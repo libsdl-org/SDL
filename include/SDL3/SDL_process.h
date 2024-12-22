@@ -54,6 +54,13 @@
 extern "C" {
 #endif
 
+/**
+ * An opaque handle representing a system process.
+ *
+ * \since This datatype is available since SDL 3.1.3.
+ *
+ * \sa SDL_CreateProcess
+ */
 typedef struct SDL_Process SDL_Process;
 
 /**

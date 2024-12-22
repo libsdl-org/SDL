@@ -4021,6 +4021,15 @@ extern "C" {
  * \since This hint is available since SDL 3.1.3.
  */
 #define SDL_HINT_WINDOWS_INTRESOURCE_ICON       "SDL_WINDOWS_INTRESOURCE_ICON"
+
+/**
+ * A variable to specify custom icon resource id from RC file on Windows
+ * platform.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.1.3.
+ */
 #define SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL "SDL_WINDOWS_INTRESOURCE_ICON_SMALL"
 
 /**

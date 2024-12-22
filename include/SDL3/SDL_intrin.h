@@ -267,7 +267,21 @@ _m_prefetch(void *__P)
 #endif
 #endif /* compiler version */
 
-#if defined(__clang__) && defined(__has_attribute)
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+/**
+ * A macro to decide if the compiler supports `__attribute__((target))`.
+ *
+ * Even though this is defined in SDL's public headers, it is generally not
+ * used directly by apps. Apps should probably just use SDL_TARGETING
+ * directly, instead.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_TARGETING
+ */
+#define SDL_HAS_TARGET_ATTRIBS
+
+#elif defined(__clang__) && defined(__has_attribute)
 # if __has_attribute(target)
 # define SDL_HAS_TARGET_ATTRIBS
 # endif
@@ -277,7 +291,55 @@ _m_prefetch(void *__P)
 # define SDL_HAS_TARGET_ATTRIBS
 #endif
 
-#ifdef SDL_HAS_TARGET_ATTRIBS
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * A macro to tag a function as targeting a specific CPU architecture.
+ *
+ * This is a hint to the compiler that a function should be built with support
+ * for a CPU instruction set that might be different than the rest of the
+ * program.
+ *
+ * The particulars of this are explained in the GCC documentation:
+ *
+ * https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html#index-target-function-attribute
+ *
+ * An example of using this feature is to turn on SSE2 support for a specific
+ * function, even if the rest of the source code is not compiled to use SSE2
+ * code:
+ *
+ * ```c
+ * #ifdef SDL_SSE2_INTRINSICS
+ * static void SDL_TARGETING("sse2") DoSomethingWithSSE2(char *x) {
+ *    ...use SSE2 intrinsic functions, etc...
+ * }
+ * #endif
+ *
+ * // later...
+ * #ifdef SDL_SSE2_INTRINSICS
+ * if (SDL_HasSSE2()) {
+ *     DoSomethingWithSSE2(str);
+ * }
+ * #endif
+ * ```
+ *
+ * The application is, on a whole, built without SSE2 instructions, so it
+ * will run on Intel machines that don't support SSE2. But then at runtime,
+ * it checks if the system supports the instructions, and then calls into a
+ * function that uses SSE2 opcodes. The ifdefs make sure that this code isn't
+ * used on platforms that don't have SSE2 at all.
+ *
+ * On compilers without target support, this is defined to nothing.
+ *
+ * This symbol is used by SDL internally, but apps and other libraries are
+ * welcome to use it for their own interfaces as well.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_TARGETING(x) __attribute__((target(x)))
+
+#elif defined(SDL_HAS_TARGET_ATTRIBS)
 # define SDL_TARGETING(x) __attribute__((target(x)))
 #else
 # define SDL_TARGETING(x)

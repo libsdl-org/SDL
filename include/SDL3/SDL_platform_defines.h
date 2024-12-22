@@ -357,7 +357,15 @@
     #define WINAPI_FAMILY_WINRT 0
 #endif /* HAVE_WINAPIFAMILY_H */
 
-#if HAVE_WINAPIFAMILY_H && HAVE_WINAPIFAMILY_H
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+/**
+ * A preprocessor macro that defined to 1 if compiling for Windows Phone.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_WINAPI_FAMILY_PHONE (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+
+#elif HAVE_WINAPIFAMILY_H && HAVE_WINAPIFAMILY_H
     #define SDL_WINAPI_FAMILY_PHONE (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
 #else
     #define SDL_WINAPI_FAMILY_PHONE 0

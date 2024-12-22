@@ -299,12 +299,24 @@ typedef struct SDL_Haptic SDL_Haptic;
 #define SDL_HAPTIC_LEFTRIGHT    (1u<<11)
 
 /**
- * Reserved for future use
+ * Reserved for future use.
  *
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_HAPTIC_RESERVED1    (1u<<12)
+
+/**
+ * Reserved for future use.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_HAPTIC_RESERVED2    (1u<<13)
+
+/**
+ * Reserved for future use.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_HAPTIC_RESERVED3    (1u<<14)
 
 /**

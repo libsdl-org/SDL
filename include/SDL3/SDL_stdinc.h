@@ -753,7 +753,288 @@ SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 f
 #endif
 
 /* Annotations to help code analysis tools */
-#ifdef SDL_DISABLE_ANALYZE_MACROS
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * Macro that annotates function params with input buffer size.
+ *
+ * If we were to annotate `memcpy`:
+ *
+ * ```c
+ * void *memcpy(void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
+ * ```
+ *
+ * This notes that `src` should be `len` bytes in size and is only read by the
+ * function. The compiler or other analysis tools can warn when this doesn't
+ * appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_IN_BYTECAP(x) _In_bytecount_(x)
+
+/**
+ * Macro that annotates function params with input/output string buffer size.
+ *
+ * If we were to annotate `strlcat`:
+ *
+ * ```c
+ * size_t strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
+ * ```
+ *
+ * This notes that `dst` is a null-terminated C string, should be `maxlen`
+ * bytes in size, and is both read from and written to by the function. The
+ * compiler or other analysis tools can warn when this doesn't appear to be
+ * the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_INOUT_Z_CAP(x) _Inout_z_cap_(x)
+
+/**
+ * Macro that annotates function params with output string buffer size.
+ *
+ * If we were to annotate `snprintf`:
+ *
+ * ```c
+ * int snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, ...);
+ * ```
+ *
+ * This notes that `text` is a null-terminated C string, should be `maxlen`
+ * bytes in size, and is only written to by the function. The compiler or
+ * other analysis tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_OUT_Z_CAP(x) _Out_z_cap_(x)
+
+/**
+ * Macro that annotates function params with output buffer size.
+ *
+ * If we were to annotate `wcsncpy`:
+ *
+ * ```c
+ * char *wcscpy(SDL_OUT_CAP(bufsize) wchar_t *dst, const wchar_t *src, size_t bufsize);
+ * ```
+ *
+ * This notes that `dst` should have a capacity of `bufsize` wchar_t in size,
+ * and is only written to by the function. The compiler or other analysis
+ * tools can warn when this doesn't appear to be the case.
+ *
+ * This operates on counts of objects, not bytes. Use SDL_OUT_BYTECAP for bytes.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_OUT_CAP(x) _Out_cap_(x)
+
+/**
+ * Macro that annotates function params with output buffer size.
+ *
+ * If we were to annotate `memcpy`:
+ *
+ * ```c
+ * void *memcpy(SDL_OUT_BYTECAP(bufsize) void *dst, const void *src, size_t bufsize);
+ * ```
+ *
+ * This notes that `dst` should have a capacity of `bufsize` bytes in size,
+ * and is only written to by the function. The compiler or other analysis
+ * tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_OUT_BYTECAP(x) _Out_bytecap_(x)
+
+/**
+ * Macro that annotates function params with output buffer string size.
+ *
+ * If we were to annotate `strcpy`:
+ *
+ * ```c
+ * char *strcpy(SDL_OUT_Z_BYTECAP(bufsize) char *dst, const char *src, size_t bufsize);
+ * ```
+ *
+ * This notes that `dst` should have a capacity of `bufsize` bytes in size,
+ * and a zero-terminated string is written to it by the function. The compiler
+ * or other analysis tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_OUT_Z_BYTECAP(x) _Out_z_bytecap_(x)
+
+/**
+ * Macro that annotates function params as printf-style format strings.
+ *
+ * If we were to annotate `fprintf`:
+ *
+ * ```c
+ * int fprintf(FILE *f, SDL_PRINTF_FORMAT_STRING const char *fmt, ...);
+ * ```
+ *
+ * This notes that `fmt` should be a printf-style format string. The compiler
+ * or other analysis tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_PRINTF_FORMAT_STRING _Printf_format_string_
+
+/**
+ * Macro that annotates function params as scanf-style format strings.
+ *
+ * If we were to annotate `fscanf`:
+ *
+ * ```c
+ * int fscanf(FILE *f, SDL_SCANF_FORMAT_STRING const char *fmt, ...);
+ * ```
+ *
+ * This notes that `fmt` should be a scanf-style format string. The compiler
+ * or other analysis tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_SCANF_FORMAT_STRING _Scanf_format_string_impl_
+
+/**
+ * Macro that annotates a vararg function that operates like printf.
+ *
+ * If we were to annotate `fprintf`:
+ *
+ * ```c
+ * int fprintf(FILE *f, const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
+ * ```
+ *
+ * This notes that the second parameter should be a printf-style format string, followed by `...`.
+ * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which between them
+ * will cover at least Visual Studio, GCC, and Clang.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_PRINTF_VARARG_FUNC( fmtargnumber ) __attribute__ (( format( __printf__, fmtargnumber, fmtargnumber+1 )))
+
+/**
+ * Macro that annotates a va_list function that operates like printf.
+ *
+ * If we were to annotate `vfprintf`:
+ *
+ * ```c
+ * int vfprintf(FILE *f, const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
+ * ```
+ *
+ * This notes that the second parameter should be a printf-style format string, followed by a va_list.
+ * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which between them
+ * will cover at least Visual Studio, GCC, and Clang.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_PRINTF_VARARG_FUNCV( fmtargnumber ) __attribute__(( format( __printf__, fmtargnumber, 0 )))
+
+/**
+ * Macro that annotates a vararg function that operates like scanf.
+ *
+ * If we were to annotate `fscanf`:
+ *
+ * ```c
+ * int fscanf(FILE *f, const char *fmt, ...) SDL_PRINTF_VARARG_FUNCV(2);
+ * ```
+ *
+ * This notes that the second parameter should be a scanf-style format string, followed by `...`.
+ * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * This can (and should) be used with SDL_SCANF_FORMAT_STRING as well, which between them
+ * will cover at least Visual Studio, GCC, and Clang.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_SCANF_VARARG_FUNC( fmtargnumber ) __attribute__ (( format( __scanf__, fmtargnumber, fmtargnumber+1 )))
+
+/**
+ * Macro that annotates a va_list function that operates like scanf.
+ *
+ * If we were to annotate `vfscanf`:
+ *
+ * ```c
+ * int vfscanf(FILE *f, const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
+ * ```
+ *
+ * This notes that the second parameter should be a scanf-style format string, followed by a va_list.
+ * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * This can (and should) be used with SDL_SCANF_FORMAT_STRING as well, which between them
+ * will cover at least Visual Studio, GCC, and Clang.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_SCANF_VARARG_FUNCV( fmtargnumber ) __attribute__(( format( __scanf__, fmtargnumber, 0 )))
+
+/**
+ * Macro that annotates a vararg function that operates like wprintf.
+ *
+ * If we were to annotate `fwprintf`:
+ *
+ * ```c
+ * int fwprintf(FILE *f, const wchar_t *fmt, ...) SDL_WPRINTF_VARARG_FUNC(2);
+ * ```
+ *
+ * This notes that the second parameter should be a wprintf-style format wide string, followed by `...`.
+ * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which between them
+ * will cover at least Visual Studio, GCC, and Clang.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_WPRINTF_VARARG_FUNC( fmtargnumber ) /* __attribute__ (( format( __wprintf__, fmtargnumber, fmtargnumber+1 ))) */
+
+/**
+ * Macro that annotates a va_list function that operates like wprintf.
+ *
+ * If we were to annotate `vfwprintf`:
+ *
+ * ```c
+ * int vfwprintf(FILE *f, const wchar_t *fmt, va_list ap) SDL_WPRINTF_VARARG_FUNC(2);
+ * ```
+ *
+ * This notes that the second parameter should be a wprintf-style format wide string, followed by a va_list.
+ * The compiler or other analysis tools can warn when this doesn't appear to be the case.
+ *
+ * On compilers without this annotation mechanism, this is defined to nothing.
+ *
+ * This can (and should) be used with SDL_PRINTF_FORMAT_STRING as well, which between them
+ * will cover at least Visual Studio, GCC, and Clang.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_WPRINTF_VARARG_FUNCV( fmtargnumber ) /* __attribute__ (( format( __wprintf__, fmtargnumber, 0 ))) */
+
+#elif defined(SDL_DISABLE_ANALYZE_MACROS)
 #define SDL_IN_BYTECAP(x)
 #define SDL_INOUT_Z_CAP(x)
 #define SDL_OUT_Z_CAP(x)
@@ -2295,9 +2576,77 @@ extern SDL_DECLSPEC void * SDLCALL SDL_memset4(void *dst, Uint32 val, size_t dwo
 #define SDL_zeroa(x) SDL_memset((x), 0, sizeof((x)))
 
 
+/**
+ * Compare two buffers of memory.
+ *
+ * \param s1 the first buffer to compare. NULL is not permitted!
+ * \param s2 the second buffer to compare. NULL is not permitted!
+ * \param len the number of bytes to compare between the buffers.
+ * \returns less than zero if s1 is "less than" s2, greater than zero if
+ *          s1 is "greater than" s2, and zero if the buffers match
+ *          exactly for `len` bytes.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_t len);
 
+/**
+ * This works exactly like wcslen() but doesn't require access to a C runtime.
+ *
+ * Counts the number of wchar_t values in `wstr`, excluding the null
+ * terminator.
+ *
+ * Like SDL_strlen only counts bytes and not codepoints in a UTF-8 string,
+ * this counts wchar_t values in a string, even if the string's encoding is of
+ * variable width, like UTF-16.
+ *
+ * Also be aware that wchar_t is different sizes on different platforms (4
+ * bytes on Linux, 2 on Windows, etc).
+ *
+ * \param wstr The null-terminated wide string to read. Must not be NULL.
+ * \returns the length (in wchar_t values, excluding the null terminator) of `wstr`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_wcsnlen
+ * \sa SDL_utf8strlen
+ * \sa SDL_utf8strnlen
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_wcslen(const wchar_t *wstr);
+
+/**
+ * This works exactly like wcsnlen() but doesn't require access to a C
+ * runtime.
+ *
+ * Counts up to a maximum of `maxlen` wchar_t values in `wstr`, excluding the
+ * null terminator.
+ *
+ * Like SDL_strnlen only counts bytes and not codepoints in a UTF-8 string,
+ * this counts wchar_t values in a string, even if the string's encoding is of
+ * variable width, like UTF-16.
+ *
+ * Also be aware that wchar_t is different sizes on different platforms (4
+ * bytes on Linux, 2 on Windows, etc).
+ *
+ * Also, `maxlen` is a count of wide characters, not bytes!
+ *
+ * \param wstr The null-terminated wide string to read. Must not be NULL.
+ * \param maxlen The maximum amount of wide characters to count.
+ * \returns the length (in wide characters, excluding the null terminator) of
+ *          `wstr` but never more than `maxlen`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_wcslen
+ * \sa SDL_utf8strlen
+ * \sa SDL_utf8strnlen
+ */
 extern SDL_DECLSPEC size_t SDLCALL SDL_wcsnlen(const wchar_t *wstr, size_t maxlen);
 
 /**
@@ -2316,7 +2665,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_wcsnlen(const wchar_t *wstr, size_t maxle
  * \param src The null-terminated wide string to copy. Must not be NULL, and
  *            must not overlap with `dst`.
  * \param maxlen The length (in wide characters) of the destination buffer.
- * \returns The length (in wide characters, excluding the null terminator) of
+ * \returns the length (in wide characters, excluding the null terminator) of
  *          `src`.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -2345,7 +2694,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_wcslcpy(SDL_OUT_Z_CAP(maxlen) wchar_t *ds
  * \param src The second null-terminated wide string. Must not be NULL, and
  *            must not overlap with `dst`.
  * \param maxlen The length (in wide characters) of the destination buffer.
- * \returns The length (in wide characters, excluding the null terminator) of
+ * \returns the length (in wide characters, excluding the null terminator) of
  *          the string in `dst` plus the length of `src`.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -2356,8 +2705,63 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_wcslcpy(SDL_OUT_Z_CAP(maxlen) wchar_t *ds
  */
 extern SDL_DECLSPEC size_t SDLCALL SDL_wcslcat(SDL_INOUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t maxlen);
 
+/**
+ * Allocate a copy of a wide string.
+ *
+ * This allocates enough space for a null-terminated copy of `wstr`, using
+ * SDL_malloc, and then makes a copy of the string into this space.
+ *
+ * The returned string is owned by the caller, and should be passed to
+ * SDL_free when no longer needed.
+ *
+ * \param wstr the string to copy.
+ * \returns a pointer to the newly-allocated wide string.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC wchar_t * SDLCALL SDL_wcsdup(const wchar_t *wstr);
+
+/**
+ * Search a wide string for the first instance of a specific substring.
+ *
+ * The search ends once it finds the requested substring, or a null
+ * terminator byte to end the string.
+ *
+ * Note that this looks for strings of _wide characters_, not _codepoints_, so
+ * it's legal to search for malformed and incomplete UTF-16 sequences.
+ *
+ * \param haystack the wide string to search. Must not be NULL.
+ * \param needle the wide string to search for. Must not be NULL.
+ * \returns a pointer to the first instance of `needle` in the string, or NULL if not found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC wchar_t * SDLCALL SDL_wcsstr(const wchar_t *haystack, const wchar_t *needle);
+
+/**
+ * Search a wide string, up to n wide chars, for the first instance of a specific substring.
+ *
+ * The search ends once it finds the requested substring, or a null
+ * terminator value to end the string, or `maxlen` wide character have been
+ * examined. It is possible to use this function on a wide string without a
+ * null terminator.
+ *
+ * Note that this looks for strings of _wide characters_, not _codepoints_, so
+ * it's legal to search for malformed and incomplete UTF-16 sequences.
+ *
+ * \param haystack the wide string to search. Must not be NULL.
+ * \param needle the wide string to search for. Must not be NULL.
+ * \param maxlen the maximum number of wide characters to search in `haystack`.
+ * \returns a pointer to the first instance of `needle` in the string, or NULL if not found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC wchar_t * SDLCALL SDL_wcsnstr(const wchar_t *haystack, const wchar_t *needle, size_t maxlen);
 
 /**
@@ -2499,7 +2903,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_wcsncasecmp(const wchar_t *str1, const wchar
  *             to 36 inclusive. If 0, the base will be inferred from the
  *             number's prefix (0x for hexadecimal, 0 for octal, decimal
  *             otherwise).
- * \returns The parsed `long`, or 0 if no number could be parsed.
+ * \returns the parsed `long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -2517,7 +2921,7 @@ extern SDL_DECLSPEC long SDLCALL SDL_wcstol(const wchar_t *str, wchar_t **endp, 
  * If you need the length of a UTF-8 string, consider using SDL_utf8strlen().
  *
  * \param str The null-terminated string to read. Must not be NULL.
- * \returns The length (in bytes, excluding the null terminator) of `src`.
+ * \returns the length (in bytes, excluding the null terminator) of `src`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -2540,7 +2944,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_strlen(const char *str);
  *
  * \param str The null-terminated string to read. Must not be NULL.
  * \param maxlen The maximum amount of bytes to count.
- * \returns The length (in bytes, excluding the null terminator) of `src` but
+ * \returns the length (in bytes, excluding the null terminator) of `src` but
  *          never more than `maxlen`.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -2570,7 +2974,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_strnlen(const char *str, size_t maxlen);
  * \param src The null-terminated string to copy. Must not be NULL, and must
  *            not overlap with `dst`.
  * \param maxlen The length (in characters) of the destination buffer.
- * \returns The length (in characters, excluding the null terminator) of
+ * \returns the length (in characters, excluding the null terminator) of
  *          `src`.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -2600,7 +3004,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, 
  *            must not overlap with `dst`.
  * \param dst_bytes The length (in bytes) of the destination buffer. Must not
  *                  be 0.
- * \returns The number of bytes written, excluding the null terminator.
+ * \returns the number of bytes written, excluding the null terminator.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -2627,7 +3031,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char
  * \param src The second null-terminated string. Must not be NULL, and must
  *            not overlap with `dst`.
  * \param maxlen The length (in characters) of the destination buffer.
- * \returns The length (in characters, excluding the null terminator) of the
+ * \returns the length (in characters, excluding the null terminator) of the
  *          string in `dst` plus the length of `src`.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -2638,8 +3042,68 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char
  */
 extern SDL_DECLSPEC size_t SDLCALL SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen);
 
+/**
+ * Allocate a copy of a string.
+ *
+ * This allocates enough space for a null-terminated copy of `str`, using
+ * SDL_malloc, and then makes a copy of the string into this space.
+ *
+ * The returned string is owned by the caller, and should be passed to
+ * SDL_free when no longer needed.
+ *
+ * \param str the string to copy.
+ * \returns a pointer to the newly-allocated string.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC SDL_MALLOC char * SDLCALL SDL_strdup(const char *str);
+
+/**
+ * Allocate a copy of a string, up to n characters.
+ *
+ * This allocates enough space for a null-terminated copy of `str`, up to
+ * `maxlen` bytes, using SDL_malloc, and then makes a copy of the string
+ * into this space.
+ *
+ * If the string is longer than `maxlen` bytes, the returned string will
+ * be `maxlen` bytes long, plus a null-terminator character that isn't
+ * included in the count.
+ *
+ * The returned string is owned by the caller, and should be passed to
+ * SDL_free when no longer needed.
+ *
+ * \param str the string to copy.
+ * \param maxlen the maximum length of the copied string, not counting
+ *        the null-terminator character.
+ * \returns a pointer to the newly-allocated string.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC SDL_MALLOC char * SDLCALL SDL_strndup(const char *str, size_t maxlen);
+
+/**
+ * Reverse a string's contents.
+ *
+ * This reverses a null-terminated string in-place. Only the content of the
+ * string is reversed; the null-terminator character remains at the end of the
+ * reversed string.
+ *
+ * **WARNING**: This function reverses the _bytes_ of the string, not the
+ * codepoints. If `str` is a UTF-8 string with Unicode codepoints > 127, this
+ * will ruin the string data. You should only use this function on strings
+ * that are completely comprised of low ASCII characters.
+ *
+ * \param str the string to reverse.
+ * \returns `str`.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC char * SDLCALL SDL_strrev(char *str);
 
 /**
@@ -3059,7 +3523,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ulltoa(unsigned long long value, char *st
  * `(int)SDL_strtol(str, NULL, 10)`.
  *
  * \param str The null-terminated string to read. Must not be NULL.
- * \returns The parsed `int`.
+ * \returns the parsed `int`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3082,7 +3546,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_atoi(const char *str);
  * NULL)`.
  *
  * \param str The null-terminated string to read. Must not be NULL.
- * \returns The parsed `double`.
+ * \returns the parsed `double`.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3114,7 +3578,7 @@ extern SDL_DECLSPEC double SDLCALL SDL_atof(const char *str);
  *             to 36 inclusive. If 0, the base will be inferred from the
  *             number's prefix (0x for hexadecimal, 0 for octal, decimal
  *             otherwise).
- * \returns The parsed `long`, or 0 if no number could be parsed.
+ * \returns the parsed `long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3148,7 +3612,7 @@ extern SDL_DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int ba
  *             to 36 inclusive. If 0, the base will be inferred from the
  *             number's prefix (0x for hexadecimal, 0 for octal, decimal
  *             otherwise).
- * \returns The parsed `unsigned long`, or 0 if no number could be parsed.
+ * \returns the parsed `unsigned long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3181,7 +3645,7 @@ extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **en
  *             to 36 inclusive. If 0, the base will be inferred from the
  *             number's prefix (0x for hexadecimal, 0 for octal, decimal
  *             otherwise).
- * \returns The parsed `long long`, or 0 if no number could be parsed.
+ * \returns the parsed `long long`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3214,7 +3678,7 @@ extern SDL_DECLSPEC long long SDLCALL SDL_strtoll(const char *str, char **endp, 
  *             to 36 inclusive. If 0, the base will be inferred from the
  *             number's prefix (0x for hexadecimal, 0 for octal, decimal
  *             otherwise).
- * \returns The parsed `unsigned long long`, or 0 if no number could be
+ * \returns the parsed `unsigned long long`, or 0 if no number could be
  *          parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -3241,11 +3705,11 @@ extern SDL_DECLSPEC unsigned long long SDLCALL SDL_strtoull(const char *str, cha
  * - Whether or not INF and NAN can be parsed is unspecified.
  * - The precision of the result is unspecified.
  *
- * \param str The null-terminated string to read. Must not be NULL.
- * \param endp If not NULL, the address of the first invalid character (i.e.
+ * \param str the null-terminated string to read. Must not be NULL.
+ * \param endp if not NULL, the address of the first invalid character (i.e.
  *             the next character after the parsed number) will be written to
  *             this pointer.
- * \returns The parsed `double`, or 0 if no number could be parsed.
+ * \returns the parsed `double`, or 0 if no number could be parsed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -3516,14 +3980,186 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_StepBackUTF8(const char *start, const cha
  */
 extern SDL_DECLSPEC char * SDLCALL SDL_UCS4ToUTF8(Uint32 codepoint, char *dst);
 
-
+/**
+ * This works exactly like sscanf() but doesn't require access to a C runtime.
+ *
+ * Scan a string, matching a format string, converting each '%' item and
+ * storing it to pointers provided through variable arguments.
+ *
+ * \param text the string to scan. Must not be NULL.
+ * \param fmt a printf-style format string. Must not be NULL.
+ * \param ... a list of pointers to values to be filled in with scanned items.
+ * \returns the number of items that matched the format string.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC int SDLCALL SDL_sscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, ...) SDL_SCANF_VARARG_FUNC(2);
+
+/**
+ * This works exactly like vsscanf() but doesn't require access to a C runtime.
+ *
+ * Functions identically to SDL_sscanf(), except it takes a `va_list`
+ * instead of using `...` variable arguments.
+ *
+ * \param text the string to scan. Must not be NULL.
+ * \param fmt a printf-style format string. Must not be NULL.
+ * \param ap a `va_list` of pointers to values to be filled in with scanned items.
+ * \returns the number of items that matched the format string.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC int SDLCALL SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_STRING const char *fmt, va_list ap) SDL_SCANF_VARARG_FUNCV(2);
+
+/**
+ * This works exactly like snprintf() but doesn't require access to a C runtime.
+ *
+ * Format a string of up to `maxlen`-1 bytes, converting each '%' item with
+ * values provided through variable arguments.
+ *
+ * While some C runtimes differ on how to deal with too-large strings,
+ * this function null-terminates the output, by treating the null-terminator
+ * as part of the `maxlen` count. Note that if `maxlen` is zero, however, no
+ * bytes will be written at all.
+ *
+ * This function returns the number of _bytes_ (not _characters_) that should
+ * be written, excluding the null-terminator character. If this returns a
+ * number >= `maxlen`, it means the output string was truncated. A negative
+ * return value means an error occurred.
+ *
+ * Referencing the output string's pointer with a format item is undefined
+ * behavior.
+ *
+ * \param text the buffer to write the string into. Must not be NULL.
+ * \param maxlen the maximum bytes to write, including the null-terminator.
+ * \param fmt a printf-style format string. Must not be NULL.
+ * \param ... a list of values to be used with the format string.
+ * \returns the number of bytes that should be written, not counting the
+ *          null-terminator char, or a negative value on error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC int SDLCALL SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(3);
+
+/**
+ * This works exactly like swprintf() but doesn't require access to a C runtime.
+ *
+ * Format a wide string of up to `maxlen`-1 wchar_t values, converting each '%'
+ * item with values provided through variable arguments.
+ *
+ * While some C runtimes differ on how to deal with too-large strings,
+ * this function null-terminates the output, by treating the null-terminator
+ * as part of the `maxlen` count. Note that if `maxlen` is zero, however, no
+ * wide characters will be written at all.
+ *
+ * This function returns the number of _wide characters_ (not _codepoints_)
+ * that should be written, excluding the null-terminator character. If this
+ * returns a number >= `maxlen`, it means the output string was truncated. A
+ * negative return value means an error occurred.
+ *
+ * Referencing the output string's pointer with a format item is undefined
+ * behavior.
+ *
+ * \param text the buffer to write the wide string into. Must not be NULL.
+ * \param maxlen the maximum wchar_t values to write, including the null-terminator.
+ * \param fmt a printf-style format string. Must not be NULL.
+ * \param ... a list of values to be used with the format string.
+ * \returns the number of wide characters that should be written, not counting
+ *          the null-terminator char, or a negative value on error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC int SDLCALL SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, ...) SDL_WPRINTF_VARARG_FUNC(3);
+
+/**
+ * This works exactly like vsnprintf() but doesn't require access to a C runtime.
+ *
+ * Functions identically to SDL_snprintf(), except it takes a `va_list`
+ * instead of using `...` variable arguments.
+ *
+ * \param text the buffer to write the string into. Must not be NULL.
+ * \param maxlen the maximum bytes to write, including the null-terminator.
+ * \param fmt a printf-style format string. Must not be NULL.
+ * \param ap a `va_list` values to be used with the format string.
+ * \returns the number of bytes that should be written, not counting the
+ *          null-terminator char, or a negative value on error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(3);
+
+/**
+ * This works exactly like vswprintf() but doesn't require access to a C runtime.
+ *
+ * Functions identically to SDL_swprintf(), except it takes a `va_list`
+ * instead of using `...` variable arguments.
+ *
+ * \param text the buffer to write the string into. Must not be NULL.
+ * \param maxlen the maximum wide characters to write, including the null-terminator.
+ * \param fmt a printf-style format wide string. Must not be NULL.
+ * \param ap a `va_list` values to be used with the format string.
+ * \returns the number of wide characters that should be written, not counting
+ *          the null-terminator char, or a negative value on error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC int SDLCALL SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const wchar_t *fmt, va_list ap) SDL_WPRINTF_VARARG_FUNCV(3);
+
+/**
+ * This works exactly like asprintf() but doesn't require access to a C runtime.
+ *
+ * Functions identically to SDL_snprintf(), except it allocates a buffer large
+ * enough to hold the output string on behalf of the caller.
+ *
+ * On success, this function returns the number of bytes (not characters)
+ * comprising the output string, not counting the null-terminator character,
+ * and sets `*strp` to the newly-allocated string.
+ *
+ * On error, this function returns a negative number, and the value of `*strp`
+ * is undefined.
+ *
+ * The returned string is owned by the caller, and should be passed to
+ * SDL_free when no longer needed.
+ *
+ * \param strp on output, is set to the new string. Must not be NULL.
+ * \param fmt a printf-style format string. Must not be NULL.
+ * \param ... a list of values to be used with the format string.
+ * \returns the number of bytes in the newly-allocated string, not counting
+ *          the null-terminator char, or a negative value on error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
+
+/**
+ * This works exactly like vasprintf() but doesn't require access to a C runtime.
+ *
+ * Functions identically to SDL_asprintf(), except it takes a `va_list`
+ * instead of using `...` variable arguments.
+ *
+ * \param strp on output, is set to the new string. Must not be NULL.
+ * \param fmt a printf-style format string. Must not be NULL.
+ * \param ap a `va_list` values to be used with the format string.
+ * \returns the number of bytes in the newly-allocated string, not counting
+ *          the null-terminator char, or a negative value on error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.3.
+ */
 extern SDL_DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap) SDL_PRINTF_VARARG_FUNCV(2);
 
 /**

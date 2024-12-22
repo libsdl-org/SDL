@@ -112,7 +112,15 @@ typedef enum SDL_SystemTheme
     SDL_SYSTEM_THEME_DARK       /**< Dark colored system theme */
 } SDL_SystemTheme;
 
-/* Internal display mode data */
+/**
+ * Internal display mode data.
+ *
+ * This lives as a field in SDL_DisplayMode, as opaque data.
+ *
+ * \since This struct is available since SDL 3.1.3.
+ *
+ * \sa SDL_DisplayMode
+ */
 typedef struct SDL_DisplayModeData SDL_DisplayModeData;
 
 /**
@@ -206,26 +214,86 @@ typedef Uint64 SDL_WindowFlags;
 
 
 /**
- * Used to indicate that you don't care what the window position is.
+ * A magic value used with SDL_WINDOWPOS_UNDEFINED.
+ *
+ * Generally this macro isn't used directly, but rather through
+ * SDL_WINDOWPOS_UNDEFINED or SDL_WINDOWPOS_UNDEFINED_DISPLAY.
  *
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
-#define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
-#define SDL_WINDOWPOS_UNDEFINED         SDL_WINDOWPOS_UNDEFINED_DISPLAY(0)
-#define SDL_WINDOWPOS_ISUNDEFINED(X)    \
-            (((X)&0xFFFF0000) == SDL_WINDOWPOS_UNDEFINED_MASK)
 
 /**
- * Used to indicate that the window position should be centered.
+ * Used to indicate that you don't care what the window position is.
+ *
+ * If you _really_ don't care, SDL_WINDOWPOS_UNDEFINED is the same, but always
+ * uses the primary display instead of specifying one.
+ *
+ * \param X the SDL_DisplayID of the display to use.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
+
+/**
+ * Used to indicate that you don't care what the window position/display is.
+ *
+ * This always uses the primary display.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_WINDOWPOS_UNDEFINED         SDL_WINDOWPOS_UNDEFINED_DISPLAY(0)
+
+/**
+ * A macro to test if the window position is marked as "undefined."
+ *
+ * \param X the window position value.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_WINDOWPOS_ISUNDEFINED(X)    (((X)&0xFFFF0000) == SDL_WINDOWPOS_UNDEFINED_MASK)
+
+/**
+ * A magic value used with SDL_WINDOWPOS_CENTERED.
+ *
+ * Generally this macro isn't used directly, but rather through
+ * SDL_WINDOWPOS_CENTERED or SDL_WINDOWPOS_CENTERED_DISPLAY.
  *
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_WINDOWPOS_CENTERED_MASK    0x2FFF0000u
+
+/**
+ * Used to indicate that the window position should be centered.
+ *
+ * SDL_WINDOWPOS_CENTERED is the same, but always uses the primary display
+ * instead of specifying one.
+ *
+ * \param X the SDL_DisplayID of the display to use.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_WINDOWPOS_CENTERED_DISPLAY(X)  (SDL_WINDOWPOS_CENTERED_MASK|(X))
+
+/**
+ * Used to indicate that the window position should be centered.
+ *
+ * This always uses the primary display.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_WINDOWPOS_CENTERED         SDL_WINDOWPOS_CENTERED_DISPLAY(0)
+
+/**
+ * A macro to test if the window position is marked as "centered."
+ *
+ * \param X the window position value.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_WINDOWPOS_ISCENTERED(X)    \
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK)
+
 
 /**
  * Window flash operation.
@@ -249,14 +317,38 @@ typedef enum SDL_FlashOperation
 typedef struct SDL_GLContextState *SDL_GLContext;
 
 /**
- * Opaque EGL types.
+ * Opaque type for an EGL display.
  *
  * \since This datatype is available since SDL 3.1.3.
  */
 typedef void *SDL_EGLDisplay;
+
+/**
+ * Opaque type for an EGL config.
+ *
+ * \since This datatype is available since SDL 3.1.3.
+ */
 typedef void *SDL_EGLConfig;
+
+/**
+ * Opaque type for an EGL surface.
+ *
+ * \since This datatype is available since SDL 3.1.3.
+ */
 typedef void *SDL_EGLSurface;
+
+/**
+ * An EGL attribute, used when creating an EGL context.
+ *
+ * \since This datatype is available since SDL 3.1.3.
+ */
 typedef intptr_t SDL_EGLAttrib;
+
+/**
+ * An EGL integer attribute, used when creating an EGL surface.
+ *
+ * \since This datatype is available since SDL 3.1.3.
+ */
 typedef int SDL_EGLint;
 
 /**
