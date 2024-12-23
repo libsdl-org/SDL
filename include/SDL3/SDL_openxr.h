@@ -52,13 +52,24 @@ extern "C" {
     #define XR_DEFINE_HANDLE(object) typedef Uint64 object;
 #endif /* XR_DEFINE_HANDLE */
 
+typedef enum XrStructureType {
+    XR_TYPE_SESSION_CREATE_INFO = 8,
+    XR_TYPE_SWAPCHAIN_CREATE_INFO = 9,
+} XrStructureType;
+
 XR_DEFINE_HANDLE(XrInstance)
 XR_DEFINE_HANDLE(XrSystemId)
 XR_DEFINE_HANDLE(XrSession)
 XR_DEFINE_HANDLE(XrSwapchain)
 
-typedef struct {} XrSessionCreateInfo;
-typedef struct {} XrSwapchainCreateInfo;
+typedef struct {
+    XrStructureType type;
+    const void* next;
+} XrSessionCreateInfo;
+typedef struct {
+    XrStructureType type;
+    const void* next;
+} XrSwapchainCreateInfo;
 
 typedef enum XrResult {
     XR_ERROR_FUNCTION_UNSUPPORTED = -7,
