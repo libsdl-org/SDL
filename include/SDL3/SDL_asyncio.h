@@ -273,7 +273,6 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetAsyncIOSize(SDL_AsyncIO *asyncio);
  *
  * \sa SDL_WriteAsyncIO
  * \sa SDL_CreateAsyncIOQueue
- * \sa SDL_GetAsyncIOTaskResult
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata);
 
@@ -311,7 +310,6 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadAsyncIO(SDL_AsyncIO *asyncio, void *ptr
  *
  * \sa SDL_ReadAsyncIO
  * \sa SDL_CreateAsyncIOQueue
- * \sa SDL_GetAsyncIOTaskResult
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata);
 
