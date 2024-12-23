@@ -19,10 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/*
-  All hid command sent are based on https://github.com/berarma/new-lg4ff
-*/
-
 #include "SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
@@ -131,13 +127,14 @@ static bool HIDAPI_DriverLg4ff_IsSupportedDevice(
     /*
       TODO
 
-      Is it possible to identify native mode from hid? On the Linux kernel
-      driver that is done by checking with the usb stack, more specifically
-      bcdDevice on the usb descriptor
+      Review hidapi code to see if SDL_hid_device_info.release_number is reliable
 
-      If a way is found to probe for native mode on the HID layer, this function
-      should trigger mode switch, then return false, so the next probe cycle
-      would take the device on a supported mode
+      Use SDL_hid_get_device_info(device) to grab SDL_hid_device_info.release_number,
+      to find the native device model
+
+      When a native device model is found and the device is not in it's native mode,
+      trigger mode switch, then return false, so the next probe cycle would take
+      the device in the new mode
     */
     if (vendor_id != USB_VENDOR_ID_LOGITECH) {
         return false;
@@ -150,6 +147,13 @@ static bool HIDAPI_DriverLg4ff_IsSupportedDevice(
     return false;
 }
 
+/*
+  *Ported*
+  Original functions by:
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  lg4ff_set_range_g25 lg4ff_set_range_dfp
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
 static bool HIDAPI_DriverLg4ff_SetRange(SDL_HIDAPI_Device *device, int range)
 {
     Uint8 cmd[7] = {0};
@@ -238,33 +242,43 @@ static bool HIDAPI_DriverLg4ff_SetRange(SDL_HIDAPI_Device *device, int range)
     return true;
 }
 
-static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int gain)
+/*
+  *Ported*
+  Original functions by:
+  Simon Wood <simon@mungewell.org>
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  lg4ff_set_autocenter_default lg4ff_set_autocenter_ffex
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
+static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int magnitude)
 {
     /*
-    XXX
+      TODO
 
-    Once again the Linux driver checks between ffex and dfex on the usb
-    stack, not sure how one can check for that on hid.
+      Review hidapi code to see if SDL_hid_device_info.release_number is reliable
+
+      Use SDL_hid_get_device_info(device) to grab SDL_hid_device_info.release_number,
+      to tell between ffex and dfex
     */
     Uint8 cmd[7] = {0};
     int ret;
 
-    if (gain < 0) {
-        gain = 0;
+    if (magnitude < 0) {
+        magnitude = 0;
     }
-    if (gain > 65535) {
-        gain = 65535;
+    if (magnitude > 65535) {
+        magnitude = 65535;
     }
 
 #if 0
     if (is_ffex) {
-        gain = gain * 90 / 65535;
+        magnitude = magnitude * 90 / 65535;
 
         cmd[0] = 0xfe;
         cmd[1] = 0x03;
-        cmd[2] = (uint16_t)gain >> 14;
-        cmd[3] = (uint16_t)gain >> 14;
-        cmd[4] = (uint16_t)gain;
+        cmd[2] = (uint16_t)magnitude >> 14;
+        cmd[3] = (uint16_t)magnitude >> 14;
+        cmd[4] = (uint16_t)magnitude;
         cmd[5] = 0x00;
         cmd[6] = 0x00;
 
@@ -285,22 +299,23 @@ static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int gain
             return false;
         }
 
-        if (gain == 0) {
+        if (magnitude == 0) {
             return true;
         }
 
         // set strength
 
-        if (gain <= 0xaaaa) {
-            expand_a = 0x0c * gain;
-            expand_b = 0x80 * gain;
+        if (magnitude <= 0xaaaa) {
+            expand_a = 0x0c * magnitude;
+            expand_b = 0x80 * magnitude;
         } else {
-            expand_a = (0x0c * 0xaaaa) + 0x06 * (gain - 0xaaaa);
-            expand_b = (0x80 * 0xaaaa) + 0xff * (gain - 0xaaaa);
+            expand_a = (0x0c * 0xaaaa) + 0x06 * (magnitude - 0xaaaa);
+            expand_b = (0x80 * 0xaaaa) + 0xff * (magnitude - 0xaaaa);
         }
+        // TODO do not adjust for MOMO wheels, when support is added
         expand_a = expand_a >> 1;
 
-        SDL_memset(cmd, 0x00, 7);
+        SDL_memset(cmd, 0x00, sizeof(cmd));
         cmd[0] = 0xfe;
         cmd[1] = 0x0d;
         cmd[2] = expand_a / 0xaaaa;
@@ -313,7 +328,7 @@ static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int gain
         }
 
         // enable
-        SDL_memset(cmd, 0x00, 7);
+        SDL_memset(cmd, 0x00, sizeof(cmd));
         cmd[0] = 0x14;
 
         ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
@@ -695,6 +710,13 @@ static Uint32 HIDAPI_DriverLg4ff_GetJoystickCapabilities(SDL_HIDAPI_Device *devi
     return 0;
 }
 
+/*
+  Commands by:
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  Simon Wood <simon@mungewell.org>
+  lg4ff_led_set_brightness lg4ff_set_leds
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
 static bool HIDAPI_DriverLg4ff_SendLedCommand(SDL_HIDAPI_Device *device, Uint8 state)
 {
     Uint8 cmd[7];
