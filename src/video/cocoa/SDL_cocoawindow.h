@@ -59,6 +59,7 @@ typedef enum
     NSInteger focusClickPending;
     float pendingWindowWarpX, pendingWindowWarpY;
     BOOL isDragAreaRunning;
+    NSTimer *liveResizeTimer;
 }
 
 - (BOOL)isTouchFromTrackpad:(NSEvent *)theEvent;
@@ -83,6 +84,9 @@ typedef enum
 // Window delegate functionality
 - (BOOL)windowShouldClose:(id)sender;
 - (void)windowDidExpose:(NSNotification *)aNotification;
+- (void)windowDidChangeOcclusionState:(NSNotification *)aNotification;
+- (void)windowWillStartLiveResize:(NSNotification *)aNotification;
+- (void)windowDidEndLiveResize:(NSNotification *)aNotification;
 - (void)windowDidMove:(NSNotification *)aNotification;
 - (void)windowDidResize:(NSNotification *)aNotification;
 - (void)windowDidMiniaturize:(NSNotification *)aNotification;

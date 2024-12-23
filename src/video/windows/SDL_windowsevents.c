@@ -1541,12 +1541,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_TIMER:
     {
         if (wParam == (UINT_PTR)SDL_IterateMainCallbacks) {
-            if (SDL_HasMainCallbacks()) {
-                SDL_IterateMainCallbacks(false);
-            } else {
-                // Send an expose event so the application can redraw
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
-            }
+            SDL_OnWindowLiveResizeUpdate(data->window);
             return 0;
         }
     } break;
