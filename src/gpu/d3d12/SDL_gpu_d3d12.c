@@ -23,6 +23,9 @@
 
 #ifdef SDL_GPU_D3D12
 
+#include "../../core/windows/SDL_windows.h"
+#include "../../video/directx/SDL_d3d12.h"
+
 #ifdef HAVE_GPU_OPENXR
 #include <openxr/openxr.h>
 
@@ -32,8 +35,6 @@
 #include "../xr/SDL_openxrdyn.h"
 #endif
 
-#include "../../core/windows/SDL_windows.h"
-#include "../../video/directx/SDL_d3d12.h"
 #include "../SDL_sysgpu.h"
 
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
@@ -3815,6 +3816,36 @@ static SDL_GPUTransferBuffer *D3D12_CreateTransferBuffer(
         size,
         usage == SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD ? D3D12_BUFFER_TYPE_UPLOAD : D3D12_BUFFER_TYPE_DOWNLOAD,
         debugName);
+}
+
+static XrResult D3D12_DestroyXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSwapchain swapchain,
+    SDL_GPUTexture **swapchainImages)
+{
+    SDL_SetError("The d3d12 backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static XrResult D3D12_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *oldCreateInfo,
+    SDL_GPUTextureFormat *textureFormat,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+    SDL_SetError("The d3d12 backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static XrResult D3D12_CreateXRSession(
+    SDL_GPURenderer *driverData,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+    SDL_SetError("The d3d12 backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
 
 // Disposal
@@ -9069,7 +9100,7 @@ SDL_GPUBootstrap D3D12Driver = {
     SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_DXBC,
     D3D12_PrepareDriver,
     D3D12_PrepareXRDriver,
-    D3D12_CreateDevice
+    D3D12_CreateDevice,
     D3D12_CreateXRDevice,
 };
 
