@@ -2078,23 +2078,23 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  *
  * - 0: Sampled textures, followed by read-only storage textures, followed by
  *   read-only storage buffers
- * - 1: Write-only storage textures, followed by write-only storage buffers
+ * - 1: Read-write storage textures, followed by read-write storage buffers
  * - 2: Uniform buffers
  *
  * For DXBC and DXIL shaders, use the following register order:
  *
  * - (t[n], space0): Sampled textures, followed by read-only storage textures,
  *   followed by read-only storage buffers
- * - (u[n], space1): Write-only storage textures, followed by write-only
+ * - (u[n], space1): Read-write storage textures, followed by read-write
  *   storage buffers
  * - (b[n], space2): Uniform buffers
  *
  * For MSL/metallib, use the following order:
  *
- * - [[buffer]]: Uniform buffers, followed by write-only storage buffers,
- *   followed by write-only storage buffers
+ * - [[buffer]]: Uniform buffers, followed by read-only storage buffers,
+ *   followed by read-write storage buffers
  * - [[texture]]: Sampled textures, followed by read-only storage textures,
- *   followed by write-only storage textures
+ *   followed by read-write storage textures
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the compute pipeline to
