@@ -4448,6 +4448,36 @@ static void METAL_INTERNAL_DestroyBlitResources(
     SDL_free(renderer->blitPipelines);
 }
 
+static XrResult METAL_DestroyXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSwapchain swapchain,
+    SDL_GPUTexture **swapchainImages)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static XrResult METAL_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *oldCreateInfo,
+    SDL_GPUTextureFormat *textureFormat,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static XrResult METAL_CreateXRSession(
+    SDL_GPURenderer *driverData,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
 static bool METAL_CreateXRDevice(SDL_GPUDevice **gpu_device, XrInstance *xrInstance, XrSystemId *xrSystem, bool debugMode, bool preferLowPower, SDL_PropertiesID props)
 {
     SDL_SetError("The metal backend does not currently support OpenXR");
@@ -4596,8 +4626,8 @@ SDL_GPUBootstrap MetalDriver = {
     SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB,
     METAL_PrepareDriver,
     METAL_PrepareXRDriver,
-    METAL_CreateDevice
-    METAL_CreateXRDevice
+    METAL_CreateDevice,
+    METAL_CreateXRDevice,
 };
 
 #endif // SDL_GPU_METAL
