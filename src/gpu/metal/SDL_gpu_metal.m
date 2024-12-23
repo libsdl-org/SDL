@@ -26,6 +26,15 @@
 #include <Metal/Metal.h>
 #include <QuartzCore/CoreAnimation.h>
 
+#ifdef HAVE_GPU_OPENXR
+#include <openxr/openxr.h>
+
+/* Needed for the OpenXR metal extension structures */
+#define XR_USE_GRAPHICS_API_METAL 1
+#include <openxr/openxr_platform.h>
+#include "../xr/SDL_openxrdyn.h"
+#endif
+
 #include "../SDL_sysgpu.h"
 
 // Defines
@@ -4274,6 +4283,12 @@ static bool METAL_SupportsTextureFormat(
 
 // Device Creation
 
+static bool METAL_PrepareXRDriver(SDL_VideoDevice *this)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return false;
+}
+
 static bool METAL_PrepareDriver(SDL_VideoDevice *this)
 {
     if (@available(macOS 10.14, iOS 13.0, tvOS 13.0, *)) {
@@ -4433,6 +4448,12 @@ static void METAL_INTERNAL_DestroyBlitResources(
     SDL_free(renderer->blitPipelines);
 }
 
+static bool METAL_CreateXRDevice(SDL_GPUDevice **gpu_device, XrInstance *xrInstance, XrSystemId *xrSystem, bool debugMode, bool preferLowPower, SDL_PropertiesID props)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return false;
+}
+
 static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
 {
     @autoreleasepool {
@@ -4574,7 +4595,9 @@ SDL_GPUBootstrap MetalDriver = {
     "metal",
     SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB,
     METAL_PrepareDriver,
+    METAL_PrepareXRDriver,
     METAL_CreateDevice
+    METAL_CreateXRDevice
 };
 
 #endif // SDL_GPU_METAL
