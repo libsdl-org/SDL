@@ -6920,6 +6920,8 @@ static XrResult VULKAN_DestroyXRSwapchain(
     XrResult result;
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
 
+    VULKAN_Wait(driverData);
+
     Uint32 swapchainCount;
     result = renderer->xr->xrEnumerateSwapchainImages(swapchain, 0, &swapchainCount, NULL);
     if (result != XR_SUCCESS) {
