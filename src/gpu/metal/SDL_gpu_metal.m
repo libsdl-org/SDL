@@ -4343,6 +4343,15 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         MetalRenderer *renderer;
         id<MTLDevice> device = NULL;
 
+        if (debugMode) {
+            /* Due to a Metal driver quirk, once a MTLDevice has been created
+             * with this environment variable set, the Metal validation layers
+             * will remain enabled for the rest of the application's lifespan,
+             * even if the device is destroyed and recreated.
+             */
+            SDL_setenv_unsafe("MTL_DEBUG_LAYER", "1", 0);
+        }
+
         // Create the Metal device and command queue
 #ifdef SDL_PLATFORM_MACOS
         if (preferLowPower) {
