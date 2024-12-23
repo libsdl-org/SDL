@@ -1592,11 +1592,11 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 switch (edge) {
                 case WMSZ_LEFT:
                 case WMSZ_RIGHT:
-                    h = (int)(w / data->window->max_aspect);
+                    h = (int)SDL_roundf(w / data->window->max_aspect);
                     break;
                 default:
                     // resizing via corners or top or bottom
-                    w = (int)(h*data->window->max_aspect);
+                    w = (int)SDL_roundf(h * data->window->max_aspect);
                     break;
                 }
             } else {
