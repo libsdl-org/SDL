@@ -3179,6 +3179,12 @@ void SDL_OnWindowMoved(SDL_Window *window)
     }
 }
 
+void SDL_OnWindowLiveResizeUpdate(SDL_Window *window)
+{
+    /* Send an expose event so the application can redraw */
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+}
+
 void SDL_OnWindowMinimized(SDL_Window *window)
 {
     if (!DisableUnsetFullscreenOnMinimize(_this)) {

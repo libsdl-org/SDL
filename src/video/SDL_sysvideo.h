@@ -512,6 +512,7 @@ extern void SDL_OnWindowShown(SDL_Window *window);
 extern void SDL_OnWindowHidden(SDL_Window *window);
 extern void SDL_OnWindowMoved(SDL_Window *window);
 extern void SDL_OnWindowResized(SDL_Window *window);
+extern void SDL_OnWindowLiveResizeUpdate(SDL_Window *window);
 extern void SDL_OnWindowMinimized(SDL_Window *window);
 extern void SDL_OnWindowRestored(SDL_Window *window);
 extern void SDL_OnWindowEnter(SDL_Window *window);

@@ -1335,8 +1335,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_TIMER:
     {
         if (wParam == (UINT_PTR)&s_ModalMoveResizeLoop) {
-            // Send an expose event so the application can redraw
-            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+            SDL_OnWindowLiveResizeUpdate(data->window);
             return 0;
         }
     } break;
