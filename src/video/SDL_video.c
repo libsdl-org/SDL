@@ -35,6 +35,7 @@
 #include "../timer/SDL_timer_c.h"
 #include "../camera/SDL_camera_c.h"
 #include "../render/SDL_sysrender.h"
+#include "../main/SDL_main_callbacks.h"
 
 #ifdef SDL_VIDEO_OPENGL
 #include <SDL3/SDL_opengl.h>
@@ -3925,6 +3926,16 @@ void SDL_CheckWindowPixelSizeChanged(SDL_Window *window)
 void SDL_OnWindowPixelSizeChanged(SDL_Window *window)
 {
     window->surface_valid = false;
+}
+
+void SDL_OnWindowLiveResizeUpdate(SDL_Window *window)
+{
+    if (SDL_HasMainCallbacks()) {
+        SDL_IterateMainCallbacks(false);
+    } else {
+        // Send an expose event so the application can redraw
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+    }
 }
 
 static void SDL_CheckWindowSafeAreaChanged(SDL_Window *window)
