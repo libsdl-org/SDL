@@ -1038,6 +1038,10 @@ static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
         return false;
     }
 
+    if (device->is_bluetooth) {
+        return true;
+    }
+
     if (IsDongle(product_id)) {
         if (interface_number >= 1 && interface_number <= 4) {
             // This is one of the wireless controller interfaces
