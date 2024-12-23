@@ -633,7 +633,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
     if (textField.markedTextRange == nil) {
-        if (textField.text.length < 16) {
+        if ([string length] == 0 && textField.text.length < 16) {
             [self resetTextState];
         }
     }
