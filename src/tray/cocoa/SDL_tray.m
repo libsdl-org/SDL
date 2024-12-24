@@ -21,6 +21,8 @@
 
 #include "SDL_internal.h"
 
+#ifdef SDL_PLATFORM_MACOS
+
 #include <Cocoa/Cocoa.h>
 
 #include "../../video/SDL_surface_c.h"
@@ -30,7 +32,7 @@
 struct SDL_TrayMenu {
     NSMenu *nsmenu;
 
-    size_t nEntries;
+    int nEntries;
     SDL_TrayEntry **entries;
 
     SDL_Tray *parent_tray;
@@ -102,7 +104,7 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
-    SDL_Tray *tray = (SDL_Tray *) SDL_malloc(sizeof(SDL_Tray));
+    SDL_Tray *tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
 
     AppDelegate *delegate = [[AppDelegate alloc] init];
     app = [NSApplication sharedApplication];
@@ -111,8 +113,6 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     if (!tray) {
         return NULL;
     }
-
-    SDL_memset((void *) tray, 0, sizeof(*tray));
 
     tray->statusItem = nil;
     tray->statusBar = [NSStatusBar systemStatusBar];
@@ -211,13 +211,10 @@ void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 {
-    SDL_TrayMenu *menu = SDL_malloc(sizeof(SDL_TrayMenu));
-
+    SDL_TrayMenu *menu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*menu));
     if (!menu) {
         return NULL;
     }
-
-    SDL_memset((void *) menu, 0, sizeof(*menu));
 
     NSMenu *nsmenu = [[NSMenu alloc] init];
     [nsmenu setAutoenablesItems:FALSE];
@@ -251,13 +248,10 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
         return NULL;
     }
 
-    SDL_TrayMenu *menu = SDL_malloc(sizeof(SDL_TrayMenu));
-
+    SDL_TrayMenu *menu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*menu));
     if (!menu) {
         return NULL;
     }
-
-    SDL_memset((void *) menu, 0, sizeof(*menu));
 
     NSMenu *nsmenu = [[NSMenu alloc] init];
     [nsmenu setAutoenablesItems:FALSE];
@@ -312,7 +306,7 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
     }
 
     menu->nEntries--;
-    SDL_TrayEntry ** new_entries = SDL_realloc(menu->entries, menu->nEntries * sizeof(SDL_TrayEntry *));
+    SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, menu->nEntries * sizeof(*new_entries));
 
     /* Not sure why shrinking would fail, but even if it does, we can live with a "too big" array */
     if (new_entries) {
@@ -326,7 +320,7 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
 
 SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags)
 {
-    if (pos < -1 || pos > (int) menu->nEntries) {
+    if (pos < -1 || pos > menu->nEntries) {
         SDL_InvalidParamError("pos");
         return NULL;
     }
@@ -335,16 +329,12 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         pos = menu->nEntries;
     }
 
-    SDL_TrayEntry *entry = SDL_malloc(sizeof(SDL_TrayEntry));
-
+    SDL_TrayEntry *entry = (SDL_TrayEntry *)SDL_calloc(1, sizeof(*entry));
     if (!entry) {
         return NULL;
     }
 
-    SDL_memset((void *) entry, 0, sizeof(*entry));
-
-    SDL_TrayEntry **new_entries = (SDL_TrayEntry **) SDL_realloc(menu->entries, (menu->nEntries + 1) * sizeof(SDL_TrayEntry *));
-
+    SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, (menu->nEntries + 1) * sizeof(*new_entries));
     if (!new_entries) {
         SDL_free(entry);
         return NULL;
@@ -456,3 +446,5 @@ void SDL_DestroyTray(SDL_Tray *tray)
 
     SDL_free(tray);
 }
+
+#endif // SDL_PLATFORM_MACOS

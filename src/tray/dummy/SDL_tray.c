@@ -21,6 +21,8 @@
 
 #include "SDL_internal.h"
 
+#ifndef SDL_PLATFORM_MACOS
+
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     SDL_Unsupported();
@@ -137,3 +139,5 @@ void SDL_DestroyTray(SDL_Tray *tray)
 {
     SDL_Unsupported();
 }
+
+#endif // !SDL_PLATFORM_MACOS

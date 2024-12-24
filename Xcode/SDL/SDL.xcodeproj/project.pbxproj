@@ -386,6 +386,8 @@
 		F32DDAD12AB795A30041EAA5 /* SDL_audioqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = F32DDACB2AB795A30041EAA5 /* SDL_audioqueue.c */; };
 		F32DDAD32AB795A30041EAA5 /* SDL_audioqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F32DDACD2AB795A30041EAA5 /* SDL_audioqueue.h */; };
 		F32DDAD42AB795A30041EAA5 /* SDL_audioresample.c in Sources */ = {isa = PBXBuildFile; fileRef = F32DDACE2AB795A30041EAA5 /* SDL_audioresample.c */; };
+		F338A1182D1B37D8007CDFDF /* SDL_tray.m in Sources */ = {isa = PBXBuildFile; fileRef = F338A1172D1B37D8007CDFDF /* SDL_tray.m */; };
+		F338A11A2D1B37E4007CDFDF /* SDL_tray.c in Sources */ = {isa = PBXBuildFile; fileRef = F338A1192D1B37E4007CDFDF /* SDL_tray.c */; };
 		F34B9895291DEFF500AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
 		F35B79632D03A7B900C6D591 /* SDL_asyncio.h in Headers */ = {isa = PBXBuildFile; fileRef = 00004945A946DF5B1AED0000 /* SDL_asyncio.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F362B9192B3349E200D30B94 /* controller_list.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9152B3349E200D30B94 /* controller_list.h */; };
@@ -927,6 +929,8 @@
 		F32DDACB2AB795A30041EAA5 /* SDL_audioqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audioqueue.c; sourceTree = "<group>"; };
 		F32DDACD2AB795A30041EAA5 /* SDL_audioqueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audioqueue.h; sourceTree = "<group>"; };
 		F32DDACE2AB795A30041EAA5 /* SDL_audioresample.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audioresample.c; sourceTree = "<group>"; };
+		F338A1172D1B37D8007CDFDF /* SDL_tray.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SDL_tray.m; sourceTree = "<group>"; };
+		F338A1192D1B37E4007CDFDF /* SDL_tray.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_tray.c; sourceTree = "<group>"; };
 		F362B9152B3349E200D30B94 /* controller_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_list.h; sourceTree = "<group>"; };
 		F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamepad_c.h; sourceTree = "<group>"; };
 		F362B9172B3349E200D30B94 /* SDL_steam_virtual_gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_steam_virtual_gamepad.h; sourceTree = "<group>"; };
@@ -1337,25 +1341,26 @@
 				A7D8A77623E2513E00DCD162 /* thread */,
 				0000F5E7419220E3A8AB0000 /* time */,
 				A7D8A5DE23E2513D00DCD162 /* timer */,
+				F338A1142D1B3735007CDFDF /* tray */,
 				A7D8A5EB23E2513D00DCD162 /* video */,
-				A7D8A7F523E2513F00DCD162 /* SDL_assert_c.h */,
-				A7D8A94423E2514000DCD162 /* SDL_assert.c */,
-				A7D8A57523E2513D00DCD162 /* SDL_error_c.h */,
-				A7D8A8BF23E2513F00DCD162 /* SDL_error.c */,
-				F382071C284F362F004DD584 /* SDL_guid.c */,
-				000078E1881E857EBB6C0000 /* SDL_hashtable.c */,
-				0000B6ADCD88CAD6610F0000 /* SDL_hashtable.h */,
-				A7D8A8D123E2514000DCD162 /* SDL_hints_c.h */,
-				A7D8A5AB23E2513D00DCD162 /* SDL_hints.c */,
-				A7D8A58323E2513D00DCD162 /* SDL_internal.h */,
-				A1BB8B6127F6CF320057CFA8 /* SDL_list.c */,
-				A1BB8B6227F6CF330057CFA8 /* SDL_list.h */,
-				F386F6E42884663E001840AA /* SDL_log_c.h */,
-				A7D8A5DD23E2513D00DCD162 /* SDL_log.c */,
-				F3E5A6EA2AD5E0E600293D83 /* SDL_properties.c */,
-				F386F6E52884663E001840AA /* SDL_utils_c.h */,
-				F386F6E62884663E001840AA /* SDL_utils.c */,
 				A7D8A57123E2513D00DCD162 /* SDL.c */,
+				A7D8A94423E2514000DCD162 /* SDL_assert.c */,
+				A7D8A7F523E2513F00DCD162 /* SDL_assert_c.h */,
+				A7D8A8BF23E2513F00DCD162 /* SDL_error.c */,
+				A7D8A57523E2513D00DCD162 /* SDL_error_c.h */,
+				F382071C284F362F004DD584 /* SDL_guid.c */,
+				0000B6ADCD88CAD6610F0000 /* SDL_hashtable.h */,
+				000078E1881E857EBB6C0000 /* SDL_hashtable.c */,
+				A7D8A5AB23E2513D00DCD162 /* SDL_hints.c */,
+				A7D8A8D123E2514000DCD162 /* SDL_hints_c.h */,
+				A7D8A58323E2513D00DCD162 /* SDL_internal.h */,
+				A1BB8B6227F6CF330057CFA8 /* SDL_list.h */,
+				A1BB8B6127F6CF320057CFA8 /* SDL_list.c */,
+				A7D8A5DD23E2513D00DCD162 /* SDL_log.c */,
+				F386F6E42884663E001840AA /* SDL_log_c.h */,
+				F3E5A6EA2AD5E0E600293D83 /* SDL_properties.c */,
+				F386F6E62884663E001840AA /* SDL_utils.c */,
+				F386F6E52884663E001840AA /* SDL_utils_c.h */,
 			);
 			name = "Library Source";
 			path = ../../src;
@@ -2268,6 +2273,31 @@
 			path = gpu;
 			sourceTree = "<group>";
 		};
+		F338A1142D1B3735007CDFDF /* tray */ = {
+			isa = PBXGroup;
+			children = (
+				F338A1162D1B378D007CDFDF /* cocoa */,
+				F338A1152D1B3786007CDFDF /* dummy */,
+			);
+			path = tray;
+			sourceTree = "<group>";
+		};
+		F338A1152D1B3786007CDFDF /* dummy */ = {
+			isa = PBXGroup;
+			children = (
+				F338A1192D1B37E4007CDFDF /* SDL_tray.c */,
+			);
+			path = dummy;
+			sourceTree = "<group>";
+		};
+		F338A1162D1B378D007CDFDF /* cocoa */ = {
+			isa = PBXGroup;
+			children = (
+				F338A1172D1B37D8007CDFDF /* SDL_tray.m */,
+			);
+			path = cocoa;
+			sourceTree = "<group>";
+		};
 		F36C7ACF294B9F5E004D61C3 /* core */ = {
 			isa = PBXGroup;
 			children = (
@@ -2784,6 +2814,7 @@
 				A7D8B86623E2514400DCD162 /* SDL_audiocvt.c in Sources */,
 				A7D8B9F523E2514400DCD162 /* SDL_rotate.c in Sources */,
 				A7D8BBE323E2574800DCD162 /* SDL_uikitvideo.m in Sources */,
+				F338A1182D1B37D8007CDFDF /* SDL_tray.m in Sources */,
 				5616CA4E252BB2A6005D5928 /* SDL_sysurl.m in Sources */,
 				F3B439562C937DAB00792030 /* SDL_process.c in Sources */,
 				A7D8A97523E2514000DCD162 /* SDL_coremotionsensor.m in Sources */,
@@ -2822,6 +2853,7 @@
 				A7D8BA3723E2514400DCD162 /* SDL_d3dmath.c in Sources */,
 				F3A9AE9C2C8A13C100AAC390 /* SDL_pipeline_gpu.c in Sources */,
 				75E0915A241EA924004729E1 /* SDL_virtualjoystick.c in Sources */,
+				F338A11A2D1B37E4007CDFDF /* SDL_tray.c in Sources */,
 				A7D8ABEB23E2514100DCD162 /* SDL_nullvideo.c in Sources */,
 				F3990E072A78833C000D8759 /* hid.m in Sources */,
 				A7D8AB6723E2514100DCD162 /* SDL_offscreenevents.c in Sources */,
