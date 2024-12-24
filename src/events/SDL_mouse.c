@@ -105,7 +105,7 @@ static void SDLCALL SDL_MouseRelativeSpeedScaleChanged(void *userdata, const cha
 static void SDLCALL SDL_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
-    
+
     mouse->relative_mode_center = SDL_GetStringBoolean(hint, true);
 }
 
@@ -196,7 +196,7 @@ static void SDLCALL SDL_MouseRelativeCursorVisibleChanged(void *userdata, const 
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
     mouse->relative_mode_cursor_visible = SDL_GetStringBoolean(hint, false);
-    
+
     SDL_SetCursor(NULL); // Update cursor visibility
 }
 
@@ -436,7 +436,7 @@ void SDL_SetDefaultCursor(SDL_Cursor *cursor)
     }
 }
 
-SDL_SystemCursor SDL_GetDefaultSystemCursor(void) 
+SDL_SystemCursor SDL_GetDefaultSystemCursor(void)
 {
     SDL_SystemCursor id = SDL_SYSTEM_CURSOR_DEFAULT;
     const char *value = SDL_GetHint(SDL_HINT_MOUSE_DEFAULT_SYSTEM_CURSOR);
@@ -954,6 +954,11 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
         return;
     }
 
+    if (!mouse->relative_mode || mouse->warp_emulation_active) {
+        // We're not in relative mode, so all mouse events are global mouse events
+        mouseID = SDL_GLOBAL_MOUSE_ID;
+    }
+
     // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_MOUSE_WHEEL)) {
         SDL_Event event;
@@ -1022,7 +1027,7 @@ void SDL_QuitMouse(void)
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
                         SDL_MouseRelativeSystemScaleChanged, mouse);
 
-    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER, 
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER,
                         SDL_MouseRelativeModeCenterChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE,
