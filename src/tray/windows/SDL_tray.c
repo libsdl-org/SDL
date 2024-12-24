@@ -183,26 +183,6 @@ static wchar_t *convert_label(const char *in)
     return out;
 }
 
-static void register_tray_window_class(void)
-{
-    static bool init = false;
-
-    if (init) {
-        return;
-    }
-
-    HINSTANCE hInstance = GetModuleHandle(NULL);
-    WNDCLASSW wc;
-    ZeroMemory(&wc, sizeof(WNDCLASS));
-    wc.lpfnWndProc = TrayWindowProc;
-    wc.hInstance = hInstance;
-    wc.lpszClassName = L"SDLTrayRunner";
-
-    RegisterClassW(&wc);
-
-    init = true;
-}
-
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     SDL_Tray *tray = SDL_malloc(sizeof(SDL_Tray));
@@ -211,13 +191,9 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
         return NULL;
     }
 
-    tray->hwnd = NULL;
     tray->menu = NULL;
-
-    register_tray_window_class();
-
-    HINSTANCE hInstance = GetModuleHandle(NULL);
-    tray->hwnd = CreateWindowExW(0, L"SDLTrayRunner", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, hInstance, NULL);
+    tray->hwnd = CreateWindowEx(0, TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+    SetWindowLongPtr(tray->hwnd, GWLP_WNDPROC, (LONG_PTR) TrayWindowProc);
 
     ZeroMemory(&tray->nid, sizeof(NOTIFYICONDATAW));
     tray->nid.cbSize = sizeof(NOTIFYICONDATAW);
