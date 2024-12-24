@@ -1271,8 +1271,6 @@ SDL_DYNAPI_PROC(bool,SDL_SetRelativeMouseTransform,(SDL_MouseMotionTransformCall
 SDL_DYNAPI_PROC(bool,SDL_RenderTexture9GridTiled,(SDL_Renderer *a,SDL_Texture *b,const SDL_FRect *c,float d,float e,float f,float g,float h,const SDL_FRect *i,float j),(a,b,c,d,e,f,g,h,i,j),return)
 SDL_DYNAPI_PROC(bool,SDL_SetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode *b),(a,b),return)
-SDL_DYNAPI_PROC(bool,SDL_CreateXRGPUDeviceWithProperties,(SDL_GPUDevice **a, XrInstance *b, XrSystemId *c, SDL_PropertiesID d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSession,(SDL_GPUDevice *a, const XrSessionCreateInfo *b, XrSession *c),(a,b,c),return)
 SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSwapchain,(SDL_GPUDevice *a, XrSession b, const XrSwapchainCreateInfo *c, SDL_GPUTextureFormat *d, XrSwapchain *e, SDL_GPUTexture ***f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(XrResult,SDL_DestroyGPUXRSwapchain,(SDL_GPUDevice *a,XrSwapchain b,SDL_GPUTexture **c),(a,b,c),return)
-SDL_DYNAPI_PROC(bool,SDL_XRGPUSupportsProperties,(SDL_PropertiesID a),(a),return)

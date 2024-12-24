@@ -8250,12 +8250,6 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 }
 
-static bool D3D12_PrepareXRDriver(SDL_VideoDevice *this)
-{
-    SDL_SetError("The d3d12 backend does not currently support OpenXR");
-    return false;
-}
-
 static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
 {
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
@@ -8582,12 +8576,6 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *rend
     ID3D12InfoQueue1_Release(infoQueue);
 }
 #endif
-
-static bool D3D12_CreateXRDevice(SDL_GPUDevice **gpu_device, XrInstance *xrInstance, XrSystemId *xrSystem, bool debugMode, bool preferLowPower, SDL_PropertiesID props)
-{
-    SDL_SetError("The d3d12 backend does not currently support OpenXR");
-    return false;
-}
 
 static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
 {
@@ -9099,9 +9087,7 @@ SDL_GPUBootstrap D3D12Driver = {
     "direct3d12",
     SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_DXBC,
     D3D12_PrepareDriver,
-    D3D12_PrepareXRDriver,
     D3D12_CreateDevice,
-    D3D12_CreateXRDevice,
 };
 
 #endif // SDL_GPU_D3D12

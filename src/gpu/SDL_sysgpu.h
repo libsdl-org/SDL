@@ -1003,10 +1003,8 @@ typedef struct SDL_GPUBootstrap
 {
     const char *name;
     const SDL_GPUShaderFormat shader_formats;
-    bool (*PrepareDriver)(SDL_VideoDevice *_this);
-    bool (*PrepareXrDriver)(SDL_VideoDevice *_this);
+    bool (*PrepareDriver)(SDL_VideoDevice *_this, SDL_PropertiesID props);
     SDL_GPUDevice *(*CreateDevice)(bool debug_mode, bool prefer_low_power, SDL_PropertiesID props);
-    bool (*CreateXrDevice)(SDL_GPUDevice **gpu_device, XrInstance *xrInstance, XrSystemId *xrSystemId, bool debug_mode, bool prefer_low_power, SDL_PropertiesID props);
 } SDL_GPUBootstrap;
 
 #ifdef __cplusplus

@@ -77,25 +77,6 @@ typedef enum XrResult {
 } XrResult;
 #endif /* NO_SDL_OPENXR_TYPEDEFS */
 
-extern SDL_DECLSPEC bool SDLCALL SDL_XRGPUSupportsProperties(
-    SDL_PropertiesID props);
-
-extern SDL_DECLSPEC bool SDLCALL SDL_CreateXRGPUDeviceWithProperties(
-    SDL_GPUDevice **device,
-    XrInstance *instance,
-    XrSystemId *systemId,
-    SDL_PropertiesID props);
-
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION                 "SDL.gpu.device.create.xr.version"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_COUNT         "SDL.gpu.device.create.xr.extensions.count"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_NAMES         "SDL.gpu.device.create.xr.extensions.names"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_COUNT             "SDL.gpu.device.create.xr.layers.count"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_NAMES             "SDL.gpu.device.create.xr.layers.names"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME        "SDL.gpu.device.create.xr.application.name"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION     "SDL.gpu.device.create.xr.application.version"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_NAME             "SDL.gpu.device.create.xr.engine.name"
-#define SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_VERSION          "SDL.gpu.device.create.xr.engine.version"
-
 extern SDL_DECLSPEC XrResult SDLCALL SDL_CreateGPUXRSession(
     SDL_GPUDevice *device,
     const XrSessionCreateInfo *createinfo,
