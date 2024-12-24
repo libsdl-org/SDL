@@ -983,15 +983,15 @@ if(SDL_LIBC)
   set(symbols_to_check
     abs acos acosf asin asinf atan atan2 atan2f atanf atof atoi
     bcopy
-    calloc ceil ceilf copysign copysignf cos cosf
+    ceil ceilf copysign copysignf cos cosf
     _Exit exp expf
-    fabs fabsf floor floorf fmod fmodf fopen64 free fseeko fseeko64
+    fabs fabsf floor floorf fmod fmodf fopen64 fseeko fseeko64
     getenv
     _i64toa index itoa
     log log10 log10f logf lround lroundf _ltoa
     malloc memcmp memcpy memmove memset modf modff
     pow powf putenv
-    realloc rindex round roundf
+    rindex round roundf
     scalbn scalbnf setenv sin sinf sqr sqrt sqrtf sscanf strchr
     strcmp strlcat strlcpy strlen strncmp strnlen strpbrk
     strrchr strstr strnstr strtod strtok_r strtol strtoll strtoul strtoull
@@ -1002,7 +1002,7 @@ if(SDL_LIBC)
   )
   if(WINDOWS)
     list(APPEND symbols_to_check
-      _strrev _ui64toa _uitoa _ultoa _wcsdup
+      _copysign _fseeki64 _strrev _ui64toa _uitoa _ultoa _wcsdup
     )
   else()
     list(APPEND symbols_to_check
