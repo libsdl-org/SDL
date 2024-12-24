@@ -11501,8 +11501,7 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     VkPhysicalDevice physicalDevice,
     VulkanExtensions *physicalDeviceExtensions,
     Uint32 *queueFamilyIndex,
-    Uint8 *deviceRank,
-    bool canBeOutranked)
+    Uint8 *deviceRank)
 {
     Uint32 queueFamilyCount, queueFamilyRank, queueFamilyBest;
     VkQueueFamilyProperties *queueProps;
@@ -11520,19 +11519,23 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     renderer->vkGetPhysicalDeviceProperties(
         physicalDevice,
         &deviceProperties);
-    if (*deviceRank < devicePriority[deviceProperties.deviceType]) {
-        /* This device outranks the best device we've found so far!
-         * This includes a dedicated GPU that has less features than an
-         * integrated GPU, because this is a freak case that is almost
-         * never intentionally desired by the end user
-         */
-        *deviceRank = devicePriority[deviceProperties.deviceType];
-    } else if (*deviceRank > devicePriority[deviceProperties.deviceType] && canBeOutranked) {
-        /* Device is outranked by a previous device, don't even try to
-         * run a query and reset the rank to avoid overwrites
-         */
-        *deviceRank = 0;
-        return 0;
+
+    /* If no device rank is passed, assume the device isn't rankable and always let it through */
+    if (deviceRank) {
+        if (*deviceRank < devicePriority[deviceProperties.deviceType]) {
+            /* This device outranks the best device we've found so far!
+            * This includes a dedicated GPU that has less features than an
+            * integrated GPU, because this is a freak case that is almost
+            * never intentionally desired by the end user
+            */
+            *deviceRank = devicePriority[deviceProperties.deviceType];
+        } else if (*deviceRank > devicePriority[deviceProperties.deviceType]) {
+            /* Device is outranked by a previous device, don't even try to
+            * run a query and reset the rank to avoid overwrites
+            */
+            *deviceRank = 0;
+            return 0;
+        }
     }
 
     renderer->vkGetPhysicalDeviceFeatures(
@@ -11666,8 +11669,7 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
             renderer->physicalDevice,
             &physicalDeviceExtension,
             &queueFamilyIndex,
-            &deviceRank, 
-            false))
+            NULL))
         {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "The graphics device chosen by the OpenXR runtime is not suitable for use.");
             return 0;
@@ -11728,8 +11730,7 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
                     physicalDevices[i],
                     &physicalDeviceExtensions[i],
                     &queueFamilyIndex,
-                    &deviceRank,
-                    true)) {
+                    &deviceRank)) {
                 /* Use this for rendering.
                 * Note that this may override a previous device that
                 * supports rendering, but shares the same device rank.
