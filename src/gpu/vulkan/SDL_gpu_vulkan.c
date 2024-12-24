@@ -12112,7 +12112,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
         if((xrResult = instancePfns->xrGetSystem(xrInstance, &(XrSystemGetInfo){
             .type = XR_TYPE_SYSTEM_GET_INFO,
-            .formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY, /* TODO: this should be using the user's wanted form factor */
+            .formFactor = (XrFormFactor)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR, XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY),
         }, &xrSystemId)) != XR_SUCCESS) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");
             instancePfns->xrDestroyInstance(xrInstance);
@@ -12264,7 +12264,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         }
 
         XrSystemGetInfo systemGetInfo = {XR_TYPE_SYSTEM_GET_INFO};
-        systemGetInfo.formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY; /* TODO: let the caller specify this */
+        systemGetInfo.formFactor = (XrFormFactor)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR, XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY);
         if((xrResult = renderer->xr->xrGetSystem(*xrInstance, &systemGetInfo, xrSystemId)) != XR_SUCCESS) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");
             renderer->xr->xrDestroyInstance(*xrInstance);

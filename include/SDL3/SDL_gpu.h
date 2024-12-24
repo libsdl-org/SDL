@@ -2198,6 +2198,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_OUT            "SDL.gpu.device.create.xr.instance_out"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_OUT           "SDL.gpu.device.create.xr.system_id_out"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION                 "SDL.gpu.device.create.xr.version"
+#define SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR             "SDL.gpu.device.create.xr.form_factor"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_COUNT         "SDL.gpu.device.create.xr.extensions.count"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_NAMES         "SDL.gpu.device.create.xr.extensions.names"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_COUNT             "SDL.gpu.device.create.xr.layers.count"
