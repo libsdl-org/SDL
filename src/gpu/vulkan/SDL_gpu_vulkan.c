@@ -12063,7 +12063,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
 #ifdef HAVE_GPU_OPENXR
     XrResult xrResult;
-    XrInstancePfns *instancePfns;
+    XrInstancePfns *instancePfns = NULL;
     XrInstance xrInstance = XR_NULL_HANDLE;
     XrSystemId xrSystemId = XR_NULL_HANDLE;
     bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false);
@@ -12153,7 +12153,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         renderer->vkDestroyInstance(renderer->instance, NULL);
     }
 #ifdef HAVE_GPU_OPENXR
-    if (xr) {
+    if (instancePfns) {
         instancePfns->xrDestroyInstance(xrInstance);
         SDL_free(instancePfns);
         SDL_OPENXR_UnloadLoaderSymbols();
