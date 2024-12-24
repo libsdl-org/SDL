@@ -407,6 +407,7 @@ add_sdl_test_executable(testdialog SOURCES testdialog.c)
 add_sdl_test_executable(testtime SOURCES testtime.c)
 add_sdl_test_executable(testmanymouse SOURCES testmanymouse.c)
 add_sdl_test_executable(testmodal SOURCES testmodal.c)
+add_sdl_test_executable(testtray SOURCES testtray.c)
 
 
 add_sdl_test_executable(testprocess

@@ -1208,6 +1208,27 @@ SDL3_0.0.0 {
     SDL_RenderTextureAffine;
     SDL_WaitAndAcquireGPUSwapchainTexture;
     SDL_RenderDebugTextFormat;
+    SDL_CreateTray;
+    SDL_SetTrayIcon;
+    SDL_SetTrayTooltip;
+    SDL_CreateTrayMenu;
+    SDL_CreateTraySubmenu;
+    SDL_GetTrayMenu;
+    SDL_GetTraySubmenu;
+    SDL_GetTrayEntries;
+    SDL_RemoveTrayEntry;
+    SDL_InsertTrayEntryAt;
+    SDL_SetTrayEntryLabel;
+    SDL_GetTrayEntryLabel;
+    SDL_SetTrayEntryChecked;
+    SDL_GetTrayEntryChecked;
+    SDL_SetTrayEntryEnabled;
+    SDL_GetTrayEntryEnabled;
+    SDL_SetTrayEntryCallback;
+    SDL_DestroyTray;
+    SDL_GetTrayEntryParent;
+    SDL_GetTrayMenuParentEntry;
+    SDL_GetTrayMenuParentTray;
     # extra symbols go here (don't modify this line)
   local: *;
 };

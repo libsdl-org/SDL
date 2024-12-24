@@ -181,6 +181,7 @@
     <ClCompile Include="..\..\src\video\SDL_video_unsupported.c" />
     <ClCompile Include="..\..\src\video\SDL_vulkan_utils.c" />
     <ClCompile Include="..\..\src\video\SDL_yuv.c" />
+    <ClCompile Include="..\..\src\video\windows\SDL_surface_utils.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsclipboard.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsevents.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsframebuffer.c" />
@@ -217,6 +218,8 @@
     <ClCompile Include="..\..\src\storage\SDL_storage.c" />
     <ClCompile Include="..\..\src\time\SDL_time.c" />
     <ClCompile Include="..\..\src\time\windows\SDL_systime.c" />
+    <ClCompile Include="..\..\src\tray\dummy\SDL_tray.c" />
+    <ClCompile Include="..\..\src\tray\windows\SDL_tray.c" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.c" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.c" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c" />
@@ -435,6 +438,7 @@
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h" />
     <ClInclude Include="..\..\src\video\SDL_yuv_c.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_msctf.h" />
+    <ClInclude Include="..\..\src\video\windows\SDL_surface_utils.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsclipboard.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsevents.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsframebuffer.h" />

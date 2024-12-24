@@ -690,6 +690,9 @@
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std_func.h">
       <Filter>video\yuv2rgb</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\video\windows\SDL_surface_utils.h">
+      <Filter>video\windows</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\video\windows\SDL_windowsclipboard.h">
       <Filter>video\windows</Filter>
     </ClInclude>
@@ -1229,6 +1232,9 @@
     <ClCompile Include="..\..\src\time\windows\SDL_systime.c">
       <Filter>time\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\tray\windows\SDL_tray.c">
+      <Filter>video</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_RLEaccel.c">
       <Filter>video</Filter>
     </ClCompile>
@@ -1300,6 +1306,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c">
       <Filter>video\dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\windows\SDL_surface_utils.c">
+      <Filter>video\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\windows\SDL_windowsclipboard.c">
       <Filter>video\windows</Filter>
