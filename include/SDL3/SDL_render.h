@@ -443,8 +443,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetRendererName(SDL_Renderer *rende
  *
  * With the gpu renderer:
  *
- * - `SDL_PROP_RENDERER_GPU_DEVICE_POINTER`: the SDL_GPUDevice associated
- *   with the renderer
+ * - `SDL_PROP_RENDERER_GPU_DEVICE_POINTER`: the SDL_GPUDevice associated with
+ *   the renderer
  *
  * \param renderer the rendering context.
  * \returns a valid property ID on success or 0 on failure; call
