@@ -1267,3 +1267,7 @@ SDL_DYNAPI_PROC(bool,SDL_AudioStreamDevicePaused,(SDL_AudioStream *a),(a),return
 SDL_DYNAPI_PROC(void,SDL_ClickTrayEntry,(SDL_TrayEntry *a),(a),)
 SDL_DYNAPI_PROC(void,SDL_UpdateTrays,(void),(),)
 SDL_DYNAPI_PROC(bool,SDL_StretchSurface,(SDL_Surface *a,const SDL_Rect *b,SDL_Surface *c,const SDL_Rect *d,SDL_ScaleMode e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(bool,SDL_GetSystemPreference,(SDL_SystemPreference a),(a),return)
+SDL_DYNAPI_PROC(bool,SDL_GetSystemAccentColor,(SDL_Color *a),(a),return)
+SDL_DYNAPI_PROC(float,SDL_GetSystemTextScale,(void),(),return)
+SDL_DYNAPI_PROC(float,SDL_GetSystemCursorScale,(void),(),return)
