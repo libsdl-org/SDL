@@ -756,30 +756,39 @@ static bool PrepareAudioQueue(SDL_AudioDevice *device)
     SDL_zero(layout);
     switch (device->spec.channels) {
     case 1:
+        // a standard mono stream
         layout.mChannelLayoutTag = kAudioChannelLayoutTag_Mono;
         break;
     case 2:
+        // a standard stereo stream (L R) - implied playback
         layout.mChannelLayoutTag = kAudioChannelLayoutTag_Stereo;
         break;
     case 3:
+        // L R LFE
         layout.mChannelLayoutTag = kAudioChannelLayoutTag_DVD_4;
         break;
     case 4:
+        // front left, front right, back left, back right
         layout.mChannelLayoutTag = kAudioChannelLayoutTag_Quadraphonic;
         break;
     case 5:
-        layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_5_0_A;
+        // L R LFE Ls Rs
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_DVD_6;
         break;
     case 6:
-        layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_5_1_A;
+        //  L R C LFE Ls Rs
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_DVD_12;
         break;
     case 7:
-        // FIXME: Need to move channel[4] (BC) to channel[6]
-        layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_6_1_A;
+        // L R C LFE Cs Ls Rs
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_6_1;
         break;
     case 8:
-        layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_7_1_A;
+        // L R C LFE Rls Rrs Ls Rs
+        layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_7_1;
         break;
+    default:
+        return SDL_SetError("Unsupported audio channels");
     }
     if (layout.mChannelLayoutTag != 0) {
         result = AudioQueueSetProperty(device->hidden->audioQueue, kAudioQueueProperty_ChannelLayout, &layout, sizeof(layout));
