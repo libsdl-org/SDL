@@ -25,6 +25,7 @@
 #include <unistd.h> // For getpid() and readlink()
 
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../core/linux/SDL_system_preferences.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../SDL_pixels_c.h"
@@ -272,6 +273,13 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 #ifdef SDL_USE_LIBDBUS
     if (SDL_SystemTheme_Init())
         device->system_theme = SDL_SystemTheme_Get();
+
+    if (Unix_SystemPref_Init()) {
+        device->GetSystemPreference = Unix_GetSystemPreference;
+        device->GetSystemAccentColor = Unix_GetSystemAccentColor;
+        device->GetSystemTextScale = Unix_GetSystemTextScale;
+        device->GetSystemCursorScale = Unix_GetSystemCursorScale;
+    }
 #endif
 
     device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT;

@@ -24,6 +24,7 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../core/linux/SDL_system_preferences.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandclipboard.h"
@@ -650,6 +651,13 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
 #ifdef SDL_USE_LIBDBUS
     if (SDL_SystemTheme_Init())
         device->system_theme = SDL_SystemTheme_Get();
+
+    if (Unix_SystemPref_Init()) {
+        device->GetSystemPreference = Unix_GetSystemPreference;
+        device->GetSystemAccentColor = Unix_GetSystemAccentColor;
+        device->GetSystemTextScale = Unix_GetSystemTextScale;
+        device->GetSystemCursorScale = Unix_GetSystemCursorScale;
+    }
 #endif
 
     device->GetTextMimeTypes = Wayland_GetTextMimeTypes;

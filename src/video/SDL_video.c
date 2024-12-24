@@ -780,6 +780,42 @@ SDL_SystemTheme SDL_GetSystemTheme(void)
     }
 }
 
+bool SDL_GetSystemPreference(SDL_SystemPreference preference)
+{
+    if (_this) {
+        return _this->GetSystemPreference(preference);
+    } else {
+        return false;
+    }
+}
+
+bool SDL_GetSystemAccentColor(SDL_Color *color)
+{
+    if (_this) {
+        return _this->GetSystemAccentColor(color);
+    } else {
+        return false;
+    }
+}
+
+float SDL_GetSystemTextScale(void)
+{
+    if (_this) {
+        return _this->GetSystemTextScale();
+    } else {
+        return 1.0f;
+    }
+}
+
+float SDL_GetSystemCursorScale(void)
+{
+    if (_this) {
+        return _this->GetSystemCursorScale();
+    } else {
+        return 1.0f;
+    }
+}
+
 void SDL_UpdateDesktopBounds(void)
 {
     SDL_Rect rect;
