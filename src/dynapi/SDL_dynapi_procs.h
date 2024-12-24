@@ -1263,3 +1263,7 @@ SDL_DYNAPI_PROC(SDL_TrayMenu*,SDL_GetTrayEntryParent,(SDL_TrayEntry *a),(a),retu
 SDL_DYNAPI_PROC(SDL_TrayEntry*,SDL_GetTrayMenuParentEntry,(SDL_TrayMenu *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Tray*,SDL_GetTrayMenuParentTray,(SDL_TrayMenu *a),(a),return)
 SDL_DYNAPI_PROC(SDL_ThreadState,SDL_GetThreadState,(SDL_Thread *a),(a),return)
+SDL_DYNAPI_PROC(bool,SDL_GetSystemPreference,(SDL_SystemPreference a),(a),return)
+SDL_DYNAPI_PROC(bool,SDL_GetSystemAccentColor,(SDL_Color *a),(a),return)
+SDL_DYNAPI_PROC(float,SDL_GetSystemTextScale,(void),(),return)
+SDL_DYNAPI_PROC(float,SDL_GetSystemCursorScale,(void),(),return)

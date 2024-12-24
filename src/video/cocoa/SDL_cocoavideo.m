@@ -256,6 +256,69 @@ SDL_SystemTheme Cocoa_GetSystemTheme(void)
     return SDL_SYSTEM_THEME_LIGHT;
 }
 
+bool SDL_GetSystemPreference(SDL_SystemPreference preference)
+{
+    switch(preference)
+    {
+    case SDL_SYSTEM_PREFERENCE_REDUCED_MOTION:
+        return [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceMotion];
+
+    case SDL_SYSTEM_PREFERENCE_REDUCED_TRANSPARENCY:
+        return [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldReduceTransparency];
+
+    case SDL_SYSTEM_PREFERENCE_HIGH_CONTRAST:
+        return [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldIncreaseContrast];
+
+    case SDL_SYSTEM_PREFERENCE_COLORBLIND:
+        return [[NSWorkspace sharedWorkspace] accessibilityDisplayShouldDifferentiateWithoutColor];
+
+    case SDL_SYSTEM_PREFERENCE_SCREEN_READER:
+        return [[NSWorkspace sharedWorkspace] isVoiceOverEnabled];
+
+    // FIXME: This doesn't work on my Mac, and I can't find any other way to do it.
+    // case SDL_SYSTEM_PREFERENCE_PERSIST_SCROLLBARS:
+    //    return [[NSUserDefaults standardUserDefaults] integerForKey:@"AppleShowScrollBars"] == 1;
+
+    default:
+        return SDL_Unsupported();
+    }
+}
+
+// https://stackoverflow.com/questions/58543327/detecting-when-macos-10-14-accent-color-has-changed
+bool SDL_GetSystemAccentColor(SDL_Color *color)
+{
+    @autoreleasepool {
+        if (!color) {
+            return SDL_InvalidParamError("color");
+        }
+
+        NSColor *accent = [NSColor controlAccentColor];
+
+        NSColor *rgbAccent = [accent colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
+
+        CGFloat r, g, b, a;
+        [rgbAccent getRed:&r green:&g blue:&b alpha:&a];
+
+        color->r = (Uint8) 255.0f * r;
+        color->g = (Uint8) 255.0f * g;
+        color->b = (Uint8) 255.0f * b;
+        color->a = (Uint8) 255.0f * a;
+
+        return true;
+    }
+}
+
+float SDL_GetSystemTextScale(void)
+{
+    return 1.0f;
+}
+
+float SDL_GetSystemCursorScale(void)
+{
+    return 1.0f;
+}
+
+
 // This function assumes that it's called from within an autorelease pool
 NSImage *Cocoa_CreateImage(SDL_Surface *surface)
 {
