@@ -50,7 +50,6 @@
 #cmakedefine HAVE_ALLOCA_H 1
 #cmakedefine HAVE_ICONV_H 1
 #cmakedefine HAVE_INTTYPES_H 1
-#cmakedefine HAVE_LIBUNWIND_H 1
 #cmakedefine HAVE_LIMITS_H 1
 #cmakedefine HAVE_MALLOC_H 1
 #cmakedefine HAVE_MATH_H 1
