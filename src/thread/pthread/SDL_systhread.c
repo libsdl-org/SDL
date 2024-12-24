@@ -40,7 +40,7 @@
 #include "../../core/linux/SDL_dbus.h"
 #endif // SDL_PLATFORM_LINUX
 
-#if (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)) && defined(HAVE_DLOPEN)
+#if (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)) && defined(HAVE_DLOPEN)
 #include <dlfcn.h>
 #ifndef RTLD_DEFAULT
 #define RTLD_DEFAULT NULL
@@ -77,7 +77,7 @@ static void *RunThread(void *data)
 #if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)) && defined(HAVE_DLOPEN)
 static bool checked_setname = false;
 static int (*ppthread_setname_np)(const char *) = NULL;
-#elif defined(SDL_PLATFORM_LINUX) && defined(HAVE_DLOPEN)
+#elif (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)) && defined(HAVE_DLOPEN)
 static bool checked_setname = false;
 static int (*ppthread_setname_np)(pthread_t, const char *) = NULL;
 #endif
@@ -88,17 +88,17 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
     pthread_attr_t type;
 
 // do this here before any threads exist, so there's no race condition.
-#if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_LINUX)) && defined(HAVE_DLOPEN)
+#if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)) && defined(HAVE_DLOPEN)
     if (!checked_setname) {
         void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
 #if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)
         ppthread_setname_np = (int (*)(const char *))fn;
-#elif defined(SDL_PLATFORM_LINUX)
+#elif defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)
         ppthread_setname_np = (int (*)(pthread_t, const char *))fn;
 #endif
         checked_setname = true;
     }
-#endif
+    #endif
 
     // Set the thread attributes
     if (pthread_attr_init(&type) != 0) {
@@ -127,12 +127,12 @@ void SDL_SYS_SetupThread(const char *name)
 #endif
 
     if (name) {
-#if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_LINUX)) && defined(HAVE_DLOPEN)
+#if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)) && defined(HAVE_DLOPEN)
         SDL_assert(checked_setname);
         if (ppthread_setname_np) {
 #if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)
             ppthread_setname_np(name);
-#elif defined(SDL_PLATFORM_LINUX)
+#elif defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID)
             if (ppthread_setname_np(pthread_self(), name) == ERANGE) {
                 char namebuf[16]; // Limited to 16 char
                 SDL_strlcpy(namebuf, name, sizeof(namebuf));
