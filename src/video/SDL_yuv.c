@@ -26,7 +26,7 @@
 #include "yuv2rgb/yuv_rgb.h"
 
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool IsPlanar2x2Format(SDL_PixelFormat format);
 #endif
 
@@ -36,7 +36,7 @@ static bool IsPlanar2x2Format(SDL_PixelFormat format);
  */
 bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, size_t *pitch)
 {
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     int sz_plane = 0, sz_plane_chroma = 0, sz_plane_packed = 0;
 
     if (IsPlanar2x2Format(format) == true) {
@@ -155,7 +155,7 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
 #endif
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 
 static bool GetYUVConversionType(SDL_Colorspace colorspace, YCbCrType *yuv_type)
 {
@@ -2561,7 +2561,7 @@ bool SDL_ConvertPixels_YUV_to_YUV(int width, int height,
                                   SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
                                   SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (src_colorspace != dst_colorspace) {
         return SDL_SetError("SDL_ConvertPixels_YUV_to_YUV: colorspace conversion not supported");
     }

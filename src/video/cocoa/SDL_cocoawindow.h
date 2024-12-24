@@ -38,7 +38,8 @@ typedef enum
     PENDING_OPERATION_NONE = 0x00,
     PENDING_OPERATION_ENTER_FULLSCREEN = 0x01,
     PENDING_OPERATION_LEAVE_FULLSCREEN = 0x02,
-    PENDING_OPERATION_MINIMIZE = 0x04
+    PENDING_OPERATION_MINIMIZE = 0x04,
+    PENDING_OPERATION_ZOOM = 0x08
 } PendingWindowOperation;
 
 @interface SDL3Cocoa_WindowListener : NSResponder <NSWindowDelegate>
@@ -58,6 +59,7 @@ typedef enum
     NSInteger focusClickPending;
     float pendingWindowWarpX, pendingWindowWarpY;
     BOOL isDragAreaRunning;
+    NSTimer *liveResizeTimer;
 }
 
 - (BOOL)isTouchFromTrackpad:(NSEvent *)theEvent;
@@ -82,6 +84,9 @@ typedef enum
 // Window delegate functionality
 - (BOOL)windowShouldClose:(id)sender;
 - (void)windowDidExpose:(NSNotification *)aNotification;
+- (void)windowDidChangeOcclusionState:(NSNotification *)aNotification;
+- (void)windowWillStartLiveResize:(NSNotification *)aNotification;
+- (void)windowDidEndLiveResize:(NSNotification *)aNotification;
 - (void)windowDidMove:(NSNotification *)aNotification;
 - (void)windowDidResize:(NSNotification *)aNotification;
 - (void)windowDidMiniaturize:(NSNotification *)aNotification;
@@ -144,10 +149,10 @@ typedef enum
 @property(nonatomic) SDL3Cocoa_WindowListener *listener;
 @property(nonatomic) NSModalSession modal_session;
 @property(nonatomic) SDL_CocoaVideoData *videodata;
-@property(nonatomic) bool send_floating_size;
-@property(nonatomic) bool send_floating_position;
+@property(nonatomic) bool pending_size;
+@property(nonatomic) bool pending_position;
 @property(nonatomic) bool border_toggled;
-@property(nonatomic) BOOL checking_zoom;
+
 #ifdef SDL_VIDEO_OPENGL_EGL
 @property(nonatomic) EGLSurface egl_surface;
 #endif

@@ -21,7 +21,10 @@
 
 /*
  * This file reverses the effects of SDL_begin_code.h and should be included
- * after you finish any function and structure declarations in your headers
+ * after you finish any function and structure declarations in your headers.
+ *
+ * SDL's headers use this; applications generally should not include this
+ * header directly.
  */
 
 #ifndef SDL_begin_code_h

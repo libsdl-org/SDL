@@ -6352,6 +6352,17 @@ static struct
     real_malloc, real_calloc, real_realloc, real_free, { 0 }
 };
 
+// Define this if you want to track the number of allocations active
+// #define SDL_TRACK_ALLOCATION_COUNT
+#ifdef SDL_TRACK_ALLOCATION_COUNT
+#define INCREMENT_ALLOCATION_COUNT()    (void)SDL_AtomicIncRef(&s_mem.num_allocations)
+#define DECREMENT_ALLOCATION_COUNT()    (void)SDL_AtomicDecRef(&s_mem.num_allocations)
+#else
+#define INCREMENT_ALLOCATION_COUNT()
+#define DECREMENT_ALLOCATION_COUNT()
+#endif
+
+
 void SDL_GetOriginalMemoryFunctions(SDL_malloc_func *malloc_func,
                                     SDL_calloc_func *calloc_func,
                                     SDL_realloc_func *realloc_func,
@@ -6417,7 +6428,11 @@ bool SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 
 int SDL_GetNumAllocations(void)
 {
+#ifdef SDL_TRACK_ALLOCATION_COUNT
     return SDL_GetAtomicInt(&s_mem.num_allocations);
+#else
+    return -1;
+#endif
 }
 
 void *SDL_malloc(size_t size)
@@ -6430,7 +6445,7 @@ void *SDL_malloc(size_t size)
 
     mem = s_mem.malloc_func(size);
     if (mem) {
-        SDL_AtomicIncRef(&s_mem.num_allocations);
+        INCREMENT_ALLOCATION_COUNT();
     } else {
         SDL_OutOfMemory();
     }
@@ -6449,7 +6464,7 @@ void *SDL_calloc(size_t nmemb, size_t size)
 
     mem = s_mem.calloc_func(nmemb, size);
     if (mem) {
-        SDL_AtomicIncRef(&s_mem.num_allocations);
+        INCREMENT_ALLOCATION_COUNT();
     } else {
         SDL_OutOfMemory();
     }
@@ -6467,7 +6482,7 @@ void *SDL_realloc(void *ptr, size_t size)
 
     mem = s_mem.realloc_func(ptr, size);
     if (mem && !ptr) {
-        SDL_AtomicIncRef(&s_mem.num_allocations);
+        INCREMENT_ALLOCATION_COUNT();
     } else if (!mem) {
         SDL_OutOfMemory();
     }
@@ -6482,5 +6497,5 @@ void SDL_free(void *ptr)
     }
 
     s_mem.free_func(ptr);
-    (void)SDL_AtomicDecRef(&s_mem.num_allocations);
+    DECREMENT_ALLOCATION_COUNT();
 }

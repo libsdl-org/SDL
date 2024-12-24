@@ -83,6 +83,12 @@ struct SDL_WindowData
     PointerBarrier barrier[4];
     SDL_Rect barrier_rect;
 #endif // SDL_VIDEO_DRIVER_X11_XFIXES
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+    XSyncCounter resize_counter;
+    XSyncValue resize_id;
+    bool resize_in_progress;
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
+
     SDL_Rect expected;
     SDL_DisplayMode requested_fullscreen_mode;
 
@@ -97,6 +103,8 @@ struct SDL_WindowData
         X11_PENDING_OP_RESIZE = 0x20
     } pending_operation;
 
+    bool pending_size;
+    bool pending_position;
     bool window_was_maximized;
     bool disable_size_position_events;
     bool previous_borders_nonzero;

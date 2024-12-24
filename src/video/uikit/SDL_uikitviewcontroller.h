@@ -69,8 +69,8 @@
 #endif
 
 #ifdef SDL_IPHONE_KEYBOARD
-- (void)showKeyboard;
-- (void)hideKeyboard;
+- (bool)startTextInput;
+- (bool)stopTextInput;
 - (void)initKeyboard;
 - (void)deinitKeyboard;
 
@@ -79,7 +79,7 @@
 
 - (void)updateKeyboard;
 
-@property(nonatomic, assign, getter=isKeyboardVisible) BOOL keyboardVisible;
+@property(nonatomic, assign, getter=isTextFieldFocused) BOOL textFieldFocused;
 @property(nonatomic, assign) SDL_Rect textInputRect;
 @property(nonatomic, assign) int keyboardHeight;
 #endif
@@ -88,8 +88,9 @@
 
 #ifdef SDL_IPHONE_KEYBOARD
 bool UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
-void UIKit_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
-void UIKit_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
+bool UIKit_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
+bool UIKit_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
+void UIKit_SetTextInputProperties(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 bool UIKit_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
 #endif

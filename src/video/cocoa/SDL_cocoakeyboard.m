@@ -59,11 +59,10 @@
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
-    // TODO: Make use of replacementRange?
-
     const char *str;
 
-    DEBUG_IME(@"insertText: %@", aString);
+    DEBUG_IME(@"insertText: %@ replacementRange: (%d, %d)", aString,
+              (int)replacementRange.location, (int)replacementRange.length);
 
     /* Could be NSString or NSAttributedString, so we have
      * to test and convert it before return as SDL event */
@@ -80,6 +79,12 @@
 
     // Deliver the raw key event that generated this text
     [self sendPendingKey];
+
+    if ((int)replacementRange.location != -1) {
+        // We're replacing the last character
+        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_BACKSPACE, true);
+        SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_BACKSPACE, false);
+    }
 
     SDL_SendKeyboardText(str);
 }
@@ -131,8 +136,9 @@
     SDL_SendEditingText([aString UTF8String],
                         (int)selectedRange.location, (int)selectedRange.length);
 
-    DEBUG_IME(@"setMarkedText: %@, (%d, %d)", _markedText,
-              selectedRange.location, selectedRange.length);
+    DEBUG_IME(@"setMarkedText: %@, (%d, %d) replacement range (%d, %d)", _markedText,
+              (int)selectedRange.location, (int)selectedRange.length,
+              (int)replacementRange.location, (int)replacementRange.length);
 }
 
 - (void)unmarkText
@@ -158,7 +164,7 @@
     }
 
     DEBUG_IME(@"firstRectForCharacterRange: (%d, %d): windowHeight = %g, rect = %@",
-              aRange.location, aRange.length, windowHeight,
+              (int)aRange.location, (int)aRange.length, windowHeight,
               NSStringFromRect(rect));
 
     rect = [window convertRectToScreen:rect];
@@ -168,7 +174,7 @@
 
 - (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange
 {
-    DEBUG_IME(@"attributedSubstringFromRange: (%d, %d)", aRange.location, aRange.length);
+    DEBUG_IME(@"attributedSubstringFromRange: (%d, %d)", (int)aRange.location, (int)aRange.length);
     return nil;
 }
 

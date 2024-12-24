@@ -2601,6 +2601,11 @@ bool Android_JNI_GetLocale(char *buf, size_t buflen)
         AConfiguration_getLanguage(cfg, language);
         AConfiguration_getCountry(cfg, country);
 
+        // Indonesian is "id" according to ISO 639.2, but on Android is "in" because of Java backwards compatibility
+        if (language[0] == 'i' && language[1] == 'n') {
+            language[1] = 'd';
+        }
+
         // copy language (not null terminated)
         if (language[0]) {
             buf[id++] = language[0];

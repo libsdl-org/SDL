@@ -166,7 +166,7 @@ bool SDL_GetMasksForPixelFormat(SDL_PixelFormat format, int *bpp, Uint32 *Rmask,
 {
     Uint32 masks[4];
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     // Partial support for SDL_Surface with FOURCC
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
         // Not a format that uses masks
@@ -572,8 +572,8 @@ SDL_PixelFormat SDL_GetPixelFormatForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, 
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
+static SDL_InitState SDL_format_details_init;
 static SDL_HashTable *SDL_format_details;
-static SDL_Mutex *SDL_format_details_lock;
 
 static bool SDL_InitPixelFormatDetails(SDL_PixelFormatDetails *details, SDL_PixelFormat format)
 {
@@ -646,53 +646,44 @@ const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
 {
     SDL_PixelFormatDetails *details;
 
-    if (!SDL_format_details_lock) {
-        SDL_format_details_lock = SDL_CreateMutex();
-    }
-
-    SDL_LockMutex(SDL_format_details_lock);
-
-    if (!SDL_format_details) {
-        SDL_format_details = SDL_CreateHashTable(NULL, 8, SDL_HashID, SDL_KeyMatchID, SDL_NukeFreeValue, false);
+    if (SDL_ShouldInit(&SDL_format_details_init)) {
+        SDL_format_details = SDL_CreateHashTable(NULL, 8, SDL_HashID, SDL_KeyMatchID, SDL_NukeFreeValue, true, false);
+        if (!SDL_format_details) {
+            SDL_SetInitialized(&SDL_format_details_init, false);
+            return NULL;
+        }
+        SDL_SetInitialized(&SDL_format_details_init, true);
     }
 
     if (SDL_FindInHashTable(SDL_format_details, (const void *)(uintptr_t)format, (const void **)&details)) {
-        goto done;
+        return details;
     }
 
     // Allocate an empty pixel format structure, and initialize it
     details = (SDL_PixelFormatDetails *)SDL_malloc(sizeof(*details));
     if (!details) {
-        goto done;
+        return NULL;
     }
 
     if (!SDL_InitPixelFormatDetails(details, format)) {
         SDL_free(details);
-        details = NULL;
-        goto done;
+        return NULL;
     }
 
     if (!SDL_InsertIntoHashTable(SDL_format_details, (const void *)(uintptr_t)format, (void *)details)) {
         SDL_free(details);
-        details = NULL;
-        goto done;
+        return NULL;
     }
-
-done:
-    SDL_UnlockMutex(SDL_format_details_lock);
 
     return details;
 }
 
 void SDL_QuitPixelFormatDetails(void)
 {
-    if (SDL_format_details) {
+    if (SDL_ShouldQuit(&SDL_format_details_init)) {
         SDL_DestroyHashTable(SDL_format_details);
         SDL_format_details = NULL;
-    }
-    if (SDL_format_details_lock) {
-        SDL_DestroyMutex(SDL_format_details_lock);
-        SDL_format_details_lock = NULL;
+        SDL_SetInitialized(&SDL_format_details_init, false);
     }
 }
 
@@ -1464,7 +1455,7 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
 
     // Clear out any previous mapping
     map = &src->map;
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
     if (src->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         SDL_UnRLESurface(src, true);
     }
@@ -1505,7 +1496,7 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
     } else {
         if (SDL_ISPIXELFORMAT_INDEXED(dstfmt->format)) {
             // BitField --> Palette
-            map->info.palette_map = SDL_CreateHashTable(NULL, 32, SDL_HashID, SDL_KeyMatchID, NULL, false);
+            map->info.palette_map = SDL_CreateHashTable(NULL, 32, SDL_HashID, SDL_KeyMatchID, NULL, false, false);
         } else {
             // BitField --> BitField
             if (srcfmt == dstfmt) {

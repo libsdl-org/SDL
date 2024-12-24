@@ -102,10 +102,10 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'" />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
-    <IncludePath>$(SolutionDir)/../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)../../src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">
-    <IncludePath>$(SolutionDir)/../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)../../src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
     <Midl>
@@ -165,8 +165,10 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\src\render\direct3d12\compile_shaders_xbox.bat $(SolutionDir)</Command>
-      <Command>$(SolutionDir)..\src\gpu\d3d12\compile_shaders_xbox.bat $(SolutionDir)</Command>
+      <Command>
+        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox Series)</Message>
@@ -200,8 +202,10 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\src\render\direct3d12\compile_shaders_xbox.bat $(SolutionDir) one</Command>
-      <Command>$(SolutionDir)..\src\gpu\d3d12\compile_shaders_xbox.bat $(SolutionDir) one</Command>
+      <Command>
+        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox One)</Message>
@@ -267,8 +271,10 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\src\render\direct3d12\compile_shaders_xbox.bat $(SolutionDir)</Command>
-      <Command>$(SolutionDir)..\src\gpu\d3d12\compile_shaders_xbox.bat $(SolutionDir)</Command>
+      <Command>
+        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox Series)</Message>
@@ -303,8 +309,10 @@
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Link>
     <PreBuildEvent>
-      <Command>$(SolutionDir)..\src\render\direct3d12\compile_shaders_xbox.bat $(SolutionDir) one</Command>
-      <Command>$(SolutionDir)..\src\gpu\d3d12\compile_shaders_xbox.bat $(SolutionDir) one</Command>
+      <Command>
+        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+      </Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building shader blobs (Xbox One)</Message>
@@ -339,6 +347,7 @@
     <ClInclude Include="..\..\include\SDL3\SDL_haptic.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_hints.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_hidapi.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_asyncio.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_joystick.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_keyboard.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_keycode.h" />
@@ -432,6 +441,8 @@
     <ClInclude Include="..\..\src\events\SDL_windowevents_c.h" />
     <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h" />
     <ClInclude Include="..\..\src\gpu\SDL_sysgpu.h" />
+    <ClInclude Include="..\..\src\file\SDL_asyncio_c.h" />
+    <ClInclude Include="..\..\src\file\SDL_sysasyncio.h" />
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h" />
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
@@ -514,9 +525,13 @@
     </ClCompile>
     <ClCompile Include="..\..\src\camera\dummy\SDL_camera_dummy.c" />
     <ClCompile Include="..\..\src\camera\SDL_camera.c" />
+    <ClCompile Include="..\..\src\dialog\SDL_dialog.c" />
     <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c" />
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
+    <ClCompile Include="..\..\src\file\generic\SDL_asyncio_generic.c" />
+    <ClCompile Include="..\..\src\file\SDL_asyncio.c" />
+    <ClCompile Include="..\..\src\file\windows\SDL_asyncio_windows_ioring.c" />
     <ClCompile Include="..\..\src\main\gdk\SDL_sysmain_runapp.cpp" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
@@ -616,7 +631,6 @@
     <ClCompile Include="..\..\src\audio\SDL_mixer.c" />
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
-    <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c" />
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />
@@ -725,31 +739,7 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">CompileAsCpp</CompileAs>
     </ClCompile>
-    <ClCompile Include="..\..\src\libm\e_atan2.c" />
-    <ClCompile Include="..\..\src\libm\e_exp.c" />
-    <ClCompile Include="..\..\src\libm\e_fmod.c" />
-    <ClCompile Include="..\..\src\libm\e_log.c" />
-    <ClCompile Include="..\..\src\libm\e_log10.c" />
-    <ClCompile Include="..\..\src\libm\e_pow.c" />
-    <ClCompile Include="..\..\src\libm\e_rem_pio2.c" />
-    <ClCompile Include="..\..\src\libm\e_sqrt.c" />
-    <ClCompile Include="..\..\src\libm\k_cos.c" />
-    <ClCompile Include="..\..\src\libm\k_rem_pio2.c" />
-    <ClCompile Include="..\..\src\libm\k_sin.c" />
-    <ClCompile Include="..\..\src\libm\k_tan.c" />
-    <ClCompile Include="..\..\src\libm\s_atan.c" />
-    <ClCompile Include="..\..\src\libm\s_copysign.c" />
-    <ClCompile Include="..\..\src\libm\s_cos.c" />
-    <ClCompile Include="..\..\src\libm\s_fabs.c" />
-    <ClCompile Include="..\..\src\libm\s_floor.c" />
-    <ClCompile Include="..\..\src\libm\s_isinf.c" />
-    <ClCompile Include="..\..\src\libm\s_isinff.c" />
-    <ClCompile Include="..\..\src\libm\s_isnan.c" />
-    <ClCompile Include="..\..\src\libm\s_isnanf.c" />
     <ClCompile Include="..\..\src\libm\s_modf.c" />
-    <ClCompile Include="..\..\src\libm\s_scalbn.c" />
-    <ClCompile Include="..\..\src\libm\s_sin.c" />
-    <ClCompile Include="..\..\src\libm\s_tan.c" />
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c" />
     <ClCompile Include="..\..\src\locale\SDL_locale.c" />
     <ClCompile Include="..\..\src\locale\windows\SDL_syslocale.c" />

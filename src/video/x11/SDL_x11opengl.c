@@ -24,6 +24,7 @@
 #ifdef SDL_VIDEO_DRIVER_X11
 
 #include "SDL_x11video.h"
+#include "SDL_x11xsync.h"
 
 // GLX implementation of SDL OpenGL support
 
@@ -1089,6 +1090,11 @@ bool X11_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Display *display = data->videodata->display;
 
     _this->gl_data->glXSwapBuffers(display, data->xwindow);
+
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+    X11_HandlePresent(data->window);
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
+
     return true;
 }
 

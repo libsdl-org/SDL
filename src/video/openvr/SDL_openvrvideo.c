@@ -1138,12 +1138,12 @@ static void OPENVR_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 
-    if (window->floating.w != window->w) {
-        window->w = window->floating.w;
+    if (window->pending.w != window->w) {
+        window->w = window->pending.w;
     }
 
-    if (window->floating.h != window->h) {
-        window->h = window->floating.h;
+    if (window->pending.h != window->h) {
+        window->h = window->pending.h;
     }
 
     if (data->targh != window->h || data->targw != window->w) {
@@ -1210,9 +1210,11 @@ static bool OPENVR_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 static void OPENVR_HandleMouse(float x, float y, int btn, int evt)
 {
     if (evt == 2) {
-        SDL_SendMouseMotion(0, 0, 0, false, (int)x, (int)y);
+        SDL_SendMouseMotion(0, NULL, SDL_GLOBAL_MOUSE_ID, false, x, y);
     } else {
-        SDL_SendMouseButton(0, 0, 0, btn + 1, (evt != 0));
+        const Uint8 button = SDL_BUTTON_LEFT + btn;
+        const bool down = (evt != 0);
+        SDL_SendMouseButton(0, NULL, SDL_GLOBAL_MOUSE_ID, button, down);
     }
 }
 

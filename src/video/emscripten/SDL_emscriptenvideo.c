@@ -55,6 +55,77 @@ static void Emscripten_DeleteDevice(SDL_VideoDevice *device)
     SDL_free(device);
 }
 
+static SDL_SystemTheme Emscripten_GetSystemTheme(void)
+{
+    /* Technically, light theme can mean explicit light theme or no preference.
+       https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-color-scheme#syntax */
+
+    int theme_code = EM_ASM_INT({
+        if (!window.matchMedia) {
+            return -1;
+        }
+
+        if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+            return 0;
+        }
+
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 1;
+        }
+
+        return -1;
+    });
+
+    switch (theme_code) {
+    case 0:
+        return SDL_SYSTEM_THEME_LIGHT;
+
+    case 1:
+        return SDL_SYSTEM_THEME_DARK;
+
+    default:
+        return SDL_SYSTEM_THEME_UNKNOWN;
+    }
+}
+
+static void Emscripten_ListenSystemTheme(void)
+{
+    MAIN_THREAD_EM_ASM({
+        if (window.matchMedia) {
+            if (typeof(Module['SDL3']) === 'undefined') {
+                Module['SDL3'] = {};
+            }
+
+            var SDL3 = Module['SDL3'];
+
+            SDL3.eventHandlerThemeChanged = function(event) {
+                _Emscripten_SendSystemThemeChangedEvent();
+            };
+
+            SDL3.themeChangedMatchMedia = window.matchMedia('(prefers-color-scheme: dark)');
+            SDL3.themeChangedMatchMedia.addEventListener('change', SDL3.eventHandlerThemeChanged);
+        }
+    });
+}
+
+static void Emscripten_UnlistenSystemTheme(void)
+{
+    MAIN_THREAD_EM_ASM({
+        if (typeof(Module['SDL3']) !== 'undefined') {
+            var SDL3 = Module['SDL3'];
+
+            SDL3.themeChangedMatchMedia.removeEventListener('change', SDL3.eventHandlerThemeChanged);
+            SDL3.themeChangedMatchMedia = undefined;
+            SDL3.eventHandlerThemeChanged = undefined;
+        }
+    });
+}
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_SendSystemThemeChangedEvent(void)
+{
+    SDL_SetSystemTheme(Emscripten_GetSystemTheme());
+}
+
 static SDL_VideoDevice *Emscripten_CreateDevice(void)
 {
     SDL_VideoDevice *device;
@@ -111,6 +182,9 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
 
     device->free = Emscripten_DeleteDevice;
 
+    Emscripten_ListenSystemTheme();
+    device->system_theme = Emscripten_GetSystemTheme();
+
     return device;
 }
 
@@ -153,6 +227,7 @@ static bool Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *
 static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
 {
     Emscripten_QuitMouse();
+    Emscripten_UnlistenSystemTheme();
 }
 
 static bool Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
@@ -252,14 +327,14 @@ static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
         }
-        emscripten_set_canvas_element_size(data->canvas_id, SDL_lroundf(window->floating.w * data->pixel_ratio), SDL_lroundf(window->floating.h * data->pixel_ratio));
+        emscripten_set_canvas_element_size(data->canvas_id, SDL_lroundf(window->pending.w * data->pixel_ratio), SDL_lroundf(window->pending.h * data->pixel_ratio));
 
         // scale canvas down
         if (!data->external_size && data->pixel_ratio != 1.0f) {
-            emscripten_set_element_css_size(data->canvas_id, window->floating.w, window->floating.h);
+            emscripten_set_element_css_size(data->canvas_id, window->pending.w, window->pending.h);
         }
 
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->floating.w, window->floating.h);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->pending.w, window->pending.h);
     }
 }
 

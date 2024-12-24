@@ -35,6 +35,7 @@
 #include "SDL_x11xfixes.h"
 #include "SDL_x11settings.h"
 #include "../SDL_clipboard_c.h"
+#include "SDL_x11xsync.h"
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -794,6 +795,12 @@ SDL_WindowData *X11_FindWindow(SDL_VideoDevice *_this, Window window)
     return NULL;
 }
 
+Uint64 X11_GetEventTimestamp(unsigned long time)
+{
+    // FIXME: Get the event time in the SDL tick time base
+    return SDL_GetTicksNS();
+}
+
 void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_KeyboardID keyboardID, XEvent *xevent)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
@@ -804,6 +811,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     char text[64];
     Status status = 0;
     bool handled_by_ime = false;
+    Uint64 timestamp = X11_GetEventTimestamp(xevent->xkey.time);
 
 #ifdef DEBUG_XEVENTS
     SDL_Log("window 0x%lx %s (X11 keycode = 0x%X)\n", xevent->xany.window, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
@@ -845,9 +853,9 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
             videodata->filter_time = xevent->xkey.time;
 
             if (orig_event_type == KeyPress) {
-                SDL_SendKeyboardKey(0, keyboardID, orig_keycode, scancode, true);
+                SDL_SendKeyboardKey(timestamp, keyboardID, orig_keycode, scancode, true);
             } else {
-                SDL_SendKeyboardKey(0, keyboardID, orig_keycode, scancode, false);
+                SDL_SendKeyboardKey(timestamp, keyboardID, orig_keycode, scancode, false);
             }
 #endif
             return;
@@ -873,7 +881,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
         if (xevent->type == KeyPress) {
             // Don't send the key if it looks like a duplicate of a filtered key sent by an IME
             if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                SDL_SendKeyboardKey(0, keyboardID, keycode, videodata->key_layout[keycode], true);
+                SDL_SendKeyboardKey(timestamp, keyboardID, keycode, videodata->key_layout[keycode], true);
             }
             if (*text) {
                 text[text_length] = '\0';
@@ -884,7 +892,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
                 // We're about to get a repeated key down, ignore the key up
                 return;
             }
-            SDL_SendKeyboardKey(0, keyboardID, keycode, videodata->key_layout[keycode], false);
+            SDL_SendKeyboardKey(timestamp, keyboardID, keycode, videodata->key_layout[keycode], false);
         }
     }
 
@@ -893,35 +901,38 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     }
 }
 
-void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button, const float x, const float y, const unsigned long time)
+void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button, float x, float y, unsigned long time)
 {
     SDL_Window *window = windowdata->window;
     const SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
     Display *display = videodata->display;
     int xticks = 0, yticks = 0;
+    Uint64 timestamp = X11_GetEventTimestamp(time);
+
 #ifdef DEBUG_XEVENTS
     SDL_Log("window 0x%lx: ButtonPress (X11 button = %d)\n", windowdata->xwindow, button);
 #endif
 
     SDL_Mouse *mouse = SDL_GetMouse();
-    if ((!mouse->relative_mode || mouse->relative_mode_warp) && (x != mouse->x || y != mouse->y)) {
+    if (!mouse->relative_mode && (x != mouse->x || y != mouse->y)) {
         X11_ProcessHitTest(_this, windowdata, x, y, false);
-        SDL_SendMouseMotion(0, window, mouseID, false, x, y);
+        SDL_SendMouseMotion(timestamp, window, mouseID, false, x, y);
     }
 
     if (X11_IsWheelEvent(display, button, &xticks, &yticks)) {
-        SDL_SendMouseWheel(0, window, mouseID, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(timestamp, window, mouseID, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
     } else {
         bool ignore_click = false;
+        if (button > 7) {
+            /* X button values 4-7 are used for scrolling, so X1 is 8, X2 is 9, ...
+               => subtract (8-SDL_BUTTON_X1) to get value SDL expects */
+            button -= (8 - SDL_BUTTON_X1);
+        }
         if (button == Button1) {
             if (X11_TriggerHitTestAction(_this, windowdata, x, y)) {
                 SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
                 return; // don't pass this event on to app.
             }
-        } else if (button > 7) {
-            /* X button values 4-7 are used for scrolling, so X1 is 8, X2 is 9, ...
-               => subtract (8-SDL_BUTTON_X1) to get value SDL expects */
-            button -= (8 - SDL_BUTTON_X1);
         }
         if (windowdata->last_focus_event_time) {
             const int X11_FOCUS_CLICK_TIMEOUT = 10;
@@ -931,19 +942,21 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
             windowdata->last_focus_event_time = 0;
         }
         if (!ignore_click) {
-            SDL_SendMouseButton(0, window, mouseID, button, true);
+            SDL_SendMouseButton(timestamp, window, mouseID, button, true);
         }
     }
     X11_UpdateUserTime(windowdata, time);
 }
 
-void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button)
+void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button, unsigned long time)
 {
     SDL_Window *window = windowdata->window;
     const SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
     Display *display = videodata->display;
     // The X server sends a Release event for each Press for wheels. Ignore them.
     int xticks = 0, yticks = 0;
+    Uint64 timestamp = X11_GetEventTimestamp(time);
+
 #ifdef DEBUG_XEVENTS
     SDL_Log("window 0x%lx: ButtonRelease (X11 button = %d)\n", windowdata->xwindow, button);
 #endif
@@ -952,7 +965,7 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
             // see explanation at case ButtonPress
             button -= (8 - SDL_BUTTON_X1);
         }
-        SDL_SendMouseButton(0, window, mouseID, button, false);
+        SDL_SendMouseButton(timestamp, window, mouseID, button, false);
     }
 }
 
@@ -1376,6 +1389,11 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 }
             }
         }
+
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+        X11_HandleConfigure(data->window, &xevent->xconfigure);
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
+
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
             xevent->xconfigure.height != data->last_xconfigure.height) {
             if (!data->disable_size_position_events) {
@@ -1501,6 +1519,17 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
             break;
+        } else if ((xevent->xclient.message_type == videodata->atoms.WM_PROTOCOLS) &&
+                   (xevent->xclient.format == 32) &&
+                   (xevent->xclient.data.l[0] == videodata->atoms._NET_WM_SYNC_REQUEST)) {
+
+#ifdef DEBUG_XEVENTS
+            printf("window %p: _NET_WM_SYNC_REQUEST\n", data);
+#endif
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+            X11_HandleSyncRequest(data->window, &xevent->xclient);
+#endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
+            break;
         }
     } break;
 
@@ -1539,7 +1568,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         }
 
         SDL_Mouse *mouse = SDL_GetMouse();
-        if (!mouse->relative_mode || mouse->relative_mode_warp) {
+        if (!mouse->relative_mode) {
 #ifdef DEBUG_MOTION
             SDL_Log("window 0x%lx: X11 motion: %d,%d\n", xevent->xany.window, xevent->xmotion.x, xevent->xmotion.y);
 #endif
@@ -1567,7 +1596,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             break;
         }
 
-        X11_HandleButtonRelease(_this, data, SDL_GLOBAL_MOUSE_ID, xevent->xbutton.button);
+        X11_HandleButtonRelease(_this, data, SDL_GLOBAL_MOUSE_ID, xevent->xbutton.button, xevent->xbutton.time);
     } break;
 
     case PropertyNotify:
@@ -1755,16 +1784,23 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 }
                 if (!(flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
                     data->pending_operation &= ~X11_PENDING_OP_RESTORE;
-                    if (SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0)) {
-                        // Restore the last known floating state if leaving maximized mode
-                        if (!(flags & SDL_WINDOW_FULLSCREEN)) {
-                            data->pending_operation |= X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE;
-                            data->expected.x = data->window->floating.x - data->border_left;
-                            data->expected.y = data->window->floating.y - data->border_top;
-                            data->expected.w = data->window->floating.w;
-                            data->expected.h = data->window->floating.h;
-                            X11_XMoveWindow(display, data->xwindow, data->window->floating.x - data->border_left, data->window->floating.y - data->border_top);
-                            X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
+                    SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+
+                    // Apply any pending state if restored.
+                    if (!(flags & SDL_WINDOW_FULLSCREEN)) {
+                        if (data->pending_position) {
+                            data->pending_position = false;
+                            data->pending_operation |= X11_PENDING_OP_MOVE;
+                            data->expected.x = data->window->pending.x - data->border_left;
+                            data->expected.y = data->window->pending.y - data->border_top;
+                            X11_XMoveWindow(display, data->xwindow, data->window->pending.x - data->border_left, data->window->pending.y - data->border_top);
+                        }
+                        if (data->pending_size) {
+                            data->pending_size = false;
+                            data->pending_operation |= X11_PENDING_OP_RESIZE;
+                            data->expected.w = data->window->pending.w;
+                            data->expected.h = data->window->pending.h;
+                            X11_XResizeWindow(display, data->xwindow, data->window->pending.w, data->window->pending.h);
                         }
                     }
                 }
@@ -1795,18 +1831,28 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 X11_GetBorderValues(data);
                 if (data->border_top != 0 || data->border_left != 0 || data->border_right != 0 || data->border_bottom != 0) {
                     // Adjust if the window size/position changed to accommodate the borders.
-                    if (data->window->flags & SDL_WINDOW_MAXIMIZED) {
-                        data->pending_operation |= X11_PENDING_OP_RESIZE;
+                    data->pending_operation |= X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE;
+
+                    if (data->pending_position) {
+                        data->pending_position = false;
+                        data->expected.x = data->window->pending.x - data->border_left;
+                        data->expected.y = data->window->pending.y - data->border_top;
+
+                    } else {
+                        data->expected.x = data->window->windowed.x - data->border_left;
+                        data->expected.y = data->window->windowed.y - data->border_top;
+                    }
+
+                    if (data->pending_size) {
+                        data->pending_size = false;
+                        data->expected.w = data->window->pending.w;
+                        data->expected.h = data->window->pending.h;
+                    } else {
                         data->expected.w = data->window->windowed.w;
                         data->expected.h = data->window->windowed.h;
-                        X11_XResizeWindow(display, data->xwindow, data->window->windowed.w, data->window->windowed.h);
-                    } else {
-                        data->pending_operation |= X11_PENDING_OP_RESIZE | X11_PENDING_OP_MOVE;
-                        data->expected.w = data->window->floating.w;
-                        data->expected.h = data->window->floating.h;
-                        X11_XMoveWindow(display, data->xwindow, data->window->floating.x - data->border_left, data->window->floating.y - data->border_top);
-                        X11_XResizeWindow(display, data->xwindow, data->window->floating.w, data->window->floating.h);
                     }
+                    X11_XMoveWindow(display, data->xwindow, data->expected.x, data->expected.y - data->border_top);
+                    X11_XResizeWindow(display, data->xwindow, data->expected.w, data->expected.h);
                 }
             }
             if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {

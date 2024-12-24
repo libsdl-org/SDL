@@ -20,21 +20,11 @@
 */
 #include "SDL_internal.h"
 
+#include "../SDL_dialog.h"
+
 #ifdef SDL_DIALOG_DUMMY
 
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many)
-{
-  SDL_Unsupported();
-  callback(userdata, NULL, -1);
-}
-
-void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location)
-{
-  SDL_Unsupported();
-  callback(userdata, NULL, -1);
-}
-
-void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many)
+void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
   SDL_Unsupported();
   callback(userdata, NULL, -1);

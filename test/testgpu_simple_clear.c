@@ -82,28 +82,32 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 	}
 
     SDL_GPUTexture *swapchainTexture;
-	if (!SDL_AcquireGPUSwapchainTexture(cmdbuf, state->windows[0], &swapchainTexture, NULL, NULL)) {
+	if (!SDL_WaitAndAcquireGPUSwapchainTexture(cmdbuf, state->windows[0], &swapchainTexture, NULL, NULL)) {
         SDL_Log("SDL_AcquireGPUSwapchainTexture failed: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-	if (swapchainTexture != NULL) {
+
+    if (swapchainTexture != NULL) {
         const double currentTime = (double)SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency();
         SDL_GPURenderPass *renderPass;
-		SDL_GPUColorTargetInfo color_target_info;
+        SDL_GPUColorTargetInfo color_target_info;
         SDL_zero(color_target_info);
-		color_target_info.texture = swapchainTexture;
-		color_target_info.clear_color.r = (float)(0.5 + 0.5 * SDL_sin(currentTime));
-		color_target_info.clear_color.g = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 2 / 3));
-		color_target_info.clear_color.b = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 4 / 3));
-		color_target_info.clear_color.a = 1.0f;
-		color_target_info.load_op = SDL_GPU_LOADOP_CLEAR;
-		color_target_info.store_op = SDL_GPU_STOREOP_STORE;
+        color_target_info.texture = swapchainTexture;
+        color_target_info.clear_color.r = (float)(0.5 + 0.5 * SDL_sin(currentTime));
+        color_target_info.clear_color.g = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 2 / 3));
+        color_target_info.clear_color.b = (float)(0.5 + 0.5 * SDL_sin(currentTime + SDL_PI_D * 4 / 3));
+        color_target_info.clear_color.a = 1.0f;
+        color_target_info.load_op = SDL_GPU_LOADOP_CLEAR;
+        color_target_info.store_op = SDL_GPU_STOREOP_STORE;
 
-		renderPass = SDL_BeginGPURenderPass(cmdbuf, &color_target_info, 1, NULL);
-		SDL_EndGPURenderPass(renderPass);
-	}
+        renderPass = SDL_BeginGPURenderPass(cmdbuf, &color_target_info, 1, NULL);
+        SDL_EndGPURenderPass(renderPass);
 
-	SDL_SubmitGPUCommandBuffer(cmdbuf);
+        SDL_SubmitGPUCommandBuffer(cmdbuf);
+    } else {
+        /* Swapchain is unavailable, cancel work */
+        SDL_CancelGPUCommandBuffer(cmdbuf);
+    }
 
     frames++;
 

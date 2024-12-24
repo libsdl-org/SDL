@@ -46,6 +46,11 @@
  *   not defined whether or not it goes into the global symbol namespace for
  *   the application. If it does and it conflicts with symbols in your code or
  *   other shared libraries, you will not get the results you expect. :)
+ * - Once a library is unloaded, all pointers into it obtained through
+ *   SDL_LoadFunction() become invalid, even if the library is later reloaded.
+ *   Don't unload a library if you plan to use these pointers in the future.
+ *   Notably: beware of giving one of these pointers to atexit(), since it may
+ *   call that pointer after the library unloads.
  */
 
 #ifndef SDL_loadso_h_

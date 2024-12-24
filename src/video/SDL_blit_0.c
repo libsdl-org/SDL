@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_HAVE_BLIT_0
+#ifdef SDL_HAVE_BLIT_0
 
 #include "SDL_surface_c.h"
 

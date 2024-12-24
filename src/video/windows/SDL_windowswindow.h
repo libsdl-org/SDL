@@ -38,7 +38,8 @@ typedef enum SDL_WindowRect
 {
     SDL_WINDOWRECT_CURRENT,
     SDL_WINDOWRECT_WINDOWED,
-    SDL_WINDOWRECT_FLOATING
+    SDL_WINDOWRECT_FLOATING,
+    SDL_WINDOWRECT_PENDING
 } SDL_WindowRect;
 
 typedef enum SDL_WindowEraseBackgroundMode
@@ -76,14 +77,12 @@ struct SDL_WindowData
     bool expected_resize;
     bool in_border_change;
     bool in_title_click;
-    bool floating_rect_pending;
     Uint8 focus_click_pending;
     bool skip_update_clipcursor;
-    Uint64 last_updated_clipcursor;
-    bool mouse_relative_mode_center;
     bool windowed_mode_was_maximized;
     bool in_window_deactivation;
-    RECT cursor_clipped_rect;
+    RECT cursor_clipped_rect; // last successfully committed clipping rect for this window
+    RECT cursor_ctrlock_rect; // this is Windows-specific, but probably does not need to be per-window
     UINT windowed_mode_corner_rounding;
     COLORREF dwma_border_color;
     bool mouse_tracked;
@@ -128,6 +127,7 @@ extern bool WIN_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window
 extern void WIN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_UpdateClipCursor(SDL_Window *window);
+extern void WIN_UnclipCursorForWindow(SDL_Window *window);
 extern bool WIN_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern void WIN_AcceptDragAndDrop(SDL_Window *window, bool accept);
 extern bool WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);

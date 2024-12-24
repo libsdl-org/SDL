@@ -27,16 +27,15 @@
 
 #include "../SDL_sysaudio.h"
 
+#define SDL_AUDIO_ALSA__CHMAP_CHANS_N_MAX    8
+#define SDL_AUDIO_ALSA__SDL_CHMAPS_N         9 // from 0 channels to 8 channels
 struct SDL_PrivateAudioData
 {
     // The audio device handle
-    snd_pcm_t *pcm_handle;
+    snd_pcm_t *pcm;
 
     // Raw mixing buffer
     Uint8 *mixbuf;
-
-    // swizzle function
-    void (*swizzle_func)(SDL_AudioDevice *_this, void *buffer, Uint32 bufferlen);
 };
 
 #endif // SDL_ALSA_audio_h_

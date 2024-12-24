@@ -115,6 +115,11 @@ typedef enum SDL_FlipMode
  * remaining bytes to reach the pitch are used as padding to reach a desired
  * alignment, and have undefined contents.
  *
+ * When a surface holds YUV format data, the planes are assumed to be
+ * contiguous without padding between them, e.g. a 32x32 surface in NV12
+ * format with a pitch of 32 would consist of 32x32 bytes of Y plane followed
+ * by 32x16 bytes of UV plane.
+ *
  * \since This struct is available since SDL 3.1.3.
  *
  * \sa SDL_CreateSurface
@@ -351,7 +356,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AddSurfaceAlternateImage(SDL_Surface *surfa
  * Return whether a surface has alternate versions available.
  *
  * \param surface the SDL_Surface structure to query.
- * \returns true if alternate versions are available or true otherwise.
+ * \returns true if alternate versions are available or false otherwise.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -855,7 +860,6 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurface(SDL_Surface *surfac
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_ConvertSurface
- * \sa SDL_ConvertSurface
  * \sa SDL_DestroySurface
  */
 extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props);
@@ -871,7 +875,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurfaceAndColorspace(SDL_Su
  * \param dst_format an SDL_PixelFormat value of the `dst` pixels format.
  * \param dst a pointer to be filled in with new pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
- * \returns false on success or false on failure; call SDL_GetError() for more
+ * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.1.3.
@@ -900,7 +904,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ConvertPixels(int width, int height, SDL_Pi
  *                       properties, or 0.
  * \param dst a pointer to be filled in with new pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
- * \returns false on success or false on failure; call SDL_GetError() for more
+ * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.1.3.

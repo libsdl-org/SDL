@@ -20,9 +20,11 @@
 */
 #include "SDL_internal.h"
 extern "C" {
+#include "../SDL_dialog.h"
 #include "../SDL_dialog_utils.h"
 }
 #include "../../core/haiku/SDL_BeApp.h"
+#include "../../video/haiku/SDL_BWin.h"
 
 #include <string>
 #include <vector>
@@ -190,8 +192,35 @@ private:
     SDLBRefFilter *m_filter;
 };
 
-void ShowDialog(bool save, SDL_DialogFileCallback callback, void *userdata, bool many, bool modal, const SDL_DialogFileFilter *filters, int nfilters, bool folder, const char *location)
+void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
+    SDL_Window* window = (SDL_Window*) SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
+    SDL_DialogFileFilter* filters = (SDL_DialogFileFilter*) SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
+    int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
+    bool many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
+    const char* location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
+    const char* title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, NULL);
+    const char* accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
+    const char* cancel = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_CANCEL_STRING, NULL);
+
+    bool modal = !!window;
+
+    bool save = false;
+    bool folder = false;
+
+    switch (type) {
+    case SDL_FILEDIALOG_SAVEFILE:
+        save = true;
+        break;
+
+    case SDL_FILEDIALOG_OPENFILE:
+        break;
+
+    case SDL_FILEDIALOG_OPENFOLDER:
+        folder = true;
+        break;
+    };
+
     if (!SDL_InitBeApp()) {
         char* err = SDL_strdup(SDL_GetError());
         SDL_SetError("Couldn't init Be app: %s", err);
@@ -238,22 +267,27 @@ void ShowDialog(bool save, SDL_DialogFileCallback callback, void *userdata, bool
     }
 
     BFilePanel *panel = new BFilePanel(save ? B_SAVE_PANEL : B_OPEN_PANEL, messenger, location ? &entryref : NULL, folder ? B_DIRECTORY_NODE : B_FILE_NODE, many, NULL, filter, modal);
+
+    if (title) {
+        panel->Window()->SetTitle(title);
+    }
+
+    if (accept) {
+        panel->SetButtonLabel(B_DEFAULT_BUTTON, accept);
+    }
+
+    if (cancel) {
+        panel->SetButtonLabel(B_CANCEL_BUTTON, cancel);
+    }
+
+    if (window) {
+        SDL_BWin *bwin = (SDL_BWin *)(window->internal);
+        panel->Window()->SetLook(B_MODAL_WINDOW_LOOK);
+        panel->Window()->SetFeel(B_MODAL_SUBSET_WINDOW_FEEL);
+        panel->Window()->AddToSubset(bwin);
+    }
+
     looper->SetToBeFreed(messenger, panel, filter);
     looper->Run();
     panel->Show();
-}
-
-void SDL_ShowOpenFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, bool allow_many)
-{
-    ShowDialog(false, callback, userdata, allow_many == true, !!window, filters, nfilters, false, default_location);
-}
-
-void SDL_ShowSaveFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location)
-{
-    ShowDialog(true, callback, userdata, false, !!window, filters, nfilters, false, default_location);
-}
-
-void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char* default_location, bool allow_many)
-{
-    ShowDialog(false, callback, userdata, allow_many == true, !!window, NULL, 0, true, default_location);
 }

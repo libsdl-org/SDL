@@ -346,8 +346,9 @@ void SDL_EVDEV_Poll(void)
                 switch (event->type) {
                 case EV_KEY:
                     if (event->code >= BTN_MOUSE && event->code < BTN_MOUSE + SDL_arraysize(EVDEV_MouseButtons)) {
+                        Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
                         mouse_button = event->code - BTN_MOUSE;
-                        SDL_SendMouseButton(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, EVDEV_MouseButtons[mouse_button], (event->value != 0));
+                        SDL_SendMouseButton(timestamp, mouse->focus, (SDL_MouseID)item->fd, EVDEV_MouseButtons[mouse_button], (event->value != 0));
                         break;
                     }
 
@@ -367,13 +368,16 @@ void SDL_EVDEV_Poll(void)
                     }
 
                     // Probably keyboard
-                    scancode = SDL_EVDEV_translate_keycode(event->code);
-                    if (event->value == 0) {
-                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, false);
-                    } else if (event->value == 1 || event->value == 2 /* key repeated */) {
-                        SDL_SendKeyboardKey(SDL_EVDEV_GetEventTimestamp(event), (SDL_KeyboardID)item->fd, event->code, scancode, true);
+                    {
+                        Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+                        scancode = SDL_EVDEV_translate_keycode(event->code);
+                        if (event->value == 0) {
+                            SDL_SendKeyboardKey(timestamp, (SDL_KeyboardID)item->fd, event->code, scancode, false);
+                        } else if (event->value == 1 || event->value == 2 /* key repeated */) {
+                            SDL_SendKeyboardKey(timestamp, (SDL_KeyboardID)item->fd, event->code, scancode, true);
+                        }
+                        SDL_EVDEV_kbd_keycode(_this->kbd, event->code, event->value);
                     }
-                    SDL_EVDEV_kbd_keycode(_this->kbd, event->code, event->value);
                     break;
                 case EV_ABS:
                     switch (event->code) {
@@ -485,7 +489,8 @@ void SDL_EVDEV_Poll(void)
                         // Send mouse axis changes together to ensure consistency and reduce event processing overhead
                         if (item->relative_mouse) {
                             if (item->mouse_x != 0 || item->mouse_y != 0) {
-                                SDL_SendMouseMotion(SDL_EVDEV_GetEventTimestamp(event), mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, (float)item->mouse_x, (float)item->mouse_y);
+                                Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+                                SDL_SendMouseMotion(timestamp, mouse->focus, (SDL_MouseID)item->fd, item->relative_mouse, (float)item->mouse_x, (float)item->mouse_y);
                                 item->mouse_x = item->mouse_y = 0;
                             }
                         } else if (item->range_x > 0 && item->range_y > 0) {
@@ -508,10 +513,12 @@ void SDL_EVDEV_Poll(void)
                         }
 
                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
-                            SDL_SendMouseWheel(SDL_EVDEV_GetEventTimestamp(event),
+                            Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
+                            const float denom = (item->high_res_hwheel ? 120.0f : 1.0f);
+                            SDL_SendMouseWheel(timestamp,
                                                mouse->focus, (SDL_MouseID)item->fd,
-                                               item->mouse_hwheel / (item->high_res_hwheel ? 120.0f : 1.0f),
-                                               item->mouse_wheel / (item->high_res_wheel ? 120.0f : 1.0f),
+                                               item->mouse_hwheel / denom,
+                                               item->mouse_wheel / denom,
                                                SDL_MOUSEWHEEL_NORMAL);
                             item->mouse_wheel = item->mouse_hwheel = 0;
                         }

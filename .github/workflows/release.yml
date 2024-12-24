@@ -600,7 +600,6 @@ jobs:
               -DCMAKE_PREFIX_PATH="${{ steps.sdk.outputs.prefix }}" \
               -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake \
               -DANDROID_ABI=${android_abi} \
-              -Werror=dev \
               -DCMAKE_BUILD_TYPE=Release \
               -B "${android_abi}"
             echo "Building ${android_abi}..."

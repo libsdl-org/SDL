@@ -350,8 +350,6 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
 
         WIN_UpdateWindowICCProfile(data->window, true);
     } else {
-        RECT rect;
-
         data->in_window_deactivation = true;
 
         SDL_SetKeyboardFocus(NULL);
@@ -361,10 +359,7 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
         }
         WIN_ResetDeadKeys();
 
-        if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect)) == 0) {
-            ClipCursor(NULL);
-            SDL_zero(data->cursor_clipped_rect);
-        }
+        WIN_UnclipCursorForWindow(window);
 
         data->in_window_deactivation = false;
     }
@@ -526,6 +521,31 @@ static bool WIN_SwapButtons(HANDLE hDevice)
 
 static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDLE hDevice, RAWMOUSE *rawmouse)
 {
+    static struct {
+        USHORT usButtonFlags;
+        Uint8 button;
+        bool down;
+    } raw_buttons[] = {
+        { RI_MOUSE_LEFT_BUTTON_DOWN, SDL_BUTTON_LEFT, true },
+        { RI_MOUSE_LEFT_BUTTON_UP, SDL_BUTTON_LEFT, false },
+        { RI_MOUSE_RIGHT_BUTTON_DOWN, SDL_BUTTON_RIGHT, true },
+        { RI_MOUSE_RIGHT_BUTTON_UP, SDL_BUTTON_RIGHT, false },
+        { RI_MOUSE_MIDDLE_BUTTON_DOWN, SDL_BUTTON_MIDDLE, true },
+        { RI_MOUSE_MIDDLE_BUTTON_UP, SDL_BUTTON_MIDDLE, false },
+        { RI_MOUSE_BUTTON_4_DOWN, SDL_BUTTON_X1, true },
+        { RI_MOUSE_BUTTON_4_UP, SDL_BUTTON_X1, false },
+        { RI_MOUSE_BUTTON_5_DOWN, SDL_BUTTON_X2, true },
+        { RI_MOUSE_BUTTON_5_UP, SDL_BUTTON_X2, false }
+    };
+
+    int dx = (int)rawmouse->lLastX;
+    int dy = (int)rawmouse->lLastY;
+    bool haveMotion = (dx || dy);
+    bool haveButton = (rawmouse->usButtonFlags != 0);
+    bool isAbsolute = ((rawmouse->usFlags & MOUSE_MOVE_ABSOLUTE) != 0);
+    SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)hDevice;
+
+    // Check whether relative mode should also receive events from the rawinput stream
     if (!data->raw_mouse_enabled) {
         return;
     }
@@ -540,104 +560,86 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         return;
     }
 
-    SDL_MouseID mouseID = (SDL_MouseID)(uintptr_t)hDevice;
     SDL_WindowData *windowdata = window->internal;
 
-    if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
-        if (rawmouse->lLastX || rawmouse->lLastY) {
-            SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)rawmouse->lLastX, (float)rawmouse->lLastY);
-        }
-    } else if (rawmouse->lLastX || rawmouse->lLastY) {
-        /* This is absolute motion, either using a tablet or mouse over RDP
+    if (haveMotion) {
+        if (!isAbsolute) {
+            SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)dx, (float)dy);
+        } else {
+            /* This is absolute motion, either using a tablet or mouse over RDP
 
-            Notes on how RDP appears to work, as of Windows 10 2004:
-            - SetCursorPos() calls are cached, with multiple calls coalesced into a single call that's sent to the RDP client. If the last call to SetCursorPos() has the same value as the last one that was sent to the client, it appears to be ignored and not sent. This means that we need to jitter the SetCursorPos() position slightly in order for the recentering to work correctly.
-            - User mouse motion is coalesced with SetCursorPos(), so the WM_INPUT positions we see will not necessarily match the position we requested with SetCursorPos().
-            - SetCursorPos() outside of the bounds of the focus window appears not to do anything.
-            - SetCursorPos() while the cursor is NULL doesn't do anything
+                Notes on how RDP appears to work, as of Windows 10 2004:
+                - SetCursorPos() calls are cached, with multiple calls coalesced into a single call that's sent to the RDP client. If the last call to SetCursorPos() has the same value as the last one that was sent to the client, it appears to be ignored and not sent. This means that we need to jitter the SetCursorPos() position slightly in order for the recentering to work correctly.
+                - User mouse motion is coalesced with SetCursorPos(), so the WM_INPUT positions we see will not necessarily match the position we requested with SetCursorPos().
+                - SetCursorPos() outside of the bounds of the focus window appears not to do anything.
+                - SetCursorPos() while the cursor is NULL doesn't do anything
 
-            We handle this by creating a safe area within the application window, and when the mouse leaves that safe area, we warp back to the opposite side. Any single motion > 50% of the safe area is assumed to be a warp and ignored.
-        */
-        bool remote_desktop = GetSystemMetrics(SM_REMOTESESSION) ? true : false;
-        bool virtual_desktop = (rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) ? true : false;
-        bool normalized_coordinates = !(rawmouse->usFlags & 0x40) ? true : false;
-        int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
-        int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
-        int x = normalized_coordinates ? (int)(((float)rawmouse->lLastX / 65535.0f) * w) : (int)rawmouse->lLastX;
-        int y = normalized_coordinates ? (int)(((float)rawmouse->lLastY / 65535.0f) * h) : (int)rawmouse->lLastY;
-        int relX, relY;
+                We handle this by creating a safe area within the application window, and when the mouse leaves that safe area, we warp back to the opposite side. Any single motion > 50% of the safe area is assumed to be a warp and ignored.
+            */
+            bool remote_desktop = (GetSystemMetrics(SM_REMOTESESSION) == TRUE);
+            bool virtual_desktop = ((rawmouse->usFlags & MOUSE_VIRTUAL_DESKTOP) != 0);
+            bool raw_coordinates = ((rawmouse->usFlags & 0x40) != 0);
+            int w = GetSystemMetrics(virtual_desktop ? SM_CXVIRTUALSCREEN : SM_CXSCREEN);
+            int h = GetSystemMetrics(virtual_desktop ? SM_CYVIRTUALSCREEN : SM_CYSCREEN);
+            int x = raw_coordinates ? dx : (int)(((float)dx / 65535.0f) * w);
+            int y = raw_coordinates ? dy : (int)(((float)dy / 65535.0f) * h);
+            int relX, relY;
 
-        // Calculate relative motion
-        if (data->last_raw_mouse_position.x == 0 && data->last_raw_mouse_position.y == 0) {
+            /* Calculate relative motion */
+            if (data->last_raw_mouse_position.x == 0 && data->last_raw_mouse_position.y == 0) {
+                data->last_raw_mouse_position.x = x;
+                data->last_raw_mouse_position.y = y;
+            }
+            relX = x - data->last_raw_mouse_position.x;
+            relY = y - data->last_raw_mouse_position.y;
+
+            if (remote_desktop) {
+                if (!windowdata->in_title_click && !windowdata->focus_click_pending) {
+                    static int wobble;
+                    float floatX = (float)x / w;
+                    float floatY = (float)y / h;
+
+                    /* See if the mouse is at the edge of the screen, or in the RDP title bar area */
+                    if (floatX <= 0.01f || floatX >= 0.99f || floatY <= 0.01f || floatY >= 0.99f || y < 32) {
+                        /* Wobble the cursor position so it's not ignored if the last warp didn't have any effect */
+                        RECT rect = windowdata->cursor_clipped_rect;
+                        int warpX = rect.left + ((rect.right - rect.left) / 2) + wobble;
+                        int warpY = rect.top + ((rect.bottom - rect.top) / 2);
+
+                        WIN_SetCursorPos(warpX, warpY);
+
+                        ++wobble;
+                        if (wobble > 1) {
+                            wobble = -1;
+                        }
+                    } else {
+                        /* Send relative motion if we didn't warp last frame (had good position data)
+                           We also sometimes get large deltas due to coalesced mouse motion and warping,
+                           so ignore those.
+                         */
+                        const int MAX_RELATIVE_MOTION = (h / 6);
+                        if (SDL_abs(relX) < MAX_RELATIVE_MOTION &&
+                            SDL_abs(relY) < MAX_RELATIVE_MOTION) {
+                            SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)relX, (float)relY);
+                        }
+                    }
+                }
+            } else {
+                const int MAXIMUM_TABLET_RELATIVE_MOTION = 32;
+                if (SDL_abs(relX) > MAXIMUM_TABLET_RELATIVE_MOTION ||
+                    SDL_abs(relY) > MAXIMUM_TABLET_RELATIVE_MOTION) {
+                    /* Ignore this motion, probably a pen lift and drop */
+                } else {
+                    SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)relX, (float)relY);
+                }
+            }
+
             data->last_raw_mouse_position.x = x;
             data->last_raw_mouse_position.y = y;
         }
-        relX = x - data->last_raw_mouse_position.x;
-        relY = y - data->last_raw_mouse_position.y;
-
-        if (remote_desktop) {
-            if (!windowdata->in_title_click && !windowdata->focus_click_pending) {
-                static int wobble;
-                float floatX = (float)x / w;
-                float floatY = (float)y / h;
-
-                // See if the mouse is at the edge of the screen, or in the RDP title bar area
-                if (floatX <= 0.01f || floatX >= 0.99f || floatY <= 0.01f || floatY >= 0.99f || y < 32) {
-                    // Wobble the cursor position so it's not ignored if the last warp didn't have any effect
-                    RECT rect = windowdata->cursor_clipped_rect;
-                    int warpX = rect.left + ((rect.right - rect.left) / 2) + wobble;
-                    int warpY = rect.top + ((rect.bottom - rect.top) / 2);
-
-                    WIN_SetCursorPos(warpX, warpY);
-
-                    ++wobble;
-                    if (wobble > 1) {
-                        wobble = -1;
-                    }
-                } else {
-                    /* Send relative motion if we didn't warp last frame (had good position data)
-                       We also sometimes get large deltas due to coalesced mouse motion and warping,
-                       so ignore those.
-                     */
-                    const int MAX_RELATIVE_MOTION = (h / 6);
-                    if (SDL_abs(relX) < MAX_RELATIVE_MOTION &&
-                        SDL_abs(relY) < MAX_RELATIVE_MOTION) {
-                        SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)relX, (float)relY);
-                    }
-                }
-            }
-        } else {
-            const int MAXIMUM_TABLET_RELATIVE_MOTION = 32;
-            if (SDL_abs(relX) > MAXIMUM_TABLET_RELATIVE_MOTION ||
-                SDL_abs(relY) > MAXIMUM_TABLET_RELATIVE_MOTION) {
-                // Ignore this motion, probably a pen lift and drop
-            } else {
-                SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)relX, (float)relY);
-            }
-        }
-
-        data->last_raw_mouse_position.x = x;
-        data->last_raw_mouse_position.y = y;
     }
 
-    if (rawmouse->usButtonFlags) {
-        static struct {
-            USHORT usButtonFlags;
-            Uint8 button;
-            bool down;
-        } raw_buttons[] = {
-            { RI_MOUSE_LEFT_BUTTON_DOWN, SDL_BUTTON_LEFT, true },
-            { RI_MOUSE_LEFT_BUTTON_UP, SDL_BUTTON_LEFT, false },
-            { RI_MOUSE_RIGHT_BUTTON_DOWN, SDL_BUTTON_RIGHT, true },
-            { RI_MOUSE_RIGHT_BUTTON_UP, SDL_BUTTON_RIGHT, false },
-            { RI_MOUSE_MIDDLE_BUTTON_DOWN, SDL_BUTTON_MIDDLE, true },
-            { RI_MOUSE_MIDDLE_BUTTON_UP, SDL_BUTTON_MIDDLE, false },
-            { RI_MOUSE_BUTTON_4_DOWN, SDL_BUTTON_X1, true },
-            { RI_MOUSE_BUTTON_4_UP, SDL_BUTTON_X1, false },
-            { RI_MOUSE_BUTTON_5_DOWN, SDL_BUTTON_X2, true },
-            { RI_MOUSE_BUTTON_5_UP, SDL_BUTTON_X2, false }
-        };
-
+    if (haveButton) {
         for (int i = 0; i < SDL_arraysize(raw_buttons); ++i) {
             if (rawmouse->usButtonFlags & raw_buttons[i].usButtonFlags) {
                 Uint8 button = raw_buttons[i].button;
@@ -669,11 +671,11 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         }
 
         if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
-            short amount = (short)rawmouse->usButtonData;
+            SHORT amount = (SHORT)rawmouse->usButtonData;
             float fAmount = (float)amount / WHEEL_DELTA;
             SDL_SendMouseWheel(WIN_GetEventTimestamp(), window, mouseID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
         } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
-            short amount = (short)rawmouse->usButtonData;
+            SHORT amount = (SHORT)rawmouse->usButtonData;
             float fAmount = (float)amount / WHEEL_DELTA;
             SDL_SendMouseWheel(WIN_GetEventTimestamp(), window, mouseID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
         }
@@ -730,6 +732,7 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
         }
         code = windows_scancode_table[index];
     }
+
     if (down) {
         SDL_Window *focus = SDL_GetKeyboardFocus();
         if (!focus || focus->text_input_active) {
@@ -740,12 +743,12 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
     SDL_SendKeyboardKey(timestamp, keyboardID, rawcode, code, down);
 }
 
-void WIN_PollRawInput(SDL_VideoDevice *_this)
+void WIN_PollRawInput(SDL_VideoDevice *_this, Uint64 poll_start)
 {
     SDL_VideoData *data = _this->internal;
     UINT size, i, count, total = 0;
     RAWINPUT *input;
-    Uint64 now;
+    Uint64 poll_finish;
 
     if (data->rawinput_offset == 0) {
         BOOL isWow64;
@@ -762,6 +765,7 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
     for (;;) {
         size = data->rawinput_size - (UINT)((BYTE *)input - data->rawinput);
         count = GetRawInputBuffer(input, &size, sizeof(RAWINPUTHEADER));
+        poll_finish = SDL_GetTicksNS();
         if (count == 0 || count == (UINT)-1) {
             if (!data->rawinput || (count == (UINT)-1 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)) {
                 const UINT RAWINPUT_BUFFER_SIZE_INCREMENT = 96;   // 2 64-bit raw mouse packets
@@ -785,37 +789,28 @@ void WIN_PollRawInput(SDL_VideoDevice *_this)
         }
     }
 
-    now = SDL_GetTicksNS();
     if (total > 0) {
-        Uint64 mouse_timestamp, mouse_increment;
-        Uint64 delta = (now - data->last_rawinput_poll);
-        UINT total_mouse = 0;
+        Uint64 delta = poll_finish - poll_start;
+        UINT mouse_total = 0;
         for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
             if (input->header.dwType == RIM_TYPEMOUSE) {
-                ++total_mouse;
+                mouse_total += 1;
             }
         }
-        if (total_mouse > 1 && delta <= SDL_MS_TO_NS(100)) {
-            // We'll spread these events over the time since the last poll
-            mouse_timestamp = data->last_rawinput_poll;
-            mouse_increment = delta / total_mouse;
-        } else {
-            // Do we want to track the update rate per device?
-            mouse_timestamp = now;
-            mouse_increment = 0;
-        }
+        int mouse_index = 0;
         for (i = 0, input = (RAWINPUT *)data->rawinput; i < total; ++i, input = NEXTRAWINPUTBLOCK(input)) {
             if (input->header.dwType == RIM_TYPEMOUSE) {
+                mouse_index += 1; // increment first so that it starts at one
                 RAWMOUSE *rawmouse = (RAWMOUSE *)((BYTE *)input + data->rawinput_offset);
-                mouse_timestamp += mouse_increment;
-                WIN_HandleRawMouseInput(mouse_timestamp, data, input->header.hDevice, rawmouse);
+                Uint64 time = poll_finish - (delta * (mouse_total - mouse_index)) / mouse_total;
+                WIN_HandleRawMouseInput(time, data, input->header.hDevice, rawmouse);
             } else if (input->header.dwType == RIM_TYPEKEYBOARD) {
                 RAWKEYBOARD *rawkeyboard = (RAWKEYBOARD *)((BYTE *)input + data->rawinput_offset);
-                WIN_HandleRawKeyboardInput(now, data, input->header.hDevice, rawkeyboard);
+                WIN_HandleRawKeyboardInput(poll_finish, data, input->header.hDevice, rawkeyboard);
             }
         }
     }
-    data->last_rawinput_poll = now;
+    data->last_rawinput_poll = poll_finish;
 }
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -1086,6 +1081,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_NCACTIVATE:
     {
         // Don't immediately clip the cursor in case we're clicking minimize/maximize buttons
+        // This is the only place that this flag is set. This causes all subsequent calls to
+        // WIN_UpdateClipCursor for this window to be no-ops in this frame's message-pumping.
+        // This flag is unset at the end of message pumping each frame for every window, and
+        // should never be carried over between frames.
         data->skip_update_clipcursor = true;
 
         /* Update the focus here, since it's possible to get WM_ACTIVATE and WM_SETFOCUS without
@@ -1128,7 +1127,18 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_MOUSEMOVE:
     {
-        /* SDL_Mouse *mouse = SDL_GetMouse(); */
+        SDL_Window *window = data->window;
+
+        if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
+            bool wish_clip_cursor = (
+                window->flags & (SDL_WINDOW_MOUSE_RELATIVE_MODE | SDL_WINDOW_MOUSE_GRABBED) ||
+                (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)
+            );
+            if (wish_clip_cursor) {
+                data->skip_update_clipcursor = false;
+                WIN_UpdateClipCursor(window);
+            }
+        }
 
         if (!data->mouse_tracked) {
             TRACKMOUSEEVENT trackMouseEvent;
@@ -1146,7 +1156,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             // Only generate mouse events for real mouse
             if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
                 lParam != data->last_pointer_update) {
-                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
+                SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
             }
         }
     } break;
@@ -1440,32 +1450,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         break;
 #endif // WM_GETMINMAXINFO
 
-    case WM_WINDOWPOSCHANGING:
-    {
-        if (data->expected_resize) {
-            returnCode = 0;
-        }
-
-        if (data->floating_rect_pending &&
-            !IsIconic(hwnd) &&
-            !IsZoomed(hwnd) &&
-            (data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) &&
-            !(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-            // If a new floating size is pending, apply it if moving from a fixed-size to floating state.
-            WINDOWPOS *windowpos = (WINDOWPOS*)lParam;
-            int fx, fy, fw, fh;
-
-            WIN_AdjustWindowRect(data->window, &fx, &fy, &fw, &fh, SDL_WINDOWRECT_FLOATING);
-            windowpos->x = fx;
-            windowpos->y = fy;
-            windowpos->cx = fw;
-            windowpos->cy = fh;
-            windowpos->flags &= ~(SWP_NOSIZE | SWP_NOMOVE);
-
-            data->floating_rect_pending = false;
-        }
-    } break;
-
     case WM_WINDOWPOSCHANGED:
     {
         SDL_Window *win;
@@ -1557,12 +1541,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_TIMER:
     {
         if (wParam == (UINT_PTR)SDL_IterateMainCallbacks) {
-            if (SDL_HasMainCallbacks()) {
-                SDL_IterateMainCallbacks(false);
-            } else {
-                // Send an expose event so the application can redraw
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
-            }
+            SDL_OnWindowLiveResizeUpdate(data->window);
             return 0;
         }
     } break;
@@ -1608,11 +1587,11 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 switch (edge) {
                 case WMSZ_LEFT:
                 case WMSZ_RIGHT:
-                    h = (int)(w / data->window->max_aspect);
+                    h = (int)SDL_roundf(w / data->window->max_aspect);
                     break;
                 default:
                     // resizing via corners or top or bottom
-                    w = (int)(h*data->window->max_aspect);
+                    w = (int)SDL_roundf(h * data->window->max_aspect);
                     break;
                 }
             } else {
@@ -1891,9 +1870,21 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_WindowFlags window_flags = SDL_GetWindowFlags(data->window);
         if (wParam == TRUE && (window_flags & SDL_WINDOW_BORDERLESS) && !(window_flags & SDL_WINDOW_FULLSCREEN)) {
             // When borderless, need to tell windows that the size of the non-client area is 0
-            if (!(window_flags & SDL_WINDOW_RESIZABLE)) {
+            NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
+            WINDOWPLACEMENT placement;
+            if (GetWindowPlacement(hwnd, &placement) && placement.showCmd == SW_MAXIMIZE) {
+                // Maximized borderless windows should use the full monitor size
+                HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL);
+                if (hMonitor) {
+                    MONITORINFO info;
+                    SDL_zero(info);
+                    info.cbSize = sizeof(info);
+                    if (GetMonitorInfo(hMonitor, &info)) {
+                        params->rgrc[0] = info.rcMonitor;
+                    }
+                }
+            } else if (!(window_flags & SDL_WINDOW_RESIZABLE)) {
                 int w, h;
-                NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
                 w = data->window->floating.w;
                 h = data->window->floating.h;
                 params->rgrc[0].right = params->rgrc[0].left + w;
@@ -2102,28 +2093,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-static void WIN_UpdateClipCursorForWindows(void)
-{
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_Window *window;
-    Uint64 now = SDL_GetTicks();
-    const int CLIPCURSOR_UPDATE_INTERVAL_MS = SDL_GetMouse()->relative_mode_clip_interval;
-
-    if (_this) {
-        for (window = _this->windows; window; window = window->next) {
-            SDL_WindowData *data = window->internal;
-            if (data) {
-                if (data->skip_update_clipcursor) {
-                    data->skip_update_clipcursor = false;
-                    WIN_UpdateClipCursor(window);
-                } else if (CLIPCURSOR_UPDATE_INTERVAL_MS > 0 && now >= (data->last_updated_clipcursor + CLIPCURSOR_UPDATE_INTERVAL_MS)) {
-                    WIN_UpdateClipCursor(window);
-                }
-            }
-        }
-    }
-}
-
 static void WIN_UpdateMouseCapture(void)
 {
     SDL_Window *focusWindow = SDL_GetKeyboardFocus();
@@ -2318,7 +2287,17 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
     }
 
     // Update the clipping rect in case someone else has stolen it
-    WIN_UpdateClipCursorForWindows();
+    if (_this) {
+        SDL_Window *window = _this->windows;
+        while (window) {
+            SDL_WindowData *data = window->internal;
+            if (data && data->skip_update_clipcursor) {
+                data->skip_update_clipcursor = false;
+                WIN_UpdateClipCursor(window);
+            }
+            window = window->next;
+        }
+    }
 
     // Update mouse capture
     WIN_UpdateMouseCapture();

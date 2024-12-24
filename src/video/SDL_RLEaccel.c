@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
 
 /*
  * RLE encoding for software colorkey and alpha-channel acceleration

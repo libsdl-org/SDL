@@ -173,15 +173,4 @@ extern void KMSDRM_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void KMSDRM_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void KMSDRM_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
-// OpenGL/OpenGL ES functions
-extern bool KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-extern SDL_FunctionPointer KMSDRM_GLES_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
-extern void KMSDRM_GLES_UnloadLibrary(SDL_VideoDevice *_this);
-extern SDL_GLContext KMSDRM_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
-extern bool KMSDRM_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
-extern bool KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
-extern bool KMSDRM_GLES_GetSwapInterval(SDL_VideoDevice *_this);
-extern bool KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern bool KMSDRM_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext context);
-
 #endif // SDL_kmsdrmvideo_h

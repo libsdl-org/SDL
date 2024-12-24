@@ -29,6 +29,7 @@
 #include "SDL_windowsevents.h"
 
 #include "../../joystick/usb_ids.h"
+#include "../../events/SDL_events_c.h"
 
 #define ENABLE_RAW_MOUSE_INPUT      0x01
 #define ENABLE_RAW_KEYBOARD_INPUT   0x02
@@ -93,14 +94,21 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
     SetEvent(data->ready_event);
 
     while (!data->done) {
-        if (MsgWaitForMultipleObjects(1, &data->done_event, FALSE, INFINITE, QS_RAWINPUT) != (WAIT_OBJECT_0 + 1)) {
+        Uint64 idle_begin = SDL_GetTicksNS();
+        DWORD result = MsgWaitForMultipleObjects(1, &data->done_event, FALSE, INFINITE, QS_RAWINPUT);
+        Uint64 idle_end = SDL_GetTicksNS();
+        if (result != (WAIT_OBJECT_0 + 1)) {
             break;
         }
 
         // Clear the queue status so MsgWaitForMultipleObjects() will wait again
         (void)GetQueueStatus(QS_RAWINPUT);
 
-        WIN_PollRawInput(_this);
+        Uint64 idle_time = idle_end - idle_begin;
+        Uint64 usb_8khz_interval = SDL_US_TO_NS(125);
+        Uint64 poll_start = idle_time < usb_8khz_interval ? _this->internal->last_rawinput_poll : idle_end;
+
+        WIN_PollRawInput(_this, poll_start);
     }
 
     devices[0].dwFlags |= RIDEV_REMOVE;

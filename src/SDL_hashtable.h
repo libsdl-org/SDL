@@ -34,19 +34,33 @@ extern SDL_HashTable *SDL_CreateHashTable(void *data,
                                           SDL_HashTable_HashFn hashfn,
                                           SDL_HashTable_KeyMatchFn keymatchfn,
                                           SDL_HashTable_NukeFn nukefn,
+                                          bool threadsafe,
                                           bool stackable);
 
+// This function is thread-safe if the hashtable was created with threadsafe = true
 extern void SDL_EmptyHashTable(SDL_HashTable *table);
+
+// This function is not thread-safe.
 extern void SDL_DestroyHashTable(SDL_HashTable *table);
+
+// This function is thread-safe if the hashtable was created with threadsafe = true
 extern bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value);
+
+// This function is thread-safe if the hashtable was created with threadsafe = true
 extern bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key);
+
+// This function is thread-safe if the hashtable was created with threadsafe = true
 extern bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **_value);
+
+// This function is thread-safe if the hashtable was created with threadsafe = true
 extern bool SDL_HashTableEmpty(SDL_HashTable *table);
 
 // iterate all values for a specific key. This only makes sense if the hash is stackable. If not-stackable, just use SDL_FindInHashTable().
+// This function is not thread-safe, you should use external locking if you use this function
 extern bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, const void **_value, void **iter);
 
 // iterate all key/value pairs in a hash (stackable hashes can have duplicate keys with multiple values).
+// This function is not thread-safe, you should use external locking if you use this function
 extern bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const void **_value, void **iter);
 
 extern Uint32 SDL_HashPointer(const void *key, void *unused);

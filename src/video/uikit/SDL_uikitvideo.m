@@ -97,8 +97,9 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
 
 #ifdef SDL_IPHONE_KEYBOARD
         device->HasScreenKeyboardSupport = UIKit_HasScreenKeyboardSupport;
-        device->ShowScreenKeyboard = UIKit_ShowScreenKeyboard;
-        device->HideScreenKeyboard = UIKit_HideScreenKeyboard;
+        device->StartTextInput = UIKit_StartTextInput;
+        device->StopTextInput = UIKit_StopTextInput;
+        device->SetTextInputProperties = UIKit_SetTextInputProperties;
         device->IsScreenKeyboardShown = UIKit_IsScreenKeyboardShown;
         device->UpdateTextInputArea = UIKit_UpdateTextInputArea;
 #endif

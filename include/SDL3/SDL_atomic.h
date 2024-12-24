@@ -155,6 +155,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockSpinlock(SDL_SpinLock *lock);
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_CompilerBarrier() DoCompilerSpecificReadWriteBarrier()
+
 #elif defined(_MSC_VER) && (_MSC_VER > 1200) && !defined(__clang__)
 void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
@@ -171,7 +172,50 @@ extern __inline void SDL_CompilerBarrier(void);
 #endif
 
 /**
- * Insert a memory release barrier.
+ * Insert a memory release barrier (function version).
+ *
+ * Please refer to SDL_MemoryBarrierRelease for details. This is a function
+ * version, which might be useful if you need to use this functionality from a
+ * scripting language, etc. Also, some of the macro versions call this
+ * function behind the scenes, where more heavy lifting can happen inside of
+ * SDL. Generally, though, an app written in C/C++/etc should use the macro
+ * version, as it will be more efficient.
+ *
+ * \threadsafety Obviously this function is safe to use from any thread at any
+ *               time, but if you find yourself needing this, you are probably
+ *               dealing with some very sensitive code; be careful!
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_MemoryBarrierRelease
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
+
+/**
+ * Insert a memory acquire barrier (function version).
+ *
+ * Please refer to SDL_MemoryBarrierRelease for details. This is a function
+ * version, which might be useful if you need to use this functionality from a
+ * scripting language, etc. Also, some of the macro versions call this
+ * function behind the scenes, where more heavy lifting can happen inside of
+ * SDL. Generally, though, an app written in C/C++/etc should use the macro
+ * version, as it will be more efficient.
+ *
+ * \threadsafety Obviously this function is safe to use from any thread at any
+ *               time, but if you find yourself needing this, you are probably
+ *               dealing with some very sensitive code; be careful!
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_MemoryBarrierAcquire
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
+
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * Insert a memory release barrier (macro version).
  *
  * Memory barriers are designed to prevent reads and writes from being
  * reordered by the compiler and being seen out of order on multi-core CPUs.
@@ -191,31 +235,47 @@ extern __inline void SDL_CompilerBarrier(void);
  * For more information on these semantics, take a look at the blog post:
  * http://preshing.com/20120913/acquire-and-release-semantics
  *
+ * This is the macro version of this functionality; if possible, SDL will use
+ * compiler intrinsics or inline assembly, but some platforms might need to
+ * call the function version of this, SDL_MemoryBarrierReleaseFunction to do
+ * the heavy lifting. Apps that can use the macro should favor it over the
+ * function.
+ *
  * \threadsafety Obviously this macro is safe to use from any thread at any
  *               time, but if you find yourself needing this, you are probably
  *               dealing with some very sensitive code; be careful!
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_MemoryBarrierAcquire
+ * \sa SDL_MemoryBarrierReleaseFunction
  */
-extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
+#define SDL_MemoryBarrierRelease() SDL_MemoryBarrierReleaseFunction()
 
 /**
- * Insert a memory acquire barrier.
+ * Insert a memory acquire barrier (macro version).
  *
- * Please refer to SDL_MemoryBarrierReleaseFunction for the details!
+ * Please see SDL_MemoryBarrierRelease for the details on what memory barriers
+ * are and when to use them.
  *
- * \threadsafety Obviously this function is safe to use from any thread at any
+ * This is the macro version of this functionality; if possible, SDL will use
+ * compiler intrinsics or inline assembly, but some platforms might need to
+ * call the function version of this, SDL_MemoryBarrierAcquireFunction, to do
+ * the heavy lifting. Apps that can use the macro should favor it over the
+ * function.
+ *
+ * \threadsafety Obviously this macro is safe to use from any thread at any
  *               time, but if you find yourself needing this, you are probably
  *               dealing with some very sensitive code; be careful!
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.1.3.
  *
- * \sa SDL_MemoryBarrierReleaseFunction
+ * \sa SDL_MemoryBarrierRelease
+ * \sa SDL_MemoryBarrierAcquireFunction
  */
-extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
+#define SDL_MemoryBarrierAcquire() SDL_MemoryBarrierAcquireFunction()
 
-/* !!! FIXME: this should have documentation! */
-#if defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
+#elif defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("lwsync" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("lwsync" : : : "memory")
 #elif defined(__GNUC__) && defined(__aarch64__)
@@ -284,6 +344,7 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_CPUPauseInstruction() DoACPUPauseInACompilerAndArchitectureSpecificWay
+
 #elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_CPUPauseInstruction() __asm__ __volatile__("pause\n")  /* Some assemblers can't do REP NOP, so go with PAUSE. */
 #elif (defined(__arm__) && defined(__ARM_ARCH) && __ARM_ARCH >= 7) || defined(__aarch64__)

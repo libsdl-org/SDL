@@ -81,8 +81,8 @@ struct SDL_WaylandInput
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
     SDL_CursorData *current_cursor;
-    Uint32 keyboard_id;
-    Uint32 pointer_id;
+    SDL_KeyboardID keyboard_id;
+    SDL_MouseID pointer_id;
     uint32_t pointer_enter_serial;
 
     // High-resolution event timestamps
@@ -162,6 +162,7 @@ extern void Wayland_create_text_input(SDL_VideoData *d);
 extern void Wayland_input_initialize_seat(SDL_VideoData *d);
 extern void Wayland_display_destroy_input(SDL_VideoData *d);
 
+extern void Wayland_input_init_relative_pointer(SDL_VideoData *d);
 extern bool Wayland_input_enable_relative_pointer(struct SDL_WaylandInput *input);
 extern bool Wayland_input_disable_relative_pointer(struct SDL_WaylandInput *input);
 

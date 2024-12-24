@@ -3,35 +3,64 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>@project_name@ Example: @category_name@/@example_name@</title>
+    <link rel="icon" href="/@project_name@/thumbnail.png" type="image/png" />
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@project_name@ Example: @category_name@/@example_name@">
+    <meta property="og:description" content="@description@">
+    <meta property="og:image" content="@preview_image@" />
+
+    <link rel="stylesheet" type="text/css" href="/@project_name@/examples.css" />
     <style>
-      html, body {
-        width: 100vw;
-        height: 100vh;
-        overflow: hidden;
-        font-family: 'Liberation Sans', sans-serif;
+      main {
+        display: flex;
+      }
+
+      main > #sidebar {
+        flex: 0 1 25%;
+        border-left: 2px solid #efefef;
+        padding: 1rem 1rem;
+      }
+
+      main > #content {
+        flex: 1 1 auto;
+        margin-bottom: 16px;
+      }
+
+      main > #content > h1 {
+        margin-top: 0;
+      }
+
+      main > #sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      main > #sidebar li {
+        padding: 2px 0;
+      }
+
+      #example-description {
+        max-width: 85ch;
+        margin-bottom: 16px;
       }
 
       .canvas-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-
         display: flex;
         align-items: center;
         justify-content: center;
-
-        background: black;
       }
 
       #canvas {
+        max-width: 100%;
         box-shadow: 0 0 0.5rem #7787;
       }
 
       #output-container {
-        position: absolute;
+        position: fixed;
         top: 100%;
         left: 0;
         right: 0;
@@ -47,8 +76,8 @@
       }
 
       #output-container::before {
-        position: absolute;
-        bottom: 100%;
+        position: fixed;
+        bottom: 0;
         right: 1rem;
 
         content: 'Console';
@@ -87,11 +116,12 @@
         outline: none;
         resize: none;
 
-        font-family: 'Lucida Console', Monaco, monospace;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+          "Liberation Mono", monospace;
       }
 
       #source-code {
-        position: absolute;
+        position: fixed;
         top: 100%;
         left: 0;
         right: 0;
@@ -104,8 +134,8 @@
       }
 
       #source-code::before {
-        position: absolute;
-        bottom: 100%;
+        position: fixed;
+        bottom: 0;
         left: 1rem;
 
         content: 'Source code';
@@ -134,21 +164,53 @@
         overflow: scroll;
       }
 
-      #example-description {
-        color: white;
-        text-align: center;
-        position: relative; /* required for proper positioning */
+      @media (prefers-color-scheme: dark) {
+        main > #sidebar {
+          border-color: rgba(48, 54, 61, 0.7);
+        }
+      }
+
+      @media only screen and (max-width: 992px) {
+        main {
+          flex-direction: column;
+        }
+
+        main > #sidebar {
+          border: none;
+        }
       }
     </style>
     <link rel="stylesheet" type="text/css" href="highlight.css">
   </head>
   <body>
-    <div class="canvas-container">
-      <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
-    </div>
-    <div id="example-description">
-      @description@
-    </div>
+    <header>
+      <a href="/">SDL Examples</a>
+    </header>
+    <main>
+      <div id="content">
+        <nav class="breadcrumb">
+          <ul>
+            <li><a href="/@project_name@">@project_name@</a></li>
+            <li><a href="/@project_name@/@category_name@">@category_name@</a></li>
+            <li><a href="/@project_name@/@category_name@/@example_name@">@example_name@</a></li>
+          </ul>
+        </nav>
+        <h1>@project_name@ example: @category_name@/@example_name@</h1>
+        <div id="example-description">@description@</div>
+        <div class="canvas-container">
+          <canvas
+            id="canvas"
+            oncontextmenu="event.preventDefault()"
+            tabindex="-1"
+          ></canvas>
+        </div>
+      </div>
+      <div id="sidebar">
+        <h3>Other examples:</h3>
+        @other_examples_html@
+      </div>
+    </main>
+
     <div id="output-container">
       <textarea id="output" rows="8" spellcheck="false" readonly></textarea>
     </div>

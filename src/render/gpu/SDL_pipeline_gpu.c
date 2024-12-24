@@ -83,7 +83,7 @@ static void NukePipelineCacheEntry(const void *key, const void *value, void *dat
 bool GPU_InitPipelineCache(GPU_PipelineCache *cache, SDL_GPUDevice *device)
 {
     // FIXME how many buckets do we need?
-    cache->table = SDL_CreateHashTable(device, 32, HashPassthrough, MatchPipelineCacheKey, NukePipelineCacheEntry, true);
+    cache->table = SDL_CreateHashTable(device, 32, HashPassthrough, MatchPipelineCacheKey, NukePipelineCacheEntry, false, true);
     if (!cache->table) {
         return false;
     }

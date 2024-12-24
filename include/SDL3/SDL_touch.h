@@ -38,21 +38,49 @@
 extern "C" {
 #endif
 
+/**
+ * A unique ID for a touch device.
+ *
+ * This ID is valid for the time the device is connected to the system, and is
+ * never reused for the lifetime of the application.
+ *
+ * The value 0 is an invalid ID.
+ *
+ * \since This datatype is available since SDL 3.1.3.
+ */
 typedef Uint64 SDL_TouchID;
+
+/**
+ * A unique ID for a single finger on a touch device.
+ *
+ * This ID is valid for the time the finger (stylus, etc) is touching and will
+ * be unique for all fingers currently in contact, so this ID tracks the
+ * lifetime of a single continuous touch. This value may represent an index, a
+ * pointer, or some other unique ID, depending on the platform.
+ *
+ * The value 0 is an invalid ID.
+ *
+ * \since This datatype is available since SDL 3.1.3.
+ */
 typedef Uint64 SDL_FingerID;
 
+/**
+ * An enum that describes the type of a touch device.
+ *
+ * \since This enum is available since SDL 3.1.3.
+ */
 typedef enum SDL_TouchDeviceType
 {
     SDL_TOUCH_DEVICE_INVALID = -1,
-    SDL_TOUCH_DEVICE_DIRECT,            /* touch screen with window-relative coordinates */
-    SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE, /* trackpad with absolute device coordinates */
-    SDL_TOUCH_DEVICE_INDIRECT_RELATIVE  /* trackpad with screen cursor-relative coordinates */
+    SDL_TOUCH_DEVICE_DIRECT,            /**< touch screen with window-relative coordinates */
+    SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE, /**< trackpad with absolute device coordinates */
+    SDL_TOUCH_DEVICE_INDIRECT_RELATIVE  /**< trackpad with screen cursor-relative coordinates */
 } SDL_TouchDeviceType;
 
 /**
  * Data about a single finger in a multitouch event.
  *
- * Each touch even is a collection of fingers that are simultaneously in
+ * Each touch event is a collection of fingers that are simultaneously in
  * contact with the touch device (so a "touch" can be a "multitouch," in
  * reality), and this struct reports details of the specific fingers.
  *
@@ -68,10 +96,18 @@ typedef struct SDL_Finger
     float pressure; /**< the quantity of pressure applied, normalized (0...1) */
 } SDL_Finger;
 
-/* Used as the device ID for mouse events simulated with touch input */
+/**
+ * The SDL_MouseID for mouse events simulated with touch input.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_TOUCH_MOUSEID ((SDL_MouseID)-1)
 
-/* Used as the SDL_TouchID for touch events simulated with mouse input */
+/**
+ * The SDL_TouchID for touch events simulated with mouse input.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_MOUSE_TOUCHID ((SDL_TouchID)-1)
 
 

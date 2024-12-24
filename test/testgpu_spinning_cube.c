@@ -341,20 +341,20 @@ Render(SDL_Window *window, const int windownum)
         SDL_Log("Failed to acquire command buffer :%s", SDL_GetError());
         quit(2);
     }
-    if (!SDL_AcquireGPUSwapchainTexture(cmd, state->windows[windownum], &swapchainTexture, &drawablew, &drawableh)) {
+    if (!SDL_WaitAndAcquireGPUSwapchainTexture(cmd, state->windows[windownum], &swapchainTexture, &drawablew, &drawableh)) {
         SDL_Log("Failed to acquire swapchain texture: %s", SDL_GetError());
         quit(2);
     }
 
     if (swapchainTexture == NULL) {
-        /* No swapchain was acquired, probably too many frames in flight */
-        SDL_SubmitGPUCommandBuffer(cmd);
+        /* Swapchain is unavailable, cancel work */
+        SDL_CancelGPUCommandBuffer(cmd);
         return;
     }
 
     /*
     * Do some rotation with Euler angles. It is not a fixed axis as
-    * quaterions would be, but the effect is cool.
+    * quaternions would be, but the effect is cool.
     */
     rotate_matrix((float)winstate->angle_x, 1.0f, 0.0f, 0.0f, matrix_modelview);
     rotate_matrix((float)winstate->angle_y, 0.0f, 1.0f, 0.0f, matrix_rotate);

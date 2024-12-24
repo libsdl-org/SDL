@@ -4,15 +4,6 @@
     <ClCompile Include="..\..\src\core\gdk\SDL_gdk.cpp" />
     <ClCompile Include="..\..\src\core\windows\pch.c" />
     <ClCompile Include="..\..\src\core\windows\pch_cpp.cpp" />
-    <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c">
-      <Filter>dialog</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c">
-      <Filter>filesystem</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c">
-      <Filter>filesystem\windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\render\direct3d12\SDL_render_d3d12_xbox.cpp" />
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12_xboxone.cpp" />
     <ClCompile Include="..\..\src\render\direct3d12\SDL_shaders_d3d12_xboxseries.cpp" />
@@ -35,7 +26,6 @@
     <ClCompile Include="..\..\src\audio\SDL_mixer.c" />
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
-    <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c" />
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />
@@ -95,31 +85,7 @@
     <ClCompile Include="..\..\src\joystick\windows\SDL_windowsjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_windows_gaming_input.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_xinputjoystick.c" />
-    <ClCompile Include="..\..\src\libm\e_atan2.c" />
-    <ClCompile Include="..\..\src\libm\e_exp.c" />
-    <ClCompile Include="..\..\src\libm\e_fmod.c" />
-    <ClCompile Include="..\..\src\libm\e_log.c" />
-    <ClCompile Include="..\..\src\libm\e_log10.c" />
-    <ClCompile Include="..\..\src\libm\e_pow.c" />
-    <ClCompile Include="..\..\src\libm\e_rem_pio2.c" />
-    <ClCompile Include="..\..\src\libm\e_sqrt.c" />
-    <ClCompile Include="..\..\src\libm\k_cos.c" />
-    <ClCompile Include="..\..\src\libm\k_rem_pio2.c" />
-    <ClCompile Include="..\..\src\libm\k_sin.c" />
-    <ClCompile Include="..\..\src\libm\k_tan.c" />
-    <ClCompile Include="..\..\src\libm\s_atan.c" />
-    <ClCompile Include="..\..\src\libm\s_copysign.c" />
-    <ClCompile Include="..\..\src\libm\s_cos.c" />
-    <ClCompile Include="..\..\src\libm\s_fabs.c" />
-    <ClCompile Include="..\..\src\libm\s_floor.c" />
-    <ClCompile Include="..\..\src\libm\s_isinf.c" />
-    <ClCompile Include="..\..\src\libm\s_isinff.c" />
-    <ClCompile Include="..\..\src\libm\s_isnan.c" />
-    <ClCompile Include="..\..\src\libm\s_isnanf.c" />
     <ClCompile Include="..\..\src\libm\s_modf.c" />
-    <ClCompile Include="..\..\src\libm\s_scalbn.c" />
-    <ClCompile Include="..\..\src\libm\s_sin.c" />
-    <ClCompile Include="..\..\src\libm\s_tan.c" />
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c" />
     <ClCompile Include="..\..\src\locale\SDL_locale.c" />
     <ClCompile Include="..\..\src\locale\windows\SDL_syslocale.c" />
@@ -190,12 +156,6 @@
     <ClCompile Include="..\..\src\thread\windows\SDL_systls.c" />
     <ClCompile Include="..\..\src\timer\SDL_timer.c" />
     <ClCompile Include="..\..\src\timer\windows\SDL_systimer.c" />
-    <ClCompile Include="..\..\src\time\SDL_time.c">
-      <Filter>time</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\time\windows\SDL_systime.c">
-      <Filter>time\windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\video\dummy\SDL_nullevents.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullframebuffer.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c" />
@@ -236,8 +196,30 @@
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvideo.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvulkan.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowswindow.c" />
-    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfilesystem.c" />
+    <ClCompile Include="..\..\src\camera\dummy\SDL_camera_dummy.c" />
+    <ClCompile Include="..\..\src\camera\SDL_camera.c" />
+    <ClCompile Include="..\..\src\dialog\SDL_dialog.c" />
+    <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c" />
+    <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c" />
+    <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
+    <ClCompile Include="..\..\src\file\generic\SDL_asyncio_generic.c" />
+    <ClCompile Include="..\..\src\file\SDL_asyncio.c" />
+    <ClCompile Include="..\..\src\file\windows\SDL_asyncio_windows_ioring.c" />
+    <ClCompile Include="..\..\src\dialog\dummy\SDL_dummydialog.c" />
+    <ClCompile Include="..\..\src\dialog\windows\SDL_windowsdialog.c" />
+    <ClCompile Include="..\..\src\render\gpu\SDL_pipeline_gpu.c" />
+    <ClCompile Include="..\..\src\render\gpu\SDL_render_gpu.c" />
+    <ClCompile Include="..\..\src\render\gpu\SDL_shaders_gpu.c" />
+    <ClCompile Include="..\..\src\render\vulkan\SDL_render_vulkan.c" />
+    <ClCompile Include="..\..\src\render\vulkan\SDL_shaders_vulkan.c" />
+    <ClCompile Include="..\..\src\storage\generic\SDL_genericstorage.c" />
+    <ClCompile Include="..\..\src\storage\SDL_storage.c" />
+    <ClCompile Include="..\..\src\time\SDL_time.c" />
+    <ClCompile Include="..\..\src\time\windows\SDL_systime.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h" />
@@ -349,9 +331,6 @@
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h" />
     <ClInclude Include="..\..\src\events\SDL_touch_c.h" />
     <ClInclude Include="..\..\src\events\SDL_windowevents_c.h" />
-    <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h">
-      <Filter>filesystem</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\gpu\SDL_sysgpu.h" />
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h" />
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h" />
@@ -475,6 +454,21 @@
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse_func.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std_func.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_camera.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_asyncio.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_storage.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_time.h" />
+    <ClInclude Include="..\..\src\camera\SDL_camera_c.h" />
+    <ClInclude Include="..\..\src\camera\SDL_syscamera.h" />
+    <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h" />
+    <ClInclude Include="..\..\src\file\SDL_asyncio_c.h" />
+    <ClInclude Include="..\..\src\file\SDL_sysasyncio.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_common.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_internal.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx_func.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />

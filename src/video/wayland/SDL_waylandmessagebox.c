@@ -123,14 +123,14 @@ bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *butto
         argv[argc++] = "--title";
         argv[argc++] = messageboxdata->title;
     } else {
-        argv[argc++] = "--title=\"\"";
+        argv[argc++] = "--title=";
     }
 
     if (messageboxdata->message && messageboxdata->message[0]) {
         argv[argc++] = "--text";
         argv[argc++] = messageboxdata->message;
     } else {
-        argv[argc++] = "--text=\"\"";
+        argv[argc++] = "--text=";
     }
 
     for (i = 0; i < messageboxdata->numbuttons; ++i) {
@@ -143,8 +143,11 @@ bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *butto
             argv[argc++] = "--extra-button";
             argv[argc++] = messageboxdata->buttons[i].text;
         } else {
-            argv[argc++] = "--extra-button=\"\"";
+            argv[argc++] = "--extra-button=";
         }
+    }
+    if (messageboxdata->numbuttons == 0) {
+        argv[argc++] = "--extra-button=OK";
     }
     argv[argc] = NULL;
 

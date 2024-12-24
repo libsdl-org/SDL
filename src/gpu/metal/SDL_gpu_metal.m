@@ -34,31 +34,35 @@
 #define WINDOW_PROPERTY_DATA           "SDL_GPUMetalWindowPropertyData"
 #define SDL_GPU_SHADERSTAGE_COMPUTE    2
 
-#define TRACK_RESOURCE(resource, type, array, count, capacity) \
-    Uint32 i;                                                  \
-                                                               \
-    for (i = 0; i < commandBuffer->count; i += 1) {            \
-        if (commandBuffer->array[i] == resource) {             \
-            return;                                            \
-        }                                                      \
-    }                                                          \
-                                                               \
-    if (commandBuffer->count == commandBuffer->capacity) {     \
-        commandBuffer->capacity += 1;                          \
-        commandBuffer->array = SDL_realloc(                    \
-            commandBuffer->array,                              \
-            commandBuffer->capacity * sizeof(type));           \
-    }                                                          \
-    commandBuffer->array[commandBuffer->count] = resource;     \
-    commandBuffer->count += 1;                                 \
-    SDL_AtomicIncRef(&resource->referenceCount);
+#define TRACK_RESOURCE(resource, type, array, count, capacity)   \
+    do {                                                         \
+        Uint32 i;                                                \
+                                                                 \
+        for (i = 0; i < commandBuffer->count; i += 1) {          \
+            if (commandBuffer->array[i] == (resource)) {         \
+                return;                                          \
+            }                                                    \
+        }                                                        \
+                                                                 \
+        if (commandBuffer->count == commandBuffer->capacity) {   \
+            commandBuffer->capacity += 1;                        \
+            commandBuffer->array = SDL_realloc(                  \
+                commandBuffer->array,                            \
+                commandBuffer->capacity * sizeof(type));         \
+        }                                                        \
+        commandBuffer->array[commandBuffer->count] = (resource); \
+        commandBuffer->count += 1;                               \
+        SDL_AtomicIncRef(&(resource)->referenceCount);           \
+    } while (0)
 
-#define SET_ERROR_AND_RETURN(fmt, msg, ret)           \
-    if (renderer->debugMode) {                        \
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, fmt, msg); \
-    }                                                 \
-    SDL_SetError(fmt, msg);                           \
-    return ret;                                       \
+#define SET_ERROR_AND_RETURN(fmt, msg, ret)               \
+    do {                                                  \
+        if (renderer->debugMode) {                        \
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, fmt, msg); \
+        }                                                 \
+        SDL_SetError(fmt, msg);                           \
+        return ret;                                       \
+    } while (0)
 
 #define SET_STRING_ERROR_AND_RETURN(msg, ret) SET_ERROR_AND_RETURN("%s", msg, ret)
 
@@ -641,6 +645,7 @@ struct MetalRenderer
     id<MTLCommandQueue> queue;
 
     bool debugMode;
+    Uint32 allowedFramesInFlight;
 
     MetalWindowData **claimedWindows;
     Uint32 claimedWindowCount;
@@ -3623,8 +3628,7 @@ static bool METAL_ClaimWindow(
                 SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window", false);
             }
         } else {
-            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Window already claimed!");
-            return false;
+            SET_ERROR_AND_RETURN("%s", "Window already claimed!", false);
         }
     }
 }
@@ -3667,7 +3671,34 @@ static void METAL_ReleaseWindow(
     }
 }
 
-static bool METAL_AcquireSwapchainTexture(
+static bool METAL_WaitForSwapchain(
+    SDL_GPURenderer *driverData,
+    SDL_Window *window)
+{
+    @autoreleasepool {
+        MetalRenderer *renderer = (MetalRenderer *)driverData;
+        MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
+
+        if (windowData == NULL) {
+            SET_STRING_ERROR_AND_RETURN("Cannot wait for a swapchain from an unclaimed window!", false);
+        }
+
+        if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
+            if (!METAL_WaitForFences(
+                driverData,
+                true,
+                &windowData->inFlightFences[windowData->frameCounter],
+                1)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+
+static bool METAL_INTERNAL_AcquireSwapchainTexture(
+    bool block,
     SDL_GPUCommandBuffer *commandBuffer,
     SDL_Window *window,
     SDL_GPUTexture **texture,
@@ -3705,8 +3736,8 @@ static bool METAL_AcquireSwapchainTexture(
         }
 
         if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
-            if (windowData->presentMode == SDL_GPU_PRESENTMODE_VSYNC) {
-                // In VSYNC mode, block until the least recent presented frame is done
+            if (block) {
+                // If we are blocking, just wait for the fence!
                 if (!METAL_WaitForFences(
                     (SDL_GPURenderer *)renderer,
                     true,
@@ -3715,13 +3746,11 @@ static bool METAL_AcquireSwapchainTexture(
                     return false;
                 }
             } else {
+                // If we are not blocking and the least recent fence is not signaled,
+                // return true to indicate that there is no error but rendering should be skipped.
                 if (!METAL_QueryFence(
                         (SDL_GPURenderer *)metalCommandBuffer->renderer,
                         windowData->inFlightFences[windowData->frameCounter])) {
-                    /*
-                    * In IMMEDIATE mode, if the least recent fence is not signaled,
-                    * return true to indicate that there is no error but rendering should be skipped
-                    */
                     return true;
                 }
             }
@@ -3751,6 +3780,38 @@ static bool METAL_AcquireSwapchainTexture(
         *texture = (SDL_GPUTexture *)&windowData->textureContainer;
         return true;
     }
+}
+
+static bool METAL_AcquireSwapchainTexture(
+    SDL_GPUCommandBuffer *command_buffer,
+    SDL_Window *window,
+    SDL_GPUTexture **swapchain_texture,
+    Uint32 *swapchain_texture_width,
+    Uint32 *swapchain_texture_height
+) {
+    return METAL_INTERNAL_AcquireSwapchainTexture(
+        false,
+        command_buffer,
+        window,
+        swapchain_texture,
+        swapchain_texture_width,
+        swapchain_texture_height);
+}
+
+static bool METAL_WaitAndAcquireSwapchainTexture(
+    SDL_GPUCommandBuffer *command_buffer,
+    SDL_Window *window,
+    SDL_GPUTexture **swapchain_texture,
+    Uint32 *swapchain_texture_width,
+    Uint32 *swapchain_texture_height
+) {
+    return METAL_INTERNAL_AcquireSwapchainTexture(
+        true,
+        command_buffer,
+        window,
+        swapchain_texture,
+        swapchain_texture_width,
+        swapchain_texture_height);
 }
 
 static SDL_GPUTextureFormat METAL_GetSwapchainTextureFormat(
@@ -3817,6 +3878,22 @@ static bool METAL_SetSwapchainParameters(
     }
 }
 
+static bool METAL_SetAllowedFramesInFlight(
+    SDL_GPURenderer *driverData,
+    Uint32 allowedFramesInFlight)
+{
+    @autoreleasepool {
+        MetalRenderer *renderer = (MetalRenderer *)driverData;
+
+        if (!METAL_Wait(driverData)) {
+            return false;
+        }
+
+        renderer->allowedFramesInFlight = allowedFramesInFlight;
+        return true;
+    }
+}
+
 // Submission
 
 static bool METAL_Submit(
@@ -3843,7 +3920,7 @@ static bool METAL_Submit(
 
             (void)SDL_AtomicIncRef(&metalCommandBuffer->fence->referenceCount);
 
-            windowData->frameCounter = (windowData->frameCounter + 1) % MAX_FRAMES_IN_FLIGHT;
+            windowData->frameCounter = (windowData->frameCounter + 1) % renderer->allowedFramesInFlight;
         }
 
         // Notify the fence when the command buffer has completed
@@ -4266,6 +4343,15 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         MetalRenderer *renderer;
         id<MTLDevice> device = NULL;
 
+        if (debugMode) {
+            /* Due to a Metal driver quirk, once a MTLDevice has been created
+             * with this environment variable set, the Metal validation layers
+             * will remain enabled for the rest of the application's lifespan,
+             * even if the device is destroyed and recreated.
+             */
+            SDL_setenv_unsafe("MTL_DEBUG_LAYER", "1", 0);
+        }
+
         // Create the Metal device and command queue
 #ifdef SDL_PLATFORM_MACOS
         if (preferLowPower) {
@@ -4301,6 +4387,7 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
 
         // Remember debug mode
         renderer->debugMode = debugMode;
+        renderer->allowedFramesInFlight = 2;
 
         // Set up colorspace array
         SwapchainCompositionToColorSpace[0] = kCGColorSpaceSRGB;

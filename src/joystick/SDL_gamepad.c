@@ -2582,7 +2582,7 @@ bool SDL_IsGamepad(SDL_JoystickID instance_id)
             }
 
             if (!s_gamepadInstanceIDs) {
-                s_gamepadInstanceIDs = SDL_CreateHashTable(NULL, 4, SDL_HashID, SDL_KeyMatchID, NULL, false);
+                s_gamepadInstanceIDs = SDL_CreateHashTable(NULL, 4, SDL_HashID, SDL_KeyMatchID, NULL, false, false);
             }
             SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, (void *)(uintptr_t)result);
         }
@@ -2619,6 +2619,17 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
         // The Google Pixel fingerprint sensor reports itself as a joystick
         return true;
     }
+
+#ifdef SDL_PLATFORM_WIN32
+    if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", false) &&
+        SDL_GetHintBoolean("STEAM_COMPAT_PROTON", false)) {
+        // We are launched by Steam and running under Proton
+        // We can't tell whether this controller is a Steam Virtual Gamepad,
+        // so assume that Proton is doing the appropriate filtering of controllers
+        // and anything we see here is fine to use.
+        return false;
+    }
+#endif // SDL_PLATFORM_WIN32
 
     if (SDL_IsJoystickSteamVirtualGamepad(vendor_id, product_id, version)) {
         return !SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", false);

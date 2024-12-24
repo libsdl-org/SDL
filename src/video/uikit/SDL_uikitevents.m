@@ -187,7 +187,8 @@ static void OnGCKeyboardConnected(GCKeyboard *keyboard) API_AVAILABLE(macos(11.0
     SDL_AddKeyboard(keyboardID, NULL, true);
 
     keyboard.keyboardInput.keyChangedHandler = ^(GCKeyboardInput *kbrd, GCControllerButtonInput *key, GCKeyCode keyCode, BOOL pressed) {
-        SDL_SendKeyboardKey(0, keyboardID, 0, (SDL_Scancode)keyCode, pressed);
+        Uint64 timestamp = SDL_GetTicksNS();
+        SDL_SendKeyboardKey(timestamp, keyboardID, 0, (SDL_Scancode)keyCode, pressed);
     };
 
     dispatch_queue_t queue = dispatch_queue_create("org.libsdl.input.keyboard", DISPATCH_QUEUE_SERIAL);
@@ -318,7 +319,8 @@ static bool SetGCMouseRelativeMode(bool enabled)
 
 static void OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button, BOOL pressed)
 {
-    SDL_SendMouseButton(0, SDL_GetMouseFocus(), mouseID, button, pressed);
+    Uint64 timestamp = SDL_GetTicksNS();
+    SDL_SendMouseButton(timestamp, SDL_GetMouseFocus(), mouseID, button, pressed);
 }
 
 static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
@@ -346,12 +348,16 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
     }
 
     mouse.mouseInput.mouseMovedHandler = ^(GCMouseInput *mouseInput, float deltaX, float deltaY) {
-      if (SDL_GCMouseRelativeMode()) {
-          SDL_SendMouseMotion(0, SDL_GetMouseFocus(), mouseID, 1, deltaX, -deltaY);
-      }
+        Uint64 timestamp = SDL_GetTicksNS();
+
+        if (SDL_GCMouseRelativeMode()) {
+            SDL_SendMouseMotion(timestamp, SDL_GetMouseFocus(), mouseID, true, deltaX, -deltaY);
+        }
     };
 
     mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
+        Uint64 timestamp = SDL_GetTicksNS();
+
         /* Raw scroll values come in here, vertical values in the first axis, horizontal values in the second axis.
          * The vertical values are negative moving the mouse wheel up and positive moving it down.
          * The horizontal values are negative moving the mouse wheel left and positive moving it right.
@@ -359,12 +365,13 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
          */
         float vertical = -xValue;
         float horizontal = yValue;
+
         if (mouse_scroll_direction == SDL_MOUSEWHEEL_FLIPPED) {
             // Since these are raw values, we need to flip them ourselves
             vertical = -vertical;
             horizontal = -horizontal;
         }
-        SDL_SendMouseWheel(0, SDL_GetMouseFocus(), mouseID, horizontal, vertical, mouse_scroll_direction);
+        SDL_SendMouseWheel(timestamp, SDL_GetMouseFocus(), mouseID, horizontal, vertical, mouse_scroll_direction);
     };
     UpdateScrollDirection();
 

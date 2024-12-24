@@ -28,12 +28,19 @@
  * should look like this:
  *
  * ```c
- *  int main(int argc, char *argv[])
- *  {
- *  }
+ * int main(int argc, char *argv[])
+ * {
+ * }
  * ```
  *
  * SDL will take care of platform specific details on how it gets called.
+ *
+ * This is also where an app can be configured to use the main callbacks, via
+ * the SDL_MAIN_USE_CALLBACKS macro.
+ *
+ * This is a "single-header library," which is to say that including this
+ * header inserts code into your program, and you should only include it once
+ * in most cases. SDL.h does not include this header automatically.
  *
  * For more information, see:
  *
@@ -47,6 +54,84 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * Inform SDL that the app is providing an entry point instead of SDL.
+ *
+ * SDL does not define this macro, but will check if it is defined when
+ * including `SDL_main.h`. If defined, SDL will expect the app to provide the
+ * proper entry point for the platform, and all the other magic details
+ * needed, like manually calling SDL_SetMainReady.
+ *
+ * Please see [README/main-functions](README/main-functions), (or
+ * docs/README-main-functions.md in the source tree) for a more detailed
+ * explanation.
+ *
+ * \since This macro is used by the headers since SDL 3.1.3.
+ */
+#define SDL_MAIN_HANDLED 1
+
+/**
+ * Inform SDL to use the main callbacks instead of main.
+ *
+ * SDL does not define this macro, but will check if it is defined when
+ * including `SDL_main.h`. If defined, SDL will expect the app to provide
+ * several functions: SDL_AppInit, SDL_AppEvent, SDL_AppIterate, and
+ * SDL_AppQuit. The app should not provide a `main` function in this case, and
+ * doing so will likely cause the build to fail.
+ *
+ * Please see [README/main-functions](README/main-functions), (or
+ * docs/README-main-functions.md in the source tree) for a more detailed
+ * explanation.
+ *
+ * \since This macro is used by the headers since SDL 3.1.3.
+ *
+ * \sa SDL_AppInit
+ * \sa SDL_AppEvent
+ * \sa SDL_AppIterate
+ * \sa SDL_AppQuit
+ */
+#define SDL_MAIN_USE_CALLBACKS 1
+
+/**
+ * Defined if the target platform offers a special mainline through SDL.
+ *
+ * This won't be defined otherwise. If defined, SDL's headers will redefine
+ * `main` to `SDL_main`.
+ *
+ * This macro is defined by `SDL_main.h`, which is not automatically included
+ * by `SDL.h`.
+ *
+ * Even if available, an app can define SDL_MAIN_HANDLED and provide their
+ * own, if they know what they're doing.
+ *
+ * This macro is used internally by SDL, and apps probably shouldn't rely on it.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_MAIN_AVAILABLE
+
+/**
+ * Defined if the target platform _requires_ a special mainline through SDL.
+ *
+ * This won't be defined otherwise. If defined, SDL's headers will redefine
+ * `main` to `SDL_main`.
+ *
+ * This macro is defined by `SDL_main.h`, which is not automatically included
+ * by `SDL.h`.
+ *
+ * Even if required, an app can define SDL_MAIN_HANDLED and provide their
+ * own, if they know what they're doing.
+ *
+ * This macro is used internally by SDL, and apps probably shouldn't rely on it.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_MAIN_NEEDED
+
+#endif
 
 #ifndef SDL_MAIN_HANDLED
     #if defined(SDL_PLATFORM_PRIVATE_MAIN)
@@ -134,17 +219,29 @@
         */
         #define SDL_MAIN_AVAILABLE
 
-    #elif defined(SDL_PLATFORM_NGAGE)
-        /*
-        TODO: not sure if it should be SDL_MAIN_NEEDED, in SDL2 ngage had a
-                main implementation, but wasn't mentioned in SDL_main.h
-         */
-        #define SDL_MAIN_AVAILABLE
-
     #endif
 #endif /* SDL_MAIN_HANDLED */
 
-#ifdef SDL_MAIN_EXPORTED
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * A macro to tag a main entry point function as exported.
+ *
+ * Most platforms don't need this, and the macro will be defined to nothing.
+ * Some, like Android, keep the entry points in a shared library and need to
+ * explicitly export the symbols.
+ *
+ * External code rarely needs this, and if it needs something, it's almost
+ * always SDL_DECLSPEC instead.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ *
+ * \sa SDL_DECLSPEC
+ */
+#define SDLMAIN_DECLSPEC
+
+#elif defined(SDL_MAIN_EXPORTED)
 /* We need to export SDL_main so it can be launched from external code,
    like SDLActivity.java on Android */
 #define SDLMAIN_DECLSPEC    SDL_DECLSPEC
@@ -152,31 +249,6 @@
 /* usually this is empty */
 #define SDLMAIN_DECLSPEC
 #endif /* SDL_MAIN_EXPORTED */
-
-#ifdef SDL_WIKI_DOCUMENTATION_SECTION
-
-/**
- * Inform SDL to use the main callbacks instead of main.
- *
- * SDL does not define this macro, but will check if it is defined when
- * including `SDL_main.h`. If defined, SDL will expect the app to provide
- * several functions: SDL_AppInit, SDL_AppEvent, SDL_AppIterate, and
- * SDL_AppQuit. The app should not provide a `main` function in this case, and
- * doing so will likely cause the build to fail.
- *
- * Please see [README/main-functions](README/main-functions), (or
- * docs/README-main-functions.md in the source tree) for a more detailed
- * explanation.
- *
- * \since This macro is used by the headers since SDL 3.1.3.
- *
- * \sa SDL_AppInit
- * \sa SDL_AppEvent
- * \sa SDL_AppIterate
- * \sa SDL_AppQuit
- */
-#define SDL_MAIN_USE_CALLBACKS 1
-#endif
 
 #if defined(SDL_MAIN_NEEDED) || defined(SDL_MAIN_AVAILABLE) || defined(SDL_MAIN_USE_CALLBACKS)
 #define main SDL_main
@@ -567,16 +639,15 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* defined(SDL_PLATFORM_WINDOWS) */
 
-#ifdef SDL_PLATFORM_GDK
-
 /**
  * Callback from the application to let the suspend continue.
+ *
+ * This function is only needed for Xbox GDK support; all other platforms will
+ * do nothing and set an "unsupported" error message.
  *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
-
-#endif /* SDL_PLATFORM_GDK */
 
 #ifdef __cplusplus
 }

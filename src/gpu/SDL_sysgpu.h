@@ -391,12 +391,14 @@ static inline Uint32 BytesPerRow(
 // Internal Macros
 
 #define EXPAND_ARRAY_IF_NEEDED(arr, elementType, newCount, capacity, newCapacity) \
-    if (newCount >= capacity) {                                                   \
-        capacity = newCapacity;                                                   \
-        arr = (elementType *)SDL_realloc(                                         \
-            arr,                                                                  \
-            sizeof(elementType) * capacity);                                      \
-    }
+    do {                                                                          \
+        if ((newCount) >= (capacity)) {                                           \
+            (capacity) = (newCapacity);                                           \
+            (arr) = (elementType *)SDL_realloc(                                   \
+                (arr),                                                            \
+                sizeof(elementType) * (capacity));                                \
+        }                                                                         \
+    } while (0)
 
 // Internal Declarations
 
@@ -791,6 +793,10 @@ struct SDL_GPUDevice
         SDL_GPUSwapchainComposition swapchainComposition,
         SDL_GPUPresentMode presentMode);
 
+    bool (*SetAllowedFramesInFlight)(
+        SDL_GPURenderer *driverData,
+        Uint32 allowedFramesInFlight);
+
     SDL_GPUTextureFormat (*GetSwapchainTextureFormat)(
         SDL_GPURenderer *driverData,
         SDL_Window *window);
@@ -799,6 +805,17 @@ struct SDL_GPUDevice
         SDL_GPURenderer *driverData);
 
     bool (*AcquireSwapchainTexture)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_Window *window,
+        SDL_GPUTexture **swapchainTexture,
+        Uint32 *swapchainTextureWidth,
+        Uint32 *swapchainTextureHeight);
+
+    bool (*WaitForSwapchain)(
+        SDL_GPURenderer *driverData,
+        SDL_Window *window);
+
+    bool (*WaitAndAcquireSwapchainTexture)(
         SDL_GPUCommandBuffer *commandBuffer,
         SDL_Window *window,
         SDL_GPUTexture **swapchainTexture,
@@ -927,9 +944,12 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(ClaimWindow, name)                   \
     ASSIGN_DRIVER_FUNC(ReleaseWindow, name)                 \
     ASSIGN_DRIVER_FUNC(SetSwapchainParameters, name)        \
+    ASSIGN_DRIVER_FUNC(SetAllowedFramesInFlight, name)      \
     ASSIGN_DRIVER_FUNC(GetSwapchainTextureFormat, name)     \
     ASSIGN_DRIVER_FUNC(AcquireCommandBuffer, name)          \
     ASSIGN_DRIVER_FUNC(AcquireSwapchainTexture, name)       \
+    ASSIGN_DRIVER_FUNC(WaitForSwapchain, name)              \
+    ASSIGN_DRIVER_FUNC(WaitAndAcquireSwapchainTexture, name)\
     ASSIGN_DRIVER_FUNC(Submit, name)                        \
     ASSIGN_DRIVER_FUNC(SubmitAndAcquireFence, name)         \
     ASSIGN_DRIVER_FUNC(Cancel, name)                        \

@@ -322,6 +322,7 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
 {
     SDL_VideoDevice *video = SDL_GetVideoDevice();
     SDL_Keyboard *keyboard = &SDL_keyboard;
+    SDL_Mouse *mouse = SDL_GetMouse();
 
     if (window) {
         if (!SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW) || window->is_destroying) {
@@ -332,6 +333,19 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
     if (keyboard->focus && !window) {
         // We won't get anymore keyboard messages, so reset keyboard state
         SDL_ResetKeyboard();
+
+        // Also leave mouse relative mode
+        if (mouse->relative_mode) {
+            SDL_SetRelativeMouseMode(false);
+
+            SDL_Window *focus = keyboard->focus;
+            if ((focus->flags & SDL_WINDOW_MINIMIZED) != 0) {
+                // We can't warp the mouse within minimized windows, so manually restore the position
+                float x = focus->x + mouse->x;
+                float y = focus->y + mouse->y;
+                SDL_WarpMouseGlobal(x, y);
+            }
+        }
     }
 
     // See if the current window has lost focus

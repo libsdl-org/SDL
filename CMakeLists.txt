@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+  set(cmake_build_type_undefined 1)
+endif()
+
 # See docs/release_checklist.md
 project(SDL3 LANGUAGES C VERSION "3.1.7")
 
@@ -7,6 +11,23 @@ if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL3_SUBPROJECT OFF)
 else()
   set(SDL3_SUBPROJECT ON)
+endif()
+
+# By default, configure SDL3 in RelWithDebInfo configuration
+if(NOT SDL3_SUBPROJECT)
+  get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+  if(is_multi_config)
+      # The first item in CMAKE_CONFIGURATION_TYPES is the default configuration
+      if(DEFINED CMAKE_CONFIGURATION_TYPES AND "RelWithDebInfo" IN_LIST CMAKE_CONFIGURATION_TYPES)
+        list(REMOVE_ITEM CMAKE_CONFIGURATION_TYPES "RelWithDebInfo")
+        list(INSERT CMAKE_CONFIGURATION_TYPES 0 "RelWithDebInfo")
+        set(CMAKE_CONFIGURATION_TYPES "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING "CMake configuration types" FORCE)
+      endif()
+  else()
+    if(cmake_build_type_undefined)
+      set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "CMake build type" FORCE)
+    endif()
+  endif()
 endif()
 
 # CMake 3.0 expands the "if(${A})" in "set(OFF 1);set(A OFF);if(${A})" to "if(1)"
@@ -286,6 +307,7 @@ set_option(SDL_SYSTEM_ICONV        "Use iconv() from system-installed libraries"
 set_option(SDL_LIBICONV            "Prefer iconv() from libiconv, if available, over libc version" OFF)
 set_option(SDL_GCC_ATOMICS         "Use gcc builtin atomics" ${SDL_GCC_ATOMICS_DEFAULT})
 dep_option(SDL_DBUS                "Enable D-Bus support" ON "${UNIX_SYS}" OFF)
+dep_option(SDL_LIBURING            "Enable liburing support" ON "${UNIX_SYS}" OFF)
 dep_option(SDL_DISKAUDIO           "Support the disk writer audio driver" ON "SDL_AUDIO" OFF)
 dep_option(SDL_DUMMYAUDIO          "Support the dummy audio driver" ON "SDL_AUDIO" OFF)
 dep_option(SDL_DUMMYVIDEO          "Use dummy video driver" ON "SDL_VIDEO" OFF)
@@ -309,7 +331,7 @@ set_option(SDL_RPATH               "Use an rpath when linking SDL" ${SDL_RPATH_D
 set_option(SDL_CLOCK_GETTIME       "Use clock_gettime() instead of gettimeofday()" ${SDL_CLOCK_GETTIME_DEFAULT})
 dep_option(SDL_X11                 "Use X11 video driver" ${UNIX_SYS} "SDL_VIDEO" OFF)
 dep_option(SDL_X11_SHARED          "Dynamically load X11 support" ON "SDL_X11" OFF)
-set(SDL_X11_OPTIONS Xcursor Xdbe XInput Xfixes Xrandr Xscrnsaver XShape)
+set(SDL_X11_OPTIONS Xcursor Xdbe XInput Xfixes Xrandr Xscrnsaver XShape Xsync)
 foreach(_SUB ${SDL_X11_OPTIONS})
   string(TOUPPER "SDL_X11_${_SUB}" _OPT)
   dep_option(${_OPT}               "Enable ${_SUB} support" ON "SDL_X11" OFF)
@@ -1119,6 +1141,7 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/dynapi/*.c"
   "${SDL3_SOURCE_DIR}/src/events/*.c"
   "${SDL3_SOURCE_DIR}/src/file/*.c"
+  "${SDL3_SOURCE_DIR}/src/file/generic/*.c"
   "${SDL3_SOURCE_DIR}/src/filesystem/*.c"
   "${SDL3_SOURCE_DIR}/src/gpu/*.c"
   "${SDL3_SOURCE_DIR}/src/joystick/*.c"
@@ -1659,6 +1682,16 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
         set(SDL_USE_IME 1)
       endif()
 
+      if(SDL_LIBURING)
+        pkg_search_module(LIBURING liburing-ffi)
+        find_path(HAVE_LIBURING_H NAMES liburing.h)
+        if(LIBURING_FOUND AND HAVE_LIBURING_H)
+          set(HAVE_LIBURING_LIBURING_H TRUE)
+          sdl_include_directories(PRIVATE SYSTEM ${LIBURING_INCLUDE_DIRS})
+          set(HAVE_LIBURING TRUE)
+        endif()
+      endif()
+
       if((FREEBSD OR NETBSD) AND NOT HAVE_INOTIFY)
         set(LibInotify_PKG_CONFIG_SPEC libinotify)
         pkg_check_modules(PC_LIBINOTIFY IMPORTED_TARGET ${LibInotify_PKG_CONFIG_SPEC})
@@ -1720,6 +1753,10 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
           sdl_include_directories(PRIVATE SYSTEM ${DXVK_NATIVE_INCLUDE_DIRS})
         endif()
       endif()
+    endif()
+
+    if(HAVE_LIBURING_H)
+      sdl_sources("${SDL3_SOURCE_DIR}/src/file/io_uring/SDL_asyncio_liburing.c")
     endif()
 
     # Always compiled for Linux, unconditionally:
@@ -2116,8 +2153,6 @@ elseif(APPLE)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ios/*.m")
     set(HAVE_SDL_MAIN_CALLBACKS TRUE)
   endif()
-
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/cocoa/*.m")
 
   if(SDL_CAMERA)
     if(MACOS OR IOS)
@@ -2742,10 +2777,6 @@ elseif(PSP)
   )
 
 elseif(PS2)
-  sdl_compile_definitions(PRIVATE "PS2" "__PS2__")
-  sdl_include_directories(PRIVATE SYSTEM "$ENV{PS2SDK}/ports/include" "$ENV{PS2DEV}/gsKit/include")
-  target_include_directories(SDL_uclibc PRIVATE "$ENV{PS2SDK}/ports/include" "$ENV{PS2DEV}/gsKit/include")
-
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ps2/*.c")
 
   if(SDL_AUDIO)
@@ -2869,6 +2900,7 @@ elseif(N3DS)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/n3ds/*.c")
 endif()
 
+sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog.c)
 if (SDL_DIALOG)
   sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog_utils.c)
   if(ANDROID)

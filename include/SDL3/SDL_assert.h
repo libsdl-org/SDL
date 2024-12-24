@@ -51,9 +51,14 @@
  * - It provides statistics and data on all failed assertions to the app.
  * - It allows the default assertion handler to be controlled with environment
  *   variables, in case an automated script needs to control it.
+ * - It can be used as an aid to Clang's static analysis; it will treat SDL
+ *   assertions as universally true (under the assumption that you are serious
+ *   about the asserted claims and that your debug builds will detect when
+ *   these claims were wrong). This can help the analyzer avoid false
+ *   positives.
  *
- * To use it: do a debug build and just sprinkle around tests to check your
- * code!
+ * To use it: compile a debug build and just sprinkle around tests to check
+ * your code!
  */
 
 #ifndef SDL_assert_h_
@@ -151,14 +156,37 @@ extern "C" {
     #define SDL_TriggerBreakpoint()
 #endif
 
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * A macro that reports the current function being compiled.
+ *
+ * If SDL can't figure how the compiler reports this, it will use "???".
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_FUNCTION __FUNCTION__
+
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L) /* C99 supports __func__ as a standard. */
 #   define SDL_FUNCTION __func__
 #elif ((defined(__GNUC__) && (__GNUC__ >= 2)) || defined(_MSC_VER) || defined (__WATCOMC__))
 #   define SDL_FUNCTION __FUNCTION__
 #else
 #   define SDL_FUNCTION "???"
 #endif
+
+/**
+ * A macro that reports the current file being compiled.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_FILE    __FILE__
+
+/**
+ * A macro that reports the current line number of the file being compiled.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_LINE    __LINE__
 
 /*
@@ -176,14 +204,50 @@ This also solves the problem of...
 disable assertions.
 */
 
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * A macro for wrapping code in `do {} while (0);` without compiler warnings.
+ *
+ * Visual Studio with really aggressive warnings enabled needs this to avoid
+ * compiler complaints.
+ *
+ * the `do {} while (0);` trick is useful for wrapping code in a macro that
+ * may or may not be a single statement, to avoid various C language
+ * accidents.
+ *
+ * To use:
+ *
+ * ```c
+ * do { SomethingOnce(); } while (SDL_NULL_WHILE_LOOP_CONDITION (0));
+ * ```
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_NULL_WHILE_LOOP_CONDITION (0)
+
+#elif defined(_MSC_VER)  /* Avoid /W4 warnings. */
 /* "while (0,0)" fools Microsoft's compiler's /W4 warning level into thinking
     this condition isn't constant. And looks like an owl's face! */
-#ifdef _MSC_VER  /* stupid /W4 warnings. */
 #define SDL_NULL_WHILE_LOOP_CONDITION (0,0)
 #else
 #define SDL_NULL_WHILE_LOOP_CONDITION (0)
 #endif
 
+/**
+ * The macro used when an assertion is disabled.
+ *
+ * This isn't for direct use by apps, but this is the code that is inserted
+ * when an SDL_assert is disabled (perhaps in a release build).
+ *
+ * The code does nothing, but wraps `condition` in a sizeof operator, which
+ * generates no code and has no side effects, but avoid compiler warnings
+ * about unused variables.
+ *
+ * \param condition the condition to assert (but not actually run here).
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_disabled_assert(condition) \
     do { (void) sizeof ((condition)); } while (SDL_NULL_WHILE_LOOP_CONDITION)
 
@@ -232,7 +296,7 @@ typedef struct SDL_AssertData
 /**
  * Never call this directly.
  *
- * Use the SDL_assert* macros instead.
+ * Use the SDL_assert macros instead.
  *
  * \param data assert data structure.
  * \param func function name.
@@ -248,23 +312,49 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
                                                             const char *func,
                                                             const char *file, int line) SDL_ANALYZER_NORETURN;
 
-/* Define the trigger breakpoint call used in asserts */
-#ifndef SDL_AssertBreakpoint
-#if defined(ANDROID) && defined(assert)
-/* Define this as empty in case assert() is defined as SDL_assert */
-#define SDL_AssertBreakpoint()
-#else
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * The macro used when an assertion triggers a breakpoint.
+ *
+ * This isn't for direct use by apps; use SDL_assert or SDL_TriggerBreakpoint
+ * instead.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_AssertBreakpoint() SDL_TriggerBreakpoint()
-#endif
+
+#elif !defined(SDL_AssertBreakpoint)
+#  if defined(ANDROID) && defined(assert)
+     /* Define this as empty in case assert() is defined as SDL_assert */
+#    define SDL_AssertBreakpoint()
+#  else
+#    define SDL_AssertBreakpoint() SDL_TriggerBreakpoint()
+#  endif
 #endif /* !SDL_AssertBreakpoint */
 
-/* the do {} while(0) avoids dangling else problems:
-    if (x) SDL_assert(y); else blah();
-       ... without the do/while, the "else" could attach to this macro's "if".
-   We try to handle just the minimum we need here in a macro...the loop,
-   the static vars, and break points. The heavy lifting is handled in
-   SDL_ReportAssertion(), in SDL_assert.c.
-*/
+/**
+ * The macro used when an assertion is enabled.
+ *
+ * This isn't for direct use by apps, but this is the code that is inserted
+ * when an SDL_assert is enabled.
+ *
+ * The `do {} while(0)` avoids dangling else problems:
+ *
+ * ```c
+ * if (x) SDL_assert(y); else blah();
+ * ```
+ *
+ * ... without the do/while, the "else" could attach to this macro's "if". We
+ * try to handle just the minimum we need here in a macro...the loop, the
+ * static vars, and break points. The heavy lifting is handled in
+ * SDL_ReportAssertion().
+ *
+ * \param condition the condition to assert.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_enabled_assert(condition) \
     do { \
         while ( !(condition) ) { \

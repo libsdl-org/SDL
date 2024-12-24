@@ -71,6 +71,62 @@ sub build_latest {
     }
 }
 
+sub get_category_description {
+    my $category = shift;
+    my $retval = ucfirst($category);
+
+    if (open(my $fh, '<', "$examples_dir/$category/description.txt")) {
+        $retval = <$fh>;
+        chomp($retval);
+        close($fh);
+    }
+
+    return $retval;
+}
+
+sub get_categories {
+    my @categories = ();
+
+    if (open(my $fh, '<', "$examples_dir/categories.txt")) {
+        while (<$fh>) {
+            chomp;
+            s/\A\s+//;
+            s/\s+\Z//;
+            next if $_ eq '';
+            next if /\A\#/;
+            push @categories, $_;
+        }
+        close($fh);
+    } else {
+        opendir(my $dh, $examples_dir) or die("Couldn't opendir '$examples_dir': $!\n");
+        foreach my $dir (sort readdir $dh) {
+            next if ($dir eq '.') || ($dir eq '..');  # obviously skip current and parent entries.
+            next if not -d "$examples_dir/$dir";   # only care about subdirectories.
+            push @categories, $dir;
+        }
+        closedir($dh);
+    }
+
+    return @categories;
+}
+
+sub get_examples_for_category {
+    my $category = shift;
+
+    my @examples = ();
+
+    opendir(my $dh, "$examples_dir/$category") or die("Couldn't opendir '$examples_dir/$category': $!\n");
+    foreach my $dir (sort readdir $dh) {
+        next if ($dir eq '.') || ($dir eq '..');  # obviously skip current and parent entries.
+        next if not -d "$examples_dir/$category/$dir";   # only care about subdirectories.
+
+        push @examples, $dir;
+    }
+    closedir($dh);
+
+    return @examples;
+}
+
 sub handle_example_dir {
     my $category = shift;
     my $example = shift;
@@ -99,25 +155,43 @@ sub handle_example_dir {
     $basefname = "$category-$basefname";
     my $jsfname = "$basefname.js";
     my $wasmfname = "$basefname.wasm";
+    my $thumbnailfname = 'thumbnail.png';
+    my $onmouseoverfname = 'onmouseover.webp';
     my $jssrc = "$compile_dir/examples/$jsfname";
     my $wasmsrc = "$compile_dir/examples/$wasmfname";
+    my $thumbnailsrc = "$examples_dir/$category/$example/$thumbnailfname";
+    my $onmouseoversrc = "$examples_dir/$category/$example/$onmouseoverfname";
     my $jsdst = "$dst/$jsfname";
     my $wasmdst = "$dst/$wasmfname";
+    my $thumbnaildst = "$dst/$thumbnailfname";
+    my $onmouseoverdst = "$dst/$onmouseoverfname";
 
     my $description = '';
+    my $has_paragraph = 0;
     if (open(my $readmetxth, '<', "$examples_dir/$category/$example/README.txt")) {
         while (<$readmetxth>) {
             chomp;
             s/\A\s+//;
             s/\s+\Z//;
-            $description .= "$_<br/>";
+            if (($_ eq '') && ($description ne '')) {
+                $has_paragraph = 1;
+            } else {
+                if ($has_paragraph) {
+                    $description .= "\n<br/>\n<br/>\n";
+                    $has_paragraph = 0;
+                }
+                $description .= "$_ ";
+            }
         }
         close($readmetxth);
+        $description =~ s/\s+\Z//;
     }
 
     do_mkdir($dst);
     do_copy($jssrc, $jsdst);
     do_copy($wasmsrc, $wasmdst);
+    do_copy($thumbnailsrc, $thumbnaildst) if ( -f $thumbnailsrc );
+    do_copy($onmouseoversrc, $onmouseoverdst) if ( -f $onmouseoversrc );
 
     my $highlight_cmd = "highlight '--outdir=$dst' --style-outfile=highlight.css --fragment --enclose-pre --stdout --syntax=c '--plug-in=$examples_dir/highlight-plugin.lua'";
     print("$highlight_cmd\n");
@@ -146,16 +220,27 @@ sub handle_example_dir {
 
     waitpid($pid, 0);
 
+    my $other_examples_html = "<ul>";
+    foreach my $example (get_examples_for_category($category)) {
+        $other_examples_html .= "<li><a href='/$project/$category/$example'>$category/$example</a></li>";
+    }
+    $other_examples_html .= "</ul>";
+
+    my $category_description = get_category_description($category);
+    my $preview_image = get_example_thumbnail($project, $category, $example);
 
     my $html = '';
     open my $htmltemplate, '<', "$examples_dir/template.html" or die("Couldn't open '$examples_dir/template.html': $!\n");
     while (<$htmltemplate>) {
         s/\@project_name\@/$project/g;
         s/\@category_name\@/$category/g;
+        s/\@category_description\@/$category_description/g;
         s/\@example_name\@/$example/g;
         s/\@javascript_file\@/$jsfname/g;
         s/\@htmlified_source_code\@/$htmlified_source_code/g;
         s/\@description\@/$description/g;
+        s/\@preview_image\@/$preview_image/g;
+        s/\@other_examples_html\@/$other_examples_html/g;
         $html .= $_;
     }
     close($htmltemplate);
@@ -165,10 +250,60 @@ sub handle_example_dir {
     close($htmloutput);
 }
 
+sub get_example_thumbnail {
+    my $project = shift;
+    my $category = shift;
+    my $example = shift;
+
+    if ( -f "$examples_dir/$category/$example/thumbnail.png" ) {
+        return "/$project/$category/$example/thumbnail.png";
+    } elsif ( -f "$examples_dir/$category/thumbnail.png" ) {
+        return "/$project/$category/thumbnail.png";
+    }
+
+    return "/$project/thumbnail.png";
+}
+
+sub generate_example_thumbnail {
+    my $project = shift;
+    my $category = shift;
+    my $example = shift;
+
+    my $example_no_num = "$example";
+    $example_no_num =~ s/\A\d+\-//;
+
+    my $example_image_url = get_example_thumbnail($project, $category, $example);
+
+    my $example_mouseover_html = '';
+    if ( -f "$examples_dir/$category/$example/onmouseover.webp" ) {
+        $example_mouseover_html = "onmouseover=\"this.src='/$project/$category/$example/onmouseover.webp'\" onmouseout=\"this.src='$example_image_url';\"";
+    } elsif ( -f "$examples_dir/$category/onmouseover.webp" ) {
+        $example_mouseover_html = "onmouseover=\"this.src='/$project/$category/onmouseover.webp'\" onmouseout=\"this.src='$example_image_url';\"";
+    }
+
+    return "
+        <a href='/$project/$category/$example'>
+          <div>
+            <img src='$example_image_url' $example_mouseover_html />
+            <div>$example_no_num</div>
+          </div>
+        </a>"
+    ;
+}
+
+sub generate_example_thumbnails_for_category {
+    my $project = shift;
+    my $category = shift;
+    my @examples = get_examples_for_category($category);
+    my $retval = '';
+    foreach my $example (@examples) {
+        $retval .= generate_example_thumbnail($project, $category, $example);
+    }
+    return $retval;
+}
+
 sub handle_category_dir {
     my $category = shift;
-
-    # !!! FIXME: this needs to generate a preview page for all the examples things in the category.
 
     print("Category $category ...\n");
 
@@ -183,6 +318,36 @@ sub handle_category_dir {
     }
 
     closedir($dh);
+
+    my $examples_list_html = generate_example_thumbnails_for_category($project, $category);
+
+    my $dst = "$output_dir/$category";
+
+    do_copy("$examples_dir/$category/thumbnail.png", "$dst/thumbnail.png") if ( -f "$examples_dir/$category/thumbnail.png" );
+    do_copy("$examples_dir/$category/onmouseover.webp", "$dst/onmouseover.webp") if ( -f "$examples_dir/$category/onmouseover.webp" );
+
+    my $category_description = get_category_description($category);
+    my $preview_image = "/$project/thumbnail.png";
+    if ( -f "$examples_dir/$category/thumbnail.png" ) {
+        $preview_image = "/$project/$category/thumbnail.png";
+    }
+
+    # write category page
+    my $html = '';
+    open my $htmltemplate, '<', "$examples_dir/template-category.html" or die("Couldn't open '$examples_dir/template-category.html': $!\n");
+    while (<$htmltemplate>) {
+        s/\@project_name\@/$project/g;
+        s/\@category_name\@/$category/g;
+        s/\@category_description\@/$category_description/g;
+        s/\@examples_list_html\@/$examples_list_html/g;
+        s/\@preview_image\@/$preview_image/g;
+        $html .= $_;
+    }
+    close($htmltemplate);
+
+    open my $htmloutput, '>', "$dst/index.html" or die("Couldn't open '$dst/index.html': $!\n");
+    print $htmloutput $html;
+    close($htmloutput);
 }
 
 
@@ -210,6 +375,9 @@ do_mkdir($output_dir);
 
 build_latest();
 
+do_copy("$examples_dir/template.css", "$output_dir/examples.css");
+do_copy("$examples_dir/template-placeholder.png", "$output_dir/thumbnail.png");
+
 opendir(my $dh, $examples_dir) or die("Couldn't opendir '$examples_dir': $!\n");
 
 while (readdir($dh)) {
@@ -221,6 +389,32 @@ while (readdir($dh)) {
 
 closedir($dh);
 
+# write homepage
+my $homepage_list_html = "";
+foreach my $category (get_categories()) {
+    my $category_description = get_category_description($category);
+    $homepage_list_html .= "<h2>$category_description</h2>";
+    $homepage_list_html .= "<div class='list'>";
+    $homepage_list_html .= generate_example_thumbnails_for_category($project, $category);
+    $homepage_list_html .= "</div>";
+}
+
+my $preview_image = "/$project/thumbnail.png";
+
+my $dst = "$output_dir/";
+my $html = '';
+open my $htmltemplate, '<', "$examples_dir/template-homepage.html" or die("Couldn't open '$examples_dir/template-category.html': $!\n");
+while (<$htmltemplate>) {
+    s/\@project_name\@/$project/g;
+    s/\@homepage_list_html\@/$homepage_list_html/g;
+    s/\@preview_image\@/$preview_image/g;
+    $html .= $_;
+}
+close($htmltemplate);
+
+open my $htmloutput, '>', "$dst/index.html" or die("Couldn't open '$dst/index.html': $!\n");
+print $htmloutput $html;
+close($htmloutput);
+
 print("All examples built successfully!\n");
 exit(0);  # success!
-

@@ -52,7 +52,7 @@ This module responds to the flags:
 
 #]=======================================================================]
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.7...3.28)
 
 if(NOT PROJECT_NAME MATCHES "^SDL.*")
   message(WARNING "This module is internal to SDL and is currently not supported.")

@@ -277,6 +277,8 @@ int main(int argc, char *argv[])
         SDL_RenderClear(renderer);
     }
 
+SDL_StopTextInput(state->windows[0]);
+SDL_StopTextInput(state->windows[0]);
     /* Main render loop */
     done = 0;
 #ifdef SDL_PLATFORM_EMSCRIPTEN

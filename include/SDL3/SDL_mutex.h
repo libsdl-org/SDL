@@ -33,78 +33,225 @@
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_thread.h>
 
-/******************************************************************************/
-/* Enable thread safety attributes only with clang.
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * Enable thread safety attributes, only with clang.
+ *
  * The attributes can be safely erased when compiling with other compilers.
  *
  * To enable analysis, set these environment variables before running cmake:
- *      export CC=clang
- *      export CFLAGS="-DSDL_THREAD_SAFETY_ANALYSIS -Wthread-safety"
+ *
+ * ```bash
+ * export CC=clang
+ * export CFLAGS="-DSDL_THREAD_SAFETY_ANALYSIS -Wthread-safety"
+ * ```
  */
-#if defined(SDL_THREAD_SAFETY_ANALYSIS) && \
-    defined(__clang__) && (!defined(SWIG))
+#define SDL_THREAD_ANNOTATION_ATTRIBUTE__(x)   __attribute__((x))
+
+#elif defined(SDL_THREAD_SAFETY_ANALYSIS) && defined(__clang__) && (!defined(SWIG))
 #define SDL_THREAD_ANNOTATION_ATTRIBUTE__(x)   __attribute__((x))
 #else
 #define SDL_THREAD_ANNOTATION_ATTRIBUTE__(x)   /* no-op */
 #endif
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_CAPABILITY(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(capability(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_SCOPED_CAPABILITY \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(scoped_lockable)
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_GUARDED_BY(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_PT_GUARDED_BY(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(pt_guarded_by(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_ACQUIRED_BEFORE(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquired_before(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_ACQUIRED_AFTER(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquired_after(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_REQUIRES(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(requires_capability(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_REQUIRES_SHARED(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(requires_shared_capability(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_ACQUIRE(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquire_capability(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_ACQUIRE_SHARED(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(acquire_shared_capability(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_RELEASE(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_capability(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_RELEASE_SHARED(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_shared_capability(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_RELEASE_GENERIC(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(release_generic_capability(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_TRY_ACQUIRE(x, y) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_capability(x, y))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_TRY_ACQUIRE_SHARED(x, y) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(try_acquire_shared_capability(x, y))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_EXCLUDES(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_ASSERT_CAPABILITY(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(assert_capability(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_ASSERT_SHARED_CAPABILITY(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(assert_shared_capability(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_RETURN_CAPABILITY(x) \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(lock_returned(x))
 
+/**
+ * Wrapper around Clang thread safety analysis annotations.
+ *
+ * Please see https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutex-h
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_NO_THREAD_SAFETY_ANALYSIS \
   SDL_THREAD_ANNOTATION_ATTRIBUTE__(no_thread_safety_analysis)
 

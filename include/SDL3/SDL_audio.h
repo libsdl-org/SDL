@@ -141,14 +141,68 @@
 extern "C" {
 #endif
 
-/* masks for different parts of SDL_AudioFormat. */
+/**
+ * Mask of bits in an SDL_AudioFormat that contains the format bit size.
+ *
+ * Generally one should use SDL_AUDIO_BITSIZE instead of this macro directly.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_AUDIO_MASK_BITSIZE       (0xFFu)
+
+/**
+ * Mask of bits in an SDL_AudioFormat that contain the floating point flag.
+ *
+ * Generally one should use SDL_AUDIO_ISFLOAT instead of this macro directly.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_AUDIO_MASK_FLOAT         (1u<<8)
+
+/**
+ * Mask of bits in an SDL_AudioFormat that contain the bigendian flag.
+ *
+ * Generally one should use SDL_AUDIO_ISBIGENDIAN or SDL_AUDIO_ISLITTLEENDIAN
+ * instead of this macro directly.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_AUDIO_MASK_BIG_ENDIAN    (1u<<12)
+
+/**
+ * Mask of bits in an SDL_AudioFormat that contain the signed data flag.
+ *
+ * Generally one should use SDL_AUDIO_ISSIGNED instead of this macro directly.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_AUDIO_MASK_SIGNED        (1u<<15)
 
-#define SDL_DEFINE_AUDIO_FORMAT(signed, bigendian, float, size) \
-    (((Uint16)(signed) << 15) | ((Uint16)(bigendian) << 12) | ((Uint16)(float) << 8) | ((size) & SDL_AUDIO_MASK_BITSIZE))
+/**
+ * Define an SDL_AudioFormat value.
+ *
+ * SDL does not support custom audio formats, so this macro is not of much use
+ * externally, but it can be illustrative as to what the various bits of an
+ * SDL_AudioFormat mean.
+ *
+ * For example, SDL_AUDIO_S32LE looks like this:
+ *
+ * ```c
+ * SDL_DEFINE_AUDIO_FORMAT(1, 0, 0, 32)
+ * ```
+ *
+ * \param signed 1 for signed data, 0 for unsigned data.
+ * \param bigendian 1 for bigendian data, 0 for littleendian data.
+ * \param flt 1 for floating point data, 0 for integer data.
+ * \param size number of bits per sample.
+ * \returns a format value in the style of SDL_AudioFormat.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_DEFINE_AUDIO_FORMAT(signed, bigendian, flt, size) \
+    (((Uint16)(signed) << 15) | ((Uint16)(bigendian) << 12) | ((Uint16)(flt) << 8) | ((size) & SDL_AUDIO_MASK_BITSIZE))
 
 /**
  * Audio format.
@@ -400,14 +454,6 @@ typedef struct SDL_AudioStream SDL_AudioStream;
 /* Function prototypes */
 
 /**
- *  \name Driver discovery functions
- *
- *  These functions return the list of built in audio drivers, in the
- *  order that they are normally initialized by default.
- */
-/* @{ */
-
-/**
  * Use this function to get the number of built-in audio drivers.
  *
  * This function returns a hardcoded number. This never returns a negative
@@ -453,7 +499,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
  * \sa SDL_GetNumAudioDrivers
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDriver(int index);
-/* @} */
 
 /**
  * Get the name of the current audio driver.

@@ -6,7 +6,7 @@ Because
 
 #]=======================================================================]
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.16...3.28)
 
 if(NOT CMAKE_SCRIPT_MODE_FILE)
   message(FATAL_ERROR "This file can only be used in CMake script mode")

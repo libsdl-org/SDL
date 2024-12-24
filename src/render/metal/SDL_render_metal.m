@@ -158,7 +158,7 @@ typedef struct METAL_ShaderPipelines
 @property(nonatomic, retain) id<MTLTexture> mtltexture;
 @property(nonatomic, retain) id<MTLTexture> mtltextureUv;
 @property(nonatomic, assign) SDL_MetalFragmentFunction fragmentFunction;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 @property(nonatomic, assign) BOOL yuv;
 @property(nonatomic, assign) BOOL nv12;
 @property(nonatomic, assign) size_t conversionBufferOffset;
@@ -650,7 +650,6 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
-        case SDL_PIXELFORMAT_XBGR8888:
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
             } else {
@@ -658,14 +657,13 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             }
             break;
         case SDL_PIXELFORMAT_ARGB8888:
-        case SDL_PIXELFORMAT_XRGB8888:
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
                 pixfmt = MTLPixelFormatBGRA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatBGRA8Unorm;
             }
             break;
-        case SDL_PIXELFORMAT_XBGR2101010:
+        case SDL_PIXELFORMAT_ABGR2101010:
             pixfmt = MTLPixelFormatRGB10A2Unorm;
             break;
         case SDL_PIXELFORMAT_IYUV:
@@ -713,7 +711,7 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
 
         mtltextureUv = nil;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         BOOL yuv = (texture->format == SDL_PIXELFORMAT_IYUV || texture->format == SDL_PIXELFORMAT_YV12);
         BOOL nv12 = (texture->format == SDL_PIXELFORMAT_NV12 || texture->format == SDL_PIXELFORMAT_NV21 || texture->format == SDL_PIXELFORMAT_P010);
 
@@ -749,7 +747,7 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         texturedata = [[SDL3METAL_TextureData alloc] init];
         if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         } else if (yuv) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_YUV;
 #endif
@@ -758,7 +756,7 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
         texturedata.mtltexture = mtltexture;
         texturedata.mtltextureUv = mtltextureUv;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         texturedata.yuv = yuv;
         texturedata.nv12 = nv12;
         if (yuv || nv12) {
@@ -872,7 +870,7 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, pixels, pitch)) {
             return false;
         }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         if (texturedata.yuv) {
             int Uslice = texture->format == SDL_PIXELFORMAT_YV12 ? 1 : 0;
             int Vslice = texture->format == SDL_PIXELFORMAT_YV12 ? 0 : 1;
@@ -909,7 +907,7 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
                                   const Uint8 *Yplane, int Ypitch,
@@ -986,7 +984,7 @@ static bool METAL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         }
 
         *pitch = SDL_BYTESPERPIXEL(texture->format) * rect->w;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         if (texturedata.yuv || texturedata.nv12) {
             buffersize = ((*pitch) * rect->h) + (2 * (*pitch + 1) / 2) * ((rect->h + 1) / 2);
         } else
@@ -1016,7 +1014,7 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         id<MTLBlitCommandEncoder> blitcmd;
         SDL_Rect rect = texturedata.lockedrect;
         int pitch = SDL_BYTESPERPIXEL(texture->format) * rect.w;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         SDL_Rect UVrect = { rect.x / 2, rect.y / 2, (rect.w + 1) / 2, (rect.h + 1) / 2 };
 #endif
 
@@ -1044,7 +1042,7 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
                destinationSlice:0
                destinationLevel:0
               destinationOrigin:MTLOriginMake(rect.x, rect.y, 0)];
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         if (texturedata.yuv) {
             int Uslice = texture->format == SDL_PIXELFORMAT_YV12 ? 1 : 0;
             int Vslice = texture->format == SDL_PIXELFORMAT_YV12 ? 0 : 1;
@@ -1524,7 +1522,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
         [data.mtlcmdencoder setFragmentSamplerState:mtlsampler atIndex:0];
 
         [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         if (texturedata.yuv || texturedata.nv12) {
             [data.mtlcmdencoder setFragmentTexture:texturedata.mtltextureUv atIndex:1];
             [data.mtlcmdencoder setFragmentBuffer:data.mtlbufconstants offset:texturedata.conversionBufferOffset atIndex:1];
@@ -1737,7 +1735,7 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
             format = SDL_PIXELFORMAT_ABGR8888;
             break;
         case MTLPixelFormatRGB10A2Unorm:
-            format = SDL_PIXELFORMAT_XBGR2101010;
+            format = SDL_PIXELFORMAT_ABGR2101010;
             break;
         case MTLPixelFormatRGBA16Float:
             format = SDL_PIXELFORMAT_RGBA64_FLOAT;
@@ -2153,7 +2151,7 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         renderer->SupportsBlendMode = METAL_SupportsBlendMode;
         renderer->CreateTexture = METAL_CreateTexture;
         renderer->UpdateTexture = METAL_UpdateTexture;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         renderer->UpdateTextureYUV = METAL_UpdateTextureYUV;
         renderer->UpdateTextureNV = METAL_UpdateTextureNV;
 #endif
@@ -2179,9 +2177,7 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         renderer->name = METAL_RenderDriver.name;
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR8888);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR2101010);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR2101010);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA128_FLOAT);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);

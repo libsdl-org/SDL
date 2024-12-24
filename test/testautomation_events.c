@@ -203,6 +203,62 @@ static int SDLCALL events_addDelEventWatchWithUserdata(void *arg)
     return TEST_COMPLETED;
 }
 
+/**
+ * Runs callbacks on the main thread.
+ *
+ * \sa SDL_IsMainThread
+ * \sa SDL_RunOnMainThread
+ *
+ */
+
+static void SDLCALL IncrementCounter(void *userdata)
+{
+    int *value = (int *)userdata;
+    *value = *value + 1;
+}
+
+#ifndef SDL_PLATFORM_EMSCRIPTEN /* Emscripten doesn't have threads */
+static int SDLCALL IncrementCounterThread(void *userdata)
+{
+    SDL_assert(!SDL_IsMainThread());
+    SDL_RunOnMainThread(IncrementCounter, userdata, false);
+    SDL_RunOnMainThread(IncrementCounter, userdata, true);
+    return 0;
+}
+#endif /* !SDL_PLATFORM_EMSCRIPTEN */
+
+static int SDLCALL events_mainThreadCallbacks(void *arg)
+{
+    int counter = 0;
+
+    /* Make sure we're on the main thread */
+    SDLTest_AssertCheck(SDL_IsMainThread(), "Verify we're on the main thread");
+
+    SDL_RunOnMainThread(IncrementCounter, &counter, true);
+    SDLTest_AssertCheck(counter == 1, "Incremented counter on main thread, expected 1, got %d", counter);
+
+#ifndef SDL_PLATFORM_EMSCRIPTEN /* Emscripten doesn't have threads */
+    {
+        SDL_Thread *thread;
+
+        thread = SDL_CreateThread(IncrementCounterThread, NULL, &counter);
+        SDLTest_AssertCheck(thread != NULL, "Create counter thread");
+
+        /* Wait for both increment calls to be queued up */
+        SDL_Delay(100);
+
+        /* Run the main callbacks */
+        while (counter < 3) {
+            SDL_PumpEvents();
+        }
+        SDL_WaitThread(thread, NULL);
+        SDLTest_AssertCheck(counter == 3, "Incremented counter on main thread, expected 3, got %d", counter);
+    }
+#endif /* !SDL_PLATFORM_EMSCRIPTEN */
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Events test cases */
@@ -218,11 +274,16 @@ static const SDLTest_TestCaseReference eventsTest_addDelEventWatchWithUserdata =
     events_addDelEventWatchWithUserdata, "events_addDelEventWatchWithUserdata", "Adds and deletes an event watch function with userdata", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference eventsTest_mainThreadCallbacks = {
+    events_mainThreadCallbacks, "events_mainThreadCallbacks", "Run callbacks on the main thread", TEST_ENABLED
+};
+
 /* Sequence of Events test cases */
 static const SDLTest_TestCaseReference *eventsTests[] = {
     &eventsTest_pushPumpAndPollUserevent,
     &eventsTest_addDelEventWatch,
     &eventsTest_addDelEventWatchWithUserdata,
+    &eventsTest_mainThreadCallbacks,
     NULL
 };
 

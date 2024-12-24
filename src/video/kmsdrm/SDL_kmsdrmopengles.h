@@ -23,9 +23,6 @@
 #ifndef SDL_kmsdrmopengles_h_
 #define SDL_kmsdrmopengles_h_
 
-#ifdef SDL_VIDEO_DRIVER_KMSDRM
-
-#include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
 // OpenGLES functions
@@ -37,10 +34,9 @@
 extern void KMSDRM_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor);
 extern bool KMSDRM_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval);
 extern bool KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern void KMSDRM_GLES_UnloadLibrary(SDL_VideoDevice *_this);
 extern SDL_GLContext KMSDRM_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool KMSDRM_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool KMSDRM_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context);
-
-#endif // SDL_VIDEO_DRIVER_KMSDRM
 
 #endif // SDL_kmsdrmopengles_h_

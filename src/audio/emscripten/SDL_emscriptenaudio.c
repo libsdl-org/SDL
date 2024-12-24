@@ -168,7 +168,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
                 SDL3.audioContext = new webkitAudioContext();
             }
             if (SDL3.audioContext) {
-                if ((typeof navigator.userActivation) === 'undefined') {  // Firefox doesn't have this (as of August 2023), use autoResumeAudioContext instead.
+                if ((typeof navigator.userActivation) === 'undefined') {
                     autoResumeAudioContext(SDL3.audioContext);
                 }
             }
@@ -190,6 +190,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     // limit to native freq
     device->spec.freq = EM_ASM_INT({ return Module['SDL3'].audioContext.sampleRate; });
+    device->sample_frames = SDL_GetDefaultSampleFramesFromFreq(device->spec.freq);
 
     SDL_UpdatedAudioDeviceFormat(device);
 
@@ -283,7 +284,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
                 SDL3.audio_playback.silenceBuffer = SDL3.audioContext.createBuffer($0, $1, SDL3.audioContext.sampleRate);
                 SDL3.audio_playback.silenceBuffer.getChannelData(0).fill(0.0);
                 var silence_callback = function() {
-                    if ((typeof navigator.userActivation) !== 'undefined') {  // Almost everything modern except Firefox (as of August 2023)
+                    if ((typeof navigator.userActivation) !== 'undefined') {
                         if (navigator.userActivation.hasBeenActive) {
                             SDL3.audioContext.resume();
                         }
