@@ -61,6 +61,9 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #endif
 
 @implementation SDLUITextField : UITextField
+
+@synthesize sdlWindow;
+
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender
 {
     if (action == @selector(paste:)) {
@@ -69,6 +72,46 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
     return [super canPerformAction:action withSender:sender];
 }
+
+- (BOOL)becomeFirstResponder
+{
+    if ([super becomeFirstResponder])
+    {
+        if (!SDL_TextInputActive(sdlWindow))
+            SDL_StartTextInput(sdlWindow);
+
+        return YES;
+    }
+
+    return NO;
+}
+
+- (BOOL)resignFirstResponder
+{
+    if ([super resignFirstResponder])
+    {
+        // resigning indicates that the user dismissed the keyboard via some method,
+        // synchronise the text input state accordingly.
+        if (SDL_TextInputActive(sdlWindow))
+            SDL_StopTextInput(sdlWindow);
+
+        return YES;
+    }
+
+    return NO;
+}
+
+// these are callled internally by SDL when text input is started/stopped.
+- (BOOL)becomeFirstResponderFromSDL
+{
+    return [super becomeFirstResponder];
+}
+
+- (BOOL)resignFirstResponderFromSDL
+{
+    return [super resignFirstResponder];
+}
+
 @end
 
 @implementation SDL_uikitviewcontroller
@@ -80,8 +123,6 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_IPHONE_KEYBOARD
     SDLUITextField *textField;
-    BOOL hidingKeyboard;
-    BOOL rotatingOrientation;
     NSString *committedText;
     NSString *obligateForBackspace;
 #endif
@@ -96,8 +137,6 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_IPHONE_KEYBOARD
         [self initKeyboard];
-        hidingKeyboard = NO;
-        rotatingOrientation = NO;
 #endif
 
 #ifdef SDL_PLATFORM_TVOS
@@ -285,6 +324,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 {
     obligateForBackspace = @"                                                                "; // 64 space
     textField = [[SDLUITextField alloc] initWithFrame:CGRectZero];
+    textField.sdlWindow = window;
     textField.delegate = self;
     // placeholder so there is something to delete!
     textField.text = obligateForBackspace;
@@ -358,18 +398,6 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
          * call it again for the text field to actually become first responder. */
         [self startTextInput];
     }
-}
-
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
-{
-    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    rotatingOrientation = YES;
-    [coordinator
-        animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-        }
-        completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-          self->rotatingOrientation = NO;
-        }];
 }
 
 - (void)deinitKeyboard
@@ -514,7 +542,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         return true;
     }
 
-    return [textField becomeFirstResponder];
+    return [textField becomeFirstResponderFromSDL];
 }
 
 /* requests the SDL text field to lose focus and stop accepting text input.
@@ -528,7 +556,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         return true;
     }
 
-    return [textField resignFirstResponder];
+    return [textField resignFirstResponderFromSDL];
 }
 
 - (void)keyboardWillShow:(NSNotification *)notification
@@ -542,37 +570,15 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
     [self setKeyboardHeight:(int)kbrect.size.height];
 #endif
-
-    /* A keyboard hide transition has been interrupted with a show (keyboardWillHide has been called but keyboardDidHide didn't).
-     * since text input was stopped by the hide, we have to start it again. */
-    if (hidingKeyboard) {
-        SDL_StartTextInput(window);
-        hidingKeyboard = NO;
-    }
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
-    hidingKeyboard = YES;
     [self setKeyboardHeight:0];
-
-    /* When the user dismisses the software keyboard by the "hide" button in the bottom right corner,
-     * we want to reflect that on SDL_TextInputActive by calling SDL_StopTextInput...on certain conditions */
-    if (SDL_TextInputActive(window)
-        /* keyboardWillHide gets called when a hardware keyboard is attached,
-         * keep text input state active if hiding while there is a hardware keyboard.
-         * if the hardware keyboard gets detached, the software keyboard will appear anyway. */
-        && !SDL_HasKeyboard()
-        /* When the device changes orientation, a sequence of hide and show transitions are triggered.
-         * keep text input state active in this case. */
-        && !rotatingOrientation) {
-        SDL_StopTextInput(window);
-    }
 }
 
 - (void)keyboardDidHide:(NSNotification *)notification
 {
-    hidingKeyboard = NO;
 }
 
 - (void)textFieldTextDidChange:(NSNotification *)notification

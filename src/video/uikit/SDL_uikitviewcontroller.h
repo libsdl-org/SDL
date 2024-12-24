@@ -32,6 +32,9 @@
 #endif
 
 @interface SDLUITextField : UITextField
+
+@property(nonatomic, assign) SDL_Window *sdlWindow;
+
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender;
 @end
 
