@@ -56,7 +56,7 @@ static void *ioring_handle = NULL;
     SDL_IORING_FUNC(HRESULT, SetIoRingCompletionEvent, (HIORING ioRing, HANDLE hEvent)) \
     SDL_IORING_FUNC(HRESULT, BuildIoRingCancelRequest, (HIORING ioRing, IORING_HANDLE_REF file, UINT_PTR opToCancel, UINT_PTR userData)) \
     SDL_IORING_FUNC(HRESULT, BuildIoRingReadFile, (HIORING ioRing, IORING_HANDLE_REF fileRef, IORING_BUFFER_REF dataRef, UINT32 numberOfBytesToRead, UINT64 fileOffset, UINT_PTR userData, IORING_SQE_FLAGS sqeFlags)) \
-    SDL_IORING_FUNC(HRESULT, BuildIoRingWriteFile, (HIORING ioRing, IORING_HANDLE_REF fileRef, IORING_BUFFER_REF bufferRef, UINT32 numberOfBytesToWrite, UINT64 fileOffset, int /*FILE_WRITE_FLAGS*/ writeFlags, UINT_PTR userData, IORING_SQE_FLAGS sqeFlags)) \
+    SDL_IORING_FUNC(HRESULT, BuildIoRingWriteFile, (HIORING ioRing, IORING_HANDLE_REF fileRef, IORING_BUFFER_REF bufferRef, UINT32 numberOfBytesToWrite, UINT64 fileOffset, FILE_WRITE_FLAGS writeFlags, UINT_PTR userData, IORING_SQE_FLAGS sqeFlags)) \
     SDL_IORING_FUNC(HRESULT, BuildIoRingFlushFile, (HIORING ioRing, IORING_HANDLE_REF fileRef, FILE_FLUSH_MODE flushMode, UINT_PTR userData, IORING_SQE_FLAGS sqeFlags)) \
 
 #define SDL_IORING_FUNC(ret, fn, args) typedef ret (WINAPI *SDL_fntype_##fn) args;
