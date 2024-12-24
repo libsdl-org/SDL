@@ -446,7 +446,7 @@ typedef struct SDL_MouseMotionEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
-    SDL_MouseID which;  /**< The mouse instance id or SDL_TOUCH_MOUSEID */
+    SDL_MouseID which;  /**< The mouse instance id in relative mode, SDL_TOUCH_MOUSEID for touch events, or 0 */
     SDL_MouseButtonFlags state;       /**< The current button state */
     float x;            /**< X coordinate, relative to window */
     float y;            /**< Y coordinate, relative to window */
@@ -465,7 +465,7 @@ typedef struct SDL_MouseButtonEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
-    SDL_MouseID which;  /**< The mouse instance id or SDL_TOUCH_MOUSEID */
+    SDL_MouseID which;  /**< The mouse instance id in relative mode, SDL_TOUCH_MOUSEID for touch events, or 0 */
     Uint8 button;       /**< The mouse button index */
     bool down;          /**< true if the button is pressed */
     Uint8 clicks;       /**< 1 for single-click, 2 for double-click, etc. */
@@ -485,7 +485,7 @@ typedef struct SDL_MouseWheelEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with mouse focus, if any */
-    SDL_MouseID which;  /**< The mouse instance id */
+    SDL_MouseID which;  /**< The mouse instance id in relative mode or 0 */
     float x;            /**< The amount scrolled horizontally, positive to the right and negative to the left */
     float y;            /**< The amount scrolled vertically, positive away from the user and negative toward the user */
     SDL_MouseWheelDirection direction; /**< Set to one of the SDL_MOUSEWHEEL_* defines. When FLIPPED the values in X and Y will be opposite. Multiply by -1 to change them back */
