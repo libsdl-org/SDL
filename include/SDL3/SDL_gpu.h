@@ -159,6 +159,24 @@
  * and reasonable to implement across several platforms and underlying APIs.
  * So while these things are not in the "never" category, they are definitely
  * not "near future" items either.
+ *
+ * ## System Requirements
+ *
+ * **Vulkan:** Supported on Windows, Linux, Nintendo Switch, and certain Android devices. Requires Vulkan 1.0 with the following extensions and device features:
+ * - `VK_KHR_swapchain`
+ * - `VK_KHR_maintenance1`
+ * - `independentBlend`
+ * - `imageCubeArray`
+ * - `depthClamp`
+ * - `shaderClipDistance`
+ * - `drawIndirectFirstInstance`
+ *
+ * **D3D12:** Supported on Windows 10 or newer, Xbox One (GDK), and Xbox Series X|S (GDK). Requires a GPU that supports DirectX 12 Feature Level 11_1.
+ *
+ * **Metal:** Supported on macOS 10.14+ and iOS/tvOS 13.0+. Hardware requirements vary by operating system:
+ * - macOS requires an Apple Silicon or [Intel Mac2 family](https://developer.apple.com/documentation/metal/mtlfeatureset/mtlfeatureset_macos_gpufamily2_v1?language=objc) GPU
+ * - iOS/tvOS requires an A9 GPU or newer
+ * - iOS Simulator and tvOS Simulator are unsupported
  */
 
 #ifndef SDL_gpu_h_
