@@ -114,7 +114,8 @@ struct SDL_WaylandInput
         uint32_t idx_ctrl;
         uint32_t idx_alt;
         uint32_t idx_gui;
-        uint32_t idx_mode;
+        uint32_t idx_mod3;
+        uint32_t idx_mod5;
         uint32_t idx_num;
         uint32_t idx_caps;
 
