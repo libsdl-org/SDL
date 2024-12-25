@@ -707,7 +707,13 @@ static bool HIDAPI_DriverLg4ff_RumbleJoystickTriggers(SDL_HIDAPI_Device *device,
 
 static Uint32 HIDAPI_DriverLg4ff_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return 0;
+    switch(device->product_id) {
+        case USB_DEVICE_ID_LOGITECH_G29_WHEEL:
+        case USB_DEVICE_ID_LOGITECH_G27_WHEEL:
+            return SDL_JOYSTICK_CAP_MONO_LED;
+        default:
+            return 0;
+    }
 }
 
 /*
