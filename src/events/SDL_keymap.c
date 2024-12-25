@@ -50,8 +50,8 @@ SDL_Keymap *SDL_CreateKeymap(void)
 
 static SDL_Keymod NormalizeModifierStateForKeymap(SDL_Keymod modstate)
 {
-    // The modifiers that affect the keymap are: SHIFT, CAPS, ALT, and MODE
-    modstate &= (SDL_KMOD_SHIFT | SDL_KMOD_CAPS | SDL_KMOD_ALT | SDL_KMOD_MODE);
+    // The modifiers that affect the keymap are: SHIFT, CAPS, ALT, MODE, and LEVEL5
+    modstate &= (SDL_KMOD_SHIFT | SDL_KMOD_CAPS | SDL_KMOD_ALT | SDL_KMOD_MODE | SDL_KMOD_LEVEL5);
 
     // If either right or left Shift are set, set both in the output
     if (modstate & SDL_KMOD_SHIFT) {

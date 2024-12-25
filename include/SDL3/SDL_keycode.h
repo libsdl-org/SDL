@@ -313,6 +313,7 @@ typedef Uint16 SDL_Keymod;
 #define SDL_KMOD_NONE   0x0000u /**< no modifier is applicable. */
 #define SDL_KMOD_LSHIFT 0x0001u /**< the left Shift key is down. */
 #define SDL_KMOD_RSHIFT 0x0002u /**< the right Shift key is down. */
+#define SDL_KMOD_LEVEL5 0x0004u /**< the Level 5 Shift key is down. */
 #define SDL_KMOD_LCTRL  0x0040u /**< the left Ctrl (Control) key is down. */
 #define SDL_KMOD_RCTRL  0x0080u /**< the right Ctrl (Control) key is down. */
 #define SDL_KMOD_LALT   0x0100u /**< the left Alt key is down. */

@@ -958,6 +958,9 @@ static void SDLTest_PrintModStateFlag(char *text, size_t maxlen, SDL_Keymod flag
     case SDL_KMOD_RSHIFT:
         SDL_snprintfcat(text, maxlen, "RSHIFT");
         break;
+    case SDL_KMOD_LEVEL5:
+        SDL_snprintfcat(text, maxlen, "LEVEL5");
+        break;
     case SDL_KMOD_LCTRL:
         SDL_snprintfcat(text, maxlen, "LCTRL");
         break;
@@ -999,6 +1002,7 @@ static void SDLTest_PrintModState(char *text, size_t maxlen, SDL_Keymod keymod)
     const SDL_Keymod kmod_flags[] = {
         SDL_KMOD_LSHIFT,
         SDL_KMOD_RSHIFT,
+        SDL_KMOD_LEVEL5,
         SDL_KMOD_LCTRL,
         SDL_KMOD_RCTRL,
         SDL_KMOD_LALT,
