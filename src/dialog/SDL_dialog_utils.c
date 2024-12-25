@@ -59,7 +59,7 @@ char *convert_filters(const SDL_DialogFileFilter *filters, int nfilters,
             return NULL;
         }
 
-        terminator = f[1].name ? separator : suffix;
+        terminator = ((i + 1) < nfilters) ? separator : suffix;
         new_length = SDL_strlen(combined) + SDL_strlen(converted)
                    + SDL_strlen(terminator) + 1;
 
