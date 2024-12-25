@@ -44,14 +44,6 @@
 #endif
 #include "../SDL_error_c.h"
 
-typedef enum SDL_ThreadState
-{
-    SDL_THREAD_STATE_ALIVE,
-    SDL_THREAD_STATE_DETACHED,
-    SDL_THREAD_STATE_ZOMBIE,
-    SDL_THREAD_STATE_CLEANED,
-} SDL_ThreadState;
-
 // This is the system-independent thread info structure
 struct SDL_Thread
 {

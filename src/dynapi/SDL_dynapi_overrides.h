@@ -1254,3 +1254,4 @@
 #define SDL_GetTrayEntryParent SDL_GetTrayEntryParent_REAL
 #define SDL_GetTrayMenuParentEntry SDL_GetTrayMenuParentEntry_REAL
 #define SDL_GetTrayMenuParentTray SDL_GetTrayMenuParentTray_REAL
+#define SDL_GetThreadState SDL_GetThreadState_REAL

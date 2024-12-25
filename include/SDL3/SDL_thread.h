@@ -103,6 +103,25 @@ typedef enum SDL_ThreadPriority {
 } SDL_ThreadPriority;
 
 /**
+ * The SDL thread state.
+ * 
+ * SDL stores the current state of a thread in an atomic int.
+ * The current state of a thread can be checked by calling
+ * SDL_GetThreadState.
+ * 
+ * \since This enum is available since SDL 3.1.3.
+ * 
+ * \sa SDL_GetThreadState
+ */
+typedef enum SDL_ThreadState
+{
+    SDL_THREAD_STATE_ALIVE,
+    SDL_THREAD_STATE_DETACHED,
+    SDL_THREAD_STATE_ZOMBIE,
+    SDL_THREAD_STATE_CLEANED,
+} SDL_ThreadState;
+
+/**
  * The function passed to SDL_CreateThread() as the new thread's entry point.
  *
  * \param data what was passed as `data` to SDL_CreateThread().
@@ -421,6 +440,18 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetCurrentThreadPriority(SDL_ThreadPriority
  * \sa SDL_DetachThread
  */
 extern SDL_DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread *thread, int *status);
+
+/**
+ * Get the current state of a thread.
+ *
+ * \param thread the thread whose status you want to check.
+ * \returns the current state of a thread as defined in the SDL_ThreadState enum.
+ *
+ * \since This function is available since SDL 3.1.3.
+ * 
+ * \sa SDL_ThreadState
+ */
+extern SDL_DECLSPEC SDL_ThreadState SDLCALL SDL_GetThreadState(SDL_Thread *thread);
 
 /**
  * Let a thread clean up on exit without intervention.
