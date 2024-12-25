@@ -104,13 +104,12 @@ typedef enum SDL_ThreadPriority {
 
 /**
  * The SDL thread state.
- * 
- * SDL stores the current state of a thread in an atomic int.
- * The current state of a thread can be checked by calling
- * SDL_GetThreadState.
- * 
+ *
+ * SDL stores the current state of a thread in an atomic int. The current
+ * state of a thread can be checked by calling SDL_GetThreadState.
+ *
  * \since This enum is available since SDL 3.1.3.
- * 
+ *
  * \sa SDL_GetThreadState
  */
 typedef enum SDL_ThreadState
@@ -445,10 +444,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread *thread, int *status)
  * Get the current state of a thread.
  *
  * \param thread the thread whose status you want to check.
- * \returns the current state of a thread as defined in the SDL_ThreadState enum.
+ * \returns the current state of a thread as defined in the SDL_ThreadState
+ *          enum.
  *
- * \since This function is available since SDL 3.1.3.
- * 
+ * \since This function is available since SDL 3.2.0.
+ *
  * \sa SDL_ThreadState
  */
 extern SDL_DECLSPEC SDL_ThreadState SDLCALL SDL_GetThreadState(SDL_Thread *thread);
