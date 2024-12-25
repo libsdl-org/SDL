@@ -456,6 +456,11 @@ void SDL_WaitThread(SDL_Thread *thread, int *status)
     }
 }
 
+SDL_ThreadState SDL_GetThreadState(SDL_Thread *thread)
+{
+    return (SDL_ThreadState)SDL_GetAtomicInt(&thread->state);
+}
+
 void SDL_DetachThread(SDL_Thread *thread)
 {
     if (!thread) {
