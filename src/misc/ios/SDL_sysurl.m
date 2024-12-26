@@ -29,22 +29,19 @@
 bool SDL_SYS_OpenURL(const char *url)
 {
     @autoreleasepool {
-
-#ifdef SDL_PLATFORM_VISIONOS
-        return SDL_Unsupported();  // openURL is not supported on visionOS
-#else
         NSString *nsstr = [NSString stringWithUTF8String:url];
         NSURL *nsurl = [NSURL URLWithString:nsstr];
         if (![[UIApplication sharedApplication] canOpenURL:nsurl]) {
             return SDL_SetError("No handler registerd for this type of URL");
         }
-        if (@available(iOS 10.0, *)) {
+        if (@available(iOS 10.0, tvOS 10.0, *)) {
             [[UIApplication sharedApplication] openURL:nsurl options:@{} completionHandler:^(BOOL success) {}];
         } else {
+            #ifndef SDL_PLATFORM_VISIONOS   // Fallback is never available in any version of VisionOS (but correct API always is).
             [[UIApplication sharedApplication] openURL:nsurl];
+            #endif
         }
         return true;
-#endif
     }
 }
 
