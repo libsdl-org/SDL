@@ -160,12 +160,32 @@
  * So while these things are not in the "never" category, they are definitely
  * not "near future" items either.
  *
+ * **Question: Why is my shader not working?**
+ *
+ * Answer: A common oversight when using shaders is not properly laying out the
+ * shader resources/registers correctly. The GPU API is very strict with how it
+ * wants resources to be laid out and it's difficult for the API to
+ * automatically validate shaders to see if they have a compatible layout. See
+ * the documentation for SDL_CreateGPUShader() and
+ * SDL_CreateGPUComputePipeline() for information on the expected layout.
+ *
+ * Another common issue is not setting the correct number of samplers, textures,
+ * and buffers in SDL_GPUShaderCreateInfo. If possible use shader reflection to
+ * extract the required information from the shader automatically instead of
+ * manually filling in the struct's values.
+ *
  * ## System Requirements
  *
  * **Vulkan:** Supported on Windows, Linux, Nintendo Switch, and certain
  * Android devices. Requires Vulkan 1.0 with the following extensions and
- * device features: - `VK_KHR_swapchain` - `VK_KHR_maintenance1` -
- * `independentBlend` - `imageCubeArray` - `depthClamp` - `shaderClipDistance`
+ * device features:
+ *
+ * - `VK_KHR_swapchain`
+ * - `VK_KHR_maintenance1`
+ * - `independentBlend`
+ * - `imageCubeArray`
+ * - `depthClamp`
+ * - `shaderClipDistance`
  * - `drawIndirectFirstInstance`
  *
  * **D3D12:** Supported on Windows 10 or newer, Xbox One (GDK), and Xbox
@@ -173,10 +193,78 @@
  * 11_1.
  *
  * **Metal:** Supported on macOS 10.14+ and iOS/tvOS 13.0+. Hardware
- * requirements vary by operating system: - macOS requires an Apple Silicon or
- * [Intel Mac2 family](https://developer.apple.com/documentation/metal/mtlfeatureset/mtlfeatureset_macos_gpufamily2_v1?language=objc)
- * GPU - iOS/tvOS requires an A9 GPU or newer - iOS Simulator and tvOS
- * Simulator are unsupported
+ * requirements vary by operating system:
+ *
+ * - macOS requires an Apple Silicon or
+ *   [Intel Mac2 family](https://developer.apple.com/documentation/metal/mtlfeatureset/mtlfeatureset_macos_gpufamily2_v1?language=objc)
+ *   GPU
+ * - iOS/tvOS requires an A9 GPU or newer
+ * - iOS Simulator and tvOS Simulator are unsupported
+ *
+ * ## Uniform Data
+ *
+ * Uniforms are for passing data to shaders. The uniform data will be constant
+ * across all executions of the shader.
+ *
+ * There are 4 available uniform slots per shader stage (where the stages are
+ * vertex, fragment, and compute). Uniform data pushed to a slot on a stage
+ * keeps its value throughout the command buffer until you call the relevant
+ * Push function on that slot again.
+ *
+ * For example, you could write your vertex shaders to read a camera matrix from
+ * uniform binding slot 0, push the camera matrix at the start of the command
+ * buffer, and that data will be used for every subsequent draw call.
+ *
+ * It is valid to push uniform data during a render or compute pass.
+ *
+ * Uniforms are best for pushing small amounts of data. If you are pushing more
+ * than a matrix or two per call you should consider using a storage buffer
+ * instead.
+ *
+ * ## A Note On Cycling
+ *
+ * When using a command buffer, operations do not occur immediately - they occur
+ * some time after the command buffer is submitted.
+ *
+ * When a resource is used in a pending or active command buffer, it is
+ * considered to be "bound". When a resource is no longer used in any pending or
+ * active command buffers, it is considered to be "unbound".
+ *
+ * If data resources are bound, it is unspecified when that data will be unbound
+ * unless you acquire a fence when submitting the command buffer and wait on it.
+ * However, this doesn't mean you need to track resource usage manually.
+ *
+ * All of the functions and structs that involve writing to a resource have a
+ * "cycle" bool. SDL_GPUTransferBuffer, SDL_GPUBuffer, and SDL_GPUTexture all
+ * effectively function as ring buffers on internal resources. When cycle is
+ * true, if the resource is bound, the cycle rotates to the next unbound
+ * internal resource, or if none are available, a new one is created. This means
+ * you don't have to worry about complex state tracking and synchronization as
+ * long as cycling is correctly employed.
+ *
+ * For example: you can call SDL_MapGPUTransferBuffer(), write texture data,
+ * SDL_UnmapGPUTransferBuffer(), and then SDL_UploadToGPUTexture(). The next
+ * time you write texture data to the transfer buffer, if you set the cycle
+ * param to true, you don't have to worry about overwriting any data that is not
+ * yet uploaded.
+ *
+ * Another example: If you are using a texture in a render pass every frame,
+ * this can cause a data dependency between frames. If you set cycle to true in
+ * the SDL_GPUColorTargetInfo struct, you can prevent this data dependency.
+ *
+ * Cycling will never undefine already bound data. When cycling, all data in the
+ * resource is considered to be undefined for subsequent commands until that
+ * data is written again. You must take care not to read undefined data.
+ *
+ * Note that when cycling a texture, the entire texture will be cycled, even if
+ * only part of the texture is used in the call, so you must consider the entire
+ * texture to contain undefined data after cycling.
+ *
+ * You must also take care not to overwrite a section of data that has been
+ * referenced in a command without cycling first. It is OK to overwrite
+ * unreferenced data in a bound resource without cycling, but overwriting a
+ * section of data that has already been referenced will produce unexpected
+ * results.
  */
 
 #ifndef SDL_gpu_h_
@@ -1124,14 +1212,15 @@ typedef enum SDL_GPUPresentMode
  * claiming the window if you wish to change the swapchain composition from
  * SDR.
  *
- * - SDR: B8G8R8A8 or R8G8B8A8 swapchain. Pixel values are in nonlinear sRGB
- *   encoding.
- * - SDR_LINEAR: B8G8R8A8_SRGB or R8G8B8A8_SRGB swapchain. Pixel values are in
- *   nonlinear sRGB encoding.
+ * - SDR: B8G8R8A8 or R8G8B8A8 swapchain. Pixel values are in sRGB encoding.
+ * - SDR_LINEAR: B8G8R8A8_SRGB or R8G8B8A8_SRGB swapchain. Pixel values are
+ *   stored in memory in sRGB encoding but accessed in shaders in "linear sRGB"
+ *   encoding which is sRGB but with a linear transfer function.
  * - HDR_EXTENDED_LINEAR: R16G16B16A16_SFLOAT swapchain. Pixel values are in
- *   extended linear encoding.
+ *   extended linear sRGB encoding and permits values outside of the [0, 1]
+ *   range.
  * - HDR10_ST2048: A2R10G10B10 or A2B10G10R10 swapchain. Pixel values are in
- *   PQ ST2048 encoding.
+ *   BT.2020 ST2084 (PQ) encoding.
  *
  * \since This enum is available since SDL 3.1.3
  *
@@ -2563,6 +2652,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUGraphicsPipeline(
  * acquired on. The command buffer should be submitted on the thread it was
  * acquired on.
  *
+ * It is valid to acquire multiple command buffers on the same thread at once.
+ * In fact a common design pattern is to acquire two command buffers per frame
+ * where one is dedicated to render and compute passes and the other is
+ * dedicated to copy passes and other preparatory work such as generating
+ * mipmaps. Interleaving commands between the two command buffers reduces the
+ * total amount of passes overall which improves rendering performance.
+ *
  * \param device a GPU context.
  * \returns a command buffer, or NULL on failure; call SDL_GetError() for more
  *          information.
@@ -2575,25 +2671,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseGPUGraphicsPipeline(
 extern SDL_DECLSPEC SDL_GPUCommandBuffer *SDLCALL SDL_AcquireGPUCommandBuffer(
     SDL_GPUDevice *device);
 
-/*
- * UNIFORM DATA
- *
- * Uniforms are for passing data to shaders.
- * The uniform data will be constant across all executions of the shader.
- *
- * There are 4 available uniform slots per shader stage (vertex, fragment, compute).
- * Uniform data pushed to a slot on a stage keeps its value throughout the command buffer
- * until you call the relevant Push function on that slot again.
- *
- * For example, you could write your vertex shaders to read a camera matrix from uniform binding slot 0,
- * push the camera matrix at the start of the command buffer, and that data will be used for every
- * subsequent draw call.
- *
- * It is valid to push uniform data during a render or compute pass.
- *
- * Uniforms are best for pushing small amounts of data.
- * If you are pushing more than a matrix or two per call you should consider using a storage buffer instead.
- */
+/* Uniform Data */
 
 /**
  * Pushes data to a vertex uniform slot on the command buffer.
@@ -2648,45 +2726,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUComputeUniformData(
     Uint32 slot_index,
     const void *data,
     Uint32 length);
-
-/*
- * A NOTE ON CYCLING
- *
- * When using a command buffer, operations do not occur immediately -
- * they occur some time after the command buffer is submitted.
- *
- * When a resource is used in a pending or active command buffer, it is considered to be "bound".
- * When a resource is no longer used in any pending or active command buffers, it is considered to be "unbound".
- *
- * If data resources are bound, it is unspecified when that data will be unbound
- * unless you acquire a fence when submitting the command buffer and wait on it.
- * However, this doesn't mean you need to track resource usage manually.
- *
- * All of the functions and structs that involve writing to a resource have a "cycle" bool.
- * GPUTransferBuffer, GPUBuffer, and GPUTexture all effectively function as ring buffers on internal resources.
- * When cycle is true, if the resource is bound, the cycle rotates to the next unbound internal resource,
- * or if none are available, a new one is created.
- * This means you don't have to worry about complex state tracking and synchronization as long as cycling is correctly employed.
- *
- * For example: you can call MapTransferBuffer, write texture data, UnmapTransferBuffer, and then UploadToTexture.
- * The next time you write texture data to the transfer buffer, if you set the cycle param to true, you don't have
- * to worry about overwriting any data that is not yet uploaded.
- *
- * Another example: If you are using a texture in a render pass every frame, this can cause a data dependency between frames.
- * If you set cycle to true in the SDL_GPUColorTargetInfo struct, you can prevent this data dependency.
- *
- * Cycling will never undefine already bound data.
- * When cycling, all data in the resource is considered to be undefined for subsequent commands until that data is written again.
- * You must take care not to read undefined data.
- *
- * Note that when cycling a texture, the entire texture will be cycled,
- * even if only part of the texture is used in the call,
- * so you must consider the entire texture to contain undefined data after cycling.
- *
- * You must also take care not to overwrite a section of data that has been referenced in a command without cycling first.
- * It is OK to overwrite unreferenced data in a bound resource without cycling,
- * but overwriting a section of data that has already been referenced will produce unexpected results.
- */
 
 /* Graphics State */
 
@@ -3299,8 +3338,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_UploadToGPUTexture(
     const SDL_GPUTextureRegion *destination,
     bool cycle);
 
-/* Uploads data from a TransferBuffer to a Buffer. */
-
 /**
  * Uploads data from a transfer buffer to a buffer.
  *
@@ -3346,8 +3383,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUTextureToTexture(
     Uint32 h,
     Uint32 d,
     bool cycle);
-
-/* Copies data from a buffer to a buffer. */
 
 /**
  * Performs a buffer-to-buffer copy.
