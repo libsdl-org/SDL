@@ -1219,7 +1219,7 @@ typedef enum SDL_GPUPresentMode
  * - HDR_EXTENDED_LINEAR: R16G16B16A16_SFLOAT swapchain. Pixel values are in
  *   extended linear sRGB encoding and permits values outside of the [0, 1]
  *   range.
- * - HDR10_ST2048: A2R10G10B10 or A2B10G10R10 swapchain. Pixel values are in
+ * - HDR10_ST2084: A2R10G10B10 or A2B10G10R10 swapchain. Pixel values are in
  *   BT.2020 ST2084 (PQ) encoding.
  *
  * \since This enum is available since SDL 3.1.3
@@ -1233,7 +1233,7 @@ typedef enum SDL_GPUSwapchainComposition
     SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
     SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR,
     SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR,
-    SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048
+    SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084
 } SDL_GPUSwapchainComposition;
 
 /* Structures */

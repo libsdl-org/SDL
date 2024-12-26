@@ -369,7 +369,7 @@ static SDL_GPUTextureFormat SwapchainCompositionToFormat[] = {
     SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM,      // SDR
     SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB, // SDR_LINEAR
     SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT,  // HDR_EXTENDED_LINEAR
-    SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM,   // HDR10_ST2048
+    SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM,   // HDR10_ST2084
 };
 
 static CFStringRef SwapchainCompositionToColorSpace[4]; // initialized on device creation
@@ -3490,7 +3490,7 @@ static bool METAL_SupportsSwapchainComposition(
     SDL_GPUSwapchainComposition swapchainComposition)
 {
 #ifndef SDL_PLATFORM_MACOS
-    if (swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048) {
+    if (swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084) {
         return false;
     }
 #endif
@@ -3498,7 +3498,7 @@ static bool METAL_SupportsSwapchainComposition(
     if (@available(macOS 11.0, *)) {
         return true;
     } else {
-        return swapchainComposition != SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048;
+        return swapchainComposition != SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084;
     }
 }
 
