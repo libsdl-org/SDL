@@ -1064,7 +1064,7 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, true);
 
-    if (window->parent) {
+    if (SDL_WINDOW_IS_POPUP(window)) {
         // Update our position in case our parent moved while we were hidden
         WIN_SetWindowPosition(_this, window);
     }
