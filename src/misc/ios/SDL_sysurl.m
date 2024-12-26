@@ -29,7 +29,15 @@ int SDL_SYS_OpenURL(const char *url)
 
         NSString *nsstr = [NSString stringWithUTF8String:url];
         NSURL *nsurl = [NSURL URLWithString:nsstr];
-        return [[UIApplication sharedApplication] openURL:nsurl] ? 0 : -1;
+        if (![[UIApplication sharedApplication] canOpenURL:nsurl]) {
+            return SDL_SetError("No handler registerd for this type of URL");
+        }
+        if (@available(iOS 10.0, *)) {
+            [[UIApplication sharedApplication] openURL:nsurl options:@{} completionHandler:^(BOOL success) {}];
+        } else {
+            [[UIApplication sharedApplication] openURL:nsurl];
+        }
+        return 0;
     }
 }
 
