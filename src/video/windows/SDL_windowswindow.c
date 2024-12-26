@@ -664,15 +664,17 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
     window->internal = NULL;
 }
 
-static void WIN_ConstrainPopup(SDL_Window *window)
+static void WIN_ConstrainPopup(SDL_Window *window, bool output_to_pending)
 {
     // Clamp popup windows to the output borders
     if (SDL_WINDOW_IS_POPUP(window)) {
         SDL_Window *w;
         SDL_DisplayID displayID;
         SDL_Rect rect;
-        int abs_x = window->floating.x;
-        int abs_y = window->floating.y;
+        int abs_x = window->last_position_pending ? window->pending.x : window->floating.x;
+        int abs_y = window->last_position_pending ? window->pending.y : window->floating.y;
+        const int width = window->last_size_pending ? window->pending.w : window->floating.w;
+        const int height = window->last_size_pending ? window->pending.h : window->floating.h;
         int offset_x = 0, offset_y = 0;
 
         // Calculate the total offset from the parents
@@ -689,17 +691,26 @@ static void WIN_ConstrainPopup(SDL_Window *window)
         // Constrain the popup window to the display of the toplevel parent
         displayID = SDL_GetDisplayForWindow(w);
         SDL_GetDisplayBounds(displayID, &rect);
-        if (abs_x + window->floating.w > rect.x + rect.w) {
-            abs_x -= (abs_x + window->floating.w) - (rect.x + rect.w);
+        if (abs_x + width > rect.x + rect.w) {
+            abs_x -= (abs_x + width) - (rect.x + rect.w);
         }
-        if (abs_y + window->floating.h > rect.y + rect.h) {
-            abs_y -= (abs_y + window->floating.h) - (rect.y + rect.h);
+        if (abs_y + height > rect.y + rect.h) {
+            abs_y -= (abs_y + height) - (rect.y + rect.h);
         }
         abs_x = SDL_max(abs_x, rect.x);
         abs_y = SDL_max(abs_y, rect.y);
 
-        window->floating.x = abs_x - offset_x;
-        window->floating.y = abs_y - offset_y;
+        if (output_to_pending) {
+            window->pending.x = abs_x - offset_x;
+            window->pending.y = abs_y - offset_y;
+            window->pending.w = width;
+            window->pending.h = height;
+        } else {
+            window->floating.x = abs_x - offset_x;
+            window->floating.y = abs_y - offset_y;
+            window->floating.w = width;
+            window->floating.h = height;
+        }
     }
 }
 
@@ -742,7 +753,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         styleEx |= GetWindowStyleEx(window);
 
         // Figure out what the window area will be
-        WIN_ConstrainPopup(window);
+        WIN_ConstrainPopup(window, false);
         WIN_AdjustWindowRectWithStyle(window, style, styleEx, FALSE, &x, &y, &w, &h, SDL_WINDOWRECT_FLOATING);
 
         hwnd = CreateWindowEx(styleEx, SDL_Appname, TEXT(""), style,
@@ -938,7 +949,7 @@ bool WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
      */
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         if (!(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) {
-            WIN_ConstrainPopup(window);
+            WIN_ConstrainPopup(window, true);
             return WIN_SetWindowPositionInternal(window,
                                                  window->internal->copybits_flag | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOSIZE |
                                                  SWP_NOACTIVATE, SDL_WINDOWRECT_PENDING);
