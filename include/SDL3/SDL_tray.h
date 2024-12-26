@@ -39,8 +39,25 @@
 extern "C" {
 #endif
 
+/**
+ * An opaque handle representing a toplevel system tray object.
+ *
+ * \since This struct is available since SDL 3.2.0.
+ */
 typedef struct SDL_Tray SDL_Tray;
+
+/**
+ * An opaque handle representing a menu/submenu on a system tray object.
+ *
+ * \since This struct is available since SDL 3.2.0.
+ */
 typedef struct SDL_TrayMenu SDL_TrayMenu;
+
+/**
+ * An opaque handle representing an entry on a system tray object.
+ *
+ * \since This struct is available since SDL 3.2.0.
+ */
 typedef struct SDL_TrayEntry SDL_TrayEntry;
 
 /**
@@ -50,7 +67,7 @@ typedef struct SDL_TrayEntry SDL_TrayEntry;
  * the time a tray entry is created. Other flags are optional; zero or more of
  * those can be OR'ed together with the required flag.
  *
- * \since This datatype is available since SDL 3.0.0.
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_InsertTrayEntryAt
  */
@@ -68,6 +85,8 @@ typedef Uint32 SDL_TrayEntryFlags;
  * \param userdata an optional pointer to pass extra data to the callback when
  *                 it will be invoked.
  * \param entry the tray entry that was selected.
+ *
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_SetTrayEntryCallback
  */
