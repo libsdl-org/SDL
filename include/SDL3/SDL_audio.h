@@ -396,6 +396,17 @@ typedef Uint32 SDL_AudioDeviceID;
 #define SDL_AUDIO_DEVICE_DEFAULT_RECORDING ((SDL_AudioDeviceID) 0xFFFFFFFEu)
 
 /**
+ * A value used to request a default output audio device.
+ *
+ * Several functions that require an SDL_AudioDeviceID will accept this value
+ * to signify the app just wants the system to choose a default device for
+ * audio output instead of the app providing a specific one.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_AUDIO_DEVICE_DEFAULT_OUTPUT ((SDL_AudioDeviceID) 0xFFFFFFFDu)
+
+/**
  * Format specifier for audio data.
  *
  * \since This struct is available since SDL 3.1.3.
