@@ -5476,7 +5476,7 @@ bool SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
         if (!titlecpy) {
             return false;
         }
-        SDL_strlcpy(titlecpy, messageboxdata->title, slen);
+        SDL_memcpy(titlecpy, messageboxdata->title, slen);
     }
 
     if (messageboxdata->message) {
@@ -5486,7 +5486,7 @@ bool SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
             SDL_small_free(titlecpy, titleisstack);
             return false;
         }
-        SDL_strlcpy(msgcpy, messageboxdata->message, slen);
+        SDL_memcpy(msgcpy, messageboxdata->message, slen);
     }
 
     (void)SDL_AtomicIncRef(&SDL_messagebox_count);
