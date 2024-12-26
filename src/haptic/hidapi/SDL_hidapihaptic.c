@@ -149,7 +149,7 @@ bool SDL_HIDAPI_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystic
             list_node->next = NULL;
             
             // grab a joystick ref so that it doesn't get fully destroyed before the haptic is closed
-            joystick->ref_count++;
+            SDL_OpenJoystick(SDL_GetJoystickID(joystick));
 
             SDL_LockMutex(haptic_list_mutex);
             if (haptic_list_head == NULL) {
