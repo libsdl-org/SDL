@@ -50,7 +50,7 @@ struct SDL_Thread
     SDL_ThreadID threadid;
     SYS_ThreadHandle handle;
     int status;
-    SDL_AtomicInt state; /* SDL_THREAD_STATE_* */
+    SDL_AtomicInt state; /* SDL_ThreadState */
     SDL_error errbuf;
     char *name;
     size_t stacksize; // 0 for default, >0 for user-specified stack size.

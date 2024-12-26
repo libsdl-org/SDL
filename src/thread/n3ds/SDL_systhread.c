@@ -126,7 +126,7 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
       Detached threads can be waited on, but should NOT be cleaned manually
       as it would result in a fatal error.
     */
-    if (R_SUCCEEDED(res) && SDL_GetAtomicInt(&thread->state) != SDL_THREAD_STATE_DETACHED) {
+    if (R_SUCCEEDED(res) && SDL_GetThreadState(thread) != SDL_THREAD_DETACHED) {
         threadFree(thread->handle);
     }
 }

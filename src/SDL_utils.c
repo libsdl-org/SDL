@@ -214,6 +214,9 @@ void SDL_SetObjectsInvalid(void)
             case SDL_OBJECT_TYPE_HIDAPI_JOYSTICK:
                 type = "hidapi joystick";
                 break;
+            case SDL_OBJECT_TYPE_THREAD:
+                type = "thread";
+                break;
             default:
                 type = "unknown object";
                 break;
