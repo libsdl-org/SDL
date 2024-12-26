@@ -41,7 +41,6 @@ typedef struct GPU_RenderData
     SDL_GPUDevice *device;
     GPU_Shaders shaders;
     GPU_PipelineCache pipeline_cache;
-    SDL_GPUFence *present_fence;
 
     struct
     {
@@ -959,51 +958,35 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
 
     SDL_GPUTexture *swapchain;
     Uint32 swapchain_texture_width, swapchain_texture_height;
-    bool result = SDL_AcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain, &swapchain_texture_width, &swapchain_texture_height);
+    bool result = SDL_WaitAndAcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain, &swapchain_texture_width, &swapchain_texture_height);
 
     if (!result) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to acquire swapchain texture: %s", SDL_GetError());
     }
 
-    if (swapchain == NULL) {
-        goto submit;
-    }
+    if (swapchain != NULL) {
+        SDL_GPUBlitInfo blit_info;
+        SDL_zero(blit_info);
 
-    SDL_GPUBlitInfo blit_info;
-    SDL_zero(blit_info);
+        blit_info.source.texture = data->backbuffer.texture;
+        blit_info.source.w = data->backbuffer.width;
+        blit_info.source.h = data->backbuffer.height;
+        blit_info.destination.texture = swapchain;
+        blit_info.destination.w = swapchain_texture_width;
+        blit_info.destination.h = swapchain_texture_height;
+        blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
+        blit_info.filter = SDL_GPU_FILTER_LINEAR;
 
-    blit_info.source.texture = data->backbuffer.texture;
-    blit_info.source.w = data->backbuffer.width;
-    blit_info.source.h = data->backbuffer.height;
-    blit_info.destination.texture = swapchain;
-    blit_info.destination.w = swapchain_texture_width;
-    blit_info.destination.h = swapchain_texture_height;
-    blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
-    blit_info.filter = SDL_GPU_FILTER_LINEAR;
+        SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
 
-    SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
+        SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
 
-// *** FIXME ***
-// This is going to block if there is ever a frame in flight.
-// We should do something similar to FNA3D
-// where we keep track of MAX_FRAMES_IN_FLIGHT number of fences
-// and only block if we have maxed out the backpressure.
-// -cosmonaut
-submit:
-#if 1
-    if (data->present_fence) {
-        SDL_WaitForGPUFences(data->device, true, &data->present_fence, 1);
-        SDL_ReleaseGPUFence(data->device, data->present_fence);
-    }
-
-    data->present_fence = SDL_SubmitGPUCommandBufferAndAcquireFence(data->state.command_buffer);
-#else
-    SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
-#endif
-
-    if (swapchain != NULL && (swapchain_texture_width != data->backbuffer.width || swapchain_texture_height != data->backbuffer.height)) {
-        SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
-        CreateBackbuffer(data, swapchain_texture_width, swapchain_texture_height, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
+        if (swapchain_texture_width != data->backbuffer.width || swapchain_texture_height != data->backbuffer.height) {
+            SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
+            CreateBackbuffer(data, swapchain_texture_width, swapchain_texture_height, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
+        }
+    } else {
+        SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
     }
 
     data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
@@ -1036,11 +1019,6 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
 
     if (!data) {
         return;
-    }
-
-    if (data->present_fence) {
-        SDL_WaitForGPUFences(data->device, true, &data->present_fence, 1);
-        SDL_ReleaseGPUFence(data->device, data->present_fence);
     }
 
     if (data->state.command_buffer) {
@@ -1261,6 +1239,8 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     ChoosePresentMode(data->device, window, vsync, &data->swapchain.present_mode);
 
     SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode);
+
+    SDL_SetGPUAllowedFramesInFlight(data->device, 1);
 
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
