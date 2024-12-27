@@ -36,7 +36,7 @@ HICON CreateIconFromSurface(SDL_Surface *surface)
     const int height = s->h;
 
     BITMAPINFO bmpInfo;
-    ZeroMemory(&bmpInfo, sizeof(BITMAPINFO));
+    SDL_zero(bmpInfo);
     bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
     bmpInfo.bmiHeader.biWidth = width;
     bmpInfo.bmiHeader.biHeight = -height; /* Top-down bitmap */
