@@ -1473,8 +1473,13 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
             }
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
+            data->force_resizable = true;
         } else if (data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) {
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+
+            // If resizable was forced on for the maximized window, clear the style flags now.
+            data->force_resizable = false;
+            WIN_SetWindowResizable(SDL_GetVideoDevice(), data->window, !!(data->window->flags & SDL_WINDOW_RESIZABLE));
         }
 
         if (windowpos->flags & SWP_HIDEWINDOW) {
@@ -1873,14 +1878,14 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
             WINDOWPLACEMENT placement;
             if (GetWindowPlacement(hwnd, &placement) && placement.showCmd == SW_MAXIMIZE) {
-                // Maximized borderless windows should use the full monitor size
+                // Maximized borderless windows should use the monitor work area.
                 HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL);
                 if (hMonitor) {
                     MONITORINFO info;
                     SDL_zero(info);
                     info.cbSize = sizeof(info);
                     if (GetMonitorInfo(hMonitor, &info)) {
-                        params->rgrc[0] = info.rcMonitor;
+                        params->rgrc[0] = info.rcWork;
                     }
                 }
             } else if (!(window_flags & SDL_WINDOW_RESIZABLE)) {

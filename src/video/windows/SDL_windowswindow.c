@@ -180,13 +180,22 @@ static DWORD GetWindowStyle(SDL_Window *window)
             style |= STYLE_NORMAL;
         }
 
-        if (window->flags & SDL_WINDOW_RESIZABLE) {
+        /* The WS_MAXIMIZEBOX style flag needs to be retained for as long as the window is maximized,
+         * or restoration from minimized can fail, and leaving maximized can result in an odd size.
+         */
+        if ((window->flags & SDL_WINDOW_RESIZABLE) || (window->internal && window->internal->force_resizable)) {
             /* You can have a borderless resizable window, but Windows doesn't always draw it correctly,
                see https://bugzilla.libsdl.org/show_bug.cgi?id=4466
              */
             if (!(window->flags & SDL_WINDOW_BORDERLESS) ||
                 SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", false)) {
                 style |= STYLE_RESIZABLE;
+            } else if (window->flags & SDL_WINDOW_BORDERLESS) {
+                /* Even if the resizable style hint isn't set, WS_MAXIMIZEBOX is still needed, or
+                 * maximizing the window will make it fullscreen and cover the taskbar, instead
+                 * of entering a normal maximized state that fills the usable desktop area.
+                 */
+                style |= WS_MAXIMIZEBOX;
             }
         }
 
