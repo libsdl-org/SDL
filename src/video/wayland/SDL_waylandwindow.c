@@ -1852,8 +1852,8 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             xdg_positioner_set_size(data->shell_surface.xdg.popup.xdg_positioner, data->current.logical_width, data->current.logical_height);
 
             // Set the popup initial position
-            position_x = window->x;
-            position_y = window->y;
+            position_x = window->last_position_pending ? window->pending.x : window->x;
+            position_y = window->last_position_pending ? window->pending.y : window->y;
             EnsurePopupPositionIsValid(window, &position_x, &position_y);
             if (data->scale_to_display) {
                 position_x = PixelToPoint(window->parent, position_x);
