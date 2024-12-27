@@ -220,6 +220,7 @@
     <ClCompile Include="..\..\src\time\windows\SDL_systime.c" />
     <ClCompile Include="..\..\src\tray\dummy\SDL_tray.c" />
     <ClCompile Include="..\..\src\tray\windows\SDL_tray.c" />
+    <ClCompile Include="..\..\src\tray\SDL_tray_utils.c" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.c" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.c" />
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c" />

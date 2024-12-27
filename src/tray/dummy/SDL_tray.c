@@ -23,6 +23,8 @@
 
 #ifndef SDL_PLATFORM_MACOS
 
+#include "../SDL_tray_utils.h"
+
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     SDL_Unsupported();

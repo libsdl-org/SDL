@@ -25,6 +25,7 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include "../SDL_tray_utils.h"
 #include "../../video/SDL_surface_c.h"
 
 /* applicationDockMenu */
@@ -158,6 +159,8 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     }
 
 skip_putting_an_icon:
+    SDL_IncrementTrayCount();
+
     return tray;
 }
 
@@ -445,6 +448,8 @@ void SDL_DestroyTray(SDL_Tray *tray)
     }
 
     SDL_free(tray);
+
+    SDL_DecrementTrayCount();
 }
 
 #endif // SDL_PLATFORM_MACOS

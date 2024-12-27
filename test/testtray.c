@@ -9,6 +9,20 @@ static void SDLCALL tray_quit(void *ptr, SDL_TrayEntry *entry)
     SDL_PushEvent(&e);
 }
 
+static bool trays_destroyed = false;
+
+static void SDLCALL tray_close(void *ptr, SDL_TrayEntry *entry)
+{
+    SDL_Tray **trays = (SDL_Tray **) ptr;
+
+    trays_destroyed = true;
+
+    SDL_DestroyTray(trays[0]);
+    SDL_DestroyTray(trays[1]);
+
+    SDL_free(trays);
+}
+
 static void SDLCALL apply_icon(void *ptr, const char * const *filelist, int filter)
 {
     if (!*filelist) {
@@ -500,6 +514,13 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    SDL_Window *w = SDL_CreateWindow("", 640, 480, 0);
+
+    if (!w) {
+        SDL_Log("Couldn't create window: %s", SDL_GetError());
+        goto quit;
+    }
+
     /* TODO: Resource paths? */
     SDL_Surface *icon = SDL_LoadBMP("../test/sdl-test_round.bmp");
 
@@ -517,7 +538,7 @@ int main(int argc, char **argv)
 
     if (!tray) {
         SDL_Log("Couldn't create control tray: %s", SDL_GetError());
-        goto quit;
+        goto clean_window;
     }
 
     SDL_Tray *tray2 = SDL_CreateTray(icon2, "SDL Tray example");
@@ -545,7 +566,20 @@ int main(int argc, char **argv)
     SDL_TrayEntry *entry_quit = SDL_InsertTrayEntryAt(menu, -1, "Quit", SDL_TRAYENTRY_BUTTON);
     CHECK(entry_quit);
 
+    SDL_TrayEntry *entry_close = SDL_InsertTrayEntryAt(menu, -1, "Close", SDL_TRAYENTRY_BUTTON);
+    CHECK(entry_close);
+
+    /* TODO: Track memory! */
+    SDL_Tray **trays = SDL_malloc(sizeof(SDL_Tray *) * 2);
+    if (!trays) {
+        goto clean_all;
+    }
+
+    trays[0] = tray;
+    trays[1] = tray2;
+
     SDL_SetTrayEntryCallback(entry_quit, tray_quit, NULL);
+    SDL_SetTrayEntryCallback(entry_close, tray_close, trays);
 
     SDL_InsertTrayEntryAt(menu, -1, NULL, 0);
 
@@ -582,14 +616,26 @@ int main(int argc, char **argv)
     while (SDL_WaitEvent(&e)) {
         if (e.type == SDL_EVENT_QUIT) {
             break;
+        } else if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+            SDL_DestroyWindow(w);
+            w = NULL;
         }
     }
 
 clean_all:
-    SDL_DestroyTray(tray2);
+    if (!trays_destroyed) {
+        SDL_DestroyTray(tray2);
+    }
 
 clean_tray1:
-    SDL_DestroyTray(tray);
+    if (!trays_destroyed) {
+        SDL_DestroyTray(tray);
+    }
+
+clean_window:
+    if (w) {
+        SDL_DestroyWindow(w);
+    }
 
 quit:
     SDL_Quit();

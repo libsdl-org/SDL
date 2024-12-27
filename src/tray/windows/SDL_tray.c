@@ -21,7 +21,9 @@
 
 #include "SDL_internal.h"
 
+#include "../SDL_tray_utils.h"
 #include "../../core/windows/SDL_windows.h"
+
 #include <windowsx.h>
 #include <shellapi.h>
 #include <stdlib.h> /* FIXME: for mbstowcs_s, wcslen */
@@ -227,6 +229,8 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     Shell_NotifyIconW(NIM_SETVERSION, &tray->nid);
 
     SetWindowLongPtr(tray->hwnd, GWLP_USERDATA, (LONG_PTR) tray);
+
+    SDL_IncrementTrayCount();
 
     return tray;
 }
@@ -568,4 +572,6 @@ void SDL_DestroyTray(SDL_Tray *tray)
     }
 
     SDL_free(tray);
+
+    SDL_DecrementTrayCount();
 }
