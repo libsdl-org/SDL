@@ -26,6 +26,8 @@
 #include "gamepad_axis.h"
 #include "gamepad_axis_arrow.h"
 #include "gamepad_button_background.h"
+#include "gamepad_wired.h"
+#include "gamepad_wireless.h"
 
 
 /* This is indexed by gamepad element */
@@ -95,6 +97,7 @@ struct GamepadImage
     SDL_Texture *face_abxy_texture;
     SDL_Texture *face_bayx_texture;
     SDL_Texture *face_sony_texture;
+    SDL_Texture *connection_texture[2];
     SDL_Texture *battery_texture[2];
     SDL_Texture *touchpad_texture;
     SDL_Texture *button_texture;
@@ -103,6 +106,8 @@ struct GamepadImage
     float gamepad_height;
     float face_width;
     float face_height;
+    float connection_width;
+    float connection_height;
     float battery_width;
     float battery_height;
     float touchpad_width;
@@ -121,6 +126,7 @@ struct GamepadImage
 
     bool elements[SDL_GAMEPAD_ELEMENT_MAX];
 
+    SDL_JoystickConnectionState connection_state;
     SDL_PowerState battery_state;
     int battery_percent;
 
@@ -156,6 +162,10 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
         ctx->face_bayx_texture = CreateTexture(renderer, gamepad_face_bayx_bmp, gamepad_face_bayx_bmp_len);
         ctx->face_sony_texture = CreateTexture(renderer, gamepad_face_sony_bmp, gamepad_face_sony_bmp_len);
         SDL_GetTextureSize(ctx->face_abxy_texture, &ctx->face_width, &ctx->face_height);
+
+        ctx->connection_texture[0] = CreateTexture(renderer, gamepad_wired_bmp, gamepad_wired_bmp_len);
+        ctx->connection_texture[1] = CreateTexture(renderer, gamepad_wireless_bmp, gamepad_wireless_bmp_len);
+        SDL_GetTextureSize(ctx->connection_texture[0], &ctx->connection_width, &ctx->connection_height);
 
         ctx->battery_texture[0] = CreateTexture(renderer, gamepad_battery_bmp, gamepad_battery_bmp_len);
         ctx->battery_texture[1] = CreateTexture(renderer, gamepad_battery_wired_bmp, gamepad_battery_wired_bmp_len);
@@ -463,6 +473,7 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
         }
     }
 
+    ctx->connection_state = SDL_GetGamepadConnectionState(gamepad);
     ctx->battery_state = SDL_GetGamepadPowerInfo(gamepad, &ctx->battery_percent);
 
     if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
@@ -562,6 +573,24 @@ void RenderGamepadImage(GamepadImage *ctx)
                 dst.y = ctx->y + axis_positions[i].y - dst.h / 2;
                 SDL_RenderTextureRotated(ctx->renderer, ctx->axis_texture, NULL, &dst, angle, NULL, SDL_FLIP_NONE);
             }
+        }
+    }
+
+    if (ctx->display_mode == CONTROLLER_MODE_TESTING) {
+        dst.x = ctx->x + ctx->gamepad_width - ctx->battery_width - 4 - ctx->connection_width;
+        dst.y = ctx->y;
+        dst.w = ctx->connection_width;
+        dst.h = ctx->connection_height;
+
+        switch (ctx->connection_state) {
+        case SDL_JOYSTICK_CONNECTION_WIRED:
+            SDL_RenderTexture(ctx->renderer, ctx->connection_texture[0], NULL, &dst);
+            break;
+        case SDL_JOYSTICK_CONNECTION_WIRELESS:
+            SDL_RenderTexture(ctx->renderer, ctx->connection_texture[1], NULL, &dst);
+            break;
+        default:
+            break;
         }
     }
 

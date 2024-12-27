@@ -327,6 +327,8 @@ files2headers(gamepad_image_headers
     gamepad_face_sony.bmp
     gamepad_front.bmp
     gamepad_touchpad.bmp
+    gamepad_wired.bmp
+    gamepad_wireless.bmp
 )
 files2headers(icon_bmp_header icon.bmp)
 files2headers(glass_bmp_header glass.bmp)
