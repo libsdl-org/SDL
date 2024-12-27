@@ -533,9 +533,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetCurrentRenderOutputSize(SDL_Renderer *re
  * \param access one of the enumerated values in SDL_TextureAccess.
  * \param w the width of the texture in pixels.
  * \param h the height of the texture in pixels.
- * \returns a pointer to the created texture or NULL if no rendering context
- *          was active, the format was unsupported, or the width or height
- *          were out of range; call SDL_GetError() for more information.
+ * \returns the created texture or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \threadsafety This function should only be called on the main thread.
  *
@@ -673,9 +672,8 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  *
  * \param renderer the rendering context.
  * \param props the properties to use.
- * \returns a pointer to the created texture or NULL if no rendering context
- *          was active, the format was unsupported, or the width or height
- *          were out of range; call SDL_GetError() for more information.
+ * \returns the created texture or NULL on failure; call SDL_GetError() for
+ *          more information.
  *
  * \threadsafety This function should only be called on the main thread.
  *
