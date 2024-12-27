@@ -1858,7 +1858,7 @@ bool SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallba
     return result;
 }
 
-bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int num_streams)
+bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream * const *streams, int num_streams)
 {
     const bool islogical = !(devid & (1<<1));
     SDL_AudioDevice *device = NULL;
@@ -1947,7 +1947,7 @@ bool SDL_BindAudioStream(SDL_AudioDeviceID devid, SDL_AudioStream *stream)
 }
 
 // !!! FIXME: this and BindAudioStreams are mutex nightmares.  :/
-void SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams)
+void SDL_UnbindAudioStreams(SDL_AudioStream * const *streams, int num_streams)
 {
     /* to prevent deadlock when holding both locks, we _must_ lock the device first, and the stream second, as that is the order the audio thread will do it.
        But this means we have an unlikely, pathological case where a stream could change its binding between when we lookup its bound device and when we lock everything,
