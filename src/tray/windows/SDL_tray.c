@@ -21,13 +21,12 @@
 
 #include "SDL_internal.h"
 
-#include "../../video/windows/SDL_surface_utils.h"
-
-#include <windows.h>
+#include "../../core/windows/SDL_windows.h"
 #include <windowsx.h>
 #include <shellapi.h>
+#include <stdlib.h> /* FIXME: for mbstowcs_s, wcslen */
 
-#include <stdlib.h>
+#include "../../video/windows/SDL_surface_utils.h"
 
 #ifndef NOTIFYICON_VERSION_4
 #define NOTIFYICON_VERSION_4 4

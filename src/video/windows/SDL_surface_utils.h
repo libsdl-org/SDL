@@ -23,7 +23,7 @@
 #ifndef SDL_surface_utils_h_
 #define SDL_surface_utils_h_
 
-#include <windows.h>
+#include "../../core/windows/SDL_windows.h"
 
 #ifdef __cplusplus
 extern "C" {
