@@ -196,15 +196,15 @@ void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, SDL_WindowFlags f
     }
 }
 
-static void X11_ConstrainPopup(SDL_Window *window, bool use_current_position)
+static void X11_ConstrainPopup(SDL_Window *window, bool output_to_pending)
 {
     // Clamp popup windows to the output borders
     if (SDL_WINDOW_IS_POPUP(window)) {
         SDL_Window *w;
         SDL_DisplayID displayID;
         SDL_Rect rect;
-        int abs_x = use_current_position ? window->floating.x : window->pending.x;
-        int abs_y = use_current_position ? window->floating.y : window->pending.y;
+        int abs_x = window->last_position_pending ? window->pending.x : window->floating.x;
+        int abs_y = window->last_position_pending ? window->pending.y : window->floating.y;
         int offset_x = 0, offset_y = 0;
 
         // Calculate the total offset from the parents
@@ -230,8 +230,13 @@ static void X11_ConstrainPopup(SDL_Window *window, bool use_current_position)
         abs_x = SDL_max(abs_x, rect.x);
         abs_y = SDL_max(abs_y, rect.y);
 
-        window->floating.x = window->windowed.x = abs_x - offset_x;
-        window->floating.y = window->windowed.y = abs_y - offset_y;
+        if (output_to_pending) {
+            window->pending.x = abs_x - offset_x;
+            window->pending.y = abs_y - offset_y;
+        } else {
+            window->floating.x = window->windowed.x = abs_x - offset_x;
+            window->floating.y = window->windowed.y = abs_y - offset_y;
+        }
     }
 }
 
@@ -685,7 +690,7 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     }
 
     if (SDL_WINDOW_IS_POPUP(window)) {
-        X11_ConstrainPopup(window, true);
+        X11_ConstrainPopup(window, false);
     }
     SDL_RelativeToGlobalForWindow(window,
                                   window->floating.x, window->floating.y,
@@ -1085,7 +1090,7 @@ bool X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         if (SDL_WINDOW_IS_POPUP(window)) {
-            X11_ConstrainPopup(window, false);
+            X11_ConstrainPopup(window, true);
         }
         X11_UpdateWindowPosition(window, false);
     } else {
@@ -1119,9 +1124,11 @@ static void X11_SetWMNormalHints(SDL_VideoDevice *_this, SDL_Window *window, XSi
        and transitioning from windowed to fullscreen in Unity.
      */
     X11_XResizeWindow(display, data->xwindow, window->pending.w, window->pending.h);
+    const int x = window->last_position_pending ? window->pending.x : window->floating.x;
+    const int y = window->last_position_pending ? window->pending.y : window->floating.y;
     SDL_RelativeToGlobalForWindow(window,
-                                  window->pending.x - data->border_left,
-                                  window->pending.y - data->border_top,
+                                  x - data->border_left,
+                                  y - data->border_top,
                                   &dest_x, &dest_y);
     X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
     X11_XRaiseWindow(display, data->xwindow);
@@ -1431,10 +1438,14 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, true);
     XEvent event;
 
-    if (window->parent) {
-        // Update our position in case our parent moved while we were hidden
-        X11_UpdateWindowPosition(window, true);
+    if (SDL_WINDOW_IS_POPUP(window)) {
+        // Update the position in case the parent moved while we were hidden
+        X11_ConstrainPopup(window, true);
+        X11_UpdateWindowPosition(window, false);
     }
+
+    const int target_x = window->last_position_pending ? window->pending.x : window->x;
+    const int target_y = window->last_position_pending ? window->pending.y : window->y;
 
     /* Whether XMapRaised focuses the window is based on the window type and it is
      * wm specific. There isn't much we can do here */
@@ -1487,9 +1498,9 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
 
         // If the borders appeared, this happened automatically in the event system, otherwise, set the position now.
-        if (data->disable_size_position_events && (window->x != x || window->y != y)) {
+        if (data->disable_size_position_events && (target_x != x || target_y != y)) {
             data->pending_operation = X11_PENDING_OP_MOVE;
-            X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+            X11_XMoveWindow(display, data->xwindow, target_x, target_y);
         }
 
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, data->last_xconfigure.width, data->last_xconfigure.height);
