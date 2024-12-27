@@ -202,7 +202,7 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     tray->hwnd = CreateWindowEx(0, TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
     SetWindowLongPtr(tray->hwnd, GWLP_WNDPROC, (LONG_PTR) TrayWindowProc);
 
-    ZeroMemory(&tray->nid, sizeof(NOTIFYICONDATAW));
+    SDL_zero(tray->nid);
     tray->nid.cbSize = sizeof(NOTIFYICONDATAW);
     tray->nid.hWnd = tray->hwnd;
     tray->nid.uID = (UINT) get_next_id();
