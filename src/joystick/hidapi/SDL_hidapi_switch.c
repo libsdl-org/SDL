@@ -2433,7 +2433,7 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, ~axis);
     }
 
-    /* High nibble of battery/connection byte is battery level, low nibble is connection status
+    /* High nibble of battery/connection byte is battery level, low nibble is connection status (always 0 on 8BitDo Pro 2)
      * LSB of connection nibble is USB/Switch connection status
      * LSB of the battery nibble is used to report charging.
      * The battery level is reported from 0(empty)-8(full)
@@ -2442,12 +2442,6 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
     int charging = (packet->controllerState.ucBatteryAndConnection & 0x10);
     int level = (packet->controllerState.ucBatteryAndConnection & 0xE0) >> 4;
     int percent = (int)SDL_roundf((level / 8.0f) * 100.0f);
-
-    if (packet->controllerState.ucBatteryAndConnection & 0x01) {
-        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
-    } else {
-        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
-    }
 
     if (charging) {
         if (level == 8) {
