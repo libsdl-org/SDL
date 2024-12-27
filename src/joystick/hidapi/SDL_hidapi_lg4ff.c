@@ -92,6 +92,7 @@ typedef struct
 {
     Uint8 last_report_buf[32];
     bool initialized;
+    bool is_ffex;
 } SDL_DriverLg4ff_Context;
 
 static void HIDAPI_DriverLg4ff_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -384,14 +385,7 @@ static bool HIDAPI_DriverLg4ff_SetRange(SDL_HIDAPI_Device *device, int range)
 */
 static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int magnitude)
 {
-    /*
-      TODO
-
-      Review hidapi code to see if SDL_hid_device_info.release_number is reliable
-
-      Use SDL_hid_get_device_info(device) to grab SDL_hid_device_info.release_number,
-      to tell between ffex and dfex
-    */
+    SDL_DriverLg4ff_Context *ctx = (SDL_DriverLg4ff_Context *)device->context;
     Uint8 cmd[7] = {0};
     int ret;
 
@@ -402,25 +396,20 @@ static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int magn
         magnitude = 65535;
     }
 
-#if 0
-    if (is_ffex) {
+    if (ctx->is_ffex) {
         magnitude = magnitude * 90 / 65535;
 
         cmd[0] = 0xfe;
         cmd[1] = 0x03;
-        cmd[2] = (uint16_t)magnitude >> 14;
-        cmd[3] = (uint16_t)magnitude >> 14;
-        cmd[4] = (uint16_t)magnitude;
-        cmd[5] = 0x00;
-        cmd[6] = 0x00;
+        cmd[2] = (Uint8)((Uint16)magnitude >> 14);
+        cmd[3] = (Uint8)((Uint16)magnitude >> 14);
+        cmd[4] = (Uint8)magnitude;
 
         ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
         if(ret == -1){
             return false;
         }
-    }else
-#endif
-    {
+    } else {
         Uint32 expand_a;
         Uint32 expand_b;
         // first disable
@@ -471,6 +460,13 @@ static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int magn
     return true;
 }
 
+/*
+  ffex identification method by:
+  Simon Wood <simon@mungewell.org>
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  lg4ff_init
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
 static bool HIDAPI_DriverLg4ff_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverLg4ff_Context *ctx;
@@ -493,6 +489,14 @@ static bool HIDAPI_DriverLg4ff_InitDevice(SDL_HIDAPI_Device *device)
 
     if (!HIDAPI_DriverLg4ff_SetAutoCenter(device, 0)) {
         return false;
+    }
+
+    if (device->product_id == USB_DEVICE_ID_LOGITECH_WHEEL &&
+            (device->version >> 8) == 0x21 &&
+            (device->version & 0xff) == 0x00) {
+        ctx->is_ffex = true;
+    } else {
+        ctx->is_ffex = false;
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
