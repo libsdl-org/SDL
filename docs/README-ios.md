@@ -146,18 +146,9 @@ From iOS 17 onward, the key now defaults to true.
 Notes -- Reading and Writing files
 ==============================================================================
 
-Each application installed on iPhone resides in a sandbox which includes its own Application Home directory.  Your application may not access files outside this directory.
+Each application installed on iPhone resides in a sandbox which includes its own application home directory. Your application may not access files outside this directory.
 
-Once your application is installed its directory tree looks like:
-
-    MySDLApp Home/
-        MySDLApp.app
-        Documents/
-        Library/
-            Preferences/
-        tmp/
-
-When your SDL based iPhone application starts up, it sets the working directory to the main bundle (MySDLApp Home/MySDLApp.app), where your application resources are stored.  You cannot write to this directory.  Instead, I advise you to write document files to "../Documents/" and preferences to "../Library/Preferences".
+When your SDL based iPhone application starts up, it sets the working directory to the main bundle, where your application resources are stored. You cannot write to this directory. Instead, you should write document files to the directory returned by SDL_GetUserFolder(SDL_FOLDER_DOCUMENTS) and preferences to the directory returned by SDL_GetPrefPath().
 
 More information on this subject is available here:
 http://developer.apple.com/library/ios/#documentation/iPhone/Conceptual/iPhoneOSProgrammingGuide/Introduction/Introduction.html
