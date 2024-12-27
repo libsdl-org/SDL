@@ -958,7 +958,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * \sa SDL_UnbindAudioStream
  * \sa SDL_GetAudioStreamDevice
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int num_streams);
+extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream * const *streams, int num_streams);
 
 /**
  * Bind a single audio stream to an audio device.
@@ -999,7 +999,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStream(SDL_AudioDeviceID devid, SD
  *
  * \sa SDL_BindAudioStreams
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams);
+extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream * const *streams, int num_streams);
 
 /**
  * Unbind a single audio stream from its audio device.
