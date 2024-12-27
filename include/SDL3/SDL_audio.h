@@ -990,7 +990,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStream(SDL_AudioDeviceID devid, SD
  *
  * Unbinding a stream that isn't bound to a device is a legal no-op.
  *
- * \param streams an array of audio streams to unbind.
+ * \param streams an array of audio streams to unbind. Can be NULL or contain NULL.
  * \param num_streams number streams listed in the `streams` array.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1007,7 +1007,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream * const 
  * This is a convenience function, equivalent to calling
  * `SDL_UnbindAudioStreams(&stream, 1)`.
  *
- * \param stream an audio stream to unbind from a device.
+ * \param stream an audio stream to unbind from a device. Can be NULL.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

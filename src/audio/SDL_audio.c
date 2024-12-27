@@ -1949,6 +1949,10 @@ bool SDL_BindAudioStream(SDL_AudioDeviceID devid, SDL_AudioStream *stream)
 // !!! FIXME: this and BindAudioStreams are mutex nightmares.  :/
 void SDL_UnbindAudioStreams(SDL_AudioStream * const *streams, int num_streams)
 {
+    if (num_streams <= 0 || !streams) {
+        return; // nothing to do
+    }
+
     /* to prevent deadlock when holding both locks, we _must_ lock the device first, and the stream second, as that is the order the audio thread will do it.
        But this means we have an unlikely, pathological case where a stream could change its binding between when we lookup its bound device and when we lock everything,
        so we double-check here. */
