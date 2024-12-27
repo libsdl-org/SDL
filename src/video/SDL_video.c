@@ -3069,8 +3069,6 @@ bool SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 
 bool SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
 {
-    int w, h;
-
     CHECK_WINDOW_MAGIC(window, false);
     if (min_w < 0) {
         return SDL_InvalidParamError("min_w");
@@ -3092,8 +3090,10 @@ bool SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
     }
 
     // Ensure that window is not smaller than minimal size
-    w = window->min_w ? SDL_max(window->floating.w, window->min_w) : window->floating.w;
-    h = window->min_h ? SDL_max(window->floating.h, window->min_h) : window->floating.h;
+    int w = window->last_size_pending ? window->pending.w : window->floating.w;
+    int h = window->last_size_pending ? window->pending.h : window->floating.h;
+    w = window->min_w ? SDL_max(w, window->min_w) : w;
+    h = window->min_h ? SDL_max(h, window->min_h) : h;
     return SDL_SetWindowSize(window, w, h);
 }
 
@@ -3111,8 +3111,6 @@ bool SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
 
 bool SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
 {
-    int w, h;
-
     CHECK_WINDOW_MAGIC(window, false);
     if (max_w < 0) {
         return SDL_InvalidParamError("max_w");
@@ -3134,8 +3132,10 @@ bool SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
     }
 
     // Ensure that window is not larger than maximal size
-    w = window->max_w ? SDL_min(window->floating.w, window->max_w) : window->floating.w;
-    h = window->max_h ? SDL_min(window->floating.h, window->max_h) : window->floating.h;
+    int w = window->last_size_pending ? window->pending.w : window->floating.w;
+    int h = window->last_size_pending ? window->pending.h : window->floating.h;
+    w = window->max_w ? SDL_min(w, window->max_w) : w;
+    h = window->max_h ? SDL_min(h, window->max_h) : h;
     return SDL_SetWindowSize(window, w, h);
 }
 
