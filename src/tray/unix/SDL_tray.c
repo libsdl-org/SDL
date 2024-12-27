@@ -21,6 +21,8 @@
 
 #include "SDL_internal.h"
 
+#include "../SDL_tray_utils.h"
+
 #include <dlfcn.h>
 
 /* getpid() */
@@ -52,6 +54,7 @@ typedef enum
     G_CONNECT_SWAPPED = 1 << 1
 } GConnectFlags;
 gulong (*g_signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, GConnectFlags connect_flags);
+void (*g_object_unref)(gpointer object);
 
 #define g_signal_connect(instance, detailed_signal, c_handler, data) \
     g_signal_connect_data ((instance), (detailed_signal), (c_handler), (data), NULL, (GConnectFlags) 0)
@@ -237,6 +240,7 @@ static bool init_gtk(void)
     gtk_widget_get_sensitive = dlsym(libgtk, "gtk_widget_get_sensitive");
 
     g_signal_connect_data = dlsym(libgdk, "g_signal_connect_data");
+    g_object_unref = dlsym(libgdk, "g_object_unref");
 
     app_indicator_new = dlsym(libappindicator, "app_indicator_new");
     app_indicator_set_status = dlsym(libappindicator, "app_indicator_set_status");
@@ -257,6 +261,7 @@ static bool init_gtk(void)
         !gtk_menu_shell_insert ||
         !gtk_widget_destroy ||
         !g_signal_connect_data ||
+        !g_object_unref ||
         !app_indicator_new ||
         !app_indicator_set_status ||
         !app_indicator_set_icon ||
@@ -393,6 +398,8 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
                                         APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
 
     app_indicator_set_status(tray->indicator, APP_INDICATOR_STATUS_ACTIVE);
+
+    SDL_IncrementTrayCount();
 
     return tray;
 }
@@ -660,5 +667,9 @@ void SDL_DestroyTray(SDL_Tray *tray)
         SDL_RemovePath(tray->icon_path);
     }
 
+    g_object_unref(tray->indicator);
+
     SDL_free(tray);
+
+    SDL_DecrementTrayCount();
 }

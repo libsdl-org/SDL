@@ -1235,6 +1235,9 @@
     <ClCompile Include="..\..\src\tray\windows\SDL_tray.c">
       <Filter>video</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\tray\SDL_tray_utils.c">
+      <Filter>video</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_RLEaccel.c">
       <Filter>video</Filter>
     </ClCompile>
