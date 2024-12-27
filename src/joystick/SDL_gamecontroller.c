@@ -688,7 +688,7 @@ static ControllerMapping_t *SDL_CreateMappingForWGIController(SDL_JoystickGUID g
 /*
  * Helper function to scan the mappings database for a controller with the specified GUID
  */
-static ControllerMapping_t *SDL_PrivateMatchControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool match_version)
+static ControllerMapping_t *SDL_PrivateMatchControllerMappingForGUID(SDL_JoystickGUID guid, SDL_bool match_version, SDL_bool exact_match_crc)
 {
     ControllerMapping_t *mapping, *best_match = NULL;
     Uint16 crc = 0;
@@ -728,8 +728,9 @@ static ControllerMapping_t *SDL_PrivateMatchControllerMappingForGUID(SDL_Joystic
 
                 /* An exact match, including CRC */
                 return mapping;
+            } else if (crc && exact_match_crc) {
+                return NULL;
             }
-
 
             if (!best_match) {
                 best_match = mapping;
@@ -746,7 +747,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
 {
     ControllerMapping_t *mapping;
 
-    mapping = SDL_PrivateMatchControllerMappingForGUID(guid, SDL_TRUE);
+    mapping = SDL_PrivateMatchControllerMappingForGUID(guid, SDL_TRUE, adding_mapping);
     if (mapping) {
         return mapping;
     }
@@ -760,7 +761,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
 
     if (SDL_JoystickGUIDUsesVersion(guid)) {
         /* Try again, ignoring the version */
-        mapping = SDL_PrivateMatchControllerMappingForGUID(guid, SDL_FALSE);
+        mapping = SDL_PrivateMatchControllerMappingForGUID(guid, SDL_FALSE, SDL_FALSE);
         if (mapping) {
             return mapping;
         }
