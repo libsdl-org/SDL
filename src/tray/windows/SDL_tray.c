@@ -29,6 +29,13 @@
 
 #include <stdlib.h>
 
+#ifndef NOTIFYICON_VERSION_4
+#define NOTIFYICON_VERSION_4 4
+#endif
+#ifndef NIF_SHOWTIP
+#define NIF_SHOWTIP 0x00000080
+#endif
+
 #define WM_TRAYICON (WM_USER + 1)
 
 struct SDL_TrayMenu {
