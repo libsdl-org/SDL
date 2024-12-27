@@ -870,7 +870,7 @@ static GamepadMapping_t *SDL_CreateMappingForWGIGamepad(SDL_GUID guid)
 /*
  * Helper function to scan the mappings database for a gamepad with the specified GUID
  */
-static GamepadMapping_t *SDL_PrivateMatchGamepadMappingForGUID(SDL_GUID guid, bool match_version)
+static GamepadMapping_t *SDL_PrivateMatchGamepadMappingForGUID(SDL_GUID guid, bool match_version, bool exact_match_crc)
 {
     GamepadMapping_t *mapping, *best_match = NULL;
     Uint16 crc = 0;
@@ -909,6 +909,8 @@ static GamepadMapping_t *SDL_PrivateMatchGamepadMappingForGUID(SDL_GUID guid, bo
 
                 // An exact match, including CRC
                 return mapping;
+            } else if (crc && exact_match_crc) {
+                return NULL;
             }
 
             if (!best_match) {
@@ -926,7 +928,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_GUID guid, bool
 {
     GamepadMapping_t *mapping;
 
-    mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, true);
+    mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, true, adding_mapping);
     if (mapping) {
         return mapping;
     }
@@ -940,7 +942,7 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_GUID guid, bool
 
     if (SDL_JoystickGUIDUsesVersion(guid)) {
         // Try again, ignoring the version
-        mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, false);
+        mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, false, false);
         if (mapping) {
             return mapping;
         }
