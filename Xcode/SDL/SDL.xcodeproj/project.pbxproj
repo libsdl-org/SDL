@@ -529,6 +529,8 @@
 		F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */; };
 		F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
+		000012E88BE7D71B274A0000 /* SDL_uikitpen.h in Headers */ = {isa = PBXBuildFile; fileRef = 000063D3D80F97ADC7770000 /* SDL_uikitpen.h */; };
+		0000A877C7DB9FA935FC0000 /* SDL_uikitpen.m in Sources */ = {isa = PBXBuildFile; fileRef = 000053D344416737F6050000 /* SDL_uikitpen.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1090,6 +1092,8 @@
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		000063D3D80F97ADC7770000 /* SDL_uikitpen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_uikitpen.h; path = SDL_uikitpen.h; sourceTree = "<group>"; };
+		000053D344416737F6050000 /* SDL_uikitpen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_uikitpen.m; path = SDL_uikitpen.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1679,6 +1683,8 @@
 				A7D8A62523E2513D00DCD162 /* SDL_uikitvulkan.m */,
 				A7D8A62723E2513D00DCD162 /* SDL_uikitwindow.h */,
 				A7D8A61A23E2513D00DCD162 /* SDL_uikitwindow.m */,
+				000063D3D80F97ADC7770000 /* SDL_uikitpen.h */,
+				000053D344416737F6050000 /* SDL_uikitpen.m */,
 			);
 			path = uikit;
 			sourceTree = "<group>";
@@ -3016,6 +3022,7 @@
 				0000AEB9AE90228CA2D60000 /* SDL_asyncio.c in Sources */,
 				00004D0B73767647AD550000 /* SDL_asyncio_generic.c in Sources */,
 				0000A03C0F32C43816F40000 /* SDL_asyncio_windows_ioring.c in Sources */,
+				0000A877C7DB9FA935FC0000 /* SDL_uikitpen.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
