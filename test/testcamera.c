@@ -118,10 +118,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         const SDL_CameraPosition position = SDL_GetCameraPosition(device);
         const char *posstr = "";
         if (position == SDL_CAMERA_POSITION_FRONT_FACING) {
-            front_camera = device;
+            if (!front_camera) {
+                front_camera = device;
+            }
             posstr = "[front-facing] ";
         } else if (position == SDL_CAMERA_POSITION_BACK_FACING) {
-            back_camera = device;
+            if (!back_camera) {
+                back_camera = device;
+            }
             posstr = "[back-facing] ";
         }
         if (camera_name && SDL_strcasecmp(name, camera_name) == 0) {
