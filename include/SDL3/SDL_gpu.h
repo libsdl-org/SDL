@@ -1518,6 +1518,8 @@ typedef struct SDL_GPUVertexAttribute
  * \since This struct is available since SDL 3.1.3
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
+ * \sa SDL_GPUVertexBufferDescription
+ * \sa SDL_GPUVertexAttribute
  */
 typedef struct SDL_GPUVertexInputState
 {
