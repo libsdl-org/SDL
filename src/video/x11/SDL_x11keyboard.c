@@ -90,9 +90,9 @@ KeySym X11_KeyCodeToSym(SDL_VideoDevice *_this, KeyCode keycode, unsigned char g
     SDL_zero(mods_ret);
 
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
-    if (data->xkb) {
-        int num_groups = XkbKeyNumGroups(data->xkb, keycode);
-        unsigned char info = XkbKeyGroupInfo(data->xkb, keycode);
+    if (data->xkb.desc_ptr) {
+        int num_groups = XkbKeyNumGroups(data->xkb.desc_ptr, keycode);
+        unsigned char info = XkbKeyGroupInfo(data->xkb.desc_ptr, keycode);
 
         if (num_groups && group >= num_groups) {
 
@@ -152,8 +152,8 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
         int xkb_major = XkbMajorVersion;
         int xkb_minor = XkbMinorVersion;
 
-        if (X11_XkbQueryExtension(data->display, NULL, &data->xkb_event, NULL, &xkb_major, &xkb_minor)) {
-            data->xkb = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
+        if (X11_XkbQueryExtension(data->display, NULL, &data->xkb.event, NULL, &xkb_major, &xkb_minor)) {
+            data->xkb.desc_ptr = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
         }
 
         // This will remove KeyRelease events for held keys
@@ -326,6 +326,56 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
     return true;
 }
 
+static unsigned X11_GetNumLockModifierMask(SDL_VideoDevice *_this)
+{
+    SDL_VideoData *videodata = _this->internal;
+    Display *display = videodata->display;
+    unsigned num_mask = 0;
+    int i, j;
+    XModifierKeymap *xmods;
+    unsigned n;
+
+    xmods = X11_XGetModifierMapping(display);
+    n = xmods->max_keypermod;
+    for (i = 3; i < 8; i++) {
+        for (j = 0; j < n; j++) {
+            KeyCode kc = xmods->modifiermap[i * n + j];
+            if (videodata->key_layout[kc] == SDL_SCANCODE_NUMLOCKCLEAR) {
+                num_mask = 1 << i;
+                break;
+            }
+        }
+    }
+    X11_XFreeModifiermap(xmods);
+
+    return num_mask;
+}
+
+static unsigned X11_GetScrollLockModifierMask(SDL_VideoDevice *_this)
+{
+    SDL_VideoData *videodata = _this->internal;
+    Display *display = videodata->display;
+    unsigned num_mask = 0;
+    int i, j;
+    XModifierKeymap *xmods;
+    unsigned n;
+
+    xmods = X11_XGetModifierMapping(display);
+    n = xmods->max_keypermod;
+    for (i = 3; i < 8; i++) {
+        for (j = 0; j < n; j++) {
+            KeyCode kc = xmods->modifiermap[i * n + j];
+            if (videodata->key_layout[kc] == SDL_SCANCODE_SCROLLLOCK) {
+                num_mask = 1 << i;
+                break;
+            }
+        }
+    }
+    X11_XFreeModifiermap(xmods);
+
+    return num_mask;
+}
+
 void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
 {
     struct Keymod_masks
@@ -340,7 +390,15 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
         { SDL_KMOD_MODE, Mod5Mask },
         { SDL_KMOD_MODE | SDL_KMOD_SHIFT, Mod5Mask | ShiftMask },
         { SDL_KMOD_MODE | SDL_KMOD_CAPS, Mod5Mask | LockMask },
-        { SDL_KMOD_MODE | SDL_KMOD_SHIFT | SDL_KMOD_CAPS, Mod5Mask | ShiftMask | LockMask }
+        { SDL_KMOD_MODE | SDL_KMOD_SHIFT | SDL_KMOD_CAPS, Mod5Mask | ShiftMask | LockMask },
+        { SDL_KMOD_LEVEL5, Mod3Mask },
+        { SDL_KMOD_LEVEL5 | SDL_KMOD_SHIFT, Mod3Mask | ShiftMask },
+        { SDL_KMOD_LEVEL5 | SDL_KMOD_CAPS, Mod3Mask | LockMask },
+        { SDL_KMOD_LEVEL5 | SDL_KMOD_SHIFT | SDL_KMOD_CAPS, Mod3Mask | ShiftMask | LockMask },
+        { SDL_KMOD_LEVEL5 | SDL_KMOD_MODE, Mod5Mask | Mod3Mask },
+        { SDL_KMOD_LEVEL5 | SDL_KMOD_MODE | SDL_KMOD_SHIFT, Mod3Mask | Mod5Mask | ShiftMask },
+        { SDL_KMOD_LEVEL5 | SDL_KMOD_MODE | SDL_KMOD_CAPS, Mod3Mask | Mod5Mask | LockMask },
+        { SDL_KMOD_LEVEL5 | SDL_KMOD_MODE | SDL_KMOD_SHIFT | SDL_KMOD_CAPS, Mod3Mask | Mod5Mask | ShiftMask | LockMask }
     };
 
     SDL_VideoData *data = _this->internal;
@@ -351,12 +409,12 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
     keymap = SDL_CreateKeymap();
 
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
-    if (data->xkb) {
+    if (data->xkb.desc_ptr) {
         XkbStateRec state;
-        X11_XkbGetUpdatedMap(data->display, XkbAllClientInfoMask, data->xkb);
+        X11_XkbGetUpdatedMap(data->display, XkbAllClientInfoMask, data->xkb.desc_ptr);
 
         if (X11_XkbGetState(data->display, XkbUseCoreKbd, &state) == Success) {
-            data->xkb_group = state.group;
+            data->xkb.current_group = state.group;
         }
     }
 #endif
@@ -371,22 +429,46 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
                 continue;
             }
 
-            KeySym keysym = X11_KeyCodeToSym(_this, i, data->xkb_group, keymod_masks[m].xkb_mask);
+            const KeySym keysym = X11_KeyCodeToSym(_this, i, data->xkb.current_group, keymod_masks[m].xkb_mask);
+            bool key_is_unknown = false;
 
-            // Note: The default SDL scancode table sets this to right alt instead of AltGr/Mode, so handle it separately.
-            if (keysym != XK_ISO_Level3_Shift) {
-                keycode = SDL_KeySymToUcs4(keysym);
-            } else {
+            switch (keysym) {
+            // The default SDL scancode table sets this to right alt instead of AltGr/Mode, so handle it separately.
+            case XK_ISO_Level3_Shift:
                 keycode = SDLK_MODE;
+                break;
+
+            /* The default SDL scancode table sets Meta L/R to the GUI keys, and Hyper R to app menu, which is
+             * correct as far as physical key placement goes, but these keys are functionally distinct from the
+             * default keycodes SDL returns for the scancodes, so they are set to unknown.
+             *
+             * SDL has no scancode mapping for Hyper L or Level 5 Shift, and they are usually mapped to something
+             * else, like Caps Lock, so just pass through the unknown keycode.
+             */
+            case XK_Meta_L:
+            case XK_Meta_R:
+            case XK_Hyper_L:
+            case XK_Hyper_R:
+            case XK_ISO_Level5_Shift:
+                keycode = SDLK_UNKNOWN;
+                key_is_unknown = true;
+                break;
+
+            default:
+                keycode = SDL_KeySymToUcs4(keysym);
+                break;
             }
 
-            if (!keycode) {
-                SDL_Scancode keyScancode = SDL_GetScancodeFromKeySym(keysym, (KeyCode)i);
+            if (!keycode && !key_is_unknown) {
+                const SDL_Scancode keyScancode = SDL_GetScancodeFromKeySym(keysym, (KeyCode)i);
                 keycode = SDL_GetKeymapKeycode(NULL, keyScancode, keymod_masks[m].sdl_mask);
             }
             SDL_SetKeymapEntry(keymap, scancode, keymod_masks[m].sdl_mask, keycode);
         }
     }
+
+    data->xkb.numlock_mask = X11_GetNumLockModifierMask(_this);
+    data->xkb.scrolllock_mask = X11_GetScrollLockModifierMask(_this);
     SDL_SetKeymap(keymap, send_event);
 }
 
@@ -395,9 +477,9 @@ void X11_QuitKeyboard(SDL_VideoDevice *_this)
     SDL_VideoData *data = _this->internal;
 
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
-    if (data->xkb) {
-        X11_XkbFreeKeyboard(data->xkb, 0, True);
-        data->xkb = NULL;
+    if (data->xkb.desc_ptr) {
+        X11_XkbFreeKeyboard(data->xkb.desc_ptr, 0, True);
+        data->xkb.desc_ptr = NULL;
     }
 #endif
 
