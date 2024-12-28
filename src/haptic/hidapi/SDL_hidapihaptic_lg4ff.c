@@ -129,7 +129,7 @@ return SDL_GetTicks();
 #define test_bit(bit, field) (*(field) & (1 << bit))
 #define __set_bit(bit, field) {*(field) = *(field) | (1 << bit);}
 #define __clear_bit(bit, field) {*(field) = *(field) & ~(1 << bit);}
-#define sin_deg(in) (double)(sin((double)(in) * (double)M_PI / 180.0))
+#define sin_deg(in) (double)(SDL_sin((double)(in) * (double)M_PI / 180.0))
 
 #define time_after_eq(a, b) (a >= b)
 #define time_before(a, b) (a < b)
