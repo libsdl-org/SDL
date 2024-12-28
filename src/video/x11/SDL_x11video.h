@@ -141,12 +141,19 @@ struct SDL_VideoData
     bool xinput_hierarchy_changed;
 
     int xrandr_event_base;
-
+    struct
+    {
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
-    XkbDescPtr xkb;
+        XkbDescPtr desc_ptr;
 #endif
-    int xkb_event;
-    unsigned int xkb_group;
+        int event;
+        unsigned int current_group;
+
+        SDL_Keymod active_modifiers;
+
+        Uint32 numlock_mask;
+        Uint32 scrolllock_mask;
+    } xkb;
 
     KeyCode filter_code;
     Time filter_time;

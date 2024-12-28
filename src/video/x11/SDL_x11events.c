@@ -246,54 +246,133 @@ static void X11_HandleGenericEvent(SDL_VideoDevice *_this, XEvent *xev)
 }
 #endif // SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 
-static unsigned X11_GetNumLockModifierMask(SDL_VideoDevice *_this)
+static void X11_ReconcileModifiers(SDL_VideoData *viddata)
 {
-    SDL_VideoData *videodata = _this->internal;
-    Display *display = videodata->display;
-    unsigned num_mask = 0;
-    int i, j;
-    XModifierKeymap *xmods;
-    unsigned n;
+    Window junk_window;
+    int x, y;
+    Uint32 xk_modifiers = 0;
 
-    xmods = X11_XGetModifierMapping(display);
-    n = xmods->max_keypermod;
-    for (i = 3; i < 8; i++) {
-        for (j = 0; j < n; j++) {
-            KeyCode kc = xmods->modifiermap[i * n + j];
-            if (videodata->key_layout[kc] == SDL_SCANCODE_NUMLOCKCLEAR) {
-                num_mask = 1 << i;
-                break;
-            }
+    X11_XQueryPointer(viddata->display, DefaultRootWindow(viddata->display), &junk_window, &junk_window, &x, &y, &x, &y, &xk_modifiers);
+
+    /* If a modifier was activated by a keypress, it will be tied to the
+     * specific left/right key that initiated it. Otherwise, the ambiguous
+     * left/right combo is used.
+     */
+    if (xk_modifiers & ShiftMask) {
+        if (!(viddata->xkb.active_modifiers & SDL_KMOD_SHIFT)) {
+            viddata->xkb.active_modifiers |= SDL_KMOD_SHIFT;
         }
+    } else {
+        viddata->xkb.active_modifiers &= ~SDL_KMOD_SHIFT;
     }
-    X11_XFreeModifiermap(xmods);
 
-    return num_mask;
+    if (xk_modifiers & ControlMask) {
+        if (!(viddata->xkb.active_modifiers & SDL_KMOD_CTRL)) {
+            viddata->xkb.active_modifiers |= SDL_KMOD_CTRL;
+        }
+    } else {
+        viddata->xkb.active_modifiers &= ~SDL_KMOD_CTRL;
+    }
+
+    // Mod1 is used for the Alt keys
+    if (xk_modifiers & Mod1Mask) {
+        if (!(viddata->xkb.active_modifiers & SDL_KMOD_ALT)) {
+            viddata->xkb.active_modifiers |= SDL_KMOD_ALT;
+        }
+    } else {
+        viddata->xkb.active_modifiers &= ~SDL_KMOD_ALT;
+    }
+
+    // Mod4 is used for the Super (aka GUI/Logo) keys.
+    if (xk_modifiers & Mod4Mask) {
+        if (!(viddata->xkb.active_modifiers & SDL_KMOD_GUI)) {
+            viddata->xkb.active_modifiers |= SDL_KMOD_GUI;
+        }
+    } else {
+        viddata->xkb.active_modifiers &= ~SDL_KMOD_GUI;
+    }
+
+    // Mod3 is typically Level 5 shift.
+    if (xk_modifiers & Mod3Mask) {
+        viddata->xkb.active_modifiers |= SDL_KMOD_LEVEL5;
+    } else {
+        viddata->xkb.active_modifiers &= ~SDL_KMOD_LEVEL5;
+    }
+
+    // Mod5 is typically Level 3 shift (aka AltGr).
+    if (xk_modifiers & Mod5Mask) {
+        viddata->xkb.active_modifiers |= SDL_KMOD_MODE;
+    } else {
+        viddata->xkb.active_modifiers &= ~SDL_KMOD_MODE;
+    }
+
+    if (xk_modifiers & viddata->xkb.numlock_mask) {
+        viddata->xkb.active_modifiers |= SDL_KMOD_NUM;
+    } else {
+        viddata->xkb.active_modifiers &= ~SDL_KMOD_NUM;
+    }
+
+    if (xk_modifiers & viddata->xkb.scrolllock_mask) {
+        viddata->xkb.active_modifiers |= SDL_KMOD_SCROLL;
+    } else {
+        viddata->xkb.active_modifiers &= ~SDL_KMOD_SCROLL;
+    }
+
+    SDL_SetModState(viddata->xkb.active_modifiers);
 }
 
-static unsigned X11_GetScrollLockModifierMask(SDL_VideoDevice *_this)
+static void X11_HandleModifierKeys(SDL_VideoData *viddata, SDL_Scancode scancode, bool pressed, bool reconcile)
 {
-    SDL_VideoData *videodata = _this->internal;
-    Display *display = videodata->display;
-    unsigned num_mask = 0;
-    int i, j;
-    XModifierKeymap *xmods;
-    unsigned n;
+    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false);
+    SDL_Keymod mod = SDL_KMOD_NONE;
 
-    xmods = X11_XGetModifierMapping(display);
-    n = xmods->max_keypermod;
-    for (i = 3; i < 8; i++) {
-        for (j = 0; j < n; j++) {
-            KeyCode kc = xmods->modifiermap[i * n + j];
-            if (videodata->key_layout[kc] == SDL_SCANCODE_SCROLLLOCK) {
-                num_mask = 1 << i;
-                break;
-            }
-        }
+    /* SDL clients expect modifier state to be activated at the same time as the
+     * source keypress, so we set pressed modifier state with the usual modifier
+     * keys here, as the explicit modifier event won't arrive until after the
+     * keypress event. If this is wrong, it will be corrected when the explicit
+     * modifier state is checked.
+     */
+    switch (keycode) {
+    case SDLK_LSHIFT:
+        mod = SDL_KMOD_LSHIFT;
+        break;
+    case SDLK_RSHIFT:
+        mod = SDL_KMOD_RSHIFT;
+        break;
+    case SDLK_LCTRL:
+        mod = SDL_KMOD_LCTRL;
+        break;
+    case SDLK_RCTRL:
+        mod = SDL_KMOD_RCTRL;
+        break;
+    case SDLK_LALT:
+        mod = SDL_KMOD_LALT;
+        break;
+    case SDLK_RALT:
+        mod = SDL_KMOD_RALT;
+        break;
+    case SDLK_LGUI:
+        mod = SDL_KMOD_LGUI;
+        break;
+    case SDLK_RGUI:
+        mod = SDL_KMOD_RGUI;
+        break;
+    case SDLK_MODE:
+        mod = SDL_KMOD_MODE;
+        break;
+    default:
+        return;
     }
-    X11_XFreeModifiermap(xmods);
 
-    return num_mask;
+    if (pressed) {
+        viddata->xkb.active_modifiers |= mod;
+    } else {
+        viddata->xkb.active_modifiers &= ~mod;
+    }
+
+    if (reconcile) {
+        X11_ReconcileModifiers(viddata);
+    }
 }
 
 void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
@@ -302,19 +381,9 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
     Display *display = videodata->display;
     char keys[32];
     int keycode;
-    Window junk_window;
-    int x, y;
-    unsigned int mask;
     const bool *keyboardState;
 
     X11_XQueryKeymap(display, keys);
-
-    // Sync up the keyboard modifier state
-    if (X11_XQueryPointer(display, DefaultRootWindow(display), &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
-        SDL_ToggleModState(SDL_KMOD_CAPS, (mask & LockMask) ? true : false);
-        SDL_ToggleModState(SDL_KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) ? true : false);
-        SDL_ToggleModState(SDL_KMOD_SCROLL, (mask & X11_GetScrollLockModifierMask(_this)) ? true : false);
-    }
 
     keyboardState = SDL_GetKeyboardState(0);
     for (keycode = 0; keycode < SDL_arraysize(videodata->key_layout); ++keycode) {
@@ -334,15 +403,19 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             case SDLK_LGUI:
             case SDLK_RGUI:
             case SDLK_MODE:
-                SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
+                X11_HandleModifierKeys(videodata, scancode, true, false);
+                SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
                 break;
             default:
                 break;
             }
         } else if (!x11KeyPressed && sdlKeyPressed) {
-            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, false);
+            X11_HandleModifierKeys(videodata, scancode, false, false);
+            SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, false);
         }
     }
+
+    X11_ReconcileModifiers(videodata);
 }
 
 static void X11_DispatchFocusIn(SDL_VideoDevice *_this, SDL_WindowData *data)
@@ -853,8 +926,10 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
             videodata->filter_time = xevent->xkey.time;
 
             if (orig_event_type == KeyPress) {
-                SDL_SendKeyboardKey(timestamp, keyboardID, orig_keycode, scancode, true);
+                X11_HandleModifierKeys(videodata, scancode, true, true);
+                SDL_SendKeyboardKeyIgnoreModifiers(timestamp, keyboardID, orig_keycode, scancode, true);
             } else {
+                X11_HandleModifierKeys(videodata, scancode, false, true);
                 SDL_SendKeyboardKey(timestamp, keyboardID, orig_keycode, scancode, false);
             }
 #endif
@@ -881,7 +956,8 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
         if (xevent->type == KeyPress) {
             // Don't send the key if it looks like a duplicate of a filtered key sent by an IME
             if (xevent->xkey.keycode != videodata->filter_code || xevent->xkey.time != videodata->filter_time) {
-                SDL_SendKeyboardKey(timestamp, keyboardID, keycode, videodata->key_layout[keycode], true);
+                X11_HandleModifierKeys(videodata, videodata->key_layout[keycode], true, true);
+                SDL_SendKeyboardKeyIgnoreModifiers(timestamp, keyboardID, keycode, videodata->key_layout[keycode], true);
             }
             if (*text) {
                 text[text_length] = '\0';
@@ -892,7 +968,8 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
                 // We're about to get a repeated key down, ignore the key up
                 return;
             }
-            SDL_SendKeyboardKey(timestamp, keyboardID, keycode, videodata->key_layout[keycode], false);
+            X11_HandleModifierKeys(videodata, videodata->key_layout[keycode], false, true);
+            SDL_SendKeyboardKeyIgnoreModifiers(timestamp, keyboardID, keycode, videodata->key_layout[keycode], false);
         }
     }
 
@@ -1101,10 +1178,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
             if (SDL_GetKeyboardFocus() != NULL) {
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
-                if (videodata->xkb) {
+                if (videodata->xkb.desc_ptr) {
                     XkbStateRec state;
                     if (X11_XkbGetState(videodata->display, XkbUseCoreKbd, &state) == Success) {
-                        if (state.group != videodata->xkb_group) {
+                        if (state.group != videodata->xkb.current_group) {
                             // Only rebuild the keymap if the layout has changed.
                             X11_UpdateKeymap(_this, true);
                         }
