@@ -342,7 +342,7 @@ static bool get_tmp_filename(char *buffer, size_t size)
     static int count = 0;
 
     if (size < 64) {
-        return SDL_SetError("Can't create temporary file for icon: size %ld < 64", size);
+        return SDL_SetError("Can't create temporary file for icon: size %u < 64", (unsigned int)size);
     }
 
     int would_have_written = SDL_snprintf(buffer, size, "/tmp/sdl_appindicator_icon_%d_%d.bmp", getpid(), count++);
@@ -358,7 +358,7 @@ static const char *get_appindicator_id(void)
     int would_have_written = SDL_snprintf(buffer, sizeof(buffer), "sdl-appindicator-%d-%d", getpid(), count++);
 
     if (would_have_written <= 0 || would_have_written >= sizeof(buffer) - 1) {
-        SDL_SetError("Couldn't fit %d bytes in buffer of size %ld", would_have_written, sizeof(buffer));
+        SDL_SetError("Couldn't fit %d bytes in buffer of size %d", would_have_written, (int) sizeof(buffer));
         return NULL;
     }
 
