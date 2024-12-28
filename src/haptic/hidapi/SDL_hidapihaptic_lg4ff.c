@@ -141,7 +141,14 @@ return SDL_GetTicks();
 #define SCALE_VALUE_U16(x, bits) (CLAMP_VALUE_U16(x) >> (16 - bits))
 #define CLAMP_VALUE_S16(x) ((Uint16)((x) <= -0x8000 ? -0x8000 : ((x) > 0x7fff ? 0x7fff : (x))))
 #define TRANSLATE_FORCE(x) ((CLAMP_VALUE_S16(x) + 0x8000) >> 8)
-#define SCALE_COEFF(x, bits) SCALE_VALUE_U16(abs(x) * 2, bits)
+#define SCALE_COEFF(x, bits) SCALE_VALUE_U16(_abs(x) * 2, bits)
+
+static Sint32 _abs(Sint32 x) {
+    return x < 0 ? -x : x;
+}
+static Sint64 _llabs(Sint64 x) {
+    return x < 0 ? -x : x;
+}
 
 SDL_bool effect_is_periodic(SDL_HapticEffect *effect)
 {
@@ -508,7 +515,7 @@ static Sint32 lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
             break;
         */
         case SDL_HAPTIC_TRIANGLE:
-            level += (Sint32) (llabs((Sint64)state->phase * magnitude * 2 / 360 - magnitude) * 2 - magnitude);
+            level += (Sint32) (_llabs((Sint64)state->phase * magnitude * 2 / 360 - magnitude) * 2 - magnitude);
             break;
         case SDL_HAPTIC_SAWTOOTHUP:
             level += state->phase * magnitude * 2 / 360 - magnitude;
@@ -618,8 +625,8 @@ static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_param
                 d2 = SCALE_VALUE_U16(((parameters->d2) + 0x8000) & 0xffff, 11);
                 s1 = parameters->k1 < 0;
                 s2 = parameters->k2 < 0;
-                k1 = abs(parameters->k1);
-                k2 = abs(parameters->k2);
+                k1 = _abs(parameters->k1);
+                k2 = _abs(parameters->k2);
                 if (k1 < 2048) {
                     d1 = 0;
                 } else {
@@ -796,7 +803,7 @@ static int lg4ff_timer(struct lg4ff_device *device)
     parameters[2].clip = parameters[2].clip * device->damper_level / 100;
     parameters[3].clip = parameters[3].clip * device->friction_level / 100;
 
-    ffb_level = abs(parameters[0].level);
+    ffb_level = _abs(parameters[0].level);
     for (i = 1; i < 4; i++) {
         parameters[i].k1 = (Sint64)parameters[i].k1 * gain / 0xffff;
         parameters[i].k2 = (Sint64)parameters[i].k2 * gain / 0xffff;
