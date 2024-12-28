@@ -97,6 +97,7 @@ struct lg4ff_slot{
 
 typedef struct lg4ff_device{
     Uint16 product_id;
+    Uint16 release_number;
     struct lg4ff_effect_state states[LG4FF_MAX_EFFECTS];
     struct lg4ff_slot slots[4];
     Sint32 effects_used;
@@ -112,12 +113,13 @@ typedef struct lg4ff_device{
 
     SDL_Joystick *hid_handle;
 
-SDL_bool stop_thread;
-SDL_Thread *thread;
-char thread_name_buf[256];
+    SDL_bool stop_thread;
+    SDL_Thread *thread;
+    char thread_name_buf[256];
 
-SDL_mutex *mutex;
-int cmd_errors;
+    SDL_mutex *mutex;
+
+    SDL_bool is_ffex;
 } lg4ff_device;
 
 Uint64 get_time_ms(){
@@ -867,6 +869,13 @@ static int SDL_HIDAPI_HapticDriverLg4ff_GetEnvInt(const char *env_name, int min,
     return value;
 }
 
+/*
+  ffex identification method by:
+  Simon Wood <simon@mungewell.org>
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  lg4ff_init
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
 static void *SDL_HIDAPI_HapticDriverLg4ff_Open(SDL_Joystick *joystick)
 {
     lg4ff_device *ctx;
@@ -902,10 +911,19 @@ static void *SDL_HIDAPI_HapticDriverLg4ff_Open(SDL_Joystick *joystick)
     ctx->app_gain = 65535;
 
     ctx->product_id = SDL_JoystickGetProduct(joystick);
+    ctx->release_number = SDL_JoystickGetProductVersion(joystick);
 
     SDL_snprintf(ctx->thread_name_buf, sizeof(ctx->thread_name_buf), "SDL_hidapihaptic_lg4ff %d %04x:%04x", SDL_JoystickInstanceID(joystick), USB_VENDOR_ID_LOGITECH, ctx->product_id);
     ctx->stop_thread = SDL_FALSE;
     ctx->thread = SDL_CreateThread(SDL_HIDAPI_HapticDriverLg4ff_ThreadFunction, ctx->thread_name_buf, ctx);
+
+    if (ctx->product_id == USB_DEVICE_ID_LOGITECH_WHEEL &&
+            (ctx->release_number >> 8) == 0x21 &&
+            (ctx->release_number & 0xff) == 0x00) {
+        ctx->is_ffex = SDL_TRUE;
+    } else {
+        ctx->is_ffex = SDL_FALSE;
+    }
 
     return ctx;
 }
@@ -1122,12 +1140,6 @@ static int SDL_HIDAPI_HapticDriverLg4ff_SetGain(SDL_HIDAPI_HapticDevice *device,
 static int SDL_HIDAPI_HapticDriverLg4ff_SetAutocenter(SDL_HIDAPI_HapticDevice *device, int autocenter)
 {
     lg4ff_device *ctx = (lg4ff_device *)device->ctx;
-    /*
-    XXX
-
-        Once again the Linux driver checks between ffex and dfex on the usb
-        stack, not sure how one can check for that on hid.
-    */
     Uint8 cmd[7] = {0};
     int ret;
 
@@ -1139,27 +1151,22 @@ static int SDL_HIDAPI_HapticDriverLg4ff_SetAutocenter(SDL_HIDAPI_HapticDevice *d
     }
 
     SDL_LockMutex(ctx->mutex);
-    #if 0
-    if (is_ffex) {
+    if (ctx->is_ffex) {
         int magnitude = (90 * autocenter) / 100;
 
         cmd[0] = 0xfe;
         cmd[1] = 0x03;
-        cmd[2] = (uint16_t)magnitude >> 14;
-        cmd[3] = (uint16_t)magnitude >> 14;
-        cmd[4] = (uint16_t)magnitude;
-        cmd[5] = 0x00;
-        cmd[6] = 0x00;
+        cmd[2] = (Uint8)((Uint16)magnitude >> 14);
+        cmd[3] = (Uint8)((Uint16)magnitude >> 14);
+        cmd[4] = (Uint8)magnitude;
 
-        ret = SDL_hid_write(ctx->dev, cmd, sizeof(cmd));
+        ret = SDL_JoystickSendEffect(ctx->hid_handle, cmd, sizeof(cmd));
         if(ret == -1){
             SDL_UnlockMutex(ctx->mutex);
             SDL_SetError("Failed sending autocenter command");
             return -1;
         }
-    }else
-    #endif
-    {
+    } else {
         Uint32 expand_a;
         Uint32 expand_b;
         int magnitude = (65535 * autocenter) / 100;
