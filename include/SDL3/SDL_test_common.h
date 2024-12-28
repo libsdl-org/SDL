@@ -139,6 +139,7 @@ typedef struct
     int gl_accum_blue_size;
     int gl_accum_alpha_size;
     int gl_stereo;
+    int gl_release_behavior;
     int gl_multisamplebuffers;
     int gl_multisamplesamples;
     int gl_retained_backing;
