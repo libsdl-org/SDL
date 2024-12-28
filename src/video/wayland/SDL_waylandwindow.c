@@ -1026,15 +1026,31 @@ static void handle_configure_xdg_popup(void *data,
     x -= offset_x;
     y -= offset_y;
 
-    wind->requested.logical_width = width;
-    wind->requested.logical_height = height;
-
-    if (wind->scale_to_display) {
-        x = PointToPixel(wind->sdlwindow->parent, x);
-        y = PointToPixel(wind->sdlwindow->parent, y);
-        wind->requested.pixel_width = PointToPixel(wind->sdlwindow, width);
-        wind->requested.pixel_height = PointToPixel(wind->sdlwindow, height);
+    /* This happens when the compositor indicates that the size is
+     * up to the client, so use the cached window size here.
+     */
+    if (width == 0 || height == 0) {
+        width = wind->sdlwindow->floating.w;
+        height = wind->sdlwindow->floating.h;
     }
+
+    /* Don't apply the supplied dimensions if they haven't changed from the last configuration
+     * event, or a newer size set programmatically can be overwritten by old data.
+     */
+    if (width != wind->last_configure.width || height != wind->last_configure.height) {
+        wind->requested.logical_width = width;
+        wind->requested.logical_height = height;
+
+        if (wind->scale_to_display) {
+            x = PointToPixel(wind->sdlwindow->parent, x);
+            y = PointToPixel(wind->sdlwindow->parent, y);
+            wind->requested.pixel_width = PointToPixel(wind->sdlwindow, width);
+            wind->requested.pixel_height = PointToPixel(wind->sdlwindow, height);
+        }
+    }
+
+    wind->last_configure.width = width;
+    wind->last_configure.height = height;
 
     SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_MOVED, x, y);
 
