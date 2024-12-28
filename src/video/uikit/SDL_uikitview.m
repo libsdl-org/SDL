@@ -261,17 +261,13 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 {
     switch (recognizer.state) {
         case UIGestureRecognizerStateBegan:
-            UIKit_HandlePenEnter();
-            UIKit_HandlePenHover(self, [recognizer locationInView:self]);
-            break;
-
         case UIGestureRecognizerStateChanged:
-            UIKit_HandlePenHover(self, [recognizer locationInView:self]);
+            UIKit_HandlePenHover(self, recognizer);
             break;
 
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled:
-            UIKit_HandlePenLeave();
+            // we track touches elsewhere, so if a hover "ends" we'll deal with that there.
             break;
 
         default:

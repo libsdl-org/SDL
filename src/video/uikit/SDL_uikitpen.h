@@ -26,12 +26,14 @@
 #include "SDL_uikitwindow.h"
 
 extern bool UIKit_InitPen(SDL_VideoDevice *_this);
-extern void UIKit_HandlePenEnter();
-extern void UIKit_HandlePenLeave();
-extern void UIKit_HandlePenHover(SDL_uikitview *view, CGPoint point);
 extern void UIKit_HandlePenMotion(SDL_uikitview *view, UITouch *pencil);
 extern void UIKit_HandlePenPress(SDL_uikitview *view, UITouch *pencil);
 extern void UIKit_HandlePenRelease(SDL_uikitview *view, UITouch *pencil);
+
+#if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_0)
+extern void UIKit_HandlePenHover(SDL_uikitview *view, UIHoverGestureRecognizer *recognizer) API_AVAILABLE(ios(13.0));
+#endif
+
 extern void UIKit_QuitPen(SDL_VideoDevice *_this);
 
 #endif // SDL_uikitpen_h_
