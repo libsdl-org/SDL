@@ -1599,6 +1599,10 @@ typedef struct SDL_GPUShaderCreateInfo
  * \since This struct is available since SDL 3.1.3
  *
  * \sa SDL_CreateGPUTexture
+ * \sa SDL_GPUTextureType
+ * \sa SDL_GPUTextureFormat
+ * \sa SDL_GPUTextureUsageFlags
+ * \sa SDL_GPUSampleCount
  */
 typedef struct SDL_GPUTextureCreateInfo
 {
