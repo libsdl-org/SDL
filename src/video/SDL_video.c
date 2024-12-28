@@ -4931,6 +4931,19 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
         }
         return SDL_SetError("OpenGL error: %08X", error);
     }
+
+    // convert GL_CONTEXT_RELEASE_BEHAVIOR values back to SDL_GL_CONTEXT_RELEASE_BEHAVIOR values
+#ifdef SDL_VIDEO_OPENGL
+    if (attr == SDL_GL_CONTEXT_RELEASE_BEHAVIOR) {
+        *value = *value == GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH ? SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH : SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE;
+    }
+#else
+    if (attr == GL_CONTEXT_RELEASE_BEHAVIOR_KHR) {
+        *value = *value == GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH_KHR ? SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH : SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE;
+    }
+    attrib = GL_CONTEXT_RELEASE_BEHAVIOR_KHR;
+#endif
+
     return true;
 #else
     return SDL_Unsupported();
