@@ -142,9 +142,13 @@ Sint32 SDLTest_RandomIntegerInRange(Sint32 min, Sint32 max)
         max = temp;
     }
 
-    Sint32 range = (max - min);
-    SDL_assert(range < SDL_MAX_SINT32);
-    return min + SDL_rand_r(&rndContext, range + 1);
+    Uint64 range = (Sint64)max - (Sint64)min;
+    if (range < SDL_MAX_SINT32) {
+        return min + (Sint32) SDL_rand_r(&rndContext, (Sint32) range + 1);
+    } else {
+        Uint64 add = SDL_rand_bits_r(&rndContext) | ((Uint64) SDL_rand_bits_r(&rndContext) << 32);
+        return (Sint32) (min + (Sint64) (add % (range + 1)));
+    }
 }
 
 /**

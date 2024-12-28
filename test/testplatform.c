@@ -180,8 +180,8 @@ static int TestEndian(bool verbose)
 
 static int TST_allmul(void *a, void *b, int arg, void *result, void *expected)
 {
-    (*(long long *)result) = ((*(long long *)a) * (*(long long *)b));
-    return (*(long long *)result) == (*(long long *)expected);
+    (*(unsigned long long *)result) = ((*(unsigned long long *)a) * (*(unsigned long long *)b));
+    return (*(unsigned long long *)result) == (*(unsigned long long *)expected);
 }
 
 static int TST_alldiv(void *a, void *b, int arg, void *result, void *expected)
