@@ -1894,8 +1894,10 @@ elseif(WINDOWS)
   if(TARGET SDL3-shared AND MSVC AND NOT SDL_LIBC)
     # Prevent codegen that would use the VC runtime libraries.
     target_compile_options(SDL3-shared PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:/GS-> $<$<COMPILE_LANGUAGE:C,CXX>:/Gs1048576>)
+    target_compile_options(SDL_uclibc PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:/GS-> $<$<COMPILE_LANGUAGE:C,CXX>:/Gs1048576>)
     if(SDL_CPU_X86)
       target_compile_options(SDL3-shared PRIVATE "/arch:SSE")
+      target_compile_options(SDL3-SDL_uclibc PRIVATE "/arch:SSE")
     endif()
   endif()
 
