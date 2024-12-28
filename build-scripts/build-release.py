@@ -339,6 +339,12 @@ class ArchiveFileTree:
     def add_file(self, file: NodeInArchive):
         self._tree[file.arcpath] = file
 
+    def __iter__(self) -> typing.Iterable[NodeInArchive]:
+        yield from self._tree.values()
+
+    def __contains__(self, value: str) -> bool:
+        return value in self._tree
+
     def get_latest_mod_time(self) -> datetime.datetime:
         return max(item.time for item in self._tree.values() if item.time)
 
@@ -353,7 +359,6 @@ class ArchiveFileTree:
             target = dest_dir + s.symtarget
             while True:
                 new_target, n = re.subn(r"([^/]+/+[.]{2}/)", "", target)
-                print(f"{target=} {new_target=}")
                 target = new_target
                 if not n:
                     break
@@ -587,11 +592,21 @@ class Releaser:
     def create_source_archives(self) -> None:
         source_collector = SourceCollector(root=self.root, commit=self.commit, executer=self.executer, filter=self._path_filter)
         print(f"Collecting sources of {self.project}...")
-        archive_tree = source_collector.get_archive_file_tree()
+        archive_tree: ArchiveFileTree = source_collector.get_archive_file_tree()
         latest_mod_time = archive_tree.get_latest_mod_time()
         archive_tree.add_file(NodeInArchive.from_text(arcpath=REVISION_TXT, text=f"{self.revision}\n", time=latest_mod_time))
         archive_tree.add_file(NodeInArchive.from_text(arcpath=f"{GIT_HASH_FILENAME}", text=f"{self.commit}\n", time=latest_mod_time))
         archive_tree.add_file_mapping(arc_dir="", file_mapping=self.release_info["source"].get("files", {}), file_mapping_root=self.root, context=self.get_context(), time=latest_mod_time)
+
+        if "Makefile.am" in archive_tree:
+            patched_time = latest_mod_time + datetime.timedelta(minutes=1)
+            print(f"Makefile.am detected -> touching aclocal.m4, */Makefile.in, configure")
+            for node_data in archive_tree:
+                arc_name = os.path.basename(node_data.arcpath)
+                arc_name_we, arc_name_ext = os.path.splitext(arc_name)
+                if arc_name in ("aclocal.m4", "configure", "Makefile.in"):
+                    print(f"Bumping time of {node_data.arcpath}")
+                    node_data.time = patched_time
 
         archive_base = f"{self.project}-{self.version}"
         zip_path = self.dist_path / f"{archive_base}.zip"
@@ -767,6 +782,9 @@ class Releaser:
                         f"--bindir=${{prefix}}/bin",
                         f"--host={triplet}",
                         f"--build=x86_64-none-linux-gnu",
+                        "CFLAGS=-O2",
+                        "CXXFLAGS=-O2",
+                        "LDFLAGS=-Wl,-s",
                     ] + extra_args, cwd=build_path, env=new_env)
                 with self.section_printer.group(f"Build MinGW {triplet} (autotools)"):
                     self.executer.run(["make", f"-j{self.cpu_count}"], cwd=build_path, env=new_env)
