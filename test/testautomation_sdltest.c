@@ -1073,7 +1073,7 @@ static int SDLCALL sdltest_randomIntegerInRange(void *arg)
 #endif
 
     /* Range with max at integer limit */
-    min = long_min - (Sint32)SDLTest_RandomSint16();
+    min = (Sint32)((Uint32)long_min + (Uint32)SDLTest_RandomSint16());
     max = long_max;
     result = SDLTest_RandomIntegerInRange(min, max);
     SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(...,SINT32_MAX)");
