@@ -94,6 +94,7 @@ typedef struct
     Uint8 last_report_buf[32];
     SDL_bool initialized;
     SDL_bool is_ffex;
+    Uint16 range;
 } SDL_DriverLg4ff_Context;
 
 static void HIDAPI_DriverLg4ff_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -293,6 +294,7 @@ static SDL_bool HIDAPI_DriverLg4ff_SetRange(SDL_HIDAPI_Device *device, int range
 {
     Uint8 cmd[7] = {0};
     int ret = 0;
+    SDL_DriverLg4ff_Context *ctx = (SDL_DriverLg4ff_Context *)device->context;
 
     if (range < 40) {
         range = 40;
@@ -301,6 +303,7 @@ static SDL_bool HIDAPI_DriverLg4ff_SetRange(SDL_HIDAPI_Device *device, int range
         range = 900;
     }
 
+    ctx->range = range;
     switch (device->product_id) {
         case USB_DEVICE_ID_LOGITECH_G29_WHEEL:
         case USB_DEVICE_ID_LOGITECH_G27_WHEEL:
@@ -501,6 +504,8 @@ static SDL_bool HIDAPI_DriverLg4ff_InitDevice(SDL_HIDAPI_Device *device)
         ctx->is_ffex = SDL_FALSE;
     }
 
+    ctx->range = 900;
+
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -523,6 +528,36 @@ static SDL_bool HIDAPI_DriverLg4ff_GetBit(const Uint8 *buf, int bit_num, int buf
         SDL_assert(0);
     }
     return (buf[byte_offset] & mask) ? SDL_TRUE : SDL_FALSE;
+}
+
+/*
+  *Ported*
+  Original functions by:
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  lg4ff_adjust_dfp_x_axis
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
+static Uint16 lg4ff_adjust_dfp_x_axis(Uint16 value, Uint16 range)
+{
+    Uint16 max_range;
+    Sint32 new_value;
+
+    if (range == 900)
+        return value;
+    else if (range == 200)
+        return value;
+    else if (range < 200)
+        max_range = 200;
+    else
+        max_range = 900;
+
+    new_value = 8192 + ((value - 8192) * max_range / range);
+    if (new_value < 0)
+        return 0;
+    else if (new_value > 16383)
+        return 16383;
+    else
+        return (Uint16)new_value;
 }
 
 static SDL_bool HIDAPI_DriverLg4ff_HandleState(SDL_HIDAPI_Device *device,
@@ -694,7 +729,7 @@ static SDL_bool HIDAPI_DriverLg4ff_HandleState(SDL_HIDAPI_Device *device,
             last_x = last_x | (ctx->last_report_buf[1] & 0x3F) << 8;
             if (x != last_x) {
                 state_changed = SDL_TRUE;
-                SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, x * 4 - 32768);
+                SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, lg4ff_adjust_dfp_x_axis(x, ctx->range) * 4 - 32768);
             }
             if (report_buf[5] != ctx->last_report_buf[5]) {
                 state_changed = SDL_TRUE;
