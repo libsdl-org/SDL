@@ -113,6 +113,137 @@ static SDL_bool HIDAPI_DriverLg4ff_IsEnabled(void)
     return enabled;
 }
 
+/*
+  Wheel id information by:
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  Simon Wood <simon@mungewell.org>
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
+static Uint16 HIDAPI_DriverLg4ff_IdentifyWheel(Uint16 device_id, Uint16 release_number)
+{
+    #define is_device(ret, m, r) { \
+        if ((release_number & m) == r) { \
+            return ret; \
+        } \
+    }
+    #define is_dfp { \
+        is_device(USB_DEVICE_ID_LOGITECH_DFP_WHEEL, 0xf000, 0x1000); \
+    }
+    #define is_dfgt { \
+        is_device(USB_DEVICE_ID_LOGITECH_DFGT_WHEEL, 0xff00, 0x1300); \
+    }
+    #define is_g25 { \
+        is_device(USB_DEVICE_ID_LOGITECH_G25_WHEEL, 0xff00, 0x1200); \
+    }
+    #define is_g27 { \
+        is_device(USB_DEVICE_ID_LOGITECH_G27_WHEEL, 0xfff0, 0x1230); \
+    }
+    #define is_g29 { \
+        is_device(USB_DEVICE_ID_LOGITECH_G29_WHEEL, 0xfff8, 0x1350); \
+        is_device(USB_DEVICE_ID_LOGITECH_G29_WHEEL, 0xff00, 0x8900); \
+    }
+    switch(device_id){
+        case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:
+        case USB_DEVICE_ID_LOGITECH_WHEEL:
+            is_g29;
+            is_g27;
+            is_g25;
+            is_dfgt;
+            is_dfp;
+            break;
+        case USB_DEVICE_ID_LOGITECH_DFGT_WHEEL:
+            is_g29;
+            is_dfgt;
+            break;
+        case USB_DEVICE_ID_LOGITECH_G25_WHEEL:
+            is_g29;
+            is_g27;
+            is_g25;
+            break;
+        case USB_DEVICE_ID_LOGITECH_G27_WHEEL:
+            is_g29;
+            is_g27;
+            break;
+        case USB_DEVICE_ID_LOGITECH_G29_WHEEL:
+            is_g29;
+            break;
+    }
+    return 0;
+    #undef is_device
+    #undef is_dfp
+    #undef is_dfgt
+    #undef is_g25
+    #undef is_g27
+    #undef is_g29
+}
+
+static int SDL_HIDAPI_DriverLg4ff_GetEnvInt(const char *env_name, int min, int max, int def)
+{
+    const char *env = SDL_getenv(env_name);
+    int value = 0;
+    if(env == NULL) {
+        return def;
+    }
+    value = SDL_atoi(env);
+    if (value < min) {
+        value = min;
+    }
+    if (value > max) {
+        value = max;
+    }
+    return value;
+}
+
+/*
+  Commands by:
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  Simon Wood <simon@mungewell.org>
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
+static SDL_bool HIDAPI_DriverLg4ff_SwitchMode(SDL_HIDAPI_Device *device, Uint16 target_product_id){
+    int ret = 0;
+
+    switch(target_product_id){
+        case USB_DEVICE_ID_LOGITECH_G29_WHEEL:{
+            Uint8 cmd[] = {0xf8, 0x09, 0x05, 0x01, 0x01, 0x00, 0x00};
+            ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
+            break;
+        }
+        case USB_DEVICE_ID_LOGITECH_G27_WHEEL:{
+            Uint8 cmd[] = {0xf8, 0x09, 0x04, 0x01, 0x00, 0x00, 0x00};
+            ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
+            break;
+        }
+        case USB_DEVICE_ID_LOGITECH_G25_WHEEL:{
+            Uint8 cmd[] = {0xf8, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00};
+            ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
+            break;
+        }
+        case USB_DEVICE_ID_LOGITECH_DFGT_WHEEL:{
+            Uint8 cmd[] = {0xf8, 0x09, 0x03, 0x01, 0x00, 0x00, 0x00};
+            ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
+            break;
+        }
+        case USB_DEVICE_ID_LOGITECH_DFP_WHEEL:{
+            Uint8 cmd[] = {0xf8, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
+            ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
+            break;
+        }
+        case USB_DEVICE_ID_LOGITECH_WHEEL:{
+            Uint8 cmd[] = {0xf8, 0x09, 0x00, 0x01, 0x00, 0x00, 0x00};
+            ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
+            break;
+        }
+        default:{
+            SDL_assert(0);
+        }
+    }
+    if(ret == -1){
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
+}
+
 static SDL_bool HIDAPI_DriverLg4ff_IsSupportedDevice(
     SDL_HIDAPI_Device *device,
     const char *name,
@@ -125,27 +256,29 @@ static SDL_bool HIDAPI_DriverLg4ff_IsSupportedDevice(
     int interface_subclass,
     int interface_protocol)
 {
-    /*
-      TODO
-
-      Is it possible to identify native mode from hid? On the Linux kernel
-      driver that is done by checking with the usb stack, more specifically
-      bcdDevice on the usb descriptor
-
-      If a way is found to probe for native mode on the HID layer, this function
-      should trigger mode switch, then return false, so the next probe cycle
-      would take the device on a supported mode
-    */
     int i;
+    Uint16 real_id = 0;
     if (vendor_id != USB_VENDOR_ID_LOGITECH) {
         return SDL_FALSE;
     }
     for (i = 0; i < sizeof(supported_device_ids) / sizeof(Uint32); i++) {
         if (supported_device_ids[i] == product_id) {
-            return SDL_TRUE;
+            break;
         }
     }
-    return SDL_FALSE;
+    if (i == sizeof(supported_device_ids) / sizeof(Uint32)) {
+        return SDL_FALSE;
+    }
+    real_id = HIDAPI_DriverLg4ff_IdentifyWheel(product_id, version);
+    if (real_id == product_id || real_id == 0) {
+        // either it is already in native mode, or we don't know what the native mode is
+        return SDL_TRUE;
+    }
+    // a supported native mode is found, send mode change command, then still state that we support the device
+    if (device != NULL && SDL_HIDAPI_DriverLg4ff_GetEnvInt("SDL_HIDAPI_LG4FF_NO_MODE_SWITCH", 0, 1, 0) == 0) {
+        HIDAPI_DriverLg4ff_SwitchMode(device, real_id);
+    }
+    return SDL_TRUE;
 }
 
 /*
@@ -592,23 +725,6 @@ static SDL_bool HIDAPI_DriverLg4ff_HandleState(SDL_HIDAPI_Device *device,
 
     SDL_memcpy(ctx->last_report_buf, report_buf, report_size);
     return state_changed;
-}
-
-static int SDL_HIDAPI_DriverLg4ff_GetEnvInt(const char *env_name, int min, int max, int def)
-{
-    const char *env = SDL_getenv(env_name);
-    int value = 0;
-    if(env == NULL) {
-        return def;
-    }
-    value = SDL_atoi(env);
-    if (value < min) {
-        value = min;
-    }
-    if (value > max) {
-        value = max;
-    }
-    return value;
 }
 
 static SDL_bool HIDAPI_DriverLg4ff_UpdateDevice(SDL_HIDAPI_Device *device)
