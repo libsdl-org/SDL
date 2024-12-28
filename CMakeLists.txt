@@ -281,9 +281,9 @@ if(COMMAND SDL_Preseed_CMakeCache)
   set(SDL_PRESEED_AVAILABLE ON)
 endif()
 
-set(SDL_X11_XFIXES_DEFAULT ON)
+set(SDL_X11_XRANDR_DEFAULT ON)
 if(SOLARIS)
-  set(SDL_X11_XFIXES_DEFAULT OFF)
+  set(SDL_X11_XRANDR_DEFAULT OFF)
 endif()
 
 # Allow some projects to be built conditionally.
@@ -345,8 +345,8 @@ dep_option(SDL_X11_SHARED          "Dynamically load X11 support" ON "SDL_X11" O
 dep_option(SDL_X11_XCURSOR         "Enable Xcursor support" ON SDL_X11 OFF)
 dep_option(SDL_X11_XDBE            "Enable Xdbe support" ON SDL_X11 OFF)
 dep_option(SDL_X11_XINPUT          "Enable XInput support" ON SDL_X11 OFF)
-dep_option(SDL_X11_XFIXES          "Enable Xfixes support" "${SDL_X11_XFIXES_DEFAULT}" SDL_X11 OFF)
-dep_option(SDL_X11_XRANDR          "Enable Xrandr support" ON SDL_X11 OFF)
+dep_option(SDL_X11_XFIXES          "Enable Xfixes support" ON SDL_X11 OFF)
+dep_option(SDL_X11_XRANDR          "Enable Xrandr support" "${SDL_X11_XRANDR_DEFAULT}" SDL_X11 OFF)
 dep_option(SDL_X11_XSCRNSAVER      "Enable Xscrnsaver support" ON SDL_X11 OFF)
 dep_option(SDL_X11_XSHAPE          "Enable XShape support" ON SDL_X11 OFF)
 dep_option(SDL_X11_XSYNC           "Enable Xsync support" ON SDL_X11 OFF)
