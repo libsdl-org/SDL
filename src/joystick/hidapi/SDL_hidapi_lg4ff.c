@@ -649,8 +649,8 @@ static SDL_bool HIDAPI_DriverLg4ff_HandleState(SDL_HIDAPI_Device *device,
 
     for (i = 0;i < num_buttons;i++) {
         int bit_num = bit_offset + i;
-        SDL_bool button_on = HIDAPI_DriverLg4ff_GetBit(report_buf, bit_num, report_size);
-        SDL_bool button_was_on = HIDAPI_DriverLg4ff_GetBit(ctx->last_report_buf, bit_num, report_size);
+        SDL_bool button_on = HIDAPI_DriverLg4ff_GetBit(report_buf, bit_num, (int)report_size);
+        SDL_bool button_was_on = HIDAPI_DriverLg4ff_GetBit(ctx->last_report_buf, bit_num, (int)report_size);
         if(button_on != button_was_on){
             state_changed = SDL_TRUE;
             SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_A + i, button_on ? SDL_PRESSED : SDL_RELEASED);

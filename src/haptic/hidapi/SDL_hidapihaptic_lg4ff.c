@@ -27,7 +27,7 @@
 
 #ifdef SDL_HAPTIC_HIDAPI_LG4FF
 
-#include "SDL_thread.h"
+#include "../../thread/SDL_systhread.h"
 #include "SDL_mutex.h"
 #include "SDL_timer.h"
 
@@ -477,7 +477,7 @@ static Sint32 lg4ff_calculate_ramp(struct lg4ff_effect_state *state)
         level = ramp->start + ((t * state->slope) >> 16);
     }
 
-    return state->direction_gain * level;
+    return (Sint32)(state->direction_gain * level);
 }
 
 /*
@@ -507,7 +507,7 @@ static Sint32 lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
 
     switch (periodic->type) {
         case SDL_HAPTIC_SINE:
-            level += sin_deg(state->phase) * magnitude;
+            level += (Sint32)(sin_deg(state->phase) * magnitude);
             break;
         /*
         case SDL_HAPTIC_SQUARE:
@@ -527,7 +527,7 @@ static Sint32 lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
             SDL_assert(0);
     }
 
-    return state->direction_gain * level;
+    return (Sint32)(state->direction_gain * level);
 }
 
 /*
@@ -922,7 +922,7 @@ static void *SDL_HIDAPI_HapticDriverLg4ff_Open(SDL_Joystick *joystick)
 
     SDL_snprintf(ctx->thread_name_buf, sizeof(ctx->thread_name_buf), "SDL_hidapihaptic_lg4ff %d %04x:%04x", SDL_JoystickInstanceID(joystick), USB_VENDOR_ID_LOGITECH, ctx->product_id);
     ctx->stop_thread = SDL_FALSE;
-    ctx->thread = SDL_CreateThread(SDL_HIDAPI_HapticDriverLg4ff_ThreadFunction, ctx->thread_name_buf, ctx);
+    ctx->thread = SDL_CreateThreadInternal(SDL_HIDAPI_HapticDriverLg4ff_ThreadFunction, ctx->thread_name_buf, 64 * 1024, ctx);
 
     if (ctx->product_id == USB_DEVICE_ID_LOGITECH_WHEEL &&
             (ctx->release_number >> 8) == 0x21 &&
