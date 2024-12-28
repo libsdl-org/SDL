@@ -23,6 +23,8 @@ static float previous_touch_y = -1.0f;
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
+    int w, h;
+
     SDL_SetAppMetadata("Example Pen Drawing Lines", "1.0", "com.example.pen-drawing-lines");
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -37,7 +39,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     /* we make a render target so we can draw lines to it and not have to record and redraw every pen stroke each frame.
        Instead rendering a frame for us is a single texture draw. */
-    render_target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 640, 480);
+
+    /* make sure the render target matches output size (for hidpi displays, etc) so drawing matches the pen's position on a tablet display. */
+    SDL_GetRenderOutputSize(renderer, &w, &h);
+    render_target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, w, h);
     if (!render_target) {
         SDL_Log("Couldn't create render target: %s", SDL_GetError());
         return SDL_APP_FAILURE;
