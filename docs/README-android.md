@@ -170,13 +170,13 @@ build-scripts/create-android-project.py --variant aar com.yourcompany.yourapp < 
 Customizing your application name
 ================================================================================
 
-To customize your application name, edit AndroidManifest.xml and replace
+To customize your application name, edit AndroidManifest.xml and build.gradle to replace
 "org.libsdl.app" with an identifier for your product package.
 
 Then create a Java class extending SDLActivity and place it in a directory
 under src matching your package, e.g.
 
-    src/com/gamemaker/game/MyGame.java
+    app/src/main/java/com/gamemaker/game/MyGame.java
 
 Here's an example of a minimal class file:
 
