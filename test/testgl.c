@@ -263,6 +263,9 @@ int main(int argc, char *argv[])
     state->gl_green_size = 5;
     state->gl_blue_size = 5;
     state->gl_depth_size = 16;
+    /* For release_behavior to work, at least on Windows, you'll most likely need to set state->gl_major_version = 3 */
+    /* state->gl_major_version = 3; */
+    state->gl_release_behavior = 0;
     state->gl_double_buffer = 1;
     if (fsaa) {
         state->gl_multisamplebuffers = 1;
@@ -330,6 +333,11 @@ int main(int argc, char *argv[])
         SDL_Log("SDL_GL_DEPTH_SIZE: requested %d, got %d\n", 16, value);
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_DEPTH_SIZE: %s\n", SDL_GetError());
+    }
+    if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_RELEASE_BEHAVIOR, &value)) {
+        SDL_Log("SDL_GL_CONTEXT_RELEASE_BEHAVIOR: requested %d, got %d\n", 0, value);
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_CONTEXT_RELEASE_BEHAVIOR: %s\n", SDL_GetError());
     }
     if (fsaa) {
         if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value)) {
