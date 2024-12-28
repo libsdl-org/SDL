@@ -30,6 +30,7 @@
 #define LACKS_STDLIB_H
 #define FORCEINLINE
 #define ABORT
+#define NO_MALLOC_STATS 1
 #define USE_LOCKS 1
 #define USE_DL_PREFIX
 
