@@ -22,8 +22,31 @@
 #include "SDL_hashtable.h"
 
 // XXX: We can't use SDL_assert here because it's going to call into hashtable code
-#include <assert.h>
-#define HT_ASSERT(x) assert(x)
+#ifdef NDEBUG
+#define HT_ASSERT(x) (void)(0)
+#else
+#if (defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#include <windows.h>
+#endif
+/* This is not declared in any header, although it is shared between some
+   parts of SDL, because we don't want anything calling it without an
+   extremely good reason. */
+extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
+static void HT_ASSERT_FAIL(const char *msg)
+{
+    const char *caption = "SDL_HashTable Assertion Failure!";
+    (void)caption;
+#if (defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
+#elif defined(HAVE_STDIO_H)
+    fprintf(stderr, "\n\n%s\n%s\n\n", caption, msg);
+    fflush(stderr);
+#endif
+    SDL_TriggerBreakpoint();
+    SDL_ExitProcess(-1);
+}
+#define HT_ASSERT(x) if (!(x)) HT_ASSERT_FAIL("SDL_HashTable Assertion Failure: " #x)
+#endif
 
 typedef struct SDL_HashItem
 {
