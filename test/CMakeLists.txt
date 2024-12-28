@@ -102,7 +102,7 @@ define_property(TARGET PROPERTY SDL_NONINTERACTIVE_ARGUMENTS BRIEF_DOCS "Argumen
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_TIMEOUT BRIEF_DOCS "Timeout for noninteractive executable." FULL_DOCS "Timeout for noninteractive executable.")
 
 macro(add_sdl_test_executable TARGET)
-    cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;THREADS;NO_C90;MAIN_CALLBACKS;NOTRACKMEM" "" "DISABLE_THREADS_ARGS;NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;INSTALLED_ARGS;SOURCES" ${ARGN})
+    cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;THREADS;NO_C90;MAIN_CALLBACKS;NOTRACKMEM" "" "DEPENDS;DISABLE_THREADS_ARGS;NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;INSTALLED_ARGS;SOURCES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unknown argument(s): ${AST_UNPARSED_ARGUMENTS}")
     endif()
@@ -128,6 +128,7 @@ macro(add_sdl_test_executable TARGET)
         set_property(TARGET ${TARGET} PROPERTY C_STANDARD 90)
         set_property(TARGET ${TARGET} PROPERTY C_EXTENSIONS FALSE)
     endif()
+    add_dependencies(${TARGET} ${AST_DEPENDS})
 
     list(APPEND SDL_TEST_EXECUTABLES ${TARGET})
     set_property(TARGET ${TARGET} PROPERTY SDL_NOTRACKMEM ${AST_NOTRACKMEM})
@@ -208,6 +209,50 @@ if(HAVE_LIBUDEV_H)
     add_definitions(-DHAVE_LIBUDEV_H)
 endif()
 
+function(files2headers OUTPUT)
+    set(xxd "${SDL3_SOURCE_DIR}/cmake/xxd.py")
+    set(inputs ${ARGN})
+    set(outputs )
+    foreach(input IN LISTS inputs)
+        get_filename_component(file_we "${input}" NAME_WE)
+        set(intermediate "${CMAKE_CURRENT_BINARY_DIR}/${file_we}.h")
+        set(output "${CMAKE_CURRENT_SOURCE_DIR}/${file_we}.h")
+        list(APPEND outputs "${output}")
+        if(TARGET Python3::Interpreter AND NOT CMAKE_CROSSCOMPILING)
+            list(APPEND outputs  "${intermediate}")
+            # Don't add the 'output' header to the output, to avoid marking them as GENERATED
+            # (generated files are removed when running the CLEAN target)
+            add_custom_command(OUTPUT "${intermediate}"
+                COMMAND Python3::Interpreter "${xxd}" -i "${CMAKE_CURRENT_SOURCE_DIR}/${input}" "-o" "${intermediate}"
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${intermediate}" "${output}"
+                DEPENDS "${xxd}" "${bmp}"
+            )
+        endif()
+    endforeach()
+    set(${OUTPUT} "${outputs}" PARENT_SCOPE)
+    add_custom_target(generate-${OUTPUT} DEPENDS ${ARGN})
+endfunction()
+
+files2headers(gamepad_image_headers
+    gamepad_axis_arrow.bmp
+    gamepad_axis.bmp
+    gamepad_back.bmp
+    gamepad_battery.bmp
+    gamepad_battery_wired.bmp
+    gamepad_button_background.bmp
+    gamepad_button.bmp
+    gamepad_button_small.bmp
+    gamepad_face_abxy.bmp
+    gamepad_face_bayx.bmp
+    gamepad_face_sony.bmp
+    gamepad_front.bmp
+    gamepad_touchpad.bmp
+    gamepad_wired.bmp
+    gamepad_wireless.bmp
+)
+files2headers(icon_bmp_header icon.bmp)
+files2headers(glass_bmp_header glass.bmp)
+
 set(FFmpeg_FIND_COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)
 include("${CMAKE_CURRENT_LIST_DIR}/../cmake/FindFFmpeg.cmake")
 if(FFmpeg_FOUND)
@@ -219,7 +264,7 @@ if(FFmpeg_FOUND)
     cmake_pop_check_state()
 endif()
 if(FFmpeg_FOUND AND LIBAVUTIL_AVFRAME_HAS_CH_LAYOUT)
-    add_sdl_test_executable(testffmpeg NO_C90 SOURCES testffmpeg.c testffmpeg_vulkan.c ${icon_bmp_header})
+    add_sdl_test_executable(testffmpeg NO_C90 SOURCES testffmpeg.c testffmpeg_vulkan.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
     if(LIBAVUTIL_AVFULKANFRAMESCONTEXT_HAS_FORMAT)
       target_compile_definitions(testffmpeg PRIVATE FFMPEG_VULKAN_SUPPORT)
     endif()
@@ -290,54 +335,11 @@ elseif(HAVE_X11 OR HAVE_WAYLAND)
     endif ()
 endif()
 
-function(files2headers OUTPUT)
-    set(xxd "${SDL3_SOURCE_DIR}/cmake/xxd.py")
-    set(inputs ${ARGN})
-    set(outputs )
-    foreach(input IN LISTS inputs)
-        get_filename_component(file_we "${input}" NAME_WE)
-        set(intermediate "${CMAKE_CURRENT_BINARY_DIR}/${file_we}.h")
-        set(output "${CMAKE_CURRENT_SOURCE_DIR}/${file_we}.h")
-        list(APPEND outputs "${output}")
-        if(TARGET Python3::Interpreter AND NOT CMAKE_CROSSCOMPILING)
-            list(APPEND outputs  "${intermediate}")
-            # Don't add the 'output' header to the output, to avoid marking them as GENERATED
-            # (generated files are removed when running the CLEAN target)
-            add_custom_command(OUTPUT "${intermediate}"
-                COMMAND Python3::Interpreter "${xxd}" -i "${CMAKE_CURRENT_SOURCE_DIR}/${input}" "-o" "${intermediate}"
-                COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${intermediate}" "${output}"
-                DEPENDS "${xxd}" "${bmp}"
-            )
-        endif()
-    endforeach()
-    set(${OUTPUT} "${outputs}" PARENT_SCOPE)
-endfunction()
-
-files2headers(gamepad_image_headers
-    gamepad_axis_arrow.bmp
-    gamepad_axis.bmp
-    gamepad_back.bmp
-    gamepad_battery.bmp
-    gamepad_battery_wired.bmp
-    gamepad_button_background.bmp
-    gamepad_button.bmp
-    gamepad_button_small.bmp
-    gamepad_face_abxy.bmp
-    gamepad_face_bayx.bmp
-    gamepad_face_sony.bmp
-    gamepad_front.bmp
-    gamepad_touchpad.bmp
-    gamepad_wired.bmp
-    gamepad_wireless.bmp
-)
-files2headers(icon_bmp_header icon.bmp)
-files2headers(glass_bmp_header glass.bmp)
-
 add_sdl_test_executable(testasyncio MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testasyncio.c)
 add_sdl_test_executable(testaudio MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testaudio.c)
 add_sdl_test_executable(testcolorspace SOURCES testcolorspace.c)
 add_sdl_test_executable(testfile NONINTERACTIVE SOURCES testfile.c)
-add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c ${gamepad_image_headers})
+add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c ${gamepad_image_headers} DEPENDS generate-gamepad_image_headers)
 add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
 add_sdl_test_executable(testgl SOURCES testgl.c)
 add_sdl_test_executable(testgles SOURCES testgles.c)
@@ -383,10 +385,10 @@ add_sdl_test_executable(testshader NEEDS_RESOURCES TESTUTILS SOURCES testshader.
 if(EMSCRIPTEN)
     target_link_options(testshader PRIVATE "-sLEGACY_GL_EMULATION")
 endif()
-add_sdl_test_executable(testshape NEEDS_RESOURCES SOURCES testshape.c ${glass_bmp_header})
+add_sdl_test_executable(testshape NEEDS_RESOURCES SOURCES testshape.c ${glass_bmp_header} DEPENDS generate-glass_bmp_header)
 add_sdl_test_executable(testsprite MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c)
-add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_bmp_header})
-add_sdl_test_executable(testspritesurface SOURCES testspritesurface.c ${icon_bmp_header})
+add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
+add_sdl_test_executable(testspritesurface SOURCES testspritesurface.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
 add_sdl_test_executable(teststreaming NEEDS_RESOURCES TESTUTILS SOURCES teststreaming.c)
 add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c)
 add_sdl_test_executable(testurl SOURCES testurl.c)
