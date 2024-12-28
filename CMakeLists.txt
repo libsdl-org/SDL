@@ -505,9 +505,14 @@ if(MSVC AND TARGET SDL3-shared AND NOT SDL_LIBC)
     target_compile_options(SDL3-shared PRIVATE "$<$<COMPILE_LANGUAGE:ASM_MASM>:/nologo>")
     set_property(SOURCE "${asm_src}" PROPERTY LANGUAGE "ASM_MASM")
     target_sources(SDL3-shared PRIVATE "${asm_src}")
-  elseif(SDL_CPU_ARM32 OR SDL_CPU_ARM64)
-    # FIXME: ARM assembler (armasm.exe/armasm64.exe) is NOT ASM_MASM, and does currently not work with CMake
-    # (https://gitlab.kitware.com/cmake/cmake/-/issues/18912)
+  elseif(SDL_CPU_ARM64)
+    enable_language(ASM_MARMASM)
+    set(asm_src "${SDL3_SOURCE_DIR}/src/stdlib/SDL_mslibc_arm64.masm")
+    target_compile_options(SDL3-shared PRIVATE "$<$<COMPILE_LANGUAGE:ASM_MARMASM>:/nologo>")
+    set_property(SOURCE "${asm_src}" PROPERTY LANGUAGE "ASM_MARMASM")
+    target_sources(SDL3-shared PRIVATE "${asm_src}")
+  elseif(SDL_CPU_ARM32)
+    # FIXME
   endif()
 endif()
 
@@ -3387,6 +3392,17 @@ if(SDL_SHARED)
         # linking to msvcrt.lib avoid unresolved external symbols
         # (__rt_sdiv, __rt_udiv, __rt_sdiv64, _rt_udiv64, __dtou64, __u64tod, __i64tos)
         target_link_libraries(SDL3-shared PRIVATE msvcrt.lib)
+      endif()
+      find_library(HAVE_ONECORE_LIB NAMES "onecore.lib")
+      if(HAVE_ONECORE_LIB)
+        # SDL_malloc.c: __imp_MapViewOfFileNuma2 referenced in function MapViewOfFile2
+        target_link_libraries(SDL3-shared PRIVATE onecore.lib)
+      endif()
+      find_library(HAVE_VOLATILEACCESSU_LIB NAMES "volatileaccessu.lib")
+      if(HAVE_VOLATILEACCESSU_LIB)
+        # SDL_malloc.c : RtlSetVolatileMemory referenced in function RtlFillVolatileMemory
+        # SDL_malloc.c : RtlFillDeviceMemory referenced in function RtlZeroDeviceMemory
+        target_link_libraries(SDL3-shared PRIVATE volatileaccessu.lib)
       endif()
     endif()
     if(HAS_Q_NO_USE_LIBIRC)
