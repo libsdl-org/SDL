@@ -498,7 +498,7 @@ else()
   sdl_include_directories(NO_EXPORT SYSTEM PRIVATE "$<BUILD_INTERFACE:${SDL3_SOURCE_DIR}/src/video/khronos>")
 endif()
 
-if(MSVC AND TARGET SDL3-shared)
+if(MSVC AND TARGET SDL3-shared AND NOT SDL_LIBC)
   if(SDL_CPU_X64)
     enable_language(ASM_MASM)
     set(asm_src "${SDL3_SOURCE_DIR}/src/stdlib/SDL_mslibc_x64.masm")

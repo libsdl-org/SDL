@@ -43,7 +43,6 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -647,9 +646,6 @@
     <ClCompile Include="..\..\src\stdlib\SDL_memmove.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_memset.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_mslibc.c" />
-    <MASM Condition="'$(Platform)'=='x64'" Include="..\..\src\stdlib\SDL_mslibc_x64.masm">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </MASM>
     <ClCompile Include="..\..\src\stdlib\SDL_murmur3.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_random.c" />
@@ -729,6 +725,5 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>
