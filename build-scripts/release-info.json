@@ -36,9 +36,10 @@
         "-DSDL_SHARED=ON",
         "-DSDL_STATIC=OFF",
         "-DSDL_DISABLE_INSTALL_DOCS=ON",
+        "-DSDL_RELOCATABLE=ON",
         "-DSDL_TEST_LIBRARY=ON",
-        "-DSDL_VENDOR_INFO=libsdl.org",
-        "-DSDL_TESTS=OFF"
+        "-DSDL_TESTS=OFF",
+        "-DSDL_VENDOR_INFO=libsdl.org"
       ],
       "shared-static": "args"
     },
@@ -100,6 +101,7 @@
         "-DSDL_TEST_LIBRARY=ON",
         "-DSDL_TESTS=OFF",
         "-DSDL_DISABLE_INSTALL_DOCS=ON",
+        "-DSDL_RELOCATABLE=ON",
         "-DSDL_VENDOR_INFO=libsdl.org"
       ],
       "files-lib": {
