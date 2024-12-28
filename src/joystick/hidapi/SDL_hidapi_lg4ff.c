@@ -19,10 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/*
-  All hid command sent are based on https://github.com/berarma/new-lg4ff
-*/
-
 #include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
@@ -152,6 +148,13 @@ static SDL_bool HIDAPI_DriverLg4ff_IsSupportedDevice(
     return SDL_FALSE;
 }
 
+/*
+  *Ported*
+  Original functions by:
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  lg4ff_set_range_g25 lg4ff_set_range_dfp
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
 static SDL_bool HIDAPI_DriverLg4ff_SetRange(SDL_HIDAPI_Device *device, int range)
 {
     Uint8 cmd[7] = {0};
@@ -240,7 +243,15 @@ static SDL_bool HIDAPI_DriverLg4ff_SetRange(SDL_HIDAPI_Device *device, int range
     return SDL_TRUE;
 }
 
-static SDL_bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int gain)
+/*
+  *Ported*
+  Original functions by:
+  Simon Wood <simon@mungewell.org>
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  lg4ff_set_autocenter_default lg4ff_set_autocenter_ffex
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
+static SDL_bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int magnitude)
 {
     /*
     XXX
@@ -251,22 +262,22 @@ static SDL_bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int 
     Uint8 cmd[7] = {0};
     int ret;
 
-    if (gain < 0) {
-        gain = 0;
+    if (magnitude < 0) {
+        magnitude = 0;
     }
-    if (gain > 65535) {
-        gain = 65535;
+    if (magnitude > 65535) {
+        magnitude = 65535;
     }
 
 #if 0
     if (is_ffex) {
-        gain = gain * 90 / 65535;
+        magnitude = magnitude * 90 / 65535;
 
         cmd[0] = 0xfe;
         cmd[1] = 0x03;
-        cmd[2] = (uint16_t)gain >> 14;
-        cmd[3] = (uint16_t)gain >> 14;
-        cmd[4] = (uint16_t)gain;
+        cmd[2] = (uint16_t)magnitude >> 14;
+        cmd[3] = (uint16_t)magnitude >> 14;
+        cmd[4] = (uint16_t)magnitude;
         cmd[5] = 0x00;
         cmd[6] = 0x00;
 
@@ -287,22 +298,23 @@ static SDL_bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int 
             return SDL_FALSE;
         }
 
-        if (gain == 0) {
+        if (magnitude == 0) {
             return SDL_TRUE;
         }
 
         // set strength
 
-        if (gain <= 0xaaaa) {
-            expand_a = 0x0c * gain;
-            expand_b = 0x80 * gain;
+        if (magnitude <= 0xaaaa) {
+            expand_a = 0x0c * magnitude;
+            expand_b = 0x80 * magnitude;
         } else {
-            expand_a = (0x0c * 0xaaaa) + 0x06 * (gain - 0xaaaa);
-            expand_b = (0x80 * 0xaaaa) + 0xff * (gain - 0xaaaa);
+            expand_a = (0x0c * 0xaaaa) + 0x06 * (magnitude - 0xaaaa);
+            expand_b = (0x80 * 0xaaaa) + 0xff * (magnitude - 0xaaaa);
         }
+        // TODO do not adjust for MOMO wheels, when support is added
         expand_a = expand_a >> 1;
 
-        SDL_memset(cmd, 0x00, 7);
+        SDL_memset(cmd, 0x00, sizeof(cmd));
         cmd[0] = 0xfe;
         cmd[1] = 0x0d;
         cmd[2] = expand_a / 0xaaaa;
@@ -315,7 +327,7 @@ static SDL_bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int 
         }
 
         // enable
-        SDL_memset(cmd, 0x00, 7);
+        SDL_memset(cmd, 0x00, sizeof(cmd));
         cmd[0] = 0x14;
 
         ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
@@ -697,6 +709,13 @@ static Uint32 HIDAPI_DriverLg4ff_GetJoystickCapabilities(SDL_HIDAPI_Device *devi
     return 0;
 }
 
+/*
+  Commands by:
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  Simon Wood <simon@mungewell.org>
+  lg4ff_led_set_brightness lg4ff_set_leds
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
 static int HIDAPI_DriverLg4ff_SendLedCommand(SDL_HIDAPI_Device *device, Uint8 state)
 {
     Uint8 cmd[7];
@@ -733,7 +752,7 @@ static int HIDAPI_DriverLg4ff_SendLedCommand(SDL_HIDAPI_Device *device, Uint8 st
     cmd[5] = 0x00;
     cmd[6] = 0x00;
 
-    return SDL_hid_write(device->dev, cmd, sizeof(cmd)) > 0 ? 0 : -1;
+    return SDL_hid_write(device->dev, cmd, sizeof(cmd)) == sizeof(cmd) ? 0 : -1;
 }
 
 static int HIDAPI_DriverLg4ff_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)

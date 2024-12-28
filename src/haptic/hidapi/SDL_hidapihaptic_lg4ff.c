@@ -19,10 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/*
-  All hid command sent and effect rendering are ported from https://github.com/berarma/new-lg4ff
-*/
-
 #include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
@@ -289,6 +285,12 @@ static Uint16 get_effect_replay_delay(SDL_HapticEffect *effect)
     return delay;
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value)
 {
     struct lg4ff_effect_state *state;
@@ -315,6 +317,12 @@ static int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int val
     return 0;
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static int lg4ff_upload_effect(struct lg4ff_device *device, SDL_HapticEffect *effect, int id)
 {
     struct lg4ff_effect_state *state;
@@ -340,6 +348,12 @@ static int lg4ff_upload_effect(struct lg4ff_device *device, SDL_HapticEffect *ef
     return 0;
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static void lg4ff_update_state(struct lg4ff_effect_state *state, const Uint64 now)
 {
     SDL_HapticEffect *effect = &state->effect;
@@ -395,6 +409,12 @@ static void lg4ff_update_state(struct lg4ff_effect_state *state, const Uint64 no
     }
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static Sint32 lg4ff_calculate_constant(struct lg4ff_effect_state *state)
 {
     SDL_HapticConstant *constant = (SDL_HapticConstant *)&state->effect;
@@ -418,6 +438,12 @@ static Sint32 lg4ff_calculate_constant(struct lg4ff_effect_state *state)
     return (Sint32)(state->direction_gain * level);
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static Sint32 lg4ff_calculate_ramp(struct lg4ff_effect_state *state)
 {
     SDL_HapticRamp *ramp = (SDL_HapticRamp *)&state->effect;
@@ -445,6 +471,12 @@ static Sint32 lg4ff_calculate_ramp(struct lg4ff_effect_state *state)
     return state->direction_gain * level;
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static Sint32 lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
 {
     SDL_HapticPeriodic *periodic = (SDL_HapticPeriodic *)&state->effect;
@@ -489,6 +521,12 @@ static Sint32 lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
     return state->direction_gain * level;
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static void lg4ff_calculate_spring(struct lg4ff_effect_state *state, struct lg4ff_effect_parameters *parameters)
 {
     SDL_HapticCondition *condition = (SDL_HapticCondition *)&state->effect;
@@ -500,6 +538,12 @@ static void lg4ff_calculate_spring(struct lg4ff_effect_state *state, struct lg4f
     parameters->clip = (Uint16)condition->right_sat[0];
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static void lg4ff_calculate_resistance(struct lg4ff_effect_state *state, struct lg4ff_effect_parameters *parameters)
 {
     SDL_HapticCondition *condition = (SDL_HapticCondition *)&state->effect;
@@ -509,6 +553,12 @@ static void lg4ff_calculate_resistance(struct lg4ff_effect_state *state, struct 
     parameters->clip = (Uint16)condition->right_sat[0];
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_parameters *parameters)
 {
     Uint8 original_cmd[7];
@@ -553,58 +603,58 @@ static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_param
     } else {
         switch (slot->effect_type) {
             case SDL_HAPTIC_CONSTANT:
-            slot->current_cmd[1] = 0x00;
-            slot->current_cmd[2] = 0;
-            slot->current_cmd[3] = 0;
-            slot->current_cmd[4] = 0;
-            slot->current_cmd[5] = 0;
-            slot->current_cmd[6] = 0;
-            slot->current_cmd[2 + slot->id] = TRANSLATE_FORCE(parameters->level);
-            break;
+                slot->current_cmd[1] = 0x00;
+                slot->current_cmd[2] = 0;
+                slot->current_cmd[3] = 0;
+                slot->current_cmd[4] = 0;
+                slot->current_cmd[5] = 0;
+                slot->current_cmd[6] = 0;
+                slot->current_cmd[2 + slot->id] = TRANSLATE_FORCE(parameters->level);
+                break;
             case SDL_HAPTIC_SPRING:
-            d1 = SCALE_VALUE_U16(((parameters->d1) + 0x8000) & 0xffff, 11);
-            d2 = SCALE_VALUE_U16(((parameters->d2) + 0x8000) & 0xffff, 11);
-            s1 = parameters->k1 < 0;
-            s2 = parameters->k2 < 0;
-            k1 = abs(parameters->k1);
-            k2 = abs(parameters->k2);
-            if (k1 < 2048) {
-                d1 = 0;
-            } else {
-                k1 -= 2048;
-            }
-            if (k2 < 2048) {
-                d2 = 2047;
-            } else {
-                k2 -= 2048;
-            }
-            slot->current_cmd[1] = 0x0b;
-            slot->current_cmd[2] = d1 >> 3;
-            slot->current_cmd[3] = d2 >> 3;
-            slot->current_cmd[4] = (SCALE_COEFF(k2, 4) << 4) + SCALE_COEFF(k1, 4);
-            slot->current_cmd[5] = ((d2 & 7) << 5) + ((d1 & 7) << 1) + (s2 << 4) + s1;
-            slot->current_cmd[6] = SCALE_VALUE_U16(parameters->clip, 8);
-            break;
+                d1 = SCALE_VALUE_U16(((parameters->d1) + 0x8000) & 0xffff, 11);
+                d2 = SCALE_VALUE_U16(((parameters->d2) + 0x8000) & 0xffff, 11);
+                s1 = parameters->k1 < 0;
+                s2 = parameters->k2 < 0;
+                k1 = abs(parameters->k1);
+                k2 = abs(parameters->k2);
+                if (k1 < 2048) {
+                    d1 = 0;
+                } else {
+                    k1 -= 2048;
+                }
+                if (k2 < 2048) {
+                    d2 = 2047;
+                } else {
+                    k2 -= 2048;
+                }
+                slot->current_cmd[1] = 0x0b;
+                slot->current_cmd[2] = d1 >> 3;
+                slot->current_cmd[3] = d2 >> 3;
+                slot->current_cmd[4] = (SCALE_COEFF(k2, 4) << 4) + SCALE_COEFF(k1, 4);
+                slot->current_cmd[5] = ((d2 & 7) << 5) + ((d1 & 7) << 1) + (s2 << 4) + s1;
+                slot->current_cmd[6] = SCALE_VALUE_U16(parameters->clip, 8);
+                break;
             case SDL_HAPTIC_DAMPER:
-            s1 = parameters->k1 < 0;
-            s2 = parameters->k2 < 0;
-            slot->current_cmd[1] = 0x0c;
-            slot->current_cmd[2] = SCALE_COEFF(parameters->k1, 4);
-            slot->current_cmd[3] = s1;
-            slot->current_cmd[4] = SCALE_COEFF(parameters->k2, 4);
-            slot->current_cmd[5] = s2;
-            slot->current_cmd[6] = SCALE_VALUE_U16(parameters->clip, 8);
-            break;
+                s1 = parameters->k1 < 0;
+                s2 = parameters->k2 < 0;
+                slot->current_cmd[1] = 0x0c;
+                slot->current_cmd[2] = SCALE_COEFF(parameters->k1, 4);
+                slot->current_cmd[3] = s1;
+                slot->current_cmd[4] = SCALE_COEFF(parameters->k2, 4);
+                slot->current_cmd[5] = s2;
+                slot->current_cmd[6] = SCALE_VALUE_U16(parameters->clip, 8);
+                break;
             case SDL_HAPTIC_FRICTION:
-            s1 = parameters->k1 < 0;
-            s2 = parameters->k2 < 0;
-            slot->current_cmd[1] = 0x0e;
-            slot->current_cmd[2] = SCALE_COEFF(parameters->k1, 8);
-            slot->current_cmd[3] = SCALE_COEFF(parameters->k2, 8);
-            slot->current_cmd[4] = SCALE_VALUE_U16(parameters->clip, 8);
-            slot->current_cmd[5] = (s2 << 4) + s1;
-            slot->current_cmd[6] = 0;
-            break;
+                s1 = parameters->k1 < 0;
+                s2 = parameters->k2 < 0;
+                slot->current_cmd[1] = 0x0e;
+                slot->current_cmd[2] = SCALE_COEFF(parameters->k1, 8);
+                slot->current_cmd[3] = SCALE_COEFF(parameters->k2, 8);
+                slot->current_cmd[4] = SCALE_VALUE_U16(parameters->clip, 8);
+                slot->current_cmd[5] = (s2 << 4) + s1;
+                slot->current_cmd[6] = 0;
+                break;
         }
     }
 
@@ -613,6 +663,12 @@ static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_param
     }
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static int lg4ff_init_slots(struct lg4ff_device *device)
 {
     struct lg4ff_effect_parameters parameters;
@@ -651,6 +707,12 @@ static int lg4ff_init_slots(struct lg4ff_device *device)
     return 0;
 }
 
+/*
+  *Ported*
+  Original function by:
+  Bernat Arlandis <berarma@hotmail.com>
+  `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
+*/
 static int lg4ff_timer(struct lg4ff_device *device)
 {
     struct lg4ff_slot *slot;
@@ -1049,6 +1111,14 @@ static int SDL_HIDAPI_HapticDriverLg4ff_SetGain(SDL_HIDAPI_HapticDevice *device,
     return 0;
 }
 
+/*
+  *Ported*
+  Original functions by:
+  Simon Wood <simon@mungewell.org>
+  Michal Malý <madcatxster@devoid-pointer.net> <madcatxster@gmail.com>
+  lg4ff_set_autocenter_default lg4ff_set_autocenter_ffex
+  `git blame v6.12 drivers/hid/hid-lg4ff.c`, https://github.com/torvalds/linux.git
+*/
 static int SDL_HIDAPI_HapticDriverLg4ff_SetAutocenter(SDL_HIDAPI_HapticDevice *device, int autocenter)
 {
     lg4ff_device *ctx = (lg4ff_device *)device->ctx;
