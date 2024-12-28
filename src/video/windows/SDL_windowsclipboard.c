@@ -41,51 +41,6 @@
 // Assume we can directly read and write BMP fields without byte swapping
 SDL_COMPILE_TIME_ASSERT(verify_byte_order, SDL_BYTEORDER == SDL_LIL_ENDIAN);
 
-static int WIN_GetPixelDataOffset(BITMAPINFOHEADER bih)
-{
-    int offset = 0;
-    // biSize Specifies the number of bytes required by the structure
-    // We expect to always be 40 because it should be packed
-    if (40 == bih.biSize && 40 == sizeof(BITMAPINFOHEADER))
-    {
-        //
-        // biBitCount Specifies the number of bits per pixel.
-        // Might exist some bit masks *after* the header and *before* the pixel offset
-        // we're looking, but only if we have more than
-        // 8 bits per pixel, so we need to ajust for that
-        //
-        if (bih.biBitCount > 8)
-        {
-            // If bih.biCompression is RBG we should NOT offset more
-
-            if (bih.biCompression == BI_BITFIELDS)
-            {
-                offset += 3 * sizeof(RGBQUAD);
-            } else if (bih.biCompression == 6 /* BI_ALPHABITFIELDS */) {
-                // Not common, but still right
-                offset += 4 * sizeof(RGBQUAD);
-            }
-        }
-    }
-
-    //
-    // biClrUsed Specifies the number of color indices in the color table that are actually used by the bitmap.
-    // If this value is zero, the bitmap uses the maximum number of colors
-    // corresponding to the value of the biBitCount member for the compression mode specified by biCompression.
-    // If biClrUsed is nonzero and the biBitCount member is less than 16
-    // the biClrUsed member specifies the actual number of colors
-    //
-    if (bih.biClrUsed > 0) {
-        offset += bih.biClrUsed * sizeof(RGBQUAD);
-    } else {
-        if (bih.biBitCount < 16) {
-            offset = offset + (sizeof(RGBQUAD) << bih.biBitCount);
-        }
-    }
-    return bih.biSize + offset;
-}
-
-
 static BOOL WIN_OpenClipboard(SDL_VideoDevice *_this)
 {
     // Retry to open the clipboard in case another application has it open
@@ -157,9 +112,30 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
         LPVOID dib = GlobalLock(hMem);
         if (dib) {
             BITMAPINFOHEADER *pbih = (BITMAPINFOHEADER *)dib;
-            size_t bih_size = pbih->biSize + pbih->biClrUsed * sizeof(RGBQUAD);
+
+            // https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader#color-tables
+            size_t color_table_size;
+            switch (pbih->biCompression) {
+            case BI_RGB:
+                if (pbih->biBitCount <= 8) {
+                    color_table_size = sizeof(RGBQUAD) * (pbih->biClrUsed == 0 ? 1 << pbih->biBitCount : pbih->biClrUsed);
+                } else {
+                    color_table_size = 0;
+                }
+                break;
+            case BI_BITFIELDS:
+                color_table_size = 3 * sizeof(DWORD);
+                break;
+            case 6 /* BI_ALPHABITFIELDS */:
+                // https://learn.microsoft.com/en-us/previous-versions/windows/embedded/aa452885(v=msdn.10)
+                color_table_size = 4 * sizeof(DWORD);
+                break;
+            default: // FOURCC
+                color_table_size = sizeof(RGBQUAD) * pbih->biClrUsed;
+            }
+
+            size_t bih_size = pbih->biSize + color_table_size;
             size_t dib_size = bih_size + pbih->biSizeImage;
-            int pixel_offset = WIN_GetPixelDataOffset(*pbih);
             if (dib_size <= mem_size) {
                 size_t bmp_size = sizeof(BITMAPFILEHEADER) + mem_size;
                 bmp = SDL_malloc(bmp_size);
@@ -169,7 +145,7 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
                     pbfh->bfSize = (DWORD)bmp_size;
                     pbfh->bfReserved1 = 0;
                     pbfh->bfReserved2 = 0;
-                    pbfh->bfOffBits = (DWORD)(sizeof(BITMAPFILEHEADER) + pixel_offset);
+                    pbfh->bfOffBits = (DWORD)(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + color_table_size);
                     SDL_memcpy((Uint8 *)bmp + sizeof(BITMAPFILEHEADER), dib, dib_size);
                     *size = bmp_size;
                 }
