@@ -520,6 +520,9 @@ static void SDL_InitDynamicAPILocked(void)
         if (initialize_jumptable(SDL_DYNAPI_VERSION, &jump_table, sizeof(jump_table)) < 0) {
             // Now we're screwed. Should definitely abort now.
             dynapi_warn("Failed to initialize internal SDL dynapi. As this would otherwise crash, we have to abort now.");
+#ifndef NDEBUG
+            SDL_TriggerBreakpoint();
+#endif
             SDL_ExitProcess(86);
         }
     }
