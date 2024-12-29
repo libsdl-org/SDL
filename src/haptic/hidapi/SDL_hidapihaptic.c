@@ -37,10 +37,11 @@ typedef struct haptic_list_node
 static haptic_list_node *haptic_list_head = NULL;
 static SDL_Mutex *haptic_list_mutex = NULL;
 
-SDL_HIDAPI_HapticDriver *drivers[] = {
+static SDL_HIDAPI_HapticDriver *drivers[] = {
     #ifdef SDL_HAPTIC_HIDAPI_LG4FF
     &SDL_HIDAPI_HapticDriverLg4ff,
-    #endif //SDL_HAPTIC_HIDAPI_LG4FF
+    #endif
+    NULL
 };
 
 bool SDL_HIDAPI_HapticInit()
@@ -76,16 +77,17 @@ bool SDL_HIDAPI_HapticIsHidapi(SDL_Haptic *haptic)
 
 bool SDL_HIDAPI_JoystickIsHaptic(SDL_Joystick *joystick)
 {
+    const int numdrivers = SDL_arraysize(drivers) - 1;
     int i;
 
     SDL_AssertJoysticksLocked();
 
-    if (joystick->driver != &SDL_HIDAPI_JoystickDriver){
+    if (joystick->driver != &SDL_HIDAPI_JoystickDriver) {
         return false;
     }
 
-    for (i = 0; i < SDL_arraysize(drivers); ++i) {
-        if(drivers[i]->JoystickSupported(joystick)) {
+    for (i = 0; i < numdrivers; ++i) {
+        if (drivers[i]->JoystickSupported(joystick)) {
             return true;
         }
     }
@@ -94,15 +96,17 @@ bool SDL_HIDAPI_JoystickIsHaptic(SDL_Joystick *joystick)
 
 bool SDL_HIDAPI_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
+    const int numdrivers = SDL_arraysize(drivers) - 1;
     int i;
+
     SDL_AssertJoysticksLocked();
 
-    if (joystick->driver != &SDL_HIDAPI_JoystickDriver){
+    if (joystick->driver != &SDL_HIDAPI_JoystickDriver) {
         return SDL_SetError("Cannot open hidapi haptic from non hidapi joystick");
     }
 
-    for (i = 0;i < SDL_arraysize(drivers);++i) {
-        if(drivers[i]->JoystickSupported(joystick)) {
+    for (i = 0; i < numdrivers; ++i) {
+        if (drivers[i]->JoystickSupported(joystick)) {
             SDL_HIDAPI_HapticDevice *device;
             haptic_list_node *list_node;
             // the driver is responsible for calling SDL_SetError
@@ -127,7 +131,7 @@ bool SDL_HIDAPI_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystic
             device->ctx = ctx;
 
             list_node = SDL_malloc(sizeof(haptic_list_node));
-            if(list_node == NULL) {
+            if (list_node == NULL) {
                 device->driver->Close(device);
                 SDL_free(device);
                 return SDL_OutOfMemory();
@@ -175,7 +179,7 @@ bool SDL_HIDAPI_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
     SDL_HIDAPI_HapticDevice *device;
 
     SDL_AssertJoysticksLocked();
-    if (joystick->driver != &SDL_HIDAPI_JoystickDriver){
+    if (joystick->driver != &SDL_HIDAPI_JoystickDriver) {
         return false;
     }
 
