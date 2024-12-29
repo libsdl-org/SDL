@@ -24,7 +24,6 @@
 #include "../../core/windows/SDL_windows.h"
 #include <windowsx.h>
 #include <shellapi.h>
-#include <stdlib.h> /* FIXME: for mbstowcs_s, wcslen */
 
 #include "../../video/windows/SDL_surface_utils.h"
 
@@ -148,7 +147,7 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
     SDL_free(menu);
 }
 
-static wchar_t *convert_label(const char *in)
+static wchar_t *escape_label(const char *in)
 {
     const char *c;
     char *c2;
@@ -174,16 +173,7 @@ static wchar_t *convert_label(const char *in)
 
     *c2 = '\0';
 
-    int len_w = MultiByteToWideChar(CP_UTF8, 0, escaped, len + 1, NULL, 0);
-    wchar_t *out = (wchar_t *)SDL_malloc(len_w * sizeof(wchar_t));
-
-    if (!out) {
-        SDL_free(escaped);
-        return NULL;
-    }
-
-    MultiByteToWideChar(CP_UTF8, 0, escaped, -1, out, len_w);
-
+    wchar_t *out = WIN_UTF8ToStringW(escaped);
     SDL_free(escaped);
 
     return out;
@@ -208,7 +198,9 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     tray->nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
     tray->nid.uCallbackMessage = WM_TRAYICON;
     tray->nid.uVersion = NOTIFYICON_VERSION_4;
-    mbstowcs_s(NULL, tray->nid.szTip, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip), tooltip, _TRUNCATE);
+    wchar_t *tooltipw = WIN_UTF8ToStringW(tooltip);
+    SDL_wcslcpy(tray->nid.szTip, tooltipw, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip));
+    SDL_free(tooltipw);
 
     if (icon) {
         tray->nid.hIcon = CreateIconFromSurface(icon);
@@ -256,7 +248,9 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
 void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 {
     if (tooltip) {
-        mbstowcs_s(NULL, tray->nid.szTip, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip), tooltip, _TRUNCATE);
+        wchar_t *tooltipw = WIN_UTF8ToStringW(tooltip);
+        SDL_wcslcpy(tray->nid.szTip, tooltipw, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip));
+        SDL_free(tooltipw);
     } else {
         tray->nid.szTip[0] = '\0';
     }
@@ -370,7 +364,7 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
 
     wchar_t *label_w = NULL;
 
-    if (label && !(label_w = convert_label(label))) {
+    if (label && !(label_w = escape_label(label))) {
         SDL_free(entry);
         return NULL;
     }
@@ -449,7 +443,7 @@ void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
 {
     SDL_snprintf(entry->label_cache, sizeof(entry->label_cache), "%s", label);
 
-    wchar_t *label_w = convert_label(label);
+    wchar_t *label_w = escape_label(label);
 
     if (!label_w) {
         return;
@@ -460,7 +454,7 @@ void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
     mii.fMask = MIIM_STRING;
 
     mii.dwTypeData = label_w;
-    mii.cch = (UINT) wcslen(label_w);
+    mii.cch = (UINT) SDL_wcslen(label_w);
 
     if (!SetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, TRUE, &mii)) {
         SDL_SetError("Couldn't update tray entry label");

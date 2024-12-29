@@ -102,8 +102,8 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  * Using tray icons require the video subsystem.
  *
  * \param icon a surface to be used as icon. May be NULL.
- * \param tooltip a tooltip to be displayed when the mouse hovers the icon.
- *                Not supported on all platforms. May be NULL.
+ * \param tooltip a tooltip to be displayed when the mouse hovers the icon in
+ *                UTF-8 encoding. Not supported on all platforms. May be NULL.
  * \returns The newly created system tray icon.
  *
  * \since This function is available since SDL 3.2.0.
@@ -130,7 +130,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *ic
  * Updates the system tray icon's tooltip.
  *
  * \param tray the tray icon to be updated.
- * \param tooltip the new tooltip. May be NULL.
+ * \param tooltip the new tooltip in UTF-8 encoding. May be NULL.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -262,8 +262,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_RemoveTrayEntry(SDL_TrayEntry *entry);
  * \param menu the menu to append the entry to.
  * \param pos the desired position for the new entry. Entries at or following
  *            this place will be moved. If pos is -1, the entry is appended.
- * \param label the text to be displayed on the entry, or NULL for a
- *              separator.
+ * \param label the text to be displayed on the entry, in UTF-8 encoding, or
+ *              NULL for a separator.
  * \param flags a combination of flags, some of which are mandatory.
  * \returns the newly created entry, or NULL if pos is out of bounds.
  *
@@ -285,7 +285,7 @@ extern SDL_DECLSPEC SDL_TrayEntry *SDLCALL SDL_InsertTrayEntryAt(SDL_TrayMenu *m
  * label. The function will silently fail if that happens.
  *
  * \param entry the entry to be updated.
- * \param label the new label for the entry.
+ * \param label the new label for the entry in UTF-8 encoding.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -301,7 +301,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, con
  * If the returned value is NULL, the entry is a separator.
  *
  * \param entry the entry to be read.
- * \returns the label of the entry.
+ * \returns the label of the entry in UTF-8 encoding.
  *
  * \since This function is available since SDL 3.2.0.
  *
