@@ -54,7 +54,7 @@ static void PickCameraSpec(SDL_CameraID camera_id, SDL_CameraSpec *spec)
     if (specs) {
         int i;
 
-        int max_size = SDL_GetNumberProperty(SDL_GetRendererProperties(state->renderers[0]), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0);
+        int max_size = (int)SDL_GetNumberProperty(SDL_GetRendererProperties(state->renderers[0]), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0);
         for (i = 0; specs[i]; ++i) {
             const SDL_CameraSpec *s = specs[i];
             if (s->width <= max_size && s->height <= max_size) {
