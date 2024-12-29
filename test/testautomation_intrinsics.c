@@ -2,7 +2,7 @@
  * Intrinsics test suite
  */
 
-#ifndef NO_BUILD_CONFIG
+#ifdef HAVE_BUILD_CONFIG
 /* Disable intrinsics that are unsupported by the current compiler */
 #include "SDL_build_config.h"
 #endif

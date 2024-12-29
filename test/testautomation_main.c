@@ -9,7 +9,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 #include "testautomation_suites.h"
+#ifdef HAVE_BUILD_CONFIG
 #include "SDL_build_config.h"
+#endif
 
 /**
  * Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
