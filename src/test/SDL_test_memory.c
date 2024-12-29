@@ -212,9 +212,7 @@ static void SDL_UntrackAllocation(void *mem)
         }
         prev = entry;
     }
-    if (s_tracked_allocations < 0) {
-        s_unknown_frees += 1;
-    }
+    s_unknown_frees += 1;
     UNLOCK_ALLOCATOR();
 }
 
