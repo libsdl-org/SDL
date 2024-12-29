@@ -26,7 +26,6 @@
 
 #include <windowsx.h>
 #include <shellapi.h>
-#include <stdlib.h> /* FIXME: for mbstowcs_s, wcslen */
 
 #include "../../video/windows/SDL_surface_utils.h"
 
@@ -210,7 +209,9 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     tray->nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
     tray->nid.uCallbackMessage = WM_TRAYICON;
     tray->nid.uVersion = NOTIFYICON_VERSION_4;
-    mbstowcs_s(NULL, tray->nid.szTip, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip), tooltip, _TRUNCATE);
+    wchar_t *tooltipw = WIN_UTF8ToStringW(tooltip);
+    SDL_wcslcpy(tray->nid.szTip, tooltipw, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip));
+    SDL_free(tooltipw);
 
     if (icon) {
         tray->nid.hIcon = CreateIconFromSurface(icon);
@@ -260,7 +261,9 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
 void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 {
     if (tooltip) {
-        mbstowcs_s(NULL, tray->nid.szTip, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip), tooltip, _TRUNCATE);
+        wchar_t *tooltipw = WIN_UTF8ToStringW(tooltip);
+        SDL_wcslcpy(tray->nid.szTip, tooltipw, sizeof(tray->nid.szTip) / sizeof(*tray->nid.szTip));
+        SDL_free(tooltipw);
     } else {
         tray->nid.szTip[0] = '\0';
     }
@@ -464,7 +467,7 @@ void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
     mii.fMask = MIIM_STRING;
 
     mii.dwTypeData = label_w;
-    mii.cch = (UINT) wcslen(label_w);
+    mii.cch = (UINT) SDL_wcslen(label_w);
 
     if (!SetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, TRUE, &mii)) {
         SDL_SetError("Couldn't update tray entry label");
