@@ -59,7 +59,7 @@ static Uint32 supported_device_ids[] = {
 #define FF_EFFECT_PLAYING 2
 #define FF_EFFECT_UPDATING 3
 
-struct lg4ff_effect_state{
+struct lg4ff_effect_state {
     SDL_HapticEffect effect;
     Uint64 start_at;
     Uint64 play_at;
@@ -74,10 +74,10 @@ struct lg4ff_effect_state{
     double direction_gain;
     Sint32 slope;
 
-bool allocated;
+    bool allocated;
 };
 
-struct lg4ff_effect_parameters{
+struct lg4ff_effect_parameters {
     Sint32 level;
     Sint32 d1;
     Sint32 d2;
@@ -86,7 +86,7 @@ struct lg4ff_effect_parameters{
     Uint32 clip;
 };
 
-struct lg4ff_slot{
+struct lg4ff_slot {
     Sint32 id;
     struct lg4ff_effect_parameters parameters;
     Uint8 current_cmd[7];
@@ -95,7 +95,7 @@ struct lg4ff_slot{
     Uint32 effect_type;
 };
 
-typedef struct lg4ff_device{
+typedef struct lg4ff_device {
     Uint16 product_id;
     Uint16 release_number;
     struct lg4ff_effect_state states[LG4FF_MAX_EFFECTS];
@@ -122,7 +122,7 @@ typedef struct lg4ff_device{
     bool is_ffex;
 } lg4ff_device;
 
-Uint64 get_time_ms(){
+static SDL_INLINE Uint64 get_time_ms(void) {
     return SDL_GetTicks();
 }
 
@@ -141,30 +141,30 @@ Uint64 get_time_ms(){
 #define SCALE_VALUE_U16(x, bits) (CLAMP_VALUE_U16(x) >> (16 - bits))
 #define CLAMP_VALUE_S16(x) ((Uint16)((x) <= -0x8000 ? -0x8000 : ((x) > 0x7fff ? 0x7fff : (x))))
 #define TRANSLATE_FORCE(x) ((CLAMP_VALUE_S16(x) + 0x8000) >> 8)
-#define SCALE_COEFF(x, bits) SCALE_VALUE_U16(_abs(x) * 2, bits)
+#define SCALE_COEFF(x, bits) SCALE_VALUE_U16(abs32(x) * 2, bits)
 
-static Sint32 _abs(Sint32 x) {
+static SDL_INLINE Sint32 abs32(Sint32 x) {
     return x < 0 ? -x : x;
 }
-static Sint64 _llabs(Sint64 x) {
+static SDL_INLINE Sint64 abs64(Sint64 x) {
     return x < 0 ? -x : x;
 }
 
-bool effect_is_periodic(const SDL_HapticEffect *effect)
+static SDL_INLINE bool effect_is_periodic(const SDL_HapticEffect *effect)
 {
 
-return effect->type == SDL_HAPTIC_SINE ||
-    effect->type == SDL_HAPTIC_TRIANGLE ||
-    effect->type == SDL_HAPTIC_SAWTOOTHUP ||
-    effect->type == SDL_HAPTIC_SAWTOOTHDOWN ||
-    effect->type == SDL_HAPTIC_SQUARE;
+    return effect->type == SDL_HAPTIC_SINE ||
+           effect->type == SDL_HAPTIC_TRIANGLE ||
+           effect->type == SDL_HAPTIC_SAWTOOTHUP ||
+           effect->type == SDL_HAPTIC_SAWTOOTHDOWN ||
+           effect->type == SDL_HAPTIC_SQUARE;
 }
 
-bool effect_is_condition(const SDL_HapticEffect *effect)
+static SDL_INLINE bool effect_is_condition(const SDL_HapticEffect *effect)
 {
-return effect->type == SDL_HAPTIC_SPRING ||
-    effect->type == SDL_HAPTIC_DAMPER ||
-    effect->type == SDL_HAPTIC_FRICTION;
+    return effect->type == SDL_HAPTIC_SPRING ||
+           effect->type == SDL_HAPTIC_DAMPER ||
+           effect->type == SDL_HAPTIC_FRICTION;
 }
 
 // linux SDL_syshaptic.c SDL_SYS_ToDirection
@@ -513,7 +513,7 @@ static Sint32 lg4ff_calculate_periodic(struct lg4ff_effect_state *state)
             level += (state->phase < 180 ? 1 : -1) * magnitude;
             break;
         case SDL_HAPTIC_TRIANGLE:
-            level += (Sint32) (_llabs((Sint64)state->phase * magnitude * 2 / 360 - magnitude) * 2 - magnitude);
+            level += (Sint32) (abs64((Sint64)state->phase * magnitude * 2 / 360 - magnitude) * 2 - magnitude);
             break;
         case SDL_HAPTIC_SAWTOOTHUP:
             level += state->phase * magnitude * 2 / 360 - magnitude;
@@ -623,8 +623,8 @@ static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_param
                 d2 = SCALE_VALUE_U16(((parameters->d2) + 0x8000) & 0xffff, 11);
                 s1 = parameters->k1 < 0;
                 s2 = parameters->k2 < 0;
-                k1 = _abs(parameters->k1);
-                k2 = _abs(parameters->k2);
+                k1 = abs32(parameters->k1);
+                k2 = abs32(parameters->k2);
                 if (k1 < 2048) {
                     d1 = 0;
                 } else {
@@ -688,7 +688,7 @@ static int lg4ff_init_slots(struct lg4ff_device *device)
     //cmd[1] = fixed_loop ? 1 : 0;
     cmd[1] = 0;
     ret = SDL_SendJoystickEffect(device->hid_handle, cmd, 7);
-    if(!ret){
+    if (!ret) {
         return -1;
     }
 
@@ -705,7 +705,7 @@ static int lg4ff_init_slots(struct lg4ff_device *device)
         device->slots[i].id = i;
         lg4ff_update_slot(&device->slots[i], &parameters);
         ret = SDL_SendJoystickEffect(device->hid_handle, cmd, 7);
-        if(!ret){
+        if (!ret) {
             return -1;
         }
         device->slots[i].is_updated = 0;
@@ -801,7 +801,7 @@ static int lg4ff_timer(struct lg4ff_device *device)
     parameters[2].clip = parameters[2].clip * device->damper_level / 100;
     parameters[3].clip = parameters[3].clip * device->friction_level / 100;
 
-    ffb_level = _abs(parameters[0].level);
+    ffb_level = abs32(parameters[0].level);
     for (i = 1; i < 4; i++) {
         parameters[i].k1 = (Sint64)parameters[i].k1 * gain / 0xffff;
         parameters[i].k2 = (Sint64)parameters[i].k2 * gain / 0xffff;
@@ -817,7 +817,7 @@ static int lg4ff_timer(struct lg4ff_device *device)
         lg4ff_update_slot(slot, &parameters[i]);
         if (slot->is_updated) {
             bool ret = SDL_SendJoystickEffect(device->hid_handle, slot->current_cmd, 7);
-            if(!ret){
+            if (!ret) {
                 status = -1;
             }
             slot->is_updated = 0;
@@ -860,7 +860,7 @@ static int SDL_HIDAPI_HapticDriverLg4ff_GetEnvInt(const char *env_name, int min,
 {
     const char *env = SDL_getenv(env_name);
     int value = 0;
-    if(env == NULL) {
+    if (env == NULL) {
         return def;
     }
     value = SDL_atoi(env);
@@ -1112,7 +1112,7 @@ static bool SDL_HIDAPI_HapticDriverLg4ff_GetEffectStatus(SDL_HIDAPI_HapticDevice
         return false;
     }
 
-    if(test_bit(FF_EFFECT_STARTED, &ctx->states[id].flags)){
+    if (test_bit(FF_EFFECT_STARTED, &ctx->states[id].flags)) {
         ret = true;
     }
     SDL_UnlockMutex(ctx->mutex);
@@ -1165,7 +1165,7 @@ static bool SDL_HIDAPI_HapticDriverLg4ff_SetAutocenter(SDL_HIDAPI_HapticDevice *
         cmd[4] = (Uint8)magnitude;
 
         ret = SDL_SendJoystickEffect(ctx->hid_handle, cmd, sizeof(cmd));
-        if(!ret){
+        if (!ret) {
             SDL_UnlockMutex(ctx->mutex);
             SDL_SetError("Failed sending autocenter command");
             return false;
