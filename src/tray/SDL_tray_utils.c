@@ -22,6 +22,8 @@
 
 #include "../video/SDL_sysvideo.h"
 #include "../events/SDL_events_c.h"
+#include "SDL_tray_utils.h"
+
 
 static int active_trays = 0;
 
