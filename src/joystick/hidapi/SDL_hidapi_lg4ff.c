@@ -769,7 +769,7 @@ static bool HIDAPI_DriverLg4ff_HandleState(SDL_HIDAPI_Device *device,
 static bool HIDAPI_DriverLg4ff_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_Joystick *joystick = NULL;
-    size_t r;
+    int r;
     Uint8 report_buf[32] = {0};
     size_t report_size = 0;
     SDL_DriverLg4ff_Context *ctx = (SDL_DriverLg4ff_Context *)device->context;
@@ -804,7 +804,6 @@ static bool HIDAPI_DriverLg4ff_UpdateDevice(SDL_HIDAPI_Device *device)
 
     do {
         r = SDL_hid_read(device->dev, report_buf, report_size);
-
         if (r < 0) {
             /* Failed to read from controller */
             HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
