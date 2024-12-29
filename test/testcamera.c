@@ -19,7 +19,6 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDLTest_CommonState *state = NULL;
 static SDL_Camera *camera = NULL;
-static SDL_CameraSpec spec;
 static SDL_Texture *texture = NULL;
 static bool texture_updated = false;
 static SDL_Surface *frame_current = NULL;
@@ -46,12 +45,34 @@ static void PrintCameraSpecs(SDL_CameraID camera_id)
     }
 }
 
+static void PickCameraSpec(SDL_CameraID camera_id, SDL_CameraSpec *spec)
+{
+    SDL_CameraSpec **specs = SDL_GetCameraSupportedFormats(camera_id, NULL);
+
+    SDL_zerop(spec);
+
+    if (specs) {
+        int i;
+
+        int max_size = SDL_GetNumberProperty(SDL_GetRendererProperties(state->renderers[0]), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0);
+        for (i = 0; specs[i]; ++i) {
+            const SDL_CameraSpec *s = specs[i];
+            if (s->width <= max_size && s->height <= max_size) {
+                SDL_copyp(spec, s);
+                break;
+            }
+        }
+        SDL_free(specs);
+    }
+}
+
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     char window_title[128];
     int devcount = 0;
     int i;
     const char *camera_name = NULL;
+    SDL_CameraSpec spec;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_CAMERA);
@@ -132,6 +153,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
             camera_id = device;
         }
         SDL_Log("  - Camera #%d: %s %s", i, posstr, name);
+
+        PrintCameraSpecs(device);
     }
 
     if (!camera_id) {
@@ -152,13 +175,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    PrintCameraSpecs(camera_id);
-
-    SDL_CameraSpec *pspec = &spec;
-    spec.framerate_numerator = 30;
-    spec.framerate_denominator = 1;
-
-    camera = SDL_OpenCamera(camera_id, pspec);
+    PickCameraSpec(camera_id, &spec);
+    camera = SDL_OpenCamera(camera_id, &spec);
     if (!camera) {
         SDL_Log("Failed to open camera device: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -188,6 +206,8 @@ static int FlipCamera(void)
         }
 
         if (nextcam) {
+            SDL_CameraSpec spec;
+
             SDL_Log("Flip camera!");
 
             if (frame_current) {
@@ -202,7 +222,8 @@ static int FlipCamera(void)
                 texture = NULL;  /* will rebuild when new camera is approved. */
             }
 
-            camera = SDL_OpenCamera(nextcam, NULL);
+            PickCameraSpec(nextcam, &spec);
+            camera = SDL_OpenCamera(nextcam, &spec);
             if (!camera) {
                 SDL_Log("Failed to open camera device: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
