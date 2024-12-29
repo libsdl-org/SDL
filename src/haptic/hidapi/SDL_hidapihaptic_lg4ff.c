@@ -958,6 +958,7 @@ static void SDL_HIDAPI_HapticDriverLg4ff_Close(SDL_HIDAPI_HapticDevice *device)
 
     ctx->stop_thread = true;
     SDL_WaitThread(ctx->thread, NULL);
+    SDL_DestroyMutex(ctx->mutex);
 }
 
 static int SDL_HIDAPI_HapticDriverLg4ff_NumEffects(SDL_HIDAPI_HapticDevice *device)
