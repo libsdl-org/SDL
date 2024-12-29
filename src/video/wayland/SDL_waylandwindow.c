@@ -60,12 +60,12 @@ static int PointToPixel(SDL_Window *window, int point)
      * Wayland scale units are in units of 1/120, so the offset is required to correct for
      * rounding errors when using certain scale values.
      */
-    return SDL_max((int)SDL_lround((double)point * GetWindowScale(window) + 1e-6), 1);
+    return point ? SDL_max((int)SDL_lround((double)point * GetWindowScale(window) + 1e-6), 1) : 0;
 }
 
 static int PixelToPoint(SDL_Window *window, int pixel)
 {
-    return SDL_max((int)SDL_lround((double)pixel / GetWindowScale(window)), 1);
+    return pixel ? SDL_max((int)SDL_lround((double)pixel / GetWindowScale(window)), 1) : 0;
 }
 
 /* According to the Wayland spec:
