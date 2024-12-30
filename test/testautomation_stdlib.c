@@ -392,6 +392,9 @@ int stdlib_getsetenv(void *arg)
 #endif
 #endif
 
+#define FMT_PRILLd "%lld"
+#define FMT_PRILLu "%llu"
+
 /**
  * @brief Call to SDL_sscanf
  */
@@ -713,6 +716,112 @@ stdlib_overflow(void *arg)
     return TEST_COMPLETED;
 }
 
+static int
+stdlib_strtox(void *arg)
+{
+    const unsigned long long ullong_max = ~0ULL;
+
+#define STRTOX_TEST_CASE(func_name, type, format_spec, str, base, expected_result, expected_endp_offset) do {                    \
+        const char *s = str;                                                                                                     \
+        type r, expected_r = expected_result;                                                                                    \
+        char *ep, *expected_ep = (char *)s + expected_endp_offset;                                                               \
+        r = func_name(s, &ep, base);                                                                                             \
+        SDLTest_AssertPass("Call to " #func_name "(" #str ", &endp, " #base ")");                                                \
+        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: " format_spec ", got: " format_spec, expected_r, r); \
+        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep);                      \
+    } while (0)
+
+    // infer decimal
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "\t  123abcxyz", 0, 123, 6); // skip leading space
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "+123abcxyz", 0, 123, 4);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "+123abcxyz", 0, 123, 4);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "-123abcxyz", 0, -123, 4);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "9999999999999999999999999999999999999999abcxyz", 0, ullong_max, 40);
+
+    // infer hexadecimal
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "0x123abcxyz", 0, 0x123abc, 8);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "0X123ABCXYZ", 0, 0x123abc, 8); // uppercase X
+
+    // infer octal
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "0123abcxyz", 0, 0123, 4);
+
+    // arbitrary bases
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "00110011", 2, 51, 8);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "-uvwxyz", 32, -991, 3);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "ZzZzZzZzZzZzZzZzZzZzZzZzZ", 36, ullong_max, 25);
+
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "0", 0, 0, 1);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "0", 10, 0, 1);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "-0", 0, 0, 2);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "-0", 10, 0, 2);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, " - 1", 0, 0, 0); // invalid input
+
+    // We know that SDL_strtol, SDL_strtoul and SDL_strtoll share the same code path as SDL_strtoull under the hood,
+    // so the most interesting test cases are those close to the bounds of the integer type.
+
+    // For simplicity, we only run long/long long tests when they are 32-bit/64-bit, respectively.
+    // Suppressing warnings would be difficult otherwise.
+    // Since the CI runs the tests against a variety of targets, this should be fine in practice.
+
+    if (sizeof(long) == 4) {
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "0", 0, 0, 1);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "0", 10, 0, 1);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-0", 0, 0, 2);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-0", 10, 0, 2);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "2147483647", 10, 2147483647, 10);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "2147483648", 10, 2147483647, 10);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-2147483648", 10, -2147483647L - 1, 11);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-2147483649", 10, -2147483647L - 1, 11);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-9999999999999999999999999999999999999999", 10, -2147483647L - 1, 41);
+
+        STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "4294967295", 10, 4294967295UL, 10);
+        STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "4294967296", 10, 4294967295UL, 10);
+        STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "-4294967295", 10, 1, 11);
+    }
+
+    if (sizeof(long long) == 8) {
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "0", 0, 0LL, 1);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "0", 10, 0LL, 1);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-0", 0, 0LL, 2);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-0", 10, 0LL, 2);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "9223372036854775807", 10, 9223372036854775807LL, 19);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "9223372036854775808", 10, 9223372036854775807LL, 19);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-9223372036854775808", 10, -9223372036854775807LL - 1, 20);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-9223372036854775809", 10, -9223372036854775807LL - 1, 20);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-9999999999999999999999999999999999999999", 10, -9223372036854775807LL - 1, 41);
+
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLd, "18446744073709551615", 10, 18446744073709551615ULL, 20);
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLd, "18446744073709551616", 10, 18446744073709551615ULL, 20);
+        STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLd, "-18446744073709551615", 10, 1, 21);
+    }
+
+#undef STRTOX_TEST_CASE
+
+    return TEST_COMPLETED;
+}
+
+static int
+stdlib_strtod(void *arg)
+{
+#define STRTOD_TEST_CASE(str, expected_result, expected_endp_offset) do {                                   \
+        const char *s = str;                                                                                \
+        double r, expected_r = expected_result;                                                             \
+        char *ep, *expected_ep = (char *)s + expected_endp_offset;                                          \
+        r = SDL_strtod(s, &ep);                                                                             \
+        SDLTest_AssertPass("Call to SDL_strtod(" #str ", &endp)");                                          \
+        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: %f, got: %f", expected_r, r);   \
+        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep); \
+    } while (0)
+
+    STRTOD_TEST_CASE("\t  123.75abcxyz", 123.75, 9); // skip leading space
+    STRTOD_TEST_CASE("+999.555", 999.555, 8);
+    STRTOD_TEST_CASE("-999.555", -999.555, 8);
+
+#undef STRTOD_TEST_CASE
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Standard C routine test cases */
@@ -736,6 +845,14 @@ static const SDLTest_TestCaseReference stdlibTestOverflow = {
     stdlib_overflow, "stdlib_overflow", "Overflow detection", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference stdlibTest_strtox = {
+    stdlib_strtox, "stdlib_strtox", "Calls to SDL_strtol, SDL_strtoul, SDL_strtoll and SDL_strtoull", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference stdlibTest_strtod = {
+    stdlib_strtod, "stdlib_strtod", "Calls to SDL_strtod", TEST_ENABLED
+};
+
 /* Sequence of Standard C routine test cases */
 static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest1,
@@ -743,6 +860,8 @@ static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTest3,
     &stdlibTest4,
     &stdlibTestOverflow,
+    &stdlibTest_strtox,
+    &stdlibTest_strtod,
     NULL
 };
 
