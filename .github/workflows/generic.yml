@@ -207,7 +207,7 @@ jobs:
           ctest -VV --test-dir build/ -j2
       - name: "Build test apk's (CMake)"
         id: apks
-        if: ${{ steps.build.outcome == 'success' && matrix.platform.android-apks != '' }}
+        if: ${{ always() && steps.build.outcome == 'success' && matrix.platform.android-apks != '' }}
 #        shell: ${{ matrix.platform.shell }}
         run: |
           ${{ matrix.platform.source-cmd }}
@@ -218,7 +218,7 @@ jobs:
             -- ${{ matrix.platform.cmake-build-arguments }}
       - name: 'Install (CMake)'
         id: install
-        if: ${{ steps.build.outcome == 'success' }}
+        if: ${{ always() && steps.build.outcome == 'success' }}
 #        shell: ${{ matrix.platform.shell }}
         run: |
           ${{ matrix.platform.source-cmd }}
@@ -227,7 +227,7 @@ jobs:
           ( cd prefix; find . ) | LC_ALL=C sort -u
       - name: 'Package (CPack)'
         id: package
-        if: ${{ steps.build.outcome == 'success' }}
+        if: ${{ always() && steps.build.outcome == 'success' }}
 #        shell: ${{ matrix.platform.shell }}
         run: |
           # DMG creation on macOS occasionally fails, so try multiple times
