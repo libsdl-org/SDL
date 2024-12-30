@@ -116,7 +116,7 @@ typedef enum SDL_ThreadState
     SDL_THREAD_UNKNOWN,     /**< The thread is not valid */
     SDL_THREAD_ALIVE,       /**< The thread is currently running */
     SDL_THREAD_DETACHED,    /**< The thread is detached and can't be waited on */
-    SDL_THREAD_COMPLETE,    /**< The thread has finished and should be cleaned up with SDL_WaitThread() */
+    SDL_THREAD_COMPLETE     /**< The thread has finished and should be cleaned up with SDL_WaitThread() */
 } SDL_ThreadState;
 
 /**
