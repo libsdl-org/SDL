@@ -63,6 +63,10 @@ static int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; // Default SurfaceView format, in case this is queried before being filled
 float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
+int Android_SafeInsetLeft = 0;
+int Android_SafeInsetRight = 0;
+int Android_SafeInsetTop = 0;
+int Android_SafeInsetBottom = 0;
 static SDL_SystemTheme Android_SystemTheme;
 
 static bool Android_SuspendScreenSaver(SDL_VideoDevice *_this)
@@ -268,6 +272,18 @@ void Android_SendResize(SDL_Window *window)
 
     if (window) {
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, Android_SurfaceWidth, Android_SurfaceHeight);
+    }
+}
+
+void Android_SetWindowSafeAreaInsets(int left, int right, int top, int bottom)
+{
+    Android_SafeInsetLeft = left;
+    Android_SafeInsetRight = right;
+    Android_SafeInsetTop = top;
+    Android_SafeInsetBottom = bottom;
+
+    if (Android_Window) {
+        SDL_SetWindowSafeAreaInsets(Android_Window, left, right, top, bottom);
     }
 }
 

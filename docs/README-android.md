@@ -10,7 +10,7 @@ The rest of this README covers the Android gradle style build process.
 Requirements
 ================================================================================
 
-Android SDK (version 34 or later)
+Android SDK (version 35 or later)
 https://developer.android.com/sdk/index.html
 
 Android NDK r15c or later
@@ -316,6 +316,17 @@ You can control activity re-creation (eg. onCreate()) behaviour. This allows you
 to choose whether to keep or re-initialize java and native static datas, see
 SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY in SDL_hints.h.
 
+
+Insets and Safe Areas
+================================================================================
+
+As of Android 15, SDL windows cover the entire screen, extending under notches
+and system bars. The OS expects you to take those into account when displaying
+content and SDL provides the function SDL_GetWindowSafeArea() so you know what
+area is available for interaction. Outside of the safe area can be potentially
+covered by system bars or used by OS gestures.
+
+
 Mouse / Touch events
 ================================================================================
 
@@ -325,6 +336,7 @@ To enable/disable this behavior, see SDL_hints.h:
 - SDL_HINT_TOUCH_MOUSE_EVENTS
 - SDL_HINT_MOUSE_TOUCH_EVENTS
 
+
 Misc
 ================================================================================
 
@@ -333,6 +345,7 @@ before creating a window:
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+
 
 Threads and the Java VM
 ================================================================================
@@ -358,6 +371,7 @@ in your native thread.
 
 see:
 https://developer.android.com/training/articles/perf-jni#faq:-why-didnt-findclass-find-my-class
+
 
 Using STL
 ================================================================================
@@ -526,15 +540,6 @@ The Tegra Graphics Debugger is available from NVidia here:
 https://developer.nvidia.com/tegra-graphics-debugger
 
 
-Why is API level 19 the minimum required?
-================================================================================
-
-The latest NDK toolchain doesn't support targeting earlier than API level 19.
-As of this writing, according to https://www.composables.com/tools/distribution-chart
-about 99.7% of the Android devices accessing Google Play support API level 19 or
-higher (August 2023).
-
-
 A note regarding the use of the "dirty rectangles" rendering technique
 ================================================================================
 
@@ -545,12 +550,6 @@ This is caused by SDL's use of EGL as the support system to handle OpenGL ES/ES2
 contexts, in particular the use of the eglSwapBuffers function. As stated in the
 documentation for the function "The contents of ancillary buffers are always
 undefined after calling eglSwapBuffers".
-Setting the EGL_SWAP_BEHAVIOR attribute of the surface to EGL_BUFFER_PRESERVED
-is not possible for SDL as it requires EGL 1.4, available only on the API level
-17+, so the only workaround available on this platform is to redraw the entire
-screen each frame.
-
-Reference: http://www.khronos.org/registry/egl/specs/EGLTechNote0001.html
 
 
 Ending your application
@@ -570,11 +569,13 @@ Don't call exit() as it stops the activity badly.
 NB: "Back button" can be handled as a SDL_EVENT_KEY_DOWN/UP events, with Keycode
 SDLK_AC_BACK, for any purpose.
 
+
 Known issues
 ================================================================================
 
 - The number of buttons reported for each joystick is hardcoded to be 36, which
 is the current maximum number of buttons Android can report.
+
 
 Building the SDL tests
 ================================================================================
@@ -651,4 +652,4 @@ There is also a convenience target which will build, install and start a test:
 cmake --build . --target build-install-start-testsprite
 ```
 
-Not all tests provide a GUI. For those, you can use `adb logcat` to read the output of stdout.
+Not all tests provide a GUI. For those, you can use `adb logcat` to read the output.
