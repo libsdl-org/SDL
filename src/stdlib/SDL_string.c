@@ -368,7 +368,7 @@ static size_t SDL_ScanUnsignedLongLongInternal(const char *text, int count, int 
             negative = *text == '-';
             ++text;
         }
-        if ((radix == 0 || radix == 16) && *text == '0') {
+        if ((radix == 0 || radix == 16) && *text == '0' && text[1] != '\0') {
             ++text;
             if (*text == 'x' || *text == 'X') {
                 radix = 16;
