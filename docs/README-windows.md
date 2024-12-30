@@ -16,6 +16,68 @@ Studio solution.
 
 Details are here: https://github.com/libsdl-org/SDL/issues/5186
 
+## MinGW-64 compiler support
+
+SDL can be built with MinGW-64 and CMake. First, you need to install and set up the MSYS2 environment, which provides the MinGW-64 toolchain. Install MSYS2, typically to `C:\msys64`, and follow the instructions on the MSYS2 wiki to use the MinGW-64 shell to update all components in the MSYS2 environment. This generally amounts to running `pacman -Syuu` from the mingw64 shell, but refer to MSYS2's documentation for more details. Once the MSYS2 environment has been updated, install the x86_64 MinGW toolchain from the mingw64 shell with the command `pacman -S mingw-w64-x86_64-toolchain`. (You could alternatively install the 32-bit MinGW toolchain from the mingw32 shell.)
+
+To build and install SDL, you can use PowerShell or any CMake-compatible IDE. First, install CMake, Ninja, and Git. These tools can be installed using the Windows Package Manager `winget` (The winget IDs for these tools are Kitware.CMake, Git.Git, and Ninja-build.Ninja). Clone SDL to an appropriate location with `git` and run the following commands from the root of the cloned repository:
+
+```sh
+mkdir build
+cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=build-scripts/cmake-toolchain-mingw64-x86_64.cmake
+cmake --build build --parallel
+cmake --install build --prefix C:\Libraries
+```
+
+This installs SDL to `C:\Libraries`. You can specify another directory of your choice as desired. To build your game against the installed SDL using CMake, copy `build-scripts/cmake-toolchain-mingw64-x86_64.cmake` into your project directory and refer to it with the `-DCMAKE_TOOLCHAIN_FILE` option. Alternatively, you can directly copy these three lines into your `CMakeLists.txt` file:
+
+```cmake
+find_program(CMAKE_C_COMPILER NAMES x86_64-w64-mingw32-gcc)
+find_program(CMAKE_CXX_COMPILER NAMES x86_64-w64-mingw32-g++)
+find_program(CMAKE_RC_COMPILER NAMES x86_64-w64-mingw32-windres windres)
+```
+
+Ensure that your `CMAKE_PREFIX_PATH` includes `C:\Libraries`. A minimal fix is to pass it as a CMake option when building:
+
+```sh
+cmake .. -G Ninja -DCMAKE_PREFIX_PATH=C:\Libraries
+```
+
+On Windows, you also need to copy `SDL3.dll` to your build directory so that the game can find it at runtime. You can use `find_program` in CMake to locate the DLL:
+
+```cmake
+find_program(SDL3_DLL NAMES SDL3.dll PATH_SUFFIXES bin REQUIRED)
+```
+
+Below is a minimal `CMakeLists.txt` file to build your game linked against a system SDL that was built with the MinGW-64 toolchain. See [README-cmake.md](README-cmake.md) for more details on including SDL in your CMake project.
+
+```cmake
+cmake_minimum_required(VERSION 3.18)
+project(mygame)
+
+# Find mingw64 toolchain.
+find_program(CMAKE_C_COMPILER NAMES x86_64-w64-mingw32-gcc)
+find_program(CMAKE_CXX_COMPILER NAMES x86_64-w64-mingw32-g++)
+find_program(CMAKE_RC_COMPILER NAMES x86_64-w64-mingw32-windres windres)
+
+find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
+
+add_executable(mygame WIN32 mygame.c)
+target_link_libraries(mygame PRIVATE SDL3::SDL3)  # Links to the static SDL3 shim
+
+# On Windows, copy the DLL to the build dir so it can be loaded by the shim
+if(WIN32)
+    find_program(SDL3_DLL NAMES SDL3.dll PATH_SUFFIXES bin REQUIRED)
+    message(STATUS "Found SDL3.dll at: ${SDL3_DLL}")
+
+    add_custom_command(TARGET mygame POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${SDL3_DLL}"
+            $<TARGET_FILE_DIR:mygame>
+            COMMENT "Copying SDL3.dll to the executable directory"
+    )
+endif()
+```
 
 ## OpenGL ES 2.x support
 
