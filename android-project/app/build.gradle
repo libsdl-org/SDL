@@ -8,7 +8,7 @@ android {
     namespace "org.libsdl.app"
     compileSdkVersion 35
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 35
         versionCode 1
         versionName "1.0"
