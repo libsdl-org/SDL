@@ -63,6 +63,7 @@ static int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; // Default SurfaceView format, in case this is queried before being filled
 float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
+static SDL_DisplayOrientation Android_ScreenOrientation = SDL_ORIENTATION_UNKNOWN;
 int Android_SafeInsetLeft = 0;
 int Android_SafeInsetRight = 0;
 int Android_SafeInsetTop = 0;
@@ -249,6 +250,29 @@ void Android_SetFormat(int format_wanted, int format_got)
             SDL_GetPixelFormatName(pf_got), format_got);
 }
 
+static void Android_SendOrientationUpdate(void)
+{
+    /* If we've received a compatible resize event, update the
+     * orientation immediately, otherwise wait for the display
+     * resize event.
+     */
+    SDL_VideoDevice *device = SDL_GetVideoDevice();
+    if (device && device->num_displays > 0) {
+        SDL_VideoDisplay *display = device->displays[0];
+        bool mode_landscape = (display->desktop_mode.w > display->desktop_mode.h);
+        bool sensor_landscape = (Android_ScreenOrientation == SDL_ORIENTATION_LANDSCAPE || Android_ScreenOrientation == SDL_ORIENTATION_LANDSCAPE_FLIPPED);
+        if (sensor_landscape == mode_landscape) {
+            SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, Android_ScreenOrientation, 0);
+        }
+    }
+}
+
+void Android_SetOrientation(SDL_DisplayOrientation orientation)
+{
+    Android_ScreenOrientation = orientation;
+    Android_SendOrientationUpdate();
+}
+
 void Android_SendResize(SDL_Window *window)
 {
     /*
@@ -268,6 +292,7 @@ void Android_SendResize(SDL_Window *window)
         desktop_mode.h = Android_DeviceHeight;
         desktop_mode.refresh_rate = Android_ScreenRate;
         SDL_SetDesktopDisplayMode(display, &desktop_mode);
+        Android_SendOrientationUpdate();
     }
 
     if (window) {
