@@ -284,12 +284,18 @@ char **SDL_GetClipboardMimeTypes(size_t *num_mime_types)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
+    if (num_mime_types) {
+        *num_mime_types = 0;
+    }
+
     if (!_this) {
-        SDL_SetError("Video subsystem must be initialized to query clipboard mime types");
+        SDL_SetError("Video subsystem has not been initialized");
         return NULL;
     }
 
-    *num_mime_types = _this->num_clipboard_mime_types;
+    if (num_mime_types) {
+        *num_mime_types = _this->num_clipboard_mime_types;
+    }
     return SDL_CopyClipboardMimeTypes((const char **)_this->clipboard_mime_types, _this->num_clipboard_mime_types, false);
 }
 
