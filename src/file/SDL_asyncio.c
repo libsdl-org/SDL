@@ -205,6 +205,7 @@ static bool GetAsyncIOTaskOutcome(SDL_AsyncIOTask *task, SDL_AsyncIOOutcome *out
     SDL_zerop(outcome);
     outcome->asyncio = asyncio->oneshot ? NULL : asyncio;
     outcome->result = task->result;
+    outcome->type = task->type;
     outcome->buffer = task->buffer;
     outcome->offset = task->offset;
     outcome->bytes_requested = task->requested_size;
