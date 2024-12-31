@@ -1080,7 +1080,7 @@ SDL_Keycode SDL_GetKeyFromName(const char *name)
             SDL_Keymap *keymap = SDL_GetCurrentKeymap();
             SDL_Keymod modstate;
             SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, &modstate);
-            if (scancode != SDL_SCANCODE_UNKNOWN && (modstate & SDL_KMOD_SHIFT)) {
+            if (scancode != SDL_SCANCODE_UNKNOWN && (modstate & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS))) {
                 key = SDL_GetKeymapKeycode(keymap, scancode, SDL_KMOD_NONE);
             }
         }
