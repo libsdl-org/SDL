@@ -1053,7 +1053,11 @@ void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *
     HWND hwnd = data->hwnd;
     RECT rect;
 
-    if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+    // GetClientRect() returns the wrong size for popup windows if called while handling WM_WINDOWPOSCHANGED.
+    if (data->use_last_popup_size) {
+        *w = data->last_popup_width;
+        *h = data->last_popup_height;
+    } else if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
         *w = rect.right;
         *h = rect.bottom;
     } else if (window->last_pixel_w && window->last_pixel_h) {

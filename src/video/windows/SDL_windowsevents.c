@@ -1506,12 +1506,23 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
         }
 
-        // Moving the window from one display to another can change the size of the window (in the handling of SDL_EVENT_WINDOW_MOVED), so we need to re-query the bounds
-        if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
-            w = rect.right;
-            h = rect.bottom;
+        // GetClientRect() returns the old size for popup windows for some reason.
+        if (!SDL_WINDOW_IS_POPUP(data->window)) {
+            // Moving the window from one display to another can change the size of the window (in the handling of SDL_EVENT_WINDOW_MOVED), so we need to re-query the bounds
+            if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+                w = rect.right;
+                h = rect.bottom;
 
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+            }
+        } else {
+            // Cache the data, as a resize event will call GetWindowSizeInPixels().
+            w = data->last_popup_width = windowpos->cx;
+            h = data->last_popup_height = windowpos->cy;
+
+            data->use_last_popup_size = true;
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+            data->use_last_popup_size = false;
         }
 
         WIN_UpdateClipCursor(data->window);
