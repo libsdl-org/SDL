@@ -42,7 +42,7 @@ void SDL_CancelClipboardData(Uint32 sequence)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-    if (sequence != _this->clipboard_sequence) {
+    if (sequence && sequence != _this->clipboard_sequence) {
         // This clipboard data was already canceled
         return;
     }
@@ -58,10 +58,36 @@ void SDL_CancelClipboardData(Uint32 sequence)
     _this->clipboard_userdata = NULL;
 }
 
+bool SDL_SaveClipboardMimeTypes(const char **mime_types, size_t num_mime_types)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+    SDL_FreeClipboardMimeTypes(_this);
+
+    if (mime_types && num_mime_types > 0) {
+        size_t num_allocated = 0;
+
+        _this->clipboard_mime_types = (char **)SDL_malloc(num_mime_types * sizeof(char *));
+        if (_this->clipboard_mime_types) {
+            for (size_t i = 0; i < num_mime_types; ++i) {
+                _this->clipboard_mime_types[i] = SDL_strdup(mime_types[i]);
+                if (_this->clipboard_mime_types[i]) {
+                    ++num_allocated;
+                }
+            }
+        }
+        if (num_allocated < num_mime_types) {
+            SDL_FreeClipboardMimeTypes(_this);
+            return false;
+        }
+        _this->num_clipboard_mime_types = num_mime_types;
+    }
+    return true;
+}
+
 bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    size_t i;
 
     if (!_this) {
         return SDL_UninitializedVideo();
@@ -78,7 +104,7 @@ bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardClean
         return true;
     }
 
-    SDL_CancelClipboardData(_this->clipboard_sequence);
+    SDL_CancelClipboardData(0);
 
     ++_this->clipboard_sequence;
     if (!_this->clipboard_sequence) {
@@ -88,23 +114,9 @@ bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardClean
     _this->clipboard_cleanup = cleanup;
     _this->clipboard_userdata = userdata;
 
-    if (mime_types && num_mime_types > 0) {
-        size_t num_allocated = 0;
-
-        _this->clipboard_mime_types = (char **)SDL_malloc(num_mime_types * sizeof(char *));
-        if (_this->clipboard_mime_types) {
-            for (i = 0; i < num_mime_types; ++i) {
-                _this->clipboard_mime_types[i] = SDL_strdup(mime_types[i]);
-                if (_this->clipboard_mime_types[i]) {
-                    ++num_allocated;
-                }
-            }
-        }
-        if (num_allocated < num_mime_types) {
-            SDL_ClearClipboardData();
-            return false;
-        }
-        _this->num_clipboard_mime_types = num_mime_types;
+    if (!SDL_SaveClipboardMimeTypes(mime_types, num_mime_types)) {
+        SDL_ClearClipboardData();
+        return false;
     }
 
     if (_this->SetClipboardData) {
@@ -115,7 +127,7 @@ bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardClean
         char *text = NULL;
         size_t size;
 
-        for (i = 0; i < num_mime_types; ++i) {
+        for (size_t i = 0; i < num_mime_types; ++i) {
             const char *mime_type = _this->clipboard_mime_types[i];
             if (SDL_IsTextMimeType(mime_type)) {
                 const void *data = _this->clipboard_callback(_this->clipboard_userdata, mime_type, &size);

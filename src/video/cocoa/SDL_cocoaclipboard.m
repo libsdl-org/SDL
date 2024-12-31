@@ -23,7 +23,10 @@
 #ifdef SDL_VIDEO_DRIVER_COCOA
 
 #include "SDL_cocoavideo.h"
+#include "../../events/SDL_events_c.h"
 #include "../../events/SDL_clipboardevents_c.h"
+
+#include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 101300
 typedef NSString *NSPasteboardType; // Defined in macOS 10.13+
@@ -72,6 +75,66 @@ provideDataForType:(NSPasteboardType)type
 
 @end
 
+static char **GetMimeTypes(int *pnformats)
+{
+    char **new_mime_types = NULL;
+
+    *pnformats = 0;
+
+    int nformats = 0;
+    int formatsSz = 0;
+    NSArray<NSPasteboardItem *> *items = [[NSPasteboard generalPasteboard] pasteboardItems];
+    NSUInteger nitems = [items count];
+    if (nitems > 0) {
+        for (NSPasteboardItem *item in items) {
+            NSArray<NSString *> *types = [item types];
+            for (NSString *type in types) {
+                if (@available(macOS 11.0, *)) {
+                    UTType *uttype = [UTType typeWithIdentifier:type];
+                    NSString *mime_type = [uttype preferredMIMEType];
+                    if (mime_type) {
+                        NSUInteger len = [mime_type lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1;
+                        formatsSz += len;
+                        ++nformats;
+                    }
+                }
+                NSUInteger len = [type lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1;
+                formatsSz += len;
+                ++nformats;
+            }
+        }
+
+        new_mime_types = SDL_AllocateTemporaryMemory((nformats + 1) * sizeof(char *) + formatsSz);
+        if (new_mime_types) {
+            int i = 0;
+            char *strPtr = (char *)(new_mime_types + nformats + 1);
+            for (NSPasteboardItem *item in items) {
+                NSArray<NSString *> *types = [item types];
+                for (NSString *type in types) {
+                    if (@available(macOS 11.0, *)) {
+                        UTType *uttype = [UTType typeWithIdentifier:type];
+                        NSString *mime_type = [uttype preferredMIMEType];
+                        if (mime_type) {
+                            NSUInteger len = [mime_type lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1;
+                            SDL_memcpy(strPtr, [mime_type UTF8String], len);
+                            new_mime_types[i++] = strPtr;
+                            strPtr += len;
+                        }
+                    }
+                    NSUInteger len = [type lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1;
+                    SDL_memcpy(strPtr, [type UTF8String], len);
+                    new_mime_types[i++] = strPtr;
+                    strPtr += len;
+                }
+            }
+
+            new_mime_types[nformats] = NULL;
+            *pnformats = nformats;
+        }
+    }
+    return new_mime_types;
+}
+
 
 void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data)
 {
@@ -83,8 +146,11 @@ void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data)
         count = [pasteboard changeCount];
         if (count != data.clipboard_count) {
             if (data.clipboard_count) {
-                // TODO: compute mime types
-                SDL_SendClipboardUpdate(false, NULL, 0);
+                int nformats = 0;
+                char **new_mime_types = GetMimeTypes(&nformats);
+                if (new_mime_types) {
+                    SDL_SendClipboardUpdate(false, new_mime_types, nformats);
+                }
             }
             data.clipboard_count = count;
         }
@@ -129,6 +195,33 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
     return true;
 }
 
+static bool IsMimeType(const char *tag)
+{
+    if (SDL_strchr(tag, '/')) {
+        // MIME types have slashes
+        return true;
+    } else if (SDL_strchr(tag, '.')) {
+        // UTI identifiers have periods
+        return false;
+    } else {
+        // Not sure, but it's not a UTI identifier
+        return true;
+    }
+}
+
+static CFStringRef GetUTIType(const char *tag)
+{
+    CFStringRef utiType;
+    if (IsMimeType(tag)) {
+        CFStringRef mimeType = CFStringCreateWithCString(NULL, tag, kCFStringEncodingUTF8);
+        utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
+        CFRelease(mimeType);
+    } else {
+        utiType = CFStringCreateWithCString(NULL, tag, kCFStringEncodingUTF8);
+    }
+    return utiType;
+}
+
 void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *size)
 {
     @autoreleasepool {
@@ -137,9 +230,7 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size
         *size = 0;
         for (NSPasteboardItem *item in [pasteboard pasteboardItems]) {
             NSData *itemData;
-            CFStringRef mimeType = CFStringCreateWithCString(NULL, mime_type, kCFStringEncodingUTF8);
-            CFStringRef utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
-            CFRelease(mimeType);
+            CFStringRef utiType = GetUTIType(mime_type);
             itemData = [item dataForType: (__bridge NSString *)utiType];
             CFRelease(utiType);
             if (itemData != nil) {
@@ -162,9 +253,7 @@ bool Cocoa_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     bool result = false;
     @autoreleasepool {
         NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
-        CFStringRef mimeType = CFStringCreateWithCString(NULL, mime_type, kCFStringEncodingUTF8);
-        CFStringRef utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
-        CFRelease(mimeType);
+        CFStringRef utiType = GetUTIType(mime_type);
         if ([pasteboard canReadItemWithDataConformingToTypes: @[(__bridge NSString *)utiType]]) {
             result = true;
         }
