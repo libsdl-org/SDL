@@ -264,6 +264,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetStorageFileSize(SDL_Storage *storage, co
  * Synchronously read a file from a storage container into a client-provided
  * buffer.
  *
+ * The value of `length` must match the length of the file exactly; call
+ * SDL_GetStorageFileSize() to get this value. This behavior may be relaxed in
+ * a future release.
+ *
  * \param storage a storage container to read from.
  * \param path the relative path of the file to read.
  * \param destination a client-provided buffer to read the file into.
