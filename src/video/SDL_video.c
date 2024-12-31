@@ -24,6 +24,7 @@
 // The high-level video driver subsystem
 
 #include "SDL_sysvideo.h"
+#include "SDL_clipboard_c.h"
 #include "SDL_egl_c.h"
 #include "SDL_surface_c.h"
 #include "SDL_pixels_c.h"
@@ -4262,6 +4263,8 @@ void SDL_VideoQuit(void)
     SDL_assert(_this->num_displays == 0);
     SDL_free(_this->displays);
     _this->displays = NULL;
+
+    SDL_CancelClipboardData(_this->clipboard_sequence);
 
     if (_this->primary_selection_text) {
         SDL_free(_this->primary_selection_text);
