@@ -174,6 +174,7 @@ void *SDL_GetInternalClipboardData(SDL_VideoDevice *_this, const char *mime_type
 void *SDL_GetClipboardData(const char *mime_type, size_t *size)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    size_t unused;
 
     if (!_this) {
         SDL_UninitializedVideo();
@@ -185,8 +186,7 @@ void *SDL_GetClipboardData(const char *mime_type, size_t *size)
         return NULL;
     }
     if (!size) {
-        SDL_InvalidParamError("size");
-        return NULL;
+        size = &unused;
     }
 
     // Initialize size to empty, so implementations don't have to worry about it
