@@ -705,6 +705,9 @@ static void SDL_LogEvent(const SDL_Event *event)
         SDL_EVENT_CASE(SDL_EVENT_FINGER_UP)
         PRINT_FINGER_EVENT(event);
         break;
+        SDL_EVENT_CASE(SDL_EVENT_FINGER_CANCELED)
+        PRINT_FINGER_EVENT(event);
+        break;
         SDL_EVENT_CASE(SDL_EVENT_FINGER_MOTION)
         PRINT_FINGER_EVENT(event);
         break;

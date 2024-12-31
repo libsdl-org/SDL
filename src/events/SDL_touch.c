@@ -254,10 +254,11 @@ static void SDL_DelFinger(SDL_Touch *touch, SDL_FingerID fingerid)
     }
 }
 
-void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, bool down, float x, float y, float pressure)
+void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, SDL_EventType type, float x, float y, float pressure)
 {
     SDL_Finger *finger;
     SDL_Mouse *mouse;
+    bool down = (type == SDL_EVENT_FINGER_DOWN);
 
     SDL_Touch *touch = SDL_GetTouch(id);
     if (!touch) {
@@ -331,16 +332,16 @@ void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_
         if (finger) {
             /* This finger is already down.
                Assume the finger-up for the previous touch was lost, and send it. */
-            SDL_SendTouch(timestamp, id, fingerid, window, false, x, y, pressure);
+            SDL_SendTouch(timestamp, id, fingerid, window, SDL_EVENT_FINGER_CANCELED, x, y, pressure);
         }
 
         if (!SDL_AddFinger(touch, fingerid, x, y, pressure)) {
             return;
         }
 
-        if (SDL_EventEnabled(SDL_EVENT_FINGER_DOWN)) {
+        if (SDL_EventEnabled(type)) {
             SDL_Event event;
-            event.type = SDL_EVENT_FINGER_DOWN;
+            event.type = type;
             event.common.timestamp = timestamp;
             event.tfinger.touchID = id;
             event.tfinger.fingerID = fingerid;
@@ -358,9 +359,9 @@ void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_
             return;
         }
 
-        if (SDL_EventEnabled(SDL_EVENT_FINGER_UP)) {
+        if (SDL_EventEnabled(type)) {
             SDL_Event event;
-            event.type = SDL_EVENT_FINGER_UP;
+            event.type = type;
             event.common.timestamp = timestamp;
             event.tfinger.touchID = id;
             event.tfinger.fingerID = fingerid;
@@ -431,7 +432,7 @@ void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid
 
     finger = SDL_GetFinger(touch, fingerid);
     if (!finger) {
-        SDL_SendTouch(timestamp, id, fingerid, window, true, x, y, pressure);
+        SDL_SendTouch(timestamp, id, fingerid, window, SDL_EVENT_FINGER_DOWN, x, y, pressure);
         return;
     }
 
