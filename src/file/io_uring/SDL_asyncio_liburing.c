@@ -225,7 +225,7 @@ static SDL_AsyncIOTask *ProcessCQE(LibUringAsyncIOQueueData *queuedata, struct i
             task = (SDL_AsyncIOTask *) cancel_task->app_userdata;
             SDL_free(cancel_task);
             if (cqe->res >= 0) {  // cancel was successful?
-                task->result = SDL_ASYNCIO_CANCELLED;
+                task->result = SDL_ASYNCIO_CANCELED;
             } else {
                 task = NULL; // it already finished or was too far along to cancel, so we'll pick up the actual results later.
             }

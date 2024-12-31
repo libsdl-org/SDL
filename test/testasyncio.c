@@ -139,7 +139,7 @@ static void async_io_task_complete(const SDL_AsyncIOOutcome *outcome)
         #define RESCASE(x) case x: resultstr = #x; break
         RESCASE(SDL_ASYNCIO_COMPLETE);
         RESCASE(SDL_ASYNCIO_FAILURE);
-        RESCASE(SDL_ASYNCIO_CANCELLED);
+        RESCASE(SDL_ASYNCIO_CANCELED);
         #undef RESCASE
     }
 
