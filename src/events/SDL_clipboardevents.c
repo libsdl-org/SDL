@@ -28,6 +28,12 @@
 
 void SDL_SendClipboardUpdate(bool owner, char **mime_types, size_t num_mime_types)
 {
+    if (!owner) {
+        // Clear our internal clipboard contents when external clipboard is set
+        SDL_CancelClipboardData(0);
+        SDL_SaveClipboardMimeTypes((const char **)mime_types, num_mime_types);
+    }
+
     if (SDL_EventEnabled(SDL_EVENT_CLIPBOARD_UPDATE)) {
         SDL_Event event;
         event.type = SDL_EVENT_CLIPBOARD_UPDATE;
