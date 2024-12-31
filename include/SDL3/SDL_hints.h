@@ -2391,10 +2391,10 @@ extern "C" {
 /**
  * Request SDL_AppIterate() be called at a specific rate.
  *
- * If this is set to a number, it represents Hz, so "60" means try to
- * iterate 60 times per second. "0" means to iterate as fast as possible.
- * Negative values are illegal, but reserved, in case they are useful in
- * a future revision of SDL.
+ * If this is set to a number, it represents Hz, so "60" means try to iterate
+ * 60 times per second. "0" means to iterate as fast as possible. Negative
+ * values are illegal, but reserved, in case they are useful in a future
+ * revision of SDL.
  *
  * There are other strings that have special meaning. If set to "waitevent",
  * SDL_AppIterate will not be called until new event(s) have arrived (and been
