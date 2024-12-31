@@ -40,8 +40,6 @@
 extern "C" {
 #endif
 
-/* !!! FIXME: Don't let this ship without async R/W support!!! */
-
 /**
  * Function interface for SDL_Storage.
  *
