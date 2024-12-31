@@ -2216,8 +2216,8 @@ The following functions have been removed:
 * SDL_GetNumVideoDisplays() - replaced with SDL_GetDisplays()
 * SDL_SetWindowGrab() - use SDL_SetWindowMouseGrab() instead, along with SDL_SetWindowKeyboardGrab() if you also set SDL_HINT_GRAB_KEYBOARD.
 * SDL_GetWindowGrab() - use SDL_GetWindowMouseGrab() instead, along with SDL_GetWindowKeyboardGrab() if you also set SDL_HINT_GRAB_KEYBOARD.
-* SDL_GetWindowData() - use SDL_GetWindowProperties() instead
-* SDL_SetWindowData() - use SDL_GetWindowProperties() instead
+* SDL_GetWindowData() - use SDL_GetPointerProperty() instead, along with SDL_GetWindowProperties()
+* SDL_SetWindowData() - use SDL_SetPointerProperty() instead, along with SDL_GetWindowProperties()
 * SDL_CreateWindowFrom() - use SDL_CreateWindowWithProperties() with the properties that allow you to wrap an existing window
 * SDL_SetWindowInputFocus() - use SDL_RaiseWindow() instead
 * SDL_SetWindowModalFor() - use SDL_SetWindowParent() with SDL_SetWindowModal() instead
