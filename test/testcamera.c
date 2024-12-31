@@ -99,7 +99,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
             SDLTest_CommonLogUsage(state, argv[0], options);
             SDL_Quit();
             SDLTest_CommonDestroyState(state);
-            return 1;
+            return SDL_APP_FAILURE;
         }
         i += consumed;
     }
@@ -257,7 +257,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
         case SDL_EVENT_QUIT:
             SDL_Log("Quit!");
-            return 1;
+            return SDL_APP_SUCCESS;
 
         case SDL_EVENT_CAMERA_DEVICE_APPROVED:
             SDL_Log("Camera approved!");
