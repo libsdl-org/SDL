@@ -23,6 +23,6 @@
 #ifndef SDL_clipboardevents_c_h_
 #define SDL_clipboardevents_c_h_
 
-extern void SDL_SendClipboardUpdate(bool owner, char **mime_types, size_t n_mime_types);
+extern void SDL_SendClipboardUpdate(bool owner, char **mime_types, size_t num_mime_types);
 
 #endif // SDL_clipboardevents_c_h_

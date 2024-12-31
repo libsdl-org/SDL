@@ -920,8 +920,8 @@ typedef struct SDL_ClipboardEvent
     SDL_EventType type; /**< SDL_EVENT_CLIPBOARD_UPDATE */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    bool owner;       /**< are we owning the clipboard (internal update) */
-    Sint32 n_mime_types;     /**< number of mime types */
+    bool owner;         /**< are we owning the clipboard (internal update) */
+    Sint32 num_mime_types;   /**< number of mime types */
     const char **mime_types; /**< current mime types */
 } SDL_ClipboardEvent;
 
