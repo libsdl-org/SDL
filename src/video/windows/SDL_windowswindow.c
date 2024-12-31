@@ -162,7 +162,7 @@ static DWORD GetWindowStyle(SDL_Window *window)
     DWORD style = 0;
 
     if (SDL_WINDOW_IS_POPUP(window)) {
-        style |= WS_POPUP;
+        style |= WS_POPUP | WS_THICKFRAME;
     } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style |= STYLE_FULLSCREEN;
     } else {
@@ -269,7 +269,7 @@ static bool WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD
     /* borderless windows will have WM_NCCALCSIZE return 0 for the non-client area. When this happens, it looks like windows will send a resize message
        expanding the window client area to the previous window + chrome size, so shouldn't need to adjust the window size for the set styles.
      */
-    if (!(window->flags & SDL_WINDOW_BORDERLESS)) {
+    if (!(window->flags & SDL_WINDOW_BORDERLESS) && !SDL_WINDOW_IS_POPUP(window)) {
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
         AdjustWindowRectEx(&rect, style, menu, 0);
 #else
@@ -765,6 +765,9 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         WIN_ConstrainPopup(window, false);
         WIN_AdjustWindowRectWithStyle(window, style, styleEx, FALSE, &x, &y, &w, &h, SDL_WINDOWRECT_FLOATING);
 
+        int gx, gy;
+        SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &gx, &gy);
+        SDL_Log("Create at: %i,%i (%i,%i)", gx, gy, x, y);
         hwnd = CreateWindowEx(styleEx, SDL_Appname, TEXT(""), style,
                               x, y, w, h, parent, NULL, SDL_Instance, NULL);
         if (!hwnd) {
