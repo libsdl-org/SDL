@@ -2429,7 +2429,8 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
     data_device->drag_offer = NULL;
 }
 
-static void notifyFromMimes(struct wl_list *mimes) {
+static void notifyFromMimes(struct wl_list *mimes)
+{
     int nformats = 0;
     char **new_mime_types = NULL;
     if (mimes) {
