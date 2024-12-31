@@ -149,6 +149,29 @@
  * [here](https://github.com/TheSpydog/SDL_gpu_examples)
  * .
  *
+ * ## Performance considerations
+ *
+ * Here are some basic tips for maximizing your rendering performance.
+ *
+ * - Beginning a new render pass is relatively expensive. Use as few render
+ *   passes as you can.
+ * - Minimize the amount of state changes. For example, binding a pipeline is
+ *   relatively cheap, but doing it hundreds of times when you don't need to
+ *   will slow the performance significantly.
+ * - Perform your data uploads as early as possible in the frame.
+ * - Don't churn resources. Creating and releasing resources is expensive.
+ *   It's better to create what you need up front and cache it.
+ * - Don't use uniform buffers for large amounts of data (more than a matrix
+ *   or so). Use a storage buffer instead.
+ * - Use cycling correctly. There is a detailed explanation of cycling further
+ *   below.
+ * - Use culling techniques to minimize pixel writes. The less writing the GPU
+ *   has to do the better. Culling can be a very advanced topic but even
+ *   simple culling techniques can boost performance significantly.
+ *
+ * In general try to remember the golden rule of performance: doing things is
+ * more expensive than not doing things. Don't Touch The Driver!
+ *
  * ## FAQ
  *
  * **Question: When are you adding more advanced features, like ray tracing or
@@ -173,6 +196,16 @@
  * textures, and buffers in SDL_GPUShaderCreateInfo. If possible use shader
  * reflection to extract the required information from the shader
  * automatically instead of manually filling in the struct's values.
+ *
+ * **Question: My application isn't performing very well. Is this the GPU
+ * API's fault?**
+ *
+ * Answer: No. Long answer: The GPU API is a relatively thin layer over the
+ * underlying graphics API. While it's possible that we have done something
+ * inefficiently, it's very unlikely especially if you are relatively
+ * inexperienced with GPU rendering. Please see the performance tips above and
+ * make sure you are following them. Additionally, tools like RenderDoc can be
+ * very helpful for diagnosing incorrect behavior and performance issues.
  *
  * ## System Requirements
  *
