@@ -144,7 +144,7 @@ typedef enum SDL_AsyncIOResult
 {
     SDL_ASYNCIO_COMPLETE,  /**< request was completed without error */
     SDL_ASYNCIO_FAILURE,   /**< request failed for some reason; check SDL_GetError()! */
-    SDL_ASYNCIO_CANCELLED  /**< request was cancelled before completing. */
+    SDL_ASYNCIO_CANCELED   /**< request was canceled before completing. */
 } SDL_AsyncIOResult;
 
 /**

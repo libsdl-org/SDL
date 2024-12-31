@@ -64,7 +64,7 @@ static void AsyncIOTaskComplete(SDL_AsyncIOTask *task)
 // This is called directly, without a threadpool, if !SDL_ASYNCIO_USE_THREADPOOL.
 static void SynchronousIO(SDL_AsyncIOTask *task)
 {
-    SDL_assert(task->result != SDL_ASYNCIO_CANCELLED);  // shouldn't have gotten in here if cancelled!
+    SDL_assert(task->result != SDL_ASYNCIO_CANCELED);  // shouldn't have gotten in here if canceled!
 
     GenericAsyncIOData *data = (GenericAsyncIOData *) task->asyncio->userdata;
     SDL_IOStream *io = data->io;
@@ -184,7 +184,7 @@ static void QueueAsyncIOTask(SDL_AsyncIOTask *task)
     SDL_LockMutex(threadpool_lock);
 
     if (stop_threadpool) {  // just in case.
-        task->result = SDL_ASYNCIO_CANCELLED;
+        task->result = SDL_ASYNCIO_CANCELED;
         AsyncIOTaskComplete(task);
     } else {
         LINKED_LIST_PREPEND(task, threadpool_tasks, threadpool);
@@ -239,7 +239,7 @@ static void ShutdownThreadpool(void)
         SDL_AsyncIOTask *task;
         while ((task = LINKED_LIST_START(threadpool_tasks, threadpool)) != NULL) {
             LINKED_LIST_UNLINK(task, threadpool);
-            task->result = SDL_ASYNCIO_CANCELLED;
+            task->result = SDL_ASYNCIO_CANCELED;
             AsyncIOTaskComplete(task);
         }
 
@@ -300,14 +300,14 @@ static bool generic_asyncioqueue_queue_task(void *userdata, SDL_AsyncIOTask *tas
 static void generic_asyncioqueue_cancel_task(void *userdata, SDL_AsyncIOTask *task)
 {
     #if !SDL_ASYNCIO_USE_THREADPOOL  // in theory, this was all synchronous and should never call this, but just in case.
-    task->result = SDL_ASYNCIO_CANCELLED;
+    task->result = SDL_ASYNCIO_CANCELED;
     AsyncIOTaskComplete(task);
     #else
     // we can't stop i/o that's in-flight, but we _can_ just refuse to start it if the threadpool hadn't picked it up yet.
     SDL_LockMutex(threadpool_lock);
     if (LINKED_LIST_PREV(task, threadpool) != NULL) {  // still in the queue waiting to be run? Take it out.
         LINKED_LIST_UNLINK(task, threadpool);
-        task->result = SDL_ASYNCIO_CANCELLED;
+        task->result = SDL_ASYNCIO_CANCELED;
         AsyncIOTaskComplete(task);
     }
     SDL_UnlockMutex(threadpool_lock);
