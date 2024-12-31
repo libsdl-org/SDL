@@ -1910,8 +1910,10 @@ void SDLTest_PrintEvent(const SDL_Event *event)
         break;
     case SDL_EVENT_FINGER_DOWN:
     case SDL_EVENT_FINGER_UP:
+    case SDL_EVENT_FINGER_CANCELED:
         SDL_Log("SDL EVENT: Finger: %s touch=%" SDL_PRIu64 ", finger=%" SDL_PRIu64 ", x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
-                (event->type == SDL_EVENT_FINGER_DOWN) ? "down" : "up",
+                (event->type == SDL_EVENT_FINGER_DOWN) ? "down" :
+                (event->type == SDL_EVENT_FINGER_UP) ? "up" : "cancel",
                 event->tfinger.touchID,
                 event->tfinger.fingerID,
                 event->tfinger.x, event->tfinger.y,

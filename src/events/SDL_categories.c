@@ -136,6 +136,7 @@ SDL_EventCategory SDL_GetEventCategory(Uint32 type)
 
     case SDL_EVENT_FINGER_DOWN:
     case SDL_EVENT_FINGER_UP:
+    case SDL_EVENT_FINGER_CANCELED:
     case SDL_EVENT_FINGER_MOTION:
         return SDL_EVENTCATEGORY_TFINGER;
 

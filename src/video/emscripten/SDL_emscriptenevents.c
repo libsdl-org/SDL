@@ -433,7 +433,7 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
         }
 
         if (eventType == EMSCRIPTEN_EVENT_TOUCHSTART) {
-            SDL_SendTouch(0, deviceId, id, window_data->window, true, x, y, 1.0f);
+            SDL_SendTouch(0, deviceId, id, window_data->window, SDL_EVENT_FINGER_DOWN, x, y, 1.0f);
 
             // disable browser scrolling/pinch-to-zoom if app handles touch events
             if (!preventDefault && SDL_EventEnabled(SDL_EVENT_FINGER_DOWN)) {
@@ -441,11 +441,13 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
             }
         } else if (eventType == EMSCRIPTEN_EVENT_TOUCHMOVE) {
             SDL_SendTouchMotion(0, deviceId, id, window_data->window, x, y, 1.0f);
-        } else {
-            SDL_SendTouch(0, deviceId, id, window_data->window, false, x, y, 1.0f);
+        } else if (eventType == EMSCRIPTEN_EVENT_TOUCHEND) {
+            SDL_SendTouch(0, deviceId, id, window_data->window, SDL_EVENT_FINGER_UP, x, y, 1.0f);
 
             // block browser's simulated mousedown/mouseup on touchscreen devices
             preventDefault = 1;
+        } else if (eventType == EMSCRIPTEN_EVENT_TOUCHCANCEL) {
+            SDL_SendTouch(0, deviceId, id, window_data->window, SDL_EVENT_FINGER_CANCELED, x, y, 1.0f);
         }
     }
 

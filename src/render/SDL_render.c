@@ -2897,6 +2897,7 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
         }
     } else if (event->type == SDL_EVENT_FINGER_DOWN ||
                event->type == SDL_EVENT_FINGER_UP ||
+               event->type == SDL_EVENT_FINGER_CANCELED ||
                event->type == SDL_EVENT_FINGER_MOTION) {
         // FIXME: Are these events guaranteed to be window relative?
         if (renderer->window) {

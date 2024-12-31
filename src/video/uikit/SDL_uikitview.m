@@ -353,7 +353,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             }
         }
 #endif
-        
+
 #if defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
@@ -377,7 +377,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
         SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
                       touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
-                      true, locationInView.x, locationInView.y, pressure);
+                      SDL_EVENT_FINGER_DOWN, locationInView.x, locationInView.y, pressure);
     }
 }
 
@@ -393,7 +393,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
             }
         }
 #endif
-        
+
 #if defined(__IPHONE_13_4)
         if (@available(iOS 13.4, *)) {
             if (touch.type == UITouchTypeIndirectPointer) {
@@ -417,13 +417,46 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
         SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
                       touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
-                      false, locationInView.x, locationInView.y, pressure);
+                      SDL_EVENT_FINGER_UP, locationInView.x, locationInView.y, pressure);
     }
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self touchesEnded:touches withEvent:event];
+    for (UITouch *touch in touches) {
+#if !defined(SDL_PLATFORM_TVOS)
+#if defined(__IPHONE_13_0)
+        if (@available(iOS 13.0, *)) {
+            if (touch.type == UITouchTypePencil) {
+                [self pencilReleased:touch];
+                continue;
+            }
+        }
+#endif
+
+#if defined(__IPHONE_13_4)
+        if (@available(iOS 13.4, *)) {
+            if (touch.type == UITouchTypeIndirectPointer) {
+                [self indirectPointerReleased:touch fromEvent:event];
+                continue;
+            }
+        }
+#endif
+#endif // !defined(SDL_PLATFORM_TVOS)
+
+        SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
+        SDL_TouchID touchId = [self touchIdForType:touchType];
+        float pressure = [self pressureForTouch:touch];
+
+        if (SDL_AddTouch(touchId, touchType, "") < 0) {
+            continue;
+        }
+
+        CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
+        SDL_SendTouch(UIKit_GetEventTimestamp([event timestamp]),
+                      touchId, (SDL_FingerID)(uintptr_t)touch, sdlwindow,
+                      SDL_EVENT_FINGER_CANCELED, locationInView.x, locationInView.y, pressure);
+    }
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event

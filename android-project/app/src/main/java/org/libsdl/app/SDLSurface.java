@@ -287,8 +287,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                     p = 1.0f;
                 }
 
-                SDLActivity.onNativeTouch(touchDevId, pointerId,
-                        action == MotionEvent.ACTION_CANCEL ? MotionEvent.ACTION_UP : action, x, y, p);
+                SDLActivity.onNativeTouch(touchDevId, pointerId, action, x, y, p);
             }
 
             // Non-primary up/down
