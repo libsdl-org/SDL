@@ -352,54 +352,75 @@ bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     return false;
 }
 
+static int GetClipboardFormatMimeType(UINT format, char *name)
+{
+    static struct
+    {
+        UINT format;
+        const char *mime_type;
+    } mime_types[] = {
+        { TEXT_FORMAT, "text/plain;charset=utf-8" },
+        { IMAGE_FORMAT, IMAGE_MIME_TYPE },
+    };
+
+    for (int i = 0; i < SDL_arraysize(mime_types); ++i) {
+        if (format == mime_types[i].format) {
+            size_t len = SDL_strlen(mime_types[i].mime_type) + 1;
+            if (name) {
+                SDL_memcpy(name, mime_types[i].mime_type, len);
+            }
+            return (int)len;
+        }
+    }
+    return 0;
+}
+
 static char **GetMimeTypes(int *pnformats)
 {
+    char **new_mime_types = NULL;
+
     *pnformats = 0;
 
-    int nformats = CountClipboardFormats();
-    size_t allocSize = (nformats + 1) * sizeof(char*);
+    if (WIN_OpenClipboard(SDL_GetVideoDevice())) {
+        int nformats = 0;
+        UINT format = 0;
+        int formatsSz = 0;
+        for ( ; ; ) {
+            format = EnumClipboardFormats(format);
+            if (!format) {
+                break;
+            }
 
-    UINT format = 0;
-    int formatsSz = 0;
-    int i;
-    for (i = 0; i < nformats; i++) {
-        format = EnumClipboardFormats(format);
-        if (!format) {
-            nformats = i;
-            break;
+            int len = GetClipboardFormatMimeType(format, NULL);
+            if (len > 0) {
+                ++nformats;
+                formatsSz += len;
+            }
         }
 
-        char mimeType[200];
-        int nchars = GetClipboardFormatNameA(format, mimeType, sizeof(mimeType));
-        formatsSz += nchars + 1;
-    }
+        new_mime_types = SDL_AllocateTemporaryMemory((nformats + 1) * sizeof(char *) + formatsSz);
+        if (new_mime_types) {
+            format = 0;
+            char *strPtr = (char *)(new_mime_types + nformats + 1);
+            int i = 0;
+            for ( ; ; ) {
+                format = EnumClipboardFormats(format);
+                if (!format) {
+                    break;
+                }
 
-    char **new_mime_types = SDL_AllocateTemporaryMemory(allocSize + formatsSz);
-    if (!new_mime_types)
-        return NULL;
+                int len = GetClipboardFormatMimeType(format, strPtr);
+                if (len > 0) {
+                    new_mime_types[i++] = strPtr;
+                    strPtr += len;
+                }
+            }
 
-    format = 0;
-    char *strPtr = (char *)(new_mime_types + nformats + 1);
-    int formatRemains = formatsSz;
-    for (i = 0; i < nformats; i++) {
-        format = EnumClipboardFormats(format);
-        if (!format) {
-            nformats = i;
-            break;
+            new_mime_types[nformats] = NULL;
+            *pnformats = nformats;
         }
-
-        new_mime_types[i] = strPtr;
-
-        int nchars = GetClipboardFormatNameA(format, strPtr, formatRemains-1);
-        strPtr += nchars;
-        *strPtr = '\0';
-        strPtr++;
-
-        formatRemains -= (nchars + 1);
+        WIN_CloseClipboard();
     }
-
-    new_mime_types[nformats] = NULL;
-    *pnformats = nformats;
     return new_mime_types;
 }
 
@@ -412,10 +433,7 @@ void WIN_CheckClipboardUpdate(struct SDL_VideoData *data)
             char **new_mime_types = GetMimeTypes(&nformats);
             if (new_mime_types) {
                 SDL_SendClipboardUpdate(false, new_mime_types, nformats);
-            } else {
-                WIN_SetError("Couldn't get clipboard mime types");
             }
-
         }
 
         data->clipboard_count = seq;
