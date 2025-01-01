@@ -723,7 +723,7 @@ static void WIN_ConstrainPopup(SDL_Window *window, bool output_to_pending)
     }
 }
 
-static void WIN_SetKeyboardFocus(SDL_Window *window)
+static void WIN_SetKeyboardFocus(SDL_Window *window, bool set_active_focus)
 {
     SDL_Window *toplevel = window;
 
@@ -734,7 +734,7 @@ static void WIN_SetKeyboardFocus(SDL_Window *window)
 
     toplevel->internal->keyboard_focus = window;
 
-    if (!window->is_hiding && !window->is_destroying) {
+    if (set_active_focus && !window->is_hiding && !window->is_destroying) {
     	SDL_SetKeyboardFocus(window);
     }
 }
@@ -1097,9 +1097,7 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     if (window->flags & SDL_WINDOW_POPUP_MENU && bActivate) {
-        if (window->parent == SDL_GetKeyboardFocus()) {
-            WIN_SetKeyboardFocus(window);
-        }
+	    WIN_SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
     }
     if (window->flags & SDL_WINDOW_MODAL) {
         WIN_SetWindowModal(_this, window, true);
@@ -1118,16 +1116,20 @@ void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     // Transfer keyboard focus back to the parent
     if (window->flags & SDL_WINDOW_POPUP_MENU) {
-        if (window == SDL_GetKeyboardFocus()) {
-            SDL_Window *new_focus = window->parent;
+        SDL_Window *new_focus = window->parent;
+        bool set_focus = window == SDL_GetKeyboardFocus();
 
-            // Find the highest level window, up to the toplevel parent, that isn't being hidden or destroyed.
-            while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
-                new_focus = new_focus->parent;
+        // Find the highest level window, up to the toplevel parent, that isn't being hidden or destroyed.
+        while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
+            new_focus = new_focus->parent;
+
+            // If some window in the chain currently had keyboard focus, set it to the new lowest-level window.
+            if (!set_focus) {
+                set_focus = new_focus == SDL_GetKeyboardFocus();
             }
-
-            WIN_SetKeyboardFocus(new_focus);
         }
+
+        WIN_SetKeyboardFocus(new_focus, set_focus);
     }
 }
 
@@ -1165,9 +1167,7 @@ void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (bActivate) {
         SetForegroundWindow(hwnd);
         if (window->flags & SDL_WINDOW_POPUP_MENU) {
-            if (window->parent == SDL_GetKeyboardFocus()) {
-                WIN_SetKeyboardFocus(window);
-            }
+            WIN_SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
         }
     } else {
         SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, data->copybits_flag | SWP_NOMOVE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
