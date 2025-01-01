@@ -208,7 +208,7 @@ static void X11_ConstrainPopup(SDL_Window *window, bool output_to_pending)
         int offset_x = 0, offset_y = 0;
 
         // Calculate the total offset from the parents
-        for (w = window->parent; w->parent; w = w->parent) {
+        for (w = window->parent; SDL_WINDOW_IS_POPUP(w); w = w->parent) {
             offset_x += w->x;
             offset_y += w->y;
         }
@@ -242,15 +242,18 @@ static void X11_ConstrainPopup(SDL_Window *window, bool output_to_pending)
 
 static void X11_SetKeyboardFocus(SDL_Window *window)
 {
-    SDL_Window *topmost = window;
+    SDL_Window *toplevel = window;
 
-    // Find the topmost parent
-    while (topmost->parent) {
-        topmost = topmost->parent;
+    // Find the toplevel parent
+    while (SDL_WINDOW_IS_POPUP(toplevel)) {
+        toplevel = toplevel->parent;
     }
 
-    topmost->internal->keyboard_focus = window;
-    SDL_SetKeyboardFocus(window);
+    toplevel->internal->keyboard_focus = window;
+
+    if (!window->is_hiding && !window->is_destroying) {
+        SDL_SetKeyboardFocus(window);
+    }
 }
 
 Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow)
@@ -1533,7 +1536,7 @@ void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
             SDL_Window *new_focus = window->parent;
 
             // Find the highest level window that isn't being hidden or destroyed.
-            while (new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
+            while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
                 new_focus = new_focus->parent;
             }
 

@@ -1526,8 +1526,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         // Update the position of any child windows
         for (win = data->window->first_child; win; win = win->next_sibling) {
-            // Don't update hidden child windows, their relative position doesn't change
-            if (!(win->flags & SDL_WINDOW_HIDDEN)) {
+            // Don't update hidden child popup windows, their relative position doesn't change
+            if (SDL_WINDOW_IS_POPUP(win) && !(win->flags & SDL_WINDOW_HIDDEN)) {
                 WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
             }
         }
