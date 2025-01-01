@@ -70,8 +70,8 @@ void VITA_InitTouch(void)
     }
 
     // Support passing both front and back touch devices in events
-    SDL_AddTouch((SDL_TouchID)0, SDL_TOUCH_DEVICE_DIRECT, "Front");
-    SDL_AddTouch((SDL_TouchID)1, SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE, "Back");
+    SDL_AddTouch((SDL_TouchID)1, SDL_TOUCH_DEVICE_DIRECT, "Front");
+    SDL_AddTouch((SDL_TouchID)2, SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE, "Back");
 }
 
 void VITA_QuitTouch(void)
@@ -123,7 +123,7 @@ void VITA_PollTouch(void)
                 // Skip if finger was already previously down
                 if (!finger_down) {
                     // Send an initial touch
-                    SDL_SendTouch((SDL_TouchID)port,
+                    SDL_SendTouch((SDL_TouchID)(port + 1),
                                   finger_id,
                                   Vita_Window,
                                   SDL_TRUE,
@@ -133,7 +133,7 @@ void VITA_PollTouch(void)
                 }
 
                 // Always send the motion
-                SDL_SendTouchMotion((SDL_TouchID)port,
+                SDL_SendTouchMotion((SDL_TouchID)(port + 1),
                                     finger_id,
                                     Vita_Window,
                                     x,
@@ -160,7 +160,7 @@ void VITA_PollTouch(void)
                     VITA_ConvertTouchXYToSDLXY(&x, &y, touch_old[port].report[i].x, touch_old[port].report[i].y, port);
                     finger_id = (SDL_FingerID)touch_old[port].report[i].id;
                     // Finger released from screen
-                    SDL_SendTouch((SDL_TouchID)port,
+                    SDL_SendTouch((SDL_TouchID)(port + 1),
                                   finger_id,
                                   Vita_Window,
                                   SDL_FALSE,
