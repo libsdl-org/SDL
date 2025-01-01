@@ -145,7 +145,7 @@ void Cocoa_CheckClipboardUpdate(SDL_CocoaVideoData *data)
         pasteboard = [NSPasteboard generalPasteboard];
         count = [pasteboard changeCount];
         if (count != data.clipboard_count) {
-            if (data.clipboard_count) {
+            if (count) {
                 int nformats = 0;
                 char **new_mime_types = GetMimeTypes(&nformats);
                 if (new_mime_types) {
