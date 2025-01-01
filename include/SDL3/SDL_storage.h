@@ -34,16 +34,15 @@
  * are usually two separate storage devices with entirely different
  * characteristics (and possibly different low-level APIs altogether!).
  *
- * 2. **How to Access:** Another common mistake is applications assuming that all
- * storage is universally writeable - again, many platforms treat game content
- * and user data as two separate storage devices, and only user data is
- * writeable while game content is read-only.
+ * 2. **How to Access:** Another common mistake is applications assuming that
+ * all storage is universally writeable - again, many platforms treat game
+ * content and user data as two separate storage devices, and only user data
+ * is writeable while game content is read-only.
  *
- * 3. **When to Access:** The most
- * common portability issue with filesystem access is _timing_ - you cannot
- * always assume that the storage device is always accessible all of the time,
- * nor can you assume that there are no limits to how long you have access to
- * a particular device.
+ * 3. **When to Access:** The most common portability issue with filesystem
+ * access is _timing_ - you cannot always assume that the storage device is
+ * always accessible all of the time, nor can you assume that there are no
+ * limits to how long you have access to a particular device.
  *
  * Consider the following example:
  *
@@ -92,13 +91,13 @@
  * and saves are all presumed to be in the current working directory (which
  * may or may not be the game's installation folder!).
  *
- * 2. **How to Access:**
- * This code assumes that content paths are writeable, and that save data is
- * also writeable despite being in the same location as the game data.
+ * 2. **How to Access:** This code assumes that content paths are writeable,
+ * and that save data is also writeable despite being in the same location as
+ * the game data.
  *
- * 3. **When to Access:** This code assumes that they can be called at any time,
- * since the filesystem is always accessible and has no limits on how long the
- * filesystem is being accessed.
+ * 3. **When to Access:** This code assumes that they can be called at any
+ * time, since the filesystem is always accessible and has no limits on how
+ * long the filesystem is being accessed.
  *
  * Due to these assumptions, the filesystem code is not portable and will fail
  * under these common scenarios:
@@ -200,12 +199,11 @@
  * 1. **What to Access:** This code explicitly reads from a title or user
  * storage device based on the context of the function.
  *
- * 2. **How to Access:** This code explicitly uses either a read or write function based on the
- * context of the function.
+ * 2. **How to Access:** This code explicitly uses either a read or write
+ * function based on the context of the function.
  *
- * 3. **When to Access:** This code explicitly opens
- * the device when it needs to, and closes it when it is finished working with
- * the filesystem.
+ * 3. **When to Access:** This code explicitly opens the device when it needs
+ * to, and closes it when it is finished working with the filesystem.
  *
  * The result is an application that is significantly more robust against the
  * increasing demands of platforms and their filesystems!
