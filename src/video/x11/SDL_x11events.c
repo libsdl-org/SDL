@@ -1382,8 +1382,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 }
 #endif
                 for (w = data->window->first_child; w; w = w->next_sibling) {
-                    // Don't update hidden child windows, their relative position doesn't change
-                    if (!(w->flags & SDL_WINDOW_HIDDEN)) {
+                    // Don't update hidden child popup windows, their relative position doesn't change
+                    if (SDL_WINDOW_IS_POPUP(w) && !(w->flags & SDL_WINDOW_HIDDEN)) {
                         X11_UpdateWindowPosition(w, true);
                     }
                 }

@@ -622,26 +622,29 @@ static void Cocoa_UpdateClipCursor(SDL_Window *window)
     }
 }
 
-static SDL_Window *GetTopmostWindow(SDL_Window *window)
+static SDL_Window *GetParentToplevelWindow(SDL_Window *window)
 {
-    SDL_Window *topmost = window;
+    SDL_Window *toplevel = window;
 
     // Find the topmost parent
-    while (topmost->parent != NULL) {
-        topmost = topmost->parent;
+    while (SDL_WINDOW_IS_POPUP(toplevel)) {
+        toplevel = toplevel->parent;
     }
 
-    return topmost;
+    return toplevel;
 }
 
 static void Cocoa_SetKeyboardFocus(SDL_Window *window)
 {
-    SDL_Window *topmost = GetTopmostWindow(window);
-    SDL_CocoaWindowData *topmost_data;
+    SDL_Window *toplevel = GetParentToplevelWindow(window);
+    SDL_CocoaWindowData *toplevel_data;
 
-    topmost_data = (__bridge SDL_CocoaWindowData *)topmost->internal;
-    topmost_data.keyboard_focus = window;
-    SDL_SetKeyboardFocus(window);
+    toplevel_data = (__bridge SDL_CocoaWindowData *)toplevel->internal;
+    toplevel_data.keyboard_focus = window;
+
+    if (!window->is_hiding && !window->is_destroying) {
+    	SDL_SetKeyboardFocus(window);
+    }
 }
 
 static void Cocoa_SendExposedEventIfVisible(SDL_Window *window)
@@ -2555,8 +2558,8 @@ void Cocoa_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
             if (window == SDL_GetKeyboardFocus()) {
                 SDL_Window *new_focus = window->parent;
 
-                // Find the highest level window that isn't being hidden or destroyed.
-                while (new_focus->parent != NULL && (new_focus->is_hiding || new_focus->is_destroying)) {
+                // Find the highest level window, up to the next toplevel, that isn't being hidden or destroyed.
+                while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
                     new_focus = new_focus->parent;
                 }
 
@@ -2988,7 +2991,7 @@ void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             NSArray *contexts;
 
 #endif // SDL_VIDEO_OPENGL
-            SDL_Window *topmost = GetTopmostWindow(window);
+            SDL_Window *topmost = GetParentToplevelWindow(window);
             SDL_CocoaWindowData *topmost_data = (__bridge SDL_CocoaWindowData *)topmost->internal;
 
             /* Reset the input focus of the root window if this window is still set as keyboard focus.
@@ -2998,7 +3001,7 @@ void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
              */
             if (topmost_data.keyboard_focus == window) {
                 SDL_Window *new_focus = window;
-                while (new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
+                while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
                     new_focus = new_focus->parent;
                 }
 

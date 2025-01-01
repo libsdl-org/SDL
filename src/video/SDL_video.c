@@ -1562,6 +1562,10 @@ void SDL_RelativeToGlobalForWindow(SDL_Window *window, int rel_x, int rel_y, int
         for (w = window->parent; w; w = w->parent) {
             rel_x += w->x;
             rel_y += w->y;
+
+            if (!SDL_WINDOW_IS_POPUP(w)) {
+                break;
+            }
         }
     }
 
@@ -1582,6 +1586,10 @@ void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int
         for (w = window->parent; w; w = w->parent) {
             abs_x -= w->x;
             abs_y -= w->y;
+
+            if (!SDL_WINDOW_IS_POPUP(w)) {
+                break;
+            }
         }
     }
 

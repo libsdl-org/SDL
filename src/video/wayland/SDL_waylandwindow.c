@@ -1631,16 +1631,18 @@ static const struct frog_color_managed_surface_listener frog_surface_listener = 
 
 static void SetKeyboardFocus(SDL_Window *window)
 {
-    SDL_Window *topmost = window;
+    SDL_Window *toplevel = window;
 
-    // Find the topmost parent
-    while (topmost->parent) {
-        topmost = topmost->parent;
+    // Find the toplevel parent
+    while (SDL_WINDOW_IS_POPUP(toplevel)) {
+        toplevel = toplevel->parent;
     }
 
-    topmost->internal->keyboard_focus = window;
+    toplevel->internal->keyboard_focus = window;
 
-    SDL_SetKeyboardFocus(window);
+    if (!window->is_hiding && !window->is_destroying) {
+        SDL_SetKeyboardFocus(window);
+    }
 }
 
 bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled)
@@ -2043,8 +2045,8 @@ static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
         if (popup == SDL_GetKeyboardFocus()) {
             SDL_Window *new_focus = popup->parent;
 
-            // Find the highest level window that isn't being hidden or destroyed.
-            while (new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
+            // Find the highest level window, up to the toplevel parent, that isn't being hidden or destroyed.
+            while (SDL_WINDOW_IS_POPUP(new_focus) && new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
                 new_focus = new_focus->parent;
             }
 
