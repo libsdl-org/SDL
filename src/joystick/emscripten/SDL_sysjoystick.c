@@ -40,17 +40,18 @@ static int numjoysticks = 0;
 
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
+    SDL_joylist_item *item;
     int i;
 
-    SDL_joylist_item *item;
+    SDL_LockJoysticks();
 
     if (JoystickByIndex(gamepadEvent->index) != NULL) {
-        return 1;
+        goto done;
     }
 
     item = (SDL_joylist_item *)SDL_malloc(sizeof(SDL_joylist_item));
     if (!item) {
-        return 1;
+        goto done;
     }
 
     SDL_zerop(item);
@@ -59,14 +60,14 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     item->name = SDL_CreateJoystickName(0, 0, NULL, gamepadEvent->id);
     if (!item->name) {
         SDL_free(item);
-        return 1;
+        goto done;
     }
 
     item->mapping = SDL_strdup(gamepadEvent->mapping);
     if (!item->mapping) {
         SDL_free(item->name);
         SDL_free(item);
-        return 1;
+        goto done;
     }
 
     item->naxes = gamepadEvent->numAxes;
@@ -103,6 +104,9 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     SDL_Log("Added joystick with index %d", item->index);
 #endif
 
+done:
+    SDL_UnlockJoysticks();
+
     return 1;
 }
 
@@ -110,6 +114,8 @@ static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGa
 {
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
+
+    SDL_LockJoysticks();
 
     while (item) {
         if (item->index == gamepadEvent->index) {
@@ -120,7 +126,7 @@ static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGa
     }
 
     if (!item) {
-        return 1;
+        goto done;
     }
 
     if (item->joystick) {
@@ -148,6 +154,10 @@ static EM_BOOL Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGa
     SDL_free(item->name);
     SDL_free(item->mapping);
     SDL_free(item);
+
+done:
+    SDL_UnlockJoysticks();
+
     return 1;
 }
 
