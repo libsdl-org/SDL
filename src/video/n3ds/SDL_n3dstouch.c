@@ -30,7 +30,7 @@
 #include "SDL_n3dstouch.h"
 #include "SDL_n3dsvideo.h"
 
-#define N3DS_TOUCH_ID 0
+#define N3DS_TOUCH_ID 1
 
 /*
   Factors used to convert touchscreen coordinates to
