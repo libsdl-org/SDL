@@ -634,7 +634,7 @@ static SDL_Window *GetParentToplevelWindow(SDL_Window *window)
     return toplevel;
 }
 
-static void Cocoa_SetKeyboardFocus(SDL_Window *window)
+static void Cocoa_SetKeyboardFocus(SDL_Window *window, bool set_active_focus)
 {
     SDL_Window *toplevel = GetParentToplevelWindow(window);
     SDL_CocoaWindowData *toplevel_data;
@@ -642,7 +642,7 @@ static void Cocoa_SetKeyboardFocus(SDL_Window *window)
     toplevel_data = (__bridge SDL_CocoaWindowData *)toplevel->internal;
     toplevel_data.keyboard_focus = window;
 
-    if (!window->is_hiding && !window->is_destroying) {
+    if (set_active_focus && !window->is_hiding && !window->is_destroying) {
     	SDL_SetKeyboardFocus(window);
     }
 }
@@ -1175,7 +1175,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
     // We're going to get keyboard events, since we're key.
     // This needs to be done before restoring the relative mouse mode.
-    Cocoa_SetKeyboardFocus(_data.keyboard_focus ? _data.keyboard_focus : window);
+    Cocoa_SetKeyboardFocus(_data.keyboard_focus ? _data.keyboard_focus : window, true);
 
     // If we just gained focus we need the updated mouse position
     if (!(window->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE)) {
@@ -2131,15 +2131,13 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow
         if (!SDL_WINDOW_IS_POPUP(window)) {
             if ([nswindow isKeyWindow]) {
                 window->flags |= SDL_WINDOW_INPUT_FOCUS;
-                Cocoa_SetKeyboardFocus(data.window);
+                Cocoa_SetKeyboardFocus(data.window, true);
             }
         } else {
             if (window->flags & SDL_WINDOW_TOOLTIP) {
                 [nswindow setIgnoresMouseEvents:YES];
             } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
-                if (window->parent == SDL_GetKeyboardFocus()) {
-                    Cocoa_SetKeyboardFocus(window);
-                }
+                Cocoa_SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
             }
         }
 
@@ -2555,16 +2553,20 @@ void Cocoa_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         // Transfer keyboard focus back to the parent when closing a popup menu
         if (window->flags & SDL_WINDOW_POPUP_MENU) {
-            if (window == SDL_GetKeyboardFocus()) {
-                SDL_Window *new_focus = window->parent;
+            SDL_Window *new_focus = window->parent;
+            bool set_focus = window == SDL_GetKeyboardFocus();
 
-                // Find the highest level window, up to the next toplevel, that isn't being hidden or destroyed.
-                while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
-                    new_focus = new_focus->parent;
+            // Find the highest level window, up to the toplevel parent, that isn't being hidden or destroyed.
+            while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
+                new_focus = new_focus->parent;
+
+                // If some window in the chain currently had focus, set it to the new lowest-level window.
+                if (!set_focus) {
+                    set_focus = new_focus == SDL_GetKeyboardFocus();
                 }
-
-                Cocoa_SetKeyboardFocus(new_focus);
             }
+
+            Cocoa_SetKeyboardFocus(new_focus, set_focus);
         } else if (window->parent && waskey) {
             /* Key status is not automatically set on the parent when a child is hidden. Check if the
              * child window was key, and set the first visible parent to be key if so.
