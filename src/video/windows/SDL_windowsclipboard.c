@@ -426,17 +426,16 @@ static char **GetMimeTypes(int *pnformats)
 
 void WIN_CheckClipboardUpdate(struct SDL_VideoData *data)
 {
-    const DWORD seq = GetClipboardSequenceNumber();
-    if (seq != data->clipboard_count) {
-        if (data->clipboard_count) {
+    DWORD count = GetClipboardSequenceNumber();
+    if (count != data->clipboard_count) {
+        if (count) {
             int nformats = 0;
             char **new_mime_types = GetMimeTypes(&nformats);
             if (new_mime_types) {
                 SDL_SendClipboardUpdate(false, new_mime_types, nformats);
             }
         }
-
-        data->clipboard_count = seq;
+        data->clipboard_count = count;
     }
 }
 
