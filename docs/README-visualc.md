@@ -1,7 +1,7 @@
 Using SDL with Microsoft Visual C++
 ===================================
 
-### by Lion Kimbro with additions by James Turk
+#### by Lion Kimbro with additions by James Turk
 
 You can either use the precompiled libraries from the [SDL](https://www.libsdl.org/download.php) web site, or you can build SDL
 yourself.
@@ -39,10 +39,10 @@ _Note for the `x64` versions, just replace `Win32` in the path with `x64`_
 - Create a C++ file for your project.
 
 - Set the C runtime to `Multi-threaded DLL` in the menu:
-`Project|Settings|C/C++                  tab|Code Generation|Runtime Library `.
+  `Project|Settings|C/C++ tab|Code Generation|Runtime Library `.
 
 - Add the SDL `include` directory to your list of includes in the menu:
-`Project|Settings|C/C++ tab|Preprocessor|Additional include directories `
+  `Project|Settings|C/C++ tab|Preprocessor|Additional include directories `
 
 *VC7 Specific: Instead of doing this, I find it easier to add the
 include and library directories to the list that VC7 keeps. Do this by
@@ -75,27 +75,27 @@ and type the names of the libraries to link with in the "Additional Options:" bo
 
 Here's a sample SDL snippet to verify everything is setup in your IDE:
 
+```c
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h> // only include this one in the source file with main()!
+
+int main( int argc, char* argv[] )
+{
+	const int WIDTH = 640;
+	const int HEIGHT = 480;
+	SDL_Window* window = NULL;
+	SDL_Renderer* renderer = NULL;
+
+	SDL_Init(SDL_INIT_VIDEO);
+	window = SDL_CreateWindow("Hello SDL", WIDTH, HEIGHT, 0);
+	renderer = SDL_CreateRenderer(window, NULL);
+
+	SDL_DestroyRenderer(renderer);
+	SDL_DestroyWindow(window);
+	SDL_Quit();
+	return 0;
+}
 ```
-    #include <SDL3/SDL.h>
-    #include <SDL3/SDL_main.h> // only include this one in the source file with main()!
-
-    int main( int argc, char* argv[] )
-    {
-        const int WIDTH = 640;
-        const int HEIGHT = 480;
-        SDL_Window* window = NULL;
-        SDL_Renderer* renderer = NULL;
-
-        SDL_Init(SDL_INIT_VIDEO);
-        window = SDL_CreateWindow("Hello SDL", WIDTH, HEIGHT, 0);
-        renderer = SDL_CreateRenderer(window, NULL);
-
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return 0;
-    }
- ```
 
 ### That's it!
 
@@ -110,4 +110,4 @@ This document was originally called "VisualC.txt", and was written by [Sam Lanti
 
 Later, it was converted to HTML and expanded into the document that you see today by [Lion Kimbro](mailto:snowlion@sprynet.com).
 
-Minor Fixes and Visual C++ 7 Information (In Green) was added by [James Turk](mailto:james@conceptofzero.net)
+Minor Fixes and Visual C++ 7 Information (in italic) was added by [James Turk](mailto:james@conceptofzero.net)
