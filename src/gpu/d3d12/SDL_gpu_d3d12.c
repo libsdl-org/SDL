@@ -6222,16 +6222,16 @@ static void D3D12_GenerateMipmaps(
             blitInfo.source.layer_or_depth_plane = layerOrDepthIndex;
             blitInfo.source.x = 0;
             blitInfo.source.y = 0;
-            blitInfo.source.w = container->header.info.width >> (levelIndex - 1);
-            blitInfo.source.h = container->header.info.height >> (levelIndex - 1);
+            blitInfo.source.w = SDL_max(container->header.info.width >> (levelIndex - 1), 1);
+            blitInfo.source.h = SDL_max(container->header.info.height >> (levelIndex - 1), 1);
 
             blitInfo.destination.texture = texture;
             blitInfo.destination.mip_level = levelIndex;
             blitInfo.destination.layer_or_depth_plane = layerOrDepthIndex;
             blitInfo.destination.x = 0;
             blitInfo.destination.y = 0;
-            blitInfo.destination.w = container->header.info.width >> levelIndex;
-            blitInfo.destination.h = container->header.info.height >> levelIndex;
+            blitInfo.destination.w = SDL_max(container->header.info.width >> levelIndex, 1);
+            blitInfo.destination.h = SDL_max(container->header.info.height >> levelIndex, 1);
 
             blitInfo.load_op = SDL_GPU_LOADOP_DONT_CARE;
             blitInfo.filter = SDL_GPU_FILTER_LINEAR;
