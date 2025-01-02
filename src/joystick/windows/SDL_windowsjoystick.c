@@ -284,7 +284,7 @@ static bool SDL_StartJoystickThread(void)
     }
 
     s_bJoystickThreadQuit = false;
-    s_joystickThread = SDL_CreateThreadWithStackSize(SDL_JoystickThread, "SDL_joystick", 64 * 1024, NULL);
+    s_joystickThread = SDL_CreateThread(SDL_JoystickThread, "SDL_joystick", NULL);
     if (!s_joystickThread) {
         return false;
     }
@@ -344,7 +344,7 @@ static bool WINDOWS_JoystickInit(void)
     WIN_InitDeviceNotification();
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, false);
+    s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, true);
     if (s_bJoystickThread) {
         if (!SDL_StartJoystickThread()) {
             return false;
