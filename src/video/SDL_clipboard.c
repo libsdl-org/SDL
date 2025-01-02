@@ -99,11 +99,6 @@ bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardClean
         return SDL_SetError("Invalid parameters");
     }
 
-    if (!callback && !_this->clipboard_callback) {
-        // Nothing to do, don't modify the system clipboard
-        return true;
-    }
-
     SDL_CancelClipboardData(0);
 
     ++_this->clipboard_sequence;
