@@ -114,6 +114,14 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
                 }
                 *value++ = '\0';
 
+                // Environment variable names on Windows are case insensitive, but we're using a case sensitive hash table,
+                //  so normalize the case of the variable name.
+                char *p = variable;
+                while (p < value) {
+                    *p = toupper(*p);
+                    p++;
+                }
+
                 SDL_InsertIntoHashTable(env->strings, variable, value);
             }
             FreeEnvironmentStringsW(strings);
