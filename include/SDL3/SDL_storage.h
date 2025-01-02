@@ -24,7 +24,8 @@
  *
  * The storage API is a high-level API designed to abstract away the
  * portability issues that come up when using something lower-level (in SDL's
- * case, this sits on top of SDL_filesystem). It is significantly more
+ * case, this sits on top of the [Filesystem](CategoryFilesystem) and
+ * [IOStream](CategoryIOStream) subsystems). It is significantly more
  * restrictive than a typical filesystem API, for a number of reasons:
  *
  * 1. **What to Access:** A common pitfall with existing filesystem APIs is
