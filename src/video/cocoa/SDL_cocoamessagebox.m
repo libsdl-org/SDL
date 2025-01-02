@@ -33,6 +33,9 @@
     NSWindow *nswindow;
 }
 - (id)initWithParentWindow:(SDL_Window *)window;
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1090
+- (void)alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo;
+#endif
 @end
 
 @implementation SDLMessageBoxPresenter
@@ -56,16 +59,32 @@
 - (void)showAlert:(NSAlert*)alert
 {
     if (nswindow) {
-        [alert beginSheetModalForWindow:nswindow
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1090
+        if ([alert respondsToSelector:@selector(beginSheetModalForWindow:completionHandler:)]) {
+            [alert beginSheetModalForWindow:nswindow
                       completionHandler:^(NSModalResponse returnCode) {
                         [NSApp stopModalWithCode:returnCode];
                       }];
+        } else
+#endif
+        {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1090
+            [alert beginSheetModalForWindow:nswindow modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:nil];
+#endif
+        }
         clicked = [NSApp runModalForWindow:nswindow];
         nswindow = nil;
     } else {
         clicked = [alert runModal];
     }
 }
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1090
+- (void) alertDidEnd:(NSAlert *)alert returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
+{
+    [NSApp stopModalWithCode:returnCode];
+}
+#endif
 @end
 
 
