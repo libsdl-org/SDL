@@ -880,14 +880,25 @@ static int prepare_audioqueue(_THIS)
         //  L R C LFE Ls Rs
         layout.mChannelLayoutTag = kAudioChannelLayoutTag_DVD_12;
         break;
+#if (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 130000) || \
+    (defined(MAC_OS_X_VERSION_MAX_ALLOWED) && MAC_OS_X_VERSION_MAX_ALLOWED >= 101500)
     case 7:
         // L R C LFE Cs Ls Rs
-        layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_6_1;
+        if (@available(macOS 10.15, iOS 13, *)) {
+            layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_6_1;
+        } else {
+            return SDL_SetError("Unsupported audio channels");
+        }
         break;
     case 8:
         // L R C LFE Rls Rrs Ls Rs
-        layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_7_1;
+        if (@available(macOS 10.15, iOS 13, *)) {
+            layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_7_1;
+        } else {
+            return SDL_SetError("Unsupported audio channels");
+        }
         break;
+#endif
     default:
         return SDL_SetError("Unsupported audio channels");
     }
