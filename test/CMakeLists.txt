@@ -321,6 +321,7 @@ if(MACOS)
             testnativex11.c
     )
 elseif(WINDOWS)
+    add_sdl_test_executable(testcreateprocwndstatew32 SOURCES testcreateprocwndstatew32.c)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
 elseif(HAVE_X11 OR HAVE_WAYLAND)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NO_C90 NEEDS_RESOURCES TESTUTILS SOURCES testnative.c)

@@ -902,6 +902,38 @@ static bool WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int 
     return result;
 }
 
+
+static INT_PTR CALLBACK EmptyDlgProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
+{
+    return 0;
+}
+
+// Windows stores an initial window state passed in by the shell (or another process) if STARTF_USESHOWWINDOW is set.
+// This state is applied to the first window that receives a 'ShowWindow' call.
+// To ensure our window is not influenced by this, we create a dummy window to catch this initial state.
+// The idea is taken from putty, which uses this method to ensure its windows are always created in the correct state.
+static bool s_DefusedInitialwShowWindow = false;
+static void DefuseInitialwShowWindow(void)
+{
+    // Build up a dialog template
+    enum { DlgX = 0, DlgY = 0, DlgW = 100, DlgH = 60, ChildCount = 0, MenuId = 0, ClassName = 0, Title = 0, DialogStyle = DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU, DialogStyleEx = 0 };
+    static const WORD DialogTemplate[] =
+    {
+        LOWORD(DialogStyle), HIWORD(DialogStyle), LOWORD(DialogStyleEx), HIWORD(DialogStyleEx), ChildCount, DlgX, DlgY, DlgW, DlgH, MenuId, ClassName, Title,
+    };
+    if (s_DefusedInitialwShowWindow) {
+        return;
+    }
+    // Create a window using the template
+    HWND hWnd = CreateDialogIndirectParamW(NULL, (LPCDLGTEMPLATE)DialogTemplate, NULL, EmptyDlgProc, 0);
+    // Now catch the window state provided
+    ShowWindow(hWnd, SW_HIDE);
+    // We are done
+    DestroyWindow(hWnd);
+    s_DefusedInitialwShowWindow = true;
+}
+
+
 /* TaskDialogIndirect procedure
  * This is because SDL targets Windows XP (0x501), so this is not defined in the platform SDK.
  */
@@ -929,6 +961,8 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     if (SIZE_MAX / sizeof(TASKDIALOG_BUTTON) < messageboxdata->numbuttons) {
         return SDL_OutOfMemory();
     }
+
+    DefuseInitialwShowWindow();
 
     // If we cannot load comctl32.dll use the old messagebox!
     hComctl32 = LoadLibrary(TEXT("comctl32.dll"));
