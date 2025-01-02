@@ -1061,7 +1061,7 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
         blit_info.destination.texture = swapchain;
         blit_info.destination.w = swapchain_texture_width;
         blit_info.destination.h = swapchain_texture_height;
-        blit_info.load_op = SDL_GPU_LOADOP_LOAD;
+        blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
         blit_info.filter = SDL_GPU_FILTER_LINEAR;
 
         SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
