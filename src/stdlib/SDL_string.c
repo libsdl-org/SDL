@@ -55,234 +55,237 @@ static size_t UTF8_TrailingBytes(unsigned char c)
 }
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOL) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD)
+/**
+ * Parses an unsigned long long and returns the unsigned value and sign bit.
+ *
+ * Positive values are clamped to ULLONG_MAX.
+ * The result `value == 0 && negative` indicates negative overflow
+ * and might need to be handled differently depending on whether a
+ * signed or unsigned integer is being parsed.
+ */
+static size_t SDL_ScanUnsignedLongLongInternal(const char *text, int count, int radix, unsigned long long *valuep, SDL_bool *negativep)
+{
+    const unsigned long long ullong_max = ~0ULL;
+
+    const char *text_start = text;
+    const char *number_start = text_start;
+    unsigned long long value = 0;
+    SDL_bool negative = SDL_FALSE;
+    SDL_bool overflow = SDL_FALSE;
+
+    if (radix == 0 || (radix >= 2 && radix <= 36)) {
+        while (SDL_isspace(*text)) {
+            ++text;
+        }
+        if (*text == '-' || *text == '+') {
+            negative = *text == '-';
+            ++text;
+        }
+        if ((radix == 0 || radix == 16) && *text == '0' && text[1] != '\0') {
+            ++text;
+            if (*text == 'x' || *text == 'X') {
+                radix = 16;
+                ++text;
+            } else if (radix == 0) {
+                radix = 8;
+            }
+        } else if (radix == 0) {
+            radix = 10;
+        }
+        number_start = text;
+        do {
+            unsigned long long digit;
+            if (*text >= '0' && *text <= '9') {
+                digit = *text - '0';
+            } else if (radix > 10) {
+                if (*text >= 'A' && *text < 'A' + (radix - 10)) {
+                    digit = 10 + (*text - 'A');
+                } else if (*text >= 'a' && *text < 'a' + (radix - 10)) {
+                    digit = 10 + (*text - 'a');
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+            if (value != 0 && radix > ullong_max / value) {
+                overflow = SDL_TRUE;
+            } else {
+                value *= radix;
+                if (digit > ullong_max - value) {
+                    overflow = SDL_TRUE;
+                } else {
+                    value += digit;
+                }
+            }
+            ++text;
+        } while (count == 0 || (text - text_start) != count);
+    }
+    if (text == number_start) {
+        if (radix == 16 && text > text_start && (*(text - 1) == 'x' || *(text - 1) == 'X')) {
+            // the string was "0x"; consume the '0' but not the 'x'
+            --text;
+        } else {
+            // no number was parsed, and thus no characters were consumed
+            text = text_start;
+        }
+    }
+    if (overflow) {
+        if (negative) {
+            value = 0;
+        } else {
+            value = ullong_max;
+        }
+    } else if (value == 0) {
+        negative = SDL_FALSE;
+    }
+    *valuep = value;
+    *negativep = negative;
+    return text - text_start;
+}
+
 static size_t SDL_ScanLong(const char *text, int count, int radix, long *valuep)
 {
-    const char *textstart = text;
-    long value = 0;
-    SDL_bool negative = SDL_FALSE;
-
-    if (*text == '-') {
-        negative = SDL_TRUE;
-        ++text;
-    }
-    if (radix == 16 && SDL_strncmp(text, "0x", 2) == 0) {
-        text += 2;
-    }
-    for (;;) {
-        int v;
-        if (SDL_isdigit((unsigned char)*text)) {
-            v = *text - '0';
-        } else if (radix == 16 && SDL_isupperhex(*text)) {
-            v = 10 + (*text - 'A');
-        } else if (radix == 16 && SDL_islowerhex(*text)) {
-            v = 10 + (*text - 'a');
+    const unsigned long long_max = (~0UL) >> 1;
+    unsigned long long value;
+    SDL_bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternal(text, count, radix, &value, &negative);
+    if (negative) {
+        const unsigned long abs_long_min = long_max + 1;
+        if (value == 0 || value > abs_long_min) {
+            value = 0ULL - abs_long_min;
         } else {
-            break;
+            value = 0ULL - value;
         }
-        value *= radix;
-        value += v;
-        ++text;
-
-        if (count > 0 && (text - textstart) == count) {
-            break;
-        }
+    } else if (value > long_max) {
+        value = long_max;
     }
-    if (valuep && text > textstart) {
-        if (negative && value) {
-            *valuep = -value;
-        } else {
-            *valuep = value;
-        }
-    }
-    return text - textstart;
+    *valuep = (long)value;
+    return len;
 }
 #endif
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOUL) || !defined(HAVE_STRTOD)
 static size_t SDL_ScanUnsignedLong(const char *text, int count, int radix, unsigned long *valuep)
 {
-    const char *textstart = text;
-    unsigned long value = 0;
-
-    if (*text == '-') {
-        return SDL_ScanLong(text, count, radix, (long *)valuep);
-    }
-
-    if (radix == 16 && SDL_strncmp(text, "0x", 2) == 0) {
-        text += 2;
-    }
-    for (;;) {
-        int v;
-        if (SDL_isdigit((unsigned char)*text)) {
-            v = *text - '0';
-        } else if (radix == 16 && SDL_isupperhex(*text)) {
-            v = 10 + (*text - 'A');
-        } else if (radix == 16 && SDL_islowerhex(*text)) {
-            v = 10 + (*text - 'a');
+    const unsigned long ulong_max = ~0UL;
+    unsigned long long value;
+    SDL_bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternal(text, count, radix, &value, &negative);
+    if (negative) {
+        if (value == 0 || value > ulong_max) {
+            value = ulong_max;
+        } else if (value == ulong_max) {
+            value = 1;
         } else {
-            break;
+            value = 0ULL - value;
         }
-        value *= radix;
-        value += v;
-        ++text;
-
-        if (count > 0 && (text - textstart) == count) {
-            break;
-        }
+    } else if (value > ulong_max) {
+        value = ulong_max;
     }
-    if (valuep && text > textstart) {
-        *valuep = value;
-    }
-    return text - textstart;
+    *valuep = (unsigned long)value;
+    return len;
 }
 #endif
 
 #ifndef HAVE_VSSCANF
 static size_t SDL_ScanUintPtrT(const char *text, int radix, uintptr_t *valuep)
 {
-    const char *textstart = text;
-    uintptr_t value = 0;
-
-    if (radix == 16 && SDL_strncmp(text, "0x", 2) == 0) {
-        text += 2;
-    }
-    for (;;) {
-        int v;
-        if (SDL_isdigit((unsigned char)*text)) {
-            v = *text - '0';
-        } else if (radix == 16 && SDL_isupperhex(*text)) {
-            v = 10 + (*text - 'A');
-        } else if (radix == 16 && SDL_islowerhex(*text)) {
-            v = 10 + (*text - 'a');
+    const uintptr_t uintptr_max = ~(uintptr_t)0;
+    unsigned long long value;
+    SDL_bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternal(text, 0, 16, &value, &negative);
+    if (negative) {
+        if (value == 0 || value > uintptr_max) {
+            value = uintptr_max;
+        } else if (value == uintptr_max) {
+            value = 1;
         } else {
-            break;
+            value = 0ULL - value;
         }
-        value *= radix;
-        value += v;
-        ++text;
+    } else if (value > uintptr_max) {
+        value = uintptr_max;
     }
-    if (valuep && text > textstart) {
-        *valuep = value;
-    }
-    return text - textstart;
+    *valuep = (uintptr_t)value;
+    return len;
 }
 #endif
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOLL) || !defined(HAVE_STRTOULL)
 static size_t SDL_ScanLongLong(const char *text, int count, int radix, Sint64 *valuep)
 {
-    const char *textstart = text;
-    Sint64 value = 0;
-    SDL_bool negative = SDL_FALSE;
-
-    if (*text == '-') {
-        negative = SDL_TRUE;
-        ++text;
-    }
-    if (radix == 16 && SDL_strncmp(text, "0x", 2) == 0) {
-        text += 2;
-    }
-    for (;;) {
-        int v;
-        if (SDL_isdigit((unsigned char)*text)) {
-            v = *text - '0';
-        } else if (radix == 16 && SDL_isupperhex(*text)) {
-            v = 10 + (*text - 'A');
-        } else if (radix == 16 && SDL_islowerhex(*text)) {
-            v = 10 + (*text - 'a');
+    const unsigned long long llong_max = (~0ULL) >> 1;
+    unsigned long long value;
+    SDL_bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternal(text, count, radix, &value, &negative);
+    if (negative) {
+        const unsigned long long abs_llong_min = llong_max + 1;
+        if (value == 0 || value > abs_llong_min) {
+            value = 0ULL - abs_llong_min;
         } else {
-            break;
+            value = 0ULL - value;
         }
-        value *= radix;
-        value += v;
-        ++text;
-
-        if (count > 0 && (text - textstart) == count) {
-            break;
-        }
+    } else if (value > llong_max) {
+        value = llong_max;
     }
-    if (valuep && text > textstart) {
-        if (negative && value) {
-            *valuep = -value;
-        } else {
-            *valuep = value;
-        }
-    }
-    return text - textstart;
+    *valuep = value;
+    return len;
 }
 #endif
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOULL)
 static size_t SDL_ScanUnsignedLongLong(const char *text, int count, int radix, Uint64 *valuep)
 {
-    const char *textstart = text;
-    Uint64 value = 0;
-
-    if (*text == '-') {
-        return SDL_ScanLongLong(text, count, radix, (Sint64 *)valuep);
-    }
-
-    if (radix == 16 && SDL_strncmp(text, "0x", 2) == 0) {
-        text += 2;
-    }
-    for (;;) {
-        int v;
-        if (SDL_isdigit((unsigned char)*text)) {
-            v = *text - '0';
-        } else if (radix == 16 && SDL_isupperhex(*text)) {
-            v = 10 + (*text - 'A');
-        } else if (radix == 16 && SDL_islowerhex(*text)) {
-            v = 10 + (*text - 'a');
+    const unsigned long long ullong_max = ~0ULL;
+    SDL_bool negative;
+    size_t len = SDL_ScanUnsignedLongLongInternal(text, count, radix, valuep, &negative);
+    if (negative) {
+        if (*valuep == 0) {
+            *valuep = ullong_max;
         } else {
-            break;
-        }
-        value *= radix;
-        value += v;
-        ++text;
-
-        if (count > 0 && (text - textstart) == count) {
-            break;
+            *valuep = 0ULL - *valuep;
         }
     }
-    if (valuep && text > textstart) {
-        *valuep = value;
-    }
-    return text - textstart;
+    return len;
 }
 #endif
 
 #if !defined(HAVE_VSSCANF) || !defined(HAVE_STRTOD)
 static size_t SDL_ScanFloat(const char *text, double *valuep)
 {
-    const char *textstart = text;
-    unsigned long lvalue = 0;
+    const char *text_start = text;
+    const char *number_start = text_start;
     double value = 0.0;
     SDL_bool negative = SDL_FALSE;
 
-    if (*text == '-') {
-        negative = SDL_TRUE;
+    while (SDL_isspace(*text)) {
         ++text;
     }
-    text += SDL_ScanUnsignedLong(text, 0, 10, &lvalue);
-    value += lvalue;
-    if (*text == '.') {
-        int mult = 10;
+    if (*text == '-' || *text == '+') {
+        negative = *text == '-';
         ++text;
-        while (SDL_isdigit((unsigned char)*text)) {
-            lvalue = *text - '0';
-            value += (double)lvalue / mult;
-            mult *= 10;
+    }
+    number_start = text;
+    if (SDL_isdigit(*text)) {
+        value += SDL_strtoull(text, (char **)(&text), 10);
+        if (*text == '.') {
+            double denom = 10;
             ++text;
+            while (SDL_isdigit(*text)) {
+                value += (double)(*text - '0') / denom;
+                denom *= 10;
+                ++text;
+            }
         }
     }
-    if (valuep && text > textstart) {
-        if (negative && value) {
-            *valuep = -value;
-        } else {
-            *valuep = value;
-        }
+    if (text == number_start) {
+        // no number was parsed, and thus no characters were consumed
+        text = text_start;
+    } else if (negative) {
+        value = -value;
     }
-    return text - textstart;
+    *valuep = value;
+    return text - text_start;
 }
 #endif
 
@@ -897,18 +900,8 @@ long SDL_strtol(const char *string, char **endp, int base)
 #if defined(HAVE_STRTOL)
     return strtol(string, endp, base);
 #else
-    size_t len;
     long value = 0;
-
-    if (!base) {
-        if ((SDL_strlen(string) > 2) && (SDL_strncmp(string, "0x", 2) == 0)) {
-            base = 16;
-        } else {
-            base = 10;
-        }
-    }
-
-    len = SDL_ScanLong(string, 0, base, &value);
+    size_t len = SDL_ScanLong(string, 0, base, &value);
     if (endp) {
         *endp = (char *)string + len;
     }
@@ -922,18 +915,8 @@ SDL_strtoul(const char *string, char **endp, int base)
 #if defined(HAVE_STRTOUL)
     return strtoul(string, endp, base);
 #else
-    size_t len;
     unsigned long value = 0;
-
-    if (!base) {
-        if ((SDL_strlen(string) > 2) && (SDL_strncmp(string, "0x", 2) == 0)) {
-            base = 16;
-        } else {
-            base = 10;
-        }
-    }
-
-    len = SDL_ScanUnsignedLong(string, 0, base, &value);
+    size_t len = SDL_ScanUnsignedLong(string, 0, base, &value);
     if (endp) {
         *endp = (char *)string + len;
     }
@@ -946,18 +929,8 @@ Sint64 SDL_strtoll(const char *string, char **endp, int base)
 #if defined(HAVE_STRTOLL)
     return strtoll(string, endp, base);
 #else
-    size_t len;
-    Sint64 value = 0;
-
-    if (!base) {
-        if ((SDL_strlen(string) > 2) && (SDL_strncmp(string, "0x", 2) == 0)) {
-            base = 16;
-        } else {
-            base = 10;
-        }
-    }
-
-    len = SDL_ScanLongLong(string, 0, base, &value);
+    long long value = 0;
+    size_t len = SDL_ScanLongLong(string, 0, base, &value);
     if (endp) {
         *endp = (char *)string + len;
     }
@@ -970,18 +943,8 @@ Uint64 SDL_strtoull(const char *string, char **endp, int base)
 #if defined(HAVE_STRTOULL)
     return strtoull(string, endp, base);
 #else
-    size_t len;
-    Uint64 value = 0;
-
-    if (!base) {
-        if ((SDL_strlen(string) > 2) && (SDL_strncmp(string, "0x", 2) == 0)) {
-            base = 16;
-        } else {
-            base = 10;
-        }
-    }
-
-    len = SDL_ScanUnsignedLongLong(string, 0, base, &value);
+    unsigned long long value = 0;
+    size_t len = SDL_ScanUnsignedLongLong(string, 0, base, &value);
     if (endp) {
         *endp = (char *)string + len;
     }
