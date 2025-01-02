@@ -268,6 +268,18 @@ typedef struct
 } SwitchProprietaryOutputPacket_t;
 #pragma pack()
 
+/* Enhanced report hint mode:
+ * "0": enhanced features are never used
+ * "1": enhanced features are always used
+ * "auto": enhanced features are advertised to the application, but SDL doesn't touch the controller state unless the application explicitly requests it.
+ */
+typedef enum
+{
+    SWITCH_ENHANCED_REPORT_HINT_OFF,
+    SWITCH_ENHANCED_REPORT_HINT_ON,
+    SWITCH_ENHANCED_REPORT_HINT_AUTO
+} HIDAPI_Switch_EnhancedReportHint;
+
 typedef struct
 {
     SDL_HIDAPI_Device *device;
@@ -283,6 +295,9 @@ typedef struct
     Uint8 m_nCurrentInputMode;
     Uint8 m_rgucMACAddress[6];
     Uint8 m_nCommandNumber;
+    HIDAPI_Switch_EnhancedReportHint m_eEnhancedReportHint;
+    bool m_bEnhancedMode;
+    bool m_bEnhancedModeAvailable;
     SwitchCommonOutputPacket_t m_RumblePacket;
     Uint8 m_rgucReadBuffer[k_unSwitchMaxOutputPacketLength];
     bool m_bRumbleActive;
@@ -290,6 +305,7 @@ typedef struct
     bool m_bRumblePending;
     bool m_bRumbleZeroPending;
     Uint32 m_unRumblePending;
+    bool m_bSensorsSupported;
     bool m_bReportSensors;
     bool m_bHasSensorData;
     Uint64 m_ulLastInput;
@@ -777,24 +793,25 @@ static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
         }
     }
 
-    /* The official Nintendo Switch Pro Controller supports FullControllerState over Bluetooth
-     * just fine. We really should use that, or else the epowerlevel code in HandleFullControllerState
-     * is completely pointless. We need full state if we want battery level and we only care about
-     * battery level over Bluetooth anyway.
-     */
-    if (ctx->device->vendor_id == USB_VENDOR_NINTENDO) {
-        // However, switching to full controller state breaks DirectInput, so let's not do that
-        #if 0
-        input_mode = k_eSwitchInputReportIDs_FullControllerState;
-        #endif
-
-        /* However, Joy-Con controllers switch their thumbsticks into D-pad mode in simple mode,
-         * so let's enable full controller state for them.
-         */
-        if (ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT ||
-            ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
+    switch (ctx->m_eEnhancedReportHint) {
+    case SWITCH_ENHANCED_REPORT_HINT_OFF:
+        input_mode = k_eSwitchInputReportIDs_SimpleControllerState;
+        break;
+    case SWITCH_ENHANCED_REPORT_HINT_ON:
+        if (input_mode == k_eSwitchInputReportIDs_SimpleControllerState) {
             input_mode = k_eSwitchInputReportIDs_FullControllerState;
         }
+        break;
+    case SWITCH_ENHANCED_REPORT_HINT_AUTO:
+        /* Joy-Con controllers switch their thumbsticks into D-pad mode in simple mode,
+         * so let's enable full controller state for them.
+         */
+        if (ctx->device->vendor_id == USB_VENDOR_NINTENDO &&
+            (ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT ||
+             ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT)) {
+            input_mode = k_eSwitchInputReportIDs_FullControllerState;
+        }
+        break;
     }
     return input_mode;
 }
@@ -811,6 +828,103 @@ static Uint8 GetSensorInputMode(SDL_DriverSwitch_Context *ctx)
         input_mode = ctx->m_nInitialInputMode;
     }
     return input_mode;
+}
+
+static void UpdateInputMode(SDL_DriverSwitch_Context *ctx)
+{
+    Uint8 input_mode;
+
+    if (ctx->m_bReportSensors) {
+        input_mode = GetSensorInputMode(ctx);
+    } else {
+        input_mode = GetDefaultInputMode(ctx);
+    }
+    SetInputMode(ctx, input_mode);
+}
+
+static void SetEnhancedModeAvailable(SDL_DriverSwitch_Context *ctx)
+{
+    if (ctx->m_bEnhancedModeAvailable) {
+        return;
+    }
+    ctx->m_bEnhancedModeAvailable = true;
+
+    if (ctx->m_bSensorsSupported) {
+        // Use the right sensor in the combined Joy-Con pair
+        if (!ctx->device->parent ||
+            ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 200.0f);
+            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 200.0f);
+        }
+        if (ctx->device->parent &&
+            ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
+            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO_L, 200.0f);
+            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL_L, 200.0f);
+        }
+        if (ctx->device->parent &&
+            ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
+            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO_R, 200.0f);
+            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL_R, 200.0f);
+        }
+    }
+}
+
+static void SetEnhancedMode(SDL_DriverSwitch_Context *ctx, bool bEnabled)
+{
+    if (bEnabled) {
+        SetEnhancedModeAvailable(ctx);
+    }
+
+    if (bEnabled != ctx->m_bEnhancedMode) {
+        ctx->m_bEnhancedMode = bEnabled;
+
+        UpdateInputMode(ctx);
+    }
+}
+
+static void SetEnhancedReportHint(SDL_DriverSwitch_Context *ctx, HIDAPI_Switch_EnhancedReportHint eEnhancedReportHint)
+{
+    switch (eEnhancedReportHint) {
+    case SWITCH_ENHANCED_REPORT_HINT_OFF:
+        SetEnhancedMode(ctx, false);
+        break;
+    case SWITCH_ENHANCED_REPORT_HINT_ON:
+        SetEnhancedMode(ctx, true);
+        break;
+    case SWITCH_ENHANCED_REPORT_HINT_AUTO:
+        SetEnhancedModeAvailable(ctx);
+        break;
+    }
+    ctx->m_eEnhancedReportHint = eEnhancedReportHint;
+
+    UpdateInputMode(ctx);
+}
+
+static void UpdateEnhancedModeOnEnhancedReport(SDL_DriverSwitch_Context *ctx)
+{
+    if (ctx->m_eEnhancedReportHint == SWITCH_ENHANCED_REPORT_HINT_AUTO) {
+        SetEnhancedReportHint(ctx, SWITCH_ENHANCED_REPORT_HINT_ON);
+    }
+}
+
+static void UpdateEnhancedModeOnApplicationUsage(SDL_DriverSwitch_Context *ctx)
+{
+    if (ctx->m_eEnhancedReportHint == SWITCH_ENHANCED_REPORT_HINT_AUTO) {
+        SetEnhancedReportHint(ctx, SWITCH_ENHANCED_REPORT_HINT_ON);
+    }
+}
+
+static void SDLCALL SDL_EnhancedReportsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)userdata;
+
+    if (hint && SDL_strcasecmp(hint, "auto") == 0) {
+        SetEnhancedReportHint(ctx, SWITCH_ENHANCED_REPORT_HINT_AUTO);
+    } else if (SDL_GetStringBoolean(hint, true)) {
+        SetEnhancedReportHint(ctx, SWITCH_ENHANCED_REPORT_HINT_ON);
+    } else {
+        SetEnhancedReportHint(ctx, SWITCH_ENHANCED_REPORT_HINT_OFF);
+    }
 }
 
 static bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, bool enabled)
@@ -1432,35 +1546,16 @@ static bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_N64 &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SEGA_Genesis) {
             if (LoadIMUCalibration(ctx)) {
-                // Use the right sensor in the combined Joy-Con pair
-                if (!device->parent ||
-                    ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 200.0f);
-                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 200.0f);
-                }
-                if (device->parent &&
-                    ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft) {
-                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_L, 200.0f);
-                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_L, 200.0f);
-                }
-                if (device->parent &&
-                    ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
-                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO_R, 200.0f);
-                    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL_R, 200.0f);
-                }
+                ctx->m_bSensorsSupported = true;
             }
         }
 
-        if (!SetVibrationEnabled(ctx, 1)) {
-            SDL_SetError("Couldn't enable vibration");
-            return false;
-        }
+        // Enable vibration
+        SetVibrationEnabled(ctx, 1);
 
         // Set desired input mode
-        if (!SetInputMode(ctx, GetDefaultInputMode(ctx))) {
-            SDL_SetError("Couldn't set input mode");
-            return false;
-        }
+        SDL_AddHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
+                            SDL_EnhancedReportsChanged, ctx);
 
         // Start sending USB reports
         if (!device->is_bluetooth) {
@@ -1694,19 +1789,19 @@ static bool HIDAPI_DriverSwitch_SendJoystickEffect(SDL_HIDAPI_Device *device, SD
 static bool HIDAPI_DriverSwitch_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
-    Uint8 input_mode;
 
-    if (enabled) {
-        input_mode = GetSensorInputMode(ctx);
-    } else {
-        input_mode = GetDefaultInputMode(ctx);
+    UpdateEnhancedModeOnApplicationUsage(ctx);
+
+    if (!ctx->m_bSensorsSupported || (enabled && !ctx->m_bEnhancedMode)) {
+        return SDL_Unsupported();
     }
-    SetInputMode(ctx, input_mode);
 
-    SetIMUEnabled(ctx, enabled);
     ctx->m_bReportSensors = enabled;
     ctx->m_unIMUSamples = 0;
     ctx->m_ulIMUSampleTimestampNS = SDL_GetTicksNS();
+
+    UpdateInputMode(ctx);
+    SetIMUEnabled(ctx, enabled);
 
     return true;
 }
@@ -2585,6 +2680,9 @@ static bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
                 break;
             case k_eSwitchInputReportIDs_FullControllerState:
             case k_eSwitchInputReportIDs_FullControllerAndMcuState:
+                // This is the extended report, we can enable sensors now in auto mode
+                UpdateEnhancedModeOnEnhancedReport(ctx);
+
                 HandleFullControllerState(joystick, ctx, (SwitchStatePacket_t *)&ctx->m_rgucReadBuffer[1]);
                 break;
             default:
@@ -2651,6 +2749,9 @@ static void HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joy
             SetInputMode(ctx, k_eSwitchInputReportIDs_SimpleControllerState);
         }
     }
+
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
+                        SDL_EnhancedReportsChanged, ctx);
 
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
         ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {

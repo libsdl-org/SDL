@@ -129,18 +129,16 @@ typedef struct
 } IMUCalibrationData;
 
 /* Rumble hint mode:
- * default: enhanced features are available if the controller is using enhanced reports
  * "0": enhanced features are never used
  * "1": enhanced features are always used
  * "auto": enhanced features are advertised to the application, but SDL doesn't touch the controller state unless the application explicitly requests it.
  */
 typedef enum
 {
-    PS4_RUMBLE_HINT_DEFAULT,
-    PS4_RUMBLE_HINT_OFF,
-    PS4_RUMBLE_HINT_ON,
-    PS4_RUMBLE_HINT_AUTO
-} SDL_PS4_RumbleHintMode;
+    PS4_ENHANCED_REPORT_HINT_OFF,
+    PS4_ENHANCED_REPORT_HINT_ON,
+    PS4_ENHANCED_REPORT_HINT_AUTO
+} HIDAPI_PS4_EnhancedReportHint;
 
 typedef struct
 {
@@ -154,7 +152,7 @@ typedef struct
     bool vibration_supported;
     bool touchpad_supported;
     bool effects_supported;
-    SDL_PS4_RumbleHintMode rumble_hint;
+    HIDAPI_PS4_EnhancedReportHint enhanced_report_hint;
     bool enhanced_reports;
     bool enhanced_mode;
     bool enhanced_mode_available;
@@ -696,7 +694,7 @@ static void HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
             SDL_HIDAPI_SendRumbleAndUnlock(device, data, sizeof(data));
         }
     } else {
-#if 0 /* The 8BitDo Zero 2 has perfect emulation of a PS4 controllers, except it
+#if 0 /* The 8BitDo Zero 2 has perfect emulation of a PS4 controller, except it
        * only sends reports when the state changes, so we can't disconnect here.
        */
         // We can't even send an invalid effects packet, or it will put the controller in enhanced mode
@@ -709,6 +707,9 @@ static void HIDAPI_DriverPS4_TickleBluetooth(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverPS4_SetEnhancedModeAvailable(SDL_DriverPS4_Context *ctx)
 {
+    if (ctx->enhanced_mode_available) {
+        return;
+    }
     ctx->enhanced_mode_available = true;
 
     if (ctx->touchpad_supported) {
@@ -730,9 +731,7 @@ static void HIDAPI_DriverPS4_SetEnhancedModeAvailable(SDL_DriverPS4_Context *ctx
 
 static void HIDAPI_DriverPS4_SetEnhancedMode(SDL_DriverPS4_Context *ctx)
 {
-    if (!ctx->enhanced_mode_available) {
-        HIDAPI_DriverPS4_SetEnhancedModeAvailable(ctx);
-    }
+    HIDAPI_DriverPS4_SetEnhancedModeAvailable(ctx);
 
     if (!ctx->enhanced_mode) {
         ctx->enhanced_mode = true;
@@ -742,55 +741,52 @@ static void HIDAPI_DriverPS4_SetEnhancedMode(SDL_DriverPS4_Context *ctx)
     }
 }
 
-static void HIDAPI_DriverPS4_SetRumbleHintMode(SDL_DriverPS4_Context *ctx, SDL_PS4_RumbleHintMode rumble_hint)
+static void HIDAPI_DriverPS4_SetEnhancedReportHint(SDL_DriverPS4_Context *ctx, HIDAPI_PS4_EnhancedReportHint enhanced_report_hint)
 {
-    switch (rumble_hint) {
-    case PS4_RUMBLE_HINT_DEFAULT:
-        if (ctx->enhanced_reports) {
-            HIDAPI_DriverPS4_SetEnhancedMode(ctx);
-        }
-        break;
-    case PS4_RUMBLE_HINT_OFF:
+    switch (enhanced_report_hint) {
+    case PS4_ENHANCED_REPORT_HINT_OFF:
         // Nothing to do, enhanced mode is a one-way ticket
         break;
-    case PS4_RUMBLE_HINT_ON:
+    case PS4_ENHANCED_REPORT_HINT_ON:
         HIDAPI_DriverPS4_SetEnhancedMode(ctx);
         break;
-    case PS4_RUMBLE_HINT_AUTO:
+    case PS4_ENHANCED_REPORT_HINT_AUTO:
         HIDAPI_DriverPS4_SetEnhancedModeAvailable(ctx);
         break;
     }
-    ctx->rumble_hint = rumble_hint;
+    ctx->enhanced_report_hint = enhanced_report_hint;
 }
 
 static void HIDAPI_DriverPS4_UpdateEnhancedModeOnEnhancedReport(SDL_DriverPS4_Context *ctx)
 {
     ctx->enhanced_reports = true;
 
-    if (ctx->rumble_hint == PS4_RUMBLE_HINT_DEFAULT) {
-        HIDAPI_DriverPS4_SetRumbleHintMode(ctx, PS4_RUMBLE_HINT_ON);
+    if (ctx->enhanced_report_hint == PS4_ENHANCED_REPORT_HINT_AUTO) {
+        HIDAPI_DriverPS4_SetEnhancedReportHint(ctx, PS4_ENHANCED_REPORT_HINT_ON);
     }
 }
 
 static void HIDAPI_DriverPS4_UpdateEnhancedModeOnApplicationUsage(SDL_DriverPS4_Context *ctx)
 {
-    if (ctx->rumble_hint == PS4_RUMBLE_HINT_AUTO) {
-        HIDAPI_DriverPS4_SetRumbleHintMode(ctx, PS4_RUMBLE_HINT_ON);
+    if (ctx->enhanced_report_hint == PS4_ENHANCED_REPORT_HINT_AUTO) {
+        HIDAPI_DriverPS4_SetEnhancedReportHint(ctx, PS4_ENHANCED_REPORT_HINT_ON);
     }
 }
 
-static void SDLCALL SDL_PS4RumbleHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_PS4EnhancedReportsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)userdata;
 
-    if (!hint) {
-        HIDAPI_DriverPS4_SetRumbleHintMode(ctx, PS4_RUMBLE_HINT_DEFAULT);
-    } else if (SDL_strcasecmp(hint, "auto") == 0) {
-        HIDAPI_DriverPS4_SetRumbleHintMode(ctx, PS4_RUMBLE_HINT_AUTO);
-    } else if (SDL_GetStringBoolean(hint, false)) {
-        HIDAPI_DriverPS4_SetRumbleHintMode(ctx, PS4_RUMBLE_HINT_ON);
+    if (ctx->device->is_bluetooth) {
+        if (hint && SDL_strcasecmp(hint, "auto") == 0) {
+            HIDAPI_DriverPS4_SetEnhancedReportHint(ctx, PS4_ENHANCED_REPORT_HINT_AUTO);
+        } else if (SDL_GetStringBoolean(hint, true)) {
+            HIDAPI_DriverPS4_SetEnhancedReportHint(ctx, PS4_ENHANCED_REPORT_HINT_ON);
+        } else {
+            HIDAPI_DriverPS4_SetEnhancedReportHint(ctx, PS4_ENHANCED_REPORT_HINT_OFF);
+        }
     } else {
-        HIDAPI_DriverPS4_SetRumbleHintMode(ctx, PS4_RUMBLE_HINT_OFF);
+        HIDAPI_DriverPS4_SetEnhancedReportHint(ctx, PS4_ENHANCED_REPORT_HINT_ON);
     }
 }
 
@@ -868,8 +864,8 @@ static bool HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
 
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL,
                         SDL_PS4ReportIntervalHintChanged, ctx);
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
-                        SDL_PS4RumbleHintChanged, ctx);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
+                        SDL_PS4EnhancedReportsChanged, ctx);
     return true;
 }
 
@@ -1287,7 +1283,7 @@ static bool HIDAPI_DriverPS4_UpdateDevice(SDL_HIDAPI_Device *device)
         case k_EPS4ReportIdBluetoothState7:
         case k_EPS4ReportIdBluetoothState8:
         case k_EPS4ReportIdBluetoothState9:
-            // This is the extended report, we can enable effects now in default mode
+            // This is the extended report, we can enable effects now in auto mode
             HIDAPI_DriverPS4_UpdateEnhancedModeOnEnhancedReport(ctx);
 
             // Bluetooth state packets have two additional bytes at the beginning, the first notes if HID is present
@@ -1353,8 +1349,8 @@ static void HIDAPI_DriverPS4_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL,
                         SDL_PS4ReportIntervalHintChanged, ctx);
-    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE,
-                        SDL_PS4RumbleHintChanged, ctx);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
+                        SDL_PS4EnhancedReportsChanged, ctx);
 
     ctx->joystick = NULL;
 }
