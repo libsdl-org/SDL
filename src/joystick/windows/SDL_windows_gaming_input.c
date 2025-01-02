@@ -110,7 +110,7 @@ extern SDL_bool SDL_XINPUT_Enabled(void);
 extern SDL_bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version);
 
 
-static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
+static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product, const char* name)
 {
 #if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
     PRAWINPUTDEVICELIST raw_devices = NULL;
@@ -124,6 +124,13 @@ static SDL_bool SDL_IsXInputDevice(Uint16 vendor, Uint16 product)
 #endif
     ) {
         return SDL_FALSE;
+    }
+
+    /* Sometimes we'll get a Windows.Gaming.Input callback before the raw input device is even in the list,
+     * so try to do some checks up front to catch these cases. */
+    if (SDL_IsJoystickXboxOne(vendor, product) ||
+        (name && SDL_strncmp(name, "Xbox ", 5) == 0)) {
+        return SDL_TRUE;
     }
 
     /* Go through RAWINPUT (WinXP and later) to find HID devices. */
@@ -508,7 +515,7 @@ static HRESULT STDMETHODCALLTYPE IEventHandler_CRawGameControllerVtbl_InvokeAdde
             ignore_joystick = SDL_TRUE;
         }
 
-        if (!ignore_joystick && SDL_IsXInputDevice(vendor, product)) {
+        if (!ignore_joystick && SDL_IsXInputDevice(vendor, product, name)) {
             ignore_joystick = SDL_TRUE;
         }
 
