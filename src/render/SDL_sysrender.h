@@ -371,6 +371,7 @@ extern void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer);
 
 // We must expose this function for manual control over renderer command buffer
 extern void GPU_SetCommandBuffer(SDL_Renderer *renderer, SDL_GPUCommandBuffer *cmd_buf);
+extern bool GPU_PresentToUserTexture(SDL_Renderer *renderer, SDL_GPUTexture *textur, SDL_GPUTextureFormat format);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

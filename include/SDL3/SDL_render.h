@@ -2573,17 +2573,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, flo
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugTextFormat(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(4);
 
 /**
- * Set custom swapchain texture for a GPU-based renderer.
+ * Draw all queued render commands to SDL_GPUTexture
  *
- * This function will set a custom swapchain texture for a GPU-based renderer, and make it ready for SDL_RenderPresent.
- * Tihs function also has effect only on SDL_Renderer that was created with SDL_PROP_RENDERER_CREATE_USER_GPU_DEVICE_POINTER property.
- * Renderer must be created with a SDL_PROP_RENDERER_CREATE_USER_GPU_DEVICE_POINTER property in order for this function to have effect.
- * Please note, it's on user's respsonsibility to acquire and provide a valid swapchain texture before calling SDL_RenderPresent.
+ * This function is only useful for GPU-based renderers, especially when the GPU device is manually controlled.
  * If the texture is invalid or not provided, nothing will be rendered.
- * For acquiring a swapchain texture, please refer to SDL_WaitAndAcquireGPUSwapchainTexture.
+ * The target texture may also be a swapchain texture, obtained from SDL_WaitAndAcquireGPUSwapchainTexture,
+ * which is the recommended way to combine GPU and SDL_Renderer usage.
  *
  * \param renderer the renderer
- * \param swapchain_texture the swapchain texture to be used for rendering
+ * \param target the GPU texture to render to
+ * \param format the format of the target texture
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -2591,11 +2590,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugTextFormat(SDL_Renderer *rendere
  *
  * \since This function is available since SDL 3.2.0.
  *
- * \sa SDL_SetRenderGPUCommandBuffer
- * \sa SDL_WaitAndAcquireGPUSwapchainTexture
  * \sa SDL_RenderPresent
+ * \sa SDL_WaitAndAcquireGPUSwapchainTexture
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderGPUSwapchainTexture(SDL_Renderer *renderer, SDL_GPUTexture *swapchain_texture);
+extern SDL_DECLSPEC bool SDLCALL SDL_RenderPresentToGPUTexture(SDL_Renderer *renderer, SDL_GPUTexture *target, SDL_GPUTextureFormat format);
 
 /**
  * Set custom command buffer for a GPU-based renderer.

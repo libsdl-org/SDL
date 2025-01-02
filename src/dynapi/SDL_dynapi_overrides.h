@@ -1257,3 +1257,4 @@
 #define SDL_GetThreadState SDL_GetThreadState_REAL
 #define SDL_SetRenderGPUSwapchainTexture SDL_SetRenderGPUSwapchainTexture_REAL
 #define SDL_SetRenderGPUCommandBuffer SDL_SetRenderGPUCommandBuffer_REAL
+#define SDL_RenderPresentToGPUTexture SDL_RenderPresentToGPUTexture_REAL

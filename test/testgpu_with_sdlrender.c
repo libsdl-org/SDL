@@ -24,6 +24,7 @@ static Uint64 then = 0;
 static Uint64 frames = 0;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *icon_texture = NULL;
+static float icon_pos_x = 0.0f;
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
@@ -116,6 +117,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
+    if (event->type == SDL_EVENT_KEY_DOWN) {
+        icon_pos_x += 16.0f;
+    }
+
     return SDLTest_CommonEventMainCallbacks(state, event);
 }
 
@@ -149,7 +154,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
         /* Custom GPU rendering */
         renderPass = SDL_BeginGPURenderPass(cmdbuf, &color_target_info, 1, NULL);
-        /* Render universe or whatever */
+        /* Render Half-Life 3 or whatever */
         SDL_EndGPURenderPass(renderPass);
 
         /* 2D rendering with SDL renderer */
@@ -158,18 +163,18 @@ SDL_AppResult SDL_AppIterate(void *appstate)
             return SDL_APP_FAILURE;
         }
 
-        if (!SDL_SetRenderGPUSwapchainTexture(renderer, swapchainTexture)) {
-            SDL_Log("SDL_SetRenderGPUSwapchainTexture failed: %s", SDL_GetError());
-            return SDL_APP_FAILURE;
-        }
-
         SDL_FRect rect = { 32, 32, 64, 64 };
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        SDL_RenderClear(renderer);
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderFillRect(renderer, &rect);
-        SDL_FRect tex_rect = { 150, 150, 32, 32 };
+        SDL_FRect tex_rect = { 150 + icon_pos_x, 150, 32, 32 };
         SDL_RenderTexture(renderer, icon_texture, NULL, &tex_rect);
 
-        SDL_RenderPresent(renderer);
+        if (!SDL_RenderPresentToGPUTexture(renderer, swapchainTexture, SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]))) {
+            SDL_Log("SDL_RenderPresentToGPUTexture failed: %s", SDL_GetError());
+            return SDL_APP_FAILURE;
+        }
 
         SDL_SubmitGPUCommandBuffer(cmdbuf);
     } else {
