@@ -2818,6 +2818,10 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
+    (void)SDL_snprintf(text, sizeof(text), "SDL_GetDisplayContentScale: %g", SDL_GetDisplayContentScale(windowDisplayID));
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
+    textY += lineHeight;
+
     /* Mouse */
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
