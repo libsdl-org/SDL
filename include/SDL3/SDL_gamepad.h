@@ -63,6 +63,8 @@
  * By default SDL will try to use the most capable driver available, but you
  * can tune which OS drivers to use with the various joystick hints in
  * SDL_hints.h.
+ *
+ * Your application should always support gamepad hotplugging. On some platforms like Xbox, Steam Deck, etc., this is a requirement for certification. On other platforms, like macOS and Windows when using Windows.Gaming.Input, controllers may not be available at startup and will come in at some point after you've started processing events.
  */
 
 #ifndef SDL_gamepad_h_
