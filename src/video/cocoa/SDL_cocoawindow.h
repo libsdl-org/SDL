@@ -78,6 +78,7 @@ typedef enum
 /* Window delegate functionality */
 -(BOOL) windowShouldClose:(id) sender;
 -(void) windowDidExpose:(NSNotification *) aNotification;
+-(void) onLiveResizeTimerFire:(id) sender;
 -(void) windowWillStartLiveResize:(NSNotification *)aNotification;
 -(void) windowDidEndLiveResize:(NSNotification *)aNotification;
 -(void) windowDidMove:(NSNotification *) aNotification;

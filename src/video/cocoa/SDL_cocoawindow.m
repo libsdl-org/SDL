@@ -743,16 +743,26 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     SDL_SendWindowEvent(_data.window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
 }
 
+- (void)onLiveResizeTimerFire:(id)sender
+{
+    SDL_OnWindowLiveResizeUpdate(_data.window);
+}
+
 - (void)windowWillStartLiveResize:(NSNotification *)aNotification
 {
     // We'll try to maintain 60 FPS during live resizing
     const NSTimeInterval interval = 1.0 / 60.0;
+
+    NSMethodSignature *invocationSig = [Cocoa_WindowListener
+        instanceMethodSignatureForSelector:@selector(onLiveResizeTimerFire:)];
+    NSInvocation *invocation = [NSInvocation
+        invocationWithMethodSignature:invocationSig];
+    [invocation setTarget:self];
+    [invocation setSelector:@selector(onLiveResizeTimerFire:)];
+
     liveResizeTimer = [NSTimer scheduledTimerWithTimeInterval:interval
-                                                      repeats:TRUE
-                                                        block:^(NSTimer *unusedTimer)
-    {
-        SDL_OnWindowLiveResizeUpdate(_data.window);
-    }];
+                                                      invocation:invocation
+                                                      repeats:TRUE];
 
     [[NSRunLoop currentRunLoop] addTimer:liveResizeTimer forMode:NSRunLoopCommonModes];
 }
