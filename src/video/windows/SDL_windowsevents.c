@@ -82,6 +82,18 @@
 #ifndef WM_POINTERUPDATE
 #define WM_POINTERUPDATE 0x0245
 #endif
+#ifndef WM_POINTERDOWN
+#define WM_POINTERDOWN 0x0246
+#endif
+#ifndef WM_POINTERUP
+#define WM_POINTERUP 0x0247
+#endif
+#ifndef WM_POINTERENTER
+#define WM_POINTERENTER 0x0249
+#endif
+#ifndef WM_POINTERLEAVE
+#define WM_POINTERLEAVE 0x024A
+#endif
 #ifndef WM_UNICHAR
 #define WM_UNICHAR 0x0109
 #endif
@@ -556,7 +568,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         return;
     }
 
-    if (GetMouseMessageSource(rawmouse->ulExtraInformation) == SDL_MOUSE_EVENT_SOURCE_TOUCH) {
+    if (GetMouseMessageSource(rawmouse->ulExtraInformation) != SDL_MOUSE_EVENT_SOURCE_MOUSE) {
         return;
     }
 
@@ -1119,11 +1131,119 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         WIN_UpdateFocus(data->window, false);
     } break;
 
-    case WM_POINTERUPDATE:
+    case WM_POINTERENTER:
     {
-        data->last_pointer_update = lParam;
-        break;
+        if (!data->videodata->GetPointerType) {
+            break;  // Not on Windows8 or later? We shouldn't get this event, but just in case...
+        }
+
+        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
+        void *hpointer = (void *) (size_t) pointerid;
+        POINTER_INPUT_TYPE pointer_type = PT_POINTER;
+        if (!data->videodata->GetPointerType(pointerid, &pointer_type)) {
+            break;  // oh well.
+        } else if (pointer_type != PT_PEN) {
+            break;  // we only care about pens here.
+        } else if (SDL_FindPenByHandle(hpointer)) {
+            break;  // we already have this one, don't readd it.
+        }
+
+        // one can use GetPointerPenInfo() to get the current state of the pen, and check POINTER_PEN_INFO::penMask,
+        //  but the docs aren't clear if these masks are _always_ set for pens with specific features, or if they
+        //  could be unset at this moment because Windows is still deciding what capabilities the pen has, and/or
+        //  doesn't yet have valid data for them. As such, just say everything that the interface supports is
+        //  available...we don't expose this information through the public API at the moment anyhow.
+        SDL_PenInfo info;
+        SDL_zero(info);
+        info.capabilities = SDL_PEN_CAPABILITY_PRESSURE | SDL_PEN_CAPABILITY_XTILT | SDL_PEN_CAPABILITY_YTILT | SDL_PEN_CAPABILITY_DISTANCE | SDL_PEN_CAPABILITY_ROTATION | SDL_PEN_CAPABILITY_ERASER;
+        info.max_tilt = 90.0f;
+        info.num_buttons = 1;
+        info.subtype = SDL_PEN_TYPE_PENCIL;
+        SDL_AddPenDevice(0, NULL, &info, hpointer);
+        returnCode = 0;
+    } break;
+
+    case WM_POINTERLEAVE:
+    {
+        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
+        void *hpointer = (void *) (size_t) pointerid;
+        const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
+        if (pen == 0) {
+            break;  // not a pen, or not a pen we already knew about.
+        }
+
+        // if this just left the _window_, we don't care. If this is no longer visible to the tablet, time to remove it!
+        if (!IS_POINTER_INCONTACT_WPARAM(wParam)) {
+            SDL_RemovePenDevice(WIN_GetEventTimestamp(), pen);
+        }
+        returnCode = 0;
+    } break;
+
+    case WM_POINTERUPDATE: {
+        POINTER_INPUT_TYPE pointer_type = PT_POINTER;
+        if (!data->videodata->GetPointerType || !data->videodata->GetPointerType(GET_POINTERID_WPARAM(wParam), &pointer_type)) {
+            break;  // oh well.
+        }
+
+        if (pointer_type == PT_MOUSE) {
+            data->last_pointer_update = lParam;
+            returnCode = 0;
+            break;
+        }
     }
+    SDL_FALLTHROUGH;
+
+    case WM_POINTERDOWN:
+    case WM_POINTERUP: {
+        POINTER_PEN_INFO pen_info;
+        const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
+        void *hpointer = (void *) (size_t) pointerid;
+        const SDL_PenID pen = SDL_FindPenByHandle(hpointer);
+        if (pen == 0) {
+            break;  // not a pen, or not a pen we already knew about.
+        } else if (!data->videodata->GetPointerPenInfo || !data->videodata->GetPointerPenInfo(pointerid, &pen_info)) {
+            break;  // oh well.
+        }
+
+        const Uint64 timestamp = WIN_GetEventTimestamp();
+        SDL_Window *window = data->window;
+
+        // if lifting off, do it first, so any motion changes don't cause app issues.
+        if (msg == WM_POINTERUP) {
+            SDL_SendPenTouch(timestamp, pen, window, (pen_info.penFlags & PEN_FLAG_INVERTED) != 0, false);
+        }
+
+        POINT position;
+        position.x = (LONG) GET_X_LPARAM(lParam);
+        position.y = (LONG) GET_Y_LPARAM(lParam);
+        ScreenToClient(data->hwnd, &position);
+
+        SDL_SendPenMotion(timestamp, pen, window, (float) position.x, (float) position.y);
+        SDL_SendPenButton(timestamp, pen, window, 1, (pen_info.penFlags & PEN_FLAG_BARREL) != 0);
+
+        if (pen_info.penMask & PEN_MASK_PRESSURE) {
+            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_PRESSURE, ((float) pen_info.pressure) / 1024.0f);  // pen_info.pressure is in the range 0..1024.
+        }
+
+        if (pen_info.penMask & PEN_MASK_ROTATION) {
+            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_ROTATION, ((float) pen_info.rotation));  // it's already in the range of 0 to 359.
+        }
+
+        if (pen_info.penMask & PEN_MASK_TILT_X) {
+            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_XTILT, ((float) pen_info.tiltX));  // it's already in the range of -90 to 90..
+        }
+
+        if (pen_info.penMask & PEN_MASK_TILT_Y) {
+            SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_YTILT, ((float) pen_info.tiltY));  // it's already in the range of -90 to 90..
+        }
+
+        // if setting down, do it last, so the pen is positioned correctly from the first contact.
+        if (msg == WM_POINTERDOWN) {
+            SDL_SendPenTouch(timestamp, pen, window, (pen_info.penFlags & PEN_FLAG_INVERTED) != 0, true);
+        }
+
+        returnCode = 0;
+    } break;
 
     case WM_MOUSEMOVE:
     {
@@ -1154,7 +1274,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         if (!data->videodata->raw_mouse_enabled) {
             // Only generate mouse events for real mouse
-            if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
+            if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) == SDL_MOUSE_EVENT_SOURCE_MOUSE &&
                 lParam != data->last_pointer_update) {
                 SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
             }
@@ -1176,7 +1296,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     {
         /* SDL_Mouse *mouse = SDL_GetMouse(); */
         if (!data->videodata->raw_mouse_enabled) {
-            if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) != SDL_MOUSE_EVENT_SOURCE_TOUCH &&
+            if (GetMouseMessageSource((ULONG)GetMessageExtraInfo()) == SDL_MOUSE_EVENT_SOURCE_MOUSE &&
                 lParam != data->last_pointer_update) {
                 WIN_CheckWParamMouseButtons(WIN_GetEventTimestamp(), wParam, data, SDL_GLOBAL_MOUSE_ID);
             }
