@@ -41,6 +41,7 @@ typedef struct GPU_RenderData
     SDL_GPUDevice *device;
     GPU_Shaders shaders;
     GPU_PipelineCache pipeline_cache;
+    bool user_managed_device;
 
     struct
     {
@@ -253,6 +254,10 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!SDL_size_mul_check_overflow(rect->w, texturebpp, &row_size) ||
         !SDL_size_mul_check_overflow(rect->h, row_size, &data_size)) {
         return SDL_SetError("update size overflow");
+    }
+
+    if (renderdata->user_managed_device && !renderdata->state.command_buffer) {
+        return SDL_SetError("Command buffer must be set for a renderer with user-managed device to upload textures");
     }
 
     SDL_GPUTransferBufferCreateInfo tbci;
@@ -526,6 +531,10 @@ static void Draw(
 {
     if (!data->state.render_pass || data->state.color_attachment.load_op == SDL_GPU_LOADOP_CLEAR) {
         RestartRenderPass(data);
+    }
+
+    if (!data->state.command_buffer) {
+        return;
     }
 
     GPU_VertexShaderID v_shader;
@@ -905,7 +914,8 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     SDL_GPUFence *fence = SDL_SubmitGPUCommandBufferAndAcquireFence(data->state.command_buffer);
     SDL_WaitForGPUFences(data->device, true, &fence, 1);
     SDL_ReleaseGPUFence(data->device, fence);
-    data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
+    if (!data->user_managed_device)
+        data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
 
     void *mapped_tbuf = SDL_MapGPUTransferBuffer(data->device, tbuf, false);
 
@@ -958,10 +968,26 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
 
     SDL_GPUTexture *swapchain;
     Uint32 swapchain_texture_width, swapchain_texture_height;
-    bool result = SDL_WaitAndAcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain, &swapchain_texture_width, &swapchain_texture_height);
+    if (!data->user_managed_device) {
+        bool result = SDL_WaitAndAcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain, &swapchain_texture_width, &swapchain_texture_height);
 
-    if (!result) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to acquire swapchain texture: %s", SDL_GetError());
+        if (!result) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to acquire swapchain texture: %s", SDL_GetError());
+        }
+    } else {
+        SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
+        if (SDL_HasProperty(props, SDL_PROP_RENDERER_GPU_INTERNAL_SWAPCHAIN_TEXTURE_POINTER)) {
+            swapchain = SDL_GetPointerProperty(props, SDL_PROP_RENDERER_GPU_INTERNAL_SWAPCHAIN_TEXTURE_POINTER, NULL);
+            swapchain_texture_width = renderer->output_pixel_w;
+            swapchain_texture_height = renderer->output_pixel_h;
+        } else {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Renderer with user-managed GPU device requires a swapchain texture pointer");
+            swapchain = NULL;
+        }
+
+        if (!data->state.command_buffer) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Renderer with user-managed GPU device requires a command buffer");
+        }
     }
 
     if (swapchain != NULL) {
@@ -979,17 +1005,23 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
 
         SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
 
-        SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
+        if (!data->user_managed_device)
+            SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
 
         if (swapchain_texture_width != data->backbuffer.width || swapchain_texture_height != data->backbuffer.height) {
             SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
             CreateBackbuffer(data, swapchain_texture_width, swapchain_texture_height, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
         }
     } else {
-        SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
+        if (!data->user_managed_device)
+            SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
     }
 
-    data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
+    if (data->user_managed_device) {
+        data->state.command_buffer = NULL;
+    } else {
+        data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
+    }
 
     return true;
 }
@@ -1021,7 +1053,7 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
         return;
     }
 
-    if (data->state.command_buffer) {
+    if (!data->user_managed_device && data->state.command_buffer) {
         SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
         data->state.command_buffer = NULL;
     }
@@ -1034,14 +1066,15 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
     }
 
-    if (renderer->window) {
+    if (!data->user_managed_device && renderer->window) {
         SDL_ReleaseWindowFromGPUDevice(data->device, renderer->window);
     }
 
     ReleaseVertexBuffer(data);
     GPU_DestroyPipelineCache(&data->pipeline_cache);
     GPU_ReleaseShaders(&data->shaders, data->device);
-    SDL_DestroyGPUDevice(data->device);
+    if (!data->user_managed_device)
+        SDL_DestroyGPUDevice(data->device);
 
     SDL_free(data);
 }
@@ -1205,7 +1238,13 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, lowpower);
 
     GPU_FillSupportedShaderFormats(create_props);
-    data->device = SDL_CreateGPUDeviceWithProperties(create_props);
+
+    if (SDL_HasProperty(create_props, SDL_PROP_RENDERER_CREATE_USER_GPU_DEVICE_POINTER)) {
+        data->device = (SDL_GPUDevice *)SDL_GetPointerProperty(create_props, SDL_PROP_RENDERER_CREATE_USER_GPU_DEVICE_POINTER, NULL);
+        data->user_managed_device = true;
+    } else {
+        data->device = SDL_CreateGPUDeviceWithProperties(create_props);
+    }
 
     if (!data->device) {
         return false;
@@ -1228,19 +1267,22 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         return false;
     }
 
-    if (!SDL_ClaimWindowForGPUDevice(data->device, window)) {
-        return false;
+    if (!data->user_managed_device) {
+        if (!SDL_ClaimWindowForGPUDevice(data->device, window)) {
+            return false;
+        }
     }
 
     data->swapchain.composition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
     data->swapchain.present_mode = SDL_GPU_PRESENTMODE_VSYNC;
 
-    int vsync = (int)SDL_GetNumberProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
-    ChoosePresentMode(data->device, window, vsync, &data->swapchain.present_mode);
+    if (!data->user_managed_device) {
+        int vsync = (int)SDL_GetNumberProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
+        ChoosePresentMode(data->device, window, vsync, &data->swapchain.present_mode);
+        SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode);
 
-    SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode);
-
-    SDL_SetGPUAllowedFramesInFlight(data->device, 1);
+        SDL_SetGPUAllowedFramesInFlight(data->device, 1);
+    }
 
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
@@ -1255,7 +1297,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     data->state.draw_color.a = 1.0f;
     data->state.viewport.min_depth = 0;
     data->state.viewport.max_depth = 1;
-    data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
+    data->state.command_buffer = data->user_managed_device ? NULL : SDL_AcquireGPUCommandBuffer(data->device);
 
     int w, h;
     SDL_GetWindowSizeInPixels(window, &w, &h);
@@ -1267,6 +1309,12 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, data->device);
 
     return true;
+}
+
+void GPU_SetCommandBuffer(SDL_Renderer *renderer, SDL_GPUCommandBuffer *command_buffer)
+{
+    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+    data->state.command_buffer = command_buffer;
 }
 
 SDL_RenderDriver GPU_RenderDriver = {
