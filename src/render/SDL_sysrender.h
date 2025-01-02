@@ -32,9 +32,6 @@
 extern "C" {
 #endif
 
-// Used by GPU driver to retrieve user-provided swapchain texture
-#define SDL_PROP_RENDERER_GPU_INTERNAL_SWAPCHAIN_TEXTURE_POINTER "SDL.internal.renderer.gpu.swapchain"
-
 typedef enum SDL_TextureAddressMode
 {
     SDL_TEXTURE_ADDRESS_AUTO,
