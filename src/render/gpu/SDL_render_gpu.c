@@ -1121,6 +1121,10 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
     }
 
+    if (data->vertices.present_quad_buffer) {
+        SDL_ReleaseGPUBuffer(data->device, data->vertices.present_quad_buffer);
+    }
+
     if (!data->user_managed_device && renderer->window) {
         SDL_ReleaseWindowFromGPUDevice(data->device, renderer->window);
     }
@@ -1404,6 +1408,7 @@ bool GPU_PresentToUserTexture(SDL_Renderer *renderer, SDL_GPUTexture *texture, S
 
     SDL_GPUColorTargetInfo color_attachment;
     SDL_zero(color_attachment);
+    /* Preserve the contents that were rendered by other GPU code, if any */
     color_attachment.load_op = SDL_GPU_LOADOP_LOAD;
     color_attachment.store_op = SDL_GPU_STOREOP_STORE;
     color_attachment.texture = texture;
