@@ -691,7 +691,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             match spec.platform:
                 case SdlPlatform.FreeBSD:
                     job.cpactions_os = "freebsd"
-                    job.cpactions_version = "13.3"
+                    job.cpactions_version = "14.2"
                     job.cpactions_arch = "x86-64"
                     job.cpactions_setup_cmd = "sudo pkg update"
                     job.cpactions_install_cmd = "sudo pkg install -y cmake ninja pkgconf libXcursor libXext libXinerama libXi libXfixes libXrandr libXScrnSaver libXxf86vm wayland wayland-protocols libxkbcommon mesa-libs libglvnd evdev-proto libinotify alsa-lib jackit pipewire pulseaudio sndio dbus zh-fcitx ibus libudev-devd"
