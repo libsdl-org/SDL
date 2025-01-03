@@ -174,6 +174,12 @@ struct SDL_WindowData
         int min_height;
     } system_limits;
 
+    struct
+    {
+        int width;
+        int height;
+    } toplevel_bounds;
+
     SDL_DisplayID last_displayID;
     int fullscreen_deadline_count;
     int maximized_restored_deadline_count;

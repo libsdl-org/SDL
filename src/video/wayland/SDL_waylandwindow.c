@@ -833,6 +833,12 @@ static void handle_configure_xdg_toplevel(void *data,
                 if (floating) {
                     width = window->floating.w;
                     height = window->floating.h;
+
+                    // Clamp the window to the toplevel bounds, if any are set.
+                    if (wind->toplevel_bounds.width && wind->toplevel_bounds.height) {
+                        width = SDL_min(wind->toplevel_bounds.width, width);
+                        height = SDL_min(wind->toplevel_bounds.height, height);
+                    }
                 } else {
                     width = window->windowed.w;
                     height = window->windowed.h;
@@ -972,7 +978,9 @@ static void handle_xdg_configure_toplevel_bounds(void *data,
                                                  struct xdg_toplevel *xdg_toplevel,
                                                  int32_t width, int32_t height)
 {
-    // NOP
+    SDL_WindowData *window = (SDL_WindowData *)data;
+    window->toplevel_bounds.width = width;
+    window->toplevel_bounds.height = height;
 }
 
 static void handle_xdg_toplevel_wm_capabilities(void *data,
@@ -1946,6 +1954,13 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     } else
 #endif
         if (data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP || data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
+
+        // Create the window decorations
+        if (data->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP && data->shell_surface.xdg.toplevel.xdg_toplevel && c->decoration_manager) {
+            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.toplevel.xdg_toplevel);
+            zxdg_toplevel_decoration_v1_add_listener(data->server_decoration, &decoration_listener, window);
+        }
+
         /* Unlike libdecor we need to call this explicitly to prevent a deadlock.
          * libdecor will call this as part of their configure event!
          * -flibit
@@ -1956,14 +1971,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 WAYLAND_wl_display_flush(c->display);
                 WAYLAND_wl_display_dispatch(c->display);
             }
-        }
-
-        // Create the window decorations
-        if (data->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP && data->shell_surface.xdg.toplevel.xdg_toplevel && c->decoration_manager) {
-            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.toplevel.xdg_toplevel);
-            zxdg_toplevel_decoration_v1_add_listener(data->server_decoration,
-                                                     &decoration_listener,
-                                                     window);
         }
     } else {
         // Nothing to see here, just commit.
