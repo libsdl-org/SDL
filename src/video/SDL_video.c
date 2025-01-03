@@ -4910,7 +4910,22 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
             if (glBindFramebufferFunc && (current_fbo != 0)) {
                 glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, 0);
             }
-            glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, attachmentattrib, (GLint *)value);
+            // glGetFramebufferAttachmentParameterivFunc may cause GL_INVALID_OPERATION when querying depth/stencil size if the 
+            // bits is 0. From the GL docs:
+            //      If the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE, then either no framebuffer is bound to target;
+            //      or a default framebuffer is queried, attachment is GL_DEPTH or GL_STENCIL, and the number of depth or stencil bits,
+            //      respectively, is zero. In this case querying pname GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME will return zero, and all
+            //      other queries will generate an error. 
+            GLint fbo_type = GL_FRAMEBUFFER_DEFAULT;
+            if (attachment == GL_DEPTH || attachment == GL_STENCIL) {
+                glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &fbo_type);
+            }
+            if (fbo_type != GL_NONE) {
+                glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, attachmentattrib, (GLint *)value);
+            }
+            else {
+                *value = 0;
+            }
             if (glBindFramebufferFunc && (current_fbo != 0)) {
                 glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, current_fbo);
             }
