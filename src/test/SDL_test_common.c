@@ -145,10 +145,6 @@ static int SDLCALL SDLTest_CommonStateParseCommonArguments(void *data, char **ar
             SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
             return 2;
         }
-        if (SDL_strcasecmp(argv[index], "error") == 0) {
-            SDL_SetLogPriority(SDL_LOG_CATEGORY_ERROR, SDL_LOG_PRIORITY_VERBOSE);
-            return 2;
-        }
         if (SDL_strcasecmp(argv[index], "system") == 0) {
             SDL_SetLogPriority(SDL_LOG_CATEGORY_SYSTEM, SDL_LOG_PRIORITY_VERBOSE);
             return 2;
