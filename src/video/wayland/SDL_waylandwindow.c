@@ -1042,17 +1042,20 @@ static void handle_configure_xdg_popup(void *data,
         wind->requested.logical_height = height;
 
         if (wind->scale_to_display) {
-            x = PointToPixel(wind->sdlwindow->parent, x);
-            y = PointToPixel(wind->sdlwindow->parent, y);
             wind->requested.pixel_width = PointToPixel(wind->sdlwindow, width);
             wind->requested.pixel_height = PointToPixel(wind->sdlwindow, height);
         }
     }
 
-    wind->last_configure.width = width;
-    wind->last_configure.height = height;
+    if (wind->scale_to_display) {
+        x = PointToPixel(wind->sdlwindow->parent, x);
+        y = PointToPixel(wind->sdlwindow->parent, y);
+    }
 
     SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_MOVED, x, y);
+
+    wind->last_configure.width = width;
+    wind->last_configure.height = height;
 
     if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
         wind->shell_surface_status = WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_FRAME;
