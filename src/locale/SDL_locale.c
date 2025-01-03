@@ -73,7 +73,7 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
         loc->language = ptr++;
         while (true) {
             const char ch = *ptr;
-            if (ch == '_' || ch == '-') {
+            if (ch == '_') {
                 *(ptr++) = '\0';
                 loc->country = ptr;
             } else if (SDL_isspace(ch)) {
