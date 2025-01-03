@@ -1265,17 +1265,23 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_DEVICE "SDL_JOYSTICK_DEVICE"
 
 /**
- * A variable controlling whether enhanced reports should be used for controllers when using the HIDAPI driver.
+ * A variable controlling whether enhanced reports should be used for
+ * controllers when using the HIDAPI driver.
  *
- * Enhanced reports allow rumble and effects on Bluetooth PlayStation controllers and gyro on Nintendo Switch controllers, but break Windows DirectInput for other applications that don't use SDL.
+ * Enhanced reports allow rumble and effects on Bluetooth PlayStation
+ * controllers and gyro on Nintendo Switch controllers, but break Windows
+ * DirectInput for other applications that don't use SDL.
  *
- * Once enhanced reports are enabled, they can't be disabled on PlayStation controllers without power cycling the controller.
+ * Once enhanced reports are enabled, they can't be disabled on PlayStation
+ * controllers without power cycling the controller.
  *
  * The variable can be set to the following values:
  *
  * - "0": enhanced reports are not enabled.
  * - "1": enhanced reports are enabled. (default)
- * - "auto": enhanced features are advertised to the application, but SDL doesn't change the controller report mode unless the application uses them.
+ * - "auto": enhanced features are advertised to the application, but SDL
+ *   doesn't change the controller report mode unless the application uses
+ *   them.
  *
  * This hint can be enabled anytime.
  *
