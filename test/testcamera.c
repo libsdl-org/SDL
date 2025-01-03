@@ -124,6 +124,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
+    SDL_Log("Using SDL camera driver: %s", SDL_GetCurrentCameraDriver());
+
     SDL_CameraID *devices = SDL_GetCameras(&devcount);
     if (!devices) {
         SDL_Log("SDL_GetCameras failed: %s", SDL_GetError());
