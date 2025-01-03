@@ -37,6 +37,8 @@ logger = logging.getLogger(__name__)
 GIT_HASH_FILENAME = ".git-hash"
 REVISION_TXT = "REVISION.txt"
 
+RE_ILLEGAL_MINGW_LIBRARIES = re.compile(r"(?:lib)?(?:gcc|(?:std)?c[+][+]|(?:win)?pthread).*", flags=re.I)
+
 
 def safe_isotime_to_datetime(str_isotime: str) -> datetime.datetime:
     try:
@@ -684,6 +686,15 @@ class Releaser:
     def git_hash_data(self) -> bytes:
         return f"{self.commit}\n".encode()
 
+    def verify_mingw_library(self, triplet: str, path: Path):
+        objdump_output = self.executer.check_output([f"{triplet}-objdump", "-p", str(path)])
+        libraries = re.findall(r"DLL Name: ([^\n]+)", objdump_output)
+        logger.info("%s (%s) libraries: %r", path, triplet, libraries)
+        illegal_libraries = list(filter(RE_ILLEGAL_MINGW_LIBRARIES.match, libraries))
+        logger.error("Detected 'illegal' libraries: %r", illegal_libraries)
+        if illegal_libraries:
+            raise Exception(f"{path} links to illegal libraries: {illegal_libraries}")
+
     def create_mingw_archives(self) -> None:
         build_type = "Release"
         build_parent_dir = self.root / "build-mingw"
@@ -790,6 +801,7 @@ class Releaser:
                     self.executer.run(["make", f"-j{self.cpu_count}"], cwd=build_path, env=new_env)
                 with self.section_printer.group(f"Install MinGW {triplet} (autotools)"):
                     self.executer.run(["make", "install"], cwd=build_path, env=new_env)
+                self.verify_mingw_library(triplet=ARCH_TO_TRIPLET[arch], path=install_path / "bin" / f"{self.project}.dll")
                 archive_file_tree.add_directory_tree(arc_dir=arc_join(arc_root, triplet), path=install_path, time=self.arc_time)
 
                 print("Recording arch-dependent extra files for MinGW development archive ...")
@@ -845,6 +857,7 @@ class Releaser:
                         self.executer.run(["cmake", "--build", str(build_path), "--verbose", "--config", build_type], cwd=build_path, env=new_env)
                     with self.section_printer.group(f"Install MinGW {triplet} (CMake)"):
                         self.executer.run(["cmake", "--install", str(build_path)], cwd=build_path, env=new_env)
+                self.verify_mingw_library(triplet=ARCH_TO_TRIPLET[arch], path=install_path / "bin" / f"{self.project}.dll")
                 archive_file_tree.add_directory_tree(arc_dir=arc_join(arc_root, triplet), path=install_path, time=self.arc_time)
 
                 print("Recording arch-dependent extra files for MinGW development archive ...")
