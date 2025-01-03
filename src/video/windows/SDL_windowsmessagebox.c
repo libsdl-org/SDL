@@ -670,6 +670,31 @@ static const char *EscapeAmpersands(char **dst, size_t *dstlen, const char *src)
     return *dst;
 }
 
+static float WIN_GetContentScale(void)
+{
+    int dpi = 0;
+
+#if 0 // We don't know what monitor the dialog will be shown on
+    UINT hdpi_uint, vdpi_uint;
+    if (GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &hdpi_uint, &vdpi_uint) == S_OK) {
+        dpi = (int)hdpi_uint;
+    }
+#endif
+    if (dpi == 0) {
+        // Window 8.0 and below: same DPI for all monitors
+        HDC hdc = GetDC(NULL);
+        if (hdc) {
+            dpi = GetDeviceCaps(hdc, LOGPIXELSX);
+            ReleaseDC(NULL, hdc);
+        }
+    }
+    if (dpi == 0) {
+        // Safe default
+        dpi = USER_DEFAULT_SCREEN_DPI;
+    }
+    return dpi / (float)USER_DEFAULT_SCREEN_DPI;
+}
+
 // This function is called if a Task Dialog is unsupported.
 static bool WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
@@ -690,13 +715,14 @@ static bool WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int 
 
     HWND ParentWindow = NULL;
 
-    const int ButtonWidth = 88;
-    const int ButtonHeight = 26;
-    const int TextMargin = 16;
-    const int ButtonMargin = 12;
+    const float scale = WIN_GetContentScale();
+    const int ButtonWidth = (int)SDL_roundf(88 * scale);
+    const int ButtonHeight = (int)SDL_roundf(26 * scale);
+    const int TextMargin = (int)SDL_roundf(16 * scale);
+    const int ButtonMargin = (int)SDL_roundf(12 * scale);
     const int IconWidth = GetSystemMetrics(SM_CXICON);
     const int IconHeight = GetSystemMetrics(SM_CYICON);
-    const int IconMargin = 20;
+    const int IconMargin = (int)SDL_roundf(20 * scale);
 
     if (messageboxdata->numbuttons > MAX_BUTTONS) {
         return SDL_SetError("Number of buttons exceeds limit of %d", MAX_BUTTONS);
@@ -925,15 +951,25 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     int nButton;
     int nCancelButton;
     int i;
+    bool result = false;
 
     if (SIZE_MAX / sizeof(TASKDIALOG_BUTTON) < messageboxdata->numbuttons) {
         return SDL_OutOfMemory();
     }
 
+    HMODULE hUser32 = GetModuleHandle(TEXT("user32.dll"));
+    typedef DPI_AWARENESS_CONTEXT (WINAPI * SetThreadDpiAwarenessContext_t)(DPI_AWARENESS_CONTEXT);
+    SetThreadDpiAwarenessContext_t SetThreadDpiAwarenessContextFunc = (SetThreadDpiAwarenessContext_t)GetProcAddress(hUser32, "SetThreadDpiAwarenessContext");
+    DPI_AWARENESS_CONTEXT previous_context;
+    if (SetThreadDpiAwarenessContextFunc) {
+        previous_context = SetThreadDpiAwarenessContextFunc(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    }
+
     // If we cannot load comctl32.dll use the old messagebox!
     hComctl32 = LoadLibrary(TEXT("comctl32.dll"));
     if (!hComctl32) {
-        return WIN_ShowOldMessageBox(messageboxdata, buttonID);
+        result = WIN_ShowOldMessageBox(messageboxdata, buttonID);
+        goto done;
     }
 
     /* If TaskDialogIndirect doesn't exist use the old messagebox!
@@ -941,12 +977,13 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
        The manifest file in the application may require targeting version 6 of comctl32.dll, even
        when we use LoadLibrary here!
        If you don't want to bother with manifests, put this #pragma in your app's source code somewhere:
-       pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+       #pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
      */
     pfnTaskDialogIndirect = (TASKDIALOGINDIRECTPROC)GetProcAddress(hComctl32, "TaskDialogIndirect");
     if (!pfnTaskDialogIndirect) {
         FreeLibrary(hComctl32);
-        return WIN_ShowOldMessageBox(messageboxdata, buttonID);
+        result = WIN_ShowOldMessageBox(messageboxdata, buttonID);
+        goto done;
     }
 
     /* If we have a parent window, get the Instance and HWND for them
@@ -1033,11 +1070,17 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
         } else {
             *buttonID = -1;
         }
-        return true;
+        result = true;
+    } else {
+        // We failed showing the Task Dialog, use the old message box!
+        result = WIN_ShowOldMessageBox(messageboxdata, buttonID);
     }
 
-    // We failed showing the Task Dialog, use the old message box!
-    return WIN_ShowOldMessageBox(messageboxdata, buttonID);
+done:
+    if (SetThreadDpiAwarenessContextFunc) {
+        SetThreadDpiAwarenessContextFunc(previous_context);
+    }
+    return result;
 }
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS
