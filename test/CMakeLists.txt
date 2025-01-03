@@ -233,7 +233,7 @@ function(files2headers OUTPUT)
         endif()
     endforeach()
     set(${OUTPUT} "${outputs}" PARENT_SCOPE)
-    add_custom_target(generate-${OUTPUT} DEPENDS ${ARGN})
+    add_custom_target(generate-${OUTPUT} DEPENDS ${outputs})
 endfunction()
 
 files2headers(gamepad_image_headers
