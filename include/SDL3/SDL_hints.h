@@ -1285,7 +1285,7 @@ extern "C" {
  *
  * This hint can be enabled anytime.
  *
- * \since This hint is available since SDL 3.1.3.
+ * \since This hint is available since SDL 3.1.8.
  */
 #define SDL_HINT_JOYSTICK_ENHANCED_REPORTS "SDL_JOYSTICK_ENHANCED_REPORTS"
 
