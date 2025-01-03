@@ -101,7 +101,7 @@ typedef enum SDL_MetalFragmentFunction
     SDL_METAL_FRAGMENT_SOLID = 0,
     SDL_METAL_FRAGMENT_COPY,
     SDL_METAL_FRAGMENT_YUV,
-    SDL_METAL_FRAGMENT_ADVANCED,
+    SDL_METAL_FRAGMENT_NV12,
     SDL_METAL_FRAGMENT_COUNT,
 } SDL_MetalFragmentFunction;
 
@@ -253,8 +253,8 @@ static NSString *GetFragmentFunctionName(SDL_MetalFragmentFunction function)
         return @"SDL_Copy_fragment";
     case SDL_METAL_FRAGMENT_YUV:
         return @"SDL_YUV_fragment";
-    case SDL_METAL_FRAGMENT_ADVANCED:
-        return @"SDL_Advanced_fragment";
+    case SDL_METAL_FRAGMENT_NV12:
+        return @"SDL_NV12_fragment";
     default:
         return nil;
     }
@@ -392,7 +392,7 @@ void MakeShaderPipelines(SDL3METAL_RenderData *data, METAL_ShaderPipelines *pipe
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_SOLID], "SDL primitives pipeline", rtformat, SDL_METAL_VERTEX_SOLID, SDL_METAL_FRAGMENT_SOLID);
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_COPY], "SDL copy pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_COPY);
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_YUV], "SDL YUV pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_YUV);
-    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_ADVANCED], "SDL advanced pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_ADVANCED);
+    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_NV12], "SDL NV12 pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_NV12);
 }
 
 static METAL_ShaderPipelines *ChooseShaderPipelines(SDL3METAL_RenderData *data, MTLPixelFormat rtformat)
@@ -745,14 +745,15 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
 #endif // SDL_HAVE_YUV
         texturedata = [[SDL3METAL_TextureData alloc] init];
-        if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
-            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
 #ifdef SDL_HAVE_YUV
-        } else if (yuv) {
+        if (yuv) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_YUV;
+        } else if (nv12) {
+            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_NV12;
+        } else
 #endif
-        } else {
-            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_ADVANCED;
+        {
+            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
         }
         texturedata.mtltexture = mtltexture;
         texturedata.mtltextureUv = mtltextureUv;
