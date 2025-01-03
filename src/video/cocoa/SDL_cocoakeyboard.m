@@ -130,9 +130,6 @@
     _selectedRange = selectedRange;
     _markedRange = NSMakeRange(0, [aString length]);
 
-    // This key event was consumed by the IME
-    [self clearPendingKey];
-
     SDL_SendEditingText([aString UTF8String],
                         (int)selectedRange.location, (int)selectedRange.length);
 
@@ -144,9 +141,6 @@
 - (void)unmarkText
 {
     _markedText = nil;
-
-    // This key event was consumed by the IME
-    [self clearPendingKey];
 
     SDL_SendEditingText("", 0, 0);
 }

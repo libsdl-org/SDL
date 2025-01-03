@@ -1014,7 +1014,6 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
     case WM_KEYDOWN:
         if (wParam == VK_PROCESSKEY) {
             SDL_DebugIMELog("WM_KEYDOWN VK_PROCESSKEY\n");
-            trap = true;
         } else {
             SDL_DebugIMELog("WM_KEYDOWN normal\n");
         }
