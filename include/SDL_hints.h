@@ -2283,7 +2283,7 @@ extern "C" {
 
 /**
  * A variable controlling whether the libdecor Wayland backend is preferred
- * over native decrations.
+ * over native decorations.
  *
  * When this hint is set, libdecor will be used to provide window decorations,
  * even if xdg-decoration is available. (Note that, by default, libdecor will
