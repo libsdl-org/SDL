@@ -26,13 +26,13 @@ To build and install SDL, you can use PowerShell or any CMake-compatible IDE. Fi
 mkdir build
 cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=build-scripts/cmake-toolchain-mingw64-x86_64.cmake
 cmake --build build --parallel
-cmake --install build --prefix C:\Libraries
+cmake --install build --prefix C:/Libraries
 ```
 
 This installs SDL to `C:\Libraries`. You can specify another directory of your choice as desired. Ensure that your `CMAKE_PREFIX_PATH` includes `C:\Libraries` when you want to build against this copy of SDL. The simplest way to do this is to pass it to CMake as an option at configuration time:
 
 ```sh
-cmake .. -G Ninja -DCMAKE_PREFIX_PATH=C:\Libraries
+cmake .. -G Ninja -DCMAKE_PREFIX_PATH=C:/Libraries
 ```
 
 You will also need to configure CMake to use the MinGW-w64 toolchain to build your own project. Here is a minimal toolchain file that you could use for this purpose:
