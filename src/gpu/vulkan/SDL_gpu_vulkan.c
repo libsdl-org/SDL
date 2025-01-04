@@ -4309,12 +4309,6 @@ static bool VULKAN_INTERNAL_QuerySwapchainSupport(
     VkResult result;
     VkBool32 supportsPresent;
 
-    // Passing a null surface into Win32 NVIDIA user-mode driver will cause a crash because it doesn't check
-    //  the surface pointer for null before dereferenccing it.
-    if (!surface) {
-        SET_STRING_ERROR_AND_RETURN("Unable to acquire surface!", false);
-    }
-
     renderer->vkGetPhysicalDeviceSurfaceSupportKHR(
         physicalDevice,
         renderer->queueFamilyIndex,
@@ -4469,6 +4463,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             &windowData->surface)) {
         return false;
     }
+    SDL_assert(windowData->surface);
 
     if (!VULKAN_INTERNAL_QuerySwapchainSupport(
             renderer,
@@ -9477,6 +9472,9 @@ static bool VULKAN_SupportsSwapchainComposition(
     }
 
     surface = windowData->surface;
+    if (!surface) {
+        SET_STRING_ERROR_AND_RETURN("Window has no surface!", false);
+    }
 
     if (VULKAN_INTERNAL_QuerySwapchainSupport(
             renderer,
@@ -9522,6 +9520,9 @@ static bool VULKAN_SupportsPresentMode(
     }
 
     surface = windowData->surface;
+    if (!surface) {
+        SET_STRING_ERROR_AND_RETURN("Window has no surface!", false);
+    }
 
     if (VULKAN_INTERNAL_QuerySwapchainSupport(
             renderer,
