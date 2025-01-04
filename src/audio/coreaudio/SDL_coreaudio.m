@@ -673,7 +673,21 @@ static OSStatus default_device_changed(AudioObjectID inObjectID, UInt32 inNumber
 #if DEBUG_COREAUDIO
     printf("COREAUDIO: default device changed for SDL audio device %p!\n", this);
 #endif
-    SDL_AtomicSet(&this->hidden->device_change_flag, 1); /* let the audioqueue thread pick up on this when safe to do so. */
+
+    /* due to a bug (?) in CoreAudio, this seems able to fire for a device pointer that's already closed, so check our list to make sure
+       the pointer is still valid before touching it. https://github.com/libsdl-org/SDL/issues/10432 */
+    if (open_devices) {
+        int i;
+        for (i = 0; i < num_open_devices; i++) {
+            SDL_AudioDevice *device = open_devices[i];
+            if (device == this) {
+                if (this->hidden) {
+                    SDL_AtomicSet(&this->hidden->device_change_flag, 1); /* let the audioqueue thread pick up on this when safe to do so. */
+                }
+                return noErr;
+            }
+        }
+    }
     return noErr;
 }
 #endif
