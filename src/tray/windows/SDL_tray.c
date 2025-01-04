@@ -23,6 +23,7 @@
 
 #include "../SDL_tray_utils.h"
 #include "../../core/windows/SDL_windows.h"
+#include "../../video/windows/SDL_windowswindow.h"
 
 #include <windowsx.h>
 #include <shellapi.h>
@@ -130,6 +131,12 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             }
             break;
 
+        case WM_SETTINGCHANGE:
+            if (wParam == 0 && lParam != 0 && SDL_wcscmp((wchar_t *)lParam, L"ImmersiveColorSet") == 0) {
+                WIN_UpdateDarkModeForHWND(hwnd);
+            }
+            break;
+
         default:
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
@@ -192,6 +199,8 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     tray->menu = NULL;
     tray->hwnd = CreateWindowEx(0, TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
     SetWindowLongPtr(tray->hwnd, GWLP_WNDPROC, (LONG_PTR) TrayWindowProc);
+
+    WIN_UpdateDarkModeForHWND(tray->hwnd);
 
     SDL_zero(tray->nid);
     tray->nid.cbSize = sizeof(NOTIFYICONDATAW);
