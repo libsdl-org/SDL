@@ -56,7 +56,7 @@ Below is a minimal `CMakeLists.txt` file to build your game linked against a sys
 cmake_minimum_required(VERSION 3.15)
 project(mygame)
 
-find_package(SDL3 REQUIRED CONFIG REQUIRED COMPONENTS SDL3-shared)
+find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3-shared)
 
 add_executable(mygame WIN32 mygame.c)
 target_link_libraries(mygame PRIVATE SDL3::SDL3)
