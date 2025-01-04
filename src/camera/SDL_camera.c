@@ -32,11 +32,11 @@
 
 // Available camera drivers
 static const CameraBootStrap *const bootstrap[] = {
-#ifdef SDL_CAMERA_DRIVER_PIPEWIRE
-    &PIPEWIRECAMERA_bootstrap,
-#endif
 #ifdef SDL_CAMERA_DRIVER_V4L2
     &V4L2_bootstrap,
+#endif
+#ifdef SDL_CAMERA_DRIVER_PIPEWIRE
+    &PIPEWIRECAMERA_bootstrap,
 #endif
 #ifdef SDL_CAMERA_DRIVER_COREMEDIA
     &COREMEDIA_bootstrap,
