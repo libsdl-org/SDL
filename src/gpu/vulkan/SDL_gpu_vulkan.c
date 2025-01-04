@@ -9473,7 +9473,7 @@ static bool VULKAN_SupportsSwapchainComposition(
 
     surface = windowData->surface;
     if (!surface) {
-        SET_STRING_ERROR_AND_RETURN("Window has no surface!", false);
+        SET_STRING_ERROR_AND_RETURN("Window has no Vulkan surface", false);
     }
 
     if (VULKAN_INTERNAL_QuerySwapchainSupport(
@@ -9521,7 +9521,7 @@ static bool VULKAN_SupportsPresentMode(
 
     surface = windowData->surface;
     if (!surface) {
-        SET_STRING_ERROR_AND_RETURN("Window has no surface!", false);
+        SET_STRING_ERROR_AND_RETURN("Window has no Vulkan surface", false);
     }
 
     if (VULKAN_INTERNAL_QuerySwapchainSupport(
