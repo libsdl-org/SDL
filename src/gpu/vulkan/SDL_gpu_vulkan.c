@@ -4309,6 +4309,12 @@ static bool VULKAN_INTERNAL_QuerySwapchainSupport(
     VkResult result;
     VkBool32 supportsPresent;
 
+    // Passing a null surface into Win32 NVIDIA user-mode driver will cause a crash because it doesn't check
+    //  the surface pointer for null before dereferenccing it.
+    if (!surface) {
+        SET_STRING_ERROR_AND_RETURN("Unable to acquire surface!", false);
+    }
+
     renderer->vkGetPhysicalDeviceSurfaceSupportKHR(
         physicalDevice,
         renderer->queueFamilyIndex,
