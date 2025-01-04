@@ -61,7 +61,7 @@ find_package(SDL3 REQUIRED CONFIG COMPONENTS SDL3-shared)
 add_executable(mygame WIN32 mygame.c)
 target_link_libraries(mygame PRIVATE SDL3::SDL3)
 
-# On Windows, copy the DLL to the build dir
+# On Windows, copy SDL3.dll to the build directory
 if(WIN32)
     add_custom_command(
         TARGET mygame POST_BUILD
