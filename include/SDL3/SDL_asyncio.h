@@ -117,7 +117,7 @@ extern "C" {
  * This operates as an opaque handle. One can then request read or write
  * operations on it.
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_AsyncIOFromFile
  */
@@ -126,7 +126,7 @@ typedef struct SDL_AsyncIO SDL_AsyncIO;
 /**
  * Types of asynchronous I/O tasks.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_AsyncIOTaskType
 {
@@ -138,7 +138,7 @@ typedef enum SDL_AsyncIOTaskType
 /**
  * Possible outcomes of an asynchronous I/O task.
  *
- * \since This enum is available since SDL 3.0.0.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_AsyncIOResult
 {
@@ -150,7 +150,7 @@ typedef enum SDL_AsyncIOResult
 /**
  * Information about a completed asynchronous I/O request.
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_AsyncIOOutcome
 {
@@ -172,7 +172,7 @@ typedef struct SDL_AsyncIOOutcome
  * allowing an app to manage multiple pending tasks in one place, in whatever
  * order they complete.
  *
- * \since This struct is available since SDL 3.0.0.
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateAsyncIOQueue
  * \sa SDL_ReadAsyncIO
