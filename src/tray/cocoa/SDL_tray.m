@@ -309,11 +309,12 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
     }
 
     menu->nEntries--;
-    SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, menu->nEntries * sizeof(*new_entries));
+    SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, (menu->nEntries + 1) * sizeof(*new_entries));
 
     /* Not sure why shrinking would fail, but even if it does, we can live with a "too big" array */
     if (new_entries) {
         menu->entries = new_entries;
+        menu->entries[menu->nEntries] = NULL;
     }
 
     [menu->nsmenu removeItem:entry->nsitem];
@@ -337,7 +338,7 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         return NULL;
     }
 
-    SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, (menu->nEntries + 1) * sizeof(*new_entries));
+    SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, (menu->nEntries + 2) * sizeof(*new_entries));
     if (!new_entries) {
         SDL_free(entry);
         return NULL;
@@ -351,6 +352,7 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
     }
 
     new_entries[pos] = entry;
+    new_entries[menu->nEntries] = NULL;
 
     NSMenuItem *nsitem;
     if (label == NULL) {

@@ -518,11 +518,12 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
     }
 
     menu->nEntries--;
-    SDL_TrayEntry ** new_entries = SDL_realloc(menu->entries, menu->nEntries * sizeof(SDL_TrayEntry *));
+    SDL_TrayEntry ** new_entries = SDL_realloc(menu->entries, (menu->nEntries + 1) * sizeof(SDL_TrayEntry *));
 
     /* Not sure why shrinking would fail, but even if it does, we can live with a "too big" array */
     if (new_entries) {
         menu->entries = new_entries;
+        menu->entries[menu->nEntries] = NULL;
     }
 
     gtk_widget_destroy(entry->item);
@@ -566,7 +567,7 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
 
     gtk_widget_set_sensitive(entry->item, !(flags & SDL_TRAYENTRY_DISABLED));
 
-    SDL_TrayEntry **new_entries = (SDL_TrayEntry **) SDL_realloc(menu->entries, (menu->nEntries + 1) * sizeof(SDL_TrayEntry *));
+    SDL_TrayEntry **new_entries = (SDL_TrayEntry **) SDL_realloc(menu->entries, (menu->nEntries + 2) * sizeof(SDL_TrayEntry *));
 
     if (!new_entries) {
         SDL_free(entry);
@@ -581,6 +582,7 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
     }
 
     new_entries[pos] = entry;
+    new_entries[menu->nEntries] = NULL;
 
     gtk_widget_show(entry->item);
     gtk_menu_shell_insert(menu->menu, entry->item, (pos == menu->nEntries) ? -1 : pos);
