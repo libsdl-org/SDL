@@ -1498,10 +1498,18 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderCoordinatesToWindow(SDL_Renderer *ren
  * - The scale (SDL_SetRenderScale)
  * - The viewport (SDL_SetRenderViewport)
  *
+ * Various event types are converted with this function: mouse, touch, pen,
+ * etc.
+ *
  * Touch coordinates are converted from normalized coordinates in the window
  * to non-normalized rendering coordinates.
  *
- * Once converted, the coordinates may be outside the rendering area.
+ * Relative mouse coordinates (xrel and yrel event fields) are _also_
+ * converted. Applications that do not want these fields converted should
+ * use SDL_RenderCoordinatesFromWindow() on the specific event fields instead
+ * of converting the entire event structure.
+ *
+ * Once converted, coordinates may be outside the rendering area.
  *
  * \param renderer the rendering context.
  * \param event the event to modify.
