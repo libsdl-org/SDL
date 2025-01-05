@@ -37,7 +37,7 @@ dispatches to native functions implemented in the SDL library:
 src/core/android/SDL_android.c
 
 
-Building an app
+Building a simple app
 ================================================================================
 
 For simple projects you can use the script located at build-scripts/create-android-project.py
@@ -67,40 +67,38 @@ Finally, a word of caution: re running create-android-project.py wipes any chang
 done in the build directory for the app!
 
 
+Building a more complex app
+================================================================================
+
 For more complex projects, follow these instructions:
 
-1. Get the source code for SDL and copy the 'android-project' directory located at SDL/android-project to a suitable location. Also make sure to rename it to your project name (In these examples: YOURPROJECT).
+1. Get the source code for SDL and copy the 'android-project' directory located at SDL/android-project to a suitable location in your project.
 
-   (The 'android-project' directory can basically be seen as a sort of starting point for the android-port of your project. It contains the glue code between the Android Java 'frontend' and the SDL code 'backend'. It also contains some standard behaviour, like how events should be handled, which you will be able to change.)
+   The 'android-project' directory can basically be seen as a sort of starting point for the android-port of your project. It contains the glue code between the Android Java 'frontend' and the SDL code 'backend'. It also contains some standard behaviour, like how events should be handled, which you will be able to change.
 
-2. Move or [symlink](https://en.wikipedia.org/wiki/Symbolic_link) the SDL directory into the "YOURPROJECT/app/jni" directory
+2. If you are _not_ already building SDL as a part of your project (e.g. via CMake add_subdirectory() or FetchContent) move or [symlink](https://en.wikipedia.org/wiki/Symbolic_link) the SDL directory into the 'android-project/app/jni' directory. Alternatively you can [use the SDL3 Android Archive (.aar)](#using-the-sdl3-android-archive-aar), see bellow for more details.
 
-(This is needed as the source of SDL has to be compiled by the Android compiler)
+    This is needed as SDL has to be compiled by the Android compiler.
 
-3. Edit "YOURPROJECT/app/jni/src/Android.mk" to include your source files.
+3. Edit 'android-project/app/build.gradle' to include any assets that your app needs by adding 'assets.srcDirs' in 'sourceSets.main'.
 
-(They should be separated by spaces after the "LOCAL_SRC_FILES := " declaration)
+    For example: `assets.srcDirs = ['../../assets', '../../shaders']`
 
-4a. If you want to use Android Studio, simply open your 'YOURPROJECT' directory and start building.
+If using CMake:
 
-4b. If you want to build manually, run './gradlew installDebug' in the project directory. This compiles the .java, creates an .apk with the native code embedded, and installs it on any connected Android device
+4. Edit 'android-project/app/build.gradle' to set 'buildWithCMake' to true and set 'externalNativeBuild' cmake path to your top level CMakeLists.txt.
 
+    For example: `path '../../CMakeLists.txt'`
 
-If you already have a project that uses CMake, the instructions change somewhat:
+5. Change the target containing your main function to be built as a shared library called "main" when compiling for Android. (e.g. add_executable(MyGame main.c) should become add_library(main SHARED main.c) on Android)
 
-1. Do points 1 and 2 from the instruction above.
-2. Edit "YOURPROJECT/app/build.gradle" to comment out or remove sections containing ndk-build
-   and uncomment the cmake sections. Add arguments to the CMake invocation as needed.
-3. Edit "YOURPROJECT/app/jni/CMakeLists.txt" to include your project (it defaults to
-   adding the "src" subdirectory). Note that you'll have SDL3 and SDL3-static
-   as targets in your project, so you should have "target_link_libraries(yourgame SDL3)"
-   in your CMakeLists.txt file. Also be aware that you should use add_library() instead of
-   add_executable() for the target containing your "main" function.
+If using Android Makefiles:
 
-If you wish to use Android Studio, you can skip the last step.
+4. Edit 'android-project/app/jni/src/Android.mk' to include your source files. They should be separated by spaces after the 'LOCAL_SRC_FILES := ' declaration.
 
-4. Run './gradlew installDebug' or './gradlew installRelease' in the project directory. It will build and install your .apk on any
-   connected Android device
+To build your app, run `./gradlew installDebug` or `./gradlew installRelease` in the project directory. It will build and install your .apk on any connected Android device. If you want to use Android Studio, simply open your 'android-project' directory and start building.
+
+Additionally the [SDL_helloworld](https://github.com/libsdl-org/SDL_helloworld) project contains a small example program with a functional Android port that you can use as a reference.
 
 Here's an explanation of the files in the Android project, so you can customize them:
 
