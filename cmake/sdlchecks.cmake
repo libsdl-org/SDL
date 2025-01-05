@@ -313,10 +313,7 @@ macro(CheckX11)
     find_file(HAVE_XDBE_H NAMES "X11/extensions/Xdbe.h" HINTS "${X11_INCLUDEDIR}")
     find_file(HAVE_XEXT_H NAMES "X11/extensions/Xext.h" HINTS "${X11_INCLUDEDIR}")
 
-    if(X11_LIB)
-      if(NOT HAVE_XEXT_H)
-        message(FATAL_ERROR "Missing Xext.h, maybe you need to install the libxext-dev package?")
-      endif()
+    if(X11_LIB AND HAVE_XEXT_H)
 
       set(HAVE_X11 TRUE)
       set(HAVE_SDL_VIDEO TRUE)
