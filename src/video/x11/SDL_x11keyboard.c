@@ -32,6 +32,7 @@
 
 #include "../../events/imKStoUCS.h"
 #include "../../events/SDL_keysym_to_scancode_c.h"
+#include "../../events/SDL_keysym_to_keycode_c.h"
 
 #ifdef X_HAVE_UTF8_STRING
 #include <locale.h>
@@ -280,7 +281,7 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
             if (scancode == data->key_layout[i]) {
                 continue;
             }
-            if ((SDL_GetKeymapKeycode(NULL, scancode, SDL_KMOD_NONE) & SDLK_SCANCODE_MASK) && X11_ScancodeIsRemappable(scancode)) {
+            if ((SDL_GetKeymapKeycode(NULL, scancode, SDL_KMOD_NONE) & (SDLK_SCANCODE_MASK | SDLK_EXTENDED_MASK)) && X11_ScancodeIsRemappable(scancode)) {
                 // Not a character key and the scancode is safe to remap
 #ifdef DEBUG_KEYBOARD
                 SDL_Log("Changing scancode, was %d (%s), now %d (%s)\n", data->key_layout[i], SDL_GetScancodeName(data->key_layout[i]), scancode, SDL_GetScancodeName(scancode));
@@ -402,11 +403,8 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
     };
 
     SDL_VideoData *data = _this->internal;
-    int i;
     SDL_Scancode scancode;
-    SDL_Keymap *keymap;
-
-    keymap = SDL_CreateKeymap();
+    SDL_Keymap *keymap = SDL_CreateKeymap();
 
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
     if (data->xkb.desc_ptr) {
@@ -420,9 +418,7 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
 #endif
 
     for (int m = 0; m < SDL_arraysize(keymod_masks); ++m) {
-        for (i = 0; i < SDL_arraysize(data->key_layout); i++) {
-            SDL_Keycode keycode;
-
+        for (int i = 0; i < SDL_arraysize(data->key_layout); ++i) {
             // Make sure this is a valid scancode
             scancode = data->key_layout[i];
             if (scancode == SDL_SCANCODE_UNKNOWN) {
@@ -430,40 +426,32 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
             }
 
             const KeySym keysym = X11_KeyCodeToSym(_this, i, data->xkb.current_group, keymod_masks[m].xkb_mask);
-            bool key_is_unknown = false;
 
-            switch (keysym) {
-            // The default SDL scancode table sets this to right alt instead of AltGr/Mode, so handle it separately.
-            case XK_ISO_Level3_Shift:
-                keycode = SDLK_MODE;
-                break;
+            if (keysym != NoSymbol) {
+                SDL_Keycode keycode = SDL_GetKeyCodeFromKeySym(keysym, i, keymod_masks[m].sdl_mask);
 
-            /* The default SDL scancode table sets Meta L/R to the GUI keys, and Hyper R to app menu, which is
-             * correct as far as physical key placement goes, but these keys are functionally distinct from the
-             * default keycodes SDL returns for the scancodes, so they are set to unknown.
-             *
-             * SDL has no scancode mapping for Hyper L or Level 5 Shift, and they are usually mapped to something
-             * else, like Caps Lock, so just pass through the unknown keycode.
-             */
-            case XK_Meta_L:
-            case XK_Meta_R:
-            case XK_Hyper_L:
-            case XK_Hyper_R:
-            case XK_ISO_Level5_Shift:
-                keycode = SDLK_UNKNOWN;
-                key_is_unknown = true;
-                break;
+                if (!keycode) {
+                    switch (scancode) {
+                    case SDL_SCANCODE_RETURN:
+                        keycode = SDLK_RETURN;
+                        break;
+                    case SDL_SCANCODE_ESCAPE:
+                        keycode = SDLK_ESCAPE;
+                        break;
+                    case SDL_SCANCODE_BACKSPACE:
+                        keycode = SDLK_BACKSPACE;
+                        break;
+                    case SDL_SCANCODE_DELETE:
+                        keycode = SDLK_DELETE;
+                        break;
+                    default:
+                        keycode = SDL_SCANCODE_TO_KEYCODE(scancode);
+                        break;
+                    }
+                }
 
-            default:
-                keycode = SDL_KeySymToUcs4(keysym);
-                break;
+                SDL_SetKeymapEntry(keymap, scancode, keymod_masks[m].sdl_mask, keycode);
             }
-
-            if (!keycode && !key_is_unknown) {
-                const SDL_Scancode keyScancode = SDL_GetScancodeFromKeySym(keysym, (KeyCode)i);
-                keycode = SDL_GetKeymapKeycode(NULL, keyScancode, keymod_masks[m].sdl_mask);
-            }
-            SDL_SetKeymapEntry(keymap, scancode, keymod_masks[m].sdl_mask, keycode);
         }
     }
 
