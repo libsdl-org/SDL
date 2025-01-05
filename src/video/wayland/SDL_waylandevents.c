@@ -2669,7 +2669,7 @@ void Wayland_create_primary_selection_device(SDL_VideoData *d)
     }
 }
 
-void Wayland_create_text_input(SDL_VideoData *d)
+static void Wayland_create_text_input(SDL_VideoData *d)
 {
     SDL_WaylandTextInput *text_input = NULL;
 
@@ -2696,6 +2696,23 @@ void Wayland_create_text_input(SDL_VideoData *d)
     }
 }
 
+void Wayland_create_text_input_manager(SDL_VideoData *d, uint32_t id)
+{
+#ifdef HAVE_FCITX
+    const char *im_module = SDL_getenv("SDL_IM_MODULE");
+    if (im_module && SDL_strcmp(im_module, "fcitx") == 0) {
+        /* Override the Wayland text-input protocol when Fcitx is enabled, like how GTK_IM_MODULE does.
+         *
+         * The Fcitx wiki discourages enabling it under Wayland via SDL_IM_MODULE, so its presence must
+         * be intentional, and this workaround is needed for fixing key repeat detection.
+         */
+        return;
+    }
+#endif
+
+    d->text_input_manager = wl_registry_bind(d->registry, id, &zwp_text_input_manager_v3_interface, 1);
+    Wayland_create_text_input(d);
+}
 
 // Pen/Tablet support...
 
