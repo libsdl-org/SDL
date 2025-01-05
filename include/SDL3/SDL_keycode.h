@@ -47,11 +47,15 @@
  * A special exception is the number keys at the top of the keyboard which map
  * to SDLK_0...SDLK_9 on AZERTY layouts.
  *
+ * Keys with the `SDLK_EXTENDED_MASK` bit set do not map to a scancode or
+ * unicode code point.
+ *
  * \since This datatype is available since SDL 3.1.3.
  */
 typedef Uint32 SDL_Keycode;
 
-#define SDLK_SCANCODE_MASK          (1u<<30)
+#define SDLK_EXTENDED_MASK          (1u << 29)
+#define SDLK_SCANCODE_MASK          (1u << 30)
 #define SDL_SCANCODE_TO_KEYCODE(X)  (X | SDLK_SCANCODE_MASK)
 #define SDLK_UNKNOWN                0x00000000u /**< 0 */
 #define SDLK_RETURN                 0x0000000du /**< '\r' */
@@ -302,6 +306,13 @@ typedef Uint32 SDL_Keycode;
 #define SDLK_SOFTRIGHT              0x40000120u /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_SOFTRIGHT) */
 #define SDLK_CALL                   0x40000121u /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CALL) */
 #define SDLK_ENDCALL                0x40000122u /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_ENDCALL) */
+#define SDLK_LEFT_TAB               0x20000001u /**< Extended key Left Tab */
+#define SDLK_LEVEL5_SHIFT           0x20000002u /**< Extended key Level 5 Shift */
+#define SDLK_MULTI_KEY_COMPOSE      0x20000003u /**< Extended key Multi-key Compose */
+#define SDLK_LMETA                  0x20000004u /**< Extended key Left Meta */
+#define SDLK_RMETA                  0x20000005u /**< Extended key Right Meta */
+#define SDLK_LHYPER                 0x20000006u /**< Extended key Left Hyper */
+#define SDLK_RHYPER                 0x20000007u /**< Extended key Right Hyper */
 
 /**
  * Valid key modifiers (possibly OR'd together).

@@ -26,6 +26,7 @@
 #include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_scancode_tables_c.h"
+#include "../../events/SDL_keysym_to_keycode_c.h"
 #include "../../core/linux/SDL_system_theme.h"
 #include "../SDL_sysvideo.h"
 
@@ -68,14 +69,12 @@
 // Weston uses a ratio of 10 units per scroll tick
 #define WAYLAND_WHEEL_AXIS_UNIT 10
 
-// "Mod5" is typically level 3 shift, which SDL calls SDL_KMOD_MODE (AltGr).
-#ifndef XKB_MOD_NAME_MOD5
-#define XKB_MOD_NAME_MOD5 "Mod5"
-#endif
-
-// "Mod3" is typically level 5 shift, but is often remapped.
 #ifndef XKB_MOD_NAME_MOD3
 #define XKB_MOD_NAME_MOD3 "Mod3"
+#endif
+
+#ifndef XKB_MOD_NAME_MOD5
+#define XKB_MOD_NAME_MOD5 "Mod5"
 #endif
 
 // Keyboard and mouse names to match XWayland
@@ -1278,40 +1277,9 @@ static void Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, vo
     }
 
     if (WAYLAND_xkb_state_key_get_syms(sdlKeymap->state, key, &syms) > 0) {
-        uint32_t keycode = SDL_KeySymToUcs4(syms[0]);
-        bool key_is_unknown = false;
+        SDL_Keycode keycode = SDL_GetKeyCodeFromKeySym(syms[0], key, sdlKeymap->modstate);
 
         if (!keycode) {
-            switch (syms[0]) {
-            // The default SDL scancode table sets this to right alt instead of AltGr/Mode, so handle it separately.
-            case XKB_KEY_ISO_Level3_Shift:
-                keycode = SDLK_MODE;
-                break;
-
-            /* The default SDL scancode table sets Meta L/R to the GUI keys, and Hyper R to app menu, which is
-             * correct as far as physical key placement goes, but these keys are functionally distinct from the
-             * default keycodes SDL returns for the scancodes, so they are set to unknown.
-             *
-             * SDL has no scancode mapping for Hyper L or Level 5 Shift.
-             */
-            case XKB_KEY_Meta_L:
-            case XKB_KEY_Meta_R:
-            case XKB_KEY_Hyper_L:
-            case XKB_KEY_Hyper_R:
-            case XKB_KEY_ISO_Level5_Shift:
-                keycode = SDLK_UNKNOWN;
-                key_is_unknown = true;
-                break;
-
-            default:
-            {
-                const SDL_Scancode sc = SDL_GetScancodeFromKeySym(syms[0], key);
-                keycode = SDL_GetKeymapKeycode(NULL, sc, sdlKeymap->modstate);
-            } break;
-            }
-        }
-
-        if (!keycode && !key_is_unknown) {
             switch (scancode) {
             case SDL_SCANCODE_RETURN:
                 keycode = SDLK_RETURN;
@@ -1321,9 +1289,6 @@ static void Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, vo
                 break;
             case SDL_SCANCODE_BACKSPACE:
                 keycode = SDLK_BACKSPACE;
-                break;
-            case SDL_SCANCODE_TAB:
-                keycode = SDLK_TAB;
                 break;
             case SDL_SCANCODE_DELETE:
                 keycode = SDLK_DELETE;
@@ -1520,17 +1485,20 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
  * Virtual keyboards can have arbitrary layouts, arbitrary scancodes/keycodes, etc...
  * Key presses from these devices must be looked up by their keysym value.
  */
-static void Wayland_get_scancode_from_key(struct SDL_WaylandInput *input, uint32_t keycode, SDL_Scancode *scancode)
+static SDL_Scancode Wayland_GetScancodeForKey(struct SDL_WaylandInput *input, uint32_t key)
 {
-    const xkb_keysym_t *syms;
+    SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
 
     if (!input->keyboard_is_virtual) {
-        *scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, keycode);
+        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, key);
     } else {
-        if (WAYLAND_xkb_keymap_key_get_syms_by_level(input->xkb.keymap, keycode + 8, input->xkb.current_group, 0, &syms) > 0) {
-            *scancode = SDL_GetScancodeFromKeySym(syms[0], keycode + 8);
+        const xkb_keysym_t *syms;
+        if (WAYLAND_xkb_keymap_key_get_syms_by_level(input->xkb.keymap, key + 8, input->xkb.current_group, 0, &syms) > 0) {
+            scancode = SDL_GetScancodeFromKeySym(syms[0], key);
         }
     }
+
+    return scancode;
 }
 
 static void Wayland_ReconcileModifiers(struct SDL_WaylandInput *input, bool key_pressed)
@@ -1573,6 +1541,9 @@ static void Wayland_ReconcileModifiers(struct SDL_WaylandInput *input, bool key_
             input->pressed_modifiers &= ~SDL_KMOD_GUI;
         }
 
+        /* Note: This is not backwards: in the default keymap, Mod5 is typically
+         *       level 3 shift, and Mod3 is typically level 5 shift.
+         */
         if (input->xkb.wl_pressed_modifiers & input->xkb.idx_mod3) {
             if (!(input->pressed_modifiers & SDL_KMOD_LEVEL5)) {
                 input->pressed_modifiers |= SDL_KMOD_LEVEL5;
@@ -1641,9 +1612,7 @@ static void Wayland_ReconcileModifiers(struct SDL_WaylandInput *input, bool key_
         input->locked_modifiers &= ~SDL_KMOD_GUI;
     }
 
-    /* The Mod3 modifier corresponds to no particular SDL keycode, so it is
-     * only activated by the backend modifier callback.
-     */
+    // As above, this is correct: Mod3 is typically level 5 shift, and Mod5 is typically level 3 shift.
     if (input->xkb.wl_locked_modifiers & input->xkb.idx_mod3) {
         input->locked_modifiers |= SDL_KMOD_LEVEL5;
     } else {
@@ -1711,6 +1680,9 @@ static void Wayland_HandleModifierKeys(struct SDL_WaylandInput *input, SDL_Scanc
     case SDLK_MODE:
         mod = SDL_KMOD_MODE;
         break;
+    case SDLK_LEVEL5_SHIFT:
+        mod = SDL_KMOD_LEVEL5;
+        break;
     default:
         return;
     }
@@ -1759,9 +1731,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     window->last_focus_event_time_ns = timestamp;
 
     wl_array_for_each (key, keys) {
-        SDL_Scancode scancode;
-
-        Wayland_get_scancode_from_key(input, *key, &scancode);
+        const SDL_Scancode scancode = Wayland_GetScancodeForKey(input, *key);
         const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false);
 
         switch (keycode) {
@@ -1774,6 +1744,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         case SDLK_LGUI:
         case SDLK_RGUI:
         case SDLK_MODE:
+        case SDLK_LEVEL5_SHIFT:
             Wayland_HandleModifierKeys(input, scancode, true);
             SDL_SendKeyboardKeyIgnoreModifiers(timestamp, input->keyboard_id, *key, scancode, true);
             break;
@@ -1883,7 +1854,6 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 {
     struct SDL_WaylandInput *input = data;
     enum wl_keyboard_key_state state = state_w;
-    SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
     char text[8];
     bool has_text = false;
     bool handled_by_ime = false;
@@ -1909,10 +1879,11 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
         keyboard_input_get_text(text, input, key, false, &handled_by_ime);
     }
 
-    Wayland_get_scancode_from_key(input, key, &scancode);
+    const SDL_Scancode scancode = Wayland_GetScancodeForKey(input, key);
     Wayland_HandleModifierKeys(input, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
     Uint64 timestamp = Wayland_GetKeyboardTimestamp(input, time);
-    SDL_SendKeyboardKeyIgnoreModifiers(timestamp, input->keyboard_id, key, scancode, (state == WL_KEYBOARD_KEY_STATE_PRESSED));
+
+    SDL_SendKeyboardKeyIgnoreModifiers(timestamp, input->keyboard_id, key, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         if (has_text && !(SDL_GetModState() & SDL_KMOD_CTRL)) {

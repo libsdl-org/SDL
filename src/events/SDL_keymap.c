@@ -189,6 +189,18 @@ static const SDL_Keycode shifted_default_symbols[] = {
     SDLK_QUESTION
 };
 
+static const struct
+{
+    SDL_Keycode keycode;
+    SDL_Scancode scancode;
+} extended_default_symbols[] = {
+    { SDLK_LEFT_TAB, SDL_SCANCODE_TAB },
+    { SDLK_MULTI_KEY_COMPOSE, SDL_SCANCODE_APPLICATION }, // Sun keyboards
+    { SDLK_LMETA, SDL_SCANCODE_LGUI },
+    { SDLK_RMETA, SDL_SCANCODE_RGUI },
+    { SDLK_RHYPER, SDL_SCANCODE_APPLICATION }
+};
+
 static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate)
 {
     if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
@@ -600,6 +612,16 @@ static SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *m
         return SDL_SCANCODE_UNKNOWN;
     }
 
+    if (key & SDLK_EXTENDED_MASK) {
+        for (int i = 0; i < SDL_arraysize(extended_default_symbols); ++i) {
+            if (extended_default_symbols[i].keycode == key) {
+                return extended_default_symbols[i].scancode;
+            }
+        }
+
+        return SDL_SCANCODE_UNKNOWN;
+    }
+
     if (key & SDLK_SCANCODE_MASK) {
         return (SDL_Scancode)(key & ~SDLK_SCANCODE_MASK);
     }
@@ -932,6 +954,16 @@ static const char *SDL_scancode_names[SDL_SCANCODE_COUNT] =
     /* 290 */ "EndCall",
 };
 
+static const char *SDL_extended_key_names[] = {
+    "LeftTab",         /* 0x01 SDLK_LEFT_TAB */
+    "Level5Shift",     /* 0x02 SDLK_LEVEL5_SHIFT */
+    "MultiKeyCompose", /* 0x03 SDLK_MULTI_KEY_COMPOSE */
+    "Left Meta",       /* 0x04 SDLK_LMETA */
+    "Right Meta",      /* 0x05 SDLK_RMETA */
+    "Left Hyper",      /* 0x06 SDLK_LHYPER */
+    "Right Hyper"      /* 0x07 SDLK_RHYPER */
+};
+
 bool SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 {
     if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
@@ -988,6 +1020,17 @@ const char *SDL_GetKeyName(SDL_Keycode key)
 
     if (key & SDLK_SCANCODE_MASK) {
         return SDL_GetScancodeName((SDL_Scancode)(key & ~SDLK_SCANCODE_MASK));
+    }
+
+    if (key & SDLK_EXTENDED_MASK) {
+        const SDL_Keycode idx = (key & ~SDLK_EXTENDED_MASK);
+        if (idx > 0 && (idx - 1) < SDL_arraysize(SDL_extended_key_names)) {
+            return SDL_extended_key_names[idx - 1];
+        }
+
+        // Key out of name index bounds.
+        SDL_InvalidParamError("key");
+        return "";
     }
 
     switch (key) {
@@ -1085,6 +1128,13 @@ SDL_Keycode SDL_GetKeyFromName(const char *name)
             }
         }
         return key;
+    }
+
+    // Check the extended key names
+    for (SDL_Keycode i = 0; i < SDL_arraysize(SDL_extended_key_names); ++i) {
+        if (SDL_strcasecmp(name, SDL_extended_key_names[i]) == 0) {
+            return (i + 1) | SDLK_EXTENDED_MASK;
+        }
     }
 
     return SDL_GetKeyFromScancode(SDL_GetScancodeFromName(name), SDL_KMOD_NONE, false);

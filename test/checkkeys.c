@@ -167,6 +167,9 @@ static void print_modifiers(char **text, size_t *maxlen, SDL_Keymod mod)
     if (mod & SDL_KMOD_MODE) {
         print_string(text, maxlen, " MODE");
     }
+    if (mod & SDL_KMOD_LEVEL5) {
+        print_string(text, maxlen, " LEVEL5");
+    }
     if (mod & SDL_KMOD_SCROLL) {
         print_string(text, maxlen, " SCROLL");
     }

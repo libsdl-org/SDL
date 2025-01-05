@@ -1031,6 +1031,9 @@ The following structures have been removed:
 
 SDL_Keycode is now Uint32 and the SDLK_* constants are now defines instead of an enum, to more clearly reflect that they are a subset of the possible values of an SDL_Keycode.
 
+In addition to the `SDLK_SCANCODE_MASK` bit found on key codes that directly map to scancodes, there is now the
+`SDLK_EXTENDED_MASK` bit used to denote key codes that don't have a corresponding scancode, and aren't a unicode value.
+
 The following symbols have been removed:
 
 * KMOD_RESERVED - No replacement. A bit named "RESERVED" probably shouldn't be used in an app, but if you need it, this was equivalent to KMOD_SCROLL (0x8000) in SDL2.

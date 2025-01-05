@@ -148,8 +148,9 @@ struct SDL_VideoData
 #endif
         int event;
         unsigned int current_group;
+        unsigned int xkb_modifiers;
 
-        SDL_Keymod active_modifiers;
+        SDL_Keymod sdl_modifiers;
 
         Uint32 numlock_mask;
         Uint32 scrolllock_mask;
