@@ -32,9 +32,9 @@
  * between Windows and Linux builds, or itoa() only existing on some
  * platforms.
  *
- * For many of the most common functions, like SDL_memcpy, SDL might just
- * call through to the usual C runtime behind the scenes, if it makes sense to
- * do so (if it's faster and always available/reliable on a given platform),
+ * For many of the most common functions, like SDL_memcpy, SDL might just call
+ * through to the usual C runtime behind the scenes, if it makes sense to do
+ * so (if it's faster and always available/reliable on a given platform),
  * reducing library size and offering the most optimized option.
  *
  * SDL also offers other C-runtime-adjacent functionality in this header that
