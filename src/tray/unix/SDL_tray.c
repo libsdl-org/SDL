@@ -78,7 +78,7 @@ typedef struct _GtkCheckMenuItem GtkCheckMenuItem;
 
 gboolean (*gtk_init_check)(int *argc, char ***argv);
 void (*gtk_main)(void);
-
+void (*gtk_main_quit)(void);
 GtkWidget* (*gtk_menu_new)(void);
 GtkWidget* (*gtk_separator_menu_item_new)(void);
 GtkWidget* (*gtk_menu_item_new_with_label)(const gchar *label);
@@ -132,6 +132,8 @@ static int main_gtk_thread(void *data)
     return 0;
 }
 
+static bool gtk_thread_active = false;
+
 #ifdef APPINDICATOR_HEADER
 
 static void quit_gtk(void)
@@ -140,7 +142,7 @@ static void quit_gtk(void)
 
 static bool init_gtk(void)
 {
-    SDL_DetachThread(SDL_CreateThread(main_gtk_thread, "tray gtk", NULL));
+
 }
 
 #else
@@ -223,6 +225,7 @@ static bool init_gtk(void)
 
     gtk_init_check = dlsym(libgtk, "gtk_init_check");
     gtk_main = dlsym(libgtk, "gtk_main");
+    gtk_main_quit = dlsym(libgtk, "gtk_main_quit");
     gtk_menu_new = dlsym(libgtk, "gtk_menu_new");
     gtk_separator_menu_item_new = dlsym(libgtk, "gtk_separator_menu_item_new");
     gtk_menu_item_new_with_label = dlsym(libgtk, "gtk_menu_item_new_with_label");
@@ -249,6 +252,7 @@ static bool init_gtk(void)
 
     if (!gtk_init_check ||
         !gtk_main ||
+        !gtk_main_quit ||
         !gtk_menu_new ||
         !gtk_separator_menu_item_new ||
         !gtk_menu_item_new_with_label ||
@@ -280,8 +284,6 @@ static bool init_gtk(void)
     }
 
     gtk_is_init = true;
-
-    SDL_DetachThread(SDL_CreateThread(main_gtk_thread, "tray gtk", NULL));
 
     return true;
 }
@@ -381,6 +383,11 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     if (init_gtk() != true) {
         return NULL;
+    }
+
+    if (!gtk_thread_active) {
+        SDL_DetachThread(SDL_CreateThread(main_gtk_thread, "tray gtk", NULL));
+        gtk_thread_active = true;
     }
 
     SDL_Tray *tray = (SDL_Tray *) SDL_malloc(sizeof(SDL_Tray));
@@ -674,4 +681,9 @@ void SDL_DestroyTray(SDL_Tray *tray)
     SDL_free(tray);
 
     SDL_DecrementTrayCount();
+
+    if (SDL_HasNoActiveTrays()) {
+        gtk_main_quit();
+        gtk_thread_active = false;
+    }
 }
