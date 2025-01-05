@@ -386,6 +386,22 @@ static int SDLCALL stdlib_swprintf(void *arg)
     const wchar_t *expected;
     size_t size;
 
+    result = SDL_swprintf(text, SDL_arraysize(text), L"%s", "hello, world");
+    expected = L"hello, world";
+    SDLTest_AssertPass("Call to SDL_swprintf(\"%%s\", \"hello, world\")");
+    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %S, got: %S", expected, text);
+    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
+
+    result = SDL_swprintf(text, 2, L"%s", "hello, world");
+    expected = L"h";
+    SDLTest_AssertPass("Call to SDL_swprintf(\"%%s\", \"hello, world\") with buffer size 2");
+    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %S, got: %S", expected, text);
+    SDLTest_AssertCheck(result == 12, "Check result value, expected: 12, got: %d", result);
+
+    result = SDL_swprintf(NULL, 0, L"%s", "hello, world");
+    SDLTest_AssertPass("Call to SDL_swprintf(NULL, 0, \"%%s\", \"hello, world\")");
+    SDLTest_AssertCheck(result == 12, "Check result value, expected: 12, got: %d", result);
+
     result = SDL_swprintf(text, SDL_arraysize(text), L"%s", "foo");
     expected = L"foo";
     SDLTest_AssertPass("Call to SDL_swprintf(\"%%s\", \"foo\")");
