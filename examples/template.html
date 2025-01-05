@@ -76,8 +76,8 @@
       }
 
       #output-container::before {
-        position: fixed;
-        bottom: 0;
+        position: absolute;
+        bottom: 100%;
         right: 1rem;
 
         content: 'Console';
@@ -134,8 +134,8 @@
       }
 
       #source-code::before {
-        position: fixed;
-        bottom: 0;
+        position: absolute;
+        bottom: 100%;
         left: 1rem;
 
         content: 'Source code';
@@ -143,6 +143,10 @@
         background: linear-gradient(to bottom, #789, #e0eaee);
         padding: 0.75rem 1.5rem;
         border-radius: 0.5rem 0.5rem 0 0;
+
+        /* Used for a hack to avoid tab labels showing on top of tabs; see
+           comment below for details. */
+        transition: bottom 0.25s;
       }
 
       #source-code:hover,
@@ -162,6 +166,14 @@
       #source-code-contents {
         height: 100%;
         overflow: scroll;
+      }
+
+      /* Hack: Sinze z-index only goes one way, and both tab labels should be
+         behind each other's tab, put the former on top (higher z-index) and
+         make the latter one disappear when the former is hovered. */
+      #output-container:hover ~ #source-code::before,
+      #output-container:focus-within ~ #source-code::before {
+        bottom: -100%;
       }
 
       @media (prefers-color-scheme: dark) {
