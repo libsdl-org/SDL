@@ -318,6 +318,8 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *nam
  *
  * If the key doesn't have a name, this function returns an empty string ("").
  *
+ * Letters will be presented in their uppercase form, if applicable.
+ *
  * \param key the desired SDL_Keycode to query.
  * \returns a UTF-8 encoded string of the key name.
  *
