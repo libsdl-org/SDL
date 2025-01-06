@@ -1063,17 +1063,15 @@ static int SDLCALL sdltest_randomIntegerInRange(void *arg)
     SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(max,min)");
     SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
 
-#if 0 /* This test correctly triggers an asan warning: runtime error: signed integer overflow: 2147483647 + 4239 cannot be represented in type 'int' */
     /* Range with min at integer limit */
     min = long_min;
-    max = long_max + (Sint32)SDLTest_RandomSint16();
+    max = long_min + (Sint32)SDLTest_RandomUint16();
     result = SDLTest_RandomIntegerInRange(min, max);
     SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(SINT32_MIN,...)");
     SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%" SDL_PRIs32 ",%" SDL_PRIs32 "], got: %" SDL_PRIs32, min, max, result);
-#endif
 
     /* Range with max at integer limit */
-    min = (Sint32)((Uint32)long_min + (Uint32)SDLTest_RandomSint16());
+    min = long_max - (Sint32)SDLTest_RandomUint16();
     max = long_max;
     result = SDLTest_RandomIntegerInRange(min, max);
     SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(...,SINT32_MAX)");
