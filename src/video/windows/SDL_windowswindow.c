@@ -768,9 +768,6 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         WIN_ConstrainPopup(window, false);
         WIN_AdjustWindowRectWithStyle(window, style, styleEx, FALSE, &x, &y, &w, &h, SDL_WINDOWRECT_FLOATING);
 
-        int gx, gy;
-        SDL_RelativeToGlobalForWindow(window, window->floating.x, window->floating.y, &gx, &gy);
-        SDL_Log("Create at: %i,%i (%i,%i)", gx, gy, x, y);
         hwnd = CreateWindowEx(styleEx, SDL_Appname, TEXT(""), style,
                               x, y, w, h, parent, NULL, SDL_Instance, NULL);
         if (!hwnd) {
@@ -1689,7 +1686,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
     if (!GetClientScreenRect(data->hwnd, &client)) {
         return;
     }
-    
+
     RECT target = client;
     if (lock_to_ctr) {
         LONG cx = (client.left + client.right ) / 2;
@@ -1713,7 +1710,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
         }
     }
 
-    if (GetClipCursor(&client) && 
+    if (GetClipCursor(&client) &&
         0 != SDL_memcmp(&target, &client, sizeof(client)) &&
         ClipCursor(&target)) {
         data->cursor_clipped_rect = target; // ClipCursor may fail if rect beyond screen
