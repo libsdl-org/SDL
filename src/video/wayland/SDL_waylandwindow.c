@@ -538,6 +538,13 @@ static void handle_configure_xdg_toplevel(void *data,
              */
             width = wind->floating_width;
             height = wind->floating_height;
+
+            /* Clamp the window to the toplevel bounds, if any were sent. */
+            if ((window->flags & SDL_WINDOW_HIDDEN) &&
+                wind->toplevel_bounds_width && wind->toplevel_bounds_height) {
+                width = SDL_min(width, wind->toplevel_bounds_width);
+                height = SDL_min(height, wind->toplevel_bounds_height);
+            }
         }
 
         /* xdg_toplevel spec states that this is a suggestion.
@@ -614,9 +621,28 @@ static void handle_close_xdg_toplevel(void *data, struct xdg_toplevel *xdg_tople
     SDL_SendWindowEvent(window->sdlwindow, SDL_WINDOWEVENT_CLOSE, 0, 0);
 }
 
+static void handle_xdg_toplevel_configure_bounds(void *data,
+                                                 struct xdg_toplevel *xdg_toplevel,
+                                                 int32_t width,
+                                                 int32_t height)
+{
+    SDL_WindowData *window = (SDL_WindowData *)data;
+    window->toplevel_bounds_width = width;
+    window->toplevel_bounds_height = height;
+}
+
+static void handle_xdg_toplevel_wm_capabilities(void *data,
+                                                struct xdg_toplevel *xdg_toplevel,
+                                                struct wl_array *capabilities)
+{
+    /* NOP */
+}
+
 static const struct xdg_toplevel_listener toplevel_listener_xdg = {
     handle_configure_xdg_toplevel,
-    handle_close_xdg_toplevel
+    handle_close_xdg_toplevel,
+    handle_xdg_toplevel_configure_bounds,
+    handle_xdg_toplevel_wm_capabilities
 };
 
 static void handle_configure_xdg_popup(void *data,
@@ -1358,6 +1384,12 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     } else
 #endif
         if (c->shell.xdg) {
+        /* Create the window decorations */
+        if (data->shell_surface_type != WAYLAND_SURFACE_XDG_POPUP && data->shell_surface.xdg.roleobj.toplevel && c->decoration_manager) {
+            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
+            zxdg_toplevel_decoration_v1_add_listener(data->server_decoration, &decoration_listener, window);
+        }
+
         /* Unlike libdecor we need to call this explicitly to prevent a deadlock.
          * libdecor will call this as part of their configure event!
          * -flibit
@@ -1368,14 +1400,6 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
                 WAYLAND_wl_display_flush(c->display);
                 WAYLAND_wl_display_dispatch(c->display);
             }
-        }
-
-        /* Create the window decorations */
-        if (data->shell_surface_type != WAYLAND_SURFACE_XDG_POPUP && data->shell_surface.xdg.roleobj.toplevel && c->decoration_manager) {
-            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
-            zxdg_toplevel_decoration_v1_add_listener(data->server_decoration,
-                                                     &decoration_listener,
-                                                     window);
         }
     } else {
         /* Nothing to see here, just commit. */
