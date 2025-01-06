@@ -2635,11 +2635,24 @@ extern "C" {
  * Specify the OpenGL library to load.
  *
  * This hint should be set before creating an OpenGL window or creating an
- * OpenGL context.
+ * OpenGL context. If this hint isn't set, SDL will choose a reasonable
+ * default.
  *
  * \since This hint is available since SDL 3.1.3.
  */
 #define SDL_HINT_OPENGL_LIBRARY "SDL_OPENGL_LIBRARY"
+
+/**
+ * Specify the EGL library to load.
+ *
+ * This hint should be set before creating an OpenGL window or creating an
+ * OpenGL context. This hint is only considered if SDL is using EGL to
+ * manage OpenGL contexts. If this hint isn't set, SDL will choose a
+ * reasonable default.
+ *
+ * \since This hint is available since SDL 3.2.0.
+ */
+#define SDL_HINT_EGL_LIBRARY "SDL_EGL_LIBRARY"
 
 /**
  * A variable controlling what driver to use for OpenGL ES contexts.

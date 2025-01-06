@@ -344,7 +344,7 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
 
 #if !defined(SDL_VIDEO_STATIC_ANGLE) && !defined(SDL_VIDEO_DRIVER_VITA)
     /* A funny thing, loading EGL.so first does not work on the Raspberry, so we load libGL* first */
-    path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
+    path = SDL_GetHint(SDL_HINT_OPENGL_LIBRARY);
     if (path) {
         opengl_dll_handle = SDL_LoadObject(path);
     }
@@ -404,7 +404,7 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
         if (egl_dll_handle) {
             SDL_UnloadObject(egl_dll_handle);
         }
-        path = SDL_getenv("SDL_VIDEO_EGL_DRIVER");
+        path = SDL_GetHint(SDL_HINT_EGL_LIBRARY);
         if (!path) {
             path = DEFAULT_EGL;
         }
