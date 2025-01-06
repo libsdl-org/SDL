@@ -960,7 +960,7 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     HMODULE hUser32 = GetModuleHandle(TEXT("user32.dll"));
     typedef DPI_AWARENESS_CONTEXT (WINAPI * SetThreadDpiAwarenessContext_t)(DPI_AWARENESS_CONTEXT);
     SetThreadDpiAwarenessContext_t SetThreadDpiAwarenessContextFunc = (SetThreadDpiAwarenessContext_t)GetProcAddress(hUser32, "SetThreadDpiAwarenessContext");
-    DPI_AWARENESS_CONTEXT previous_context;
+    DPI_AWARENESS_CONTEXT previous_context = DPI_AWARENESS_CONTEXT_UNAWARE;
     if (SetThreadDpiAwarenessContextFunc) {
         previous_context = SetThreadDpiAwarenessContextFunc(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     }
