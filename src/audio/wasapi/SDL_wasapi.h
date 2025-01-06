@@ -40,6 +40,7 @@ struct SDL_PrivateAudioData
     HANDLE task;
     bool coinitialized;
     int framesize;
+    SDL_AtomicInt device_disconnecting;
     bool device_lost;
     bool device_dead;
 };

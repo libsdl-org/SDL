@@ -353,14 +353,18 @@ static void WASAPI_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDe
 
 static bool mgmtthrtask_DisconnectDevice(void *userdata)
 {
-    SDL_AudioDeviceDisconnected((SDL_AudioDevice *)userdata);
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
+    SDL_AudioDeviceDisconnected(device);
+    UnrefPhysicalAudioDevice(device);
     return true;
 }
 
 void WASAPI_DisconnectDevice(SDL_AudioDevice *device)
 {
-    bool rc;  // block on this; don't disconnect while holding the device lock!
-    WASAPI_ProxyToManagementThread(mgmtthrtask_DisconnectDevice, device, &rc);
+    if (SDL_CompareAndSwapAtomicInt(&device->hidden->device_disconnecting, 0, 1)) {
+        RefPhysicalAudioDevice(device); // will unref when the task ends.
+        WASAPI_ProxyToManagementThread(mgmtthrtask_DisconnectDevice, device, NULL);
+    }
 }
 
 static bool WasapiFailed(SDL_AudioDevice *device, const HRESULT err)
@@ -503,8 +507,10 @@ static bool RecoverWasapiDevice(SDL_AudioDevice *device)
 static bool RecoverWasapiIfLost(SDL_AudioDevice *device)
 {
     if (SDL_GetAtomicInt(&device->shutdown)) {
-        return false; // already failed.
-    } else if (device->hidden->device_dead) {  // had a fatal error elsewhere, clean up and quit
+        return false;                         // closing, stop trying.
+    } else if (SDL_GetAtomicInt(&device->hidden->device_disconnecting)) {
+        return false; // failing via the WASAPI management thread, stop trying.
+    } else if (device->hidden->device_dead) { // had a fatal error elsewhere, clean up and quit
         IAudioClient_Stop(device->hidden->client);
         WASAPI_DisconnectDevice(device);
         SDL_assert(SDL_GetAtomicInt(&device->shutdown));  // so we don't come back through here.
@@ -541,7 +547,7 @@ static Uint8 *WASAPI_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 
 static bool WASAPI_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
-    if (device->hidden->render) { // definitely activated?
+    if (device->hidden->render && !SDL_GetAtomicInt(&device->hidden->device_disconnecting)) { // definitely activated?
         // WasapiFailed() will mark the device for reacquisition or removal elsewhere.
         WasapiFailed(device, IAudioRenderClient_ReleaseBuffer(device->hidden->render, device->sample_frames, 0));
     }
