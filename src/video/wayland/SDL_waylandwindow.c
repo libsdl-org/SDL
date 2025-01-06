@@ -835,7 +835,8 @@ static void handle_configure_xdg_toplevel(void *data,
                     height = window->floating.h;
 
                     // Clamp the window to the toplevel bounds, if any are set.
-                    if (wind->toplevel_bounds.width && wind->toplevel_bounds.height) {
+                    if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE &&
+                        wind->toplevel_bounds.width && wind->toplevel_bounds.height) {
                         width = SDL_min(wind->toplevel_bounds.width, width);
                         height = SDL_min(wind->toplevel_bounds.height, height);
                     }
