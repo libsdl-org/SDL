@@ -99,7 +99,7 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
 {
     size_t len;
     int i;
-    int i_out;
+    size_t i_out;
     char *result;
     bool batch_file = is_batch_file_path(args[0]);
 
