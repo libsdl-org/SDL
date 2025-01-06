@@ -292,7 +292,7 @@ static bool init_gtk(void)
 struct SDL_TrayMenu {
     GtkMenuShell *menu;
 
-    size_t nEntries;
+    int nEntries;
     SDL_TrayEntry **entries;
 
     SDL_Tray *parent_tray;
@@ -390,8 +390,7 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
         gtk_thread_active = true;
     }
 
-    SDL_Tray *tray = (SDL_Tray *) SDL_malloc(sizeof(SDL_Tray));
-
+    SDL_Tray *tray = (SDL_Tray *)SDL_malloc(sizeof(*tray));
     if (!tray) {
         return NULL;
     }
@@ -436,8 +435,7 @@ void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 {
-    tray->menu = SDL_malloc(sizeof(SDL_TrayMenu));
-
+    tray->menu = (SDL_TrayMenu *)SDL_malloc(sizeof(*tray->menu));
     if (!tray->menu) {
         return NULL;
     }
@@ -470,8 +468,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
         return NULL;
     }
 
-    entry->submenu = SDL_malloc(sizeof(SDL_TrayMenu));
-
+    entry->submenu = (SDL_TrayMenu *)SDL_malloc(sizeof(*entry->submenu));
     if (!entry->submenu) {
         return NULL;
     }
@@ -497,8 +494,7 @@ const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *size)
     if (size) {
         *size = menu->nEntries;
     }
-
-    return (const SDL_TrayEntry **) menu->entries;
+    return menu->entries;
 }
 
 void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
@@ -525,7 +521,7 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
     }
 
     menu->nEntries--;
-    SDL_TrayEntry ** new_entries = SDL_realloc(menu->entries, (menu->nEntries + 1) * sizeof(SDL_TrayEntry *));
+    SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, (menu->nEntries + 1) * sizeof(*new_entries));
 
     /* Not sure why shrinking would fail, but even if it does, we can live with a "too big" array */
     if (new_entries) {
@@ -539,7 +535,7 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
 
 SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags)
 {
-    if (pos < -1 || pos > (int) menu->nEntries) {
+    if (pos < -1 || pos > menu->nEntries) {
         SDL_InvalidParamError("pos");
         return NULL;
     }
@@ -548,8 +544,7 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         pos = menu->nEntries;
     }
 
-    SDL_TrayEntry *entry = SDL_malloc(sizeof(SDL_TrayEntry));
-
+    SDL_TrayEntry *entry = (SDL_TrayEntry *)SDL_malloc(sizeof(*entry));
     if (!entry) {
         return NULL;
     }
@@ -574,7 +569,7 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
 
     gtk_widget_set_sensitive(entry->item, !(flags & SDL_TRAYENTRY_DISABLED));
 
-    SDL_TrayEntry **new_entries = (SDL_TrayEntry **) SDL_realloc(menu->entries, (menu->nEntries + 2) * sizeof(SDL_TrayEntry *));
+    SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, (menu->nEntries + 2) * sizeof(*new_entries));
 
     if (!new_entries) {
         SDL_free(entry);

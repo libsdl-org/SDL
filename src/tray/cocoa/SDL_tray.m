@@ -281,8 +281,7 @@ const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *size)
     if (size) {
         *size = menu->nEntries;
     }
-
-    return (const SDL_TrayEntry **) menu->entries;
+    return menu->entries;
 }
 
 void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
