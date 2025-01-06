@@ -399,8 +399,6 @@ should be changed to:
     SDL_Keymod mod = event.key.mod;
 ```
 
-The keycode in key events is affected by modifiers by default. e.g. pressing the A key would generate the keycode `SDLK_A`, or 'a', and pressing it while holding the shift key would generate the keycode `SDLK_A`, or 'A'. This behavior can be customized with `SDL_HINT_KEYCODE_OPTIONS`.
-
 The gamepad event structures caxis, cbutton, cdevice, ctouchpad, and csensor have been renamed gaxis, gbutton, gdevice, gtouchpad, and gsensor.
 
 The mouseX and mouseY fields of SDL_MouseWheelEvent have been renamed mouse_x and mouse_y.
