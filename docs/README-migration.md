@@ -2224,6 +2224,10 @@ The following functions have been removed:
 
 The SDL_Window id type is named SDL_WindowID
 
+The following environment variables have been removed:
+* SDL_VIDEO_GL_DRIVER - replaced with the hint SDL_HINT_OPENGL_LIBRARY
+* SDL_VIDEO_EGL_DRIVER - replaced with the hint SDL_HINT_EGL_LIBRARY
+
 The following symbols have been renamed:
 * SDL_DISPLAYEVENT_DISCONNECTED => SDL_EVENT_DISPLAY_REMOVED
 * SDL_DISPLAYEVENT_MOVED => SDL_EVENT_DISPLAY_MOVED
