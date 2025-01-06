@@ -539,8 +539,8 @@ static void handle_configure_xdg_toplevel(void *data,
             width = wind->floating_width;
             height = wind->floating_height;
 
-            /* Clamp the window to the toplevel bounds, if any were sent. */
-            if ((window->flags & SDL_WINDOW_HIDDEN) &&
+            /* Clamp resizable windows to the toplevel bounds when mapping, if any were sent. */
+            if ((window->flags & (SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE)) &&
                 wind->toplevel_bounds_width && wind->toplevel_bounds_height) {
                 width = SDL_min(width, wind->toplevel_bounds_width);
                 height = SDL_min(height, wind->toplevel_bounds_height);
