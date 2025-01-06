@@ -1505,9 +1505,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderCoordinatesToWindow(SDL_Renderer *ren
  * to non-normalized rendering coordinates.
  *
  * Relative mouse coordinates (xrel and yrel event fields) are _also_
- * converted. Applications that do not want these fields converted should
- * use SDL_RenderCoordinatesFromWindow() on the specific event fields instead
- * of converting the entire event structure.
+ * converted. Applications that do not want these fields converted should use
+ * SDL_RenderCoordinatesFromWindow() on the specific event fields instead of
+ * converting the entire event structure.
  *
  * Once converted, coordinates may be outside the rendering area.
  *
