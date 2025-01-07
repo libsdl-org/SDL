@@ -67,7 +67,7 @@ static SDL_Cursor *Emscripten_CreateDefaultCursor(void)
     return Emscripten_CreateCursorFromString(cursor_name, false);
 }
 
-EM_JS_DEPS(sdlmouse, "$stringToUTF8,$UTF8ToString");
+SDL_EM_JS_DEPS(sdlmouse, "$stringToUTF8,$UTF8ToString");
 
 static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {

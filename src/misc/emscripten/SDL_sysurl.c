@@ -24,7 +24,7 @@
 
 #include <emscripten/emscripten.h>
 
-EM_JS_DEPS(sdlsysurl, "$UTF8ToString");
+SDL_EM_JS_DEPS(sdlsysurl, "$UTF8ToString");
 
 bool SDL_SYS_OpenURL(const char *url)
 {

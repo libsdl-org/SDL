@@ -143,7 +143,7 @@ static void EMSCRIPTENAUDIO_CloseDevice(SDL_AudioDevice *device)
     SDL_AudioThreadFinalize(device);
 }
 
-EM_JS_DEPS(sdlaudio, "$autoResumeAudioContext,$dynCall");
+SDL_EM_JS_DEPS(sdlaudio, "$autoResumeAudioContext,$dynCall");
 
 static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
 {

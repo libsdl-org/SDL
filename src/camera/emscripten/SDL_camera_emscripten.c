@@ -33,7 +33,7 @@
 //  each EM_ASM section is ugly.
 /* *INDENT-OFF* */ // clang-format off
 
-EM_JS_DEPS(sdlcamera, "$dynCall");
+SDL_EM_JS_DEPS(sdlcamera, "$dynCall");
 
 static bool EMSCRIPTENCAMERA_WaitDevice(SDL_Camera *device)
 {

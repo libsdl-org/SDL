@@ -217,6 +217,12 @@
 #define SDL_EndThreadFunction NULL
 #endif
 
+#ifdef EM_JS_DEPS
+#define SDL_EM_JS_DEPS(name, deps) EM_JS_DEPS(name, deps)
+#else
+#define SDL_EM_JS_DEPS(name, deps)
+#endif
+
 /* Enable internal definitions in SDL API headers */
 #define SDL_INTERNAL
 

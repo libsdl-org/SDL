@@ -836,7 +836,7 @@ EMSCRIPTEN_KEEPALIVE void Emscripten_SendDragFileEvent(SDL_WindowData *window_da
     SDL_SendDropFile(window_data->window, NULL, filename);
 }
 
-EM_JS_DEPS(dragndrop, "$writeArrayToMemory");
+SDL_EM_JS_DEPS(dragndrop, "$writeArrayToMemory");
 
 static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
 {

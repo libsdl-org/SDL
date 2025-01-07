@@ -24,7 +24,7 @@
 
 #include <emscripten/emscripten.h>
 
-EM_JS_DEPS(sdlrunapp, "$dynCall,$stringToNewUTF8");
+SDL_EM_JS_DEPS(sdlrunapp, "$dynCall,$stringToNewUTF8");
 
 int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
 {
