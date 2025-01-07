@@ -671,7 +671,9 @@ void SDL_DestroyTray(SDL_Tray *tray)
         SDL_RemovePath(tray->icon_path);
     }
 
-    g_object_unref(tray->indicator);
+    if (tray->indicator) {
+        g_object_unref(tray->indicator);
+    }
 
     SDL_free(tray);
 
