@@ -94,6 +94,9 @@
 #ifndef WM_POINTERLEAVE
 #define WM_POINTERLEAVE 0x024A
 #endif
+#ifndef WM_POINTERCAPTURECHANGED
+#define WM_POINTERCAPTURECHANGED 0x024C
+#endif
 #ifndef WM_UNICHAR
 #define WM_UNICHAR 0x0109
 #endif
@@ -1163,6 +1166,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         returnCode = 0;
     } break;
 
+    case WM_POINTERCAPTURECHANGED:
     case WM_POINTERLEAVE:
     {
         const UINT32 pointerid = GET_POINTERID_WPARAM(wParam);
@@ -1173,7 +1177,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
 
         // if this just left the _window_, we don't care. If this is no longer visible to the tablet, time to remove it!
-        if (!IS_POINTER_INCONTACT_WPARAM(wParam)) {
+        if ((msg == WM_POINTERCAPTURECHANGED) || !IS_POINTER_INCONTACT_WPARAM(wParam)) {
             SDL_RemovePenDevice(WIN_GetEventTimestamp(), pen);
         }
         returnCode = 0;
