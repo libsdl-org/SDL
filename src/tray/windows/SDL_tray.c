@@ -375,7 +375,7 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
 
     wchar_t *label_w = NULL;
 
-    if (label && (label_w = escape_label(label)) != NULL) {
+    if (label && (label_w = escape_label(label)) == NULL) {
         SDL_free(entry);
         return NULL;
     }
