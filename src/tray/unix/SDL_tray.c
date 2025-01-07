@@ -176,11 +176,8 @@ static void quit_gtk(void)
 const char *appindicator_names[] = {
     "libayatana-appindicator3.so",
     "libayatana-appindicator3.so.1",
-    "libayatana-appindicator.so",
     "libappindicator3.so",
     "libappindicator3.so.1",
-    "libappindicator.so",
-    "libappindicator.so.1",
     NULL
 };
 
