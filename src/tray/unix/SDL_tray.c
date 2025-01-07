@@ -174,22 +174,31 @@ static void quit_gtk(void)
 }
 
 const char *appindicator_names[] = {
+#ifdef SDL_PLATFORM_OPENBSD
     "libayatana-appindicator3.so",
-    "libayatana-appindicator3.so.1",
     "libappindicator3.so",
+#else
+    "libayatana-appindicator3.so.1",
     "libappindicator3.so.1",
+#endif
     NULL
 };
 
 const char *gtk_names[] = {
+#ifdef SDL_PLATFORM_OPENBSD
     "libgtk-3.so",
+#else
     "libgtk-3.so.0",
+#endif
     NULL
 };
 
 const char *gdk_names[] = {
+#ifdef SDL_PLATFORM_OPENBSD
     "libgdk-3.so",
+#else
     "libgdk-3.so.0",
+#endif
     NULL
 };
 
