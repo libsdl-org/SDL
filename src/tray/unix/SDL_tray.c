@@ -24,6 +24,7 @@
 #include "../SDL_tray_utils.h"
 
 #include <dlfcn.h>
+#include <errno.h>
 
 /* getpid() */
 #include <unistd.h>
@@ -55,6 +56,7 @@ typedef enum
 } GConnectFlags;
 gulong (*g_signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, GConnectFlags connect_flags);
 void (*g_object_unref)(gpointer object);
+gchar *(*g_mkdtemp)(gchar *template);
 
 #define g_signal_connect(instance, detailed_signal, c_handler, data) \
     g_signal_connect_data ((instance), (detailed_signal), (c_handler), (data), NULL, (GConnectFlags) 0)
@@ -248,6 +250,9 @@ static bool init_gtk(void)
     gtk_check_menu_item_get_active = dlsym(libgtk, "gtk_check_menu_item_get_active");
     gtk_widget_get_sensitive = dlsym(libgtk, "gtk_widget_get_sensitive");
 
+    /* Technically these are GLib or GObject functions, but we can find
+     * them via GDK */
+    g_mkdtemp = dlsym(libgdk, "g_mkdtemp");
     g_signal_connect_data = dlsym(libgdk, "g_signal_connect_data");
     g_object_unref = dlsym(libgdk, "g_object_unref");
 
@@ -270,6 +275,7 @@ static bool init_gtk(void)
         !gtk_menu_shell_append ||
         !gtk_menu_shell_insert ||
         !gtk_widget_destroy ||
+        !g_mkdtemp ||
         !g_signal_connect_data ||
         !g_object_unref ||
         !app_indicator_new ||
@@ -319,9 +325,14 @@ struct SDL_TrayEntry {
     SDL_TrayMenu *submenu;
 };
 
+/* Template for g_mkdtemp(). The Xs will get replaced with a random
+ * directory name, which is created safely and atomically. */
+#define ICON_DIR_TEMPLATE "/tmp/SDL-tray-XXXXXX"
+
 struct SDL_Tray {
     AppIndicator *indicator;
     SDL_TrayMenu *menu;
+    char icon_dir[sizeof(ICON_DIR_TEMPLATE)];
     char icon_path[256];
 };
 
@@ -343,19 +354,19 @@ static void call_callback(GtkMenuItem *item, gpointer ptr)
     }
 }
 
-/* Since AppIndicator deals only in filenames, which are inherently subject to
-   timing attacks, don't bother generating a secure filename. */
-static bool get_tmp_filename(char *buffer, size_t size)
+static bool new_tmp_filename(SDL_Tray *tray)
 {
     static int count = 0;
 
-    if (size < 64) {
-        return SDL_SetError("Can't create temporary file for icon: size %u < 64", (unsigned int)size);
+    int would_have_written = SDL_snprintf(tray->icon_path, sizeof(tray->icon_path), "%s/%d.bmp", tray->icon_dir, count++);
+
+    if (would_have_written > 0 && ((unsigned) would_have_written) < sizeof(tray->icon_path) - 1) {
+        return true;
     }
 
-    int would_have_written = SDL_snprintf(buffer, size, "/tmp/sdl_appindicator_icon_%d_%d.bmp", getpid(), count++);
-
-    return would_have_written > 0 && would_have_written < size - 1;
+    tray->icon_path[0] = '\0';
+    SDL_SetError("Failed to format new temporary filename");
+    return false;
 }
 
 static const char *get_appindicator_id(void)
@@ -402,8 +413,21 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     }
 
     SDL_memset((void *) tray, 0, sizeof(*tray));
+    /* On success, g_mkdtemp edits its argument in-place to replace the Xs
+     * with a random directory name, which it creates safely and atomically.
+     * On failure, it sets errno. */
+    SDL_strlcpy(tray->icon_dir, ICON_DIR_TEMPLATE, sizeof(tray->icon_dir));
+    if (!g_mkdtemp(tray->icon_dir)) {
+        SDL_SetError("Cannot create directory for tray icon: %s", strerror(errno));
+        SDL_free(tray);
+        return NULL;
+    }
 
-    get_tmp_filename(tray->icon_path, sizeof(tray->icon_path));
+    if (!new_tmp_filename(tray)) {
+        SDL_free(tray);
+        return NULL;
+    }
+
     SDL_SaveBMP(icon, tray->icon_path);
 
     tray->indicator = app_indicator_new(get_appindicator_id(), tray->icon_path,
@@ -424,8 +448,7 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
 
     /* AppIndicator caches the icon files; always change filename to avoid caching */
 
-    if (icon) {
-        get_tmp_filename(tray->icon_path, sizeof(tray->icon_path));
+    if (icon && new_tmp_filename(tray)) {
         SDL_SaveBMP(icon, tray->icon_path);
         app_indicator_set_icon(tray->indicator, tray->icon_path);
     } else {
@@ -675,6 +698,10 @@ void SDL_DestroyTray(SDL_Tray *tray)
 
     if (*tray->icon_path) {
         SDL_RemovePath(tray->icon_path);
+    }
+
+    if (*tray->icon_dir) {
+        SDL_RemovePath(tray->icon_dir);
     }
 
     if (tray->indicator) {
