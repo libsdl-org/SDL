@@ -335,7 +335,7 @@ typedef enum
 			continue;
 
 		NSLog( @"connected peripheral: %@", peripheral );
-		if ( [peripheral.name isEqualToString:@"SteamController"] )
+		if ( [peripheral.name hasPrefix:@"Steam"] )
 		{
 			self.nPendingPairs += 1;
 			HIDBLEDevice *steamController = [[HIDBLEDevice alloc] initWithPeripheral:peripheral];
@@ -459,7 +459,7 @@ typedef enum
 	NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
 	NSString *log = [NSString stringWithFormat:@"Found '%@'", localName];
 
-	if ( [localName isEqualToString:@"SteamController"] )
+	if ( [localName hasPrefix:@"Steam"] )
 	{
 		NSLog( @"%@ : %@ - %@", log, peripheral, advertisementData );
 		self.nPendingPairs += 1;
