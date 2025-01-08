@@ -25,6 +25,16 @@
 
 #include "../../core/windows/SDL_windows.h"
 #include "../../video/directx/SDL_d3d12.h"
+
+#ifdef HAVE_GPU_OPENXR
+#include <openxr/openxr.h>
+
+/* Needed for the OpenXR metal extension structures */
+#define XR_USE_GRAPHICS_API_D3D12 1
+#include <openxr/openxr_platform.h>
+#include "../xr/SDL_openxrdyn.h"
+#endif
+
 #include "../SDL_sysgpu.h"
 
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
@@ -3641,6 +3651,36 @@ static SDL_GPUTransferBuffer *D3D12_CreateTransferBuffer(
         0,
         size,
         usage == SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD ? D3D12_BUFFER_TYPE_UPLOAD : D3D12_BUFFER_TYPE_DOWNLOAD);
+}
+
+static XrResult D3D12_DestroyXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSwapchain swapchain,
+    SDL_GPUTexture **swapchainImages)
+{
+    SDL_SetError("The d3d12 backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static XrResult D3D12_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *oldCreateInfo,
+    SDL_GPUTextureFormat *textureFormat,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+    SDL_SetError("The d3d12 backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static XrResult D3D12_CreateXRSession(
+    SDL_GPURenderer *driverData,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+    SDL_SetError("The d3d12 backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
 }
 
 // Debug Naming
@@ -8176,7 +8216,7 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 }
 
-static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
+static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 {
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     return true;
@@ -9013,7 +9053,7 @@ SDL_GPUBootstrap D3D12Driver = {
     "direct3d12",
     SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_DXBC,
     D3D12_PrepareDriver,
-    D3D12_CreateDevice
+    D3D12_CreateDevice,
 };
 
 #endif // SDL_GPU_D3D12

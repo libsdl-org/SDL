@@ -26,6 +26,15 @@
 #include <Metal/Metal.h>
 #include <QuartzCore/CoreAnimation.h>
 
+#ifdef HAVE_GPU_OPENXR
+#include <openxr/openxr.h>
+
+/* Needed for the OpenXR metal extension structures */
+#define XR_USE_GRAPHICS_API_METAL 1
+#include <openxr/openxr_platform.h>
+#include "../xr/SDL_openxrdyn.h"
+#endif
+
 #include "../SDL_sysgpu.h"
 
 // Defines
@@ -4178,7 +4187,7 @@ static bool METAL_SupportsTextureFormat(
 
 // Device Creation
 
-static bool METAL_PrepareDriver(SDL_VideoDevice *this)
+static bool METAL_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
 {
     if (@available(macOS 10.14, iOS 13.0, tvOS 13.0, *)) {
         return (this->Metal_CreateView != NULL);
@@ -4337,6 +4346,36 @@ static void METAL_INTERNAL_DestroyBlitResources(
     SDL_free(renderer->blitPipelines);
 }
 
+static XrResult METAL_DestroyXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSwapchain swapchain,
+    SDL_GPUTexture **swapchainImages)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static XrResult METAL_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *oldCreateInfo,
+    SDL_GPUTextureFormat *textureFormat,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static XrResult METAL_CreateXRSession(
+    SDL_GPURenderer *driverData,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+    SDL_SetError("The metal backend does not currently support OpenXR");
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
 static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
 {
     @autoreleasepool {
@@ -4477,7 +4516,7 @@ SDL_GPUBootstrap MetalDriver = {
     "metal",
     SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB,
     METAL_PrepareDriver,
-    METAL_CreateDevice
+    METAL_CreateDevice,
 };
 
 #endif // SDL_GPU_METAL

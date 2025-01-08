@@ -1263,3 +1263,6 @@ SDL_DYNAPI_PROC(SDL_TrayMenu*,SDL_GetTrayEntryParent,(SDL_TrayEntry *a),(a),retu
 SDL_DYNAPI_PROC(SDL_TrayEntry*,SDL_GetTrayMenuParentEntry,(SDL_TrayMenu *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Tray*,SDL_GetTrayMenuParentTray,(SDL_TrayMenu *a),(a),return)
 SDL_DYNAPI_PROC(SDL_ThreadState,SDL_GetThreadState,(SDL_Thread *a),(a),return)
+SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSession,(SDL_GPUDevice *a, const XrSessionCreateInfo *b, XrSession *c),(a,b,c),return)
+SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSwapchain,(SDL_GPUDevice *a, XrSession b, const XrSwapchainCreateInfo *c, SDL_GPUTextureFormat *d, XrSwapchain *e, SDL_GPUTexture ***f),(a,b,c,d,e,f),return)
+SDL_DYNAPI_PROC(XrResult,SDL_DestroyGPUXRSwapchain,(SDL_GPUDevice *a,XrSwapchain b,SDL_GPUTexture **c),(a,b,c),return)
