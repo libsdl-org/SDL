@@ -1777,6 +1777,7 @@ public class SDLActivityComponent {
         }
     };
 
+    @ActivityHook
     public void onSystemUiVisibilityChange(int visibility) {
         if (SDLActivityComponent.mFullscreenModeActive && ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0 || (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0)) {
 

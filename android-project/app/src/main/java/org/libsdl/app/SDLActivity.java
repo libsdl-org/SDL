@@ -97,4 +97,9 @@ public abstract class SDLActivity extends Activity implements View.OnSystemUiVis
     public void superOnBackPressed() {
         super.onBackPressed();
     }
+
+    @Override
+    public void onSystemUiVisibilityChange(int visibility) {
+        component.onSystemUiVisibilityChange(visibility);
+    }
 }
