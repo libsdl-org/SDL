@@ -13,7 +13,7 @@ public class SDL {
     // This function should be called first and sets up the native code
     // so it can call into the Java classes
     public static void setupJNI() {
-        SDLActivity.nativeSetupJNI();
+        SDLActivityComponent.nativeSetupJNI();
         SDLAudioManager.nativeSetupJNI();
         SDLControllerManager.nativeSetupJNI();
     }
@@ -22,7 +22,7 @@ public class SDL {
     public static void initialize() {
         setContext(null);
 
-        SDLActivity.initialize();
+        SDLActivityComponent.initialize();
         SDLAudioManager.initialize();
         SDLControllerManager.initialize();
     }

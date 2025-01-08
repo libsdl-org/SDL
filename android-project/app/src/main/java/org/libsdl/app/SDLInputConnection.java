@@ -1,6 +1,5 @@
 package org.libsdl.app;
 
-import android.content.*;
 import android.os.Build;
 import android.text.Editable;
 import android.view.*;
@@ -37,7 +36,7 @@ public class SDLInputConnection extends BaseInputConnection
          */
 
         if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-            if (SDLActivity.onNativeSoftReturnKey()) {
+            if (SDLActivityComponent.onNativeSoftReturnKey()) {
                 return true;
             }
         }
@@ -114,7 +113,7 @@ public class SDLInputConnection extends BaseInputConnection
             for (offset = 0; offset < pendingText.length(); ) {
                 int codePoint = pendingText.codePointAt(offset);
                 if (codePoint == '\n') {
-                    if (SDLActivity.onNativeSoftReturnKey()) {
+                    if (SDLActivityComponent.onNativeSoftReturnKey()) {
                         return;
                     }
                 }

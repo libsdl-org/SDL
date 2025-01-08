@@ -41,15 +41,15 @@ else
     not_ok "CMakeLists.txt $version disagrees with SDL_version.h $ref_version"
 fi
 
-major=$(sed -ne 's/.*SDL_MAJOR_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java)
-minor=$(sed -ne 's/.*SDL_MINOR_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java)
-micro=$(sed -ne 's/.*SDL_MICRO_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java)
+major=$(sed -ne 's/.*SDL_MAJOR_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivityComponent.java)
+minor=$(sed -ne 's/.*SDL_MINOR_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivityComponent.java)
+micro=$(sed -ne 's/.*SDL_MICRO_VERSION = \([0-9]*\);/\1/p' android-project/app/src/main/java/org/libsdl/app/SDLActivityComponent.java)
 version="${major}.${minor}.${micro}"
 
 if [ "$ref_version" = "$version" ]; then
-    ok "SDLActivity.java $version"
+    ok "SDLActivityComponent.java $version"
 else
-    not_ok "android-project/app/src/main/java/org/libsdl/app/SDLActivity.java $version disagrees with SDL_version.h $ref_version"
+    not_ok "android-project/app/src/main/java/org/libsdl/app/SDLActivityComponent.java $version disagrees with SDL_version.h $ref_version"
 fi
 
 tuple=$(sed -ne 's/^ *FILEVERSION *//p' src/core/windows/version.rc | tr -d '\r')

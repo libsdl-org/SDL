@@ -55,8 +55,15 @@ android {
     lint {
         abortOnError false
     }
+    compileOptions {
+        // our minSdk, lollipop (API 21) uses java 7
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
 }
 
 dependencies {
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.7"
+
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 }
