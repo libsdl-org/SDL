@@ -3007,13 +3007,13 @@ static void GetRenderViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
     rect->y = 0.0f;
 
     if (view->viewport.w >= 0) {
-        rect->w = (float)view->viewport.w / scale_x;
+        rect->w = (float)view->viewport.w;
     } else {
         rect->w = view->pixel_w / scale_x;
     }
 
     if (view->viewport.h >= 0) {
-        rect->h = (float)view->viewport.h / scale_y;
+        rect->h = (float)view->viewport.h;
     } else {
         rect->h = view->pixel_h / scale_y;
     }
