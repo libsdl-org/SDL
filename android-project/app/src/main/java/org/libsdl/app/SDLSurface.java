@@ -144,7 +144,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // Prevent a screen distortion glitch,
         // for instance when the device is in Landscape and a Portrait App is resumed.
         boolean skip = false;
-        int requestedOrientation = SDLActivityComponent.mSingleton.getRequestedOrientation();
+        int requestedOrientation = SDLActivityComponent.mSingleton.mActivity.getRequestedOrientation();
 
         if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT) {
             if (mWidth > mHeight) {
