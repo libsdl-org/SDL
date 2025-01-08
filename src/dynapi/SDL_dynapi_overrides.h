@@ -1255,3 +1255,7 @@
 #define SDL_GetTrayMenuParentEntry SDL_GetTrayMenuParentEntry_REAL
 #define SDL_GetTrayMenuParentTray SDL_GetTrayMenuParentTray_REAL
 #define SDL_GetThreadState SDL_GetThreadState_REAL
+#define SDL_GetSystemPreference SDL_GetSystemPreference_REAL
+#define SDL_GetSystemAccentColor SDL_GetSystemAccentColor_REAL
+#define SDL_GetSystemTextScale SDL_GetSystemTextScale_REAL
+#define SDL_GetSystemCursorScale SDL_GetSystemCursorScale_REAL

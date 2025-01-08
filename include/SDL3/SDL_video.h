@@ -571,6 +571,86 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentVideoDriver(void);
 extern SDL_DECLSPEC SDL_SystemTheme SDLCALL SDL_GetSystemTheme(void);
 
 /**
+ * An enumeration of various boolean system preferences.
+ *
+ * Some systems provide a variety of accessibility options that allow users to
+ * adapt their environment to various conditions.
+ *
+ * \since This enum is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetSystemPreference
+ */
+typedef enum SDL_SystemPreference
+{
+    SDL_SYSTEM_PREFERENCE_REDUCED_MOTION,        /**< Disable smooth graphical transitions */
+    SDL_SYSTEM_PREFERENCE_REDUCED_TRANSPARENCY,  /**< Reduce usage of semi-transparent objects */
+    SDL_SYSTEM_PREFERENCE_HIGH_CONTRAST,         /**< Use extreme color differences between different elements of the interface */
+    SDL_SYSTEM_PREFERENCE_COLORBLIND,            /**< Add shape-based distinction between color-coded elements, for example "0" and "1" on switches */
+    SDL_SYSTEM_PREFERENCE_PERSIST_SCROLLBARS,    /**< Always show scrollbars, don't hide them after a few seconds of inactivity */
+    SDL_SYSTEM_PREFERENCE_SCREEN_READER,         /**< A screen reader is currently active */
+} SDL_SystemPreference;
+
+/**
+ * Get whether or not a certain system preference was enabled by the user.
+ *
+ * \param preference the preference to be fetched.
+ * \returns true if the user enabled the system preference; false if the user
+ *          disabled that setting, or the setting doesn't exist, or an error
+ *          occured.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_SystemPreference
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetSystemPreference(SDL_SystemPreference preference);
+
+/**
+ * Get the system's accent color, as chosen by the user.
+ *
+ * If the current system does not have an accent color, false is returned and
+ * the struct is unaffected.
+ *
+ * \param color a pointer to a struct to be filled with the color info. The
+ *              alpha channel is what the operating system returned and may or
+ *              may not be opaque.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetSystemAccentColor(SDL_Color *color);
+
+/**
+ * Get the scale factor for text, as set by the user for their system.
+ *
+ * If the system does not have a setting to scale the font, 1 is returned.
+ *
+ * \returns the preferred scale for text; a scale of 1 means no scaling.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ */
+extern SDL_DECLSPEC float SDLCALL SDL_GetSystemTextScale(void);
+
+/**
+ * Get the scale factor for the cursor, as set by the user for their system.
+ *
+ * If the system does not have a setting to scale the cursor, 1 is returned.
+ *
+ * \returns the preferred scale for the cursor; a scale of 1 means no scaling.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ */
+extern SDL_DECLSPEC float SDLCALL SDL_GetSystemCursorScale(void);
+
+/**
  * Get a list of currently connected displays.
  *
  * \param count a pointer filled in with the number of displays returned, may

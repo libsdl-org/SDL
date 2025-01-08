@@ -751,6 +751,106 @@ SDL_SystemTheme WIN_GetSystemTheme(void)
     return theme;
 }
 
+bool SDL_GetSystemPreference(SDL_SystemPreference preference)
+{
+    switch(preference)
+    {
+    case SDL_SYSTEM_PREFERENCE_REDUCED_MOTION:
+    {
+        BOOL option = false;
+
+        if (!SystemParametersInfoW(SPI_GETCLIENTAREAANIMATION, 0, &option, 0)) {
+            return WIN_SetError("Could not invoke SystemParametersInfoW with SDL_SYSTEM_PREFERENCE_REDUCED_MOTION");
+        }
+
+        return !option;
+    }
+
+    case SDL_SYSTEM_PREFERENCE_REDUCED_TRANSPARENCY:
+    {
+        HKEY hKey;
+        if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                         TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
+                         0,
+                         KEY_READ,
+                         &hKey) == ERROR_SUCCESS) {
+            DWORD enableTransparency;
+            DWORD size = sizeof(enableTransparency);
+            if (RegQueryValueEx(hKey, TEXT("EnableTransparency"), NULL, NULL, (LPBYTE)&enableTransparency, &size) == ERROR_SUCCESS) {
+                RegCloseKey(hKey);
+                return !enableTransparency;
+            }
+            RegCloseKey(hKey);
+        }
+
+        return false;
+    }
+
+    case SDL_SYSTEM_PREFERENCE_HIGH_CONTRAST:
+    {
+        HIGHCONTRAST high_contrast_data;
+        high_contrast_data.cbSize = sizeof(HIGHCONTRAST);
+
+        if (!SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRAST), &high_contrast_data, 0)) {
+            return WIN_SetError("Could not invoke SystemParametersInfoW with SDL_SYSTEM_PREFERENCE_HIGH_CONTRAST");
+        }
+
+        return high_contrast_data.dwFlags & HCF_HIGHCONTRASTON;
+    }
+
+    case SDL_SYSTEM_PREFERENCE_PERSIST_SCROLLBARS:
+    {
+        HKEY hKey;
+        if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                         TEXT("Control Panel\\Accessibility"),
+                         0,
+                         KEY_READ,
+                         &hKey) == ERROR_SUCCESS) {
+            DWORD autoHideScrollBars;
+            DWORD size = sizeof(autoHideScrollBars);
+            if (RegQueryValueEx(hKey, TEXT("DynamicScrollbars"), NULL, NULL, (LPBYTE)&autoHideScrollBars, &size) == ERROR_SUCCESS) {
+                RegCloseKey(hKey);
+                return !autoHideScrollBars;
+            }
+            RegCloseKey(hKey);
+        }
+
+        return false;
+    }
+
+    case SDL_SYSTEM_PREFERENCE_SCREEN_READER:
+    {
+        BOOL option = false;
+
+        // FIXME: Documentation states that this won't work if the screen
+        // reader is Windows' built-in "Narrator" program
+        if (!SystemParametersInfoW(SPI_GETSCREENREADER, 0, &option, 0)) {
+            return WIN_SetError("Could not invoke SystemParametersInfoW with SPI_GETSCREENREADER");
+        }
+
+        return option;
+    }
+
+    default:
+        return SDL_Unsupported();
+    }
+}
+
+bool SDL_GetSystemAccentColor(SDL_Color *color)
+{
+    return false;
+}
+
+float SDL_GetSystemTextScale(void)
+{
+    return 1.0f;
+}
+
+float SDL_GetSystemCursorScale(void)
+{
+    return 1.0f;
+}
+
 bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

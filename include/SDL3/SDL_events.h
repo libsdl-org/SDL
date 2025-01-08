@@ -118,6 +118,11 @@ typedef enum SDL_EventType
 
     SDL_EVENT_SYSTEM_THEME_CHANGED, /**< The system theme changed */
 
+    SDL_EVENT_SYSTEM_PREFERENCE_CHANGED, /**< A system preference setting changed */
+    SDL_EVENT_SYSTEM_TEXT_SCALE_CHANGED, /**< The text scale changed */
+    SDL_EVENT_SYSTEM_CURSOR_SCALE_CHANGED, /**< The cursor scale changed */
+    SDL_EVENT_SYSTEM_ACCENT_COLOR_CHANGED, /**< The accent color changed */
+
     /* Display events */
     /* 0x150 was SDL_DISPLAYEVENT, reserve the number for sdl2-compat */
     SDL_EVENT_DISPLAY_ORIENTATION = 0x151,   /**< Display orientation has changed to data1 */
@@ -926,6 +931,20 @@ typedef struct SDL_ClipboardEvent
 } SDL_ClipboardEvent;
 
 /**
+ * An event triggered when the clipboard contents have changed
+ * (event.clipboard.*)
+ *
+ * \since This struct is available since SDL 3.1.3.
+ */
+typedef struct SDL_PreferenceEvent
+{
+    SDL_EventType type;         /**< SDL_EVENT_SYSTEM_PREFERENCE_CHANGED */
+    Uint32 reserved;
+    Uint64 timestamp;           /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_SystemPreference pref;  /**< The preference setting that changed */
+} SDL_PreferenceEvent;
+
+/**
  * Sensor event structure (event.sensor.*)
  *
  * \since This struct is available since SDL 3.1.3.
@@ -1023,6 +1042,7 @@ typedef union SDL_Event
     SDL_RenderEvent render;                 /**< Render event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
+    SDL_PreferenceEvent pref;           /**< Clipboard event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of
