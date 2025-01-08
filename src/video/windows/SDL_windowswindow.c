@@ -1055,10 +1055,17 @@ void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *
     const SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
     RECT rect;
-
-    if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
-        *w = rect.right;
-        *h = rect.bottom;
+    BOOL get_rect_result;
+    
+    if (data->window->flags & SDL_WINDOW_BORDERLESS) {
+        get_rect_result = GetWindowRect(hwnd, &rect);
+    }
+    else {
+        get_rect_result = GetClientRect(hwnd, &rect);
+    }
+    if (get_rect_result && !WIN_IsRectEmpty(&rect)) {
+        *w = rect.right - rect.left;
+        *h = rect.bottom - rect.top;
     } else if (window->last_pixel_w && window->last_pixel_h) {
         *w = window->last_pixel_w;
         *h = window->last_pixel_h;
