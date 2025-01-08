@@ -7,14 +7,11 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 public abstract class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener, SDLComponentReceiver {
     private SDLActivityComponent component;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         component = new SDLActivityComponent(this);
@@ -58,7 +55,7 @@ public abstract class SDLActivity extends Activity implements View.OnSystemUiVis
     }
 
     @Override
-    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+    public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         component.onConfigurationChanged(newConfig);
     }
@@ -91,7 +88,7 @@ public abstract class SDLActivity extends Activity implements View.OnSystemUiVis
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         component.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
