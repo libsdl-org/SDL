@@ -3664,7 +3664,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPUSwapchainParameters(
  * \returns true if successful, false on error; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.1.8.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetGPUAllowedFramesInFlight(
     SDL_GPUDevice *device,
@@ -3749,7 +3749,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AcquireGPUSwapchainTexture(
  * \threadsafety This function should only be called from the thread that
  *               created the window.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.1.8.
  *
  * \sa SDL_AcquireGPUSwapchainTexture
  * \sa SDL_WaitAndAcquireGPUSwapchainTexture
@@ -3792,7 +3792,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUSwapchain(
  * \threadsafety This function should only be called from the thread that
  *               created the window.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.1.8.
  *
  * \sa SDL_SubmitGPUCommandBuffer
  * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
