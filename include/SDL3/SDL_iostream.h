@@ -713,7 +713,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveFile_IO(SDL_IOStream *src, const void *
 /**
  * Save all the data into a file path.
  *
- * \param file the path to read all available data from.
+ * \param file the path to write all available data into.
  * \param data the data to be written. If datasize is 0, may be NULL or a
  *             invalid pointer.
  * \param datasize the number of bytes to be written.
