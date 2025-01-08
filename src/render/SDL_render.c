@@ -3000,8 +3000,8 @@ bool SDL_RenderViewportSet(SDL_Renderer *renderer)
 static void GetRenderViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
 {
     const SDL_RenderViewState *view = renderer->view;
-    const float scale_x = view->logical_scale.x;
-    const float scale_y = view->logical_scale.y;
+    const float scale_x = view->current_scale.x;
+    const float scale_y = view->current_scale.y;
 
     rect->x = 0.0f;
     rect->y = 0.0f;
