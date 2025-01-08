@@ -1026,7 +1026,7 @@ static int SDLCALL video_getSetWindowSize(void *arg)
     }
 
     SDL_GetWindowSize(window, &currentW, &currentH);
-    if (SDL_SetWindowSize(window, currentW, currentH)) {
+    if (!SDL_SetWindowSize(window, currentW, currentH)) {
         SDLTest_Log("Skipping window resize tests: %s reports window resizing as unsupported", SDL_GetCurrentVideoDriver());
         goto null_tests;
     }
