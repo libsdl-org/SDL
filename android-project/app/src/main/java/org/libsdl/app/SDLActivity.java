@@ -10,11 +10,27 @@ import android.view.View;
 public abstract class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener, SDLComponentReceiver {
     private SDLActivityComponent component;
 
+    protected String[] getLibraries() {
+        return null;
+    }
+    protected String[] getArguments() {
+        return null;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         component = new SDLActivityComponent(this);
+        String[] libraries = getLibraries();
+        if (libraries != null) {
+            component.setLibraries(libraries);
+        }
+        String[] args = getArguments();
+        if (args != null) {
+            component.setArguments(args);
+        }
+
         component.onCreate();
     }
 

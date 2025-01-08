@@ -233,6 +233,8 @@ public class SDLActivityComponent {
     private static SDLFileDialogState mFileDialogState = null;
 
     Activity mActivity;
+    private String[] mLibraries;
+    private String[] mArguments;
 
     public SDLActivityComponent(Activity activity) {
         if (mSingleton != null) {
@@ -246,6 +248,16 @@ public class SDLActivityComponent {
         }
 
         mActivity = activity;
+
+        mLibraries = new String[] {
+            "SDL3",
+            // "SDL3_image",
+            // "SDL3_mixer",
+            // "SDL3_net",
+            // "SDL3_ttf",
+            "main"
+        };
+        mArguments = new String[0];
     }
 
     protected static SDLGenericMotionListener_API14 getMotionListener() {
@@ -309,15 +321,12 @@ public class SDLActivityComponent {
      * Also keep in mind that the order the libraries are loaded may matter.
      * @return names of shared libraries to be loaded (e.g. "SDL3", "main").
      */
-    protected String[] getLibraries() {
-        return new String[] {
-            "SDL3",
-            // "SDL3_image",
-            // "SDL3_mixer",
-            // "SDL3_net",
-            // "SDL3_ttf",
-            "main"
-        };
+    public String[] getLibraries() {
+        return mLibraries;
+    }
+
+    public void setLibraries(String[] libraries) {
+        mLibraries = libraries;
     }
 
     // Load the .so
@@ -333,8 +342,12 @@ public class SDLActivityComponent {
      * The default implementation returns an empty array. It never returns null.
      * @return arguments for the native application.
      */
-    protected String[] getArguments() {
-        return new String[0];
+    public String[] getArguments() {
+        return mArguments;
+    }
+
+    public void setArguments(String[] arguments) {
+        mArguments = arguments;
     }
 
     public static void initialize() {
