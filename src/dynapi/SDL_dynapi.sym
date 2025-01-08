@@ -974,7 +974,6 @@ SDL3_0.0.0 {
     SDL_WaitEventTimeout;
     SDL_WaitForGPUFences;
     SDL_WaitForGPUIdle;
-    SDL_WaitForGPUSwapchain;
     SDL_WaitProcess;
     SDL_WaitSemaphore;
     SDL_WaitSemaphoreTimeout;
@@ -1206,6 +1205,7 @@ SDL3_0.0.0 {
     SDL_RunOnMainThread;
     SDL_SetGPUAllowedFramesInFlight;
     SDL_RenderTextureAffine;
+    SDL_WaitForGPUSwapchain;
     SDL_WaitAndAcquireGPUSwapchainTexture;
     SDL_RenderDebugTextFormat;
     SDL_CreateTray;
