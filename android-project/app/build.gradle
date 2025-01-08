@@ -63,7 +63,5 @@ android {
 }
 
 dependencies {
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx-android:2.8.7"
-
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 }
