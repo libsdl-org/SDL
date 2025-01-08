@@ -4287,7 +4287,6 @@ static bool SDL_RenderTextureTiled_Iterate(SDL_Renderer *renderer, SDL_Texture *
 bool SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float scale, const SDL_FRect *dstrect)
 {
     SDL_FRect real_srcrect;
-    SDL_FRect real_dstrect;
 
     CHECK_RENDERER_MAGIC(renderer, false);
     CHECK_TEXTURE_MAGIC(texture, false);
@@ -4317,12 +4316,10 @@ bool SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const 
         }
     }
 
-    GetRenderViewportSize(renderer, &real_dstrect);
-    if (dstrect) {
-        if (!SDL_HasRectIntersectionFloat(dstrect, &real_dstrect)) {
-            return true;
-        }
-        real_dstrect = *dstrect;
+    SDL_FRect full_dstrect;
+    if (!dstrect) {
+        GetRenderViewportSize(renderer, &full_dstrect);
+        dstrect = &full_dstrect;
     }
 
     if (texture->native) {
@@ -4336,9 +4333,9 @@ bool SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const 
         (!srcrect ||
          (real_srcrect.x == 0.0f && real_srcrect.y == 0.0f &&
           real_srcrect.w == (float)texture->w && real_srcrect.h == (float)texture->h))) {
-        return SDL_RenderTextureTiled_Wrap(renderer, texture, &real_srcrect, scale, &real_dstrect);
+        return SDL_RenderTextureTiled_Wrap(renderer, texture, &real_srcrect, scale, dstrect);
     } else {
-        return SDL_RenderTextureTiled_Iterate(renderer, texture, &real_srcrect, scale, &real_dstrect);
+        return SDL_RenderTextureTiled_Iterate(renderer, texture, &real_srcrect, scale, dstrect);
     }
 }
 
