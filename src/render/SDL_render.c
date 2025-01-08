@@ -3898,9 +3898,6 @@ bool SDL_RenderTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_F
 
     GetRenderViewportSize(renderer, &real_dstrect);
     if (dstrect) {
-        if (!SDL_HasRectIntersectionFloat(dstrect, &real_dstrect)) {
-            return true;
-        }
         real_dstrect = *dstrect;
     }
 
