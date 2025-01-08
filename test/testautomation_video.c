@@ -24,7 +24,7 @@ static SDL_Window *createVideoSuiteTestWindow(const char *title)
     /* Standard window */
     w = SDLTest_RandomIntegerInRange(320, 1024);
     h = SDLTest_RandomIntegerInRange(320, 768);
-    flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS;
+    flags = SDL_WINDOW_BORDERLESS;
 
     window = SDL_CreateWindow(title, w, h, flags);
     SDLTest_AssertPass("Call to SDL_CreateWindow('Title',%d,%d,%" SDL_PRIu64 ")", w, h, flags);
@@ -1006,10 +1006,6 @@ static int SDLCALL video_getSetWindowSize(void *arg)
     int referenceW, referenceH;
     int currentW, currentH;
     int desiredW, desiredH;
-    const bool restoreHint = SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", true);
-
-    /* Win32 borderless windows are not resizable by default and need this undocumented hint */
-    SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", "1");
 
     /* Get display bounds for size range */
     result = SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &display);
@@ -1026,7 +1022,7 @@ static int SDLCALL video_getSetWindowSize(void *arg)
     }
 
     SDL_GetWindowSize(window, &currentW, &currentH);
-    if (SDL_SetWindowSize(window, currentW, currentH)) {
+    if (!SDL_SetWindowSize(window, currentW, currentH)) {
         SDLTest_Log("Skipping window resize tests: %s reports window resizing as unsupported", SDL_GetCurrentVideoDriver());
         goto null_tests;
     }
@@ -1123,7 +1119,6 @@ static int SDLCALL video_getSetWindowSize(void *arg)
                 }
             }
 
-
             /* Get just width */
             currentW = desiredW + 1;
             SDL_GetWindowSize(window, &currentW, NULL);
@@ -1187,9 +1182,6 @@ null_tests:
     SDL_SetWindowSize(NULL, desiredW, desiredH);
     SDLTest_AssertPass("Call to SDL_SetWindowSize(window=NULL)");
     checkInvalidWindowError();
-
-    /* Restore the hint to the previous value */
-    SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", restoreHint ? "1" : "0");
 
     return TEST_COMPLETED;
 }

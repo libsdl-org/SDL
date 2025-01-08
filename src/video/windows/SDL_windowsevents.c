@@ -1639,11 +1639,19 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
 
         // Moving the window from one display to another can change the size of the window (in the handling of SDL_EVENT_WINDOW_MOVED), so we need to re-query the bounds
-        if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
-            w = rect.right;
-            h = rect.bottom;
-
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+        {
+            BOOL get_rect_result;
+            if (data->window->flags & SDL_WINDOW_BORDERLESS) {
+                get_rect_result = GetWindowRect(hwnd, &rect);
+            }
+            else {
+                get_rect_result = GetClientRect(hwnd, &rect);
+            }
+            if (get_rect_result && !WIN_IsRectEmpty(&rect)) {
+                w = rect.right - rect.left;
+                h = rect.bottom - rect.top;
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+            }
         }
 
         WIN_UpdateClipCursor(data->window);
