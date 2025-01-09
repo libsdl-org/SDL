@@ -233,8 +233,8 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::Po
 
         if (!WINRT_LeftFingerDown) {
             if (button) {
-                SDL_SendMouseMotion(window, 0, 0, (int)windowPoint.X, (int)windowPoint.Y);
-                SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
+                SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, (int)windowPoint.X, (int)windowPoint.Y);
+                SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_PRESSED, button);
             }
 
             WINRT_LeftFingerDown = pointerPoint->PointerId;
@@ -264,7 +264,7 @@ WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPo
         SDL_SendMouseMotion(window, 0, 0, (int)windowPoint.X, (int)windowPoint.Y);
     } else {
         if (pointerPoint->PointerId == WINRT_LeftFingerDown) {
-            SDL_SendMouseMotion(window, 0, 0, (int)windowPoint.X, (int)windowPoint.Y);
+            SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, (int)windowPoint.X, (int)windowPoint.Y);
         }
 
         SDL_SendTouchMotion(
@@ -291,7 +291,7 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
 
         if (WINRT_LeftFingerDown == pointerPoint->PointerId) {
             if (button) {
-                SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
+                SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_RELEASED, button);
             }
             WINRT_LeftFingerDown = 0;
         }

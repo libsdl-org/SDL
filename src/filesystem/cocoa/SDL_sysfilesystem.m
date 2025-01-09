@@ -41,7 +41,6 @@ SDL_GetBasePath(void)
     const char* baseType = [[[bundle infoDictionary] objectForKey:@"SDL_FILESYSTEM_BASE_DIR_TYPE"] UTF8String];
     const char *base = NULL;
     char *retval = NULL;
-
     if (baseType == NULL) {
         baseType = "resource";
     }
@@ -53,7 +52,6 @@ SDL_GetBasePath(void)
         /* this returns the exedir for non-bundled  and the resourceDir for bundled apps */
         base = [[bundle resourcePath] fileSystemRepresentation];
     }
-
     if (base) {
         const size_t len = SDL_strlen(base) + 2;
         retval = (char *) SDL_malloc(len);
@@ -71,9 +69,8 @@ char *
 SDL_GetPrefPath(const char *org, const char *app)
 { @autoreleasepool
 {
-    char *retval = NULL;
-
     NSArray *array = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+    char *retval = NULL;
 
     if ([array count] > 0) {  /* we only want the first item in the list. */
         NSString *str = [array objectAtIndex:0];

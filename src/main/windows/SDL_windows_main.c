@@ -134,7 +134,7 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
     /* Grab the command line */
     TCHAR *text = GetCommandLine();
 #if UNICODE
-    cmdline = SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char *)(text), (SDL_wcslen(text)+1)*sizeof(WCHAR));
+    cmdline = WIN_StringToUTF8(text);
 #else
     cmdline = SDL_strdup(text);
 #endif

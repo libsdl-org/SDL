@@ -20,8 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-/* TODO, WinRT: include copyright info in SDL_winrtpaths.cpp
-   TODO, WinRT: remove the need to compile this with C++/CX (/ZW) extensions, and if possible, without C++ at all
+/* TODO, WinRT: remove the need to compile this with C++/CX (/ZW) extensions, and if possible, without C++ at all
 */
 
 #ifdef __WINRT__
@@ -29,6 +28,7 @@
 extern "C" {
 #include "SDL_filesystem.h"
 #include "SDL_error.h"
+#include "SDL_hints.h"
 #include "SDL_stdinc.h"
 #include "SDL_system.h"
 #include "../../core/windows/SDL_windows.h"
@@ -62,7 +62,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
             return path.c_str();
         }
 
-#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
         case SDL_WINRT_PATH_ROAMING_FOLDER:
         {
             static wstring path;
@@ -144,31 +144,78 @@ SDL_GetPrefPath(const char *org, const char *app)
      * without violating Microsoft's app-store requirements.
      */
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    /* A 'Roaming' folder is not available in Windows Phone 8, however a 'Local' folder is. */
-    const char * srcPath = SDL_WinRTGetFSPathUTF8(SDL_WINRT_PATH_LOCAL_FOLDER);
-#else
-    /* A 'Roaming' folder is available on Windows 8 and 8.1.  Use that. */
-    const char * srcPath = SDL_WinRTGetFSPathUTF8(SDL_WINRT_PATH_ROAMING_FOLDER);
-#endif
+    const WCHAR * srcPath = NULL;
+    WCHAR path[MAX_PATH];
+    char *retval = NULL;
+    WCHAR* worg = NULL;
+    WCHAR* wapp = NULL;
+    size_t new_wpath_len = 0;
+    BOOL api_result = FALSE;
 
-    size_t destPathLen;
-    char * destPath = NULL;
-
-    if (!srcPath) {
-        SDL_SetError("Couldn't locate our basepath: %s", SDL_GetError());
+    srcPath = SDL_WinRTGetFSPathUNICODE(SDL_WINRT_PATH_LOCAL_FOLDER);
+    if ( ! srcPath) {
+        SDL_SetError("Unable to find a source path");
         return NULL;
     }
 
-    destPathLen = SDL_strlen(srcPath) + SDL_strlen(org) + SDL_strlen(app) + 4;
-    destPath = (char *) SDL_malloc(destPathLen);
-    if (!destPath) {
+    if (SDL_wcslen(srcPath) >= MAX_PATH) {
+        SDL_SetError("Path too long.");
+        return NULL;
+    }
+    SDL_wcslcpy(path, srcPath, SDL_arraysize(path));
+
+    worg = WIN_UTF8ToString(org);
+    if (worg == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
 
-    SDL_snprintf(destPath, destPathLen, "%s\\%s\\%s\\", srcPath, org, app);
-    return destPath;
+    wapp = WIN_UTF8ToString(app);
+    if (wapp == NULL) {
+        SDL_free(worg);
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    new_wpath_len = SDL_wcslen(worg) + SDL_wcslen(wapp) + SDL_wcslen(path) + 3;
+
+    if ((new_wpath_len + 1) > MAX_PATH) {
+        SDL_free(worg);
+        SDL_free(wapp);
+        SDL_SetError("Path too long.");
+        return NULL;
+    }
+
+    SDL_wcslcat(path, L"\\", new_wpath_len + 1);
+    SDL_wcslcat(path, worg, new_wpath_len + 1);
+    SDL_free(worg);
+
+    api_result = CreateDirectoryW(path, NULL);
+    if (api_result == FALSE) {
+        if (GetLastError() != ERROR_ALREADY_EXISTS) {
+            SDL_free(wapp);
+            WIN_SetError("Couldn't create a prefpath.");
+            return NULL;
+        }
+    }
+
+    SDL_wcslcat(path, L"\\", new_wpath_len + 1);
+    SDL_wcslcat(path, wapp, new_wpath_len + 1);
+    SDL_free(wapp);
+
+    api_result = CreateDirectoryW(path, NULL);
+    if (api_result == FALSE) {
+        if (GetLastError() != ERROR_ALREADY_EXISTS) {
+            WIN_SetError("Couldn't create a prefpath.");
+            return NULL;
+        }
+    }
+
+    SDL_wcslcat(path, L"\\", new_wpath_len + 1);
+
+    retval = WIN_StringToUTF8(path);
+
+    return retval;
 }
 
 #endif /* __WINRT__ */

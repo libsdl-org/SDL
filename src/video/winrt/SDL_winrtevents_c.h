@@ -63,6 +63,7 @@ extern void WINRT_ProcessMouseMovedEvent(SDL_Window * window, Windows::Devices::
 /* Keyboard */
 extern void WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^args);
 extern void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^args);
+extern void WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArgs ^args);
 
 /* XAML Thread Management */
 extern void WINRT_CycleXAMLThread();

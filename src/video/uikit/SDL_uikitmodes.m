@@ -25,36 +25,27 @@
 #include "SDL_assert.h"
 #include "SDL_uikitmodes.h"
 
-@implementation SDL_DisplayData
-
-@synthesize uiscreen;
-
-@end
-
-@implementation SDL_DisplayModeData
-
-@synthesize uiscreenmode;
-
-@end
-
 
 static int
 UIKit_AllocateDisplayModeData(SDL_DisplayMode * mode,
-    UIScreenMode * uiscreenmode)
+    UIScreenMode * uiscreenmode, CGFloat scale)
 {
-    SDL_DisplayModeData *data = nil;
+    SDL_DisplayModeData *data = NULL;
 
     if (uiscreenmode != nil) {
         /* Allocate the display mode data */
-        data = [[SDL_DisplayModeData alloc] init];
+        data = (SDL_DisplayModeData *) SDL_malloc(sizeof(*data));
         if (!data) {
             return SDL_OutOfMemory();
         }
 
-        data.uiscreenmode = uiscreenmode;
+        data->uiscreenmode = uiscreenmode;
+        [data->uiscreenmode retain];
+
+        data->scale = scale;
     }
 
-    mode->driverdata = (void *) CFBridgingRetain(data);
+    mode->driverdata = data;
 
     return 0;
 }
@@ -63,21 +54,23 @@ static void
 UIKit_FreeDisplayModeData(SDL_DisplayMode * mode)
 {
     if (mode->driverdata != NULL) {
-        CFRelease(mode->driverdata);
+        SDL_DisplayModeData *data = (SDL_DisplayModeData *)mode->driverdata;
+        [data->uiscreenmode release];
+        SDL_free(data);
         mode->driverdata = NULL;
     }
 }
 
 static int
 UIKit_AddSingleDisplayMode(SDL_VideoDisplay * display, int w, int h,
-    UIScreenMode * uiscreenmode)
+    UIScreenMode * uiscreenmode, CGFloat scale)
 {
     SDL_DisplayMode mode;
     SDL_zero(mode);
 
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = 0;
-    if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
+    if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode, scale) < 0) {
         return -1;
     }
 
@@ -92,16 +85,16 @@ UIKit_AddSingleDisplayMode(SDL_VideoDisplay * display, int w, int h,
 }
 
 static int
-UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h,
+UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h, CGFloat scale,
                      UIScreenMode * uiscreenmode, SDL_bool addRotation)
 {
-    if (UIKit_AddSingleDisplayMode(display, w, h, uiscreenmode) < 0) {
+    if (UIKit_AddSingleDisplayMode(display, w, h, uiscreenmode, scale) < 0) {
         return -1;
     }
 
     if (addRotation) {
         /* Add the rotated version */
-        if (UIKit_AddSingleDisplayMode(display, h, w, uiscreenmode) < 0) {
+        if (UIKit_AddSingleDisplayMode(display, h, w, uiscreenmode, scale) < 0) {
             return -1;
         }
     }
@@ -121,16 +114,24 @@ UIKit_AddDisplay(UIScreen *uiscreen)
         size.height = height;
     }
 
+    /* When dealing with UIKit all coordinates are specified in terms of
+     * what Apple refers to as points. [UIScreen scale] indicates the
+     * relationship between points and pixels. Since SDL has no notion
+     * of points, we must compensate in all cases where dealing with such
+     * units.
+     */
+    CGFloat scale = [uiscreen scale];
+
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_ABGR8888;
-    mode.w = (int) size.width;
-    mode.h = (int) size.height;
+    mode.w = (int)(size.width * scale);
+    mode.h = (int)(size.height * scale);
 
-    UIScreenMode *uiscreenmode = [uiscreen currentMode];
+    UIScreenMode * uiscreenmode = [uiscreen currentMode];
 
-    if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
+    if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode, scale) < 0) {
         return -1;
     }
 
@@ -139,15 +140,17 @@ UIKit_AddDisplay(UIScreen *uiscreen)
     display.current_mode = mode;
 
     /* Allocate the display data */
-    SDL_DisplayData *data = [[SDL_DisplayData alloc] init];
+    SDL_DisplayData *data = (SDL_DisplayData *) SDL_malloc(sizeof(*data));
     if (!data) {
         UIKit_FreeDisplayModeData(&display.desktop_mode);
         return SDL_OutOfMemory();
     }
 
-    data.uiscreen = uiscreen;
+    [uiscreen retain];
+    data->uiscreen = uiscreen;
+    data->scale = scale;
 
-    display.driverdata = (void *) CFBridgingRetain(data);
+    display.driverdata = data;
     SDL_AddVideoDisplay(&display);
 
     return 0;
@@ -167,11 +170,9 @@ UIKit_IsDisplayLandscape(UIScreen *uiscreen)
 int
 UIKit_InitModes(_THIS)
 {
-    @autoreleasepool {
-        for (UIScreen *uiscreen in [UIScreen screens]) {
-            if (UIKit_AddDisplay(uiscreen) < 0) {
-                return -1;
-            }
+    for (UIScreen *uiscreen in [UIScreen screens]) {
+        if (UIKit_AddDisplay(uiscreen) < 0) {
+            return -1;
         }
     }
 
@@ -181,36 +182,34 @@ UIKit_InitModes(_THIS)
 void
 UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
-    @autoreleasepool {
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
+    SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
 
-        SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
-        SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
-        CGFloat scale = data.uiscreen.scale;
+    SDL_bool isLandscape = UIKit_IsDisplayLandscape(data->uiscreen);
+    SDL_bool addRotation = (data->uiscreen == [UIScreen mainScreen]);
 
-#ifdef __IPHONE_8_0
-        /* The UIScreenMode of an iPhone 6 Plus should be 1080x1920 rather than
-         * 1242x2208 (414x736@3x), so we should use the native scale. */
-        if ([data.uiscreen respondsToSelector:@selector(nativeScale)]) {
-            scale = data.uiscreen.nativeScale;
+    for (UIScreenMode *uimode in [data->uiscreen availableModes]) {
+        CGSize size = [uimode size];
+        int w = (int)size.width;
+        int h = (int)size.height;
+
+        /* Make sure the width/height are oriented correctly */
+        if (isLandscape != (w > h)) {
+            int tmp = w;
+            w = h;
+            h = tmp;
         }
-#endif
 
-        for (UIScreenMode *uimode in [data.uiscreen availableModes]) {
-            /* The size of a UIScreenMode is in pixels, but we deal exclusively
-             * in points (except in SDL_GL_GetDrawableSize.) */
-            int w = (int)(uimode.size.width / scale);
-            int h = (int)(uimode.size.height / scale);
+        /* Add the native screen resolution. */
+        UIKit_AddDisplayMode(display, w, h, data->scale, uimode, addRotation);
 
-            /* Make sure the width/height are oriented correctly */
-            if (isLandscape != (w > h)) {
-                int tmp = w;
-                w = h;
-                h = tmp;
-            }
-
-            /* Add the native screen resolution. */
-            UIKit_AddDisplayMode(display, w, h, uimode, addRotation);
+        if (data->scale != 1.0f) {
+            /* Add the native screen resolution divided by its scale.
+             * This is so devices capable of e.g. 640x960 also advertise 320x480.
+             */
+            UIKit_AddDisplayMode(display,
+                (int)(size.width / data->scale),
+                (int)(size.height / data->scale),
+                1.0f, uimode, addRotation);
         }
     }
 }
@@ -218,21 +217,19 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 int
 UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
-    @autoreleasepool {
-        SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
-        SDL_DisplayModeData *modedata = (__bridge SDL_DisplayModeData *)mode->driverdata;
+    SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
+    SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
 
-        [data.uiscreen setCurrentMode:modedata.uiscreenmode];
+    [data->uiscreen setCurrentMode:modedata->uiscreenmode];
 
-        if (data.uiscreen == [UIScreen mainScreen]) {
-            if (mode->w > mode->h) {
-                if (!UIKit_IsDisplayLandscape(data.uiscreen)) {
-                    [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeRight animated:NO];
-                }
-            } else if (mode->w < mode->h) {
-                if (UIKit_IsDisplayLandscape(data.uiscreen)) {
-                    [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait animated:NO];
-                }
+    if (data->uiscreen == [UIScreen mainScreen]) {
+        if (mode->w > mode->h) {
+            if (!UIKit_IsDisplayLandscape(data->uiscreen)) {
+                [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeRight animated:NO];
+            }
+        } else if (mode->w < mode->h) {
+            if (UIKit_IsDisplayLandscape(data->uiscreen)) {
+                [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait animated:NO];
             }
         }
     }
@@ -245,21 +242,19 @@ UIKit_QuitModes(_THIS)
 {
     /* Release Objective-C objects, so higher level doesn't free() them. */
     int i, j;
-    @autoreleasepool {
-        for (i = 0; i < _this->num_displays; i++) {
-            SDL_VideoDisplay *display = &_this->displays[i];
+    for (i = 0; i < _this->num_displays; i++) {
+        SDL_VideoDisplay *display = &_this->displays[i];
 
-            UIKit_FreeDisplayModeData(&display->desktop_mode);
-            for (j = 0; j < display->num_display_modes; j++) {
-                SDL_DisplayMode *mode = &display->display_modes[j];
-                UIKit_FreeDisplayModeData(mode);
-            }
-
-            if (display->driverdata != NULL) {
-                CFRelease(display->driverdata);
-                display->driverdata = NULL;
-            }
+        UIKit_FreeDisplayModeData(&display->desktop_mode);
+        for (j = 0; j < display->num_display_modes; j++) {
+            SDL_DisplayMode *mode = &display->display_modes[j];
+            UIKit_FreeDisplayModeData(mode);
         }
+
+        SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
+        [data->uiscreen release];
+        SDL_free(data);
+        display->driverdata = NULL;
     }
 }
 

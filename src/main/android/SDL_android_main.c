@@ -47,6 +47,7 @@ int Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass cls, jobject 
                 arg = SDL_strdup(utf);
                 (*env)->ReleaseStringUTFChars(env, string, utf);
             }
+            (*env)->DeleteLocalRef(env, string);
         }
         if (!arg) {
             arg = SDL_strdup("");

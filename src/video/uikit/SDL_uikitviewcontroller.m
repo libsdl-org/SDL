@@ -40,9 +40,12 @@
 
 - (id)initWithSDLWindow:(SDL_Window *)_window
 {
-    if (self = [super initWithNibName:nil bundle:nil]) {
-        self.window = _window;
+    self = [self init];
+    if (self == nil) {
+        return nil;
     }
+    self.window = _window;
+
     return self;
 }
 
@@ -53,16 +56,61 @@
 
 - (void)viewDidLayoutSubviews
 {
-    const CGSize size = self.view.bounds.size;
-    int w = (int) size.width;
-    int h = (int) size.height;
+    if (self->window->flags & SDL_WINDOW_RESIZABLE) {
+        SDL_WindowData *data = self->window->driverdata;
+        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(self->window);
+        SDL_DisplayModeData *displaymodedata = (SDL_DisplayModeData *) display->current_mode.driverdata;
+        const CGSize size = data->view.bounds.size;
+        int w, h;
 
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, w, h);
+        w = (int)(size.width * displaymodedata->scale);
+        h = (int)(size.height * displaymodedata->scale);
+
+        SDL_SendWindowEvent(self->window, SDL_WINDOWEVENT_RESIZED, w, h);
+    }
 }
 
 - (NSUInteger)supportedInterfaceOrientations
 {
-    return UIKit_GetSupportedOrientations(window);
+    NSUInteger orientationMask = 0;
+
+    const char *orientationsCString;
+    if ((orientationsCString = SDL_GetHint(SDL_HINT_ORIENTATIONS)) != NULL) {
+        BOOL rotate = NO;
+        NSString *orientationsNSString = [NSString stringWithCString:orientationsCString
+                                                            encoding:NSUTF8StringEncoding];
+        NSArray *orientations = [orientationsNSString componentsSeparatedByCharactersInSet:
+                                 [NSCharacterSet characterSetWithCharactersInString:@" "]];
+
+        if ([orientations containsObject:@"LandscapeLeft"]) {
+            orientationMask |= UIInterfaceOrientationMaskLandscapeLeft;
+        }
+        if ([orientations containsObject:@"LandscapeRight"]) {
+            orientationMask |= UIInterfaceOrientationMaskLandscapeRight;
+        }
+        if ([orientations containsObject:@"Portrait"]) {
+            orientationMask |= UIInterfaceOrientationMaskPortrait;
+        }
+        if ([orientations containsObject:@"PortraitUpsideDown"]) {
+            orientationMask |= UIInterfaceOrientationMaskPortraitUpsideDown;
+        }
+
+    } else if (self->window->flags & SDL_WINDOW_RESIZABLE) {
+        orientationMask = UIInterfaceOrientationMaskAll;  /* any orientation is okay. */
+    } else {
+        if (self->window->w >= self->window->h) {
+            orientationMask |= UIInterfaceOrientationMaskLandscape;
+        }
+        if (self->window->h >= self->window->w) {
+            orientationMask |= (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown);
+        }
+    }
+
+    /* Don't allow upside-down orientation on the phone, so answering calls is in the natural orientation */
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+        orientationMask &= ~UIInterfaceOrientationMaskPortraitUpsideDown;
+    }
+    return orientationMask;
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient
@@ -73,17 +121,11 @@
 
 - (BOOL)prefersStatusBarHidden
 {
-    if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
+    if (self->window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
         return YES;
     } else {
         return NO;
     }
-}
-
-- (UIStatusBarStyle)preferredStatusBarStyle
-{
-    /* We assume most SDL apps don't have a bright white background. */
-    return UIStatusBarStyleLightContent;
 }
 
 @end

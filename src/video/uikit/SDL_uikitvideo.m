@@ -78,10 +78,11 @@ UIKit_CreateDevice(int devindex)
     device->ShowWindow = UIKit_ShowWindow;
     device->HideWindow = UIKit_HideWindow;
     device->RaiseWindow = UIKit_RaiseWindow;
-    device->SetWindowBordered = UIKit_SetWindowBordered;
     device->SetWindowFullscreen = UIKit_SetWindowFullscreen;
     device->DestroyWindow = UIKit_DestroyWindow;
     device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
+
+    /* !!! FIXME: implement SetWindowBordered */
 
 #if SDL_IPHONE_KEYBOARD
     device->HasScreenKeyboardSupport = UIKit_HasScreenKeyboardSupport;
@@ -92,13 +93,12 @@ UIKit_CreateDevice(int devindex)
 #endif
 
     /* OpenGL (ES) functions */
-    device->GL_MakeCurrent      = UIKit_GL_MakeCurrent;
-    device->GL_GetDrawableSize  = UIKit_GL_GetDrawableSize;
-    device->GL_SwapWindow       = UIKit_GL_SwapWindow;
+    device->GL_MakeCurrent        = UIKit_GL_MakeCurrent;
+    device->GL_SwapWindow        = UIKit_GL_SwapWindow;
     device->GL_CreateContext    = UIKit_GL_CreateContext;
     device->GL_DeleteContext    = UIKit_GL_DeleteContext;
     device->GL_GetProcAddress   = UIKit_GL_GetProcAddress;
-    device->GL_LoadLibrary      = UIKit_GL_LoadLibrary;
+    device->GL_LoadLibrary        = UIKit_GL_LoadLibrary;
     device->free = UIKit_DeleteDevice;
 
     device->gl_config.accelerated = 1;
@@ -127,25 +127,6 @@ void
 UIKit_VideoQuit(_THIS)
 {
     UIKit_QuitModes(_this);
-}
-
-BOOL
-UIKit_IsSystemVersionAtLeast(double version)
-{
-    return [[UIDevice currentDevice].systemVersion doubleValue] >= version;
-}
-
-CGRect
-UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
-{
-    BOOL hasiOS7 = UIKit_IsSystemVersionAtLeast(7.0);
-
-    if (hasiOS7 || (window->flags & (SDL_WINDOW_BORDERLESS|SDL_WINDOW_FULLSCREEN))) {
-        /* The view should always show behind the status bar in iOS 7+. */
-        return screen.bounds;
-    } else {
-        return screen.applicationFrame;
-    }
 }
 
 /*

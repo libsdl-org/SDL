@@ -50,24 +50,24 @@ SDL_UIKit_UpdateBatteryMonitoring(void)
 SDL_bool
 SDL_GetPowerInfo_UIKit(SDL_PowerState * state, int *seconds, int *percent)
 {
-    @autoreleasepool {
-        UIDevice *uidev = [UIDevice currentDevice];
+    UIDevice *uidev = [UIDevice currentDevice];
 
-        if (!SDL_UIKitLastPowerInfoQuery) {
-            SDL_assert(uidev.isBatteryMonitoringEnabled == NO);
-            uidev.batteryMonitoringEnabled = YES;
-        }
+    if (!SDL_UIKitLastPowerInfoQuery) {
+        SDL_assert([uidev isBatteryMonitoringEnabled] == NO);
+        [uidev setBatteryMonitoringEnabled:YES];
+    }
 
-        /* UIKit_GL_SwapWindow() (etc) will check this and disable the battery
-         *  monitoring if the app hasn't queried it in the last X seconds.
-         *  Apparently monitoring the battery burns battery life.  :)
-         *  Apple's docs say not to monitor the battery unless you need it.
-         */
-        SDL_UIKitLastPowerInfoQuery = SDL_GetTicks();
+    /* UIKit_GL_SwapWindow() (etc) will check this and disable the battery
+     *  monitoring if the app hasn't queried it in the last X seconds.
+     *  Apparently monitoring the battery burns battery life.  :)
+     *  Apple's docs say not to monitor the battery unless you need it.
+     */
+    SDL_UIKitLastPowerInfoQuery = SDL_GetTicks();
 
-        *seconds = -1;   /* no API to estimate this in UIKit. */
+    *seconds = -1;   /* no API to estimate this in UIKit. */
 
-        switch (uidev.batteryState) {
+    switch ([uidev batteryState])
+    {
         case UIDeviceBatteryStateCharging:
             *state = SDL_POWERSTATE_CHARGING;
             break;
@@ -84,12 +84,11 @@ SDL_GetPowerInfo_UIKit(SDL_PowerState * state, int *seconds, int *percent)
         default:
             *state = SDL_POWERSTATE_UNKNOWN;
             break;
-        }
-
-        const float level = uidev.batteryLevel;
-        *percent = ( (level < 0.0f) ? -1 : ((int) ((level * 100) + 0.5f)) );
-        return SDL_TRUE; /* always the definitive answer on iOS. */
     }
+
+    const float level = [uidev batteryLevel];
+    *percent = ( (level < 0.0f) ? -1 : ((int) ((level * 100) + 0.5f)) );
+    return SDL_TRUE;            /* always the definitive answer on iOS. */
 }
 
 #endif /* SDL_POWER_UIKIT */

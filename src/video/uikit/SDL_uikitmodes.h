@@ -25,17 +25,17 @@
 
 #include "SDL_uikitvideo.h"
 
-@interface SDL_DisplayData : NSObject
+typedef struct
+{
+    UIScreen *uiscreen;
+    CGFloat scale;
+} SDL_DisplayData;
 
-@property (nonatomic, strong) UIScreen *uiscreen;
-
-@end
-
-@interface SDL_DisplayModeData : NSObject
-
-@property (nonatomic, strong) UIScreenMode *uiscreenmode;
-
-@end
+typedef struct
+{
+    UIScreenMode *uiscreenmode;
+    CGFloat scale;
+} SDL_DisplayModeData;
 
 extern SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen);
 

@@ -23,9 +23,12 @@
 
 #include "../SDL_sysvideo.h"
 
-@interface SDL_uikitviewcontroller : UIViewController
+@interface SDL_uikitviewcontroller : UIViewController {
+@private
+    SDL_Window *window;
+}
 
-@property (nonatomic, assign) SDL_Window *window;
+@property (readwrite) SDL_Window *window;
 
 - (id)initWithSDLWindow:(SDL_Window *)_window;
 - (void)loadView;
@@ -33,6 +36,5 @@
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient;
 - (BOOL)prefersStatusBarHidden;
-- (UIStatusBarStyle)preferredStatusBarStyle;
 
 @end

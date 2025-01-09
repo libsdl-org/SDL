@@ -740,7 +740,7 @@ video_getWindowGammaRampNegative(void *arg)
   /* Call against invalid window */
   result = SDL_GetWindowGammaRamp(NULL, red, green, blue);
   SDLTest_AssertPass("Call to SDL_GetWindowGammaRamp(window=NULL,r,g,b)");
-  SDLTest_AssertCheck(result == -1, "Validate result value; expected: -1, got: %f", result);
+  SDLTest_AssertCheck(result == -1, "Validate result value; expected: -1, got: %i", result);
   _checkInvalidWindowError();
 
   return TEST_COMPLETED;
@@ -1619,7 +1619,7 @@ video_getSetWindowData(void *arg)
 
   /* Set data with NULL to clear */
   result = (char *)SDL_SetWindowData(window, name, NULL);
-  SDLTest_AssertPass("Call to SDL_SetWindowData(...%s,NULL)", name, userdata);
+  SDLTest_AssertPass("Call to SDL_SetWindowData(...%s,NULL)", name);
   SDLTest_AssertCheck(SDL_strcmp(referenceUserdata2, result) == 0, "Validate that correct result was returned; expected: %s, got: %s", referenceUserdata2, result);
   SDLTest_AssertCheck(SDL_strcmp(referenceName, name) == 0, "Validate that name was not changed, expected: %s, got: %s", referenceName, name);
   SDLTest_AssertCheck(SDL_strcmp(referenceUserdata, userdata) == 0, "Validate that userdata was not changed, expected: %s, got: %s", referenceUserdata, userdata);
@@ -1627,7 +1627,7 @@ video_getSetWindowData(void *arg)
 
   /* Set data with NULL to clear again */
   result = (char *)SDL_SetWindowData(window, name, NULL);
-  SDLTest_AssertPass("Call to SDL_SetWindowData(...%s,NULL) [again]", name, userdata);
+  SDLTest_AssertPass("Call to SDL_SetWindowData(...%s,NULL) [again]", name);
   SDLTest_AssertCheck(result == NULL, "Validate that result is NULL");
   SDLTest_AssertCheck(SDL_strcmp(referenceName, name) == 0, "Validate that name was not changed, expected: %s, got: %s", referenceName, name);
   SDLTest_AssertCheck(SDL_strcmp(referenceUserdata, userdata) == 0, "Validate that userdata was not changed, expected: %s, got: %s", referenceUserdata, userdata);

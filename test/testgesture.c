@@ -215,6 +215,15 @@ int main(int argc, char* argv[])
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym)
           {
+              case SDLK_i:
+              {
+                  int i;
+                  for (i = 0; i < SDL_GetNumTouchDevices(); ++i) {
+                      SDL_TouchID id = SDL_GetTouchDevice(i);
+                      SDL_Log("Fingers Down on device %"SDL_PRIs64": %d", id, SDL_GetNumTouchFingers(id));
+                  }
+                  break;
+              }
           case SDLK_SPACE:
         SDL_RecordGesture(-1);
         break;

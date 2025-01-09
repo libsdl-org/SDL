@@ -126,6 +126,16 @@ static void WINRT_SetDisplayOrientationsPreference(void *userdata, const char *n
 {
     SDL_assert(SDL_strcmp(name, SDL_HINT_ORIENTATIONS) == 0);
 
+    /* HACK: prevent SDL from altering an app's .appxmanifest-set orientation
+     * from being changed on startup, by detecting when SDL_HINT_ORIENTATIONS
+     * is getting registered.
+     *
+     * TODO, WinRT: consider reading in an app's .appxmanifest file, and apply its orientation when 'newValue == NULL'.
+     */
+    if ((oldValue == NULL) && (newValue == NULL)) {
+        return;
+    }
+
     // Start with no orientation flags, then add each in as they're parsed
     // from newValue.
     unsigned int orientationFlags = 0;
@@ -364,6 +374,9 @@ void SDL_WinRTApp::SetWindow(CoreWindow^ window)
 
     window->KeyUp +=
         ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &SDL_WinRTApp::OnKeyUp);
+
+    window->CharacterReceived +=
+        ref new TypedEventHandler<CoreWindow^, CharacterReceivedEventArgs^>(this, &SDL_WinRTApp::OnCharacterReceived);
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     HardwareButtons::BackPressed +=
@@ -701,6 +714,11 @@ void SDL_WinRTApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI:
 void SDL_WinRTApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
 {
     WINRT_ProcessKeyUpEvent(args);
+}
+
+void SDL_WinRTApp::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args)
+{
+    WINRT_ProcessCharacterReceivedEvent(args);
 }
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP

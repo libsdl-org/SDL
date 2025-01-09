@@ -43,6 +43,7 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
    int bpp, bpp_reference;
    Uint8 *p, *p_reference;
    int dist;
+   int sampleErrorX, sampleErrorY, sampleDist;
    Uint8 R, G, B, A;
    Uint8 Rd, Gd, Bd, Ad;
    char imageFilename[128];
@@ -86,6 +87,11 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
          /* Allow some difference in blending accuracy */
          if (dist > allowable_error) {
             ret++;
+            if (ret == 1) {
+               sampleErrorX = i;
+               sampleErrorY = j;
+               sampleDist = dist;
+            }
          }
       }
    }
@@ -96,6 +102,8 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
    /* Save test image and reference for analysis on failures */
    _CompareSurfaceCount++;
    if (ret != 0) {
+      SDLTest_LogError("Comparison of pixels with allowable error of %i failed %i times.", allowable_error, ret);
+      SDLTest_LogError("First detected occurrence at position %i,%i with a squared RGB-difference of %i.", sampleErrorX, sampleErrorY, sampleDist); 
       SDL_snprintf(imageFilename, 127, "CompareSurfaces%04d_TestOutput.bmp", _CompareSurfaceCount);
       SDL_SaveBMP(surface, imageFilename);
       SDL_snprintf(referenceFilename, 127, "CompareSurfaces%04d_Reference.bmp", _CompareSurfaceCount);

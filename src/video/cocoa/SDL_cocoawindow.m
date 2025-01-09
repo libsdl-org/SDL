@@ -34,6 +34,7 @@
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../events/SDL_windowevents_c.h"
+#include "../../events/SDL_dropevents_c.h"
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoashape.h"
 #include "SDL_cocoamouse.h"
@@ -52,15 +53,21 @@
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)
 
 
-@interface SDLWindow : NSWindow
+@interface SDLWindow : NSWindow <NSDraggingDestination>
 /* These are needed for borderless/fullscreen windows */
 - (BOOL)canBecomeKeyWindow;
 - (BOOL)canBecomeMainWindow;
 - (void)sendEvent:(NSEvent *)event;
 - (void)doCommandBySelector:(SEL)aSelector;
+
+/* Handle drag-and-drop of files onto the SDL window. */
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender;
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender;
+- (BOOL)wantsPeriodicDraggingUpdates;
 @end
 
 @implementation SDLWindow
+
 - (BOOL)canBecomeKeyWindow
 {
     return YES;
@@ -96,6 +103,51 @@
 {
     /*NSLog(@"doCommandBySelector: %@\n", NSStringFromSelector(aSelector));*/
 }
+
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
+    return NSDragOperationGeneric;
+}
+
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{
+    NSURL *fileURL = [NSURL URLFromPasteboard:[sender draggingPasteboard]];
+    NSNumber *isAlias = nil;
+
+    if (fileURL == nil) {
+        return NO;
+    }
+
+    /* Functionality for resolving URL aliases was added with OS X 10.6. */
+    if ([fileURL respondsToSelector:@selector(getResourceValue:forKey:error:)]) {
+        [fileURL getResourceValue:&isAlias forKey:NSURLIsAliasFileKey error:nil];
+    }
+
+    /* If the URL is an alias, resolve it. */
+    if ([isAlias boolValue]) {
+        NSURLBookmarkResolutionOptions opts = NSURLBookmarkResolutionWithoutMounting | NSURLBookmarkResolutionWithoutUI;
+        NSData *bookmark = [NSURL bookmarkDataWithContentsOfURL:fileURL error:nil];
+        if (bookmark != nil) {
+            NSURL *resolvedURL = [NSURL URLByResolvingBookmarkData:bookmark
+                                                           options:opts
+                                                     relativeToURL:nil
+                                               bookmarkDataIsStale:nil
+                                                             error:nil];
+
+            if (resolvedURL != nil) {
+                fileURL = resolvedURL;
+            }
+        }
+    }
+
+    return (BOOL) SDL_SendDropFile([[fileURL path] UTF8String]);
+}
+
+- (BOOL)wantsPeriodicDraggingUpdates
+{
+    return NO;
+}
+
 @end
 
 
@@ -856,6 +908,25 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
 - (void)touchesBeganWithEvent:(NSEvent *) theEvent
 {
+    NSSet *touches = [theEvent touchesMatchingPhase:NSTouchPhaseAny inView:nil];
+    int existingTouchCount = 0;
+
+    for (NSTouch* touch in touches) {
+        if ([touch phase] != NSTouchPhaseBegan) {
+            existingTouchCount++;
+        }
+    }
+    if (existingTouchCount == 0) {
+        SDL_TouchID touchID = (SDL_TouchID)(intptr_t)[[touches anyObject] device];
+        int numFingers = SDL_GetNumTouchFingers(touchID);
+        DLog("Reset Lost Fingers: %d", numFingers);
+        for (--numFingers; numFingers >= 0; --numFingers) {
+            SDL_Finger* finger = SDL_GetTouchFinger(touchID, numFingers);
+            SDL_SendTouch(touchID, finger->id, SDL_FALSE, 0, 0, 0);
+        }
+    }
+
+    DLog("Began Fingers: %lu .. existing: %d", (unsigned long)[touches count], existingTouchCount);
     [self handleTouches:NSTouchPhaseBegan withEvent:theEvent];
 }
 
@@ -1101,6 +1172,9 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     [nswindow setContentView: contentView];
     [contentView release];
 
+    /* Allow files and folders to be dragged onto the window by users */
+    [nswindow registerForDraggedTypes:[NSArray arrayWithObject:(NSString *)kUTTypeFileURL]];
+
     [pool release];
 
     if (SetupWindowData(_this, window, nswindow, SDL_TRUE) < 0) {
@@ -1332,6 +1406,7 @@ Cocoa_RebuildWindow(SDL_WindowData * data, NSWindow * nswindow, unsigned style)
     [data->listener close];
     data->nswindow = [[SDLWindow alloc] initWithContentRect:[[nswindow contentView] frame] styleMask:style backing:NSBackingStoreBuffered defer:NO screen:[nswindow screen]];
     [data->nswindow setContentView:[nswindow contentView]];
+    [data->nswindow registerForDraggedTypes:[NSArray arrayWithObject:(NSString *)kUTTypeFileURL]];
     /* See comment in SetupWindowData. */
     [data->nswindow setOneShot:NO];
     [data->listener listen:data];

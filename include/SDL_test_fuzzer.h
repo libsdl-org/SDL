@@ -57,7 +57,7 @@ extern "C" {
 /**
  * Initializes the fuzzer for a test
  *
- * /param execKey Execution "Key" that initializes the random number generator uniquely for the test.
+ * \param execKey Execution "Key" that initializes the random number generator uniquely for the test.
  *
  */
 void SDLTest_FuzzerInit(Uint64 execKey);
@@ -318,7 +318,7 @@ Sint64 SDLTest_RandomSint64BoundaryValue(Sint64 boundary1, Sint64 boundary2, SDL
 /**
  * Returns integer in range [min, max] (inclusive).
  * Min and max values can be negative values.
- * If Max in smaller tham min, then the values are swapped.
+ * If Max in smaller than min, then the values are swapped.
  * Min and max are the same value, that value will be returned.
  *
  * \param min Minimum inclusive value of returned random number

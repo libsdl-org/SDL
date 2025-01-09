@@ -1076,7 +1076,7 @@ sdltest_randomIntegerInRange(void *arg)
   max = 0;
   result = SDLTest_RandomIntegerInRange(min, max);
   SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(0,0)");
-  SDLTest_AssertCheck(result == 0, "Validated returned value; expected: 0, got: %d", min, max, result);
+  SDLTest_AssertCheck(result == 0, "Validated returned value; expected: 0, got: %d", result);
 
   /* Swapped min-max */
   min = (Sint32)SDLTest_RandomSint16();

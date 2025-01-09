@@ -365,4 +365,22 @@ WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^args)
     SDL_SendKeyboardKey(SDL_RELEASED, sdlScancode);
 }
 
+void
+WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArgs ^args)
+{
+    wchar_t src_ucs2[2];
+    char dest_utf8[16];
+    int result;
+
+    /* Setup src */
+    src_ucs2[0] = args->KeyCode;
+    src_ucs2[1] = L'\0';
+
+    /* Convert the text, then send an SDL_TEXTINPUT event. */
+    result = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)&src_ucs2, -1, (LPSTR)dest_utf8, sizeof(dest_utf8), NULL, NULL);
+    if (result > 0) {
+        SDL_SendKeyboardText(dest_utf8);
+    }
+}
+
 #endif // SDL_VIDEO_DRIVER_WINRT

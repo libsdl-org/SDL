@@ -21,6 +21,7 @@
 #include "../../SDL_internal.h"
 
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
@@ -98,17 +99,26 @@ int
 SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
 {
     int retval;
+#ifndef HAVE_CLOCK_GETTIME
     struct timeval delta;
+#endif
     struct timespec abstime;
 
     if (!cond) {
         return SDL_SetError("Passed a NULL condition variable");
     }
 
+#ifdef HAVE_CLOCK_GETTIME
+    clock_gettime(CLOCK_REALTIME, &abstime);
+
+    abstime.tv_nsec += (ms % 1000) * 1000000;
+    abstime.tv_sec += ms / 1000;
+#else
     gettimeofday(&delta, NULL);
 
     abstime.tv_sec = delta.tv_sec + (ms / 1000);
     abstime.tv_nsec = (delta.tv_usec + (ms % 1000) * 1000) * 1000;
+#endif
     if (abstime.tv_nsec > 1000000000) {
         abstime.tv_sec += 1;
         abstime.tv_nsec -= 1000000000;

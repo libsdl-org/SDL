@@ -49,29 +49,11 @@ UIKit_GL_GetProcAddress(_THIS, const char *proc)
 /*
     note that SDL_GL_Delete context makes it current without passing the window
 */
-int
-UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
+int UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 {
-    @autoreleasepool {
-        [EAGLContext setCurrentContext:(__bridge EAGLContext *)context];
-    }
+    [EAGLContext setCurrentContext: context];
     return 0;
 }
-
-void UIKit_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
-{
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-
-        if (w) {
-            *w = data.view.backingWidth;
-        }
-        if (h) {
-            *h = data.view.backingHeight;
-        }
-    }
-}
-
 
 int
 UIKit_GL_LoadLibrary(_THIS, const char *path)
@@ -89,166 +71,117 @@ UIKit_GL_LoadLibrary(_THIS, const char *path)
 
 void UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
 {
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-
 #if SDL_POWER_UIKIT
-        /* Check once a frame to see if we should turn off the battery monitor. */
-        SDL_UIKit_UpdateBatteryMonitoring();
+    /* Check once a frame to see if we should turn off the battery monitor. */
+    SDL_UIKit_UpdateBatteryMonitoring();
 #endif
 
-        if (data.view == nil) {
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+
+    if (nil == data->view) {
+        return;
+    }
+    [data->view swapBuffers];
+
+    /* You need to pump events in order for the OS to make changes visible.
+       We don't pump events here because we don't want iOS application events
+       (low memory, terminate, etc.) to happen inside low level rendering.
+     */
+}
+
+SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
+{
+    SDL_uikitopenglview *view;
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData *displaydata = display->driverdata;
+    SDL_DisplayModeData *displaymodedata = display->current_mode.driverdata;
+    UIWindow *uiwindow = data->uiwindow;
+    EAGLSharegroup *share_group = nil;
+
+    if (_this->gl_config.share_with_current_context) {
+        SDL_uikitopenglview *view = (SDL_uikitopenglview *) SDL_GL_GetCurrentContext();
+        share_group = [view.context sharegroup];
+    }
+
+    /* construct our view, passing in SDL's OpenGL configuration data */
+    CGRect frame;
+    if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
+        frame = [displaydata->uiscreen bounds];
+    } else {
+        frame = [displaydata->uiscreen applicationFrame];
+    }
+    view = [[SDL_uikitopenglview alloc] initWithFrame: frame
+                                    scale: displaymodedata->scale
+                                    retainBacking: _this->gl_config.retained_backing
+                                    rBits: _this->gl_config.red_size
+                                    gBits: _this->gl_config.green_size
+                                    bBits: _this->gl_config.blue_size
+                                    aBits: _this->gl_config.alpha_size
+                                    depthBits: _this->gl_config.depth_size
+                                    stencilBits: _this->gl_config.stencil_size
+                                    majorVersion: _this->gl_config.major_version
+                                    shareGroup: share_group];
+    if (!view) {
+        return NULL;
+    }
+
+    data->view = view;
+    view->viewcontroller = data->viewcontroller;
+    if (view->viewcontroller != nil) {
+        [view->viewcontroller setView:view];
+        [view->viewcontroller retain];
+    }
+    [uiwindow addSubview: view];
+
+    /* The view controller needs to be the root in order to control rotation on iOS 6.0 */
+    if (uiwindow.rootViewController == nil) {
+        uiwindow.rootViewController = view->viewcontroller;
+    }
+
+    EAGLContext *context = view.context;
+    if (UIKit_GL_MakeCurrent(_this, window, context) < 0) {
+        UIKit_GL_DeleteContext(_this, context);
+        return NULL;
+    }
+
+    /* Make this window the current mouse focus for touch input */
+    if (displaydata->uiscreen == [UIScreen mainScreen]) {
+        SDL_SetMouseFocus(window);
+        SDL_SetKeyboardFocus(window);
+    }
+
+    return context;
+}
+
+void UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
+{
+    SDL_Window *window;
+
+    /* Find the view associated with this context */
+    for (window = _this->windows; window; window = window->next) {
+        SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+        SDL_uikitopenglview *view = data->view;
+        if (view.context == context) {
+            /* the delegate has retained the view, this will release him */
+            if (view->viewcontroller) {
+                UIWindow *uiwindow = (UIWindow *)view.superview;
+                if (uiwindow.rootViewController == view->viewcontroller) {
+                    uiwindow.rootViewController = nil;
+                }
+                [view->viewcontroller setView:nil];
+                [view->viewcontroller release];
+            }
+            [view removeFromSuperview];
+
+            /* FIXME: This doesn't actually call view dealloc - what is holding a reference to it? */
+            [view release];
             return;
         }
-        [data.view swapBuffers];
-
-        /* You need to pump events in order for the OS to make changes visible.
-           We don't pump events here because we don't want iOS application events
-           (low memory, terminate, etc.) to happen inside low level rendering.
-         */
-    }
-}
-
-SDL_GLContext
-UIKit_GL_CreateContext(_THIS, SDL_Window * window)
-{
-    @autoreleasepool {
-        SDL_uikitopenglview *view;
-        SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-        UIWindow *uiwindow = data.uiwindow;
-        CGRect frame = UIKit_ComputeViewFrame(window, uiwindow.screen);
-        EAGLSharegroup *share_group = nil;
-        CGFloat scale = 1.0;
-
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-            /* Set the scale to the natural scale factor of the screen - the
-               backing dimensions of the OpenGL view will match the pixel
-               dimensions of the screen rather than the dimensions in points.
-             */
-#ifdef __IPHONE_8_0
-            if ([uiwindow.screen respondsToSelector:@selector(nativeScale)]) {
-                scale = uiwindow.screen.nativeScale;
-            } else
-#endif
-            {
-                scale = uiwindow.screen.scale;
-            }
-        }
-
-        if (_this->gl_config.share_with_current_context) {
-            EAGLContext *context = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
-            share_group = context.sharegroup;
-        }
-
-        /* construct our view, passing in SDL's OpenGL configuration data */
-        view = [[SDL_uikitopenglview alloc] initWithFrame:frame
-                                                    scale:scale
-                                            retainBacking:_this->gl_config.retained_backing
-                                                    rBits:_this->gl_config.red_size
-                                                    gBits:_this->gl_config.green_size
-                                                    bBits:_this->gl_config.blue_size
-                                                    aBits:_this->gl_config.alpha_size
-                                                depthBits:_this->gl_config.depth_size
-                                              stencilBits:_this->gl_config.stencil_size
-                                                     sRGB:_this->gl_config.framebuffer_srgb_capable
-                                             majorVersion:_this->gl_config.major_version
-                                               shareGroup:share_group];
-        if (!view) {
-            return NULL;
-        }
-
-        data.view = view;
-        view.viewcontroller = data.viewcontroller;
-        if (view.viewcontroller != nil) {
-            view.viewcontroller.view = view;
-        }
-        [uiwindow addSubview:view];
-
-        /* The view controller needs to be the root in order to control rotation on iOS 6.0 */
-        if (uiwindow.rootViewController == nil) {
-            uiwindow.rootViewController = view.viewcontroller;
-        }
-
-        EAGLContext *context = view.context;
-        if (UIKit_GL_MakeCurrent(_this, window, (__bridge SDL_GLContext) context) < 0) {
-            UIKit_GL_DeleteContext(_this, (SDL_GLContext) CFBridgingRetain(context));
-            return NULL;
-        }
-
-        /* Make this window the current mouse focus for touch input */
-        if (uiwindow.screen == [UIScreen mainScreen]) {
-            SDL_SetMouseFocus(window);
-            SDL_SetKeyboardFocus(window);
-        }
-
-        /* We return a +1'd context. The window's driverdata owns the view. */
-        return (SDL_GLContext) CFBridgingRetain(context);
-    }
-}
-
-void
-UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
-{
-    @autoreleasepool {
-        /* Transfer ownership the +1'd context to ARC. */
-        EAGLContext *eaglcontext = (EAGLContext *) CFBridgingRelease(context);
-        SDL_Window *window;
-
-        /* Find the view associated with this context */
-        for (window = _this->windows; window; window = window->next) {
-            SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-            SDL_uikitopenglview *view = data.view;
-            if (view.context == eaglcontext) {
-                /* the delegate has retained the view, this will release him */
-                if (view.viewcontroller) {
-                    UIWindow *uiwindow = (UIWindow *)view.superview;
-                    if (uiwindow.rootViewController == view.viewcontroller) {
-                        uiwindow.rootViewController = nil;
-                    }
-                    view.viewcontroller.view = nil;
-                    view.viewcontroller = nil;
-                }
-                [view removeFromSuperview];
-
-                data.view = nil;
-                return;
-            }
-        }
-    }
-}
-
-Uint32 SDL_iPhoneGetViewRenderbuffer(SDL_Window * window)
-{
-    if (!window) {
-        SDL_SetError("Invalid window");
-        return 0;
     }
 
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-        if (data.view != nil) {
-            return data.view.drawableRenderbuffer;
-        } else {
-            return 0;
-        }
-    }
-}
-
-Uint32 SDL_iPhoneGetViewFramebuffer(SDL_Window * window)
-{
-    if (!window) {
-        SDL_SetError("Invalid window");
-        return 0;
-    }
-
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-        if (data.view != nil) {
-            return data.view.drawableFramebuffer;
-        } else {
-            return 0;
-        }
-    }
+    /* View not found... delete the context anyway? */
+    [(EAGLContext *)context release];
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */

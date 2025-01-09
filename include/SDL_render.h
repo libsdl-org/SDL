@@ -371,7 +371,7 @@ extern DECLSPEC int SDLCALL SDL_GetTextureBlendMode(SDL_Texture * texture,
  *  \param rect      A pointer to the rectangle of pixels to update, or NULL to
  *                   update the entire texture.
  *  \param pixels    The raw pixel data.
- *  \param pitch     The number of bytes between rows of pixel data.
+ *  \param pitch     The number of bytes in a row of pixel data, including padding between lines.
  *
  *  \return 0 on success, or -1 if the texture is not valid.
  *

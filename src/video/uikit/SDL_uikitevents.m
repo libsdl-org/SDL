@@ -40,9 +40,8 @@ SDL_iPhoneSetEventPump(SDL_bool enabled)
 void
 UIKit_PumpEvents(_THIS)
 {
-    if (!UIKit_EventPumpEnabled) {
+    if (!UIKit_EventPumpEnabled)
         return;
-    }
 
     /* Let the run loop run for a short amount of time: long enough for
        touch events to get processed (which is important to get certain

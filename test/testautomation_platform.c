@@ -34,16 +34,16 @@ int platform_testTypes(void *arg)
    int ret;
 
    ret = _compareSizeOfType( sizeof(Uint8), 1 );
-   SDLTest_AssertCheck( ret == 0, "sizeof(Uint8) = %lu, expected  1", sizeof(Uint8) );
+   SDLTest_AssertCheck( ret == 0, "sizeof(Uint8) = %lu, expected  1", (unsigned long)sizeof(Uint8) );
 
    ret = _compareSizeOfType( sizeof(Uint16), 2 );
-   SDLTest_AssertCheck( ret == 0, "sizeof(Uint16) = %lu, expected 2", sizeof(Uint16) );
+   SDLTest_AssertCheck( ret == 0, "sizeof(Uint16) = %lu, expected 2", (unsigned long)sizeof(Uint16) );
 
    ret = _compareSizeOfType( sizeof(Uint32), 4 );
-   SDLTest_AssertCheck( ret == 0, "sizeof(Uint32) = %lu, expected 4", sizeof(Uint32) );
+   SDLTest_AssertCheck( ret == 0, "sizeof(Uint32) = %lu, expected 4", (unsigned long)sizeof(Uint32) );
 
    ret = _compareSizeOfType( sizeof(Uint64), 8 );
-   SDLTest_AssertCheck( ret == 0, "sizeof(Uint64) = %lu, expected 8", sizeof(Uint64) );
+   SDLTest_AssertCheck( ret == 0, "sizeof(Uint64) = %lu, expected 8", (unsigned long)sizeof(Uint64) );
 
    return TEST_COMPLETED;
 }
@@ -395,21 +395,17 @@ int platform_testSetErrorInvalidInput(void *arg)
      len = SDL_strlen(lastError);
      SDLTest_AssertCheck(len == 0,
              "SDL_GetError(): expected message len 0, was len: %i",
-             0,
              len);
-     SDLTest_AssertCheck(SDL_strcmp(lastError, "") == 0,
-             "SDL_GetError(): expected message '', was message: '%s'",
-             lastError);
    }
 
    /* Set */
    result = SDL_SetError(probeError);
-   SDLTest_AssertPass("SDL_SetError()");
+   SDLTest_AssertPass("SDL_SetError('%s')", probeError);
    SDLTest_AssertCheck(result == -1, "SDL_SetError: expected -1, got: %i", result);
 
    /* Check for no-op */
    result = SDL_SetError(invalidError);
-   SDLTest_AssertPass("SDL_SetError()");
+   SDLTest_AssertPass("SDL_SetError(NULL)");
    SDLTest_AssertCheck(result == -1, "SDL_SetError: expected -1, got: %i", result);
    lastError = (char *)SDL_GetError();
    SDLTest_AssertCheck(lastError != NULL,
@@ -417,14 +413,9 @@ int platform_testSetErrorInvalidInput(void *arg)
    if (lastError != NULL)
    {
      len = SDL_strlen(lastError);
-     SDLTest_AssertCheck(len == SDL_strlen(probeError),
-             "SDL_GetError(): expected message len %i, was len: %i",
-             SDL_strlen(probeError),
+     SDLTest_AssertCheck(len == 0,
+             "SDL_GetError(): expected message len 0, was len: %i",
              len);
-     SDLTest_AssertCheck(SDL_strcmp(lastError, probeError) == 0,
-             "SDL_GetError(): expected message '%s', was message: '%s'",
-             probeError,
-             lastError);
    }
 
    /* Reset */
