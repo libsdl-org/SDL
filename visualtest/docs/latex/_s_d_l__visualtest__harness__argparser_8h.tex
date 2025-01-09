@@ -1,0 +1,80 @@
+\hypertarget{_s_d_l__visualtest__harness__argparser_8h}{\section{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\-S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.h File Reference}
+\label{_s_d_l__visualtest__harness__argparser_8h}\index{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\-S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h@{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\-S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}}
+}
+{\ttfamily \#include $<$S\-D\-L.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}S\-D\-L\-\_\-visualtest\-\_\-sut\-\_\-configparser.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}S\-D\-L\-\_\-visualtest\-\_\-action\-\_\-configparser.\-h\char`\"{}}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_s_d_l_visual_test___harness_state}{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{_s_d_l__visualtest__harness__argparser_8h_abdd33f362ae3bbdacb5de76473aa8a2f}{M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N}~300
+\item 
+\#define \hyperlink{_s_d_l__visualtest__harness__argparser_8h_a8485cbda108eca56406d67aaa685fcc5}{M\-A\-X\-\_\-\-S\-U\-T\-\_\-\-A\-R\-G\-S\-\_\-\-L\-E\-N}~600
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct \\*
+\hyperlink{struct_s_d_l_visual_test___harness_state}{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State} \hyperlink{_s_d_l__visualtest__harness__argparser_8h_ab89725ad0ec988d4923faa6a85972455}{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{_s_d_l__visualtest__harness__argparser_8h_a629609acc04ef21a21fdfbbf6c1589c8}{S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Harness\-Args} (char $\ast$$\ast$argv, \hyperlink{struct_s_d_l_visual_test___harness_state}{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State} $\ast$state)
+\item 
+void \hyperlink{_s_d_l__visualtest__harness__argparser_8h_a833147d8da541982c615645a797627cc}{S\-D\-L\-Visual\-Test\-\_\-\-Free\-Harness\-State} (\hyperlink{struct_s_d_l_visual_test___harness_state}{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State} $\ast$state)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Provides functionality to parse command line arguments to the test harness. 
+
+\subsection{Macro Definition Documentation}
+\hypertarget{_s_d_l__visualtest__harness__argparser_8h_abdd33f362ae3bbdacb5de76473aa8a2f}{\index{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h@{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}!M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N@{M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N}}
+\index{M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N@{M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N}!SDL_visualtest_harness_argparser.h@{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}}
+\subsubsection[{M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N~300}}\label{_s_d_l__visualtest__harness__argparser_8h_abdd33f362ae3bbdacb5de76473aa8a2f}
+Maximum length of a path string \hypertarget{_s_d_l__visualtest__harness__argparser_8h_a8485cbda108eca56406d67aaa685fcc5}{\index{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h@{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}!M\-A\-X\-\_\-\-S\-U\-T\-\_\-\-A\-R\-G\-S\-\_\-\-L\-E\-N@{M\-A\-X\-\_\-\-S\-U\-T\-\_\-\-A\-R\-G\-S\-\_\-\-L\-E\-N}}
+\index{M\-A\-X\-\_\-\-S\-U\-T\-\_\-\-A\-R\-G\-S\-\_\-\-L\-E\-N@{M\-A\-X\-\_\-\-S\-U\-T\-\_\-\-A\-R\-G\-S\-\_\-\-L\-E\-N}!SDL_visualtest_harness_argparser.h@{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}}
+\subsubsection[{M\-A\-X\-\_\-\-S\-U\-T\-\_\-\-A\-R\-G\-S\-\_\-\-L\-E\-N}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\-A\-X\-\_\-\-S\-U\-T\-\_\-\-A\-R\-G\-S\-\_\-\-L\-E\-N~600}}\label{_s_d_l__visualtest__harness__argparser_8h_a8485cbda108eca56406d67aaa685fcc5}
+Maximum length of a string of S\-U\-T arguments 
+
+\subsection{Typedef Documentation}
+\hypertarget{_s_d_l__visualtest__harness__argparser_8h_ab89725ad0ec988d4923faa6a85972455}{\index{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h@{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!SDL_visualtest_harness_argparser.h@{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}  {\bf S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}}\label{_s_d_l__visualtest__harness__argparser_8h_ab89725ad0ec988d4923faa6a85972455}
+Stores the state of the test harness. 
+
+\subsection{Function Documentation}
+\hypertarget{_s_d_l__visualtest__harness__argparser_8h_a833147d8da541982c615645a797627cc}{\index{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h@{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Free\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Free\-Harness\-State}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Free\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Free\-Harness\-State}!SDL_visualtest_harness_argparser.h@{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Free\-Harness\-State}]{\setlength{\rightskip}{0pt plus 5cm}void S\-D\-L\-Visual\-Test\-\_\-\-Free\-Harness\-State (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State} $\ast$}]{state}
+\end{DoxyParamCaption}
+)}}\label{_s_d_l__visualtest__harness__argparser_8h_a833147d8da541982c615645a797627cc}
+Frees any resources associated with the state object pointed to by {\ttfamily state}. \hypertarget{_s_d_l__visualtest__harness__argparser_8h_a629609acc04ef21a21fdfbbf6c1589c8}{\index{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h@{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Harness\-Args@{S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Harness\-Args}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Harness\-Args@{S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Harness\-Args}!SDL_visualtest_harness_argparser.h@{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Harness\-Args}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Harness\-Args (
+\begin{DoxyParamCaption}
+\item[{char $\ast$$\ast$}]{argv, }
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State} $\ast$}]{state}
+\end{DoxyParamCaption}
+)}}\label{_s_d_l__visualtest__harness__argparser_8h_a629609acc04ef21a21fdfbbf6c1589c8}
+Parse command line paramters to the test harness and populate a state object.
+
+
+\begin{DoxyParams}{Parameters}
+{\em argv} & The array of command line parameters. \\
+\hline
+{\em state} & Pointer to the state object to be populated.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Non-\/zero on success, zero on failure. 
+\end{DoxyReturn}

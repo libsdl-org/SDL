@@ -1,0 +1,141 @@
+\hypertarget{_s_d_l__visualtest__variator__common_8h}{\section{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\-S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.h File Reference}
+\label{_s_d_l__visualtest__variator__common_8h}\index{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\-S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h@{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\-S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}}
+}
+{\ttfamily \#include $<$S\-D\-L\-\_\-types.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}S\-D\-L\-\_\-visualtest\-\_\-sut\-\_\-configparser.\-h\char`\"{}}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+union \hyperlink{union_s_d_l_visual_test___s_u_t_option_value}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}
+\item 
+struct \hyperlink{struct_s_d_l_visual_test___variation}{S\-D\-L\-Visual\-Test\-\_\-\-Variation}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{_s_d_l__visualtest__variator__common_8h_afcdce86a10fbcdc9f3e47c47b70e3ea3}{S\-D\-L\-\_\-\-S\-U\-T\-\_\-\-I\-N\-T\-E\-G\-E\-R\-\_\-\-O\-P\-T\-I\-O\-N\-\_\-\-T\-E\-S\-T\-\_\-\-S\-T\-E\-P\-S}~3
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef enum \\*
+\hyperlink{_s_d_l__visualtest__variator__common_8h_a04bfc880abe6940d69a63c06a33acdbd}{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type} \hyperlink{_s_d_l__visualtest__variator__common_8h_a4a7752dc89880ce3f62a478b3d0d8d64}{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type}
+\item 
+typedef union \\*
+\hyperlink{union_s_d_l_visual_test___s_u_t_option_value}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value} \hyperlink{_s_d_l__visualtest__variator__common_8h_aa4e5fb752f4cd087101ea3e1f6124dfb}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}
+\item 
+typedef struct \\*
+\hyperlink{struct_s_d_l_visual_test___variation}{S\-D\-L\-Visual\-Test\-\_\-\-Variation} \hyperlink{_s_d_l__visualtest__variator__common_8h_a6b447c1467862ecd623cc8f37489faeb}{S\-D\-L\-Visual\-Test\-\_\-\-Variation}
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \hyperlink{_s_d_l__visualtest__variator__common_8h_a04bfc880abe6940d69a63c06a33acdbd}{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type} \{ {\bfseries S\-D\-L\-\_\-\-V\-A\-R\-I\-A\-T\-O\-R\-\_\-\-N\-O\-N\-E} = 0, 
+{\bfseries S\-D\-L\-\_\-\-V\-A\-R\-I\-A\-T\-O\-R\-\_\-\-E\-X\-H\-A\-U\-S\-T\-I\-V\-E}, 
+{\bfseries S\-D\-L\-\_\-\-V\-A\-R\-I\-A\-T\-O\-R\-\_\-\-R\-A\-N\-D\-O\-M}
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{_s_d_l__visualtest__variator__common_8h_aafcecc06c8feb24b6f6a509bfa9db681}{S\-D\-L\-Visual\-Test\-\_\-\-Next\-Value} (\hyperlink{union_s_d_l_visual_test___s_u_t_option_value}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value} $\ast$var, \hyperlink{struct_s_d_l_visual_test___s_u_t_option}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option} $\ast$opt)
+\item 
+int \hyperlink{_s_d_l__visualtest__variator__common_8h_ad981c2efab849e76dc878ef8da9d6017}{S\-D\-L\-Visual\-Test\-\_\-\-Make\-Str\-From\-Variation} (\hyperlink{struct_s_d_l_visual_test___variation}{S\-D\-L\-Visual\-Test\-\_\-\-Variation} $\ast$variation, \hyperlink{struct_s_d_l_visual_test___s_u_t_config}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Config} $\ast$config, char $\ast$buffer, int size)
+\item 
+int \hyperlink{_s_d_l__visualtest__variator__common_8h_ac87934906c51364778dc910ebca47b6c}{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Variation} (\hyperlink{struct_s_d_l_visual_test___variation}{S\-D\-L\-Visual\-Test\-\_\-\-Variation} $\ast$variation, \hyperlink{struct_s_d_l_visual_test___s_u_t_config}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Config} $\ast$config)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Header for common functionality used by variators. 
+
+\subsection{Macro Definition Documentation}
+\hypertarget{_s_d_l__visualtest__variator__common_8h_afcdce86a10fbcdc9f3e47c47b70e3ea3}{\index{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}!S\-D\-L\-\_\-\-S\-U\-T\-\_\-\-I\-N\-T\-E\-G\-E\-R\-\_\-\-O\-P\-T\-I\-O\-N\-\_\-\-T\-E\-S\-T\-\_\-\-S\-T\-E\-P\-S@{S\-D\-L\-\_\-\-S\-U\-T\-\_\-\-I\-N\-T\-E\-G\-E\-R\-\_\-\-O\-P\-T\-I\-O\-N\-\_\-\-T\-E\-S\-T\-\_\-\-S\-T\-E\-P\-S}}
+\index{S\-D\-L\-\_\-\-S\-U\-T\-\_\-\-I\-N\-T\-E\-G\-E\-R\-\_\-\-O\-P\-T\-I\-O\-N\-\_\-\-T\-E\-S\-T\-\_\-\-S\-T\-E\-P\-S@{S\-D\-L\-\_\-\-S\-U\-T\-\_\-\-I\-N\-T\-E\-G\-E\-R\-\_\-\-O\-P\-T\-I\-O\-N\-\_\-\-T\-E\-S\-T\-\_\-\-S\-T\-E\-P\-S}!SDL_visualtest_variator_common.h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}}
+\subsubsection[{S\-D\-L\-\_\-\-S\-U\-T\-\_\-\-I\-N\-T\-E\-G\-E\-R\-\_\-\-O\-P\-T\-I\-O\-N\-\_\-\-T\-E\-S\-T\-\_\-\-S\-T\-E\-P\-S}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\-D\-L\-\_\-\-S\-U\-T\-\_\-\-I\-N\-T\-E\-G\-E\-R\-\_\-\-O\-P\-T\-I\-O\-N\-\_\-\-T\-E\-S\-T\-\_\-\-S\-T\-E\-P\-S~3}}\label{_s_d_l__visualtest__variator__common_8h_afcdce86a10fbcdc9f3e47c47b70e3ea3}
+The number of variations one integer option would generate 
+
+\subsection{Typedef Documentation}
+\hypertarget{_s_d_l__visualtest__variator__common_8h_aa4e5fb752f4cd087101ea3e1f6124dfb}{\index{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}!SDL_visualtest_variator_common.h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}]{\setlength{\rightskip}{0pt plus 5cm}typedef union {\bf S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}  {\bf S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}}}\label{_s_d_l__visualtest__variator__common_8h_aa4e5fb752f4cd087101ea3e1f6124dfb}
+One possible value for a command line option to the S\-U\-T. \hypertarget{_s_d_l__visualtest__variator__common_8h_a6b447c1467862ecd623cc8f37489faeb}{\index{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Variation@{S\-D\-L\-Visual\-Test\-\_\-\-Variation}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Variation@{S\-D\-L\-Visual\-Test\-\_\-\-Variation}!SDL_visualtest_variator_common.h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Variation}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct {\bf S\-D\-L\-Visual\-Test\-\_\-\-Variation}  {\bf S\-D\-L\-Visual\-Test\-\_\-\-Variation}}}\label{_s_d_l__visualtest__variator__common_8h_a6b447c1467862ecd623cc8f37489faeb}
+Represents a valid combination of parameters that can be passed to the S\-U\-T. The ordering of the values here is the same as the ordering of the options in the \hyperlink{struct_s_d_l_visual_test___s_u_t_config}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Config} object for this variation. \hypertarget{_s_d_l__visualtest__variator__common_8h_a4a7752dc89880ce3f62a478b3d0d8d64}{\index{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type@{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type@{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type}!SDL_visualtest_variator_common.h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type}]{\setlength{\rightskip}{0pt plus 5cm}typedef enum {\bf S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type}  {\bf S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type}}}\label{_s_d_l__visualtest__variator__common_8h_a4a7752dc89880ce3f62a478b3d0d8d64}
+enum for indicating the type of variator being used 
+
+\subsection{Enumeration Type Documentation}
+\hypertarget{_s_d_l__visualtest__variator__common_8h_a04bfc880abe6940d69a63c06a33acdbd}{\index{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type@{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type@{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type}!SDL_visualtest_variator_common.h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type}]{\setlength{\rightskip}{0pt plus 5cm}enum {\bf S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type}}}\label{_s_d_l__visualtest__variator__common_8h_a04bfc880abe6940d69a63c06a33acdbd}
+enum for indicating the type of variator being used 
+
+\subsection{Function Documentation}
+\hypertarget{_s_d_l__visualtest__variator__common_8h_ac87934906c51364778dc910ebca47b6c}{\index{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Init\-Variation@{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Variation}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Variation@{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Variation}!SDL_visualtest_variator_common.h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Variation}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Init\-Variation (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Variation} $\ast$}]{variation, }
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Config} $\ast$}]{config}
+\end{DoxyParamCaption}
+)}}\label{_s_d_l__visualtest__variator__common_8h_ac87934906c51364778dc910ebca47b6c}
+Initializes the variation using the following rules\-:
+\begin{DoxyItemize}
+\item Boolean options are initialized to S\-D\-L\-\_\-\-F\-A\-L\-S\-E.
+\item Integer options are initialized to the minimum valid value they can hold.
+\item Enum options are initialized to the first element in the list of values they can take.
+\item String options are initialized to the name of the option.
+\end{DoxyItemize}
+
+\begin{DoxyReturn}{Returns}
+1 on success, 0 on failure. 
+\end{DoxyReturn}
+\hypertarget{_s_d_l__visualtest__variator__common_8h_ad981c2efab849e76dc878ef8da9d6017}{\index{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Make\-Str\-From\-Variation@{S\-D\-L\-Visual\-Test\-\_\-\-Make\-Str\-From\-Variation}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Make\-Str\-From\-Variation@{S\-D\-L\-Visual\-Test\-\_\-\-Make\-Str\-From\-Variation}!SDL_visualtest_variator_common.h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Make\-Str\-From\-Variation}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Make\-Str\-From\-Variation (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Variation} $\ast$}]{variation, }
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Config} $\ast$}]{config, }
+\item[{char $\ast$}]{buffer, }
+\item[{int}]{size}
+\end{DoxyParamCaption}
+)}}\label{_s_d_l__visualtest__variator__common_8h_ad981c2efab849e76dc878ef8da9d6017}
+Converts a variation object into a string of command line arguments.
+
+
+\begin{DoxyParams}{Parameters}
+{\em variation} & Variation object to be converted. \\
+\hline
+{\em config} & Config object for the S\-U\-T. \\
+\hline
+{\em buffer} & Pointer to the buffer the arguments string will be copied into. \\
+\hline
+{\em size} & Size of the buffer.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1 on success, 0 on failure 
+\end{DoxyReturn}
+\hypertarget{_s_d_l__visualtest__variator__common_8h_aafcecc06c8feb24b6f6a509bfa9db681}{\index{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Next\-Value@{S\-D\-L\-Visual\-Test\-\_\-\-Next\-Value}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Next\-Value@{S\-D\-L\-Visual\-Test\-\_\-\-Next\-Value}!SDL_visualtest_variator_common.h@{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Next\-Value}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Next\-Value (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value} $\ast$}]{var, }
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option} $\ast$}]{opt}
+\end{DoxyParamCaption}
+)}}\label{_s_d_l__visualtest__variator__common_8h_aafcecc06c8feb24b6f6a509bfa9db681}
+\char`\"{}\-Increments\char`\"{} the value of the option by one and returns the carry. We wrap around to the initial value on overflow which makes the carry one. For example\-: \char`\"{}incrementing\char`\"{} an S\-D\-L\-\_\-\-F\-A\-L\-S\-E option makes it S\-D\-L\-\_\-\-T\-R\-U\-E with no carry, and \char`\"{}incrementing\char`\"{} an S\-D\-L\-\_\-\-T\-R\-U\-E option makes it S\-D\-L\-\_\-\-F\-A\-L\-S\-E with carry one. For integers, a random value in the valid range for the option is used.
+
+
+\begin{DoxyParams}{Parameters}
+{\em var} & Value of the option \\
+\hline
+{\em opt} & Object with metadata about the option\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+1 if there is a carry for enum and bool type options, 0 otherwise. 1 is always returned for integer and string type options. -\/1 is returned on error. 
+\end{DoxyReturn}

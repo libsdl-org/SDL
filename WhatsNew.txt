@@ -1,0 +1,118 @@
+
+This is a list of major changes in SDL's version history.
+
+---------------------------------------------------------------------------
+2.0.4:
+---------------------------------------------------------------------------
+
+General:
+* Added an event SDL_RENDER_DEVICE_RESET that is sent from the D3D renderers 
+  when the D3D device is lost, and from Android's event loop when the GLES
+  context had to be re created.
+* Native Client backend
+
+---------------------------------------------------------------------------
+2.0.3:
+---------------------------------------------------------------------------
+
+Mac OS X:
+* Fixed creating an OpenGL context by default on Mac OS X 10.6
+
+
+---------------------------------------------------------------------------
+2.0.2:
+---------------------------------------------------------------------------
+General:
+* Added SDL_GL_ResetAttributes() to reset OpenGL attributes to default values
+* Added an API to load a database of game controller mappings from a file:
+    SDL_GameControllerAddMappingsFromFile(), SDL_GameControllerAddMappingsFromRW()
+* Added game controller mappings for the PS4 and OUYA controllers
+* Added SDL_GetDefaultAssertionHandler() and SDL_GetAssertionHandler()
+* Added SDL_DetachThread()
+* Added SDL_HasAVX() to determine if the CPU has AVX features
+* Added SDL_vsscanf(), SDL_acos(), and SDL_asin() to the stdlib routines
+* EGL can now create/manage OpenGL and OpenGL ES 1.x/2.x contexts, and share
+  them using SDL_GL_SHARE_WITH_CURRENT_CONTEXT
+* Added a field "clicks" to the mouse button event which records whether the event is a single click, double click, etc.
+* The screensaver is now disabled by default, and there is a hint SDL_HINT_VIDEO_ALLOW_SCREENSAVER that can change that behavior.
+* Added a hint SDL_HINT_MOUSE_RELATIVE_MODE_WARP to specify whether mouse relative mode should be emulated using mouse warping.
+* testgl2 does not need to link with libGL anymore
+* Added testgles2 test program to demonstrate working with OpenGL ES 2.0
+* Added controllermap test program to visually map a game controller
+
+Windows:
+* Support for OpenGL ES 2.x contexts using either WGL or EGL (natively via
+  the driver or emulated through ANGLE)
+* Added a hint SDL_HINT_VIDEO_WIN_D3DCOMPILER to specify which D3D shader compiler to use for OpenGL ES 2 support through ANGLE
+* Added a hint SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT that is useful when creating multiple windows that should share the same OpenGL context.
+* Added an event SDL_RENDER_TARGETS_RESET that is sent when D3D9 render targets are reset after the device has been restored.
+
+Mac OS X:
+* Added a hint SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK to control whether Ctrl+click should be treated as a right click on Mac OS X. This is off by default.
+
+Linux:
+* Fixed fullscreen and focused behavior when receiving NotifyGrab events
+* Added experimental Wayland and Mir support, disabled by default
+
+Android:
+* Joystick support (minimum SDK version required to build SDL is now 12, 
+  the required runtime version remains at 10, but on such devices joystick 
+  support won't be available).
+* Hotplugging support for joysticks
+* Added a hint SDL_HINT_ACCELEROMETER_AS_JOYSTICK to control whether the accelerometer should be listed as a 3 axis joystick, which it will by default.
+
+
+---------------------------------------------------------------------------
+2.0.1:
+---------------------------------------------------------------------------
+
+General:
+* Added an API to get common filesystem paths in SDL_filesystem.h:
+    SDL_GetBasePath(), SDL_GetPrefPath()
+* Added an API to do optimized YV12 and IYUV texture updates:
+    SDL_UpdateYUVTexture()
+* Added an API to get the amount of RAM on the system:
+    SDL_GetSystemRAM()
+* Added a macro to perform timestamp comparisons with SDL_GetTicks():
+    SDL_TICKS_PASSED()
+* Dramatically improved OpenGL ES 2.0 rendering performance
+* Added OpenGL attribute SDL_GL_FRAMEBUFFER_SRGB_CAPABLE
+
+Windows:
+* Created a static library configuration for the Visual Studio 2010 project
+* Added a hint to create the Direct3D device with support for multi-threading:
+    SDL_HINT_RENDER_DIRECT3D_THREADSAFE
+* Added a function to get the D3D9 adapter index for a display:
+    SDL_Direct3D9GetAdapterIndex()
+* Added a function to get the D3D9 device for a D3D9 renderer:
+    SDL_RenderGetD3D9Device()
+* Fixed building SDL with the mingw32 toolchain (mingw-w64 is preferred)
+* Fixed crash when using two XInput controllers at the same time
+* Fixed detecting a mixture of XInput and DirectInput controllers
+* Fixed clearing a D3D render target larger than the window
+* Improved support for format specifiers in SDL_snprintf()
+
+Mac OS X:
+* Added support for retina displays:
+  Create your window with the SDL_WINDOW_ALLOW_HIGHDPI flag, and then use SDL_GL_GetDrawableSize() to find the actual drawable size. You are responsible for scaling mouse and drawing coordinates appropriately.
+* Fixed mouse warping in fullscreen mode
+* Right mouse click is emulated by holding the Ctrl key while left clicking
+
+Linux:
+* Fixed float audio support with the PulseAudio driver
+* Fixed missing line endpoints in the OpenGL renderer on some drivers
+* X11 symbols are no longer defined to avoid collisions when linking statically
+
+iOS:
+* Fixed status bar visibility on iOS 7
+* Flipped the accelerometer Y axis to match expected values
+
+Android:
+IMPORTANT: You MUST get the updated SDLActivity.java to match C code
+* Moved EGL initialization to native code 
+* Fixed the accelerometer axis rotation relative to the device rotation
+* Fixed race conditions when handling the EGL context on pause/resume
+* Touch devices are available for enumeration immediately after init
+
+Raspberry Pi:
+* Added support for the Raspberry Pi, see README-raspberrypi.txt for details
