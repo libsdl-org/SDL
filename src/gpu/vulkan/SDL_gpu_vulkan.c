@@ -607,6 +607,7 @@ typedef struct VulkanShader
 {
     VkShaderModule shaderModule;
     const char *entrypointName;
+    SDL_GPUShaderStage stage;
     Uint32 numSamplers;
     Uint32 numStorageTextures;
     Uint32 numStorageBuffers;
@@ -6229,6 +6230,15 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     shaderStageCreateInfos[1].pName = graphicsPipeline->fragmentShader->entrypointName;
     shaderStageCreateInfos[1].pSpecializationInfo = NULL;
 
+    if (renderer->debugMode) {
+        if (graphicsPipeline->vertexShader->stage != SDL_GPU_SHADERSTAGE_VERTEX) {
+            SDL_assert_release(!"CreateGraphicsPipeline was passed a fragment shader for the vertex stage");
+        }
+        if (graphicsPipeline->fragmentShader->stage != SDL_GPU_SHADERSTAGE_FRAGMENT) {
+            SDL_assert_release(!"CreateGraphicsPipeline was passed a vertex shader for the fragment stage");
+        }
+    }
+
     // Vertex input
 
     for (i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i += 1) {
@@ -6635,6 +6645,7 @@ static SDL_GPUShader *VULKAN_CreateShader(
     vulkanShader->entrypointName = SDL_malloc(entryPointNameLength);
     SDL_utf8strlcpy((char *)vulkanShader->entrypointName, createinfo->entrypoint, entryPointNameLength);
 
+    vulkanShader->stage = createinfo->stage;
     vulkanShader->numSamplers = createinfo->num_samplers;
     vulkanShader->numStorageTextures = createinfo->num_storage_textures;
     vulkanShader->numStorageBuffers = createinfo->num_storage_buffers;

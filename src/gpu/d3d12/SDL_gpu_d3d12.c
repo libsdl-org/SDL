@@ -962,6 +962,7 @@ struct D3D12Shader
     void *bytecode;
     size_t bytecodeSize;
 
+    SDL_GPUShaderStage stage;
     Uint32 num_samplers;
     Uint32 numUniformBuffers;
     Uint32 numStorageBuffers;
@@ -2858,6 +2859,15 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     D3D12Shader *vertShader = (D3D12Shader *)createinfo->vertex_shader;
     D3D12Shader *fragShader = (D3D12Shader *)createinfo->fragment_shader;
 
+    if (renderer->debug_mode) {
+        if (vertShader->stage != SDL_GPU_SHADERSTAGE_VERTEX) {
+            SDL_assert_release(!"CreateGraphicsPipeline was passed a fragment shader for the vertex stage");
+        }
+        if (fragShader->stage != SDL_GPU_SHADERSTAGE_FRAGMENT) {
+            SDL_assert_release(!"CreateGraphicsPipeline was passed a vertex shader for the fragment stage");
+        }
+    }
+
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
     SDL_zero(psoDesc);
     psoDesc.VS.pShaderBytecode = vertShader->bytecode;
@@ -3028,6 +3038,7 @@ static SDL_GPUShader *D3D12_CreateShader(
         SDL_free(bytecode);
         return NULL;
     }
+    shader->stage = createinfo->stage;
     shader->num_samplers = createinfo->num_samplers;
     shader->numStorageBuffers = createinfo->num_storage_buffers;
     shader->numStorageTextures = createinfo->num_storage_textures;
