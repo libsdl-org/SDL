@@ -1135,7 +1135,8 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
 
             depthStencilDescriptor = [MTLDepthStencilDescriptor new];
             depthStencilDescriptor.depthCompareFunction = createinfo->depth_stencil_state.enable_depth_test ? SDLToMetal_CompareOp[createinfo->depth_stencil_state.compare_op] : MTLCompareFunctionAlways;
-            depthStencilDescriptor.depthWriteEnabled = createinfo->depth_stencil_state.enable_depth_write;
+            // Disable write when test is disabled, to match other APIs' behavior
+            depthStencilDescriptor.depthWriteEnabled = createinfo->depth_stencil_state.enable_depth_write && createinfo->depth_stencil_state.enable_depth_test;
             depthStencilDescriptor.frontFaceStencil = frontStencilDescriptor;
             depthStencilDescriptor.backFaceStencil = backStencilDescriptor;
 
