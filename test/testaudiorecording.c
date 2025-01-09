@@ -172,7 +172,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    if (!SDL_AudioDevicePaused(SDL_GetAudioStreamDevice(stream_in))) {
+    if (!SDL_AudioStreamDevicePaused(stream_in)) {
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     } else {
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);

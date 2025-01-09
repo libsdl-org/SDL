@@ -2130,6 +2130,16 @@ bool SDL_ResumeAudioStreamDevice(SDL_AudioStream *stream)
     return SDL_ResumeAudioDevice(devid);
 }
 
+bool SDL_AudioStreamDevicePaused(SDL_AudioStream *stream)
+{
+    SDL_AudioDeviceID devid = SDL_GetAudioStreamDevice(stream);
+    if (!devid) {
+        return false;
+    }
+
+    return SDL_AudioDevicePaused(devid);
+}
+
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define NATIVE(type) SDL_AUDIO_##type##LE
 #define SWAPPED(type) SDL_AUDIO_##type##BE
