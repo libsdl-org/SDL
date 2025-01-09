@@ -1729,6 +1729,32 @@ AC_HELP_STRING([--enable-video-x11-vm], [use X11 VM extension for fullscreen [[d
     fi
 }
 
+dnl Set up the MX6 video driver if enabled
+CheckMX6Video()
+{
+    AC_ARG_ENABLE(video-mx6,
+AC_HELP_STRING([--enable-video-mx6], [use Freescale i.MX6 video driver [[default=no]]]),
+                  , enable_video_mx6=no)
+    if test x$enable_video = xyes -a x$enable_video_mx6 = xyes; then
+        AC_MSG_CHECKING(for Vivante GPU SDK)
+        have_viv_sdk=no
+        AC_TRY_COMPILE([
+          #define EGL_API_FB
+          #include <EGL/eglvivante.h>
+        ],[
+        ],[
+        have_viv_sdk=yes
+        ])
+        AC_MSG_RESULT($have_viv_sdk)
+        if test x$have_viv_sdk = xyes; then
+            AC_DEFINE(SDL_VIDEO_DRIVER_MX6, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/video/mx6/*.c"
+            SUMMARY_video="${SUMMARY_video} mx6"
+            have_video=yes
+        fi
+    fi
+}
+
 dnl Set up the Haiku video driver if enabled
 CheckHaikuVideo()
 {
@@ -1955,6 +1981,7 @@ CheckOpenGLESX11()
         AC_MSG_CHECKING(for EGL support)
         video_opengl_egl=no
         AC_TRY_COMPILE([
+         #define EGL_API_FB
          #include <EGL/egl.h>
          #include <EGL/eglext.h>
         ],[
@@ -2809,6 +2836,7 @@ case "$host" in
         CheckClockGettime
         CheckLinuxVersion
         CheckRPATH
+        CheckMX6Video
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
           case $ARCH in

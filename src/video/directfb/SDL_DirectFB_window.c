@@ -90,7 +90,7 @@ DirectFB_CreateWindow(_THIS, SDL_Window * window)
     desc.height = windata->size.h;
     desc.pixelformat = dispdata->pixelformat;
     desc.surface_caps = DSCAPS_PREMULTIPLIED;
-#if DIRECTFB_MAJOR_VERSION == 1 && DIRECTFB_MINOR_VERSION >= 4
+#if DIRECTFB_MAJOR_VERSION == 1 && DIRECTFB_MINOR_VERSION >= 6
     if (window->flags & SDL_WINDOW_OPENGL) {
         desc.surface_caps |= DSCAPS_GL;
     }
