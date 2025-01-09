@@ -912,7 +912,7 @@ static void *SDL_HIDAPI_HapticDriverLg4ff_Open(SDL_Joystick *joystick)
     }
 
     ctx->spring_level = SDL_HIDAPI_HapticDriverLg4ff_GetEnvInt("SDL_HAPTIC_LG4FF_SPRING", 0, 100, 30);
-    ctx->damper_level = SDL_HIDAPI_HapticDriverLg4ff_GetEnvInt("SDL_HAPTIC_LG4FF_SPRING", 0, 100, 30);
+    ctx->damper_level = SDL_HIDAPI_HapticDriverLg4ff_GetEnvInt("SDL_HAPTIC_LG4FF_DAMPER", 0, 100, 30);
     ctx->friction_level = SDL_HIDAPI_HapticDriverLg4ff_GetEnvInt("SDL_HAPTIC_LG4FF_FRICTION", 0, 100, 30);
     ctx->gain = SDL_HIDAPI_HapticDriverLg4ff_GetEnvInt("SDL_HAPTIC_LG4FF_GAIN", 0, 65535, 65535);
     ctx->app_gain = 65535;
