@@ -217,6 +217,10 @@
 #define SDL_EndThreadFunction NULL
 #endif
 
+#ifdef SDL_NOLONGLONG
+#error We cannot build a valid SDL3 library without long long support
+#endif
+
 /* Enable internal definitions in SDL API headers */
 #define SDL_INTERNAL
 
