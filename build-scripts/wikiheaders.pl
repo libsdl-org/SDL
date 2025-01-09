@@ -50,6 +50,7 @@ my $optionsfname = undef;
 my $wikipreamble = undef;
 my $wikiheaderfiletext = 'Defined in %fname%';
 my $manpageheaderfiletext = 'Defined in %fname%';
+my $manpagesymbolfilterregex = undef;
 my $headercategoryeval = undef;
 my $quickrefenabled = 0;
 my @quickrefcategoryorder;
@@ -127,6 +128,7 @@ if (defined $optionsfname) {
             $wikipreamble = $val, next if $key eq 'wikipreamble';
             $wikiheaderfiletext = $val, next if $key eq 'wikiheaderfiletext';
             $manpageheaderfiletext = $val, next if $key eq 'manpageheaderfiletext';
+            $manpagesymbolfilterregex = $val, next if $key eq 'manpagesymbolfilterregex';
             $headercategoryeval = $val, next if $key eq 'headercategoryeval';
             $quickrefenabled = int($val), next if $key eq 'quickrefenabled';
             @quickrefcategoryorder = split(/,/, $val), next if $key eq 'quickrefcategoryorder';
@@ -2758,6 +2760,7 @@ __EOF__
         my $sym = $_;
         next if not defined $wikisyms{$sym};  # don't have a page for that function, skip it.
         next if $sym =~ /\A\[category documentation\]/;   # not real symbols
+        next if (defined $manpagesymbolfilterregex) && ($sym =~ /$manpagesymbolfilterregex/);
         my $symtype = $headersymstype{$sym};
         my $wikitype = $wikitypes{$sym};
         my $sectionsref = $wikisyms{$sym};

@@ -16,7 +16,9 @@ bugreporturl = https://github.com/libsdl-org/sdlwiki/issues/new
 warn_about_missing = 0
 wikipreamble = (This is the documentation for SDL3, which is the current stable version. [SDL2](https://wiki.libsdl.org/SDL2/) was the previous version!)
 wikiheaderfiletext = Defined in [<SDL3/%fname%>](https://github.com/libsdl-org/SDL/blob/main/include/SDL3/%fname%)
+
 manpageheaderfiletext = Defined in SDL3/%fname%
+manpagesymbolfilterregex = \A[US]int\d+\Z
 
 # All SDL_test_* headers become undefined categories, everything else just converts like SDL_audio.h -> Audio
 # A handful of others we fix up in the header itself with /* WIKI CATEGORY: x */ comments.
