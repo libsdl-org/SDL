@@ -471,6 +471,7 @@ typedef struct MetalShader
     id<MTLLibrary> library;
     id<MTLFunction> function;
 
+    SDL_GPUShaderStage stage;
     Uint32 numSamplers;
     Uint32 numUniformBuffers;
     Uint32 numStorageBuffers;
@@ -1083,6 +1084,14 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
         NSError *error = NULL;
         MetalGraphicsPipeline *result = NULL;
 
+        if (renderer->debugMode) {
+            if (vertexShader->stage != SDL_GPU_SHADERSTAGE_VERTEX) {
+                SDL_assert_release(!"CreateGraphicsPipeline was passed a fragment shader for the vertex stage");
+            }
+            if (fragmentShader->stage != SDL_GPU_SHADERSTAGE_FRAGMENT) {
+                SDL_assert_release(!"CreateGraphicsPipeline was passed a vertex shader for the fragment stage");
+            }
+        }
         pipelineDescriptor = [MTLRenderPipelineDescriptor new];
 
         // Blend
@@ -1379,6 +1388,7 @@ static SDL_GPUShader *METAL_CreateShader(
         result = SDL_calloc(1, sizeof(MetalShader));
         result->library = libraryFunction.library;
         result->function = libraryFunction.function;
+        result->stage = createinfo->stage;
         result->numSamplers = createinfo->num_samplers;
         result->numStorageBuffers = createinfo->num_storage_buffers;
         result->numStorageTextures = createinfo->num_storage_textures;
