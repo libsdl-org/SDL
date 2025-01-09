@@ -3497,6 +3497,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ltoa(long value, char *str, int radix);
 extern SDL_DECLSPEC char * SDLCALL SDL_ultoa(unsigned long value, char *str, int radix);
 
 #ifndef SDL_NOLONGLONG
+
 /**
  * Convert a long long integer into a string.
  *
@@ -3667,6 +3668,7 @@ extern SDL_DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int ba
 extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **endp, int base);
 
 #ifndef SDL_NOLONGLONG
+
 /**
  * Parse a `long long` from a string.
  *
