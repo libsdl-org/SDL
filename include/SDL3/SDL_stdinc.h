@@ -753,7 +753,9 @@ typedef Sint64 SDL_Time;
 #endif
 /* Specifically for the `long long` -- SDL-specific. */
 #ifdef SDL_PLATFORM_WINDOWS
+#ifndef SDL_NOLONGLONG
 SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 for windows - make sure `long long` is 64 bits. */
+#endif
 #define SDL_PRILL_PREFIX "I64"
 #else
 #define SDL_PRILL_PREFIX "ll"
@@ -1126,8 +1128,10 @@ SDL_COMPILE_TIME_ASSERT(uint32_size, sizeof(Uint32) == 4);
 SDL_COMPILE_TIME_ASSERT(sint32_size, sizeof(Sint32) == 4);
 SDL_COMPILE_TIME_ASSERT(uint64_size, sizeof(Uint64) == 8);
 SDL_COMPILE_TIME_ASSERT(sint64_size, sizeof(Sint64) == 8);
+#ifndef SDL_NOLONGLONG
 SDL_COMPILE_TIME_ASSERT(uint64_longlong, sizeof(Uint64) <= sizeof(unsigned long long));
 SDL_COMPILE_TIME_ASSERT(size_t_longlong, sizeof(size_t) <= sizeof(unsigned long long));
+#endif
 typedef struct SDL_alignment_test
 {
     Uint8 a;
@@ -3492,6 +3496,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ltoa(long value, char *str, int radix);
  */
 extern SDL_DECLSPEC char * SDLCALL SDL_ultoa(unsigned long value, char *str, int radix);
 
+#ifndef SDL_NOLONGLONG
 /**
  * Convert a long long integer into a string.
  *
@@ -3547,6 +3552,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_lltoa(long long value, char *str, int rad
  * \sa SDL_ultoa
  */
 extern SDL_DECLSPEC char * SDLCALL SDL_ulltoa(unsigned long long value, char *str, int radix);
+#endif
 
 /**
  * Parse an `int` from a string.
@@ -3660,6 +3666,7 @@ extern SDL_DECLSPEC long SDLCALL SDL_strtol(const char *str, char **endp, int ba
  */
 extern SDL_DECLSPEC unsigned long SDLCALL SDL_strtoul(const char *str, char **endp, int base);
 
+#ifndef SDL_NOLONGLONG
 /**
  * Parse a `long long` from a string.
  *
@@ -3726,6 +3733,7 @@ extern SDL_DECLSPEC long long SDLCALL SDL_strtoll(const char *str, char **endp, 
  * \sa SDL_ulltoa
  */
 extern SDL_DECLSPEC unsigned long long SDLCALL SDL_strtoull(const char *str, char **endp, int base);
+#endif
 
 /**
  * Parse a `double` from a string.
