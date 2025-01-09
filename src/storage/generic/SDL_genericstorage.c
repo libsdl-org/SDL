@@ -44,13 +44,34 @@ static bool GENERIC_CloseStorage(void *userdata)
     return true;
 }
 
+typedef struct GenericEnumerateData
+{
+    size_t base_len;
+    SDL_EnumerateDirectoryCallback real_callback;
+    void *real_userdata;
+} GenericEnumerateData;
+
+static SDL_EnumerationResult SDLCALL GENERIC_EnumerateDirectory(void *userdata, const char *dirname, const char *fname)
+{
+    // SDL_EnumerateDirectory will return the full path, so for Storage we
+    // can take the base directory and add its length to the dirname string,
+    // effectively trimming the root without having to strdup anything.
+    GenericEnumerateData *wrap_data = (GenericEnumerateData *)userdata;
+    return wrap_data->real_callback(wrap_data->real_userdata, dirname + wrap_data->base_len, fname);
+}
+
 static bool GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata)
 {
     bool result = false;
+    GenericEnumerateData wrap_data;
 
     char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
     if (fullpath) {
-        result = SDL_EnumerateDirectory(fullpath, callback, callback_userdata);
+        wrap_data.base_len = SDL_strlen((char *)userdata);
+        wrap_data.real_callback = callback;
+        wrap_data.real_userdata = callback_userdata;
+
+        result = SDL_EnumerateDirectory(fullpath, GENERIC_EnumerateDirectory, &wrap_data);
 
         SDL_free(fullpath);
     }
