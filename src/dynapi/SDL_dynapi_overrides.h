@@ -1255,3 +1255,5 @@
 #define SDL_GetTrayMenuParentEntry SDL_GetTrayMenuParentEntry_REAL
 #define SDL_GetTrayMenuParentTray SDL_GetTrayMenuParentTray_REAL
 #define SDL_GetThreadState SDL_GetThreadState_REAL
+#define SDL_SetRenderGPUCommandBuffer SDL_SetRenderGPUCommandBuffer_REAL
+#define SDL_RenderPresentToGPUTexture SDL_RenderPresentToGPUTexture_REAL

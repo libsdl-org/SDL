@@ -1230,6 +1230,8 @@ SDL3_0.0.0 {
     SDL_GetTrayMenuParentEntry;
     SDL_GetTrayMenuParentTray;
     SDL_GetThreadState;
+    SDL_SetRenderGPUCommandBuffer;
+    SDL_RenderPresentToGPUTexture;
     # extra symbols go here (don't modify this line)
   local: *;
 };

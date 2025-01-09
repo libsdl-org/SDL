@@ -41,6 +41,7 @@ typedef struct GPU_RenderData
     SDL_GPUDevice *device;
     GPU_Shaders shaders;
     GPU_PipelineCache pipeline_cache;
+    bool user_managed_device;
 
     struct
     {
@@ -61,6 +62,8 @@ typedef struct GPU_RenderData
         SDL_GPUTransferBuffer *transfer_buf;
         SDL_GPUBuffer *buffer;
         Uint32 buffer_size;
+
+        SDL_GPUBuffer *present_quad_buffer;
     } vertices;
 
     struct
@@ -253,6 +256,10 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!SDL_size_mul_check_overflow(rect->w, texturebpp, &row_size) ||
         !SDL_size_mul_check_overflow(rect->h, row_size, &data_size)) {
         return SDL_SetError("update size overflow");
+    }
+
+    if (renderdata->user_managed_device && !renderdata->state.command_buffer) {
+        return SDL_SetError("Command buffer must be set for a renderer with user-managed device to upload textures");
     }
 
     SDL_GPUTransferBufferCreateInfo tbci;
@@ -528,6 +535,10 @@ static void Draw(
         RestartRenderPass(data);
     }
 
+    if (!data->state.command_buffer) {
+        return;
+    }
+
     GPU_VertexShaderID v_shader;
     GPU_FragmentShaderID f_shader;
     SDL_GPURenderPass *pass = data->state.render_pass;
@@ -626,6 +637,77 @@ static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
     if (!data->vertices.transfer_buf) {
         return false;
     }
+
+    return true;
+}
+
+static bool InitPresentQuadBuffer(GPU_RenderData *data)
+{
+    SDL_GPUBufferCreateInfo create_buf_info;
+    SDL_zero(create_buf_info);
+    create_buf_info.size = sizeof(SDL_Vertex) * 6;
+    create_buf_info.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
+
+    data->vertices.present_quad_buffer = SDL_CreateGPUBuffer(data->device, &create_buf_info);
+
+    if (!data->vertices.present_quad_buffer) {
+        return false;
+    }
+
+    SDL_GPUCommandBuffer *cbuf = SDL_AcquireGPUCommandBuffer(data->device);
+
+    if (!cbuf) {
+        return false;
+    }
+
+    SDL_GPUCopyPass *cpass = SDL_BeginGPUCopyPass(cbuf);
+
+    if (!cpass) {
+        SDL_CancelGPUCommandBuffer(cbuf);
+        return false;
+    }
+
+    SDL_GPUTransferBufferCreateInfo tbci;
+    SDL_zero(tbci);
+    tbci.size = create_buf_info.size;
+    tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+
+    SDL_GPUTransferBuffer *transfer_buf = SDL_CreateGPUTransferBuffer(data->device, &tbci);
+
+    if (!transfer_buf) {
+        SDL_CancelGPUCommandBuffer(cbuf);
+        return false;
+    }
+
+    SDL_Vertex *verts = (SDL_Vertex *)SDL_MapGPUTransferBuffer(data->device, transfer_buf, false);
+
+    SDL_FColor vert_color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+    verts[0] = (SDL_Vertex){ { -1.0f, -1.0f }, vert_color, { 0.0f, 1.0f } };
+    verts[1] = (SDL_Vertex){ { 1.0f, -1.0f }, vert_color, { 1.0f, 1.0f } };
+    verts[2] = (SDL_Vertex){ { 1.0f, 1.0f }, vert_color, { 1.0f, 0.0f } };
+    verts[3] = (SDL_Vertex){ { -1.0f, -1.0f }, vert_color, { 0.0f, 1.0f } };
+    verts[4] = (SDL_Vertex){ { 1.0f, 1.0f }, vert_color, { 1.0f, 0.0f } };
+    verts[5] = (SDL_Vertex){ { -1.0f, 1.0f }, vert_color, { 0.0f, 0.0f } };
+
+    SDL_UnmapGPUTransferBuffer(data->device, transfer_buf);
+
+    SDL_GPUTransferBufferLocation src;
+    SDL_zero(src);
+    src.transfer_buffer = transfer_buf;
+
+    SDL_GPUBufferRegion dst;
+    SDL_zero(dst);
+    dst.buffer = data->vertices.present_quad_buffer;
+    dst.size = create_buf_info.size;
+
+    SDL_UploadToGPUBuffer(cpass, &src, &dst, true);
+
+    SDL_EndGPUCopyPass(cpass);
+
+    SDL_SubmitGPUCommandBuffer(cbuf);
+
+    SDL_ReleaseGPUTransferBuffer(data->device, transfer_buf);
 
     return true;
 }
@@ -905,7 +987,8 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     SDL_GPUFence *fence = SDL_SubmitGPUCommandBufferAndAcquireFence(data->state.command_buffer);
     SDL_WaitForGPUFences(data->device, true, &fence, 1);
     SDL_ReleaseGPUFence(data->device, fence);
-    data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
+    if (!data->user_managed_device)
+        data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
 
     void *mapped_tbuf = SDL_MapGPUTransferBuffer(data->device, tbuf, false);
 
@@ -955,6 +1038,10 @@ static bool CreateBackbuffer(GPU_RenderData *data, Uint32 w, Uint32 h, SDL_GPUTe
 static bool GPU_RenderPresent(SDL_Renderer *renderer)
 {
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+
+    if (data->user_managed_device) {
+        return false;
+    }
 
     SDL_GPUTexture *swapchain;
     Uint32 swapchain_texture_width, swapchain_texture_height;
@@ -1021,7 +1108,7 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
         return;
     }
 
-    if (data->state.command_buffer) {
+    if (!data->user_managed_device && data->state.command_buffer) {
         SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
         data->state.command_buffer = NULL;
     }
@@ -1034,14 +1121,19 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
     }
 
-    if (renderer->window) {
+    if (data->vertices.present_quad_buffer) {
+        SDL_ReleaseGPUBuffer(data->device, data->vertices.present_quad_buffer);
+    }
+
+    if (!data->user_managed_device && renderer->window) {
         SDL_ReleaseWindowFromGPUDevice(data->device, renderer->window);
     }
 
     ReleaseVertexBuffer(data);
     GPU_DestroyPipelineCache(&data->pipeline_cache);
     GPU_ReleaseShaders(&data->shaders, data->device);
-    SDL_DestroyGPUDevice(data->device);
+    if (!data->user_managed_device)
+        SDL_DestroyGPUDevice(data->device);
 
     SDL_free(data);
 }
@@ -1205,7 +1297,13 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, lowpower);
 
     GPU_FillSupportedShaderFormats(create_props);
-    data->device = SDL_CreateGPUDeviceWithProperties(create_props);
+
+    if (SDL_HasProperty(create_props, SDL_PROP_RENDERER_CREATE_USER_GPU_DEVICE_POINTER)) {
+        data->device = (SDL_GPUDevice *)SDL_GetPointerProperty(create_props, SDL_PROP_RENDERER_CREATE_USER_GPU_DEVICE_POINTER, NULL);
+        data->user_managed_device = true;
+    } else {
+        data->device = SDL_CreateGPUDeviceWithProperties(create_props);
+    }
 
     if (!data->device) {
         return false;
@@ -1228,19 +1326,26 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         return false;
     }
 
-    if (!SDL_ClaimWindowForGPUDevice(data->device, window)) {
+    if (data->user_managed_device && !InitPresentQuadBuffer(data)) {
         return false;
+    }
+
+    if (!data->user_managed_device) {
+        if (!SDL_ClaimWindowForGPUDevice(data->device, window)) {
+            return false;
+        }
     }
 
     data->swapchain.composition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
     data->swapchain.present_mode = SDL_GPU_PRESENTMODE_VSYNC;
 
-    int vsync = (int)SDL_GetNumberProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
-    ChoosePresentMode(data->device, window, vsync, &data->swapchain.present_mode);
+    if (!data->user_managed_device) {
+        int vsync = (int)SDL_GetNumberProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
+        ChoosePresentMode(data->device, window, vsync, &data->swapchain.present_mode);
+        SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode);
 
-    SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode);
-
-    SDL_SetGPUAllowedFramesInFlight(data->device, 1);
+        SDL_SetGPUAllowedFramesInFlight(data->device, 1);
+    }
 
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
@@ -1255,7 +1360,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     data->state.draw_color.a = 1.0f;
     data->state.viewport.min_depth = 0;
     data->state.viewport.max_depth = 1;
-    data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
+    data->state.command_buffer = data->user_managed_device ? NULL : SDL_AcquireGPUCommandBuffer(data->device);
 
     int w, h;
     SDL_GetWindowSizeInPixels(window, &w, &h);
@@ -1265,6 +1370,91 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     }
 
     SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, data->device);
+
+    return true;
+}
+
+void GPU_SetCommandBuffer(SDL_Renderer *renderer, SDL_GPUCommandBuffer *command_buffer)
+{
+    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+    data->state.command_buffer = command_buffer;
+}
+
+bool GPU_PresentToUserTexture(SDL_Renderer *renderer, SDL_GPUTexture *texture, SDL_GPUTextureFormat format)
+{
+    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+
+    if (!data->user_managed_device) {
+        return SDL_SetError("Renderer is not using a user-managed device");
+    }
+
+    if (!data->state.command_buffer) {
+        return SDL_SetError("No command buffer set");
+    }
+
+    GPU_PipelineParameters pipe_params;
+    SDL_zero(pipe_params);
+    pipe_params.blend_mode = SDL_BLENDMODE_BLEND;
+    pipe_params.vert_shader = VERT_SHADER_TRI_TEXTURE;
+    pipe_params.frag_shader = FRAG_SHADER_TEXTURE_RGBA;
+    pipe_params.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+    pipe_params.attachment_format = format;
+
+    SDL_GPUGraphicsPipeline *pipeline = GPU_GetPipeline(&data->pipeline_cache, &data->shaders, data->device, &pipe_params);
+
+    if (!pipeline) {
+        return false;
+    }
+
+    SDL_GPUColorTargetInfo color_attachment;
+    SDL_zero(color_attachment);
+    /* Preserve the contents that were rendered by other GPU code, if any */
+    color_attachment.load_op = SDL_GPU_LOADOP_LOAD;
+    color_attachment.store_op = SDL_GPU_STOREOP_STORE;
+    color_attachment.texture = texture;
+
+    SDL_GPURenderPass *present_pass = SDL_BeginGPURenderPass(
+        data->state.command_buffer, &color_attachment, 1, NULL);
+
+    if (!present_pass) {
+        return false;
+    }
+
+    SDL_GPUTextureSamplerBinding sampler_bind;
+    SDL_zero(sampler_bind);
+    sampler_bind.sampler = *SamplerPointer(data, SDL_TEXTURE_ADDRESS_CLAMP, SDL_SCALEMODE_LINEAR);
+    sampler_bind.texture = data->backbuffer.texture;
+
+    SDL_GPUBufferBinding buffer_bind;
+    SDL_zero(buffer_bind);
+    buffer_bind.buffer = data->vertices.present_quad_buffer;
+    buffer_bind.offset = 0;
+
+    /*
+     * Present quad already has normalized coordinates, so we supply identity matrix as for MVP.
+     */
+    GPU_ShaderUniformData uniforms;
+    SDL_zero(uniforms);
+    uniforms.mvp.v._11 = 1.0f;
+    uniforms.mvp.v._22 = 1.0f;
+    uniforms.mvp.v._33 = 1.0f;
+    uniforms.mvp.v._44 = 1.0f;
+
+    uniforms.color = (SDL_FColor){ 1.0f, 1.0f, 1.0f, 1.0f };
+
+    /*
+       Vertex shader divides input coordinates by texture size, but present quad already has them normalized
+       so we set it to (1,1) here to avoid any scaling.
+     */
+    uniforms.texture_size[0] = 1.0f;
+    uniforms.texture_size[1] = 1.0f;
+
+    SDL_BindGPUGraphicsPipeline(present_pass, pipeline);
+    SDL_BindGPUVertexBuffers(present_pass, 0, &buffer_bind, 1);
+    SDL_BindGPUFragmentSamplers(present_pass, 0, &sampler_bind, 1);
+    SDL_PushGPUVertexUniformData(data->state.command_buffer, 0, &uniforms, sizeof(uniforms));
+    SDL_DrawGPUPrimitives(present_pass, 6, 1, 0, 0);
+    SDL_EndGPURenderPass(present_pass);
 
     return true;
 }
