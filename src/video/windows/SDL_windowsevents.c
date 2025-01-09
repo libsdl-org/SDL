@@ -2020,10 +2020,15 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                         params->rgrc[0] = info.rcWork;
                     }
                 }
-            } else if (!(window_flags & SDL_WINDOW_RESIZABLE)) {
+            } else if (!(window_flags & SDL_WINDOW_RESIZABLE) && !data->force_resizable) {
                 int w, h;
-                w = data->window->floating.w;
-                h = data->window->floating.h;
+                if (data->window->last_size_pending) {
+                    w = data->window->pending.w;
+                    h = data->window->pending.h;
+                } else {
+                    w = data->window->floating.w;
+                    h = data->window->floating.h;
+                }
                 params->rgrc[0].right = params->rgrc[0].left + w;
                 params->rgrc[0].bottom = params->rgrc[0].top + h;
             }

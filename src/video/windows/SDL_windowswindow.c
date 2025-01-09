@@ -162,7 +162,7 @@ static DWORD GetWindowStyle(SDL_Window *window)
     DWORD style = 0;
 
     if (SDL_WINDOW_IS_POPUP(window)) {
-        style |= WS_POPUP | WS_THICKFRAME;
+        style |= WS_POPUP;
     } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style |= STYLE_FULLSCREEN;
     } else {
