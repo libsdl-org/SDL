@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A114B178-D2BB-CF42-A049-034C4C50596F}</ProjectGuid>
+    <RootNamespace>SDL2</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>Win32\Debug\</OutDir>
+    <IntDir>obj\Debug\</IntDir>
+    <TargetName>SDL2</TargetName>
+    <TargetExt>.dll</TargetExt>
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>Win32\Release\</OutDir>
+    <IntDir>obj\Release\</IntDir>
+    <TargetName>SDL2</TargetName>
+    <TargetExt>.dll</TargetExt>
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..;..\..\..\..\include;$(DXSDK_DIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USING_PREMAKE_CONFIG_H;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    <ExceptionHandling>false</ExceptionHandling>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)SDL2.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>USING_PREMAKE_CONFIG_H;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..;..\..\..\..\include;$(DXSDK_DIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>imm32.lib;oleaut32.lib;winmm.lib;version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;uuid.lib;odbc32.lib;odbccp32.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)SDL2.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>Win32\Debug\SDL2.lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>..;..\..\..\..\include;$(DXSDK_DIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USING_PREMAKE_CONFIG_H;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+    <ExceptionHandling>false</ExceptionHandling>
+      <DebugInformationFormat></DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>USING_PREMAKE_CONFIG_H;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..;..\..\..\..\include;$(DXSDK_DIR)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>imm32.lib;oleaut32.lib;winmm.lib;version.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;uuid.lib;odbc32.lib;odbccp32.lib;OpenGL32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)SDL2.dll</OutputFile>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ImportLibrary>Win32\Release\SDL2.lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\src\SDL_assert_c.h" />
+    <ClInclude Include="..\..\..\..\src\SDL_error_c.h" />
+    <ClInclude Include="..\..\..\..\src\audio\SDL_audiodev_c.h" />
+    <ClInclude Include="..\..\..\..\src\audio\SDL_audiomem.h" />
+    <ClInclude Include="..\..\..\..\src\audio\SDL_audio_c.h" />
+    <ClInclude Include="..\..\..\..\src\audio\SDL_sysaudio.h" />
+    <ClInclude Include="..\..\..\..\src\audio\SDL_wave.h" />
+    <ClInclude Include="..\..\..\..\src\audio\disk\SDL_diskaudio.h" />
+    <ClInclude Include="..\..\..\..\src\audio\dummy\SDL_dummyaudio.h" />
+    <ClInclude Include="..\..\..\..\src\events\blank_cursor.h" />
+    <ClInclude Include="..\..\..\..\src\events\default_cursor.h" />
+    <ClInclude Include="..\..\..\..\src\events\scancodes_darwin.h" />
+    <ClInclude Include="..\..\..\..\src\events\scancodes_linux.h" />
+    <ClInclude Include="..\..\..\..\src\events\scancodes_windows.h" />
+    <ClInclude Include="..\..\..\..\src\events\scancodes_xfree86.h" />
+    <ClInclude Include="..\..\..\..\src\events\SDL_clipboardevents_c.h" />
+    <ClInclude Include="..\..\..\..\src\events\SDL_dropevents_c.h" />
+    <ClInclude Include="..\..\..\..\src\events\SDL_events_c.h" />
+    <ClInclude Include="..\..\..\..\src\events\SDL_gesture_c.h" />
+    <ClInclude Include="..\..\..\..\src\events\SDL_keyboard_c.h" />
+    <ClInclude Include="..\..\..\..\src\events\SDL_mouse_c.h" />
+    <ClInclude Include="..\..\..\..\src\events\SDL_sysevents.h" />
+    <ClInclude Include="..\..\..\..\src\events\SDL_touch_c.h" />
+    <ClInclude Include="..\..\..\..\src\events\SDL_windowevents_c.h" />
+    <ClInclude Include="..\..\..\..\src\haptic\SDL_haptic_c.h" />
+    <ClInclude Include="..\..\..\..\src\haptic\SDL_syshaptic.h" />
+    <ClInclude Include="..\..\..\..\src\joystick\SDL_gamecontrollerdb.h" />
+    <ClInclude Include="..\..\..\..\src\joystick\SDL_joystick_c.h" />
+    <ClInclude Include="..\..\..\..\src\joystick\SDL_sysjoystick.h" />
+    <ClInclude Include="..\..\..\..\src\render\mmx.h" />
+    <ClInclude Include="..\..\..\..\src\render\SDL_sysrender.h" />
+    <ClInclude Include="..\..\..\..\src\render\SDL_yuv_sw_c.h" />
+    <ClInclude Include="..\..\..\..\src\render\software\SDL_blendfillrect.h" />
+    <ClInclude Include="..\..\..\..\src\render\software\SDL_blendline.h" />
+    <ClInclude Include="..\..\..\..\src\render\software\SDL_blendpoint.h" />
+    <ClInclude Include="..\..\..\..\src\render\software\SDL_draw.h" />
+    <ClInclude Include="..\..\..\..\src\render\software\SDL_drawline.h" />
+    <ClInclude Include="..\..\..\..\src\render\software\SDL_drawpoint.h" />
+    <ClInclude Include="..\..\..\..\src\render\software\SDL_render_sw_c.h" />
+    <ClInclude Include="..\..\..\..\src\render\software\SDL_rotate.h" />
+    <ClInclude Include="..\..\..\..\src\thread\SDL_systhread.h" />
+    <ClInclude Include="..\..\..\..\src\thread\SDL_thread_c.h" />
+    <ClInclude Include="..\..\..\..\src\timer\SDL_timer_c.h" />
+    <ClInclude Include="..\..\..\..\src\video\SDL_blit.h" />
+    <ClInclude Include="..\..\..\..\src\video\SDL_blit_auto.h" />
+    <ClInclude Include="..\..\..\..\src\video\SDL_blit_copy.h" />
+    <ClInclude Include="..\..\..\..\src\video\SDL_blit_slow.h" />
+    <ClInclude Include="..\..\..\..\src\video\SDL_egl.h" />
+    <ClInclude Include="..\..\..\..\src\video\SDL_pixels_c.h" />
+    <ClInclude Include="..\..\..\..\src\video\SDL_rect_c.h" />
+    <ClInclude Include="..\..\..\..\src\video\SDL_RLEaccel_c.h" />
+    <ClInclude Include="..\..\..\..\src\video\SDL_shape_internals.h" />
+    <ClInclude Include="..\..\..\..\src\video\SDL_sysvideo.h" />
+    <ClInclude Include="..\..\..\..\src\video\dummy\SDL_nullevents_c.h" />
+    <ClInclude Include="..\..\..\..\src\video\dummy\SDL_nullframebuffer_c.h" />
+    <ClInclude Include="..\..\..\..\src\video\dummy\SDL_nullvideo.h" />
+    <ClInclude Include="..\..\..\..\src\thread\generic\SDL_sysmutex_c.h" />
+    <ClInclude Include="..\..\..\..\src\audio\winmm\SDL_winmm.h" />
+    <ClInclude Include="..\..\..\..\src\core\windows\SDL_windows.h" />
+    <ClInclude Include="..\..\..\..\src\libm\math_libm.h" />
+    <ClInclude Include="..\..\..\..\src\libm\math_private.h" />
+    <ClInclude Include="..\..\..\..\src\thread\windows\SDL_systhread_c.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_msctf.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_vkeys.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowsclipboard.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowsevents.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowsframebuffer.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowskeyboard.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowsmessagebox.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowsmodes.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowsmouse.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowsopengl.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowsshape.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowsvideo.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\SDL_windowswindow.h" />
+    <ClInclude Include="..\..\..\..\src\video\windows\wmmsg.h" />
+    <ClInclude Include="..\..\..\..\src\audio\directsound\directx.h" />
+    <ClInclude Include="..\..\..\..\src\audio\directsound\SDL_directsound.h" />
+    <ClInclude Include="..\..\..\..\src\joystick\windows\SDL_dxjoystick_c.h" />
+    <ClInclude Include="..\..\..\..\src\render\opengl\SDL_glfuncs.h" />
+    <ClInclude Include="..\..\..\..\src\render\opengl\SDL_shaders_gl.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\SDL.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\SDL_assert.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\SDL_error.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\SDL_hints.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\SDL_log.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\atomic\SDL_atomic.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\atomic\SDL_spinlock.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\SDL_audio.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\SDL_audiocvt.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\SDL_audiodev.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\SDL_audiotypecvt.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\SDL_mixer.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\SDL_wave.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\disk\SDL_diskaudio.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\dummy\SDL_dummyaudio.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\cpuinfo\SDL_cpuinfo.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\events\SDL_clipboardevents.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\events\SDL_dropevents.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\events\SDL_events.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\events\SDL_gesture.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\events\SDL_keyboard.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\events\SDL_mouse.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\events\SDL_quit.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\events\SDL_touch.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\events\SDL_windowevents.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\file\SDL_rwops.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\haptic\SDL_haptic.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\joystick\SDL_gamecontroller.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\joystick\SDL_joystick.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\power\SDL_power.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\SDL_render.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\SDL_yuv_mmx.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\SDL_yuv_sw.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\software\SDL_blendfillrect.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\software\SDL_blendline.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\software\SDL_blendpoint.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\software\SDL_drawline.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\software\SDL_drawpoint.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\software\SDL_render_sw.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\software\SDL_rotate.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\stdlib\SDL_getenv.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\stdlib\SDL_iconv.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\stdlib\SDL_malloc.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\stdlib\SDL_qsort.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\stdlib\SDL_stdlib.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\stdlib\SDL_string.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\thread\SDL_thread.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\timer\SDL_timer.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_blit.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_blit_0.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_blit_1.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_blit_A.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_blit_auto.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_blit_copy.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_blit_N.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_blit_slow.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_bmp.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_clipboard.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_egl.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_fillrect.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_pixels.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_rect.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_RLEaccel.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_shape.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_stretch.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_surface.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\SDL_video.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\dummy\SDL_nullevents.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\dummy\SDL_nullframebuffer.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\dummy\SDL_nullvideo.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\thread\generic\SDL_syscond.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\winmm\SDL_winmm.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\core\windows\SDL_windows.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\e_atan2.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\e_log.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\e_pow.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\e_rem_pio2.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\e_sqrt.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\k_cos.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\k_rem_pio2.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\k_sin.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\s_atan.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\s_copysign.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\s_cos.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\s_fabs.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\s_floor.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\s_scalbn.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\libm\s_sin.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\loadso\windows\SDL_sysloadso.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\power\windows\SDL_syspower.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\thread\windows\SDL_sysmutex.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\thread\windows\SDL_syssem.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\thread\windows\SDL_systhread.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\thread\windows\SDL_systls.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\timer\windows\SDL_systimer.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowsclipboard.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowsevents.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowsframebuffer.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowskeyboard.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowsmessagebox.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowsmodes.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowsmouse.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowsopengl.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowsshape.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowsvideo.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\video\windows\SDL_windowswindow.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\filesystem\windows\SDL_sysfilesystem.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\directsound\SDL_directsound.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\audio\xaudio2\SDL_xaudio2.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\direct3d\SDL_render_d3d.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\haptic\windows\SDL_syshaptic.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\joystick\windows\SDL_dxjoystick.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\joystick\windows\SDL_mmjoystick.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\opengl\SDL_render_gl.c">
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\render\opengl\SDL_shaders_gl.c">
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
