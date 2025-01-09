@@ -170,9 +170,9 @@ jobs:
             -DSDLTEST_TRACKMEM=ON \
             -DSDL_INSTALL_TESTS=${{ matrix.platform.build-tests }} \
             -DSDL_CLANG_TIDY=${{ matrix.platform.clang-tidy }} \
-            -DSDL_DISABLE_INSTALL_DOCS=OFF \
-            -DSDL_DISABLE_INSTALL_CPACK=OFF \
-            -DSDL_DISABLE_INSTALL_DOCS=OFF \
+            -DSDL_INSTALL_DOCS=ON \
+            -DSDL_INSTALL_CPACK=ON \
+            -DSDL_INSTALL_DOCS=ON \
             ${{ matrix.platform.cmake-arguments }} \
             -DSDL_SHARED=${{ matrix.platform.shared }} \
             -DSDL_STATIC=${{ matrix.platform.static  }} \
@@ -293,7 +293,7 @@ jobs:
               ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
               -Wdeprecated -Wdev -Werror \
               -DSDL_WERROR=${{ matrix.platform.werror }} \
-              -DSDL_DISABLE_INSTALL_DOCS=OFF \
+              -DSDL_INSTALL_DOCS=ON \
               ${{ matrix.platform.cmake-arguments }} \
               -DSDL_SHARED=${{ matrix.platform.shared }} \
               -DSDL_STATIC=${{ matrix.platform.static  }} \

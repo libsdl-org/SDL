@@ -8,13 +8,13 @@ endif()
 project(SDL3 LANGUAGES C VERSION "3.1.9")
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
-  set(SDL3_SUBPROJECT OFF)
+  set(SDL3_MAINPROJECT ON)
 else()
-  set(SDL3_SUBPROJECT ON)
+  set(SDL3_MAINPROJECT OFF)
 endif()
 
 # By default, configure SDL3 in RelWithDebInfo configuration
-if(NOT SDL3_SUBPROJECT)
+if(SDL3_MAINPROJECT)
   get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
   if(is_multi_config)
       # The first item in CMAKE_CONFIGURATION_TYPES is the default configuration
@@ -287,14 +287,14 @@ if(SOLARIS)
 endif()
 
 # Allow some projects to be built conditionally.
-set_option(SDL_DISABLE_INSTALL     "Disable installation of SDL3" ${SDL3_SUBPROJECT})
-cmake_dependent_option(SDL_DISABLE_INSTALL_CPACK "Create binary SDL3 archive using CPack" ${SDL3_SUBPROJECT} "NOT SDL_DISABLE_INSTALL" ON)
-cmake_dependent_option(SDL_DISABLE_INSTALL_DOCS "Install docs for SDL3" ON "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" ON)
-set_option(SDL_DISABLE_UNINSTALL   "Disable uninstallation of SDL3" OFF)
+set_option(SDL_INSTALL             "Enable installation of SDL3" ${SDL3_MAINPROJECT})
+cmake_dependent_option(SDL_INSTALL_CPACK "Create binary SDL3 archive using CPack" ${SDL3_MAINPROJECT} "SDL_INSTALL" ON)
+cmake_dependent_option(SDL_INSTALL_DOCS "Install docs for SDL3" OFF "SDL_INSTALL;NOT SDL_FRAMEWORK" ON)
+set_option(SDL_UNINSTALL           "Enable uninstallation of SDL3" ${SDL3_MAINPROJECT})
 cmake_dependent_option(SDL_PRESEED "Preseed CMake cache to speed up configuration" ON "${SDL_PRESEED_AVAILABLE}" OFF)
-cmake_dependent_option(SDL_RELOCATABLE "Create relocatable SDL package" ${SDL_RELOCATABLE_DEFAULT} "NOT SDL_DISABLE_INSTALL" OFF)
+cmake_dependent_option(SDL_RELOCATABLE "Create relocatable SDL package" ${SDL_RELOCATABLE_DEFAULT} "SDL_INSTALL" OFF)
 
-cmake_dependent_option(SDL_DISABLE_ANDROID_JAR  "Disable creation of SDL3.jar" ${SDL3_SUBPROJECT} "ANDROID" ON)
+cmake_dependent_option(SDL_ANDROID_JAR  "Enable creation of SDL3.jar" ${SDL3_MAINPROJECT} "ANDROID" ON)
 
 option_string(SDL_ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
 set_option(SDL_ASSEMBLY            "Enable assembly routines" ${SDL_ASSEMBLY_DEFAULT})
@@ -394,7 +394,7 @@ cmake_dependent_option(SDL_STATIC "Build a static version of the library" ${SDL_
 option(SDL_TEST_LIBRARY   "Build the SDL3_test library" ON)
 
 dep_option(SDL_TESTS           "Build the test directory" OFF SDL_TEST_LIBRARY OFF)
-dep_option(SDL_INSTALL_TESTS   "Install test-cases" OFF "NOT SDL_DISABLE_INSTALL;NOT SDL_FRAMEWORK" OFF)
+dep_option(SDL_INSTALL_TESTS   "Install test-cases" OFF "SDL_INSTALL;NOT SDL_FRAMEWORK" OFF)
 dep_option(SDL_TESTS_LINK_SHARED "link tests to shared SDL library" "${SDL_SHARED}" "SDL_SHARED;SDL_STATIC" "${SDL_SHARED}")
 set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account for really slow machines")
 
@@ -1419,7 +1419,7 @@ if(ANDROID)
     set(HAVE_CLOCK_GETTIME 1)
   endif()
 
-  if(NOT SDL_DISABLE_ANDROID_JAR)
+  if(SDL_ANDROID_JAR)
     find_package(Java)
     find_package(SdlAndroidPlatform MODULE)
 
@@ -1449,7 +1449,7 @@ if(ANDROID)
         DEPENDS ${SDL_JAVA_SOURCES}
       )
       add_custom_target(SDL3-javasources ALL DEPENDS "${javasourcesjar}")
-      if(NOT SDL_DISABLE_INSTALL_DOCS)
+      if(SDL_INSTALL_DOCS)
         set(javadocdir "${SDL3_BINARY_DIR}/docs/javadoc")
         set(javadocjar "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-javadoc.jar")
         set(javadoc_index_html "${javadocdir}/index.html")
@@ -3609,7 +3609,7 @@ if(sdl_cmake_modules)
   execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${sdl_cmake_modules} "${SDL3_BINARY_DIR}")
 endif()
 
-if(NOT SDL_DISABLE_INSTALL)
+if(SDL_INSTALL)
 
   ##### sdl3.pc #####
   configure_sdl3_pc()
@@ -3709,7 +3709,7 @@ if(NOT SDL_DISABLE_INSTALL)
     install(FILES "LICENSE.txt" DESTINATION "${SDL_INSTALL_LICENSEDIR}")
   endif()
 
-  if(NOT SDL_DISABLE_INSTALL_CPACK)
+  if(SDL_INSTALL_CPACK)
     if(SDL_FRAMEWORK)
       set(CPACK_GENERATOR "DragNDrop")
     elseif(MSVC)
@@ -3750,7 +3750,7 @@ if(NOT SDL_DISABLE_INSTALL)
     endif()
   endif()
 
-  if(NOT SDL_DISABLE_INSTALL_DOCS)
+  if(SDL_INSTALL_DOCS)
     SDL_generate_manpages(
       HEADERS_DIR "${PROJECT_SOURCE_DIR}/include/SDL3"
       SYMBOL "SDL_Init"
@@ -3767,7 +3767,7 @@ endif()
 
 ##### Uninstall target #####
 
-if(NOT SDL_DISABLE_UNINSTALL)
+if(SDL_UNINSTALL)
   if(NOT TARGET uninstall)
     configure_file(cmake/cmake_uninstall.cmake.in cmake_uninstall.cmake IMMEDIATE @ONLY)
 

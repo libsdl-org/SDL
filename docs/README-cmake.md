@@ -131,6 +131,13 @@ Exceptions exist:
 - some platforms don't support dynamic libraries, so only `-DSDL_STATIC=ON` makes sense.
 - a static Apple framework is not supported
 
+### Man pages
+
+Configuring with `-DSDL_INSTALL_DOCS=TRUE` installs man pages.
+
+We recommend package managers of unix distributions to install SDL3's man pages.
+This adds an extra build-time dependency on Perl.
+
 ### Pass custom compile options to the compiler
 
 - Use [`CMAKE_<LANG>_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html) to pass extra
