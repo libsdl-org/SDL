@@ -47,7 +47,7 @@
  *
  * Consider the following example:
  *
- * ```
+ * ```c
  * void ReadGameData(void)
  * {
  *     extern char** fileNames;
@@ -115,7 +115,7 @@
  * When using, SDL_Storage, these types of problems are virtually impossible
  * to trip over:
  *
- * ```
+ * ```c
  * void ReadGameData(void)
  * {
  *     extern char** fileNames;
