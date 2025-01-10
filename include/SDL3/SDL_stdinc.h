@@ -107,6 +107,32 @@ void *alloca(size_t);
 # endif
 #endif
 
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * Don't let SDL use "long long" C types.
+ *
+ * SDL will define this if it believes the compiler doesn't understand
+ * the "long long" syntax for C datatypes. This can happen on older compilers.
+ *
+ * If _your_ compiler doesn't support "long long" but SDL doesn't know it, it
+ * is safe to define this yourself to build against the SDL headers.
+ *
+ * If this is defined, it will remove access to some C runtime support
+ * functions, like SDL_ulltoa and SDL_strtoll that refer to this datatype
+ * explicitly. The rest of SDL will still be available.
+ *
+ * SDL's own source code cannot be built with a compiler that has this defined,
+ * for various technical reasons.
+ */
+#define SDL_NOLONGLONG 1
+
+#elif defined(_MSC_VER) && (_MSC_VER < 1310)  /* long long introduced in Visual Studio.NET 2003 */
+#  define SDL_NOLONGLONG 1
+#endif
+
+
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
 /**
