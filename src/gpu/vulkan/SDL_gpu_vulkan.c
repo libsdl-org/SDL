@@ -6981,8 +6981,6 @@ static XrResult VULKAN_CreateXRSwapchain(
     SDL_GPUTexture ***textures)
 {
 #ifdef HAVE_GPU_OPENXR
-    /* TODO: fill out textures */
-
     XrResult result;
     Uint32 i, j, num_supported_formats;
     int64_t *supported_formats;
@@ -7031,7 +7029,6 @@ static XrResult VULKAN_CreateXRSwapchain(
     createInfo.format = vkFormat;
 
     /* TODO: validate createInfo.usageFlags */
-
     result = renderer->xr->xrCreateSwapchain(session, &createInfo, swapchain);
     if(result != XR_SUCCESS) return result;
 
@@ -7039,7 +7036,6 @@ static XrResult VULKAN_CreateXRSwapchain(
     result = renderer->xr->xrEnumerateSwapchainImages(*swapchain, 0, &swapchainImageCount, NULL);
     if(result != XR_SUCCESS) return result;
 
-    /* TODO: dont hardcode KHR_vulkan_enable2 */
     XrSwapchainImageVulkan2KHR *swapchainImages = (XrSwapchainImageVulkan2KHR*)SDL_calloc(swapchainImageCount, sizeof(XrSwapchainImageVulkan2KHR));
     for(i = 0; i < swapchainImageCount; i++) swapchainImages[i].type = XR_TYPE_SWAPCHAIN_IMAGE_VULKAN2_KHR;
 
@@ -7054,8 +7050,7 @@ static XrResult VULKAN_CreateXRSwapchain(
     for(Uint32 idx = 0; idx < swapchainImageCount; idx++) {
         VkImage vkImage = swapchainImages[idx].image;
 
-        VulkanTexture *texture = SDL_malloc(sizeof(VulkanTexture));
-        SDL_zerop(texture);
+        VulkanTexture *texture = SDL_calloc(1, sizeof(VulkanTexture));
 
         texture->swizzle = SwizzleForSDLFormat(*textureFormat);
         texture->depth = 1;
