@@ -12,7 +12,7 @@
       "src/SDL.c",
       "include/SDL3/SDL.h",
       "test/testsprite.c",
-      "android-project/app/src/main/java/org/libsdl/app/SDLActivityComponent.java"
+      "android-project/app/src/main/java/org/libsdl/app/SDLActivity.java"
     ],
     "files": {
       "include/SDL3": [

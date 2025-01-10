@@ -10,6 +10,7 @@ import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
+import android.util.Log;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -681,7 +682,7 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
                     case MotionEvent.ACTION_SCROLL:
                         x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, i);
                         y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, i);
-                        SDLActivityComponent.onNativeMouse(0, action, x, y, false);
+                        SDLActivity.onNativeMouse(0, action, x, y, false);
                         consumed = true;
                         break;
 
@@ -689,7 +690,7 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
                         x = getEventX(event, i);
                         y = getEventY(event, i);
 
-                        SDLActivityComponent.onNativeMouse(0, action, x, y, checkRelativeEvent(event));
+                        SDLActivity.onNativeMouse(0, action, x, y, checkRelativeEvent(event));
                         consumed = true;
                         break;
 
@@ -708,7 +709,7 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
                         // BUTTON_STYLUS_PRIMARY is 2^5, so shift by 4
                         int buttons = event.getButtonState() >> 4;
 
-                        SDLActivityComponent.onNativePen(event.getPointerId(i), buttons, action, x, y, p);
+                        SDLActivity.onNativePen(event.getPointerId(i), buttons, action, x, y, p);
                         consumed = true;
                         break;
                 }
@@ -794,7 +795,7 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     public boolean supportsRelativeMouse() {
-        return (!SDLActivityComponent.isDeXMode() || Build.VERSION.SDK_INT >= 27 /* Android 8.1 (O_MR1) */);
+        return (!SDLActivity.isDeXMode() || Build.VERSION.SDK_INT >= 27 /* Android 8.1 (O_MR1) */);
     }
 
     @Override
@@ -804,11 +805,11 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     public boolean setRelativeMouseEnabled(boolean enabled) {
-        if (!SDLActivityComponent.isDeXMode() || Build.VERSION.SDK_INT >= 27 /* Android 8.1 (O_MR1) */) {
+        if (!SDLActivity.isDeXMode() || Build.VERSION.SDK_INT >= 27 /* Android 8.1 (O_MR1) */) {
             if (enabled) {
-                SDLActivityComponent.getContentView().requestPointerCapture();
+                SDLActivity.getContentView().requestPointerCapture();
             } else {
-                SDLActivityComponent.getContentView().releasePointerCapture();
+                SDLActivity.getContentView().releasePointerCapture();
             }
             mRelativeModeEnabled = enabled;
             return true;
@@ -819,8 +820,8 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     public void reclaimRelativeMouseModeIfNeeded() {
-        if (mRelativeModeEnabled && !SDLActivityComponent.isDeXMode()) {
-            SDLActivityComponent.getContentView().requestPointerCapture();
+        if (mRelativeModeEnabled && !SDLActivity.isDeXMode()) {
+            SDLActivity.getContentView().requestPointerCapture();
         }
     }
 

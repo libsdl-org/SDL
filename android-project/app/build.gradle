@@ -55,11 +55,6 @@ android {
     lint {
         abortOnError false
     }
-    compileOptions {
-        // our minSdk, lollipop (API 21) uses java 7
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
-    }
 }
 
 dependencies {

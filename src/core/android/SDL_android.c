@@ -58,7 +58,7 @@
 #define ENCODING_PCM_16BIT 2
 #define ENCODING_PCM_FLOAT 4
 
-// Java class SDLActivityComponent
+// Java class SDLActivity
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(
     JNIEnv *env, jclass cls);
 
@@ -196,7 +196,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
     JNIEnv *env, jclass jcls,
     jint requestCode, jobjectArray fileList, jint filter);
 
-static JNINativeMethod SDLActivityComponent_tab[] = {
+static JNINativeMethod SDLActivity_tab[] = {
     { "nativeGetVersion", "()Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetVersion) },
     { "nativeSetupJNI", "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
     { "nativeInitMainThread", "()V", SDL_JAVA_INTERFACE(nativeInitMainThread) },
@@ -559,7 +559,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
         return JNI_VERSION_1_4;
     }
 
-    register_methods(env, "org/libsdl/app/SDLActivityComponent", SDLActivityComponent_tab, SDL_arraysize(SDLActivityComponent_tab));
+    register_methods(env, "org/libsdl/app/SDLActivity", SDLActivity_tab, SDL_arraysize(SDLActivity_tab));
     register_methods(env, "org/libsdl/app/SDLInputConnection", SDLInputConnection_tab, SDL_arraysize(SDLInputConnection_tab));
     register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, SDL_arraysize(SDLAudioManager_tab));
     register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
@@ -696,7 +696,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midSupportsRelativeMouse ||
         !midOpenFileDescriptor ||
         !midShowFileDialog) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivityComponent.java?");
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
     checkJNIReady();
@@ -2041,7 +2041,7 @@ void Android_JNI_HapticStop(int device_id)
     (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticStop, device_id);
 }
 
-// See SDLActivityComponent.java for constants.
+// See SDLActivity.java for constants.
 #define COMMAND_SET_KEEP_SCREEN_ON 5
 
 bool SDL_SendAndroidMessage(Uint32 command, int param)

@@ -58,9 +58,9 @@ fi
 
 perl -w -pi -e 's/\A(project\(SDL[0-9]+ LANGUAGES C VERSION ")[0-9.]+/${1}'$NEWVERSION'/;' CMakeLists.txt
 
-perl -w -pi -e 's/\A(.* SDL_MAJOR_VERSION = )\d+/${1}'$MAJOR'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivityComponent.java
-perl -w -pi -e 's/\A(.* SDL_MINOR_VERSION = )\d+/${1}'$MINOR'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivityComponent.java
-perl -w -pi -e 's/\A(.* SDL_MICRO_VERSION = )\d+/${1}'$MICRO'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivityComponent.java
+perl -w -pi -e 's/\A(.* SDL_MAJOR_VERSION = )\d+/${1}'$MAJOR'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
+perl -w -pi -e 's/\A(.* SDL_MINOR_VERSION = )\d+/${1}'$MINOR'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
+perl -w -pi -e 's/\A(.* SDL_MICRO_VERSION = )\d+/${1}'$MICRO'/;' android-project/app/src/main/java/org/libsdl/app/SDLActivity.java
 
 perl -w -pi -e 's/(\#define SDL_MAJOR_VERSION\s+)\d+/${1}'$MAJOR'/;' include/SDL3/SDL_version.h
 perl -w -pi -e 's/(\#define SDL_MINOR_VERSION\s+)\d+/${1}'$MINOR'/;' include/SDL3/SDL_version.h

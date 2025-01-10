@@ -118,8 +118,7 @@ Here's an explanation of the files in the Android project, so you can customize 
         src/main/res/		- directory holding resources for your application
         src/main/res/mipmap-*	- directories holding icons for different phone hardware
         src/main/res/values/strings.xml	- strings used in your application, including the application name
-        src/main/java/org/libsdl/app/SDLActivityComponent.java - the Java class handling the initialization and binding to SDL. Be very careful changing this, as the SDL library relies on this implementation. Most of the time you do not need to interact with this class directly. Instead, make your activity extend SDLActivity.java
-        src/main/java/org/libsdl/app/SDLActivity.java - an abstract android activity that uses SDLActivityComponent via composition.
+        src/main/java/org/libsdl/app/SDLActivity.java - the Java class handling the initialization and binding to SDL. Be very careful changing this, as the SDL library relies on this implementation. You should instead subclass this for your application.
 
 
 Using the SDL3 Android Archive (.aar)

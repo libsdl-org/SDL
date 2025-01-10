@@ -1,6 +1,7 @@
 package org.libsdl.app;
 
 import android.content.*;
+import android.text.InputType;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -31,7 +32,7 @@ public class SDLDummyEdit extends View implements View.OnKeyListener
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
-        return SDLActivityComponent.handleKeyEvent(v, keyCode, event, ic);
+        return SDLActivity.handleKeyEvent(v, keyCode, event, ic);
     }
 
     //
@@ -44,8 +45,8 @@ public class SDLDummyEdit extends View implements View.OnKeyListener
         // FIXME: And determine the keyboard presence doing this: http://stackoverflow.com/questions/2150078/how-to-check-visibility-of-software-keyboard-in-android
         // FIXME: An even more effective way would be if Android provided this out of the box, but where would the fun be in that :)
         if (event.getAction()==KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-            if (SDLActivityComponent.mTextEdit != null && SDLActivityComponent.mTextEdit.getVisibility() == View.VISIBLE) {
-                SDLActivityComponent.onNativeKeyboardFocusLost();
+            if (SDLActivity.mTextEdit != null && SDLActivity.mTextEdit.getVisibility() == View.VISIBLE) {
+                SDLActivity.onNativeKeyboardFocusLost();
             }
         }
         return super.onKeyPreIme(keyCode, event);
