@@ -25,7 +25,4 @@
 // This function only correctly maps letters and numbers for keyboards in US QWERTY layout
 extern SDL_Scancode SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode);
 
-// Convert a keysym to an extended SDL key code
-extern SDL_Keycode SDL_GetExtendedKeyCodeFromKeySym(Uint32 keysym);
-
 #endif // SDL_keysym_to_scancode_c_h_
