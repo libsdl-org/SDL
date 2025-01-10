@@ -131,6 +131,8 @@ extern "C" {
     /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()
+#elif defined(_MSC_VER) && defined(_M_IX86)
+    #define SDL_TriggerBreakpoint() { _asm { int 0x03 }  }
 #elif defined(ANDROID)
     #include <assert.h>
     #define SDL_TriggerBreakpoint() assert(0)
