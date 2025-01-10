@@ -53,6 +53,7 @@ extern XrInstancePfns *SDL_OPENXR_LoadInstanceSymbols(XrInstance instance);
 #include "SDL_openxrsym.h"
 
 #define xrGetInstanceProcAddr OPENXR_xrGetInstanceProcAddr
+#define xrEnumerateApiLayerProperties OPENXR_xrEnumerateApiLayerProperties
 #define xrEnumerateInstanceExtensionProperties OPENXR_xrEnumerateInstanceExtensionProperties
 #define xrCreateInstance OPENXR_xrCreateInstance
 
