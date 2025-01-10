@@ -113,8 +113,8 @@ void *alloca(size_t);
 /**
  * Don't let SDL use "long long" C types.
  *
- * SDL will define this if it believes the compiler doesn't understand
- * the "long long" syntax for C datatypes. This can happen on older compilers.
+ * SDL will define this if it believes the compiler doesn't understand the
+ * "long long" syntax for C datatypes. This can happen on older compilers.
  *
  * If _your_ compiler doesn't support "long long" but SDL doesn't know it, it
  * is safe to define this yourself to build against the SDL headers.
@@ -123,8 +123,8 @@ void *alloca(size_t);
  * functions, like SDL_ulltoa and SDL_strtoll that refer to this datatype
  * explicitly. The rest of SDL will still be available.
  *
- * SDL's own source code cannot be built with a compiler that has this defined,
- * for various technical reasons.
+ * SDL's own source code cannot be built with a compiler that has this
+ * defined, for various technical reasons.
  */
 #define SDL_NOLONGLONG 1
 
