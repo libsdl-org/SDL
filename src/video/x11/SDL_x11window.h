@@ -111,6 +111,13 @@ struct SDL_WindowData
     bool toggle_borders;
     bool fullscreen_borders_forced_on;
     SDL_HitTestResult hit_test_result;
+
+    XPoint xim_spot;
+    char *preedit_text;
+    XIMFeedback *preedit_feedback;
+    int preedit_length;
+    int preedit_cursor;
+    bool ime_needs_clear_composition;
 };
 
 extern void X11_SetNetWMState(SDL_VideoDevice *_this, Window xwindow, SDL_WindowFlags flags);

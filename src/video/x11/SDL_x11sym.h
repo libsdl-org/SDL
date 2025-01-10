@@ -223,6 +223,8 @@ SDL_X11_SYM(int,Xutf8LookupString,(XIC a,XKeyPressedEvent* b,char* c,int d,KeySy
 // SDL_X11_SYM(XIC,XCreateIC,(XIM, ...),return)  !!! ARGH!
 SDL_X11_SYM(void,XDestroyIC,(XIC a),(a),)
 /* SDL_X11_SYM(char*,XGetICValues,(XIC, ...),return)  !!! ARGH! */
+/* SDL_X11_SYM(char*,XSetICValues,(XIC, ...),return)  !!! ARGH! */
+/* SDL_X11_SYM(XVaNestedList,XVaCreateNestedList,(int, ...),return)  !!! ARGH! */
 SDL_X11_SYM(void,XSetICFocus,(XIC a),(a),)
 SDL_X11_SYM(void,XUnsetICFocus,(XIC a),(a),)
 SDL_X11_SYM(XIM,XOpenIM,(Display* a,struct _XrmHashBucketRec* b,char* c,char* d),(a,b,c,d),return)
