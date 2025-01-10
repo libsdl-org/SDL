@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,31 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* *INDENT-OFF* */ // clang-format off
+#include "SDL_openxrdyn.h"
 
-#include "openxr/openxr.h"
-
-#ifndef SDL_OPENXR_SYM
-#define SDL_OPENXR_SYM(name)
-#endif
-
-#ifndef SDL_OPENXR_INSTANCE_SYM
-#define SDL_OPENXR_INSTANCE_SYM(name)
-#endif
-
-SDL_OPENXR_SYM(xrGetInstanceProcAddr)
-SDL_OPENXR_SYM(xrEnumerateApiLayerProperties)
-SDL_OPENXR_SYM(xrCreateInstance)
-SDL_OPENXR_SYM(xrEnumerateInstanceExtensionProperties)
-SDL_OPENXR_INSTANCE_SYM(xrEnumerateSwapchainFormats)
-SDL_OPENXR_INSTANCE_SYM(xrCreateSession)
-SDL_OPENXR_INSTANCE_SYM(xrGetSystem)
-SDL_OPENXR_INSTANCE_SYM(xrCreateSwapchain)
-SDL_OPENXR_INSTANCE_SYM(xrEnumerateSwapchainImages)
-SDL_OPENXR_INSTANCE_SYM(xrDestroyInstance)
-SDL_OPENXR_INSTANCE_SYM(xrDestroySwapchain)
-
-#undef SDL_OPENXR_SYM
-#undef SDL_OPENXR_INSTANCE_SYM
-
-/* *INDENT-ON* */ // clang-format on
+XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
+    bool debugMode, 
+    XrExtensionProperties gpuExtension, 
+    SDL_PropertiesID props, 
+    XrInstance *instance, 
+    XrSystemId *systemId,
+    XrInstancePfns **xr);

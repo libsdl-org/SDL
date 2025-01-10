@@ -4285,6 +4285,10 @@ static bool METAL_SupportsTextureFormat(
 
 static bool METAL_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
 {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false)) {
+        return false;
+    }
+
     if (@available(macOS 10.14, iOS 13.0, tvOS 13.0, *)) {
         return (this->Metal_CreateView != NULL);
     }
