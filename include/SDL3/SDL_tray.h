@@ -393,7 +393,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, 
  *
  * \param entry The entry to activate.
  *
- * \since This function is available since SDL 3.1.9.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_ClickTrayEntry(SDL_TrayEntry *entry);
 
