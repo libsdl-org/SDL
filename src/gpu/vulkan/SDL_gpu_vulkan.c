@@ -12010,9 +12010,11 @@ static bool VULKAN_INTERNAL_SearchForOpenXrGpuExtension(XrExtensionProperties *f
     {
         XrExtensionProperties extension = extension_properties[i];
 
+        // NOTE: as generally recommended, we support KHR_vulkan_enable2 *only*
+        //       see https://fredemmott.com/blog/2024/11/25/best-practices-for-openxr-api-layers.html
         if(SDL_strcmp(extension.extensionName, XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME) == 0)
         {
-            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Found KHR_vulkan_enable2 extension");
+            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Found " XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME " extension");
 
             *found_extension = extension;
 
@@ -12087,7 +12089,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         if((xrResult = xrCreateInstance(&(XrInstanceCreateInfo){
             .type = XR_TYPE_INSTANCE_CREATE_INFO,
             .applicationInfo = {
-                .apiVersion = XR_API_VERSION_1_0,
+                .apiVersion = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION, XR_API_VERSION_1_0),
                 .applicationName = "SDL",
             },
             .enabledExtensionCount = 1,
