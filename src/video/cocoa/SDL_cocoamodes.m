@@ -433,7 +433,7 @@ static void Cocoa_DisplayReconfigurationCallback(CGDirectDisplayID displayid, CG
                 if (link) {
                     SDL_DisplayMode mode;
                     if (GetDisplayMode(moderef, true, NULL, link, &mode)) {
-                        SDL_SetCurrentDisplayMode(display, &mode);
+                        SDL_SetDesktopDisplayMode(display, &mode);
                     }
                     CVDisplayLinkRelease(link);
                 }
