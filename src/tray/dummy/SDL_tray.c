@@ -119,6 +119,10 @@ void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, v
     SDL_Unsupported();
 }
 
+void SDL_ClickTrayEntry(SDL_TrayEntry *entry)
+{
+}
+
 SDL_TrayMenu *SDL_GetTrayEntryParent(SDL_TrayEntry *entry)
 {
     SDL_Unsupported();

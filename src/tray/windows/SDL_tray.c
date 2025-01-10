@@ -536,6 +536,21 @@ void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, v
     entry->userdata = userdata;
 }
 
+void SDL_ClickTrayEntry(SDL_TrayEntry *entry)
+{
+	if (!entry) {
+		return;
+	}
+
+	if (entry->flags & SDL_TRAYENTRY_CHECKBOX) {
+		SDL_SetTrayEntryChecked(entry, !SDL_GetTrayEntryChecked(entry));
+	}
+
+	if (entry->callback) {
+		entry->callback(entry->userdata, entry);
+	}
+}
+
 SDL_TrayMenu *SDL_GetTrayEntryParent(SDL_TrayEntry *entry)
 {
     return entry->parent;
