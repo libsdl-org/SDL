@@ -21,7 +21,7 @@
 
 #include "SDL_internal.h"
 
-#if HAVE_GPU_OPENXR
+#ifdef HAVE_GPU_OPENXR
 
 #ifndef SDL_GPU_OPENXR_DYNAMIC
 #error OpenXR loader path not set for platform
@@ -81,7 +81,8 @@ bool SDL_OPENXR_LoadLoaderSymbols(void)
 
     // deal with multiple modules (dga, openxr, etc) needing these symbols...
     if (openxr_load_refcount++ == 0) {
-        openxr_loader.lib = SDL_LoadObject(openxr_loader.libname);
+        openxr_loader.lib = SDL_LoadObject("openxr_loaderd.dll");
+        // openxr_loader.lib = SDL_LoadObject(openxr_loader.libname);
 
         if(!openxr_loader.lib)
             return false;

@@ -33,6 +33,8 @@
 #define XR_USE_GRAPHICS_API_D3D12 1
 #include <openxr/openxr_platform.h>
 #include "../xr/SDL_openxrdyn.h"
+
+#include "../xr/SDL_gpu_openxr.h"
 #endif
 
 #include "../SDL_sysgpu.h"
@@ -780,6 +782,12 @@ struct D3D12Renderer
     const char *semantic;
     SDL_iconv_t iconv;
 
+#ifdef HAVE_GPU_OPENXR
+    XrInstance xrInstance; /* a non-null instance also states this d3d12 device was created by OpenXR */
+    XrSystemId xrSystemId;
+    XrInstancePfns *xr;
+#endif
+
     ID3D12CommandQueue *commandQueue;
 
     bool debug_mode;
@@ -1510,6 +1518,16 @@ static void D3D12_INTERNAL_DestroyFence(D3D12Fence *fence)
 
 static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
 {
+#ifdef HAVE_GPU_OPENXR
+    if (renderer->xr) {
+        if(renderer->xrInstance) {
+            renderer->xr->xrDestroyInstance(renderer->xrInstance);
+        }
+        SDL_OPENXR_UnloadLoaderSymbols();
+        SDL_free(renderer->xr);
+    }
+#endif
+
     // Release uniform buffers
     for (Uint32 i = 0; i < renderer->uniformBufferPoolCount; i += 1) {
         D3D12_INTERNAL_DestroyBuffer(
@@ -3844,8 +3862,23 @@ static XrResult D3D12_CreateXRSession(
     const XrSessionCreateInfo *createinfo,
     XrSession *session)
 {
-    SDL_SetError("The d3d12 backend does not currently support OpenXR");
+#ifdef HAVE_GPU_OPENXR
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
+
+    XrGraphicsBindingD3D12KHR graphicsBinding = {XR_TYPE_GRAPHICS_BINDING_D3D12_KHR};
+    graphicsBinding.device = renderer->device;
+    graphicsBinding.queue = renderer->commandQueue;
+
+    XrSessionCreateInfo sessionCreateInfo = {XR_TYPE_SESSION_CREATE_INFO};
+    sessionCreateInfo.systemId = renderer->xrSystemId;
+    sessionCreateInfo.next = &graphicsBinding;
+
+    return renderer->xr->xrCreateSession(renderer->xrInstance, &sessionCreateInfo, session);
+#else
+    SDL_SetError("SDL not built with OpenXR support");
     return XR_ERROR_FUNCTION_UNSUPPORTED;
+#endif /* HAVE_GPU_OPENXR */
+
 }
 
 // Disposal
@@ -8250,6 +8283,97 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 }
 
+#ifdef HAVE_GPU_OPENXR
+static bool D3D12_INTERNAL_SearchForOpenXrGpuExtension(XrExtensionProperties *found_extension)
+{
+    XrResult result;
+    Uint32 extension_count;
+    Uint32 i;
+
+    result = xrEnumerateInstanceExtensionProperties(NULL, 0, &extension_count, NULL);
+    if(result != XR_SUCCESS) 
+        return false;
+
+    XrExtensionProperties *extension_properties = (XrExtensionProperties *)SDL_calloc(extension_count, sizeof(XrExtensionProperties));
+    for(i = 0; i < extension_count; i++)
+        extension_properties[i] = (XrExtensionProperties){XR_TYPE_EXTENSION_PROPERTIES};
+
+    result = xrEnumerateInstanceExtensionProperties(NULL, extension_count, &extension_count, extension_properties);
+    if(result != XR_SUCCESS) 
+        return false;
+    
+    for(i = 0; i < extension_count; i++)
+    {
+        XrExtensionProperties extension = extension_properties[i];
+
+        if(SDL_strcmp(extension.extensionName, XR_KHR_D3D12_ENABLE_EXTENSION_NAME) == 0)
+        {
+            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Found " XR_KHR_D3D12_ENABLE_EXTENSION_NAME " extension");
+
+            *found_extension = extension;
+
+            SDL_free(extension_properties);
+            return true;
+        }
+    }
+
+    SDL_free(extension_properties);
+    return false;
+}
+
+static XrResult D3D12_INTERNAL_GetXrGraphicsRequirements(XrInstance instance, XrSystemId systemId, D3D_FEATURE_LEVEL *minimumFeatureLevel, LUID *adapter)
+{
+    XrResult xrResult;
+
+    PFN_xrGetD3D12GraphicsRequirementsKHR xrGetD3D12GraphicsRequirementsKHR;
+    if((xrResult = xrGetInstanceProcAddr(instance, "xrGetD3D12GraphicsRequirementsKHR", (PFN_xrVoidFunction*)&xrGetD3D12GraphicsRequirementsKHR)) != XR_SUCCESS) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get xrGetVulkanGraphicsRequirements2KHR");
+        return xrResult;
+    }
+
+    XrGraphicsRequirementsD3D12KHR graphicsRequirementsD3D12 = {XR_TYPE_GRAPHICS_REQUIREMENTS_D3D12_KHR};
+    if((xrResult = xrGetD3D12GraphicsRequirementsKHR(instance, systemId, &graphicsRequirementsD3D12)) != XR_SUCCESS) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get vulkan graphics requirements, got OpenXR error %d", xrResult);
+        return xrResult;
+    }
+
+    *adapter = graphicsRequirementsD3D12.adapterLuid;
+    *minimumFeatureLevel = graphicsRequirementsD3D12.minFeatureLevel;
+    return XR_SUCCESS;
+}
+
+static bool D3D12_INTERNAL_GetAdapterByLuid(LUID luid, IDXGIFactory1 *factory, IDXGIAdapter1 **outAdapter) 
+{
+    HRESULT res;
+    
+    // We need to iterate over all the adapters in the system to find the one with the matching LUID
+    for (Uint32 adapterIndex = 0;; adapterIndex++) {
+        // EnumAdapters1 will fail with DXGI_ERROR_NOT_FOUND when there are no more adapters to enumerate.
+        IDXGIAdapter1 *adapter;
+        res = IDXGIFactory1_EnumAdapters1(factory, adapterIndex, &adapter);
+        if(FAILED(res)) {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get an adapter when iterating, i: %d, res: %d", adapterIndex, res);
+            return false;
+        }
+
+        DXGI_ADAPTER_DESC1 adapterDesc;
+        res = IDXGIAdapter1_GetDesc1(adapter, &adapterDesc);
+        if(FAILED(res)) {
+            IDXGIAdapter1_Release(adapter);
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get description of adapter, i: %d, res %d", adapterIndex, res);
+            return false;
+        }
+        if (memcmp(&adapterDesc.AdapterLuid, &luid, sizeof(luid)) == 0) {
+            *outAdapter = adapter;
+            return true;
+        }
+        IDXGIAdapter1_Release(adapter);
+    }
+
+    return false;
+}
+#endif /* HAVE_GPU_OPENXR */
+
 static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 {
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
@@ -8265,6 +8389,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     IDXGIFactory4 *factory4;
     IDXGIFactory6 *factory6;
     IDXGIAdapter1 *adapter;
+    D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_CHOICE;
 
     // Can we load D3D12?
 
@@ -8327,41 +8452,157 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     }
     IDXGIFactory4_Release(factory4);
 
-    res = IDXGIFactory1_QueryInterface(
-        factory,
-        D3D_GUID(D3D_IID_IDXGIFactory6),
-        (void **)&factory6);
-    if (SUCCEEDED(res)) {
-        res = IDXGIFactory6_EnumAdapterByGpuPreference(
-            factory6,
-            0,
-            DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
-            D3D_GUID(D3D_IID_IDXGIAdapter1),
-            (void **)&adapter);
-        IDXGIFactory6_Release(factory6);
-    } else {
-        res = IDXGIFactory1_EnumAdapters1(
+#ifdef HAVE_GPU_OPENXR
+    XrResult xrResult;
+    XrInstancePfns *instancePfns = NULL;
+    XrInstance xrInstance = XR_NULL_HANDLE;
+    XrSystemId xrSystemId = XR_NULL_HANDLE;
+    LUID xrAdapter;
+    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false);
+
+    if (xr) {
+        if (!SDL_OPENXR_LoadLoaderSymbols()) {
+            SDL_SetError("Failed to load OpenXR loader or a required symbol");
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to load OpenXR loader");
+            SDL_Vulkan_UnloadLibrary();
+            return false;
+        }
+
+        XrExtensionProperties gpuExtension;
+        if(!D3D12_INTERNAL_SearchForOpenXrGpuExtension(&gpuExtension)) {
+            SDL_SetError("Failed to find a suitable OpenXR GPU extension.");
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to find a suitable OpenXR GPU extension");
+            SDL_Vulkan_UnloadLibrary();
+            SDL_OPENXR_UnloadLoaderSymbols();
+            return false;
+        }
+
+        const char *extensionName = gpuExtension.extensionName;
+        if((xrResult = xrCreateInstance(&(XrInstanceCreateInfo){
+            .type = XR_TYPE_INSTANCE_CREATE_INFO,
+            .applicationInfo = {
+                .apiVersion = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION, XR_API_VERSION_1_0),
+                .applicationName = "SDL",
+            },
+            .enabledExtensionCount = 1,
+            .enabledExtensionNames = &extensionName,
+        }, &xrInstance)) != XR_SUCCESS) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to create OpenXR instance");
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create OpenXR instance");
+            SDL_Vulkan_UnloadLibrary();
+            SDL_OPENXR_UnloadLoaderSymbols();
+            return false;
+        }
+
+        instancePfns = SDL_OPENXR_LoadInstanceSymbols(xrInstance);
+        if (!instancePfns) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to load needed OpenXR instance symbols");
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to load needed OpenXR instance symbols");
+            SDL_Vulkan_UnloadLibrary();
+            SDL_OPENXR_UnloadLoaderSymbols();
+            /* NOTE: we can't actually destroy the created OpenXR instance here, 
+                    as we only get that function pointer by loading the instance symbols...
+                    let's just hope that doesn't happen... */
+            return false;
+        }
+
+        if((xrResult = instancePfns->xrGetSystem(xrInstance, &(XrSystemGetInfo){
+            .type = XR_TYPE_SYSTEM_GET_INFO,
+            .formFactor = (XrFormFactor)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR, XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY),
+        }, &xrSystemId)) != XR_SUCCESS) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");
+            instancePfns->xrDestroyInstance(xrInstance);
+            SDL_Vulkan_UnloadLibrary();
+            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_free(instancePfns);
+            return false;
+        }
+
+        if ((xrResult = D3D12_INTERNAL_GetXrGraphicsRequirements(xrInstance, xrSystemId, &featureLevel, &xrAdapter)) != XR_SUCCESS) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get D3D12 graphics requirements");
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get D3D12 graphics requirements");
+            instancePfns->xrDestroyInstance(xrInstance);
+            SDL_Vulkan_UnloadLibrary();
+            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_free(instancePfns);
+            return false;
+        }
+
+        // Ensure we get the minimum feature level we need
+        if (featureLevel < D3D_FEATURE_LEVEL_CHOICE) {
+            featureLevel = D3D_FEATURE_LEVEL_CHOICE;
+        }
+
+        if (!D3D12_INTERNAL_GetAdapterByLuid(xrAdapter, factory, &adapter)) {
+            SDL_SetError("Failed to get the OpenXR DXGI adapter by its LUID");
+            if (instancePfns) {
+                instancePfns->xrDestroyInstance(xrInstance);
+                SDL_free(instancePfns);
+                SDL_OPENXR_UnloadLoaderSymbols();
+            }
+            IDXGIFactory1_Release(factory);
+            SDL_UnloadObject(d3d12Dll);
+            SDL_UnloadObject(dxgiDll);
+
+            return false;
+        }
+    } else 
+#endif /* HAVE_GPU_OPENXR */
+    {
+        res = IDXGIFactory1_QueryInterface(
             factory,
-            0,
-            &adapter);
-    }
-    if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Failed to find adapter for D3D12Device");
-        IDXGIFactory1_Release(factory);
-        SDL_UnloadObject(d3d12Dll);
-        SDL_UnloadObject(dxgiDll);
-        return false;
+            D3D_GUID(D3D_IID_IDXGIFactory6),
+            (void **)&factory6);
+
+        if (SUCCEEDED(res)) {
+            res = IDXGIFactory6_EnumAdapterByGpuPreference(
+                factory6,
+                0,
+                DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+                D3D_GUID(D3D_IID_IDXGIAdapter1),
+                (void **)&adapter);
+            IDXGIFactory6_Release(factory6);
+        } else {
+            res = IDXGIFactory1_EnumAdapters1(
+                factory,
+                0,
+                &adapter);
+        }
+        if (FAILED(res)) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Failed to find adapter for D3D12Device");
+#ifdef HAVE_GPU_OPENXR
+            if (instancePfns) {
+                instancePfns->xrDestroyInstance(xrInstance);
+                SDL_free(instancePfns);
+                SDL_OPENXR_UnloadLoaderSymbols();
+            }
+#endif /* HAVE_GPU_OPENXR */
+            IDXGIFactory1_Release(factory);
+            SDL_UnloadObject(d3d12Dll);
+            SDL_UnloadObject(dxgiDll);
+            return false;
+        }
     }
 
     res = D3D12CreateDeviceFunc(
         (IUnknown *)adapter,
-        D3D_FEATURE_LEVEL_CHOICE,
+        featureLevel,
         D3D_GUID(D3D_IID_ID3D12Device),
         (void **)&device);
 
     if (SUCCEEDED(res)) {
         ID3D12Device_Release(device);
     }
+
+#ifdef HAVE_GPU_OPENXR
+    if (instancePfns) {
+        instancePfns->xrDestroyInstance(xrInstance);
+        SDL_free(instancePfns);
+        SDL_OPENXR_UnloadLoaderSymbols();
+    }
+#endif /* HAVE_GPU_OPENXR */
+
     IDXGIAdapter1_Release(adapter);
     IDXGIFactory1_Release(factory);
 
@@ -8369,7 +8610,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     SDL_UnloadObject(dxgiDll);
 
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not create D3D12Device with feature level " D3D_FEATURE_LEVEL_CHOICE_STR);
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not create D3D12Device with feature level %d", featureLevel);
         return false;
     }
 
@@ -8597,6 +8838,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 #endif
     D3D12_FEATURE_DATA_ARCHITECTURE architecture;
     D3D12_COMMAND_QUEUE_DESC queueDesc;
+    D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_CHOICE;
 
     renderer = (D3D12Renderer *)SDL_calloc(1, sizeof(D3D12Renderer));
 
@@ -8661,24 +8903,79 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         IDXGIFactory5_Release(factory5);
     }
 
-    // Select the appropriate device for rendering
-    res = IDXGIFactory4_QueryInterface(
-        renderer->factory,
-        D3D_GUID(D3D_IID_IDXGIFactory6),
-        (void **)&factory6);
-    if (SUCCEEDED(res)) {
-        res = IDXGIFactory6_EnumAdapterByGpuPreference(
-            factory6,
-            0,
-            preferLowPower ? DXGI_GPU_PREFERENCE_MINIMUM_POWER : DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
-            D3D_GUID(D3D_IID_IDXGIAdapter1),
-            (void **)&renderer->adapter);
-        IDXGIFactory6_Release(factory6);
-    } else {
-        res = IDXGIFactory4_EnumAdapters1(
+#ifdef HAVE_GPU_OPENXR
+    bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false);
+    XrInstance *xrInstance = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_OUT, NULL);
+    XrSystemId *xrSystemId = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_OUT, NULL);
+    
+    if (xr) {
+        XrExtensionProperties gpuExtension;
+
+        if(!xrInstance) {
+            SDL_SetError("You must specify an out pointer for the OpenXR instance");
+            return NULL;
+        }
+
+        if(!xrSystemId) {
+            SDL_SetError("You must specify an out pointer for the OpenXR system ID");
+            return NULL;
+        }
+
+        if (!SDL_OPENXR_LoadLoaderSymbols()) {
+            SDL_assert(!"This should have failed in PrepareDevice first!");
+            return NULL;
+        }
+
+        if(!D3D12_INTERNAL_SearchForOpenXrGpuExtension(&gpuExtension)) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to find a compatible OpenXR D3D12 extension");
+            SDL_OPENXR_UnloadLoaderSymbols();
+            return false;
+        }
+
+        if (!SDL_OPENXR_INTERNAL_GPUInitOpenXR(debugMode, gpuExtension, props, xrInstance, xrSystemId, &renderer->xr)) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to init OpenXR");
+            SDL_OPENXR_UnloadLoaderSymbols();
+            return false;
+        }
+
+        renderer->xrInstance = *xrInstance;
+        renderer->xrSystemId = *xrSystemId;
+
+        LUID xrAdapter;
+
+        if (D3D12_INTERNAL_GetXrGraphicsRequirements(*xrInstance, *xrSystemId, &featureLevel, &xrAdapter) != XR_SUCCESS) {
+            SDL_OPENXR_UnloadLoaderSymbols();
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            return false;
+        }
+
+        if (!D3D12_INTERNAL_GetAdapterByLuid(xrAdapter, factory1, &renderer->adapter)) {
+            SDL_OPENXR_UnloadLoaderSymbols();
+            D3D12_INTERNAL_DestroyRenderer(renderer);
+            return false;
+        }
+    } else
+#endif /* HAVE_GPU_OPENXR */
+    {
+        // Select the appropriate device for rendering
+        res = IDXGIFactory4_QueryInterface(
             renderer->factory,
-            0,
-            &renderer->adapter);
+            D3D_GUID(D3D_IID_IDXGIFactory6),
+            (void **)&factory6);
+        if (SUCCEEDED(res)) {
+            res = IDXGIFactory6_EnumAdapterByGpuPreference(
+                factory6,
+                0,
+                preferLowPower ? DXGI_GPU_PREFERENCE_MINIMUM_POWER : DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+                D3D_GUID(D3D_IID_IDXGIAdapter1),
+                (void **)&renderer->adapter);
+            IDXGIFactory6_Release(factory6);
+        } else {
+            res = IDXGIFactory4_EnumAdapters1(
+                renderer->factory,
+                0,
+                &renderer->adapter);
+        }
     }
 
     if (FAILED(res)) {

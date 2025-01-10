@@ -36,6 +36,8 @@
 #define XR_USE_GRAPHICS_API_VULKAN 1
 #include <openxr/openxr_platform.h>
 #include "../xr/SDL_openxrdyn.h"
+
+#include "../xr/SDL_gpu_openxr.h"
 #endif
 
 #include <SDL3/SDL_vulkan.h>
@@ -12184,7 +12186,6 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->minimumVkVersion = VK_API_VERSION_1_0;
 
 #ifdef HAVE_GPU_OPENXR
-    XrResult xrResult;
     bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false);
     XrInstance *xrInstance = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_OUT, NULL);
     XrSystemId *xrSystemId = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_OUT, NULL);
@@ -12214,67 +12215,13 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
             return false;
         }
 
-        Sint64 userApiLayerCount = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_COUNT, 0);
-        const char *const *userApiLayerNames = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_LAYER_NAMES, NULL);
-
-        Sint64 userExtensionCount = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_COUNT, 0);
-        const char *const *userExtensionNames = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_EXTENSION_NAMES, NULL);
-
-        // allocate enough space for the validation layer + the user's api layers
-        const char **apiLayerNames = SDL_stack_alloc(const char *, userApiLayerCount + 1);
-        SDL_memcpy(apiLayerNames, userApiLayerNames, sizeof(const char *) * (userApiLayerCount));
-        apiLayerNames[userApiLayerCount] = "XR_APILAYER_LUNARG_core_validation";
-
-        const char **extensionNames = SDL_stack_alloc(const char *, userExtensionCount + 1);
-        SDL_memcpy(extensionNames, userExtensionNames, sizeof(const char *) * (userExtensionCount));
-        extensionNames[userExtensionCount] = gpuExtension.extensionName;
-
-        XrInstanceCreateInfo xrInstanceCreateInfo = { XR_TYPE_INSTANCE_CREATE_INFO };
-        xrInstanceCreateInfo.applicationInfo.apiVersion = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_VERSION, XR_API_VERSION_1_0);
-        xrInstanceCreateInfo.enabledApiLayerCount = userApiLayerCount + (debugMode ? 1 : 0); // in debug mode, we enable the validation layer
-        xrInstanceCreateInfo.enabledApiLayerNames = apiLayerNames;
-        xrInstanceCreateInfo.enabledExtensionCount = userExtensionCount + 1;
-        xrInstanceCreateInfo.enabledExtensionNames = extensionNames;
-
-        const char *applicationName = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME, "SDL Application");
-        uint32_t applicationVersion = (uint32_t)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION, 0);
-
-        SDL_strlcpy(xrInstanceCreateInfo.applicationInfo.applicationName, applicationName, XR_MAX_APPLICATION_NAME_SIZE); // TODO: let the user specify this
-        xrInstanceCreateInfo.applicationInfo.applicationVersion = applicationVersion;
-
-        const char *engineName = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_NAME, "SDLGPU");
-        uint32_t engineVersion = (uint32_t)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENGINE_VERSION, SDL_VERSION);
-
-        SDL_strlcpy(xrInstanceCreateInfo.applicationInfo.engineName, engineName, XR_MAX_APPLICATION_NAME_SIZE);
-        xrInstanceCreateInfo.applicationInfo.engineVersion = engineVersion;
-
-        if((xrResult = xrCreateInstance(&xrInstanceCreateInfo, xrInstance)) != XR_SUCCESS) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to create OpenXR instance");
+        if (!SDL_OPENXR_INTERNAL_GPUInitOpenXR(debugMode, gpuExtension, props, xrInstance, xrSystemId, &renderer->xr)) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to init OpenXR");
             SDL_OPENXR_UnloadLoaderSymbols();
             return false;
         }
 
         renderer->xrInstance = *xrInstance;
-        renderer->xr = SDL_OPENXR_LoadInstanceSymbols(*xrInstance);
-        if (!renderer->xr) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to load required OpenXR instance symbols");
-            SDL_OPENXR_UnloadLoaderSymbols();
-            /* NOTE: we can't actually destroy the created OpenXR instance here, 
-                    as we only get that function pointer by loading the instance symbols...
-                    let's just hope that doesn't happen. */
-            return false;
-        }
-
-        XrSystemGetInfo systemGetInfo = {XR_TYPE_SYSTEM_GET_INFO};
-        systemGetInfo.formFactor = (XrFormFactor)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_FORM_FACTOR, XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY);
-        if((xrResult = renderer->xr->xrGetSystem(*xrInstance, &systemGetInfo, xrSystemId)) != XR_SUCCESS) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");
-            renderer->xr->xrDestroyInstance(*xrInstance);
-            SDL_OPENXR_UnloadLoaderSymbols();
-            SDL_free(renderer->xr);
-            return false;
-        }
-
         renderer->xrSystemId = *xrSystemId;
 
         XrVersion minimumVulkanApiVersion;
