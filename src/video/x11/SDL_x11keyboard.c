@@ -169,9 +169,6 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
            Compose keys will work correctly. */
         char *prev_locale = setlocale(LC_ALL, NULL);
         char *prev_xmods = X11_XSetLocaleModifiers(NULL);
-        const char *new_xmods = "";
-        const char *env_xmods = SDL_getenv("XMODIFIERS");
-        bool has_dbus_ime_support = false;
 
         if (prev_locale) {
             prev_locale = SDL_strdup(prev_locale);
@@ -181,22 +178,8 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
             prev_xmods = SDL_strdup(prev_xmods);
         }
 
-        /* IBus resends some key events that were filtered by XFilterEvents
-           when it is used via XIM which causes issues. Prevent this by forcing
-           @im=none if XMODIFIERS contains @im=ibus. IBus can still be used via
-           the DBus implementation, which also has support for pre-editing. */
-        if (env_xmods && SDL_strstr(env_xmods, "@im=ibus") != NULL) {
-            has_dbus_ime_support = true;
-        }
-        if (env_xmods && SDL_strstr(env_xmods, "@im=fcitx") != NULL) {
-            has_dbus_ime_support = true;
-        }
-        if (has_dbus_ime_support || !xkb_repeat) {
-            new_xmods = "@im=none";
-        }
-
         (void)setlocale(LC_ALL, "");
-        X11_XSetLocaleModifiers(new_xmods);
+        X11_XSetLocaleModifiers("");
 
         data->im = X11_XOpenIM(data->display, NULL, NULL, NULL);
 
@@ -317,10 +300,6 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
     X11_UpdateKeymap(_this, false);
 
     SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
-
-#ifdef SDL_USE_IME
-    SDL_IME_Init();
-#endif
 
     X11_ReconcileKeyboardState(_this);
 
@@ -470,10 +449,6 @@ void X11_QuitKeyboard(SDL_VideoDevice *_this)
         data->xkb.desc_ptr = NULL;
     }
 #endif
-
-#ifdef SDL_USE_IME
-    SDL_IME_Quit();
-#endif
 }
 
 static void X11_ResetXIM(SDL_VideoDevice *_this, SDL_Window *window)
@@ -501,17 +476,11 @@ bool X11_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 bool X11_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
     X11_ResetXIM(_this, window);
-#ifdef SDL_USE_IME
-    SDL_IME_Reset();
-#endif
     return true;
 }
 
 bool X11_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
-#ifdef SDL_USE_IME
-    SDL_IME_UpdateTextInputArea(window);
-#endif
     return true;
 }
 
