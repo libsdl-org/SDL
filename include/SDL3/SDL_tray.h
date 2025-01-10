@@ -389,6 +389,15 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry);
 extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata);
 
 /**
+ * Simulate a click on a tray entry.
+ *
+ * \param entry The entry to activate.
+ *
+ * \since This function is available since SDL 3.1.9.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_ClickTrayEntry(SDL_TrayEntry *entry);
+
+/**
  * Destroys a tray object.
  *
  * This also destroys all associated menus and entries.

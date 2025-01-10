@@ -136,6 +136,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                         change:(NSDictionary *)change
                        context:(void *)context;
 - (BOOL)applicationSupportsSecureRestorableState:(NSApplication *)app;
+- (IBAction)menu:(id)sender;
 @end
 
 @implementation SDL3AppDelegate : NSObject
@@ -356,6 +357,13 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     // More-detailed explanation:
     // https://stackoverflow.com/questions/77283578/sonoma-and-nsapplicationdelegate-applicationsupportssecurerestorablestate/77320845#77320845
     return YES;
+}
+
+- (IBAction)menu:(id)sender
+{
+	SDL_TrayEntry *entry = [[sender representedObject] pointerValue];
+
+	SDL_ClickTrayEntry(entry);
 }
 
 @end
