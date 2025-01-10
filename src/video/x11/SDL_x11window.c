@@ -356,19 +356,12 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
     if (!data) {
         return false;
     }
+    data->videodata = videodata;
     data->window = window;
     data->xwindow = w;
     data->hit_test_result = SDL_HITTEST_NORMAL;
 
-#ifdef X_HAVE_UTF8_STRING
-    if (SDL_X11_HAVE_UTF8 && videodata->im) {
-        data->ic =
-            X11_XCreateIC(videodata->im, XNClientWindow, w, XNFocusWindow, w,
-                          XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-                          NULL);
-    }
-#endif
-    data->videodata = videodata;
+    X11_CreateInputContext(data);
 
     // Associate the data with the window
 
@@ -2044,6 +2037,8 @@ void X11_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #ifdef X_HAVE_UTF8_STRING
         if (data->ic) {
             X11_XDestroyIC(data->ic);
+            SDL_free(data->preedit_text);
+            SDL_free(data->preedit_feedback);
         }
 #endif
 

@@ -939,6 +939,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
 
             if (*text) {
                 text[text_length] = '\0';
+                X11_ClearComposition(windowdata);
                 SDL_SendKeyboardText(text);
             }
         } else {

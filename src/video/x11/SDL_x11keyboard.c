@@ -451,6 +451,227 @@ void X11_QuitKeyboard(SDL_VideoDevice *_this)
 #endif
 }
 
+void X11_ClearComposition(SDL_WindowData *data)
+{
+    if (data->preedit_length > 0) {
+        data->preedit_text[0] = '\0';
+        data->preedit_length = 0;
+    }
+
+    if (data->ime_needs_clear_composition) {
+        SDL_SendEditingText("", 0, 0);
+        data->ime_needs_clear_composition = false;
+    }
+}
+
+static void X11_SendEditingEvent(SDL_WindowData *data)
+{
+    if (data->preedit_length == 0) {
+        X11_ClearComposition(data);
+        return;
+    }
+
+    bool in_highlight = false;
+    int start = -1, length = 0, i;
+    for (i = 0; i < data->preedit_length; ++i) {
+        if (data->preedit_feedback[i] & (XIMReverse | XIMHighlight)) {
+            if (start < 0) {
+                start = i;
+                in_highlight = true;
+            }
+        } else if (in_highlight) {
+            // Found the end of the highlight
+            break;
+        }
+    }
+    if (in_highlight) {
+        length = (i - start);
+    } else {
+        start = SDL_clamp(data->preedit_cursor, 0, data->preedit_length);
+    }
+    SDL_SendEditingText(data->preedit_text, start, length);
+
+    data->ime_needs_clear_composition = true;
+}
+
+static int preedit_start_callback(XIC xic, XPointer client_data, XPointer call_data)
+{
+    // No limit on preedit text length
+    return -1;
+}
+
+static void preedit_done_callback(XIC xic, XPointer client_data, XPointer call_data)
+{
+}
+
+static void preedit_draw_callback(XIC xic, XPointer client_data, XIMPreeditDrawCallbackStruct *call_data)
+{
+    SDL_WindowData *data = (SDL_WindowData *)client_data;
+    int chg_first = SDL_clamp(call_data->chg_first, 0, data->preedit_length);
+    int chg_length = SDL_clamp(call_data->chg_length, 0, data->preedit_length - chg_first);
+
+    const char *start = data->preedit_text;
+    if (chg_length > 0) {
+        // Delete text in range
+        for (int i = 0; start && *start && i < chg_first; ++i) {
+            SDL_StepUTF8(&start, NULL);
+        }
+
+        const char *end = start;
+        for (int i = 0; end && *end && i < chg_length; ++i) {
+            SDL_StepUTF8(&end, NULL);
+        }
+
+        if (end > start) {
+            SDL_memmove((char *)start, end, SDL_strlen(end) + 1);
+            if ((chg_first + chg_length) > data->preedit_length) {
+                SDL_memmove(&data->preedit_feedback[chg_first], &data->preedit_feedback[chg_first + chg_length], (data->preedit_length - chg_first - chg_length) * sizeof(*data->preedit_feedback));
+            }
+        }
+        data->preedit_length -= chg_length;
+    }
+
+    XIMText *text = call_data->text;
+    if (text) {
+        // Insert text in range
+        SDL_assert(!text->encoding_is_wchar);
+
+        // The text length isn't calculated as directed by the spec, recalculate it now
+        if (text->string.multi_byte) {
+            text->length = SDL_utf8strlen(text->string.multi_byte);
+        }
+
+        size_t string_size = SDL_strlen(text->string.multi_byte);
+        size_t size = string_size + 1;
+        if (data->preedit_text) {
+            size += SDL_strlen(data->preedit_text);
+        }
+        char *preedit_text = (char *)SDL_malloc(size * sizeof(*preedit_text));
+        if (preedit_text) {
+            size_t pre_size = (start - data->preedit_text);
+            size_t post_size = start ? SDL_strlen(start) : 0;
+            if (pre_size > 0) {
+                SDL_memcpy(&preedit_text[0], data->preedit_text, pre_size);
+            }
+            SDL_memcpy(&preedit_text[pre_size], text->string.multi_byte, string_size);
+            if (post_size > 0) {
+                SDL_memcpy(&preedit_text[pre_size + string_size], start, post_size);
+            }
+            preedit_text[size - 1] = '\0';
+        }
+
+        size_t feedback_size = data->preedit_length + text->length;
+        XIMFeedback *feedback = (XIMFeedback *)SDL_malloc(feedback_size * sizeof(*feedback));
+        if (feedback) {
+            size_t pre_size = (size_t)chg_first;
+            size_t post_size = (size_t)data->preedit_length - pre_size;
+            if (pre_size > 0) {
+                SDL_memcpy(&feedback[0], data->preedit_feedback, pre_size * sizeof(*feedback));
+            }
+            SDL_memcpy(&feedback[pre_size], text->feedback, text->length * sizeof(*feedback));
+            if (post_size > 0) {
+                SDL_memcpy(&feedback[pre_size + text->length], &data->preedit_feedback[pre_size], post_size * sizeof(*feedback));
+            }
+        }
+
+        if (preedit_text && feedback) {
+            SDL_free(data->preedit_text);
+            data->preedit_text = preedit_text;
+
+            SDL_free(data->preedit_feedback);
+            data->preedit_feedback = feedback;
+
+            data->preedit_length += text->length;
+        } else {
+            SDL_free(preedit_text);
+            SDL_free(feedback);
+        }
+    }
+
+    data->preedit_cursor = call_data->caret;
+
+#ifdef DEBUG_XIM
+    if (call_data->chg_length > 0) {
+        SDL_Log("Draw callback deleted %d characters at %d\n", call_data->chg_length, call_data->chg_first);
+    }
+    if (text) {
+        SDL_Log("Draw callback inserted %s at %d, caret: %d\n", text->string.multi_byte, call_data->chg_first, call_data->caret);
+    }
+    SDL_Log("Pre-edit text: %s\n", data->preedit_text);
+#endif
+
+    X11_SendEditingEvent(data);
+}
+
+static void preedit_caret_callback(XIC xic, XPointer client_data, XIMPreeditCaretCallbackStruct *call_data)
+{
+    SDL_WindowData *data = (SDL_WindowData *)client_data;
+
+    switch (call_data->direction) {
+    case XIMAbsolutePosition:
+        if (call_data->position != data->preedit_cursor) {
+            data->preedit_cursor = call_data->position;
+            X11_SendEditingEvent(data);
+        }
+        break;
+    case XIMDontChange:
+        break;
+    default:
+        // Not currently supported
+        break;
+    }
+}
+
+void X11_CreateInputContext(SDL_WindowData *data)
+{
+#ifdef X_HAVE_UTF8_STRING
+    SDL_VideoData *videodata = data->videodata;
+
+    if (SDL_X11_HAVE_UTF8 && videodata->im) {
+        const char *hint = SDL_GetHint(SDL_HINT_IME_IMPLEMENTED_UI);
+        if (hint && SDL_strstr(hint, "composition")) {
+            XIMCallback draw_callback;
+            draw_callback.client_data = (XPointer)data;
+            draw_callback.callback = (XIMProc)preedit_draw_callback;
+
+            XIMCallback start_callback;
+            start_callback.client_data = (XPointer)data;
+            start_callback.callback = (XIMProc)preedit_start_callback;
+
+            XIMCallback done_callback;
+            done_callback.client_data = (XPointer)data;
+            done_callback.callback = (XIMProc)preedit_done_callback;
+
+            XIMCallback caret_callback;
+            caret_callback.client_data = (XPointer)data;
+            caret_callback.callback = (XIMProc)preedit_caret_callback;
+
+            XVaNestedList attr = X11_XVaCreateNestedList(0,
+                                                         XNPreeditStartCallback, &start_callback,
+                                                         XNPreeditDoneCallback, &done_callback,
+                                                         XNPreeditDrawCallback, &draw_callback,
+                                                         XNPreeditCaretCallback, &caret_callback,
+                                                         NULL);
+            if (attr) {
+                data->ic = X11_XCreateIC(videodata->im,
+                                         XNInputStyle, XIMPreeditCallbacks | XIMStatusCallbacks,
+                                         XNPreeditAttributes, attr,
+                                         XNClientWindow, data->xwindow,
+                                         NULL);
+                X11_XFree(attr);
+            }
+        } else {
+            data->ic = X11_XCreateIC(videodata->im,
+                                     XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+                                     XNClientWindow, data->xwindow,
+                                     NULL);
+        }
+        data->xim_spot.x = -1;
+        data->xim_spot.y = -1;
+    }
+#endif // X_HAVE_UTF8_STRING
+}
+
 static void X11_ResetXIM(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef X_HAVE_UTF8_STRING
@@ -463,7 +684,7 @@ static void X11_ResetXIM(SDL_VideoDevice *_this, SDL_Window *window)
             X11_XFree(contents);
         }
     }
-#endif
+#endif // X_HAVE_UTF8_STRING
 }
 
 bool X11_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
@@ -481,6 +702,23 @@ bool X11_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 
 bool X11_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
+#ifdef X_HAVE_UTF8_STRING
+    SDL_WindowData *data = window->internal;
+
+    if (data && data->ic) {
+        XPoint spot;
+        spot.x = window->text_input_rect.x + window->text_input_cursor;
+        spot.y = window->text_input_rect.y + window->text_input_rect.h;
+        if (spot.x != data->xim_spot.x || spot.y != data->xim_spot.y) {
+            XVaNestedList attr = X11_XVaCreateNestedList(0, XNSpotLocation, &spot, NULL);
+            if (attr) {
+                X11_XSetICValues(data->ic, XNPreeditAttributes, attr, NULL);
+                X11_XFree(attr);
+            }
+            SDL_copyp(&data->xim_spot, &spot);
+        }
+    }
+#endif
     return true;
 }
 

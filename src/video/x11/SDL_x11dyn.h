@@ -94,8 +94,12 @@ extern void SDL_X11_UnloadSymbols(void);
 #ifdef X_HAVE_UTF8_STRING
 typedef XIC (*SDL_DYNX11FN_XCreateIC)(XIM, ...);
 typedef char *(*SDL_DYNX11FN_XGetICValues)(XIC, ...);
+typedef char *(*SDL_DYNX11FN_XSetICValues)(XIC, ...);
+typedef XVaNestedList (*SDL_DYNX11FN_XVaCreateNestedList)(int, ...);
 extern SDL_DYNX11FN_XCreateIC X11_XCreateIC;
 extern SDL_DYNX11FN_XGetICValues X11_XGetICValues;
+extern SDL_DYNX11FN_XSetICValues X11_XSetICValues;
+extern SDL_DYNX11FN_XVaCreateNestedList X11_XVaCreateNestedList;
 #endif
 
 /* These SDL_X11_HAVE_* flags are here whether you have dynamic X11 or not. */
