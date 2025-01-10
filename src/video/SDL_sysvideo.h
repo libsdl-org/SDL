@@ -586,6 +586,8 @@ extern bool SDL_ShouldAllowTopmost(void);
 
 extern void SDL_ToggleDragAndDropSupport(void);
 
+extern void SDL_UpdateDesktopBounds(void);
+
 extern SDL_TextInputType SDL_GetTextInputType(SDL_PropertiesID props);
 extern SDL_Capitalization SDL_GetTextInputCapitalization(SDL_PropertiesID props);
 extern bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props);

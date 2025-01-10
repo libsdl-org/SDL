@@ -2934,17 +2934,11 @@ SDL_DisplayID Cocoa_GetDisplayForWindow(SDL_VideoDevice *_this, SDL_Window *wind
         screen = data.nswindow.screen;
 
         if (screen != nil) {
-            CGDirectDisplayID displayid;
-            int i;
-
             // https://developer.apple.com/documentation/appkit/nsscreen/1388360-devicedescription?language=objc
-            displayid = [[screen.deviceDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
-
-            for (i = 0; i < _this->num_displays; i++) {
-                SDL_DisplayData *displaydata = _this->displays[i]->internal;
-                if (displaydata != NULL && displaydata->display == displayid) {
-                    return _this->displays[i]->id;
-                }
+            CGDirectDisplayID displayid = [[screen.deviceDescription objectForKey:@"NSScreenNumber"] unsignedIntValue];
+            SDL_VideoDisplay *display = Cocoa_FindSDLDisplayByCGDirectDisplayID(_this, displayid);
+            if (display) {
+                return display->id;
             }
         }
 
