@@ -404,6 +404,61 @@ static NSScreen *ScreenForPoint(const NSPoint *point)
     return screen;
 }
 
+bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window)
+{
+    @autoreleasepool {
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+
+        if ([data.listener isInFullscreenSpace]) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+typedef enum CocoaMenuVisibility
+{
+    COCOA_MENU_VISIBILITY_AUTO = 0,
+    COCOA_MENU_VISIBILITY_NEVER,
+    COCOA_MENU_VISIBILITY_ALWAYS
+} CocoaMenuVisibility;
+
+static CocoaMenuVisibility menu_visibility_hint = COCOA_MENU_VISIBILITY_AUTO;
+
+static void Cocoa_ToggleFullscreenSpaceMenuVisibility(SDL_Window *window)
+{
+    if (window && Cocoa_IsWindowInFullscreenSpace(window)) {
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+
+        // 'Auto' sets the menu to visible if fullscreen wasn't explicitly entered via SDL_SetWindowFullscreen().
+        if ((menu_visibility_hint == COCOA_MENU_VISIBILITY_AUTO && !data.fullscreen_space_requested) ||
+            menu_visibility_hint == COCOA_MENU_VISIBILITY_ALWAYS) {
+            [NSMenu setMenuBarVisible:YES];
+        } else {
+            [NSMenu setMenuBarVisible:NO];
+        }
+    }
+}
+
+void Cocoa_MenuVisibilityCallback(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    if (newValue) {
+        if (*newValue == '0' || SDL_strcasecmp(newValue, "false") == 0) {
+            menu_visibility_hint = COCOA_MENU_VISIBILITY_NEVER;
+        } else if (*newValue == '1' || SDL_strcasecmp(newValue, "true") == 0) {
+            menu_visibility_hint = COCOA_MENU_VISIBILITY_ALWAYS;
+        } else {
+            menu_visibility_hint = COCOA_MENU_VISIBILITY_AUTO;
+        }
+    } else {
+        menu_visibility_hint = COCOA_MENU_VISIBILITY_AUTO;
+    }
+
+    // Update the current menu visibility.
+    Cocoa_ToggleFullscreenSpaceMenuVisibility(SDL_GetKeyboardFocus());
+}
+
 static NSScreen *ScreenForRect(const NSRect *rect)
 {
     NSPoint center = NSMakePoint(NSMidX(*rect), NSMidY(*rect));
@@ -1195,7 +1250,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     Cocoa_CheckClipboardUpdate(_data.videodata);
 
     if (isFullscreenSpace && !window->fullscreen_exclusive) {
-        [NSMenu setMenuBarVisible:NO];
+        Cocoa_ToggleFullscreenSpaceMenuVisibility(window);
     }
     {
         const unsigned int newflags = [NSEvent modifierFlags] & NSEventModifierFlagCapsLock;
@@ -1307,9 +1362,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     if ([self windowOperationIsPending:PENDING_OPERATION_LEAVE_FULLSCREEN]) {
         [self setFullscreenSpace:NO];
     } else {
-        if (window->fullscreen_exclusive) {
-            [NSMenu setMenuBarVisible:NO];
-        }
+        Cocoa_ToggleFullscreenSpaceMenuVisibility(window);
 
         /* Don't recurse back into UpdateFullscreenMode() if this was hit in
          * a blocking transition, as the caller is already waiting in
@@ -1380,6 +1433,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     NSWindow *nswindow = _data.nswindow;
 
     inFullscreenTransition = NO;
+    _data.fullscreen_space_requested = NO;
 
     /* As of macOS 10.15, the window decorations can go missing sometimes after
        certain fullscreen-desktop->exlusive-fullscreen->windowed mode flows
@@ -3036,25 +3090,15 @@ void Cocoa_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window)
-{
-    @autoreleasepool {
-        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
-
-        if ([data.listener isInFullscreenSpace]) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-}
-
 bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, bool state, bool blocking)
 {
     @autoreleasepool {
         bool succeeded = false;
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
 
+        if (state) {
+            data.fullscreen_space_requested = YES;
+        }
         data.in_blocking_transition = blocking;
         if ([data.listener setFullscreenSpace:(state ? YES : NO)]) {
             if (blocking) {
