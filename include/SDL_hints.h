@@ -2606,7 +2606,7 @@ extern "C" {
  * Force SDL to use Critical Sections for mutexes on Windows.
  *
  * On Windows 7 and newer, Slim Reader/Writer Locks are available. They offer
- * better performance, allocate no kernel ressources and use less memory. SDL
+ * better performance, allocate no kernel resources and use less memory. SDL
  * will fall back to Critical Sections on older OS versions or if forced to by
  * this hint.
  *
