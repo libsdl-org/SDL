@@ -48,6 +48,10 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 
+static bool pumpevents_has_run = false;
+static int pending_swap_interval = -1;
+
+
 // Emscripten driver bootstrap functions
 
 static void Emscripten_DeleteDevice(SDL_VideoDevice *device)
@@ -228,6 +232,8 @@ static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
 {
     Emscripten_QuitMouse();
     Emscripten_UnlistenSystemTheme();
+    pumpevents_has_run = false;
+    pending_swap_interval = -1;
 }
 
 static bool Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
@@ -245,9 +251,26 @@ static bool Emscripten_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoD
     return true;
 }
 
+bool Emscripten_ShouldSetSwapInterval(int interval)
+{
+    if (!pumpevents_has_run) {
+        pending_swap_interval = interval;
+        return false;
+    }
+    return true;
+}
+
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this)
 {
-    // do nothing.
+    if (!pumpevents_has_run) {
+        // we assume you've set a mainloop by the time you've called pumpevents, so we delay initial SetInterval changes until then.
+        // otherwise you'll get a warning on the javascript console.
+        pumpevents_has_run = true;
+        if (pending_swap_interval >= 0) {
+            Emscripten_GLES_SetSwapInterval(_this, pending_swap_interval);
+            pending_swap_interval = -1;
+        }
+    }
 }
 
 static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)

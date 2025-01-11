@@ -47,4 +47,6 @@ struct SDL_WindowData
     bool has_pointer_lock;
 };
 
+bool Emscripten_ShouldSetSwapInterval(int interval);
+
 #endif // SDL_emscriptenvideo_h_

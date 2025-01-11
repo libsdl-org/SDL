@@ -47,10 +47,14 @@ bool Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     if (interval < 0) {
         return SDL_SetError("Late swap tearing currently unsupported");
-    } else if (interval == 0) {
-        emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 0);
-    } else {
-        emscripten_set_main_loop_timing(EM_TIMING_RAF, interval);
+    }
+
+    if (Emscripten_ShouldSetSwapInterval(interval)) {
+        if (interval == 0) {
+            emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 0);
+        } else {
+            emscripten_set_main_loop_timing(EM_TIMING_RAF, interval);
+        }
     }
 
     return true;
