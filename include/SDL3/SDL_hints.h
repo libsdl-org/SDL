@@ -3331,6 +3331,23 @@ extern "C" {
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
 
 /**
+ * A variable that specifies the menu visibility when a window is fullscreen in Spaces on macOS.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": The menu will be hidden when the window is in a fullscreen space, and not accessible by moving the mouse to the top of the screen.
+ * - "1": The menu will be accessible when the window is in a fullscreen space.
+ * - "auto": The menu will be hidden if fullscreen mode was toggled on programmatically via `SDL_SetWindowFullscreen()`,
+ *           and accessible if fullscreen was entered via the "fullscreen" button on the window
+ *           title bar. (default)
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.1.9.
+ */
+#define SDL_HINT_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY "SDL_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY"
+
+/**
  * A variable controlling whether fullscreen windows are minimized when they
  * lose focus.
  *

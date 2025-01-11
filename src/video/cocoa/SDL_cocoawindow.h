@@ -142,6 +142,7 @@ typedef enum
 @property(nonatomic) NSView *sdlContentView;
 @property(nonatomic) NSMutableArray *nscontexts;
 @property(nonatomic) BOOL in_blocking_transition;
+@property(nonatomic) BOOL fullscreen_space_requested;
 @property(nonatomic) BOOL was_zoomed;
 @property(nonatomic) NSInteger window_number;
 @property(nonatomic) NSInteger flash_request;
@@ -191,5 +192,7 @@ extern bool Cocoa_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window,
 extern bool Cocoa_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal);
 extern bool Cocoa_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent);
 extern bool Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
+
+extern void Cocoa_MenuVisibilityCallback(void *userdata, const char *name, const char *oldValue, const char *newValue);
 
 #endif // SDL_cocoawindow_h_
