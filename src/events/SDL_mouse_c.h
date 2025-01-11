@@ -111,8 +111,6 @@ typedef struct
     Uint64 last_center_warp_time_ns;
     bool enable_normal_speed_scale;
     float normal_speed_scale;
-    bool enable_relative_speed_scale;
-    float relative_speed_scale;
     bool enable_relative_system_scale;
     Uint32 double_click_time;
     int double_click_radius;

@@ -2515,16 +2515,6 @@ extern "C" {
 #define SDL_HINT_MOUSE_RELATIVE_MODE_CENTER "SDL_MOUSE_RELATIVE_MODE_CENTER"
 
 /**
- * A variable setting the scale for mouse motion, in floating point, when the
- * mouse is in relative mode.
- *
- * This hint can be set anytime.
- *
- * \since This hint is available since SDL 3.1.3.
- */
-#define SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE "SDL_MOUSE_RELATIVE_SPEED_SCALE"
-
-/**
  * A variable controlling whether the system mouse acceleration curve is used
  * for relative mouse motion.
  *

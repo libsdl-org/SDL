@@ -89,19 +89,6 @@ static void SDLCALL SDL_MouseNormalSpeedScaleChanged(void *userdata, const char 
     }
 }
 
-static void SDLCALL SDL_MouseRelativeSpeedScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
-
-    if (hint && *hint) {
-        mouse->enable_relative_speed_scale = true;
-        mouse->relative_speed_scale = (float)SDL_atof(hint);
-    } else {
-        mouse->enable_relative_speed_scale = false;
-        mouse->relative_speed_scale = 1.0f;
-    }
-}
-
 static void SDLCALL SDL_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
@@ -215,9 +202,6 @@ bool SDL_PreInitMouse(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
                         SDL_MouseNormalSpeedScaleChanged, mouse);
-
-    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
-                        SDL_MouseRelativeSpeedScaleChanged, mouse);
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
                         SDL_MouseRelativeSystemScaleChanged, mouse);
@@ -669,10 +653,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
 
     if (relative) {
         if (mouse->relative_mode) {
-            if (mouse->enable_relative_speed_scale) {
-                x *= mouse->relative_speed_scale;
-                y *= mouse->relative_speed_scale;
-            } else if (mouse->enable_relative_system_scale) {
+            if (mouse->enable_relative_system_scale) {
                 if (mouse->ApplySystemScale) {
                     mouse->ApplySystemScale(mouse->system_scale_data, timestamp, window, mouseID, &x, &y);
                 }
@@ -1023,9 +1004,6 @@ void SDL_QuitMouse(void)
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
                         SDL_MouseNormalSpeedScaleChanged, mouse);
-
-    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
-                        SDL_MouseRelativeSpeedScaleChanged, mouse);
 
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
                         SDL_MouseRelativeSystemScaleChanged, mouse);
