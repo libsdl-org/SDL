@@ -2534,7 +2534,8 @@ extern "C" {
  * - "1": Relative mouse motion will be scaled using the system mouse
  *   acceleration curve.
  *
- * If SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE is set, that will apply before the system speed scale.
+ * If SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE is set, that will apply before the
+ * system speed scale.
  *
  * This hint can be set anytime.
  *
