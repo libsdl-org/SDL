@@ -1019,7 +1019,7 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
     if (i < 0) {
         return;
     }
-    SDL_Log("Gamepad %u added\n", id);
+    SDL_Log("Gamepad %" SDL_PRIu32 " added\n", id);
 
     SDL_assert(!controllers[i].gamepad);
     controllers[i].gamepad = SDL_OpenGamepad(id);
@@ -1091,7 +1091,7 @@ static void HandleGamepadRemoved(SDL_JoystickID id)
     if (i < 0) {
         return;
     }
-    SDL_Log("Gamepad %u removed\n", id);
+    SDL_Log("Gamepad %" SDL_PRIu32 " removed\n", id);
 
     if (controllers[i].mapping) {
         SDL_free(controllers[i].mapping);
