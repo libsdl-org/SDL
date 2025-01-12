@@ -1265,6 +1265,7 @@ The following symbols have been renamed:
 The following functions have been removed:
 * SDL_FreeFormat()
 * SDL_SetPixelFormatPalette()
+* SDL_CalculateGammaRamp()
 
 The following macros have been removed:
 * SDL_Colour - use SDL_Color instead
@@ -2180,7 +2181,7 @@ Windows now have an explicit fullscreen mode that is set, using SDL_SetWindowFul
 
 SDL_WINDOW_FULLSCREEN_DESKTOP has been removed, and you can call SDL_GetWindowFullscreenMode() to see whether an exclusive fullscreen mode will be used or the borderless fullscreen desktop mode will be used when the window is fullscreen.
 
-SDL_SetWindowBrightness and SDL_SetWindowGammaRamp have been removed from the API, because they interact poorly with modern operating systems and aren't able to limit their effects to the SDL window.
+SDL_SetWindowBrightness(), SDL_GetWindowBrightness, SDL_SetWindowGammaRamp(), and SDL_GetWindowGammaRamp have been removed from the API, because they interact poorly with modern operating systems and aren't able to limit their effects to the SDL window.
 
 Programs which have access to shaders can implement more robust versions of those functions using custom shader code rendered as a post-process effect.
 
@@ -2224,6 +2225,10 @@ The following functions have been removed:
 * SDL_CreateWindowFrom() - use SDL_CreateWindowWithProperties() with the properties that allow you to wrap an existing window
 * SDL_SetWindowInputFocus() - use SDL_RaiseWindow() instead
 * SDL_SetWindowModalFor() - use SDL_SetWindowParent() with SDL_SetWindowModal() instead
+* SDL_SetWindowBrightness() - use a shader or other in-game effect.
+* SDL_GetWindowBrightness() - use a shader or other in-game effect.
+* SDL_SetWindowGammaRamp() - use a shader or other in-game effect.
+* SDL_GetWindowGammaRamp() - use a shader or other in-game effect.
 
 The SDL_Window id type is named SDL_WindowID
 
