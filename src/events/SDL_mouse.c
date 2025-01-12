@@ -672,10 +672,9 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
             if (mouse->enable_relative_speed_scale) {
                 x *= mouse->relative_speed_scale;
                 y *= mouse->relative_speed_scale;
-            } else if (mouse->enable_relative_system_scale) {
-                if (mouse->ApplySystemScale) {
-                    mouse->ApplySystemScale(mouse->system_scale_data, timestamp, window, mouseID, &x, &y);
-                }
+            }
+            if (mouse->enable_relative_system_scale && mouse->ApplySystemScale) {
+                mouse->ApplySystemScale(mouse->system_scale_data, timestamp, window, mouseID, &x, &y);
             }
         } else {
             if (mouse->enable_normal_speed_scale) {
