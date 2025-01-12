@@ -1353,6 +1353,10 @@ static void HIDAPI_DriverPS4_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
                         SDL_PS4EnhancedReportsChanged, ctx);
 
     ctx->joystick = NULL;
+
+    ctx->report_sensors = false;
+    ctx->enhanced_mode = false;
+    ctx->enhanced_mode_available = false;
 }
 
 static void HIDAPI_DriverPS4_FreeDevice(SDL_HIDAPI_Device *device)

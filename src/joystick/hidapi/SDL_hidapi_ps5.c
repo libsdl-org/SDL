@@ -1587,6 +1587,10 @@ static void HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
                         SDL_PS5PlayerLEDHintChanged, ctx);
 
     ctx->joystick = NULL;
+
+    ctx->report_sensors = false;
+    ctx->enhanced_mode = false;
+    ctx->enhanced_mode_available = false;
 }
 
 static void HIDAPI_DriverPS5_FreeDevice(SDL_HIDAPI_Device *device)

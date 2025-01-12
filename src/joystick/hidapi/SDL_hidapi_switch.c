@@ -2766,6 +2766,10 @@ static void HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joy
                         SDL_PlayerLEDHintChanged, ctx);
 
     ctx->joystick = NULL;
+
+    ctx->m_bReportSensors = false;
+    ctx->m_bEnhancedMode = false;
+    ctx->m_bEnhancedModeAvailable = false;
 }
 
 static void HIDAPI_DriverSwitch_FreeDevice(SDL_HIDAPI_Device *device)
