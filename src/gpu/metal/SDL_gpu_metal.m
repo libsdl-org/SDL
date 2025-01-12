@@ -1121,10 +1121,11 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
 
         if (createinfo->target_info.has_depth_stencil_target) {
             pipelineDescriptor.depthAttachmentPixelFormat = SDLToMetal_TextureFormat(createinfo->target_info.depth_stencil_format);
+            if (IsStencilFormat(createinfo->target_info.depth_stencil_format)) {
+                pipelineDescriptor.stencilAttachmentPixelFormat = SDLToMetal_TextureFormat(createinfo->target_info.depth_stencil_format);
+            }
 
             if (createinfo->depth_stencil_state.enable_stencil_test) {
-                pipelineDescriptor.stencilAttachmentPixelFormat = SDLToMetal_TextureFormat(createinfo->target_info.depth_stencil_format);
-
                 frontStencilDescriptor = [MTLStencilDescriptor new];
                 frontStencilDescriptor.stencilCompareFunction = SDLToMetal_CompareOp[createinfo->depth_stencil_state.front_stencil_state.compare_op];
                 frontStencilDescriptor.stencilFailureOperation = SDLToMetal_StencilOp[createinfo->depth_stencil_state.front_stencil_state.fail_op];
