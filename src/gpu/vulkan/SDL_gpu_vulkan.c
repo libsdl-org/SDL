@@ -1215,6 +1215,14 @@ struct VulkanRenderer
 #include "SDL_gpu_vulkan_vkfuncs.h"
 };
 
+// Debug structs
+
+typedef struct VulkanSetDebugObjectNameContext
+{
+    VulkanRenderer *renderer;
+    VkDebugUtilsObjectNameInfoEXT nameInfo;
+} VulkanSetDebugObjectNameContext;
+
 // Forward declarations
 
 static bool VULKAN_INTERNAL_DefragmentMemory(VulkanRenderer *renderer);
@@ -5403,23 +5411,37 @@ static void VULKAN_DrawIndexedPrimitivesIndirect(
 
 // Debug Naming
 
+static void VULKAN_INTERNAL_SetDebugObjectNameMainThreadCallback(
+    void *userdata)
+{
+    VulkanSetDebugObjectNameContext *context = (VulkanSetDebugObjectNameContext *)userdata;
+
+    context->renderer->vkSetDebugUtilsObjectNameEXT(
+        context->renderer->logicalDevice,
+        &context->nameInfo);
+
+    SDL_free(context);
+}
+
+/* vkSetDebugUtilsObjectNameEXT is not thread-safe,
+ * so we call it on the main thread to avoid the client
+ * having to synchronize this call manually.
+ */
 static void VULKAN_INTERNAL_SetBufferName(
     VulkanRenderer *renderer,
     VulkanBuffer *buffer,
     const char *text)
 {
-    VkDebugUtilsObjectNameInfoEXT nameInfo;
-
     if (renderer->debugMode && renderer->supportsDebugUtils) {
-        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-        nameInfo.pNext = NULL;
-        nameInfo.pObjectName = text;
-        nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
-        nameInfo.objectHandle = (uint64_t)buffer->buffer;
+        VulkanSetDebugObjectNameContext *context = SDL_malloc(sizeof(VulkanSetDebugObjectNameContext));
+        context->renderer = renderer;
+        context->nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        context->nameInfo.pNext = NULL;
+        context->nameInfo.pObjectName = text;
+        context->nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
+        context->nameInfo.objectHandle = (uint64_t)buffer->buffer;
 
-        renderer->vkSetDebugUtilsObjectNameEXT(
-            renderer->logicalDevice,
-            &nameInfo);
+        SDL_RunOnMainThread(VULKAN_INTERNAL_SetDebugObjectNameMainThreadCallback, context, false);
     }
 }
 
@@ -5451,23 +5473,25 @@ static void VULKAN_SetBufferName(
     }
 }
 
+/* vkSetDebugUtilsObjectNameEXT is not thread-safe,
+ * so we call it on the main thread to avoid the client
+ * having to synchronize this call manually.
+ */
 static void VULKAN_INTERNAL_SetTextureName(
     VulkanRenderer *renderer,
     VulkanTexture *texture,
     const char *text)
 {
-    VkDebugUtilsObjectNameInfoEXT nameInfo;
-
     if (renderer->debugMode && renderer->supportsDebugUtils) {
-        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-        nameInfo.pNext = NULL;
-        nameInfo.pObjectName = text;
-        nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
-        nameInfo.objectHandle = (uint64_t)texture->image;
+        VulkanSetDebugObjectNameContext *context = SDL_malloc(sizeof(VulkanSetDebugObjectNameContext));
+        context->renderer = renderer;
+        context->nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        context->nameInfo.pNext = NULL;
+        context->nameInfo.pObjectName = text;
+        context->nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
+        context->nameInfo.objectHandle = (uint64_t)texture->image;
 
-        renderer->vkSetDebugUtilsObjectNameEXT(
-            renderer->logicalDevice,
-            &nameInfo);
+        SDL_RunOnMainThread(VULKAN_INTERNAL_SetDebugObjectNameMainThreadCallback, context, false);
     }
 }
 
@@ -9908,9 +9932,9 @@ static bool VULKAN_WaitAndAcquireSwapchainTexture(
     Uint32 *swapchain_texture_height
 ) {
     return VULKAN_INTERNAL_AcquireSwapchainTexture(
-        true, 
-        command_buffer, 
-        window, 
+        true,
+        command_buffer,
+        window,
         swapchain_texture,
         swapchain_texture_width,
         swapchain_texture_height);

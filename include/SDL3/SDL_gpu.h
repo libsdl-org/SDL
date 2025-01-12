@@ -2514,8 +2514,7 @@ extern SDL_DECLSPEC SDL_GPUTransferBuffer *SDLCALL SDL_CreateGPUTransferBuffer(
  * \param buffer a buffer to attach the name to.
  * \param text a UTF-8 string constant to mark as the name of the buffer.
  *
- * \threadsafety This function is not thread safe, you must synchronize calls
- *               to this function.
+ * \threadsafety This function is thread safe, but the name may not be immediately set if called off the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -2533,8 +2532,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUBufferName(
  * \param texture a texture to attach the name to.
  * \param text a UTF-8 string constant to mark as the name of the texture.
  *
- * \threadsafety This function is not thread safe, you must synchronize calls
- *               to this function.
+ * \threadsafety This function is thread safe, but the name may not be immediately set if called off the main thread.
  *
  * \since This function is available since SDL 3.1.3.
  */
