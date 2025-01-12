@@ -963,7 +963,7 @@ typedef enum SDL_InitStatus
  *    {
  *        if (!SDL_ShouldQuit(&init)) {
  *            // The system is not initialized
- *            return true;
+ *            return;
  *        }
  *
  *        // At this point, you should not leave this function without calling SDL_SetInitialized()
