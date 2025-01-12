@@ -5420,6 +5420,7 @@ static void VULKAN_INTERNAL_SetDebugObjectNameMainThreadCallback(
         context->renderer->logicalDevice,
         &context->nameInfo);
 
+    SDL_free(context->nameInfo.pObjectName);
     SDL_free(context);
 }
 
@@ -5437,7 +5438,7 @@ static void VULKAN_INTERNAL_SetBufferName(
         context->renderer = renderer;
         context->nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         context->nameInfo.pNext = NULL;
-        context->nameInfo.pObjectName = text;
+        context->nameInfo.pObjectName = SDL_strdup(text);
         context->nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
         context->nameInfo.objectHandle = (uint64_t)buffer->buffer;
 
@@ -5487,7 +5488,7 @@ static void VULKAN_INTERNAL_SetTextureName(
         context->renderer = renderer;
         context->nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         context->nameInfo.pNext = NULL;
-        context->nameInfo.pObjectName = text;
+        context->nameInfo.pObjectName = SDL_strdup(text);
         context->nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
         context->nameInfo.objectHandle = (uint64_t)texture->image;
 
