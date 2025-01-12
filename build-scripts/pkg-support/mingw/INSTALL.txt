@@ -15,7 +15,7 @@ Use DESTDIR to change the target location
     mkdir $HOME/mingw32-prefix
     make install-i686 DESTDIR=$HOME/mingw32-prefix
 
-Look at the example programs in ./test, and check out online documentation:
+Look at the example programs in ./examples, and check out online documentation:
     https://wiki.libsdl.org/SDL3/FrontPage
 
 Join the SDL discourse server if you want to join the community:

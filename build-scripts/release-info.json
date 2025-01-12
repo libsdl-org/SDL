@@ -151,9 +151,9 @@
         "-DSDL_STATIC=OFF",
         "-DSDL_TEST_LIBRARY=ON",
         "-DSDL_TESTS=OFF",
-        "-DSDL_DISABLE_ANDROID_JAR=OFF",
-        "-DSDL_DISABLE_INSTALL=OFF",
-        "-DSDL_DISABLE_INSTALL_DOCS=OFF",
+        "-DSDL_ANDROID_JAR=ON",
+        "-DSDL_INSTALL=ON",
+        "-DSDL_INSTALL_DOCS=ON",
         "-DSDL_VENDOR_INFO=libsdl.org"
       ]
     },
@@ -197,20 +197,25 @@
     "api-minimum": 19,
     "api-target": 29,
     "ndk-minimum": 21,
-    "files": {
+    "aar-files": {
       "": [
         "android-project/app/proguard-rules.pro:proguard.txt",
-        "build-scripts/pkg-support/android/INSTALL.md.in:INSTALL.md",
-        "build-scripts/pkg-support/android/__main__.py.in:__main__.py",
-        "build-scripts/pkg-support/android/description.json.in:description.json"
+        "build-scripts/pkg-support/android/aar/__main__.py.in:__main__.py",
+        "build-scripts/pkg-support/android/aar/description.json.in:description.json"
       ],
       "META-INF": [
         "LICENSE.txt"
       ],
       "cmake": [
         "cmake/sdlcpu.cmake",
-        "build-scripts/pkg-support/android/cmake/SDL3Config.cmake",
-        "build-scripts/pkg-support/android/cmake/SDL3ConfigVersion.cmake.in:SDL3ConfigVersion.cmake"
+        "build-scripts/pkg-support/android/aar/cmake/SDL3Config.cmake",
+        "build-scripts/pkg-support/android/aar/cmake/SDL3ConfigVersion.cmake.in:SDL3ConfigVersion.cmake"
+      ]
+    },
+    "files": {
+      "": [
+        "LICENSE.txt",
+        "build-scripts/pkg-support/android/README.md.in:README.md"
       ]
     }
   }

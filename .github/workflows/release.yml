@@ -586,8 +586,11 @@ jobs:
       - name: 'Extract Android SDK from AAR'
         id: sdk
         run: |
-          python "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" -o /tmp/SDL3-android
+          cd /tmp
+          unzip "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}"
+          python "${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}.aar" -o /tmp/SDL3-android
           echo "prefix=/tmp/SDL3-android" >>$GITHUB_OUTPUT
+          echo "sdl3-aar=/tmp/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}.aar" >>$GITHUB_OUTPUT
       - name: 'CMake (configure + build) x86, x64, arm32, arm64'
         run: |
           android_abis="x86 x86_64 armeabi-v7a arm64-v8a"
@@ -617,7 +620,7 @@ jobs:
           echo "path=/tmp/projects/org.libsdl.testspriteminimal" >>$GITHUB_OUTPUT
       - name: 'Copy SDL3 aar into Gradle project'
         run: |
-          cp "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" "${{ steps.create-gradle-project.outputs.path }}/app/libs"
+          cp "${{ steps.sdk.outputs.sdl3-aar }}" "${{ steps.create-gradle-project.outputs.path }}/app/libs"
 
           echo ""
           echo "Project contents:"

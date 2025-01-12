@@ -46,7 +46,7 @@ Read docs/README-cmake.md
 
 # Example code
 
-Look at the example programs in ./test, and check out the online
+Look at the example programs in ./examples, and check out the online
 documentation at https://wiki.libsdl.org/SDL3/
 
 # Discussion
