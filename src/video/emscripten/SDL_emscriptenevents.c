@@ -645,6 +645,25 @@ static const char *Emscripten_HandleBeforeUnload(int eventType, const void *rese
     return ""; // don't trigger confirmation dialog
 }
 
+static EM_BOOL Emscripten_HandleOrientationChange(int eventType, const EmscriptenOrientationChangeEvent *orientationChangeEvent, void *userData)
+{
+    SDL_DisplayOrientation orientation;
+    switch (orientationChangeEvent->orientationIndex) {
+        #define CHECK_ORIENTATION(emsdk, sdl) case EMSCRIPTEN_ORIENTATION_##emsdk: orientation = SDL_ORIENTATION_##sdl; break
+        CHECK_ORIENTATION(LANDSCAPE_PRIMARY, LANDSCAPE);
+        CHECK_ORIENTATION(LANDSCAPE_SECONDARY, LANDSCAPE_FLIPPED);
+        CHECK_ORIENTATION(PORTRAIT_PRIMARY, PORTRAIT);
+        CHECK_ORIENTATION(PORTRAIT_SECONDARY, PORTRAIT_FLIPPED);
+        #undef CHECK_ORIENTATION
+        default: orientation = SDL_ORIENTATION_UNKNOWN; break;
+    }
+
+    SDL_WindowData *window_data = (SDL_WindowData *) userData;
+    SDL_SendDisplayEvent(SDL_GetVideoDisplayForWindow(window_data->window), SDL_EVENT_DISPLAY_ORIENTATION, orientation, 0);
+
+    return 0;
+}
+
 // IF YOU CHANGE THIS STRUCTURE, YOU NEED TO UPDATE THE JAVASCRIPT THAT FILLS IT IN: makePointerEventCStruct, below.
 typedef struct Emscripten_PointerEvent
 {
@@ -965,6 +984,8 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_focus_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, data, 0, Emscripten_HandleFocus);
     emscripten_set_blur_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, data, 0, Emscripten_HandleFocus);
 
+    emscripten_set_orientationchange_callback(data, 0, Emscripten_HandleOrientationChange);
+
     emscripten_set_touchstart_callback(data->canvas_id, data, 0, Emscripten_HandleTouch);
     emscripten_set_touchend_callback(data->canvas_id, data, 0, Emscripten_HandleTouch);
     emscripten_set_touchmove_callback(data->canvas_id, data, 0, Emscripten_HandleTouch);
@@ -1022,6 +1043,8 @@ void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 
     emscripten_set_focus_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
     emscripten_set_blur_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
+
+    emscripten_set_orientationchange_callback(NULL, 0, NULL);
 
     emscripten_set_touchstart_callback(data->canvas_id, NULL, 0, NULL);
     emscripten_set_touchend_callback(data->canvas_id, NULL, 0, NULL);
