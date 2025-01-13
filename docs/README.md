@@ -32,7 +32,6 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [High DPI Support](README-highdpi.md)
 - [Touch](README-touch.md)
 - [Versions](README-versions.md)
-- [Visual Studio](README-visualc.md)
 
 - [Android](README-android.md)
 - [Emscripten](README-emscripten.md)
