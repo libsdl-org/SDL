@@ -475,7 +475,7 @@ struct SDL_GPUDevice
         SDL_GPURenderer *driverData,
         SDL_GPUBufferUsageFlags usageFlags,
         Uint32 size,
-        char *debugName);
+        const char *debugName);
 
     SDL_GPUTransferBuffer *(*CreateTransferBuffer)(
         SDL_GPURenderer *driverData,

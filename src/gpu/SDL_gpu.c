@@ -1055,7 +1055,7 @@ SDL_GPUBuffer *SDL_CreateGPUBuffer(
         return NULL;
     }
 
-    char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING, NULL);
+    const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATEBUFFER_NAME_STRING, NULL);
 
     return device->CreateBuffer(
         device->driverData,

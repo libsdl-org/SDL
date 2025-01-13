@@ -2437,7 +2437,7 @@ extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_A_FLOAT       "SDL.gpu.createtexture.d3d12.clear.a"
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_DEPTH_FLOAT   "SDL.gpu.createtexture.d3d12.clear.depth"
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8 "SDL.gpu.createtexture.d3d12.clear.stencil"
-
+#define SDL_PROP_GPU_CREATETEXTURE_NAME_STRING               "SDL.gpu.createtexture.name"
 
 /**
  * Creates a buffer object to be used in graphics or compute workflows.
@@ -2478,7 +2478,7 @@ extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
     SDL_GPUDevice *device,
     const SDL_GPUBufferCreateInfo *createinfo);
 
-#define SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING "SDL.gpu.buffer.create.name"
+#define SDL_PROP_GPU_CREATEBUFFER_NAME_STRING "SDL.gpu.createbuffer.name"
 
 /**
  * Creates a transfer buffer to be used when uploading to or downloading from
