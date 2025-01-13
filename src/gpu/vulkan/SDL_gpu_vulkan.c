@@ -9228,7 +9228,7 @@ static bool VULKAN_INTERNAL_AllocateCommandBuffer(
 
     VULKAN_INTERNAL_SetObjectNamePrintf(
         renderer, commandBuffer->commandBuffer, VK_OBJECT_TYPE_COMMAND_BUFFER,
-        "[Thread %d's Command pool %p] Command buffer %p", vulkanCommandPool->threadID, vulkanCommandPool, commandBuffer
+        "[Thread %p's Command pool %p] Command buffer %p", vulkanCommandPool->threadID, vulkanCommandPool, commandBuffer
     );
 
     vulkanCommandPool->inactiveCommandBuffers[vulkanCommandPool->inactiveCommandBufferCount] = commandBuffer;
@@ -9277,7 +9277,7 @@ static VulkanCommandPool *VULKAN_INTERNAL_FetchCommandPool(
 
     VULKAN_INTERNAL_SetObjectNamePrintf(
         renderer, vulkanCommandPool->commandPool, VK_OBJECT_TYPE_COMMAND_POOL,
-        "[Thread %d] Command pool %p", threadID, vulkanCommandPool
+        "[Thread %p] Command pool %p", threadID, vulkanCommandPool
     );
 
     vulkanCommandPool->threadID = threadID;
