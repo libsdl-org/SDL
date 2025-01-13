@@ -45,6 +45,8 @@ struct SDL_WindowData
     bool fullscreen_resize;
 
     bool has_pointer_lock;
+
+    bool mouse_focus_loss_pending;
 };
 
 bool Emscripten_ShouldSetSwapInterval(int interval);

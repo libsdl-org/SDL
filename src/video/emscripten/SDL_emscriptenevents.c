@@ -314,8 +314,11 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
         return 0;
     }
 
+    const SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_assert(mouse != NULL);
+
     if (eventType == EMSCRIPTEN_EVENT_MOUSEDOWN) {
-        if (SDL_GetMouse()->relative_mode && !window_data->has_pointer_lock) {
+        if (mouse->relative_mode && !window_data->has_pointer_lock) {
             emscripten_request_pointerlock(window_data->canvas_id, 0); // try to regrab lost pointer lock.
         }
         sdl_button_state = true;
@@ -323,13 +326,30 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
         sdl_button_state = false;
         prevent_default = SDL_EventEnabled(SDL_EVENT_MOUSE_BUTTON_UP);
     }
+
     SDL_SendMouseButton(0, window_data->window, SDL_DEFAULT_MOUSE_ID, sdl_button, sdl_button_state);
 
-    // Do not consume the event if the mouse is outside of the canvas.
-    emscripten_get_element_css_size(window_data->canvas_id, &css_w, &css_h);
-    if (mouseEvent->targetX < 0 || mouseEvent->targetX >= css_w ||
-        mouseEvent->targetY < 0 || mouseEvent->targetY >= css_h) {
-        return 0;
+    // We have an imaginary mouse capture, because we need SDL to not drop our imaginary mouse focus when we leave the canvas.
+    if (mouse->auto_capture) {
+        if (SDL_GetMouseState(NULL, NULL) != 0) {
+            window_data->window->flags |= SDL_WINDOW_MOUSE_CAPTURE;
+        } else {
+            window_data->window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+        }
+    }
+
+    if ((eventType == EMSCRIPTEN_EVENT_MOUSEUP) && window_data->mouse_focus_loss_pending) {
+        window_data->mouse_focus_loss_pending = (window_data->window->flags & SDL_WINDOW_MOUSE_CAPTURE) != 0;
+        if (!window_data->mouse_focus_loss_pending) {
+            SDL_SetMouseFocus(NULL);
+        }
+    } else {
+        // Do not consume the event if the mouse is outside of the canvas.
+        emscripten_get_element_css_size(window_data->canvas_id, &css_w, &css_h);
+        if (mouseEvent->targetX < 0 || mouseEvent->targetX >= css_w ||
+            mouseEvent->targetY < 0 || mouseEvent->targetY >= css_h) {
+            return 0;
+        }
     }
 
     return prevent_default;
@@ -352,8 +372,16 @@ static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseE
         SDL_SendMouseMotion(0, window_data->window, SDL_GLOBAL_MOUSE_ID, isPointerLocked, mx, my);
     }
 
-    SDL_SetMouseFocus(eventType == EMSCRIPTEN_EVENT_MOUSEENTER ? window_data->window : NULL);
-    return SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION);
+    const bool isenter = (eventType == EMSCRIPTEN_EVENT_MOUSEENTER);
+    if (isenter && window_data->mouse_focus_loss_pending) {
+        window_data->mouse_focus_loss_pending = false;  // just drop the state, but don't send the enter event.
+    } else if (!isenter && (window_data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+        window_data->mouse_focus_loss_pending = true;  // waiting on a mouse button to let go before we send the mouse focus update.
+    } else {
+        SDL_SetMouseFocus(isenter ? window_data->window : NULL);
+    }
+
+    return SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION);  // !!! FIXME: should this be MOUSE_MOTION or something else?
 }
 
 static EM_BOOL Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
