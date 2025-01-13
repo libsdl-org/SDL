@@ -239,13 +239,13 @@ If you want to build with thread support, something like this works:
 ```bash
 mkdir build
 cd build
-emcmake cmake -DSDL_THREADS=On ..
+emcmake cmake -DSDL_THREADS=ON ..
 # you can also do `emcmake cmake -G Ninja ..` and then use `ninja` instead of this command.
 emmake make -j4
 ```
 
-To build the tests, add `-DSDL_TESTS=On` to the `emcmake cmake` command line.
-To build the examples, add `-DSDL_EXAMPLES=On` to the `emcmake cmake` command line.
+To build the tests, add `-DSDL_TESTS=ON` to the `emcmake cmake` command line.
+To build the examples, add `-DSDL_EXAMPLES=ON` to the `emcmake cmake` command line.
 
 
 ## Building your app
