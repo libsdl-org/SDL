@@ -1280,7 +1280,7 @@ static inline const char *VkErrorMessages(VkResult code)
 // Utility
 
 static void VULKAN_INTERNAL_SetObjectNamePrintf(
-    VulkanRenderer *renderer, uint64_t object, VkObjectType objectType, const char *format, ...
+    VulkanRenderer *renderer, void *object, VkObjectType objectType, const char *format, ...
 ) {
     if (!renderer->debugMode)
         return;
@@ -1291,7 +1291,7 @@ static void VULKAN_INTERNAL_SetObjectNamePrintf(
     vsnprintf(buf, sizeof(buf), format, args);
     va_end(args);
     VkDebugUtilsObjectNameInfoEXT nameInfo = {
-        .objectHandle = object,
+        .objectHandle = (uint64_t)object,
         .objectType = objectType,
         .pObjectName = buf,
         .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
