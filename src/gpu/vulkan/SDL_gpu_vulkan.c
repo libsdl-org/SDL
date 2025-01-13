@@ -1279,6 +1279,27 @@ static inline const char *VkErrorMessages(VkResult code)
 
 // Utility
 
+static void VULKAN_INTERNAL_SetObjectNamePrintf(
+    VulkanRenderer *renderer, void *object, VkObjectType objectType, const char *format, ...
+) {
+    if (!renderer->debugMode)
+        return;
+
+    va_list args;
+    char buf[1024] = { 0 };
+    va_start(args, format);
+    vsnprintf(buf, sizeof(buf), format, args);
+    va_end(args);
+    VkDebugUtilsObjectNameInfoEXT nameInfo = {
+        .objectHandle = object,
+        .objectType = objectType,
+        .pObjectName = buf,
+        .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
+        .pNext = NULL,
+    };
+    renderer->vkSetDebugUtilsObjectNameEXT(renderer->logicalDevice, &nameInfo);
+}
+
 static inline VkPolygonMode SDLToVK_PolygonMode(
     VulkanRenderer *renderer,
     SDL_GPUFillMode mode)
@@ -9205,6 +9226,11 @@ static bool VULKAN_INTERNAL_AllocateCommandBuffer(
 
     // Pool it!
 
+    VULKAN_INTERNAL_SetObjectNamePrintf(
+        renderer, commandBuffer->commandBuffer, VK_OBJECT_TYPE_COMMAND_BUFFER,
+        "[Thread %d's Command pool %p] Command buffer %p", vulkanCommandPool->threadID, vulkanCommandPool, commandBuffer
+    );
+
     vulkanCommandPool->inactiveCommandBuffers[vulkanCommandPool->inactiveCommandBufferCount] = commandBuffer;
     vulkanCommandPool->inactiveCommandBufferCount += 1;
 
@@ -9248,6 +9274,11 @@ static VulkanCommandPool *VULKAN_INTERNAL_FetchCommandPool(
         CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateCommandPool, NULL);
         return NULL;
     }
+
+    VULKAN_INTERNAL_SetObjectNamePrintf(
+        renderer, vulkanCommandPool->commandPool, VK_OBJECT_TYPE_COMMAND_POOL,
+        "[Thread %d] Command pool %p", threadID, vulkanCommandPool
+    );
 
     vulkanCommandPool->threadID = threadID;
 
