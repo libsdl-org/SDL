@@ -2262,6 +2262,8 @@ extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline
     SDL_GPUDevice *device,
     const SDL_GPUComputePipelineCreateInfo *createinfo);
 
+#define SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING "SDL.gpu.createcomputepipeline.name"
+
 /**
  * Creates a pipeline object to be used in a graphics workflow.
  *
@@ -2280,6 +2282,8 @@ extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline
 extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeline(
     SDL_GPUDevice *device,
     const SDL_GPUGraphicsPipelineCreateInfo *createinfo);
+
+#define SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING "SDL.gpu.creategraphicspipeline.name"
 
 /**
  * Creates a sampler object to be used when binding textures in a graphics

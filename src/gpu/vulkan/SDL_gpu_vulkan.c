@@ -6520,6 +6520,19 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     SDL_SetAtomicInt(&graphicsPipeline->referenceCount, 0);
 
+    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING)) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo;
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.pNext = NULL;
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING, NULL);
+        nameInfo.objectType = VK_OBJECT_TYPE_PIPELINE;
+        nameInfo.objectHandle = (uint64_t)graphicsPipeline->pipeline;
+
+        renderer->vkSetDebugUtilsObjectNameEXT(
+            renderer->logicalDevice,
+            &nameInfo);
+    }
+
     return (SDL_GPUGraphicsPipeline *)graphicsPipeline;
 }
 
@@ -6600,6 +6613,19 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
     }
 
     SDL_SetAtomicInt(&vulkanComputePipeline->referenceCount, 0);
+
+    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING)) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo;
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.pNext = NULL;
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING, NULL);
+        nameInfo.objectType = VK_OBJECT_TYPE_PIPELINE;
+        nameInfo.objectHandle = (uint64_t)vulkanComputePipeline->pipeline;
+
+        renderer->vkSetDebugUtilsObjectNameEXT(
+            renderer->logicalDevice,
+            &nameInfo);
+    }
 
     return (SDL_GPUComputePipeline *)vulkanComputePipeline;
 }
