@@ -57,7 +57,7 @@ If you had already forked the repository, you may update it from the web page us
 
 Code formatting is done using a custom `.clang-format` file, you can learn more about how to run it [here](https://clang.llvm.org/docs/ClangFormat.html).
 
-Some legacy code may not be formatted, as such avoid formatting the whole file at once and only format around your changes.
+Some legacy code may not be formatted, so please avoid formatting the whole file at once and only format around your changes.
 
 For your commit message to be properly displayed on GitHub, it should contain:
 
