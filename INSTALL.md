@@ -21,6 +21,8 @@ There are simple example programs in the examples directory, and you can view th
 
 https://examples.libsdl.org/SDL3
 
+More in-depth test programs are available in the tests directory and can be built by adding `-DSDL_TESTS=ON` to the CMake command line when building SDL.
+
 # Discussions
 
 ## Discord
