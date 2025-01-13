@@ -2304,6 +2304,8 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
     SDL_GPUDevice *device,
     const SDL_GPUSamplerCreateInfo *createinfo);
 
+#define SDL_PROP_GPU_CREATESAMPLER_NAME_STRING "SDL.gpu.createsampler.name"
+
 /**
  * Creates a shader to be used when creating a graphics pipeline.
  *
@@ -2374,6 +2376,8 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
 extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
     SDL_GPUDevice *device,
     const SDL_GPUShaderCreateInfo *createinfo);
+
+#define SDL_PROP_GPU_CREATESHADER_NAME_STRING "SDL.gpu.createshader.name"
 
 /**
  * Creates a texture object to be used in graphics or compute workflows.

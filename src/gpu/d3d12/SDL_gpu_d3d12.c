@@ -3206,6 +3206,9 @@ static SDL_GPUSampler *D3D12_CreateSampler(
 
     sampler->createInfo = *createinfo;
     SDL_SetAtomicInt(&sampler->referenceCount, 0);
+
+    // Ignore name property because it is not applicable to D3D12.
+
     return (SDL_GPUSampler *)sampler;
 }
 
@@ -3242,6 +3245,8 @@ static SDL_GPUShader *D3D12_CreateShader(
 
     shader->bytecode = bytecode;
     shader->bytecodeSize = bytecodeSize;
+
+    // Ignore name property because it is not applicable to D3D12.
 
     return (SDL_GPUShader *)shader;
 }
