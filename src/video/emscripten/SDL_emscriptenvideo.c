@@ -273,6 +273,11 @@ static void Emscripten_PumpEvents(SDL_VideoDevice *_this)
     }
 }
 
+EMSCRIPTEN_KEEPALIVE void requestFullscreenThroughSDL(SDL_Window *window)
+{
+    SDL_SetWindowFullscreen(window, true);
+}
+
 static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_WindowData *wdata;
@@ -336,6 +341,13 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
 
     Emscripten_RegisterEventHandlers(wdata);
 
+    // disable the emscripten "fullscreen" button.
+    MAIN_THREAD_EM_ASM({
+        Module['requestFullscreen'] = function(lockPointer, resizeCanvas) {
+            _requestFullscreenThroughSDL($0);
+        };
+    }, window);
+
     // Window has been successfully created
     return true;
 }
@@ -387,6 +399,9 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SDL_free(window->internal);
         window->internal = NULL;
     }
+
+    // just ignore clicks on the fullscreen button while there's no SDL window.
+    MAIN_THREAD_EM_ASM({ Module['requestFullscreen'] = function(lockPointer, resizeCanvas) {}; });
 }
 
 static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
