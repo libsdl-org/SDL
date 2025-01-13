@@ -1043,7 +1043,15 @@ static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
             return NULL;
         }
 
-        handle = [renderer->device newComputePipelineStateWithFunction:libraryFunction.function error:&error];
+        MTLComputePipelineDescriptor *descriptor = [MTLComputePipelineDescriptor new];
+        descriptor.computeFunction = libraryFunction.function;
+        descriptor.label = @("Compute Pipeline"); // label can't be nil for some reason
+        if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING)) {
+            const char *name = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING, NULL);
+            descriptor.label = @(name);
+        }
+
+        handle = [renderer->device newComputePipelineStateWithDescriptor:descriptor options:MTLPipelineOptionNone reflection: nil error:&error];
         if (error != NULL) {
             SET_ERROR_AND_RETURN("Creating compute pipeline failed: %s", [[error description] UTF8String], NULL);
         }
@@ -1183,6 +1191,12 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
             pipelineDescriptor.vertexDescriptor = vertexDescriptor;
         }
 
+        pipelineDescriptor.label = @("Graphics Pipeline"); // label can't be nil for some reason
+        if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING)) {
+            const char *name = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING, NULL);
+            pipelineDescriptor.label = @(name);
+        }
+
         // Create the graphics pipeline
 
         pipelineState = [renderer->device newRenderPipelineStateWithDescriptor:pipelineDescriptor error:&error];
@@ -1222,17 +1236,13 @@ static void METAL_SetBufferName(
     @autoreleasepool {
         MetalRenderer *renderer = (MetalRenderer *)driverData;
         MetalBufferContainer *container = (MetalBufferContainer *)buffer;
-        size_t textLength = SDL_strlen(text) + 1;
 
-        if (renderer->debugMode) {
-            container->debugName = SDL_realloc(
-                container->debugName,
-                textLength);
+        if (renderer->debugMode && text != NULL) {
+            if (container->debugName != NULL) {
+                SDL_free(container->debugName);
+            }
 
-            SDL_utf8strlcpy(
-                container->debugName,
-                text,
-                textLength);
+            container->debugName = SDL_strdup(text);
 
             for (Uint32 i = 0; i < container->bufferCount; i += 1) {
                 container->buffers[i]->handle.label = @(text);
@@ -1249,17 +1259,13 @@ static void METAL_SetTextureName(
     @autoreleasepool {
         MetalRenderer *renderer = (MetalRenderer *)driverData;
         MetalTextureContainer *container = (MetalTextureContainer *)texture;
-        size_t textLength = SDL_strlen(text) + 1;
 
-        if (renderer->debugMode) {
-            container->debugName = SDL_realloc(
-                container->debugName,
-                textLength);
+        if (renderer->debugMode && text != NULL) {
+            if (container->debugName != NULL) {
+                SDL_free(container->debugName);
+            }
 
-            SDL_utf8strlcpy(
-                container->debugName,
-                text,
-                textLength);
+            container->debugName = SDL_strdup(text);
 
             for (Uint32 i = 0; i < container->textureCount; i += 1) {
                 container->textures[i]->handle.label = @(text);
@@ -1457,6 +1463,11 @@ static MetalTexture *METAL_INTERNAL_CreateTexture(
     metalTexture = (MetalTexture *)SDL_calloc(1, sizeof(MetalTexture));
     metalTexture->handle = texture;
     SDL_SetAtomicInt(&metalTexture->referenceCount, 0);
+
+    if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_NAME_STRING)) {
+        metalTexture->handle.label = @(SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_NAME_STRING, NULL));
+    }
+
     return metalTexture;
 }
 
@@ -1500,6 +1511,10 @@ static SDL_GPUTexture *METAL_CreateTexture(
         container->textures[0] = texture;
         container->debugName = NULL;
 
+        if (SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_NAME_STRING)) {
+            container->debugName = SDL_strdup(SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_NAME_STRING, NULL));
+        }
+
         return (SDL_GPUTexture *)container;
     }
 }
@@ -1534,10 +1549,6 @@ static MetalTexture *METAL_INTERNAL_PrepareTextureForWrite(
         container->textureCount += 1;
 
         container->activeTexture = container->textures[container->textureCount - 1];
-
-        if (renderer->debugMode && container->debugName != NULL) {
-            container->activeTexture->handle.label = @(container->debugName);
-        }
     }
 
     return container->activeTexture;
@@ -1547,7 +1558,8 @@ static MetalTexture *METAL_INTERNAL_PrepareTextureForWrite(
 static MetalBuffer *METAL_INTERNAL_CreateBuffer(
     MetalRenderer *renderer,
     Uint32 size,
-    MTLResourceOptions resourceOptions)
+    MTLResourceOptions resourceOptions,
+    const char *debugName)
 {
     id<MTLBuffer> bufferHandle;
     MetalBuffer *metalBuffer;
@@ -1565,6 +1577,10 @@ static MetalBuffer *METAL_INTERNAL_CreateBuffer(
     metalBuffer->handle = bufferHandle;
     SDL_SetAtomicInt(&metalBuffer->referenceCount, 0);
 
+    if (debugName != NULL) {
+        metalBuffer->handle.label = @(debugName);
+    }
+
     return metalBuffer;
 }
 
@@ -1573,7 +1589,8 @@ static MetalBufferContainer *METAL_INTERNAL_CreateBufferContainer(
     MetalRenderer *renderer,
     Uint32 size,
     bool isPrivate,
-    bool isWriteOnly)
+    bool isWriteOnly,
+    const char *debugName)
 {
     MetalBufferContainer *container = SDL_calloc(1, sizeof(MetalBufferContainer));
     MTLResourceOptions resourceOptions;
@@ -1586,6 +1603,9 @@ static MetalBufferContainer *METAL_INTERNAL_CreateBufferContainer(
     container->isPrivate = isPrivate;
     container->isWriteOnly = isWriteOnly;
     container->debugName = NULL;
+    if (container->debugName != NULL) {
+        container->debugName = SDL_strdup(debugName);
+    }
 
     if (isPrivate) {
         resourceOptions = MTLResourceStorageModePrivate;
@@ -1600,7 +1620,9 @@ static MetalBufferContainer *METAL_INTERNAL_CreateBufferContainer(
     container->buffers[0] = METAL_INTERNAL_CreateBuffer(
         renderer,
         size,
-        resourceOptions);
+        resourceOptions,
+        debugName);
+
     container->activeBuffer = container->buffers[0];
 
     return container;
@@ -1609,28 +1631,32 @@ static MetalBufferContainer *METAL_INTERNAL_CreateBufferContainer(
 static SDL_GPUBuffer *METAL_CreateBuffer(
     SDL_GPURenderer *driverData,
     SDL_GPUBufferUsageFlags usage,
-    Uint32 size)
+    Uint32 size,
+    const char *debugName)
 {
     @autoreleasepool {
         return (SDL_GPUBuffer *)METAL_INTERNAL_CreateBufferContainer(
             (MetalRenderer *)driverData,
             size,
             true,
-            false);
+            false,
+            debugName);
     }
 }
 
 static SDL_GPUTransferBuffer *METAL_CreateTransferBuffer(
     SDL_GPURenderer *driverData,
     SDL_GPUTransferBufferUsage usage,
-    Uint32 size)
+    Uint32 size,
+    const char *debugName)
 {
     @autoreleasepool {
         return (SDL_GPUTransferBuffer *)METAL_INTERNAL_CreateBufferContainer(
             (MetalRenderer *)driverData,
             size,
             false,
-            usage == SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD);
+            usage == SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
+            debugName);
     }
 }
 
@@ -1694,14 +1720,11 @@ static MetalBuffer *METAL_INTERNAL_PrepareBufferForWrite(
         container->buffers[container->bufferCount] = METAL_INTERNAL_CreateBuffer(
             renderer,
             container->size,
-            resourceOptions);
+            resourceOptions,
+            container->debugName);
         container->bufferCount += 1;
 
         container->activeBuffer = container->buffers[container->bufferCount - 1];
-
-        if (renderer->debugMode && container->debugName != NULL) {
-            container->activeBuffer->handle.label = @(container->debugName);
-        }
     }
 
     return container->activeBuffer;
@@ -4386,6 +4409,8 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         }
 
 #ifdef SDL_PLATFORM_MACOS
+        hasHardwareSupport = true;
+        /*
         if (@available(macOS 10.15, *)) {
             hasHardwareSupport = [device supportsFamily:MTLGPUFamilyMac2];
         } else if (@available(macOS 10.14, *)) {
@@ -4395,6 +4420,7 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         if (@available(iOS 13.0, tvOS 13.0, *)) {
             hasHardwareSupport = [device supportsFamily:MTLGPUFamilyApple3];
         }
+        */
 #endif
 
         if (!hasHardwareSupport) {

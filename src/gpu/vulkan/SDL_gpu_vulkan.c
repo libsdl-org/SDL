@@ -5851,13 +5851,6 @@ static void VULKAN_INTERNAL_CycleActiveBuffer(
     container->bufferCount += 1;
 
     container->activeBuffer = buffer;
-
-    if (renderer->debugMode && renderer->supportsDebugUtils && container->debugName != NULL) {
-        VULKAN_INTERNAL_SetBufferName(
-            renderer,
-            container->activeBuffer,
-            container->debugName);
-    }
 }
 
 static void VULKAN_INTERNAL_CycleActiveTexture(
@@ -5898,13 +5891,6 @@ static void VULKAN_INTERNAL_CycleActiveTexture(
     container->textureCount += 1;
 
     container->activeTexture = texture;
-
-    if (renderer->debugMode && renderer->supportsDebugUtils && container->debugName != NULL) {
-        VULKAN_INTERNAL_SetTextureName(
-            renderer,
-            container->activeTexture,
-            container->debugName);
-    }
 }
 
 static VulkanBuffer *VULKAN_INTERNAL_PrepareBufferForWrite(
@@ -10707,18 +10693,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 // copy subresource if necessary
                 srcSubresource = &currentRegion->vulkanTexture->subresources[subresourceIndex];
                 dstSubresource = &newTexture->subresources[subresourceIndex];
-
-                // Set debug name if it exists
-                if (
-                    renderer->debugMode &&
-                    renderer->supportsDebugUtils &&
-                    srcSubresource->parent->container != NULL &&
-                    srcSubresource->parent->container->debugName != NULL) {
-                    VULKAN_INTERNAL_SetTextureName(
-                        renderer,
-                        currentRegion->vulkanTexture,
-                        srcSubresource->parent->container->debugName);
-                }
 
                 VULKAN_INTERNAL_TextureSubresourceTransitionFromDefaultUsage(
                     renderer,
