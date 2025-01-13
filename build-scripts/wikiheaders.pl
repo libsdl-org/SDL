@@ -2792,7 +2792,8 @@ __EOF__
         my $decl = $headerdecls{$sym};
         my $str = '';
 
-        $brief = "$brief";
+        # the "$brief" makes sure this is a copy of the string, which is doing some weird reference thing otherwise.
+        $brief = defined $brief ? "$brief" : '';
         $brief =~ s/\A[\s\n]*\= .*? \=\s*?\n+//ms;
         $brief =~ s/\A[\s\n]*\=\= .*? \=\=\s*?\n+//ms;
         $brief =~ s/\A(.*?\.) /$1\n/;  # \brief should only be one sentence, delimited by a period+space. Split if necessary.
