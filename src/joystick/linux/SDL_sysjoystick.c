@@ -1036,6 +1036,10 @@ static bool LINUX_JoystickInit(void)
                          "udev init failed, disabling udev integration");
             enumeration_method = ENUMERATION_FALLBACK;
         }
+    } else {
+        if (udev_initialized) {
+            SDL_UDEV_Quit();
+        }
     }
 #endif
 
