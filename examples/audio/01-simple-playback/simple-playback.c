@@ -73,12 +73,11 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         static float samples[512];  /* this will feed 512 samples each frame until we get to our maximum. */
         int i;
 
+        /* generate a 440Hz pure tone */
         for (i = 0; i < SDL_arraysize(samples); i++) {
-            /* You don't have to care about this math; we're just generating a simple sine wave as we go.
-               https://en.wikipedia.org/wiki/Sine_wave */
-            const double time = total_samples_generated / 8000.0;
-            const int sine_freq = 500;   /* run the wave at 500Hz */
-            samples[i] = (float)SDL_sin(6.283185 * sine_freq * time);
+            const int freq = 440;
+            const int phase = (total_samples_generated * freq) % 8000;
+            samples[i] = (float)SDL_sin(phase * 2 * SDL_PI_D / 8000.0);
             total_samples_generated++;
         }
 
