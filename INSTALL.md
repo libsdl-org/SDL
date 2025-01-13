@@ -1,28 +1,13 @@
 # To build and use SDL:
 
-## Using CMake
+SDL supports a number of development environments:
+- [CMake](docs/INTRO-cmake.md)
+- [Visual Studio on Windows](docs/INTRO-visualstudio.md)
+- [Xcode on Apple platforms](docs/INTRO-xcode.md)
+- [Android](docs/INTRO-android.md)
+- [Emscripten for web](docs/INTRO-emscripten.md)
 
-Read [BUILD-cmake.md](docs/BUILD-cmake.md) and [INTRO-cmake.md](docs/INTRO-cmake.md)
-
-## Using Visual Studio on Windows
-
-Read [BUILD-visualstudio.md](docs/BUILD-visualstudio.md) and [INTRO-visualstudio.md](docs/INTRO-visualstudio.md)
-
-## Using Xcode on Apple platforms
-
-Read [BUILD-xcode.md](docs/BUILD-xcode.md) and [INTRO-xcode.md](docs/INTRO-xcode.md)
-
-## Android:
-
-Read [BUILD-android.md](docs/BUILD-android.md) and [INTRO-android.md](docs/INTRO-android.md)
-
-## Emscripten:
-
-Read [BUILD-emscripten.md](docs/BUILD-emscripten.md) and [INTRO-emscripten.md](docs/INTRO-emscripten.md)
-
-## Other environments:
-
-SDL is also usable in other build environments. The basic steps are to use CMake to build the library and then use the headers and library that you built in your project. You can search online to see if anyone has specific steps for your environment.
+SDL is also usable in other environments. The basic steps are to use CMake to build the library and then use the headers and library that you built in your project. You can search online to see if anyone has specific steps for your setup.
 
 # Documentation
 
