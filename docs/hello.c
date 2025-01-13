@@ -19,6 +19,7 @@ int main(int argc, char *argv[])
     const char *message = "Hello World!";
     int w = 0, h = 0;
     float x, y;
+    const float scale = 4.0f;
     bool done = false;
 
     /* Create the window */
@@ -39,10 +40,11 @@ int main(int argc, char *argv[])
             }
         }
 
-        /* Center the message */
-        SDL_GetWindowSize(window, &w, &h);
-        x = (float)(w - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(message)) / 2;
-        y = (float)(h - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE) / 2;
+        /* Center the message and scale it up */
+        SDL_GetRenderOutputSize(renderer, &w, &h);
+        SDL_SetRenderScale(renderer, scale, scale);
+        x = ((w / scale) - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(message)) / 2;
+        y = ((h / scale) - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE) / 2;
 
         /* Draw the message */
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
