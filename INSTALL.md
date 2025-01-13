@@ -2,7 +2,7 @@
 
 ##  Windows with Visual Studio:
 
-Read ./docs/README-visualc.md
+Read [README-visualc.md](docs/README-visualc.md)
 
 ## Windows building with mingw-w64 for x86:
 
@@ -18,7 +18,7 @@ Run: `cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=build-scripts/cmake-toolchain-m
 
 ## macOS with Xcode:
 
-Read docs/README-macos.md
+Read [README-macos.md](docs/README-macos.md)
 
 ## macOS from the command line:
 
@@ -34,15 +34,15 @@ Run: `cmake -S . -B build && cmake --build build --parallel $(nproc) && cmake --
 
 ## Android:
 
-Read docs/README-android.md
+Read [README-android.md](docs/README-android.md)
 
 ## iOS:
 
-Read docs/README-ios.md
+Read [README-ios.md](docs/README-ios.md)
 
 ## Using CMake:
 
-Read docs/README-cmake.md
+Read [README-cmake.md](docs/README-cmake.md)
 
 # Example code
 
