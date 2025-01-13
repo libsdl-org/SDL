@@ -4069,7 +4069,8 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
     VkDeviceSize size,
     SDL_GPUBufferUsageFlags usageFlags,
     VulkanBufferType type,
-    bool dedicated)
+    bool dedicated,
+    char *debugName)
 {
     VulkanBuffer *buffer;
     VkResult vulkanResult;
@@ -4155,6 +4156,19 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
 
     SDL_SetAtomicInt(&buffer->referenceCount, 0);
 
+    if (renderer->debugMode && renderer->supportsDebugUtils && debugName != NULL) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo;
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.pNext = NULL;
+        nameInfo.pObjectName = debugName;
+        nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
+        nameInfo.objectHandle = (uint64_t)buffer->buffer;
+
+        renderer->vkSetDebugUtilsObjectNameEXT(
+            renderer->logicalDevice,
+            &nameInfo);
+    }
+
     return buffer;
 }
 
@@ -4163,7 +4177,8 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
     VkDeviceSize size,
     SDL_GPUBufferUsageFlags usageFlags,
     VulkanBufferType type,
-    bool dedicated)
+    bool dedicated,
+    char *debugName)
 {
     VulkanBufferContainer *bufferContainer;
     VulkanBuffer *buffer;
@@ -4173,7 +4188,8 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
         size,
         usageFlags,
         type,
-        dedicated);
+        dedicated,
+        debugName);
 
     if (buffer == NULL) {
         return NULL;
@@ -4191,7 +4207,7 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
         bufferContainer->bufferCapacity * sizeof(VulkanBuffer *));
     bufferContainer->buffers[0] = bufferContainer->activeBuffer;
     bufferContainer->dedicated = dedicated;
-    bufferContainer->debugName = NULL;
+    bufferContainer->debugName = debugName;
 
     return bufferContainer;
 }
@@ -5797,7 +5813,8 @@ static void VULKAN_INTERNAL_CycleActiveBuffer(
         container->activeBuffer->size,
         container->activeBuffer->usage,
         container->activeBuffer->type,
-        container->dedicated);
+        container->dedicated,
+        container->debugName);
 
     if (!buffer) {
         return;
@@ -6703,14 +6720,16 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
 static SDL_GPUBuffer *VULKAN_CreateBuffer(
     SDL_GPURenderer *driverData,
     SDL_GPUBufferUsageFlags usageFlags,
-    Uint32 size)
+    Uint32 size,
+    char *debugName)
 {
     return (SDL_GPUBuffer *)VULKAN_INTERNAL_CreateBufferContainer(
         (VulkanRenderer *)driverData,
         (VkDeviceSize)size,
         usageFlags,
         VULKAN_BUFFER_TYPE_GPU,
-        false);
+        false,
+        debugName);
 }
 
 static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
@@ -6724,7 +6743,8 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
         (VkDeviceSize)size,
         0,
         VULKAN_BUFFER_TYPE_UNIFORM,
-        false);
+        false,
+        NULL);
 
     uniformBuffer->drawOffset = 0;
     uniformBuffer->writeOffset = 0;
@@ -6746,7 +6766,8 @@ static SDL_GPUTransferBuffer *VULKAN_CreateTransferBuffer(
         (VkDeviceSize)size,
         0,
         VULKAN_BUFFER_TYPE_TRANSFER,
-        usage == SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD);
+        usage == SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD,
+        NULL);
 }
 
 static void VULKAN_INTERNAL_ReleaseTexture(
@@ -9908,9 +9929,9 @@ static bool VULKAN_WaitAndAcquireSwapchainTexture(
     Uint32 *swapchain_texture_height
 ) {
     return VULKAN_INTERNAL_AcquireSwapchainTexture(
-        true, 
-        command_buffer, 
-        window, 
+        true,
+        command_buffer,
+        window,
         swapchain_texture,
         swapchain_texture_width,
         swapchain_texture_height);
@@ -10565,22 +10586,12 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 currentRegion->vulkanBuffer->size,
                 currentRegion->vulkanBuffer->usage,
                 currentRegion->vulkanBuffer->type,
-                false);
+                false,
+                currentRegion->vulkanBuffer->container != NULL ? currentRegion->vulkanBuffer->container->debugName : NULL);
 
             if (newBuffer == NULL) {
                 SDL_UnlockMutex(renderer->allocatorLock);
                 return false;
-            }
-
-            if (
-                renderer->debugMode &&
-                renderer->supportsDebugUtils &&
-                currentRegion->vulkanBuffer->container != NULL &&
-                currentRegion->vulkanBuffer->container->debugName != NULL) {
-                VULKAN_INTERNAL_SetBufferName(
-                    renderer,
-                    newBuffer,
-                    currentRegion->vulkanBuffer->container->debugName);
             }
 
             // Copy buffer contents if necessary
