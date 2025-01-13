@@ -45,7 +45,6 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [PS2](README-ps2.md)
 - [PSP](README-psp.md)
 - [PSVita](README-vita.md)
-- [Raspberry Pi](README-raspberrypi.md)
 - [RISC OS](README-riscos.md)
 - [Windows GDK](README-gdk.md)
 - [Windows](README-windows.md)
