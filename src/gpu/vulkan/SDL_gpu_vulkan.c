@@ -1280,7 +1280,7 @@ static inline const char *VkErrorMessages(VkResult code)
 // Utility
 
 static void VULKAN_INTERNAL_SetObjectNamePrintf(
-    VulkanRenderer *renderer, void *object, VkObjectType objectType, const char *format, ...
+    VulkanRenderer *renderer, uint64_t object, VkObjectType objectType, const char *format, ...
 ) {
     if (!renderer->debugMode)
         return;
