@@ -19,18 +19,17 @@ in the file "LICENSE.txt".
 Information on building SDL with CMake is available in [README-cmake.md](README-cmake.md)
 
 The best way to learn how to use SDL is to check out the header files in
-the "include" subdirectory and the programs in the "test" subdirectory.
+the "include" subdirectory and the programs in the "examples" subdirectory.
 The header files and test programs are well commented and always up to date.
 
 Information on reporting bugs and contributing is available in [README-contributing.md](README-contributing.md)
 
 More documentation and FAQs are available online at [the wiki](http://wiki.libsdl.org/)
 
-- [High DPI Support](README-highdpi.md)
-- [main()](README-main-functions.md)
-- [Porting information](README-porting.md)
 - [Migrating from SDL 2.0](README-migration.md)
 - [Supported Platforms](README-platforms.md)
+- [main()](README-main-functions.md)
+- [High DPI Support](README-highdpi.md)
 - [Touch](README-touch.md)
 - [Versions](README-versions.md)
 - [Visual Studio](README-visualc.md)
@@ -48,6 +47,7 @@ More documentation and FAQs are available online at [the wiki](http://wiki.libsd
 - [RISC OS](README-riscos.md)
 - [Windows GDK](README-gdk.md)
 - [Windows](README-windows.md)
+- [Porting information](README-porting.md)
 
 If you need help with the library, or just want to discuss SDL related
 issues, you can join the [SDL Discourse](https://discourse.libsdl.org/),
