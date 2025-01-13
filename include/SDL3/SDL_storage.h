@@ -112,8 +112,8 @@
  *   validated, so an error occurring elsewhere in the program may result in
  *   missing/corrupted save data
  *
- * When using, SDL_Storage, these types of problems are virtually impossible
- * to trip over:
+ * When using SDL_Storage, these types of problems are virtually impossible to
+ * trip over:
  *
  * ```c
  * void ReadGameData(void)
