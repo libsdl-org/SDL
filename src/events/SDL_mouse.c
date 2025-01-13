@@ -1249,12 +1249,6 @@ bool SDL_SetRelativeMouseMode(bool enabled)
 
     if (focusWindow) {
         SDL_UpdateWindowGrab(focusWindow);
-
-        // Put the cursor back to where the application expects it
-        if (!enabled) {
-            SDL_PerformWarpMouseInWindow(focusWindow, mouse->x, mouse->y, true);
-        }
-
         SDL_UpdateMouseCapture(false);
     }
 
