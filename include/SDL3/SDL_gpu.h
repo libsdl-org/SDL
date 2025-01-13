@@ -2505,6 +2505,8 @@ extern SDL_DECLSPEC SDL_GPUTransferBuffer *SDLCALL SDL_CreateGPUTransferBuffer(
     SDL_GPUDevice *device,
     const SDL_GPUTransferBufferCreateInfo *createinfo);
 
+#define SDL_PROP_GPU_CREATETRANSFERBUFFER_NAME_STRING "SDL.gpu.createtransferbuffer.name"
+
 /* Debug Naming */
 
 /**

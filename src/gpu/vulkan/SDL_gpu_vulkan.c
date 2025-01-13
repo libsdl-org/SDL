@@ -6778,7 +6778,8 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
 static SDL_GPUTransferBuffer *VULKAN_CreateTransferBuffer(
     SDL_GPURenderer *driverData,
     SDL_GPUTransferBufferUsage usage,
-    Uint32 size)
+    Uint32 size,
+    const char *debugName)
 {
     // We use dedicated allocations for download buffers to avoid an issue
     // where a defrag is triggered after submitting a download but before
@@ -6789,7 +6790,7 @@ static SDL_GPUTransferBuffer *VULKAN_CreateTransferBuffer(
         0,
         VULKAN_BUFFER_TYPE_TRANSFER,
         usage == SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD,
-        NULL);
+        debugName);
 }
 
 static void VULKAN_INTERNAL_ReleaseTexture(
