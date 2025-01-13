@@ -1,72 +1,60 @@
-# To compile and install SDL:
+# To build and use SDL:
 
-##  Windows with Visual Studio:
+## Using CMake
 
-Read [README-visualc.md](docs/README-visualc.md)
+Read [BUILD-cmake.md](docs/BUILD-cmake.md) and [INTRO-cmake.md](docs/INTRO-cmake.md)
 
-## Windows building with mingw-w64 for x86:
+## Using Visual Studio on Windows
 
-Read [README-windows.md](docs/README-windows.md) for more information on building with MinGW64.
+Read [BUILD-visualstudio.md](docs/BUILD-visualstudio.md) and [INTRO-visualstudio.md](docs/INTRO-visualstudio.md)
 
-Run: `cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=build-scripts/cmake-toolchain-mingw64-i686.cmake && cmake --build build && cmake --install build`
+## Using Xcode on Apple platforms
 
-## Windows building with mingw-w64 for x64:
-
-Read [README-windows.md](docs/README-windows.md).
-
-Run: `cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=build-scripts/cmake-toolchain-mingw64-x86_64.cmake && cmake --build build && cmake --install build`
-
-## macOS with Xcode:
-
-Read [README-macos.md](docs/README-macos.md)
-
-## macOS from the command line:
-
-Run: `cmake -S . -B build && cmake --build build && cmake --install build`
-
-### macOS for universal architecture:
-
-Run: `cmake -S . -B build -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" && cmake --build build && cmake --install build`
-
-## Linux and other UNIX systems:
-
-Run: `cmake -S . -B build && cmake --build build --parallel $(nproc) && cmake --install build`
+Read [BUILD-xcode.md](docs/BUILD-xcode.md) and [INTRO-xcode.md](docs/INTRO-xcode.md)
 
 ## Android:
 
-Read [README-android.md](docs/README-android.md)
+Read [BUILD-android.md](docs/BUILD-android.md) and [INTRO-android.md](docs/INTRO-android.md)
 
-## iOS:
+## Emscripten:
 
-Read [README-ios.md](docs/README-ios.md)
+Read [BUILD-emscripten.md](docs/BUILD-emscripten.md) and [INTRO-emscripten.md](docs/INTRO-emscripten.md)
 
-## Using CMake:
+## Other environments:
 
-Read [README-cmake.md](docs/README-cmake.md)
+SDL is also usable in other build environments. The basic steps are to use CMake to build the library and then use the headers and library that you built in your project. You can search online to see if anyone has specific steps for your environment.
+
+# Documentation
+
+An API reference, tutorials, and additional documentation is available at:
+
+https://wiki.libsdl.org/SDL3
 
 # Example code
 
-Look at the example programs in ./examples, and check out the online
-documentation at https://wiki.libsdl.org/SDL3/
+There are simple example programs in the examples directory, and you can view them online at:
 
-# Discussion
+https://examples.libsdl.org/SDL3
+
+# Discussions
+
+## Discord
+
+You can join the official Discord server at:
+
+https://discord.com/invite/BwpFGBWsv8
 
 ## Forums/mailing lists
 
-Join the SDL developer discussions, sign up on
+You can join SDL development discussions at:
 
 https://discourse.libsdl.org/
 
-and go to the development forum
-
-https://discourse.libsdl.org/c/sdl-development/6
-
-Once you sign up, you can use the forum through the website, or as a mailing
-list from your email client.
+Once you sign up, you can use the forum through the website or as a mailing list from your email client.
 
 ## Announcement list
 
-Sign up for the announcement list through the web interface:
+You can sign up for the low traffic announcement list at:
 
 https://www.libsdl.org/mailing-list.php
 
