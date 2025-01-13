@@ -404,9 +404,6 @@ static void Internal_Android_Destroy_AssetManager(void);
 static AAssetManager *asset_manager = NULL;
 static jobject javaAssetManagerRef = 0;
 
-// Re-create activity hint
-static SDL_AtomicInt bAllowRecreateActivity;
-
 static SDL_Mutex *Android_ActivityMutex = NULL;
 static SDL_Mutex *Android_LifecycleMutex = NULL;
 static SDL_Semaphore *Android_LifecycleEventSem = NULL;
@@ -564,7 +561,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, SDL_arraysize(SDLAudioManager_tab));
     register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
     register_methods(env, "org/libsdl/app/HIDDeviceManager", HIDDeviceManager_tab, SDL_arraysize(HIDDeviceManager_tab));
-    SDL_SetAtomicInt(&bAllowRecreateActivity, false);
 
     return JNI_VERSION_1_4;
 }
@@ -764,28 +760,16 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter)(
     return tmp;
 }
 
-static void SDLCALL SDL_AllowRecreateActivityChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    if (SDL_GetStringBoolean(hint, false)) {
-        SDL_SetAtomicInt(&bAllowRecreateActivity, true);
-    } else {
-        SDL_SetAtomicInt(&bAllowRecreateActivity, false);
-    }
-}
-
 JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeAllowRecreateActivity)(
     JNIEnv *env, jclass jcls)
 {
-    return SDL_GetAtomicInt(&bAllowRecreateActivity);
+    return SDL_GetHintBoolean(SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY, false);
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitMainThread)(
     JNIEnv *env, jclass jcls)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeInitSDLThread() %d time", run_count);
-    if (run_count == 1) {
-        SDL_AddHintCallback(SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY, SDL_AllowRecreateActivityChanged, NULL);
-    }
     run_count += 1;
 
     // Save JNIEnv of SDLThread
