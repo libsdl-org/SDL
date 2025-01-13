@@ -36,9 +36,9 @@ static void SDLCALL FeedTheAudioStreamMore(void *userdata, SDL_AudioStream *astr
         for (i = 0; i < total; i++) {
             /* You don't have to care about this math; we're just generating a simple sine wave as we go.
                https://en.wikipedia.org/wiki/Sine_wave */
-            const float time = total_samples_generated / 8000.0f;
+            const double time = total_samples_generated / 8000.0;
             const int sine_freq = 500;   /* run the wave at 500Hz */
-            samples[i] = SDL_sinf(6.283185f * sine_freq * time);
+            samples[i] = (float)SDL_sin(6.283185 * sine_freq * time);
             total_samples_generated++;
         }
 
