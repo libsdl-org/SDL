@@ -1045,7 +1045,7 @@ static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
 
         MTLComputePipelineDescriptor *descriptor = [MTLComputePipelineDescriptor new];
         descriptor.computeFunction = libraryFunction.function;
-        descriptor.label = @("Compute Pipeline"); // label can't be nil for some reason
+
         if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING)) {
             const char *name = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING, NULL);
             descriptor.label = @(name);
@@ -1191,7 +1191,6 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
             pipelineDescriptor.vertexDescriptor = vertexDescriptor;
         }
 
-        pipelineDescriptor.label = @("Graphics Pipeline"); // label can't be nil for some reason
         if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING)) {
             const char *name = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING, NULL);
             pipelineDescriptor.label = @(name);
@@ -1362,6 +1361,11 @@ static SDL_GPUSampler *METAL_CreateSampler(
         samplerDesc.lodMaxClamp = createinfo->max_lod;
         samplerDesc.maxAnisotropy = (NSUInteger)((createinfo->enable_anisotropy) ? createinfo->max_anisotropy : 1);
         samplerDesc.compareFunction = (createinfo->enable_compare) ? SDLToMetal_CompareOp[createinfo->compare_op] : MTLCompareFunctionAlways;
+
+        if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATESAMPLER_NAME_STRING)) {
+            const char *name = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATESAMPLER_NAME_STRING, NULL);
+            samplerDesc.label = @(name);
+        }
 
         sampler = [renderer->device newSamplerStateWithDescriptor:samplerDesc];
         if (sampler == NULL) {
