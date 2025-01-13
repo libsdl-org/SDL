@@ -3559,7 +3559,11 @@ static SDL_GPUTexture *D3D12_CreateTexture(
         return NULL;
     }
 
+    // Copy properties so we don't lose information when the client destroys them
     container->header.info = *createinfo;
+    container->header.info.props = SDL_CreateProperties();
+    SDL_CopyProperties(createinfo->props, container->header.info.props);
+
     container->textureCapacity = 1;
     container->textureCount = 1;
     container->textures = (D3D12Texture **)SDL_calloc(

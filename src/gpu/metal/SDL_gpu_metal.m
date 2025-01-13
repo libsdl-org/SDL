@@ -1502,7 +1502,12 @@ static SDL_GPUTexture *METAL_CreateTexture(
 
         container = SDL_calloc(1, sizeof(MetalTextureContainer));
         container->canBeCycled = 1;
+
+        // Copy properties so we don't lose information when the client destroys them
         container->header.info = *createinfo;
+        container->header.info.props = SDL_CreateProperties();
+        SDL_CopyProperties(createinfo->props, container->header.info.props);
+
         container->activeTexture = texture;
         container->textureCapacity = 1;
         container->textureCount = 1;

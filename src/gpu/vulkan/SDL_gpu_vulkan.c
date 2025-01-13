@@ -6757,7 +6757,12 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
     }
 
     container = SDL_malloc(sizeof(VulkanTextureContainer));
+
+    // Copy properties so we don't lose information when the client destroys them
     container->header.info = *createinfo;
+    container->header.info.props = SDL_CreateProperties();
+    SDL_CopyProperties(createinfo->props, container->header.info.props);
+
     container->canBeCycled = true;
     container->activeTexture = texture;
     container->textureCapacity = 1;
