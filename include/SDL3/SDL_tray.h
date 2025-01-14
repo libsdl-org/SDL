@@ -204,7 +204,7 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTrayMenu(SDL_Tray *tray);
 /**
  * Gets a previously created tray entry submenu.
  *
- * You should have called SDL_CreateTraySubenu() on the entry object. This
+ * You should have called SDL_CreateTraySubmenu() on the entry object. This
  * function allows you to fetch it again later.
  *
  * This function does the same thing as SDL_GetTrayMenu(), except that it
@@ -317,7 +317,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetTrayEntryLabel(SDL_TrayEntry *ent
  * The entry must have been created with the SDL_TRAYENTRY_CHECKBOX flag.
  *
  * \param entry the entry to be updated.
- * \param checked SDL_TRUE if the entry should be checked; SDL_FALSE
+ * \param checked true if the entry should be checked; false
  *                otherwise.
  *
  * \since This function is available since SDL 3.1.8.
@@ -334,7 +334,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, b
  * The entry must have been created with the SDL_TRAYENTRY_CHECKBOX flag.
  *
  * \param entry the entry to be read.
- * \returns SDL_TRUE if the entry is checked; SDL_FALSE otherwise.
+ * \returns true if the entry is checked; false otherwise.
  *
  * \since This function is available since SDL 3.1.8.
  *
@@ -348,7 +348,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryChecked(SDL_TrayEntry *entry);
  * Sets whether or not an entry is enabled.
  *
  * \param entry the entry to be updated.
- * \param enabled SDL_TRUE if the entry should be enabled; SDL_FALSE
+ * \param enabled true if the entry should be enabled; false
  *                otherwise.
  *
  * \since This function is available since SDL 3.1.8.
@@ -363,7 +363,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, b
  * Gets whether or not an entry is enabled.
  *
  * \param entry the entry to be read.
- * \returns SDL_TRUE if the entry is enabled; SDL_FALSE otherwise.
+ * \returns true if the entry is enabled; false otherwise.
  *
  * \since This function is available since SDL 3.1.8.
  *
