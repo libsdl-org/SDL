@@ -281,6 +281,18 @@ bool SDL_AudioSpecsEqual(const SDL_AudioSpec *a, const SDL_AudioSpec *b, const i
     return true;
 }
 
+bool SDL_AudioChannelMapsEqual(int channels, const int *channel_map_a, const int *channel_map_b)
+{
+    if (channel_map_a == channel_map_b) {
+        return true;
+    } else if ((channel_map_a != NULL) != (channel_map_b != NULL)) {
+        return false;
+    } else if (channel_map_a && (SDL_memcmp(channel_map_a, channel_map_b, sizeof (*channel_map_a) * channels) != 0)) {
+        return false;
+    }
+    return true;
+}
+
 
 // Zombie device implementation...
 
@@ -1134,7 +1146,7 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
             SDL_AudioStream *stream = logdev->bound_streams;
 
             // We should have updated this elsewhere if the format changed!
-            SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &device->spec, stream->dst_chmap, device->chmap));
+            SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &device->spec, NULL, NULL));
 
             const int br = SDL_GetAtomicInt(&logdev->paused) ? 0 : SDL_GetAudioStreamDataAdjustGain(stream, device_buffer, buffer_size, logdev->gain);
             if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
@@ -1142,6 +1154,12 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
                 SDL_memset(device_buffer, device->silence_value, buffer_size);  // just supply silence to the device before we die.
             } else if (br < buffer_size) {
                 SDL_memset(device_buffer + br, device->silence_value, buffer_size - br);  // silence whatever we didn't write to.
+            }
+
+            // generally channel maps will line up, but if the audio stream's chmap has been explicitly changed, do a final swizzle to device layout.
+            if ((br > 0) && (!SDL_AudioChannelMapsEqual(device->spec.channels, stream->dst_chmap, device->chmap))) {
+                ConvertAudio(br / SDL_AUDIO_FRAMESIZE(device->spec), device_buffer, device->spec.format, device->spec.channels, NULL,
+                             device_buffer, device->spec.format, device->spec.channels, device->chmap, NULL, 1.0f);
             }
         } else {  // need to actually mix (or silence the buffer)
             float *final_mix_buffer = (float *) ((device->spec.format == SDL_AUDIO_F32) ? device_buffer : device->mix_buffer);
@@ -1170,7 +1188,7 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
 
                 for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
                     // We should have updated this elsewhere if the format changed!
-                    SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &outspec, stream->dst_chmap, device->chmap));
+                    SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &outspec, NULL, NULL));
 
                     /* this will hold a lock on `stream` while getting. We don't explicitly lock the streams
                        for iterating here because the binding linked list can only change while the device lock is held.
@@ -1181,6 +1199,11 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
                         failed = true;
                         break;
                     } else if (br > 0) {  // it's okay if we get less than requested, we mix what we have.
+                        // generally channel maps will line up, but if the audio stream's chmap has been explicitly changed, do a final swizzle to device layout.
+                        if (!SDL_AudioChannelMapsEqual(device->spec.channels, stream->dst_chmap, device->chmap)) {
+                            ConvertAudio(br / SDL_AUDIO_FRAMESIZE(device->spec), device->work_buffer, device->spec.format, device->spec.channels, NULL,
+                                         device->work_buffer, device->spec.format, device->spec.channels, device->chmap, NULL, 1.0f);
+                        }
                         MixFloat32Audio(mix_buffer, (float *) device->work_buffer, br);
                     }
                 }
@@ -1303,11 +1326,20 @@ bool SDL_RecordingAudioThreadIterate(SDL_AudioDevice *device)
                     SDL_assert(stream->src_spec.channels == device->spec.channels);
                     SDL_assert(stream->src_spec.freq == device->spec.freq);
 
+                    void *final_buf = output_buffer;
+
+                    // generally channel maps will line up, but if the audio stream's chmap has been explicitly changed, do a final swizzle to stream layout.
+                    if (!SDL_AudioChannelMapsEqual(device->spec.channels, stream->src_chmap, device->chmap)) {
+                        final_buf = device->mix_buffer;  // this is otherwise unused on recording devices, so it makes convenient scratch space here.
+                        ConvertAudio(br / SDL_AUDIO_FRAMESIZE(device->spec), output_buffer, device->spec.format, device->spec.channels, NULL,
+                                     final_buf, device->spec.format, device->spec.channels, stream->src_chmap, NULL, 1.0f);
+                    }
+
                     /* this will hold a lock on `stream` while putting. We don't explicitly lock the streams
                        for iterating here because the binding linked list can only change while the device lock is held.
                        (we _do_ lock the stream during binding/unbinding to make sure that two threads can't try to bind
                        the same stream to different devices at the same time, though.) */
-                    if (!SDL_PutAudioStreamData(stream, output_buffer, br)) {
+                    if (!SDL_PutAudioStreamData(stream, final_buf, br)) {
                         // oh crud, we probably ran out of memory. This is possibly an overreaction to kill the audio device, but it's likely the whole thing is going down in a moment anyhow.
                         failed = true;
                         break;

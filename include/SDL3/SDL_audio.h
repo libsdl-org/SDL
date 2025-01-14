@@ -942,7 +942,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * Binding a stream to a device will set its output format for playback
  * devices, and its input format for recording devices, so they match the
  * device's settings. The caller is welcome to change the other end of the
- * stream's format at any time.
+ * stream's format at any time with SDL_SetAudioStreamFormat().
  *
  * \param devid an audio device to bind a stream to.
  * \param streams an array of audio streams to bind.
@@ -1103,6 +1103,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *strea
  * the end of a sound file in one format to a stream, change formats for the
  * next sound file, and start putting that new data while the previous sound
  * file is still queued, and everything will still play back correctly.
+ *
+ * If a stream is bound to a device, then the format of the side of the stream
+ * bound to a device cannot be changed (src_spec for recording devices,
+ * dst_spec for playback devices). Attempts to make a change to this side
+ * will be ignored, but this will not report an error. The other side's format
+ * can be changed.
  *
  * \param stream the stream the format is being changed.
  * \param src_spec the new format of the audio input; if NULL, it is not
@@ -1298,6 +1304,11 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioSt
  * race condition hasn't changed the format while this call is setting the
  * channel map.
  *
+ * Unlike attempting to change the stream's format, the input channel map on a
+ * stream bound to a recording device is permitted to change at any time; any
+ * data added to the stream from the device after this call will have the new
+ * mapping, but previously-added data will still have the prior mapping.
+ *
  * \param stream the SDL_AudioStream to change.
  * \param chmap the new channel map, NULL to reset to default.
  * \param count The number of channels in the map.
@@ -1348,6 +1359,13 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamInputChannelMap(SDL_AudioStre
  * stream's format, this will fail. This is a safety measure to make sure a
  * race condition hasn't changed the format while this call is setting the
  * channel map.
+ *
+ * Unlike attempting to change the stream's format, the output channel map on
+ * a stream bound to a recording device is permitted to change at any time;
+ * any data added to the stream after this call will have the new mapping, but
+ * previously-added data will still have the prior mapping. When the channel
+ * map doesn't match the hardware's channel layout, SDL will convert the data
+ * before feeding it to the device for playback.
  *
  * \param stream the SDL_AudioStream to change.
  * \param chmap the new channel map, NULL to reset to default.

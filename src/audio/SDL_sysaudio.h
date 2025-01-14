@@ -125,8 +125,12 @@ extern void ConvertAudio(int num_frames,
 
 // Compare two SDL_AudioSpecs, return true if they match exactly.
 // Using SDL_memcmp directly isn't safe, since potential padding might not be initialized.
-// either channel maps can be NULL for the default (and both should be if you don't care about them).
+// either channel map can be NULL for the default (and both should be if you don't care about them).
 extern bool SDL_AudioSpecsEqual(const SDL_AudioSpec *a, const SDL_AudioSpec *b, const int *channel_map_a, const int *channel_map_b);
+
+// See if two channel maps match
+// either channel map can be NULL for the default (and both should be if you don't care about them).
+extern bool SDL_AudioChannelMapsEqual(int channels, const int *channel_map_a, const int *channel_map_b);
 
 // allocate+copy a channel map.
 extern int *SDL_ChannelMapDup(const int *origchmap, int channels);

@@ -154,7 +154,7 @@ static void SwizzleAudio(const int num_frames, void *dst, const void *src, int c
 {
     const int bitsize = (int) SDL_AUDIO_BITSIZE(fmt);
 
-    bool has_null_mappings = false;
+    bool has_null_mappings = false;  // !!! FIXME: calculate this when setting the channel map instead.
     for (int i = 0; i < channels; i++) {
         if (map[i] == -1) {
             has_null_mappings = true;
@@ -256,6 +256,11 @@ void ConvertAudio(int num_frames,
 
     const int dst_bitsize = (int) SDL_AUDIO_BITSIZE(dst_format);
     const int dst_sample_frame_size = (dst_bitsize / 8) * dst_channels;
+
+    const bool chmaps_match = (src_channels == dst_channels) && SDL_AudioChannelMapsEqual(src_channels, src_map, dst_map);
+    if (chmaps_match) {
+        src_map = dst_map = NULL;  // NULL both these out so we don't do any unnecessary swizzling.
+    }
 
     /* Type conversion goes like this now:
         - swizzle through source channel map to "standard" layout.
@@ -635,8 +640,6 @@ bool SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec
         // already have this map, don't allocate/copy it again.
     } else if (SDL_ChannelMapIsBogus(chmap, channels)) {
         result = SDL_SetError("Invalid channel mapping");
-    } else if ((isinput != -1) && stream->bound_device && (!!isinput == !!stream->bound_device->physical_device->recording)) {
-        // quietly refuse to change the format of the end currently bound to a device.
     } else {
         if (SDL_ChannelMapIsDefault(chmap, channels)) {
             chmap = NULL;  // just apply a default mapping.
@@ -661,12 +664,12 @@ bool SetAudioStreamChannelMap(SDL_AudioStream *stream, const SDL_AudioSpec *spec
 
 bool SDL_SetAudioStreamInputChannelMap(SDL_AudioStream *stream, const int *chmap, int channels)
 {
-    return SetAudioStreamChannelMap(stream, &stream->src_spec, &stream->src_chmap, chmap, channels, true);
+    return SetAudioStreamChannelMap(stream, &stream->src_spec, &stream->src_chmap, chmap, channels, 1);
 }
 
 bool SDL_SetAudioStreamOutputChannelMap(SDL_AudioStream *stream, const int *chmap, int channels)
 {
-    return SetAudioStreamChannelMap(stream, &stream->dst_spec, &stream->dst_chmap, chmap, channels, false);
+    return SetAudioStreamChannelMap(stream, &stream->dst_spec, &stream->dst_chmap, chmap, channels, 0);
 }
 
 int *SDL_GetAudioStreamInputChannelMap(SDL_AudioStream *stream, int *count)
