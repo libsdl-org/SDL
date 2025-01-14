@@ -123,7 +123,7 @@ void SDLTest_TextWindowAddTextWithLength(SDLTest_TextWindow *textwin, const char
         if (newline) {
             if (textwin->current == textwin->numlines - 1) {
                 SDL_free(textwin->lines[0]);
-                SDL_memcpy(&textwin->lines[0], &textwin->lines[1], (textwin->numlines - 1) * sizeof(textwin->lines[1]));
+                SDL_memmove(&textwin->lines[0], &textwin->lines[1], (textwin->numlines - 1) * sizeof(textwin->lines[1]));
                 textwin->lines[textwin->current] = NULL;
             } else {
                 ++textwin->current;

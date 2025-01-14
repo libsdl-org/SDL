@@ -883,7 +883,7 @@ static int FindLifecycleEvent(SDL_AndroidLifecycleEvent event)
 static void RemoveLifecycleEvent(int index)
 {
     if (index < Android_NumLifecycleEvents - 1) {
-        SDL_memcpy(&Android_LifecycleEvents[index], &Android_LifecycleEvents[index+1], (Android_NumLifecycleEvents - index - 1) * sizeof(Android_LifecycleEvents[index]));
+        SDL_memmove(&Android_LifecycleEvents[index], &Android_LifecycleEvents[index+1], (Android_NumLifecycleEvents - index - 1) * sizeof(Android_LifecycleEvents[index]));
     }
     --Android_NumLifecycleEvents;
 }
