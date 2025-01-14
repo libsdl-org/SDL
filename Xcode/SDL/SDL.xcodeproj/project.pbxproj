@@ -46,21 +46,22 @@
 		000098E9DAA43EF6FF7F0000 /* SDL_camera.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000035D38C3899C7EFD0000 /* SDL_camera.c */; };
 		0000A03C0F32C43816F40000 /* SDL_asyncio_windows_ioring.c in Sources */ = {isa = PBXBuildFile; fileRef = 000030DD21496B5C0F210000 /* SDL_asyncio_windows_ioring.c */; };
 		0000A4DA2F45A31DC4F00000 /* SDL_sysmain_callbacks.m in Sources */ = {isa = PBXBuildFile; fileRef = 0000BB287BA0A0178C1A0000 /* SDL_sysmain_callbacks.m */; };
+		0000A877C7DB9FA935FC0000 /* SDL_uikitpen.m in Sources */ = {isa = PBXBuildFile; fileRef = 000053D344416737F6050000 /* SDL_uikitpen.m */; };
 		0000AEB9AE90228CA2D60000 /* SDL_asyncio.c in Sources */ = {isa = PBXBuildFile; fileRef = 00003928A612EC33D42C0000 /* SDL_asyncio.c */; };
 		0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */ = {isa = PBXBuildFile; fileRef = 0000CCA310B73A7B59910000 /* SDL_cocoapen.m */; };
 		007317A40858DECD00B2BC32 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0073179D0858DECD00B2BC32 /* Cocoa.framework */; platformFilters = (macos, ); };
 		007317A60858DECD00B2BC32 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0073179F0858DECD00B2BC32 /* IOKit.framework */; platformFilters = (ios, maccatalyst, macos, ); };
 		00CFA89D106B4BA100758660 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFA89C106B4BA100758660 /* ForceFeedback.framework */; platformFilters = (macos, ); };
-		00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D08310675DD9004B05EF /* CoreFoundation.framework */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
+		00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D08310675DD9004B05EF /* CoreFoundation.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Required, ); }; };
 		00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007317C10858E15000B2BC32 /* Carbon.framework */; platformFilters = (macos, ); };
 		1485C3312BBA4AF30063985B /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1485C32F2BBA4A0C0063985B /* UniformTypeIdentifiers.framework */; platformFilters = (maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
-		557D0CFA254586CA003913E3 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); };
-		557D0CFB254586D7003913E3 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDABD23E28B6200529352 /* GameController.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		557D0CFA254586CA003913E3 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Weak, ); }; };
+		557D0CFB254586D7003913E3 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDABD23E28B6200529352 /* GameController.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		5616CA4C252BB2A6005D5928 /* SDL_url.c in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA49252BB2A5005D5928 /* SDL_url.c */; };
 		5616CA4D252BB2A6005D5928 /* SDL_sysurl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */; };
 		5616CA4E252BB2A6005D5928 /* SDL_sysurl.m in Sources */ = {isa = PBXBuildFile; fileRef = 5616CA4B252BB2A6005D5928 /* SDL_sysurl.m */; };
-		564624361FF821C20074AC87 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624351FF821B80074AC87 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		564624381FF821DA0074AC87 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624371FF821CB0074AC87 /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		564624361FF821C20074AC87 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624351FF821B80074AC87 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Required, ); }; };
+		564624381FF821DA0074AC87 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624371FF821CB0074AC87 /* Metal.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		566E26CF246274CC00718109 /* SDL_syslocale.m in Sources */ = {isa = PBXBuildFile; fileRef = 566E26CC246274CB00718109 /* SDL_syslocale.m */; };
 		566E26D8246274CC00718109 /* SDL_locale.c in Sources */ = {isa = PBXBuildFile; fileRef = 566E26CD246274CB00718109 /* SDL_locale.c */; };
 		566E26E1246274CC00718109 /* SDL_syslocale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26CE246274CC00718109 /* SDL_syslocale.h */; };
@@ -75,7 +76,7 @@
 		A1626A522617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
 		A1BB8B6327F6CF330057CFA8 /* SDL_list.c in Sources */ = {isa = PBXBuildFile; fileRef = A1BB8B6127F6CF320057CFA8 /* SDL_list.c */; };
 		A1BB8B6C27F6CF330057CFA8 /* SDL_list.h in Headers */ = {isa = PBXBuildFile; fileRef = A1BB8B6227F6CF330057CFA8 /* SDL_list.h */; };
-		A7381E961D8B69D600B177DD /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E951D8B69D600B177DD /* CoreAudio.framework */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
+		A7381E961D8B69D600B177DD /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E951D8B69D600B177DD /* CoreAudio.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Required, ); }; };
 		A7381E971D8B6A0300B177DD /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E931D8B69C300B177DD /* AudioToolbox.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); };
 		A75FDB5823E39E6100529352 /* hidapi.h in Headers */ = {isa = PBXBuildFile; fileRef = A75FDB5723E39E6100529352 /* hidapi.h */; };
 		A75FDBB723E4CBC700529352 /* License.txt in Resources */ = {isa = PBXBuildFile; fileRef = 00794D3F09D0C461003FC8A1 /* License.txt */; };
@@ -529,9 +530,7 @@
 		F3FA5A252B59ACE000FEAD97 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1C2B59ACE000FEAD97 /* yuv_rgb_common.h */; };
 		F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */; };
 		F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */; };
-		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, watchos, ); };
-		000012E88BE7D71B274A0000 /* SDL_uikitpen.h in Headers */ = {isa = PBXBuildFile; fileRef = 000063D3D80F97ADC7770000 /* SDL_uikitpen.h */; };
-		0000A877C7DB9FA935FC0000 /* SDL_uikitpen.m in Sources */ = {isa = PBXBuildFile; fileRef = 000053D344416737F6050000 /* SDL_uikitpen.m */; };
+		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Required, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -565,9 +564,11 @@
 		00003260407E1002EAC10000 /* SDL_main_callbacks.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_main_callbacks.h; sourceTree = "<group>"; };
 		00003928A612EC33D42C0000 /* SDL_asyncio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_asyncio.c; sourceTree = "<group>"; };
 		00003F472C51CE7DF6160000 /* SDL_systime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_systime.c; sourceTree = "<group>"; };
+		000053D344416737F6050000 /* SDL_uikitpen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitpen.m; sourceTree = "<group>"; };
 		0000585B2CAB450B40540000 /* SDL_sysasyncio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysasyncio.h; sourceTree = "<group>"; };
 		00005BD74B46358B33A20000 /* SDL_camera_dummy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_camera_dummy.c; sourceTree = "<group>"; };
 		00005D3EB902478835E20000 /* SDL_syscamera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_syscamera.h; sourceTree = "<group>"; };
+		000063D3D80F97ADC7770000 /* SDL_uikitpen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitpen.h; sourceTree = "<group>"; };
 		0000641A9BAC11AB3FBE0000 /* SDL_time.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_time.c; sourceTree = "<group>"; };
 		000078E1881E857EBB6C0000 /* SDL_hashtable.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hashtable.c; sourceTree = "<group>"; };
 		00008B79BF08CBCEAC460000 /* SDL_camera_coremedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_camera_coremedia.m; sourceTree = "<group>"; };
@@ -1094,8 +1095,6 @@
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
-		000063D3D80F97ADC7770000 /* SDL_uikitpen.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_uikitpen.h; path = SDL_uikitpen.h; sourceTree = "<group>"; };
-		000053D344416737F6050000 /* SDL_uikitpen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_uikitpen.m; path = SDL_uikitpen.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
