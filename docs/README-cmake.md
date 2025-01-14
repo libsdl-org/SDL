@@ -6,7 +6,7 @@ The CMake build system is supported on the following platforms:
 
 * FreeBSD
 * Linux
-* Microsoft Visual C
+* Microsoft Visual Studio
 * MinGW and Msys
 * macOS, iOS, tvOS, and visionOS with support for XCode
 * Android
@@ -20,42 +20,55 @@ The CMake build system is supported on the following platforms:
 * QNX 7.x/8.x
 * RiscOS
 
-## Building SDL
+## Building SDL on Windows
 
-Assuming the source tree of SDL is located at `~/sdl`,
-this will configure and build SDL in the `~/build` directory:
+Assuming you're in the SDL source directory, building and installing to C:/SDL can be done with:
 ```sh
-cmake -S ~/sdl -B ~/build
-cmake --build ~/build
+cmake -S . -B build
+cmake --build build --config RelWithDebInfo
+cmake --install build --config RelWithDebInfo --prefix C:/SDL
 ```
 
-Installation can be done using:
+## Building SDL on UNIX
+
+SDL will build with very few dependencies, but for full functionality you should install the packages detailed in [README-linux.md](README-linux.md).
+
+Assuming you're in the SDL source directory, building and installing to /usr/local can be done with:
 ```sh
-cmake --install ~/build --prefix /usr/local        # '--install' requires CMake 3.15, or newer
+cmake -S . -B build
+cmake --build build
+sudo cmake --install build --prefix /usr/local
 ```
 
-This will install SDL to /usr/local.
+## Building SDL on macOS
 
-### Building SDL tests
+Assuming you're in the SDL source directory, building and installing to ~/SDL can be done with:
+```sh
+cmake -S . -B build -DSDL_FRAMEWORK=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+cmake --build build
+cmake --install build --prefix ~/SDL
+```
+
+## Building SDL tests
 
 You can build the SDL test programs by adding `-DSDL_TESTS=ON` to the first cmake command above:
 ```sh
-cmake -S ~/sdl -B ~/build -DSDL_TEST_LIBRARY=ON -DSDL_TESTS=ON
+cmake -S . -B build -DSDL_TESTS=ON
 ```
-and then building normally. In this example, the test programs will be built and can be run from `~/build/tests/`.
+and then building normally. The test programs will be built and can be run from `build/test/`.
 
-### Building SDL examples
+## Building SDL examples
 
 You can build the SDL example programs by adding `-DSDL_EXAMPLES=ON` to the first cmake command above:
 ```sh
-cmake -S ~/sdl -B ~/build -DSDL_EXAMPLES=ON
+cmake -S . -B build -DSDL_EXAMPLES=ON
 ```
-and then building normally. In this example, the example programs will be built and can be run from `~/build/examples/`.
+and then building normally. The example programs will be built and can be run from `build/examples/`.
 
 ## Including SDL in your project
 
 SDL can be included in your project in 2 major ways:
-- using a system SDL library, provided by your (*nix) distribution or a package manager
+- using a system SDL library, provided by your (UNIX) distribution or a package manager
 - using a vendored SDL library: this is SDL copied or symlinked in a subfolder.
 
 The following CMake script supports both, depending on the value of `MYGAME_VENDORED`.
@@ -181,7 +194,7 @@ Only shared frameworks are supported, no static ones.
 
 #### Platforms
 
-Use `-DCMAKE_PLATFORM_NAME=<value>` to configure the platform. CMake can target only one platform at a time.
+Use `-DCMAKE_SYSTEM_NAME=<value>` to configure the platform. CMake can target only one platform at a time.
 
 | Apple platform  | `CMAKE_SYSTEM_NAME` value |
 |-----------------|---------------------------|

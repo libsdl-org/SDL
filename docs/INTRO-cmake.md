@@ -27,17 +27,19 @@ target_link_libraries(hello PRIVATE SDL3::SDL3)
 
 Build:
 ```sh
-cmake .
-cmake --build .
+cmake -S . -B build
+cmake --build build
 ```
 
 Run:
-- On Windows the executable is in the Debug directory:
+- On Windows the executable is in the build Debug directory:
 ```sh
-./Debug/hello
+cd build/Debug
+./hello
 ``` 
-- On other platforms the executable is in the current directory:
+- On other platforms the executable is in the build directory:
 ```sh
+cd build
 ./hello
 ```
 
