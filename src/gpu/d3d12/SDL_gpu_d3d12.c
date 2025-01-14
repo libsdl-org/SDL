@@ -1935,71 +1935,19 @@ static void D3D12_INTERNAL_TrackComputePipeline(
 
 #undef TRACK_RESOURCE
 
-
 // Debug Naming
-
-static bool D3D12_INTERNAL_StrToWStr(
-    D3D12Renderer *renderer,
-    const char *str,
-    wchar_t *wstr,
-    size_t wstrSize,
-    Uint32 *outSize)
-{
-    size_t inlen, result;
-    size_t outBytesLeft = wstrSize;
-    *outSize = 0;
-
-    if (renderer->iconv == NULL) {
-        renderer->iconv = SDL_iconv_open("WCHAR_T", "UTF-8");
-        SDL_assert(renderer->iconv);
-    }
-
-    // Convert...
-    inlen = SDL_strlen(str) + 1;
-    result = SDL_iconv(
-        renderer->iconv,
-        &str,
-        &inlen,
-        (char **)&wstr,
-        &outBytesLeft);
-
-
-    // Check...
-    switch (result) {
-    case SDL_ICONV_ERROR:
-    case SDL_ICONV_E2BIG:
-    case SDL_ICONV_EILSEQ:
-    case SDL_ICONV_EINVAL:
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Failed to convert string to wchar_t!");
-        return false;
-    default:
-        break;
-    }
-
-    *outSize = (Uint32)(wstrSize - outBytesLeft);
-    return true;
-}
 
 static void D3D12_INTERNAL_SetPipelineStateName(
     D3D12Renderer *renderer,
     ID3D12PipelineState *pipelineState,
     const char *text
 ) {
-    wchar_t wstr[256];
-    Uint32 convSize;
-
     if (renderer->debug_mode && text != NULL) {
-        if (D3D12_INTERNAL_StrToWStr(
-            renderer,
-            text,
-            wstr,
-            sizeof(wstr),
-            &convSize
-        )) {
-            ID3D12PipelineState_SetName(
-                pipelineState,
-                wstr);
-        }
+        WCHAR *wchar_text = WIN_UTF8ToStringW(text);
+        ID3D12PipelineState_SetName(
+            pipelineState,
+            wchar_text);
+        SDL_free(wchar_text);
     }
 }
 
@@ -2008,21 +1956,12 @@ static void D3D12_INTERNAL_SetResourceName(
     ID3D12Resource *resource,
     const char *text
 ) {
-    wchar_t wstr[256];
-    Uint32 convSize;
-
     if (renderer->debug_mode && text != NULL) {
-        if (D3D12_INTERNAL_StrToWStr(
-            renderer,
-            text,
-            wstr,
-            sizeof(wstr),
-            &convSize
-        )) {
-            ID3D12Resource_SetName(
-                resource,
-                wstr);
-        }
+        WCHAR *wchar_text = WIN_UTF8ToStringW(text);
+        ID3D12Resource_SetName(
+            resource,
+            wchar_text);
+        SDL_free(wchar_text);
     }
 }
 
@@ -2083,23 +2022,15 @@ static void D3D12_InsertDebugLabel(
     const char *text)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
-    wchar_t wstr[256];
-    Uint32 convSize;
-
-    if (!D3D12_INTERNAL_StrToWStr(
-            d3d12CommandBuffer->renderer,
-            text,
-            wstr,
-            sizeof(wstr),
-            &convSize)) {
-        return;
-    }
+    WCHAR *wchar_text = WIN_UTF8ToStringW(text);
 
     ID3D12GraphicsCommandList_SetMarker(
         d3d12CommandBuffer->graphicsCommandList,
         0,
-        wstr,
-        convSize);
+        wchar_text,
+        SDL_wcslen(wchar_text));
+
+    SDL_free(wchar_text);
 }
 
 static void D3D12_PushDebugGroup(
@@ -2107,23 +2038,15 @@ static void D3D12_PushDebugGroup(
     const char *name)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
-    wchar_t wstr[256];
-    Uint32 convSize;
-
-    if (!D3D12_INTERNAL_StrToWStr(
-            d3d12CommandBuffer->renderer,
-            name,
-            wstr,
-            sizeof(wstr),
-            &convSize)) {
-        return;
-    }
+    WCHAR *wchar_text = WIN_UTF8ToStringW(name);
 
     ID3D12GraphicsCommandList_BeginEvent(
         d3d12CommandBuffer->graphicsCommandList,
         0,
-        wstr,
-        convSize);
+        wchar_text,
+        SDL_wcslen(wchar_text));
+
+    SDL_free(wchar_text);
 }
 
 static void D3D12_PopDebugGroup(
