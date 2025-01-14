@@ -25,7 +25,6 @@
 #include "../SDL_sysrender.h"
 #include "../../video/SDL_pixels_c.h"
 
-#include <Availability.h>
 #import <CoreVideo/CoreVideo.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -170,18 +169,6 @@ typedef struct METAL_ShaderPipelines
 
 @implementation SDL3METAL_TextureData
 @end
-
-static bool IsMetalAvailable()
-{
-#if (defined(SDL_PLATFORM_MACOS) && (MAC_OS_X_VERSION_MIN_REQUIRED < 101100))
-    // this checks a weak symbol.
-    if (MTLCreateSystemDefaultDevice == NULL) { // probably on 10.10 or lower.
-        SDL_SetError("Metal framework not available on this system");
-        return false;
-    }
-#endif
-    return true;
-}
 
 static const MTLBlendOperation invalidBlendOperation = (MTLBlendOperation)0xFFFFFFFF;
 static const MTLBlendFactor invalidBlendFactor = (MTLBlendFactor)0xFFFFFFFF;
@@ -690,19 +677,14 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
                                                                        height:(NSUInteger)texture->h
                                                                     mipmapped:NO];
 
-        // Not available in iOS 8.
-        if ([mtltexdesc respondsToSelector:@selector(usage)]) {
-            if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-                mtltexdesc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
-            } else {
-                mtltexdesc.usage = MTLTextureUsageShaderRead;
-            }
+        if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+            mtltexdesc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
+        } else {
+            mtltexdesc.usage = MTLTextureUsageShaderRead;
         }
 
         if (surface) {
-            if (@available(iOS 11.0, tvOS 11.0, *)) {
-                mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
-            }
+            mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
         } else {
             mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
         }
@@ -733,9 +715,7 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         if (yuv || nv12) {
             if (surface) {
-                if (@available(iOS 11.0, tvOS 11.0, *)) {
-                    mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
-                }
+                mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
             } else {
                 mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
             }
@@ -787,11 +767,7 @@ static void METAL_UploadTextureData(id<MTLTexture> texture, SDL_Rect rect, int s
 
 static MTLStorageMode METAL_GetStorageMode(id<MTLResource> resource)
 {
-    // iOS 8 does not have this method.
-    if ([resource respondsToSelector:@selector(storageMode)]) {
-        return resource.storageMode;
-    }
-    return MTLStorageModeShared;
+    return resource.storageMode;
 }
 
 static bool METAL_UpdateTextureInternal(SDL_Renderer *renderer, SDL3METAL_TextureData *texturedata,
@@ -1845,28 +1821,27 @@ static void *METAL_GetMetalCommandEncoder(SDL_Renderer *renderer)
 
 static bool METAL_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
-#if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
-    if (@available(macOS 10.13, *)) {
-        SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
-        switch (vsync) {
-        case 0:
-            data.mtllayer.displaySyncEnabled = NO;
-            break;
-        case 1:
-            data.mtllayer.displaySyncEnabled = YES;
-            break;
-        default:
-            return SDL_Unsupported();
-        }
-        return true;
+#if defined(SDL_PLATFORM_MACOS) || TARGET_OS_MACCATALYST
+    SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
+    switch (vsync) {
+    case 0:
+        data.mtllayer.displaySyncEnabled = NO;
+        break;
+    case 1:
+        data.mtllayer.displaySyncEnabled = YES;
+        break;
+    default:
+        return SDL_Unsupported();
     }
-#endif
+    return true;
+#else
     switch (vsync) {
     case 1:
         return true;
     default:
         return SDL_Unsupported();
     }
+#endif
 }
 
 static SDL_MetalView GetWindowView(SDL_Window *window)
@@ -1960,10 +1935,6 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         };
 
         const size_t YCbCr_shader_matrix_size = 4 * 4 * sizeof(float);
-
-        if (!IsMetalAvailable()) {
-            return false;
-        }
 
         SDL_SetupRendererColorspace(renderer, create_props);
 
@@ -2187,10 +2158,8 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
-#if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
-        if (@available(macOS 10.13, *)) {
-            data.mtllayer.displaySyncEnabled = NO;
-        }
+#if defined(SDL_PLATFORM_MACOS) || TARGET_OS_MACCATALYST
+        data.mtllayer.displaySyncEnabled = NO;
 #endif
 
         // https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
@@ -2199,28 +2168,15 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         maxtexsize = 16384;
 #elif defined(SDL_PLATFORM_TVOS)
         maxtexsize = 8192;
-#ifdef __TVOS_11_0
-        if (@available(tvOS 11.0, *)) {
-            if ([mtldevice supportsFeatureSet:MTLFeatureSet_tvOS_GPUFamily2_v1]) {
-                maxtexsize = 16384;
-            }
+        if ([mtldevice supportsFeatureSet:MTLFeatureSet_tvOS_GPUFamily2_v1]) {
+            maxtexsize = 16384;
         }
-#endif
 #else
-#ifdef __IPHONE_11_0
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability-new"
         if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily4_v1]) {
             maxtexsize = 16384;
-        } else
-#pragma clang diagnostic pop
-#endif
-#ifdef __IPHONE_10_0
-            if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1]) {
+        } else if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1]) {
             maxtexsize = 16384;
-        } else
-#endif
-            if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v2] || [mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v2]) {
+        } else if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v2] || [mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v2]) {
             maxtexsize = 8192;
         } else {
             maxtexsize = 4096;

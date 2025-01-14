@@ -386,11 +386,7 @@ static MTLTextureType SDLToMetal_TextureType(SDL_GPUTextureType textureType, boo
     case SDL_GPU_TEXTURETYPE_CUBE:
         return MTLTextureTypeCube;
     case SDL_GPU_TEXTURETYPE_CUBE_ARRAY:
-        if (@available(iOS 11.0, tvOS 11.0, *)) {
-            return MTLTextureTypeCubeArray;
-        } else {
-            return MTLTextureType2D; // FIXME: I guess...?
-        }
+        return MTLTextureTypeCubeArray;
     default:
         return MTLTextureType2D;
     }
@@ -1289,10 +1285,8 @@ static void METAL_InsertDebugLabel(
             [metalCommandBuffer->computeEncoder insertDebugSignpost:label];
         } else {
             // Metal doesn't have insertDebugSignpost for command buffers...
-            if (@available(macOS 10.13, iOS 11.0, tvOS 11.0, *)) {
-                [metalCommandBuffer->handle pushDebugGroup:label];
-                [metalCommandBuffer->handle popDebugGroup];
-            }
+            [metalCommandBuffer->handle pushDebugGroup:label];
+            [metalCommandBuffer->handle popDebugGroup];
         }
     }
 }
@@ -1312,9 +1306,7 @@ static void METAL_PushDebugGroup(
         } else if (metalCommandBuffer->computeEncoder) {
             [metalCommandBuffer->computeEncoder pushDebugGroup:label];
         } else {
-            if (@available(macOS 10.13, iOS 11.0, tvOS 11.0, *)) {
-                [metalCommandBuffer->handle pushDebugGroup:label];
-            }
+            [metalCommandBuffer->handle pushDebugGroup:label];
         }
     }
 }
@@ -1332,9 +1324,7 @@ static void METAL_PopDebugGroup(
         } else if (metalCommandBuffer->computeEncoder) {
             [metalCommandBuffer->computeEncoder popDebugGroup];
         } else {
-            if (@available(macOS 10.13, iOS 11.0, tvOS 11.0, *)) {
-                [metalCommandBuffer->handle popDebugGroup];
-            }
+            [metalCommandBuffer->handle popDebugGroup];
         }
     }
 }
@@ -2418,9 +2408,7 @@ static void METAL_BindGraphicsPipeline(
         [metalCommandBuffer->renderEncoder setTriangleFillMode:SDLToMetal_PolygonMode[metalGraphicsPipeline->rasterizerState.fill_mode]];
         [metalCommandBuffer->renderEncoder setCullMode:SDLToMetal_CullMode[metalGraphicsPipeline->rasterizerState.cull_mode]];
         [metalCommandBuffer->renderEncoder setFrontFacingWinding:SDLToMetal_FrontFace[metalGraphicsPipeline->rasterizerState.front_face]];
-        if (@available(iOS 11.0, tvOS 11.0, *)) {
-            [metalCommandBuffer->renderEncoder setDepthClipMode:SDLToMetal_DepthClipMode(metalGraphicsPipeline->rasterizerState.enable_depth_clip)];
-        }
+        [metalCommandBuffer->renderEncoder setDepthClipMode:SDLToMetal_DepthClipMode(metalGraphicsPipeline->rasterizerState.enable_depth_clip)];
         [metalCommandBuffer->renderEncoder
             setDepthBias:((rast->enable_depth_bias) ? rast->depth_bias_constant_factor : 0)
               slopeScale:((rast->enable_depth_bias) ? rast->depth_bias_slope_factor : 0)

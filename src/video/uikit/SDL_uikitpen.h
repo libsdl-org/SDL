@@ -30,7 +30,7 @@ extern void UIKit_HandlePenMotion(SDL_uikitview *view, UITouch *pencil);
 extern void UIKit_HandlePenPress(SDL_uikitview *view, UITouch *pencil);
 extern void UIKit_HandlePenRelease(SDL_uikitview *view, UITouch *pencil);
 
-#if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_0)
+#if !defined(SDL_PLATFORM_TVOS)
 extern void UIKit_HandlePenHover(SDL_uikitview *view, UIHoverGestureRecognizer *recognizer) API_AVAILABLE(ios(13.0));
 #endif
 

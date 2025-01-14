@@ -131,12 +131,7 @@ static void UIKit_FreeDisplayModeData(SDL_DisplayMode *mode)
 #ifndef SDL_PLATFORM_VISIONOS
 static float UIKit_GetDisplayModeRefreshRate(UIScreen *uiscreen)
 {
-#ifdef __IPHONE_10_3
-    if ([uiscreen respondsToSelector:@selector(maximumFramesPerSecond)]) {
-        return (float)uiscreen.maximumFramesPerSecond;
-    }
-#endif
-    return 0.0f;
+    return (float)uiscreen.maximumFramesPerSecond;
 }
 
 static bool UIKit_AddSingleDisplayMode(SDL_VideoDisplay *display, int w, int h,

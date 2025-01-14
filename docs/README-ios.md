@@ -1,10 +1,10 @@
 iOS
 ======
 
-Building the Simple DirectMedia Layer for iOS 9.0+
+Building the Simple DirectMedia Layer for iOS 11.0+
 ==============================================================================
 
-Requirements: macOS 10.9 or later and the iOS 9.0 or newer SDK.
+Please note that building SDL requires at least Xcode 12.2 and the iOS 14.2 SDK.
 
 Instructions:
 
@@ -185,9 +185,6 @@ Windows:
 Textures:
 	The optimal texture formats on iOS are SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_XBGR8888, and SDL_PIXELFORMAT_RGB24 pixel formats.
 
-Loading Shared Objects:
-	This is disabled by default since it seems to break the terms of the iOS SDK agreement for iOS versions prior to iOS 8. It can be re-enabled in SDL_config_ios.h.
-
 
 Notes -- CoreBluetooth.framework
 ==============================================================================
@@ -249,7 +246,7 @@ Note that if you are using main callbacks instead of a standard C main() functio
 Deploying to older versions of iOS
 ==============================================================================
 
-SDL supports deploying to older versions of iOS than are supported by the latest version of Xcode, all the way back to iOS 8.0
+SDL supports deploying to older versions of iOS than are supported by the latest version of Xcode, all the way back to iOS 11.0
 
 In order to do that you need to download an older version of Xcode:
 https://developer.apple.com/download/more/?name=Xcode

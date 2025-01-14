@@ -146,8 +146,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     if (w) {
         // [dialog beginWithCompletionHandler:^(NSInteger result) {
         [dialog beginSheetModalForWindow:w completionHandler:^(NSInteger result) {
-            // NSModalResponseOK for >= 10.13
-            if (result == NSFileHandlingPanelOKButton) {
+            if (result == NSModalResponseOK) {
                 if (dialog_as_open) {
                     NSArray* urls = [dialog_as_open URLs];
                     const char *files[[urls count] + 1];
@@ -166,8 +165,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
             }
         }];
     } else {
-        // NSModalResponseOK for >= 10.10
-        if ([dialog runModal] == NSOKButton) {
+        if ([dialog runModal] == NSModalResponseOK) {
             if (dialog_as_open) {
                 NSArray* urls = [dialog_as_open URLs];
                 const char *files[[urls count] + 1];

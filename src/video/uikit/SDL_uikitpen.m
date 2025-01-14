@@ -107,7 +107,7 @@ static void UIKit_HandlePenAxes(SDL_Window *window, NSTimeInterval nstimestamp, 
     }
 }
 
-#if !defined(SDL_PLATFORM_TVOS) && defined(__IPHONE_13_0)
+#if !defined(SDL_PLATFORM_TVOS)
 extern void UIKit_HandlePenHover(SDL_uikitview *view, UIHoverGestureRecognizer *recognizer)
 {
     float zOffset = 0.0f;

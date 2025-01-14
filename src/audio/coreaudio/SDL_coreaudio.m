@@ -467,31 +467,16 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
             options |= AVAudioSessionCategoryOptionDuckOthers;
         }
 
-        if ([session respondsToSelector:@selector(setCategory:mode:options:error:)]) {
-            if (![session.category isEqualToString:category] || session.categoryOptions != options) {
-                // Stop the current session so we don't interrupt other application audio
-                PauseAudioDevices();
-                [session setActive:NO error:nil];
-                session_active = false;
+        if (![session.category isEqualToString:category] || session.categoryOptions != options) {
+            // Stop the current session so we don't interrupt other application audio
+            PauseAudioDevices();
+            [session setActive:NO error:nil];
+            session_active = false;
 
-                if (![session setCategory:category mode:mode options:options error:&err]) {
-                    NSString *desc = err.description;
-                    SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
-                    return false;
-                }
-            }
-        } else {
-            if (![session.category isEqualToString:category]) {
-                // Stop the current session so we don't interrupt other application audio
-                PauseAudioDevices();
-                [session setActive:NO error:nil];
-                session_active = false;
-
-                if (![session setCategory:category error:&err]) {
-                    NSString *desc = err.description;
-                    SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
-                    return false;
-                }
+            if (![session setCategory:category mode:mode options:options error:&err]) {
+                NSString *desc = err.description;
+                SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
+                return false;
             }
         }
 
