@@ -4069,7 +4069,8 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
     VkDeviceSize size,
     SDL_GPUBufferUsageFlags usageFlags,
     VulkanBufferType type,
-    bool dedicated)
+    bool dedicated,
+    const char *debugName)
 {
     VulkanBuffer *buffer;
     VkResult vulkanResult;
@@ -4155,6 +4156,19 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
 
     SDL_SetAtomicInt(&buffer->referenceCount, 0);
 
+    if (renderer->debugMode && renderer->supportsDebugUtils && debugName != NULL) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo;
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.pNext = NULL;
+        nameInfo.pObjectName = debugName;
+        nameInfo.objectType = VK_OBJECT_TYPE_BUFFER;
+        nameInfo.objectHandle = (uint64_t)buffer->buffer;
+
+        renderer->vkSetDebugUtilsObjectNameEXT(
+            renderer->logicalDevice,
+            &nameInfo);
+    }
+
     return buffer;
 }
 
@@ -4163,7 +4177,8 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
     VkDeviceSize size,
     SDL_GPUBufferUsageFlags usageFlags,
     VulkanBufferType type,
-    bool dedicated)
+    bool dedicated,
+    const char *debugName)
 {
     VulkanBufferContainer *bufferContainer;
     VulkanBuffer *buffer;
@@ -4173,7 +4188,8 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
         size,
         usageFlags,
         type,
-        dedicated);
+        dedicated,
+        debugName);
 
     if (buffer == NULL) {
         return NULL;
@@ -4192,6 +4208,10 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
     bufferContainer->buffers[0] = bufferContainer->activeBuffer;
     bufferContainer->dedicated = dedicated;
     bufferContainer->debugName = NULL;
+
+    if (debugName != NULL) {
+        bufferContainer->debugName = SDL_strdup(debugName);
+    }
 
     return bufferContainer;
 }
@@ -5763,6 +5783,20 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
         }
     }
 
+    // Set debug name if applicable
+    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING)) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo;
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.pNext = NULL;
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL);
+        nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
+        nameInfo.objectHandle = (uint64_t)texture->image;
+
+        renderer->vkSetDebugUtilsObjectNameEXT(
+            renderer->logicalDevice,
+            &nameInfo);
+    }
+
     // Let's transition to the default barrier state, because for some reason Vulkan doesn't let us do that with initialLayout.
     VulkanCommandBuffer *barrierCommandBuffer = (VulkanCommandBuffer *)VULKAN_AcquireCommandBuffer((SDL_GPURenderer *)renderer);
     VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
@@ -5797,7 +5831,8 @@ static void VULKAN_INTERNAL_CycleActiveBuffer(
         container->activeBuffer->size,
         container->activeBuffer->usage,
         container->activeBuffer->type,
-        container->dedicated);
+        container->dedicated,
+        container->debugName);
 
     if (!buffer) {
         return;
@@ -5816,13 +5851,6 @@ static void VULKAN_INTERNAL_CycleActiveBuffer(
     container->bufferCount += 1;
 
     container->activeBuffer = buffer;
-
-    if (renderer->debugMode && renderer->supportsDebugUtils && container->debugName != NULL) {
-        VULKAN_INTERNAL_SetBufferName(
-            renderer,
-            container->activeBuffer,
-            container->debugName);
-    }
 }
 
 static void VULKAN_INTERNAL_CycleActiveTexture(
@@ -5863,13 +5891,6 @@ static void VULKAN_INTERNAL_CycleActiveTexture(
     container->textureCount += 1;
 
     container->activeTexture = texture;
-
-    if (renderer->debugMode && renderer->supportsDebugUtils && container->debugName != NULL) {
-        VULKAN_INTERNAL_SetTextureName(
-            renderer,
-            container->activeTexture,
-            container->debugName);
-    }
 }
 
 static VulkanBuffer *VULKAN_INTERNAL_PrepareBufferForWrite(
@@ -6485,6 +6506,19 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     SDL_SetAtomicInt(&graphicsPipeline->referenceCount, 0);
 
+    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING)) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo;
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.pNext = NULL;
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING, NULL);
+        nameInfo.objectType = VK_OBJECT_TYPE_PIPELINE;
+        nameInfo.objectHandle = (uint64_t)graphicsPipeline->pipeline;
+
+        renderer->vkSetDebugUtilsObjectNameEXT(
+            renderer->logicalDevice,
+            &nameInfo);
+    }
+
     return (SDL_GPUGraphicsPipeline *)graphicsPipeline;
 }
 
@@ -6566,6 +6600,19 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
 
     SDL_SetAtomicInt(&vulkanComputePipeline->referenceCount, 0);
 
+    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING)) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo;
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.pNext = NULL;
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING, NULL);
+        nameInfo.objectType = VK_OBJECT_TYPE_PIPELINE;
+        nameInfo.objectHandle = (uint64_t)vulkanComputePipeline->pipeline;
+
+        renderer->vkSetDebugUtilsObjectNameEXT(
+            renderer->logicalDevice,
+            &nameInfo);
+    }
+
     return (SDL_GPUComputePipeline *)vulkanComputePipeline;
 }
 
@@ -6610,6 +6657,19 @@ static SDL_GPUSampler *VULKAN_CreateSampler(
 
     SDL_SetAtomicInt(&vulkanSampler->referenceCount, 0);
 
+    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING)) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo;
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.pNext = NULL;
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING, NULL);
+        nameInfo.objectType = VK_OBJECT_TYPE_SAMPLER;
+        nameInfo.objectHandle = (uint64_t)vulkanSampler->sampler;
+
+        renderer->vkSetDebugUtilsObjectNameEXT(
+            renderer->logicalDevice,
+            &nameInfo);
+    }
+
     return (SDL_GPUSampler *)vulkanSampler;
 }
 
@@ -6653,6 +6713,19 @@ static SDL_GPUShader *VULKAN_CreateShader(
 
     SDL_SetAtomicInt(&vulkanShader->referenceCount, 0);
 
+    if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_SHADER_CREATE_NAME_STRING)) {
+        VkDebugUtilsObjectNameInfoEXT nameInfo;
+        nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+        nameInfo.pNext = NULL;
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_SHADER_CREATE_NAME_STRING, NULL);
+        nameInfo.objectType = VK_OBJECT_TYPE_SHADER_MODULE;
+        nameInfo.objectHandle = (uint64_t)vulkanShader->shaderModule;
+
+        renderer->vkSetDebugUtilsObjectNameEXT(
+            renderer->logicalDevice,
+            &nameInfo);
+    }
+
     return (SDL_GPUShader *)vulkanShader;
 }
 
@@ -6684,7 +6757,12 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
     }
 
     container = SDL_malloc(sizeof(VulkanTextureContainer));
+
+    // Copy properties so we don't lose information when the client destroys them
     container->header.info = *createinfo;
+    container->header.info.props = SDL_CreateProperties();
+    SDL_CopyProperties(createinfo->props, container->header.info.props);
+
     container->canBeCycled = true;
     container->activeTexture = texture;
     container->textureCapacity = 1;
@@ -6693,6 +6771,10 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
         container->textureCapacity * sizeof(VulkanTexture *));
     container->textures[0] = container->activeTexture;
     container->debugName = NULL;
+
+    if (SDL_HasProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING)) {
+        container->debugName = SDL_strdup(SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL));
+    }
 
     texture->container = container;
     texture->containerIndex = 0;
@@ -6703,14 +6785,16 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
 static SDL_GPUBuffer *VULKAN_CreateBuffer(
     SDL_GPURenderer *driverData,
     SDL_GPUBufferUsageFlags usageFlags,
-    Uint32 size)
+    Uint32 size,
+    const char *debugName)
 {
     return (SDL_GPUBuffer *)VULKAN_INTERNAL_CreateBufferContainer(
         (VulkanRenderer *)driverData,
         (VkDeviceSize)size,
         usageFlags,
         VULKAN_BUFFER_TYPE_GPU,
-        false);
+        false,
+        debugName);
 }
 
 static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
@@ -6724,7 +6808,8 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
         (VkDeviceSize)size,
         0,
         VULKAN_BUFFER_TYPE_UNIFORM,
-        false);
+        false,
+        NULL);
 
     uniformBuffer->drawOffset = 0;
     uniformBuffer->writeOffset = 0;
@@ -6736,7 +6821,8 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
 static SDL_GPUTransferBuffer *VULKAN_CreateTransferBuffer(
     SDL_GPURenderer *driverData,
     SDL_GPUTransferBufferUsage usage,
-    Uint32 size)
+    Uint32 size,
+    const char *debugName)
 {
     // We use dedicated allocations for download buffers to avoid an issue
     // where a defrag is triggered after submitting a download but before
@@ -6746,7 +6832,8 @@ static SDL_GPUTransferBuffer *VULKAN_CreateTransferBuffer(
         (VkDeviceSize)size,
         0,
         VULKAN_BUFFER_TYPE_TRANSFER,
-        usage == SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD);
+        usage == SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD,
+        debugName);
 }
 
 static void VULKAN_INTERNAL_ReleaseTexture(
@@ -9908,9 +9995,9 @@ static bool VULKAN_WaitAndAcquireSwapchainTexture(
     Uint32 *swapchain_texture_height
 ) {
     return VULKAN_INTERNAL_AcquireSwapchainTexture(
-        true, 
-        command_buffer, 
-        window, 
+        true,
+        command_buffer,
+        window,
         swapchain_texture,
         swapchain_texture_width,
         swapchain_texture_height);
@@ -10565,22 +10652,12 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 currentRegion->vulkanBuffer->size,
                 currentRegion->vulkanBuffer->usage,
                 currentRegion->vulkanBuffer->type,
-                false);
+                false,
+                currentRegion->vulkanBuffer->container != NULL ? currentRegion->vulkanBuffer->container->debugName : NULL);
 
             if (newBuffer == NULL) {
                 SDL_UnlockMutex(renderer->allocatorLock);
                 return false;
-            }
-
-            if (
-                renderer->debugMode &&
-                renderer->supportsDebugUtils &&
-                currentRegion->vulkanBuffer->container != NULL &&
-                currentRegion->vulkanBuffer->container->debugName != NULL) {
-                VULKAN_INTERNAL_SetBufferName(
-                    renderer,
-                    newBuffer,
-                    currentRegion->vulkanBuffer->container->debugName);
             }
 
             // Copy buffer contents if necessary
@@ -10647,18 +10724,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 // copy subresource if necessary
                 srcSubresource = &currentRegion->vulkanTexture->subresources[subresourceIndex];
                 dstSubresource = &newTexture->subresources[subresourceIndex];
-
-                // Set debug name if it exists
-                if (
-                    renderer->debugMode &&
-                    renderer->supportsDebugUtils &&
-                    srcSubresource->parent->container != NULL &&
-                    srcSubresource->parent->container->debugName != NULL) {
-                    VULKAN_INTERNAL_SetTextureName(
-                        renderer,
-                        currentRegion->vulkanTexture,
-                        srcSubresource->parent->container->debugName);
-                }
 
                 VULKAN_INTERNAL_TextureSubresourceTransitionFromDefaultUsage(
                     renderer,

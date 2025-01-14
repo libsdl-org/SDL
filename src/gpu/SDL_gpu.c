@@ -1055,10 +1055,13 @@ SDL_GPUBuffer *SDL_CreateGPUBuffer(
         return NULL;
     }
 
+    const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING, NULL);
+
     return device->CreateBuffer(
         device->driverData,
         createinfo->usage,
-        createinfo->size);
+        createinfo->size,
+        debugName);
 }
 
 SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
@@ -1071,10 +1074,13 @@ SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
         return NULL;
     }
 
+    const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_TRANSFERBUFFER_CREATE_NAME_STRING, NULL);
+
     return device->CreateTransferBuffer(
         device->driverData,
         createinfo->usage,
-        createinfo->size);
+        createinfo->size,
+        debugName);
 }
 
 // Debug Naming
