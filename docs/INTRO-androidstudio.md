@@ -10,4 +10,8 @@ We'll start by creating a simple project to build and run [hello.c](hello.c)
 - Run Android Studio and open the newly created build/org.libsdl.hello directory
 - Build and run!
 
+A more complete example is available at:
+
+https://github.com/Ravbug/sdl3-sample
+
 Additional information and troubleshooting is available in [README-android.md](README-android.md)
