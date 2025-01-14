@@ -328,7 +328,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
     SDL_free(SDL_mice[mouse_index].name);
 
     if (mouse_index != SDL_mouse_count - 1) {
-        SDL_memcpy(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
+        SDL_memmove(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
     }
     --SDL_mouse_count;
 
@@ -339,7 +339,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
         if (source->mouseID == mouseID) {
             SDL_free(source->clickstate);
             if (i != mouse->num_sources - 1) {
-                SDL_memcpy(&mouse->sources[i], &mouse->sources[i + 1], (mouse->num_sources - i - 1) * sizeof(mouse->sources[i]));
+                SDL_memmove(&mouse->sources[i], &mouse->sources[i + 1], (mouse->num_sources - i - 1) * sizeof(mouse->sources[i]));
             }
             --mouse->num_sources;
             break;

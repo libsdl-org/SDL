@@ -160,7 +160,7 @@ void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event)
     SDL_free(SDL_keyboards[keyboard_index].name);
 
     if (keyboard_index != SDL_keyboard_count - 1) {
-        SDL_memcpy(&SDL_keyboards[keyboard_index], &SDL_keyboards[keyboard_index + 1], (SDL_keyboard_count - keyboard_index - 1) * sizeof(SDL_keyboards[keyboard_index]));
+        SDL_memmove(&SDL_keyboards[keyboard_index], &SDL_keyboards[keyboard_index + 1], (SDL_keyboard_count - keyboard_index - 1) * sizeof(SDL_keyboards[keyboard_index]));
     }
     --SDL_keyboard_count;
 
