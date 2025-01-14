@@ -2417,9 +2417,6 @@ extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
  * There are optional properties that can be provided through
  * SDL_GPUTextureCreateInfo's `props`. These are the supported properties:
  *
- * - `SDL_PROP_PROCESS_CREATE_ARGS_POINTER`: an array of strings containing
- *   the program to run, any arguments, and a NULL pointer, e.g. const char
- *   *args[] = { "myprogram", "argument", NULL }. This is a required property.
  * - `SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT`: (Direct3D 12 only) if
  *   the texture usage is SDL_GPU_TEXTUREUSAGE_COLOR_TARGET, clear the texture
  *   to a color with this red intensity. Defaults to zero.
