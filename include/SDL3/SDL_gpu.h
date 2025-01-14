@@ -2247,7 +2247,7 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  *
  * There are optional properties that can be provided through `props`. These are the supported properties:
  *
- * - `SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING`: a name that can be displayed in debugging tools.
+ * - `SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING`: a name that can be displayed in debugging tools.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the compute pipeline to
@@ -2264,14 +2264,14 @@ extern SDL_DECLSPEC SDL_GPUComputePipeline *SDLCALL SDL_CreateGPUComputePipeline
     SDL_GPUDevice *device,
     const SDL_GPUComputePipelineCreateInfo *createinfo);
 
-#define SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING "SDL.gpu.createcomputepipeline.name"
+#define SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING "SDL.gpu.computepipeline.create.name"
 
 /**
  * Creates a pipeline object to be used in a graphics workflow.
  *
  * There are optional properties that can be provided through `props`. These are the supported properties:
  *
- * - `SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING`: a name that can be displayed in debugging tools.
+ * - `SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING`: a name that can be displayed in debugging tools.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the graphics pipeline to
@@ -2289,7 +2289,7 @@ extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeli
     SDL_GPUDevice *device,
     const SDL_GPUGraphicsPipelineCreateInfo *createinfo);
 
-#define SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING "SDL.gpu.creategraphicspipeline.name"
+#define SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING "SDL.gpu.graphicspipeline.create.name"
 
 /**
  * Creates a sampler object to be used when binding textures in a graphics
@@ -2297,7 +2297,7 @@ extern SDL_DECLSPEC SDL_GPUGraphicsPipeline *SDLCALL SDL_CreateGPUGraphicsPipeli
  *
  * There are optional properties that can be provided through `props`. These are the supported properties:
  *
- * - `SDL_PROP_GPU_CREATESAMPLER_NAME_STRING`: a name that can be displayed in debugging tools.
+ * - `SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING`: a name that can be displayed in debugging tools.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the sampler to create.
@@ -2314,7 +2314,7 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
     SDL_GPUDevice *device,
     const SDL_GPUSamplerCreateInfo *createinfo);
 
-#define SDL_PROP_GPU_CREATESAMPLER_NAME_STRING "SDL.gpu.createsampler.name"
+#define SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING "SDL.gpu.sampler.create.name"
 
 /**
  * Creates a shader to be used when creating a graphics pipeline.
@@ -2375,7 +2375,7 @@ extern SDL_DECLSPEC SDL_GPUSampler *SDLCALL SDL_CreateGPUSampler(
  *
  * There are optional properties that can be provided through `props`. These are the supported properties:
  *
- * - `SDL_PROP_GPU_CREATESHADER_NAME_STRING`: a name that can be displayed in debugging tools.
+ * - `SDL_PROP_GPU_SHADER_CREATE_NAME_STRING`: a name that can be displayed in debugging tools.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the shader to create.
@@ -2391,7 +2391,7 @@ extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
     SDL_GPUDevice *device,
     const SDL_GPUShaderCreateInfo *createinfo);
 
-#define SDL_PROP_GPU_CREATESHADER_NAME_STRING "SDL.gpu.createshader.name"
+#define SDL_PROP_GPU_SHADER_CREATE_NAME_STRING "SDL.gpu.shader.create.name"
 
 /**
  * Creates a texture object to be used in graphics or compute workflows.
@@ -2430,7 +2430,7 @@ extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
  * - `SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8`: (Direct3D 12
  *   only) if the texture usage is SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
  *   clear the texture to a stencil of this value. Defaults to zero.
- * - `SDL_PROP_GPU_CREATETEXTURE_NAME_STRING`: a name that can be displayed in debugging tools.
+ * - `SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING`: a name that can be displayed in debugging tools.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the texture to create.
@@ -2460,7 +2460,7 @@ extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_A_FLOAT       "SDL.gpu.createtexture.d3d12.clear.a"
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_DEPTH_FLOAT   "SDL.gpu.createtexture.d3d12.clear.depth"
 #define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8 "SDL.gpu.createtexture.d3d12.clear.stencil"
-#define SDL_PROP_GPU_CREATETEXTURE_NAME_STRING               "SDL.gpu.createtexture.name"
+#define SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING              "SDL.gpu.texture.create.name"
 
 /**
  * Creates a buffer object to be used in graphics or compute workflows.
@@ -2478,7 +2478,7 @@ extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
  *
  * There are optional properties that can be provided through `props`. These are the supported properties:
  *
- * - `SDL_PROP_GPU_CREATEBUFFER_NAME_STRING`: a name that can be displayed in debugging tools.
+ * - `SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING`: a name that can be displayed in debugging tools.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the buffer to create.
@@ -2504,7 +2504,7 @@ extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
     SDL_GPUDevice *device,
     const SDL_GPUBufferCreateInfo *createinfo);
 
-#define SDL_PROP_GPU_CREATEBUFFER_NAME_STRING "SDL.gpu.createbuffer.name"
+#define SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING "SDL.gpu.buffer.create.name"
 
 /**
  * Creates a transfer buffer to be used when uploading to or downloading from
@@ -2515,7 +2515,7 @@ extern SDL_DECLSPEC SDL_GPUBuffer *SDLCALL SDL_CreateGPUBuffer(
  *
  * There are optional properties that can be provided through `props`. These are the supported properties:
  *
- * - `SDL_PROP_GPU_CREATETRANSFERBUFFER_NAME_STRING`: a name that can be displayed in debugging tools.
+ * - `SDL_PROP_GPU_TRANSFERBUFFER_CREATE_NAME_STRING`: a name that can be displayed in debugging tools.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the transfer buffer to
@@ -2535,14 +2535,14 @@ extern SDL_DECLSPEC SDL_GPUTransferBuffer *SDLCALL SDL_CreateGPUTransferBuffer(
     SDL_GPUDevice *device,
     const SDL_GPUTransferBufferCreateInfo *createinfo);
 
-#define SDL_PROP_GPU_CREATETRANSFERBUFFER_NAME_STRING "SDL.gpu.createtransferbuffer.name"
+#define SDL_PROP_GPU_TRANSFERBUFFER_CREATE_NAME_STRING "SDL.gpu.transferbuffer.create.name"
 
 /* Debug Naming */
 
 /**
  * Sets an arbitrary string constant to label a buffer.
  *
- * It is recommended to use SDL_PROP_GPU_CREATEBUFFER_NAME_STRING with SDL_CreateGPUBuffer instead of this function to avoid thread safety issues.
+ * It is recommended to use SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING with SDL_CreateGPUBuffer instead of this function to avoid thread safety issues.
  *
  * \param device a GPU Context.
  * \param buffer a buffer to attach the name to.
@@ -2562,7 +2562,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUBufferName(
 /**
  * Sets an arbitrary string constant to label a texture.
  *
- * It is recommended to use SDL_PROP_GPU_CREATETEXTURE_NAME_STRING with SDL_CreateGPUTexture instead of this function to avoid thread safety issues.
+ * It is recommended to use SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING with SDL_CreateGPUTexture instead of this function to avoid thread safety issues.
  *
  * \param device a GPU Context.
  * \param texture a texture to attach the name to.

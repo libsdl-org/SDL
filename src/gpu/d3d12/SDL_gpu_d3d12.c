@@ -2785,11 +2785,11 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     computePipeline->numUniformBuffers = createinfo->num_uniform_buffers;
     SDL_SetAtomicInt(&computePipeline->referenceCount, 0);
 
-    if (renderer->debug_mode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING)) {
+    if (renderer->debug_mode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING)) {
         D3D12_INTERNAL_SetPipelineStateName(
             renderer,
             computePipeline->pipelineState,
-            SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING, NULL));
+            SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING, NULL));
     }
 
     return (SDL_GPUComputePipeline *)computePipeline;
@@ -3077,11 +3077,11 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
 
     SDL_SetAtomicInt(&pipeline->referenceCount, 0);
 
-    if (renderer->debug_mode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING)) {
+    if (renderer->debug_mode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING)) {
         D3D12_INTERNAL_SetPipelineStateName(
             renderer,
             pipeline->pipelineState,
-            SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING, NULL));
+            SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING, NULL));
     }
 
     return (SDL_GPUGraphicsPipeline *)pipeline;

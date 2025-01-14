@@ -539,7 +539,7 @@ init_render_state(int msaa)
     buffer_desc.usage = SDL_GPU_BUFFERUSAGE_VERTEX;
     buffer_desc.size = sizeof(vertex_data);
     buffer_desc.props = SDL_CreateProperties();
-    SDL_SetStringProperty(buffer_desc.props, SDL_PROP_GPU_CREATEBUFFER_NAME_STRING, "космонавт");
+    SDL_SetStringProperty(buffer_desc.props, SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING, "космонавт");
     render_state.buf_vertex = SDL_CreateGPUBuffer(
         gpu_device,
         &buffer_desc
@@ -550,7 +550,7 @@ init_render_state(int msaa)
     transfer_buffer_desc.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
     transfer_buffer_desc.size = sizeof(vertex_data);
     transfer_buffer_desc.props = SDL_CreateProperties();
-    SDL_SetStringProperty(transfer_buffer_desc.props, SDL_PROP_GPU_CREATETRANSFERBUFFER_NAME_STRING, "Transfer Buffer");
+    SDL_SetStringProperty(transfer_buffer_desc.props, SDL_PROP_GPU_TRANSFERBUFFER_CREATE_NAME_STRING, "Transfer Buffer");
     buf_transfer = SDL_CreateGPUTransferBuffer(
         gpu_device,
         &transfer_buffer_desc

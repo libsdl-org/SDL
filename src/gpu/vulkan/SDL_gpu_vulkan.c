@@ -6506,11 +6506,11 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     SDL_SetAtomicInt(&graphicsPipeline->referenceCount, 0);
 
-    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING)) {
+    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING)) {
         VkDebugUtilsObjectNameInfoEXT nameInfo;
         nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         nameInfo.pNext = NULL;
-        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATEGRAPHICSPIPELINE_NAME_STRING, NULL);
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING, NULL);
         nameInfo.objectType = VK_OBJECT_TYPE_PIPELINE;
         nameInfo.objectHandle = (uint64_t)graphicsPipeline->pipeline;
 
@@ -6600,11 +6600,11 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
 
     SDL_SetAtomicInt(&vulkanComputePipeline->referenceCount, 0);
 
-    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING)) {
+    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING)) {
         VkDebugUtilsObjectNameInfoEXT nameInfo;
         nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         nameInfo.pNext = NULL;
-        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATECOMPUTEPIPELINE_NAME_STRING, NULL);
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING, NULL);
         nameInfo.objectType = VK_OBJECT_TYPE_PIPELINE;
         nameInfo.objectHandle = (uint64_t)vulkanComputePipeline->pipeline;
 
@@ -6657,11 +6657,11 @@ static SDL_GPUSampler *VULKAN_CreateSampler(
 
     SDL_SetAtomicInt(&vulkanSampler->referenceCount, 0);
 
-    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATESAMPLER_NAME_STRING)) {
+    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING)) {
         VkDebugUtilsObjectNameInfoEXT nameInfo;
         nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         nameInfo.pNext = NULL;
-        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATESAMPLER_NAME_STRING, NULL);
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING, NULL);
         nameInfo.objectType = VK_OBJECT_TYPE_SAMPLER;
         nameInfo.objectHandle = (uint64_t)vulkanSampler->sampler;
 
@@ -6713,11 +6713,11 @@ static SDL_GPUShader *VULKAN_CreateShader(
 
     SDL_SetAtomicInt(&vulkanShader->referenceCount, 0);
 
-    if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATESHADER_NAME_STRING)) {
+    if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_SHADER_CREATE_NAME_STRING)) {
         VkDebugUtilsObjectNameInfoEXT nameInfo;
         nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         nameInfo.pNext = NULL;
-        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATESHADER_NAME_STRING, NULL);
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_SHADER_CREATE_NAME_STRING, NULL);
         nameInfo.objectType = VK_OBJECT_TYPE_SHADER_MODULE;
         nameInfo.objectHandle = (uint64_t)vulkanShader->shaderModule;
 
