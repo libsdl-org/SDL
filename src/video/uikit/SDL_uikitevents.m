@@ -31,13 +31,7 @@
 #include "SDL_uikitwindow.h"
 
 #import <Foundation/Foundation.h>
-
-#if (__IPHONE_OS_VERSION_MAX_ALLOWED >= 140000) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 140000) || (__MAC_OS_VERSION_MAX_ALLOWED > 1500000)
 #import <GameController/GameController.h>
-
-#define ENABLE_GCKEYBOARD
-#define ENABLE_GCMOUSE
-#endif
 
 static BOOL UIKit_EventPumpEnabled = YES;
 
@@ -175,8 +169,6 @@ void UIKit_PumpEvents(SDL_VideoDevice *_this)
 #endif
 }
 
-#ifdef ENABLE_GCKEYBOARD
-
 static id keyboard_connect_observer = nil;
 static id keyboard_disconnect_observer = nil;
 
@@ -256,20 +248,6 @@ void SDL_QuitGCKeyboard(void)
         }
     }
 }
-
-#else
-
-void SDL_InitGCKeyboard(void)
-{
-}
-
-void SDL_QuitGCKeyboard(void)
-{
-}
-
-#endif // ENABLE_GCKEYBOARD
-
-#ifdef ENABLE_GCMOUSE
 
 static id mouse_connect_observer = nil;
 static id mouse_disconnect_observer = nil;
@@ -470,22 +448,5 @@ void SDL_QuitGCMouse(void)
         }
     }
 }
-
-#else
-
-void SDL_InitGCMouse(void)
-{
-}
-
-bool SDL_GCMouseRelativeMode(void)
-{
-    return false;
-}
-
-void SDL_QuitGCMouse(void)
-{
-}
-
-#endif // ENABLE_GCMOUSE
 
 #endif // SDL_VIDEO_DRIVER_UIKIT

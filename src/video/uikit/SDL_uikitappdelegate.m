@@ -30,14 +30,6 @@
 
 #include "../../events/SDL_events_c.h"
 
-#ifndef SDL_PLATFORM_TVOS
-#include <AvailabilityVersions.h>
-
-#ifndef __IPHONE_13_0
-#define __IPHONE_13_0 130000
-#endif
-#endif
-
 #ifdef main
 #undef main
 #endif
@@ -159,13 +151,11 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     if ([statusBarStyle isEqualToString:@"UIStatusBarStyleLightContent"]) {
         return UIStatusBarStyleLightContent;
     }
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0
     if (@available(iOS 13.0, *)) {
         if ([statusBarStyle isEqualToString:@"UIStatusBarStyleDarkContent"]) {
             return UIStatusBarStyleDarkContent;
         }
     }
-#endif
     return UIStatusBarStyleDefault;
 }
 
@@ -517,24 +507,12 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     SDL_SendDropComplete(NULL);
 }
 
-#if defined(SDL_PLATFORM_TVOS) || (defined(__IPHONE_9_0) && __IPHONE_OS_VERSION_MIN_REQUIRED >= __IPHONE_9_0)
-
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options
 {
     // TODO: Handle options
     [self sendDropFileForURL:url fromSourceApplication:NULL];
     return YES;
 }
-
-#else
-
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
-{
-    [self sendDropFileForURL:url fromSourceApplication:sourceApplication];
-    return YES;
-}
-
-#endif
 
 @end
 

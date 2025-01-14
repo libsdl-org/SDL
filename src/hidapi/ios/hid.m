@@ -398,7 +398,7 @@ typedef enum
 {
 	switch ( central.state )
 	{
-		case CBCentralManagerStatePoweredOn:
+		case CBManagerStatePoweredOn:
 		{
 			NSLog( @"CoreBluetooth BLE hardware is powered on and ready" );
 
@@ -418,23 +418,23 @@ typedef enum
 			break;
 		}
 
-		case CBCentralManagerStatePoweredOff:
+		case CBManagerStatePoweredOff:
 			NSLog( @"CoreBluetooth BLE hardware is powered off" );
 			break;
 
-		case CBCentralManagerStateUnauthorized:
+		case CBManagerStateUnauthorized:
 			NSLog( @"CoreBluetooth BLE state is unauthorized" );
 			break;
 
-		case CBCentralManagerStateUnknown:
+		case CBManagerStateUnknown:
 			NSLog( @"CoreBluetooth BLE state is unknown" );
 			break;
 
-		case CBCentralManagerStateUnsupported:
+		case CBManagerStateUnsupported:
 			NSLog( @"CoreBluetooth BLE hardware is unsupported on this platform" );
 			break;
 
-		case CBCentralManagerStateResetting:
+		case CBManagerStateResetting:
 			NSLog( @"CoreBluetooth BLE manager is resetting" );
 			break;
 	}

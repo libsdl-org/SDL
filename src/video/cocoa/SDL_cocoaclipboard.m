@@ -28,10 +28,6 @@
 
 #include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 101300
-typedef NSString *NSPasteboardType; // Defined in macOS 10.13+
-#endif
-
 @interface Cocoa_PasteboardDataProvider : NSObject<NSPasteboardItemDataProvider>
 {
     SDL_ClipboardDataCallback m_callback;

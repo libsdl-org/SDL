@@ -32,12 +32,6 @@
 #include <CoreVideo/CVBase.h>
 #include <CoreVideo/CVDisplayLink.h>
 
-// This gets us MAC_OS_X_VERSION_MIN_REQUIRED...
-#include <AvailabilityMacros.h>
-
-#ifndef MAC_OS_X_VERSION_10_13
-#define NSAppKitVersionNumber10_12 1504
-#endif
 #if (IOGRAPHICSTYPES_REV < 40)
 #define kDisplayModeNativeFlag 0x02000000
 #endif
@@ -307,7 +301,6 @@ static void Cocoa_GetHDRProperties(CGDirectDisplayID displayID, SDL_HDROutputPro
     HDR->SDR_white_level = 1.0f;
     HDR->HDR_headroom = 1.0f;
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101500 // Added in the 10.15 SDK
     if (@available(macOS 10.15, *)) {
         NSScreen *screen = GetNSScreenForDisplayID(displayID);
         if (screen) {
@@ -318,7 +311,6 @@ static void Cocoa_GetHDRProperties(CGDirectDisplayID displayID, SDL_HDROutputPro
             }
         }
     }
-#endif
 }
 
 

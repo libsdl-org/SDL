@@ -49,13 +49,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     @autoreleasepool {
         SDL_uikitviewcontroller *viewcontroller = (__bridge SDL_uikitviewcontroller *)userdata;
         viewcontroller.homeIndicatorHidden = (hint && *hint) ? SDL_atoi(hint) : -1;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability-new"
-        if ([viewcontroller respondsToSelector:@selector(setNeedsUpdateOfHomeIndicatorAutoHidden)]) {
-            [viewcontroller setNeedsUpdateOfHomeIndicatorAutoHidden];
-            [viewcontroller setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
-        }
-#pragma clang diagnostic pop
+        [viewcontroller setNeedsUpdateOfHomeIndicatorAutoHidden];
+        [viewcontroller setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
     }
 }
 #endif
@@ -176,18 +171,11 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_PLATFORM_VISIONOS
     displayLink.preferredFramesPerSecond = 90 / animationInterval;      //TODO: Get frame max frame rate on visionOS
-#elif defined(__IPHONE_10_3)
+#else
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
 
-    if ([displayLink respondsToSelector:@selector(preferredFramesPerSecond)] && data != nil && data.uiwindow != nil && [data.uiwindow.screen respondsToSelector:@selector(maximumFramesPerSecond)]) {
-        displayLink.preferredFramesPerSecond = data.uiwindow.screen.maximumFramesPerSecond / animationInterval;
-    } else
+    displayLink.preferredFramesPerSecond = data.uiwindow.screen.maximumFramesPerSecond / animationInterval;
 #endif
-    {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < 100300
-        [displayLink setFrameInterval:animationInterval];
-#endif
-    }
 
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
@@ -411,28 +399,16 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, tvOS 11.0, *)) {
-            textField.textContentType = UITextContentTypeUsername;
-        } else {
-            textField.textContentType = nil;
-        }
+        textField.textContentType = UITextContentTypeUsername;
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, tvOS 11.0, *)) {
-            textField.textContentType = UITextContentTypePassword;
-        } else {
-            textField.textContentType = nil;
-        }
+        textField.textContentType = UITextContentTypePassword;
         textField.secureTextEntry = YES;
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, tvOS 11.0, *)) {
-            textField.textContentType = UITextContentTypePassword;
-        } else {
-            textField.textContentType = nil;
-        }
+        textField.textContentType = UITextContentTypePassword;
         break;
     case SDL_TEXTINPUT_TYPE_NUMBER:
         textField.keyboardType = UIKeyboardTypeNumberPad;

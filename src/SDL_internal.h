@@ -78,7 +78,18 @@
 #ifndef _DARWIN_C_SOURCE
 #define _DARWIN_C_SOURCE 1 // for memset_pattern4()
 #endif
+#include <Availability.h>
+
+#ifndef __IPHONE_OS_VERSION_MAX_ALLOWED
+#define __IPHONE_OS_VERSION_MAX_ALLOWED 0
 #endif
+#ifndef __APPLETV_OS_VERSION_MAX_ALLOWED
+#define __APPLETV_OS_VERSION_MAX_ALLOWED 0
+#endif
+#ifndef __MAC_OS_X_VERSION_MAX_ALLOWED
+#define __MAC_OS_X_VERSION_MAX_ALLOWED 0
+#endif
+#endif // SDL_PLATFORM_APPLE
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>

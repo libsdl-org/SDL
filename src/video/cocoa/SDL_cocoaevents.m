@@ -25,10 +25,6 @@
 #include "SDL_cocoavideo.h"
 #include "../../events/SDL_events_c.h"
 
-#ifndef MAC_OS_X_VERSION_10_12
-#define NSEventTypeApplicationDefined NSApplicationDefined
-#endif
-
 static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
 {
     SDL_Window *sdlwindow = NULL;

@@ -22,10 +22,6 @@
 
 #ifdef SDL_VIDEO_DRIVER_COCOA
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 1090
-#error SDL for macOS must be built with a 10.9 SDK or above.
-#endif // MAC_OS_X_VERSION_MAX_ALLOWED < 1090
-
 #include <float.h> // For FLT_MAX
 
 #include "../../events/SDL_dropevents_c.h"
@@ -71,10 +67,6 @@
 @end
 
 @interface NSWindow (SDL)
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 101000 // Added in the 10.10 SDK
-@property(readonly) NSRect contentLayoutRect;
-#endif
-
 // This is available as of 10.13.2, but isn't in public headers
 @property(nonatomic) NSRect mouseConfinementRect;
 @end
@@ -1944,20 +1936,16 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
          */
         SDL_Window *window = NULL;
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101202 // Added in the 10.12.2 SDK.
-        if ([touch respondsToSelector:@selector(type)]) {
-            /* TODO: Before implementing direct touch support here, we need to
-             * figure out whether the OS generates mouse events from them on its
-             * own. If it does, we should prevent SendTouch from generating
-             * synthetic mouse events for these touches itself (while also
-             * sending a window.) It will also need to use normalized window-
-             * relative coordinates via [touch locationInView:].
-             */
-            if ([touch type] == NSTouchTypeDirect) {
-                continue;
-            }
+        /* TODO: Before implementing direct touch support here, we need to
+         * figure out whether the OS generates mouse events from them on its
+         * own. If it does, we should prevent SendTouch from generating
+         * synthetic mouse events for these touches itself (while also
+         * sending a window.) It will also need to use normalized window-
+         * relative coordinates via [touch locationInView:].
+         */
+        if ([touch type] == NSTouchTypeDirect) {
+            continue;
         }
-#endif
 
         if (SDL_AddTouch(touchId, devtype, "") < 0) {
             return;
@@ -2301,12 +2289,7 @@ bool Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
 
             [nswindow setColorSpace:[NSColorSpace sRGBColorSpace]];
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200 // Added in the 10.12.0 SDK.
-            // By default, don't allow users to make our window tabbed in 10.12 or later
-            if ([nswindow respondsToSelector:@selector(setTabbingMode:)]) {
-                [nswindow setTabbingMode:NSWindowTabbingModeDisallowed];
-            }
-#endif
+            [nswindow setTabbingMode:NSWindowTabbingModeDisallowed];
 
             if (videodata.allow_spaces) {
                 // we put fullscreen desktop windows in their own Space, without a toggle button or menubar, later
@@ -2351,8 +2334,7 @@ bool Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         if ((window->flags & SDL_WINDOW_OPENGL) &&
             _this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
             [nsview setWantsLayer:TRUE];
-            if ((window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) &&
-                [nswindow.screen respondsToSelector:@selector(backingScaleFactor)]) {
+            if ((window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY)) {
                 nsview.layer.contentsScale = nswindow.screen.backingScaleFactor;
             } else {
                 nsview.layer.contentsScale = 1;
