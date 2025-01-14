@@ -2542,7 +2542,7 @@ extern SDL_DECLSPEC SDL_GPUTransferBuffer *SDLCALL SDL_CreateGPUTransferBuffer(
 /**
  * Sets an arbitrary string constant to label a buffer.
  *
- * It is recommended to use SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING with SDL_CreateGPUBuffer instead of this function to avoid thread safety issues.
+ * You should use SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING with SDL_CreateGPUBuffer instead of this function to avoid thread safety issues.
  *
  * \param device a GPU Context.
  * \param buffer a buffer to attach the name to.
@@ -2562,7 +2562,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetGPUBufferName(
 /**
  * Sets an arbitrary string constant to label a texture.
  *
- * It is recommended to use SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING with SDL_CreateGPUTexture instead of this function to avoid thread safety issues.
+ * You should use SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING with SDL_CreateGPUTexture instead of this function to avoid thread safety issues.
  *
  * \param device a GPU Context.
  * \param texture a texture to attach the name to.
