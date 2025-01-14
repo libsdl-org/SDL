@@ -3498,8 +3498,8 @@ static SDL_GPUTexture *D3D12_CreateTexture(
     }
 
     container->debugName = NULL;
-    if (SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_NAME_STRING)) {
-        container->debugName = SDL_strdup(SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_NAME_STRING, NULL));
+    if (SDL_HasProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING)) {
+        container->debugName = SDL_strdup(SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL));
     }
 
     container->canBeCycled = true;

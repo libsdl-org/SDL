@@ -5784,11 +5784,11 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
     }
 
     // Set debug name if applicable
-    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_NAME_STRING)) {
+    if (renderer->debugMode && renderer->supportsDebugUtils && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING)) {
         VkDebugUtilsObjectNameInfoEXT nameInfo;
         nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         nameInfo.pNext = NULL;
-        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_NAME_STRING, NULL);
+        nameInfo.pObjectName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL);
         nameInfo.objectType = VK_OBJECT_TYPE_IMAGE;
         nameInfo.objectHandle = (uint64_t)texture->image;
 
@@ -6772,8 +6772,8 @@ static SDL_GPUTexture *VULKAN_CreateTexture(
     container->textures[0] = container->activeTexture;
     container->debugName = NULL;
 
-    if (SDL_HasProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_NAME_STRING)) {
-        container->debugName = SDL_strdup(SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_NAME_STRING, NULL));
+    if (SDL_HasProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING)) {
+        container->debugName = SDL_strdup(SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL));
     }
 
     texture->container = container;
