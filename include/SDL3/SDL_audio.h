@@ -1106,9 +1106,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *strea
  *
  * If a stream is bound to a device, then the format of the side of the stream
  * bound to a device cannot be changed (src_spec for recording devices,
- * dst_spec for playback devices). Attempts to make a change to this side
- * will be ignored, but this will not report an error. The other side's format
- * can be changed.
+ * dst_spec for playback devices). Attempts to make a change to this side will
+ * be ignored, but this will not report an error. The other side's format can
+ * be changed.
  *
  * \param stream the stream the format is being changed.
  * \param src_spec the new format of the audio input; if NULL, it is not
