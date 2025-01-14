@@ -187,6 +187,28 @@ static wchar_t *escape_label(const char *in)
     return out;
 }
 
+static HICON load_default_icon()
+{
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+    if (!hInstance) {
+        return LoadIcon(NULL, IDI_APPLICATION);
+    }
+
+    const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL);
+    if (hint && *hint) {
+        HICON icon = LoadIcon(hInstance, MAKEINTRESOURCE(SDL_atoi(hint)));
+        return icon ? icon : LoadIcon(NULL, IDI_APPLICATION);
+    }
+
+    hint = SDL_GetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON);
+    if (hint && *hint) {
+        HICON icon = LoadIcon(hInstance, MAKEINTRESOURCE(SDL_atoi(hint)));
+        return icon ? icon : LoadIcon(NULL, IDI_APPLICATION);
+    }
+
+    return LoadIcon(NULL, IDI_APPLICATION);
+}
+
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     SDL_Tray *tray = (SDL_Tray *)SDL_malloc(sizeof(*tray));
@@ -216,12 +238,12 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
         tray->nid.hIcon = CreateIconFromSurface(icon);
 
         if (!tray->nid.hIcon) {
-            tray->nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+            tray->nid.hIcon = load_default_icon();
         }
 
         tray->icon = tray->nid.hIcon;
     } else {
-        tray->nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+        tray->nid.hIcon = load_default_icon();
         tray->icon = tray->nid.hIcon;
     }
 
@@ -245,12 +267,12 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
         tray->nid.hIcon = CreateIconFromSurface(icon);
 
         if (!tray->nid.hIcon) {
-            tray->nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+            tray->nid.hIcon = load_default_icon();
         }
 
         tray->icon = tray->nid.hIcon;
     } else {
-        tray->nid.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+        tray->nid.hIcon = load_default_icon();
         tray->icon = tray->nid.hIcon;
     }
 
