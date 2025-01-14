@@ -317,8 +317,7 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetTrayEntryLabel(SDL_TrayEntry *ent
  * The entry must have been created with the SDL_TRAYENTRY_CHECKBOX flag.
  *
  * \param entry the entry to be updated.
- * \param checked true if the entry should be checked; false
- *                otherwise.
+ * \param checked true if the entry should be checked; false otherwise.
  *
  * \since This function is available since SDL 3.1.8.
  *
@@ -348,8 +347,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryChecked(SDL_TrayEntry *entry);
  * Sets whether or not an entry is enabled.
  *
  * \param entry the entry to be updated.
- * \param enabled true if the entry should be enabled; false
- *                otherwise.
+ * \param enabled true if the entry should be enabled; false otherwise.
  *
  * \since This function is available since SDL 3.1.8.
  *

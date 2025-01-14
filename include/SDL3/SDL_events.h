@@ -38,10 +38,10 @@
  * at all).
  *
  * There is other forms of control, too: SDL_PeepEvents() has more
- * functionality at the cost of more complexity, and SDL_WaitEvent() can
- * block the process until something interesting happens, which might be
- * beneficial for certain types of programs on low-power hardware. One may
- * also call SDL_AddEventWatch() to set a callback when new events arrive.
+ * functionality at the cost of more complexity, and SDL_WaitEvent() can block
+ * the process until something interesting happens, which might be beneficial
+ * for certain types of programs on low-power hardware. One may also call
+ * SDL_AddEventWatch() to set a callback when new events arrive.
  *
  * The app is free to generate their own events, too: SDL_PushEvent allows the
  * app to put events onto the queue for later retrieval; SDL_RegisterEvents
