@@ -765,12 +765,26 @@ static bool PrepareAudioQueue(SDL_AudioDevice *device)
         layout.mChannelLayoutTag = kAudioChannelLayoutTag_DVD_12;
         break;
     case 7:
-        // L R C LFE Cs Ls Rs
-        layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_6_1;
+        if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+            // L R C LFE Cs Ls Rs
+            layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_6_1;
+        } else {
+            // FIXME: We need to manually swizzle channels into a supported layout
+            // L R C LFE Ls Rs Cs
+            //layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_6_1_A;
+            return SDL_SetError("Unsupported audio channels");
+        }
         break;
     case 8:
-        // L R C LFE Rls Rrs Ls Rs
-        layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_7_1;
+        if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+            // L R C LFE Rls Rrs Ls Rs
+            layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_7_1;
+        } else {
+            // FIXME: We need to manually swizzle channels into a supported layout
+            // L R C LFE Ls Rs Rls Rrs
+            //layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_7_1_C;
+            return SDL_SetError("Unsupported audio channels");
+        }
         break;
     default:
         return SDL_SetError("Unsupported audio channels");
