@@ -2420,22 +2420,22 @@ extern SDL_DECLSPEC SDL_GPUShader *SDLCALL SDL_CreateGPUShader(
  * - `SDL_PROP_PROCESS_CREATE_ARGS_POINTER`: an array of strings containing
  *   the program to run, any arguments, and a NULL pointer, e.g. const char
  *   *args[] = { "myprogram", "argument", NULL }. This is a required property.
- * - `SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_R_FLOAT`: (Direct3D 12 only) if
+ * - `SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT`: (Direct3D 12 only) if
  *   the texture usage is SDL_GPU_TEXTUREUSAGE_COLOR_TARGET, clear the texture
  *   to a color with this red intensity. Defaults to zero.
- * - `SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_G_FLOAT`: (Direct3D 12 only) if
+ * - `SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_G_FLOAT`: (Direct3D 12 only) if
  *   the texture usage is SDL_GPU_TEXTUREUSAGE_COLOR_TARGET, clear the texture
  *   to a color with this green intensity. Defaults to zero.
- * - `SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_B_FLOAT`: (Direct3D 12 only) if
+ * - `SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_B_FLOAT`: (Direct3D 12 only) if
  *   the texture usage is SDL_GPU_TEXTUREUSAGE_COLOR_TARGET, clear the texture
  *   to a color with this blue intensity. Defaults to zero.
- * - `SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_A_FLOAT`: (Direct3D 12 only) if
+ * - `SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_A_FLOAT`: (Direct3D 12 only) if
  *   the texture usage is SDL_GPU_TEXTUREUSAGE_COLOR_TARGET, clear the texture
  *   to a color with this alpha intensity. Defaults to zero.
- * - `SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_DEPTH_FLOAT`: (Direct3D 12 only)
+ * - `SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT`: (Direct3D 12 only)
  *   if the texture usage is SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET, clear
  *   the texture to a depth of this value. Defaults to zero.
- * - `SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8`: (Direct3D 12
+ * - `SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_UINT8`: (Direct3D 12
  *   only) if the texture usage is SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
  *   clear the texture to a stencil of this value. Defaults to zero.
  * - `SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING`: a name that can be displayed
@@ -2463,13 +2463,13 @@ extern SDL_DECLSPEC SDL_GPUTexture *SDLCALL SDL_CreateGPUTexture(
     SDL_GPUDevice *device,
     const SDL_GPUTextureCreateInfo *createinfo);
 
-#define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_R_FLOAT       "SDL.gpu.createtexture.d3d12.clear.r"
-#define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_G_FLOAT       "SDL.gpu.createtexture.d3d12.clear.g"
-#define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_B_FLOAT       "SDL.gpu.createtexture.d3d12.clear.b"
-#define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_A_FLOAT       "SDL.gpu.createtexture.d3d12.clear.a"
-#define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_DEPTH_FLOAT   "SDL.gpu.createtexture.d3d12.clear.depth"
-#define SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8 "SDL.gpu.createtexture.d3d12.clear.stencil"
-#define SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING              "SDL.gpu.texture.create.name"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT       "SDL.gpu.texture.create.d3d12.clear.r"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_G_FLOAT       "SDL.gpu.texture.create.d3d12.clear.g"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_B_FLOAT       "SDL.gpu.texture.create.d3d12.clear.b"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_A_FLOAT       "SDL.gpu.texture.create.d3d12.clear.a"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT   "SDL.gpu.texture.create.d3d12.clear.depth"
+#define SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_UINT8 "SDL.gpu.texture.create.d3d12.clear.stencil"
+#define SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING               "SDL.gpu.texture.create.name"
 
 /**
  * Creates a buffer object to be used in graphics or compute workflows.

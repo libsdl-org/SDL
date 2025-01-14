@@ -3209,17 +3209,17 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         useClearValue = true;
-        clearValue.Color[0] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_R_FLOAT, 0);
-        clearValue.Color[1] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_G_FLOAT, 0);
-        clearValue.Color[2] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_B_FLOAT, 0);
-        clearValue.Color[3] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_A_FLOAT, 0);
+        clearValue.Color[0] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT, 0);
+        clearValue.Color[1] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_G_FLOAT, 0);
+        clearValue.Color[2] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_B_FLOAT, 0);
+        clearValue.Color[3] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_A_FLOAT, 0);
     }
 
     if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         useClearValue = true;
-        clearValue.DepthStencil.Depth = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_DEPTH_FLOAT, 0);
-        clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(createinfo->props, SDL_PROP_GPU_CREATETEXTURE_D3D12_CLEAR_STENCIL_UINT8, 0);
+        clearValue.DepthStencil.Depth = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT, 0);
+        clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_UINT8, 0);
         format = SDLToD3D12_DepthFormat[createinfo->format];
     }
 
