@@ -262,6 +262,8 @@ typedef struct SDL_IOStream SDL_IOStream;
  *
  * \since This function is available since SDL 3.1.3.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \sa SDL_CloseIO
  * \sa SDL_FlushIO
  * \sa SDL_ReadIO
@@ -304,6 +306,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromFile(const char *file, cons
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \sa SDL_IOFromConstMem
  * \sa SDL_CloseIO
@@ -349,6 +353,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromMem(void *mem, size_t size)
  *
  * \since This function is available since SDL 3.1.3.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \sa SDL_IOFromMem
  * \sa SDL_CloseIO
  * \sa SDL_ReadIO
@@ -376,6 +382,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromConstMem(const void *mem, s
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \sa SDL_CloseIO
  * \sa SDL_ReadIO
@@ -409,6 +417,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromDynamicMem(void);
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \sa SDL_CloseIO
  * \sa SDL_INIT_INTERFACE
@@ -444,6 +454,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_OpenIO(const SDL_IOStreamInterfac
  *
  * \since This function is available since SDL 3.1.3.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \sa SDL_OpenIO
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_CloseIO(SDL_IOStream *context);
@@ -456,6 +468,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CloseIO(SDL_IOStream *context);
  *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetIOProperties(SDL_IOStream *context);
 
@@ -477,6 +491,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetIOProperties(SDL_IOStream *c
  *               another thread is operating on the same SDL_IOStream.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC SDL_IOStatus SDLCALL SDL_GetIOStatus(SDL_IOStream *context);
 
@@ -489,6 +505,8 @@ extern SDL_DECLSPEC SDL_IOStatus SDLCALL SDL_GetIOStatus(SDL_IOStream *context);
  *          information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetIOSize(SDL_IOStream *context);
 
@@ -515,6 +533,8 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetIOSize(SDL_IOStream *context);
  *
  * \since This function is available since SDL 3.1.3.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \sa SDL_TellIO
  */
 extern SDL_DECLSPEC Sint64 SDLCALL SDL_SeekIO(SDL_IOStream *context, Sint64 offset, SDL_IOWhence whence);
@@ -532,6 +552,8 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_SeekIO(SDL_IOStream *context, Sint64 offs
  *          be determined.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \sa SDL_SeekIO
  */
@@ -555,6 +577,8 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \sa SDL_WriteIO
  * \sa SDL_GetIOStatus
@@ -583,6 +607,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, 
  *
  * \since This function is available since SDL 3.1.3.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \sa SDL_IOprintf
  * \sa SDL_ReadIO
  * \sa SDL_SeekIO
@@ -605,6 +631,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_WriteIO(SDL_IOStream *context, const void
  *
  * \since This function is available since SDL 3.1.3.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \sa SDL_IOvprintf
  * \sa SDL_WriteIO
  */
@@ -623,6 +651,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_IOprintf(SDL_IOStream *context, SDL_PRINT
  *
  * \since This function is available since SDL 3.1.3.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \sa SDL_IOprintf
  * \sa SDL_WriteIO
  */
@@ -640,6 +670,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_IOvprintf(SDL_IOStream *context, SDL_PRIN
  *          information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \sa SDL_OpenIO
  * \sa SDL_WriteIO
@@ -665,6 +697,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FlushIO(SDL_IOStream *context);
  *
  * \since This function is available since SDL 3.1.3.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \sa SDL_LoadFile
  * \sa SDL_SaveFile_IO
  */
@@ -686,6 +720,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *da
  *
  * \since This function is available since SDL 3.1.3.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \sa SDL_LoadFile_IO
  * \sa SDL_SaveFile
  */
@@ -705,6 +741,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile(const char *file, size_t *datasi
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \sa SDL_SaveFile
  * \sa SDL_LoadFile_IO
  */
@@ -721,6 +759,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveFile_IO(SDL_IOStream *src, const void *
  *          information.
  *
  * \since This function is available since SDL 3.1.8.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \sa SDL_SaveFile_IO
  * \sa SDL_LoadFile
@@ -748,6 +788,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveFile(const char *file, const void *data
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadU8(SDL_IOStream *src, Uint8 *value);
 
@@ -765,6 +807,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU8(SDL_IOStream *src, Uint8 *value);
  *          information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadS8(SDL_IOStream *src, Sint8 *value);
 
@@ -786,6 +830,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS8(SDL_IOStream *src, Sint8 *value);
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value);
 
@@ -807,6 +853,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadS16LE(SDL_IOStream *src, Sint16 *value);
 
@@ -828,6 +876,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS16LE(SDL_IOStream *src, Sint16 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadU16BE(SDL_IOStream *src, Uint16 *value);
 
@@ -849,6 +899,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU16BE(SDL_IOStream *src, Uint16 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadS16BE(SDL_IOStream *src, Sint16 *value);
 
@@ -870,6 +922,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS16BE(SDL_IOStream *src, Sint16 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadU32LE(SDL_IOStream *src, Uint32 *value);
 
@@ -891,6 +945,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU32LE(SDL_IOStream *src, Uint32 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadS32LE(SDL_IOStream *src, Sint32 *value);
 
@@ -912,6 +968,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS32LE(SDL_IOStream *src, Sint32 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadU32BE(SDL_IOStream *src, Uint32 *value);
 
@@ -933,6 +991,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU32BE(SDL_IOStream *src, Uint32 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadS32BE(SDL_IOStream *src, Sint32 *value);
 
@@ -954,6 +1014,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS32BE(SDL_IOStream *src, Sint32 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadU64LE(SDL_IOStream *src, Uint64 *value);
 
@@ -975,6 +1037,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU64LE(SDL_IOStream *src, Uint64 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadS64LE(SDL_IOStream *src, Sint64 *value);
 
@@ -996,6 +1060,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS64LE(SDL_IOStream *src, Sint64 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadU64BE(SDL_IOStream *src, Uint64 *value);
 
@@ -1017,6 +1083,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU64BE(SDL_IOStream *src, Uint64 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadS64BE(SDL_IOStream *src, Sint64 *value);
 /* @} *//* Read endian functions */
@@ -1037,6 +1105,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS64BE(SDL_IOStream *src, Sint64 *value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU8(SDL_IOStream *dst, Uint8 value);
 
@@ -1049,6 +1119,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU8(SDL_IOStream *dst, Uint8 value);
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteS8(SDL_IOStream *dst, Sint8 value);
 
@@ -1066,6 +1138,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS8(SDL_IOStream *dst, Sint8 value);
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU16LE(SDL_IOStream *dst, Uint16 value);
 
@@ -1083,6 +1157,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU16LE(SDL_IOStream *dst, Uint16 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteS16LE(SDL_IOStream *dst, Sint16 value);
 
@@ -1099,6 +1175,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS16LE(SDL_IOStream *dst, Sint16 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU16BE(SDL_IOStream *dst, Uint16 value);
 
@@ -1115,6 +1193,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU16BE(SDL_IOStream *dst, Uint16 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteS16BE(SDL_IOStream *dst, Sint16 value);
 
@@ -1132,6 +1212,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS16BE(SDL_IOStream *dst, Sint16 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU32LE(SDL_IOStream *dst, Uint32 value);
 
@@ -1149,6 +1231,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU32LE(SDL_IOStream *dst, Uint32 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteS32LE(SDL_IOStream *dst, Sint32 value);
 
@@ -1165,6 +1249,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS32LE(SDL_IOStream *dst, Sint32 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU32BE(SDL_IOStream *dst, Uint32 value);
 
@@ -1181,6 +1267,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU32BE(SDL_IOStream *dst, Uint32 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteS32BE(SDL_IOStream *dst, Sint32 value);
 
@@ -1198,6 +1286,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS32BE(SDL_IOStream *dst, Sint32 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU64LE(SDL_IOStream *dst, Uint64 value);
 
@@ -1215,6 +1305,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU64LE(SDL_IOStream *dst, Uint64 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteS64LE(SDL_IOStream *dst, Sint64 value);
 
@@ -1231,6 +1323,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS64LE(SDL_IOStream *dst, Sint64 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU64BE(SDL_IOStream *dst, Uint64 value);
 
@@ -1247,6 +1341,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU64BE(SDL_IOStream *dst, Uint64 value)
  *          for more information.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \threadsafety This function is not thread safe.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteS64BE(SDL_IOStream *dst, Sint64 value);
 
