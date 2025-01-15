@@ -330,7 +330,7 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
  * result in a memory leak.
  *
  * src is an open SDL_RWops buffer, typically loaded with SDL_RWFromFile.
- * Alternitavely, you might also use the macro SDL_LoadBMP to load a bitmap
+ * Alternatively, you might also use the macro SDL_LoadBMP to load a bitmap
  * from a file, convert it to an SDL_Surface and then close the file.
  *
  * \param src the data stream for the surface.
