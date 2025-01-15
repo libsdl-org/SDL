@@ -307,7 +307,7 @@ static SDL_EnumerationResult SDLCALL GlobDirectoryCallback(void *userdata, const
     // !!! FIXME: and only casefold the new pieces instead of allocating and folding full paths for all of this.
 
     char *fullpath = NULL;
-    if (SDL_asprintf(&fullpath, "%s/%s", dirname, fname) < 0) {
+    if (SDL_asprintf(&fullpath, "%s%s", dirname, fname) < 0) {
         return SDL_ENUM_FAILURE;
     }
 
@@ -417,7 +417,8 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
     data.enumerator = enumerator;
     data.getpathinfo = getpathinfo;
     data.fsuserdata = userdata;
-    data.basedirlen = SDL_strlen(path) + 1;  // +1 for the '/' we'll be adding.
+    data.basedirlen = *path ? (SDL_strlen(path) + 1) : 0;  // +1 for the '/' we'll be adding.
+
 
     char **result = NULL;
     if (data.enumerator(path, GlobDirectoryCallback, &data, data.fsuserdata)) {

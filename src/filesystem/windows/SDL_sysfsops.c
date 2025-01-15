@@ -34,35 +34,45 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
     SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
     if (*path == '\0') {  // if empty (completely at the root), we need to enumerate drive letters.
         const DWORD drives = GetLogicalDrives();
-        char name[3] = { 0, ':', '\0' };
+        char name[] = { 0, ':', '\\', '\0' };
         for (int i = 'A'; (result == SDL_ENUM_CONTINUE) && (i <= 'Z'); i++) {
             if (drives & (1 << (i - 'A'))) {
                 name[0] = (char) i;
-                result = cb(userdata, path, name);
+                result = cb(userdata, "", name);
             }
         }
     } else {
-        const size_t patternlen = SDL_strlen(path) + 3;
-        char *pattern = (char *) SDL_malloc(patternlen);
-        if (!pattern) {
-            return false;
-        }
-
         // you need a wildcard to enumerate through FindFirstFileEx(), but the wildcard is only checked in the
         // filename element at the end of the path string, so always tack on a "\\*" to get everything, and
         // also prevent any wildcards inserted by the app from being respected.
-        SDL_snprintf(pattern, patternlen, "%s\\*", path);
-
-        WCHAR *wpattern = WIN_UTF8ToStringW(pattern);
-        SDL_free(pattern);
-        if (!wpattern) {
+        char *pattern = NULL;
+        int patternlen = SDL_asprintf(&pattern, "%s\\\\", path);  // we'll replace that second '\\' in the trimdown.
+        if ((patternlen == -1) || (!pattern)) {
             return false;
         }
+
+        // trim down to a single path separator at the end, in case the caller added one or more.
+        patternlen--;
+        while ((patternlen >= 0) && ((pattern[patternlen] == '\\') || (pattern[patternlen] == '/'))) {
+            pattern[patternlen--] ='\0';
+        }
+        pattern[++patternlen] = '\\';
+        pattern[++patternlen] = '*';
+        pattern[++patternlen] = '\0';
+
+        WCHAR *wpattern = WIN_UTF8ToStringW(pattern);
+        if (!wpattern) {
+            SDL_free(pattern);
+            return false;
+        }
+
+        pattern[--patternlen] = '\0';  // chop off the '*' so we just have the dirname with a path separator.
 
         WIN32_FIND_DATAW entw;
         HANDLE dir = FindFirstFileExW(wpattern, FindExInfoStandard, &entw, FindExSearchNameMatch, NULL, 0);
         SDL_free(wpattern);
         if (dir == INVALID_HANDLE_VALUE) {
+            SDL_free(pattern);
             return WIN_SetError("Failed to enumerate directory");
         }
 
@@ -79,12 +89,13 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
             if (!utf8fn) {
                 result = SDL_ENUM_FAILURE;
             } else {
-                result = cb(userdata, path, utf8fn);
+                result = cb(userdata, pattern, utf8fn);
                 SDL_free(utf8fn);
             }
         } while ((result == SDL_ENUM_CONTINUE) && (FindNextFileW(dir, &entw) != 0));
 
         FindClose(dir);
+        SDL_free(pattern);
     }
 
     return (result != SDL_ENUM_FAILURE);
