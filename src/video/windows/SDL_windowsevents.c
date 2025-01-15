@@ -2076,7 +2076,19 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         return ret;                                                        \
     }
                 case SDL_HITTEST_DRAGGABLE:
+                {
+                    /* If the mouse button state is something other than none or left button down,
+                     * return HTCLIENT, or Windows will eat the button press.
+                     */
+                    SDL_MouseButtonFlags buttonState = SDL_GetGlobalMouseState(NULL, NULL);
+                    if (buttonState && !(buttonState & SDL_BUTTON_LMASK)) {
+                        // Set focus in case it was lost while previously moving over a draggable area.
+                        SDL_SetMouseFocus(window);
+                        return HTCLIENT;
+                    }
+
                     POST_HIT_TEST(HTCAPTION);
+                }
                 case SDL_HITTEST_RESIZE_TOPLEFT:
                     POST_HIT_TEST(HTTOPLEFT);
                 case SDL_HITTEST_RESIZE_TOP:
