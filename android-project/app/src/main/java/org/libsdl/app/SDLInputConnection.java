@@ -111,18 +111,20 @@ public class SDLInputConnection extends BaseInputConnection
 
         if (matchLength < text.length()) {
             String pendingText = text.subSequence(matchLength, text.length()).toString();
-            for (offset = 0; offset < pendingText.length(); ) {
-                int codePoint = pendingText.codePointAt(offset);
-                if (codePoint == '\n') {
-                    if (SDLActivity.onNativeSoftReturnKey()) {
-                        return;
+            if (!SDLActivity.dispatchingKeyEvent()) {
+                for (offset = 0; offset < pendingText.length(); ) {
+                    int codePoint = pendingText.codePointAt(offset);
+                    if (codePoint == '\n') {
+                        if (SDLActivity.onNativeSoftReturnKey()) {
+                            return;
+                        }
                     }
+                    /* Higher code points don't generate simulated scancodes */
+                    if (codePoint > 0 && codePoint < 128) {
+                        nativeGenerateScancodeForUnichar((char)codePoint);
+                    }
+                    offset += Character.charCount(codePoint);
                 }
-                /* Higher code points don't generate simulated scancodes */
-                if (codePoint < 128) {
-                    nativeGenerateScancodeForUnichar((char)codePoint);
-                }
-                offset += Character.charCount(codePoint);
             }
             SDLInputConnection.nativeCommitText(pendingText, 0);
         }
