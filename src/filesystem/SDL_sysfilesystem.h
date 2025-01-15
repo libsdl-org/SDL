@@ -28,7 +28,7 @@ extern char *SDL_SYS_GetPrefPath(const char *org, const char *app);
 extern char *SDL_SYS_GetUserFolder(SDL_Folder folder);
 extern char *SDL_SYS_GetCurrentDirectory(void);
 
-extern bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata);
+extern bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata);
 extern bool SDL_SYS_RemovePath(const char *path);
 extern bool SDL_SYS_RenamePath(const char *oldpath, const char *newpath);
 extern bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath);

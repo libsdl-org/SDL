@@ -35,7 +35,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
+bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
 
@@ -51,7 +51,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enume
         if ((SDL_strcmp(name, ".") == 0) || (SDL_strcmp(name, "..") == 0)) {
             continue;
         }
-        result = cb(userdata, dirname, name);
+        result = cb(userdata, path, name);
     }
 
     closedir(dir);

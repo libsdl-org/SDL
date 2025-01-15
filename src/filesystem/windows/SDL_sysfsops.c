@@ -29,7 +29,7 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysfilesystem.h"
 
-bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
+bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
     if (*path == '\0') {  // if empty (completely at the root), we need to enumerate drive letters.
@@ -38,7 +38,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enume
         for (int i = 'A'; (result == SDL_ENUM_CONTINUE) && (i <= 'Z'); i++) {
             if (drives & (1 << (i - 'A'))) {
                 name[0] = (char) i;
-                result = cb(userdata, dirname, name);
+                result = cb(userdata, path, name);
             }
         }
     } else {
@@ -79,7 +79,7 @@ bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_Enume
             if (!utf8fn) {
                 result = SDL_ENUM_FAILURE;
             } else {
-                result = cb(userdata, dirname, utf8fn);
+                result = cb(userdata, path, utf8fn);
                 SDL_free(utf8fn);
             }
         } while ((result == SDL_ENUM_CONTINUE) && (FindNextFileW(dir, &entw) != 0));
