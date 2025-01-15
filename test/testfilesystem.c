@@ -36,7 +36,7 @@ static SDL_EnumerationResult SDLCALL enum_callback(void *userdata, const char *o
         } else {
             type = "OTHER";
         }
-        SDL_Log("%s (type=%s, size=%" SDL_PRIu64 ", create=%" SDL_PRIu64 ", mod=%" SDL_PRIu64 ", access=%" SDL_PRIu64 ")",
+        SDL_Log("DIRECTORY %s (type=%s, size=%" SDL_PRIu64 ", create=%" SDL_PRIu64 ", mod=%" SDL_PRIu64 ", access=%" SDL_PRIu64 ")",
                 fullpath, type, info.size, info.modify_time, info.create_time, info.access_time);
 
         if (info.type == SDL_PATHTYPE_DIRECTORY) {
@@ -50,6 +50,42 @@ static SDL_EnumerationResult SDLCALL enum_callback(void *userdata, const char *o
     return SDL_ENUM_CONTINUE;  /* keep going */
 }
 
+
+static SDL_EnumerationResult SDLCALL enum_storage_callback(void *userdata, const char *origdir, const char *fname)
+{
+    SDL_Storage *storage = (SDL_Storage *) userdata;
+    SDL_PathInfo info;
+    char *fullpath = NULL;
+
+    if (SDL_asprintf(&fullpath, "%s%s", origdir, fname) < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
+        return SDL_ENUM_FAILURE;
+    }
+
+    if (!SDL_GetStoragePathInfo(storage, fullpath, &info)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't stat '%s': %s", fullpath, SDL_GetError());
+    } else {
+        const char *type;
+        if (info.type == SDL_PATHTYPE_FILE) {
+            type = "FILE";
+        } else if (info.type == SDL_PATHTYPE_DIRECTORY) {
+            type = "DIRECTORY";
+        } else {
+            type = "OTHER";
+        }
+        SDL_Log("STORAGE %s (type=%s, size=%" SDL_PRIu64 ", create=%" SDL_PRIu64 ", mod=%" SDL_PRIu64 ", access=%" SDL_PRIu64 ")",
+                fullpath, type, info.size, info.modify_time, info.create_time, info.access_time);
+
+        if (info.type == SDL_PATHTYPE_DIRECTORY) {
+            if (!SDL_EnumerateStorageDirectory(storage, fullpath, enum_storage_callback, userdata)) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Enumeration failed!");
+            }
+        }
+    }
+
+    SDL_free(fullpath);
+    return SDL_ENUM_CONTINUE;  /* keep going */
+}
 
 int main(int argc, char *argv[])
 {
@@ -111,6 +147,7 @@ int main(int argc, char *argv[])
 
     if (base_path) {
         char **globlist;
+        SDL_Storage *storage = NULL;
         SDL_IOStream *stream;
         const char *text = "foo\n";
 
@@ -124,7 +161,7 @@ int main(int argc, char *argv[])
         } else {
             int i;
             for (i = 0; globlist[i]; i++) {
-                SDL_Log("GLOB[%d]: '%s'", i, globlist[i]);
+                SDL_Log("DIRECTORY GLOB[%d]: '%s'", i, globlist[i]);
             }
             SDL_free(globlist);
         }
@@ -191,6 +228,28 @@ int main(int argc, char *argv[])
         } else {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_IOFromFile('testfilesystem-A', 'w') failed: %s", SDL_GetError());
         }
+
+        storage = SDL_OpenFileStorage(base_path);
+        if (!storage) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to open base path storage object: %s", SDL_GetError());
+        } else {
+            if (!SDL_EnumerateStorageDirectory(storage, "", enum_storage_callback, storage)) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Storage Base path enumeration failed!");
+            }
+
+            globlist = SDL_GlobStorageDirectory(storage, "", "C*/test*/T?st*", SDL_GLOB_CASEINSENSITIVE, NULL);
+            if (!globlist) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Base path globbing failed!");
+            } else {
+                int i;
+                for (i = 0; globlist[i]; i++) {
+                    SDL_Log("STORAGE GLOB[%d]: '%s'", i, globlist[i]);
+                }
+                SDL_free(globlist);
+            }
+            SDL_CloseStorage(storage);
+        }
+
     }
 
     SDL_Quit();
