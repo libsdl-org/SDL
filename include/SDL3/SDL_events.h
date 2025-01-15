@@ -1377,9 +1377,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PushEvent(SDL_Event *event);
 typedef bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
 
 /**
- * Set up a filter to process all events before they are added to the internal event queue.
+ * Set up a filter to process all events before they are added to the internal
+ * event queue.
  *
- * If you just want to see events without modifying them or preventing them from being queued, you should use SDL_AddEventWatch() instead.
+ * If you just want to see events without modifying them or preventing them
+ * from being queued, you should use SDL_AddEventWatch() instead.
  *
  * If the filter function returns true when called, then the event will be
  * added to the internal queue. If it returns false, then the event will be
