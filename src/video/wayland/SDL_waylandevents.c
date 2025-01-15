@@ -2957,7 +2957,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
 
     const Uint64 timestamp = Wayland_GetEventTimestamp(SDL_MS_TO_NS(time));
     const SDL_PenID instance_id = sdltool->instance_id;
-    const SDL_Window *window = sdltool->tool_focus;
+    SDL_Window *window = sdltool->tool_focus;
 
     // I don't know if this is necessary (or makes sense), but send motion before pen downs, but after pen ups, so you don't get unexpected lines drawn.
     if (sdltool->frame_motion_set && (sdltool->frame_pen_down != -1)) {

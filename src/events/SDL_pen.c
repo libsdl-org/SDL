@@ -26,6 +26,8 @@
 #include "SDL_events_c.h"
 #include "SDL_pen_c.h"
 
+static SDL_PenID pen_touching = 0;  // used for synthetic mouse/touch events.
+
 typedef struct SDL_Pen
 {
     SDL_PenID instance_id;
@@ -111,6 +113,7 @@ void SDL_QuitPen(void)
     SDL_free(pen_devices);
     pen_devices = NULL;
     pen_device_count = 0;
+    pen_touching = 0;
 }
 
 #if 0 // not a public API at the moment.
@@ -309,7 +312,7 @@ void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handl
     SDL_UnlockRWLock(pen_device_rwlock);
 }
 
-void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, bool eraser, bool down)
+void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, bool eraser, bool down)
 {
     bool send_event = false;
     SDL_PenInputFlags input_state = 0;
@@ -363,10 +366,45 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window 
             event.ptouch.down = down;
             SDL_PushEvent(&event);
         }
+
+        SDL_Mouse *mouse = SDL_GetMouse();
+        if (mouse && window) {
+            if (mouse->pen_mouse_events) {
+                if (down) {
+                    if (!pen_touching) {
+                        SDL_SendMouseMotion(timestamp, window, SDL_PEN_MOUSEID, false, x, y);
+                        SDL_SendMouseButton(timestamp, window, SDL_PEN_MOUSEID, SDL_BUTTON_LEFT, true);
+                    }
+                } else {
+                    if (pen_touching == instance_id) {
+                        SDL_SendMouseButton(timestamp, window, SDL_PEN_MOUSEID, SDL_BUTTON_LEFT, false);
+                    }
+                }
+            }
+
+            if (mouse->pen_touch_events) {
+                const SDL_EventType touchtype = down ? SDL_EVENT_FINGER_DOWN : SDL_EVENT_FINGER_UP;
+                const float normalized_x = x / (float)window->w;
+                const float normalized_y = y / (float)window->h;
+                if (!pen_touching || (pen_touching == instance_id)) {
+                    SDL_SendTouch(timestamp, SDL_PEN_TOUCHID, SDL_BUTTON_LEFT, window, touchtype, normalized_x, normalized_y, pen->axes[SDL_PEN_AXIS_PRESSURE]);
+                }
+            }
+        }
+
+        if (down) {
+            if (!pen_touching) {
+                pen_touching = instance_id;
+            }
+        } else {
+            if (pen_touching == instance_id) {
+                pen_touching = 0;
+            }
+        }
     }
 }
 
-void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, SDL_PenAxis axis, float value)
+void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, SDL_PenAxis axis, float value)
 {
     SDL_assert((axis >= 0) && (axis < SDL_PEN_AXIS_COUNT));  // fix the backend if this triggers.
 
@@ -405,10 +443,19 @@ void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *
         event.paxis.axis = axis;
         event.paxis.value = value;
         SDL_PushEvent(&event);
+
+        if (window && (axis == SDL_PEN_AXIS_PRESSURE) && (pen_touching == instance_id)) {
+            SDL_Mouse *mouse = SDL_GetMouse();
+            if (mouse && mouse->pen_touch_events) {
+                const float normalized_x = x / (float)window->w;
+                const float normalized_y = y / (float)window->h;
+                SDL_SendTouchMotion(timestamp, SDL_PEN_TOUCHID, SDL_BUTTON_LEFT, window, normalized_x, normalized_y, value);
+            }
+        }
     }
 }
 
-void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, float x, float y)
+void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, float x, float y)
 {
     bool send_event = false;
     SDL_PenInputFlags input_state = 0;
@@ -440,10 +487,25 @@ void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window
         event.pmotion.x = x;
         event.pmotion.y = y;
         SDL_PushEvent(&event);
+
+        if (window && (pen_touching == instance_id)) {
+            SDL_Mouse *mouse = SDL_GetMouse();
+            if (mouse) {
+                if (mouse->pen_mouse_events) {
+                    SDL_SendMouseMotion(timestamp, window, SDL_PEN_MOUSEID, false, x, y);
+                }
+
+                if (mouse->pen_touch_events) {
+                    const float normalized_x = x / (float)window->w;
+                    const float normalized_y = y / (float)window->h;
+                    SDL_SendTouchMotion(timestamp, SDL_PEN_TOUCHID, SDL_BUTTON_LEFT, window, normalized_x, normalized_y, pen->axes[SDL_PEN_AXIS_PRESSURE]);
+                }
+            }
+        }
     }
 }
 
-void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 button, bool down)
+void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, Uint8 button, bool down)
 {
     bool send_event = false;
     SDL_PenInputFlags input_state = 0;
@@ -492,6 +554,13 @@ void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window
             event.pbutton.button = button;
             event.pbutton.down = down;
             SDL_PushEvent(&event);
+
+            if (window && (pen_touching == instance_id)) {
+                SDL_Mouse *mouse = SDL_GetMouse();
+                if (mouse && mouse->pen_mouse_events) {
+                    SDL_SendMouseButton(timestamp, window, SDL_PEN_MOUSEID, button + 1, down);
+                }
+            }
         }
     }
 }
