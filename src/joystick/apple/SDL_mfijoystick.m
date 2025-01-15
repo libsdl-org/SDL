@@ -727,16 +727,11 @@ static bool IOS_JoystickInit(void)
     }
 
 #ifdef SDL_PLATFORM_MACOS
-#if SDL_HAS_BUILTIN(__builtin_available)
     if (@available(macOS 10.16, *)) {
         // Continue with initialization on macOS 11+
     } else {
         return true;
     }
-#else
-    // No @available, must be an older macOS version
-    return true;
-#endif
 #endif
 
     @autoreleasepool {
