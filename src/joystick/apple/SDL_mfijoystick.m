@@ -42,9 +42,9 @@
 #endif
 #endif // SDL_PLATFORM_MACOS
 
-#ifdef SDL_JOYSTICK_MFI
 #import <GameController/GameController.h>
 
+#ifdef SDL_JOYSTICK_MFI
 static id connectObserver = nil;
 static id disconnectObserver = nil;
 
@@ -1201,6 +1201,7 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 #endif // SDL_JOYSTICK_MFI
 }
 
+#ifdef SDL_JOYSTICK_MFI
 @interface SDL3_RumbleMotor : NSObject
 @property(nonatomic, strong) CHHapticEngine *engine API_AVAILABLE(macos(10.16), ios(13.0), tvos(14.0));
 @property(nonatomic, strong) id<CHHapticPatternPlayer> player API_AVAILABLE(macos(10.16), ios(13.0), tvos(14.0));
@@ -1395,8 +1396,11 @@ static SDL3_RumbleContext *IOS_JoystickInitRumble(GCController *controller)
     return nil;
 }
 
+#endif // SDL_JOYSTICK_MFI
+
 static bool IOS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
+#ifdef SDL_JOYSTICK_MFI
     SDL_JoystickDeviceItem *device = joystick->hwdata;
 
     if (device == NULL) {
@@ -1415,13 +1419,14 @@ static bool IOS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     if (device->rumble) {
         SDL3_RumbleContext *rumble = (__bridge SDL3_RumbleContext *)device->rumble;
         return [rumble rumbleWithLowFrequency:low_frequency_rumble andHighFrequency:high_frequency_rumble];
-    } else {
-        return SDL_Unsupported();
     }
+#endif
+    return SDL_Unsupported();
 }
 
 static bool IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
+#ifdef SDL_JOYSTICK_MFI
     SDL_JoystickDeviceItem *device = joystick->hwdata;
 
     if (device == NULL) {
@@ -1440,9 +1445,9 @@ static bool IOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumbl
     if (device->rumble) {
         SDL3_RumbleContext *rumble = (__bridge SDL3_RumbleContext *)device->rumble;
         return [rumble rumbleLeftTrigger:left_rumble andRightTrigger:right_rumble];
-    } else {
-        return SDL_Unsupported();
     }
+#endif
+    return SDL_Unsupported();
 }
 
 static bool IOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
@@ -1465,7 +1470,6 @@ static bool IOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, U
             }
         }
     }
-
     return SDL_Unsupported();
 }
 
@@ -1519,6 +1523,7 @@ static void IOS_JoystickClose(SDL_Joystick *joystick)
 
     device->joystick = NULL;
 
+#ifdef SDL_JOYSTICK_MFI
     @autoreleasepool {
         if (device->rumble) {
             SDL3_RumbleContext *rumble = (__bridge SDL3_RumbleContext *)device->rumble;
@@ -1529,7 +1534,6 @@ static void IOS_JoystickClose(SDL_Joystick *joystick)
         }
 
         if (device->controller) {
-#ifdef SDL_JOYSTICK_MFI
             GCController *controller = device->controller;
             controller.controllerPausedHandler = nil;
             controller.playerIndex = -1;
@@ -1542,9 +1546,10 @@ static void IOS_JoystickClose(SDL_Joystick *joystick)
                     }
                 }
             }
-#endif // SDL_JOYSTICK_MFI
         }
     }
+#endif // SDL_JOYSTICK_MFI
+
     if (device->is_siri_remote) {
         --SDL_AppleTVRemoteOpenedAsJoystick;
     }
