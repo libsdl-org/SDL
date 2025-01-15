@@ -1198,7 +1198,6 @@ struct VulkanRenderer
     SDL_Mutex *submitLock;
     SDL_Mutex *acquireCommandBufferLock;
     SDL_Mutex *acquireUniformBufferLock;
-    SDL_Mutex *renderPassFetchLock;
     SDL_Mutex *framebufferFetchLock;
     SDL_Mutex *windowLock;
 
@@ -4924,7 +4923,6 @@ static void VULKAN_DestroyDevice(
     SDL_DestroyMutex(renderer->submitLock);
     SDL_DestroyMutex(renderer->acquireCommandBufferLock);
     SDL_DestroyMutex(renderer->acquireUniformBufferLock);
-    SDL_DestroyMutex(renderer->renderPassFetchLock);
     SDL_DestroyMutex(renderer->framebufferFetchLock);
     SDL_DestroyMutex(renderer->windowLock);
 
@@ -7092,14 +7090,10 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
         key.depthStencilTargetDescription.stencilStoreOp = depthStencilTargetInfo->stencil_store_op;
     }
 
-    SDL_LockMutex(renderer->renderPassFetchLock);
-
     bool result = SDL_FindInHashTable(
         renderer->renderPassHashTable,
         (const void *)&key,
         (const void **)&renderPassWrapper);
-
-    SDL_UnlockMutex(renderer->renderPassFetchLock);
 
     if (result) {
         return renderPassWrapper->handle;
@@ -7123,14 +7117,11 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
     renderPassWrapper = SDL_malloc(sizeof(VulkanRenderPassHashTableValue));
     renderPassWrapper->handle = renderPassHandle;
 
-    SDL_LockMutex(renderer->renderPassFetchLock);
-
     SDL_InsertIntoHashTable(
         renderer->renderPassHashTable,
         (const void *)allocedKey,
         (const void *)renderPassWrapper);
 
-    SDL_UnlockMutex(renderer->renderPassFetchLock);
     return renderPassHandle;
 }
 
@@ -11653,7 +11644,6 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->submitLock = SDL_CreateMutex();
     renderer->acquireCommandBufferLock = SDL_CreateMutex();
     renderer->acquireUniformBufferLock = SDL_CreateMutex();
-    renderer->renderPassFetchLock = SDL_CreateMutex();
     renderer->framebufferFetchLock = SDL_CreateMutex();
     renderer->windowLock = SDL_CreateMutex();
 
@@ -11705,6 +11695,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 
     // Initialize caches
 
+    // manually synchronized due to submission timing
     renderer->commandPoolHashTable = SDL_CreateHashTable(
         (void *)renderer,
         64,
@@ -11713,14 +11704,16 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         VULKAN_INTERNAL_CommandPoolHashNuke,
         false, false);
 
+    // thread-safe
     renderer->renderPassHashTable = SDL_CreateHashTable(
         (void *)renderer,
         64,
         VULKAN_INTERNAL_RenderPassHashFunction,
         VULKAN_INTERNAL_RenderPassHashKeyMatch,
         VULKAN_INTERNAL_RenderPassHashNuke,
-        false, false);
+        true, false);
 
+    // manually synchronized due to iteration
     renderer->framebufferHashTable = SDL_CreateHashTable(
         (void *)renderer,
         64,
@@ -11729,29 +11722,32 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         VULKAN_INTERNAL_FramebufferHashNuke,
         false, false);
 
+    // thread-safe
     renderer->graphicsPipelineResourceLayoutHashTable = SDL_CreateHashTable(
         (void *)renderer,
         64,
         VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashFunction,
         VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashKeyMatch,
         VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashNuke,
-        false, false);
+        true, false);
 
+    // thread-safe
     renderer->computePipelineResourceLayoutHashTable = SDL_CreateHashTable(
         (void *)renderer,
         64,
         VULKAN_INTERNAL_ComputePipelineResourceLayoutHashFunction,
         VULKAN_INTERNAL_ComputePipelineResourceLayoutHashKeyMatch,
         VULKAN_INTERNAL_ComputePipelineResourceLayoutHashNuke,
-        false, false);
+        true, false);
 
+    // thread-safe
     renderer->descriptorSetLayoutHashTable = SDL_CreateHashTable(
         (void *)renderer,
         64,
         VULKAN_INTERNAL_DescriptorSetLayoutHashFunction,
         VULKAN_INTERNAL_DescriptorSetLayoutHashKeyMatch,
         VULKAN_INTERNAL_DescriptorSetLayoutHashNuke,
-        false, false);
+        true, false);
 
     // Initialize fence pool
 
