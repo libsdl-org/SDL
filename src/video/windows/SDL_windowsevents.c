@@ -1119,6 +1119,16 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         if (SDL_WINDOW_IS_POPUP(data->window)) {
             return MA_NOACTIVATE;
         }
+
+        // Check parents to see if they are in relative mouse mode and focused
+        SDL_Window *parent = data->window->parent;
+        while (parent) {
+            if ((parent->flags & SDL_WINDOW_INPUT_FOCUS) &&
+                (parent->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE)) {
+                return MA_NOACTIVATE;
+            }
+            parent = parent->parent;
+        }
     } break;
 
     case WM_SETFOCUS:
