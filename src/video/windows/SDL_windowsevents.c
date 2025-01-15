@@ -241,9 +241,7 @@ static void WIN_CheckWParamMouseButton(Uint64 timestamp, bool bwParamMousePresse
             data->focus_click_pending &= ~SDL_BUTTON_MASK(button);
             WIN_UpdateClipCursor(data->window);
         }
-        if (WIN_ShouldIgnoreFocusClick(data)) {
-            return;
-        }
+        return;
     }
 
     if (bwParamMousePressed && !(mouseFlags & SDL_BUTTON_MASK(button))) {
@@ -323,7 +321,7 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
     if (has_focus) {
         POINT cursorPos;
 
-        if (!(window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+        if (WIN_ShouldIgnoreFocusClick(data) && !(window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
             bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
             if (GetAsyncKeyState(VK_LBUTTON)) {
                 data->focus_click_pending |= !swapButtons ? SDL_BUTTON_LMASK : SDL_BUTTON_RMASK;
@@ -676,9 +674,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                         windowdata->focus_click_pending &= ~SDL_BUTTON_MASK(button);
                         WIN_UpdateClipCursor(window);
                     }
-                    if (WIN_ShouldIgnoreFocusClick(windowdata)) {
-                        continue;
-                    }
+                    continue;
                 }
 
                 SDL_SendMouseButton(timestamp, window, mouseID, button, down);
