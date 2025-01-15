@@ -26,7 +26,9 @@
 #include "SDL_keymap_c.h"
 #include "../video/SDL_sysvideo.h"
 
-// #define DEBUG_KEYBOARD
+#if 0
+#define DEBUG_KEYBOARD
+#endif
 
 // Global keyboard information
 
@@ -217,7 +219,7 @@ void SDL_ResetKeyboard(void)
     int scancode;
 
 #ifdef DEBUG_KEYBOARD
-    printf("Resetting keyboard\n");
+    SDL_Log("Resetting keyboard\n");
 #endif
     for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_SCANCODE_COUNT; ++scancode) {
         if (keyboard->keystate[scancode]) {
@@ -514,7 +516,7 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
     const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
 
 #ifdef DEBUG_KEYBOARD
-    printf("The '%s' key has been %s\n", SDL_GetScancodeName(scancode), down ? "pressed" : "released");
+    SDL_Log("The '%s' key has been %s\n", SDL_GetScancodeName(scancode), down ? "pressed" : "released");
 #endif
 
     // Figure out what type of event this is
