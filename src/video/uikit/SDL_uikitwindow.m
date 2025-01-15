@@ -398,7 +398,11 @@ UIKit_GetSupportedOrientations(SDL_Window *window)
 
         /* Get all possible valid orientations. If the app delegate doesn't tell
          * us, we get the orientations from Info.plist via UIApplication. */
-        validOrientations = [app.delegate application:app supportedInterfaceOrientationsForWindow:data.uiwindow];
+        if ([app.delegate respondsToSelector:@selector(application:supportedInterfaceOrientationsForWindow:)]) {
+            validOrientations = [app.delegate application:app supportedInterfaceOrientationsForWindow:data.uiwindow];
+        } else {
+            validOrientations = [app supportedInterfaceOrientationsForWindow:data.uiwindow];
+        }
 
         if (hint != NULL) {
             NSArray *orientations = [@(hint) componentsSeparatedByString:@" "];
