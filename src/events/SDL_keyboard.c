@@ -208,6 +208,7 @@ const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
 {
     int keyboard_index = SDL_GetKeyboardIndex(instance_id);
     if (keyboard_index < 0) {
+        SDL_SetError("Keyboard %" SDL_PRIu32 " not found", instance_id);
         return NULL;
     }
     return SDL_GetPersistentString(SDL_keyboards[keyboard_index].name);
