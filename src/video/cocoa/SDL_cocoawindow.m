@@ -1109,7 +1109,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 {
     SDL_Window *window = _data.window;
 
-    if (window->min_aspect > 0.0f || window->max_aspect > 0.0f) {
+    if (window->min_aspect != window->max_aspect) {
         NSWindow *nswindow = _data.nswindow;
         NSRect newContentRect = [nswindow contentRectForFrameRect:NSMakeRect(0, 0, frameSize.width, frameSize.height)];
         NSSize newSize = newContentRect.size;
@@ -1121,9 +1121,9 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
             aspectRatio = newSize.width / newSize.height;
 
             if (maxAspectRatio > 0.0f && aspectRatio > maxAspectRatio) {
-                newSize.width = (int)SDL_roundf(newSize.height * maxAspectRatio);
+                newSize.width = SDL_roundf(newSize.height * maxAspectRatio);
             } else if (minAspectRatio > 0.0f && aspectRatio < minAspectRatio) {
-                newSize.height = (int)SDL_roundf(newSize.width / minAspectRatio);
+                newSize.height = SDL_roundf(newSize.width / minAspectRatio);
             }
 
             NSRect newFrameRect = [nswindow frameRectForContentRect:NSMakeRect(0, 0, newSize.width, newSize.height)];
@@ -2512,6 +2512,21 @@ void Cocoa_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window)
         maxSize.height = window->max_h;
 
         [windata.nswindow setContentMaxSize:maxSize];
+    }
+}
+
+void Cocoa_SetWindowAspectRatio(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    @autoreleasepool {
+        SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)window->internal;
+
+        if (window->min_aspect > 0.0f && window->min_aspect == window->max_aspect) {
+            int numerator = 0, denominator = 1;
+            SDL_CalculateFraction(window->max_aspect, &numerator, &denominator);
+            [windata.nswindow setContentAspectRatio:NSMakeSize(numerator, denominator)];
+        } else {
+            [windata.nswindow setContentAspectRatio:NSMakeSize(0, 0)];
+        }
     }
 }
 

@@ -103,6 +103,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->SetWindowSize = Cocoa_SetWindowSize;
         device->SetWindowMinimumSize = Cocoa_SetWindowMinimumSize;
         device->SetWindowMaximumSize = Cocoa_SetWindowMaximumSize;
+        device->SetWindowAspectRatio = Cocoa_SetWindowAspectRatio;
         device->SetWindowOpacity = Cocoa_SetWindowOpacity;
         device->GetWindowSizeInPixels = Cocoa_GetWindowSizeInPixels;
         device->ShowWindow = Cocoa_ShowWindow;

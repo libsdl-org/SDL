@@ -168,6 +168,7 @@ extern bool Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Cocoa_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Cocoa_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Cocoa_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window);
+extern void Cocoa_SetWindowAspectRatio(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Cocoa_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
 extern bool Cocoa_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
 extern void Cocoa_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
