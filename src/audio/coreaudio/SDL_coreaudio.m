@@ -769,10 +769,17 @@ static bool PrepareAudioQueue(SDL_AudioDevice *device)
             // L R C LFE Cs Ls Rs
             layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_6_1;
         } else {
-            // FIXME: We need to manually swizzle channels into a supported layout
             // L R C LFE Ls Rs Cs
-            //layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_6_1_A;
-            return SDL_SetError("Unsupported audio channels");
+            layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_6_1_A;
+
+            // Convert from SDL channel layout to kAudioChannelLayoutTag_MPEG_6_1_A
+            static const int swizzle_map[7] = {
+                0, 1, 2, 3, 6, 4, 5
+            };
+            device->chmap = SDL_ChannelMapDup(swizzle_map, SDL_arraysize(swizzle_map));
+            if (!device->chmap) {
+                return false;
+            }
         }
         break;
     case 8:
@@ -780,10 +787,17 @@ static bool PrepareAudioQueue(SDL_AudioDevice *device)
             // L R C LFE Rls Rrs Ls Rs
             layout.mChannelLayoutTag = kAudioChannelLayoutTag_WAVE_7_1;
         } else {
-            // FIXME: We need to manually swizzle channels into a supported layout
             // L R C LFE Ls Rs Rls Rrs
-            //layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_7_1_C;
-            return SDL_SetError("Unsupported audio channels");
+            layout.mChannelLayoutTag = kAudioChannelLayoutTag_MPEG_7_1_C;
+
+            // Convert from SDL channel layout to kAudioChannelLayoutTag_MPEG_7_1_C
+            static const int swizzle_map[8] = {
+                0, 1, 2, 3, 6, 7, 4, 5
+            };
+            device->chmap = SDL_ChannelMapDup(swizzle_map, SDL_arraysize(swizzle_map));
+            if (!device->chmap) {
+                return false;
+            }
         }
         break;
     default:
