@@ -794,6 +794,20 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
     return preventDefault;
 }
 
+static bool IsFunctionKey(SDL_Scancode scancode)
+{
+    if (scancode >= SDL_SCANCODE_F1 && scancode <= SDL_SCANCODE_F12) {
+        return true;
+    }
+    if (scancode >= SDL_SCANCODE_F13 && scancode <= SDL_SCANCODE_F24) {
+        return true;
+    }
+    return false;
+}
+
+/* This is a great tool to see web keyboard events live:
+ * https://w3c.github.io/uievents/tools/key-event-viewer.html
+ */
 static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     const SDL_Keycode keycode = Emscripten_MapKeyCode(keyEvent);
@@ -823,7 +837,7 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
         (scancode == SDL_SCANCODE_UP) ||
         (scancode == SDL_SCANCODE_RIGHT) ||
         (scancode == SDL_SCANCODE_DOWN) ||
-        ((scancode >= SDL_SCANCODE_F1) && (scancode <= SDL_SCANCODE_F15)) ||
+        IsFunctionKey(scancode) ||
         keyEvent->ctrlKey) {
         is_nav_key = SDL_TRUE;
     }
