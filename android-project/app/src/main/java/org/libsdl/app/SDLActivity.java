@@ -1495,7 +1495,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 // on some devices key events are sent for mouse BUTTON_BACK/FORWARD presses
                 // they are ignored here because sending them as mouse input to SDL is messy
                 if ((keyCode == KeyEvent.KEYCODE_BACK) || (keyCode == KeyEvent.KEYCODE_FORWARD)) {
-    Log.v("SDL", "keycode is back or forward");
                     switch (event.getAction()) {
                     case KeyEvent.ACTION_DOWN:
                     case KeyEvent.ACTION_UP:
