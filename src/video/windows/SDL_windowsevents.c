@@ -1682,6 +1682,11 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_ENTERSIZEMOVE:
     case WM_ENTERMENULOOP:
     {
+        data->initial_size_rect.left = data->window->x;
+        data->initial_size_rect.right = data->window->x + data->window->w;
+        data->initial_size_rect.top = data->window->y;
+        data->initial_size_rect.bottom = data->window->y + data->window->h;
+
         SetTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks, USER_TIMER_MINIMUM, NULL);
     } break;
 
@@ -1775,7 +1780,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             case WMSZ_LEFT:
                 clientDragRect.left = clientDragRect.right - w;
                 if (lock_aspect_ratio) {
-                    clientDragRect.top = (clientDragRect.bottom + clientDragRect.top - h) / 2;
+                    clientDragRect.top = (data->initial_size_rect.bottom + data->initial_size_rect.top - h) / 2;
                 }
                 clientDragRect.bottom = h + clientDragRect.top;
                 break;
@@ -1786,7 +1791,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             case WMSZ_RIGHT:
                 clientDragRect.right = w + clientDragRect.left;
                 if (lock_aspect_ratio) {
-                    clientDragRect.top = (clientDragRect.bottom + clientDragRect.top - h) / 2;
+                    clientDragRect.top = (data->initial_size_rect.bottom + data->initial_size_rect.top - h) / 2;
                 }
                 clientDragRect.bottom = h + clientDragRect.top;
                 break;
@@ -1796,7 +1801,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             case WMSZ_TOP:
                 if (lock_aspect_ratio) {
-                    clientDragRect.left = (clientDragRect.right + clientDragRect.left - w) / 2;
+                    clientDragRect.left = (data->initial_size_rect.right + data->initial_size_rect.left - w) / 2;
                 }
                 clientDragRect.right = w + clientDragRect.left;
                 clientDragRect.top = clientDragRect.bottom - h;
@@ -1807,7 +1812,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 break;
             case WMSZ_BOTTOM:
                 if (lock_aspect_ratio) {
-                    clientDragRect.left = (clientDragRect.right + clientDragRect.left - w) / 2;
+                    clientDragRect.left = (data->initial_size_rect.right + data->initial_size_rect.left - w) / 2;
                 }
                 clientDragRect.right = w + clientDragRect.left;
                 clientDragRect.bottom = h + clientDragRect.top;

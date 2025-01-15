@@ -82,6 +82,7 @@ struct SDL_WindowData
     bool windowed_mode_was_maximized;
     bool in_window_deactivation;
     bool force_resizable;
+    RECT initial_size_rect;
     RECT cursor_clipped_rect; // last successfully committed clipping rect for this window
     RECT cursor_ctrlock_rect; // this is Windows-specific, but probably does not need to be per-window
     UINT windowed_mode_corner_rounding;
