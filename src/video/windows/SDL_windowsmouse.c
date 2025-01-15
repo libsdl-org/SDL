@@ -390,7 +390,7 @@ static HCURSOR GetCachedCursor(SDL_Cursor *cursor)
     }
 
     int hot_x = (int)SDL_round(data->hot_x * scale);
-    int hot_y = (int)SDL_round(data->hot_x * scale);
+    int hot_y = (int)SDL_round(data->hot_y * scale);
     hcursor = WIN_CreateHCursor(surface, hot_x, hot_y);
     if (!hcursor) {
         goto error;
