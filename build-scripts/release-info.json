@@ -110,24 +110,21 @@
     },
     "files-lib": {
       "": [
-        "README-SDL.txt"
+        "build-scripts/pkg-support/msvc/@<@ARCH@>@/INSTALL.md.in:INSTALL.md",
+        "LICENSE.txt",
+        "README.md"
       ]
     },
     "files-devel": {
       "": [
-        "README-SDL.txt",
-        "BUGS.txt",
+        "build-scripts/pkg-support/msvc/INSTALL.md",
         "LICENSE.txt",
-        "README.md",
-        "WhatsNew.txt"
+        "README.md"
       ],
       "cmake": [
         "build-scripts/pkg-support/msvc/cmake/SDL3Config.cmake.in:SDL3Config.cmake",
         "build-scripts/pkg-support/msvc/cmake/SDL3ConfigVersion.cmake.in:SDL3ConfigVersion.cmake",
         "cmake/sdlcpu.cmake"
-      ],
-      "docs": [
-        "docs/*"
       ],
       "include/SDL3": [
         "include/SDL3/*.h"
