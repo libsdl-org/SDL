@@ -40,6 +40,8 @@
 #define SDL_pen_h_
 
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_touch.h>
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -58,6 +60,20 @@ extern "C" {
  * \since This datatype is available since SDL 3.1.3.
  */
 typedef Uint32 SDL_PenID;
+
+/**
+ * The SDL_MouseID for mouse events simulated with pen input.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_PEN_MOUSEID ((SDL_MouseID)-2)
+
+/**
+ * The SDL_TouchID for touch events simulated with pen input.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_PEN_TOUCHID ((SDL_TouchID)-2)
 
 
 /**
