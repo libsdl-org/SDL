@@ -476,7 +476,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
             [data.fieldEdit setPendingKey:scancode scancode:code timestamp:Cocoa_GetEventTimestamp([event timestamp])];
             [data.fieldEdit interpretKeyEvents:[NSArray arrayWithObject:event]];
             [data.fieldEdit sendPendingKey];
-        } else {
+        } else if (SDL_GetKeyboardFocus()) {
             SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, true);
         }
         break;
