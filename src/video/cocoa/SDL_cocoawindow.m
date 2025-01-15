@@ -1668,11 +1668,6 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
         }
     }
 
-    if ([self processHitTest:theEvent]) {
-        SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
-        return; // dragging, drop event.
-    }
-
     switch ([theEvent buttonNumber]) {
     case 0:
         if (([theEvent modifierFlags] & NSEventModifierFlagControl) &&
@@ -1693,6 +1688,11 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     default:
         button = (int)[theEvent buttonNumber] + 1;
         break;
+    }
+
+    if (button == SDL_BUTTON_LEFT && [self processHitTest:theEvent]) {
+        SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
+        return; // dragging, drop event.
     }
 
     Cocoa_SendMouseButtonClicks(mouse, theEvent, _data.window, button, true);
@@ -1721,11 +1721,6 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
         return;
     }
 
-    if ([self processHitTest:theEvent]) {
-        SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
-        return; // stopped dragging, drop event.
-    }
-
     switch ([theEvent buttonNumber]) {
     case 0:
         if (wasCtrlLeft) {
@@ -1744,6 +1739,11 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     default:
         button = (int)[theEvent buttonNumber] + 1;
         break;
+    }
+
+    if (button == SDL_BUTTON_LEFT && [self processHitTest:theEvent]) {
+        SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
+        return; // stopped dragging, drop event.
     }
 
     Cocoa_SendMouseButtonClicks(mouse, theEvent, _data.window, button, false);
