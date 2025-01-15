@@ -36,7 +36,9 @@
 #include "SDL_cocoaopengles.h"
 #include "SDL_cocoavideo.h"
 
-// #define DEBUG_COCOAWINDOW
+#if 0
+#define DEBUG_COCOAWINDOW
+#endif
 
 #ifdef DEBUG_COCOAWINDOW
 #define DLog(fmt, ...) printf("%s: " fmt "\n", __func__, ##__VA_ARGS__)
@@ -125,7 +127,7 @@
 - (BOOL)canBecomeMainWindow
 {
     SDL_Window *window = [self findSDLWindow];
-    if (window && !SDL_WINDOW_IS_POPUP(window)) {
+    if (window && !(window->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_NOT_FOCUSABLE)) && !SDL_WINDOW_IS_POPUP(window)) {
         return YES;
     } else {
         return NO;
