@@ -37,24 +37,41 @@
 
 bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-    SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
+    char *pathwithsep = NULL;
+    int pathwithseplen = SDL_asprintf(&pathwithsep, "%s/", path);
+    if ((pathwithseplen == -1) || (!pathwithsep)) {
+        return false;
+    }
 
-    DIR *dir = opendir(path);
+    // trim down to a single path separator at the end, in case the caller added one or more.
+    pathwithseplen--;
+    while ((pathwithseplen >= 0) && (pathwithsep[pathwithseplen] == '/')) {
+        pathwithsep[pathwithseplen--] = '\0';
+    }
+
+    DIR *dir = opendir(pathwithsep);
     if (!dir) {
+        SDL_free(pathwithsep);
         return SDL_SetError("Can't open directory: %s", strerror(errno));
     }
 
+    // make sure there's a path separator at the end now for the actual callback.
+    pathwithsep[++pathwithseplen] = '/';
+    pathwithsep[++pathwithseplen] = '\0';
+
+    SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
     struct dirent *ent;
-    while ((result == SDL_ENUM_CONTINUE) && ((ent = readdir(dir)) != NULL))
-    {
+    while ((result == SDL_ENUM_CONTINUE) && ((ent = readdir(dir)) != NULL)) {
         const char *name = ent->d_name;
         if ((SDL_strcmp(name, ".") == 0) || (SDL_strcmp(name, "..") == 0)) {
             continue;
         }
-        result = cb(userdata, path, name);
+        result = cb(userdata, pathwithsep, name);
     }
 
     closedir(dir);
+
+    SDL_free(pathwithsep);
 
     return (result != SDL_ENUM_FAILURE);
 }

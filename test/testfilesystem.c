@@ -20,14 +20,7 @@ static SDL_EnumerationResult SDLCALL enum_callback(void *userdata, const char *o
     SDL_PathInfo info;
     char *fullpath = NULL;
 
-    /* you can use '/' for a path separator on Windows, but to make the log output look correct, we'll #ifdef this... */
-    #ifdef SDL_PLATFORM_WINDOWS
-    const char *pathsep = "\\";
-    #else
-    const char *pathsep = "/";
-    #endif
-
-    if (SDL_asprintf(&fullpath, "%s%s%s", origdir, *origdir ? pathsep : "", fname) < 0) {
+    if (SDL_asprintf(&fullpath, "%s%s", origdir, fname) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         return SDL_ENUM_FAILURE;
     }
