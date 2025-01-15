@@ -172,6 +172,10 @@ extern bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window);
 extern bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, bool state, bool blocking);
 #endif
 
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+extern void SDL_UpdateLifecycleObserver(void);
+#endif
+
 static void SDL_CheckWindowDisplayChanged(SDL_Window *window);
 static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window);
 static void SDL_CheckWindowSafeAreaChanged(SDL_Window *window);
@@ -2467,6 +2471,10 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     // Make sure window pixel size is up to date
     SDL_CheckWindowPixelSizeChanged(window);
 
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+    SDL_UpdateLifecycleObserver();
+#endif
+
     SDL_ClearError();
 
     return window;
@@ -4198,6 +4206,10 @@ void SDL_DestroyWindow(SDL_Window *window)
     }
 
     SDL_free(window);
+
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+    SDL_UpdateLifecycleObserver();
+#endif
 }
 
 bool SDL_ScreenSaverEnabled(void)

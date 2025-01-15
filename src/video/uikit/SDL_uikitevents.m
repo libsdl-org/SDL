@@ -44,7 +44,16 @@ static BOOL UIKit_EventPumpEnabled = YES;
 - (void)update
 {
     NSNotificationCenter *notificationCenter = NSNotificationCenter.defaultCenter;
-    if ((UIKit_EventPumpEnabled || SDL_HasMainCallbacks()) && !self.isObservingNotifications) {
+    bool wants_observation = (UIKit_EventPumpEnabled || SDL_HasMainCallbacks());
+    if (!wants_observation) {
+        // Make sure no windows have active animation callbacks
+        int num_windows = 0;
+        SDL_free(SDL_GetWindows(&num_windows));
+        if (num_windows > 0) {
+            wants_observation = true;
+        }
+    }
+    if (wants_observation && !self.isObservingNotifications) {
         self.isObservingNotifications = YES;
         [notificationCenter addObserver:self selector:@selector(applicationDidBecomeActive) name:UIApplicationDidBecomeActiveNotification object:nil];
         [notificationCenter addObserver:self selector:@selector(applicationWillResignActive) name:UIApplicationWillResignActiveNotification object:nil];
@@ -58,7 +67,7 @@ static BOOL UIKit_EventPumpEnabled = YES;
                                    name:UIApplicationDidChangeStatusBarOrientationNotification
                                  object:nil];
 #endif
-    } else if (!UIKit_EventPumpEnabled && !SDL_HasMainCallbacks() && self.isObservingNotifications) {
+    } else if (!wants_observation && self.isObservingNotifications) {
         self.isObservingNotifications = NO;
         [notificationCenter removeObserver:self];
     }
