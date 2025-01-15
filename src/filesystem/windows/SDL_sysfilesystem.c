@@ -355,11 +355,17 @@ char *SDL_SYS_GetCurrentDirectory(void)
         if (bw == 0) {
             WIN_SetError("GetCurrentDirectoryW failed");
             return NULL;
-        } else if (bw < buflen) {
-            break;  // we got it!
+        } else if (bw < buflen) {  // we got it!
+            // make sure there's a path separator at the end.
+            SDL_assert(bw < (buflen + 2));
+            if ((bw == 0) || (wstr[bw-1] != '\\')) {
+                wstr[bw] = '\\';
+                wstr[bw + 1] = '\0';
+            }
+            break;
         }
 
-        void *ptr = SDL_realloc(wstr, bw * sizeof (WCHAR));
+        void *ptr = SDL_realloc(wstr, (bw + 1) * sizeof (WCHAR));
         if (!ptr) {
             SDL_free(wstr);
             return NULL;

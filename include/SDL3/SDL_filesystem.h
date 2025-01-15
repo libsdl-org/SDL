@@ -483,6 +483,9 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GlobDirectory(const char *path, const ch
  * platforms without this concept, this would cause surprises with file access
  * outside of SDL.
  *
+ * The returned path is guaranteed to end with a path separator ('\\' on
+ * Windows, '/' on most other platforms).
+ *
  * \returns a UTF-8 string of the current working directory in
  *          platform-dependent notation. NULL if there's a problem. This
  *          should be freed with SDL_free() when it is no longer needed.

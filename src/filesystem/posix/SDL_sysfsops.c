@@ -217,7 +217,7 @@ char *SDL_SYS_GetCurrentDirectory(void)
         }
         buf = (char *) ptr;
 
-        if (getcwd(buf, buflen) != NULL) {
+        if (getcwd(buf, buflen-1) != NULL) {
             break;  // we got it!
         }
 
@@ -229,6 +229,14 @@ char *SDL_SYS_GetCurrentDirectory(void)
         SDL_free(buf);
         SDL_SetError("getcwd failed: %s", strerror(errno));
         return NULL;
+    }
+
+    // make sure there's a path separator at the end.
+    SDL_assert(SDL_strlen(buf) < (buflen + 2));
+    buflen = SDL_strlen(buf);
+    if ((buflen == 0) || (buf[buflen-1] != '/')) {
+        buf[buflen] = '/';
+        buf[buflen + 1] = '\0';
     }
 
     return buf;
