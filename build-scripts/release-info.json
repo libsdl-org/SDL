@@ -45,21 +45,14 @@
     },
     "files": {
       "": [
-        "build-scripts/pkg-support/mingw/INSTALL.txt",
+        "build-scripts/pkg-support/mingw/INSTALL.md",
         "build-scripts/pkg-support/mingw/Makefile",
-        "BUGS.txt",
-        "CREDITS.md",
-        "README-SDL.txt",
-        "WhatsNew.txt",
         "LICENSE.txt",
         "README.md"
       ],
       "cmake": [
         "build-scripts/pkg-support/mingw/cmake/SDL3Config.cmake",
         "build-scripts/pkg-support/mingw/cmake/SDL3ConfigVersion.cmake"
-      ],
-      "docs": [
-        "docs/*"
       ]
     }
   },
