@@ -47,6 +47,14 @@ jobs:
         with:
           name: sources
           path: '${{ github.workspace}}/dist'
+      - name: 'Generate summary'
+        run: |
+          echo "Run the following commands to download all artifacts:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "mkdir -p /tmp/${{ steps.releaser.outputs.project }}-${{ steps.releaser.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "cd /tmp/${{ steps.releaser.outputs.project }}-${{ steps.releaser.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "gh run -R ${{ github.repository }} download ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   linux-verify:
     needs: [src]
