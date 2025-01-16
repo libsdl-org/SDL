@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2024 Katharine Chui <katharine.chui@gmail.com>
+  Copyright (C) 2025 Katharine Chui <katharine.chui@gmail.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
