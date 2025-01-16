@@ -794,15 +794,15 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
     return preventDefault;
 }
 
-static bool IsFunctionKey(SDL_Scancode scancode)
+static SDL_bool IsFunctionKey(SDL_Scancode scancode)
 {
     if (scancode >= SDL_SCANCODE_F1 && scancode <= SDL_SCANCODE_F12) {
-        return true;
+        return SDL_TRUE;
     }
     if (scancode >= SDL_SCANCODE_F13 && scancode <= SDL_SCANCODE_F24) {
-        return true;
+        return SDL_TRUE;
     }
-    return false;
+    return SDL_FALSE;
 }
 
 /* This is a great tool to see web keyboard events live:
