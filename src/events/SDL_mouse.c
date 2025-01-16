@@ -122,13 +122,13 @@ static void SDLCALL SDL_VitaTouchMouseDeviceChanged(void *userdata, const char *
         switch (*hint) {
         default:
         case '0':
-            mouse->vita_touch_mouse_device = 0;
-            break;
-        case '1':
             mouse->vita_touch_mouse_device = 1;
             break;
-        case '2':
+        case '1':
             mouse->vita_touch_mouse_device = 2;
+            break;
+        case '2':
+            mouse->vita_touch_mouse_device = 3;
             break;
         }
     }
