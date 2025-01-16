@@ -892,6 +892,10 @@ class Releaser:
         for platform_dir in platform_dirs:
             logger.debug("Found Android Platform SDK: %s", platform_dir)
             if not (platform_dir / "android.jar").is_file():
+                logger.debug("Skipping SDK, missing android.jar")
+                continue
+            if platform_dir.match('*/android-*-ext*'):
+                logger.debug("Skipping SDK, extended version")
                 continue
             if m:= re_platform.match(platform_dir.name):
                 platform_versions.append(int(m.group(1)))
