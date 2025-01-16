@@ -236,10 +236,15 @@ static const SDL_StorageInterface GENERIC_title_iface = {
 static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID props)
 {
     SDL_Storage *result = NULL;
-
     char *basepath = NULL;
+
     if (override != NULL) {
-        basepath = SDL_strdup(override);
+        // make sure override has a path separator at the end. If you're not on Windows and used '\\', that's on you.
+        const size_t slen = SDL_strlen(override);
+        const bool need_sep = (!slen || ((override[slen-1] != '/') && (override[slen-1] != '\\')));
+        if (SDL_asprintf(&basepath, "%s%s", override, need_sep ? "/" : "") == -1) {
+            return NULL;
+        }
     } else {
         const char *base = SDL_GetBasePath();
         basepath = base ? SDL_strdup(base) : NULL;
