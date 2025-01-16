@@ -1889,6 +1889,7 @@ elseif(WINDOWS)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/windows/*.c")
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/windows/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/io/windows/*.c")
 
   if(TARGET SDL3-shared AND MSVC AND NOT SDL_LIBC)
     # Prevent codegen that would use the VC runtime libraries.
