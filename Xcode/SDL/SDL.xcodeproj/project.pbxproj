@@ -1331,7 +1331,7 @@
 				F37E18542BA50EB40098C111 /* dialog */,
 				A7D8A5D723E2513D00DCD162 /* dynapi */,
 				A7D8A92923E2514000DCD162 /* events */,
-				A7D8A7DA23E2513E00DCD162 /* file */,
+				A7D8A7DA23E2513E00DCD162 /* io */,
 				A7D8A7F623E2513F00DCD162 /* filesystem */,
 				E4F257872C81903800FCEAFC /* gpu */,
 				A7D8A5C223E2513D00DCD162 /* haptic */,
@@ -1918,7 +1918,7 @@
 			path = darwin;
 			sourceTree = "<group>";
 		};
-		A7D8A7DA23E2513E00DCD162 /* file */ = {
+		A7D8A7DA23E2513E00DCD162 /* io */ = {
 			isa = PBXGroup;
 			children = (
 				A7D8A7DB23E2513F00DCD162 /* SDL_iostream.c */,
@@ -1928,7 +1928,7 @@
 				000013C0F2EADC24ADC10000 /* generic */,
 				000064F9A2AAE947C1CD0000 /* windows */,
 			);
-			path = file;
+			path = io;
 			sourceTree = "<group>";
 		};
 		A7D8A7DF23E2513F00DCD162 /* power */ = {

@@ -25,7 +25,7 @@
     <Filter Include="events">
       <UniqueIdentifier>{5e27e19f-b3f8-4e2d-b323-b00b2040ec86}</UniqueIdentifier>
     </Filter>
-    <Filter Include="file">
+    <Filter Include="io">
       <UniqueIdentifier>{a3ab9cff-8495-4a5c-8af6-27e43199a712}</UniqueIdentifier>
     </Filter>
     <Filter Include="filesystem">
@@ -211,10 +211,10 @@
     <Filter Include="main\windows">
       <UniqueIdentifier>{00009d5ded166cc6c6680ec771a30000}</UniqueIdentifier>
     </Filter>
-    <Filter Include="file\generic">
+    <Filter Include="io\generic">
       <UniqueIdentifier>{00004d6806b6238cae0ed62db5440000}</UniqueIdentifier>
     </Filter>
-    <Filter Include="file\windows">
+    <Filter Include="io\windows">
       <UniqueIdentifier>{000028b2ea36d7190d13777a4dc70000}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -447,11 +447,11 @@
     <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h">
       <Filter>filesystem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\file\SDL_asyncio_c.h">
-      <Filter>file</Filter>
+    <ClInclude Include="..\..\src\io\SDL_asyncio_c.h">
+      <Filter>io</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\file\SDL_sysasyncio.h">
-      <Filter>file</Filter>
+    <ClInclude Include="..\..\src\io\SDL_sysasyncio.h">
+      <Filter>io</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\main\SDL_main_callbacks.h">
       <Filter>main</Filter>
@@ -965,14 +965,14 @@
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c">
       <Filter>filesystem\windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\file\generic\SDL_asyncio_generic.c">
-      <Filter>file\generic</Filter>
+    <ClCompile Include="..\..\src\io\generic\SDL_asyncio_generic.c">
+      <Filter>io\generic</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\file\SDL_asyncio.c">
-      <Filter>file</Filter>
+    <ClCompile Include="..\..\src\io\SDL_asyncio.c">
+      <Filter>io</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\file\windows\SDL_asyncio_windows_ioring.c">
-      <Filter>file\windows</Filter>
+    <ClCompile Include="..\..\src\io\windows\SDL_asyncio_windows_ioring.c">
+      <Filter>io\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c">
       <Filter>main\generic</Filter>
@@ -1085,8 +1085,8 @@
     <ClCompile Include="..\..\src\events\SDL_windowevents.c">
       <Filter>events</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\file\SDL_iostream.c">
-      <Filter>file</Filter>
+    <ClCompile Include="..\..\src\io\SDL_iostream.c">
+      <Filter>io</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfilesystem.c">
       <Filter>filesystem\windows</Filter>
