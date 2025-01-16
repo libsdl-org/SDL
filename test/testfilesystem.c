@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
         SDL_Storage *storage = NULL;
         SDL_IOStream *stream;
         const char *text = "foo\n";
+        SDL_PathInfo pathinfo;
 
         if (!SDL_EnumerateDirectory(base_path, enum_callback, NULL)) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Base path enumeration failed!");
@@ -233,7 +234,7 @@ int main(int argc, char *argv[])
         if (!storage) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to open base path storage object: %s", SDL_GetError());
         } else {
-            if (!SDL_EnumerateStorageDirectory(storage, "", enum_storage_callback, storage)) {
+            if (!SDL_EnumerateStorageDirectory(storage, "CMakeFiles", enum_storage_callback, storage)) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Storage Base path enumeration failed!");
             }
 
@@ -247,6 +248,62 @@ int main(int argc, char *argv[])
                 }
                 SDL_free(globlist);
             }
+
+            /* these should fail: */
+            if (!SDL_GetStoragePathInfo(storage, "CMakeFiles/../testsprite.c", &pathinfo)) {
+                SDL_Log("Storage access on path with internal '..' refused correctly.");
+            } else {
+                SDL_Log("Storage access on path with internal '..' accepted INCORRECTLY.");
+            }
+
+            if (!SDL_GetStoragePathInfo(storage, "CMakeFiles/./TargetDirectories.txt", &pathinfo)) {
+                SDL_Log("Storage access on path with internal '.' refused correctly.");
+            } else {
+                SDL_Log("Storage access on path with internal '.' accepted INCORRECTLY.");
+            }
+
+            if (!SDL_GetStoragePathInfo(storage, "../test", &pathinfo)) {
+                SDL_Log("Storage access on path with leading '..' refused correctly.");
+            } else {
+                SDL_Log("Storage access on path with leading '..' accepted INCORRECTLY.");
+            }
+
+            if (!SDL_GetStoragePathInfo(storage, "./CMakeFiles", &pathinfo)) {
+                SDL_Log("Storage access on path with leading '.' refused correctly.");
+            } else {
+                SDL_Log("Storage access on path with leading '.' accepted INCORRECTLY.");
+            }
+
+            if (!SDL_GetStoragePathInfo(storage, "CMakeFiles/..", &pathinfo)) {
+                SDL_Log("Storage access on path with trailing '..' refused correctly.");
+            } else {
+                SDL_Log("Storage access on path with trailing '..' accepted INCORRECTLY.");
+            }
+
+            if (!SDL_GetStoragePathInfo(storage, "CMakeFiles/.", &pathinfo)) {
+                SDL_Log("Storage access on path with trailing '.' refused correctly.");
+            } else {
+                SDL_Log("Storage access on path with trailing '.' accepted INCORRECTLY.");
+            }
+
+            if (!SDL_GetStoragePathInfo(storage, "..", &pathinfo)) {
+                SDL_Log("Storage access on path '..' refused correctly.");
+            } else {
+                SDL_Log("Storage access on path '..' accepted INCORRECTLY.");
+            }
+
+            if (!SDL_GetStoragePathInfo(storage, ".", &pathinfo)) {
+                SDL_Log("Storage access on path '.' refused correctly.");
+            } else {
+                SDL_Log("Storage access on path '.' accepted INCORRECTLY.");
+            }
+
+            if (!SDL_GetStoragePathInfo(storage, "CMakeFiles\\TargetDirectories.txt", &pathinfo)) {
+                SDL_Log("Storage access on path with Windows separator refused correctly.");
+            } else {
+                SDL_Log("Storage access on path with Windows separator accepted INCORRECTLY.");
+            }
+
             SDL_CloseStorage(storage);
         }
 
