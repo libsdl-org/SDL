@@ -1776,6 +1776,12 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
         return;
     }
 
+    if (!Cocoa_GetMouseFocus()) {
+        // The mouse is no longer over any window in the application
+        SDL_SetMouseFocus(NULL);
+        return;
+    }
+
     window = _data.window;
     contentView = _data.sdlContentView;
     point = [theEvent locationInWindow];
