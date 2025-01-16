@@ -26,6 +26,7 @@
 #include "SDL_cocoavideo.h"
 
 extern bool Cocoa_InitMouse(SDL_VideoDevice *_this);
+extern NSWindow *Cocoa_GetMouseFocus();
 extern void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event);
 extern void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event);
 extern void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y);
