@@ -249,7 +249,7 @@ static Uint16 get_effect_direction(SDL_HapticEffect *effect)
 
 static Uint32 get_effect_replay_length(SDL_HapticEffect *effect)
 {
-    int length = 0;
+    Uint32 length = 0;
     if (effect_is_periodic(effect)) {
         length = effect->periodic.length;
     } else if (effect_is_condition(effect)) {
@@ -276,7 +276,7 @@ static Uint32 get_effect_replay_length(SDL_HapticEffect *effect)
 
 static Uint16 get_effect_replay_delay(SDL_HapticEffect *effect)
 {
-    int delay = 0;
+    Uint16 delay = 0;
     if (effect_is_periodic(effect)) {
         delay = effect->periodic.delay;
     } else if (effect_is_condition(effect)) {
@@ -601,7 +601,7 @@ static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_param
         }
     }
 
-    slot->current_cmd[0] = (0x10 << slot->id) + slot->cmd_op;
+    slot->current_cmd[0] = (Uint8)((0x10 << slot->id) + slot->cmd_op);
 
     if (slot->cmd_op == 3) {
         slot->current_cmd[1] = 0;
@@ -639,10 +639,10 @@ static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_param
                     k2 -= 2048;
                 }
                 slot->current_cmd[1] = 0x0b;
-                slot->current_cmd[2] = d1 >> 3;
-                slot->current_cmd[3] = d2 >> 3;
+                slot->current_cmd[2] = (Uint8)(d1 >> 3);
+                slot->current_cmd[3] = (Uint8)(d2 >> 3);
                 slot->current_cmd[4] = (SCALE_COEFF(k2, 4) << 4) + SCALE_COEFF(k1, 4);
-                slot->current_cmd[5] = ((d2 & 7) << 5) + ((d1 & 7) << 1) + (s2 << 4) + s1;
+                slot->current_cmd[5] = (Uint8)(((d2 & 7) << 5) + ((d1 & 7) << 1) + (s2 << 4) + s1);
                 slot->current_cmd[6] = SCALE_VALUE_U16(parameters->clip, 8);
                 break;
             case SDL_HAPTIC_DAMPER:
@@ -650,9 +650,9 @@ static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_param
                 s2 = parameters->k2 < 0;
                 slot->current_cmd[1] = 0x0c;
                 slot->current_cmd[2] = SCALE_COEFF(parameters->k1, 4);
-                slot->current_cmd[3] = s1;
+                slot->current_cmd[3] = (Uint8)s1;
                 slot->current_cmd[4] = SCALE_COEFF(parameters->k2, 4);
-                slot->current_cmd[5] = s2;
+                slot->current_cmd[5] = (Uint8)s2;
                 slot->current_cmd[6] = SCALE_VALUE_U16(parameters->clip, 8);
                 break;
             case SDL_HAPTIC_FRICTION:
@@ -662,7 +662,7 @@ static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_param
                 slot->current_cmd[2] = SCALE_COEFF(parameters->k1, 8);
                 slot->current_cmd[3] = SCALE_COEFF(parameters->k2, 8);
                 slot->current_cmd[4] = SCALE_VALUE_U16(parameters->clip, 8);
-                slot->current_cmd[5] = (s2 << 4) + s1;
+                slot->current_cmd[5] = (Uint8)((s2 << 4) + s1);
                 slot->current_cmd[6] = 0;
                 break;
         }
@@ -740,7 +740,7 @@ static int lg4ff_timer(struct lg4ff_device *device)
 
     SDL_memset(parameters, 0, sizeof(parameters));
 
-    gain = (Uint32)device->gain * device->app_gain / 0xffff;
+    gain = (Uint16)((Uint32)device->gain * device->app_gain / 0xffff);
 
     count = device->effects_used;
 
@@ -809,7 +809,7 @@ static int lg4ff_timer(struct lg4ff_device *device)
         parameters[i].k1 = (Sint64)parameters[i].k1 * gain / 0xffff;
         parameters[i].k2 = (Sint64)parameters[i].k2 * gain / 0xffff;
         parameters[i].clip = parameters[i].clip * gain / 0xffff;
-        ffb_level += parameters[i].clip * 0x7fff / 0xffff;
+        ffb_level = (Sint32)(ffb_level + parameters[i].clip * 0x7fff / 0xffff);
     }
     if (ffb_level > device->peak_ffb_level) {
         device->peak_ffb_level = ffb_level;
@@ -1029,8 +1029,6 @@ static int SDL_HIDAPI_HapticDriverLg4ff_CreateEffect(SDL_HIDAPI_HapticDevice *de
         SDL_SetError("Bad effect parameters");
         return -1;
     }
-
-    return 0;
 }
 
 // assumes ctx->mutex locked
@@ -1206,9 +1204,9 @@ static bool SDL_HIDAPI_HapticDriverLg4ff_SetAutocenter(SDL_HIDAPI_HapticDevice *
         SDL_memset(cmd, 0x00, 7);
         cmd[0] = 0xfe;
         cmd[1] = 0x0d;
-        cmd[2] = expand_a / 0xaaaa;
-        cmd[3] = expand_a / 0xaaaa;
-        cmd[4] = expand_b / 0xaaaa;
+        cmd[2] = (Uint8)(expand_a / 0xaaaa);
+        cmd[3] = (Uint8)(expand_a / 0xaaaa);
+        cmd[4] = (Uint8)(expand_b / 0xaaaa);
 
         ret = SDL_SendJoystickEffect(ctx->hid_handle, cmd, sizeof(cmd));
         if (!ret) {
