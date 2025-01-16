@@ -534,6 +534,15 @@ class SourceCollector:
         return path_times
 
 
+class AndroidApiVersion:
+    def __init__(self, name: str, ints: tuple[int, ...]):
+        self.name = name
+        self.ints = ints
+
+    def __repr__(self) -> str:
+        return f"<{self.name} ({'.'.join(str(v) for v in self.ints)})>"
+
+
 class Releaser:
     def __init__(self, release_info: dict, commit: str, revision: str, root: Path, dist_path: Path, section_printer: SectionPrinter, executer: Executer, cmake_generator: str, deps_path: Path, overwrite: bool, github: bool, fast: bool):
         self.release_info = release_info
@@ -885,28 +894,25 @@ class Releaser:
         self.artifacts["mingw-devel-tar-gz"] = tgz_path
         self.artifacts["mingw-devel-tar-xz"] = txz_path
 
-    def _detect_android_api(self, android_home: str) -> typing.Optional[int]:
+    def _detect_android_api(self, android_home: str) -> typing.Optional[AndroidApiVersion]:
         platform_dirs = list(Path(p) for p in glob.glob(f"{android_home}/platforms/android-*"))
-        re_platform = re.compile("android-([0-9]+)")
-        platform_versions = []
+        re_platform = re.compile("^android-([0-9]+)(?:-ext([0-9]+))?$")
+        platform_versions: list[AndroidApiVersion] = []
         for platform_dir in platform_dirs:
             logger.debug("Found Android Platform SDK: %s", platform_dir)
             if not (platform_dir / "android.jar").is_file():
                 logger.debug("Skipping SDK, missing android.jar")
                 continue
-            if platform_dir.match('*/android-*-ext*'):
-                logger.debug("Skipping SDK, extended version")
-                continue
             if m:= re_platform.match(platform_dir.name):
-                platform_versions.append(int(m.group(1)))
-        platform_versions.sort()
+                platform_versions.append(AndroidApiVersion(name=platform_dir.name, ints=(int(m.group(1)), int(m.group(2) or 0))))
+        platform_versions.sort(key=lambda v: v.ints)
         logger.info("Available platform versions: %s", platform_versions)
-        platform_versions = list(filter(lambda v: v >= self._android_api_minimum, platform_versions))
-        logger.info("Valid platform versions (>=%d): %s", self._android_api_minimum, platform_versions)
+        platform_versions = list(filter(lambda v: v.ints >= self._android_api_minimum.ints, platform_versions))
+        logger.info("Valid platform versions (>=%s): %s", self._android_api_minimum.ints, platform_versions)
         if not platform_versions:
             return None
         android_api = platform_versions[0]
-        logger.info("Selected API version %d", android_api)
+        logger.info("Selected API version %s", android_api)
         return android_api
 
     def _get_prefab_json_text(self) -> str:
@@ -930,8 +936,19 @@ class Releaser:
         return json.dumps(module_json_dict, indent=4)
 
     @property
-    def _android_api_minimum(self):
-        return self.release_info["android"]["api-minimum"]
+    def _android_api_minimum(self) -> AndroidApiVersion:
+        value = self.release_info["android"]["api-minimum"]
+        if isinstance(value, int):
+            ints = (value, )
+        elif isinstance(value, str):
+            ints = tuple(split("."))
+        else:
+            raise ValueError("Invalid android.api-minimum: must be X or X.Y")
+        match len(ints):
+            case 1: name = f"android-{ints[0]}"
+            case 2: name = f"android-{ints[0]}-ext-{ints[1]}"
+            case _: raise ValueError("Invalid android.api-minimum: must be X or X.Y")
+        return AndroidApiVersion(name=name, ints=ints)
 
     @property
     def _android_api_target(self):
@@ -944,7 +961,7 @@ class Releaser:
     def _get_prefab_abi_json_text(self, abi: str, cpp: bool, shared: bool) -> str:
         abi_json_dict = {
             "abi": abi,
-            "api": self._android_api_minimum,
+            "api": self._android_api_minimum.ints[0],
             "ndk": self._android_ndk_minimum,
             "stl": "c++_shared" if cpp else "none",
             "static": not shared,
@@ -957,7 +974,7 @@ class Releaser:
                 xmlns:android="http://schemas.android.com/apk/res/android"
                 package="org.libsdl.android.{self.project}" android:versionCode="1"
                 android:versionName="1.0">
-                <uses-sdk android:minSdkVersion="{self._android_api_minimum}"
+                <uses-sdk android:minSdkVersion="{self._android_api_minimum.ints[0]}"
                           android:targetSdkVersion="{self._android_api_target}" />
             </manifest>
         """)
@@ -1372,7 +1389,7 @@ def main(argv=None) -> int:
     parser.add_argument("--actions", choices=["download", "source", "android", "mingw", "msvc", "dmg"], required=True, nargs="+", dest="actions", help="What to do?")
     parser.set_defaults(loglevel=logging.INFO)
     parser.add_argument('--vs-year', dest="vs_year", help="Visual Studio year")
-    parser.add_argument('--android-api', type=int, dest="android_api", help="Android API version")
+    parser.add_argument('--android-api', dest="android_api", help="Android API version")
     parser.add_argument('--android-home', dest="android_home", default=os.environ.get("ANDROID_HOME"), help="Android Home folder")
     parser.add_argument('--android-ndk-home', dest="android_ndk_home", default=os.environ.get("ANDROID_NDK_HOME"), help="Android NDK Home folder")
     parser.add_argument('--cmake-generator', dest="cmake_generator", default="Ninja", help="CMake Generator")
@@ -1499,9 +1516,19 @@ def main(argv=None) -> int:
         if args.android_api is None:
             with section_printer.group("Detect Android APIS"):
                 args.android_api = releaser._detect_android_api(android_home=args.android_home)
+        else:
+            try:
+                android_api_ints = tuple(int(v) for v in args.android_api.split("."))
+                match len(android_api_ints):
+                    case 1: android_api_name = f"android-{android_api_ints[0]}"
+                    case 2: android_api_name = f"android-{android_api_ints[0]}-ext-{android_api_ints[1]}"
+                    case _: raise ValueError
+            except ValueError:
+                logger.error("Invalid --android-api, must be a 'X' or 'X.Y' version")
+            args.android_api = AndroidApiVersion(ints=android_api_ints, name=android_api_name)
         if args.android_api is None:
             parser.error("Invalid --android-api, and/or could not be detected")
-        android_api_path = Path(args.android_home) / f"platforms/android-{args.android_api}"
+        android_api_path = Path(args.android_home) / f"platforms/{args.android_api.name}"
         if not android_api_path.is_dir():
             parser.error(f"Android API directory does not exist ({android_api_path})")
         with section_printer.group("Android arguments"):
@@ -1509,7 +1536,7 @@ def main(argv=None) -> int:
             print(f"android_ndk_home = {args.android_ndk_home}")
             print(f"android_api      = {args.android_api}")
         releaser.create_android_archives(
-            android_api=args.android_api,
+            android_api=args.android_api.ints[0],
             android_home=args.android_home,
             android_ndk_home=args.android_ndk_home,
         )
