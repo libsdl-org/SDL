@@ -2,32 +2,13 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
-3.1.0:
+3.2.0:
 ---------------------------------------------------------------------------
-
-This is a preview release of the new SDL 3.0 API.
-
-The ABI hasn't been locked down yet, but it's fairly stable and feedback is welcome!
 
 Check out [migration guide](docs/README-migration.md) for details on API changes since SDL 2.0, and tips on transitioning your code from SDL2 code to SDL3.
 
 There have been too many changes to list them all, but here are some of the highlights:
-* The API has been significantly reworked to be easier to use and more consistent
-* The 2D rendering API now has support for more advanced colorspaces and HDR rendering
-* The 2D rendering API now has a Vulkan backend
-* An example of hardware accelerated video playback using ffmpeg has been added in test/testffmpeg.c
-* The shaped window API has been replaced with transparent windows
-* Time and date functions have been added in SDL_time.h
-* Support for webcam video recording has been added in SDL_camera.h
-* Support for handling pens and tablets has been added in SDL_pen.h
-* Support for file open and save dialogs has been added in SDL_dialog.h
-* Cross-platform functions for working with files and directories are available in SDL_filesystem.h
-* A cross-platform abstraction for working with user and game data has been added in SDL_storage.h
-* Handling of main() has been moved to a header library and an optional callback-based program flow is available
-* Support for simple object properties has been added in SDL_properties.h. These properties are available on many SDL objects, and can be used for more advanced functionality.
 
-Please let us know about issues and feedback at: https://github.com/libsdl-org/SDL/issues
+https://wiki.libsdl.org/SDL3/NewFeatures
 
-The development team is focused on code, moving towards the final release, and we would love volunteers to help improve the documentation. Please send e-mail to slouken@libsdl.org if you'd like to help out!
-
-Finally, a giant thank you to all the people who have contributed code and feedback to the SDL 3.0 improvements!
+Thank you to all the people who have contributed code and feedback to the SDL 3.0 release!

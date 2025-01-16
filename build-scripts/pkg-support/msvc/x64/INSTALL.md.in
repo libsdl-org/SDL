@@ -1,0 +1,13 @@
+
+# Using this package
+
+This package contains @<@PROJECT_NAME@>@ built for x64 Windows.
+
+To use this package, simply replace an existing 64-bit @<@PROJECT_NAME@>@.dll with the one included here.
+
+# Development packages
+
+If you're looking for packages with headers and libraries, you can download one of these:
+-  @<@PROJECT_NAME@>@-devel-@<@PROJECT_VERSION@>@-VC.zip, for development using Visual Studio
+-  @<@PROJECT_NAME@>@-devel-@<@PROJECT_VERSION@>@-mingw.zip, for development using mingw-w64
+

@@ -891,6 +891,8 @@ class Releaser:
         platform_versions = []
         for platform_dir in platform_dirs:
             logger.debug("Found Android Platform SDK: %s", platform_dir)
+            if not (platform_dir / "android.jar").is_file():
+                continue
             if m:= re_platform.match(platform_dir.name):
                 platform_versions.append(int(m.group(1)))
         platform_versions.sort()
@@ -1248,6 +1250,10 @@ class Releaser:
         platform_context = self.get_context(extra_context=arch_platform.extra_context())
 
         build_type = "Release"
+        extra_context = {
+            "ARCH": arch_platform.arch,
+            "PLATFORM": arch_platform.platform,
+        }
 
         built_paths = set(install_path / configure_text(f, context=platform_context) for file_mapping in (self.release_info["msvc"]["cmake"]["files-lib"], self.release_info["msvc"]["cmake"]["files-devel"]) for files_list in file_mapping.values() for f in files_list)
         logger.info("CMake builds these files, to be included in the package: %s", built_paths)
@@ -1298,7 +1304,7 @@ class Releaser:
         logger.info("Collecting files...")
         archive_file_tree = ArchiveFileTree()
         archive_file_tree.add_file_mapping(arc_dir="", file_mapping=self.release_info["msvc"]["cmake"]["files-lib"], file_mapping_root=install_path, context=platform_context, time=self.arc_time)
-        archive_file_tree.add_file_mapping(arc_dir="", file_mapping=self.release_info["msvc"]["files-lib"], file_mapping_root=self.root, context=self.get_context(), time=self.arc_time)
+        archive_file_tree.add_file_mapping(arc_dir="", file_mapping=self.release_info["msvc"]["files-lib"], file_mapping_root=self.root, context=self.get_context(extra_context=extra_context), time=self.arc_time)
 
         logger.info("Creating %s", zip_path)
         with Archiver(zip_path=zip_path) as archiver:
@@ -1489,8 +1495,11 @@ def main(argv=None) -> int:
         if args.android_api is None:
             with section_printer.group("Detect Android APIS"):
                 args.android_api = releaser._detect_android_api(android_home=args.android_home)
-        if args.android_api is None or not (Path(args.android_home) / f"platforms/android-{args.android_api}").is_dir():
+        if args.android_api is None:
             parser.error("Invalid --android-api, and/or could not be detected")
+        android_api_path = Path(args.android_home) / f"platforms/android-{args.android_api}"
+        if not android_api_path.is_dir():
+            parser.error(f"Android API directory does not exist ({android_api_path})")
         with section_printer.group("Android arguments"):
             print(f"android_home     = {args.android_home}")
             print(f"android_ndk_home = {args.android_ndk_home}")

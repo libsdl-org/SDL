@@ -77,6 +77,14 @@ jobs:
         shell: bash
         run: |
           ${{ steps.tar.outputs.path }}/build-scripts/test-versioning.sh
+      - name: 'Install Linux dependencies'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libjack-dev libsndio-dev \
+            libusb-1.0-0-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev \
+            libxss-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev
       - name: 'CMake (configure + build + tests + examples)'
         run: |
           cmake -S ${{ steps.tar.outputs.path }} -B /tmp/build -DSDL_TEST_LIBRARY=TRUE -DSDL_TESTS=TRUE -DSDL_EXAMPLES=TRUE

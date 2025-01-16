@@ -45,21 +45,14 @@
     },
     "files": {
       "": [
-        "build-scripts/pkg-support/mingw/INSTALL.txt",
+        "build-scripts/pkg-support/mingw/INSTALL.md",
         "build-scripts/pkg-support/mingw/Makefile",
-        "BUGS.txt",
-        "CREDITS.md",
-        "README-SDL.txt",
-        "WhatsNew.txt",
         "LICENSE.txt",
         "README.md"
       ],
       "cmake": [
         "build-scripts/pkg-support/mingw/cmake/SDL3Config.cmake",
         "build-scripts/pkg-support/mingw/cmake/SDL3ConfigVersion.cmake"
-      ],
-      "docs": [
-        "docs/*"
       ]
     }
   },
@@ -117,24 +110,21 @@
     },
     "files-lib": {
       "": [
-        "README-SDL.txt"
+        "build-scripts/pkg-support/msvc/@<@ARCH@>@/INSTALL.md.in:INSTALL.md",
+        "LICENSE.txt",
+        "README.md"
       ]
     },
     "files-devel": {
       "": [
-        "README-SDL.txt",
-        "BUGS.txt",
+        "build-scripts/pkg-support/msvc/INSTALL.md",
         "LICENSE.txt",
-        "README.md",
-        "WhatsNew.txt"
+        "README.md"
       ],
       "cmake": [
         "build-scripts/pkg-support/msvc/cmake/SDL3Config.cmake.in:SDL3Config.cmake",
         "build-scripts/pkg-support/msvc/cmake/SDL3ConfigVersion.cmake.in:SDL3ConfigVersion.cmake",
         "cmake/sdlcpu.cmake"
-      ],
-      "docs": [
-        "docs/*"
       ],
       "include/SDL3": [
         "include/SDL3/*.h"
@@ -211,8 +201,9 @@
     },
     "files": {
       "": [
+        "build-scripts/pkg-support/android/INSTALL.md.in:INSTALL.md",
         "LICENSE.txt",
-        "build-scripts/pkg-support/android/README.md.in:README.md"
+        "README.md"
       ]
     }
   }
