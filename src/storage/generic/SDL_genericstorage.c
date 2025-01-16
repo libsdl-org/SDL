@@ -26,15 +26,8 @@
 
 static char *GENERIC_INTERNAL_CreateFullPath(const char *base, const char *relative)
 {
-    if (!base) {
-        return SDL_strdup(relative);
-    }
-
-    size_t len = SDL_strlen(base) + SDL_strlen(relative) + 1;
-    char *result = (char*)SDL_malloc(len);
-    if (result != NULL) {
-        SDL_snprintf(result, len, "%s%s", base, relative);
-    }
+    char *result = NULL;
+    SDL_asprintf(&result, "%s%s", base ? base : "", relative);
     return result;
 }
 
@@ -56,8 +49,27 @@ static SDL_EnumerationResult SDLCALL GENERIC_EnumerateDirectory(void *userdata, 
     // SDL_EnumerateDirectory will return the full path, so for Storage we
     // can take the base directory and add its length to the dirname string,
     // effectively trimming the root without having to strdup anything.
-    GenericEnumerateData *wrap_data = (GenericEnumerateData *)userdata;
-    return wrap_data->real_callback(wrap_data->real_userdata, dirname + wrap_data->base_len, fname);
+    const GenericEnumerateData *wrap_data = (GenericEnumerateData *)userdata;
+
+    dirname += wrap_data->base_len;  // skip the base, just return the part inside of the Storage.
+
+    #ifdef SDL_PLATFORM_WINDOWS
+    char *dirnamecpy = NULL;
+    const size_t slen = SDL_strlen(dirname);
+    if (slen && (dirname[slen - 1] == '\\')) {
+        dirnamecpy = SDL_strdup(dirname);
+        if (!dirnamecpy) {
+            return SDL_ENUM_FAILURE;
+        }
+        dirnamecpy[slen - 1] = '/';  // storage layer always uses '/' path separators.
+        dirname = dirnamecpy;
+    }
+    const SDL_EnumerationResult retval = wrap_data->real_callback(wrap_data->real_userdata, dirname, fname);
+    SDL_free(dirnamecpy);
+    return retval;
+    #else
+    return wrap_data->real_callback(wrap_data->real_userdata, dirname, fname);
+    #endif
 }
 
 static bool GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata)
