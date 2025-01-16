@@ -6403,7 +6403,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     createInfo.num_levels = 1;
 
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
-        texture = D3D12_INTERNAL_CreateTexture(renderer, &createInfo, true);
+        texture = D3D12_INTERNAL_CreateTexture(renderer, &createInfo, true, "Swapchain");
         texture->container = &windowData->textureContainers[i];
         windowData->textureContainers[i].activeTexture = texture;
         windowData->textureContainers[i].canBeCycled = false;
