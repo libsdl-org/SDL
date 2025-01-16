@@ -45,7 +45,7 @@
     <ClCompile Include="..\..\src\events\SDL_quit.c" />
     <ClCompile Include="..\..\src\events\SDL_touch.c" />
     <ClCompile Include="..\..\src\events\SDL_windowevents.c" />
-    <ClCompile Include="..\..\src\file\SDL_iostream.c" />
+    <ClCompile Include="..\..\src\io\SDL_iostream.c" />
     <ClCompile Include="..\..\src\filesystem\gdk\SDL_sysfilesystem.cpp" />
     <ClCompile Include="..\..\src\gpu\SDL_gpu.c" />
     <ClCompile Include="..\..\src\gpu\d3d12\SDL_gpu_d3d12.c" />
@@ -204,9 +204,9 @@
     <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c" />
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
-    <ClCompile Include="..\..\src\file\generic\SDL_asyncio_generic.c" />
-    <ClCompile Include="..\..\src\file\SDL_asyncio.c" />
-    <ClCompile Include="..\..\src\file\windows\SDL_asyncio_windows_ioring.c" />
+    <ClCompile Include="..\..\src\io\generic\SDL_asyncio_generic.c" />
+    <ClCompile Include="..\..\src\io\SDL_asyncio.c" />
+    <ClCompile Include="..\..\src\io\windows\SDL_asyncio_windows_ioring.c" />
     <ClCompile Include="..\..\src\dialog\dummy\SDL_dummydialog.c" />
     <ClCompile Include="..\..\src\dialog\windows\SDL_windowsdialog.c" />
     <ClCompile Include="..\..\src\render\gpu\SDL_pipeline_gpu.c" />
@@ -466,8 +466,8 @@
     <ClInclude Include="..\..\src\camera\SDL_camera_c.h" />
     <ClInclude Include="..\..\src\camera\SDL_syscamera.h" />
     <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h" />
-    <ClInclude Include="..\..\src\file\SDL_asyncio_c.h" />
-    <ClInclude Include="..\..\src\file\SDL_sysasyncio.h" />
+    <ClInclude Include="..\..\src\io\SDL_asyncio_c.h" />
+    <ClInclude Include="..\..\src\io\SDL_sysasyncio.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_common.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_internal.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx.h" />

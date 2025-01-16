@@ -441,8 +441,8 @@
     <ClInclude Include="..\..\src\events\SDL_windowevents_c.h" />
     <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h" />
     <ClInclude Include="..\..\src\gpu\SDL_sysgpu.h" />
-    <ClInclude Include="..\..\src\file\SDL_asyncio_c.h" />
-    <ClInclude Include="..\..\src\file\SDL_sysasyncio.h" />
+    <ClInclude Include="..\..\src\io\SDL_asyncio_c.h" />
+    <ClInclude Include="..\..\src\io\SDL_sysasyncio.h" />
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h" />
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
@@ -529,9 +529,9 @@
     <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c" />
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
-    <ClCompile Include="..\..\src\file\generic\SDL_asyncio_generic.c" />
-    <ClCompile Include="..\..\src\file\SDL_asyncio.c" />
-    <ClCompile Include="..\..\src\file\windows\SDL_asyncio_windows_ioring.c" />
+    <ClCompile Include="..\..\src\io\generic\SDL_asyncio_generic.c" />
+    <ClCompile Include="..\..\src\io\SDL_asyncio.c" />
+    <ClCompile Include="..\..\src\io\windows\SDL_asyncio_windows_ioring.c" />
     <ClCompile Include="..\..\src\main\gdk\SDL_sysmain_runapp.cpp" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
@@ -673,7 +673,7 @@
     <ClCompile Include="..\..\src\events\SDL_quit.c" />
     <ClCompile Include="..\..\src\events\SDL_touch.c" />
     <ClCompile Include="..\..\src\events\SDL_windowevents.c" />
-    <ClCompile Include="..\..\src\file\SDL_iostream.c" />
+    <ClCompile Include="..\..\src\io\SDL_iostream.c" />
     <ClCompile Include="..\..\src\filesystem\gdk\SDL_sysfilesystem.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">true</ExcludedFromBuild>

@@ -1158,8 +1158,8 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/cpuinfo/*.c"
   "${SDL3_SOURCE_DIR}/src/dynapi/*.c"
   "${SDL3_SOURCE_DIR}/src/events/*.c"
-  "${SDL3_SOURCE_DIR}/src/file/*.c"
-  "${SDL3_SOURCE_DIR}/src/file/generic/*.c"
+  "${SDL3_SOURCE_DIR}/src/io/*.c"
+  "${SDL3_SOURCE_DIR}/src/io/generic/*.c"
   "${SDL3_SOURCE_DIR}/src/filesystem/*.c"
   "${SDL3_SOURCE_DIR}/src/gpu/*.c"
   "${SDL3_SOURCE_DIR}/src/joystick/*.c"
@@ -1774,7 +1774,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     endif()
 
     if(HAVE_LIBURING_H)
-      sdl_sources("${SDL3_SOURCE_DIR}/src/file/io_uring/SDL_asyncio_liburing.c")
+      sdl_sources("${SDL3_SOURCE_DIR}/src/io/io_uring/SDL_asyncio_liburing.c")
     endif()
 
     # Always compiled for Linux, unconditionally:
@@ -2912,7 +2912,7 @@ elseif(N3DS)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/n3ds/*.c")
   set(HAVE_SDL_LOCALE TRUE)
 
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/file/n3ds/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/io/n3ds/*.c")
 endif()
 
 sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog.c)

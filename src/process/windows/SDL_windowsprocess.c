@@ -24,7 +24,7 @@
 
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysprocess.h"
-#include "../../file/SDL_iostream_c.h"
+#include "../../io/SDL_iostream_c.h"
 
 #define READ_END 0
 #define WRITE_END 1
