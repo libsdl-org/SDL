@@ -303,7 +303,7 @@ static bool HIDAPI_DriverLg4ff_SetRange(SDL_HIDAPI_Device *device, int range)
         range = 900;
     }
 
-    ctx->range = range;
+    ctx->range = (Uint16)range;
     switch (device->product_id) {
         case USB_DEVICE_ID_LOGITECH_G29_WHEEL:
         case USB_DEVICE_ID_LOGITECH_G27_WHEEL:
@@ -357,8 +357,8 @@ static bool HIDAPI_DriverLg4ff_SetRange(SDL_HIDAPI_Device *device, int range)
                 start_left = (((full_range - range + 1) * 2047) / full_range);
                 start_right = 0xfff - start_left;
 
-                cmd[2] = start_left >> 4;
-                cmd[3] = start_right >> 4;
+                cmd[2] = (Uint8)(start_left >> 4);
+                cmd[3] = (Uint8)(start_right >> 4);
                 cmd[4] = 0xff;
                 cmd[5] = (start_right & 0xe) << 4 | (start_left & 0xe);
                 cmd[6] = 0xff;
@@ -444,9 +444,9 @@ static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int magn
         SDL_memset(cmd, 0x00, sizeof(cmd));
         cmd[0] = 0xfe;
         cmd[1] = 0x0d;
-        cmd[2] = expand_a / 0xaaaa;
-        cmd[3] = expand_a / 0xaaaa;
-        cmd[4] = expand_b / 0xaaaa;
+        cmd[2] = (Uint8)(expand_a / 0xaaaa);
+        cmd[3] = (Uint8)(expand_a / 0xaaaa);
+        cmd[4] = (Uint8)(expand_b / 0xaaaa);
 
         ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
         if (ret == -1) {
@@ -572,7 +572,7 @@ static bool HIDAPI_DriverLg4ff_HandleState(SDL_HIDAPI_Device *device,
     int bit_offset = 0;
 	Uint64 timestamp = SDL_GetTicksNS();
 
-    bool state_changed;
+    bool state_changed = false;
 
     switch (device->product_id) {
         case USB_DEVICE_ID_LOGITECH_G29_WHEEL:
@@ -653,7 +653,7 @@ static bool HIDAPI_DriverLg4ff_HandleState(SDL_HIDAPI_Device *device,
         bool button_was_on = HIDAPI_DriverLg4ff_GetBit(ctx->last_report_buf, bit_num, report_size);
         if(button_on != button_was_on){
             state_changed = true;
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH + i, button_on);
+            SDL_SendJoystickButton(timestamp, joystick, (Uint8)(SDL_GAMEPAD_BUTTON_SOUTH + i), button_on);
         }
     }
 
@@ -810,7 +810,7 @@ static bool HIDAPI_DriverLg4ff_UpdateDevice(SDL_HIDAPI_Device *device)
             /* Failed to read from controller */
             HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
             return false;
-        } else if (r == report_size) {
+        } else if ((size_t)r == report_size) {
             bool state_changed = HIDAPI_DriverLg4ff_HandleState(device, joystick, report_buf, report_size);
             if(state_changed && !ctx->initialized) {
                 ctx->initialized = true;
@@ -934,7 +934,7 @@ static bool HIDAPI_DriverLg4ff_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joy
         max_led = blue;
     }
 
-    return HIDAPI_DriverLg4ff_SendLedCommand(device, (5 * max_led) / 255);
+    return HIDAPI_DriverLg4ff_SendLedCommand(device, (Uint8)((5 * max_led) / 255));
 }
 
 static bool HIDAPI_DriverLg4ff_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
