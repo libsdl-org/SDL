@@ -3330,8 +3330,8 @@ endif()
 set_source_files_properties(src/dynapi/SDL_dynapi.c PROPERTIES SKIP_PRECOMPILE_HEADERS 1)
 
 set(SDL_FRAMEWORK_RESOURCES
-  Xcode/SDL/pkg-support/resources/ReadMe.txt
   LICENSE.txt
+  README.md
 )
 if(SDL_FRAMEWORK)
   sdl_sources(${SDL_FRAMEWORK_RESOURCES})
