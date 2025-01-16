@@ -2844,7 +2844,7 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
 
     // TODO: Add high-DPI icon support
     Wayland_ReleaseSHMBuffer(&wind->icon);
-    if (Wayland_AllocSHMBuffer(icon->w, icon->h, &wind->icon) != 0) {
+    if (!Wayland_AllocSHMBuffer(icon->w, icon->h, &wind->icon)) {
         return SDL_SetError("wayland: failed to allocate SHM buffer for the icon");
     }
 
