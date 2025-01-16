@@ -201,8 +201,9 @@
     },
     "files": {
       "": [
+        "build-scripts/pkg-support/android/INSTALL.md.in:INSTALL.md",
         "LICENSE.txt",
-        "build-scripts/pkg-support/android/README.md.in:README.md"
+        "README.md"
       ]
     }
   }

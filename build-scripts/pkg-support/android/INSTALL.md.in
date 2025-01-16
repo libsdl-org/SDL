@@ -1,17 +1,7 @@
 
-The Simple DirectMedia Layer (SDL for short) is a cross-platform library
-designed to make it easy to write multi-media software, such as games
-and emulators.
+# Using this package
 
-The Simple DirectMedia Layer library source code is available from:
-https://www.libsdl.org/
-
-This library is distributed under the terms of the zlib license:
-http://www.zlib.net/zlib_license.html
-
-# @<@PROJECT_NAME@>@-@<@PROJECT_VERSION@>@.aar
-
-This Android archive allows use of @<@PROJECT_NAME@>@ in your Android project, without needing to copy any SDL source.
+This package contains SDL built for the Android platform.
 
 ## Gradle integration
 
@@ -65,13 +55,37 @@ python @<@PROJECT_NAME@>@-@<@PROJECT_VERSION@>@.aar -o android_prefix
 ```
 Add `--help` for a list of all available options.
 
+# Documentation
 
-Look at the example programs in ./examples (of the source archive), and check out online documentation:
-    https://wiki.libsdl.org/SDL3/FrontPage
+An API reference, tutorials, and additional documentation is available at:
 
-Join the SDL discourse server if you want to join the community:
-    https://discourse.libsdl.org/
+https://wiki.libsdl.org/SDL3
 
+# Example code
 
-That's it!
-Sam Lantinga <slouken@libsdl.org>
+There are simple example programs available at:
+
+https://examples.libsdl.org/SDL3
+
+# Discussions
+
+## Discord
+
+You can join the official Discord server at:
+
+https://discord.com/invite/BwpFGBWsv8
+
+## Forums/mailing lists
+
+You can join SDL development discussions at:
+
+https://discourse.libsdl.org/
+
+Once you sign up, you can use the forum through the website or as a mailing list from your email client.
+
+## Announcement list
+
+You can sign up for the low traffic announcement list at:
+
+https://www.libsdl.org/mailing-list.php
+
