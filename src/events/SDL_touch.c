@@ -267,7 +267,7 @@ void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_
         // FIXME: maybe we should only restrict to a few SDL_TouchDeviceType
         if ((id != SDL_MOUSE_TOUCHID) && (id != SDL_PEN_TOUCHID)) {
 #ifdef SDL_PLATFORM_VITA
-            if (mouse->touch_mouse_events && ((mouse->vita_touch_mouse_device == id) || (mouse->vita_touch_mouse_device == 2))) {
+            if (mouse->touch_mouse_events && ((mouse->vita_touch_mouse_device == id) || (mouse->vita_touch_mouse_device == 3))) {
 #else
             if (mouse->touch_mouse_events) {
 #endif
