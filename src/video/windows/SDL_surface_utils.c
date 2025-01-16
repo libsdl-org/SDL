@@ -24,6 +24,7 @@
 
 #include "../SDL_surface_c.h"
 
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 HICON CreateIconFromSurface(SDL_Surface *surface)
 {
     SDL_Surface *s = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
@@ -93,3 +94,4 @@ HICON CreateIconFromSurface(SDL_Surface *surface)
 
     return hIcon;
 }
+#endif
