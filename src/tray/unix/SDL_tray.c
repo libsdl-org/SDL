@@ -591,12 +591,14 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         entry->item = gtk_separator_menu_item_new();
     } else if (flags & SDL_TRAYENTRY_CHECKBOX) {
         entry->item = gtk_check_menu_item_new_with_label(label);
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), !!(flags & SDL_TRAYENTRY_CHECKED));
+        gboolean active = ((flags & SDL_TRAYENTRY_CHECKED) != 0);
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), active);
     } else {
         entry->item = gtk_menu_item_new_with_label(label);
     }
 
-    gtk_widget_set_sensitive(entry->item, !(flags & SDL_TRAYENTRY_DISABLED));
+    gboolean sensitive = ((flags & SDL_TRAYENTRY_DISABLED) == 0);
+    gtk_widget_set_sensitive(entry->item, sensitive);
 
     SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, (menu->nEntries + 2) * sizeof(*new_entries));
 

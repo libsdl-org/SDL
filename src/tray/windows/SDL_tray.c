@@ -523,7 +523,7 @@ bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 
     GetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, FALSE, &mii);
 
-    return !!(mii.fState & MFS_CHECKED);
+    return ((mii.fState & MFS_CHECKED) != 0);
 }
 
 void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
@@ -549,7 +549,7 @@ bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 
     GetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, FALSE, &mii);
 
-    return !!(mii.fState & MFS_ENABLED);
+    return ((mii.fState & MFS_ENABLED) != 0);
 }
 
 void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata)
