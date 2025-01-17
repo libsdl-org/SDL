@@ -2,23 +2,22 @@
 
 [www.cmake.org](https://www.cmake.org/)
 
-The CMake build system is supported on the following platforms:
+The CMake build system is supported with the following environments:
 
-* FreeBSD
-* Linux
-* Microsoft Visual Studio
-* MinGW and Msys
-* macOS, iOS, tvOS, and visionOS with support for XCode
 * Android
 * Emscripten
-* NetBSD
+* FreeBSD
 * Haiku
+* Linux
+* macOS, iOS, tvOS, and visionOS with support for XCode
+* Microsoft Visual Studio
+* MinGW and Msys
+* NetBSD
 * Nintendo 3DS
 * PlayStation 2
 * PlayStation Portable
 * PlayStation Vita
-* QNX 7.x/8.x
-* RiscOS
+* RISC OS
 
 ## Building SDL on Windows
 
