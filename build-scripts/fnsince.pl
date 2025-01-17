@@ -90,7 +90,7 @@ foreach my $release (@releases) {
     my $tag = $fulltags{$release};
     my $blobname = "$tag:src/dynapi/SDL_dynapi_overrides.h";
 
-    if ($release =~ /\A3\.(0\.\d+|1\.[0123])/) {  # make everything up to the first SDL3 prerelease look like 3.1.3 (ABI lock version).
+    if ($release =~ /\A3\.(0\.\d+|1\.[0123]\Z)/) {  # make everything up to the first SDL3 prerelease look like 3.1.3 (ABI lock version).
         $release = '3.1.3';
     }
 
