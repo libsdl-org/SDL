@@ -2022,7 +2022,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             WINDOWPLACEMENT placement;
             if (GetWindowPlacement(hwnd, &placement) && placement.showCmd == SW_MAXIMIZE) {
                 // Maximized borderless windows should use the monitor work area.
-                HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+                HMONITOR hMonitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL);
+                if (!hMonitor) {
+                    // The returned monitor can be null when restoring from minimized, so use the last coordinates.
+                    const POINT pt = { data->window->windowed.x, data->window->windowed.y };
+                    hMonitor = MonitorFromPoint(pt, MONITOR_DEFAULTTONEAREST);
+                }
                 if (hMonitor) {
                     MONITORINFO info;
                     SDL_zero(info);
