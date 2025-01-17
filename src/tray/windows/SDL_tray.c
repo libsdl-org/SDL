@@ -304,6 +304,7 @@ SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 
     tray->menu->hMenu = CreatePopupMenu();
     tray->menu->parent_tray = tray;
+    tray->menu->parent_entry = NULL;
 
     return tray->menu;
 }
@@ -395,6 +396,8 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         return NULL;
     }
 
+    SDL_memset((void *) entry, 0, sizeof(*entry));
+
     wchar_t *label_w = NULL;
 
     if (label && (label_w = escape_label(label)) == NULL) {
@@ -417,10 +420,13 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
             return NULL;
         }
 
+        SDL_memset((void *) entry->submenu, 0, sizeof(*entry->submenu));
+
         entry->submenu->hMenu = CreatePopupMenu();
         entry->submenu->nEntries = 0;
         entry->submenu->entries = NULL;
         entry->submenu->parent_entry = entry;
+        entry->submenu->parent_tray = NULL;
 
         entry->id = (UINT_PTR) entry->submenu->hMenu;
     } else {
