@@ -35,25 +35,25 @@ typedef struct
 {
     bool is_save;
     wchar_t *filters_str;
-    char* default_file;
-    SDL_Window* parent;
+    char *default_file;
+    SDL_Window *parent;
     DWORD flags;
     SDL_DialogFileCallback callback;
-    void* userdata;
-    char* title;
-    char* accept;
-    char* cancel;
+    void *userdata;
+    char *title;
+    char *accept;
+    char *cancel;
 } winArgs;
 
 typedef struct
 {
-    SDL_Window* parent;
+    SDL_Window *parent;
     SDL_DialogFileCallback callback;
-    char* default_folder;
-    void* userdata;
-    char* title;
-    char* accept;
-    char* cancel;
+    char *default_folder;
+    void *userdata;
+    char *title;
+    char *accept;
+    char *cancel;
 } winFArgs;
 
 void freeWinArgs(winArgs *args)
@@ -106,11 +106,11 @@ void windows_ShowFileDialog(void *ptr)
 {
     winArgs *args = (winArgs *) ptr;
     bool is_save = args->is_save;
-    const char* default_file = args->default_file;
-    SDL_Window* parent = args->parent;
+    const char *default_file = args->default_file;
+    SDL_Window *parent = args->parent;
     DWORD flags = args->flags;
     SDL_DialogFileCallback callback = args->callback;
-    void* userdata = args->userdata;
+    void *userdata = args->userdata;
     const char *title = args->title;
     wchar_t *filter_wchar = args->filters_str;
 
@@ -255,7 +255,7 @@ void windows_ShowFileDialog(void *ptr)
         if (!(flags & OFN_ALLOWMULTISELECT)) {
             // File is a C string stored in dialog.lpstrFile
             char *chosen_file = WIN_StringToUTF8W(dialog.lpstrFile);
-            const char* opts[2] = { chosen_file, NULL };
+            const char *opts[2] = { chosen_file, NULL };
             callback(userdata, opts, getFilterIndex(dialog.nFilterIndex));
             SDL_free(chosen_file);
         } else {
@@ -391,7 +391,7 @@ void windows_ShowFileDialog(void *ptr)
                code to 0 after calling GetOpenFileName if another Windows
                function before set a different error code, so it's safe to
                check for success. */
-            const char* opts[1] = { NULL };
+            const char *opts[1] = { NULL };
             callback(userdata, opts, getFilterIndex(dialog.nFilterIndex));
         } else {
             SDL_SetError("Windows error, CommDlgExtendedError: %ld", pCommDlgExtendedError());
@@ -403,7 +403,7 @@ void windows_ShowFileDialog(void *ptr)
     freeWinArgs(args);
 }
 
-int windows_file_dialog_thread(void* ptr)
+int windows_file_dialog_thread(void *ptr)
 {
     windows_ShowFileDialog(ptr);
     SDL_free(ptr);
@@ -428,7 +428,7 @@ int CALLBACK browse_callback_proc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lp
     return 0;
 }
 
-void windows_ShowFolderDialog(void* ptr)
+void windows_ShowFolderDialog(void *ptr)
 {
     winFArgs *args = (winFArgs *) ptr;
     SDL_Window *window = args->parent;
@@ -498,7 +498,7 @@ void windows_ShowFolderDialog(void* ptr)
     freeWinFArgs(args);
 }
 
-int windows_folder_dialog_thread(void* ptr)
+int windows_folder_dialog_thread(void *ptr)
 {
     windows_ShowFolderDialog(ptr);
     SDL_free(ptr);
@@ -543,7 +543,7 @@ wchar_t *win_get_filters(const SDL_DialogFileFilter *filters, int nfilters)
     return filter_wchar;
 }
 
-static void ShowFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const SDL_DialogFileFilter *filters, int nfilters, const char* default_location, bool allow_many, bool is_save, const char* title, const char* accept, const char* cancel)
+static void ShowFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const SDL_DialogFileFilter *filters, int nfilters, const char *default_location, bool allow_many, bool is_save, const char *title, const char *accept, const char *cancel)
 {
     winArgs *args;
     SDL_Thread *thread;
@@ -591,7 +591,7 @@ static void ShowFileDialog(SDL_DialogFileCallback callback, void* userdata, SDL_
     SDL_DetachThread(thread);
 }
 
-void ShowFolderDialog(SDL_DialogFileCallback callback, void* userdata, SDL_Window* window, const char* default_location, bool allow_many, const char* title, const char* accept, const char* cancel)
+void ShowFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Window *window, const char *default_location, bool allow_many, const char *title, const char *accept, const char *cancel)
 {
     winFArgs *args;
     SDL_Thread *thread;
@@ -631,14 +631,14 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
 {
     /* The internal functions will start threads, and the properties may be freed as soon as this function returns.
        Save a copy of what we need before invoking the functions and starting the threads. */
-    SDL_Window* window = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
+    SDL_Window *window = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
     SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
     int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
     bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
-    const char* default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
-    const char* title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, NULL);
-    const char* accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
-    const char* cancel = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_CANCEL_STRING, NULL);
+    const char *default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
+    const char *title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, NULL);
+    const char *accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
+    const char *cancel = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_CANCEL_STRING, NULL);
     bool is_save = false;
 
     switch (type) {
