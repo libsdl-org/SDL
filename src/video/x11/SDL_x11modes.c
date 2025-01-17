@@ -541,6 +541,38 @@ static bool X11_UpdateXRandRDisplay(SDL_VideoDevice *_this, Display *dpy, int sc
     return true;
 }
 
+static XRRScreenResources *X11_GetScreenResources(Display *dpy, int screen)
+{
+    XRRScreenResources *res = X11_XRRGetScreenResourcesCurrent(dpy, RootWindow(dpy, screen));
+    if (!res || res->noutput == 0) {
+        if (res) {
+            X11_XRRFreeScreenResources(res);
+        }
+        res = X11_XRRGetScreenResources(dpy, RootWindow(dpy, screen));
+    }
+    return res;
+}
+
+static void X11_CheckDisplaysMoved(SDL_VideoDevice *_this, Display *dpy)
+{
+    const int screen = DefaultScreen(dpy);
+    XRRScreenResources *res = X11_GetScreenResources(dpy, screen);
+    if (!res) {
+        return;
+    }
+
+    SDL_DisplayID *displays = SDL_GetDisplays(NULL);
+    if (displays) {
+        for (int i = 0; displays[i]; ++i) {
+            SDL_VideoDisplay *display = SDL_GetVideoDisplay(displays[i]);
+            const SDL_DisplayData *displaydata = display->internal;
+            X11_UpdateXRandRDisplay(_this, dpy, screen, displaydata->xrandr_output, res, display);
+        }
+        SDL_free(displays);
+    }
+    X11_XRRFreeScreenResources(res);
+}
+
 static void X11_HandleXRandROutputChange(SDL_VideoDevice *_this, const XRROutputChangeNotifyEvent *ev)
 {
     SDL_DisplayID *displays;
@@ -568,29 +600,19 @@ static void X11_HandleXRandROutputChange(SDL_VideoDevice *_this, const XRROutput
         if (display) {
             SDL_DelVideoDisplay(display->id, true);
         }
+        X11_CheckDisplaysMoved(_this, ev->display);
+
     } else if (ev->connection == RR_Connected) { // output is coming online
-        Display *dpy = ev->display;
-        const int screen = DefaultScreen(dpy);
-        XVisualInfo vinfo;
-        if (get_visualinfo(dpy, screen, &vinfo)) {
-            XRRScreenResources *res = X11_XRRGetScreenResourcesCurrent(dpy, RootWindow(dpy, screen));
-            if (!res || res->noutput == 0) {
-                if (res) {
-                    X11_XRRFreeScreenResources(res);
-                }
-                res = X11_XRRGetScreenResources(dpy, RootWindow(dpy, screen));
-            }
-
+        if (!display) {
+            Display *dpy = ev->display;
+            const int screen = DefaultScreen(dpy);
+            XRRScreenResources *res = X11_GetScreenResources(dpy, screen);
             if (res) {
-                if (display) {
-                    X11_UpdateXRandRDisplay(_this, dpy, screen, ev->output, res, display);
-                } else {
-                    X11_AddXRandRDisplay(_this, dpy, screen, ev->output, res, true);
-                }
-
+                X11_AddXRandRDisplay(_this, dpy, screen, ev->output, res, true);
                 X11_XRRFreeScreenResources(res);
             }
         }
+        X11_CheckDisplaysMoved(_this, ev->display);
     }
 }
 
@@ -661,7 +683,6 @@ static bool X11_InitModes_XRandR(SDL_VideoDevice *_this)
     const int screencount = ScreenCount(dpy);
     const int default_screen = DefaultScreen(dpy);
     RROutput primary = X11_XRRGetOutputPrimary(dpy, RootWindow(dpy, default_screen));
-    XRRScreenResources *res = NULL;
     int xrandr_error_base = 0;
     int looking_for_primary;
     int output;
@@ -679,16 +700,9 @@ static bool X11_InitModes_XRandR(SDL_VideoDevice *_this)
                 continue;
             }
 
-            res = X11_XRRGetScreenResourcesCurrent(dpy, RootWindow(dpy, screen));
-            if (!res || res->noutput == 0) {
-                if (res) {
-                    X11_XRRFreeScreenResources(res);
-                }
-
-                res = X11_XRRGetScreenResources(dpy, RootWindow(dpy, screen));
-                if (!res) {
-                    continue;
-                }
+            XRRScreenResources *res = X11_GetScreenResources(dpy, screen);
+            if (!res) {
+                continue;
             }
 
             for (output = 0; output < res->noutput; output++) {
