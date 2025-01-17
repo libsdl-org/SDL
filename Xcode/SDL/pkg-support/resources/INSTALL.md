@@ -3,7 +3,9 @@
 
 This package contains SDL built for Xcode, and includes support for macOS, iOS and tvOS.
 
-To use this package, drag SDL3.xcframework into your project.
+To use this package in Xcode, drag `SDL3.xcframework` into your project.
+
+To use this package in a CMake project, copy both `SDL3.xcframework` and `share` to `~/Library/Frameworks`.
 
 # Documentation
 
