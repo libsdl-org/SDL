@@ -624,14 +624,9 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
     }
 
     if (!(window_data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-        // this will only work if the canvas size is set through css
         if (window_data->window->flags & SDL_WINDOW_RESIZABLE) {
-            double w = window_data->window->w;
-            double h = window_data->window->h;
-
-            if (window_data->external_size) {
-                emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
-            }
+            const double w = (double) uiEvent->windowInnerWidth;
+            const double h = (double) uiEvent->windowInnerHeight;
 
             emscripten_set_canvas_element_size(window_data->canvas_id, SDL_lroundf(w * window_data->pixel_ratio), SDL_lroundf(h * window_data->pixel_ratio));
 
