@@ -648,7 +648,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetDisplayName(SDL_DisplayID displa
 /**
  * Get the desktop area represented by a display.
  *
- * The primary display is always located at (0,0).
+ * The primary display is often located at (0,0), but may be placed at a different location depending on monitor layout.
  *
  * \param displayID the instance ID of the display to query.
  * \param rect the SDL_Rect structure filled in with the display bounds.
