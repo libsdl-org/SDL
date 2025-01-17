@@ -1607,7 +1607,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ResumeAudioStreamDevice(SDL_AudioStream *st
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.1.10.
  *
  * \sa SDL_PauseAudioStreamDevice
  * \sa SDL_ResumeAudioStreamDevice
