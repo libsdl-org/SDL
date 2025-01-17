@@ -420,6 +420,7 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         entry->submenu->hMenu = CreatePopupMenu();
         entry->submenu->nEntries = 0;
         entry->submenu->entries = NULL;
+        entry->submenu->parent_entry = entry;
 
         entry->id = (UINT_PTR) entry->submenu->hMenu;
     } else {
@@ -528,21 +529,11 @@ bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 
 void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
 {
-    if (!(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
-        SDL_SetError("Cannot update check for entry not created with SDL_TRAYENTRY_CHECKBOX");
-        return;
-    }
-
     EnableMenuItem(entry->parent->hMenu, (UINT) entry->id, MF_BYCOMMAND | (enabled ? MF_ENABLED : (MF_DISABLED | MF_GRAYED)));
 }
 
 bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 {
-    if (!(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
-        SDL_SetError("Cannot fetch check for entry not created with SDL_TRAYENTRY_CHECKBOX");
-        return false;
-    }
-
     MENUITEMINFOW mii;
     mii.cbSize = sizeof(MENUITEMINFOW);
     mii.fMask = MIIM_STATE;
