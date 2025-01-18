@@ -94,7 +94,7 @@ struct SDL_WaylandInput
     wl_fixed_t sx_w;
     wl_fixed_t sy_w;
 
-    uint32_t buttons_pressed;
+    SDL_MouseButtonFlags buttons_pressed;
 
     // The serial of the last implicit grab event for window activation and selection data.
     Uint32 last_implicit_grab_serial;

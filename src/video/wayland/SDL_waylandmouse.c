@@ -892,9 +892,10 @@ static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float 
     SDL_MouseButtonFlags result = 0;
 
     if (focus) {
+        SDL_VideoData *viddata = SDL_GetVideoDevice()->internal;
         int off_x, off_y;
 
-        result = SDL_GetMouseState(x, y);
+        result = viddata->input->buttons_pressed;
         SDL_RelativeToGlobalForWindow(focus, focus->x, focus->y, &off_x, &off_y);
         *x += off_x;
         *y += off_y;
