@@ -437,6 +437,50 @@ bool Cocoa_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
     return true;
 }
 
+// replace event for opt_as_alt
+static NSEvent *ReplaceEvent(NSEvent *event)
+{
+    const unsigned int modflags = (unsigned int)[event modifierFlags];
+
+    const char *option_as_alt = SDL_GetHint(SDL_HINT_MAC_OPT_AS_ALT);
+
+    bool ignore_alt_characters = false;
+
+    bool lalt_pressed = IsModifierKeyPressed(modflags, NX_DEVICELALTKEYMASK,
+                                             NX_DEVICERALTKEYMASK, NX_ALTERNATEMASK);
+    bool ralt_pressed = IsModifierKeyPressed(modflags, NX_DEVICERALTKEYMASK,
+                                             NX_DEVICELALTKEYMASK, NX_ALTERNATEMASK);
+
+    if (SDL_strcmp(option_as_alt, "left_only") == 0 && lalt_pressed) {
+        ignore_alt_characters = true;
+    } else if (SDL_strcmp(option_as_alt, "right_only") == 0 && ralt_pressed) {
+        ignore_alt_characters = true;
+    } else if (SDL_strcmp(option_as_alt, "both") == 0 && (lalt_pressed || ralt_pressed)) {
+        ignore_alt_characters = true;
+    }
+
+    bool cmd_pressed = modflags & NX_COMMANDMASK;
+    bool ctrl_pressed = modflags & NX_CONTROLMASK;
+
+    ignore_alt_characters = ignore_alt_characters && !cmd_pressed && !ctrl_pressed;
+
+    if (ignore_alt_characters) {
+        NSString *charactersIgnoringModifiers = [event charactersIgnoringModifiers];
+        return [NSEvent keyEventWithType:[event type]
+                                location:[event locationInWindow]
+                           modifierFlags:modflags
+                               timestamp:[event timestamp]
+                            windowNumber:[event windowNumber]
+                                 context:[event context]
+                              characters:charactersIgnoringModifiers
+             charactersIgnoringModifiers:charactersIgnoringModifiers
+                               isARepeat:[event isARepeat]
+                                 keyCode:[event keyCode]];
+    }
+
+    return event;
+}
+
 void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
     unsigned short scancode;
@@ -445,6 +489,8 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
     if (!data) {
         return; // can happen when returning from fullscreen Space on shutdown
     }
+
+    // event = ReplaceEvent(event);
 
     scancode = [event keyCode];
 

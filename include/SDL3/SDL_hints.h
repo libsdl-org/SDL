@@ -2347,6 +2347,31 @@ extern "C" {
  */
 #define SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH "SDL_MAC_OPENGL_ASYNC_DISPATCH"
 
+// TODO: finish the ... parts
+/**
+ * A variable controlling whether the Option (⌥) key on macOS should be remapped
+ * to act as the Alt key.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "none": The Option key is not remapped to Alt. (default)
+ * - "left_only": Only the left Option key is remapped to Alt.
+ * - "right_only": Only the right Option key is remapped to Alt.
+ * - "both": Both Option keys are remapped to Alt.
+ *
+ * This will prevent the Option key from triggering special characters like `å`
+ * or key compositions that rely on the Option key, but will still send the Alt
+ * modifier signal to the application. This is particularly useful for
+ * applications like terminal emulators and graphical user interfaces (GUIs)
+ * that rely on Alt key functionality for shortcuts or navigation.
+ *
+ * This hint ...
+ *
+ * \since This hint is avaliable since ...
+ */
+
+#define SDL_HINT_MAC_OPT_AS_ALT "SDL_MAC_OPT_AS_ALT"
+
 /**
  * A variable controlling whether SDL_EVENT_MOUSE_WHEEL event values will have
  * momentum on macOS.
