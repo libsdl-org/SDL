@@ -284,8 +284,10 @@ bool SDL_EnumerateStorageDirectory(SDL_Storage *storage, const char *path, SDL_E
     CHECK_STORAGE_MAGIC()
 
     if (!path) {
-        return SDL_InvalidParamError("path");
-    } else if (!ValidateStoragePath(path)) {
+        path = "";  // we allow NULL to mean "root of the storage tree".
+    }
+
+    if (!ValidateStoragePath(path)) {
         return false;
     } else if (!storage->iface.enumerate) {
         return SDL_Unsupported();
@@ -396,9 +398,10 @@ char **SDL_GlobStorageDirectory(SDL_Storage *storage, const char *path, const ch
     CHECK_STORAGE_MAGIC_RET(NULL)
 
     if (!path) {
-        SDL_InvalidParamError("path");
-        return NULL;
-    } else if (!ValidateStoragePath(path)) {
+        path = "";  // we allow NULL to mean "root of the storage tree".
+    }
+
+    if (!ValidateStoragePath(path)) {
         return NULL;
     }
 
