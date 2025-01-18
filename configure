@@ -28440,6 +28440,7 @@ printf "%s\n" "$hidapi_support" >&6; }
 printf "%s\n" "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
 
         SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+        SOURCES="$SOURCES $srcdir/src/haptic/hidapi/*.c"
     fi
 }
 

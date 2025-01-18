@@ -85,6 +85,9 @@
     <Filter Include="haptic\windows">
       <UniqueIdentifier>{ebc2fca3-3c26-45e3-815e-3e0581d5e226}</UniqueIdentifier>
     </Filter>
+    <Filter Include="haptic\hidapi">
+      <UniqueIdentifier>{A2F323D5-B1AA-43D7-BB47-60294238C798}</UniqueIdentifier>
+    </Filter>
     <Filter Include="haptic\dummy">
       <UniqueIdentifier>{47c445a2-7014-4e15-9660-7c89a27dddcf}</UniqueIdentifier>
     </Filter>
@@ -492,6 +495,9 @@
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h">
       <Filter>haptic</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\haptic\SDL_hidapihaptic.h">
+      <Filter>haptic</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h">
       <Filter>haptic</Filter>
     </ClInclude>
@@ -548,6 +554,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h">
       <Filter>haptic\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\haptic\hidapi\SDL_hidapihaptic_c.h">
+      <Filter>haptic\hidapi</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h">
       <Filter>haptic\windows</Filter>
@@ -1039,6 +1048,12 @@
     <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c">
       <Filter>haptic\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\haptic\hidapi\SDL_hidapihaptic.c">
+      <Filter>haptic\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\haptic\hidapi\SDL_hidapihaptic_lg4ff.c">
+      <Filter>haptic\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\haptic\dummy\SDL_syshaptic.c">
       <Filter>haptic\dummy</Filter>
     </ClCompile>
@@ -1091,6 +1106,9 @@
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_lg4ff.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c">
