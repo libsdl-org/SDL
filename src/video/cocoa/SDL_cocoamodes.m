@@ -405,8 +405,15 @@ static void Cocoa_DisplayReconfigurationCallback(CGDirectDisplayID displayid, CG
     }
 
     if ((flags & kCGDisplayAddFlag) && (flags & kCGDisplayRemoveFlag)) {
-        // both adding _and_ removing? Treat it as a remove exclusively. This can happen if a display is unmirroring because it's being disabled, etc.
-        flags &= ~kCGDisplayAddFlag;
+        // sometimes you get a removed device that gets Add and Remove flags at the same time but the display dimensions are 0x0 or 1x1, hence the `> 1` test.
+        // Mirrored things are always removed, since they don't represent a discrete display in this state.
+        if (((flags & kCGDisplayMirrorFlag) == 0) && (CGDisplayPixelsWide(displayid) > 1)) {
+            // Final state is connected
+            flags &= ~kCGDisplayRemoveFlag;
+        } else {
+            // Final state is disconnected
+            flags &= ~kCGDisplayAddFlag;
+        }
     }
 
     if (flags & kCGDisplayAddFlag) {
