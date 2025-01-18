@@ -327,7 +327,12 @@ SDL_Storage *GENERIC_OpenFileStorage(const char *path)
         len += SDL_strlen(path);
     }
     if (len > 0) {
-        if (path[len-1] == '/') {
+        #ifdef SDL_PLATFORM_WINDOWS
+        const bool appended_separator = (path[len-1] == '/') || (path[len-1] == '\\');
+        #else
+        const bool appended_separator = (path[len-1] == '/');
+        #endif
+        if (appended_separator) {
             basepath = SDL_strdup(path);
             if (!basepath) {
                 return NULL;
