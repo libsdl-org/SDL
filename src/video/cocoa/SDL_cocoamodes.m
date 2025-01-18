@@ -283,6 +283,16 @@ static bool GetDisplayMode(CGDisplayModeRef vidmode, bool vidmodeCurrent, CFArra
 
 static char *Cocoa_GetDisplayName(CGDirectDisplayID displayID)
 {
+    if (@available(macOS 10.15, *)) {
+        NSScreen *screen = GetNSScreenForDisplayID(displayID);
+        if (screen) {
+            const char *name = [screen.localizedName UTF8String];
+            if (name) {
+                return SDL_strdup(name);
+            }
+        }
+    }
+
     // This API is deprecated in 10.9 with no good replacement (as of 10.15).
     io_service_t servicePort = CGDisplayIOServicePort(displayID);
     CFDictionaryRef deviceInfo = IODisplayCreateInfoDictionary(servicePort, kIODisplayOnlyPreferredName);
