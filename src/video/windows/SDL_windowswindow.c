@@ -143,12 +143,12 @@ static ATOM SDL_HelperWindowClass = 0;
 
 /* For borderless Windows, still want the following flag:
    - WS_MINIMIZEBOX: window will respond to Windows minimize commands sent to all windows, such as windows key + m, shaking title bar, etc.
-   - WS_MAXIMIZEBOX: window will respond to Windows maximize commands sent to all windows, and the window will fill the usable desktop area rather than the whole screen
    Additionally, non-fullscreen windows can add:
    - WS_CAPTION: this seems to enable the Windows minimize animation
    - WS_SYSMENU: enables system context menu on task bar
    This will also cause the task bar to overlap the window and other windowed behaviors, so only use this for windows that shouldn't appear to be fullscreen
    - WS_THICKFRAME: allows hit-testing to resize window (doesn't actually add a frame to a borderless window).
+   - WS_MAXIMIZEBOX: window will respond to Windows maximize commands sent to all windows, and the window will fill the usable desktop area rather than the whole screen
  */
 
 #define STYLE_BASIC               (WS_CLIPSIBLINGS | WS_CLIPCHILDREN)
