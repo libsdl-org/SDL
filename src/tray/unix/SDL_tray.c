@@ -407,12 +407,11 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
         gtk_thread_active = true;
     }
 
-    SDL_Tray *tray = (SDL_Tray *)SDL_malloc(sizeof(*tray));
+    SDL_Tray *tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
     if (!tray) {
         return NULL;
     }
 
-    SDL_memset((void *) tray, 0, sizeof(*tray));
     /* On success, g_mkdtemp edits its argument in-place to replace the Xs
      * with a random directory name, which it creates safely and atomically.
      * On failure, it sets errno. */
@@ -464,7 +463,7 @@ void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 {
-    tray->menu = (SDL_TrayMenu *)SDL_malloc(sizeof(*tray->menu));
+    tray->menu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*tray->menu));
     if (!tray->menu) {
         return NULL;
     }
@@ -497,7 +496,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
         return NULL;
     }
 
-    entry->submenu = (SDL_TrayMenu *)SDL_malloc(sizeof(*entry->submenu));
+    entry->submenu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*entry->submenu));
     if (!entry->submenu) {
         return NULL;
     }
@@ -573,12 +572,11 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         pos = menu->nEntries;
     }
 
-    SDL_TrayEntry *entry = (SDL_TrayEntry *)SDL_malloc(sizeof(*entry));
+    SDL_TrayEntry *entry = (SDL_TrayEntry *)SDL_calloc(1, sizeof(*entry));
     if (!entry) {
         return NULL;
     }
 
-    SDL_memset((void *) entry, 0, sizeof(*entry));
     entry->parent = menu;
     entry->item = NULL;
     entry->ignore_signal = false;

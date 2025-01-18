@@ -211,7 +211,7 @@ static HICON load_default_icon()
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
-    SDL_Tray *tray = (SDL_Tray *)SDL_malloc(sizeof(*tray));
+    SDL_Tray *tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
 
     if (!tray) {
         return NULL;
@@ -294,13 +294,11 @@ void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 {
-    tray->menu = (SDL_TrayMenu *)SDL_malloc(sizeof(*tray->menu));
+    tray->menu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*tray->menu));
 
     if (!tray->menu) {
         return NULL;
     }
-
-    SDL_memset((void *) tray->menu, 0, sizeof(*tray->menu));
 
     tray->menu->hMenu = CreatePopupMenu();
     tray->menu->parent_tray = tray;
@@ -391,12 +389,10 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         windows_compatible_pos = -1;
     }
 
-    SDL_TrayEntry *entry = (SDL_TrayEntry *)SDL_malloc(sizeof(*entry));
+    SDL_TrayEntry *entry = (SDL_TrayEntry *)SDL_calloc(1, sizeof(*entry));
     if (!entry) {
         return NULL;
     }
-
-    SDL_memset((void *) entry, 0, sizeof(*entry));
 
     wchar_t *label_w = NULL;
 
@@ -413,14 +409,12 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
     SDL_snprintf(entry->label_cache, sizeof(entry->label_cache), "%s", label ? label : "");
 
     if (label != NULL && flags & SDL_TRAYENTRY_SUBMENU) {
-        entry->submenu = (SDL_TrayMenu *)SDL_malloc(sizeof(*entry->submenu));
+        entry->submenu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*entry->submenu));
         if (!entry->submenu) {
             SDL_free(entry);
             SDL_free(label_w);
             return NULL;
         }
-
-        SDL_memset((void *) entry->submenu, 0, sizeof(*entry->submenu));
 
         entry->submenu->hMenu = CreatePopupMenu();
         entry->submenu->nEntries = 0;
