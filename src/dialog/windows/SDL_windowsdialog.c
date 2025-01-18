@@ -128,21 +128,18 @@ void windows_ShowFileDialog(void *ptr)
     } else {
         SDL_SetError("Couldn't load Comdlg32.dll");
         callback(userdata, NULL, -1);
-        freeWinArgs(args);
         return;
     }
 
     if (!pGetAnyFileName) {
         SDL_SetError("Couldn't load GetOpenFileName/GetSaveFileName from library");
         callback(userdata, NULL, -1);
-        freeWinArgs(args);
         return;
     }
 
     if (!pCommDlgExtendedError) {
         SDL_SetError("Couldn't load CommDlgExtendedError from library");
         callback(userdata, NULL, -1);
-        freeWinArgs(args);
         return;
     }
 
@@ -217,7 +214,6 @@ void windows_ShowFileDialog(void *ptr)
         if (!title_w) {
             SDL_free(filebuffer);
             callback(userdata, NULL, -1);
-            freeWinArgs(args);
             return;
         }
 
@@ -276,7 +272,6 @@ void windows_ShowFileDialog(void *ptr)
             if (!chosen_files_list) {
                 callback(userdata, NULL, -1);
                 SDL_free(filebuffer);
-                freeWinArgs(args);
                 return;
             }
 
@@ -287,7 +282,6 @@ void windows_ShowFileDialog(void *ptr)
                 SDL_free(chosen_files_list);
                 callback(userdata, NULL, -1);
                 SDL_free(filebuffer);
-                freeWinArgs(args);
                 return;
             }
 
@@ -309,7 +303,6 @@ void windows_ShowFileDialog(void *ptr)
                     SDL_free(chosen_files_list);
                     callback(userdata, NULL, -1);
                     SDL_free(filebuffer);
-                    freeWinArgs(args);
                     return;
                 }
 
@@ -328,7 +321,6 @@ void windows_ShowFileDialog(void *ptr)
                     SDL_free(chosen_files_list);
                     callback(userdata, NULL, -1);
                     SDL_free(filebuffer);
-                    freeWinArgs(args);
                     return;
                 }
 
@@ -344,7 +336,6 @@ void windows_ShowFileDialog(void *ptr)
                     SDL_free(chosen_files_list);
                     callback(userdata, NULL, -1);
                     SDL_free(filebuffer);
-                    freeWinArgs(args);
                     return;
                 }
             }
@@ -358,7 +349,6 @@ void windows_ShowFileDialog(void *ptr)
                     SDL_free(chosen_files_list);
                     callback(userdata, NULL, -1);
                     SDL_free(filebuffer);
-                    freeWinArgs(args);
                     return;
                 }
 
@@ -370,7 +360,6 @@ void windows_ShowFileDialog(void *ptr)
                     SDL_free(chosen_files_list);
                     callback(userdata, NULL, -1);
                     SDL_free(filebuffer);
-                    freeWinArgs(args);
                     return;
                 }
             }
@@ -400,13 +389,12 @@ void windows_ShowFileDialog(void *ptr)
     }
 
     SDL_free(filebuffer);
-    freeWinArgs(args);
 }
 
 int windows_file_dialog_thread(void *ptr)
 {
     windows_ShowFileDialog(ptr);
-    SDL_free(ptr);
+    freeWinArgs(ptr);
     return 0;
 }
 
@@ -461,7 +449,6 @@ void windows_ShowFolderDialog(void *ptr)
 
         if (!title_w) {
             callback(userdata, NULL, -1);
-            freeWinFArgs(args);
             return;
         }
 
@@ -494,14 +481,12 @@ void windows_ShowFolderDialog(void *ptr)
         const char *files[1] = { NULL };
         callback(userdata, (const char * const*) files, -1);
     }
-
-    freeWinFArgs(args);
 }
 
 int windows_folder_dialog_thread(void *ptr)
 {
     windows_ShowFolderDialog(ptr);
-    SDL_free(ptr);
+    freeWinFArgs((winFArgs *)ptr);
     return 0;
 }
 
@@ -584,7 +569,8 @@ static void ShowFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_
 
     if (thread == NULL) {
         callback(userdata, NULL, -1);
-        SDL_free(args);
+        // The thread won't have run, therefore the data won't have been freed
+        freeWinArgs(args);
         return;
     }
 
@@ -620,7 +606,8 @@ void ShowFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Windo
 
     if (thread == NULL) {
         callback(userdata, NULL, -1);
-        SDL_free(args);
+        // The thread won't have run, therefore the data won't have been freed
+        freeWinFArgs(args);
         return;
     }
 
