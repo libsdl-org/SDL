@@ -14,7 +14,7 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_AudioStream *stream = NULL;
-static int total_samples_generated = 0;
+static int current_sine_sample = 0;
 
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -76,10 +76,13 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         /* generate a 440Hz pure tone */
         for (i = 0; i < SDL_arraysize(samples); i++) {
             const int freq = 440;
-            const int phase = (total_samples_generated * freq) % 8000;
-            samples[i] = (float)SDL_sin(phase * 2 * SDL_PI_D / 8000.0);
-            total_samples_generated++;
+            const int phase = current_sine_sample * freq / 8000.0f;
+            samples[i] = SDL_sinf(phase * 2 * SDL_PI_F);
+            current_sine_sample++;
         }
+
+        /* wrapping around to avoid floating-point errors */
+        current_sine_sample %= 8000;
 
         /* feed the new data to the stream. It will queue at the end, and trickle out as the hardware needs more data. */
         SDL_PutAudioStreamData(stream, samples, sizeof (samples));
