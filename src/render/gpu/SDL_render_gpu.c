@@ -77,7 +77,7 @@ typedef struct GPU_RenderData
         GPU_ShaderUniformData shader_data;
     } state;
 
-    SDL_GPUSampler *samplers[3][2];
+    SDL_GPUSampler *samplers[2][2];
 } GPU_RenderData;
 
 typedef struct GPU_TextureData
