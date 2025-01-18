@@ -1033,9 +1033,11 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
         keyElement = EMSCRIPTEN_EVENT_TARGET_WINDOW;
     }
 
-    emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
-    emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);
-    emscripten_set_keypress_callback(keyElement, data, 0, Emscripten_HandleKeyPress);
+    if (*keyElement) {
+        emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
+        emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);
+        emscripten_set_keypress_callback(keyElement, data, 0, Emscripten_HandleKeyPress);
+    }
 
     emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, data, 0, Emscripten_HandleFullscreenChange);
 
@@ -1092,9 +1094,11 @@ void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
         target = EMSCRIPTEN_EVENT_TARGET_WINDOW;
     }
 
-    emscripten_set_keydown_callback(target, NULL, 0, NULL);
-    emscripten_set_keyup_callback(target, NULL, 0, NULL);
-    emscripten_set_keypress_callback(target, NULL, 0, NULL);
+    if (*target) {
+        emscripten_set_keydown_callback(target, NULL, 0, NULL);
+        emscripten_set_keyup_callback(target, NULL, 0, NULL);
+        emscripten_set_keypress_callback(target, NULL, 0, NULL);
+    }
 
     emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
 
