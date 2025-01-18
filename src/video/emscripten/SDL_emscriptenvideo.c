@@ -47,7 +47,6 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
-static void Emscripten_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable);
 
 static bool pumpevents_has_run = false;
 static int pending_swap_interval = -1;
@@ -157,7 +156,6 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
 
     device->CreateSDLWindow = Emscripten_CreateWindow;
     device->SetWindowTitle = Emscripten_SetWindowTitle;
-    device->SetWindowResizable = Emscripten_SetWindowResizable;
     /*device->SetWindowIcon = Emscripten_SetWindowIcon;
     device->SetWindowPosition = Emscripten_SetWindowPosition;*/
     device->SetWindowSize = Emscripten_SetWindowSize;
@@ -283,6 +281,8 @@ EMSCRIPTEN_KEEPALIVE void requestFullscreenThroughSDL(SDL_Window *window)
 static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_WindowData *wdata;
+    double scaled_w, scaled_h;
+    double css_w, css_h;
     const char *selector;
 
     // Allocate window internal data
@@ -304,12 +304,36 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
         wdata->pixel_ratio = 1.0f;
     }
 
+    scaled_w = SDL_floor(window->w * wdata->pixel_ratio);
+    scaled_h = SDL_floor(window->h * wdata->pixel_ratio);
+
+    // set a fake size to check if there is any CSS sizing the canvas
+    emscripten_set_canvas_element_size(wdata->canvas_id, 1, 1);
+    emscripten_get_element_css_size(wdata->canvas_id, &css_w, &css_h);
+
+    wdata->external_size = SDL_floor(css_w) != 1 || SDL_floor(css_h) != 1;
+
+    if ((window->flags & SDL_WINDOW_RESIZABLE) && wdata->external_size) {
+        // external css has resized us
+        scaled_w = css_w * wdata->pixel_ratio;
+        scaled_h = css_h * wdata->pixel_ratio;
+
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(css_w), SDL_lroundf(css_h));
+    }
+    emscripten_set_canvas_element_size(wdata->canvas_id, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
+
+    // if the size is not being controlled by css, we need to scale down for hidpi
+    if (!wdata->external_size) {
+        if (wdata->pixel_ratio != 1.0f) {
+            // scale canvas down
+            emscripten_set_element_css_size(wdata->canvas_id, window->w, window->h);
+        }
+    }
+
     wdata->window = window;
 
     // Setup driver data for this window
     window->internal = wdata;
-
-    Emscripten_SetWindowResizable(_this, window, (window->flags & SDL_WINDOW_RESIZABLE) != 0);
 
     // One window, it always has focus
     SDL_SetMouseFocus(window);
@@ -317,7 +341,7 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
 
     Emscripten_RegisterEventHandlers(wdata);
 
-    // Make the emscripten "fullscreen" button go through SDL.
+    // disable the emscripten "fullscreen" button.
     MAIN_THREAD_EM_ASM({
         Module['requestFullscreen'] = function(lockPointer, resizeCanvas) {
             _requestFullscreenThroughSDL($0);
@@ -330,12 +354,10 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
 
 static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    if ((window->flags & SDL_WINDOW_RESIZABLE) == 0) {
-        return;  // canvas size is being dictated by the browser window size, refuse request.
-    }
+    SDL_WindowData *data;
 
     if (window->internal) {
-        SDL_WindowData *data = window->internal;
+        data = window->internal;
         // update pixel ratio
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
@@ -431,58 +453,6 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
     emscripten_set_window_title(window->title);
-}
-
-static void Emscripten_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable)
-{
-    SDL_WindowData *wdata = window->internal;
-    double scaled_w = SDL_floor(window->w * wdata->pixel_ratio);
-    double scaled_h = SDL_floor(window->h * wdata->pixel_ratio);
-    double css_w, css_h;
-
-    // set a fake size to check if there is any CSS sizing the canvas
-    emscripten_set_canvas_element_size(wdata->canvas_id, 1, 1);
-    emscripten_get_element_css_size(wdata->canvas_id, &css_w, &css_h);
-
-    wdata->external_size = SDL_floor(css_w) != 1 || SDL_floor(css_h) != 1;
-    if (wdata->external_size) {
-        window->flags &= ~SDL_WINDOW_RESIZABLE;  // can't be resizable if something else is controlling it.
-    }
-
-    // SDL_WINDOW_RESIZABLE takes up the entire page and resizes as the browser window resizes.
-    if (window->flags & SDL_WINDOW_RESIZABLE) {
-        const double w = (double) MAIN_THREAD_EM_ASM_INT({ return window.innerWidth; });
-        const double h = (double) MAIN_THREAD_EM_ASM_INT({ return window.innerHeight; });
-
-        scaled_w = w * wdata->pixel_ratio;
-        scaled_h = h * wdata->pixel_ratio;
-
-        MAIN_THREAD_EM_ASM({
-            var canvas = document.querySelector(UTF8ToString($0));
-            canvas.style.position = 'absolute';
-            canvas.style.top = '0';
-            canvas.style.right = '0';
-        }, wdata->canvas_id);
-
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
-    } else {
-        MAIN_THREAD_EM_ASM({
-            var canvas = document.querySelector(UTF8ToString($0));
-            canvas.style.position = undefined;
-            canvas.style.top = undefined;
-            canvas.style.right = undefined;
-        }, wdata->canvas_id);
-    }
-
-    emscripten_set_canvas_element_size(wdata->canvas_id, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
-
-    // if the size is not being controlled by css, we need to scale down for hidpi
-    if (!wdata->external_size) {
-        if (wdata->pixel_ratio != 1.0f) {
-            // scale canvas down
-            emscripten_set_element_css_size(wdata->canvas_id, window->w, window->h);
-        }
-    }
 }
 
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN
