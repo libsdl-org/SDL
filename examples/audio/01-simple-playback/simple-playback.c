@@ -76,7 +76,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         /* generate a 440Hz pure tone */
         for (i = 0; i < SDL_arraysize(samples); i++) {
             const int freq = 440;
-            const int phase = current_sine_sample * freq / 8000.0f;
+            const float phase = current_sine_sample * freq / 8000.0f;
             samples[i] = SDL_sinf(phase * 2 * SDL_PI_F);
             current_sine_sample++;
         }
