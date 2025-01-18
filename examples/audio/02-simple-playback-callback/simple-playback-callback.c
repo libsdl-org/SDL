@@ -36,7 +36,7 @@ static void SDLCALL FeedTheAudioStreamMore(void *userdata, SDL_AudioStream *astr
         /* generate a 440Hz pure tone */
         for (i = 0; i < total; i++) {
             const int freq = 440;
-            const int phase = (total_samples_generated * freq) % 8000;
+            const float phase = (total_samples_generated * freq) % 8000;
             samples[i] = (float)SDL_sin(phase * 2 * SDL_PI_D / 8000.0);
             total_samples_generated++;
         }
