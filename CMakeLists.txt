@@ -2453,7 +2453,7 @@ elseif(APPLE)
     find_library(COREHAPTICS CoreHaptics)
     if(COREHAPTICS)
       # macOS 10.15+ iOS 13.0+ tvOS 14.0+
-      sdl_link_dependency(core_haptics LIBS "$<LINK_LIBRARY:FRAMEWORK,CoreHaptics>" PKG_CONFIG_LINK_OPTIONS "-Wl,-weak_framework,CoreHaptics")
+      sdl_link_dependency(core_haptics LIBS "$<LINK_LIBRARY:WEAK_FRAMEWORK,CoreHaptics>" PKG_CONFIG_LINK_OPTIONS "-Wl,-weak_framework,CoreHaptics")
     endif()
   endif()
 
