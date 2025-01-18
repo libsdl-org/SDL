@@ -543,8 +543,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CreateStorageDirectory(SDL_Storage *storage
  * returned SDL_ENUM_SUCCESS to halt enumeration, or all directory entries
  * were enumerated.
  *
+ * If `path` is NULL, this is treated as a request to enumerate the root of
+ * the storage container's tree. An empty string also works for this.
+ *
  * \param storage a storage container.
- * \param path the path of the directory to enumerate.
+ * \param path the path of the directory to enumerate, or NULL for the root.
  * \param callback a function that is called for each entry in the directory.
  * \param userdata a pointer that is passed to `callback`.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -646,8 +649,11 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetStorageSpaceRemaining(SDL_Storage *sto
  * convenience, but if `count` is non-NULL, on return it will contain the
  * number of items in the array, not counting the NULL terminator.
  *
+ * If `path` is NULL, this is treated as a request to enumerate the root of
+ * the storage container's tree. An empty string also works for this.
+ *
  * \param storage a storage container.
- * \param path the path of the directory to enumerate.
+ * \param path the path of the directory to enumerate, or NULL for the root.
  * \param pattern the pattern that files in the directory must match. Can be
  *                NULL.
  * \param flags `SDL_GLOB_*` bitflags that affect this search.
