@@ -147,12 +147,13 @@ static ATOM SDL_HelperWindowClass = 0;
    - WS_CAPTION: this seems to enable the Windows minimize animation
    - WS_SYSMENU: enables system context menu on task bar
    This will also cause the task bar to overlap the window and other windowed behaviors, so only use this for windows that shouldn't appear to be fullscreen
+   - WS_THICKFRAME: allows hit-testing to resize window (doesn't actually add a frame to a borderless window).
  */
 
 #define STYLE_BASIC               (WS_CLIPSIBLINGS | WS_CLIPCHILDREN)
 #define STYLE_FULLSCREEN          (WS_POPUP | WS_MINIMIZEBOX)
-#define STYLE_BORDERLESS          (WS_POPUP | WS_MINIMIZEBOX)
-#define STYLE_BORDERLESS_WINDOWED (WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
+#define STYLE_BORDERLESS          (WS_POPUP | WS_MINIMIZEBOX | WS_THICKFRAME)
+#define STYLE_BORDERLESS_WINDOWED (WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_THICKFRAME)
 #define STYLE_NORMAL              (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
 #define STYLE_RESIZABLE           (WS_THICKFRAME | WS_MAXIMIZEBOX)
 #define STYLE_MASK                (STYLE_FULLSCREEN | STYLE_BORDERLESS | STYLE_NORMAL | STYLE_RESIZABLE)
