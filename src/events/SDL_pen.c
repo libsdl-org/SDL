@@ -488,17 +488,22 @@ void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *wind
         event.pmotion.y = y;
         SDL_PushEvent(&event);
 
-        if (window && (pen_touching == instance_id)) {
+        if (window) {
             SDL_Mouse *mouse = SDL_GetMouse();
             if (mouse) {
-                if (mouse->pen_mouse_events) {
-                    SDL_SendMouseMotion(timestamp, window, SDL_PEN_MOUSEID, false, x, y);
-                }
+                if (pen_touching == instance_id) {
+                    if (mouse->pen_mouse_events) {
+                        SDL_SendMouseMotion(timestamp, window, SDL_PEN_MOUSEID, false, x, y);
+                    }
 
-                if (mouse->pen_touch_events) {
-                    const float normalized_x = x / (float)window->w;
-                    const float normalized_y = y / (float)window->h;
-                    SDL_SendTouchMotion(timestamp, SDL_PEN_TOUCHID, SDL_BUTTON_LEFT, window, normalized_x, normalized_y, pen->axes[SDL_PEN_AXIS_PRESSURE]);
+                    if (mouse->pen_touch_events) {
+                        const float normalized_x = x / (float)window->w;
+                        const float normalized_y = y / (float)window->h;
+                        SDL_SendTouchMotion(timestamp, SDL_PEN_TOUCHID, SDL_BUTTON_LEFT, window, normalized_x, normalized_y, pen->axes[SDL_PEN_AXIS_PRESSURE]);
+                    }
+                } else if (pen_touching == 0) {  // send mouse motion (without a pressed button) for pens that aren't touching.
+                    // this might cause a little chaos if you have multiple pens hovering at the same time, but this seems unlikely in the real world, and also something you did to yourself.  :)
+                    SDL_SendMouseMotion(timestamp, window, SDL_PEN_MOUSEID, false, x, y);
                 }
             }
         }
