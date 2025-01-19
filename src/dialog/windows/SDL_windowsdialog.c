@@ -196,28 +196,12 @@ void windows_ShowFileDialog(void *ptr)
     wchar_t *title_w = NULL;
 
     if (title) {
-        int title_len = (int) SDL_strlen(title);
-
-        /* If the title is longer than 2GB, it might be exploitable. */
-        if (title_len < 0) {
-            title_len = 0;
-        }
-
-        int title_wlen = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
-
-        if (title_wlen < 0) {
-            title_wlen = 0;
-        }
-
-        title_w = (wchar_t *)SDL_malloc(title_wlen * sizeof(wchar_t));
-
+        title_w = WIN_UTF8ToStringW(title);
         if (!title_w) {
             SDL_free(filebuffer);
             callback(userdata, NULL, -1);
             return;
         }
-
-        MultiByteToWideChar(CP_UTF8, 0, title, -1, title_w, title_wlen);
     }
 
     OPENFILENAMEW dialog;
@@ -432,27 +416,11 @@ void windows_ShowFolderDialog(void *ptr)
     wchar_t *title_w = NULL;
 
     if (title) {
-        int title_len = (int) SDL_strlen(title);
-
-        /* If the title is longer than 2GB, it might be exploitable. */
-        if (title_len < 0) {
-            title_len = 0;
-        }
-
-        int title_wlen = MultiByteToWideChar(CP_UTF8, 0, title, -1, NULL, 0);
-
-        if (title_wlen < 0) {
-            title_wlen = 0;
-        }
-
-        title_w = (wchar_t *)SDL_malloc(title_wlen * sizeof(wchar_t));
-
+        title_w = WIN_UTF8ToStringW(title);
         if (!title_w) {
             callback(userdata, NULL, -1);
             return;
         }
-
-        MultiByteToWideChar(CP_UTF8, 0, title, -1, title_w, title_wlen);
     }
 
     wchar_t buffer[MAX_PATH];
