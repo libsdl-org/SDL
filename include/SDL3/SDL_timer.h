@@ -25,7 +25,20 @@
 /**
  * # CategoryTimer
  *
- * SDL time management routines.
+ * SDL provides time management functionality. It is useful for dealing with
+ * (usually) small durations of time.
+ *
+ * This is not to be confused with _calendar time_ management, which is
+ * provided by [CategoryTime](CategoryTime).
+ *
+ * This category covers measuring time elapsed (SDL_GetTicks(),
+ * SDL_GetPerformanceCounter()), putting a thread to sleep for a certain
+ * amount of time (SDL_Delay(), SDL_DelayNS(), SDL_DelayPrecise()), and
+ * firing a callback function after a certain amount of time has elasped
+ * (SDL_AddTimer(), etc).
+ *
+ * There are also useful macros to convert between time units, like
+ * SDL_SECONDS_TO_NS() and such.
  */
 
 #include <SDL3/SDL_stdinc.h>
@@ -239,6 +252,9 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetPerformanceFrequency(void);
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_DelayNS
+ * \sa SDL_DelayPrecise
  */
 extern SDL_DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
 
@@ -254,6 +270,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_Delay(Uint32 ms);
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_Delay
+ * \sa SDL_DelayPrecise
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
 
@@ -269,6 +288,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_DelayNS(Uint64 ns);
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.6.
+ *
+ * \sa SDL_Delay
+ * \sa SDL_DelayNS
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DelayPrecise(Uint64 ns);
 
