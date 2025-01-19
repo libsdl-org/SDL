@@ -525,6 +525,7 @@
 #define SDL_GetSurfaceImages SDL_GetSurfaceImages_REAL
 #define SDL_GetSurfacePalette SDL_GetSurfacePalette_REAL
 #define SDL_GetSurfaceProperties SDL_GetSurfaceProperties_REAL
+#define SDL_GetSystemMouseTransform SDL_GetSystemMouseTransform_REAL
 #define SDL_GetSystemRAM SDL_GetSystemRAM_REAL
 #define SDL_GetSystemTheme SDL_GetSystemTheme_REAL
 #define SDL_GetTLS SDL_GetTLS_REAL
@@ -844,6 +845,7 @@
 #define SDL_SetHapticGain SDL_SetHapticGain_REAL
 #define SDL_SetHint SDL_SetHint_REAL
 #define SDL_SetHintWithPriority SDL_SetHintWithPriority_REAL
+#define SDL_SetRelativeMouseTransform SDL_SetRelativeMouseTransform_REAL
 #define SDL_SetInitialized SDL_SetInitialized_REAL
 #define SDL_SetJoystickEventsEnabled SDL_SetJoystickEventsEnabled_REAL
 #define SDL_SetJoystickLED SDL_SetJoystickLED_REAL

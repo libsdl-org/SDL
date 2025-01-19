@@ -1019,12 +1019,13 @@ static void relative_pointer_handle_relative_motion(void *data,
     if (input->pointer_focus && d->relative_mouse_mode) {
         double dx;
         double dy;
-        if (!SDL_GetMouse()->enable_relative_system_scale) {
-            dx = wl_fixed_to_double(dx_unaccel_w);
-            dy = wl_fixed_to_double(dy_unaccel_w);
-        } else {
+        SDL_Mouse *mouse = SDL_GetMouse();
+        if (mouse->InputTransform && (mouse->InputTransform == mouse->ApplySystemScale)) {
             dx = wl_fixed_to_double(dx_w);
             dy = wl_fixed_to_double(dy_w);
+        } else {
+            dx = wl_fixed_to_double(dx_unaccel_w);
+            dy = wl_fixed_to_double(dy_unaccel_w);
         }
 
         SDL_SendMouseMotion(timestamp, window->sdlwindow, input->pointer_id, true, (float)dx, (float)dy);

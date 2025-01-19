@@ -694,9 +694,9 @@ void WIN_UpdateMouseSystemScale(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (mouse->ApplySystemScale == WIN_ApplySystemScale) {
-        mouse->system_scale_data = &WIN_system_scale_data;
-    }
+    // always set to platform impl to be safe, even though it's not exposed to user.
+    mouse->ApplySystemScale = WIN_ApplySystemScale;
+    mouse->system_scale_data = &WIN_system_scale_data;
 
     // always reinitialize to valid defaults, whether fetch was successful or not.
     WIN_MouseData *data = &WIN_system_scale_data;

@@ -960,6 +960,11 @@ void Wayland_RecreateCursors(void)
 }
 #endif // 0
 
+void Wayland_ApplySystemScale(void *userdata, Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float *x, float *y) 
+{
+    // dummy function
+}
+
 void Wayland_InitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -974,6 +979,7 @@ void Wayland_InitMouse(void)
     mouse->WarpMouseGlobal = Wayland_WarpMouseGlobal;
     mouse->SetRelativeMouseMode = Wayland_SetRelativeMouseMode;
     mouse->GetGlobalMouseState = Wayland_GetGlobalMouseState;
+    mouse->ApplySystemScale = Wayland_ApplySystemScale;
 
     SDL_HitTestResult r = SDL_HITTEST_NORMAL;
     while (r <= SDL_HITTEST_RESIZE_LEFT) {
