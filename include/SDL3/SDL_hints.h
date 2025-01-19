@@ -2368,9 +2368,9 @@ extern "C" {
  *
  * This hint can be set anytime.
  *
- * \since This hint is avaliable since ...
+ * \since This hint is available since 3.2.0
  */
-#define SDL_HINT_MAC_OPT_AS_ALT "SDL_MAC_OPT_AS_ALT"
+#define SDL_HINT_MAC_OPTION_AS_ALT "SDL_MAC_OPTION_AS_ALT"
 
 /**
  * A variable controlling whether SDL_EVENT_MOUSE_WHEEL event values will have

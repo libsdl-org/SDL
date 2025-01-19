@@ -369,6 +369,24 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, bool send_event)
     SDL_SetKeymap(keymap, send_event);
 }
 
+static void SDLCALL SDL_MacOptionAsAltChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
+    SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
+
+    if (hint && *hint) {
+        if (SDL_strcmp(hint, "none") == 0) {
+            data.option_as_alt = OptionAsAltNone;
+        } else if (SDL_strcmp(hint, "only_left") == 0) {
+            data.option_as_alt = OptionAsAltOnlyLeft;
+        } else if (SDL_strcmp(hint, "only_right") == 0) {
+            data.option_as_alt = OptionAsAltOnlyRight;
+        } else if (SDL_strcmp(hint, "both") == 0) {
+            data.option_as_alt = OptionAsAltBoth;
+        }
+    }
+}
+
 void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
 {
     SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
@@ -385,6 +403,9 @@ void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
 
     data.modifierFlags = (unsigned int)[NSEvent modifierFlags];
     SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? true : false);
+
+    data.option_as_alt = OptionAsAltNone;
+    SDL_AddHintCallback(SDL_HINT_MAC_OPTION_AS_ALT, SDL_MacOptionAsAltChanged, _this);
 }
 
 bool Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
@@ -437,15 +458,13 @@ bool Cocoa_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
     return true;
 }
 
-// replace event for opt_as_alt
-static NSEvent *ReplaceEvent(NSEvent *event)
+static NSEvent *ReplaceEvent(NSEvent *event, OptionAsAlt option_as_alt)
 {
-    const unsigned int modflags = (unsigned int)[event modifierFlags];
-
-    const char *option_as_alt = SDL_GetHint(SDL_HINT_MAC_OPT_AS_ALT);
-    if (!(option_as_alt && *option_as_alt)) {
+    if (option_as_alt == OptionAsAltNone) {
         return event;
     }
+
+    const unsigned int modflags = (unsigned int)[event modifierFlags];
 
     bool ignore_alt_characters = false;
 
@@ -454,11 +473,11 @@ static NSEvent *ReplaceEvent(NSEvent *event)
     bool ralt_pressed = IsModifierKeyPressed(modflags, NX_DEVICERALTKEYMASK,
                                              NX_DEVICELALTKEYMASK, NX_ALTERNATEMASK);
 
-    if (SDL_strcmp(option_as_alt, "only_left") == 0 && lalt_pressed) {
+    if (option_as_alt == OptionAsAltOnlyLeft && lalt_pressed) {
         ignore_alt_characters = true;
-    } else if (SDL_strcmp(option_as_alt, "only_right") == 0 && ralt_pressed) {
+    } else if (option_as_alt == OptionAsAltOnlyRight && ralt_pressed) {
         ignore_alt_characters = true;
-    } else if (SDL_strcmp(option_as_alt, "both") == 0 && (lalt_pressed || ralt_pressed)) {
+    } else if (option_as_alt == OptionAsAltBoth && (lalt_pressed || ralt_pressed)) {
         ignore_alt_characters = true;
     }
 
@@ -494,7 +513,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
     }
 
     if ([event type] == NSEventTypeKeyDown || [event type] == NSEventTypeKeyUp) {
-        event = ReplaceEvent(event);
+        event = ReplaceEvent(event, data.option_as_alt);
     }
 
     scancode = [event keyCode];
