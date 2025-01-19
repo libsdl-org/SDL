@@ -80,6 +80,11 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
+    if (!SDL_IsMainThread()) {
+        SDL_SetError("This function should be called on the main thread");
+        return NULL;
+    }
+
     if (icon) {
         icon = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
         if (!icon) {

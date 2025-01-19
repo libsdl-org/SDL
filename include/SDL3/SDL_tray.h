@@ -108,6 +108,8 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \sa SDL_CreateTrayMenu
  * \sa SDL_GetTrayMenu
  * \sa SDL_DestroyTray
@@ -122,6 +124,8 @@ extern SDL_DECLSPEC SDL_Tray *SDLCALL SDL_CreateTray(SDL_Surface *icon, const ch
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_CreateTray
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon);
@@ -133,6 +137,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *ic
  * \param tooltip the new tooltip in UTF-8 encoding. May be NULL.
  *
  * \since This function is available since SDL 3.1.8.
+ *
+ * \threadsafety This function should be called on the thread that created the tray.
  *
  * \sa SDL_CreateTray
  */
@@ -152,6 +158,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayTooltip(SDL_Tray *tray, const char *
  * \returns the newly created menu.
  *
  * \since This function is available since SDL 3.1.8.
+ *
+ * \threadsafety This function should be called on the thread that created the tray.
  *
  * \sa SDL_CreateTray
  * \sa SDL_GetTrayMenu
@@ -173,6 +181,8 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTrayMenu(SDL_Tray *tray);
  * \returns the newly created menu.
  *
  * \since This function is available since SDL 3.1.8.
+ *
+ * \threadsafety This function should be called on the thread that created the tray.
  *
  * \sa SDL_InsertTrayEntryAt
  * \sa SDL_GetTraySubmenu
@@ -196,6 +206,8 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTraySubmenu(SDL_TrayEntry *e
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_CreateTray
  * \sa SDL_CreateTrayMenu
  */
@@ -217,6 +229,8 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTrayMenu(SDL_Tray *tray);
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_InsertTrayEntryAt
  * \sa SDL_CreateTraySubmenu
  */
@@ -234,6 +248,8 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTraySubmenu(SDL_TrayEntry *entr
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_RemoveTrayEntry
  * \sa SDL_InsertTrayEntryAt
  */
@@ -245,6 +261,8 @@ extern SDL_DECLSPEC const SDL_TrayEntry **SDLCALL SDL_GetTrayEntries(SDL_TrayMen
  * \param entry The entry to be deleted.
  *
  * \since This function is available since SDL 3.1.8.
+ *
+ * \threadsafety This function should be called on the thread that created the tray.
  *
  * \sa SDL_GetTrayEntries
  * \sa SDL_InsertTrayEntryAt
@@ -269,6 +287,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_RemoveTrayEntry(SDL_TrayEntry *entry);
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_TrayEntryFlags
  * \sa SDL_GetTrayEntries
  * \sa SDL_RemoveTrayEntry
@@ -289,6 +309,8 @@ extern SDL_DECLSPEC SDL_TrayEntry *SDLCALL SDL_InsertTrayEntryAt(SDL_TrayMenu *m
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_GetTrayEntries
  * \sa SDL_InsertTrayEntryAt
  * \sa SDL_GetTrayEntryLabel
@@ -304,6 +326,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, con
  * \returns the label of the entry in UTF-8 encoding.
  *
  * \since This function is available since SDL 3.1.8.
+ *
+ * \threadsafety This function should be called on the thread that created the tray.
  *
  * \sa SDL_GetTrayEntries
  * \sa SDL_InsertTrayEntryAt
@@ -321,6 +345,8 @@ extern SDL_DECLSPEC const char *SDLCALL SDL_GetTrayEntryLabel(SDL_TrayEntry *ent
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_GetTrayEntries
  * \sa SDL_InsertTrayEntryAt
  * \sa SDL_GetTrayEntryChecked
@@ -337,6 +363,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, b
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_GetTrayEntries
  * \sa SDL_InsertTrayEntryAt
  * \sa SDL_SetTrayEntryChecked
@@ -351,6 +379,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryChecked(SDL_TrayEntry *entry);
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_GetTrayEntries
  * \sa SDL_InsertTrayEntryAt
  * \sa SDL_GetTrayEntryEnabled
@@ -364,6 +394,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, b
  * \returns true if the entry is enabled; false otherwise.
  *
  * \since This function is available since SDL 3.1.8.
+ *
+ * \threadsafety This function should be called on the thread that created the tray.
  *
  * \sa SDL_GetTrayEntries
  * \sa SDL_InsertTrayEntryAt
@@ -381,6 +413,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry);
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_GetTrayEntries
  * \sa SDL_InsertTrayEntryAt
  */
@@ -392,6 +426,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, 
  * \param entry The entry to activate.
  *
  * \since This function is available since SDL 3.1.10.
+ *
+ * \threadsafety This function should be called on the thread that created the tray.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_ClickTrayEntry(SDL_TrayEntry *entry);
 
@@ -404,17 +440,21 @@ extern SDL_DECLSPEC void SDLCALL SDL_ClickTrayEntry(SDL_TrayEntry *entry);
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_CreateTray
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DestroyTray(SDL_Tray *tray);
 
 /**
- * Gets the menu contianing a certain tray entry.
+ * Gets the menu containing a certain tray entry.
  *
  * \param entry the entry for which to get the parent menu.
  * \returns the parent menu.
  *
  * \since This function is available since SDL 3.1.8.
+ *
+ * \threadsafety This function should be called on the thread that created the tray.
  *
  * \sa SDL_InsertTrayEntryAt
  */
@@ -432,6 +472,8 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTrayEntryParent(SDL_TrayEntry *
  *
  * \since This function is available since SDL 3.1.8.
  *
+ * \threadsafety This function should be called on the thread that created the tray.
+ *
  * \sa SDL_CreateTraySubmenu
  * \sa SDL_GetTrayMenuParentTray
  */
@@ -448,6 +490,8 @@ extern SDL_DECLSPEC SDL_TrayEntry *SDLCALL SDL_GetTrayMenuParentEntry(SDL_TrayMe
  * \returns the parent tray, or NULL if this menu is a submenu.
  *
  * \since This function is available since SDL 3.1.8.
+ *
+ * \threadsafety This function should be called on the thread that created the tray.
  *
  * \sa SDL_CreateTrayMenu
  * \sa SDL_GetTrayMenuParentEntry
