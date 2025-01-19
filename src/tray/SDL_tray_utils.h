@@ -20,6 +20,7 @@
 */
 #include "SDL_internal.h"
 
-extern void SDL_IncrementTrayCount(void);
-extern void SDL_DecrementTrayCount(void);
+extern void SDL_RegisterTray(SDL_Tray *tray);
+extern void SDL_UnregisterTray(SDL_Tray *tray);
+extern void SDL_CleanupTrays(void);
 extern bool SDL_HasNoActiveTrays(void);

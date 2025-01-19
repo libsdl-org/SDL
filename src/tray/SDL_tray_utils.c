@@ -27,38 +27,65 @@
 
 static int active_trays = 0;
 
-extern void SDL_IncrementTrayCount(void)
+void SDL_RegisterTray(SDL_Tray *tray)
 {
-    if (++active_trays < 1) {
-        SDL_Log("Active tray count corrupted (%d < 1), this is a bug. The app may close or fail to close unexpectedly.", active_trays);
-    }
+    SDL_SetObjectValid(tray, SDL_OBJECT_TYPE_TRAY, true);
+
+    ++active_trays;
 }
 
-extern void SDL_DecrementTrayCount(void)
+void SDL_UnregisterTray(SDL_Tray *tray)
 {
-    int toplevel_count = 0;
-    SDL_Window *n;
+    SDL_assert(SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY));
 
-    if (--active_trays < 0) {
-        SDL_Log("Active tray count corrupted (%d < 0), this is a bug. The app may close or fail to close unexpectedly.", active_trays);
+    SDL_SetObjectValid(tray, SDL_OBJECT_TYPE_TRAY, false);
+
+    --active_trays;
+    if (active_trays > 0) {
+        return;
     }
 
     if (!SDL_GetHintBoolean(SDL_HINT_QUIT_ON_LAST_WINDOW_CLOSE, true)) {
         return;
     }
 
-    for (n = SDL_GetVideoDevice()->windows; n; n = n->next) {
-        if (!n->parent && !(n->flags & SDL_WINDOW_HIDDEN)) {
-            ++toplevel_count;
+    int toplevel_count = 0;
+    SDL_Window **windows = SDL_GetWindows(NULL);
+    if (windows) {
+        for (int i = 0; windows[i]; ++i) {
+            SDL_Window *window = windows[i];
+            if (!window->parent && !(window->flags & SDL_WINDOW_HIDDEN)) {
+                ++toplevel_count;
+            }
         }
+        SDL_free(windows);
     }
 
-    if (toplevel_count < 1) {
+    if (toplevel_count == 0) {
         SDL_SendQuit();
     }
 }
 
-extern bool SDL_HasNoActiveTrays(void)
+void SDL_CleanupTrays(void)
 {
-    return active_trays < 1;
+    if (active_trays == 0) {
+        return;
+    }
+
+    void **trays = (void **)SDL_malloc(active_trays * sizeof(*trays));
+    if (!trays) {
+        return;
+    }
+
+    int count = SDL_GetObjects(SDL_OBJECT_TYPE_TRAY, trays, active_trays);
+    SDL_assert(count == active_trays);
+    for (int i = 0; i < count; ++i) {
+        SDL_DestroyTray((SDL_Tray *)trays[i]);
+    }
+    SDL_free(trays);
+}
+
+bool SDL_HasNoActiveTrays(void)
+{
+    return active_trays == 0;
 }

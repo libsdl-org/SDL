@@ -144,7 +144,7 @@ static void quit_gtk(void)
 
 static bool init_gtk(void)
 {
-
+    return true;
 }
 
 #else
@@ -434,13 +434,17 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
     app_indicator_set_status(tray->indicator, APP_INDICATOR_STATUS_ACTIVE);
 
-    SDL_IncrementTrayCount();
+    SDL_RegisterTray(tray);
 
     return tray;
 }
 
 void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
 {
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        return;
+    }
+
     if (*tray->icon_path) {
         SDL_RemovePath(tray->icon_path);
     }
@@ -463,6 +467,11 @@ void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 {
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return NULL;
+    }
+
     tray->menu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*tray->menu));
     if (!tray->menu) {
         return NULL;
@@ -481,11 +490,21 @@ SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 
 SDL_TrayMenu *SDL_GetTrayMenu(SDL_Tray *tray)
 {
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return NULL;
+    }
+
     return tray->menu;
 }
 
 SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
 {
+    if (!entry) {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+
     if (entry->submenu) {
         SDL_SetError("Tray entry submenu already exists");
         return NULL;
@@ -514,11 +533,21 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
 
 SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
 {
+    if (!entry) {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+
     return entry->submenu;
 }
 
 const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *size)
 {
+    if (!menu) {
+        SDL_InvalidParamError("menu");
+        return NULL;
+    }
+
     if (size) {
         *size = menu->nEntries;
     }
@@ -563,6 +592,11 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
 
 SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags)
 {
+    if (!menu) {
+        SDL_InvalidParamError("menu");
+        return NULL;
+    }
+
     if (pos < -1 || pos > menu->nEntries) {
         SDL_InvalidParamError("pos");
         return NULL;
@@ -625,18 +659,26 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
 
 void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
 {
+    if (!entry) {
+        return;
+    }
+
     gtk_menu_item_set_label(GTK_MENU_ITEM(entry->item), label);
 }
 
 const char *SDL_GetTrayEntryLabel(SDL_TrayEntry *entry)
 {
+    if (!entry) {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+
     return gtk_menu_item_get_label(GTK_MENU_ITEM(entry->item));
 }
 
 void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
 {
-    if (!(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
-        SDL_SetError("Cannot update check for entry not created with SDL_TRAYENTRY_CHECKBOX");
+    if (!entry || !(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
         return;
     }
 
@@ -647,8 +689,7 @@ void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
 
 bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 {
-    if (!(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
-        SDL_SetError("Cannot fetch check for entry not created with SDL_TRAYENTRY_CHECKBOX");
+    if (!entry || !(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
         return false;
     }
 
@@ -657,16 +698,28 @@ bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 
 void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
 {
+    if (!entry) {
+        return;
+    }
+
     gtk_widget_set_sensitive(entry->item, enabled);
 }
 
 bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 {
+    if (!entry) {
+        return false;
+    }
+
     return gtk_widget_get_sensitive(entry->item);
 }
 
 void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata)
 {
+    if (!entry) {
+        return;
+    }
+
     entry->callback = callback;
     entry->userdata = userdata;
 }
@@ -688,6 +741,11 @@ void SDL_ClickTrayEntry(SDL_TrayEntry *entry)
 
 SDL_TrayMenu *SDL_GetTrayEntryParent(SDL_TrayEntry *entry)
 {
+    if (!entry) {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+
     return entry->parent;
 }
 
@@ -698,14 +756,21 @@ SDL_TrayEntry *SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu)
 
 SDL_Tray *SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu)
 {
+    if (!menu) {
+        SDL_InvalidParamError("menu");
+        return NULL;
+    }
+
     return menu->parent_tray;
 }
 
 void SDL_DestroyTray(SDL_Tray *tray)
 {
-    if (!tray) {
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
         return;
     }
+
+    SDL_UnregisterTray(tray);
 
     if (tray->menu) {
         DestroySDLMenu(tray->menu);
@@ -724,8 +789,6 @@ void SDL_DestroyTray(SDL_Tray *tray)
     }
 
     SDL_free(tray);
-
-    SDL_DecrementTrayCount();
 
     if (SDL_HasNoActiveTrays()) {
         gtk_main_quit();

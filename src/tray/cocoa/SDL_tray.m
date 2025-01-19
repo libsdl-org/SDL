@@ -80,8 +80,16 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
+    if (icon) {
+        icon = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
+        if (!icon) {
+            return NULL;
+        }
+    }
+
     SDL_Tray *tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
     if (!tray) {
+        SDL_DestroySurface(icon);
         return NULL;
     }
 
@@ -97,22 +105,17 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     }
 
     if (icon) {
-        SDL_Surface *iconfmt = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
-        if (!iconfmt) {
-            goto skip_putting_an_icon;
-        }
-
-        NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:(unsigned char **)&iconfmt->pixels
-                                                                           pixelsWide:iconfmt->w
-                                                                           pixelsHigh:iconfmt->h
+        NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:(unsigned char **)&icon->pixels
+                                                                           pixelsWide:icon->w
+                                                                           pixelsHigh:icon->h
                                                                         bitsPerSample:8
                                                                       samplesPerPixel:4
                                                                              hasAlpha:YES
                                                                              isPlanar:NO
                                                                        colorSpaceName:NSCalibratedRGBColorSpace
-                                                                          bytesPerRow:iconfmt->pitch
+                                                                          bytesPerRow:icon->pitch
                                                                          bitsPerPixel:32];
-        NSImage *iconimg = [[NSImage alloc] initWithSize:NSMakeSize(iconfmt->w, iconfmt->h)];
+        NSImage *iconimg = [[NSImage alloc] initWithSize:NSMakeSize(icon->w, icon->h)];
         [iconimg addRepresentation:bitmap];
 
         /* A typical icon size is 22x22 on macOS. Failing to resize the icon
@@ -125,39 +128,42 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
         tray->statusItem.button.image = iconimg22;
 
-        SDL_DestroySurface(iconfmt);
+        SDL_DestroySurface(icon);
     }
 
-skip_putting_an_icon:
-    SDL_IncrementTrayCount();
+    SDL_RegisterTray(tray);
 
     return tray;
 }
 
 void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
 {
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        return;
+    }
+
     if (!icon) {
         tray->statusItem.button.image = nil;
         return;
     }
 
-    SDL_Surface *iconfmt = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
-    if (!iconfmt) {
+    icon = SDL_ConvertSurface(icon, SDL_PIXELFORMAT_RGBA32);
+    if (!icon) {
         tray->statusItem.button.image = nil;
         return;
     }
 
-    NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:(unsigned char **)&iconfmt->pixels
-                                                                       pixelsWide:iconfmt->w
-                                                                       pixelsHigh:iconfmt->h
+    NSBitmapImageRep *bitmap = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:(unsigned char **)&icon->pixels
+                                                                       pixelsWide:icon->w
+                                                                       pixelsHigh:icon->h
                                                                     bitsPerSample:8
                                                                   samplesPerPixel:4
                                                                          hasAlpha:YES
                                                                          isPlanar:NO
                                                                    colorSpaceName:NSCalibratedRGBColorSpace
-                                                                      bytesPerRow:iconfmt->pitch
+                                                                      bytesPerRow:icon->pitch
                                                                      bitsPerPixel:32];
-    NSImage *iconimg = [[NSImage alloc] initWithSize:NSMakeSize(iconfmt->w, iconfmt->h)];
+    NSImage *iconimg = [[NSImage alloc] initWithSize:NSMakeSize(icon->w, icon->h)];
     [iconimg addRepresentation:bitmap];
 
     /* A typical icon size is 22x22 on macOS. Failing to resize the icon
@@ -170,11 +176,15 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
 
     tray->statusItem.button.image = iconimg22;
 
-    SDL_DestroySurface(iconfmt);
+    SDL_DestroySurface(icon);
 }
 
 void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 {
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        return;
+    }
+
     if (tooltip) {
         tray->statusItem.button.toolTip = [NSString stringWithUTF8String:tooltip];
     } else {
@@ -184,6 +194,11 @@ void SDL_SetTrayTooltip(SDL_Tray *tray, const char *tooltip)
 
 SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 {
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return NULL;
+    }
+
     SDL_TrayMenu *menu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*menu));
     if (!menu) {
         return NULL;
@@ -206,11 +221,21 @@ SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
 
 SDL_TrayMenu *SDL_GetTrayMenu(SDL_Tray *tray)
 {
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return NULL;
+    }
+
     return tray->menu;
 }
 
 SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
 {
+    if (!entry) {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+
     if (entry->submenu) {
         SDL_SetError("Tray entry submenu already exists");
         return NULL;
@@ -243,11 +268,21 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
 
 SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
 {
+    if (!entry) {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+
     return entry->submenu;
 }
 
 const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *size)
 {
+    if (!menu) {
+        SDL_InvalidParamError("menu");
+        return NULL;
+    }
+
     if (size) {
         *size = menu->nEntries;
     }
@@ -293,6 +328,11 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
 
 SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags)
 {
+    if (!menu) {
+        SDL_InvalidParamError("menu");
+        return NULL;
+    }
+
     if (pos < -1 || pos > menu->nEntries) {
         SDL_InvalidParamError("pos");
         return NULL;
@@ -347,28 +387,44 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
 
 void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
 {
+    if (!entry) {
+        return;
+    }
+
     [entry->nsitem setTitle:[NSString stringWithUTF8String:label]];
 }
 
 const char *SDL_GetTrayEntryLabel(SDL_TrayEntry *entry)
 {
+    if (!entry) {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+
     return [[entry->nsitem title] UTF8String];
 }
 
 void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
 {
+    if (!entry) {
+        return;
+    }
+
     [entry->nsitem setState:(checked ? NSControlStateValueOn : NSControlStateValueOff)];
 }
 
 bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 {
+    if (!entry) {
+        return false;
+    }
+
     return entry->nsitem.state == NSControlStateValueOn;
 }
 
 void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
 {
-    if (!(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
-        SDL_SetError("Cannot update check for entry not created with SDL_TRAYENTRY_CHECKBOX");
+    if (!entry || !(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
         return;
     }
 
@@ -377,8 +433,7 @@ void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
 
 bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 {
-    if (!(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
-        SDL_SetError("Cannot fetch check for entry not created with SDL_TRAYENTRY_CHECKBOX");
+    if (!entry || !(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
         return false;
     }
 
@@ -387,6 +442,10 @@ bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 
 void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata)
 {
+    if (!entry) {
+        return;
+    }
+
     entry->callback = callback;
     entry->userdata = userdata;
 }
@@ -408,24 +467,41 @@ void SDL_ClickTrayEntry(SDL_TrayEntry *entry)
 
 SDL_TrayMenu *SDL_GetTrayEntryParent(SDL_TrayEntry *entry)
 {
+    if (!entry) {
+        SDL_InvalidParamError("entry");
+        return NULL;
+    }
+
     return entry->parent;
 }
 
 SDL_TrayEntry *SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu)
 {
+    if (!menu) {
+        SDL_InvalidParamError("menu");
+        return NULL;
+    }
+
     return menu->parent_entry;
 }
 
 SDL_Tray *SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu)
 {
+    if (!menu) {
+        SDL_InvalidParamError("menu");
+        return NULL;
+    }
+
     return menu->parent_tray;
 }
 
 void SDL_DestroyTray(SDL_Tray *tray)
 {
-    if (!tray) {
+    if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
         return;
     }
+
+    SDL_UnregisterTray(tray);
 
     [[NSStatusBar systemStatusBar] removeStatusItem:tray->statusItem];
 
@@ -434,8 +510,6 @@ void SDL_DestroyTray(SDL_Tray *tray)
     }
 
     SDL_free(tray);
-
-    SDL_DecrementTrayCount();
 }
 
 #endif // SDL_PLATFORM_MACOS
