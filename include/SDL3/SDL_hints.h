@@ -2370,7 +2370,6 @@ extern "C" {
  *
  * \since This hint is avaliable since ...
  */
-
 #define SDL_HINT_MAC_OPT_AS_ALT "SDL_MAC_OPT_AS_ALT"
 
 /**
