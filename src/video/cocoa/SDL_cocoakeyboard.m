@@ -443,6 +443,9 @@ static NSEvent *ReplaceEvent(NSEvent *event)
     const unsigned int modflags = (unsigned int)[event modifierFlags];
 
     const char *option_as_alt = SDL_GetHint(SDL_HINT_MAC_OPT_AS_ALT);
+    if (!(option_as_alt && *option_as_alt)) {
+        return event;
+    }
 
     bool ignore_alt_characters = false;
 
@@ -451,9 +454,9 @@ static NSEvent *ReplaceEvent(NSEvent *event)
     bool ralt_pressed = IsModifierKeyPressed(modflags, NX_DEVICERALTKEYMASK,
                                              NX_DEVICELALTKEYMASK, NX_ALTERNATEMASK);
 
-    if (SDL_strcmp(option_as_alt, "left_only") == 0 && lalt_pressed) {
+    if (SDL_strcmp(option_as_alt, "only_left") == 0 && lalt_pressed) {
         ignore_alt_characters = true;
-    } else if (SDL_strcmp(option_as_alt, "right_only") == 0 && ralt_pressed) {
+    } else if (SDL_strcmp(option_as_alt, "only_right") == 0 && ralt_pressed) {
         ignore_alt_characters = true;
     } else if (SDL_strcmp(option_as_alt, "both") == 0 && (lalt_pressed || ralt_pressed)) {
         ignore_alt_characters = true;
@@ -471,7 +474,7 @@ static NSEvent *ReplaceEvent(NSEvent *event)
                            modifierFlags:modflags
                                timestamp:[event timestamp]
                             windowNumber:[event windowNumber]
-                                 context:[event context]
+                                 context:nil
                               characters:charactersIgnoringModifiers
              charactersIgnoringModifiers:charactersIgnoringModifiers
                                isARepeat:[event isARepeat]
@@ -490,7 +493,9 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
         return; // can happen when returning from fullscreen Space on shutdown
     }
 
-    // event = ReplaceEvent(event);
+    if ([event type] == NSEventTypeKeyDown || [event type] == NSEventTypeKeyUp) {
+        event = ReplaceEvent(event);
+    }
 
     scancode = [event keyCode];
 
