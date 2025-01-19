@@ -211,6 +211,11 @@ static HICON load_default_icon()
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
+    if (!SDL_IsMainThread()) {
+        SDL_SetError("This function should be called on the main thread");
+        return NULL;
+    }
+
     SDL_Tray *tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
 
     if (!tray) {
