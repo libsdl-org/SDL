@@ -817,7 +817,7 @@ static bool PrepareAudioQueue(SDL_AudioDevice *device)
     }
     #endif
 
-    int numAudioBuffers = 2;
+    int numAudioBuffers = 3;
     const double msecs = (device->sample_frames / ((double)device->spec.freq)) * 1000.0;
     if (msecs < MINIMUM_AUDIO_BUFFER_TIME_MS) { // use more buffers if we have a VERY small sample set.
         numAudioBuffers = ((int)SDL_ceil(MINIMUM_AUDIO_BUFFER_TIME_MS / msecs) * 2);
