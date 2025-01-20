@@ -790,7 +790,7 @@ void SDL_DestroyTray(SDL_Tray *tray)
 
     SDL_free(tray);
 
-    if (SDL_HasNoActiveTrays()) {
+    if (!SDL_HasActiveTrays()) {
         gtk_main_quit();
         gtk_thread_active = false;
     }

@@ -23,4 +23,4 @@
 extern void SDL_RegisterTray(SDL_Tray *tray);
 extern void SDL_UnregisterTray(SDL_Tray *tray);
 extern void SDL_CleanupTrays(void);
-extern bool SDL_HasNoActiveTrays(void);
+extern bool SDL_HasActiveTrays(void);
