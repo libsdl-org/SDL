@@ -1377,6 +1377,8 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         window->h = 0;
         [self windowDidMove:aNotification];
         [self windowDidResize:aNotification];
+
+        Cocoa_UpdateClipCursor(window);
     }
 }
 
@@ -1516,6 +1518,8 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         if (!(window->flags & SDL_WINDOW_HIDDEN)) {
             Cocoa_ShowWindow(SDL_GetVideoDevice(), window);
         }
+
+        Cocoa_UpdateClipCursor(window);
     }
 }
 
@@ -2935,6 +2939,8 @@ SDL_FullscreenResult Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Windo
         }
 
         ScheduleContextUpdates(data);
+        Cocoa_SyncWindow(_this, window);
+        Cocoa_UpdateClipCursor(window);
     }
 
     return SDL_FULLSCREEN_SUCCEEDED;
