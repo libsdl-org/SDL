@@ -1275,6 +1275,13 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                 if (floating) {
                     width = window->floating.w;
                     height = window->floating.h;
+
+                    // Clamp the window to the toplevel bounds, if any are set.
+                    if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE &&
+                        wind->toplevel_bounds.width && wind->toplevel_bounds.height) {
+                        width = SDL_min(wind->toplevel_bounds.width, width);
+                        height = SDL_min(wind->toplevel_bounds.height, height);
+                    }
                 } else {
                     width = window->windowed.w;
                     height = window->windowed.h;
@@ -1440,11 +1447,20 @@ static void decoration_dismiss_popup(struct libdecor_frame *frame, const char *s
     // NOP
 }
 
+static void decoration_frame_toplevel_bounds(struct libdecor_frame *frame, int width, int height, void *user_data)
+{
+        SDL_WindowData *wind = (SDL_WindowData *)user_data;
+        wind->toplevel_bounds.width = width;
+        wind->toplevel_bounds.height = height;
+}
+
+// Note: Functions pointers after dismiss_popup are cast to avoid compiler warnings if building against an older version.
 static struct libdecor_frame_interface libdecor_frame_interface = {
     decoration_frame_configure,
     decoration_frame_close,
     decoration_frame_commit,
-    decoration_dismiss_popup
+    decoration_dismiss_popup,
+    (void (*)(void))decoration_frame_toplevel_bounds
 };
 #endif
 
