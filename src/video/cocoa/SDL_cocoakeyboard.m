@@ -384,6 +384,8 @@ static void SDLCALL SDL_MacOptionAsAltChanged(void *userdata, const char *name, 
         } else if (SDL_strcmp(hint, "both") == 0) {
             data.option_as_alt = OptionAsAltBoth;
         }
+    } else {
+        data.option_as_alt = OptionAsAltNone;
     }
 }
 
@@ -404,7 +406,6 @@ void Cocoa_InitKeyboard(SDL_VideoDevice *_this)
     data.modifierFlags = (unsigned int)[NSEvent modifierFlags];
     SDL_ToggleModState(SDL_KMOD_CAPS, (data.modifierFlags & NSEventModifierFlagCapsLock) ? true : false);
 
-    data.option_as_alt = OptionAsAltNone;
     SDL_AddHintCallback(SDL_HINT_MAC_OPTION_AS_ALT, SDL_MacOptionAsAltChanged, _this);
 }
 
