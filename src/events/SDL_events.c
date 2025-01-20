@@ -1354,29 +1354,8 @@ bool SDL_RunOnMainThread(SDL_MainThreadCallback callback, void *userdata, bool w
     }
 }
 
-// Run the system dependent event loops
-static void SDL_PumpEventsInternal(bool push_sentinel)
+void SDL_PumpEventMaintenance(void)
 {
-    // Free any temporary memory from old events
-    SDL_FreeTemporaryMemory();
-
-    // Release any keys held down from last frame
-    SDL_ReleaseAutoReleaseKeys();
-
-    // Run any pending main thread callbacks
-    SDL_RunMainThreadCallbacks();
-
-#ifdef SDL_PLATFORM_ANDROID
-    // Android event processing is independent of the video subsystem
-    Android_PumpEvents(0);
-#else
-    // Get events from the video subsystem
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (_this) {
-        _this->PumpEvents(_this);
-    }
-#endif
-
 #ifndef SDL_AUDIO_DISABLED
     SDL_UpdateAudio();
 #endif
@@ -1402,6 +1381,32 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
     SDL_UpdateTrays();
 
     SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
+}
+
+// Run the system dependent event loops
+static void SDL_PumpEventsInternal(bool push_sentinel)
+{
+    // Free any temporary memory from old events
+    SDL_FreeTemporaryMemory();
+
+    // Release any keys held down from last frame
+    SDL_ReleaseAutoReleaseKeys();
+
+    // Run any pending main thread callbacks
+    SDL_RunMainThreadCallbacks();
+
+#ifdef SDL_PLATFORM_ANDROID
+    // Android event processing is independent of the video subsystem
+    Android_PumpEvents(0);
+#else
+    // Get events from the video subsystem
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this) {
+        _this->PumpEvents(_this);
+    }
+#endif
+
+    SDL_PumpEventMaintenance();
 
     if (push_sentinel && SDL_EventEnabled(SDL_EVENT_POLL_SENTINEL)) {
         SDL_Event sentinel;

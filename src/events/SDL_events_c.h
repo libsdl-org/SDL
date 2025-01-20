@@ -51,6 +51,8 @@ extern const char *SDL_CreateTemporaryString(const char *string);
 extern void *SDL_ClaimTemporaryMemory(const void *mem);
 extern void SDL_FreeTemporaryMemory(void);
 
+extern void SDL_PumpEventMaintenance(void);
+
 extern void SDL_SendQuit(void);
 
 extern bool SDL_InitEvents(void);
