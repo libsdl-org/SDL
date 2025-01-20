@@ -85,7 +85,7 @@ void SDL_CleanupTrays(void)
     SDL_free(trays);
 }
 
-bool SDL_HasNoActiveTrays(void)
+bool SDL_HasActiveTrays(void)
 {
-    return active_trays == 0;
+    return (active_trays > 0);
 }

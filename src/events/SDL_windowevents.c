@@ -247,7 +247,7 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         break;
     }
 
-    if (windowevent == SDL_EVENT_WINDOW_CLOSE_REQUESTED && !window->parent && SDL_HasNoActiveTrays()) {
+    if (windowevent == SDL_EVENT_WINDOW_CLOSE_REQUESTED && !window->parent && !SDL_HasActiveTrays()) {
         int toplevel_count = 0;
         SDL_Window *n;
         for (n = SDL_GetVideoDevice()->windows; n; n = n->next) {
