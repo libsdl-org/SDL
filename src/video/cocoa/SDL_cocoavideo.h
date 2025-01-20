@@ -44,6 +44,14 @@
 
 @class SDL3TranslatorResponder;
 
+typedef enum
+{
+    OptionAsAltNone,
+    OptionAsAltOnlyLeft,
+    OptionAsAltOnlyRight,
+    OptionAsAltBoth,
+} OptionAsAlt;
+
 @interface SDL_CocoaVideoData : NSObject
 @property(nonatomic) int allow_spaces;
 @property(nonatomic) int trackpad_is_touch_only;
@@ -53,6 +61,7 @@
 @property(nonatomic) NSInteger clipboard_count;
 @property(nonatomic) IOPMAssertionID screensaver_assertion;
 @property(nonatomic) SDL_Mutex *swaplock;
+@property(nonatomic) OptionAsAlt option_as_alt;
 @end
 
 // Utility functions
