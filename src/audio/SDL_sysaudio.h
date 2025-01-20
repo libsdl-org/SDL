@@ -305,8 +305,11 @@ struct SDL_AudioDevice
 
     // The device's current audio specification
     SDL_AudioSpec spec;
+
+    // The size, in bytes, of the device's playback/recording buffer.
     int buffer_size;
 
+    // The device's channel map, or NULL for SDL default layout.
     int *chmap;
 
     // The device's default audio specification
