@@ -174,6 +174,16 @@ static Uint64 WIN_GetEventTimestamp(void)
     return timestamp;
 }
 
+// A message hook called before TranslateMessage()
+static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
+static void *g_WindowsMessageHookData = NULL;
+
+void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
+{
+    g_WindowsMessageHook = callback;
+    g_WindowsMessageHookData = userdata;
+}
+
 static SDL_Scancode WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam, Uint16 *rawcode, bool *virtual_key)
 {
     SDL_Scancode code;
@@ -1042,6 +1052,25 @@ static bool SkipAltGrLeftControl(WPARAM wParam, LPARAM lParam)
     return false;
 }
 
+static bool DispatchModalLoopMessageHook(HWND *hwnd, UINT *msg, WPARAM *wParam, LPARAM *lParam)
+{
+    MSG dummy;
+
+    SDL_zero(dummy);
+    dummy.hwnd = *hwnd;
+    dummy.message = *msg;
+    dummy.wParam = *wParam;
+    dummy.lParam = *lParam;
+    if (g_WindowsMessageHook(g_WindowsMessageHookData, &dummy)) {
+        // Can't modify the hwnd, but everything else is fair game
+        *msg = dummy.message;
+        *wParam = dummy.wParam;
+        *lParam = dummy.lParam;
+        return true;
+    }
+    return false;
+}
+
 LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     SDL_WindowData *data;
@@ -1070,6 +1099,14 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         OutputDebugStringA(message);
     }
 #endif // WMMSG_DEBUG
+
+
+    if (g_WindowsMessageHook && data->in_modal_loop) {
+        // Synthesize a message for window hooks so they can modify the message if desired
+        if (!DispatchModalLoopMessageHook(&hwnd, &msg, &wParam, &lParam)) {
+            return 0;
+        }
+    }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     if (WIN_HandleIMEMessage(hwnd, msg, wParam, &lParam, data->videodata)) {
@@ -1684,12 +1721,15 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_ENTERSIZEMOVE:
     case WM_ENTERMENULOOP:
     {
-        data->initial_size_rect.left = data->window->x;
-        data->initial_size_rect.right = data->window->x + data->window->w;
-        data->initial_size_rect.top = data->window->y;
-        data->initial_size_rect.bottom = data->window->y + data->window->h;
+        ++data->in_modal_loop;
+        if (data->in_modal_loop == 1) {
+            data->initial_size_rect.left = data->window->x;
+            data->initial_size_rect.right = data->window->x + data->window->w;
+            data->initial_size_rect.top = data->window->y;
+            data->initial_size_rect.bottom = data->window->y + data->window->h;
 
-        SetTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks, USER_TIMER_MINIMUM, NULL);
+            SetTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks, USER_TIMER_MINIMUM, NULL);
+        }
     } break;
 
     case WM_TIMER:
@@ -1703,7 +1743,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_EXITSIZEMOVE:
     case WM_EXITMENULOOP:
     {
-        KillTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks);
+        --data->in_modal_loop;
+        if (data->in_modal_loop == 0) {
+            KillTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks);
+        }
     } break;
 
     case WM_SIZING:
@@ -2304,16 +2347,6 @@ static void WIN_UpdateMouseCapture(void)
     }
 }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-
-// A message hook called before TranslateMessage()
-static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
-static void *g_WindowsMessageHookData = NULL;
-
-void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
-{
-    g_WindowsMessageHook = callback;
-    g_WindowsMessageHookData = userdata;
-}
 
 int WIN_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
 {
