@@ -209,6 +209,10 @@ static HICON load_default_icon()
     return LoadIcon(NULL, IDI_APPLICATION);
 }
 
+void SDL_UpdateTrays(void)
+{
+}
+
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     if (!SDL_IsMainThread()) {

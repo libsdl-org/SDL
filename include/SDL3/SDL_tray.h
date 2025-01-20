@@ -498,6 +498,17 @@ extern SDL_DECLSPEC SDL_TrayEntry *SDLCALL SDL_GetTrayMenuParentEntry(SDL_TrayMe
  */
 extern SDL_DECLSPEC SDL_Tray *SDLCALL SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu);
 
+/**
+ * Update the trays.
+ *
+ * This is called automatically by the event loop and is only needed if you're using trays but aren't handling SDL events.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_UpdateTrays(void);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

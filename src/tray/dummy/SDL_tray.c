@@ -25,6 +25,10 @@
 
 #include "../SDL_tray_utils.h"
 
+void SDL_UpdateTrays(void)
+{
+}
+
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     SDL_Unsupported();

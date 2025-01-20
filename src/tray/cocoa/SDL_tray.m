@@ -78,6 +78,10 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
     SDL_free(menu);
 }
 
+void SDL_UpdateTrays(void)
+{
+}
+
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     if (!SDL_IsMainThread()) {
