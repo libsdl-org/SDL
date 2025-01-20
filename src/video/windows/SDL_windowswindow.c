@@ -1377,27 +1377,30 @@ SDL_FullscreenResult WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window 
            https://bugzilla.libsdl.org/show_bug.cgi?id=3215 can reproduce!
         */
         if (data->windowed_mode_was_maximized && !data->in_window_deactivation) {
-            style |= WS_MAXIMIZE;
             enterMaximized = true;
+            data->disable_move_size_events = true;
         }
 
         menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
         WIN_AdjustWindowRectWithStyle(window, style, styleEx, menu,
                                       &x, &y,
                                       &w, &h,
-                                      data->windowed_mode_was_maximized ? SDL_WINDOWRECT_WINDOWED : SDL_WINDOWRECT_FLOATING);
+                                      SDL_WINDOWRECT_FLOATING);
         data->windowed_mode_was_maximized = false;
     }
+
+    /* Always reset the window to the base floating size before possibly re-applying the maximized state,
+     * otherwise, the base floating size can seemingly be lost in some cases.
+     */
     SetWindowLong(hwnd, GWL_STYLE, style);
     data->expected_resize = true;
+    SetWindowPos(hwnd, top, x, y, w, h, data->copybits_flag | SWP_NOACTIVATE);
+    data->expected_resize = false;
+    data->disable_move_size_events = false;
 
-    if (!enterMaximized) {
-        SetWindowPos(hwnd, top, x, y, w, h, data->copybits_flag | SWP_NOACTIVATE);
-    } else {
+    if (enterMaximized) {
         WIN_MaximizeWindow(_this, window);
     }
-
-    data->expected_resize = false;
 
 #ifdef HIGHDPI_DEBUG
     SDL_Log("WIN_SetWindowFullscreen: %d finished. Set window to %d,%d, %dx%d", (int)fullscreen, x, y, w, h);

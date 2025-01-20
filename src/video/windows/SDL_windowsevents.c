@@ -1633,23 +1633,25 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             break;
         }
 
-        if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
-            ClientToScreen(hwnd, (LPPOINT) &rect);
-            ClientToScreen(hwnd, (LPPOINT) &rect + 1);
+        if (!data->disable_move_size_events) {
+            if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+                ClientToScreen(hwnd, (LPPOINT) &rect);
+                ClientToScreen(hwnd, (LPPOINT) &rect + 1);
 
-            x = rect.left;
-            y = rect.top;
+                x = rect.left;
+                y = rect.top;
 
-            SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
-        }
+                SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
+            }
 
-        // Moving the window from one display to another can change the size of the window (in the handling of SDL_EVENT_WINDOW_MOVED), so we need to re-query the bounds
-        if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
-            w = rect.right;
-            h = rect.bottom;
+            // Moving the window from one display to another can change the size of the window (in the handling of SDL_EVENT_WINDOW_MOVED), so we need to re-query the bounds
+            if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+                w = rect.right;
+                h = rect.bottom;
 
-            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+            }
         }
 
         WIN_UpdateClipCursor(data->window);
