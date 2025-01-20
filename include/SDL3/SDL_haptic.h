@@ -710,7 +710,7 @@ typedef struct SDL_HapticCondition
     /* Header */
     Uint16 type;            /**< SDL_HAPTIC_SPRING, SDL_HAPTIC_DAMPER,
                                  SDL_HAPTIC_INERTIA or SDL_HAPTIC_FRICTION */
-    SDL_HapticDirection direction;  /**< Direction of the effect - Not used ATM. */
+    SDL_HapticDirection direction;  /**< Direction of the effect. */
 
     /* Replay */
     Uint32 length;          /**< Duration of the effect. */
