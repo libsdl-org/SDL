@@ -5006,8 +5006,22 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
         SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
 
         if (renderer->target) {
-            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->target->SDR_white_point);
-            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, renderer->target->HDR_headroom);
+            SDL_Texture *target = renderer->target;
+            SDL_Texture *parent = SDL_GetPointerProperty(SDL_GetTextureProperties(target), SDL_PROP_TEXTURE_PARENT_POINTER, NULL);
+            SDL_PixelFormat expected_format = (parent ? parent->format : target->format);
+
+            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point);
+            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, target->HDR_headroom);
+
+            // Set the expected surface format
+            if ((surface->format == SDL_PIXELFORMAT_ARGB8888 && expected_format == SDL_PIXELFORMAT_XRGB8888) ||
+                (surface->format == SDL_PIXELFORMAT_RGBA8888 && expected_format == SDL_PIXELFORMAT_RGBX8888) ||
+                (surface->format == SDL_PIXELFORMAT_ABGR8888 && expected_format == SDL_PIXELFORMAT_XBGR8888) ||
+                (surface->format == SDL_PIXELFORMAT_BGRA8888 && expected_format == SDL_PIXELFORMAT_BGRX8888)) {
+printf("changing format\n");
+                surface->format = expected_format;
+                surface->fmt = SDL_GetPixelFormatDetails(expected_format);
+            }
         } else {
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, renderer->SDR_white_point);
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, renderer->HDR_headroom);
