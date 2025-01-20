@@ -133,6 +133,12 @@
 
 #endif
 
+#if defined(__has_include)
+    #if __has_include("SDL_main_private.h") && __has_include("SDL_main_impl_private.h")
+        #define SDL_PLATFORM_PRIVATE_MAIN
+    #endif
+#endif
+
 #ifndef SDL_MAIN_HANDLED
     #if defined(SDL_PLATFORM_PRIVATE_MAIN)
         /* Private platforms may have their own ideas about entry points. */
