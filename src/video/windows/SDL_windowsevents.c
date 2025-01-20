@@ -1611,13 +1611,17 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
             }
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
-            data->force_resizable = true;
+            data->force_ws_maximizebox = true;
         } else if (data->window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) {
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
 
-            // If resizable was forced on for the maximized window, clear the style flags now.
-            data->force_resizable = false;
-            WIN_SetWindowResizable(SDL_GetVideoDevice(), data->window, !!(data->window->flags & SDL_WINDOW_RESIZABLE));
+            /* If resizable was forced on for the maximized window, clear the style flags now,
+             * but not if the window is fullscreen, as this needs to be preserved in that case.
+             */
+            if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
+                data->force_ws_maximizebox = false;
+                WIN_SetWindowResizable(SDL_GetVideoDevice(), data->window, !!(data->window->flags & SDL_WINDOW_RESIZABLE));
+            }
         }
 
         if (windowpos->flags & SWP_HIDEWINDOW) {
@@ -2038,7 +2042,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                         params->rgrc[0] = info.rcWork;
                     }
                 }
-            } else if (!(window_flags & SDL_WINDOW_RESIZABLE) && !data->force_resizable) {
+            } else if (!(window_flags & SDL_WINDOW_RESIZABLE) && !data->force_ws_maximizebox) {
                 int w, h;
                 if (data->window->last_size_pending) {
                     w = data->window->pending.w;
