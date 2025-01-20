@@ -1006,10 +1006,6 @@ static int SDLCALL video_getSetWindowSize(void *arg)
     int referenceW, referenceH;
     int currentW, currentH;
     int desiredW, desiredH;
-    const bool restoreHint = SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", true);
-
-    /* Win32 borderless windows are not resizable by default and need this undocumented hint */
-    SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", "1");
 
     /* Get display bounds for size range */
     result = SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &display);
@@ -1187,9 +1183,6 @@ null_tests:
     SDL_SetWindowSize(NULL, desiredW, desiredH);
     SDLTest_AssertPass("Call to SDL_SetWindowSize(window=NULL)");
     checkInvalidWindowError();
-
-    /* Restore the hint to the previous value */
-    SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", restoreHint ? "1" : "0");
 
     return TEST_COMPLETED;
 }
