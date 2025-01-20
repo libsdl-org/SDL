@@ -411,7 +411,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         textField.textContentType = UITextContentTypePassword;
         break;
     case SDL_TEXTINPUT_TYPE_NUMBER:
-        textField.keyboardType = UIKeyboardTypeNumberPad;
+        textField.keyboardType = UIKeyboardTypeDecimalPad;
         textField.textContentType = nil;
         break;
     case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
