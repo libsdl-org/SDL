@@ -1265,3 +1265,4 @@ SDL_DYNAPI_PROC(SDL_Tray*,SDL_GetTrayMenuParentTray,(SDL_TrayMenu *a),(a),return
 SDL_DYNAPI_PROC(SDL_ThreadState,SDL_GetThreadState,(SDL_Thread *a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_AudioStreamDevicePaused,(SDL_AudioStream *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_ClickTrayEntry,(SDL_TrayEntry *a),(a),)
+SDL_DYNAPI_PROC(void,SDL_UpdateTrays,(void),(),)

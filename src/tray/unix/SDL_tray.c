@@ -54,9 +54,10 @@ typedef enum
     G_CONNECT_AFTER = 1 << 0,
     G_CONNECT_SWAPPED = 1 << 1
 } GConnectFlags;
-gulong (*g_signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, GConnectFlags connect_flags);
-void (*g_object_unref)(gpointer object);
-gchar *(*g_mkdtemp)(gchar *template);
+
+static gulong (*g_signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, GConnectFlags connect_flags);
+static void (*g_object_unref)(gpointer object);
+static gchar *(*g_mkdtemp)(gchar *template);
 
 #define g_signal_connect(instance, detailed_signal, c_handler, data) \
     g_signal_connect_data ((instance), (detailed_signal), (c_handler), (data), NULL, (GConnectFlags) 0)
@@ -78,24 +79,23 @@ typedef struct _GtkMenuShell GtkMenuShell;
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkCheckMenuItem GtkCheckMenuItem;
 
-gboolean (*gtk_init_check)(int *argc, char ***argv);
-void (*gtk_main)(void);
-void (*gtk_main_quit)(void);
-GtkWidget* (*gtk_menu_new)(void);
-GtkWidget* (*gtk_separator_menu_item_new)(void);
-GtkWidget* (*gtk_menu_item_new_with_label)(const gchar *label);
-void (*gtk_menu_item_set_submenu)(GtkMenuItem *menu_item, GtkWidget *submenu);
-GtkWidget* (*gtk_check_menu_item_new_with_label)(const gchar *label);
-void (*gtk_check_menu_item_set_active)(GtkCheckMenuItem *check_menu_item, gboolean is_active);
-void (*gtk_widget_set_sensitive)(GtkWidget *widget, gboolean sensitive);
-void (*gtk_widget_show)(GtkWidget *widget);
-void (*gtk_menu_shell_append)(GtkMenuShell *menu_shell, GtkWidget *child);
-void (*gtk_menu_shell_insert)(GtkMenuShell *menu_shell, GtkWidget *child, gint position);
-void (*gtk_widget_destroy)(GtkWidget *widget);
-const gchar *(*gtk_menu_item_get_label)(GtkMenuItem *menu_item);
-void (*gtk_menu_item_set_label)(GtkMenuItem *menu_item, const gchar *label);
-gboolean (*gtk_check_menu_item_get_active)(GtkCheckMenuItem *check_menu_item);
-gboolean (*gtk_widget_get_sensitive)(GtkWidget *widget);
+static gboolean (*gtk_init_check)(int *argc, char ***argv);
+static gboolean (*gtk_main_iteration_do)(gboolean blocking);
+static GtkWidget* (*gtk_menu_new)(void);
+static GtkWidget* (*gtk_separator_menu_item_new)(void);
+static GtkWidget* (*gtk_menu_item_new_with_label)(const gchar *label);
+static void (*gtk_menu_item_set_submenu)(GtkMenuItem *menu_item, GtkWidget *submenu);
+static GtkWidget* (*gtk_check_menu_item_new_with_label)(const gchar *label);
+static void (*gtk_check_menu_item_set_active)(GtkCheckMenuItem *check_menu_item, gboolean is_active);
+static void (*gtk_widget_set_sensitive)(GtkWidget *widget, gboolean sensitive);
+static void (*gtk_widget_show)(GtkWidget *widget);
+static void (*gtk_menu_shell_append)(GtkMenuShell *menu_shell, GtkWidget *child);
+static void (*gtk_menu_shell_insert)(GtkMenuShell *menu_shell, GtkWidget *child, gint position);
+static void (*gtk_widget_destroy)(GtkWidget *widget);
+static const gchar *(*gtk_menu_item_get_label)(GtkMenuItem *menu_item);
+static void (*gtk_menu_item_set_label)(GtkMenuItem *menu_item, const gchar *label);
+static gboolean (*gtk_check_menu_item_get_active)(GtkCheckMenuItem *check_menu_item);
+static gboolean (*gtk_widget_get_sensitive)(GtkWidget *widget);
 
 #define GTK_MENU_ITEM(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GTK_TYPE_MENU_ITEM, GtkMenuItem))
 #define GTK_WIDGET(widget) (G_TYPE_CHECK_INSTANCE_CAST ((widget), GTK_TYPE_WIDGET, GtkWidget))
@@ -119,22 +119,16 @@ typedef enum {
 } AppIndicatorStatus;
 
 typedef struct _AppIndicator AppIndicator;
-AppIndicator *(*app_indicator_new)(const gchar *id, const gchar *icon_name, AppIndicatorCategory category);
-void (*app_indicator_set_status)(AppIndicator *self, AppIndicatorStatus status);
-void (*app_indicator_set_icon)(AppIndicator *self, const gchar *icon_name);
-void (*app_indicator_set_menu)(AppIndicator *self, GtkMenu *menu);
+
+static AppIndicator *(*app_indicator_new)(const gchar *id, const gchar *icon_name, AppIndicatorCategory category);
+static void (*app_indicator_set_status)(AppIndicator *self, AppIndicatorStatus status);
+static void (*app_indicator_set_icon)(AppIndicator *self, const gchar *icon_name);
+static void (*app_indicator_set_menu)(AppIndicator *self, GtkMenu *menu);
+
 /* ------------------------------------------------------------------------- */
 /*                      END THIRD-PARTY HEADER CONTENT                       */
 /* ------------------------------------------------------------------------- */
 #endif
-
-static int main_gtk_thread(void *data)
-{
-    gtk_main();
-    return 0;
-}
-
-static bool gtk_thread_active = false;
 
 #ifdef APPINDICATOR_HEADER
 
@@ -232,8 +226,7 @@ static bool init_gtk(void)
     }
 
     gtk_init_check = dlsym(libgtk, "gtk_init_check");
-    gtk_main = dlsym(libgtk, "gtk_main");
-    gtk_main_quit = dlsym(libgtk, "gtk_main_quit");
+    gtk_main_iteration_do = dlsym(libgtk, "gtk_main_iteration_do");
     gtk_menu_new = dlsym(libgtk, "gtk_menu_new");
     gtk_separator_menu_item_new = dlsym(libgtk, "gtk_separator_menu_item_new");
     gtk_menu_item_new_with_label = dlsym(libgtk, "gtk_menu_item_new_with_label");
@@ -262,8 +255,7 @@ static bool init_gtk(void)
     app_indicator_set_menu = dlsym(libappindicator, "app_indicator_set_menu");
 
     if (!gtk_init_check ||
-        !gtk_main ||
-        !gtk_main_quit ||
+        !gtk_main_iteration_do ||
         !gtk_menu_new ||
         !gtk_separator_menu_item_new ||
         !gtk_menu_item_new_with_label ||
@@ -396,6 +388,13 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
     SDL_free(menu);
 }
 
+void SDL_UpdateTrays(void)
+{
+    if (SDL_HasActiveTrays()) {
+        gtk_main_iteration_do(FALSE);
+    }
+}
+
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     if (!SDL_IsMainThread()) {
@@ -405,11 +404,6 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
     if (init_gtk() != true) {
         return NULL;
-    }
-
-    if (!gtk_thread_active) {
-        SDL_DetachThread(SDL_CreateThread(main_gtk_thread, "tray gtk", NULL));
-        gtk_thread_active = true;
     }
 
     SDL_Tray *tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
@@ -794,9 +788,4 @@ void SDL_DestroyTray(SDL_Tray *tray)
     }
 
     SDL_free(tray);
-
-    if (!SDL_HasActiveTrays()) {
-        gtk_main_quit();
-        gtk_thread_active = false;
-    }
 }

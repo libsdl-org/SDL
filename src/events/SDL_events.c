@@ -1399,6 +1399,8 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
     }
 #endif
 
+    SDL_UpdateTrays();
+
     SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
 
     if (push_sentinel && SDL_EventEnabled(SDL_EVENT_POLL_SENTINEL)) {
