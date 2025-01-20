@@ -897,7 +897,12 @@ static void testBlendModeOperation(TestRenderOperation op, int mode, SDL_PixelFo
     deltaR = SDL_abs((int)actualR - expectedR);
     deltaG = SDL_abs((int)actualG - expectedG);
     deltaB = SDL_abs((int)actualB - expectedB);
-    deltaA = SDL_abs((int)actualA - expectedA);
+    if (SDL_ISPIXELFORMAT_ALPHA(dst_format)) {
+        deltaA = SDL_abs((int)actualA - expectedA);
+    } else {
+        // The alpha channel is ignored in non-alpha formats, so don't validate it
+        deltaA = 0;
+    }
     SDLTest_AssertCheck(
         deltaR <= MAXIMUM_ERROR &&
         deltaG <= MAXIMUM_ERROR &&
