@@ -824,7 +824,9 @@ static bool SDL_SYS_ToFFEffect(struct ff_effect *dest, const SDL_HapticEffect *s
             dest->type = FF_FRICTION;
         }
 
-        dest->direction = 0; // Handled by the condition-specifics.
+        if (!SDL_SYS_ToDirection(&dest->direction, &condition->direction)) {
+            return false;
+        }
 
         // Replay
         dest->replay.length = (condition->length == SDL_HAPTIC_INFINITY) ? 0 : CLAMP(condition->length);
