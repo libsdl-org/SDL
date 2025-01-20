@@ -1634,7 +1634,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     }
 
-    texture_colorspace = SDL_GetSurfaceColorspace(surface);
+    surface_colorspace = SDL_GetSurfaceColorspace(surface);
 
     // Try to have the best pixel format for the texture
     // No alpha, but a colorkey => promote to alpha
