@@ -137,6 +137,8 @@ extern "C" {
     #define SDL_TriggerBreakpoint() assert(0)
 #elif SDL_HAS_BUILTIN(__builtin_debugtrap)
     #define SDL_TriggerBreakpoint() __builtin_debugtrap()
+#elif SDL_HAS_BUILTIN(__builtin_trap)
+    #define SDL_TriggerBreakpoint() __builtin_trap()
 #elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_TriggerBreakpoint() __asm__ __volatile__ ( "int $3\n\t" )
 #elif (defined(__GNUC__) || defined(__clang__)) && defined(__riscv)
