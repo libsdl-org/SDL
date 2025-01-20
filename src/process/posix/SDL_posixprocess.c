@@ -309,10 +309,16 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     // Spawn the new process
     if (process->background) {
         int status = -1;
-        pid_t pid = vfork();
+        #ifdef SDL_PLATFORM_APPLE  // Apple has vfork marked as deprecated and (as of macOS 10.12) is almost identical to calling fork() anyhow.
+        const pid_t pid = fork();
+        const char *forkname = "fork";
+        #else
+        const pid_t pid = vfork();
+        const char *forkname = "vfork";
+        #endif
         switch (pid) {
         case -1:
-            SDL_SetError("vfork() failed: %s", strerror(errno));
+            SDL_SetError("%s() failed: %s", forkname, strerror(errno));
             goto posix_spawn_fail_all;
 
         case 0:
