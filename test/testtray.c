@@ -19,8 +19,6 @@ static void SDLCALL tray_close(void *ptr, SDL_TrayEntry *entry)
 
     SDL_DestroyTray(trays[0]);
     SDL_DestroyTray(trays[1]);
-
-    SDL_free(trays);
 }
 
 static void SDLCALL apply_icon(void *ptr, const char * const *filelist, int filter)
@@ -485,6 +483,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
 
 int main(int argc, char **argv)
 {
+    SDL_Tray **trays = NULL;
     SDLTest_CommonState *state;
     int i;
 
@@ -514,7 +513,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    SDL_Window *w = SDL_CreateWindow("", 640, 480, 0);
+    SDL_Window *w = SDL_CreateWindow("testtray", 640, 480, 0);
 
     if (!w) {
         SDL_Log("Couldn't create window: %s", SDL_GetError());
@@ -570,7 +569,7 @@ int main(int argc, char **argv)
     CHECK(entry_close);
 
     /* TODO: Track memory! */
-    SDL_Tray **trays = SDL_malloc(sizeof(SDL_Tray *) * 2);
+    trays = SDL_malloc(sizeof(SDL_Tray *) * 2);
     if (!trays) {
         goto clean_all;
     }
@@ -631,6 +630,7 @@ clean_tray1:
     if (!trays_destroyed) {
         SDL_DestroyTray(tray);
     }
+    SDL_free(trays);
 
 clean_window:
     if (w) {
