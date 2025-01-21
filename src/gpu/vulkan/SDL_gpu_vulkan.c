@@ -479,6 +479,7 @@ static VkSamplerAddressMode SDLToVK_SamplerAddressMode[] = {
 typedef struct VulkanMemoryAllocation VulkanMemoryAllocation;
 typedef struct VulkanBuffer VulkanBuffer;
 typedef struct VulkanBufferContainer VulkanBufferContainer;
+typedef struct VulkanUniformBuffer VulkanUniformBuffer;
 typedef struct VulkanTexture VulkanTexture;
 typedef struct VulkanTextureContainer VulkanTextureContainer;
 
@@ -573,6 +574,7 @@ struct VulkanBuffer
     SDL_AtomicInt referenceCount;
     bool transitioned;
     bool markedForDestroy; // so that defrag doesn't double-free
+    VulkanUniformBuffer *uniformBufferForDefrag;
 };
 
 struct VulkanBufferContainer
@@ -6811,7 +6813,7 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
 
     uniformBuffer->drawOffset = 0;
     uniformBuffer->writeOffset = 0;
-    uniformBuffer->buffer->container = (VulkanBufferContainer *)uniformBuffer; // little hack for defrag
+    uniformBuffer->buffer->uniformBufferForDefrag = uniformBuffer;
 
     return uniformBuffer;
 }
@@ -10691,7 +10693,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
             newBuffer->container = currentRegion->vulkanBuffer->container;
             newBuffer->containerIndex = currentRegion->vulkanBuffer->containerIndex;
             if (newBuffer->type == VULKAN_BUFFER_TYPE_UNIFORM) {
-                ((VulkanUniformBuffer *)newBuffer->container)->buffer = newBuffer;
+                currentRegion->vulkanBuffer->uniformBufferForDefrag->buffer = newBuffer;
             } else {
                 newBuffer->container->buffers[newBuffer->containerIndex] = newBuffer;
                 if (newBuffer->container->activeBuffer == currentRegion->vulkanBuffer) {
