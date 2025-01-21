@@ -2900,9 +2900,9 @@ extern "C" {
  * - "gpu"
  * - "software"
  *
- * This hint accepts a comma-separated list of driver names, and each will
- * be tried in the order listed when creating a renderer until one succeeds
- * or all of them fail.
+ * This hint accepts a comma-separated list of driver names, and each will be
+ * tried in the order listed when creating a renderer until one succeeds or
+ * all of them fail.
  *
  * The default varies by platform, but it's the first one in the list that is
  * available on the current platform.
@@ -3293,8 +3293,8 @@ extern "C" {
  * force a specific target, such as "x11" if, say, you are on Wayland but want
  * to try talking to the X server instead.
  *
- * This hint accepts a comma-separated list of driver names, and each will
- * be tried in the order listed during init, until one succeeds or all of them
+ * This hint accepts a comma-separated list of driver names, and each will be
+ * tried in the order listed during init, until one succeeds or all of them
  * fail.
  *
  * This hint should be set before SDL is initialized.
