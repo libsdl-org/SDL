@@ -730,10 +730,10 @@ extern SDL_DECLSPEC SDL_DisplayOrientation SDLCALL SDL_GetCurrentDisplayOrientat
  * big on this display, to aid in readability.
  *
  * After window creation, SDL_GetWindowDisplayScale() should be used to query
- * the content scale factor for individual windows instead of querying the display
- * for a window and calling this function, as the per-window content scale factor
- * may differ from the base value of the display it is on, particularly on
- * high-DPI and/or multi-monitor desktop configurations.
+ * the content scale factor for individual windows instead of querying the
+ * display for a window and calling this function, as the per-window content
+ * scale factor may differ from the base value of the display it is on,
+ * particularly on high-DPI and/or multi-monitor desktop configurations.
  *
  * \param displayID the instance ID of the display to query.
  * \returns the content scale of the display, or 0.0f on failure; call
