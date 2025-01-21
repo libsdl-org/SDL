@@ -2814,6 +2814,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUVertexUniformData(
  *
  * Subsequent draw calls will use this uniform data.
  *
+ * The data being pushed must respect std140 layout conventions. In practical
+ * terms this means you must ensure that vec3 and vec4 fields are 16-byte
+ * aligned.
+ *
  * \param command_buffer a command buffer.
  * \param slot_index the fragment uniform slot to push data to.
  * \param data client data to write.
