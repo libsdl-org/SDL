@@ -104,7 +104,7 @@ typedef Uint32 SDL_PenInputFlags;
  *
  * `SDL_sinf(xtilt * SDL_PI_F / 180.0)`.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_PenAxis
 {

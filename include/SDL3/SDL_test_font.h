@@ -91,7 +91,7 @@ typedef struct SDLTest_TextWindow
  *
  *  \returns the new window, or NULL on failure.
  *
- *  \since This function is available since SDL 3.1.3.
+ *  \since This function is available since SDL 3.2.0.
  */
 SDLTest_TextWindow * SDLCALL SDLTest_TextWindowCreate(float x, float y, float w, float h);
 
@@ -103,7 +103,7 @@ SDLTest_TextWindow * SDLCALL SDLTest_TextWindowCreate(float x, float y, float w,
  *  \param textwin The text output window
  *  \param renderer The renderer to use for display
  *
- *  \since This function is available since SDL 3.1.3.
+ *  \since This function is available since SDL 3.2.0.
  */
 void SDLCALL SDLTest_TextWindowDisplay(SDLTest_TextWindow *textwin, SDL_Renderer *renderer);
 
@@ -118,7 +118,7 @@ void SDLCALL SDLTest_TextWindowDisplay(SDLTest_TextWindow *textwin, SDL_Renderer
  *  \param fmt A printf() style format string
  *  \param ...  additional parameters matching % tokens in the `fmt` string, if any
  *
- *  \since This function is available since SDL 3.1.3.
+ *  \since This function is available since SDL 3.2.0.
  */
 void SDLCALL SDLTest_TextWindowAddText(SDLTest_TextWindow *textwin, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 
@@ -133,7 +133,7 @@ void SDLCALL SDLTest_TextWindowAddText(SDLTest_TextWindow *textwin, SDL_PRINTF_F
  *  \param text The text to add to the window
  *  \param len The length, in bytes, of the text to add to the window
  *
- *  \since This function is available since SDL 3.1.3.
+ *  \since This function is available since SDL 3.2.0.
  */
 void SDLCALL SDLTest_TextWindowAddTextWithLength(SDLTest_TextWindow *textwin, const char *text, size_t len);
 
@@ -142,7 +142,7 @@ void SDLCALL SDLTest_TextWindowAddTextWithLength(SDLTest_TextWindow *textwin, co
  *
  *  \param textwin The text output window
  *
- *  \since This function is available since SDL 3.1.3.
+ *  \since This function is available since SDL 3.2.0.
  */
 void SDLCALL SDLTest_TextWindowClear(SDLTest_TextWindow *textwin);
 
@@ -151,7 +151,7 @@ void SDLCALL SDLTest_TextWindowClear(SDLTest_TextWindow *textwin);
  *
  *  \param textwin The text output window
  *
- *  \since This function is available since SDL 3.1.3.
+ *  \since This function is available since SDL 3.2.0.
  */
 void SDLCALL SDLTest_TextWindowDestroy(SDLTest_TextWindow *textwin);
 

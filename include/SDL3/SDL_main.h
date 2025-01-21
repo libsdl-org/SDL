@@ -69,7 +69,7 @@
  * docs/README-main-functions.md in the source tree) for a more detailed
  * explanation.
  *
- * \since This macro is used by the headers since SDL 3.1.3.
+ * \since This macro is used by the headers since SDL 3.2.0.
  */
 #define SDL_MAIN_HANDLED 1
 
@@ -86,7 +86,7 @@
  * docs/README-main-functions.md in the source tree) for a more detailed
  * explanation.
  *
- * \since This macro is used by the headers since SDL 3.1.3.
+ * \since This macro is used by the headers since SDL 3.2.0.
  *
  * \sa SDL_AppInit
  * \sa SDL_AppEvent
@@ -109,7 +109,7 @@
  *
  * This macro is used internally by SDL, and apps probably shouldn't rely on it.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_MAIN_AVAILABLE
 
@@ -127,7 +127,7 @@
  *
  * This macro is used internally by SDL, and apps probably shouldn't rely on it.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_MAIN_NEEDED
 
@@ -241,7 +241,7 @@
  * External code rarely needs this, and if it needs something, it's almost
  * always SDL_DECLSPEC instead.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_DECLSPEC
  */

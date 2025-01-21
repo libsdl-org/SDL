@@ -321,7 +321,7 @@ extern "C" {
 /**
  * An opaque handle representing the SDL_GPU context.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_GPUDevice SDL_GPUDevice;
 
@@ -331,7 +331,7 @@ typedef struct SDL_GPUDevice SDL_GPUDevice;
  * Used for vertices, indices, indirect draw commands, and general compute
  * data.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUBuffer
  * \sa SDL_UploadToGPUBuffer
@@ -354,7 +354,7 @@ typedef struct SDL_GPUBuffer SDL_GPUBuffer;
  *
  * Used for transferring data to and from the device.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUTransferBuffer
  * \sa SDL_MapGPUTransferBuffer
@@ -370,7 +370,7 @@ typedef struct SDL_GPUTransferBuffer SDL_GPUTransferBuffer;
 /**
  * An opaque handle representing a texture.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUTexture
  * \sa SDL_UploadToGPUTexture
@@ -390,7 +390,7 @@ typedef struct SDL_GPUTexture SDL_GPUTexture;
 /**
  * An opaque handle representing a sampler.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUSampler
  * \sa SDL_BindGPUVertexSamplers
@@ -402,7 +402,7 @@ typedef struct SDL_GPUSampler SDL_GPUSampler;
 /**
  * An opaque handle representing a compiled shader object.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUShader
  * \sa SDL_CreateGPUGraphicsPipeline
@@ -415,7 +415,7 @@ typedef struct SDL_GPUShader SDL_GPUShader;
  *
  * Used during compute passes.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUComputePipeline
  * \sa SDL_BindGPUComputePipeline
@@ -428,7 +428,7 @@ typedef struct SDL_GPUComputePipeline SDL_GPUComputePipeline;
  *
  * Used during render passes.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  * \sa SDL_BindGPUGraphicsPipeline
@@ -453,7 +453,7 @@ typedef struct SDL_GPUGraphicsPipeline SDL_GPUGraphicsPipeline;
  * In multi-threading scenarios, you should only access a command buffer on
  * the thread you acquired it from.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_AcquireGPUCommandBuffer
  * \sa SDL_SubmitGPUCommandBuffer
@@ -467,7 +467,7 @@ typedef struct SDL_GPUCommandBuffer SDL_GPUCommandBuffer;
  * This handle is transient and should not be held or referenced after
  * SDL_EndGPURenderPass is called.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPURenderPass
  * \sa SDL_EndGPURenderPass
@@ -480,7 +480,7 @@ typedef struct SDL_GPURenderPass SDL_GPURenderPass;
  * This handle is transient and should not be held or referenced after
  * SDL_EndGPUComputePass is called.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPUComputePass
  * \sa SDL_EndGPUComputePass
@@ -493,7 +493,7 @@ typedef struct SDL_GPUComputePass SDL_GPUComputePass;
  * This handle is transient and should not be held or referenced after
  * SDL_EndGPUCopyPass is called.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPUCopyPass
  * \sa SDL_EndGPUCopyPass
@@ -503,7 +503,7 @@ typedef struct SDL_GPUCopyPass SDL_GPUCopyPass;
 /**
  * An opaque handle representing a fence.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_SubmitGPUCommandBufferAndAcquireFence
  * \sa SDL_QueryGPUFence
@@ -529,7 +529,7 @@ typedef struct SDL_GPUFence SDL_GPUFence;
  * topology for both compatibility and performance reasons. You WILL regret
  * using it.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -546,7 +546,7 @@ typedef enum SDL_GPUPrimitiveType
  * Specifies how the contents of a texture attached to a render pass are
  * treated at the beginning of the render pass.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPURenderPass
  */
@@ -561,7 +561,7 @@ typedef enum SDL_GPULoadOp
  * Specifies how the contents of a texture attached to a render pass are
  * treated at the end of the render pass.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPURenderPass
  */
@@ -576,7 +576,7 @@ typedef enum SDL_GPUStoreOp
 /**
  * Specifies the size of elements in an index buffer.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -666,7 +666,7 @@ typedef enum SDL_GPUIndexElementSize
  * Unless D16_UNORM is sufficient for your purposes, always check which of
  * D24/D32 is supported before creating a depth-stencil texture!
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUTexture
  * \sa SDL_GPUTextureSupportsFormat
@@ -812,7 +812,7 @@ typedef enum SDL_GPUTextureFormat
  * within a compute pass. Note that SIMULTANEOUS usage is only supported by a
  * limited number of texture formats.
  *
- * \since This datatype is available since SDL 3.2.0
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUTexture
  */
@@ -829,7 +829,7 @@ typedef Uint32 SDL_GPUTextureUsageFlags;
 /**
  * Specifies the type of a texture.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUTexture
  */
@@ -848,7 +848,7 @@ typedef enum SDL_GPUTextureType
  * Used in multisampling. Note that this value only applies when the texture
  * is used as a render target.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUTexture
  * \sa SDL_GPUTextureSupportsSampleCount
@@ -867,7 +867,7 @@ typedef enum SDL_GPUSampleCount
  *
  * Can be passed in as the layer field in texture-related structs.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_GPUCubeMapFace
 {
@@ -888,7 +888,7 @@ typedef enum SDL_GPUCubeMapFace
  * Unlike textures, READ | WRITE can be used for simultaneous read-write
  * usage. The same data synchronization concerns as textures apply.
  *
- * \since This datatype is available since SDL 3.2.0
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUBuffer
  */
@@ -907,7 +907,7 @@ typedef Uint32 SDL_GPUBufferUsageFlags;
  * Note that mapping and copying FROM an upload transfer buffer or TO a
  * download transfer buffer is undefined behavior.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUTransferBuffer
  */
@@ -920,7 +920,7 @@ typedef enum SDL_GPUTransferBufferUsage
 /**
  * Specifies which stage a shader program corresponds to.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUShader
  */
@@ -935,7 +935,7 @@ typedef enum SDL_GPUShaderStage
  *
  * Each format corresponds to a specific backend that accepts it.
  *
- * \since This datatype is available since SDL 3.2.0
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUShader
  */
@@ -952,7 +952,7 @@ typedef Uint32 SDL_GPUShaderFormat;
 /**
  * Specifies the format of a vertex attribute.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1018,7 +1018,7 @@ typedef enum SDL_GPUVertexElementFormat
 /**
  * Specifies the rate at which vertex attributes are pulled from buffers.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1031,7 +1031,7 @@ typedef enum SDL_GPUVertexInputRate
 /**
  * Specifies the fill mode of the graphics pipeline.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1044,7 +1044,7 @@ typedef enum SDL_GPUFillMode
 /**
  * Specifies the facing direction in which triangle faces will be culled.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1059,7 +1059,7 @@ typedef enum SDL_GPUCullMode
  * Specifies the vertex winding that will cause a triangle to be determined to
  * be front-facing.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1072,7 +1072,7 @@ typedef enum SDL_GPUFrontFace
 /**
  * Specifies a comparison operator for depth, stencil and sampler operations.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1093,7 +1093,7 @@ typedef enum SDL_GPUCompareOp
  * Specifies what happens to a stored stencil value if stencil tests fail or
  * pass.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1117,7 +1117,7 @@ typedef enum SDL_GPUStencilOp
  * The source color is the value written by the fragment shader. The
  * destination color is the value currently existing in the texture.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1138,7 +1138,7 @@ typedef enum SDL_GPUBlendOp
  * The source color is the value written by the fragment shader. The
  * destination color is the value currently existing in the texture.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1163,7 +1163,7 @@ typedef enum SDL_GPUBlendFactor
 /**
  * Specifies which color components are written in a graphics pipeline.
  *
- * \since This datatype is available since SDL 3.2.0
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  */
@@ -1177,7 +1177,7 @@ typedef Uint8 SDL_GPUColorComponentFlags;
 /**
  * Specifies a filter operation used by a sampler.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUSampler
  */
@@ -1190,7 +1190,7 @@ typedef enum SDL_GPUFilter
 /**
  * Specifies a mipmap mode used by a sampler.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUSampler
  */
@@ -1204,7 +1204,7 @@ typedef enum SDL_GPUSamplerMipmapMode
  * Specifies behavior of texture sampling when the coordinates exceed the 0-1
  * range.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUSampler
  */
@@ -1234,7 +1234,7 @@ typedef enum SDL_GPUSamplerAddressMode
  *   there is a pending image to present, the pending image is replaced by the
  *   new image. Similar to VSYNC, but with reduced visual latency.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_SetGPUSwapchainParameters
  * \sa SDL_WindowSupportsGPUPresentMode
@@ -1267,7 +1267,7 @@ typedef enum SDL_GPUPresentMode
  * - HDR10_ST2084: A2R10G10B10 or A2B10G10R10 swapchain. Pixel values are in
  *   BT.2020 ST2084 (PQ) encoding.
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_SetGPUSwapchainParameters
  * \sa SDL_WindowSupportsGPUSwapchainComposition
@@ -1286,7 +1286,7 @@ typedef enum SDL_GPUSwapchainComposition
 /**
  * A structure specifying a viewport.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_SetGPUViewport
  */
@@ -1304,7 +1304,7 @@ typedef struct SDL_GPUViewport
  * A structure specifying parameters related to transferring data to or from a
  * texture.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_UploadToGPUTexture
  * \sa SDL_DownloadFromGPUTexture
@@ -1322,7 +1322,7 @@ typedef struct SDL_GPUTextureTransferInfo
  *
  * Used when transferring buffer data to or from a transfer buffer.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_UploadToGPUBuffer
  * \sa SDL_DownloadFromGPUBuffer
@@ -1338,7 +1338,7 @@ typedef struct SDL_GPUTransferBufferLocation
  *
  * Used when copying data from one texture to another.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CopyGPUTextureToTexture
  */
@@ -1357,7 +1357,7 @@ typedef struct SDL_GPUTextureLocation
  *
  * Used when transferring data to or from a texture.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_UploadToGPUTexture
  * \sa SDL_DownloadFromGPUTexture
@@ -1378,7 +1378,7 @@ typedef struct SDL_GPUTextureRegion
 /**
  * A structure specifying a region of a texture used in the blit operation.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BlitGPUTexture
  */
@@ -1398,7 +1398,7 @@ typedef struct SDL_GPUBlitRegion
  *
  * Used when copying data between buffers.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CopyGPUBufferToBuffer
  */
@@ -1413,7 +1413,7 @@ typedef struct SDL_GPUBufferLocation
  *
  * Used when transferring data to or from buffers.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_UploadToGPUBuffer
  * \sa SDL_DownloadFromGPUBuffer
@@ -1435,7 +1435,7 @@ typedef struct SDL_GPUBufferRegion
  * only way to keep behavior consistent and portable is to always pass 0 for
  * the correlating parameter in the draw calls.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_DrawGPUPrimitivesIndirect
  */
@@ -1457,7 +1457,7 @@ typedef struct SDL_GPUIndirectDrawCommand
  * only way to keep behavior consistent and portable is to always pass 0 for
  * the correlating parameter in the draw calls.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_DrawGPUIndexedPrimitivesIndirect
  */
@@ -1473,7 +1473,7 @@ typedef struct SDL_GPUIndexedIndirectDrawCommand
 /**
  * A structure specifying the parameters of an indexed dispatch command.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_DispatchGPUComputeIndirect
  */
@@ -1489,7 +1489,7 @@ typedef struct SDL_GPUIndirectDispatchCommand
 /**
  * A structure specifying the parameters of a sampler.
  *
- * \since This function is available since SDL 3.2.0
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUSampler
  */
@@ -1527,7 +1527,7 @@ typedef struct SDL_GPUSamplerCreateInfo
  * SDL_GPUVertexAttribute. For example, if an attribute has a buffer_slot of
  * 0, then that attribute belongs to the vertex buffer bound at slot 0.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUVertexAttribute
  * \sa SDL_GPUVertexInputState
@@ -1546,7 +1546,7 @@ typedef struct SDL_GPUVertexBufferDescription
  * All vertex attribute locations provided to an SDL_GPUVertexInputState must
  * be unique.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUVertexBufferDescription
  * \sa SDL_GPUVertexInputState
@@ -1563,7 +1563,7 @@ typedef struct SDL_GPUVertexAttribute
  * A structure specifying the parameters of a graphics pipeline vertex input
  * state.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
  * \sa SDL_GPUVertexBufferDescription
@@ -1580,7 +1580,7 @@ typedef struct SDL_GPUVertexInputState
 /**
  * A structure specifying the stencil operation state of a graphics pipeline.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUDepthStencilState
  */
@@ -1595,7 +1595,7 @@ typedef struct SDL_GPUStencilOpState
 /**
  * A structure specifying the blend state of a color target.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUColorTargetDescription
  */
@@ -1618,7 +1618,7 @@ typedef struct SDL_GPUColorTargetBlendState
 /**
  * A structure specifying code and metadata for creating a shader object.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUShader
  */
@@ -1644,7 +1644,7 @@ typedef struct SDL_GPUShaderCreateInfo
  * that certain usage combinations are invalid, for example SAMPLER and
  * GRAPHICS_STORAGE.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUTexture
  * \sa SDL_GPUTextureType
@@ -1672,7 +1672,7 @@ typedef struct SDL_GPUTextureCreateInfo
  * Usage flags can be bitwise OR'd together for combinations of usages. Note
  * that certain combinations are invalid, for example VERTEX and INDEX.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUBuffer
  * \sa SDL_GPUBufferUsageFlags
@@ -1688,7 +1688,7 @@ typedef struct SDL_GPUBufferCreateInfo
 /**
  * A structure specifying the parameters of a transfer buffer.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUTransferBuffer
  */
@@ -1711,7 +1711,7 @@ typedef struct SDL_GPUTransferBufferCreateInfo
  * consider enabling depth clip and then manually clamping depth in your
  * fragment shaders on Metal and Vulkan.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
  */
@@ -1733,7 +1733,7 @@ typedef struct SDL_GPURasterizerState
  * A structure specifying the parameters of the graphics pipeline multisample
  * state.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
  */
@@ -1751,7 +1751,7 @@ typedef struct SDL_GPUMultisampleState
  * A structure specifying the parameters of the graphics pipeline depth
  * stencil state.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
  */
@@ -1774,7 +1774,7 @@ typedef struct SDL_GPUDepthStencilState
  * A structure specifying the parameters of color targets used in a graphics
  * pipeline.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineTargetInfo
  */
@@ -1788,7 +1788,7 @@ typedef struct SDL_GPUColorTargetDescription
  * A structure specifying the descriptions of render targets used in a
  * graphics pipeline.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
  */
@@ -1806,7 +1806,7 @@ typedef struct SDL_GPUGraphicsPipelineTargetInfo
 /**
  * A structure specifying the parameters of a graphics pipeline state.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUGraphicsPipeline
  * \sa SDL_GPUVertexInputState
@@ -1833,7 +1833,7 @@ typedef struct SDL_GPUGraphicsPipelineCreateInfo
 /**
  * A structure specifying the parameters of a compute pipeline state.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUComputePipeline
  */
@@ -1887,7 +1887,7 @@ typedef struct SDL_GPUComputePipelineCreateInfo
  *   stores the multisample texture's contents. Not recommended as it requires
  *   significant memory bandwidth.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPURenderPass
  */
@@ -1948,7 +1948,7 @@ typedef struct SDL_GPUColorTargetInfo
  *
  * Note that depth/stencil targets do not support multisample resolves.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPURenderPass
  */
@@ -1969,7 +1969,7 @@ typedef struct SDL_GPUDepthStencilTargetInfo
 /**
  * A structure containing parameters for a blit command.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BlitGPUTexture
  */
@@ -1991,7 +1991,7 @@ typedef struct SDL_GPUBlitInfo {
 /**
  * A structure specifying parameters in a buffer binding call.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BindGPUVertexBuffers
  * \sa SDL_BindGPUIndexBuffer
@@ -2005,7 +2005,7 @@ typedef struct SDL_GPUBufferBinding
 /**
  * A structure specifying parameters in a sampler binding call.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BindGPUVertexSamplers
  * \sa SDL_BindGPUFragmentSamplers
@@ -2020,7 +2020,7 @@ typedef struct SDL_GPUTextureSamplerBinding
  * A structure specifying parameters related to binding buffers in a compute
  * pass.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPUComputePass
  */
@@ -2037,7 +2037,7 @@ typedef struct SDL_GPUStorageBufferReadWriteBinding
  * A structure specifying parameters related to binding textures in a compute
  * pass.
  *
- * \since This struct is available since SDL 3.2.0
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPUComputePass
  */

@@ -51,7 +51,7 @@ extern "C" {
  *
  * These are results returned by SDL_GetPowerInfo().
  *
- * \since This enum is available since SDL 3.2.0
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_PowerState
 {

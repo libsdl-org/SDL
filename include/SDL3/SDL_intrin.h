@@ -58,7 +58,7 @@
  *
  * If this macro is defined, SDL will have already included `<lsxintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_LASX_INTRINSICS
  */
@@ -69,7 +69,7 @@
  *
  * If this macro is defined, SDL will have already included `<lasxintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_LASX_INTRINSICS
  */
@@ -81,7 +81,7 @@
  * If this macro is defined, SDL will have already included `<armintr.h>`
  * `<arm_neon.h>`, `<arm64intr.h>`, and `<arm64_neon.h>`, as appropriate.
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_NEON_INTRINSICS 1
 
@@ -90,7 +90,7 @@
  *
  * If this macro is defined, SDL will have already included `<altivec.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_ALTIVEC_INTRINSICS 1
 
@@ -99,7 +99,7 @@
  *
  * If this macro is defined, SDL will have already included `<mmintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_SSE_INTRINSICS
  */
@@ -110,7 +110,7 @@
  *
  * If this macro is defined, SDL will have already included `<xmmintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_SSE2_INTRINSICS
  * \sa SDL_SSE3_INTRINSICS
@@ -124,7 +124,7 @@
  *
  * If this macro is defined, SDL will have already included `<emmintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_SSE_INTRINSICS
  * \sa SDL_SSE3_INTRINSICS
@@ -138,7 +138,7 @@
  *
  * If this macro is defined, SDL will have already included `<pmmintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_SSE_INTRINSICS
  * \sa SDL_SSE2_INTRINSICS
@@ -152,7 +152,7 @@
  *
  * If this macro is defined, SDL will have already included `<smmintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_SSE_INTRINSICS
  * \sa SDL_SSE2_INTRINSICS
@@ -166,7 +166,7 @@
  *
  * If this macro is defined, SDL will have already included `<nmmintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_SSE_INTRINSICS
  * \sa SDL_SSE2_INTRINSICS
@@ -180,7 +180,7 @@
  *
  * If this macro is defined, SDL will have already included `<immintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_AVX2_INTRINSICS
  * \sa SDL_AVX512F_INTRINSICS
@@ -192,7 +192,7 @@
  *
  * If this macro is defined, SDL will have already included `<immintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_AVX_INTRINSICS
  * \sa SDL_AVX512F_INTRINSICS
@@ -206,7 +206,7 @@
  *
  * If this macro is defined, SDL will have already included `<immintrin.h>`
  *
- * \since This macro is available since 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_AVX_INTRINSICS
  * \sa SDL_AVX2_INTRINSICS
@@ -275,7 +275,7 @@ _m_prefetch(void *__P)
  * used directly by apps. Apps should probably just use SDL_TARGETING
  * directly, instead.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_TARGETING
  */
