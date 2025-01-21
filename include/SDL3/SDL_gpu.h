@@ -888,6 +888,10 @@ typedef enum SDL_GPUCubeMapFace
  * Unlike textures, READ | WRITE can be used for simultaneous read-write
  * usage. The same data synchronization concerns as textures apply.
  *
+ * If you use a STORAGE flag, the data in the buffer must respect std140
+ * layout conventions. In practical terms this means you must ensure that vec3
+ * and vec4 fields are 16-byte aligned.
+ *
  * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUBuffer
