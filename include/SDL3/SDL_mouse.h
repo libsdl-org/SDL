@@ -228,6 +228,37 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID insta
 extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
 
 /**
+ * Retieve an implementation of the function by which the platform
+ * transforms raw mouse inputs into cursor motion.
+ *
+ * This returns a function pointer to the implmentation if one exists,
+ * or NULL if not. This pointer can be passed to SDL_SetRelativeMouseTransform
+ * if one wishes to scale relative mouse motion using the implementation,
+ * in which case the userdata argument is ignored and platform-specific
+ * data will be used instead.
+ *
+ * \returns a pointer to an input transform function.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_SetRelativeMouseTransform
+ */
+extern SDL_DECLSPEC const void * SDLCALL SDL_GetSystemMouseTransform(void);
+
+/**
+ * Set a user-defined function by which to transform relative mouse inputs,
+ * and its associated internal data which will be passed to the function.
+ *
+ * \param transform a pointer to an input transform function, or NULL to disable.
+ * \param userdata an optional pointer to the associated internal data.
+ *
+ * \since This function is available since SDL 3.1.3.
+ *
+ * \sa SDL_GetSystemMouseTransform
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_SetRelativeMouseTransform(const void *transform, void *userdata);
+
+/**
  * Query SDL's cache for the synchronous mouse button state and the
  * window-relative SDL-cursor position.
  *
