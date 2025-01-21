@@ -384,6 +384,9 @@
 		F32DDAD42AB795A30041EAA5 /* SDL_audioresample.c in Sources */ = {isa = PBXBuildFile; fileRef = F32DDACE2AB795A30041EAA5 /* SDL_audioresample.c */; };
 		F338A1182D1B37D8007CDFDF /* SDL_tray.m in Sources */ = {isa = PBXBuildFile; fileRef = F338A1172D1B37D8007CDFDF /* SDL_tray.m */; };
 		F338A11A2D1B37E4007CDFDF /* SDL_tray.c in Sources */ = {isa = PBXBuildFile; fileRef = F338A1192D1B37E4007CDFDF /* SDL_tray.c */; };
+		F34400342D40217A003F26D7 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = F373DA182D388A1E002158FA /* LICENSE.txt */; };
+		F34400362D40217A003F26D7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = F373DA192D388A1E002158FA /* README.md */; };
+		F344003D2D4022E1003F26D7 /* INSTALL.md in Resources */ = {isa = PBXBuildFile; fileRef = F344003C2D4022E1003F26D7 /* INSTALL.md */; };
 		F34B9895291DEFF500AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
 		F362B9192B3349E200D30B94 /* controller_list.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9152B3349E200D30B94 /* controller_list.h */; };
 		F362B91A2B3349E200D30B94 /* SDL_gamepad_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */; };
@@ -929,6 +932,7 @@
 		F32DDACE2AB795A30041EAA5 /* SDL_audioresample.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audioresample.c; sourceTree = "<group>"; };
 		F338A1172D1B37D8007CDFDF /* SDL_tray.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SDL_tray.m; sourceTree = "<group>"; };
 		F338A1192D1B37E4007CDFDF /* SDL_tray.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_tray.c; sourceTree = "<group>"; };
+		F344003C2D4022E1003F26D7 /* INSTALL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = INSTALL.md; sourceTree = "<group>"; };
 		F362B9152B3349E200D30B94 /* controller_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_list.h; sourceTree = "<group>"; };
 		F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamepad_c.h; sourceTree = "<group>"; };
 		F362B9172B3349E200D30B94 /* SDL_steam_virtual_gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_steam_virtual_gamepad.h; sourceTree = "<group>"; };
@@ -2311,6 +2315,14 @@
 			path = cocoa;
 			sourceTree = "<group>";
 		};
+		F344003B2D40229E003F26D7 /* framework */ = {
+			isa = PBXGroup;
+			children = (
+				F344003C2D4022E1003F26D7 /* INSTALL.md */,
+			);
+			path = framework;
+			sourceTree = "<group>";
+		};
 		F36C7ACF294B9F5E004D61C3 /* core */ = {
 			isa = PBXGroup;
 			children = (
@@ -2408,6 +2420,7 @@
 		F59C710100D5CB5801000001 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				F344003B2D40229E003F26D7 /* framework */,
 				F37A8E1928405AA100C38E95 /* CMake */,
 				F373DA182D388A1E002158FA /* LICENSE.txt */,
 				F373DA192D388A1E002158FA /* README.md */,
@@ -2754,6 +2767,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F344003D2D4022E1003F26D7 /* INSTALL.md in Resources */,
+				F34400342D40217A003F26D7 /* LICENSE.txt in Resources */,
+				F34400362D40217A003F26D7 /* README.md in Resources */,
 				F37A8E1A28405AA100C38E95 /* CMake in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
