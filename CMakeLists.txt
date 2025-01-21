@@ -3246,7 +3246,6 @@ else()
 endif()
 
 if(SDL_CLANG_TIDY)
-  cmake_minimum_required(VERSION 3.6)
   find_program(CLANG_TIDY_BINARY clang-tidy)
 
   if(CLANG_TIDY_BINARY)
