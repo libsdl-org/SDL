@@ -817,6 +817,10 @@ static bool PrepareAudioQueue(SDL_AudioDevice *device)
     }
     #endif
 
+    // we use THREE audio buffers by default, unlike most things that would
+    // choose two alternating buffers, because it helps with issues on
+    // Bluetooth headsets when recording and playing at the same time.
+    // See conversation in #8192 for details.
     int numAudioBuffers = 3;
     const double msecs = (device->sample_frames / ((double)device->spec.freq)) * 1000.0;
     if (msecs < MINIMUM_AUDIO_BUFFER_TIME_MS) { // use more buffers if we have a VERY small sample set.
