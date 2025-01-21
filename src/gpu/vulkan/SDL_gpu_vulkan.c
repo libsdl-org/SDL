@@ -4104,7 +4104,7 @@ static VulkanBuffer *VULKAN_INTERNAL_CreateBuffer(
         vulkanUsageFlags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
     }
 
-    buffer = SDL_malloc(sizeof(VulkanBuffer));
+    buffer = SDL_calloc(1, sizeof(VulkanBuffer));
 
     buffer->size = size;
     buffer->usage = usageFlags;
@@ -4196,7 +4196,7 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
         return NULL;
     }
 
-    bufferContainer = SDL_malloc(sizeof(VulkanBufferContainer));
+    bufferContainer = SDL_calloc(1, sizeof(VulkanBufferContainer));
 
     bufferContainer->activeBuffer = buffer;
     buffer->container = bufferContainer;
@@ -4204,8 +4204,7 @@ static VulkanBufferContainer *VULKAN_INTERNAL_CreateBufferContainer(
 
     bufferContainer->bufferCapacity = 1;
     bufferContainer->bufferCount = 1;
-    bufferContainer->buffers = SDL_malloc(
-        bufferContainer->bufferCapacity * sizeof(VulkanBuffer *));
+    bufferContainer->buffers = SDL_calloc(bufferContainer->bufferCapacity, sizeof(VulkanBuffer *));
     bufferContainer->buffers[0] = bufferContainer->activeBuffer;
     bufferContainer->dedicated = dedicated;
     bufferContainer->debugName = NULL;
@@ -6801,7 +6800,7 @@ static VulkanUniformBuffer *VULKAN_INTERNAL_CreateUniformBuffer(
     VulkanRenderer *renderer,
     Uint32 size)
 {
-    VulkanUniformBuffer *uniformBuffer = SDL_malloc(sizeof(VulkanUniformBuffer));
+    VulkanUniformBuffer *uniformBuffer = SDL_calloc(1, sizeof(VulkanUniformBuffer));
 
     uniformBuffer->buffer = VULKAN_INTERNAL_CreateBuffer(
         renderer,
@@ -6928,6 +6927,7 @@ static void VULKAN_INTERNAL_ReleaseBuffer(
     renderer->buffersToDestroyCount += 1;
 
     vulkanBuffer->markedForDestroy = 1;
+    vulkanBuffer->container = NULL;
 
     SDL_UnlockMutex(renderer->disposeLock);
 }
@@ -6947,6 +6947,7 @@ static void VULKAN_INTERNAL_ReleaseBufferContainer(
     // Containers are just client handles, so we can free immediately
     if (bufferContainer->debugName != NULL) {
         SDL_free(bufferContainer->debugName);
+        bufferContainer->debugName = NULL;
     }
     SDL_free(bufferContainer->buffers);
     SDL_free(bufferContainer);
@@ -10693,6 +10694,10 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 if (newBuffer->container->activeBuffer == currentRegion->vulkanBuffer) {
                     newBuffer->container->activeBuffer = newBuffer;
                 }
+            }
+
+            if (currentRegion->vulkanBuffer->uniformBufferForDefrag) {
+                newBuffer->uniformBufferForDefrag = currentRegion->vulkanBuffer->uniformBufferForDefrag;
             }
 
             VULKAN_INTERNAL_ReleaseBuffer(renderer, currentRegion->vulkanBuffer);
