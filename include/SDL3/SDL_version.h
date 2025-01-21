@@ -53,7 +53,7 @@ extern "C" {
  *
  * \since This macro is available since SDL 3.1.3.
  */
-#define SDL_MINOR_VERSION   1
+#define SDL_MINOR_VERSION   2
 
 /**
  * The current micro (or patchlevel) version of the SDL headers.
@@ -62,7 +62,7 @@ extern "C" {
  *
  * \since This macro is available since SDL 3.1.3.
  */
-#define SDL_MICRO_VERSION   11
+#define SDL_MICRO_VERSION   0
 
 /**
  * This macro turns the version numbers into a numeric value.
