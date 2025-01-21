@@ -360,7 +360,6 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
                 }
             }
         }
-        SDL_Log("render_driver == '%s'", render_driver);
 
         // Check to see if there's a specific driver requested
         if (render_driver) {
