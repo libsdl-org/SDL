@@ -9858,24 +9858,7 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
     }
 
     // Finally, try to acquire!
-    acquireResult = renderer->vkAcquireNextImageKHR(
-        renderer->logicalDevice,
-        windowData->swapchain,
-        SDL_MAX_UINT64,
-        windowData->imageAvailableSemaphore[windowData->frameCounter],
-        VK_NULL_HANDLE,
-        &swapchainImageIndex);
-
-    // Acquisition is invalid, let's try to recreate
-    if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
-        Uint32 recreateSwapchainResult = VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
-        if (!recreateSwapchainResult) {
-            return false;
-        } else if (recreateSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
-            // Edge case, texture is filled in with NULL but not an error
-            return true;
-        }
-
+    while (true) {
         acquireResult = renderer->vkAcquireNextImageKHR(
             renderer->logicalDevice,
             windowData->swapchain,
@@ -9884,8 +9867,19 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
             VK_NULL_HANDLE,
             &swapchainImageIndex);
 
-        if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
+        //if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) { SDL_Log("VULKAN SWAPCHAIN OUT OF DATE"); }
+
+        if (acquireResult == VK_SUCCESS || acquireResult == VK_SUBOPTIMAL_KHR) {
+            break;  // we got the next image!
+        }
+
+        // If acquisition is invalid, let's try to recreate
+        Uint32 recreateSwapchainResult = VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
+        if (!recreateSwapchainResult) {
             return false;
+        } else if (recreateSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
+            // Edge case, texture is filled in with NULL but not an error
+            return true;
         }
     }
 
