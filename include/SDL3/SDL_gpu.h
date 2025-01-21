@@ -660,9 +660,9 @@ typedef enum SDL_GPUIndexElementSize
  * supported:
  *
  * - D16_UNORM
- * - Either (but not necessarily both!) D24_UNORM or D32_SFLOAT
+ * - Either (but not necessarily both!) D24_UNORM or D32_FLOAT
  * - Either (but not necessarily both!) D24_UNORM_S8_UINT or
- *   D32_SFLOAT_S8_UINT
+ *   D32_FLOAT_S8_UINT
  *
  * Unless D16_UNORM is sufficient for your purposes, always check which of
  * D24/D32 is supported before creating a depth-stencil texture!
@@ -1262,7 +1262,7 @@ typedef enum SDL_GPUPresentMode
  * - SDR_LINEAR: B8G8R8A8_SRGB or R8G8B8A8_SRGB swapchain. Pixel values are
  *   stored in memory in sRGB encoding but accessed in shaders in "linear
  *   sRGB" encoding which is sRGB but with a linear transfer function.
- * - HDR_EXTENDED_LINEAR: R16G16B16A16_SFLOAT swapchain. Pixel values are in
+ * - HDR_EXTENDED_LINEAR: R16G16B16A16_FLOAT swapchain. Pixel values are in
  *   extended linear sRGB encoding and permits values outside of the [0, 1]
  *   range.
  * - HDR10_ST2084: A2R10G10B10 or A2B10G10R10 swapchain. Pixel values are in
