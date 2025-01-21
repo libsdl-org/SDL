@@ -96,7 +96,7 @@ extern "C" {
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetClipboardText
  * \sa SDL_HasClipboardText
@@ -115,7 +115,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardText(const char *text);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_HasClipboardText
  * \sa SDL_SetClipboardText
@@ -129,7 +129,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetClipboardText(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetClipboardText
  * \sa SDL_SetClipboardText
@@ -145,7 +145,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasClipboardText(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_HasPrimarySelectionText
@@ -164,7 +164,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetPrimarySelectionText(const char *text);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_HasPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
@@ -179,7 +179,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
@@ -204,7 +204,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasPrimarySelectionText(void);
  *          breakage in receiving applications. The returned data will not be
  *          freed so it needs to be retained and dealt with internally.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetClipboardData
  */
@@ -216,7 +216,7 @@ typedef const void *(SDLCALL *SDL_ClipboardDataCallback)(void *userdata, const c
  *
  * \param userdata a pointer to provided user data.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetClipboardData
  */
@@ -246,7 +246,7 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_ClearClipboardData
  * \sa SDL_GetClipboardData
@@ -262,7 +262,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback 
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetClipboardData
  */
@@ -282,7 +282,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ClearClipboardData(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_HasClipboardData
  * \sa SDL_SetClipboardData
@@ -298,7 +298,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetClipboardData(const char *mime_type, s
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetClipboardData
  * \sa SDL_GetClipboardData
@@ -316,7 +316,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasClipboardData(const char *mime_type);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetClipboardData
  */

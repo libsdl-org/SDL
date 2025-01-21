@@ -67,7 +67,7 @@ extern "C" {
  * These are the flags which may be passed to SDL_Init(). You should specify
  * the subsystems which you will be using in your application.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_Init
  * \sa SDL_Quit
@@ -104,7 +104,7 @@ typedef Uint32 SDL_InitFlags;
  * [Main callbacks in SDL3](https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3)
  * for complete details.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_AppResult
 {
@@ -128,7 +128,7 @@ typedef enum SDL_AppResult
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef SDL_AppResult (SDLCALL *SDL_AppInit_func)(void **appstate, int argc, char *argv[]);
 
@@ -143,7 +143,7 @@ typedef SDL_AppResult (SDLCALL *SDL_AppInit_func)(void **appstate, int argc, cha
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef SDL_AppResult (SDLCALL *SDL_AppIterate_func)(void *appstate);
 
@@ -159,7 +159,7 @@ typedef SDL_AppResult (SDLCALL *SDL_AppIterate_func)(void *appstate);
  * \returns SDL_APP_FAILURE to terminate with an error, SDL_APP_SUCCESS to
  *          terminate with success, SDL_APP_CONTINUE to continue.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef SDL_AppResult (SDLCALL *SDL_AppEvent_func)(void *appstate, SDL_Event *event);
 
@@ -173,7 +173,7 @@ typedef SDL_AppResult (SDLCALL *SDL_AppEvent_func)(void *appstate, SDL_Event *ev
  * \param appstate an optional pointer, provided by the app in SDL_AppInit.
  * \param result the result code that terminated the app (success or failure).
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate, SDL_AppResult result);
 
@@ -224,7 +224,7 @@ typedef void (SDLCALL *SDL_AppQuit_func)(void *appstate, SDL_AppResult result);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetAppMetadata
  * \sa SDL_SetAppMetadataProperty
@@ -244,7 +244,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_Init(SDL_InitFlags flags);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Init
  * \sa SDL_Quit
@@ -260,7 +260,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_InitSubSystem(SDL_InitFlags flags);
  *
  * \param flags any of the flags used by SDL_Init(); see SDL_Init for details.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_InitSubSystem
  * \sa SDL_Quit
@@ -274,7 +274,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_QuitSubSystem(SDL_InitFlags flags);
  * \returns a mask of all initialized subsystems if `flags` is 0, otherwise it
  *          returns the initialization status of the specified subsystems.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Init
  * \sa SDL_InitSubSystem
@@ -292,7 +292,7 @@ extern SDL_DECLSPEC SDL_InitFlags SDLCALL SDL_WasInit(SDL_InitFlags flags);
  * application is shutdown, but it is not wise to do this from a library or
  * other dynamically loaded code.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Init
  * \sa SDL_QuitSubSystem
@@ -313,7 +313,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Quit(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.8.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RunOnMainThread
  */
@@ -324,7 +324,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsMainThread(void);
  *
  * \param userdata an app-controlled pointer that is passed to the callback.
  *
- * \since This datatype is available since SDL 3.1.8.
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_RunOnMainThread
  */
@@ -350,7 +350,7 @@ typedef void (SDLCALL *SDL_MainThreadCallback)(void *userdata);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.8.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_IsMainThread
  */
@@ -388,7 +388,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RunOnMainThread(SDL_MainThreadCallback call
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetAppMetadataProperty
  */
@@ -450,7 +450,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAppMetadata(const char *appname, const c
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetAppMetadataProperty
  * \sa SDL_SetAppMetadata
@@ -481,7 +481,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAppMetadataProperty(const char *name, co
  *               freed if you call SDL_SetAppMetadataProperty() to set that
  *               property from another thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetAppMetadata
  * \sa SDL_SetAppMetadataProperty

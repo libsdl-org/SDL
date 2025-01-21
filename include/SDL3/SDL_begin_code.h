@@ -62,7 +62,7 @@
  * On compilers without a deprecation mechanism, this is defined to nothing,
  * and using a deprecated function will not generate a warning.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_DEPRECATED __attribute__((deprecated))
 
@@ -76,7 +76,7 @@
  * This symbol is used in SDL's headers, but apps and other libraries are
  * welcome to use it for their own interfaces as well.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_DECLSPEC __attribute__ ((visibility("default")))
 
@@ -97,7 +97,7 @@
  * This symbol is used in SDL's headers, but apps and other libraries are
  * welcome to use it for their own interfaces as well.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDLCALL __cdecl
 
@@ -108,7 +108,7 @@
  * to ignore this request. On compilers without inline support, this is
  * defined to nothing.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_INLINE __inline
 
@@ -123,7 +123,7 @@
  * This symbol is used in SDL's headers, but apps and other libraries are
  * welcome to use it for their own interfaces as well.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_FORCE_INLINE __forceinline
 
@@ -140,7 +140,7 @@
  * This symbol is used in SDL's headers, but apps and other libraries are
  * welcome to use it for their own interfaces as well.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_NORETURN __attribute__((noreturn))
 
@@ -160,7 +160,7 @@
  * This symbol is used in SDL's headers, but apps and other libraries are
  * welcome to use it for their own interfaces as well.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_ANALYZER_NORETURN __attribute__((analyzer_noreturn))
 
@@ -188,7 +188,7 @@
  * }
  * ```
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_FALLTHROUGH [[fallthrough]]
 
@@ -215,7 +215,7 @@
  *
  * On compilers without nodiscard support, this is defined to nothing.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_NODISCARD [[nodiscard]]
 
@@ -232,7 +232,7 @@
  *
  * Most apps don't need to, and should not, use this directly.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_MALLOC __declspec(allocator) __desclspec(restrict)
 
@@ -248,7 +248,7 @@
  *
  * Most apps don't need to, and should not, use this directly.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_ALLOC_SIZE(p) __attribute__((alloc_size(p)))
 
@@ -261,7 +261,7 @@
  *
  * On compilers without restrict support, this is defined to nothing.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_RESTRICT __restrict__
 
@@ -277,7 +277,7 @@
  * On compilers without has_builtin support, this is defined to 0 (always
  * false).
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_HAS_BUILTIN(x) __has_builtin(x)
 

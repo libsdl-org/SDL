@@ -80,7 +80,7 @@ extern "C" {
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_ClearError
  * \sa SDL_GetError
@@ -99,7 +99,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const cha
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.6.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_ClearError
  * \sa SDL_GetError
@@ -116,7 +116,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetErrorV(SDL_PRINTF_FORMAT_STRING const ch
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_OutOfMemory(void);
 
@@ -150,7 +150,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_OutOfMemory(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_ClearError
  * \sa SDL_SetError
@@ -164,7 +164,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetError(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetError
  * \sa SDL_SetError
@@ -187,7 +187,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ClearError(void);
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Unsupported()               SDL_SetError("That operation is not supported")
 
@@ -211,7 +211,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ClearError(void);
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_InvalidParamError(param)    SDL_SetError("Parameter '%s' is invalid", (param))
 

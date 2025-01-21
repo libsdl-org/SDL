@@ -47,7 +47,7 @@
  * The values in this enumeration are based on the USB usage page standard:
  * https://usb.org/sites/default/files/hut1_5.pdf
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_Scancode
 {

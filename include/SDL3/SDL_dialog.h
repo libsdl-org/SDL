@@ -59,7 +59,7 @@ extern "C" {
  * hyphens, underscores and periods. Alternatively, the whole string can be a
  * single asterisk ("*"), which serves as an "All files" filter.
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_DialogFileCallback
  * \sa SDL_ShowOpenFileDialog
@@ -102,7 +102,7 @@ typedef struct SDL_DialogFileFilter
  * \param filelist the file(s) chosen by the user.
  * \param filter index of the selected filter.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_DialogFileFilter
  * \sa SDL_ShowOpenFileDialog
@@ -153,7 +153,7 @@ typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * cons
  *               callback may be invoked from the same thread or from a
  *               different one, depending on the OS's constraints.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_DialogFileCallback
  * \sa SDL_DialogFileFilter
@@ -202,7 +202,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  *               callback may be invoked from the same thread or from a
  *               different one, depending on the OS's constraints.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_DialogFileCallback
  * \sa SDL_DialogFileFilter
@@ -248,7 +248,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  *               callback may be invoked from the same thread or from a
  *               different one, depending on the OS's constraints.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_DialogFileCallback
  * \sa SDL_ShowOpenFileDialog
@@ -263,7 +263,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFolderDialog(SDL_DialogFileCallback
  * This is used by SDL_ShowFileDialogWithProperties() to decide what kind of
  * dialog to present to the user.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_ShowFileDialogWithProperties
  */
@@ -312,7 +312,7 @@ typedef enum SDL_FileDialogType
  *               callback may be invoked from the same thread or from a
  *               different one, depending on the OS's constraints.
  *
- * \since This function is available since SDL 3.1.8.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_FileDialogType
  * \sa SDL_DialogFileCallback

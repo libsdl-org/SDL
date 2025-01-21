@@ -50,7 +50,7 @@
  * Keys with the `SDLK_EXTENDED_MASK` bit set do not map to a scancode or
  * unicode code point.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef Uint32 SDL_Keycode;
 
@@ -317,7 +317,7 @@ typedef Uint32 SDL_Keycode;
 /**
  * Valid key modifiers (possibly OR'd together).
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef Uint16 SDL_Keymod;
 

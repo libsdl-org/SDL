@@ -76,7 +76,7 @@ extern "C" {
  *
  * The value 0 is an invalid ID.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef Uint32 SDL_MouseID;
 
@@ -85,14 +85,14 @@ typedef Uint32 SDL_MouseID;
  *
  * This is opaque data.
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_Cursor SDL_Cursor;
 
 /**
  * Cursor types for SDL_CreateSystemCursor().
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_SystemCursor
 {
@@ -122,7 +122,7 @@ typedef enum SDL_SystemCursor
 /**
  * Scroll direction types for the Scroll event
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_MouseWheelDirection
 {
@@ -139,7 +139,7 @@ typedef enum SDL_MouseWheelDirection
  * - Button 4: Side mouse button 1
  * - Button 5: Side mouse button 2
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_GetMouseState
  * \sa SDL_GetGlobalMouseState
@@ -170,7 +170,7 @@ typedef Uint32 SDL_MouseButtonFlags;
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetMice
  */
@@ -192,7 +192,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasMouse(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetMouseNameForID
  * \sa SDL_HasMouse
@@ -210,7 +210,7 @@ extern SDL_DECLSPEC SDL_MouseID * SDLCALL SDL_GetMice(int *count);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetMice
  */
@@ -223,7 +223,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID insta
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
 
@@ -253,7 +253,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetGlobalMouseState
  * \sa SDL_GetRelativeMouseState
@@ -289,7 +289,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetMouseState(float *x, flo
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CaptureMouse
  * \sa SDL_GetMouseState
@@ -325,7 +325,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetGlobalMouseState(float *
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetMouseState
  * \sa SDL_GetGlobalMouseState
@@ -349,7 +349,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_WarpMouseGlobal
  */
@@ -374,7 +374,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window,
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_WarpMouseInWindow
  */
@@ -402,7 +402,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WarpMouseGlobal(float x, float y);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetWindowRelativeMouseMode
  */
@@ -416,7 +416,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowRelativeMouseMode(SDL_Window *wind
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetWindowRelativeMouseMode
  */
@@ -464,7 +464,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowRelativeMouseMode(SDL_Window *wind
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetGlobalMouseState
  */
@@ -507,7 +507,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CaptureMouse(bool enabled);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CreateColorCursor
  * \sa SDL_CreateSystemCursor
@@ -540,7 +540,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 * data,
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CreateCursor
  * \sa SDL_CreateSystemCursor
@@ -560,7 +560,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateColorCursor(SDL_Surface *surf
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_DestroyCursor
  */
@@ -580,7 +580,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetCursor
  */
@@ -596,7 +596,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetCursor(SDL_Cursor *cursor);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetCursor
  */
@@ -613,7 +613,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetCursor(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetDefaultCursor(void);
 
@@ -627,7 +627,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetDefaultCursor(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CreateColorCursor
  * \sa SDL_CreateCursor
@@ -643,7 +643,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyCursor(SDL_Cursor *cursor);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CursorVisible
  * \sa SDL_HideCursor
@@ -658,7 +658,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowCursor(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CursorVisible
  * \sa SDL_ShowCursor
@@ -673,7 +673,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HideCursor(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_HideCursor
  * \sa SDL_ShowCursor

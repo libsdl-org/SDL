@@ -78,7 +78,7 @@ _m_prefetch(void *__P)
  * #endif
  * ```
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_BYTEORDER
  * \sa SDL_BIG_ENDIAN
@@ -97,7 +97,7 @@ _m_prefetch(void *__P)
  * #endif
  * ```
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_BYTEORDER
  * \sa SDL_LIL_ENDIAN
@@ -122,7 +122,7 @@ _m_prefetch(void *__P)
  * #endif
  * ```
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_LIL_ENDIAN
  * \sa SDL_BIG_ENDIAN
@@ -184,7 +184,7 @@ _m_prefetch(void *__P)
  * #endif
  * ```
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_LIL_ENDIAN
  * \sa SDL_BIG_ENDIAN
@@ -403,7 +403,7 @@ SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 SDL_FORCE_INLINE float SDL_SwapFloat(float x)
 {
@@ -442,7 +442,7 @@ SDL_FORCE_INLINE float SDL_SwapFloat(float x)
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
 
@@ -463,7 +463,7 @@ SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
 
@@ -484,7 +484,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
 
@@ -500,7 +500,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap16LE(x) SwapOnlyIfNecessary(x)
 
@@ -516,7 +516,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap32LE(x) SwapOnlyIfNecessary(x)
 
@@ -532,7 +532,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap64LE(x) SwapOnlyIfNecessary(x)
 
@@ -548,7 +548,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_SwapFloatLE(x) SwapOnlyIfNecessary(x)
 
@@ -564,7 +564,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap16BE(x) SwapOnlyIfNecessary(x)
 
@@ -580,7 +580,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap32BE(x) SwapOnlyIfNecessary(x)
 
@@ -596,7 +596,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap64BE(x) SwapOnlyIfNecessary(x)
 
@@ -612,7 +612,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_SwapFloatBE(x) SwapOnlyIfNecessary(x)
 

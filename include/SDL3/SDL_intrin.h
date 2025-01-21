@@ -335,7 +335,7 @@ _m_prefetch(void *__P)
  * This symbol is used by SDL internally, but apps and other libraries are
  * welcome to use it for their own interfaces as well.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_TARGETING(x) __attribute__((target(x)))
 
