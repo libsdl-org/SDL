@@ -661,8 +661,7 @@ typedef enum SDL_GPUIndexElementSize
  *
  * - D16_UNORM
  * - Either (but not necessarily both!) D24_UNORM or D32_FLOAT
- * - Either (but not necessarily both!) D24_UNORM_S8_UINT or
- *   D32_FLOAT_S8_UINT
+ * - Either (but not necessarily both!) D24_UNORM_S8_UINT or D32_FLOAT_S8_UINT
  *
  * Unless D16_UNORM is sufficient for your purposes, always check which of
  * D24/D32 is supported before creating a depth-stencil texture!
