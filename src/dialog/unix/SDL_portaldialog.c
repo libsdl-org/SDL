@@ -153,49 +153,54 @@ static void DBus_AppendByteArray(SDL_DBusContext *dbus, DBusMessageIter *options
     dbus->message_iter_close_container(options, &options_pair);
 }
 
-static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data) {
+static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
+{
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     SignalCallback *signal_data = (SignalCallback *)data;
 
-    if (dbus->message_is_signal(msg, SIGNAL_INTERFACE, SIGNAL_NAME)
-            && dbus->message_has_path(msg, signal_data->path)) {
+    if (dbus->message_is_signal(msg, SIGNAL_INTERFACE, SIGNAL_NAME) &&
+        dbus->message_has_path(msg, signal_data->path)) {
         DBusMessageIter signal_iter, result_array, array_entry, value_entry, uri_entry;
         uint32_t result;
         size_t length = 2, current = 0;
-        const char **path;
+        const char **path = NULL;
 
         dbus->message_iter_init(msg, &signal_iter);
         // Check if the parameters are what we expect
-        if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_UINT32)
+        if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_UINT32) {
             goto not_our_signal;
+        }
         dbus->message_iter_get_basic(&signal_iter, &result);
 
         if (result == 1 || result == 2) {
             // cancelled
             const char *result_data[] = { NULL };
             signal_data->callback(signal_data->userdata, result_data, -1); // TODO: Set this to the last selected filter
-            goto handled;
-        }
-        else if (result) {
+            goto done;
+
+        } else if (result) {
             // some error occurred
             signal_data->callback(signal_data->userdata, NULL, -1);
-            goto handled;
+            goto done;
         }
 
-        if (!dbus->message_iter_next(&signal_iter))
+        if (!dbus->message_iter_next(&signal_iter)) {
             goto not_our_signal;
+        }
 
-        if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_ARRAY)
+        if (dbus->message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_ARRAY) {
             goto not_our_signal;
+        }
+
         dbus->message_iter_recurse(&signal_iter, &result_array);
 
-        while (dbus->message_iter_get_arg_type(&result_array) == DBUS_TYPE_DICT_ENTRY)
-        {
+        while (dbus->message_iter_get_arg_type(&result_array) == DBUS_TYPE_DICT_ENTRY) {
             const char *method;
 
             dbus->message_iter_recurse(&result_array, &array_entry);
-            if (dbus->message_iter_get_arg_type(&array_entry) != DBUS_TYPE_STRING)
+            if (dbus->message_iter_get_arg_type(&array_entry) != DBUS_TYPE_STRING) {
                 goto not_our_signal;
+            }
 
             dbus->message_iter_get_basic(&array_entry, &method);
             if (!SDL_strcmp(method, "uris")) {
@@ -203,38 +208,42 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
                 break;
             }
 
-            if (!dbus->message_iter_next(&result_array))
+            if (!dbus->message_iter_next(&result_array)) {
                 goto not_our_signal;
+            }
         }
 
-        if (!dbus->message_iter_next(&array_entry))
+        if (!dbus->message_iter_next(&array_entry)) {
             goto not_our_signal;
+        }
 
-        if (dbus->message_iter_get_arg_type(&array_entry) != DBUS_TYPE_VARIANT)
+        if (dbus->message_iter_get_arg_type(&array_entry) != DBUS_TYPE_VARIANT) {
             goto not_our_signal;
+        }
         dbus->message_iter_recurse(&array_entry, &value_entry);
 
-        if (dbus->message_iter_get_arg_type(&value_entry) != DBUS_TYPE_ARRAY)
+        if (dbus->message_iter_get_arg_type(&value_entry) != DBUS_TYPE_ARRAY) {
             goto not_our_signal;
+        }
         dbus->message_iter_recurse(&value_entry, &uri_entry);
 
-        path = SDL_malloc(sizeof(const char *) * length);
+        path = SDL_malloc(length * sizeof(const char *));
         if (!path) {
             signal_data->callback(signal_data->userdata, NULL, -1);
-            goto cleanup;
+            goto done;
         }
 
-        while (dbus->message_iter_get_arg_type(&uri_entry) == DBUS_TYPE_STRING)
-        {
+        while (dbus->message_iter_get_arg_type(&uri_entry) == DBUS_TYPE_STRING) {
             const char *uri = NULL;
 
             if (current >= length - 1) {
                 ++length;
-                path = SDL_realloc(path, sizeof(const char *) * length);
-                if (!path) {
+                const char **newpath = SDL_realloc(path, length * sizeof(const char *));
+                if (!newpath) {
                     signal_data->callback(signal_data->userdata, NULL, -1);
-                    goto cleanup;
+                    goto done;
                 }
+                path = newpath;
             }
 
             dbus->message_iter_get_basic(&uri_entry, &uri);
@@ -248,29 +257,28 @@ static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *m
                 SDL_free(decoded_uri);
                 SDL_SetError("Portal dialogs: Unsupported protocol: %s", uri);
                 signal_data->callback(signal_data->userdata, NULL, -1);
-                goto cleanup;
+                goto done;
             }
 
             dbus->message_iter_next(&uri_entry);
             ++current;
         }
-        path[length - 1] = NULL;
+        path[current] = NULL;
         signal_data->callback(signal_data->userdata, path, -1); // TODO: Fetch the index of the filter that was used
-cleanup:
+done:
         dbus->connection_remove_filter(conn, &DBus_MessageFilter, signal_data);
 
         if (path) {
             for (size_t i = 0; i < current; ++i) {
                 SDL_free((char *)path[i]);
             }
+            SDL_free(path);
         }
-
-        SDL_free(path);
         SDL_free((void *)signal_data->path);
         SDL_free(signal_data);
-handled:
         return DBUS_HANDLER_RESULT_HANDLED;
     }
+
 not_our_signal:
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
