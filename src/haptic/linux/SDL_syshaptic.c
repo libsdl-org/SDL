@@ -880,7 +880,7 @@ static int SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect *src)
 
         /* Header */
         dest->type = FF_RUMBLE;
-        dest->direction = 0;
+        dest->direction = 0x4000;
 
         /* Replay */
         dest->replay.length = (leftright->length == SDL_HAPTIC_INFINITY) ? 0 : CLAMP(leftright->length);
