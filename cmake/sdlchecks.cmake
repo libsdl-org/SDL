@@ -1245,7 +1245,21 @@ endmacro()
 macro(CheckLibUnwind)
   if(TARGET SDL3_test)
     set(found_libunwind FALSE)
-    set(_libunwind_src "#include <libunwind.h>\nint main() {unw_context_t context; unw_getcontext(&context); return 0;}")
+    set(_libunwind_src [==[
+      #include <libunwind.h>
+      int main(int argc, char *argv[]) {
+        (void)argc; (void)argv;
+        unw_context_t context;
+        unw_cursor_t cursor;
+        unw_word_t pc;
+        char sym[256];
+        unw_word_t offset;
+        unw_getcontext(&context);
+        unw_step(&cursor);
+        unw_get_reg(&cursor, UNW_REG_IP, &pc);
+        unw_get_proc_name(&cursor, sym, sizeof(sym), &offset);
+        return 0;
+      }]==])
 
     if(NOT found_libunwind)
       cmake_push_check_state()
