@@ -1,5 +1,5 @@
 /*
- * This example code creates an simple audio stream for playing sound, and
+ * This example code creates a simple audio stream for playing sound, and
  * generates a sine wave sound effect for it to play as time goes on. This
  * is the simplest way to get up and running with procedural sound.
  *
