@@ -321,10 +321,9 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
     if (!data) {
         SDL_Renderer *renderer = NULL;
         const char *render_driver = NULL;
-        const char *hint;
 
         // See if there's a render driver being requested
-        hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
+        const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
         if (hint && *hint != '0' && *hint != '1' &&
             SDL_strcasecmp(hint, "true") != 0 &&
             SDL_strcasecmp(hint, "false") != 0 &&
@@ -333,20 +332,46 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
         }
 
         if (!render_driver) {
-            hint = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
-            if (hint && *hint && SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) != 0) {
-                render_driver = hint;
+            render_driver = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
+        }
+
+        char *render_driver_copy = NULL;
+        if (render_driver && *render_driver) {
+            render_driver_copy = SDL_strdup(render_driver);
+            render_driver = render_driver_copy;
+            if (render_driver_copy) {  // turn any "software" requests into "xxxxxxxx" so we don't end up in infinite recursion.
+                char *prev = render_driver_copy;
+                char *ptr = prev;
+                while ((ptr = SDL_strchr(ptr, ',')) != NULL) {
+                    *ptr = '\0';
+                    const bool is_sw = (SDL_strcasecmp(prev, SDL_SOFTWARE_RENDERER) == 0);
+                    *ptr = ',';
+                    if (is_sw) {
+                        SDL_memset(prev, 'x', SDL_strlen(SDL_SOFTWARE_RENDERER));
+                        ptr = prev;
+                    } else {
+                        ptr++;
+                        prev = ptr;
+                    }
+                }
+
+                if (SDL_strcasecmp(prev, SDL_SOFTWARE_RENDERER) == 0) {
+                    SDL_memset(prev, 'x', SDL_strlen(SDL_SOFTWARE_RENDERER));
+                }
             }
         }
+        SDL_Log("render_driver == '%s'", render_driver);
 
         // Check to see if there's a specific driver requested
         if (render_driver) {
             renderer = SDL_CreateRenderer(window, render_driver);
+            SDL_free(render_driver_copy);
             if (!renderer) {
                 // The error for this specific renderer has already been set
                 return false;
             }
         } else {
+            SDL_assert(render_driver_copy == NULL);
             const int total = SDL_GetNumRenderDrivers();
             for (i = 0; i < total; ++i) {
                 const char *name = SDL_GetRenderDriver(i);
