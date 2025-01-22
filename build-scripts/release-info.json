@@ -181,8 +181,8 @@
       "x86",
       "x86_64"
     ],
-    "api-minimum": 19,
-    "api-target": 29,
+    "api-minimum": 21,
+    "api-target": 35,
     "ndk-minimum": 21,
     "aar-files": {
       "": [
