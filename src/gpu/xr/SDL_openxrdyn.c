@@ -81,8 +81,7 @@ bool SDL_OPENXR_LoadLoaderSymbols(void)
 
     // deal with multiple modules (dga, openxr, etc) needing these symbols...
     if (openxr_load_refcount++ == 0) {
-        openxr_loader.lib = SDL_LoadObject("openxr_loaderd.dll");
-        // openxr_loader.lib = SDL_LoadObject(openxr_loader.libname);
+        openxr_loader.lib = SDL_LoadObject(openxr_loader.libname);
 
         if(!openxr_loader.lib)
             return false;
