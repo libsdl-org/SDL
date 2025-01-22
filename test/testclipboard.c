@@ -41,12 +41,12 @@ static const void *ClipboardDataCallback(void *userdata, const char *mime_type, 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_Log("Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
     if (!SDL_CreateWindowAndRenderer("testclipboard", 640, 480, 0, &window, &renderer)) {
-        SDL_Log("Couldn't create window and renderer: %s\n", SDL_GetError());
+        SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
     return SDL_APP_CONTINUE;
@@ -69,12 +69,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     case SDL_EVENT_CLIPBOARD_UPDATE:
         if (event->clipboard.num_mime_types > 0) {
             int i;
-            SDL_Log("Clipboard updated:\n");
+            SDL_Log("Clipboard updated:");
             for (i = 0; event->clipboard.mime_types[i]; ++i) {
-                SDL_Log("    %s\n", event->clipboard.mime_types[i]);
+                SDL_Log("    %s", event->clipboard.mime_types[i]);
             }
         } else {
-            SDL_Log("Clipboard cleared\n");
+            SDL_Log("Clipboard cleared");
         }
         break;
 

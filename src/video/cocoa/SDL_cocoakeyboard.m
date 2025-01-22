@@ -540,7 +540,7 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
 
 #ifdef DEBUG_SCANCODES
         if (code == SDL_SCANCODE_UNKNOWN) {
-            SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
+            SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.", scancode);
         }
 #endif
         if (SDL_TextInputActive(SDL_GetKeyboardFocus())) {

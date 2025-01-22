@@ -396,7 +396,7 @@ int main(int argc, char *argv[])
 
     /* Load the SDL library */
     if (!SDLTest_CommonInit(state)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 

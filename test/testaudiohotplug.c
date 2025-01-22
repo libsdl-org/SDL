@@ -84,7 +84,7 @@ static void iteration(void)
                 if (!stream) {
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to create/bind an audio stream to %u ('%s'): %s", (unsigned int) which, name, SDL_GetError());
                 } else {
-                    SDL_Log("Opened '%s' as %u\n", name, (unsigned int) which);
+                    SDL_Log("Opened '%s' as %u", name, (unsigned int) which);
                     /* !!! FIXME: laziness, this used to loop the audio, but we'll just play it once for now on each connect. */
                     SDL_PutAudioStreamData(stream, sound, soundlen);
                     SDL_FlushAudioStream(stream);
@@ -94,7 +94,7 @@ static void iteration(void)
             }
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_REMOVED) {
             dev = (SDL_AudioDeviceID)e.adevice.which;
-            SDL_Log("%s device %u removed.\n", devtypestr(e.adevice.recording), (unsigned int)dev);
+            SDL_Log("%s device %u removed.", devtypestr(e.adevice.recording), (unsigned int)dev);
             /* !!! FIXME: we need to keep track of our streams and destroy them here. */
         }
     }
@@ -144,14 +144,14 @@ int main(int argc, char *argv[])
 
     /* Load the SDL library */
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
     /* Some targets (Mac CoreAudio) need an event queue for audio hotplug, so make and immediately hide a window. */
     window = SDL_CreateWindow("testaudiohotplug", 640, 480, 0);
     if (!window) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateWindow failed: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateWindow failed: %s", SDL_GetError());
         quit(1);
     }
     SDL_MinimizeWindow(window);
@@ -159,13 +159,13 @@ int main(int argc, char *argv[])
     filename = GetResourceFilename(filename, "sample.wav");
 
     if (!filename) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s", SDL_GetError());
         quit(1);
     }
 
     /* Load the wave file into memory */
     if (!SDL_LoadWAV(filename, &spec, &sound, &soundlen)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", filename, SDL_GetError());
         quit(1);
     }
 
@@ -187,8 +187,8 @@ int main(int argc, char *argv[])
         SDL_Log("%i: %s", i, SDL_GetAudioDriver(i));
     }
 
-    SDL_Log("Select a driver with the SDL_AUDIO_DRIVER environment variable.\n");
-    SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
+    SDL_Log("Select a driver with the SDL_AUDIO_DRIVER environment variable.");
+    SDL_Log("Using audio driver: %s", SDL_GetCurrentAudioDriver());
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);

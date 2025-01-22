@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
     }
     quit(0);
     return 0;

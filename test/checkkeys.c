@@ -185,7 +185,7 @@ static void PrintModifierState(void)
     left = sizeof(message);
 
     print_modifiers(&spot, &left, SDL_GetModState());
-    SDL_Log("Initial state:%s\n", message);
+    SDL_Log("Initial state:%s", message);
 }
 
 static void PrintKey(SDL_KeyboardEvent *event)
@@ -218,7 +218,7 @@ static void PrintKey(SDL_KeyboardEvent *event)
     if (event->repeat) {
         print_string(&spot, &left, " (repeat)");
     }
-    SDL_Log("%s\n", message);
+    SDL_Log("%s", message);
 }
 
 static void PrintText(const char *eventtype, const char *text)
@@ -231,7 +231,7 @@ static void PrintText(const char *eventtype, const char *text)
         size_t length = SDL_strlen(expanded);
         (void)SDL_snprintf(expanded + length, sizeof(expanded) - length, "\\x%.2x", (unsigned char)*spot);
     }
-    SDL_Log("%s Text (%s): \"%s%s\"\n", eventtype, expanded, *text == '"' ? "\\" : "", text);
+    SDL_Log("%s Text (%s): \"%s%s\"", eventtype, expanded, *text == '"' ? "\\" : "", text);
 }
 
 static void CountKeysDown(void)
@@ -244,7 +244,7 @@ static void CountKeysDown(void)
             ++count;
         }
     }
-    SDL_Log("Keys down: %d\n", count);
+    SDL_Log("Keys down: %d", count);
 }
 
 static void DrawCursor(int i)
@@ -373,10 +373,10 @@ static void loop(void)
         {
             SDL_Window *window = SDL_GetWindowFromEvent(&event);
             if (SDL_TextInputActive(window)) {
-                SDL_Log("Stopping text input for window %" SDL_PRIu32 "\n", event.tfinger.windowID);
+                SDL_Log("Stopping text input for window %" SDL_PRIu32, event.tfinger.windowID);
                 SDL_StopTextInput(window);
             } else {
-                SDL_Log("Starting text input for window %" SDL_PRIu32 "\n", event.tfinger.windowID);
+                SDL_Log("Starting text input for window %" SDL_PRIu32, event.tfinger.windowID);
                 SDL_StartTextInput(window);
             }
             break;
@@ -385,16 +385,16 @@ static void loop(void)
             if (event.button.button == SDL_BUTTON_RIGHT) {
                 SDL_Window *window = SDL_GetWindowFromEvent(&event);
                 if (SDL_TextInputActive(window)) {
-                    SDL_Log("Stopping text input for window %" SDL_PRIu32 "\n", event.button.windowID);
+                    SDL_Log("Stopping text input for window %" SDL_PRIu32, event.button.windowID);
                     SDL_StopTextInput(window);
                 } else {
-                    SDL_Log("Starting text input for window %" SDL_PRIu32 "\n", event.button.windowID);
+                    SDL_Log("Starting text input for window %" SDL_PRIu32, event.button.windowID);
                     SDL_StartTextInput(window);
                 }
             }
             break;
         case SDL_EVENT_KEYMAP_CHANGED:
-            SDL_Log("Keymap changed!\n");
+            SDL_Log("Keymap changed!");
             break;
         case SDL_EVENT_QUIT:
             done = 1;
@@ -466,13 +466,13 @@ int main(int argc, char *argv[])
 
     /* Initialize SDL */
     if (!SDLTest_CommonInit(state)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
     windowstates = (TextWindowState *)SDL_calloc(state->num_windows, sizeof(*windowstates));
     if (!windowstates) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't allocate text windows: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't allocate text windows: %s", SDL_GetError());
         goto done;
     }
 

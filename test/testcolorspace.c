@@ -64,12 +64,12 @@ static void UpdateHDRState(void)
     props = SDL_GetWindowProperties(window);
     HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
 
-    SDL_Log("HDR %s\n", HDR_enabled ? "enabled" : "disabled");
+    SDL_Log("HDR %s", HDR_enabled ? "enabled" : "disabled");
 
     if (HDR_enabled) {
         props = SDL_GetRendererProperties(renderer);
         if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SRGB_LINEAR) {
-            SDL_Log("Run with --colorspace linear to display HDR colors\n");
+            SDL_Log("Run with --colorspace linear to display HDR colors");
         }
         HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT, 1.0f);
     }
@@ -86,12 +86,12 @@ static void CreateRenderer(void)
     renderer = SDL_CreateRendererWithProperties(props);
     SDL_DestroyProperties(props);
     if (!renderer) {
-        SDL_Log("Couldn't create renderer: %s\n", SDL_GetError());
+        SDL_Log("Couldn't create renderer: %s", SDL_GetError());
         return;
     }
 
     renderer_name = SDL_GetRendererName(renderer);
-    SDL_Log("Created renderer %s\n", renderer_name);
+    SDL_Log("Created renderer %s", renderer_name);
 
     UpdateHDRState();
 }
@@ -159,11 +159,11 @@ static bool ReadPixel(int x, int y, SDL_Color *c)
         if (SDL_ReadSurfacePixel(surface, 0, 0, &c->r, &c->g, &c->b, &c->a)) {
             result = true;
         } else {
-            SDL_Log("Couldn't read pixel: %s\n", SDL_GetError());
+            SDL_Log("Couldn't read pixel: %s", SDL_GetError());
         }
         SDL_DestroySurface(surface);
     } else {
-        SDL_Log("Couldn't read back pixels: %s\n", SDL_GetError());
+        SDL_Log("Couldn't read back pixels: %s", SDL_GetError());
     }
     return result;
 }
@@ -662,7 +662,7 @@ static void loop(void)
 
 static void LogUsage(const char *argv0)
 {
-    SDL_Log("Usage: %s [--renderer renderer] [--colorspace colorspace]\n", argv0);
+    SDL_Log("Usage: %s [--renderer renderer] [--colorspace colorspace]", argv0);
 }
 
 int main(int argc, char *argv[])
@@ -691,7 +691,7 @@ int main(int argc, char *argv[])
                     colorspace = SDL_COLORSPACE_HDR10;
 */
                 } else {
-                    SDL_Log("Unknown colorspace %s\n", argv[i + 1]);
+                    SDL_Log("Unknown colorspace %s", argv[i + 1]);
                     goto quit;
                 }
                 ++i;
@@ -707,20 +707,20 @@ int main(int argc, char *argv[])
 
     window = SDL_CreateWindow("SDL colorspace test", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     if (!window) {
-        SDL_Log("Couldn't create window: %s\n", SDL_GetError());
+        SDL_Log("Couldn't create window: %s", SDL_GetError());
         return_code = 2;
         goto quit;
     }
 
     renderer_count = SDL_GetNumRenderDrivers();
-    SDL_Log("There are %d render drivers:\n", renderer_count);
+    SDL_Log("There are %d render drivers:", renderer_count);
     for (i = 0; i < renderer_count; ++i) {
         const char *name = SDL_GetRenderDriver(i);
 
         if (renderer_name && SDL_strcasecmp(renderer_name, name) == 0) {
             renderer_index = i;
         }
-        SDL_Log("    %s\n", name);
+        SDL_Log("    %s", name);
     }
     CreateRenderer();
 

@@ -67,7 +67,7 @@ static int LoadSprite(const char *file)
             return -1;
         }
         if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
             return -1;
         }
@@ -502,7 +502,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     sprites =
         (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
     if (!sprites) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         return SDL_APP_FAILURE;
     }
     for (i = 0; i < state->num_windows; ++i) {
@@ -518,7 +518,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     positions = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*positions));
     velocities = (SDL_FRect *)SDL_malloc(num_sprites * sizeof(*velocities));
     if (!positions || !velocities) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         return SDL_APP_FAILURE;
     }
 
@@ -588,7 +588,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         /* Print out some timing information */
         const Uint64 then = next_fps_check - fps_check_delay;
         const double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
         next_fps_check = now + fps_check_delay;
         frames = 0;
     }

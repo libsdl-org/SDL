@@ -28,7 +28,7 @@
 #define DEBUG_AUDIO_CONVERT 0
 
 #if DEBUG_AUDIO_CONVERT
-#define LOG_DEBUG_AUDIO_CONVERT(from, to) SDL_Log("SDL_AUDIO_CONVERT: Converting %s to %s.\n", from, to);
+#define LOG_DEBUG_AUDIO_CONVERT(from, to) SDL_Log("SDL_AUDIO_CONVERT: Converting %s to %s.", from, to);
 #else
 #define LOG_DEBUG_AUDIO_CONVERT(from, to)
 #endif

@@ -52,7 +52,7 @@ ThreadFunc(void *data)
     int i;
     int tid = (int)(uintptr_t)data;
 
-    SDL_Log("Creating Thread %d\n", tid);
+    SDL_Log("Creating Thread %d", tid);
 
     for (i = 0; i < NUMTHREADS; i++) {
         char name[64];
@@ -61,18 +61,18 @@ ThreadFunc(void *data)
         sub_threads[i] = SDL_CreateThread(SubThreadFunc, name, &flags[i]);
     }
 
-    SDL_Log("Thread '%d' waiting for signal\n", tid);
+    SDL_Log("Thread '%d' waiting for signal", tid);
     while (SDL_GetAtomicInt(&time_for_threads_to_die[tid]) != 1) {
         ; /* do nothing */
     }
 
-    SDL_Log("Thread '%d' sending signals to subthreads\n", tid);
+    SDL_Log("Thread '%d' sending signals to subthreads", tid);
     for (i = 0; i < NUMTHREADS; i++) {
         SDL_SetAtomicInt(&flags[i], 1);
         SDL_WaitThread(sub_threads[i], NULL);
     }
 
-    SDL_Log("Thread '%d' exiting!\n", tid);
+    SDL_Log("Thread '%d' exiting!", tid);
 
     return 0;
 }
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
         threads[i] = SDL_CreateThread(ThreadFunc, name, (void *)(uintptr_t)i);
 
         if (threads[i] == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s", SDL_GetError());
             quit(1);
         }
     }

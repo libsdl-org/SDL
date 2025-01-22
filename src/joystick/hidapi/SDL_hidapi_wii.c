@@ -1364,7 +1364,7 @@ static void HandleStatus(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
     // The report data format has been reset, need to update it
     ResetButtonPacketType(ctx);
 
-    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Status update, extension %s\n", hasExtension ? "CONNECTED" : "DISCONNECTED");
+    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Status update, extension %s", hasExtension ? "CONNECTED" : "DISCONNECTED");
 
     /* When Motion Plus is active, we get extension connect/disconnect status
      * through the Motion Plus packets. Otherwise we can use the status here.
@@ -1404,7 +1404,7 @@ static void HandleResponse(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
         if (ParseExtensionIdentifyResponse(ctx, &extension)) {
             if ((extension & WII_EXTENSION_MOTIONPLUS_MASK) == WII_EXTENSION_MOTIONPLUS_ID) {
                 // Motion Plus is currently active
-                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Motion Plus CONNECTED (stage %d)\n", ctx->m_eCommState == k_eWiiCommunicationState_CheckMotionPlusStage1 ? 1 : 2);
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Motion Plus CONNECTED (stage %d)", ctx->m_eCommState == k_eWiiCommunicationState_CheckMotionPlusStage1 ? 1 : 2);
 
                 if (!ctx->m_bMotionPlusPresent) {
                     // Reinitialize to get new sensor availability
@@ -1420,7 +1420,7 @@ static void HandleResponse(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick)
 
             } else {
                 // Motion Plus is not present
-                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Motion Plus DISCONNECTED (stage %d)\n", ctx->m_eCommState == k_eWiiCommunicationState_CheckMotionPlusStage1 ? 1 : 2);
+                SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Motion Plus DISCONNECTED (stage %d)", ctx->m_eCommState == k_eWiiCommunicationState_CheckMotionPlusStage1 ? 1 : 2);
 
                 if (ctx->m_bMotionPlusPresent) {
                     // Reinitialize to get new sensor availability
@@ -1443,7 +1443,7 @@ static void HandleButtonPacket(SDL_DriverWii_Context *ctx, SDL_Joystick *joystic
 
     // FIXME: This should see if the data format is compatible rather than equal
     if (eExpectedReport != ctx->m_rgucReadBuffer[0]) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Resetting report mode to %d\n", eExpectedReport);
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Resetting report mode to %d", eExpectedReport);
         RequestButtonPacketType(ctx, eExpectedReport);
     }
 

@@ -42,7 +42,7 @@ SDL_Quit_Wrapper(void)
 
 static void printid(void)
 {
-    SDL_Log("Thread %" SDL_PRIu64 ":  exiting\n", SDL_GetCurrentThreadID());
+    SDL_Log("Thread %" SDL_PRIu64 ":  exiting", SDL_GetCurrentThreadID());
 }
 
 static void terminate(int sig)
@@ -55,7 +55,7 @@ static void closemutex(int sig)
 {
     SDL_ThreadID id = SDL_GetCurrentThreadID();
     int i;
-    SDL_Log("Thread %" SDL_PRIu64 ":  Cleaning up...\n", id == mainthread ? 0 : id);
+    SDL_Log("Thread %" SDL_PRIu64 ":  Cleaning up...", id == mainthread ? 0 : id);
     SDL_SetAtomicInt(&doterminate, 1);
     if (threads) {
         for (i = 0; i < nb_threads; ++i) {
@@ -81,21 +81,21 @@ Run(void *data)
     }
     SDL_Log("Thread %" SDL_PRIu64 ": starting up", current_thread);
     while (!SDL_GetAtomicInt(&doterminate)) {
-        SDL_Log("Thread %" SDL_PRIu64 ": ready to work\n", current_thread);
+        SDL_Log("Thread %" SDL_PRIu64 ": ready to work", current_thread);
         SDL_LockMutex(mutex);
-        SDL_Log("Thread %" SDL_PRIu64 ": start work!\n", current_thread);
+        SDL_Log("Thread %" SDL_PRIu64 ": start work!", current_thread);
         SDL_Delay(1 * worktime);
-        SDL_Log("Thread %" SDL_PRIu64 ": work done!\n", current_thread);
+        SDL_Log("Thread %" SDL_PRIu64 ": work done!", current_thread);
         SDL_UnlockMutex(mutex);
 
         /* If this sleep isn't done, then threads may starve */
         SDL_Delay(10);
     }
     if (current_thread == mainthread && SDL_GetAtomicInt(&doterminate)) {
-        SDL_Log("Thread %" SDL_PRIu64 ": raising SIGTERM\n", current_thread);
+        SDL_Log("Thread %" SDL_PRIu64 ": raising SIGTERM", current_thread);
         (void)raise(SIGTERM);
     }
-    SDL_Log("Thread %" SDL_PRIu64 ": exiting!\n", current_thread);
+    SDL_Log("Thread %" SDL_PRIu64 ": exiting!", current_thread);
     return 0;
 }
 
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 
     /* Load the SDL library */
     if (!SDL_Init(0)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s", SDL_GetError());
         exit(1);
     }
     (void)atexit(SDL_Quit_Wrapper);
@@ -183,19 +183,19 @@ int main(int argc, char *argv[])
 
     mutex = SDL_CreateMutex();
     if (!mutex) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create mutex: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create mutex: %s", SDL_GetError());
         exit(1);
     }
 
     mainthread = SDL_GetCurrentThreadID();
-    SDL_Log("Main thread: %" SDL_PRIu64 "\n", mainthread);
+    SDL_Log("Main thread: %" SDL_PRIu64, mainthread);
     (void)atexit(printid);
     for (i = 0; i < nb_threads; ++i) {
         char name[64];
         (void)SDL_snprintf(name, sizeof(name), "Worker%d", i);
         threads[i] = SDL_CreateThread(Run, name, NULL);
         if (threads[i] == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread!\n");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread!");
         }
     }
 

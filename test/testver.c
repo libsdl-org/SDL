@@ -25,15 +25,15 @@ int main(int argc, char *argv[])
     }
 
 #if SDL_VERSION_ATLEAST(3, 0, 0)
-    SDL_Log("Compiled with SDL 3.0 or newer\n");
+    SDL_Log("Compiled with SDL 3.0 or newer");
 #else
-    SDL_Log("Compiled with SDL older than 3.0\n");
+    SDL_Log("Compiled with SDL older than 3.0");
 #endif
-    SDL_Log("Compiled version: %d.%d.%d (%s)\n",
+    SDL_Log("Compiled version: %d.%d.%d (%s)",
             SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_MICRO_VERSION,
             SDL_REVISION);
     int version = SDL_GetVersion();
-    SDL_Log("Runtime version: %d.%d.%d (%s)\n",
+    SDL_Log("Runtime version: %d.%d.%d (%s)",
             SDL_VERSIONNUM_MAJOR(version), SDL_VERSIONNUM_MINOR(version), SDL_VERSIONNUM_MICRO(version),
             SDL_GetRevision());
     SDL_Quit();

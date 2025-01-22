@@ -127,7 +127,7 @@ SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transpar
 
         texture = SDL_CreateTextureFromSurface(renderer, temp);
         if (!texture) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s", SDL_GetError());
         }
     }
     SDL_DestroySurface(temp);

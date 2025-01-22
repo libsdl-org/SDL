@@ -661,7 +661,7 @@ static bool OPENVR_SetupFrame(SDL_VideoDevice *_this, SDL_Window *window)
     {
         int error = ov_glGetError();
         if (error)
-            SDL_Log("Found GL Error before beginning frame: %d / (Framebuffer:%d)\n", error, ov_glCheckNamedFramebufferStatus(videodata->fbo, GL_FRAMEBUFFER));
+            SDL_Log("Found GL Error before beginning frame: %d / (Framebuffer:%d)", error, ov_glCheckNamedFramebufferStatus(videodata->fbo, GL_FRAMEBUFFER));
     }
 #endif
 
@@ -698,7 +698,7 @@ static bool OPENVR_ReleaseFrame(SDL_VideoDevice *_this)
     {
         int error = ov_glGetError();
         if (error) {
-            SDL_Log("Found GL Error before release frame: %d / (Framebuffer:%d)\n", error, ov_glCheckNamedFramebufferStatus(videodata->fbo, GL_FRAMEBUFFER));
+            SDL_Log("Found GL Error before release frame: %d / (Framebuffer:%d)", error, ov_glCheckNamedFramebufferStatus(videodata->fbo, GL_FRAMEBUFFER));
         }
     }
 #endif
@@ -895,7 +895,7 @@ static SDL_GLContext OPENVR_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window 
         const char *ccc = (const char *)ov_glGetStringi(GL_EXTENSIONS, i);
         if (SDL_strcmp(ccc, "GL_KHR_debug") == 0) {
 #ifdef DEBUG_OPENVR
-            SDL_Log("Found renderdoc debug extension.\n");
+            SDL_Log("Found renderdoc debug extension.");
 #endif
             videodata->renderdoc_debugmarker_frame_end = true;
         }
@@ -968,7 +968,7 @@ static bool SDL_EGL_InitInternal(SDL_VideoData * vd)
 
     vd->eglDpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 #ifdef DEBUG_OPENVR
-    SDL_Log("EGL Display: %p\n", vd->eglDpy);
+    SDL_Log("EGL Display: %p", vd->eglDpy);
 #endif
 
     if (vd->eglDpy == 0) {
@@ -1040,7 +1040,7 @@ static SDL_GLContext OVR_EGL_CreateContext(SDL_VideoDevice *_this, SDL_Window * 
         const char * ccc = (const char*)ov_glGetStringi(GL_EXTENSIONS, i);
         if (SDL_strcmp(ccc, "GL_KHR_debug") == 0) {
 #ifdef DEBUG_OPENVR
-           SDL_Log("Found renderdoc debug extension.\n");
+           SDL_Log("Found renderdoc debug extension.");
 #endif
            videodata->renderdoc_debugmarker_frame_end = true;
         }

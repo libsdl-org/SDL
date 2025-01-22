@@ -240,7 +240,7 @@ void SDL_SetObjectsInvalid(void)
                 type = "unknown object";
                 break;
             }
-            SDL_Log("Leaked %s (%p)\n", type, object);
+            SDL_Log("Leaked %s (%p)", type, object);
         }
         SDL_assert(SDL_HashTableEmpty(SDL_objects));
 

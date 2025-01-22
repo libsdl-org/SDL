@@ -132,14 +132,14 @@ int main(int argc, char *argv[])
 
     /* Initialize SDL */
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init fail : %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init fail : %s", SDL_GetError());
         return 1;
     }
 
     /* Create window and renderer for given surface */
     window = SDL_CreateWindow("Chess Board", 640, 480, SDL_WINDOW_RESIZABLE);
     if (!window) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s", SDL_GetError());
         return 1;
     }
 #ifdef USE_SOFTWARE_RENDERER
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
     renderer = SDL_CreateRenderer(window, NULL);
 #endif
     if (!renderer) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Render creation for surface fail : %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Render creation for surface fail : %s", SDL_GetError());
         return 1;
     }
 

@@ -521,11 +521,11 @@ static bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCo
         }
 
         if (!waitForReply || ReadProprietaryReply(ctx, ucCommand)) {
-            // SDL_Log("Succeeded%s after %d tries\n", ctx->m_bSyncWrite ? " (sync)" : "", nTries);
+            // SDL_Log("Succeeded%s after %d tries", ctx->m_bSyncWrite ? " (sync)" : "", nTries);
             return true;
         }
     }
-    // SDL_Log("Failed%s after %d tries\n", ctx->m_bSyncWrite ? " (sync)" : "", nTries);
+    // SDL_Log("Failed%s after %d tries", ctx->m_bSyncWrite ? " (sync)" : "", nTries);
     return false;
 }
 
@@ -579,7 +579,7 @@ static void EncodeRumble(SwitchRumbleData_t *pRumble, Uint16 usHighFreq, Uint8 u
         pRumble->rgucData[3] = usLowFreqAmp & 0xFF;
 
 #ifdef DEBUG_RUMBLE
-        SDL_Log("Freq: %.2X %.2X  %.2X, Amp: %.2X  %.2X %.2X\n",
+        SDL_Log("Freq: %.2X %.2X  %.2X, Amp: %.2X  %.2X %.2X",
                 usHighFreq & 0xFF, ((usHighFreq >> 8) & 0x01), ucLowFreq,
                 ucHighFreqAmp, ((usLowFreqAmp >> 8) & 0x80), usLowFreqAmp & 0xFF);
 #endif
@@ -1647,7 +1647,7 @@ static bool HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
         Uint16 high_frequency_rumble = (Uint16)ctx->m_unRumblePending;
 
 #ifdef DEBUG_RUMBLE
-        SDL_Log("Sent pending rumble %d/%d, %d ms after previous rumble\n", low_frequency_rumble, high_frequency_rumble, SDL_GetTicks() - ctx->m_ulRumbleSent);
+        SDL_Log("Sent pending rumble %d/%d, %d ms after previous rumble", low_frequency_rumble, high_frequency_rumble, SDL_GetTicks() - ctx->m_ulRumbleSent);
 #endif
         ctx->m_bRumblePending = false;
         ctx->m_unRumblePending = 0;
@@ -1659,7 +1659,7 @@ static bool HIDAPI_DriverSwitch_SendPendingRumble(SDL_DriverSwitch_Context *ctx)
         ctx->m_bRumbleZeroPending = false;
 
 #ifdef DEBUG_RUMBLE
-        SDL_Log("Sent pending zero rumble, %d ms after previous rumble\n", SDL_GetTicks() - ctx->m_ulRumbleSent);
+        SDL_Log("Sent pending zero rumble, %d ms after previous rumble", SDL_GetTicks() - ctx->m_ulRumbleSent);
 #endif
         return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, 0, 0);
     }
@@ -1709,7 +1709,7 @@ static bool HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     }
 
 #ifdef DEBUG_RUMBLE
-    SDL_Log("Sent rumble %d/%d\n", low_frequency_rumble, high_frequency_rumble);
+    SDL_Log("Sent rumble %d/%d", low_frequency_rumble, high_frequency_rumble);
 #endif
 
     return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_frequency_rumble, high_frequency_rumble);
@@ -2719,7 +2719,7 @@ static bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
         } else if (ctx->m_bRumbleActive &&
                    now >= (ctx->m_ulRumbleSent + RUMBLE_REFRESH_FREQUENCY_MS)) {
 #ifdef DEBUG_RUMBLE
-            SDL_Log("Sent continuing rumble, %d ms after previous rumble\n", now - ctx->m_ulRumbleSent);
+            SDL_Log("Sent continuing rumble, %d ms after previous rumble", now - ctx->m_ulRumbleSent);
 #endif
             WriteRumble(ctx);
         }

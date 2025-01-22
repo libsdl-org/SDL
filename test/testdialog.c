@@ -33,14 +33,14 @@ static void SDLCALL callback(void* userdata, const char* const* files, int filte
             }
         }
 
-        SDL_Log("Filter used: '%s'\n", filter_name);
+        SDL_Log("Filter used: '%s'", filter_name);
 
         while (*files) {
-            SDL_Log("'%s'\n", *files);
+            SDL_Log("'%s'", *files);
             files++;
         }
     } else {
-        SDL_Log("Error: %s\n", SDL_GetError());
+        SDL_Log("Error: %s", SDL_GetError());
     }
 }
 
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
         return 1;
     }
     if (!SDL_CreateWindowAndRenderer("testdialog", 640, 480, 0, &w, &r)) {
-        SDL_Log("Failed to create window and/or renderer: %s\n", SDL_GetError());
+        SDL_Log("Failed to create window and/or renderer: %s", SDL_GetError());
         SDL_Quit();
         return 1;
     }
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
     initial_path = SDL_GetUserFolder(SDL_FOLDER_HOME);
 
     if (!initial_path) {
-        SDL_Log("Will not use an initial path, couldn't get the home directory path: %s\n", SDL_GetError());
+        SDL_Log("Will not use an initial path, couldn't get the home directory path: %s", SDL_GetError());
     }
 
     while (1) {

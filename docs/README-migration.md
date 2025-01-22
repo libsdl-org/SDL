@@ -193,7 +193,7 @@ Rather than iterating over audio devices using a device index, there are new fun
         if (devices) {
             for (i = 0; i < num_devices; ++i) {
                 SDL_AudioDeviceID instance_id = devices[i];
-                SDL_Log("AudioDevice %" SDL_PRIu32 ": %s\n", instance_id, SDL_GetAudioDeviceName(instance_id));
+                SDL_Log("AudioDevice %" SDL_PRIu32 ": %s", instance_id, SDL_GetAudioDeviceName(instance_id));
             }
             SDL_free(devices);
         }
@@ -749,7 +749,7 @@ Rather than iterating over haptic devices using device index, there is a new fun
         if (haptics) {
             for (i = 0; i < num_haptics; ++i) {
                 SDL_HapticID instance_id = haptics[i];
-                SDL_Log("Haptic %" SDL_PRIu32 ": %s\n", instance_id, SDL_GetHapticNameForID(instance_id));
+                SDL_Log("Haptic %" SDL_PRIu32 ": %s", instance_id, SDL_GetHapticNameForID(instance_id));
             }
             SDL_free(haptics);
         }
@@ -917,7 +917,7 @@ Rather than iterating over joysticks using device index, there is a new function
                 const char *name = SDL_GetJoystickNameForID(instance_id);
                 const char *path = SDL_GetJoystickPathForID(instance_id);
 
-                SDL_Log("Joystick %" SDL_PRIu32 ": %s%s%s VID 0x%.4x, PID 0x%.4x\n",
+                SDL_Log("Joystick %" SDL_PRIu32 ": %s%s%s VID 0x%.4x, PID 0x%.4x",
                         instance_id, name ? name : "Unknown", path ? ", " : "", path ? path : "", SDL_GetJoystickVendorForID(instance_id), SDL_GetJoystickProductForID(instance_id));
             }
             SDL_free(joysticks);
@@ -1696,7 +1696,7 @@ Rather than iterating over sensors using device index, there is a new function S
         SDL_SensorID *sensors = SDL_GetSensors(&num_sensors);
         if (sensors) {
             for (i = 0; i < num_sensors; ++i) {
-                SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %d, platform type %d\n",
+                SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %d, platform type %d",
                         sensors[i],
                         SDL_GetSensorNameForID(sensors[i]),
                         SDL_GetSensorTypeForID(sensors[i]),
@@ -2121,7 +2121,7 @@ Rather than iterating over displays using display index, there is a new function
                 SDL_DisplayID instance_id = displays[i];
                 const char *name = SDL_GetDisplayName(instance_id);
 
-                SDL_Log("Display %" SDL_PRIu32 ": %s\n", instance_id, name ? name : "Unknown");
+                SDL_Log("Display %" SDL_PRIu32 ": %s", instance_id, name ? name : "Unknown");
             }
             SDL_free(displays);
         }
@@ -2167,7 +2167,7 @@ Rather than iterating over display modes using an index, there is a new function
     if (modes) {
         for (i = 0; i < num_modes; ++i) {
             SDL_DisplayMode *mode = modes[i];
-            SDL_Log("Display %" SDL_PRIu32 " mode %d: %dx%d@%gx %gHz\n",
+            SDL_Log("Display %" SDL_PRIu32 " mode %d: %dx%d@%gx %gHz",
                     display, i, mode->w, mode->h, mode->pixel_density, mode->refresh_rate);
         }
         SDL_free(modes);

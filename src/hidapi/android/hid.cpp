@@ -1028,7 +1028,7 @@ extern "C"
 
 static void SDLCALL RequestBluetoothPermissionCallback( void *userdata, const char *permission, bool granted )
 {
-	SDL_Log( "Bluetooth permission %s\n", granted ? "granted" : "denied" );
+	SDL_Log( "Bluetooth permission %s", granted ? "granted" : "denied" );
 
 	if ( granted && g_HIDDeviceManagerCallbackHandler )
 	{

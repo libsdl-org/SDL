@@ -52,7 +52,7 @@ static void SDLCALL change_icon(void *ptr, SDL_TrayEntry *entry)
 
 static void SDLCALL print_entry(void *ptr, SDL_TrayEntry *entry)
 {
-    SDL_Log("Clicked on button '%s'\n", SDL_GetTrayEntryLabel(entry));
+    SDL_Log("Clicked on button '%s'", SDL_GetTrayEntryLabel(entry));
 }
 
 static void SDLCALL set_entry_enabled(void *ptr, SDL_TrayEntry *entry)
@@ -88,7 +88,7 @@ static void SDLCALL remove_entry(void *ptr, SDL_TrayEntry *entry)
     SDL_TrayEntry *ctrl_entry = SDL_GetTrayMenuParentEntry(ctrl_submenu);
 
     if (!ctrl_entry) {
-        SDL_Log("Attempt to remove a menu that isn't a submenu. This shouldn't happen.\n");
+        SDL_Log("Attempt to remove a menu that isn't a submenu. This shouldn't happen.");
         return;
     }
 
@@ -108,7 +108,7 @@ static void SDLCALL append_button_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl = SDL_InsertTrayEntryAt(SDL_GetTrayEntryParent(entry), -1, "New button", SDL_TRAYENTRY_SUBMENU);
 
     if (!new_ctrl) {
-        SDL_Log("Couldn't insert entry in control tray: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry in control tray: %s", SDL_GetError());
         return;
     }
 
@@ -117,7 +117,7 @@ static void SDLCALL append_button_to(void *ptr, SDL_TrayEntry *entry)
     submenu = SDL_CreateTraySubmenu(new_ctrl);
 
     if (!new_ctrl) {
-        SDL_Log("Couldn't create control tray entry submenu: %s\n", SDL_GetError());
+        SDL_Log("Couldn't create control tray entry submenu: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         return;
     }
@@ -127,7 +127,7 @@ static void SDLCALL append_button_to(void *ptr, SDL_TrayEntry *entry)
     new_example = SDL_InsertTrayEntryAt(menu, -1, "New button", SDL_TRAYENTRY_BUTTON);
 
     if (new_example == NULL) {
-        SDL_Log("Couldn't insert entry in example tray: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry in example tray: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         return;
     }
@@ -139,7 +139,7 @@ static void SDLCALL append_button_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_remove = SDL_InsertTrayEntryAt(submenu, -1, "Remove", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_remove == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_remove: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_remove: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -152,7 +152,7 @@ static void SDLCALL append_button_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_enabled = SDL_InsertTrayEntryAt(submenu, -1, "Enable", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_enabled == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_enabled: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_enabled: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -165,7 +165,7 @@ static void SDLCALL append_button_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_disabled = SDL_InsertTrayEntryAt(submenu, -1, "Disable", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_disabled == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_disabled: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_disabled: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -189,7 +189,7 @@ static void SDLCALL append_checkbox_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl = SDL_InsertTrayEntryAt(SDL_GetTrayEntryParent(entry), -1, "New checkbox", SDL_TRAYENTRY_SUBMENU);
 
     if (!new_ctrl) {
-        SDL_Log("Couldn't insert entry in control tray: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry in control tray: %s", SDL_GetError());
         return;
     }
 
@@ -198,7 +198,7 @@ static void SDLCALL append_checkbox_to(void *ptr, SDL_TrayEntry *entry)
     submenu = SDL_CreateTraySubmenu(new_ctrl);
 
     if (!new_ctrl) {
-        SDL_Log("Couldn't create control tray entry submenu: %s\n", SDL_GetError());
+        SDL_Log("Couldn't create control tray entry submenu: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         return;
     }
@@ -208,7 +208,7 @@ static void SDLCALL append_checkbox_to(void *ptr, SDL_TrayEntry *entry)
     new_example = SDL_InsertTrayEntryAt(menu, -1, "New checkbox", SDL_TRAYENTRY_CHECKBOX);
 
     if (new_example == NULL) {
-        SDL_Log("Couldn't insert entry in example tray: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry in example tray: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         return;
     }
@@ -220,7 +220,7 @@ static void SDLCALL append_checkbox_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_remove = SDL_InsertTrayEntryAt(submenu, -1, "Remove", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_remove == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_remove: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_remove: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -233,7 +233,7 @@ static void SDLCALL append_checkbox_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_enabled = SDL_InsertTrayEntryAt(submenu, -1, "Enable", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_enabled == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_enabled: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_enabled: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -246,7 +246,7 @@ static void SDLCALL append_checkbox_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_disabled = SDL_InsertTrayEntryAt(submenu, -1, "Disable", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_disabled == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_disabled: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_disabled: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -259,7 +259,7 @@ static void SDLCALL append_checkbox_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_checked = SDL_InsertTrayEntryAt(submenu, -1, "Check", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_checked == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_checked: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_checked: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -272,7 +272,7 @@ static void SDLCALL append_checkbox_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_unchecked = SDL_InsertTrayEntryAt(submenu, -1, "Uncheck", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_unchecked == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_unchecked: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_unchecked: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -292,7 +292,7 @@ static void SDLCALL append_separator_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl = SDL_InsertTrayEntryAt(SDL_GetTrayEntryParent(entry), -1, "[Separator]", SDL_TRAYENTRY_SUBMENU);
 
     if (!new_ctrl) {
-        SDL_Log("Couldn't insert entry in control tray: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry in control tray: %s", SDL_GetError());
         return;
     }
 
@@ -301,7 +301,7 @@ static void SDLCALL append_separator_to(void *ptr, SDL_TrayEntry *entry)
     submenu = SDL_CreateTraySubmenu(new_ctrl);
 
     if (!new_ctrl) {
-        SDL_Log("Couldn't create control tray entry submenu: %s\n", SDL_GetError());
+        SDL_Log("Couldn't create control tray entry submenu: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         return;
     }
@@ -311,7 +311,7 @@ static void SDLCALL append_separator_to(void *ptr, SDL_TrayEntry *entry)
     new_example = SDL_InsertTrayEntryAt(menu, -1, NULL, SDL_TRAYENTRY_BUTTON);
 
     if (new_example == NULL) {
-        SDL_Log("Couldn't insert separator in example tray: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert separator in example tray: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         return;
     }
@@ -321,7 +321,7 @@ static void SDLCALL append_separator_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_remove = SDL_InsertTrayEntryAt(submenu, -1, "Remove", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_remove == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_remove: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_remove: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -344,7 +344,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl = SDL_InsertTrayEntryAt(SDL_GetTrayEntryParent(entry), -1, "New submenu", SDL_TRAYENTRY_SUBMENU);
 
     if (!new_ctrl) {
-        SDL_Log("Couldn't insert entry in control tray: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry in control tray: %s", SDL_GetError());
         return;
     }
 
@@ -353,7 +353,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     submenu = SDL_CreateTraySubmenu(new_ctrl);
 
     if (!new_ctrl) {
-        SDL_Log("Couldn't create control tray entry submenu: %s\n", SDL_GetError());
+        SDL_Log("Couldn't create control tray entry submenu: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         return;
     }
@@ -363,7 +363,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     new_example = SDL_InsertTrayEntryAt(menu, -1, "New submenu", SDL_TRAYENTRY_SUBMENU);
 
     if (new_example == NULL) {
-        SDL_Log("Couldn't insert entry in example tray: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry in example tray: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         return;
     }
@@ -375,7 +375,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     entry_submenu = SDL_CreateTraySubmenu(new_example);
 
     if (entry_submenu == NULL) {
-        SDL_Log("Couldn't create new entry submenu: %s\n", SDL_GetError());
+        SDL_Log("Couldn't create new entry submenu: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -386,7 +386,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_remove = SDL_InsertTrayEntryAt(submenu, -1, "Remove", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_remove == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_remove: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_remove: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -399,7 +399,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_enabled = SDL_InsertTrayEntryAt(submenu, -1, "Enable", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_enabled == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_enabled: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_enabled: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -412,7 +412,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     new_ctrl_disabled = SDL_InsertTrayEntryAt(submenu, -1, "Disable", SDL_TRAYENTRY_BUTTON);
 
     if (new_ctrl_disabled == NULL) {
-        SDL_Log("Couldn't insert new_ctrl_disabled: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert new_ctrl_disabled: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -429,7 +429,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     SDL_TrayEntry *entry_newbtn = SDL_InsertTrayEntryAt(submenu, -1, "Create button", SDL_TRAYENTRY_BUTTON);
 
     if (entry_newbtn == NULL) {
-        SDL_Log("Couldn't insert entry_newbtn: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry_newbtn: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -442,7 +442,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     SDL_TrayEntry *entry_newchk = SDL_InsertTrayEntryAt(submenu, -1, "Create checkbox", SDL_TRAYENTRY_BUTTON);
 
     if (entry_newchk == NULL) {
-        SDL_Log("Couldn't insert entry_newchk: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry_newchk: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -455,7 +455,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     SDL_TrayEntry *entry_newsub = SDL_InsertTrayEntryAt(submenu, -1, "Create submenu", SDL_TRAYENTRY_BUTTON);
 
     if (entry_newsub == NULL) {
-        SDL_Log("Couldn't insert entry_newsub: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry_newsub: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;
@@ -468,7 +468,7 @@ static void SDLCALL append_submenu_to(void *ptr, SDL_TrayEntry *entry)
     SDL_TrayEntry *entry_newsep = SDL_InsertTrayEntryAt(submenu, -1, "Create separator", SDL_TRAYENTRY_BUTTON);
 
     if (entry_newsep == NULL) {
-        SDL_Log("Couldn't insert entry_newsep: %s\n", SDL_GetError());
+        SDL_Log("Couldn't insert entry_newsep: %s", SDL_GetError());
         SDL_RemoveTrayEntry(new_ctrl);
         SDL_RemoveTrayEntry(new_example);
         return;

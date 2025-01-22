@@ -27,7 +27,7 @@
 
 #define TESTGPU_SUPPORTED_FORMATS (SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXBC | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_METALLIB)
 
-#define CHECK_CREATE(var, thing) { if (!(var)) { SDL_Log("Failed to create %s: %s\n", thing, SDL_GetError()); quit(2); } }
+#define CHECK_CREATE(var, thing) { if (!(var)) { SDL_Log("Failed to create %s: %s", thing, SDL_GetError()); quit(2); } }
 
 static Uint32 frames = 0;
 
@@ -641,7 +641,7 @@ init_render_state(int msaa)
 
     window_states = (WindowState *) SDL_calloc(state->num_windows, sizeof (WindowState));
     if (!window_states) {
-        SDL_Log("Out of memory!\n");
+        SDL_Log("Out of memory!");
         quit(2);
     }
 
@@ -729,7 +729,7 @@ main(int argc, char *argv[])
     }
 
     mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(state->windows[0]));
-    SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode->format));
+    SDL_Log("Screen bpp: %d", SDL_BITSPERPIXEL(mode->format));
 
     init_render_state(msaa);
 
@@ -749,7 +749,7 @@ main(int argc, char *argv[])
     /* Print out some timing information */
     now = SDL_GetTicks();
     if (now > then) {
-        SDL_Log("%2.2f frames per second\n",
+        SDL_Log("%2.2f frames per second",
                ((double) frames * 1000) / (now - then));
     }
 #if !defined(__ANDROID__)

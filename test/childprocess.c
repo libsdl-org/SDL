@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
 #else
                     SDL_strlcpy(error, strerror(errno), sizeof(error));
 #endif
-                    SDL_Log("Error reading from stdin: %s\n", error);
+                    SDL_Log("Error reading from stdin: %s", error);
                 }
                 break;
             }

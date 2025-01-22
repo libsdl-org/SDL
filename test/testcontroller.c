@@ -923,9 +923,9 @@ static void AddController(SDL_JoystickID id, bool verbose)
             const char *name = SDL_GetJoystickName(joystick);
             const char *path = SDL_GetJoystickPath(joystick);
             char guid[33];
-            SDL_Log("Opened joystick %s%s%s\n", name, path ? ", " : "", path ? path : "");
+            SDL_Log("Opened joystick %s%s%s", name, path ? ", " : "", path ? path : "");
             SDL_GUIDToString(SDL_GetJoystickGUID(joystick), guid, sizeof(guid));
-            SDL_Log("No gamepad mapping for %s\n", guid);
+            SDL_Log("No gamepad mapping for %s", guid);
         }
     } else {
         SDL_Log("Couldn't open joystick: %s", SDL_GetError());
@@ -1021,7 +1021,7 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
     if (i < 0) {
         return;
     }
-    SDL_Log("Gamepad %" SDL_PRIu32 " added\n", id);
+    SDL_Log("Gamepad %" SDL_PRIu32 " added", id);
 
     SDL_assert(!controllers[i].gamepad);
     controllers[i].gamepad = SDL_OpenGamepad(id);
@@ -1035,11 +1035,11 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
             SDL_GUID guid = SDL_GetGamepadGUIDForID(id);
             char guid_string[33];
             SDL_GUIDToString(guid, guid_string, sizeof(guid_string));
-            SDL_Log("Opened gamepad %s, guid %s%s%s\n", name, guid_string, path ? ", " : "", path ? path : "");
+            SDL_Log("Opened gamepad %s, guid %s%s%s", name, guid_string, path ? ", " : "", path ? path : "");
 
             firmware_version = SDL_GetGamepadFirmwareVersion(gamepad);
             if (firmware_version) {
-                SDL_Log("Firmware version: 0x%x (%d)\n", firmware_version, firmware_version);
+                SDL_Log("Firmware version: 0x%x (%d)", firmware_version, firmware_version);
             }
 
             if (SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_PLAYER_LED_BOOLEAN, false)) {
@@ -1055,7 +1055,7 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
             }
 
             if (SDL_GetGamepadPlayerIndex(gamepad) >= 0) {
-                SDL_Log("Player index: %d\n", SDL_GetGamepadPlayerIndex(gamepad));
+                SDL_Log("Player index: %d", SDL_GetGamepadPlayerIndex(gamepad));
             }
         }
 
@@ -1064,7 +1064,7 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
 
             if (SDL_GamepadHasSensor(gamepad, sensor)) {
                 if (verbose) {
-                    SDL_Log("Enabling %s at %.2f Hz\n", GetSensorName(sensor), SDL_GetGamepadSensorDataRate(gamepad, sensor));
+                    SDL_Log("Enabling %s at %.2f Hz", GetSensorName(sensor), SDL_GetGamepadSensorDataRate(gamepad, sensor));
                 }
                 SDL_SetGamepadSensorEnabled(gamepad, sensor, true);
             }
@@ -1073,7 +1073,7 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
         if (verbose) {
             char *mapping = SDL_GetGamepadMapping(gamepad);
             if (mapping) {
-                SDL_Log("Mapping: %s\n", mapping);
+                SDL_Log("Mapping: %s", mapping);
                 SDL_free(mapping);
             }
         }
@@ -1093,7 +1093,7 @@ static void HandleGamepadRemoved(SDL_JoystickID id)
     if (i < 0) {
         return;
     }
-    SDL_Log("Gamepad %" SDL_PRIu32 " removed\n", id);
+    SDL_Log("Gamepad %" SDL_PRIu32 " removed", id);
 
     if (controllers[i].mapping) {
         SDL_free(controllers[i].mapping);
@@ -1137,24 +1137,24 @@ static bool ShowingFront(void)
 
 static void SDLCALL VirtualGamepadSetPlayerIndex(void *userdata, int player_index)
 {
-    SDL_Log("Virtual Gamepad: player index set to %d\n", player_index);
+    SDL_Log("Virtual Gamepad: player index set to %d", player_index);
 }
 
 static bool SDLCALL VirtualGamepadRumble(void *userdata, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    SDL_Log("Virtual Gamepad: rumble set to %d/%d\n", low_frequency_rumble, high_frequency_rumble);
+    SDL_Log("Virtual Gamepad: rumble set to %d/%d", low_frequency_rumble, high_frequency_rumble);
     return true;
 }
 
 static bool SDLCALL VirtualGamepadRumbleTriggers(void *userdata, Uint16 left_rumble, Uint16 right_rumble)
 {
-    SDL_Log("Virtual Gamepad: trigger rumble set to %d/%d\n", left_rumble, right_rumble);
+    SDL_Log("Virtual Gamepad: trigger rumble set to %d/%d", left_rumble, right_rumble);
     return true;
 }
 
 static bool SDLCALL VirtualGamepadSetLED(void *userdata, Uint8 red, Uint8 green, Uint8 blue)
 {
-    SDL_Log("Virtual Gamepad: LED set to RGB %d,%d,%d\n", red, green, blue);
+    SDL_Log("Virtual Gamepad: LED set to RGB %d,%d,%d", red, green, blue);
     return true;
 }
 
@@ -1184,11 +1184,11 @@ static void OpenVirtualGamepad(void)
 
     virtual_id = SDL_AttachVirtualJoystick(&desc);
     if (virtual_id == 0) {
-        SDL_Log("Couldn't attach virtual device: %s\n", SDL_GetError());
+        SDL_Log("Couldn't attach virtual device: %s", SDL_GetError());
     } else {
         virtual_joystick = SDL_OpenJoystick(virtual_id);
         if (!virtual_joystick) {
-            SDL_Log("Couldn't open virtual device: %s\n", SDL_GetError());
+            SDL_Log("Couldn't open virtual device: %s", SDL_GetError());
         }
     }
 }
@@ -1620,7 +1620,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
             }
 
 #ifdef DEBUG_AXIS_MAPPING
-            SDL_Log("AXIS %d nValue %d nCurrentDistance %d nFarthestDistance %d\n", event->jaxis.axis, nValue, nCurrentDistance, nFarthestDistance);
+            SDL_Log("AXIS %d nValue %d nCurrentDistance %d nFarthestDistance %d", event->jaxis.axis, nValue, nCurrentDistance, nFarthestDistance);
 #endif
             /* If we've gone out far enough and started to come back, let's bind this axis */
             if (nFarthestDistance >= 16000 && nCurrentDistance <= 10000) {
@@ -1642,7 +1642,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
                     }
                 }
 #ifdef DEBUG_AXIS_MAPPING
-                SDL_Log("AXIS %d axis_min = %d, axis_max = %d, binding = %s\n", event->jaxis.axis, axis_min, axis_max, binding);
+                SDL_Log("AXIS %d axis_min = %d, axis_max = %d, binding = %s", event->jaxis.axis, axis_min, axis_max, binding);
 #endif
                 CommitBindingElement(binding, false);
             }
@@ -1698,7 +1698,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
     case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
     case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
     case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
-        SDL_Log("Gamepad %" SDL_PRIu32 " touchpad %" SDL_PRIs32 " finger %" SDL_PRIs32 " %s %.2f, %.2f, %.2f\n",
+        SDL_Log("Gamepad %" SDL_PRIu32 " touchpad %" SDL_PRIs32 " finger %" SDL_PRIs32 " %s %.2f, %.2f, %.2f",
                 event->gtouchpad.which,
                 event->gtouchpad.touchpad,
                 event->gtouchpad.finger,
@@ -1711,7 +1711,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
 
 #ifdef VERBOSE_SENSORS
     case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
-        SDL_Log("Gamepad %" SDL_PRIu32 " sensor %s: %.2f, %.2f, %.2f (%" SDL_PRIu64 ")\n",
+        SDL_Log("Gamepad %" SDL_PRIu32 " sensor %s: %.2f, %.2f, %.2f (%" SDL_PRIu64 ")",
                 event->gsensor.which,
                 GetSensorName((SDL_SensorType) event->gsensor.sensor),
                 event->gsensor.data[0],
@@ -1728,7 +1728,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
                 SetController(event->gaxis.which);
             }
         }
-        SDL_Log("Gamepad %" SDL_PRIu32 " axis %s changed to %d\n",
+        SDL_Log("Gamepad %" SDL_PRIu32 " axis %s changed to %d",
                 event->gaxis.which,
                 SDL_GetGamepadStringForAxis((SDL_GamepadAxis) event->gaxis.axis),
                 event->gaxis.value);
@@ -1743,7 +1743,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
             }
         }
 #ifdef VERBOSE_BUTTONS
-        SDL_Log("Gamepad %" SDL_PRIu32 " button %s %s\n",
+        SDL_Log("Gamepad %" SDL_PRIu32 " button %s %s",
                 event->gbutton.which,
                 SDL_GetGamepadStringForButton((SDL_GamepadButton) event->gbutton.button),
                 event->gbutton.state ? "pressed" : "released");
@@ -1784,8 +1784,8 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         } else if (display_mode == CONTROLLER_MODE_BINDING) {
             if (GamepadButtonContains(done_mapping_button, event->button.x, event->button.y)) {
                 if (controller->mapping) {
-                    SDL_Log("Mapping complete:\n");
-                    SDL_Log("%s\n", controller->mapping);
+                    SDL_Log("Mapping complete:");
+                    SDL_Log("%s", controller->mapping);
                 }
                 SetDisplayMode(CONTROLLER_MODE_TESTING);
             } else if (GamepadButtonContains(cancel_button, event->button.x, event->button.y)) {
@@ -2047,7 +2047,7 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
 
     /* Initialize SDL (Note: video is required to start event loop) */
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
@@ -2057,11 +2057,11 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
         int count = 0;
         char **mappings = SDL_GetGamepadMappings(&count);
         int map_i;
-        SDL_Log("Supported mappings:\n");
+        SDL_Log("Supported mappings:");
         for (map_i = 0; map_i < count; ++map_i) {
-            SDL_Log("\t%s\n", mappings[map_i]);
+            SDL_Log("\t%s", mappings[map_i]);
         }
-        SDL_Log("\n");
+        SDL_Log("%s", "");
         SDL_free(mappings);
     }
 
@@ -2074,13 +2074,13 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     screen_height = (int)SDL_ceilf(SCREEN_HEIGHT * content_scale);
     window = SDL_CreateWindow("SDL Controller Test", screen_width, screen_height, 0);
     if (!window) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
     screen = SDL_CreateRenderer(window, NULL);
     if (!screen) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s", SDL_GetError());
         SDL_DestroyWindow(window);
         return SDL_APP_FAILURE;
     }
