@@ -264,7 +264,7 @@ jobs:
       - name: 'Build (cross-platform-actions, BSD)'
         id: cpactions
         if: ${{ matrix.platform.cpactions }}
-        uses: cross-platform-actions/action@v0.26.0
+        uses: cross-platform-actions/action@v0.27.0
         with:
           operating_system: '${{ matrix.platform.cpactions-os }}'
           architecture: '${{ matrix.platform.cpactions-arch }}'
