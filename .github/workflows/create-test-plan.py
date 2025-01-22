@@ -129,7 +129,7 @@ JOB_SPECS = {
     "android-cmake-lean": JobSpec(name="Android (CMake, lean)",             os=JobOs.UbuntuLatest,      platform=SdlPlatform.Android,     artifact="SDL-lean-android-arm64", android_abi="arm64-v8a", android_arch="aarch64", android_platform=23, lean=True, ),
     "android-mk": JobSpec(name="Android (Android.mk)",                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.Android,     artifact=None,                     no_cmake=True, android_mk=True, ),
     "android-gradle": JobSpec(name="Android (Gradle)",                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.Android,     artifact=None,                     no_cmake=True, android_gradle=True, ),
-    "emscripten": JobSpec(name="Emscripten",                                os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Emscripten,  artifact="SDL-emscripten", ),
+    "emscripten": JobSpec(name="Emscripten",                                os=JobOs.UbuntuLatest,      platform=SdlPlatform.Emscripten,  artifact="SDL-emscripten", ),
     "haiku": JobSpec(name="Haiku",                                          os=JobOs.UbuntuLatest,      platform=SdlPlatform.Haiku,       artifact="SDL-haiku-x64",          container="ghcr.io/haiku/cross-compiler:x86_64-r1beta5", ),
     "loongarch64": JobSpec(name="LoongArch64",                              os=JobOs.UbuntuLatest,      platform=SdlPlatform.LoongArch64, artifact="SDL-loongarch64", ),
     "n3ds": JobSpec(name="Nintendo 3DS",                                    os=JobOs.UbuntuLatest,      platform=SdlPlatform.N3ds,        artifact="SDL-n3ds",               container="devkitpro/devkitarm:latest", ),
@@ -223,6 +223,8 @@ class JobDetails:
     cpactions_install_cmd: str = ""
     setup_vita_gles_type: str = ""
     check_sources: bool = False
+    setup_python: bool = False
+    pypi_packages: list[str] = dataclasses.field(default_factory=list)
 
     def to_workflow(self, enable_artifacts: bool) -> dict[str, str|bool]:
         data = {
@@ -287,6 +289,8 @@ class JobDetails:
             "setup-vita-gles-type": self.setup_vita_gles_type,
             "setup-gdk-folder": self.setup_gdk_folder,
             "check-sources": self.check_sources,
+            "setup-python": self.setup_python,
+            "pypi-packages": my_shlex_join(self.pypi_packages),
         }
         return {k: v for k, v in data.items() if v != ""}
 
@@ -541,7 +545,6 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.cmake_config_emulator = "emcmake"
             job.cmake_build_type = "Debug"
             job.test_pkg_config = False
-            job.apt_packages.append("python3-selenium")
             job.cmake_arguments.extend((
                 "-DSDLTEST_BROWSER=chrome",
                 "-DSDLTEST_TIMEOUT_MULTIPLIER=4",
@@ -561,6 +564,8 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 "chromedriver --version",
             ))
             job.static_lib = StaticLibType.A
+            job.setup_python = True
+            job.pypi_packages.append("selenium")
         case SdlPlatform.Ps2:
             build_parallel = False
             job.shared = False
@@ -713,6 +718,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
 
     if "ubuntu" in spec.name.lower():
         job.check_sources = True
+        job.setup_python = True
 
     if not build_parallel:
         job.cmake_build_arguments.append("-j1")

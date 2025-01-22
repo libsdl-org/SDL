@@ -133,6 +133,15 @@ jobs:
           export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
           brew update
           brew install ${{ matrix.platform.brew-packages }}
+      - name: 'Setup Python'
+        uses: 'actions/setup-python@main'
+        if: ${{ matrix.platform.setup-python }}
+        with:
+          python-version: '3.x'
+      - name: 'Install PyPI packages'
+        if: ${{ matrix.platform.pypi-packages != '' }}
+        run: |
+          python -m pip install --user ${{ matrix.platform.pypi-packages }}
       - name: 'Set up GLES for VITA'  # Must be after apk
         if: ${{ matrix.platform.setup-vita-gles-type != '' }}
         uses: ./.github/actions/setup-vita-gles
@@ -348,11 +357,6 @@ jobs:
         if: ${{ matrix.platform.xcode-sdk != '' }}
         run: |
           xcodebuild -project Xcode/SDL/SDL.xcodeproj -target SDL3 -configuration Release -sdk ${{ matrix.platform.xcode-sdk }} clean build
-      - name: 'Setup Python'
-        uses: 'actions/setup-python@main'
-        if: ${{ matrix.platform.check-sources }}
-        with:
-          python-version: '3.x'
       - name: 'Check Sources'
         if: ${{ matrix.platform.check-sources }}
         run: |

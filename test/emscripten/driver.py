@@ -32,6 +32,10 @@ class SDLSeleniumTestDriver:
         self.failed_messages: list[str] = []
         self.return_code = None
 
+        options = [
+            "--headless",
+        ]
+
         driver_contructor = None
         match browser:
             case "firefox":
@@ -44,12 +48,9 @@ class SDLSeleniumTestDriver:
                 driver_options = webdriver.ChromeOptions()
                 if self.chrome_binary:
                     driver_options.binary_location = self.chrome_binary
+                options.append("--no-sandbox")
         if driver_contructor is None:
             raise ValueError(f"Invalid {browser=}")
-
-        options = [
-            "--headless",
-        ]
         for o in options:
             driver_options.add_argument(o)
         logger.debug("About to create driver")
