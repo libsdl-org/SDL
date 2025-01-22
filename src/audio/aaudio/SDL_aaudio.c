@@ -315,10 +315,10 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     ctx.AAudioStreamBuilder_setDataCallback(builder, AAUDIO_dataCallback, device);
     // Some devices have flat sounding audio when low latency mode is enabled, but this is a better experience for most people
     if (SDL_GetHintBoolean(SDL_HINT_ANDROID_LOW_LATENCY_AUDIO, true)) {
-        SDL_Log("Low latency audio enabled\n");
+        SDL_Log("Low latency audio enabled");
         ctx.AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
     } else {
-        SDL_Log("Low latency audio disabled\n");
+        SDL_Log("Low latency audio disabled");
     }
 
     LOGI("AAudio Try to open %u hz %s %u channels samples %u",

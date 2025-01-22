@@ -18,7 +18,7 @@
 
 int main(int argc, char *argv[])
 {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No Vulkan support on this system\n");
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No Vulkan support on this system");
     return 1;
 }
 
@@ -264,7 +264,7 @@ static void createSurface(void)
 {
     if (!SDL_Vulkan_CreateSurface(vulkanContext->window, vulkanContext->instance, NULL, &vulkanContext->surface)) {
         vulkanContext->surface = VK_NULL_HANDLE;
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Vulkan_CreateSurface(): %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Vulkan_CreateSurface(): %s", SDL_GetError());
         quit(2);
     }
 }
@@ -478,7 +478,7 @@ static void createDevice(void)
     result = vkCreateDevice(vulkanContext->physicalDevice, &deviceCreateInfo, NULL, &vulkanContext->device);
     if (result != VK_SUCCESS) {
         vulkanContext->device = VK_NULL_HANDLE;
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkCreateDevice(): %s\n", getVulkanResultString(result));
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkCreateDevice(): %s", getVulkanResultString(result));
         quit(2);
     }
 }
@@ -1040,12 +1040,12 @@ static bool render(void)
     }
     rc = vkWaitForFences(vulkanContext->device, 1, &vulkanContext->fences[frameIndex], VK_FALSE, UINT64_MAX);
     if (rc != VK_SUCCESS) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkWaitForFences(): %s\n", getVulkanResultString(rc));
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkWaitForFences(): %s", getVulkanResultString(rc));
         quit(2);
     }
     rc = vkResetFences(vulkanContext->device, 1, &vulkanContext->fences[frameIndex]);
     if (rc != VK_SUCCESS) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkResetFences(): %s\n", getVulkanResultString(rc));
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkResetFences(): %s", getVulkanResultString(rc));
         quit(2);
     }
     currentTime = (double)SDL_GetPerformanceCounter() / SDL_GetPerformanceFrequency();
@@ -1065,7 +1065,7 @@ static bool render(void)
     rc = vkQueueSubmit(vulkanContext->graphicsQueue, 1, &submitInfo, vulkanContext->fences[frameIndex]);
 
     if (rc != VK_SUCCESS) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkQueueSubmit(): %s\n", getVulkanResultString(rc));
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "vkQueueSubmit(): %s", getVulkanResultString(rc));
         quit(2);
     }
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -1118,13 +1118,13 @@ int main(int argc, char **argv)
 
     mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
     if (mode) {
-        SDL_Log("Screen BPP    : %d\n", SDL_BITSPERPIXEL(mode->format));
+        SDL_Log("Screen BPP    : %d", SDL_BITSPERPIXEL(mode->format));
     }
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
-    SDL_Log("Window Size   : %d,%d\n", dw, dh);
+    SDL_Log("Window Size   : %d,%d", dw, dh);
     SDL_GetWindowSizeInPixels(state->windows[0], &dw, &dh);
-    SDL_Log("Draw Size     : %d,%d\n", dw, dh);
-    SDL_Log("\n");
+    SDL_Log("Draw Size     : %d,%d", dw, dh);
+    SDL_Log("%s", "");
 
     initVulkan();
 
@@ -1159,7 +1159,7 @@ int main(int argc, char **argv)
     /* Print out some timing information */
     now = SDL_GetTicks();
     if (now > then) {
-        SDL_Log("%2.2f frames per second\n", ((double)frames * 1000) / (now - then));
+        SDL_Log("%2.2f frames per second", ((double)frames * 1000) / (now - then));
     }
 
     shutdownVulkan(true);

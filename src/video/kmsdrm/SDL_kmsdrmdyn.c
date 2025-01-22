@@ -59,9 +59,9 @@ static void *KMSDRM_GetSym(const char *fnname, int *pHasModule, bool required)
 
 #if DEBUG_DYNAMIC_KMSDRM
     if (fn)
-        SDL_Log("KMSDRM: Found '%s' in %s (%p)\n", fnname, kmsdrmlibs[i].libname, fn);
+        SDL_Log("KMSDRM: Found '%s' in %s (%p)", fnname, kmsdrmlibs[i].libname, fn);
     else
-        SDL_Log("KMSDRM: Symbol '%s' NOT FOUND!\n", fnname);
+        SDL_Log("KMSDRM: Symbol '%s' NOT FOUND!", fnname);
 #endif
 
     if (!fn && required) {

@@ -306,7 +306,7 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
         if (size == 2 && data[0] == 0x08) {
             bool connected = (data[1] & 0x80) ? true : false;
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Connected = %s\n", connected ? "TRUE" : "FALSE");
+            SDL_Log("Connected = %s", connected ? "TRUE" : "FALSE");
 #endif
             if (connected != ctx->connected) {
                 ctx->connected = connected;
@@ -323,14 +323,14 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
         } else if (size == 29 && data[0] == 0x00 && data[1] == 0x0f && data[2] == 0x00 && data[3] == 0xf0) {
             // Serial number is data[7-13]
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Battery status (initial): %d\n", data[17]);
+            SDL_Log("Battery status (initial): %d", data[17]);
 #endif
             if (joystick) {
                 UpdatePowerLevel(joystick, data[17]);
             }
         } else if (size == 29 && data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x00 && data[3] == 0x13) {
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Battery status: %d\n", data[4]);
+            SDL_Log("Battery status: %d", data[4]);
 #endif
             if (joystick) {
                 UpdatePowerLevel(joystick, data[4]);

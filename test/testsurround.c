@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
     }
 
     if (!SDL_Init(SDL_INIT_AUDIO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
@@ -219,11 +219,11 @@ int main(int argc, char *argv[])
         SDL_Log("%i: %s", i, SDL_GetAudioDriver(i));
     }
 
-    SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
+    SDL_Log("Using audio driver: %s", SDL_GetCurrentAudioDriver());
 
     devices = SDL_GetAudioPlaybackDevices(&devcount);
     if (!devices) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioPlaybackDevices() failed: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioPlaybackDevices() failed: %s", SDL_GetError());
     }
 
     SDL_Log("Available audio devices:");
@@ -237,14 +237,14 @@ int main(int argc, char *argv[])
         int j;
         SDL_AudioSpec spec;
 
-        SDL_Log("Testing audio device: %s\n", devname);
+        SDL_Log("Testing audio device: %s", devname);
 
         if (!SDL_GetAudioDeviceFormat(devices[i], &spec, NULL)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioDeviceFormat() failed: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GetAudioDeviceFormat() failed: %s", SDL_GetError());
             continue;
         }
 
-        SDL_Log("  (%d channels)\n", spec.channels);
+        SDL_Log("  (%d channels)", spec.channels);
 
         spec.freq = SAMPLE_RATE_HZ;
         spec.format = SDL_AUDIO_S16;
@@ -255,7 +255,7 @@ int main(int argc, char *argv[])
 
         stream = SDL_OpenAudioDeviceStream(devices[i], &spec, fill_buffer, NULL);
         if (!stream) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_OpenAudioDeviceStream() failed: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_OpenAudioDeviceStream() failed: %s", SDL_GetError());
             continue;
         }
         SDL_ResumeAudioStreamDevice(stream);
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
         for (j = 0; j < total_channels; j++) {
             const int sine_freq = is_lfe_channel(j, total_channels) ? LFE_SINE_FREQ_HZ : SINE_FREQ_HZ;
 
-            SDL_Log("Playing %d Hz test tone on channel: %s\n", sine_freq, get_channel_name(j, total_channels));
+            SDL_Log("Playing %d Hz test tone on channel: %s", sine_freq, get_channel_name(j, total_channels));
 
             /* fill_buffer() will increment the active channel */
             if (SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_TESTS_QUICK") != NULL) {

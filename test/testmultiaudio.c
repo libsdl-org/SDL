@@ -86,7 +86,7 @@ test_multi_audio(const SDL_AudioDeviceID *devices, int devcount)
     }
 
     /* note that Emscripten currently doesn't run this part (but maybe only has a single audio device anyhow?) */
-    SDL_Log("Playing on all devices...\n");
+    SDL_Log("Playing on all devices...");
     streams = (SDL_AudioStream **) SDL_calloc(devcount, sizeof (SDL_AudioStream *));
     if (!streams) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
@@ -130,7 +130,7 @@ test_multi_audio(const SDL_AudioDeviceID *devices, int devcount)
         SDL_free(streams);
     }
 
-    SDL_Log("All done!\n");
+    SDL_Log("All done!");
 }
 
 int main(int argc, char **argv)
@@ -169,11 +169,11 @@ int main(int argc, char **argv)
 
     /* Load the SDL library */
     if (!SDLTest_CommonInit(state)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
-    SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
+    SDL_Log("Using audio driver: %s", SDL_GetCurrentAudioDriver());
 
     filename = GetResourceFilename(filename, "sample.wav");
 
@@ -186,7 +186,7 @@ int main(int argc, char **argv)
             test_multi_audio(devices, devcount);
             SDL_free(sound);
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", filename,
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", filename,
                          SDL_GetError());
         }
         SDL_free(devices);

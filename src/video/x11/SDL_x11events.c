@@ -430,7 +430,7 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
 static void X11_DispatchFocusIn(SDL_VideoDevice *_this, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
-    SDL_Log("window 0x%lx: Dispatching FocusIn\n", data->xwindow);
+    SDL_Log("window 0x%lx: Dispatching FocusIn", data->xwindow);
 #endif
     SDL_SetKeyboardFocus(data->window);
     X11_ReconcileKeyboardState(_this);
@@ -447,7 +447,7 @@ static void X11_DispatchFocusIn(SDL_VideoDevice *_this, SDL_WindowData *data)
 static void X11_DispatchFocusOut(SDL_VideoDevice *_this, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
-    SDL_Log("window 0x%lx: Dispatching FocusOut\n", data->xwindow);
+    SDL_Log("window 0x%lx: Dispatching FocusOut", data->xwindow);
 #endif
     /* If another window has already processed a focus in, then don't try to
      * remove focus here.  Doing so will incorrectly remove focus from that
@@ -606,7 +606,7 @@ static void X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
                             XA_CARDINAL, 32, PropModeReplace,
                             (const unsigned char *)&latest, 1);
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: updating _NET_WM_USER_TIME to %lu\n", data->xwindow, latest);
+        SDL_Log("window 0x%lx: updating _NET_WM_USER_TIME to %lu", data->xwindow, latest);
 #endif
         data->user_time = latest;
     }
@@ -636,7 +636,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
 #ifdef DEBUG_XEVENTS
         char *atom_name;
         atom_name = X11_XGetAtomName(display, req->target);
-        SDL_Log("window CLIPBOARD: SelectionRequest (requestor = 0x%lx, target = 0x%lx, mime_type = %s)\n",
+        SDL_Log("window CLIPBOARD: SelectionRequest (requestor = 0x%lx, target = 0x%lx, mime_type = %s)",
                req->requestor, req->target, atom_name);
         if (atom_name) {
             X11_XFree(atom_name);
@@ -709,7 +709,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         const char *propName = xsel->property ? X11_XGetAtomName(display, xsel->property) : "None";
         const char *targetName = xsel->target ? X11_XGetAtomName(display, xsel->target) : "None";
 
-        SDL_Log("window CLIPBOARD: SelectionNotify (requestor = 0x%lx, target = %s, property = %s)\n",
+        SDL_Log("window CLIPBOARD: SelectionNotify (requestor = 0x%lx, target = %s, property = %s)",
                xsel->requestor, targetName, propName);
 #endif
         if (xsel->target == videodata->atoms.TARGETS && xsel->property == videodata->atoms.SDL_FORMATS) {
@@ -761,7 +761,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         SDLX11_ClipboardData *clipboard = NULL;
 
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window CLIPBOARD: SelectionClear (requestor = 0x%lx, target = 0x%lx)\n",
+        SDL_Log("window CLIPBOARD: SelectionClear (requestor = 0x%lx, target = 0x%lx)",
                xevent->xselection.requestor, xevent->xselection.target);
 #endif
 
@@ -892,14 +892,14 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
     Uint64 timestamp = X11_GetEventTimestamp(xevent->xkey.time);
 
 #ifdef DEBUG_XEVENTS
-    SDL_Log("window 0x%lx %s (X11 keycode = 0x%X)\n", xevent->xany.window, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
+    SDL_Log("window 0x%lx %s (X11 keycode = 0x%X)", xevent->xany.window, (xevent->type == KeyPress ? "KeyPress" : "KeyRelease"), xevent->xkey.keycode);
 #endif
 #ifdef DEBUG_SCANCODES
     if (scancode == SDL_SCANCODE_UNKNOWN && keycode) {
         int min_keycode, max_keycode;
         X11_XDisplayKeycodes(display, &min_keycode, &max_keycode);
         keysym = X11_KeyCodeToSym(_this, keycode, xevent->xkey.state >> 13);
-        SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
+        SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).",
                 keycode, keycode - min_keycode, keysym,
                 X11_XKeysymToString(keysym));
     }
@@ -912,7 +912,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
         // filter events catches XIM events and sends them to the correct handler
         if (X11_XFilterEvent(xevent, None)) {
 #ifdef DEBUG_XEVENTS
-            SDL_Log("Filtered event type = %d display = %p window = 0x%lx\n",
+            SDL_Log("Filtered event type = %d display = %p window = 0x%lx",
                    xevent->type, xevent->xany.display, xevent->xany.window);
 #endif
             handled_by_ime = true;
@@ -967,7 +967,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
     Uint64 timestamp = X11_GetEventTimestamp(time);
 
 #ifdef DEBUG_XEVENTS
-    SDL_Log("window 0x%lx: ButtonPress (X11 button = %d)\n", windowdata->xwindow, button);
+    SDL_Log("window 0x%lx: ButtonPress (X11 button = %d)", windowdata->xwindow, button);
 #endif
 
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -1015,7 +1015,7 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
     Uint64 timestamp = X11_GetEventTimestamp(time);
 
 #ifdef DEBUG_XEVENTS
-    SDL_Log("window 0x%lx: ButtonRelease (X11 button = %d)\n", windowdata->xwindow, button);
+    SDL_Log("window 0x%lx: ButtonRelease (X11 button = %d)", windowdata->xwindow, button);
 #endif
     if (!X11_IsWheelEvent(display, button, &xticks, &yticks)) {
         if (button > 7) {
@@ -1048,7 +1048,7 @@ void X11_GetBorderValues(SDL_WindowData *data)
             X11_XFree(property);
 
 #ifdef DEBUG_XEVENTS
-            SDL_Log("New _NET_FRAME_EXTENTS: left=%d right=%d, top=%d, bottom=%d\n", data->border_left, data->border_right, data->border_top, data->border_bottom);
+            SDL_Log("New _NET_FRAME_EXTENTS: left=%d right=%d, top=%d, bottom=%d", data->border_left, data->border_right, data->border_top, data->border_bottom);
 #endif
         }
     } else {
@@ -1072,7 +1072,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     if (xevent->type != KeyPress && xevent->type != KeyRelease) {
         if (X11_XFilterEvent(xevent, None)) {
 #ifdef DEBUG_XEVENTS
-            SDL_Log("Filtered event type = %d display = %p window = 0x%lx\n",
+            SDL_Log("Filtered event type = %d display = %p window = 0x%lx",
                    xevent->type, xevent->xany.display, xevent->xany.window);
 #endif
             return;
@@ -1100,7 +1100,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #endif
 
 #ifdef DEBUG_XEVENTS
-    SDL_Log("X11 event type = %d display = %p window = 0x%lx\n",
+    SDL_Log("X11 event type = %d display = %p window = 0x%lx",
            xevent->type, xevent->xany.display, xevent->xany.window);
 #endif
 
@@ -1110,7 +1110,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         XFixesSelectionNotifyEvent *ev = (XFixesSelectionNotifyEvent *)xevent;
 
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window CLIPBOARD: XFixesSelectionNotify (selection = %s)\n",
+        SDL_Log("window CLIPBOARD: XFixesSelectionNotify (selection = %s)",
                X11_XGetAtomName(display, ev->selection));
 #endif
 
@@ -1154,7 +1154,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         // The window for KeymapNotify, etc events is 0
         if (xevent->type == KeymapNotify) {
 #ifdef DEBUG_XEVENTS
-            SDL_Log("window 0x%lx: KeymapNotify!\n", xevent->xany.window);
+            SDL_Log("window 0x%lx: KeymapNotify!", xevent->xany.window);
 #endif
             if (SDL_GetKeyboardFocus() != NULL) {
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
@@ -1176,7 +1176,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             const int request = xevent->xmapping.request;
 
 #ifdef DEBUG_XEVENTS
-            SDL_Log("window 0x%lx: MappingNotify!\n", xevent->xany.window);
+            SDL_Log("window 0x%lx: MappingNotify!", xevent->xany.window);
 #endif
             if ((request == MappingKeyboard) || (request == MappingModifier)) {
                 X11_XRefreshKeyboardMapping(&xevent->xmapping);
@@ -1221,15 +1221,15 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     {
         SDL_Mouse *mouse = SDL_GetMouse();
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: EnterNotify! (%d,%d,%d)\n", xevent->xany.window,
+        SDL_Log("window 0x%lx: EnterNotify! (%d,%d,%d)", xevent->xany.window,
                xevent->xcrossing.x,
                xevent->xcrossing.y,
                xevent->xcrossing.mode);
         if (xevent->xcrossing.mode == NotifyGrab) {
-            SDL_Log("Mode: NotifyGrab\n");
+            SDL_Log("Mode: NotifyGrab");
         }
         if (xevent->xcrossing.mode == NotifyUngrab) {
-            SDL_Log("Mode: NotifyUngrab\n");
+            SDL_Log("Mode: NotifyUngrab");
         }
 #endif
         SDL_SetMouseFocus(data->window);
@@ -1260,15 +1260,15 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     case LeaveNotify:
     {
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: LeaveNotify! (%d,%d,%d)\n", xevent->xany.window,
+        SDL_Log("window 0x%lx: LeaveNotify! (%d,%d,%d)", xevent->xany.window,
                xevent->xcrossing.x,
                xevent->xcrossing.y,
                xevent->xcrossing.mode);
         if (xevent->xcrossing.mode == NotifyGrab) {
-            SDL_Log("Mode: NotifyGrab\n");
+            SDL_Log("Mode: NotifyGrab");
         }
         if (xevent->xcrossing.mode == NotifyUngrab) {
-            SDL_Log("Mode: NotifyUngrab\n");
+            SDL_Log("Mode: NotifyUngrab");
         }
 #endif
         if (!SDL_GetMouse()->relative_mode) {
@@ -1295,19 +1295,19 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         if (xevent->xfocus.mode == NotifyGrab || xevent->xfocus.mode == NotifyUngrab) {
             // Someone is handling a global hotkey, ignore it
 #ifdef DEBUG_XEVENTS
-            SDL_Log("window 0x%lx: FocusIn (NotifyGrab/NotifyUngrab, ignoring)\n", xevent->xany.window);
+            SDL_Log("window 0x%lx: FocusIn (NotifyGrab/NotifyUngrab, ignoring)", xevent->xany.window);
 #endif
             break;
         }
 
         if (xevent->xfocus.detail == NotifyInferior || xevent->xfocus.detail == NotifyPointer) {
 #ifdef DEBUG_XEVENTS
-            SDL_Log("window 0x%lx: FocusIn (NotifyInferior/NotifyPointer, ignoring)\n", xevent->xany.window);
+            SDL_Log("window 0x%lx: FocusIn (NotifyInferior/NotifyPointer, ignoring)", xevent->xany.window);
 #endif
             break;
         }
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: FocusIn!\n", xevent->xany.window);
+        SDL_Log("window 0x%lx: FocusIn!", xevent->xany.window);
 #endif
         if (!videodata->last_mode_change_deadline) /* no recent mode changes */ {
             data->pending_focus = PENDING_FOCUS_NONE;
@@ -1326,7 +1326,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         if (xevent->xfocus.mode == NotifyGrab || xevent->xfocus.mode == NotifyUngrab) {
             // Someone is handling a global hotkey, ignore it
 #ifdef DEBUG_XEVENTS
-            SDL_Log("window 0x%lx: FocusOut (NotifyGrab/NotifyUngrab, ignoring)\n", xevent->xany.window);
+            SDL_Log("window 0x%lx: FocusOut (NotifyGrab/NotifyUngrab, ignoring)", xevent->xany.window);
 #endif
             break;
         }
@@ -1335,12 +1335,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                care about the position of the pointer when the keyboard
                focus changed. */
 #ifdef DEBUG_XEVENTS
-            SDL_Log("window 0x%lx: FocusOut (NotifyInferior/NotifyPointer, ignoring)\n", xevent->xany.window);
+            SDL_Log("window 0x%lx: FocusOut (NotifyInferior/NotifyPointer, ignoring)", xevent->xany.window);
 #endif
             break;
         }
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: FocusOut!\n", xevent->xany.window);
+        SDL_Log("window 0x%lx: FocusOut!", xevent->xany.window);
 #endif
         if (!videodata->last_mode_change_deadline) /* no recent mode changes */ {
             data->pending_focus = PENDING_FOCUS_NONE;
@@ -1366,7 +1366,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         XEvent ev;
 
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: UnmapNotify!\n", xevent->xany.window);
+        SDL_Log("window 0x%lx: UnmapNotify!", xevent->xany.window);
 #endif
 
         if (X11_XCheckIfEvent(display, &ev, &isReparentNotify, (XPointer)&xevent->xunmap)) {
@@ -1387,7 +1387,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     case MapNotify:
     {
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: MapNotify!\n", xevent->xany.window);
+        SDL_Log("window 0x%lx: MapNotify!", xevent->xany.window);
 #endif
         X11_DispatchMapNotify(data);
 
@@ -1403,7 +1403,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     case ConfigureNotify:
     {
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: ConfigureNotify! (position: %d,%d, size: %dx%d)\n", xevent->xany.window,
+        SDL_Log("window 0x%lx: ConfigureNotify! (position: %d,%d, size: %dx%d)", xevent->xany.window,
                xevent->xconfigure.x, xevent->xconfigure.y,
                xevent->xconfigure.width, xevent->xconfigure.height);
 #endif
@@ -1470,9 +1470,9 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             data->xdnd_source = xevent->xclient.data.l[0];
             xdnd_version = (xevent->xclient.data.l[1] >> 24);
 #ifdef DEBUG_XEVENTS
-            SDL_Log("XID of source window : 0x%lx\n", data->xdnd_source);
-            SDL_Log("Protocol version to use : %d\n", xdnd_version);
-            SDL_Log("More then 3 data types : %d\n", (int)use_list);
+            SDL_Log("XID of source window : 0x%lx", data->xdnd_source);
+            SDL_Log("Protocol version to use : %d", xdnd_version);
+            SDL_Log("More then 3 data types : %d", (int)use_list);
 #endif
 
             if (use_list) {
@@ -1488,7 +1488,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             }
         } else if (xevent->xclient.message_type == videodata->atoms.XdndLeave) {
 #ifdef DEBUG_XEVENTS
-            SDL_Log("XID of source window : 0x%lx\n", xevent->xclient.data.l[0]);
+            SDL_Log("XID of source window : 0x%lx", xevent->xclient.data.l[0]);
 #endif
             SDL_SendDropComplete(data->window);
         } else if (xevent->xclient.message_type == videodata->atoms.XdndPosition) {
@@ -1498,7 +1498,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             if (xdnd_version >= 2) {
                 act = xevent->xclient.data.l[4];
             }
-            SDL_Log("Action requested by user is : %s\n", X11_XGetAtomName(display, act));
+            SDL_Log("Action requested by user is : %s", X11_XGetAtomName(display, act));
 #endif
             {
                 // Drag and Drop position
@@ -1555,7 +1555,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             Window root = DefaultRootWindow(display);
 
 #ifdef DEBUG_XEVENTS
-            SDL_Log("window 0x%lx: _NET_WM_PING\n", xevent->xany.window);
+            SDL_Log("window 0x%lx: _NET_WM_PING", xevent->xany.window);
 #endif
             xevent->xclient.window = root;
             X11_XSendEvent(display, root, False, SubstructureRedirectMask | SubstructureNotifyMask, xevent);
@@ -1567,7 +1567,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                  (xevent->xclient.data.l[0] == videodata->atoms.WM_DELETE_WINDOW)) {
 
 #ifdef DEBUG_XEVENTS
-            SDL_Log("window 0x%lx: WM_DELETE_WINDOW\n", xevent->xany.window);
+            SDL_Log("window 0x%lx: WM_DELETE_WINDOW", xevent->xany.window);
 #endif
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
             break;
@@ -1589,7 +1589,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     case Expose:
     {
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: Expose (count = %d)\n", xevent->xany.window, xevent->xexpose.count);
+        SDL_Log("window 0x%lx: Expose (count = %d)", xevent->xany.window, xevent->xexpose.count);
 #endif
         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
     } break;
@@ -1622,7 +1622,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         SDL_Mouse *mouse = SDL_GetMouse();
         if (!mouse->relative_mode) {
 #ifdef DEBUG_MOTION
-            SDL_Log("window 0x%lx: X11 motion: %d,%d\n", xevent->xany.window, xevent->xmotion.x, xevent->xmotion.y);
+            SDL_Log("window 0x%lx: X11 motion: %d,%d", xevent->xany.window, xevent->xmotion.x, xevent->xmotion.y);
 #endif
 
             X11_ProcessHitTest(_this, data, (float)xevent->xmotion.x, (float)xevent->xmotion.y, false);
@@ -1661,7 +1661,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
         char *name = X11_XGetAtomName(display, xevent->xproperty.atom);
         if (name) {
-            SDL_Log("window 0x%lx: PropertyNotify: %s %s time=%lu\n", xevent->xany.window, name, (xevent->xproperty.state == PropertyDelete) ? "deleted" : "changed", xevent->xproperty.time);
+            SDL_Log("window 0x%lx: PropertyNotify: %s %s time=%lu", xevent->xany.window, name, (xevent->xproperty.state == PropertyDelete) ? "deleted" : "changed", xevent->xproperty.time);
             X11_XFree(name);
         }
 
@@ -1674,7 +1674,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                 for (i = 0; i < items_read; i++) {
                     SDL_Log(" %d", values[i]);
                 }
-                SDL_Log(" }\n");
+                SDL_Log(" }");
             } else if (real_type == XA_CARDINAL) {
                 if (real_format == 32) {
                     Uint32 *values = (Uint32 *)propdata;
@@ -1683,7 +1683,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     for (i = 0; i < items_read; i++) {
                         SDL_Log(" %d", values[i]);
                     }
-                    SDL_Log(" }\n");
+                    SDL_Log(" }");
                 } else if (real_format == 16) {
                     Uint16 *values = (Uint16 *)propdata;
 
@@ -1691,7 +1691,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     for (i = 0; i < items_read; i++) {
                         SDL_Log(" %d", values[i]);
                     }
-                    SDL_Log(" }\n");
+                    SDL_Log(" }");
                 } else if (real_format == 8) {
                     Uint8 *values = (Uint8 *)propdata;
 
@@ -1699,11 +1699,11 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     for (i = 0; i < items_read; i++) {
                         SDL_Log(" %d", values[i]);
                     }
-                    SDL_Log(" }\n");
+                    SDL_Log(" }");
                 }
             } else if (real_type == XA_STRING ||
                        real_type == videodata->atoms.UTF8_STRING) {
-                SDL_Log("{ \"%s\" }\n", propdata);
+                SDL_Log("{ \"%s\" }", propdata);
             } else if (real_type == XA_ATOM) {
                 Atom *atoms = (Atom *)propdata;
 
@@ -1715,10 +1715,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                         X11_XFree(atomname);
                     }
                 }
-                SDL_Log(" }\n");
+                SDL_Log(" }");
             } else {
                 char *atomname = X11_XGetAtomName(display, real_type);
-                SDL_Log("Unknown type: 0x%lx (%s)\n", real_type, atomname ? atomname : "UNKNOWN");
+                SDL_Log("Unknown type: 0x%lx (%s)", real_type, atomname ? atomname : "UNKNOWN");
                 if (atomname) {
                     X11_XFree(atomname);
                 }
@@ -1918,7 +1918,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     {
         Atom target = xevent->xselection.target;
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: SelectionNotify (requestor = 0x%lx, target = 0x%lx)\n", xevent->xany.window,
+        SDL_Log("window 0x%lx: SelectionNotify (requestor = 0x%lx, target = 0x%lx)", xevent->xany.window,
                xevent->xselection.requestor, xevent->xselection.target);
 #endif
         if (target == data->xdnd_req) {
@@ -1969,7 +1969,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
     default:
     {
 #ifdef DEBUG_XEVENTS
-        SDL_Log("window 0x%lx: Unhandled event %d\n", xevent->xany.window, xevent->type);
+        SDL_Log("window 0x%lx: Unhandled event %d", xevent->xany.window, xevent->type);
 #endif
     } break;
     }

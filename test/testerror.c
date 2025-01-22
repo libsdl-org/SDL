@@ -38,10 +38,10 @@ ThreadFunc(void *data)
     SDL_SetError("Thread %s (%" SDL_PRIu64 ") had a problem: %s",
                  (char *)data, SDL_GetCurrentThreadID(), "nevermind");
     while (alive) {
-        SDL_Log("Thread '%s' is alive!\n", (char *)data);
+        SDL_Log("Thread '%s' is alive!", (char *)data);
         SDL_Delay(1 * 1000);
     }
-    SDL_Log("Child thread error string: %s\n", SDL_GetError());
+    SDL_Log("Child thread error string: %s", SDL_GetError());
     return 0;
 }
 
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
     /* Load the SDL library */
     if (!SDL_Init(0)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
@@ -100,16 +100,16 @@ int main(int argc, char *argv[])
         alive = 1;
         thread = SDL_CreateThread(ThreadFunc, NULL, "#1");
         if (!thread) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s", SDL_GetError());
             quit(1);
         }
         SDL_Delay(5 * 1000);
-        SDL_Log("Waiting for thread #1\n");
+        SDL_Log("Waiting for thread #1");
         alive = 0;
         SDL_WaitThread(thread, NULL);
     }
 
-    SDL_Log("Main thread error string: %s\n", SDL_GetError());
+    SDL_Log("Main thread error string: %s", SDL_GetError());
 
     SDL_Quit();
     SDLTest_CommonDestroyState(state);

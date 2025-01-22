@@ -41,14 +41,14 @@
 
 #define SET_ERROR_CODE(message, rc)                                                                 \
     if (SDL_GetHintBoolean(SDL_HINT_RENDER_VULKAN_DEBUG, false)) {                                  \
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s: %s\n", message, SDL_Vulkan_GetResultString(rc)); \
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s: %s", message, SDL_Vulkan_GetResultString(rc)); \
         SDL_TriggerBreakpoint();                                                                    \
     }                                                                                               \
     SDL_SetError("%s: %s", message, SDL_Vulkan_GetResultString(rc))                                 \
 
 #define SET_ERROR_MESSAGE(message)                                                                  \
     if (SDL_GetHintBoolean(SDL_HINT_RENDER_VULKAN_DEBUG, false)) {                                  \
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s\n", message);                                     \
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", message);                                     \
         SDL_TriggerBreakpoint();                                                                    \
     }                                                                                               \
     SDL_SetError("%s", message)                                                                     \
@@ -2512,7 +2512,7 @@ static bool VULKAN_HandleDeviceLost(SDL_Renderer *renderer)
         VULKAN_CreateWindowSizeDependentResources(renderer) == VK_SUCCESS) {
         recovered = true;
     } else {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Renderer couldn't recover from device lost: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Renderer couldn't recover from device lost: %s", SDL_GetError());
         VULKAN_DestroyAll(renderer);
     }
 
@@ -3296,7 +3296,7 @@ static bool VULKAN_UpdateViewport(SDL_Renderer *renderer)
          * SDL_CreateRenderer is calling it, and will call it again later
          * with a non-empty viewport.
          */
-        // SDL_Log("%s, no viewport was set!\n", __FUNCTION__);
+        // SDL_Log("%s, no viewport was set!", __FUNCTION__);
         return false;
     }
 

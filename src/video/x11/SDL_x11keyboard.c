@@ -239,7 +239,7 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
         const SDL_Scancode *table = SDL_GetScancodeTable(scancode_set[best_index], &table_size);
 
 #ifdef DEBUG_KEYBOARD
-        SDL_Log("Using scancode set %d, min_keycode = %d, max_keycode = %d, table_size = %d\n", best_index, min_keycode, max_keycode, table_size);
+        SDL_Log("Using scancode set %d, min_keycode = %d, max_keycode = %d, table_size = %d", best_index, min_keycode, max_keycode, table_size);
 #endif
         // This should never happen, but just in case...
         if (table_size > (SDL_arraysize(data->key_layout) - min_keycode)) {
@@ -267,14 +267,14 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
             if ((SDL_GetKeymapKeycode(NULL, scancode, SDL_KMOD_NONE) & (SDLK_SCANCODE_MASK | SDLK_EXTENDED_MASK)) && X11_ScancodeIsRemappable(scancode)) {
                 // Not a character key and the scancode is safe to remap
 #ifdef DEBUG_KEYBOARD
-                SDL_Log("Changing scancode, was %d (%s), now %d (%s)\n", data->key_layout[i], SDL_GetScancodeName(data->key_layout[i]), scancode, SDL_GetScancodeName(scancode));
+                SDL_Log("Changing scancode, was %d (%s), now %d (%s)", data->key_layout[i], SDL_GetScancodeName(data->key_layout[i]), scancode, SDL_GetScancodeName(scancode));
 #endif
                 data->key_layout[i] = scancode;
             }
         }
     } else {
 #ifdef DEBUG_SCANCODES
-        SDL_Log("Keyboard layout unknown, please report the following to the SDL forums/mailing list (https://discourse.libsdl.org/):\n");
+        SDL_Log("Keyboard layout unknown, please report the following to the SDL forums/mailing list (https://discourse.libsdl.org/):");
 #endif
 
         // Determine key_layout - only works on US QWERTY layout
@@ -288,9 +288,9 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
                         (unsigned int)sym, sym == NoSymbol ? "NoSymbol" : X11_XKeysymToString(sym));
             }
             if (scancode == SDL_SCANCODE_UNKNOWN) {
-                SDL_Log("scancode not found\n");
+                SDL_Log("scancode not found");
             } else {
-                SDL_Log("scancode = %d (%s)\n", scancode, SDL_GetScancodeName(scancode));
+                SDL_Log("scancode = %d (%s)", scancode, SDL_GetScancodeName(scancode));
             }
 #endif
             data->key_layout[i] = scancode;
@@ -592,12 +592,12 @@ static void preedit_draw_callback(XIC xic, XPointer client_data, XIMPreeditDrawC
 
 #ifdef DEBUG_XIM
     if (call_data->chg_length > 0) {
-        SDL_Log("Draw callback deleted %d characters at %d\n", call_data->chg_length, call_data->chg_first);
+        SDL_Log("Draw callback deleted %d characters at %d", call_data->chg_length, call_data->chg_first);
     }
     if (text) {
-        SDL_Log("Draw callback inserted %s at %d, caret: %d\n", text->string.multi_byte, call_data->chg_first, call_data->caret);
+        SDL_Log("Draw callback inserted %s at %d, caret: %d", text->string.multi_byte, call_data->chg_first, call_data->caret);
     }
-    SDL_Log("Pre-edit text: %s\n", data->preedit_text);
+    SDL_Log("Pre-edit text: %s", data->preedit_text);
 #endif
 
     X11_SendEditingEvent(data);

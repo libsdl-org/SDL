@@ -36,10 +36,10 @@ static void PrintCameraSpecs(SDL_CameraID camera_id)
     if (specs) {
         int i;
 
-        SDL_Log("Available formats:\n");
+        SDL_Log("Available formats:");
         for (i = 0; specs[i]; ++i) {
             const SDL_CameraSpec *s = specs[i];
-            SDL_Log("    %dx%d %.2f FPS %s\n", s->width, s->height, (float)s->framerate_numerator / s->framerate_denominator, SDL_GetPixelFormatName(s->format));
+            SDL_Log("    %dx%d %.2f FPS %s", s->width, s->height, (float)s->framerate_numerator / s->framerate_denominator, SDL_GetPixelFormatName(s->format));
         }
         SDL_free(specs);
     }

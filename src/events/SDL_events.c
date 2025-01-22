@@ -847,7 +847,7 @@ void SDL_StopEventLoop(void)
     SDL_EventQ.active = false;
 
     if (report && SDL_atoi(report)) {
-        SDL_Log("SDL EVENT QUEUE: Maximum events in-flight: %d\n",
+        SDL_Log("SDL EVENT QUEUE: Maximum events in-flight: %d",
                 SDL_EventQ.max_events_seen);
     }
 

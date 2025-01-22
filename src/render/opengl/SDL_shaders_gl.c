@@ -350,7 +350,10 @@ static bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char 
         info = SDL_small_alloc(char, length + 1, &isstack);
         if (info) {
             ctx->glGetInfoLogARB(shader, length, NULL, info);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to compile shader:\n%s%s\n%s", defines, source, info);
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to compile shader:");
+	    SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", defines);
+	    SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", source);
+	    SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", info);
             SDL_small_free(info, isstack);
         }
         return false;

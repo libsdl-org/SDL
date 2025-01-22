@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 {
     int i;
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_Log("SDL_Init failed: %s\n", SDL_GetError());
+        SDL_Log("SDL_Init failed: %s", SDL_GetError());
         return 1;
     }
 

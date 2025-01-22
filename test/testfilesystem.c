@@ -106,42 +106,42 @@ int main(int argc, char *argv[])
     }
 
     if (!SDL_Init(0)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s", SDL_GetError());
         return 1;
     }
 
     base_path = SDL_GetBasePath();
     if (!base_path) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find base path: %s\n",
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find base path: %s",
                      SDL_GetError());
     } else {
-        SDL_Log("base path: '%s'\n", base_path);
+        SDL_Log("base path: '%s'", base_path);
     }
 
     pref_path = SDL_GetPrefPath("libsdl", "test_filesystem");
     if (!pref_path) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find pref path: %s\n",
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find pref path: %s",
                      SDL_GetError());
     } else {
-        SDL_Log("pref path: '%s'\n", pref_path);
+        SDL_Log("pref path: '%s'", pref_path);
     }
     SDL_free(pref_path);
 
     pref_path = SDL_GetPrefPath(NULL, "test_filesystem");
     if (!pref_path) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find pref path without organization: %s\n",
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find pref path without organization: %s",
                      SDL_GetError());
     } else {
-        SDL_Log("pref path: '%s'\n", pref_path);
+        SDL_Log("pref path: '%s'", pref_path);
     }
     SDL_free(pref_path);
 
     curdir = SDL_GetCurrentDirectory();
     if (!curdir) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find current directory: %s\n",
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find current directory: %s",
                      SDL_GetError());
     } else {
-        SDL_Log("current directory: '%s'\n", curdir);
+        SDL_Log("current directory: '%s'", curdir);
     }
     SDL_free(curdir);
 
@@ -209,13 +209,13 @@ int main(int argc, char *argv[])
 
                 textA = (char *)SDL_LoadFile("testfilesystem-A", &sizeA);
                 if (!textA || sizeA != SDL_strlen(text) || SDL_strcmp(textA, text) != 0) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Contents of testfilesystem-A didn't match, expected %s, got %s\n", text, textA);
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Contents of testfilesystem-A didn't match, expected %s, got %s", text, textA);
                 }
                 SDL_free(textA);
 
                 textB = (char *)SDL_LoadFile("testfilesystem-B", &sizeB);
                 if (!textB || sizeB != SDL_strlen(text) || SDL_strcmp(textB, text) != 0) {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Contents of testfilesystem-B didn't match, expected %s, got %s\n", text, textB);
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Contents of testfilesystem-B didn't match, expected %s, got %s", text, textB);
                 }
                 SDL_free(textB);
             }

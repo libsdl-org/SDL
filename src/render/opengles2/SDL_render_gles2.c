@@ -539,7 +539,7 @@ static GLuint GLES2_CacheShader(GLES2_RenderData *data, GLES2_ShaderType type, G
                 SDL_asprintf(&message, "%s%s", last_message, shader_src_list[i]);
                 SDL_free(last_message);
             }
-            SDL_Log("%s\n", message);
+            SDL_Log("%s", message);
             SDL_free(message);
         }
 #endif

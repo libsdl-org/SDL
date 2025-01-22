@@ -132,7 +132,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnStateChanged(ISensorEvents 
     SDL_LockSensors();
     for (i = 0; i < SDL_num_sensors; ++i) {
         if (pSensor == SDL_sensors[i].sensor) {
-            SDL_Log("Sensor %s state changed to %d\n", SDL_sensors[i].name, state);
+            SDL_Log("Sensor %s state changed to %d", SDL_sensors[i].name, state);
         }
     }
     SDL_UnlockSensors();
@@ -156,7 +156,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
                 Uint64 sensor_timestamp;
 
 #ifdef DEBUG_SENSORS
-                SDL_Log("Sensor %s data updated\n", SDL_sensors[i].name);
+                SDL_Log("Sensor %s data updated", SDL_sensors[i].name);
 #endif
                 if (SUCCEEDED(ISensorDataReport_GetTimestamp(pNewData, &sensor_systemtime)) &&
                     SystemTimeToFileTime(&sensor_systemtime, &sensor_filetime)) {
@@ -219,7 +219,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnEvent(ISensorEvents *This, 
     SDL_LockSensors();
     for (i = 0; i < SDL_num_sensors; ++i) {
         if (pSensor == SDL_sensors[i].sensor) {
-            SDL_Log("Sensor %s event occurred\n", SDL_sensors[i].name);
+            SDL_Log("Sensor %s event occurred", SDL_sensors[i].name);
         }
     }
     SDL_UnlockSensors();
@@ -235,7 +235,7 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnLeave(ISensorEvents *This, 
     for (i = 0; i < SDL_num_sensors; ++i) {
         if (WIN_IsEqualIID(ID, &SDL_sensors[i].sensor_id)) {
 #ifdef DEBUG_SENSORS
-            SDL_Log("Sensor %s disconnected\n", SDL_sensors[i].name);
+            SDL_Log("Sensor %s disconnected", SDL_sensors[i].name);
 #endif
             DisconnectSensor(SDL_sensors[i].sensor);
         }

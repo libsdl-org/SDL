@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
     }
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video: %s\n",
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video: %s",
                      SDL_GetError());
         exit(1);
     }
@@ -134,14 +134,14 @@ int main(int argc, char *argv[])
         }
     }
     if (!factory) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find native window code for %s driver\n",
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find native window code for %s driver",
                      driver);
         quit(2);
     }
-    SDL_Log("Creating native window for %s driver\n", driver);
+    SDL_Log("Creating native window for %s driver", driver);
     native_window = factory->CreateNativeWindow(WINDOW_W, WINDOW_H);
     if (!native_window) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create native window\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create native window");
         quit(3);
     }
     props = SDL_CreateProperties();
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
     window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     if (!window) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window: %s", SDL_GetError());
         quit(4);
     }
     SDL_SetWindowTitle(window, "SDL Native Window Test");
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
     /* Create the renderer */
     renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s", SDL_GetError());
         quit(5);
     }
 
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
     positions = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*positions));
     velocities = (SDL_FRect *)SDL_malloc(NUM_SPRITES * sizeof(*velocities));
     if (!positions || !velocities) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         quit(2);
     }
     for (i = 0; i < NUM_SPRITES; ++i) {

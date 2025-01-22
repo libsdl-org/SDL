@@ -157,17 +157,17 @@ static Uint64 WIN_GetEventTimestamp(void)
     timestamp += timestamp_offset;
     if (!timestamp_offset) {
         // Initializing timestamp offset
-        //SDL_Log("Initializing timestamp offset\n");
+        //SDL_Log("Initializing timestamp offset");
         timestamp_offset = (now - timestamp);
         timestamp = now;
     } else if ((Sint64)(now - timestamp - TIMESTAMP_WRAP_OFFSET) >= 0) {
         // The windows message tick wrapped
-        //SDL_Log("Adjusting timestamp offset for wrapping tick\n");
+        //SDL_Log("Adjusting timestamp offset for wrapping tick");
         timestamp_offset += TIMESTAMP_WRAP_OFFSET;
         timestamp += TIMESTAMP_WRAP_OFFSET;
     } else if (timestamp > now) {
         // We got a newer timestamp, but it can't be newer than now, so adjust our offset
-        //SDL_Log("Adjusting timestamp offset, %.2f ms newer\n", (double)(timestamp - now) / SDL_NS_PER_MS);
+        //SDL_Log("Adjusting timestamp offset, %.2f ms newer", (double)(timestamp - now) / SDL_NS_PER_MS);
         timestamp_offset -= (timestamp - now);
         timestamp = now;
     }
@@ -2239,7 +2239,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             int w, h;
 
 #ifdef HIGHDPI_DEBUG
-            SDL_Log("WM_DPICHANGED: to %d\tsuggested rect: (%d, %d), (%dx%d)\n", newDPI,
+            SDL_Log("WM_DPICHANGED: to %d\tsuggested rect: (%d, %d), (%dx%d)", newDPI,
                     suggestedRect->left, suggestedRect->top, suggestedRect->right - suggestedRect->left, suggestedRect->bottom - suggestedRect->top);
 #endif
 
@@ -2270,7 +2270,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
 
 #ifdef HIGHDPI_DEBUG
-            SDL_Log("WM_DPICHANGED: current SDL window size: (%dx%d)\tcalling SetWindowPos: (%d, %d), (%dx%d)\n",
+            SDL_Log("WM_DPICHANGED: current SDL window size: (%dx%d)\tcalling SetWindowPos: (%d, %d), (%dx%d)",
                     data->window->w, data->window->h,
                     suggestedRect->left, suggestedRect->top, w, h);
 #endif

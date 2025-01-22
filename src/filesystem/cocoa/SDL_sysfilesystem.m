@@ -92,7 +92,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
             static bool shown = false;
             if (!shown) {
                 shown = true;
-                SDL_LogCritical(SDL_LOG_CATEGORY_SYSTEM, "tvOS does not have persistent local storage! Use iCloud storage if you want your data to persist between sessions.\n");
+                SDL_LogCritical(SDL_LOG_CATEGORY_SYSTEM, "tvOS does not have persistent local storage! Use iCloud storage if you want your data to persist between sessions.");
             }
         }
 

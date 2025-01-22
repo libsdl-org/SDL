@@ -66,9 +66,9 @@ static void *WAYLAND_GetSym(const char *fnname, int *pHasModule, bool required)
 
 #if DEBUG_DYNAMIC_WAYLAND
     if (fn) {
-        SDL_Log("WAYLAND: Found '%s' in %s (%p)\n", fnname, dynlib->libname, fn);
+        SDL_Log("WAYLAND: Found '%s' in %s (%p)", fnname, dynlib->libname, fn);
     } else {
-        SDL_Log("WAYLAND: Symbol '%s' NOT FOUND!\n", fnname);
+        SDL_Log("WAYLAND: Symbol '%s' NOT FOUND!", fnname);
     }
 #endif
 

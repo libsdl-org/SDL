@@ -34,16 +34,16 @@ static void DoWork(const int workticks)  /* "Work" */
     const bool is_reader = tid != mainthread;
     const char *typestr = is_reader ? "Reader" : "Writer";
 
-    SDL_Log("%s Thread %" SDL_PRIu64 ": ready to work\n", typestr, tid);
+    SDL_Log("%s Thread %" SDL_PRIu64 ": ready to work", typestr, tid);
     if (is_reader) {
         SDL_LockRWLockForReading(rwlock);
     } else {
         SDL_LockRWLockForWriting(rwlock);
     }
 
-    SDL_Log("%s Thread %" SDL_PRIu64 ": start work!\n", typestr, tid);
+    SDL_Log("%s Thread %" SDL_PRIu64 ": start work!", typestr, tid);
     SDL_Delay(workticks);
-    SDL_Log("%s Thread %" SDL_PRIu64 ": work done!\n", typestr, tid);
+    SDL_Log("%s Thread %" SDL_PRIu64 ": work done!", typestr, tid);
     SDL_UnlockRWLock(rwlock);
 
     /* If this sleep isn't done, then threads may starve */
@@ -57,7 +57,7 @@ ReaderRun(void *data)
     while (!SDL_GetAtomicInt(&doterminate)) {
         DoWork(worktime);
     }
-    SDL_Log("Reader Thread %" SDL_PRIu64 ": exiting!\n", SDL_GetCurrentThreadID());
+    SDL_Log("Reader Thread %" SDL_PRIu64 ": exiting!", SDL_GetCurrentThreadID());
     return 0;
 }
 
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 
     /* Load the SDL library */
     if (!SDL_Init(0)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s", SDL_GetError());
         return 1;
     }
 
@@ -140,20 +140,20 @@ int main(int argc, char *argv[])
 
     rwlock = SDL_CreateRWLock();
     if (!rwlock) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create rwlock: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create rwlock: %s", SDL_GetError());
         SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
     }
 
     mainthread = SDL_GetCurrentThreadID();
-    SDL_Log("Writer thread: %" SDL_PRIu64 "\n", mainthread);
+    SDL_Log("Writer thread: %" SDL_PRIu64, mainthread);
     for (i = 0; i < nb_threads; ++i) {
         char name[64];
         (void)SDL_snprintf(name, sizeof(name), "Reader%d", i);
         threads[i] = SDL_CreateThread(ReaderRun, name, NULL);
         if (threads[i] == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create reader thread! %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create reader thread! %s", SDL_GetError());
         }
     }
 

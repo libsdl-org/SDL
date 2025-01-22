@@ -324,7 +324,7 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
 
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, imu_data, 3);
 
-      //  SDL_Log("%u %f, %f, %f \n", data[0], imu_data[0], imu_data[1], imu_data[2] );
+      //  SDL_Log("%u %f, %f, %f ", data[0], imu_data[0], imu_data[1], imu_data[2] );
         imu_data[2] = LOAD16(data[18], data[19]) * accelScale;
         imu_data[1] = -1 * LOAD16(data[20], data[21]) * accelScale;
         imu_data[0] = LOAD16(data[22], data[23]) * accelScale;

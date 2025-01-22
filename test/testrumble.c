@@ -72,7 +72,7 @@ int main(int argc, char **argv)
         if (consumed <= 0) {
             static const char *options[] = { "[device]", NULL };
             SDLTest_CommonLogUsage(state, argv[0], options);
-            SDL_Log("\n");
+            SDL_Log("%s", "");
             SDL_Log("If device is a two-digit number it'll use it as an index, otherwise\n"
                     "it'll use it as if it were part of the device's name.\n");
             return 1;
@@ -84,9 +84,9 @@ int main(int argc, char **argv)
     /* Initialize the force feedbackness */
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC);
     haptics = SDL_GetHaptics(&num_haptics);
-    SDL_Log("%d Haptic devices detected.\n", num_haptics);
+    SDL_Log("%d Haptic devices detected.", num_haptics);
     if (num_haptics == 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No Haptic devices found!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No Haptic devices found!");
         SDL_free(haptics);
         return 1;
     }
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
         i = (index != -1) ? index : 0;
 
         if (i >= num_haptics) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Index out of range, aborting.\n");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Index out of range, aborting.");
             SDL_free(haptics);
             return 1;
         }
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
         }
 
         if (i >= num_haptics) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to find device matching '%s', aborting.\n", name);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to find device matching '%s', aborting.", name);
             SDL_free(haptics);
             return 1;
         }
@@ -118,36 +118,36 @@ int main(int argc, char **argv)
 
     haptic = SDL_OpenHaptic(haptics[i]);
     if (!haptic) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create the haptic device: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create the haptic device: %s", SDL_GetError());
         SDL_free(haptics);
         return 1;
     }
-    SDL_Log("Device: %s\n", SDL_GetHapticName(haptic));
+    SDL_Log("Device: %s", SDL_GetHapticName(haptic));
     SDL_free(haptics);
 
     /* We only want force feedback errors. */
     SDL_ClearError();
 
     if (!SDL_HapticRumbleSupported(haptic)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Rumble not supported!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Rumble not supported!");
         return 1;
     }
     if (!SDL_InitHapticRumble(haptic)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize rumble: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize rumble: %s", SDL_GetError());
         return 1;
     }
-    SDL_Log("Playing 2 second rumble at 0.5 magnitude.\n");
+    SDL_Log("Playing 2 second rumble at 0.5 magnitude.");
     if (!SDL_PlayHapticRumble(haptic, 0.5, 5000)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s", SDL_GetError());
         return 1;
     }
     SDL_Delay(2000);
-    SDL_Log("Stopping rumble.\n");
+    SDL_Log("Stopping rumble.");
     SDL_StopHapticRumble(haptic);
     SDL_Delay(2000);
-    SDL_Log("Playing 2 second rumble at 0.3 magnitude.\n");
+    SDL_Log("Playing 2 second rumble at 0.3 magnitude.");
     if (!SDL_PlayHapticRumble(haptic, 0.3f, 5000)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s", SDL_GetError());
         return 1;
     }
     SDL_Delay(2000);

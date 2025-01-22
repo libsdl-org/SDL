@@ -47,14 +47,14 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
 
     for (i = 0; i < numareas; i++) {
         if (SDL_PointInRect(&adj_pt, &areas[i])) {
-            SDL_Log("HIT-TEST: DRAGGABLE\n");
+            SDL_Log("HIT-TEST: DRAGGABLE");
             return SDL_HITTEST_DRAGGABLE;
         }
     }
 
 #define REPORT_RESIZE_HIT(name)                  \
     {                                            \
-        SDL_Log("HIT-TEST: RESIZE_" #name "\n"); \
+        SDL_Log("HIT-TEST: RESIZE_" #name ""); \
         return SDL_HITTEST_RESIZE_##name;        \
     }
 
@@ -76,7 +76,7 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
         REPORT_RESIZE_HIT(LEFT);
     }
 
-    SDL_Log("HIT-TEST: NORMAL\n");
+    SDL_Log("HIT-TEST: NORMAL");
     return SDL_HITTEST_NORMAL;
 }
 
@@ -130,15 +130,15 @@ int main(int argc, char **argv)
 
             switch (e.type) {
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                SDL_Log("button down!\n");
+                SDL_Log("button down!");
                 break;
 
             case SDL_EVENT_MOUSE_BUTTON_UP:
-                SDL_Log("button up!\n");
+                SDL_Log("button up!");
                 break;
 
             case SDL_EVENT_WINDOW_MOVED:
-                SDL_Log("Window event moved to (%d, %d)!\n", (int)e.window.data1, (int)e.window.data2);
+                SDL_Log("Window event moved to (%d, %d)!", (int)e.window.data1, (int)e.window.data2);
                 break;
 
             case SDL_EVENT_KEY_DOWN:

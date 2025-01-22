@@ -39,19 +39,19 @@ static void HandleSensorEvent(SDL_SensorEvent *event)
 {
     SDL_Sensor *sensor = SDL_GetSensorFromID(event->which);
     if (!sensor) {
-        SDL_Log("Couldn't get sensor for sensor event\n");
+        SDL_Log("Couldn't get sensor for sensor event");
         return;
     }
 
     switch (SDL_GetSensorType(sensor)) {
     case SDL_SENSOR_ACCEL:
-        SDL_Log("Accelerometer update: %.2f, %.2f, %.2f\n", event->data[0], event->data[1], event->data[2]);
+        SDL_Log("Accelerometer update: %.2f, %.2f, %.2f", event->data[0], event->data[1], event->data[2]);
         break;
     case SDL_SENSOR_GYRO:
-        SDL_Log("Gyro update: %.2f, %.2f, %.2f\n", event->data[0], event->data[1], event->data[2]);
+        SDL_Log("Gyro update: %.2f, %.2f, %.2f", event->data[0], event->data[1], event->data[2]);
         break;
     default:
-        SDL_Log("Sensor update for sensor type %s\n", GetSensorTypeString(SDL_GetSensorType(sensor)));
+        SDL_Log("Sensor update for sensor type %s", GetSensorTypeString(SDL_GetSensorType(sensor)));
         break;
     }
 }
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
 
     /* Load the SDL library */
     if (!SDL_Init(SDL_INIT_SENSOR)) {
-        SDL_Log("Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         SDL_Quit();
         SDLTest_CommonDestroyState(state);
         return 1;
@@ -85,10 +85,10 @@ int main(int argc, char **argv)
     sensors = SDL_GetSensors(&num_sensors);
     num_opened = 0;
 
-    SDL_Log("There are %d sensors available\n", num_sensors);
+    SDL_Log("There are %d sensors available", num_sensors);
     if (sensors) {
         for (i = 0; i < num_sensors; ++i) {
-            SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %s, platform type %d\n",
+            SDL_Log("Sensor %" SDL_PRIu32 ": %s, type %s, platform type %d",
                     sensors[i],
                     SDL_GetSensorNameForID(sensors[i]),
                     GetSensorTypeString(SDL_GetSensorTypeForID(sensors[i])),
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
             if (SDL_GetSensorTypeForID(sensors[i]) != SDL_SENSOR_UNKNOWN) {
                 SDL_Sensor *sensor = SDL_OpenSensor(sensors[i]);
                 if (!sensor) {
-                    SDL_Log("Couldn't open sensor %" SDL_PRIu32 ": %s\n", sensors[i], SDL_GetError());
+                    SDL_Log("Couldn't open sensor %" SDL_PRIu32 ": %s", sensors[i], SDL_GetError());
                 } else {
                     ++num_opened;
                 }
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
         }
         SDL_free(sensors);
     }
-    SDL_Log("Opened %d sensors\n", num_opened);
+    SDL_Log("Opened %d sensors", num_opened);
 
     if (num_opened > 0) {
         bool done = false;

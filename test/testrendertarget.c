@@ -79,7 +79,7 @@ DrawComposite(DrawState *s)
         if (surface) {
             Uint8 r, g, b, a;
             if (SDL_ReadSurfacePixel(surface, 0, 0, &r, &g, &b, &a)) {
-                SDL_Log("Blended pixel: 0x%.2x%.2x%.2x%.2x\n", r, g, b, a);
+                SDL_Log("Blended pixel: 0x%.2x%.2x%.2x%.2x", r, g, b, a);
             }
             SDL_DestroySurface(surface);
         }
@@ -148,7 +148,7 @@ Draw(DrawState *s)
 
     target = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, viewport.w, viewport.h);
     if (!target) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create render target texture: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create render target texture: %s", SDL_GetError());
         return false;
     }
     SDL_SetRenderTarget(s->renderer, target);
@@ -283,7 +283,7 @@ int main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
     }
 
     SDL_stack_free(drawstates);
