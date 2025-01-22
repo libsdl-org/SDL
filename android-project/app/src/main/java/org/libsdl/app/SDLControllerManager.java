@@ -705,9 +705,14 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
                         x = event.getX(i);
                         y = event.getY(i);
                         float p = event.getPressure(i);
+                        if (p > 1.0f) {
+                            // may be larger than 1.0f on some devices
+                            // see the documentation of getPressure(i)
+                            p = 1.0f;
+                        }
 
-                        // BUTTON_STYLUS_PRIMARY is 2^5, so shift by 4
-                        int buttons = event.getButtonState() >> 4;
+                        // BUTTON_STYLUS_PRIMARY is 2^5, so shift by 4, and apply SDL_PEN_INPUT_DOWN/SDL_PEN_INPUT_ERASER_TIP
+                        int buttons = (event.getButtonState() >> 4) | (1 << (toolType == MotionEvent.TOOL_TYPE_STYLUS ? 0 : 30));
 
                         SDLActivity.onNativePen(event.getPointerId(i), buttons, action, x, y, p);
                         consumed = true;
