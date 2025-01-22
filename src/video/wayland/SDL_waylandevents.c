@@ -543,6 +543,10 @@ static SDL_bool ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
                                       input->seat,
                                       serial);
                 }
+            } else {
+                if (window_data->shell_surface.wl) {
+                    wl_shell_surface_move(window_data->shell_surface.wl, input->seat, serial);
+                }
             }
             return SDL_TRUE;
 
@@ -567,6 +571,10 @@ static SDL_bool ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
                                         input->seat,
                                         serial,
                                         directions[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                }
+            } else {
+                if (window_data->shell_surface.wl) {
+                    wl_shell_surface_resize(window_data->shell_surface.wl, input->seat, serial, directions[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
                 }
             }
             return SDL_TRUE;
