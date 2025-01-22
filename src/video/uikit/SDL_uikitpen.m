@@ -28,6 +28,31 @@
 
 #include "../../events/SDL_pen_c.h"
 
+// Fix build errors when using an older SDK by defining these selectors
+#if !defined(SDL_PLATFORM_TVOS)
+
+@interface UITouch (SDL)
+#if !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 170500)
+@property (nonatomic, readonly) CGFloat rollAngle;
+#endif
+@end
+
+@interface UIHoverGestureRecognizer (SDL)
+#if !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 160100)
+@property (nonatomic, readonly) CGFloat zOffset;
+#endif
+#if !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 160400)
+- (CGFloat) azimuthAngleInView:(UIView *) view;
+
+@property (nonatomic, readonly) CGFloat altitudeAngle;
+#endif
+#if !(__IPHONE_OS_VERSION_MAX_ALLOWED >= 170500)
+@property (nonatomic, readonly) CGFloat rollAngle;
+#endif
+@end
+
+#endif // !SDL_PLATFORM_TVOS
+
 static SDL_PenID apple_pencil_id = 0;
 
 bool UIKit_InitPen(SDL_VideoDevice *_this)
@@ -142,11 +167,11 @@ extern void UIKit_HandlePenHover(SDL_uikitview *view, UIHoverGestureRecognizer *
 static void UIKit_HandlePenAxesFromUITouch(SDL_uikitview *view, UITouch *pencil)
 {
     float rollAngle = 0.0f;
-    #if !defined(SDL_PLATFORM_TVOS)
+#if !defined(SDL_PLATFORM_TVOS)
     if (@available(iOS 17.5, *)) {
         rollAngle = (float) [pencil rollAngle];
     }
-    #endif
+#endif
 
     SDL_Window *window = [view getSDLWindow];
     const CGPoint point = [pencil locationInView:view];

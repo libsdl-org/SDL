@@ -50,9 +50,7 @@ static id disconnectObserver = nil;
 
 #include <objc/message.h>
 
-/* remove compilation warnings for strict builds by defining these selectors, even though
- * they are only ever used indirectly through objc_msgSend
- */
+// Fix build errors when using an older SDK by defining these selectors
 @interface GCController (SDL)
 #if !((__IPHONE_OS_VERSION_MAX_ALLOWED >= 140500) || (__APPLETV_OS_VERSION_MAX_ALLOWED >= 140500) || (__MAC_OS_X_VERSION_MAX_ALLOWED >= 110300))
 @property(class, nonatomic, readwrite) BOOL shouldMonitorBackgroundEvents;
