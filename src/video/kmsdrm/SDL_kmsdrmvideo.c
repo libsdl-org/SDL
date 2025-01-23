@@ -163,7 +163,7 @@ static int get_driindex(void)
                 close(drm_fd);
             } else {
                 SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
-                             "Failed to open KMSDRM device %s, errno: %d\n", device, errno);
+                             "Failed to open KMSDRM device %s, errno: %d", device, errno);
             }
         }
     }

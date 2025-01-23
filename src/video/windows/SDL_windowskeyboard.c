@@ -741,7 +741,7 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
     videodata->ime_cursor = LOWORD(ImmGetCompositionStringW(himc, GCS_CURSORPOS, 0, 0));
     videodata->ime_selected_start = 0;
     videodata->ime_selected_length = 0;
-    SDL_DebugIMELog("Cursor = %d\n", videodata->ime_cursor);
+    SDL_DebugIMELog("Cursor = %d", videodata->ime_cursor);
 
     length = ImmGetCompositionStringW(himc, string, NULL, 0);
     if (length > 0 && videodata->ime_composition_length < length) {
@@ -786,7 +786,7 @@ static void IME_GetCompositionString(SDL_VideoData *videodata, HIMC himc, DWORD 
             }
 
             for (LONG i = 0; i < length; ++i) {
-                SDL_DebugIMELog("attrib[%d] = %d\n", i, attributes[i]);
+                SDL_DebugIMELog("attrib[%d] = %d", i, attributes[i]);
             }
 
             for (start = 0; start < length; ++start) {
@@ -987,7 +987,7 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
     HIMC himc = 0;
 
     if (msg == WM_IME_SETCONTEXT) {
-        SDL_DebugIMELog("WM_IME_SETCONTEXT\n");
+        SDL_DebugIMELog("WM_IME_SETCONTEXT");
 
         LPARAM element_mask;
         if (videodata->ime_internal_composition && videodata->ime_internal_candidates) {
@@ -1013,35 +1013,35 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
     switch (msg) {
     case WM_KEYDOWN:
         if (wParam == VK_PROCESSKEY) {
-            SDL_DebugIMELog("WM_KEYDOWN VK_PROCESSKEY\n");
+            SDL_DebugIMELog("WM_KEYDOWN VK_PROCESSKEY");
             trap = true;
         } else {
-            SDL_DebugIMELog("WM_KEYDOWN normal\n");
+            SDL_DebugIMELog("WM_KEYDOWN normal");
         }
         break;
     case WM_INPUTLANGCHANGE:
-        SDL_DebugIMELog("WM_INPUTLANGCHANGE\n");
+        SDL_DebugIMELog("WM_INPUTLANGCHANGE");
         IME_InputLangChanged(videodata);
         break;
     case WM_IME_STARTCOMPOSITION:
-        SDL_DebugIMELog("WM_IME_STARTCOMPOSITION\n");
+        SDL_DebugIMELog("WM_IME_STARTCOMPOSITION");
         if (videodata->ime_internal_composition) {
             trap = true;
         }
         break;
     case WM_IME_COMPOSITION:
-        SDL_DebugIMELog("WM_IME_COMPOSITION %x\n", lParam);
+        SDL_DebugIMELog("WM_IME_COMPOSITION %x", lParam);
         if (videodata->ime_internal_composition) {
             trap = true;
             himc = ImmGetContext(hwnd);
             if (*lParam & GCS_RESULTSTR) {
-                SDL_DebugIMELog("GCS_RESULTSTR\n");
+                SDL_DebugIMELog("GCS_RESULTSTR");
                 IME_GetCompositionString(videodata, himc, GCS_RESULTSTR);
                 IME_SendClearComposition(videodata);
                 IME_SendInputEvent(videodata);
             }
             if (*lParam & GCS_COMPSTR) {
-                SDL_DebugIMELog("GCS_COMPSTR\n");
+                SDL_DebugIMELog("GCS_COMPSTR");
                 videodata->ime_readingstring[0] = 0;
                 IME_GetCompositionString(videodata, himc, GCS_COMPSTR);
                 IME_SendEditingEvent(videodata);
@@ -1050,7 +1050,7 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
         }
         break;
     case WM_IME_ENDCOMPOSITION:
-        SDL_DebugIMELog("WM_IME_ENDCOMPOSITION\n");
+        SDL_DebugIMELog("WM_IME_ENDCOMPOSITION");
         if (videodata->ime_internal_composition) {
             trap = true;
             videodata->ime_composition[0] = 0;
@@ -1062,32 +1062,32 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
         }
         break;
     case WM_IME_NOTIFY:
-        SDL_DebugIMELog("WM_IME_NOTIFY %x\n", wParam);
+        SDL_DebugIMELog("WM_IME_NOTIFY %x", wParam);
         switch (wParam) {
         case IMN_SETCOMPOSITIONWINDOW:
-            SDL_DebugIMELog("IMN_SETCOMPOSITIONWINDOW\n");
+            SDL_DebugIMELog("IMN_SETCOMPOSITIONWINDOW");
             break;
         case IMN_SETCOMPOSITIONFONT:
-            SDL_DebugIMELog("IMN_SETCOMPOSITIONFONT\n");
+            SDL_DebugIMELog("IMN_SETCOMPOSITIONFONT");
             break;
         case IMN_SETCANDIDATEPOS:
-            SDL_DebugIMELog("IMN_SETCANDIDATEPOS\n");
+            SDL_DebugIMELog("IMN_SETCANDIDATEPOS");
             break;
         case IMN_SETCONVERSIONMODE:
         case IMN_SETOPENSTATUS:
-            SDL_DebugIMELog("%s\n", wParam == IMN_SETCONVERSIONMODE ? "IMN_SETCONVERSIONMODE" : "IMN_SETOPENSTATUS");
+            SDL_DebugIMELog("%s", wParam == IMN_SETCONVERSIONMODE ? "IMN_SETCONVERSIONMODE" : "IMN_SETOPENSTATUS");
             IME_UpdateInputLocale(videodata);
             break;
         case IMN_OPENCANDIDATE:
         case IMN_CHANGECANDIDATE:
-            SDL_DebugIMELog("%s\n", wParam == IMN_OPENCANDIDATE ? "IMN_OPENCANDIDATE" : "IMN_CHANGECANDIDATE");
+            SDL_DebugIMELog("%s", wParam == IMN_OPENCANDIDATE ? "IMN_OPENCANDIDATE" : "IMN_CHANGECANDIDATE");
             if (videodata->ime_internal_candidates) {
                 trap = true;
                 videodata->ime_update_candidates = true;
             }
             break;
         case IMN_CLOSECANDIDATE:
-            SDL_DebugIMELog("IMN_CLOSECANDIDATE\n");
+            SDL_DebugIMELog("IMN_CLOSECANDIDATE");
             if (videodata->ime_internal_candidates) {
                 trap = true;
                 videodata->ime_update_candidates = false;
@@ -1097,7 +1097,7 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
         case IMN_PRIVATE:
         {
             DWORD dwId = IME_GetId(videodata, 0);
-            SDL_DebugIMELog("IMN_PRIVATE %u\n", dwId);
+            SDL_DebugIMELog("IMN_PRIVATE %u", dwId);
             IME_GetReadingString(videodata, hwnd);
             switch (dwId) {
             case IMEID_CHT_VER42:

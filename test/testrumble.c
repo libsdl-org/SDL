@@ -74,7 +74,7 @@ int main(int argc, char **argv)
             SDLTest_CommonLogUsage(state, argv[0], options);
             SDL_Log("%s", "");
             SDL_Log("If device is a two-digit number it'll use it as an index, otherwise\n"
-                    "it'll use it as if it were part of the device's name.\n");
+                    "it'll use it as if it were part of the device's name.");
             return 1;
         }
 
