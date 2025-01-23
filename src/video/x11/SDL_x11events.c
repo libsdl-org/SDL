@@ -1424,7 +1424,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
         if (xevent->xconfigure.x != data->last_xconfigure.x ||
             xevent->xconfigure.y != data->last_xconfigure.y) {
-            if (!data->disable_size_position_events) {
+            if (!data->size_move_event_flags) {
                 SDL_Window *w;
                 int x = xevent->xconfigure.x;
                 int y = xevent->xconfigure.y;
@@ -1448,7 +1448,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
         if (xevent->xconfigure.width != data->last_xconfigure.width ||
             xevent->xconfigure.height != data->last_xconfigure.height) {
-            if (!data->disable_size_position_events) {
+            if (!data->size_move_event_flags) {
                 data->pending_operation &= ~X11_PENDING_OP_RESIZE;
                 SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
                                     xevent->xconfigure.width,
@@ -1799,7 +1799,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                          * shut off to avoid bogus window sizes and positions, and
                          * note that the old borders were non-zero for restoration.
                          */
-                        data->disable_size_position_events = true;
+                        data->size_move_event_flags |= X11_SIZE_MOVE_EVENTS_WAIT_FOR_BORDERS;
                         data->previous_borders_nonzero = true;
                     } else if (!(flags & SDL_WINDOW_FULLSCREEN) &&
                                data->previous_borders_nonzero &&
@@ -1809,10 +1809,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                          * off size events until the borders come back to avoid bogus
                          * window sizes and positions.
                          */
-                        data->disable_size_position_events = true;
+                        data->size_move_event_flags |= X11_SIZE_MOVE_EVENTS_WAIT_FOR_BORDERS;
                         data->previous_borders_nonzero = false;
                     } else {
-                        data->disable_size_position_events = false;
+                        data->size_move_event_flags = 0;
                         data->previous_borders_nonzero = false;
 
                         if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
@@ -1845,7 +1845,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                             data->pending_operation |= X11_PENDING_OP_MOVE;
                             data->expected.x = data->window->pending.x - data->border_left;
                             data->expected.y = data->window->pending.y - data->border_top;
-                            X11_XMoveWindow(display, data->xwindow, data->window->pending.x - data->border_left, data->window->pending.y - data->border_top);
+                            X11_XMoveWindow(display, data->xwindow, data->expected.x, data->expected.y);
                         }
                         if (data->pending_size) {
                             data->pending_size = false;
@@ -1875,37 +1875,13 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                right approach, but it seems to work. */
             X11_UpdateKeymap(_this, true);
         } else if (xevent->xproperty.atom == videodata->atoms._NET_FRAME_EXTENTS) {
-            if (data->disable_size_position_events) {
-                /* Re-enable size events if they were turned off waiting for the borders to come back
-                 * when leaving fullscreen.
-                 */
-                data->disable_size_position_events = false;
+            /* Events are disabled when leaving fullscreen until the borders appear to avoid
+             * incorrect size/position events.
+             */
+            if (data->size_move_event_flags) {
+                data->size_move_event_flags &= ~X11_SIZE_MOVE_EVENTS_WAIT_FOR_BORDERS;
                 X11_GetBorderValues(data);
-                if (data->border_top != 0 || data->border_left != 0 || data->border_right != 0 || data->border_bottom != 0) {
-                    // Adjust if the window size/position changed to accommodate the borders.
-                    data->pending_operation |= X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE;
 
-                    if (data->pending_position) {
-                        data->pending_position = false;
-                        data->expected.x = data->window->pending.x - data->border_left;
-                        data->expected.y = data->window->pending.y - data->border_top;
-
-                    } else {
-                        data->expected.x = data->window->windowed.x - data->border_left;
-                        data->expected.y = data->window->windowed.y - data->border_top;
-                    }
-
-                    if (data->pending_size) {
-                        data->pending_size = false;
-                        data->expected.w = data->window->pending.w;
-                        data->expected.h = data->window->pending.h;
-                    } else {
-                        data->expected.w = data->window->windowed.w;
-                        data->expected.h = data->window->windowed.h;
-                    }
-                    X11_XMoveWindow(display, data->xwindow, data->expected.x, data->expected.y - data->border_top);
-                    X11_XResizeWindow(display, data->xwindow, data->expected.w, data->expected.h);
-                }
             }
             if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
                 data->toggle_borders = false;

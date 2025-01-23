@@ -1440,9 +1440,6 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         X11_UpdateWindowPosition(window, false);
     }
 
-    const int target_x = window->last_position_pending ? window->pending.x : window->x;
-    const int target_y = window->last_position_pending ? window->pending.y : window->y;
-
     /* Whether XMapRaised focuses the window is based on the window type and it is
      * wm specific. There isn't much we can do here */
     (void)bActivate;
@@ -1475,33 +1472,24 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         X11_GetBorderValues(data);
     }
 
-    /* Some window managers can send garbage coordinates while mapping the window, and need the position sent again
-     * after mapping or the window may not be positioned properly.
-     *
-     * Don't emit size and position events during the initial configure events, they will be sent afterwards, when the
-     * final coordinates are available to avoid sending garbage values.
+    // Apply the pending position, if any, after the window is mapped.
+    data->pending_position = window->last_position_pending;
+
+    /* Some window managers can send garbage coordinates while mapping the window, so don't emit size and position
+     * events during the initial configure events.
      */
-    data->disable_size_position_events = true;
+    data->size_move_event_flags = X11_SIZE_MOVE_EVENTS_DISABLE;
     X11_XSync(display, False);
     X11_PumpEvents(_this);
+    data->size_move_event_flags = 0;
 
     // If a configure event was received (type is non-zero), send the final window size and coordinates.
     if (data->last_xconfigure.type) {
-        int x = data->last_xconfigure.x;
-        int y = data->last_xconfigure.y;
-        SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-
-        // If the borders appeared, this happened automatically in the event system, otherwise, set the position now.
-        if (data->disable_size_position_events && (target_x != x || target_y != y)) {
-            data->pending_operation = X11_PENDING_OP_MOVE;
-            X11_XMoveWindow(display, data->xwindow, target_x, target_y);
-        }
-
+        int x, y;
+        SDL_GlobalToRelativeForWindow(data->window, data->last_xconfigure.x, data->last_xconfigure.y, &x, &y);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, data->last_xconfigure.width, data->last_xconfigure.height);
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
     }
-
-    data->disable_size_position_events = false;
 }
 
 void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
