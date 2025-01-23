@@ -77,14 +77,39 @@ void SDL_OPENXR_UnloadLoaderSymbols(void)
 // returns non-zero if all needed symbols were loaded.
 bool SDL_OPENXR_LoadLoaderSymbols(void)
 {
-    bool result = true; // always succeed if not using Dynamic OPENXR stuff.
+    bool result = true;
 
-    // deal with multiple modules (dga, openxr, etc) needing these symbols...
+    // deal with multiple modules (gpu, openxr, etc) needing these symbols...
     if (openxr_load_refcount++ == 0) {
-        openxr_loader.lib = SDL_LoadObject(openxr_loader.libname);
+        const char *paths_hint = SDL_GetHint(SDL_HINT_OPENXR_SONAMES);
 
-        if(!openxr_loader.lib)
+        if (paths_hint) { 
+            // dupe for strtok
+            char *paths = SDL_strdup(paths_hint);
+
+            char *strtok_state;
+            // go over all the passed paths
+            char *path = SDL_strtok_r(paths, ",", &strtok_state);
+            while (path) {
+                openxr_loader.lib = SDL_LoadObject(path);
+                // if we found the lib, break out
+                if(openxr_loader.lib) {
+                    break;
+                }
+
+                path = SDL_strtok_r(NULL, ",", &strtok_state);
+            }
+
+            SDL_free(paths);
+        } else {
+            // If no hint is specfied, use a sane default
+            openxr_loader.lib = SDL_LoadObject(openxr_loader.libname);
+        }
+
+        if (!openxr_loader.lib) {
+            openxr_load_refcount--;
             return false;
+        }
 
         bool failed = false;
 
