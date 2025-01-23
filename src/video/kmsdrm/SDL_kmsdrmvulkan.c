@@ -328,7 +328,7 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                   &mode_count, NULL);
 
     if (mode_count == 0) {
-        SDL_SetError("Vulkan can't find any video modes for display %i (%s)\n", 0,
+        SDL_SetError("Vulkan can't find any video modes for display %i (%s)", 0,
                      display_props[display_index].displayName);
         goto clean;
     }

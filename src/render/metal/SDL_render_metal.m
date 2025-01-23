@@ -1482,7 +1482,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
                 mtlsampler = data.mtlsamplers[SDL_METAL_SAMPLER_NEAREST_WRAP];
                 break;
             default:
-                return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+                return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
             }
         } else {
             switch (cmd->data.draw.texture_address_mode) {
@@ -1493,7 +1493,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
                 mtlsampler = data.mtlsamplers[SDL_METAL_SAMPLER_LINEAR_WRAP];
                 break;
             default:
-                return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+                return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
             }
         }
         [data.mtlcmdencoder setFragmentSamplerState:mtlsampler atIndex:0];

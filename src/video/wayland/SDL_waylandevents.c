@@ -1397,7 +1397,7 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     close(fd);
 
     if (!input->xkb.keymap) {
-        SDL_SetError("failed to compile keymap\n");
+        SDL_SetError("failed to compile keymap");
         return;
     }
 
@@ -1422,7 +1422,7 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     }
     input->xkb.state = WAYLAND_xkb_state_new(input->xkb.keymap);
     if (!input->xkb.state) {
-        SDL_SetError("failed to create XKB state\n");
+        SDL_SetError("failed to create XKB state");
         WAYLAND_xkb_keymap_unref(input->xkb.keymap);
         input->xkb.keymap = NULL;
         return;
@@ -1472,7 +1472,7 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         input->xkb.compose_state = WAYLAND_xkb_compose_state_new(input->xkb.compose_table,
                                                                  XKB_COMPOSE_STATE_NO_FLAGS);
         if (!input->xkb.compose_state) {
-            SDL_SetError("could not create XKB compose state\n");
+            SDL_SetError("could not create XKB compose state");
             WAYLAND_xkb_compose_table_unref(input->xkb.compose_table);
             input->xkb.compose_table = NULL;
         }

@@ -921,7 +921,7 @@ static bool SDL_ConvertPixels_XRGB8888_to_YUV(int width, int height, const void 
         int plane_skip;
 
         if (dst_pitch < row_size) {
-            return SDL_SetError("Destination pitch is too small, expected at least %d\n", row_size);
+            return SDL_SetError("Destination pitch is too small, expected at least %d", row_size);
         }
         plane_skip = (dst_pitch - row_size);
 

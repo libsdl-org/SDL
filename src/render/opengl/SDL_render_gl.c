@@ -1132,7 +1132,7 @@ static bool SetTextureAddressMode(GL_RenderData *data, GLenum textype, SDL_Textu
         data->glTexParameteri(textype, GL_TEXTURE_WRAP_T, GL_REPEAT);
         break;
     default:
-        return SDL_SetError("Unknown texture address mode: %d\n", addressMode);
+        return SDL_SetError("Unknown texture address mode: %d", addressMode);
     }
     return true;
 }

@@ -1323,7 +1323,7 @@ static bool HIDAPI_GIP_SendPacket(SDL_DriverXboxOne_Context *ctx, struct gip_hea
     hdr_len = HIDAPI_GIP_GetHeaderLength(hdr);
     size = (hdr_len + hdr->packet_length);
     if (size > sizeof(packet)) {
-        SDL_SetError("Couldn't send GIP packet, size (%d) too large\n", size);
+        SDL_SetError("Couldn't send GIP packet, size (%d) too large", size);
         return false;
     }
 
