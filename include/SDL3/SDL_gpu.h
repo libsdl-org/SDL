@@ -3410,7 +3410,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPUComputePass(
 /**
  * Maps a transfer buffer into application address space.
  *
- * You must unmap the transfer buffer before encoding upload commands.
+ * You must unmap the transfer buffer before encoding upload commands. The
+ * memory is owned by the graphics driver - do NOT call SDL_free() on the
+ * returned pointer.
  *
  * \param device a GPU context.
  * \param transfer_buffer a transfer buffer.
