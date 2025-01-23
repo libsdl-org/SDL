@@ -1560,7 +1560,7 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
         if(renderer->xrInstance) {
             renderer->xr->xrDestroyInstance(renderer->xrInstance);
         }
-        SDL_OPENXR_UnloadLoaderSymbols();
+        SDL_OpenXR_UnloadLibrary();
         SDL_free(renderer->xr);
     }
 #endif
@@ -8690,7 +8690,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false);
 
     if (xr) {
-        if (!SDL_OPENXR_LoadLoaderSymbols()) {
+        if (!SDL_OpenXR_LoadLibrary()) {
             SDL_SetError("Failed to load OpenXR loader or a required symbol");
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to load OpenXR loader");
             SDL_Vulkan_UnloadLibrary();
@@ -8702,7 +8702,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
             SDL_SetError("Failed to find a suitable OpenXR GPU extension.");
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to find a suitable OpenXR GPU extension");
             SDL_Vulkan_UnloadLibrary();
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             return false;
         }
 
@@ -8719,7 +8719,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to create OpenXR instance");
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create OpenXR instance");
             SDL_Vulkan_UnloadLibrary();
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             return false;
         }
 
@@ -8728,7 +8728,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to load needed OpenXR instance symbols");
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to load needed OpenXR instance symbols");
             SDL_Vulkan_UnloadLibrary();
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             /* NOTE: we can't actually destroy the created OpenXR instance here, 
                     as we only get that function pointer by loading the instance symbols...
                     let's just hope that doesn't happen... */
@@ -8743,7 +8743,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");
             instancePfns->xrDestroyInstance(xrInstance);
             SDL_Vulkan_UnloadLibrary();
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             SDL_free(instancePfns);
             return false;
         }
@@ -8753,7 +8753,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get D3D12 graphics requirements");
             instancePfns->xrDestroyInstance(xrInstance);
             SDL_Vulkan_UnloadLibrary();
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             SDL_free(instancePfns);
             return false;
         }
@@ -8768,7 +8768,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
             if (instancePfns) {
                 instancePfns->xrDestroyInstance(xrInstance);
                 SDL_free(instancePfns);
-                SDL_OPENXR_UnloadLoaderSymbols();
+                SDL_OpenXR_UnloadLibrary();
             }
             IDXGIFactory1_Release(factory);
             SDL_UnloadObject(d3d12Dll);
@@ -8804,7 +8804,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
             if (instancePfns) {
                 instancePfns->xrDestroyInstance(xrInstance);
                 SDL_free(instancePfns);
-                SDL_OPENXR_UnloadLoaderSymbols();
+                SDL_OpenXR_UnloadLibrary();
             }
 #endif /* HAVE_GPU_OPENXR */
             IDXGIFactory1_Release(factory);
@@ -8828,7 +8828,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     if (instancePfns) {
         instancePfns->xrDestroyInstance(xrInstance);
         SDL_free(instancePfns);
-        SDL_OPENXR_UnloadLoaderSymbols();
+        SDL_OpenXR_UnloadLibrary();
     }
 #endif /* HAVE_GPU_OPENXR */
 
@@ -9150,20 +9150,20 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
             return NULL;
         }
 
-        if (!SDL_OPENXR_LoadLoaderSymbols()) {
+        if (!SDL_OpenXR_LoadLibrary()) {
             SDL_assert(!"This should have failed in PrepareDevice first!");
             return NULL;
         }
 
         if(!D3D12_INTERNAL_SearchForOpenXrGpuExtension(&gpuExtension)) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to find a compatible OpenXR D3D12 extension");
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             return false;
         }
 
         if (!SDL_OPENXR_INTERNAL_GPUInitOpenXR(debugMode, gpuExtension, props, xrInstance, xrSystemId, &renderer->xr)) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to init OpenXR");
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             return false;
         }
 
@@ -9173,13 +9173,13 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         LUID xrAdapter;
 
         if (D3D12_INTERNAL_GetXrGraphicsRequirements(*xrInstance, *xrSystemId, &featureLevel, &xrAdapter) != XR_SUCCESS) {
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             D3D12_INTERNAL_DestroyRenderer(renderer);
             return false;
         }
 
         if (!D3D12_INTERNAL_GetAdapterByLuid(xrAdapter, factory1, &renderer->adapter)) {
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             D3D12_INTERNAL_DestroyRenderer(renderer);
             return false;
         }

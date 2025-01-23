@@ -4905,7 +4905,7 @@ static void VULKAN_DestroyDevice(
     VULKAN_Wait(device->driverData);
 
 #ifdef HAVE_GPU_OPENXR
-    SDL_OPENXR_UnloadLoaderSymbols();
+    SDL_OpenXR_UnloadLibrary();
     if(renderer->xr) {
         SDL_free(renderer->xr);
     }
@@ -6894,6 +6894,9 @@ static XrResult VULKAN_CreateXRSession(
 #ifdef HAVE_GPU_OPENXR
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
 
+    /* Copy out the existing next ptr so that we can append it to the end of the chain we create */
+    const void* XR_MAY_ALIAS currentNextPtr = createinfo->next;
+
     /* KHR_vulkan_enable and KHR_vulkan_enable2 share this structure, so we don't need to change any logic here to handle both */
     XrGraphicsBindingVulkanKHR graphicsBinding = {XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR};
     graphicsBinding.instance = renderer->instance;
@@ -6901,8 +6904,9 @@ static XrResult VULKAN_CreateXRSession(
     graphicsBinding.device = renderer->logicalDevice;
     graphicsBinding.queueFamilyIndex = renderer->queueFamilyIndex;
     graphicsBinding.queueIndex = 0; /* we only ever have one queue, so hardcode queue index 0 */
+    graphicsBinding.next = currentNextPtr;
 
-    XrSessionCreateInfo sessionCreateInfo = {XR_TYPE_SESSION_CREATE_INFO};
+    XrSessionCreateInfo sessionCreateInfo = *createinfo;
     sessionCreateInfo.systemId = renderer->xrSystemId;
     sessionCreateInfo.next = &graphicsBinding;
 
@@ -12067,7 +12071,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     bool xr = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false);
     
     if (xr) {
-        if (!SDL_OPENXR_LoadLoaderSymbols()) {
+        if (!SDL_OpenXR_LoadLibrary()) {
             SDL_SetError("Failed to load OpenXR loader or a required symbol");
             SDL_Vulkan_UnloadLibrary();
             return false;
@@ -12077,7 +12081,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         if(!VULKAN_INTERNAL_SearchForOpenXrGpuExtension(&gpuExtension)) {
             SDL_SetError("Failed to find a suitable OpenXR GPU extension.");
             SDL_Vulkan_UnloadLibrary();
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             return false;
         }
 
@@ -12093,7 +12097,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         }, &xrInstance)) != XR_SUCCESS) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to create OpenXR instance");
             SDL_Vulkan_UnloadLibrary();
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             return false;
         }
 
@@ -12101,7 +12105,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         if (!instancePfns) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to load needed OpenXR instance symbols");
             SDL_Vulkan_UnloadLibrary();
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             /* NOTE: we can't actually destroy the created OpenXR instance here, 
                     as we only get that function pointer by loading the instance symbols...
                     let's just hope that doesn't happen. */
@@ -12115,7 +12119,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR system");
             instancePfns->xrDestroyInstance(xrInstance);
             SDL_Vulkan_UnloadLibrary();
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             SDL_free(instancePfns);
             return false;
         }
@@ -12126,7 +12130,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
             SDL_SetError("Failed to get the minimum supported Vulkan API version.");
             instancePfns->xrDestroyInstance(xrInstance);
             SDL_Vulkan_UnloadLibrary();
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             SDL_free(instancePfns);
             return false;
         }
@@ -12154,7 +12158,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     if (instancePfns) {
         instancePfns->xrDestroyInstance(xrInstance);
         SDL_free(instancePfns);
-        SDL_OPENXR_UnloadLoaderSymbols();
+        SDL_OpenXR_UnloadLibrary();
     }
 #endif /* HAVE_GPU_OPENXR */
     SDL_free(renderer);
@@ -12197,7 +12201,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
             return NULL;
         }
 
-        if (!SDL_OPENXR_LoadLoaderSymbols()) {
+        if (!SDL_OpenXR_LoadLibrary()) {
             SDL_assert(!"This should have failed in PrepareDevice first!");
             return NULL;
         }
@@ -12205,13 +12209,13 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         if(!VULKAN_INTERNAL_SearchForOpenXrGpuExtension(&gpuExtension))
         {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to find a compatible OpenXR vulkan extension");
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             return false;
         }
 
         if (!SDL_OPENXR_INTERNAL_GPUInitOpenXR(debugMode, gpuExtension, props, xrInstance, xrSystemId, &renderer->xr)) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to init OpenXR");
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             return false;
         }
 
@@ -12222,7 +12226,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         if(VULKAN_INTERNAL_GetXrMinimumVulkanApiVersion(&minimumVulkanApiVersion, *xrInstance, *xrSystemId) != XR_SUCCESS) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Failed to get OpenXR graphics requirements");
             renderer->xr->xrDestroyInstance(*xrInstance);
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             SDL_free(renderer->xr);
             SDL_free(renderer);
             return false;
@@ -12239,7 +12243,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 #ifdef HAVE_GPU_OPENXR
         if (xr) {
             renderer->xr->xrDestroyInstance(*xrInstance);
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             SDL_free(renderer->xr);
         }
 #endif /* HAVE_GPU_OPENXR */
@@ -12274,7 +12278,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 #ifdef HAVE_GPU_OPENXR
         if (xr) {
             renderer->xr->xrDestroyInstance(*xrInstance);
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             SDL_free(renderer->xr);
         }
 #endif /* HAVE_GPU_OPENXR */
