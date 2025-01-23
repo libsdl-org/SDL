@@ -60,7 +60,7 @@ static void *OPENXR_GetSym(const char *fnname, bool *failed)
 
 static int openxr_load_refcount = 0;
 
-void SDL_OPENXR_UnloadLoaderSymbols(void)
+void SDL_OpenXR_UnloadLibrary(void)
 {
     // Don't actually unload if more than one module is using the libs...
     if (openxr_load_refcount > 0) {
@@ -75,7 +75,7 @@ void SDL_OPENXR_UnloadLoaderSymbols(void)
 }
 
 // returns non-zero if all needed symbols were loaded.
-bool SDL_OPENXR_LoadLoaderSymbols(void)
+bool SDL_OpenXR_LoadLibrary(void)
 {
     bool result = true;
 
@@ -118,12 +118,20 @@ bool SDL_OPENXR_LoadLoaderSymbols(void)
 
         if (failed) {
             // in case something got loaded...
-            SDL_OPENXR_UnloadLoaderSymbols();
+            SDL_OpenXR_UnloadLibrary();
             result = false;
         }
     }
 
     return result;
+}
+
+PFN_xrGetInstanceProcAddr SDL_OpenXR_GetXrGetInstanceProcAddr(void) {
+    if(xrGetInstanceProcAddr == NULL) {
+        SDL_SetError("The OpenXR loader has not been loaded");
+    }
+
+    return xrGetInstanceProcAddr;
 }
 
 XrInstancePfns *SDL_OPENXR_LoadInstanceSymbols(XrInstance instance)
