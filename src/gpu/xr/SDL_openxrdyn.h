@@ -42,9 +42,6 @@ typedef struct XrInstancePfns {
 #include "SDL_openxrsym.h"
 } XrInstancePfns;
 
-extern bool SDL_OPENXR_LoadLoaderSymbols(void);
-extern void SDL_OPENXR_UnloadLoaderSymbols(void);
-
 extern XrInstancePfns *SDL_OPENXR_LoadInstanceSymbols(XrInstance instance);
 
 /* Define the function pointers */

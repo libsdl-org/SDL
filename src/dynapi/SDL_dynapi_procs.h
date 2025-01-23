@@ -1274,3 +1274,6 @@ SDL_DYNAPI_PROC(bool,SDL_GetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMo
 SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSession,(SDL_GPUDevice *a, const XrSessionCreateInfo *b, XrSession *c),(a,b,c),return)
 SDL_DYNAPI_PROC(XrResult,SDL_CreateGPUXRSwapchain,(SDL_GPUDevice *a, XrSession b, const XrSwapchainCreateInfo *c, SDL_GPUTextureFormat *d, XrSwapchain *e, SDL_GPUTexture ***f),(a,b,c,d,e,f),return)
 SDL_DYNAPI_PROC(XrResult,SDL_DestroyGPUXRSwapchain,(SDL_GPUDevice *a,XrSwapchain b,SDL_GPUTexture **c),(a,b,c),return)
+SDL_DYNAPI_PROC(void,SDL_OpenXR_UnloadLibrary,(void),(),)
+SDL_DYNAPI_PROC(bool,SDL_OpenXR_LoadLibrary,(void),(),return)
+SDL_DYNAPI_PROC(PFN_xrGetInstanceProcAddr,SDL_OpenXR_GetXrGetInstanceProcAddr,(void),(),return)
