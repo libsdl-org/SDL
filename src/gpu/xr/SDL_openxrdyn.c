@@ -21,6 +21,8 @@
 
 #include "SDL_internal.h"
 
+#include "SDL_openxrdyn.h"
+
 #ifdef HAVE_GPU_OPENXR
 
 #ifndef SDL_GPU_OPENXR_DYNAMIC
@@ -28,8 +30,6 @@
 #endif
 
 #define DEBUG_DYNAMIC_OPENXR 0
-
-#include "SDL_openxrdyn.h"
 
 typedef struct
 {
@@ -149,6 +149,26 @@ XrInstancePfns *SDL_OPENXR_LoadInstanceSymbols(XrInstance instance)
 #include "SDL_openxrsym.h"
 
     return pfns;
+}
+
+#else
+
+bool SDL_OpenXR_LoadLibrary(void) 
+{
+    SDL_SetError("OpenXR is not enabled in this build of SDL");
+    return false;
+}
+
+void SDL_OpenXR_UnloadLibrary(void)
+{
+    SDL_SetError("OpenXR is not enabled in this build of SDL");
+}
+
+PFN_xrGetInstanceProcAddr SDL_OpenXR_GetXrGetInstanceProcAddr(void)
+{
+    SDL_SetError("OpenXR is not enabled in this build of SDL");
+
+    return NULL;
 }
 
 #endif // HAVE_GPU_OPENXR
