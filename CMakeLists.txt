@@ -1188,6 +1188,7 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/timer/*.c"
   "${SDL3_SOURCE_DIR}/src/video/*.c"
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c"
+  "${SDL3_SOURCE_DIR}/src/gpu/xr/*.c"
 )
 
 # Build uclibc as a static library such that non-used symbols don't end up in the SDL3 shared library.
@@ -3040,7 +3041,6 @@ if(SDL_GPU)
       set(SDL_GPU_OPENXR_DYNAMIC "\"libopenxr_loader.so.1\"")
     endif()
 
-    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/xr/*.c")
     set(HAVE_GPU_OPENXR 1)
   endif()
 endif()
