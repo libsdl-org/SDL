@@ -1153,7 +1153,7 @@ void *SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, bool closeio)
         size = FILE_CHUNK_SIZE;
         loading_chunks = true;
     }
-    if (size >= SDL_SIZE_MAX) {
+    if (size >= SDL_SIZE_MAX - 1) {
         goto done;
     }
     data = (char *)SDL_malloc((size_t)(size + 1));
@@ -1166,7 +1166,7 @@ void *SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, bool closeio)
         if (loading_chunks) {
             if ((size_total + FILE_CHUNK_SIZE) > size) {
                 size = (size_total + FILE_CHUNK_SIZE);
-                if (size >= SDL_SIZE_MAX) {
+                if (size >= SDL_SIZE_MAX - 1) {
                     newdata = NULL;
                 } else {
                     newdata = (char *)SDL_realloc(data, (size_t)(size + 1));
