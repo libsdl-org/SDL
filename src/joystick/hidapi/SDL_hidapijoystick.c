@@ -1492,7 +1492,7 @@ static bool HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     if (!device || !device->driver) {
         // This should never happen - validated before being called
-        return SDL_SetError("Couldn't find HIDAPI device at index %d\n", device_index);
+        return SDL_SetError("Couldn't find HIDAPI device at index %d", device_index);
     }
 
     hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*hwdata));

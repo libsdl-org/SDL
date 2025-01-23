@@ -2315,7 +2315,7 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
             textureSampler = rendererData->samplers[D3D11_SAMPLER_NEAREST_WRAP];
             break;
         default:
-            return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+            return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
         }
         break;
     case D3D11_FILTER_MIN_MAG_MIP_LINEAR:
@@ -2327,11 +2327,11 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
             textureSampler = rendererData->samplers[D3D11_SAMPLER_LINEAR_WRAP];
             break;
         default:
-            return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+            return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
         }
         break;
     default:
-        return SDL_SetError("Unknown scale mode: %d\n", textureData->scaleMode);
+        return SDL_SetError("Unknown scale mode: %d", textureData->scaleMode);
     }
 #ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
