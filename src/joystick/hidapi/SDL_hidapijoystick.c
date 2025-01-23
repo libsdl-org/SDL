@@ -458,7 +458,7 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, bool *removed) S
 
             if (dev == NULL) {
                 SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                             "HIDAPI_SetupDeviceDriver() couldn't open %s: %s\n",
+                             "HIDAPI_SetupDeviceDriver() couldn't open %s: %s",
                              device->path, SDL_GetError());
                 return;
             }

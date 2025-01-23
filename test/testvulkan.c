@@ -198,18 +198,18 @@ static void loadGlobalFunctions(void)
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr();
     if (!vkGetInstanceProcAddr) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "SDL_Vulkan_GetVkGetInstanceProcAddr(): %s\n",
+                     "SDL_Vulkan_GetVkGetInstanceProcAddr(): %s",
                      SDL_GetError());
         quit(2);
     }
 
 #define VULKAN_DEVICE_FUNCTION(name)
-#define VULKAN_GLOBAL_FUNCTION(name)                                                   \
-    name = (PFN_##name)vkGetInstanceProcAddr(VK_NULL_HANDLE, #name);                   \
-    if (!name) {                                                                       \
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,                                     \
-                     "vkGetInstanceProcAddr(VK_NULL_HANDLE, \"" #name "\") failed\n"); \
-        quit(2);                                                                       \
+#define VULKAN_GLOBAL_FUNCTION(name)                                                 \
+    name = (PFN_##name)vkGetInstanceProcAddr(VK_NULL_HANDLE, #name);                 \
+    if (!name) {                                                                     \
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,                                   \
+                     "vkGetInstanceProcAddr(VK_NULL_HANDLE, \"" #name "\") failed"); \
+        quit(2);                                                                     \
     }
 #define VULKAN_INSTANCE_FUNCTION(name)
     VULKAN_FUNCTIONS()
@@ -237,7 +237,7 @@ static void createInstance(void)
     if (result != VK_SUCCESS) {
         vulkanContext->instance = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkCreateInstance(): %s\n",
+                     "vkCreateInstance(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -247,12 +247,12 @@ static void loadInstanceFunctions(void)
 {
 #define VULKAN_DEVICE_FUNCTION(name)
 #define VULKAN_GLOBAL_FUNCTION(name)
-#define VULKAN_INSTANCE_FUNCTION(name)                                           \
-    name = (PFN_##name)vkGetInstanceProcAddr(vulkanContext->instance, #name);    \
-    if (!name) {                                                                 \
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,                               \
-                     "vkGetInstanceProcAddr(instance, \"" #name "\") failed\n"); \
-        quit(2);                                                                 \
+#define VULKAN_INSTANCE_FUNCTION(name)                                         \
+    name = (PFN_##name)vkGetInstanceProcAddr(vulkanContext->instance, #name);  \
+    if (!name) {                                                               \
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,                             \
+                     "vkGetInstanceProcAddr(instance, \"" #name "\") failed"); \
+        quit(2);                                                               \
     }
     VULKAN_FUNCTIONS()
 #undef VULKAN_DEVICE_FUNCTION
@@ -283,13 +283,13 @@ static void findPhysicalDevice(void)
     result = vkEnumeratePhysicalDevices(vulkanContext->instance, &physicalDeviceCount, NULL);
     if (result != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkEnumeratePhysicalDevices(): %s\n",
+                     "vkEnumeratePhysicalDevices(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
     if (physicalDeviceCount == 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkEnumeratePhysicalDevices(): no physical devices\n");
+                     "vkEnumeratePhysicalDevices(): no physical devices");
         quit(2);
     }
     physicalDevices = (VkPhysicalDevice *)SDL_malloc(sizeof(VkPhysicalDevice) * physicalDeviceCount);
@@ -300,7 +300,7 @@ static void findPhysicalDevice(void)
     if (result != VK_SUCCESS) {
         SDL_free(physicalDevices);
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkEnumeratePhysicalDevices(): %s\n",
+                     "vkEnumeratePhysicalDevices(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -353,7 +353,7 @@ static void findPhysicalDevice(void)
                 SDL_free(queueFamiliesProperties);
                 SDL_free(deviceExtensions);
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                             "vkGetPhysicalDeviceSurfaceSupportKHR(): %s\n",
+                             "vkGetPhysicalDeviceSurfaceSupportKHR(): %s",
                              getVulkanResultString(result));
                 quit(2);
             }
@@ -369,7 +369,7 @@ static void findPhysicalDevice(void)
                     SDL_free(queueFamiliesProperties);
                     SDL_free(deviceExtensions);
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                                 "SDL_Vulkan_GetPresentationSupport(): %s\n",
+                                 "SDL_Vulkan_GetPresentationSupport(): %s",
                                  SDL_GetError());
                     quit(2);
                 }
@@ -393,7 +393,7 @@ static void findPhysicalDevice(void)
             SDL_free(queueFamiliesProperties);
             SDL_free(deviceExtensions);
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                         "vkEnumerateDeviceExtensionProperties(): %s\n",
+                         "vkEnumerateDeviceExtensionProperties(): %s",
                          getVulkanResultString(result));
             quit(2);
         }
@@ -416,7 +416,7 @@ static void findPhysicalDevice(void)
             SDL_free(queueFamiliesProperties);
             SDL_free(deviceExtensions);
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                         "vkEnumerateDeviceExtensionProperties(): %s\n",
+                         "vkEnumerateDeviceExtensionProperties(): %s",
                          getVulkanResultString(result));
             quit(2);
         }
@@ -485,12 +485,12 @@ static void createDevice(void)
 
 static void loadDeviceFunctions(void)
 {
-#define VULKAN_DEVICE_FUNCTION(name)                                         \
-    name = (PFN_##name)vkGetDeviceProcAddr(vulkanContext->device, #name);    \
-    if (!name) {                                                             \
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,                           \
-                     "vkGetDeviceProcAddr(device, \"" #name "\") failed\n"); \
-        quit(2);                                                             \
+#define VULKAN_DEVICE_FUNCTION(name)                                       \
+    name = (PFN_##name)vkGetDeviceProcAddr(vulkanContext->device, #name);  \
+    if (!name) {                                                           \
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,                         \
+                     "vkGetDeviceProcAddr(device, \"" #name "\") failed"); \
+        quit(2);                                                           \
     }
 #define VULKAN_GLOBAL_FUNCTION(name)
 #define VULKAN_INSTANCE_FUNCTION(name)
@@ -528,7 +528,7 @@ static void createSemaphore(VkSemaphore *semaphore)
     if (result != VK_SUCCESS) {
         *semaphore = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkCreateSemaphore(): %s\n",
+                     "vkCreateSemaphore(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -545,7 +545,7 @@ static void getSurfaceCaps(void)
     VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vulkanContext->physicalDevice, vulkanContext->surface, &vulkanContext->surfaceCapabilities);
     if (result != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkGetPhysicalDeviceSurfaceCapabilitiesKHR(): %s\n",
+                     "vkGetPhysicalDeviceSurfaceCapabilitiesKHR(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -553,7 +553,7 @@ static void getSurfaceCaps(void)
     // check surface usage
     if (!(vulkanContext->surfaceCapabilities.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_DST_BIT)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "Vulkan surface doesn't support VK_IMAGE_USAGE_TRANSFER_DST_BIT\n");
+                     "Vulkan surface doesn't support VK_IMAGE_USAGE_TRANSFER_DST_BIT");
         quit(2);
     }
 }
@@ -567,7 +567,7 @@ static void getSurfaceFormats(void)
     if (result != VK_SUCCESS) {
         vulkanContext->surfaceFormatsCount = 0;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkGetPhysicalDeviceSurfaceFormatsKHR(): %s\n",
+                     "vkGetPhysicalDeviceSurfaceFormatsKHR(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -587,7 +587,7 @@ static void getSurfaceFormats(void)
     if (result != VK_SUCCESS) {
         vulkanContext->surfaceFormatsCount = 0;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkGetPhysicalDeviceSurfaceFormatsKHR(): %s\n",
+                     "vkGetPhysicalDeviceSurfaceFormatsKHR(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -603,7 +603,7 @@ static void getSwapchainImages(void)
     if (result != VK_SUCCESS) {
         vulkanContext->swapchainImageCount = 0;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkGetSwapchainImagesKHR(): %s\n",
+                     "vkGetSwapchainImagesKHR(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -620,7 +620,7 @@ static void getSwapchainImages(void)
         vulkanContext->swapchainImages = NULL;
         vulkanContext->swapchainImageCount = 0;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkGetSwapchainImagesKHR(): %s\n",
+                     "vkGetSwapchainImagesKHR(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -706,7 +706,7 @@ static bool createSwapchain(void)
     if (result != VK_SUCCESS) {
         vulkanContext->swapchain = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkCreateSwapchainKHR(): %s\n",
+                     "vkCreateSwapchainKHR(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -756,7 +756,7 @@ static void createCommandPool(void)
     if (result != VK_SUCCESS) {
         vulkanContext->commandPool = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkCreateCommandPool(): %s\n",
+                     "vkCreateCommandPool(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -776,7 +776,7 @@ static void createCommandBuffers(void)
         SDL_free(vulkanContext->commandBuffers);
         vulkanContext->commandBuffers = NULL;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkAllocateCommandBuffers(): %s\n",
+                     "vkAllocateCommandBuffers(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -803,7 +803,7 @@ static void createFences(void)
             SDL_free(vulkanContext->fences);
             vulkanContext->fences = NULL;
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                         "vkCreateFence(): %s\n",
+                         "vkCreateFence(): %s",
                          getVulkanResultString(result));
             quit(2);
         }
@@ -868,7 +868,7 @@ static void rerecordCommandBuffer(uint32_t frameIndex, const VkClearColorValue *
     VkResult result = vkResetCommandBuffer(commandBuffer, 0);
     if (result != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkResetCommandBuffer(): %s\n",
+                     "vkResetCommandBuffer(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -877,7 +877,7 @@ static void rerecordCommandBuffer(uint32_t frameIndex, const VkClearColorValue *
     result = vkBeginCommandBuffer(commandBuffer, &beginInfo);
     if (result != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkBeginCommandBuffer(): %s\n",
+                     "vkBeginCommandBuffer(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -902,7 +902,7 @@ static void rerecordCommandBuffer(uint32_t frameIndex, const VkClearColorValue *
     result = vkEndCommandBuffer(commandBuffer);
     if (result != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkEndCommandBuffer(): %s\n",
+                     "vkEndCommandBuffer(): %s",
                      getVulkanResultString(result));
         quit(2);
     }
@@ -1034,7 +1034,7 @@ static bool render(void)
 
     if ((rc != VK_SUBOPTIMAL_KHR) && (rc != VK_SUCCESS)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkAcquireNextImageKHR(): %s\n",
+                     "vkAcquireNextImageKHR(): %s",
                      getVulkanResultString(rc));
         quit(2);
     }
@@ -1081,7 +1081,7 @@ static bool render(void)
 
     if (rc != VK_SUCCESS) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
-                     "vkQueuePresentKHR(): %s\n",
+                     "vkQueuePresentKHR(): %s",
                      getVulkanResultString(rc));
         quit(2);
     }

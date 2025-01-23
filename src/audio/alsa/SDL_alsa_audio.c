@@ -923,7 +923,7 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
             return CHANS_N_NOT_CONFIGURED;
         }
 
-        LOGDEBUG("target chans_n is %u\n", target_chans_n);
+        LOGDEBUG("target chans_n is %u", target_chans_n);
 
         int status = ALSA_snd_pcm_hw_params_any(ctx->device->hidden->pcm, ctx->hwparams);
         if (status < 0) {
@@ -1050,7 +1050,7 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
 
 static bool ALSA_pcm_cfg_hw(struct ALSA_pcm_cfg_ctx *ctx)
 {
-    LOGDEBUG("target chans_n, equal or above requested chans_n mode\n");
+    LOGDEBUG("target chans_n, equal or above requested chans_n mode");
     int status = ALSA_pcm_cfg_hw_chans_n_scan(ctx, CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N);
     if (status < 0) {  // something went too wrong
         return false;
@@ -1059,7 +1059,7 @@ static bool ALSA_pcm_cfg_hw(struct ALSA_pcm_cfg_ctx *ctx)
     }
 
     // Here, status == CHANS_N_NOT_CONFIGURED
-    LOGDEBUG("target chans_n, below requested chans_n mode\n");
+    LOGDEBUG("target chans_n, below requested chans_n mode");
     status = ALSA_pcm_cfg_hw_chans_n_scan(ctx, CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N);
     if (status < 0) { // something went too wrong
         return false;
