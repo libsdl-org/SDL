@@ -325,7 +325,7 @@ void ConvertAudio(int num_frames,
 
     // Gain adjustment
     if (gain != 1.0f) {
-        float *buf = (float *)(dstconvert ? scratch : dst);
+        float *buf = (float *)((channelconvert || dstconvert) ? scratch : dst);
         const int total_samples = num_frames * src_channels;
         if (src == buf) {
             for (int i = 0; i < total_samples; i++) {
