@@ -25,8 +25,12 @@
 
 #ifdef HAVE_GPU_OPENXR
 
-#ifndef SDL_GPU_OPENXR_DYNAMIC
-#error OpenXR loader path not set for platform
+#if defined(SDL_PLATFORM_APPLE)
+#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.dylib"
+#elif defined(SDL_PLATFORM_WINDOWS)
+#define SDL_GPU_OPENXR_DYNAMIC "openxr_loader.dll"
+#else
+#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so.1"
 #endif
 
 #define DEBUG_DYNAMIC_OPENXR 0
