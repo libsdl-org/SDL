@@ -2999,7 +2999,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUIndexBuffer(
  *
  * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER.
  *
- * Be sure your shader is set up according to the requirements documented in SDL_CreateGPUShader().
+ * Be sure your shader is set up according to the requirements documented in
+ * SDL_CreateGPUShader().
  *
  * \param render_pass a render pass handle.
  * \param first_slot the vertex sampler slot to begin binding from.
@@ -3024,7 +3025,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexSamplers(
  * These textures must have been created with
  * SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ.
  *
- * Be sure your shader is set up according to the requirements documented in SDL_CreateGPUShader().
+ * Be sure your shader is set up according to the requirements documented in
+ * SDL_CreateGPUShader().
  *
  * \param render_pass a render pass handle.
  * \param first_slot the vertex storage texture slot to begin binding from.
@@ -3047,7 +3049,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageTextures(
  * These buffers must have been created with
  * SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ.
  *
- * Be sure your shader is set up according to the requirements documented in SDL_CreateGPUShader().
+ * Be sure your shader is set up according to the requirements documented in
+ * SDL_CreateGPUShader().
  *
  * \param render_pass a render pass handle.
  * \param first_slot the vertex storage buffer slot to begin binding from.
@@ -3069,7 +3072,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUVertexStorageBuffers(
  *
  * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER.
  *
- * Be sure your shader is set up according to the requirements documented in SDL_CreateGPUShader().
+ * Be sure your shader is set up according to the requirements documented in
+ * SDL_CreateGPUShader().
  *
  * \param render_pass a render pass handle.
  * \param first_slot the fragment sampler slot to begin binding from.
@@ -3094,7 +3098,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentSamplers(
  * These textures must have been created with
  * SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ.
  *
- * Be sure your shader is set up according to the requirements documented in SDL_CreateGPUShader().
+ * Be sure your shader is set up according to the requirements documented in
+ * SDL_CreateGPUShader().
  *
  * \param render_pass a render pass handle.
  * \param first_slot the fragment storage texture slot to begin binding from.
@@ -3117,7 +3122,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUFragmentStorageTextures(
  * These buffers must have been created with
  * SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ.
  *
- * Be sure your shader is set up according to the requirements documented in SDL_CreateGPUShader().
+ * Be sure your shader is set up according to the requirements documented in
+ * SDL_CreateGPUShader().
  *
  * \param render_pass a render pass handle.
  * \param first_slot the fragment storage buffer slot to begin binding from.
@@ -3314,7 +3320,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputePipeline(
  *
  * The textures must have been created with SDL_GPU_TEXTUREUSAGE_SAMPLER.
  *
- * Be sure your shader is set up according to the requirements documented in SDL_CreateGPUShader().
+ * Be sure your shader is set up according to the requirements documented in
+ * SDL_CreateGPUShader().
  *
  * \param compute_pass a compute pass handle.
  * \param first_slot the compute sampler slot to begin binding from.
@@ -3339,7 +3346,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeSamplers(
  * These textures must have been created with
  * SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ.
  *
- * Be sure your shader is set up according to the requirements documented in SDL_CreateGPUShader().
+ * Be sure your shader is set up according to the requirements documented in
+ * SDL_CreateGPUShader().
  *
  * \param compute_pass a compute pass handle.
  * \param first_slot the compute storage texture slot to begin binding from.
@@ -3362,7 +3370,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_BindGPUComputeStorageTextures(
  * These buffers must have been created with
  * SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ.
  *
- * Be sure your shader is set up according to the requirements documented in SDL_CreateGPUShader().
+ * Be sure your shader is set up according to the requirements documented in
+ * SDL_CreateGPUShader().
  *
  * \param compute_pass a compute pass handle.
  * \param first_slot the compute storage buffer slot to begin binding from.
