@@ -8600,8 +8600,6 @@ static bool D3D12_INTERNAL_GetAdapterByLuid(LUID luid, IDXGIFactory1 *factory, I
         }
         IDXGIAdapter1_Release(adapter);
     }
-
-    return false;
 }
 #endif /* HAVE_GPU_OPENXR */
 
