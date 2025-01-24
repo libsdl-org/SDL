@@ -907,6 +907,8 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c" />
+    <ClCompile Include="..\..\src\gpu\xr\SDL_gpu_opexnr.c" />
+    <ClCompile Include="..\..\src\gpu\xr\SDL_openxrdyn.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />
