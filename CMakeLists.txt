@@ -1176,6 +1176,7 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/io/generic/*.c"
   "${SDL3_SOURCE_DIR}/src/filesystem/*.c"
   "${SDL3_SOURCE_DIR}/src/gpu/*.c"
+  "${SDL3_SOURCE_DIR}/src/gpu/xr/*.c"
   "${SDL3_SOURCE_DIR}/src/joystick/*.c"
   "${SDL3_SOURCE_DIR}/src/haptic/*.c"
   "${SDL3_SOURCE_DIR}/src/hidapi/*.c"
@@ -1193,7 +1194,6 @@ sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/timer/*.c"
   "${SDL3_SOURCE_DIR}/src/video/*.c"
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c"
-  "${SDL3_SOURCE_DIR}/src/gpu/xr/*.c"
 )
 
 # Build uclibc as a static library such that non-used symbols don't end up in the SDL3 shared library.
