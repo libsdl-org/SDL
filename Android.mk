@@ -10,7 +10,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := SDL3
 
-LOCAL_C_INCLUDES := $(LOCAL_PATH)/include $(LOCAL_PATH)/include/build_config $(LOCAL_PATH)/src
+LOCAL_C_INCLUDES := $(LOCAL_PATH)/include $(LOCAL_PATH)/include/build_config $(LOCAL_PATH)/src $(LOCAL_PATH)/src/video/khronos
 
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
 

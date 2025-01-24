@@ -567,6 +567,12 @@
     <ClInclude Include="..\..\src\video\dummy\SDL_nullframebuffer_c.h" />
     <ClInclude Include="..\..\src\video\dummy\SDL_nullvideo.h" />
     <ClInclude Include="..\..\src\video\gdk\SDL_gdktextinput.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_platform.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_reflection.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_reflection_parent_structs.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_loader_negotiation.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_platform_defines.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_icd.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_layer.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_platform.h" />
