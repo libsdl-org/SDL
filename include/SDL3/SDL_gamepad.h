@@ -29,7 +29,7 @@
  * "joysticks" now are actually console-style gamepads. So SDL provides the
  * gamepad API on top of the lower-level joystick functionality.
  *
- * The difference betweena joystick and a gamepad is that a gamepad tells you
+ * The difference between a joystick and a gamepad is that a gamepad tells you
  * _where_ a button or axis is on the device. You don't speak to gamepads in
  * terms of arbitrary numbers like "button 3" or "axis 2" but in standard
  * locations: the d-pad, the shoulder buttons, triggers, A/B/X/Y (or
