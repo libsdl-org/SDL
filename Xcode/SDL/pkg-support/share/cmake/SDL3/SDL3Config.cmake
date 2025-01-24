@@ -112,7 +112,7 @@ if(NOT TARGET SDL3::SDL3-shared)
         set_target_properties(SDL3::SDL3-shared
             PROPERTIES
                 FRAMEWORK "TRUE"
-                IMPORTED_LOCATION "${_sdl3_framework_path}"
+                IMPORTED_LOCATION "${_sdl3_framework_path}/SDL3"
                 INTERFACE_LINK_LIBRARIES "SDL3::Headers"
         )
     endif()
