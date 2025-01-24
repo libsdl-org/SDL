@@ -102,10 +102,10 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'" />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
-    <IncludePath>$(ProjectDir)../../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)../../src;$(ProjectDir)../../src/video/khronos;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">
-    <IncludePath>$(ProjectDir)../../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)../../src;$(ProjectDir)../../src/video/khronos;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
     <Midl>
