@@ -9309,7 +9309,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 #else
     res = D3D12CreateDeviceFunc(
         (IUnknown *)renderer->adapter,
-        D3D_FEATURE_LEVEL_CHOICE,
+        featureLevel,
         D3D_GUID(D3D_IID_ID3D12Device),
         (void **)&renderer->device);
 
