@@ -30,7 +30,7 @@
 #elif defined(SDL_PLATFORM_WINDOWS)
 #define SDL_GPU_OPENXR_DYNAMIC "openxr_loader.dll"
 #else
-#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so.1"
+#define SDL_GPU_OPENXR_DYNAMIC "libopenxr_loader.so.1,libopenxr_loader.so"
 #endif
 
 #define DEBUG_DYNAMIC_OPENXR 0
@@ -38,7 +38,7 @@
 typedef struct
 {
     SDL_SharedObject *lib;
-    const char *libname;
+    const char *libnames;
 } openxrdynlib;
 
 static openxrdynlib openxr_loader = { NULL, SDL_GPU_OPENXR_DYNAMIC };
@@ -87,28 +87,27 @@ bool SDL_OpenXR_LoadLibrary(void)
     if (openxr_load_refcount++ == 0) {
         const char *paths_hint = SDL_GetHint(SDL_HINT_OPENXR_SONAMES);
 
-        if (paths_hint) { 
-            // dupe for strtok
-            char *paths = SDL_strdup(paths_hint);
+        // If no hint was specified, use the default
+        if(!paths_hint)
+            paths_hint = openxr_loader.libnames;
 
-            char *strtok_state;
-            // go over all the passed paths
-            char *path = SDL_strtok_r(paths, ",", &strtok_state);
-            while (path) {
-                openxr_loader.lib = SDL_LoadObject(path);
-                // if we found the lib, break out
-                if(openxr_loader.lib) {
-                    break;
-                }
+        // dupe for strtok
+        char *paths = SDL_strdup(paths_hint);
 
-                path = SDL_strtok_r(NULL, ",", &strtok_state);
+        char *strtok_state;
+        // go over all the passed paths
+        char *path = SDL_strtok_r(paths, ",", &strtok_state);
+        while (path) {
+            openxr_loader.lib = SDL_LoadObject(path);
+            // if we found the lib, break out
+            if(openxr_loader.lib) {
+                break;
             }
 
-            SDL_free(paths);
-        } else {
-            // If no hint is specfied, use a sane default
-            openxr_loader.lib = SDL_LoadObject(openxr_loader.libname);
+            path = SDL_strtok_r(NULL, ",", &strtok_state);
         }
+
+        SDL_free(paths);
 
         if (!openxr_loader.lib) {
             openxr_load_refcount--;
