@@ -430,7 +430,7 @@
     <ClCompile Include="..\..\src\gpu\SDL_gpu.c" />
     <ClCompile Include="..\..\src\gpu\d3d12\SDL_gpu_d3d12.c" />
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c" />
-    <ClCompile Include="..\..\src\gpu\xr\SDL_gpu_opexnr.c" />
+    <ClCompile Include="..\..\src\gpu\xr\SDL_gpu_openxr.c" />
     <ClCompile Include="..\..\src\gpu\xr\SDL_openxrdyn.c" />
     <ClCompile Include="..\..\src\io\generic\SDL_asyncio_generic.c" />
     <ClCompile Include="..\..\src\io\SDL_asyncio.c" />
