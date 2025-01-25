@@ -1083,6 +1083,8 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         renderer->line_method = SDL_GetRenderLineMethod();
     }
 
+    renderer->scale_mode = SDL_SCALEMODE_LINEAR;
+
     renderer->SDR_white_point = 1.0f;
     renderer->HDR_headroom = 1.0f;
     renderer->desired_color_scale = 1.0f;
@@ -1380,7 +1382,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     texture->color.b = 1.0f;
     texture->color.a = 1.0f;
     texture->blendMode = SDL_ISPIXELFORMAT_ALPHA(format) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE;
-    texture->scaleMode = SDL_SCALEMODE_LINEAR;
+    texture->scaleMode = renderer->scale_mode;
     texture->view.pixel_w = w;
     texture->view.pixel_h = h;
     texture->view.viewport.w = -1;
@@ -5625,4 +5627,27 @@ bool SDL_RenderDebugTextFormat(SDL_Renderer *renderer, float x, float y, SDL_PRI
     const bool retval = SDL_RenderDebugText(renderer, x, y, str);
     SDL_free(str);
     return retval;
+}
+
+bool SDL_SetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode scale_mode)
+{
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    renderer->scale_mode = scale_mode;
+
+    return true;
+}
+
+bool SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale_mode)
+{
+    if (scale_mode) {
+        *scale_mode = SDL_SCALEMODE_LINEAR;
+    }
+
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    if (scale_mode) {
+        *scale_mode = renderer->scale_mode;
+    }
+    return true;
 }

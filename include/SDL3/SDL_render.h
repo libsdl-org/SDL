@@ -2578,6 +2578,41 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, flo
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugTextFormat(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(4);
 
+/**
+ * Set default scale mode for new textures for given renderer.
+ *
+ * When a renderer is created, scale_mode defaults to SDL_SCALEMODE_LINEAR.
+ * 
+ * \param renderer the renderer to update.
+ * \param scale_mode the scale mode to change to for new textures.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetDefaultTextureScaleMode
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode scale_mode);
+
+/**
+ * Get default texture scale mode of the given renderer.
+ *
+ * \param renderer the renderer to get data from.
+ * \param scale_mode a SDL_ScaleMode filled with current default scale mode.
+ *          See SDL_SetDefaultTextureScaleMode() for the meaning of the value.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetDefaultTextureScaleMode
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale_mode);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
