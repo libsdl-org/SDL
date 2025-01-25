@@ -2066,7 +2066,12 @@ SDL_bool SDL_IsGameController(int joystick_index)
 
     SDL_LockJoysticks();
     {
-        if (SDL_PrivateGetControllerMapping(joystick_index) != NULL) {
+        SDL_JoystickType joystick_type = SDL_JoystickGetDeviceType(joystick_index);
+        /* do not spawn mappings on known hidapi joystick devices */
+        if (joystick_type != SDL_JOYSTICK_TYPE_GAMECONTROLLER &&
+        joystick_type != SDL_JOYSTICK_TYPE_UNKNOWN) {
+            retval = SDL_FALSE;
+        } else if (SDL_PrivateGetControllerMapping(joystick_index) != NULL) {
             retval = SDL_TRUE;
         } else {
             retval = SDL_FALSE;
