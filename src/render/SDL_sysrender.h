@@ -264,6 +264,9 @@ struct SDL_Renderer
     // The method of drawing lines
     SDL_RenderLineMethod line_method;
 
+    // Default scale mode for textures created with this renderer
+    SDL_ScaleMode scale_mode;
+
     // The list of textures
     SDL_Texture *textures;
     SDL_Texture *target;
