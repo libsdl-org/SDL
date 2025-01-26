@@ -24,6 +24,10 @@ static void SDLCALL timerSetUp(void **arg)
 {
 }
 
+static void SDLCALL timerTearDown(void *arg)
+{
+}
+
 /* Test case functions */
 
 /**
@@ -203,5 +207,5 @@ SDLTest_TestSuiteReference timerTestSuite = {
     "Timer",
     timerSetUp,
     timerTests,
-    NULL
+    timerTearDown
 };
