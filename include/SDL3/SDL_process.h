@@ -173,13 +173,13 @@ typedef enum SDL_ProcessIO
  *   standard input when `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER` is set to
  *   `SDL_PROCESS_STDIO_REDIRECT`.
  * - `SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER`: an SDL_ProcessIO value
- *   describing where standard output for the process goes go, defaults to
+ *   describing where standard output for the process goes to, defaults to
  *   `SDL_PROCESS_STDIO_INHERITED`.
  * - `SDL_PROP_PROCESS_CREATE_STDOUT_POINTER`: an SDL_IOStream pointer used
  *   for standard output when `SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER` is set
  *   to `SDL_PROCESS_STDIO_REDIRECT`.
  * - `SDL_PROP_PROCESS_CREATE_STDERR_NUMBER`: an SDL_ProcessIO value
- *   describing where standard error for the process goes go, defaults to
+ *   describing where standard error for the process goes to, defaults to
  *   `SDL_PROCESS_STDIO_INHERITED`.
  * - `SDL_PROP_PROCESS_CREATE_STDERR_POINTER`: an SDL_IOStream pointer used
  *   for standard error when `SDL_PROP_PROCESS_CREATE_STDERR_NUMBER` is set to
