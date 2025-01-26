@@ -1136,12 +1136,12 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 @@
 @@
 - SDL_GameControllerGetNumTouchpadFingers
-+ SDL_GetGamepadNumTouchpadFingers
++ SDL_GetNumGamepadTouchpadFingers
   (...)
 @@
 @@
 - SDL_GameControllerGetNumTouchpads
-+ SDL_GetGamepadNumTouchpads
++ SDL_GetNumGamepadTouchpads
   (...)
 @@
 @@
