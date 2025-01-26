@@ -1491,6 +1491,51 @@ typedef SDL_GameControllerButton, SDL_GamepadButton;
 + SDL_TextInputShown
   (...)
 @@
+SDL_Event e1;
+@@
+- e1.key.keysym.mod
++ e1.key.mod
+@@
+SDL_Event *e1;
+@@
+- e1->key.keysym.mod
++ e1->key.mod
+@@
+SDL_KeyboardEvent *e1;
+@@
+- e1->keysym.mod
++ e1->mod
+@@
+SDL_Event e1;
+@@
+- e1.key.keysym.sym
++ e1.key.key
+@@
+SDL_Event *e1;
+@@
+- e1->key.keysym.sym
++ e1->key.key
+@@
+SDL_KeyboardEvent *e1;
+@@
+- e1->keysym.sym
++ e1->key
+@@
+SDL_Event e1;
+@@
+- e1.key.keysym.scancode
++ e1.key.scancode
+@@
+SDL_Event *e1;
+@@
+- e1->key.keysym.scancode
++ e1->key.scancode
+@@
+SDL_KeyboardEvent *e1;
+@@
+- e1->keysym.scancode
++ e1->scancode
+@@
 @@
 - KMOD_ALT
 + SDL_KMOD_ALT
@@ -2443,6 +2488,11 @@ SDL_Event *e1;
 - e1->wheel.mouseX
 + e1->wheel.mouse_x
 @@
+SDL_MouseWheelEvent *e1;
+@@
+- e1->mouseX
++ e1->mouse_x
+@@
 SDL_Event e1;
 @@
 - e1.wheel.mouseY
@@ -2452,6 +2502,41 @@ SDL_Event *e1;
 @@
 - e1->wheel.mouseY
 + e1->wheel.mouse_y
+@@
+SDL_MouseWheelEvent *e1;
+@@
+- e1->mouseY
++ e1->mouse_y
+@@
+SDL_Event e1;
+@@
+- e1.wheel.preciseX
++ e1.wheel.x
+@@
+SDL_Event *e1;
+@@
+- e1->wheel.preciseX
++ e1->wheel.x
+@@
+SDL_MouseWheelEvent *e1;
+@@
+- e1->preciseX
++ e1->x
+@@
+SDL_Event e1;
+@@
+- e1.wheel.preciseY
++ e1.wheel.y
+@@
+SDL_Event *e1;
+@@
+- e1->wheel.preciseY
++ e1->wheel.y
+@@
+SDL_MouseWheelEvent *e1;
+@@
+- e1->preciseY
++ e1->y
 @@
 SDL_Event e1;
 @@
@@ -2463,6 +2548,11 @@ SDL_Event *e1;
 - e1->tfinger.touchId
 + e1->tfinger.touchID
 @@
+SDL_TouchFingerEvent *e1;
+@@
+- e1->touchId
++ e1->touchID
+@@
 SDL_Event e1;
 @@
 - e1.tfinger.fingerId
@@ -2472,6 +2562,11 @@ SDL_Event *e1;
 @@
 - e1->tfinger.fingerId
 + e1->tfinger.fingerID
+@@
+SDL_TouchFingerEvent *e1;
+@@
+- e1->fingerId
++ e1->fingerID
 @@
 expression e1, e2, e3, e4;
 @@
