@@ -344,6 +344,7 @@ void UIKit_DelDisplay(UIScreen *uiscreen)
 
         if (data && data.uiscreen == uiscreen) {
             CFRelease(SDL_GetDisplayDriverData(i));
+            SDL_GetDisplay(i)->driverdata = NULL;
             SDL_DelVideoDisplay(i);
             return;
         }
