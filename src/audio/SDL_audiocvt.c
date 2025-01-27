@@ -558,9 +558,9 @@ bool SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_
         return SDL_InvalidParamError("stream");
     }
 
-    // Picked mostly arbitrarily.
-    static const int min_freq = 4000;
-    static const int max_freq = 384000;
+    // note that while we've removed the maximum frequency checks, SDL _will_
+    // fail to resample to extremely high sample rates correctly. Really high,
+    // like 196608000Hz. File a bug.  :P
 
     if (src_spec) {
         if (!SDL_IsSupportedAudioFormat(src_spec->format)) {
@@ -569,10 +569,6 @@ bool SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_
             return SDL_InvalidParamError("src_spec->channels");
         } else if (src_spec->freq <= 0) {
             return SDL_InvalidParamError("src_spec->freq");
-        } else if (src_spec->freq < min_freq) {
-            return SDL_SetError("Source rate is too low");
-        } else if (src_spec->freq > max_freq) {
-            return SDL_SetError("Source rate is too high");
         }
     }
 
@@ -583,10 +579,6 @@ bool SDL_SetAudioStreamFormat(SDL_AudioStream *stream, const SDL_AudioSpec *src_
             return SDL_InvalidParamError("dst_spec->channels");
         } else if (dst_spec->freq <= 0) {
             return SDL_InvalidParamError("dst_spec->freq");
-        } else if (dst_spec->freq < min_freq) {
-            return SDL_SetError("Destination rate is too low");
-        } else if (dst_spec->freq > max_freq) {
-            return SDL_SetError("Destination rate is too high");
         }
     }
 
