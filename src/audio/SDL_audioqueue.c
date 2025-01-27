@@ -548,7 +548,7 @@ const Uint8 *SDL_ReadFromAudioQueue(SDL_AudioQueue *queue,
     size_t dst_present_bytes = present_frames * dst_frame_size;
     size_t dst_future_bytes = future_frames * dst_frame_size;
 
-    bool convert = (src_format != dst_format) || (src_channels != dst_channels);
+    const bool convert = (src_format != dst_format) || (src_channels != dst_channels) || (gain != 1.0f);
 
     if (convert && !dst) {
         // The user didn't ask for the data to be copied, but we need to convert it, so store it in the scratch buffer
