@@ -237,7 +237,7 @@ static void SwizzleAudio(const int num_frames, void *dst, const void *src, int c
 void ConvertAudio(int num_frames,
                   const void *src, SDL_AudioFormat src_format, int src_channels, const int *src_map,
                   void *dst, SDL_AudioFormat dst_format, int dst_channels, const int *dst_map,
-                  void* scratch, float gain)
+                  void *scratch, float gain)
 {
     SDL_assert(src != NULL);
     SDL_assert(dst != NULL);
