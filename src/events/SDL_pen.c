@@ -109,9 +109,14 @@ bool SDL_InitPen(void)
 void SDL_QuitPen(void)
 {
     SDL_DestroyRWLock(pen_device_rwlock);
-    pen_device_rwlock = 0;
-    SDL_free(pen_devices);
-    pen_devices = NULL;
+    pen_device_rwlock = NULL;
+    if (pen_devices) {
+        for (int i = pen_device_count; i--; ) {
+            SDL_free(pen_devices[i].name);
+        }
+        SDL_free(pen_devices);
+        pen_devices = NULL;
+    }
     pen_device_count = 0;
     pen_touching = 0;
 }
