@@ -688,7 +688,9 @@ void SDL_DelVideoDisplay(int index)
     SDL_SendDisplayEvent(&_this->displays[index], SDL_DISPLAYEVENT_DISCONNECTED, 0);
 
     SDL_free(_this->displays[index].driverdata);
+    _this->displays[index].driverdata = NULL;
     SDL_free(_this->displays[index].name);
+    _this->displays[index].name = NULL;
     if (index < (_this->num_displays - 1)) {
         SDL_memmove(&_this->displays[index], &_this->displays[index + 1], (_this->num_displays - index - 1) * sizeof(_this->displays[index]));
     }
