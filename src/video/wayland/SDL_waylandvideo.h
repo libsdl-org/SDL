@@ -84,6 +84,7 @@ struct SDL_VideoData
     struct xdg_toplevel_icon_manager_v1 *xdg_toplevel_icon_manager_v1;
     struct frog_color_management_factory_v1 *frog_color_management_factory_v1;
     struct zwp_tablet_manager_v2 *tablet_manager;
+    struct wl_fixes *wl_fixes;
 
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
