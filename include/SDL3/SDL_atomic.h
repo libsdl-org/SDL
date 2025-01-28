@@ -498,7 +498,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  *
  * ***Note: If you don't know what this macro is for, you shouldn't use it!***
  *
- * \param a a pointer to an SDL_AtomicInt to increment.
+ * \param a a pointer to an SDL_AtomicInt to decrement.
  * \returns true if the variable reached zero after decrementing, false
  *          otherwise.
  *
