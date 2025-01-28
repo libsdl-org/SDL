@@ -1022,7 +1022,7 @@ static bool GetAudioStreamDataInternal(SDL_AudioStream *stream, void *buf, int o
         Uint8* work_buffer = NULL;
 
         // Ensure we have enough scratch space for any conversions
-        if ((src_format != dst_format) || (src_channels != dst_channels)) {
+        if ((src_format != dst_format) || (src_channels != dst_channels) || (gain != 1.0f)) {
             work_buffer = EnsureAudioStreamWorkBufferSize(stream, output_frames * max_frame_size);
 
             if (!work_buffer) {
