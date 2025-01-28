@@ -102,10 +102,10 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'" />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
-    <IncludePath>$(ProjectDir)../../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)../../src;$(ProjectDir)../../src/video/khronos;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">
-    <IncludePath>$(ProjectDir)../../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)../../src;$(ProjectDir)../../src/video/khronos;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">
     <Midl>
@@ -558,6 +558,12 @@
     <ClInclude Include="..\..\src\video\dummy\SDL_nullframebuffer_c.h" />
     <ClInclude Include="..\..\src\video\dummy\SDL_nullvideo.h" />
     <ClInclude Include="..\..\src\video\gdk\SDL_gdktextinput.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_platform.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_reflection.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_reflection_parent_structs.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_loader_negotiation.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_platform_defines.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_icd.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_layer.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_platform.h" />
@@ -894,6 +900,8 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c" />
+    <ClCompile Include="..\..\src\gpu\xr\SDL_gpu_openxr.c" />
+    <ClCompile Include="..\..\src\gpu\xr\SDL_openxrdyn.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />
