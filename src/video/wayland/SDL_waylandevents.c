@@ -1987,7 +1987,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
         Wayland_input_init_relative_pointer(input->display);
 
         input->pointer_id = SDL_GetNextObjectID();
-        SDL_AddMouse(input->pointer_id, WAYLAND_DEFAULT_POINTER_NAME, true);
+        SDL_AddMouse(input->pointer_id, WAYLAND_DEFAULT_POINTER_NAME, !input->display->initializing);
     } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && input->pointer) {
         if (input->relative_pointer) {
             zwp_relative_pointer_v1_destroy(input->relative_pointer);
@@ -2028,7 +2028,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *seat,
                                  input);
 
         input->keyboard_id = SDL_GetNextObjectID();
-        SDL_AddKeyboard(input->keyboard_id, WAYLAND_DEFAULT_KEYBOARD_NAME, true);
+        SDL_AddKeyboard(input->keyboard_id, WAYLAND_DEFAULT_KEYBOARD_NAME, !input->display->initializing);
     } else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && input->keyboard) {
         wl_keyboard_destroy(input->keyboard);
         input->keyboard = NULL;
