@@ -56,6 +56,18 @@ if(NOT DEFINED OpenGL_GL_PREFERENCE)
   set(OpenGL_GL_PREFERENCE GLVND)
 endif()
 
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  set(ARCH_64 TRUE)
+else()
+  set(ARCH_64 FALSE)
+endif()
+
+if(LINUX)
+  if(NOT ARCH_64)
+    set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:/usr/lib/i386-linux-gnu/pkgconfig")
+  endif()
+endif()
+
 find_package(PkgConfig)
 
 list(APPEND CMAKE_MODULE_PATH "${SDL3_SOURCE_DIR}/cmake")
@@ -3269,12 +3281,6 @@ endif()
 
 if(SDL_TESTS)
   set(HAVE_TESTS ON)
-endif()
-
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-  set(ARCH_64 TRUE)
-else()
-  set(ARCH_64 FALSE)
 endif()
 
 if(ANDROID)
