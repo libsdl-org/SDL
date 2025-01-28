@@ -788,10 +788,13 @@ static bool SDLCALL mem_close(void *userdata)
 #if defined(HAVE_STDIO_H) && !defined(SDL_PLATFORM_WINDOWS)
 static bool IsRegularFileOrPipe(FILE *f)
 {
+#ifndef SDL_PLATFORM_EMSCRIPTEN
     struct stat st;
     if (fstat(fileno(f), &st) < 0 || !(S_ISREG(st.st_mode) || S_ISFIFO(st.st_mode))) {
         return false;
     }
+#endif // !SDL_PLATFORM_EMSCRIPTEN
+
     return true;
 }
 #endif
