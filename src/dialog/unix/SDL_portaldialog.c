@@ -497,7 +497,7 @@ bool SDL_Portal_detect(void)
         goto done;
     }
 
-    reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, DBUS_TIMEOUT_INFINITE, NULL);
+    reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, DBUS_TIMEOUT_USE_DEFAULT, NULL);
     dbus->message_unref(msg);
     if (!reply) {
         goto done;
