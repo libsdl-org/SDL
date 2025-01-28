@@ -710,7 +710,7 @@ void WIN_UpdateMouseSystemScale(void)
     int v = 10;
     if (SystemParametersInfo(SPI_GETMOUSESPEED, 0, &v, 0)) {
         v = SDL_max(1, SDL_min(v, 20));
-        data->dpiscale = SDL_max(SDL_max(v, (v - 2) << 2), (v - 6) << 3);
+        data->dpiscale = SDL_max(SDL_max(v, (v - 2) * 4), (v - 6) * 8);
     }
 
     int params[3];
