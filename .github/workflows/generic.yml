@@ -53,7 +53,7 @@ jobs:
       - uses: mymindstorm/setup-emsdk@v14
         if: ${{ matrix.platform.platform == 'emscripten' }}
         with:
-          version: 3.1.35
+          version: 3.1.74
       - uses: browser-actions/setup-chrome@v1
         id: setup-chrome
         if: ${{ matrix.platform.platform == 'emscripten' }}

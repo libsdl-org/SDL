@@ -2305,6 +2305,8 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     bool undefined_y = false;
     bool external_graphics_context = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, false);
 
+    SDL_Log("Creating window with properties\n");
+
     if (!_this) {
         // Initialize the video system if needed
         if (!SDL_Init(SDL_INIT_VIDEO)) {

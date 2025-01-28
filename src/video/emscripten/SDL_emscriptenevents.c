@@ -23,8 +23,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_EMSCRIPTEN
 
-#include <emscripten/html5.h>
 #include <emscripten/dom_pk_codes.h>
+#include <emscripten/html5.h>
 
 #include "../../events/SDL_dropevents_c.h"
 #include "../../events/SDL_events_c.h"
@@ -374,14 +374,14 @@ static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseE
 
     const bool isenter = (eventType == EMSCRIPTEN_EVENT_MOUSEENTER);
     if (isenter && window_data->mouse_focus_loss_pending) {
-        window_data->mouse_focus_loss_pending = false;  // just drop the state, but don't send the enter event.
+        window_data->mouse_focus_loss_pending = false; // just drop the state, but don't send the enter event.
     } else if (!isenter && (window_data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
-        window_data->mouse_focus_loss_pending = true;  // waiting on a mouse button to let go before we send the mouse focus update.
+        window_data->mouse_focus_loss_pending = true; // waiting on a mouse button to let go before we send the mouse focus update.
     } else {
         SDL_SetMouseFocus(isenter ? window_data->window : NULL);
     }
 
-    return SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION);  // !!! FIXME: should this be MOUSE_MOTION or something else?
+    return SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION); // !!! FIXME: should this be MOUSE_MOTION or something else?
 }
 
 static EM_BOOL Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
@@ -688,16 +688,21 @@ static EM_BOOL Emscripten_HandleOrientationChange(int eventType, const Emscripte
 {
     SDL_DisplayOrientation orientation;
     switch (orientationChangeEvent->orientationIndex) {
-        #define CHECK_ORIENTATION(emsdk, sdl) case EMSCRIPTEN_ORIENTATION_##emsdk: orientation = SDL_ORIENTATION_##sdl; break
+#define CHECK_ORIENTATION(emsdk, sdl)        \
+    case EMSCRIPTEN_ORIENTATION_##emsdk:     \
+        orientation = SDL_ORIENTATION_##sdl; \
+        break
         CHECK_ORIENTATION(LANDSCAPE_PRIMARY, LANDSCAPE);
         CHECK_ORIENTATION(LANDSCAPE_SECONDARY, LANDSCAPE_FLIPPED);
         CHECK_ORIENTATION(PORTRAIT_PRIMARY, PORTRAIT);
         CHECK_ORIENTATION(PORTRAIT_SECONDARY, PORTRAIT_FLIPPED);
-        #undef CHECK_ORIENTATION
-        default: orientation = SDL_ORIENTATION_UNKNOWN; break;
+#undef CHECK_ORIENTATION
+    default:
+        orientation = SDL_ORIENTATION_UNKNOWN;
+        break;
     }
 
-    SDL_WindowData *window_data = (SDL_WindowData *) userData;
+    SDL_WindowData *window_data = (SDL_WindowData *)userData;
     SDL_SendDisplayEvent(SDL_GetVideoDisplayForWindow(window_data->window), SDL_EVENT_DISPLAY_ORIENTATION, orientation, 0);
 
     return 0;
@@ -722,7 +727,7 @@ typedef struct Emscripten_PointerEvent
 
 static void Emscripten_UpdatePointerFromEvent(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
 {
-    const SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) event->pointerid);
+    const SDL_PenID pen = SDL_FindPenByHandle((void *)(size_t)event->pointerid);
     if (pen) {
         // rescale (in case canvas is being scaled)
         double client_w, client_h;
@@ -742,10 +747,10 @@ static void Emscripten_UpdatePointerFromEvent(SDL_WindowData *window_data, const
 
         SDL_SendPenMotion(0, pen, window_data->window, mx, my);
 
-        if (event->button == 0) {  // pen touch
+        if (event->button == 0) { // pen touch
             bool down = ((event->buttons & 1) != 0);
             SDL_SendPenTouch(0, pen, window_data->window, false, down);
-        } else if (event->button == 5) {  // eraser touch...? Not sure if this is right...
+        } else if (event->button == 5) { // eraser touch...? Not sure if this is right...
             bool down = ((event->buttons & 32) != 0);
             SDL_SendPenTouch(0, pen, window_data->window, true, down);
         } else if (event->button == 1) {
@@ -773,15 +778,15 @@ EMSCRIPTEN_KEEPALIVE void Emscripten_HandlePointerEnter(SDL_WindowData *window_d
     peninfo.max_tilt = 90.0f;
     peninfo.num_buttons = 2;
     peninfo.subtype = SDL_PEN_TYPE_PEN;
-    SDL_AddPenDevice(0, NULL, &peninfo, (void *) (size_t) event->pointerid);
+    SDL_AddPenDevice(0, NULL, &peninfo, (void *)(size_t)event->pointerid);
     Emscripten_UpdatePointerFromEvent(window_data, event);
 }
 
 EMSCRIPTEN_KEEPALIVE void Emscripten_HandlePointerLeave(SDL_WindowData *window_data, const Emscripten_PointerEvent *event)
 {
-    const SDL_PenID pen = SDL_FindPenByHandle((void *) (size_t) event->pointerid);
+    const SDL_PenID pen = SDL_FindPenByHandle((void *)(size_t)event->pointerid);
     if (pen) {
-        Emscripten_UpdatePointerFromEvent(window_data, event);  // last data updates?
+        Emscripten_UpdatePointerFromEvent(window_data, event); // last data updates?
         SDL_RemovePenDevice(0, pen);
     }
 }
@@ -844,8 +849,7 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
             target.addEventListener("pointerdown", SDL3.eventHandlerPointerGeneric);
             target.addEventListener("pointerup", SDL3.eventHandlerPointerGeneric);
             target.addEventListener("pointermove", SDL3.eventHandlerPointerGeneric);
-        }
-    }, data, data->canvas_id, sizeof (Emscripten_PointerEvent));
+        } }, data, data->canvas_id, sizeof(Emscripten_PointerEvent));
 }
 
 static void Emscripten_unset_pointer_event_callbacks(SDL_WindowData *data)
@@ -863,8 +867,7 @@ static void Emscripten_unset_pointer_event_callbacks(SDL_WindowData *data)
             SDL3.eventHandlerPointerEnter = undefined;
             SDL3.eventHandlerPointerLeave = undefined;
             SDL3.eventHandlerPointerGeneric = undefined;
-        }
-    }, data->canvas_id);
+        } }, data->canvas_id);
 }
 
 // IF YOU CHANGE THIS STRUCTURE, YOU NEED TO UPDATE THE JAVASCRIPT THAT FILLS IT IN: makeDropEventCStruct, below.
@@ -968,8 +971,7 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
             };
             target.addEventListener("dragend", SDL3.eventHandlerDropDragend);
             target.addEventListener("dragleave", SDL3.eventHandlerDropDragend);
-        }
-    }, data, data->canvas_id, sizeof (Emscripten_DropEvent));
+        } }, data, data->canvas_id, sizeof(Emscripten_DropEvent));
 }
 
 static void Emscripten_unset_drag_event_callbacks(SDL_WindowData *data)
@@ -1001,13 +1003,12 @@ static void Emscripten_unset_drag_event_callbacks(SDL_WindowData *data)
             SDL3.eventHandlerDropDragover = undefined;
             SDL3.eventHandlerDropDrop = undefined;
             SDL3.eventHandlerDropDragend = undefined;
-        }
-    }, data->canvas_id);
+        } }, data->canvas_id);
 }
 
 void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
-    const char *keyElement;
+    const char *keyElement = NULL;
 
     // There is only one window and that window is the canvas
     emscripten_set_mousemove_callback(data->canvas_id, data, 0, Emscripten_HandleMouseMove);
@@ -1034,8 +1035,12 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 
     // Keyboard events are awkward
     keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
+    // EMSCRIPTEN_EVENT_TARGET_WINDOW does not like being assigned to keyElement and fails when performing strcmp.
+    // EMSCRIPTEN_EVENT_TARGET_WINDOW is defined as ((const char *)2) but the emscripten_set_key* functions expect a string, and "2" works.
+    // This was identified and fixed while testing the SDLGPU WebGPU backend after rebasing.
+    const char *target = "2";
     if (!keyElement || !*keyElement) {
-        keyElement = EMSCRIPTEN_EVENT_TARGET_WINDOW;
+        keyElement = target;
     }
 
     if (SDL_strcmp(keyElement, "#none") != 0) {
@@ -1062,7 +1067,7 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 
 void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 {
-    const char *target;
+    const char *keyElement;
 
     // !!! FIXME: currently Emscripten doesn't have a Drop Events functions like emscripten_set_*_callback, but we should use those when they do:
     Emscripten_unset_drag_event_callbacks(data);
@@ -1094,15 +1099,19 @@ void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 
     emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
 
-    target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
-    if (!target) {
-        target = EMSCRIPTEN_EVENT_TARGET_WINDOW;
+    keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
+    // EMSCRIPTEN_EVENT_TARGET_WINDOW does not like being assigned to keyElement and fails when performing strcmp.
+    // EMSCRIPTEN_EVENT_TARGET_WINDOW is defined as ((const char *)2) but the emscripten_set_key* functions expect a string, and "2" works.
+    // This was identified and fixed while testing the SDLGPU WebGPU backend after rebasing.
+    const char *target = "2";
+    if (!keyElement || !*keyElement) {
+        keyElement = target;
     }
 
-    if (*target) {
-        emscripten_set_keydown_callback(target, NULL, 0, NULL);
-        emscripten_set_keyup_callback(target, NULL, 0, NULL);
-        emscripten_set_keypress_callback(target, NULL, 0, NULL);
+    if (SDL_strcmp(keyElement, "#none") != 0) {
+        emscripten_set_keydown_callback(keyElement, NULL, 0, NULL);
+        emscripten_set_keyup_callback(keyElement, NULL, 0, NULL);
+        emscripten_set_keypress_callback(keyElement, NULL, 0, NULL);
     }
 
     emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
