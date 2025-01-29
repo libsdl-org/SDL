@@ -285,7 +285,9 @@ X11_PenHandle *X11_MaybeAddPenByDeviceID(SDL_VideoDevice *_this, int deviceid)
     XIDeviceInfo *device_info = X11_XIQueryDevice(data->display, deviceid, &num_device_info);
     if (device_info) {
         SDL_assert(num_device_info == 1);
-        return X11_MaybeAddPen(_this, device_info);
+        X11_PenHandle *handle = X11_MaybeAddPen(_this, device_info);
+        X11_XIFreeDeviceInfo(device_info);
+        return handle;
     }
     return NULL;
 }
