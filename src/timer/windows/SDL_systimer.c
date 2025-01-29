@@ -24,6 +24,11 @@
 
 #include "../../core/windows/SDL_windows.h"
 
+typedef HANDLE (WINAPI *CreateWaitableTimerExW_t)(LPSECURITY_ATTRIBUTES lpTimerAttributes, LPCWSTR lpTimerName, DWORD dwFlags, DWORD dwDesiredAccess);
+static CreateWaitableTimerExW_t pCreateWaitableTimerExW;
+
+typedef BOOL (WINAPI *SetWaitableTimerEx_t)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, PREASON_CONTEXT WakeContext, ULONG TolerableDelay);
+static SetWaitableTimerEx_t pSetWaitableTimerEx;
 
 static void SDL_CleanupWaitableHandle(void *handle)
 {
@@ -36,9 +41,26 @@ static HANDLE SDL_GetWaitableTimer(void)
     static SDL_TLSID TLS_timer_handle;
     HANDLE timer;
 
+    if (!pCreateWaitableTimerExW || !pSetWaitableTimerEx) {
+        static bool initialized;
+
+        if (!initialized) {
+            HMODULE module = GetModuleHandle(TEXT("kernel32.dll"));
+            if (module) {
+                pCreateWaitableTimerExW = (CreateWaitableTimerExW_t)GetProcAddress(module, "CreateWaitableTimerExW");
+                pSetWaitableTimerEx = (SetWaitableTimerEx_t)GetProcAddress(module, "SetWaitableTimerEx");
+            }
+            initialized = true;
+        }
+
+        if (!pCreateWaitableTimerExW || !pSetWaitableTimerEx) {
+            return NULL;
+        }
+    }
+
     timer = SDL_GetTLS(&TLS_timer_handle);
     if (!timer) {
-        timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+        timer = pCreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
         if (timer) {
             SDL_SetTLS(&TLS_timer_handle, timer, SDL_CleanupWaitableHandle);
         }
@@ -89,7 +111,7 @@ void SDL_SYS_DelayNS(Uint64 ns)
     if (timer) {
         LARGE_INTEGER due_time;
         due_time.QuadPart = -((LONGLONG)ns / 100);
-        if (SetWaitableTimerEx(timer, &due_time, 0, NULL, NULL, NULL, 0)) {
+        if (pSetWaitableTimerEx(timer, &due_time, 0, NULL, NULL, NULL, 0)) {
             WaitForSingleObject(timer, INFINITE);
         }
         return;
