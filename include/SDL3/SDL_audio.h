@@ -781,7 +781,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePlayback(SDL_AudioDeviceID dev
  * Physical devices can not be paused or unpaused, only logical devices
  * created through SDL_OpenAudioDevice() can be.
  *
- * \param dev a device opened by SDL_OpenAudioDevice().
+ * \param devid a device opened by SDL_OpenAudioDevice().
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -792,7 +792,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePlayback(SDL_AudioDeviceID dev
  * \sa SDL_ResumeAudioDevice
  * \sa SDL_AudioDevicePaused
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
+extern SDL_DECLSPEC bool SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID devid);
 
 /**
  * Use this function to unpause audio playback on a specified device.
@@ -809,7 +809,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
  * Physical devices can not be paused or unpaused, only logical devices
  * created through SDL_OpenAudioDevice() can be.
  *
- * \param dev a device opened by SDL_OpenAudioDevice().
+ * \param devid a device opened by SDL_OpenAudioDevice().
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -820,7 +820,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev);
  * \sa SDL_AudioDevicePaused
  * \sa SDL_PauseAudioDevice
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID dev);
+extern SDL_DECLSPEC bool SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID devid);
 
 /**
  * Use this function to query if an audio device is paused.
@@ -832,7 +832,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID dev);
  * created through SDL_OpenAudioDevice() can be. Physical and invalid device
  * IDs will report themselves as unpaused here.
  *
- * \param dev a device opened by SDL_OpenAudioDevice().
+ * \param devid a device opened by SDL_OpenAudioDevice().
  * \returns true if device is valid and paused, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -842,7 +842,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ResumeAudioDevice(SDL_AudioDeviceID dev);
  * \sa SDL_PauseAudioDevice
  * \sa SDL_ResumeAudioDevice
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_AudioDevicePaused(SDL_AudioDeviceID dev);
+extern SDL_DECLSPEC bool SDLCALL SDL_AudioDevicePaused(SDL_AudioDeviceID devid);
 
 /**
  * Get the gain of an audio device.
