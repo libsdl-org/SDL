@@ -1020,8 +1020,7 @@ struct D3D12ComputePipeline
 typedef struct D3D12PipelineCache
 {
     ID3DBlob* pipelineCache;
-    size_t checksumSize;
-    void* checksumData;
+    Uint64 cacheChecksum[4];
     size_t cacheBlobSize;
     void* cacheBlob;
 } D3D12PipelineCache;
@@ -2914,9 +2913,24 @@ static SDL_GPUPipelineCache* D3D12_CreatePipelineCache(
     SDL_GPURenderer* driverData,
     const SDL_GPUPipelineCacheCreateInfo* createinfo)
 {
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
     D3D12PipelineCache* d3d12PipelineCache = (D3D12PipelineCache*)SDL_malloc(sizeof(D3D12PipelineCache));
 
-    if (createinfo->cache_size != 0 && createinfo->cache_data != NULL)
+    LUID uuid;
+    LARGE_INTEGER umdVersion;
+    Uint64 computedCache[4];
+
+    ID3D12Device_GetAdapterLuid(renderer->device,&uuid);
+    IDXGIAdapter1_CheckInterfaceSupport(renderer->adapter, D3D_GUID(D3D_IID_IDXGIDevice), &umdVersion);
+
+    computedCache[0] = uuid.LowPart;
+    computedCache[1] = uuid.HighPart;
+    computedCache[2] = umdVersion.QuadPart;
+    computedCache[3] = 0;
+
+    if (createinfo->cache_size != 0 &&
+        createinfo->cache_data != NULL &&
+        (SDL_memcmp(computedCache, createinfo->cache_checksum, sizeof(Uint64) * 4) == 0))
     {
         d3d12PipelineCache->cacheBlobSize = createinfo->cache_size;
         d3d12PipelineCache->cacheBlob = SDL_malloc(createinfo->cache_size);
@@ -2927,18 +2941,7 @@ static SDL_GPUPipelineCache* D3D12_CreatePipelineCache(
         d3d12PipelineCache->cacheBlobSize = 0;
         d3d12PipelineCache->cacheBlob = NULL;
     }
-    if (createinfo->checksum_size != 0 && createinfo->checksum_data != NULL)
-    {
-        d3d12PipelineCache->checksumSize = createinfo->checksum_size;
-        d3d12PipelineCache->checksumData = SDL_malloc(createinfo->checksum_size);
-        SDL_memcpy(d3d12PipelineCache->checksumData, createinfo->checksum_data, createinfo->checksum_size);
-    }
-    else
-    {
-        d3d12PipelineCache->checksumSize = 0;
-        d3d12PipelineCache->checksumData = NULL;
-    }
-
+    SDL_memcpy(d3d12PipelineCache->cacheChecksum,createinfo->cache_checksum,sizeof(Uint64) * 4);
     return (SDL_GPUPipelineCache*)d3d12PipelineCache;
 }
 
@@ -2948,8 +2951,7 @@ static bool D3D12_FetchPipelineCacheData(
     SDL_GPUPipelineCacheCreateInfo* createinfo)
 {
     D3D12PipelineCache* d3d12PipelineCache = (D3D12PipelineCache*)pipelineCache;
-    createinfo->checksum_size = d3d12PipelineCache->checksumSize;
-    createinfo->checksum_data = d3d12PipelineCache->checksumData;
+    SDL_memcpy(createinfo->cache_checksum,d3d12PipelineCache->cacheChecksum,sizeof(Uint64)*4);
     createinfo->cache_size = d3d12PipelineCache->cacheBlobSize;
     createinfo->cache_data = ID3D10Blob_GetBufferPointer(d3d12PipelineCache->pipelineCache);
     return true;

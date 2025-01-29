@@ -1717,10 +1717,9 @@ typedef struct SDL_GPUComputePipelineCreateInfo
  */
 typedef struct SDL_GPUPipelineCacheCreateInfo
 {
-    size_t checksum_size;  /**< The size in bytes of the cache checksum. */
-    void*  checksum_data;  /**< A pointer to the checksum data. */
-    size_t cache_size;     /**< The size in bytes of the pipeline cache. */
-    void*  cache_data;     /**< A pointer to the cache data. */
+    Uint64 cache_checksum[4];
+    size_t cache_size;    /**< The size in bytes of the pipeline cache. */
+    void*  cache_data;    /**< A pointer to the cache data. */
 } SDL_GPUPipelineCacheCreateInfo;
 
 /**

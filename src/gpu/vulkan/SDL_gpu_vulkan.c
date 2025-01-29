@@ -909,8 +909,7 @@ typedef struct VulkanComputePipeline
 typedef struct VulkanPipelineCache
 {
     VkPipelineCache pipelineCache;
-    size_t checksumSize;
-    void* checksumData;
+    Uint64 cacheChecksum[4];
     size_t cacheBlobSize;
     void* cacheBlob;
 } VulkanPipelineCache;
@@ -6592,10 +6591,11 @@ static SDL_GPUPipelineCache* VULKAN_CreatePipelineCache(
 {
     VulkanRenderer* renderer = (VulkanRenderer*)driverData;
     VulkanPipelineCache* pipelineCache = (VulkanPipelineCache*)SDL_malloc(sizeof(VulkanPipelineCache));
+    VkPhysicalDeviceProperties deviceProperties;
     VkPipelineCache vkPipelineCache;
+    Uint64 computedChecksum[4];
     VkResult vulkanResult;
-    
-    // Here I'll eventually need to implement the checksum control
+
     VkPipelineCacheCreateInfo vkPipelineCacheInfo;
     vkPipelineCacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
     vkPipelineCacheInfo.pNext = NULL;
@@ -6617,8 +6617,14 @@ static SDL_GPUPipelineCache* VULKAN_CreatePipelineCache(
     }
 
     pipelineCache->pipelineCache  = vkPipelineCache;
-   
-    if (createinfo->cache_size != 0 && createinfo->cache_data != NULL)
+    renderer->vkGetPhysicalDeviceProperties(renderer->physicalDevice,&deviceProperties);
+    computedChecksum[0] = deviceProperties.deviceID;
+    computedChecksum[1] = deviceProperties.driverVersion;
+    SDL_memcpy(&computedChecksum[2],deviceProperties.pipelineCacheUUID,sizeof(deviceProperties.pipelineCacheUUID));
+
+    if (createinfo->cache_size != 0 &&
+        createinfo->cache_data != NULL &&
+        (SDL_memcmp(computedChecksum,createinfo->cache_data,sizeof(computedChecksum)) == 0))
     {
         pipelineCache->cacheBlobSize = createinfo->cache_size;
         pipelineCache->cacheBlob = SDL_malloc(createinfo->cache_size);
@@ -6629,18 +6635,7 @@ static SDL_GPUPipelineCache* VULKAN_CreatePipelineCache(
         pipelineCache->cacheBlobSize = 0;
         pipelineCache->cacheBlob = NULL;
     }
-    if (createinfo->checksum_size != 0 && createinfo->checksum_data != NULL)
-    {
-        pipelineCache->checksumSize = createinfo->checksum_size;
-        pipelineCache->checksumData = SDL_malloc(createinfo->checksum_size);
-        SDL_memcpy(pipelineCache->checksumData, createinfo->checksum_data, createinfo->checksum_size);
-    }
-    else
-    {
-        pipelineCache->checksumSize = 0;
-        pipelineCache->checksumData = NULL;
-    }
-
+    SDL_memcpy(pipelineCache->cacheChecksum,createinfo->cache_checksum,sizeof(Uint64)*4);
     return (SDL_GPUPipelineCache*)pipelineCache;
 }
 
@@ -6650,8 +6645,7 @@ static bool VULKAN_FetchPipelineCacheData(
     SDL_GPUPipelineCacheCreateInfo* createinfo)
 {
     VulkanPipelineCache* vulkanPipelineCache = (VulkanPipelineCache*)pipelineCache;
-    createinfo->checksum_size = vulkanPipelineCache->checksumSize;
-    createinfo->checksum_data = vulkanPipelineCache->checksumData;
+    SDL_memcpy(createinfo->cache_checksum,vulkanPipelineCache->cacheChecksum,sizeof(Uint64)*4);
     createinfo->cache_size = vulkanPipelineCache->cacheBlobSize;
     createinfo->cache_data = vulkanPipelineCache->cacheBlob;
 
@@ -7057,11 +7051,10 @@ static void VULKAN_ReleasePipelineCache(
         SDL_free(vulkanPipelineCache->cacheBlob);
         vulkanPipelineCache->cacheBlobSize = 0;
     }
-    if (vulkanPipelineCache->checksumData != NULL)
-    {
-        SDL_free(vulkanPipelineCache->checksumData);
-        vulkanPipelineCache->checksumSize = 0;
-    }
+    vulkanPipelineCache->cacheChecksum[0] = 0;
+    vulkanPipelineCache->cacheChecksum[1] = 0;
+    vulkanPipelineCache->cacheChecksum[2] = 0;
+    vulkanPipelineCache->cacheChecksum[3] = 0;
     renderer->vkDestroyPipelineCache(renderer->logicalDevice, vulkanPipelineCache->pipelineCache, NULL);
     SDL_free(vulkanPipelineCache);
 }
