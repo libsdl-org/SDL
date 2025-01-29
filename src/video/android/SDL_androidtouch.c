@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,7 @@
 #define ACTION_DOWN 0
 #define ACTION_UP   1
 #define ACTION_MOVE 2
-// #define ACTION_CANCEL 3
+#define ACTION_CANCEL 3
 // #define ACTION_OUTSIDE 4
 #define ACTION_POINTER_DOWN 5
 #define ACTION_POINTER_UP   6
@@ -72,7 +72,7 @@ void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_fin
     switch (action) {
     case ACTION_DOWN:
     case ACTION_POINTER_DOWN:
-        SDL_SendTouch(0, touchDeviceId, fingerId, window, true, x, y, p);
+        SDL_SendTouch(0, touchDeviceId, fingerId, window, SDL_EVENT_FINGER_DOWN, x, y, p);
         break;
 
     case ACTION_MOVE:
@@ -81,7 +81,11 @@ void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_fin
 
     case ACTION_UP:
     case ACTION_POINTER_UP:
-        SDL_SendTouch(0, touchDeviceId, fingerId, window, false, x, y, p);
+        SDL_SendTouch(0, touchDeviceId, fingerId, window, SDL_EVENT_FINGER_UP, x, y, p);
+        break;
+
+    case ACTION_CANCEL:
+        SDL_SendTouch(0, touchDeviceId, fingerId, window, SDL_EVENT_FINGER_CANCELED, x, y, p);
         break;
 
     default:

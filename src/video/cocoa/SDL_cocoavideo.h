@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,62 +40,17 @@
 #include "SDL_cocoawindow.h"
 #include "SDL_cocoapen.h"
 
-#ifndef MAC_OS_X_VERSION_10_12
-#define DECLARE_EVENT(name) static const NSEventType NSEventType##name = NS##name
-DECLARE_EVENT(LeftMouseDown);
-DECLARE_EVENT(LeftMouseUp);
-DECLARE_EVENT(RightMouseDown);
-DECLARE_EVENT(RightMouseUp);
-DECLARE_EVENT(OtherMouseDown);
-DECLARE_EVENT(OtherMouseUp);
-DECLARE_EVENT(MouseMoved);
-DECLARE_EVENT(LeftMouseDragged);
-DECLARE_EVENT(RightMouseDragged);
-DECLARE_EVENT(OtherMouseDragged);
-DECLARE_EVENT(ScrollWheel);
-DECLARE_EVENT(KeyDown);
-DECLARE_EVENT(KeyUp);
-DECLARE_EVENT(FlagsChanged);
-#undef DECLARE_EVENT
-
-static const NSEventMask NSEventMaskAny = NSAnyEventMask;
-
-#define DECLARE_MODIFIER_FLAG(name) static const NSUInteger NSEventModifierFlag##name = NS##name##KeyMask
-DECLARE_MODIFIER_FLAG(Shift);
-DECLARE_MODIFIER_FLAG(Control);
-DECLARE_MODIFIER_FLAG(Command);
-DECLARE_MODIFIER_FLAG(NumericPad);
-DECLARE_MODIFIER_FLAG(Help);
-DECLARE_MODIFIER_FLAG(Function);
-#undef DECLARE_MODIFIER_FLAG
-static const NSUInteger NSEventModifierFlagCapsLock = NSAlphaShiftKeyMask;
-static const NSUInteger NSEventModifierFlagOption = NSAlternateKeyMask;
-
-#define DECLARE_WINDOW_MASK(name) static const unsigned int NSWindowStyleMask##name = NS##name##WindowMask
-DECLARE_WINDOW_MASK(Borderless);
-DECLARE_WINDOW_MASK(Titled);
-DECLARE_WINDOW_MASK(Closable);
-DECLARE_WINDOW_MASK(Miniaturizable);
-DECLARE_WINDOW_MASK(Resizable);
-DECLARE_WINDOW_MASK(TexturedBackground);
-DECLARE_WINDOW_MASK(UnifiedTitleAndToolbar);
-DECLARE_WINDOW_MASK(FullScreen);
-/*DECLARE_WINDOW_MASK(FullSizeContentView);*/ // Not used, fails compile on older SDKs
-static const unsigned int NSWindowStyleMaskUtilityWindow = NSUtilityWindowMask;
-static const unsigned int NSWindowStyleMaskDocModalWindow = NSDocModalWindowMask;
-static const unsigned int NSWindowStyleMaskHUDWindow = NSHUDWindowMask;
-#undef DECLARE_WINDOW_MASK
-
-#define DECLARE_ALERT_STYLE(name) static const NSUInteger NSAlertStyle##name = NS##name##AlertStyle
-DECLARE_ALERT_STYLE(Warning);
-DECLARE_ALERT_STYLE(Informational);
-DECLARE_ALERT_STYLE(Critical);
-#undef DECLARE_ALERT_STYLE
-#endif
-
 // Private display data
 
 @class SDL3TranslatorResponder;
+
+typedef enum
+{
+    OptionAsAltNone,
+    OptionAsAltOnlyLeft,
+    OptionAsAltOnlyRight,
+    OptionAsAltBoth,
+} OptionAsAlt;
 
 @interface SDL_CocoaVideoData : NSObject
 @property(nonatomic) int allow_spaces;
@@ -106,15 +61,11 @@ DECLARE_ALERT_STYLE(Critical);
 @property(nonatomic) NSInteger clipboard_count;
 @property(nonatomic) IOPMAssertionID screensaver_assertion;
 @property(nonatomic) SDL_Mutex *swaplock;
+@property(nonatomic) OptionAsAlt option_as_alt;
 @end
 
 // Utility functions
 extern SDL_SystemTheme Cocoa_GetSystemTheme(void);
 extern NSImage *Cocoa_CreateImage(SDL_Surface *surface);
-
-// Fix build with the 10.11 SDK
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 101200
-#define NSEventSubtypeMouseEvent NSMouseEventSubtype
-#endif
 
 #endif // SDL_cocoavideo_h_

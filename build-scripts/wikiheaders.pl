@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # Simple DirectMedia Layer
-# Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+# Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 #
 # This software is provided 'as-is', without any express or implied
 # warranty.  In no event will the authors be held liable for any damages
@@ -50,6 +50,7 @@ my $optionsfname = undef;
 my $wikipreamble = undef;
 my $wikiheaderfiletext = 'Defined in %fname%';
 my $manpageheaderfiletext = 'Defined in %fname%';
+my $manpagesymbolfilterregex = undef;
 my $headercategoryeval = undef;
 my $quickrefenabled = 0;
 my @quickrefcategoryorder;
@@ -127,6 +128,7 @@ if (defined $optionsfname) {
             $wikipreamble = $val, next if $key eq 'wikipreamble';
             $wikiheaderfiletext = $val, next if $key eq 'wikiheaderfiletext';
             $manpageheaderfiletext = $val, next if $key eq 'manpageheaderfiletext';
+            $manpagesymbolfilterregex = $val, next if $key eq 'manpagesymbolfilterregex';
             $headercategoryeval = $val, next if $key eq 'headercategoryeval';
             $quickrefenabled = int($val), next if $key eq 'quickrefenabled';
             @quickrefcategoryorder = split(/,/, $val), next if $key eq 'quickrefcategoryorder';
@@ -765,6 +767,7 @@ my %big_ascii = (
     ',' => [ "\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}", "\x{2584}\x{2588}\x{2557}", "\x{255A}\x{2550}\x{255D}" ],
     '/' => [ "\x{20}\x{20}\x{20}\x{20}\x{2588}\x{2588}\x{2557}", "\x{20}\x{20}\x{20}\x{2588}\x{2588}\x{2554}\x{255D}", "\x{20}\x{20}\x{2588}\x{2588}\x{2554}\x{255D}\x{20}", "\x{20}\x{2588}\x{2588}\x{2554}\x{255D}\x{20}\x{20}", "\x{2588}\x{2588}\x{2554}\x{255D}\x{20}\x{20}\x{20}", "\x{255A}\x{2550}\x{255D}\x{20}\x{20}\x{20}\x{20}" ],
     '!' => [ "\x{2588}\x{2588}\x{2557}", "\x{2588}\x{2588}\x{2551}", "\x{2588}\x{2588}\x{2551}", "\x{255A}\x{2550}\x{255D}", "\x{2588}\x{2588}\x{2557}", "\x{255A}\x{2550}\x{255D}" ],
+    '_' => [ "\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}", "\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}\x{20}", "\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2557}", "\x{255A}\x{2550}\x{2550}\x{2550}\x{2550}\x{2550}\x{2550}\x{255D}" ],
     '0' => [ "\x{20}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2557}\x{20}", "\x{2588}\x{2588}\x{2554}\x{2550}\x{2588}\x{2588}\x{2588}\x{2588}\x{2557}", "\x{2588}\x{2588}\x{2551}\x{2588}\x{2588}\x{2554}\x{2588}\x{2588}\x{2551}", "\x{2588}\x{2588}\x{2588}\x{2588}\x{2554}\x{255D}\x{2588}\x{2588}\x{2551}", "\x{255A}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2554}\x{255D}", "\x{20}\x{255A}\x{2550}\x{2550}\x{2550}\x{2550}\x{2550}\x{255D}\x{20}" ],
     '1' => [ "\x{20}\x{2588}\x{2588}\x{2557}", "\x{2588}\x{2588}\x{2588}\x{2551}", "\x{255A}\x{2588}\x{2588}\x{2551}", "\x{20}\x{2588}\x{2588}\x{2551}", "\x{20}\x{2588}\x{2588}\x{2551}", "\x{20}\x{255A}\x{2550}\x{255D}" ],
     '2' => [ "\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2557}\x{20}", "\x{255A}\x{2550}\x{2550}\x{2550}\x{2550}\x{2588}\x{2588}\x{2557}", "\x{20}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2554}\x{255D}", "\x{2588}\x{2588}\x{2554}\x{2550}\x{2550}\x{2550}\x{255D}\x{20}", "\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2588}\x{2557}", "\x{255A}\x{2550}\x{2550}\x{2550}\x{2550}\x{2550}\x{2550}\x{255D}" ],
@@ -862,11 +865,11 @@ sub generate_quickref {
     print $fh "<!-- DO NOT EDIT THIS PAGE ON THE WIKI. IT WILL BE OVERWRITTEN BY WIKIHEADERS AND CHANGES WILL BE LOST! -->\n\n";
 
     # Just something to test big_ascii output.
-    #print_big_ascii_string($fh, "ABCDEFGHIJ", $lowascii);
-    #print_big_ascii_string($fh, "KLMNOPQRST", $lowascii);
-    #print_big_ascii_string($fh, "UVWXYZ0123", $lowascii);
-    #print_big_ascii_string($fh, "456789JT3A", $lowascii);
-    #print_big_ascii_string($fh, "hello, a.b/c!!", $lowascii);
+    #print_big_ascii_string($fh, "ABCDEFGHIJ", '', $lowascii);
+    #print_big_ascii_string($fh, "KLMNOPQRST", '', $lowascii);
+    #print_big_ascii_string($fh, "UVWXYZ0123", '', $lowascii);
+    #print_big_ascii_string($fh, "456789JT3A", '', $lowascii);
+    #print_big_ascii_string($fh, "hello, _a.b/c_!!", '', $lowascii);
 
     # Dan Bechard's work was on an SDL2 cheatsheet:
     # https://blog.theprogrammingjunkie.com/post/sdl2-cheatsheet/
@@ -956,7 +959,8 @@ sub generate_quickref {
             if (defined $brief) {
                 $brief = "$brief";
                 chomp($brief);
-                $brief = dewikify($wikitypes{$sym}, $brief);
+                my $thiswikitype = defined $wikitypes{$sym} ? $wikitypes{$sym} : 'md';  # default to MarkDown for new stuff.
+                $brief = dewikify($thiswikitype, $brief);
                 my $spaces = ' ' x ($maxlen - length($csig));
                 $brief = "$spaces// $brief";
             } else {
@@ -2756,6 +2760,7 @@ __EOF__
         my $sym = $_;
         next if not defined $wikisyms{$sym};  # don't have a page for that function, skip it.
         next if $sym =~ /\A\[category documentation\]/;   # not real symbols
+        next if (defined $manpagesymbolfilterregex) && ($sym =~ /$manpagesymbolfilterregex/);
         my $symtype = $headersymstype{$sym};
         my $wikitype = $wikitypes{$sym};
         my $sectionsref = $wikisyms{$sym};
@@ -2787,7 +2792,8 @@ __EOF__
         my $decl = $headerdecls{$sym};
         my $str = '';
 
-        $brief = "$brief";
+        # the "$brief" makes sure this is a copy of the string, which is doing some weird reference thing otherwise.
+        $brief = defined $brief ? "$brief" : '';
         $brief =~ s/\A[\s\n]*\= .*? \=\s*?\n+//ms;
         $brief =~ s/\A[\s\n]*\=\= .*? \=\=\s*?\n+//ms;
         $brief =~ s/\A(.*?\.) /$1\n/;  # \brief should only be one sentence, delimited by a period+space. Split if necessary.

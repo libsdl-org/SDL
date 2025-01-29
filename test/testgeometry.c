@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -57,7 +57,7 @@ static int LoadSprite(const char *file)
             return -1;
         }
         if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
             return -1;
         }
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
     sprites =
         (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
     if (!sprites) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         quit(2);
     }
     /* Create the windows and initialize the renderers */
@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
     }
 
     quit(0);

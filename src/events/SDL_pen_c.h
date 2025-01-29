@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -67,22 +67,25 @@ extern void SDL_RemovePenDevice(Uint64 timestamp, SDL_PenID instance_id);
 extern void SDL_RemoveAllPenDevices(void (*callback)(SDL_PenID instance_id, void *handle, void *userdata), void *userdata);
 
 // Backend calls this when a pen's button changes, to generate events and update state.
-extern void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, bool eraser, bool down);
+extern void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, bool eraser, bool down);
 
 // Backend calls this when a pen moves on the tablet, to generate events and update state.
-extern void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, float x, float y);
+extern void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, float x, float y);
 
 // Backend calls this when a pen's axis changes, to generate events and update state.
-extern void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, SDL_PenAxis axis, float value);
+extern void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, SDL_PenAxis axis, float value);
 
 // Backend calls this when a pen's button changes, to generate events and update state.
-extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, const SDL_Window *window, Uint8 button, bool down);
+extern void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window, Uint8 button, bool down);
 
 // Backend can optionally use this to find the SDL_PenID for the `handle` that was passed to SDL_AddPenDevice.
 extern SDL_PenID SDL_FindPenByHandle(void *handle);
 
 // Backend can optionally use this to find a SDL_PenID, selected by a callback examining all devices. Zero if not found.
 extern SDL_PenID SDL_FindPenByCallback(bool (*callback)(void *handle, void *userdata), void *userdata);
+
+// Backend can use this to query current pen status.
+SDL_PenInputFlags SDL_GetPenStatus(SDL_PenID instance_id, float *axes, int num_axes);
 
 // Backend can use this to map an axis to a capability bit.
 SDL_PenCapabilityFlags SDL_GetPenCapabilityFromAxis(SDL_PenAxis axis);

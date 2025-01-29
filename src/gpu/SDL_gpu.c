@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -801,6 +801,10 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
                 SDL_assert_release(!"Color target formats cannot be a depth format!");
                 return NULL;
             }
+            if (!SDL_GPUTextureSupportsFormat(device, graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format, SDL_GPU_TEXTURETYPE_2D, SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
+                SDL_assert_release(!"Format is not supported for color targets on this device!");
+                return NULL;
+            }
             if (graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].blend_state.enable_blend) {
                 const SDL_GPUColorTargetBlendState *blend_state = &graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].blend_state;
                 CHECK_BLENDFACTOR_ENUM_INVALID(blend_state->src_color_blendfactor, NULL)
@@ -815,6 +819,10 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             CHECK_TEXTUREFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->target_info.depth_stencil_format, NULL);
             if (!IsDepthFormat(graphicsPipelineCreateInfo->target_info.depth_stencil_format)) {
                 SDL_assert_release(!"Depth-stencil target format must be a depth format!");
+                return NULL;
+            }
+            if (!SDL_GPUTextureSupportsFormat(device, graphicsPipelineCreateInfo->target_info.depth_stencil_format, SDL_GPU_TEXTURETYPE_2D, SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
+                SDL_assert_release(!"Format is not supported for depth targets on this device!");
                 return NULL;
             }
         }
@@ -1086,10 +1094,13 @@ SDL_GPUBuffer *SDL_CreateGPUBuffer(
         return NULL;
     }
 
+    const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING, NULL);
+
     return device->CreateBuffer(
         device->driverData,
         createinfo->usage,
-        createinfo->size);
+        createinfo->size,
+        debugName);
 }
 
 SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
@@ -1102,10 +1113,13 @@ SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
         return NULL;
     }
 
+    const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_TRANSFERBUFFER_CREATE_NAME_STRING, NULL);
+
     return device->CreateTransferBuffer(
         device->driverData,
         createinfo->usage,
-        createinfo->size);
+        createinfo->size,
+        debugName);
 }
 
 // Debug Naming

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -566,7 +566,7 @@ static bool HIDAPI_DriverPS3_UpdateDevice(SDL_HIDAPI_Device *device)
             break;
         default:
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Unknown PS3 packet: 0x%.2x\n", data[0]);
+            SDL_Log("Unknown PS3 packet: 0x%.2x", data[0]);
 #endif
             break;
         }
@@ -1004,7 +1004,7 @@ static bool HIDAPI_DriverPS3ThirdParty_UpdateDevice(SDL_HIDAPI_Device *device)
             HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(joystick, ctx, data, size);
         } else {
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Unknown PS3 packet, size %d\n", size);
+            SDL_Log("Unknown PS3 packet, size %d", size);
 #endif
         }
     }
@@ -1357,7 +1357,7 @@ static bool HIDAPI_DriverPS3SonySixaxis_UpdateDevice(SDL_HIDAPI_Device *device)
         break;
     default:
 #ifdef DEBUG_JOYSTICK
-        SDL_Log("Unknown PS3 packet: 0x%.2x\n", data[0]);
+        SDL_Log("Unknown PS3 packet: 0x%.2x", data[0]);
 #endif
         break;
     }

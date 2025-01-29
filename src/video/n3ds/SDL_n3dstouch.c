@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -70,7 +70,7 @@ void N3DS_PollTouch(SDL_VideoDevice *_this)
         was_pressed = pressed;
         SDL_SendTouch(0, N3DS_TOUCH_ID, N3DS_TOUCH_FINGER,
                       window,
-                      pressed,
+                      pressed ? SDL_EVENT_FINGER_DOWN : SDL_EVENT_FINGER_UP,
                       touch.px * TOUCHSCREEN_SCALE_X,
                       touch.py * TOUCHSCREEN_SCALE_Y,
                       pressed ? 1.0f : 0.0f);

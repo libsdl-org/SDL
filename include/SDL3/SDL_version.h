@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,7 +42,7 @@ extern "C" {
  *
  * If this were SDL version 3.2.1, this value would be 3.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_MAJOR_VERSION   3
 
@@ -51,18 +51,18 @@ extern "C" {
  *
  * If this were SDL version 3.2.1, this value would be 2.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_MINOR_VERSION   1
+#define SDL_MINOR_VERSION   2
 
 /**
  * The current micro (or patchlevel) version of the SDL headers.
  *
  * If this were SDL version 3.2.1, this value would be 1.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_MICRO_VERSION   7
+#define SDL_MICRO_VERSION   1
 
 /**
  * This macro turns the version numbers into a numeric value.
@@ -73,7 +73,7 @@ extern "C" {
  * \param minor the minorversion number.
  * \param patch the patch version number.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_VERSIONNUM(major, minor, patch) \
     ((major) * 1000000 + (minor) * 1000 + (patch))
@@ -85,7 +85,7 @@ extern "C" {
  *
  * \param version the version number.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_VERSIONNUM_MAJOR(version) ((version) / 1000000)
 
@@ -96,7 +96,7 @@ extern "C" {
  *
  * \param version the version number.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_VERSIONNUM_MINOR(version) (((version) / 1000) % 1000)
 
@@ -107,14 +107,14 @@ extern "C" {
  *
  * \param version the version number.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_VERSIONNUM_MICRO(version) ((version) % 1000)
 
 /**
  * This is the version number macro for the current SDL version.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_GetVersion
  */
@@ -124,7 +124,7 @@ extern "C" {
 /**
  * This macro will evaluate to true if compiled with SDL at least X.Y.Z.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_VERSION_ATLEAST(X, Y, Z) \
     (SDL_VERSION >= SDL_VERSIONNUM(X, Y, Z))
@@ -141,7 +141,7 @@ extern "C" {
  *
  * \returns the version of the linked library.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetRevision
  */
@@ -167,7 +167,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetVersion(void);
  * \returns an arbitrary string, uniquely identifying the exact revision of
  *          the SDL library in use.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetVersion
  */

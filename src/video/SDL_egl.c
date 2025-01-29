@@ -1,6 +1,6 @@
 /*
  *  Simple DirectMedia Layer
- *  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+ *  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the authors be held liable for any damages
@@ -344,7 +344,7 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
 
 #if !defined(SDL_VIDEO_STATIC_ANGLE) && !defined(SDL_VIDEO_DRIVER_VITA)
     /* A funny thing, loading EGL.so first does not work on the Raspberry, so we load libGL* first */
-    path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
+    path = SDL_GetHint(SDL_HINT_OPENGL_LIBRARY);
     if (path) {
         opengl_dll_handle = SDL_LoadObject(path);
     }
@@ -404,7 +404,7 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
         if (egl_dll_handle) {
             SDL_UnloadObject(egl_dll_handle);
         }
-        path = SDL_getenv("SDL_VIDEO_EGL_DRIVER");
+        path = SDL_GetHint(SDL_HINT_EGL_LIBRARY);
         if (!path) {
             path = DEFAULT_EGL;
         }
@@ -719,7 +719,7 @@ static void dumpconfig(SDL_VideoDevice *_this, EGLConfig config)
     for (attr = 0; attr < sizeof(all_attributes) / sizeof(Attribute); attr++) {
         EGLint value;
         _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, config, all_attributes[attr].attribute, &value);
-        SDL_Log("\t%-32s: %10d (0x%08x)\n", all_attributes[attr].name, value, value);
+        SDL_Log("\t%-32s: %10d (0x%08x)", all_attributes[attr].name, value, value);
     }
 }
 

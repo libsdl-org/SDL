@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,11 +32,11 @@
 
 // Available camera drivers
 static const CameraBootStrap *const bootstrap[] = {
-#ifdef SDL_CAMERA_DRIVER_PIPEWIRE
-    &PIPEWIRECAMERA_bootstrap,
-#endif
 #ifdef SDL_CAMERA_DRIVER_V4L2
     &V4L2_bootstrap,
+#endif
+#ifdef SDL_CAMERA_DRIVER_PIPEWIRE
+    &PIPEWIRECAMERA_bootstrap,
 #endif
 #ifdef SDL_CAMERA_DRIVER_COREMEDIA
     &COREMEDIA_bootstrap,

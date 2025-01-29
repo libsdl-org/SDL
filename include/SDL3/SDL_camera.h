@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,25 @@
  * provide SDL_Surface objects as new frames of video come in. These surfaces
  * can be uploaded to an SDL_Texture or processed as pixels in memory.
  *
+ * Several platforms will alert the user if an app tries to access a camera,
+ * and some will present a UI asking the user if your application should be
+ * allowed to obtain images at all, which they can deny. A successfully opened
+ * camera will not provide images until permission is granted. Applications,
+ * after opening a camera device, can see if they were granted access by
+ * either polling with the SDL_GetCameraPermissionState() function, or waiting
+ * for an SDL_EVENT_CAMERA_DEVICE_APPROVED or SDL_EVENT_CAMERA_DEVICE_DENIED
+ * event. Platforms that don't have any user approval process will report
+ * approval immediately.
+ *
+ * Note that SDL cameras only provide video as individual frames; they will
+ * not provide full-motion video encoded in a movie file format, although an
+ * app is free to encode the acquired frames into any format it likes. It also
+ * does not provide audio from the camera hardware through this API; not only
+ * do many webcams not have microphones at all, many people--from streamers to
+ * people on Zoom calls--will want to use a separate microphone regardless of
+ * the camera. In any case, recorded audio will be available through SDL's
+ * audio API no matter what hardware provides the microphone.
+ *
  * ## Camera gotchas
  *
  * Consumer-level camera hardware tends to take a little while to warm up,
@@ -40,10 +59,10 @@
  *
  * It's not uncommon that a newly-opened camera will provide a couple of
  * completely black frames, maybe followed by some under-exposed images. If
- * taking single frame automatically, or recording video from a camera's input
- * without the user initiating it from a preview, it could be wise to drop the
- * first several frames (if not the first several _seconds_ worth of frames!)
- * before using images from a camera.
+ * taking a single frame automatically, or recording video from a camera's
+ * input without the user initiating it from a preview, it could be wise to
+ * drop the first several frames (if not the first several _seconds_ worth of
+ * frames!) before using images from a camera.
  */
 
 #ifndef SDL_camera_h_
@@ -69,7 +88,7 @@ extern "C" {
  *
  * The value 0 is an invalid ID.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_GetCameras
  */
@@ -78,7 +97,7 @@ typedef Uint32 SDL_CameraID;
 /**
  * The opaque structure used to identify an opened SDL camera.
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_Camera SDL_Camera;
 
@@ -88,7 +107,7 @@ typedef struct SDL_Camera SDL_Camera;
  * Cameras often support multiple formats; each one will be encapsulated in
  * this struct.
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GetCameraSupportedFormats
  * \sa SDL_GetCameraFormat
@@ -106,7 +125,7 @@ typedef struct SDL_CameraSpec
 /**
  * The position of camera in relation to system device.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_GetCameraPosition
  */
@@ -135,7 +154,7 @@ typedef enum SDL_CameraPosition
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetCameraDriver
  */
@@ -159,7 +178,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumCameraDrivers(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetNumCameraDrivers
  */
@@ -177,7 +196,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCameraDriver(int index);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentCameraDriver(void);
 
@@ -192,7 +211,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentCameraDriver(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_OpenCamera
  */
@@ -230,7 +249,7 @@ extern SDL_DECLSPEC SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetCameras
  * \sa SDL_OpenCamera
@@ -246,7 +265,7 @@ extern SDL_DECLSPEC SDL_CameraSpec ** SDLCALL SDL_GetCameraSupportedFormats(SDL_
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetCameras
  */
@@ -265,7 +284,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCameraName(SDL_CameraID instance
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetCameras
  */
@@ -311,7 +330,7 @@ extern SDL_DECLSPEC SDL_CameraPosition SDLCALL SDL_GetCameraPosition(SDL_CameraI
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetCameras
  * \sa SDL_GetCameraFormat
@@ -344,7 +363,7 @@ extern SDL_DECLSPEC SDL_Camera * SDLCALL SDL_OpenCamera(SDL_CameraID instance_id
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_OpenCamera
  * \sa SDL_CloseCamera
@@ -360,7 +379,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetCameraPermissionState(SDL_Camera *camera)
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_OpenCamera
  */
@@ -375,7 +394,7 @@ extern SDL_DECLSPEC SDL_CameraID SDLCALL SDL_GetCameraID(SDL_Camera *camera);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetCameraProperties(SDL_Camera *camera);
 
@@ -399,7 +418,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetCameraProperties(SDL_Camera 
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_OpenCamera
  */
@@ -442,7 +461,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_Cam
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_ReleaseCameraFrame
  */
@@ -470,7 +489,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_AcquireCameraFrame(SDL_Camera *cam
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_AcquireCameraFrame
  */
@@ -485,7 +504,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseCameraFrame(SDL_Camera *camera, SDL_
  * \threadsafety It is safe to call this function from any thread, but no
  *               thread may reference `device` once this function is called.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_OpenCamera
  */

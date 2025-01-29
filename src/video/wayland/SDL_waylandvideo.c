@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -449,7 +449,6 @@ static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 typedef struct
 {
     bool has_fifo_v1;
-    bool has_commit_timing_v1;
 } SDL_WaylandPreferredData;
 
 static void wayland_preferred_check_handle_global(void *data, struct wl_registry *registry, uint32_t id,
@@ -459,8 +458,6 @@ static void wayland_preferred_check_handle_global(void *data, struct wl_registry
 
     if (SDL_strcmp(interface, "wp_fifo_manager_v1") == 0) {
         d->has_fifo_v1 = true;
-    } else if (SDL_strcmp(interface, "wp_commit_timing_manager_v1") == 0) {
-        d->has_commit_timing_v1 = true;
     }
 }
 
@@ -490,7 +487,7 @@ static bool Wayland_IsPreferred(struct wl_display *display)
 
     wl_registry_destroy(registry);
 
-    return preferred_data.has_fifo_v1 && preferred_data.has_commit_timing_v1;
+    return preferred_data.has_fifo_v1;
 }
 
 static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
@@ -524,19 +521,22 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
 
     /*
      * If we are checking for preferred Wayland, then let's query for
-     * fifo-v1 and commit-timing-v1's existence, so we don't regress
-     * GPU-bound performance and frame-pacing by default due to
-     * swapchain starvation.
+     * fifo-v1's existence, so we don't regress GPU-bound performance
+     * and frame-pacing by default due to swapchain starvation.
      */
     if (require_preferred_protocols && !Wayland_IsPreferred(display)) {
-        WAYLAND_wl_display_disconnect(display);
+        if (!display_is_external) {
+            WAYLAND_wl_display_disconnect(display);
+        }
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
     }
 
     data = SDL_calloc(1, sizeof(*data));
     if (!data) {
-        WAYLAND_wl_display_disconnect(display);
+        if (!display_is_external) {
+            WAYLAND_wl_display_disconnect(display);
+        }
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
     }
@@ -544,7 +544,9 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     input = SDL_calloc(1, sizeof(*input));
     if (!input) {
         SDL_free(data);
-        WAYLAND_wl_display_disconnect(display);
+        if (!display_is_external) {
+            WAYLAND_wl_display_disconnect(display);
+        }
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
     }
@@ -566,7 +568,9 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     if (!device) {
         SDL_free(input);
         SDL_free(data);
-        WAYLAND_wl_display_disconnect(display);
+        if (!display_is_external) {
+            WAYLAND_wl_display_disconnect(display);
+        }
         SDL_WAYLAND_UnloadSymbols();
         return NULL;
     }
@@ -1191,7 +1195,7 @@ static void libdecor_error(struct libdecor *context,
                            enum libdecor_error error,
                            const char *message)
 {
-    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "libdecor error (%d): %s\n", error, message);
+    SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "libdecor error (%d): %s", error, message);
 }
 
 static struct libdecor_interface libdecor_interface = {
@@ -1220,6 +1224,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
         d->relative_pointer_manager = wl_registry_bind(d->registry, id, &zwp_relative_pointer_manager_v1_interface, 1);
+        Wayland_input_init_relative_pointer(d);
     } else if (SDL_strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
         d->pointer_constraints = wl_registry_bind(d->registry, id, &zwp_pointer_constraints_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_keyboard_shortcuts_inhibit_manager_v1") == 0) {
@@ -1229,8 +1234,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     } else if (SDL_strcmp(interface, "xdg_activation_v1") == 0) {
         d->activation_manager = wl_registry_bind(d->registry, id, &xdg_activation_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_text_input_manager_v3") == 0) {
-        d->text_input_manager = wl_registry_bind(d->registry, id, &zwp_text_input_manager_v3_interface, 1);
-        Wayland_create_text_input(d);
+        Wayland_create_text_input_manager(d, id);
     } else if (SDL_strcmp(interface, "wl_data_device_manager") == 0) {
         d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, SDL_min(3, version));
         Wayland_create_data_device(d);

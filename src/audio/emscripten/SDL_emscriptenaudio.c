@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -190,7 +190,7 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
 
     // limit to native freq
     device->spec.freq = EM_ASM_INT({ return Module['SDL3'].audioContext.sampleRate; });
-    device->sample_frames = SDL_GetDefaultSampleFramesFromFreq(device->spec.freq);
+    device->sample_frames = SDL_GetDefaultSampleFramesFromFreq(device->spec.freq) * 2;  // double the buffer size, some browsers need more, and we'll just have to live with the latency.
 
     SDL_UpdatedAudioDeviceFormat(device);
 

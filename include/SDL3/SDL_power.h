@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,15 @@
  * # CategoryPower
  *
  * SDL power management routines.
+ *
+ * There is a single function in this category: SDL_GetPowerInfo().
+ *
+ * This function is useful for games on the go. This allows an app to know if
+ * it's running on a draining battery, which can be useful if the app wants to
+ * reduce processing, or perhaps framerate, to extend the duration of the
+ * battery's charge. Perhaps the app just wants to show a battery meter when
+ * fullscreen, or alert the user when the power is getting extremely low, so
+ * they can save their game.
  */
 
 #include <SDL3/SDL_stdinc.h>
@@ -42,7 +51,7 @@ extern "C" {
  *
  * These are results returned by SDL_GetPowerInfo().
  *
- * \since This enum is available since SDL 3.1.3
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_PowerState
 {
@@ -80,7 +89,7 @@ typedef enum SDL_PowerState
  * \returns the current battery state or `SDL_POWERSTATE_ERROR` on failure;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_PowerState SDLCALL SDL_GetPowerInfo(int *seconds, int *percent);
 

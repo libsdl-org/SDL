@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
                     seed_seen = 1;
                     consumed = 1;
                 } else {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Invalid seed. Use a decimal or hexadecimal number.\n");
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Invalid seed. Use a decimal or hexadecimal number.");
                     return 1;
                 }
             }
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     if (!seed_seen) {
         seed = SDL_GetPerformanceCounter();
     }
-    SDL_Log("Using random seed 0x%" SDL_PRIx64 "\n", seed);
+    SDL_Log("Using random seed 0x%" SDL_PRIx64, seed);
 
     for (iteration = 0; iteration < SDL_arraysize(itervals); iteration++) {
         const int arraylen = itervals[iteration];

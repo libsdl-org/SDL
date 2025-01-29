@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -60,12 +60,12 @@ static int PointToPixel(SDL_Window *window, int point)
      * Wayland scale units are in units of 1/120, so the offset is required to correct for
      * rounding errors when using certain scale values.
      */
-    return SDL_max((int)SDL_lround((double)point * GetWindowScale(window) + 1e-6), 1);
+    return point ? SDL_max((int)SDL_lround((double)point * GetWindowScale(window) + 1e-6), 1) : 0;
 }
 
 static int PixelToPoint(SDL_Window *window, int pixel)
 {
-    return SDL_max((int)SDL_lround((double)pixel / GetWindowScale(window)), 1);
+    return pixel ? SDL_max((int)SDL_lround((double)pixel / GetWindowScale(window)), 1) : 0;
 }
 
 /* According to the Wayland spec:
@@ -264,8 +264,8 @@ static void RepositionPopup(SDL_Window *window, bool use_current_position)
     if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP &&
         wind->shell_surface.xdg.popup.xdg_positioner &&
         xdg_popup_get_version(wind->shell_surface.xdg.popup.xdg_popup) >= XDG_POPUP_REPOSITION_SINCE_VERSION) {
-        int x = use_current_position ? window->x : window->floating.x;
-        int y = use_current_position ? window->y : window->floating.y;
+        int x = use_current_position ? window->x : window->pending.x;
+        int y = use_current_position ? window->y : window->pending.y;
 
         EnsurePopupPositionIsValid(window, &x, &y);
         if (wind->scale_to_display) {
@@ -499,28 +499,35 @@ static struct wl_callback_listener fullscreen_deadline_listener = {
     fullscreen_deadline_handler
 };
 
-static void maximized_deadline_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
+static void maximized_restored_deadline_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
 {
     // Get the window from the ID as it may have been destroyed
     SDL_WindowID windowID = (SDL_WindowID)((uintptr_t)data);
     SDL_Window *window = SDL_GetWindowFromID(windowID);
 
     if (window && window->internal) {
-        window->internal->maximized_deadline_count--;
+        window->internal->maximized_restored_deadline_count--;
     }
 
     wl_callback_destroy(callback);
 }
 
-static struct wl_callback_listener maximized_deadline_listener = {
-    maximized_deadline_handler
+static struct wl_callback_listener maximized_restored_deadline_listener = {
+    maximized_restored_deadline_handler
 };
 
 static void FlushPendingEvents(SDL_Window *window)
 {
-    while (window->internal->fullscreen_deadline_count || window->internal->maximized_deadline_count) {
+    // Serialize and restore the pending flags, as they may be overwritten while flushing.
+    const bool last_position_pending = window->last_position_pending;
+    const bool last_size_pending = window->last_size_pending;
+
+    while (window->internal->fullscreen_deadline_count || window->internal->maximized_restored_deadline_count) {
         WAYLAND_wl_display_roundtrip(window->internal->waylandData->display);
     }
+
+    window->last_position_pending = last_position_pending;
+    window->last_size_pending = last_size_pending;
 }
 
 /* While we can't get window position from the compositor, we do at least know
@@ -819,16 +826,20 @@ static void handle_configure_xdg_toplevel(void *data,
          * Ignore if less than or greater than max/min size.
          */
         if (window->flags & SDL_WINDOW_RESIZABLE) {
-            if ((floating && wind->pending_restored_size) ||
-                width == 0 || height == 0) {
-                /* This happens when we're being restored from a non-floating state
-                 * with a pending floating client size, or the compositor indicates
-                 * that the size is up to the client, so use the cached window size here.
+            if (width == 0 || height == 0) {
+                /* This happens when the compositor indicates that the size is
+                 * up to the client, so use the cached window size here.
                  */
                 if (floating) {
-                    wind->pending_restored_size = false;
                     width = window->floating.w;
                     height = window->floating.h;
+
+                    // Clamp the window to the toplevel bounds, if any are set.
+                    if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE &&
+                        wind->toplevel_bounds.width && wind->toplevel_bounds.height) {
+                        width = SDL_min(wind->toplevel_bounds.width, width);
+                        height = SDL_min(wind->toplevel_bounds.height, height);
+                    }
                 } else {
                     width = window->windowed.w;
                     height = window->windowed.h;
@@ -968,7 +979,9 @@ static void handle_xdg_configure_toplevel_bounds(void *data,
                                                  struct xdg_toplevel *xdg_toplevel,
                                                  int32_t width, int32_t height)
 {
-    // NOP
+    SDL_WindowData *window = (SDL_WindowData *)data;
+    window->toplevel_bounds.width = width;
+    window->toplevel_bounds.height = height;
 }
 
 static void handle_xdg_toplevel_wm_capabilities(void *data,
@@ -1022,17 +1035,36 @@ static void handle_configure_xdg_popup(void *data,
     x -= offset_x;
     y -= offset_y;
 
-    wind->requested.logical_width = width;
-    wind->requested.logical_height = height;
+    /* This happens when the compositor indicates that the size is
+     * up to the client, so use the cached window size here.
+     */
+    if (width == 0 || height == 0) {
+        width = wind->sdlwindow->floating.w;
+        height = wind->sdlwindow->floating.h;
+    }
+
+    /* Don't apply the supplied dimensions if they haven't changed from the last configuration
+     * event, or a newer size set programmatically can be overwritten by old data.
+     */
+    if (width != wind->last_configure.width || height != wind->last_configure.height) {
+        wind->requested.logical_width = width;
+        wind->requested.logical_height = height;
+
+        if (wind->scale_to_display) {
+            wind->requested.pixel_width = PointToPixel(wind->sdlwindow, width);
+            wind->requested.pixel_height = PointToPixel(wind->sdlwindow, height);
+        }
+    }
 
     if (wind->scale_to_display) {
         x = PointToPixel(wind->sdlwindow->parent, x);
         y = PointToPixel(wind->sdlwindow->parent, y);
-        wind->requested.pixel_width = PointToPixel(wind->sdlwindow, width);
-        wind->requested.pixel_height = PointToPixel(wind->sdlwindow, height);
     }
 
     SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_MOVED, x, y);
+
+    wind->last_configure.width = width;
+    wind->last_configure.height = height;
 
     if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
         wind->shell_surface_status = WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_FRAME;
@@ -1234,14 +1266,13 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
              *
              *      https://gitlab.freedesktop.org/libdecor/libdecor/-/issues/34
              */
-            if ((floating && (wind->pending_restored_size || (!wind->floating && !(window->flags & SDL_WINDOW_BORDERLESS)))) ||
+            if ((floating && (!wind->floating && !(window->flags & SDL_WINDOW_BORDERLESS))) ||
                 !libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
                 /* This happens when we're being restored from a non-floating state,
                  * or the compositor indicates that the size is up to the client, so
                  * used the cached window size here.
                  */
                 if (floating) {
-                    wind->pending_restored_size = false;
                     width = window->floating.w;
                     height = window->floating.h;
                 } else {
@@ -1404,10 +1435,16 @@ static void decoration_frame_commit(struct libdecor_frame *frame, void *user_dat
     }
 }
 
+static void decoration_dismiss_popup(struct libdecor_frame *frame, const char *seat_name, void *user_data)
+{
+    // NOP
+}
+
 static struct libdecor_frame_interface libdecor_frame_interface = {
     decoration_frame_configure,
     decoration_frame_close,
     decoration_frame_commit,
+    decoration_dismiss_popup
 };
 #endif
 
@@ -1610,18 +1647,20 @@ static const struct frog_color_managed_surface_listener frog_surface_listener = 
     frog_preferred_metadata_handler
 };
 
-static void SetKeyboardFocus(SDL_Window *window)
+static void SetKeyboardFocus(SDL_Window *window, bool set_focus)
 {
-    SDL_Window *topmost = window;
+    SDL_Window *toplevel = window;
 
-    // Find the topmost parent
-    while (topmost->parent) {
-        topmost = topmost->parent;
+    // Find the toplevel parent
+    while (SDL_WINDOW_IS_POPUP(toplevel)) {
+        toplevel = toplevel->parent;
     }
 
-    topmost->internal->keyboard_focus = window;
+    toplevel->internal->keyboard_focus = window;
 
-    SDL_SetKeyboardFocus(window);
+    if (set_focus && !window->is_hiding && !window->is_destroying) {
+        SDL_SetKeyboardFocus(window);
+    }
 }
 
 bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled)
@@ -1799,6 +1838,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         } else {
             libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, data->app_id);
             libdecor_frame_map(data->shell_surface.libdecor.frame);
+            libdecor_frame_set_visibility(data->shell_surface.libdecor.frame, !(window->flags & SDL_WINDOW_BORDERLESS));
 
             if (c->zxdg_exporter_v2) {
                 data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
@@ -1849,8 +1889,8 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             xdg_positioner_set_size(data->shell_surface.xdg.popup.xdg_positioner, data->current.logical_width, data->current.logical_height);
 
             // Set the popup initial position
-            position_x = window->x;
-            position_y = window->y;
+            position_x = window->last_position_pending ? window->pending.x : window->x;
+            position_y = window->last_position_pending ? window->pending.y : window->y;
             EnsurePopupPositionIsValid(window, &position_x, &position_y);
             if (data->scale_to_display) {
                 position_x = PixelToPoint(window->parent, position_x);
@@ -1874,9 +1914,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 wl_surface_set_input_region(data->surface, region);
                 wl_region_destroy(region);
             } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
-                if (window->parent == SDL_GetKeyboardFocus()) {
-                    SetKeyboardFocus(window);
-                }
+                SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
             }
 
             SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER, data->shell_surface.xdg.popup.xdg_popup);
@@ -1885,6 +1923,14 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             data->shell_surface.xdg.toplevel.xdg_toplevel = xdg_surface_get_toplevel(data->shell_surface.xdg.surface);
             xdg_toplevel_set_app_id(data->shell_surface.xdg.toplevel.xdg_toplevel, data->app_id);
             xdg_toplevel_add_listener(data->shell_surface.xdg.toplevel.xdg_toplevel, &toplevel_listener_xdg, data);
+
+            // Create the window decorations
+            if (c->decoration_manager) {
+                data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.toplevel.xdg_toplevel);
+                zxdg_toplevel_decoration_v1_add_listener(data->server_decoration, &decoration_listener, window);
+                const enum zxdg_toplevel_decoration_v1_mode mode = !(window->flags & SDL_WINDOW_BORDERLESS) ? ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE : ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
+                zxdg_toplevel_decoration_v1_set_mode(data->server_decoration, mode);
+            }
 
             if (c->zxdg_exporter_v2) {
                 data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
@@ -1935,14 +1981,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 WAYLAND_wl_display_dispatch(c->display);
             }
         }
-
-        // Create the window decorations
-        if (data->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP && data->shell_surface.xdg.toplevel.xdg_toplevel && c->decoration_manager) {
-            data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.toplevel.xdg_toplevel);
-            zxdg_toplevel_decoration_v1_add_listener(data->server_decoration,
-                                                     &decoration_listener,
-                                                     window);
-        }
     } else {
         // Nothing to see here, just commit.
         wl_surface_commit(data->surface);
@@ -1974,7 +2012,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 #endif
     Wayland_SetWindowResizable(_this, window, !!(window->flags & SDL_WINDOW_RESIZABLE));
-    Wayland_SetWindowBordered(_this, window, !(window->flags & SDL_WINDOW_BORDERLESS));
 
     // We're finally done putting the window together, raise if possible
     if (c->activation_manager) {
@@ -2021,16 +2058,20 @@ static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
     }
 
     if (popup->flags & SDL_WINDOW_POPUP_MENU) {
-        if (popup == SDL_GetKeyboardFocus()) {
-            SDL_Window *new_focus = popup->parent;
+        SDL_Window *new_focus = popup->parent;
+        bool set_focus = popup == SDL_GetKeyboardFocus();
 
-            // Find the highest level window that isn't being hidden or destroyed.
-            while (new_focus->parent && (new_focus->is_hiding || new_focus->is_destroying)) {
-                new_focus = new_focus->parent;
+        // Find the highest level window, up to the toplevel parent, that isn't being hidden or destroyed.
+        while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
+            new_focus = new_focus->parent;
+
+            // If some window in the chain currently had focus, set it to the new lowest-level window.
+            if (!set_focus) {
+                set_focus = new_focus == SDL_GetKeyboardFocus();
             }
-
-            SetKeyboardFocus(new_focus);
         }
+
+        SetKeyboardFocus(new_focus, set_focus);
     }
 
     xdg_popup_destroy(popupdata->shell_surface.xdg.popup.xdg_popup);
@@ -2268,12 +2309,22 @@ void Wayland_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->internal;
 
+    // Not currently fullscreen or maximized, and no state pending; nothing to do.
+    if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) &&
+        !wind->fullscreen_deadline_count && !wind->maximized_restored_deadline_count) {
+        return;
+    }
+
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
         if (!wind->shell_surface.libdecor.frame) {
             return; // Can't do anything yet, wait for ShowWindow
         }
         libdecor_frame_unset_maximized(wind->shell_surface.libdecor.frame);
+
+        ++wind->maximized_restored_deadline_count;
+        struct wl_callback *cb = wl_display_sync(_this->internal->display);
+        wl_callback_add_listener(cb, &maximized_restored_deadline_listener, (void *)((uintptr_t)window->id));
     } else
 #endif
         // Note that xdg-shell does NOT provide a way to unset minimize!
@@ -2282,6 +2333,10 @@ void Wayland_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 return; // Can't do anything yet, wait for ShowWindow
             }
             xdg_toplevel_unset_maximized(wind->shell_surface.xdg.toplevel.xdg_toplevel);
+
+            ++wind->maximized_restored_deadline_count;
+            struct wl_callback *cb = wl_display_sync(_this->internal->display);
+            wl_callback_add_listener(cb, &maximized_restored_deadline_listener, (void *)((uintptr_t)window->id));
         }
 }
 
@@ -2340,6 +2395,12 @@ void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
         WAYLAND_wl_display_roundtrip(_this->internal->display);
     }
 
+    // Not fullscreen, already maximized, and no state pending; nothing to do.
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN) && (window->flags & SDL_WINDOW_MAXIMIZED) &&
+        !wind->fullscreen_deadline_count && !wind->maximized_restored_deadline_count) {
+        return;
+    }
+
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
         if (!wind->shell_surface.libdecor.frame) {
@@ -2349,6 +2410,10 @@ void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
         // Commit to preserve any pending size data.
         wl_surface_commit(wind->surface);
         libdecor_frame_set_maximized(wind->shell_surface.libdecor.frame);
+
+        ++wind->maximized_restored_deadline_count;
+        struct wl_callback *cb = wl_display_sync(viddata->display);
+        wl_callback_add_listener(cb, &maximized_restored_deadline_listener, (void *)((uintptr_t)window->id));
     } else
 #endif
         if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
@@ -2359,11 +2424,11 @@ void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
         // Commit to preserve any pending size data.
         wl_surface_commit(wind->surface);
         xdg_toplevel_set_maximized(wind->shell_surface.xdg.toplevel.xdg_toplevel);
-    }
 
-    ++wind->maximized_deadline_count;
-    struct wl_callback *cb = wl_display_sync(viddata->display);
-    wl_callback_add_listener(cb, &maximized_deadline_listener, (void *)((uintptr_t)window->id));
+        ++wind->maximized_restored_deadline_count;
+        struct wl_callback *cb = wl_display_sync(viddata->display);
+        wl_callback_add_listener(cb, &maximized_restored_deadline_listener, (void *)((uintptr_t)window->id));
+    }
 }
 
 void Wayland_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -2651,30 +2716,11 @@ bool Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         RepositionPopup(window, false);
         return true;
     } else if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR || wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
-        const bool use_pending_position_for_fullscreen = window->use_pending_position_for_fullscreen;
-        const int x = window->floating.x;
-        const int y = window->floating.y;
-
         /* Catch up on any pending state before attempting to change the fullscreen window
          * display via a set fullscreen call to make sure the window doesn't have a pending
          * leave fullscreen event that it might override.
          */
         FlushPendingEvents(window);
-
-        /* XXX: Need to restore this after the roundtrip, as the requested coordinates might
-         *      have been overwritten by the 'real' coordinates if a display enter/leave event
-         *      occurred.
-         *
-         * The common pattern:
-         *
-         * SDL_SetWindowPosition();
-         * SDL_SetWindowFullscreen();
-         *
-         * for positioning a desktop fullscreen window won't work without this.
-         */
-        window->use_pending_position_for_fullscreen = use_pending_position_for_fullscreen;
-        window->floating.x = x;
-        window->floating.y = y;
 
         if (wind->is_fullscreen) {
             SDL_VideoDisplay *display = SDL_GetVideoDisplayForFullscreenWindow(window);
@@ -2693,30 +2739,33 @@ void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->internal;
 
-    /* Fullscreen windows do not get explicitly resized, and not strictly
-     * obeying the size of maximized windows is a protocol violation, so
-     * it is necessary to flush any of these pending state operations.
+    /* Flush any pending state operations, as fullscreen windows do not get
+     * explicitly resized, not strictly obeying the size of a maximized window
+     * is a protocol violation, and pending restore events might result in a
+     * configure event overwriting the requested size.
      *
      * Calling this on a custom surface is informative, so the size must
      * always be passed through.
      */
     FlushPendingEvents(window);
 
+    // Maximized and fullscreen windows don't get resized.
     if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) ||
         wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_CUSTOM) {
         if (!wind->scale_to_display) {
-            wind->requested.logical_width = window->floating.w;
-            wind->requested.logical_height = window->floating.h;
+            wind->requested.logical_width = window->pending.w;
+            wind->requested.logical_height = window->pending.h;
         } else {
-            wind->requested.logical_width = PixelToPoint(window, window->floating.w);
-            wind->requested.logical_height = PixelToPoint(window, window->floating.h);
-            wind->requested.pixel_width = window->floating.w;
-            wind->requested.pixel_height = window->floating.h;
+            wind->requested.logical_width = PixelToPoint(window, window->pending.w);
+            wind->requested.logical_height = PixelToPoint(window, window->pending.h);
+            wind->requested.pixel_width = window->pending.w;
+            wind->requested.pixel_height = window->pending.h;
         }
 
         ConfigureWindowGeometry(window);
     } else {
-        wind->pending_restored_size = true;
+        // Can't resize the window.
+        window->last_size_pending = false;
     }
 
     // Always commit, as this may be in response to a min/max limit change.
@@ -2802,7 +2851,7 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
 
     // TODO: Add high-DPI icon support
     Wayland_ReleaseSHMBuffer(&wind->icon);
-    if (Wayland_AllocSHMBuffer(icon->w, icon->h, &wind->icon) != 0) {
+    if (!Wayland_AllocSHMBuffer(icon->w, icon->h, &wind->icon)) {
         return SDL_SetError("wayland: failed to allocate SHM buffer for the icon");
     }
 
@@ -2833,7 +2882,7 @@ bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     do {
         WAYLAND_wl_display_roundtrip(_this->internal->display);
-    } while (wind->fullscreen_deadline_count || wind->maximized_deadline_count);
+    } while (wind->fullscreen_deadline_count || wind->maximized_restored_deadline_count);
 
     return true;
 }

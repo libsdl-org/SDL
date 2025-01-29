@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
   Copyright (C) 2020-2022 Collabora Ltd.
 
   This software is provided 'as-is', without any express or implied
@@ -21,7 +21,7 @@
 #endif
 #define SDL_DYNAMIC_API 0
 
-#ifndef NO_BUILD_CONFIG
+#ifdef HAVE_BUILD_CONFIG
 #include "../src/SDL_internal.h"
 #endif
 

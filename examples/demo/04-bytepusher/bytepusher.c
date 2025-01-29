@@ -47,7 +47,7 @@ static const struct {
     const char *key;
     const char *value;
 } extended_metadata[] = {
-    { SDL_PROP_APP_METADATA_URL_STRING, "https://examples.libsdl.org/SDL3/game/04-bytepusher/" },
+    { SDL_PROP_APP_METADATA_URL_STRING, "https://examples.libsdl.org/SDL3/demo/04-bytepusher/" },
     { SDL_PROP_APP_METADATA_CREATOR_STRING, "SDL team" },
     { SDL_PROP_APP_METADATA_COPYRIGHT_STRING, "Placed in the public domain" },
     { SDL_PROP_APP_METADATA_TYPE_STRING, "game" }

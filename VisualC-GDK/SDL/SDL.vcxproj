@@ -166,8 +166,8 @@
     </Link>
     <PreBuildEvent>
       <Command>
-        $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
-        $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
       </Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -203,8 +203,8 @@
     </Link>
     <PreBuildEvent>
       <Command>
-        $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
-        $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
       </Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -272,8 +272,8 @@
     </Link>
     <PreBuildEvent>
       <Command>
-        $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
-        $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
       </Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -310,8 +310,8 @@
     </Link>
     <PreBuildEvent>
       <Command>
-        $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
-        $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
+        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\ one
       </Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -441,8 +441,8 @@
     <ClInclude Include="..\..\src\events\SDL_windowevents_c.h" />
     <ClInclude Include="..\..\src\filesystem\SDL_sysfilesystem.h" />
     <ClInclude Include="..\..\src\gpu\SDL_sysgpu.h" />
-    <ClInclude Include="..\..\src\file\SDL_asyncio_c.h" />
-    <ClInclude Include="..\..\src\file\SDL_sysasyncio.h" />
+    <ClInclude Include="..\..\src\io\SDL_asyncio_c.h" />
+    <ClInclude Include="..\..\src\io\SDL_sysasyncio.h" />
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h" />
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
@@ -529,9 +529,9 @@
     <ClCompile Include="..\..\src\dialog\SDL_dialog_utils.c" />
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
-    <ClCompile Include="..\..\src\file\generic\SDL_asyncio_generic.c" />
-    <ClCompile Include="..\..\src\file\SDL_asyncio.c" />
-    <ClCompile Include="..\..\src\file\windows\SDL_asyncio_windows_ioring.c" />
+    <ClCompile Include="..\..\src\io\generic\SDL_asyncio_generic.c" />
+    <ClCompile Include="..\..\src\io\SDL_asyncio.c" />
+    <ClCompile Include="..\..\src\io\windows\SDL_asyncio_windows_ioring.c" />
     <ClCompile Include="..\..\src\main\gdk\SDL_sysmain_runapp.cpp" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
@@ -592,6 +592,7 @@
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h" />
     <ClInclude Include="..\..\src\video\SDL_yuv_c.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_msctf.h" />
+    <ClInclude Include="..\..\src\video\windows\SDL_surface_utils.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsclipboard.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsevents.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsframebuffer.h" />
@@ -631,7 +632,6 @@
     <ClCompile Include="..\..\src\audio\SDL_mixer.c" />
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
-    <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_win32.c" />
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />
@@ -673,7 +673,7 @@
     <ClCompile Include="..\..\src\events\SDL_quit.c" />
     <ClCompile Include="..\..\src\events\SDL_touch.c" />
     <ClCompile Include="..\..\src\events\SDL_windowevents.c" />
-    <ClCompile Include="..\..\src\file\SDL_iostream.c" />
+    <ClCompile Include="..\..\src\io\SDL_iostream.c" />
     <ClCompile Include="..\..\src\filesystem\gdk\SDL_sysfilesystem.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">true</ExcludedFromBuild>
@@ -828,6 +828,17 @@
     <ClCompile Include="..\..\src\timer\windows\SDL_systimer.c" />
     <ClCompile Include="..\..\src\time\SDL_time.c" />
     <ClCompile Include="..\..\src\time\windows\SDL_systime.c" />
+    <ClCompile Include="..\..\src\tray\dummy\SDL_tray.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tray\windows\SDL_tray.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.Scarlett.x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\src\tray\SDL_tray_utils.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullevents.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullframebuffer.c" />
     <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c" />
@@ -856,6 +867,7 @@
     <ClCompile Include="..\..\src\video\SDL_video_unsupported.c" />
     <ClCompile Include="..\..\src\video\SDL_vulkan_utils.c" />
     <ClCompile Include="..\..\src\video\SDL_yuv.c" />
+    <ClCompile Include="..\..\src\video\windows\SDL_surface_utils.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsclipboard.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsevents.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsframebuffer.c" />

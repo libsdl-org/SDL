@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -92,7 +92,7 @@ typedef int SDL_SpinLock;
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_LockSpinlock
  * \sa SDL_UnlockSpinlock
@@ -109,7 +109,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TryLockSpinlock(SDL_SpinLock *lock);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_TryLockSpinlock
  * \sa SDL_UnlockSpinlock
@@ -128,7 +128,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LockSpinlock(SDL_SpinLock *lock);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_LockSpinlock
  * \sa SDL_TryLockSpinlock
@@ -152,9 +152,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockSpinlock(SDL_SpinLock *lock);
  *               time, but if you find yourself needing this, you are probably
  *               dealing with some very sensitive code; be careful!
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_CompilerBarrier() DoCompilerSpecificReadWriteBarrier()
+
 #elif defined(_MSC_VER) && (_MSC_VER > 1200) && !defined(__clang__)
 void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
@@ -171,7 +172,50 @@ extern __inline void SDL_CompilerBarrier(void);
 #endif
 
 /**
- * Insert a memory release barrier.
+ * Insert a memory release barrier (function version).
+ *
+ * Please refer to SDL_MemoryBarrierRelease for details. This is a function
+ * version, which might be useful if you need to use this functionality from a
+ * scripting language, etc. Also, some of the macro versions call this
+ * function behind the scenes, where more heavy lifting can happen inside of
+ * SDL. Generally, though, an app written in C/C++/etc should use the macro
+ * version, as it will be more efficient.
+ *
+ * \threadsafety Obviously this function is safe to use from any thread at any
+ *               time, but if you find yourself needing this, you are probably
+ *               dealing with some very sensitive code; be careful!
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_MemoryBarrierRelease
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
+
+/**
+ * Insert a memory acquire barrier (function version).
+ *
+ * Please refer to SDL_MemoryBarrierRelease for details. This is a function
+ * version, which might be useful if you need to use this functionality from a
+ * scripting language, etc. Also, some of the macro versions call this
+ * function behind the scenes, where more heavy lifting can happen inside of
+ * SDL. Generally, though, an app written in C/C++/etc should use the macro
+ * version, as it will be more efficient.
+ *
+ * \threadsafety Obviously this function is safe to use from any thread at any
+ *               time, but if you find yourself needing this, you are probably
+ *               dealing with some very sensitive code; be careful!
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_MemoryBarrierAcquire
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
+
+
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * Insert a memory release barrier (macro version).
  *
  * Memory barriers are designed to prevent reads and writes from being
  * reordered by the compiler and being seen out of order on multi-core CPUs.
@@ -191,31 +235,47 @@ extern __inline void SDL_CompilerBarrier(void);
  * For more information on these semantics, take a look at the blog post:
  * http://preshing.com/20120913/acquire-and-release-semantics
  *
+ * This is the macro version of this functionality; if possible, SDL will use
+ * compiler intrinsics or inline assembly, but some platforms might need to
+ * call the function version of this, SDL_MemoryBarrierReleaseFunction to do
+ * the heavy lifting. Apps that can use the macro should favor it over the
+ * function.
+ *
  * \threadsafety Obviously this macro is safe to use from any thread at any
  *               time, but if you find yourself needing this, you are probably
  *               dealing with some very sensitive code; be careful!
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_MemoryBarrierAcquire
+ * \sa SDL_MemoryBarrierReleaseFunction
  */
-extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierReleaseFunction(void);
+#define SDL_MemoryBarrierRelease() SDL_MemoryBarrierReleaseFunction()
 
 /**
- * Insert a memory acquire barrier.
+ * Insert a memory acquire barrier (macro version).
  *
- * Please refer to SDL_MemoryBarrierReleaseFunction for the details!
+ * Please see SDL_MemoryBarrierRelease for the details on what memory barriers
+ * are and when to use them.
  *
- * \threadsafety Obviously this function is safe to use from any thread at any
+ * This is the macro version of this functionality; if possible, SDL will use
+ * compiler intrinsics or inline assembly, but some platforms might need to
+ * call the function version of this, SDL_MemoryBarrierAcquireFunction, to do
+ * the heavy lifting. Apps that can use the macro should favor it over the
+ * function.
+ *
+ * \threadsafety Obviously this macro is safe to use from any thread at any
  *               time, but if you find yourself needing this, you are probably
  *               dealing with some very sensitive code; be careful!
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
- * \sa SDL_MemoryBarrierReleaseFunction
+ * \sa SDL_MemoryBarrierRelease
+ * \sa SDL_MemoryBarrierAcquireFunction
  */
-extern SDL_DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
+#define SDL_MemoryBarrierAcquire() SDL_MemoryBarrierAcquireFunction()
 
-/* !!! FIXME: this should have documentation! */
-#if defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
+#elif defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("lwsync" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("lwsync" : : : "memory")
 #elif defined(__GNUC__) && defined(__aarch64__)
@@ -281,9 +341,10 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  *
  * \threadsafety This macro is safe to use from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_CPUPauseInstruction() DoACPUPauseInACompilerAndArchitectureSpecificWay
+
 #elif (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define SDL_CPUPauseInstruction() __asm__ __volatile__("pause\n")  /* Some assemblers can't do REP NOP, so go with PAUSE. */
 #elif (defined(__arm__) && defined(__ARM_ARCH) && __ARM_ARCH >= 7) || defined(__aarch64__)
@@ -324,7 +385,7 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
  * This is a struct so people don't accidentally use numeric operations on it
  * directly. You have to use SDL atomic functions.
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CompareAndSwapAtomicInt
  * \sa SDL_GetAtomicInt
@@ -346,7 +407,7 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetAtomicInt
  * \sa SDL_SetAtomicInt
@@ -367,7 +428,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, i
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetAtomicInt
  */
@@ -384,7 +445,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAtomicInt(SDL_AtomicInt *a, int v);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetAtomicInt
  */
@@ -404,7 +465,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAtomicInt(SDL_AtomicInt *a);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_AtomicDecRef
  * \sa SDL_AtomicIncRef
@@ -423,7 +484,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_AtomicDecRef
  */
@@ -437,13 +498,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  *
  * ***Note: If you don't know what this macro is for, you shouldn't use it!***
  *
- * \param a a pointer to an SDL_AtomicInt to increment.
+ * \param a a pointer to an SDL_AtomicInt to decrement.
  * \returns true if the variable reached zero after decrementing, false
  *          otherwise.
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_AtomicIncRef
  */
@@ -470,7 +531,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * This is a struct so people don't accidentally use numeric operations on it
  * directly. You have to use SDL atomic functions.
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CompareAndSwapAtomicU32
  * \sa SDL_GetAtomicU32
@@ -491,7 +552,7 @@ typedef struct SDL_AtomicU32 { Uint32 value; } SDL_AtomicU32;
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetAtomicU32
  * \sa SDL_SetAtomicU32
@@ -512,7 +573,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, U
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetAtomicU32
  */
@@ -529,7 +590,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetAtomicU32
  */
@@ -548,7 +609,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CompareAndSwapAtomicInt
  * \sa SDL_GetAtomicPointer
@@ -568,7 +629,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicPointer(void **a, void 
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CompareAndSwapAtomicPointer
  * \sa SDL_GetAtomicPointer
@@ -586,7 +647,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_SetAtomicPointer(void **a, void *v);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CompareAndSwapAtomicPointer
  * \sa SDL_SetAtomicPointer

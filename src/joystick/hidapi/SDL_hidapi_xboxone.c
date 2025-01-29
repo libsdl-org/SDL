@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -213,7 +213,7 @@ static void SDLCALL SDL_HomeLEDHintChanged(void *userdata, const char *name, con
 static void SetInitState(SDL_DriverXboxOne_Context *ctx, SDL_XboxOneInitState state)
 {
 #ifdef DEBUG_JOYSTICK
-    SDL_Log("Setting init state %d\n", state);
+    SDL_Log("Setting init state %d", state);
 #endif
     ctx->init_state = state;
 }
@@ -391,7 +391,7 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
     }
 
 #ifdef DEBUG_JOYSTICK
-    SDL_Log("Controller version: %d (0x%.4x)\n", device->version, device->version);
+    SDL_Log("Controller version: %d (0x%.4x)", device->version, device->version);
 #endif
 
     device->type = SDL_GAMEPAD_TYPE_XBOXONE;
@@ -620,7 +620,7 @@ static void HIDAPI_DriverXboxOne_HandleUnmappedStatePacket(SDL_Joystick *joystic
         return;
     }
 #ifdef DEBUG_XBOX_PROTOCOL
-    SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s\n",
+    SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s",
             (data[paddle_index] & button1_bit) ? 1 : 0,
             (data[paddle_index] & button2_bit) ? 1 : 0,
             (data[paddle_index] & button3_bit) ? 1 : 0,
@@ -654,7 +654,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         Uint8 packet[] = { 0x4d, 0x00, 0x00, 0x02, 0x07, 0x00 };
 
 #ifdef DEBUG_JOYSTICK
-        SDL_Log("Enabling paddles on XBox Elite 2\n");
+        SDL_Log("Enabling paddles on XBox Elite 2");
 #endif
         SDL_HIDAPI_SendRumble(ctx->device, packet, sizeof(packet));
     }
@@ -787,7 +787,7 @@ static void HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, SDL_D
             paddles_mapped = (data[20] != 0);
         }
 #ifdef DEBUG_XBOX_PROTOCOL
-        SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s\n",
+        SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s",
                 (data[paddle_index] & button1_bit) ? 1 : 0,
                 (data[paddle_index] & button2_bit) ? 1 : 0,
                 (data[paddle_index] & button3_bit) ? 1 : 0,
@@ -954,7 +954,7 @@ static void HIDAPI_DriverXboxOneBluetooth_HandleButtons(Uint64 timestamp, SDL_Jo
         }
 
 #ifdef DEBUG_XBOX_PROTOCOL
-        SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s\n",
+        SDL_Log(">>> Paddles: %d,%d,%d,%d mapped = %s",
                 (data[paddle_index] & button1_bit) ? 1 : 0,
                 (data[paddle_index] & button2_bit) ? 1 : 0,
                 (data[paddle_index] & button3_bit) ? 1 : 0,
@@ -990,7 +990,7 @@ static void HIDAPI_DriverXboxOneBluetooth_HandleStatePacket(SDL_Joystick *joysti
         HIDAPI_DriverXboxOneBluetooth_HandleButtons(timestamp, joystick, ctx, data, size);
     } else {
 #ifdef DEBUG_XBOX_PROTOCOL
-        SDL_Log("Unknown Bluetooth state packet format\n");
+        SDL_Log("Unknown Bluetooth state packet format");
 #endif
         return;
     }
@@ -1104,7 +1104,7 @@ static void HIDAPI_DriverXboxOne_HandleSerialIDPacket(SDL_DriverXboxOne_Context 
     serial[i * 2] = '\0';
 
 #ifdef DEBUG_JOYSTICK
-    SDL_Log("Setting serial number to %s\n", serial);
+    SDL_Log("Setting serial number to %s", serial);
 #endif
     HIDAPI_SetDeviceSerial(ctx->device, serial);
 }
@@ -1129,7 +1129,7 @@ static bool HIDAPI_DriverXboxOne_UpdateInitState(SDL_DriverXboxOne_Context *ctx)
             if (SDL_GetTicks() >= (ctx->send_time + CONTROLLER_IDENTIFY_TIMEOUT_MS)) {
                 // We haven't heard anything, let's move on
 #ifdef DEBUG_JOYSTICK
-                SDL_Log("Identification request timed out after %llu ms\n", (SDL_GetTicks() - ctx->send_time));
+                SDL_Log("Identification request timed out after %llu ms", (SDL_GetTicks() - ctx->send_time));
 #endif
                 SetInitState(ctx, XBOX_ONE_INIT_STATE_STARTUP);
             }
@@ -1146,7 +1146,7 @@ static bool HIDAPI_DriverXboxOne_UpdateInitState(SDL_DriverXboxOne_Context *ctx)
         case XBOX_ONE_INIT_STATE_PREPARE_INPUT:
             if (SDL_GetTicks() >= (ctx->send_time + CONTROLLER_PREPARE_INPUT_TIMEOUT_MS)) {
 #ifdef DEBUG_JOYSTICK
-                SDL_Log("Prepare input complete after %llu ms\n", (SDL_GetTicks() - ctx->send_time));
+                SDL_Log("Prepare input complete after %llu ms", (SDL_GetTicks() - ctx->send_time));
 #endif
                 SetInitState(ctx, XBOX_ONE_INIT_STATE_COMPLETE);
             }
@@ -1323,7 +1323,7 @@ static bool HIDAPI_GIP_SendPacket(SDL_DriverXboxOne_Context *ctx, struct gip_hea
     hdr_len = HIDAPI_GIP_GetHeaderLength(hdr);
     size = (hdr_len + hdr->packet_length);
     if (size > sizeof(packet)) {
-        SDL_SetError("Couldn't send GIP packet, size (%d) too large\n", size);
+        SDL_SetError("Couldn't send GIP packet, size (%d) too large", size);
         return false;
     }
 
@@ -1397,7 +1397,7 @@ static bool HIDAPI_GIP_DispatchPacket(SDL_Joystick *joystick, SDL_DriverXboxOne_
                then 8 bytes of unknown data
             */
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Controller announce after %llu ms\n", (SDL_GetTicks() - ctx->start_time));
+            SDL_Log("Controller announce after %llu ms", (SDL_GetTicks() - ctx->start_time));
 #endif
             SetInitState(ctx, XBOX_ONE_INIT_STATE_ANNOUNCED);
             break;
@@ -1407,7 +1407,7 @@ static bool HIDAPI_GIP_DispatchPacket(SDL_Joystick *joystick, SDL_DriverXboxOne_
             break;
         case GIP_CMD_IDENTIFY:
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Identification request completed after %llu ms\n", (SDL_GetTicks() - ctx->send_time));
+            SDL_Log("Identification request completed after %llu ms", (SDL_GetTicks() - ctx->send_time));
 #endif
 #ifdef DEBUG_XBOX_PROTOCOL
             HIDAPI_DumpPacket("Xbox One identification data: size = %d", data, size);
@@ -1440,7 +1440,7 @@ static bool HIDAPI_GIP_DispatchPacket(SDL_Joystick *joystick, SDL_DriverXboxOne_
             break;
         default:
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Unknown Xbox One packet: 0x%.2x\n", hdr->command);
+            SDL_Log("Unknown Xbox One packet: 0x%.2x", hdr->command);
 #endif
             break;
         }
@@ -1452,7 +1452,7 @@ static bool HIDAPI_GIP_DispatchPacket(SDL_Joystick *joystick, SDL_DriverXboxOne_
 
                 // Ignore the first input, it may be spurious
 #ifdef DEBUG_JOYSTICK
-                SDL_Log("Controller ignoring spurious input\n");
+                SDL_Log("Controller ignoring spurious input");
 #endif
                 break;
             }
@@ -1469,7 +1469,7 @@ static bool HIDAPI_GIP_DispatchPacket(SDL_Joystick *joystick, SDL_DriverXboxOne_
             break;
         default:
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Unknown Xbox One packet: 0x%.2x\n", hdr->command);
+            SDL_Log("Unknown Xbox One packet: 0x%.2x", hdr->command);
 #endif
             break;
         }
@@ -1596,7 +1596,7 @@ static bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                     HIDAPI_DriverXboxOneBluetooth_HandleStatePacket(joystick, ctx, data, size);
                 } else {
 #ifdef DEBUG_JOYSTICK
-                    SDL_Log("Unknown Xbox One Bluetooth packet size: %d\n", size);
+                    SDL_Log("Unknown Xbox One Bluetooth packet size: %d", size);
 #endif
                 }
                 break;
@@ -1614,7 +1614,7 @@ static bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
                 break;
             default:
 #ifdef DEBUG_JOYSTICK
-                SDL_Log("Unknown Xbox One packet: 0x%.2x\n", data[0]);
+                SDL_Log("Unknown Xbox One packet: 0x%.2x", data[0]);
 #endif
                 break;
             }

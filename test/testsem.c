@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -53,16 +53,16 @@ ThreadFuncRealWorld(void *data)
     Thread_State *state = (Thread_State *)data;
     while (alive) {
         SDL_WaitSemaphore(sem);
-        SDL_Log("Thread number %d has got the semaphore (value = %" SDL_PRIu32 ")!\n",
+        SDL_Log("Thread number %d has got the semaphore (value = %" SDL_PRIu32 ")!",
                 state->number, SDL_GetSemaphoreValue(sem));
         SDL_Delay(200);
         SDL_SignalSemaphore(sem);
-        SDL_Log("Thread number %d has released the semaphore (value = %" SDL_PRIu32 ")!\n",
+        SDL_Log("Thread number %d has released the semaphore (value = %" SDL_PRIu32 ")!",
                 state->number, SDL_GetSemaphoreValue(sem));
         ++state->loop_count;
         SDL_Delay(1); /* For the scheduler */
     }
-    SDL_Log("Thread number %d exiting.\n", state->number);
+    SDL_Log("Thread number %d exiting.", state->number);
     return 0;
 }
 
@@ -75,7 +75,7 @@ TestRealWorld(int init_sem)
 
     sem = SDL_CreateSemaphore(init_sem);
 
-    SDL_Log("Running %d threads, semaphore value = %d\n", NUM_THREADS,
+    SDL_Log("Running %d threads, semaphore value = %d", NUM_THREADS,
             init_sem);
     alive = 1;
     /* Create all the threads */
@@ -90,14 +90,15 @@ TestRealWorld(int init_sem)
     SDL_Delay(10 * 1000);
 
     /* Wait for all threads to finish */
-    SDL_Log("Waiting for threads to finish\n");
+    SDL_Log("Waiting for threads to finish");
     alive = 0;
     loop_count = 0;
     for (i = 0; i < NUM_THREADS; ++i) {
         SDL_WaitThread(thread_states[i].thread, NULL);
         loop_count += thread_states[i].loop_count;
     }
-    SDL_Log("Finished waiting for threads, ran %d loops in total\n\n", loop_count);
+    SDL_Log("Finished waiting for threads, ran %d loops in total", loop_count);
+    SDL_Log("%s", "");
 
     SDL_DestroySemaphore(sem);
 }
@@ -111,7 +112,7 @@ TestWaitTimeout(void)
     bool result;
 
     sem = SDL_CreateSemaphore(0);
-    SDL_Log("Waiting 2 seconds on semaphore\n");
+    SDL_Log("Waiting 2 seconds on semaphore");
 
     start_ticks = SDL_GetTicks();
     result = SDL_WaitSemaphoreTimeout(sem, 2000);
@@ -120,12 +121,14 @@ TestWaitTimeout(void)
     duration = end_ticks - start_ticks;
 
     /* Accept a little offset in the effective wait */
-    SDL_Log("Wait took %" SDL_PRIu64 " milliseconds\n\n", duration);
+    SDL_Log("Wait took %" SDL_PRIu64 " milliseconds", duration);
+    SDL_Log("%s", "");
     SDL_assert(duration > 1900 && duration < 2050);
 
     /* Check to make sure the return value indicates timed out */
     if (result) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_WaitSemaphoreTimeout returned: %d; expected: false\n\n", result);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_WaitSemaphoreTimeout returned: %d; expected: false", result);
+	SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s", "");
     }
 
     SDL_DestroySemaphore(sem);
@@ -140,7 +143,7 @@ TestOverheadUncontended(void)
     int i, j;
 
     sem = SDL_CreateSemaphore(0);
-    SDL_Log("Doing %d uncontended Post/Wait operations on semaphore\n", NUM_OVERHEAD_OPS * NUM_OVERHEAD_OPS_MULT);
+    SDL_Log("Doing %d uncontended Post/Wait operations on semaphore", NUM_OVERHEAD_OPS * NUM_OVERHEAD_OPS_MULT);
 
     start_ticks = SDL_GetTicks();
     for (i = 0; i < NUM_OVERHEAD_OPS_MULT; i++) {
@@ -154,7 +157,8 @@ TestOverheadUncontended(void)
     end_ticks = SDL_GetTicks();
 
     duration = end_ticks - start_ticks;
-    SDL_Log("Took %" SDL_PRIu64 " milliseconds\n\n", duration);
+    SDL_Log("Took %" SDL_PRIu64 " milliseconds", duration);
+    SDL_Log("%s", "");
 
     SDL_DestroySemaphore(sem);
 }
@@ -197,7 +201,7 @@ TestOverheadContended(bool try_wait)
     size_t len;
 
     sem = SDL_CreateSemaphore(0);
-    SDL_Log("Doing %d contended %s operations on semaphore using %d threads\n",
+    SDL_Log("Doing %d contended %s operations on semaphore using %d threads",
             NUM_OVERHEAD_OPS * NUM_OVERHEAD_OPS_MULT, try_wait ? "Post/TryWait" : "Post/WaitTimeout", NUM_THREADS);
     alive = 1;
     /* Create multiple threads to starve the semaphore and cause contention */
@@ -232,7 +236,7 @@ TestOverheadContended(bool try_wait)
     SDL_assert_release((loop_count - content_count) == NUM_OVERHEAD_OPS * NUM_OVERHEAD_OPS_MULT);
 
     duration = end_ticks - start_ticks;
-    SDL_Log("Took %" SDL_PRIu64 " milliseconds, threads %s %d out of %d times in total (%.2f%%)\n",
+    SDL_Log("Took %" SDL_PRIu64 " milliseconds, threads %s %d out of %d times in total (%.2f%%)",
             duration, try_wait ? "where contended" : "timed out", content_count,
             loop_count, ((float)content_count * 100) / loop_count);
     /* Print how many semaphores where consumed per thread */
@@ -246,8 +250,8 @@ TestOverheadContended(bool try_wait)
         (void)SDL_snprintf(textBuffer + len, sizeof(textBuffer) - len, "%d", thread_states[i].loop_count - thread_states[i].content_count);
     }
     len = SDL_strlen(textBuffer);
-    (void)SDL_snprintf(textBuffer + len, sizeof(textBuffer) - len, " }\n");
-    SDL_Log("%s\n", textBuffer);
+    (void)SDL_snprintf(textBuffer + len, sizeof(textBuffer) - len, " }");
+    SDL_Log("%s", textBuffer);
 
     SDL_DestroySemaphore(sem);
 }
@@ -300,7 +304,7 @@ int main(int argc, char **argv)
 
     /* Load the SDL library */
     if (!SDL_Init(0)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
     (void)signal(SIGTERM, killed);

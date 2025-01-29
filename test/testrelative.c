@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,12 @@ static void DrawRects(SDL_Renderer *renderer)
     SDL_RenderFillRect(renderer, &rect);
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDLTest_DrawString(renderer, 0.f, 0.f, "Relative Mode: Enabled");
+
+    if (SDL_GetWindowRelativeMouseMode(SDL_GetRenderWindow(renderer))) {
+        SDLTest_DrawString(renderer, 0.f, 0.f, "Relative Mode: Enabled");
+    } else {
+        SDLTest_DrawString(renderer, 0.f, 0.f, "Relative Mode: Disabled");
+    }
 }
 
 static void CenterMouse(void)

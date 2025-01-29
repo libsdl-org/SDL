@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -139,7 +139,7 @@ static void async_io_task_complete(const SDL_AsyncIOOutcome *outcome)
         #define RESCASE(x) case x: resultstr = #x; break
         RESCASE(SDL_ASYNCIO_COMPLETE);
         RESCASE(SDL_ASYNCIO_FAILURE);
-        RESCASE(SDL_ASYNCIO_CANCELLED);
+        RESCASE(SDL_ASYNCIO_CANCELED);
         #undef RESCASE
     }
 

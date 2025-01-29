@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,59 @@
 /**
  * # CategoryPixels
  *
- * Pixel management.
+ * SDL offers facilities for pixel management.
+ *
+ * Largely these facilities deal with pixel _format_: what does this set of
+ * bits represent?
+ *
+ * If you mostly want to think of a pixel as some combination of red, green,
+ * blue, and maybe alpha intensities, this is all pretty straightforward, and
+ * in many cases, is enough information to build a perfectly fine game.
+ *
+ * However, the actual definition of a pixel is more complex than that:
+ *
+ * Pixels are a representation of a color in a particular color space.
+ *
+ * The first characteristic of a color space is the color type. SDL
+ * understands two different color types, RGB and YCbCr, or in SDL also
+ * referred to as YUV.
+ *
+ * RGB colors consist of red, green, and blue channels of color that are added
+ * together to represent the colors we see on the screen.
+ *
+ * https://en.wikipedia.org/wiki/RGB_color_model
+ *
+ * YCbCr colors represent colors as a Y luma brightness component and red and
+ * blue chroma color offsets. This color representation takes advantage of the
+ * fact that the human eye is more sensitive to brightness than the color in
+ * an image. The Cb and Cr components are often compressed and have lower
+ * resolution than the luma component.
+ *
+ * https://en.wikipedia.org/wiki/YCbCr
+ *
+ * When the color information in YCbCr is compressed, the Y pixels are left at
+ * full resolution and each Cr and Cb pixel represents an average of the color
+ * information in a block of Y pixels. The chroma location determines where in
+ * that block of pixels the color information is coming from.
+ *
+ * The color range defines how much of the pixel to use when converting a
+ * pixel into a color on the display. When the full color range is used, the
+ * entire numeric range of the pixel bits is significant. When narrow color
+ * range is used, for historical reasons, the pixel uses only a portion of the
+ * numeric range to represent colors.
+ *
+ * The color primaries and white point are a definition of the colors in the
+ * color space relative to the standard XYZ color space.
+ *
+ * https://en.wikipedia.org/wiki/CIE_1931_color_space
+ *
+ * The transfer characteristic, or opto-electrical transfer function (OETF),
+ * is the way a color is converted from mathematically linear space into a
+ * non-linear output signals.
+ *
+ * https://en.wikipedia.org/wiki/Rec._709#Transfer_characteristics
+ *
+ * The matrix coefficients are used to convert between YCbCr and RGB colors.
  */
 
 #ifndef SDL_pixels_h_
@@ -41,7 +93,7 @@ extern "C" {
 /**
  * A fully opaque 8-bit alpha value.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_ALPHA_TRANSPARENT
  */
@@ -50,7 +102,7 @@ extern "C" {
 /**
  * A fully opaque floating point alpha value.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_ALPHA_TRANSPARENT_FLOAT
  */
@@ -59,7 +111,7 @@ extern "C" {
 /**
  * A fully transparent 8-bit alpha value.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_ALPHA_OPAQUE
  */
@@ -68,7 +120,7 @@ extern "C" {
 /**
  * A fully transparent floating point alpha value.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  *
  * \sa SDL_ALPHA_OPAQUE_FLOAT
  */
@@ -77,7 +129,7 @@ extern "C" {
 /**
  * Pixel type.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_PixelType
 {
@@ -100,7 +152,7 @@ typedef enum SDL_PixelType
 /**
  * Bitmap pixel order, high bit -> low bit.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_BitmapOrder
 {
@@ -112,7 +164,7 @@ typedef enum SDL_BitmapOrder
 /**
  * Packed component order, high bit -> low bit.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_PackedOrder
 {
@@ -130,7 +182,7 @@ typedef enum SDL_PackedOrder
 /**
  * Array component order, low byte -> high byte.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_ArrayOrder
 {
@@ -146,7 +198,7 @@ typedef enum SDL_ArrayOrder
 /**
  * Packed component layout.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_PackedLayout
 {
@@ -161,25 +213,172 @@ typedef enum SDL_PackedLayout
     SDL_PACKEDLAYOUT_1010102
 } SDL_PackedLayout;
 
+/**
+ * A macro for defining custom FourCC pixel formats.
+ *
+ * For example, defining SDL_PIXELFORMAT_YV12 looks like this:
+ *
+ * ```c
+ * SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2')
+ * ```
+ *
+ * \param A the first character of the FourCC code.
+ * \param B the second character of the FourCC code.
+ * \param C the third character of the FourCC code.
+ * \param D the fourth character of the FourCC code.
+ * \returns a format value in the style of SDL_PixelFormat.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
 #define SDL_DEFINE_PIXELFOURCC(A, B, C, D) SDL_FOURCC(A, B, C, D)
 
+/**
+ * A macro for defining custom non-FourCC pixel formats.
+ *
+ * For example, defining SDL_PIXELFORMAT_RGBA8888 looks like this:
+ *
+ * ```c
+ * SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_RGBA, SDL_PACKEDLAYOUT_8888, 32, 4)
+ * ```
+ *
+ * \param type the type of the new format, probably a SDL_PixelType value.
+ * \param order the order of the new format, probably a SDL_BitmapOrder,
+ *              SDL_PackedOrder, or SDL_ArrayOrder value.
+ * \param layout the layout of the new format, probably an SDL_PackedLayout
+ *               value or zero.
+ * \param bits the number of bits per pixel of the new format.
+ * \param bytes the number of bytes per pixel of the new format.
+ * \returns a format value in the style of SDL_PixelFormat.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
 #define SDL_DEFINE_PIXELFORMAT(type, order, layout, bits, bytes) \
     ((1 << 28) | ((type) << 24) | ((order) << 20) | ((layout) << 16) | \
      ((bits) << 8) | ((bytes) << 0))
 
-#define SDL_PIXELFLAG(X)    (((X) >> 28) & 0x0F)
-#define SDL_PIXELTYPE(X)    (((X) >> 24) & 0x0F)
-#define SDL_PIXELORDER(X)   (((X) >> 20) & 0x0F)
-#define SDL_PIXELLAYOUT(X)  (((X) >> 16) & 0x0F)
-#define SDL_BITSPERPIXEL(X) \
-    (SDL_ISPIXELFORMAT_FOURCC(X) ? 0 : (((X) >> 8) & 0xFF))
-#define SDL_BYTESPERPIXEL(X) \
-    (SDL_ISPIXELFORMAT_FOURCC(X) ? \
-        ((((X) == SDL_PIXELFORMAT_YUY2) || \
-          ((X) == SDL_PIXELFORMAT_UYVY) || \
-          ((X) == SDL_PIXELFORMAT_YVYU) || \
-          ((X) == SDL_PIXELFORMAT_P010)) ? 2 : 1) : (((X) >> 0) & 0xFF))
+/**
+ * A macro to retrieve the flags of an SDL_PixelFormat.
+ *
+ * This macro is generally not needed directly by an app, which should use
+ * specific tests, like SDL_ISPIXELFORMAT_FOURCC, instead.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the flags of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_PIXELFLAG(format)    (((format) >> 28) & 0x0F)
 
+/**
+ * A macro to retrieve the type of an SDL_PixelFormat.
+ *
+ * This is usually a value from the SDL_PixelType enumeration.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the type of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_PIXELTYPE(format)    (((format) >> 24) & 0x0F)
+
+/**
+ * A macro to retrieve the order of an SDL_PixelFormat.
+ *
+ * This is usually a value from the SDL_BitmapOrder, SDL_PackedOrder, or
+ * SDL_ArrayOrder enumerations, depending on the format type.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the order of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_PIXELORDER(format)   (((format) >> 20) & 0x0F)
+
+/**
+ * A macro to retrieve the layout of an SDL_PixelFormat.
+ *
+ * This is usually a value from the SDL_PackedLayout enumeration, or zero if a
+ * layout doesn't make sense for the format type.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the layout of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_PIXELLAYOUT(format)  (((format) >> 16) & 0x0F)
+
+/**
+ * A macro to determine an SDL_PixelFormat's bits per pixel.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * FourCC formats will report zero here, as it rarely makes sense to measure
+ * them per-pixel.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the bits-per-pixel of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_BYTESPERPIXEL
+ */
+#define SDL_BITSPERPIXEL(format) \
+    (SDL_ISPIXELFORMAT_FOURCC(format) ? 0 : (((format) >> 8) & 0xFF))
+
+/**
+ * A macro to determine an SDL_PixelFormat's bytes per pixel.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * FourCC formats do their best here, but many of them don't have a meaningful
+ * measurement of bytes per pixel.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns the bytes-per-pixel of `format`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_BITSPERPIXEL
+ */
+#define SDL_BYTESPERPIXEL(format) \
+    (SDL_ISPIXELFORMAT_FOURCC(format) ? \
+        ((((format) == SDL_PIXELFORMAT_YUY2) || \
+          ((format) == SDL_PIXELFORMAT_UYVY) || \
+          ((format) == SDL_PIXELFORMAT_YVYU) || \
+          ((format) == SDL_PIXELFORMAT_P010)) ? 2 : 1) : (((format) >> 0) & 0xFF))
+
+
+/**
+ * A macro to determine if an SDL_PixelFormat is an indexed format.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format is indexed, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
 #define SDL_ISPIXELFORMAT_INDEXED(format)   \
     (!SDL_ISPIXELFORMAT_FOURCC(format) && \
      ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX1) || \
@@ -187,12 +386,38 @@ typedef enum SDL_PackedLayout
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX4) || \
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX8)))
 
+/**
+ * A macro to determine if an SDL_PixelFormat is a packed format.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format is packed, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
 #define SDL_ISPIXELFORMAT_PACKED(format) \
     (!SDL_ISPIXELFORMAT_FOURCC(format) && \
      ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED8) || \
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED16) || \
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED32)))
 
+/**
+ * A macro to determine if an SDL_PixelFormat is an array format.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format is an array, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
 #define SDL_ISPIXELFORMAT_ARRAY(format) \
     (!SDL_ISPIXELFORMAT_FOURCC(format) && \
      ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYU8) || \
@@ -201,16 +426,55 @@ typedef enum SDL_PackedLayout
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF16) || \
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF32)))
 
+/**
+ * A macro to determine if an SDL_PixelFormat is a 10-bit format.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format is 10-bit, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
 #define SDL_ISPIXELFORMAT_10BIT(format)    \
       (!SDL_ISPIXELFORMAT_FOURCC(format) && \
        ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED32) && \
         (SDL_PIXELLAYOUT(format) == SDL_PACKEDLAYOUT_2101010)))
 
+/**
+ * A macro to determine if an SDL_PixelFormat is a floating point format.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format is 10-bit, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
 #define SDL_ISPIXELFORMAT_FLOAT(format)    \
       (!SDL_ISPIXELFORMAT_FOURCC(format) && \
        ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF16) || \
         (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF32)))
 
+/**
+ * A macro to determine if an SDL_PixelFormat has an alpha channel.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format has alpha, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
 #define SDL_ISPIXELFORMAT_ALPHA(format)   \
     ((SDL_ISPIXELFORMAT_PACKED(format) && \
       ((SDL_PIXELORDER(format) == SDL_PACKEDORDER_ARGB) || \
@@ -223,8 +487,23 @@ typedef enum SDL_PackedLayout
        (SDL_PIXELORDER(format) == SDL_ARRAYORDER_ABGR) || \
        (SDL_PIXELORDER(format) == SDL_ARRAYORDER_BGRA))))
 
-/* The flag is set to 1 because 0x1? is not in the printable ASCII range */
-#define SDL_ISPIXELFORMAT_FOURCC(format)    \
+
+/**
+ * A macro to determine if an SDL_PixelFormat is a "FourCC" format.
+ *
+ * This covers custom and other unusual formats.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param format an SDL_PixelFormat to check.
+ * \returns true if the format has alpha, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_ISPIXELFORMAT_FOURCC(format)  /* The flag is set to 1 because 0x1? is not in the printable ASCII range */ \
     ((format) && (SDL_PIXELFLAG(format) != 1))
 
 /* Note: If you modify this enum, update SDL_GetPixelFormatName() */
@@ -264,7 +543,7 @@ typedef enum SDL_PackedLayout
  * an alias for ABGR8888 on little-endian CPUs like x86, or an alias for
  * RGBA8888 on big-endian CPUs.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_PixelFormat
 {
@@ -420,33 +699,9 @@ typedef enum SDL_PixelFormat
 } SDL_PixelFormat;
 
 /**
- * Pixels are a representation of a color in a particular color space.
- *
- * The first characteristic of a color space is the color type. SDL understands two different color types, RGB and YCbCr, or in SDL also referred to as YUV.
- *
- * RGB colors consist of red, green, and blue channels of color that are added together to represent the colors we see on the screen.
- * https://en.wikipedia.org/wiki/RGB_color_model
- *
- * YCbCr colors represent colors as a Y luma brightness component and red and blue chroma color offsets. This color representation takes advantage of the fact that the human eye is more sensitive to brightness than the color in an image. The Cb and Cr components are often compressed and have lower resolution than the luma component.
- * https://en.wikipedia.org/wiki/YCbCr
- *
- * When the color information in YCbCr is compressed, the Y pixels are left at full resolution and each Cr and Cb pixel represents an average of the color information in a block of Y pixels. The chroma location determines where in that block of pixels the color information is coming from.
- *
- * The color range defines how much of the pixel to use when converting a pixel into a color on the display. When the full color range is used, the entire numeric range of the pixel bits is significant. When narrow color range is used, for historical reasons, the pixel uses only a portion of the numeric range to represent colors.
- *
- * The color primaries and white point are a definition of the colors in the color space relative to the standard XYZ color space.
- * https://en.wikipedia.org/wiki/CIE_1931_color_space
- *
- * The transfer characteristic, or opto-electrical transfer function (OETF), is the way a color is converted from mathematically linear space into a non-linear output signals.
- * https://en.wikipedia.org/wiki/Rec._709#Transfer_characteristics
- *
- * The matrix coefficients are used to convert between YCbCr and RGB colors.
- */
-
-/**
  * Colorspace color type.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_ColorType
 {
@@ -459,7 +714,7 @@ typedef enum SDL_ColorType
  * Colorspace color range, as described by
  * https://www.itu.int/rec/R-REC-BT.2100-2-201807-I/en
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_ColorRange
 {
@@ -472,7 +727,7 @@ typedef enum SDL_ColorRange
  * Colorspace color primaries, as described by
  * https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_ColorPrimaries
 {
@@ -497,7 +752,7 @@ typedef enum SDL_ColorPrimaries
  *
  * These are as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_TransferCharacteristics
 {
@@ -527,7 +782,7 @@ typedef enum SDL_TransferCharacteristics
  *
  * These are as described by https://www.itu.int/rec/T-REC-H.273-201612-S/en
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_MatrixCoefficients
 {
@@ -551,7 +806,7 @@ typedef enum SDL_MatrixCoefficients
 /**
  * Colorspace chroma sample location.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_ChromaLocation
 {
@@ -563,22 +818,177 @@ typedef enum SDL_ChromaLocation
 
 
 /* Colorspace definition */
+
+/**
+ * A macro for defining custom SDL_Colorspace formats.
+ *
+ * For example, defining SDL_COLORSPACE_SRGB looks like this:
+ *
+ * ```c
+ * SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_RGB,
+ *                       SDL_COLOR_RANGE_FULL,
+ *                       SDL_COLOR_PRIMARIES_BT709,
+ *                       SDL_TRANSFER_CHARACTERISTICS_SRGB,
+ *                       SDL_MATRIX_COEFFICIENTS_IDENTITY,
+ *                       SDL_CHROMA_LOCATION_NONE)
+ * ```
+ *
+ * \param type the type of the new format, probably an SDL_ColorType value.
+ * \param range the range of the new format, probably a SDL_ColorRange value.
+ * \param primaries the primaries of the new format, probably an
+ *                  SDL_ColorPrimaries value.
+ * \param transfer the transfer characteristics of the new format, probably an
+ *                 SDL_TransferCharacteristics value.
+ * \param matrix the matrix coefficients of the new format, probably an
+ *               SDL_MatrixCoefficients value.
+ * \param chroma the chroma sample location of the new format, probably an
+ *               SDL_ChromaLocation value.
+ * \returns a format value in the style of SDL_Colorspace.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
 #define SDL_DEFINE_COLORSPACE(type, range, primaries, transfer, matrix, chroma) \
     (((Uint32)(type) << 28) | ((Uint32)(range) << 24) | ((Uint32)(chroma) << 20) | \
     ((Uint32)(primaries) << 10) | ((Uint32)(transfer) << 5) | ((Uint32)(matrix) << 0))
 
-#define SDL_COLORSPACETYPE(X)       (SDL_ColorType)(((X) >> 28) & 0x0F)
-#define SDL_COLORSPACERANGE(X)      (SDL_ColorRange)(((X) >> 24) & 0x0F)
-#define SDL_COLORSPACECHROMA(X)     (SDL_ChromaLocation)(((X) >> 20) & 0x0F)
-#define SDL_COLORSPACEPRIMARIES(X)  (SDL_ColorPrimaries)(((X) >> 10) & 0x1F)
-#define SDL_COLORSPACETRANSFER(X)   (SDL_TransferCharacteristics)(((X) >> 5) & 0x1F)
-#define SDL_COLORSPACEMATRIX(X)     (SDL_MatrixCoefficients)((X) & 0x1F)
+/**
+ * A macro to retrieve the type of an SDL_Colorspace.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns the SDL_ColorType for `cspace`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_COLORSPACETYPE(cspace)       (SDL_ColorType)(((cspace) >> 28) & 0x0F)
 
-#define SDL_ISCOLORSPACE_MATRIX_BT601(X)        (SDL_COLORSPACEMATRIX(X) == SDL_MATRIX_COEFFICIENTS_BT601 || SDL_COLORSPACEMATRIX(X) == SDL_MATRIX_COEFFICIENTS_BT470BG)
-#define SDL_ISCOLORSPACE_MATRIX_BT709(X)        (SDL_COLORSPACEMATRIX(X) == SDL_MATRIX_COEFFICIENTS_BT709)
-#define SDL_ISCOLORSPACE_MATRIX_BT2020_NCL(X)   (SDL_COLORSPACEMATRIX(X) == SDL_MATRIX_COEFFICIENTS_BT2020_NCL)
-#define SDL_ISCOLORSPACE_LIMITED_RANGE(X)       (SDL_COLORSPACERANGE(X) != SDL_COLOR_RANGE_FULL)
-#define SDL_ISCOLORSPACE_FULL_RANGE(X)          (SDL_COLORSPACERANGE(X) == SDL_COLOR_RANGE_FULL)
+/**
+ * A macro to retrieve the range of an SDL_Colorspace.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns the SDL_ColorRange of `cspace`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_COLORSPACERANGE(cspace)      (SDL_ColorRange)(((cspace) >> 24) & 0x0F)
+
+/**
+ * A macro to retrieve the chroma sample location of an SDL_Colorspace.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns the SDL_ChromaLocation of `cspace`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_COLORSPACECHROMA(cspace)     (SDL_ChromaLocation)(((cspace) >> 20) & 0x0F)
+
+/**
+ * A macro to retrieve the primaries of an SDL_Colorspace.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns the SDL_ColorPrimaries of `cspace`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_COLORSPACEPRIMARIES(cspace)  (SDL_ColorPrimaries)(((cspace) >> 10) & 0x1F)
+
+/**
+ * A macro to retrieve the transfer characteristics of an SDL_Colorspace.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns the SDL_TransferCharacteristics of `cspace`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_COLORSPACETRANSFER(cspace)   (SDL_TransferCharacteristics)(((cspace) >> 5) & 0x1F)
+
+/**
+ * A macro to retrieve the matrix coefficients of an SDL_Colorspace.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns the SDL_MatrixCoefficients of `cspace`.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_COLORSPACEMATRIX(cspace)     (SDL_MatrixCoefficients)((cspace) & 0x1F)
+
+/**
+ * A macro to determine if an SDL_Colorspace uses BT601 (or BT470BG) matrix
+ * coefficients.
+ *
+ * Note that this macro double-evaluates its parameter, so do not use
+ * expressions with side-effects here.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns true if BT601 or BT470BG, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_ISCOLORSPACE_MATRIX_BT601(cspace)        (SDL_COLORSPACEMATRIX(cspace) == SDL_MATRIX_COEFFICIENTS_BT601 || SDL_COLORSPACEMATRIX(cspace) == SDL_MATRIX_COEFFICIENTS_BT470BG)
+
+/**
+ * A macro to determine if an SDL_Colorspace uses BT709 matrix coefficients.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns true if BT709, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_ISCOLORSPACE_MATRIX_BT709(cspace)        (SDL_COLORSPACEMATRIX(cspace) == SDL_MATRIX_COEFFICIENTS_BT709)
+
+/**
+ * A macro to determine if an SDL_Colorspace uses BT2020_NCL matrix
+ * coefficients.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns true if BT2020_NCL, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_ISCOLORSPACE_MATRIX_BT2020_NCL(cspace)   (SDL_COLORSPACEMATRIX(cspace) == SDL_MATRIX_COEFFICIENTS_BT2020_NCL)
+
+/**
+ * A macro to determine if an SDL_Colorspace has a limited range.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns true if limited range, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_ISCOLORSPACE_LIMITED_RANGE(cspace)       (SDL_COLORSPACERANGE(cspace) != SDL_COLOR_RANGE_FULL)
+
+/**
+ * A macro to determine if an SDL_Colorspace has a full range.
+ *
+ * \param cspace an SDL_Colorspace to check.
+ * \returns true if full range, false otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_ISCOLORSPACE_FULL_RANGE(cspace)          (SDL_COLORSPACERANGE(cspace) == SDL_COLOR_RANGE_FULL)
 
 /**
  * Colorspace definitions.
@@ -587,7 +997,7 @@ typedef enum SDL_ChromaLocation
  * function, etc.), this is not an exhaustive list, but rather a
  * representative sample of the kinds of colorspaces supported in SDL.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_ColorPrimaries
  * \sa SDL_ColorRange
@@ -694,7 +1104,7 @@ typedef enum SDL_Colorspace
  * (SDL_PIXELFORMAT_ABGR8888 on little-endian systems and
  * SDL_PIXELFORMAT_RGBA8888 on big-endian systems).
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_Color
 {
@@ -708,7 +1118,7 @@ typedef struct SDL_Color
  * The bits of this structure can be directly reinterpreted as a float-packed
  * color which uses the SDL_PIXELFORMAT_RGBA128_FLOAT format
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_FColor
 {
@@ -721,7 +1131,7 @@ typedef struct SDL_FColor
 /**
  * A set of indexed colors representing a palette.
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_SetPaletteColors
  */
@@ -736,7 +1146,7 @@ typedef struct SDL_Palette
 /**
  * Details about the format of a pixel.
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_PixelFormatDetails
 {
@@ -767,7 +1177,7 @@ typedef struct SDL_PixelFormatDetails
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat format);
 
@@ -785,7 +1195,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat 
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetPixelFormatForMasks
  */
@@ -807,7 +1217,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetMasksForPixelFormat(SDL_PixelFormat form
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetMasksForPixelFormat
  */
@@ -826,7 +1236,7 @@ extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetPixelFormatForMasks(int bpp, 
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC const SDL_PixelFormatDetails * SDLCALL SDL_GetPixelFormatDetails(SDL_PixelFormat format);
 
@@ -842,7 +1252,7 @@ extern SDL_DECLSPEC const SDL_PixelFormatDetails * SDLCALL SDL_GetPixelFormatDet
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_DestroyPalette
  * \sa SDL_SetPaletteColors
@@ -863,7 +1273,7 @@ extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreatePalette(int ncolors);
  * \threadsafety It is safe to call this function from any thread, as long as
  *               the palette is not modified or destroyed in another thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int firstcolor, int ncolors);
 
@@ -875,7 +1285,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetPaletteColors(SDL_Palette *palette, cons
  * \threadsafety It is safe to call this function from any thread, as long as
  *               the palette is not modified or destroyed in another thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CreatePalette
  */
@@ -910,7 +1320,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette *palette);
  * \threadsafety It is safe to call this function from any thread, as long as
  *               the palette is not modified.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGB
@@ -949,7 +1359,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormatDetails *form
  * \threadsafety It is safe to call this function from any thread, as long as
  *               the palette is not modified.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGBA
@@ -977,7 +1387,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *for
  * \threadsafety It is safe to call this function from any thread, as long as
  *               the palette is not modified.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGBA
@@ -1009,7 +1419,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixel, const SDL_PixelFormatD
  * \threadsafety It is safe to call this function from any thread, as long as
  *               the palette is not modified.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetPixelFormatDetails
  * \sa SDL_GetRGB

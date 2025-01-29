@@ -386,6 +386,22 @@ static int SDLCALL stdlib_swprintf(void *arg)
     const wchar_t *expected;
     size_t size;
 
+    result = SDL_swprintf(text, SDL_arraysize(text), L"%s", "hello, world");
+    expected = L"hello, world";
+    SDLTest_AssertPass("Call to SDL_swprintf(\"%%s\", \"hello, world\")");
+    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %S, got: %S", expected, text);
+    SDLTest_AssertCheck(result == SDL_wcslen(text), "Check result value, expected: %d, got: %d", (int)SDL_wcslen(text), result);
+
+    result = SDL_swprintf(text, 2, L"%s", "hello, world");
+    expected = L"h";
+    SDLTest_AssertPass("Call to SDL_swprintf(\"%%s\", \"hello, world\") with buffer size 2");
+    SDLTest_AssertCheck(SDL_wcscmp(text, expected) == 0, "Check text, expected: %S, got: %S", expected, text);
+    SDLTest_AssertCheck(result == 12, "Check result value, expected: 12, got: %d", result);
+
+    result = SDL_swprintf(NULL, 0, L"%s", "hello, world");
+    SDLTest_AssertPass("Call to SDL_swprintf(NULL, 0, \"%%s\", \"hello, world\")");
+    SDLTest_AssertCheck(result == 12, "Check result value, expected: 12, got: %d", result);
+
     result = SDL_swprintf(text, SDL_arraysize(text), L"%s", "foo");
     expected = L"foo";
     SDLTest_AssertPass("Call to SDL_swprintf(\"%%s\", \"foo\")");
@@ -1324,6 +1340,9 @@ static int SDLCALL stdlib_strtox(void *arg)
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "-uvwxyz", 32, -991, 3);
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "ZzZzZzZzZzZzZzZzZzZzZzZzZ", 36, ullong_max, 25);
 
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "0", 0, 0, 1);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "0", 10, 0, 1);
+    STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "-0", 0, 0, 2);
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, "-0", 10, 0, 2);
     STRTOX_TEST_CASE(SDL_strtoull, unsigned long long, FMT_PRILLu, " - 1", 0, 0, 0); // invalid input
 
@@ -1335,6 +1354,10 @@ static int SDLCALL stdlib_strtox(void *arg)
     // Since the CI runs the tests against a variety of targets, this should be fine in practice.
 
     if (sizeof(long) == 4) {
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "0", 0, 0, 1);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "0", 10, 0, 1);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-0", 0, 0, 2);
+        STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-0", 10, 0, 2);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "2147483647", 10, 2147483647, 10);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "2147483648", 10, 2147483647, 10);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-2147483648", 10, -2147483647L - 1, 11);
@@ -1347,6 +1370,10 @@ static int SDLCALL stdlib_strtox(void *arg)
     }
 
     if (sizeof(long long) == 8) {
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "0", 0, 0LL, 1);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "0", 10, 0LL, 1);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-0", 0, 0LL, 2);
+        STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-0", 10, 0LL, 2);
         STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "9223372036854775807", 10, 9223372036854775807LL, 19);
         STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "9223372036854775808", 10, 9223372036854775807LL, 19);
         STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-9223372036854775808", 10, -9223372036854775807LL - 1, 20);

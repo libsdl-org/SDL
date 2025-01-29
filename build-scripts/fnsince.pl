@@ -90,15 +90,9 @@ foreach my $release (@releases) {
     my $tag = $fulltags{$release};
     my $blobname = "$tag:src/dynapi/SDL_dynapi_overrides.h";
 
-    if ($release =~ /\A3\.(0\.\d+|1\.[0123])/) {  # make everything up to the first SDL3 prerelease look like 3.1.3 (ABI lock version).
-        $release = '3.1.3';
-    }
-
-    # !!! FIXME: REMOVE ME WHEN 3.2.0 SHIPS!
-    elsif (not $release =~ /\A3\.1\.\d+/) {  # a couple of releases after the initial 3.1.3, let them through.
+    if ($release =~ /\A3\.[01]\.\d+\Z/) {  # make everything up to the first SDL3 official release look like 3.2.0.
         $release = '3.2.0';
     }
-    # !!! FIXME: REMOVE ME WHEN 3.2.0 SHIPS!
 
     open(PIPEFH, '-|', "git show '$blobname'") or die "Failed to read git blob '$blobname': $!\n";
     while (<PIPEFH>) {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 // The high-level video driver subsystem
 
 #include "SDL_sysvideo.h"
+#include "SDL_clipboard_c.h"
 #include "SDL_egl_c.h"
 #include "SDL_surface_c.h"
 #include "SDL_pixels_c.h"
@@ -35,6 +36,7 @@
 #include "../timer/SDL_timer_c.h"
 #include "../camera/SDL_camera_c.h"
 #include "../render/SDL_sysrender.h"
+#include "../main/SDL_main_callbacks.h"
 
 #ifdef SDL_VIDEO_OPENGL
 #include <SDL3/SDL_opengl.h>
@@ -49,10 +51,14 @@
 #include <SDL3/SDL_opengles2.h>
 #endif // SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL
 
-#ifndef SDL_VIDEO_OPENGL
-#ifndef GL_CONTEXT_RELEASE_BEHAVIOR_KHR
-#define GL_CONTEXT_RELEASE_BEHAVIOR_KHR 0x82FB
+// GL_CONTEXT_RELEASE_BEHAVIOR and GL_CONTEXT_RELEASE_BEHAVIOR_KHR have the same number.
+#ifndef GL_CONTEXT_RELEASE_BEHAVIOR
+#define GL_CONTEXT_RELEASE_BEHAVIOR 0x82FB
 #endif
+
+// GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH and GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH_KHR have the same number.
+#ifndef GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH
+#define GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH 0x82FC
 #endif
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
@@ -168,6 +174,10 @@ static VideoBootStrap *bootstrap[] = {
 // Support for macOS fullscreen spaces
 extern bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window);
 extern bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, bool state, bool blocking);
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+extern void SDL_UpdateLifecycleObserver(void);
 #endif
 
 static void SDL_CheckWindowDisplayChanged(SDL_Window *window);
@@ -311,10 +321,9 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
     if (!data) {
         SDL_Renderer *renderer = NULL;
         const char *render_driver = NULL;
-        const char *hint;
 
         // See if there's a render driver being requested
-        hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
+        const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
         if (hint && *hint != '0' && *hint != '1' &&
             SDL_strcasecmp(hint, "true") != 0 &&
             SDL_strcasecmp(hint, "false") != 0 &&
@@ -323,20 +332,45 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
         }
 
         if (!render_driver) {
-            hint = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
-            if (hint && *hint && SDL_strcasecmp(hint, SDL_SOFTWARE_RENDERER) != 0) {
-                render_driver = hint;
+            render_driver = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
+        }
+
+        char *render_driver_copy = NULL;
+        if (render_driver && *render_driver) {
+            render_driver_copy = SDL_strdup(render_driver);
+            render_driver = render_driver_copy;
+            if (render_driver_copy) {  // turn any "software" requests into "xxxxxxxx" so we don't end up in infinite recursion.
+                char *prev = render_driver_copy;
+                char *ptr = prev;
+                while ((ptr = SDL_strchr(ptr, ',')) != NULL) {
+                    *ptr = '\0';
+                    const bool is_sw = (SDL_strcasecmp(prev, SDL_SOFTWARE_RENDERER) == 0);
+                    *ptr = ',';
+                    if (is_sw) {
+                        SDL_memset(prev, 'x', SDL_strlen(SDL_SOFTWARE_RENDERER));
+                        ptr = prev;
+                    } else {
+                        ptr++;
+                        prev = ptr;
+                    }
+                }
+
+                if (SDL_strcasecmp(prev, SDL_SOFTWARE_RENDERER) == 0) {
+                    SDL_memset(prev, 'x', SDL_strlen(SDL_SOFTWARE_RENDERER));
+                }
             }
         }
 
         // Check to see if there's a specific driver requested
         if (render_driver) {
             renderer = SDL_CreateRenderer(window, render_driver);
+            SDL_free(render_driver_copy);
             if (!renderer) {
                 // The error for this specific renderer has already been set
                 return false;
             }
         } else {
+            SDL_assert(render_driver_copy == NULL);
             const int total = SDL_GetNumRenderDrivers();
             for (i = 0; i < total; ++i) {
                 const char *name = SDL_GetRenderDriver(i);
@@ -518,7 +552,7 @@ static int SDLCALL cmpmodes(const void *A, const void *B)
     return 0;
 }
 
-static bool SDL_UninitializedVideo(void)
+bool SDL_UninitializedVideo(void)
 {
     return SDL_SetError("Video subsystem has not been initialized");
 }
@@ -741,7 +775,7 @@ SDL_SystemTheme SDL_GetSystemTheme(void)
     }
 }
 
-static void SDL_UpdateDesktopBounds(void)
+void SDL_UpdateDesktopBounds(void)
 {
     SDL_Rect rect;
     SDL_zero(rect);
@@ -1560,6 +1594,10 @@ void SDL_RelativeToGlobalForWindow(SDL_Window *window, int rel_x, int rel_y, int
         for (w = window->parent; w; w = w->parent) {
             rel_x += w->x;
             rel_y += w->y;
+
+            if (!SDL_WINDOW_IS_POPUP(w)) {
+                break;
+            }
         }
     }
 
@@ -1580,6 +1618,10 @@ void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int
         for (w = window->parent; w; w = w->parent) {
             abs_x -= w->x;
             abs_y -= w->y;
+
+            if (!SDL_WINDOW_IS_POPUP(w)) {
+                break;
+            }
         }
     }
 
@@ -1664,14 +1706,13 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
      * the current position won't be updated at the time of the fullscreen call.
      */
     if (!displayID) {
-        if (window->use_pending_position_for_fullscreen) {
-            // The last coordinates were client requested; use the pending floating coordinates.
-            displayID = GetDisplayForRect(window->floating.x, window->floating.y, window->floating.w, window->floating.h);
-        }
-        else {
-            // The last coordinates were from the window manager; use the current position.
-            displayID = GetDisplayForRect(window->x, window->y, 1, 1);
-        }
+        // Use the pending position and dimensions, if available, otherwise, use the current.
+        const int x = window->last_position_pending ? window->pending.x : window->x;
+        const int y = window->last_position_pending ? window->pending.y : window->y;
+        const int w = window->last_size_pending ? window->pending.w : window->w;
+        const int h = window->last_size_pending ? window->pending.h : window->h;
+
+        displayID = GetDisplayForRect(x, y, w, h);
     }
     if (!displayID) {
         // Use the primary display for a window if we can't find it anywhere else
@@ -2458,6 +2499,10 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     // Make sure window pixel size is up to date
     SDL_CheckWindowPixelSizeChanged(window);
 
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+    SDL_UpdateLifecycleObserver();
+#endif
+
     SDL_ClearError();
 
     return window;
@@ -2763,6 +2808,9 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
 
     CHECK_WINDOW_MAGIC(window, false);
 
+    const int w = window->last_size_pending ? window->pending.w : window->windowed.w;
+    const int h = window->last_size_pending ? window->pending.h : window->windowed.h;
+
     original_displayID = SDL_GetDisplayForWindow(window);
 
     if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
@@ -2785,26 +2833,24 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         }
 
         SDL_zero(bounds);
-        if (!SDL_GetDisplayUsableBounds(displayID, &bounds) ||
-            window->windowed.w > bounds.w ||
-            window->windowed.h > bounds.h) {
+        if (!SDL_GetDisplayUsableBounds(displayID, &bounds) || w > bounds.w || h > bounds.h) {
             if (!SDL_GetDisplayBounds(displayID, &bounds)) {
                 return false;
             }
         }
         if (SDL_WINDOWPOS_ISCENTERED(x)) {
-            x = bounds.x + (bounds.w - window->windowed.w) / 2;
+            x = bounds.x + (bounds.w - w) / 2;
         }
         if (SDL_WINDOWPOS_ISCENTERED(y)) {
-            y = bounds.y + (bounds.h - window->windowed.h) / 2;
+            y = bounds.y + (bounds.h - h) / 2;
         }
     }
 
-    window->floating.x = x;
-    window->floating.y = y;
+    window->pending.x = x;
+    window->pending.y = y;
     window->undefined_x = false;
     window->undefined_y = false;
-    window->use_pending_position_for_fullscreen = true;
+    window->last_position_pending = true;
 
     if (_this->SetWindowPosition) {
         const bool result = _this->SetWindowPosition(_this, window);
@@ -2952,8 +2998,9 @@ bool SDL_SetWindowSize(SDL_Window *window, int w, int h)
         h = window->max_h;
     }
 
-    window->floating.w = w;
-    window->floating.h = h;
+    window->last_size_pending = true;
+    window->pending.w = w;
+    window->pending.h = h;
 
     if (_this->SetWindowSize) {
         _this->SetWindowSize(_this, window);
@@ -3067,8 +3114,6 @@ bool SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 
 bool SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
 {
-    int w, h;
-
     CHECK_WINDOW_MAGIC(window, false);
     if (min_w < 0) {
         return SDL_InvalidParamError("min_w");
@@ -3090,8 +3135,10 @@ bool SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
     }
 
     // Ensure that window is not smaller than minimal size
-    w = window->min_w ? SDL_max(window->floating.w, window->min_w) : window->floating.w;
-    h = window->min_h ? SDL_max(window->floating.h, window->min_h) : window->floating.h;
+    int w = window->last_size_pending ? window->pending.w : window->floating.w;
+    int h = window->last_size_pending ? window->pending.h : window->floating.h;
+    w = window->min_w ? SDL_max(w, window->min_w) : w;
+    h = window->min_h ? SDL_max(h, window->min_h) : h;
     return SDL_SetWindowSize(window, w, h);
 }
 
@@ -3109,8 +3156,6 @@ bool SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
 
 bool SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
 {
-    int w, h;
-
     CHECK_WINDOW_MAGIC(window, false);
     if (max_w < 0) {
         return SDL_InvalidParamError("max_w");
@@ -3132,8 +3177,10 @@ bool SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
     }
 
     // Ensure that window is not larger than maximal size
-    w = window->max_w ? SDL_min(window->floating.w, window->max_w) : window->floating.w;
-    h = window->max_h ? SDL_min(window->floating.h, window->max_h) : window->floating.h;
+    int w = window->last_size_pending ? window->pending.w : window->floating.w;
+    int h = window->last_size_pending ? window->pending.h : window->floating.h;
+    w = window->max_w ? SDL_min(w, window->max_w) : w;
+    h = window->max_h ? SDL_min(h, window->max_h) : h;
     return SDL_SetWindowSize(window, w, h);
 }
 
@@ -3203,7 +3250,8 @@ bool SDL_HideWindow(SDL_Window *window)
     }
 
     // Store the flags for restoration later.
-    window->pending_flags = window->flags;
+    const SDL_WindowFlags pending_mask = (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_KEYBOARD_GRABBED | SDL_WINDOW_MOUSE_GRABBED);
+    window->pending_flags = (window->flags & pending_mask);
 
     window->is_hiding = true;
     if (_this->HideWindow) {
@@ -3919,6 +3967,18 @@ void SDL_OnWindowPixelSizeChanged(SDL_Window *window)
     window->surface_valid = false;
 }
 
+void SDL_OnWindowLiveResizeUpdate(SDL_Window *window)
+{
+    if (SDL_HasMainCallbacks()) {
+        SDL_IterateMainCallbacks(false);
+    } else {
+        // Send an expose event so the application can redraw
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+    }
+
+    SDL_PumpEventMaintenance();
+}
+
 static void SDL_CheckWindowSafeAreaChanged(SDL_Window *window)
 {
     SDL_Rect rect;
@@ -4004,9 +4064,6 @@ void SDL_OnWindowFocusGained(SDL_Window *window)
 
     if (mouse && mouse->relative_mode) {
         SDL_SetMouseFocus(window);
-        if (mouse->relative_mode_warp) {
-            SDL_PerformWarpMouseInWindow(window, (float)window->w / 2.0f, (float)window->h / 2.0f, true);
-        }
     }
 
     SDL_UpdateWindowGrab(window);
@@ -4179,6 +4236,10 @@ void SDL_DestroyWindow(SDL_Window *window)
     }
 
     SDL_free(window);
+
+#ifdef SDL_VIDEO_DRIVER_UIKIT
+    SDL_UpdateLifecycleObserver();
+#endif
 }
 
 bool SDL_ScreenSaverEnabled(void)
@@ -4252,6 +4313,8 @@ void SDL_VideoQuit(void)
     SDL_assert(_this->num_displays == 0);
     SDL_free(_this->displays);
     _this->displays = NULL;
+
+    SDL_CancelClipboardData(0);
 
     if (_this->primary_selection_text) {
         SDL_free(_this->primary_selection_text);
@@ -4787,11 +4850,7 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
         attrib = GL_SAMPLES;
         break;
     case SDL_GL_CONTEXT_RELEASE_BEHAVIOR:
-#ifdef SDL_VIDEO_OPENGL
         attrib = GL_CONTEXT_RELEASE_BEHAVIOR;
-#else
-        attrib = GL_CONTEXT_RELEASE_BEHAVIOR_KHR;
-#endif
         break;
     case SDL_GL_BUFFER_SIZE:
     {
@@ -4889,7 +4948,22 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
             if (glBindFramebufferFunc && (current_fbo != 0)) {
                 glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, 0);
             }
-            glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, attachmentattrib, (GLint *)value);
+            // glGetFramebufferAttachmentParameterivFunc may cause GL_INVALID_OPERATION when querying depth/stencil size if the
+            // bits is 0. From the GL docs:
+            //      If the value of GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE is GL_NONE, then either no framebuffer is bound to target;
+            //      or a default framebuffer is queried, attachment is GL_DEPTH or GL_STENCIL, and the number of depth or stencil bits,
+            //      respectively, is zero. In this case querying pname GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME will return zero, and all
+            //      other queries will generate an error.
+            GLint fbo_type = GL_FRAMEBUFFER_DEFAULT;
+            if (attachment == GL_DEPTH || attachment == GL_STENCIL) {
+                glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, &fbo_type);
+            }
+            if (fbo_type != GL_NONE) {
+                glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, attachmentattrib, (GLint *)value);
+            }
+            else {
+                *value = 0;
+            }
             if (glBindFramebufferFunc && (current_fbo != 0)) {
                 glBindFramebufferFunc(GL_DRAW_FRAMEBUFFER, current_fbo);
             }
@@ -4921,6 +4995,12 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
         }
         return SDL_SetError("OpenGL error: %08X", error);
     }
+
+    // convert GL_CONTEXT_RELEASE_BEHAVIOR values back to SDL_GL_CONTEXT_RELEASE_BEHAVIOR values
+    if (attr == SDL_GL_CONTEXT_RELEASE_BEHAVIOR) {
+        *value = (*value == GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH) ? SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH : SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE;
+    }
+
     return true;
 #else
     return SDL_Unsupported();
@@ -5455,6 +5535,30 @@ bool SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
         return SDL_SetError("Invalid number of buttons");
     }
 
+    // in case either the title or message was a pointer from SDL_GetError(), make a copy
+    // now, as we'll likely overwrite error state in here.
+    bool titleisstack = false, msgisstack = false;
+    char *titlecpy = NULL;
+    char *msgcpy = NULL;
+    if (messageboxdata->title) {
+        const size_t slen = SDL_strlen(messageboxdata->title) + 1;
+        titlecpy = SDL_small_alloc(char, slen, &titleisstack);
+        if (!titlecpy) {
+            return false;
+        }
+        SDL_memcpy(titlecpy, messageboxdata->title, slen);
+    }
+
+    if (messageboxdata->message) {
+        const size_t slen = SDL_strlen(messageboxdata->message) + 1;
+        msgcpy = SDL_small_alloc(char, slen, &msgisstack);
+        if (!msgcpy) {
+            SDL_small_free(titlecpy, titleisstack);
+            return false;
+        }
+        SDL_memcpy(msgcpy, messageboxdata->message, slen);
+    }
+
     (void)SDL_AtomicIncRef(&SDL_messagebox_count);
 
     current_window = SDL_GetKeyboardFocus();
@@ -5469,9 +5573,11 @@ bool SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     }
 
     SDL_memcpy(&mbdata, messageboxdata, sizeof(*messageboxdata));
+    mbdata.title = titlecpy;
     if (!mbdata.title) {
         mbdata.title = "";
     }
+    mbdata.message = msgcpy;
     if (!mbdata.message) {
         mbdata.message = "";
     }
@@ -5533,6 +5639,9 @@ bool SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     }
     SDL_UpdateRelativeMouseMode();
     SDL_UpdateMouseCapture(false);
+
+    SDL_small_free(msgcpy, msgisstack);
+    SDL_small_free(titlecpy, titleisstack);
 
     return result;
 }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1036,6 +1036,10 @@ static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
 {
     if (!SDL_IsJoystickSteamController(vendor_id, product_id)) {
         return false;
+    }
+
+    if (device->is_bluetooth) {
+        return true;
     }
 
     if (IsDongle(product_id)) {

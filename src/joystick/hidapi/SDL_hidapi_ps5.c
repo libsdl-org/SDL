@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -215,18 +215,16 @@ typedef struct
 } IMUCalibrationData;
 
 /* Rumble hint mode:
- * default: enhanced features are available if the controller is using enhanced reports
  * "0": enhanced features are never used
  * "1": enhanced features are always used
  * "auto": enhanced features are advertised to the application, but SDL doesn't touch the controller state unless the application explicitly requests it.
  */
 typedef enum
 {
-    PS5_RUMBLE_HINT_DEFAULT,
-    PS5_RUMBLE_HINT_OFF,
-    PS5_RUMBLE_HINT_ON,
-    PS5_RUMBLE_HINT_AUTO
-} SDL_PS5_RumbleHintMode;
+    PS5_ENHANCED_REPORT_HINT_OFF,
+    PS5_ENHANCED_REPORT_HINT_ON,
+    PS5_ENHANCED_REPORT_HINT_AUTO
+} HIDAPI_PS5_EnhancedReportHint;
 
 typedef struct
 {
@@ -240,7 +238,7 @@ typedef struct
     bool playerled_supported;
     bool touchpad_supported;
     bool effects_supported;
-    SDL_PS5_RumbleHintMode rumble_hint;
+    HIDAPI_PS5_EnhancedReportHint enhanced_report_hint;
     bool enhanced_reports;
     bool enhanced_mode;
     bool enhanced_mode_available;
@@ -389,7 +387,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         j = -1;
         for (i = 0; i < 12; i += 2) {
             j += 1;
-            SDL_memcpy(&serial[j], &device->serial[i], 2);
+            SDL_memmove(&serial[j], &device->serial[i], 2);
             j += 2;
             serial[j] = '-';
         }
@@ -404,7 +402,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
     if (size > 0) {
         HIDAPI_DumpPacket("PS5 first packet: size = %d", data, size);
     } else {
-        SDL_Log("PS5 first packet: size = %d\n", size);
+        SDL_Log("PS5 first packet: size = %d", size);
     }
 #endif
     if (size == 64) {
@@ -563,7 +561,7 @@ static void HIDAPI_DriverPS5_LoadCalibrationData(SDL_HIDAPI_Device *device)
     size = ReadFeatureReport(device->dev, k_EPS5FeatureReportIdCalibration, data, sizeof(data));
     if (size < 35) {
 #ifdef DEBUG_PS5_CALIBRATION
-        SDL_Log("Short read of calibration data: %d, ignoring calibration\n", size);
+        SDL_Log("Short read of calibration data: %d, ignoring calibration", size);
 #endif
         return;
     }
@@ -633,12 +631,12 @@ static void HIDAPI_DriverPS5_LoadCalibrationData(SDL_HIDAPI_Device *device)
         for (i = 0; i < 6; ++i) {
             float divisor = (i < 3 ? 64.0f : 1.0f);
 #ifdef DEBUG_PS5_CALIBRATION
-            SDL_Log("calibration[%d] bias = %d, sensitivity = %f\n", i, ctx->calibration[i].bias, ctx->calibration[i].sensitivity);
+            SDL_Log("calibration[%d] bias = %d, sensitivity = %f", i, ctx->calibration[i].bias, ctx->calibration[i].sensitivity);
 #endif
             // Some controllers have a bad calibration
             if ((SDL_abs(ctx->calibration[i].bias) > 1024) || (SDL_fabsf(1.0f - ctx->calibration[i].sensitivity / divisor) > 0.5f)) {
 #ifdef DEBUG_PS5_CALIBRATION
-                SDL_Log("invalid calibration, ignoring\n");
+                SDL_Log("invalid calibration, ignoring");
 #endif
                 ctx->hardware_calibration = false;
             }
@@ -803,6 +801,9 @@ static void HIDAPI_DriverPS5_TickleBluetooth(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx)
 {
+    if (ctx->enhanced_mode_available) {
+        return;
+    }
     ctx->enhanced_mode_available = true;
 
     if (ctx->touchpad_supported) {
@@ -828,11 +829,9 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
 
 static void HIDAPI_DriverPS5_SetEnhancedMode(SDL_DriverPS5_Context *ctx)
 {
-    if (!ctx->enhanced_mode_available) {
-        HIDAPI_DriverPS5_SetEnhancedModeAvailable(ctx);
-    }
+    HIDAPI_DriverPS5_SetEnhancedModeAvailable(ctx);
 
-    if (!ctx->enhanced_mode && ctx->enhanced_mode_available) {
+    if (!ctx->enhanced_mode) {
         ctx->enhanced_mode = true;
 
         // Switch into enhanced report mode
@@ -843,63 +842,52 @@ static void HIDAPI_DriverPS5_SetEnhancedMode(SDL_DriverPS5_Context *ctx)
     }
 }
 
-static void HIDAPI_DriverPS5_SetRumbleHintMode(SDL_DriverPS5_Context *ctx, SDL_PS5_RumbleHintMode rumble_hint)
+static void HIDAPI_DriverPS5_SetEnhancedReportHint(SDL_DriverPS5_Context *ctx, HIDAPI_PS5_EnhancedReportHint enhanced_report_hint)
 {
-    switch (rumble_hint) {
-    case PS5_RUMBLE_HINT_DEFAULT:
-        if (ctx->enhanced_reports) {
-            HIDAPI_DriverPS5_SetEnhancedMode(ctx);
-        }
-        break;
-    case PS5_RUMBLE_HINT_OFF:
+    switch (enhanced_report_hint) {
+    case PS5_ENHANCED_REPORT_HINT_OFF:
         // Nothing to do, enhanced mode is a one-way ticket
         break;
-    case PS5_RUMBLE_HINT_ON:
+    case PS5_ENHANCED_REPORT_HINT_ON:
         HIDAPI_DriverPS5_SetEnhancedMode(ctx);
         break;
-    case PS5_RUMBLE_HINT_AUTO:
+    case PS5_ENHANCED_REPORT_HINT_AUTO:
         HIDAPI_DriverPS5_SetEnhancedModeAvailable(ctx);
         break;
     }
-    ctx->rumble_hint = rumble_hint;
+    ctx->enhanced_report_hint = enhanced_report_hint;
 }
 
 static void HIDAPI_DriverPS5_UpdateEnhancedModeOnEnhancedReport(SDL_DriverPS5_Context *ctx)
 {
     ctx->enhanced_reports = true;
 
-    if (ctx->rumble_hint == PS5_RUMBLE_HINT_DEFAULT) {
-        HIDAPI_DriverPS5_SetRumbleHintMode(ctx, PS5_RUMBLE_HINT_ON);
+    if (ctx->enhanced_report_hint == PS5_ENHANCED_REPORT_HINT_AUTO) {
+        HIDAPI_DriverPS5_SetEnhancedReportHint(ctx, PS5_ENHANCED_REPORT_HINT_ON);
     }
 }
 
 static void HIDAPI_DriverPS5_UpdateEnhancedModeOnApplicationUsage(SDL_DriverPS5_Context *ctx)
 {
-    if (ctx->rumble_hint == PS5_RUMBLE_HINT_AUTO) {
-        HIDAPI_DriverPS5_SetRumbleHintMode(ctx, PS5_RUMBLE_HINT_ON);
+    if (ctx->enhanced_report_hint == PS5_ENHANCED_REPORT_HINT_AUTO) {
+        HIDAPI_DriverPS5_SetEnhancedReportHint(ctx, PS5_ENHANCED_REPORT_HINT_ON);
     }
 }
 
-static void SDLCALL SDL_PS5RumbleHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+static void SDLCALL SDL_PS5EnhancedReportsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)userdata;
 
-    if (!hint) {
-        /* Games written prior the introduction of PS5 controller support in SDL will not be aware of
-           SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE, but they did know SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE.
-           To support apps that only knew about the PS4 hint, we'll use the PS4 hint as the default.
-        */
-        hint = SDL_GetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE);
-    }
-
-    if (!hint) {
-        HIDAPI_DriverPS5_SetRumbleHintMode(ctx, PS5_RUMBLE_HINT_DEFAULT);
-    } else if (SDL_strcasecmp(hint, "auto") == 0) {
-        HIDAPI_DriverPS5_SetRumbleHintMode(ctx, PS5_RUMBLE_HINT_AUTO);
-    } else if (SDL_GetStringBoolean(hint, false)) {
-        HIDAPI_DriverPS5_SetRumbleHintMode(ctx, PS5_RUMBLE_HINT_ON);
+    if (ctx->device->is_bluetooth) {
+        if (hint && SDL_strcasecmp(hint, "auto") == 0) {
+            HIDAPI_DriverPS5_SetEnhancedReportHint(ctx, PS5_ENHANCED_REPORT_HINT_AUTO);
+        } else if (SDL_GetStringBoolean(hint, true)) {
+            HIDAPI_DriverPS5_SetEnhancedReportHint(ctx, PS5_ENHANCED_REPORT_HINT_ON);
+        } else {
+            HIDAPI_DriverPS5_SetEnhancedReportHint(ctx, PS5_ENHANCED_REPORT_HINT_OFF);
+        }
     } else {
-        HIDAPI_DriverPS5_SetRumbleHintMode(ctx, PS5_RUMBLE_HINT_OFF);
+        HIDAPI_DriverPS5_SetEnhancedReportHint(ctx, PS5_ENHANCED_REPORT_HINT_ON);
     }
 }
 
@@ -962,9 +950,9 @@ static bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     joystick->nhats = 1;
     joystick->firmware_version = ctx->firmware_version;
 
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
-                        SDL_PS5RumbleHintChanged, ctx);
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
+                        SDL_PS5EnhancedReportsChanged, ctx);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
                         SDL_PS5PlayerLEDHintChanged, ctx);
 
     return true;
@@ -1529,7 +1517,7 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
             }
             break;
         case k_EPS5ReportIdBluetoothState:
-            // This is the extended report, we can enable effects now in default mode
+            // This is the extended report, we can enable effects now in auto mode
             HIDAPI_DriverPS5_UpdateEnhancedModeOnEnhancedReport(ctx);
 
             if (ctx->use_alternate_report) {
@@ -1543,7 +1531,7 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
             break;
         default:
 #ifdef DEBUG_JOYSTICK
-            SDL_Log("Unknown PS5 packet: 0x%.2x\n", data[0]);
+            SDL_Log("Unknown PS5 packet: 0x%.2x", data[0]);
 #endif
             break;
         }
@@ -1592,13 +1580,17 @@ static void HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
 
-    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_RUMBLE,
-                        SDL_PS5RumbleHintChanged, ctx);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
+                        SDL_PS5EnhancedReportsChanged, ctx);
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
                         SDL_PS5PlayerLEDHintChanged, ctx);
 
     ctx->joystick = NULL;
+
+    ctx->report_sensors = false;
+    ctx->enhanced_mode = false;
+    ctx->enhanced_mode_available = false;
 }
 
 static void HIDAPI_DriverPS5_FreeDevice(SDL_HIDAPI_Device *device)

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1242,7 +1242,7 @@ int SDL_hid_init(void)
         return -1;
     }
 
-#ifdef SDL_PLATFORM_MACOS
+#if defined(SDL_PLATFORM_MACOS) && !defined(SDL_HIDAPI_DISABLED)
     hid_darwin_set_open_exclusive(0);
 #endif
 

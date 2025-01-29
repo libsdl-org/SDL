@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -53,7 +53,7 @@ cleanup(void)
 static void
 iostrm_error_quit(unsigned line, SDL_IOStream *iostrm)
 {
-    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testfile.c(%d): failed\n", line);
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testfile.c(%d): failed", line);
     if (iostrm) {
         SDL_CloseIO(iostrm);
     }
@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
     if (iostrm) {
         RWOP_ERR_QUIT(iostrm);
     }
-    SDL_Log("test1 OK\n");
+    SDL_Log("test1 OK");
 
     /* test 2 : check that inexistent file is not successfully opened/created when required */
     /* modes : r, r+ imply that file MUST exist
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
     }
     SDL_CloseIO(iostrm);
     unlink(FBASENAME2);
-    SDL_Log("test2 OK\n");
+    SDL_Log("test2 OK");
 
     /* test 3 : creation, writing , reading, seeking,
                 test : w mode, r mode, w+ mode
@@ -257,7 +257,7 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(iostrm);
     }
     SDL_CloseIO(iostrm);
-    SDL_Log("test3 OK\n");
+    SDL_Log("test3 OK");
 
     /* test 4: same in r+ mode */
     iostrm = SDL_IOFromFile(FBASENAME1, "rb+"); /* write + read + file must exists, no truncation */
@@ -308,7 +308,7 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(iostrm);
     }
     SDL_CloseIO(iostrm);
-    SDL_Log("test4 OK\n");
+    SDL_Log("test4 OK");
 
     /* test5 : append mode */
     iostrm = SDL_IOFromFile(FBASENAME1, "ab+"); /* write + read + append */
@@ -365,7 +365,7 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(iostrm);
     }
     SDL_CloseIO(iostrm);
-    SDL_Log("test5 OK\n");
+    SDL_Log("test5 OK");
     cleanup();
     SDL_Quit();
     SDLTest_CommonDestroyState(state);

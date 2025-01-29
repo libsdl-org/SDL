@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -550,7 +550,7 @@ static void Translate_to_text(SDL_WSCONS_input_data *input, keysym_t ksym)
     }
 }
 
-static void Translate_to_keycode(SDL_WSCONS_input_data *input, int type, keysym_t ksym)
+static void Translate_to_keycode(SDL_WSCONS_input_data *input, int type, keysym_t ksym, Uint64 timestamp)
 {
     struct wscons_keymap keyDesc = input->keymap.map[ksym];
     keysym_t *group = &keyDesc.group1[KS_GROUP(keyDesc.group1[0]) == KS_GROUP_Keypad && IS_NUMLOCK_ON ? !IS_SHIFT_HELD : 0];
@@ -560,22 +560,30 @@ static void Translate_to_keycode(SDL_WSCONS_input_data *input, int type, keysym_
     switch (keyDesc.command) {
     case KS_Cmd_ScrollBack:
     {
-        SDL_SendKeyboardKey(0, input->keyboardID, 0, SDL_SCANCODE_PAGEUP, (type == WSCONS_EVENT_KEY_DOWN));
+        SDL_SendKeyboardKey(timestamp, input->keyboardID, 0, SDL_SCANCODE_PAGEUP, (type == WSCONS_EVENT_KEY_DOWN));
         return;
     }
     case KS_Cmd_ScrollFwd:
     {
-        SDL_SendKeyboardKey(0, input->keyboardID, 0, SDL_SCANCODE_PAGEDOWN, (type == WSCONS_EVENT_KEY_DOWN));
+        SDL_SendKeyboardKey(timestamp, input->keyboardID, 0, SDL_SCANCODE_PAGEDOWN, (type == WSCONS_EVENT_KEY_DOWN));
         return;
     }
+    default:
+        break;
     }
-    for (i = 0; i < sizeof(conversion_table) / sizeof(struct wscons_keycode_to_SDL); i++) {
+    for (i = 0; i < SDL_arraysize(conversion_table); i++) {
         if (conversion_table[i].sourcekey == group[0]) {
-            SDL_SendKeyboardKey(0, input->keyboardID, group[0], conversion_table[i].targetKey, (type == WSCONS_EVENT_KEY_DOWN));
+            SDL_SendKeyboardKey(timestamp, input->keyboardID, group[0], conversion_table[i].targetKey, (type == WSCONS_EVENT_KEY_DOWN));
             return;
         }
     }
-    SDL_SendKeyboardKey(0, input->keyboardID, group[0], SDL_SCANCODE_UNKNOWN, (type == WSCONS_EVENT_KEY_DOWN));
+    SDL_SendKeyboardKey(timestamp, input->keyboardID, group[0], SDL_SCANCODE_UNKNOWN, (type == WSCONS_EVENT_KEY_DOWN));
+}
+
+static Uint64 GetEventTimestamp(struct timespec *time)
+{
+    // FIXME: Get the event time in the SDL tick time base
+    return SDL_GetTicksNS();
 }
 
 static void updateKeyboard(SDL_WSCONS_input_data *input)
@@ -592,6 +600,7 @@ static void updateKeyboard(SDL_WSCONS_input_data *input)
     if ((n = read(input->fd, events, sizeof(events))) > 0) {
         n /= sizeof(struct wscons_event);
         for (i = 0; i < n; i++) {
+            Uint64 timestamp = GetEventTimestamp(&events[i].time);
             type = events[i].type;
             switch (type) {
             case WSCONS_EVENT_KEY_DOWN:
@@ -809,15 +818,18 @@ static void updateKeyboard(SDL_WSCONS_input_data *input)
             } break;
             case WSCONS_EVENT_ALL_KEYS_UP:
                 for (i = 0; i < SDL_SCANCODE_COUNT; i++) {
-                    SDL_SendKeyboardKey(0, input->keyboardID, 0, (SDL_Scancode)i, false);
+                    SDL_SendKeyboardKey(timestamp, input->keyboardID, 0, (SDL_Scancode)i, false);
                 }
+                break;
+            default:
                 break;
             }
 
-            if (input->type == WSKBD_TYPE_USB && events[i].value <= 0xE7)
-                SDL_SendKeyboardKey(0, input->keyboardID, 0, (SDL_Scancode)events[i].value, (type == WSCONS_EVENT_KEY_DOWN));
-            else
-                Translate_to_keycode(input, type, events[i].value);
+            if (input->type == WSKBD_TYPE_USB && events[i].value <= 0xE7) {
+                SDL_SendKeyboardKey(timestamp, input->keyboardID, 0, (SDL_Scancode)events[i].value, (type == WSCONS_EVENT_KEY_DOWN));
+            } else {
+                Translate_to_keycode(input, type, events[i].value, timestamp);
+            }
 
             if (type == WSCONS_EVENT_KEY_UP) {
                 continue;
@@ -910,7 +922,7 @@ static void updateKeyboard(SDL_WSCONS_input_data *input)
                 }
                 if (IS_ALT_HELD) {
                     if (input->encoding & KB_METAESC) {
-                        Translate_to_keycode(input, WSCONS_EVENT_KEY_DOWN, KS_Escape);
+                        Translate_to_keycode(input, WSCONS_EVENT_KEY_DOWN, KS_Escape, 0);
                         Translate_to_text(input, result);
                         continue;
                     } else {

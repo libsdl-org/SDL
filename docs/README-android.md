@@ -10,7 +10,7 @@ The rest of this README covers the Android gradle style build process.
 Requirements
 ================================================================================
 
-Android SDK (version 34 or later)
+Android SDK (version 35 or later)
 https://developer.android.com/sdk/index.html
 
 Android NDK r15c or later
@@ -37,7 +37,7 @@ dispatches to native functions implemented in the SDL library:
 src/core/android/SDL_android.c
 
 
-Building an app
+Building a simple app
 ================================================================================
 
 For simple projects you can use the script located at build-scripts/create-android-project.py
@@ -67,40 +67,38 @@ Finally, a word of caution: re running create-android-project.py wipes any chang
 done in the build directory for the app!
 
 
+Building a more complex app
+================================================================================
+
 For more complex projects, follow these instructions:
 
-1. Get the source code for SDL and copy the 'android-project' directory located at SDL/android-project to a suitable location. Also make sure to rename it to your project name (In these examples: YOURPROJECT).
+1. Get the source code for SDL and copy the 'android-project' directory located at SDL/android-project to a suitable location in your project.
 
-   (The 'android-project' directory can basically be seen as a sort of starting point for the android-port of your project. It contains the glue code between the Android Java 'frontend' and the SDL code 'backend'. It also contains some standard behaviour, like how events should be handled, which you will be able to change.)
+   The 'android-project' directory can basically be seen as a sort of starting point for the android-port of your project. It contains the glue code between the Android Java 'frontend' and the SDL code 'backend'. It also contains some standard behaviour, like how events should be handled, which you will be able to change.
 
-2. Move or [symlink](https://en.wikipedia.org/wiki/Symbolic_link) the SDL directory into the "YOURPROJECT/app/jni" directory
+2. If you are _not_ already building SDL as a part of your project (e.g. via CMake add_subdirectory() or FetchContent) move or [symlink](https://en.wikipedia.org/wiki/Symbolic_link) the SDL directory into the 'android-project/app/jni' directory. Alternatively you can [use the SDL3 Android Archive (.aar)](#using-the-sdl3-android-archive-aar), see bellow for more details.
 
-(This is needed as the source of SDL has to be compiled by the Android compiler)
+    This is needed as SDL has to be compiled by the Android compiler.
 
-3. Edit "YOURPROJECT/app/jni/src/Android.mk" to include your source files.
+3. Edit 'android-project/app/build.gradle' to include any assets that your app needs by adding 'assets.srcDirs' in 'sourceSets.main'.
 
-(They should be separated by spaces after the "LOCAL_SRC_FILES := " declaration)
+    For example: `assets.srcDirs = ['../../assets', '../../shaders']`
 
-4a. If you want to use Android Studio, simply open your 'YOURPROJECT' directory and start building.
+If using CMake:
 
-4b. If you want to build manually, run './gradlew installDebug' in the project directory. This compiles the .java, creates an .apk with the native code embedded, and installs it on any connected Android device
+4. Edit 'android-project/app/build.gradle' to set 'buildWithCMake' to true and set 'externalNativeBuild' cmake path to your top level CMakeLists.txt.
 
+    For example: `path '../../CMakeLists.txt'`
 
-If you already have a project that uses CMake, the instructions change somewhat:
+5. Change the target containing your main function to be built as a shared library called "main" when compiling for Android. (e.g. add_executable(MyGame main.c) should become add_library(main SHARED main.c) on Android)
 
-1. Do points 1 and 2 from the instruction above.
-2. Edit "YOURPROJECT/app/build.gradle" to comment out or remove sections containing ndk-build
-   and uncomment the cmake sections. Add arguments to the CMake invocation as needed.
-3. Edit "YOURPROJECT/app/jni/CMakeLists.txt" to include your project (it defaults to
-   adding the "src" subdirectory). Note that you'll have SDL3 and SDL3-static
-   as targets in your project, so you should have "target_link_libraries(yourgame SDL3)"
-   in your CMakeLists.txt file. Also be aware that you should use add_library() instead of
-   add_executable() for the target containing your "main" function.
+If using Android Makefiles:
 
-If you wish to use Android Studio, you can skip the last step.
+4. Edit 'android-project/app/jni/src/Android.mk' to include your source files. They should be separated by spaces after the 'LOCAL_SRC_FILES := ' declaration.
 
-4. Run './gradlew installDebug' or './gradlew installRelease' in the project directory. It will build and install your .apk on any
-   connected Android device
+To build your app, run `./gradlew installDebug` or `./gradlew installRelease` in the project directory. It will build and install your .apk on any connected Android device. If you want to use Android Studio, simply open your 'android-project' directory and start building.
+
+Additionally the [SDL_helloworld](https://github.com/libsdl-org/SDL_helloworld) project contains a small example program with a functional Android port that you can use as a reference.
 
 Here's an explanation of the files in the Android project, so you can customize them:
 
@@ -170,13 +168,13 @@ build-scripts/create-android-project.py --variant aar com.yourcompany.yourapp < 
 Customizing your application name
 ================================================================================
 
-To customize your application name, edit AndroidManifest.xml and replace
+To customize your application name, edit AndroidManifest.xml and build.gradle to replace
 "org.libsdl.app" with an identifier for your product package.
 
 Then create a Java class extending SDLActivity and place it in a directory
 under src matching your package, e.g.
 
-    src/com/gamemaker/game/MyGame.java
+    app/src/main/java/com/gamemaker/game/MyGame.java
 
 Here's an example of a minimal class file:
 
@@ -316,6 +314,17 @@ You can control activity re-creation (eg. onCreate()) behaviour. This allows you
 to choose whether to keep or re-initialize java and native static datas, see
 SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY in SDL_hints.h.
 
+
+Insets and Safe Areas
+================================================================================
+
+As of Android 15, SDL windows cover the entire screen, extending under notches
+and system bars. The OS expects you to take those into account when displaying
+content and SDL provides the function SDL_GetWindowSafeArea() so you know what
+area is available for interaction. Outside of the safe area can be potentially
+covered by system bars or used by OS gestures.
+
+
 Mouse / Touch events
 ================================================================================
 
@@ -325,6 +334,7 @@ To enable/disable this behavior, see SDL_hints.h:
 - SDL_HINT_TOUCH_MOUSE_EVENTS
 - SDL_HINT_MOUSE_TOUCH_EVENTS
 
+
 Misc
 ================================================================================
 
@@ -333,6 +343,7 @@ before creating a window:
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 6);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
+
 
 Threads and the Java VM
 ================================================================================
@@ -358,6 +369,7 @@ in your native thread.
 
 see:
 https://developer.android.com/training/articles/perf-jni#faq:-why-didnt-findclass-find-my-class
+
 
 Using STL
 ================================================================================
@@ -526,15 +538,6 @@ The Tegra Graphics Debugger is available from NVidia here:
 https://developer.nvidia.com/tegra-graphics-debugger
 
 
-Why is API level 19 the minimum required?
-================================================================================
-
-The latest NDK toolchain doesn't support targeting earlier than API level 19.
-As of this writing, according to https://www.composables.com/tools/distribution-chart
-about 99.7% of the Android devices accessing Google Play support API level 19 or
-higher (August 2023).
-
-
 A note regarding the use of the "dirty rectangles" rendering technique
 ================================================================================
 
@@ -545,12 +548,6 @@ This is caused by SDL's use of EGL as the support system to handle OpenGL ES/ES2
 contexts, in particular the use of the eglSwapBuffers function. As stated in the
 documentation for the function "The contents of ancillary buffers are always
 undefined after calling eglSwapBuffers".
-Setting the EGL_SWAP_BEHAVIOR attribute of the surface to EGL_BUFFER_PRESERVED
-is not possible for SDL as it requires EGL 1.4, available only on the API level
-17+, so the only workaround available on this platform is to redraw the entire
-screen each frame.
-
-Reference: http://www.khronos.org/registry/egl/specs/EGLTechNote0001.html
 
 
 Ending your application
@@ -570,11 +567,13 @@ Don't call exit() as it stops the activity badly.
 NB: "Back button" can be handled as a SDL_EVENT_KEY_DOWN/UP events, with Keycode
 SDLK_AC_BACK, for any purpose.
 
+
 Known issues
 ================================================================================
 
 - The number of buttons reported for each joystick is hardcoded to be 36, which
 is the current maximum number of buttons Android can report.
+
 
 Building the SDL tests
 ================================================================================
@@ -651,4 +650,4 @@ There is also a convenience target which will build, install and start a test:
 cmake --build . --target build-install-start-testsprite
 ```
 
-Not all tests provide a GUI. For those, you can use `adb logcat` to read the output of stdout.
+Not all tests provide a GUI. For those, you can use `adb logcat` to read the output.

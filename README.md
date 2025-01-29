@@ -1,16 +1,16 @@
 
-# Simple DirectMedia Layer (SDL) Version 3.0
+Simple DirectMedia Layer (SDL for short) is a cross-platform library
+designed to make it easy to write multi-media software, such as games
+and emulators.
 
+You can find the latest release and additional information at:
 https://www.libsdl.org/
 
-Simple DirectMedia Layer is a cross-platform development library designed
-to provide low level access to audio, keyboard, mouse, joystick, and graphics
-hardware. It is used by video playback software, emulators, and popular games
-including Valve's award winning catalog and many Humble Bundle games.
+Installation instructions and a quick introduction is available in
+[INSTALL.md](INSTALL.md)
 
-More extensive documentation is available in the docs directory, starting
-with [README.md](docs/README.md). If you are migrating to SDL 3.0 from SDL 2.0,
-the changes are extensively documented in [README-migration.md](docs/README-migration.md).
+This library is distributed under the terms of the zlib license,
+available in [LICENSE.txt](LICENSE.txt).
 
 Enjoy!
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,6 +40,7 @@ struct SDL_PrivateAudioData
     HANDLE task;
     bool coinitialized;
     int framesize;
+    SDL_AtomicInt device_disconnecting;
     bool device_lost;
     bool device_dead;
 };
@@ -52,17 +53,6 @@ void WASAPI_DisconnectDevice(SDL_AudioDevice *device);  // don't hold the device
 // BE CAREFUL: if you are holding the device lock and proxy to the management thread with wait_until_complete, and grab the lock again, you will deadlock.
 typedef bool (*ManagementThreadTask)(void *userdata);
 bool WASAPI_ProxyToManagementThread(ManagementThreadTask task, void *userdata, bool *wait_until_complete);
-
-// These are functions that are (were...?) implemented differently for various Windows versions.
-// UNLESS OTHERWISE NOTED THESE ALL HAPPEN ON THE MANAGEMENT THREAD.
-bool WASAPI_PlatformInit(void);
-void WASAPI_PlatformDeinit(void);
-void WASAPI_PlatformDeinitializeStart(void);
-void WASAPI_EnumerateEndpoints(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
-bool WASAPI_ActivateDevice(SDL_AudioDevice *device);
-void WASAPI_PlatformThreadInit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
-void WASAPI_PlatformThreadDeinit(SDL_AudioDevice *device);  // this happens on the audio device thread, not the management thread.
-void WASAPI_PlatformFreeDeviceHandle(SDL_AudioDevice *device);
 
 #ifdef __cplusplus
 }

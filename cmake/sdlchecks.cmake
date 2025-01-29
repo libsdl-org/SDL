@@ -313,10 +313,7 @@ macro(CheckX11)
     find_file(HAVE_XDBE_H NAMES "X11/extensions/Xdbe.h" HINTS "${X11_INCLUDEDIR}")
     find_file(HAVE_XEXT_H NAMES "X11/extensions/Xext.h" HINTS "${X11_INCLUDEDIR}")
 
-    if(X11_LIB)
-      if(NOT HAVE_XEXT_H)
-        message(FATAL_ERROR "Missing Xext.h, maybe you need to install the libxext-dev package?")
-      endif()
+    if(X11_LIB AND HAVE_XEXT_H)
 
       set(HAVE_X11 TRUE)
       set(HAVE_SDL_VIDEO TRUE)
@@ -629,6 +626,7 @@ macro(CheckCOCOA)
     endif()
     if(HAVE_COCOA)
       sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/cocoa/*.m")
+      set(SDL_FRAMEWORK_IOKIT 1)
       set(SDL_VIDEO_DRIVER_COCOA 1)
       set(HAVE_SDL_VIDEO TRUE)
     endif()
@@ -822,7 +820,11 @@ macro(CheckPTHREAD)
       set(PTHREAD_LDFLAGS "-lpthread")
     elseif(SOLARIS)
       set(PTHREAD_CFLAGS "-D_REENTRANT")
-      set(PTHREAD_LDFLAGS "-pthread -lposix4")
+      if(CMAKE_C_COMPILER_ID MATCHES "SunPro")
+        set(PTHREAD_LDFLAGS "-mt -lpthread")
+      else()
+        set(PTHREAD_LDFLAGS "-pthread -lposix4")
+      endif()
     elseif(SYSV5)
       set(PTHREAD_CFLAGS "-D_REENTRANT -Kthread")
       set(PTHREAD_LDFLAGS "")
@@ -1243,7 +1245,21 @@ endmacro()
 macro(CheckLibUnwind)
   if(TARGET SDL3_test)
     set(found_libunwind FALSE)
-    set(_libunwind_src "#include <libunwind.h>\nint main() {unw_context_t context; unw_getcontext(&context); return 0;}")
+    set(_libunwind_src [==[
+      #include <libunwind.h>
+      int main(int argc, char *argv[]) {
+        (void)argc; (void)argv;
+        unw_context_t context;
+        unw_cursor_t cursor;
+        unw_word_t pc;
+        char sym[256];
+        unw_word_t offset;
+        unw_getcontext(&context);
+        unw_step(&cursor);
+        unw_get_reg(&cursor, UNW_REG_IP, &pc);
+        unw_get_proc_name(&cursor, sym, sizeof(sym), &offset);
+        return 0;
+      }]==])
 
     if(NOT found_libunwind)
       cmake_push_check_state()

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -138,7 +138,7 @@ typedef struct
     int pitch;
     SDL_Rect locked_rect;
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     // YUV texture support
     bool yuv;
     bool nv12;
@@ -410,13 +410,13 @@ static bool convert_format(Uint32 pixel_format, GLint *internalFormat, GLenum *f
     case SDL_PIXELFORMAT_XRGB8888:
         *internalFormat = GL_RGBA8;
         *format = GL_BGRA;
-        *type = GL_UNSIGNED_INT_8_8_8_8_REV;
+        *type = GL_UNSIGNED_BYTE; // previously GL_UNSIGNED_INT_8_8_8_8_REV, seeing if this is better in modern times.
         break;
     case SDL_PIXELFORMAT_ABGR8888:
     case SDL_PIXELFORMAT_XBGR8888:
         *internalFormat = GL_RGBA8;
         *format = GL_RGBA;
-        *type = GL_UNSIGNED_INT_8_8_8_8_REV;
+        *type = GL_UNSIGNED_BYTE; // previously GL_UNSIGNED_INT_8_8_8_8_REV, seeing if this is better in modern times.
         break;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
@@ -577,7 +577,7 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         return false;
     }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
         data->yuv = true;
@@ -641,7 +641,7 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         data->shader = SHADER_RGB;
     }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (data->yuv || data->nv12) {
         if (data->yuv) {
             data->shader = SHADER_YUV;
@@ -688,7 +688,7 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     renderdata->glTexSubImage2D(textype, 0, rect->x, rect->y, rect->w,
                                 rect->h, data->format, data->formattype,
                                 pixels);
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (data->yuv) {
         renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, ((pitch + 1) / 2));
 
@@ -729,7 +729,7 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool GL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                const SDL_Rect *rect,
                                const Uint8 *Yplane, int Ypitch,
@@ -833,7 +833,7 @@ static void GL_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture,
     renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, glScaleMode);
     renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, glScaleMode);
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
         renderdata->glBindTexture(textype, data->utexture);
@@ -1132,7 +1132,7 @@ static bool SetTextureAddressMode(GL_RenderData *data, GLenum textype, SDL_Textu
         data->glTexParameteri(textype, GL_TEXTURE_WRAP_T, GL_REPEAT);
         break;
     default:
-        return SDL_SetError("Unknown texture address mode: %d\n", addressMode);
+        return SDL_SetError("Unknown texture address mode: %d", addressMode);
     }
     return true;
 }
@@ -1146,7 +1146,7 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 
     if (texture != data->drawstate.texture) {
         const GLenum textype = data->textype;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         if (texturedata->yuv) {
             if (data->GL_ARB_multitexture_supported) {
                 data->glActiveTextureARB(GL_TEXTURE2_ARB);
@@ -1529,7 +1529,7 @@ static void GL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (data->texture && !data->texture_external) {
         renderdata->glDeleteTextures(1, &data->texture);
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (data->yuv) {
         if (!data->utexture_external) {
             renderdata->glDeleteTextures(1, &data->utexture);
@@ -1650,7 +1650,7 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     renderer->SupportsBlendMode = GL_SupportsBlendMode;
     renderer->CreateTexture = GL_CreateTexture;
     renderer->UpdateTexture = GL_UpdateTexture;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = GL_UpdateTextureYUV;
     renderer->UpdateTextureNV = GL_UpdateTextureNV;
 #endif
@@ -1766,7 +1766,7 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     data->shaders = GL_CreateShaderContext();
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
                 data->shaders ? "ENABLED" : "DISABLED");
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     // We support YV12 textures using 3 textures and a shader
     if (data->shaders && data->num_texture_units >= 3) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);

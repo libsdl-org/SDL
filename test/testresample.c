@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -93,20 +93,20 @@ int main(int argc, char **argv)
     }
 
     if (!SDL_Init(SDL_INIT_AUDIO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s", SDL_GetError());
         ret = 2;
         goto end;
     }
 
     if (!SDL_LoadWAV(file_in, &spec, &data, &len)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to load %s: %s\n", file_in, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to load %s: %s", file_in, SDL_GetError());
         ret = 3;
         goto end;
     }
 
     cvtspec.format = spec.format;
     if (!SDL_ConvertAudioSamples(&spec, data, len, &cvtspec, &dst_buf, &dst_len)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to convert samples: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to convert samples: %s", SDL_GetError());
         ret = 4;
         goto end;
     }
@@ -114,7 +114,7 @@ int main(int argc, char **argv)
     /* write out a WAV header... */
     io = SDL_IOFromFile(file_out, "wb");
     if (!io) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "opening '%s' failed: %s\n", file_out, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "opening '%s' failed: %s", file_out, SDL_GetError());
         ret = 5;
         goto end;
     }
@@ -139,7 +139,7 @@ int main(int argc, char **argv)
     SDL_WriteIO(io, dst_buf, dst_len);
 
     if (!SDL_CloseIO(io)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "closing '%s' failed: %s\n", file_out, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "closing '%s' failed: %s", file_out, SDL_GetError());
         ret = 6;
         goto end;
     }

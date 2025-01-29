@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysprocess.h"
-#include "../../file/SDL_iostream_c.h"
+#include "../../io/SDL_iostream_c.h"
 
 #define READ_END 0
 #define WRITE_END 1
@@ -99,7 +99,7 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
 {
     size_t len;
     int i;
-    int i_out;
+    size_t i_out;
     char *result;
     bool batch_file = is_batch_file_path(args[0]);
 

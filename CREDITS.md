@@ -4,6 +4,10 @@ Thanks to everyone who made this possible, including:
 
 - Cliff Matthews, for giving me a reason to start this project. :)  -- Executor rocks!  *grin*
 - Ryan Gordon for helping everybody out and keeping the dream alive. :)
+- Frank Praznik for his Wayland support and general windowing development.
+- Ozkan Sezer for sanity checks and make sure the i's are dotted and t's are crossed.
+- Anonymous Maarten for CMake support and build system development.
+- Evan Hemsley, Caleb Cornett, and Ethan Lee for SDL GPU development.
 - Gabriel Jacobo for his work on the Android port and generally helping out all around.
 - Philipp Wiesemann for his attention to detail reviewing the entire SDL code base and proposes patches.
 - Andreas Schiffler for his dedication to unit tests, Visual Studio projects, and managing the Google Summer of Code.
@@ -24,7 +28,7 @@ Thanks to everyone who made this possible, including:
 - Holmes Futrell for his port of SDL to the iPhone and iPod Touch during the
   Google Summer of Code 2008.
 - Jon Atkins for SDL_image, SDL_mixer and SDL_net documentation.
-- Everybody at Loki Software, Inc. for their great contributions!
+- Everybody at Loki Software, Inc. and Valve Corporation for their great contributions!
 
  And a big hand to everyone else who has contributed over the years.
 

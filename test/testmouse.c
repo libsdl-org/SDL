@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
 
     /* Initialize SDL (Note: video is required to start event loop) */
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         exit(1);
     }
 
@@ -313,7 +313,7 @@ int main(int argc, char *argv[])
     window = SDL_CreateWindow("Mouse Test", SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 #endif
     if (!window) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s", SDL_GetError());
         return 0;
     }
 
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
 
     loop_data.renderer = SDL_CreateRenderer(window, NULL);
     if (!loop_data.renderer) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s", SDL_GetError());
         SDL_DestroyWindow(window);
         return 0;
     }

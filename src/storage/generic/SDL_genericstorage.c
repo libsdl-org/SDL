@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,15 +26,8 @@
 
 static char *GENERIC_INTERNAL_CreateFullPath(const char *base, const char *relative)
 {
-    if (!base) {
-        return SDL_strdup(relative);
-    }
-
-    size_t len = SDL_strlen(base) + SDL_strlen(relative) + 1;
-    char *result = (char*)SDL_malloc(len);
-    if (result != NULL) {
-        SDL_snprintf(result, len, "%s%s", base, relative);
-    }
+    char *result = NULL;
+    SDL_asprintf(&result, "%s%s", base ? base : "", relative);
     return result;
 }
 
@@ -44,13 +37,53 @@ static bool GENERIC_CloseStorage(void *userdata)
     return true;
 }
 
+typedef struct GenericEnumerateData
+{
+    size_t base_len;
+    SDL_EnumerateDirectoryCallback real_callback;
+    void *real_userdata;
+} GenericEnumerateData;
+
+static SDL_EnumerationResult SDLCALL GENERIC_EnumerateDirectory(void *userdata, const char *dirname, const char *fname)
+{
+    // SDL_EnumerateDirectory will return the full path, so for Storage we
+    // can take the base directory and add its length to the dirname string,
+    // effectively trimming the root without having to strdup anything.
+    const GenericEnumerateData *wrap_data = (GenericEnumerateData *)userdata;
+
+    dirname += wrap_data->base_len;  // skip the base, just return the part inside of the Storage.
+
+    #ifdef SDL_PLATFORM_WINDOWS
+    char *dirnamecpy = NULL;
+    const size_t slen = SDL_strlen(dirname);
+    if (slen && (dirname[slen - 1] == '\\')) {
+        dirnamecpy = SDL_strdup(dirname);
+        if (!dirnamecpy) {
+            return SDL_ENUM_FAILURE;
+        }
+        dirnamecpy[slen - 1] = '/';  // storage layer always uses '/' path separators.
+        dirname = dirnamecpy;
+    }
+    const SDL_EnumerationResult retval = wrap_data->real_callback(wrap_data->real_userdata, dirname, fname);
+    SDL_free(dirnamecpy);
+    return retval;
+    #else
+    return wrap_data->real_callback(wrap_data->real_userdata, dirname, fname);
+    #endif
+}
+
 static bool GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, SDL_EnumerateDirectoryCallback callback, void *callback_userdata)
 {
     bool result = false;
+    GenericEnumerateData wrap_data;
 
     char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
     if (fullpath) {
-        result = SDL_EnumerateDirectory(fullpath, callback, callback_userdata);
+        wrap_data.base_len = SDL_strlen((char *)userdata);
+        wrap_data.real_callback = callback;
+        wrap_data.real_userdata = callback_userdata;
+
+        result = SDL_EnumerateDirectory(fullpath, GENERIC_EnumerateDirectory, &wrap_data);
 
         SDL_free(fullpath);
     }
@@ -85,6 +118,8 @@ static bool GENERIC_ReadStorageFile(void *userdata, const char *path, void *dest
             // FIXME: Should SDL_ReadIO use u64 now...?
             if (SDL_ReadIO(stream, destination, (size_t)length) == length) {
                 result = true;
+            } else {
+                SDL_SetError("File length did not exactly match the destination length");
             }
             SDL_CloseIO(stream);
         }
@@ -110,6 +145,8 @@ static bool GENERIC_WriteStorageFile(void *userdata, const char *path, const voi
             // FIXME: Should SDL_WriteIO use u64 now...?
             if (SDL_WriteIO(stream, source, (size_t)length) == length) {
                 result = true;
+            } else {
+                SDL_SetError("Resulting file length did not exactly match the source length");
             }
             SDL_CloseIO(stream);
         }
@@ -199,10 +236,15 @@ static const SDL_StorageInterface GENERIC_title_iface = {
 static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID props)
 {
     SDL_Storage *result = NULL;
-
     char *basepath = NULL;
+
     if (override != NULL) {
-        basepath = SDL_strdup(override);
+        // make sure override has a path separator at the end. If you're not on Windows and used '\\', that's on you.
+        const size_t slen = SDL_strlen(override);
+        const bool need_sep = (!slen || ((override[slen-1] != '/') && (override[slen-1] != '\\')));
+        if (SDL_asprintf(&basepath, "%s%s", override, need_sep ? "/" : "") == -1) {
+            return NULL;
+        }
     } else {
         const char *base = SDL_GetBasePath();
         basepath = base ? SDL_strdup(base) : NULL;
@@ -285,7 +327,12 @@ SDL_Storage *GENERIC_OpenFileStorage(const char *path)
         len += SDL_strlen(path);
     }
     if (len > 0) {
-        if (path[len-1] == '/') {
+        #ifdef SDL_PLATFORM_WINDOWS
+        const bool appended_separator = (path[len-1] == '/') || (path[len-1] == '\\');
+        #else
+        const bool appended_separator = (path[len-1] == '/');
+        #endif
+        if (appended_separator) {
             basepath = SDL_strdup(path);
             if (!basepath) {
                 return NULL;

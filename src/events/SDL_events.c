@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -571,7 +571,7 @@ static void SDL_LogEvent(const SDL_Event *event)
     (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u button=%u state=%s clicks=%u x=%g y=%g)", \
                        (uint)event->button.timestamp, (uint)event->button.windowID,                                             \
                        (uint)event->button.which, (uint)event->button.button,                                                   \
-                       event->button.down ? "pressed" : "released",                                             \
+                       event->button.down ? "pressed" : "released",                                                             \
                        (uint)event->button.clicks, event->button.x, event->button.y)
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_BUTTON_DOWN)
         PRINT_MBUTTON_EVENT(event);
@@ -703,6 +703,9 @@ static void SDL_LogEvent(const SDL_Event *event)
         PRINT_FINGER_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_EVENT_FINGER_UP)
+        PRINT_FINGER_EVENT(event);
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_FINGER_CANCELED)
         PRINT_FINGER_EVENT(event);
         break;
         SDL_EVENT_CASE(SDL_EVENT_FINGER_MOTION)
@@ -844,7 +847,7 @@ void SDL_StopEventLoop(void)
     SDL_EventQ.active = false;
 
     if (report && SDL_atoi(report)) {
-        SDL_Log("SDL EVENT QUEUE: Maximum events in-flight: %d\n",
+        SDL_Log("SDL EVENT QUEUE: Maximum events in-flight: %d",
                 SDL_EventQ.max_events_seen);
     }
 
@@ -885,11 +888,16 @@ void SDL_StopEventLoop(void)
     }
     SDL_zero(SDL_EventOK);
 
-    SDL_UnlockMutex(SDL_EventQ.lock);
-
+    SDL_Mutex *lock = NULL;
     if (SDL_EventQ.lock) {
-        SDL_DestroyMutex(SDL_EventQ.lock);
+        lock = SDL_EventQ.lock;
         SDL_EventQ.lock = NULL;
+    }
+
+    SDL_UnlockMutex(lock);
+
+    if (lock) {
+        SDL_DestroyMutex(lock);
     }
 }
 
@@ -1346,6 +1354,35 @@ bool SDL_RunOnMainThread(SDL_MainThreadCallback callback, void *userdata, bool w
     }
 }
 
+void SDL_PumpEventMaintenance(void)
+{
+#ifndef SDL_AUDIO_DISABLED
+    SDL_UpdateAudio();
+#endif
+
+#ifndef SDL_CAMERA_DISABLED
+    SDL_UpdateCamera();
+#endif
+
+#ifndef SDL_SENSOR_DISABLED
+    // Check for sensor state change
+    if (SDL_update_sensors) {
+        SDL_UpdateSensors();
+    }
+#endif
+
+#ifndef SDL_JOYSTICK_DISABLED
+    // Check for joystick state change
+    if (SDL_update_joysticks) {
+        SDL_UpdateJoysticks();
+    }
+#endif
+
+    SDL_UpdateTrays();
+
+    SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
+}
+
 // Run the system dependent event loops
 static void SDL_PumpEventsInternal(bool push_sentinel)
 {
@@ -1369,29 +1406,7 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
     }
 #endif
 
-#ifndef SDL_AUDIO_DISABLED
-    SDL_UpdateAudio();
-#endif
-
-#ifndef SDL_CAMERA_DISABLED
-    SDL_UpdateCamera();
-#endif
-
-#ifndef SDL_SENSOR_DISABLED
-    // Check for sensor state change
-    if (SDL_update_sensors) {
-        SDL_UpdateSensors();
-    }
-#endif
-
-#ifndef SDL_JOYSTICK_DISABLED
-    // Check for joystick state change
-    if (SDL_update_joysticks) {
-        SDL_UpdateJoysticks();
-    }
-#endif
-
-    SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
+    SDL_PumpEventMaintenance();
 
     if (push_sentinel && SDL_EventEnabled(SDL_EVENT_POLL_SENTINEL)) {
         SDL_Event sentinel;

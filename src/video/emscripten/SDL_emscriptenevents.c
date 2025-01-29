@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -314,8 +314,11 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
         return 0;
     }
 
+    const SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_assert(mouse != NULL);
+
     if (eventType == EMSCRIPTEN_EVENT_MOUSEDOWN) {
-        if (SDL_GetMouse()->relative_mode && !window_data->has_pointer_lock) {
+        if (mouse->relative_mode && !window_data->has_pointer_lock) {
             emscripten_request_pointerlock(window_data->canvas_id, 0); // try to regrab lost pointer lock.
         }
         sdl_button_state = true;
@@ -323,13 +326,30 @@ static EM_BOOL Emscripten_HandleMouseButton(int eventType, const EmscriptenMouse
         sdl_button_state = false;
         prevent_default = SDL_EventEnabled(SDL_EVENT_MOUSE_BUTTON_UP);
     }
+
     SDL_SendMouseButton(0, window_data->window, SDL_DEFAULT_MOUSE_ID, sdl_button, sdl_button_state);
 
-    // Do not consume the event if the mouse is outside of the canvas.
-    emscripten_get_element_css_size(window_data->canvas_id, &css_w, &css_h);
-    if (mouseEvent->targetX < 0 || mouseEvent->targetX >= css_w ||
-        mouseEvent->targetY < 0 || mouseEvent->targetY >= css_h) {
-        return 0;
+    // We have an imaginary mouse capture, because we need SDL to not drop our imaginary mouse focus when we leave the canvas.
+    if (mouse->auto_capture) {
+        if (SDL_GetMouseState(NULL, NULL) != 0) {
+            window_data->window->flags |= SDL_WINDOW_MOUSE_CAPTURE;
+        } else {
+            window_data->window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+        }
+    }
+
+    if ((eventType == EMSCRIPTEN_EVENT_MOUSEUP) && window_data->mouse_focus_loss_pending) {
+        window_data->mouse_focus_loss_pending = (window_data->window->flags & SDL_WINDOW_MOUSE_CAPTURE) != 0;
+        if (!window_data->mouse_focus_loss_pending) {
+            SDL_SetMouseFocus(NULL);
+        }
+    } else {
+        // Do not consume the event if the mouse is outside of the canvas.
+        emscripten_get_element_css_size(window_data->canvas_id, &css_w, &css_h);
+        if (mouseEvent->targetX < 0 || mouseEvent->targetX >= css_w ||
+            mouseEvent->targetY < 0 || mouseEvent->targetY >= css_h) {
+            return 0;
+        }
     }
 
     return prevent_default;
@@ -352,8 +372,16 @@ static EM_BOOL Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseE
         SDL_SendMouseMotion(0, window_data->window, SDL_GLOBAL_MOUSE_ID, isPointerLocked, mx, my);
     }
 
-    SDL_SetMouseFocus(eventType == EMSCRIPTEN_EVENT_MOUSEENTER ? window_data->window : NULL);
-    return SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION);
+    const bool isenter = (eventType == EMSCRIPTEN_EVENT_MOUSEENTER);
+    if (isenter && window_data->mouse_focus_loss_pending) {
+        window_data->mouse_focus_loss_pending = false;  // just drop the state, but don't send the enter event.
+    } else if (!isenter && (window_data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+        window_data->mouse_focus_loss_pending = true;  // waiting on a mouse button to let go before we send the mouse focus update.
+    } else {
+        SDL_SetMouseFocus(isenter ? window_data->window : NULL);
+    }
+
+    return SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION);  // !!! FIXME: should this be MOUSE_MOTION or something else?
 }
 
 static EM_BOOL Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
@@ -433,7 +461,7 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
         }
 
         if (eventType == EMSCRIPTEN_EVENT_TOUCHSTART) {
-            SDL_SendTouch(0, deviceId, id, window_data->window, true, x, y, 1.0f);
+            SDL_SendTouch(0, deviceId, id, window_data->window, SDL_EVENT_FINGER_DOWN, x, y, 1.0f);
 
             // disable browser scrolling/pinch-to-zoom if app handles touch events
             if (!preventDefault && SDL_EventEnabled(SDL_EVENT_FINGER_DOWN)) {
@@ -441,15 +469,28 @@ static EM_BOOL Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent 
             }
         } else if (eventType == EMSCRIPTEN_EVENT_TOUCHMOVE) {
             SDL_SendTouchMotion(0, deviceId, id, window_data->window, x, y, 1.0f);
-        } else {
-            SDL_SendTouch(0, deviceId, id, window_data->window, false, x, y, 1.0f);
+        } else if (eventType == EMSCRIPTEN_EVENT_TOUCHEND) {
+            SDL_SendTouch(0, deviceId, id, window_data->window, SDL_EVENT_FINGER_UP, x, y, 1.0f);
 
             // block browser's simulated mousedown/mouseup on touchscreen devices
             preventDefault = 1;
+        } else if (eventType == EMSCRIPTEN_EVENT_TOUCHCANCEL) {
+            SDL_SendTouch(0, deviceId, id, window_data->window, SDL_EVENT_FINGER_CANCELED, x, y, 1.0f);
         }
     }
 
     return preventDefault;
+}
+
+static bool IsFunctionKey(SDL_Scancode scancode)
+{
+    if (scancode >= SDL_SCANCODE_F1 && scancode <= SDL_SCANCODE_F12) {
+        return true;
+    }
+    if (scancode >= SDL_SCANCODE_F13 && scancode <= SDL_SCANCODE_F24) {
+        return true;
+    }
+    return false;
 }
 
 /* This is a great tool to see web keyboard events live:
@@ -527,7 +568,7 @@ static EM_BOOL Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent
         (scancode == SDL_SCANCODE_UP) ||
         (scancode == SDL_SCANCODE_RIGHT) ||
         (scancode == SDL_SCANCODE_DOWN) ||
-        ((scancode >= SDL_SCANCODE_F1) && (scancode <= SDL_SCANCODE_F15)) ||
+        IsFunctionKey(scancode) ||
         keyEvent->ctrlKey) {
         is_nav_key = true;
     }
@@ -641,6 +682,25 @@ static const char *Emscripten_HandleBeforeUnload(int eventType, const void *rese
     // No need to send a SDL_EVENT_QUIT, the app won't get control again.
     SDL_SendAppEvent(SDL_EVENT_TERMINATING);
     return ""; // don't trigger confirmation dialog
+}
+
+static EM_BOOL Emscripten_HandleOrientationChange(int eventType, const EmscriptenOrientationChangeEvent *orientationChangeEvent, void *userData)
+{
+    SDL_DisplayOrientation orientation;
+    switch (orientationChangeEvent->orientationIndex) {
+        #define CHECK_ORIENTATION(emsdk, sdl) case EMSCRIPTEN_ORIENTATION_##emsdk: orientation = SDL_ORIENTATION_##sdl; break
+        CHECK_ORIENTATION(LANDSCAPE_PRIMARY, LANDSCAPE);
+        CHECK_ORIENTATION(LANDSCAPE_SECONDARY, LANDSCAPE_FLIPPED);
+        CHECK_ORIENTATION(PORTRAIT_PRIMARY, PORTRAIT);
+        CHECK_ORIENTATION(PORTRAIT_SECONDARY, PORTRAIT_FLIPPED);
+        #undef CHECK_ORIENTATION
+        default: orientation = SDL_ORIENTATION_UNKNOWN; break;
+    }
+
+    SDL_WindowData *window_data = (SDL_WindowData *) userData;
+    SDL_SendDisplayEvent(SDL_GetVideoDisplayForWindow(window_data->window), SDL_EVENT_DISPLAY_ORIENTATION, orientation, 0);
+
+    return 0;
 }
 
 // IF YOU CHANGE THIS STRUCTURE, YOU NEED TO UPDATE THE JAVASCRIPT THAT FILLS IT IN: makePointerEventCStruct, below.
@@ -963,6 +1023,8 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_focus_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, data, 0, Emscripten_HandleFocus);
     emscripten_set_blur_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, data, 0, Emscripten_HandleFocus);
 
+    emscripten_set_orientationchange_callback(data, 0, Emscripten_HandleOrientationChange);
+
     emscripten_set_touchstart_callback(data->canvas_id, data, 0, Emscripten_HandleTouch);
     emscripten_set_touchend_callback(data->canvas_id, data, 0, Emscripten_HandleTouch);
     emscripten_set_touchmove_callback(data->canvas_id, data, 0, Emscripten_HandleTouch);
@@ -972,13 +1034,15 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 
     // Keyboard events are awkward
     keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
-    if (!keyElement) {
+    if (!keyElement || !*keyElement) {
         keyElement = EMSCRIPTEN_EVENT_TARGET_WINDOW;
     }
 
-    emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
-    emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);
-    emscripten_set_keypress_callback(keyElement, data, 0, Emscripten_HandleKeyPress);
+    if (SDL_strcmp(keyElement, "#none") != 0) {
+        emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
+        emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);
+        emscripten_set_keypress_callback(keyElement, data, 0, Emscripten_HandleKeyPress);
+    }
 
     emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, data, 0, Emscripten_HandleFullscreenChange);
 
@@ -1021,6 +1085,8 @@ void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
     emscripten_set_focus_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
     emscripten_set_blur_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
 
+    emscripten_set_orientationchange_callback(NULL, 0, NULL);
+
     emscripten_set_touchstart_callback(data->canvas_id, NULL, 0, NULL);
     emscripten_set_touchend_callback(data->canvas_id, NULL, 0, NULL);
     emscripten_set_touchmove_callback(data->canvas_id, NULL, 0, NULL);
@@ -1033,9 +1099,11 @@ void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
         target = EMSCRIPTEN_EVENT_TARGET_WINDOW;
     }
 
-    emscripten_set_keydown_callback(target, NULL, 0, NULL);
-    emscripten_set_keyup_callback(target, NULL, 0, NULL);
-    emscripten_set_keypress_callback(target, NULL, 0, NULL);
+    if (*target) {
+        emscripten_set_keydown_callback(target, NULL, 0, NULL);
+        emscripten_set_keyup_callback(target, NULL, 0, NULL);
+        emscripten_set_keypress_callback(target, NULL, 0, NULL);
+    }
 
     emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
 

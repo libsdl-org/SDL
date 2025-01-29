@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,8 +28,8 @@
 #define LACKS_STRINGS_H
 #define LACKS_STRING_H
 #define LACKS_STDLIB_H
-#define FORCEINLINE
 #define ABORT
+#define NO_MALLOC_STATS 1
 #define USE_LOCKS 1
 #define USE_DL_PREFIX
 
@@ -816,6 +816,7 @@ struct mallinfo {
   inlining are defined as macros, so these aren't used for them.
 */
 
+#if 0 /* SDL */
 #ifndef FORCEINLINE
   #if defined(__GNUC__)
 #define FORCEINLINE __inline __attribute__ ((always_inline))
@@ -823,6 +824,7 @@ struct mallinfo {
     #define FORCEINLINE __forceinline
   #endif
 #endif
+#endif /* SDL */
 #ifndef NOINLINE
   #if defined(__GNUC__)
     #define NOINLINE __attribute__ ((noinline))
@@ -835,13 +837,17 @@ struct mallinfo {
 
 #ifdef __cplusplus
 extern "C" {
+#if 0 /* SDL */
 #ifndef FORCEINLINE
  #define FORCEINLINE inline
 #endif
+#endif /* SDL */
 #endif /* __cplusplus */
+#if 0 /* SDL */
 #ifndef FORCEINLINE
  #define FORCEINLINE
 #endif
+#endif /* SDL_FORCE_INLINE */
 
 #if !ONLY_MSPACES
 
@@ -1697,20 +1703,20 @@ static int dev_zero_fd = -1; /* Cached file descriptor for /dev/zero. */
 #else /* WIN32 */
 
 /* Win32 MMAP via VirtualAlloc */
-static FORCEINLINE void* win32mmap(size_t size) {
+SDL_FORCE_INLINE void* win32mmap(size_t size) {
   void* ptr = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
   return (ptr != 0)? ptr: MFAIL;
 }
 
 /* For direct MMAP, use MEM_TOP_DOWN to minimize interference */
-static FORCEINLINE void* win32direct_mmap(size_t size) {
+SDL_FORCE_INLINE void* win32direct_mmap(size_t size) {
   void* ptr = VirtualAlloc(0, size, MEM_RESERVE|MEM_COMMIT|MEM_TOP_DOWN,
                            PAGE_READWRITE);
   return (ptr != 0)? ptr: MFAIL;
 }
 
 /* This function supports releasing coalesed segments */
-static FORCEINLINE int win32munmap(void* ptr, size_t size) {
+SDL_FORCE_INLINE int win32munmap(void* ptr, size_t size) {
   MEMORY_BASIC_INFORMATION minfo;
   char* cptr = (char*)ptr;
   while (size) {
@@ -1863,7 +1869,7 @@ static FORCEINLINE int win32munmap(void* ptr, size_t size) {
 
 #elif (defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__)))
 /* Custom spin locks for older gcc on x86 */
-static FORCEINLINE int x86_cas_lock(int *sl) {
+SDL_FORCE_INLINE int x86_cas_lock(int *sl) {
   int ret;
   int val = 1;
   int cmp = 0;
@@ -1874,7 +1880,7 @@ static FORCEINLINE int x86_cas_lock(int *sl) {
   return ret;
 }
 
-static FORCEINLINE void x86_clear_lock(int* sl) {
+SDL_FORCE_INLINE void x86_clear_lock(int* sl) {
   assert(*sl != 0);
   int prev = 0;
   int ret;
@@ -1952,14 +1958,14 @@ struct malloc_recursive_lock {
 #define MLOCK_T  struct malloc_recursive_lock
 static MLOCK_T malloc_global_mutex = { 0, 0, (THREAD_ID_T)0};
 
-static FORCEINLINE void recursive_release_lock(MLOCK_T *lk) {
+SDL_FORCE_INLINE void recursive_release_lock(MLOCK_T *lk) {
   assert(lk->sl != 0);
   if (--lk->c == 0) {
     CLEAR_LOCK(&lk->sl);
   }
 }
 
-static FORCEINLINE int recursive_acquire_lock(MLOCK_T *lk) {
+SDL_FORCE_INLINE int recursive_acquire_lock(MLOCK_T *lk) {
   THREAD_ID_T mythreadid = CURRENT_THREAD;
   int spins = 0;
   for (;;) {
@@ -1980,7 +1986,7 @@ static FORCEINLINE int recursive_acquire_lock(MLOCK_T *lk) {
   }
 }
 
-static FORCEINLINE int recursive_try_lock(MLOCK_T *lk) {
+SDL_FORCE_INLINE int recursive_try_lock(MLOCK_T *lk) {
   THREAD_ID_T mythreadid = CURRENT_THREAD;
   if (*((volatile int *)(&lk->sl)) == 0) {
     if (!CAS_LOCK(&lk->sl)) {
@@ -6352,6 +6358,17 @@ static struct
     real_malloc, real_calloc, real_realloc, real_free, { 0 }
 };
 
+// Define this if you want to track the number of allocations active
+// #define SDL_TRACK_ALLOCATION_COUNT
+#ifdef SDL_TRACK_ALLOCATION_COUNT
+#define INCREMENT_ALLOCATION_COUNT()    (void)SDL_AtomicIncRef(&s_mem.num_allocations)
+#define DECREMENT_ALLOCATION_COUNT()    (void)SDL_AtomicDecRef(&s_mem.num_allocations)
+#else
+#define INCREMENT_ALLOCATION_COUNT()
+#define DECREMENT_ALLOCATION_COUNT()
+#endif
+
+
 void SDL_GetOriginalMemoryFunctions(SDL_malloc_func *malloc_func,
                                     SDL_calloc_func *calloc_func,
                                     SDL_realloc_func *realloc_func,
@@ -6417,7 +6434,11 @@ bool SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 
 int SDL_GetNumAllocations(void)
 {
+#ifdef SDL_TRACK_ALLOCATION_COUNT
     return SDL_GetAtomicInt(&s_mem.num_allocations);
+#else
+    return -1;
+#endif
 }
 
 void *SDL_malloc(size_t size)
@@ -6430,7 +6451,7 @@ void *SDL_malloc(size_t size)
 
     mem = s_mem.malloc_func(size);
     if (mem) {
-        SDL_AtomicIncRef(&s_mem.num_allocations);
+        INCREMENT_ALLOCATION_COUNT();
     } else {
         SDL_OutOfMemory();
     }
@@ -6449,7 +6470,7 @@ void *SDL_calloc(size_t nmemb, size_t size)
 
     mem = s_mem.calloc_func(nmemb, size);
     if (mem) {
-        SDL_AtomicIncRef(&s_mem.num_allocations);
+        INCREMENT_ALLOCATION_COUNT();
     } else {
         SDL_OutOfMemory();
     }
@@ -6467,7 +6488,7 @@ void *SDL_realloc(void *ptr, size_t size)
 
     mem = s_mem.realloc_func(ptr, size);
     if (mem && !ptr) {
-        SDL_AtomicIncRef(&s_mem.num_allocations);
+        INCREMENT_ALLOCATION_COUNT();
     } else if (!mem) {
         SDL_OutOfMemory();
     }
@@ -6482,5 +6503,5 @@ void SDL_free(void *ptr)
     }
 
     s_mem.free_func(ptr);
-    (void)SDL_AtomicDecRef(&s_mem.num_allocations);
+    DECREMENT_ALLOCATION_COUNT();
 }

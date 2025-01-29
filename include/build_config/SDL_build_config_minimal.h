@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,8 +31,8 @@
  *  This is the minimal configuration that can be used to build SDL.
  */
 
-#define HAVE_STDARG_H   1
-#define HAVE_STDDEF_H   1
+#define HAVE_STDARG_H 1
+#define HAVE_STDDEF_H 1
 
 #if !defined(HAVE_STDINT_H) && !defined(_STDINT_H_)
 /* Most everything except Visual Studio 2008 and earlier has stdint.h now */
@@ -51,7 +51,6 @@ typedef unsigned __int64 uintptr_t;
 #else
 typedef unsigned int uintptr_t;
 #endif
-#define _UINTPTR_T_DEFINED
 #endif
 #else
 #define HAVE_STDINT_H 1
@@ -63,10 +62,10 @@ typedef unsigned int uintptr_t;
 #endif
 
 /* Enable the dummy audio driver (src/audio/dummy/\*.c) */
-#define SDL_AUDIO_DRIVER_DUMMY  1
+#define SDL_AUDIO_DRIVER_DUMMY 1
 
 /* Enable the stub joystick driver (src/joystick/dummy/\*.c) */
-#define SDL_JOYSTICK_DISABLED   1
+#define SDL_JOYSTICK_DISABLED 1
 
 /* Enable the stub haptic driver (src/haptic/dummy/\*.c) */
 #define SDL_HAPTIC_DISABLED 1
@@ -84,17 +83,17 @@ typedef unsigned int uintptr_t;
 #define SDL_LOADSO_DUMMY 1
 
 /* Enable the stub thread support (src/thread/generic/\*.c) */
-#define SDL_THREADS_DISABLED    1
+#define SDL_THREADS_DISABLED 1
 
 /* Enable the dummy video driver (src/video/dummy/\*.c) */
-#define SDL_VIDEO_DRIVER_DUMMY  1
+#define SDL_VIDEO_DRIVER_DUMMY 1
 
 /* Enable the dummy filesystem driver (src/filesystem/dummy/\*.c) */
-#define SDL_FILESYSTEM_DUMMY  1
+#define SDL_FILESYSTEM_DUMMY 1
 #define SDL_FSOPS_DUMMY 1
 
 /* Enable the camera driver (src/camera/dummy/\*.c) */
-#define SDL_CAMERA_DRIVER_DUMMY  1
+#define SDL_CAMERA_DRIVER_DUMMY 1
 
 /* Enable dialog subsystem */
 #define SDL_DIALOG_DUMMY 1

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,6 @@
 #ifndef SDL_clipboardevents_c_h_
 #define SDL_clipboardevents_c_h_
 
-extern void SDL_SendClipboardUpdate(bool owner, char **mime_types, size_t n_mime_types);
+extern void SDL_SendClipboardUpdate(bool owner, char **mime_types, size_t num_mime_types);
 
 #endif // SDL_clipboardevents_c_h_

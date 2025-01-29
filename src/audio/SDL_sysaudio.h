@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@
 #define DEBUG_AUDIO_CONVERT 0
 
 #if DEBUG_AUDIO_CONVERT
-#define LOG_DEBUG_AUDIO_CONVERT(from, to) SDL_Log("SDL_AUDIO_CONVERT: Converting %s to %s.\n", from, to);
+#define LOG_DEBUG_AUDIO_CONVERT(from, to) SDL_Log("SDL_AUDIO_CONVERT: Converting %s to %s.", from, to);
 #else
 #define LOG_DEBUG_AUDIO_CONVERT(from, to)
 #endif
@@ -125,8 +125,12 @@ extern void ConvertAudio(int num_frames,
 
 // Compare two SDL_AudioSpecs, return true if they match exactly.
 // Using SDL_memcmp directly isn't safe, since potential padding might not be initialized.
-// either channel maps can be NULL for the default (and both should be if you don't care about them).
+// either channel map can be NULL for the default (and both should be if you don't care about them).
 extern bool SDL_AudioSpecsEqual(const SDL_AudioSpec *a, const SDL_AudioSpec *b, const int *channel_map_a, const int *channel_map_b);
+
+// See if two channel maps match
+// either channel map can be NULL for the default (and both should be if you don't care about them).
+extern bool SDL_AudioChannelMapsEqual(int channels, const int *channel_map_a, const int *channel_map_b);
 
 // allocate+copy a channel map.
 extern int *SDL_ChannelMapDup(const int *origchmap, int channels);
@@ -301,8 +305,11 @@ struct SDL_AudioDevice
 
     // The device's current audio specification
     SDL_AudioSpec spec;
+
+    // The size, in bytes, of the device's playback/recording buffer.
     int buffer_size;
 
+    // The device's channel map, or NULL for SDL default layout.
     int *chmap;
 
     // The device's default audio specification

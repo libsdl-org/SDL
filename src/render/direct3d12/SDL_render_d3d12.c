@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -127,7 +127,7 @@ typedef struct
     D3D12_FILTER scaleMode;
     D3D12_Shader shader;
     const float *YCbCr_matrix;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     // YV12 texture support
     bool yuv;
     ID3D12Resource *mainTextureU;
@@ -1453,7 +1453,7 @@ static bool D3D12_HandleDeviceLost(SDL_Renderer *renderer)
         SUCCEEDED(D3D12_CreateWindowSizeDependentResources(renderer))) {
         recovered = true;
     } else {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Renderer couldn't recover from device lost: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Renderer couldn't recover from device lost: %s", SDL_GetError());
         D3D12_ReleaseAll(renderer);
     }
 
@@ -1619,7 +1619,7 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
     textureData->mainResourceState = D3D12_RESOURCE_STATE_COPY_DEST;
     SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D12_TEXTURE_POINTER, textureData->mainTexture);
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
         textureData->yuv = true;
@@ -1706,7 +1706,7 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
              textureData->mainTexture,
              &resourceViewDesc,
              textureData->mainTextureResourceView);
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
         D3D_CALL_RET(rendererData->srvDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &textureData->mainTextureResourceViewU);
         textureData->mainSRVIndexU = D3D12_GetAvailableSRVIndex(renderer);
@@ -1781,7 +1781,7 @@ static void D3D12_DestroyTexture(SDL_Renderer *renderer,
     D3D_SAFE_RELEASE(textureData->mainTexture);
     D3D_SAFE_RELEASE(textureData->stagingBuffer);
     D3D12_FreeSRVIndex(renderer, textureData->mainSRVIndex);
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     D3D_SAFE_RELEASE(textureData->mainTextureU);
     D3D_SAFE_RELEASE(textureData->mainTextureV);
     if (textureData->yuv) {
@@ -1949,7 +1949,7 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 0, rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch, &textureData->mainResourceState)) {
         return false;
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
         // Skip to the correct offset into the next texture
         srcPixels = (const void *)((const Uint8 *)srcPixels + rect->h * srcPitch);
@@ -1982,7 +1982,7 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     return true;
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool D3D12_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
                                   const Uint8 *Yplane, int Ypitch,
@@ -2048,7 +2048,7 @@ static bool D3D12_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (textureData->yuv || textureData->nv12) {
         // It's more efficient to upload directly...
         if (!textureData->pixels) {
@@ -2167,7 +2167,7 @@ static void D3D12_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (!textureData) {
         return;
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (textureData->yuv || textureData->nv12) {
         const SDL_Rect *rect = &textureData->lockedRect;
         void *pixels =
@@ -2430,7 +2430,7 @@ static bool D3D12_UpdateViewport(SDL_Renderer *renderer)
          * SDL_CreateRenderer is calling it, and will call it again later
          * with a non-empty viewport.
          */
-        // SDL_Log("%s, no viewport was set!\n", __FUNCTION__);
+        // SDL_Log("%s, no viewport was set!", __FUNCTION__);
         return false;
     }
 
@@ -2497,7 +2497,7 @@ static bool D3D12_UpdateViewport(SDL_Renderer *renderer)
     d3dviewport.Height = orientationAlignedViewport.h;
     d3dviewport.MinDepth = 0.0f;
     d3dviewport.MaxDepth = 1.0f;
-    // SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}\n", __FUNCTION__, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height);
+    // SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}", __FUNCTION__, d3dviewport.TopLeftX, d3dviewport.TopLeftY, d3dviewport.Width, d3dviewport.Height);
     ID3D12GraphicsCommandList_RSSetViewports(data->commandList, 1, &d3dviewport);
 
     data->viewportDirty = false;
@@ -2742,7 +2742,7 @@ static bool D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
             textureSampler = &rendererData->samplers[D3D12_SAMPLER_NEAREST_WRAP];
             break;
         default:
-            return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+            return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
         }
         break;
     case D3D12_FILTER_MIN_MAG_MIP_LINEAR:
@@ -2754,13 +2754,13 @@ static bool D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
             textureSampler = &rendererData->samplers[D3D12_SAMPLER_LINEAR_WRAP];
             break;
         default:
-            return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+            return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
         }
         break;
     default:
-        return SDL_SetError("Unknown scale mode: %d\n", textureData->scaleMode);
+        return SDL_SetError("Unknown scale mode: %d", textureData->scaleMode);
     }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
         D3D12_CPU_DESCRIPTOR_HANDLE shaderResources[3];
 
@@ -3229,7 +3229,7 @@ bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Proper
     renderer->SupportsBlendMode = D3D12_SupportsBlendMode;
     renderer->CreateTexture = D3D12_CreateTexture;
     renderer->UpdateTexture = D3D12_UpdateTexture;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = D3D12_UpdateTextureYUV;
     renderer->UpdateTextureNV = D3D12_UpdateTextureNV;
 #endif

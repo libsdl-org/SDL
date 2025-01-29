@@ -36,32 +36,23 @@
         "-DSDL_SHARED=ON",
         "-DSDL_STATIC=OFF",
         "-DSDL_DISABLE_INSTALL_DOCS=ON",
+        "-DSDL_RELOCATABLE=ON",
         "-DSDL_TEST_LIBRARY=ON",
-        "-DSDL_VENDOR_INFO=libsdl.org",
-        "-DSDL_TESTS=OFF"
+        "-DSDL_TESTS=OFF",
+        "-DSDL_VENDOR_INFO=libsdl.org"
       ],
       "shared-static": "args"
     },
     "files": {
       "": [
-        "build-scripts/pkg-support/mingw/INSTALL.txt",
+        "build-scripts/pkg-support/mingw/INSTALL.md.in:INSTALL.md",
         "build-scripts/pkg-support/mingw/Makefile",
-        "BUGS.txt",
-        "CREDITS.md",
-        "README-SDL.txt",
-        "WhatsNew.txt",
         "LICENSE.txt",
         "README.md"
       ],
       "cmake": [
         "build-scripts/pkg-support/mingw/cmake/SDL3Config.cmake",
         "build-scripts/pkg-support/mingw/cmake/SDL3ConfigVersion.cmake"
-      ],
-      "docs": [
-        "docs/*"
-      ],
-      "test": [
-        "test/*"
       ]
     }
   },
@@ -100,6 +91,7 @@
         "-DSDL_TEST_LIBRARY=ON",
         "-DSDL_TESTS=OFF",
         "-DSDL_DISABLE_INSTALL_DOCS=ON",
+        "-DSDL_RELOCATABLE=ON",
         "-DSDL_VENDOR_INFO=libsdl.org"
       ],
       "files-lib": {
@@ -118,24 +110,21 @@
     },
     "files-lib": {
       "": [
-        "README-SDL.txt"
+        "build-scripts/pkg-support/msvc/@<@ARCH@>@/INSTALL.md.in:INSTALL.md",
+        "LICENSE.txt",
+        "README.md"
       ]
     },
     "files-devel": {
       "": [
-        "README-SDL.txt",
-        "BUGS.txt",
+        "build-scripts/pkg-support/msvc/INSTALL.md.in:INSTALL.md",
         "LICENSE.txt",
-        "README.md",
-        "WhatsNew.txt"
+        "README.md"
       ],
       "cmake": [
         "build-scripts/pkg-support/msvc/cmake/SDL3Config.cmake.in:SDL3Config.cmake",
         "build-scripts/pkg-support/msvc/cmake/SDL3ConfigVersion.cmake.in:SDL3ConfigVersion.cmake",
         "cmake/sdlcpu.cmake"
-      ],
-      "docs": [
-        "docs/*"
       ],
       "include/SDL3": [
         "include/SDL3/*.h"
@@ -149,9 +138,9 @@
         "-DSDL_STATIC=OFF",
         "-DSDL_TEST_LIBRARY=ON",
         "-DSDL_TESTS=OFF",
-        "-DSDL_DISABLE_ANDROID_JAR=OFF",
-        "-DSDL_DISABLE_INSTALL=OFF",
-        "-DSDL_DISABLE_INSTALL_DOCS=OFF",
+        "-DSDL_ANDROID_JAR=ON",
+        "-DSDL_INSTALL=ON",
+        "-DSDL_INSTALL_DOCS=ON",
         "-DSDL_VENDOR_INFO=libsdl.org"
       ]
     },
@@ -192,23 +181,29 @@
       "x86",
       "x86_64"
     ],
-    "api-minimum": 19,
-    "api-target": 29,
+    "api-minimum": 21,
+    "api-target": 35,
     "ndk-minimum": 21,
-    "files": {
+    "aar-files": {
       "": [
         "android-project/app/proguard-rules.pro:proguard.txt",
-        "build-scripts/pkg-support/android/INSTALL.md.in:INSTALL.md",
-        "build-scripts/pkg-support/android/__main__.py.in:__main__.py",
-        "build-scripts/pkg-support/android/description.json.in:description.json"
+        "build-scripts/pkg-support/android/aar/__main__.py.in:__main__.py",
+        "build-scripts/pkg-support/android/aar/description.json.in:description.json"
       ],
       "META-INF": [
         "LICENSE.txt"
       ],
       "cmake": [
         "cmake/sdlcpu.cmake",
-        "build-scripts/pkg-support/android/cmake/SDL3Config.cmake",
-        "build-scripts/pkg-support/android/cmake/SDL3ConfigVersion.cmake.in:SDL3ConfigVersion.cmake"
+        "build-scripts/pkg-support/android/aar/cmake/SDL3Config.cmake",
+        "build-scripts/pkg-support/android/aar/cmake/SDL3ConfigVersion.cmake.in:SDL3ConfigVersion.cmake"
+      ]
+    },
+    "files": {
+      "": [
+        "build-scripts/pkg-support/android/INSTALL.md.in:INSTALL.md",
+        "LICENSE.txt",
+        "README.md"
       ]
     }
   }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #  Simple DirectMedia Layer
-#  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+#  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 #
 #  This software is provided 'as-is', without any express or implied
 #  warranty.  In no event will the authors be held liable for any damages
@@ -168,9 +168,11 @@ def parse_header(header_path: Path) -> list[SdlProcedure]:
             func = func.replace(" SDL_PRINTF_VARARG_FUNC(1)", "")
             func = func.replace(" SDL_PRINTF_VARARG_FUNC(2)", "")
             func = func.replace(" SDL_PRINTF_VARARG_FUNC(3)", "")
+            func = func.replace(" SDL_PRINTF_VARARG_FUNC(4)", "")
             func = func.replace(" SDL_PRINTF_VARARG_FUNCV(1)", "")
             func = func.replace(" SDL_PRINTF_VARARG_FUNCV(2)", "")
             func = func.replace(" SDL_PRINTF_VARARG_FUNCV(3)", "")
+            func = func.replace(" SDL_PRINTF_VARARG_FUNCV(4)", "")
             func = func.replace(" SDL_WPRINTF_VARARG_FUNC(3)", "")
             func = func.replace(" SDL_WPRINTF_VARARG_FUNCV(3)", "")
             func = func.replace(" SDL_SCANF_VARARG_FUNC(2)", "")

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -198,7 +198,7 @@ LoadSprite(const char *file)
             return -1;
         }
         if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
             return -1;
         }
@@ -405,7 +405,7 @@ main(int argc, char *argv[])
     sprites =
         (SDL_Texture **) SDL_malloc(state->num_windows * sizeof(*sprites));
     if (!sprites) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         quit(2);
     }
     for (i = 0; i < state->num_windows; ++i) {
@@ -420,13 +420,13 @@ main(int argc, char *argv[])
     soundname = GetResourceFilename(argc > 1 ? argv[1] : NULL, "sample.wav");
 
     if (!soundname) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%s", SDL_GetError());
         quit(1);
     }
 
     /* Load the wave file into memory */
     if (!SDL_LoadWAV(soundname, &wave.spec, &wave.sound, &wave.soundlen)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", soundname, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", soundname, SDL_GetError());
         quit(1);
     }
 
@@ -436,11 +436,11 @@ main(int argc, char *argv[])
         SDL_Log("%i: %s", i, SDL_GetAudioDriver(i));
     }
 
-    SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
+    SDL_Log("Using audio driver: %s", SDL_GetCurrentAudioDriver());
 
     stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &wave.spec, NULL, NULL);
     if (!stream) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create audio stream: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create audio stream: %s", SDL_GetError());
         return -1;
     }
     SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));

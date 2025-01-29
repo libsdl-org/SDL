@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,51 @@
  * from other processes and publishing information of its own.
  *
  * This is not just text! SDL apps can access and publish data by mimetype.
+ *
+ * ## Basic use (text)
+ *
+ * Obtaining and publishing simple text to the system clipboard is as easy as
+ * calling SDL_GetClipboardText() and SDL_SetClipboardText(), respectively.
+ * These deal with C strings in UTF-8 encoding. Data transmission and encoding
+ * conversion is completely managed by SDL.
+ *
+ * ## Clipboard callbacks (data other than text)
+ *
+ * Things get more complicated when the clipboard contains something other
+ * than text. Not only can the system clipboard contain data of any type, in
+ * some cases it can contain the same data in different formats! For example,
+ * an image painting app might let the user copy a graphic to the clipboard,
+ * and offers it in .BMP, .JPG, or .PNG format for other apps to consume.
+ *
+ * Obtaining clipboard data ("pasting") like this is a matter of calling
+ * SDL_GetClipboardData() and telling it the mimetype of the data you want.
+ * But how does one know if that format is available? SDL_HasClipboardData()
+ * can report if a specific mimetype is offered, and
+ * SDL_GetClipboardMimeTypes() can provide the entire list of mimetypes
+ * available, so the app can decide what to do with the data and what formats
+ * it can support.
+ *
+ * Setting the clipboard ("copying") to arbitrary data is done with
+ * SDL_SetClipboardData. The app does not provide the data in this call, but
+ * rather the mimetypes it is willing to provide and a callback function.
+ * During the callback, the app will generate the data. This allows massive
+ * data sets to be provided to the clipboard, without any data being copied
+ * before it is explicitly requested. More specifically, it allows an app to
+ * offer data in multiple formats without providing a copy of all of them
+ * upfront. If the app has an image that it could provide in PNG or JPG
+ * format, it doesn't have to encode it to either of those unless and until
+ * something tries to paste it.
+ *
+ * ## Primary Selection
+ *
+ * The X11 and Wayland video targets have a concept of the "primary selection"
+ * in addition to the usual clipboard. This is generally highlighted (but not
+ * explicitly copied) text from various apps. SDL offers APIs for this through
+ * SDL_GetPrimarySelectionText() and SDL_SetPrimarySelectionText(). SDL offers
+ * these APIs on platforms without this concept, too, but only so far that it
+ * will keep a copy of a string that the app sets for later retrieval; the
+ * operating system will not ever attempt to change the string externally if
+ * it doesn't support a primary selection.
  */
 
 #ifndef SDL_clipboard_h_
@@ -51,7 +96,7 @@ extern "C" {
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetClipboardText
  * \sa SDL_HasClipboardText
@@ -70,7 +115,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardText(const char *text);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_HasClipboardText
  * \sa SDL_SetClipboardText
@@ -84,7 +129,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetClipboardText(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetClipboardText
  * \sa SDL_SetClipboardText
@@ -100,7 +145,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasClipboardText(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_HasPrimarySelectionText
@@ -119,7 +164,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetPrimarySelectionText(const char *text);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_HasPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
@@ -134,7 +179,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetPrimarySelectionText(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetPrimarySelectionText
  * \sa SDL_SetPrimarySelectionText
@@ -159,7 +204,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasPrimarySelectionText(void);
  *          breakage in receiving applications. The returned data will not be
  *          freed so it needs to be retained and dealt with internally.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetClipboardData
  */
@@ -171,7 +216,7 @@ typedef const void *(SDLCALL *SDL_ClipboardDataCallback)(void *userdata, const c
  *
  * \param userdata a pointer to provided user data.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetClipboardData
  */
@@ -181,13 +226,13 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * Offer clipboard data to the OS.
  *
  * Tell the operating system that the application is offering clipboard data
- * for each of the proivded mime-types. Once another application requests the
- * data the callback function will be called allowing it to generate and
+ * for each of the provided mime-types. Once another application requests the
+ * data the callback function will be called, allowing it to generate and
  * respond with the data for the requested mime-type.
  *
  * The size of text data does not include any terminator, and the text does
  * not need to be null terminated (e.g. you can directly copy a portion of a
- * document)
+ * document).
  *
  * \param callback a function pointer to the function that provides the
  *                 clipboard data.
@@ -201,7 +246,7 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_ClearClipboardData
  * \sa SDL_GetClipboardData
@@ -217,7 +262,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback 
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetClipboardData
  */
@@ -237,7 +282,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ClearClipboardData(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_HasClipboardData
  * \sa SDL_SetClipboardData
@@ -253,7 +298,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetClipboardData(const char *mime_type, s
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetClipboardData
  * \sa SDL_GetClipboardData
@@ -271,7 +316,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasClipboardData(const char *mime_type);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetClipboardData
  */

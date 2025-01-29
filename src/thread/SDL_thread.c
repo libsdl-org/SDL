@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -306,6 +306,11 @@ SDL_error *SDL_GetErrBuf(bool create)
 #endif // SDL_THREADS_DISABLED
 }
 
+static bool ThreadValid(SDL_Thread *thread)
+{
+    return SDL_ObjectValid(thread, SDL_OBJECT_TYPE_THREAD);
+}
+
 void SDL_RunThread(SDL_Thread *thread)
 {
     void *userdata = thread->userdata;
@@ -326,9 +331,10 @@ void SDL_RunThread(SDL_Thread *thread)
     SDL_CleanupTLS();
 
     // Mark us as ready to be joined (or detached)
-    if (!SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_ZOMBIE)) {
+    if (!SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_ALIVE, SDL_THREAD_COMPLETE)) {
         // Clean up if something already detached us.
-        if (SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_STATE_DETACHED, SDL_THREAD_STATE_CLEANED)) {
+        if (SDL_GetThreadState(thread) == SDL_THREAD_DETACHED) {
+            SDL_SetObjectValid(thread, SDL_OBJECT_TYPE_THREAD, false);
             SDL_free(thread->name); // Can't free later, we've already cleaned up TLS
             SDL_free(thread);
         }
@@ -364,7 +370,7 @@ SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
         return NULL;
     }
     thread->status = -1;
-    SDL_SetAtomicInt(&thread->state, SDL_THREAD_STATE_ALIVE);
+    SDL_SetAtomicInt(&thread->state, SDL_THREAD_ALIVE);
 
     // Set up the arguments for the thread
     if (name) {
@@ -379,9 +385,12 @@ SDL_Thread *SDL_CreateThreadWithPropertiesRuntime(SDL_PropertiesID props,
     thread->userdata = userdata;
     thread->stacksize = stacksize;
 
+    SDL_SetObjectValid(thread, SDL_OBJECT_TYPE_THREAD, true);
+
     // Create the thread and go!
     if (!SDL_SYS_CreateThread(thread, pfnBeginThread, pfnEndThread)) {
         // Oops, failed.  Gotta free everything
+        SDL_SetObjectValid(thread, SDL_OBJECT_TYPE_THREAD, false);
         SDL_free(thread->name);
         SDL_free(thread);
         thread = NULL;
@@ -420,10 +429,12 @@ SDL_Thread *SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *nam
 
 SDL_ThreadID SDL_GetThreadID(SDL_Thread *thread)
 {
-    SDL_ThreadID id;
+    SDL_ThreadID id = 0;
 
     if (thread) {
-        id = thread->threadid;
+        if (ThreadValid(thread)) {
+            id = thread->threadid;
+        }
     } else {
         id = SDL_GetCurrentThreadID();
     }
@@ -432,7 +443,7 @@ SDL_ThreadID SDL_GetThreadID(SDL_Thread *thread)
 
 const char *SDL_GetThreadName(SDL_Thread *thread)
 {
-    if (thread) {
+    if (ThreadValid(thread)) {
         return SDL_GetPersistentString(thread->name);
     } else {
         return NULL;
@@ -446,34 +457,47 @@ bool SDL_SetCurrentThreadPriority(SDL_ThreadPriority priority)
 
 void SDL_WaitThread(SDL_Thread *thread, int *status)
 {
-    if (thread) {
-        SDL_SYS_WaitThread(thread);
+    if (!ThreadValid(thread) || SDL_GetThreadState(thread) == SDL_THREAD_DETACHED) {
         if (status) {
-            *status = thread->status;
+            *status = -1;
         }
-        SDL_free(thread->name);
-        SDL_free(thread);
+        return;
     }
+
+    SDL_SYS_WaitThread(thread);
+    if (status) {
+        *status = thread->status;
+    }
+    SDL_SetObjectValid(thread, SDL_OBJECT_TYPE_THREAD, false);
+    SDL_free(thread->name);
+    SDL_free(thread);
+}
+
+SDL_ThreadState SDL_GetThreadState(SDL_Thread *thread)
+{
+    if (!ThreadValid(thread)) {
+        return SDL_THREAD_UNKNOWN;
+    }
+
+    return (SDL_ThreadState)SDL_GetAtomicInt(&thread->state);
 }
 
 void SDL_DetachThread(SDL_Thread *thread)
 {
-    if (!thread) {
+    if (!ThreadValid(thread)) {
         return;
     }
 
     // Grab dibs if the state is alive+joinable.
-    if (SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_STATE_ALIVE, SDL_THREAD_STATE_DETACHED)) {
+    if (SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_ALIVE, SDL_THREAD_DETACHED)) {
         SDL_SYS_DetachThread(thread);
     } else {
         // all other states are pretty final, see where we landed.
-        const int thread_state = SDL_GetAtomicInt(&thread->state);
-        if ((thread_state == SDL_THREAD_STATE_DETACHED) || (thread_state == SDL_THREAD_STATE_CLEANED)) {
+        SDL_ThreadState thread_state = SDL_GetThreadState(thread);
+        if (thread_state == SDL_THREAD_DETACHED) {
             return; // already detached (you shouldn't call this twice!)
-        } else if (thread_state == SDL_THREAD_STATE_ZOMBIE) {
+        } else if (thread_state == SDL_THREAD_COMPLETE) {
             SDL_WaitThread(thread, NULL); // already done, clean it up.
-        } else {
-            SDL_assert(0 && "Unexpected thread state");
         }
     }
 }

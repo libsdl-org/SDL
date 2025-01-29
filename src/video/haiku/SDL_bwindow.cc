@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -100,8 +100,8 @@ void HAIKU_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window * window)
 bool HAIKU_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window * window)
 {
     BMessage msg(BWIN_MOVE_WINDOW);
-    msg.AddInt32("window-x", window->floating.x);
-    msg.AddInt32("window-y", window->floating.y);
+    msg.AddInt32("window-x", window->pending.x);
+    msg.AddInt32("window-y", window->pending.y);
     _ToBeWin(window)->PostMessage(&msg);
     return true;
 }
@@ -109,8 +109,8 @@ bool HAIKU_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window * window)
 void HAIKU_SetWindowSize(SDL_VideoDevice *_this, SDL_Window * window)
 {
     BMessage msg(BWIN_RESIZE_WINDOW);
-    msg.AddInt32("window-w", window->floating.w - 1);
-    msg.AddInt32("window-h", window->floating.h - 1);
+    msg.AddInt32("window-w", window->pending.w - 1);
+    msg.AddInt32("window-h", window->pending.h - 1);
     _ToBeWin(window)->PostMessage(&msg);
 }
 

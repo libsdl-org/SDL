@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -123,7 +123,7 @@ void SDLTest_TextWindowAddTextWithLength(SDLTest_TextWindow *textwin, const char
         if (newline) {
             if (textwin->current == textwin->numlines - 1) {
                 SDL_free(textwin->lines[0]);
-                SDL_memcpy(&textwin->lines[0], &textwin->lines[1], (textwin->numlines - 1) * sizeof(textwin->lines[1]));
+                SDL_memmove(&textwin->lines[0], &textwin->lines[1], (textwin->numlines - 1) * sizeof(textwin->lines[1]));
                 textwin->lines[textwin->current] = NULL;
             } else {
                 ++textwin->current;

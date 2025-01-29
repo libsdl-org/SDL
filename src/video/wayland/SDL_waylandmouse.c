@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -892,9 +892,10 @@ static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float 
     SDL_MouseButtonFlags result = 0;
 
     if (focus) {
+        SDL_VideoData *viddata = SDL_GetVideoDevice()->internal;
         int off_x, off_y;
 
-        result = SDL_GetMouseState(x, y);
+        result = viddata->input->buttons_pressed;
         SDL_RelativeToGlobalForWindow(focus, focus->x, focus->y, &off_x, &off_y);
         *x += off_x;
         *y += off_y;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -391,7 +391,7 @@ static void DumpKeys(const char *prefix, GameInputKeyState *keys, uint32_t count
     for (uint32_t i = 0; i < count; ++i) {
         char str[5];
         *SDL_UCS4ToUTF8(keys[i].codePoint, str) = '\0';
-        SDL_Log("    Key 0x%.2x (%s)\n", keys[i].scanCode, str);
+        SDL_Log("    Key 0x%.2x (%s)", keys[i].scanCode, str);
     }
 }
 #endif // DEBUG_KEYS
@@ -413,7 +413,7 @@ static void GAMEINPUT_HandleKeyboardDelta(WIN_GameInputData *data, SDL_Window *w
     uint32_t num_last = IGameInputReading_GetKeyState(last_reading, max_keys, last);
     uint32_t num_keys = IGameInputReading_GetKeyState(reading, max_keys, keys);
 #ifdef DEBUG_KEYS
-    SDL_Log("Timestamp: %llu\n", timestamp);
+    SDL_Log("Timestamp: %llu", timestamp);
     DumpKeys("Last keys:", last, num_last);
     DumpKeys("New keys:", keys, num_keys);
 #endif

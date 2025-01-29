@@ -47,6 +47,14 @@ jobs:
         with:
           name: sources
           path: '${{ github.workspace}}/dist'
+      - name: 'Generate summary'
+        run: |
+          echo "Run the following commands to download all artifacts:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "mkdir -p /tmp/${{ steps.releaser.outputs.project }}-${{ steps.releaser.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "cd /tmp/${{ steps.releaser.outputs.project }}-${{ steps.releaser.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "gh run -R ${{ github.repository }} download ${{ github.run_id }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   linux-verify:
     needs: [src]
@@ -77,6 +85,14 @@ jobs:
         shell: bash
         run: |
           ${{ steps.tar.outputs.path }}/build-scripts/test-versioning.sh
+      - name: 'Install Linux dependencies'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            gnome-desktop-testing libasound2-dev libpulse-dev libaudio-dev libjack-dev libsndio-dev \
+            libusb-1.0-0-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev \
+            libxss-dev libwayland-dev libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
+            libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev
       - name: 'CMake (configure + build + tests + examples)'
         run: |
           cmake -S ${{ steps.tar.outputs.path }} -B /tmp/build -DSDL_TEST_LIBRARY=TRUE -DSDL_TESTS=TRUE -DSDL_EXAMPLES=TRUE
@@ -163,7 +179,7 @@ jobs:
               -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}"  \
               -DCMAKE_SYSTEM_NAME=Darwin                                    \
               -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"                      \
-              -DCMAKE_OSX_DEPLOYMENT_TARGET=10.11                           \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13                           \
               -Werror=dev                                                   \
               -B build_darwin
           cmake --build build_darwin --config Release --verbose
@@ -175,7 +191,7 @@ jobs:
               -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}/SDL3.xcframework/macos-arm64_x86_64"  \
               -DCMAKE_SYSTEM_NAME=Darwin                                                                        \
               -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"                                                          \
-              -DCMAKE_OSX_DEPLOYMENT_TARGET=10.11                                                               \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13                                                               \
               -Werror=dev                                                                                       \
               -B build_darwin_2
           cmake --build build_darwin --config Release --verbose
@@ -188,7 +204,7 @@ jobs:
               -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}"  \
               -DCMAKE_SYSTEM_NAME=iOS                                       \
               -DCMAKE_OSX_ARCHITECTURES="arm64"                             \
-              -DCMAKE_OSX_DEPLOYMENT_TARGET=9.0                             \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                             \
               -Werror=dev                                                   \
               -B build_ios
           cmake --build build_ios --config Release --verbose
@@ -201,7 +217,7 @@ jobs:
               -DCMAKE_PREFIX_PATH="${{ steps.mount.outputs.mount_point }}"  \
               -DCMAKE_SYSTEM_NAME=tvOS                                      \
               -DCMAKE_OSX_ARCHITECTURES="arm64"                             \
-              -DCMAKE_OSX_DEPLOYMENT_TARGET=9.0                             \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                             \
               -Werror=dev                                                   \
               -B build_tvos
           cmake --build build_tvos --config Release --verbose
@@ -217,7 +233,7 @@ jobs:
               -DCMAKE_SYSTEM_NAME=iOS                                       \
               -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"                      \
               -DCMAKE_OSX_SYSROOT="${sysroot}"                              \
-              -DCMAKE_OSX_DEPLOYMENT_TARGET=9.0                             \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                            \
               -Werror=dev                                                   \
               -B build_ios_simulator
           cmake --build build_ios_simulator --config Release --verbose
@@ -233,7 +249,7 @@ jobs:
               -DCMAKE_SYSTEM_NAME=tvOS                                      \
               -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"                      \
               -DCMAKE_OSX_SYSROOT="${sysroot}"                              \
-              -DCMAKE_OSX_DEPLOYMENT_TARGET=9.0                             \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0                            \
               -Werror=dev                                                   \
               -B build_tvos_simulator
           cmake --build build_tvos_simulator --config Release --verbose
@@ -586,8 +602,11 @@ jobs:
       - name: 'Extract Android SDK from AAR'
         id: sdk
         run: |
-          python "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" -o /tmp/SDL3-android
+          cd /tmp
+          unzip "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}"
+          python "${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}.aar" -o /tmp/SDL3-android
           echo "prefix=/tmp/SDL3-android" >>$GITHUB_OUTPUT
+          echo "sdl3-aar=/tmp/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}.aar" >>$GITHUB_OUTPUT
       - name: 'CMake (configure + build) x86, x64, arm32, arm64'
         run: |
           android_abis="x86 x86_64 armeabi-v7a arm64-v8a"
@@ -617,7 +636,7 @@ jobs:
           echo "path=/tmp/projects/org.libsdl.testspriteminimal" >>$GITHUB_OUTPUT
       - name: 'Copy SDL3 aar into Gradle project'
         run: |
-          cp "${{ github.workspace }}/${{ needs.android.outputs.android-aar }}" "${{ steps.create-gradle-project.outputs.path }}/app/libs"
+          cp "${{ steps.sdk.outputs.sdl3-aar }}" "${{ steps.create-gradle-project.outputs.path }}/app/libs"
 
           echo ""
           echo "Project contents:"

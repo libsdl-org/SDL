@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -86,7 +86,7 @@ static void UpdateTexture(SDL_Texture *texture)
     int pitch;
 
     if (!SDL_LockTexture(texture, NULL, &pixels, &pitch)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't lock texture: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't lock texture: %s", SDL_GetError());
         quit(5);
     }
     src = MooseFrames[frame];
@@ -152,20 +152,20 @@ int main(int argc, char **argv)
     }
 
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
     /* load the moose images */
     filename = GetResourceFilename(NULL, "moose.dat");
     if (!filename) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory");
         return -1;
     }
     handle = SDL_IOFromFile(filename, "rb");
     SDL_free(filename);
     if (!handle) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !");
         quit(2);
     }
     SDL_ReadIO(handle, MooseFrames, MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
@@ -174,19 +174,19 @@ int main(int argc, char **argv)
     /* Create the window and renderer */
     window = SDL_CreateWindow("Happy Moose", MOOSEPIC_W * 4, MOOSEPIC_H * 4, SDL_WINDOW_RESIZABLE);
     if (!window) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create window: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create window: %s", SDL_GetError());
         quit(3);
     }
 
     renderer = SDL_CreateRenderer(window, NULL);
     if (!renderer) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create renderer: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create renderer: %s", SDL_GetError());
         quit(4);
     }
 
     MooseTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
     if (!MooseTexture) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s", SDL_GetError());
         quit(5);
     }
 

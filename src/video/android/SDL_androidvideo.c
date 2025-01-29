@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -63,6 +63,11 @@ static int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; // Default SurfaceView format, in case this is queried before being filled
 float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
+static SDL_DisplayOrientation Android_ScreenOrientation = SDL_ORIENTATION_UNKNOWN;
+int Android_SafeInsetLeft = 0;
+int Android_SafeInsetRight = 0;
+int Android_SafeInsetTop = 0;
+int Android_SafeInsetBottom = 0;
 static SDL_SystemTheme Android_SystemTheme;
 
 static bool Android_SuspendScreenSaver(SDL_VideoDevice *_this)
@@ -245,6 +250,29 @@ void Android_SetFormat(int format_wanted, int format_got)
             SDL_GetPixelFormatName(pf_got), format_got);
 }
 
+static void Android_SendOrientationUpdate(void)
+{
+    /* If we've received a compatible resize event, update the
+     * orientation immediately, otherwise wait for the display
+     * resize event.
+     */
+    SDL_VideoDevice *device = SDL_GetVideoDevice();
+    if (device && device->num_displays > 0) {
+        SDL_VideoDisplay *display = device->displays[0];
+        bool mode_landscape = (display->desktop_mode.w > display->desktop_mode.h);
+        bool sensor_landscape = (Android_ScreenOrientation == SDL_ORIENTATION_LANDSCAPE || Android_ScreenOrientation == SDL_ORIENTATION_LANDSCAPE_FLIPPED);
+        if (sensor_landscape == mode_landscape) {
+            SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, Android_ScreenOrientation, 0);
+        }
+    }
+}
+
+void Android_SetOrientation(SDL_DisplayOrientation orientation)
+{
+    Android_ScreenOrientation = orientation;
+    Android_SendOrientationUpdate();
+}
+
 void Android_SendResize(SDL_Window *window)
 {
     /*
@@ -264,10 +292,23 @@ void Android_SendResize(SDL_Window *window)
         desktop_mode.h = Android_DeviceHeight;
         desktop_mode.refresh_rate = Android_ScreenRate;
         SDL_SetDesktopDisplayMode(display, &desktop_mode);
+        Android_SendOrientationUpdate();
     }
 
     if (window) {
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, Android_SurfaceWidth, Android_SurfaceHeight);
+    }
+}
+
+void Android_SetWindowSafeAreaInsets(int left, int right, int top, int bottom)
+{
+    Android_SafeInsetLeft = left;
+    Android_SafeInsetRight = right;
+    Android_SafeInsetTop = top;
+    Android_SafeInsetBottom = bottom;
+
+    if (Android_Window) {
+        SDL_SetWindowSafeAreaInsets(Android_Window, left, right, top, bottom);
     }
 }
 

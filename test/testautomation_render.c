@@ -1149,8 +1149,8 @@ static int SDLCALL render_testLogicalSize(void *arg)
     CHECK_FUNC(SDL_SetRenderLogicalPresentation, (renderer, w / factor, h / factor, SDL_LOGICAL_PRESENTATION_LETTERBOX))
     viewport.x = (TESTRENDER_SCREEN_W / 4) / factor;
     viewport.y = (TESTRENDER_SCREEN_H / 4) / factor;
-    viewport.w = TESTRENDER_SCREEN_W / factor;
-    viewport.h = TESTRENDER_SCREEN_H / factor;
+    viewport.w = (TESTRENDER_SCREEN_W / 2) / factor;
+    viewport.h = (TESTRENDER_SCREEN_H / 2) / factor;
     CHECK_FUNC(SDL_SetRenderViewport, (renderer, &viewport))
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
     CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))

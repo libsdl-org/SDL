@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,8 +45,16 @@
 #define MIN_DIALOG_WIDTH  200 // Minimum dialog width
 #define MIN_DIALOG_HEIGHT 100 // Minimum dialog height
 
-static const char g_MessageBoxFontLatin1[] = "-*-*-medium-r-normal--0-120-*-*-p-0-iso8859-1";
-static const char g_MessageBoxFont[] = "-*-*-medium-r-normal--*-120-*-*-*-*-*-*";
+static const char g_MessageBoxFontLatin1[] =
+    "-*-*-medium-r-normal--0-120-*-*-p-0-iso8859-1";
+
+static const char g_MessageBoxFont[] =
+    "-*-*-medium-r-normal--*-120-*-*-*-*-iso10646-1,"  // explicitly unicode (iso10646-1)
+    "-*-*-medium-r-*--*-120-*-*-*-*-iso10646-1,"  // explicitly unicode (iso10646-1)
+    "-*-*-*-*-*--*-*-*-*-*-*-iso10646-1,"  // just give me anything Unicode.
+    "-*-*-medium-r-normal--*-120-*-*-*-*-iso8859-1,"  // explicitly latin1, in case low-ASCII works out.
+    "-*-*-medium-r-*--*-120-*-*-*-*-iso8859-1,"  // explicitly latin1, in case low-ASCII works out.
+    "-*-*-*-*-*--*-*-*-*-*-*-iso8859-1";  // just give me anything latin1.
 
 static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = {
     { 56, 54, 53 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,

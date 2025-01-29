@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -157,10 +157,10 @@ static void loop(void)
     /* Wait up to 20 ms for input, as a test */
     Uint64 then = SDL_GetTicks();
     if (SDL_WaitEventTimeout(NULL, 20)) {
-        SDL_Log("Got an event!\n");
+        SDL_Log("Got an event!");
     }
     Uint64 now = SDL_GetTicks();
-    SDL_Log("Waited %d ms for events\n", (int)(now - then));
+    SDL_Log("Waited %d ms for events", (int)(now - then));
 #endif
 
     while (SDL_PollEvent(&event)) {
@@ -170,7 +170,7 @@ static void loop(void)
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
             SDL_Window *window = SDL_GetWindowFromEvent(&event);
             if (window) {
-                SDL_Log("Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32 "\n",
+                SDL_Log("Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32,
                         event.window.windowID,
                         event.window.data1,
                         event.window.data2);
@@ -179,7 +179,7 @@ static void loop(void)
         if (event.type == SDL_EVENT_WINDOW_MOVED) {
             SDL_Window *window = SDL_GetWindowFromEvent(&event);
             if (window) {
-                SDL_Log("Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (display %s)\n",
+                SDL_Log("Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (display %s)",
                         event.window.windowID,
                         event.window.data1,
                         event.window.data2,

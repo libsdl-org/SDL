@@ -2,60 +2,72 @@
 
 [www.cmake.org](https://www.cmake.org/)
 
-The CMake build system is supported on the following platforms:
+The CMake build system is supported with the following environments:
 
-* FreeBSD
-* Linux
-* Microsoft Visual C
-* MinGW and Msys
-* macOS, iOS, tvOS, and visionOS with support for XCode
 * Android
 * Emscripten
-* NetBSD
+* FreeBSD
 * Haiku
+* Linux
+* macOS, iOS, tvOS, and visionOS with support for XCode
+* Microsoft Visual Studio
+* MinGW and Msys
+* NetBSD
 * Nintendo 3DS
 * PlayStation 2
 * PlayStation Portable
 * PlayStation Vita
-* QNX 7.x/8.x
-* RiscOS
+* RISC OS
 
-## Building SDL
+## Building SDL on Windows
 
-Assuming the source tree of SDL is located at `~/sdl`,
-this will configure and build SDL in the `~/build` directory:
+Assuming you're in the SDL source directory, building and installing to C:/SDL can be done with:
 ```sh
-cmake -S ~/sdl -B ~/build
-cmake --build ~/build
+cmake -S . -B build
+cmake --build build --config RelWithDebInfo
+cmake --install build --config RelWithDebInfo --prefix C:/SDL
 ```
 
-Installation can be done using:
+## Building SDL on UNIX
+
+SDL will build with very few dependencies, but for full functionality you should install the packages detailed in [README-linux.md](README-linux.md).
+
+Assuming you're in the SDL source directory, building and installing to /usr/local can be done with:
 ```sh
-cmake --install ~/build --prefix /usr/local        # '--install' requires CMake 3.15, or newer
+cmake -S . -B build
+cmake --build build
+sudo cmake --install build --prefix /usr/local
 ```
 
-This will install SDL to /usr/local.
+## Building SDL on macOS
 
-### Building SDL tests
+Assuming you're in the SDL source directory, building and installing to ~/SDL can be done with:
+```sh
+cmake -S . -B build -DSDL_FRAMEWORK=ON -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+cmake --build build
+cmake --install build --prefix ~/SDL
+```
+
+## Building SDL tests
 
 You can build the SDL test programs by adding `-DSDL_TESTS=ON` to the first cmake command above:
 ```sh
-cmake -S ~/sdl -B ~/build -DSDL_TEST_LIBRARY=ON -DSDL_TESTS=ON
+cmake -S . -B build -DSDL_TESTS=ON
 ```
-and then building normally. In this example, the test programs will be built and can be run from `~/build/tests/`.
+and then building normally. The test programs will be built and can be run from `build/test/`.
 
-### Building SDL examples
+## Building SDL examples
 
 You can build the SDL example programs by adding `-DSDL_EXAMPLES=ON` to the first cmake command above:
 ```sh
-cmake -S ~/sdl -B ~/build -DSDL_EXAMPLES=ON
+cmake -S . -B build -DSDL_EXAMPLES=ON
 ```
-and then building normally. In this example, the example programs will be built and can be run from `~/build/examples/`.
+and then building normally. The example programs will be built and can be run from `build/examples/`.
 
 ## Including SDL in your project
 
 SDL can be included in your project in 2 major ways:
-- using a system SDL library, provided by your (*nix) distribution or a package manager
+- using a system SDL library, provided by your (UNIX) distribution or a package manager
 - using a vendored SDL library: this is SDL copied or symlinked in a subfolder.
 
 The following CMake script supports both, depending on the value of `MYGAME_VENDORED`.
@@ -131,6 +143,13 @@ Exceptions exist:
 - some platforms don't support dynamic libraries, so only `-DSDL_STATIC=ON` makes sense.
 - a static Apple framework is not supported
 
+### Man pages
+
+Configuring with `-DSDL_INSTALL_DOCS=TRUE` installs man pages.
+
+We recommend package managers of unix distributions to install SDL3's man pages.
+This adds an extra build-time dependency on Perl.
+
 ### Pass custom compile options to the compiler
 
 - Use [`CMAKE_<LANG>_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_FLAGS.html) to pass extra
@@ -174,7 +193,7 @@ Only shared frameworks are supported, no static ones.
 
 #### Platforms
 
-Use `-DCMAKE_PLATFORM_NAME=<value>` to configure the platform. CMake can target only one platform at a time.
+Use `-DCMAKE_SYSTEM_NAME=<value>` to configure the platform. CMake can target only one platform at a time.
 
 | Apple platform  | `CMAKE_SYSTEM_NAME` value |
 |-----------------|---------------------------|
@@ -343,114 +362,3 @@ However, by default CMake builds static libraries as non-relocatable.
 Configuring SDL with `-DCMAKE_POSITION_INDEPENDENT_CODE=ON` will result in a static `libSDL3.a` library
 which you can link against to create a shared library.
 
-## Help, it doesn't work!
-
-Below, a SDL3 CMake project can be found that builds 99.9% of time (assuming you have internet connectivity).
-When you have a problem with building or using SDL, please modify it until it reproduces your issue.
-
-```cmake
-cmake_minimum_required(VERSION 3.16)
-project(sdl_issue)
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# !!!!!!                                                                            !!!!!!
-# !!!!!!     This CMake script is not using "CMake best practices".                 !!!!!!
-# !!!!!!                 Don't use it in your project.                              !!!!!!
-# !!!!!!                                                                            !!!!!!
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# 1. Try system SDL3 package first
-find_package(SDL3 QUIET)
-if(SDL3_FOUND)
-    message(STATUS "Using SDL3 via find_package")
-endif()
-
-# 2. Try using a vendored SDL library
-if(NOT SDL3_FOUND AND EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL/CMakeLists.txt")
-    add_subdirectory(SDL EXCLUDE_FROM_ALL)
-    message(STATUS "Using SDL3 via add_subdirectory")
-    set(SDL3_FOUND TRUE)
-endif()
-
-# 3. Download SDL, and use that.
-if(NOT SDL3_FOUND)
-    include(FetchContent)
-    set(SDL_SHARED TRUE CACHE BOOL "Build a SDL shared library (if available)")
-    set(SDL_STATIC TRUE CACHE BOOL "Build a SDL static library (if available)")
-    FetchContent_Declare(
-        SDL
-        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-        GIT_TAG main  # Replace this with a particular git tag or git hash
-        GIT_SHALLOW TRUE
-        GIT_PROGRESS TRUE
-    )
-    message(STATUS "Using SDL3 via FetchContent")
-    FetchContent_MakeAvailable(SDL)
-    set_property(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/_deps/sdl-src" PROPERTY EXCLUDE_FROM_ALL TRUE)
-endif()
-
-file(WRITE main.c [===========================================[
-/**
- * Modify this source such that it reproduces your problem.
- */
-
-/* START of source modifications */
-
-#include <SDL3/SDL.h>
-/*
- * SDL3/SDL_main.h is explicitly not included such that a terminal window would appear on Windows.
- */
-
-int main(int argc, char *argv[]) {
-    (void)argc;
-    (void)argv;
-
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_Log("SDL_Init failed (%s)", SDL_GetError());
-        return 1;
-    }
-
-    SDL_Window *window = NULL;
-    SDL_Renderer *renderer = NULL;
-
-    if (!SDL_CreateWindowAndRenderer("SDL issue", 640, 480, 0, &window, &renderer)) {
-        SDL_Log("SDL_CreateWindowAndRenderer failed (%s)", SDL_GetError());
-        SDL_Quit();
-        return 1;
-    }
-
-    while (1) {
-        int finished = 0;
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_QUIT) {
-                finished = 1;
-                break;
-            }
-        }
-        if (finished) {
-            break;
-        }
-
-        SDL_SetRenderDrawColor(renderer, 80, 80, 80, SDL_ALPHA_OPAQUE);
-        SDL_RenderClear(renderer);
-        SDL_RenderPresent(renderer);
-    }
-
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-
-    SDL_Quit();
-    return 0;
-}
-
-/* END of source modifications */
-
-]===========================================])
-
-add_executable(sdl_issue main.c)
-
-target_link_libraries(sdl_issue PRIVATE SDL3::SDL3)
-# target_link_libraries(sdl_issue PRIVATE SDL3::SDL3-shared)
-# target_link_libraries(sdl_issue PRIVATE SDL3::SDL3-static)
-```

@@ -2,7 +2,7 @@
 // Distributed under BSD 3-Clause License
 #include "SDL_internal.h"
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 
 #include "yuv_rgb_internal.h"
 

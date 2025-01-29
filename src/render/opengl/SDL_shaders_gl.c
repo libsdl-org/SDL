@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -284,7 +284,7 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "    gl_FragColor = texture2D(tex0, v_texCoord) * v_color;\n"
 "}"
     },
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     // SHADER_YUV
     {
         // vertex shader
@@ -350,7 +350,10 @@ static bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char 
         info = SDL_small_alloc(char, length + 1, &isstack);
         if (info) {
             ctx->glGetInfoLogARB(shader, length, NULL, info);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to compile shader:\n%s%s\n%s", defines, source, info);
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to compile shader:");
+	    SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", defines);
+	    SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", source);
+	    SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", info);
             SDL_small_free(info, isstack);
         }
         return false;

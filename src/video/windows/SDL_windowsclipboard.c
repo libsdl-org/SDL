@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -112,10 +112,32 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
         LPVOID dib = GlobalLock(hMem);
         if (dib) {
             BITMAPINFOHEADER *pbih = (BITMAPINFOHEADER *)dib;
-            size_t bih_size = pbih->biSize + pbih->biClrUsed * sizeof(RGBQUAD);
+
+            // https://learn.microsoft.com/en-us/windows/win32/api/wingdi/ns-wingdi-bitmapinfoheader#color-tables
+            size_t color_table_size;
+            switch (pbih->biCompression) {
+            case BI_RGB:
+                if (pbih->biBitCount <= 8) {
+                    color_table_size = sizeof(RGBQUAD) * (pbih->biClrUsed == 0 ? 1 << pbih->biBitCount : pbih->biClrUsed);
+                } else {
+                    color_table_size = 0;
+                }
+                break;
+            case BI_BITFIELDS:
+                color_table_size = 3 * sizeof(DWORD);
+                break;
+            case 6 /* BI_ALPHABITFIELDS */:
+                // https://learn.microsoft.com/en-us/previous-versions/windows/embedded/aa452885(v=msdn.10)
+                color_table_size = 4 * sizeof(DWORD);
+                break;
+            default: // FOURCC
+                color_table_size = sizeof(RGBQUAD) * pbih->biClrUsed;
+            }
+
+            size_t bih_size = pbih->biSize + color_table_size;
             size_t dib_size = bih_size + pbih->biSizeImage;
             if (dib_size <= mem_size) {
-                size_t bmp_size = sizeof(BITMAPFILEHEADER) + dib_size;
+                size_t bmp_size = sizeof(BITMAPFILEHEADER) + mem_size;
                 bmp = SDL_malloc(bmp_size);
                 if (bmp) {
                     BITMAPFILEHEADER *pbfh = (BITMAPFILEHEADER *)bmp;
@@ -123,7 +145,7 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
                     pbfh->bfSize = (DWORD)bmp_size;
                     pbfh->bfReserved1 = 0;
                     pbfh->bfReserved2 = 0;
-                    pbfh->bfOffBits = (DWORD)(sizeof(BITMAPFILEHEADER) + bih_size);
+                    pbfh->bfOffBits = (DWORD)(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + color_table_size);
                     SDL_memcpy((Uint8 *)bmp + sizeof(BITMAPFILEHEADER), dib, dib_size);
                     *size = bmp_size;
                 }
@@ -330,73 +352,90 @@ bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     return false;
 }
 
+static int GetClipboardFormatMimeType(UINT format, char *name)
+{
+    static struct
+    {
+        UINT format;
+        const char *mime_type;
+    } mime_types[] = {
+        { TEXT_FORMAT, "text/plain;charset=utf-8" },
+        { IMAGE_FORMAT, IMAGE_MIME_TYPE },
+    };
+
+    for (int i = 0; i < SDL_arraysize(mime_types); ++i) {
+        if (format == mime_types[i].format) {
+            size_t len = SDL_strlen(mime_types[i].mime_type) + 1;
+            if (name) {
+                SDL_memcpy(name, mime_types[i].mime_type, len);
+            }
+            return (int)len;
+        }
+    }
+    return 0;
+}
+
 static char **GetMimeTypes(int *pnformats)
 {
+    char **new_mime_types = NULL;
+
     *pnformats = 0;
 
-    int nformats = CountClipboardFormats();
-    size_t allocSize = (nformats + 1) * sizeof(char*);
+    if (WIN_OpenClipboard(SDL_GetVideoDevice())) {
+        int nformats = 0;
+        UINT format = 0;
+        int formatsSz = 0;
+        for ( ; ; ) {
+            format = EnumClipboardFormats(format);
+            if (!format) {
+                break;
+            }
 
-    UINT format = 0;
-    int formatsSz = 0;
-    int i;
-    for (i = 0; i < nformats; i++) {
-        format = EnumClipboardFormats(format);
-        if (!format) {
-            nformats = i;
-            break;
+            int len = GetClipboardFormatMimeType(format, NULL);
+            if (len > 0) {
+                ++nformats;
+                formatsSz += len;
+            }
         }
 
-        char mimeType[200];
-        int nchars = GetClipboardFormatNameA(format, mimeType, sizeof(mimeType));
-        formatsSz += nchars + 1;
-    }
+        new_mime_types = SDL_AllocateTemporaryMemory((nformats + 1) * sizeof(char *) + formatsSz);
+        if (new_mime_types) {
+            format = 0;
+            char *strPtr = (char *)(new_mime_types + nformats + 1);
+            int i = 0;
+            for ( ; ; ) {
+                format = EnumClipboardFormats(format);
+                if (!format) {
+                    break;
+                }
 
-    char **new_mime_types = SDL_AllocateTemporaryMemory(allocSize + formatsSz);
-    if (!new_mime_types)
-        return NULL;
+                int len = GetClipboardFormatMimeType(format, strPtr);
+                if (len > 0) {
+                    new_mime_types[i++] = strPtr;
+                    strPtr += len;
+                }
+            }
 
-    format = 0;
-    char *strPtr = (char *)(new_mime_types + nformats + 1);
-    int formatRemains = formatsSz;
-    for (i = 0; i < nformats; i++) {
-        format = EnumClipboardFormats(format);
-        if (!format) {
-            nformats = i;
-            break;
+            new_mime_types[nformats] = NULL;
+            *pnformats = nformats;
         }
-
-        new_mime_types[i] = strPtr;
-
-        int nchars = GetClipboardFormatNameA(format, strPtr, formatRemains-1);
-        strPtr += nchars;
-        *strPtr = '\0';
-        strPtr++;
-
-        formatRemains -= (nchars + 1);
+        WIN_CloseClipboard();
     }
-
-    new_mime_types[nformats] = NULL;
-    *pnformats = nformats;
     return new_mime_types;
 }
 
 void WIN_CheckClipboardUpdate(struct SDL_VideoData *data)
 {
-    const DWORD seq = GetClipboardSequenceNumber();
-    if (seq != data->clipboard_count) {
-        if (data->clipboard_count) {
+    DWORD count = GetClipboardSequenceNumber();
+    if (count != data->clipboard_count) {
+        if (count) {
             int nformats = 0;
             char **new_mime_types = GetMimeTypes(&nformats);
             if (new_mime_types) {
                 SDL_SendClipboardUpdate(false, new_mime_types, nformats);
-            } else {
-                WIN_SetError("Couldn't get clipboard mime types");
             }
-
         }
-
-        data->clipboard_count = seq;
+        data->clipboard_count = count;
     }
 }
 

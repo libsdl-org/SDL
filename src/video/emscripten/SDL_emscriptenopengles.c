@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,10 +47,14 @@ bool Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
     if (interval < 0) {
         return SDL_SetError("Late swap tearing currently unsupported");
-    } else if (interval == 0) {
-        emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 0);
-    } else {
-        emscripten_set_main_loop_timing(EM_TIMING_RAF, interval);
+    }
+
+    if (Emscripten_ShouldSetSwapInterval(interval)) {
+        if (interval == 0) {
+            emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 0);
+        } else {
+            emscripten_set_main_loop_timing(EM_TIMING_RAF, interval);
+        }
     }
 
     return true;

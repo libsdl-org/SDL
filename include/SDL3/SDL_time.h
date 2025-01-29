@@ -1,6 +1,6 @@
 /*
 Simple DirectMedia Layer
-Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,14 @@ freely, subject to the following restrictions:
  * # CategoryTime
  *
  * SDL realtime clock and date/time routines.
+ *
+ * There are two data types that are used in this category: SDL_Time, which
+ * represents the nanoseconds since a specific moment (an "epoch"), and
+ * SDL_DateTime, which breaks time down into human-understandable components:
+ * years, months, days, hours, etc.
+ *
+ * Much of the functionality is involved in converting those two types to
+ * other useful forms.
  */
 
 #include <SDL3/SDL_error.h>
@@ -41,7 +49,7 @@ extern "C" {
  * A structure holding a calendar date and time broken down into its
  * components.
  *
- * \since This struct is available since SDL 3.1.3.
+ * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_DateTime
 {
@@ -59,7 +67,7 @@ typedef struct SDL_DateTime
 /**
  * The preferred date format of the current system locale.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_GetDateTimeLocalePreferences
  */
@@ -73,7 +81,7 @@ typedef enum SDL_DateFormat
 /**
  * The preferred time format of the current system locale.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_GetDateTimeLocalePreferences
  */
@@ -98,7 +106,7 @@ typedef enum SDL_TimeFormat
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat *dateFormat, SDL_TimeFormat *timeFormat);
 
@@ -110,7 +118,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
 
@@ -126,7 +134,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime);
 
@@ -141,7 +149,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks);
 
@@ -157,7 +165,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_
  * \param dwHighDateTime a pointer filled in with the high portion of the
  *                       Windows FILETIME value.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLowDateTime, Uint32 *dwHighDateTime);
 
@@ -172,7 +180,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_TimeToWindows(SDL_Time ticks, Uint32 *dwLow
  * \param dwHighDateTime the high portion of the Windows FILETIME value.
  * \returns the converted SDL time.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_Time SDLCALL SDL_TimeFromWindows(Uint32 dwLowDateTime, Uint32 dwHighDateTime);
 
@@ -184,7 +192,7 @@ extern SDL_DECLSPEC SDL_Time SDLCALL SDL_TimeFromWindows(Uint32 dwLowDateTime, U
  * \returns the number of days in the requested month or -1 on failure; call
  *          SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetDaysInMonth(int year, int month);
 
@@ -197,7 +205,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetDaysInMonth(int year, int month);
  * \returns the day of year [0-365] if the date is valid or -1 on failure;
  *          call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetDayOfYear(int year, int month, int day);
 
@@ -210,7 +218,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetDayOfYear(int year, int month, int day);
  * \returns a value between 0 and 6 (0 being Sunday) if the date is valid or
  *          -1 on failure; call SDL_GetError() for more information.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetDayOfWeek(int year, int month, int day);
 

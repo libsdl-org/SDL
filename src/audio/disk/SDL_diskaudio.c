@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -136,7 +136,7 @@ static bool DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, "You are using the SDL disk i/o audio driver!");
-    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, " %s file [%s].\n", recording ? "Reading from" : "Writing to", fname);
+    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, " %s file [%s].", recording ? "Reading from" : "Writing to", fname);
 
     return true;  // We're ready to rock and roll. :-)
 }

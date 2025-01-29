@@ -1006,10 +1006,6 @@ static int SDLCALL video_getSetWindowSize(void *arg)
     int referenceW, referenceH;
     int currentW, currentH;
     int desiredW, desiredH;
-    const bool restoreHint = SDL_GetHintBoolean("SDL_BORDERLESS_RESIZABLE_STYLE", true);
-
-    /* Win32 borderless windows are not resizable by default and need this undocumented hint */
-    SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", "1");
 
     /* Get display bounds for size range */
     result = SDL_GetDisplayUsableBounds(SDL_GetPrimaryDisplay(), &display);
@@ -1026,7 +1022,7 @@ static int SDLCALL video_getSetWindowSize(void *arg)
     }
 
     SDL_GetWindowSize(window, &currentW, &currentH);
-    if (SDL_SetWindowSize(window, currentW, currentH)) {
+    if (!SDL_SetWindowSize(window, currentW, currentH)) {
         SDLTest_Log("Skipping window resize tests: %s reports window resizing as unsupported", SDL_GetCurrentVideoDriver());
         goto null_tests;
     }
@@ -1187,9 +1183,6 @@ null_tests:
     SDL_SetWindowSize(NULL, desiredW, desiredH);
     SDLTest_AssertPass("Call to SDL_SetWindowSize(window=NULL)");
     checkInvalidWindowError();
-
-    /* Restore the hint to the previous value */
-    SDL_SetHint("SDL_BORDERLESS_RESIZABLE_STYLE", restoreHint ? "1" : "0");
 
     return TEST_COMPLETED;
 }
@@ -2133,7 +2126,54 @@ static int SDLCALL video_getSetWindowState(void *arg)
     SDLTest_AssertCheck(windowedW == currentW, "Verify returned width; expected: %d, got: %d", windowedW, currentW);
     SDLTest_AssertCheck(windowedH == currentH, "Verify returned height; expected: %d, got: %d", windowedH, currentH);
 
-    /* Maximize, change size, and restore */
+    /* Maximize, restore, and change size */
+    result = SDL_MaximizeWindow(window);
+    SDLTest_AssertPass("SDL_MaximizeWindow()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    result = SDL_RestoreWindow(window);
+    SDLTest_AssertPass("SDL_RestoreWindow()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    desiredW = windowedW + 10;
+    desiredH = windowedH + 10;
+    result = SDL_SetWindowSize(window, desiredW, desiredH);
+    SDLTest_AssertPass("SDL_SetWindowSize()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    if (!skipPos) {
+        desiredX = windowedX + 10;
+        desiredY = windowedY + 10;
+        result = SDL_SetWindowPosition(window, desiredX, desiredY);
+        SDLTest_AssertPass("SDL_SetWindowPosition()");
+        SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+    }
+
+    result = SDL_SyncWindow(window);
+    SDLTest_AssertPass("SDL_SyncWindow()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    flags = SDL_GetWindowFlags(window);
+    SDLTest_AssertPass("SDL_GetWindowFlags()");
+    SDLTest_AssertCheck(!(flags & SDL_WINDOW_MAXIMIZED), "Verify that the `SDL_WINDOW_MAXIMIZED` flag is cleared: %s", !(flags & SDL_WINDOW_MAXIMIZED) ? "true" : "false");
+
+    if (!skipPos) {
+        currentX = desiredX + 1;
+        currentY = desiredY + 1;
+        SDL_GetWindowPosition(window, &currentX, &currentY);
+        SDLTest_AssertPass("Call to SDL_GetWindowPosition()");
+        SDLTest_AssertCheck(desiredX == currentX, "Verify returned X coordinate; expected: %d, got: %d", desiredX, currentX);
+        SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y coordinate; expected: %d, got: %d", desiredY, currentY);
+    }
+
+    currentW = desiredW + 1;
+    currentH = desiredH + 1;
+    SDL_GetWindowSize(window, &currentW, &currentH);
+    SDLTest_AssertPass("Call to SDL_GetWindowSize()");
+    SDLTest_AssertCheck(desiredW == currentW, "Verify returned width; expected: %d, got: %d", desiredW, currentW);
+    SDLTest_AssertCheck(desiredH == currentH, "Verify returned height; expected: %d, got: %d", desiredH, currentH);
+
+    /* Maximize, change size/position (should be ignored), and restore. */
     result = SDL_MaximizeWindow(window);
     SDLTest_AssertPass("SDL_MaximizeWindow()");
     SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
@@ -2165,20 +2205,20 @@ static int SDLCALL video_getSetWindowState(void *arg)
     SDLTest_AssertCheck(!(flags & SDL_WINDOW_MAXIMIZED), "Verify that the `SDL_WINDOW_MAXIMIZED` flag is cleared: %s", !(flags & SDL_WINDOW_MAXIMIZED) ? "true" : "false");
 
     if (!skipPos) {
-        currentX = desiredX + 1;
-        currentY = desiredY + 1;
-        SDL_GetWindowPosition(window, &currentX, &currentY);
+        int previousX = desiredX + 1;
+        int previousY = desiredY + 1;
+        SDL_GetWindowPosition(window, &previousX, &previousY);
         SDLTest_AssertPass("Call to SDL_GetWindowPosition()");
-        SDLTest_AssertCheck(desiredX == currentX, "Verify returned X coordinate; expected: %d, got: %d", desiredX, currentX);
-        SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y coordinate; expected: %d, got: %d", desiredY, currentY);
+        SDLTest_AssertCheck(desiredX == currentX, "Verify returned X coordinate; expected: %d, got: %d", previousX, currentX);
+        SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y coordinate; expected: %d, got: %d", previousY, currentY);
     }
 
-    currentW = desiredW + 1;
-    currentH = desiredH + 1;
-    SDL_GetWindowSize(window, &currentW, &currentH);
+    int previousW = desiredW + 1;
+    int previousH = desiredH + 1;
+    SDL_GetWindowSize(window, &previousW, &previousH);
     SDLTest_AssertPass("Call to SDL_GetWindowSize()");
-    SDLTest_AssertCheck(desiredW == currentW, "Verify returned width; expected: %d, got: %d", desiredW, currentW);
-    SDLTest_AssertCheck(desiredH == currentH, "Verify returned height; expected: %d, got: %d", desiredH, currentH);
+    SDLTest_AssertCheck(desiredW == currentW, "Verify returned width; expected: %d, got: %d", previousW, currentW);
+    SDLTest_AssertCheck(desiredH == currentH, "Verify returned height; expected: %d, got: %d", previousH, currentH);
 
     /* Change size and position, maximize and restore */
     desiredW = windowedW - 5;

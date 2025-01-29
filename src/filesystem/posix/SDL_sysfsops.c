@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,26 +35,43 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-bool SDL_SYS_EnumerateDirectory(const char *path, const char *dirname, SDL_EnumerateDirectoryCallback cb, void *userdata)
+bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-    SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
+    char *pathwithsep = NULL;
+    int pathwithseplen = SDL_asprintf(&pathwithsep, "%s/", path);
+    if ((pathwithseplen == -1) || (!pathwithsep)) {
+        return false;
+    }
 
-    DIR *dir = opendir(path);
+    // trim down to a single path separator at the end, in case the caller added one or more.
+    pathwithseplen--;
+    while ((pathwithseplen >= 0) && (pathwithsep[pathwithseplen] == '/')) {
+        pathwithsep[pathwithseplen--] = '\0';
+    }
+
+    DIR *dir = opendir(pathwithsep);
     if (!dir) {
+        SDL_free(pathwithsep);
         return SDL_SetError("Can't open directory: %s", strerror(errno));
     }
 
+    // make sure there's a path separator at the end now for the actual callback.
+    pathwithsep[++pathwithseplen] = '/';
+    pathwithsep[++pathwithseplen] = '\0';
+
+    SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
     struct dirent *ent;
-    while ((result == SDL_ENUM_CONTINUE) && ((ent = readdir(dir)) != NULL))
-    {
+    while ((result == SDL_ENUM_CONTINUE) && ((ent = readdir(dir)) != NULL)) {
         const char *name = ent->d_name;
         if ((SDL_strcmp(name, ".") == 0) || (SDL_strcmp(name, "..") == 0)) {
             continue;
         }
-        result = cb(userdata, dirname, name);
+        result = cb(userdata, pathwithsep, name);
     }
 
     closedir(dir);
+
+    SDL_free(pathwithsep);
 
     return (result != SDL_ENUM_FAILURE);
 }
@@ -200,7 +217,7 @@ char *SDL_SYS_GetCurrentDirectory(void)
         }
         buf = (char *) ptr;
 
-        if (getcwd(buf, buflen) != NULL) {
+        if (getcwd(buf, buflen-1) != NULL) {
             break;  // we got it!
         }
 
@@ -212,6 +229,14 @@ char *SDL_SYS_GetCurrentDirectory(void)
         SDL_free(buf);
         SDL_SetError("getcwd failed: %s", strerror(errno));
         return NULL;
+    }
+
+    // make sure there's a path separator at the end.
+    SDL_assert(SDL_strlen(buf) < (buflen + 2));
+    buflen = SDL_strlen(buf);
+    if ((buflen == 0) || (buf[buflen-1] != '/')) {
+        buf[buflen] = '/';
+        buf[buflen + 1] = '\0';
     }
 
     return buf;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,20 @@
 /**
  * # CategoryEndian
  *
- * Functions for reading and writing endian-specific values.
+ * Functions converting endian-specific values to different byte orders.
+ *
+ * These functions either unconditionally swap byte order (SDL_Swap16,
+ * SDL_Swap32, SDL_Swap64, SDL_SwapFloat), or they swap to/from the system's
+ * native byte order (SDL_Swap16LE, SDL_Swap16BE, SDL_Swap32LE, SDL_Swap32BE,
+ * SDL_Swap32LE, SDL_Swap32BE, SDL_SwapFloatLE, SDL_SwapFloatBE). In the
+ * latter case, the functionality is provided by macros that become no-ops if
+ * a swap isn't necessary: on an x86 (littleendian) processor, SDL_Swap32LE
+ * does nothing, but SDL_Swap32BE reverses the bytes of the data. On a PowerPC
+ * processor (bigendian), the macros behavior is reversed.
+ *
+ * The swap routines are inline functions, and attempt to use compiler
+ * intrinsics, inline assembly, and other magic to make byteswapping
+ * efficient.
  */
 
 #ifndef SDL_endian_h_
@@ -51,12 +64,71 @@ _m_prefetch(void *__P)
  *  \name The two types of endianness
  */
 /* @{ */
+
+
+/**
+ * A value to represent littleendian byteorder.
+ *
+ * This is used with the preprocessor macro SDL_BYTEORDER, to determine a
+ * platform's byte ordering:
+ *
+ * ```c
+ * #if SDL_BYTEORDER == SDL_LIL_ENDIAN
+ * SDL_Log("This system is littleendian.");
+ * #endif
+ * ```
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_BYTEORDER
+ * \sa SDL_BIG_ENDIAN
+ */
 #define SDL_LIL_ENDIAN  1234
+
+/**
+ * A value to represent bigendian byteorder.
+ *
+ * This is used with the preprocessor macro SDL_BYTEORDER, to determine a
+ * platform's byte ordering:
+ *
+ * ```c
+ * #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+ * SDL_Log("This system is bigendian.");
+ * #endif
+ * ```
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_BYTEORDER
+ * \sa SDL_LIL_ENDIAN
+ */
 #define SDL_BIG_ENDIAN  4321
+
 /* @} */
 
 #ifndef SDL_BYTEORDER
-#ifdef SDL_PLATFORM_LINUX
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * A macro that reports the target system's byte order.
+ *
+ * This is set to either SDL_LIL_ENDIAN or SDL_BIG_ENDIAN (and maybe other
+ * values in the future, if something else becomes popular). This can be
+ * tested with the preprocessor, so decisions can be made at compile time.
+ *
+ * ```c
+ * #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+ * SDL_Log("This system is bigendian.");
+ * #endif
+ * ```
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_LIL_ENDIAN
+ * \sa SDL_BIG_ENDIAN
+ */
+#define SDL_BYTEORDER   SDL_LIL_ENDIAN___or_maybe___SDL_BIG_ENDIAN
+#elif defined(SDL_PLATFORM_LINUX)
 #include <endian.h>
 #define SDL_BYTEORDER  __BYTE_ORDER
 #elif defined(SDL_PLATFORM_SOLARIS)
@@ -97,8 +169,29 @@ _m_prefetch(void *__P)
 #endif /* !SDL_BYTEORDER */
 
 #ifndef SDL_FLOATWORDORDER
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * A macro that reports the target system's floating point word order.
+ *
+ * This is set to either SDL_LIL_ENDIAN or SDL_BIG_ENDIAN (and maybe other
+ * values in the future, if something else becomes popular). This can be
+ * tested with the preprocessor, so decisions can be made at compile time.
+ *
+ * ```c
+ * #if SDL_FLOATWORDORDER == SDL_BIG_ENDIAN
+ * SDL_Log("This system's floats are bigendian.");
+ * #endif
+ * ```
+ *
+ * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_LIL_ENDIAN
+ * \sa SDL_BIG_ENDIAN
+ */
+#define SDL_FLOATWORDORDER   SDL_LIL_ENDIAN___or_maybe___SDL_BIG_ENDIAN
 /* predefs from newer gcc versions: */
-#if defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__) && defined(__FLOAT_WORD_ORDER__)
+#elif defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__) && defined(__FLOAT_WORD_ORDER__)
 #if (__FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 #define SDL_FLOATWORDORDER   SDL_LIL_ENDIAN
 #elif (__FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__)
@@ -124,10 +217,6 @@ _m_prefetch(void *__P)
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- *  \file SDL_endian.h
- */
 
 /* various modern compilers may have builtin swap */
 #if defined(__GNUC__) || defined(__clang__)
@@ -314,7 +403,7 @@ SDL_FORCE_INLINE Uint64 SDL_Swap64(Uint64 x)
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 SDL_FORCE_INLINE float SDL_SwapFloat(float x)
 {
@@ -353,7 +442,7 @@ SDL_FORCE_INLINE float SDL_SwapFloat(float x)
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
 
@@ -374,7 +463,7 @@ SDL_FORCE_INLINE Uint16 SDL_Swap16(Uint16 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
 
@@ -395,7 +484,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap32(Uint32 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
 
@@ -411,7 +500,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap16LE(x) SwapOnlyIfNecessary(x)
 
@@ -427,7 +516,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap32LE(x) SwapOnlyIfNecessary(x)
 
@@ -443,7 +532,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap64LE(x) SwapOnlyIfNecessary(x)
 
@@ -459,7 +548,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_SwapFloatLE(x) SwapOnlyIfNecessary(x)
 
@@ -475,7 +564,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap16BE(x) SwapOnlyIfNecessary(x)
 
@@ -491,7 +580,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap32BE(x) SwapOnlyIfNecessary(x)
 
@@ -507,7 +596,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_Swap64BE(x) SwapOnlyIfNecessary(x)
 
@@ -523,7 +612,7 @@ SDL_FORCE_INLINE Uint32 SDL_Swap64(Uint64 x) { return x_but_byteswapped; }
  *
  * \threadsafety It is safe to call this macro from any thread.
  *
- * \since This macro is available since SDL 3.1.3.
+ * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_SwapFloatBE(x) SwapOnlyIfNecessary(x)
 

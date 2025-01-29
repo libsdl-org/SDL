@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -382,7 +382,7 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
         close(pipefd[0]);
     }
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                 ". In Wayland_data_offer_receive for '%s', buffer (%ld) at %p\n",
+                 ". In Wayland_data_offer_receive for '%s', buffer (%zu) at %p",
                  mime_type, *length, buffer);
     return buffer;
 }
@@ -418,7 +418,7 @@ void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *
         close(pipefd[0]);
     }
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                 ". In Wayland_primary_selection_offer_receive for '%s', buffer (%ld) at %p\n",
+                 ". In Wayland_primary_selection_offer_receive for '%s', buffer (%zu) at %p",
                  mime_type, *length, buffer);
     return buffer;
 }

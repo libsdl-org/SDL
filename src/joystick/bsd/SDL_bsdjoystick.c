@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -77,7 +77,7 @@
 #include "../SDL_joystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
-#if defined(SDL_PLATFORM_FREEBSD) || SDL_HAVE_MACHINE_JOYSTICK_H || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
+#if defined(SDL_PLATFORM_FREEBSD) || defined(SDL_HAVE_MACHINE_JOYSTICK_H) || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
 #define SUPPORT_JOY_GAMEPORT
 #endif
 

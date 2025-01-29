@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -50,36 +50,36 @@ static int TestTypes(bool verbose)
 
     if (badsize(sizeof(bool), 1)) {
         if (verbose) {
-            SDL_Log("sizeof(bool) != 1, instead = %u\n", (unsigned int)sizeof(bool));
+            SDL_Log("sizeof(bool) != 1, instead = %u", (unsigned int)sizeof(bool));
         }
         ++error;
     }
     if (badsize(sizeof(Uint8), 1)) {
         if (verbose) {
-            SDL_Log("sizeof(Uint8) != 1, instead = %u\n", (unsigned int)sizeof(Uint8));
+            SDL_Log("sizeof(Uint8) != 1, instead = %u", (unsigned int)sizeof(Uint8));
         }
         ++error;
     }
     if (badsize(sizeof(Uint16), 2)) {
         if (verbose) {
-            SDL_Log("sizeof(Uint16) != 2, instead = %u\n", (unsigned int)sizeof(Uint16));
+            SDL_Log("sizeof(Uint16) != 2, instead = %u", (unsigned int)sizeof(Uint16));
         }
         ++error;
     }
     if (badsize(sizeof(Uint32), 4)) {
         if (verbose) {
-            SDL_Log("sizeof(Uint32) != 4, instead = %u\n", (unsigned int)sizeof(Uint32));
+            SDL_Log("sizeof(Uint32) != 4, instead = %u", (unsigned int)sizeof(Uint32));
         }
         ++error;
     }
     if (badsize(sizeof(Uint64), 8)) {
         if (verbose) {
-            SDL_Log("sizeof(Uint64) != 8, instead = %u\n", (unsigned int)sizeof(Uint64));
+            SDL_Log("sizeof(Uint64) != 8, instead = %u", (unsigned int)sizeof(Uint64));
         }
         ++error;
     }
     if (verbose && !error) {
-        SDL_Log("All data types are the expected size.\n");
+        SDL_Log("All data types are the expected size.");
     }
 
     return error ? 1 : 0;
@@ -112,7 +112,7 @@ static int TestEndian(bool verbose)
     value_double.d = 3.141593;
 
     if (verbose) {
-        SDL_Log("Detected a %s endian machine.\n",
+        SDL_Log("Detected a %s endian machine.",
                 (SDL_BYTEORDER == SDL_LIL_ENDIAN) ? "little" : "big");
     }
     if ((*((char *)&value) >> 4) == 0x1) {
@@ -122,13 +122,13 @@ static int TestEndian(bool verbose)
     }
     if (real_byteorder != SDL_BYTEORDER) {
         if (verbose) {
-            SDL_Log("Actually a %s endian machine!\n",
+            SDL_Log("Actually a %s endian machine!",
                     (real_byteorder == SDL_LIL_ENDIAN) ? "little" : "big");
         }
         ++error;
     }
     if (verbose) {
-        SDL_Log("Detected a %s endian float word order machine.\n",
+        SDL_Log("Detected a %s endian float word order machine.",
                 (SDL_FLOATWORDORDER == SDL_LIL_ENDIAN) ? "little" : "big");
     }
     if (value_double.ui32[0] == 0x82c2bd7f && value_double.ui32[1] == 0x400921fb) {
@@ -138,40 +138,40 @@ static int TestEndian(bool verbose)
     }
     if (real_floatwordorder != SDL_FLOATWORDORDER) {
         if (verbose) {
-            SDL_Log("Actually a %s endian float word order machine!\n",
+            SDL_Log("Actually a %s endian float word order machine!",
                     (real_floatwordorder == SDL_LIL_ENDIAN) ? "little" : (real_floatwordorder == SDL_BIG_ENDIAN) ? "big"
                                                                                                                  : "unknown");
         }
         ++error;
     }
     if (verbose) {
-        SDL_Log("Value 16 = 0x%X, swapped = 0x%X\n", value16,
+        SDL_Log("Value 16 = 0x%X, swapped = 0x%X", value16,
                 SDL_Swap16(value16));
     }
     if (SDL_Swap16(value16) != swapped16) {
         if (verbose) {
-            SDL_Log("16 bit value swapped incorrectly!\n");
+            SDL_Log("16 bit value swapped incorrectly!");
         }
         ++error;
     }
     if (verbose) {
-        SDL_Log("Value 32 = 0x%" SDL_PRIX32 ", swapped = 0x%" SDL_PRIX32 "\n",
+        SDL_Log("Value 32 = 0x%" SDL_PRIX32 ", swapped = 0x%" SDL_PRIX32,
                 value32,
                 SDL_Swap32(value32));
     }
     if (SDL_Swap32(value32) != swapped32) {
         if (verbose) {
-            SDL_Log("32 bit value swapped incorrectly!\n");
+            SDL_Log("32 bit value swapped incorrectly!");
         }
         ++error;
     }
     if (verbose) {
-        SDL_Log("Value 64 = 0x%" SDL_PRIX64 ", swapped = 0x%" SDL_PRIX64 "\n", value64,
+        SDL_Log("Value 64 = 0x%" SDL_PRIX64 ", swapped = 0x%" SDL_PRIX64, value64,
                 SDL_Swap64(value64));
     }
     if (SDL_Swap64(value64) != swapped64) {
         if (verbose) {
-            SDL_Log("64 bit value swapped incorrectly!\n");
+            SDL_Log("64 bit value swapped incorrectly!");
         }
         ++error;
     }
@@ -180,8 +180,8 @@ static int TestEndian(bool verbose)
 
 static int TST_allmul(void *a, void *b, int arg, void *result, void *expected)
 {
-    (*(long long *)result) = ((*(long long *)a) * (*(long long *)b));
-    return (*(long long *)result) == (*(long long *)expected);
+    (*(unsigned long long *)result) = ((*(unsigned long long *)a) * (*(unsigned long long *)b));
+    return (*(unsigned long long *)result) == (*(unsigned long long *)expected);
 }
 
 static int TST_alldiv(void *a, void *b, int arg, void *result, void *expected)
@@ -380,14 +380,14 @@ static int Test64Bit(bool verbose)
 
         if (!t->routine(&t->a, &t->b, t->arg, &result, &t->expected_result)) {
             if (verbose) {
-                SDL_Log("%s(0x%08X%08X, 0x%08X%08X, %3d, produced: 0x%08X%08X, expected: 0x%08X%08X\n", t->operation, al[1], al[0], bl[1], bl[0],
+                SDL_Log("%s(0x%08X%08X, 0x%08X%08X, %3d, produced: 0x%08X%08X, expected: 0x%08X%08X", t->operation, al[1], al[0], bl[1], bl[0],
                         t->arg, rl[1], rl[0], el[1], el[0]);
             }
             ++failed;
         }
     }
     if (verbose && (failed == 0)) {
-        SDL_Log("All 64bit intrinsic tests passed\n");
+        SDL_Log("All 64bit intrinsic tests passed");
     }
     return failed ? 1 : 0;
 }
@@ -395,23 +395,23 @@ static int Test64Bit(bool verbose)
 static int TestCPUInfo(bool verbose)
 {
     if (verbose) {
-        SDL_Log("Number of logical CPU cores: %d\n", SDL_GetNumLogicalCPUCores());
-        SDL_Log("CPU cache line size: %d\n", SDL_GetCPUCacheLineSize());
-        SDL_Log("AltiVec %s\n", SDL_HasAltiVec() ? "detected" : "not detected");
-        SDL_Log("MMX %s\n", SDL_HasMMX() ? "detected" : "not detected");
-        SDL_Log("SSE %s\n", SDL_HasSSE() ? "detected" : "not detected");
-        SDL_Log("SSE2 %s\n", SDL_HasSSE2() ? "detected" : "not detected");
-        SDL_Log("SSE3 %s\n", SDL_HasSSE3() ? "detected" : "not detected");
-        SDL_Log("SSE4.1 %s\n", SDL_HasSSE41() ? "detected" : "not detected");
-        SDL_Log("SSE4.2 %s\n", SDL_HasSSE42() ? "detected" : "not detected");
-        SDL_Log("AVX %s\n", SDL_HasAVX() ? "detected" : "not detected");
-        SDL_Log("AVX2 %s\n", SDL_HasAVX2() ? "detected" : "not detected");
-        SDL_Log("AVX-512F %s\n", SDL_HasAVX512F() ? "detected" : "not detected");
-        SDL_Log("ARM SIMD %s\n", SDL_HasARMSIMD() ? "detected" : "not detected");
-        SDL_Log("NEON %s\n", SDL_HasNEON() ? "detected" : "not detected");
-        SDL_Log("LSX %s\n", SDL_HasLSX() ? "detected" : "not detected");
-        SDL_Log("LASX %s\n", SDL_HasLASX() ? "detected" : "not detected");
-        SDL_Log("System RAM %d MB\n", SDL_GetSystemRAM());
+        SDL_Log("Number of logical CPU cores: %d", SDL_GetNumLogicalCPUCores());
+        SDL_Log("CPU cache line size: %d", SDL_GetCPUCacheLineSize());
+        SDL_Log("AltiVec %s", SDL_HasAltiVec() ? "detected" : "not detected");
+        SDL_Log("MMX %s", SDL_HasMMX() ? "detected" : "not detected");
+        SDL_Log("SSE %s", SDL_HasSSE() ? "detected" : "not detected");
+        SDL_Log("SSE2 %s", SDL_HasSSE2() ? "detected" : "not detected");
+        SDL_Log("SSE3 %s", SDL_HasSSE3() ? "detected" : "not detected");
+        SDL_Log("SSE4.1 %s", SDL_HasSSE41() ? "detected" : "not detected");
+        SDL_Log("SSE4.2 %s", SDL_HasSSE42() ? "detected" : "not detected");
+        SDL_Log("AVX %s", SDL_HasAVX() ? "detected" : "not detected");
+        SDL_Log("AVX2 %s", SDL_HasAVX2() ? "detected" : "not detected");
+        SDL_Log("AVX-512F %s", SDL_HasAVX512F() ? "detected" : "not detected");
+        SDL_Log("ARM SIMD %s", SDL_HasARMSIMD() ? "detected" : "not detected");
+        SDL_Log("NEON %s", SDL_HasNEON() ? "detected" : "not detected");
+        SDL_Log("LSX %s", SDL_HasLSX() ? "detected" : "not detected");
+        SDL_Log("LASX %s", SDL_HasLASX() ? "detected" : "not detected");
+        SDL_Log("System RAM %d MB", SDL_GetSystemRAM());
     }
     return 0;
 }
@@ -434,7 +434,7 @@ static int TestAssertions(bool verbose)
     {
         const SDL_AssertData *item = SDL_GetAssertionReport();
         while (item) {
-            SDL_Log("'%s', %s (%s:%d), triggered %u times, always ignore: %s.\n",
+            SDL_Log("'%s', %s (%s:%d), triggered %u times, always ignore: %s.",
                     item->condition, item->function, item->filename,
                     item->linenum, item->trigger_count,
                     item->always_ignore ? "yes" : "no");
@@ -478,7 +478,7 @@ int main(int argc, char *argv[])
     }
 
     if (verbose) {
-        SDL_Log("This system is running %s\n", SDL_GetPlatform());
+        SDL_Log("This system is running %s", SDL_GetPlatform());
     }
 
     status += TestTypes(verbose);

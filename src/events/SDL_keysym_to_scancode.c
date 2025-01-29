@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,6 +45,7 @@ static const struct {
     { 0xFF62, SDL_SCANCODE_EXECUTE },  // XK_Execute
     { 0xFFEE, SDL_SCANCODE_APPLICATION },  // XK_Hyper_R
     { 0xFE03, SDL_SCANCODE_RALT },  // XK_ISO_Level3_Shift
+    { 0xFE20, SDL_SCANCODE_TAB },  // XK_ISO_Left_Tab
     { 0xFFEB, SDL_SCANCODE_LGUI },  // XK_Super_L
     { 0xFFEC, SDL_SCANCODE_RGUI },  // XK_Super_R
     { 0xFF7E, SDL_SCANCODE_MODE },  // XK_Mode_switch

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,7 @@
 #include "SDL_cocoavideo.h"
 
 extern bool Cocoa_InitMouse(SDL_VideoDevice *_this);
+extern NSWindow *Cocoa_GetMouseFocus();
 extern void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event);
 extern void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event);
 extern void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -328,7 +328,7 @@ bool KMSDRM_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                   &mode_count, NULL);
 
     if (mode_count == 0) {
-        SDL_SetError("Vulkan can't find any video modes for display %i (%s)\n", 0,
+        SDL_SetError("Vulkan can't find any video modes for display %i (%s)", 0,
                      display_props[display_index].displayName);
         goto clean;
     }

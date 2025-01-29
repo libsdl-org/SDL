@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -766,25 +766,25 @@ static void SDLCALL SDL_DumpPropertiesCallback(void *userdata, SDL_PropertiesID 
 {
     switch (SDL_GetPropertyType(props, name)) {
     case SDL_PROPERTY_TYPE_POINTER:
-        SDL_Log("%s: %p\n", name, SDL_GetPointerProperty(props, name, NULL));
+        SDL_Log("%s: %p", name, SDL_GetPointerProperty(props, name, NULL));
         break;
     case SDL_PROPERTY_TYPE_STRING:
-        SDL_Log("%s: \"%s\"\n", name, SDL_GetStringProperty(props, name, ""));
+        SDL_Log("%s: \"%s\"", name, SDL_GetStringProperty(props, name, ""));
         break;
     case SDL_PROPERTY_TYPE_NUMBER:
         {
             Sint64 value = SDL_GetNumberProperty(props, name, 0);
-            SDL_Log("%s: %" SDL_PRIs64 " (%" SDL_PRIx64 ")\n", name, value, value);
+            SDL_Log("%s: %" SDL_PRIs64 " (%" SDL_PRIx64 ")", name, value, value);
         }
         break;
     case SDL_PROPERTY_TYPE_FLOAT:
-        SDL_Log("%s: %g\n", name, SDL_GetFloatProperty(props, name, 0.0f));
+        SDL_Log("%s: %g", name, SDL_GetFloatProperty(props, name, 0.0f));
         break;
     case SDL_PROPERTY_TYPE_BOOLEAN:
-        SDL_Log("%s: %s\n", name, SDL_GetBooleanProperty(props, name, false) ? "true" : "false");
+        SDL_Log("%s: %s", name, SDL_GetBooleanProperty(props, name, false) ? "true" : "false");
         break;
     default:
-        SDL_Log("%s UNKNOWN TYPE\n", name);
+        SDL_Log("%s UNKNOWN TYPE", name);
         break;
     }
 }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -63,6 +63,12 @@ SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse(void)
     return input;
 }
 
+static Uint64 GetEventTimestamp(struct timespec *time)
+{
+    // FIXME: Get the event time in the SDL tick time base
+    return SDL_GetTicksNS();
+}
+
 void updateMouse(SDL_WSCONS_mouse_input_data *input)
 {
     struct wscons_event events[64];
@@ -73,56 +79,39 @@ void updateMouse(SDL_WSCONS_mouse_input_data *input)
         int i;
         n /= sizeof(struct wscons_event);
         for (i = 0; i < n; i++) {
+            Uint64 timestamp = GetEventTimestamp(&events[i].time);
             int type = events[i].type;
             switch (type) {
             case WSCONS_EVENT_MOUSE_DOWN:
-            {
-                switch (events[i].value) {
-                case 0: // Left Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_LEFT, true);
-                    break;
-                case 1: // Middle Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_MIDDLE, true);
-                    break;
-                case 2: // Right Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_RIGHT, true);
-                    break;
-                }
-            } break;
             case WSCONS_EVENT_MOUSE_UP:
             {
-                switch (events[i].value) {
-                case 0: // Left Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_LEFT, false);
-                    break;
-                case 1: // Middle Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_MIDDLE, false);
-                    break;
-                case 2: // Right Mouse Button.
-                    SDL_SendMouseButton(0, mouse->focus, input->mouseID, SDL_BUTTON_RIGHT, false);
-                    break;
-                }
-            } break;
+                Uint8 button = SDL_BUTTON_LEFT + events[i].value;
+                bool down = (type == WSCONS_EVENT_MOUSE_DOWN);
+                SDL_SendMouseButton(timestamp, mouse->focus, input->mouseID, button, down);
+                break;
+            }
             case WSCONS_EVENT_MOUSE_DELTA_X:
             {
-                SDL_SendMouseMotion(0, mouse->focus, input->mouseID, 1, (float)events[i].value, 0.0f);
+                SDL_SendMouseMotion(timestamp, mouse->focus, input->mouseID, true, (float)events[i].value, 0.0f);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_Y:
             {
-                SDL_SendMouseMotion(0, mouse->focus, input->mouseID, 1, 0.0f, -(float)events[i].value);
+                SDL_SendMouseMotion(timestamp, mouse->focus, input->mouseID, true, 0.0f, -(float)events[i].value);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_W:
             {
-                SDL_SendMouseWheel(0, mouse->focus, input->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
+                SDL_SendMouseWheel(timestamp, mouse->focus, input->mouseID, events[i].value, 0, SDL_MOUSEWHEEL_NORMAL);
                 break;
             }
             case WSCONS_EVENT_MOUSE_DELTA_Z:
             {
-                SDL_SendMouseWheel(0, mouse->focus, input->mouseID, 0, -events[i].value, SDL_MOUSEWHEEL_NORMAL);
+                SDL_SendMouseWheel(timestamp, mouse->focus, input->mouseID, 0, -events[i].value, SDL_MOUSEWHEEL_NORMAL);
                 break;
             }
+            default:
+                break;
             }
         }
     }

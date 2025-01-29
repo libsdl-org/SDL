@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -73,7 +73,7 @@ static SDL_Locale **build_locales_from_csv_string(char *csv, int *count)
         loc->language = ptr++;
         while (true) {
             const char ch = *ptr;
-            if (ch == '_' || ch == '-') {
+            if (ch == '_') {
                 *(ptr++) = '\0';
                 loc->country = ptr;
             } else if (SDL_isspace(ch)) {

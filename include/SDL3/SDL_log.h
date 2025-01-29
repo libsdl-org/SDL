@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,6 +56,15 @@
  * - Windows: debug output stream
  * - Android: log output
  * - Others: standard error output (stderr)
+ *
+ * You don't need to have a newline (`\n`) on the end of messages, the
+ * functions will do that for you. For consistent behavior cross-platform, you
+ * shouldn't have any newlines in messages, such as to log multiple lines in
+ * one call; unusual platform-specific behavior can be observed in such usage.
+ * Do one log call per line instead, with no newlines in messages.
+ *
+ * Each log call is atomic, so you won't see log messages cut off one another
+ * when logging from multiple threads.
  */
 
 #ifndef SDL_log_h_
@@ -76,7 +85,7 @@ extern "C" {
  * level, the assert category is enabled at the WARN level, test is enabled at
  * the VERBOSE level and all other categories are enabled at the ERROR level.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_LogCategory
 {
@@ -116,7 +125,7 @@ typedef enum SDL_LogCategory
 /**
  * The predefined log priorities
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_LogPriority
 {
@@ -139,7 +148,7 @@ typedef enum SDL_LogPriority
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_ResetLogPriorities
  * \sa SDL_SetLogPriority
@@ -154,7 +163,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetLogPriorities(SDL_LogPriority priority);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetLogPriority
  * \sa SDL_ResetLogPriorities
@@ -170,7 +179,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetLogPriority(int category, SDL_LogPriorit
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetLogPriority
  */
@@ -183,7 +192,7 @@ extern SDL_DECLSPEC SDL_LogPriority SDLCALL SDL_GetLogPriority(int category);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetLogPriorities
  * \sa SDL_SetLogPriority
@@ -205,7 +214,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetLogPriorities
  * \sa SDL_SetLogPriority
@@ -221,7 +230,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetLogPriorityPrefix(SDL_LogPriority priori
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_LogCritical
  * \sa SDL_LogDebug
@@ -245,7 +254,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fm
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Log
  * \sa SDL_LogCritical
@@ -270,7 +279,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogTrace(int category, SDL_PRINTF_FORMAT_ST
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Log
  * \sa SDL_LogCritical
@@ -293,7 +302,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogVerbose(int category, SDL_PRINTF_FORMAT_
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Log
  * \sa SDL_LogCritical
@@ -317,7 +326,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogDebug(int category, SDL_PRINTF_FORMAT_ST
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Log
  * \sa SDL_LogCritical
@@ -341,7 +350,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogInfo(int category, SDL_PRINTF_FORMAT_STR
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Log
  * \sa SDL_LogCritical
@@ -365,7 +374,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogWarn(int category, SDL_PRINTF_FORMAT_STR
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Log
  * \sa SDL_LogCritical
@@ -389,7 +398,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogError(int category, SDL_PRINTF_FORMAT_ST
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Log
  * \sa SDL_LogDebug
@@ -414,7 +423,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogCritical(int category, SDL_PRINTF_FORMAT
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Log
  * \sa SDL_LogCritical
@@ -440,7 +449,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogMessage(int category,
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_Log
  * \sa SDL_LogCritical
@@ -469,7 +478,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogMessageV(int category,
  * \param priority the priority of the message.
  * \param message the message being output.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
@@ -480,7 +489,7 @@ typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.6.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetLogOutputFunction
  * \sa SDL_GetLogOutputFunction
@@ -497,7 +506,7 @@ extern SDL_DECLSPEC SDL_LogOutputFunction SDLCALL SDL_GetDefaultLogOutputFunctio
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetDefaultLogOutputFunction
  * \sa SDL_SetLogOutputFunction
@@ -512,7 +521,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetLogOutputFunction(SDL_LogOutputFunction 
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetDefaultLogOutputFunction
  * \sa SDL_GetLogOutputFunction

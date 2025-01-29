@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,11 @@
  * # CategoryKeycode
  *
  * Defines constants which identify keyboard keys and modifiers.
+ *
+ * Please refer to the Best Keyboard Practices document for details on what
+ * this information means and how best to use it.
+ *
+ * https://wiki.libsdl.org/SDL3/BestKeyboardPractices
  */
 
 #ifndef SDL_keycode_h_
@@ -42,11 +47,15 @@
  * A special exception is the number keys at the top of the keyboard which map
  * to SDLK_0...SDLK_9 on AZERTY layouts.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * Keys with the `SDLK_EXTENDED_MASK` bit set do not map to a scancode or
+ * unicode code point.
+ *
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef Uint32 SDL_Keycode;
 
-#define SDLK_SCANCODE_MASK          (1u<<30)
+#define SDLK_EXTENDED_MASK          (1u << 29)
+#define SDLK_SCANCODE_MASK          (1u << 30)
 #define SDL_SCANCODE_TO_KEYCODE(X)  (X | SDLK_SCANCODE_MASK)
 #define SDLK_UNKNOWN                0x00000000u /**< 0 */
 #define SDLK_RETURN                 0x0000000du /**< '\r' */
@@ -297,17 +306,25 @@ typedef Uint32 SDL_Keycode;
 #define SDLK_SOFTRIGHT              0x40000120u /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_SOFTRIGHT) */
 #define SDLK_CALL                   0x40000121u /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CALL) */
 #define SDLK_ENDCALL                0x40000122u /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_ENDCALL) */
+#define SDLK_LEFT_TAB               0x20000001u /**< Extended key Left Tab */
+#define SDLK_LEVEL5_SHIFT           0x20000002u /**< Extended key Level 5 Shift */
+#define SDLK_MULTI_KEY_COMPOSE      0x20000003u /**< Extended key Multi-key Compose */
+#define SDLK_LMETA                  0x20000004u /**< Extended key Left Meta */
+#define SDLK_RMETA                  0x20000005u /**< Extended key Right Meta */
+#define SDLK_LHYPER                 0x20000006u /**< Extended key Left Hyper */
+#define SDLK_RHYPER                 0x20000007u /**< Extended key Right Hyper */
 
 /**
  * Valid key modifiers (possibly OR'd together).
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef Uint16 SDL_Keymod;
 
 #define SDL_KMOD_NONE   0x0000u /**< no modifier is applicable. */
 #define SDL_KMOD_LSHIFT 0x0001u /**< the left Shift key is down. */
 #define SDL_KMOD_RSHIFT 0x0002u /**< the right Shift key is down. */
+#define SDL_KMOD_LEVEL5 0x0004u /**< the Level 5 Shift key is down. */
 #define SDL_KMOD_LCTRL  0x0040u /**< the left Ctrl (Control) key is down. */
 #define SDL_KMOD_RCTRL  0x0080u /**< the right Ctrl (Control) key is down. */
 #define SDL_KMOD_LALT   0x0100u /**< the left Alt key is down. */

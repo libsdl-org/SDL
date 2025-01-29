@@ -13,7 +13,7 @@ To build SDL using the command line, use the CMake build script:
 ```bash
 mkdir build
 cd build
-cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.11
+cmake .. -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
 cmake --build .
 sudo cmake --install .
 ```
@@ -25,15 +25,12 @@ You can also build SDL as a Universal library (a single binary for both
 ```bash
 mkdir build
 cd build
-cmake .. "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.11
+cmake .. "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
 cmake --build .
 sudo cmake --install .
 ```
 
-Please note that building SDL requires at least Xcode 12.2 and the 11.0 SDK.
-PowerPC support for macOS has been officially dropped as of SDL 2.0.2.
-32-bit Intel and macOS 10.8 runtime support has been officially dropped as
-of SDL 2.24.0.
+Please note that building SDL requires at least Xcode 12.2 and the macOS 11.0 SDK.
 
 To use the library once it's built, you essential have two possibilities:
 use the traditional autoconf/automake/make method, or use Xcode.

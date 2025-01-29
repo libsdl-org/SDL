@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,11 +51,12 @@
 #include "sensor/SDL_sensor_c.h"
 #include "stdlib/SDL_getenv_c.h"
 #include "thread/SDL_thread_c.h"
+#include "tray/SDL_tray_utils.h"
 #include "video/SDL_pixels_c.h"
 #include "video/SDL_surface_c.h"
 #include "video/SDL_video_c.h"
 #include "filesystem/SDL_filesystem_c.h"
-#include "file/SDL_asyncio_c.h"
+#include "io/SDL_asyncio_c.h"
 #ifdef SDL_PLATFORM_ANDROID
 #include "core/android/SDL_android.h"
 #endif
@@ -642,6 +643,7 @@ void SDL_Quit(void)
     SDL_HelperWindowDestroy();
 #endif
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
+    SDL_CleanupTrays();
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();

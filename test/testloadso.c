@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,8 +24,8 @@ typedef int (*fntype)(const char *);
 static void log_usage(char *progname, SDLTest_CommonState *state) {
     static const char *options[] = { "library", "functionname|--hello", NULL };
     SDLTest_CommonLogUsage(state, progname, options);
-    SDL_Log("USAGE: %s <library> <functionname>\n", progname);
-    SDL_Log("       %s <lib with puts()> --hello\n", progname);
+    SDL_Log("USAGE: %s <library> <functionname>", progname);
+    SDL_Log("       %s <lib with puts()> --hello", progname);
 }
 
 int main(int argc, char *argv[])
@@ -80,28 +80,28 @@ int main(int argc, char *argv[])
 
     /* Initialize SDL */
     if (!SDL_Init(0)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 2;
     }
 
     lib = SDL_LoadObject(libname);
     if (!lib) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_LoadObject('%s') failed: %s\n",
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_LoadObject('%s') failed: %s",
                      libname, SDL_GetError());
         result = 3;
     } else {
         fn = (fntype)SDL_LoadFunction(lib, symname);
         if (!fn) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_LoadFunction('%s') failed: %s\n",
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_LoadFunction('%s') failed: %s",
                          symname, SDL_GetError());
             result = 4;
         } else {
-            SDL_Log("Found %s in %s at %p\n", symname, libname, fn);
+            SDL_Log("Found %s in %s at %p", symname, libname, fn);
             if (hello) {
-                SDL_Log("Calling function...\n");
+                SDL_Log("Calling function...");
                 fn("     HELLO, WORLD!\n");
-                SDL_Log("...apparently, we survived.  :)\n");
-                SDL_Log("Unloading library...\n");
+                SDL_Log("...apparently, we survived.  :)");
+                SDL_Log("Unloading library...");
             }
         }
         SDL_UnloadObject(lib);

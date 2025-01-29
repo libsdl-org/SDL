@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -102,7 +102,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
         size_t end = (offset + size) % hidden->mixbuf_bytes;
         SDL_assert(size <= hidden->mixbuf_bytes);
 
-//LOGI("Recorded %zu frames, %zu available, %zu max (%zu written, %zu read)\n", callback_bytes / framesize, available_bytes / framesize, hidden->mixbuf_bytes / framesize, hidden->callback_bytes / framesize, hidden->processed_bytes / framesize);
+//LOGI("Recorded %zu frames, %zu available, %zu max (%zu written, %zu read)", callback_bytes / framesize, available_bytes / framesize, hidden->mixbuf_bytes / framesize, hidden->callback_bytes / framesize, hidden->processed_bytes / framesize);
 
         if (offset <= end) {
             SDL_memcpy(&hidden->mixbuf[offset], input, size);
@@ -116,7 +116,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
         hidden->callback_bytes += size;
 
         if (size < callback_bytes) {
-            LOGI("Audio recording overflow, dropped %zu frames\n", (callback_bytes - size) / framesize);
+            LOGI("Audio recording overflow, dropped %zu frames", (callback_bytes - size) / framesize);
         }
     } else {
         Uint8 *output = (Uint8 *)audioData;
@@ -126,7 +126,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
         size_t end = (offset + size) % hidden->mixbuf_bytes;
         SDL_assert(size <= hidden->mixbuf_bytes);
 
-//LOGI("Playing %zu frames, %zu available, %zu max (%zu written, %zu read)\n", callback_bytes / framesize, available_bytes / framesize, hidden->mixbuf_bytes / framesize, hidden->processed_bytes / framesize, hidden->callback_bytes / framesize);
+//LOGI("Playing %zu frames, %zu available, %zu max (%zu written, %zu read)", callback_bytes / framesize, available_bytes / framesize, hidden->mixbuf_bytes / framesize, hidden->processed_bytes / framesize, hidden->callback_bytes / framesize);
 
         SDL_MemoryBarrierAcquire();
         if (offset <= end) {
@@ -139,7 +139,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
         hidden->callback_bytes += size;
 
         if (size < callback_bytes) {
-            LOGI("Audio playback underflow, missed %zu frames\n", (callback_bytes - size) / framesize);
+            LOGI("Audio playback underflow, missed %zu frames", (callback_bytes - size) / framesize);
             SDL_memset(&output[size], device->silence_value, (callback_bytes - size));
         }
     }
@@ -315,10 +315,10 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     ctx.AAudioStreamBuilder_setDataCallback(builder, AAUDIO_dataCallback, device);
     // Some devices have flat sounding audio when low latency mode is enabled, but this is a better experience for most people
     if (SDL_GetHintBoolean(SDL_HINT_ANDROID_LOW_LATENCY_AUDIO, true)) {
-        SDL_Log("Low latency audio enabled\n");
+        SDL_Log("Low latency audio enabled");
         ctx.AAudioStreamBuilder_setPerformanceMode(builder, AAUDIO_PERFORMANCE_MODE_LOW_LATENCY);
     } else {
-        SDL_Log("Low latency audio disabled\n");
+        SDL_Log("Low latency audio disabled");
     }
 
     LOGI("AAudio Try to open %u hz %s %u channels samples %u",

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,9 @@
 #include "SDL_keymap_c.h"
 #include "../video/SDL_sysvideo.h"
 
-// #define DEBUG_KEYBOARD
+#if 0
+#define DEBUG_KEYBOARD
+#endif
 
 // Global keyboard information
 
@@ -160,7 +162,7 @@ void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event)
     SDL_free(SDL_keyboards[keyboard_index].name);
 
     if (keyboard_index != SDL_keyboard_count - 1) {
-        SDL_memcpy(&SDL_keyboards[keyboard_index], &SDL_keyboards[keyboard_index + 1], (SDL_keyboard_count - keyboard_index - 1) * sizeof(SDL_keyboards[keyboard_index]));
+        SDL_memmove(&SDL_keyboards[keyboard_index], &SDL_keyboards[keyboard_index + 1], (SDL_keyboard_count - keyboard_index - 1) * sizeof(SDL_keyboards[keyboard_index]));
     }
     --SDL_keyboard_count;
 
@@ -206,6 +208,7 @@ const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
 {
     int keyboard_index = SDL_GetKeyboardIndex(instance_id);
     if (keyboard_index < 0) {
+        SDL_SetError("Keyboard %" SDL_PRIu32 " not found", instance_id);
         return NULL;
     }
     return SDL_GetPersistentString(SDL_keyboards[keyboard_index].name);
@@ -217,7 +220,7 @@ void SDL_ResetKeyboard(void)
     int scancode;
 
 #ifdef DEBUG_KEYBOARD
-    printf("Resetting keyboard\n");
+    SDL_Log("Resetting keyboard");
 #endif
     for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_SCANCODE_COUNT; ++scancode) {
         if (keyboard->keystate[scancode]) {
@@ -322,6 +325,7 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
 {
     SDL_VideoDevice *video = SDL_GetVideoDevice();
     SDL_Keyboard *keyboard = &SDL_keyboard;
+    SDL_Mouse *mouse = SDL_GetMouse();
 
     if (window) {
         if (!SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW) || window->is_destroying) {
@@ -332,6 +336,19 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
     if (keyboard->focus && !window) {
         // We won't get anymore keyboard messages, so reset keyboard state
         SDL_ResetKeyboard();
+
+        // Also leave mouse relative mode
+        if (mouse->relative_mode) {
+            SDL_SetRelativeMouseMode(false);
+
+            SDL_Window *focus = keyboard->focus;
+            if ((focus->flags & SDL_WINDOW_MINIMIZED) != 0) {
+                // We can't warp the mouse within minimized windows, so manually restore the position
+                float x = focus->x + mouse->x;
+                float y = focus->y + mouse->y;
+                SDL_WarpMouseGlobal(x, y);
+            }
+        }
     }
 
     // See if the current window has lost focus
@@ -500,7 +517,7 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
     const Uint8 source = flags & KEYBOARD_SOURCE_MASK;
 
 #ifdef DEBUG_KEYBOARD
-    printf("The '%s' key has been %s\n", SDL_GetScancodeName(scancode), down ? "pressed" : "released");
+    SDL_Log("The '%s' key has been %s", SDL_GetScancodeName(scancode), down ? "pressed" : "released");
 #endif
 
     // Figure out what type of event this is

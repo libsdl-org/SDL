@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_HAVE_BLIT_N
+#ifdef SDL_HAVE_BLIT_N
 
 #include "SDL_surface_c.h"
 #include "SDL_blit_copy.h"
@@ -1162,7 +1162,7 @@ static void Blit_XRGB8888_RGB565(SDL_BlitInfo *info)
 #endif // USE_DUFFS_LOOP
 }
 
-#if SDL_HAVE_BLIT_N_RGB565
+#ifdef SDL_HAVE_BLIT_N_RGB565
 
 // Special optimized blit for RGB 5-6-5 --> 32-bit RGB surfaces
 #define RGB565_32(dst, src, map) (map[src[LO] * 2] + map[src[HI] * 2 + 1])
@@ -2753,7 +2753,7 @@ static const struct blit_table normal_blit_2[] = {
     { 0x00007C00, 0x000003E0, 0x0000001F, 4, 0x00000000, 0x00000000, 0x00000000,
       BLIT_FEATURE_HAS_ALTIVEC, Blit_RGB555_32Altivec, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
 #endif
-#if SDL_HAVE_BLIT_N_RGB565
+#ifdef SDL_HAVE_BLIT_N_RGB565
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
       0, Blit_RGB565_ARGB8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,

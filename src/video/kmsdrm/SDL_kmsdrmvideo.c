@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -163,7 +163,7 @@ static int get_driindex(void)
                 close(drm_fd);
             } else {
                 SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
-                             "Failed to open KMSDRM device %s, errno: %d\n", device, errno);
+                             "Failed to open KMSDRM device %s, errno: %d", device, errno);
             }
         }
     }

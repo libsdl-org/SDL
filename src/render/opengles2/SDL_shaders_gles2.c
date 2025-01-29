@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -148,7 +148,7 @@ static const char GLES2_Fragment_TextureBGR[] =                 \
 "}\n"                                                           \
 ;
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 
 #define YUV_SHADER_PROLOGUE                                     \
 "uniform sampler2D u_texture;\n"                                \
@@ -365,7 +365,7 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
         return GLES2_Fragment_TextureRGB;
     case GLES2_SHADER_FRAGMENT_TEXTURE_BGR:
         return GLES2_Fragment_TextureBGR;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     case GLES2_SHADER_FRAGMENT_TEXTURE_YUV:
         return GLES2_Fragment_TextureYUV;
     case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA:

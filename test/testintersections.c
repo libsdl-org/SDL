@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -92,7 +92,7 @@ static int add_line(float x1, float y1, float x2, float y2)
         return 0;
     }
 
-    SDL_Log("adding line (%g, %g), (%g, %g)\n", x1, y1, x2, y2);
+    SDL_Log("adding line (%g, %g), (%g, %g)", x1, y1, x2, y2);
     lines[num_lines].x = x1;
     lines[num_lines].y = y1;
     lines[num_lines].w = x2;
@@ -142,7 +142,7 @@ static int add_rect(float x1, float y1, float x2, float y2)
         SWAP(float, y1, y2);
     }
 
-    SDL_Log("adding rect (%g, %g), (%g, %g) [%gx%g]\n", x1, y1, x2, y2,
+    SDL_Log("adding rect (%g, %g), (%g, %g) [%gx%g]", x1, y1, x2, y2,
             x2 - x1, y2 - y1);
 
     rects[num_rects].x = x1;
@@ -385,7 +385,7 @@ int main(int argc, char *argv[])
 
     if (now > then) {
         double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
     }
     return 0;
 }

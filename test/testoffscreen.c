@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     /* Force the offscreen renderer, if it cannot be created then fail out */
     SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO)) {
-        SDL_Log("Couldn't initialize the offscreen video driver: %s\n",
+        SDL_Log("Couldn't initialize the offscreen video driver: %s",
                 SDL_GetError());
         return 1;
     }
@@ -117,14 +117,14 @@ int main(int argc, char *argv[])
     window = SDL_CreateWindow("Offscreen Test", width, height, 0);
 
     if (!window) {
-        SDL_Log("Couldn't create window: %s\n", SDL_GetError());
+        SDL_Log("Couldn't create window: %s", SDL_GetError());
         return 1;
     }
 
     renderer = SDL_CreateRenderer(window, NULL);
 
     if (!renderer) {
-        SDL_Log("Couldn't create renderer: %s\n",
+        SDL_Log("Couldn't create renderer: %s",
                 SDL_GetError());
         return 1;
     }
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     done = 0;
 #endif
 
-    SDL_Log("Rendering %u frames offscreen\n", max_frames);
+    SDL_Log("Rendering %u frames offscreen", max_frames);
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
             now = SDL_GetTicks();
             if (now > then) {
                 double fps = ((double)frames * 1000) / (now - then);
-                SDL_Log("Frames remaining: %" SDL_PRIu32 " rendering at %2.2f frames per second\n", max_frames - frames, fps);
+                SDL_Log("Frames remaining: %" SDL_PRIu32 " rendering at %2.2f frames per second", max_frames - frames, fps);
             }
         }
     }

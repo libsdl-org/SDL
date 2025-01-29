@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,8 +20,6 @@
 */
 
 /**
- *  \file SDL_test_common.h
- *
  *  Common functions of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
@@ -141,6 +139,7 @@ typedef struct
     int gl_accum_blue_size;
     int gl_accum_alpha_size;
     int gl_stereo;
+    int gl_release_behavior;
     int gl_multisamplebuffers;
     int gl_multisamplesamples;
     int gl_retained_backing;

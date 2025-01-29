@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -76,7 +76,7 @@ typedef struct BlitPipelineCacheEntry
 #define SDL_GPU_STENCILOP_MAX_ENUM_VALUE            (SDL_GPU_STENCILOP_DECREMENT_AND_WRAP + 1)
 #define SDL_GPU_BLENDOP_MAX_ENUM_VALUE              (SDL_GPU_BLENDOP_MAX + 1)
 #define SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE          (SDL_GPU_BLENDFACTOR_SRC_ALPHA_SATURATE + 1)
-#define SDL_GPU_SWAPCHAINCOMPOSITION_MAX_ENUM_VALUE (SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2048 + 1)
+#define SDL_GPU_SWAPCHAINCOMPOSITION_MAX_ENUM_VALUE (SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084 + 1)
 #define SDL_GPU_PRESENTMODE_MAX_ENUM_VALUE          (SDL_GPU_PRESENTMODE_MAILBOX + 1)
 
 static inline Sint32 Texture_GetBlockWidth(
@@ -483,12 +483,14 @@ struct SDL_GPUDevice
     SDL_GPUBuffer *(*CreateBuffer)(
         SDL_GPURenderer *driverData,
         SDL_GPUBufferUsageFlags usageFlags,
-        Uint32 size);
+        Uint32 size,
+        const char *debugName);
 
     SDL_GPUTransferBuffer *(*CreateTransferBuffer)(
         SDL_GPURenderer *driverData,
         SDL_GPUTransferBufferUsage usage,
-        Uint32 size);
+        Uint32 size,
+        const char *debugName);
 
     // Debug Naming
 

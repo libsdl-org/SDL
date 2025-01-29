@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,7 @@
 #include "../../video/android/SDL_androidkeyboard.h"
 #include "../../video/android/SDL_androidmouse.h"
 #include "../../video/android/SDL_androidtouch.h"
+#include "../../video/android/SDL_androidpen.h"
 #include "../../video/android/SDL_androidvideo.h"
 #include "../../video/android/SDL_androidwindow.h"
 #include "../../joystick/android/SDL_sysjoystick_c.h"
@@ -117,6 +118,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
     JNIEnv *env, jclass jcls,
     jint button, jint action, jfloat x, jfloat y, jboolean relative);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePen)(
+    JNIEnv *env, jclass jcls,
+    jint pen_id_in, jint button, jint action, jfloat x, jfloat y, jfloat p);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
     JNIEnv *env, jclass jcls,
@@ -209,6 +214,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     { "onNativeKeyboardFocusLost", "()V", SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost) },
     { "onNativeTouch", "(IIIFFF)V", SDL_JAVA_INTERFACE(onNativeTouch) },
     { "onNativeMouse", "(IIFFZ)V", SDL_JAVA_INTERFACE(onNativeMouse) },
+    { "onNativePen", "(IIIFFF)V", SDL_JAVA_INTERFACE(onNativePen) },
     { "onNativeAccel", "(FFF)V", SDL_JAVA_INTERFACE(onNativeAccel) },
     { "onNativeClipboardChanged", "()V", SDL_JAVA_INTERFACE(onNativeClipboardChanged) },
     { "nativeLowMemory", "()V", SDL_JAVA_INTERFACE(nativeLowMemory) },
@@ -398,9 +404,6 @@ static void Internal_Android_Destroy_AssetManager(void);
 static AAssetManager *asset_manager = NULL;
 static jobject javaAssetManagerRef = 0;
 
-// Re-create activity hint
-static SDL_AtomicInt bAllowRecreateActivity;
-
 static SDL_Mutex *Android_ActivityMutex = NULL;
 static SDL_Mutex *Android_LifecycleMutex = NULL;
 static SDL_Semaphore *Android_LifecycleEventSem = NULL;
@@ -558,7 +561,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     register_methods(env, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, SDL_arraysize(SDLAudioManager_tab));
     register_methods(env, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
     register_methods(env, "org/libsdl/app/HIDDeviceManager", HIDDeviceManager_tab, SDL_arraysize(HIDDeviceManager_tab));
-    SDL_SetAtomicInt(&bAllowRecreateActivity, false);
 
     return JNI_VERSION_1_4;
 }
@@ -758,28 +760,16 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeCheckSDLThreadCounter)(
     return tmp;
 }
 
-static void SDLCALL SDL_AllowRecreateActivityChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    if (SDL_GetStringBoolean(hint, false)) {
-        SDL_SetAtomicInt(&bAllowRecreateActivity, true);
-    } else {
-        SDL_SetAtomicInt(&bAllowRecreateActivity, false);
-    }
-}
-
 JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeAllowRecreateActivity)(
     JNIEnv *env, jclass jcls)
 {
-    return SDL_GetAtomicInt(&bAllowRecreateActivity);
+    return SDL_GetHintBoolean(SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY, false);
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitMainThread)(
     JNIEnv *env, jclass jcls)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeInitSDLThread() %d time", run_count);
-    if (run_count == 1) {
-        SDL_AddHintCallback(SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY, SDL_AllowRecreateActivityChanged, NULL);
-    }
     run_count += 1;
 
     // Save JNIEnv of SDLThread
@@ -893,7 +883,7 @@ static int FindLifecycleEvent(SDL_AndroidLifecycleEvent event)
 static void RemoveLifecycleEvent(int index)
 {
     if (index < Android_NumLifecycleEvents - 1) {
-        SDL_memcpy(&Android_LifecycleEvents[index], &Android_LifecycleEvents[index+1], (Android_NumLifecycleEvents - index - 1) * sizeof(Android_LifecycleEvents[index]));
+        SDL_memmove(&Android_LifecycleEvents[index], &Android_LifecycleEvents[index+1], (Android_NumLifecycleEvents - index - 1) * sizeof(Android_LifecycleEvents[index]));
     }
     --Android_NumLifecycleEvents;
 }
@@ -1057,10 +1047,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeRotationChanged)(
         break;
     }
 
-    if (Android_Window) {
-        SDL_VideoDisplay *display = SDL_GetVideoDisplay(SDL_GetPrimaryDisplay());
-        SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ORIENTATION, displayCurrentOrientation, 0);
-    }
+    Android_SetOrientation(displayCurrentOrientation);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -1071,9 +1058,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeInsetsChanged)(
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    if (Android_Window) {
-        SDL_SetWindowSafeAreaInsets(Android_Window, left, right, top, bottom);
-    }
+    Android_SetWindowSafeAreaInsets(left, right, top, bottom);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -1358,6 +1343,18 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
     SDL_LockMutex(Android_ActivityMutex);
 
     Android_OnMouse(Android_Window, button, action, x, y, relative);
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+// Pen
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePen)(
+    JNIEnv *env, jclass jcls,
+    jint pen_id_in, jint button, jint action, jfloat x, jfloat y, jfloat p)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    Android_OnPen(Android_Window, pen_id_in, button, action, x, y, p);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }

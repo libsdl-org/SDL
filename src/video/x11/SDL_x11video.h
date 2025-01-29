@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -137,15 +137,24 @@ struct SDL_VideoData
     Uint32 global_mouse_buttons;
 
     SDL_XInput2DeviceInfo *mouse_device_info;
+    int xinput_master_pointer_device;
     bool xinput_hierarchy_changed;
 
     int xrandr_event_base;
-
+    struct
+    {
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
-    XkbDescPtr xkb;
+        XkbDescPtr desc_ptr;
 #endif
-    int xkb_event;
-    unsigned int xkb_group;
+        int event;
+        unsigned int current_group;
+        unsigned int xkb_modifiers;
+
+        SDL_Keymod sdl_modifiers;
+
+        Uint32 numlock_mask;
+        Uint32 scrolllock_mask;
+    } xkb;
 
     KeyCode filter_code;
     Time filter_time;

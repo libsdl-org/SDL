@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -125,7 +125,7 @@ void VITA_PollTouch(void)
                 // Skip if finger was already previously down
                 if (!finger_down) {
                     // Send an initial touch
-                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, true, x, y, force);
+                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, SDL_EVENT_FINGER_DOWN, x, y, force);
                 }
 
                 // Always send the motion
@@ -151,7 +151,7 @@ void VITA_PollTouch(void)
                     VITA_ConvertTouchXYToSDLXY(&x, &y, touch_old[port].report[i].x, touch_old[port].report[i].y, port);
                     finger_id = (SDL_FingerID)(touch_old[port].report[i].id + 1);
                     // Finger released from screen
-                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, false, x, y, force);
+                    SDL_SendTouch(0, touch_id, finger_id, Vita_Window, SDL_EVENT_FINGER_UP, x, y, force);
                 }
             }
         }

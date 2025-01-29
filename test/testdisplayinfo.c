@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@ print_mode(const char *prefix, const SDL_DisplayMode *mode)
         return;
     }
 
-    SDL_Log("%s: %dx%d@%gx, %gHz, fmt=%s\n",
+    SDL_Log("%s: %dx%d@%gx, %gHz, fmt=%s",
             prefix,
             mode->w, mode->h, mode->pixel_density, mode->refresh_rate,
             SDL_GetPixelFormatName(mode->format));
@@ -52,14 +52,14 @@ int main(int argc, char *argv[])
 
     /* Load the SDL library */
     if (!SDL_Init(SDL_INIT_VIDEO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
-    SDL_Log("Using video target '%s'.\n", SDL_GetCurrentVideoDriver());
+    SDL_Log("Using video target '%s'.", SDL_GetCurrentVideoDriver());
     displays = SDL_GetDisplays(&num_displays);
 
-    SDL_Log("See %d displays.\n", num_displays);
+    SDL_Log("See %d displays.", num_displays);
 
     for (i = 0; i < num_displays; i++) {
         SDL_DisplayID dpy = displays[i];
@@ -70,20 +70,20 @@ int main(int argc, char *argv[])
 
         SDL_GetDisplayBounds(dpy, &rect);
         modes = SDL_GetFullscreenDisplayModes(dpy, &num_modes);
-        SDL_Log("%" SDL_PRIu32 ": \"%s\" (%dx%d at %d,%d), content scale %.2f, %d fullscreen modes, HDR capable: %s.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, SDL_GetDisplayContentScale(dpy), num_modes, has_HDR ? "yes" : "no");
+        SDL_Log("%" SDL_PRIu32 ": \"%s\" (%dx%d at %d,%d), content scale %.2f, %d fullscreen modes, HDR capable: %s.", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, SDL_GetDisplayContentScale(dpy), num_modes, has_HDR ? "yes" : "no");
 
         mode = SDL_GetCurrentDisplayMode(dpy);
         if (mode) {
             print_mode("CURRENT", mode);
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    CURRENT: failed to query (%s)\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    CURRENT: failed to query (%s)", SDL_GetError());
         }
 
         mode = SDL_GetDesktopDisplayMode(dpy);
         if (mode) {
             print_mode("DESKTOP", mode);
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DESKTOP: failed to query (%s)\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DESKTOP: failed to query (%s)", SDL_GetError());
         }
 
         for (m = 0; m < num_modes; m++) {
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         }
         SDL_free(modes);
 
-        SDL_Log("\n");
+        SDL_Log("%s", "");
     }
     SDL_free(displays);
 

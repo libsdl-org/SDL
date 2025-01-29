@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -210,7 +210,7 @@ static bool VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, 
     renderer->SupportsBlendMode = VITA_GXM_SupportsBlendMode;
     renderer->CreateTexture = VITA_GXM_CreateTexture;
     renderer->UpdateTexture = VITA_GXM_UpdateTexture;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = VITA_GXM_UpdateTextureYUV;
     renderer->UpdateTextureNV = VITA_GXM_UpdateTextureNV;
 #endif
@@ -299,7 +299,7 @@ static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     VITA_GXM_SetTextureScaleMode(renderer, texture, texture->scaleMode);
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     vita_texture->yuv = ((texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12));
     vita_texture->nv12 = ((texture->format == SDL_PIXELFORMAT_NV12) || (texture->format == SDL_PIXELFORMAT_NV21));
 #endif
@@ -324,11 +324,11 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT709_FULL_RANGE);
         }
     } else {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Unsupported YUV colorspace\n");
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Unsupported YUV colorspace");
     }
 
     if (ret < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Setting YUV profile failed: %x\n", ret);
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Setting YUV profile failed: %x", ret);
     }
 }
 
@@ -339,7 +339,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     Uint8 *dst;
     int row, length, dpitch;
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (vita_texture->yuv || vita_texture->nv12) {
         VITA_GXM_SetYUVProfile(renderer, texture);
     }
@@ -358,7 +358,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         }
     }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (vita_texture->yuv) {
         void *Udst;
         void *Vdst;
@@ -425,7 +425,7 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     return true;
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                      const SDL_Rect *rect,
                                      const Uint8 *Yplane, int Ypitch,

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -703,12 +703,12 @@ static void RAWINPUT_InitWindowsGamingInput(RAWINPUT_DeviceContext *ctx)
 
                     hr = __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_add_GamepadAdded(wgi_state.gamepad_statics, &gamepad_added.iface, &wgi_state.gamepad_added_token);
                     if (!SUCCEEDED(hr)) {
-                        SDL_SetError("add_GamepadAdded() failed: 0x%lx\n", hr);
+                        SDL_SetError("add_GamepadAdded() failed: 0x%lx", hr);
                     }
 
                     hr = __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics_add_GamepadRemoved(wgi_state.gamepad_statics, &gamepad_removed.iface, &wgi_state.gamepad_removed_token);
                     if (!SUCCEEDED(hr)) {
-                        SDL_SetError("add_GamepadRemoved() failed: 0x%lx\n", hr);
+                        SDL_SetError("add_GamepadRemoved() failed: 0x%lx", hr);
                     }
                 }
             }
@@ -935,7 +935,7 @@ static void RAWINPUT_AddDevice(HANDLE hDevice)
     device->joystick_id = SDL_GetNextObjectID();
 
 #ifdef DEBUG_RAWINPUT
-    SDL_Log("Adding RAWINPUT device '%s' VID 0x%.4x, PID 0x%.4x, version %d, handle 0x%.8x\n", device->name, device->vendor_id, device->product_id, device->version, device->hDevice);
+    SDL_Log("Adding RAWINPUT device '%s' VID 0x%.4x, PID 0x%.4x, version %d, handle 0x%.8x", device->name, device->vendor_id, device->product_id, device->version, device->hDevice);
 #endif
 
     // Add it to the list
@@ -985,7 +985,7 @@ static void RAWINPUT_DelDevice(SDL_RAWINPUT_Device *device, bool send_event)
             SDL_PrivateJoystickRemoved(device->joystick_id);
 
 #ifdef DEBUG_RAWINPUT
-            SDL_Log("Removing RAWINPUT device '%s' VID 0x%.4x, PID 0x%.4x, version %d, handle %p\n", device->name, device->vendor_id, device->product_id, device->version, device->hDevice);
+            SDL_Log("Removing RAWINPUT device '%s' VID 0x%.4x, PID 0x%.4x, version %d, handle %p", device->name, device->vendor_id, device->product_id, device->version, device->hDevice);
 #endif
             RAWINPUT_ReleaseDevice(device);
             return;
@@ -1511,7 +1511,7 @@ static bool RAWINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_
         gamepad_state->vibration.RightTrigger = (DOUBLE)right_rumble / SDL_MAX_UINT16;
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_put_Vibration(gamepad_state->gamepad, gamepad_state->vibration);
         if (!SUCCEEDED(hr)) {
-            return SDL_SetError("Setting vibration failed: 0x%lx\n", hr);
+            return SDL_SetError("Setting vibration failed: 0x%lx", hr);
         }
         return true;
     } else {
@@ -1779,7 +1779,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
               triggers for a frame. */
             if (ctx->wgi_uncorrelate_count >= 5) {
 #ifdef DEBUG_RAWINPUT
-                SDL_Log("UN-Correlated joystick %d to WindowsGamingInput device #%d\n", joystick->instance_id, ctx->wgi_slot);
+                SDL_Log("UN-Correlated joystick %d to WindowsGamingInput device #%d", joystick->instance_id, ctx->wgi_slot);
 #endif
                 RAWINPUT_MarkWindowsGamingInputSlotFree(ctx->wgi_slot);
                 ctx->wgi_correlated = false;
@@ -1811,7 +1811,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                             // correlation stayed steady and uncontested across multiple frames, guaranteed match
                             ctx->wgi_correlated = true;
 #ifdef DEBUG_RAWINPUT
-                            SDL_Log("Correlated joystick %d to WindowsGamingInput device #%d\n", joystick->instance_id, slot_idx);
+                            SDL_Log("Correlated joystick %d to WindowsGamingInput device #%d", joystick->instance_id, slot_idx);
 #endif
                             correlated = true;
                             RAWINPUT_MarkWindowsGamingInputSlotUsed(ctx->wgi_slot, ctx);
@@ -1875,7 +1875,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                   triggers for a frame. */
                 if (ctx->xinput_uncorrelate_count >= 5) {
 #ifdef DEBUG_RAWINPUT
-                    SDL_Log("UN-Correlated joystick %d to XInput device #%d\n", joystick->instance_id, ctx->xinput_slot);
+                    SDL_Log("UN-Correlated joystick %d to XInput device #%d", joystick->instance_id, ctx->xinput_slot);
 #endif
                     RAWINPUT_MarkXInputSlotFree(ctx->xinput_slot);
                     ctx->xinput_correlated = false;
@@ -1907,7 +1907,7 @@ static void RAWINPUT_UpdateOtherAPIs(SDL_Joystick *joystick)
                                 // correlation stayed steady and uncontested across multiple frames, guaranteed match
                                 ctx->xinput_correlated = true;
 #ifdef DEBUG_RAWINPUT
-                                SDL_Log("Correlated joystick %d to XInput device #%d\n", joystick->instance_id, slot_idx);
+                                SDL_Log("Correlated joystick %d to XInput device #%d", joystick->instance_id, slot_idx);
 #endif
                                 correlated = true;
                                 RAWINPUT_MarkXInputSlotUsed(ctx->xinput_slot);

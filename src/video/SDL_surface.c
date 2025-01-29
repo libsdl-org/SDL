@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1254,7 +1254,8 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
     if (scaleMode == SDL_SCALEMODE_NEAREST) {
         if (!(src->map.info.flags & complex_copy_flags) &&
             src->format == dst->format &&
-            !SDL_ISPIXELFORMAT_INDEXED(src->format)) {
+            !SDL_ISPIXELFORMAT_INDEXED(src->format) &&
+            SDL_BYTESPERPIXEL(src->format) <= 4) {
             return SDL_SoftStretch(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
         } else if (SDL_BITSPERPIXEL(src->format) < 8) {
             // Scaling bitmap not yet supported, convert to RGBA for blit
@@ -1722,7 +1723,7 @@ bool SDL_LockSurface(SDL_Surface *surface)
     }
 
     if (!surface->locked) {
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
         // Perform the lock
         if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
             SDL_UnRLESurface(surface, true);
@@ -1753,7 +1754,7 @@ void SDL_UnlockSurface(SDL_Surface *surface)
         return;
     }
 
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
     // Update RLE encoded surface with new data
     if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         surface->internal_flags &= ~SDL_INTERNAL_SURFACE_RLEACCEL; // stop lying
@@ -2276,7 +2277,7 @@ bool SDL_ConvertPixelsAndColorspace(int width, int height,
         dst_colorspace = SDL_GetDefaultColorspaceForFormat(dst_format);
     }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
     if (SDL_ISPIXELFORMAT_FOURCC(src_format) && SDL_ISPIXELFORMAT_FOURCC(dst_format)) {
         return SDL_ConvertPixels_YUV_to_YUV(width, height, src_format, src_colorspace, src_properties, src, src_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch);
     } else if (SDL_ISPIXELFORMAT_FOURCC(src_format)) {
@@ -2960,7 +2961,7 @@ void SDL_DestroySurface(SDL_Surface *surface)
     while (surface->locked > 0) {
         SDL_UnlockSurface(surface);
     }
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
     if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         SDL_UnRLESurface(surface, false);
     }

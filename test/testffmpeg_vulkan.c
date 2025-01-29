@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -146,7 +146,7 @@ static int loadDeviceFunctions(VulkanVideoContext *context)
 #define VULKAN_DEVICE_FUNCTION(name)                                                  \
     context->name = (PFN_##name)context->vkGetDeviceProcAddr(context->device, #name); \
     if (!context->name) {                                                             \
-        return SDL_SetError("vkGetDeviceProcAddr(device, \"" #name "\") failed\n");   \
+        return SDL_SetError("vkGetDeviceProcAddr(device, \"" #name "\") failed");     \
     }
     VULKAN_FUNCTIONS()
 #undef VULKAN_GLOBAL_FUNCTION
@@ -243,7 +243,7 @@ static int createInstance(VulkanVideoContext *context)
     result = context->vkCreateInstance(&instanceCreateInfo, NULL, &context->instance);
     if (result != VK_SUCCESS) {
         context->instance = VK_NULL_HANDLE;
-        return SDL_SetError("vkCreateInstance(): %s\n", getVulkanResultString(result));
+        return SDL_SetError("vkCreateInstance(): %s", getVulkanResultString(result));
     }
     if (loadInstanceFunctions(context) < 0) {
         return -1;

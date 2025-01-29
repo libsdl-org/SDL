@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,13 +49,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     @autoreleasepool {
         SDL_uikitviewcontroller *viewcontroller = (__bridge SDL_uikitviewcontroller *)userdata;
         viewcontroller.homeIndicatorHidden = (hint && *hint) ? SDL_atoi(hint) : -1;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability-new"
-        if ([viewcontroller respondsToSelector:@selector(setNeedsUpdateOfHomeIndicatorAutoHidden)]) {
-            [viewcontroller setNeedsUpdateOfHomeIndicatorAutoHidden];
-            [viewcontroller setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
-        }
-#pragma clang diagnostic pop
+        [viewcontroller setNeedsUpdateOfHomeIndicatorAutoHidden];
+        [viewcontroller setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
     }
 }
 #endif
@@ -111,6 +106,19 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
                             SDL_HideHomeIndicatorHintChanged,
                             (__bridge void *)self);
 #endif
+
+        // Enable high refresh rates on iOS
+        // To enable this on phones, you should add the following line to Info.plist:
+        // <key>CADisableMinimumFrameDurationOnPhone</key> <true/>
+        if (@available(iOS 15.0, tvOS 15.0, *)) {
+            const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+            if (mode && mode->refresh_rate > 60.0f) {
+                int frame_rate = (int)mode->refresh_rate;
+                displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
+                displayLink.preferredFrameRateRange = CAFrameRateRangeMake((frame_rate * 2) / 3, frame_rate, frame_rate);
+                [displayLink addToRunLoop:NSRunLoop.currentRunLoop forMode:NSDefaultRunLoopMode];
+            }
+        }
     }
     return self;
 }
@@ -145,6 +153,9 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 {
     [self stopAnimation];
 
+    if (interval <= 0) {
+        interval = 1;
+    }
     animationInterval = interval;
     animationCallback = callback;
     animationCallbackParam = callbackParam;
@@ -160,18 +171,11 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_PLATFORM_VISIONOS
     displayLink.preferredFramesPerSecond = 90 / animationInterval;      //TODO: Get frame max frame rate on visionOS
-#elif defined(__IPHONE_10_3)
+#else
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
 
-    if ([displayLink respondsToSelector:@selector(preferredFramesPerSecond)] && data != nil && data.uiwindow != nil && [data.uiwindow.screen respondsToSelector:@selector(maximumFramesPerSecond)]) {
-        displayLink.preferredFramesPerSecond = data.uiwindow.screen.maximumFramesPerSecond / animationInterval;
-    } else
+    displayLink.preferredFramesPerSecond = data.uiwindow.screen.maximumFramesPerSecond / animationInterval;
 #endif
-    {
-#if __IPHONE_OS_VERSION_MIN_REQUIRED < 100300
-        [displayLink setFrameInterval:animationInterval];
-#endif
-    }
 
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
@@ -185,7 +189,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 - (void)doLoop:(CADisplayLink *)sender
 {
     // Don't run the game loop while a messagebox is up
-    if (!UIKit_ShowingMessageBox()) {
+    if (animationCallback && !UIKit_ShowingMessageBox()) {
         // See the comment in the function definition.
 #if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
         UIKit_GL_RestoreCurrentContext();
@@ -395,31 +399,19 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_USERNAME:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, tvOS 11.0, *)) {
-            textField.textContentType = UITextContentTypeUsername;
-        } else {
-            textField.textContentType = nil;
-        }
+        textField.textContentType = UITextContentTypeUsername;
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_HIDDEN:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, tvOS 11.0, *)) {
-            textField.textContentType = UITextContentTypePassword;
-        } else {
-            textField.textContentType = nil;
-        }
+        textField.textContentType = UITextContentTypePassword;
         textField.secureTextEntry = YES;
         break;
     case SDL_TEXTINPUT_TYPE_TEXT_PASSWORD_VISIBLE:
         textField.keyboardType = UIKeyboardTypeDefault;
-        if (@available(iOS 11.0, tvOS 11.0, *)) {
-            textField.textContentType = UITextContentTypePassword;
-        } else {
-            textField.textContentType = nil;
-        }
+        textField.textContentType = UITextContentTypePassword;
         break;
     case SDL_TEXTINPUT_TYPE_NUMBER:
-        textField.keyboardType = UIKeyboardTypeNumberPad;
+        textField.keyboardType = UIKeyboardTypeDecimalPad;
         textField.textContentType = nil;
         break;
     case SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN:
@@ -512,6 +504,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         return true;
     }
 
+    [self resetTextState];
     return [textField resignFirstResponder];
 }
 
@@ -641,8 +634,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 {
     if (textField.markedTextRange == nil) {
         if (textField.text.length < 16) {
-            textField.text = obligateForBackspace;
-            committedText = textField.text;
+            [self resetTextState];
         }
     }
     return YES;
@@ -657,6 +649,12 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         SDL_StopTextInput(window);
     }
     return YES;
+}
+
+- (void)resetTextState
+{
+    textField.text = obligateForBackspace;
+    committedText = textField.text;
 }
 
 #endif

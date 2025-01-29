@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -163,7 +163,7 @@ static int unifont_init(const char *fontname)
     /* Allocate memory for the glyph data so the file can be closed after initialization. */
     unifontGlyph = (struct UnifontGlyph *)SDL_malloc(unifontGlyphSize);
     if (!unifontGlyph) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d KiB for glyph data.\n", (int)(unifontGlyphSize + 1023) / 1024);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d KiB for glyph data.", (int)(unifontGlyphSize + 1023) / 1024);
         return -1;
     }
     SDL_memset(unifontGlyph, 0, unifontGlyphSize);
@@ -171,20 +171,20 @@ static int unifont_init(const char *fontname)
     /* Allocate memory for texture pointers for all renderers. */
     unifontTexture = (SDL_Texture **)SDL_malloc(unifontTextureSize);
     if (!unifontTexture) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d KiB for texture pointer data.\n", (int)(unifontTextureSize + 1023) / 1024);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d KiB for texture pointer data.", (int)(unifontTextureSize + 1023) / 1024);
         return -1;
     }
     SDL_memset(unifontTexture, 0, unifontTextureSize);
 
     filename = GetResourceFilename(NULL, fontname);
     if (!filename) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory");
         return -1;
     }
     hexFile = SDL_IOFromFile(filename, "rb");
     SDL_free(filename);
     if (!hexFile) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to open font file: %s\n", fontname);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to open font file: %s", fontname);
         return -1;
     }
 
@@ -200,7 +200,7 @@ static int unifont_init(const char *fontname)
             break; /* EOF */
         }
         if ((numGlyphs == 0 && bytesRead == 0) || (numGlyphs > 0 && bytesRead < 9)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.");
             return -1;
         }
 
@@ -214,16 +214,16 @@ static int unifont_init(const char *fontname)
         } else if (hexBuffer[8] == ':') {
             codepointHexSize = 8;
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Could not find codepoint and glyph data separator symbol in hex file on line %d.\n", lineNumber);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Could not find codepoint and glyph data separator symbol in hex file on line %d.", lineNumber);
             return -1;
         }
 
         if (!validate_hex((const char *)hexBuffer, codepointHexSize, &codepoint)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Malformed hexadecimal number in hex file on line %d.\n", lineNumber);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Malformed hexadecimal number in hex file on line %d.", lineNumber);
             return -1;
         }
         if (codepoint > UNIFONT_MAX_CODEPOINT) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "unifont: Codepoint on line %d exceeded limit of 0x%x.\n", lineNumber, UNIFONT_MAX_CODEPOINT);
+            SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "unifont: Codepoint on line %d exceeded limit of 0x%x.", lineNumber, UNIFONT_MAX_CODEPOINT);
         }
 
         /* If there was glyph data read in the last file read, move it to the front of the buffer. */
@@ -234,7 +234,7 @@ static int unifont_init(const char *fontname)
         bytesRead = SDL_ReadIO(hexFile, hexBuffer + bytesOverread, 33 - bytesOverread);
 
         if (bytesRead < (33 - bytesOverread)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.");
             return -1;
         }
         if (hexBuffer[32] == '\n') {
@@ -243,19 +243,19 @@ static int unifont_init(const char *fontname)
             glyphWidth = 16;
             bytesRead = SDL_ReadIO(hexFile, hexBuffer + 33, 32);
             if (bytesRead < 32) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.");
                 return -1;
             }
         }
 
         if (!validate_hex((const char *)hexBuffer, glyphWidth * 4, NULL)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Malformed hexadecimal glyph data in hex file on line %d.\n", lineNumber);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Malformed hexadecimal glyph data in hex file on line %d.", lineNumber);
             return -1;
         }
 
         if (codepoint <= UNIFONT_MAX_CODEPOINT) {
             if (unifontGlyph[codepoint].width > 0) {
-                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "unifont: Ignoring duplicate codepoint 0x%08" SDL_PRIx32 " in hex file on line %d.\n", codepoint, lineNumber);
+                SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "unifont: Ignoring duplicate codepoint 0x%08" SDL_PRIx32 " in hex file on line %d.", codepoint, lineNumber);
             } else {
                 unifontGlyph[codepoint].width = glyphWidth;
                 /* Pack the hex data into a more compact form. */
@@ -270,7 +270,7 @@ static int unifont_init(const char *fontname)
     } while (bytesRead > 0);
 
     SDL_CloseIO(hexFile);
-    SDL_Log("unifont: Loaded %" SDL_PRIu32 " glyphs.\n", numGlyphs);
+    SDL_Log("unifont: Loaded %" SDL_PRIu32 " glyphs.", numGlyphs);
     return 0;
 }
 
@@ -310,13 +310,13 @@ static int unifont_load_texture(Uint32 textureID)
     Uint8 *textureRGBA;
 
     if (textureID >= UNIFONT_NUM_TEXTURES) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Tried to load out of range texture %" SDL_PRIu32 "\n", textureID);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Tried to load out of range texture %" SDL_PRIu32, textureID);
         return -1;
     }
 
     textureRGBA = (Uint8 *)SDL_malloc(UNIFONT_TEXTURE_SIZE);
     if (!textureRGBA) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d MiB for a texture.\n", UNIFONT_TEXTURE_SIZE / 1024 / 1024);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d MiB for a texture.", UNIFONT_TEXTURE_SIZE / 1024 / 1024);
         return -1;
     }
     SDL_memset(textureRGBA, 0, UNIFONT_TEXTURE_SIZE);
@@ -340,13 +340,13 @@ static int unifont_load_texture(Uint32 textureID)
         }
         tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, UNIFONT_TEXTURE_WIDTH, UNIFONT_TEXTURE_WIDTH);
         if (tex == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to create texture %" SDL_PRIu32 " for renderer %d.\n", textureID, i);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to create texture %" SDL_PRIu32 " for renderer %d.", textureID, i);
             return -1;
         }
         unifontTexture[UNIFONT_NUM_TEXTURES * i + textureID] = tex;
         SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
         if (!SDL_UpdateTexture(tex, NULL, textureRGBA, UNIFONT_TEXTURE_PITCH)) {
-            SDL_Log("unifont error: Failed to update texture %" SDL_PRIu32 " data for renderer %d.\n", textureID, i);
+            SDL_Log("unifont error: Failed to update texture %" SDL_PRIu32 " data for renderer %d.", textureID, i);
         }
     }
 
@@ -970,7 +970,7 @@ int main(int argc, char *argv[])
 
     windowstate = (WindowState *)SDL_calloc(state->num_windows, sizeof(*windowstate));
     if (!windowstate) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't allocate window state: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't allocate window state: %s", SDL_GetError());
         return -1;
     }
 
@@ -980,7 +980,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    SDL_Log("Using font: %s\n", fontname);
+    SDL_Log("Using font: %s", fontname);
 
     /* Initialize window state */
     for (i = 0; i < state->num_windows; ++i) {
@@ -1082,7 +1082,7 @@ int main(int argc, char *argv[])
                     break;
                 }
 
-                SDL_Log("Keyboard: scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s\n",
+                SDL_Log("Keyboard: scancode 0x%08X = %s, keycode 0x%08" SDL_PRIX32 " = %s",
                         event.key.scancode,
                         SDL_GetScancodeName(event.key.scancode),
                         SDL_static_cast(Uint32, event.key.key),
@@ -1099,13 +1099,13 @@ int main(int argc, char *argv[])
                     break;
                 }
 
-                SDL_Log("Keyboard: text input \"%s\"\n", event.text.text);
+                SDL_Log("Keyboard: text input \"%s\"", event.text.text);
 
                 if (SDL_strlen(ctx->text) + SDL_strlen(event.text.text) < sizeof(ctx->text)) {
                     SDL_strlcat(ctx->text, event.text.text, sizeof(ctx->text));
                 }
 
-                SDL_Log("text inputted: %s\n", ctx->text);
+                SDL_Log("text inputted: %s", ctx->text);
 
                 /* After text inputted, we can clear up markedText because it */
                 /* is committed */
@@ -1118,7 +1118,7 @@ int main(int argc, char *argv[])
                     break;
                 }
 
-                SDL_Log("text editing \"%s\", selected range (%" SDL_PRIs32 ", %" SDL_PRIs32 ")\n",
+                SDL_Log("text editing \"%s\", selected range (%" SDL_PRIs32 ", %" SDL_PRIs32 ")",
                         event.edit.text, event.edit.start, event.edit.length);
 
                 SDL_strlcpy(ctx->markedText, event.edit.text, sizeof(ctx->markedText));
@@ -1132,9 +1132,9 @@ int main(int argc, char *argv[])
                     break;
                 }
 
-                SDL_Log("text candidates:\n");
+                SDL_Log("text candidates:");
                 for (i = 0; i < event.edit_candidates.num_candidates; ++i) {
-                    SDL_Log("%c%s\n", i == event.edit_candidates.selected_candidate ? '>' : ' ', event.edit_candidates.candidates[i]);
+                    SDL_Log("%c%s", i == event.edit_candidates.selected_candidate ? '>' : ' ', event.edit_candidates.candidates[i]);
                 }
 
                 ClearCandidates(ctx);

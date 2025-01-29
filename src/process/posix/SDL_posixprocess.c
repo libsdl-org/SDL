@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,7 +34,7 @@
 #include <sys/wait.h>
 
 #include "../SDL_sysprocess.h"
-#include "../../file/SDL_iostream_c.h"
+#include "../../io/SDL_iostream_c.h"
 
 
 #define READ_END 0
@@ -309,10 +309,16 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     // Spawn the new process
     if (process->background) {
         int status = -1;
-        pid_t pid = vfork();
+        #ifdef SDL_PLATFORM_APPLE  // Apple has vfork marked as deprecated and (as of macOS 10.12) is almost identical to calling fork() anyhow.
+        const pid_t pid = fork();
+        const char *forkname = "fork";
+        #else
+        const pid_t pid = vfork();
+        const char *forkname = "vfork";
+        #endif
         switch (pid) {
         case -1:
-            SDL_SetError("vfork() failed: %s", strerror(errno));
+            SDL_SetError("%s() failed: %s", forkname, strerror(errno));
             goto posix_spawn_fail_all;
 
         case 0:

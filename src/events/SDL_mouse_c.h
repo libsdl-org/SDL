@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,16 +39,21 @@ struct SDL_Cursor
 
 typedef struct
 {
-    SDL_MouseID mouseID;
-    Uint32 buttonstate;
-} SDL_MouseInputSource;
+    Uint64 last_timestamp;
+    double click_motion_x;
+    double click_motion_y;
+    Uint8 click_count;
+} SDL_MouseClickState;
 
 typedef struct
 {
-    float last_x, last_y;
-    Uint64 last_timestamp;
-    Uint8 click_count;
-} SDL_MouseClickState;
+    SDL_MouseID mouseID;
+    Uint32 buttonstate;
+
+    // Data for double-click tracking
+    int num_clickstates;
+    SDL_MouseClickState *clickstate;
+} SDL_MouseInputSource;
 
 typedef struct
 {
@@ -93,16 +98,17 @@ typedef struct
     float x_accu;
     float y_accu;
     float last_x, last_y; // the last reported x and y coordinates
+    double click_motion_x;
+    double click_motion_y;
     bool has_position;
     bool relative_mode;
-    bool relative_mode_warp;
     bool relative_mode_warp_motion;
     bool relative_mode_cursor_visible;
+    bool relative_mode_center;
     bool warp_emulation_hint;
     bool warp_emulation_active;
     bool warp_emulation_prohibited;
     Uint64 last_center_warp_time_ns;
-    int relative_mode_clip_interval;
     bool enable_normal_speed_scale;
     float normal_speed_scale;
     bool enable_relative_speed_scale;
@@ -112,7 +118,11 @@ typedef struct
     int double_click_radius;
     bool touch_mouse_events;
     bool mouse_touch_events;
+    bool pen_mouse_events;
+    bool pen_touch_events;
     bool was_touch_mouse_events; // Was a touch-mouse event pending?
+    bool added_mouse_touch_device;  // did we SDL_AddTouch() a virtual touch device for the mouse?
+    bool added_pen_touch_device;  // did we SDL_AddTouch() a virtual touch device for pens?
 #ifdef SDL_PLATFORM_VITA
     Uint8 vita_touch_mouse_device;
 #endif
@@ -123,10 +133,6 @@ typedef struct
     // Data for input source state
     int num_sources;
     SDL_MouseInputSource *sources;
-
-    // Data for double-click tracking
-    int num_clickstates;
-    SDL_MouseClickState *clickstate;
 
     SDL_Cursor *cursors;
     SDL_Cursor *def_cursor;

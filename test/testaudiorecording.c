@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -62,31 +62,31 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
 
     /* Load the SDL library */
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_SUCCESS;
     }
 
     if (!SDL_CreateWindowAndRenderer("testaudiorecording", 320, 240, 0, &window, &renderer)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window and renderer: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window and renderer: %s", SDL_GetError());
         return SDL_APP_SUCCESS;
     }
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
 
-    SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
+    SDL_Log("Using audio driver: %s", SDL_GetCurrentAudioDriver());
 
     devices = SDL_GetAudioRecordingDevices(NULL);
     for (i = 0; devices[i] != 0; i++) {
         const char *name = SDL_GetAudioDeviceName(devices[i]);
-        SDL_Log(" Recording device #%d: '%s'\n", i, name);
+        SDL_Log(" Recording device #%d: '%s'", i, name);
         if (devname && (SDL_strcmp(devname, name) == 0)) {
             want_device = devices[i];
         }
     }
 
     if (devname && (want_device == SDL_AUDIO_DEVICE_DEFAULT_RECORDING)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Didn't see a recording device named '%s', using the system default instead.\n", devname);
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Didn't see a recording device named '%s', using the system default instead.", devname);
         devname = NULL;
     }
 
@@ -96,10 +96,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
        open your recording devices second in case you land in those bizarre
        circumstances. */
 
-    SDL_Log("Opening default playback device...\n");
+    SDL_Log("Opening default playback device...");
     device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
     if (!device) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for playback: %s!\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for playback: %s!", SDL_GetError());
         SDL_free(devices);
         return SDL_APP_FAILURE;
     }
@@ -107,23 +107,23 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
     SDL_GetAudioDeviceFormat(device, &outspec, NULL);
     stream_out = SDL_CreateAudioStream(&outspec, &outspec);
     if (!stream_out) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for playback: %s!\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for playback: %s!", SDL_GetError());
         SDL_free(devices);
         return SDL_APP_FAILURE;
     } else if (!SDL_BindAudioStream(device, stream_out)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't bind an audio stream for playback: %s!\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't bind an audio stream for playback: %s!", SDL_GetError());
         SDL_free(devices);
         return SDL_APP_FAILURE;
     }
 
-    SDL_Log("Opening recording device %s%s%s...\n",
+    SDL_Log("Opening recording device %s%s%s...",
             devname ? "'" : "",
             devname ? devname : "[[default]]",
             devname ? "'" : "");
 
     device = SDL_OpenAudioDevice(want_device, NULL);
     if (!device) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for recording: %s!\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for recording: %s!", SDL_GetError());
         SDL_free(devices);
         return SDL_APP_FAILURE;
     }
@@ -132,16 +132,16 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
     SDL_GetAudioDeviceFormat(device, &inspec, NULL);
     stream_in = SDL_CreateAudioStream(&inspec, &inspec);
     if (!stream_in) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for recording: %s!\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create an audio stream for recording: %s!", SDL_GetError());
         return SDL_APP_FAILURE;
     } else if (!SDL_BindAudioStream(device, stream_in)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't bind an audio stream for recording: %s!\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't bind an audio stream for recording: %s!", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
     SDL_SetAudioStreamFormat(stream_in, NULL, &outspec);  /* make sure we output at the playback format. */
 
-    SDL_Log("Ready! Hold down mouse or finger to record!\n");
+    SDL_Log("Ready! Hold down mouse or finger to record!");
 
     return SDL_APP_CONTINUE;
 }
@@ -172,7 +172,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    if (!SDL_AudioDevicePaused(SDL_GetAudioStreamDevice(stream_in))) {
+    if (!SDL_AudioStreamDevicePaused(stream_in)) {
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     } else {
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
@@ -185,10 +185,10 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         Uint8 buf[1024];
         const int br = SDL_GetAudioStreamData(stream_in, buf, sizeof(buf));
         if (br < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to read from input audio stream: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to read from input audio stream: %s", SDL_GetError());
             return SDL_APP_FAILURE;
         } else if (!SDL_PutAudioStreamData(stream_out, buf, br)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to write to output audio stream: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to write to output audio stream: %s", SDL_GetError());
             return SDL_APP_FAILURE;
         }
     }
@@ -198,7 +198,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
-    SDL_Log("Shutting down.\n");
+    SDL_Log("Shutting down.");
     const SDL_AudioDeviceID devid_in = SDL_GetAudioStreamDevice(stream_in);
     const SDL_AudioDeviceID devid_out = SDL_GetAudioStreamDevice(stream_out);
     SDL_CloseAudioDevice(devid_in);  /* !!! FIXME: use SDL_OpenAudioDeviceStream instead so we can dump this. */

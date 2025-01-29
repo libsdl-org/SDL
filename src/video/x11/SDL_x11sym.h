@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -223,6 +223,8 @@ SDL_X11_SYM(int,Xutf8LookupString,(XIC a,XKeyPressedEvent* b,char* c,int d,KeySy
 // SDL_X11_SYM(XIC,XCreateIC,(XIM, ...),return)  !!! ARGH!
 SDL_X11_SYM(void,XDestroyIC,(XIC a),(a),)
 /* SDL_X11_SYM(char*,XGetICValues,(XIC, ...),return)  !!! ARGH! */
+/* SDL_X11_SYM(char*,XSetICValues,(XIC, ...),return)  !!! ARGH! */
+/* SDL_X11_SYM(XVaNestedList,XVaCreateNestedList,(int, ...),return)  !!! ARGH! */
 SDL_X11_SYM(void,XSetICFocus,(XIC a),(a),)
 SDL_X11_SYM(void,XUnsetICFocus,(XIC a),(a),)
 SDL_X11_SYM(XIM,XOpenIM,(Display* a,struct _XrmHashBucketRec* b,char* c,char* d),(a,b,c,d),return)

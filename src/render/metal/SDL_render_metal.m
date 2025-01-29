@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,6 @@
 #include "../SDL_sysrender.h"
 #include "../../video/SDL_pixels_c.h"
 
-#include <Availability.h>
 #import <CoreVideo/CoreVideo.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -101,7 +100,7 @@ typedef enum SDL_MetalFragmentFunction
     SDL_METAL_FRAGMENT_SOLID = 0,
     SDL_METAL_FRAGMENT_COPY,
     SDL_METAL_FRAGMENT_YUV,
-    SDL_METAL_FRAGMENT_ADVANCED,
+    SDL_METAL_FRAGMENT_NV12,
     SDL_METAL_FRAGMENT_COUNT,
 } SDL_MetalFragmentFunction;
 
@@ -158,7 +157,7 @@ typedef struct METAL_ShaderPipelines
 @property(nonatomic, retain) id<MTLTexture> mtltexture;
 @property(nonatomic, retain) id<MTLTexture> mtltextureUv;
 @property(nonatomic, assign) SDL_MetalFragmentFunction fragmentFunction;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 @property(nonatomic, assign) BOOL yuv;
 @property(nonatomic, assign) BOOL nv12;
 @property(nonatomic, assign) size_t conversionBufferOffset;
@@ -170,18 +169,6 @@ typedef struct METAL_ShaderPipelines
 
 @implementation SDL3METAL_TextureData
 @end
-
-static bool IsMetalAvailable()
-{
-#if (defined(SDL_PLATFORM_MACOS) && (MAC_OS_X_VERSION_MIN_REQUIRED < 101100))
-    // this checks a weak symbol.
-    if (MTLCreateSystemDefaultDevice == NULL) { // probably on 10.10 or lower.
-        SDL_SetError("Metal framework not available on this system");
-        return false;
-    }
-#endif
-    return true;
-}
 
 static const MTLBlendOperation invalidBlendOperation = (MTLBlendOperation)0xFFFFFFFF;
 static const MTLBlendFactor invalidBlendFactor = (MTLBlendFactor)0xFFFFFFFF;
@@ -253,8 +240,8 @@ static NSString *GetFragmentFunctionName(SDL_MetalFragmentFunction function)
         return @"SDL_Copy_fragment";
     case SDL_METAL_FRAGMENT_YUV:
         return @"SDL_YUV_fragment";
-    case SDL_METAL_FRAGMENT_ADVANCED:
-        return @"SDL_Advanced_fragment";
+    case SDL_METAL_FRAGMENT_NV12:
+        return @"SDL_NV12_fragment";
     default:
         return nil;
     }
@@ -392,7 +379,7 @@ void MakeShaderPipelines(SDL3METAL_RenderData *data, METAL_ShaderPipelines *pipe
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_SOLID], "SDL primitives pipeline", rtformat, SDL_METAL_VERTEX_SOLID, SDL_METAL_FRAGMENT_SOLID);
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_COPY], "SDL copy pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_COPY);
     MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_YUV], "SDL YUV pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_YUV);
-    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_ADVANCED], "SDL advanced pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_ADVANCED);
+    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_NV12], "SDL NV12 pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_NV12);
 }
 
 static METAL_ShaderPipelines *ChooseShaderPipelines(SDL3METAL_RenderData *data, MTLPixelFormat rtformat)
@@ -690,19 +677,14 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
                                                                        height:(NSUInteger)texture->h
                                                                     mipmapped:NO];
 
-        // Not available in iOS 8.
-        if ([mtltexdesc respondsToSelector:@selector(usage)]) {
-            if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-                mtltexdesc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
-            } else {
-                mtltexdesc.usage = MTLTextureUsageShaderRead;
-            }
+        if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+            mtltexdesc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
+        } else {
+            mtltexdesc.usage = MTLTextureUsageShaderRead;
         }
 
         if (surface) {
-            if (@available(iOS 11.0, tvOS 11.0, *)) {
-                mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
-            }
+            mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:0];
         } else {
             mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
         }
@@ -711,7 +693,7 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
 
         mtltextureUv = nil;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         BOOL yuv = (texture->format == SDL_PIXELFORMAT_IYUV || texture->format == SDL_PIXELFORMAT_YV12);
         BOOL nv12 = (texture->format == SDL_PIXELFORMAT_NV12 || texture->format == SDL_PIXELFORMAT_NV21 || texture->format == SDL_PIXELFORMAT_P010);
 
@@ -733,9 +715,7 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 
         if (yuv || nv12) {
             if (surface) {
-                if (@available(iOS 11.0, tvOS 11.0, *)) {
-                    mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
-                }
+                mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc iosurface:surface plane:1];
             } else {
                 mtltextureUv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
             }
@@ -745,18 +725,19 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         }
 #endif // SDL_HAVE_YUV
         texturedata = [[SDL3METAL_TextureData alloc] init];
-        if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
-            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
-#if SDL_HAVE_YUV
-        } else if (yuv) {
+#ifdef SDL_HAVE_YUV
+        if (yuv) {
             texturedata.fragmentFunction = SDL_METAL_FRAGMENT_YUV;
+        } else if (nv12) {
+            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_NV12;
+        } else
 #endif
-        } else {
-            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_ADVANCED;
+        {
+            texturedata.fragmentFunction = SDL_METAL_FRAGMENT_COPY;
         }
         texturedata.mtltexture = mtltexture;
         texturedata.mtltextureUv = mtltextureUv;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         texturedata.yuv = yuv;
         texturedata.nv12 = nv12;
         if (yuv || nv12) {
@@ -786,11 +767,7 @@ static void METAL_UploadTextureData(id<MTLTexture> texture, SDL_Rect rect, int s
 
 static MTLStorageMode METAL_GetStorageMode(id<MTLResource> resource)
 {
-    // iOS 8 does not have this method.
-    if ([resource respondsToSelector:@selector(storageMode)]) {
-        return resource.storageMode;
-    }
-    return MTLStorageModeShared;
+    return resource.storageMode;
 }
 
 static bool METAL_UpdateTextureInternal(SDL_Renderer *renderer, SDL3METAL_TextureData *texturedata,
@@ -870,7 +847,7 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         if (!METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, pixels, pitch)) {
             return false;
         }
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         if (texturedata.yuv) {
             int Uslice = texture->format == SDL_PIXELFORMAT_YV12 ? 1 : 0;
             int Vslice = texture->format == SDL_PIXELFORMAT_YV12 ? 0 : 1;
@@ -907,7 +884,7 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 }
 
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
 static bool METAL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
                                   const Uint8 *Yplane, int Ypitch,
@@ -984,7 +961,7 @@ static bool METAL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         }
 
         *pitch = SDL_BYTESPERPIXEL(texture->format) * rect->w;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         if (texturedata.yuv || texturedata.nv12) {
             buffersize = ((*pitch) * rect->h) + (2 * (*pitch + 1) / 2) * ((rect->h + 1) / 2);
         } else
@@ -1014,7 +991,7 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         id<MTLBlitCommandEncoder> blitcmd;
         SDL_Rect rect = texturedata.lockedrect;
         int pitch = SDL_BYTESPERPIXEL(texture->format) * rect.w;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         SDL_Rect UVrect = { rect.x / 2, rect.y / 2, (rect.w + 1) / 2, (rect.h + 1) / 2 };
 #endif
 
@@ -1042,7 +1019,7 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
                destinationSlice:0
                destinationLevel:0
               destinationOrigin:MTLOriginMake(rect.x, rect.y, 0)];
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         if (texturedata.yuv) {
             int Uslice = texture->format == SDL_PIXELFORMAT_YV12 ? 1 : 0;
             int Vslice = texture->format == SDL_PIXELFORMAT_YV12 ? 0 : 1;
@@ -1505,7 +1482,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
                 mtlsampler = data.mtlsamplers[SDL_METAL_SAMPLER_NEAREST_WRAP];
                 break;
             default:
-                return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+                return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
             }
         } else {
             switch (cmd->data.draw.texture_address_mode) {
@@ -1516,13 +1493,13 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
                 mtlsampler = data.mtlsamplers[SDL_METAL_SAMPLER_LINEAR_WRAP];
                 break;
             default:
-                return SDL_SetError("Unknown texture address mode: %d\n", cmd->data.draw.texture_address_mode);
+                return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
             }
         }
         [data.mtlcmdencoder setFragmentSamplerState:mtlsampler atIndex:0];
 
         [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         if (texturedata.yuv || texturedata.nv12) {
             [data.mtlcmdencoder setFragmentTexture:texturedata.mtltextureUv atIndex:1];
             [data.mtlcmdencoder setFragmentBuffer:data.mtlbufconstants offset:texturedata.conversionBufferOffset atIndex:1];
@@ -1844,28 +1821,27 @@ static void *METAL_GetMetalCommandEncoder(SDL_Renderer *renderer)
 
 static bool METAL_SetVSync(SDL_Renderer *renderer, const int vsync)
 {
-#if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
-    if (@available(macOS 10.13, *)) {
-        SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
-        switch (vsync) {
-        case 0:
-            data.mtllayer.displaySyncEnabled = NO;
-            break;
-        case 1:
-            data.mtllayer.displaySyncEnabled = YES;
-            break;
-        default:
-            return SDL_Unsupported();
-        }
-        return true;
+#if defined(SDL_PLATFORM_MACOS) || TARGET_OS_MACCATALYST
+    SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
+    switch (vsync) {
+    case 0:
+        data.mtllayer.displaySyncEnabled = NO;
+        break;
+    case 1:
+        data.mtllayer.displaySyncEnabled = YES;
+        break;
+    default:
+        return SDL_Unsupported();
     }
-#endif
+    return true;
+#else
     switch (vsync) {
     case 1:
         return true;
     default:
         return SDL_Unsupported();
     }
+#endif
 }
 
 static SDL_MetalView GetWindowView(SDL_Window *window)
@@ -1959,10 +1935,6 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         };
 
         const size_t YCbCr_shader_matrix_size = 4 * 4 * sizeof(float);
-
-        if (!IsMetalAvailable()) {
-            return false;
-        }
 
         SDL_SetupRendererColorspace(renderer, create_props);
 
@@ -2151,7 +2123,7 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         renderer->SupportsBlendMode = METAL_SupportsBlendMode;
         renderer->CreateTexture = METAL_CreateTexture;
         renderer->UpdateTexture = METAL_UpdateTexture;
-#if SDL_HAVE_YUV
+#ifdef SDL_HAVE_YUV
         renderer->UpdateTextureYUV = METAL_UpdateTextureYUV;
         renderer->UpdateTextureNV = METAL_UpdateTextureNV;
 #endif
@@ -2186,10 +2158,8 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
-#if (defined(SDL_PLATFORM_MACOS) && defined(MAC_OS_X_VERSION_10_13)) || TARGET_OS_MACCATALYST
-        if (@available(macOS 10.13, *)) {
-            data.mtllayer.displaySyncEnabled = NO;
-        }
+#if defined(SDL_PLATFORM_MACOS) || TARGET_OS_MACCATALYST
+        data.mtllayer.displaySyncEnabled = NO;
 #endif
 
         // https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
@@ -2198,28 +2168,15 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         maxtexsize = 16384;
 #elif defined(SDL_PLATFORM_TVOS)
         maxtexsize = 8192;
-#ifdef __TVOS_11_0
-        if (@available(tvOS 11.0, *)) {
-            if ([mtldevice supportsFeatureSet:MTLFeatureSet_tvOS_GPUFamily2_v1]) {
-                maxtexsize = 16384;
-            }
+        if ([mtldevice supportsFeatureSet:MTLFeatureSet_tvOS_GPUFamily2_v1]) {
+            maxtexsize = 16384;
         }
-#endif
 #else
-#ifdef __IPHONE_11_0
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability-new"
         if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily4_v1]) {
             maxtexsize = 16384;
-        } else
-#pragma clang diagnostic pop
-#endif
-#ifdef __IPHONE_10_0
-            if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1]) {
+        } else if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1]) {
             maxtexsize = 16384;
-        } else
-#endif
-            if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v2] || [mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v2]) {
+        } else if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v2] || [mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v2]) {
             maxtexsize = 8192;
         } else {
             maxtexsize = 4096;

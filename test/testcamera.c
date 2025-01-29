@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,6 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDLTest_CommonState *state = NULL;
 static SDL_Camera *camera = NULL;
-static SDL_CameraSpec spec;
 static SDL_Texture *texture = NULL;
 static bool texture_updated = false;
 static SDL_Surface *frame_current = NULL;
@@ -37,10 +36,31 @@ static void PrintCameraSpecs(SDL_CameraID camera_id)
     if (specs) {
         int i;
 
-        SDL_Log("Available formats:\n");
+        SDL_Log("Available formats:");
         for (i = 0; specs[i]; ++i) {
             const SDL_CameraSpec *s = specs[i];
-            SDL_Log("    %dx%d %.2f FPS %s\n", s->width, s->height, (float)s->framerate_numerator / s->framerate_denominator, SDL_GetPixelFormatName(s->format));
+            SDL_Log("    %dx%d %.2f FPS %s", s->width, s->height, (float)s->framerate_numerator / s->framerate_denominator, SDL_GetPixelFormatName(s->format));
+        }
+        SDL_free(specs);
+    }
+}
+
+static void PickCameraSpec(SDL_CameraID camera_id, SDL_CameraSpec *spec)
+{
+    SDL_CameraSpec **specs = SDL_GetCameraSupportedFormats(camera_id, NULL);
+
+    SDL_zerop(spec);
+
+    if (specs) {
+        int i;
+
+        int max_size = (int)SDL_GetNumberProperty(SDL_GetRendererProperties(state->renderers[0]), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 0);
+        for (i = 0; specs[i]; ++i) {
+            const SDL_CameraSpec *s = specs[i];
+            if (s->width <= max_size && s->height <= max_size) {
+                SDL_copyp(spec, s);
+                break;
+            }
         }
         SDL_free(specs);
     }
@@ -52,6 +72,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     int devcount = 0;
     int i;
     const char *camera_name = NULL;
+    SDL_CameraSpec spec;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_CAMERA);
@@ -78,7 +99,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
             SDLTest_CommonLogUsage(state, argv[0], options);
             SDL_Quit();
             SDLTest_CommonDestroyState(state);
-            return 1;
+            return SDL_APP_FAILURE;
         }
         i += consumed;
     }
@@ -103,6 +124,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
+    SDL_Log("Using SDL camera driver: %s", SDL_GetCurrentCameraDriver());
+
     SDL_CameraID *devices = SDL_GetCameras(&devcount);
     if (!devices) {
         SDL_Log("SDL_GetCameras failed: %s", SDL_GetError());
@@ -118,16 +141,22 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         const SDL_CameraPosition position = SDL_GetCameraPosition(device);
         const char *posstr = "";
         if (position == SDL_CAMERA_POSITION_FRONT_FACING) {
-            front_camera = device;
+            if (!front_camera) {
+                front_camera = device;
+            }
             posstr = "[front-facing] ";
         } else if (position == SDL_CAMERA_POSITION_BACK_FACING) {
-            back_camera = device;
+            if (!back_camera) {
+                back_camera = device;
+            }
             posstr = "[back-facing] ";
         }
         if (camera_name && SDL_strcasecmp(name, camera_name) == 0) {
             camera_id = device;
         }
         SDL_Log("  - Camera #%d: %s %s", i, posstr, name);
+
+        PrintCameraSpecs(device);
     }
 
     if (!camera_id) {
@@ -148,13 +177,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    PrintCameraSpecs(camera_id);
-
-    SDL_CameraSpec *pspec = &spec;
-    spec.framerate_numerator = 30;
-    spec.framerate_denominator = 1;
-
-    camera = SDL_OpenCamera(camera_id, pspec);
+    PickCameraSpec(camera_id, &spec);
+    camera = SDL_OpenCamera(camera_id, &spec);
     if (!camera) {
         SDL_Log("Failed to open camera device: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -184,6 +208,8 @@ static int FlipCamera(void)
         }
 
         if (nextcam) {
+            SDL_CameraSpec spec;
+
             SDL_Log("Flip camera!");
 
             if (frame_current) {
@@ -198,7 +224,8 @@ static int FlipCamera(void)
                 texture = NULL;  /* will rebuild when new camera is approved. */
             }
 
-            camera = SDL_OpenCamera(nextcam, NULL);
+            PickCameraSpec(nextcam, &spec);
+            camera = SDL_OpenCamera(nextcam, &spec);
             if (!camera) {
                 SDL_Log("Failed to open camera device: %s", SDL_GetError());
                 return SDL_APP_FAILURE;
@@ -232,7 +259,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
         case SDL_EVENT_QUIT:
             SDL_Log("Quit!");
-            return 1;
+            return SDL_APP_SUCCESS;
 
         case SDL_EVENT_CAMERA_DEVICE_APPROVED:
             SDL_Log("Camera approved!");

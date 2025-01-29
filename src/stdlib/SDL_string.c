@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -368,7 +368,7 @@ static size_t SDL_ScanUnsignedLongLongInternal(const char *text, int count, int 
             negative = *text == '-';
             ++text;
         }
-        if ((radix == 0 || radix == 16) && *text == '0') {
+        if ((radix == 0 || radix == 16) && *text == '0' && text[1] != '\0') {
             ++text;
             if (*text == 'x' || *text == 'X') {
                 radix = 16;
@@ -2346,9 +2346,7 @@ int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FO
 
 int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wchar_t *fmt, va_list ap)
 {
-    char *text_utf8 = NULL, *fmt_utf8 = NULL;
-    int result;
-
+    char *fmt_utf8 = NULL;
     if (fmt) {
         fmt_utf8 = SDL_iconv_string("UTF-8", "WCHAR_T", (const char *)fmt, (SDL_wcslen(fmt) + 1) * sizeof(wchar_t));
         if (!fmt_utf8) {
@@ -2356,33 +2354,55 @@ int SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, const wcha
         }
     }
 
-    if (!maxlen) {
-        // We still need to generate the text to find the final text length
-        maxlen = 1024;
-    }
-    text_utf8 = (char *)SDL_malloc(maxlen * 4);
-    if (!text_utf8) {
+    char tinybuf[64];  // for really small strings, calculate it once.
+
+    // generate the text to find the final text length
+    va_list aq;
+    va_copy(aq, ap);
+    const int utf8len = SDL_vsnprintf(tinybuf, sizeof (tinybuf), fmt_utf8, aq);
+    va_end(aq);
+
+    if (utf8len < 0) {
         SDL_free(fmt_utf8);
         return -1;
     }
 
-    result = SDL_vsnprintf(text_utf8, maxlen * 4, fmt_utf8, ap);
+    bool isstack = false;
+    char *smallbuf = NULL;
+    char *utf8buf;
+    int result;
 
-    if (result >= 0) {
-        wchar_t *text_wchar =  (wchar_t *)SDL_iconv_string("WCHAR_T", "UTF-8", text_utf8, SDL_strlen(text_utf8) + 1);
-        if (text_wchar) {
-            if (text) {
-                SDL_wcslcpy(text, text_wchar, maxlen);
-            }
-            result = (int)SDL_wcslen(text_wchar);
-            SDL_free(text_wchar);
-        } else {
-            result = -1;
+    if (utf8len < sizeof (tinybuf)) {   // whole thing fit in the stack buffer, just use that copy.
+        utf8buf = tinybuf;
+    } else {  // didn't fit in the stack buffer, allocate the needed space and run it again.
+        utf8buf = smallbuf = SDL_small_alloc(char, utf8len + 1, &isstack);
+        if (!smallbuf) {
+            SDL_free(fmt_utf8);
+            return -1;  // oh well.
+        }
+        const int utf8len2 = SDL_vsnprintf(smallbuf, utf8len + 1, fmt_utf8, ap);
+        if (utf8len2 > utf8len) {
+            SDL_free(fmt_utf8);
+            return SDL_SetError("Formatted output changed between two runs");  // race condition on the parameters, and we no longer have room...yikes.
         }
     }
 
-    SDL_free(text_utf8);
     SDL_free(fmt_utf8);
+
+    wchar_t *wbuf = (wchar_t *)SDL_iconv_string("WCHAR_T", "UTF-8", utf8buf, utf8len + 1);
+    if (wbuf) {
+        if (text) {
+            SDL_wcslcpy(text, wbuf, maxlen);
+        }
+        result = (int)SDL_wcslen(wbuf);
+        SDL_free(wbuf);
+    } else {
+        result = -1;
+    }
+
+    if (smallbuf != NULL) {
+        SDL_small_free(smallbuf, isstack);
+    }
 
     return result;
 }

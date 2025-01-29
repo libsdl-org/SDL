@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -40,6 +40,8 @@
 #define SDL_pen_h_
 
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_touch.h>
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -55,15 +57,29 @@ extern "C" {
  * consistent as long as SDL can recognize a tool to be the same pen; but if a
  * pen physically leaves the area and returns, it might get a new ID.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef Uint32 SDL_PenID;
+
+/**
+ * The SDL_MouseID for mouse events simulated with pen input.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_PEN_MOUSEID ((SDL_MouseID)-2)
+
+/**
+ * The SDL_TouchID for touch events simulated with pen input.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_PEN_TOUCHID ((SDL_TouchID)-2)
 
 
 /**
  * Pen input flags, as reported by various pen events' `pen_state` field.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef Uint32 SDL_PenInputFlags;
 
@@ -88,7 +104,7 @@ typedef Uint32 SDL_PenInputFlags;
  *
  * `SDL_sinf(xtilt * SDL_PI_F / 180.0)`.
  *
- * \since This enum is available since SDL 3.1.3
+ * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_PenAxis
 {

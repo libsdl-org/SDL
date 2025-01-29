@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -97,7 +97,7 @@ static bool SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
     return okay;
 }
 
-#if SDL_HAVE_BLIT_AUTO
+#ifdef SDL_HAVE_BLIT_AUTO
 
 #ifdef SDL_PLATFORM_MACOS
 #include <sys/sysctl.h>
@@ -189,7 +189,7 @@ bool SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
         return SDL_SetError("Blit combination not supported");
     }
 
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
     // Clean everything out to start
     if (surface->flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         SDL_UnRLESurface(surface, true);
@@ -204,7 +204,7 @@ bool SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
     map->info.dst_fmt = dst->fmt;
     map->info.dst_pal = dst->palette;
 
-#if SDL_HAVE_RLE
+#ifdef SDL_HAVE_RLE
     // See if we can do RLE acceleration
     if (map->info.flags & SDL_COPY_RLE_DESIRED) {
         if (SDL_RLESurface(surface)) {
@@ -228,30 +228,30 @@ bool SDL_CalculateBlit(SDL_Surface *surface, SDL_Surface *dst)
                    SDL_ISPIXELFORMAT_10BIT(dst->format)) {
             blit = SDL_Blit_Slow;
         }
-#if SDL_HAVE_BLIT_0
+#ifdef SDL_HAVE_BLIT_0
         else if (SDL_BITSPERPIXEL(surface->format) < 8 &&
                  SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
             blit = SDL_CalculateBlit0(surface);
         }
 #endif
-#if SDL_HAVE_BLIT_1
+#ifdef SDL_HAVE_BLIT_1
         else if (SDL_BYTESPERPIXEL(surface->format) == 1 &&
                  SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
             blit = SDL_CalculateBlit1(surface);
         }
 #endif
-#if SDL_HAVE_BLIT_A
+#ifdef SDL_HAVE_BLIT_A
         else if (map->info.flags & SDL_COPY_BLEND) {
             blit = SDL_CalculateBlitA(surface);
         }
 #endif
-#if SDL_HAVE_BLIT_N
+#ifdef SDL_HAVE_BLIT_N
         else {
             blit = SDL_CalculateBlitN(surface);
         }
 #endif
     }
-#if SDL_HAVE_BLIT_AUTO
+#ifdef SDL_HAVE_BLIT_AUTO
     if (!blit) {
         SDL_PixelFormat src_format = surface->format;
         SDL_PixelFormat dst_format = dst->format;

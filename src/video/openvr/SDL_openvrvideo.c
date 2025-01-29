@@ -661,7 +661,7 @@ static bool OPENVR_SetupFrame(SDL_VideoDevice *_this, SDL_Window *window)
     {
         int error = ov_glGetError();
         if (error)
-            SDL_Log("Found GL Error before beginning frame: %d / (Framebuffer:%d)\n", error, ov_glCheckNamedFramebufferStatus(videodata->fbo, GL_FRAMEBUFFER));
+            SDL_Log("Found GL Error before beginning frame: %d / (Framebuffer:%d)", error, ov_glCheckNamedFramebufferStatus(videodata->fbo, GL_FRAMEBUFFER));
     }
 #endif
 
@@ -698,7 +698,7 @@ static bool OPENVR_ReleaseFrame(SDL_VideoDevice *_this)
     {
         int error = ov_glGetError();
         if (error) {
-            SDL_Log("Found GL Error before release frame: %d / (Framebuffer:%d)\n", error, ov_glCheckNamedFramebufferStatus(videodata->fbo, GL_FRAMEBUFFER));
+            SDL_Log("Found GL Error before release frame: %d / (Framebuffer:%d)", error, ov_glCheckNamedFramebufferStatus(videodata->fbo, GL_FRAMEBUFFER));
         }
     }
 #endif
@@ -895,7 +895,7 @@ static SDL_GLContext OPENVR_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window 
         const char *ccc = (const char *)ov_glGetStringi(GL_EXTENSIONS, i);
         if (SDL_strcmp(ccc, "GL_KHR_debug") == 0) {
 #ifdef DEBUG_OPENVR
-            SDL_Log("Found renderdoc debug extension.\n");
+            SDL_Log("Found renderdoc debug extension.");
 #endif
             videodata->renderdoc_debugmarker_frame_end = true;
         }
@@ -968,7 +968,7 @@ static bool SDL_EGL_InitInternal(SDL_VideoData * vd)
 
     vd->eglDpy = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 #ifdef DEBUG_OPENVR
-    SDL_Log("EGL Display: %p\n", vd->eglDpy);
+    SDL_Log("EGL Display: %p", vd->eglDpy);
 #endif
 
     if (vd->eglDpy == 0) {
@@ -1040,7 +1040,7 @@ static SDL_GLContext OVR_EGL_CreateContext(SDL_VideoDevice *_this, SDL_Window * 
         const char * ccc = (const char*)ov_glGetStringi(GL_EXTENSIONS, i);
         if (SDL_strcmp(ccc, "GL_KHR_debug") == 0) {
 #ifdef DEBUG_OPENVR
-           SDL_Log("Found renderdoc debug extension.\n");
+           SDL_Log("Found renderdoc debug extension.");
 #endif
            videodata->renderdoc_debugmarker_frame_end = true;
         }
@@ -1138,12 +1138,12 @@ static void OPENVR_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->internal;
 
-    if (window->floating.w != window->w) {
-        window->w = window->floating.w;
+    if (window->pending.w != window->w) {
+        window->w = window->pending.w;
     }
 
-    if (window->floating.h != window->h) {
-        window->h = window->floating.h;
+    if (window->pending.h != window->h) {
+        window->h = window->pending.h;
     }
 
     if (data->targh != window->h || data->targw != window->w) {
@@ -1210,9 +1210,11 @@ static bool OPENVR_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 static void OPENVR_HandleMouse(float x, float y, int btn, int evt)
 {
     if (evt == 2) {
-        SDL_SendMouseMotion(0, 0, 0, false, (int)x, (int)y);
+        SDL_SendMouseMotion(0, NULL, SDL_GLOBAL_MOUSE_ID, false, x, y);
     } else {
-        SDL_SendMouseButton(0, 0, 0, btn + 1, (evt != 0));
+        const Uint8 button = SDL_BUTTON_LEFT + btn;
+        const bool down = (evt != 0);
+        SDL_SendMouseButton(0, NULL, SDL_GLOBAL_MOUSE_ID, button, down);
     }
 }
 

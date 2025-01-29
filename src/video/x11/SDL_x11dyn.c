@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -104,6 +104,8 @@ static void *X11_GetSym(const char *fnname, int *pHasModule)
 #ifdef X_HAVE_UTF8_STRING
 SDL_DYNX11FN_XCreateIC X11_XCreateIC = NULL;
 SDL_DYNX11FN_XGetICValues X11_XGetICValues = NULL;
+SDL_DYNX11FN_XSetICValues X11_XSetICValues = NULL;
+SDL_DYNX11FN_XVaCreateNestedList X11_XVaCreateNestedList = NULL;
 #endif
 
 /* These SDL_X11_HAVE_* flags are here whether you have dynamic X11 or not. */
@@ -129,6 +131,8 @@ void SDL_X11_UnloadSymbols(void)
 #ifdef X_HAVE_UTF8_STRING
             X11_XCreateIC = NULL;
             X11_XGetICValues = NULL;
+            X11_XSetICValues = NULL;
+            X11_XVaCreateNestedList = NULL;
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
@@ -171,6 +175,10 @@ bool SDL_X11_LoadSymbols(void)
             X11_GetSym("XCreateIC", &SDL_X11_HAVE_UTF8);
         X11_XGetICValues = (SDL_DYNX11FN_XGetICValues)
             X11_GetSym("XGetICValues", &SDL_X11_HAVE_UTF8);
+        X11_XSetICValues = (SDL_DYNX11FN_XSetICValues)
+            X11_GetSym("XSetICValues", &SDL_X11_HAVE_UTF8);
+        X11_XVaCreateNestedList = (SDL_DYNX11FN_XVaCreateNestedList)
+            X11_GetSym("XVaCreateNestedList", &SDL_X11_HAVE_UTF8);
 #endif
 
         if (SDL_X11_HAVE_BASEXLIB) {
@@ -191,6 +199,8 @@ bool SDL_X11_LoadSymbols(void)
 #ifdef X_HAVE_UTF8_STRING
         X11_XCreateIC = XCreateIC;
         X11_XGetICValues = XGetICValues;
+        X11_XSetICValues = XSetICValues;
+        X11_XVaCreateNestedList = XVaCreateNestedList;
 #endif
 #endif
     }

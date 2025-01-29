@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -561,7 +561,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     float content_scale = WIN_GetContentScale(_this, hMonitor);
 
 #ifdef DEBUG_MODES
-    SDL_Log("Display: %s\n", WIN_StringToUTF8W(info->szDevice));
+    SDL_Log("Display: %s", WIN_StringToUTF8W(info->szDevice));
 #endif
 
     dxgi_output = WIN_GetDXGIOutput(_this, info->szDevice);

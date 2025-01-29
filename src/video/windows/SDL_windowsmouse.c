@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -390,7 +390,7 @@ static HCURSOR GetCachedCursor(SDL_Cursor *cursor)
     }
 
     int hot_x = (int)SDL_round(data->hot_x * scale);
-    int hot_y = (int)SDL_round(data->hot_x * scale);
+    int hot_y = (int)SDL_round(data->hot_y * scale);
     hcursor = WIN_CreateHCursor(surface, hot_x, hot_y);
     if (!hcursor) {
         goto error;
@@ -710,7 +710,7 @@ void WIN_UpdateMouseSystemScale(void)
     int v = 10;
     if (SystemParametersInfo(SPI_GETMOUSESPEED, 0, &v, 0)) {
         v = SDL_max(1, SDL_min(v, 20));
-        data->dpiscale = SDL_max(SDL_max(v, (v - 2) << 2), (v - 6) << 3);
+        data->dpiscale = SDL_max(SDL_max(v, (v - 2) * 4), (v - 6) * 8);
     }
 
     int params[3];

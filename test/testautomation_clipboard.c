@@ -108,6 +108,13 @@ static int SDLCALL clipboard_testClipboardDataFunctions(void *arg)
         result == true,
         "Validate SDL_ClearClipboardData result, expected true, got %i",
         result);
+    expected_text = "";
+    text = SDL_GetClipboardText();
+    SDLTest_AssertCheck(
+        text && SDL_strcmp(text, expected_text) == 0,
+        "Verify clipboard text, expected \"%s\", got \"%s\"",
+        expected_text, text);
+    SDL_free(text);
 
     /* Test clearing clipboard data when it's already clear */
     last_clipboard_update_count = clipboard_update_count;
@@ -117,8 +124,8 @@ static int SDLCALL clipboard_testClipboardDataFunctions(void *arg)
         "Validate SDL_ClearClipboardData result, expected true, got %i",
         result);
     SDLTest_AssertCheck(
-        clipboard_update_count == last_clipboard_update_count,
-        "Verify clipboard update unchanged, got %d",
+        clipboard_update_count != last_clipboard_update_count,
+        "Verify clipboard update count changed, got %d",
         clipboard_update_count - last_clipboard_update_count);
 
     /* Validate error handling */
@@ -430,8 +437,8 @@ static int SDLCALL clipboard_testClipboardTextFunctions(void *arg)
         "Verify SDL_HasClipboardText returned false, got %s",
         (boolResult) ? "true" : "false");
     SDLTest_AssertCheck(
-        clipboard_update_count == last_clipboard_update_count,
-        "Verify clipboard update unchanged, got %d",
+        clipboard_update_count == last_clipboard_update_count + 1,
+        "Verify clipboard update count incremented by 1, got %d",
         clipboard_update_count - last_clipboard_update_count);
 
 

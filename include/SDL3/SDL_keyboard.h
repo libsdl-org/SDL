@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,11 @@
  * # CategoryKeyboard
  *
  * SDL keyboard management.
+ *
+ * Please refer to the Best Keyboard Practices document for details on how
+ * best to accept keyboard input in various types of programs:
+ *
+ * https://wiki.libsdl.org/SDL3/BestKeyboardPractices
  */
 
 #ifndef SDL_keyboard_h_
@@ -50,7 +55,7 @@ extern "C" {
  *
  * The value 0 is an invalid ID.
  *
- * \since This datatype is available since SDL 3.1.3.
+ * \since This datatype is available since SDL 3.2.0.
  */
 typedef Uint32 SDL_KeyboardID;
 
@@ -63,7 +68,7 @@ typedef Uint32 SDL_KeyboardID;
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetKeyboards
  */
@@ -85,7 +90,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasKeyboard(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetKeyboardNameForID
  * \sa SDL_HasKeyboard
@@ -103,7 +108,7 @@ extern SDL_DECLSPEC SDL_KeyboardID * SDLCALL SDL_GetKeyboards(int *count);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetKeyboards
  */
@@ -116,7 +121,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetKeyboardNameForID(SDL_KeyboardID
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
 
@@ -146,7 +151,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_PumpEvents
  * \sa SDL_ResetKeyboard
@@ -160,7 +165,7 @@ extern SDL_DECLSPEC const bool * SDLCALL SDL_GetKeyboardState(int *numkeys);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetKeyboardState
  */
@@ -174,7 +179,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetKeyboard(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetKeyboardState
  * \sa SDL_SetModState
@@ -196,7 +201,7 @@ extern SDL_DECLSPEC SDL_Keymod SDLCALL SDL_GetModState(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetModState
  */
@@ -219,7 +224,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetKeyName
  * \sa SDL_GetScancodeFromKey
@@ -240,7 +245,7 @@ extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scan
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetKeyFromScancode
  * \sa SDL_GetScancodeName
@@ -259,7 +264,7 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key,
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetScancodeName
  */
@@ -283,7 +288,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetScancodeName(SDL_Scancode scancode, cons
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetScancodeFromKey
  * \sa SDL_GetScancodeFromName
@@ -300,7 +305,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetScancodeName(SDL_Scancode scanco
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetKeyFromName
  * \sa SDL_GetScancodeFromKey
@@ -313,12 +318,14 @@ extern SDL_DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *nam
  *
  * If the key doesn't have a name, this function returns an empty string ("").
  *
+ * Letters will be presented in their uppercase form, if applicable.
+ *
  * \param key the desired SDL_Keycode to query.
  * \returns a UTF-8 encoded string of the key name.
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetKeyFromName
  * \sa SDL_GetKeyFromScancode
@@ -335,7 +342,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetKeyName(SDL_Keycode key);
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetKeyFromScancode
  * \sa SDL_GetKeyName
@@ -362,7 +369,7 @@ extern SDL_DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromName(const char *name);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetTextInputArea
  * \sa SDL_StartTextInputWithProperties
@@ -378,7 +385,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_StartTextInput(SDL_Window *window);
  * value is valid on every platform, but where a value isn't supported, a
  * reasonable fallback will be used.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_StartTextInputWithProperties
  */
@@ -402,7 +409,7 @@ typedef enum SDL_TextInputType
  * Not every value is valid on every platform, but where a value isn't
  * supported, a reasonable fallback will be used.
  *
- * \since This enum is available since SDL 3.1.3.
+ * \since This enum is available since SDL 3.2.0.
  *
  * \sa SDL_StartTextInputWithProperties
  */
@@ -457,7 +464,7 @@ typedef enum SDL_Capitalization
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetTextInputArea
  * \sa SDL_StartTextInput
@@ -480,7 +487,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_StartTextInputWithProperties(SDL_Window *wi
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_StartTextInput
  */
@@ -498,7 +505,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TextInputActive(SDL_Window *window);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_StartTextInput
  */
@@ -513,7 +520,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_StopTextInput(SDL_Window *window);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_StartTextInput
  * \sa SDL_StopTextInput
@@ -536,7 +543,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ClearComposition(SDL_Window *window);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetTextInputArea
  * \sa SDL_StartTextInput
@@ -558,7 +565,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetTextInputArea(SDL_Window *window, const 
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetTextInputArea
  */
@@ -572,7 +579,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTextInputArea(SDL_Window *window, SDL_Re
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_StartTextInput
  * \sa SDL_ScreenKeyboardShown
@@ -587,7 +594,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasScreenKeyboardSupport(void);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.1.3.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_HasScreenKeyboardSupport
  */

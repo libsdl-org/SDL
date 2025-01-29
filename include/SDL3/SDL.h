@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,9 +20,12 @@
 */
 
 /**
- *  \file SDL.h
+ * Main include header for the SDL library, version 3.2.1
  *
- *  Main include header for the SDL library, version 3.1.7
+ * It is almost always best to include just this one header instead of
+ * picking out individual headers included here. There are exceptions to
+ * this rule--SDL_main.h is special and not included here--but usually
+ * letting SDL.h include the kitchen sink for you is the correct approach.
  */
 
 #ifndef SDL_h_
@@ -78,6 +81,7 @@
 #include <SDL3/SDL_thread.h>
 #include <SDL3/SDL_time.h>
 #include <SDL3/SDL_timer.h>
+#include <SDL3/SDL_tray.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_video.h>
