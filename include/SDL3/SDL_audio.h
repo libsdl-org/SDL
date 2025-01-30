@@ -1583,6 +1583,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PauseAudioStreamDevice(SDL_AudioStream *str
  * previously been paused. Once unpaused, any bound audio streams will begin
  * to progress again, and audio can be generated.
  *
+ * Remember, SDL_OpenAudioDeviceStream opens device in an unpaused state, so
+ * this function call is required for audio playback to begin on such device.
+ *
  * \param stream the audio stream associated with the audio device to resume.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
