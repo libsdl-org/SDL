@@ -19,6 +19,8 @@ static SDL_Texture *render_target = NULL;
 static float pressure = 0.0f;
 static float previous_touch_x = -1.0f;
 static float previous_touch_y = -1.0f;
+static float tilt_x = 0.0f;
+static float tilt_y = 0.0f;
 
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
@@ -84,6 +86,10 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     } else if (event->type == SDL_EVENT_PEN_AXIS) {
         if (event->paxis.axis == SDL_PEN_AXIS_PRESSURE) {
             pressure = event->paxis.value;  /* remember new pressure for later draws. */
+        } else if(event->paxis.axis == SDL_PEN_AXIS_XTILT) {
+            tilt_x = event->paxis.value;
+        } else if(event->paxis.axis == SDL_PEN_AXIS_YTILT) {
+            tilt_y = event->paxis.value;
         }
     }
 
@@ -93,11 +99,15 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
+    char debug_text[1024] = {};
+
     /* make sure we're drawing to the window and not the render target */
     SDL_SetRenderTarget(renderer, NULL);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);  /* just in case. */
     SDL_RenderTexture(renderer, render_target, NULL, NULL);
+    SDL_snprintf(debug_text, sizeof(debug_text), "Tilt: %f %f", tilt_x, tilt_y);
+    SDL_RenderDebugText(renderer, 0, 8, debug_text);
     SDL_RenderPresent(renderer);
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
