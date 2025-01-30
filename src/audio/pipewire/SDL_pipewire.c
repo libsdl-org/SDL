@@ -574,6 +574,25 @@ static SDL_bool get_int_param(const struct spa_pod *param, Uint32 key, int *val)
     return SDL_FALSE;
 }
 
+static SDL_AudioFormat SPAFormatToSDL(enum spa_audio_format spafmt)
+{
+    switch (spafmt) {
+        #define CHECKFMT(spa,sdl) case SPA_AUDIO_FORMAT_##spa: return AUDIO_##sdl
+        CHECKFMT(U8, U8);
+        CHECKFMT(S8, S8);
+        CHECKFMT(S16_LE, S16LSB);
+        CHECKFMT(S16_BE, S16MSB);
+        CHECKFMT(S32_LE, S32LSB);
+        CHECKFMT(S32_BE, S32MSB);
+        CHECKFMT(F32_LE, F32LSB);
+        CHECKFMT(F32_BE, F32MSB);
+        #undef CHECKFMT
+        default: break;
+    }
+
+    return 0;
+}
+
 /* Interface node callbacks */
 static void node_event_info(void *object, const struct pw_node_info *info)
 {
@@ -601,6 +620,15 @@ static void node_event_param(void *object, int seq, uint32_t id, uint32_t index,
 {
     struct node_object *node = object;
     struct io_node *io = node->userdata;
+
+    if ((id == SPA_PARAM_Format) && (io->spec.format == 0)) {
+        struct spa_audio_info_raw info;
+        SDL_zero(info);
+        if (spa_format_audio_raw_parse(param, &info) == 0) {
+            /*SDL_Log("Sink Format: %d, Rate: %d Hz, Channels: %d", info.format, info.rate, info.channels);*/
+            io->spec.format = SPAFormatToSDL(info.format);
+        }
+    }
 
     /* Get the default frequency */
     if (io->spec.freq == 0) {
@@ -719,7 +747,9 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
                 /* Begin setting the node properties */
                 io->id = id;
                 io->is_capture = is_capture;
-                io->spec.format = AUDIO_F32; /* Pipewire uses floats internally, other formats require conversion. */
+                if (io->spec.format == 0) {
+                    io->spec.format = AUDIO_S16;  /* we'll go conservative here if for some reason the format isn't known. */
+                }
                 io->name = io->buf;
                 io->path = io->buf + desc_buffer_len;
                 SDL_strlcpy(io->buf, node_desc, desc_buffer_len);
