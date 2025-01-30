@@ -755,12 +755,12 @@ typedef struct VulkanPresentData
     Uint32 swapchainImageIndex;
 } VulkanPresentData;
 
-typedef struct VulkanUniformBuffer
+struct VulkanUniformBuffer
 {
     VulkanBuffer *buffer;
     Uint32 drawOffset;
     Uint32 writeOffset;
-} VulkanUniformBuffer;
+};
 
 typedef struct VulkanDescriptorInfo
 {
