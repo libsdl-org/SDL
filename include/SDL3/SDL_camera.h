@@ -239,7 +239,7 @@ extern SDL_DECLSPEC SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
  * there _is_ a camera until the user has given you permission to check
  * through a scary warning popup.
  *
- * \param devid the camera device instance ID to query.
+ * \param instance_id the camera device instance ID.
  * \param count a pointer filled in with the number of elements in the list,
  *              may be NULL.
  * \returns a NULL terminated array of pointers to SDL_CameraSpec or NULL on
@@ -254,7 +254,7 @@ extern SDL_DECLSPEC SDL_CameraID * SDLCALL SDL_GetCameras(int *count);
  * \sa SDL_GetCameras
  * \sa SDL_OpenCamera
  */
-extern SDL_DECLSPEC SDL_CameraSpec ** SDLCALL SDL_GetCameraSupportedFormats(SDL_CameraID devid, int *count);
+extern SDL_DECLSPEC SDL_CameraSpec ** SDLCALL SDL_GetCameraSupportedFormats(SDL_CameraID instance_id, int *count);
 
 /**
  * Get the human-readable device name for a camera.
