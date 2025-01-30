@@ -1035,6 +1035,11 @@ typedef struct VulkanCommandBuffer
     VkDescriptorSet computeReadWriteDescriptorSet;
     VkDescriptorSet computeUniformDescriptorSet;
 
+    VkBuffer vertexBuffers[MAX_VERTEX_BUFFERS];
+    VkDeviceSize vertexBufferOffsets[MAX_VERTEX_BUFFERS];
+    Uint32 vertexBufferCount;
+    bool needVertexBufferBind;
+
     VulkanTexture *vertexSamplerTextures[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     VulkanSampler *vertexSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     VulkanTexture *vertexStorageTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
@@ -5027,6 +5032,7 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
     Uint32 dynamicOffsetCount = 0;
 
     if (
+        !commandBuffer->needVertexBufferBind &&
         !commandBuffer->needNewVertexResourceDescriptorSet &&
         !commandBuffer->needNewVertexUniformDescriptorSet &&
         !commandBuffer->needNewVertexUniformOffsets &&
@@ -5035,6 +5041,17 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
         !commandBuffer->needNewFragmentUniformOffsets
     ) {
         return;
+    }
+
+    if (commandBuffer->needVertexBufferBind && commandBuffer->vertexBufferCount > 0) {
+        renderer->vkCmdBindVertexBuffers(
+            commandBuffer->commandBuffer,
+            0,
+            commandBuffer->vertexBufferCount,
+            commandBuffer->vertexBuffers,
+            commandBuffer->vertexBufferOffsets);
+
+        commandBuffer->needVertexBufferBind = false;
     }
 
     resourceLayout = commandBuffer->currentGraphicsPipeline->resourceLayout;
@@ -7404,19 +7421,26 @@ static void VULKAN_BindVertexSamplers(
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)textureSamplerBindings[i].texture;
-        vulkanCommandBuffer->vertexSamplerTextures[firstSlot + i] = textureContainer->activeTexture;
-        vulkanCommandBuffer->vertexSamplers[firstSlot + i] = (VulkanSampler *)textureSamplerBindings[i].sampler;
+        VulkanSampler *sampler = (VulkanSampler *)textureSamplerBindings[i].sampler;
 
-        VULKAN_INTERNAL_TrackSampler(
-            vulkanCommandBuffer,
-            (VulkanSampler *)textureSamplerBindings[i].sampler);
+        if (vulkanCommandBuffer->vertexSamplers[firstSlot + i] != sampler) {
+            VULKAN_INTERNAL_TrackSampler(
+                vulkanCommandBuffer,
+                (VulkanSampler *)textureSamplerBindings[i].sampler);
 
-        VULKAN_INTERNAL_TrackTexture(
-            vulkanCommandBuffer,
-            textureContainer->activeTexture);
+            vulkanCommandBuffer->vertexSamplers[firstSlot + i] = (VulkanSampler *)textureSamplerBindings[i].sampler;
+            vulkanCommandBuffer->needNewVertexResourceDescriptorSet = true;
+        }
+
+        if (vulkanCommandBuffer->vertexSamplerTextures[firstSlot + i] != textureContainer->activeTexture) {
+            VULKAN_INTERNAL_TrackTexture(
+                vulkanCommandBuffer,
+                textureContainer->activeTexture);
+
+            vulkanCommandBuffer->vertexSamplerTextures[firstSlot + i] = textureContainer->activeTexture;
+            vulkanCommandBuffer->needNewVertexResourceDescriptorSet = true;
+        }
     }
-
-    vulkanCommandBuffer->needNewVertexResourceDescriptorSet = true;
 }
 
 static void VULKAN_BindVertexStorageTextures(
@@ -7430,14 +7454,15 @@ static void VULKAN_BindVertexStorageTextures(
     for (Uint32 i = 0; i < numBindings; i += 1) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)storageTextures[i];
 
-        vulkanCommandBuffer->vertexStorageTextures[firstSlot + i] = textureContainer->activeTexture;
+        if (vulkanCommandBuffer->vertexStorageTextures[firstSlot + i] != textureContainer->activeTexture) {
+            VULKAN_INTERNAL_TrackTexture(
+                vulkanCommandBuffer,
+                textureContainer->activeTexture);
 
-        VULKAN_INTERNAL_TrackTexture(
-            vulkanCommandBuffer,
-            textureContainer->activeTexture);
+            vulkanCommandBuffer->vertexStorageTextures[firstSlot + i] = textureContainer->activeTexture;
+            vulkanCommandBuffer->needNewVertexResourceDescriptorSet = true;
+        }
     }
-
-    vulkanCommandBuffer->needNewVertexResourceDescriptorSet = true;
 }
 
 static void VULKAN_BindVertexStorageBuffers(
@@ -7447,20 +7472,19 @@ static void VULKAN_BindVertexStorageBuffers(
     Uint32 numBindings)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanBufferContainer *bufferContainer;
-    Uint32 i;
 
-    for (i = 0; i < numBindings; i += 1) {
-        bufferContainer = (VulkanBufferContainer *)storageBuffers[i];
+    for (Uint32 i = 0; i < numBindings; i += 1) {
+        VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)storageBuffers[i];
 
-        vulkanCommandBuffer->vertexStorageBuffers[firstSlot + i] = bufferContainer->activeBuffer;
+        if (vulkanCommandBuffer->vertexStorageBuffers[firstSlot + i] != bufferContainer->activeBuffer) {
+            VULKAN_INTERNAL_TrackBuffer(
+                vulkanCommandBuffer,
+                bufferContainer->activeBuffer);
 
-        VULKAN_INTERNAL_TrackBuffer(
-            vulkanCommandBuffer,
-            bufferContainer->activeBuffer);
+            vulkanCommandBuffer->vertexStorageBuffers[firstSlot + i] = bufferContainer->activeBuffer;
+            vulkanCommandBuffer->needNewVertexResourceDescriptorSet = true;
+        }
     }
-
-    vulkanCommandBuffer->needNewVertexResourceDescriptorSet = true;
 }
 
 static void VULKAN_BindFragmentSamplers(
@@ -7473,19 +7497,26 @@ static void VULKAN_BindFragmentSamplers(
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)textureSamplerBindings[i].texture;
-        vulkanCommandBuffer->fragmentSamplerTextures[firstSlot + i] = textureContainer->activeTexture;
-        vulkanCommandBuffer->fragmentSamplers[firstSlot + i] = (VulkanSampler *)textureSamplerBindings[i].sampler;
+        VulkanSampler *sampler = (VulkanSampler *)textureSamplerBindings[i].sampler;
 
-        VULKAN_INTERNAL_TrackSampler(
-            vulkanCommandBuffer,
-            (VulkanSampler *)textureSamplerBindings[i].sampler);
+        if (vulkanCommandBuffer->fragmentSamplers[firstSlot + i] != sampler) {
+            VULKAN_INTERNAL_TrackSampler(
+                vulkanCommandBuffer,
+                (VulkanSampler *)textureSamplerBindings[i].sampler);
 
-        VULKAN_INTERNAL_TrackTexture(
-            vulkanCommandBuffer,
-            textureContainer->activeTexture);
+            vulkanCommandBuffer->fragmentSamplers[firstSlot + i] = (VulkanSampler *)textureSamplerBindings[i].sampler;
+            vulkanCommandBuffer->needNewFragmentResourceDescriptorSet = true;
+        }
+
+        if (vulkanCommandBuffer->fragmentSamplerTextures[firstSlot + i] != textureContainer->activeTexture) {
+            VULKAN_INTERNAL_TrackTexture(
+                vulkanCommandBuffer,
+                textureContainer->activeTexture);
+
+            vulkanCommandBuffer->fragmentSamplerTextures[firstSlot + i] = textureContainer->activeTexture;
+            vulkanCommandBuffer->needNewFragmentResourceDescriptorSet = true;
+        }
     }
-
-    vulkanCommandBuffer->needNewFragmentResourceDescriptorSet = true;
 }
 
 static void VULKAN_BindFragmentStorageTextures(
@@ -7499,15 +7530,15 @@ static void VULKAN_BindFragmentStorageTextures(
     for (Uint32 i = 0; i < numBindings; i += 1) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)storageTextures[i];
 
-        vulkanCommandBuffer->fragmentStorageTextures[firstSlot + i] =
-            textureContainer->activeTexture;
+        if (vulkanCommandBuffer->fragmentStorageTextures[firstSlot + i] != textureContainer->activeTexture) {
+            VULKAN_INTERNAL_TrackTexture(
+                vulkanCommandBuffer,
+                textureContainer->activeTexture);
 
-        VULKAN_INTERNAL_TrackTexture(
-            vulkanCommandBuffer,
-            textureContainer->activeTexture);
+            vulkanCommandBuffer->fragmentStorageTextures[firstSlot + i] = textureContainer->activeTexture;
+            vulkanCommandBuffer->needNewFragmentResourceDescriptorSet = true;
+        }
     }
-
-    vulkanCommandBuffer->needNewFragmentResourceDescriptorSet = true;
 }
 
 static void VULKAN_BindFragmentStorageBuffers(
@@ -7523,14 +7554,15 @@ static void VULKAN_BindFragmentStorageBuffers(
     for (i = 0; i < numBindings; i += 1) {
         bufferContainer = (VulkanBufferContainer *)storageBuffers[i];
 
-        vulkanCommandBuffer->fragmentStorageBuffers[firstSlot + i] = bufferContainer->activeBuffer;
+        if (vulkanCommandBuffer->fragmentStorageBuffers[firstSlot + i] != bufferContainer->activeBuffer) {
+            VULKAN_INTERNAL_TrackBuffer(
+                vulkanCommandBuffer,
+                bufferContainer->activeBuffer);
 
-        VULKAN_INTERNAL_TrackBuffer(
-            vulkanCommandBuffer,
-            bufferContainer->activeBuffer);
+            vulkanCommandBuffer->fragmentStorageBuffers[firstSlot + i] = bufferContainer->activeBuffer;
+            vulkanCommandBuffer->needNewFragmentResourceDescriptorSet = true;
+        }
     }
-
-    vulkanCommandBuffer->needNewFragmentResourceDescriptorSet = true;
 }
 
 static VulkanUniformBuffer *VULKAN_INTERNAL_AcquireUniformBufferFromPool(
@@ -7922,28 +7954,20 @@ static void VULKAN_BindVertexBuffers(
     Uint32 numBindings)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
-    VulkanBuffer *currentVulkanBuffer;
-    VkBuffer *buffers = SDL_stack_alloc(VkBuffer, numBindings);
-    VkDeviceSize *offsets = SDL_stack_alloc(VkDeviceSize, numBindings);
-    Uint32 i;
 
-    for (i = 0; i < numBindings; i += 1) {
-        currentVulkanBuffer = ((VulkanBufferContainer *)bindings[i].buffer)->activeBuffer;
-        buffers[i] = currentVulkanBuffer->buffer;
-        offsets[i] = (VkDeviceSize)bindings[i].offset;
-        VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, currentVulkanBuffer);
+    for (Uint32 i = 0; i < numBindings; i += 1) {
+        VulkanBuffer *buffer = ((VulkanBufferContainer *)bindings[i].buffer)->activeBuffer;
+        if (vulkanCommandBuffer->vertexBuffers[i] != buffer->buffer || vulkanCommandBuffer->vertexBufferOffsets[i] != bindings[i].offset) {
+            VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, buffer);
+
+            vulkanCommandBuffer->vertexBuffers[i] = buffer->buffer;
+            vulkanCommandBuffer->vertexBufferOffsets[i] = bindings[i].offset;
+            vulkanCommandBuffer->needVertexBufferBind = true;
+        }
     }
 
-    renderer->vkCmdBindVertexBuffers(
-        vulkanCommandBuffer->commandBuffer,
-        firstSlot,
-        numBindings,
-        buffers,
-        offsets);
-
-    SDL_stack_free(buffers);
-    SDL_stack_free(offsets);
+    vulkanCommandBuffer->vertexBufferCount =
+        SDL_max(vulkanCommandBuffer->vertexBufferCount, firstSlot + numBindings);
 }
 
 static void VULKAN_BindIndexBuffer(
@@ -8044,6 +8068,10 @@ static void VULKAN_EndRenderPass(
     SDL_zeroa(vulkanCommandBuffer->colorAttachmentSubresources);
     SDL_zeroa(vulkanCommandBuffer->resolveAttachmentSubresources);
     vulkanCommandBuffer->depthStencilAttachmentSubresource = NULL;
+
+    SDL_zeroa(vulkanCommandBuffer->vertexBuffers);
+    SDL_zeroa(vulkanCommandBuffer->vertexBufferOffsets);
+    vulkanCommandBuffer->vertexBufferCount = 0;
 
     SDL_zeroa(vulkanCommandBuffer->vertexSamplers);
     SDL_zeroa(vulkanCommandBuffer->vertexSamplerTextures);
@@ -8148,19 +8176,26 @@ static void VULKAN_BindComputeSamplers(
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)textureSamplerBindings[i].texture;
-        vulkanCommandBuffer->computeSamplerTextures[firstSlot + i] = textureContainer->activeTexture;
-        vulkanCommandBuffer->computeSamplers[firstSlot + i] = (VulkanSampler *)textureSamplerBindings[i].sampler;
+        VulkanSampler *sampler = (VulkanSampler *)textureSamplerBindings[i].sampler;
 
-        VULKAN_INTERNAL_TrackSampler(
-            vulkanCommandBuffer,
-            (VulkanSampler *)textureSamplerBindings[i].sampler);
+        if (vulkanCommandBuffer->computeSamplers[firstSlot + i] != sampler) {
+            VULKAN_INTERNAL_TrackSampler(
+                vulkanCommandBuffer,
+                sampler);
 
-        VULKAN_INTERNAL_TrackTexture(
-            vulkanCommandBuffer,
-            textureContainer->activeTexture);
+            vulkanCommandBuffer->computeSamplers[firstSlot + i] = sampler;
+            vulkanCommandBuffer->needNewComputeReadOnlyDescriptorSet = true;
+        }
+
+        if (vulkanCommandBuffer->computeSamplerTextures[firstSlot + i] != textureContainer->activeTexture) {
+            VULKAN_INTERNAL_TrackTexture(
+                vulkanCommandBuffer,
+                textureContainer->activeTexture);
+
+            vulkanCommandBuffer->computeSamplerTextures[firstSlot + i] = textureContainer->activeTexture;
+            vulkanCommandBuffer->needNewComputeReadOnlyDescriptorSet = true;
+        }
     }
-
-    vulkanCommandBuffer->needNewComputeReadOnlyDescriptorSet = true;
 }
 
 static void VULKAN_BindComputeStorageTextures(
@@ -8173,31 +8208,34 @@ static void VULKAN_BindComputeStorageTextures(
     VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
-        if (vulkanCommandBuffer->readOnlyComputeStorageTextures[firstSlot + i] != NULL) {
-            VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+        VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)storageTextures[i];
+
+        if (vulkanCommandBuffer->readOnlyComputeStorageTextures[firstSlot + i] != textureContainer->activeTexture) {
+            /* If a different texture as in this slot, transition it back to its default usage */
+            if (vulkanCommandBuffer->readOnlyComputeStorageTextures[firstSlot + i] != NULL) {
+                VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+                    renderer,
+                    vulkanCommandBuffer,
+                    VULKAN_TEXTURE_USAGE_MODE_COMPUTE_STORAGE_READ,
+                    vulkanCommandBuffer->readOnlyComputeStorageTextures[firstSlot + i]);
+            }
+
+            /* Then transition the new texture and prepare it for binding */
+            VULKAN_INTERNAL_TextureTransitionFromDefaultUsage(
                 renderer,
                 vulkanCommandBuffer,
                 VULKAN_TEXTURE_USAGE_MODE_COMPUTE_STORAGE_READ,
-                vulkanCommandBuffer->readOnlyComputeStorageTextures[firstSlot + i]);
+                textureContainer->activeTexture);
+
+
+            VULKAN_INTERNAL_TrackTexture(
+                vulkanCommandBuffer,
+                textureContainer->activeTexture);
+
+            vulkanCommandBuffer->readOnlyComputeStorageTextures[firstSlot + i] = textureContainer->activeTexture;
+            vulkanCommandBuffer->needNewComputeReadOnlyDescriptorSet = true;
         }
-
-        VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)storageTextures[i];
-
-        vulkanCommandBuffer->readOnlyComputeStorageTextures[firstSlot + i] =
-            textureContainer->activeTexture;
-
-        VULKAN_INTERNAL_TextureTransitionFromDefaultUsage(
-            renderer,
-            vulkanCommandBuffer,
-            VULKAN_TEXTURE_USAGE_MODE_COMPUTE_STORAGE_READ,
-            textureContainer->activeTexture);
-
-        VULKAN_INTERNAL_TrackTexture(
-            vulkanCommandBuffer,
-            textureContainer->activeTexture);
     }
-
-    vulkanCommandBuffer->needNewComputeReadOnlyDescriptorSet = true;
 }
 
 static void VULKAN_BindComputeStorageBuffers(
@@ -8208,34 +8246,35 @@ static void VULKAN_BindComputeStorageBuffers(
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
-    VulkanBufferContainer *bufferContainer;
-    Uint32 i;
 
-    for (i = 0; i < numBindings; i += 1) {
-        if (vulkanCommandBuffer->readOnlyComputeStorageBuffers[firstSlot + i] != NULL) {
-            VULKAN_INTERNAL_BufferTransitionToDefaultUsage(
+    for (Uint32 i = 0; i < numBindings; i += 1) {
+        VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)storageBuffers[i];
+
+        if (vulkanCommandBuffer->readOnlyComputeStorageBuffers[firstSlot + i] != bufferContainer->activeBuffer) {
+            /* If a different buffer was in this slot, transition it back to its default usage */
+            if (vulkanCommandBuffer->readOnlyComputeStorageBuffers[firstSlot + i] != NULL) {
+                VULKAN_INTERNAL_BufferTransitionToDefaultUsage(
+                    renderer,
+                    vulkanCommandBuffer,
+                    VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ,
+                    vulkanCommandBuffer->readOnlyComputeStorageBuffers[firstSlot + i]);
+            }
+
+            /* Then transition the new buffer and prepare it for binding */
+            VULKAN_INTERNAL_BufferTransitionFromDefaultUsage(
                 renderer,
                 vulkanCommandBuffer,
                 VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ,
-                vulkanCommandBuffer->readOnlyComputeStorageBuffers[firstSlot + i]);
+                bufferContainer->activeBuffer);
+
+            VULKAN_INTERNAL_TrackBuffer(
+                vulkanCommandBuffer,
+                bufferContainer->activeBuffer);
+
+            vulkanCommandBuffer->readOnlyComputeStorageBuffers[firstSlot + i] = bufferContainer->activeBuffer;
+            vulkanCommandBuffer->needNewComputeReadOnlyDescriptorSet = true;
         }
-
-        bufferContainer = (VulkanBufferContainer *)storageBuffers[i];
-
-        vulkanCommandBuffer->readOnlyComputeStorageBuffers[firstSlot + i] = bufferContainer->activeBuffer;
-
-        VULKAN_INTERNAL_BufferTransitionFromDefaultUsage(
-            renderer,
-            vulkanCommandBuffer,
-            VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ,
-            bufferContainer->activeBuffer);
-
-        VULKAN_INTERNAL_TrackBuffer(
-            vulkanCommandBuffer,
-            bufferContainer->activeBuffer);
     }
-
-    vulkanCommandBuffer->needNewComputeReadOnlyDescriptorSet = true;
 }
 
 static void VULKAN_PushComputeUniformData(
@@ -9226,6 +9265,7 @@ static bool VULKAN_INTERNAL_AllocateCommandBuffer(
 
     // Resource bind tracking
 
+    commandBuffer->needVertexBufferBind = false;
     commandBuffer->needNewVertexResourceDescriptorSet = true;
     commandBuffer->needNewVertexUniformDescriptorSet = true;
     commandBuffer->needNewVertexUniformOffsets = true;
@@ -9419,6 +9459,7 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
         commandBuffer->computeUniformBuffers[i] = NULL;
     }
 
+    commandBuffer->needVertexBufferBind = false;
     commandBuffer->needNewVertexResourceDescriptorSet = true;
     commandBuffer->needNewVertexUniformDescriptorSet = true;
     commandBuffer->needNewVertexUniformOffsets = true;
@@ -9438,6 +9479,10 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
     commandBuffer->computeReadOnlyDescriptorSet = VK_NULL_HANDLE;
     commandBuffer->computeReadWriteDescriptorSet = VK_NULL_HANDLE;
     commandBuffer->computeUniformDescriptorSet = VK_NULL_HANDLE;
+
+    SDL_zeroa(commandBuffer->vertexBuffers);
+    SDL_zeroa(commandBuffer->vertexBufferOffsets);
+    commandBuffer->vertexBufferCount = 0;
 
     SDL_zeroa(commandBuffer->vertexSamplerTextures);
     SDL_zeroa(commandBuffer->vertexSamplers);
@@ -9867,8 +9912,6 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
             windowData->imageAvailableSemaphore[windowData->frameCounter],
             VK_NULL_HANDLE,
             &swapchainImageIndex);
-
-        //if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) { SDL_Log("VULKAN SWAPCHAIN OUT OF DATE"); }
 
         if (acquireResult == VK_SUCCESS || acquireResult == VK_SUBOPTIMAL_KHR) {
             break;  // we got the next image!
