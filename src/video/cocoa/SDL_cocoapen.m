@@ -135,7 +135,7 @@ static void Cocoa_HandlePenPointEvent(SDL_CocoaWindowData *_data, NSEvent *event
     SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_PRESSURE, [event pressure]);
     SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_ROTATION, [event rotation]);
     SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_XTILT, ((float) tilt.x) * 90.0f);
-    SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_YTILT, ((float) tilt.y) * 90.0f);
+    SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_YTILT, ((float) -tilt.y) * 90.0f);
     SDL_SendPenAxis(timestamp, pen, window, SDL_PEN_AXIS_TANGENTIAL_PRESSURE, event.tangentialPressure);
 }
 
