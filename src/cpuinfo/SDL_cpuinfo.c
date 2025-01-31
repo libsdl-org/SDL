@@ -421,6 +421,12 @@ static int CPU_haveARMSIMD(void)
     return regs.r[0];
 }
 
+#elif defined(SDL_PLATFORM_NGAGE)
+static int CPU_haveARMSIMD(void)
+{
+    // The RM920T is based on the ARMv4T architecture and doesn't have SIMD.
+    return 0;
+}
 #else
 static int CPU_haveARMSIMD(void)
 {
@@ -468,6 +474,8 @@ static int CPU_haveNEON(void)
     return 1;
 #elif defined(SDL_PLATFORM_3DS)
     return 0;
+#elif defined(SDL_PLATFORM_NGAGE)
+    return 0; // The ARM920T is based on the ARMv4T architecture and doesn't have NEON.
 #elif defined(SDL_PLATFORM_APPLE) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
     // (note that sysctlbyname("hw.optional.neon") doesn't work!)
     return 1; // all Apple ARMv7 chips and later have NEON.
