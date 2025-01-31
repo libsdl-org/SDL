@@ -62,8 +62,8 @@
 #define HAVE_POW      1
 #define HAVE_SCALBN   1
 #define HAVE_SIN      1
-#define HAVE_SQRT     1
 #define HAVE_STDIO_H  1
+#define HAVE_SQRT     1
 #define HAVE_TAN      1
 
 #define isnanf(x) SDL_uclibc_isnanf(x);
@@ -71,5 +71,7 @@
 
 extern void va_copy(char* dest, char* src);
 extern int vsnprintf(char* str, size_t size, const char* format, va_list ap);
+
+typedef long ssize_t;
 
 #endif /* SDL_build_config_ngage_h_ */
