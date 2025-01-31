@@ -93,7 +93,10 @@ SDL_COMPILE_TIME_ASSERT(SDL_MICRO_VERSION_max, SDL_MICRO_VERSION <= 999);
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 SDL_NORETURN void SDL_ExitProcess(int exitcode)
 {
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_NGAGE)
+    extern void NGAGE_ExitApp(int exitcode);
+    NGAGE_ExitApp(exitcode);
+#elif defined(SDL_PLATFORM_WINDOWS)
     /* "if you do not know the state of all threads in your process, it is
        better to call TerminateProcess than ExitProcess"
        https://msdn.microsoft.com/en-us/library/windows/desktop/ms682658(v=vs.85).aspx */
@@ -728,6 +731,8 @@ const char *SDL_GetPlatform(void)
     return "macOS";
 #elif defined(SDL_PLATFORM_NETBSD)
     return "NetBSD";
+#elif defined(SDL_PLATFORM_NGAGE)
+    return "Nokia N-Gage";
 #elif defined(SDL_PLATFORM_OPENBSD)
     return "OpenBSD";
 #elif defined(SDL_PLATFORM_OS2)
