@@ -309,6 +309,30 @@ static size_t SDLCALL SDL_IOprintf_LOGSDLCALLS(SDL_IOStream *context, SDL_PRINTF
     va_end(ap);
     return result;
 }
+static bool SDLCALL SDL_RenderDebugTextFormat_LOGSDLCALLS(SDL_Renderer *renderer, float x, float y, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+{
+    char buf[128], *str = buf;
+    int result;
+    va_list ap;
+    SDL_Log_REAL("SDL3CALL SDL_RenderDebugTextFormat");
+    va_start(ap, fmt);
+    result = jump_table.SDL_vsnprintf(buf, sizeof(buf), fmt, ap);
+    va_end(ap);
+    if (result >= 0 && (size_t)result >= sizeof(buf)) {
+        str = NULL;
+        va_start(ap, fmt);
+        result = SDL_vasprintf_REAL(&str, fmt, ap);
+        va_end(ap);
+    }
+    bool retval = false;
+    if (result >= 0) {
+        retval = SDL_RenderDebugTextFormat_REAL(renderer, x, y, "%s", str);
+    }
+    if (str != buf) {
+        jump_table.SDL_free(str);
+    }
+    return retval;
+}
 static void SDLCALL SDL_Log_LOGSDLCALLS(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     va_list ap;
