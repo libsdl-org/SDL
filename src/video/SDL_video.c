@@ -334,6 +334,9 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
         if (!render_driver) {
             render_driver = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
         }
+        if (render_driver && SDL_strcasecmp(render_driver, SDL_SOFTWARE_RENDERER) == 0) {
+            render_driver = NULL;
+        }
 
         char *render_driver_copy = NULL;
         if (render_driver && *render_driver) {
