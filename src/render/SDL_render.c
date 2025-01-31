@@ -119,6 +119,9 @@ static const SDL_RenderDriver *render_drivers[] = {
 #ifdef SDL_VIDEO_RENDER_METAL
     &METAL_RenderDriver,
 #endif
+#ifdef SDL_VIDEO_RENDER_NGAGE
+    &NGAGE_RenderDriver,
+#endif
 #ifdef SDL_VIDEO_RENDER_OGL
     &GL_RenderDriver,
 #endif
@@ -3175,6 +3178,7 @@ bool SDL_SetRenderDrawColorFloat(SDL_Renderer *renderer, float r, float g, float
     renderer->color.g = g;
     renderer->color.b = b;
     renderer->color.a = a;
+
     return true;
 }
 
