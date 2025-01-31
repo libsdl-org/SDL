@@ -567,30 +567,37 @@ typedef struct MetalCommandBuffer
     MetalComputePipeline *compute_pipeline;
 
     // Resource slot state
+    bool needVertexBufferBind;
     bool needVertexSamplerBind;
     bool needVertexStorageTextureBind;
     bool needVertexStorageBufferBind;
-    bool needVertexUniformBind;
+    bool needVertexUniformBufferBind[MAX_UNIFORM_BUFFERS_PER_STAGE];
 
     bool needFragmentSamplerBind;
     bool needFragmentStorageTextureBind;
     bool needFragmentStorageBufferBind;
-    bool needFragmentUniformBind;
+    bool needFragmentUniformBufferBind[MAX_UNIFORM_BUFFERS_PER_STAGE];
 
     bool needComputeSamplerBind;
-    bool needComputeTextureBind;
-    bool needComputeBufferBind;
-    bool needComputeUniformBind;
+    bool needComputeReadOnlyStorageTextureBind;
+    bool needComputeReadOnlyStorageBufferBind;
+    bool needComputeUniformBufferBind[MAX_UNIFORM_BUFFERS_PER_STAGE];
+
+    id<MTLBuffer> vertexBuffers[MAX_VERTEX_BUFFERS];
+    Uint32 vertexBufferOffsets[MAX_VERTEX_BUFFERS];
+    Uint32 vertexBufferCount;
 
     id<MTLSamplerState> vertexSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     id<MTLTexture> vertexTextures[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     id<MTLTexture> vertexStorageTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
     id<MTLBuffer> vertexStorageBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
+    MetalUniformBuffer *vertexUniformBuffers[MAX_UNIFORM_BUFFERS_PER_STAGE];
 
     id<MTLSamplerState> fragmentSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     id<MTLTexture> fragmentTextures[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     id<MTLTexture> fragmentStorageTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
     id<MTLBuffer> fragmentStorageBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
+    MetalUniformBuffer *fragmentUniformBuffers[MAX_UNIFORM_BUFFERS_PER_STAGE];
 
     id<MTLTexture> computeSamplerTextures[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     id<MTLSamplerState> computeSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
@@ -598,10 +605,6 @@ typedef struct MetalCommandBuffer
     id<MTLBuffer> computeReadOnlyBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
     id<MTLTexture> computeReadWriteTextures[MAX_COMPUTE_WRITE_TEXTURES];
     id<MTLBuffer> computeReadWriteBuffers[MAX_COMPUTE_WRITE_BUFFERS];
-
-    // Uniform buffers
-    MetalUniformBuffer *vertexUniformBuffers[MAX_UNIFORM_BUFFERS_PER_STAGE];
-    MetalUniformBuffer *fragmentUniformBuffers[MAX_UNIFORM_BUFFERS_PER_STAGE];
     MetalUniformBuffer *computeUniformBuffers[MAX_UNIFORM_BUFFERS_PER_STAGE];
 
     MetalUniformBuffer **usedUniformBuffers;
@@ -2130,20 +2133,6 @@ static SDL_GPUCommandBuffer *METAL_AcquireCommandBuffer(
             commandBuffer->computeUniformBuffers[i] = NULL;
         }
 
-        // FIXME: Do we actually need to set this?
-        commandBuffer->needVertexSamplerBind = true;
-        commandBuffer->needVertexStorageTextureBind = true;
-        commandBuffer->needVertexStorageBufferBind = true;
-        commandBuffer->needVertexUniformBind = true;
-        commandBuffer->needFragmentSamplerBind = true;
-        commandBuffer->needFragmentStorageTextureBind = true;
-        commandBuffer->needFragmentStorageBufferBind = true;
-        commandBuffer->needFragmentUniformBind = true;
-        commandBuffer->needComputeSamplerBind = true;
-        commandBuffer->needComputeBufferBind = true;
-        commandBuffer->needComputeTextureBind = true;
-        commandBuffer->needComputeUniformBind = true;
-
         commandBuffer->autoReleaseFence = true;
 
         SDL_UnlockMutex(renderer->acquireCommandBufferLock);
@@ -2397,73 +2386,71 @@ static void METAL_BindGraphicsPipeline(
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-        MetalGraphicsPipeline *metalGraphicsPipeline = (MetalGraphicsPipeline *)graphicsPipeline;
-        SDL_GPURasterizerState *rast = &metalGraphicsPipeline->rasterizerState;
+        MetalGraphicsPipeline *pipeline = (MetalGraphicsPipeline *)graphicsPipeline;
+        SDL_GPURasterizerState *rast = &pipeline->rasterizerState;
+        Uint32 i;
 
-        metalCommandBuffer->graphics_pipeline = metalGraphicsPipeline;
+        metalCommandBuffer->graphics_pipeline = pipeline;
 
-        [metalCommandBuffer->renderEncoder setRenderPipelineState:metalGraphicsPipeline->handle];
+        [metalCommandBuffer->renderEncoder setRenderPipelineState:pipeline->handle];
 
         // Apply rasterizer state
-        [metalCommandBuffer->renderEncoder setTriangleFillMode:SDLToMetal_PolygonMode[metalGraphicsPipeline->rasterizerState.fill_mode]];
-        [metalCommandBuffer->renderEncoder setCullMode:SDLToMetal_CullMode[metalGraphicsPipeline->rasterizerState.cull_mode]];
-        [metalCommandBuffer->renderEncoder setFrontFacingWinding:SDLToMetal_FrontFace[metalGraphicsPipeline->rasterizerState.front_face]];
-        [metalCommandBuffer->renderEncoder setDepthClipMode:SDLToMetal_DepthClipMode(metalGraphicsPipeline->rasterizerState.enable_depth_clip)];
+        [metalCommandBuffer->renderEncoder setTriangleFillMode:SDLToMetal_PolygonMode[pipeline->rasterizerState.fill_mode]];
+        [metalCommandBuffer->renderEncoder setCullMode:SDLToMetal_CullMode[pipeline->rasterizerState.cull_mode]];
+        [metalCommandBuffer->renderEncoder setFrontFacingWinding:SDLToMetal_FrontFace[pipeline->rasterizerState.front_face]];
+        [metalCommandBuffer->renderEncoder setDepthClipMode:SDLToMetal_DepthClipMode(pipeline->rasterizerState.enable_depth_clip)];
         [metalCommandBuffer->renderEncoder
             setDepthBias:((rast->enable_depth_bias) ? rast->depth_bias_constant_factor : 0)
               slopeScale:((rast->enable_depth_bias) ? rast->depth_bias_slope_factor : 0)
               clamp:((rast->enable_depth_bias) ? rast->depth_bias_clamp : 0)];
 
         // Apply depth-stencil state
-        if (metalGraphicsPipeline->depth_stencil_state != NULL) {
+        if (pipeline->depth_stencil_state != NULL) {
             [metalCommandBuffer->renderEncoder
-                setDepthStencilState:metalGraphicsPipeline->depth_stencil_state];
+                setDepthStencilState:pipeline->depth_stencil_state];
         }
 
-        for (Uint32 i = 0; i < metalGraphicsPipeline->vertexUniformBufferCount; i += 1) {
+        for (i = 0; i < MAX_UNIFORM_BUFFERS_PER_STAGE; i += 1) {
+            metalCommandBuffer->needVertexUniformBufferBind[i] = true;
+            metalCommandBuffer->needFragmentUniformBufferBind[i] = true;
+        }
+
+        for (i = 0; i < pipeline->vertexUniformBufferCount; i += 1) {
             if (metalCommandBuffer->vertexUniformBuffers[i] == NULL) {
                 metalCommandBuffer->vertexUniformBuffers[i] = METAL_INTERNAL_AcquireUniformBufferFromPool(
                     metalCommandBuffer);
             }
         }
 
-        for (Uint32 i = 0; i < metalGraphicsPipeline->fragmentUniformBufferCount; i += 1) {
+        for (i = 0; i < pipeline->fragmentUniformBufferCount; i += 1) {
             if (metalCommandBuffer->fragmentUniformBuffers[i] == NULL) {
                 metalCommandBuffer->fragmentUniformBuffers[i] = METAL_INTERNAL_AcquireUniformBufferFromPool(
                     metalCommandBuffer);
             }
         }
-
-        metalCommandBuffer->needVertexUniformBind = true;
-        metalCommandBuffer->needFragmentUniformBind = true;
     }
 }
 
 static void METAL_BindVertexBuffers(
     SDL_GPUCommandBuffer *commandBuffer,
-    Uint32 firstBinding,
+    Uint32 firstSlot,
     const SDL_GPUBufferBinding *bindings,
     Uint32 numBindings)
 {
-    @autoreleasepool {
-        MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-        id<MTLBuffer> metalBuffers[MAX_VERTEX_BUFFERS];
-        NSUInteger bufferOffsets[MAX_VERTEX_BUFFERS];
-        NSRange range = NSMakeRange(METAL_FIRST_VERTEX_BUFFER_SLOT + firstBinding, numBindings);
+    MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
 
-        if (range.length == 0) {
-            return;
-        }
-
-        for (Uint32 i = 0; i < numBindings; i += 1) {
-            MetalBuffer *currentBuffer = ((MetalBufferContainer *)bindings[i].buffer)->activeBuffer;
-            metalBuffers[firstBinding + i] = currentBuffer->handle;
-            bufferOffsets[firstBinding + i] = bindings[i].offset;
+    for (Uint32 i = 0; i < numBindings; i += 1) {
+        MetalBuffer *currentBuffer = ((MetalBufferContainer *)bindings[i].buffer)->activeBuffer;
+        if (metalCommandBuffer->vertexBuffers[firstSlot + i] != currentBuffer->handle || metalCommandBuffer->vertexBufferOffsets[firstSlot + i] != bindings[i].offset) {
+            metalCommandBuffer->vertexBuffers[firstSlot + i] = currentBuffer->handle;
+            metalCommandBuffer->vertexBufferOffsets[firstSlot + i] = bindings[i].offset;
+            metalCommandBuffer->needVertexBufferBind = true;
             METAL_INTERNAL_TrackBuffer(metalCommandBuffer, currentBuffer);
         }
-
-        [metalCommandBuffer->renderEncoder setVertexBuffers:metalBuffers offsets:bufferOffsets withRange:range];
     }
+
+    metalCommandBuffer->vertexBufferCount =
+        SDL_max(metalCommandBuffer->vertexBufferCount, firstSlot + numBindings);
 }
 
 static void METAL_BindIndexBuffer(
@@ -2487,22 +2474,28 @@ static void METAL_BindVertexSamplers(
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
     MetalTextureContainer *textureContainer;
+    MetalSampler *sampler;
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         textureContainer = (MetalTextureContainer *)textureSamplerBindings[i].texture;
+        sampler = (MetalSampler *)textureSamplerBindings[i].sampler;
 
-        METAL_INTERNAL_TrackTexture(
-            metalCommandBuffer,
-            textureContainer->activeTexture);
+        if (metalCommandBuffer->vertexSamplers[firstSlot + i] != sampler->handle) {
+            metalCommandBuffer->vertexSamplers[firstSlot + i] = sampler->handle;
+            metalCommandBuffer->needVertexSamplerBind  = true;
+        }
 
-        metalCommandBuffer->vertexSamplers[firstSlot + i] =
-            ((MetalSampler *)textureSamplerBindings[i].sampler)->handle;
+        if (metalCommandBuffer->vertexTextures[firstSlot + i] != textureContainer->activeTexture->handle) {
+            METAL_INTERNAL_TrackTexture(
+                metalCommandBuffer,
+                textureContainer->activeTexture);
 
-        metalCommandBuffer->vertexTextures[firstSlot + i] =
-            textureContainer->activeTexture->handle;
+            metalCommandBuffer->vertexTextures[firstSlot + i] =
+                textureContainer->activeTexture->handle;
+
+            metalCommandBuffer->needVertexSamplerBind  = true;
+        }
     }
-
-    metalCommandBuffer->needVertexSamplerBind = true;
 }
 
 static void METAL_BindVertexStorageTextures(
@@ -2517,15 +2510,17 @@ static void METAL_BindVertexStorageTextures(
     for (Uint32 i = 0; i < numBindings; i += 1) {
         textureContainer = (MetalTextureContainer *)storageTextures[i];
 
-        METAL_INTERNAL_TrackTexture(
-            metalCommandBuffer,
-            textureContainer->activeTexture);
+        if (metalCommandBuffer->vertexStorageTextures[firstSlot + i] != textureContainer->activeTexture->handle) {
+            METAL_INTERNAL_TrackTexture(
+                metalCommandBuffer,
+                textureContainer->activeTexture);
 
-        metalCommandBuffer->vertexStorageTextures[firstSlot + i] =
-            textureContainer->activeTexture->handle;
+            metalCommandBuffer->vertexStorageTextures[firstSlot + i] =
+                textureContainer->activeTexture->handle;
+
+            metalCommandBuffer->needVertexStorageTextureBind = true;
+        }
     }
-
-    metalCommandBuffer->needVertexStorageTextureBind = true;
 }
 
 static void METAL_BindVertexStorageBuffers(
@@ -2540,15 +2535,17 @@ static void METAL_BindVertexStorageBuffers(
     for (Uint32 i = 0; i < numBindings; i += 1) {
         bufferContainer = (MetalBufferContainer *)storageBuffers[i];
 
-        METAL_INTERNAL_TrackBuffer(
-            metalCommandBuffer,
-            bufferContainer->activeBuffer);
+        if (metalCommandBuffer->vertexStorageBuffers[firstSlot + i] != bufferContainer->activeBuffer->handle) {
+            METAL_INTERNAL_TrackBuffer(
+                metalCommandBuffer,
+                bufferContainer->activeBuffer);
 
-        metalCommandBuffer->vertexStorageBuffers[firstSlot + i] =
-            bufferContainer->activeBuffer->handle;
+            metalCommandBuffer->vertexStorageBuffers[firstSlot + i] =
+                bufferContainer->activeBuffer->handle;
+
+            metalCommandBuffer->needVertexStorageBufferBind = true;
+        }
     }
-
-    metalCommandBuffer->needVertexStorageBufferBind = true;
 }
 
 static void METAL_BindFragmentSamplers(
@@ -2559,22 +2556,28 @@ static void METAL_BindFragmentSamplers(
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
     MetalTextureContainer *textureContainer;
+    MetalSampler *sampler;
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         textureContainer = (MetalTextureContainer *)textureSamplerBindings[i].texture;
+        sampler = (MetalSampler *)textureSamplerBindings[i].sampler;
 
-        METAL_INTERNAL_TrackTexture(
-            metalCommandBuffer,
-            textureContainer->activeTexture);
+        if (metalCommandBuffer->fragmentSamplers[firstSlot + i] != sampler->handle) {
+            metalCommandBuffer->fragmentSamplers[firstSlot + i] = sampler->handle;
+            metalCommandBuffer->needFragmentSamplerBind  = true;
+        }
 
-        metalCommandBuffer->fragmentSamplers[firstSlot + i] =
-            ((MetalSampler *)textureSamplerBindings[i].sampler)->handle;
+        if (metalCommandBuffer->fragmentTextures[firstSlot + i] != textureContainer->activeTexture->handle) {
+            METAL_INTERNAL_TrackTexture(
+                metalCommandBuffer,
+                textureContainer->activeTexture);
 
-        metalCommandBuffer->fragmentTextures[firstSlot + i] =
-            textureContainer->activeTexture->handle;
+            metalCommandBuffer->fragmentTextures[firstSlot + i] =
+                textureContainer->activeTexture->handle;
+
+            metalCommandBuffer->needFragmentSamplerBind  = true;
+        }
     }
-
-    metalCommandBuffer->needFragmentSamplerBind = true;
 }
 
 static void METAL_BindFragmentStorageTextures(
@@ -2589,15 +2592,17 @@ static void METAL_BindFragmentStorageTextures(
     for (Uint32 i = 0; i < numBindings; i += 1) {
         textureContainer = (MetalTextureContainer *)storageTextures[i];
 
-        METAL_INTERNAL_TrackTexture(
-            metalCommandBuffer,
-            textureContainer->activeTexture);
+        if (metalCommandBuffer->fragmentStorageTextures[firstSlot + i] != textureContainer->activeTexture->handle) {
+            METAL_INTERNAL_TrackTexture(
+                metalCommandBuffer,
+                textureContainer->activeTexture);
 
-        metalCommandBuffer->fragmentStorageTextures[firstSlot + i] =
-            textureContainer->activeTexture->handle;
+            metalCommandBuffer->fragmentStorageTextures[firstSlot + i] =
+                textureContainer->activeTexture->handle;
+
+            metalCommandBuffer->needFragmentStorageTextureBind = true;
+        }
     }
-
-    metalCommandBuffer->needFragmentStorageTextureBind = true;
 }
 
 static void METAL_BindFragmentStorageBuffers(
@@ -2612,15 +2617,17 @@ static void METAL_BindFragmentStorageBuffers(
     for (Uint32 i = 0; i < numBindings; i += 1) {
         bufferContainer = (MetalBufferContainer *)storageBuffers[i];
 
-        METAL_INTERNAL_TrackBuffer(
-            metalCommandBuffer,
-            bufferContainer->activeBuffer);
+        if (metalCommandBuffer->fragmentStorageBuffers[firstSlot + i] != bufferContainer->activeBuffer->handle) {
+            METAL_INTERNAL_TrackBuffer(
+                metalCommandBuffer,
+                bufferContainer->activeBuffer);
 
-        metalCommandBuffer->fragmentStorageBuffers[firstSlot + i] =
-            bufferContainer->activeBuffer->handle;
+            metalCommandBuffer->fragmentStorageBuffers[firstSlot + i] =
+                bufferContainer->activeBuffer->handle;
+
+            metalCommandBuffer->needFragmentStorageBufferBind = true;
+        }
     }
-
-    metalCommandBuffer->needFragmentStorageBufferBind = true;
 }
 
 // This function assumes that it's called from within an autorelease pool
@@ -2630,85 +2637,115 @@ static void METAL_INTERNAL_BindGraphicsResources(
     MetalGraphicsPipeline *graphicsPipeline = commandBuffer->graphics_pipeline;
     NSUInteger offsets[MAX_STORAGE_BUFFERS_PER_STAGE] = { 0 };
 
+    // Vertex Buffers
+    if (commandBuffer->needVertexBufferBind) {
+        id<MTLBuffer> metalBuffers[MAX_VERTEX_BUFFERS];
+        NSUInteger bufferOffsets[MAX_VERTEX_BUFFERS];
+        NSRange range = NSMakeRange(METAL_FIRST_VERTEX_BUFFER_SLOT, commandBuffer->vertexBufferCount);
+        for (Uint32 i = 0; i < commandBuffer->vertexBufferCount; i += 1) {
+            metalBuffers[i] = commandBuffer->vertexBuffers[i];
+            bufferOffsets[i] = commandBuffer->vertexBufferOffsets[i];
+        }
+        [commandBuffer->renderEncoder setVertexBuffers:metalBuffers offsets:bufferOffsets withRange:range];
+        commandBuffer->needVertexBufferBind = false;
+    }
+
     // Vertex Samplers+Textures
 
-    if (graphicsPipeline->vertexSamplerCount > 0 && commandBuffer->needVertexSamplerBind) {
-        [commandBuffer->renderEncoder setVertexSamplerStates:commandBuffer->vertexSamplers
-                                                   withRange:NSMakeRange(0, graphicsPipeline->vertexSamplerCount)];
-        [commandBuffer->renderEncoder setVertexTextures:commandBuffer->vertexTextures
-                                              withRange:NSMakeRange(0, graphicsPipeline->vertexSamplerCount)];
+    if (commandBuffer->needVertexSamplerBind) {
+        if (graphicsPipeline->vertexSamplerCount > 0) {
+            [commandBuffer->renderEncoder setVertexSamplerStates:commandBuffer->vertexSamplers
+                                                       withRange:NSMakeRange(0, graphicsPipeline->vertexSamplerCount)];
+            [commandBuffer->renderEncoder setVertexTextures:commandBuffer->vertexTextures
+                                                  withRange:NSMakeRange(0, graphicsPipeline->vertexSamplerCount)];
+        }
         commandBuffer->needVertexSamplerBind = false;
     }
 
     // Vertex Storage Textures
 
-    if (graphicsPipeline->vertexStorageTextureCount > 0 && commandBuffer->needVertexStorageTextureBind) {
-        [commandBuffer->renderEncoder setVertexTextures:commandBuffer->vertexStorageTextures
-                                              withRange:NSMakeRange(graphicsPipeline->vertexSamplerCount,
-                                                                    graphicsPipeline->vertexStorageTextureCount)];
+    if (commandBuffer->needVertexStorageTextureBind) {
+        if (graphicsPipeline->vertexStorageTextureCount > 0) {
+            [commandBuffer->renderEncoder setVertexTextures:commandBuffer->vertexStorageTextures
+                                                  withRange:NSMakeRange(graphicsPipeline->vertexSamplerCount,
+                                                                        graphicsPipeline->vertexStorageTextureCount)];
+        }
         commandBuffer->needVertexStorageTextureBind = false;
     }
 
     // Vertex Storage Buffers
 
-    if (graphicsPipeline->vertexStorageBufferCount > 0 && commandBuffer->needVertexStorageBufferBind) {
-        [commandBuffer->renderEncoder setVertexBuffers:commandBuffer->vertexStorageBuffers
-                                               offsets:offsets
-                                             withRange:NSMakeRange(graphicsPipeline->vertexUniformBufferCount,
-                                                                   graphicsPipeline->vertexStorageBufferCount)];
+    if (commandBuffer->needVertexStorageBufferBind) {
+        if (graphicsPipeline->vertexStorageBufferCount > 0) {
+            [commandBuffer->renderEncoder setVertexBuffers:commandBuffer->vertexStorageBuffers
+                                                   offsets:offsets
+                                                 withRange:NSMakeRange(graphicsPipeline->vertexUniformBufferCount,
+                                                                       graphicsPipeline->vertexStorageBufferCount)];
+        }
         commandBuffer->needVertexStorageBufferBind = false;
     }
 
     // Vertex Uniform Buffers
 
-    if (graphicsPipeline->vertexUniformBufferCount > 0 && commandBuffer->needVertexUniformBind) {
-        for (Uint32 i = 0; i < graphicsPipeline->vertexUniformBufferCount; i += 1) {
-            [commandBuffer->renderEncoder
-                setVertexBuffer:commandBuffer->vertexUniformBuffers[i]->handle
-                         offset:commandBuffer->vertexUniformBuffers[i]->drawOffset
-                        atIndex:i];
+    for (Uint32 i = 0; i < graphicsPipeline->vertexUniformBufferCount; i += 1) {
+        if (commandBuffer->needVertexUniformBufferBind[i]) {
+            if (graphicsPipeline->vertexUniformBufferCount > i) {
+                [commandBuffer->renderEncoder
+                    setVertexBuffer:commandBuffer->vertexUniformBuffers[i]->handle
+                             offset:commandBuffer->vertexUniformBuffers[i]->drawOffset
+                            atIndex:i];
+            }
+            commandBuffer->needVertexUniformBufferBind[i] = false;
         }
-        commandBuffer->needVertexUniformBind = false;
     }
 
     // Fragment Samplers+Textures
 
-    if (graphicsPipeline->fragmentSamplerCount > 0 && commandBuffer->needFragmentSamplerBind) {
-        [commandBuffer->renderEncoder setFragmentSamplerStates:commandBuffer->fragmentSamplers
-                                                     withRange:NSMakeRange(0, graphicsPipeline->fragmentSamplerCount)];
-        [commandBuffer->renderEncoder setFragmentTextures:commandBuffer->fragmentTextures
-                                                withRange:NSMakeRange(0, graphicsPipeline->fragmentSamplerCount)];
+    if (commandBuffer->needFragmentSamplerBind) {
+        if (graphicsPipeline->fragmentSamplerCount > 0) {
+            [commandBuffer->renderEncoder setFragmentSamplerStates:commandBuffer->fragmentSamplers
+                                                         withRange:NSMakeRange(0, graphicsPipeline->fragmentSamplerCount)];
+            [commandBuffer->renderEncoder setFragmentTextures:commandBuffer->fragmentTextures
+                                                    withRange:NSMakeRange(0, graphicsPipeline->fragmentSamplerCount)];
+        }
         commandBuffer->needFragmentSamplerBind = false;
     }
 
     // Fragment Storage Textures
 
-    if (graphicsPipeline->fragmentStorageTextureCount > 0 && commandBuffer->needFragmentStorageTextureBind) {
-        [commandBuffer->renderEncoder setFragmentTextures:commandBuffer->fragmentStorageTextures
-                                                withRange:NSMakeRange(graphicsPipeline->fragmentSamplerCount,
-                                                                      graphicsPipeline->fragmentStorageTextureCount)];
+    if (commandBuffer->needFragmentStorageTextureBind) {
+        if (graphicsPipeline->fragmentStorageTextureCount > 0) {
+            [commandBuffer->renderEncoder setFragmentTextures:commandBuffer->fragmentStorageTextures
+                                                    withRange:NSMakeRange(graphicsPipeline->fragmentSamplerCount,
+                                                                          graphicsPipeline->fragmentStorageTextureCount)];
+        }
         commandBuffer->needFragmentStorageTextureBind = false;
     }
 
     // Fragment Storage Buffers
 
-    if (graphicsPipeline->fragmentStorageBufferCount > 0 && commandBuffer->needFragmentStorageBufferBind) {
-        [commandBuffer->renderEncoder setFragmentBuffers:commandBuffer->fragmentStorageBuffers
-                                                 offsets:offsets
-                                               withRange:NSMakeRange(graphicsPipeline->fragmentUniformBufferCount,
-                                                                     graphicsPipeline->fragmentStorageBufferCount)];
+    if (commandBuffer->needFragmentStorageBufferBind) {
+        if (graphicsPipeline->fragmentStorageBufferCount > 0) {
+            [commandBuffer->renderEncoder setFragmentBuffers:commandBuffer->fragmentStorageBuffers
+                                                     offsets:offsets
+                                                   withRange:NSMakeRange(graphicsPipeline->fragmentUniformBufferCount,
+                                                                         graphicsPipeline->fragmentStorageBufferCount)];
+        }
         commandBuffer->needFragmentStorageBufferBind = false;
     }
 
     // Fragment Uniform Buffers
-    if (graphicsPipeline->fragmentUniformBufferCount > 0 && commandBuffer->needFragmentUniformBind) {
-        for (Uint32 i = 0; i < graphicsPipeline->fragmentUniformBufferCount; i += 1) {
-            [commandBuffer->renderEncoder
-                setFragmentBuffer:commandBuffer->fragmentUniformBuffers[i]->handle
-                           offset:commandBuffer->fragmentUniformBuffers[i]->drawOffset
-                          atIndex:i];
+
+    for (Uint32 i = 0; i < graphicsPipeline->fragmentUniformBufferCount; i += 1) {
+        if (commandBuffer->needFragmentUniformBufferBind[i]) {
+            if (graphicsPipeline->fragmentUniformBufferCount > i) {
+                [commandBuffer->renderEncoder
+                    setFragmentBuffer:commandBuffer->fragmentUniformBuffers[i]->handle
+                            offset:commandBuffer->fragmentUniformBuffers[i]->drawOffset
+                            atIndex:i];
+            }
+            commandBuffer->needFragmentUniformBufferBind[i] = false;
         }
-        commandBuffer->needFragmentUniformBind = false;
     }
 }
 
@@ -2720,7 +2757,6 @@ static void METAL_INTERNAL_BindComputeResources(
     NSUInteger offsets[MAX_STORAGE_BUFFERS_PER_STAGE] = { 0 };
 
     if (commandBuffer->needComputeSamplerBind) {
-        // Bind sampler textures
         if (computePipeline->numSamplers > 0) {
             [commandBuffer->computeEncoder setTextures:commandBuffer->computeSamplerTextures
                                              withRange:NSMakeRange(0, computePipeline->numSamplers)];
@@ -2730,54 +2766,36 @@ static void METAL_INTERNAL_BindComputeResources(
         commandBuffer->needComputeSamplerBind = false;
     }
 
-    if (commandBuffer->needComputeTextureBind) {
-        // Bind read-only textures
+    if (commandBuffer->needComputeReadOnlyStorageTextureBind) {
         if (computePipeline->numReadonlyStorageTextures > 0) {
             [commandBuffer->computeEncoder setTextures:commandBuffer->computeReadOnlyTextures
                                              withRange:NSMakeRange(
                                                            computePipeline->numSamplers,
                                                            computePipeline->numReadonlyStorageTextures)];
         }
-
-        // Bind write-only textures
-        if (computePipeline->numReadWriteStorageTextures > 0) {
-            [commandBuffer->computeEncoder setTextures:commandBuffer->computeReadWriteTextures
-                                             withRange:NSMakeRange(
-                                                           computePipeline->numSamplers + computePipeline->numReadonlyStorageTextures,
-                                                           computePipeline->numReadWriteStorageTextures)];
-        }
-        commandBuffer->needComputeTextureBind = false;
+        commandBuffer->needComputeReadOnlyStorageTextureBind = false;
     }
 
-    if (commandBuffer->needComputeBufferBind) {
-        // Bind read-only buffers
+    if (commandBuffer->needComputeReadOnlyStorageBufferBind) {
         if (computePipeline->numReadonlyStorageBuffers > 0) {
             [commandBuffer->computeEncoder setBuffers:commandBuffer->computeReadOnlyBuffers
                                               offsets:offsets
                                             withRange:NSMakeRange(computePipeline->numUniformBuffers,
                                                                   computePipeline->numReadonlyStorageBuffers)];
         }
-        // Bind write-only buffers
-        if (computePipeline->numReadWriteStorageBuffers > 0) {
-            [commandBuffer->computeEncoder setBuffers:commandBuffer->computeReadWriteBuffers
-                                              offsets:offsets
-                                            withRange:NSMakeRange(
-                                                          computePipeline->numUniformBuffers +
-                                                              computePipeline->numReadonlyStorageBuffers,
-                                                          computePipeline->numReadWriteStorageBuffers)];
-        }
-        commandBuffer->needComputeBufferBind = false;
+        commandBuffer->needComputeReadOnlyStorageBufferBind = false;
     }
 
-    if (commandBuffer->needComputeUniformBind) {
-        for (Uint32 i = 0; i < computePipeline->numUniformBuffers; i += 1) {
-            [commandBuffer->computeEncoder
-                setBuffer:commandBuffer->computeUniformBuffers[i]->handle
-                   offset:commandBuffer->computeUniformBuffers[i]->drawOffset
-                  atIndex:i];
+    for (Uint32 i = 0; i < MAX_UNIFORM_BUFFERS_PER_STAGE; i += 1) {
+        if (commandBuffer->needComputeUniformBufferBind[i]) {
+            if (computePipeline->numUniformBuffers > i) {
+                [commandBuffer->computeEncoder
+                    setBuffer:commandBuffer->computeUniformBuffers[i]->handle
+                    offset:commandBuffer->computeUniformBuffers[i]->drawOffset
+                    atIndex:i];
+            }
         }
-
-        commandBuffer->needComputeUniformBind = false;
+        commandBuffer->needComputeUniformBufferBind[i] = false;
     }
 }
 
@@ -2892,6 +2910,11 @@ static void METAL_EndRenderPass(
         [metalCommandBuffer->renderEncoder endEncoding];
         metalCommandBuffer->renderEncoder = nil;
 
+        for (Uint32 i = 0; i < MAX_VERTEX_BUFFERS; i += 1) {
+            metalCommandBuffer->vertexBuffers[i] = nil;
+            metalCommandBuffer->vertexBufferOffsets[i] = 0;
+            metalCommandBuffer->vertexBufferCount = 0;
+        }
         for (Uint32 i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i += 1) {
             metalCommandBuffer->vertexSamplers[i] = nil;
             metalCommandBuffer->vertexTextures[i] = nil;
@@ -2976,11 +2999,11 @@ static void METAL_INTERNAL_PushUniformData(
     metalUniformBuffer->writeOffset += alignedDataLength;
 
     if (shaderStage == SDL_GPU_SHADERSTAGE_VERTEX) {
-        metalCommandBuffer->needVertexUniformBind = true;
+        metalCommandBuffer->needVertexUniformBufferBind[slotIndex] = true;
     } else if (shaderStage == SDL_GPU_SHADERSTAGE_FRAGMENT) {
-        metalCommandBuffer->needFragmentUniformBind = true;
+        metalCommandBuffer->needFragmentUniformBufferBind[slotIndex] = true;
     } else if (shaderStage == SDL_GPU_SHADERSTAGE_COMPUTE) {
-        metalCommandBuffer->needComputeUniformBind = true;
+        metalCommandBuffer->needComputeUniformBufferBind[slotIndex] = true;
     } else {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Unrecognized shader stage!");
     }
@@ -3078,7 +3101,6 @@ static void METAL_BeginComputePass(
                                                                   slices:NSMakeRange(storageTextureBindings[i].layer, 1)];
 
             metalCommandBuffer->computeReadWriteTextures[i] = textureView;
-            metalCommandBuffer->needComputeTextureBind = true;
         }
 
         for (Uint32 i = 0; i < numStorageBufferBindings; i += 1) {
@@ -3094,7 +3116,6 @@ static void METAL_BeginComputePass(
                 buffer);
 
             metalCommandBuffer->computeReadWriteBuffers[i] = buffer->handle;
-            metalCommandBuffer->needComputeBufferBind = true;
         }
     }
 }
@@ -3111,6 +3132,10 @@ static void METAL_BindComputePipeline(
 
         [metalCommandBuffer->computeEncoder setComputePipelineState:pipeline->handle];
 
+        for (Uint32 i = 0; i < MAX_UNIFORM_BUFFERS_PER_STAGE; i += 1) {
+            metalCommandBuffer->needComputeUniformBufferBind[i] = true;
+        }
+
         for (Uint32 i = 0; i < pipeline->numUniformBuffers; i += 1) {
             if (metalCommandBuffer->computeUniformBuffers[i] == NULL) {
                 metalCommandBuffer->computeUniformBuffers[i] = METAL_INTERNAL_AcquireUniformBufferFromPool(
@@ -3118,7 +3143,24 @@ static void METAL_BindComputePipeline(
             }
         }
 
-        metalCommandBuffer->needComputeUniformBind = true;
+        // Bind write-only resources
+        if (pipeline->numReadWriteStorageTextures > 0) {
+            [metalCommandBuffer->computeEncoder setTextures:metalCommandBuffer->computeReadWriteTextures
+                                                  withRange:NSMakeRange(
+                                                        pipeline->numSamplers +
+                                                            pipeline->numReadonlyStorageTextures,
+                                                        pipeline->numReadWriteStorageTextures)];
+        }
+
+        NSUInteger offsets[MAX_COMPUTE_WRITE_BUFFERS] = { 0 };
+        if (pipeline->numReadWriteStorageBuffers > 0) {
+            [metalCommandBuffer->computeEncoder setBuffers:metalCommandBuffer->computeReadWriteBuffers
+                                                   offsets:offsets
+                                                 withRange:NSMakeRange(
+                                                        pipeline->numUniformBuffers +
+                                                            pipeline->numReadonlyStorageBuffers,
+                                                        pipeline->numReadWriteStorageBuffers)];
+        }
     }
 }
 
@@ -3130,22 +3172,28 @@ static void METAL_BindComputeSamplers(
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
     MetalTextureContainer *textureContainer;
+    MetalSampler *sampler;
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         textureContainer = (MetalTextureContainer *)textureSamplerBindings[i].texture;
+        sampler = (MetalSampler *)textureSamplerBindings[i].sampler;
 
-        METAL_INTERNAL_TrackTexture(
-            metalCommandBuffer,
-            textureContainer->activeTexture);
+        if (metalCommandBuffer->computeSamplers[firstSlot + i] != sampler->handle) {
+            metalCommandBuffer->computeSamplers[firstSlot + i] = sampler->handle;
+            metalCommandBuffer->needComputeSamplerBind = true;
+        }
 
-        metalCommandBuffer->computeSamplers[firstSlot + i] =
-            ((MetalSampler *)textureSamplerBindings[i].sampler)->handle;
+        if (metalCommandBuffer->computeSamplerTextures[firstSlot + i] != textureContainer->activeTexture->handle) {
+            METAL_INTERNAL_TrackTexture(
+                metalCommandBuffer,
+                textureContainer->activeTexture);
 
-        metalCommandBuffer->computeSamplerTextures[firstSlot + i] =
-            textureContainer->activeTexture->handle;
+            metalCommandBuffer->computeSamplerTextures[firstSlot + i] =
+                textureContainer->activeTexture->handle;
+
+            metalCommandBuffer->needComputeSamplerBind = true;
+        }
     }
-
-    metalCommandBuffer->needComputeSamplerBind = true;
 }
 
 static void METAL_BindComputeStorageTextures(
@@ -3160,15 +3208,17 @@ static void METAL_BindComputeStorageTextures(
     for (Uint32 i = 0; i < numBindings; i += 1) {
         textureContainer = (MetalTextureContainer *)storageTextures[i];
 
-        METAL_INTERNAL_TrackTexture(
-            metalCommandBuffer,
-            textureContainer->activeTexture);
+        if (metalCommandBuffer->computeReadOnlyTextures[firstSlot + i] != textureContainer->activeTexture->handle) {
+            METAL_INTERNAL_TrackTexture(
+                metalCommandBuffer,
+                textureContainer->activeTexture);
 
-        metalCommandBuffer->computeReadOnlyTextures[firstSlot + i] =
-            textureContainer->activeTexture->handle;
+            metalCommandBuffer->computeReadOnlyTextures[firstSlot + i] =
+                textureContainer->activeTexture->handle;
+
+            metalCommandBuffer->needComputeReadOnlyStorageTextureBind = true;
+        }
     }
-
-    metalCommandBuffer->needComputeTextureBind = true;
 }
 
 static void METAL_BindComputeStorageBuffers(
@@ -3183,15 +3233,17 @@ static void METAL_BindComputeStorageBuffers(
     for (Uint32 i = 0; i < numBindings; i += 1) {
         bufferContainer = (MetalBufferContainer *)storageBuffers[i];
 
-        METAL_INTERNAL_TrackBuffer(
-            metalCommandBuffer,
-            bufferContainer->activeBuffer);
+        if (metalCommandBuffer->computeReadOnlyBuffers[firstSlot + i] != bufferContainer->activeBuffer->handle) {
+            METAL_INTERNAL_TrackBuffer(
+                metalCommandBuffer,
+                bufferContainer->activeBuffer);
 
-        metalCommandBuffer->computeReadOnlyBuffers[firstSlot + i] =
-            bufferContainer->activeBuffer->handle;
+            metalCommandBuffer->computeReadOnlyBuffers[firstSlot + i] =
+                bufferContainer->activeBuffer->handle;
+
+            metalCommandBuffer->needComputeReadOnlyStorageBufferBind = true;
+        }
     }
-
-    metalCommandBuffer->needComputeBufferBind = true;
 }
 
 static void METAL_PushComputeUniformData(
@@ -3368,6 +3420,11 @@ static void METAL_INTERNAL_CleanCommandBuffer(
     commandBuffer->windowDataCount = 0;
 
     // Reset bindings
+    for (i = 0; i < MAX_VERTEX_BUFFERS; i += 1) {
+        commandBuffer->vertexBuffers[i] = nil;
+        commandBuffer->vertexBufferOffsets[i] = 0;
+    }
+    commandBuffer->vertexBufferCount = 0;
     commandBuffer->indexBuffer = NULL;
     for (i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i += 1) {
         commandBuffer->vertexSamplers[i] = nil;
@@ -3393,6 +3450,22 @@ static void METAL_INTERNAL_CleanCommandBuffer(
     for (i = 0; i < MAX_COMPUTE_WRITE_BUFFERS; i += 1) {
         commandBuffer->computeReadWriteBuffers[i] = nil;
     }
+
+    commandBuffer->needVertexBufferBind = false;
+    commandBuffer->needVertexSamplerBind = false;
+    commandBuffer->needVertexStorageBufferBind = false;
+    commandBuffer->needVertexStorageTextureBind = false;
+    SDL_zeroa(commandBuffer->needVertexUniformBufferBind);
+
+    commandBuffer->needFragmentSamplerBind = false;
+    commandBuffer->needFragmentStorageBufferBind = false;
+    commandBuffer->needFragmentStorageTextureBind = false;
+    SDL_zeroa(commandBuffer->needFragmentUniformBufferBind);
+
+    commandBuffer->needComputeSamplerBind = false;
+    commandBuffer->needComputeReadOnlyStorageBufferBind = false;
+    commandBuffer->needComputeReadOnlyStorageTextureBind = false;
+    SDL_zeroa(commandBuffer->needComputeUniformBufferBind);
 
     // The fence is now available (unless SubmitAndAcquireFence was called)
     if (commandBuffer->autoReleaseFence) {

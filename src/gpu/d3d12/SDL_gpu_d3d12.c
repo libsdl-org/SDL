@@ -4552,15 +4552,18 @@ static void D3D12_BindVertexBuffers(
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12Buffer *currentBuffer = ((D3D12BufferContainer *)bindings[i].buffer)->activeBuffer;
-        d3d12CommandBuffer->vertexBuffers[firstSlot + i] = currentBuffer;
-        d3d12CommandBuffer->vertexBufferOffsets[firstSlot + i] = bindings[i].offset;
-        D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, currentBuffer);
+
+        if (d3d12CommandBuffer->vertexBuffers[firstSlot + i] != currentBuffer || d3d12CommandBuffer->vertexBufferOffsets[firstSlot + i] != bindings[i].offset) {
+            D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, currentBuffer);
+
+            d3d12CommandBuffer->vertexBuffers[firstSlot + i] = currentBuffer;
+            d3d12CommandBuffer->vertexBufferOffsets[firstSlot + i] = bindings[i].offset;
+            d3d12CommandBuffer->needVertexBufferBind = true;
+        }
     }
 
     d3d12CommandBuffer->vertexBufferCount =
         SDL_max(d3d12CommandBuffer->vertexBufferCount, firstSlot + numBindings);
-
-    d3d12CommandBuffer->needVertexBufferBind = true;
 }
 
 static void D3D12_BindIndexBuffer(
@@ -4596,19 +4599,24 @@ static void D3D12_BindVertexSamplers(
         D3D12TextureContainer *container = (D3D12TextureContainer *)textureSamplerBindings[i].texture;
         D3D12Sampler *sampler = (D3D12Sampler *)textureSamplerBindings[i].sampler;
 
-        D3D12_INTERNAL_TrackTexture(
-            d3d12CommandBuffer,
-            container->activeTexture);
+        if (d3d12CommandBuffer->vertexSamplers[firstSlot + i] != sampler) {
+            D3D12_INTERNAL_TrackSampler(
+                d3d12CommandBuffer,
+                sampler);
 
-        D3D12_INTERNAL_TrackSampler(
-            d3d12CommandBuffer,
-            sampler);
+            d3d12CommandBuffer->vertexSamplers[firstSlot + i] = sampler;
+            d3d12CommandBuffer->needVertexSamplerBind = true;
+        }
 
-        d3d12CommandBuffer->vertexSamplers[firstSlot + i] = sampler;
-        d3d12CommandBuffer->vertexSamplerTextures[firstSlot + i] = container->activeTexture;
+        if (d3d12CommandBuffer->vertexSamplerTextures[firstSlot + i] != container->activeTexture) {
+            D3D12_INTERNAL_TrackTexture(
+                d3d12CommandBuffer,
+                container->activeTexture);
+
+            d3d12CommandBuffer->vertexSamplerTextures[firstSlot + i] = container->activeTexture;
+            d3d12CommandBuffer->needVertexSamplerBind = true;
+        }
     }
-
-    d3d12CommandBuffer->needVertexSamplerBind = true;
 }
 
 static void D3D12_BindVertexStorageTextures(
@@ -4623,12 +4631,13 @@ static void D3D12_BindVertexStorageTextures(
         D3D12TextureContainer *container = (D3D12TextureContainer *)storageTextures[i];
         D3D12Texture *texture = container->activeTexture;
 
-        D3D12_INTERNAL_TrackTexture(d3d12CommandBuffer, texture);
+        if (d3d12CommandBuffer->vertexStorageTextures[firstSlot + i] != texture) {
+            D3D12_INTERNAL_TrackTexture(d3d12CommandBuffer, texture);
 
-        d3d12CommandBuffer->vertexStorageTextures[firstSlot + i] = texture;
+            d3d12CommandBuffer->vertexStorageTextures[firstSlot + i] = texture;
+            d3d12CommandBuffer->needVertexStorageTextureBind = true;
+        }
     }
-
-    d3d12CommandBuffer->needVertexStorageTextureBind = true;
 }
 
 static void D3D12_BindVertexStorageBuffers(
@@ -4641,15 +4650,15 @@ static void D3D12_BindVertexStorageBuffers(
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12BufferContainer *container = (D3D12BufferContainer *)storageBuffers[i];
+        if (d3d12CommandBuffer->vertexStorageBuffers[firstSlot + i] != container->activeBuffer) {
+            D3D12_INTERNAL_TrackBuffer(
+                d3d12CommandBuffer,
+                container->activeBuffer);
 
-        D3D12_INTERNAL_TrackBuffer(
-            d3d12CommandBuffer,
-            container->activeBuffer);
-
-        d3d12CommandBuffer->vertexStorageBuffers[firstSlot + i] = container->activeBuffer;
+            d3d12CommandBuffer->vertexStorageBuffers[firstSlot + i] = container->activeBuffer;
+            d3d12CommandBuffer->needVertexStorageBufferBind = true;
+        }
     }
-
-    d3d12CommandBuffer->needVertexStorageBufferBind = true;
 }
 
 static void D3D12_BindFragmentSamplers(
@@ -4664,19 +4673,24 @@ static void D3D12_BindFragmentSamplers(
         D3D12TextureContainer *container = (D3D12TextureContainer *)textureSamplerBindings[i].texture;
         D3D12Sampler *sampler = (D3D12Sampler *)textureSamplerBindings[i].sampler;
 
-        D3D12_INTERNAL_TrackTexture(
-            d3d12CommandBuffer,
-            container->activeTexture);
+        if (d3d12CommandBuffer->fragmentSamplers[firstSlot + i] != sampler) {
+            D3D12_INTERNAL_TrackSampler(
+                d3d12CommandBuffer,
+                sampler);
 
-        D3D12_INTERNAL_TrackSampler(
-            d3d12CommandBuffer,
-            sampler);
+            d3d12CommandBuffer->fragmentSamplers[firstSlot + i] = sampler;
+            d3d12CommandBuffer->needFragmentSamplerBind = true;
+        }
 
-        d3d12CommandBuffer->fragmentSamplers[firstSlot + i] = sampler;
-        d3d12CommandBuffer->fragmentSamplerTextures[firstSlot + i] = container->activeTexture;
+        if (d3d12CommandBuffer->fragmentSamplerTextures[firstSlot + i] != container->activeTexture) {
+            D3D12_INTERNAL_TrackTexture(
+                d3d12CommandBuffer,
+                container->activeTexture);
+
+            d3d12CommandBuffer->fragmentSamplerTextures[firstSlot + i] = container->activeTexture;
+            d3d12CommandBuffer->needFragmentSamplerBind = true;
+        }
     }
-
-    d3d12CommandBuffer->needFragmentSamplerBind = true;
 }
 
 static void D3D12_BindFragmentStorageTextures(
@@ -4691,12 +4705,13 @@ static void D3D12_BindFragmentStorageTextures(
         D3D12TextureContainer *container = (D3D12TextureContainer *)storageTextures[i];
         D3D12Texture *texture = container->activeTexture;
 
-        D3D12_INTERNAL_TrackTexture(d3d12CommandBuffer, texture);
+        if (d3d12CommandBuffer->fragmentStorageTextures[firstSlot + i] != texture) {
+            D3D12_INTERNAL_TrackTexture(d3d12CommandBuffer, texture);
 
-        d3d12CommandBuffer->fragmentStorageTextures[firstSlot + i] = texture;
+            d3d12CommandBuffer->fragmentStorageTextures[firstSlot + i] = texture;
+            d3d12CommandBuffer->needFragmentStorageTextureBind = true;
+        }
     }
-
-    d3d12CommandBuffer->needFragmentStorageTextureBind = true;
 }
 
 static void D3D12_BindFragmentStorageBuffers(
@@ -4710,14 +4725,15 @@ static void D3D12_BindFragmentStorageBuffers(
     for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12BufferContainer *container = (D3D12BufferContainer *)storageBuffers[i];
 
-        D3D12_INTERNAL_TrackBuffer(
-            d3d12CommandBuffer,
-            container->activeBuffer);
+        if (d3d12CommandBuffer->fragmentStorageBuffers[firstSlot + i] != container->activeBuffer) {
+            D3D12_INTERNAL_TrackBuffer(
+                d3d12CommandBuffer,
+                container->activeBuffer);
 
-        d3d12CommandBuffer->fragmentStorageBuffers[firstSlot + i] = container->activeBuffer;
+            d3d12CommandBuffer->fragmentStorageBuffers[firstSlot + i] = container->activeBuffer;
+            d3d12CommandBuffer->needFragmentStorageBufferBind = true;
+        }
     }
-
-    d3d12CommandBuffer->needFragmentStorageBufferBind = true;
 }
 
 static void D3D12_PushVertexUniformData(
@@ -5330,20 +5346,26 @@ static void D3D12_BindComputeSamplers(
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         D3D12TextureContainer *container = (D3D12TextureContainer *)textureSamplerBindings[i].texture;
+        D3D12Sampler *sampler = (D3D12Sampler *)textureSamplerBindings[i].sampler;
 
-        D3D12_INTERNAL_TrackSampler(
-            d3d12CommandBuffer,
-            (D3D12Sampler *)textureSamplerBindings[i].sampler);
+        if (d3d12CommandBuffer->computeSamplers[firstSlot + i] != sampler) {
+            D3D12_INTERNAL_TrackSampler(
+                d3d12CommandBuffer,
+                (D3D12Sampler *)textureSamplerBindings[i].sampler);
 
-        D3D12_INTERNAL_TrackTexture(
-            d3d12CommandBuffer,
-            container->activeTexture);
+            d3d12CommandBuffer->computeSamplers[firstSlot + i] = (D3D12Sampler *)textureSamplerBindings[i].sampler;
+            d3d12CommandBuffer->needComputeSamplerBind = true;
+        }
 
-        d3d12CommandBuffer->computeSamplerTextures[firstSlot + i] = container->activeTexture;
-        d3d12CommandBuffer->computeSamplers[firstSlot + i] = (D3D12Sampler *)textureSamplerBindings[i].sampler;
+        if (d3d12CommandBuffer->computeSamplerTextures[firstSlot + i] != container->activeTexture) {
+            D3D12_INTERNAL_TrackTexture(
+                d3d12CommandBuffer,
+                container->activeTexture);
+
+            d3d12CommandBuffer->computeSamplerTextures[firstSlot + i] = container->activeTexture;
+            d3d12CommandBuffer->needComputeSamplerBind = true;
+        }
     }
-
-    d3d12CommandBuffer->needComputeSamplerBind = true;
 }
 
 static void D3D12_BindComputeStorageTextures(
@@ -5355,27 +5377,31 @@ static void D3D12_BindComputeStorageTextures(
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
-        if (d3d12CommandBuffer->computeReadOnlyStorageTextures[firstSlot + i] != NULL) {
-            D3D12_INTERNAL_TextureTransitionToDefaultUsage(
+        D3D12TextureContainer *container = (D3D12TextureContainer *)storageTextures[i];
+
+        if (d3d12CommandBuffer->computeReadOnlyStorageTextures[firstSlot + i] != container->activeTexture) {
+            /* If a different texture was in this slot, transition it back to its default usage */
+            if (d3d12CommandBuffer->computeReadOnlyStorageTextures[firstSlot + i] != NULL) {
+                D3D12_INTERNAL_TextureTransitionToDefaultUsage(
+                    d3d12CommandBuffer,
+                    D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+                    d3d12CommandBuffer->computeReadOnlyStorageTextures[firstSlot + i]);
+            }
+
+            /* Then transition the new texture and prepare it for binding */
+            D3D12_INTERNAL_TextureTransitionFromDefaultUsage(
                 d3d12CommandBuffer,
                 D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                d3d12CommandBuffer->computeReadOnlyStorageTextures[firstSlot + i]);
+                container->activeTexture);
+
+            D3D12_INTERNAL_TrackTexture(
+                d3d12CommandBuffer,
+                container->activeTexture);
+
+            d3d12CommandBuffer->computeReadOnlyStorageTextures[firstSlot + i] = container->activeTexture;
+            d3d12CommandBuffer->needComputeReadOnlyStorageTextureBind = true;
         }
-
-        D3D12TextureContainer *container = (D3D12TextureContainer *)storageTextures[i];
-        d3d12CommandBuffer->computeReadOnlyStorageTextures[firstSlot + i] = container->activeTexture;
-
-        D3D12_INTERNAL_TextureTransitionFromDefaultUsage(
-            d3d12CommandBuffer,
-            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-            container->activeTexture);
-
-        D3D12_INTERNAL_TrackTexture(
-            d3d12CommandBuffer,
-            container->activeTexture);
     }
-
-    d3d12CommandBuffer->needComputeReadOnlyStorageTextureBind = true;
 }
 
 static void D3D12_BindComputeStorageBuffers(
@@ -5387,29 +5413,32 @@ static void D3D12_BindComputeStorageBuffers(
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
-        if (d3d12CommandBuffer->computeReadOnlyStorageBuffers[firstSlot + i] != NULL) {
-            D3D12_INTERNAL_BufferTransitionToDefaultUsage(
-                d3d12CommandBuffer,
-                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-                d3d12CommandBuffer->computeReadOnlyStorageBuffers[firstSlot + i]);
-        }
-
         D3D12BufferContainer *container = (D3D12BufferContainer *)storageBuffers[i];
         D3D12Buffer *buffer = container->activeBuffer;
 
-        d3d12CommandBuffer->computeReadOnlyStorageBuffers[firstSlot + i] = buffer;
+        if (d3d12CommandBuffer->computeReadOnlyStorageBuffers[firstSlot + i] != buffer) {
+            /* If a different buffer was in this slot, transition it back to its default usage */
+            if (d3d12CommandBuffer->computeReadOnlyStorageBuffers[firstSlot + i] != NULL) {
+                D3D12_INTERNAL_BufferTransitionToDefaultUsage(
+                    d3d12CommandBuffer,
+                    D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+                    d3d12CommandBuffer->computeReadOnlyStorageBuffers[firstSlot + i]);
+            }
 
-        D3D12_INTERNAL_BufferTransitionFromDefaultUsage(
-            d3d12CommandBuffer,
-            D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
-            buffer);
+            /* Then transition the new buffer and prepare it for binding */
+            D3D12_INTERNAL_BufferTransitionFromDefaultUsage(
+                d3d12CommandBuffer,
+                D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+                buffer);
 
-        D3D12_INTERNAL_TrackBuffer(
-            d3d12CommandBuffer,
-            buffer);
+            D3D12_INTERNAL_TrackBuffer(
+                d3d12CommandBuffer,
+                buffer);
+
+            d3d12CommandBuffer->computeReadOnlyStorageBuffers[firstSlot + i] = buffer;
+            d3d12CommandBuffer->needComputeReadOnlyStorageBufferBind = true;
+        }
     }
-
-    d3d12CommandBuffer->needComputeReadOnlyStorageBufferBind = true;
 }
 
 static void D3D12_PushComputeUniformData(
