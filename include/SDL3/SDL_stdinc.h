@@ -49,11 +49,15 @@
 #include <SDL3/SDL_platform_defines.h>
 
 #include <stdarg.h>
+#if defined (HAVE_STDINT_H)
 #include <stdint.h>
+#endif
 #include <string.h>
+#if defined (HAVE_WCHAR_H)
 #include <wchar.h>
+#endif
 
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L && !defined SDL_PLATFORM_NGAGE) || \
     defined(SDL_INCLUDE_INTTYPES_H)
 #include <inttypes.h>
 #endif
@@ -64,7 +68,7 @@
 #define SDL_INCLUDE_STDBOOL_H
 #endif
 #endif
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L && !defined SDL_PLATFORM_NGAGE) || \
     (defined(_MSC_VER) && (_MSC_VER >= 1910 /* Visual Studio 2017 */)) || \
     defined(SDL_INCLUDE_STDBOOL_H)
 #include <stdbool.h>
