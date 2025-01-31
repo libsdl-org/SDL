@@ -587,6 +587,25 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
         return;
     }
 
+#if defined(SDL_PLATFORM_NGAGE)
+    extern void NGAGE_vnprintf(char *buf, size_t size, const char *fmt, va_list ap);
+    char buf[1024];
+    NGAGE_vnprintf(buf, sizeof(buf), fmt, ap);
+
+#ifdef ENABLE_FILE_LOG
+    FILE* file;
+    file = fopen("E:/SDL_Log.txt", "a");
+    if (file)
+    {
+        vfprintf(file, fmt, ap);
+        fprintf(file, "\n");
+        (void)fclose(file);
+    }
+#endif
+
+    return;
+#endif
+
     // Render into stack buffer
     va_copy(aq, ap);
     len = SDL_vsnprintf(stack_buf, sizeof(stack_buf), fmt, aq);
@@ -767,10 +786,15 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
             (void)fclose(pFile);
         }
     }
+#elif defined(SDL_PLATFORM_NGAGE)
+    {
+        /* Nothing to do here. */
+    }
 #endif
 #if defined(HAVE_STDIO_H) && \
+    !(defined (SDL_PLATFORM_NGAGE) || \
     !(defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))) && \
-    !(defined(SDL_PLATFORM_WIN32))
+    !(defined(SDL_PLATFORM_WIN32)))
     (void)fprintf(stderr, "%s%s\n", GetLogPriorityPrefix(priority), message);
 #endif
 }
