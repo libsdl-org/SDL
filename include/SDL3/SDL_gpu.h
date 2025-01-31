@@ -1842,6 +1842,7 @@ typedef struct SDL_GPUGraphicsPipelineCreateInfo
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUComputePipeline
+ * \sa SDL_GPUShaderFormat
  */
 typedef struct SDL_GPUComputePipelineCreateInfo
 {
