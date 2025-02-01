@@ -45,7 +45,7 @@ static SDL_VideoDevice* NGAGE_CreateDevice(void)
     if (!device)
     {
         SDL_OutOfMemory();
-        return (SDL_VideoDevice*)nullptr;
+        return (SDL_VideoDevice*)0;
     }
 
     // Initialize internal N-Gage specific data.
@@ -54,7 +54,7 @@ static SDL_VideoDevice* NGAGE_CreateDevice(void)
     {
         SDL_OutOfMemory();
         SDL_free(device);
-        return (SDL_VideoDevice*)nullptr;
+        return (SDL_VideoDevice*)0;
     }
 
     device->internal = phdata;
