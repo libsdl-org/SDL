@@ -53,7 +53,7 @@
 #include <string.h>
 #include <wchar.h>
 
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L && !defined SDL_PLATFORM_NGAGE) || \
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
     defined(SDL_INCLUDE_INTTYPES_H)
 #include <inttypes.h>
 #endif
