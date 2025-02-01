@@ -75,12 +75,15 @@ void CAudio::ConstructL(TInt aLatency)
 
 CAudio::~CAudio()
 {
-    Cancel();
-    StopThread();
-
     if (iStream)
     {
         iStream->Stop();
+
+        while (iState != EStateDone)
+        {
+            User::After(100000); // 100ms.
+        }
+
         delete iStream;
     }
 }
@@ -258,6 +261,7 @@ void CAudio::MaoscOpenComplete(TInt aError)
         iStream->SetVolume(1);
         iStreamStarted = ETrue;
         StartThread();
+
     }
     else
     {
@@ -274,8 +278,8 @@ void CAudio::MaoscBufferCopied(TInt aError, const TDesC8& /*aBuffer*/)
     }
     else if (aError == KErrAbort)
     {
-        Cancel();
-        iState = EStateNone;
+        // The stream has been stopped.
+        iState = EStateDone;
     }
     else
     {
@@ -303,11 +307,15 @@ void CAudio::MaoscPlayComplete(TInt aError)
         iState = EStatePlaying;
         Feed();
         return;
+
     }
     else if (aError != KErrNone)
     {
         // Handle error.
     }
+
+    // We shouldn't get here.
+    SDL_Log("%s: %d", __FUNCTION__, aError);
 }
 
 static TBool gAudioRunning;
@@ -390,13 +398,13 @@ void InitAudio(TInt* aLatency)
 
 void DeinitAudio()
 {
-    gAudioRunning = EFalse;
+   gAudioRunning = EFalse;
 
-    TRequestStatus status;
-    audioThread.Logon(status);
-    User::WaitForRequest(status);
+   TRequestStatus status;
+   audioThread.Logon(status);
+   User::WaitForRequest(status);
 
-    audioThread.Close();
+   audioThread.Close();
 }
 
 #endif // SDL_AUDIO_DRIVER_NGAGE
