@@ -494,8 +494,6 @@ typedef unsigned long uintptr_t;
 typedef signed long intptr_t;
 typedef long ssize_t;
 
-extern const void* nullptr;
-
 #undef __NGAGE__
 #endif
 
