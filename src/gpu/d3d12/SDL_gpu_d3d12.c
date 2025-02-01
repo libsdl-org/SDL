@@ -1036,6 +1036,14 @@ struct D3D12ComputePipeline
     SDL_AtomicInt referenceCount;
 };
 
+typedef struct D3D12PipelineCache
+{
+    ID3DBlob* pipelineCache;
+    Uint64 cacheChecksum[4];
+    size_t cacheBlobSize;
+    void* cacheBlob;
+} D3D12PipelineCache;
+
 struct D3D12TextureDownload
 {
     D3D12Buffer *destinationBuffer;
@@ -2724,6 +2732,9 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     size_t bytecodeSize;
     ID3D12PipelineState *pipelineState;
 
+    D3D12PipelineCache* pipelineCache = SDL_GetPointerProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_USE_CACHE, NULL);
+    bool storeCache = SDL_GetBooleanProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_STORE_CACHE, false);
+
     if (!D3D12_INTERNAL_CreateShaderBytecode(
             renderer,
             SDL_GPU_SHADERSTAGE_COMPUTE,
@@ -2749,6 +2760,12 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     pipelineDesc.CS.pShaderBytecode = bytecode;
     pipelineDesc.CS.BytecodeLength = bytecodeSize;
     pipelineDesc.pRootSignature = rootSignature->handle;
+
+    if (pipelineCache != NULL && pipelineCache->cacheBlob != NULL) {
+        pipelineDesc.CachedPSO.CachedBlobSizeInBytes = pipelineCache->cacheBlobSize;
+        pipelineDesc.CachedPSO.pCachedBlob = pipelineCache->cacheBlob;
+    }
+
     pipelineDesc.CachedPSO.CachedBlobSizeInBytes = 0;
     pipelineDesc.CachedPSO.pCachedBlob = NULL;
     pipelineDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
@@ -2759,6 +2776,12 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
         &pipelineDesc,
         D3D_GUID(D3D_IID_ID3D12PipelineState),
         (void **)&pipelineState);
+
+    if (pipelineCache != NULL && storeCache)
+    {
+        ID3D12PipelineState_GetCachedBlob(pipelineState, &pipelineCache->pipelineCache);
+        pipelineCache->cacheBlobSize = ID3D10Blob_GetBufferSize(pipelineCache->pipelineCache);
+    }
 
     if (FAILED(res)) {
         D3D12_INTERNAL_SetError(renderer, "Could not create compute pipeline state", res);
@@ -2970,6 +2993,7 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     D3D12Shader *vertShader = (D3D12Shader *)createinfo->vertex_shader;
     D3D12Shader *fragShader = (D3D12Shader *)createinfo->fragment_shader;
 
+
     if (renderer->debug_mode) {
         if (vertShader->stage != SDL_GPU_SHADERSTAGE_VERTEX) {
             SDL_assert_release(!"CreateGraphicsPipeline was passed a fragment shader for the vertex stage");
@@ -2978,6 +3002,9 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
             SDL_assert_release(!"CreateGraphicsPipeline was passed a vertex shader for the fragment stage");
         }
     }
+  
+    D3D12PipelineCache* pipelineCache = SDL_GetPointerProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_USE_CACHE, NULL);
+    bool storeCache = SDL_GetBooleanProperty(createinfo->props, SDL_PROP_GPU_PIPELINE_STORE_CACHE, false);
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc;
     SDL_zero(psoDesc);
@@ -3023,12 +3050,14 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     for (uint32_t i = 0; i < createinfo->target_info.num_color_targets; i += 1) {
         psoDesc.RTVFormats[i] = SDLToD3D12_TextureFormat[createinfo->target_info.color_target_descriptions[i].format];
     }
-
-    // Assuming some default values or further initialization
+    
     psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
-    psoDesc.CachedPSO.CachedBlobSizeInBytes = 0;
-    psoDesc.CachedPSO.pCachedBlob = NULL;
 
+    if (pipelineCache != NULL && pipelineCache->cacheBlob != NULL) {
+        psoDesc.CachedPSO.CachedBlobSizeInBytes = pipelineCache->cacheBlobSize;
+        psoDesc.CachedPSO.pCachedBlob = pipelineCache->cacheBlob;
+    }
+   
     psoDesc.NodeMask = 0;
 
     D3D12GraphicsRootSignature *rootSignature = D3D12_INTERNAL_CreateGraphicsRootSignature(
@@ -3054,6 +3083,12 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
         D3D12_INTERNAL_SetError(renderer, "Could not create graphics pipeline state", res);
         D3D12_INTERNAL_DestroyGraphicsPipeline(pipeline);
         return NULL;
+    }
+
+    if (pipelineCache != NULL && storeCache)
+    {
+        ID3D12PipelineState_GetCachedBlob(pipelineState, &pipelineCache->pipelineCache);
+        pipelineCache->cacheBlobSize = ID3D10Blob_GetBufferSize(pipelineCache->pipelineCache);
     }
 
     pipeline->pipelineState = pipelineState;
@@ -3085,6 +3120,54 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     }
 
     return (SDL_GPUGraphicsPipeline *)pipeline;
+}
+
+static SDL_GPUPipelineCache* D3D12_CreatePipelineCache(
+    SDL_GPURenderer* driverData,
+    const SDL_GPUPipelineCacheCreateInfo* createinfo)
+{
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
+    D3D12PipelineCache* d3d12PipelineCache = (D3D12PipelineCache*)SDL_malloc(sizeof(D3D12PipelineCache));
+
+    LUID uuid;
+    LARGE_INTEGER umdVersion;
+    Uint64 computedCache[4];
+
+    ID3D12Device_GetAdapterLuid(renderer->device,&uuid);
+    IDXGIAdapter1_CheckInterfaceSupport(renderer->adapter, D3D_GUID(D3D_IID_IDXGIDevice), &umdVersion);
+
+    computedCache[0] = uuid.LowPart;
+    computedCache[1] = uuid.HighPart;
+    computedCache[2] = umdVersion.QuadPart;
+    computedCache[3] = 0;
+
+    if (createinfo->cache_size != 0 &&
+        createinfo->cache_data != NULL &&
+        (SDL_memcmp(computedCache, createinfo->cache_checksum, sizeof(Uint64) * 4) == 0))
+    {
+        d3d12PipelineCache->cacheBlobSize = createinfo->cache_size;
+        d3d12PipelineCache->cacheBlob = SDL_malloc(createinfo->cache_size);
+        SDL_memcpy(d3d12PipelineCache->cacheBlob, createinfo->cache_data, createinfo->cache_size);
+    }
+    else
+    {
+        d3d12PipelineCache->cacheBlobSize = 0;
+        d3d12PipelineCache->cacheBlob = NULL;
+    }
+    SDL_memcpy(d3d12PipelineCache->cacheChecksum,createinfo->cache_checksum,sizeof(Uint64) * 4);
+    return (SDL_GPUPipelineCache*)d3d12PipelineCache;
+}
+
+static bool D3D12_FetchPipelineCacheData(
+    SDL_GPURenderer* driverData,
+    SDL_GPUPipelineCache* pipelineCache,
+    SDL_GPUPipelineCacheCreateInfo* createinfo)
+{
+    D3D12PipelineCache* d3d12PipelineCache = (D3D12PipelineCache*)pipelineCache;
+    SDL_memcpy(createinfo->cache_checksum,d3d12PipelineCache->cacheChecksum,sizeof(Uint64)*4);
+    createinfo->cache_size = d3d12PipelineCache->cacheBlobSize;
+    createinfo->cache_data = ID3D10Blob_GetBufferPointer(d3d12PipelineCache->pipelineCache);
+    return true;
 }
 
 static SDL_GPUSampler *D3D12_CreateSampler(
@@ -3944,6 +4027,13 @@ static void D3D12_INTERNAL_ReleaseBlitPipelines(SDL_GPURenderer *driverData)
         D3D12_ReleaseGraphicsPipeline(driverData, renderer->blitPipelines[i].pipeline);
     }
     SDL_free(renderer->blitPipelines);
+}
+
+static void D3D12_ReleasePipelineCache(
+    SDL_GPURenderer* driverData,
+    SDL_GPUPipelineCache* pipelineCache)
+{
+   // Not yet implemented
 }
 
 // Render Pass

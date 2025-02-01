@@ -1258,3 +1258,6 @@
 #define SDL_AudioStreamDevicePaused SDL_AudioStreamDevicePaused_REAL
 #define SDL_ClickTrayEntry SDL_ClickTrayEntry_REAL
 #define SDL_UpdateTrays SDL_UpdateTrays_REAL
+#define SDL_CreateGPUPipelineCache SDL_CreateGPUPipelineCache_REAL
+#define SDL_FetchGPUPipelineCacheData SDL_FetchGPUPipelineCacheData_REAL
+#define SDL_ReleaseGPUPipelineCache SDL_ReleaseGPUPipelineCache_REAL

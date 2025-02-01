@@ -1018,6 +1018,13 @@ static void METAL_ReleaseGraphicsPipeline(
     }
 }
 
+static void METAL_ReleasePipelineCache(
+    SDL_GPURenderer* driverData,
+    SDL_GPUPipelineCache* pipelineCache)
+{
+   // Not yet supported
+}
+
 // Pipeline Creation
 
 static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
@@ -1079,6 +1086,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
         MetalRenderer *renderer = (MetalRenderer *)driverData;
         MetalShader *vertexShader = (MetalShader *)createinfo->vertex_shader;
         MetalShader *fragmentShader = (MetalShader *)createinfo->fragment_shader;
+        
         MTLRenderPipelineDescriptor *pipelineDescriptor;
         const SDL_GPUColorTargetBlendState *blendState;
         MTLVertexDescriptor *vertexDescriptor;
@@ -1100,7 +1108,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
             }
         }
         pipelineDescriptor = [MTLRenderPipelineDescriptor new];
-
+        
         // Blend
 
         for (Uint32 i = 0; i < createinfo->target_info.num_color_targets; i += 1) {
@@ -1189,12 +1197,12 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
 
             pipelineDescriptor.vertexDescriptor = vertexDescriptor;
         }
-
+      
         if (renderer->debugMode && SDL_HasProperty(createinfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING)) {
             const char *name = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING, NULL);
             pipelineDescriptor.label = @(name);
         }
-
+      
         // Create the graphics pipeline
 
         pipelineState = [renderer->device newRenderPipelineStateWithDescriptor:pipelineDescriptor error:&error];
@@ -1222,6 +1230,23 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
         result->fragmentStorageTextureCount = fragmentShader->numStorageTextures;
         return (SDL_GPUGraphicsPipeline *)result;
     }
+}
+
+static SDL_GPUPipelineCache* METAL_CreatePipelineCache(
+    SDL_GPURenderer* driverData,
+    const SDL_GPUPipelineCacheCreateInfo* createinfo)
+{
+    // Not yet supported
+    return NULL;
+}
+
+static bool METAL_FetchPipelineCacheData(
+    SDL_GPURenderer* driverData,
+    SDL_GPUPipelineCache* pipelineCache,
+    SDL_GPUPipelineCacheCreateInfo* createinfo)
+{
+    // Not yet supported
+    return false;
 }
 
 // Debug Naming

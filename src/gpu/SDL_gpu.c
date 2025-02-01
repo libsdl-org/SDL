@@ -870,6 +870,37 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
         graphicsPipelineCreateInfo);
 }
 
+SDL_GPUPipelineCache* SDL_CreateGPUPipelineCache(
+    SDL_GPUDevice* device,
+    const SDL_GPUPipelineCacheCreateInfo* createinfo)
+{
+    CHECK_DEVICE_MAGIC(device, NULL);
+    if (createinfo == NULL) {
+        SDL_InvalidParamError("createinfo");
+        return NULL;
+    }
+
+    return device->CreatePipelineCache(device->driverData, createinfo);
+}
+
+bool SDL_FetchGPUPipelineCacheData(
+    SDL_GPUDevice* device,
+    SDL_GPUPipelineCache* pipeline_cache,
+    SDL_GPUPipelineCacheCreateInfo* createinfo)
+{
+    CHECK_DEVICE_MAGIC(device, false);
+    if (pipeline_cache == NULL) {
+        SDL_InvalidParamError("pipeline_cache");
+        return false;
+    }
+    if (createinfo == NULL) {
+        SDL_InvalidParamError("createinfo");
+        return false;
+    }
+
+    return device->FetchPipelineCacheData(device->driverData, pipeline_cache, createinfo);
+}
+
 SDL_GPUSampler *SDL_CreateGPUSampler(
     SDL_GPUDevice *device,
     const SDL_GPUSamplerCreateInfo *createinfo)
@@ -1291,6 +1322,20 @@ void SDL_ReleaseGPUGraphicsPipeline(
     device->ReleaseGraphicsPipeline(
         device->driverData,
         graphics_pipeline);
+}
+
+void SDL_ReleaseGPUPipelineCache(
+    SDL_GPUDevice* device,
+    SDL_GPUPipelineCache* pipeline_cache)
+{
+    CHECK_DEVICE_MAGIC(device, );
+    if (pipeline_cache == NULL) {
+        return;
+    }
+
+    device->ReleasePipelineCache(
+        device->driverData,
+        pipeline_cache);
 }
 
 // Command Buffer
