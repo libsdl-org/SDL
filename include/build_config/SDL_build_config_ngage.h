@@ -26,6 +26,7 @@
 #include <SDL3/SDL_platform_defines.h>
 #include <math.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -61,8 +62,8 @@
 #define HAVE_POW      1
 #define HAVE_SCALBN   1
 #define HAVE_SIN      1
-#define HAVE_STDIO_H  1
 #define HAVE_SQRT     1
+#define HAVE_STDIO_H  1
 #define HAVE_TAN      1
 
 #define isnanf(x) SDL_uclibc_isnanf(x);
