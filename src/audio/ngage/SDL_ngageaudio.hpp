@@ -66,7 +66,8 @@ public:
         EStateNone = 0,
         EStateOpening,
         EStatePlaying,
-        EStateWriting
+        EStateWriting,
+        EStateDone
     } iState;
 
 private:
