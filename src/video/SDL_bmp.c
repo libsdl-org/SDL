@@ -46,9 +46,21 @@
 #endif
 
 // Logical color space values for BMP files
+// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wmf/eb4bbd50-b3ce-4917-895c-be31f214797f
 #ifndef LCS_WINDOWS_COLOR_SPACE
 // 0x57696E20 == "Win "
 #define LCS_WINDOWS_COLOR_SPACE 0x57696E20
+#endif
+
+#ifndef LCS_sRGB
+// 0x73524742 == "sRGB"
+#define LCS_sRGB 0x73524742
+#endif
+
+// Logical/physical color relationship
+// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wmf/9fec0834-607d-427d-abd5-ab240fb0db38
+#ifndef LCS_GM_GRAPHICS
+#define LCS_GM_GRAPHICS 0x00000002
 #endif
 
 static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
@@ -637,6 +649,12 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
     Uint32 bV4GammaGreen = 0;
     Uint32 bV4GammaBlue = 0;
 
+    // The additional header members from the Win32 BITMAPV5HEADER struct (124 bytes in total)
+    Uint32 bV5Intent = 0;
+    Uint32 bV5ProfileData = 0;
+    Uint32 bV5ProfileSize = 0;
+    Uint32 bV5Reserved = 0;
+
     // Make sure we have somewhere to save
     if (!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("surface");
@@ -728,19 +746,25 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
         }
         biClrImportant = 0;
 
-        // Set the BMP info values for the version 4 header
+        // Set the BMP info values
         if (save32bit && !saveLegacyBMP) {
-            biSize = 108;
+            biSize = 124;
+            // Version 4 values
             biCompression = BI_BITFIELDS;
             // The BMP format is always little endian, these masks stay the same
             bV4RedMask = 0x00ff0000;
             bV4GreenMask = 0x0000ff00;
             bV4BlueMask = 0x000000ff;
             bV4AlphaMask = 0xff000000;
-            bV4CSType = LCS_WINDOWS_COLOR_SPACE;
+            bV4CSType = LCS_sRGB;
             bV4GammaRed = 0;
             bV4GammaGreen = 0;
             bV4GammaBlue = 0;
+            // Version 5 values
+            bV5Intent = LCS_GM_GRAPHICS;
+            bV5ProfileData = 0;
+            bV5ProfileSize = 0;
+            bV5Reserved = 0;
         }
 
         // Write the BMP info values
@@ -758,8 +782,9 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
             goto done;
         }
 
-        // Write the BMP info values for the version 4 header
+        // Write the BMP info values
         if (save32bit && !saveLegacyBMP) {
+            // Version 4 values
             if (!SDL_WriteU32LE(dst, bV4RedMask) ||
                 !SDL_WriteU32LE(dst, bV4GreenMask) ||
                 !SDL_WriteU32LE(dst, bV4BlueMask) ||
@@ -775,6 +800,13 @@ bool SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
             if (!SDL_WriteU32LE(dst, bV4GammaRed) ||
                 !SDL_WriteU32LE(dst, bV4GammaGreen) ||
                 !SDL_WriteU32LE(dst, bV4GammaBlue)) {
+                goto done;
+            }
+            // Version 5 values
+            if (!SDL_WriteU32LE(dst, bV5Intent) ||
+                !SDL_WriteU32LE(dst, bV5ProfileData) ||
+                !SDL_WriteU32LE(dst, bV5ProfileSize) ||
+                !SDL_WriteU32LE(dst, bV5Reserved)) {
                 goto done;
             }
         }
