@@ -131,7 +131,7 @@ static int SDLCALL adder(void *junk)
 static void runAdder(void)
 {
     Uint32 start, end;
-    int T = NThreads;
+    int i;
     SDL_Thread *threads[NThreads];
 
     start = SDL_GetTicks();
