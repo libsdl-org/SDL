@@ -3672,6 +3672,7 @@ CheckHIDAPI()
     if test x$enable_joystick = xyes -a x$hidapi_support = xyes -a x$enable_hidapi_joystick = xyes; then
         AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+        SOURCES="$SOURCES $srcdir/src/haptic/hidapi/*.c"
     fi
 }
 
