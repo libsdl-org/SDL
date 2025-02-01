@@ -99,7 +99,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    char debug_text[1024] = {};
+    char debug_text[1024];
 
     /* make sure we're drawing to the window and not the render target */
     SDL_SetRenderTarget(renderer, NULL);
