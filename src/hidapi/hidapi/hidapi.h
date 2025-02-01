@@ -27,9 +27,7 @@
 #ifndef HIDAPI_H__
 #define HIDAPI_H__
 
-#ifdef HAVE_WCHAR_H
 #include <wchar.h>
-#endif
 
 /* #480: this is to be refactored properly for v1.0 */
 #ifdef _WIN32
