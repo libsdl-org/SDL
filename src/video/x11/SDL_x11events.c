@@ -1614,7 +1614,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
     case MotionNotify:
     {
-        if (data->xinput2_mouse_enabled) {
+        if (data->xinput2_mouse_enabled && !data->mouse_grabbed) {
             // This input is being handled by XInput2
             break;
         }
