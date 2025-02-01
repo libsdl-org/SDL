@@ -292,6 +292,7 @@ typedef unsigned int uintptr_t;
 #define SDL_GPU_D3D12 1
 #define SDL_GPU_VULKAN 1
 #define SDL_VIDEO_RENDER_GPU 1
+#define HAVE_GPU_OPENXR 1
 
 /* Enable system power support */
 #define SDL_POWER_WINDOWS 1
