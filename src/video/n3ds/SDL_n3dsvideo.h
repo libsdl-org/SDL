@@ -29,13 +29,19 @@
 
 struct SDL_VideoData
 {
-    int top_display;
+    int top_left_display;
+    int top_right_display;
     int touch_display;
+
+    // The following two variables keep track of if it is ready to swap the buffers
+    bool top_left_ready;
+    bool top_right_ready;
 };
 
 struct SDL_WindowData
 {
     gfxScreen_t screen; /**< Keeps track of which N3DS screen is targeted */
+    gfx3dSide_t side;
 };
 
 #endif // SDL_n3dsvideo_h_
