@@ -77,6 +77,7 @@ set(test_libs
   ${EPOC_LIB}/cone.lib
   ${EPOC_PLATFORM}/gcc/lib/gcc-lib/arm-epoc-pe/2.9-psion-98r2/libgcc.a
   ${EPOC_PLATFORM}/ngagesdk/lib/gcc/arm-epoc-pe/4.6.4/libgcc_ngage.a
+  ${EPOC_PLATFORM}/ngagesdk/lib/gcc/arm-epoc-pe/4.6.4/libc_ngage.a
   ${EPOC_LIB}/mediaclientaudiostream.lib
   ${EPOC_LIB}/charconv.lib
   ${EPOC_LIB}/bitgdi.lib
