@@ -2,10 +2,6 @@ cmake_minimum_required(VERSION 3.16)
 
 enable_language(CXX)
 
-set(GCC_MODULE_COMN_DEFS -D__SYMBIAN32__ -D__GCC32__ -D__EPOC32__ -D__MARM__ -D__MARM_ARMI__)
-set(GCC_MODULE_MODE_DEFS -DNDEBUG -D_UNICODE)
-set(GCC_MODULE_DEFS ${GCC_MODULE_COMN_DEFS} ${GCC_MODULE_MODE_DEFS})
-
 file(GLOB SDL3_sources
   "${SDL3_SOURCE_DIR}/src/*.c"
   "${SDL3_SOURCE_DIR}/src/atomic/*.c"
@@ -69,8 +65,7 @@ target_include_directories(
 target_compile_definitions(
   ${PROJECT_NAME}
   PUBLIC
-  SDL_STATIC_LIB
-  ${GCC_MODULE_DEFS})
+  SDL_STATIC_LIB)
 
 set(test_static_libs
   ${CMAKE_CURRENT_BINARY_DIR}/libSDL3.a)
@@ -114,17 +109,9 @@ target_compile_definitions(
   ngage_test
   PUBLIC
   __EXE__
-  FUNCTION_NAME=__FUNCTION__
-  ${GCC_DEFS}
   UID1=${UID1}
   UID2=${UID2}
   UID3=${UID3})
-
-target_compile_options(
-  ngage_test
-  PUBLIC
-  -O3
-)
 
 target_include_directories(
   ngage_test
