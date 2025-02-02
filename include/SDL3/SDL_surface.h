@@ -1190,7 +1190,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src
  *               threads at once. It is safe to use the same source surface
  *               from multiple threads.
  *
- * \since This function is available since SDL 3.2.4.
+ * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_BlitSurfaceScaled
  */
