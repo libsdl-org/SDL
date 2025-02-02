@@ -1366,6 +1366,7 @@ typedef struct SDL_GPUTextureLocation
  *
  * \sa SDL_UploadToGPUTexture
  * \sa SDL_DownloadFromGPUTexture
+ * \sa SDL_CreateGPUTexture
  */
 typedef struct SDL_GPUTextureRegion
 {
