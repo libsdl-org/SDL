@@ -4561,6 +4561,7 @@ bool SDL_RenderTexture9GridTiled(SDL_Renderer *renderer, SDL_Texture *texture, c
 
     // Lower-right corner
     curr_src.y = srcrect->y + srcrect->h - bottom_height;
+    curr_src.h = bottom_height;
     curr_dst.y = dstrect->y + dstrect->h - dst_bottom_height;
     curr_dst.h = dst_bottom_height;
     if (!SDL_RenderTexture(renderer, texture, &curr_src, &curr_dst)) {
@@ -4609,6 +4610,7 @@ bool SDL_RenderTexture9GridTiled(SDL_Renderer *renderer, SDL_Texture *texture, c
 
     // Bottom
     curr_src.y = srcrect->y + srcrect->h - bottom_height;
+    curr_src.h = bottom_height;
     curr_dst.y = dstrect->y + dstrect->h - dst_bottom_height;
     curr_dst.h = dst_bottom_height;
     if (!SDL_RenderTextureTiled(renderer, texture, &curr_src, tileScale, &curr_dst)) {
