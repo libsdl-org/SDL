@@ -459,6 +459,15 @@ struct SDL_GPUDevice
         SDL_GPURenderer *driverData,
         const SDL_GPUGraphicsPipelineCreateInfo *createinfo);
 
+    SDL_GPUPipelineCache* (*CreatePipelineCache)(
+        SDL_GPURenderer* driverData,
+        const SDL_GPUPipelineCacheCreateInfo* createinfo);
+
+    bool (*FetchPipelineCacheData)(
+        SDL_GPURenderer* driverData,
+        SDL_GPUPipelineCache* pipelineCache,
+        SDL_GPUPipelineCacheCreateInfo* createinfo);
+
     SDL_GPUSampler *(*CreateSampler)(
         SDL_GPURenderer *driverData,
         const SDL_GPUSamplerCreateInfo *createinfo);
@@ -535,6 +544,10 @@ struct SDL_GPUDevice
     void (*ReleaseGraphicsPipeline)(
         SDL_GPURenderer *driverData,
         SDL_GPUGraphicsPipeline *graphicsPipeline);
+
+    void (*ReleasePipelineCache)(
+        SDL_GPURenderer* driverData,
+        SDL_GPUPipelineCache* pipelineCache);
 
     // Render Pass
 
@@ -882,6 +895,8 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(DestroyDevice, name)                 \
     ASSIGN_DRIVER_FUNC(CreateComputePipeline, name)         \
     ASSIGN_DRIVER_FUNC(CreateGraphicsPipeline, name)        \
+    ASSIGN_DRIVER_FUNC(CreatePipelineCache, name)           \
+    ASSIGN_DRIVER_FUNC(FetchPipelineCacheData, name)        \
     ASSIGN_DRIVER_FUNC(CreateSampler, name)                 \
     ASSIGN_DRIVER_FUNC(CreateShader, name)                  \
     ASSIGN_DRIVER_FUNC(CreateTexture, name)                 \
@@ -899,6 +914,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(ReleaseShader, name)                 \
     ASSIGN_DRIVER_FUNC(ReleaseComputePipeline, name)        \
     ASSIGN_DRIVER_FUNC(ReleaseGraphicsPipeline, name)       \
+    ASSIGN_DRIVER_FUNC(ReleasePipelineCache, name)          \
     ASSIGN_DRIVER_FUNC(BeginRenderPass, name)               \
     ASSIGN_DRIVER_FUNC(BindGraphicsPipeline, name)          \
     ASSIGN_DRIVER_FUNC(SetViewport, name)                   \
