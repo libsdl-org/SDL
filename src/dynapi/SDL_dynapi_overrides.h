@@ -1258,3 +1258,4 @@
 #define SDL_AudioStreamDevicePaused SDL_AudioStreamDevicePaused_REAL
 #define SDL_ClickTrayEntry SDL_ClickTrayEntry_REAL
 #define SDL_UpdateTrays SDL_UpdateTrays_REAL
+#define SDL_SoftStretch SDL_SoftStretch_REAL

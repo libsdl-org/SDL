@@ -1174,6 +1174,29 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, const S
 extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
 
 /**
+ * Perform a stretched pixel copy from one surface to another.
+ *
+ * \param src the SDL_Surface structure to be copied from.
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied, may not be NULL.
+ * \param dst the SDL_Surface structure that is the blit target.
+ * \param dstrect the SDL_Rect structure representing the target rectangle in
+ *                the destination surface, may not be NULL.
+ * \param scaleMode the SDL_ScaleMode to be used.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety The same destination surface should not be used from two
+ *               threads at once. It is safe to use the same source surface
+ *               from multiple threads.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_BlitSurfaceScaled
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode);
+
+/**
  * Perform a tiled blit to a destination surface, which may be of a different
  * format.
  *
