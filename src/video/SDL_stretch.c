@@ -22,10 +22,10 @@
 
 #include "SDL_surface_c.h"
 
-static bool SDL_LowerSoftStretchNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
-static bool SDL_LowerSoftStretchLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+static bool SDL_StretchSurfaceUncheckedNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+static bool SDL_StretchSurfaceUncheckedLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 
-bool SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
+bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
     bool result;
     int src_locked;
@@ -46,7 +46,7 @@ bool SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst
         if (!src_tmp) {
             return false;
         }
-        result = SDL_SoftStretch(src_tmp, srcrect, dst, dstrect, scaleMode);
+        result = SDL_StretchSurface(src_tmp, srcrect, dst, dstrect, scaleMode);
         SDL_DestroySurface(src_tmp);
         return result;
     }
@@ -64,7 +64,7 @@ bool SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst
         SDL_Surface *src_tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_XRGB8888);
         SDL_Surface *dst_tmp = SDL_CreateSurface(dstrect->w, dstrect->h, SDL_PIXELFORMAT_XRGB8888);
         if (src_tmp && dst_tmp) {
-            result = SDL_SoftStretch(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
+            result = SDL_StretchSurface(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
             if (result) {
                 result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
                             dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
@@ -152,9 +152,9 @@ bool SDL_SoftStretch(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst
     }
 
     if (scaleMode == SDL_SCALEMODE_NEAREST) {
-        result = SDL_LowerSoftStretchNearest(src, srcrect, dst, dstrect);
+        result = SDL_StretchSurfaceUncheckedNearest(src, srcrect, dst, dstrect);
     } else {
-        result = SDL_LowerSoftStretchLinear(src, srcrect, dst, dstrect);
+        result = SDL_StretchSurfaceUncheckedLinear(src, srcrect, dst, dstrect);
     }
 
     // We need to unlock the surfaces if they're locked
@@ -825,7 +825,7 @@ static bool scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitc
 }
 #endif
 
-bool SDL_LowerSoftStretchLinear(SDL_Surface *s, const SDL_Rect *srcrect, SDL_Surface *d, const SDL_Rect *dstrect)
+bool SDL_StretchSurfaceUncheckedLinear(SDL_Surface *s, const SDL_Rect *srcrect, SDL_Surface *d, const SDL_Rect *dstrect)
 {
     bool result = false;
     int src_w = srcrect->w;
@@ -953,7 +953,7 @@ static bool scale_mat_nearest_4(const Uint32 *src_ptr, int src_w, int src_h, int
     return true;
 }
 
-bool SDL_LowerSoftStretchNearest(SDL_Surface *s, const SDL_Rect *srcrect, SDL_Surface *d, const SDL_Rect *dstrect)
+bool SDL_StretchSurfaceUncheckedNearest(SDL_Surface *s, const SDL_Rect *srcrect, SDL_Surface *d, const SDL_Rect *dstrect)
 {
     int src_w = srcrect->w;
     int src_h = srcrect->h;
