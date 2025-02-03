@@ -71,7 +71,7 @@ bool X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
             if (!stretched) {
                 return false;
             }
-            if (!SDL_SoftStretch(shape, NULL, stretched, NULL, SDL_SCALEMODE_LINEAR)) {
+            if (!SDL_StretchSurface(shape, NULL, stretched, NULL, SDL_SCALEMODE_LINEAR)) {
                 SDL_DestroySurface(stretched);
                 return false;
             }

@@ -1845,8 +1845,6 @@ SDL_BlitSurface() and SDL_BlitSurfaceScaled() now have a const `dstrect` paramet
 
 SDL_BlitSurfaceScaled() and SDL_BlitSurfaceUncheckedScaled() now take a scale parameter.
 
-SDL_SoftStretch() now takes a scale parameter.
-
 SDL_PixelFormat is used instead of Uint32 for API functions that refer to pixel format by enumerated value.
 
 SDL_SetSurfaceColorKey() takes an bool to enable and disable colorkey. RLE acceleration isn't controlled by the parameter, you should use SDL_SetSurfaceRLE() to change that separately.
@@ -1880,8 +1878,8 @@ The following functions have been removed:
 * SDL_GetYUVConversionMode()
 * SDL_GetYUVConversionModeForResolution()
 * SDL_SetYUVConversionMode() - use SDL_SetSurfaceColorspace() to set the surface colorspace and SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER with SDL_CreateTextureWithProperties() to set the texture colorspace. The default colorspace for YUV pixel formats is SDL_COLORSPACE_JPEG.
-* SDL_SoftStretch() - use SDL_BlitSurfaceScaled() with SDL_SCALEMODE_NEAREST
-* SDL_SoftStretchLinear() - use SDL_BlitSurfaceScaled() with SDL_SCALEMODE_LINEAR
+* SDL_SoftStretch() - use SDL_StretchSurface() with SDL_SCALEMODE_NEAREST
+* SDL_SoftStretchLinear() - use SDL_StretchSurface() with SDL_SCALEMODE_LINEAR
 
 The following symbols have been renamed:
 * SDL_PREALLOC => SDL_SURFACE_PREALLOCATED

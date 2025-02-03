@@ -888,7 +888,7 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
             SDL_Surface *srcsurf = acquired;
             if (device->needs_scaling == -1) {  // downscaling? Do it first.  -1: downscale, 0: no scaling, 1: upscale
                 SDL_Surface *dstsurf = device->needs_conversion ? device->conversion_surface : output_surface;
-                SDL_SoftStretch(srcsurf, NULL, dstsurf, NULL, SDL_SCALEMODE_NEAREST);  // !!! FIXME: linear scale? letterboxing?
+                SDL_StretchSurface(srcsurf, NULL, dstsurf, NULL, SDL_SCALEMODE_NEAREST);  // !!! FIXME: linear scale? letterboxing?
                 srcsurf = dstsurf;
             }
             if (device->needs_conversion) {
@@ -899,7 +899,7 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
                 srcsurf = dstsurf;
             }
             if (device->needs_scaling == 1) {  // upscaling? Do it last.  -1: downscale, 0: no scaling, 1: upscale
-                SDL_SoftStretch(srcsurf, NULL, output_surface, NULL, SDL_SCALEMODE_NEAREST);  // !!! FIXME: linear scale? letterboxing?
+                SDL_StretchSurface(srcsurf, NULL, output_surface, NULL, SDL_SCALEMODE_NEAREST);  // !!! FIXME: linear scale? letterboxing?
             }
 
             // we made a copy, so we can give the driver back its resources.
