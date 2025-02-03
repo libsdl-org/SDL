@@ -2963,7 +2963,7 @@ bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
         }
     }
     if (vendor_id == USB_VENDOR_THRUSTMASTER) {
-        if (product_id == USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO) {
+        if (product_id == USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO_SERIES_X) {
             return true;
         }
     }
