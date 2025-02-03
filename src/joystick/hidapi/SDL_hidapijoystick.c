@@ -192,7 +192,15 @@ bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
     case USB_VENDOR_SHANWAN_ALT:
         return true;
     case USB_VENDOR_THRUSTMASTER:
-        return true;
+        switch (product) {
+        case USB_PRODUCT_THRUSTMASTER_T300RS:
+        case USB_PRODUCT_THRUSTMASTER_T300RS_ADV:
+        case USB_PRODUCT_THRUSTMASTER_T300RS_PS4:
+        case USB_PRODUCT_THRUSTMASTER_ADV_RACER:
+            return false;
+        default:
+            return true;
+        }
     case USB_VENDOR_ZEROPLUS:
         return true;
     case 0x7545 /* SZ-MYPOWER */:
