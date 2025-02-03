@@ -287,9 +287,9 @@ static SDL_vidpid_list blacklist_devices = {
 
 static Uint32 initial_flightstick_devices[] = {
     MAKE_VIDPID(0x044f, 0x0402), // HOTAS Warthog Joystick
-    MAKE_VIDPID(0x0738, 0x2221), // Saitek Pro Flight X-56 Rhino Stick
     MAKE_VIDPID(0x044f, 0xb10a), // ThrustMaster, Inc. T.16000M Joystick
     MAKE_VIDPID(0x046d, 0xc215), // Logitech Extreme 3D
+    MAKE_VIDPID(0x0738, 0x2221), // Saitek Pro Flight X-56 Rhino Stick
     MAKE_VIDPID(0x231d, 0x0126), // Gunfighter Mk.III 'Space Combat Edition' (right)
     MAKE_VIDPID(0x231d, 0x0127), // Gunfighter Mk.III 'Space Combat Edition' (left)
     MAKE_VIDPID(0x362c, 0x0001), // Yawman Arrow
@@ -313,10 +313,10 @@ static SDL_vidpid_list gamecube_devices = {
 };
 
 static Uint32 initial_rog_gamepad_mice[] = {
-    MAKE_VIDPID(0x0b05, 0x1906), // ROG Pugio II
-    MAKE_VIDPID(0x0b05, 0x1958), // ROG Chakram Core Mouse
     MAKE_VIDPID(0x0b05, 0x18e3), // ROG Chakram (wired) Mouse
     MAKE_VIDPID(0x0b05, 0x18e5), // ROG Chakram (wireless) Mouse
+    MAKE_VIDPID(0x0b05, 0x1906), // ROG Pugio II
+    MAKE_VIDPID(0x0b05, 0x1958), // ROG Chakram Core Mouse
     MAKE_VIDPID(0x0b05, 0x1a18), // ROG Chakram X (wired) Mouse
     MAKE_VIDPID(0x0b05, 0x1a1a), // ROG Chakram X (wireless) Mouse
     MAKE_VIDPID(0x0b05, 0x1a1c), // ROG Chakram X (Bluetooth) Mouse
@@ -341,37 +341,37 @@ static SDL_vidpid_list throttle_devices = {
 
 static Uint32 initial_wheel_devices[] = {
     MAKE_VIDPID(0x0079, 0x1864), // DragonRise Inc. Wired Wheel (active mode) (also known as PXN V900 (PS3), Superdrive SV-750, or a Genesis Seaborg 400)
+    MAKE_VIDPID(0x044f, 0xb65d), // Thrustmaster Wheel FFB
+    MAKE_VIDPID(0x044f, 0xb65e), // Thrustmaster T500RS
+    MAKE_VIDPID(0x044f, 0xb664), // Thrustmaster TX (initial mode)
+    MAKE_VIDPID(0x044f, 0xb669), // Thrustmaster TX (active mode)
+    MAKE_VIDPID(0x044f, 0xb66d), // Thrustmaster T300RS (PS4 mode)
+    MAKE_VIDPID(0x044f, 0xb66d), // Thrustmaster Wheel FFB
+    MAKE_VIDPID(0x044f, 0xb66e), // Thrustmaster T300RS (normal mode)
+    MAKE_VIDPID(0x044f, 0xb66f), // Thrustmaster T300RS (advanced mode)
+    MAKE_VIDPID(0x044f, 0xb677), // Thrustmaster T150
+    MAKE_VIDPID(0x044f, 0xb67f), // Thrustmaster TMX
+    MAKE_VIDPID(0x044f, 0xb691), // Thrustmaster TS-XW (initial mode)
+    MAKE_VIDPID(0x044f, 0xb692), // Thrustmaster TS-XW (active mode)
+    MAKE_VIDPID(0x044f, 0xb696), // Thrustmaster T248
+    MAKE_VIDPID(0x046d, 0xc24f), // Logitech G29 (PS3)
+    MAKE_VIDPID(0x046d, 0xc260), // Logitech G29 (PS4)
+    MAKE_VIDPID(0x046d, 0xc261), // Logitech G920 (initial mode)
+    MAKE_VIDPID(0x046d, 0xc262), // Logitech G920 (active mode)
+    MAKE_VIDPID(0x046d, 0xc266), // Logitech G923 for Playstation 4 and PC (PC mode)
+    MAKE_VIDPID(0x046d, 0xc267), // Logitech G923 for Playstation 4 and PC (PS4 mode)
+    MAKE_VIDPID(0x046d, 0xc268), // Logitech PRO Racing Wheel (PC mode)
+    MAKE_VIDPID(0x046d, 0xc269), // Logitech PRO Racing Wheel (PS4/PS5 mode)
+    MAKE_VIDPID(0x046d, 0xc26d), // Logitech G923 (Xbox)
+    MAKE_VIDPID(0x046d, 0xc26e), // Logitech G923
+    MAKE_VIDPID(0x046d, 0xc272), // Logitech PRO Racing Wheel for Xbox (PC mode)
     MAKE_VIDPID(0x046d, 0xc294), // Logitech generic wheel
     MAKE_VIDPID(0x046d, 0xc295), // Logitech Momo Force
     MAKE_VIDPID(0x046d, 0xc298), // Logitech Driving Force Pro
     MAKE_VIDPID(0x046d, 0xc299), // Logitech G25
     MAKE_VIDPID(0x046d, 0xc29a), // Logitech Driving Force GT
     MAKE_VIDPID(0x046d, 0xc29b), // Logitech G27
-    MAKE_VIDPID(0x046d, 0xc24f), // Logitech G29 (PS3)
-    MAKE_VIDPID(0x046d, 0xc260), // Logitech G29 (PS4)
-    MAKE_VIDPID(0x046d, 0xc261), // Logitech G920 (initial mode)
-    MAKE_VIDPID(0x046d, 0xc262), // Logitech G920 (active mode)
-    MAKE_VIDPID(0x046d, 0xc268), // Logitech PRO Racing Wheel (PC mode)
-    MAKE_VIDPID(0x046d, 0xc269), // Logitech PRO Racing Wheel (PS4/PS5 mode)
-    MAKE_VIDPID(0x046d, 0xc272), // Logitech PRO Racing Wheel for Xbox (PC mode)
-    MAKE_VIDPID(0x046d, 0xc26d), // Logitech G923 (Xbox)
-    MAKE_VIDPID(0x046d, 0xc26e), // Logitech G923
-    MAKE_VIDPID(0x046d, 0xc266), // Logitech G923 for Playstation 4 and PC (PC mode)
-    MAKE_VIDPID(0x046d, 0xc267), // Logitech G923 for Playstation 4 and PC (PS4 mode)
     MAKE_VIDPID(0x046d, 0xca03), // Logitech Momo Racing
-    MAKE_VIDPID(0x044f, 0xb65d), // Thrustmaster Wheel FFB
-    MAKE_VIDPID(0x044f, 0xb66d), // Thrustmaster Wheel FFB
-    MAKE_VIDPID(0x044f, 0xb677), // Thrustmaster T150
-    MAKE_VIDPID(0x044f, 0xb696), // Thrustmaster T248
-    MAKE_VIDPID(0x044f, 0xb66e), // Thrustmaster T300RS (normal mode)
-    MAKE_VIDPID(0x044f, 0xb66f), // Thrustmaster T300RS (advanced mode)
-    MAKE_VIDPID(0x044f, 0xb66d), // Thrustmaster T300RS (PS4 mode)
-    MAKE_VIDPID(0x044f, 0xb65e), // Thrustmaster T500RS
-    MAKE_VIDPID(0x044f, 0xb664), // Thrustmaster TX (initial mode)
-    MAKE_VIDPID(0x044f, 0xb669), // Thrustmaster TX (active mode)
-    MAKE_VIDPID(0x044f, 0xb67f), // Thrustmaster TMX
-    MAKE_VIDPID(0x044f, 0xb691), // Thrustmaster TS-XW (initial mode)
-    MAKE_VIDPID(0x044f, 0xb692), // Thrustmaster TS-XW (active mode)
     MAKE_VIDPID(0x0483, 0x0522), // Simagic Wheelbase (including M10, Alpha Mini, Alpha, Alpha U)
     MAKE_VIDPID(0x0483, 0xa355), // VRS DirectForce Pro Wheel Base
     MAKE_VIDPID(0x0eb7, 0x0001), // Fanatec ClubSport Wheel Base V2
@@ -410,8 +410,8 @@ static SDL_vidpid_list wheel_devices = {
 };
 
 static Uint32 initial_zero_centered_devices[] = {
-    MAKE_VIDPID(0x0e8f, 0x3013), // HuiJia SNES USB adapter
     MAKE_VIDPID(0x05a0, 0x3232), // 8Bitdo Zero Gamepad
+    MAKE_VIDPID(0x0e8f, 0x3013), // HuiJia SNES USB adapter
 };
 static SDL_vidpid_list zero_centered_devices = {
     SDL_HINT_JOYSTICK_ZERO_CENTERED_DEVICES, 0, 0, NULL,
