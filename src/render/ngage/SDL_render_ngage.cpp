@@ -212,6 +212,7 @@ void CRenderer::ConstructL()
 
     DisableKeyBlocking();
 
+    iIsFocused = ETrue;
     iShowFPS = EFalse;
 
     if (!iDirectScreen->IsActive())
@@ -758,6 +759,7 @@ void CRenderer::HandleEvent(const TWsEvent& aWsEvent)
             {
                 iDirectScreen->Cancel();
             }
+
             iIsFocused = EFalse;
             break;
         }
