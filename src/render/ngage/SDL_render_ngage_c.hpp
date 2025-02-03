@@ -61,6 +61,7 @@ private:
     // Direct screen access.
 	CDirectScreenAccess* iDirectScreen;
 	CFbsBitGc *iScreenGc;
+    TBool iIsFocused;
 
     // Window server session.
     RWsSession       iWsSession;

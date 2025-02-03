@@ -542,6 +542,11 @@ void CRenderer::Flip()
         return;
     }
 
+    if (!iIsFocused)
+    {
+        return;
+    }
+
     iRenderer->Gc()->UseFont(iFont);
 
     if (iShowFPS && iRenderer->Gc())
@@ -743,6 +748,7 @@ void CRenderer::HandleEvent(const TWsEvent& aWsEvent)
                     return;
                 }
                 iDirectScreen->ScreenDevice()->SetAutoUpdate(ETrue);
+                iIsFocused = ETrue;
             }
             Flip();
             break;
@@ -752,20 +758,7 @@ void CRenderer::HandleEvent(const TWsEvent& aWsEvent)
             {
                 iDirectScreen->Cancel();
             }
-
-            RWsSession aSession;
-            aSession.Connect();
-            RWindowGroup aGroup(aSession);
-            aGroup.Construct(TUint32(&aGroup), EFalse);
-            aGroup.EnableReceiptOfFocus(EFalse);
-            RWindow aWindow(aSession);
-            aWindow.Construct(aGroup, TUint32(&aWindow));
-            aWindow.SetExtent(TPoint(0, 0), iWsWindow.Size());
-            aWindow.SetOrdinalPosition(0);
-            aWindow.Activate();
-            aWindow.Close();
-            aGroup.Close();
-            aSession.Close();
+            iIsFocused = EFalse;
             break;
         }
         default:
