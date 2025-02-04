@@ -471,8 +471,6 @@
  * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_PLATFORM_3DS 1
-
-#undef __3DS__
 #endif
 
 #endif /* SDL_platform_defines_h_ */
