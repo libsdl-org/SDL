@@ -115,7 +115,6 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
                 bits -= pitch; // go to previous
                 break;
             case 1:               // end of bitmap
-printf("SUCCESS!\n");
                 return true; // success!
             case 2:               // delta
                 if (!SDL_ReadU8(src, &ch)) {
