@@ -1065,8 +1065,12 @@ void X11_UpdateWindowPosition(SDL_Window *window, bool use_current_position)
                                   &data->expected.x, &data->expected.y);
 
     // Attempt to move the window
-    data->pending_operation |= X11_PENDING_OP_MOVE;
-    X11_XMoveWindow(display, data->xwindow, data->expected.x, data->expected.y);
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        window->internal->pending_position = true;
+    } else {
+        data->pending_operation |= X11_PENDING_OP_MOVE;
+        X11_XMoveWindow(display, data->xwindow, data->expected.x, data->expected.y);
+    }
 }
 
 bool X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
