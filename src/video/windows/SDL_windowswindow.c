@@ -842,6 +842,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             return WIN_SetError("SetPixelFormat()");
         }
     } else {
+#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         if (!(window->flags & SDL_WINDOW_OPENGL)) {
             return true;
         }
@@ -874,6 +875,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
 #else
         return SDL_SetError("Could not create GL window (WGL support not configured)");
 #endif
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
