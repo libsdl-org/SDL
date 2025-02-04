@@ -4360,7 +4360,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetHint(const char *name);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 
 /**
  * Get the boolean value of a hint variable.

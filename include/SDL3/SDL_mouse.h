@@ -353,7 +353,7 @@ extern SDL_DECLSPEC SDL_MouseButtonFlags SDLCALL SDL_GetRelativeMouseState(float
  *
  * \sa SDL_WarpMouseGlobal
  */
-extern SDL_DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window,
+extern SDL_DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window *window,
                                                    float x, float y);
 
 /**
@@ -514,8 +514,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CaptureMouse(bool enabled);
  * \sa SDL_DestroyCursor
  * \sa SDL_SetCursor
  */
-extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 * data,
-                                                     const Uint8 * mask,
+extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 *data,
+                                                     const Uint8 *mask,
                                                      int w, int h, int hot_x,
                                                      int hot_y);
 

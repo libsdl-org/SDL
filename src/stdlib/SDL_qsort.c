@@ -361,7 +361,7 @@ typedef struct { char * first; char * last; } stack_entry;
 /* ---------------------------------------------------------------------- */
 
 static char * pivot_big(char *first, char *mid, char *last, size_t size,
-                        int (SDLCALL * compare)(void *, const void *, const void *), void *userdata) {
+                        int (SDLCALL *compare)(void *, const void *, const void *), void *userdata) {
   size_t d=(((last-first)/size)>>3)*size;
 #ifdef DEBUG_QSORT
 fprintf(stderr, "pivot_big: first=%p last=%p size=%lu n=%lu\n", first, (unsigned long)last, size, (unsigned long)((last-first+1)/size));
@@ -402,7 +402,7 @@ fprintf(stderr,"-> %d %d %d @ %p %p %p\n",*(int*)m1,*(int*)m2,*(int*)m3, m1,m2,m
 /* ---------------------------------------------------------------------- */
 
 static void qsort_r_nonaligned(void *base, size_t nmemb, size_t size,
-           int (SDLCALL * compare)(void *, const void *, const void *), void *userdata) {
+           int (SDLCALL *compare)(void *, const void *, const void *), void *userdata) {
 
   stack_entry stack[STACK_SIZE];
   int stacktop=0;
@@ -433,7 +433,7 @@ static void qsort_r_nonaligned(void *base, size_t nmemb, size_t size,
 }
 
 static void qsort_r_aligned(void *base, size_t nmemb, size_t size,
-           int (SDLCALL * compare)(void *,const void *, const void *), void *userdata) {
+           int (SDLCALL *compare)(void *,const void *, const void *), void *userdata) {
 
   stack_entry stack[STACK_SIZE];
   int stacktop=0;
@@ -464,7 +464,7 @@ static void qsort_r_aligned(void *base, size_t nmemb, size_t size,
 }
 
 static void qsort_r_words(void *base, size_t nmemb,
-           int (SDLCALL * compare)(void *,const void *, const void *), void *userdata) {
+           int (SDLCALL *compare)(void *,const void *, const void *), void *userdata) {
 
   stack_entry stack[STACK_SIZE];
   int stacktop=0;

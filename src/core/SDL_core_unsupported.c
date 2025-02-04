@@ -111,14 +111,14 @@ void SDL_SendAndroidBackButton(void)
     SDL_Unsupported();
 }
 
-SDL_DECLSPEC void *SDLCALL SDL_GetAndroidActivity(void);
+SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);
 void *SDL_GetAndroidActivity(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidCachePath(void);
+SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
 const char* SDL_GetAndroidCachePath(void)
 {
     SDL_Unsupported();
@@ -126,7 +126,7 @@ const char* SDL_GetAndroidCachePath(void)
 }
 
 
-SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidExternalStoragePath(void);
+SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void);
 const char* SDL_GetAndroidExternalStoragePath(void)
 {
     SDL_Unsupported();
@@ -139,14 +139,14 @@ Uint32 SDL_GetAndroidExternalStorageState(void)
     SDL_Unsupported();
     return 0;
 }
-SDL_DECLSPEC const char *SDLCALL SDL_GetAndroidInternalStoragePath(void);
+SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidInternalStoragePath(void);
 const char *SDL_GetAndroidInternalStoragePath(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-SDL_DECLSPEC void *SDLCALL SDL_GetAndroidJNIEnv(void);
+SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);
 void *SDL_GetAndroidJNIEnv(void)
 {
     SDL_Unsupported();
@@ -171,7 +171,7 @@ bool SDL_SendAndroidMessage(Uint32 command, int param)
     return SDL_Unsupported();
 }
 
-SDL_DECLSPEC bool SDLCALL SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
+SDL_DECLSPEC bool SDLCALL SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xoffset, int yoffset);
 bool SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset)
 {
     (void)message;

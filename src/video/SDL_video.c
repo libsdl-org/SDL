@@ -2161,7 +2161,7 @@ void SDL_ToggleDragAndDropSupport(void)
     }
 }
 
-SDL_Window **SDLCALL SDL_GetWindows(int *count)
+SDL_Window ** SDLCALL SDL_GetWindows(int *count)
 {
     if (count) {
         *count = 0;

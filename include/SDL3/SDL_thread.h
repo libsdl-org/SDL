@@ -139,7 +139,7 @@ typedef enum SDL_ThreadState
  *
  * \since This datatype is available since SDL 3.2.0.
  */
-typedef int (SDLCALL * SDL_ThreadFunction) (void *data);
+typedef int (SDLCALL *SDL_ThreadFunction) (void *data);
 
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION

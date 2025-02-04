@@ -226,7 +226,7 @@ extern SDL_DECLSPEC char const * const * SDLCALL SDL_Vulkan_GetInstanceExtension
 extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
                                                               VkInstance instance,
                                                               const struct VkAllocationCallbacks *allocator,
-                                                              VkSurfaceKHR* surface);
+                                                              VkSurfaceKHR *surface);
 
 /**
  * Destroy the Vulkan rendering surface of a window.
