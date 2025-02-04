@@ -1721,8 +1721,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_ENTERSIZEMOVE:
     case WM_ENTERMENULOOP:
     {
-        if (!DispatchModalLoopMessageHook(&hwnd, &msg, &wParam, &lParam)) {
-            return 0;
+        if (g_WindowsMessageHook) {
+            if (!DispatchModalLoopMessageHook(&hwnd, &msg, &wParam, &lParam)) {
+                return 0;
+            }
         }
 
         ++data->in_modal_loop;
