@@ -189,10 +189,16 @@ void SDL_DBus_Quit(void)
         if (dbus.shutdown) {
             dbus.shutdown();
         }
+
+        UnloadDBUSLibrary();
+    } else {
+        /* Leaving libdbus loaded when skipping dbus_shutdown() avoids
+         * spurious leak warnings from LeakSanitizer on internal D-Bus
+         * allocations that would be freed by dbus_shutdown(). */
+        dbus_handle = NULL;
     }
 
     SDL_zero(dbus);
-    UnloadDBUSLibrary();
     if (inhibit_handle) {
         SDL_free(inhibit_handle);
         inhibit_handle = NULL;
