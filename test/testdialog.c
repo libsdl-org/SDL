@@ -21,7 +21,7 @@ const SDL_DialogFileFilter filters[3] = {
     { "PNG images", "png" }
 };
 
-static void SDLCALL callback(void* userdata, const char* const* files, int filter) {
+static void SDLCALL callback(void *userdata, const char * const *files, int filter) {
     if (files) {
         const char* filter_name = "(filter fetching unsupported)";
 
