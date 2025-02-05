@@ -102,6 +102,7 @@ extern "C" {
     void NGAGE_SetClipRect(const SDL_Rect* rect);
     void NGAGE_SetDrawColor(const Uint32 color);
     void NGAGE_PumpEventsInternal();
+    void NGAGE_SuspendScreenSaverInternal(bool suspend);
 
 #ifdef __cplusplus
 }
