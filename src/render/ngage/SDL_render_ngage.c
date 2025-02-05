@@ -53,8 +53,6 @@ static void NGAGE_DestroyRenderer(SDL_Renderer* renderer);
 
 static bool NGAGE_SetVSync(SDL_Renderer* renderer, int vsync);
 
-static bool NGAGE_QueueNoOp(SDL_Renderer* renderer, SDL_RenderCommand* cmd);
-
 static bool NGAGE_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_SetupRendererColorspace(renderer, create_props);
@@ -550,12 +548,6 @@ static void NGAGE_DestroyRenderer(SDL_Renderer* renderer)
 
 static bool NGAGE_SetVSync(SDL_Renderer* renderer, int vsync)
 {
-    return true;
-}
-
-static bool NGAGE_QueueNoOp(SDL_Renderer* renderer, SDL_RenderCommand* cmd)
-{
-    // Intentionally do nothing.
     return true;
 }
 
