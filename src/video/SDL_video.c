@@ -75,10 +75,6 @@
 #include <unistd.h>
 #endif
 
-#ifdef SDL_PLATFORM_NGAGE
-extern VideoBootStrap NGAGE_bootstrap;
-#endif
-
 // Available video drivers
 static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_PRIVATE
