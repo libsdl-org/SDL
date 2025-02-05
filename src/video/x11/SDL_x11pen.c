@@ -85,6 +85,7 @@ static bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, char *d
                     result = true;
                 }
                 X11_XFree(tooltype_name_info);
+                X11_XFree(tooltype_name);
 
                 return result;
             }
