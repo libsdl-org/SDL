@@ -389,9 +389,7 @@
 #endif /* SDL_FORCE_INLINE not defined */
 
 #ifndef SDL_NORETURN
-#if defined (SDL_PLATFORM_NGAGE)
-#define SDL_NORETURN
-#elif defined(__GNUC__)
+#if defined(__GNUC__)
 #define SDL_NORETURN __attribute__((noreturn))
 #elif defined(_MSC_VER)
 #define SDL_NORETURN __declspec(noreturn)
