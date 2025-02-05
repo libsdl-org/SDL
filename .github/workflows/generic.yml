@@ -9,6 +9,11 @@ on:
         type: string
         required: true
   workflow_dispatch:
+    inputs:
+      platforms:
+        description: 'JSON-encoded test properties'
+        type: string
+        required: true
   push:
       branches:
         - SDL2
