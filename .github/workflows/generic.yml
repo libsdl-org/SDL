@@ -8,6 +8,15 @@ on:
         description: 'JSON-encoded test properties'
         type: string
         required: true
+  workflow_dispatch:
+  push:
+      branches:
+        - SDL2
+        - main
+  pull_request:
+      branches:
+        - SDL2
+        - main
 
 jobs:
   build:
