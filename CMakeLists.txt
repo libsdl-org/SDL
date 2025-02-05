@@ -5,14 +5,6 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
 endif()
 
 option(BUILD_FOR_NOKIA_NGAGE "Build for Nokia N-Gage" OFF)
-if (BUILD_FOR_NOKIA_NGAGE)
-  if(DEFINED ENV{NGAGESDK})
-    set(NGAGESDK $ENV{NGAGESDK})
-    set(CMAKE_TOOLCHAIN_FILE ${NGAGESDK}/cmake/ngage-toolchain.cmake)
-  else()
-    message(FATAL_ERROR "The environment variable NGAGESDK needs to be defined.")
-  endif()
-endif()
 
 # See docs/release_checklist.md
 project(SDL3 LANGUAGES C VERSION "3.3.0")
