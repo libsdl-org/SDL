@@ -250,7 +250,7 @@ extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_GetTraySubmenu(SDL_TrayEntry *ent
  * Returns a list of entries in the menu, in order.
  *
  * \param menu The menu to get entries from.
- * \param size An optional pointer to obtain the number of entries in the
+ * \param count An optional pointer to obtain the number of entries in the
  *             menu.
  * \returns a NULL-terminated list of entries within the given menu. The
  *          pointer becomes invalid when any function that inserts or deletes
@@ -264,7 +264,7 @@ extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_GetTraySubmenu(SDL_TrayEntry *ent
  * \sa SDL_RemoveTrayEntry
  * \sa SDL_InsertTrayEntryAt
  */
-extern SDL_DECLSPEC const SDL_TrayEntry ** SDLCALL SDL_GetTrayEntries(SDL_TrayMenu *menu, int *size);
+extern SDL_DECLSPEC const SDL_TrayEntry ** SDLCALL SDL_GetTrayEntries(SDL_TrayMenu *menu, int *count);
 
 /**
  * Removes a tray entry.
