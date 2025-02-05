@@ -251,7 +251,7 @@ extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_GetTraySubmenu(SDL_TrayEntry *ent
  *
  * \param menu The menu to get entries from.
  * \param count An optional pointer to obtain the number of entries in the
- *             menu.
+ *              menu.
  * \returns a NULL-terminated list of entries within the given menu. The
  *          pointer becomes invalid when any function that inserts or deletes
  *          entries in the menu is called.
