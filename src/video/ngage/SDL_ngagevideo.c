@@ -30,10 +30,12 @@ static void NGAGE_DeleteDevice(SDL_VideoDevice *device);
 static bool NGAGE_VideoInit(SDL_VideoDevice *device);
 static void NGAGE_VideoQuit(SDL_VideoDevice *device);
 
-static bool NGAGE_GetDisplayBounds(SDL_VideoDevice* _this, SDL_VideoDisplay* display, SDL_Rect* rect);
-static bool NGAGE_GetDisplayModes(SDL_VideoDevice* _this, SDL_VideoDisplay* display);
+static bool NGAGE_GetDisplayBounds(SDL_VideoDevice* device, SDL_VideoDisplay* display, SDL_Rect* rect);
+static bool NGAGE_GetDisplayModes(SDL_VideoDevice* device, SDL_VideoDisplay* display);
 
 static void NGAGE_PumpEvents(SDL_VideoDevice* device);
+
+static bool NGAGE_SuspendScreenSaver(SDL_VideoDevice* device);
 
 static SDL_VideoDevice* NGAGE_CreateDevice(void)
 {
@@ -69,16 +71,7 @@ static SDL_VideoDevice* NGAGE_CreateDevice(void)
 
     device->PumpEvents = NGAGE_PumpEvents;
 
-    //device->StartTextInput
-    //device->StopTextInput
-    //device->UpdateTextInputArea
-    //device->ClearComposition
-    //device->SetComposition
-    //device->HasScreenKeyboardSupport
-    //device->ShowScreenKeyboard
-    //device->HideScreenKeyboard
-    //device->SetTextInputProperties
-    //device->IsScreenKeyboardShown
+    device->SuspendScreenSaver = NGAGE_SuspendScreenSaver;
 
     device->free = NGAGE_DeleteDevice;
 
@@ -179,6 +172,11 @@ static bool NGAGE_GetDisplayModes(SDL_VideoDevice* device, SDL_VideoDisplay* dis
 static void NGAGE_PumpEvents(SDL_VideoDevice* device)
 {
     NGAGE_PumpEventsInternal();
+}
+
+static bool NGAGE_SuspendScreenSaver(SDL_VideoDevice* device)
+{
+    NGAGE_SuspendScreenSaverInternal(device->suspend_screensaver);
 }
 
 #endif // SDL_VIDEO_DRIVER_NGAGE
