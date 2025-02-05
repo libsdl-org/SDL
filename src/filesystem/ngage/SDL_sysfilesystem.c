@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+extern void NGAGE_GetAppPath(char* path);
+
 char *SDL_SYS_GetBasePath(void)
 {
     char app_path[512];
