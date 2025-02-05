@@ -401,3 +401,9 @@ jobs:
           if-no-files-found: error
           name: '${{ matrix.platform.artifact }}-apks'
           path: build/test/*.apk
+      - name: "Upload coverage reports to Codecov"
+          uses: codecov/codecov-action@v5
+          if: ${{ matrix.platform.codecov }}
+          with:
+            token: ${{ secrets.CODECOV_TOKEN }}
+            slug: pengwinsurf/SDL
