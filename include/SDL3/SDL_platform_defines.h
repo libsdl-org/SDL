@@ -476,7 +476,7 @@
 #ifdef __NGAGE__
 
 /**
- * A preprocessor macro that is only defined if compiling for Nintendo 3DS.
+ * A preprocessor macro that is only defined if compiling for the Nokia N-Gage.
  *
  * \since This macro is available since SDL 3.1.3.
  */
