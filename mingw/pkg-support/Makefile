@@ -30,7 +30,7 @@ install-package:
 	    	-e "s|^set[(]libdir \".*|set(libdir \"$(prefix)/lib\")|" <$(arch)/lib/cmake/SDL2/sdl2-config.cmake >$(prefix)/lib/cmake/SDL2/sdl2-config.cmake; \
 	    sed -e "s|^prefix=.*|prefix=$(prefix)|" \
 	    	-e "s|^includedir=.*|includedir=$(prefix)/include|" \
-	    	-e "s|^libdir=.*|prefix=$(prefix)/lib|" <$(arch)/lib/pkgconfig/sdl2.pc >$(prefix)/lib/pkgconfig/sdl2.pc; \
+	    	-e "s|^libdir=.*|libdir=$(prefix)/lib|" <$(arch)/lib/pkgconfig/sdl2.pc >$(prefix)/lib/pkgconfig/sdl2.pc; \
 	else \
 	    echo "*** ERROR: $(arch) or $(prefix) does not exist!"; \
 	    exit 1; \
