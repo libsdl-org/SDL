@@ -45,6 +45,7 @@ public:
     void SetDrawColor(TUint32 iColor);
     void SetClipRect(TInt aX, TInt aY, TInt aWidth, TInt aHeight);
     void UpdateFPS();
+    void SuspendScreenSaver(TBool aSuspend);
 
     // Event handling.
     void DisableKeyBlocking();
@@ -82,6 +83,9 @@ private:
     TBool iShowFPS;
     TUint iFPS;
     const CFont* iFont;
+
+    // Screen saver.
+    TBool iSuspendScreenSaver;
 };
 
 #endif // ngage_video_render_ngage_c_hpp

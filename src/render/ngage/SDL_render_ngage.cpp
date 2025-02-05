@@ -111,6 +111,11 @@ extern "C" {
         gRenderer->PumpEvents();
     }
 
+    void NGAGE_SuspendScreenSaverInternal(bool suspend)
+    {
+        gRenderer->SuspendScreenSaver(suspend);
+    }
+
 #ifdef __cplusplus
 }
 #endif
@@ -214,6 +219,7 @@ void CRenderer::ConstructL()
 
     iIsFocused = ETrue;
     iShowFPS = EFalse;
+    iSuspendScreenSaver = EFalse;
 
     if (!iDirectScreen->IsActive())
     {
@@ -578,7 +584,10 @@ void CRenderer::Flip()
     iRenderer->Flip(iDirectScreen);
 
     // Keep the backlight on.
-    User::ResetInactivityTime();
+    if (iSuspendScreenSaver)
+    {
+        User::ResetInactivityTime();
+    }
     // Suspend the current thread for a short while.
     // Give some time to other threads and active objects.
     User::After(0);
@@ -630,6 +639,11 @@ void CRenderer::UpdateFPS()
         frameCount = 0;
         lastTime = currentTime;
     }
+}
+
+void CRenderer::SuspendScreenSaver(TBool aSuspend)
+{
+    iSuspendScreenSaver = aSuspend;
 }
 
 static SDL_Scancode ConvertScancode(int key)
