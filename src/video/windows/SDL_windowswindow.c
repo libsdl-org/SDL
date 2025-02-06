@@ -1286,13 +1286,14 @@ static DWM_WINDOW_CORNER_PREFERENCE WIN_UpdateCornerRoundingForHWND(HWND hwnd, D
 
 static COLORREF WIN_UpdateBorderColorForHWND(HWND hwnd, COLORREF colorRef)
 {
-    COLORREF oldPref = colorRef ^ 0x00000001;
+    COLORREF oldPref = colorRef;
 
     SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
     if (handle) {
         DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
         if (DwmSetWindowAttributeFunc) {
             DwmSetWindowAttributeFunc(hwnd, DWMWA_BORDER_COLOR, &colorRef, sizeof(colorRef));
+            oldPref = colorRef ^ 0x00000001;
         }
 
         SDL_UnloadObject(handle);
