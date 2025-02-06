@@ -76,16 +76,16 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
     int ofs = 0;
     Uint8 ch;
     Uint8 needsPad;
+    const int pixels_per_byte = (isRle8 ? 1 : 2);
 
 #define COPY_PIXEL(x)                \
     spot = &bits[ofs++];             \
     if (spot >= start && spot < end) \
-    *spot = (x)
+        *spot = (x)
 
-    // !!! FIXME: for all these reads, handle error vs eof? handle -2 if non-blocking?
     for (;;) {
         if (!SDL_ReadU8(src, &ch)) {
-            return true;
+            return false;
         }
         /*
         | encoded mode starts with a run length, and then a byte
@@ -94,26 +94,12 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
         if (ch) {
             Uint8 pixel;
             if (!SDL_ReadU8(src, &pixel)) {
-                return true;
+                return false;
             }
-            if (isRle8) { // 256-color bitmap, compressed
-                do {
-                    COPY_PIXEL(pixel);
-                } while (--ch);
-            } else { // 16-color bitmap, compressed
-                Uint8 pixel0 = pixel >> 4;
-                Uint8 pixel1 = pixel & 0x0F;
-                for (;;) {
-                    COPY_PIXEL(pixel0); // even count, high nibble
-                    if (!--ch) {
-                        break;
-                    }
-                    COPY_PIXEL(pixel1); // odd count, low nibble
-                    if (!--ch) {
-                        break;
-                    }
-                }
-            }
+            ch /= pixels_per_byte;
+            do {
+                COPY_PIXEL(pixel);
+            } while (--ch);
         } else {
             /*
             | A leading zero is an escape; it may signal the end of the bitmap,
@@ -121,7 +107,7 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
             | zero tag may be absolute mode or an escape
             */
             if (!SDL_ReadU8(src, &ch)) {
-                return true;
+                return false;
             }
             switch (ch) {
             case 0: // end of line
@@ -129,47 +115,32 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
                 bits -= pitch; // go to previous
                 break;
             case 1:               // end of bitmap
-                return false; // success!
+                return true; // success!
             case 2:               // delta
                 if (!SDL_ReadU8(src, &ch)) {
-                    return true;
+                    return false;
                 }
-                ofs += ch;
+                ofs += ch / pixels_per_byte;
+
                 if (!SDL_ReadU8(src, &ch)) {
-                    return true;
+                    return false;
                 }
-                bits -= (ch * pitch);
+                bits -= ((ch / pixels_per_byte) * pitch);
                 break;
             default: // no compression
-                if (isRle8) {
-                    needsPad = (ch & 1);
-                    do {
-                        Uint8 pixel;
-                        if (!SDL_ReadU8(src, &pixel)) {
-                            return true;
-                        }
-                        COPY_PIXEL(pixel);
-                    } while (--ch);
-                } else {
-                    needsPad = (((ch + 1) >> 1) & 1); // (ch+1)>>1: bytes size
-                    for (;;) {
-                        Uint8 pixel;
-                        if (!SDL_ReadU8(src, &pixel)) {
-                            return true;
-                        }
-                        COPY_PIXEL(pixel >> 4);
-                        if (!--ch) {
-                            break;
-                        }
-                        COPY_PIXEL(pixel & 0x0F);
-                        if (!--ch) {
-                            break;
-                        }
+                ch /= pixels_per_byte;
+                needsPad = (ch & 1);
+                do {
+                    Uint8 pixel;
+                    if (!SDL_ReadU8(src, &pixel)) {
+                        return false;
                     }
-                }
+                    COPY_PIXEL(pixel);
+                } while (--ch);
+
                 // pad at even boundary
                 if (needsPad && !SDL_ReadU8(src, &ch)) {
-                    return true;
+                    return false;
                 }
                 break;
             }
@@ -513,10 +484,13 @@ SDL_Surface *SDL_LoadBMP_IO(SDL_IOStream *src, bool closeio)
         goto done;
     }
     if ((biCompression == BI_RLE4) || (biCompression == BI_RLE8)) {
-        was_error = readRlePixels(surface, src, biCompression == BI_RLE8);
-        if (was_error) {
+        if (!readRlePixels(surface, src, biCompression == BI_RLE8)) {
             SDL_SetError("Error reading from datastream");
+            goto done;
         }
+
+        // Success!
+        was_error = false;
         goto done;
     }
     top = (Uint8 *)surface->pixels;

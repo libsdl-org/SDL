@@ -24,6 +24,7 @@
 
 #include "SDL_events_c.h"
 #include "SDL_mouse_c.h"
+#include "../render/SDL_sysrender.h"
 #include "../tray/SDL_tray_utils.h"
 
 static bool SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *event)
@@ -183,14 +184,19 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
     }
 
     // Post the event, if desired
-    if (SDL_EventEnabled(windowevent)) {
-        SDL_Event event;
-        event.type = windowevent;
-        event.common.timestamp = 0;
-        event.window.data1 = data1;
-        event.window.data2 = data2;
-        event.window.windowID = window->id;
+    SDL_Event event;
+    event.type = windowevent;
+    event.common.timestamp = 0;
+    event.window.data1 = data1;
+    event.window.data2 = data2;
+    event.window.windowID = window->id;
 
+    SDL_Renderer *renderer = (SDL_Renderer *)SDL_GetPointerProperty(window->props, SDL_PROP_WINDOW_RENDERER_POINTER, NULL);
+    if (renderer) {
+        SDL_RendererEventWatch(renderer, &event);
+    }
+
+    if (SDL_EventEnabled(windowevent)) {
         // Fixes queue overflow with move/resize events that aren't processed
         if (windowevent == SDL_EVENT_WINDOW_MOVED ||
             windowevent == SDL_EVENT_WINDOW_RESIZED ||

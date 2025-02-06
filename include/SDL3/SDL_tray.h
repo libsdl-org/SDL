@@ -118,7 +118,7 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  * \sa SDL_GetTrayMenu
  * \sa SDL_DestroyTray
  */
-extern SDL_DECLSPEC SDL_Tray *SDLCALL SDL_CreateTray(SDL_Surface *icon, const char *tooltip);
+extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const char *tooltip);
 
 /**
  * Updates the system tray icon's icon.
@@ -172,7 +172,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayTooltip(SDL_Tray *tray, const char *
  * \sa SDL_GetTrayMenu
  * \sa SDL_GetTrayMenuParentTray
  */
-extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTrayMenu(SDL_Tray *tray);
+extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_CreateTrayMenu(SDL_Tray *tray);
 
 /**
  * Create a submenu for a system tray entry.
@@ -196,7 +196,7 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTrayMenu(SDL_Tray *tray);
  * \sa SDL_GetTraySubmenu
  * \sa SDL_GetTrayMenuParentEntry
  */
-extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTraySubmenu(SDL_TrayEntry *entry);
+extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_CreateTraySubmenu(SDL_TrayEntry *entry);
 
 /**
  * Gets a previously created tray menu.
@@ -220,7 +220,7 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_CreateTraySubmenu(SDL_TrayEntry *e
  * \sa SDL_CreateTray
  * \sa SDL_CreateTrayMenu
  */
-extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTrayMenu(SDL_Tray *tray);
+extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_GetTrayMenu(SDL_Tray *tray);
 
 /**
  * Gets a previously created tray entry submenu.
@@ -244,14 +244,14 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTrayMenu(SDL_Tray *tray);
  * \sa SDL_InsertTrayEntryAt
  * \sa SDL_CreateTraySubmenu
  */
-extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTraySubmenu(SDL_TrayEntry *entry);
+extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_GetTraySubmenu(SDL_TrayEntry *entry);
 
 /**
  * Returns a list of entries in the menu, in order.
  *
  * \param menu The menu to get entries from.
- * \param size An optional pointer to obtain the number of entries in the
- *             menu.
+ * \param count An optional pointer to obtain the number of entries in the
+ *              menu.
  * \returns a NULL-terminated list of entries within the given menu. The
  *          pointer becomes invalid when any function that inserts or deletes
  *          entries in the menu is called.
@@ -264,7 +264,7 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTraySubmenu(SDL_TrayEntry *entr
  * \sa SDL_RemoveTrayEntry
  * \sa SDL_InsertTrayEntryAt
  */
-extern SDL_DECLSPEC const SDL_TrayEntry **SDLCALL SDL_GetTrayEntries(SDL_TrayMenu *menu, int *size);
+extern SDL_DECLSPEC const SDL_TrayEntry ** SDLCALL SDL_GetTrayEntries(SDL_TrayMenu *menu, int *count);
 
 /**
  * Removes a tray entry.
@@ -307,7 +307,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_RemoveTrayEntry(SDL_TrayEntry *entry);
  * \sa SDL_RemoveTrayEntry
  * \sa SDL_GetTrayEntryParent
  */
-extern SDL_DECLSPEC SDL_TrayEntry *SDLCALL SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags);
+extern SDL_DECLSPEC SDL_TrayEntry * SDLCALL SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label, SDL_TrayEntryFlags flags);
 
 /**
  * Sets the label of an entry.
@@ -348,7 +348,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, con
  * \sa SDL_InsertTrayEntryAt
  * \sa SDL_SetTrayEntryLabel
  */
-extern SDL_DECLSPEC const char *SDLCALL SDL_GetTrayEntryLabel(SDL_TrayEntry *entry);
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetTrayEntryLabel(SDL_TrayEntry *entry);
 
 /**
  * Sets whether or not an entry is checked.
@@ -481,7 +481,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyTray(SDL_Tray *tray);
  *
  * \sa SDL_InsertTrayEntryAt
  */
-extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTrayEntryParent(SDL_TrayEntry *entry);
+extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_GetTrayEntryParent(SDL_TrayEntry *entry);
 
 /**
  * Gets the entry for which the menu is a submenu, if the current menu is a
@@ -501,7 +501,7 @@ extern SDL_DECLSPEC SDL_TrayMenu *SDLCALL SDL_GetTrayEntryParent(SDL_TrayEntry *
  * \sa SDL_CreateTraySubmenu
  * \sa SDL_GetTrayMenuParentTray
  */
-extern SDL_DECLSPEC SDL_TrayEntry *SDLCALL SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu);
+extern SDL_DECLSPEC SDL_TrayEntry * SDLCALL SDL_GetTrayMenuParentEntry(SDL_TrayMenu *menu);
 
 /**
  * Gets the tray for which this menu is the first-level menu, if the current
@@ -521,7 +521,7 @@ extern SDL_DECLSPEC SDL_TrayEntry *SDLCALL SDL_GetTrayMenuParentEntry(SDL_TrayMe
  * \sa SDL_CreateTrayMenu
  * \sa SDL_GetTrayMenuParentEntry
  */
-extern SDL_DECLSPEC SDL_Tray *SDLCALL SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu);
+extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu);
 
 /**
  * Update the trays.

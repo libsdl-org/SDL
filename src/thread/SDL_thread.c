@@ -314,7 +314,7 @@ static bool ThreadValid(SDL_Thread *thread)
 void SDL_RunThread(SDL_Thread *thread)
 {
     void *userdata = thread->userdata;
-    int(SDLCALL * userfunc)(void *) = thread->userfunc;
+    int(SDLCALL *userfunc)(void *) = thread->userfunc;
 
     int *statusloc = &thread->status;
 

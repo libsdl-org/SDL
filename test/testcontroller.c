@@ -1057,6 +1057,35 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
             if (SDL_GetGamepadPlayerIndex(gamepad) >= 0) {
                 SDL_Log("Player index: %d", SDL_GetGamepadPlayerIndex(gamepad));
             }
+
+            switch (SDL_GetJoystickTypeForID(id)) {
+            case SDL_JOYSTICK_TYPE_WHEEL:
+                SDL_Log("Controller is a wheel");
+                break;
+            case SDL_JOYSTICK_TYPE_ARCADE_STICK:
+                SDL_Log("Controller is an arcade stick");
+                break;
+            case SDL_JOYSTICK_TYPE_FLIGHT_STICK:
+                SDL_Log("Controller is a flight stick");
+                break;
+            case SDL_JOYSTICK_TYPE_DANCE_PAD:
+                SDL_Log("Controller is a dance pad");
+                break;
+            case SDL_JOYSTICK_TYPE_GUITAR:
+                SDL_Log("Controller is a guitar");
+                break;
+            case SDL_JOYSTICK_TYPE_DRUM_KIT:
+                SDL_Log("Controller is a drum kit");
+                break;
+            case SDL_JOYSTICK_TYPE_ARCADE_PAD:
+                SDL_Log("Controller is an arcade pad");
+                break;
+            case SDL_JOYSTICK_TYPE_THROTTLE:
+                SDL_Log("Controller is a throttle");
+                break;
+            default:
+                break;
+            }
         }
 
         for (i = 0; i < SDL_arraysize(sensors); ++i) {

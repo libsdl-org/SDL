@@ -81,10 +81,13 @@ static bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, char *d
             }
 
             if (tooltype_name) {
-                if (0 == SDL_strcasecmp(tooltype_name, PEN_ERASER_NAME_TAG)) {
+                if (SDL_strcasecmp(tooltype_name, PEN_ERASER_NAME_TAG) == 0) {
                     result = true;
                 }
-                X11_XFree(tooltype_name_info);
+                if (tooltype_name != (char *)tooltype_name_info) {
+                    X11_XFree(tooltype_name_info);
+                }
+                X11_XFree(tooltype_name);
 
                 return result;
             }

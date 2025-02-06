@@ -385,7 +385,7 @@ bool SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect, SDL
     }
     if (stretch) {
         SDL_Rect rect = *srcrect;
-        return SDL_SoftStretch(swdata->stretch, &rect, swdata->display, NULL, SDL_SCALEMODE_NEAREST);
+        return SDL_StretchSurface(swdata->stretch, &rect, swdata->display, NULL, SDL_SCALEMODE_NEAREST);
     } else {
         return true;
     }

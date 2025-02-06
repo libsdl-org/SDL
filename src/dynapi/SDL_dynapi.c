@@ -33,6 +33,9 @@
 #ifdef HAVE_STDIO_H
 #include <stdio.h>
 #endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 #include <SDL3/SDL.h>
 #define SDL_MAIN_NOIMPL // don't drag in header-only implementation of SDL_main
@@ -41,6 +44,13 @@
 
 // These headers have system specific definitions, so aren't included above
 #include <SDL3/SDL_vulkan.h>
+
+#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif
+#include <windows.h>
+#endif
 
 /* This is the version of the dynamic API. This doesn't match the SDL version
    and should not change until there's been a major revamp in API/ABI.
@@ -438,10 +448,6 @@ Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 // Obviously we can't use SDL_LoadObject() to load SDL.  :)
 // Also obviously, we never close the loaded library.
 #if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN 1
-#endif
-#include <windows.h>
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
     HMODULE lib = LoadLibraryA(fname);
@@ -503,7 +509,16 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 static void SDL_InitDynamicAPILocked(void)
 {
-    const char *libname = SDL_getenv_unsafe_REAL(SDL_DYNAMIC_API_ENVVAR);
+    // this can't use SDL_getenv_unsafe_REAL, because it might allocate memory before the app can set their allocator.
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
+    // We've always used LoadLibraryA for this, so this has never worked with Unicode paths on Windows. Sorry.
+    char envbuf[512];  // overflows will just report as environment variable being unset, but LoadLibraryA has a MAX_PATH of 260 anyhow, apparently.
+    const DWORD rc = GetEnvironmentVariableA(SDL_DYNAMIC_API_ENVVAR, envbuf, (DWORD) sizeof (envbuf));
+    char *libname = ((rc != 0) && (rc < sizeof (envbuf))) ? envbuf : NULL;
+#else
+    char *libname = getenv(SDL_DYNAMIC_API_ENVVAR);
+#endif
+
     SDL_DYNAPI_ENTRYFN entry = NULL; // funcs from here by default.
     bool use_internal = true;
 

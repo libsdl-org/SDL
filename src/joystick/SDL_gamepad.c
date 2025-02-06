@@ -1393,6 +1393,55 @@ static void SDL_UpdateGamepadFaceStyle(SDL_Gamepad *gamepad)
     }
 }
 
+static void SDL_FixupHIDAPIMapping(SDL_Gamepad *gamepad)
+{
+    // Check to see if we need fixup
+    for (int i = 0; i < gamepad->num_bindings; ++i) {
+        SDL_GamepadBinding *binding = &gamepad->bindings[i];
+        if (binding->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON &&
+            binding->output.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
+            if (binding->input_type != SDL_GAMEPAD_BINDTYPE_BUTTON ||
+                binding->input.button != SDL_GAMEPAD_BUTTON_DPAD_UP) {
+                // New style binding
+                return;
+            }
+        }
+    }
+
+    for (int i = 0; i < gamepad->num_bindings; ++i) {
+        SDL_GamepadBinding *binding = &gamepad->bindings[i];
+        if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON &&
+            binding->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
+            switch (binding->output.button) {
+            case SDL_GAMEPAD_BUTTON_DPAD_UP:
+                binding->input_type = SDL_GAMEPAD_BINDTYPE_HAT;
+                binding->input.hat.hat = 0;
+                binding->input.hat.hat_mask = SDL_HAT_UP;
+                break;
+            case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+                binding->input_type = SDL_GAMEPAD_BINDTYPE_HAT;
+                binding->input.hat.hat = 0;
+                binding->input.hat.hat_mask = SDL_HAT_DOWN;
+                break;
+            case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+                binding->input_type = SDL_GAMEPAD_BINDTYPE_HAT;
+                binding->input.hat.hat = 0;
+                binding->input.hat.hat_mask = SDL_HAT_LEFT;
+                break;
+            case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+                binding->input_type = SDL_GAMEPAD_BINDTYPE_HAT;
+                binding->input.hat.hat = 0;
+                binding->input.hat.hat_mask = SDL_HAT_RIGHT;
+                break;
+            default:
+                if (binding->output.button > SDL_GAMEPAD_BUTTON_DPAD_RIGHT) {
+                    binding->input.button -= 4;
+                }
+                break;
+            }
+        }
+    }
+}
 
 /*
  * Make a new button mapping struct
@@ -1414,6 +1463,10 @@ static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t 
     SDL_UpdateGamepadFaceStyle(gamepad);
 
     SDL_PrivateParseGamepadConfigString(gamepad, pGamepadMapping->mapping);
+
+    if (SDL_IsJoystickHIDAPI(pGamepadMapping->guid)) {
+        SDL_FixupHIDAPIMapping(gamepad);
+    }
 
     // Set the zero point for triggers
     for (i = 0; i < gamepad->num_bindings; ++i) {

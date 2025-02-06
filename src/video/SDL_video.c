@@ -2154,7 +2154,7 @@ void SDL_ToggleDragAndDropSupport(void)
     }
 }
 
-SDL_Window **SDLCALL SDL_GetWindows(int *count)
+SDL_Window ** SDLCALL SDL_GetWindows(int *count)
 {
     if (count) {
         *count = 0;
@@ -4294,7 +4294,9 @@ void SDL_VideoQuit(void)
     }
 
     // Halt event processing before doing anything else
+#if 0 // This was moved to the end to fix a memory leak
     SDL_QuitPen();
+#endif
     SDL_QuitTouch();
     SDL_QuitMouse();
     SDL_QuitKeyboard();
@@ -4325,6 +4327,9 @@ void SDL_VideoQuit(void)
     }
     _this->free(_this);
     _this = NULL;
+
+    // This needs to happen after the video subsystem has removed pen data
+    SDL_QuitPen();
 }
 
 bool SDL_GL_LoadLibrary(const char *path)

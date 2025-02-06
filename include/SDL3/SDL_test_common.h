@@ -177,7 +177,7 @@ extern "C" {
  *
  * \returns a newly allocated common state object.
  */
-SDLTest_CommonState *SDLCALL SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags);
+SDLTest_CommonState * SDLCALL SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags);
 
 /**
  * Free the common state object.
