@@ -63,4 +63,7 @@ extern bool SDL_SetWindowTextureVSync(struct SDL_VideoDevice *_this, SDL_Window 
 const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name);
 #endif
 
+extern bool SDL_AddWindowRenderer(SDL_Window *window, SDL_Renderer *renderer);
+extern void SDL_RemoveWindowRenderer(SDL_Window *window, SDL_Renderer *renderer);
+
 #endif // SDL_video_c_h_
