@@ -177,6 +177,7 @@ static void NGAGE_PumpEvents(SDL_VideoDevice* device)
 static bool NGAGE_SuspendScreenSaver(SDL_VideoDevice* device)
 {
     NGAGE_SuspendScreenSaverInternal(device->suspend_screensaver);
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_NGAGE
