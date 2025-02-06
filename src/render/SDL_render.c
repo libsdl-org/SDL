@@ -45,9 +45,6 @@ this should probably be removed at some point in the future.  --ryan. */
 #define DONT_DRAW_WHILE_HIDDEN 0
 #endif
 
-#define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
-#define SDL_PROP_TEXTURE_PARENT_POINTER "SDL.internal.texture.parent"
-
 #define CHECK_RENDERER_MAGIC_BUT_NOT_DESTROYED_FLAG(renderer, result)   \
     if (!SDL_ObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER)) {         \
         SDL_InvalidParamError("renderer");                              \
@@ -821,43 +818,35 @@ const char *SDL_GetRenderDriver(int index)
 #endif
 }
 
-static bool SDLCALL SDL_RendererEventWatch(void *userdata, SDL_Event *event)
+void SDL_RendererEventWatch(SDL_Renderer *renderer, SDL_Event *event)
 {
-    SDL_Renderer *renderer = (SDL_Renderer *)userdata;
+    SDL_Window *window = renderer->window;
 
-    if (event->type >= SDL_EVENT_WINDOW_FIRST && event->type <= SDL_EVENT_WINDOW_LAST) {
-        SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
-        if (window == renderer->window) {
-            if (renderer->WindowEvent) {
-                renderer->WindowEvent(renderer, &event->window);
-            }
-
-            if (event->type == SDL_EVENT_WINDOW_RESIZED ||
-                event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED ||
-                event->type == SDL_EVENT_WINDOW_METAL_VIEW_RESIZED) {
-                UpdateLogicalPresentation(renderer);
-            } else if (event->type == SDL_EVENT_WINDOW_HIDDEN) {
-                renderer->hidden = true;
-            } else if (event->type == SDL_EVENT_WINDOW_SHOWN) {
-                if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)) {
-                    renderer->hidden = false;
-                }
-            } else if (event->type == SDL_EVENT_WINDOW_MINIMIZED) {
-                renderer->hidden = true;
-            } else if (event->type == SDL_EVENT_WINDOW_RESTORED ||
-                       event->type == SDL_EVENT_WINDOW_MAXIMIZED) {
-                if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_HIDDEN)) {
-                    renderer->hidden = false;
-                }
-            } else if (event->type == SDL_EVENT_WINDOW_DISPLAY_CHANGED) {
-                UpdateHDRProperties(renderer);
-            }
-        }
-    } else if (event->type == SDL_EVENT_WINDOW_HDR_STATE_CHANGED) {
-        UpdateHDRProperties(renderer);
+    if (renderer->WindowEvent) {
+        renderer->WindowEvent(renderer, &event->window);
     }
 
-    return true;
+    if (event->type == SDL_EVENT_WINDOW_RESIZED ||
+        event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED ||
+        event->type == SDL_EVENT_WINDOW_METAL_VIEW_RESIZED) {
+        UpdateLogicalPresentation(renderer);
+    } else if (event->type == SDL_EVENT_WINDOW_HIDDEN) {
+        renderer->hidden = true;
+    } else if (event->type == SDL_EVENT_WINDOW_SHOWN) {
+        if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)) {
+            renderer->hidden = false;
+        }
+    } else if (event->type == SDL_EVENT_WINDOW_MINIMIZED) {
+        renderer->hidden = true;
+    } else if (event->type == SDL_EVENT_WINDOW_RESTORED ||
+               event->type == SDL_EVENT_WINDOW_MAXIMIZED) {
+        if (!(SDL_GetWindowFlags(window) & SDL_WINDOW_HIDDEN)) {
+            renderer->hidden = false;
+        }
+    } else if (event->type == SDL_EVENT_WINDOW_DISPLAY_CHANGED ||
+               event->type == SDL_EVENT_WINDOW_HDR_STATE_CHANGED) {
+        UpdateHDRProperties(renderer);
+    }
 }
 
 bool SDL_CreateWindowAndRenderer(const char *title, int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer)
@@ -1114,10 +1103,6 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     }
 
     SDL_SetRenderViewport(renderer, NULL);
-
-    if (window) {
-        SDL_AddEventWatch(SDL_RendererEventWatch, renderer);
-    }
 
     int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
     if (!SDL_SetRenderVSync(renderer, vsync)) {
@@ -5216,8 +5201,6 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
     SDL_assert(!renderer->destroyed);
 
     renderer->destroyed = true;
-
-    SDL_RemoveEventWatch(SDL_RendererEventWatch, renderer);
 
     if (renderer->window) {
         SDL_PropertiesID props = SDL_GetWindowProperties(renderer->window);
