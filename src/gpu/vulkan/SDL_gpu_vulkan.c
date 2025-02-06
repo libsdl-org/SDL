@@ -5689,7 +5689,7 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
         imageViewCreateInfo.image = texture->image;
         imageViewCreateInfo.format = SDLToVK_TextureFormat[createinfo->format];
         imageViewCreateInfo.components = texture->swizzle;
-        imageViewCreateInfo.subresourceRange.aspectMask = texture->aspectFlags;
+        imageViewCreateInfo.subresourceRange.aspectMask = texture->aspectFlags & ~VK_IMAGE_ASPECT_STENCIL_BIT; // Can't sample stencil values
         imageViewCreateInfo.subresourceRange.baseMipLevel = 0;
         imageViewCreateInfo.subresourceRange.levelCount = createinfo->num_levels;
         imageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
