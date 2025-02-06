@@ -1556,6 +1556,7 @@ typedef struct SDL_GPUVertexBufferDescription
  *
  * \sa SDL_GPUVertexBufferDescription
  * \sa SDL_GPUVertexInputState
+ * \sa SDL_GPUVertexElementFormat
  */
 typedef struct SDL_GPUVertexAttribute
 {
