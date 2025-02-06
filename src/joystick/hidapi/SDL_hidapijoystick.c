@@ -192,7 +192,13 @@ bool HIDAPI_SupportsPlaystationDetection(Uint16 vendor, Uint16 product)
     case USB_VENDOR_SHANWAN_ALT:
         return true;
     case USB_VENDOR_THRUSTMASTER:
-        return true;
+        /* Most of these are wheels, don't have the full set of effects, and
+         * at least in the case of the T248 and T300 RS, the hid-tmff2 driver
+         * puts them in a non-standard report mode and they can't be read.
+         *
+         * If these should use the HIDAPI driver, add them to controller_list.h
+         */
+        return false;
     case USB_VENDOR_ZEROPLUS:
         return true;
     case 0x7545 /* SZ-MYPOWER */:
