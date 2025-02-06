@@ -45,6 +45,9 @@ this should probably be removed at some point in the future.  --ryan. */
 #define DONT_DRAW_WHILE_HIDDEN 0
 #endif
 
+#define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
+#define SDL_PROP_TEXTURE_PARENT_POINTER "SDL.internal.texture.parent"
+
 #define CHECK_RENDERER_MAGIC_BUT_NOT_DESTROYED_FLAG(renderer, result)   \
     if (!SDL_ObjectValid(renderer, SDL_OBJECT_TYPE_RENDERER)) {         \
         SDL_InvalidParamError("renderer");                              \
@@ -1100,6 +1103,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     if (window) {
         SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_RENDERER_POINTER, renderer);
+        SDL_AddWindowRenderer(window, renderer);
     }
 
     SDL_SetRenderViewport(renderer, NULL);
@@ -5207,6 +5211,7 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
         if (SDL_GetPointerProperty(props, SDL_PROP_WINDOW_RENDERER_POINTER, NULL) == renderer) {
             SDL_ClearProperty(props, SDL_PROP_WINDOW_RENDERER_POINTER);
         }
+        SDL_RemoveWindowRenderer(renderer->window, renderer);
     }
 
     SDL_DiscardAllCommands(renderer);
