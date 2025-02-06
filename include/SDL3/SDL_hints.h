@@ -2349,8 +2349,8 @@ extern "C" {
 #define SDL_HINT_MAC_OPENGL_ASYNC_DISPATCH "SDL_MAC_OPENGL_ASYNC_DISPATCH"
 
 /**
- * A variable controlling whether the Option key on macOS should be
- * remapped to act as the Alt key.
+ * A variable controlling whether the Option key on macOS should be remapped
+ * to act as the Alt key.
  *
  * The variable can be set to the following values:
  *
