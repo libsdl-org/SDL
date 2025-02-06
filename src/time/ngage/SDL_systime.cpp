@@ -20,10 +20,6 @@
 */
 #include "SDL_internal.h"
 
-#ifdef NULL
-#undef NULL
-#endif
-
 #include <bautils.h>
 #include <e32base.h>
 #include <e32cons.h>

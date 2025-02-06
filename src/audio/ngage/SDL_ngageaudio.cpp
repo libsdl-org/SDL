@@ -242,7 +242,6 @@ TInt CAudio::ProcessThreadCB(TAny* aPtr)
     {
         if (device)
         {
-            SDL_PrivateAudioData* phdata = (SDL_PrivateAudioData*)device->hidden;
             SDL_PlaybackAudioThreadIterate(device);
         }
         else
@@ -355,7 +354,8 @@ TInt AudioThreadCB(TAny* aParams)
             while (gAudioRunning)
             {
                 // Allow active scheduler to process any events.
-                CActiveScheduler::RunIfReady(0, CActive::EPriorityIdle);
+                TInt error;
+                CActiveScheduler::RunIfReady(error, CActive::EPriorityIdle);
 
                 if (!once)
                 {
