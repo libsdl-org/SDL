@@ -31,12 +31,6 @@ extern "C" {
 
 #include "../SDL_sysrender.h"
 
-#define M_PI 3.14159265358979323846
-#define Int2Fix(i) ((i)<<16)
-#define Fix2Int(i) ((((unsigned int)(i)>0xFFFF0000)?0:((i)>>16)))
-#define Fix2Real(i) ((i)/65536.0)
-#define Real2Fix(i) ((int)((i)*65536.0))
-
     typedef struct NGAGE_RendererData
     {
         SDL_Rect* viewport;

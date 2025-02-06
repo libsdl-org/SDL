@@ -27,10 +27,6 @@
 #ifndef _SDL_ngagevideo_h
 #define _SDL_ngagevideo_h
 
-#ifdef NULL
-#undef NULL
-#endif
-
 typedef struct SDL_VideoData
 {
     SDL_DisplayMode mode;

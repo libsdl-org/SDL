@@ -28,10 +28,6 @@ extern "C" {
 }
 #endif
 
-#ifdef NULL
-#undef NULL
-#endif
-
 #include <e32base.h>
 #include <e32std.h>
 #include <f32file.h>

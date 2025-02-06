@@ -20,6 +20,7 @@
 */
 #include "SDL_internal.h"
 
+#include <3dtypes.h>
 #include "SDL_render_ops.hpp"
 
 void ApplyColorMod(void *dest, void *source, int pitch, int width, int height, SDL_FColor color)

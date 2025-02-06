@@ -21,10 +21,6 @@
 #include "SDL_internal.h"
 #include "../SDL_syslocale.h"
 
-#ifdef NULL
-#undef NULL
-#endif
-
 #include <e32std.h>
 #include <bautils.h>
 #include <e32base.h>

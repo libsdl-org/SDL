@@ -20,10 +20,6 @@
 */
 #include "SDL_internal.h"
 
-#ifdef NULL
-#undef NULL
-#endif
-
 #include <e32std.h>
 #include <e32svr.h>
 #include <hal.h>
@@ -31,11 +27,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-void NGAGE_ExitApp(int exitcode)
-{
-    User::Exit(exitcode);
-}
 
 bool NGAGE_IsClassicModel()
 {
