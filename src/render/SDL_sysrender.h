@@ -32,6 +32,9 @@
 extern "C" {
 #endif
 
+#define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
+#define SDL_PROP_TEXTURE_PARENT_POINTER "SDL.internal.texture.parent"
+
 typedef enum SDL_TextureAddressMode
 {
     SDL_TEXTURE_ADDRESS_AUTO,
@@ -338,6 +341,9 @@ extern SDL_RenderDriver GPU_RenderDriver;
 
 // Clean up any renderers at shutdown
 extern void SDL_QuitRender(void);
+
+// Handle window events for a renderer
+extern void SDL_RendererEventWatch(SDL_Renderer *renderer, SDL_Event *event);
 
 // Add a supported texture format to a renderer
 extern bool SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormat format);
