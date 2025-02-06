@@ -31,7 +31,7 @@ class CRenderer: public MDirectScreenAccess
 {
 public:
     static CRenderer* NewL();
-    ~CRenderer();
+    virtual ~CRenderer();
 
     // Rendering functions.
     void Clear(TUint32 iColor);
