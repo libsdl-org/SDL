@@ -191,8 +191,8 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
     event.window.data2 = data2;
     event.window.windowID = window->id;
 
-    SDL_Renderer *renderer = (SDL_Renderer *)SDL_GetPointerProperty(window->props, SDL_PROP_WINDOW_RENDERER_POINTER, NULL);
-    if (renderer) {
+    for (int i = 0; i < window->num_renderers; ++i) {
+        SDL_Renderer *renderer = window->renderers[i];
         SDL_RendererEventWatch(renderer, &event);
     }
 

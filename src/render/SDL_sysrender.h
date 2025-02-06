@@ -32,9 +32,6 @@
 extern "C" {
 #endif
 
-#define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
-#define SDL_PROP_TEXTURE_PARENT_POINTER "SDL.internal.texture.parent"
-
 typedef enum SDL_TextureAddressMode
 {
     SDL_TEXTURE_ADDRESS_AUTO,
