@@ -2,7 +2,7 @@
 #define OPENXR_REFLECTION_H_ 1
 
 /*
-** Copyright (c) 2017-2024, The Khronos Group Inc.
+** Copyright (c) 2017-2025 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
@@ -460,6 +460,8 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_COMPOSITION_LAYER_SETTINGS_FB, 1000204000) \
     _(XR_TYPE_HAPTIC_PCM_VIBRATION_FB, 1000209001) \
     _(XR_TYPE_DEVICE_PCM_SAMPLE_RATE_STATE_FB, 1000209002) \
+    _(XR_TYPE_FRAME_SYNTHESIS_INFO_EXT, 1000211000) \
+    _(XR_TYPE_FRAME_SYNTHESIS_CONFIG_VIEW_EXT, 1000211001) \
     _(XR_TYPE_COMPOSITION_LAYER_DEPTH_TEST_FB, 1000212000) \
     _(XR_TYPE_LOCAL_DIMMING_FRAME_END_INFO_META, 1000216000) \
     _(XR_TYPE_PASSTHROUGH_PREFERENCES_META, 1000217000) \
@@ -528,6 +530,10 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_ACTIVE_ACTION_SET_PRIORITIES_EXT, 1000373000) \
     _(XR_TYPE_SYSTEM_FORCE_FEEDBACK_CURL_PROPERTIES_MNDX, 1000375000) \
     _(XR_TYPE_FORCE_FEEDBACK_CURL_APPLY_LOCATIONS_MNDX, 1000375001) \
+    _(XR_TYPE_BODY_TRACKER_CREATE_INFO_BD, 1000385001) \
+    _(XR_TYPE_BODY_JOINTS_LOCATE_INFO_BD, 1000385002) \
+    _(XR_TYPE_BODY_JOINT_LOCATIONS_BD, 1000385003) \
+    _(XR_TYPE_SYSTEM_BODY_TRACKING_PROPERTIES_BD, 1000385004) \
     _(XR_TYPE_HAND_TRACKING_DATA_SOURCE_INFO_EXT, 1000428000) \
     _(XR_TYPE_HAND_TRACKING_DATA_SOURCE_STATE_EXT, 1000428001) \
     _(XR_TYPE_PLANE_DETECTOR_CREATE_INFO_EXT, 1000429001) \
@@ -666,6 +672,7 @@ XR_ENUM_STR(XrResult);
     _(XR_OBJECT_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_META, 1000291001) \
     _(XR_OBJECT_TYPE_PASSTHROUGH_HTC, 1000317000) \
     _(XR_OBJECT_TYPE_BODY_TRACKER_HTC, 1000320000) \
+    _(XR_OBJECT_TYPE_BODY_TRACKER_BD, 1000385000) \
     _(XR_OBJECT_TYPE_PLANE_DETECTOR_EXT, 1000429000) \
     _(XR_OBJECT_TYPE_WORLD_MESH_DETECTOR_ML, 1000474000) \
     _(XR_OBJECT_TYPE_FACIAL_EXPRESSION_CLIENT_ML, 1000482000) \
@@ -1495,6 +1502,38 @@ XR_ENUM_STR(XrResult);
     _(XR_FORCE_FEEDBACK_CURL_LOCATION_LITTLE_CURL_MNDX, 4) \
     _(XR_FORCE_FEEDBACK_CURL_LOCATION_MAX_ENUM_MNDX, 0x7FFFFFFF)
 
+#define XR_LIST_ENUM_XrBodyJointBD(_) \
+    _(XR_BODY_JOINT_PELVIS_BD, 0) \
+    _(XR_BODY_JOINT_LEFT_HIP_BD, 1) \
+    _(XR_BODY_JOINT_RIGHT_HIP_BD, 2) \
+    _(XR_BODY_JOINT_SPINE1_BD, 3) \
+    _(XR_BODY_JOINT_LEFT_KNEE_BD, 4) \
+    _(XR_BODY_JOINT_RIGHT_KNEE_BD, 5) \
+    _(XR_BODY_JOINT_SPINE2_BD, 6) \
+    _(XR_BODY_JOINT_LEFT_ANKLE_BD, 7) \
+    _(XR_BODY_JOINT_RIGHT_ANKLE_BD, 8) \
+    _(XR_BODY_JOINT_SPINE3_BD, 9) \
+    _(XR_BODY_JOINT_LEFT_FOOT_BD, 10) \
+    _(XR_BODY_JOINT_RIGHT_FOOT_BD, 11) \
+    _(XR_BODY_JOINT_NECK_BD, 12) \
+    _(XR_BODY_JOINT_LEFT_COLLAR_BD, 13) \
+    _(XR_BODY_JOINT_RIGHT_COLLAR_BD, 14) \
+    _(XR_BODY_JOINT_HEAD_BD, 15) \
+    _(XR_BODY_JOINT_LEFT_SHOULDER_BD, 16) \
+    _(XR_BODY_JOINT_RIGHT_SHOULDER_BD, 17) \
+    _(XR_BODY_JOINT_LEFT_ELBOW_BD, 18) \
+    _(XR_BODY_JOINT_RIGHT_ELBOW_BD, 19) \
+    _(XR_BODY_JOINT_LEFT_WRIST_BD, 20) \
+    _(XR_BODY_JOINT_RIGHT_WRIST_BD, 21) \
+    _(XR_BODY_JOINT_LEFT_HAND_BD, 22) \
+    _(XR_BODY_JOINT_RIGHT_HAND_BD, 23) \
+    _(XR_BODY_JOINT_MAX_ENUM_BD, 0x7FFFFFFF)
+
+#define XR_LIST_ENUM_XrBodyJointSetBD(_) \
+    _(XR_BODY_JOINT_SET_BODY_WITHOUT_ARM_BD, 1) \
+    _(XR_BODY_JOINT_SET_FULL_BODY_JOINTS_BD, 2) \
+    _(XR_BODY_JOINT_SET_MAX_ENUM_BD, 0x7FFFFFFF)
+
 #define XR_LIST_ENUM_XrHandTrackingDataSourceEXT(_) \
     _(XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT, 1) \
     _(XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT, 2) \
@@ -1775,6 +1814,10 @@ XR_ENUM_STR(XrResult);
     _(XR_COMPOSITION_LAYER_SETTINGS_NORMAL_SHARPENING_BIT_FB, 0x00000004) \
     _(XR_COMPOSITION_LAYER_SETTINGS_QUALITY_SHARPENING_BIT_FB, 0x00000008) \
     _(XR_COMPOSITION_LAYER_SETTINGS_AUTO_LAYER_FILTER_BIT_META, 0x00000020) \
+
+#define XR_LIST_BITS_XrFrameSynthesisInfoFlagsEXT(_) \
+    _(XR_FRAME_SYNTHESIS_INFO_USE_2D_MOTION_VECTOR_BIT_EXT, 0x00000001) \
+    _(XR_FRAME_SYNTHESIS_INFO_REQUEST_RELAXED_FRAME_INTERVAL_BIT_EXT, 0x00000002) \
 
 #define XR_LIST_BITS_XrPassthroughPreferenceFlagsMETA(_) \
     _(XR_PASSTHROUGH_PREFERENCE_DEFAULT_TO_ACTIVE_BIT_META, 0x00000001) \
@@ -4492,6 +4535,28 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(sampleRate) \
 
+/// Calls your macro with the name of each member of XrFrameSynthesisInfoEXT, in order.
+#define XR_LIST_STRUCT_XrFrameSynthesisInfoEXT(_) \
+    _(type) \
+    _(next) \
+    _(layerFlags) \
+    _(motionVectorSubImage) \
+    _(motionVectorScale) \
+    _(motionVectorOffset) \
+    _(appSpaceDeltaPose) \
+    _(depthSubImage) \
+    _(minDepth) \
+    _(maxDepth) \
+    _(nearZ) \
+    _(farZ) \
+
+/// Calls your macro with the name of each member of XrFrameSynthesisConfigViewEXT, in order.
+#define XR_LIST_STRUCT_XrFrameSynthesisConfigViewEXT(_) \
+    _(type) \
+    _(next) \
+    _(recommendedMotionVectorImageRectWidth) \
+    _(recommendedMotionVectorImageRectHeight) \
+
 /// Calls your macro with the name of each member of XrCompositionLayerDepthTestFB, in order.
 #define XR_LIST_STRUCT_XrCompositionLayerDepthTestFB(_) \
     _(type) \
@@ -5032,6 +5097,38 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(locationCount) \
     _(locations) \
+
+/// Calls your macro with the name of each member of XrSystemBodyTrackingPropertiesBD, in order.
+#define XR_LIST_STRUCT_XrSystemBodyTrackingPropertiesBD(_) \
+    _(type) \
+    _(next) \
+    _(supportsBodyTracking) \
+
+/// Calls your macro with the name of each member of XrBodyTrackerCreateInfoBD, in order.
+#define XR_LIST_STRUCT_XrBodyTrackerCreateInfoBD(_) \
+    _(type) \
+    _(next) \
+    _(jointSet) \
+
+/// Calls your macro with the name of each member of XrBodyJointsLocateInfoBD, in order.
+#define XR_LIST_STRUCT_XrBodyJointsLocateInfoBD(_) \
+    _(type) \
+    _(next) \
+    _(baseSpace) \
+    _(time) \
+
+/// Calls your macro with the name of each member of XrBodyJointLocationBD, in order.
+#define XR_LIST_STRUCT_XrBodyJointLocationBD(_) \
+    _(locationFlags) \
+    _(pose) \
+
+/// Calls your macro with the name of each member of XrBodyJointLocationsBD, in order.
+#define XR_LIST_STRUCT_XrBodyJointLocationsBD(_) \
+    _(type) \
+    _(next) \
+    _(allJointPosesTracked) \
+    _(jointLocationCount) \
+    _(jointLocations) \
 
 /// Calls your macro with the name of each member of XrHandTrackingDataSourceInfoEXT, in order.
 #define XR_LIST_STRUCT_XrHandTrackingDataSourceInfoEXT(_) \
@@ -5689,6 +5786,8 @@ XR_ENUM_STR(XrResult);
     _(XrCompositionLayerSettingsFB, XR_TYPE_COMPOSITION_LAYER_SETTINGS_FB) \
     _(XrHapticPcmVibrationFB, XR_TYPE_HAPTIC_PCM_VIBRATION_FB) \
     _(XrDevicePcmSampleRateStateFB, XR_TYPE_DEVICE_PCM_SAMPLE_RATE_STATE_FB) \
+    _(XrFrameSynthesisInfoEXT, XR_TYPE_FRAME_SYNTHESIS_INFO_EXT) \
+    _(XrFrameSynthesisConfigViewEXT, XR_TYPE_FRAME_SYNTHESIS_CONFIG_VIEW_EXT) \
     _(XrCompositionLayerDepthTestFB, XR_TYPE_COMPOSITION_LAYER_DEPTH_TEST_FB) \
     _(XrLocalDimmingFrameEndInfoMETA, XR_TYPE_LOCAL_DIMMING_FRAME_END_INFO_META) \
     _(XrPassthroughPreferencesMETA, XR_TYPE_PASSTHROUGH_PREFERENCES_META) \
@@ -5756,6 +5855,10 @@ XR_ENUM_STR(XrResult);
     _(XrActiveActionSetPrioritiesEXT, XR_TYPE_ACTIVE_ACTION_SET_PRIORITIES_EXT) \
     _(XrSystemForceFeedbackCurlPropertiesMNDX, XR_TYPE_SYSTEM_FORCE_FEEDBACK_CURL_PROPERTIES_MNDX) \
     _(XrForceFeedbackCurlApplyLocationsMNDX, XR_TYPE_FORCE_FEEDBACK_CURL_APPLY_LOCATIONS_MNDX) \
+    _(XrSystemBodyTrackingPropertiesBD, XR_TYPE_SYSTEM_BODY_TRACKING_PROPERTIES_BD) \
+    _(XrBodyTrackerCreateInfoBD, XR_TYPE_BODY_TRACKER_CREATE_INFO_BD) \
+    _(XrBodyJointsLocateInfoBD, XR_TYPE_BODY_JOINTS_LOCATE_INFO_BD) \
+    _(XrBodyJointLocationsBD, XR_TYPE_BODY_JOINT_LOCATIONS_BD) \
     _(XrHandTrackingDataSourceInfoEXT, XR_TYPE_HAND_TRACKING_DATA_SOURCE_INFO_EXT) \
     _(XrHandTrackingDataSourceStateEXT, XR_TYPE_HAND_TRACKING_DATA_SOURCE_STATE_EXT) \
     _(XrSystemPlaneDetectionPropertiesEXT, XR_TYPE_SYSTEM_PLANE_DETECTION_PROPERTIES_EXT) \
@@ -6106,6 +6209,7 @@ XR_ENUM_STR(XrResult);
     _(XR_FB_composition_layer_settings, 205) \
     _(XR_FB_touch_controller_proximity, 207) \
     _(XR_FB_haptic_pcm, 210) \
+    _(XR_EXT_frame_synthesis, 212) \
     _(XR_FB_composition_layer_depth_test, 213) \
     _(XR_META_local_dimming, 217) \
     _(XR_META_passthrough_preferences, 218) \
@@ -6135,6 +6239,7 @@ XR_ENUM_STR(XrResult);
     _(XR_EXT_active_action_set_priority, 374) \
     _(XR_MNDX_force_feedback_curl, 376) \
     _(XR_BD_controller_interaction, 385) \
+    _(XR_BD_body_tracking, 386) \
     _(XR_EXT_local_floor, 427) \
     _(XR_EXT_hand_tracking_data_source, 429) \
     _(XR_EXT_plane_detection, 430) \
@@ -7028,6 +7133,16 @@ XR_ENUM_STR(XrResult);
 /// because it is easy to add back but impossible to remove with the preprocessor.
 #define XR_LIST_FUNCTIONS_XR_MNDX_force_feedback_curl(_) \
     _(ApplyForceFeedbackCurlMNDX, MNDX_force_feedback_curl) \
+
+
+/// For every function defined by XR_BD_body_tracking in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_BD_body_tracking(_) \
+    _(CreateBodyTrackerBD, BD_body_tracking) \
+    _(DestroyBodyTrackerBD, BD_body_tracking) \
+    _(LocateBodyJointsBD, BD_body_tracking) \
 
 
 /// For every function defined by XR_EXT_plane_detection in this version of the spec,
