@@ -22,6 +22,26 @@
 
 #ifdef SDL_VIDEO_RENDER_NGAGE
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifndef Int2Fix
+#define Int2Fix(i) ((i)<<16)
+#endif
+
+#ifndef Fix2Int
+#define Fix2Int(i) ((((unsigned int)(i)>0xFFFF0000)?0:((i)>>16)))
+#endif
+
+#ifndef Fix2Real
+#define Fix2Real(i) ((i)/65536.0)
+#endif
+
+#ifndef Real2Fix
+#define Real2Fix(i) ((int)((i)*65536.0))
+#endif
+
 #include "SDL_render_ngage_c.h"
 #include "../SDL_sysrender.h"
 
