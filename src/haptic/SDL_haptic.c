@@ -131,6 +131,7 @@ SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
     haptic->instance_id = instance_id;
     haptic->rumble_id = -1;
     if (!SDL_SYS_HapticOpen(haptic)) {
+        SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, false);
         SDL_free(haptic);
         return NULL;
     }
@@ -268,9 +269,11 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
         /* Initialize the haptic device
          * This function should fill in the instance ID and name.
          */
+        SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, true);
         haptic->rumble_id = -1;
         if (!SDL_SYS_HapticOpenFromJoystick(haptic, joystick)) {
             SDL_SetError("Haptic: SDL_SYS_HapticOpenFromJoystick failed.");
+            SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, false);
             SDL_free(haptic);
             SDL_UnlockJoysticks();
             return NULL;
