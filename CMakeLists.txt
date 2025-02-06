@@ -13,6 +13,12 @@ else()
   set(SDL3_MAINPROJECT OFF)
 endif()
 
+# Add UTF-8 encoding support for MSVC compiler.
+# This ensures that the MSVC compiler interprets source files as UTF-8 encoded,
+# which is useful for projects containing non-ASCII characters in source files.
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 # By default, configure SDL3 in RelWithDebInfo configuration
 if(SDL3_MAINPROJECT)
   get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
