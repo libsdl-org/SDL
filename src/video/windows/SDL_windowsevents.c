@@ -1525,6 +1525,15 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_NCLBUTTONDOWN:
     {
         data->in_title_click = true;
+
+        // Fix for 500ms hang after user clicks on the title bar, but before moving mouse
+        if (SendMessage(hwnd, WM_NCHITTEST, wParam, lParam) == HTCAPTION)
+        {
+            POINT point;
+            GetCursorPos(&point);
+            ScreenToClient(hwnd, &point);
+            PostMessage(hwnd, WM_MOUSEMOVE, 0, point.x | point.y << 16);
+        }
     } break;
 
     case WM_CAPTURECHANGED:
