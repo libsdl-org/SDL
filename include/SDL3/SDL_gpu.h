@@ -1498,6 +1498,10 @@ typedef struct SDL_GPUIndirectDispatchCommand
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUSampler
+ * \sa SDL_GPUFilter
+ * \sa SDL_GPUSamplerMipmapMode
+ * \sa SDL_GPUSamplerAddressMode
+ * \sa SDL_GPUCompareOp
  */
 typedef struct SDL_GPUSamplerCreateInfo
 {
