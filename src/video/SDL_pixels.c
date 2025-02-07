@@ -155,6 +155,7 @@ const char *SDL_GetPixelFormatName(SDL_PixelFormat format)
         CASE(SDL_PIXELFORMAT_NV21)
         CASE(SDL_PIXELFORMAT_P010)
         CASE(SDL_PIXELFORMAT_EXTERNAL_OES)
+        CASE(SDL_PIXELFORMAT_MJPG)
 
     default:
         return "SDL_PIXELFORMAT_UNKNOWN";
@@ -690,7 +691,9 @@ void SDL_QuitPixelFormatDetails(void)
 SDL_Colorspace SDL_GetDefaultColorspaceForFormat(SDL_PixelFormat format)
 {
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
-        if (format == SDL_PIXELFORMAT_P010) {
+        if (format == SDL_PIXELFORMAT_MJPG) {
+            return SDL_COLORSPACE_SRGB;
+        } else if (format == SDL_PIXELFORMAT_P010) {
             return SDL_COLORSPACE_HDR10;
         } else {
             return SDL_COLORSPACE_YUV_DEFAULT;
