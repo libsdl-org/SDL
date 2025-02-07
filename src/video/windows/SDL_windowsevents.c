@@ -1527,8 +1527,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         data->in_title_click = true;
 
         // Fix for 500ms hang after user clicks on the title bar, but before moving mouse
-        if (SendMessage(hwnd, WM_NCHITTEST, wParam, lParam) == HTCAPTION)
-        {
+        // Reference: https://gamedev.net/forums/topic/672094-keeping-things-moving-during-win32-moveresize-events/5254386/
+        if (SendMessage(hwnd, WM_NCHITTEST, wParam, lParam) == HTCAPTION) {
             POINT cursorPos;
             GetCursorPos(&cursorPos);
             ScreenToClient(hwnd, &cursorPos);
