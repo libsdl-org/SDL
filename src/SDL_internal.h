@@ -191,6 +191,11 @@
 #define SDL_VIDEO_RENDER_SW 1
 #endif
 
+/* STB image conversion */
+#if !defined(SDL_HAVE_STB) && !defined(SDL_LEAN_AND_MEAN)
+#define SDL_HAVE_STB 1
+#endif
+
 /* YUV formats
    - handling of YUV surfaces
    - blitting and conversion functions */

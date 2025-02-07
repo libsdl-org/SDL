@@ -128,10 +128,11 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
     const io_method io = device->hidden->io;
     size_t size = device->hidden->buffers[0].length;
     struct v4l2_buffer buf;
+    ssize_t amount;
 
     switch (io) {
         case IO_METHOD_READ:
-            if (read(fd, device->hidden->buffers[0].start, size) == -1) {
+            if ((amount = read(fd, device->hidden->buffers[0].start, size)) == -1) {
                 switch (errno) {
                 case EAGAIN:
                     return SDL_CAMERA_FRAME_SKIP;
@@ -148,7 +149,11 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
 
             *timestampNS = SDL_GetTicksNS();  // oh well, close enough.
             frame->pixels = device->hidden->buffers[0].start;
-            frame->pitch = device->hidden->driver_pitch;
+            if (device->hidden->driver_pitch) {
+                frame->pitch = device->hidden->driver_pitch;
+            } else {
+                frame->pitch = (int)amount;
+            }
             break;
 
         case IO_METHOD_MMAP:
@@ -178,7 +183,11 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
             }
 
             frame->pixels = device->hidden->buffers[buf.index].start;
-            frame->pitch = device->hidden->driver_pitch;
+            if (device->hidden->driver_pitch) {
+                frame->pitch = device->hidden->driver_pitch;
+            } else {
+                frame->pitch = buf.bytesused;
+            }
             device->hidden->buffers[buf.index].available = 1;
 
             *timestampNS = (((Uint64) buf.timestamp.tv_sec) * SDL_NS_PER_SECOND) + SDL_US_TO_NS(buf.timestamp.tv_usec);
@@ -222,7 +231,11 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
             }
 
             frame->pixels = (void*)buf.m.userptr;
-            frame->pitch = device->hidden->driver_pitch;
+            if (device->hidden->driver_pitch) {
+                frame->pitch = device->hidden->driver_pitch;
+            } else {
+                frame->pitch = buf.bytesused;
+            }
             device->hidden->buffers[i].available = 1;
 
             *timestampNS = (((Uint64) buf.timestamp.tv_sec) * SDL_NS_PER_SECOND) + SDL_US_TO_NS(buf.timestamp.tv_usec);
@@ -404,10 +417,15 @@ static void format_v4l2_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspa
     switch (fmt) {
     #define CASE(x, y, z)  case x: *format = y; *colorspace = z; return
     CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED);
+    CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_MJPG, SDL_COLORSPACE_SRGB);
     #undef CASE
     default:
         #if DEBUG_CAMERA
-        SDL_Log("CAMERA: Unknown format V4L2_PIX_FORMAT '%d'", fmt);
+        SDL_Log("CAMERA: Unknown format V4L2_PIX_FORMAT '%c%c%c%c' (0x%x)",
+            (char)(Uint8)(fmt >>  0),
+            (char)(Uint8)(fmt >>  8),
+            (char)(Uint8)(fmt >> 16),
+            (char)(Uint8)(fmt >> 24), fmt);
         #endif
         break;
     }
