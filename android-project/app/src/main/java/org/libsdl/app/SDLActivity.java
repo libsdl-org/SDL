@@ -60,8 +60,8 @@ import java.util.Locale;
 public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
     private static final int SDL_MAJOR_VERSION = 2;
-    private static final int SDL_MINOR_VERSION = 31;
-    private static final int SDL_MICRO_VERSION = 1;
+    private static final int SDL_MINOR_VERSION = 32;
+    private static final int SDL_MICRO_VERSION = 0;
 /*
     // Display InputType.SOURCE/CLASS of events and devices
     //
