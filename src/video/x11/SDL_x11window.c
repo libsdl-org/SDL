@@ -100,12 +100,12 @@ static bool X11_IsWindowMapped(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-static SDL_bool X11_IsDisplayOk(Display *display)
+static bool X11_IsDisplayOk(Display *display)
 {
     if (display->flags & XlibDisplayIOError) {
-        return SDL_FALSE;
+        return false;
     }
-    return SDL_TRUE;
+    return true;
 }
 
 #if 0
