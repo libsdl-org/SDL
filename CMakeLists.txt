@@ -245,7 +245,7 @@ endif()
 
 cmake_dependent_option(SDL_DEPS_SHARED "Load dependencies dynamically" ON SDL_SHARED_AVAILABLE OFF)
 
-set(SDL_SUBSYSTEMS)
+set(SDL_SUBSYSTEMS )
 
 macro(define_sdl_subsystem _name)
   cmake_parse_arguments("_ds" "" "" "DEPS" ${ARGN})
