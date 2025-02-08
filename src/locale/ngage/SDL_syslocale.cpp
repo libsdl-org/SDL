@@ -66,12 +66,6 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         case ELangFinnish:
             locale = "fi_FI";
             break;
-        case ELangAmerican:
-        case ELangCanadianEnglish:
-        case ELangInternationalEnglish:
-        case ELangSouthAfricanEnglish:
-            locale = "en_US";
-            break;
         case ELangPortuguese:
         case ELangBrazilianPortuguese:
             locale = "pt_PT";
@@ -288,7 +282,12 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             locale = "zu_ZA";
             break;
         case ELangEnglish:
-        case ELangOther:
+            locale = "en_GB";
+            break;
+        case ELangAmerican:
+        case ELangCanadianEnglish:
+        case ELangInternationalEnglish:
+        case ELangSouthAfricanEnglish:
         default:
             locale = "en_US";
             break;
