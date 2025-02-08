@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,14 +26,15 @@
 #include "SDL_windows.h"
 
 #ifdef HAVE_XINPUT_H
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
-/* Xbox supports an XInput wrapper which is a C++-only header... */
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+// Xbox supports an XInput wrapper which is a C++-only header...
+#include <math.h> // Required to compile with recent MSVC...
 #include <XInputOnGameInput.h>
 using namespace XInputOnGameInput;
 #else
 #include <xinput.h>
 #endif
-#endif /* HAVE_XINPUT_H */
+#endif // HAVE_XINPUT_H
 
 #ifndef XUSER_MAX_COUNT
 #define XUSER_MAX_COUNT 4
@@ -43,6 +44,9 @@ using namespace XInputOnGameInput;
 #endif
 #ifndef XINPUT_CAPS_FFB_SUPPORTED
 #define XINPUT_CAPS_FFB_SUPPORTED 0x0001
+#endif
+#ifndef XINPUT_CAPS_WIRELESS
+#define XINPUT_CAPS_WIRELESS 0x0002
 #endif
 
 #ifndef XINPUT_DEVSUBTYPE_UNKNOWN
@@ -156,35 +160,15 @@ using namespace XInputOnGameInput;
 #define BATTERY_LEVEL_FULL 0x03
 #endif
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* typedef's for XInput structs we use */
+// typedef's for XInput structs we use
 
-#ifndef HAVE_XINPUT_GAMEPAD_EX
-typedef struct
-{
-    WORD wButtons;
-    BYTE bLeftTrigger;
-    BYTE bRightTrigger;
-    SHORT sThumbLX;
-    SHORT sThumbLY;
-    SHORT sThumbRX;
-    SHORT sThumbRY;
-    DWORD dwPaddingReserved;
-} XINPUT_GAMEPAD_EX;
-#endif
 
-#ifndef HAVE_XINPUT_STATE_EX
-typedef struct
-{
-    DWORD dwPacketNumber;
-    XINPUT_GAMEPAD_EX Gamepad;
-} XINPUT_STATE_EX;
-#endif
-
+// This is the same as XINPUT_BATTERY_INFORMATION, but always defined instead of just if WIN32_WINNT >= _WIN32_WINNT_WIN8
 typedef struct
 {
     BYTE BatteryType;
@@ -206,6 +190,12 @@ typedef struct
 
 typedef struct
 {
+    DWORD dwPacketNumber;
+    XINPUT_GAMEPAD Gamepad;
+} XINPUT_STATE;
+
+typedef struct
+{
     WORD wLeftMotorSpeed;
     WORD wRightMotorSpeed;
 } XINPUT_VIBRATION;
@@ -219,23 +209,42 @@ typedef struct
     XINPUT_VIBRATION Vibration;
 } XINPUT_CAPABILITIES;
 
-#endif /* HAVE_XINPUT_H */
+#endif // HAVE_XINPUT_H
 
-/* Forward decl's for XInput API's we load dynamically and use if available */
+// This struct is not defined in XInput headers.
+typedef struct
+{
+    XINPUT_CAPABILITIES Capabilities;
+    WORD VendorId;
+    WORD ProductId;
+    WORD ProductVersion;
+    WORD unk1;
+    DWORD unk2;
+} SDL_XINPUT_CAPABILITIES_EX;
+
+// Forward decl's for XInput API's we load dynamically and use if available
 typedef DWORD(WINAPI *XInputGetState_t)(
-    DWORD dwUserIndex,      /* [in] Index of the gamer associated with the device */
-    XINPUT_STATE_EX *pState /* [out] Receives the current state */
+    DWORD dwUserIndex,      // [in] Index of the gamer associated with the device
+    XINPUT_STATE *pState    // [out] Receives the current state
 );
 
 typedef DWORD(WINAPI *XInputSetState_t)(
-    DWORD dwUserIndex,           /* [in] Index of the gamer associated with the device */
-    XINPUT_VIBRATION *pVibration /* [in, out] The vibration information to send to the controller */
+    DWORD dwUserIndex,           // [in] Index of the gamer associated with the device
+    XINPUT_VIBRATION *pVibration // [in, out] The vibration information to send to the controller
 );
 
 typedef DWORD(WINAPI *XInputGetCapabilities_t)(
-    DWORD dwUserIndex,                 /* [in] Index of the gamer associated with the device */
-    DWORD dwFlags,                     /* [in] Input flags that identify the device type */
-    XINPUT_CAPABILITIES *pCapabilities /* [out] Receives the capabilities */
+    DWORD dwUserIndex,                 // [in] Index of the gamer associated with the device
+    DWORD dwFlags,                     // [in] Input flags that identify the device type
+    XINPUT_CAPABILITIES *pCapabilities // [out] Receives the capabilities
+);
+
+// Only available in XInput 1.4 that is shipped with Windows 8 and newer.
+typedef DWORD(WINAPI *XInputGetCapabilitiesEx_t)(
+    DWORD dwReserved,                       // [in] Must be 1
+    DWORD dwUserIndex,                      // [in] Index of the gamer associated with the device
+    DWORD dwFlags,                          // [in] Input flags that identify the device type
+    SDL_XINPUT_CAPABILITIES_EX *pCapabilitiesEx // [out] Receives the capabilities
 );
 
 typedef DWORD(WINAPI *XInputGetBatteryInformation_t)(
@@ -243,16 +252,17 @@ typedef DWORD(WINAPI *XInputGetBatteryInformation_t)(
     BYTE devType,
     XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation);
 
-extern int WIN_LoadXInputDLL(void);
+extern bool WIN_LoadXInputDLL(void);
 extern void WIN_UnloadXInputDLL(void);
 
 extern XInputGetState_t SDL_XInputGetState;
 extern XInputSetState_t SDL_XInputSetState;
 extern XInputGetCapabilities_t SDL_XInputGetCapabilities;
+extern XInputGetCapabilitiesEx_t SDL_XInputGetCapabilitiesEx;
 extern XInputGetBatteryInformation_t SDL_XInputGetBatteryInformation;
-extern DWORD SDL_XInputVersion; /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
+extern DWORD SDL_XInputVersion; // ((major << 16) & 0xFF00) | (minor & 0xFF)
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
@@ -260,6 +270,7 @@ extern DWORD SDL_XInputVersion; /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
 #define XINPUTGETSTATE              SDL_XInputGetState
 #define XINPUTSETSTATE              SDL_XInputSetState
 #define XINPUTGETCAPABILITIES       SDL_XInputGetCapabilities
+#define XINPUTGETCAPABILITIESEX     SDL_XInputGetCapabilitiesEx
 #define XINPUTGETBATTERYINFORMATION SDL_XInputGetBatteryInformation
 
-#endif /* SDL_xinput_h_ */
+#endif // SDL_xinput_h_

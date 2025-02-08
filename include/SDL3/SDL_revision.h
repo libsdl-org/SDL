@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,16 +19,35 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_revision.h
- *
- *  \brief Header file containing the SDL revision
+/* WIKI CATEGORY: Version */
+
+/*
+ * SDL_revision.h contains the SDL revision, which might be defined on the
+ * compiler command line, or generated right into the header itself by the
+ * build system.
  */
 
 #ifndef SDL_revision_h_
 #define SDL_revision_h_
 
-#ifdef SDL_VENDOR_INFO
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
+/**
+ * This macro is a string describing the source at a particular point in
+ * development.
+ *
+ * This string is often generated from revision control's state at build time.
+ *
+ * This string can be quite complex and does not follow any standard. For
+ * example, it might be something like "SDL-prerelease-3.1.1-47-gf687e0732".
+ * It might also be user-defined at build time, so it's best to treat it as a
+ * clue in debugging forensics and not something the app will parse in any
+ * way.
+ *
+ * \since This macro is available since SDL 3.2.0.
+ */
+#define SDL_REVISION "Some arbitrary string decided at SDL build time"
+#elif defined(SDL_VENDOR_INFO)
 #define SDL_REVISION SDL_VENDOR_INFO
 #else
 #define SDL_REVISION ""

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,28 +28,10 @@
 */
 #include <SDL3/SDL_test.h>
 
-#include "../video/SDL_surface_pixel_impl.h"
-
 #define FILENAME_SIZE 128
 
 /* Counter for _CompareSurface calls; used for filename creation when comparisons fail */
 static int _CompareSurfaceCount = 0;
-
-int
-SDLTest_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
-{
-    return SDL_ReadSurfacePixel_impl(surface, x, y, r, g, b, a);
-}
-
-static void
-LogErrorFormat(const char *name, const SDL_PixelFormat *format)
-{
-  SDLTest_LogError("%s: %08" SDL_PRIx32 " %s, %u bits/%u bytes per pixel", name, format->format, SDL_GetPixelFormatName(format->format), format->BitsPerPixel, format->BytesPerPixel);
-  SDLTest_LogError("%s: R mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Rmask, format->Rloss, format->Rshift);
-  SDLTest_LogError("%s: G mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Gmask, format->Gloss, format->Gshift);
-  SDLTest_LogError("%s: B mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Bmask, format->Bloss, format->Bshift);
-  SDLTest_LogError("%s: A mask %08" SDL_PRIx32 ", loss %u, shift %u", name, format->Amask, format->Aloss, format->Ashift);
-}
 
 /* Compare surfaces */
 int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface, int allowable_error)
@@ -66,12 +48,12 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
     char referenceFilename[FILENAME_SIZE];
 
     /* Validate input surfaces */
-    if (surface == NULL) {
+    if (!surface) {
         SDLTest_LogError("Cannot compare NULL surface");
         return -1;
     }
 
-    if (referenceSurface == NULL) {
+    if (!referenceSurface) {
         SDLTest_LogError("Cannot compare NULL reference surface");
         return -1;
     }
@@ -96,15 +78,15 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
         for (i = 0; i < surface->w; i++) {
             int temp;
 
-            temp = SDLTest_ReadSurfacePixel(surface, i, j, &R, &G, &B, &A);
-            if (temp != 0) {
+            temp = SDL_ReadSurfacePixel(surface, i, j, &R, &G, &B, &A);
+            if (!temp) {
                 SDLTest_LogError("Failed to retrieve pixel (%d,%d): %s", i, j, SDL_GetError());
                 ret++;
                 continue;
             }
 
-            temp = SDLTest_ReadSurfacePixel(referenceSurface, i, j, &Rd, &Gd, &Bd, &Ad);
-            if (temp != 0) {
+            temp = SDL_ReadSurfacePixel(referenceSurface, i, j, &Rd, &Gd, &Bd, &Ad);
+            if (!temp) {
                 SDLTest_LogError("Failed to retrieve reference pixel (%d,%d): %s", i, j, SDL_GetError());
                 ret++;
                 continue;
@@ -142,8 +124,8 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
     _CompareSurfaceCount++;
     if (ret != 0) {
         SDLTest_LogError("Comparison of pixels with allowable error of %i failed %i times.", allowable_error, ret);
-        LogErrorFormat("Reference surface format", referenceSurface->format);
-        LogErrorFormat("Actual surface format   ", surface->format);
+        SDLTest_LogError("Reference surface format: %s", SDL_GetPixelFormatName(referenceSurface->format));
+        SDLTest_LogError("Actual surface format: %s", SDL_GetPixelFormatName(surface->format));
         SDLTest_LogError("First detected occurrence at position %i,%i with a squared RGB-difference of %i.", sampleErrorX, sampleErrorY, sampleDist);
         SDLTest_LogError("Reference pixel: R=%u G=%u B=%u A=%u", sampleReference.r, sampleReference.g, sampleReference.b, sampleReference.a);
         SDLTest_LogError("Actual pixel   : R=%u G=%u B=%u A=%u", sampleActual.r, sampleActual.g, sampleActual.b, sampleActual.a);
@@ -155,4 +137,82 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
     }
 
     return ret;
+}
+
+int SDLTest_CompareMemory(const void *actual, size_t size_actual, const void *reference, size_t size_reference) {
+#define WIDTH 16
+
+    const size_t size_max = SDL_max(size_actual, size_reference);
+    size_t i;
+    struct {
+        const char *header;
+        const Uint8 *data;
+        size_t size;
+    } columns[] = {
+        {
+            "actual",
+            actual,
+            size_actual,
+        },
+        {
+            "reference",
+            reference,
+            size_reference,
+        },
+    };
+    char line_buffer[16 + SDL_arraysize(columns) * (4 * WIDTH + 1) + (SDL_arraysize(columns) - 1) * 2 + 1];
+
+    SDLTest_AssertCheck(size_actual == size_reference, "Sizes of memory blocks must be equal (actual=%" SDL_PRIu64 " expected=%" SDL_PRIu64 ")", (Uint64)size_actual, (Uint64)size_reference);
+    if (size_actual == size_reference) {
+        int equals;
+        equals = SDL_memcmp(actual, reference, size_max) == 0;
+        SDLTest_AssertCheck(equals, "Memory blocks contain the same data");
+        if (equals) {
+            return 0;
+        }
+    }
+
+    SDL_memset(line_buffer, ' ', sizeof(line_buffer));
+    line_buffer[sizeof(line_buffer) - 1] = '\0';
+    for (i = 0; i < SDL_arraysize(columns); i++) {
+        SDL_memcpy(line_buffer + 16 + 1 + i * (4 * WIDTH + 3), columns[i].header, SDL_strlen(columns[i].header));
+    }
+    SDLTest_LogError("%s", line_buffer);
+
+    for (i = 0; i < size_max; i += WIDTH) {
+        size_t pos = 0;
+        size_t col;
+
+        pos += SDL_snprintf(line_buffer + pos, SDL_arraysize(line_buffer) - pos, "%016" SDL_PRIx64 , (Uint64)i);
+
+        for (col = 0; col < SDL_arraysize(columns); col++) {
+            size_t j;
+
+            for (j = 0; j < WIDTH; j++) {
+                if (i + j < columns[col].size) {
+                    pos += SDL_snprintf(line_buffer + pos, SDL_arraysize(line_buffer) - pos, " %02x", columns[col].data[i + j]);
+                } else {
+                    pos += SDL_snprintf(line_buffer + pos, SDL_arraysize(line_buffer) - pos, "   ");
+                }
+            }
+            pos += SDL_snprintf(line_buffer + pos, SDL_arraysize(line_buffer) - pos, " ");
+            for (j = 0; j < WIDTH; j++) {
+                char c = ' ';
+                if (i + j < columns[col].size) {
+                    c = columns[col].data[i + j];
+                    if (!SDL_isprint(c)) {
+                        c = '.';
+                    }
+                }
+                pos += SDL_snprintf(line_buffer + pos, SDL_arraysize(line_buffer) - pos, "%c", c);
+            }
+            if (col < SDL_arraysize(columns) - 1) {
+                pos += SDL_snprintf(line_buffer + pos, SDL_arraysize(line_buffer), " |");
+            }
+        }
+        SDLTest_LogError("%s", line_buffer);
+        SDL_assert(pos == SDL_arraysize(line_buffer) - 1);
+    }
+#undef WIDTH
+    return 1;
 }

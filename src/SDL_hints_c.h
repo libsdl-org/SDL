@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,12 +20,14 @@
 */
 #include "SDL_internal.h"
 
-/* This file defines useful function for working with SDL hints */
+// This file defines useful function for working with SDL hints
 
 #ifndef SDL_hints_c_h_
 #define SDL_hints_c_h_
 
-extern SDL_bool SDL_GetStringBoolean(const char *value, SDL_bool default_value);
+extern void SDL_InitHints(void);
+extern bool SDL_GetStringBoolean(const char *value, bool default_value);
 extern int SDL_GetStringInteger(const char *value, int default_value);
+extern void SDL_QuitHints(void);
 
-#endif /* SDL_hints_c_h_ */
+#endif // SDL_hints_c_h_

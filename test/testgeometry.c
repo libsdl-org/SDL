@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -13,22 +13,24 @@
 /* Simple program:  draw a RGB triangle, with texture  */
 
 #include <stdlib.h>
-#include <time.h>
 
-#ifdef __EMSCRIPTEN__
+#include "testutils.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test_common.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
 
-#include <SDL3/SDL_test_common.h>
-#include <SDL3/SDL_main.h>
-#include "testutils.h"
-
 static SDLTest_CommonState *state;
-static SDL_bool use_texture = SDL_FALSE;
+static bool use_texture = false;
 static SDL_Texture **sprites;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 static float angle = 0.0f;
 static int sprite_w, sprite_h;
+static int translate_cx = 0;
+static int translate_cy = 0;
 
 static int done;
 
@@ -50,12 +52,12 @@ static int LoadSprite(const char *file)
 
     for (i = 0; i < state->num_windows; ++i) {
         /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
-        sprites[i] = LoadTexture(state->renderers[i], file, SDL_TRUE, &sprite_w, &sprite_h);
+        sprites[i] = LoadTexture(state->renderers[i], file, true, &sprite_w, &sprite_h);
         if (!sprites[i]) {
             return -1;
         }
-        if (SDL_SetTextureBlendMode(sprites[i], blendMode) < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
+        if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s", SDL_GetError());
             SDL_DestroyTexture(sprites[i]);
             return -1;
         }
@@ -92,6 +94,18 @@ static void loop(void)
                     angle += yrel;
                 }
             }
+        } else if (event.type == SDL_EVENT_KEY_DOWN) {
+            if (event.key.key == SDLK_LEFT) {
+                translate_cx -= 1;
+            } else if (event.key.key == SDLK_RIGHT) {
+                translate_cx += 1;
+            } else if (event.key.key == SDLK_UP) {
+                translate_cy -= 1;
+            } else if (event.key.key == SDLK_DOWN) {
+                translate_cy += 1;
+            } else {
+                SDLTest_CommonEvent(state, &event, &done);
+            }
         } else {
             SDLTest_CommonEvent(state, &event, &done);
         }
@@ -119,29 +133,32 @@ static void loop(void)
             cy = viewport.y + viewport.h / 2;
             d = (viewport.w + viewport.h) / 5.f;
 
-            a = (angle * 3.1415f) / 180.0f;
+            cx += translate_cx;
+            cy += translate_cy;
+
+            a = (angle * SDL_PI_F) / 180.0f;
             verts[0].position.x = cx + d * SDL_cosf(a);
             verts[0].position.y = cy + d * SDL_sinf(a);
-            verts[0].color.r = 0xFF;
+            verts[0].color.r = 1.0f;
             verts[0].color.g = 0;
             verts[0].color.b = 0;
-            verts[0].color.a = 0xFF;
+            verts[0].color.a = 1.0f;
 
-            a = ((angle + 120) * 3.1415f) / 180.0f;
+            a = ((angle + 120) * SDL_PI_F) / 180.0f;
             verts[1].position.x = cx + d * SDL_cosf(a);
             verts[1].position.y = cy + d * SDL_sinf(a);
             verts[1].color.r = 0;
-            verts[1].color.g = 0xFF;
+            verts[1].color.g = 1.0f;
             verts[1].color.b = 0;
-            verts[1].color.a = 0xFF;
+            verts[1].color.a = 1.0f;
 
-            a = ((angle + 240) * 3.1415f) / 180.0f;
+            a = ((angle + 240) * SDL_PI_F) / 180.0f;
             verts[2].position.x = cx + d * SDL_cosf(a);
             verts[2].position.y = cy + d * SDL_sinf(a);
             verts[2].color.r = 0;
             verts[2].color.g = 0;
-            verts[2].color.b = 0xFF;
-            verts[2].color.a = 0xFF;
+            verts[2].color.b = 1.0f;
+            verts[2].color.a = 1.0f;
 
             if (use_texture) {
                 verts[0].tex_coord.x = 0.5f;
@@ -157,7 +174,7 @@ static void loop(void)
 
         SDL_RenderPresent(renderer);
     }
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -173,12 +190,9 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     for (i = 1; i < argc;) {
         int consumed;
@@ -206,7 +220,7 @@ int main(int argc, char *argv[])
                     }
                 }
             } else if (SDL_strcasecmp(argv[i], "--use-texture") == 0) {
-                use_texture = SDL_TRUE;
+                use_texture = true;
                 consumed = 1;
             }
         }
@@ -224,8 +238,8 @@ int main(int argc, char *argv[])
     /* Create the windows, initialize the renderers, and load the textures */
     sprites =
         (SDL_Texture **)SDL_malloc(state->num_windows * sizeof(*sprites));
-    if (sprites == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
+    if (!sprites) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         quit(2);
     }
     /* Create the windows and initialize the renderers */
@@ -242,14 +256,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    srand((unsigned int)time(NULL));
-
     /* Main render loop */
     frames = 0;
     then = SDL_GetTicks();
     done = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
@@ -262,7 +274,7 @@ int main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
     }
 
     quit(0);

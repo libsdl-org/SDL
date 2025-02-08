@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,71 +20,105 @@
 */
 #include "SDL_internal.h"
 
-#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-#include "SDL_windowsshape.h"
 #include "SDL_windowsvideo.h"
+#include "SDL_windowsshape.h"
 
-SDL_WindowShaper *Win32_CreateShaper(SDL_Window *window)
+
+static void AddRegion(HRGN *mask, int x1, int y1, int x2, int y2)
 {
-    SDL_WindowShaper *result = (SDL_WindowShaper *)SDL_malloc(sizeof(SDL_WindowShaper));
-    if (result == NULL) {
-        SDL_OutOfMemory();
-        return NULL;
+    HRGN region = CreateRectRgn(x1, y1, x2, y2);
+    if (*mask) {
+        CombineRgn(*mask, *mask, region, RGN_OR);
+        DeleteObject(region);
+    } else {
+        *mask = region;
     }
-    result->window = window;
-    result->mode.mode = ShapeModeDefault;
-    result->mode.parameters.binarizationCutoff = 1;
-    result->hasshape = SDL_FALSE;
-    result->driverdata = (SDL_ShapeData *)SDL_calloc(1, sizeof(SDL_ShapeData));
-    if (!result->driverdata) {
-        SDL_free(result);
-        SDL_OutOfMemory();
-        return NULL;
-    }
-    window->shaper = result;
-
-    return result;
 }
 
-static void CombineRectRegions(SDL_ShapeTree *node, void *closure)
+static HRGN GenerateSpanListRegion(SDL_Surface *shape, int offset_x, int offset_y)
 {
-    HRGN mask_region = *((HRGN *)closure), temp_region = NULL;
-    if (node->kind == OpaqueShape) {
-        /* Win32 API regions exclude their outline, so we widen the region by one pixel in each direction to include the real outline. */
-        temp_region = CreateRectRgn(node->data.shape.x, node->data.shape.y, node->data.shape.x + node->data.shape.w + 1, node->data.shape.y + node->data.shape.h + 1);
-        if (mask_region != NULL) {
-            CombineRgn(mask_region, mask_region, temp_region, RGN_OR);
-            DeleteObject(temp_region);
-        } else {
-            *((HRGN *)closure) = temp_region;
+    HRGN mask = NULL;
+    int x, y;
+    int span_start = -1;
+
+    for (y = 0; y < shape->h; ++y) {
+        const Uint8 *a = (const Uint8 *)shape->pixels + y * shape->pitch;
+        for (x = 0; x < shape->w; ++x) {
+            if (*a == SDL_ALPHA_TRANSPARENT) {
+                if (span_start != -1) {
+                    AddRegion(&mask, offset_x + span_start, offset_y + y, offset_x + x, offset_y + y + 1);
+                    span_start = -1;
+                }
+            } else {
+                if (span_start == -1) {
+                    span_start = x;
+                }
+            }
+            a += 4;
+        }
+        if (span_start != -1) {
+            // Add the final span
+            AddRegion(&mask, offset_x + span_start, offset_y + y, offset_x + x, offset_y + y + 1);
+            span_start = -1;
         }
     }
+    return mask;
 }
 
-int Win32_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode)
+bool WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape)
 {
-    SDL_ShapeData *data;
-    HRGN mask_region = NULL;
+    SDL_WindowData *data = window->internal;
+    HRGN mask = NULL;
 
-    if ((shaper == NULL) ||
-        (shape == NULL) ||
-        ((shape->format->Amask == 0) && (shape_mode->mode != ShapeModeColorKey))) {
-        return SDL_INVALID_SHAPE_ARGUMENT;
+    // Generate a set of spans for the region
+    if (shape) {
+        SDL_Surface *stretched = NULL;
+        RECT rect;
+
+        if (shape->w != window->w || shape->h != window->h) {
+            stretched = SDL_CreateSurface(window->w, window->h, SDL_PIXELFORMAT_ARGB32);
+            if (!stretched) {
+                return false;
+            }
+            if (!SDL_StretchSurface(shape, NULL, stretched, NULL, SDL_SCALEMODE_LINEAR)) {
+                SDL_DestroySurface(stretched);
+                return false;
+            }
+            shape = stretched;
+        }
+
+        rect.top = 0;
+        rect.left = 0;
+        rect.bottom = 0;
+        rect.right = 0;
+        if (!(SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS)) {
+            WIN_AdjustWindowRectForHWND(data->hwnd, &rect, 0);
+        }
+
+        mask = GenerateSpanListRegion(shape, -rect.left, -rect.top);
+
+        if (!(SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS)) {
+            // Add the window borders
+            // top
+            AddRegion(&mask, 0, 0, -rect.left + shape->w + rect.right + 1, -rect.top + 1);
+            // left
+            AddRegion(&mask, 0, -rect.top, -rect.left + 1, -rect.top + shape->h + 1);
+            // right
+            AddRegion(&mask, -rect.left + shape->w, -rect.top, -rect.left + shape->w + rect.right + 1, -rect.top + shape->h + 1);
+            // bottom
+            AddRegion(&mask, 0, -rect.top + shape->h, -rect.left + shape->w + rect.right + 1, -rect.top + shape->h + rect.bottom + 1);
+        }
+
+        if (stretched) {
+            SDL_DestroySurface(stretched);
+        }
     }
-
-    data = (SDL_ShapeData *)shaper->driverdata;
-    if (data->mask_tree != NULL) {
-        SDL_FreeShapeTree(&data->mask_tree);
+    if (!SetWindowRgn(data->hwnd, mask, TRUE)) {
+        return WIN_SetError("SetWindowRgn failed");
     }
-    data->mask_tree = SDL_CalculateShapeTree(*shape_mode, shape);
-
-    SDL_TraverseShapeTree(data->mask_tree, &CombineRectRegions, &mask_region);
-    SDL_assert(mask_region != NULL);
-
-    SetWindowRgn(shaper->window->driverdata->hwnd, mask_region, TRUE);
-
-    return 0;
+    return true;
 }
 
-#endif /* SDL_VIDEO_DRIVER_WINDOWS */
+#endif // defined(SDL_VIDEO_DRIVER_WINDOWS) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

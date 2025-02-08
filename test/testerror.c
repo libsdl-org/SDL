@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,13 +35,13 @@ static int SDLCALL
 ThreadFunc(void *data)
 {
     /* Set the child thread error string */
-    SDL_SetError("Thread %s (%lu) had a problem: %s",
-                 (char *)data, SDL_ThreadID(), "nevermind");
+    SDL_SetError("Thread %s (%" SDL_PRIu64 ") had a problem: %s",
+                 (char *)data, SDL_GetCurrentThreadID(), "nevermind");
     while (alive) {
-        SDL_Log("Thread '%s' is alive!\n", (char *)data);
+        SDL_Log("Thread '%s' is alive!", (char *)data);
         SDL_Delay(1 * 1000);
     }
-    SDL_Log("Child thread error string: %s\n", SDL_GetError());
+    SDL_Log("Child thread error string: %s", SDL_GetError());
     return 0;
 }
 
@@ -49,48 +49,67 @@ int main(int argc, char *argv[])
 {
     SDL_Thread *thread;
     SDLTest_CommonState *state;
+    int i;
+    bool enable_threads = true;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     /* Parse commandline */
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return 1;
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (consumed == 0) {
+            consumed = -1;
+            if (SDL_strcasecmp(argv[i], "--no-threads") == 0) {
+                enable_threads = false;
+                consumed = 1;
+            }
+        }
+        if (consumed < 0) {
+            static const char *options[] = {
+                "[--no-threads]",
+                NULL
+            };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return 1;
+        }
+        i += consumed;
     }
 
     /* Load the SDL library */
-    if (SDL_Init(0) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+    if (!SDL_Init(0)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
     /* Set the error value for the main thread */
     SDL_SetError("No worries");
 
-    if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+    if (SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_TESTS_QUICK") != NULL) {
         SDL_Log("Not running slower tests");
         SDL_Quit();
         return 0;
     }
 
-    alive = 1;
-    thread = SDL_CreateThread(ThreadFunc, NULL, "#1");
-    if (thread == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
-        quit(1);
+    if (enable_threads) {
+        alive = 1;
+        thread = SDL_CreateThread(ThreadFunc, NULL, "#1");
+        if (!thread) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s", SDL_GetError());
+            quit(1);
+        }
+        SDL_Delay(5 * 1000);
+        SDL_Log("Waiting for thread #1");
+        alive = 0;
+        SDL_WaitThread(thread, NULL);
     }
-    SDL_Delay(5 * 1000);
-    SDL_Log("Waiting for thread #1\n");
-    alive = 0;
-    SDL_WaitThread(thread, NULL);
 
-    SDL_Log("Main thread error string: %s\n", SDL_GetError());
+    SDL_Log("Main thread error string: %s", SDL_GetError());
 
     SDL_Quit();
     SDLTest_CommonDestroyState(state);

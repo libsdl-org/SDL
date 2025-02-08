@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,4 +27,4 @@ extern SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smo
 extern void SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle, const SDL_FPoint *center,
                                            SDL_Rect *rect_dest, double *cangle, double *sangle);
 
-#endif /* SDL_rotate_h_ */
+#endif // SDL_rotate_h_

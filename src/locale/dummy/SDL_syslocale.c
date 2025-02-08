@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,8 +22,8 @@
 #include "SDL_internal.h"
 #include "../SDL_syslocale.h"
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
-    /* dummy implementation. Caller already zero'd out buffer. */
+    // dummy implementation. Caller already zero'd out buffer.
     return SDL_Unsupported();
 }

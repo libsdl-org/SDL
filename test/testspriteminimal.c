@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -11,15 +11,12 @@
 */
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdlib.h>
-#include <time.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
 
 #include "icon.h"
 
@@ -36,15 +33,16 @@ static int sprite_w, sprite_h;
 static SDL_Renderer *renderer;
 static int done;
 
-static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h) {
+static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h)
+{
     SDL_Texture *texture = NULL;
     SDL_Surface *surface;
-    SDL_RWops *src = SDL_RWFromConstMem(data, len);
+    SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_RW(src, SDL_TRUE);
+        surface = SDL_LoadBMP_IO(src, true);
         if (surface) {
             /* Treat white as transparent */
-            SDL_SetSurfaceColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 255, 255, 255));
+            SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
 
             texture = SDL_CreateTextureFromSurface(r, surface);
             *w = surface->w;
@@ -95,12 +93,13 @@ static void loop(void)
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_EVENT_QUIT || event.type == SDL_EVENT_KEY_DOWN) {
+        if (event.type == SDL_EVENT_QUIT ||
+            (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_ESCAPE)) {
             done = 1;
         }
     }
     MoveSprites();
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -113,51 +112,45 @@ int main(int argc, char *argv[])
     int return_code = -1;
     int i;
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
     if (argc > 1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "USAGE: %s\n", argv[0]);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "USAGE: %s", argv[0]);
         return_code = 1;
         goto quit;
     }
 
-    if (SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer) < 0) {
+    if (!SDL_CreateWindowAndRenderer("testspriteminimal", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         return_code = 2;
         goto quit;
     }
 
-    if (SDL_SetWindowTitle(window, argv[0]) < 0) {
-        SDL_Log("SDL_SetWindowTitle: %s", SDL_GetError());
-    }
+    SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     sprite = CreateTexture(renderer, icon_bmp, icon_bmp_len, &sprite_w, &sprite_h);
 
-    if (sprite == NULL) {
+    if (!sprite) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture (%s)", SDL_GetError());
         return_code = 3;
         goto quit;
     }
 
     /* Initialize the sprite positions */
-    srand((unsigned int)time(NULL));
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = (float)(rand() % (WINDOW_WIDTH - sprite_w));
-        positions[i].y = (float)(rand() % (WINDOW_HEIGHT - sprite_h));
+        positions[i].x = (float)SDL_rand(WINDOW_WIDTH - sprite_w);
+        positions[i].y = (float)SDL_rand(WINDOW_HEIGHT - sprite_h);
         positions[i].w = (float)sprite_w;
         positions[i].h = (float)sprite_h;
         velocities[i].x = 0.0f;
         velocities[i].y = 0.0f;
-        while (!velocities[i].x && !velocities[i].y) {
-            velocities[i].x = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
-            velocities[i].y = (float)((rand() % (MAX_SPEED * 2 + 1)) - MAX_SPEED);
+        while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
+            velocities[i].x = (float)(SDL_rand(MAX_SPEED * 2 + 1) - MAX_SPEED);
+            velocities[i].y = (float)(SDL_rand(MAX_SPEED * 2 + 1) - MAX_SPEED);
         }
     }
 
     /* Main render loop */
     done = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

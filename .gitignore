@@ -29,13 +29,27 @@ __pycache__
 *.rej
 
 # for CMake
+.cmake
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 cmake_uninstall.cmake
-SDL3ConfigVersion.cmake
+install_manifest.txt
+*Targets.cmake
+*Config.cmake
+*ConfigVersion.cmake
+CTestTestfile.cmake
+Testing
+compile_commands.json
+.cache/
+/include-config-*
+/include-revision
+/Makefile
 .ninja_*
 *.ninja
+*.pc
+test/*.test
+wayland-generated-protocols
 
 # for CLion
 .idea
@@ -49,6 +63,7 @@ cmake-build-*
 .DS_Store
 xcuserdata
 *.xcworkspace
+Xcode/build.xcconfig
 
 # for Visual Studio Code
 .vscode/
@@ -66,8 +81,7 @@ VisualC/tests/gamepadmap/button.bmp
 VisualC/tests/gamepadmap/gamepadmap.bmp
 VisualC/tests/gamepadmap/gamepadmap_back.bmp
 VisualC/tests/loopwave/sample.wav
-VisualC/tests/testautomation/CompareSurfaces0001_Reference.bmp
-VisualC/tests/testautomation/CompareSurfaces0001_TestOutput.bmp
+VisualC/tests/testautomation/*.bmp
 VisualC/tests/testgamepad/axis.bmp
 VisualC/tests/testgamepad/button.bmp
 VisualC/tests/testgamepad/gamepadmap.bmp
@@ -80,6 +94,10 @@ VisualC/tests/testscale/sample.bmp
 VisualC/tests/testsprite/icon.bmp
 VisualC/tests/testyuv/testyuv.bmp
 VisualC-GDK/**/Layout
+src/render/direct3d12/D3D12_*_One.h
+src/render/direct3d12/D3D12_*_Series.h
+src/gpu/d3d12/D3D12_*_One.h
+src/gpu/d3d12/D3D12_*_Series.h
 
 # for Android
 android-project/local.properties
@@ -91,7 +109,7 @@ test/gamepadmap
 test/loopwave
 test/loopwavequeue
 test/testatomic
-test/testaudiocapture
+test/testaudiorecording
 test/testaudiohotplug
 test/testaudioinfo
 test/testautomation

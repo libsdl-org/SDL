@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,29 +33,28 @@
 #include "SDL_vivantevideo.h"
 
 #include "SDL_vivantevulkan.h"
-#include <SDL3/SDL_syswm.h>
 
-int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+bool VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
     Uint32 i, extensionCount = 0;
-    SDL_bool hasSurfaceExtension = SDL_FALSE;
-    SDL_bool hasDisplayExtension = SDL_FALSE;
+    bool hasSurfaceExtension = false;
+    bool hasDisplayExtension = false;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
     if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
     }
 
-    /* Load the Vulkan loader library */
-    if (path == NULL) {
-        path = SDL_getenv("SDL_VULKAN_LIBRARY");
+    // Load the Vulkan loader library
+    if (!path) {
+        path = SDL_GetHint(SDL_HINT_VULKAN_LIBRARY);
     }
-    if (path == NULL) {
-        /* If no path set, try Vivante fb vulkan driver explicitly */
+    if (!path) {
+        // If no path set, try Vivante fb vulkan driver explicitly
         path = "libvulkan-fb.so";
         _this->vulkan_config.loader_handle = SDL_LoadObject(path);
         if (!_this->vulkan_config.loader_handle) {
-            /* If that couldn't be loaded, fall back to default name */
+            // If that couldn't be loaded, fall back to default name
             path = "libvulkan.so";
             _this->vulkan_config.loader_handle = SDL_LoadObject(path);
         }
@@ -63,7 +62,7 @@ int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         _this->vulkan_config.loader_handle = SDL_LoadObject(path);
     }
     if (!_this->vulkan_config.loader_handle) {
-        return -1;
+        return false;
     }
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
                 SDL_arraysize(_this->vulkan_config.loader_path));
@@ -84,14 +83,14 @@ int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         (PFN_vkEnumerateInstanceExtensionProperties)
             _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
         &extensionCount);
-    if (extensions == NULL) {
+    if (!extensions) {
         goto fail;
     }
     for (i = 0; i < extensionCount; i++) {
         if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasSurfaceExtension = SDL_TRUE;
+            hasSurfaceExtension = true;
         } else if (SDL_strcmp(VK_KHR_DISPLAY_EXTENSION_NAME, extensions[i].extensionName) == 0) {
-            hasDisplayExtension = SDL_TRUE;
+            hasDisplayExtension = true;
         }
     }
     SDL_free(extensions);
@@ -102,12 +101,12 @@ int VIVANTE_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         SDL_SetError("Installed Vulkan doesn't implement the " VK_KHR_DISPLAY_EXTENSION_NAME "extension");
         goto fail;
     }
-    return 0;
+    return true;
 
 fail:
     SDL_UnloadObject(_this->vulkan_config.loader_handle);
     _this->vulkan_config.loader_handle = NULL;
-    return -1;
+    return false;
 }
 
 void VIVANTE_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
@@ -118,32 +117,38 @@ void VIVANTE_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-SDL_bool VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                              unsigned *count,
-                                              const char **names)
+char const* const* VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
+                                              Uint32 *count)
 {
     static const char *const extensionsForVivante[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME
     };
-    if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
+    if (count) {
+        *count = SDL_arraysize(extensionsForVivante);
     }
-    return SDL_Vulkan_GetInstanceExtensions_Helper(
-        count, names, SDL_arraysize(extensionsForVivante),
-        extensionsForVivante);
+    return extensionsForVivante;
 }
 
-SDL_bool VIVANTE_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-                                      SDL_Window *window,
-                                      VkInstance instance,
-                                      VkSurfaceKHR *surface)
+bool VIVANTE_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+                                 SDL_Window *window,
+                                 VkInstance instance,
+                                 const struct VkAllocationCallbacks *allocator,
+                                 VkSurfaceKHR *surface)
 {
     if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return SDL_FALSE;
+        return SDL_SetError("Vulkan is not loaded");
     }
-    return SDL_Vulkan_Display_CreateSurface(_this->vulkan_config.vkGetInstanceProcAddr, instance, surface);
+    return SDL_Vulkan_Display_CreateSurface(_this->vulkan_config.vkGetInstanceProcAddr, instance, allocator, surface);
+}
+
+void VIVANTE_Vulkan_DestroySurface(SDL_VideoDevice *_this,
+                                   VkInstance instance,
+                                   VkSurfaceKHR surface,
+                                   const struct VkAllocationCallbacks *allocator)
+{
+    if (_this->vulkan_config.loader_handle) {
+        SDL_Vulkan_DestroySurface_Internal(_this->vulkan_config.vkGetInstanceProcAddr, instance, surface, allocator);
+    }
 }
 
 #endif

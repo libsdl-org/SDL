@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@
 
 @property(nonatomic, readonly, weak) EAGLContext *context;
 
-/* The width and height of the drawable in pixels (as opposed to points.) */
+// The width and height of the drawable in pixels (as opposed to points.)
 @property(nonatomic, readonly) int backingWidth;
 @property(nonatomic, readonly) int backingHeight;
 

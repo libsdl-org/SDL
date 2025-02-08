@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{E9C6A7A6-22C0-42E6-AC9C-8580A396D077}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ItemGroup>
+    <None Include="$(SolutionDir)\..\examples\renderer\11-color-mods\README.txt" />
+    <ClCompile Include="$(SolutionDir)\..\examples\renderer\11-color-mods\color-mods.c" />
+    <Content Include="$(SolutionDir)\..\test\sample.bmp" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

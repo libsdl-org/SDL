@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,30 +26,30 @@
 
 #ifdef HAVE_IBUS_IBUS_H
 #define SDL_USE_IBUS 1
-#include <ibus-1.0/ibus.h>
+#include <ibus.h>
 
-extern SDL_bool SDL_IBus_Init(void);
+extern bool SDL_IBus_Init(void);
 extern void SDL_IBus_Quit(void);
 
-/* Lets the IBus server know about changes in window focus */
-extern void SDL_IBus_SetFocus(SDL_bool focused);
+// Lets the IBus server know about changes in window focus
+extern void SDL_IBus_SetFocus(bool focused);
 
-/* Closes the candidate list and resets any text currently being edited */
+// Closes the candidate list and resets any text currently being edited
 extern void SDL_IBus_Reset(void);
 
-/* Sends a keypress event to IBus, returns SDL_TRUE if IBus used this event to
+/* Sends a keypress event to IBus, returns true if IBus used this event to
    update its candidate list or change input methods. PumpEvents should be
    called some time after this, to receive the TextInput / TextEditing event back. */
-extern SDL_bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state);
+extern bool SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down);
 
 /* Update the position of IBus' candidate list. If rect is NULL then this will
    just reposition it relative to the focused window's new position. */
-extern void SDL_IBus_UpdateTextRect(const SDL_Rect *window_relative_rect);
+extern void SDL_IBus_UpdateTextInputArea(SDL_Window *window);
 
 /* Checks DBus for new IBus events, and calls SDL_SendKeyboardText /
    SDL_SendEditingText for each event it finds */
 extern void SDL_IBus_PumpEvents(void);
 
-#endif /* HAVE_IBUS_IBUS_H */
+#endif // HAVE_IBUS_IBUS_H
 
-#endif /* SDL_ibus_h_ */
+#endif // SDL_ibus_h_

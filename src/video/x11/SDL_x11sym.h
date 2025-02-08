@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 
 #ifndef SDL_X11_MODULE
 #define SDL_X11_MODULE(modname)
@@ -99,7 +99,7 @@ SDL_X11_SYM(Status,XInitThreads,(void),(),return)
 SDL_X11_SYM(int,XPeekEvent,(Display* a,XEvent* b),(a,b),return)
 SDL_X11_SYM(int,XPending,(Display* a),(a),return)
 SDL_X11_SYM(int,XPutImage,(Display* a,Drawable b,GC c,XImage* d,int e,int f,int g,int h,unsigned int i,unsigned int j),(a,b,c,d,e,f,g,h,i,j),return)
-SDL_X11_SYM(int,XQueryKeymap,(Display* a,char *b),(a,b),return)
+SDL_X11_SYM(int,XQueryKeymap,(Display* a,char b[32]),(a,b),return)
 SDL_X11_SYM(Bool,XQueryPointer,(Display* a,Window b,Window* c,Window* d,int* e,int* f,int* g,int* h,unsigned int* i),(a,b,c,d,e,f,g,h,i),return)
 SDL_X11_SYM(int,XRaiseWindow,(Display* a,Window b),(a,b),return)
 SDL_X11_SYM(int,XReparentWindow,(Display* a,Window b,Window c,int d,int e),(a,b,c,d,e),return)
@@ -156,21 +156,30 @@ SDL_X11_SYM(int,XQueryTree,(Display* a,Window b,Window* c,Window* d,Window** e,u
 SDL_X11_SYM(Bool,XSupportsLocale,(void),(),return)
 SDL_X11_SYM(Status,XmbTextListToTextProperty,(Display* a,char** b,int c,XICCEncodingStyle d,XTextProperty* e),(a,b,c,d,e),return)
 SDL_X11_SYM(Region,XCreateRegion,(void),(),return)
+SDL_X11_SYM(int,XUnionRectWithRegion,(XRectangle *a, Region b, Region c),(a,b,c), return)
 SDL_X11_SYM(void,XDestroyRegion,(Region),(a),)
-SDL_X11_SYM(void,XrmInitialize,(),(),)
+SDL_X11_SYM(void,XrmInitialize,(void),(),)
 SDL_X11_SYM(char*,XResourceManagerString,(Display *display),(display),)
 SDL_X11_SYM(XrmDatabase,XrmGetStringDatabase,(char *data),(data),)
 SDL_X11_SYM(void,XrmDestroyDatabase,(XrmDatabase db),(db),)
 SDL_X11_SYM(Bool,XrmGetResource,(XrmDatabase db, char* str_name, char* str_class, char **str_type_return, XrmValue *),(db, str_name, str_class,str_type_return,value_return),)
 
-
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 SDL_X11_MODULE(XFIXES)
 SDL_X11_SYM(PointerBarrier, XFixesCreatePointerBarrier, (Display* a, Window b, int c, int d, int e, int f, int g, int h, int *i),(a,b,c,d,e,f,g,h,i),return)
 SDL_X11_SYM(void, XFixesDestroyPointerBarrier, (Display* a, PointerBarrier b), (a,b),)
-SDL_X11_SYM(int, XIBarrierReleasePointer,(Display* a,  int b, PointerBarrier c, BarrierEventID d), (a,b,c,d), return) /* this is actually Xinput2 */
+SDL_X11_SYM(int, XIBarrierReleasePointer,(Display* a,  int b, PointerBarrier c, BarrierEventID d), (a,b,c,d), return) // this is actually Xinput2
 SDL_X11_SYM(Status, XFixesQueryVersion,(Display* a, int* b, int* c), (a,b,c), return)
 SDL_X11_SYM(Status, XFixesSelectSelectionInput, (Display* a, Window b, Atom c, unsigned long d), (a,b,c,d), return)
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+SDL_X11_MODULE(XSYNC)
+SDL_X11_SYM(Status, XSyncQueryExtension, (Display* a, int* b, int* c), (a, b, c), return)
+SDL_X11_SYM(Status, XSyncInitialize, (Display* a, int* b, int* c), (a, b, c), return)
+SDL_X11_SYM(XSyncCounter, XSyncCreateCounter, (Display* a, XSyncValue b), (a, b), return)
+SDL_X11_SYM(Status, XSyncDestroyCounter, (Display* a, XSyncCounter b), (a, b), return)
+SDL_X11_SYM(Status, XSyncSetCounter, (Display* a, XSyncCounter b, XSyncValue c), (a, b, c), return)
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
@@ -178,12 +187,12 @@ SDL_X11_SYM(Bool,XGetEventData,(Display* a,XGenericEventCookie* b),(a,b),return)
 SDL_X11_SYM(void,XFreeEventData,(Display* a,XGenericEventCookie* b),(a,b),)
 #endif
 
-#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
 SDL_X11_SYM(Bool,XkbQueryExtension,(Display* a,int * b,int * c,int * d,int * e, int *f),(a,b,c,d,e,f),return)
 #if NeedWidePrototypes
-SDL_X11_SYM(KeySym,XkbKeycodeToKeysym,(Display* a,unsigned int b,int c,int d),(a,b,c,d),return)
+SDL_X11_SYM(Bool,XkbLookupKeySym,(Display* a, unsigned int b, unsigned int c, unsigned int* d, KeySym* e),(a,b,c,d,e),return)
 #else
-SDL_X11_SYM(KeySym,XkbKeycodeToKeysym,(Display* a,KeyCode b,int c,int d),(a,b,c,d),return)
+SDL_X11_SYM(Bool,XkbLookupKeySym,(Display* a, KeyCode b, unsigned int c, unsigned int* d, KeySym* e),(a,b,c,d,e),return)
 #endif
 SDL_X11_SYM(Status,XkbGetState,(Display* a,unsigned int b,XkbStatePtr c),(a,b,c),return)
 SDL_X11_SYM(Status,XkbGetUpdatedMap,(Display* a,unsigned int b,XkbDescPtr c),(a,b,c),return)
@@ -193,19 +202,29 @@ SDL_X11_SYM(void,XkbFreeKeyboard,(XkbDescPtr a,unsigned int b, Bool c),(a,b,c),)
 SDL_X11_SYM(Bool,XkbSetDetectableAutoRepeat,(Display* a, Bool b, Bool* c),(a,b,c),return)
 #endif
 
+// XKeycodeToKeysym is a deprecated function
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 #if NeedWidePrototypes
 SDL_X11_SYM(KeySym,XKeycodeToKeysym,(Display* a,unsigned int b,int c),(a,b,c),return)
 #else
 SDL_X11_SYM(KeySym,XKeycodeToKeysym,(Display* a,KeyCode b,int c),(a,b,c),return)
+#endif
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic pop
 #endif
 
 #ifdef X_HAVE_UTF8_STRING
 SDL_X11_MODULE(UTF8)
 SDL_X11_SYM(int,Xutf8TextListToTextProperty,(Display* a,char** b,int c,XICCEncodingStyle d,XTextProperty* e),(a,b,c,d,e),return)
 SDL_X11_SYM(int,Xutf8LookupString,(XIC a,XKeyPressedEvent* b,char* c,int d,KeySym* e,Status* f),(a,b,c,d,e,f),return)
-/* SDL_X11_SYM(XIC,XCreateIC,(XIM, ...),return)  !!! ARGH! */
+// SDL_X11_SYM(XIC,XCreateIC,(XIM, ...),return)  !!! ARGH!
 SDL_X11_SYM(void,XDestroyIC,(XIC a),(a),)
 /* SDL_X11_SYM(char*,XGetICValues,(XIC, ...),return)  !!! ARGH! */
+/* SDL_X11_SYM(char*,XSetICValues,(XIC, ...),return)  !!! ARGH! */
+/* SDL_X11_SYM(XVaNestedList,XVaCreateNestedList,(int, ...),return)  !!! ARGH! */
 SDL_X11_SYM(void,XSetICFocus,(XIC a),(a),)
 SDL_X11_SYM(void,XUnsetICFocus,(XIC a),(a),)
 SDL_X11_SYM(XIM,XOpenIM,(Display* a,struct _XrmHashBucketRec* b,char* c,char* d),(a,b,c,d),return)
@@ -239,7 +258,7 @@ SDL_X11_SYM(void,_XRead32,(Display *dpy,register long *data,long len),(dpy,data,
 /*
  * These only show up on some variants of Unix.
  */
-#ifdef __osf__
+#ifdef SDL_PLATFORM_OSF
 SDL_X11_MODULE(OSF_ENTRY_POINTS)
 SDL_X11_SYM(void,_SmtBufferOverflow,(Display *dpy,register smtDisplayPtr p),(dpy,p),)
 SDL_X11_SYM(void,_SmtIpError,(Display *dpy,register smtDisplayPtr p,int i),(dpy,p,i),)
@@ -247,15 +266,16 @@ SDL_X11_SYM(int,ipAllocateData,(ChannelPtr a,IPCard b,IPDataPtr * c),(a,b,c),ret
 SDL_X11_SYM(int,ipUnallocateAndSendData,(ChannelPtr a,IPCard b),(a,b),return)
 #endif
 
-/* XCursor support */
+// XCursor support
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
 SDL_X11_MODULE(XCURSOR)
 SDL_X11_SYM(XcursorImage*,XcursorImageCreate,(int a,int b),(a,b),return)
 SDL_X11_SYM(void,XcursorImageDestroy,(XcursorImage *a),(a),)
 SDL_X11_SYM(Cursor,XcursorImageLoadCursor,(Display *a,const XcursorImage *b),(a,b),return)
+SDL_X11_SYM(Cursor,XcursorLibraryLoadCursor,(Display *a, const char *b),(a,b),return)
 #endif
 
-/* Xdbe support */
+// Xdbe support
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
 SDL_X11_MODULE(XDBE)
 SDL_X11_SYM(Status,XdbeQueryExtension,(Display *dpy,int *major_version_return,int *minor_version_return),(dpy,major_version_return,minor_version_return),return)
@@ -269,7 +289,7 @@ SDL_X11_SYM(void,XdbeFreeVisualInfo,(XdbeScreenVisualInfo *visual_info),(visual_
 SDL_X11_SYM(XdbeBackBufferAttributes*,XdbeGetBackBufferAttributes,(Display *dpy,XdbeBackBuffer buffer),(dpy,buffer),return)
 #endif
 
-/* XInput2 support for multiple mice, tablets, etc. */
+// XInput2 support for multiple mice, tablets, etc.
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 SDL_X11_MODULE(XINPUT2)
 SDL_X11_SYM(XIDeviceInfo*,XIQueryDevice,(Display *a,int b,int *c),(a,b,c),return)
@@ -281,9 +301,10 @@ SDL_X11_SYM(Status,XIQueryVersion,(Display *a,int *b,int *c),(a,b,c),return)
 SDL_X11_SYM(XIEventMask*,XIGetSelectedEvents,(Display *a,Window b,int *c),(a,b,c),return)
 SDL_X11_SYM(Bool,XIGetClientPointer,(Display *a,Window b,int *c),(a,b,c),return)
 SDL_X11_SYM(Bool,XIWarpPointer,(Display *a,int b,Window c,Window d,double e,double f,int g,int h,double i,double j),(a,b,c,d,e,f,g,h,i,j),return)
+SDL_X11_SYM(Status,XIGetProperty,(Display *a,int b,Atom c,long d,long e,Bool f, Atom g, Atom *h, int *i, unsigned long *j, unsigned long *k, unsigned char **l),(a,b,c,d,e,f,g,h,i,j,k,l),return)
 #endif
 
-/* XRandR support */
+// XRandR support
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 SDL_X11_MODULE(XRANDR)
 SDL_X11_SYM(Status,XRRQueryVersion,(Display *dpy,int *major_versionp,int *minor_versionp),(dpy,major_versionp,minor_versionp),return)
@@ -313,7 +334,7 @@ SDL_X11_SYM(void,XRRSelectInput,(Display *dpy, Window window, int mask),(dpy,win
 SDL_X11_SYM(Status,XRRGetCrtcTransform,(Display *dpy,RRCrtc crtc,XRRCrtcTransformAttributes **attributes),(dpy,crtc,attributes),return)
 #endif
 
-/* MIT-SCREEN-SAVER support */
+// MIT-SCREEN-SAVER support
 #ifdef SDL_VIDEO_DRIVER_X11_XSCRNSAVER
 SDL_X11_MODULE(XSS)
 SDL_X11_SYM(Bool,XScreenSaverQueryExtension,(Display *dpy,int *event_base,int *error_base),(dpy,event_base,error_base),return)
@@ -330,4 +351,4 @@ SDL_X11_SYM(void,XShapeCombineRegion,(Display *a,Window b,int c,int d,int e,Regi
 #undef SDL_X11_MODULE
 #undef SDL_X11_SYM
 
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on

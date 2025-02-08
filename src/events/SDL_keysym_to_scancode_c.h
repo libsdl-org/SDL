@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 #ifndef SDL_keysym_to_scancode_c_h_
 #define SDL_keysym_to_scancode_c_h_
 
-/* This function only correctly maps letters and numbers for keyboards in US QWERTY layout */
+// This function only correctly maps letters and numbers for keyboards in US QWERTY layout
 extern SDL_Scancode SDL_GetScancodeFromKeySym(Uint32 keysym, Uint32 keycode);
 
-#endif /* SDL_keysym_to_scancode_c_h_ */
+#endif // SDL_keysym_to_scancode_c_h_

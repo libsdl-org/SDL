@@ -45,19 +45,15 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -92,8 +88,9 @@
       <TypeLibraryName>.\Debug/testautomation.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../include;$(SolutionDir)/../include/build_config;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -118,8 +115,9 @@
       <TypeLibraryName>.\Debug/testautomation.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../include;$(SolutionDir)/../include/build_config;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -144,7 +142,8 @@
       <TypeLibraryName>.\Release/testautomation.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../include;$(SolutionDir)/../include/build_config;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -167,7 +166,8 @@
       <TypeLibraryName>.\Release/testautomation.tlb</TypeLibraryName>
     </Midl>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../include;$(SolutionDir)/../include/build_config;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -180,6 +180,12 @@
     <Link>
       <SubSystem>Windows</SubSystem>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(TreatWarningsAsError)'!=''">
+    <ClCompile>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
+      <TreatWarningAsError>$(TreatWarningsAsError)</TreatWarningAsError>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SDL\SDL.vcxproj">
@@ -198,6 +204,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\Test\testautomation.c" />
     <ClCompile Include="..\..\..\test\testautomation_audio.c" />
+    <ClCompile Include="..\..\..\test\testautomation_blit.c" />
     <ClCompile Include="..\..\..\test\testautomation_clipboard.c" />
     <ClCompile Include="..\..\..\test\testautomation_events.c" />
     <ClCompile Include="..\..\..\test\testautomation_guid.c" />
@@ -206,6 +213,7 @@
     <ClCompile Include="..\..\..\test\testautomation_intrinsics.c" />
     <ClCompile Include="..\..\..\test\testautomation_joystick.c" />
     <ClCompile Include="..\..\..\test\testautomation_keyboard.c" />
+    <ClCompile Include="..\..\..\test\testautomation_log.c" />
     <ClCompile Include="..\..\..\test\testautomation_main.c" />
     <ClCompile Include="..\..\..\test\testautomation_math.c" />
     <ClCompile Include="..\..\..\test\testautomation_mouse.c" />
@@ -214,13 +222,14 @@
     <ClCompile Include="..\..\..\test\testautomation_properties.c" />
     <ClCompile Include="..\..\..\test\testautomation_rect.c" />
     <ClCompile Include="..\..\..\test\testautomation_render.c" />
-    <ClCompile Include="..\..\..\test\testautomation_rwops.c" />
+    <ClCompile Include="..\..\..\test\testautomation_iostream.c" />
     <ClCompile Include="..\..\..\test\testautomation_sdltest.c" />
     <ClCompile Include="..\..\..\test\testautomation_stdlib.c" />
     <ClCompile Include="..\..\..\test\testautomation_surface.c" />
-    <ClCompile Include="..\..\..\test\testautomation_syswm.c" />
+    <ClCompile Include="..\..\..\test\testautomation_time.c" />
     <ClCompile Include="..\..\..\test\testautomation_timer.c" />
     <ClCompile Include="..\..\..\test\testautomation_video.c" />
+    <ClCompile Include="..\..\..\test\testautomation_subsystems.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\test\testautomation_suites.h" />

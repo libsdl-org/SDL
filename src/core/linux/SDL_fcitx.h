@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,12 +24,12 @@
 
 #include "SDL_internal.h"
 
-extern SDL_bool SDL_Fcitx_Init(void);
+extern bool SDL_Fcitx_Init(void);
 extern void SDL_Fcitx_Quit(void);
-extern void SDL_Fcitx_SetFocus(SDL_bool focused);
+extern void SDL_Fcitx_SetFocus(bool focused);
 extern void SDL_Fcitx_Reset(void);
-extern SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, Uint8 state);
-extern void SDL_Fcitx_UpdateTextRect(const SDL_Rect *rect);
+extern bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode, bool down);
+extern void SDL_Fcitx_UpdateTextInputArea(SDL_Window *window);
 extern void SDL_Fcitx_PumpEvents(void);
 
-#endif /* SDL_fcitx_h_ */
+#endif // SDL_fcitx_h_

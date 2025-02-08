@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,35 +25,49 @@
 
 #include "../SDL_sysjoystick.h"
 
+#import <CoreFoundation/CoreFoundation.h>
+#import <Foundation/Foundation.h>
+
 @class GCController;
 
 typedef struct joystick_hwdata
 {
-    SDL_bool accelerometer;
-    SDL_bool remote;
-
     GCController __unsafe_unretained *controller;
     void *rumble;
-    SDL_bool uses_pause_handler;
-    int num_pause_presses;
-    Uint32 pause_button_down_time;
+    int pause_button_index;
+    Uint64 pause_button_pressed;
 
     char *name;
     SDL_Joystick *joystick;
     SDL_JoystickID instance_id;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
 
     int naxes;
     int nbuttons;
     int nhats;
     Uint32 button_mask;
-    SDL_bool has_dualshock_touchpad;
-    SDL_bool has_xbox_paddles;
-    SDL_bool has_xbox_share_button;
+    bool is_xbox;
+    bool is_ps4;
+    bool is_ps5;
+    bool is_switch_pro;
+    bool is_switch_joycon_pair;
+    bool is_switch_joyconL;
+    bool is_switch_joyconR;
+    bool is_stadia;
+    bool is_backbone_one;
+    int is_siri_remote;
+
+    NSArray __unsafe_unretained *axes;
+    NSArray __unsafe_unretained *buttons;
+
+    bool has_dualshock_touchpad;
+    bool has_xbox_paddles;
+    bool has_xbox_share_button;
+    bool has_nintendo_buttons;
 
     struct joystick_hwdata *next;
 } joystick_hwdata;
 
 typedef joystick_hwdata SDL_JoystickDeviceItem;
 
-#endif /* SDL_JOYSTICK_IOS_H */
+#endif // SDL_JOYSTICK_IOS_H

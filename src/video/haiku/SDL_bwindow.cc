@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,22 +26,23 @@
 #include "SDL_BWin.h"
 #include <new>
 
-#include <SDL3/SDL_syswm.h>
-
-/* Define a path to window's BWIN data */
+// Define a path to window's BWIN data
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
-    return (SDL_BWin *)(window->driverdata);
+static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window)
+{
+    return (SDL_BWin *)(window->internal);
 }
 
-static SDL_INLINE SDL_BLooper *_GetBeLooper() {
+static SDL_INLINE SDL_BLooper *_GetBeLooper()
+{
     return SDL_Looper;
 }
 
-static int _InitWindow(SDL_VideoDevice *_this, SDL_Window *window) {
+static bool _InitWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+{
     uint32 flags = 0;
     window_look look = B_TITLED_WINDOW_LOOK;
 
@@ -53,11 +54,11 @@ static int _InitWindow(SDL_VideoDevice *_this, SDL_Window *window) {
     );
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        /* TODO: Add support for this flag */
+        // TODO: Add support for this flag
         printf(__FILE__": %d!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",__LINE__);
     }
     if (window->flags & SDL_WINDOW_OPENGL) {
-        /* TODO: Add support for this flag */
+        // TODO: Add support for this flag
     }
     if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
         flags |= B_NOT_RESIZABLE | B_NOT_ZOOMABLE;
@@ -67,159 +68,157 @@ static int _InitWindow(SDL_VideoDevice *_this, SDL_Window *window) {
     }
 
     SDL_BWin *bwin = new(std::nothrow) SDL_BWin(bounds, look, flags);
-    if (bwin == NULL) {
-        return -1;
+    if (!bwin) {
+        return false;
     }
 
-    window->driverdata = (SDL_WindowData *)bwin;
+    window->internal = (SDL_WindowData *)bwin;
     int32 winID = _GetBeLooper()->GetID(window);
     bwin->SetID(winID);
 
-    return 0;
+    return true;
 }
 
-int HAIKU_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window) {
-    if (_InitWindow(_this, window) < 0) {
-        return -1;
+bool HAIKU_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
+{
+    if (!_InitWindow(_this, window, create_props)) {
+        return false;
     }
 
-    /* Start window loop */
+    // Start window loop
     _ToBeWin(window)->Show();
-    return 0;
+    return true;
 }
 
-int HAIKU_CreateWindowFrom(SDL_VideoDevice *_this, SDL_Window * window, const void *data) {
-
-    SDL_BWin *otherBWin = (SDL_BWin*)data;
-    if (!otherBWin->LockLooper()) {
-        return -1;
-    }
-
-    /* Create the new window and initialize its members */
-    window->x = (int)otherBWin->Frame().left;
-    window->y = (int)otherBWin->Frame().top;
-    window->w = (int)otherBWin->Frame().Width();
-    window->h = (int)otherBWin->Frame().Height();
-
-    /* Set SDL flags */
-    if (!(otherBWin->Flags() & B_NOT_RESIZABLE)) {
-        window->flags |= SDL_WINDOW_RESIZABLE;
-    }
-
-    /* If we are out of memory, return the error code */
-    if (_InitWindow(_this, window) < 0) {
-        return -1;
-    }
-
-    /* TODO: Add any other SDL-supported window attributes here */
-    _ToBeWin(window)->SetTitle(otherBWin->Title());
-
-    /* Start window loop and unlock the other window */
-    _ToBeWin(window)->Show();
-
-    otherBWin->UnlockLooper();
-    return 0;
-}
-
-void HAIKU_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window * window) {
+void HAIKU_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window * window)
+{
     BMessage msg(BWIN_SET_TITLE);
     msg.AddString("window-title", window->title);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window * window) {
+bool HAIKU_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window * window)
+{
     BMessage msg(BWIN_MOVE_WINDOW);
-    msg.AddInt32("window-x", window->x);
-    msg.AddInt32("window-y", window->y);
+    msg.AddInt32("window-x", window->pending.x);
+    msg.AddInt32("window-y", window->pending.y);
     _ToBeWin(window)->PostMessage(&msg);
+    return true;
 }
 
-void HAIKU_SetWindowSize(SDL_VideoDevice *_this, SDL_Window * window) {
+void HAIKU_SetWindowSize(SDL_VideoDevice *_this, SDL_Window * window)
+{
     BMessage msg(BWIN_RESIZE_WINDOW);
-    msg.AddInt32("window-w", window->w - 1);
-    msg.AddInt32("window-h", window->h - 1);
+    msg.AddInt32("window-w", window->pending.w - 1);
+    msg.AddInt32("window-h", window->pending.h - 1);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window * window, SDL_bool bordered) {
+void HAIKU_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window * window, bool bordered)
+{
     BMessage msg(BWIN_SET_BORDERED);
-    msg.AddBool("window-border", bordered != SDL_FALSE);
+    msg.AddBool("window-border", bordered != false);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window * window, SDL_bool resizable) {
+void HAIKU_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window * window, bool resizable)
+{
     BMessage msg(BWIN_SET_RESIZABLE);
-    msg.AddBool("window-resizable", resizable != SDL_FALSE);
+    msg.AddBool("window-resizable", resizable != false);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_ShowWindow(SDL_VideoDevice *_this, SDL_Window * window) {
+void HAIKU_ShowWindow(SDL_VideoDevice *_this, SDL_Window * window)
+{
     BMessage msg(BWIN_SHOW_WINDOW);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_HideWindow(SDL_VideoDevice *_this, SDL_Window * window) {
+void HAIKU_HideWindow(SDL_VideoDevice *_this, SDL_Window * window)
+{
     BMessage msg(BWIN_HIDE_WINDOW);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_RaiseWindow(SDL_VideoDevice *_this, SDL_Window * window) {
-    BMessage msg(BWIN_SHOW_WINDOW);    /* Activate this window and move to front */
+void HAIKU_RaiseWindow(SDL_VideoDevice *_this, SDL_Window * window)
+{
+    BMessage msg(BWIN_SHOW_WINDOW);    // Activate this window and move to front
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window * window) {
+void HAIKU_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window * window)
+{
     BMessage msg(BWIN_MAXIMIZE_WINDOW);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window * window) {
+void HAIKU_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window * window)
+{
     BMessage msg(BWIN_MINIMIZE_WINDOW);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_RestoreWindow(SDL_VideoDevice *_this, SDL_Window * window) {
+void HAIKU_RestoreWindow(SDL_VideoDevice *_this, SDL_Window * window)
+{
     BMessage msg(BWIN_RESTORE_WINDOW);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window * window,
-        SDL_VideoDisplay * display, SDL_bool fullscreen) {
-    /* Haiku tracks all video display information */
+SDL_FullscreenResult HAIKU_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay * display, SDL_FullscreenOp fullscreen)
+{
+    // Haiku tracks all video display information
     BMessage msg(BWIN_FULLSCREEN);
-    msg.AddBool("fullscreen", fullscreen);
+    msg.AddBool("fullscreen", !!fullscreen);
     _ToBeWin(window)->PostMessage(&msg);
-
+    return SDL_FULLSCREEN_SUCCEEDED;
 }
 
 
-void HAIKU_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window * window) {
+void HAIKU_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window * window)
+{
     BMessage msg(BWIN_MINIMUM_SIZE_WINDOW);
     msg.AddInt32("window-w", window->w -1);
     msg.AddInt32("window-h", window->h -1);
     _ToBeWin(window)->PostMessage(&msg);
 }
 
-void HAIKU_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window * window, SDL_bool grabbed) {
-    /* TODO: Implement this! */
+bool HAIKU_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window * window, bool grabbed)
+{
+    // TODO: Implement this!
+    return SDL_Unsupported();
 }
 
-void HAIKU_DestroyWindow(SDL_VideoDevice *_this, SDL_Window * window) {
-    _ToBeWin(window)->LockLooper();    /* This MUST be locked */
+bool HAIKU_SetWindowParent(SDL_VideoDevice *_this, SDL_Window * window, SDL_Window *parent)
+{
+    return true;
+}
+
+bool HAIKU_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
+{
+    if (modal) {
+        _ToBeWin(window)->SetLook(B_MODAL_WINDOW_LOOK);
+        _ToBeWin(window)->SetFeel(B_MODAL_SUBSET_WINDOW_FEEL);
+        _ToBeWin(window)->AddToSubset(_ToBeWin(window->parent));
+    } else {
+        window_look look = (window->flags & SDL_WINDOW_BORDERLESS) ? B_NO_BORDER_WINDOW_LOOK : B_TITLED_WINDOW_LOOK;
+        _ToBeWin(window)->RemoveFromSubset(_ToBeWin(window->parent));
+        _ToBeWin(window)->SetLook(look);
+        _ToBeWin(window)->SetFeel(B_NORMAL_WINDOW_FEEL);
+    }
+
+    return true;
+}
+
+void HAIKU_DestroyWindow(SDL_VideoDevice *_this, SDL_Window * window)
+{
+    _ToBeWin(window)->LockLooper();    // This MUST be locked
     _GetBeLooper()->ClearID(_ToBeWin(window));
     _ToBeWin(window)->Quit();
-    window->driverdata = NULL;
+    window->internal = NULL;
 }
-
-int HAIKU_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info)
-{
-    info->subsystem = SDL_SYSWM_HAIKU;
-    return 0;
-}
-
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif // SDL_VIDEO_DRIVER_HAIKU

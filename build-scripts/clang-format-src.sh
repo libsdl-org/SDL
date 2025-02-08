@@ -18,15 +18,22 @@ git checkout \
     stdlib/SDL_malloc.c \
     stdlib/SDL_qsort.c \
     stdlib/SDL_strtokr.c \
-    video/arm \
     video/khronos \
+    video/x11/edid.h \
     video/x11/edid-parse.c \
+    video/x11/xsettings-client.* \
     video/yuv2rgb
 clang-format -i hidapi/SDL_hidapi.c
 
 # Revert generated code
-git checkout dynapi/SDL_dynapi_overrides.h
-git checkout dynapi/SDL_dynapi_procs.h
-git checkout render/metal/SDL_shaders_metal_*.h
+git checkout \
+    dynapi/SDL_dynapi_overrides.h \
+    dynapi/SDL_dynapi_procs.h \
+    render/*/*Shader*.h \
+    render/metal/SDL_shaders_metal_*.h \
+    render/vitagxm/SDL_render_vita_gxm_shaders.h \
+    video/directx/SDL_d3d12_xbox_cmacros.h \
+    video/directx/d3d12.h \
+    video/directx/d3d12sdklayers.h \
 
 echo "clang-format complete!"

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,11 +28,11 @@
 #include <X11/Xatom.h>
 #include <X11/Xresource.h>
 
-#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
 #include <X11/XKBlib.h>
 #endif
 
-/* Apparently some X11 systems can't include this multiple times... */
+// Apparently some X11 systems can't include this multiple times...
 #ifndef SDL_INCLUDED_XLIBINT_H
 #define SDL_INCLUDED_XLIBINT_H 1
 #include <X11/Xlibint.h>
@@ -59,6 +59,9 @@
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 #include <X11/extensions/Xfixes.h>
 #endif
+#ifdef SDL_VIDEO_DRIVER_X11_XSYNC
+#include <X11/extensions/sync.h>
+#endif
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 #include <X11/extensions/Xrandr.h>
 #endif
@@ -73,26 +76,30 @@
 extern "C" {
 #endif
 
-/* evil function signatures... */
+// evil function signatures...
 typedef Bool (*SDL_X11_XESetWireToEventRetType)(Display *, XEvent *, xEvent *);
 typedef int (*SDL_X11_XSynchronizeRetType)(Display *);
 typedef Status (*SDL_X11_XESetEventToWireRetType)(Display *, XEvent *, xEvent *);
 
-int SDL_X11_LoadSymbols(void);
-void SDL_X11_UnloadSymbols(void);
+extern bool SDL_X11_LoadSymbols(void);
+extern void SDL_X11_UnloadSymbols(void);
 
-/* Declare all the function pointers and wrappers... */
+// Declare all the function pointers and wrappers...
 #define SDL_X11_SYM(rc, fn, params, args, ret) \
     typedef rc(*SDL_DYNX11FN_##fn) params;     \
     extern SDL_DYNX11FN_##fn X11_##fn;
 #include "SDL_x11sym.h"
 
-/* Annoying varargs entry point... */
+// Annoying varargs entry point...
 #ifdef X_HAVE_UTF8_STRING
 typedef XIC (*SDL_DYNX11FN_XCreateIC)(XIM, ...);
 typedef char *(*SDL_DYNX11FN_XGetICValues)(XIC, ...);
+typedef char *(*SDL_DYNX11FN_XSetICValues)(XIC, ...);
+typedef XVaNestedList (*SDL_DYNX11FN_XVaCreateNestedList)(int, ...);
 extern SDL_DYNX11FN_XCreateIC X11_XCreateIC;
 extern SDL_DYNX11FN_XGetICValues X11_XGetICValues;
+extern SDL_DYNX11FN_XSetICValues X11_XSetICValues;
+extern SDL_DYNX11FN_XVaCreateNestedList X11_XVaCreateNestedList;
 #endif
 
 /* These SDL_X11_HAVE_* flags are here whether you have dynamic X11 or not. */
@@ -103,4 +110,4 @@ extern SDL_DYNX11FN_XGetICValues X11_XGetICValues;
 }
 #endif
 
-#endif /* !defined SDL_x11dyn_h_ */
+#endif // !defined SDL_x11dyn_h_

@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Replace com.test.game with the identifier of your game below, e.g.
-     com.gamemaker.game
--->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     android:versionCode="1"
     android:versionName="1.0"
@@ -32,10 +29,18 @@
         android:required="false" />
 
     <!-- Audio recording support -->
-    <!-- if you want to capture audio, uncomment this. -->
+    <!-- if you want to record audio, uncomment this. -->
+    <!-- <uses-permission android:name="android.permission.RECORD_AUDIO" /> -->
     <!-- <uses-feature
         android:name="android.hardware.microphone"
         android:required="false" /> -->
+
+    <!-- Camera support -->
+    <!-- if you want to record video, uncomment this. -->
+    <!--
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+    -->
 
     <!-- Allow downloading to the external storage on Android 5.1 and older -->
     <!-- <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="22" /> -->
@@ -48,12 +53,15 @@
     <!-- Allow access to the vibrator -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- if you want to capture audio, uncomment this. -->
-    <!-- <uses-permission android:name="android.permission.RECORD_AUDIO" /> -->
+    <!-- Allow access to Internet -->
+    <!-- if you want to connect to the network or internet, uncomment this. -->
+    <!--
+    <uses-permission android:name="android.permission.INTERNET" />
+    -->
 
     <!-- Create a Java class extending SDLActivity and place it in a
          directory under app/src/main/java matching the package, e.g. app/src/main/java/com/gamemaker/game/MyGame.java
- 
+
          then replace "SDLActivity" with the name of your class (e.g. "MyGame")
          in the XML below.
 
@@ -62,18 +70,18 @@
     <application android:label="@string/app_name"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="true"
-        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+        android:theme="@style/AppTheme"
         android:hardwareAccelerated="true" >
 
         <!-- Example of setting SDL hints from AndroidManifest.xml:
-        <meta-data android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK" android:value="0"/>
+        <meta-data android:name="SDL_ENV.SDL_ANDROID_TRAP_BACK_BUTTON" android:value="0"/>
          -->
-     
+
         <activity android:name="SDLActivity"
             android:label="@string/app_name"
             android:alwaysRetainTaskState="true"
             android:launchMode="singleInstance"
-            android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
+            android:configChanges="layoutDirection|locale|grammaticalGender|fontScale|fontWeightAdjustment|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:preferMinimalPostProcessing="true"
             android:exported="true"
             >

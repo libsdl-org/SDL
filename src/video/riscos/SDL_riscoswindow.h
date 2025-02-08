@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,8 +32,7 @@ struct SDL_WindowData
     sprite_header *fb_sprite;
 };
 
-extern int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern int RISCOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
 
-#endif /* SDL_riscoswindow_h_ */
+#endif // SDL_riscoswindow_h_

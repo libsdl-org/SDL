@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,4 +28,4 @@ extern SDL_GLContext VITA_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *w
 extern int VITA_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern SDL_FunctionPointer VITA_GL_GetProcAddress(SDL_VideoDevice *_this, const char *proc);
 
-#endif /* SDL_vitagl_pvr_c_h_ */
+#endif // SDL_vitagl_pvr_c_h_

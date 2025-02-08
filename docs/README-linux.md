@@ -21,7 +21,7 @@ Ubuntu 18.04, all available features enabled:
     libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
     libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev fcitx-libs-dev
 
-Ubuntu 22.04+ can also add `libpipewire-0.3-dev libwayland-dev libdecor-0-dev` to that command line.
+Ubuntu 22.04+ can also add `libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev` to that command line.
 
 Fedora 35, all available features enabled:
 
@@ -34,10 +34,16 @@ Fedora 35, all available features enabled:
     libdrm-devel mesa-libgbm-devel libusb-devel libdecor-devel \
     pipewire-jack-audio-connection-kit-devel \
 
+Fedora 39+ can also add `liburing-devel` to that command line.
+
 NOTES:
 - The sndio audio target is unavailable on Fedora (but probably not what you
   should want to use anyhow).
 
+openSUSE Tumbleweed:
+
+    sudo zypper in libunwind-devel libusb-1_0-devel Mesa-libGL-devel libxkbcommon-devel libdrm-devel \
+    libgbm-devel pipewire-devel libpulse-devel sndio-devel Mesa-libEGL-devel
 
 Joystick does not work
 --------------------------------------------------------------------------------

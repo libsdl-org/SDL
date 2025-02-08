@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,7 +26,7 @@
 
 #include <emscripten/html5.h>
 
-/* A linked list of available joysticks */
+// A linked list of available joysticks
 typedef struct SDL_joylist_item
 {
     int index;
@@ -46,4 +46,4 @@ typedef struct SDL_joylist_item
 
 typedef SDL_joylist_item joystick_hwdata;
 
-#endif /* SDL_JOYSTICK_EMSCRIPTEN */
+#endif // SDL_JOYSTICK_EMSCRIPTEN

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -10,13 +10,13 @@
   freely.
 */
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_test_font.h>
 #include <SDL3/SDL_main.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
 
 static SDLTest_CommonState *state;
 static int done;
@@ -34,17 +34,26 @@ static const char *cursorNames[] = {
     "sizeALL",
     "NO",
     "hand",
+    "window top left",
+    "window top",
+    "window top right",
+    "window right",
+    "window bottom right",
+    "window bottom",
+    "window bottom left",
+    "window left"
 };
+SDL_COMPILE_TIME_ASSERT(cursorNames, SDL_arraysize(cursorNames) == SDL_SYSTEM_CURSOR_COUNT);
+
 static int system_cursor = -1;
 static SDL_Cursor *cursor = NULL;
-static SDL_bool relative_mode = SDL_FALSE;
-static const SDL_DisplayMode *highlighted_mode = NULL;
+static SDL_DisplayMode highlighted_mode;
 
 /* Draws the modes menu, and stores the mode index under the mouse in highlighted_mode */
 static void
 draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
 {
-    const SDL_DisplayMode **modes;
+    SDL_DisplayMode **modes;
     char text[1024];
     const int lineHeight = 10;
     int i, j;
@@ -53,7 +62,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
     float x, y;
     float table_top;
     SDL_FPoint mouse_pos = { -1.0f, -1.0f };
-    SDL_DisplayID *display_ids;
+    SDL_DisplayID *displays;
 
     /* Get mouse position */
     if (SDL_GetMouseFocus() == window) {
@@ -86,21 +95,20 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
 
     /* Clear the cached mode under the mouse */
     if (window == SDL_GetMouseFocus()) {
-        highlighted_mode = NULL;
+        SDL_zero(highlighted_mode);
     }
 
-    display_ids = SDL_GetDisplays(NULL);
-
-    if (display_ids) {
-        for (i = 0; display_ids[i]; ++i) {
-            const SDL_DisplayID display_id = display_ids[i];
-            modes = SDL_GetFullscreenDisplayModes(display_id, NULL);
+    displays = SDL_GetDisplays(NULL);
+    if (displays) {
+        for (i = 0; displays[i]; ++i) {
+            SDL_DisplayID display = displays[i];
+            modes = SDL_GetFullscreenDisplayModes(display, NULL);
             for (j = 0; modes[j]; ++j) {
                 SDL_FRect cell_rect;
                 const SDL_DisplayMode *mode = modes[j];
 
                 (void)SDL_snprintf(text, sizeof(text), "%s mode %d: %dx%d@%gx %gHz",
-                                   SDL_GetDisplayName(display_id),
+                                   SDL_GetDisplayName(display),
                                    j, mode->w, mode->h, mode->pixel_density, mode->refresh_rate);
 
                 /* Update column width */
@@ -118,7 +126,7 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
 
                     /* Update cached mode under the mouse */
                     if (window == SDL_GetMouseFocus()) {
-                        highlighted_mode = mode;
+                        SDL_copyp(&highlighted_mode, mode);
                     }
                 } else {
                     SDL_SetRenderDrawColor(renderer, 170, 170, 170, 255);
@@ -134,9 +142,9 @@ draw_modes_menu(SDL_Window *window, SDL_Renderer *renderer, SDL_FRect viewport)
                     column_chars = 0;
                 }
             }
-            SDL_free((void *)modes);
+            SDL_free(modes);
         }
-        SDL_free(display_ids);
+        SDL_free(displays);
     }
 }
 
@@ -144,57 +152,57 @@ static void loop(void)
 {
     int i;
     SDL_Event event;
-    /* Check for events */
+
+#ifdef TEST_WAITEVENTTIMEOUT
+    /* Wait up to 20 ms for input, as a test */
+    Uint64 then = SDL_GetTicks();
+    if (SDL_WaitEventTimeout(NULL, 20)) {
+        SDL_Log("Got an event!");
+    }
+    Uint64 now = SDL_GetTicks();
+    SDL_Log("Waited %d ms for events", (int)(now - then));
+#endif
+
     while (SDL_PollEvent(&event)) {
         SDLTest_CommonEvent(state, &event, &done);
+        SDL_ConvertEventToRenderCoordinates(SDL_GetRenderer(SDL_GetWindowFromEvent(&event)), &event);
 
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-            SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+            SDL_Window *window = SDL_GetWindowFromEvent(&event);
             if (window) {
-                SDL_Log("Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32 "\n",
+                SDL_Log("Window %" SDL_PRIu32 " resized to %" SDL_PRIs32 "x%" SDL_PRIs32,
                         event.window.windowID,
                         event.window.data1,
                         event.window.data2);
             }
         }
         if (event.type == SDL_EVENT_WINDOW_MOVED) {
-            SDL_Window *window = SDL_GetWindowFromID(event.window.windowID);
+            SDL_Window *window = SDL_GetWindowFromEvent(&event);
             if (window) {
-                SDL_Log("Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (display %s)\n",
+                SDL_Log("Window %" SDL_PRIu32 " moved to %" SDL_PRIs32 ",%" SDL_PRIs32 " (display %s)",
                         event.window.windowID,
                         event.window.data1,
                         event.window.data2,
                         SDL_GetDisplayName(SDL_GetDisplayForWindow(window)));
             }
         }
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_LOST) {
-            relative_mode = SDL_GetRelativeMouseMode();
-            if (relative_mode) {
-                SDL_SetRelativeMouseMode(SDL_FALSE);
-            }
-        }
-        if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED) {
-            if (relative_mode) {
-                SDL_SetRelativeMouseMode(SDL_TRUE);
-            }
-        }
         if (event.type == SDL_EVENT_KEY_UP) {
-            SDL_bool updateCursor = SDL_FALSE;
+            bool updateCursor = false;
 
-            if (event.key.keysym.sym == SDLK_a) {
+            if (event.key.key == SDLK_A) {
                 SDL_assert(!"Keyboard generated assert");
-            } else if (event.key.keysym.sym == SDLK_LEFT) {
+            } else if (event.key.key == SDLK_LEFT) {
                 --system_cursor;
                 if (system_cursor < 0) {
-                    system_cursor = SDL_NUM_SYSTEM_CURSORS - 1;
+                    system_cursor = SDL_SYSTEM_CURSOR_COUNT - 1;
                 }
-                updateCursor = SDL_TRUE;
-            } else if (event.key.keysym.sym == SDLK_RIGHT) {
+                updateCursor = true;
+            } else if (event.key.key == SDLK_RIGHT) {
                 ++system_cursor;
-                if (system_cursor >= SDL_NUM_SYSTEM_CURSORS) {
+                if (system_cursor >= SDL_SYSTEM_CURSOR_COUNT) {
                     system_cursor = 0;
                 }
-                updateCursor = SDL_TRUE;
+                updateCursor = true;
             }
             if (updateCursor) {
                 SDL_Log("Changing cursor to \"%s\"", cursorNames[system_cursor]);
@@ -205,9 +213,9 @@ static void loop(void)
         }
         if (event.type == SDL_EVENT_MOUSE_BUTTON_UP) {
             SDL_Window *window = SDL_GetMouseFocus();
-            if (highlighted_mode != NULL && window != NULL) {
-                SDL_memcpy(&state->fullscreen_mode, highlighted_mode, sizeof(state->fullscreen_mode));
-                SDL_SetWindowFullscreenMode(window, highlighted_mode);
+            if (highlighted_mode.w && window) {
+                SDL_copyp(&state->fullscreen_mode, &highlighted_mode);
+                SDL_SetWindowFullscreenMode(window, &highlighted_mode);
             }
         }
     }
@@ -215,12 +223,14 @@ static void loop(void)
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Window *window = state->windows[i];
         SDL_Renderer *renderer = state->renderers[i];
-        if (window != NULL && renderer != NULL) {
+        if (window && renderer) {
             float y = 0.0f;
             SDL_Rect viewport;
             SDL_FRect menurect;
 
-            SDL_GetRenderViewport(renderer, &viewport);
+            SDL_SetRenderViewport(renderer, NULL);
+            SDL_GetRenderSafeArea(renderer, &viewport);
+            SDL_SetRenderViewport(renderer, &viewport);
 
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
             SDL_RenderClear(renderer);
@@ -238,7 +248,7 @@ static void loop(void)
             SDL_RenderPresent(renderer);
         }
     }
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -251,22 +261,15 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    SDL_assert(SDL_arraysize(cursorNames) == SDL_NUM_SYSTEM_CURSORS);
-
+    /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv) || !SDLTest_CommonInit(state)) {
         SDLTest_CommonQuit(state);
         return 1;
     }
-
-    SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, SDL_TRUE);
-    SDL_SetEventEnabled(SDL_EVENT_DROP_TEXT, SDL_TRUE);
 
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
@@ -274,9 +277,11 @@ int main(int argc, char *argv[])
         SDL_RenderClear(renderer);
     }
 
+SDL_StopTextInput(state->windows[0]);
+SDL_StopTextInput(state->windows[0]);
     /* Main render loop */
     done = 0;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,6 @@ extern HCURSOR SDL_cursor;
 extern void WIN_InitMouse(SDL_VideoDevice *_this);
 extern void WIN_QuitMouse(SDL_VideoDevice *_this);
 extern void WIN_SetCursorPos(int x, int y);
-extern void WIN_UpdateMouseSystemScale();
+extern void WIN_UpdateMouseSystemScale(void);
 
-#endif /* SDL_windowsmouse_h_ */
+#endif // SDL_windowsmouse_h_

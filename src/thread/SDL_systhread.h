@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,14 +20,14 @@
 */
 #include "SDL_internal.h"
 
-/* These are functions that need to be implemented by a port of SDL */
+// These are functions that need to be implemented by a port of SDL
 
 #ifndef SDL_systhread_h_
 #define SDL_systhread_h_
 
 #include "SDL_thread_c.h"
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,42 +36,42 @@ extern "C" {
    saves a system-dependent thread id in thread->id, and returns 0
    on success.
 */
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-extern int SDL_SYS_CreateThread(SDL_Thread *thread,
-                                pfnSDL_CurrentBeginThread pfnBeginThread,
-                                pfnSDL_CurrentEndThread pfnEndThread);
-#else
-extern int SDL_SYS_CreateThread(SDL_Thread *thread);
-#endif
+extern bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                                 SDL_FunctionPointer pfnBeginThread,
+                                 SDL_FunctionPointer pfnEndThread);
 
-/* This function does any necessary setup in the child thread */
+// This function does any necessary setup in the child thread
 extern void SDL_SYS_SetupThread(const char *name);
 
-/* This function sets the current thread priority */
-extern int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority);
+// This function sets the current thread priority
+extern bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority);
 
 /* This function waits for the thread to finish and frees any data
    allocated by SDL_SYS_CreateThread()
  */
 extern void SDL_SYS_WaitThread(SDL_Thread *thread);
 
-/* Mark thread as cleaned up as soon as it exits, without joining. */
+// Mark thread as cleaned up as soon as it exits, without joining.
 extern void SDL_SYS_DetachThread(SDL_Thread *thread);
 
-/* Get the thread local storage for this thread */
+// Initialize the global TLS data
+extern void SDL_SYS_InitTLSData(void);
+
+// Get the thread local storage for this thread
 extern SDL_TLSData *SDL_SYS_GetTLSData(void);
 
-/* Set the thread local storage for this thread */
-extern int SDL_SYS_SetTLSData(SDL_TLSData *data);
+// Set the thread local storage for this thread
+extern bool SDL_SYS_SetTLSData(SDL_TLSData *data);
 
-/* This is for internal SDL use, so we don't need #ifdefs everywhere. */
-extern SDL_Thread *
-SDL_CreateThreadInternal(int(SDLCALL *fn)(void *), const char *name,
-                         const size_t stacksize, void *data);
+// Quit the global TLS data
+extern void SDL_SYS_QuitTLSData(void);
 
-/* Ends C function definitions when using C++ */
+// A helper function for setting up a thread with a stack size.
+extern SDL_Thread *SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, size_t stacksize, void *data);
+
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_systhread_h_ */
+#endif // SDL_systhread_h_

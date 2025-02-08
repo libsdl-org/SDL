@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #
 #  Simple DirectMedia Layer
-#  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+#  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 #
 #  This software is provided 'as-is', without any express or implied
 #  warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@ import sys
 
 SDL_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-words = [
+STDLIB_SYMBOLS = [
     'abs',
     'acos',
     'acosf',
@@ -42,6 +42,7 @@ words = [
     'atanf',
     'atof',
     'atoi',
+    'bsearch',
     'calloc',
     'ceil',
     'ceilf',
@@ -90,6 +91,8 @@ words = [
     'pow',
     'powf',
     'qsort',
+    'qsort_r',
+    'qsort_s',
     'realloc',
     'round',
     'roundf',
@@ -143,15 +146,13 @@ words = [
     'wcslen',
     'wcsncasecmp',
     'wcsncmp',
-    'wcsstr' ]
+    'wcsstr',
+]
+RE_STDLIB_SYMBOL = re.compile(rf"\b(?P<symbol>{'|'.join(STDLIB_SYMBOLS)})\b\(")
 
 
-reg_comment_remove_content = re.compile('\/\*.*\*/')
-reg_comment_remove_content2 = re.compile('".*"')
-reg_comment_remove_content3 = re.compile(':strlen')
-reg_comment_remove_content4 = re.compile('->free')
-
-def find_symbols_in_file(file, regex):
+def find_symbols_in_file(file: pathlib.Path) -> int:
+    match_count = 0
 
     allowed_extensions = [ ".c", ".cpp", ".m", ".h",  ".hpp", ".cc" ]
 
@@ -162,99 +163,99 @@ def find_symbols_in_file(file, regex):
         "src/video/khronos",
         "include/SDL3",
         "build-scripts/gen_audio_resampler_filter.c",
-        "build-scripts/gen_audio_channel_conversion.c" ]
+        "build-scripts/gen_audio_channel_conversion.c",
+        "test/win32/sdlprocdump.c",
+    ]
 
     filename = pathlib.Path(file)
 
     for ep in excluded_paths:
         if ep in filename.as_posix():
             # skip
-            return
+            return 0
 
     if filename.suffix not in allowed_extensions:
         # skip
-        return
+        return 0
 
     # print("Parse %s" % file)
 
     try:
         with file.open("r", encoding="UTF-8", newline="") as rfp:
             parsing_comment = False
-            for l in rfp:
-                l = l.strip()
+            for line_i, original_line in enumerate(rfp, start=1):
+                line = original_line.strip()
+
+                line_comment = ""
 
                 # Get the comment block /* ... */ across several lines
-                match_start = "/*" in l
-                match_end = "*/" in l
-                if match_start and match_end:
-                    continue
-                if match_start:
-                    parsing_comment = True
-                    continue
-                if match_end:
-                    parsing_comment = False
-                    continue
+                while True:
+                    if parsing_comment:
+                        pos_end_comment = line.find("*/")
+                        if pos_end_comment >= 0:
+                            line = line[pos_end_comment+2:]
+                            parsing_comment = False
+                        else:
+                            break
+                    else:
+                        pos_start_comment = line.find("/*")
+                        if pos_start_comment >= 0:
+                            pos_end_comment = line.find("*/", pos_start_comment+2)
+                            if pos_end_comment >= 0:
+                                line_comment += line[pos_start_comment:pos_end_comment+2]
+                                line = line[:pos_start_comment] + line[pos_end_comment+2:]
+                            else:
+                                line_comment += line[pos_start_comment:]
+                                line = line[:pos_start_comment]
+                                parsing_comment = True
+                                break
+                        else:
+                            break
                 if parsing_comment:
                     continue
+                pos_line_comment = line.find("//")
+                if pos_line_comment >= 0:
+                    line_comment += line[pos_line_comment:]
+                    line = line[:pos_line_comment]
 
-                if regex.match(l):
-
-                    # free() allowed here
-                    if "This should NOT be SDL_" in l:
-                        continue
-
-                    # double check
-                    # Remove one line comment /* ... */
-                    # eg: extern DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path, int bExclusive /* = false */);
-                    l = reg_comment_remove_content.sub('', l)
-
-                    # Remove strings " ... "
-                    l = reg_comment_remove_content2.sub('', l)
-
-                    # :strlen
-                    l = reg_comment_remove_content3.sub('', l)
-
-                    # ->free
-                    l = reg_comment_remove_content4.sub('', l)
-
-                    if regex.match(l):
-                        print("File %s" % filename)
-                        print("        %s" % l)
-                        print("")
+                if m := RE_STDLIB_SYMBOL.match(line):
+                    override_string = f"This should NOT be SDL_{m['symbol']}()"
+                    if override_string not in line_comment:
+                        print(f"{filename}:{line_i}")
+                        print(f"    {line}")
+                        print(f"")
+                        match_count += 1
 
     except UnicodeDecodeError:
-        print("%s is not text, skipping" % file)
-    except Exception as err:
-        print("%s" % err)
+        print(f"{file} is not text, skipping", file=sys.stderr)
 
-def find_symbols_in_dir(path, regex):
+    return match_count
 
+def find_symbols_in_dir(path: pathlib.Path) -> int:
+    match_count = 0
     for entry in path.glob("*"):
         if entry.is_dir():
-            find_symbols_in_dir(entry, regex)
+            match_count += find_symbols_in_dir(entry)
         else:
-            find_symbols_in_file(entry, regex)
+            match_count += find_symbols_in_file(entry)
+    return match_count
 
 def main():
-    str = ".*\\b("
-    for w in words:
-        str += w + "|"
-    str = str[:-1]
-    str += ")\("
-    regex = re.compile(str)
-    find_symbols_in_dir(SDL_ROOT, regex)
-
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
+    parser = argparse.ArgumentParser(fromfile_prefix_chars="@")
+    parser.add_argument("path", default=SDL_ROOT, nargs="?", type=pathlib.Path, help="Path to look for stdlib symbols")
     args = parser.parse_args()
 
-    try:
-        main()
-    except Exception as e:
-        print(e)
-        exit(-1)
+    print(f"Looking for stdlib usage in {args.path}...")
 
-    exit(0)
+    match_count = find_symbols_in_dir(args.path)
 
+    if match_count:
+        print("If the stdlib usage is intentional, add a '// This should NOT be SDL_<symbol>()' line comment.")
+        print("")
+        print("NOT OK")
+    else:
+        print("OK")
+    return 1 if match_count else 0
 
+if __name__ == "__main__":
+    raise SystemExit(main())

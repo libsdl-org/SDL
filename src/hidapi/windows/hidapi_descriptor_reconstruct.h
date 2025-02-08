@@ -16,6 +16,8 @@
  code repository located at:
         https://github.com/libusb/hidapi .
 ********************************************************/
+#include "SDL_internal.h"
+
 #ifndef HIDAPI_DESCRIPTOR_RECONSTRUCT_H__
 #define HIDAPI_DESCRIPTOR_RECONSTRUCT_H__
 
@@ -37,6 +39,7 @@
 #include <windows.h>
 
 #include "hidapi_hidsdi.h"
+/*#include <assert.h>*/
 
 #define NUM_OF_HIDP_REPORT_TYPES 3
 
@@ -124,6 +127,14 @@ typedef struct hid_pp_link_collection_node_ {
 	ULONG  Reserved : 23;
 	// Same as the public API structure HIDP_LINK_COLLECTION_NODE, but without PVOID UserContext at the end
 } hid_pp_link_collection_node, *phid_pp_link_collection_node;
+
+// Note: This is risk-reduction-measure for this specific struct, as it has ULONG bit-field.
+//       Although very unlikely, it might still be possible that the compiler creates a memory layout that is
+//       not binary compatile.
+//       Other structs are not checked at the time of writing.
+//static_assert(sizeof(struct hid_pp_link_collection_node_) == 16,
+//    "Size of struct hid_pp_link_collection_node_ not as expected. This might break binary compatibility");
+SDL_COMPILE_TIME_ASSERT(hid_pp_link_collection_node_, sizeof(struct hid_pp_link_collection_node_) == 16);
 
 typedef struct hidp_unknown_token_ {
 	UCHAR Token; /* Specifies the one-byte prefix of a global item. */
@@ -213,15 +224,19 @@ typedef struct hidp_preparsed_data_ {
 	USHORT FirstByteOfLinkCollectionArray;
 	USHORT NumberLinkCollectionNodes;
 
-#if defined(__MINGW32__) || defined(__CYGWIN__)
+#ifndef _MSC_VER
 	// MINGW fails with: Flexible array member in union not supported
 	// Solution: https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
 	union {
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
+#endif
 		hid_pp_cap caps[0];
 		hid_pp_link_collection_node LinkCollectionArray[0];
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic pop
+#endif
 	};
 #else
 	union {

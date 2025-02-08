@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,7 +23,7 @@
 #ifndef SDL_thread_c_h_
 #define SDL_thread_c_h_
 
-/* Need the definitions of SYS_ThreadHandle */
+// Need the definitions of SYS_ThreadHandle
 #ifdef SDL_THREADS_DISABLED
 #include "generic/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_PTHREAD)
@@ -38,47 +38,35 @@
 #include "vita/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_N3DS)
 #include "n3ds/SDL_systhread_c.h"
-#elif defined(SDL_THREAD_STDCPP)
-#include "stdcpp/SDL_systhread_c.h"
-#elif defined(SDL_THREAD_NGAGE)
-#include "ngage/SDL_systhread_c.h"
 #else
 #error Need thread implementation for this platform
 #include "generic/SDL_systhread_c.h"
 #endif
 #include "../SDL_error_c.h"
 
-typedef enum SDL_ThreadState
-{
-    SDL_THREAD_STATE_ALIVE,
-    SDL_THREAD_STATE_DETACHED,
-    SDL_THREAD_STATE_ZOMBIE,
-    SDL_THREAD_STATE_CLEANED,
-} SDL_ThreadState;
-
-/* This is the system-independent thread info structure */
+// This is the system-independent thread info structure
 struct SDL_Thread
 {
-    SDL_threadID threadid;
+    SDL_ThreadID threadid;
     SYS_ThreadHandle handle;
     int status;
-    SDL_AtomicInt state; /* SDL_THREAD_STATE_* */
+    SDL_AtomicInt state; /* SDL_ThreadState */
     SDL_error errbuf;
     char *name;
-    size_t stacksize; /* 0 for default, >0 for user-specified stack size. */
+    size_t stacksize; // 0 for default, >0 for user-specified stack size.
     int(SDLCALL *userfunc)(void *);
     void *userdata;
     void *data;
-    void *endfunc; /* only used on some platforms. */
+    SDL_FunctionPointer endfunc; // only used on some platforms.
 };
 
-/* This is the function called to run a thread */
+// This is the function called to run a thread
 extern void SDL_RunThread(SDL_Thread *thread);
 
-/* This is the system-independent thread local storage structure */
+// This is the system-independent thread local storage structure
 typedef struct
 {
-    unsigned int limit;
+    int limit;
     struct
     {
         void *data;
@@ -86,19 +74,19 @@ typedef struct
     } array[1];
 } SDL_TLSData;
 
-/* This is how many TLS entries we allocate at once */
+// This is how many TLS entries we allocate at once
 #define TLS_ALLOC_CHUNKSIZE 4
 
-/* Get cross-platform, slow, thread local storage for this thread.
+extern void SDL_InitTLSData(void);
+extern void SDL_QuitTLSData(void);
+
+/* Generic TLS support.
    This is only intended as a fallback if getting real thread-local
    storage fails or isn't supported on this platform.
  */
+extern void SDL_Generic_InitTLSData(void);
 extern SDL_TLSData *SDL_Generic_GetTLSData(void);
+extern bool SDL_Generic_SetTLSData(SDL_TLSData *data);
+extern void SDL_Generic_QuitTLSData(void);
 
-/* Set cross-platform, slow, thread local storage for this thread.
-   This is only intended as a fallback if getting real thread-local
-   storage fails or isn't supported on this platform.
- */
-extern int SDL_Generic_SetTLSData(SDL_TLSData *data);
-
-#endif /* SDL_thread_c_h_ */
+#endif // SDL_thread_c_h_

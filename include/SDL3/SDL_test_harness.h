@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,9 +20,7 @@
 */
 
 /**
- *  \file SDL_test_harness.h
- *
- *  \brief Test suite related functions of SDL test framework.
+ *  Test suite related functions of SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
@@ -36,12 +34,14 @@
 #ifndef SDL_test_h_arness_h
 #define SDL_test_h_arness_h
 
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_test_common.h> /* SDLTest_CommonState */
+
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /* ! Definitions for test case structures */
 #define TEST_ENABLED  1
@@ -61,15 +61,15 @@ extern "C" {
 #define TEST_RESULT_SETUP_FAILURE       4
 
 /* !< Function pointer to a test case setup function (run before every test) */
-typedef void (*SDLTest_TestCaseSetUpFp)(void *arg);
+typedef void (SDLCALL *SDLTest_TestCaseSetUpFp)(void **arg);
 
 /* !< Function pointer to a test case function */
-typedef int (*SDLTest_TestCaseFp)(void *arg);
+typedef int (SDLCALL *SDLTest_TestCaseFp)(void *arg);
 
 /* !< Function pointer to a test case teardown function (run after every test) */
-typedef void  (*SDLTest_TestCaseTearDownFp)(void *arg);
+typedef void  (SDLCALL *SDLTest_TestCaseTearDownFp)(void *arg);
 
-/**
+/*
  * Holds information about a single test case.
  */
 typedef struct SDLTest_TestCaseReference {
@@ -83,7 +83,7 @@ typedef struct SDLTest_TestCaseReference {
     int enabled;
 } SDLTest_TestCaseReference;
 
-/**
+/*
  * Holds information about a test suite (multiple test cases).
  */
 typedef struct SDLTest_TestSuiteReference {
@@ -98,30 +98,49 @@ typedef struct SDLTest_TestSuiteReference {
 } SDLTest_TestSuiteReference;
 
 
-/**
- * \brief Generates a random run seed string for the harness. The generated seed will contain alphanumeric characters (0-9A-Z).
+/*
+ * Generates a random run seed string for the harness. The generated seed
+ * will contain alphanumeric characters (0-9A-Z).
  *
- * Note: The returned string needs to be deallocated by the caller.
+ * \param buffer Buffer in which to generate the random seed. Must have a capacity of at least length + 1 characters.
+ * \param length Number of alphanumeric characters to write to buffer, must be >0
  *
- * \param length The length of the seed string to generate
- *
- * \returns the generated seed string
+ * \returns A null-terminated seed string and equal to the in put buffer on success, NULL on failure
  */
-char *SDLTest_GenerateRunSeed(const int length);
+char * SDLCALL SDLTest_GenerateRunSeed(char *buffer, int length);
 
-/**
- * \brief Execute a test suite using the given run seed and execution key.
+/*
+ * Holds information about the execution of test suites.
+ * */
+typedef struct SDLTest_TestSuiteRunner SDLTest_TestSuiteRunner;
+
+/*
+ * Create a new test suite runner, that will execute the given test suites.
+ * It will register the harness cli arguments to the common SDL state.
  *
- * \param testSuites Suites containing the test case.
- * \param userRunSeed Custom run seed provided by user, or NULL to autogenerate one.
- * \param userExecKey Custom execution key provided by user, or 0 to autogenerate one.
- * \param filter Filter specification. NULL disables. Case sensitive.
- * \param testIterations Number of iterations to run each test case.
+ * \param state Common SDL state on which to register CLI arguments.
+ * \param testSuites NULL-terminated test suites containing test cases.
  *
  * \returns the test run result: 0 when all tests passed, 1 if any tests failed.
  */
-int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *userRunSeed, Uint64 userExecKey, const char *filter, int testIterations);
+SDLTest_TestSuiteRunner * SDLCALL SDLTest_CreateTestSuiteRunner(SDLTest_CommonState *state, SDLTest_TestSuiteReference *testSuites[]);
 
+/*
+ * Destroy a test suite runner.
+ * It will unregister the harness cli arguments to the common SDL state.
+ *
+ * \param runner The runner that should be destroyed.
+ */
+void SDLCALL SDLTest_DestroyTestSuiteRunner(SDLTest_TestSuiteRunner *runner);
+
+/*
+ * Execute a test suite, using the configured run seed, execution key, filter, etc.
+ *
+ * \param runner The runner that should be executed.
+ *
+ * \returns the test run result: 0 when all tests passed, 1 if any tests failed.
+ */
+int SDLCALL SDLTest_ExecuteTestSuiteRunner(SDLTest_TestSuiteRunner *runner);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

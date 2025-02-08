@@ -54,15 +54,15 @@ static int pthread_barrier_init(pthread_barrier_t *barrier, const pthread_barrie
 {
 	(void) attr;
 
-	if(count == 0) {
+	if (count == 0) {
 		errno = EINVAL;
 		return -1;
 	}
 
-	if(pthread_mutex_init(&barrier->mutex, 0) < 0) {
+	if (pthread_mutex_init(&barrier->mutex, 0) < 0) {
 		return -1;
 	}
-	if(pthread_cond_init(&barrier->cond, 0) < 0) {
+	if (pthread_cond_init(&barrier->cond, 0) < 0) {
 		pthread_mutex_destroy(&barrier->mutex);
 		return -1;
 	}
@@ -83,16 +83,18 @@ static int pthread_barrier_wait(pthread_barrier_t *barrier)
 {
 	pthread_mutex_lock(&barrier->mutex);
 	++(barrier->count);
-	if(barrier->count >= barrier->trip_count)
-	{
+	if (barrier->count >= barrier->trip_count) {
 		barrier->count = 0;
-		pthread_cond_broadcast(&barrier->cond);
 		pthread_mutex_unlock(&barrier->mutex);
+		pthread_cond_broadcast(&barrier->cond);
 		return 1;
 	}
-	else
-	{
-		pthread_cond_wait(&barrier->cond, &(barrier->mutex));
+	else {
+		do {
+			pthread_cond_wait(&barrier->cond, &(barrier->mutex));
+		}
+		while (barrier->count != 0);
+
 		pthread_mutex_unlock(&barrier->mutex);
 		return 0;
 	}
@@ -592,6 +594,14 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 	dev_vid = get_vendor_id(dev);
 	dev_pid = get_product_id(dev);
 
+#ifdef HIDAPI_IGNORE_DEVICE
+	/* See if there are any devices we should skip in enumeration */
+	if (HIDAPI_IGNORE_DEVICE(get_bus_type(dev), dev_vid, dev_pid, usage_page, usage)) {
+		free(cur_dev);
+		return NULL;
+	}
+#endif
+
 	cur_dev->usage_page = usage_page;
 	cur_dev->usage = usage;
 
@@ -689,9 +699,6 @@ static struct hid_device_info *create_device_info(IOHIDDeviceRef device)
 	struct hid_device_info *root = create_device_info_with_usage(device, primary_usage_page, primary_usage);
 	struct hid_device_info *cur = root;
 
-	if (!root)
-		return NULL;
-
 	CFArrayRef usage_pairs = get_usage_pairs(device);
 
 	if (usage_pairs != NULL) {
@@ -717,9 +724,13 @@ static struct hid_device_info *create_device_info(IOHIDDeviceRef device)
 				continue; /* Already added. */
 
 			next = create_device_info_with_usage(device, usage_page, usage);
-			cur->next = next;
-			if (next != NULL) {
-				cur = next;
+			if (cur) {
+				if (next != NULL) {
+					cur->next = next;
+					cur = next;
+				}
+			} else {
+				root = cur = next;
 			}
 		}
 	}
@@ -785,18 +796,6 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		if (!dev) {
 			continue;
 		}
-
-#ifdef HIDAPI_IGNORE_DEVICE
-		/* See if there are any devices we should skip in enumeration */
-		hid_bus_type bus_type = get_bus_type(dev);
-		unsigned short dev_vid = get_vendor_id(dev);
-		unsigned short dev_pid = get_product_id(dev);
-		unsigned short usage_page = get_int_property(dev, CFSTR(kIOHIDPrimaryUsagePageKey));
-		unsigned short usage = get_int_property(dev, CFSTR(kIOHIDPrimaryUsageKey));
-		if (HIDAPI_IGNORE_DEVICE(bus_type, dev_vid, dev_pid, usage_page, usage)) {
-			continue;
-		}
-#endif
 
 		struct hid_device_info *tmp = create_device_info(dev);
 		if (tmp == NULL) {
@@ -1230,7 +1229,9 @@ static int return_data(hid_device *dev, unsigned char *data, size_t length)
 	   return buffer (data), and delete the liked list item. */
 	struct input_report *rpt = dev->input_reports;
 	size_t len = (length < rpt->len)? length: rpt->len;
-	memcpy(data, rpt->data, len);
+	if (data != NULL) {
+		memcpy(data, rpt->data, len);
+	}
 	dev->input_reports = rpt->next;
 	free(rpt->data);
 	free(rpt);
@@ -1571,7 +1572,7 @@ int HID_API_EXPORT_CALL hid_get_report_descriptor(hid_device *dev, unsigned char
 		}
 
 		memcpy(buf, descriptor_buf, copy_len);
-		return copy_len;
+		return (int)copy_len;
 	}
 	else {
 		register_device_error(dev, "Failed to get kIOHIDReportDescriptorKey property");

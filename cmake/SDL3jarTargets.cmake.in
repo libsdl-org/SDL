@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+set_and_check(SDL3_JAR "@PACKAGE_SDL_INSTALL_JAVADIR@/SDL3/SDL3-@SDL3_VERSION@.jar")
+
+if(NOT TARGET SDL3::Jar)
+  add_library(SDL3::Jar INTERFACE IMPORTED)
+  set_property(TARGET SDL3::Jar PROPERTY JAR_FILE "${SDL3_JAR}")
+endif()
+
+unset(SDL3_JAR)

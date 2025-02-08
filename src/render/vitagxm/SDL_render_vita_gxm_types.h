@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -63,7 +63,7 @@ typedef struct color_vertex
 {
     float x;
     float y;
-    SDL_Color color;
+    SDL_FColor color;
 } color_vertex;
 
 typedef struct texture_vertex
@@ -72,7 +72,7 @@ typedef struct texture_vertex
     float y;
     float u;
     float v;
-    SDL_Color color;
+    SDL_FColor color;
 } texture_vertex;
 
 typedef struct gxm_texture
@@ -83,7 +83,7 @@ typedef struct gxm_texture
     SceGxmColorSurface gxm_colorsurface;
     SceGxmDepthStencilSurface gxm_depthstencil;
     SceUID depth_UID;
-    SDL_bool cdram;
+    bool cdram;
 } gxm_texture;
 
 typedef struct fragment_programs
@@ -104,28 +104,27 @@ typedef struct blend_fragment_programs
 typedef struct
 {
     SDL_Rect viewport;
-    SDL_bool viewport_dirty;
+    bool viewport_dirty;
     SDL_Texture *texture;
     SDL_Texture *target;
-    SDL_Color color;
+    SDL_FColor color;
     SceGxmFragmentProgram *fragment_program;
     SceGxmVertexProgram *vertex_program;
     int last_command;
 
-    SDL_bool cliprect_enabled_dirty;
-    SDL_bool cliprect_enabled;
-    SDL_bool cliprect_dirty;
+    bool cliprect_enabled_dirty;
+    bool cliprect_enabled;
+    bool cliprect_dirty;
     SDL_Rect cliprect;
-    SDL_bool texturing;
-    SDL_Color clear_color;
+    bool texturing;
     int drawablew;
     int drawableh;
 } gxm_drawstate_cache;
 
 typedef struct
 {
-    SDL_bool initialized;
-    SDL_bool drawing;
+    bool initialized;
+    bool drawing;
 
     unsigned int psm;
     unsigned int bpp;
@@ -204,8 +203,8 @@ typedef struct
     unsigned int w;
     unsigned int h;
     float wscale;
-    SDL_bool yuv;
-    SDL_bool nv12;
+    bool yuv;
+    bool nv12;
 } VITA_GXM_TextureData;
 
-#endif /* SDL_RENDER_VITA_GXM_TYPES_H */
+#endif // SDL_RENDER_VITA_GXM_TYPES_H

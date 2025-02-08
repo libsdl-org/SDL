@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,8 +24,8 @@
 #ifndef SDL_BCLIPBOARD_H
 #define SDL_BCLIPBOARD_H
 
-extern int HAIKU_SetClipboardText(SDL_VideoDevice *_this, const char *text);
+extern bool HAIKU_SetClipboardText(SDL_VideoDevice *_this, const char *text);
 extern char *HAIKU_GetClipboardText(SDL_VideoDevice *_this);
-extern SDL_bool HAIKU_HasClipboardText(SDL_VideoDevice *_this);
+extern bool HAIKU_HasClipboardText(SDL_VideoDevice *_this);
 
 #endif

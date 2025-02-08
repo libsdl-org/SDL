@@ -1,0 +1,12 @@
+//
+//  config.xcconfig
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+// Include any optional config for this build
+#include? "build.xcconfig"
+
+CONFIG_PREPROCESSOR_DEFINITIONS = $(inherited) $(SDL_PREPROCESSOR_DEFINITIONS)
+CONFIG_FRAMEWORK_LDFLAGS = $(inherited)

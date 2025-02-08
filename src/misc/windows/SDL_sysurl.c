@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,35 +25,38 @@
 
 #include <shellapi.h>
 
-#if defined(__XBOXONE__) || defined(__XBOXSERIES__)
-int SDL_SYS_OpenURL(const char *url)
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+bool SDL_SYS_OpenURL(const char *url)
 {
-    /* Not supported */
+    // Not supported
     return SDL_Unsupported();
 }
 #else
-/* https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx */
-int SDL_SYS_OpenURL(const char *url)
+// https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx
+bool SDL_SYS_OpenURL(const char *url)
 {
     WCHAR *wurl;
     HINSTANCE rc;
 
-    /* MSDN says for safety's sake, make sure COM is initialized. */
+    // MSDN says for safety's sake, make sure COM is initialized.
     const HRESULT hr = WIN_CoInitialize();
     if (FAILED(hr)) {
         return WIN_SetErrorFromHRESULT("CoInitialize failed", hr);
     }
 
     wurl = WIN_UTF8ToStringW(url);
-    if (wurl == NULL) {
+    if (!wurl) {
         WIN_CoUninitialize();
-        return SDL_OutOfMemory();
+        return false;
     }
 
-    /* Success returns value greater than 32. Less is an error. */
+    // Success returns value greater than 32. Less is an error.
     rc = ShellExecuteW(NULL, L"open", wurl, NULL, NULL, SW_SHOWNORMAL);
     SDL_free(wurl);
     WIN_CoUninitialize();
-    return (rc > ((HINSTANCE)32)) ? 0 : WIN_SetError("Couldn't open given URL.");
+    if (rc <= ((HINSTANCE)32)) {
+        return WIN_SetError("Couldn't open given URL.");
+    }
+    return true;
 }
 #endif

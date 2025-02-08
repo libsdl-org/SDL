@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ int main(int argc, char **argv)
     int bitsize = 0;
     int blockalign = 0;
     int avgbytes = 0;
-    SDL_RWops *io = NULL;
+    SDL_IOStream *io = NULL;
     int dst_len;
     int ret = 0;
     int argpos = 0;
@@ -41,12 +41,9 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     SDL_zero(cvtspec);
 
@@ -95,29 +92,29 @@ int main(int argc, char **argv)
         goto end;
     }
 
-    if (SDL_Init(SDL_INIT_AUDIO) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
+    if (!SDL_Init(SDL_INIT_AUDIO)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s", SDL_GetError());
         ret = 2;
         goto end;
     }
 
-    if (SDL_LoadWAV(file_in, &spec, &data, &len) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to load %s: %s\n", file_in, SDL_GetError());
+    if (!SDL_LoadWAV(file_in, &spec, &data, &len)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to load %s: %s", file_in, SDL_GetError());
         ret = 3;
         goto end;
     }
 
     cvtspec.format = spec.format;
-    if (SDL_ConvertAudioSamples(&spec, data, len, &cvtspec, &dst_buf, &dst_len) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to convert samples: %s\n", SDL_GetError());
+    if (!SDL_ConvertAudioSamples(&spec, data, len, &cvtspec, &dst_buf, &dst_len)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "failed to convert samples: %s", SDL_GetError());
         ret = 4;
         goto end;
     }
 
     /* write out a WAV header... */
-    io = SDL_RWFromFile(file_out, "wb");
-    if (io == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fopen('%s') failed: %s\n", file_out, SDL_GetError());
+    io = SDL_IOFromFile(file_out, "wb");
+    if (!io) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "opening '%s' failed: %s", file_out, SDL_GetError());
         ret = 5;
         goto end;
     }
@@ -132,17 +129,17 @@ int main(int argc, char **argv)
     SDL_WriteU32LE(io, 0x20746D66);                             /* fmt */
     SDL_WriteU32LE(io, 16);                                     /* chunk size */
     SDL_WriteU16LE(io, SDL_AUDIO_ISFLOAT(spec.format) ? 3 : 1); /* uncompressed */
-    SDL_WriteU16LE(io, cvtspec.channels);                       /* channels */
+    SDL_WriteU16LE(io, (Uint16)cvtspec.channels);               /* channels */
     SDL_WriteU32LE(io, cvtspec.freq);                           /* sample rate */
     SDL_WriteU32LE(io, avgbytes);                               /* average bytes per second */
-    SDL_WriteU16LE(io, blockalign);                             /* block align */
-    SDL_WriteU16LE(io, bitsize);                                /* significant bits per sample */
+    SDL_WriteU16LE(io, (Uint16)blockalign);                     /* block align */
+    SDL_WriteU16LE(io, (Uint16)bitsize);                        /* significant bits per sample */
     SDL_WriteU32LE(io, 0x61746164);                             /* data */
     SDL_WriteU32LE(io, dst_len);                                /* size */
-    SDL_RWwrite(io, dst_buf, dst_len);
+    SDL_WriteIO(io, dst_buf, dst_len);
 
-    if (SDL_RWclose(io) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "fclose('%s') failed: %s\n", file_out, SDL_GetError());
+    if (!SDL_CloseIO(io)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "closing '%s' failed: %s", file_out, SDL_GetError());
         ret = 6;
         goto end;
     }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7091C001-3D71-47D4-B27B-E99271E5B987}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ItemGroup>
+    <None Include="$(SolutionDir)\..\examples\renderer\08-rotating-textures\README.txt" />
+    <ClCompile Include="$(SolutionDir)\..\examples\renderer\08-rotating-textures\rotating-textures.c" />
+    <Content Include="$(SolutionDir)\..\test\sample.bmp" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,20 +26,20 @@
 #import "SDL_uikitview.h"
 #import "SDL_uikitviewcontroller.h"
 
-extern int UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void UIKit_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
-extern void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool bordered);
-extern void UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen);
-extern void UIKit_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
+extern void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bordered);
+extern SDL_FullscreenResult UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 extern void UIKit_UpdatePointerLock(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
-extern int UIKit_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info);
 
 extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
+
+#define SDL_METALVIEW_TAG 255
 
 @class UIWindow;
 
@@ -48,9 +48,9 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 @property(nonatomic, strong) UIWindow *uiwindow;
 @property(nonatomic, strong) SDL_uikitviewcontroller *viewcontroller;
 
-/* Array of SDL_uikitviews owned by this window. */
+// Array of SDL_uikitviews owned by this window.
 @property(nonatomic, copy) NSMutableArray *views;
 
 @end
 
-#endif /* SDL_uikitwindow_h_ */
+#endif // SDL_uikitwindow_h_

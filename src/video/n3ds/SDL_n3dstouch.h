@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,6 @@
 
 void N3DS_InitTouch(void);
 void N3DS_QuitTouch(void);
-void N3DS_PollTouch(void);
+void N3DS_PollTouch(SDL_VideoDevice *_this);
 
-#endif /* SDL_n3dstouch_h_ */
+#endif // SDL_n3dstouch_h_

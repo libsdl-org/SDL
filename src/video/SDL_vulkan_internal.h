@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,10 +24,6 @@
 #include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_VULKAN
-#if defined(SDL_LOADSO_DISABLED) || defined(SDL_LOADSO_DUMMY)
-#error You should not be here.
-#endif
-
 #ifdef SDL_VIDEO_DRIVER_ANDROID
 #define VK_USE_PLATFORM_ANDROID_KHR
 #endif
@@ -61,30 +57,35 @@ extern const char *SDL_Vulkan_GetResultString(VkResult result);
 
 extern VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties,
-    Uint32 *extensionCount); /* free returned list with SDL_free */
-
-/* Implements functionality of SDL_Vulkan_GetInstanceExtensions for a list of
- * names passed in nameCount and names. */
-extern SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
-                                                        const char **userNames,
-                                                        unsigned nameCount,
-                                                        const char *const *names);
+    Uint32 *extensionCount); // free returned list with SDL_free
 
 /* Create a surface directly from a display connected to a physical device
  * using the DisplayKHR extension.
  * This needs to be passed an instance that was created with the VK_KHR_DISPLAY_EXTENSION_NAME
  * extension. */
-extern SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr,
-                                                 VkInstance instance,
-                                                 VkSurfaceKHR *surface);
+extern bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr,
+                                             VkInstance instance,
+                                             const struct VkAllocationCallbacks *allocator,
+                                             VkSurfaceKHR *surface);
+
+/* Platform independent base function for destroying the Vulkan surface. Unlike surface
+ * creation, surface destruction doesn't require platform specific extensions like
+ * VK_KHR_wayland_surface, VK_KHR_android_surface or VK_EXT_metal_surface. The only
+ * necessary extension is cross platform VK_KHR_surface, which is a dependency to all
+ * WSI platform extensions, so we can handle surface destruction in an platform-independent
+ * manner. */
+extern void SDL_Vulkan_DestroySurface_Internal(void *vkGetInstanceProcAddr,
+                                               VkInstance instance,
+                                               VkSurfaceKHR surface,
+                                               const struct VkAllocationCallbacks *allocator);
 #else
 
-/* No SDL Vulkan support, just include the header for typedefs */
+// No SDL Vulkan support, just include the header for typedefs
 #include <SDL3/SDL_vulkan.h>
 
 typedef void (*PFN_vkGetInstanceProcAddr)(void);
 typedef int (*PFN_vkEnumerateInstanceExtensionProperties)(void);
 
-#endif /* SDL_VIDEO_VULKAN */
+#endif // SDL_VIDEO_VULKAN
 
-#endif /* SDL_vulkan_internal_h_ */
+#endif // SDL_vulkan_internal_h_

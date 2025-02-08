@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,13 +25,13 @@
 
 #include <emscripten/html5.h>
 
-SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *percent)
+bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *percent)
 {
     EmscriptenBatteryEvent batteryState;
     int haveBattery = 0;
 
     if (emscripten_get_battery_status(&batteryState) == EMSCRIPTEN_RESULT_NOT_SUPPORTED) {
-        return SDL_FALSE;
+        return false;
     }
 
     haveBattery = batteryState.level != 1.0 || !batteryState.charging || batteryState.chargingTime != 0.0;
@@ -40,19 +40,20 @@ SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *state, int *seconds, int *p
         *state = SDL_POWERSTATE_NO_BATTERY;
         *seconds = -1;
         *percent = -1;
-        return SDL_TRUE;
+        return true;
     }
 
-    if (batteryState.charging)
+    if (batteryState.charging) {
         *state = batteryState.chargingTime == 0.0 ? SDL_POWERSTATE_CHARGED : SDL_POWERSTATE_CHARGING;
-    else
+    } else {
         *state = SDL_POWERSTATE_ON_BATTERY;
+    }
 
-    *seconds = batteryState.dischargingTime;
-    *percent = batteryState.level * 100;
+    *seconds = (int)batteryState.dischargingTime;
+    *percent = (int)batteryState.level * 100;
 
-    return SDL_TRUE;
+    return true;
 }
 
-#endif /* SDL_POWER_EMSCRIPTEN */
-#endif /* SDL_POWER_DISABLED */
+#endif // SDL_POWER_EMSCRIPTEN
+#endif // SDL_POWER_DISABLED

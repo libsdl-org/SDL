@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 
 #ifdef SDL_SENSOR_ANDROID
 
-/* This is the system specific header for the SDL sensor API */
+// This is the system specific header for the SDL sensor API
 #include <android/sensor.h>
 
 #include "SDL_androidsensor.h"
@@ -62,15 +62,15 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
     ASensorEvent event;
     struct android_poll_source *source;
 
-    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
+    SDL_SetCurrentThreadPriority(SDL_THREAD_PRIORITY_HIGH);
 
     SDL_sensor_looper = ALooper_prepare(ALOOPER_PREPARE_ALLOW_NON_CALLBACKS);
-    SDL_PostSemaphore(ctx->sem);
+    SDL_SignalSemaphore(ctx->sem);
 
-    while (SDL_AtomicGet(&ctx->running)) {
+    while (SDL_GetAtomicInt(&ctx->running)) {
         Uint64 timestamp = SDL_GetTicksNS();
 
-        if (ALooper_pollAll(-1, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
+        if (ALooper_pollOnce(-1, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
             SDL_LockSensors();
             for (i = 0; i < SDL_sensors_count; ++i) {
                 if (!SDL_sensors[i].event_queue) {
@@ -93,7 +93,7 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
 
 static void SDL_ANDROID_StopSensorThread(SDL_AndroidSensorThreadContext *ctx)
 {
-    SDL_AtomicSet(&ctx->running, SDL_FALSE);
+    SDL_SetAtomicInt(&ctx->running, false);
 
     if (ctx->thread) {
         int result;
@@ -111,56 +111,56 @@ static void SDL_ANDROID_StopSensorThread(SDL_AndroidSensorThreadContext *ctx)
     }
 }
 
-static int SDL_ANDROID_StartSensorThread(SDL_AndroidSensorThreadContext *ctx)
+static bool SDL_ANDROID_StartSensorThread(SDL_AndroidSensorThreadContext *ctx)
 {
     ctx->sem = SDL_CreateSemaphore(0);
     if (!ctx->sem) {
         SDL_ANDROID_StopSensorThread(ctx);
-        return -1;
+        return false;
     }
 
-    SDL_AtomicSet(&ctx->running, SDL_TRUE);
-    ctx->thread = SDL_CreateThreadInternal(SDL_ANDROID_SensorThread, "Sensors", 0, ctx);
+    SDL_SetAtomicInt(&ctx->running, true);
+    ctx->thread = SDL_CreateThread(SDL_ANDROID_SensorThread, "Sensors", ctx);
     if (!ctx->thread) {
         SDL_ANDROID_StopSensorThread(ctx);
-        return -1;
+        return false;
     }
 
-    /* Wait for the sensor thread to start */
+    // Wait for the sensor thread to start
     SDL_WaitSemaphore(ctx->sem);
 
-    return 0;
+    return true;
 }
 
-static int SDL_ANDROID_SensorInit(void)
+static bool SDL_ANDROID_SensorInit(void)
 {
     int i, sensors_count;
     ASensorList sensors;
 
     SDL_sensor_manager = ASensorManager_getInstance();
-    if (SDL_sensor_manager == NULL) {
+    if (!SDL_sensor_manager) {
         return SDL_SetError("Couldn't create sensor manager");
     }
 
-    /* FIXME: Is the sensor list dynamic? */
+    // FIXME: Is the sensor list dynamic?
     sensors_count = ASensorManager_getSensorList(SDL_sensor_manager, &sensors);
     if (sensors_count > 0) {
         SDL_sensors = (SDL_AndroidSensor *)SDL_calloc(sensors_count, sizeof(*SDL_sensors));
-        if (SDL_sensors == NULL) {
-            return SDL_OutOfMemory();
+        if (!SDL_sensors) {
+            return false;
         }
 
         for (i = 0; i < sensors_count; ++i) {
             SDL_sensors[i].asensor = sensors[i];
-            SDL_sensors[i].instance_id = SDL_GetNextSensorInstanceID();
+            SDL_sensors[i].instance_id = SDL_GetNextObjectID();
         }
         SDL_sensors_count = sensors_count;
     }
 
-    if (SDL_ANDROID_StartSensorThread(&SDL_sensor_thread_context) < 0) {
-        return -1;
+    if (!SDL_ANDROID_StartSensorThread(&SDL_sensor_thread_context)) {
+        return false;
     }
-    return 0;
+    return true;
 }
 
 static int SDL_ANDROID_SensorGetCount(void)
@@ -199,7 +199,7 @@ static SDL_SensorID SDL_ANDROID_SensorGetDeviceInstanceID(int device_index)
     return SDL_sensors[device_index].instance_id;
 }
 
-static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
+static bool SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
 {
     int delay_us, min_delay_us;
 
@@ -219,8 +219,8 @@ static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
             return SDL_SetError("Couldn't enable sensor");
         }
 
-        /* Use 60 Hz update rate if possible */
-        /* FIXME: Maybe add a hint for this? */
+        // Use 60 Hz update rate if possible
+        // FIXME: Maybe add a hint for this?
         delay_us = 1000000 / 60;
         min_delay_us = ASensor_getMinDelay(SDL_sensors[device_index].asensor);
         if (delay_us < min_delay_us) {
@@ -230,7 +230,7 @@ static int SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
     }
     SDL_UnlockSensors();
 
-    return 0;
+    return true;
 }
 
 static void SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)
@@ -258,7 +258,7 @@ static void SDL_ANDROID_SensorClose(SDL_Sensor *sensor)
 
 static void SDL_ANDROID_SensorQuit(void)
 {
-    /* All sensors are closed, but we need to unblock the sensor thread */
+    // All sensors are closed, but we need to unblock the sensor thread
     SDL_AssertSensorsLocked();
     SDL_UnlockSensors();
     SDL_ANDROID_StopSensorThread(&SDL_sensor_thread_context);
@@ -285,4 +285,4 @@ SDL_SensorDriver SDL_ANDROID_SensorDriver = {
     SDL_ANDROID_SensorQuit,
 };
 
-#endif /* SDL_SENSOR_ANDROID */
+#endif // SDL_SENSOR_ANDROID

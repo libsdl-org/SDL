@@ -99,7 +99,7 @@
  *-------------------------------------------------------------------------
  * This precedes the return type of the function in the function prototype.
  */
-#ifdef KHRONOS_STATIC
+#if defined(KHRONOS_STATIC)
     /* If the preprocessor constant KHRONOS_STATIC is defined, make the
      * header compatible with static linking. */
 #   define KHRONOS_APICALL
@@ -260,7 +260,7 @@ typedef signed   long  int     khronos_intptr_t;
 typedef unsigned long  int     khronos_uintptr_t;
 #endif
 
-#ifdef _WIN64
+#if defined(_WIN64)
 typedef signed   long long int khronos_ssize_t;
 typedef unsigned long long int khronos_usize_t;
 #else

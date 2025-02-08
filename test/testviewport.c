@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -11,23 +11,23 @@
 */
 /* Simple program:  Check viewports */
 
-#include <stdlib.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 #include "testutils.h"
 
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
+
 static SDLTest_CommonState *state;
 
 static SDL_Rect viewport;
 static int done, j;
-static SDL_bool use_target = SDL_FALSE;
-#ifdef __EMSCRIPTEN__
+static bool use_target = false;
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 static Uint32 wait_start;
 #endif
 static SDL_Texture *sprite;
@@ -48,7 +48,6 @@ static void DrawOnViewport(SDL_Renderer *renderer)
 {
     SDL_FRect rect;
     SDL_Rect cliprect;
-    int w, h;
 
     /* Set the viewport */
     SDL_SetRenderViewport(renderer, &viewport);
@@ -91,15 +90,11 @@ static void DrawOnViewport(SDL_Renderer *renderer)
     SDL_RenderFillRect(renderer, &rect);
 
     /* Add a clip rect and fill it with the sprite */
-    SDL_QueryTexture(sprite, NULL, NULL, &w, &h);
-    cliprect.x = (viewport.w - w) / 2;
-    cliprect.y = (viewport.h - h) / 2;
-    cliprect.w = w;
-    cliprect.h = h;
-    rect.x = (float)cliprect.x;
-    rect.y = (float)cliprect.y;
-    rect.w = (float)cliprect.w;
-    rect.h = (float)cliprect.h;
+    cliprect.x = (viewport.w - sprite->w) / 2;
+    cliprect.y = (viewport.h - sprite->h) / 2;
+    cliprect.w = sprite->w;
+    cliprect.h = sprite->h;
+    SDL_RectToFRect(&cliprect, &rect);
     SDL_SetRenderClipRect(renderer, &cliprect);
     SDL_RenderTexture(renderer, sprite, NULL, &rect);
     SDL_SetRenderClipRect(renderer, NULL);
@@ -109,7 +104,7 @@ static void loop(void)
 {
     SDL_Event event;
     int i;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     /* Avoid using delays */
     if (SDL_GetTicks() - wait_start < 1000) {
         return;
@@ -148,7 +143,7 @@ static void loop(void)
         }
     }
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {
         emscripten_cancel_main_loop();
     }
@@ -163,7 +158,7 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
@@ -174,7 +169,7 @@ int main(int argc, char *argv[])
         if (consumed == 0) {
             consumed = -1;
             if (SDL_strcasecmp(argv[i], "--target") == 0) {
-                use_target = SDL_TRUE;
+                use_target = true;
                 consumed = 1;
             }
         }
@@ -189,9 +184,9 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
-    sprite = LoadTexture(state->renderers[0], "icon.bmp", SDL_TRUE, &sprite_w, &sprite_h);
+    sprite = LoadTexture(state->renderers[0], "icon.bmp", true, &sprite_w, &sprite_h);
 
-    if (sprite == NULL) {
+    if (!sprite) {
         quit(2);
     }
 
@@ -217,7 +212,7 @@ int main(int argc, char *argv[])
     done = 0;
     j = 0;
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     wait_start = SDL_GetTicks();
     emscripten_set_main_loop(loop, 0, 1);
 #else
@@ -232,7 +227,7 @@ int main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double)frames * 1000) / (now - then);
-        SDL_Log("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second", fps);
     }
     quit(0);
     return 0;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,57 +23,52 @@
 #ifdef SDL_VIDEO_DRIVER_OFFSCREEN
 
 #include "../SDL_sysvideo.h"
+#include "../../SDL_properties_c.h"
 #include "SDL_offscreenframebuffer_c.h"
 
-#define OFFSCREEN_SURFACE "_SDL_DummySurface"
+#define OFFSCREEN_SURFACE "SDL.internal.window.surface"
 
-static void CleanupSurface(void *userdata, void *value)
-{
-    SDL_Surface *surface = (SDL_Surface *)value;
 
-    SDL_DestroySurface(surface);
-}
-
-int SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, Uint32 *format, void **pixels, int *pitch)
+bool SDL_OFFSCREEN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
     SDL_Surface *surface;
-    const Uint32 surface_format = SDL_PIXELFORMAT_XRGB8888;
+    const SDL_PixelFormat surface_format = SDL_PIXELFORMAT_XRGB8888;
     int w, h;
 
-    /* Create a new framebuffer */
+    // Create a new framebuffer
     SDL_GetWindowSizeInPixels(window, &w, &h);
     surface = SDL_CreateSurface(w, h, surface_format);
-    if (surface == NULL) {
-        return -1;
+    if (!surface) {
+        return false;
     }
 
-    /* Save the info and return! */
-    SDL_SetProperty(SDL_GetWindowProperties(window), OFFSCREEN_SURFACE, surface, CleanupSurface, NULL);
+    // Save the info and return!
+    SDL_SetSurfaceProperty(SDL_GetWindowProperties(window), OFFSCREEN_SURFACE, surface);
     *format = surface_format;
     *pixels = surface->pixels;
     *pitch = surface->pitch;
 
-    return 0;
+    return true;
 }
 
-int SDL_OFFSCREEN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
+bool SDL_OFFSCREEN_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
     static int frame_number;
     SDL_Surface *surface;
 
-    surface = (SDL_Surface *)SDL_GetProperty(SDL_GetWindowProperties(window), OFFSCREEN_SURFACE);
-    if (surface == NULL) {
+    surface = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), OFFSCREEN_SURFACE, NULL);
+    if (!surface) {
         return SDL_SetError("Couldn't find offscreen surface for window");
     }
 
-    /* Send the data to the display */
-    if (SDL_getenv("SDL_VIDEO_OFFSCREEN_SAVE_FRAMES")) {
+    // Send the data to the display
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_OFFSCREEN_SAVE_FRAMES, false)) {
         char file[128];
         (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIu32 "-%8.8d.bmp",
                            SDL_GetWindowID(window), ++frame_number);
         SDL_SaveBMP(surface, file);
     }
-    return 0;
+    return true;
 }
 
 void SDL_OFFSCREEN_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
@@ -81,4 +76,4 @@ void SDL_OFFSCREEN_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *
     SDL_ClearProperty(SDL_GetWindowProperties(window), OFFSCREEN_SURFACE);
 }
 
-#endif /* SDL_VIDEO_DRIVER_OFFSCREEN */
+#endif // SDL_VIDEO_DRIVER_OFFSCREEN

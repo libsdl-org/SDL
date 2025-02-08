@@ -1,12 +1,14 @@
+#if defined(__MINGW32__)
+	// Needed for %zu
+	#define __USE_MINGW_ANSI_STDIO 1
+#endif
+
 #include "../hidapi_descriptor_reconstruct.h"
 
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 
-#if defined(__MINGW32__)
-#pragma GCC diagnostic ignored "-Wformat"
-#endif
 static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 {
 	FILE* file;
@@ -107,25 +109,25 @@ static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 		if (sscanf(line, "pp_data->UsagePage                            = 0x%04hX\n", &pp_data->UsagePage)) continue;
 		if (sscanf(line, "pp_data->Reserved                             = 0x%04hX%04hX\n", &pp_data->Reserved[0], &pp_data->Reserved[1])) continue;
 
-		if (sscanf(line, "pp_data->caps_info[%d]", &rt_idx) == 1) {
+		if (sscanf(line, "pp_data->caps_info[%u]", &rt_idx) == 1) {
 			const size_t caps_info_count = sizeof(pp_data->caps_info) / sizeof(pp_data->caps_info[0]);
 			if (rt_idx >= caps_info_count) {
 				fprintf(stderr, "Broken pp_data file, pp_data->caps_info[<idx>] can have at most %zu elements, accessing %ud, (%s)", caps_info_count, rt_idx, line);
 				continue;
 			}
-			if (sscanf(line, "pp_data->caps_info[%d]->FirstCap           = %hu\n", &rt_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->caps_info[%u]->FirstCap           = %hu\n", &rt_idx, &temp_ushort) == 2) {
 				pp_data->caps_info[rt_idx].FirstCap = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->caps_info[%d]->LastCap            = %hu\n", &rt_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->caps_info[%u]->LastCap            = %hu\n", &rt_idx, &temp_ushort) == 2) {
 				pp_data->caps_info[rt_idx].LastCap = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->caps_info[%d]->NumberOfCaps       = %hu\n", &rt_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->caps_info[%u]->NumberOfCaps       = %hu\n", &rt_idx, &temp_ushort) == 2) {
 				pp_data->caps_info[rt_idx].NumberOfCaps = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->caps_info[%d]->ReportByteLength   = %hu\n", &rt_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->caps_info[%u]->ReportByteLength   = %hu\n", &rt_idx, &temp_ushort) == 2) {
 				pp_data->caps_info[rt_idx].ReportByteLength = temp_ushort;
 				continue;
 			}
@@ -140,7 +142,7 @@ static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 			continue;
 		}
 
-		if (sscanf(line, "pp_data->cap[%d]", &caps_idx) == 1) {
+		if (sscanf(line, "pp_data->cap[%u]", &caps_idx) == 1) {
 			if (pp_data->FirstByteOfLinkCollectionArray == 0) {
 				fprintf(stderr, "Error reading pp_data file (%s): FirstByteOfLinkCollectionArray is 0 or not reported yet\n", line);
 				continue;
@@ -149,113 +151,113 @@ static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 				fprintf(stderr, "Error reading pp_data file (%s): the caps index (%u) is out of pp_data bytes boundary (%hu vs %hu)\n", line, caps_idx, (unsigned short) ((caps_idx + 1) * sizeof(hid_pp_cap)), pp_data->FirstByteOfLinkCollectionArray);
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->UsagePage                    = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->UsagePage                    = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
 				pp_data->caps[caps_idx].UsagePage = temp_usage;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->ReportID                     = 0x%02hhX\n", &caps_idx, &temp_uchar[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->ReportID                     = 0x%02hhX\n", &caps_idx, &temp_uchar[0]) == 2) {
 				pp_data->caps[caps_idx].ReportID = temp_uchar[0];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->BitPosition                  = %hhu\n", &caps_idx, &temp_uchar[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->BitPosition                  = %hhu\n", &caps_idx, &temp_uchar[0]) == 2) {
 				pp_data->caps[caps_idx].BitPosition = temp_uchar[0];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->BitSize                      = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->BitSize                      = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].ReportSize = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->ReportCount                  = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->ReportCount                  = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].ReportCount = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->BytePosition                 = 0x%04hX\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->BytePosition                 = 0x%04hX\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].BytePosition = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->BitCount                     = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->BitCount                     = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].BitCount = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->BitField                     = 0x%02lX\n", &caps_idx, &temp_ulong) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->BitField                     = 0x%02lX\n", &caps_idx, &temp_ulong) == 2) {
 				pp_data->caps[caps_idx].BitField = temp_ulong;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NextBytePosition             = 0x%04hX\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NextBytePosition             = 0x%04hX\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].NextBytePosition = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->LinkCollection               = 0x%04hX\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->LinkCollection               = 0x%04hX\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].LinkCollection = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->LinkUsagePage                = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->LinkUsagePage                = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
 				pp_data->caps[caps_idx].LinkUsagePage = temp_usage;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->LinkUsage                    = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->LinkUsage                    = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
 				pp_data->caps[caps_idx].LinkUsage = temp_usage;
 				continue;
 			}
 
 			// 8 Flags in one byte
-			if (sscanf(line, "pp_data->cap[%d]->IsMultipleItemsForArray      = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->IsMultipleItemsForArray      = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
 				pp_data->caps[caps_idx].IsMultipleItemsForArray = temp_boolean[0];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->IsButtonCap                  = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->IsButtonCap                  = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
 				pp_data->caps[caps_idx].IsButtonCap = temp_boolean[0];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->IsPadding                    = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->IsPadding                    = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
 				pp_data->caps[caps_idx].IsPadding = temp_boolean[0];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->IsAbsolute                   = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->IsAbsolute                   = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
 				pp_data->caps[caps_idx].IsAbsolute = temp_boolean[0];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->IsRange                      = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->IsRange                      = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
 				pp_data->caps[caps_idx].IsRange = temp_boolean[0];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->IsAlias                      = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->IsAlias                      = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
 				pp_data->caps[caps_idx].IsAlias = temp_boolean[0];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->IsStringRange                = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->IsStringRange                = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
 				pp_data->caps[caps_idx].IsStringRange = temp_boolean[0];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->IsDesignatorRange            = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->IsDesignatorRange            = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
 				pp_data->caps[caps_idx].IsDesignatorRange = temp_boolean[0];
 				continue;
 			}
 
-			if (sscanf(line, "pp_data->cap[%d]->Reserved1                    = 0x%hhu%hhu%hhu\n", &caps_idx, &temp_uchar[0], &temp_uchar[1], &temp_uchar[2]) == 4) {
+			if (sscanf(line, "pp_data->cap[%u]->Reserved1                    = 0x%hhu%hhu%hhu\n", &caps_idx, &temp_uchar[0], &temp_uchar[1], &temp_uchar[2]) == 4) {
 				pp_data->caps[caps_idx].Reserved1[0] = temp_uchar[0];
 				pp_data->caps[caps_idx].Reserved1[1] = temp_uchar[1];
 				pp_data->caps[caps_idx].Reserved1[2] = temp_uchar[2];
 				continue;
 			}
 
-			if (sscanf(line, "pp_data->cap[%d]->pp_cap->UnknownTokens[%d]", &caps_idx, &token_idx) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->pp_cap->UnknownTokens[%u]", &caps_idx, &token_idx) == 2) {
 				const size_t unknown_tokens_count = sizeof(pp_data->caps[0].UnknownTokens) / sizeof(pp_data->caps[0].UnknownTokens[0]);
 				if (token_idx >= unknown_tokens_count) {
 					fprintf(stderr, "Broken pp_data file, pp_data->caps[<idx>].UnknownTokens[<idx>] can have at most %zu elements, accessing %ud, (%s)", unknown_tokens_count, token_idx, line);
 					continue;
 				}
-				if (sscanf(line, "pp_data->cap[%d]->pp_cap->UnknownTokens[%d].Token    = 0x%02hhX\n", &caps_idx, &token_idx, &temp_uchar[0]) == 3) {
+				if (sscanf(line, "pp_data->cap[%u]->pp_cap->UnknownTokens[%u].Token    = 0x%02hhX\n", &caps_idx, &token_idx, &temp_uchar[0]) == 3) {
 					pp_data->caps[caps_idx].UnknownTokens[token_idx].Token = temp_uchar[0];
 					continue;
 				}
-				if (sscanf(line, "pp_data->cap[%d]->pp_cap->UnknownTokens[%d].Reserved = 0x%02hhX%02hhX%02hhX\n", &caps_idx, &token_idx, &temp_uchar[0], &temp_uchar[1], &temp_uchar[2]) == 5) {
+				if (sscanf(line, "pp_data->cap[%u]->pp_cap->UnknownTokens[%u].Reserved = 0x%02hhX%02hhX%02hhX\n", &caps_idx, &token_idx, &temp_uchar[0], &temp_uchar[1], &temp_uchar[2]) == 5) {
 					pp_data->caps[caps_idx].UnknownTokens[token_idx].Reserved[0] = temp_uchar[0];
 					pp_data->caps[caps_idx].UnknownTokens[token_idx].Reserved[1] = temp_uchar[1];
 					pp_data->caps[caps_idx].UnknownTokens[token_idx].Reserved[2] = temp_uchar[2];
 					continue;
 				}
-				if (sscanf(line, "pp_data->cap[%d]->pp_cap->UnknownTokens[%d].BitField = 0x%08lX\n", &caps_idx, &token_idx, &temp_ulong) == 3) {
+				if (sscanf(line, "pp_data->cap[%u]->pp_cap->UnknownTokens[%u].BitField = 0x%08lX\n", &caps_idx, &token_idx, &temp_ulong) == 3) {
 					pp_data->caps[caps_idx].UnknownTokens[token_idx].BitField = temp_ulong;
 					continue;
 				}
@@ -264,120 +266,120 @@ static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 			}
 
 			// Range
-			if (sscanf(line, "pp_data->cap[%d]->Range.UsageMin                     = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Range.UsageMin                     = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
 				pp_data->caps[caps_idx].Range.UsageMin = temp_usage;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->Range.UsageMax                     = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Range.UsageMax                     = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
 				pp_data->caps[caps_idx].Range.UsageMax = temp_usage;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->Range.StringMin                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Range.StringMin                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].Range.StringMin = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->Range.StringMax                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Range.StringMax                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].Range.StringMax = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->Range.DesignatorMin                = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Range.DesignatorMin                = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].Range.DesignatorMin = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->Range.DesignatorMax                = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Range.DesignatorMax                = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].Range.DesignatorMax = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->Range.DataIndexMin                 = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Range.DataIndexMin                 = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].Range.DataIndexMin = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->Range.DataIndexMax                 = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Range.DataIndexMax                 = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].Range.DataIndexMax = temp_ushort;
 				continue;
 			}
 
 			// NotRange
-			if (sscanf(line, "pp_data->cap[%d]->NotRange.Usage                        = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotRange.Usage                        = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
 				pp_data->caps[caps_idx].NotRange.Usage = temp_usage;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotRange.Reserved1                    = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotRange.Reserved1                    = 0x%04hX\n", &caps_idx, &temp_usage) == 2) {
 				pp_data->caps[caps_idx].NotRange.Reserved1 = temp_usage;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotRange.StringIndex                  = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotRange.StringIndex                  = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].NotRange.StringIndex = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotRange.Reserved2                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotRange.Reserved2                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].NotRange.Reserved2 = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotRange.DesignatorIndex              = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotRange.DesignatorIndex              = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].NotRange.DesignatorIndex = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotRange.Reserved3                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotRange.Reserved3                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].NotRange.Reserved3 = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotRange.DataIndex                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotRange.DataIndex                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].NotRange.DataIndex = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotRange.Reserved4                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotRange.Reserved4                    = %hu\n", &caps_idx, &temp_ushort) == 2) {
 				pp_data->caps[caps_idx].NotRange.Reserved4 = temp_ushort;
 				continue;
 			}
 
 			// Button
-			if (sscanf(line, "pp_data->cap[%d]->Button.LogicalMin                   = %ld\n", &caps_idx, &temp_long) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Button.LogicalMin                   = %ld\n", &caps_idx, &temp_long) == 2) {
 				pp_data->caps[caps_idx].Button.LogicalMin = temp_long;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->Button.LogicalMax                   = %ld\n", &caps_idx, &temp_long) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Button.LogicalMax                   = %ld\n", &caps_idx, &temp_long) == 2) {
 				pp_data->caps[caps_idx].Button.LogicalMax = temp_long;
 				continue;
 			}
 
 			// NotButton
-			if (sscanf(line, "pp_data->cap[%d]->NotButton.HasNull                   = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotButton.HasNull                   = %hhu\n", &caps_idx, &temp_boolean[0]) == 2) {
 				pp_data->caps[caps_idx].NotButton.HasNull = temp_boolean[0];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotButton.Reserved4                 = 0x%02hhX%02hhX%02hhX\n", &caps_idx, &temp_uchar[0], &temp_uchar[1], &temp_uchar[2]) == 4) {
+			if (sscanf(line, "pp_data->cap[%u]->NotButton.Reserved4                 = 0x%02hhX%02hhX%02hhX\n", &caps_idx, &temp_uchar[0], &temp_uchar[1], &temp_uchar[2]) == 4) {
 				pp_data->caps[caps_idx].NotButton.Reserved4[0] = temp_uchar[0];
 				pp_data->caps[caps_idx].NotButton.Reserved4[1] = temp_uchar[1];
 				pp_data->caps[caps_idx].NotButton.Reserved4[2] = temp_uchar[2];
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotButton.LogicalMin                = %ld\n", &caps_idx, &temp_long) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotButton.LogicalMin                = %ld\n", &caps_idx, &temp_long) == 2) {
 				pp_data->caps[caps_idx].NotButton.LogicalMin = temp_long;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotButton.LogicalMax                = %ld\n", &caps_idx, &temp_long) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotButton.LogicalMax                = %ld\n", &caps_idx, &temp_long) == 2) {
 				pp_data->caps[caps_idx].NotButton.LogicalMax = temp_long;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotButton.PhysicalMin               = %ld\n", &caps_idx, &temp_long) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotButton.PhysicalMin               = %ld\n", &caps_idx, &temp_long) == 2) {
 				pp_data->caps[caps_idx].NotButton.PhysicalMin = temp_long;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->NotButton.PhysicalMax               = %ld\n", &caps_idx, &temp_long) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->NotButton.PhysicalMax               = %ld\n", &caps_idx, &temp_long) == 2) {
 				pp_data->caps[caps_idx].NotButton.PhysicalMax = temp_long;
 				continue;
 			}
 
-			if (sscanf(line, "pp_data->cap[%d]->Units                    = %lu\n", &caps_idx, &temp_ulong) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->Units                    = %lu\n", &caps_idx, &temp_ulong) == 2) {
 				pp_data->caps[caps_idx].Units = temp_ulong;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->UnitsExp                 = %lu\n", &caps_idx, &temp_ulong) == 2) {
+			if (sscanf(line, "pp_data->cap[%u]->UnitsExp                 = %lu\n", &caps_idx, &temp_ulong) == 2) {
 				pp_data->caps[caps_idx].UnitsExp = temp_ulong;
 				continue;
 			}
-			if (sscanf(line, "pp_data->cap[%d]->Reserved1                    = 0x%02hhu%02hhu%02hhu\n", &coll_idx, &temp_uchar[0], &temp_uchar[1], &temp_uchar[2]) == 4) {
+			if (sscanf(line, "pp_data->cap[%u]->Reserved1                    = 0x%02hhu%02hhu%02hhu\n", &coll_idx, &temp_uchar[0], &temp_uchar[1], &temp_uchar[2]) == 4) {
 				pp_data->caps[caps_idx].Reserved1[0] = temp_uchar[0];
 				pp_data->caps[caps_idx].Reserved1[1] = temp_uchar[1];
 				pp_data->caps[caps_idx].Reserved1[2] = temp_uchar[2];
@@ -387,7 +389,7 @@ static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 			continue;
 		}
 
-		if (sscanf(line, "pp_data->LinkCollectionArray[%d]", &coll_idx) == 1) {
+		if (sscanf(line, "pp_data->LinkCollectionArray[%u]", &coll_idx) == 1) {
 			if (pp_data->FirstByteOfLinkCollectionArray == 0 || pp_data->NumberLinkCollectionNodes == 0) {
 				fprintf(stderr, "Error reading pp_data file (%s): FirstByteOfLinkCollectionArray or NumberLinkCollectionNodes is 0 or not reported yet\n", line);
 				continue;
@@ -397,39 +399,39 @@ static hidp_preparsed_data * alloc_preparsed_data_from_file(char* filename)
 				continue;
 			}
 			phid_pp_link_collection_node pcoll = (phid_pp_link_collection_node)(((unsigned char*)&pp_data->caps[0]) + pp_data->FirstByteOfLinkCollectionArray);
-			if (sscanf(line, "pp_data->LinkCollectionArray[%d]->LinkUsage          = 0x%04hX\n", &coll_idx, &temp_usage) == 2) {
+			if (sscanf(line, "pp_data->LinkCollectionArray[%u]->LinkUsage          = 0x%04hX\n", &coll_idx, &temp_usage) == 2) {
 				pcoll[coll_idx].LinkUsage = temp_usage;
 				continue;
 			}
-			if (sscanf(line, "pp_data->LinkCollectionArray[%d]->LinkUsagePage      = 0x%04hX\n", &coll_idx, &temp_usage) == 2) {
+			if (sscanf(line, "pp_data->LinkCollectionArray[%u]->LinkUsagePage      = 0x%04hX\n", &coll_idx, &temp_usage) == 2) {
 				pcoll[coll_idx].LinkUsagePage = temp_usage;
 				continue;
 			}
-			if (sscanf(line, "pp_data->LinkCollectionArray[%d]->Parent             = %hu\n", &coll_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->LinkCollectionArray[%u]->Parent             = %hu\n", &coll_idx, &temp_ushort) == 2) {
 				pcoll[coll_idx].Parent = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->LinkCollectionArray[%d]->NumberOfChildren   = %hu\n", &coll_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->LinkCollectionArray[%u]->NumberOfChildren   = %hu\n", &coll_idx, &temp_ushort) == 2) {
 				pcoll[coll_idx].NumberOfChildren = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->LinkCollectionArray[%d]->NextSibling        = %hu\n", &coll_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->LinkCollectionArray[%u]->NextSibling        = %hu\n", &coll_idx, &temp_ushort) == 2) {
 				pcoll[coll_idx].NextSibling = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->LinkCollectionArray[%d]->FirstChild         = %hu\n", &coll_idx, &temp_ushort) == 2) {
+			if (sscanf(line, "pp_data->LinkCollectionArray[%u]->FirstChild         = %hu\n", &coll_idx, &temp_ushort) == 2) {
 				pcoll[coll_idx].FirstChild = temp_ushort;
 				continue;
 			}
-			if (sscanf(line, "pp_data->LinkCollectionArray[%d]->CollectionType     = %ld\n", &coll_idx, &temp_ulong) == 2) {
+			if (sscanf(line, "pp_data->LinkCollectionArray[%u]->CollectionType     = %lu\n", &coll_idx, &temp_ulong) == 2) {
 				pcoll[coll_idx].CollectionType = temp_ulong;
 				continue;
 			}
-			if (sscanf(line, "pp_data->LinkCollectionArray[%d]->IsAlias            = %ld\n", &coll_idx, &temp_ulong) == 2) {
+			if (sscanf(line, "pp_data->LinkCollectionArray[%u]->IsAlias            = %lu\n", &coll_idx, &temp_ulong) == 2) {
 				pcoll[coll_idx].IsAlias = temp_ulong;
 				continue;
 			}
-			if (sscanf(line, "pp_data->LinkCollectionArray[%d]->Reserved           = %ld\n", &coll_idx, &temp_ulong) == 2) {
+			if (sscanf(line, "pp_data->LinkCollectionArray[%u]->Reserved           = %lu\n", &coll_idx, &temp_ulong) == 2) {
 				pcoll[coll_idx].Reserved = temp_ulong;
 				continue;
 			}

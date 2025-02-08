@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,4 +25,4 @@
 
 extern void SDL_AssertionsQuit(void);
 
-#endif /* SDL_assert_c_h_ */
+#endif // SDL_assert_c_h_

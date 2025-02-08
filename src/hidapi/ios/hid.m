@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__IOS__) || defined(__TVOS__)
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
 
 #ifndef SDL_HIDAPI_DISABLED
 
@@ -241,7 +241,7 @@ typedef enum
 
         // Bluetooth is currently only used for Steam Controllers, so check that hint
         // before initializing Bluetooth, which will prompt the user for permission.
-		if ( SDL_GetHintBoolean( SDL_HINT_JOYSTICK_HIDAPI_STEAM, SDL_FALSE ) )
+		if ( SDL_GetHintBoolean( SDL_HINT_JOYSTICK_HIDAPI_STEAM, false ) )
 		{
 			[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appWillResignActiveNotification:) name: UIApplicationWillResignActiveNotification object:nil];
 			[[NSNotificationCenter defaultCenter] addObserver:sharedInstance selector:@selector(appDidBecomeActiveNotification:) name:UIApplicationDidBecomeActiveNotification object:nil];
@@ -335,7 +335,7 @@ typedef enum
 			continue;
 
 		NSLog( @"connected peripheral: %@", peripheral );
-		if ( [peripheral.name isEqualToString:@"SteamController"] )
+		if ( [peripheral.name hasPrefix:@"Steam"] )
 		{
 			self.nPendingPairs += 1;
 			HIDBLEDevice *steamController = [[HIDBLEDevice alloc] initWithPeripheral:peripheral];
@@ -398,7 +398,7 @@ typedef enum
 {
 	switch ( central.state )
 	{
-		case CBCentralManagerStatePoweredOn:
+		case CBManagerStatePoweredOn:
 		{
 			NSLog( @"CoreBluetooth BLE hardware is powered on and ready" );
 
@@ -418,23 +418,23 @@ typedef enum
 			break;
 		}
 
-		case CBCentralManagerStatePoweredOff:
+		case CBManagerStatePoweredOff:
 			NSLog( @"CoreBluetooth BLE hardware is powered off" );
 			break;
 
-		case CBCentralManagerStateUnauthorized:
+		case CBManagerStateUnauthorized:
 			NSLog( @"CoreBluetooth BLE state is unauthorized" );
 			break;
 
-		case CBCentralManagerStateUnknown:
+		case CBManagerStateUnknown:
 			NSLog( @"CoreBluetooth BLE state is unknown" );
 			break;
 
-		case CBCentralManagerStateUnsupported:
+		case CBManagerStateUnsupported:
 			NSLog( @"CoreBluetooth BLE hardware is unsupported on this platform" );
 			break;
 
-		case CBCentralManagerStateResetting:
+		case CBManagerStateResetting:
 			NSLog( @"CoreBluetooth BLE manager is resetting" );
 			break;
 	}
@@ -459,7 +459,7 @@ typedef enum
 	NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
 	NSString *log = [NSString stringWithFormat:@"Found '%@'", localName];
 
-	if ( [localName isEqualToString:@"SteamController"] )
+	if ( [localName hasPrefix:@"Steam"] )
 	{
 		NSLog( @"%@ : %@ - %@", log, peripheral, advertisementData );
 		self.nPendingPairs += 1;
@@ -853,6 +853,7 @@ static struct hid_device_info *create_device_info_for_hid_device(HIDBLEDevice *d
     device_info->product_id = D0G_BLE2_PID;
     device_info->product_string = wcsdup( L"Steam Controller" );
     device_info->manufacturer_string = wcsdup( L"Valve Corporation" );
+    device_info->bus_type = HID_API_BUS_BLUETOOTH;
     return device_info;
 }
 
@@ -1034,4 +1035,4 @@ HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *dev)
 
 #endif /* !SDL_HIDAPI_DISABLED */
 
-#endif /* __IOS__ || __TVOS__ */
+#endif /* SDL_PLATFORM_IOS || SDL_PLATFORM_TVOS */

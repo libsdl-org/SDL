@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,5 @@
 #define SDL_kmsdrmevents_h_
 
 extern void KMSDRM_PumpEvents(SDL_VideoDevice *_this);
-extern void KMSDRM_EventInit(SDL_VideoDevice *_this);
-extern void KMSDRM_EventQuit(SDL_VideoDevice *_this);
 
-#endif /* SDL_kmsdrmevents_h_ */
+#endif // SDL_kmsdrmevents_h_

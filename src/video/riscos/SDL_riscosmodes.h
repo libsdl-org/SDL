@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,9 +23,8 @@
 #ifndef SDL_riscosmodes_h_
 #define SDL_riscosmodes_h_
 
-extern int RISCOS_InitModes(SDL_VideoDevice *_this);
-extern int RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-extern int RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display,
-                                 SDL_DisplayMode *mode);
+extern bool RISCOS_InitModes(SDL_VideoDevice *_this);
+extern bool RISCOS_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern bool RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 
-#endif /* SDL_riscosmodes_h_ */
+#endif // SDL_riscosmodes_h_

@@ -1,5 +1,5 @@
 /*
-Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -11,16 +11,15 @@ freely.
 */
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
-#include <stdlib.h>
-#include <time.h>
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
-
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_test_font.h>
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
+#include <stdlib.h>
 
 #define MENU_WIDTH  120
 #define MENU_HEIGHT 300
@@ -56,6 +55,7 @@ static void quit(int rc)
     SDL_free(menus);
     menus = NULL;
 
+    SDLTest_CleanupTextDrawing();
     SDLTest_CommonQuit(state);
     /* Let 'main()' return normally */
     if (rc != 0) {
@@ -75,19 +75,19 @@ static int get_menu_index_by_window(SDL_Window *window)
     return -1;
 }
 
-static SDL_bool window_is_root(SDL_Window *window)
+static bool window_is_root(SDL_Window *window)
 {
     int i;
     for (i = 0; i < state->num_windows; ++i) {
         if (window == state->windows[i]) {
-            return SDL_TRUE;
+            return true;
         }
     }
 
-    return SDL_FALSE;
+    return false;
 }
 
-static SDL_bool create_popup(struct PopupWindow *new_popup, SDL_bool is_menu)
+static bool create_popup(struct PopupWindow *new_popup, bool is_menu)
 {
     SDL_Window *focus;
     SDL_Window *new_win;
@@ -95,7 +95,7 @@ static SDL_bool create_popup(struct PopupWindow *new_popup, SDL_bool is_menu)
     const int w = is_menu ? MENU_WIDTH : TOOLTIP_WIDTH;
     const int h = is_menu ? MENU_HEIGHT : TOOLTIP_HEIGHT;
     const int v_off = is_menu ? 0 : 32;
-    const Uint32 flags = is_menu ? SDL_WINDOW_POPUP_MENU : SDL_WINDOW_TOOLTIP;
+    const SDL_WindowFlags flags = is_menu ? SDL_WINDOW_POPUP_MENU : SDL_WINDOW_TOOLTIP;
     float x, y;
 
     focus = SDL_GetMouseFocus();
@@ -105,17 +105,17 @@ static SDL_bool create_popup(struct PopupWindow *new_popup, SDL_bool is_menu)
                                     (int)x, (int)y + v_off, w, h, flags);
 
     if (new_win) {
-        new_renderer = SDL_CreateRenderer(new_win, state->renderdriver, state->render_flags);
+        new_renderer = SDL_CreateRenderer(new_win, state->renderdriver);
 
         new_popup->win = new_win;
         new_popup->renderer = new_renderer;
         new_popup->parent = focus;
 
-        return SDL_TRUE;
+        return true;
     }
 
     SDL_zerop(new_popup);
-    return SDL_FALSE;
+    return false;
 }
 
 static void close_popups(void)
@@ -167,12 +167,12 @@ static void loop(void)
             } else if (event.button.button == SDL_BUTTON_RIGHT) {
                 /* Create a new popup menu */
                 menus = SDL_realloc(menus, sizeof(struct PopupWindow) * (num_menus + 1));
-                if (create_popup(&menus[num_menus], SDL_TRUE)) {
+                if (create_popup(&menus[num_menus], true)) {
                     ++num_menus;
                 }
             }
         } else if (event.type == SDL_EVENT_KEY_DOWN) {
-            if (event.key.keysym.sym == SDLK_SPACE) {
+            if (event.key.key == SDLK_SPACE) {
                 for (i = 0; i < num_menus; ++i) {
                     if (SDL_GetWindowFlags(menus[i].win) & SDL_WINDOW_HIDDEN) {
                         SDL_ShowWindow(menus[i].win);
@@ -188,10 +188,14 @@ static void loop(void)
         SDLTest_CommonEvent(state, &event, &done);
     }
 
+    if (done) {
+        return;
+    }
+
     /* Show the tooltip if the delay period has elapsed */
     if (SDL_GetTicks() > tooltip_timer) {
-        if (tooltip.win == NULL) {
-            create_popup(&tooltip, SDL_FALSE);
+        if (!tooltip.win) {
+            create_popup(&tooltip, false);
         }
     }
 
@@ -240,12 +244,9 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
@@ -265,7 +266,7 @@ int main(int argc, char *argv[])
 
     /* Main render loop */
     done = 0;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

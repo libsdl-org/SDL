@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,34 +21,58 @@
 #ifndef SDL_hashtable_h_
 #define SDL_hashtable_h_
 
-/* this is not (currently) a public API. But maybe it should be! */
+// this is not (currently) a public API. But maybe it should be!
 
 struct SDL_HashTable;
 typedef struct SDL_HashTable SDL_HashTable;
 typedef Uint32 (*SDL_HashTable_HashFn)(const void *key, void *data);
-typedef SDL_bool (*SDL_HashTable_KeyMatchFn)(const void *a, const void *b, void *data);
+typedef bool (*SDL_HashTable_KeyMatchFn)(const void *a, const void *b, void *data);
 typedef void (*SDL_HashTable_NukeFn)(const void *key, const void *value, void *data);
 
-SDL_HashTable *SDL_CreateHashTable(void *data,
-                                   const Uint32 num_buckets,
-                                   const SDL_HashTable_HashFn hashfn,
-                                   const SDL_HashTable_KeyMatchFn keymatchfn,
-                                   const SDL_HashTable_NukeFn nukefn,
-                                   const SDL_bool stackable);
+extern SDL_HashTable *SDL_CreateHashTable(void *data,
+                                          Uint32 num_buckets,
+                                          SDL_HashTable_HashFn hashfn,
+                                          SDL_HashTable_KeyMatchFn keymatchfn,
+                                          SDL_HashTable_NukeFn nukefn,
+                                          bool threadsafe,
+                                          bool stackable);
 
-void SDL_DestroyHashTable(SDL_HashTable *table);
-SDL_bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value);
-SDL_bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key);
-SDL_bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **_value);
-SDL_bool SDL_HashTableEmpty(SDL_HashTable *table);
+// This function is thread-safe if the hashtable was created with threadsafe = true
+extern void SDL_EmptyHashTable(SDL_HashTable *table);
 
-SDL_bool SDL_IterateHashTable(const SDL_HashTable *table, const void *key, const void **_value, void **iter);
-SDL_bool SDL_IterateHashTableKeys(const SDL_HashTable *table, const void **_key, void **iter);
+// This function is not thread-safe.
+extern void SDL_DestroyHashTable(SDL_HashTable *table);
 
-Uint32 SDL_HashString(const void *key, void *unused);
-SDL_bool SDL_KeyMatchString(const void *a, const void *b, void *unused);
+// This function is thread-safe if the hashtable was created with threadsafe = true
+extern bool SDL_InsertIntoHashTable(SDL_HashTable *table, const void *key, const void *value);
 
-Uint32 SDL_HashID(const void *key, void *unused);
-SDL_bool SDL_KeyMatchID(const void *a, const void *b, void *unused);
+// This function is thread-safe if the hashtable was created with threadsafe = true
+extern bool SDL_RemoveFromHashTable(SDL_HashTable *table, const void *key);
 
-#endif /* SDL_hashtable_h_ */
+// This function is thread-safe if the hashtable was created with threadsafe = true
+extern bool SDL_FindInHashTable(const SDL_HashTable *table, const void *key, const void **_value);
+
+// This function is thread-safe if the hashtable was created with threadsafe = true
+extern bool SDL_HashTableEmpty(SDL_HashTable *table);
+
+// iterate all values for a specific key. This only makes sense if the hash is stackable. If not-stackable, just use SDL_FindInHashTable().
+// This function is not thread-safe, you should use external locking if you use this function
+extern bool SDL_IterateHashTableKey(const SDL_HashTable *table, const void *key, const void **_value, void **iter);
+
+// iterate all key/value pairs in a hash (stackable hashes can have duplicate keys with multiple values).
+// This function is not thread-safe, you should use external locking if you use this function
+extern bool SDL_IterateHashTable(const SDL_HashTable *table, const void **_key, const void **_value, void **iter);
+
+extern Uint32 SDL_HashPointer(const void *key, void *unused);
+extern bool SDL_KeyMatchPointer(const void *a, const void *b, void *unused);
+
+extern Uint32 SDL_HashString(const void *key, void *unused);
+extern bool SDL_KeyMatchString(const void *a, const void *b, void *unused);
+
+extern Uint32 SDL_HashID(const void *key, void *unused);
+extern bool SDL_KeyMatchID(const void *a, const void *b, void *unused);
+
+extern void SDL_NukeFreeKey(const void *key, const void *value, void *unused);
+extern void SDL_NukeFreeValue(const void *key, const void *value, void *unused);
+
+#endif // SDL_hashtable_h_

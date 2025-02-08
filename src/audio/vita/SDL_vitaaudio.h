@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,14 +28,14 @@
 
 struct SDL_PrivateAudioData
 {
-    /* The hardware input/output port. */
+    // The hardware input/output port.
     int port;
-    /* The raw allocated mixing buffer. */
+    // The raw allocated mixing buffer.
     Uint8 *rawbuf;
-    /* Individual mixing buffers. */
+    // Individual mixing buffers.
     Uint8 *mixbufs[NUM_BUFFERS];
-    /* Index of the next available mixing buffer. */
+    // Index of the next available mixing buffer.
     int next_buffer;
 };
 
-#endif /* SDL_vitaaudio_h */
+#endif // SDL_vitaaudio_h

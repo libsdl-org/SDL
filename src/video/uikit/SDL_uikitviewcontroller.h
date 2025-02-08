@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 
 #include "../SDL_sysvideo.h"
 
-#if TARGET_OS_TV
+#ifdef SDL_PLATFORM_TVOS
 #import <GameController/GameController.h>
 #define SDLRootViewController GCEventViewController
 #else
@@ -59,7 +59,7 @@
 - (void)loadView;
 - (void)viewDidLayoutSubviews;
 
-#if !TARGET_OS_TV
+#ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)prefersStatusBarHidden;
 - (BOOL)prefersHomeIndicatorAutoHidden;
@@ -69,8 +69,8 @@
 #endif
 
 #ifdef SDL_IPHONE_KEYBOARD
-- (void)showKeyboard;
-- (void)hideKeyboard;
+- (bool)startTextInput;
+- (bool)stopTextInput;
 - (void)initKeyboard;
 - (void)deinitKeyboard;
 
@@ -79,7 +79,7 @@
 
 - (void)updateKeyboard;
 
-@property(nonatomic, assign, getter=isKeyboardVisible) BOOL keyboardVisible;
+@property(nonatomic, assign, getter=isTextFieldFocused) BOOL textFieldFocused;
 @property(nonatomic, assign) SDL_Rect textInputRect;
 @property(nonatomic, assign) int keyboardHeight;
 #endif
@@ -87,9 +87,10 @@
 @end
 
 #ifdef SDL_IPHONE_KEYBOARD
-SDL_bool UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
-void UIKit_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-void UIKit_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-SDL_bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
-int UIKit_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);
+bool UIKit_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
+bool UIKit_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
+bool UIKit_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
+void UIKit_SetTextInputProperties(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
+bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
+bool UIKit_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
 #endif

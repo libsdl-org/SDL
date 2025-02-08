@@ -4,3 +4,4 @@ find . -type f \( -name '*.bmp' -o -name '*.wav' -o -name '*.dat' \) -print -del
 find . -depth -type d \( -name Gaming.Desktop.x64 \) -exec rm -rv {} \;
 find . -depth -type d \( -name Gaming.Xbox.Scarlett.x64 \) -exec rm -rv {} \;
 find . -depth -type d \( -name Gaming.Xbox.XboxOne.x64 \) -exec rm -rv {} \;
+rm shaders/*.h

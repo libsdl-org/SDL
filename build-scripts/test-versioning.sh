@@ -8,7 +8,7 @@ cd `dirname $0`/..
 
 ref_major=$(sed -ne 's/^#define SDL_MAJOR_VERSION  *//p' include/SDL3/SDL_version.h)
 ref_minor=$(sed -ne 's/^#define SDL_MINOR_VERSION  *//p' include/SDL3/SDL_version.h)
-ref_micro=$(sed -ne 's/^#define SDL_PATCHLEVEL  *//p' include/SDL3/SDL_version.h)
+ref_micro=$(sed -ne 's/^#define SDL_MICRO_VERSION  *//p' include/SDL3/SDL_version.h)
 ref_version="${ref_major}.${ref_minor}.${ref_micro}"
 
 tests=0
@@ -25,7 +25,15 @@ not_ok () {
     failed=1
 }
 
-version=$(sed -Ene 's/^project\(SDL[0-9]+ LANGUAGES C CXX VERSION "([0-9.]*)"\)$/\1/p' CMakeLists.txt)
+version=$(sed -Ene 's/^.* version ([0-9.]*)$/\1/p' include/SDL3/SDL.h)
+
+if [ "$ref_version" = "$version" ]; then
+    ok "SDL.h $version"
+else
+    not_ok "SDL.h $version disagrees with SDL_version.h $ref_version"
+fi
+
+version=$(sed -Ene 's/^project\(SDL[0-9]+ LANGUAGES C VERSION "([0-9.]*)"\)$/\1/p' CMakeLists.txt)
 
 if [ "$ref_version" = "$version" ]; then
     ok "CMakeLists.txt $version"

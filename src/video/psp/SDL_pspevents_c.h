@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,5 +23,7 @@
 
 extern void PSP_InitOSKeymap(SDL_VideoDevice *_this);
 extern void PSP_PumpEvents(SDL_VideoDevice *_this);
+extern bool PSP_EventInit(SDL_VideoDevice *_this);
+extern void PSP_EventQuit(SDL_VideoDevice *_this);
 
-/* end of SDL_pspevents_c.h ... */
+// end of SDL_pspevents_c.h ...

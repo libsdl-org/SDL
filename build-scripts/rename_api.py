@@ -24,7 +24,7 @@ def main():
 
     # Check whether we can still modify the ABI
     version_header = pathlib.Path( SDL_INCLUDE_DIR / "SDL_version.h" ).read_text()
-    if not re.search("SDL_MINOR_VERSION\s+[01]\s", version_header):
+    if not re.search(r"SDL_MINOR_VERSION\s+[01]\s", version_header):
         raise Exception("ABI is frozen, symbols cannot be renamed")
 
     # Find the symbol in the headers
@@ -35,6 +35,10 @@ def main():
 
     if not header.exists():
         raise Exception("Couldn't find header %s" % header)
+
+    header_name = header.name
+    if (header.name == "SDL_gamepad.h"):
+        header_name = "SDL_gamecontroller.h"
 
     header_text = header.read_text()
 
@@ -53,7 +57,7 @@ def main():
         i += 2
 
     regex = create_regex_from_replacements(replacements)
-    for dir in ["src", "test", "include", "docs", "cmake/test"]:
+    for dir in ["src", "test", "examples", "include", "docs", "cmake/test"]:
         replace_symbols_in_path(SDL_ROOT / dir, regex, replacements)
 
     # Replace the symbols in documentation
@@ -62,8 +66,8 @@ def main():
         oldname = args.args[i + 0]
         newname = args.args[i + 1]
 
-        add_symbol_to_oldnames(header.name, oldname, newname)
-        add_symbol_to_migration(header.name, args.type, oldname, newname)
+        add_symbol_to_oldnames(header_name, oldname, newname)
+        add_symbol_to_migration(header_name, args.type, oldname, newname)
         add_symbol_to_coccinelle(args.type, oldname, newname)
         i += 2
 
@@ -235,8 +239,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
     parser.add_argument("--skip-header-check", action="store_true")
-    parser.add_argument("header");
-    parser.add_argument("type", choices=["enum", "function", "hint", "structure", "symbol"]);
+    parser.add_argument("header")
+    parser.add_argument("type", choices=["enum", "function", "hint", "structure", "symbol"])
     parser.add_argument("args", nargs="*")
     args = parser.parse_args()
 

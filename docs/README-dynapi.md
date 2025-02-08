@@ -35,7 +35,7 @@ SDL now has, internally, a table of function pointers. So, this is what SDL_Init
 now looks like:
 
 ```c
-UInt32 SDL_Init(Uint32 flags)
+bool SDL_Init(SDL_InitFlags flags)
 {
     return jump_table.SDL_Init(flags);
 }
@@ -49,7 +49,7 @@ SDL_Init() that you've been calling all this time. But at startup, it looks more
 like this:
 
 ```c
-Uint32 SDL_Init_DEFAULT(Uint32 flags)
+bool SDL_Init_DEFAULT(SDL_InitFlags flags)
 {
     SDL_InitDynamicAPI();
     return jump_table.SDL_Init(flags);
@@ -100,7 +100,7 @@ a shared library of its own). If so, it loads that library and looks for and
 calls a single function:
 
 ```c
-SInt32 SDL_DYNAPI_entry(Uint32 version, void *table, Uint32 tablesize);
+Sint32 SDL_DYNAPI_entry(Uint32 version, void *table, Uint32 tablesize);
 ```
 
 That function takes a version number (more on that in a moment), the address of

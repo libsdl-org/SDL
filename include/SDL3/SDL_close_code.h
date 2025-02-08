@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,11 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/**
- *  \file SDL_close_code.h
+/*
+ * This file reverses the effects of SDL_begin_code.h and should be included
+ * after you finish any function and structure declarations in your headers.
  *
- *  This file reverses the effects of SDL_begin_code.h and should be included
- *  after you finish any function and structure declarations in your headers
+ * SDL's headers use this; applications generally should not include this
+ * header directly.
  */
 
 #ifndef SDL_begin_code_h

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,28 +22,28 @@
 
 #include "./SDL_list.h"
 
-/* Push */
-int SDL_ListAdd(SDL_ListNode **head, void *ent)
+// Push
+bool SDL_ListAdd(SDL_ListNode **head, void *ent)
 {
-    SDL_ListNode *node = SDL_malloc(sizeof(*node));
+    SDL_ListNode *node = (SDL_ListNode *)SDL_malloc(sizeof(*node));
 
-    if (node == NULL) {
-        return SDL_OutOfMemory();
+    if (!node) {
+        return false;
     }
 
     node->entry = ent;
     node->next = *head;
     *head = node;
-    return 0;
+    return true;
 }
 
-/* Pop from end as a FIFO (if add with SDL_ListAdd) */
+// Pop from end as a FIFO (if add with SDL_ListAdd)
 void SDL_ListPop(SDL_ListNode **head, void **ent)
 {
     SDL_ListNode **ptr = head;
 
-    /* Invalid or empty */
-    if (head == NULL || *head == NULL) {
+    // Invalid or empty
+    if (!head || !*head) {
         return;
     }
 

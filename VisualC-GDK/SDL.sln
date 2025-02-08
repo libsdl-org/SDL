@@ -11,6 +11,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL3_test", "SDL_test\SDL_test.vcxproj", "{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testcontroller", "tests\testcontroller\testcontroller.vcxproj", "{55812185-D13C-4022-9C81-32E0F4A08305}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A} = {DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testgdk", "tests\testgdk\testgdk.vcxproj", "{1C9A3F71-35A5-4C56-B292-F4375B3C3649}"
 EndProject

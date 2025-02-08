@@ -18,9 +18,6 @@
     <CopyFileToFolders Include="..\..\logos\Logo480x480.png">
       <Filter>logos</Filter>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="$(Console_GRDKExtLibRoot)Xbox.Services.API.C\DesignTime\CommonConfiguration\Neutral\Lib\Release\Microsoft.Xbox.Services.141.GDK.C.Thunks.dll">
-      <Filter>wingdk</Filter>
-    </CopyFileToFolders>
     <CopyFileToFolders Include="xboxseries\MicrosoftGame.config">
       <Filter>xboxseries</Filter>
     </CopyFileToFolders>
@@ -34,6 +31,9 @@
       <Filter>logos</Filter>
     </CopyFileToFolders>
     <CopyFileToFolders Include="PackageLayout.xml" />
+    <CopyFileToFolders Include="$(Console_GRDKExtLibRoot)Xbox.Services.API.C\DesignTime\CommonConfiguration\Neutral\Lib\Release\Microsoft.Xbox.Services.GDK.C.Thunks.dll">
+      <Filter>wingdk</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="logos">

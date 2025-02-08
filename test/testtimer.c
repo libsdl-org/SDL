@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -50,16 +50,25 @@ static int test_sdl_delay_within_bounds(void) {
 static int ticks = 0;
 
 static Uint32 SDLCALL
-ticktock(Uint32 interval, void *param)
+ticktock(void *param, SDL_TimerID timerID, Uint32 interval)
+{
+    ++ticks;
+    return interval;
+}
+
+static Uint64 SDLCALL
+ticktockNS(void *param, SDL_TimerID timerID, Uint64 interval)
 {
     ++ticks;
     return interval;
 }
 
 static Uint32 SDLCALL
-callback(Uint32 interval, void *param)
+callback(void *param, SDL_TimerID timerID, Uint32 interval)
 {
-    SDL_Log("Timer %" SDL_PRIu32 " : param = %d\n", interval, (int)(uintptr_t)param);
+    int value = (int)(uintptr_t)param;
+    SDL_assert( value == 1 || value == 2 || value == 3 );
+    SDL_Log("Timer %" SDL_PRIu32 " : param = %d", interval, value);
     return interval;
 }
 
@@ -71,17 +80,14 @@ int main(int argc, char *argv[])
     Uint64 start, now;
     Uint64 start_perf, now_perf;
     SDLTest_CommonState  *state;
-    SDL_bool run_interactive_tests = SDL_TRUE;
+    bool run_interactive_tests = true;
     int return_code = 0;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -90,7 +96,7 @@ int main(int argc, char *argv[])
         consumed = SDLTest_CommonArg(state, i);
         if (!consumed) {
             if (SDL_strcmp(argv[i], "--no-interactive") == 0) {
-                run_interactive_tests = SDL_FALSE;
+                run_interactive_tests = false;
                 consumed = 1;
             } else if (desired < 0) {
                 char *endptr;
@@ -110,96 +116,172 @@ int main(int argc, char *argv[])
         i += consumed;
     }
 
-    if (SDL_Init(SDL_INIT_TIMER) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
-        return 1;
-    }
-
-    if (SDL_getenv("SDL_TESTS_QUICK") != NULL) {
+    if (SDL_GetEnvironmentVariable(SDL_GetEnvironment(), "SDL_TESTS_QUICK") != NULL) {
         SDL_Log("Not running slower tests");
         SDL_Quit();
         return 0;
     }
 
     /* Verify SDL_GetTicks* acts monotonically increasing, and not erratic. */
-    SDL_Log("Sanity-checking GetTicks\n");
+    SDL_Log("Sanity-checking GetTicks");
     for (i = 0; i < 1000; ++i) {
         start = SDL_GetTicks();
         SDL_Delay(1);
         now = SDL_GetTicks() - start;
         if (now > 100) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testtimer.c: Delta time erratic at iter %d. Delay 1ms = %d ms in ticks\n", i, (int)now);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "testtimer.c: Delta time erratic at iter %d. Delay 1ms = %d ms in ticks", i, (int)now);
             SDL_Quit();
             return 1;
         }
     }
 
-    /* Start the timer */
+    /* Start the millisecond timer */
     if (desired < 0) {
         desired = DEFAULT_RESOLUTION;
     }
+    ticks = 0;
     t1 = SDL_AddTimer(desired, ticktock, NULL);
 
-    /* Wait 10 seconds */
-    SDL_Log("Waiting 10 seconds\n");
-    SDL_Delay(10 * 1000);
+    /* Wait 1 seconds */
+    SDL_Log("Waiting 1 seconds for millisecond timer");
+    SDL_Delay(1 * 1000);
 
     /* Stop the timer */
     SDL_RemoveTimer(t1);
 
     /* Print the results */
     if (ticks) {
-        SDL_Log("Timer resolution: desired = %d ms, actual = %f ms\n",
+        SDL_Log("Millisecond timer resolution: desired = %d ms, actual = %f ms",
                 desired, (double)(10 * 1000) / ticks);
     }
 
+    /* Wait for the results to be seen */
+    SDL_Delay(1 * 1000);
+
+    /* Start the nanosecond timer */
+    ticks = 0;
+    t1 = SDL_AddTimerNS(desired, ticktockNS, NULL);
+
+    /* Wait 1 seconds */
+    SDL_Log("Waiting 1 seconds for nanosecond timer");
+    SDL_Delay(1 * 1000);
+
+    /* Stop the timer */
+    SDL_RemoveTimer(t1);
+
+    /* Print the results */
+    if (ticks) {
+        SDL_Log("Nanosecond timer resolution: desired = %d ns, actual = %f ns",
+                desired, (double)(10 * 1000000) / ticks);
+    }
+
+    /* Wait for the results to be seen */
+    SDL_Delay(1 * 1000);
+
+    /* Check accuracy of nanosecond delay */
+    {
+        Uint64 desired_delay = SDL_NS_PER_SECOND / 60;
+        Uint64 actual_delay;
+        Uint64 total_overslept = 0;
+
+        start = SDL_GetTicksNS();
+        SDL_DelayNS(1);
+        now = SDL_GetTicksNS();
+        actual_delay = (now - start);
+        SDL_Log("Minimum nanosecond delay: %" SDL_PRIu64 " ns", actual_delay);
+
+        SDL_Log("Timing 100 frames at 60 FPS");
+        for (i = 0; i < 100; ++i) {
+            start = SDL_GetTicksNS();
+            SDL_DelayNS(desired_delay);
+            now = SDL_GetTicksNS();
+            actual_delay = (now - start);
+            if (actual_delay > desired_delay) {
+                total_overslept += (actual_delay - desired_delay);
+            }
+        }
+        SDL_Log("Overslept %.2f ms", (double)total_overslept / SDL_NS_PER_MS);
+    }
+
+    /* Wait for the results to be seen */
+    SDL_Delay(1 * 1000);
+
+    /* Check accuracy of precise delay */
+    {
+        Uint64 desired_delay = SDL_NS_PER_SECOND / 60;
+        Uint64 actual_delay;
+        Uint64 total_overslept = 0;
+
+        start = SDL_GetTicksNS();
+        SDL_DelayPrecise(1);
+        now = SDL_GetTicksNS();
+        actual_delay = (now - start);
+        SDL_Log("Minimum precise delay: %" SDL_PRIu64 " ns", actual_delay);
+
+        SDL_Log("Timing 100 frames at 60 FPS");
+        for (i = 0; i < 100; ++i) {
+            start = SDL_GetTicksNS();
+            SDL_DelayPrecise(desired_delay);
+            now = SDL_GetTicksNS();
+            actual_delay = (now - start);
+            if (actual_delay > desired_delay) {
+                total_overslept += (actual_delay - desired_delay);
+            }
+        }
+        SDL_Log("Overslept %.2f ms", (double)total_overslept / SDL_NS_PER_MS);
+    }
+
+    /* Wait for the results to be seen */
+    SDL_Delay(1 * 1000);
+
     /* Test multiple timers */
-    SDL_Log("Testing multiple timers...\n");
+    SDL_Log("Testing multiple timers...");
     t1 = SDL_AddTimer(100, callback, (void *)1);
     if (!t1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 1: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 1: %s", SDL_GetError());
     }
     t2 = SDL_AddTimer(50, callback, (void *)2);
     if (!t2) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 2: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 2: %s", SDL_GetError());
     }
     t3 = SDL_AddTimer(233, callback, (void *)3);
     if (!t3) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 3: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create timer 3: %s", SDL_GetError());
     }
 
-    /* Wait 10 seconds */
-    SDL_Log("Waiting 10 seconds\n");
-    SDL_Delay(10 * 1000);
+    /* Wait 3 seconds */
+    SDL_Log("Waiting 3 seconds");
+    SDL_Delay(3 * 1000);
 
-    SDL_Log("Removing timer 1 and waiting 5 more seconds\n");
+    SDL_Log("Removing timer 1 and waiting 3 more seconds");
     SDL_RemoveTimer(t1);
 
-    SDL_Delay(5 * 1000);
+    SDL_Delay(3 * 1000);
 
     SDL_RemoveTimer(t2);
     SDL_RemoveTimer(t3);
 
+    ticks = 0;
     start_perf = SDL_GetPerformanceCounter();
     for (i = 0; i < 1000000; ++i) {
-        ticktock(0, NULL);
+        ticktock(NULL, 0, 0);
     }
     now_perf = SDL_GetPerformanceCounter();
-    SDL_Log("1 million iterations of ticktock took %f ms\n", (double)((now_perf - start_perf) * 1000) / SDL_GetPerformanceFrequency());
+    SDL_Log("1 million iterations of ticktock took %f ms", (double)((now_perf - start_perf) * 1000) / SDL_GetPerformanceFrequency());
 
-    SDL_Log("Performance counter frequency: %" SDL_PRIu64 "\n", SDL_GetPerformanceFrequency());
+    SDL_Log("Performance counter frequency: %" SDL_PRIu64, SDL_GetPerformanceFrequency());
     start = SDL_GetTicks();
     start_perf = SDL_GetPerformanceCounter();
     SDL_Delay(1000);
     now_perf = SDL_GetPerformanceCounter();
     now = SDL_GetTicks();
-    SDL_Log("Delay 1 second = %d ms in ticks, %f ms according to performance counter\n", (int)(now - start), (double)((now_perf - start_perf) * 1000) / SDL_GetPerformanceFrequency());
+    SDL_Log("Delay 1 second = %d ms in ticks, %f ms according to performance counter", (int)(now - start), (double)((now_perf - start_perf) * 1000) / SDL_GetPerformanceFrequency());
 
     if (run_interactive_tests) {
         return_code = test_sdl_delay_within_bounds();
     }
 
-    SDLTest_CommonDestroyState(state);
     SDL_Quit();
+    SDLTest_CommonDestroyState(state);
     return return_code;
 }

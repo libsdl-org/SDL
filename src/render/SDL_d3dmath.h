@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,14 +20,18 @@
 */
 #include "SDL_internal.h"
 
-#if (defined(SDL_VIDEO_RENDER_D3D) || defined(SDL_VIDEO_RENDER_D3D11) || defined(SDL_VIDEO_RENDER_D3D12)) && !defined(SDL_RENDER_DISABLED)
+#if defined(SDL_VIDEO_RENDER_D3D) || \
+    defined(SDL_VIDEO_RENDER_D3D11) || \
+    defined(SDL_VIDEO_RENDER_D3D12) || \
+    defined(SDL_VIDEO_RENDER_GPU) || \
+    defined(SDL_VIDEO_RENDER_VULKAN)
 
-/* Set up for C function definitions, even when using C++ */
+// Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Direct3D matrix math functions */
+// Direct3D matrix math functions
 
 typedef struct
 {
@@ -65,17 +69,17 @@ typedef struct
     };
 } Float4X4;
 
-Float4X4 MatrixIdentity();
-Float4X4 MatrixMultiply(Float4X4 M1, Float4X4 M2);
-Float4X4 MatrixScaling(float x, float y, float z);
-Float4X4 MatrixTranslation(float x, float y, float z);
-Float4X4 MatrixRotationX(float r);
-Float4X4 MatrixRotationY(float r);
-Float4X4 MatrixRotationZ(float r);
+extern Float4X4 MatrixIdentity(void);
+extern Float4X4 MatrixMultiply(Float4X4 M1, Float4X4 M2);
+extern Float4X4 MatrixScaling(float x, float y, float z);
+extern Float4X4 MatrixTranslation(float x, float y, float z);
+extern Float4X4 MatrixRotationX(float r);
+extern Float4X4 MatrixRotationY(float r);
+extern Float4X4 MatrixRotationZ(float r);
 
-/* Ends C function definitions when using C++ */
+// Ends C function definitions when using C++
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12) && !defined(SDL_RENDER_DISABLED) */
+#endif // SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11 || SDL_VIDEO_RENDER_D3D12 || SDL_VIDEO_RENDER_VULKAN

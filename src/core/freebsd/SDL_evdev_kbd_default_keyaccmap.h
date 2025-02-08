@@ -1,6 +1,6 @@
 #include <sys/kbio.h>
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 /*
  * Automatically generated from /usr/share/vt/keymaps/us.acc.kbd.
  * DO NOT EDIT!
@@ -123,45 +123,45 @@ static keymap_t keymap_default_us_acc = { 0x6d, {
 } };
 
 static accentmap_t accentmap_default_us_acc = { 11, {
-    /* dgra=0 */
+    // dgra=0
     {  '`', { {  'a',0xe0 }, {  'A',0xc0 }, {  'e',0xe8 }, {  'E',0xc8 },
 	      {  'i',0xec }, {  'I',0xcc }, {  'o',0xf2 }, {  'O',0xd2 },
 	      {  'u',0xf9 }, {  'U',0xd9 }, }, },
-    /* dacu=1 */
+    // dacu=1
     { 0xb4, { {  'a',0xe1 }, {  'A',0xc1 }, {  'e',0xe9 }, {  'E',0xc9 },
 	      {  'i',0xed }, {  'I',0xcd }, {  'o',0xf3 }, {  'O',0xd3 },
 	      {  'u',0xfa }, {  'U',0xda }, {  'y',0xfd }, {  'Y',0xdd }, }, },
-    /* dcir=2 */
+    // dcir=2
     {  '^', { {  'a',0xe2 }, {  'A',0xc2 }, {  'e',0xea }, {  'E',0xca },
 	      {  'i',0xee }, {  'I',0xce }, {  'o',0xf4 }, {  'O',0xd4 },
 	      {  'u',0xfb }, {  'U',0xdb }, }, },
-    /* dtil=3 */
+    // dtil=3
     {  '~', { {  'a',0xe3 }, {  'A',0xc3 }, {  'n',0xf1 }, {  'N',0xd1 },
 	      {  'o',0xf5 }, {  'O',0xd5 }, }, },
-    /* dmac=4 */
-    { 0x00 }, 
-    /* dbre=5 */
-    { 0x00 }, 
-    /* ddot=6 */
-    { 0x00 }, 
-    /* duml=7 */
+    // dmac=4
+    { 0x00 },
+    // dbre=5
+    { 0x00 },
+    // ddot=6
+    { 0x00 },
+    // duml=7
     { 0xa8, { {  'a',0xe4 }, {  'A',0xc4 }, {  'e',0xeb }, {  'E',0xcb },
 	      {  'i',0xef }, {  'I',0xcf }, {  'o',0xf6 }, {  'O',0xd6 },
 	      {  'u',0xfc }, {  'U',0xdc }, {  'y',0xff }, }, },
-    /* dsla=8 */
-    { 0x00 }, 
-    /* drin=9 */
+    // dsla=8
+    { 0x00 },
+    // drin=9
     { 0xb0, { {  'a',0xe5 }, {  'A',0xc5 }, }, },
-    /* dced=10 */
+    // dced=10
     { 0xb8, { {  'c',0xe7 }, {  'C',0xc7 }, }, },
-    /* dapo=11 */
-    { 0x00 }, 
-    /* ddac=12 */
-    { 0x00 }, 
-    /* dogo=13 */
-    { 0x00 }, 
-    /* dcar=14 */
-    { 0x00 }, 
+    // dapo=11
+    { 0x00 },
+    // ddac=12
+    { 0x00 },
+    // dogo=13
+    { 0x00 },
+    // dcar=14
+    { 0x00 },
 } };
 
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on

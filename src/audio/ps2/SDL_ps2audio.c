@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,18 +20,18 @@
 */
 #include "SDL_internal.h"
 
-#include "../SDL_audio_c.h"
+#include "../SDL_sysaudio.h"
 #include "SDL_ps2audio.h"
 
 #include <kernel.h>
 #include <audsrv.h>
 #include <ps2_audio_driver.h>
 
-static int PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     device->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
-        return SDL_OutOfMemory();
+    if (!device->hidden) {
+        return false;
     }
 
     // These are the native supported audio PS2 configs
@@ -73,7 +73,7 @@ static int PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
        64, so spec->size should be a multiple of 64 as well. */
     const int mixlen = device->buffer_size * NUM_BUFFERS;
     device->hidden->rawbuf = (Uint8 *)SDL_aligned_alloc(64, mixlen);
-    if (device->hidden->rawbuf == NULL) {
+    if (!device->hidden->rawbuf) {
         return SDL_SetError("Couldn't allocate mixing buffer");
     }
 
@@ -82,19 +82,19 @@ static int PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
         device->hidden->mixbufs[i] = &device->hidden->rawbuf[i * device->buffer_size];
     }
 
-    return 0;
+    return true;
 }
 
-static int PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     // this returns number of bytes accepted or a negative error. We assume anything other than buflen is a fatal error.
-    return (audsrv_play_audio((char *)buffer, buflen) != buflen) ? -1 : 0;
+    return (audsrv_play_audio((char *)buffer, buflen) == buflen);
 }
 
-static int PS2AUDIO_WaitDevice(SDL_AudioDevice *device)
+static bool PS2AUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     audsrv_wait_audio(device->buffer_size);
-    return 0;
+    return true;
 }
 
 static Uint8 *PS2AUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -112,7 +112,7 @@ static void PS2AUDIO_CloseDevice(SDL_AudioDevice *device)
             device->hidden->channel = -1;
         }
 
-        if (device->hidden->rawbuf != NULL) {
+        if (device->hidden->rawbuf) {
             SDL_aligned_free(device->hidden->rawbuf);
             device->hidden->rawbuf = NULL;
         }
@@ -137,10 +137,10 @@ static void PS2AUDIO_Deinitialize(void)
     deinit_audio_driver();
 }
 
-static SDL_bool PS2AUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool PS2AUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     if (init_audio_driver() < 0) {
-        return SDL_FALSE;
+        return false;
     }
 
     impl->OpenDevice = PS2AUDIO_OpenDevice;
@@ -150,10 +150,10 @@ static SDL_bool PS2AUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->CloseDevice = PS2AUDIO_CloseDevice;
     impl->ThreadInit = PS2AUDIO_ThreadInit;
     impl->Deinitialize = PS2AUDIO_Deinitialize;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    return SDL_TRUE; // this audio target is available.
+    impl->OnlyHasDefaultPlaybackDevice = true;
+    return true; // this audio target is available.
 }
 
 AudioBootStrap PS2AUDIO_bootstrap = {
-    "ps2", "PS2 audio driver", PS2AUDIO_Init, SDL_FALSE
+    "ps2", "PS2 audio driver", PS2AUDIO_Init, false
 };

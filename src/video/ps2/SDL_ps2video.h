@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,9 +32,15 @@
 
 #include <gsToolkit.h>
 
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeclaration-after-statement"
-#include <gsInline.h>
-#pragma GCC diagnostic pop
+#endif
 
-#endif /* SDL_ps2video_h_ */
+#include <gsInline.h>
+
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic pop
+#endif
+
+#endif // SDL_ps2video_h_

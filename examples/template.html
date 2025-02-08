@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@project_name@ Example: @category_name@/@example_name@</title>
+    <link rel="icon" href="/@project_name@/thumbnail.png" type="image/png" />
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@project_name@ Example: @category_name@/@example_name@">
+    <meta property="og:description" content="@description@">
+    <meta property="og:image" content="@preview_image@" />
+
+    <link rel="stylesheet" type="text/css" href="/@project_name@/examples.css" />
+    <style>
+      main {
+        display: flex;
+      }
+
+      main > #sidebar {
+        flex: 0 1 25%;
+        border-left: 2px solid #efefef;
+        padding: 1rem 1rem;
+      }
+
+      main > #content {
+        flex: 1 1 auto;
+        margin-bottom: 16px;
+      }
+
+      main > #content > h1 {
+        margin-top: 0;
+      }
+
+      main > #sidebar ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      main > #sidebar li {
+        padding: 2px 0;
+      }
+
+      #example-description {
+        max-width: 85ch;
+        margin-bottom: 16px;
+      }
+
+      .canvas-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #canvas {
+        max-width: 100%;
+        box-shadow: 0 0 0.5rem #7787;
+      }
+
+      #output-container {
+        position: fixed;
+        top: 100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        background-color: black;
+        border: none;
+        border-top: 1px solid #778;
+        margin: 0;
+        padding: 1rem;
+
+        transition: top 0.25s;
+      }
+
+      #output-container::before {
+        position: absolute;
+        bottom: 100%;
+        right: 1rem;
+
+        content: 'Console';
+        font-size: 1.5rem;
+        color: white;
+        background: black;
+        border: 1px solid #778;
+        border-bottom: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+
+      #output-container:hover,
+      #output-container:focus-within {
+        top: 50%;
+      }
+
+      #output-container:focus-within {
+        border-top: 2px solid orange;
+      }
+
+      #output-container:focus-within::before {
+        border: 2px solid orange;
+        border-bottom: none;
+      }
+
+      #output {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+
+        border: none;
+        background: black;
+        color: white;
+        outline: none;
+        resize: none;
+
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+          "Liberation Mono", monospace;
+      }
+
+      #source-code {
+        position: fixed;
+        top: 100%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        background: #e0eaee;
+        padding: 1rem;
+
+        transition: top 0.25s;
+      }
+
+      #source-code::before {
+        position: absolute;
+        bottom: 100%;
+        left: 1rem;
+
+        content: 'Source code';
+        font-size: 1.5rem;
+        background: linear-gradient(to bottom, #789, #e0eaee);
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+
+        /* Used for a hack to avoid tab labels showing on top of tabs; see
+           comment below for details. */
+        transition: bottom 0.25s;
+      }
+
+      #source-code:hover,
+      #source-code:focus-within {
+        top: 50%;
+      }
+
+      #source-code:focus-within {
+        border-top: 2px solid orange;
+      }
+
+      #source-code:focus-within::before {
+        border: 2px solid orange;
+        border-bottom: none;
+      }
+
+      #source-code-contents {
+        height: 100%;
+        overflow: scroll;
+      }
+
+      /* Hack: Sinze z-index only goes one way, and both tab labels should be
+         behind each other's tab, put the former on top (higher z-index) and
+         make the latter one disappear when the former is hovered. */
+      #output-container:hover ~ #source-code::before,
+      #output-container:focus-within ~ #source-code::before {
+        bottom: -100%;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        main > #sidebar {
+          border-color: rgba(48, 54, 61, 0.7);
+        }
+      }
+
+      @media only screen and (max-width: 992px) {
+        main {
+          flex-direction: column;
+        }
+
+        main > #sidebar {
+          border: none;
+        }
+      }
+    </style>
+    <link rel="stylesheet" type="text/css" href="highlight.css">
+  </head>
+  <body>
+    <header>
+      <a href="/">SDL Examples</a>
+    </header>
+    <main>
+      <div id="content">
+        <nav class="breadcrumb">
+          <ul>
+            <li><a href="/@project_name@">@project_name@</a></li>
+            <li><a href="/@project_name@/@category_name@">@category_name@</a></li>
+            <li><a href="/@project_name@/@category_name@/@example_name@">@example_name@</a></li>
+          </ul>
+        </nav>
+        <hr/>
+        <div id="example-description">@description@</div>
+        <div class="canvas-container">
+          <canvas
+            id="canvas"
+            oncontextmenu="event.preventDefault()"
+            tabindex="-1"
+          ></canvas>
+        </div>
+      </div>
+      <div id="sidebar">
+        <h3>Other examples:</h3>
+        @other_examples_html@
+      </div>
+    </main>
+
+    <div id="output-container">
+      <textarea id="output" rows="8" spellcheck="false" readonly></textarea>
+    </div>
+
+    <div id="source-code" tabindex="1">
+      <div id="source-code-contents">@htmlified_source_code@</div>
+    </div>
+
+    <script type='text/javascript'>
+      var Module = {
+        preRun: [],
+        postRun: [],
+        print: (function() {
+          var element = document.getElementById('output');
+          if (element) element.value = ''; // clear browser cache
+          return function(text) {
+            var elem = document.getElementById('output-container');
+            if (elem.style['top'] == '') {
+                elem.style['top'] = '50%';
+                setTimeout(function() { elem.style['top'] = ''; }, 3000);
+            }
+
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            // These replacements are necessary if you render to raw HTML
+            //text = text.replace(/&/g, "&amp;");
+            //text = text.replace(/</g, "&lt;");
+            //text = text.replace(/>/g, "&gt;");
+            //text = text.replace('\n', '<br>', 'g');
+            console.log(text);
+            if (element) {
+              element.value += text + "\n";
+              element.scrollTop = element.scrollHeight; // focus on bottom
+            }
+          };
+        })(),
+        printErr: function(text) { Module.print(text) },
+        canvas: (() => {
+          var canvas = document.getElementById('canvas');
+
+          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+          // application robust, you may want to override this behavior before shipping!
+          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+          canvas.addEventListener("webglcontextlost", (e) => { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+
+          return canvas;
+        })(),
+        setStatus: (text) => {},
+        totalDependencies: 0,
+        monitorRunDependencies: (left) => {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+      Module.setStatus('Downloading...');
+      window.onerror = (event) => {
+        // TODO: do not warn on ok events like simulating an infinite loop or exitStatus
+        Module.setStatus('Exception thrown, see JavaScript console');
+        Module.setStatus = (text) => {
+          if (text) console.error('[post-exception status] ' + text);
+        };
+      };
+    </script>
+    <script async type="text/javascript" src="@javascript_file@"></script>
+  </body>
+</html>
+
+

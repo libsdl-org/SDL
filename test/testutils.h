@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
   Copyright 2022 Collabora Ltd.
 
   This software is provided 'as-is', without any express or implied
@@ -16,7 +16,7 @@
 
 #include <SDL3/SDL.h>
 
-SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent,
+SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transparent,
                          int *width_out, int *height_out);
 char *GetNearbyFilename(const char *file);
 char *GetResourceFilename(const char *user_specified, const char *def);

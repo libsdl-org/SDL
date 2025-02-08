@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* General touch handling code for SDL */
+// General touch handling code for SDL
 
 #include "SDL_events_c.h"
 #include "../video/SDL_sysvideo.h"
@@ -28,43 +28,41 @@
 static int SDL_num_touch = 0;
 static SDL_Touch **SDL_touchDevices = NULL;
 
-/* for mapping touch events to mice */
-
-#define SYNTHESIZE_TOUCH_TO_MOUSE 1
-
-#if SYNTHESIZE_TOUCH_TO_MOUSE
-static SDL_bool finger_touching = SDL_FALSE;
+// for mapping touch events to mice
+static bool finger_touching = false;
 static SDL_FingerID track_fingerid;
 static SDL_TouchID track_touchid;
-#endif
 
-/* Public functions */
-int SDL_InitTouch(void)
+// Public functions
+bool SDL_InitTouch(void)
 {
-    return 0;
+    return true;
 }
 
-int SDL_GetNumTouchDevices(void)
+bool SDL_TouchDevicesAvailable(void)
 {
-    return SDL_num_touch;
+    return SDL_num_touch > 0;
 }
 
-SDL_TouchID SDL_GetTouchDevice(int index)
+SDL_TouchID *SDL_GetTouchDevices(int *count)
 {
-    if (index < 0 || index >= SDL_num_touch) {
-        SDL_SetError("Unknown touch device index %d", index);
-        return 0;
+    if (count) {
+        *count = 0;
     }
-    return SDL_touchDevices[index]->id;
-}
 
-const char *SDL_GetTouchName(int index)
-{
-    if (index < 0 || index >= SDL_num_touch) {
-        SDL_SetError("Unknown touch device");
-        return NULL;
+    const int total = SDL_num_touch;
+    SDL_TouchID *result = (SDL_TouchID *) SDL_malloc(sizeof (SDL_TouchID) * (total + 1));
+    if (result) {
+        for (int i = 0; i < total; i++) {
+            result[i] = SDL_touchDevices[i]->id;
+        }
+        result[total] = 0;
+        if (count) {
+            *count = SDL_num_touch;
+        }
     }
-    return SDL_touchDevices[index]->name;
+
+    return result;
 }
 
 static int SDL_GetTouchIndex(SDL_TouchID id)
@@ -96,13 +94,19 @@ SDL_Touch *SDL_GetTouch(SDL_TouchID id)
     return SDL_touchDevices[index];
 }
 
+const char *SDL_GetTouchDeviceName(SDL_TouchID id)
+{
+    SDL_Touch *touch = SDL_GetTouch(id);
+    if (!touch) {
+        return NULL;
+    }
+    return SDL_GetPersistentString(touch->name);
+}
+
 SDL_TouchDeviceType SDL_GetTouchDeviceType(SDL_TouchID id)
 {
     SDL_Touch *touch = SDL_GetTouch(id);
-    if (touch) {
-        return touch->type;
-    }
-    return SDL_TOUCH_DEVICE_INVALID;
+    return touch ? touch->type : SDL_TOUCH_DEVICE_INVALID;
 }
 
 static int SDL_GetFingerIndex(const SDL_Touch *touch, SDL_FingerID fingerid)
@@ -125,26 +129,37 @@ static SDL_Finger *SDL_GetFinger(const SDL_Touch *touch, SDL_FingerID id)
     return touch->fingers[index];
 }
 
-int SDL_GetNumTouchFingers(SDL_TouchID touchID)
+SDL_Finger **SDL_GetTouchFingers(SDL_TouchID touchID, int *count)
 {
-    SDL_Touch *touch = SDL_GetTouch(touchID);
-    if (touch) {
-        return touch->num_fingers;
-    }
-    return 0;
-}
+    SDL_Finger **fingers;
+    SDL_Finger *finger_data;
 
-SDL_Finger *SDL_GetTouchFinger(SDL_TouchID touchID, int index)
-{
+    if (count) {
+        *count = 0;
+    }
+
     SDL_Touch *touch = SDL_GetTouch(touchID);
-    if (touch == NULL) {
+    if (!touch) {
         return NULL;
     }
-    if (index < 0 || index >= touch->num_fingers) {
-        SDL_SetError("Unknown touch finger");
+
+    // Create a snapshot of the current finger state
+    fingers = (SDL_Finger **)SDL_malloc((touch->num_fingers + 1) * sizeof(*fingers) + touch->num_fingers * sizeof(**fingers));
+    if (!fingers) {
         return NULL;
     }
-    return touch->fingers[index];
+    finger_data = (SDL_Finger *)(fingers + (touch->num_fingers + 1));
+
+    for (int i = 0; i < touch->num_fingers; ++i) {
+        fingers[i] = &finger_data[i];
+        SDL_copyp(fingers[i], touch->fingers[i]);
+    }
+    fingers[touch->num_fingers] = NULL;
+
+    if (count) {
+        *count = touch->num_fingers;
+    }
+    return fingers;
 }
 
 int SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name)
@@ -152,16 +167,18 @@ int SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name
     SDL_Touch **touchDevices;
     int index;
 
+    SDL_assert(touchID != 0);
+
     index = SDL_GetTouchIndex(touchID);
     if (index >= 0) {
         return index;
     }
 
-    /* Add the touch to the list of touch */
+    // Add the touch to the list of touch
     touchDevices = (SDL_Touch **)SDL_realloc(SDL_touchDevices,
                                              (SDL_num_touch + 1) * sizeof(*touchDevices));
-    if (touchDevices == NULL) {
-        return SDL_OutOfMemory();
+    if (!touchDevices) {
+        return -1;
     }
 
     SDL_touchDevices = touchDevices;
@@ -169,13 +186,13 @@ int SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name
 
     SDL_touchDevices[index] = (SDL_Touch *)SDL_malloc(sizeof(*SDL_touchDevices[index]));
     if (!SDL_touchDevices[index]) {
-        return SDL_OutOfMemory();
+        return -1;
     }
 
-    /* Added touch to list */
+    // Added touch to list
     ++SDL_num_touch;
 
-    /* we're setting the touch properties */
+    // we're setting the touch properties
     SDL_touchDevices[index]->id = touchID;
     SDL_touchDevices[index]->type = type;
     SDL_touchDevices[index]->num_fingers = 0;
@@ -186,20 +203,22 @@ int SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name
     return index;
 }
 
-static int SDL_AddFinger(SDL_Touch *touch, SDL_FingerID fingerid, float x, float y, float pressure)
+static bool SDL_AddFinger(SDL_Touch *touch, SDL_FingerID fingerid, float x, float y, float pressure)
 {
     SDL_Finger *finger;
+
+    SDL_assert(fingerid != 0);
 
     if (touch->num_fingers == touch->max_fingers) {
         SDL_Finger **new_fingers;
         new_fingers = (SDL_Finger **)SDL_realloc(touch->fingers, (touch->max_fingers + 1) * sizeof(*touch->fingers));
-        if (new_fingers == NULL) {
-            return SDL_OutOfMemory();
+        if (!new_fingers) {
+            return false;
         }
         touch->fingers = new_fingers;
         touch->fingers[touch->max_fingers] = (SDL_Finger *)SDL_malloc(sizeof(*finger));
         if (!touch->fingers[touch->max_fingers]) {
-            return SDL_OutOfMemory();
+            return false;
         }
         touch->max_fingers++;
     }
@@ -209,52 +228,52 @@ static int SDL_AddFinger(SDL_Touch *touch, SDL_FingerID fingerid, float x, float
     finger->x = x;
     finger->y = y;
     finger->pressure = pressure;
-    return 0;
+    return true;
 }
 
-static int SDL_DelFinger(SDL_Touch *touch, SDL_FingerID fingerid)
+static void SDL_DelFinger(SDL_Touch *touch, SDL_FingerID fingerid)
 {
-    SDL_Finger *temp;
-
     int index = SDL_GetFingerIndex(touch, fingerid);
     if (index < 0) {
-        return -1;
+        return;
     }
 
-    touch->num_fingers--;
-    temp = touch->fingers[index];
-    touch->fingers[index] = touch->fingers[touch->num_fingers];
-    touch->fingers[touch->num_fingers] = temp;
-    return 0;
+    --touch->num_fingers;
+    if (index < (touch->num_fingers)) {
+        // Move the deleted finger to just past the end of the active fingers array and shift the active fingers by one.
+        // This ensures that the descriptor for the now-deleted finger is located at `touch->fingers[touch->num_fingers]`
+        // and is ready for use in SDL_AddFinger.
+        SDL_Finger *deleted_finger = touch->fingers[index];
+        SDL_memmove(&touch->fingers[index], &touch->fingers[index + 1], (touch->num_fingers - index) * sizeof(touch->fingers[index]));
+        touch->fingers[touch->num_fingers] = deleted_finger;
+    }
 }
 
-int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, SDL_bool down, float x, float y, float pressure)
+void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, SDL_EventType type, float x, float y, float pressure)
 {
-    int posted;
     SDL_Finger *finger;
-    SDL_Mouse *mouse;
+    bool down = (type == SDL_EVENT_FINGER_DOWN);
 
     SDL_Touch *touch = SDL_GetTouch(id);
-    if (touch == NULL) {
-        return -1;
+    if (!touch) {
+        return;
     }
 
-    mouse = SDL_GetMouse();
+    SDL_Mouse *mouse = SDL_GetMouse();
 
-#if SYNTHESIZE_TOUCH_TO_MOUSE
-    /* SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events */
-    /* SDL_HINT_VITA_TOUCH_MOUSE_DEVICE: controlling which touchpad should generate synthetic mouse events, PSVita-only */
+    // SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events
+    // SDL_HINT_VITA_TOUCH_MOUSE_DEVICE: controlling which touchpad should generate synthetic mouse events, PSVita-only
     {
-#ifdef __vita__
-        if (mouse->touch_mouse_events && ((mouse->vita_touch_mouse_device == id) || (mouse->vita_touch_mouse_device == 2))) {
+        // FIXME: maybe we should only restrict to a few SDL_TouchDeviceType
+        if ((id != SDL_MOUSE_TOUCHID) && (id != SDL_PEN_TOUCHID)) {
+#ifdef SDL_PLATFORM_VITA
+            if (mouse->touch_mouse_events && ((mouse->vita_touch_mouse_device == id) || (mouse->vita_touch_mouse_device == 3))) {
 #else
-        if (mouse->touch_mouse_events) {
+            if (mouse->touch_mouse_events) {
 #endif
-            /* FIXME: maybe we should only restrict to a few SDL_TouchDeviceType */
-            if (id != SDL_MOUSE_TOUCHID) {
                 if (window) {
                     if (down) {
-                        if (finger_touching == SDL_FALSE) {
+                        if (finger_touching == false) {
                             float pos_x = (x * (float)window->w);
                             float pos_y = (y * (float)window->h);
                             if (pos_x < 0) {
@@ -269,36 +288,35 @@ int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_W
                             if (pos_y > (float)(window->h - 1)) {
                                 pos_y = (float)(window->h - 1);
                             }
-                            SDL_SendMouseMotion(timestamp, window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
-                            SDL_SendMouseButton(timestamp, window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+                            SDL_SendMouseMotion(timestamp, window, SDL_TOUCH_MOUSEID, false, pos_x, pos_y);
+                            SDL_SendMouseButton(timestamp, window, SDL_TOUCH_MOUSEID, SDL_BUTTON_LEFT, true);
                         }
                     } else {
-                        if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
-                            SDL_SendMouseButton(timestamp, window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+                        if (finger_touching == true && track_touchid == id && track_fingerid == fingerid) {
+                            SDL_SendMouseButton(timestamp, window, SDL_TOUCH_MOUSEID, SDL_BUTTON_LEFT, false);
                         }
                     }
                 }
                 if (down) {
-                    if (finger_touching == SDL_FALSE) {
-                        finger_touching = SDL_TRUE;
+                    if (finger_touching == false) {
+                        finger_touching = true;
                         track_touchid = id;
                         track_fingerid = fingerid;
                     }
                 } else {
-                    if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
-                        finger_touching = SDL_FALSE;
+                    if (finger_touching == true && track_touchid == id && track_fingerid == fingerid) {
+                        finger_touching = false;
                     }
                 }
             }
         }
     }
-#endif
 
-    /* SDL_HINT_MOUSE_TOUCH_EVENTS: if not set, discard synthetic touch events coming from platform layer */
-    if (mouse->mouse_touch_events == 0) {
-        if (id == SDL_MOUSE_TOUCHID) {
-            return 0;
-        }
+    // SDL_HINT_MOUSE_TOUCH_EVENTS: if not set, discard synthetic touch events coming from platform layer
+    if (!mouse->mouse_touch_events && (id == SDL_MOUSE_TOUCHID)) {
+        return;
+    } else if (!mouse->pen_touch_events && (id == SDL_PEN_TOUCHID)) {
+        return;
     }
 
     finger = SDL_GetFinger(touch, fingerid);
@@ -306,79 +324,73 @@ int SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_W
         if (finger) {
             /* This finger is already down.
                Assume the finger-up for the previous touch was lost, and send it. */
-            SDL_SendTouch(timestamp, id, fingerid, window, SDL_FALSE, x, y, pressure);
+            SDL_SendTouch(timestamp, id, fingerid, window, SDL_EVENT_FINGER_CANCELED, x, y, pressure);
         }
 
-        if (SDL_AddFinger(touch, fingerid, x, y, pressure) < 0) {
-            return 0;
+        if (!SDL_AddFinger(touch, fingerid, x, y, pressure)) {
+            return;
         }
 
-        posted = 0;
-        if (SDL_EventEnabled(SDL_EVENT_FINGER_DOWN)) {
+        if (SDL_EventEnabled(type)) {
             SDL_Event event;
-            event.type = SDL_EVENT_FINGER_DOWN;
+            event.type = type;
             event.common.timestamp = timestamp;
-            event.tfinger.touchId = id;
-            event.tfinger.fingerId = fingerid;
+            event.tfinger.touchID = id;
+            event.tfinger.fingerID = fingerid;
             event.tfinger.x = x;
             event.tfinger.y = y;
             event.tfinger.dx = 0;
             event.tfinger.dy = 0;
             event.tfinger.pressure = pressure;
             event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
-            posted = (SDL_PushEvent(&event) > 0);
+            SDL_PushEvent(&event);
         }
     } else {
-        if (finger == NULL) {
-            /* This finger is already up */
-            return 0;
+        if (!finger) {
+            // This finger is already up
+            return;
         }
 
-        posted = 0;
-        if (SDL_EventEnabled(SDL_EVENT_FINGER_UP)) {
+        if (SDL_EventEnabled(type)) {
             SDL_Event event;
-            event.type = SDL_EVENT_FINGER_UP;
+            event.type = type;
             event.common.timestamp = timestamp;
-            event.tfinger.touchId = id;
-            event.tfinger.fingerId = fingerid;
-            /* I don't trust the coordinates passed on fingerUp */
+            event.tfinger.touchID = id;
+            event.tfinger.fingerID = fingerid;
+            // I don't trust the coordinates passed on fingerUp
             event.tfinger.x = finger->x;
             event.tfinger.y = finger->y;
             event.tfinger.dx = 0;
             event.tfinger.dy = 0;
             event.tfinger.pressure = pressure;
             event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
-            posted = (SDL_PushEvent(&event) > 0);
+            SDL_PushEvent(&event);
         }
 
         SDL_DelFinger(touch, fingerid);
     }
-    return posted;
 }
 
-int SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window,
+void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window,
                         float x, float y, float pressure)
 {
     SDL_Touch *touch;
     SDL_Finger *finger;
-    SDL_Mouse *mouse;
-    int posted;
     float xrel, yrel, prel;
 
     touch = SDL_GetTouch(id);
-    if (touch == NULL) {
-        return -1;
+    if (!touch) {
+        return;
     }
 
-    mouse = SDL_GetMouse();
+    SDL_Mouse *mouse = SDL_GetMouse();
 
-#if SYNTHESIZE_TOUCH_TO_MOUSE
-    /* SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events */
+    // SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events
     {
-        if (mouse->touch_mouse_events) {
-            if (id != SDL_MOUSE_TOUCHID) {
+        if ((id != SDL_MOUSE_TOUCHID) && (id != SDL_PEN_TOUCHID)) {
+            if (mouse->touch_mouse_events) {
                 if (window) {
-                    if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
+                    if (finger_touching == true && track_touchid == id && track_fingerid == fingerid) {
                         float pos_x = (x * (float)window->w);
                         float pos_y = (y * (float)window->h);
                         if (pos_x < 0.0f) {
@@ -393,60 +405,58 @@ int SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid,
                         if (pos_y > (float)(window->h - 1)) {
                             pos_y = (float)(window->h - 1);
                         }
-                        SDL_SendMouseMotion(timestamp, window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
+                        SDL_SendMouseMotion(timestamp, window, SDL_TOUCH_MOUSEID, false, pos_x, pos_y);
                     }
                 }
             }
         }
     }
-#endif
 
-    /* SDL_HINT_MOUSE_TOUCH_EVENTS: if not set, discard synthetic touch events coming from platform layer */
+    // SDL_HINT_MOUSE_TOUCH_EVENTS: if not set, discard synthetic touch events coming from platform layer
     if (mouse->mouse_touch_events == 0) {
         if (id == SDL_MOUSE_TOUCHID) {
-            return 0;
+            return;
         }
     }
 
     finger = SDL_GetFinger(touch, fingerid);
-    if (finger == NULL) {
-        return SDL_SendTouch(timestamp, id, fingerid, window, SDL_TRUE, x, y, pressure);
+    if (!finger) {
+        SDL_SendTouch(timestamp, id, fingerid, window, SDL_EVENT_FINGER_DOWN, x, y, pressure);
+        return;
     }
 
     xrel = x - finger->x;
     yrel = y - finger->y;
     prel = pressure - finger->pressure;
 
-    /* Drop events that don't change state */
+    // Drop events that don't change state
     if (xrel == 0.0f && yrel == 0.0f && prel == 0.0f) {
 #if 0
         printf("Touch event didn't change state - dropped!\n");
 #endif
-        return 0;
+        return;
     }
 
-    /* Update internal touch coordinates */
+    // Update internal touch coordinates
     finger->x = x;
     finger->y = y;
     finger->pressure = pressure;
 
-    /* Post the event, if desired */
-    posted = 0;
+    // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_FINGER_MOTION)) {
         SDL_Event event;
         event.type = SDL_EVENT_FINGER_MOTION;
         event.common.timestamp = timestamp;
-        event.tfinger.touchId = id;
-        event.tfinger.fingerId = fingerid;
+        event.tfinger.touchID = id;
+        event.tfinger.fingerID = fingerid;
         event.tfinger.x = x;
         event.tfinger.y = y;
         event.tfinger.dx = xrel;
         event.tfinger.dy = yrel;
         event.tfinger.pressure = pressure;
         event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
-        posted = (SDL_PushEvent(&event) > 0);
+        SDL_PushEvent(&event);
     }
-    return posted;
 }
 
 void SDL_DelTouch(SDL_TouchID id)
@@ -455,13 +465,13 @@ void SDL_DelTouch(SDL_TouchID id)
     SDL_Touch *touch;
 
     if (SDL_num_touch == 0) {
-        /* We've already cleaned up, we won't find this device */
+        // We've already cleaned up, we won't find this device
         return;
     }
 
     index = SDL_GetTouchIndex(id);
     touch = SDL_GetTouch(id);
-    if (touch == NULL) {
+    if (!touch) {
         return;
     }
 

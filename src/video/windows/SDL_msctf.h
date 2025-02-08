@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@
 #define TF_IPSINK_FLAG_ACTIVE        0x0001
 #define TF_TMAE_UIELEMENTENABLEDONLY 0x00000004
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 
 typedef struct ITfThreadMgr ITfThreadMgr;
 typedef struct ITfDocumentMgr ITfDocumentMgr;
@@ -241,6 +241,6 @@ struct ITfSource
     const struct ITfSourceVtbl *lpVtbl;
 };
 
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on
 
-#endif /* SDL_msctf_h_ */
+#endif // SDL_msctf_h_

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,8 @@ void *vita_mem_alloc(unsigned int type, unsigned int size, unsigned int alignmen
 
     if (type == SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW) {
         size = ALIGN(size, 256 * 1024);
+    } else if (type == SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW) {
+        size = ALIGN(size, 1024 * 1024);
     } else {
         size = ALIGN(size, 4 * 1024);
     }
@@ -66,7 +68,7 @@ void *vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
 {
     void *mem;
 
-    if (data->texturePool == NULL) {
+    if (!data->texturePool) {
         int poolsize;
         int ret;
         SceKernelFreeMemorySizeInfo info;
@@ -88,7 +90,7 @@ void *vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
         }
         data->texturePool = sceClibMspaceCreate(mem, poolsize);
 
-        if (data->texturePool == NULL) {
+        if (!data->texturePool) {
             return NULL;
         }
         ret = sceGxmMapMemory(mem, poolsize, SCE_GXM_MEMORY_ATTRIB_READ | SCE_GXM_MEMORY_ATTRIB_WRITE);
@@ -101,7 +103,7 @@ void *vita_gpu_mem_alloc(VITA_GXM_RenderData *data, unsigned int size)
 
 void vita_gpu_mem_free(VITA_GXM_RenderData *data, void *ptr)
 {
-    if (data->texturePool != NULL) {
+    if (data->texturePool) {
         sceClibMspaceFree(data->texturePool, ptr);
     }
 }
@@ -109,7 +111,7 @@ void vita_gpu_mem_free(VITA_GXM_RenderData *data, void *ptr)
 void vita_gpu_mem_destroy(VITA_GXM_RenderData *data)
 {
     void *mem = NULL;
-    if (data->texturePool != NULL) {
+    if (data->texturePool) {
         sceClibMspaceDestroy(data->texturePool);
         data->texturePool = NULL;
         if (sceKernelGetMemBlockBase(data->texturePoolUID, &mem) < 0) {
@@ -174,4 +176,4 @@ void vita_mem_fragment_usse_free(SceUID uid)
     sceKernelFreeMemBlock(uid);
 }
 
-#endif /* SDL_VIDEO_RENDER_VITA_GXM */
+#endif // SDL_VIDEO_RENDER_VITA_GXM

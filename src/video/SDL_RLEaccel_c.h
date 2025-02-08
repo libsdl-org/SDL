@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,9 +24,9 @@
 
 #include "SDL_internal.h"
 
-/* Useful functions and variables from SDL_RLEaccel.c */
+// Useful functions and variables from SDL_RLEaccel.c
 
-extern int SDL_RLESurface(SDL_Surface *surface);
-extern void SDL_UnRLESurface(SDL_Surface *surface, int recode);
+extern bool SDL_RLESurface(SDL_Surface *surface);
+extern void SDL_UnRLESurface(SDL_Surface *surface, bool recode);
 
-#endif /* SDL_RLEaccel_c_h_ */
+#endif // SDL_RLEaccel_c_h_

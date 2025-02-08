@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,20 +27,24 @@
 #endif
 
 #include "SDL_cocoavideo.h"
-#include "SDL_cocoashape.h"
 #include "SDL_cocoavulkan.h"
 #include "SDL_cocoametalview.h"
 #include "SDL_cocoaopengles.h"
+#include "SDL_cocoamessagebox.h"
+#include "SDL_cocoashape.h"
+
+#include "../../events/SDL_keyboard_c.h"
+#include "../../events/SDL_mouse_c.h"
 
 @implementation SDL_CocoaVideoData
 
 @end
 
-/* Initialization/Query functions */
-static int Cocoa_VideoInit(SDL_VideoDevice *_this);
+// Initialization/Query functions
+static bool Cocoa_VideoInit(SDL_VideoDevice *_this);
 static void Cocoa_VideoQuit(SDL_VideoDevice *_this);
 
-/* Cocoa driver bootstrap functions */
+// Cocoa driver bootstrap functions
 
 static void Cocoa_DeleteDevice(SDL_VideoDevice *device)
 {
@@ -48,7 +52,7 @@ static void Cocoa_DeleteDevice(SDL_VideoDevice *device)
         if (device->wakeup_lock) {
             SDL_DestroyMutex(device->wakeup_lock);
         }
-        CFBridgingRelease(device->driverdata);
+        CFBridgingRelease(device->internal);
         SDL_free(device);
     }
 }
@@ -59,9 +63,13 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         SDL_VideoDevice *device;
         SDL_CocoaVideoData *data;
 
+        if (![NSThread isMainThread]) {
+            return NULL;  // this doesn't SDL_SetError() because SDL_VideoInit is just going to overwrite it.
+        }
+
         Cocoa_RegisterApp();
 
-        /* Initialize all variables that we clean on shutdown */
+        // Initialize all variables that we clean on shutdown
         device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
         if (device) {
             data = [[SDL_CocoaVideoData alloc] init];
@@ -69,15 +77,14 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             data = nil;
         }
         if (!data) {
-            SDL_OutOfMemory();
             SDL_free(device);
             return NULL;
         }
-        device->driverdata = (SDL_VideoData *)CFBridgingRetain(data);
+        device->internal = (SDL_VideoData *)CFBridgingRetain(data);
         device->wakeup_lock = SDL_CreateMutex();
         device->system_theme = Cocoa_GetSystemTheme();
 
-        /* Set the function pointers */
+        // Set the function pointers
         device->VideoInit = Cocoa_VideoInit;
         device->VideoQuit = Cocoa_VideoQuit;
         device->GetDisplayBounds = Cocoa_GetDisplayBounds;
@@ -90,13 +97,13 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->SuspendScreenSaver = Cocoa_SuspendScreenSaver;
 
         device->CreateSDLWindow = Cocoa_CreateWindow;
-        device->CreateSDLWindowFrom = Cocoa_CreateWindowFrom;
         device->SetWindowTitle = Cocoa_SetWindowTitle;
         device->SetWindowIcon = Cocoa_SetWindowIcon;
         device->SetWindowPosition = Cocoa_SetWindowPosition;
         device->SetWindowSize = Cocoa_SetWindowSize;
         device->SetWindowMinimumSize = Cocoa_SetWindowMinimumSize;
         device->SetWindowMaximumSize = Cocoa_SetWindowMaximumSize;
+        device->SetWindowAspectRatio = Cocoa_SetWindowAspectRatio;
         device->SetWindowOpacity = Cocoa_SetWindowOpacity;
         device->GetWindowSizeInPixels = Cocoa_GetWindowSizeInPixels;
         device->ShowWindow = Cocoa_ShowWindow;
@@ -115,14 +122,14 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->SetWindowMouseGrab = Cocoa_SetWindowMouseGrab;
         device->SetWindowKeyboardGrab = Cocoa_SetWindowKeyboardGrab;
         device->DestroyWindow = Cocoa_DestroyWindow;
-        device->GetWindowWMInfo = Cocoa_GetWindowWMInfo;
         device->SetWindowHitTest = Cocoa_SetWindowHitTest;
         device->AcceptDragAndDrop = Cocoa_AcceptDragAndDrop;
+        device->UpdateWindowShape = Cocoa_UpdateWindowShape;
         device->FlashWindow = Cocoa_FlashWindow;
         device->SetWindowFocusable = Cocoa_SetWindowFocusable;
-
-        device->shape_driver.CreateShaper = Cocoa_CreateShaper;
-        device->shape_driver.SetWindowShape = Cocoa_SetWindowShape;
+        device->SetWindowParent = Cocoa_SetWindowParent;
+        device->SetWindowModal = Cocoa_SetWindowModal;
+        device->SyncWindow = Cocoa_SyncWindow;
 
 #ifdef SDL_VIDEO_OPENGL_CGL
         device->GL_LoadLibrary = Cocoa_GL_LoadLibrary;
@@ -133,12 +140,12 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->GL_SetSwapInterval = Cocoa_GL_SetSwapInterval;
         device->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
         device->GL_SwapWindow = Cocoa_GL_SwapWindow;
-        device->GL_DeleteContext = Cocoa_GL_DeleteContext;
+        device->GL_DestroyContext = Cocoa_GL_DestroyContext;
         device->GL_GetEGLSurface = NULL;
 #endif
 #ifdef SDL_VIDEO_OPENGL_EGL
 #ifdef SDL_VIDEO_OPENGL_CGL
-        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, SDL_FALSE)) {
+        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_FORCE_EGL, false)) {
 #endif
             device->GL_LoadLibrary = Cocoa_GLES_LoadLibrary;
             device->GL_GetProcAddress = Cocoa_GLES_GetProcAddress;
@@ -148,7 +155,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             device->GL_SetSwapInterval = Cocoa_GLES_SetSwapInterval;
             device->GL_GetSwapInterval = Cocoa_GLES_GetSwapInterval;
             device->GL_SwapWindow = Cocoa_GLES_SwapWindow;
-            device->GL_DeleteContext = Cocoa_GLES_DeleteContext;
+            device->GL_DestroyContext = Cocoa_GLES_DestroyContext;
             device->GL_GetEGLSurface = Cocoa_GLES_GetEGLSurface;
 #ifdef SDL_VIDEO_OPENGL_CGL
         }
@@ -160,6 +167,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->Vulkan_UnloadLibrary = Cocoa_Vulkan_UnloadLibrary;
         device->Vulkan_GetInstanceExtensions = Cocoa_Vulkan_GetInstanceExtensions;
         device->Vulkan_CreateSurface = Cocoa_Vulkan_CreateSurface;
+        device->Vulkan_DestroySurface = Cocoa_Vulkan_DestroySurface;
 #endif
 
 #ifdef SDL_VIDEO_METAL
@@ -170,7 +178,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 
         device->StartTextInput = Cocoa_StartTextInput;
         device->StopTextInput = Cocoa_StopTextInput;
-        device->SetTextInputRect = Cocoa_SetTextInputRect;
+        device->UpdateTextInputArea = Cocoa_UpdateTextInputArea;
 
         device->SetClipboardData = Cocoa_SetClipboardData;
         device->GetClipboardData = Cocoa_GetClipboardData;
@@ -178,114 +186,127 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 
         device->free = Cocoa_DeleteDevice;
 
-        device->quirk_flags = VIDEO_DEVICE_QUIRK_HAS_POPUP_WINDOW_SUPPORT;
-
+        device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
+                              VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
         return device;
     }
 }
 
 VideoBootStrap COCOA_bootstrap = {
     "cocoa", "SDL Cocoa video driver",
-    Cocoa_CreateDevice
+    Cocoa_CreateDevice,
+    Cocoa_ShowMessageBox
 };
 
-int Cocoa_VideoInit(SDL_VideoDevice *_this)
+static bool Cocoa_VideoInit(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
-        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
 
         Cocoa_InitModes(_this);
         Cocoa_InitKeyboard(_this);
-        if (Cocoa_InitMouse(_this) < 0) {
-            return -1;
+        if (!Cocoa_InitMouse(_this)) {
+            return false;
+        }
+        if (!Cocoa_InitPen(_this)) {
+            return false;
         }
 
-        data.allow_spaces = SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, SDL_TRUE);
-        data.trackpad_is_touch_only = SDL_GetHintBoolean(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, SDL_FALSE);
+        // Assume we have a mouse and keyboard
+        // We could use GCMouse and GCKeyboard if we needed to, as is done in SDL_uikitevents.m
+        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
+        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
+
+        data.allow_spaces = SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, true);
+        data.trackpad_is_touch_only = SDL_GetHintBoolean(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, false);
+        SDL_AddHintCallback(SDL_HINT_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY, Cocoa_MenuVisibilityCallback, NULL);
 
         data.swaplock = SDL_CreateMutex();
         if (!data.swaplock) {
-            return -1;
+            return false;
         }
 
-        return 0;
+        return true;
     }
 }
 
 void Cocoa_VideoQuit(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
-        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->driverdata;
+        SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
         Cocoa_QuitModes(_this);
         Cocoa_QuitKeyboard(_this);
         Cocoa_QuitMouse(_this);
+        Cocoa_QuitPen(_this);
         SDL_DestroyMutex(data.swaplock);
         data.swaplock = NULL;
     }
 }
 
-/* This function assumes that it's called from within an autorelease pool */
+// This function assumes that it's called from within an autorelease pool
 SDL_SystemTheme Cocoa_GetSystemTheme(void)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 101400 /* Added in the 10.14.0 SDK. */
-    if ([[NSApplication sharedApplication] respondsToSelector:@selector(effectiveAppearance)]) {
+    if (@available(macOS 10.14, *)) {
         NSAppearance* appearance = [[NSApplication sharedApplication] effectiveAppearance];
 
         if ([appearance.name containsString: @"Dark"]) {
             return SDL_SYSTEM_THEME_DARK;
         }
     }
-#endif
     return SDL_SYSTEM_THEME_LIGHT;
 }
 
-/* This function assumes that it's called from within an autorelease pool */
+// This function assumes that it's called from within an autorelease pool
 NSImage *Cocoa_CreateImage(SDL_Surface *surface)
 {
-    SDL_Surface *converted;
-    NSBitmapImageRep *imgrep;
-    Uint8 *pixels;
-    int i;
     NSImage *img;
 
-    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32);
-    if (!converted) {
-        return nil;
-    }
-
-    imgrep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
-                                                     pixelsWide:converted->w
-                                                     pixelsHigh:converted->h
-                                                  bitsPerSample:8
-                                                samplesPerPixel:4
-                                                       hasAlpha:YES
-                                                       isPlanar:NO
-                                                 colorSpaceName:NSDeviceRGBColorSpace
-                                                    bytesPerRow:converted->pitch
-                                                   bitsPerPixel:converted->format->BitsPerPixel];
-    if (imgrep == nil) {
-        SDL_DestroySurface(converted);
-        return nil;
-    }
-
-    /* Copy the pixels */
-    pixels = [imgrep bitmapData];
-    SDL_memcpy(pixels, converted->pixels, (size_t)converted->h * converted->pitch);
-    SDL_DestroySurface(converted);
-
-    /* Premultiply the alpha channel */
-    for (i = (surface->h * surface->w); i--;) {
-        Uint8 alpha = pixels[3];
-        pixels[0] = (Uint8)(((Uint16)pixels[0] * alpha) / 255);
-        pixels[1] = (Uint8)(((Uint16)pixels[1] * alpha) / 255);
-        pixels[2] = (Uint8)(((Uint16)pixels[2] * alpha) / 255);
-        pixels += 4;
-    }
-
     img = [[NSImage alloc] initWithSize:NSMakeSize(surface->w, surface->h)];
-    if (img != nil) {
+    if (img == nil) {
+        return nil;
+    }
+
+    SDL_Surface **images = SDL_GetSurfaceImages(surface, NULL);
+    if (!images) {
+        return nil;
+    }
+
+    for (int i = 0; images[i]; ++i) {
+        SDL_Surface *converted = SDL_ConvertSurface(images[i], SDL_PIXELFORMAT_RGBA32);
+        if (!converted) {
+            SDL_free(images);
+            return nil;
+        }
+
+        // Premultiply the alpha channel
+        SDL_PremultiplySurfaceAlpha(converted, false);
+
+        NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
+                                                                           pixelsWide:converted->w
+                                                                           pixelsHigh:converted->h
+                                                                        bitsPerSample:8
+                                                                      samplesPerPixel:4
+                                                                             hasAlpha:YES
+                                                                             isPlanar:NO
+                                                                       colorSpaceName:NSDeviceRGBColorSpace
+                                                                          bytesPerRow:converted->pitch
+                                                                         bitsPerPixel:SDL_BITSPERPIXEL(converted->format)];
+        if (imgrep == nil) {
+            SDL_free(images);
+            SDL_DestroySurface(converted);
+            return nil;
+        }
+
+        // Copy the pixels
+        Uint8 *pixels = [imgrep bitmapData];
+        SDL_memcpy(pixels, converted->pixels, (size_t)converted->h * converted->pitch);
+        SDL_DestroySurface(converted);
+
+        // Add the image representation
         [img addRepresentation:imgrep];
     }
+    SDL_free(images);
+
     return img;
 }
 
@@ -303,13 +324,13 @@ void SDL_NSLog(const char *prefix, const char *text)
 {
     @autoreleasepool {
         NSString *nsText = [NSString stringWithUTF8String:text];
-        if (prefix) {
+        if (prefix && *prefix) {
             NSString *nsPrefix = [NSString stringWithUTF8String:prefix];
-            NSLog(@"%@: %@", nsPrefix, nsText);
+            NSLog(@"%@%@", nsPrefix, nsText);
         } else {
             NSLog(@"%@", nsText);
         }
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

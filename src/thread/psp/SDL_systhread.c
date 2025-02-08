@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_PSP
 
-/* PSP thread management routines for SDL */
+// PSP thread management routines for SDL
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,12 +38,14 @@ static int ThreadEntry(SceSize args, void *argp)
     return 0;
 }
 
-int SDL_SYS_CreateThread(SDL_Thread *thread)
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                          SDL_FunctionPointer pfnBeginThread,
+                          SDL_FunctionPointer pfnEndThread)
 {
     SceKernelThreadInfo status;
     int priority = 32;
 
-    /* Set priority of new thread to the same as the current thread */
+    // Set priority of new thread to the same as the current thread
     status.size = sizeof(SceKernelThreadInfo);
     if (sceKernelReferThreadStatus(sceKernelGetThreadId(), &status) == 0) {
         priority = status.currentPriority;
@@ -57,17 +59,17 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
     }
 
     sceKernelStartThread(thread->handle, 4, &thread);
-    return 0;
+    return true;
 }
 
 void SDL_SYS_SetupThread(const char *name)
 {
-    /* Do nothing. */
+    // Do nothing.
 }
 
-SDL_threadID SDL_ThreadID(void)
+SDL_ThreadID SDL_GetCurrentThreadID(void)
 {
-    return (SDL_threadID)sceKernelGetThreadId();
+    return (SDL_ThreadID)sceKernelGetThreadId();
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)
@@ -78,7 +80,7 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
 
 void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
-    /* !!! FIXME: is this correct? */
+    // !!! FIXME: is this correct?
     sceKernelDeleteThread(thread->handle);
 }
 
@@ -87,7 +89,7 @@ void SDL_SYS_KillThread(SDL_Thread *thread)
     sceKernelTerminateDeleteThread(thread->handle);
 }
 
-int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
     int value;
 
@@ -101,7 +103,10 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         value = 50;
     }
 
-    return sceKernelChangeThreadPriority(sceKernelGetThreadId(), value);
+    if (sceKernelChangeThreadPriority(sceKernelGetThreadId(), value) < 0) {
+        return SDL_SetError("sceKernelChangeThreadPriority() failed");
+    }
+    return true;
 }
 
-#endif /* SDL_THREAD_PSP */
+#endif // SDL_THREAD_PSP

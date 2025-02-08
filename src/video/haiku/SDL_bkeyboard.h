@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,8 +30,6 @@ extern "C" {
 
 extern void HAIKU_InitOSKeymap(void);
 extern SDL_Scancode HAIKU_GetScancodeFromBeKey(int32 bkey);
-extern int8 HAIKU_GetKeyState(int32 bkey);
-extern void HAIKU_SetKeyState(int32 bkey, int8 state);
 
 #ifdef __cplusplus
 }

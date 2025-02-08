@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,11 +28,14 @@
 
 struct input_event;
 
-extern int SDL_EVDEV_Init(void);
+extern bool SDL_EVDEV_Init(void);
 extern void SDL_EVDEV_Quit(void);
+extern void SDL_EVDEV_SetVTSwitchCallbacks(void (*release_callback)(void*), void *release_callback_data,
+                                           void (*acquire_callback)(void*), void *acquire_callback_data);
+extern int SDL_EVDEV_GetDeviceCount(int device_class);
 extern void SDL_EVDEV_Poll(void);
 extern Uint64 SDL_EVDEV_GetEventTimestamp(struct input_event *event);
 
-#endif /* SDL_INPUT_LINUXEV */
+#endif // SDL_INPUT_LINUXEV
 
-#endif /* SDL_evdev_h_ */
+#endif // SDL_evdev_h_

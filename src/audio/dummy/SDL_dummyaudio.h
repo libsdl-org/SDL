@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@
 struct SDL_PrivateAudioData
 {
     Uint8 *mixbuf;   // The file descriptor for the audio device
-    Uint32 io_delay; // miliseconds to sleep in WaitDevice.
+    Uint32 io_delay; // milliseconds to sleep in WaitDevice.
 };
 
 #endif // SDL_dummyaudio_h_

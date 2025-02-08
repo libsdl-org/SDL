@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,7 +32,6 @@
 extern "C"
 {
 
-#include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 #include "SDL_haikuaudio.h"
 
@@ -46,14 +45,14 @@ static Uint8 *HAIKUAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     return device->hidden->current_buffer;
 }
 
-static int HAIKUAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
+static bool HAIKUAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size)
 {
     // We already wrote our output right into the BSoundPlayer's callback's stream. Just clean up our stuff.
     SDL_assert(device->hidden->current_buffer != NULL);
     SDL_assert(device->hidden->current_buffer_len > 0);
     device->hidden->current_buffer = NULL;
     device->hidden->current_buffer_len = 0;
-    return 0;
+    return true;
 }
 
 // The Haiku callback for handling the audio buffer
@@ -64,7 +63,7 @@ static void FillSound(void *data, void *stream, size_t len, const media_raw_audi
     SDL_assert(device->hidden->current_buffer_len == 0);
     device->hidden->current_buffer = (Uint8 *) stream;
     device->hidden->current_buffer_len = (int) len;
-    SDL_OutputAudioThreadIterate(device);
+    SDL_PlaybackAudioThreadIterate(device);
 }
 
 static void HAIKUAUDIO_CloseDevice(SDL_AudioDevice *device)
@@ -103,12 +102,12 @@ static inline void UnmaskSignals(sigset_t * omask)
 }
 
 
-static int HAIKUAUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool HAIKUAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     // Initialize all variables that we clean on shutdown
     device->hidden = new SDL_PrivateAudioData;
-    if (device->hidden == NULL) {
-        return SDL_OutOfMemory();
+    if (!device->hidden) {
+        return false;
     }
     SDL_zerop(device->hidden);
 
@@ -187,7 +186,7 @@ static int HAIKUAUDIO_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("Unable to start Haiku audio");
     }
 
-    return 0;  // We're running!
+    return true;  // We're running!
 }
 
 static void HAIKUAUDIO_Deinitialize(void)
@@ -195,10 +194,10 @@ static void HAIKUAUDIO_Deinitialize(void)
     SDL_QuitBeApp();
 }
 
-static SDL_bool HAIKUAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool HAIKUAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    if (SDL_InitBeApp() < 0) {
-        return SDL_FALSE;
+    if (!SDL_InitBeApp()) {
+        return false;
     }
 
     // Set the function pointers
@@ -207,17 +206,17 @@ static SDL_bool HAIKUAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->PlayDevice = HAIKUAUDIO_PlayDevice;
     impl->CloseDevice = HAIKUAUDIO_CloseDevice;
     impl->Deinitialize = HAIKUAUDIO_Deinitialize;
-    impl->ProvidesOwnCallbackThread = SDL_TRUE;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->ProvidesOwnCallbackThread = true;
+    impl->OnlyHasDefaultPlaybackDevice = true;
 
-    return SDL_TRUE;
+    return true;
 }
 
 
 extern "C" { extern AudioBootStrap HAIKUAUDIO_bootstrap; }
 
 AudioBootStrap HAIKUAUDIO_bootstrap = {
-    "haiku", "Haiku BSoundPlayer", HAIKUAUDIO_Init, SDL_FALSE
+    "haiku", "Haiku BSoundPlayer", HAIKUAUDIO_Init, false
 };
 
 #endif // SDL_AUDIO_DRIVER_HAIKU

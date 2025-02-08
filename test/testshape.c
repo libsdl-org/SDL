@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -9,382 +9,139 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdlib.h>
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <SDL3/SDL_test.h>
 
-#define SHAPED_WINDOW_DIMENSION 640
+#include "glass.h"
 
-typedef struct LoadedPicture
+
+static SDL_HitTestResult SDLCALL ShapeHitTest(SDL_Window *window, const SDL_Point *area, void *userdata)
 {
-    SDL_Surface *surface;
-    SDL_Texture *texture;
-    SDL_WindowShapeMode mode;
-    const char *name;
-    struct LoadedPicture *next;
-} LoadedPicture;
+    SDL_Surface *shape = (SDL_Surface *)userdata;
+    Uint8 r, g, b, a;
 
-static Uint8 *g_bitmap = NULL;
-static int g_bitmap_w = 0, g_bitmap_h = 0;
-static SDL_Surface *g_shape_surface = NULL;
-static SDL_Texture *g_shape_texture = NULL;
-
-static void log_usage(SDLTest_CommonState *state, char *progname) {
-    static const char *options[] = { "sample1.bmp [sample2.bmp [sample3.bmp ...]]", NULL };
-    SDLTest_CommonLogUsage(state, progname, options);
-}
-
-/* REQUIRES that bitmap point to a w-by-h bitmap with ppb pixels-per-byte. */
-static void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode, SDL_Surface *shape, Uint8 *bitmap, Uint8 ppb)
-{
-    int x = 0;
-    int y = 0;
-    Uint8 r = 0, g = 0, b = 0, alpha = 0;
-    Uint32 mask_value = 0;
-    size_t bytes_per_scanline = (size_t)(shape->w + (ppb - 1)) / ppb;
-    Uint8 *bitmap_scanline;
-    SDL_Color key;
-
-    if (SDL_MUSTLOCK(shape)) {
-        SDL_LockSurface(shape);
-    }
-
-    SDL_memset(bitmap, 0, shape->h * bytes_per_scanline);
-
-    for (y = 0; y < shape->h; y++) {
-        bitmap_scanline = bitmap + y * bytes_per_scanline;
-        for (x = 0; x < shape->w; x++) {
-            alpha = 0;
-            if (SDLTest_ReadSurfacePixel(shape, x, y, &r, &g, &b, &alpha) != 0) {
-                continue;
-            }
-
-            switch (mode.mode) {
-            case (ShapeModeDefault):
-                mask_value = (alpha >= 1 ? 1 : 0);
-                break;
-            case (ShapeModeBinarizeAlpha):
-                mask_value = (alpha >= mode.parameters.binarizationCutoff ? 1 : 0);
-                break;
-            case (ShapeModeReverseBinarizeAlpha):
-                mask_value = (alpha <= mode.parameters.binarizationCutoff ? 1 : 0);
-                break;
-            case (ShapeModeColorKey):
-                key = mode.parameters.colorKey;
-                mask_value = ((key.r != r || key.g != g || key.b != b) ? 1 : 0);
-                break;
-            }
-            bitmap_scanline[x / ppb] |= mask_value << (x % ppb);
+    if (SDL_ReadSurfacePixel(shape, area->x, area->y, &r, &g, &b, &a)) {
+        if (a != SDL_ALPHA_TRANSPARENT) {
+            /* We'll just make everything draggable */
+            return SDL_HITTEST_DRAGGABLE;
         }
     }
-
-    if (SDL_MUSTLOCK(shape)) {
-        SDL_UnlockSurface(shape);
-    }
+    return SDL_HITTEST_NORMAL;
 }
 
-static int SDL3_SetWindowShape(SDL_Window *window, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode)
+int main(int argc, char *argv[])
 {
-    if (g_bitmap) {
-        SDL_free(g_bitmap);
-        g_bitmap = NULL;
-    }
-
-    if (g_shape_texture) {
-        SDL_DestroyTexture(g_shape_texture);
-        g_shape_texture = NULL;
-    }
-
-    if (g_shape_surface) {
-        SDL_DestroySurface(g_shape_surface);
-        g_shape_surface = NULL;
-    }
-
-    if (shape == NULL) {
-        return SDL_SetError("shape");
-    }
-
-    if (shape_mode == NULL) {
-        return SDL_SetError("shape_mode");
-    }
-
-    g_bitmap_w = shape->w;
-    g_bitmap_h = shape->h;
-    g_bitmap = (Uint8*) SDL_malloc(shape->w * shape->h);
-    if (g_bitmap == NULL) {
-        return SDL_OutOfMemory();
-    }
-
-    SDL_CalculateShapeBitmap(*shape_mode, shape, g_bitmap, 1);
-
-    g_shape_surface = SDL_CreateSurface(g_bitmap_w, g_bitmap_h, SDL_PIXELFORMAT_ABGR8888);
-    if (g_shape_surface) {
-        int x, y, i = 0;
-        Uint32 *ptr = g_shape_surface->pixels;
-        for (y = 0; y < g_bitmap_h; y++) {
-            for (x = 0; x < g_bitmap_w; x++) {
-                Uint8 val = g_bitmap[i++];
-                if (val == 0) {
-                    ptr[x] = 0;
-                } else {
-                    ptr[x] = 0xffffffff;
-                }
-            }
-            ptr = (Uint32 *)((Uint8 *)ptr + g_shape_surface->pitch);
-        }
-    }
-
-    return 0;
-}
-
-static void render(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    /* Clear render-target to blue. */
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0xff, 0xff);
-    SDL_RenderClear(renderer);
-
-    /* Render the texture. */
-    SDL_RenderTexture(renderer, texture, NULL, NULL);
-
-    /* Apply the shape */
-    if (g_shape_surface) {
-        SDL_RendererInfo info;
-        SDL_GetRendererInfo(renderer, &info);
-
-        if (info.flags & SDL_RENDERER_SOFTWARE) {
-            if (g_bitmap) {
-                int x, y, i = 0;
-                Uint8 r, g, b, a;
-                SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-                for (y = 0; y < g_bitmap_h; y++) {
-                    for (x = 0; x < g_bitmap_w; x++) {
-                        Uint8 val = g_bitmap[i++];
-                        if (val == 0) {
-                            SDL_RenderPoint(renderer, (float)x, (float)y);
-                        }
-                    }
-                }
-                SDL_SetRenderDrawColor(renderer, r, g, b, a);
-            }
-        } else {
-            if (g_shape_texture == NULL) {
-                SDL_BlendMode bm;
-
-                g_shape_texture = SDL_CreateTextureFromSurface(renderer, g_shape_surface);
-
-                /* if Alpha is 0, set all to 0, else leave unchanged. */
-                bm = SDL_ComposeCustomBlendMode(
-                        SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD,
-                        SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDOPERATION_ADD);
-
-                SDL_SetTextureBlendMode(g_shape_texture, bm);
-            }
-            SDL_RenderTexture(renderer, g_shape_texture, NULL, NULL);
-        }
-    }
-
-    SDL_RenderPresent(renderer);
-}
-
-int main(int argc, char **argv)
-{
-    int num_pictures = 0;
-    LoadedPicture *pic_i = NULL;
-    LoadedPicture *picture_linked_list = NULL;
-    LoadedPicture **pictures = NULL;
-    int i;
-    const SDL_DisplayMode *mode;
-    SDL_PixelFormat *format = NULL;
+    const char *image_file = NULL;
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
-    SDL_Color black = { 0, 0, 0, 0xff };
+    SDL_Surface *shape = NULL;
+    bool resizable = false;
+    SDL_WindowFlags flags;
+    bool done = false;
     SDL_Event event;
-    int should_exit = 0;
-    int current_picture;
-    int button_down;
-    Uint32 pixelFormat = 0;
-    int w, h, access = 0;
-    SDLTest_CommonState *state;
-    int rc;
+    int i;
+    int return_code = 1;
 
-    /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
-        return 1;
-    }
-
-    rc = 0;
-
-    /* SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software"); */
-    /* SDL_SetHint(SDL_HINT_VIDEO_FORCE_EGL, "0"); */
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-    /* Parse commandline */
-    for (i = 1; i < argc;) {
-        int consumed;
-
-        consumed = SDLTest_CommonArg(state, i);
-        if (!consumed) {
-            LoadedPicture *new_picture;
-
-            new_picture = SDL_malloc(sizeof(LoadedPicture));
-            new_picture->name = argv[i];
-            new_picture->next = picture_linked_list;
-            picture_linked_list = new_picture;
-            num_pictures++;
-            consumed = 1;
-        }
-        if (consumed <= 0) {
-            log_usage(state, argv[0]);
-            exit(-1);
-        }
-
-        i += consumed;
-    }
-    if (!num_pictures) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Shape requires at least one bitmap file as argument.");
-        log_usage(state, argv[0]);
-        exit(-1);
-    }
-
-    if (SDL_Init(SDL_INIT_VIDEO) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not initialize SDL video.");
-        exit(-2);
-    }
-
-    mode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
-    if (!mode) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't get desktop display mode: %s", SDL_GetError());
-        rc = -2;
-        goto ret;
-    }
-
-    /* Allocate an array of LoadedPicture pointers for convenience accesses. */
-    pictures = (LoadedPicture **)SDL_malloc(sizeof(LoadedPicture*) * num_pictures);
-    if (!pictures) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not allocate memory.");
-        rc = 1;
-        goto ret;
-    }
-    for (i = 0, pic_i = picture_linked_list; i < num_pictures; i++, pic_i = pic_i->next) {
-        pictures[i] = pic_i;
-        pictures[i]->surface = NULL;
-    }
-    for (i = 0; i < num_pictures; i++) {
-        pictures[i]->surface = SDL_LoadBMP(pictures[i]->name);
-        if (pictures[i]->surface == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not load surface from named bitmap file: %s", pictures[i]->name);
-            rc = -3;
-            goto ret;
-        }
-
-        format = pictures[i]->surface->format;
-        if (SDL_ISPIXELFORMAT_ALPHA(format->format)) {
-            pictures[i]->mode.mode = ShapeModeBinarizeAlpha;
-            pictures[i]->mode.parameters.binarizationCutoff = 255;
+    for (i = 1; i < argc; ++i) {
+        if (SDL_strcmp(argv[i], "--resizable") == 0) {
+            resizable = true;
+        } else if (!image_file) {
+            image_file = argv[i];
         } else {
-            pictures[i]->mode.mode = ShapeModeColorKey;
-            pictures[i]->mode.parameters.colorKey = black;
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Usage: %s [--resizable] [shape.bmp]", argv[0]);
+            goto quit;
         }
     }
 
-    window = SDL_CreateWindow("SDL_Shape test", SHAPED_WINDOW_DIMENSION, SHAPED_WINDOW_DIMENSION, SDL_WINDOW_TRANSPARENT);
-    if (window == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create shaped window for SDL_Shape.");
-        rc = -4;
-        goto ret;
-    }
-    renderer = SDL_CreateRenderer(window, NULL, 0);
-    if (renderer == NULL) {
-        SDL_DestroyWindow(window);
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create rendering context for SDL_Shape window.");
-        rc = -4;
-        goto ret;
-    }
-
-    for (i = 0; i < num_pictures; i++) {
-        pictures[i]->texture = NULL;
-    }
-    for (i = 0; i < num_pictures; i++) {
-        pictures[i]->texture = SDL_CreateTextureFromSurface(renderer, pictures[i]->surface);
-        if (pictures[i]->texture == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create texture for SDL_shape.");
-            rc = -6;
-            goto ret;
+    if (image_file) {
+        shape = SDL_LoadBMP(image_file);
+        if (!shape) {
+            SDL_Log("Couldn't load %s: %s", image_file, SDL_GetError());
+            goto quit;
+        }
+    } else {
+        SDL_IOStream *stream = SDL_IOFromConstMem(glass_bmp, sizeof(glass_bmp));
+        if (!stream) {
+            SDL_Log("Couldn't create iostream for glass.bmp: %s", SDL_GetError());
+            goto quit;
+        }
+        shape = SDL_LoadBMP_IO(stream, true);
+        if (!shape) {
+            SDL_Log("Couldn't load glass.bmp: %s", SDL_GetError());
+            goto quit;
         }
     }
 
-    should_exit = 0;
-    current_picture = 0;
-    button_down = 0;
-    SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture]->name);
-    SDL_QueryTexture(pictures[current_picture]->texture, &pixelFormat, &access, &w, &h);
-    /* We want to set the window size in pixels */
-    SDL_SetWindowSize(window, (int)SDL_ceilf(w / mode->pixel_density), (int)SDL_ceilf(h / mode->pixel_density));
-    SDL3_SetWindowShape(window, pictures[current_picture]->surface, &pictures[current_picture]->mode);
-    while (should_exit == 0) {
+    /* Create the window hidden so we can set the shape before it's visible */
+    flags = (SDL_WINDOW_HIDDEN | SDL_WINDOW_TRANSPARENT);
+    if (resizable) {
+        flags |= SDL_WINDOW_RESIZABLE;
+    } else {
+        flags |= SDL_WINDOW_BORDERLESS;
+    }
+    window = SDL_CreateWindow("SDL Shape Test", shape->w, shape->h, flags);
+    if (!window) {
+        SDL_Log("Couldn't create transparent window: %s", SDL_GetError());
+        goto quit;
+    }
+
+    renderer = SDL_CreateRenderer(window, NULL);
+    if (!renderer) {
+        SDL_Log("Couldn't create renderer: %s", SDL_GetError());
+        goto quit;
+    }
+
+    if (!SDL_ISPIXELFORMAT_ALPHA(shape->format)) {
+        /* Set the colorkey to the top-left pixel */
+        Uint8 r, g, b, a;
+
+        SDL_ReadSurfacePixel(shape, 0, 0, &r, &g, &b, &a);
+        SDL_SetSurfaceColorKey(shape, 1, SDL_MapSurfaceRGBA(shape, r, g, b, a));
+    }
+
+    if (!resizable) {
+        /* Set the hit test callback so we can drag the window */
+        if (!SDL_SetWindowHitTest(window, ShapeHitTest, shape)) {
+            SDL_Log("Couldn't set hit test callback: %s", SDL_GetError());
+            goto quit;
+        }
+    }
+
+    /* Set the window size to the size of our shape and show it */
+    SDL_SetWindowShape(window, shape);
+    SDL_ShowWindow(window);
+
+    /* We're ready to go! */
+    while (!done) {
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_KEY_DOWN) {
-                button_down = 1;
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    should_exit = 1;
-                    break;
+            switch (event.type) {
+            case SDL_EVENT_KEY_DOWN:
+                if (event.key.key == SDLK_ESCAPE) {
+                    done = true;
                 }
-            }
-            if (button_down && event.type == SDL_EVENT_KEY_UP) {
-                button_down = 0;
-                current_picture += 1;
-                if (current_picture >= num_pictures) {
-                    current_picture = 0;
-                }
-                SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Changing to shaped bmp: %s", pictures[current_picture]->name);
-                SDL_QueryTexture(pictures[current_picture]->texture, &pixelFormat, &access, &w, &h);
-                SDL_SetWindowSize(window, (int)SDL_ceilf(w / mode->pixel_density), (int)SDL_ceilf(h / mode->pixel_density));
-                SDL3_SetWindowShape(window, pictures[current_picture]->surface, &pictures[current_picture]->mode);
-            }
-            if (event.type == SDL_EVENT_QUIT) {
-                should_exit = 1;
+                break;
+            case SDL_EVENT_QUIT:
+                done = true;
+                break;
+            default:
                 break;
             }
         }
-        render(renderer, pictures[current_picture]->texture);
-        SDL_Delay(10);
+
+        /* We'll clear to white, but you could do other drawing here */
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+
+        /* Show everything on the screen and wait a bit */
+        SDL_RenderPresent(renderer);
+        SDL_Delay(100);
     }
 
-ret:
-    /* Free the textures + original surfaces backing the textures. */
-    for (pic_i = picture_linked_list; pic_i; ) {
-        LoadedPicture *next = pic_i->next;
-        if (pic_i->texture) {
-            SDL_DestroyTexture(pic_i->texture);
-        }
-        SDL_DestroySurface(pic_i->surface);
-        SDL_free(pic_i);
-        pic_i = next;
-    }
-    SDL_free(pictures);
+    /* Success! */
+    return_code = 0;
 
-    /* Destroy the renderer. */
-    SDL_DestroyRenderer(renderer);
-    /* Destroy the window. */
-    SDL_DestroyWindow(window);
-
-    if (g_bitmap) {
-        SDL_free(g_bitmap);
-        g_bitmap = NULL;
-    }
-    if (g_shape_surface) {
-        SDL_DestroySurface(g_shape_surface);
-        g_shape_surface = NULL;
-    }
-
+quit:
+    SDL_DestroySurface(shape);
     SDL_Quit();
-    SDLTest_CommonDestroyState(state);
-
-    return rc;
+    return return_code;
 }

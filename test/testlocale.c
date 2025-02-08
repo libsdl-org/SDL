@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -15,14 +15,15 @@
 
 static void log_locales(void)
 {
-    SDL_Locale *locales = SDL_GetPreferredLocales();
-    if (locales == NULL) {
+    SDL_Locale **locales = SDL_GetPreferredLocales(NULL);
+    if (!locales) {
         SDL_Log("Couldn't determine locales: %s", SDL_GetError());
     } else {
-        SDL_Locale *l;
+        int i;
         unsigned int total = 0;
         SDL_Log("Locales, in order of preference:");
-        for (l = locales; l->language; l++) {
+        for (i = 0; locales[i]; ++i) {
+            const SDL_Locale *l = locales[i];
             const char *c = l->country;
             SDL_Log(" - %s%s%s", l->language, c ? "_" : "", c ? c : "");
             total++;
@@ -40,12 +41,9 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -69,7 +67,7 @@ int main(int argc, char **argv)
     }
 
     /* Print locales and languages */
-    if (SDLTest_CommonInit(state) == SDL_FALSE) {
+    if (SDLTest_CommonInit(state) == false) {
         return 1;
     }
 

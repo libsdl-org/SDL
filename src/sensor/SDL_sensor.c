@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,13 +20,11 @@
 */
 #include "SDL_internal.h"
 
-/* This is the sensor API for Simple DirectMedia Layer */
+// This is the sensor API for Simple DirectMedia Layer
 
 #include "SDL_syssensor.h"
 
-#ifndef SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
-#endif
 #include "../joystick/SDL_gamepad_c.h"
 
 static SDL_SensorDriver *SDL_sensor_drivers[] = {
@@ -53,22 +51,20 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #ifndef SDL_THREAD_SAFETY_ANALYSIS
 static
 #endif
-SDL_Mutex *SDL_sensor_lock = NULL; /* This needs to support recursive locks */
+SDL_Mutex *SDL_sensor_lock = NULL; // This needs to support recursive locks
 static SDL_AtomicInt SDL_sensor_lock_pending;
 static int SDL_sensors_locked;
-static SDL_bool SDL_sensors_initialized;
+static bool SDL_sensors_initialized;
 static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
-static SDL_AtomicInt SDL_last_sensor_instance_id;
-static char SDL_sensor_magic;
 
-#define CHECK_SENSOR_MAGIC(sensor, retval)              \
-    if (!sensor || sensor->magic != &SDL_sensor_magic) { \
-        SDL_InvalidParamError("sensor");                \
-        SDL_UnlockSensors();                            \
-        return retval;                                  \
+#define CHECK_SENSOR_MAGIC(sensor, result)                  \
+    if (!SDL_ObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR)) { \
+        SDL_InvalidParamError("sensor");                    \
+        SDL_UnlockSensors();                                \
+        return result;                                      \
     }
 
-SDL_bool SDL_SensorsInitialized(void)
+bool SDL_SensorsInitialized(void)
 {
     return SDL_sensors_initialized;
 }
@@ -84,14 +80,14 @@ void SDL_LockSensors(void)
 
 void SDL_UnlockSensors(void)
 {
-    SDL_bool last_unlock = SDL_FALSE;
+    bool last_unlock = false;
 
     --SDL_sensors_locked;
 
     if (!SDL_sensors_initialized) {
-        /* NOTE: There's a small window here where another thread could lock the mutex after we've checked for pending locks */
-        if (!SDL_sensors_locked && SDL_AtomicGet(&SDL_sensor_lock_pending) == 0) {
-            last_unlock = SDL_TRUE;
+        // NOTE: There's a small window here where another thread could lock the mutex after we've checked for pending locks
+        if (!SDL_sensors_locked && SDL_GetAtomicInt(&SDL_sensor_lock_pending) == 0) {
+            last_unlock = true;
         }
     }
 
@@ -114,9 +110,9 @@ void SDL_UnlockSensors(void)
     }
 }
 
-SDL_bool SDL_SensorsLocked(void)
+bool SDL_SensorsLocked(void)
 {
-    return (SDL_sensors_locked > 0) ? SDL_TRUE : SDL_FALSE;
+    return (SDL_sensors_locked > 0);
 }
 
 void SDL_AssertSensorsLocked(void)
@@ -124,51 +120,50 @@ void SDL_AssertSensorsLocked(void)
     SDL_assert(SDL_SensorsLocked());
 }
 
-int SDL_InitSensors(void)
+bool SDL_InitSensors(void)
 {
-    int i, status;
+    int i;
+    bool status;
 
-    /* Create the sensor list lock */
+    // Create the sensor list lock
     if (SDL_sensor_lock == NULL) {
         SDL_sensor_lock = SDL_CreateMutex();
     }
 
-#ifndef SDL_EVENTS_DISABLED
-    if (SDL_InitSubSystem(SDL_INIT_EVENTS) < 0) {
-        return -1;
+    if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {
+        return false;
     }
-#endif /* !SDL_EVENTS_DISABLED */
 
     SDL_LockSensors();
 
-    SDL_sensors_initialized = SDL_TRUE;
+    SDL_sensors_initialized = true;
 
-    status = -1;
+    status = false;
     for (i = 0; i < SDL_arraysize(SDL_sensor_drivers); ++i) {
-        if (SDL_sensor_drivers[i]->Init() >= 0) {
-            status = 0;
+        if (SDL_sensor_drivers[i]->Init()) {
+            status = true;
         }
     }
 
     SDL_UnlockSensors();
 
-    if (status < 0) {
+    if (!status) {
         SDL_QuitSensors();
     }
 
     return status;
 }
 
-SDL_bool SDL_SensorsOpened(void)
+bool SDL_SensorsOpened(void)
 {
-    SDL_bool opened;
+    bool opened;
 
     SDL_LockSensors();
     {
         if (SDL_sensors != NULL) {
-            opened = SDL_TRUE;
+            opened = true;
         } else {
-            opened = SDL_FALSE;
+            opened = false;
         }
     }
     SDL_UnlockSensors();
@@ -209,8 +204,6 @@ SDL_SensorID *SDL_GetSensors(int *count)
             if (count) {
                 *count = 0;
             }
-
-            SDL_OutOfMemory();
         }
     }
     SDL_UnlockSensors();
@@ -219,19 +212,10 @@ SDL_SensorID *SDL_GetSensors(int *count)
 }
 
 /*
- * Return the next available sensor instance ID
- * This may be called by drivers from multiple threads, unprotected by any locks
- */
-SDL_SensorID SDL_GetNextSensorInstanceID(void)
-{
-    return SDL_AtomicIncRef(&SDL_last_sensor_instance_id) + 1;
-}
-
-/*
  * Get the driver and device index for a sensor instance ID
  * This should be called while the sensor lock is held, to prevent another thread from updating the list
  */
-static SDL_bool SDL_GetDriverAndSensorIndex(SDL_SensorID instance_id, SDL_SensorDriver **driver, int *driver_index)
+static bool SDL_GetDriverAndSensorIndex(SDL_SensorID instance_id, SDL_SensorDriver **driver, int *driver_index)
 {
     int i, num_sensors, device_index;
 
@@ -243,19 +227,19 @@ static SDL_bool SDL_GetDriverAndSensorIndex(SDL_SensorID instance_id, SDL_Sensor
                 if (sensor_id == instance_id) {
                     *driver = SDL_sensor_drivers[i];
                     *driver_index = device_index;
-                    return SDL_TRUE;
+                    return true;
                 }
             }
         }
     }
-    SDL_SetError("Sensor %" SDL_PRIs32 " not found", instance_id);
-    return SDL_FALSE;
+    SDL_SetError("Sensor %" SDL_PRIu32 " not found", instance_id);
+    return false;
 }
 
 /*
  * Get the implementation dependent name of a sensor
  */
-const char *SDL_GetSensorInstanceName(SDL_SensorID instance_id)
+const char *SDL_GetSensorNameForID(SDL_SensorID instance_id)
 {
     SDL_SensorDriver *driver;
     int device_index;
@@ -263,15 +247,14 @@ const char *SDL_GetSensorInstanceName(SDL_SensorID instance_id)
 
     SDL_LockSensors();
     if (SDL_GetDriverAndSensorIndex(instance_id, &driver, &device_index)) {
-        name = driver->GetDeviceName(device_index);
+        name = SDL_GetPersistentString(driver->GetDeviceName(device_index));
     }
     SDL_UnlockSensors();
 
-    /* FIXME: Really we should reference count this name so it doesn't go away after unlock */
     return name;
 }
 
-SDL_SensorType SDL_GetSensorInstanceType(SDL_SensorID instance_id)
+SDL_SensorType SDL_GetSensorTypeForID(SDL_SensorID instance_id)
 {
     SDL_SensorDriver *driver;
     int device_index;
@@ -286,7 +269,7 @@ SDL_SensorType SDL_GetSensorInstanceType(SDL_SensorID instance_id)
     return type;
 }
 
-int SDL_GetSensorInstanceNonPortableType(SDL_SensorID instance_id)
+int SDL_GetSensorNonPortableTypeForID(SDL_SensorID instance_id)
 {
     SDL_SensorDriver *driver;
     int device_index;
@@ -337,20 +320,20 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
         sensorlist = sensorlist->next;
     }
 
-    /* Create and initialize the sensor */
-    sensor = (SDL_Sensor *)SDL_calloc(sizeof(*sensor), 1);
-    if (sensor == NULL) {
-        SDL_OutOfMemory();
+    // Create and initialize the sensor
+    sensor = (SDL_Sensor *)SDL_calloc(1, sizeof(*sensor));
+    if (!sensor) {
         SDL_UnlockSensors();
         return NULL;
     }
-    sensor->magic = &SDL_sensor_magic;
+    SDL_SetObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR, true);
     sensor->driver = driver;
     sensor->instance_id = instance_id;
     sensor->type = driver->GetDeviceType(device_index);
     sensor->non_portable_type = driver->GetDeviceNonPortableType(device_index);
 
-    if (driver->Open(sensor, device_index) < 0) {
+    if (!driver->Open(sensor, device_index)) {
+        SDL_SetObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR, false);
         SDL_free(sensor);
         SDL_UnlockSensors();
         return NULL;
@@ -363,9 +346,9 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
         sensor->name = NULL;
     }
 
-    /* Add sensor to list */
+    // Add sensor to list
     ++sensor->ref_count;
-    /* Link the sensor in the list */
+    // Link the sensor in the list
     sensor->next = SDL_sensors;
     SDL_sensors = sensor;
 
@@ -379,7 +362,7 @@ SDL_Sensor *SDL_OpenSensor(SDL_SensorID instance_id)
 /*
  * Find the SDL_Sensor that owns this instance id
  */
-SDL_Sensor *SDL_GetSensorFromInstanceID(SDL_SensorID instance_id)
+SDL_Sensor *SDL_GetSensorFromID(SDL_SensorID instance_id)
 {
     SDL_Sensor *sensor;
 
@@ -398,7 +381,7 @@ SDL_Sensor *SDL_GetSensorFromInstanceID(SDL_SensorID instance_id)
  */
 SDL_PropertiesID SDL_GetSensorProperties(SDL_Sensor *sensor)
 {
-    SDL_PropertiesID retval;
+    SDL_PropertiesID result;
 
     SDL_LockSensors();
     {
@@ -407,11 +390,11 @@ SDL_PropertiesID SDL_GetSensorProperties(SDL_Sensor *sensor)
         if (sensor->props == 0) {
             sensor->props = SDL_CreateProperties();
         }
-        retval = sensor->props;
+        result = sensor->props;
     }
     SDL_UnlockSensors();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -419,17 +402,17 @@ SDL_PropertiesID SDL_GetSensorProperties(SDL_Sensor *sensor)
  */
 const char *SDL_GetSensorName(SDL_Sensor *sensor)
 {
-    const char *retval;
+    const char *result;
 
     SDL_LockSensors();
     {
         CHECK_SENSOR_MAGIC(sensor, NULL);
 
-        retval = sensor->name;
+        result = SDL_GetPersistentString(sensor->name);
     }
     SDL_UnlockSensors();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -437,17 +420,17 @@ const char *SDL_GetSensorName(SDL_Sensor *sensor)
  */
 SDL_SensorType SDL_GetSensorType(SDL_Sensor *sensor)
 {
-    SDL_SensorType retval;
+    SDL_SensorType result;
 
     SDL_LockSensors();
     {
         CHECK_SENSOR_MAGIC(sensor, SDL_SENSOR_INVALID);
 
-        retval = sensor->type;
+        result = sensor->type;
     }
     SDL_UnlockSensors();
 
-    return retval;
+    return result;
 }
 
 /*
@@ -455,52 +438,52 @@ SDL_SensorType SDL_GetSensorType(SDL_Sensor *sensor)
  */
 int SDL_GetSensorNonPortableType(SDL_Sensor *sensor)
 {
-    int retval;
+    int result;
 
     SDL_LockSensors();
     {
         CHECK_SENSOR_MAGIC(sensor, -1);
 
-        retval = sensor->non_portable_type;
+        result = sensor->non_portable_type;
     }
     SDL_UnlockSensors();
 
-    return retval;
+    return result;
 }
 
 /*
  * Get the instance id for this opened sensor
  */
-SDL_SensorID SDL_GetSensorInstanceID(SDL_Sensor *sensor)
+SDL_SensorID SDL_GetSensorID(SDL_Sensor *sensor)
 {
-    SDL_SensorID retval;
+    SDL_SensorID result;
 
     SDL_LockSensors();
     {
         CHECK_SENSOR_MAGIC(sensor, 0);
 
-        retval = sensor->instance_id;
+        result = sensor->instance_id;
     }
     SDL_UnlockSensors();
 
-    return retval;
+    return result;
 }
 
 /*
  * Get the current state of this sensor
  */
-int SDL_GetSensorData(SDL_Sensor *sensor, float *data, int num_values)
+bool SDL_GetSensorData(SDL_Sensor *sensor, float *data, int num_values)
 {
     SDL_LockSensors();
     {
-        CHECK_SENSOR_MAGIC(sensor, -1);
+        CHECK_SENSOR_MAGIC(sensor, false);
 
         num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
         SDL_memcpy(data, sensor->data, num_values * sizeof(*data));
     }
     SDL_UnlockSensors();
 
-    return 0;
+    return true;
 }
 
 /*
@@ -515,7 +498,7 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
     {
         CHECK_SENSOR_MAGIC(sensor,);
 
-        /* First decrement ref count */
+        // First decrement ref count
         if (--sensor->ref_count > 0) {
             SDL_UnlockSensors();
             return;
@@ -525,13 +508,14 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
 
         sensor->driver->Close(sensor);
         sensor->hwdata = NULL;
+        SDL_SetObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR, false);
 
         sensorlist = SDL_sensors;
         sensorlistprev = NULL;
         while (sensorlist) {
             if (sensor == sensorlist) {
                 if (sensorlistprev) {
-                    /* unlink this entry */
+                    // unlink this entry
                     sensorlistprev->next = sensorlist->next;
                 } else {
                     SDL_sensors = sensor->next;
@@ -542,7 +526,7 @@ void SDL_CloseSensor(SDL_Sensor *sensor)
             sensorlist = sensorlist->next;
         }
 
-        /* Free the data associated with this sensor */
+        // Free the data associated with this sensor
         SDL_free(sensor->name);
         SDL_free(sensor);
     }
@@ -555,43 +539,37 @@ void SDL_QuitSensors(void)
 
     SDL_LockSensors();
 
-    /* Stop the event polling */
+    // Stop the event polling
     while (SDL_sensors) {
         SDL_sensors->ref_count = 1;
         SDL_CloseSensor(SDL_sensors);
     }
 
-    /* Quit the sensor setup */
+    // Quit the sensor setup
     for (i = 0; i < SDL_arraysize(SDL_sensor_drivers); ++i) {
         SDL_sensor_drivers[i]->Quit();
     }
 
-#ifndef SDL_EVENTS_DISABLED
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
-#endif
 
-    SDL_sensors_initialized = SDL_FALSE;
+    SDL_sensors_initialized = false;
 
     SDL_UnlockSensors();
 }
 
-/* These are global for SDL_syssensor.c and SDL_events.c */
+// These are global for SDL_syssensor.c and SDL_events.c
 
-int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values)
+void SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_timestamp, float *data, int num_values)
 {
-    int posted;
-
     SDL_AssertSensorsLocked();
 
-    /* Allow duplicate events, for things like steps and heartbeats */
+    // Allow duplicate events, for things like steps and heartbeats
 
-    /* Update internal sensor state */
+    // Update internal sensor state
     num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
     SDL_memcpy(sensor->data, data, num_values * sizeof(*data));
 
-    /* Post the event, if desired */
-    posted = 0;
-#ifndef SDL_EVENTS_DISABLED
+    // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_SENSOR_UPDATE)) {
         SDL_Event event;
         event.type = SDL_EVENT_SENSOR_UPDATE;
@@ -601,13 +579,10 @@ int SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_tim
         SDL_memset(event.sensor.data, 0, sizeof(event.sensor.data));
         SDL_memcpy(event.sensor.data, data, num_values * sizeof(*data));
         event.sensor.sensor_timestamp = sensor_timestamp;
-        posted = SDL_PushEvent(&event) == 1;
+        SDL_PushEvent(&event);
     }
-#endif /* !SDL_EVENTS_DISABLED */
 
     SDL_GamepadSensorWatcher(timestamp, sensor->instance_id, sensor_timestamp, data, num_values);
-
-    return posted;
 }
 
 void SDL_UpdateSensor(SDL_Sensor *sensor)

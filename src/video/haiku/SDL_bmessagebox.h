@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
   Copyright (C) 2018-2019 EXL <exlmotodev@gmail.com>
 
   This software is provided 'as-is', without any express or implied
@@ -31,13 +31,12 @@
 extern "C" {
 #endif
 
-extern int
-HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+extern bool HAIKU_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif // SDL_VIDEO_DRIVER_HAIKU
 
 #endif

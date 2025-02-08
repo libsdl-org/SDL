@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -59,7 +59,7 @@
 #include <libusbhid.h>
 #endif
 
-#if defined(__FREEBSD__) || defined(__FreeBSD_kernel__)
+#if defined(SDL_PLATFORM_FREEBSD)
 #include <osreldate.h>
 #if __FreeBSD_kernel_version > 800063
 #include <dev/usb/usb_ioctl.h>
@@ -69,7 +69,7 @@
 #include <sys/joystick.h>
 #endif
 
-#if SDL_HAVE_MACHINE_JOYSTICK_H
+#ifdef SDL_HAVE_MACHINE_JOYSTICK_H
 #include <machine/joystick.h>
 #endif
 
@@ -77,7 +77,7 @@
 #include "../SDL_joystick_c.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
-#if defined(__FREEBSD__) || SDL_HAVE_MACHINE_JOYSTICK_H || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
+#if defined(SDL_PLATFORM_FREEBSD) || defined(SDL_HAVE_MACHINE_JOYSTICK_H) || defined(__FreeBSD_kernel__) || defined(__DragonFly_)
 #define SUPPORT_JOY_GAMEPORT
 #endif
 
@@ -85,7 +85,7 @@
 #define MAX_JOY_JOYS  2
 #define MAX_JOYS      (MAX_UHID_JOYS + MAX_JOY_JOYS)
 
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
 
 #define HUG_DPAD_UP    0x90
 #define HUG_DPAD_DOWN  0x91
@@ -101,16 +101,16 @@
 
 struct report
 {
-#if defined(__FREEBSD__) && (__FreeBSD_kernel_version > 900000) || \
+#if defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 900000) || \
     defined(__DragonFly__)
-    void *buf; /* Buffer */
-#elif defined(__FREEBSD__) && (__FreeBSD_kernel_version > 800063)
-    struct usb_gen_descriptor *buf; /* Buffer */
+    void *buf; // Buffer
+#elif defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 800063)
+    struct usb_gen_descriptor *buf; // Buffer
 #else
-    struct usb_ctl_report *buf; /* Buffer */
+    struct usb_ctl_report *buf; // Buffer
 #endif
-    size_t size; /* Buffer size */
-    int rid;     /* Report ID */
+    size_t size; // Buffer size
+    int rid;     // Report ID
     enum
     {
         SREPORT_UNINIT,
@@ -155,8 +155,8 @@ struct joystick_hwdata
     int fd;
     enum
     {
-        BSDJOY_UHID, /* uhid(4) */
-        BSDJOY_JOY   /* joy(4) */
+        BSDJOY_UHID, // uhid(4)
+        BSDJOY_JOY   // joy(4)
     } type;
 
     int naxes;
@@ -167,13 +167,13 @@ struct joystick_hwdata
     int axis_map[JOYAXE_count]; /* map present JOYAXE_* to 0,1,.. */
 };
 
-/* A linked list of available joysticks */
+// A linked list of available joysticks
 typedef struct SDL_joylist_item
 {
     SDL_JoystickID device_instance;
-    char *path; /* "/dev/uhid0" or whatever */
-    char *name; /* "SideWinder 3D Pro" or whatever */
-    SDL_JoystickGUID guid;
+    char *path; // "/dev/uhid0" or whatever
+    char *name; // "SideWinder 3D Pro" or whatever
+    SDL_GUID guid;
     dev_t devnum;
     struct SDL_joylist_item *next;
 } SDL_joylist_item;
@@ -182,15 +182,15 @@ static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
-static int report_alloc(struct report *, struct report_desc *, int);
+static bool report_alloc(struct report *, struct report_desc *, int);
 static void report_free(struct report *);
 
 #if defined(USBHID_UCR_DATA) || (defined(__FreeBSD_kernel__) && __FreeBSD_kernel_version <= 800063)
 #define REP_BUF_DATA(rep) ((rep)->buf->ucr_data)
-#elif (defined(__FREEBSD__) && (__FreeBSD_kernel_version > 900000)) || \
+#elif (defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 900000)) || \
     defined(__DragonFly__)
 #define REP_BUF_DATA(rep) ((rep)->buf)
-#elif (defined(__FREEBSD__) && (__FreeBSD_kernel_version > 800063))
+#elif (defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 800063))
 #define REP_BUF_DATA(rep) ((rep)->buf->ugd_data)
 #else
 #define REP_BUF_DATA(rep) ((rep)->buf->data)
@@ -250,8 +250,7 @@ static void FreeHwData(struct joystick_hwdata *hw)
     SDL_free(hw);
 }
 
-static struct joystick_hwdata *
-CreateHwData(const char *path)
+static struct joystick_hwdata *CreateHwData(const char *path)
 {
     struct joystick_hwdata *hw;
     struct hid_item hitem;
@@ -268,9 +267,8 @@ CreateHwData(const char *path)
 
     hw = (struct joystick_hwdata *)
         SDL_calloc(1, sizeof(struct joystick_hwdata));
-    if (hw == NULL) {
+    if (!hw) {
         close(fd);
-        SDL_OutOfMemory();
         return NULL;
     }
     hw->fd = fd;
@@ -291,21 +289,21 @@ CreateHwData(const char *path)
             }
         }
         hw->repdesc = hid_get_report_desc(fd);
-        if (hw->repdesc == NULL) {
+        if (!hw->repdesc) {
             SDL_SetError("%s: USB_GET_REPORT_DESC: %s", path,
                          strerror(errno));
             goto usberr;
         }
         rep = &hw->inreport;
-#if defined(__FREEBSD__) && (__FreeBSD_kernel_version > 800063) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
+#if defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 800063) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
         rep->rid = hid_get_report_id(fd);
         if (rep->rid < 0) {
 #else
         if (ioctl(fd, USB_GET_REPORT_ID, &rep->rid) < 0) {
 #endif
-            rep->rid = -1; /* XXX */
+            rep->rid = -1; // XXX
         }
-        if (report_alloc(rep, hw->repdesc, REPORT_INPUT) < 0) {
+        if (!report_alloc(rep, hw->repdesc, REPORT_INPUT)) {
             goto usberr;
         }
         if (rep->size <= 0) {
@@ -313,12 +311,12 @@ CreateHwData(const char *path)
                          path);
             goto usberr;
         }
-#if defined(USBHID_NEW) || (defined(__FREEBSD__) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
+#if defined(USBHID_NEW) || (defined(SDL_PLATFORM_FREEBSD) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
         hdata = hid_start_parse(hw->repdesc, 1 << hid_input, rep->rid);
 #else
         hdata = hid_start_parse(hw->repdesc, 1 << hid_input);
 #endif
-        if (hdata == NULL) {
+        if (!hdata) {
             SDL_SetError("%s: Cannot start HID parser", path);
             goto usberr;
         }
@@ -337,7 +335,7 @@ CreateHwData(const char *path)
                     if (joyaxe >= 0) {
                         hw->axis_map[joyaxe] = 1;
                     } else if (usage == HUG_HAT_SWITCH
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
                                || usage == HUG_DPAD_UP
 #endif
                     ) {
@@ -373,10 +371,10 @@ CreateHwData(const char *path)
         }
     }
 
-    /* The poll blocks the event thread. */
+    // The poll blocks the event thread.
     fcntl(fd, F_SETFL, O_NONBLOCK);
-#ifdef __NetBSD__
-    /* Flush pending events */
+#ifdef SDL_PLATFORM_NETBSD
+    // Flush pending events
     if (rep) {
         while (read(fd, REP_BUF_DATA(rep), rep->size) == rep->size)
             ;
@@ -390,32 +388,32 @@ usberr:
     return NULL;
 }
 
-static int MaybeAddDevice(const char *path)
+static bool MaybeAddDevice(const char *path)
 {
     struct stat sb;
     char *name = NULL;
-    SDL_JoystickGUID guid;
+    SDL_GUID guid;
     SDL_joylist_item *item;
     struct joystick_hwdata *hw;
 
-    if (path == NULL) {
-        return -1;
+    if (!path) {
+        return false;
     }
 
     if (stat(path, &sb) == -1) {
-        return -1;
+        return false;
     }
 
-    /* Check to make sure it's not already in list. */
-    for (item = SDL_joylist; item != NULL; item = item->next) {
+    // Check to make sure it's not already in list.
+    for (item = SDL_joylist; item; item = item->next) {
         if (sb.st_rdev == item->devnum) {
-            return -1; /* already have this one */
+            return false; // already have this one
         }
     }
 
     hw = CreateHwData(path);
-    if (hw == NULL) {
-        return -1;
+    if (!hw) {
+        return false;
     }
 
     if (hw->type == BSDJOY_JOY) {
@@ -426,34 +424,27 @@ static int MaybeAddDevice(const char *path)
         struct usb_device_info di;
         if (ioctl(hw->fd, USB_GET_DEVICEINFO, &di) != -1) {
             name = SDL_CreateJoystickName(di.udi_vendorNo, di.udi_productNo, di.udi_vendor, di.udi_product);
-            guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name, 0, 0);
+            guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, di.udi_vendor, di.udi_product, 0, 0);
 
-#ifdef SDL_JOYSTICK_HIDAPI
-            if (HIDAPI_IsDevicePresent(di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
-                /* The HIDAPI driver is taking care of this device */
+            if (SDL_ShouldIgnoreJoystick(di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name) ||
+                SDL_JoystickHandledByAnotherDriver(&SDL_BSD_JoystickDriver, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
                 SDL_free(name);
                 FreeHwData(hw);
-                return -1;
-            }
-#endif
-            if (SDL_ShouldIgnoreJoystick(name, guid)) {
-                SDL_free(name);
-                FreeHwData(hw);
-                return -1;
+                return false;
             }
         }
-#endif /* USB_GET_DEVICEINFO */
+#endif // USB_GET_DEVICEINFO
     }
-    if (name == NULL) {
+    if (!name) {
         name = SDL_strdup(path);
         guid = SDL_CreateJoystickGUIDForName(name);
     }
     FreeHwData(hw);
 
     item = (SDL_joylist_item *)SDL_calloc(1, sizeof(SDL_joylist_item));
-    if (item == NULL) {
+    if (!item) {
         SDL_free(name);
-        return -1;
+        return false;
     }
 
     item->devnum = sb.st_rdev;
@@ -461,34 +452,34 @@ static int MaybeAddDevice(const char *path)
     item->name = name;
     item->guid = guid;
 
-    if ((item->path == NULL) || (item->name == NULL)) {
+    if ((!item->path) || (!item->name)) {
         FreeJoylistItem(item);
-        return -1;
+        return false;
     }
 
-    item->device_instance = SDL_GetNextJoystickInstanceID();
-    if (SDL_joylist_tail == NULL) {
+    item->device_instance = SDL_GetNextObjectID();
+    if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
     } else {
         SDL_joylist_tail->next = item;
         SDL_joylist_tail = item;
     }
 
-    /* Need to increment the joystick count before we post the event */
+    // Need to increment the joystick count before we post the event
     ++numjoysticks;
 
     SDL_PrivateJoystickAdded(item->device_instance);
 
-    return numjoysticks;
+    return true;
 }
 
-static int BSD_JoystickInit(void)
+static bool BSD_JoystickInit(void)
 {
     char s[16];
     int i;
 
     for (i = 0; i < MAX_UHID_JOYS; i++) {
-#if defined(__OpenBSD__) && (OpenBSD >= 202105)
+#if defined(SDL_PLATFORM_OPENBSD) && (OpenBSD >= 202105)
         SDL_snprintf(s, SDL_arraysize(s), "/dev/ujoy/%d", i);
 #else
         SDL_snprintf(s, SDL_arraysize(s), "/dev/uhid%d", i);
@@ -500,12 +491,12 @@ static int BSD_JoystickInit(void)
         SDL_snprintf(s, SDL_arraysize(s), "/dev/joy%d", i);
         MaybeAddDevice(s);
     }
-#endif /* SUPPORT_JOY_GAMEPORT */
+#endif // SUPPORT_JOY_GAMEPORT
 
-    /* Read the default USB HID usage table. */
+    // Read the default USB HID usage table.
     hid_init(NULL);
 
-    return numjoysticks;
+    return true;
 }
 
 static int BSD_JoystickGetCount(void)
@@ -515,6 +506,12 @@ static int BSD_JoystickGetCount(void)
 
 static void BSD_JoystickDetect(void)
 {
+}
+
+static bool BSD_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+{
+    // We don't override any other drivers
+    return false;
 }
 
 static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
@@ -544,6 +541,11 @@ static const char *BSD_JoystickGetDevicePath(int device_index)
     return GetJoystickByDevIndex(device_index)->path;
 }
 
+static int BSD_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
+{
+    return -1;
+}
+
 static int BSD_JoystickGetDevicePlayerIndex(int device_index)
 {
     return -1;
@@ -553,12 +555,12 @@ static void BSD_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
 }
 
-static SDL_JoystickGUID BSD_JoystickGetDeviceGUID(int device_index)
+static SDL_GUID BSD_JoystickGetDeviceGUID(int device_index)
 {
     return GetJoystickByDevIndex(device_index)->guid;
 }
 
-/* Function to perform the mapping from device index to the instance id for this index */
+// Function to perform the mapping from device index to the instance id for this index
 static SDL_JoystickID BSD_JoystickGetDeviceInstanceID(int device_index)
 {
     return GetJoystickByDevIndex(device_index)->device_instance;
@@ -578,27 +580,26 @@ static unsigned hatval_to_sdl(Sint32 hatval)
     return result;
 }
 
-static int BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
+static bool BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
 {
     SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
     struct joystick_hwdata *hw;
 
-    if (item == NULL) {
+    if (!item) {
         return SDL_SetError("No such device");
     }
 
     hw = CreateHwData(item->path);
-    if (hw == NULL) {
-        return -1;
+    if (!hw) {
+        return false;
     }
 
-    joy->instance_id = item->device_instance;
     joy->hwdata = hw;
     joy->naxes = hw->naxes;
     joy->nbuttons = hw->nbuttons;
     joy->nhats = hw->nhats;
 
-    return 0;
+    return true;
 }
 
 static void BSD_JoystickUpdate(SDL_Joystick *joy)
@@ -608,7 +609,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
     struct report *rep;
     int nbutton, naxe = -1;
     Sint32 v;
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
     Sint32 dpad[4] = { 0, 0, 0, 0 };
 #endif
     Uint64 timestamp = SDL_GetTicksNS();
@@ -649,23 +650,23 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                 v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * ((Sint32)y - ymin)) / (ymax - ymin)) + SDL_JOYSTICK_AXIS_MIN;
                 SDL_SendJoystickAxis(timestamp, joy, 1, v);
             }
-            SDL_SendJoystickButton(timestamp, joy, 0, gameport.b1);
-            SDL_SendJoystickButton(timestamp, joy, 1, gameport.b2);
+            SDL_SendJoystickButton(timestamp, joy, 0, (gameport.b1 != 0));
+            SDL_SendJoystickButton(timestamp, joy, 1, (gameport.b2 != 0));
         }
         return;
     }
-#endif /* SUPPORT_JOY_GAMEPORT */
+#endif // SUPPORT_JOY_GAMEPORT
 
     rep = &joy->hwdata->inreport;
 
     while (read(joy->hwdata->fd, REP_BUF_DATA(rep), rep->size) == rep->size) {
-#if defined(USBHID_NEW) || (defined(__FREEBSD__) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
+#if defined(USBHID_NEW) || (defined(SDL_PLATFORM_FREEBSD) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
         hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input, rep->rid);
 #else
         hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input);
 #endif
-        if (hdata == NULL) {
-            /*fprintf(stderr, "%s: Cannot start HID parser\n", joy->hwdata->path);*/
+        if (!hdata) {
+            // fprintf(stderr, "%s: Cannot start HID parser\n", joy->hwdata->path);
             continue;
         }
 
@@ -679,7 +680,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                     int joyaxe = usage_to_joyaxe(usage);
                     if (joyaxe >= 0) {
                         naxe = joy->hwdata->axis_map[joyaxe];
-                        /* scaleaxe */
+                        // scaleaxe
                         v = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         v = (((SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) * (v - hitem.logical_minimum)) / (hitem.logical_maximum - hitem.logical_minimum)) + SDL_JOYSTICK_AXIS_MIN;
                         SDL_SendJoystickAxis(timestamp, joy, naxe, v);
@@ -689,12 +690,12 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                                                hatval_to_sdl(v) -
                                                    hitem.logical_minimum);
                     }
-#ifdef __OpenBSD__
+#ifdef SDL_PLATFORM_OPENBSD
                     /* here D-pad directions are reported like separate buttons.
                      * calculate the SDL hat value from the 4 separate values.
                      */
                     switch (usage) {
-	            case HUG_DPAD_UP:
+                    case HUG_DPAD_UP:
                         dpad[0] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         break;
                     case HUG_DPAD_DOWN:
@@ -707,7 +708,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                         dpad[3] = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
                         break;
                     //default:
-	                // no-op
+                        // no-op
                     }
                     SDL_PrivateJoystickHat(joy, 0, (dpad[0] * HAT_UP) |
                                                    (dpad[1] * HAT_DOWN) |
@@ -718,8 +719,8 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
                 }
                 case HUP_BUTTON:
                     v = (Sint32)hid_get_data(REP_BUF_DATA(rep), &hitem);
-                    nbutton = HID_USAGE(hitem.usage) - 1; /* SDL buttons are zero-based */
-                    SDL_SendJoystickButton(timestamp, joy, nbutton, v);
+                    nbutton = HID_USAGE(hitem.usage) - 1; // SDL buttons are zero-based
+                    SDL_SendJoystickButton(timestamp, joy, nbutton, (v != 0));
                     break;
                 default:
                     continue;
@@ -733,7 +734,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
     }
 }
 
-/* Function to close a joystick after use */
+// Function to close a joystick after use
 static void BSD_JoystickClose(SDL_Joystick *joy)
 {
     if (joy->hwdata) {
@@ -757,13 +758,13 @@ static void BSD_JoystickQuit(void)
     numjoysticks = 0;
 }
 
-static int report_alloc(struct report *r, struct report_desc *rd, int repind)
+static bool report_alloc(struct report *r, struct report_desc *rd, int repind)
 {
     int len;
 
 #ifdef __DragonFly__
     len = hid_report_size(rd, repinfo[repind].kind, r->rid);
-#elif __FREEBSD__
+#elif defined(SDL_PLATFORM_FREEBSD)
 #if (__FreeBSD_kernel_version >= 460000) || defined(__FreeBSD_kernel__)
 #if (__FreeBSD_kernel_version <= 500111)
     len = hid_report_size(rd, r->rid, repinfo[repind].kind);
@@ -787,21 +788,21 @@ static int report_alloc(struct report *r, struct report_desc *rd, int repind)
     r->size = len;
 
     if (r->size > 0) {
-#if defined(__FREEBSD__) && (__FreeBSD_kernel_version > 900000) || defined(__DragonFly__)
+#if defined(SDL_PLATFORM_FREEBSD) && (__FreeBSD_kernel_version > 900000) || defined(__DragonFly__)
         r->buf = SDL_malloc(r->size);
 #else
         r->buf = SDL_malloc(sizeof(*r->buf) - sizeof(REP_BUF_DATA(r)) +
                             r->size);
 #endif
-        if (r->buf == NULL) {
-            return SDL_OutOfMemory();
+        if (!r->buf) {
+            return false;
         }
     } else {
         r->buf = NULL;
     }
 
     r->status = SREPORT_CLEAN;
-    return 0;
+    return true;
 }
 
 static void report_free(struct report *r)
@@ -810,37 +811,32 @@ static void report_free(struct report *r)
     r->status = SREPORT_UNINIT;
 }
 
-static int BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     return SDL_Unsupported();
 }
 
-static int BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+static bool BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
     return SDL_Unsupported();
 }
 
-static SDL_bool BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
 {
-    return SDL_FALSE;
+    return false;
 }
 
-static Uint32 BSD_JoystickGetCapabilities(SDL_Joystick *joystick)
-{
-    return 0;
-}
-
-static int BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+static bool BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     return SDL_Unsupported();
 }
 
-static int BSD_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
+static bool BSD_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
 {
     return SDL_Unsupported();
 }
 
-static int BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, SDL_bool enabled)
+static bool BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     return SDL_Unsupported();
 }
@@ -849,8 +845,10 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver = {
     BSD_JoystickInit,
     BSD_JoystickGetCount,
     BSD_JoystickDetect,
+    BSD_JoystickIsDevicePresent,
     BSD_JoystickGetDeviceName,
     BSD_JoystickGetDevicePath,
+    BSD_JoystickGetDeviceSteamVirtualGamepadSlot,
     BSD_JoystickGetDevicePlayerIndex,
     BSD_JoystickSetDevicePlayerIndex,
     BSD_JoystickGetDeviceGUID,
@@ -858,7 +856,6 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver = {
     BSD_JoystickOpen,
     BSD_JoystickRumble,
     BSD_JoystickRumbleTriggers,
-    BSD_JoystickGetCapabilities,
     BSD_JoystickSetLED,
     BSD_JoystickSendEffect,
     BSD_JoystickSetSensorsEnabled,
@@ -868,4 +865,4 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver = {
     BSD_JoystickGetGamepadMapping
 };
 
-#endif /* SDL_JOYSTICK_USBHID */
+#endif // SDL_JOYSTICK_USBHID

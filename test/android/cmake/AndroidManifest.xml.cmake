@@ -33,14 +33,18 @@
     <!-- Allow access to the microphone -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+    <!-- Allow access to the camera -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/sdl-test"
         android:roundIcon="@mipmap/sdl-test_round"
         android:label="@string/label"
         android:supportsRtl="true"
-        android:hardwareAccelerated="true"
-        tools:targetApi="31">
+        android:theme="@style/AppTheme"
+        android:hardwareAccelerated="true">
         <activity
             android:name="@ANDROID_MANIFEST_PACKAGE@.SDLTestActivity"
             android:exported="true"

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,15 +23,6 @@
 #ifndef SDL_x11shape_h_
 #define SDL_x11shape_h_
 
-#include "../SDL_sysvideo.h"
+extern bool X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
 
-typedef struct
-{
-    void *bitmap;
-    Uint32 bitmapsize;
-} SDL_ShapeData;
-
-extern SDL_WindowShaper *X11_CreateShaper(SDL_Window *window);
-extern int X11_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode);
-
-#endif /* SDL_x11shape_h_ */
+#endif // SDL_x11shape_h_

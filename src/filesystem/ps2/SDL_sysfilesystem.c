@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,35 +20,37 @@
 */
 #include "SDL_internal.h"
 
-#include <sys/stat.h>
-#include <unistd.h>
-
 #ifdef SDL_FILESYSTEM_PS2
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
-char *SDL_GetBasePath(void)
+#include "../SDL_sysfilesystem.h"
+
+#include <sys/stat.h>
+#include <unistd.h>
+
+char *SDL_SYS_GetBasePath(void)
 {
-    char *retval;
+    char *result = NULL;
     size_t len;
     char cwd[FILENAME_MAX];
 
     getcwd(cwd, sizeof(cwd));
-    len = SDL_strlen(cwd) + 1;
-    retval = (char *)SDL_malloc(len);
-    if (retval) {
-        SDL_memcpy(retval, cwd, len);
+    len = SDL_strlen(cwd) + 2;
+    result = (char *)SDL_malloc(len);
+    if (result) {
+        SDL_snprintf(result, len, "%s/", cwd);
     }
 
-    return retval;
+    return result;
 }
 
-/* Do a recursive mkdir of parents folders */
+// Do a recursive mkdir of parents folders
 static void recursive_mkdir(const char *dir)
 {
     char tmp[FILENAME_MAX];
-    char *base = SDL_GetBasePath();
+    const char *base = SDL_GetBasePath();
     char *p = NULL;
     size_t len;
 
@@ -62,7 +64,7 @@ static void recursive_mkdir(const char *dir)
         if (*p == '/') {
             *p = 0;
             // Just creating subfolders from current path
-            if (SDL_strstr(tmp, base) != NULL) {
+            if (base && SDL_strstr(tmp, base) != NULL) {
                 mkdir(tmp, S_IRWXU);
             }
 
@@ -70,43 +72,48 @@ static void recursive_mkdir(const char *dir)
         }
     }
 
-    SDL_free(base);
     mkdir(tmp, S_IRWXU);
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
-    char *retval = NULL;
+    char *result = NULL;
     size_t len;
-    char *base = SDL_GetBasePath();
-    if (app == NULL) {
+
+    if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
-    if (org == NULL) {
+
+    if (!org) {
         org = "";
     }
 
-    len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
-    retval = (char *)SDL_malloc(len);
-
-    if (*org) {
-        SDL_snprintf(retval, len, "%s%s/%s/", base, org, app);
-    } else {
-        SDL_snprintf(retval, len, "%s%s/", base, app);
+    const char *base = SDL_GetBasePath();
+    if (!base) {
+        return NULL;
     }
-    SDL_free(base);
 
-    recursive_mkdir(retval);
+    len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
+    result = (char *)SDL_malloc(len);
+    if (result) {
+        if (*org) {
+            SDL_snprintf(result, len, "%s%s/%s/", base, org, app);
+        } else {
+            SDL_snprintf(result, len, "%s%s/", base, app);
+        }
 
-    return retval;
+        recursive_mkdir(result);
+    }
+
+    return result;
 }
 
-/* TODO */
-char *SDL_GetUserFolder(SDL_Folder folder)
+// TODO
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-#endif /* SDL_FILESYSTEM_PS2 */
+#endif // SDL_FILESYSTEM_PS2

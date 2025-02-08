@@ -22,7 +22,7 @@ standard_guid_pattern = re.compile(r'^([0-9a-fA-F]{4})([0-9a-fA-F]{2})([0-9a-fA-
 invalid_controllers = (
     ('0079', '0006', '0000'), # DragonRise Inc. Generic USB Joystick
     ('0079', '0006', '6120'), # DragonRise Inc. Generic USB Joystick
-    ('04b4', '2412', 'c529'), # Flydigi Vader 2, Vader 2 Pro, Apex 2, Apex 3
+    ('04b4', '2412', 'c529'), # Flydigi Vader 2, Vader 2 Pro, Apex 2, Apex 3, Apex 4
     ('16c0', '05e1', '0000'), # Xinmotek Controller
 )
 
@@ -34,6 +34,15 @@ def find_element(prefix, bindings):
         i=(i + 1)
 
     return -1
+
+def get_crc_from_entry(entry):
+    crc = ""
+    line = "".join(entry)
+    bindings = line.split(",")
+    pos = find_element("crc:", bindings)
+    if pos >= 0:
+        crc = bindings[pos][4:]
+    return crc
 
 def save_controller(line):
     global controllers
@@ -93,7 +102,7 @@ def save_controller(line):
     entry.append(match.group(5))
     controllers.append(entry)
 
-    entry_id = entry[1] + entry[3]
+    entry_id = entry[1] + get_crc_from_entry(entry)
     if ',sdk' in line or ',hint:' in line:
         conditionals.append(entry_id)
 
@@ -102,7 +111,7 @@ def write_controllers():
     global controller_guids
     # Check for duplicates
     for entry in controllers:
-        entry_id = entry[1] + entry[3]
+        entry_id = entry[1] + get_crc_from_entry(entry)
         if (entry_id in controller_guids and entry_id not in conditionals):
             current_name = entry[2]
             existing_name = controller_guids[entry_id][2]
@@ -136,6 +145,9 @@ for line in input:
             output.write(line)
         elif (line.startswith("#if")):
             print(f"Parsing {line.strip()}")
+            output.write(line)
+        elif ("SDL_PRIVATE_GAMEPAD_DEFINITIONS" in line):
+            write_controllers()
             output.write(line)
         elif (line.startswith("#endif")):
             write_controllers()

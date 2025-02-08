@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,7 +20,7 @@
 */
 #include "SDL_internal.h"
 
-/* This file contains portable stdlib functions for SDL */
+// This file contains portable stdlib functions for SDL
 
 #include "../libm/math_libm.h"
 
@@ -122,7 +122,7 @@ double SDL_ceil(double x)
         integer += 1.0;
     }
     return integer;
-#endif /* HAVE_CEIL */
+#endif // HAVE_CEIL
 }
 
 float SDL_ceilf(float x)
@@ -141,14 +141,14 @@ double SDL_copysign(double x, double y)
 #elif defined(HAVE__COPYSIGN)
     return _copysign(x, y);
 #elif defined(__WATCOMC__) && defined(__386__)
-    /* this is nasty as hell, but it works.. */
+    // this is nasty as hell, but it works..
     unsigned int *xi = (unsigned int *)&x,
                  *yi = (unsigned int *)&y;
     xi[1] = (yi[1] & 0x80000000) | (xi[1] & 0x7fffffff);
     return x;
 #else
     return SDL_uclibc_copysign(x, y);
-#endif /* HAVE_COPYSIGN */
+#endif // HAVE_COPYSIGN
 }
 
 float SDL_copysignf(float x, float y)
@@ -269,6 +269,46 @@ float SDL_fmodf(float x, float y)
     return fmodf(x, y);
 #else
     return (float)SDL_fmod((double)x, (double)y);
+#endif
+}
+
+int SDL_isinf(double x)
+{
+#ifdef HAVE_ISINF
+    return isinf(x);
+#else
+    return SDL_uclibc_isinf(x);
+#endif
+}
+
+int SDL_isinff(float x)
+{
+#ifdef HAVE_ISINF_FLOAT_MACRO
+    return isinf(x);
+#elif defined(HAVE_ISINFF)
+    return isinff(x);
+#else
+    return SDL_uclibc_isinff(x);
+#endif
+}
+
+int SDL_isnan(double x)
+{
+#ifdef HAVE_ISNAN
+    return isnan(x);
+#else
+    return SDL_uclibc_isnan(x);
+#endif
+}
+
+int SDL_isnanf(float x)
+{
+#ifdef HAVE_ISNAN_FLOAT_MACRO
+    return isnan(x);
+#elif defined(HAVE_ISNANF)
+    return isnanf(x);
+#else
+    return SDL_uclibc_isnanf(x);
 #endif
 }
 
@@ -474,28 +514,7 @@ int SDL_abs(int x)
 #endif
 }
 
-#ifdef HAVE_CTYPE_H
-int SDL_isalpha(int x)
-{
-    return isalpha(x);
-}
-int SDL_isalnum(int x) { return isalnum(x); }
-int SDL_isdigit(int x) { return isdigit(x); }
-int SDL_isxdigit(int x) { return isxdigit(x); }
-int SDL_ispunct(int x) { return ispunct(x); }
-int SDL_isspace(int x) { return isspace(x); }
-int SDL_isupper(int x) { return isupper(x); }
-int SDL_islower(int x) { return islower(x); }
-int SDL_isprint(int x) { return isprint(x); }
-int SDL_isgraph(int x) { return isgraph(x); }
-int SDL_iscntrl(int x) { return iscntrl(x); }
-int SDL_toupper(int x) { return toupper(x); }
-int SDL_tolower(int x) { return tolower(x); }
-#else
-int SDL_isalpha(int x)
-{
-    return (SDL_isupper(x)) || (SDL_islower(x));
-}
+int SDL_isalpha(int x) { return (SDL_isupper(x)) || (SDL_islower(x)); }
 int SDL_isalnum(int x) { return (SDL_isalpha(x)) || (SDL_isdigit(x)); }
 int SDL_isdigit(int x) { return ((x) >= '0') && ((x) <= '9'); }
 int SDL_isxdigit(int x) { return (((x) >= 'A') && ((x) <= 'F')) || (((x) >= 'a') && ((x) <= 'f')) || (SDL_isdigit(x)); }
@@ -508,187 +527,34 @@ int SDL_isgraph(int x) { return (SDL_isprint(x)) && ((x) != ' '); }
 int SDL_iscntrl(int x) { return (((x) >= '\0') && ((x) <= '\x1f')) || ((x) == '\x7f'); }
 int SDL_toupper(int x) { return ((x) >= 'a') && ((x) <= 'z') ? ('A' + ((x) - 'a')) : (x); }
 int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a' + ((x) - 'A')) : (x); }
-#endif
-
-/* This file contains a portable memcpy manipulation function for SDL */
-
-void *SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len)
-{
-#ifdef __GNUC__
-    /* Presumably this is well tuned for speed.
-       On my machine this is twice as fast as the C code below.
-     */
-    return __builtin_memcpy(dst, src, len);
-#elif defined(HAVE_MEMCPY)
-    return memcpy(dst, src, len);
-#elif defined(HAVE_BCOPY)
-    bcopy(src, dst, len);
-    return dst;
-#else
-    /* GCC 4.9.0 with -O3 will generate movaps instructions with the loop
-       using Uint32* pointers, so we need to make sure the pointers are
-       aligned before we loop using them.
-     */
-    if (((uintptr_t)src & 0x3) || ((uintptr_t)dst & 0x3)) {
-        /* Do an unaligned byte copy */
-        Uint8 *srcp1 = (Uint8 *)src;
-        Uint8 *dstp1 = (Uint8 *)dst;
-
-        while (len--) {
-            *dstp1++ = *srcp1++;
-        }
-    } else {
-        size_t left = (len % 4);
-        Uint32 *srcp4, *dstp4;
-        Uint8 *srcp1, *dstp1;
-
-        srcp4 = (Uint32 *)src;
-        dstp4 = (Uint32 *)dst;
-        len /= 4;
-        while (len--) {
-            *dstp4++ = *srcp4++;
-        }
-
-        srcp1 = (Uint8 *)srcp4;
-        dstp1 = (Uint8 *)dstp4;
-        switch (left) {
-        case 3:
-            *dstp1++ = *srcp1++;
-        case 2:
-            *dstp1++ = *srcp1++;
-        case 1:
-            *dstp1++ = *srcp1++;
-        }
-    }
-    return dst;
-#endif /* __GNUC__ */
-}
-
-void *SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
-{
-#ifdef HAVE_MEMSET
-    return memset(dst, c, len);
-#else
-    size_t left;
-    Uint32 *dstp4;
-    Uint8 *dstp1 = (Uint8 *)dst;
-    Uint8 value1;
-    Uint32 value4;
-
-    /* The value used in memset() is a byte, passed as an int */
-    c &= 0xff;
-
-    /* The destination pointer needs to be aligned on a 4-byte boundary to
-     * execute a 32-bit set. Set first bytes manually if needed until it is
-     * aligned. */
-    value1 = (Uint8)c;
-    while ((uintptr_t)dstp1 & 0x3) {
-        if (len--) {
-            *dstp1++ = value1;
-        } else {
-            return dst;
-        }
-    }
-
-    value4 = ((Uint32)c | ((Uint32)c << 8) | ((Uint32)c << 16) | ((Uint32)c << 24));
-    dstp4 = (Uint32 *)dstp1;
-    left = (len % 4);
-    len /= 4;
-    while (len--) {
-        *dstp4++ = value4;
-    }
-
-    dstp1 = (Uint8 *)dstp4;
-    switch (left) {
-    case 3:
-        *dstp1++ = value1;
-    case 2:
-        *dstp1++ = value1;
-    case 1:
-        *dstp1++ = value1;
-    }
-
-    return dst;
-#endif /* HAVE_MEMSET */
-}
-
-/* Note that memset() is a byte assignment and this is a 32-bit assignment, so they're not directly equivalent. */
-void *SDL_memset4(void *dst, Uint32 val, size_t dwords)
-{
-#if defined(__APPLE__) && defined(HAVE_STRING_H)
-    memset_pattern4(dst, &val, dwords * 4);
-#elif defined(__GNUC__) && defined(__i386__)
-    int u0, u1, u2;
-    __asm__ __volatile__(
-        "cld \n\t"
-        "rep ; stosl \n\t"
-        : "=&D"(u0), "=&a"(u1), "=&c"(u2)
-        : "0"(dst), "1"(val), "2"(SDL_static_cast(Uint32, dwords))
-        : "memory");
-#else
-    size_t _n = (dwords + 3) / 4;
-    Uint32 *_p = SDL_static_cast(Uint32 *, dst);
-    Uint32 _val = (val);
-    if (dwords == 0) {
-        return dst;
-    }
-    switch (dwords % 4) {
-    case 0:
-        do {
-            *_p++ = _val;
-            SDL_FALLTHROUGH;
-        case 3:
-            *_p++ = _val;
-            SDL_FALLTHROUGH;
-        case 2:
-            *_p++ = _val;
-            SDL_FALLTHROUGH;
-        case 1:
-            *_p++ = _val;
-        } while (--_n);
-    }
-#endif
-    return dst;
-}
-
-#if defined(HAVE_CTYPE_H) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-int SDL_isblank(int x)
-{
-    return isblank(x);
-}
-#else
-int SDL_isblank(int x)
-{
-    return ((x) == ' ') || ((x) == '\t');
-}
-#endif
+int SDL_isblank(int x) { return ((x) == ' ') || ((x) == '\t'); }
 
 void *SDL_aligned_alloc(size_t alignment, size_t size)
 {
     size_t padding;
-    Uint8 *retval = NULL;
+    Uint8 *result = NULL;
 
     if (alignment < sizeof(void*)) {
         alignment = sizeof(void*);
     }
     padding = (alignment - (size % alignment));
 
-    if (SDL_size_add_overflow(size, alignment, &size) == 0 &&
-        SDL_size_add_overflow(size, sizeof(void *), &size) == 0 &&
-        SDL_size_add_overflow(size, padding, &size) == 0) {
+    if (SDL_size_add_check_overflow(size, alignment, &size) &&
+        SDL_size_add_check_overflow(size, sizeof(void *), &size) &&
+        SDL_size_add_check_overflow(size, padding, &size)) {
         void *original = SDL_malloc(size);
         if (original) {
-            /* Make sure we have enough space to store the original pointer */
-            retval = (Uint8 *)original + sizeof(original);
+            // Make sure we have enough space to store the original pointer
+            result = (Uint8 *)original + sizeof(original);
 
-            /* Align the pointer we're going to return */
-            retval += alignment - (((size_t)retval) % alignment);
+            // Align the pointer we're going to return
+            result += alignment - (((size_t)result) % alignment);
 
-            /* Store the original pointer right before the returned value */
-            SDL_memcpy(retval - sizeof(original), &original, sizeof(original));
+            // Store the original pointer right before the returned value
+            SDL_memcpy(result - sizeof(original), &original, sizeof(original));
         }
     }
-    return retval;
+    return result;
 }
 
 void SDL_aligned_free(void *mem)

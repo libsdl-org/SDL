@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,27 +30,27 @@
 static SwkbdState sw_keyboard;
 const static size_t BUFFER_SIZE = 256;
 
-void N3DS_SwkbInit()
+void N3DS_SwkbInit(void)
 {
     swkbdInit(&sw_keyboard, SWKBD_TYPE_NORMAL, 2, -1);
 }
 
-void N3DS_SwkbPoll()
+void N3DS_SwkbPoll(void)
 {
     return;
 }
 
-void N3DS_SwkbQuit()
+void N3DS_SwkbQuit(void)
 {
     return;
 }
 
-SDL_bool N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
+bool N3DS_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 {
-    return SDL_TRUE;
+    return true;
 }
 
-void N3DS_StartTextInput(SDL_VideoDevice *_this)
+bool N3DS_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     char buffer[BUFFER_SIZE];
     SwkbdButton button_pressed;
@@ -58,11 +58,12 @@ void N3DS_StartTextInput(SDL_VideoDevice *_this)
     if (button_pressed == SWKBD_BUTTON_CONFIRM) {
         SDL_SendKeyboardText(buffer);
     }
+    return true;
 }
 
-void N3DS_StopTextInput(SDL_VideoDevice *_this)
+bool N3DS_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    return;
+    return true;
 }
 
-#endif /* SDL_VIDEO_DRIVER_N3DS */
+#endif // SDL_VIDEO_DRIVER_N3DS

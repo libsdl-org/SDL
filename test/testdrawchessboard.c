@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+   Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
    This software is provided 'as-is', without any express or implied
    warranty.  In no event will the authors be held liable for any damages
@@ -12,21 +12,26 @@
    This file is created by : Nitin Jain (nitin.j4\samsung.com)
 */
 
-/* Sample program:  Draw a Chess Board  by using SDL_CreateSoftwareRenderer API */
+/* Sample program:  Draw a Chess Board  by using the SDL render API */
 
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
+/* This allows testing SDL_CreateSoftwareRenderer with the window surface API. Undefine it to use the accelerated renderer instead. */
+#define USE_SOFTWARE_RENDERER
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten/emscripten.h>
+#endif
+
 static SDL_Window *window;
 static SDL_Renderer *renderer;
-static SDL_Surface *surface;
 static int done;
 
+#ifdef USE_SOFTWARE_RENDERER
+static SDL_Surface *surface;
+#endif
 
 static void DrawChessBoard(void)
 {
@@ -64,6 +69,7 @@ static void loop(void)
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
 
+#ifdef USE_SOFTWARE_RENDERER
         /* Re-create when window surface has been resized */
         if (e.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
 
@@ -75,29 +81,38 @@ static void loop(void)
             SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
             SDL_RenderClear(renderer);
         }
+#endif
 
         if (e.type == SDL_EVENT_QUIT) {
             done = 1;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
             emscripten_cancel_main_loop();
 #endif
             return;
         }
 
-        if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
+        if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.key == SDLK_ESCAPE)) {
             done = 1;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
             emscripten_cancel_main_loop();
 #endif
             return;
         }
     }
 
+    /* Clear the rendering surface with the specified color */
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    SDL_RenderClear(renderer);
+
     DrawChessBoard();
 
+    SDL_RenderPresent(renderer);
+
+#ifdef USE_SOFTWARE_RENDERER
     /* Got everything on rendering surface,
        now Update the drawing image on window screen */
     SDL_UpdateWindowSurface(window);
+#endif
 }
 
 int main(int argc, char *argv[])
@@ -106,12 +121,9 @@ int main(int argc, char *argv[])
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
@@ -119,31 +131,31 @@ int main(int argc, char *argv[])
     }
 
     /* Initialize SDL */
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init fail : %s\n", SDL_GetError());
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init fail : %s", SDL_GetError());
         return 1;
     }
 
     /* Create window and renderer for given surface */
     window = SDL_CreateWindow("Chess Board", 640, 480, SDL_WINDOW_RESIZABLE);
-    if (window == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s\n", SDL_GetError());
+    if (!window) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Window creation fail : %s", SDL_GetError());
         return 1;
     }
+#ifdef USE_SOFTWARE_RENDERER
     surface = SDL_GetWindowSurface(window);
     renderer = SDL_CreateSoftwareRenderer(surface);
-    if (renderer == NULL) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Render creation for surface fail : %s\n", SDL_GetError());
+#else
+    renderer = SDL_CreateRenderer(window, NULL);
+#endif
+    if (!renderer) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Render creation for surface fail : %s", SDL_GetError());
         return 1;
     }
-
-    /* Clear the rendering surface with the specified color */
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    SDL_RenderClear(renderer);
 
     /* Draw the Image on rendering surface */
     done = 0;
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

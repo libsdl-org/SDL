@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,4 +33,4 @@ struct SDL_VideoData
     Uint8 key_pressed[RISCOS_MAX_KEYS_PRESSED];
 };
 
-#endif /* SDL_riscosvideo_h_ */
+#endif // SDL_riscosvideo_h_

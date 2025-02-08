@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* *INDENT-OFF* */ /* clang-format off */
+/* *INDENT-OFF* */ // clang-format off
 
 #ifndef SDL_KMSDRM_MODULE
 #define SDL_KMSDRM_MODULE(modname)
@@ -33,6 +33,10 @@
 #define SDL_KMSDRM_SYM_CONST(type, name)
 #endif
 
+#ifndef SDL_KMSDRM_SYM_OPT
+#define SDL_KMSDRM_SYM_OPT(rc,fn,params)
+#endif
+
 
 SDL_KMSDRM_MODULE(LIBDRM)
 SDL_KMSDRM_SYM(void,drmModeFreeResources,(drmModeResPtr ptr))
@@ -42,16 +46,24 @@ SDL_KMSDRM_SYM(void,drmModeFreeConnector,(drmModeConnectorPtr ptr))
 SDL_KMSDRM_SYM(void,drmModeFreeEncoder,(drmModeEncoderPtr ptr))
 SDL_KMSDRM_SYM(int,drmGetCap,(int fd, uint64_t capability, uint64_t *value))
 SDL_KMSDRM_SYM(int,drmSetMaster,(int fd))
+SDL_KMSDRM_SYM(int,drmDropMaster,(int fd))
 SDL_KMSDRM_SYM(int,drmAuthMagic,(int fd, drm_magic_t magic))
 SDL_KMSDRM_SYM(drmModeResPtr,drmModeGetResources,(int fd))
 SDL_KMSDRM_SYM(int,drmModeAddFB,(int fd, uint32_t width, uint32_t height, uint8_t depth,
                          uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
                          uint32_t *buf_id))
 
-SDL_KMSDRM_SYM(int,drmModeAddFB2,(int fd, uint32_t width, uint32_t height,
+SDL_KMSDRM_SYM_OPT(int,drmModeAddFB2,(int fd, uint32_t width, uint32_t height,
                          uint32_t pixel_format, const uint32_t bo_handles[4],
                          const uint32_t pitches[4], const uint32_t offsets[4],
                          uint32_t *buf_id, uint32_t flags))
+
+SDL_KMSDRM_SYM_OPT(int,drmModeAddFB2WithModifiers,(int fd, uint32_t width,
+                         uint32_t height, uint32_t pixel_format, const uint32_t bo_handles[4],
+                         const uint32_t pitches[4], const uint32_t offsets[4],
+                         const uint64_t modifier[4], uint32_t *buf_id, uint32_t flags))
+
+SDL_KMSDRM_SYM_OPT(const char *,drmModeGetConnectorTypeName,(uint32_t connector_type))
 
 SDL_KMSDRM_SYM(int,drmModeRmFB,(int fd, uint32_t bufferId))
 SDL_KMSDRM_SYM(drmModeFBPtr,drmModeGetFB,(int fd, uint32_t buf))
@@ -71,7 +83,7 @@ SDL_KMSDRM_SYM(int,drmHandleEvent,(int fd,drmEventContextPtr evctx))
 SDL_KMSDRM_SYM(int,drmModePageFlip,(int fd, uint32_t crtc_id, uint32_t fb_id,
                                     uint32_t flags, void *user_data))
 
-/* Planes stuff. */
+// Planes stuff.
 SDL_KMSDRM_SYM(int,drmSetClientCap,(int fd, uint64_t capability, uint64_t value))
 SDL_KMSDRM_SYM(drmModePlaneResPtr,drmModeGetPlaneResources,(int fd))
 SDL_KMSDRM_SYM(drmModePlanePtr,drmModeGetPlane,(int fd, uint32_t plane_id))
@@ -91,7 +103,7 @@ SDL_KMSDRM_SYM(int,drmModeSetPlane,(int fd, uint32_t plane_id, uint32_t crtc_id,
                                     uint32_t crtc_w, uint32_t crtc_h,
                                     uint32_t src_x, uint32_t src_y,
                                     uint32_t src_w, uint32_t src_h))
-/* Planes stuff ends. */
+// Planes stuff ends.
 
 SDL_KMSDRM_MODULE(GBM)
 SDL_KMSDRM_SYM(int,gbm_device_is_format_supported,(struct gbm_device *gbm,
@@ -119,9 +131,15 @@ SDL_KMSDRM_SYM(void,gbm_surface_destroy,(struct gbm_surface *surf))
 SDL_KMSDRM_SYM(struct gbm_bo *,gbm_surface_lock_front_buffer,(struct gbm_surface *surf))
 SDL_KMSDRM_SYM(void,gbm_surface_release_buffer,(struct gbm_surface *surf, struct gbm_bo *bo))
 
+SDL_KMSDRM_SYM_OPT(uint64_t,gbm_bo_get_modifier,(struct gbm_bo *bo))
+SDL_KMSDRM_SYM_OPT(int,gbm_bo_get_plane_count,(struct gbm_bo *bo))
+SDL_KMSDRM_SYM_OPT(uint32_t,gbm_bo_get_offset,(struct gbm_bo *bo, int plane))
+SDL_KMSDRM_SYM_OPT(uint32_t,gbm_bo_get_stride_for_plane,(struct gbm_bo *bo, int plane))
+SDL_KMSDRM_SYM_OPT(union gbm_bo_handle,gbm_bo_get_handle_for_plane,(struct gbm_bo *bo, int plane))
 
 #undef SDL_KMSDRM_MODULE
 #undef SDL_KMSDRM_SYM
 #undef SDL_KMSDRM_SYM_CONST
+#undef SDL_KMSDRM_SYM_OPT
 
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,8 @@ struct SDL_WindowData
 #endif
 };
 
-extern int OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool OFFSCREEN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void OFFSCREEN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern void OFFSCREEN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 
-#endif /* SDL_offscreenwindow_h */
+#endif // SDL_offscreenwindow_h

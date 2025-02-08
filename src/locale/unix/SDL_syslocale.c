@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,24 +26,24 @@ static void normalize_locale_str(char *dst, char *str, size_t buflen)
 {
     char *ptr;
 
-    ptr = SDL_strchr(str, '.'); /* chop off encoding if specified. */
-    if (ptr != NULL) {
+    ptr = SDL_strchr(str, '.'); // chop off encoding if specified.
+    if (ptr) {
         *ptr = '\0';
     }
 
-    ptr = SDL_strchr(str, '@'); /* chop off extra bits if specified. */
-    if (ptr != NULL) {
+    ptr = SDL_strchr(str, '@'); // chop off extra bits if specified.
+    if (ptr) {
         *ptr = '\0';
     }
 
-    /* The "C" locale isn't useful for our needs, ignore it if you see it. */
+    // The "C" locale isn't useful for our needs, ignore it if you see it.
     if ((str[0] == 'C') && (str[1] == '\0')) {
         return;
     }
 
     if (*str) {
         if (*dst) {
-            SDL_strlcat(dst, ",", buflen); /* SDL has these split by commas */
+            SDL_strlcat(dst, ",", buflen); // SDL has these split by commas
         }
         SDL_strlcat(dst, str, buflen);
     }
@@ -53,7 +53,7 @@ static void normalize_locales(char *dst, char *src, size_t buflen)
 {
     char *ptr;
 
-    /* entries are separated by colons */
+    // entries are separated by colons
     while ((ptr = SDL_strchr(src, ':')) != NULL) {
         *ptr = '\0';
         normalize_locale_str(dst, src, buflen);
@@ -62,28 +62,28 @@ static void normalize_locales(char *dst, char *src, size_t buflen)
     normalize_locale_str(dst, src, buflen);
 }
 
-int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
+bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
-    /* !!! FIXME: should we be using setlocale()? Or some D-Bus thing? */
-    SDL_bool isstack;
+    // !!! FIXME: should we be using setlocale()? Or some D-Bus thing?
+    bool isstack;
     const char *envr;
     char *tmp;
 
     SDL_assert(buflen > 0);
     tmp = SDL_small_alloc(char, buflen, &isstack);
-    if (tmp == NULL) {
-        return SDL_OutOfMemory();
+    if (!tmp) {
+        return false;
     }
 
     *tmp = '\0';
 
-    /* LANG is the primary locale (maybe) */
+    // LANG is the primary locale (maybe)
     envr = SDL_getenv("LANG");
     if (envr) {
         SDL_strlcpy(tmp, envr, buflen);
     }
 
-    /* fallback languages */
+    // fallback languages
     envr = SDL_getenv("LANGUAGE");
     if (envr) {
         if (*tmp) {
@@ -99,5 +99,5 @@ int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     }
 
     SDL_small_free(tmp, isstack);
-    return 0;
+    return true;
 }

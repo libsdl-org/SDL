@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,20 +56,20 @@ CreateWindowNative(int w, int h)
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wc.lpszMenuName = NULL;
-    wc.lpszClassName = "SDL Test";
+    wc.lpszClassName = TEXT("SDL Test");
 
     if (!RegisterClass(&wc)) {
-        MessageBox(NULL, "Window Registration Failed!", "Error!",
+        MessageBox(NULL, TEXT("Window Registration Failed!"), TEXT("Error!"),
                    MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }
 
     hwnd =
-        CreateWindow("SDL Test", "", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
+        CreateWindow(TEXT("SDL Test"), TEXT(""), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
                      CW_USEDEFAULT, w, h, NULL, NULL, GetModuleHandle(NULL),
                      NULL);
-    if (hwnd == NULL) {
-        MessageBox(NULL, "Window Creation Failed!", "Error!",
+    if (!hwnd) {
+        MessageBox(NULL, TEXT("Window Creation Failed!"), TEXT("Error!"),
                    MB_ICONEXCLAMATION | MB_OK);
         return 0;
     }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,33 +20,40 @@
 */
 
 /**
- *  \file SDL.h
+ * Main include header for the SDL library, version 3.2.5
  *
- *  Main include header for the SDL library
+ * It is almost always best to include just this one header instead of
+ * picking out individual headers included here. There are exceptions to
+ * this rule--SDL_main.h is special and not included here--but usually
+ * letting SDL.h include the kitchen sink for you is the correct approach.
  */
-
 
 #ifndef SDL_h_
 #define SDL_h_
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_assert.h>
+#include <SDL3/SDL_asyncio.h>
 #include <SDL3/SDL_atomic.h>
 #include <SDL3/SDL_audio.h>
 #include <SDL3/SDL_bits.h>
 #include <SDL3/SDL_blendmode.h>
+#include <SDL3/SDL_camera.h>
 #include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_cpuinfo.h>
+#include <SDL3/SDL_dialog.h>
 #include <SDL3/SDL_endian.h>
 #include <SDL3/SDL_error.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_filesystem.h>
 #include <SDL3/SDL_gamepad.h>
+#include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_guid.h>
 #include <SDL3/SDL_haptic.h>
 #include <SDL3/SDL_hidapi.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
@@ -58,21 +65,23 @@
 #include <SDL3/SDL_misc.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_mutex.h>
+#include <SDL3/SDL_pen.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_platform.h>
 #include <SDL3/SDL_power.h>
+#include <SDL3/SDL_process.h>
 #include <SDL3/SDL_properties.h>
-#include <SDL3/SDL_quit.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
-#include <SDL3/SDL_rwops.h>
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_sensor.h>
-#include <SDL3/SDL_shape.h>
+#include <SDL3/SDL_storage.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_system.h>
 #include <SDL3/SDL_thread.h>
+#include <SDL3/SDL_time.h>
 #include <SDL3/SDL_timer.h>
+#include <SDL3/SDL_tray.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_version.h>
 #include <SDL3/SDL_video.h>

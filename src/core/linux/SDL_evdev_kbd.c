@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 
 #ifdef SDL_INPUT_LINUXKD
 
-/* This logic is adapted from drivers/tty/vt/keyboard.c in the Linux kernel source */
+// This logic is adapted from drivers/tty/vt/keyboard.c in the Linux kernel source
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -32,7 +32,7 @@
 #include <linux/kd.h>
 #include <linux/keyboard.h>
 #include <linux/vt.h>
-#include <linux/tiocl.h> /* for TIOCL_GETSHIFTSTATE */
+#include <linux/tiocl.h> // for TIOCL_GETSHIFTSTATE
 
 #include <signal.h>
 
@@ -40,7 +40,7 @@
 #include "SDL_evdev_kbd_default_accents.h"
 #include "SDL_evdev_kbd_default_keymap.h"
 
-/* These are not defined in older Linux kernel headers */
+// These are not defined in older Linux kernel headers
 #ifndef K_UNICODE
 #define K_UNICODE 0x03
 #endif
@@ -84,20 +84,25 @@ static fn_handler_fn *fn_handler[] = {
 struct SDL_EVDEV_keyboard_state
 {
     int console_fd;
+    bool muted;
     int old_kbd_mode;
     unsigned short **key_maps;
-    unsigned char shift_down[NR_SHIFT]; /* shift state counters.. */
-    SDL_bool dead_key_next;
-    int npadch; /* -1 or number assembled on pad */
+    unsigned char shift_down[NR_SHIFT]; // shift state counters..
+    bool dead_key_next;
+    int npadch; // -1 or number assembled on pad
     struct kbdiacrs *accents;
     unsigned int diacr;
-    SDL_bool rep; /* flag telling character repeat */
+    bool rep; // flag telling character repeat
     unsigned char lockstate;
     unsigned char slockstate;
     unsigned char ledflagstate;
     char shift_state;
     char text[128];
     unsigned int text_len;
+    void (*vt_release_callback)(void *);
+    void *vt_release_callback_data;
+    void (*vt_acquire_callback)(void *);
+    void *vt_acquire_callback_data;
 };
 
 #ifdef DUMP_ACCENTS
@@ -120,7 +125,7 @@ static void SDL_EVDEV_dump_accents(SDL_EVDEV_keyboard_state *kbd)
     printf("    }\n");
     printf("};\n");
 }
-#endif /* DUMP_ACCENTS */
+#endif // DUMP_ACCENTS
 
 #ifdef DUMP_KEYMAP
 static void SDL_EVDEV_dump_keymap(SDL_EVDEV_keyboard_state *kbd)
@@ -150,7 +155,7 @@ static void SDL_EVDEV_dump_keymap(SDL_EVDEV_keyboard_state *kbd)
     }
     printf("};\n");
 }
-#endif /* DUMP_KEYMAP */
+#endif // DUMP_KEYMAP
 
 static SDL_EVDEV_keyboard_state *kbd_cleanup_state = NULL;
 static int kbd_cleanup_sigactions_installed = 0;
@@ -159,7 +164,7 @@ static int kbd_cleanup_atexit_installed = 0;
 static struct sigaction old_sigaction[NSIG];
 
 static int fatal_signals[] = {
-    /* Handlers for SIGTERM and SIGINT are installed in SDL_InitQuit. */
+    // Handlers for SIGTERM and SIGINT are installed in SDL_InitQuit.
     SIGHUP, SIGQUIT, SIGILL, SIGABRT,
     SIGFPE, SIGSEGV, SIGPIPE, SIGBUS,
     SIGSYS
@@ -168,7 +173,7 @@ static int fatal_signals[] = {
 static void kbd_cleanup(void)
 {
     SDL_EVDEV_keyboard_state *kbd = kbd_cleanup_state;
-    if (kbd == NULL) {
+    if (!kbd) {
         return;
     }
     kbd_cleanup_state = NULL;
@@ -189,22 +194,22 @@ static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontex
     struct sigaction *old_action_p = &(old_sigaction[signum]);
     sigset_t sigset;
 
-    /* Restore original signal handler before going any further. */
+    // Restore original signal handler before going any further.
     sigaction(signum, old_action_p, NULL);
 
-    /* Unmask current signal. */
+    // Unmask current signal.
     sigemptyset(&sigset);
     sigaddset(&sigset, signum);
     sigprocmask(SIG_UNBLOCK, &sigset, NULL);
 
-    /* Save original signal info and context for archeologists. */
+    // Save original signal info and context for archeologists.
     SDL_EVDEV_kdb_cleanup_siginfo = info;
     SDL_EVDEV_kdb_cleanup_ucontext = ucontext;
 
-    /* Restore keyboard. */
+    // Restore keyboard.
     kbd_cleanup();
 
-    /* Reraise signal. */
+    // Reraise signal.
     SDL_EVDEV_kbd_reraise_signal(signum);
 }
 
@@ -225,27 +230,27 @@ static void kbd_unregister_emerg_cleanup(void)
         int signum = fatal_signals[tabidx];
         old_action_p = &(old_sigaction[signum]);
 
-        /* Examine current signal action */
+        // Examine current signal action
         if (sigaction(signum, NULL, &cur_action)) {
             continue;
         }
 
-        /* Check if action installed and not modified */
+        // Check if action installed and not modified
         if (!(cur_action.sa_flags & SA_SIGINFO) || cur_action.sa_sigaction != &kbd_cleanup_signal_action) {
             continue;
         }
 
-        /* Restore original action */
+        // Restore original action
         sigaction(signum, old_action_p, NULL);
     }
 }
 
 static void kbd_cleanup_atexit(void)
 {
-    /* Restore keyboard. */
+    // Restore keyboard.
     kbd_cleanup();
 
-    /* Try to restore signal handlers in case shared library is being unloaded */
+    // Try to restore signal handlers in case shared library is being unloaded
     kbd_unregister_emerg_cleanup();
 }
 
@@ -253,7 +258,7 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
 {
     int tabidx;
 
-    if (kbd_cleanup_state != NULL) {
+    if (kbd_cleanup_state) {
         return;
     }
     kbd_cleanup_state = kbd;
@@ -295,6 +300,126 @@ static void kbd_register_emerg_cleanup(SDL_EVDEV_keyboard_state *kbd)
     }
 }
 
+enum {
+    VT_SIGNAL_NONE,
+    VT_SIGNAL_RELEASE,
+    VT_SIGNAL_ACQUIRE,
+};
+static int vt_release_signal;
+static int vt_acquire_signal;
+static SDL_AtomicInt vt_signal_pending;
+
+typedef void (*signal_handler)(int signum);
+
+static void kbd_vt_release_signal_action(int signum)
+{
+    SDL_SetAtomicInt(&vt_signal_pending, VT_SIGNAL_RELEASE);
+}
+
+static void kbd_vt_acquire_signal_action(int signum)
+{
+    SDL_SetAtomicInt(&vt_signal_pending, VT_SIGNAL_ACQUIRE);
+}
+
+static bool setup_vt_signal(int signum, signal_handler handler)
+{
+    struct sigaction *old_action_p;
+    struct sigaction new_action;
+    old_action_p = &(old_sigaction[signum]);
+    SDL_zero(new_action);
+    new_action.sa_handler = handler;
+    new_action.sa_flags = SA_RESTART;
+    if (sigaction(signum, &new_action, old_action_p) < 0) {
+        return false;
+    }
+    if (old_action_p->sa_handler != SIG_DFL) {
+        // This signal is already in use
+        sigaction(signum, old_action_p, NULL);
+        return false;
+    }
+    return true;
+}
+
+static int find_free_signal(signal_handler handler)
+{
+#ifdef SIGRTMIN
+    int i;
+
+    for (i = SIGRTMIN + 2; i <= SIGRTMAX; ++i) {
+        if (setup_vt_signal(i, handler)) {
+            return i;
+        }
+    }
+#endif
+    if (setup_vt_signal(SIGUSR1, handler)) {
+        return SIGUSR1;
+    }
+    if (setup_vt_signal(SIGUSR2, handler)) {
+        return SIGUSR2;
+    }
+    return 0;
+}
+
+static void kbd_vt_quit(int console_fd)
+{
+    struct vt_mode mode;
+
+    if (vt_release_signal) {
+        sigaction(vt_release_signal, &old_sigaction[vt_release_signal], NULL);
+        vt_release_signal = 0;
+    }
+    if (vt_acquire_signal) {
+        sigaction(vt_acquire_signal, &old_sigaction[vt_acquire_signal], NULL);
+        vt_acquire_signal = 0;
+    }
+
+    SDL_zero(mode);
+    mode.mode = VT_AUTO;
+    ioctl(console_fd, VT_SETMODE, &mode);
+}
+
+static bool kbd_vt_init(int console_fd)
+{
+    struct vt_mode mode;
+
+    vt_release_signal = find_free_signal(kbd_vt_release_signal_action);
+    vt_acquire_signal = find_free_signal(kbd_vt_acquire_signal_action);
+    if (!vt_release_signal || !vt_acquire_signal ) {
+        kbd_vt_quit(console_fd);
+        return false;
+    }
+
+    SDL_zero(mode);
+    mode.mode = VT_PROCESS;
+    mode.relsig = vt_release_signal;
+    mode.acqsig = vt_acquire_signal;
+    mode.frsig = SIGIO;
+    if (ioctl(console_fd, VT_SETMODE, &mode) < 0) {
+        kbd_vt_quit(console_fd);
+        return false;
+    }
+    return true;
+}
+
+static void kbd_vt_update(SDL_EVDEV_keyboard_state *state)
+{
+    int signal_pending = SDL_GetAtomicInt(&vt_signal_pending);
+    if (signal_pending != VT_SIGNAL_NONE) {
+        if (signal_pending == VT_SIGNAL_RELEASE) {
+            if (state->vt_release_callback) {
+                state->vt_release_callback(state->vt_release_callback_data);
+            }
+            ioctl(state->console_fd, VT_RELDISP, 1);
+        } else {
+            if (state->vt_acquire_callback) {
+                state->vt_acquire_callback(state->vt_acquire_callback_data);
+            }
+            ioctl(state->console_fd, VT_RELDISP, VT_ACKACQ);
+        }
+        SDL_CompareAndSwapAtomicInt(&vt_signal_pending, signal_pending, VT_SIGNAL_NONE);
+    }
+}
+
 SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
 {
     SDL_EVDEV_keyboard_state *kbd;
@@ -303,11 +428,11 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
     char shift_state[sizeof(long)] = { TIOCL_GETSHIFTSTATE, 0 };
 
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(*kbd));
-    if (kbd == NULL) {
+    if (!kbd) {
         return NULL;
     }
 
-    /* This might fail if we're not connected to a tty (e.g. on the Steam Link) */
+    // This might fail if we're not connected to a tty (e.g. on the Steam Link)
     kbd->console_fd = open("/dev/tty", O_RDONLY | O_CLOEXEC);
     if (!((ioctl(kbd->console_fd, KDGKBTYPE, &kbtype) == 0) && ((kbtype == KB_101) || (kbtype == KB_84)))) {
         close(kbd->console_fd);
@@ -328,25 +453,67 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
     kbd->key_maps = default_key_maps;
 
     if (ioctl(kbd->console_fd, KDGKBMODE, &kbd->old_kbd_mode) == 0) {
-        /* Set the keyboard in UNICODE mode and load the keymaps */
+        // Set the keyboard in UNICODE mode and load the keymaps
         ioctl(kbd->console_fd, KDSKBMODE, K_UNICODE);
     }
 
-    /* Allow inhibiting keyboard mute with env. variable for debugging etc. */
-    if (SDL_getenv("SDL_INPUT_LINUX_KEEP_KBD") == NULL) {
-        /* Mute the keyboard so keystrokes only generate evdev events
-         * and do not leak through to the console
-         */
-        ioctl(kbd->console_fd, KDSKBMODE, K_OFF);
+    kbd_vt_init(kbd->console_fd);
 
-        /* Make sure to restore keyboard if application fails to call
-         * SDL_Quit before exit or fatal signal is raised.
-         */
-        if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
-            kbd_register_emerg_cleanup(kbd);
-        }
-    }
     return kbd;
+}
+
+void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, bool muted)
+{
+    if (!state) {
+        return;
+    }
+
+    if (muted == state->muted) {
+        return;
+    }
+
+    if (muted) {
+        if (SDL_GetHintBoolean(SDL_HINT_MUTE_CONSOLE_KEYBOARD, true)) {
+            /* Mute the keyboard so keystrokes only generate evdev events
+             * and do not leak through to the console
+             */
+            ioctl(state->console_fd, KDSKBMODE, K_OFF);
+
+            /* Make sure to restore keyboard if application fails to call
+             * SDL_Quit before exit or fatal signal is raised.
+             */
+            if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, false)) {
+                kbd_register_emerg_cleanup(state);
+            }
+        }
+    } else {
+        kbd_unregister_emerg_cleanup();
+
+        // Restore the original keyboard mode
+        ioctl(state->console_fd, KDSKBMODE, state->old_kbd_mode);
+    }
+    state->muted = muted;
+}
+
+void SDL_EVDEV_kbd_set_vt_switch_callbacks(SDL_EVDEV_keyboard_state *state, void (*release_callback)(void*), void *release_callback_data, void (*acquire_callback)(void*), void *acquire_callback_data)
+{
+    if (state == NULL) {
+        return;
+    }
+
+    state->vt_release_callback = release_callback;
+    state->vt_release_callback_data = release_callback_data;
+    state->vt_acquire_callback = acquire_callback;
+    state->vt_acquire_callback_data = acquire_callback_data;
+}
+
+void SDL_EVDEV_kbd_update(SDL_EVDEV_keyboard_state *state)
+{
+    if (!state) {
+        return;
+    }
+
+    kbd_vt_update(state);
 }
 
 void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
@@ -355,12 +522,11 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
         return;
     }
 
-    kbd_unregister_emerg_cleanup();
+    SDL_EVDEV_kbd_set_muted(state, false);
+
+    kbd_vt_quit(state->console_fd);
 
     if (state->console_fd >= 0) {
-        /* Restore the original keyboard mode */
-        ioctl(state->console_fd, KDSKBMODE, state->old_kbd_mode);
-
         close(state->console_fd);
         state->console_fd = -1;
     }
@@ -383,7 +549,7 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
  */
 static void put_queue(SDL_EVDEV_keyboard_state *kbd, uint c)
 {
-    /* c is already part of a UTF-8 sequence and safe to add as a character */
+    // c is already part of a UTF-8 sequence and safe to add as a character
     if (kbd->text_len < (sizeof(kbd->text) - 1)) {
         kbd->text[kbd->text_len++] = (char)c;
     }
@@ -433,7 +599,7 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
 
     if (kbd->console_fd >= 0)
         if (ioctl(kbd->console_fd, KDGKBDIACR, kbd->accents) < 0) {
-            /* No worries, we'll use the default accent table */
+            // No worries, we'll use the default accent table
         }
 
     for (i = 0; i < kbd->accents->kb_cnt; i++) {
@@ -452,7 +618,7 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
     return ch;
 }
 
-static int vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
+static bool vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
 {
     return (kbd->ledflagstate & flag) != 0;
 }
@@ -524,7 +690,7 @@ static void fn_num(SDL_EVDEV_keyboard_state *kbd)
 
 static void fn_compose(SDL_EVDEV_keyboard_state *kbd)
 {
-    kbd->dead_key_next = SDL_TRUE;
+    kbd->dead_key_next = true;
 }
 
 /*
@@ -555,7 +721,7 @@ static void k_lowercase(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char
 static void k_self(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_flag)
 {
     if (up_flag) {
-        return; /* no action, if this is a key release */
+        return; // no action, if this is a key release
     }
 
     if (kbd->diacr) {
@@ -563,7 +729,7 @@ static void k_self(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_f
     }
 
     if (kbd->dead_key_next) {
-        kbd->dead_key_next = SDL_FALSE;
+        kbd->dead_key_next = false;
         kbd->diacr = value;
         return;
     }
@@ -608,11 +774,11 @@ static void k_pad(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_fl
     static const char pad_chars[] = "0123456789+-*/\015,.?()#";
 
     if (up_flag) {
-        return; /* no action, if this is a key release */
+        return; // no action, if this is a key release
     }
 
     if (!vc_kbd_led(kbd, K_NUMLOCK)) {
-        /* unprintable action */
+        // unprintable action
         return;
     }
 
@@ -655,7 +821,7 @@ static void k_shift(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
         kbd->shift_state &= ~(1 << value);
     }
 
-    /* kludge */
+    // kludge
     if (up_flag && kbd->shift_state != old_state && kbd->npadch != -1) {
         put_utf8(kbd, kbd->npadch);
         kbd->npadch = -1;
@@ -675,10 +841,10 @@ static void k_ascii(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
     }
 
     if (value < 10) {
-        /* decimal input of code, while Alt depressed */
+        // decimal input of code, while Alt depressed
         base = 10;
     } else {
-        /* hexadecimal input of code, while AltGr depressed */
+        // hexadecimal input of code, while AltGr depressed
         value -= 10;
         base = 16;
     }
@@ -707,7 +873,7 @@ static void k_slock(SDL_EVDEV_keyboard_state *kbd, unsigned char value, char up_
     }
 
     chg_vc_kbd_slock(kbd, value);
-    /* try to make Alt, oops, AltGr and such work */
+    // try to make Alt, oops, AltGr and such work
     if (!kbd->key_maps[kbd->lockstate ^ kbd->slockstate]) {
         kbd->slockstate = 0;
         chg_vc_kbd_slock(kbd, value);
@@ -725,7 +891,7 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode
     unsigned short *key_map;
     unsigned short keysym;
 
-    if (state == NULL) {
+    if (!state) {
         return;
     }
 
@@ -733,8 +899,8 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode
 
     shift_final = (state->shift_state | state->slockstate) ^ state->lockstate;
     key_map = state->key_maps[shift_final];
-    if (key_map == NULL) {
-        /* Unsupported shift state (e.g. ctrl = 4, alt = 8), just reset to the default state */
+    if (!key_map) {
+        // Unsupported shift state (e.g. ctrl = 4, alt = 8), just reset to the default state
         state->shift_state = 0;
         state->slockstate = 0;
         state->lockstate = 0;
@@ -766,7 +932,7 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode
     } else {
         type -= 0xf0;
 
-        /* if type is KT_LETTER then it can be affected by Caps Lock */
+        // if type is KT_LETTER then it can be affected by Caps Lock
         if (type == KT_LETTER) {
             type = KT_LATIN;
 
@@ -801,11 +967,23 @@ void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode
     }
 }
 
-#elif !defined(SDL_INPUT_FBSDKBIO) /* !SDL_INPUT_LINUXKD */
+#elif !defined(SDL_INPUT_FBSDKBIO) // !SDL_INPUT_LINUXKD
 
 SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
 {
     return NULL;
+}
+
+void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, bool muted)
+{
+}
+
+void SDL_EVDEV_kbd_set_vt_switch_callbacks(SDL_EVDEV_keyboard_state *state, void (*release_callback)(void*), void *release_callback_data, void (*acquire_callback)(void*), void *acquire_callback_data)
+{
+}
+
+void SDL_EVDEV_kbd_update(SDL_EVDEV_keyboard_state *state)
+{
 }
 
 void SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *state, unsigned int keycode, int down)
@@ -816,4 +994,4 @@ void SDL_EVDEV_kbd_quit(SDL_EVDEV_keyboard_state *state)
 {
 }
 
-#endif /* SDL_INPUT_LINUXKD */
+#endif // SDL_INPUT_LINUXKD

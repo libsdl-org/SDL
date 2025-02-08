@@ -159,7 +159,7 @@ endif()
 HIDAPI can be easily used as a subdirectory of a larger CMake project:
 ```cmake
 # root CMakeLists.txt
-cmake_minimum_required(VERSION 3.4.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.4.3...3.25 FATAL_ERROR)
 
 add_subdirectory(hidapi)
 add_subdirectory(my_application)
@@ -214,7 +214,7 @@ This is done to let the host project's developer decide what is important (what 
     In a _subdirectory build_, even if not set, those variables remain unchanged, so a host project's developer has a full control over the HIDAPI build configuration.
 
 Available CMake targets after `add_subdirectory(hidapi)` _are the same as in case of [standalone build](#standalone-package-build)_, and a few additional ones:
-- `hidapi_include` - the interface library; `hidapi::hidapi` is an alias of it;
+- `hidapi_include` - the interface library; `hidapi::include` is an alias of it;
 - `hidapi_winapi` - library target on Windows; `hidapi::winapi` is an alias of it;
 - `hidapi_darwin` - library target on macOS; `hidapi::darwin` is an alias of it;
 - `hidapi_libusb` - library target for libusb backend; `hidapi::libusb` is an alias of it;

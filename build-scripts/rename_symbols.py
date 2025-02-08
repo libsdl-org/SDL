@@ -25,7 +25,7 @@ def main():
 
     else:
         if len(args.args) < 3:
-            print("Usage: %s oldname newname files_or_directories ..." % sys.argv[0])
+            print("Usage: %s [--substring] oldname newname files_or_directories ..." % sys.argv[0])
             exit(1)
 
         replacements = { args.args[0]: args.args[1] }

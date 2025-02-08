@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,11 +21,11 @@
 static void
 print_mode(const char *prefix, const SDL_DisplayMode *mode)
 {
-    if (mode == NULL) {
+    if (!mode) {
         return;
     }
 
-    SDL_Log("%s: %dx%d@%gx, %gHz, fmt=%s\n",
+    SDL_Log("%s: %dx%d@%gx, %gHz, fmt=%s",
             prefix,
             mode->w, mode->h, mode->pixel_density, mode->refresh_rate,
             SDL_GetPixelFormatName(mode->format));
@@ -34,19 +34,16 @@ print_mode(const char *prefix, const SDL_DisplayMode *mode)
 int main(int argc, char *argv[])
 {
     SDL_DisplayID *displays;
-    const SDL_DisplayMode **modes;
+    SDL_DisplayMode **modes;
     const SDL_DisplayMode *mode;
     int num_displays, i;
     SDLTest_CommonState *state;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
@@ -54,37 +51,39 @@ int main(int argc, char *argv[])
     }
 
     /* Load the SDL library */
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
-    SDL_Log("Using video target '%s'.\n", SDL_GetCurrentVideoDriver());
+    SDL_Log("Using video target '%s'.", SDL_GetCurrentVideoDriver());
     displays = SDL_GetDisplays(&num_displays);
 
-    SDL_Log("See %d displays.\n", num_displays);
+    SDL_Log("See %d displays.", num_displays);
 
     for (i = 0; i < num_displays; i++) {
         SDL_DisplayID dpy = displays[i];
+        SDL_PropertiesID props = SDL_GetDisplayProperties(dpy);
         SDL_Rect rect = { 0, 0, 0, 0 };
         int m, num_modes = 0;
+        const bool has_HDR = SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, false);
 
         SDL_GetDisplayBounds(dpy, &rect);
         modes = SDL_GetFullscreenDisplayModes(dpy, &num_modes);
-        SDL_Log("%" SDL_PRIu32 ": \"%s\" (%dx%d at %d,%d), content scale %.1f, %d fullscreen modes.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, SDL_GetDisplayContentScale(dpy), num_modes);
+        SDL_Log("%" SDL_PRIu32 ": \"%s\" (%dx%d at %d,%d), content scale %.2f, %d fullscreen modes, HDR capable: %s.", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, SDL_GetDisplayContentScale(dpy), num_modes, has_HDR ? "yes" : "no");
 
         mode = SDL_GetCurrentDisplayMode(dpy);
         if (mode) {
             print_mode("CURRENT", mode);
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    CURRENT: failed to query (%s)\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    CURRENT: failed to query (%s)", SDL_GetError());
         }
 
         mode = SDL_GetDesktopDisplayMode(dpy);
         if (mode) {
             print_mode("DESKTOP", mode);
         } else {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DESKTOP: failed to query (%s)\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DESKTOP: failed to query (%s)", SDL_GetError());
         }
 
         for (m = 0; m < num_modes; m++) {
@@ -92,9 +91,9 @@ int main(int argc, char *argv[])
             (void)SDL_snprintf(prefix, sizeof(prefix), "    MODE %d", m);
             print_mode(prefix, modes[m]);
         }
-        SDL_free((void*)modes);
+        SDL_free(modes);
 
-        SDL_Log("\n");
+        SDL_Log("%s", "");
     }
     SDL_free(displays);
 

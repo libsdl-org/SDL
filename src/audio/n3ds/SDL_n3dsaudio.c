@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,7 @@
 static dspHookCookie dsp_hook;
 static SDL_AudioDevice *audio_device;
 
+// fully local functions related to the wavebufs / DSP, not the same as the `device->lock` SDL_Mutex!
 static SDL_INLINE void contextLock(SDL_AudioDevice *device)
 {
     LightLock_Lock(&device->hidden->lock);
@@ -46,7 +47,7 @@ static void N3DSAUD_DspHook(DSP_HookType hook)
 {
     if (hook == DSPHOOK_ONCANCEL) {
         contextLock(audio_device);
-        audio_device->hidden->isCancelled = SDL_TRUE;
+        audio_device->hidden->isCancelled = true;
         SDL_AudioDeviceDisconnected(audio_device);
         CondVar_Broadcast(&audio_device->hidden->cv);
         contextUnlock(audio_device);
@@ -64,7 +65,7 @@ static void AudioFrameFinished(void *vdevice)
     for (i = 0; i < NUM_BUFFERS; i++) {
         if (device->hidden->waveBuf[i].status == NDSP_WBUF_DONE) {
             device->hidden->waveBuf[i].status = NDSP_WBUF_FREE;
-            shouldBroadcast = SDL_TRUE;
+            shouldBroadcast = true;
         }
     }
 
@@ -75,26 +76,25 @@ static void AudioFrameFinished(void *vdevice)
     contextUnlock(device);
 }
 
-static int N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
+static bool N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     Result ndsp_init_res;
     Uint8 *data_vaddr;
     float mix[12];
 
     device->hidden = (struct SDL_PrivateAudioData *)SDL_calloc(1, sizeof(*device->hidden));
-    if (device->hidden == NULL) {
-        return SDL_OutOfMemory();
+    if (!device->hidden) {
+        return false;
     }
 
     // Initialise the DSP service
     ndsp_init_res = ndspInit();
     if (R_FAILED(ndsp_init_res)) {
         if ((R_SUMMARY(ndsp_init_res) == RS_NOTFOUND) && (R_MODULE(ndsp_init_res) == RM_DSP)) {
-            SDL_SetError("DSP init failed: dspfirm.cdc missing!");
+            return SDL_SetError("DSP init failed: dspfirm.cdc missing!");
         } else {
-            SDL_SetError("DSP init failed. Error code: 0x%lX", ndsp_init_res);
+            return SDL_SetError("DSP init failed. Error code: 0x%lX", ndsp_init_res);
         }
-        return -1;
     }
 
     // Initialise internal state
@@ -133,14 +133,14 @@ static int N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     device->hidden->mixbuf = (Uint8 *)SDL_malloc(device->buffer_size);
-    if (device->hidden->mixbuf == NULL) {
-        return SDL_OutOfMemory();
+    if (!device->hidden->mixbuf) {
+        return false;
     }
 
     SDL_memset(device->hidden->mixbuf, device->silence_value, device->buffer_size);
 
     data_vaddr = (Uint8 *)linearAlloc(device->buffer_size * NUM_BUFFERS);
-    if (data_vaddr == NULL) {
+    if (!data_vaddr) {
         return SDL_OutOfMemory();
     }
 
@@ -173,10 +173,10 @@ static int N3DSAUDIO_OpenDevice(SDL_AudioDevice *device)
     ndspSetCallback(AudioFrameFinished, device);
     dspHook(&dsp_hook, N3DSAUD_DspHook);
 
-    return 0;
+    return true;
 }
 
-static int N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
+static bool N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
     contextLock(device);
 
@@ -185,7 +185,7 @@ static int N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
     if (device->hidden->isCancelled ||
         device->hidden->waveBuf[nextbuf].status != NDSP_WBUF_FREE) {
         contextUnlock(device);
-        return 0;  // !!! FIXME: is this a fatal error? If so, this should return -1.
+        return true;  // !!! FIXME: is this a fatal error? If so, this should return false.
     }
 
     device->hidden->nextbuf = (nextbuf + 1) % NUM_BUFFERS;
@@ -197,18 +197,18 @@ static int N3DSAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
 
     ndspChnWaveBufAdd(0, &device->hidden->waveBuf[nextbuf]);
 
-    return 0;
+    return true;
 }
 
-static int N3DSAUDIO_WaitDevice(SDL_AudioDevice *device)
+static bool N3DSAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     contextLock(device);
-    while (!device->hidden->isCancelled && !SDL_AtomicGet(&device->shutdown) &&
+    while (!device->hidden->isCancelled && !SDL_GetAtomicInt(&device->shutdown) &&
            device->hidden->waveBuf[device->hidden->nextbuf].status != NDSP_WBUF_FREE) {
         CondVar_Wait(&device->hidden->cv, &device->hidden->lock);
     }
     contextUnlock(device);
-    return 0;
+    return true;
 }
 
 static Uint8 *N3DSAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
@@ -252,7 +252,7 @@ static void N3DSAUDIO_CloseDevice(SDL_AudioDevice *device)
 
 static void N3DSAUDIO_ThreadInit(SDL_AudioDevice *device)
 {
-    s32 current_priority;
+    s32 current_priority = 0x30;
     svcGetThreadPriority(&current_priority, CUR_THREAD_HANDLE);
     current_priority--;
     // 0x18 is reserved for video, 0x30 is the default for main thread
@@ -260,7 +260,7 @@ static void N3DSAUDIO_ThreadInit(SDL_AudioDevice *device)
     svcSetThreadPriority(CUR_THREAD_HANDLE, current_priority);
 }
 
-static SDL_bool N3DSAUDIO_Init(SDL_AudioDriverImpl *impl)
+static bool N3DSAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
     impl->OpenDevice = N3DSAUDIO_OpenDevice;
     impl->PlayDevice = N3DSAUDIO_PlayDevice;
@@ -268,12 +268,12 @@ static SDL_bool N3DSAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->GetDeviceBuf = N3DSAUDIO_GetDeviceBuf;
     impl->CloseDevice = N3DSAUDIO_CloseDevice;
     impl->ThreadInit = N3DSAUDIO_ThreadInit;
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->OnlyHasDefaultPlaybackDevice = true;
 
     // Should be possible, but micInit would fail
-    impl->HasCaptureSupport = SDL_FALSE;
+    impl->HasRecordingSupport = false;
 
-    return SDL_TRUE;
+    return true;
 }
 
 AudioBootStrap N3DSAUDIO_bootstrap = {

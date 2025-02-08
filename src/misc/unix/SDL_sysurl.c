@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,53 +33,39 @@
 extern char **environ;
 #endif
 
-int SDL_SYS_OpenURL(const char *url)
+bool SDL_SYS_OpenURL(const char *url)
 {
-    const pid_t pid1 = fork();
-    if (pid1 == 0) { /* child process */
-#ifdef USE_POSIX_SPAWN
-        pid_t pid2;
-        const char *args[] = { "xdg-open", url, NULL };
-        /* Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam */
-        unsetenv("LD_PRELOAD");
-        if (posix_spawnp(&pid2, args[0], NULL, NULL, (char **)args, environ) == 0) {
-            /* Child process doesn't wait for possibly-blocking grandchild. */
-            _exit(EXIT_SUCCESS);
-        } else {
-            _exit(EXIT_FAILURE);
-        }
-#else
-        pid_t pid2;
-        /* Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam */
-        unsetenv("LD_PRELOAD");
-        /* Notice this is vfork and not fork! */
-        pid2 = vfork();
-        if (pid2 == 0) { /* Grandchild process will try to launch the url */
-            execlp("xdg-open", "xdg-open", url, NULL);
-            _exit(EXIT_FAILURE);
-        } else if (pid2 < 0) { /* There was an error forking */
-            _exit(EXIT_FAILURE);
-        } else {
-            /* Child process doesn't wait for possibly-blocking grandchild. */
-            _exit(EXIT_SUCCESS);
-        }
-#endif /* USE_POSIX_SPAWN */
-    } else if (pid1 < 0) {
-        return SDL_SetError("fork() failed: %s", strerror(errno));
-    } else {
-        int status;
-        if (waitpid(pid1, &status, 0) == pid1) {
-            if (WIFEXITED(status)) {
-                if (WEXITSTATUS(status) == 0) {
-                    return 0; /* success! */
-                } else {
-                    return SDL_SetError("xdg-open reported error or failed to launch: %d", WEXITSTATUS(status));
-                }
-            } else {
-                return SDL_SetError("xdg-open failed for some reason");
-            }
-        } else {
-            return SDL_SetError("Waiting on xdg-open failed: %s", strerror(errno));
-        }
+    const char *args[] = { "xdg-open", url, NULL };
+    SDL_Environment *env = NULL;
+    SDL_Process *process = NULL;
+    bool result = false;
+
+    env = SDL_CreateEnvironment(true);
+    if (!env) {
+        goto done;
     }
+
+    // Clear LD_PRELOAD so Chrome opens correctly when this application is launched by Steam
+    SDL_UnsetEnvironmentVariable(env, "LD_PRELOAD");
+
+    SDL_PropertiesID props = SDL_CreateProperties();
+    if (!props) {
+        goto done;
+    }
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args);
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, env);
+    SDL_SetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN, true);
+    process = SDL_CreateProcessWithProperties(props);
+    SDL_DestroyProperties(props);
+    if (!process) {
+        goto done;
+    }
+
+    result = true;
+
+done:
+    SDL_DestroyEnvironment(env);
+    SDL_DestroyProcess(process);
+
+    return result;
 }

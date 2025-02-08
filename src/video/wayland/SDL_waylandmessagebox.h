@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,8 +24,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
-extern int Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+extern bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-#endif /* SDL_VIDEO_DRIVER_WAYLAND */
+#endif // SDL_VIDEO_DRIVER_WAYLAND
 
-#endif /* SDL_waylandmessagebox_h_ */
+#endif // SDL_waylandmessagebox_h_

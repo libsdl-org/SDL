@@ -5,28 +5,10 @@ This is a list of major changes in SDL's version history.
 3.2.0:
 ---------------------------------------------------------------------------
 
-General:
-* SDL headers should now be included as `#include <SDL3/SDL.h>`
-* Many functions and symbols have changed since SDL 2.0, see the [migration guide](docs/README-migration.md) for details
-* The preprocessor symbol __MACOSX__ has been renamed __MACOS__
-* The preprocessor symbol __IPHONEOS__ has been renamed __IOS__
-* SDL_stdinc.h no longer includes stdio.h, stdlib.h, etc., it only provides the SDL C runtime functionality
-* SDL_intrin.h now includes the intrinsics headers that were in SDL_cpuinfo.h
-* Added SDL_GetSystemTheme() to return whether the system is using a dark or light color theme, and SDL_EVENT_SYSTEM_THEME_CHANGED is sent when this changes
-* Added SDL_GetDisplays() to return a list of connected displays
-* Added SDL_GetPrimaryDisplay() to get the instance ID of the primary display
-* Added SDL_GetWindowParent() to get the parent of popup windows
-* Added SDL_CreateSurface() and SDL_CreateSurfaceFrom() which replace SDL_CreateRGBSurface*(), and can also be used to create YUV surfaces
-* Added SDL_GetJoysticks(), SDL_GetJoystickInstanceName(), SDL_GetJoystickInstancePath(), SDL_GetJoystickInstancePlayerIndex(), SDL_GetJoystickInstanceGUID(), SDL_GetJoystickInstanceVendor(), SDL_GetJoystickInstanceProduct(), SDL_GetJoystickInstanceProductVersion(), and SDL_GetJoystickInstanceType() to directly query the list of available joysticks
-* Added SDL_GetGamepads(), SDL_GetGamepadInstanceName(), SDL_GetGamepadInstancePath(), SDL_GetGamepadInstancePlayerIndex(), SDL_GetGamepadInstanceGUID(), SDL_GetGamepadInstanceVendor(), SDL_GetGamepadInstanceProduct(), SDL_GetGamepadInstanceProductVersion(), and SDL_GetGamepadInstanceType() to directly query the list of available gamepads
-* Added SDL_GetSensors(), SDL_GetSensorInstanceName(), SDL_GetSensorInstanceType(), and SDL_GetSensorInstanceNonPortableType() to directly query the list of available sensors
-* SDL_GetTicks() now returns a 64-bit value and the tick values should be directly compared instead of using the SDL_TICKS_PASSED macro
-* Added SDL_GetTicksNS() to return the number of nanoseconds since the SDL library initialized
-* Added SDL_DelayNS() to specify a delay in nanoseconds, to the highest precision the system will support
-* The timestamp member of the SDL_Event structure is now in nanoseconds, filled in with the time the event was generated, or the time it was queued if that's not available
-* Added SDL_modf() and SDL_modff() to separate the whole and fractional portions of a floating point number
-* Added SDL_aligned_alloc() and SDL_aligned_free() to allocate and free memory with a given alignment
-* Added SDL_GetRenderVSync() to get vsync of the given renderer
-* Added SDL_PlayAudioDevice() to start audio playback
-* Added SDL_ConvertAudioSamples() to convert audio samples from one format to another
-* Added the hint SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY to control re-creation of Android SDL activity.
+Check out [migration guide](docs/README-migration.md) for details on API changes since SDL 2.0, and tips on transitioning your code from SDL2 code to SDL3.
+
+There have been too many changes to list them all, but here are some of the highlights:
+
+https://wiki.libsdl.org/SDL3/NewFeatures
+
+Thank you to all the people who have contributed code and feedback to the SDL 3.0 release!

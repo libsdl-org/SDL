@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,11 +20,11 @@
 */
 #include "SDL_internal.h"
 
-#include "SDL_blit.h"
+#include "SDL_surface_c.h"
 #include "SDL_blit_copy.h"
 
 #ifdef SDL_SSE_INTRINSICS
-/* This assumes 16-byte aligned src and dst */
+// This assumes 16-byte aligned src and dst
 static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint8 *src, int len)
 {
     int i;
@@ -48,70 +48,23 @@ static SDL_INLINE void SDL_TARGETING("sse") SDL_memcpySSE(Uint8 *dst, const Uint
         SDL_memcpy(dst, src, len & 63);
     }
 }
-#endif /* SDL_SSE_INTRINSICS */
-
-#ifdef SDL_MMX_INTRINSICS
-#ifdef _MSC_VER
-#pragma warning(disable : 4799)
-#endif
-static SDL_INLINE void SDL_TARGETING("mmx") SDL_memcpyMMX(Uint8 *dst, const Uint8 *src, int len)
-{
-    int remain = len & 63;
-    int i;
-
-    __m64 *d64 = (__m64 *)dst;
-    __m64 *s64 = (__m64 *)src;
-
-    for (i = len / 64; i--;) {
-        d64[0] = s64[0];
-        d64[1] = s64[1];
-        d64[2] = s64[2];
-        d64[3] = s64[3];
-        d64[4] = s64[4];
-        d64[5] = s64[5];
-        d64[6] = s64[6];
-        d64[7] = s64[7];
-
-        d64 += 8;
-        s64 += 8;
-    }
-
-    if (remain) {
-        const int skip = len - remain;
-        dst += skip;
-        src += skip;
-        while (remain--) {
-            *dst++ = *src++;
-        }
-    }
-}
-
-static SDL_INLINE void SDL_TARGETING("mmx") SDL_BlitCopyMMX(Uint8 *dst, const Uint8 *src, const int dstskip, const int srcskip, const int w, int h)
-{
-    while (h--) {
-        SDL_memcpyMMX(dst, src, w);
-        src += srcskip;
-        dst += dstskip;
-    }
-    _mm_empty();
-}
-#endif /* SDL_MMX_INTRINSICS */
+#endif // SDL_SSE_INTRINSICS
 
 void SDL_BlitCopy(SDL_BlitInfo *info)
 {
-    SDL_bool overlap;
+    bool overlap;
     Uint8 *src, *dst;
     int w, h;
     int srcskip, dstskip;
 
-    w = info->dst_w * info->dst_fmt->BytesPerPixel;
+    w = info->dst_w * info->dst_fmt->bytes_per_pixel;
     h = info->dst_h;
     src = info->src;
     dst = info->dst;
     srcskip = info->src_pitch;
     dstskip = info->dst_pitch;
 
-    /* Properly handle overlapping blits */
+    // Properly handle overlapping blits
     if (src < dst) {
         overlap = (dst < (src + h * srcskip));
     } else {
@@ -145,13 +98,6 @@ void SDL_BlitCopy(SDL_BlitInfo *info)
             src += srcskip;
             dst += dstskip;
         }
-        return;
-    }
-#endif
-
-#ifdef SDL_MMX_INTRINSICS
-    if (SDL_HasMMX() && !(srcskip & 7) && !(dstskip & 7)) {
-        SDL_BlitCopyMMX(dst, src, dstskip, srcskip, w, h);
         return;
     }
 #endif

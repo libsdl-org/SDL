@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,23 +20,34 @@
 */
 #include "SDL_internal.h"
 
-/* Simple error handling in SDL */
+// Simple error handling in SDL
 
 #include "SDL_error_c.h"
 
-int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
+bool SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
-    /* Ignore call if invalid format pointer was passed */
-    if (fmt != NULL) {
-        va_list ap;
+    va_list ap;
+    bool result;
+
+    va_start(ap, fmt);
+    result = SDL_SetErrorV(fmt, ap);
+    va_end(ap);
+    return result;
+}
+
+bool SDL_SetErrorV(SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
+{
+    // Ignore call if invalid format pointer was passed
+    if (fmt) {
         int result;
-        SDL_error *error = SDL_GetErrBuf();
+        SDL_error *error = SDL_GetErrBuf(true);
+        va_list ap2;
 
-        error->error = 1; /* mark error as valid */
+        error->error = SDL_ErrorCodeGeneric;
 
-        va_start(ap, fmt);
-        result = SDL_vsnprintf(error->str, error->len, fmt, ap);
-        va_end(ap);
+        va_copy(ap2, ap);
+        result = SDL_vsnprintf(error->str, error->len, fmt, ap2);
+        va_end(ap2);
 
         if (result >= 0 && (size_t)result >= error->len && error->realloc_func) {
             size_t len = (size_t)result + 1;
@@ -44,61 +55,58 @@ int SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
             if (str) {
                 error->str = str;
                 error->len = len;
-                va_start(ap, fmt);
-                (void)SDL_vsnprintf(error->str, error->len, fmt, ap);
-                va_end(ap);
+                va_copy(ap2, ap);
+                (void)SDL_vsnprintf(error->str, error->len, fmt, ap2);
+                va_end(ap2);
             }
         }
 
-        if (SDL_LogGetPriority(SDL_LOG_CATEGORY_ERROR) <= SDL_LOG_PRIORITY_DEBUG) {
-            /* If we are in debug mode, print out the error message */
-            SDL_LogDebug(SDL_LOG_CATEGORY_ERROR, "%s", error->str);
-        }
+// Enable this if you want to see all errors printed as they occur.
+// Note that there are many recoverable errors that may happen internally and
+// can be safely ignored if the public API doesn't return an error code.
+#if 0
+        SDL_LogError(SDL_LOG_CATEGORY_ERROR, "%s", error->str);
+#endif
     }
 
-    return -1;
+    return false;
 }
 
-/* Available for backwards compatibility */
 const char *SDL_GetError(void)
 {
-    const SDL_error *error = SDL_GetErrBuf();
-    return error->error ? error->str : "";
-}
+    const SDL_error *error = SDL_GetErrBuf(false);
 
-void SDL_ClearError(void)
-{
-    SDL_GetErrBuf()->error = 0;
-}
+    if (!error) {
+        return "";
+    }
 
-/* Very common errors go here */
-int SDL_Error(SDL_errorcode code)
-{
-    switch (code) {
-    case SDL_ENOMEM:
-        return SDL_SetError("Out of memory");
-    case SDL_EFREAD:
-        return SDL_SetError("Error reading from datastream");
-    case SDL_EFWRITE:
-        return SDL_SetError("Error writing to datastream");
-    case SDL_EFSEEK:
-        return SDL_SetError("Error seeking in datastream");
-    case SDL_UNSUPPORTED:
-        return SDL_SetError("That operation is not supported");
+    switch (error->error) {
+    case SDL_ErrorCodeGeneric:
+        return error->str;
+    case SDL_ErrorCodeOutOfMemory:
+        return "Out of memory";
     default:
-        return SDL_SetError("Unknown SDL error");
+        return "";
     }
 }
 
-char *SDL_GetErrorMsg(char *errstr, int maxlen)
+bool SDL_ClearError(void)
 {
-    const SDL_error *error = SDL_GetErrBuf();
+    SDL_error *error = SDL_GetErrBuf(false);
 
-    if (error->error) {
-        SDL_strlcpy(errstr, error->str, maxlen);
-    } else {
-        *errstr = '\0';
+    if (error) {
+        error->error = SDL_ErrorCodeNone;
     }
-
-    return errstr;
+    return true;
 }
+
+bool SDL_OutOfMemory(void)
+{
+    SDL_error *error = SDL_GetErrBuf(true);
+
+    if (error) {
+        error->error = SDL_ErrorCodeOutOfMemory;
+    }
+    return false;
+}
+

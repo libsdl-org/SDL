@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,9 +20,7 @@
 */
 
 /**
- *  \file SDL_test.h
- *
- *  \brief Include file for SDL test framework.
+ *  Include file for SDL test framework.
  *
  *  This code is a part of the SDL test library, not the main SDL library.
  */
@@ -41,7 +39,6 @@
 #include <SDL3/SDL_test_log.h>
 #include <SDL3/SDL_test_md5.h>
 #include <SDL3/SDL_test_memory.h>
-#include <SDL3/SDL_test_random.h>
 
 #include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */

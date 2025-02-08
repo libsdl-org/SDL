@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,12 +34,13 @@ typedef struct X11_ClipboardData {
 } SDLX11_ClipboardData;
 
 extern const char **X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types);
-extern int X11_SetClipboardData(SDL_VideoDevice *_this);
+extern bool X11_SetClipboardData(SDL_VideoDevice *_this);
 extern void *X11_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length);
-extern SDL_bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
-extern int X11_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text);
+extern bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);
+extern bool X11_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text);
 extern char *X11_GetPrimarySelectionText(SDL_VideoDevice *_this);
-extern SDL_bool X11_HasPrimarySelectionText(SDL_VideoDevice *_this);
+extern bool X11_HasPrimarySelectionText(SDL_VideoDevice *_this);
 extern void X11_QuitClipboard(SDL_VideoDevice *_this);
+Window GetWindow(SDL_VideoDevice *_this);
 
-#endif /* SDL_x11clipboard_h_ */
+#endif // SDL_x11clipboard_h_

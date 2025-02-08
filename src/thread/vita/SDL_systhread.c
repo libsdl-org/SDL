@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 
 #ifdef SDL_THREAD_VITA
 
-/* VITA thread management routines for SDL */
+// VITA thread management routines for SDL
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -48,7 +48,10 @@ static int ThreadEntry(SceSize args, void *argp)
     return 0;
 }
 
-int SDL_SYS_CreateThread(SDL_Thread *thread)
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                          SDL_FunctionPointer pfnBeginThread,
+                          SDL_FunctionPointer pfnEndThread)
+
 {
     char thread_name[VITA_THREAD_NAME_MAX];
     size_t stack_size = VITA_THREAD_STACK_SIZE_DEFAULT;
@@ -68,7 +71,7 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
         stack_size = thread->stacksize;
     }
 
-    /* Create new thread with the same priority as the current thread */
+    // Create new thread with the same priority as the current thread
     thread->handle = sceKernelCreateThread(
         thread_name, // name
         ThreadEntry, // function to run
@@ -84,17 +87,17 @@ int SDL_SYS_CreateThread(SDL_Thread *thread)
     }
 
     sceKernelStartThread(thread->handle, 4, &thread);
-    return 0;
+    return true;
 }
 
 void SDL_SYS_SetupThread(const char *name)
 {
-    /* Do nothing. */
+    // Do nothing.
 }
 
-SDL_threadID SDL_ThreadID(void)
+SDL_ThreadID SDL_GetCurrentThreadID(void)
 {
-    return (SDL_threadID)sceKernelGetThreadId();
+    return (SDL_ThreadID)sceKernelGetThreadId();
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)
@@ -105,10 +108,10 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
 
 void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
-    /* Do nothing. */
+    // Do nothing.
 }
 
-int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
     int value = VITA_THREAD_PRIORITY_NORMAL;
 
@@ -127,7 +130,10 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         break;
     }
 
-    return sceKernelChangeThreadPriority(0, value);
+    if (sceKernelChangeThreadPriority(0, value) < 0) {
+        return SDL_SetError("sceKernelChangeThreadPriority() failed");
+    }
+    return true;
 }
 
-#endif /* SDL_THREAD_VITA */
+#endif // SDL_THREAD_VITA

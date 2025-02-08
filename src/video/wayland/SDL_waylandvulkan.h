@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,20 +30,26 @@
 #define SDL_waylandvulkan_h_
 
 #include <SDL3/SDL_vulkan.h>
-#include "../SDL_sysvideo.h"
 
 #if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_WAYLAND)
 
-int Wayland_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
-void Wayland_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
-SDL_bool Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                              unsigned *count,
-                                              const char **names);
-SDL_bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+extern bool Wayland_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
+extern void Wayland_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
+extern char const* const* Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count);
+extern bool Wayland_Vulkan_CreateSurface(SDL_VideoDevice *_this,
                                       SDL_Window *window,
                                       VkInstance instance,
+                                      const struct VkAllocationCallbacks *allocator,
                                       VkSurfaceKHR *surface);
+extern void Wayland_Vulkan_DestroySurface(SDL_VideoDevice *_this,
+                                   VkInstance instance,
+                                   VkSurfaceKHR surface,
+                                   const struct VkAllocationCallbacks *allocator);
+extern bool Wayland_Vulkan_GetPresentationSupport(SDL_VideoDevice *_this,
+                                               VkInstance instance,
+                                               VkPhysicalDevice physicalDevice,
+                                               Uint32 queueFamilyIndex);
 
 #endif
 
-#endif /* SDL_waylandvulkan_h_ */
+#endif // SDL_waylandvulkan_h_

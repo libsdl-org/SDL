@@ -12,7 +12,7 @@ fi
 
 major=$(sed -ne 's/^#define SDL_MAJOR_VERSION  *//p' include/SDL3/SDL_version.h)
 minor=$(sed -ne 's/^#define SDL_MINOR_VERSION  *//p' include/SDL3/SDL_version.h)
-micro=$(sed -ne 's/^#define SDL_PATCHLEVEL  *//p' include/SDL3/SDL_version.h)
+micro=$(sed -ne 's/^#define SDL_MICRO_VERSION  *//p' include/SDL3/SDL_version.h)
 version="${major}.${minor}.${micro}"
 
 if [ -x "$(command -v git)" ]; then

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,7 @@
 #ifdef SDL_USE_LIBUDEV
 
 #include <linux/input.h>
+#include <sys/stat.h>
 
 #include "SDL_evdev_capabilities.h"
 #include "../unix/SDL_poll.h"
@@ -39,28 +40,31 @@ static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
 
 static SDL_UDEV_PrivateData *_this = NULL;
 
-static SDL_bool SDL_UDEV_load_sym(const char *fn, void **addr);
-static int SDL_UDEV_load_syms(void);
-static SDL_bool SDL_UDEV_hotplug_update_available(void);
+static bool SDL_UDEV_load_sym(const char *fn, void **addr);
+static bool SDL_UDEV_load_syms(void);
+static bool SDL_UDEV_hotplug_update_available(void);
+static void get_caps(struct udev_device *dev, struct udev_device *pdev, const char *attr, unsigned long *bitmask, size_t bitmask_len);
+static int guess_device_class(struct udev_device *dev);
+static int device_class(struct udev_device *dev);
 static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev);
 
-static SDL_bool SDL_UDEV_load_sym(const char *fn, void **addr)
+static bool SDL_UDEV_load_sym(const char *fn, void **addr)
 {
     *addr = SDL_LoadFunction(_this->udev_handle, fn);
-    if (*addr == NULL) {
-        /* Don't call SDL_SetError(): SDL_LoadFunction already did. */
-        return SDL_FALSE;
+    if (!*addr) {
+        // Don't call SDL_SetError(): SDL_LoadFunction already did.
+        return false;
     }
 
-    return SDL_TRUE;
+    return true;
 }
 
-static int SDL_UDEV_load_syms(void)
+static bool SDL_UDEV_load_syms(void)
 {
 /* cast funcs to char* first, to please GCC's strict aliasing rules. */
 #define SDL_UDEV_SYM(x)                                          \
     if (!SDL_UDEV_load_sym(#x, (void **)(char *)&_this->syms.x)) \
-    return -1
+        return false
 
     SDL_UDEV_SYM(udev_device_get_action);
     SDL_UDEV_SYM(udev_device_get_devnode);
@@ -91,34 +95,31 @@ static int SDL_UDEV_load_syms(void)
     SDL_UDEV_SYM(udev_device_get_devnum);
 #undef SDL_UDEV_SYM
 
-    return 0;
+    return true;
 }
 
-static SDL_bool SDL_UDEV_hotplug_update_available(void)
+static bool SDL_UDEV_hotplug_update_available(void)
 {
-    if (_this->udev_mon != NULL) {
+    if (_this->udev_mon) {
         const int fd = _this->syms.udev_monitor_get_fd(_this->udev_mon);
         if (SDL_IOReady(fd, SDL_IOR_READ, 0)) {
-            return SDL_TRUE;
+            return true;
         }
     }
-    return SDL_FALSE;
+    return false;
 }
 
-int SDL_UDEV_Init(void)
+bool SDL_UDEV_Init(void)
 {
-    int retval = 0;
-
-    if (_this == NULL) {
+    if (!_this) {
         _this = (SDL_UDEV_PrivateData *)SDL_calloc(1, sizeof(*_this));
-        if (_this == NULL) {
-            return SDL_OutOfMemory();
+        if (!_this) {
+            return false;
         }
 
-        retval = SDL_UDEV_LoadLibrary();
-        if (retval < 0) {
+        if (!SDL_UDEV_LoadLibrary()) {
             SDL_UDEV_Quit();
-            return retval;
+            return false;
         }
 
         /* Set up udev monitoring
@@ -126,33 +127,34 @@ int SDL_UDEV_Init(void)
          */
 
         _this->udev = _this->syms.udev_new();
-        if (_this->udev == NULL) {
+        if (!_this->udev) {
             SDL_UDEV_Quit();
             return SDL_SetError("udev_new() failed");
         }
 
         _this->udev_mon = _this->syms.udev_monitor_new_from_netlink(_this->udev, "udev");
-        if (_this->udev_mon == NULL) {
+        if (!_this->udev_mon) {
             SDL_UDEV_Quit();
             return SDL_SetError("udev_monitor_new_from_netlink() failed");
         }
 
         _this->syms.udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "input", NULL);
         _this->syms.udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "sound", NULL);
+        _this->syms.udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "video4linux", NULL);
         _this->syms.udev_monitor_enable_receiving(_this->udev_mon);
 
-        /* Do an initial scan of existing devices */
+        // Do an initial scan of existing devices
         SDL_UDEV_Scan();
     }
 
     _this->ref_count += 1;
 
-    return retval;
+    return true;
 }
 
 void SDL_UDEV_Quit(void)
 {
-    if (_this == NULL) {
+    if (!_this) {
         return;
     }
 
@@ -160,17 +162,17 @@ void SDL_UDEV_Quit(void)
 
     if (_this->ref_count < 1) {
 
-        if (_this->udev_mon != NULL) {
+        if (_this->udev_mon) {
             _this->syms.udev_monitor_unref(_this->udev_mon);
             _this->udev_mon = NULL;
         }
-        if (_this->udev != NULL) {
+        if (_this->udev) {
             _this->syms.udev_unref(_this->udev);
             _this->udev = NULL;
         }
 
-        /* Remove existing devices */
-        while (_this->first != NULL) {
+        // Remove existing devices
+        while (_this->first) {
             SDL_UDEV_CallbackList *item = _this->first;
             _this->first = _this->first->next;
             SDL_free(item);
@@ -182,137 +184,142 @@ void SDL_UDEV_Quit(void)
     }
 }
 
-int SDL_UDEV_Scan(void)
+bool SDL_UDEV_Scan(void)
 {
     struct udev_enumerate *enumerate = NULL;
     struct udev_list_entry *devs = NULL;
     struct udev_list_entry *item = NULL;
 
-    if (_this == NULL) {
-        return 0;
+    if (!_this) {
+        return true;
     }
 
     enumerate = _this->syms.udev_enumerate_new(_this->udev);
-    if (enumerate == NULL) {
+    if (!enumerate) {
         SDL_UDEV_Quit();
         return SDL_SetError("udev_enumerate_new() failed");
     }
 
     _this->syms.udev_enumerate_add_match_subsystem(enumerate, "input");
     _this->syms.udev_enumerate_add_match_subsystem(enumerate, "sound");
+    _this->syms.udev_enumerate_add_match_subsystem(enumerate, "video4linux");
 
     _this->syms.udev_enumerate_scan_devices(enumerate);
     devs = _this->syms.udev_enumerate_get_list_entry(enumerate);
     for (item = devs; item; item = _this->syms.udev_list_entry_get_next(item)) {
         const char *path = _this->syms.udev_list_entry_get_name(item);
         struct udev_device *dev = _this->syms.udev_device_new_from_syspath(_this->udev, path);
-        if (dev != NULL) {
+        if (dev) {
             device_event(SDL_UDEV_DEVICEADDED, dev);
             _this->syms.udev_device_unref(dev);
         }
     }
 
     _this->syms.udev_enumerate_unref(enumerate);
-    return 0;
+    return true;
 }
 
-SDL_bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version)
+bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class)
 {
-    struct udev_enumerate *enumerate = NULL;
-    struct udev_list_entry *devs = NULL;
-    struct udev_list_entry *item = NULL;
-    SDL_bool found = SDL_FALSE;
+    struct stat statbuf;
+    char type;
+    struct udev_device *dev;
+    const char* val;
+    int class_temp;
 
-    if (_this == NULL) {
-        return SDL_FALSE;
+    if (!_this) {
+        return false;
     }
 
-    enumerate = _this->syms.udev_enumerate_new(_this->udev);
-    if (enumerate == NULL) {
-        SDL_SetError("udev_enumerate_new() failed");
-        return SDL_FALSE;
+    if (stat(device_path, &statbuf) == -1) {
+        return false;
     }
 
-    _this->syms.udev_enumerate_scan_devices(enumerate);
-    devs = _this->syms.udev_enumerate_get_list_entry(enumerate);
-    for (item = devs; item && !found; item = _this->syms.udev_list_entry_get_next(item)) {
-        const char *path = _this->syms.udev_list_entry_get_name(item);
-        struct udev_device *dev = _this->syms.udev_device_new_from_syspath(_this->udev, path);
-        if (dev != NULL) {
-            const char *val = NULL;
-            const char *existing_path;
-
-            existing_path = _this->syms.udev_device_get_devnode(dev);
-            if (existing_path && SDL_strcmp(device_path, existing_path) == 0) {
-                found = SDL_TRUE;
-
-                val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
-                if (val != NULL) {
-                    *vendor = (Uint16)SDL_strtol(val, NULL, 16);
-                }
-
-                val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
-                if (val != NULL) {
-                    *product = (Uint16)SDL_strtol(val, NULL, 16);
-                }
-
-                val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
-                if (val != NULL) {
-                    *version = (Uint16)SDL_strtol(val, NULL, 16);
-                }
-            }
-            _this->syms.udev_device_unref(dev);
-        }
+    if (S_ISBLK(statbuf.st_mode)) {
+        type = 'b';
     }
-    _this->syms.udev_enumerate_unref(enumerate);
+    else if (S_ISCHR(statbuf.st_mode)) {
+        type = 'c';
+    }
+    else {
+        return false;
+    }
 
-    return found;
+    dev = _this->syms.udev_device_new_from_devnum(_this->udev, type, statbuf.st_rdev);
+
+    if (!dev) {
+        return false;
+    }
+
+    val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
+    if (val) {
+        *vendor = (Uint16)SDL_strtol(val, NULL, 16);
+    }
+
+    val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
+    if (val) {
+        *product = (Uint16)SDL_strtol(val, NULL, 16);
+    }
+
+    val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
+    if (val) {
+        *version = (Uint16)SDL_strtol(val, NULL, 16);
+    }
+
+    class_temp = device_class(dev);
+    if (class_temp) {
+        *class = class_temp;
+    }
+
+    _this->syms.udev_device_unref(dev);
+
+    return true;
 }
 
 void SDL_UDEV_UnloadLibrary(void)
 {
-    if (_this == NULL) {
+    if (!_this) {
         return;
     }
 
-    if (_this->udev_handle != NULL) {
+    if (_this->udev_handle) {
         SDL_UnloadObject(_this->udev_handle);
         _this->udev_handle = NULL;
     }
 }
 
-int SDL_UDEV_LoadLibrary(void)
+bool SDL_UDEV_LoadLibrary(void)
 {
-    int retval = 0, i;
+    bool result = true;
 
-    if (_this == NULL) {
+    if (!_this) {
         return SDL_SetError("UDEV not initialized");
     }
 
-    /* See if there is a udev library already loaded */
-    if (SDL_UDEV_load_syms() == 0) {
-        return 0;
+    // See if there is a udev library already loaded
+    if (SDL_UDEV_load_syms()) {
+        return true;
     }
 
 #ifdef SDL_UDEV_DYNAMIC
-    /* Check for the build environment's libudev first */
-    if (_this->udev_handle == NULL) {
+    // Check for the build environment's libudev first
+    if (!_this->udev_handle) {
         _this->udev_handle = SDL_LoadObject(SDL_UDEV_DYNAMIC);
-        if (_this->udev_handle != NULL) {
-            retval = SDL_UDEV_load_syms();
-            if (retval < 0) {
+        if (_this->udev_handle) {
+            result = SDL_UDEV_load_syms();
+            if (!result) {
                 SDL_UDEV_UnloadLibrary();
             }
         }
     }
 #endif
 
-    if (_this->udev_handle == NULL) {
-        for (i = 0; i < SDL_arraysize(SDL_UDEV_LIBS); i++) {
+    if (!_this->udev_handle) {
+        for (int i = 0; i < SDL_arraysize(SDL_UDEV_LIBS); i++) {
             _this->udev_handle = SDL_LoadObject(SDL_UDEV_LIBS[i]);
-            if (_this->udev_handle != NULL) {
-                retval = SDL_UDEV_load_syms();
-                if (retval < 0) {
+            if (_this->udev_handle) {
+                result = SDL_UDEV_load_syms();
+                if (!result) {
                     SDL_UDEV_UnloadLibrary();
                 } else {
                     break;
@@ -320,13 +327,13 @@ int SDL_UDEV_LoadLibrary(void)
             }
         }
 
-        if (_this->udev_handle == NULL) {
-            retval = -1;
-            /* Don't call SDL_SetError(): SDL_LoadObject already did. */
+        if (!_this->udev_handle) {
+            result = false;
+            // Don't call SDL_SetError(): SDL_LoadObject already did.
         }
     }
 
-    return retval;
+    return result;
 }
 
 static void get_caps(struct udev_device *dev, struct udev_device *pdev, const char *attr, unsigned long *bitmask, size_t bitmask_len)
@@ -339,7 +346,7 @@ static void get_caps(struct udev_device *dev, struct udev_device *pdev, const ch
 
     SDL_memset(bitmask, 0, bitmask_len * sizeof(*bitmask));
     value = _this->syms.udev_device_get_sysattr_value(pdev, attr);
-    if (value == NULL) {
+    if (!value) {
         return;
     }
 
@@ -374,7 +381,7 @@ static int guess_device_class(struct udev_device *dev)
     while (pdev && !_this->syms.udev_device_get_sysattr_value(pdev, "capabilities/ev")) {
         pdev = _this->syms.udev_device_get_parent_with_subsystem_devtype(pdev, "input", NULL);
     }
-    if (pdev == NULL) {
+    if (!pdev) {
         return 0;
     }
 
@@ -391,43 +398,44 @@ static int guess_device_class(struct udev_device *dev)
                                       &bitmask_rel[0]);
 }
 
-static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
+static int device_class(struct udev_device *dev)
 {
     const char *subsystem;
     const char *val = NULL;
     int devclass = 0;
-    const char *path;
-    SDL_UDEV_CallbackList *item;
-
-    path = _this->syms.udev_device_get_devnode(dev);
-    if (path == NULL) {
-        return;
-    }
 
     subsystem = _this->syms.udev_device_get_subsystem(dev);
+    if (!subsystem) {
+        return 0;
+    }
+
     if (SDL_strcmp(subsystem, "sound") == 0) {
         devclass = SDL_UDEV_DEVICE_SOUND;
+    } else if (SDL_strcmp(subsystem, "video4linux") == 0) {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_V4L_CAPABILITIES");
+        if (val && SDL_strcasestr(val, "capture")) {
+            devclass = SDL_UDEV_DEVICE_VIDEO_CAPTURE;
+        }
     } else if (SDL_strcmp(subsystem, "input") == 0) {
-        /* udev rules reference: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c */
+        // udev rules reference: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c
 
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK");
-        if (val != NULL && SDL_strcmp(val, "1") == 0) {
+        if (val && SDL_strcmp(val, "1") == 0) {
             devclass |= SDL_UDEV_DEVICE_JOYSTICK;
         }
 
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_ACCELEROMETER");
-        if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE) &&
-            val != NULL && SDL_strcmp(val, "1") == 0) {
-            devclass |= SDL_UDEV_DEVICE_JOYSTICK;
+        if (val && SDL_strcmp(val, "1") == 0) {
+            devclass |= SDL_UDEV_DEVICE_ACCELEROMETER;
         }
 
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_MOUSE");
-        if (val != NULL && SDL_strcmp(val, "1") == 0) {
+        if (val && SDL_strcmp(val, "1") == 0) {
             devclass |= SDL_UDEV_DEVICE_MOUSE;
         }
 
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_TOUCHSCREEN");
-        if (val != NULL && SDL_strcmp(val, "1") == 0) {
+        if (val && SDL_strcmp(val, "1") == 0) {
             devclass |= SDL_UDEV_DEVICE_TOUCHSCREEN;
         }
 
@@ -438,39 +446,58 @@ static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
            Ref: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c#n183
         */
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_KEY");
-        if (val != NULL && SDL_strcmp(val, "1") == 0) {
+        if (val && SDL_strcmp(val, "1") == 0) {
             devclass |= SDL_UDEV_DEVICE_HAS_KEYS;
         }
 
         val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_KEYBOARD");
-        if (val != NULL && SDL_strcmp(val, "1") == 0) {
+        if (val && SDL_strcmp(val, "1") == 0) {
             devclass |= SDL_UDEV_DEVICE_KEYBOARD;
         }
 
         if (devclass == 0) {
-            /* Fall back to old style input classes */
+            // Fall back to old style input classes
             val = _this->syms.udev_device_get_property_value(dev, "ID_CLASS");
-            if (val != NULL) {
+            if (val) {
                 if (SDL_strcmp(val, "joystick") == 0) {
                     devclass = SDL_UDEV_DEVICE_JOYSTICK;
                 } else if (SDL_strcmp(val, "mouse") == 0) {
                     devclass = SDL_UDEV_DEVICE_MOUSE;
                 } else if (SDL_strcmp(val, "kbd") == 0) {
                     devclass = SDL_UDEV_DEVICE_HAS_KEYS | SDL_UDEV_DEVICE_KEYBOARD;
-                } else {
-                    return;
                 }
             } else {
-                /* We could be linked with libudev on a system that doesn't have udev running */
+                // We could be linked with libudev on a system that doesn't have udev running
                 devclass = guess_device_class(dev);
             }
         }
-    } else {
+    }
+
+    return devclass;
+}
+
+static void device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
+{
+    int devclass = 0;
+    const char *path;
+    SDL_UDEV_CallbackList *item;
+
+    path = _this->syms.udev_device_get_devnode(dev);
+    if (!path) {
         return;
     }
 
-    /* Process callbacks */
-    for (item = _this->first; item != NULL; item = item->next) {
+    if (type == SDL_UDEV_DEVICEADDED) {
+        devclass = device_class(dev);
+        if (!devclass) {
+            return;
+        }
+    } else {
+        // The device has been removed, the class isn't available
+    }
+
+    // Process callbacks
+    for (item = _this->first; item; item = item->next) {
         item->callback(type, devclass, path);
     }
 }
@@ -480,13 +507,13 @@ void SDL_UDEV_Poll(void)
     struct udev_device *dev = NULL;
     const char *action = NULL;
 
-    if (_this == NULL) {
+    if (!_this) {
         return;
     }
 
     while (SDL_UDEV_hotplug_update_available()) {
         dev = _this->syms.udev_monitor_receive_device(_this->udev_mon);
-        if (dev == NULL) {
+        if (!dev) {
             break;
         }
         action = _this->syms.udev_device_get_action(dev);
@@ -503,24 +530,24 @@ void SDL_UDEV_Poll(void)
     }
 }
 
-int SDL_UDEV_AddCallback(SDL_UDEV_Callback cb)
+bool SDL_UDEV_AddCallback(SDL_UDEV_Callback cb)
 {
     SDL_UDEV_CallbackList *item;
     item = (SDL_UDEV_CallbackList *)SDL_calloc(1, sizeof(SDL_UDEV_CallbackList));
-    if (item == NULL) {
-        return SDL_OutOfMemory();
+    if (!item) {
+        return false;
     }
 
     item->callback = cb;
 
-    if (_this->last == NULL) {
+    if (!_this->last) {
         _this->first = _this->last = item;
     } else {
         _this->last->next = item;
         _this->last = item;
     }
 
-    return 1;
+    return true;
 }
 
 void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
@@ -528,14 +555,14 @@ void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
     SDL_UDEV_CallbackList *item;
     SDL_UDEV_CallbackList *prev = NULL;
 
-    if (_this == NULL) {
+    if (!_this) {
         return;
     }
 
-    for (item = _this->first; item != NULL; item = item->next) {
-        /* found it, remove it. */
+    for (item = _this->first; item; item = item->next) {
+        // found it, remove it.
         if (item->callback == cb) {
-            if (prev != NULL) {
+            if (prev) {
                 prev->next = item->next;
             } else {
                 SDL_assert(_this->first == item);
@@ -553,7 +580,7 @@ void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
 
 const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void)
 {
-    if (SDL_UDEV_Init() < 0) {
+    if (!SDL_UDEV_Init()) {
         SDL_SetError("Could not initialize UDEV");
         return NULL;
     }
@@ -566,4 +593,4 @@ void SDL_UDEV_ReleaseUdevSyms(void)
     SDL_UDEV_Quit();
 }
 
-#endif /* SDL_USE_LIBUDEV */
+#endif // SDL_USE_LIBUDEV

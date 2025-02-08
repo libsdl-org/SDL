@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,20 +33,28 @@ static SDL_HitTestResult SDLCALL
 hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
 {
     int i;
-    int w, h;
+    int w, h, p_w;
+    SDL_Point adj_pt;
+    float scale;
+
+    SDL_GetWindowSize(window, &w, &h);
+    SDL_GetWindowSizeInPixels(window, &p_w, NULL);
+
+    scale = (float)p_w / (float)w;
+
+    adj_pt.x = (int)SDL_floorf(pt->x * scale);
+    adj_pt.y = (int)SDL_floorf(pt->y * scale);
 
     for (i = 0; i < numareas; i++) {
-        if (SDL_PointInRect(pt, &areas[i])) {
-            SDL_Log("HIT-TEST: DRAGGABLE\n");
+        if (SDL_PointInRect(&adj_pt, &areas[i])) {
+            SDL_Log("HIT-TEST: DRAGGABLE");
             return SDL_HITTEST_DRAGGABLE;
         }
     }
 
-    SDL_GetWindowSize(window, &w, &h);
-
 #define REPORT_RESIZE_HIT(name)                  \
     {                                            \
-        SDL_Log("HIT-TEST: RESIZE_" #name "\n"); \
+        SDL_Log("HIT-TEST: RESIZE_" #name ""); \
         return SDL_HITTEST_RESIZE_##name;        \
     }
 
@@ -68,7 +76,7 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
         REPORT_RESIZE_HIT(LEFT);
     }
 
-    SDL_Log("HIT-TEST: NORMAL\n");
+    SDL_Log("HIT-TEST: NORMAL");
     return SDL_HITTEST_NORMAL;
 }
 
@@ -80,14 +88,11 @@ int main(int argc, char **argv)
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
 
     state->window_flags = SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE;
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
@@ -99,7 +104,7 @@ int main(int argc, char **argv)
     }
 
     for (i = 0; i < state->num_windows; i++) {
-        if (SDL_SetWindowHitTest(state->windows[i], hitTest, NULL) == -1) {
+        if (!SDL_SetWindowHitTest(state->windows[i], hitTest, NULL)) {
             SDL_Log("Enabling hit-testing failed for window %d: %s", i, SDL_GetError());
             SDL_Quit();
             return 1;
@@ -125,22 +130,22 @@ int main(int argc, char **argv)
 
             switch (e.type) {
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                SDL_Log("button down!\n");
+                SDL_Log("button down!");
                 break;
 
             case SDL_EVENT_MOUSE_BUTTON_UP:
-                SDL_Log("button up!\n");
+                SDL_Log("button up!");
                 break;
 
             case SDL_EVENT_WINDOW_MOVED:
-                SDL_Log("Window event moved to (%d, %d)!\n", (int)e.window.data1, (int)e.window.data2);
+                SDL_Log("Window event moved to (%d, %d)!", (int)e.window.data1, (int)e.window.data2);
                 break;
 
             case SDL_EVENT_KEY_DOWN:
-                if (e.key.keysym.sym == SDLK_ESCAPE) {
+                if (e.key.key == SDLK_ESCAPE) {
                     done = 1;
-                } else if (e.key.keysym.sym == SDLK_x) {
-                    if (areas == NULL) {
+                } else if (e.key.key == SDLK_X) {
+                    if (!areas) {
                         areas = drag_areas;
                         numareas = SDL_arraysize(drag_areas);
                     } else {
@@ -152,6 +157,8 @@ int main(int argc, char **argv)
 
             case SDL_EVENT_QUIT:
                 done = 1;
+                break;
+            default:
                 break;
             }
         }

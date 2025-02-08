@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 
 #include "SDL_cocoavideo.h"
 
-@interface SDLMessageBoxPresenter : NSObject
+@interface SDL3MessageBoxPresenter : NSObject
 {
   @public
     NSInteger clicked;
@@ -33,16 +33,16 @@
 - (id)initWithParentWindow:(SDL_Window *)window;
 @end
 
-@implementation SDLMessageBoxPresenter
+@implementation SDL3MessageBoxPresenter
 - (id)initWithParentWindow:(SDL_Window *)window
 {
     self = [super init];
     if (self) {
         clicked = -1;
 
-        /* Retain the NSWindow because we'll show the alert later on the main thread */
+        // Retain the NSWindow because we'll show the alert later on the main thread
         if (window) {
-            nswindow = ((__bridge SDL_CocoaWindowData *)window->driverdata).nswindow;
+            nswindow = ((__bridge SDL_CocoaWindowData *)window->internal).nswindow;
         } else {
             nswindow = nil;
         }
@@ -66,11 +66,11 @@
 }
 @end
 
-static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid, int *returnValue)
+static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID, bool *result)
 {
     NSAlert *alert;
     const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
-    SDLMessageBoxPresenter *presenter;
+    SDL3MessageBoxPresenter *presenter;
     NSInteger clicked;
     int i;
     Cocoa_RegisterApp();
@@ -108,7 +108,7 @@ static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, i
         }
     }
 
-    presenter = [[SDLMessageBoxPresenter alloc] initWithParentWindow:messageboxdata->window];
+    presenter = [[SDL3MessageBoxPresenter alloc] initWithParentWindow:messageboxdata->window];
 
     [presenter showAlert:alert];
 
@@ -118,28 +118,28 @@ static void Cocoa_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, i
         if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
             clicked = messageboxdata->numbuttons - 1 - clicked;
         }
-        *buttonid = buttons[clicked].buttonid;
-        *returnValue = 0;
+        *buttonID = buttons[clicked].buttonID;
+        *result = true;
     } else {
-        *returnValue = SDL_SetError("Did not get a valid `clicked button' id: %ld", (long)clicked);
+        *result = SDL_SetError("Did not get a valid `clicked button' id: %ld", (long)clicked);
     }
 }
 
-/* Display a Cocoa message box */
-int Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+// Display a Cocoa message box
+bool Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     @autoreleasepool {
-        __block int returnValue = 0;
+        __block bool result = 0;
 
         if ([NSThread isMainThread]) {
-            Cocoa_ShowMessageBoxImpl(messageboxdata, buttonid, &returnValue);
+            Cocoa_ShowMessageBoxImpl(messageboxdata, buttonID, &result);
         } else {
             dispatch_sync(dispatch_get_main_queue(), ^{
-              Cocoa_ShowMessageBoxImpl(messageboxdata, buttonid, &returnValue);
+              Cocoa_ShowMessageBoxImpl(messageboxdata, buttonID, &result);
             });
         }
-        return returnValue;
+        return result;
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

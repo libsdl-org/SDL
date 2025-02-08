@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,14 +23,11 @@ typedef struct SDLTest_SurfaceImage_s {
 } SDLTest_SurfaceImage_t;
 
 /* Test images */
-SDL_Surface *SDLTest_ImageBlit(void);
-SDL_Surface *SDLTest_ImageBlitColor(void);
-SDL_Surface *SDLTest_ImageBlitAlpha(void);
-SDL_Surface *SDLTest_ImageBlitBlendAdd(void);
-SDL_Surface *SDLTest_ImageBlitBlend(void);
-SDL_Surface *SDLTest_ImageBlitBlendMod(void);
-SDL_Surface *SDLTest_ImageBlitBlendNone(void);
-SDL_Surface *SDLTest_ImageBlitBlendAll(void);
-SDL_Surface *SDLTest_ImageFace(void);
-SDL_Surface *SDLTest_ImagePrimitives(void);
-SDL_Surface *SDLTest_ImagePrimitivesBlend(void);
+extern SDL_Surface *SDLTest_ImageBlit(void);
+extern SDL_Surface *SDLTest_ImageBlitTiled(void);
+extern SDL_Surface *SDLTest_ImageBlitColor(void);
+extern SDL_Surface *SDLTest_ImageFace(void);
+extern SDL_Surface *SDLTest_ImagePrimitives(void);
+extern SDL_Surface *SDLTest_ImageBlendingBackground(void);
+extern SDL_Surface *SDLTest_ImageBlendingSprite(void);
+extern SDL_Surface *SDLTest_ImageWrappingSprite(void);

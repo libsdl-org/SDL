@@ -14,6 +14,9 @@ set(_sdl3_framework @SDL_FRAMEWORK@)
 # Find SDL3::Headers
 if(NOT TARGET SDL3::Headers)
   include("${CMAKE_CURRENT_LIST_DIR}/SDL3headersTargets.cmake")
+  if(NOT CMAKE_VERSION VERSION_LESS "3.25")
+    set_property(TARGET SDL3::Headers PROPERTY SYSTEM 0)
+  endif()
 endif()
 set(SDL3_Headers_FOUND TRUE)
 
@@ -46,6 +49,11 @@ else()
       include("${CMAKE_CURRENT_LIST_DIR}/SDL3staticTargets.cmake")
     endif()
   endif()
+endif()
+
+if(ANDROID AND EXISTS "${CMAKE_CURRENT_LIST_DIR}/SDL3jarTargets.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/SDL3jarTargets.cmake")
+  set(SDL3_Jar_FOUND TRUE)
 endif()
 
 if(SDL3_SDL3-shared_FOUND OR SDL3_SDL3-static_FOUND)

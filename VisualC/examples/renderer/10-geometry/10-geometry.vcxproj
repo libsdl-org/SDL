@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8B9AB23E-3F40-4145-BA1C-B2CEACFBBD72}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ItemGroup>
+    <None Include="$(SolutionDir)\..\examples\renderer\10-geometry\README.txt" />
+    <ClCompile Include="$(SolutionDir)\..\examples\renderer\10-geometry\geometry.c" />
+    <Content Include="$(SolutionDir)\..\test\sample.bmp" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

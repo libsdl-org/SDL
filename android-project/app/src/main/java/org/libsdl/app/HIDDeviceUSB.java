@@ -154,6 +154,11 @@ class HIDDeviceUSB implements HIDDevice {
 
     @Override
     public int writeReport(byte[] report, boolean feature) {
+        if (mConnection == null) {
+            Log.w(TAG, "writeReport() called with no device connection");
+            return -1;
+        }
+
         if (feature) {
             int res = -1;
             int offset = 0;
@@ -200,6 +205,11 @@ class HIDDeviceUSB implements HIDDevice {
         int length = report.length;
         boolean skipped_report_id = false;
         byte report_number = report[0];
+
+        if (mConnection == null) {
+            Log.w(TAG, "readReport() called with no device connection");
+            return false;
+        }
 
         if (report_number == 0x0) {
             /* Offset the return buffer by 1, so that the report ID

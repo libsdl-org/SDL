@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,46 +25,32 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_mouse_c.h"
 
-#include <SDL3/SDL_syswm.h>
-
 #include "SDL_riscosvideo.h"
 #include "SDL_riscoswindow.h"
 
-int RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window)
+bool RISCOS_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
-    SDL_WindowData *driverdata;
+    SDL_WindowData *data;
 
-    driverdata = (SDL_WindowData *)SDL_calloc(1, sizeof(*driverdata));
-    if (driverdata == NULL) {
-        return SDL_OutOfMemory();
+    data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
+    if (!data) {
+        return false;
     }
-    driverdata->window = window;
-
-    window->flags |= SDL_WINDOW_FULLSCREEN;
+    data->window = window;
 
     SDL_SetMouseFocus(window);
 
-    /* All done! */
-    window->driverdata = driverdata;
-    return 0;
+    // All done!
+    window->internal = data;
+    return true;
 }
 
 void RISCOS_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *driverdata = window->driverdata;
-
-    if (driverdata == NULL) {
-        return;
+    if (window->internal) {
+        SDL_free(window->internal);
+        window->internal = NULL;
     }
-
-    SDL_free(driverdata);
-    window->driverdata = NULL;
 }
 
-int RISCOS_GetWindowWMInfo(SDL_VideoDevice *_this, SDL_Window *window, struct SDL_SysWMinfo *info)
-{
-    info->subsystem = SDL_SYSWM_RISCOS;
-    return 0;
-}
-
-#endif /* SDL_VIDEO_DRIVER_RISCOS */
+#endif // SDL_VIDEO_DRIVER_RISCOS

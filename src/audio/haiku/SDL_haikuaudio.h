@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,4 +32,4 @@ struct SDL_PrivateAudioData
     int current_buffer_len;
 };
 
-#endif /* SDL_haikuaudio_h_ */
+#endif // SDL_haikuaudio_h_

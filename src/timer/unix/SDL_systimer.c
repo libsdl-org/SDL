@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@
 
 #include "../SDL_timer_c.h"
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
 
@@ -47,11 +47,11 @@
 #if defined(HAVE_NANOSLEEP) || defined(HAVE_CLOCK_GETTIME)
 #include <time.h>
 #endif
-#ifdef __APPLE__
+#ifdef SDL_PLATFORM_APPLE
 #include <mach/mach_time.h>
 #endif
 
-/* Use CLOCK_MONOTONIC_RAW, if available, which is not subject to adjustment by NTP */
+// Use CLOCK_MONOTONIC_RAW, if available, which is not subject to adjustment by NTP
 #ifdef HAVE_CLOCK_GETTIME
 #ifdef CLOCK_MONOTONIC_RAW
 #define SDL_MONOTONIC_CLOCK CLOCK_MONOTONIC_RAW
@@ -60,26 +60,26 @@
 #endif
 #endif
 
-/* The first ticks value of the application */
-#if !defined(HAVE_CLOCK_GETTIME) && defined(__APPLE__)
+// The first ticks value of the application
+#if !defined(HAVE_CLOCK_GETTIME) && defined(SDL_PLATFORM_APPLE)
 mach_timebase_info_data_t mach_base_info;
 #endif
-static SDL_bool checked_monotonic_time = SDL_FALSE;
-static SDL_bool has_monotonic_time = SDL_FALSE;
+static bool checked_monotonic_time = false;
+static bool has_monotonic_time = false;
 
 static void CheckMonotonicTime(void)
 {
 #ifdef HAVE_CLOCK_GETTIME
     struct timespec value;
     if (clock_gettime(SDL_MONOTONIC_CLOCK, &value) == 0) {
-        has_monotonic_time = SDL_TRUE;
-    } else
-#elif defined(__APPLE__)
+        has_monotonic_time = true;
+    }
+#elif defined(SDL_PLATFORM_APPLE)
     if (mach_timebase_info(&mach_base_info) == 0) {
-        has_monotonic_time = SDL_TRUE;
+        has_monotonic_time = true;
     }
 #endif
-    checked_monotonic_time = SDL_TRUE;
+    checked_monotonic_time = true;
 }
 
 Uint64 SDL_GetPerformanceCounter(void)
@@ -98,10 +98,10 @@ Uint64 SDL_GetPerformanceCounter(void)
         ticks = now.tv_sec;
         ticks *= SDL_NS_PER_SECOND;
         ticks += now.tv_nsec;
-#elif defined(__APPLE__)
+#elif defined(SDL_PLATFORM_APPLE)
         ticks = mach_absolute_time();
 #else
-        SDL_assert(SDL_FALSE);
+        SDL_assert(false);
         ticks = 0;
 #endif
     } else {
@@ -124,7 +124,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
     if (has_monotonic_time) {
 #ifdef HAVE_CLOCK_GETTIME
         return SDL_NS_PER_SECOND;
-#elif defined(__APPLE__)
+#elif defined(SDL_PLATFORM_APPLE)
         Uint64 freq = mach_base_info.denom;
         freq *= SDL_NS_PER_SECOND;
         freq /= mach_base_info.numer;
@@ -135,7 +135,7 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return SDL_US_PER_SECOND;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     int was_error;
 
@@ -146,15 +146,15 @@ void SDL_DelayNS(Uint64 ns)
     Uint64 then, now, elapsed;
 #endif
 
-#ifdef __EMSCRIPTEN__
-    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
-        /* pseudo-synchronous pause, used directly or through e.g. SDL_WaitEvent */
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, true)) {
+        // pseudo-synchronous pause, used directly or through e.g. SDL_WaitEvent
         emscripten_sleep(ns / SDL_NS_PER_MS);
         return;
     }
 #endif
 
-    /* Set the timeout interval */
+    // Set the timeout interval
 #ifdef HAVE_NANOSLEEP
     remaining.tv_sec = (time_t)(ns / SDL_NS_PER_SECOND);
     remaining.tv_nsec = (long)(ns % SDL_NS_PER_SECOND);
@@ -169,7 +169,7 @@ void SDL_DelayNS(Uint64 ns)
         tv.tv_nsec = remaining.tv_nsec;
         was_error = nanosleep(&tv, &remaining);
 #else
-        /* Calculate the time interval left (in case of interrupt) */
+        // Calculate the time interval left (in case of interrupt)
         now = SDL_GetTicksNS();
         elapsed = (now - then);
         then = now;
@@ -181,8 +181,8 @@ void SDL_DelayNS(Uint64 ns)
         tv.tv_usec = SDL_NS_TO_US(ns % SDL_NS_PER_SECOND);
 
         was_error = select(0, NULL, NULL, NULL, &tv);
-#endif /* HAVE_NANOSLEEP */
+#endif // HAVE_NANOSLEEP
     } while (was_error && (errno == EINTR));
 }
 
-#endif /* SDL_TIMER_UNIX */
+#endif // SDL_TIMER_UNIX

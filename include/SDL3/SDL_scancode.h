@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,9 +20,14 @@
 */
 
 /**
- *  \file SDL_scancode.h
+ * # CategoryScancode
  *
- *  \brief Defines keyboard scancodes.
+ * Defines keyboard scancodes.
+ *
+ * Please refer to the Best Keyboard Practices document for details on what
+ * this information means and how best to use it.
+ *
+ * https://wiki.libsdl.org/SDL3/BestKeyboardPractices
  */
 
 #ifndef SDL_scancode_h_
@@ -31,16 +36,20 @@
 #include <SDL3/SDL_stdinc.h>
 
 /**
- *  \brief The SDL keyboard scancode representation.
+ * The SDL keyboard scancode representation.
  *
- *  Values of this type are used to represent keyboard keys, among other places
- *  in the \link SDL_Keysym::scancode key.keysym.scancode \endlink field of the
- *  SDL_Event structure.
+ * An SDL scancode is the physical representation of a key on the keyboard,
+ * independent of language and keyboard mapping.
  *
- *  The values in this enumeration are based on the USB usage page standard:
- *  https://www.usb.org/sites/default/files/documents/hut1_12v2.pdf
+ * Values of this type are used to represent keyboard keys, among other places
+ * in the `scancode` field of the SDL_KeyboardEvent structure.
+ *
+ * The values in this enumeration are based on the USB usage page standard:
+ * https://usb.org/sites/default/files/hut1_5.pdf
+ *
+ * \since This enum is available since SDL 3.2.0.
  */
-typedef enum
+typedef enum SDL_Scancode
 {
     SDL_SCANCODE_UNKNOWN = 0,
 
@@ -345,7 +354,6 @@ typedef enum
      *  \name Usage page 0x0C
      *
      *  These values are mapped from usage page 0x0C (USB consumer page).
-     *  See https://usb.org/sites/default/files/hut1_2.pdf
      *
      *  There are way more keys in the spec than we can represent in the
      *  current scancode range, so pick the ones that commonly come up in
@@ -353,59 +361,42 @@ typedef enum
      */
     /* @{ */
 
-    SDL_SCANCODE_AUDIONEXT = 258,
-    SDL_SCANCODE_AUDIOPREV = 259,
-    SDL_SCANCODE_AUDIOSTOP = 260,
-    SDL_SCANCODE_AUDIOPLAY = 261,
-    SDL_SCANCODE_AUDIOMUTE = 262,
-    SDL_SCANCODE_MEDIASELECT = 263,
-    SDL_SCANCODE_WWW = 264,             /**< AL Internet Browser */
-    SDL_SCANCODE_MAIL = 265,
-    SDL_SCANCODE_CALCULATOR = 266,      /**< AL Calculator */
-    SDL_SCANCODE_COMPUTER = 267,
-    SDL_SCANCODE_AC_SEARCH = 268,       /**< AC Search */
-    SDL_SCANCODE_AC_HOME = 269,         /**< AC Home */
-    SDL_SCANCODE_AC_BACK = 270,         /**< AC Back */
-    SDL_SCANCODE_AC_FORWARD = 271,      /**< AC Forward */
-    SDL_SCANCODE_AC_STOP = 272,         /**< AC Stop */
-    SDL_SCANCODE_AC_REFRESH = 273,      /**< AC Refresh */
-    SDL_SCANCODE_AC_BOOKMARKS = 274,    /**< AC Bookmarks */
+    SDL_SCANCODE_SLEEP = 258,                   /**< Sleep */
+    SDL_SCANCODE_WAKE = 259,                    /**< Wake */
+
+    SDL_SCANCODE_CHANNEL_INCREMENT = 260,       /**< Channel Increment */
+    SDL_SCANCODE_CHANNEL_DECREMENT = 261,       /**< Channel Decrement */
+
+    SDL_SCANCODE_MEDIA_PLAY = 262,          /**< Play */
+    SDL_SCANCODE_MEDIA_PAUSE = 263,         /**< Pause */
+    SDL_SCANCODE_MEDIA_RECORD = 264,        /**< Record */
+    SDL_SCANCODE_MEDIA_FAST_FORWARD = 265,  /**< Fast Forward */
+    SDL_SCANCODE_MEDIA_REWIND = 266,        /**< Rewind */
+    SDL_SCANCODE_MEDIA_NEXT_TRACK = 267,    /**< Next Track */
+    SDL_SCANCODE_MEDIA_PREVIOUS_TRACK = 268, /**< Previous Track */
+    SDL_SCANCODE_MEDIA_STOP = 269,          /**< Stop */
+    SDL_SCANCODE_MEDIA_EJECT = 270,         /**< Eject */
+    SDL_SCANCODE_MEDIA_PLAY_PAUSE = 271,    /**< Play / Pause */
+    SDL_SCANCODE_MEDIA_SELECT = 272,        /* Media Select */
+
+    SDL_SCANCODE_AC_NEW = 273,              /**< AC New */
+    SDL_SCANCODE_AC_OPEN = 274,             /**< AC Open */
+    SDL_SCANCODE_AC_CLOSE = 275,            /**< AC Close */
+    SDL_SCANCODE_AC_EXIT = 276,             /**< AC Exit */
+    SDL_SCANCODE_AC_SAVE = 277,             /**< AC Save */
+    SDL_SCANCODE_AC_PRINT = 278,            /**< AC Print */
+    SDL_SCANCODE_AC_PROPERTIES = 279,       /**< AC Properties */
+
+    SDL_SCANCODE_AC_SEARCH = 280,           /**< AC Search */
+    SDL_SCANCODE_AC_HOME = 281,             /**< AC Home */
+    SDL_SCANCODE_AC_BACK = 282,             /**< AC Back */
+    SDL_SCANCODE_AC_FORWARD = 283,          /**< AC Forward */
+    SDL_SCANCODE_AC_STOP = 284,             /**< AC Stop */
+    SDL_SCANCODE_AC_REFRESH = 285,          /**< AC Refresh */
+    SDL_SCANCODE_AC_BOOKMARKS = 286,        /**< AC Bookmarks */
 
     /* @} *//* Usage page 0x0C */
 
-    /**
-     *  \name Walther keys
-     *
-     *  These are values that Christian Walther added (for mac keyboard?).
-     */
-    /* @{ */
-
-    SDL_SCANCODE_BRIGHTNESSDOWN = 275,
-    SDL_SCANCODE_BRIGHTNESSUP = 276,
-    SDL_SCANCODE_DISPLAYSWITCH = 277, /**< display mirroring/dual display
-                                           switch, video mode switch */
-    SDL_SCANCODE_KBDILLUMTOGGLE = 278,
-    SDL_SCANCODE_KBDILLUMDOWN = 279,
-    SDL_SCANCODE_KBDILLUMUP = 280,
-    SDL_SCANCODE_EJECT = 281,
-    SDL_SCANCODE_SLEEP = 282,           /**< SC System Sleep */
-
-    SDL_SCANCODE_APP1 = 283,
-    SDL_SCANCODE_APP2 = 284,
-
-    /* @} *//* Walther keys */
-
-    /**
-     *  \name Usage page 0x0C (additional media keys)
-     *
-     *  These values are mapped from usage page 0x0C (USB consumer page).
-     */
-    /* @{ */
-
-    SDL_SCANCODE_AUDIOREWIND = 285,
-    SDL_SCANCODE_AUDIOFASTFORWARD = 286,
-
-    /* @} *//* Usage page 0x0C (additional media keys) */
 
     /**
      *  \name Mobile keys
@@ -429,8 +420,10 @@ typedef enum
 
     /* Add any other keys here. */
 
-    SDL_NUM_SCANCODES = 512 /**< not a key, just marks the number of scancodes
-                                 for array bounds */
+    SDL_SCANCODE_RESERVED = 400,    /**< 400-500 reserved for dynamic keycodes */
+
+    SDL_SCANCODE_COUNT = 512 /**< not a key, just marks the number of scancodes for array bounds */
+
 } SDL_Scancode;
 
 #endif /* SDL_scancode_h_ */

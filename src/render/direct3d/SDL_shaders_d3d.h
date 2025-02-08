@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,13 +20,12 @@
 */
 #include "SDL_internal.h"
 
-/* D3D9 shader implementation */
+// D3D9 shader implementation
 
 typedef enum
 {
-    SHADER_YUV_JPEG,
-    SHADER_YUV_BT601,
-    SHADER_YUV_BT709,
+    SHADER_NONE,
+    SHADER_YUV,
     NUM_SHADERS
 } D3D9_Shader;
 

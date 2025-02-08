@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,75 +24,88 @@
 
 #include "SDL_x11video.h"
 #include "SDL_x11shape.h"
-#include "SDL_x11window.h"
-#include "../SDL_shape_internals.h"
 
-SDL_WindowShaper *X11_CreateShaper(SDL_Window *window)
-{
-    SDL_WindowShaper *result = NULL;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
-    SDL_ShapeData *data = NULL;
+static Uint8 *GenerateShapeMask(SDL_Surface *shape)
+{
+    int x, y;
+    const size_t ppb = 8;
+    const size_t bytes_per_scanline = (size_t)(shape->w + (ppb - 1)) / ppb;
+    const Uint8 *a;
+    Uint8 *mask;
+    Uint8 *mask_scanline;
+    Uint8 mask_value;
 
-    if (SDL_X11_HAVE_XSHAPE) { /* Make sure X server supports it. */
-        result = SDL_malloc(sizeof(SDL_WindowShaper));
-        if (result == NULL) {
-            SDL_OutOfMemory();
-            return NULL;
+    mask = (Uint8 *)SDL_calloc(1, shape->h * bytes_per_scanline);
+    if (mask) {
+        for (y = 0; y < shape->h; y++) {
+            a = (const Uint8 *)shape->pixels + y * shape->pitch;
+            mask_scanline = mask + y * bytes_per_scanline;
+            for (x = 0; x < shape->w; x++) {
+                mask_value = (*a == SDL_ALPHA_TRANSPARENT) ? 0 : 1;
+                mask_scanline[x / ppb] |= mask_value << (x % ppb);
+                a += 4;
+            }
         }
-        result->window = window;
-        result->mode.mode = ShapeModeDefault;
-        result->mode.parameters.binarizationCutoff = 1;
-        data = SDL_malloc(sizeof(SDL_ShapeData));
-        if (data == NULL) {
-            SDL_free(result);
-            SDL_OutOfMemory();
-            return NULL;
-        }
-        result->driverdata = data;
-        data->bitmapsize = 0;
-        data->bitmap = NULL;
-        window->shaper = result;
     }
-#endif
+    return mask;
+}
+#endif // SDL_VIDEO_DRIVER_X11_XSHAPE
+
+bool X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape)
+{
+    bool result = false;
+
+#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
+    SDL_WindowData *windowdata = window->internal;
+
+    // Generate a set of spans for the region
+    if (shape) {
+        SDL_Surface *stretched = NULL;
+        Uint8 *mask;
+        Pixmap pixmap;
+
+        if (shape->w != window->w || shape->h != window->h) {
+            stretched = SDL_CreateSurface(window->w, window->h, SDL_PIXELFORMAT_ARGB32);
+            if (!stretched) {
+                return false;
+            }
+            if (!SDL_StretchSurface(shape, NULL, stretched, NULL, SDL_SCALEMODE_LINEAR)) {
+                SDL_DestroySurface(stretched);
+                return false;
+            }
+            shape = stretched;
+        }
+
+        mask = GenerateShapeMask(shape);
+        if (mask) {
+            pixmap = X11_XCreateBitmapFromData(windowdata->videodata->display, windowdata->xwindow, (const char *)mask, shape->w, shape->h);
+            X11_XShapeCombineMask(windowdata->videodata->display, windowdata->xwindow, ShapeInput, 0, 0, pixmap, ShapeSet);
+            SDL_free(mask);
+
+            result = true;
+        }
+
+        if (stretched) {
+            SDL_DestroySurface(stretched);
+        }
+    } else {
+        Region region = X11_XCreateRegion();
+        XRectangle rect;
+
+        rect.x = 0;
+        rect.y = 0;
+        rect.width = window->w;
+        rect.height = window->h;
+        X11_XUnionRectWithRegion(&rect, region, region);
+        X11_XShapeCombineRegion(windowdata->videodata->display, windowdata->xwindow, ShapeInput, 0, 0, region, ShapeSet);
+        X11_XDestroyRegion(region);
+        result = true;
+    }
+#endif // SDL_VIDEO_DRIVER_X11_XSHAPE
 
     return result;
 }
 
-int X11_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode)
-{
-#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
-    SDL_ShapeData *data = NULL;
-    SDL_WindowData *windowdata = NULL;
-    Pixmap shapemask;
-#endif
-
-    if (shaper == NULL || shape == NULL || shaper->driverdata == NULL) {
-        return -1;
-    }
-
-#ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
-    if (shape->format->Amask == 0 && SDL_SHAPEMODEALPHA(shape_mode->mode)) {
-        return -2;
-    }
-    if (shape->w != shaper->window->w || shape->h != shaper->window->h) {
-        return -3;
-    }
-    data = shaper->driverdata;
-
-    /* Assume that shaper->alphacutoff already has a value, because SDL_SetWindowShape() should have given it one. */
-    SDL_CalculateShapeBitmap(shaper->mode, shape, data->bitmap, 8);
-
-    windowdata = shaper->window->driverdata;
-    shapemask = X11_XCreateBitmapFromData(windowdata->videodata->display, windowdata->xwindow, data->bitmap, shaper->window->w, shaper->window->h);
-
-    X11_XShapeCombineMask(windowdata->videodata->display, windowdata->xwindow, ShapeBounding, 0, 0, shapemask, ShapeSet);
-    X11_XSync(windowdata->videodata->display, False);
-
-    X11_XFreePixmap(windowdata->videodata->display, shapemask);
-#endif
-
-    return 0;
-}
-
-#endif /* SDL_VIDEO_DRIVER_X11 */
+#endif // SDL_VIDEO_DRIVER_X11

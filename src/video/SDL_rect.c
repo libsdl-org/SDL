@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 
 /* There's no float version of this at the moment, because it's not a public API
    and internally we only need the int version. */
-SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
+bool SDL_GetSpanEnclosingRect(int width, int height,
                          int numrects, const SDL_Rect *rects, SDL_Rect *span)
 {
     int i;
@@ -33,22 +33,22 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
 
     if (width < 1) {
         SDL_InvalidParamError("width");
-        return SDL_FALSE;
+        return false;
     } else if (height < 1) {
         SDL_InvalidParamError("height");
-        return SDL_FALSE;
-    } else if (rects == NULL) {
+        return false;
+    } else if (!rects) {
         SDL_InvalidParamError("rects");
-        return SDL_FALSE;
-    } else if (span == NULL) {
+        return false;
+    } else if (!span) {
         SDL_InvalidParamError("span");
-        return SDL_FALSE;
+        return false;
     } else if (numrects < 1) {
         SDL_InvalidParamError("numrects");
-        return SDL_FALSE;
+        return false;
     }
 
-    /* Initialize to empty rect */
+    // Initialize to empty rect
     span_y1 = height;
     span_y2 = 0;
 
@@ -56,7 +56,7 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
         rect_y1 = rects[i].y;
         rect_y2 = rect_y1 + rects[i].h;
 
-        /* Clip out of bounds rectangles, and expand span rect */
+        // Clip out of bounds rectangles, and expand span rect
         if (rect_y1 < 0) {
             span_y1 = 0;
         } else if (rect_y1 < span_y1) {
@@ -73,22 +73,25 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
         span->y = span_y1;
         span->w = width;
         span->h = (span_y2 - span_y1);
-        return SDL_TRUE;
+        return true;
     }
-    return SDL_FALSE;
+    return false;
 }
 
-/* For use with the Cohen-Sutherland algorithm for line clipping, in SDL_rect_impl.h */
+// For use with the Cohen-Sutherland algorithm for line clipping, in SDL_rect_impl.h
 #define CODE_BOTTOM 1
 #define CODE_TOP    2
 #define CODE_LEFT   4
 #define CODE_RIGHT  8
 
-/* Same code twice, for float and int versions... */
+// Same code twice, for float and int versions...
 #define RECTTYPE                 SDL_Rect
 #define POINTTYPE                SDL_Point
 #define SCALARTYPE               int
+#define BIGSCALARTYPE            Sint64
 #define COMPUTEOUTCODE           ComputeOutCode
+#define ENCLOSEPOINTS_EPSILON    1
+#define SDL_RECT_CAN_OVERFLOW    SDL_RectCanOverflow
 #define SDL_HASINTERSECTION      SDL_HasRectIntersection
 #define SDL_INTERSECTRECT        SDL_GetRectIntersection
 #define SDL_RECTEMPTY            SDL_RectEmpty
@@ -100,7 +103,10 @@ SDL_bool SDL_GetSpanEnclosingRect(int width, int height,
 #define RECTTYPE                 SDL_FRect
 #define POINTTYPE                SDL_FPoint
 #define SCALARTYPE               float
+#define BIGSCALARTYPE            double
 #define COMPUTEOUTCODE           ComputeOutCodeFloat
+#define ENCLOSEPOINTS_EPSILON    0.0f
+#define SDL_RECT_CAN_OVERFLOW    SDL_RectCanOverflowFloat
 #define SDL_HASINTERSECTION      SDL_HasRectIntersectionFloat
 #define SDL_INTERSECTRECT        SDL_GetRectIntersectionFloat
 #define SDL_RECTEMPTY            SDL_RectEmptyFloat

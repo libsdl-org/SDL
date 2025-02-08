@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,9 +28,9 @@
 
 #ifdef SDL_VIDEO_RENDER_VITA_GXM
 #include "../../render/vitagxm/SDL_render_vita_gxm_tools.h"
-#endif /* SDL_VIDEO_RENDER_VITA_GXM */
+#endif // SDL_VIDEO_RENDER_VITA_GXM
 
-int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+bool VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
 #ifdef SDL_VIDEO_RENDER_VITA_GXM
     SceMsgDialogParam param;
@@ -41,10 +41,10 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     SceMsgDialogResult dialog_result;
     SceCommonDialogErrorCode init_result;
-    SDL_bool setup_minimal_gxm = SDL_FALSE;
+    bool setup_minimal_gxm = false;
 
     if (messageboxdata->numbuttons > 3) {
-        return -1;
+        return false;
     }
 
     SDL_zero(param);
@@ -78,7 +78,7 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     if (init_result == SCE_COMMON_DIALOG_ERROR_GXM_IS_UNINITIALIZED) {
         gxm_minimal_init_for_common_dialog();
         init_result = sceMsgDialogInit(&param);
-        setup_minimal_gxm = SDL_TRUE;
+        setup_minimal_gxm = true;
     }
 
     gxm_init_for_common_dialog();
@@ -91,21 +91,21 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         sceMsgDialogGetResult(&dialog_result);
 
         if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON1) {
-            *buttonid = messageboxdata->buttons[0].buttonid;
+            *buttonID = messageboxdata->buttons[0].buttonID;
         } else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON2) {
-            *buttonid = messageboxdata->buttons[1].buttonid;
+            *buttonID = messageboxdata->buttons[1].buttonID;
         } else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_BUTTON3) {
-            *buttonid = messageboxdata->buttons[2].buttonid;
+            *buttonID = messageboxdata->buttons[2].buttonID;
         } else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_YES) {
-            *buttonid = messageboxdata->buttons[0].buttonid;
+            *buttonID = messageboxdata->buttons[0].buttonID;
         } else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_NO) {
-            *buttonid = messageboxdata->buttons[1].buttonid;
+            *buttonID = messageboxdata->buttons[1].buttonID;
         } else if (dialog_result.buttonId == SCE_MSG_DIALOG_BUTTON_ID_OK) {
-            *buttonid = messageboxdata->buttons[0].buttonid;
+            *buttonID = messageboxdata->buttons[0].buttonID;
         }
         sceMsgDialogTerm();
     } else {
-        return -1;
+        return false;
     }
 
     gxm_term_for_common_dialog();
@@ -114,12 +114,12 @@ int VITA_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         gxm_minimal_term_for_common_dialog();
     }
 
-    return 0;
+    return true;
 #else
     (void)messageboxdata;
-    (void)buttonid;
-    return -1;
-#endif
+    (void)buttonID;
+    return SDL_Unsupported();
+#endif // SDL_VIDEO_RENDER_VITA_GXM
 }
 
-#endif /* SDL_VIDEO_DRIVER_VITA */
+#endif // SDL_VIDEO_DRIVER_VITA

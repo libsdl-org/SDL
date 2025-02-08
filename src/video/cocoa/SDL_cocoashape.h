@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,21 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "SDL_internal.h"
 
 #ifndef SDL_cocoashape_h_
 #define SDL_cocoashape_h_
 
-#include "../SDL_shape_internals.h"
+extern bool Cocoa_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
 
-@interface SDL_ShapeData : NSObject
-@property(nonatomic) NSGraphicsContext *context;
-@property(nonatomic) SDL_bool saved;
-@property(nonatomic) SDL_ShapeTree *shape;
-@end
-
-extern SDL_WindowShaper *Cocoa_CreateShaper(SDL_Window *window);
-extern int Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode);
-
-#endif /* SDL_cocoashape_h_ */
+#endif // SDL_cocoashape_h_

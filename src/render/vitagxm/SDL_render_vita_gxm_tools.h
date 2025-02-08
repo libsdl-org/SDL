@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -60,4 +60,4 @@ void gxm_init_for_common_dialog(void);
 void gxm_swap_for_common_dialog(void);
 void gxm_term_for_common_dialog(void);
 
-#endif /* SDL_RENDER_VITA_GXM_TOOLS_H */
+#endif // SDL_RENDER_VITA_GXM_TOOLS_H

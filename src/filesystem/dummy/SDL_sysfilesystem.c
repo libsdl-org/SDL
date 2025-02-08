@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,24 +23,32 @@
 #if defined(SDL_FILESYSTEM_DUMMY) || defined(SDL_FILESYSTEM_DISABLED)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
-char *SDL_GetBasePath(void)
+#include "../SDL_sysfilesystem.h"
+
+char *SDL_SYS_GetBasePath(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-char *SDL_GetUserFolder(SDL_Folder folder)
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-#endif /* SDL_FILESYSTEM_DUMMY || SDL_FILESYSTEM_DISABLED */
+char *SDL_SYS_GetCurrentDirectory(void)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+#endif // SDL_FILESYSTEM_DUMMY || SDL_FILESYSTEM_DISABLED

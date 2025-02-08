@@ -25,7 +25,7 @@ cd $srcdir
 
 build=build
 buildandroid=$build/android
-platform=android-16
+platform=android-21
 abi="arm64-v8a" # "armeabi-v7a arm64-v8a x86 x86_64"
 obj=
 lib=

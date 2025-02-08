@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,13 +20,13 @@
 */
 #include "SDL_internal.h"
 
-#if defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__)
+#if defined(SDL_PLATFORM_WINDOWS)
 
 #include "SDL_windows.h"
 
-#include <objbase.h> /* for CoInitialize/CoUninitialize (Win32 only) */
+#include <objbase.h> // for CoInitialize/CoUninitialize (Win32 only)
 #ifdef HAVE_ROAPI_H
-#include <roapi.h> /* For RoInitialize/RoUninitialize (Win32 only) */
+#include <roapi.h> // For RoInitialize/RoUninitialize (Win32 only)
 #else
 typedef enum RO_INIT_TYPE
 {
@@ -49,8 +49,12 @@ typedef enum RO_INIT_TYPE
 #define LOAD_LIBRARY_SEARCH_SYSTEM32 0x00000800
 #endif
 
-/* Sets an error message based on an HRESULT */
-int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
+#ifndef WC_ERR_INVALID_CHARS
+#define WC_ERR_INVALID_CHARS 0x00000080
+#endif
+
+// Sets an error message based on an HRESULT
+bool WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
 {
     TCHAR buffer[1024];
     char *message;
@@ -58,7 +62,7 @@ int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
     DWORD c = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0,
                             buffer, SDL_arraysize(buffer), NULL);
     buffer[c] = 0;
-    /* kill CR/LF that FormatMessage() sticks at the end */
+    // kill CR/LF that FormatMessage() sticks at the end
     while (*p) {
         if (*p == '\r') {
             *p = 0;
@@ -69,11 +73,11 @@ int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
     message = WIN_StringToUTF8(buffer);
     SDL_SetError("%s%s%s", prefix ? prefix : "", prefix ? ": " : "", message);
     SDL_free(message);
-    return -1;
+    return false;
 }
 
-/* Sets an error message based on GetLastError() */
-int WIN_SetError(const char *prefix)
+// Sets an error message based on GetLastError()
+bool WIN_SetError(const char *prefix)
 {
     return WIN_SetErrorFromHRESULT(prefix, GetLastError());
 }
@@ -86,15 +90,8 @@ WIN_CoInitialize(void)
 
        If you need multi-threaded mode, call CoInitializeEx() before SDL_Init()
     */
-#ifdef __WINRT__
-    /* DLudwig: On WinRT, it is assumed that COM was initialized in main().
-       CoInitializeEx is available (not CoInitialize though), however
-       on WinRT, main() is typically declared with the [MTAThread]
-       attribute, which, AFAIK, should initialize COM.
-    */
-    return S_OK;
-#elif defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    /* On Xbox, there's no need to call CoInitializeEx (and it's not implemented) */
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+    // On Xbox, there's no need to call CoInitializeEx (and it's not implemented)
     return S_OK;
 #else
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
@@ -102,8 +99,8 @@ WIN_CoInitialize(void)
         hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     }
 
-    /* S_FALSE means success, but someone else already initialized. */
-    /* You still need to call CoUninitialize in this case! */
+    // S_FALSE means success, but someone else already initialized.
+    // You still need to call CoUninitialize in this case!
     if (hr == S_FALSE) {
         return S_OK;
     }
@@ -114,20 +111,17 @@ WIN_CoInitialize(void)
 
 void WIN_CoUninitialize(void)
 {
-#ifndef __WINRT__
     CoUninitialize();
-#endif
 }
 
-#ifndef __WINRT__
-void *WIN_LoadComBaseFunction(const char *name)
+FARPROC WIN_LoadComBaseFunction(const char *name)
 {
-    static SDL_bool s_bLoaded;
+    static bool s_bLoaded;
     static HMODULE s_hComBase;
 
     if (!s_bLoaded) {
         s_hComBase = LoadLibraryEx(TEXT("combase.dll"), NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
-        s_bLoaded = SDL_TRUE;
+        s_bLoaded = true;
     }
     if (s_hComBase) {
         return GetProcAddress(s_hComBase, name);
@@ -135,25 +129,21 @@ void *WIN_LoadComBaseFunction(const char *name)
         return NULL;
     }
 }
-#endif
 
 HRESULT
 WIN_RoInitialize(void)
 {
-#ifdef __WINRT__
-    return S_OK;
-#else
     typedef HRESULT(WINAPI * RoInitialize_t)(RO_INIT_TYPE initType);
     RoInitialize_t RoInitializeFunc = (RoInitialize_t)WIN_LoadComBaseFunction("RoInitialize");
     if (RoInitializeFunc) {
-        /* RO_INIT_SINGLETHREADED is equivalent to COINIT_APARTMENTTHREADED */
+        // RO_INIT_SINGLETHREADED is equivalent to COINIT_APARTMENTTHREADED
         HRESULT hr = RoInitializeFunc(RO_INIT_SINGLETHREADED);
         if (hr == RPC_E_CHANGED_MODE) {
             hr = RoInitializeFunc(RO_INIT_MULTITHREADED);
         }
 
-        /* S_FALSE means success, but someone else already initialized. */
-        /* You still need to call RoUninitialize in this case! */
+        // S_FALSE means success, but someone else already initialized.
+        // You still need to call RoUninitialize in this case!
         if (hr == S_FALSE) {
             return S_OK;
         }
@@ -162,21 +152,18 @@ WIN_RoInitialize(void)
     } else {
         return E_NOINTERFACE;
     }
-#endif
 }
 
 void WIN_RoUninitialize(void)
 {
-#ifndef __WINRT__
     typedef void(WINAPI * RoUninitialize_t)(void);
     RoUninitialize_t RoUninitializeFunc = (RoUninitialize_t)WIN_LoadComBaseFunction("RoUninitialize");
     if (RoUninitializeFunc) {
         RoUninitializeFunc();
     }
-#endif
 }
 
-#if !defined(__WINRT__) && !defined(__XBOXONE__) && !defined(__XBOXSERIES__)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
 {
     OSVERSIONINFOEXW osvi;
@@ -197,32 +184,46 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 }
 #endif
 
+// apply some static variables so we only call into the Win32 API once per process for each check.
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+    #define CHECKWINVER(notdesktop_platform_result, test) return (notdesktop_platform_result);
+#else
+    #define CHECKWINVER(notdesktop_platform_result, test) \
+        static bool checked = false; \
+        static BOOL result = FALSE; \
+        if (!checked) { \
+            result = (test); \
+            checked = true; \
+        } \
+        return result;
+#endif
+
+// this is the oldest thing we run on (and we may lose support for this in SDL3 at any time!),
+//  so there's no "OrGreater" as that would always be TRUE. The other functions are here to
+//  ask "can we support a specific feature?" but this function is here to ask "do we need to do
+//  something different for an OS version we probably should abandon?"  :)
+BOOL WIN_IsWindowsXP(void)
+{
+    CHECKWINVER(FALSE, !WIN_IsWindowsVistaOrGreater() && IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINXP), LOBYTE(_WIN32_WINNT_WINXP), 0));
+}
+
 BOOL WIN_IsWindowsVistaOrGreater(void)
 {
-#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    return TRUE;
-#else
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
-#endif
+    CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0));
 }
 
 BOOL WIN_IsWindows7OrGreater(void)
 {
-#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    return TRUE;
-#else
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0);
-#endif
+    CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0));
 }
 
 BOOL WIN_IsWindows8OrGreater(void)
 {
-#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    return TRUE;
-#else
-    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0);
-#endif
+    CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0));
 }
+
+#undef CHECKWINVER
+
 
 /*
 WAVExxxCAPS gives you 31 bytes for the device name, and just truncates if it's
@@ -247,20 +248,20 @@ WASAPI doesn't need this. This is just for DirectSound/WinMM.
 */
 char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
-#if defined(__WINRT__) || defined(__XBOXONE__) || defined(__XBOXSERIES__)
-    return WIN_StringToUTF8(name); /* No registry access on WinRT/UWP and Xbox, go with what we've got. */
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+    return WIN_StringToUTF8W(name); // No registry access on Xbox, go with what we've got.
 #else
     static const GUID nullguid = { 0 };
     const unsigned char *ptr;
     char keystr[128];
     WCHAR *strw = NULL;
-    SDL_bool rc;
+    bool rc;
     HKEY hkey;
     DWORD len = 0;
-    char *retval = NULL;
+    char *result = NULL;
 
     if (WIN_IsEqualGUID(guid, &nullguid)) {
-        return WIN_StringToUTF8(name); /* No GUID, go with what we've got. */
+        return WIN_StringToUTF8(name); // No GUID, go with what we've got.
     }
 
     ptr = (const unsigned char *)guid;
@@ -273,44 +274,44 @@ char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     rc = (RegOpenKeyExW(HKEY_LOCAL_MACHINE, strw, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS);
     SDL_free(strw);
     if (!rc) {
-        return WIN_StringToUTF8(name); /* oh well. */
+        return WIN_StringToUTF8(name); // oh well.
     }
 
     rc = (RegQueryValueExW(hkey, L"Name", NULL, NULL, NULL, &len) == ERROR_SUCCESS);
     if (!rc) {
         RegCloseKey(hkey);
-        return WIN_StringToUTF8(name); /* oh well. */
+        return WIN_StringToUTF8(name); // oh well.
     }
 
     strw = (WCHAR *)SDL_malloc(len + sizeof(WCHAR));
-    if (strw == NULL) {
+    if (!strw) {
         RegCloseKey(hkey);
-        return WIN_StringToUTF8(name); /* oh well. */
+        return WIN_StringToUTF8(name); // oh well.
     }
 
     rc = (RegQueryValueExW(hkey, L"Name", NULL, NULL, (LPBYTE)strw, &len) == ERROR_SUCCESS);
     RegCloseKey(hkey);
     if (!rc) {
         SDL_free(strw);
-        return WIN_StringToUTF8(name); /* oh well. */
+        return WIN_StringToUTF8(name); // oh well.
     }
 
-    strw[len / 2] = 0; /* make sure it's null-terminated. */
+    strw[len / 2] = 0; // make sure it's null-terminated.
 
-    retval = WIN_StringToUTF8(strw);
+    result = WIN_StringToUTF8(strw);
     SDL_free(strw);
-    return retval ? retval : WIN_StringToUTF8(name);
-#endif /* if __WINRT__ / else */
+    return result ? result : WIN_StringToUTF8(name);
+#endif
 }
 
 BOOL WIN_IsEqualGUID(const GUID *a, const GUID *b)
 {
-    return SDL_memcmp(a, b, sizeof(*a)) == 0;
+    return (SDL_memcmp(a, b, sizeof(*a)) == 0);
 }
 
 BOOL WIN_IsEqualIID(REFIID a, REFIID b)
 {
-    return SDL_memcmp(a, b, sizeof(*a)) == 0;
+    return (SDL_memcmp(a, b, sizeof(*a)) == 0);
 }
 
 void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect)
@@ -331,15 +332,15 @@ void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect)
 
 BOOL WIN_IsRectEmpty(const RECT *rect)
 {
-    /* Calculating this manually because UWP and Xbox do not support Win32 IsRectEmpty. */
+    // Calculating this manually because Xbox does not support Win32 IsRectEmpty.
     return (rect->right <= rect->left) || (rect->bottom <= rect->top);
 }
 
-/* Some GUIDs we need to know without linking to libraries that aren't available before Vista. */
-/* *INDENT-OFF* */ /* clang-format off */
+// Some GUIDs we need to know without linking to libraries that aren't available before Vista.
+/* *INDENT-OFF* */ // clang-format off
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_PCM = { 0x00000001, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
 static const GUID SDL_KSDATAFORMAT_SUBTYPE_IEEE_FLOAT = { 0x00000003, 0x0000, 0x0010,{ 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 } };
-/* *INDENT-ON* */ /* clang-format on */
+/* *INDENT-ON* */ // clang-format on
 
 SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat)
 {
@@ -359,125 +360,16 @@ SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat)
             return SDL_AUDIO_S32;
         }
     }
-    return 0;
+    return SDL_AUDIO_UNKNOWN;
 }
 
-/* Win32-specific SDL_RunApp(), which does most of the SDL_main work,
-  based on SDL_windows_main.c, placed in the public domain by Sam Lantinga  4/13/98 */
-#ifdef __WIN32__
 
-#include <shellapi.h> /* CommandLineToArgvW() */
-
-/* Pop up an out of memory message, returns to Windows */
-static int OutOfMemory(void)
+int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCharStr, int cchWideChar, LPSTR lpMultiByteStr, int cbMultiByte, LPCCH lpDefaultChar, LPBOOL lpUsedDefaultChar)
 {
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
-    return -1;
-}
-
-DECLSPEC int MINGW32_FORCEALIGN SDL_RunApp(int _argc, char* _argv[], SDL_main_func mainFunction, void * reserved)
-{
-
-    /* Gets the arguments with GetCommandLine, converts them to argc and argv
-       and calls SDL_main */
-
-    LPWSTR *argvw;
-    char **argv;
-    int i, argc, result;
-
-    (void)_argc; (void)_argv; (void)reserved;
-
-    argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
-    if (argvw == NULL) {
-        return OutOfMemory();
+    if (WIN_IsWindowsXP()) {
+        dwFlags &= ~WC_ERR_INVALID_CHARS;  // not supported before Vista. Without this flag, it will just replace bogus chars with U+FFFD. You're on your own, WinXP.
     }
-
-    /* Note that we need to be careful about how we allocate/free memory here.
-     * If the application calls SDL_SetMemoryFunctions(), we can't rely on
-     * SDL_free() to use the same allocator after SDL_main() returns.
-     */
-
-    /* Parse it into argv and argc */
-    argv = (char **)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (argc + 1) * sizeof(*argv));
-    if (argv == NULL) {
-        return OutOfMemory();
-    }
-    for (i = 0; i < argc; ++i) {
-        DWORD len;
-        char *arg = WIN_StringToUTF8W(argvw[i]);
-        if (arg == NULL) {
-            return OutOfMemory();
-        }
-        len = (DWORD)SDL_strlen(arg);
-        argv[i] = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, len + 1);
-        if (!argv[i]) {
-            return OutOfMemory();
-        }
-        SDL_memcpy(argv[i], arg, len);
-        SDL_free(arg);
-    }
-    argv[i] = NULL;
-    LocalFree(argvw);
-
-    SDL_SetMainReady();
-
-    /* Run the application main() code */
-    result = mainFunction(argc, argv);
-
-    /* Free argv, to avoid memory leak */
-    for (i = 0; i < argc; ++i) {
-        HeapFree(GetProcessHeap(), 0, argv[i]);
-    }
-    HeapFree(GetProcessHeap(), 0, argv);
-
-    return result;
+    return WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr, cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 }
 
-#endif /* __WIN32__ */
-
-#endif /* defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__) */
-
-/*
- * Public APIs
- */
-#ifndef SDL_VIDEO_DRIVER_WINDOWS
-
-#if defined(__WIN32__) || defined(__GDK__)
-int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
-{
-    (void)name;
-    (void)style;
-    (void)hInst;
-    return 0;
-}
-
-void SDL_UnregisterApp(void)
-{
-}
-
-void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
-{
-}
-#endif /* __WIN32__ || __GDK__ */
-
-#if defined(__WIN32__) || defined(__WINGDK__)
-int SDL_Direct3D9GetAdapterIndex(SDL_DisplayID displayID)
-{
-    (void)displayID;
-    return 0; /* D3DADAPTER_DEFAULT */
-}
-
-SDL_bool SDL_DXGIGetOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outputIndex)
-{
-    (void)displayID;
-    if (adapterIndex) {
-        *adapterIndex = -1;
-    }
-    if (outputIndex) {
-        *outputIndex = -1;
-    }
-    return SDL_FALSE;
-}
-#endif /* __WIN32__ || __WINGDK__ */
-
-#endif /* !SDL_VIDEO_DRIVER_WINDOWS */
+#endif // defined(SDL_PLATFORM_WINDOWS)

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,26 +27,22 @@
 #include <time.h>
 #include <sys/time.h>
 #include <pspthreadman.h>
+#include <psprtc.h>
 
 
 Uint64 SDL_GetPerformanceCounter(void)
 {
     Uint64 ticks;
-	struct timeval now;
-
-	gettimeofday(&now, NULL);
-	ticks = now.tv_sec;
-	ticks *= SDL_US_PER_SECOND;
-	ticks += now.tv_usec;
+    sceRtcGetCurrentTick(&ticks);
     return ticks;
 }
 
 Uint64 SDL_GetPerformanceFrequency(void)
 {
-    return SDL_US_PER_SECOND;
+    return sceRtcGetTickResolution();
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     const Uint64 max_delay = 0xffffffffLL * SDL_NS_PER_US;
     if (ns > max_delay) {
@@ -55,4 +51,4 @@ void SDL_DelayNS(Uint64 ns)
     sceKernelDelayThreadCB((SceUInt)SDL_NS_TO_US(ns));
 }
 
-#endif /* SDL_TIMER_PSP */
+#endif // SDL_TIMER_PSP

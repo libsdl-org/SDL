@@ -55,7 +55,7 @@ This module responds to the flags:
 
 #]=======================================================================]
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.7...3.28)
 
 if(NOT PROJECT_NAME MATCHES "^SDL.*")
     message(WARNING "This module is internal to SDL and is currently not supported.")
@@ -104,8 +104,9 @@ endfunction()
 set(SDL_ANDROID_PLATFORM_ANDROID_JAR "SDL_ANDROID_PLATFORM_ANDROID_JAR-NOTFOUND")
 
 if(NOT DEFINED SDL_ANDROID_PLATFORM_ROOT)
-  _sdl_find_android_platform_root(SDL_ANDROID_PLATFORM_ROOT)
-  set(SDL_ANDROID_PLATFORM_ROOT "${SDL_ANDROID_PLATFORM_ROOT}" CACHE PATH "Path of Android platform")
+  _sdl_find_android_platform_root(_new_sdl_android_platform_root)
+  set(SDL_ANDROID_PLATFORM_ROOT "${_new_sdl_android_platform_root}" CACHE PATH "Path of Android platform")
+  unset(_new_sdl_android_platform_root)
 endif()
 if(SDL_ANDROID_PLATFORM_ROOT)
   _sdl_is_valid_android_platform_root(_valid SDL_ANDROID_PLATFORM_VERSION "${SDL_ANDROID_PLATFORM_ROOT}")

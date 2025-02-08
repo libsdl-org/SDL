@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 
 #include "SDL_internal.h"
 
-/* Useful functions and variables from SDL_events.c */
+// Useful functions and variables from SDL_events.c
 #include "../video/SDL_sysvideo.h"
 
 #include "SDL_clipboardevents_c.h"
@@ -33,27 +33,34 @@
 #include "SDL_keyboard_c.h"
 #include "SDL_mouse_c.h"
 #include "SDL_touch_c.h"
+#include "SDL_pen_c.h"
 #include "SDL_windowevents_c.h"
 
-/* Start and stop the event processing loop */
-extern int SDL_StartEventLoop(void);
+// Start and stop the event processing loop
+extern bool SDL_StartEventLoop(void);
 extern void SDL_StopEventLoop(void);
 extern void SDL_QuitInterrupt(void);
 
-extern int SDL_SendAppEvent(SDL_EventType eventType);
-extern int SDL_SendSysWMEvent(SDL_SysWMmsg *message);
-extern int SDL_SendKeymapChangedEvent(void);
-extern int SDL_SendLocaleChangedEvent(void);
-extern int SDL_SendSystemThemeChangedEvent(void);
+extern void SDL_SendAppEvent(SDL_EventType eventType);
+extern void SDL_SendKeymapChangedEvent(void);
+extern void SDL_SendLocaleChangedEvent(void);
+extern void SDL_SendSystemThemeChangedEvent(void);
 
-extern int SDL_SendQuit(void);
+extern void *SDL_AllocateTemporaryMemory(size_t size);
+extern const char *SDL_CreateTemporaryString(const char *string);
+extern void *SDL_ClaimTemporaryMemory(const void *mem);
+extern void SDL_FreeTemporaryMemory(void);
 
-extern int SDL_InitEvents(void);
+extern void SDL_PumpEventMaintenance(void);
+
+extern void SDL_SendQuit(void);
+
+extern bool SDL_InitEvents(void);
 extern void SDL_QuitEvents(void);
 
 extern void SDL_SendPendingSignalEvents(void);
 
-extern int SDL_InitQuit(void);
+extern bool SDL_InitQuit(void);
 extern void SDL_QuitQuit(void);
 
-#endif /* SDL_events_c_h_ */
+#endif // SDL_events_c_h_

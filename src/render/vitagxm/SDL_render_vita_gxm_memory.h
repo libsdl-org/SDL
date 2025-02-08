@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,4 +39,4 @@ void vita_mem_vertex_usse_free(SceUID uid);
 void *vita_mem_fragment_usse_alloc(unsigned int size, SceUID *uid, unsigned int *usse_offset);
 void vita_mem_fragment_usse_free(SceUID uid);
 
-#endif /* SDL_RENDER_VITA_GXM_MEMORY_H */
+#endif // SDL_RENDER_VITA_GXM_MEMORY_H

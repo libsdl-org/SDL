@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,7 @@ struct SDL_Condition
     pthread_cond_t cond;
 };
 
-/* Create a condition variable */
+// Create a condition variable
 SDL_Condition *SDL_CreateCondition(void)
 {
     SDL_Condition *cond;
@@ -49,7 +49,7 @@ SDL_Condition *SDL_CreateCondition(void)
     return cond;
 }
 
-/* Destroy a condition variable */
+// Destroy a condition variable
 void SDL_DestroyCondition(SDL_Condition *cond)
 {
     if (cond) {
@@ -58,55 +58,39 @@ void SDL_DestroyCondition(SDL_Condition *cond)
     }
 }
 
-/* Restart one of the threads that are waiting on the condition variable */
-int SDL_SignalCondition(SDL_Condition *cond)
+// Restart one of the threads that are waiting on the condition variable
+void SDL_SignalCondition(SDL_Condition *cond)
 {
-    int retval;
-
-    if (cond == NULL) {
-        return SDL_InvalidParamError("cond");
+    if (!cond) {
+        return;
     }
 
-    retval = 0;
-    if (pthread_cond_signal(&cond->cond) != 0) {
-        return SDL_SetError("pthread_cond_signal() failed");
-    }
-    return retval;
+    pthread_cond_signal(&cond->cond);
 }
 
-/* Restart all threads that are waiting on the condition variable */
-int SDL_BroadcastCondition(SDL_Condition *cond)
+// Restart all threads that are waiting on the condition variable
+void SDL_BroadcastCondition(SDL_Condition *cond)
 {
-    int retval;
-
-    if (cond == NULL) {
-        return SDL_InvalidParamError("cond");
+    if (!cond) {
+        return;
     }
 
-    retval = 0;
-    if (pthread_cond_broadcast(&cond->cond) != 0) {
-        return SDL_SetError("pthread_cond_broadcast() failed");
-    }
-    return retval;
+    pthread_cond_broadcast(&cond->cond);
 }
 
-int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
+bool SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS)
 {
-    int retval;
 #ifndef HAVE_CLOCK_GETTIME
     struct timeval delta;
 #endif
     struct timespec abstime;
 
-    if (cond == NULL) {
-        return SDL_InvalidParamError("cond");
+    if (!cond || !mutex) {
+        return true;
     }
 
     if (timeoutNS < 0) {
-        if (pthread_cond_wait(&cond->cond, &mutex->id) != 0) {
-            return SDL_SetError("pthread_cond_wait() failed");
-        }
-        return 0;
+        return (pthread_cond_wait(&cond->cond, &mutex->id) == 0);
     }
 
 #ifdef HAVE_CLOCK_GETTIME
@@ -120,24 +104,25 @@ int SDL_WaitConditionTimeoutNS(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 tim
     abstime.tv_sec = delta.tv_sec + (timeoutNS / SDL_NS_PER_SECOND);
     abstime.tv_nsec = SDL_US_TO_NS(delta.tv_usec) + (timeoutNS % SDL_NS_PER_SECOND);
 #endif
-    while (abstime.tv_nsec > 1000000000) {
+    while (abstime.tv_nsec >= 1000000000) {
         abstime.tv_sec += 1;
         abstime.tv_nsec -= 1000000000;
     }
 
+    bool result;
+    int rc;
 tryagain:
-    retval = pthread_cond_timedwait(&cond->cond, &mutex->id, &abstime);
-    switch (retval) {
+    rc = pthread_cond_timedwait(&cond->cond, &mutex->id, &abstime);
+    switch (rc) {
     case EINTR:
         goto tryagain;
-        /* break; -Wunreachable-code-break */
+        // break; -Wunreachable-code-break
     case ETIMEDOUT:
-        retval = SDL_MUTEX_TIMEDOUT;
-        break;
-    case 0:
+        result = false;
         break;
     default:
-        retval = SDL_SetError("pthread_cond_timedwait() failed");
+        result = true;
+        break;
     }
-    return retval;
+    return result;
 }

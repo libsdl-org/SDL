@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -10,14 +10,12 @@
   freely.
 */
 
-/* !!! FIXME: this code is not up to standards for SDL3 test apps. Someone should improve this. */
-
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 #include "testutils.h"
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten/emscripten.h>
 #endif
 
@@ -34,8 +32,8 @@ static SDL_AudioStream *stream;
 static Uint8 *audio_buf = NULL;
 static Uint32 audio_len = 0;
 
-static SDL_bool auto_loop = SDL_TRUE;
-static SDL_bool auto_flush = SDL_FALSE;
+static bool auto_loop = true;
+static bool auto_flush = false;
 
 static Uint64 last_get_callback = 0;
 static int last_get_amount_additional = 0;
@@ -44,7 +42,7 @@ static int last_get_amount_total = 0;
 typedef struct Slider
 {
     SDL_FRect area;
-    SDL_bool changed;
+    bool changed;
     char fmtlabel[64];
     float pos;
     int flags;
@@ -66,7 +64,7 @@ static void init_slider(int index, const char* fmtlabel, int flags, float value,
     slider->area.y = state->window_h * (0.2f + (index * SLIDER_HEIGHT_PERC * 1.4f));
     slider->area.w = SLIDER_WIDTH_PERC * state->window_w;
     slider->area.h = SLIDER_HEIGHT_PERC * state->window_h;
-    slider->changed = SDL_TRUE;
+    slider->changed = true;
     SDL_strlcpy(slider->fmtlabel, fmtlabel, SDL_arraysize(slider->fmtlabel));
     slider->flags = flags;
     slider->min = min;
@@ -104,42 +102,44 @@ static void draw_textf(SDL_Renderer* renderer, int x, int y, const char* fmt, ..
     draw_text(renderer, x, y, text);
 }
 
-static void queue_audio()
+static void queue_audio(void)
 {
     Uint8* new_data = NULL;
     int new_len = 0;
-    int retval = 0;
+    bool result = true;
     SDL_AudioSpec new_spec;
 
+    SDL_zero(new_spec);
     new_spec.format = spec.format;
     new_spec.channels = (int) sliders[2].value;
     new_spec.freq = (int) sliders[1].value;
 
     SDL_Log("Converting audio from %i to %i", spec.freq, new_spec.freq);
 
-    retval = retval ? retval : SDL_ConvertAudioSamples(&spec, audio_buf, audio_len, &new_spec, &new_data, &new_len);
-    retval = retval ? retval : SDL_SetAudioStreamFormat(stream, &new_spec, NULL);
-    retval = retval ? retval : SDL_PutAudioStreamData(stream, new_data, new_len);
+    /* You shouldn't actually use SDL_ConvertAudioSamples like this (just put the data straight into the stream and let it handle conversion) */
+    result = result && SDL_ConvertAudioSamples(&spec, audio_buf, audio_len, &new_spec, &new_data, &new_len);
+    result = result && SDL_SetAudioStreamFormat(stream, &new_spec, NULL);
+    result = result && SDL_PutAudioStreamData(stream, new_data, new_len);
 
     if (auto_flush) {
-        retval = retval ? retval : SDL_FlushAudioStream(stream);
+        result = result && SDL_FlushAudioStream(stream);
     }
 
     SDL_free(new_data);
 
-    if (retval) {
-        SDL_Log("Failed to queue audio: %s", SDL_GetError());
-    } else {
+    if (result) {
         SDL_Log("Queued audio");
+    } else {
+        SDL_Log("Failed to queue audio: %s", SDL_GetError());
     }
 }
 
 static void skip_audio(float amount)
 {
     float speed;
-    SDL_AudioSpec dst_spec, new_spec;
-    int num_frames;
-    int retval = 0;
+    SDL_AudioSpec dst_spec;
+    int num_bytes;
+    int result = 0;
     void* buf = NULL;
 
     SDL_LockAudioStream(stream);
@@ -147,49 +147,25 @@ static void skip_audio(float amount)
     speed = SDL_GetAudioStreamFrequencyRatio(stream);
     SDL_GetAudioStreamFormat(stream, NULL, &dst_spec);
 
-    /* Gimme that crunchy audio */
-    new_spec.format = SDL_AUDIO_S8;
-    new_spec.channels = 1;
-    new_spec.freq = 4000;
-
     SDL_SetAudioStreamFrequencyRatio(stream, 100.0f);
-    SDL_SetAudioStreamFormat(stream, NULL, &new_spec);
 
-    num_frames = (int)(new_spec.freq * ((speed * amount) / 100.0f));
-    buf = SDL_malloc(num_frames);
+    num_bytes = (int)(SDL_AUDIO_FRAMESIZE(dst_spec) * dst_spec.freq * ((speed * amount) / 100.0f));
+    buf = SDL_malloc(num_bytes);
 
-    if (buf != NULL) {
-        retval = SDL_GetAudioStreamData(stream, buf, num_frames);
+    if (buf) {
+        result = SDL_GetAudioStreamData(stream, buf, num_bytes);
         SDL_free(buf);
     }
 
-    SDL_SetAudioStreamFormat(stream, NULL, &dst_spec);
     SDL_SetAudioStreamFrequencyRatio(stream, speed);
 
     SDL_UnlockAudioStream(stream);
 
-    if (retval >= 0) {
+    if (result >= 0) {
         SDL_Log("Skipped %.2f seconds", amount);
     } else {
         SDL_Log("Failed to skip: %s", SDL_GetError());
     }
-}
-
-static const char *AudioFmtToString(const SDL_AudioFormat fmt)
-{
-    switch (fmt) {
-        #define FMTCASE(x) case SDL_AUDIO_##x: return #x
-        FMTCASE(U8);
-        FMTCASE(S8);
-        FMTCASE(S16LE);
-        FMTCASE(S16BE);
-        FMTCASE(S32LE);
-        FMTCASE(S32BE);
-        FMTCASE(F32LE);
-        FMTCASE(F32BE);
-        #undef FMTCASE
-    }
-    return "?";
 }
 
 static const char *AudioChansToStr(const int channels)
@@ -208,49 +184,65 @@ static const char *AudioChansToStr(const int channels)
     return "?";
 }
 
+static void scale_mouse_coords(SDL_FPoint *p)
+{
+    SDL_Window *window = SDL_GetMouseFocus();
+    if (window) {
+        int w, p_w;
+        float scale;
+        SDL_GetWindowSize(window, &w, NULL);
+        SDL_GetWindowSizeInPixels(window, &p_w, NULL);
+        scale = (float)p_w / (float)w;
+        p->x *= scale;
+        p->y *= scale;
+    }
+}
+
 static void loop(void)
 {
     int i, j;
     SDL_Event e;
     SDL_FPoint p;
     SDL_AudioSpec src_spec, dst_spec;
+    int queued_bytes = 0;
     int available_bytes = 0;
     float available_seconds = 0;
 
     while (SDL_PollEvent(&e)) {
         SDLTest_CommonEvent(state, &e, &done);
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
         if (done) {
             emscripten_cancel_main_loop();
         }
 #endif
         if (e.type == SDL_EVENT_KEY_DOWN) {
-            SDL_Keycode sym = e.key.keysym.sym;
-            if (sym == SDLK_q) {
+            SDL_Keycode key = e.key.key;
+            if (key == SDLK_Q) {
                 if (SDL_AudioDevicePaused(state->audio_id)) {
                     SDL_ResumeAudioDevice(state->audio_id);
                 } else {
                     SDL_PauseAudioDevice(state->audio_id);
                 }
-            } else if (sym == SDLK_w) {
-                auto_loop = auto_loop ? SDL_FALSE : SDL_TRUE;
-            } else if (sym == SDLK_e) {
-                auto_flush = auto_flush ? SDL_FALSE : SDL_TRUE;
-            } else if (sym == SDLK_a) {
+            } else if (key == SDLK_W) {
+                auto_loop = !auto_loop;
+            } else if (key == SDLK_E) {
+                auto_flush = !auto_flush;
+            } else if (key == SDLK_A) {
                 SDL_ClearAudioStream(stream);
                 SDL_Log("Cleared audio stream");
-            } else if (sym == SDLK_s) {
+            } else if (key == SDLK_S) {
                 queue_audio();
-            } else if (sym == SDLK_d) {
+            } else if (key == SDLK_D) {
                 float amount = 1.0f;
-                amount *= (e.key.keysym.mod & SDL_KMOD_CTRL) ? 10.0f : 1.0f;
-                amount *= (e.key.keysym.mod & SDL_KMOD_SHIFT) ? 10.0f : 1.0f;
+                amount *= (e.key.mod & SDL_KMOD_CTRL) ? 10.0f : 1.0f;
+                amount *= (e.key.mod & SDL_KMOD_SHIFT) ? 10.0f : 1.0f;
                 skip_audio(amount);
             }
         }
     }
 
     if (SDL_GetMouseState(&p.x, &p.y) & SDL_BUTTON_LMASK) {
+        scale_mouse_coords(&p);
         if (active_slider == -1) {
             for (i = 0; i < NUM_SLIDERS; ++i) {
                 if (SDL_PointInRectFloat(&p, &sliders[i].area)) {
@@ -282,16 +274,16 @@ static void loop(void)
 
         if (value != slider->value) {
             slider->value = value;
-            slider->changed = SDL_TRUE;
+            slider->changed = true;
         }
     }
 
     if (sliders[0].changed) {
-        sliders[0].changed = SDL_FALSE;
+        sliders[0].changed = false;
         SDL_SetAudioStreamFrequencyRatio(stream, sliders[0].value);
     }
 
-    if (SDL_GetAudioStreamFormat(stream, &src_spec, &dst_spec) == 0) {
+    if (SDL_GetAudioStreamFormat(stream, &src_spec, &dst_spec)) {
         available_bytes = SDL_GetAudioStreamAvailable(stream);
         available_seconds = (float)available_bytes / (float)(SDL_AUDIO_FRAMESIZE(dst_spec) * dst_spec.freq);
 
@@ -300,6 +292,8 @@ static void loop(void)
             queue_audio();
         }
     }
+
+    queued_bytes = SDL_GetAudioStreamQueued(stream);
 
     for (i = 0; i < state->num_windows; i++) {
         int draw_y = 0;
@@ -333,6 +327,9 @@ static void loop(void)
         draw_textf(rend, 0, draw_y, "Available: %4.2f (%i bytes)", available_seconds, available_bytes);
         draw_y += FONT_LINE_HEIGHT;
 
+        draw_textf(rend, 0, draw_y, "Queued: %i bytes", queued_bytes);
+        draw_y += FONT_LINE_HEIGHT;
+
         SDL_LockAudioStream(stream);
 
         draw_textf(rend, 0, draw_y, "Get Callback: %i/%i bytes, %2i ms ago",
@@ -344,15 +341,15 @@ static void loop(void)
         draw_y = state->window_h - FONT_LINE_HEIGHT * 3;
 
         draw_textf(rend, 0, draw_y, "Wav: %6s/%6s/%i",
-            AudioFmtToString(spec.format), AudioChansToStr(spec.channels), spec.freq);
+            SDL_GetAudioFormatName(spec.format), AudioChansToStr(spec.channels), spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Src: %6s/%6s/%i",
-            AudioFmtToString(src_spec.format), AudioChansToStr(src_spec.channels), src_spec.freq);
+            SDL_GetAudioFormatName(src_spec.format), AudioChansToStr(src_spec.channels), src_spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         draw_textf(rend, 0, draw_y, "Dst: %6s/%6s/%i",
-            AudioFmtToString(dst_spec.format), AudioChansToStr(dst_spec.channels), dst_spec.freq);
+            SDL_GetAudioFormatName(dst_spec.format), AudioChansToStr(dst_spec.channels), dst_spec.freq);
         draw_y += FONT_LINE_HEIGHT;
 
         SDL_RenderPresent(rend);
@@ -370,16 +367,12 @@ int main(int argc, char *argv[])
 {
     char *filename = NULL;
     int i;
-    int rc;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_AUDIO | SDL_INIT_VIDEO);
-    if (state == NULL) {
+    if (!state) {
         return 1;
     }
-
-    /* Enable standard application logging */
-    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Parse commandline */
     for (i = 1; i < argc;) {
@@ -403,22 +396,21 @@ int main(int argc, char *argv[])
 
     /* Load the SDL library */
     if (!SDLTest_CommonInit(state)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return 1;
     }
 
     FONT_CHARACTER_SIZE = 16;
 
     filename = GetResourceFilename(filename, "sample.wav");
-    rc = SDL_LoadWAV(filename, &spec, &audio_buf, &audio_len);
-    SDL_free(filename);
-
-    if (rc < 0) {
+    if (!SDL_LoadWAV(filename, &spec, &audio_buf, &audio_len)) {
         SDL_Log("Failed to load '%s': %s", filename, SDL_GetError());
+        SDL_free(filename);
         SDL_Quit();
         return 1;
     }
 
+    SDL_free(filename);
     init_slider(0, "Speed: %3.2fx", 0x0, 1.0f, 0.2f, 5.0f);
     init_slider(1, "Freq: %g", 0x2, (float)spec.freq, 4000.0f, 192000.0f);
     init_slider(2, "Channels: %g", 0x3, (float)spec.channels, 1.0f, 8.0f);
@@ -432,7 +424,7 @@ int main(int argc, char *argv[])
 
     SDL_BindAudioStream(state->audio_id, stream);
 
-#ifdef __EMSCRIPTEN__
+#ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {

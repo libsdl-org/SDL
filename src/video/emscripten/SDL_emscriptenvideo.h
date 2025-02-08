@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -39,12 +39,16 @@ struct SDL_WindowData
 
     float pixel_ratio;
 
-    SDL_bool external_size;
+    bool external_size;
 
     Uint32 fullscreen_mode_flags;
-    SDL_bool fullscreen_resize;
+    bool fullscreen_resize;
 
-    SDL_bool has_pointer_lock;
+    bool has_pointer_lock;
+
+    bool mouse_focus_loss_pending;
 };
 
-#endif /* SDL_emscriptenvideo_h_ */
+bool Emscripten_ShouldSetSwapInterval(int interval);
+
+#endif // SDL_emscriptenvideo_h_

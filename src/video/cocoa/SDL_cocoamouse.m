@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,9 @@
 
 #include "../../events/SDL_mouse_c.h"
 
-/* #define DEBUG_COCOAMOUSE */
+#if 0
+#define DEBUG_COCOAMOUSE
+#endif
 
 #ifdef DEBUG_COCOAMOUSE
 #define DLog(fmt, ...) printf("%s: " fmt "\n", __func__, ##__VA_ARGS__)
@@ -42,7 +44,7 @@
 {
     static NSCursor *invisibleCursor = NULL;
     if (!invisibleCursor) {
-        /* RAW 16x16 transparent GIF */
+        // RAW 16x16 transparent GIF
         static unsigned char cursorBytes[] = {
             0x47, 0x49, 0x46, 0x38, 0x37, 0x61, 0x10, 0x00, 0x10, 0x00, 0x80,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0xF9, 0x04,
@@ -63,25 +65,6 @@
 }
 @end
 
-static SDL_Cursor *Cocoa_CreateDefaultCursor(void)
-{
-    @autoreleasepool {
-        NSCursor *nscursor;
-        SDL_Cursor *cursor = NULL;
-
-        nscursor = [NSCursor arrowCursor];
-
-        if (nscursor) {
-            cursor = SDL_calloc(1, sizeof(*cursor));
-            if (cursor) {
-                cursor->driverdata = (void *)CFBridgingRetain(nscursor);
-            }
-        }
-
-        return cursor;
-    }
-}
-
 static SDL_Cursor *Cocoa_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     @autoreleasepool {
@@ -97,7 +80,7 @@ static SDL_Cursor *Cocoa_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y
         if (nscursor) {
             cursor = SDL_calloc(1, sizeof(*cursor));
             if (cursor) {
-                cursor->driverdata = (void *)CFBridgingRetain(nscursor);
+                cursor->internal = (void *)CFBridgingRetain(nscursor);
             }
         }
 
@@ -112,7 +95,7 @@ static NSCursor *LoadHiddenSystemCursor(NSString *cursorName, SEL fallback)
 {
     NSString *cursorPath = [@"/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors" stringByAppendingPathComponent:cursorName];
     NSDictionary *info = [NSDictionary dictionaryWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"info.plist"]];
-    /* we can't do animation atm.  :/ */
+    // we can't do animation atm.  :/
     const int frames = (int)[[info valueForKey:@"frames"] integerValue];
     NSCursor *cursor;
     NSImage *image = [[NSImage alloc] initWithContentsOfFile:[cursorPath stringByAppendingPathComponent:@"cursor.pdf"]];
@@ -121,7 +104,7 @@ static NSCursor *LoadHiddenSystemCursor(NSString *cursorName, SEL fallback)
     }
 
     if (frames > 1) {
-#ifdef MAC_OS_VERSION_12_0 /* same value as deprecated symbol. */
+#ifdef MAC_OS_VERSION_12_0 // same value as deprecated symbol.
         const NSCompositingOperation operation = NSCompositingOperationCopy;
 #else
         const NSCompositingOperation operation = NSCompositeCopy;
@@ -152,41 +135,65 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         SDL_Cursor *cursor = NULL;
 
         switch (id) {
-        case SDL_SYSTEM_CURSOR_ARROW:
+        case SDL_SYSTEM_CURSOR_DEFAULT:
             nscursor = [NSCursor arrowCursor];
             break;
-        case SDL_SYSTEM_CURSOR_IBEAM:
+        case SDL_SYSTEM_CURSOR_TEXT:
             nscursor = [NSCursor IBeamCursor];
             break;
         case SDL_SYSTEM_CURSOR_CROSSHAIR:
             nscursor = [NSCursor crosshairCursor];
             break;
-        case SDL_SYSTEM_CURSOR_WAIT: /* !!! FIXME: this is more like WAITARROW */
+        case SDL_SYSTEM_CURSOR_WAIT: // !!! FIXME: this is more like WAITARROW
             nscursor = LoadHiddenSystemCursor(@"busybutclickable", @selector(arrowCursor));
             break;
-        case SDL_SYSTEM_CURSOR_WAITARROW: /* !!! FIXME: this is meant to be animated */
+        case SDL_SYSTEM_CURSOR_PROGRESS: // !!! FIXME: this is meant to be animated
             nscursor = LoadHiddenSystemCursor(@"busybutclickable", @selector(arrowCursor));
             break;
-        case SDL_SYSTEM_CURSOR_SIZENWSE:
+        case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
             break;
-        case SDL_SYSTEM_CURSOR_SIZENESW:
+        case SDL_SYSTEM_CURSOR_NESW_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
             break;
-        case SDL_SYSTEM_CURSOR_SIZEWE:
+        case SDL_SYSTEM_CURSOR_EW_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
             break;
-        case SDL_SYSTEM_CURSOR_SIZENS:
+        case SDL_SYSTEM_CURSOR_NS_RESIZE:
             nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
             break;
-        case SDL_SYSTEM_CURSOR_SIZEALL:
+        case SDL_SYSTEM_CURSOR_MOVE:
             nscursor = LoadHiddenSystemCursor(@"move", @selector(closedHandCursor));
             break;
-        case SDL_SYSTEM_CURSOR_NO:
+        case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
             nscursor = [NSCursor operationNotAllowedCursor];
             break;
-        case SDL_SYSTEM_CURSOR_HAND:
+        case SDL_SYSTEM_CURSOR_POINTER:
             nscursor = [NSCursor pointingHandCursor];
+            break;
+        case SDL_SYSTEM_CURSOR_NW_RESIZE:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_N_RESIZE:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_NE_RESIZE:
+            nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_E_RESIZE:
+            nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_SE_RESIZE:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthwestsoutheast", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_S_RESIZE:
+            nscursor = LoadHiddenSystemCursor(@"resizenorthsouth", @selector(resizeUpDownCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_SW_RESIZE:
+            nscursor = LoadHiddenSystemCursor(@"resizenortheastsouthwest", @selector(closedHandCursor));
+            break;
+        case SDL_SYSTEM_CURSOR_W_RESIZE:
+            nscursor = LoadHiddenSystemCursor(@"resizeeastwest", @selector(resizeLeftRightCursor));
             break;
         default:
             SDL_assert(!"Unknown system cursor");
@@ -196,8 +203,8 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         if (nscursor) {
             cursor = SDL_calloc(1, sizeof(*cursor));
             if (cursor) {
-                /* We'll free it later, so retain it here */
-                cursor->driverdata = (void *)CFBridgingRetain(nscursor);
+                // We'll free it later, so retain it here
+                cursor->internal = (void *)CFBridgingRetain(nscursor);
             }
         }
 
@@ -205,28 +212,34 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
     }
 }
 
+static SDL_Cursor *Cocoa_CreateDefaultCursor(void)
+{
+    SDL_SystemCursor id = SDL_GetDefaultSystemCursor();
+    return Cocoa_CreateSystemCursor(id);
+}
+
 static void Cocoa_FreeCursor(SDL_Cursor *cursor)
 {
     @autoreleasepool {
-        CFBridgingRelease(cursor->driverdata);
+        CFBridgingRelease((void *)cursor->internal);
         SDL_free(cursor);
     }
 }
 
-static int Cocoa_ShowCursor(SDL_Cursor *cursor)
+static bool Cocoa_ShowCursor(SDL_Cursor *cursor)
 {
     @autoreleasepool {
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
         for (; window != NULL; window = window->next) {
-            SDL_CocoaWindowData *driverdata = (__bridge SDL_CocoaWindowData *)window->driverdata;
-            if (driverdata) {
-                [driverdata.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
-                                                      withObject:[driverdata.nswindow contentView]
-                                                   waitUntilDone:NO];
+            SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+            if (data) {
+                [data.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
+                                                withObject:[data.nswindow contentView]
+                                             waitUntilDone:NO];
             }
         }
-        return 0;
+        return true;
     }
 }
 
@@ -244,16 +257,16 @@ static SDL_Window *SDL_FindWindowAtPoint(const float x, const float y)
     return NULL;
 }
 
-static int Cocoa_WarpMouseGlobal(float x, float y)
+static bool Cocoa_WarpMouseGlobal(float x, float y)
 {
     CGPoint point;
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse->focus) {
-        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)mouse->focus->driverdata;
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)mouse->focus->internal;
         if ([data.listener isMovingOrFocusClickPending]) {
             DLog("Postponing warp, window being moved or focused.");
             [data.listener setPendingMoveX:x Y:y];
-            return 0;
+            return true;
         }
     }
     point = CGPointMake(x, y);
@@ -278,26 +291,34 @@ static int Cocoa_WarpMouseGlobal(float x, float y)
         SDL_SetMouseFocus(win);
         if (win) {
             SDL_assert(win == mouse->focus);
-            SDL_SendMouseMotion(0, win, mouse->mouseID, 0, x - win->x, y - win->y);
+            SDL_SendMouseMotion(0, win, SDL_GLOBAL_MOUSE_ID, false, x - win->x, y - win->y);
         }
     }
 
-    return 0;
+    return true;
 }
 
-static int Cocoa_WarpMouse(SDL_Window *window, float x, float y)
+static bool Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 {
     return Cocoa_WarpMouseGlobal(window->x + x, window->y + y);
 }
 
-static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
+static bool Cocoa_SetRelativeMouseMode(bool enabled)
 {
-    SDL_Window *window = SDL_GetKeyboardFocus();
     CGError result;
-    SDL_CocoaWindowData *data;
+
     if (enabled) {
+        SDL_Window *window = SDL_GetKeyboardFocus();
         if (window) {
-            /* make sure the mouse isn't at the corner of the window, as this can confuse things if macOS thinks a window resize is happening on the first click. */
+            /* We will re-apply the relative mode when the window finishes being moved,
+             * if it is being moved right now.
+             */
+            SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+            if ([data.listener isMovingOrFocusClickPending]) {
+                return true;
+            }
+
+            // make sure the mouse isn't at the corner of the window, as this can confuse things if macOS thinks a window resize is happening on the first click.
             const CGPoint point = CGPointMake((float)(window->x + (window->w / 2)), (float)(window->y + (window->h / 2)));
             Cocoa_HandleMouseWarp(point.x, point.y);
             CGWarpMouseCursorPosition(point);
@@ -312,21 +333,6 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
         return SDL_SetError("CGAssociateMouseAndMouseCursorPosition() failed");
     }
 
-    /* We will re-apply the non-relative mode when the window gets focus, if it
-     * doesn't have focus right now.
-     */
-    if (!window) {
-        return 0;
-    }
-
-    /* We will re-apply the non-relative mode when the window finishes being moved,
-     * if it is being moved right now.
-     */
-    data = (__bridge SDL_CocoaWindowData *)window->driverdata;
-    if ([data.listener isMovingOrFocusClickPending]) {
-        return 0;
-    }
-
     /* The hide/unhide calls are redundant most of the time, but they fix
      * https://bugzilla.libsdl.org/show_bug.cgi?id=2550
      */
@@ -335,44 +341,44 @@ static int Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     } else {
         [NSCursor unhide];
     }
-    return 0;
+    return true;
 }
 
-static int Cocoa_CaptureMouse(SDL_Window *window)
+static bool Cocoa_CaptureMouse(SDL_Window *window)
 {
     /* our Cocoa event code already tracks the mouse outside the window,
         so all we have to do here is say "okay" and do what we always do. */
-    return 0;
+    return true;
 }
 
-static Uint32 Cocoa_GetGlobalMouseState(float *x, float *y)
+static SDL_MouseButtonFlags Cocoa_GetGlobalMouseState(float *x, float *y)
 {
     const NSUInteger cocoaButtons = [NSEvent pressedMouseButtons];
     const NSPoint cocoaLocation = [NSEvent mouseLocation];
-    Uint32 retval = 0;
+    SDL_MouseButtonFlags result = 0;
 
     *x = cocoaLocation.x;
     *y = (CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y);
 
-    retval |= (cocoaButtons & (1 << 0)) ? SDL_BUTTON_LMASK : 0;
-    retval |= (cocoaButtons & (1 << 1)) ? SDL_BUTTON_RMASK : 0;
-    retval |= (cocoaButtons & (1 << 2)) ? SDL_BUTTON_MMASK : 0;
-    retval |= (cocoaButtons & (1 << 3)) ? SDL_BUTTON_X1MASK : 0;
-    retval |= (cocoaButtons & (1 << 4)) ? SDL_BUTTON_X2MASK : 0;
+    result |= (cocoaButtons & (1 << 0)) ? SDL_BUTTON_LMASK : 0;
+    result |= (cocoaButtons & (1 << 1)) ? SDL_BUTTON_RMASK : 0;
+    result |= (cocoaButtons & (1 << 2)) ? SDL_BUTTON_MMASK : 0;
+    result |= (cocoaButtons & (1 << 3)) ? SDL_BUTTON_X1MASK : 0;
+    result |= (cocoaButtons & (1 << 4)) ? SDL_BUTTON_X2MASK : 0;
 
-    return retval;
+    return result;
 }
 
-int Cocoa_InitMouse(SDL_VideoDevice *_this)
+bool Cocoa_InitMouse(SDL_VideoDevice *_this)
 {
     NSPoint location;
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_MouseData *driverdata = (SDL_MouseData *)SDL_calloc(1, sizeof(SDL_MouseData));
-    if (driverdata == NULL) {
-        return SDL_OutOfMemory();
+    SDL_MouseData *internal = (SDL_MouseData *)SDL_calloc(1, sizeof(SDL_MouseData));
+    if (internal == NULL) {
+        return false;
     }
 
-    mouse->driverdata = driverdata;
+    mouse->internal = internal;
     mouse->CreateCursor = Cocoa_CreateCursor;
     mouse->CreateSystemCursor = Cocoa_CreateSystemCursor;
     mouse->ShowCursor = Cocoa_ShowCursor;
@@ -386,9 +392,9 @@ int Cocoa_InitMouse(SDL_VideoDevice *_this)
     SDL_SetDefaultCursor(Cocoa_CreateDefaultCursor());
 
     location = [NSEvent mouseLocation];
-    driverdata->lastMoveX = location.x;
-    driverdata->lastMoveY = location.y;
-    return 0;
+    internal->lastMoveX = location.x;
+    internal->lastMoveY = location.y;
+    return true;
 }
 
 static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
@@ -403,7 +409,7 @@ static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
     }
 
     for (window = _this->windows; window; window = window->next) {
-        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->driverdata;
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
         if (data && data.nswindow == nswindow) {
             switch ([event type]) {
             case NSEventTypeLeftMouseDown:
@@ -424,16 +430,30 @@ static void Cocoa_HandleTitleButtonEvent(SDL_VideoDevice *_this, NSEvent *event)
     }
 }
 
+static NSWindow *Cocoa_MouseFocus;
+
+NSWindow *Cocoa_GetMouseFocus()
+{
+    return Cocoa_MouseFocus;
+}
+
 void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
 {
+    SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_Mouse *mouse;
-    SDL_MouseData *driverdata;
-    SDL_MouseID mouseID;
+    SDL_MouseData *data;
     NSPoint location;
     CGFloat lastMoveX, lastMoveY;
     float deltaX, deltaY;
-    SDL_bool seenWarp;
+    bool seenWarp;
+
     switch ([event type]) {
+    case NSEventTypeMouseEntered:
+        Cocoa_MouseFocus = [event window];
+        return;
+    case NSEventTypeMouseExited:
+        Cocoa_MouseFocus = NULL;
+        return;
     case NSEventTypeMouseMoved:
     case NSEventTypeLeftMouseDragged:
     case NSEventTypeRightMouseDragged:
@@ -456,33 +476,32 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
         return;
 
     default:
-        /* Ignore any other events. */
+        // Ignore any other events.
         return;
     }
 
     mouse = SDL_GetMouse();
-    driverdata = (SDL_MouseData *)mouse->driverdata;
-    if (!driverdata) {
-        return; /* can happen when returning from fullscreen Space on shutdown */
+    data = (SDL_MouseData *)mouse->internal;
+    if (!data) {
+        return; // can happen when returning from fullscreen Space on shutdown
     }
 
-    mouseID = mouse ? mouse->mouseID : 0;
-    seenWarp = driverdata->seenWarp;
-    driverdata->seenWarp = NO;
+    seenWarp = data->seenWarp;
+    data->seenWarp = NO;
 
     location = [NSEvent mouseLocation];
-    lastMoveX = driverdata->lastMoveX;
-    lastMoveY = driverdata->lastMoveY;
-    driverdata->lastMoveX = location.x;
-    driverdata->lastMoveY = location.y;
+    lastMoveX = data->lastMoveX;
+    lastMoveY = data->lastMoveY;
+    data->lastMoveX = location.x;
+    data->lastMoveY = location.y;
     DLog("Last seen mouse: (%g, %g)", location.x, location.y);
 
-    /* Non-relative movement is handled in -[Cocoa_WindowListener mouseMoved:] */
+    // Non-relative movement is handled in -[SDL3Cocoa_WindowListener mouseMoved:]
     if (!mouse->relative_mode) {
         return;
     }
 
-    /* Ignore events that aren't inside the client area (i.e. title bar.) */
+    // Ignore events that aren't inside the client area (i.e. title bar.)
     if ([event window]) {
         NSRect windowRect = [[[event window] contentView] frame];
         if (!NSMouseInRect([event locationInWindow], windowRect, NO)) {
@@ -494,26 +513,21 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     deltaY = [event deltaY];
 
     if (seenWarp) {
-        deltaX += (lastMoveX - driverdata->lastWarpX);
-        deltaY += ((CGDisplayPixelsHigh(kCGDirectMainDisplay) - lastMoveY) - driverdata->lastWarpY);
+        deltaX += (lastMoveX - data->lastWarpX);
+        deltaY += ((CGDisplayPixelsHigh(kCGDirectMainDisplay) - lastMoveY) - data->lastWarpY);
 
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
 
-    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, 1, deltaX, deltaY);
+    SDL_SendMouseMotion(Cocoa_GetEventTimestamp([event timestamp]), mouse->focus, mouseID, true, deltaX, deltaY);
 }
 
 void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
-    SDL_MouseID mouseID;
+    SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     SDL_MouseWheelDirection direction;
     CGFloat x, y;
-    SDL_Mouse *mouse = SDL_GetMouse();
-    if (!mouse) {
-        return;
-    }
 
-    mouseID = mouse->mouseID;
     x = -[event deltaX];
     y = [event deltaY];
     direction = SDL_MOUSEWHEEL_NORMAL;
@@ -545,10 +559,10 @@ void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y)
     /* This makes Cocoa_HandleMouseEvent ignore the delta caused by the warp,
      * since it gets included in the next movement event.
      */
-    SDL_MouseData *driverdata = (SDL_MouseData *)SDL_GetMouse()->driverdata;
-    driverdata->lastWarpX = x;
-    driverdata->lastWarpY = y;
-    driverdata->seenWarp = SDL_TRUE;
+    SDL_MouseData *data = (SDL_MouseData *)SDL_GetMouse()->internal;
+    data->lastWarpX = x;
+    data->lastWarpY = y;
+    data->seenWarp = true;
 
     DLog("(%g, %g)", x, y);
 }
@@ -557,11 +571,11 @@ void Cocoa_QuitMouse(SDL_VideoDevice *_this)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse) {
-        if (mouse->driverdata) {
-            SDL_free(mouse->driverdata);
-            mouse->driverdata = NULL;
+        if (mouse->internal) {
+            SDL_free(mouse->internal);
+            mouse->internal = NULL;
         }
     }
 }
 
-#endif /* SDL_VIDEO_DRIVER_COCOA */
+#endif // SDL_VIDEO_DRIVER_COCOA

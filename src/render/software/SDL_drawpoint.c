@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,30 +20,30 @@
 */
 #include "SDL_internal.h"
 
-#if SDL_VIDEO_RENDER_SW && !defined(SDL_RENDER_DISABLED)
+#ifdef SDL_VIDEO_RENDER_SW
 
 #include "SDL_draw.h"
 #include "SDL_drawpoint.h"
 
-int SDL_DrawPoint(SDL_Surface *dst, int x, int y, Uint32 color)
+bool SDL_DrawPoint(SDL_Surface *dst, int x, int y, Uint32 color)
 {
-    if (dst == NULL) {
+    if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_DrawPoint(): dst");
     }
 
-    /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->BitsPerPixel < 8) {
+    // This function doesn't work on surfaces < 8 bpp
+    if (dst->fmt->bits_per_pixel < 8) {
         return SDL_SetError("SDL_DrawPoint(): Unsupported surface format");
     }
 
-    /* Perform clipping */
+    // Perform clipping
     if (x < dst->clip_rect.x || y < dst->clip_rect.y ||
         x >= (dst->clip_rect.x + dst->clip_rect.w) ||
         y >= (dst->clip_rect.y + dst->clip_rect.h)) {
-        return 0;
+        return true;
     }
 
-    switch (dst->format->BytesPerPixel) {
+    switch (dst->fmt->bytes_per_pixel) {
     case 1:
         DRAW_FASTSETPIXELXY1(x, y);
         break;
@@ -56,23 +56,22 @@ int SDL_DrawPoint(SDL_Surface *dst, int x, int y, Uint32 color)
         DRAW_FASTSETPIXELXY4(x, y);
         break;
     }
-    return 0;
+    return true;
 }
 
-int SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count,
-                   Uint32 color)
+bool SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count, Uint32 color)
 {
     int minx, miny;
     int maxx, maxy;
     int i;
     int x, y;
 
-    if (dst == NULL) {
+    if (!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_DrawPoints(): dst");
     }
 
-    /* This function doesn't work on surfaces < 8 bpp */
-    if (dst->format->BitsPerPixel < 8) {
+    // This function doesn't work on surfaces < 8 bpp
+    if (dst->fmt->bits_per_pixel < 8) {
         return SDL_SetError("SDL_DrawPoints(): Unsupported surface format");
     }
 
@@ -89,7 +88,7 @@ int SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count,
             continue;
         }
 
-        switch (dst->format->BytesPerPixel) {
+        switch (dst->fmt->bytes_per_pixel) {
         case 1:
             DRAW_FASTSETPIXELXY1(x, y);
             break;
@@ -103,7 +102,7 @@ int SDL_DrawPoints(SDL_Surface *dst, const SDL_Point *points, int count,
             break;
         }
     }
-    return 0;
+    return true;
 }
 
-#endif /* SDL_VIDEO_RENDER_SW && !SDL_RENDER_DISABLED */
+#endif // SDL_VIDEO_RENDER_SW

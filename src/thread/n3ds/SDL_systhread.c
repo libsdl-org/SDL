@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,13 +22,12 @@
 
 #ifdef SDL_THREAD_N3DS
 
-/* Thread management routines for SDL */
+// Thread management routines for SDL
 
 #include "../SDL_systhread.h"
 
-/* N3DS has very limited RAM (128MB), so we put a limit on thread stack size. */
-#define N3DS_THREAD_STACK_SIZE_MAX     (16 * 1024)
-#define N3DS_THREAD_STACK_SIZE_DEFAULT (4 * 1024)
+// N3DS has very limited RAM (128MB), so we set a low default thread stack size.
+#define N3DS_THREAD_STACK_SIZE_DEFAULT (80 * 1024)
 
 #define N3DS_THREAD_PRIORITY_LOW           0x3F /**< Minimum priority */
 #define N3DS_THREAD_PRIORITY_MEDIUM        0x2F /**< Slightly higher than main thread (0x30) */
@@ -43,28 +42,34 @@ static void ThreadEntry(void *arg)
     threadExit(0);
 }
 
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-#error "SDL_PASSED_BEGINTHREAD_ENDTHREAD is not supported on N3DS"
-#endif
 
-int SDL_SYS_CreateThread(SDL_Thread *thread)
+bool SDL_SYS_CreateThread(SDL_Thread *thread,
+                          SDL_FunctionPointer pfnBeginThread,
+                          SDL_FunctionPointer pfnEndThread)
 {
-    s32 priority;
+    s32 priority = 0x30;
+    int cpu = -1;
     size_t stack_size = GetStackSize(thread->stacksize);
+
     svcGetThreadPriority(&priority, CUR_THREAD_HANDLE);
+
+    // prefer putting audio thread on system core
+    if (thread->name && (SDL_strncmp(thread->name, "SDLAudioP", 9) == 0) && R_SUCCEEDED(APT_SetAppCpuTimeLimit(30))) {
+        cpu = 1;
+    }
 
     thread->handle = threadCreate(ThreadEntry,
                                   thread,
                                   stack_size,
                                   priority,
-                                  -1,
+                                  cpu,
                                   false);
 
-    if (thread->handle == NULL) {
+    if (!thread->handle) {
         return SDL_SetError("Couldn't create thread");
     }
 
-    return 0;
+    return true;
 }
 
 static size_t GetStackSize(size_t requested_size)
@@ -73,14 +78,6 @@ static size_t GetStackSize(size_t requested_size)
         return N3DS_THREAD_STACK_SIZE_DEFAULT;
     }
 
-    if (requested_size > N3DS_THREAD_STACK_SIZE_MAX) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_SYSTEM,
-                    "Requested a thread size of %zu,"
-                    " falling back to the maximum supported of %zu\n",
-                    requested_size,
-                    N3DS_THREAD_STACK_SIZE_MAX);
-        requested_size = N3DS_THREAD_STACK_SIZE_MAX;
-    }
     return requested_size;
 }
 
@@ -89,14 +86,14 @@ void SDL_SYS_SetupThread(const char *name)
     return;
 }
 
-SDL_threadID SDL_ThreadID(void)
+SDL_ThreadID SDL_GetCurrentThreadID(void)
 {
     u32 thread_ID = 0;
     svcGetThreadId(&thread_ID, CUR_THREAD_HANDLE);
-    return (SDL_threadID)thread_ID;
+    return (SDL_ThreadID)thread_ID;
 }
 
-int SDL_SYS_SetThreadPriority(SDL_ThreadPriority sdl_priority)
+bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority sdl_priority)
 {
     s32 svc_priority;
     switch (sdl_priority) {
@@ -115,7 +112,10 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority sdl_priority)
     default:
         svc_priority = N3DS_THREAD_PRIORITY_MEDIUM;
     }
-    return (int)svcSetThreadPriority(CUR_THREAD_HANDLE, svc_priority);
+    if (svcSetThreadPriority(CUR_THREAD_HANDLE, svc_priority) < 0) {
+        return SDL_SetError("svcSetThreadPriority failed");
+    }
+    return true;
 }
 
 void SDL_SYS_WaitThread(SDL_Thread *thread)
@@ -126,7 +126,7 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
       Detached threads can be waited on, but should NOT be cleaned manually
       as it would result in a fatal error.
     */
-    if (R_SUCCEEDED(res) && SDL_AtomicGet(&thread->state) != SDL_THREAD_STATE_DETACHED) {
+    if (R_SUCCEEDED(res) && SDL_GetThreadState(thread) != SDL_THREAD_DETACHED) {
         threadFree(thread->handle);
     }
 }
@@ -136,4 +136,4 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
     threadDetach(thread->handle);
 }
 
-#endif /* SDL_THREAD_N3DS */
+#endif // SDL_THREAD_N3DS

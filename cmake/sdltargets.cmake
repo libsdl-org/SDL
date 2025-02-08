@@ -28,7 +28,7 @@ function(sdl_sources)
   set_property(TARGET SDL3-collector APPEND PROPERTY INTERFACE_SOURCES ${ARGS_SHARED} ${ARGS_STATIC} ${ARGS_UNPARSED_ARGUMENTS})
 endfunction()
 
-# Use sdl_generic_link_dependency to describe a private depency of SDL3. All options are optional.
+# Use sdl_generic_link_dependency to describe a private dependency. All options are optional.
 # Users should use sdl_link_dependency and sdl_test_link_dependency instead
 # - SHARED_TARGETS: shared targets to add this dependency to
 # - STATIC_TARGETS: static targets to add this dependency to
@@ -36,12 +36,13 @@ endfunction()
 # - INCLUDES: the include directories of the dependency
 # - PKG_CONFIG_PREFIX: name of the prefix, when using the functions of FindPkgConfig
 # - PKG_CONFIG_SPECS: pkg-config spec, used as argument for the functions of FindPkgConfig
-# - PKG_CONFIG_LIBS: libs that will only end up in the Libs.private of sdl3.pc
+# - PKG_CONFIG_LIBS: libs that will only end up in the Libs.private of the .pc file
+# - PKG_CONFIG_LINK_OPTIONS: ldflags that will only end up in the Libs.private of sdl3.pc
 # - CMAKE_MODULE: CMake module name of the dependency, used as argument of find_package
-# - LIBS: list of libraries to link to
-# - LINK_OPTIONS: list of link options
+# - LIBS: list of libraries to link to (cmake and pkg-config)
+# - LINK_OPTIONS: list of link options (also used in pc file, unless PKG_CONFIG_LINK_OPTION is used)
 function(sdl_generic_link_dependency ID)
-  cmake_parse_arguments(ARGS "" "COLLECTOR" "SHARED_TARGETS;STATIC_TARGETS;INCLUDES;PKG_CONFIG_LIBS;PKG_CONFIG_PREFIX;PKG_CONFIG_SPECS;CMAKE_MODULE;LIBS;LINK_OPTIONS" ${ARGN})
+  cmake_parse_arguments(ARGS "" "COLLECTOR" "SHARED_TARGETS;STATIC_TARGETS;INCLUDES;PKG_CONFIG_LINK_OPTIONS;PKG_CONFIG_LIBS;PKG_CONFIG_PREFIX;PKG_CONFIG_SPECS;CMAKE_MODULE;LIBS;LINK_OPTIONS" ${ARGN})
   foreach(target IN LISTS ARGS_SHARED_TARGETS)
     if(TARGET ${target})
       target_include_directories(${target} SYSTEM PRIVATE ${ARGS_INCLUDES})
@@ -63,6 +64,7 @@ function(sdl_generic_link_dependency ID)
   set_property(TARGET ${ARGS_COLLECTOR} APPEND PROPERTY INTERFACE_SDL_DEP_${ID}_PKG_CONFIG_PREFIX ${ARGS_PKG_CONFIG_PREFIX})
   set_property(TARGET ${ARGS_COLLECTOR} APPEND PROPERTY INTERFACE_SDL_DEP_${ID}_PKG_CONFIG_SPECS ${ARGS_PKG_CONFIG_SPECS})
   set_property(TARGET ${ARGS_COLLECTOR} APPEND PROPERTY INTERFACE_SDL_DEP_${ID}_PKG_CONFIG_LIBS ${ARGS_PKG_CONFIG_LIBS})
+  set_property(TARGET ${ARGS_COLLECTOR} APPEND PROPERTY INTERFACE_SDL_DEP_${ID}_PKG_CONFIG_LINK_OPTIONS ${ARGS_PKG_CONFIG_LINK_OPTIONS})
   set_property(TARGET ${ARGS_COLLECTOR} APPEND PROPERTY INTERFACE_SDL_DEP_${ID}_LIBS ${ARGS_LIBS})
   set_property(TARGET ${ARGS_COLLECTOR} APPEND PROPERTY INTERFACE_SDL_DEP_${ID}_LINK_OPTIONS ${ARGS_LINK_OPTIONS})
   set_property(TARGET ${ARGS_COLLECTOR} APPEND PROPERTY INTERFACE_SDL_DEP_${ID}_CMAKE_MODULE ${ARGS_CMAKE_MODULE})
@@ -133,7 +135,7 @@ function(sdl_compile_options)
   endif()
 endfunction()
 
-# Use sdl_link_dependency to add incude directories to the SDL3 libraries.
+# Use sdl_link_dependency to add include directories to the SDL3 libraries.
 function(sdl_include_directories)
   cmake_parse_arguments(ARGS "SYSTEM;BEFORE;AFTER;PRIVATE;PUBLIC;INTERFACE;NO_EXPORT" "" "" ${ARGN})
   set(system "")
@@ -294,14 +296,19 @@ function(configure_sdl3_pc)
     get_property(CMAKE_MODULE       TARGET SDL3-collector PROPERTY INTERFACE_SDL_DEP_${ID}_CMAKE_MODULE)
     get_property(PKG_CONFIG_SPECS   TARGET SDL3-collector PROPERTY INTERFACE_SDL_DEP_${ID}_PKG_CONFIG_SPECS)
     get_property(PKG_CONFIG_LIBS    TARGET SDL3-collector PROPERTY INTERFACE_SDL_DEP_${ID}_PKG_CONFIG_LIBS)
+    get_property(PKG_CONFIG_LDFLAGS TARGET SDL3-collector PROPERTY INTERFACE_SDL_DEP_${ID}_PKG_CONFIG_LINK_OPTIONS)
     get_property(LIBS               TARGET SDL3-collector PROPERTY INTERFACE_SDL_DEP_${ID}_LIBS)
     get_property(LINK_OPTIONS       TARGET SDL3-collector PROPERTY INTERFACE_SDL_DEP_${ID}_LINK_OPTIONS)
 
     list(APPEND private_requires ${PKG_CONFIG_SPECS})
     list(APPEND private_libs ${PKG_CONFIG_LIBS})
-    if(NOT PKG_CONFIG_SPECS AND NOT CMAKE_MODULE)
-      list(APPEND private_libs ${LIBS})
+    if(PKG_CONFIG_SPECS OR PKG_CONFIG_LIBS OR PKG_CONFIG_LDFLAGS)
+      list(APPEND private_ldflags ${PKG_CONFIG_LDFLAGS})
+    else()
       list(APPEND private_ldflags ${LINK_OPTIONS})
+      if(NOT CMAKE_MODULE)
+        list(APPEND private_libs ${LIBS})
+      endif()
     endif()
   endforeach()
 
@@ -331,10 +338,28 @@ function(configure_sdl3_pc)
     message(STATUS "\"pkg-config --static --libs sdl3\" will return invalid information")
   endif()
 
-  # Calculate prefix relative to location of sdl3.pc
-  file(RELATIVE_PATH SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG "${CMAKE_INSTALL_PREFIX}/${SDL_PKGCONFIG_INSTALLDIR}" "${CMAKE_INSTALL_PREFIX}")
-  string(REGEX REPLACE "[/]+$" "" SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG "${SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG}")
-  set(SDL_PKGCONFIG_PREFIX "\${pcfiledir}/${SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG}")
+  if(SDL_RELOCATABLE)
+    # Calculate prefix relative to location of sdl3.pc
+    if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_PREFIX}")
+      set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}")
+    endif()
+    file(RELATIVE_PATH SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG "${CMAKE_INSTALL_PREFIX}/${SDL_PKGCONFIG_INSTALLDIR}" "${CMAKE_INSTALL_PREFIX}")
+    string(REGEX REPLACE "[/]+$" "" SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG "${SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG}")
+    set(SDL_PKGCONFIG_PREFIX "\${pcfiledir}/${SDL_PATH_PREFIX_RELATIVE_TO_PKGCONFIG}")
+  else()
+    set(SDL_PKGCONFIG_PREFIX "${CMAKE_INSTALL_PREFIX}")
+  endif()
+
+  if(IS_ABSOLUTE "${CMAKE_INSTALL_INCLUDEDIR}")
+    set(INCLUDEDIR_FOR_PKG_CONFIG "${CMAKE_INSTALL_INCLUDEDIR}")
+  else()
+    set(INCLUDEDIR_FOR_PKG_CONFIG "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
+  if(IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
+    set(LIBDIR_FOR_PKG_CONFIG "${CMAKE_INSTALL_LIBDIR}")
+  else()
+    set(LIBDIR_FOR_PKG_CONFIG "\${prefix}/${CMAKE_INSTALL_LIBDIR}")
+  endif()
 
   configure_file("${SDL3_SOURCE_DIR}/cmake/sdl3.pc.in" "${SDL3_BINARY_DIR}/sdl3.pc" @ONLY)
 endfunction()

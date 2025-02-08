@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,18 +20,27 @@
 */
 #include "SDL_internal.h"
 
-#ifndef __LINUX__
+#ifndef SDL_VIDEO_DRIVER_X11
 
-DECLSPEC int SDLCALL SDL_LinuxSetThreadPriority(Sint64 threadID, int priority);
-int SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
+SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);
+void SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata)
+{
+}
+
+#endif
+
+#ifndef SDL_PLATFORM_LINUX
+
+SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
+bool SDL_SetLinuxThreadPriority(Sint64 threadID, int priority)
 {
     (void)threadID;
     (void)priority;
     return SDL_Unsupported();
 }
 
-DECLSPEC int SDLCALL SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
-int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
+SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy);
+bool SDL_SetLinuxThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int schedPolicy)
 {
     (void)threadID;
     (void)sdlPriority;
@@ -41,26 +50,36 @@ int SDL_LinuxSetThreadPriorityAndPolicy(Sint64 threadID, int sdlPriority, int sc
 
 #endif
 
-#ifndef __GDK__
+#ifndef SDL_PLATFORM_GDK
 
-DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
+SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 void SDL_GDKSuspendComplete(void)
 {
     SDL_Unsupported();
 }
 
-DECLSPEC int SDLCALL SDL_GDKGetDefaultUser(void *outUserHandle); /* XUserHandle *outUserHandle */
-int SDL_GDKGetDefaultUser(void *outUserHandle)
+SDL_DECLSPEC bool SDLCALL SDL_GetGDKDefaultUser(void *outUserHandle); /* XUserHandle *outUserHandle */
+bool SDL_GetGDKDefaultUser(void *outUserHandle)
 {
     return SDL_Unsupported();
 }
 
+SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(SDL_GPUDevice *device);
+void SDL_GDKSuspendGPU(SDL_GPUDevice *device)
+{
+}
+
+SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(SDL_GPUDevice *device);
+void SDL_GDKResumeGPU(SDL_GPUDevice *device)
+{
+}
+
 #endif
 
-#if !(defined(__WIN32__) || defined(__WINRT__) || defined(__GDK__))
+#if !defined(SDL_PLATFORM_WINDOWS)
 
-DECLSPEC int SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
-int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
+SDL_DECLSPEC bool SDLCALL SDL_RegisterApp(const char *name, Uint32 style, void *hInst);
+bool SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
 {
     (void)name;
     (void)style;
@@ -68,7 +87,7 @@ int SDL_RegisterApp(const char *name, Uint32 style, void *hInst)
     return SDL_Unsupported();
 }
 
-DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(void *callback, void *userdata); /* SDL_WindowsMessageHook callback */
+SDL_DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(void *callback, void *userdata); // SDL_WindowsMessageHook callback
 void SDL_SetWindowsMessageHook(void *callback, void *userdata)
 {
     (void)callback;
@@ -76,7 +95,7 @@ void SDL_SetWindowsMessageHook(void *callback, void *userdata)
     SDL_Unsupported();
 }
 
-DECLSPEC void SDLCALL SDL_UnregisterApp(void);
+SDL_DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 void SDL_UnregisterApp(void)
 {
     SDL_Unsupported();
@@ -84,93 +103,76 @@ void SDL_UnregisterApp(void)
 
 #endif
 
-#ifndef __WINRT__
+#ifndef SDL_PLATFORM_ANDROID
 
-/* Returns SDL_WinRT_DeviceFamily enum */
-DECLSPEC int SDLCALL SDL_WinRTGetDeviceFamily(void);
-int SDL_WinRTGetDeviceFamily()
-{
-    SDL_Unsupported();
-    return 0; /* SDL_WINRT_DEVICEFAMILY_UNKNOWN */
-}
-
-DECLSPEC const wchar_t *SDLCALL SDL_WinRTGetFSPathUNICODE(int pathType); /* SDL_WinRT_Path pathType */
-const wchar_t *SDL_WinRTGetFSPathUNICODE(int pathType)
-{
-    (void)pathType;
-    SDL_Unsupported();
-    return NULL;
-}
-
-DECLSPEC const char *SDLCALL SDL_WinRTGetFSPathUTF8(int pathType); /* SDL_WinRT_Path pathType */
-const char *SDL_WinRTGetFSPathUTF8(int pathType)
-{
-    (void)pathType;
-    SDL_Unsupported();
-    return NULL;
-}
-#endif
-
-#ifndef __ANDROID__
-
-DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
-void SDL_AndroidBackButton()
+SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
+void SDL_SendAndroidBackButton(void)
 {
     SDL_Unsupported();
 }
 
-DECLSPEC void *SDLCALL SDL_AndroidGetActivity(void);
-void *SDL_AndroidGetActivity()
+SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);
+void *SDL_GetAndroidActivity(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-DECLSPEC const char *SDLCALL SDL_AndroidGetExternalStoragePath(void);
-const char* SDL_AndroidGetExternalStoragePath()
+SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
+const char* SDL_GetAndroidCachePath(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(Uint32 *state);
-int SDL_AndroidGetExternalStorageState(Uint32 *state)
-{
-    (void)state;
-    return SDL_Unsupported();
-}
-DECLSPEC const char *SDLCALL SDL_AndroidGetInternalStoragePath(void);
-const char *SDL_AndroidGetInternalStoragePath()
+
+SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void);
+const char* SDL_GetAndroidExternalStoragePath(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-DECLSPEC void *SDLCALL SDL_AndroidGetJNIEnv(void);
-void *SDL_AndroidGetJNIEnv()
+SDL_DECLSPEC Uint32 SDLCALL SDL_GetAndroidExternalStorageState(void);
+Uint32 SDL_GetAndroidExternalStorageState(void)
+{
+    SDL_Unsupported();
+    return 0;
+}
+SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidInternalStoragePath(void);
+const char *SDL_GetAndroidInternalStoragePath(void)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-DECLSPEC SDL_bool SDLCALL SDL_AndroidRequestPermission(const char *permission);
-SDL_bool SDL_AndroidRequestPermission(const char *permission)
+SDL_DECLSPEC void * SDLCALL SDL_GetAndroidJNIEnv(void);
+void *SDL_GetAndroidJNIEnv(void)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, const char *permission, bool granted);
+SDL_DECLSPEC bool SDLCALL SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata);
+bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPermissionCallback cb, void *userdata)
 {
     (void)permission;
-    SDL_Unsupported();
-    return SDL_FALSE;
+    (void)cb;
+    (void)userdata;
+    return SDL_Unsupported();
 }
 
-DECLSPEC int SDLCALL SDL_AndroidSendMessage(Uint32 command, int param);
-int SDL_AndroidSendMessage(Uint32 command, int param)
+SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int param);
+bool SDL_SendAndroidMessage(Uint32 command, int param)
 {
     (void)command;
     (void)param;
     return SDL_Unsupported();
 }
 
-DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset);
-int SDL_AndroidShowToast(const char* message, int duration, int gravity, int xoffset, int yoffset)
+SDL_DECLSPEC bool SDLCALL SDL_ShowAndroidToast(const char *message, int duration, int gravity, int xoffset, int yoffset);
+bool SDL_ShowAndroidToast(const char* message, int duration, int gravity, int xoffset, int yoffset)
 {
     (void)message;
     (void)duration;
@@ -180,39 +182,32 @@ int SDL_AndroidShowToast(const char* message, int duration, int gravity, int xof
     return SDL_Unsupported();
 }
 
-DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
-int SDL_GetAndroidSDKVersion()
+SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
+int SDL_GetAndroidSDKVersion(void)
 {
     return SDL_Unsupported();
 }
 
-DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
-SDL_bool SDL_IsAndroidTV()
+SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
+bool SDL_IsChromebook(void)
 {
     SDL_Unsupported();
-    return SDL_FALSE;
+    return false;
 }
 
-DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
-SDL_bool SDL_IsChromebook()
+SDL_DECLSPEC bool SDLCALL SDL_IsDeXMode(void);
+bool SDL_IsDeXMode(void)
 {
     SDL_Unsupported();
-    return SDL_FALSE;
+    return false;
 }
 
-DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
-SDL_bool SDL_IsDeXMode(void)
-{
-    SDL_Unsupported();
-    return SDL_FALSE;
-}
-
-DECLSPEC Sint32 SDLCALL JNI_OnLoad(void *vm, void *reserved);
+SDL_DECLSPEC Sint32 SDLCALL JNI_OnLoad(void *vm, void *reserved);
 Sint32 JNI_OnLoad(void *vm, void *reserved)
 {
     (void)vm;
     (void)reserved;
     SDL_Unsupported();
-    return -1; /* JNI_ERR */
+    return -1; // JNI_ERR
 }
 #endif

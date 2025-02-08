@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,9 +29,10 @@
 #include "SDL_emscriptenmouse.h"
 #include "SDL_emscriptenvideo.h"
 
+#include "../SDL_video_c.h"
 #include "../../events/SDL_mouse_c.h"
 
-/* older Emscriptens don't have this, but we need to for wasm64 compatibility. */
+// older Emscriptens don't have this, but we need to for wasm64 compatibility.
 #ifndef MAIN_THREAD_EM_ASM_PTR
     #ifdef __wasm64__
         #error You need to upgrade your Emscripten compiler to support wasm64
@@ -40,33 +41,30 @@
     #endif
 #endif
 
-static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, SDL_bool is_custom)
+static SDL_Cursor *Emscripten_CreateCursorFromString(const char *cursor_str, bool is_custom)
 {
-    SDL_Cursor *cursor;
-    Emscripten_CursorData *curdata;
-
-    cursor = SDL_calloc(1, sizeof(SDL_Cursor));
+    SDL_CursorData *curdata;
+    SDL_Cursor *cursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (cursor) {
-        curdata = (Emscripten_CursorData *)SDL_calloc(1, sizeof(*curdata));
-        if (curdata == NULL) {
-            SDL_OutOfMemory();
+        curdata = (SDL_CursorData *)SDL_calloc(1, sizeof(*curdata));
+        if (!curdata) {
             SDL_free(cursor);
             return NULL;
         }
 
         curdata->system_cursor = cursor_str;
         curdata->is_custom = is_custom;
-        cursor->driverdata = curdata;
-    } else {
-        SDL_OutOfMemory();
+        cursor->internal = curdata;
     }
 
     return cursor;
 }
 
-static SDL_Cursor *Emscripten_CreateDefaultCursor()
+static SDL_Cursor *Emscripten_CreateDefaultCursor(void)
 {
-    return Emscripten_CreateCursorFromString("default", SDL_FALSE);
+    SDL_SystemCursor id = SDL_GetDefaultSystemCursor();
+    const char *cursor_name = SDL_GetCSSCursorName(id, NULL);
+    return Emscripten_CreateCursorFromString(cursor_name, false);
 }
 
 EM_JS_DEPS(sdlmouse, "$stringToUTF8,$UTF8ToString");
@@ -76,13 +74,13 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
     const char *cursor_url = NULL;
     SDL_Surface *conv_surf;
 
-    conv_surf = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ABGR8888);
+    conv_surf = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ABGR8888);
 
-    if (conv_surf == NULL) {
+    if (!conv_surf) {
         return NULL;
     }
 
-    /* *INDENT-OFF* */ /* clang-format off */
+    /* *INDENT-OFF* */ // clang-format off
     cursor_url = (const char *)MAIN_THREAD_EM_ASM_PTR({
         var w = $0;
         var h = $1;
@@ -98,7 +96,7 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
 
         var image = ctx.createImageData(w, h);
         var data = image.data;
-        var src = pixels >> 2;
+        var src = pixels / 4;
 
         var data32 = new Int32Array(data.buffer);
         data32.set(HEAP32.subarray(src, src + data32.length));
@@ -108,139 +106,97 @@ static SDL_Cursor *Emscripten_CreateCursor(SDL_Surface *surface, int hot_x, int 
             ? "url(" + canvas.toDataURL() + "), auto"
             : "url(" + canvas.toDataURL() + ") " + hot_x + " " + hot_y + ", auto";
 
-        var urlBuf = _malloc(url.length + 1);
+        var urlBuf = _SDL_malloc(url.length + 1);
         stringToUTF8(url, urlBuf, url.length + 1);
 
         return urlBuf;
     }, surface->w, surface->h, hot_x, hot_y, conv_surf->pixels);
-    /* *INDENT-ON* */ /* clang-format on */
+    /* *INDENT-ON* */ // clang-format on
 
     SDL_DestroySurface(conv_surf);
 
-    return Emscripten_CreateCursorFromString(cursor_url, SDL_TRUE);
+    return Emscripten_CreateCursorFromString(cursor_url, true);
 }
 
 static SDL_Cursor *Emscripten_CreateSystemCursor(SDL_SystemCursor id)
 {
-    const char *cursor_name = NULL;
+    const char *cursor_name = SDL_GetCSSCursorName(id, NULL);
 
-    switch (id) {
-    case SDL_SYSTEM_CURSOR_ARROW:
-        cursor_name = "default";
-        break;
-    case SDL_SYSTEM_CURSOR_IBEAM:
-        cursor_name = "text";
-        break;
-    case SDL_SYSTEM_CURSOR_WAIT:
-        cursor_name = "wait";
-        break;
-    case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        cursor_name = "crosshair";
-        break;
-    case SDL_SYSTEM_CURSOR_WAITARROW:
-        cursor_name = "progress";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENWSE:
-        cursor_name = "nwse-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENESW:
-        cursor_name = "nesw-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEWE:
-        cursor_name = "ew-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZENS:
-        cursor_name = "ns-resize";
-        break;
-    case SDL_SYSTEM_CURSOR_SIZEALL:
-        cursor_name = "move";
-        break;
-    case SDL_SYSTEM_CURSOR_NO:
-        cursor_name = "not-allowed";
-        break;
-    case SDL_SYSTEM_CURSOR_HAND:
-        cursor_name = "pointer";
-        break;
-    default:
-        SDL_assert(0);
-        return NULL;
-    }
-
-    return Emscripten_CreateCursorFromString(cursor_name, SDL_FALSE);
+    return Emscripten_CreateCursorFromString(cursor_name, false);
 }
 
 static void Emscripten_FreeCursor(SDL_Cursor *cursor)
 {
-    Emscripten_CursorData *curdata;
+    SDL_CursorData *curdata;
     if (cursor) {
-        curdata = (Emscripten_CursorData *)cursor->driverdata;
+        curdata = cursor->internal;
 
-        if (curdata != NULL) {
+        if (curdata) {
             if (curdata->is_custom) {
                 SDL_free((char *)curdata->system_cursor);
             }
-            SDL_free(cursor->driverdata);
+            SDL_free(cursor->internal);
         }
 
         SDL_free(cursor);
     }
 }
 
-static int Emscripten_ShowCursor(SDL_Cursor *cursor)
+static bool Emscripten_ShowCursor(SDL_Cursor *cursor)
 {
-    Emscripten_CursorData *curdata;
+    SDL_CursorData *curdata;
     if (SDL_GetMouseFocus() != NULL) {
-        if (cursor && cursor->driverdata) {
-            curdata = (Emscripten_CursorData *)cursor->driverdata;
+        if (cursor && cursor->internal) {
+            curdata = cursor->internal;
 
             if (curdata->system_cursor) {
-                /* *INDENT-OFF* */ /* clang-format off */
+                /* *INDENT-OFF* */ // clang-format off
                 MAIN_THREAD_EM_ASM({
                     if (Module['canvas']) {
                         Module['canvas'].style['cursor'] = UTF8ToString($0);
                     }
                 }, curdata->system_cursor);
-                /* *INDENT-ON* */ /* clang-format on */
+                /* *INDENT-ON* */ // clang-format on
             }
         } else {
-            /* *INDENT-OFF* */ /* clang-format off */
+            /* *INDENT-OFF* */ // clang-format off
             MAIN_THREAD_EM_ASM(
                 if (Module['canvas']) {
                     Module['canvas'].style['cursor'] = 'none';
                 }
             );
-            /* *INDENT-ON* */ /* clang-format on */
+            /* *INDENT-ON* */ // clang-format on
         }
     }
-    return 0;
+    return true;
 }
 
-static int Emscripten_SetRelativeMouseMode(SDL_bool enabled)
+static bool Emscripten_SetRelativeMouseMode(bool enabled)
 {
     SDL_Window *window;
     SDL_WindowData *window_data;
 
-    /* TODO: pointer lock isn't actually enabled yet */
+    // TODO: pointer lock isn't actually enabled yet
     if (enabled) {
         window = SDL_GetMouseFocus();
-        if (window == NULL) {
-            return -1;
+        if (!window) {
+            return false;
         }
 
-        window_data = window->driverdata;
+        window_data = window->internal;
 
         if (emscripten_request_pointerlock(window_data->canvas_id, 1) >= EMSCRIPTEN_RESULT_SUCCESS) {
-            return 0;
+            return true;
         }
     } else {
         if (emscripten_exit_pointerlock() >= EMSCRIPTEN_RESULT_SUCCESS) {
-            return 0;
+            return true;
         }
     }
-    return -1;
+    return false;
 }
 
-void Emscripten_InitMouse()
+void Emscripten_InitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -253,8 +209,8 @@ void Emscripten_InitMouse()
     SDL_SetDefaultCursor(Emscripten_CreateDefaultCursor());
 }
 
-void Emscripten_FiniMouse()
+void Emscripten_QuitMouse(void)
 {
 }
 
-#endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
+#endif // SDL_VIDEO_DRIVER_EMSCRIPTEN

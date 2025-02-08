@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,8 +24,6 @@
 #define SDL_hid_h_
 
 #include "SDL_windows.h"
-
-#ifndef __WINRT__
 
 typedef LONG NTSTATUS;
 typedef USHORT USAGE;
@@ -190,15 +188,15 @@ typedef struct
 #define HIDP_STATUS_REPORT_DOES_NOT_EXIST   HIDP_ERROR_CODES(0xC, 0x0010)
 #define HIDP_STATUS_NOT_IMPLEMENTED         HIDP_ERROR_CODES(0xC, 0x0020)
 
-extern int WIN_LoadHIDDLL(void);
+extern bool WIN_LoadHIDDLL(void);
 extern void WIN_UnloadHIDDLL(void);
 
-typedef BOOLEAN(WINAPI *HidD_GetString_t)(HANDLE HidDeviceObject, PVOID Buffer, ULONG BufferLength);
-typedef NTSTATUS(WINAPI *HidP_GetCaps_t)(PHIDP_PREPARSED_DATA PreparsedData, PHIDP_CAPS Capabilities);
-typedef NTSTATUS(WINAPI *HidP_GetButtonCaps_t)(HIDP_REPORT_TYPE ReportType, PHIDP_BUTTON_CAPS ButtonCaps, PUSHORT ButtonCapsLength, PHIDP_PREPARSED_DATA PreparsedData);
-typedef NTSTATUS(WINAPI *HidP_GetValueCaps_t)(HIDP_REPORT_TYPE ReportType, PHIDP_VALUE_CAPS ValueCaps, PUSHORT ValueCapsLength, PHIDP_PREPARSED_DATA PreparsedData);
-typedef ULONG(WINAPI *HidP_MaxDataListLength_t)(HIDP_REPORT_TYPE ReportType, PHIDP_PREPARSED_DATA PreparsedData);
-typedef NTSTATUS(WINAPI *HidP_GetData_t)(HIDP_REPORT_TYPE ReportType, PHIDP_DATA DataList, PULONG DataLength, PHIDP_PREPARSED_DATA PreparsedData, PCHAR Report, ULONG ReportLength);
+typedef BOOLEAN (WINAPI *HidD_GetString_t)(HANDLE HidDeviceObject, PVOID Buffer, ULONG BufferLength);
+typedef NTSTATUS (WINAPI *HidP_GetCaps_t)(PHIDP_PREPARSED_DATA PreparsedData, PHIDP_CAPS Capabilities);
+typedef NTSTATUS (WINAPI *HidP_GetButtonCaps_t)(HIDP_REPORT_TYPE ReportType, PHIDP_BUTTON_CAPS ButtonCaps, PUSHORT ButtonCapsLength, PHIDP_PREPARSED_DATA PreparsedData);
+typedef NTSTATUS (WINAPI *HidP_GetValueCaps_t)(HIDP_REPORT_TYPE ReportType, PHIDP_VALUE_CAPS ValueCaps, PUSHORT ValueCapsLength, PHIDP_PREPARSED_DATA PreparsedData);
+typedef ULONG (WINAPI *HidP_MaxDataListLength_t)(HIDP_REPORT_TYPE ReportType, PHIDP_PREPARSED_DATA PreparsedData);
+typedef NTSTATUS (WINAPI *HidP_GetData_t)(HIDP_REPORT_TYPE ReportType, PHIDP_DATA DataList, PULONG DataLength, PHIDP_PREPARSED_DATA PreparsedData, PCHAR Report, ULONG ReportLength);
 
 extern HidD_GetString_t SDL_HidD_GetManufacturerString;
 extern HidD_GetString_t SDL_HidD_GetProductString;
@@ -208,6 +206,8 @@ extern HidP_GetValueCaps_t SDL_HidP_GetValueCaps;
 extern HidP_MaxDataListLength_t SDL_HidP_MaxDataListLength;
 extern HidP_GetData_t SDL_HidP_GetData;
 
-#endif /* !__WINRT__ */
+void WIN_InitDeviceNotification(void);
+Uint64 WIN_GetLastDeviceNotification(void);
+void WIN_QuitDeviceNotification(void);
 
-#endif /* SDL_hid_h_ */
+#endif // SDL_hid_h_

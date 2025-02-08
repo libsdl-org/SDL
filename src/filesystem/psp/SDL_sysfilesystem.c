@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,60 +20,70 @@
 */
 #include "SDL_internal.h"
 
-#include <sys/stat.h>
-#include <unistd.h>
-
 #ifdef SDL_FILESYSTEM_PSP
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
 
-char *SDL_GetBasePath(void)
+#include "../SDL_sysfilesystem.h"
+
+#include <sys/stat.h>
+#include <unistd.h>
+
+char *SDL_SYS_GetBasePath(void)
 {
-    char *retval = NULL;
+    char *result = NULL;
     size_t len;
     char cwd[FILENAME_MAX];
 
     getcwd(cwd, sizeof(cwd));
     len = SDL_strlen(cwd) + 2;
-    retval = (char *)SDL_malloc(len);
-    SDL_snprintf(retval, len, "%s/", cwd);
+    result = (char *)SDL_malloc(len);
+    if (result) {
+        SDL_snprintf(result, len, "%s/", cwd);
+    }
 
-    return retval;
+    return result;
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
-    char *retval = NULL;
+    char *result = NULL;
     size_t len;
-    char *base = SDL_GetBasePath();
-    if (app == NULL) {
+    if (!app) {
         SDL_InvalidParamError("app");
         return NULL;
     }
-    if (org == NULL) {
+
+    const char *base = SDL_GetBasePath();
+    if (!base) {
+        return NULL;
+    }
+
+    if (!org) {
         org = "";
     }
 
     len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
-    retval = (char *)SDL_malloc(len);
+    result = (char *)SDL_malloc(len);
+    if (result) {
+        if (*org) {
+            SDL_snprintf(result, len, "%s%s/%s/", base, org, app);
+        } else {
+            SDL_snprintf(result, len, "%s%s/", base, app);
+        }
 
-    if (*org) {
-        SDL_snprintf(retval, len, "%s%s/%s/", base, org, app);
-    } else {
-        SDL_snprintf(retval, len, "%s%s/", base, app);
+        mkdir(result, 0755);
     }
-    SDL_free(base);
 
-    mkdir(retval, 0755);
-    return retval;
+    return result;
 }
 
-/* TODO */
-char *SDL_GetUserFolder(SDL_Folder folder)
+// TODO
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     SDL_Unsupported();
     return NULL;
 }
 
-#endif /* SDL_FILESYSTEM_PSP */
+#endif // SDL_FILESYSTEM_PSP

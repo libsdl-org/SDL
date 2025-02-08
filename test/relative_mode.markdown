@@ -42,7 +42,7 @@ Code
         SDL_Init(SDL_INIT_VIDEO);
 
         win = SDL_CreateWindow("Test", 800, 600, 0);
-        SDL_SetRelativeMouseMode(SDL_TRUE);
+        SDL_SetWindowRelativeMouseMode(win, true);
 
         while (1)
         {

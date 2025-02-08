@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,9 +35,9 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return SDL_US_PER_SECOND;
 }
 
-void SDL_DelayNS(Uint64 ns)
+void SDL_SYS_DelayNS(Uint64 ns)
 {
     snooze((bigtime_t)SDL_NS_TO_US(ns));
 }
 
-#endif /* SDL_TIMER_HAIKU */
+#endif // SDL_TIMER_HAIKU

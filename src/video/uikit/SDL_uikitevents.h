@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,16 +25,16 @@
 
 #include "../SDL_sysvideo.h"
 
+extern void SDL_UpdateLifecycleObserver(void);
+
 extern Uint64 UIKit_GetEventTimestamp(NSTimeInterval nsTimestamp);
 extern void UIKit_PumpEvents(SDL_VideoDevice *_this);
 
 extern void SDL_InitGCKeyboard(void);
-extern SDL_bool SDL_HasGCKeyboard(void);
 extern void SDL_QuitGCKeyboard(void);
 
 extern void SDL_InitGCMouse(void);
-extern SDL_bool SDL_HasGCMouse(void);
-extern SDL_bool SDL_GCMouseRelativeMode(void);
+extern bool SDL_GCMouseRelativeMode(void);
 extern void SDL_QuitGCMouse(void);
 
-#endif /* SDL_uikitevents_h_ */
+#endif // SDL_uikitevents_h_

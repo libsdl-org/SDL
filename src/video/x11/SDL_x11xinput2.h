@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,13 +30,15 @@ struct XGenericEventCookie;
 typedef struct XGenericEventCookie XGenericEventCookie;
 #endif
 
-extern void X11_InitXinput2(SDL_VideoDevice *_this);
+extern bool X11_InitXinput2(SDL_VideoDevice *_this);
 extern void X11_InitXinput2Multitouch(SDL_VideoDevice *_this);
-extern int X11_HandleXinput2Event(SDL_VideoData *videodata, XGenericEventCookie *cookie);
-extern int X11_Xinput2IsInitialized(void);
-extern int X11_Xinput2IsMultitouchSupported(void);
+extern void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie);
+extern bool X11_Xinput2IsInitialized(void);
+extern bool X11_Xinput2IsMultitouchSupported(void);
 extern void X11_Xinput2SelectTouch(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_Xinput2GrabTouch(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_Xinput2UngrabTouch(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool X11_Xinput2SelectMouseAndKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
+extern void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check);
 
-#endif /* SDL_x11xinput2_h_ */
+#endif // SDL_x11xinput2_h_

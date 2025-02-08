@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,25 +23,26 @@
 #ifdef SDL_FILESYSTEM_ANDROID
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-/* System dependent filesystem routines                                */
+// System dependent filesystem routines
+
+#include "../SDL_sysfilesystem.h"
 
 #include <unistd.h>
 
-char *SDL_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
-    /* The current working directory is / on Android */
+    // The current working directory is / on Android
     SDL_Unsupported();
     return NULL;
 }
 
-char *SDL_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
-    const char *path = SDL_AndroidGetInternalStoragePath();
+    const char *path = SDL_GetAndroidInternalStoragePath();
     if (path) {
         size_t pathlen = SDL_strlen(path) + 2;
         char *fullpath = (char *)SDL_malloc(pathlen);
-        if (fullpath == NULL) {
-            SDL_OutOfMemory();
+        if (!fullpath) {
             return NULL;
         }
         SDL_snprintf(fullpath, pathlen, "%s/", path);
@@ -50,7 +51,7 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return NULL;
 }
 
-char *SDL_GetUserFolder(SDL_Folder folder)
+char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 {
     /* TODO: see https://developer.android.com/reference/android/os/Environment#lfields
        and https://stackoverflow.com/questions/39332085/get-path-to-pictures-directory */
@@ -58,4 +59,4 @@ char *SDL_GetUserFolder(SDL_Folder folder)
     return NULL;
 }
 
-#endif /* SDL_FILESYSTEM_ANDROID */
+#endif // SDL_FILESYSTEM_ANDROID

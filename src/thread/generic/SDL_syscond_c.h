@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,10 +27,10 @@
 
 SDL_Condition *SDL_CreateCondition_generic(void);
 void SDL_DestroyCondition_generic(SDL_Condition *cond);
-int SDL_SignalCondition_generic(SDL_Condition *cond);
-int SDL_BroadcastCondition_generic(SDL_Condition *cond);
-int SDL_WaitConditionTimeoutNS_generic(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
+void SDL_SignalCondition_generic(SDL_Condition *cond);
+void SDL_BroadcastCondition_generic(SDL_Condition *cond);
+bool SDL_WaitConditionTimeoutNS_generic(SDL_Condition *cond, SDL_Mutex *mutex, Sint64 timeoutNS);
 
-#endif /* SDL_THREAD_GENERIC_COND_SUFFIX */
+#endif // SDL_THREAD_GENERIC_COND_SUFFIX
 
-#endif /* SDL_syscond_generic_h_ */
+#endif // SDL_syscond_generic_h_

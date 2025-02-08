@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.3 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.1.3...3.25 FATAL_ERROR)
 
 if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     add_subdirectory(src)
@@ -41,6 +41,9 @@ elseif(NOT WIN32)
     if(CMAKE_SYSTEM_NAME MATCHES "Linux")
         option(HIDAPI_WITH_HIDRAW "Build HIDRAW-based implementation of HIDAPI" ON)
         option(HIDAPI_WITH_LIBUSB "Build LIBUSB-based implementation of HIDAPI" ON)
+    endif()
+    if(CMAKE_SYSTEM_NAME MATCHES "NetBSD")
+        option(HIDAPI_WITH_NETBSD "Build NetBSD/UHID implementation of HIDAPI" ON)
     endif()
 endif()
 

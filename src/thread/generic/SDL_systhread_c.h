@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,5 +20,5 @@
 */
 #include "SDL_internal.h"
 
-/* Stub until we implement threads on this platform */
+// Stub until we implement threads on this platform
 typedef int SYS_ThreadHandle;

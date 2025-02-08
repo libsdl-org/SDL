@@ -7,17 +7,22 @@ import pathlib
 import re
 
 
-def main():
+def do_include_replacements(paths):
     replacements = [
+        ( re.compile(r"(?:[\"<])(?:SDL2/)?SDL_image.h(?:[\">])"), r"<SDL3_image/SDL_image.h>" ),
+        ( re.compile(r"(?:[\"<])(?:SDL2/)?SDL_mixer.h(?:[\">])"), r"<SDL3_mixer/SDL_mixer.h>" ),
+        ( re.compile(r"(?:[\"<])(?:SDL2/)?SDL_net.h(?:[\">])"), r"<SDL3_net/SDL_net.h>" ),
+        ( re.compile(r"(?:[\"<])(?:SDL2/)?SDL_rtf.h(?:[\">])"), r"<SDL3_rtf/SDL_rtf.h>" ),
+        ( re.compile(r"(?:[\"<])(?:SDL2/)?SDL_ttf.h(?:[\">])"), r"<SDL3_ttf/SDL_ttf.h>" ),
         ( re.compile(r"(?:[\"<])(?:SDL2/)?SDL_gamecontroller.h(?:[\">])"), r"<SDL3/SDL_gamepad.h>" ),
         ( re.compile(r"(?:[\"<])(?:SDL2/)?begin_code.h(?:[\">])"), r"<SDL3/SDL_begin_code.h>" ),
         ( re.compile(r"(?:[\"<])(?:SDL2/)?close_code.h(?:[\">])"), r"<SDL3/SDL_close_code.h>" ),
         ( re.compile(r"(?:[\"<])(?:SDL2/)?(SDL[_a-z0-9]*\.h)(?:[\">])"), r"<SDL3/\1>" )
     ]
-    for entry in args.args:
+    for entry in paths:
         path = pathlib.Path(entry)
         if not path.exists():
-            print("%s doesn't exist, skipping" % entry)
+            print("{} does not exist, skipping".format(entry))
             continue
 
         replace_headers_in_path(path, replacements)
@@ -55,17 +60,16 @@ def replace_headers_in_path(path, replacements):
             replace_headers_in_file(path, replacements)
 
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
-    parser.add_argument("args", nargs="*")
+def main():
+    parser = argparse.ArgumentParser(fromfile_prefix_chars='@', description="Rename #include's for SDL3.")
+    parser.add_argument("args", metavar="PATH", nargs="*", help="Input source file")
     args = parser.parse_args()
 
     try:
-        main()
+        do_include_replacements(args.args)
     except Exception as e:
         print(e)
-        exit(-1)
+        return 1
 
-    exit(0)
-
+if __name__ == "__main__":
+    raise SystemExit(main())

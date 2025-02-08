@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,13 +20,13 @@
 */
 #include "SDL_internal.h"
 
-/* This is the system specific header for the SDL locale API */
+// This is the system specific header for the SDL locale API
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern int SDL_SYS_GetPreferredLocales(char *buf, size_t buflen);
+extern bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen);
 
 #ifdef __cplusplus
 }

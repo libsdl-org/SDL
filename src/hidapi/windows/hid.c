@@ -72,6 +72,15 @@ typedef LONG NTSTATUS;
 /* BLUETOOTH_DEVICE_NAME_SIZE from bluetoothapis.h is 256 */
 #define MAX_STRING_WCHARS 256
 
+/* For certain USB devices, using a buffer larger or equal to 127 wchars results
+   in successful completion of HID API functions, but a broken string is stored
+   in the output buffer. This behaviour persists even if HID API is bypassed and
+   HID IOCTLs are passed to the HID driver directly. Therefore, for USB devices,
+   the buffer MUST NOT exceed 126 WCHARs.
+*/
+
+#define MAX_STRING_WCHARS_USB 126
+
 static struct hid_api_version api_version = {
 	.major = HID_API_VERSION_MAJOR,
 	.minor = HID_API_VERSION_MINOR,
@@ -110,7 +119,7 @@ static HMODULE hid_lib_handle = NULL;
 static HMODULE cfgmgr32_lib_handle = NULL;
 static BOOLEAN hidapi_initialized = FALSE;
 
-static void free_library_handles()
+static void free_library_handles(void)
 {
 	if (hid_lib_handle)
 		FreeLibrary(hid_lib_handle);
@@ -120,12 +129,12 @@ static void free_library_handles()
 	cfgmgr32_lib_handle = NULL;
 }
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && __GNUC__ >= 8
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
 
-static int lookup_functions()
+static int lookup_functions(void)
 {
 	hid_lib_handle = LoadLibraryW(L"hid.dll");
 	if (hid_lib_handle == NULL) {
@@ -170,7 +179,7 @@ err:
 	return -1;
 }
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && __GNUC__ >= 8
 # pragma GCC diagnostic pop
 #endif
 
@@ -212,7 +221,7 @@ static BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 	return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
 }
 
-static hid_device *new_hid_device()
+static hid_device *new_hid_device(void)
 {
 	hid_device *dev = (hid_device*) calloc(1, sizeof(hid_device));
 
@@ -325,7 +334,7 @@ static void register_winapi_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 #endif
 }
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && (__GNUC__ + (__GNUC_MINOR__ >= 6) > 4)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
@@ -355,7 +364,7 @@ static void register_string_error_to_buffer(wchar_t **error_buffer, const WCHAR 
 #endif /* HIDAPI_USING_SDL_RUNTIME */
 }
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && (__GNUC__ + (__GNUC_MINOR__ >= 6) > 4)
 # pragma GCC diagnostic pop
 #endif
 
@@ -719,11 +728,22 @@ end:
 }
 #endif /* HIDAPI_IGNORE_DEVICE */
 
-static void hid_internal_get_info(const wchar_t* interface_path, struct hid_device_info* dev)
+/* Unfortunately, HID_API_BUS_xxx constants alone aren't enough to distinguish between BLUETOOTH and BLE */
+
+#define HID_API_BUS_FLAG_BLE 0x01
+
+typedef struct hid_internal_detect_bus_type_result_ {
+	DEVINST dev_node;
+	hid_bus_type bus_type;
+	unsigned int bus_flags;
+} hid_internal_detect_bus_type_result;
+
+static hid_internal_detect_bus_type_result hid_internal_detect_bus_type(const wchar_t* interface_path)
 {
 	wchar_t *device_id = NULL, *compatible_ids = NULL;
 	CONFIGRET cr;
 	DEVINST dev_node;
+	hid_internal_detect_bus_type_result result = { 0 };
 
 	/* Get the device id from interface path */
 	device_id = hid_internal_get_device_interface_property(interface_path, &DEVPKEY_Device_InstanceId, DEVPROP_TYPE_STRING);
@@ -754,54 +774,65 @@ static void hid_internal_get_info(const wchar_t* interface_path, struct hid_devi
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-support
 		   https://docs.microsoft.com/windows-hardware/drivers/install/standard-usb-identifiers */
 		if (wcsstr(compatible_id, L"USB") != NULL) {
-			dev->bus_type = HID_API_BUS_USB;
-			hid_internal_get_usb_info(dev, dev_node);
+			result.bus_type = HID_API_BUS_USB;
 			break;
 		}
 
 		/* Bluetooth devices
 		   https://docs.microsoft.com/windows-hardware/drivers/bluetooth/installing-a-bluetooth-device */
 		if (wcsstr(compatible_id, L"BTHENUM") != NULL) {
-			dev->bus_type = HID_API_BUS_BLUETOOTH;
+			result.bus_type = HID_API_BUS_BLUETOOTH;
 			break;
 		}
 
 		/* Bluetooth LE devices */
 		if (wcsstr(compatible_id, L"BTHLEDEVICE") != NULL) {
-			dev->bus_type = HID_API_BUS_BLUETOOTH;
-			hid_internal_get_ble_info(dev, dev_node);
+			result.bus_type = HID_API_BUS_BLUETOOTH;
+			result.bus_flags |= HID_API_BUS_FLAG_BLE;
 			break;
 		}
 
 		/* I2C devices
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-support-and-power-management */
 		if (wcsstr(compatible_id, L"PNP0C50") != NULL) {
-			dev->bus_type = HID_API_BUS_I2C;
+			result.bus_type = HID_API_BUS_I2C;
 			break;
 		}
 
 		/* SPI devices
 		   https://docs.microsoft.com/windows-hardware/drivers/hid/plug-and-play-for-spi */
 		if (wcsstr(compatible_id, L"PNP0C51") != NULL) {
-			dev->bus_type = HID_API_BUS_SPI;
+			result.bus_type = HID_API_BUS_SPI;
 			break;
 		}
 	}
+
+	result.dev_node = dev_node;
+
 end:
 	free(device_id);
 	free(compatible_ids);
+	return result;
 }
 
 static char *hid_internal_UTF16toUTF8(const wchar_t *src)
 {
 	char *dst = NULL;
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	int len = WIN_WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, src, -1, NULL, 0, NULL, NULL);
+#else
 	int len = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, src, -1, NULL, 0, NULL, NULL);
+#endif
 	if (len) {
 		dst = (char*)calloc(len, sizeof(char));
 		if (dst == NULL) {
 			return NULL;
 		}
+#ifdef HIDAPI_USING_SDL_RUNTIME
+		WIN_WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, src, -1, dst, len, NULL, NULL);
+#else
 		WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, src, -1, dst, len, NULL, NULL);
+#endif
 	}
 
 	return dst;
@@ -828,7 +859,10 @@ static struct hid_device_info *hid_internal_get_device_info(const wchar_t *path,
 	HIDD_ATTRIBUTES attrib;
 	PHIDP_PREPARSED_DATA pp_data = NULL;
 	HIDP_CAPS caps;
-	wchar_t string[MAX_STRING_WCHARS];
+	wchar_t string[MAX_STRING_WCHARS + 1];
+	ULONG len;
+	ULONG size;
+	hid_internal_detect_bus_type_result detect_bus_type_result;
 
 	/* Create the record. */
 	dev = (struct hid_device_info*)calloc(1, sizeof(struct hid_device_info));
@@ -862,25 +896,46 @@ static struct hid_device_info *hid_internal_get_device_info(const wchar_t *path,
 		HidD_FreePreparsedData(pp_data);
 	}
 
+	/* detect bus type before reading string descriptors */
+	detect_bus_type_result = hid_internal_detect_bus_type(path);
+	dev->bus_type = detect_bus_type_result.bus_type;
+
+	len = dev->bus_type == HID_API_BUS_USB ? MAX_STRING_WCHARS_USB : MAX_STRING_WCHARS;
+	string[len] = L'\0';
+	size = len * sizeof(wchar_t);
+
 	/* Serial Number */
 	string[0] = L'\0';
-	HidD_GetSerialNumberString(handle, string, sizeof(string));
-	string[MAX_STRING_WCHARS - 1] = L'\0';
+	HidD_GetSerialNumberString(handle, string, size);
 	dev->serial_number = _wcsdup(string);
 
 	/* Manufacturer String */
 	string[0] = L'\0';
-	HidD_GetManufacturerString(handle, string, sizeof(string));
-	string[MAX_STRING_WCHARS - 1] = L'\0';
+	HidD_GetManufacturerString(handle, string, size);
 	dev->manufacturer_string = _wcsdup(string);
 
 	/* Product String */
 	string[0] = L'\0';
-	HidD_GetProductString(handle, string, sizeof(string));
-	string[MAX_STRING_WCHARS - 1] = L'\0';
+	HidD_GetProductString(handle, string, size);
 	dev->product_string = _wcsdup(string);
 
-	hid_internal_get_info(path, dev);
+	/* now, the portion that depends on string descriptors */
+	switch (dev->bus_type) {
+	case HID_API_BUS_USB:
+		hid_internal_get_usb_info(dev, detect_bus_type_result.dev_node);
+		break;
+
+	case HID_API_BUS_BLUETOOTH:
+		if (detect_bus_type_result.bus_flags & HID_API_BUS_FLAG_BLE)
+			hid_internal_get_ble_info(dev, detect_bus_type_result.dev_node);
+		break;
+
+	case HID_API_BUS_UNKNOWN:
+	case HID_API_BUS_SPI:
+	case HID_API_BUS_I2C:
+		/* shut down -Wswitch */
+		break;
+	}
 
 	return dev;
 }
@@ -1227,7 +1282,7 @@ int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *
 		length = dev->output_report_length;
 	}
 
-	res = WriteFile(dev->device_handle, buf, (DWORD) length, NULL, &dev->write_ol);
+	res = WriteFile(dev->device_handle, buf, (DWORD) length, &bytes_written, &dev->write_ol);
 
 	if (!res) {
 		if (GetLastError() != ERROR_IO_PENDING) {
@@ -1236,6 +1291,9 @@ int HID_API_EXPORT HID_API_CALL hid_write(hid_device *dev, const unsigned char *
 			goto end_of_function;
 		}
 		overlapped = TRUE;
+	} else {
+		/* WriteFile() succeeded synchronously. */
+		function_result = bytes_written;
 	}
 
 	if (overlapped) {
@@ -1462,7 +1520,7 @@ int HID_API_EXPORT HID_API_CALL hid_get_input_report(hid_device *dev, unsigned c
 	return hid_get_report(dev, IOCTL_HID_GET_INPUT_REPORT, data, length);
 }
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && __GNUC__ >= 8
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wcast-function-type"
 #endif
@@ -1486,7 +1544,7 @@ void HID_API_EXPORT HID_API_CALL hid_close(hid_device *dev)
 	}
 	free_hid_device(dev);
 }
-#if defined(__GNUC__)
+#if defined(__GNUC__) && __GNUC__ >= 8
 # pragma GCC diagnostic pop
 #endif
 
@@ -1564,7 +1622,12 @@ int HID_API_EXPORT_CALL HID_API_CALL hid_get_indexed_string(hid_device *dev, int
 {
 	BOOL res;
 
-	res = HidD_GetIndexedString(dev->device_handle, string_index, string, sizeof(wchar_t) * (DWORD) MIN(maxlen, MAX_STRING_WCHARS));
+	if (dev->device_info && dev->device_info->bus_type == HID_API_BUS_USB && maxlen > MAX_STRING_WCHARS_USB) {
+		string[MAX_STRING_WCHARS_USB] = L'\0';
+		maxlen = MAX_STRING_WCHARS_USB;
+	}
+
+	res = HidD_GetIndexedString(dev->device_handle, string_index, string, (ULONG)maxlen * sizeof(wchar_t));
 	if (!res) {
 		register_winapi_error(dev, L"HidD_GetIndexedString");
 		return -1;

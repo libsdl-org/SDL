@@ -106,7 +106,7 @@ void handleKeyboardEvent(screen_event_t event)
     }
 
     // Skip unrecognized keys.
-    if ((val < 0) || (val >= SDL_TABLESIZE(key_to_sdl))) {
+    if ((val < 0) || (val >= SDL_arraysize(key_to_sdl))) {
         return;
     }
 
@@ -125,8 +125,8 @@ void handleKeyboardEvent(screen_event_t event)
     // FIXME:
     // Need to handle more key states (such as key combinations).
     if (val & KEY_DOWN) {
-        SDL_SendKeyboardKey(0, SDL_PRESSED, scancode);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, val, scancode, true);
     } else {
-        SDL_SendKeyboardKey(0, SDL_RELEASED, scancode);
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, val, scancode, false);
     }
 }

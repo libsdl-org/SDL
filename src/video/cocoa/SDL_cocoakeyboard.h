@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2023 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,10 +27,10 @@ extern void Cocoa_InitKeyboard(SDL_VideoDevice *_this);
 extern void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event);
 extern void Cocoa_QuitKeyboard(SDL_VideoDevice *_this);
 
-extern void Cocoa_StartTextInput(SDL_VideoDevice *_this);
-extern void Cocoa_StopTextInput(SDL_VideoDevice *_this);
-extern int Cocoa_SetTextInputRect(SDL_VideoDevice *_this, const SDL_Rect *rect);
+extern bool Cocoa_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
+extern bool Cocoa_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool Cocoa_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
 
-extern void Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, SDL_bool grabbed);
+extern bool Cocoa_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
 
-#endif /* SDL_cocoakeyboard_h_ */
+#endif // SDL_cocoakeyboard_h_
