@@ -516,6 +516,13 @@ static bool NGAGE_UpdateTexture(SDL_Renderer* renderer, SDL_Texture* texture, co
 
 static bool NGAGE_LockTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_Rect* rect, void** pixels, int* pitch)
 {
+    NGAGE_TextureData *phdata = (NGAGE_TextureData *)texture->internal;
+    SDL_Surface *surface = phdata->surface;
+
+    *pixels =
+        (void *)((Uint8 *)surface->pixels + rect->y * surface->pitch +
+                 rect->x * surface->fmt->bytes_per_pixel);
+    *pitch = surface->pitch;
     return true;
 }
 
