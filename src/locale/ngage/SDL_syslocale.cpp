@@ -110,7 +110,11 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             locale = "sl_SI";
             break;
         case ELangTaiwanChinese:
+            locale = "zh_TW";
+            break;
         case ELangHongKongChinese:
+            locale = "zh_HK";
+            break;
         case ELangPrcChinese:
             locale = "zh_CN";
             break;
