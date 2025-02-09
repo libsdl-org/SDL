@@ -116,6 +116,7 @@ bool WIN_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
         }
     }
     if (!SetWindowRgn(data->hwnd, mask, TRUE)) {
+        DeleteObject(mask);
         return WIN_SetError("SetWindowRgn failed");
     }
     return true;
