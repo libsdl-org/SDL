@@ -309,7 +309,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    AppState *as = SDL_calloc(1, sizeof(AppState));
+    AppState *as = (AppState*)SDL_calloc(1, sizeof(AppState));
     if (!as) {
         return SDL_APP_FAILURE;
     }
@@ -334,7 +334,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     case SDL_EVENT_QUIT:
         return SDL_APP_SUCCESS;
     case SDL_EVENT_KEY_DOWN:
-        return handle_key_event_(ctx, event->key.scancode);
+        return (SDL_AppResult)handle_key_event_(ctx, event->key.scancode);
     }
     return SDL_APP_CONTINUE;
 }
