@@ -14,6 +14,7 @@ jobs:
     name: ${{ matrix.platform.name }}
     runs-on: ${{ matrix.platform.os }}
     container: ${{ matrix.platform.container }}
+    continue-on-error: ${{ matrix.platform.continue-on-error }}
     defaults:
       run:
         shell: ${{ matrix.platform.shell }}
@@ -93,6 +94,11 @@ jobs:
         with:
           arch: ${{ matrix.platform.msvc-vcvars-arch }}
           sdk: ${{ matrix.platform.msvc-vcvars-sdk }}
+      - name: 'Set up Nokia N-Gage SDK'
+        uses: ./.github/actions/setup-ngage-sdk
+        if: ${{ matrix.platform.setup-ngage-sdk-path != '' }}
+        with:
+          path: '${{ matrix.platform.setup-ngage-sdk-path }}'
       - name: 'Set up Windows GDK Desktop'
         uses: ./.github/actions/setup-gdk-desktop
         if: ${{ matrix.platform.setup-gdk-folder != '' }}
