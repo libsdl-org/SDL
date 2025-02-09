@@ -72,6 +72,4 @@
 extern void va_copy(char* dest, char* src);
 extern int vsnprintf(char* str, size_t size, const char* format, va_list ap);
 
-typedef long ssize_t;
-
 #endif /* SDL_build_config_ngage_h_ */
