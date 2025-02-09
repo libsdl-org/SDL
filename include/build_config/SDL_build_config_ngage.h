@@ -69,7 +69,4 @@
 #define isnanf(x) SDL_uclibc_isnanf(x);
 #define isinff(x) SDL_uclibc_isinff(x);
 
-extern void va_copy(char* dest, char* src);
-extern int vsnprintf(char* str, size_t size, const char* format, va_list ap);
-
 #endif /* SDL_build_config_ngage_h_ */
