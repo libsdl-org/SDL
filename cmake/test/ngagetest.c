@@ -2,7 +2,7 @@
 // when building with the N-Gage SDK since SDL can only be linked statically.
 
 #define IMPORT_C
-#include "SDL.h"
+#include <SDL3/SDL.h>
 
 int SDL_main(int argc, char* argv[])
 {
