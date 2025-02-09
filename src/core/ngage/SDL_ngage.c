@@ -27,8 +27,8 @@ void va_copy(char *dest, char *src)
     dest = src;
 }
 
-int vsnprintf(char *str, size_t size, const char *format, va_list ap)
-{
-    // Safely do nothing.
-    return 0;
-}
+//int vsnprintf(char *str, size_t size, const char *format, va_list ap)
+//{
+//    // Safely do nothing.
+//    return 0;
+//}
