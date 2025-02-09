@@ -27,4 +27,7 @@
 
 #elif defined(__GNUC__) && (__GNUC__ < 3)
 #define va_copy(dst, src) __va_copy(dst, src)
+
+#elif defined(__SYMBIAN32__)
+extern void va_copy(char* dest, char* src);
 #endif
