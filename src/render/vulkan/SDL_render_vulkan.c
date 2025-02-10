@@ -3253,7 +3253,7 @@ static bool VULKAN_UpdateVertexBuffer(SDL_Renderer *renderer,
 
     stateCache->vertexBuffer = vertexBuffer->buffer;
 
-    rendererData->currentVertexBuffer++;
+    rendererData->currentVertexBuffer = vbidx + 1;
     if (rendererData->currentVertexBuffer >= SDL_VULKAN_NUM_VERTEX_BUFFERS) {
         rendererData->currentVertexBuffer = 0;
         rendererData->issueBatch = true;
