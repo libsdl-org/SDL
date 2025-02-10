@@ -421,12 +421,14 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
         return NULL;
     }
 
-    if (!new_tmp_filename(tray)) {
-        SDL_free(tray);
-        return NULL;
-    }
+    if (icon) {
+        if (!new_tmp_filename(tray)) {
+            SDL_free(tray);
+            return NULL;
+        }
 
-    SDL_SaveBMP(icon, tray->icon_path);
+        SDL_SaveBMP(icon, tray->icon_path);
+    }
 
     tray->indicator = app_indicator_new(get_appindicator_id(), tray->icon_path,
                                         APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
