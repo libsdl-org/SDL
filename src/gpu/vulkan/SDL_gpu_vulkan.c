@@ -6822,7 +6822,7 @@ static SDL_GPUTransferBuffer *VULKAN_CreateTransferBuffer(
         (VkDeviceSize)size,
         0,
         VULKAN_BUFFER_TYPE_TRANSFER,
-        usage == SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD,
+        true,
         debugName);
 }
 
