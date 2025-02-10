@@ -243,7 +243,7 @@ if(SDL_SHARED_DEFAULT AND SDL_STATIC_DEFAULT AND SDL_SHARED_AVAILABLE)
   endif()
 endif()
 
-cmake_dependent_option(SDL_DEPS_SHARED "Load dependencies dynamically" ON SDL_SHARED_AVAILABLE OFF)
+dep_option(SDL_DEPS_SHARED "Load dependencies dynamically" ON SDL_SHARED_AVAILABLE OFF)
 
 set(SDL_SUBSYSTEMS )
 
