@@ -1391,6 +1391,35 @@ SDL_FullscreenResult WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window 
                                       &w, &h,
                                       SDL_WINDOWRECT_FLOATING);
         data->windowed_mode_was_maximized = false;
+
+        /* A window may have been maximized by dragging it to the top of another display, in which case the floating
+         * position may be out-of-date. If the window is being restored to maximized, and the maximized and floating
+         * position are on different displays, try to center the window on the maximized display for restoration, which
+         * mimics native Windows behavior.
+         */
+        if (enterMaximized) {
+            const SDL_Point windowed_point = { window->windowed.x, window->windowed.y };
+            const SDL_Point floating_point = { window->floating.x, window->floating.y };
+            const SDL_DisplayID floating_display = SDL_GetDisplayForPoint(&floating_point);
+            const SDL_DisplayID windowed_display = SDL_GetDisplayForPoint(&windowed_point);
+
+            if (floating_display != windowed_display) {
+                SDL_Rect bounds;
+
+                SDL_zero(bounds);
+                SDL_GetDisplayUsableBounds(windowed_display, &bounds);
+                if (w < bounds.w) {
+                    x = bounds.x + (bounds.w - w) / 2;
+                } else {
+                    x = bounds.x;
+                }
+                if (h < bounds.h) {
+                    y = bounds.y + (bounds.h - h) / 2;
+                } else {
+                    y = bounds.y;
+                }
+            }
+        }
     }
 
     /* Always reset the window to the base floating size before possibly re-applying the maximized state,
