@@ -221,8 +221,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *   the same tone mapping that Chrome uses for HDR content, the form "*=N",
  *   where N is a floating point scale factor applied in linear space, and
  *   "none", which disables tone mapping. This defaults to "chrome".
- * - `SDL_PROP_SURFACE_HOTSPOT_X_NUMBER`: the hotspot pixel offset from the left edge of the image, if this surface is being used as a cursor.
- * - `SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER`: the hotspot pixel offset from the top edge of the image, if this surface is being used as a cursor.
+ * - `SDL_PROP_SURFACE_HOTSPOT_X_NUMBER`: the hotspot pixel offset from the
+ *   left edge of the image, if this surface is being used as a cursor.
+ * - `SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER`: the hotspot pixel offset from the
+ *   top edge of the image, if this surface is being used as a cursor.
  *
  * \param surface the SDL_Surface structure to query.
  * \returns a valid property ID on success or 0 on failure; call
