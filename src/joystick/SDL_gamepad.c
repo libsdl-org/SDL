@@ -2824,7 +2824,7 @@ bool SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
  */
 Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
 {
-    Sint16 result = true;
+    Sint16 result = 0;
 
     SDL_LockJoysticks();
     {
