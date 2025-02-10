@@ -1483,6 +1483,11 @@ SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
         return NULL;
     }
 
+    // Allow specifying the hot spot via properties on the surface
+    SDL_PropertiesID props = SDL_GetSurfaceProperties(surface);
+    hot_x = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_X_NUMBER, hot_x);
+    hot_y = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, hot_y);
+
     // Sanity check the hot spot
     if ((hot_x < 0) || (hot_y < 0) ||
         (hot_x >= surface->w) || (hot_y >= surface->h)) {
