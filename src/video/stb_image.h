@@ -505,6 +505,7 @@ STBIDEF int      stbi_is_16_bit_from_file(FILE *f);
 
 
 
+#ifndef STBI_NO_PNG
 // for image formats that explicitly notate that they have premultiplied alpha,
 // we just return the colors as stored in the file. set this flag to force
 // unpremultiplication. results are undefined if the unpremultiply overflow.
@@ -523,9 +524,11 @@ STBIDEF void stbi_set_flip_vertically_on_load(int flag_true_if_should_flip);
 STBIDEF void stbi_set_unpremultiply_on_load_thread(int flag_true_if_should_unpremultiply);
 STBIDEF void stbi_convert_iphone_png_to_rgb_thread(int flag_true_if_should_convert);
 STBIDEF void stbi_set_flip_vertically_on_load_thread(int flag_true_if_should_flip);
+#endif
 
 // ZLIB client - used by PNG, available for other purposes
 
+#ifndef STBI_NO_ZLIB
 STBIDEF char *stbi_zlib_decode_malloc_guesssize(const char *buffer, int len, int initial_size, int *outlen);
 STBIDEF char *stbi_zlib_decode_malloc_guesssize_headerflag(const char *buffer, int len, int initial_size, int *outlen, int parse_header);
 STBIDEF char *stbi_zlib_decode_malloc(const char *buffer, int len, int *outlen);
@@ -533,6 +536,7 @@ STBIDEF int   stbi_zlib_decode_buffer(char *obuffer, int olen, const char *ibuff
 
 STBIDEF char *stbi_zlib_decode_noheader_malloc(const char *buffer, int len, int *outlen);
 STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const char *ibuffer, int ilen);
+#endif
 
 
 #ifdef __cplusplus
@@ -1113,21 +1117,25 @@ static stbi_uc *stbi__hdr_to_ldr(float   *data, int x, int y, int comp);
 
 static int stbi__vertically_flip_on_load_global = 0;
 
+#ifndef STBI_NO_PNG
 STBIDEF void stbi_set_flip_vertically_on_load(int flag_true_if_should_flip)
 {
    stbi__vertically_flip_on_load_global = flag_true_if_should_flip;
 }
+#endif
 
 #ifndef STBI_THREAD_LOCAL
 #define stbi__vertically_flip_on_load  stbi__vertically_flip_on_load_global
 #else
 static STBI_THREAD_LOCAL int stbi__vertically_flip_on_load_local, stbi__vertically_flip_on_load_set;
 
+#ifndef STBI_NO_PNG
 STBIDEF void stbi_set_flip_vertically_on_load_thread(int flag_true_if_should_flip)
 {
    stbi__vertically_flip_on_load_local = flag_true_if_should_flip;
    stbi__vertically_flip_on_load_set = 1;
 }
+#endif
 
 #define stbi__vertically_flip_on_load  (stbi__vertically_flip_on_load_set       \
                                          ? stbi__vertically_flip_on_load_local  \
@@ -1576,10 +1584,12 @@ STBIDEF void   stbi_ldr_to_hdr_gamma(float gamma) { stbi__l2h_gamma = gamma; }
 STBIDEF void   stbi_ldr_to_hdr_scale(float scale) { stbi__l2h_scale = scale; }
 #endif
 
+#ifndef STBI_NO_HDR
 static float stbi__h2l_gamma_i=1.0f/2.2f, stbi__h2l_scale_i=1.0f;
 
 STBIDEF void   stbi_hdr_to_ldr_gamma(float gamma) { stbi__h2l_gamma_i = 1/gamma; }
 STBIDEF void   stbi_hdr_to_ldr_scale(float scale) { stbi__h2l_scale_i = 1/scale; }
+#endif
 
 
 //////////////////////////////////////////////////////////////////////////////
