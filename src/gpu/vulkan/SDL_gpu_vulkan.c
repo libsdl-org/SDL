@@ -6840,15 +6840,12 @@ static SDL_GPUTransferBuffer *VULKAN_CreateTransferBuffer(
     Uint32 size,
     const char *debugName)
 {
-    // We use dedicated allocations for download buffers to avoid an issue
-    // where a defrag is triggered after submitting a download but before
-    // waiting on the fence.
     return (SDL_GPUTransferBuffer *)VULKAN_INTERNAL_CreateBufferContainer(
         (VulkanRenderer *)driverData,
         (VkDeviceSize)size,
         0,
         VULKAN_BUFFER_TYPE_TRANSFER,
-        true,
+        true, // Dedicated allocations preserve the data even if a defrag is triggered.
         debugName);
 }
 
