@@ -1366,10 +1366,16 @@ bool Wayland_VideoInit(SDL_VideoDevice *_this)
     // First roundtrip to receive all registry objects.
     WAYLAND_wl_display_roundtrip(data->display);
 
-    // Require viewports for display scaling.
-    if (data->scale_to_display_enabled && !data->viewporter) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Display scaling requires the missing 'wp_viewporter' protocol: disabling");
-        data->scale_to_display_enabled = false;
+    // Require viewports and xdg-output for display scaling.
+    if (data->scale_to_display_enabled) {
+        if (!data->viewporter) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Display scaling requires the missing 'wp_viewporter' protocol: disabling");
+            data->scale_to_display_enabled = false;
+        }
+        if (!data->xdg_output_manager) {
+            SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Display scaling requires the missing 'zxdg_output_manager_v1' protocol: disabling");
+            data->scale_to_display_enabled = false;
+        }
     }
 
     // Now that we have all the protocols, load libdecor if applicable
