@@ -952,7 +952,7 @@ static bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
 
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
                         SDL_PS5EnhancedReportsChanged, ctx);
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
                         SDL_PS5PlayerLEDHintChanged, ctx);
 
     return true;
