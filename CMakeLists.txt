@@ -753,7 +753,7 @@ if(SDL_ASSEMBLY)
   if(SDL_SSE4_2)
     cmake_push_check_state()
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
-      string(APPEND CMAKE_REQUIRED_FLAGS " -msse4.2")
+      string(APPEND CMAKE_REQUIRED_FLAGS " -msse4.2 -mcrc32")
     endif()
     check_c_source_compiles("
       #include <nmmintrin.h>

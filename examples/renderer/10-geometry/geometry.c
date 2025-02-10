@@ -141,7 +141,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     /* we need one more vertex, since the two triangles can share two of them. */
     vertices[3].position.x = 600.0f;
     vertices[3].position.y = 150.0f;
-    vertices[3].color.r = vertices[0].color.g = vertices[0].color.b = vertices[0].color.a = 1.0f;
+    vertices[3].color.r = vertices[3].color.g = vertices[3].color.b = vertices[3].color.a = 1.0f;
     vertices[3].tex_coord.x = 1.0f;
     vertices[3].tex_coord.y = 1.0f;
 
