@@ -54,7 +54,7 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
         }
         // FIXME: Add support for ppoll() for nanosecond precision
         if (timeoutNS > 0) {
-            timeoutMS = (int)SDL_NS_TO_MS(timeoutNS);
+            timeoutMS = (int)SDL_NS_TO_MS(timeoutNS + (SDL_NS_PER_MS - 1));
         } else if (timeoutNS == 0) {
             timeoutMS = 0;
         } else {
@@ -82,7 +82,7 @@ int SDL_IOReady(int fd, int flags, Sint64 timeoutNS)
 
         if (timeoutNS >= 0) {
             tv.tv_sec = (timeoutNS / SDL_NS_PER_SECOND);
-            tv.tv_usec = SDL_NS_TO_US(timeoutNS % SDL_NS_PER_SECOND);
+            tv.tv_usec = SDL_NS_TO_US((timeoutNS % SDL_NS_PER_SECOND) + (SDL_NS_PER_US - 1));
             tvp = &tv;
         }
 
