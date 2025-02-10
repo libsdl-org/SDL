@@ -421,7 +421,9 @@ typedef struct
 //
 
 STBIDEF stbi_uc *stbi_load_from_memory   (stbi_uc           const *buffer, int len   , int *x, int *y, int *channels_in_file, int desired_channels);
+#ifndef STB_INTERNAL_SDL
 STBIDEF stbi_uc *stbi_load_from_callbacks(stbi_io_callbacks const *clbk  , void *user, int *x, int *y, int *channels_in_file, int desired_channels);
+#endif
 
 #ifndef STBI_NO_STDIO
 STBIDEF stbi_uc *stbi_load            (char const *filename, int *x, int *y, int *channels_in_file, int desired_channels);
@@ -442,8 +444,10 @@ STBIDEF int stbi_convert_wchar_to_utf8(char *buffer, size_t bufferlen, const wch
 // 16-bits-per-channel interface
 //
 
+#ifndef STB_INTERNAL_SDL
 STBIDEF stbi_us *stbi_load_16_from_memory   (stbi_uc const *buffer, int len, int *x, int *y, int *channels_in_file, int desired_channels);
 STBIDEF stbi_us *stbi_load_16_from_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *channels_in_file, int desired_channels);
+#endif
 
 #ifndef STBI_NO_STDIO
 STBIDEF stbi_us *stbi_load_16          (char const *filename, int *x, int *y, int *channels_in_file, int desired_channels);
@@ -474,9 +478,11 @@ STBIDEF stbi_us *stbi_load_from_file_16(FILE *f, int *x, int *y, int *channels_i
    STBIDEF void   stbi_ldr_to_hdr_scale(float scale);
 #endif // STBI_NO_LINEAR
 
+#ifndef STB_INTERNAL_SDL
 // stbi_is_hdr is always defined, but always returns false if STBI_NO_HDR
 STBIDEF int    stbi_is_hdr_from_callbacks(stbi_io_callbacks const *clbk, void *user);
 STBIDEF int    stbi_is_hdr_from_memory(stbi_uc const *buffer, int len);
+#endif
 #ifndef STBI_NO_STDIO
 STBIDEF int      stbi_is_hdr          (char const *filename);
 STBIDEF int      stbi_is_hdr_from_file(FILE *f);
@@ -491,10 +497,12 @@ STBIDEF const char *stbi_failure_reason  (void);
 STBIDEF void     stbi_image_free      (void *retval_from_stbi_load);
 
 // get image dimensions & components without fully decoding
+#ifndef STB_INTERNAL_SDL
 STBIDEF int      stbi_info_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp);
 STBIDEF int      stbi_info_from_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp);
 STBIDEF int      stbi_is_16_bit_from_memory(stbi_uc const *buffer, int len);
 STBIDEF int      stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *clbk, void *user);
+#endif
 
 #ifndef STBI_NO_STDIO
 STBIDEF int      stbi_info               (char const *filename,     int *x, int *y, int *comp);
@@ -837,6 +845,7 @@ static void stbi__start_mem(stbi__context *s, stbi_uc const *buffer, int len)
 }
 
 // initialize a callback-based context
+#ifndef STB_INTERNAL_SDL
 static void stbi__start_callbacks(stbi__context *s, stbi_io_callbacks *c, void *user)
 {
    s->io = *c;
@@ -848,6 +857,7 @@ static void stbi__start_callbacks(stbi__context *s, stbi_io_callbacks *c, void *
    stbi__refill_buffer(s);
    s->img_buffer_original_end = s->img_buffer_end;
 }
+#endif // !STB_INTERNAL_SDL
 
 #ifndef STBI_NO_STDIO
 
@@ -912,7 +922,9 @@ typedef struct
 #ifndef STBI_NO_JPEG
 static int      stbi__jpeg_test(stbi__context *s);
 static void    *stbi__jpeg_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri);
+#ifndef STB_INTERNAL_SDL
 static int      stbi__jpeg_info(stbi__context *s, int *x, int *y, int *comp);
+#endif
 #endif
 
 #ifndef STBI_NO_PNG
@@ -1211,6 +1223,7 @@ static stbi_uc *stbi__convert_16_to_8(stbi__uint16 *orig, int w, int h, int chan
    return reduced;
 }
 
+#ifndef STB_INTERNAL_SDL
 static stbi__uint16 *stbi__convert_8_to_16(stbi_uc *orig, int w, int h, int channels)
 {
    int i;
@@ -1226,6 +1239,7 @@ static stbi__uint16 *stbi__convert_8_to_16(stbi_uc *orig, int w, int h, int chan
    STBI_FREE(orig);
    return enlarged;
 }
+#endif // !STB_INTERNAL_SDL
 
 static void stbi__vertical_flip(void *image, int w, int h, int bytes_per_pixel)
 {
@@ -1291,6 +1305,7 @@ static unsigned char *stbi__load_and_postprocess_8bit(stbi__context *s, int *x, 
    return (unsigned char *) result;
 }
 
+#ifndef STB_INTERNAL_SDL
 static stbi__uint16 *stbi__load_and_postprocess_16bit(stbi__context *s, int *x, int *y, int *comp, int req_comp)
 {
    stbi__result_info ri;
@@ -1317,6 +1332,7 @@ static stbi__uint16 *stbi__load_and_postprocess_16bit(stbi__context *s, int *x, 
 
    return (stbi__uint16 *) result;
 }
+#endif // !STB_INTERNAL_SDL
 
 #if !defined(STBI_NO_HDR) && !defined(STBI_NO_LINEAR)
 static void stbi__float_postprocess(float *result, int *x, int *y, int *comp, int req_comp)
@@ -1420,6 +1436,7 @@ STBIDEF stbi_us *stbi_load_16(char const *filename, int *x, int *y, int *comp, i
 
 #endif //!STBI_NO_STDIO
 
+#ifndef STB_INTERNAL_SDL
 STBIDEF stbi_us *stbi_load_16_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *channels_in_file, int desired_channels)
 {
    stbi__context s;
@@ -1433,6 +1450,7 @@ STBIDEF stbi_us *stbi_load_16_from_callbacks(stbi_io_callbacks const *clbk, void
    stbi__start_callbacks(&s, (stbi_io_callbacks *)clbk, user);
    return stbi__load_and_postprocess_16bit(&s,x,y,channels_in_file,desired_channels);
 }
+#endif
 
 STBIDEF stbi_uc *stbi_load_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp, int req_comp)
 {
@@ -1441,12 +1459,14 @@ STBIDEF stbi_uc *stbi_load_from_memory(stbi_uc const *buffer, int len, int *x, i
    return stbi__load_and_postprocess_8bit(&s,x,y,comp,req_comp);
 }
 
+#ifndef STB_INTERNAL_SDL
 STBIDEF stbi_uc *stbi_load_from_callbacks(stbi_io_callbacks const *clbk, void *user, int *x, int *y, int *comp, int req_comp)
 {
    stbi__context s;
    stbi__start_callbacks(&s, (stbi_io_callbacks *) clbk, user);
    return stbi__load_and_postprocess_8bit(&s,x,y,comp,req_comp);
 }
+#endif
 
 #ifndef STBI_NO_GIF
 STBIDEF stbi_uc *stbi_load_gif_from_memory(stbi_uc const *buffer, int len, int **delays, int *x, int *y, int *z, int *comp, int req_comp)
@@ -1522,6 +1542,7 @@ STBIDEF float *stbi_loadf_from_file(FILE *f, int *x, int *y, int *comp, int req_
 // defined, for API simplicity; if STBI_NO_LINEAR is defined, it always
 // reports false!
 
+#ifndef STB_INTERNAL_SDL
 STBIDEF int stbi_is_hdr_from_memory(stbi_uc const *buffer, int len)
 {
    #ifndef STBI_NO_HDR
@@ -1534,6 +1555,7 @@ STBIDEF int stbi_is_hdr_from_memory(stbi_uc const *buffer, int len)
    return 0;
    #endif
 }
+#endif // !STB_INTERNAL_SDL
 
 #ifndef STBI_NO_STDIO
 STBIDEF int      stbi_is_hdr          (char const *filename)
@@ -1564,6 +1586,7 @@ STBIDEF int stbi_is_hdr_from_file(FILE *f)
 }
 #endif // !STBI_NO_STDIO
 
+#ifndef STB_INTERNAL_SDL
 STBIDEF int      stbi_is_hdr_from_callbacks(stbi_io_callbacks const *clbk, void *user)
 {
    #ifndef STBI_NO_HDR
@@ -1576,6 +1599,7 @@ STBIDEF int      stbi_is_hdr_from_callbacks(stbi_io_callbacks const *clbk, void 
    return 0;
    #endif
 }
+#endif // !STB_INTERNAL_SDL
 
 #ifndef STBI_NO_LINEAR
 static float stbi__l2h_gamma=2.2f, stbi__l2h_scale=1.0f;
@@ -4063,6 +4087,7 @@ static int stbi__jpeg_test(stbi__context *s)
    return r;
 }
 
+#ifndef STB_INTERNAL_SDL
 static int stbi__jpeg_info_raw(stbi__jpeg *j, int *x, int *y, int *comp)
 {
    if (!stbi__decode_jpeg_header(j, STBI__SCAN_header)) {
@@ -4086,6 +4111,7 @@ static int stbi__jpeg_info(stbi__context *s, int *x, int *y, int *comp)
    STBI_FREE(j);
    return result;
 }
+#endif // !STB_INTERNAL_SDL
 #endif
 
 // public domain zlib decode    v0.2  Sean Barrett 2006-11-18
@@ -7639,6 +7665,7 @@ static int stbi__pnm_is16(stbi__context *s)
 }
 #endif
 
+#ifndef STB_INTERNAL_SDL
 static int stbi__info_main(stbi__context *s, int *x, int *y, int *comp)
 {
    #ifndef STBI_NO_JPEG
@@ -7680,7 +7707,9 @@ static int stbi__info_main(stbi__context *s, int *x, int *y, int *comp)
    #endif
    return stbi__err("unknown image type", "Image not of any known type, or corrupt");
 }
+#endif // !STB_INTERNAL_SDL
 
+#ifndef STB_INTERNAL_SDL
 static int stbi__is_16_main(stbi__context *s)
 {
    #ifndef STBI_NO_PNG
@@ -7696,6 +7725,7 @@ static int stbi__is_16_main(stbi__context *s)
    #endif
    return 0;
 }
+#endif // !STB_INTERNAL_SDL
 
 #ifndef STBI_NO_STDIO
 STBIDEF int stbi_info(char const *filename, int *x, int *y, int *comp)
@@ -7741,6 +7771,7 @@ STBIDEF int stbi_is_16_bit_from_file(FILE *f)
 }
 #endif // !STBI_NO_STDIO
 
+#ifndef STB_INTERNAL_SDL
 STBIDEF int stbi_info_from_memory(stbi_uc const *buffer, int len, int *x, int *y, int *comp)
 {
    stbi__context s;
@@ -7768,6 +7799,7 @@ STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *c, void *user
    stbi__start_callbacks(&s, (stbi_io_callbacks *) c, user);
    return stbi__is_16_main(&s);
 }
+#endif // !STB_INTERNAL_SDL
 
 #endif // STB_IMAGE_IMPLEMENTATION
 
