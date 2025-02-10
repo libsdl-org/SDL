@@ -89,31 +89,11 @@ static void SDLCALL SDL_MouseNormalSpeedScaleChanged(void *userdata, const char 
     }
 }
 
-static void SDLCALL SDL_MouseRelativeSpeedScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
-
-    if (hint && *hint) {
-        mouse->enable_relative_speed_scale = true;
-        mouse->relative_speed_scale = (float)SDL_atof(hint);
-    } else {
-        mouse->enable_relative_speed_scale = false;
-        mouse->relative_speed_scale = 1.0f;
-    }
-}
-
 static void SDLCALL SDL_MouseRelativeModeCenterChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
     mouse->relative_mode_center = SDL_GetStringBoolean(hint, true);
-}
-
-static void SDLCALL SDL_MouseRelativeSystemScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
-
-    mouse->enable_relative_system_scale = SDL_GetStringBoolean(hint, false);
 }
 
 static void SDLCALL SDL_MouseWarpEmulationChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -249,13 +229,7 @@ bool SDL_PreInitMouse(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
                         SDL_MouseNormalSpeedScaleChanged, mouse);
-
-    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
-                        SDL_MouseRelativeSpeedScaleChanged, mouse);
-
-    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
-                        SDL_MouseRelativeSystemScaleChanged, mouse);
-
+  
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER,
                         SDL_MouseRelativeModeCenterChanged, mouse);
 
@@ -705,14 +679,12 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
 
     if (relative) {
         if (mouse->relative_mode) {
-            if (mouse->enable_relative_system_scale) {
-                if (mouse->ApplySystemScale) {
-                    mouse->ApplySystemScale(mouse->system_scale_data, timestamp, window, mouseID, &x, &y);
+            if (mouse->InputTransform) {
+                void *data = mouse->input_transform_data;
+                if (mouse->InputTransform == mouse->ApplySystemScale) {
+                    data = mouse->system_scale_data;
                 }
-            }
-            if (mouse->enable_relative_speed_scale) {
-                x *= mouse->relative_speed_scale;
-                y *= mouse->relative_speed_scale;
+                mouse->InputTransform(data, timestamp, window, mouseID, &x, &y);
             }
         } else {
             if (mouse->enable_normal_speed_scale) {
@@ -1077,12 +1049,6 @@ void SDL_QuitMouse(void)
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
                         SDL_MouseNormalSpeedScaleChanged, mouse);
 
-    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
-                        SDL_MouseRelativeSpeedScaleChanged, mouse);
-
-    SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE,
-                        SDL_MouseRelativeSystemScaleChanged, mouse);
-
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_MODE_CENTER,
                         SDL_MouseRelativeModeCenterChanged, mouse);
 
@@ -1115,6 +1081,17 @@ void SDL_QuitMouse(void)
     }
     SDL_free(SDL_mice);
     SDL_mice = NULL;
+}
+
+const void *SDL_GetSystemMouseTransform(void) {
+    SDL_Mouse *mouse = SDL_GetMouse();
+    return mouse->ApplySystemScale;
+}
+
+void SDL_SetRelativeMouseTransform(const void *transform, void *userdata) {
+    SDL_Mouse *mouse = SDL_GetMouse();
+    mouse->InputTransform = (SDL_InputTransform)transform;
+    mouse->input_transform_data = userdata;
 }
 
 SDL_MouseButtonFlags SDL_GetMouseState(float *x, float *y)

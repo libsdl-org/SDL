@@ -2541,35 +2541,6 @@ extern "C" {
 #define SDL_HINT_MOUSE_RELATIVE_MODE_CENTER "SDL_MOUSE_RELATIVE_MODE_CENTER"
 
 /**
- * A variable setting the scale for mouse motion, in floating point, when the
- * mouse is in relative mode.
- *
- * This hint can be set anytime.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE "SDL_MOUSE_RELATIVE_SPEED_SCALE"
-
-/**
- * A variable controlling whether the system mouse acceleration curve is used
- * for relative mouse motion.
- *
- * The variable can be set to the following values:
- *
- * - "0": Relative mouse motion will be unscaled. (default)
- * - "1": Relative mouse motion will be scaled using the system mouse
- *   acceleration curve.
- *
- * If SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE is set, that will be applied after
- * system speed scale.
- *
- * This hint can be set anytime.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE "SDL_MOUSE_RELATIVE_SYSTEM_SCALE"
-
-/**
  * A variable controlling whether a motion event should be generated for mouse
  * warping in relative mode.
  *
