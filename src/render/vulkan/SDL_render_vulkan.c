@@ -398,6 +398,8 @@ static SDL_PixelFormat VULKAN_VkFormatToSDLPixelFormat(VkFormat vkFormat)
     switch (vkFormat) {
     case VK_FORMAT_B8G8R8A8_UNORM:
         return SDL_PIXELFORMAT_ARGB8888;
+    case VK_FORMAT_R8G8B8A8_UNORM:
+        return SDL_PIXELFORMAT_ABGR8888;
     case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
         return SDL_PIXELFORMAT_ABGR2101010;
     case VK_FORMAT_R16G16B16A16_SFLOAT:
@@ -452,6 +454,11 @@ static VkFormat SDLPixelFormatToVkTextureFormat(Uint32 format, Uint32 output_col
             return VK_FORMAT_B8G8R8A8_SRGB;
         }
         return VK_FORMAT_B8G8R8A8_UNORM;
+    case SDL_PIXELFORMAT_ABGR8888:
+        if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+            return VK_FORMAT_R8G8B8A8_SRGB;
+        }
+        return VK_FORMAT_R8G8B8A8_UNORM;
     case SDL_PIXELFORMAT_YUY2:
         return VK_FORMAT_G8B8G8R8_422_UNORM;
     case SDL_PIXELFORMAT_UYVY:
@@ -4303,6 +4310,7 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
 
     renderer->name = VULKAN_RenderDriver.name;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR2101010);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA64_FLOAT);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
