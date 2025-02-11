@@ -310,6 +310,12 @@ static void X11_ReconcileModifiers(SDL_VideoData *viddata)
         viddata->xkb.sdl_modifiers &= ~SDL_KMOD_MODE;
     }
 
+    if (xk_modifiers & LockMask) {
+        viddata->xkb.sdl_modifiers |= SDL_KMOD_CAPS;
+    } else {
+        viddata->xkb.sdl_modifiers &= ~SDL_KMOD_CAPS;
+    }
+
     if (xk_modifiers & viddata->xkb.numlock_mask) {
         viddata->xkb.sdl_modifiers |= SDL_KMOD_NUM;
     } else {
@@ -325,10 +331,11 @@ static void X11_ReconcileModifiers(SDL_VideoData *viddata)
     SDL_SetModState(viddata->xkb.sdl_modifiers);
 }
 
-static void X11_HandleModifierKeys(SDL_VideoData *viddata, SDL_Scancode scancode, bool pressed, bool reconcile)
+static void X11_HandleModifierKeys(SDL_VideoData *viddata, SDL_Scancode scancode, bool pressed, bool allow_reconciliation)
 {
     const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false);
     SDL_Keymod mod = SDL_KMOD_NONE;
+    bool reconcile = false;
 
     /* SDL clients expect modifier state to be activated at the same time as the
      * source keypress, so we set pressed modifier state with the usual modifier
@@ -367,7 +374,36 @@ static void X11_HandleModifierKeys(SDL_VideoData *viddata, SDL_Scancode scancode
     case SDLK_LEVEL5_SHIFT:
         mod = SDL_KMOD_LEVEL5;
         break;
+    case SDLK_CAPSLOCK:
+    case SDLK_NUMLOCKCLEAR:
+    case SDLK_SCROLLLOCK:
+    {
+        /* For locking modifier keys, query the lock state directly, or we may have to wait until the next
+         * key press event to know if a lock was actually activated from the key event.
+         */
+        unsigned int cur_mask = viddata->xkb.xkb_modifiers;
+        X11_UpdateSystemKeyModifiers(viddata);
+
+        if (viddata->xkb.xkb_modifiers & LockMask) {
+            cur_mask |= LockMask;
+        } else {
+            cur_mask &= ~LockMask;
+        }
+        if (viddata->xkb.xkb_modifiers & viddata->xkb.numlock_mask) {
+            cur_mask |= viddata->xkb.numlock_mask;
+        } else {
+            cur_mask &= ~viddata->xkb.numlock_mask;
+        }
+        if (viddata->xkb.xkb_modifiers & viddata->xkb.scrolllock_mask) {
+            cur_mask |= viddata->xkb.scrolllock_mask;
+        } else {
+            cur_mask &= ~viddata->xkb.scrolllock_mask;
+        }
+
+        viddata->xkb.xkb_modifiers = cur_mask;
+    } SDL_FALLTHROUGH;
     default:
+        reconcile = true;
         break;
     }
 
@@ -377,8 +413,12 @@ static void X11_HandleModifierKeys(SDL_VideoData *viddata, SDL_Scancode scancode
         viddata->xkb.sdl_modifiers &= ~mod;
     }
 
-    if (reconcile) {
-        X11_ReconcileModifiers(viddata);
+    if (allow_reconciliation) {
+        if (reconcile) {
+            X11_ReconcileModifiers(viddata);
+        } else {
+            SDL_SetModState(viddata->xkb.sdl_modifiers);
+        }
     }
 }
 
@@ -906,7 +946,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
 #endif // DEBUG SCANCODES
 
     text[0] = '\0';
-    X11_UpdateSystemKeyModifiers(videodata);
+    videodata->xkb.xkb_modifiers = xevent->xkey.state;
 
     if (SDL_TextInputActive(windowdata->window)) {
         // filter events catches XIM events and sends them to the correct handler
