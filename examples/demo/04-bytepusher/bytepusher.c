@@ -156,7 +156,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         return SDL_APP_FAILURE;
     }
 
-    if (!(vm = SDL_calloc(1, sizeof(*vm)))) {
+    if (!(vm = (BytePusher *)SDL_calloc(1, sizeof(*vm)))) {
         return SDL_APP_FAILURE;
     }
     *(BytePusher**)appstate = vm;
@@ -199,7 +199,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     for (r = 0; r < 6; ++r) {
         for (g = 0; g < 6; ++g) {
             for (b = 0; b < 6; ++b, ++i) {
-                SDL_Color color = { r * 0x33, g * 0x33, b * 0x33, SDL_ALPHA_OPAQUE };
+                SDL_Color color = { (Uint8)(r * 0x33), (Uint8)(g * 0x33), (Uint8)(b * 0x33), SDL_ALPHA_OPAQUE };
                 palette->colors[i] = color;
             }
         }
