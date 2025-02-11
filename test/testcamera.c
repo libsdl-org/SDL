@@ -15,6 +15,12 @@
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_JPEG
+#define STBI_NO_HDR
+#define STBI_NO_LINEAR
+#include "stb_image.h"
+
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDLTest_CommonState *state = NULL;
@@ -343,7 +349,11 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
             /* Create texture with appropriate format */
             SDL_PropertiesID props = SDL_CreateProperties();
-            SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, frame_current->format);
+            if (frame_current->format == SDL_PIXELFORMAT_MJPG) {
+                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_RGBA32);
+            } else {
+                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, frame_current->format);
+            }
             SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER, colorspace);
             SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STREAMING);
             SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, frame_current->w);
@@ -358,7 +368,19 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
         /* Update SDL_Texture with last video frame (only once per new frame) */
         if (frame_current && !texture_updated) {
-            SDL_UpdateTexture(texture, NULL, frame_current->pixels, frame_current->pitch);
+            if (frame_current->format == SDL_PIXELFORMAT_MJPG) {
+                /* Note: This is very slow if compiled without optimizations */
+                int w = 0, h = 0, format = 0;
+                stbi_uc *pixels = stbi_load_from_memory(frame_current->pixels, frame_current->pitch, &w, &h, &format, 4);
+                if (pixels) {
+                    SDL_UpdateTexture(texture, NULL, pixels, frame_current->w * 4);
+                    stbi_image_free(pixels);
+                } else {
+                    SDL_Log("Couldn't decode JPEG: %s", stbi_failure_reason());
+                }
+            } else {
+                SDL_UpdateTexture(texture, NULL, frame_current->pixels, frame_current->pitch);
+            }
             texture_updated = true;
         }
 
