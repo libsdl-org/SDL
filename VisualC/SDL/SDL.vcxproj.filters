@@ -666,9 +666,6 @@
     <ClInclude Include="..\..\src\video\SDL_egl_c.h">
       <Filter>video</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\SDL_stb_c.h">
-      <Filter>video</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\video\SDL_yuv_c.h">
       <Filter>video</Filter>
     </ClInclude>
@@ -1284,9 +1281,6 @@
       <Filter>video</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_rect.c">
-      <Filter>video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\video\SDL_stb.c">
       <Filter>video</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\SDL_stretch.c">
