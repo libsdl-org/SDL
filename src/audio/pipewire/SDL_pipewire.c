@@ -1337,7 +1337,7 @@ static bool PIPEWIRE_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap PIPEWIRE_PREFERRED_bootstrap = {
-    "pipewire", "Pipewire", PIPEWIRE_PREFERRED_Init, false
+    "pipewire", "Pipewire", PIPEWIRE_PREFERRED_Init, false, true
 };
 AudioBootStrap PIPEWIRE_bootstrap = {
     "pipewire", "Pipewire", PIPEWIRE_Init, false

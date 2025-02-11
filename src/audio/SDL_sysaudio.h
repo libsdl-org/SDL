@@ -360,6 +360,7 @@ typedef struct AudioBootStrap
     const char *desc;
     bool (*init)(SDL_AudioDriverImpl *impl);
     bool demand_only; // if true: request explicitly, or it won't be available.
+    bool is_preferred;
 } AudioBootStrap;
 
 // Not all of these are available in a given build. Use #ifdefs, etc.
