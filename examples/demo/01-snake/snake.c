@@ -208,7 +208,7 @@ void snake_step(SnakeContext *ctx)
     }
 }
 
-static int handle_key_event_(SnakeContext *ctx, SDL_Scancode key_code)
+static SDL_AppResult handle_key_event_(SnakeContext *ctx, SDL_Scancode key_code)
 {
     switch (key_code) {
     /* Quit. */
@@ -309,7 +309,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    AppState *as = SDL_calloc(1, sizeof(AppState));
+    AppState *as = (AppState *)SDL_calloc(1, sizeof(AppState));
     if (!as) {
         return SDL_APP_FAILURE;
     }
