@@ -132,7 +132,7 @@ typedef enum SDL_EventType
 
     /* Window events */
     /* 0x200 was SDL_WINDOWEVENT, reserve the number for sdl2-compat */
-    /* 0x201 was SDL_EVENT_SYSWM, reserve the number for sdl2-compat */
+    /* 0x201 was SDL_SYSWMEVENT, reserve the number for sdl2-compat */
     SDL_EVENT_WINDOW_SHOWN = 0x202,     /**< Window has been shown */
     SDL_EVENT_WINDOW_HIDDEN,            /**< Window has been hidden */
     SDL_EVENT_WINDOW_EXPOSED,           /**< Window has been exposed and should be redrawn, and can be redrawn directly from event watchers for this event */
