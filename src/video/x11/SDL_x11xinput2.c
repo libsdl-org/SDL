@@ -129,6 +129,11 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
     unsigned char mask[4] = { 0, 0, 0, 0 };
     int event, err;
 
+    /* XInput2 is required for relative mouse mode, so you probably want to leave this enabled */
+    if (!SDL_GetHintBoolean("SDL_VIDEO_X11_XINPUT2", true)) {
+        return false;
+    }
+
     /*
      * Initialize XInput 2
      * According to http://who-t.blogspot.com/2009/05/xi2-recipes-part-1.html its better
