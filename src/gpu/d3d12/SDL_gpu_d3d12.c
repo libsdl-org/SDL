@@ -2028,7 +2028,7 @@ static void D3D12_InsertDebugLabel(
         d3d12CommandBuffer->graphicsCommandList,
         0,
         wchar_text,
-        (UINT)SDL_wcslen(wchar_text));
+        (UINT)SDL_wcslen(wchar_text) * sizeof(WCHAR));
 
     SDL_free(wchar_text);
 }
@@ -2044,7 +2044,7 @@ static void D3D12_PushDebugGroup(
         d3d12CommandBuffer->graphicsCommandList,
         0,
         wchar_text,
-        (UINT)SDL_wcslen(wchar_text));
+        (UINT)SDL_wcslen(wchar_text) * sizeof(WCHAR));
 
     SDL_free(wchar_text);
 }
