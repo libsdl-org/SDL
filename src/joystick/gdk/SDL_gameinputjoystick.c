@@ -595,6 +595,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
     } else {
         bool *button_state = SDL_stack_alloc(bool, info->controllerButtonCount);
         float *axis_state = SDL_stack_alloc(float, info->controllerAxisCount);
+        GameInputSwitchPosition *switch_state = SDL_stack_alloc(GameInputSwitchPosition, info->controllerSwitchCount);
 
         if (button_state) {
             uint32_t i;
@@ -615,6 +616,46 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
             SDL_stack_free(axis_state);
         }
 #undef CONVERT_AXIS
+
+        if (switch_state) {
+            uint32_t i;
+            uint32_t switch_count = IGameInputReading_GetControllerSwitchState(reading, info->controllerSwitchCount, switch_state);
+            for (i = 0; i < switch_count; ++i) {
+                Uint8 hat;
+                switch (switch_state[i]) {
+                case GameInputSwitchUp:
+                    hat = SDL_HAT_UP;
+                    break;
+                case GameInputSwitchUpRight:
+                    hat = SDL_HAT_UP | SDL_HAT_RIGHT;
+                    break;
+                case GameInputSwitchRight:
+                    hat = SDL_HAT_RIGHT;
+                    break;
+                case GameInputSwitchDownRight:
+                    hat = SDL_HAT_DOWN | SDL_HAT_RIGHT;
+                    break;
+                case GameInputSwitchDown:
+                    hat = SDL_HAT_DOWN;
+                    break;
+                case GameInputSwitchDownLeft:
+                    hat = SDL_HAT_DOWN | SDL_HAT_LEFT;
+                    break;
+                case GameInputSwitchLeft:
+                    hat = SDL_HAT_LEFT;
+                    break;
+                case GameInputSwitchUpLeft:
+                    hat = SDL_HAT_UP | SDL_HAT_LEFT;
+                    break;
+                case GameInputSwitchCenter:
+                default:
+                    hat = SDL_HAT_CENTERED;
+                    break;
+                }
+                SDL_SendJoystickHat(timestamp, joystick, (Uint8)i, hat);
+            }
+            SDL_stack_free(switch_state);
+        }
     }
 
     if (info->supportedInput & GameInputKindTouch) {
