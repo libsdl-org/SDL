@@ -469,12 +469,13 @@ void WIN_UpdateGameInput(SDL_VideoDevice *_this)
                         device->last_mouse_reading = reading;
                     }
                     if (hr != GAMEINPUT_E_READING_NOT_FOUND) {
-                        // The last reading is too old, resynchronize
-                        IGameInputReading_Release(device->last_mouse_reading);
-                        device->last_mouse_reading = NULL;
+                        if (SUCCEEDED(IGameInput_GetCurrentReading(data->pGameInput, GameInputKindMouse, device->pDevice, &reading))) {
+                            GAMEINPUT_HandleMouseDelta(data, window, device, device->last_mouse_reading, reading);
+                            IGameInputReading_Release(device->last_mouse_reading);
+                            device->last_mouse_reading = reading;
+                        }
                     }
-                }
-                if (!device->last_mouse_reading) {
+                } else {
                     if (SUCCEEDED(IGameInput_GetCurrentReading(data->pGameInput, GameInputKindMouse, device->pDevice, &reading))) {
                         GAMEINPUT_InitialMouseReading(data, window, device, reading);
                         device->last_mouse_reading = reading;
@@ -498,12 +499,13 @@ void WIN_UpdateGameInput(SDL_VideoDevice *_this)
                             device->last_keyboard_reading = reading;
                         }
                         if (hr != GAMEINPUT_E_READING_NOT_FOUND) {
-                            // The last reading is too old, resynchronize
-                            IGameInputReading_Release(device->last_keyboard_reading);
-                            device->last_keyboard_reading = NULL;
+                            if (SUCCEEDED(IGameInput_GetCurrentReading(data->pGameInput, GameInputKindKeyboard, device->pDevice, &reading))) {
+                                GAMEINPUT_HandleKeyboardDelta(data, window, device, device->last_keyboard_reading, reading);
+                                IGameInputReading_Release(device->last_keyboard_reading);
+                                device->last_keyboard_reading = reading;
+                            }
                         }
-                    }
-                    if (!device->last_keyboard_reading) {
+                    } else {
                         if (SUCCEEDED(IGameInput_GetCurrentReading(data->pGameInput, GameInputKindKeyboard, device->pDevice, &reading))) {
                             GAMEINPUT_InitialKeyboardReading(data, window, device, reading);
                             device->last_keyboard_reading = reading;
