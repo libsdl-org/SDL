@@ -894,7 +894,8 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
 - (BOOL)hasPendingWindowOperation
 {
-    return pendingWindowOperation != PENDING_OPERATION_NONE ||
+    // A pending zoom may be deferred until leaving fullscreen, so don't block on it.
+    return (pendingWindowOperation & ~PENDING_OPERATION_ZOOM) != PENDING_OPERATION_NONE ||
            isMiniaturizing || inFullscreenTransition;
 }
 
@@ -3248,24 +3249,11 @@ bool Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
     bool result = true;
 
     @autoreleasepool {
-        /* The timeout needs to be high enough that animated fullscreen
-         * spaces transitions won't cause it to time out.
-         */
-        Uint64 timeout = SDL_GetTicksNS() + SDL_MS_TO_NS(2000);
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
-        while (true) {
+
+        do {
             SDL_PumpEvents();
-
-            if (SDL_GetTicksNS() >= timeout) {
-                result = false;
-                break;
-            }
-            if (![data.listener hasPendingWindowOperation]) {
-                break;
-            }
-
-            SDL_Delay(10);
-        }
+        } while ([data.listener hasPendingWindowOperation]);
     }
 
     return result;
