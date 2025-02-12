@@ -1518,6 +1518,7 @@ static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
         return NULL;
     }
     if (ioctl(fd_item, EVIOCGUNIQ(sizeof(uniq_item) - 1), &uniq_item) < 0) {
+        close(fd_item);
         return NULL;
     }
     close(fd_item);
