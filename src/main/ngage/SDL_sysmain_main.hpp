@@ -18,16 +18,24 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
-// Do our best to make sure va_copy is working
-#if defined(_MSC_VER) && _MSC_VER <= 1800
-// Visual Studio 2013 tries to link with _vacopy in the C runtime. Newer versions do an inline assignment
-#undef va_copy
-#define va_copy(dst, src) dst = src
+#include <e32std.h>
 
-#elif defined(__GNUC__) && (__GNUC__ < 3)
-#define va_copy(dst, src) __va_copy(dst, src)
+class CSDLmain : public CActive
+{
+public:
+    static CSDLmain* NewL();
+    ~CSDLmain();
 
-#elif defined(__SYMBIAN32__)
-extern void va_copy(char* dest, char* src);
-#endif
+    void Start();
+
+protected:
+    void DoCancel() ;
+    void RunL();
+
+private:
+    CSDLmain();
+    void ConstructL();
+    SDL_AppResult iResult;
+};
