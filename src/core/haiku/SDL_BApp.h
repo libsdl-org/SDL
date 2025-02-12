@@ -293,12 +293,9 @@ class SDL_BLooper : public BLooper
 
     void _HandleKey(BMessage *msg)
     {
-        SDL_Window *win;
-        int32 winID;
         int32 scancode;
-		bool down;
+        bool down;
         if (
-            !_GetWinID(msg, &winID) ||
             msg->FindInt32("key-scancode", &scancode) != B_OK ||
             msg->FindBool("key-down", &down) != B_OK) {
             return;
@@ -306,15 +303,17 @@ class SDL_BLooper : public BLooper
 
         SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, scancode, HAIKU_GetScancodeFromBeKey(scancode), down);
 
-        win = GetSDLWindow(winID);
-        if (down && SDL_TextInputActive(win)) {
-            const int8 *keyUtf8;
-            ssize_t count;
-            if (msg->FindData("key-utf8", B_INT8_TYPE, (const void **)&keyUtf8, &count) == B_OK) {
-                char text[64];
-                SDL_zeroa(text);
-                SDL_memcpy(text, keyUtf8, count);
-                SDL_SendKeyboardText(text);
+        if (down) {
+            SDL_Window *win = SDL_GetKeyboardFocus();
+            if (win && SDL_TextInputActive(win)) {
+                const int8 *keyUtf8;
+                ssize_t count;
+                if (msg->FindData("key-utf8", B_INT8_TYPE, (const void **)&keyUtf8, &count) == B_OK) {
+                    char text[64];
+                    SDL_zeroa(text);
+                    SDL_memcpy(text, keyUtf8, count);
+                    SDL_SendKeyboardText(text);
+                }
             }
         }
     }
