@@ -346,7 +346,7 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *windo
         if (eraser && ((input_state & SDL_PEN_INPUT_ERASER_TIP) == 0)) {
             input_state |= SDL_PEN_INPUT_ERASER_TIP;
             send_event = true;
-        } else if (!down && (input_state & SDL_PEN_INPUT_ERASER_TIP)) {
+        } else if (!eraser && (input_state & SDL_PEN_INPUT_ERASER_TIP)) {
             input_state &= ~SDL_PEN_INPUT_ERASER_TIP;
             send_event = true;
         }
