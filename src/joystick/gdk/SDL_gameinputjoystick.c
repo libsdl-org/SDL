@@ -24,9 +24,7 @@
 
 #include "../SDL_sysjoystick.h"
 #include "../usb_ids.h"
-
-#define COBJMACROS
-#include <gameinput.h>
+#include "../../core/windows/SDL_gameinput.h"
 
 // Default value for SDL_HINT_JOYSTICK_GAMEINPUT
 #if defined(SDL_PLATFORM_GDK)
@@ -67,11 +65,9 @@ typedef struct joystick_hwdata
 } GAMEINPUT_InternalJoystickHwdata;
 
 static GAMEINPUT_InternalList g_GameInputList = { NULL };
-static SDL_SharedObject *g_hGameInputDLL = NULL;
 static IGameInput *g_pGameInput = NULL;
 static GameInputCallbackToken g_GameInputCallbackToken = GAMEINPUT_INVALID_CALLBACK_TOKEN_VALUE;
 static Uint64 g_GameInputTimestampOffset;
-
 
 static bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
 {
@@ -245,24 +241,8 @@ static bool GAMEINPUT_JoystickInit(void)
         return true;
     }
 
-    if (!g_hGameInputDLL) {
-        g_hGameInputDLL = SDL_LoadObject("gameinput.dll");
-        if (!g_hGameInputDLL) {
-            return false;
-        }
-    }
-
-    if (!g_pGameInput) {
-        typedef HRESULT (WINAPI *GameInputCreate_t)(IGameInput * *gameInput);
-        GameInputCreate_t GameInputCreateFunc = (GameInputCreate_t)SDL_LoadFunction(g_hGameInputDLL, "GameInputCreate");
-        if (!GameInputCreateFunc) {
-            return false;
-        }
-
-        hR = GameInputCreateFunc(&g_pGameInput);
-        if (FAILED(hR)) {
-            return SDL_SetError("GameInputCreate failure with HRESULT of %08lX", hR);
-        }
+    if (!SDL_InitGameInput(&g_pGameInput)) {
+        return false;
     }
 
     hR = IGameInput_RegisterDeviceCallback(g_pGameInput,
@@ -689,13 +669,8 @@ static void GAMEINPUT_JoystickQuit(void)
             GAMEINPUT_InternalRemoveByIndex(0);
         }
 
-        IGameInput_Release(g_pGameInput);
+        SDL_QuitGameInput();
         g_pGameInput = NULL;
-    }
-
-    if (g_hGameInputDLL) {
-        SDL_UnloadObject(g_hGameInputDLL);
-        g_hGameInputDLL = NULL;
     }
 }
 

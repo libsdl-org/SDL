@@ -27,9 +27,7 @@
 
 #ifdef HAVE_GAMEINPUT_H
 
-#define COBJMACROS
-#include <gameinput.h>
-
+#include "../../core/windows/SDL_gameinput.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/scancodes_windows.h"
@@ -61,7 +59,6 @@ typedef struct GAMEINPUT_Device
 
 struct WIN_GameInputData
 {
-    void *hGameInputDLL;
     IGameInput *pGameInput;
     GameInputCallbackToken gameinput_callback_token;
     int num_devices;
@@ -237,20 +234,7 @@ bool WIN_InitGameInput(SDL_VideoDevice *_this)
         goto done;
     }
 
-    data->hGameInputDLL = SDL_LoadObject("gameinput.dll");
-    if (!data->hGameInputDLL) {
-        goto done;
-    }
-
-    typedef HRESULT (WINAPI *GameInputCreate_t)(IGameInput * *gameInput);
-    GameInputCreate_t GameInputCreateFunc = (GameInputCreate_t)SDL_LoadFunction(data->hGameInputDLL, "GameInputCreate");
-    if (!GameInputCreateFunc) {
-        goto done;
-    }
-
-    hr = GameInputCreateFunc(&data->pGameInput);
-    if (FAILED(hr)) {
-        SDL_SetError("GameInputCreate failure with HRESULT of %08X", hr);
+    if (!SDL_InitGameInput(&data->pGameInput)) {
         goto done;
     }
 
@@ -587,9 +571,9 @@ void WIN_QuitGameInput(SDL_VideoDevice *_this)
         data->pGameInput = NULL;
     }
 
-    if (data->hGameInputDLL) {
-        SDL_UnloadObject(data->hGameInputDLL);
-        data->hGameInputDLL = NULL;
+    if (data->pGameInput) {
+        SDL_QuitGameInput();
+        data->pGameInput = NULL;
     }
 
     if (data->lock) {
