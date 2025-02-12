@@ -326,6 +326,8 @@ struct SDL_Tray {
     SDL_TrayMenu *menu;
     char icon_dir[sizeof(ICON_DIR_TEMPLATE)];
     char icon_path[256];
+
+    GtkMenuShell *menu_cached;
 };
 
 static void call_callback(GtkMenuItem *item, gpointer ptr)
@@ -433,6 +435,10 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
     app_indicator_set_status(tray->indicator, APP_INDICATOR_STATUS_ACTIVE);
 
+    // The tray icon isn't shown before a menu is created; create one early.
+    tray->menu_cached = (GtkMenuShell *) gtk_menu_new();
+    app_indicator_set_menu(tray->indicator, GTK_MENU(tray->menu_cached));
+
     SDL_RegisterTray(tray);
 
     return tray;
@@ -476,13 +482,11 @@ SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
         return NULL;
     }
 
-    tray->menu->menu = (GtkMenuShell *)gtk_menu_new();
+    tray->menu->menu = tray->menu_cached;
     tray->menu->parent_tray = tray;
     tray->menu->parent_entry = NULL;
     tray->menu->nEntries = 0;
     tray->menu->entries = NULL;
-
-    app_indicator_set_menu(tray->indicator, GTK_MENU(tray->menu->menu));
 
     return tray->menu;
 }
