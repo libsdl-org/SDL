@@ -136,6 +136,7 @@ const char *SDL_GetAudioDriver(int index)
     if (index >= 0 && index < SDL_GetNumAudioDrivers()) {
         return deduped_bootstrap[index]->name;
     }
+    SDL_InvalidParamError("index");
     return NULL;
 }
 

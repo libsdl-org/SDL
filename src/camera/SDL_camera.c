@@ -74,6 +74,7 @@ const char *SDL_GetCameraDriver(int index)
     if (index >= 0 && index < SDL_GetNumCameraDrivers()) {
         return bootstrap[index]->name;
     }
+    SDL_InvalidParamError("index");
     return NULL;
 }
 
