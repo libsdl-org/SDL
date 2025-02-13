@@ -748,10 +748,8 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
 
     // modify internal state
     {
-        if (relative) {
-            mouse->x_accu += xrel;
-            mouse->y_accu += yrel;
-        }
+        mouse->x_accu += xrel;
+        mouse->y_accu += yrel;
 
         if (relative && mouse->has_position) {
             mouse->x += xrel;
