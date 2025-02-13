@@ -292,7 +292,7 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
         name = IDC_CROSS;
         break;
     case SDL_SYSTEM_CURSOR_PROGRESS:
-        name = IDC_WAIT;
+        name = IDC_APPSTARTING;
         break;
     case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
         name = IDC_SIZENWSE;
