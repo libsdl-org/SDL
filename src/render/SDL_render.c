@@ -810,8 +810,7 @@ const char *SDL_GetRenderDriver(int index)
 {
 #ifndef SDL_RENDER_DISABLED
     if (index < 0 || index >= SDL_GetNumRenderDrivers()) {
-        SDL_SetError("index must be in the range of 0 - %d",
-                            SDL_GetNumRenderDrivers() - 1);
+        SDL_InvalidParamError("index");
         return NULL;
     }
     return render_drivers[index]->name;
