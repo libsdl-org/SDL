@@ -38,6 +38,7 @@
 #include "cursor-shape-v1-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
+#include "pointer-warp-v1-client-protocol.h"
 
 #include "../../SDL_hints_c.h"
 
@@ -821,7 +822,12 @@ static bool Wayland_WarpMouse(SDL_Window *window, float x, float y)
     SDL_WindowData *wind = window->internal;
     struct SDL_WaylandInput *input = d->input;
 
-    if (d->pointer_constraints) {
+    if (d->pointer_warp) {
+        // it's a protocol error to warp the pointer outside of the surface, so clamp the position
+        const wl_fixed_t f_x = wl_fixed_from_double(SDL_clamp(x / wind->pointer_scale.x, 0, window->w));
+        const wl_fixed_t f_y = wl_fixed_from_double(SDL_clamp(y / wind->pointer_scale.y, 0, window->h));
+        wp_pointer_warp_v1_warp_pointer(d->pointer_warp, wind->surface, input->pointer, f_x, f_y, input->pointer_enter_serial);
+    } else if (d->pointer_constraints) {
         const bool toggle_lock = !wind->locked_pointer;
 
         /* The pointer confinement protocol allows setting a hint to warp the pointer,
