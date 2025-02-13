@@ -53,7 +53,7 @@ static char **environ;
 
 struct SDL_Environment
 {
-    SDL_Mutex *lock;
+    SDL_Mutex *lock;   // !!! FIXME: reuse SDL_HashTable's lock.
     SDL_HashTable *strings;
 };
 static SDL_Environment *SDL_environment;
@@ -88,13 +88,13 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
         return NULL;
     }
 
-    env->strings = SDL_CreateHashTable(NULL, 16, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeKey, false, false);
+    env->strings = SDL_CreateHashTable(0, false, SDL_HashString, SDL_KeyMatchString, SDL_DestroyHashKey, NULL);
     if (!env->strings) {
         SDL_free(env);
         return NULL;
     }
 
-    // Don't fail if we can't create a mutex (e.g. on a single-thread environment)
+    // Don't fail if we can't create a mutex (e.g. on a single-thread environment)  // !!! FIXME: single-threaded environments should still return a non-NULL, do-nothing object here. Check for failure!
     env->lock = SDL_CreateMutex();
 
     if (populated) {
@@ -114,7 +114,7 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
                 }
                 *value++ = '\0';
 
-                SDL_InsertIntoHashTable(env->strings, variable, value);
+                SDL_InsertIntoHashTable(env->strings, variable, value, true);
             }
             FreeEnvironmentStringsW(strings);
         }
@@ -138,7 +138,7 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
                 }
                 *value++ = '\0';
 
-                SDL_InsertIntoHashTable(env->strings, variable, value);
+                SDL_InsertIntoHashTable(env->strings, variable, value, true);
             }
         }
 #endif // SDL_PLATFORM_WINDOWS
@@ -170,6 +170,49 @@ const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
     return result;
 }
 
+typedef struct CountEnvStringsData
+{
+    size_t count;
+    size_t length;
+} CountEnvStringsData;
+
+static bool SDLCALL CountEnvStrings(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    CountEnvStringsData *data = (CountEnvStringsData *) userdata;
+    data->length += SDL_strlen((const char *) key) + 1 + SDL_strlen((const char *) value) + 1;
+    data->count++;
+    return true;  // keep iterating.
+}
+
+typedef struct CopyEnvStringsData
+{
+    char **result;
+    char *string;
+    size_t count;
+} CopyEnvStringsData;
+
+static bool SDLCALL CopyEnvStrings(void *userdata, const SDL_HashTable *table, const void *vkey, const void *vvalue)
+{
+    CopyEnvStringsData *data = (CopyEnvStringsData *) userdata;
+    const char *key = (const char *) vkey;
+    const char *value = (const char *) vvalue;
+    size_t len;
+
+    len = SDL_strlen(key);
+    data->result[data->count] = data->string;
+    SDL_memcpy(data->string, key, len);
+    data->string += len;
+    *(data->string++) = '=';
+
+    len = SDL_strlen(value);
+    SDL_memcpy(data->string, value, len);
+    data->string += len;
+    *(data->string++) = '\0';
+    data->count++;
+
+    return true;  // keep iterating.
+}
+
 char **SDL_GetEnvironmentVariables(SDL_Environment *env)
 {
     char **result = NULL;
@@ -181,40 +224,20 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
 
     SDL_LockMutex(env->lock);
     {
-        size_t count, length = 0;
-        void *iter;
-        const char *key, *value;
-
         // First pass, get the size we need for all the strings
-        count = 0;
-        iter = NULL;
-        while (SDL_IterateHashTable(env->strings, (const void **)&key, (const void **)&value, &iter)) {
-            length += SDL_strlen(key) + 1 + SDL_strlen(value) + 1;
-            ++count;
-        }
+        CountEnvStringsData countdata = { 0, 0 };
+        SDL_IterateHashTable(env->strings, CountEnvStrings, &countdata);
 
         // Allocate memory for the strings
-        result = (char **)SDL_malloc((count + 1) * sizeof(*result) + length);
-        char *string = (char *)(result + count + 1);
-
-        // Second pass, copy the strings
-        count = 0;
-        iter = NULL;
-        while (SDL_IterateHashTable(env->strings, (const void **)&key, (const void **)&value, &iter)) {
-            size_t len;
-
-            result[count] = string;
-            len = SDL_strlen(key);
-            SDL_memcpy(string, key, len);
-            string += len;
-            *string++ = '=';
-            len = SDL_strlen(value);
-            SDL_memcpy(string, value, len);
-            string += len;
-            *string++ = '\0';
-            ++count;
+        result = (char **)SDL_malloc((countdata.count + 1) * sizeof(*result) + countdata.length);
+        if (result) {
+            // Second pass, copy the strings
+            char *string = (char *)(result + countdata.count + 1);
+            CopyEnvStringsData cpydata = { result, string, 0 };
+            SDL_IterateHashTable(env->strings, CopyEnvStrings, &cpydata);
+            SDL_assert(countdata.count == cpydata.count);
+            result[cpydata.count] = NULL;
         }
-        result[count] = NULL;
     }
     SDL_UnlockMutex(env->lock);
 
@@ -235,26 +258,23 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
 
     SDL_LockMutex(env->lock);
     {
-        const void *existing_value;
-        bool insert = true;
-
-        if (SDL_FindInHashTable(env->strings, name, &existing_value)) {
-            if (!overwrite) {
-                result = true;
-                insert = false;
-            } else {
-                SDL_RemoveFromHashTable(env->strings, name);
-            }
-        }
-
-        if (insert) {
-            char *string = NULL;
-            if (SDL_asprintf(&string, "%s=%s", name, value) > 0) {
-                size_t len = SDL_strlen(name);
-                string[len] = '\0';
-                name = string;
-                value = string + len + 1;
-                result = SDL_InsertIntoHashTable(env->strings, name, value);
+        char *string = NULL;
+        if (SDL_asprintf(&string, "%s=%s", name, value) > 0) {
+            const size_t len = SDL_strlen(name);
+            string[len] = '\0';
+            const char *origname = name;
+            name = string;
+            value = string + len + 1;
+            result = SDL_InsertIntoHashTable(env->strings, name, value, overwrite);
+            if (!result) {
+                SDL_free(string);
+                if (!overwrite) {
+                    const void *existing_value = NULL;
+                    // !!! FIXME: InsertIntoHashTable does this lookup too, maybe we should have a means to report that, to avoid duplicate work?
+                    if (SDL_FindInHashTable(env->strings, origname, &existing_value)) {
+                        result = true;  // it already existed, and we refused to overwrite it. Call it success.
+                    }
+                }
             }
         }
     }

@@ -135,12 +135,12 @@ Uint32 SDL_GetNextObjectID(void)
 static SDL_InitState SDL_objects_init;
 static SDL_HashTable *SDL_objects;
 
-static Uint32 SDL_HashObject(const void *key, void *unused)
+static Uint32 SDLCALL SDL_HashObject(void *unused, const void *key)
 {
     return (Uint32)(uintptr_t)key;
 }
 
-static bool SDL_KeyMatchObject(const void *a, const void *b, void *unused)
+static bool SDL_KeyMatchObject(void *unused, const void *a, const void *b)
 {
     return (a == b);
 }
@@ -149,16 +149,17 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
 {
     SDL_assert(object != NULL);
 
-    if (valid && SDL_ShouldInit(&SDL_objects_init)) {
-        SDL_objects = SDL_CreateHashTable(NULL, 32, SDL_HashObject, SDL_KeyMatchObject, NULL, true, false);
-        if (!SDL_objects) {
-            SDL_SetInitialized(&SDL_objects_init, false);
+    if (SDL_ShouldInit(&SDL_objects_init)) {
+        SDL_objects = SDL_CreateHashTable(0, true, SDL_HashObject, SDL_KeyMatchObject, NULL, NULL);
+        const bool initialized = (SDL_objects != NULL);
+        SDL_SetInitialized(&SDL_objects_init, initialized);
+        if (!initialized) {
+            return;
         }
-        SDL_SetInitialized(&SDL_objects_init, true);
     }
 
     if (valid) {
-        SDL_InsertIntoHashTable(SDL_objects, object, (void *)(uintptr_t)type);
+        SDL_InsertIntoHashTable(SDL_objects, object, (void *)(uintptr_t)type, true);
     } else {
         SDL_RemoveFromHashTable(SDL_objects, object);
     }
@@ -178,75 +179,65 @@ bool SDL_ObjectValid(void *object, SDL_ObjectType type)
     return (((SDL_ObjectType)(uintptr_t)object_type) == type);
 }
 
+typedef struct GetOneObjectData
+{
+    const SDL_ObjectType type;
+    void **objects;
+    const int count;
+    int num_objects;
+} GetOneObjectData;
+
+static bool SDLCALL GetOneObject(void *userdata, const SDL_HashTable *table, const void *object, const void *object_type)
+{
+    GetOneObjectData *data = (GetOneObjectData *) userdata;
+    if ((SDL_ObjectType)(uintptr_t)object_type == data->type) {
+        if (data->num_objects < data->count) {
+            data->objects[data->num_objects] = (void *)object;
+        }
+        ++data->num_objects;
+    }
+    return true;  // keep iterating.
+}
+
+
 int SDL_GetObjects(SDL_ObjectType type, void **objects, int count)
 {
-    const void *object, *object_type;
-    void *iter = NULL;
-    int num_objects = 0;
-    while (SDL_IterateHashTable(SDL_objects, &object, &object_type, &iter)) {
-        if ((SDL_ObjectType)(uintptr_t)object_type == type) {
-            if (num_objects < count) {
-                objects[num_objects] = (void *)object;
-            }
-            ++num_objects;
-        }
+    GetOneObjectData data = { type, objects, count, 0 };
+    SDL_IterateHashTable(SDL_objects, GetOneObject, &data);
+    return data.num_objects;
+}
+
+static bool SDLCALL LogOneLeakedObject(void *userdata, const SDL_HashTable *table, const void *object, const void *object_type)
+{
+    const char *type = "unknown object";
+    switch ((SDL_ObjectType)(uintptr_t)object_type) {
+        #define SDLOBJTYPECASE(typ, name) case SDL_OBJECT_TYPE_##typ: type = name; break
+        SDLOBJTYPECASE(WINDOW, "SDL_Window");
+        SDLOBJTYPECASE(RENDERER, "SDL_Renderer");
+        SDLOBJTYPECASE(TEXTURE, "SDL_Texture");
+        SDLOBJTYPECASE(JOYSTICK, "SDL_Joystick");
+        SDLOBJTYPECASE(GAMEPAD, "SDL_Gamepad");
+        SDLOBJTYPECASE(HAPTIC, "SDL_Haptic");
+        SDLOBJTYPECASE(SENSOR, "SDL_Sensor");
+        SDLOBJTYPECASE(HIDAPI_DEVICE, "hidapi device");
+        SDLOBJTYPECASE(HIDAPI_JOYSTICK, "hidapi joystick");
+        SDLOBJTYPECASE(THREAD, "thread");
+        SDLOBJTYPECASE(TRAY, "SDL_Tray");
+        #undef SDLOBJTYPECASE
+        default: break;
     }
-    return num_objects;
+    SDL_Log("Leaked %s (%p)", type, object);
+    return true;  // keep iterating.
 }
 
 void SDL_SetObjectsInvalid(void)
 {
     if (SDL_ShouldQuit(&SDL_objects_init)) {
         // Log any leaked objects
-        const void *object, *object_type;
-        void *iter = NULL;
-        while (SDL_IterateHashTable(SDL_objects, &object, &object_type, &iter)) {
-            const char *type;
-            switch ((SDL_ObjectType)(uintptr_t)object_type) {
-            case SDL_OBJECT_TYPE_WINDOW:
-                type = "SDL_Window";
-                break;
-            case SDL_OBJECT_TYPE_RENDERER:
-                type = "SDL_Renderer";
-                break;
-            case SDL_OBJECT_TYPE_TEXTURE:
-                type = "SDL_Texture";
-                break;
-            case SDL_OBJECT_TYPE_JOYSTICK:
-                type = "SDL_Joystick";
-                break;
-            case SDL_OBJECT_TYPE_GAMEPAD:
-                type = "SDL_Gamepad";
-                break;
-            case SDL_OBJECT_TYPE_HAPTIC:
-                type = "SDL_Haptic";
-                break;
-            case SDL_OBJECT_TYPE_SENSOR:
-                type = "SDL_Sensor";
-                break;
-            case SDL_OBJECT_TYPE_HIDAPI_DEVICE:
-                type = "hidapi device";
-                break;
-            case SDL_OBJECT_TYPE_HIDAPI_JOYSTICK:
-                type = "hidapi joystick";
-                break;
-            case SDL_OBJECT_TYPE_THREAD:
-                type = "thread";
-                break;
-            case SDL_OBJECT_TYPE_TRAY:
-                type = "SDL_Tray";
-                break;
-            default:
-                type = "unknown object";
-                break;
-            }
-            SDL_Log("Leaked %s (%p)", type, object);
-        }
+        SDL_IterateHashTable(SDL_objects, LogOneLeakedObject, NULL);
         SDL_assert(SDL_HashTableEmpty(SDL_objects));
-
         SDL_DestroyHashTable(SDL_objects);
         SDL_objects = NULL;
-
         SDL_SetInitialized(&SDL_objects_init, false);
     }
 }
@@ -384,7 +375,7 @@ const char *SDL_GetPersistentString(const char *string)
 
     SDL_HashTable *strings = (SDL_HashTable *)SDL_GetTLS(&SDL_string_storage);
     if (!strings) {
-        strings = SDL_CreateHashTable(NULL, 32, SDL_HashString, SDL_KeyMatchString, SDL_NukeFreeValue, false, false);
+        strings = SDL_CreateHashTable(0, false, SDL_HashString, SDL_KeyMatchString, SDL_DestroyHashValue, NULL);
         if (!strings) {
             return NULL;
         }
@@ -400,7 +391,7 @@ const char *SDL_GetPersistentString(const char *string)
         }
 
         // If the hash table insert fails, at least we can return the string we allocated
-        SDL_InsertIntoHashTable(strings, new_string, new_string);
+        SDL_InsertIntoHashTable(strings, new_string, new_string, false);
         result = new_string;
     }
     return result;

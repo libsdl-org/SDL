@@ -76,7 +76,7 @@ static void SDL_FreePropertyWithCleanup(const void *key, const void *value, void
     SDL_free((void *)value);
 }
 
-static void SDL_FreeProperty(const void *key, const void *value, void *data)
+static void SDLCALL SDL_FreeProperty(void *data, const void *key, const void *value)
 {
     SDL_FreePropertyWithCleanup(key, value, data, true);
 }
@@ -84,14 +84,8 @@ static void SDL_FreeProperty(const void *key, const void *value, void *data)
 static void SDL_FreeProperties(SDL_Properties *properties)
 {
     if (properties) {
-        if (properties->props) {
-            SDL_DestroyHashTable(properties->props);
-            properties->props = NULL;
-        }
-        if (properties->lock) {
-            SDL_DestroyMutex(properties->lock);
-            properties->lock = NULL;
-        }
+        SDL_DestroyHashTable(properties->props);
+        SDL_DestroyMutex(properties->lock);
         SDL_free(properties);
     }
 }
@@ -102,18 +96,16 @@ bool SDL_InitProperties(void)
         return true;
     }
 
-    SDL_properties = SDL_CreateHashTable(NULL, 16, SDL_HashID, SDL_KeyMatchID, NULL, true, false);
-    if (!SDL_properties) {
-        goto error;
-    }
+    SDL_properties = SDL_CreateHashTable(0, true, SDL_HashID, SDL_KeyMatchID, NULL, NULL);
+    const bool initialized = (SDL_properties != NULL);
+    SDL_SetInitialized(&SDL_properties_init, initialized);
+    return initialized;
+}
 
-    SDL_SetInitialized(&SDL_properties_init, true);
-    return true;
-
-error:
-    SDL_SetInitialized(&SDL_properties_init, true);
-    SDL_QuitProperties();
-    return false;
+static bool SDLCALL FreeOneProperties(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    SDL_FreeProperties((SDL_Properties *)value);
+    return true;  // keep iterating.
 }
 
 void SDL_QuitProperties(void)
@@ -131,17 +123,12 @@ void SDL_QuitProperties(void)
         SDL_DestroyProperties(props);
     }
 
-    if (SDL_properties) {
-        void *iter;
-        const void *key, *value;
-
-        iter = NULL;
-        while (SDL_IterateHashTable(SDL_properties, &key, &value, &iter)) {
-            SDL_FreeProperties((SDL_Properties *)value);
-        }
-        SDL_DestroyHashTable(SDL_properties);
-        SDL_properties = NULL;
-    }
+    // this can't just DestroyHashTable with SDL_FreeProperties as the destructor, because
+    //  other destructors under this might cause use to attempt a recursive lock on SDL_properties,
+    //  which isn't allowed with rwlocks. So manually iterate and free everything.
+    SDL_IterateHashTable(SDL_properties, FreeOneProperties, NULL);
+    SDL_DestroyHashTable(SDL_properties);
+    SDL_properties = NULL;
 
     SDL_SetInitialized(&SDL_properties_init, false);
 }
@@ -167,55 +154,101 @@ SDL_PropertiesID SDL_GetGlobalProperties(void)
 
 SDL_PropertiesID SDL_CreateProperties(void)
 {
-    SDL_PropertiesID props = 0;
-    SDL_Properties *properties = NULL;
-    bool inserted = false;
-
     if (!SDL_CheckInitProperties()) {
         return 0;
     }
 
-    properties = (SDL_Properties *)SDL_calloc(1, sizeof(*properties));
+    SDL_Properties *properties = (SDL_Properties *)SDL_calloc(1, sizeof(*properties));
     if (!properties) {
-        goto error;
-    }
-    properties->props = SDL_CreateHashTable(NULL, 4, SDL_HashString, SDL_KeyMatchString, SDL_FreeProperty, false, false);
-    if (!properties->props) {
-        goto error;
+        return 0;
     }
 
-    // If this fails we'll continue without it.
     properties->lock = SDL_CreateMutex();
+    if (!properties->lock) {
+        SDL_free(properties);
+        return 0;
+    }
 
-    for ( ; ; ) {
+    properties->props = SDL_CreateHashTable(0, false, SDL_HashString, SDL_KeyMatchString, SDL_FreeProperty, NULL);
+    if (!properties->props) {
+        SDL_DestroyMutex(properties->lock);
+        SDL_free(properties);
+        return 0;
+    }
+
+    SDL_PropertiesID props = 0;
+    while (true) {
         props = (SDL_GetAtomicU32(&SDL_last_properties_id) + 1);
         if (props == 0) {
             continue;
-        }
-        if (SDL_CompareAndSwapAtomicU32(&SDL_last_properties_id, props - 1, props)) {
+        } else if (SDL_CompareAndSwapAtomicU32(&SDL_last_properties_id, props - 1, props)) {
             break;
         }
     }
-    if (SDL_InsertIntoHashTable(SDL_properties, (const void *)(uintptr_t)props, properties)) {
-        inserted = true;
+
+    SDL_assert(!SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, NULL));  // should NOT be in the hash table already.
+
+    if (!SDL_InsertIntoHashTable(SDL_properties, (const void *)(uintptr_t)props, properties, false)) {
+        SDL_FreeProperties(properties);
+        return 0;
     }
 
-    if (inserted) {
-        // All done!
-        return props;
+    return props;  // All done!
+}
+
+typedef struct CopyOnePropertyData
+{
+    SDL_Properties *dst_properties;
+    bool result;
+} CopyOnePropertyData;
+
+static bool SDLCALL CopyOneProperty(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    const SDL_Property *src_property = (const SDL_Property *)value;
+    if (src_property->cleanup) {
+        // Can't copy properties with cleanup functions, we don't know how to duplicate the data
+        return true;  // keep iterating.
     }
 
-error:
-    SDL_FreeProperties(properties);
-    return 0;
+    CopyOnePropertyData *data = (CopyOnePropertyData *) userdata;
+    SDL_Properties *dst_properties = data->dst_properties;
+    const char *src_name = (const char *)key;
+    SDL_Property *dst_property;
+
+    char *dst_name = SDL_strdup(src_name);
+    if (!dst_name) {
+        data->result = false;
+        return true; // keep iterating (I guess...?)
+    }
+
+    dst_property = (SDL_Property *)SDL_malloc(sizeof(*dst_property));
+    if (!dst_property) {
+        SDL_free(dst_name);
+        data->result = false;
+        return true; // keep iterating (I guess...?)
+    }
+
+    SDL_copyp(dst_property, src_property);
+    if (src_property->type == SDL_PROPERTY_TYPE_STRING) {
+        dst_property->value.string_value = SDL_strdup(src_property->value.string_value);
+        if (!dst_property->value.string_value) {
+            SDL_free(dst_name);
+            SDL_free(dst_property);
+            data->result = false;
+            return true; // keep iterating (I guess...?)
+        }
+    }
+
+    if (!SDL_InsertIntoHashTable(dst_properties->props, dst_name, dst_property, true)) {
+        SDL_FreePropertyWithCleanup(dst_name, dst_property, NULL, false);
+        data->result = false;
+    }
+
+    return true;  // keep iterating.
 }
 
 bool SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
 {
-    SDL_Properties *src_properties = NULL;
-    SDL_Properties *dst_properties = NULL;
-    bool result = true;
-
     if (!src) {
         return SDL_InvalidParamError("src");
     }
@@ -223,55 +256,25 @@ bool SDL_CopyProperties(SDL_PropertiesID src, SDL_PropertiesID dst)
         return SDL_InvalidParamError("dst");
     }
 
+    SDL_Properties *src_properties = NULL;
+    SDL_Properties *dst_properties = NULL;
+
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)src, (const void **)&src_properties);
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)dst, (const void **)&dst_properties);
     if (!src_properties) {
         return SDL_InvalidParamError("src");
     }
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)dst, (const void **)&dst_properties);
     if (!dst_properties) {
         return SDL_InvalidParamError("dst");
     }
 
+    bool result = true;
     SDL_LockMutex(src_properties->lock);
     SDL_LockMutex(dst_properties->lock);
     {
-        void *iter;
-        const void *key, *value;
-
-        iter = NULL;
-        while (SDL_IterateHashTable(src_properties->props, &key, &value, &iter)) {
-            const char *src_name = (const char *)key;
-            const SDL_Property *src_property = (const SDL_Property *)value;
-            char *dst_name;
-            SDL_Property *dst_property;
-
-            if (src_property->cleanup) {
-                // Can't copy properties with cleanup functions, we don't know how to duplicate the data
-                continue;
-            }
-
-            SDL_RemoveFromHashTable(dst_properties->props, src_name);
-
-            dst_name = SDL_strdup(src_name);
-            if (!dst_name) {
-                result = false;
-                continue;
-            }
-            dst_property = (SDL_Property *)SDL_malloc(sizeof(*dst_property));
-            if (!dst_property) {
-                SDL_free(dst_name);
-                result = false;
-                continue;
-            }
-            SDL_copyp(dst_property, src_property);
-            if (src_property->type == SDL_PROPERTY_TYPE_STRING) {
-                dst_property->value.string_value = SDL_strdup(src_property->value.string_value);
-            }
-            if (!SDL_InsertIntoHashTable(dst_properties->props, dst_name, dst_property)) {
-                SDL_FreePropertyWithCleanup(dst_name, dst_property, NULL, false);
-                result = false;
-            }
-        }
+        CopyOnePropertyData data = { dst_properties, true };
+        SDL_IterateHashTable(src_properties->props, CopyOneProperty, &data);
+        result = data.result;
     }
     SDL_UnlockMutex(dst_properties->lock);
     SDL_UnlockMutex(src_properties->lock);
@@ -337,7 +340,7 @@ static bool SDL_PrivateSetProperty(SDL_PropertiesID props, const char *name, SDL
         SDL_RemoveFromHashTable(properties->props, name);
         if (property) {
             char *key = SDL_strdup(name);
-            if (!SDL_InsertIntoHashTable(properties->props, key, property)) {
+            if (!key || !SDL_InsertIntoHashTable(properties->props, key, property, false)) {
                 SDL_FreePropertyWithCleanup(key, property, NULL, true);
                 result = false;
             }
@@ -518,10 +521,9 @@ void *SDL_GetPointerProperty(SDL_PropertiesID props, const char *name, void *def
         return value;
     }
 
-    /* Note that taking the lock here only guarantees that we won't read the
-     * hashtable while it's being modified. The value itself can easily be
-     * freed from another thread after it is returned here.
-     */
+    // Note that taking the lock here only guarantees that we won't read the
+    // hashtable while it's being modified. The value itself can easily be
+    // freed from another thread after it is returned here.
     SDL_LockMutex(properties->lock);
     {
         SDL_Property *property = NULL;
@@ -731,6 +733,23 @@ bool SDL_ClearProperty(SDL_PropertiesID props, const char *name)
     return SDL_PrivateSetProperty(props, name, NULL);
 }
 
+typedef struct EnumerateOnePropertyData
+{
+    SDL_EnumeratePropertiesCallback callback;
+    void *userdata;
+    SDL_PropertiesID props;
+} EnumerateOnePropertyData;
+
+
+static bool SDLCALL EnumerateOneProperty(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    (void) table;
+    (void) value;
+    const EnumerateOnePropertyData *data = (const EnumerateOnePropertyData *) userdata;
+    data->callback(data->userdata, data->props, (const char *)key);
+    return true;  // keep iterating.
+}
+
 bool SDL_EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCallback callback, void *userdata)
 {
     SDL_Properties *properties = NULL;
@@ -749,13 +768,8 @@ bool SDL_EnumerateProperties(SDL_PropertiesID props, SDL_EnumeratePropertiesCall
 
     SDL_LockMutex(properties->lock);
     {
-        void *iter;
-        const void *key, *value;
-
-        iter = NULL;
-        while (SDL_IterateHashTable(properties->props, &key, &value, &iter)) {
-            callback(userdata, props, (const char *)key);
-        }
+        EnumerateOnePropertyData data = { callback, userdata, props };
+        SDL_IterateHashTable(properties->props, EnumerateOneProperty, &data);
     }
     SDL_UnlockMutex(properties->lock);
 
@@ -796,14 +810,14 @@ bool SDL_DumpProperties(SDL_PropertiesID props)
 
 void SDL_DestroyProperties(SDL_PropertiesID props)
 {
-    SDL_Properties *properties = NULL;
-
-    if (!props) {
-        return;
-    }
-
-    if (SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties)) {
-        SDL_FreeProperties(properties);
-        SDL_RemoveFromHashTable(SDL_properties, (const void *)(uintptr_t)props);
+    if (props) {
+        // this can't just use RemoveFromHashTable with SDL_FreeProperties as the destructor, because
+        //  other destructors under this might cause use to attempt a recursive lock on SDL_properties,
+        //  which isn't allowed with rwlocks. So manually look it up and remove/free it.
+        SDL_Properties *properties = NULL;
+        if (SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties)) {
+            SDL_FreeProperties(properties);
+            SDL_RemoveFromHashTable(SDL_properties, (const void *)(uintptr_t)props);
+        }
     }
 }
