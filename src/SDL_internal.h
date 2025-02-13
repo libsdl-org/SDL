@@ -247,7 +247,6 @@ extern "C" {
 #endif
 
 #include "SDL_utils_c.h"
-#include "SDL_hashtable.h"
 
 // Do any initialization that needs to happen before threads are started
 extern void SDL_InitMainThread(void);
