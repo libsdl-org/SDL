@@ -648,7 +648,7 @@ const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
     SDL_PixelFormatDetails *details;
 
     if (SDL_ShouldInit(&SDL_format_details_init)) {
-        SDL_format_details = SDL_CreateHashTable(NULL, 8, SDL_HashID, SDL_KeyMatchID, SDL_NukeFreeValue, true, false);
+        SDL_format_details = SDL_CreateHashTable(0, true, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
         if (!SDL_format_details) {
             SDL_SetInitialized(&SDL_format_details_init, false);
             return NULL;
@@ -671,9 +671,13 @@ const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
         return NULL;
     }
 
-    if (!SDL_InsertIntoHashTable(SDL_format_details, (const void *)(uintptr_t)format, (void *)details)) {
+    if (!SDL_InsertIntoHashTable(SDL_format_details, (const void *)(uintptr_t)format, (void *)details, false)) {
         SDL_free(details);
-        return NULL;
+        // uh...did another thread beat us to inserting this?
+        if (SDL_FindInHashTable(SDL_format_details, (const void *)(uintptr_t)format, (const void **)&details)) {
+            return details;
+        }
+        return NULL;  // oh well.
     }
 
     return details;
@@ -1133,7 +1137,7 @@ Uint8 SDL_LookupRGBAColor(SDL_HashTable *palette_map, Uint32 pixel, const SDL_Pa
         Uint8 b = (Uint8)((pixel >>  8) & 0xFF);
         Uint8 a = (Uint8)((pixel >>  0) & 0xFF);
         color_index = SDL_FindColor(pal, r, g, b, a);
-        SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixel, (const void *)(uintptr_t)color_index);
+        SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixel, (const void *)(uintptr_t)color_index, true);
     }
     return color_index;
 }
@@ -1499,7 +1503,7 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
     } else {
         if (SDL_ISPIXELFORMAT_INDEXED(dstfmt->format)) {
             // BitField --> Palette
-            map->info.palette_map = SDL_CreateHashTable(NULL, 32, SDL_HashID, SDL_KeyMatchID, NULL, false, false);
+            map->info.palette_map = SDL_CreateHashTable(0, false, SDL_HashID, SDL_KeyMatchID, NULL, NULL);
         } else {
             // BitField --> BitField
             if (srcfmt == dstfmt) {

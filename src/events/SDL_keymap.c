@@ -39,8 +39,8 @@ SDL_Keymap *SDL_CreateKeymap(void)
         return NULL;
     }
 
-    keymap->scancode_to_keycode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, false, false);
-    keymap->keycode_to_scancode = SDL_CreateHashTable(NULL, 64, SDL_HashID, SDL_KeyMatchID, NULL, false, false);
+    keymap->scancode_to_keycode = SDL_CreateHashTable(256, false, SDL_HashID, SDL_KeyMatchID, NULL, NULL);
+    keymap->keycode_to_scancode = SDL_CreateHashTable(256, false, SDL_HashID, SDL_KeyMatchID, NULL, NULL);
     if (!keymap->scancode_to_keycode || !keymap->keycode_to_scancode) {
         SDL_DestroyKeymap(keymap);
         return NULL;
@@ -76,31 +76,27 @@ void SDL_SetKeymapEntry(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod mo
     Uint32 key = ((Uint32)modstate << 16) | scancode;
     const void *value;
     if (SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
-        SDL_Keycode existing_keycode = (SDL_Keycode)(uintptr_t)value;
+        const SDL_Keycode existing_keycode = (SDL_Keycode)(uintptr_t)value;
         if (existing_keycode == keycode) {
             // We already have this mapping
             return;
         }
-
-        // Changing the mapping, need to remove the existing entry from the keymap
-        SDL_RemoveFromHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key);
+        // InsertIntoHashTable will replace the existing entry in the keymap atomically.
     }
-    SDL_InsertIntoHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, (void *)(uintptr_t)keycode);
+    SDL_InsertIntoHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, (void *)(uintptr_t)keycode, true);
 
     bool update_keycode = true;
     if (SDL_FindInHashTable(keymap->keycode_to_scancode, (void *)(uintptr_t)keycode, &value)) {
-        Uint32 existing_value = (Uint32)(uintptr_t)value;
-        SDL_Keymod existing_modstate = (SDL_Keymod)(existing_value >> 16);
+        const Uint32 existing_value = (Uint32)(uintptr_t)value;
+        const SDL_Keymod existing_modstate = (SDL_Keymod)(existing_value >> 16);
 
         // Keep the simplest combination of scancode and modifiers to generate this keycode
         if (existing_modstate <= modstate) {
             update_keycode = false;
-        } else {
-            SDL_RemoveFromHashTable(keymap->keycode_to_scancode, (void *)(uintptr_t)keycode);
         }
     }
     if (update_keycode) {
-        SDL_InsertIntoHashTable(keymap->keycode_to_scancode, (void *)(uintptr_t)keycode, (void *)(uintptr_t)key);
+        SDL_InsertIntoHashTable(keymap->keycode_to_scancode, (void *)(uintptr_t)keycode, (void *)(uintptr_t)key, true);
     }
 }
 
@@ -108,7 +104,7 @@ SDL_Keycode SDL_GetKeymapKeycode(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_
 {
     SDL_Keycode keycode;
 
-    Uint32 key = ((Uint32)NormalizeModifierStateForKeymap(modstate) << 16) | scancode;
+    const Uint32 key = ((Uint32)NormalizeModifierStateForKeymap(modstate) << 16) | scancode;
     const void *value;
     if (keymap && SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
         keycode = (SDL_Keycode)(uintptr_t)value;
