@@ -41,8 +41,8 @@
  * "system", "audio", "video", "render", "input", "test", or `*` for any
  * unspecified category.
  *
- * The level can be a numeric level, one of "trace", "verbose", "debug", "info",
- * "warn", "error", "critical", or "quiet" to disable that category.
+ * The level can be a numeric level, one of "trace", "verbose", "debug",
+ * "info", "warn", "error", "critical", or "quiet" to disable that category.
  *
  * You can omit the category if you want to set the logging level for all
  * categories.
