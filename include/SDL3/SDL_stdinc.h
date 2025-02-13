@@ -4243,14 +4243,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_vasprintf(char **strp, SDL_PRINTF_FORMAT_STR
 /**
  * Seeds the pseudo-random number generator.
  *
- * Reusing the seed number will cause SDL_rand_*() to repeat the same stream
- * of 'random' numbers.
+ * Reusing the seed number will cause SDL_rand() to repeat the same stream of
+ * 'random' numbers.
  *
  * \param seed the value to use as a random number seed, or 0 to use
  *             SDL_GetPerformanceCounter().
  *
  * \threadsafety This should be called on the same thread that calls
- *               SDL_rand*()
+ *               SDL_rand()
  *
  * \since This function is available since SDL 3.2.0.
  *
