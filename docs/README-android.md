@@ -242,7 +242,7 @@ not give you any processing time after the events are delivered.
 
 e.g.
 
-    int HandleAppEvents(void *userdata, SDL_Event *event)
+    bool HandleAppEvents(void *userdata, SDL_Event *event)
     {
         switch (event->type)
         {
@@ -250,12 +250,12 @@ e.g.
             /* Terminate the app.
                Shut everything down before returning from this function.
             */
-            return 0;
+            return false;
         case SDL_EVENT_LOW_MEMORY:
             /* You will get this when your app is paused and iOS wants more memory.
                Release as much memory as possible.
             */
-            return 0;
+            return false;
         case SDL_EVENT_WILL_ENTER_BACKGROUND:
             /* Prepare your app to go into the background.  Stop loops, etc.
                This gets called when the user hits the home button, or gets a call.
@@ -264,15 +264,15 @@ e.g.
                in addition, you should set the render target to NULL, if you're using
                it, e.g. call SDL_SetRenderTarget(renderer, NULL).
             */
-            return 0;
+            return false;
         case SDL_EVENT_DID_ENTER_BACKGROUND:
             /* Your app is NOT active at this point. */
-            return 0;
+            return false;
         case SDL_EVENT_WILL_ENTER_FOREGROUND:
             /* This call happens when your app is coming back to the foreground.
                Restore all your state here.
             */
-            return 0;
+            return false;
         case SDL_EVENT_DID_ENTER_FOREGROUND:
             /* Restart your loops here.
                Your app is interactive and getting CPU again.
@@ -283,10 +283,10 @@ e.g.
                event SDL_EVENT_RENDER_DEVICE_RESET and recreate your OpenGL context and
                restore your textures when you get it, or quit the app.
             */
-            return 0;
+            return false;
         default:
             /* No special processing, add it to the event queue */
-            return 1;
+            return true;
         }
     }
 
