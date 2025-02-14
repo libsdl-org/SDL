@@ -276,7 +276,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 int buttonState = (event.getButtonState() >> 4) | (1 << (toolType == MotionEvent.TOOL_TYPE_STYLUS ? 0 : 30));
 
                 SDLActivity.onNativePen(pointerId, buttonState, action, x, y, p);
-            } else if (toolType == MotionEvent.TOOL_TYPE_FINGER) {
+            } else { // MotionEvent.TOOL_TYPE_FINGER or MotionEvent.TOOL_TYPE_UNKNOWN
                 pointerId = event.getPointerId(i);
                 x = getNormalizedX(event.getX(i));
                 y = getNormalizedY(event.getY(i));
