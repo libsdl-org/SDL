@@ -1095,11 +1095,11 @@ void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
     emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
 
     target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
-    if (!target) {
+    if (!target || !*target) {
         target = EMSCRIPTEN_EVENT_TARGET_WINDOW;
     }
 
-    if (*target) {
+    if (SDL_strcmp(target, "#none") != 0) {
         emscripten_set_keydown_callback(target, NULL, 0, NULL);
         emscripten_set_keyup_callback(target, NULL, 0, NULL);
         emscripten_set_keypress_callback(target, NULL, 0, NULL);
