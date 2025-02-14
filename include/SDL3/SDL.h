@@ -50,6 +50,7 @@
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_guid.h>
 #include <SDL3/SDL_haptic.h>
+#include <SDL3/SDL_hashtable.h>
 #include <SDL3/SDL_hidapi.h>
 #include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>

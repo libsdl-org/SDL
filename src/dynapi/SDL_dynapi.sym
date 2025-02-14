@@ -1234,6 +1234,23 @@ SDL3_0.0.0 {
     SDL_ClickTrayEntry;
     SDL_UpdateTrays;
     SDL_StretchSurface;
+    SDL_CreateHashTable;
+    SDL_DestroyHashTable;
+    SDL_InsertIntoHashTable;
+    SDL_FindInHashTable;
+    SDL_RemoveFromHashTable;
+    SDL_ClearHashTable;
+    SDL_HashTableEmpty;
+    SDL_IterateHashTable;
+    SDL_HashPointer;
+    SDL_KeyMatchPointer;
+    SDL_HashString;
+    SDL_KeyMatchString;
+    SDL_HashID;
+    SDL_KeyMatchID;
+    SDL_DestroyHashKeyAndValue;
+    SDL_DestroyHashKey;
+    SDL_DestroyHashValue;
     # extra symbols go here (don't modify this line)
   local: *;
 };
