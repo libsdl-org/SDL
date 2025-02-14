@@ -107,7 +107,8 @@ VideoBootStrap VIVANTE_bootstrap = {
     "vivante",
     "Vivante EGL Video Driver",
     VIVANTE_Create,
-    NULL // no ShowMessageBox implementation
+    NULL, // no ShowMessageBox implementation
+    false
 };
 
 /*****************************************************************************/

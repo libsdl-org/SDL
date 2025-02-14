@@ -1340,7 +1340,7 @@ AudioBootStrap PIPEWIRE_PREFERRED_bootstrap = {
     "pipewire", "Pipewire", PIPEWIRE_PREFERRED_Init, false, true
 };
 AudioBootStrap PIPEWIRE_bootstrap = {
-    "pipewire", "Pipewire", PIPEWIRE_Init, false
+    "pipewire", "Pipewire", PIPEWIRE_Init, false, false
 };
 
 #endif // SDL_AUDIO_DRIVER_PIPEWIRE

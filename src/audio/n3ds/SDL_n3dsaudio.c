@@ -280,7 +280,8 @@ AudioBootStrap N3DSAUDIO_bootstrap = {
     N3DSAUDIO_DRIVER_NAME,
     "SDL N3DS audio driver",
     N3DSAUDIO_Init,
-    0
+    false,
+    false
 };
 
 #endif // SDL_AUDIO_DRIVER_N3DS

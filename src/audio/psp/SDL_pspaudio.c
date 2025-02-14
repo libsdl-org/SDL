@@ -177,7 +177,7 @@ static bool PSPAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap PSPAUDIO_bootstrap = {
-    "psp", "PSP audio driver", PSPAUDIO_Init, false
+    "psp", "PSP audio driver", PSPAUDIO_Init, false, false
 };
 
 #endif // SDL_AUDIO_DRIVER_PSP

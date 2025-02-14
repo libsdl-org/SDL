@@ -692,7 +692,8 @@ VideoBootStrap Wayland_preferred_bootstrap = {
 VideoBootStrap Wayland_bootstrap = {
     WAYLANDVID_DRIVER_NAME, "SDL Wayland video driver",
     Wayland_Fallback_CreateDevice,
-    Wayland_ShowMessageBox
+    Wayland_ShowMessageBox,
+    false
 };
 
 static void xdg_output_handle_logical_position(void *data, struct zxdg_output_v1 *xdg_output,

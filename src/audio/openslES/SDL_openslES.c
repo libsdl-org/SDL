@@ -779,7 +779,7 @@ static bool OPENSLES_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap OPENSLES_bootstrap = {
-    "openslES", "OpenSL ES audio driver", OPENSLES_Init, false
+    "openslES", "OpenSL ES audio driver", OPENSLES_Init, false, false
 };
 
 void OPENSLES_ResumeDevices(void)

@@ -346,5 +346,6 @@ static SDL_VideoDevice *createDevice(void)
 VideoBootStrap QNX_bootstrap = {
     "qnx", "QNX Screen",
     createDevice,
-    NULL // no ShowMessageBox implementation
+    NULL, // no ShowMessageBox implementation
+    false
 };

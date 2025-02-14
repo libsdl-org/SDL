@@ -297,7 +297,7 @@ static bool DSP_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap DSP_bootstrap = {
-    "dsp", "Open Sound System (/dev/dsp)", DSP_Init, false
+    "dsp", "Open Sound System (/dev/dsp)", DSP_Init, false, false
 };
 
 #endif // SDL_AUDIO_DRIVER_OSS

@@ -330,10 +330,11 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
 VideoBootStrap WINDOWS_bootstrap = {
     "windows", "SDL Windows video driver", WIN_CreateDevice,
     #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    WIN_ShowMessageBox
+    WIN_ShowMessageBox,
     #else
-    NULL
+    NULL,
     #endif
+    false
 };
 
 static BOOL WIN_DeclareDPIAwareUnaware(SDL_VideoDevice *_this)
