@@ -957,7 +957,7 @@ static bool WASAPI_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap WASAPI_bootstrap = {
-    "wasapi", "WASAPI", WASAPI_Init, false
+    "wasapi", "WASAPI", WASAPI_Init, false, false
 };
 
 #endif // SDL_AUDIO_DRIVER_WASAPI

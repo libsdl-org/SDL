@@ -96,7 +96,8 @@ static SDL_VideoDevice *RISCOS_CreateDevice(void)
 VideoBootStrap RISCOS_bootstrap = {
     RISCOSVID_DRIVER_NAME, "SDL RISC OS video driver",
     RISCOS_CreateDevice,
-    RISCOS_ShowMessageBox
+    RISCOS_ShowMessageBox,
+    false
 };
 
 static bool RISCOS_VideoInit(SDL_VideoDevice *_this)

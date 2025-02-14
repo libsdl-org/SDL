@@ -113,7 +113,8 @@ static SDL_VideoDevice * HAIKU_CreateDevice(void)
 VideoBootStrap HAIKU_bootstrap = {
     "haiku", "Haiku graphics",
     HAIKU_CreateDevice,
-    HAIKU_ShowMessageBox
+    HAIKU_ShowMessageBox,
+    false
 };
 
 void HAIKU_DeleteDevice(SDL_VideoDevice * device)

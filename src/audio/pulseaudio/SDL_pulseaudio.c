@@ -1030,7 +1030,7 @@ static bool PULSEAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap PULSEAUDIO_bootstrap = {
-    "pulseaudio", "PulseAudio", PULSEAUDIO_Init, false
+    "pulseaudio", "PulseAudio", PULSEAUDIO_Init, false, false
 };
 
 #endif // SDL_AUDIO_DRIVER_PULSEAUDIO
