@@ -23,6 +23,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
+#include <sys/mman.h>
+
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 #include "../../core/unix/SDL_appid.h"
@@ -31,6 +33,7 @@
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandvideo.h"
 #include "../../SDL_hints_c.h"
+#include "SDL_waylandcolor.h"
 
 #include "alpha-modifier-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
@@ -43,6 +46,7 @@
 #include "xdg-dialog-v1-client-protocol.h"
 #include "frog-color-management-v1-client-protocol.h"
 #include "xdg-toplevel-icon-v1-client-protocol.h"
+#include "color-management-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1647,6 +1651,28 @@ static const struct frog_color_managed_surface_listener frog_surface_listener = 
     frog_preferred_metadata_handler
 };
 
+static void feedback_surface_preferred_changed(void *data,
+                                               struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1,
+                                               uint32_t identity)
+{
+    SDL_WindowData *wind = (SDL_WindowData *)data;
+    Wayland_ColorInfo info;
+    SDL_zero(info);
+
+    if (Wayland_GetColorInfoForWindow(wind, &info)) {
+        SDL_SetWindowHDRProperties(wind->sdlwindow, &info.HDR, true);
+        if (info.icc_size) {
+            wind->icc_fd = info.icc_fd;
+            wind->icc_size = info.icc_size;
+            SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_ICCPROF_CHANGED, 0, 0);
+        }
+    }
+}
+
+static const struct wp_color_management_surface_feedback_v1_listener color_management_surface_feedback_listener = {
+    feedback_surface_preferred_changed
+};
+
 static void SetKeyboardFocus(SDL_Window *window, bool set_focus)
 {
     SDL_Window *toplevel = window;
@@ -2593,7 +2619,10 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
     }
 
     if (!custom_surface_role) {
-        if (c->frog_color_management_factory_v1) {
+        if (c->wp_color_manager_v1) {
+            data->wp_color_management_surface_feedback = wp_color_manager_v1_get_surface_feedback(c->wp_color_manager_v1, data->surface);
+            wp_color_management_surface_feedback_v1_add_listener(data->wp_color_management_surface_feedback, &color_management_surface_feedback_listener, data);
+        } else if (c->frog_color_management_factory_v1) {
             data->frog_color_managed_surface = frog_color_management_factory_v1_get_color_managed_surface(c->frog_color_management_factory_v1, data->surface);
             frog_color_managed_surface_add_listener(data->frog_color_managed_surface, &frog_surface_listener, data);
         }
@@ -2875,6 +2904,26 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
     return true;
 }
 
+void *Wayland_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size)
+{
+    SDL_WindowData *wind = window->internal;
+    void *ret = NULL;
+
+    if (wind->icc_size > 0) {
+        void *icc_map = mmap(NULL, wind->icc_size, PROT_READ, MAP_PRIVATE, wind->icc_fd, 0);
+        if (icc_map != MAP_FAILED) {
+            ret = SDL_malloc(wind->icc_size);
+            if (ret) {
+                *size = wind->icc_size;
+                SDL_memcpy(ret, icc_map, *size);
+            }
+            munmap(icc_map, wind->icc_size);
+        }
+    }
+
+    return ret;
+}
+
 bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->internal;
@@ -2992,6 +3041,10 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         if (wind->frog_color_managed_surface) {
             frog_color_managed_surface_destroy(wind->frog_color_managed_surface);
+        }
+
+        if (wind->wp_color_management_surface_feedback) {
+            wp_color_management_surface_feedback_v1_destroy(wind->wp_color_management_surface_feedback);
         }
 
         SDL_free(wind->outputs);
