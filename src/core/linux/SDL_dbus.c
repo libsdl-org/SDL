@@ -48,6 +48,7 @@ static bool LoadDBUSSyms(void)
     SDL_DBUS_SYM(DBusConnection *(*)(DBusBusType, DBusError *), bus_get_private);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusError *), bus_register);
     SDL_DBUS_SYM(void (*)(DBusConnection *, const char *, DBusError *), bus_add_match);
+    SDL_DBUS_SYM(void (*)(DBusConnection *, const char *, DBusError *), bus_remove_match);
     SDL_DBUS_SYM(DBusConnection *(*)(const char *, DBusError *), connection_open_private);
     SDL_DBUS_SYM(void (*)(DBusConnection *, dbus_bool_t), connection_set_exit_on_disconnect);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *), connection_get_is_connected);
@@ -61,6 +62,7 @@ static bool LoadDBUSSyms(void)
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_unref);
     SDL_DBUS_SYM(void (*)(DBusConnection *), connection_flush);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, int), connection_read_write);
+    SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, int), connection_read_write_dispatch);
     SDL_DBUS_SYM(DBusDispatchStatus (*)(DBusConnection *), connection_dispatch);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *, const char *), message_is_signal);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusMessage *, const char *), message_has_path);
@@ -82,6 +84,7 @@ static bool LoadDBUSSyms(void)
     SDL_DBUS_SYM(dbus_bool_t (*)(void), threads_init_default);
     SDL_DBUS_SYM(void (*)(DBusError *), error_init);
     SDL_DBUS_SYM(dbus_bool_t (*)(const DBusError *), error_is_set);
+    SDL_DBUS_SYM(dbus_bool_t (*)(const DBusError *, const char *), error_has_name);
     SDL_DBUS_SYM(void (*)(DBusError *), error_free);
     SDL_DBUS_SYM(char *(*)(void), get_local_machine_id);
     SDL_DBUS_SYM_OPTIONAL(char *(*)(DBusError *), try_get_local_machine_id);
@@ -636,6 +639,186 @@ failed:
     }
 
     return NULL;
+}
+
+typedef struct SDL_DBus_CameraPortalMessageHandlerData
+{
+    uint32_t response;
+    char *path;
+    DBusError *err;
+    bool done;
+} SDL_DBus_CameraPortalMessageHandlerData;
+
+static DBusHandlerResult SDL_DBus_CameraPortalMessageHandler(DBusConnection *conn, DBusMessage *msg, void *v)
+{
+    SDL_DBus_CameraPortalMessageHandlerData *data = v;
+    const char *name, *old, *new;
+
+    if (dbus.message_is_signal(msg, "org.freedesktop.DBus", "NameOwnerChanged")) {
+        if (!dbus.message_get_args(msg, data->err,
+                DBUS_TYPE_STRING, &name,
+                DBUS_TYPE_STRING, &old,
+                DBUS_TYPE_STRING, &new,
+                DBUS_TYPE_INVALID)) {
+            data->done = true;
+            return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        }
+        if (SDL_strcmp(name, "org.freedesktop.portal.Desktop") != 0 ||
+            SDL_strcmp(new, "") != 0) {
+            return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+        }
+        data->done = true;
+        data->response = -1;
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+    if (!dbus.message_has_path(msg, data->path) || !dbus.message_is_signal(msg, "org.freedesktop.portal.Request", "Response")) {
+        return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+    dbus.message_get_args(msg, data->err, DBUS_TYPE_UINT32, &data->response, DBUS_TYPE_INVALID);
+    data->done = true;
+    return DBUS_HANDLER_RESULT_HANDLED;
+}
+
+#define SIGNAL_NAMEOWNERCHANGED "type='signal',\
+        sender='org.freedesktop.DBus',\
+        interface='org.freedesktop.DBus',\
+        member='NameOwnerChanged',\
+        arg0='org.freedesktop.portal.Desktop',\
+        arg2=''"
+
+/*
+ * Requests access for the camera. Returns -1 on error, -2 on denied access or
+ * missing portal, otherwise returns a file descriptor to be used by the Pipewire driver.
+ * https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Camera.html
+ */
+int SDL_DBus_CameraPortalRequestAccess(void)
+{
+    SDL_DBus_CameraPortalMessageHandlerData data;
+    DBusError err;
+    DBusMessageIter iter, iterDict;
+    DBusMessage *reply, *msg;
+    int fd;
+
+    if (SDL_DetectSandbox() == SDL_SANDBOX_NONE) {
+        return -2;
+    }
+
+    if (!SDL_DBus_GetContext()) {
+        return -2;
+    }
+
+    dbus.error_init(&err);
+
+    msg = dbus.message_new_method_call("org.freedesktop.portal.Desktop",
+                                       "/org/freedesktop/portal/desktop",
+                                       "org.freedesktop.portal.Camera",
+                                       "AccessCamera");
+
+    dbus.message_iter_init_append(msg, &iter);
+    if (!dbus.message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &iterDict) ||
+        !dbus.message_iter_close_container(&iter, &iterDict)) {
+        SDL_OutOfMemory();
+        dbus.message_unref(msg);
+        goto failed;
+    }
+
+    reply = dbus.connection_send_with_reply_and_block(dbus.session_conn, msg, DBUS_TIMEOUT_USE_DEFAULT, &err);
+    dbus.message_unref(msg);
+
+    if (reply) {
+        dbus.message_get_args(reply, &err, DBUS_TYPE_OBJECT_PATH, &data.path, DBUS_TYPE_INVALID);
+        if (dbus.error_is_set(&err)) {
+            dbus.message_unref(reply);
+            goto failed;
+        }
+        if ((data.path = SDL_strdup(data.path)) == NULL) {
+            dbus.message_unref(reply);
+            SDL_OutOfMemory();
+            goto failed;
+        }
+        dbus.message_unref(reply);
+    } else {
+        if (dbus.error_has_name(&err, DBUS_ERROR_NAME_HAS_NO_OWNER)) {
+            return -2;
+        }
+        goto failed;
+    }
+
+    dbus.bus_add_match(dbus.session_conn, SIGNAL_NAMEOWNERCHANGED, &err);
+    if (dbus.error_is_set(&err)) {
+        SDL_free(data.path);
+        goto failed;
+    }
+    data.err = &err;
+    data.done = false;
+    if (!dbus.connection_add_filter(dbus.session_conn, SDL_DBus_CameraPortalMessageHandler, &data, NULL)) {
+        SDL_free(data.path);
+        SDL_OutOfMemory();
+        goto failed;
+    }
+    while (!data.done && dbus.connection_read_write_dispatch(dbus.session_conn, -1)) {
+        ;
+    }
+
+    dbus.bus_remove_match(dbus.session_conn, SIGNAL_NAMEOWNERCHANGED, &err);
+    if (dbus.error_is_set(&err)) {
+        SDL_free(data.path);
+        goto failed;
+    }
+    dbus.connection_remove_filter(dbus.session_conn, SDL_DBus_CameraPortalMessageHandler, &data);
+    SDL_free(data.path);
+    if (!data.done) {
+        goto failed;
+    }
+    if (dbus.error_is_set(&err)) { // from the message handler
+        goto failed;
+    }
+    if (data.response == 1 || data.response == 2) {
+        return -2;
+    } else if (data.response != 0) {
+        goto failed;
+    }
+
+    msg = dbus.message_new_method_call("org.freedesktop.portal.Desktop",
+                                       "/org/freedesktop/portal/desktop",
+                                       "org.freedesktop.portal.Camera",
+                                       "OpenPipeWireRemote");
+
+    dbus.message_iter_init_append(msg, &iter);
+    if (!dbus.message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &iterDict) ||
+        !dbus.message_iter_close_container(&iter, &iterDict)) {
+        SDL_OutOfMemory();
+        dbus.message_unref(msg);
+        goto failed;
+    }
+
+    reply = dbus.connection_send_with_reply_and_block(dbus.session_conn, msg, DBUS_TIMEOUT_USE_DEFAULT, &err);
+    dbus.message_unref(msg);
+
+    if (reply) {
+        dbus.message_get_args(reply, &err, DBUS_TYPE_UNIX_FD, &fd, DBUS_TYPE_INVALID);
+        dbus.message_unref(reply);
+        if (dbus.error_is_set(&err)) {
+            goto failed;
+        }
+    } else {
+        goto failed;
+    }
+
+    return fd;
+
+failed:
+    if (dbus.error_is_set(&err)) {
+        if (dbus.error_has_name(&err, DBUS_ERROR_NO_MEMORY)) {
+            SDL_OutOfMemory();
+        }
+        SDL_SetError("%s: %s", err.name, err.message);
+        dbus.error_free(&err);
+    } else {
+        SDL_SetError("Error requesting access for the camera");
+    }
+
+    return -1;
 }
 
 #endif
