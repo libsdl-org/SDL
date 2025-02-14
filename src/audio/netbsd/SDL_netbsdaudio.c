@@ -322,7 +322,7 @@ static bool NETBSDAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap NETBSDAUDIO_bootstrap = {
-    "netbsd", "NetBSD audio", NETBSDAUDIO_Init, false
+    "netbsd", "NetBSD audio", NETBSDAUDIO_Init, false, false
 };
 
 #endif // SDL_AUDIO_DRIVER_NETBSD

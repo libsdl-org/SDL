@@ -351,7 +351,7 @@ static bool EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap EMSCRIPTENAUDIO_bootstrap = {
-    "emscripten", "SDL emscripten audio driver", EMSCRIPTENAUDIO_Init, false
+    "emscripten", "SDL emscripten audio driver", EMSCRIPTENAUDIO_Init, false, false
 };
 
 /* *INDENT-ON* */ // clang-format on

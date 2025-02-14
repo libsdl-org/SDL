@@ -674,7 +674,7 @@ static bool DSOUND_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap DSOUND_bootstrap = {
-    "directsound", "DirectSound", DSOUND_Init, false
+    "directsound", "DirectSound", DSOUND_Init, false, false
 };
 
 #endif // SDL_AUDIO_DRIVER_DSOUND

@@ -195,7 +195,8 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
 VideoBootStrap COCOA_bootstrap = {
     "cocoa", "SDL Cocoa video driver",
     Cocoa_CreateDevice,
-    Cocoa_ShowMessageBox
+    Cocoa_ShowMessageBox,
+    false
 };
 
 static bool Cocoa_VideoInit(SDL_VideoDevice *_this)

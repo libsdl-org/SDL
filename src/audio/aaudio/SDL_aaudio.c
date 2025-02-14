@@ -545,7 +545,7 @@ static bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
 }
 
 AudioBootStrap AAUDIO_bootstrap = {
-    "AAudio", "AAudio audio driver", AAUDIO_Init, false
+    "AAudio", "AAudio audio driver", AAUDIO_Init, false, false
 };
 
 #endif // SDL_AUDIO_DRIVER_AAUDIO

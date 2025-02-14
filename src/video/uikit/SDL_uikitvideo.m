@@ -144,7 +144,8 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
 VideoBootStrap UIKIT_bootstrap = {
     UIKITVID_DRIVER_NAME, "SDL UIKit video driver",
     UIKit_CreateDevice,
-    UIKit_ShowMessageBox
+    UIKit_ShowMessageBox,
+    false
 };
 
 static bool UIKit_VideoInit(SDL_VideoDevice *_this)

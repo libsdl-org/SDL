@@ -1657,7 +1657,7 @@ error:
 }
 
 VideoBootStrap OPENVR_bootstrap = {
-    "openvr", "SDL OpenVR video driver", OPENVR_CreateDevice
+    "openvr", "SDL OpenVR video driver", OPENVR_CreateDevice, NULL, false
 };
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS

@@ -160,7 +160,8 @@ VideoBootStrap VITA_bootstrap = {
     "vita",
     "VITA Video Driver",
     VITA_Create,
-    VITA_ShowMessageBox
+    VITA_ShowMessageBox,
+    false
 };
 
 /*****************************************************************************/

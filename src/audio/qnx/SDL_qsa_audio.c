@@ -444,7 +444,7 @@ static bool QSA_Init(SDL_AudioDriverImpl * impl)
 }
 
 AudioBootStrap QSAAUDIO_bootstrap = {
-    "qsa", "QNX QSA Audio", QSA_Init, 0
+    "qsa", "QNX QSA Audio", QSA_Init, false, false
 };
 
 #endif // SDL_AUDIO_DRIVER_QNX
