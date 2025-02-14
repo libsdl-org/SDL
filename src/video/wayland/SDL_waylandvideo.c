@@ -77,7 +77,9 @@
 #define SDL_WL_COMPOSITOR_VERSION 4
 #endif
 
-#if SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
+#if SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
+#define SDL_WL_SEAT_VERSION 10
+#elif SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
 #define SDL_WL_SEAT_VERSION 9
 #elif SDL_WAYLAND_CHECK_VERSION(1, 21, 0)
 #define SDL_WL_SEAT_VERSION 8
@@ -89,6 +91,13 @@
 #define SDL_WL_OUTPUT_VERSION 4
 #else
 #define SDL_WL_OUTPUT_VERSION 3
+#endif
+
+// The SDL wayland-client minimum is 1.18, which supports version 3.
+#define SDL_WL_DATA_DEVICE_VERSION 3
+
+#if SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
+#define SDL_WL_FIXES_VERSION 1
 #endif
 
 #ifdef SDL_USE_LIBDBUS
@@ -449,6 +458,7 @@ static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 typedef struct
 {
     bool has_fifo_v1;
+    struct wl_fixes *wl_fixes;
 } SDL_WaylandPreferredData;
 
 static void wayland_preferred_check_handle_global(void *data, struct wl_registry *registry, uint32_t id,
@@ -458,6 +468,10 @@ static void wayland_preferred_check_handle_global(void *data, struct wl_registry
 
     if (SDL_strcmp(interface, "wp_fifo_manager_v1") == 0) {
         d->has_fifo_v1 = true;
+#ifdef WL_FIXES_INTERFACE
+    } else if (SDL_strcmp(interface, "wl_fixes") == 0) {
+        d->wl_fixes = wl_registry_bind(registry, id, &wl_fixes_interface, SDL_min(SDL_WL_FIXES_VERSION, version));
+#endif
     }
 }
 
@@ -485,6 +499,12 @@ static bool Wayland_IsPreferred(struct wl_display *display)
 
     WAYLAND_wl_display_roundtrip(display);
 
+#ifdef WL_FIXES_INTERFACE
+    if (preferred_data.wl_fixes) {
+        wl_fixes_destroy_registry(registry);
+        wl_fixes_destroy(preferred_data.wl_fixes);
+    }
+#endif
     wl_registry_destroy(registry);
 
     return preferred_data.has_fifo_v1;
@@ -1241,7 +1261,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     } else if (SDL_strcmp(interface, "zwp_text_input_manager_v3") == 0) {
         Wayland_create_text_input_manager(d, id);
     } else if (SDL_strcmp(interface, "wl_data_device_manager") == 0) {
-        d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, SDL_min(3, version));
+        d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, SDL_min(SDL_WL_DATA_DEVICE_VERSION, version));
         Wayland_create_data_device(d);
     } else if (SDL_strcmp(interface, "zwp_primary_selection_device_manager_v1") == 0) {
         d->primary_selection_device_manager = wl_registry_bind(d->registry, id, &zwp_primary_selection_device_manager_v1_interface, 1);
@@ -1279,6 +1299,10 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->xdg_toplevel_icon_manager_v1 = wl_registry_bind(d->registry, id, &xdg_toplevel_icon_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "frog_color_management_factory_v1") == 0) {
         d->frog_color_management_factory_v1 = wl_registry_bind(d->registry, id, &frog_color_management_factory_v1_interface, 1);
+#ifdef WL_FIXES_INTERFACE
+    } else if (SDL_strcmp(interface, "wl_fixes") == 0) {
+        d->wl_fixes = wl_registry_bind(d->registry, id, &wl_fixes_interface, SDL_min(SDL_WL_FIXES_VERSION, version));
+#endif
     }
 }
 
@@ -1572,6 +1596,13 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     }
 
     if (data->registry) {
+#ifdef WL_FIXES_INTERFACE
+        if (data->wl_fixes) {
+            wl_fixes_destroy_registry(data->registry);
+            wl_fixes_destroy(data->wl_fixes);
+            data->wl_fixes = NULL;
+        }
+#endif
         wl_registry_destroy(data->registry);
         data->registry = NULL;
     }
