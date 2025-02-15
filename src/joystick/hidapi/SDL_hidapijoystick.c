@@ -533,24 +533,6 @@ static bool HIDAPI_JoystickInit(void)
         return true;
     }
 
-#ifdef SDL_USE_LIBUDEV
-    if (linux_enumeration_method == ENUMERATION_UNSET) {
-        if (!SDL_GetHintBoolean(SDL_HINT_HIDAPI_UDEV, true)) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "udev disabled by SDL_HINT_HIDAPI_UDEV");
-            linux_enumeration_method = ENUMERATION_FALLBACK;
-        } else if (SDL_GetSandbox() != SDL_SANDBOX_NONE) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "Container detected, disabling HIDAPI udev integration");
-            linux_enumeration_method = ENUMERATION_FALLBACK;
-        } else {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "Using udev for HIDAPI joystick device discovery");
-            linux_enumeration_method = ENUMERATION_LIBUDEV;
-        }
-    }
-#endif
-
     if (SDL_hid_init() < 0) {
         return SDL_SetError("Couldn't initialize hidapi");
     }
