@@ -1802,6 +1802,8 @@ typedef struct SDL_GPUColorTargetDescription
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
+ * \sa SDL_GPUColorTargetDescription
+ * \sa SDL_GPUTextureFormat
  */
 typedef struct SDL_GPUGraphicsPipelineTargetInfo
 {
