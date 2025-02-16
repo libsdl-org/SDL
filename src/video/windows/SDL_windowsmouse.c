@@ -72,17 +72,21 @@ static SDL_Cursor *WIN_CreateCursorAndData(HCURSOR hcursor)
     }
 
     SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
-    if (cursor) {
-        SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data));
-        if (!data) {
-            SDL_free(cursor);
-            return NULL;
-        }
-        data->cursor = hcursor;
-        cursor->internal = data;
+    if (!cursor) {
+        return NULL;
     }
+
+    SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data));
+    if (!data) {
+        SDL_free(cursor);
+        return NULL;
+    }
+
+    data->cursor = hcursor;
+    cursor->internal = data;
     return cursor;
 }
+
 
 static bool IsMonochromeSurface(SDL_Surface *surface)
 {
@@ -129,6 +133,9 @@ static HBITMAP CreateColorBitmap(SDL_Surface *surface)
     bitmap = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, &pixels, NULL, 0);
     if (!bitmap || !pixels) {
         WIN_SetError("CreateDIBSection()");
+        if (bitmap) {
+            DeleteObject(bitmap);
+        }
         return NULL;
     }
 
@@ -158,6 +165,7 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, bool is_monochrome)
 
     pixels = SDL_small_alloc(Uint8, size * (is_monochrome ? 2 : 1), &isstack);
     if (!pixels) {
+        WIN_SetError("SDL_small_alloc failed");
         return NULL;
     }
 
@@ -220,16 +228,20 @@ static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
     }
 
     hcursor = CreateIconIndirect(&ii);
+    if (!hcursor) {
+        WIN_SetError("CreateIconIndirect()");
+        DeleteObject(ii.hbmMask);
+        if (ii.hbmColor) {
+            DeleteObject(ii.hbmColor);
+        }
+        return NULL;
+    }
 
     DeleteObject(ii.hbmMask);
     if (ii.hbmColor) {
         DeleteObject(ii.hbmColor);
     }
 
-    if (!hcursor) {
-        WIN_SetError("CreateIconIndirect()");
-        return NULL;
-    }
     return hcursor;
 }
 
@@ -359,7 +371,9 @@ static void WIN_FreeCursor(SDL_Cursor *cursor)
     while (data->cache) {
         CachedCursor *entry = data->cache;
         data->cache = entry->next;
-        DestroyCursor(entry->cursor);
+        if (entry->cursor) {
+            DestroyCursor(entry->cursor);
+        }
         SDL_free(entry);
     }
     if (data->cursor) {
@@ -404,6 +418,11 @@ static HCURSOR GetCachedCursor(SDL_Cursor *cursor)
 
     entry = (CachedCursor *)SDL_malloc(sizeof(*entry));
     if (!entry) {
+        WIN_SetError("SDL_malloc failed");
+        if (hcursor) {
+            DestroyCursor(hcursor);
+        }
+        SDL_free(entry);
         goto error;
     }
     entry->cursor = hcursor;
