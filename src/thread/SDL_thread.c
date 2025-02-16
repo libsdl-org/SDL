@@ -334,7 +334,6 @@ void SDL_RunThread(SDL_Thread *thread)
     if (!SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_ALIVE, SDL_THREAD_COMPLETE)) {
         // Clean up if something already detached us.
         if (SDL_GetThreadState(thread) == SDL_THREAD_DETACHED) {
-            SDL_SetObjectValid(thread, SDL_OBJECT_TYPE_THREAD, false);
             SDL_free(thread->name); // Can't free later, we've already cleaned up TLS
             SDL_free(thread);
         }
@@ -457,7 +456,7 @@ bool SDL_SetCurrentThreadPriority(SDL_ThreadPriority priority)
 
 void SDL_WaitThread(SDL_Thread *thread, int *status)
 {
-    if (!ThreadValid(thread) || SDL_GetThreadState(thread) == SDL_THREAD_DETACHED) {
+    if (!ThreadValid(thread)) {
         if (status) {
             *status = -1;
         }
@@ -487,6 +486,9 @@ void SDL_DetachThread(SDL_Thread *thread)
     if (!ThreadValid(thread)) {
         return;
     }
+
+    // The thread may vanish at any time, it's no longer valid
+    SDL_SetObjectValid(thread, SDL_OBJECT_TYPE_THREAD, false);
 
     // Grab dibs if the state is alive+joinable.
     if (SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_ALIVE, SDL_THREAD_DETACHED)) {
