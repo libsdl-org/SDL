@@ -241,7 +241,7 @@ static bool HAIKU_SetRelativeMouseMode(bool enabled)
 
 	SDL_BWin *bewin = _ToBeWin(window);
 	BGLView *_SDL_GLView = bewin->GetGLView();
-    if (_SDL_GLView == NULL) {
+    if (!_SDL_GLView) {
         return false;
     }
 
