@@ -1444,12 +1444,16 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
     bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, true);
+    bool position_is_absolute = false;
     XEvent event;
 
     if (SDL_WINDOW_IS_POPUP(window)) {
         // Update the position in case the parent moved while we were hidden
         X11_ConstrainPopup(window, true);
-        X11_UpdateWindowPosition(window, false);
+        data->pending_position = true;
+
+        // Coordinates after X11_ConstrainPopup() are already in the global space.
+        position_is_absolute = true;
     }
 
     /* Whether XMapRaised focuses the window is based on the window type and it is
@@ -1458,6 +1462,20 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     if (!X11_IsWindowMapped(_this, window)) {
         X11_XMapRaised(display, data->xwindow);
+        if (data->pending_position) {
+            int x, y;
+            if (position_is_absolute) {
+                x = window->pending.x;
+                y = window->pending.y;
+            } else {
+                SDL_RelativeToGlobalForWindow(window,
+                                              window->pending.x, window->pending.y,
+                                              &x, &y);
+            }
+            data->pending_position = false;
+            X11_XMoveWindow(display, data->xwindow, x, y);
+        }
+
         /* Blocking wait for "MapNotify" event.
          * We use X11_XIfEvent because pXWindowEvent takes a mask rather than a type,
          * and XCheckTypedWindowEvent doesn't block */
@@ -1483,9 +1501,6 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (data->border_left == 0 && data->border_right == 0 && data->border_top == 0 && data->border_bottom == 0) {
         X11_GetBorderValues(data);
     }
-
-    // Apply the pending position, if any, after the window is mapped.
-    data->pending_position = window->last_position_pending;
 
     /* Some window managers can send garbage coordinates while mapping the window, so don't emit size and position
      * events during the initial configure events.
