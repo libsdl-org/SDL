@@ -1397,7 +1397,7 @@ void SDL_QuitCamera(void)
 // Physical camera objects are only destroyed when removed from the device hash.
 static void SDLCALL DestroyCameraHashItem(void *userdata, const void *key, const void *value)
 {
-    SDL_Camera *device = (SDL_Camera *) userdata;
+    SDL_Camera *device = (SDL_Camera *) value;
     ClosePhysicalCamera(device);
     camera_driver.impl.FreeDeviceHandle(device);
     SDL_DestroyMutex(device->lock);
