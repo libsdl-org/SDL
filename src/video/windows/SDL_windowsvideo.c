@@ -82,7 +82,11 @@ static bool WIN_SuspendScreenSaver(SDL_VideoDevice *_this)
     } else {
         result = SetThreadExecutionState(ES_CONTINUOUS);
     }
-    return (result != 0);
+    if (result == 0) {
+        SDL_SetError("SetThreadExecutionState() failed.");
+        return false;
+    }
+    return true;
 }
 #endif
 
