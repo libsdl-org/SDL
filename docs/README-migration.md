@@ -411,7 +411,7 @@ The iscapture field of SDL_AudioDeviceEvent has been renamed recording.
 
 SDL_QUERY, SDL_IGNORE, SDL_ENABLE, and SDL_DISABLE have been removed. You can use the functions SDL_SetEventEnabled() and SDL_EventEnabled() to set and query event processing state.
 
-SDL_AddEventWatch() now returns SDL_FALSE_ if it fails because it ran out of memory and couldn't add the event watch callback.
+SDL_AddEventWatch() now returns false if it fails because it ran out of memory and couldn't add the event watch callback.
 
 SDL_RegisterEvents() now returns 0 if it couldn't allocate any user events.
 
