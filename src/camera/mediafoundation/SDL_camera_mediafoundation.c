@@ -433,7 +433,7 @@ static void SDLCALL CleanupIMFMediaBuffer(void *userdata, void *value)
 static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS)
 {
     SDL_assert(device->hidden->current_sample != NULL);
-    
+
     SDL_CameraFrameResult result = SDL_CAMERA_FRAME_READY;
     HRESULT ret;
     LONGLONG timestamp100NS = 0;
@@ -466,54 +466,60 @@ static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SD
     } else {
         BYTE *pixels = NULL;
         LONG pitch = 0;
+        DWORD buflen = 0;
 
         if (SUCCEEDED(IMFMediaBuffer_QueryInterface(objs->buffer, &SDL_IID_IMF2DBuffer2, (void **)&objs->buffer2d2))) {
             BYTE *bufstart = NULL;
-            DWORD buflen = 0;
             ret = IMF2DBuffer2_Lock2DSize(objs->buffer2d2, MF2DBuffer_LockFlags_Read, &pixels, &pitch, &bufstart, &buflen);
             if (FAILED(ret)) {
                 result = SDL_CAMERA_FRAME_ERROR;
                 CleanupIMF2DBuffer2(NULL, objs);
             } else {
-                frame->pixels = pixels;
                 if (frame->format == SDL_PIXELFORMAT_MJPG) {
-                    frame->pitch = (int)buflen;
-                } else {
-                    frame->pitch = (int)pitch;
+                    pitch = (LONG)buflen;
                 }
+                if (pitch < 0) { // image rows are reversed.
+                    pixels += -pitch * (frame->h - 1);
+                }
+                frame->pixels = pixels;
+                frame->pitch = (int)pitch;
                 if (!SDL_SetPointerPropertyWithCleanup(surfprops, PROP_SURFACE_IMFOBJS_POINTER, objs, CleanupIMF2DBuffer2, NULL)) {
                     result = SDL_CAMERA_FRAME_ERROR;
                 }
             }
-        } else if (SUCCEEDED(IMFMediaBuffer_QueryInterface(objs->buffer, &SDL_IID_IMF2DBuffer, (void **)&objs->buffer2d))) {
+        } else if (frame->format != SDL_PIXELFORMAT_MJPG &&
+                   SUCCEEDED(IMFMediaBuffer_QueryInterface(objs->buffer, &SDL_IID_IMF2DBuffer, (void **)&objs->buffer2d))) {
             ret = IMF2DBuffer_Lock2D(objs->buffer2d, &pixels, &pitch);
             if (FAILED(ret)) {
                 CleanupIMF2DBuffer(NULL, objs);
                 result = SDL_CAMERA_FRAME_ERROR;
             } else {
+                if (pitch < 0) { // image rows are reversed.
+                    pixels += -pitch * (frame->h - 1);
+                }
                 frame->pixels = pixels;
-                frame->pitch = (int) pitch;
+                frame->pitch = (int)pitch;
                 if (!SDL_SetPointerPropertyWithCleanup(surfprops, PROP_SURFACE_IMFOBJS_POINTER, objs, CleanupIMF2DBuffer, NULL)) {
                     result = SDL_CAMERA_FRAME_ERROR;
                 }
             }
         } else {
-            DWORD maxlen = 0, currentlen = 0;
-            ret = IMFMediaBuffer_Lock(objs->buffer, &pixels, &maxlen, &currentlen);
+            DWORD maxlen = 0;
+            ret = IMFMediaBuffer_Lock(objs->buffer, &pixels, &maxlen, &buflen);
             if (FAILED(ret)) {
                 CleanupIMFMediaBuffer(NULL, objs);
                 result = SDL_CAMERA_FRAME_ERROR;
             } else {
                 if (frame->format == SDL_PIXELFORMAT_MJPG) {
-                    pitch = (LONG)currentlen;
+                    pitch = (LONG)buflen;
                 } else {
                     pitch = (LONG)device->hidden->pitch;
-                    if (pitch < 0) { // image rows are reversed.
-                        pixels += -pitch * (frame->h - 1);
-                    }
+                }
+                if (pitch < 0) { // image rows are reversed.
+                    pixels += -pitch * (frame->h - 1);
                 }
                 frame->pixels = pixels;
-                frame->pitch = (int) pitch;
+                frame->pitch = (int)pitch;
                 if (!SDL_SetPointerPropertyWithCleanup(surfprops, PROP_SURFACE_IMFOBJS_POINTER, objs, CleanupIMFMediaBuffer, NULL)) {
                     result = SDL_CAMERA_FRAME_ERROR;
                 }
@@ -539,15 +545,20 @@ static void MEDIAFOUNDATION_ReleaseFrame(SDL_Camera *device, SDL_Surface *frame)
 
 #else
 
-static SDL_CameraFrameResult MEDIAFOUNDATION_CopyFrame(SDL_Surface *frame, const void *pixels, LONG pitch, DWORD buflen)
+static SDL_CameraFrameResult MEDIAFOUNDATION_CopyFrame(SDL_Surface *frame, const BYTE *pixels, LONG pitch, DWORD buflen)
 {
     frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), buflen);
     if (!frame->pixels) {
         return SDL_CAMERA_FRAME_ERROR;
     }
 
-    SDL_memcpy(frame->pixels, pixels, buflen);
+    const BYTE *start = pixels;
+    if (pitch < 0) { // image rows are reversed.
+        start += -pitch * (frame->h - 1);
+    }
+    SDL_memcpy(frame->pixels, start, buflen);
     frame->pitch = (int)pitch;
+
     return SDL_CAMERA_FRAME_READY;
 }
 
@@ -584,19 +595,18 @@ static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SD
         IMF2DBuffer2 *buffer2d2 = NULL;
         BYTE *pixels = NULL;
         LONG pitch = 0;
+        DWORD buflen = 0;
 
         if (SUCCEEDED(IMFMediaBuffer_QueryInterface(buffer, &SDL_IID_IMF2DBuffer2, (void **)&buffer2d2))) {
             BYTE *bufstart = NULL;
-            DWORD buflen = 0;
             ret = IMF2DBuffer2_Lock2DSize(buffer2d2, MF2DBuffer_LockFlags_Read, &pixels, &pitch, &bufstart, &buflen);
             if (FAILED(ret)) {
                 result = SDL_CAMERA_FRAME_ERROR;
             } else {
                 if (frame->format == SDL_PIXELFORMAT_MJPG) {
-                    result = MEDIAFOUNDATION_CopyFrame(frame, pixels, (LONG)buflen, buflen);
-                } else {
-                    result = MEDIAFOUNDATION_CopyFrame(frame, pixels, pitch, buflen);
+                    pitch = (LONG)buflen;
                 }
+                result = MEDIAFOUNDATION_CopyFrame(frame, pixels, pitch, buflen);
                 IMF2DBuffer2_Unlock2D(buffer2d2);
             }
             IMF2DBuffer2_Release(buffer2d2);
@@ -606,32 +616,23 @@ static SDL_CameraFrameResult MEDIAFOUNDATION_AcquireFrame(SDL_Camera *device, SD
             if (FAILED(ret)) {
                 result = SDL_CAMERA_FRAME_ERROR;
             } else {
-                BYTE *bufstart = pixels;
-                const DWORD buflen = SDL_abs((int)pitch) * frame->h;
-                if (pitch < 0) { // image rows are reversed.
-                    bufstart += -pitch * (frame->h - 1);
-                }
-                result = MEDIAFOUNDATION_CopyFrame(frame, bufstart, pitch, buflen);
+                buflen = SDL_abs((int)pitch) * frame->h;
+                result = MEDIAFOUNDATION_CopyFrame(frame, pixels, pitch, buflen);
                 IMF2DBuffer_Unlock2D(buffer2d);
             }
             IMF2DBuffer_Release(buffer2d);
         } else {
-            DWORD maxlen = 0, currentlen = 0;
-            ret = IMFMediaBuffer_Lock(buffer, &pixels, &maxlen, &currentlen);
+            DWORD maxlen = 0;
+            ret = IMFMediaBuffer_Lock(buffer, &pixels, &maxlen, &buflen);
             if (FAILED(ret)) {
                 result = SDL_CAMERA_FRAME_ERROR;
             } else {
                 if (frame->format == SDL_PIXELFORMAT_MJPG) {
-                    result = MEDIAFOUNDATION_CopyFrame(frame, pixels, (LONG)currentlen, currentlen);
+                    pitch = (LONG)buflen;
                 } else {
-                    BYTE *bufstart = pixels;
                     pitch = (LONG)device->hidden->pitch;
-                    const DWORD buflen = (SDL_abs((int)pitch) * frame->w) * frame->h;
-                    if (pitch < 0) { // image rows are reversed.
-                        bufstart += -pitch * (frame->h - 1);
-                    }
-                    result = MEDIAFOUNDATION_CopyFrame(frame, bufstart, pitch, buflen);
                 }
+                result = MEDIAFOUNDATION_CopyFrame(frame, pixels, pitch, buflen);
                 IMFMediaBuffer_Unlock(buffer);
             }
         }
