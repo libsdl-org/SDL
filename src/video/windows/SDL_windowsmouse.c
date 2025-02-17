@@ -418,7 +418,6 @@ static HCURSOR GetCachedCursor(SDL_Cursor *cursor)
 
     entry = (CachedCursor *)SDL_malloc(sizeof(*entry));
     if (!entry) {
-        WIN_SetError("SDL_malloc failed");
         if (hcursor) {
             DestroyCursor(hcursor);
         }
