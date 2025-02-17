@@ -145,7 +145,7 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
                     pbfh->bfSize = (DWORD)bmp_size;
                     pbfh->bfReserved1 = 0;
                     pbfh->bfReserved2 = 0;
-                    pbfh->bfOffBits = (DWORD)(sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + color_table_size);
+                    pbfh->bfOffBits = (DWORD)(sizeof(BITMAPFILEHEADER) + pbih->biSize + color_table_size);
                     SDL_memcpy((Uint8 *)bmp + sizeof(BITMAPFILEHEADER), dib, dib_size);
                     *size = bmp_size;
                 }
