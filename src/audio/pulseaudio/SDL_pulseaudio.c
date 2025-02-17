@@ -778,8 +778,8 @@ static void AddPulseAudioDevice(const bool recording, const char *description, c
             SDL_free(handle);
         } else {
             handle->device_index = index;
+            SDL_AddAudioDevice(recording, description, &spec, handle);
         }
-        SDL_AddAudioDevice(recording, description, &spec, handle);
     }
 }
 
