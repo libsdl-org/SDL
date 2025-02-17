@@ -165,7 +165,7 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, bool is_monochrome)
 
     pixels = SDL_small_alloc(Uint8, size * (is_monochrome ? 2 : 1), &isstack);
     if (!pixels) {
-        WIN_SetError("SDL_small_alloc failed");
+        SDL_OutOfMemory();
         return NULL;
     }
 
