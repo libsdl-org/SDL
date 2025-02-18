@@ -310,7 +310,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
                     if ((SDL2 === undefined) || (SDL2.capture === undefined)) { return; }
                     audioProcessingEvent.outputBuffer.getChannelData(0).fill(0.0);
                     SDL2.capture.currentCaptureBuffer = audioProcessingEvent.inputBuffer;
-                    dynCall('vi', $2, [$3]);
+                    dynCall('vp', $2, [$3]);
                 };
                 SDL2.capture.mediaStreamNode.connect(SDL2.capture.scriptProcessorNode);
                 SDL2.capture.scriptProcessorNode.connect(SDL2.audioContext.destination);
@@ -326,7 +326,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
             SDL2.capture.silenceBuffer.getChannelData(0).fill(0.0);
             var silence_callback = function() {
                 SDL2.capture.currentCaptureBuffer = SDL2.capture.silenceBuffer;
-                dynCall('vi', $2, [$3]);
+                dynCall('vp', $2, [$3]);
             };
 
             SDL2.capture.silenceTimer = setInterval(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1000);
@@ -351,7 +351,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
                     SDL2.audio.silenceBuffer = undefined;
                 }
                 SDL2.audio.currentOutputBuffer = e['outputBuffer'];
-                dynCall('vi', $2, [$3]);
+                dynCall('vp', $2, [$3]);
             };
 
             SDL2.audio.scriptProcessorNode['connect'](SDL2.audioContext['destination']);
@@ -369,7 +369,7 @@ static int EMSCRIPTENAUDIO_OpenDevice(_THIS, const char *devname)
                     // the buffer that gets filled here just gets ignored, so the app can make progress
                     //  and/or avoid flooding audio queues until we can actually play audio.
                     SDL2.audio.currentOutputBuffer = SDL2.audio.silenceBuffer;
-                    dynCall('vi', $2, [$3]);
+                    dynCall('vp', $2, [$3]);
                     SDL2.audio.currentOutputBuffer = undefined;
                 };
 
