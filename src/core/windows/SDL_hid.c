@@ -22,6 +22,7 @@
 
 #include "SDL_hid.h"
 
+HidD_GetAttributes_t SDL_HidD_GetAttributes;
 HidD_GetString_t SDL_HidD_GetManufacturerString;
 HidD_GetString_t SDL_HidD_GetProductString;
 HidP_GetCaps_t SDL_HidP_GetCaps;
@@ -50,6 +51,7 @@ bool WIN_LoadHIDDLL(void)
     SDL_assert(s_HIDDLLRefCount == 0);
     s_HIDDLLRefCount = 1;
 
+    SDL_HidD_GetAttributes = (HidD_GetAttributes_t)GetProcAddress(s_pHIDDLL, "HidD_GetAttributes");
     SDL_HidD_GetManufacturerString = (HidD_GetString_t)GetProcAddress(s_pHIDDLL, "HidD_GetManufacturerString");
     SDL_HidD_GetProductString = (HidD_GetString_t)GetProcAddress(s_pHIDDLL, "HidD_GetProductString");
     SDL_HidP_GetCaps = (HidP_GetCaps_t)GetProcAddress(s_pHIDDLL, "HidP_GetCaps");

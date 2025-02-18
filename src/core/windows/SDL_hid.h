@@ -191,6 +191,7 @@ typedef struct
 extern bool WIN_LoadHIDDLL(void);
 extern void WIN_UnloadHIDDLL(void);
 
+typedef BOOLEAN (WINAPI *HidD_GetAttributes_t)(HANDLE HidDeviceObject, PHIDD_ATTRIBUTES Attributes);
 typedef BOOLEAN (WINAPI *HidD_GetString_t)(HANDLE HidDeviceObject, PVOID Buffer, ULONG BufferLength);
 typedef NTSTATUS (WINAPI *HidP_GetCaps_t)(PHIDP_PREPARSED_DATA PreparsedData, PHIDP_CAPS Capabilities);
 typedef NTSTATUS (WINAPI *HidP_GetButtonCaps_t)(HIDP_REPORT_TYPE ReportType, PHIDP_BUTTON_CAPS ButtonCaps, PUSHORT ButtonCapsLength, PHIDP_PREPARSED_DATA PreparsedData);
@@ -198,6 +199,7 @@ typedef NTSTATUS (WINAPI *HidP_GetValueCaps_t)(HIDP_REPORT_TYPE ReportType, PHID
 typedef ULONG (WINAPI *HidP_MaxDataListLength_t)(HIDP_REPORT_TYPE ReportType, PHIDP_PREPARSED_DATA PreparsedData);
 typedef NTSTATUS (WINAPI *HidP_GetData_t)(HIDP_REPORT_TYPE ReportType, PHIDP_DATA DataList, PULONG DataLength, PHIDP_PREPARSED_DATA PreparsedData, PCHAR Report, ULONG ReportLength);
 
+extern HidD_GetAttributes_t SDL_HidD_GetAttributes;
 extern HidD_GetString_t SDL_HidD_GetManufacturerString;
 extern HidD_GetString_t SDL_HidD_GetProductString;
 extern HidP_GetCaps_t SDL_HidP_GetCaps;
