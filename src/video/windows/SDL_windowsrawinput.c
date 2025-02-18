@@ -118,6 +118,11 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
         WIN_PollRawInput(_this, poll_start);
     }
 
+    if (_this->internal->raw_input_fake_pen_id) {
+        SDL_RemovePenDevice(0, SDL_GetKeyboardFocus(), _this->internal->raw_input_fake_pen_id);
+        _this->internal->raw_input_fake_pen_id = 0;
+    }
+
     devices[0].dwFlags |= RIDEV_REMOVE;
     devices[0].hwndTarget = NULL;
     devices[1].dwFlags |= RIDEV_REMOVE;

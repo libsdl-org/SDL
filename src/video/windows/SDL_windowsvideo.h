@@ -594,6 +594,7 @@ struct SDL_VideoData
     bool raw_keyboard_flag_nohotkeys;
     bool pending_E1_key_sequence;
     Uint32 raw_input_enabled;
+    SDL_PenID raw_input_fake_pen_id;
 
     WIN_GameInputData *gameinput_context;
 
