@@ -159,7 +159,7 @@ void SDL_SYS_SetupThread(const char *name)
             inf.dwFlags = 0;
 
             /* The debugger catches this, renames the thread, continues on. */
-            RaiseException(0x406D1388, 0, sizeof(inf) / sizeof(ULONG), (const ULONG_PTR *)&inf);
+            RaiseException(0x406D1388, 0, sizeof(inf) / sizeof(ULONG_PTR), (const ULONG_PTR *)&inf);
         }
     }
 }
