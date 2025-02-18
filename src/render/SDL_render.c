@@ -2787,7 +2787,7 @@ static void SDL_RenderLogicalPresentation(SDL_Renderer *renderer)
     }
 }
 
-static bool SDL_RenderVectorFromWindow(SDL_Renderer *renderer, float window_dx, float window_dy, float *restrict dx, float *restrict dy)
+static bool SDL_RenderVectorFromWindow(SDL_Renderer *renderer, float window_dx, float window_dy, float *dx, float *dy)
 {
     // Convert from window coordinates to pixels within the window
     window_dx *= renderer->dpi_scale.x;
