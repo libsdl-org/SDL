@@ -1331,7 +1331,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->xdg_toplevel_icon_manager_v1 = wl_registry_bind(d->registry, id, &xdg_toplevel_icon_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "frog_color_management_factory_v1") == 0) {
         d->frog_color_management_factory_v1 = wl_registry_bind(d->registry, id, &frog_color_management_factory_v1_interface, 1);
-    } else if (SDL_strcmp(interface, "xx_color_manager_v4") == 0) {
+    } else if (SDL_strcmp(interface, "wp_color_manager_v1") == 0) {
         d->wp_color_manager_v1 = wl_registry_bind(d->registry, id, &wp_color_manager_v1_interface, 1);
         Wayland_InitColorManager(d);
     }
