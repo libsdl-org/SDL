@@ -128,7 +128,8 @@ struct SDL_WindowData
     char *app_id;
     double scale_factor;
 
-    struct Wayland_SHMBuffer icon;
+    struct Wayland_SHMBuffer *icon_buffers;
+    int icon_buffer_count;
 
     struct
     {
