@@ -395,11 +395,11 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
 
         X11_XGetWindowAttributes(data->videodata->display, w, &attrib);
         if (!SDL_WINDOW_IS_POPUP(window)) {
-            window->x = data->expected.x = attrib.x;
-            window->y = data->expected.y = attrib.y - data->border_top;
+            window->x = window->windowed.x = window->floating.x = attrib.x;
+            window->y = window->windowed.y = window->floating.y = attrib.y - data->border_top;
         }
-        window->w = data->expected.w = attrib.width;
-        window->h = data->expected.h = attrib.height;
+        window->w = window->windowed.w = window->floating.w = attrib.width;
+        window->h = window->windowed.h = window->floating.h = attrib.height;
         if (attrib.map_state != IsUnmapped) {
             window->flags &= ~SDL_WINDOW_HIDDEN;
         } else {
@@ -1107,41 +1107,6 @@ bool X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
     return true;
 }
 
-static void X11_SetWMNormalHints(SDL_VideoDevice *_this, SDL_Window *window, XSizeHints *sizehints)
-{
-    SDL_WindowData *data = window->internal;
-    Display *display = data->videodata->display;
-    int dest_x, dest_y;
-
-    X11_XSetWMNormalHints(display, data->xwindow, sizehints);
-
-    /* From Pierre-Loup:
-       WMs each have their little quirks with that.  When you change the
-       size hints, they get a ConfigureNotify event with the
-       WM_NORMAL_SIZE_HINTS Atom.  They all save the hints then, but they
-       don't all resize the window right away to enforce the new hints.
-
-       Some of them resize only after:
-        - A user-initiated move or resize
-        - A code-initiated move or resize
-        - Hiding & showing window (Unmap & map)
-
-       The following move & resize seems to help a lot of WMs that didn't
-       properly update after the hints were changed. We don't do a
-       hide/show, because there are supposedly subtle problems with doing so
-       and transitioning from windowed to fullscreen in Unity.
-     */
-    X11_XResizeWindow(display, data->xwindow, window->pending.w, window->pending.h);
-    const int x = window->last_position_pending ? window->pending.x : window->floating.x;
-    const int y = window->last_position_pending ? window->pending.y : window->floating.y;
-    SDL_RelativeToGlobalForWindow(window,
-                                  x - data->border_left,
-                                  y - data->border_top,
-                                  &dest_x, &dest_y);
-    X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
-    X11_XRaiseWindow(display, data->xwindow);
-}
-
 void X11_SetWindowMinMax(SDL_Window *window, bool use_current)
 {
     SDL_WindowData *data = window->internal;
@@ -1243,6 +1208,7 @@ void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
              */
             XSizeHints *sizehints = X11_XAllocSizeHints();
             long userhints;
+            int dest_x, dest_y;
 
             X11_XGetWMNormalHints(display, data->xwindow, sizehints, &userhints);
 
@@ -1250,7 +1216,33 @@ void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
             sizehints->min_height = sizehints->max_height = window->pending.h;
             sizehints->flags |= PMinSize | PMaxSize;
 
-            X11_SetWMNormalHints(_this, window, sizehints);
+            X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+
+            /* From Pierre-Loup:
+               WMs each have their little quirks with that.  When you change the
+               size hints, they get a ConfigureNotify event with the
+               WM_NORMAL_SIZE_HINTS Atom.  They all save the hints then, but they
+               don't all resize the window right away to enforce the new hints.
+
+               Some of them resize only after:
+                - A user-initiated move or resize
+                - A code-initiated move or resize
+                - Hiding & showing window (Unmap & map)
+
+               The following move & resize seems to help a lot of WMs that didn't
+               properly update after the hints were changed. We don't do a
+               hide/show, because there are supposedly subtle problems with doing so
+               and transitioning from windowed to fullscreen in Unity.
+             */
+            X11_XResizeWindow(display, data->xwindow, window->pending.w, window->pending.h);
+            const int x = window->last_position_pending ? window->pending.x : window->x;
+            const int y = window->last_position_pending ? window->pending.y : window->y;
+            SDL_RelativeToGlobalForWindow(window,
+                                          x - data->border_left,
+                                          y - data->border_top,
+                                          &dest_x, &dest_y);
+            X11_XMoveWindow(display, data->xwindow, dest_x, dest_y);
+            X11_XRaiseWindow(display, data->xwindow);
 
             X11_XFree(sizehints);
         }
