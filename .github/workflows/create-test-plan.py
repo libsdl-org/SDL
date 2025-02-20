@@ -641,6 +641,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 "-DSDL_UNIX_CONSOLE_BUILD=ON",
             ))
         case SdlPlatform.LoongArch64:
+            fpic = True
             job.run_tests = False
             job.cc = "${LOONGARCH64_CC}"
             job.cxx = "${LOONGARCH64_CXX}"
