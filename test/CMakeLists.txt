@@ -392,7 +392,7 @@ add_sdl_test_executable(teststreaming NEEDS_RESOURCES TESTUTILS SOURCES teststre
 add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c)
 add_sdl_test_executable(testurl SOURCES testurl.c)
 add_sdl_test_executable(testver NONINTERACTIVE NOTRACKMEM SOURCES testver.c)
-add_sdl_test_executable(testcamera MAIN_CALLBACKS NO_C90 SOURCES testcamera.c)
+add_sdl_test_executable(testcamera MAIN_CALLBACKS SOURCES testcamera.c)
 add_sdl_test_executable(testclipboard MAIN_CALLBACKS SOURCES testclipboard.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
 add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS SOURCES testviewport.c)
 add_sdl_test_executable(testwm SOURCES testwm.c)
