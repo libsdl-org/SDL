@@ -34,6 +34,7 @@ jobs:
             ${{ (!matrix.platform.msys2-no-perl && format('{0}-perl', matrix.platform.msys2-env)) || '' }}
             ${{ matrix.platform.msys2-env }}-pkg-config
             ${{ matrix.platform.msys2-env }}-clang-tools-extra
+            ${{ (matrix.platform.ccache && format('{0}-ccache', matrix.platform.msys2-env)) || '' }}
       - name: 'About this job'
         run: |
           echo "key=${{ matrix.platform.key }}"
@@ -164,6 +165,36 @@ jobs:
               echo '#error "System SDL headers must not be used by build system"' >"$dest"
             done
           done
+
+      - name: 'Calculate ccache key'
+        if: ${{ matrix.platform.ccache }}
+        id: prepare-restore-ccache
+        run: |
+          echo "timestamp=$(date -u "+%Y%m%d%H%M_%S")" >> "$GITHUB_OUTPUT"
+      - name: 'Restore ccache'
+        if: ${{ matrix.platform.ccache }}
+        uses: actions/cache/restore@v4
+        id: restore-ccache
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-${{ matrix.platform.key }}-${{ steps.prepare-restore-ccache.outputs.timestamp }}
+          restore-keys: |
+            ccache-${{matrix.platform.key}}
+      - name: 'Configure ccache'
+        if: ${{ matrix.platform.ccache }}
+        run: |
+          echo 'CCACHE_DIR=${{ runner.temp }}/ccache' >>${GITHUB_ENV}
+      - name: 'Prepare ccache'
+        if: ${{ matrix.platform.ccache && steps.restore-ccache.outputs.cache-hit }}
+        run: |
+          if [ "x${{ runner.os }}" = "xmacOS" ]; then
+            touch_date="2025-02-01T12:00:00Z"
+          else
+            touch_date="2025-02-01"
+          fi
+          find "${CCACHE_DIR}" -type f -exec touch -a -m -d "$touch_date" {} +
+          ccache -s
+          ccache -z
 
       - name: 'Configure (CMake)'
         if: ${{ !matrix.platform.no-cmake }}
@@ -357,6 +388,17 @@ jobs:
         if: ${{ matrix.platform.xcode-sdk != '' }}
         run: |
           xcodebuild -project Xcode/SDL/SDL.xcodeproj -target SDL3 -configuration Release -sdk ${{ matrix.platform.xcode-sdk }} clean build
+      - name: 'Prune old ccache files'
+        if: ${{ matrix.platform.ccache }}
+        run: |
+          ccache --evict-older-than=1d
+          ccache -s
+      - name: 'Save ccache'
+        if: ${{ matrix.platform.ccache }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ${{ steps.restore-ccache.outputs.cache-primary-key }}
       - name: 'Check Sources'
         if: ${{ matrix.platform.check-sources }}
         run: |
