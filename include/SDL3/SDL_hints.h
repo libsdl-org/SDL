@@ -2192,6 +2192,27 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_ZERO_CENTERED_DEVICES "SDL_JOYSTICK_ZERO_CENTERED_DEVICES"
 
 /**
+ * A variable containing a list of devices and their desired number of haptic
+ * (force feedback) enabled axis.
+ *
+ * The format of the string is a comma separated list of USB VID/PID/AXES
+ * triples in hexadecimal form, e.g.
+ *
+ * `0xAAAA/0xBBBB/0x01,0xCCCC/0xDDDD/0x3`
+ *
+ * This hint supports a "wildcard" device that will set the number of haptic
+ * axes on all initialized haptic devices which were not defined explicitly
+ * in this hint.
+ *
+ * `0xFFFF/0xFFFF/0x1`
+ *
+ * This hint should be set before a controller is opened.
+ *
+ * \since This hint is available since SDL 3.x.x. TODO: update since
+*/
+#define SDL_HINT_JOYSTICK_HAPTIC_AXES "SDL_JOYSTICK_HAPTIC_AXES"
+
+/**
  * A variable that controls keycode representation in keyboard events.
  *
  * This variable is a comma separated set of options for translating keycodes
