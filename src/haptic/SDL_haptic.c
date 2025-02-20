@@ -23,6 +23,84 @@
 #include "SDL_syshaptic.h"
 #include "SDL_haptic_c.h"
 #include "../joystick/SDL_joystick_c.h" // For SDL_IsJoystickValid
+#include "../SDL_hints_c.h"
+
+typedef struct SDL_Haptic_VIDPID_Naxes {
+    Uint16 vid;
+    Uint16 pid;
+    Uint16 naxes;
+} SDL_Haptic_VIDPID_Naxes;
+
+static void SDL_Haptic_Load_Axes_List(SDL_Haptic_VIDPID_Naxes **entries, int *num_entries)
+{
+    SDL_Haptic_VIDPID_Naxes entry;
+    const char *spot;
+    int length = 0;
+
+    spot = SDL_GetHint(SDL_HINT_JOYSTICK_HAPTIC_AXES);
+    if (!spot)
+        return;
+
+    while (SDL_sscanf(spot, "0x%hx/0x%hx/%hu%n", &entry.vid, &entry.pid, &entry.naxes, &length) == 3) {
+        SDL_assert(length > 0);
+        spot += length;
+        length = 0;
+
+        if ((*num_entries % 8) == 0) {
+            int new_max = *num_entries + 8;
+            SDL_Haptic_VIDPID_Naxes *new_entries =
+                (SDL_Haptic_VIDPID_Naxes *)SDL_realloc(*entries, new_max * sizeof(**entries));
+
+            // Out of memory, go with what we have already
+            if (!new_entries)
+                break;
+
+            *entries = new_entries;
+        }
+        (*entries)[(*num_entries)++] = entry;
+
+        if (spot[0] == ',')
+            spot++;
+    }
+}
+
+// /* Return -1 if not found */
+static int SDL_Haptic_Naxes_List_Index(struct SDL_Haptic_VIDPID_Naxes *entries, int num_entries, Uint16 vid, Uint16 pid)
+{
+    if (!entries)
+        return -1;
+
+    int i;
+    for (i = 0; i < num_entries; ++i) {
+        if (entries[i].vid == vid && entries[i].pid == pid)
+            return i;
+    }
+
+    return -1;
+}
+
+// Check if device needs a custom number of naxes
+static int SDL_Haptic_Get_Naxes(Uint16 vid, Uint16 pid)
+{
+    int num_entries = 0, index = 0, naxes = -1;
+    SDL_Haptic_VIDPID_Naxes *naxes_list = NULL;
+
+    SDL_Haptic_Load_Axes_List(&naxes_list, &num_entries);
+    if (!num_entries || !naxes_list)
+        return -1;
+
+    // Perform "wildcard" pass
+    index = SDL_Haptic_Naxes_List_Index(naxes_list, num_entries, 0xffff, 0xffff);
+    if (index >= 0)
+        naxes = naxes_list[index].naxes;
+
+    index = SDL_Haptic_Naxes_List_Index(naxes_list, num_entries, vid, pid);
+    if (index >= 0)
+        naxes = naxes_list[index].naxes;
+
+    SDL_free(naxes_list);
+    return naxes;
+}
 
 static SDL_Haptic *SDL_haptics = NULL;
 
@@ -281,6 +359,19 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
         SDL_assert(haptic->instance_id != 0);
     }
     SDL_UnlockJoysticks();
+
+    // Check if custom number of haptic axes was defined
+    Uint16 vid = SDL_GetJoystickVendor(joystick);
+    Uint16 pid = SDL_GetJoystickProduct(joystick);
+    int general_axes = SDL_GetNumJoystickAxes(joystick);
+
+    int naxes = SDL_Haptic_Get_Naxes(vid, pid);
+    if (naxes > 0)
+        haptic->naxes = naxes;
+
+    // Limit to the actual number of axes found on the device
+    if (general_axes >= 0 && naxes > general_axes)
+        haptic->naxes = general_axes;
 
     // Add haptic to list
     ++haptic->ref_count;
