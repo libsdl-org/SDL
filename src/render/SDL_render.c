@@ -5217,9 +5217,8 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
     if (renderer->software) {
         // Make sure all drawing to a surface is complete
         FlushRenderCommands(renderer);
-    } else {
-        SDL_DiscardAllCommands(renderer);
     }
+    SDL_DiscardAllCommands(renderer);
 
     if (renderer->debug_char_texture_atlas) {
         SDL_DestroyTexture(renderer->debug_char_texture_atlas);
