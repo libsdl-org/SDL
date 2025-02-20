@@ -493,6 +493,7 @@
     <ClInclude Include="..\..\src\video\SDL_pixels_c.h" />
     <ClInclude Include="..\..\src\video\SDL_rect_c.h" />
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h" />
+    <ClInclude Include="..\..\src\video\SDL_stb_c.h" />
     <ClInclude Include="..\..\src\video\SDL_surface_c.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h" />
@@ -705,6 +706,7 @@
     <ClCompile Include="..\..\src\video\SDL_pixels.c" />
     <ClCompile Include="..\..\src\video\SDL_rect.c" />
     <ClCompile Include="..\..\src\video\SDL_RLEaccel.c" />
+    <ClCompile Include="..\..\src\video\SDL_stb.c" />
     <ClCompile Include="..\..\src\video\SDL_stretch.c" />
     <ClCompile Include="..\..\src\video\SDL_surface.c" />
     <ClCompile Include="..\..\src\video\SDL_video.c" />

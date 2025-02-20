@@ -1281,7 +1281,14 @@ static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_Pix
 {
     int i;
 
-    if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+    if (format == SDL_PIXELFORMAT_MJPG) {
+        // We'll decode to SDL_PIXELFORMAT_RGBA32
+        for (i = 0; i < renderer->num_texture_formats; ++i) {
+            if (renderer->texture_formats[i] == SDL_PIXELFORMAT_RGBA32) {
+                return renderer->texture_formats[i];
+            }
+        }
+    } else if (SDL_ISPIXELFORMAT_FOURCC(format)) {
         // Look for an exact match
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (renderer->texture_formats[i] == format) {
@@ -1443,7 +1450,9 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         texture->next = texture->native;
         renderer->textures = texture;
 
-        if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+        if (texture->format == SDL_PIXELFORMAT_MJPG) {
+            // We have a custom decode + upload path for this
+        } else if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
 #ifdef SDL_HAVE_YUV
             texture->yuv = SDL_SW_CreateYUVTexture(texture->format, texture->colorspace, w, h);
 #else
