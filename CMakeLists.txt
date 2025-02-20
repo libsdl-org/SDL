@@ -1191,7 +1191,8 @@ sdl_glob_sources(
 
 # Build uclibc as a static library such that non-used symbols don't end up in the SDL3 shared library.
 file(GLOB SDL_UCLIBC_SOURCES "${SDL3_SOURCE_DIR}/src/libm/*.c")
-add_library(SDL_uclibc STATIC "${SDL_UCLIBC_SOURCES}")
+add_library(SDL_uclibc STATIC EXCLUDE_FROM_ALL "${SDL_UCLIBC_SOURCES}")
+set_property(TARGET SDL_uclibc PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 target_compile_definitions(SDL_uclibc PRIVATE USING_GENERATED_CONFIG_H)
 target_include_directories(SDL_uclibc PRIVATE "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/build_config")
 target_include_directories(SDL_uclibc PRIVATE "${SDL3_SOURCE_DIR}/src")
