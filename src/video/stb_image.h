@@ -914,6 +914,15 @@ enum
 
 typedef struct
 {
+    int w;
+    int h;
+    int pitch;
+    stbi_uc *y;
+    stbi_uc *uv;
+} stbi__nv12;
+
+typedef struct
+{
    int bits_per_channel;
    int num_channels;
    int channel_order;
@@ -921,7 +930,7 @@ typedef struct
 
 #ifndef STBI_NO_JPEG
 static int      stbi__jpeg_test(stbi__context *s);
-static void    *stbi__jpeg_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri);
+static void    *stbi__jpeg_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__nv12 *nv12, stbi__result_info *ri);
 #ifndef STB_INTERNAL_SDL
 static int      stbi__jpeg_info(stbi__context *s, int *x, int *y, int *comp);
 #endif
@@ -1185,7 +1194,7 @@ static void *stbi__load_main(stbi__context *s, int *x, int *y, int *comp, int re
    // bytes matching expectations; these are prone to false positives, so
    // try them later
    #ifndef STBI_NO_JPEG
-   if (stbi__jpeg_test(s)) return stbi__jpeg_load(s,x,y,comp,req_comp, ri);
+   if (stbi__jpeg_test(s)) return stbi__jpeg_load(s,x,y,comp,req_comp,0, ri);
    #endif
    #ifndef STBI_NO_PNM
    if (stbi__pnm_test(s))  return stbi__pnm_load(s,x,y,comp,req_comp, ri);
@@ -3896,7 +3905,49 @@ static stbi_uc stbi__blinn_8x8(stbi_uc x, stbi_uc y)
    return (stbi_uc) ((t + (t >>8)) >> 8);
 }
 
-static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp, int req_comp)
+static stbi_uc *output_jpeg_nv12(stbi__jpeg *z, stbi__nv12 *nv12)
+{
+   unsigned int i,j;
+
+   // Copy the Y plane
+   if (nv12->pitch == (int)z->s->img_x) {
+      memcpy(nv12->y, z->img_comp[0].data, z->s->img_y * z->s->img_x);
+   } else {
+      for (i=0; i < z->s->img_y; ++i) {
+         memcpy(nv12->y + i * nv12->pitch, z->img_comp[0].data + i * z->s->img_x, z->s->img_x);
+      }
+   }
+
+   if (z->s->img_n == 3) {
+      // NV12: U and V are interleaved, each subsampled by 2
+      const int nv12_hs = 2;
+      const int nv12_vs = 2;
+      const int u_hs = (z->img_h_max / z->img_comp[1].h);
+      const int u_vs = (z->img_v_max / z->img_comp[1].v);
+      const int v_hs = (z->img_h_max / z->img_comp[2].h);
+      const int v_vs = (z->img_v_max / z->img_comp[2].v);
+      for (i=0; i < (z->s->img_y + 1) / 2; ++i) {
+         stbi_uc *src_u = z->img_comp[1].data + i * (1 + (nv12_vs - u_vs)) * z->img_comp[1].x;
+         stbi_uc *src_v = z->img_comp[2].data + i * (1 + (nv12_vs - v_vs)) * z->img_comp[2].x;
+         stbi_uc *dst = nv12->uv + i * nv12->pitch;
+         for (j=0; j < (z->s->img_x + 1) / 2; ++j) {
+            *dst++ = *src_u;
+            src_u += 1 + (nv12_hs - u_hs);
+            *dst++ = *src_v;
+            src_v += 1 + (nv12_hs - v_hs);
+         }
+      }
+   } else {
+      // Grayscale
+      for (i=0; i < (z->s->img_y + 1) / 2; ++i) {
+         memset(nv12->uv + i * nv12->pitch, 0x80808080, ((z->s->img_x + 1) / 2) * 2);
+      }
+   }
+
+   return nv12->y;
+}
+
+static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp, int req_comp, stbi__nv12 *nv12)
 {
    int n, decode_n, is_rgb;
    z->s->img_n = 0; // make stbi__cleanup_jpeg safe
@@ -3930,124 +3981,138 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
 
       stbi__resample res_comp[4];
 
-      for (k=0; k < decode_n; ++k) {
-         stbi__resample *r = &res_comp[k];
+      if (nv12) {
+         if (nv12->w != (int)z->s->img_x || nv12->h != (int)z->s->img_y) {
+             stbi__cleanup_jpeg(z);
+             return stbi__errpuc("badsize", "Unexpected size");
+         }
 
-         // allocate line buffer big enough for upsampling off the edges
-         // with upsample factor of 4
-         z->img_comp[k].linebuf = (stbi_uc *) stbi__malloc(z->s->img_x + 3);
-         if (!z->img_comp[k].linebuf) { stbi__cleanup_jpeg(z); return stbi__errpuc("outofmem", "Out of memory"); }
+         if (is_rgb) {
+             stbi__cleanup_jpeg(z);
+             return stbi__errpuc("rgbtonv12", "Can't convert RGB to NV12");
+         }
 
-         r->hs      = z->img_h_max / z->img_comp[k].h;
-         r->vs      = z->img_v_max / z->img_comp[k].v;
-         r->ystep   = r->vs >> 1;
-         r->w_lores = (z->s->img_x + r->hs-1) / r->hs;
-         r->ypos    = 0;
-         r->line0   = r->line1 = z->img_comp[k].data;
-
-         if      (r->hs == 1 && r->vs == 1) r->resample = resample_row_1;
-         else if (r->hs == 1 && r->vs == 2) r->resample = stbi__resample_row_v_2;
-         else if (r->hs == 2 && r->vs == 1) r->resample = stbi__resample_row_h_2;
-         else if (r->hs == 2 && r->vs == 2) r->resample = z->resample_row_hv_2_kernel;
-         else                               r->resample = stbi__resample_row_generic;
-      }
-
-      // can't error after this so, this is safe
-      output = (stbi_uc *) stbi__malloc_mad3(n, z->s->img_x, z->s->img_y, 1);
-      if (!output) { stbi__cleanup_jpeg(z); return stbi__errpuc("outofmem", "Out of memory"); }
-
-      // now go ahead and resample
-      for (j=0; j < z->s->img_y; ++j) {
-         stbi_uc *out = output + n * z->s->img_x * j;
+         output = output_jpeg_nv12(z, nv12);
+      } else {
          for (k=0; k < decode_n; ++k) {
             stbi__resample *r = &res_comp[k];
-            int y_bot = r->ystep >= (r->vs >> 1);
-            coutput[k] = r->resample(z->img_comp[k].linebuf,
-                                     y_bot ? r->line1 : r->line0,
-                                     y_bot ? r->line0 : r->line1,
-                                     r->w_lores, r->hs);
-            if (++r->ystep >= r->vs) {
-               r->ystep = 0;
-               r->line0 = r->line1;
-               if (++r->ypos < z->img_comp[k].y)
-                  r->line1 += z->img_comp[k].w2;
-            }
+
+            // allocate line buffer big enough for upsampling off the edges
+            // with upsample factor of 4
+            z->img_comp[k].linebuf = (stbi_uc *) stbi__malloc(z->s->img_x + 3);
+            if (!z->img_comp[k].linebuf) { stbi__cleanup_jpeg(z); return stbi__errpuc("outofmem", "Out of memory"); }
+
+            r->hs      = z->img_h_max / z->img_comp[k].h;
+            r->vs      = z->img_v_max / z->img_comp[k].v;
+            r->ystep   = r->vs >> 1;
+            r->w_lores = (z->s->img_x + r->hs-1) / r->hs;
+            r->ypos    = 0;
+            r->line0   = r->line1 = z->img_comp[k].data;
+
+            if      (r->hs == 1 && r->vs == 1) r->resample = resample_row_1;
+            else if (r->hs == 1 && r->vs == 2) r->resample = stbi__resample_row_v_2;
+            else if (r->hs == 2 && r->vs == 1) r->resample = stbi__resample_row_h_2;
+            else if (r->hs == 2 && r->vs == 2) r->resample = z->resample_row_hv_2_kernel;
+            else                               r->resample = stbi__resample_row_generic;
          }
-         if (n >= 3) {
-            stbi_uc *y = coutput[0];
-            if (z->s->img_n == 3) {
-               if (is_rgb) {
+
+         // can't error after this so, this is safe
+         output = (stbi_uc *) stbi__malloc_mad3(n, z->s->img_x, z->s->img_y, 1);
+         if (!output) { stbi__cleanup_jpeg(z); return stbi__errpuc("outofmem", "Out of memory"); }
+
+         // now go ahead and resample
+         for (j=0; j < z->s->img_y; ++j) {
+            stbi_uc *out = output + n * z->s->img_x * j;
+            for (k=0; k < decode_n; ++k) {
+               stbi__resample *r = &res_comp[k];
+               int y_bot = r->ystep >= (r->vs >> 1);
+               coutput[k] = r->resample(z->img_comp[k].linebuf,
+                                        y_bot ? r->line1 : r->line0,
+                                        y_bot ? r->line0 : r->line1,
+                                        r->w_lores, r->hs);
+               if (++r->ystep >= r->vs) {
+                  r->ystep = 0;
+                  r->line0 = r->line1;
+                  if (++r->ypos < z->img_comp[k].y)
+                     r->line1 += z->img_comp[k].w2;
+               }
+            }
+            if (n >= 3) {
+               stbi_uc *y = coutput[0];
+               if (z->s->img_n == 3) {
+                  if (is_rgb) {
+                     for (i=0; i < z->s->img_x; ++i) {
+                        out[0] = y[i];
+                        out[1] = coutput[1][i];
+                        out[2] = coutput[2][i];
+                        out[3] = 255;
+                        out += n;
+                     }
+                  } else {
+                     z->YCbCr_to_RGB_kernel(out, y, coutput[1], coutput[2], z->s->img_x, n);
+                  }
+               } else if (z->s->img_n == 4) {
+                  if (z->app14_color_transform == 0) { // CMYK
+                     for (i=0; i < z->s->img_x; ++i) {
+                        stbi_uc m = coutput[3][i];
+                        out[0] = stbi__blinn_8x8(coutput[0][i], m);
+                        out[1] = stbi__blinn_8x8(coutput[1][i], m);
+                        out[2] = stbi__blinn_8x8(coutput[2][i], m);
+                        out[3] = 255;
+                        out += n;
+                     }
+                  } else if (z->app14_color_transform == 2) { // YCCK
+                     z->YCbCr_to_RGB_kernel(out, y, coutput[1], coutput[2], z->s->img_x, n);
+                     for (i=0; i < z->s->img_x; ++i) {
+                        stbi_uc m = coutput[3][i];
+                        out[0] = stbi__blinn_8x8(255 - out[0], m);
+                        out[1] = stbi__blinn_8x8(255 - out[1], m);
+                        out[2] = stbi__blinn_8x8(255 - out[2], m);
+                        out += n;
+                     }
+                  } else { // YCbCr + alpha?  Ignore the fourth channel for now
+                     z->YCbCr_to_RGB_kernel(out, y, coutput[1], coutput[2], z->s->img_x, n);
+                  }
+               } else
                   for (i=0; i < z->s->img_x; ++i) {
-                     out[0] = y[i];
-                     out[1] = coutput[1][i];
-                     out[2] = coutput[2][i];
-                     out[3] = 255;
+                     out[0] = out[1] = out[2] = y[i];
+                     out[3] = 255; // not used if n==3
+                     out += n;
+                  }
+            } else {
+               if (is_rgb) {
+                  if (n == 1)
+                     for (i=0; i < z->s->img_x; ++i)
+                        *out++ = stbi__compute_y(coutput[0][i], coutput[1][i], coutput[2][i]);
+                  else {
+                     for (i=0; i < z->s->img_x; ++i, out += 2) {
+                        out[0] = stbi__compute_y(coutput[0][i], coutput[1][i], coutput[2][i]);
+                        out[1] = 255;
+                     }
+                  }
+               } else if (z->s->img_n == 4 && z->app14_color_transform == 0) {
+                  for (i=0; i < z->s->img_x; ++i) {
+                     stbi_uc m = coutput[3][i];
+                     stbi_uc r = stbi__blinn_8x8(coutput[0][i], m);
+                     stbi_uc g = stbi__blinn_8x8(coutput[1][i], m);
+                     stbi_uc b = stbi__blinn_8x8(coutput[2][i], m);
+                     out[0] = stbi__compute_y(r, g, b);
+                     out[1] = 255;
+                     out += n;
+                  }
+               } else if (z->s->img_n == 4 && z->app14_color_transform == 2) {
+                  for (i=0; i < z->s->img_x; ++i) {
+                     out[0] = stbi__blinn_8x8(255 - coutput[0][i], coutput[3][i]);
+                     out[1] = 255;
                      out += n;
                   }
                } else {
-                  z->YCbCr_to_RGB_kernel(out, y, coutput[1], coutput[2], z->s->img_x, n);
+                  stbi_uc *y = coutput[0];
+                  if (n == 1)
+                     for (i=0; i < z->s->img_x; ++i) out[i] = y[i];
+                  else
+                     for (i=0; i < z->s->img_x; ++i) { *out++ = y[i]; *out++ = 255; }
                }
-            } else if (z->s->img_n == 4) {
-               if (z->app14_color_transform == 0) { // CMYK
-                  for (i=0; i < z->s->img_x; ++i) {
-                     stbi_uc m = coutput[3][i];
-                     out[0] = stbi__blinn_8x8(coutput[0][i], m);
-                     out[1] = stbi__blinn_8x8(coutput[1][i], m);
-                     out[2] = stbi__blinn_8x8(coutput[2][i], m);
-                     out[3] = 255;
-                     out += n;
-                  }
-               } else if (z->app14_color_transform == 2) { // YCCK
-                  z->YCbCr_to_RGB_kernel(out, y, coutput[1], coutput[2], z->s->img_x, n);
-                  for (i=0; i < z->s->img_x; ++i) {
-                     stbi_uc m = coutput[3][i];
-                     out[0] = stbi__blinn_8x8(255 - out[0], m);
-                     out[1] = stbi__blinn_8x8(255 - out[1], m);
-                     out[2] = stbi__blinn_8x8(255 - out[2], m);
-                     out += n;
-                  }
-               } else { // YCbCr + alpha?  Ignore the fourth channel for now
-                  z->YCbCr_to_RGB_kernel(out, y, coutput[1], coutput[2], z->s->img_x, n);
-               }
-            } else
-               for (i=0; i < z->s->img_x; ++i) {
-                  out[0] = out[1] = out[2] = y[i];
-                  out[3] = 255; // not used if n==3
-                  out += n;
-               }
-         } else {
-            if (is_rgb) {
-               if (n == 1)
-                  for (i=0; i < z->s->img_x; ++i)
-                     *out++ = stbi__compute_y(coutput[0][i], coutput[1][i], coutput[2][i]);
-               else {
-                  for (i=0; i < z->s->img_x; ++i, out += 2) {
-                     out[0] = stbi__compute_y(coutput[0][i], coutput[1][i], coutput[2][i]);
-                     out[1] = 255;
-                  }
-               }
-            } else if (z->s->img_n == 4 && z->app14_color_transform == 0) {
-               for (i=0; i < z->s->img_x; ++i) {
-                  stbi_uc m = coutput[3][i];
-                  stbi_uc r = stbi__blinn_8x8(coutput[0][i], m);
-                  stbi_uc g = stbi__blinn_8x8(coutput[1][i], m);
-                  stbi_uc b = stbi__blinn_8x8(coutput[2][i], m);
-                  out[0] = stbi__compute_y(r, g, b);
-                  out[1] = 255;
-                  out += n;
-               }
-            } else if (z->s->img_n == 4 && z->app14_color_transform == 2) {
-               for (i=0; i < z->s->img_x; ++i) {
-                  out[0] = stbi__blinn_8x8(255 - coutput[0][i], coutput[3][i]);
-                  out[1] = 255;
-                  out += n;
-               }
-            } else {
-               stbi_uc *y = coutput[0];
-               if (n == 1)
-                  for (i=0; i < z->s->img_x; ++i) out[i] = y[i];
-               else
-                  for (i=0; i < z->s->img_x; ++i) { *out++ = y[i]; *out++ = 255; }
             }
          }
       }
@@ -4059,7 +4124,7 @@ static stbi_uc *load_jpeg_image(stbi__jpeg *z, int *out_x, int *out_y, int *comp
    }
 }
 
-static void *stbi__jpeg_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)
+static void *stbi__jpeg_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__nv12 *nv12, stbi__result_info *ri)
 {
    unsigned char* result;
    stbi__jpeg* j = (stbi__jpeg*) stbi__malloc(sizeof(stbi__jpeg));
@@ -4068,7 +4133,7 @@ static void *stbi__jpeg_load(stbi__context *s, int *x, int *y, int *comp, int re
    STBI_NOTUSED(ri);
    j->s = s;
    stbi__setup_jpeg(j);
-   result = load_jpeg_image(j, x,y,comp,req_comp);
+   result = load_jpeg_image(j, x,y,comp,req_comp,nv12);
    STBI_FREE(j);
    return result;
 }
