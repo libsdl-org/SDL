@@ -2298,13 +2298,17 @@ bool SDL_ConvertPixelsAndColorspace(int width, int height,
 
     // Fast path for same format copy
     if (src_format == dst_format && src_colorspace == dst_colorspace) {
-        int i;
-        const int bpp = SDL_BYTESPERPIXEL(src_format);
-        width *= bpp;
-        for (i = height; i--;) {
-            SDL_memcpy(dst, src, width);
-            src = (const Uint8 *)src + src_pitch;
-            dst = (Uint8 *)dst + dst_pitch;
+        if (src_pitch == dst_pitch) {
+            SDL_memcpy(dst, src, height * src_pitch);
+        } else {
+            int i;
+            const int bpp = SDL_BYTESPERPIXEL(src_format);
+            width *= bpp;
+            for (i = height; i--;) {
+                SDL_memcpy(dst, src, width);
+                src = (const Uint8 *)src + src_pitch;
+                dst = (Uint8 *)dst + dst_pitch;
+            }
         }
         return true;
     }
