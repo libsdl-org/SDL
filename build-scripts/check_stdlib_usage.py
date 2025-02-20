@@ -165,7 +165,6 @@ def find_symbols_in_file(file: pathlib.Path) -> int:
         "include/SDL3",
         "build-scripts/gen_audio_resampler_filter.c",
         "build-scripts/gen_audio_channel_conversion.c",
-        "test/stb_image.h",
         "test/win32/sdlprocdump.c",
     ]
 
