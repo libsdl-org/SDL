@@ -440,18 +440,23 @@ extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 static void SDL_InitDynamicAPILocked(void)
 {
+    SDL_DYNAPI_ENTRYFN entry = NULL; /* funcs from here by default. */
+    SDL_bool use_internal = SDL_TRUE;
+
     /* this can't use SDL_getenv_REAL, because it might allocate memory before the app can set their allocator */
 #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
     /* We've always used LoadLibraryA for this, so this has never worked with Unicode paths on Windows. Sorry. */
     char envbuf[512];  /* overflows will just report as environment variable being unset, but LoadLibraryA has a MAX_PATH of 260 anyhow, apparently. */
     const DWORD rc = GetEnvironmentVariableA(SDL_DYNAMIC_API_ENVVAR, envbuf, (DWORD) sizeof (envbuf));
     char *libname = ((rc != 0) && (rc < sizeof (envbuf))) ? envbuf : NULL;
+#elif defined(__OS2__)
+    char * libname;
+    if (DosScanEnv(SDL_DYNAMIC_API_ENVVAR, &libname) != NO_ERROR) {
+        libname = NULL;
+    }
 #else
     char *libname = getenv(SDL_DYNAMIC_API_ENVVAR);
 #endif
-
-    SDL_DYNAPI_ENTRYFN entry = NULL; /* funcs from here by default. */
-    SDL_bool use_internal = SDL_TRUE;
 
     if (libname) {
         while (*libname && !entry) {
