@@ -58,31 +58,60 @@
 #define STBI_ASSERT SDL_assert
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+#undef memset
 #endif
+
+#ifdef SDL_HAVE_STB
+static bool SDL_ConvertPixels_MJPG_to_NV12(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
+{
+    int w = 0, h = 0, format = 0;
+    stbi__context s;
+    stbi__start_mem(&s, src, src_pitch);
+
+    stbi__result_info ri;
+    SDL_zero(ri);
+    ri.bits_per_channel = 8;
+    ri.channel_order = STBI_ORDER_RGB;
+    ri.num_channels = 0;
+
+    stbi__nv12 nv12;
+    nv12.w = width;
+    nv12.h = height;
+    nv12.pitch = dst_pitch;
+    nv12.y = (stbi_uc *)dst;
+    nv12.uv = nv12.y + (nv12.h * nv12.pitch);
+
+    void *pixels = stbi__jpeg_load(&s, &w, &h, &format, 4, &nv12, &ri);
+    if (!pixels) {
+        return SDL_SetError("Couldn't decode image: %s", stbi_failure_reason());
+    }
+    return true;
+}
+#endif // SDL_HAVE_STB
 
 bool SDL_ConvertPixels_STB(int width, int height,
                            SDL_PixelFormat src_format, SDL_Colorspace src_colorspace, SDL_PropertiesID src_properties, const void *src, int src_pitch,
                            SDL_PixelFormat dst_format, SDL_Colorspace dst_colorspace, SDL_PropertiesID dst_properties, void *dst, int dst_pitch)
 {
 #ifdef SDL_HAVE_STB
-    if (src_colorspace != dst_colorspace) {
-        return SDL_SetError("SDL_ConvertPixels_STB: colorspace conversion not supported");
+    if (src_format == SDL_PIXELFORMAT_MJPG && dst_format == SDL_PIXELFORMAT_NV12) {
+        return SDL_ConvertPixels_MJPG_to_NV12(width, height, src, src_pitch, dst, dst_pitch);
     }
 
-    if (src_format == dst_format) {
-        if (src == dst) {
-            // Nothing to do
-            return true;
-        }
-    }
-
+    bool result;
     int w = 0, h = 0, format = 0;
-    stbi_uc *pixels = stbi_load_from_memory((const stbi_uc *)src, src_pitch, &w, &h, &format, 4);
+    int len = (src_format == SDL_PIXELFORMAT_MJPG) ? src_pitch : (height * src_pitch);
+    void *pixels = stbi_load_from_memory(src, len, &w, &h, &format, 4);
     if (!pixels) {
         return SDL_SetError("Couldn't decode image: %s", stbi_failure_reason());
     }
 
-    bool result = SDL_ConvertPixelsAndColorspace(w, h, SDL_PIXELFORMAT_RGBA32, src_colorspace, src_properties, pixels, width * 4, dst_format, dst_colorspace, dst_properties, dst, dst_pitch);
+    if (w == width && h == height) {
+        result = SDL_ConvertPixelsAndColorspace(w, h, SDL_PIXELFORMAT_RGBA32, SDL_COLORSPACE_SRGB, 0, pixels, width * 4, dst_format, dst_colorspace, dst_properties, dst, dst_pitch);
+    } else {
+        result = SDL_SetError("Expected image size %dx%d, actual size %dx%d", width, height, w, h);
+    }
     stbi_image_free(pixels);
 
     return result;
