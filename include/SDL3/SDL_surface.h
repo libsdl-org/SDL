@@ -120,6 +120,8 @@ typedef enum SDL_FlipMode
  * format with a pitch of 32 would consist of 32x32 bytes of Y plane followed
  * by 32x16 bytes of UV plane.
  *
+ * When a surface holds MJPG format data, pixels points at the compressed JPEG image and pitch is the length of that data.
+ *
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateSurface
