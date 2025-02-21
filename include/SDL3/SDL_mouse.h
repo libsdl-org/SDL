@@ -228,6 +228,21 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetMouseNameForID(SDL_MouseID insta
 extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
 
 /**
+ * Set a user-defined function by which to transform relative mouse inputs,
+ * and its associated internal data which will be passed to the function.
+ * This will cause the relative system scale and relative speed scale hints
+ * to be ignored, instead only applying this custom transform function to 
+ * raw unscaled deltas.
+ *
+ * \param transform a pointer to an input transform function, or NULL to disable.
+ * \param userdata an optional pointer to the associated internal data.
+ *
+ * \since This function is available since SDL 3.2.6.
+ *
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_SetRelativeMouseTransform(const void *transform, void *userdata);
+
+/**
  * Query SDL's cache for the synchronous mouse button state and the
  * window-relative SDL-cursor position.
  *
