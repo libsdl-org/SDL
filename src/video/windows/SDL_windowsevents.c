@@ -861,130 +861,85 @@ static bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-static void GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, char *name, size_t len)
+static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, bool hid_loaded)
 {
-    name[0] = '\0';
+    char *name = NULL;
 
-    SP_DEVINFO_DATA data;
-    SDL_zero(data);
-    data.cbSize = sizeof(data);
-    for (DWORD i = 0;; ++i) {
-        if (!SetupDiEnumDeviceInfo(devinfo, i, &data)) {
-            if (GetLastError() == ERROR_NO_MORE_ITEMS) {
-                break;
-            } else {
+    // These are 126 for USB, but can be longer for Bluetooth devices
+    WCHAR vend[256], prod[256];
+    vend[0] = 0;
+    prod[0] = 0;
+
+    HIDD_ATTRIBUTES attr;
+    attr.VendorID = 0;
+    attr.ProductID = 0;
+    attr.Size = sizeof(attr);
+
+    if (hid_loaded) {
+        char devName[MAX_PATH + 1];
+        UINT cap = sizeof(devName) - 1;
+        UINT len = GetRawInputDeviceInfoA(hDevice, RIDI_DEVICENAME, devName, &cap);
+        if (len != (UINT)-1) {
+            devName[len] = '\0';
+
+            // important: for devices with exclusive access mode as per
+            // https://learn.microsoft.com/en-us/windows-hardware/drivers/hid/top-level-collections-opened-by-windows-for-system-use
+            // they can only be opened with a desired access of none instead of generic read.
+            HANDLE hFile = CreateFileA(devName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+            if (hFile != INVALID_HANDLE_VALUE) {
+                SDL_HidD_GetAttributes(hFile, &attr);
+                SDL_HidD_GetManufacturerString(hFile, vend, sizeof(vend));
+                SDL_HidD_GetProductString(hFile, prod, sizeof(prod));
+                CloseHandle(hFile);
+            }
+        }
+    }
+
+    if (prod[0]) {
+        char *vendor_name = WIN_StringToUTF8W(vend);
+        char *product_name = WIN_StringToUTF8W(prod);
+        if (product_name) {
+            name = SDL_CreateDeviceName(attr.VendorID, attr.ProductID, vendor_name, product_name);
+        }
+        SDL_free(vendor_name);
+        SDL_free(product_name);
+    }
+
+    if (!name) {
+        SP_DEVINFO_DATA data;
+        SDL_zero(data);
+        data.cbSize = sizeof(data);
+        for (DWORD i = 0;; ++i) {
+            if (!SetupDiEnumDeviceInfo(devinfo, i, &data)) {
+                if (GetLastError() == ERROR_NO_MORE_ITEMS) {
+                    break;
+                } else {
+                    continue;
+                }
+            }
+
+            char DeviceInstanceId[64];
+            if (!SetupDiGetDeviceInstanceIdA(devinfo, &data, DeviceInstanceId, sizeof(DeviceInstanceId), NULL))
                 continue;
+
+            if (SDL_strcasecmp(instance, DeviceInstanceId) == 0) {
+                DWORD size = 0;
+                if (SetupDiGetDeviceRegistryPropertyW(devinfo, &data, SPDRP_DEVICEDESC, NULL, (PBYTE)prod, sizeof(prod), &size)) {
+                    // Make sure the device description is null terminated
+                    size /= sizeof(*prod);
+                    if (size >= SDL_arraysize(prod)) {
+                        // Truncated description...
+                        size = (SDL_arraysize(prod) - 1);
+                    }
+                    prod[size] = 0;
+
+                    name = WIN_StringToUTF8W(prod);
+                }
+                break;
             }
         }
-
-        char DeviceInstanceId[64];
-        if (!SetupDiGetDeviceInstanceIdA(devinfo, &data, DeviceInstanceId, sizeof(DeviceInstanceId), NULL))
-            continue;
-
-        if (SDL_strcasecmp(instance, DeviceInstanceId) == 0) {
-            SetupDiGetDeviceRegistryPropertyA(devinfo, &data, SPDRP_DEVICEDESC, NULL, (PBYTE)name, (DWORD)len, NULL);
-            break;
-        }
     }
-
-    size_t desc_len = 0;
-    for (size_t i = 0; i < len; i++) {
-        if (name[i] == '\0') {
-            desc_len = i;
-            break;
-        }
-    }
-
-    char devName[MAX_PATH + 1];
-    devName[MAX_PATH] = '\0';
-    UINT devName_cap = MAX_PATH;
-    UINT devName_len = GetRawInputDeviceInfoA(hDevice, RIDI_DEVICENAME, devName, &devName_cap);
-    if (0 != ~devName_len) {
-        devName[devName_len] = '\0';
-    }
-    
-    if (desc_len + 3 < len && WIN_LoadHIDDLL()) { // reference counted
-        // important: for devices with exclusive access mode as per
-        // https://learn.microsoft.com/en-us/windows-hardware/drivers/hid/top-level-collections-opened-by-windows-for-system-use
-        // they can only be opened with a desired access of none instead of generic read.
-        HANDLE hFile = CreateFileA(devName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-        if (hFile != INVALID_HANDLE_VALUE) {
-            HIDD_ATTRIBUTES attr;
-            WCHAR vend[128], prod[128];
-            attr.VendorID = 0;
-            attr.ProductID = 0;
-            attr.Size = sizeof(attr);
-            vend[0] = 0;
-            prod[0] = 0;
-            SDL_HidD_GetAttributes(hFile, &attr);
-            SDL_HidD_GetManufacturerString(hFile, vend, sizeof(vend));
-            SDL_HidD_GetProductString(hFile, prod, sizeof(prod));
-            CloseHandle(hFile);
-
-            size_t vend_len, prod_len;
-            for (vend_len = 0; vend_len < 128; vend_len++) {
-                if (vend[vend_len] == 0) {
-                    break;
-                }
-            }
-            for (prod_len = 0; prod_len < 128; prod_len++) {
-                if (prod[prod_len] == 0) {
-                    break;
-                }
-            }
-            if (vend_len > 0 || prod_len > 0) {
-                name[desc_len] = ' ';
-                name[desc_len+1] = '(';
-                size_t start = desc_len + 2;
-                size_t n = start;
-                for (size_t i = 0; i < vend_len; i++) {
-                    n = start + i;
-                    if (n < len) {
-                        name[n] = (char)(vend[i] & 0x7f); // TODO: do proper WCHAR conversion
-                    }
-                }
-                if (vend_len > 0) {
-                    n += 1;
-                    if (n < len) {
-                        name[n] = ' ';
-                    }
-                    n += 1;
-                }
-                size_t m = n;
-                for (size_t i = 0; i < prod_len; i++) {
-                    m = n + i;
-                    if (m < len) {
-                        name[m] = (char)(prod[i] & 0x7f); // TODO: do proper WCHAR conversion
-                    }
-                }
-                {
-                    m += 1;
-                    if (m < len) {
-                        name[m] = ')';
-                    }
-                    m += 1;
-                    if (m < len) {
-                        name[m] = '\0';
-                    }
-                }              
-            } else if (attr.VendorID && attr.ProductID) {
-                char buf[17];
-                int written = SDL_snprintf(buf, sizeof(buf), " (0x%.4x/0x%.4x)", attr.VendorID, attr.ProductID);
-                buf[16] = '\0'; // just to be safe
-                if (written > 0 && desc_len > 0) {
-                    for (size_t i = 0; i < sizeof(buf); i++) {
-                        size_t j = desc_len + i;
-                        if (j < len) {
-                            name[j] = buf[j];
-                        }
-                    }
-                }
-            }
-        }
-        WIN_UnloadHIDDLL();
-    }
-
-    name[len-1] = '\0'; // just to be safe
+    return name;
 }
 
 void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check)
@@ -1030,6 +985,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     old_keyboards = SDL_GetKeyboards(&old_keyboard_count);
     old_mice = SDL_GetMice(&old_mouse_count);
 
+    bool hid_loaded = WIN_LoadHIDDLL();
     for (UINT i = 0; i < raw_device_count; i++) {
         RID_DEVICE_INFO rdi;
         char devName[MAX_PATH] = { 0 };
@@ -1037,7 +993,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
         UINT nameSize = SDL_arraysize(devName);
         int vendor = 0, product = 0;
         DWORD dwType = raw_devices[i].dwType;
-        char *instance, *ptr, name[256];
+        char *instance, *ptr, *name;
 
         if (dwType != RIM_TYPEKEYBOARD && dwType != RIM_TYPEMOUSE) {
             continue;
@@ -1075,8 +1031,9 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 SDL_KeyboardID keyboardID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
                 if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
-                    GetDeviceName(raw_devices[i].hDevice, devinfo, instance, name, sizeof(name));
+                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, hid_loaded);
                     SDL_AddKeyboard(keyboardID, name, send_event);
+                    SDL_free(name);
                 }
             }
             break;
@@ -1085,14 +1042,18 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 SDL_MouseID mouseID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(mouseID, &new_mice, &new_mouse_count);
                 if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
-                    GetDeviceName(raw_devices[i].hDevice, devinfo, instance, name, sizeof(name));
+                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, hid_loaded);
                     SDL_AddMouse(mouseID, name, send_event);
+                    SDL_free(name);
                 }
             }
             break;
         default:
             break;
         }
+    }
+    if (hid_loaded) {
+        WIN_UnloadHIDDLL();
     }
 
     for (int i = old_keyboard_count; i--;) {
