@@ -447,13 +447,23 @@ void Cocoa_HandleMouseEvent(SDL_VideoDevice *_this, NSEvent *event)
     float deltaX, deltaY;
     bool seenWarp;
 
-    switch ([event type]) {
-    case NSEventTypeMouseEntered:
-        Cocoa_MouseFocus = [event window];
-        return;
-    case NSEventTypeMouseExited:
+    // All events except NSEventTypeMouseExited can only happen if the window
+    // has mouse focus, so we'll always set the focus even if we happen to miss
+    // NSEventTypeMouseEntered, which apparently happens if the window is
+    // created under the mouse on macOS 12.7
+    NSEventType event_type = [event type];
+    if (event_type == NSEventTypeMouseExited) {
         Cocoa_MouseFocus = NULL;
+    } else {
+        Cocoa_MouseFocus = [event window];
+    }
+
+    switch (event_type) {
+    case NSEventTypeMouseEntered:
+    case NSEventTypeMouseExited:
+        // Focus is handled above
         return;
+
     case NSEventTypeMouseMoved:
     case NSEventTypeLeftMouseDragged:
     case NSEventTypeRightMouseDragged:
