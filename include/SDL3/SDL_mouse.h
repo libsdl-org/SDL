@@ -147,6 +147,38 @@ typedef enum SDL_MouseWheelDirection
  */
 typedef Uint32 SDL_MouseButtonFlags;
 
+/**
+ * A callback used to transform mouse motion delta from raw values.
+ *
+ * This is called during SDL's handling of platform mouse events to
+ * scale the values of the resulting motion delta. 
+ *
+ * \param userdata what was passed as `userdata` to SDL_SetRelativeMouseTransform().
+ * \param timestamp the associated time at which this mouse motion event was received.
+ * \param window the associated window to which this mouse motion event was addressed.
+ * \param mouseID the associated mouse from which this mouse motion event was emitted.
+ * \param x pointer to a variable that will be treated as the resulting x-axis motion.
+ * \param y pointer to a variable that will be treated as the resulting y-axis motion.
+ *
+ * \threadsafety This callback is called by SDL's internal mouse input processing
+ *               procedure, which may be a thread separate from the main event loop
+ *               that is run at realtime priority. Stalling this thread with too much
+ *               work in the callback can therefore potentially freeze the entire
+ *               system. Care should be taken with proper synchronization practices 
+ *               when adding other side effects beyond mutation of the x and y values.
+ *
+ * \since This datatype is available since SDL 3.2.6.
+ *
+ * \sa SDL_SetRelativeMouseTransform
+ */
+typedef void (SDLCALL *SDL_MouseMotionTransformCallback)(
+    void *userdata, 
+    Uint64 timestamp, 
+    SDL_Window *window, 
+    SDL_MouseID mouseID, 
+    float *x, float *y
+);
+
 #define SDL_BUTTON_LEFT     1
 #define SDL_BUTTON_MIDDLE   2
 #define SDL_BUTTON_RIGHT    3
@@ -379,6 +411,17 @@ extern SDL_DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window *window,
  * \sa SDL_WarpMouseInWindow
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WarpMouseGlobal(float x, float y);
+
+/**
+ * Set a user-defined function by which to transform relative mouse inputs.
+ * This overrides the relative system scale and relative speed scale hints.
+ *
+ * \param callback a callback used to transform relative mouse motion, or NULL for default behavior.
+ * \param userdata a pointer that is passed to `callback`.
+ *
+ * \since This function is available since SDL 3.2.6.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback callback, void *userdata);
 
 /**
  * Set relative mouse mode for a window.

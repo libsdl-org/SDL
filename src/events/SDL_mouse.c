@@ -705,14 +705,19 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
 
     if (relative) {
         if (mouse->relative_mode) {
-            if (mouse->enable_relative_system_scale) {
-                if (mouse->ApplySystemScale) {
-                    mouse->ApplySystemScale(mouse->system_scale_data, timestamp, window, mouseID, &x, &y);
+            if (mouse->InputTransform) {
+                void *data = mouse->input_transform_data;
+                mouse->InputTransform(data, timestamp, window, mouseID, &x, &y);
+            } else {
+                if (mouse->enable_relative_system_scale) {
+                    if (mouse->ApplySystemScale) {
+                        mouse->ApplySystemScale(mouse->system_scale_data, timestamp, window, mouseID, &x, &y);
+                    }
                 }
-            }
-            if (mouse->enable_relative_speed_scale) {
-                x *= mouse->relative_speed_scale;
-                y *= mouse->relative_speed_scale;
+                if (mouse->enable_relative_speed_scale) {
+                    x *= mouse->relative_speed_scale;
+                    y *= mouse->relative_speed_scale;
+                }
             }
         } else {
             if (mouse->enable_normal_speed_scale) {
@@ -1113,6 +1118,13 @@ void SDL_QuitMouse(void)
     }
     SDL_free(SDL_mice);
     SDL_mice = NULL;
+}
+
+void SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback transform, void *userdata)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    mouse->InputTransform = transform;
+    mouse->input_transform_data = userdata;
 }
 
 SDL_MouseButtonFlags SDL_GetMouseState(float *x, float *y)
