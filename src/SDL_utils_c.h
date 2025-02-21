@@ -73,4 +73,6 @@ extern void SDL_SetObjectsInvalid(void);
 
 extern const char *SDL_GetPersistentString(const char *string);
 
+extern char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name);
+
 #endif // SDL_utils_h_
