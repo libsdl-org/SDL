@@ -272,7 +272,7 @@ void Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSo
     }
 }
 
-static void *Wayland_clone_data_buffer(const void *buffer, size_t *len)
+static void *Wayland_clone_data_buffer(const void *buffer, const size_t *len)
 {
     void *clone = NULL;
     if (*len > 0 && buffer) {

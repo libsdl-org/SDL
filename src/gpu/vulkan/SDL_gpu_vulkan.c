@@ -1586,7 +1586,7 @@ static void VULKAN_INTERNAL_RemoveMemoryUsedRegion(
 
 static bool VULKAN_INTERNAL_CheckMemoryTypeArrayUnique(
     Uint32 memoryTypeIndex,
-    Uint32 *memoryTypeIndexArray,
+    const Uint32 *memoryTypeIndexArray,
     Uint32 count)
 {
     Uint32 i = 0;
@@ -4448,7 +4448,7 @@ static bool VULKAN_INTERNAL_VerifySwapSurfaceFormat(
 
 static bool VULKAN_INTERNAL_VerifySwapPresentMode(
     VkPresentModeKHR presentMode,
-    VkPresentModeKHR *availablePresentModes,
+    const VkPresentModeKHR *availablePresentModes,
     Uint32 availablePresentModesLength)
 {
     Uint32 i;

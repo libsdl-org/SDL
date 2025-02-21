@@ -444,7 +444,7 @@ static void SincTable(float *table, int len)
 }
 
 // Calculate Sinc(x/y), using a lookup table
-static float Sinc(float *table, int x, int y)
+static float Sinc(const float *table, int x, int y)
 {
     float s = table[x % y];
     s = ((x / y) & 1) ? -s : s;
