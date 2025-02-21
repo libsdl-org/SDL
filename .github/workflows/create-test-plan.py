@@ -343,7 +343,10 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             case IntelCompiler.Icc:
                 job.cc = "icc"
                 job.cxx = "icpc"
+                # Disable deprecation warning
                 job.cppflags.append("-diag-disable=10441")
+                #gi Avoid 'Catastrophic error: cannot open precompiled header file'
+                job.cmake_arguments.append("-DCMAKE_DISABLE_PRECOMPILE_HEADERS:BOOL=ON")
                 job.clang_tidy = False
             case _:
                 raise ValueError(f"Invalid intel={spec.intel}")
