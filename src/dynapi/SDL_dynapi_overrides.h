@@ -844,6 +844,7 @@
 #define SDL_SetHapticGain SDL_SetHapticGain_REAL
 #define SDL_SetHint SDL_SetHint_REAL
 #define SDL_SetHintWithPriority SDL_SetHintWithPriority_REAL
+#define SDL_SetRelativeMouseTransform SDL_SetRelativeMouseTransform_REAL
 #define SDL_SetInitialized SDL_SetInitialized_REAL
 #define SDL_SetJoystickEventsEnabled SDL_SetJoystickEventsEnabled_REAL
 #define SDL_SetJoystickLED SDL_SetJoystickLED_REAL

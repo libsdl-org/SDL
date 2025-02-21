@@ -55,6 +55,8 @@ typedef struct
     SDL_MouseClickState *clickstate;
 } SDL_MouseInputSource;
 
+typedef void (*SDL_InputTransform)(void *userdata, Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float *x, float *y);
+
 typedef struct
 {
     // Create a cursor from a surface
@@ -88,8 +90,12 @@ typedef struct
     SDL_MouseButtonFlags (*GetGlobalMouseState)(float *x, float *y);
 
     // Platform-specific system mouse transform
-    void (*ApplySystemScale)(void *internal, Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float *x, float *y);
+    SDL_InputTransform ApplySystemScale;
     void *system_scale_data;
+
+    // User-defined mouse input transform
+    SDL_InputTransform InputTransform;
+    void *input_transform_data;
 
     // Data common to all mice
     SDL_Window *focus;

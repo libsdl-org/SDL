@@ -820,6 +820,7 @@ SDL3_0.0.0 {
     SDL_SetHint;
     SDL_SetHintWithPriority;
     SDL_SetInitialized;
+    SDL_SetRelativeMouseTransform;
     SDL_SetJoystickEventsEnabled;
     SDL_SetJoystickLED;
     SDL_SetJoystickPlayerIndex;
