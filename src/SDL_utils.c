@@ -24,6 +24,9 @@
 #include <unistd.h>
 #endif
 
+#include "joystick/SDL_joystick_c.h" // For SDL_GetGamepadTypeFromVIDPID()
+
+
 // Common utility functions that aren't in the public API
 
 int SDL_powerof2(int x)
@@ -395,4 +398,152 @@ const char *SDL_GetPersistentString(const char *string)
         result = new_string;
     }
     return result;
+}
+
+static int PrefixMatch(const char *a, const char *b)
+{
+    int matchlen = 0;
+    while (*a && *b) {
+        if (SDL_tolower((unsigned char)*a++) == SDL_tolower((unsigned char)*b++)) {
+            ++matchlen;
+        } else {
+            break;
+        }
+    }
+    return matchlen;
+}
+
+char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name)
+{
+    static struct
+    {
+        const char *prefix;
+        const char *replacement;
+    } replacements[] = {
+        { "ASTRO Gaming", "ASTRO" },
+        { "Bensussen Deutsch & Associates,Inc.(BDA)", "BDA" },
+        { "Guangzhou Chicken Run Network Technology Co., Ltd.", "GameSir" },
+        { "HORI CO.,LTD", "HORI" },
+        { "HORI CO.,LTD.", "HORI" },
+        { "Mad Catz Inc.", "Mad Catz" },
+        { "Nintendo Co., Ltd.", "Nintendo" },
+        { "NVIDIA Corporation ", "" },
+        { "Performance Designed Products", "PDP" },
+        { "QANBA USA, LLC", "Qanba" },
+        { "QANBA USA,LLC", "Qanba" },
+        { "Unknown ", "" },
+    };
+    char *name;
+    size_t i, len;
+
+    if (!vendor_name) {
+        vendor_name = "";
+    }
+    if (!product_name) {
+        product_name = "";
+    }
+
+    while (*vendor_name == ' ') {
+        ++vendor_name;
+    }
+    while (*product_name == ' ') {
+        ++product_name;
+    }
+
+    if (*vendor_name && *product_name) {
+        len = (SDL_strlen(vendor_name) + 1 + SDL_strlen(product_name) + 1);
+        name = (char *)SDL_malloc(len);
+        if (name) {
+            (void)SDL_snprintf(name, len, "%s %s", vendor_name, product_name);
+        }
+    } else if (*product_name) {
+        name = SDL_strdup(product_name);
+    } else if (vendor || product) {
+        // Couldn't find a controller name, try to give it one based on device type
+        switch (SDL_GetGamepadTypeFromVIDPID(vendor, product, NULL, true)) {
+        case SDL_GAMEPAD_TYPE_XBOX360:
+            name = SDL_strdup("Xbox 360 Controller");
+            break;
+        case SDL_GAMEPAD_TYPE_XBOXONE:
+            name = SDL_strdup("Xbox One Controller");
+            break;
+        case SDL_GAMEPAD_TYPE_PS3:
+            name = SDL_strdup("PS3 Controller");
+            break;
+        case SDL_GAMEPAD_TYPE_PS4:
+            name = SDL_strdup("PS4 Controller");
+            break;
+        case SDL_GAMEPAD_TYPE_PS5:
+            name = SDL_strdup("DualSense Wireless Controller");
+            break;
+        case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+            name = SDL_strdup("Nintendo Switch Pro Controller");
+            break;
+        default:
+            len = (6 + 1 + 6 + 1);
+            name = (char *)SDL_malloc(len);
+            if (name) {
+                (void)SDL_snprintf(name, len, "0x%.4x/0x%.4x", vendor, product);
+            }
+            break;
+        }
+    } else {
+        name = SDL_strdup("Controller");
+    }
+
+    if (!name) {
+        return NULL;
+    }
+
+    // Trim trailing whitespace
+    for (len = SDL_strlen(name); (len > 0 && name[len - 1] == ' '); --len) {
+        // continue
+    }
+    name[len] = '\0';
+
+    // Compress duplicate spaces
+    for (i = 0; i < (len - 1);) {
+        if (name[i] == ' ' && name[i + 1] == ' ') {
+            SDL_memmove(&name[i], &name[i + 1], (len - i));
+            --len;
+        } else {
+            ++i;
+        }
+    }
+
+    // Perform any manufacturer replacements
+    for (i = 0; i < SDL_arraysize(replacements); ++i) {
+        size_t prefixlen = SDL_strlen(replacements[i].prefix);
+        if (SDL_strncasecmp(name, replacements[i].prefix, prefixlen) == 0) {
+            size_t replacementlen = SDL_strlen(replacements[i].replacement);
+            if (replacementlen <= prefixlen) {
+                SDL_memcpy(name, replacements[i].replacement, replacementlen);
+                SDL_memmove(name + replacementlen, name + prefixlen, (len - prefixlen) + 1);
+                len -= (prefixlen - replacementlen);
+            } else {
+                // FIXME: Need to handle the expand case by reallocating the string
+            }
+            break;
+        }
+    }
+
+    /* Remove duplicate manufacturer or product in the name
+     * e.g. Razer Razer Raiju Tournament Edition Wired
+     */
+    for (i = 1; i < (len - 1); ++i) {
+        int matchlen = PrefixMatch(name, &name[i]);
+        while (matchlen > 0) {
+            if (name[matchlen] == ' ' || name[matchlen] == '-') {
+                SDL_memmove(name, name + matchlen + 1, len - matchlen);
+                break;
+            }
+            --matchlen;
+        }
+        if (matchlen > 0) {
+            // We matched the manufacturer's name and removed it
+            break;
+        }
+    }
+
+    return name;
 }
