@@ -30,8 +30,11 @@
 
 #include <Carbon/Carbon.h>
 
-// #define DEBUG_IME NSLog
+#if 0
+#define DEBUG_IME NSLog
+#else
 #define DEBUG_IME(...)
+#endif
 
 @interface SDL3TranslatorResponder : NSView <NSTextInputClient>
 {
