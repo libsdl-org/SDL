@@ -612,7 +612,7 @@ static void collect_rates(CameraFormatAddData *data, struct param *p, SDL_PixelF
     switch (choice) {
     case SPA_CHOICE_None:
         n_vals = 1;
-    SPA_FALLTHROUGH;
+    SDL_FALLTHROUGH;
     case SPA_CHOICE_Enum:
         for (i = 0; i < n_vals; i++) {
             if (!SDL_AddCameraFormat(data, sdlfmt, colorspace, size->width, size->height, rates[i].num, rates[i].denom)) {
@@ -645,7 +645,7 @@ static void collect_size(CameraFormatAddData *data, struct param *p, SDL_PixelFo
     switch (choice) {
     case SPA_CHOICE_None:
         n_vals = 1;
-    SPA_FALLTHROUGH;
+    SDL_FALLTHROUGH;
     case SPA_CHOICE_Enum:
         for (i = 0; i < n_vals; i++) {
             collect_rates(data, p, sdlfmt, colorspace, &rectangles[i]);
@@ -677,7 +677,7 @@ static void collect_format(CameraFormatAddData *data, struct param *p)
     switch (choice) {
     case SPA_CHOICE_None:
         n_vals = 1;
-	SPA_FALLTHROUGH;
+	SDL_FALLTHROUGH;
     case SPA_CHOICE_Enum:
         for (i = 0; i < n_vals; i++) {
             id_to_sdl_format(ids[i], &sdlfmt, &colorspace);
