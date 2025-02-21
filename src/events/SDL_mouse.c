@@ -484,7 +484,7 @@ SDL_SystemCursor SDL_GetDefaultSystemCursor(void)
     const char *value = SDL_GetHint(SDL_HINT_MOUSE_DEFAULT_SYSTEM_CURSOR);
     if (value) {
         int index = SDL_atoi(value);
-        if (0 <= index && index < (int)SDL_SYSTEM_CURSOR_COUNT) {
+        if (0 <= index && index < SDL_SYSTEM_CURSOR_COUNT) {
             id = (SDL_SystemCursor)index;
         }
     }

@@ -284,7 +284,7 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
 void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *videodata = _this->internal;
 
     if (cookie->extension != xinput2_opcode) {
         return;
@@ -555,10 +555,10 @@ bool X11_Xinput2IsInitialized(void)
 
 bool X11_Xinput2SelectMouseAndKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *windowdata = (SDL_WindowData *)window->internal;
+    SDL_WindowData *windowdata = window->internal;
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
-    const SDL_VideoData *data = (SDL_VideoData *)_this->internal;
+    const SDL_VideoData *data = _this->internal;
 
     if (X11_Xinput2IsInitialized()) {
         XIEventMask eventmask;

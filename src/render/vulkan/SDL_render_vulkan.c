@@ -1235,7 +1235,7 @@ static VULKAN_PipelineState *VULKAN_CreatePipelineState(SDL_Renderer *renderer,
 
     // Input assembly
     inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssemblyStateCreateInfo.topology = ( VkPrimitiveTopology ) topology;
+    inputAssemblyStateCreateInfo.topology = topology;
     inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
 
     viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

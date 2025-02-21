@@ -233,7 +233,7 @@ void SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata)
 #ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 static void X11_HandleGenericEvent(SDL_VideoDevice *_this, XEvent *xev)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *videodata = _this->internal;
 
     // event is a union, so cookie == &event, but this is type safe.
     XGenericEventCookie *cookie = &xev->xcookie;
@@ -897,7 +897,7 @@ static int XLookupStringAsUTF8(XKeyEvent *event_struct, char *buffer_return, int
 
 SDL_WindowData *X11_FindWindow(SDL_VideoDevice *_this, Window window)
 {
-    const SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
+    const SDL_VideoData *videodata = _this->internal;
     int i;
 
     if (videodata && videodata->windowlist) {
@@ -919,7 +919,7 @@ Uint64 X11_GetEventTimestamp(unsigned long time)
 
 void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_KeyboardID keyboardID, XEvent *xevent)
 {
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
     KeyCode keycode = xevent->xkey.keycode;
     KeySym keysym = NoSymbol;
@@ -1001,7 +1001,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
 void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button, float x, float y, unsigned long time)
 {
     SDL_Window *window = windowdata->window;
-    const SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
+    const SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
     int xticks = 0, yticks = 0;
     Uint64 timestamp = X11_GetEventTimestamp(time);
@@ -1048,7 +1048,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
 void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button, unsigned long time)
 {
     SDL_Window *window = windowdata->window;
-    const SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
+    const SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
     // The X server sends a Release event for each Press for wheels. Ignore them.
     int xticks = 0, yticks = 0;

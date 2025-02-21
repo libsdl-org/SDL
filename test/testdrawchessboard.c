@@ -50,8 +50,8 @@ static void DrawChessBoard(void)
 
             rect.w = (float)(darea.w / 8);
             rect.h = (float)(darea.h / 8);
-            rect.x = (float)(x * rect.w);
-            rect.y = (float)(row * rect.h);
+            rect.x = x * rect.w;
+            rect.y = row * rect.h;
             x = x + 2;
             SDL_RenderFillRect(renderer, &rect);
 

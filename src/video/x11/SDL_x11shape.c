@@ -31,7 +31,7 @@ static Uint8 *GenerateShapeMask(SDL_Surface *shape)
 {
     int x, y;
     const size_t ppb = 8;
-    const size_t bytes_per_scanline = (size_t)(shape->w + (ppb - 1)) / ppb;
+    const size_t bytes_per_scanline = (shape->w + (ppb - 1)) / ppb;
     const Uint8 *a;
     Uint8 *mask;
     Uint8 *mask_scanline;

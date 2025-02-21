@@ -31,7 +31,7 @@
 // Does this device have a valuator for pressure sensitivity?
 static bool X11_XInput2DeviceIsPen(SDL_VideoDevice *_this, const XIDeviceInfo *dev)
 {
-    const SDL_VideoData *data = (SDL_VideoData *)_this->internal;
+    const SDL_VideoData *data = _this->internal;
     for (int i = 0; i < dev->num_classes; i++) {
         const XIAnyClassInfo *classinfo = dev->classes[i];
         if (classinfo->type == XIValuatorClass) {
@@ -49,7 +49,7 @@ static bool X11_XInput2DeviceIsPen(SDL_VideoDevice *_this, const XIDeviceInfo *d
 static bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, char *devicename)
 {
     #define PEN_ERASER_NAME_TAG  "eraser" // String constant to identify erasers
-    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *data = _this->internal;
 
     if (data->atoms.pen_atom_wacom_tool_type != None) {
         Atom type_return;
@@ -105,7 +105,7 @@ static bool X11_XInput2PenIsEraser(SDL_VideoDevice *_this, int deviceid, char *d
 // Returns number of Sint32s written (<= max_words), or 0 on error.
 static size_t X11_XInput2PenGetIntProperty(SDL_VideoDevice *_this, int deviceid, Atom property, Sint32 *dest, size_t max_words)
 {
-    const SDL_VideoData *data = (SDL_VideoData *)_this->internal;
+    const SDL_VideoData *data = _this->internal;
     Atom type_return;
     int format_return;
     unsigned long num_items_return;
@@ -153,7 +153,7 @@ static size_t X11_XInput2PenGetIntProperty(SDL_VideoDevice *_this, int deviceid,
 // Identify Wacom devices (if true is returned) and extract their device type and serial IDs
 static bool X11_XInput2PenWacomDeviceID(SDL_VideoDevice *_this, int deviceid, Uint32 *wacom_devicetype_id, Uint32 *wacom_serial)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *data = _this->internal;
     Sint32 serial_id_buf[3];
     int result;
 
@@ -196,7 +196,7 @@ X11_PenHandle *X11_FindPenByDeviceID(int deviceid)
 
 static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo *dev)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *data = _this->internal;
     SDL_PenCapabilityFlags capabilities = 0;
     X11_PenHandle *handle = NULL;
 
@@ -283,7 +283,7 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
 
 X11_PenHandle *X11_MaybeAddPenByDeviceID(SDL_VideoDevice *_this, int deviceid)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *data = _this->internal;
     int num_device_info = 0;
     XIDeviceInfo *device_info = X11_XIQueryDevice(data->display, deviceid, &num_device_info);
     if (device_info) {
@@ -306,7 +306,7 @@ void X11_RemovePenByDeviceID(int deviceid)
 
 void X11_InitPen(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = (SDL_VideoData *)_this->internal;
+    SDL_VideoData *data = _this->internal;
 
     #define LOOKUP_PEN_ATOM(X) X11_XInternAtom(data->display, X, False)
     data->atoms.pen_atom_device_product_id = LOOKUP_PEN_ATOM("Device Product ID");

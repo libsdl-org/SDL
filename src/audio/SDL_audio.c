@@ -889,7 +889,7 @@ static bool SDLCALL FindLowestDeviceID(void *userdata, const SDL_HashTable *tabl
 
 static SDL_AudioDevice *GetFirstAddedAudioDevice(const bool recording)
 {
-    const SDL_AudioDeviceID highest = (SDL_AudioDeviceID) SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;  // According to AssignAudioDeviceInstanceId, nothing can have a value this large.
+    const SDL_AudioDeviceID highest = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;  // According to AssignAudioDeviceInstanceId, nothing can have a value this large.
 
     // (Device IDs increase as new devices are added, so the first device added has the lowest SDL_AudioDeviceID value.)
     FindLowestDeviceIDData data = { recording, highest, NULL };
