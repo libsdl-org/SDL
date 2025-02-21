@@ -566,7 +566,7 @@ static enum snd_pcm_chmap_position sdl_channel_maps[SDL_AUDIO_ALSA__SDL_CHMAPS_N
 };
 
 // Helper for the function right below.
-static bool has_pos(unsigned int *chmap, unsigned int pos)
+static bool has_pos(const unsigned int *chmap, unsigned int pos)
 {
     for (unsigned int chan_idx = 0; ; chan_idx++) {
         if (chan_idx == 6) {
@@ -586,7 +586,7 @@ static bool has_pos(unsigned int *chmap, unsigned int pos)
 #define HAVE_REAR 1
 #define HAVE_SIDE 2
 #define HAVE_BOTH 3
-static void sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(unsigned int *sdl_6chans, unsigned int *alsa_6chans)
+static void sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(unsigned int *sdl_6chans, const unsigned int *alsa_6chans)
 {
     // For alsa channel maps with 6 channels and with SND_CHMAP_FL,SND_CHMAP_FR,SND_CHMAP_FC,
     // SND_CHMAP_LFE, reduce our 6 channels maps to a uniq one.
@@ -638,7 +638,7 @@ static void sdl_6chans_set_rear_or_side_channels_from_alsa_6chans(unsigned int *
 #undef HAVE_SIDE
 #undef HAVE_BOTH
 
-static void swizzle_map_compute_alsa_subscan(struct ALSA_pcm_cfg_ctx *ctx, int *swizzle_map, unsigned int sdl_pos_idx)
+static void swizzle_map_compute_alsa_subscan(const struct ALSA_pcm_cfg_ctx *ctx, int *swizzle_map, unsigned int sdl_pos_idx)
 {
     swizzle_map[sdl_pos_idx] = -1;
     for (unsigned int alsa_pos_idx = 0; ; alsa_pos_idx++) {
@@ -652,7 +652,7 @@ static void swizzle_map_compute_alsa_subscan(struct ALSA_pcm_cfg_ctx *ctx, int *
 }
 
 // XXX: this must stay playback/recording symetric.
-static void swizzle_map_compute(struct ALSA_pcm_cfg_ctx *ctx, int *swizzle_map, bool *needs_swizzle)
+static void swizzle_map_compute(const struct ALSA_pcm_cfg_ctx *ctx, int *swizzle_map, bool *needs_swizzle)
 {
     *needs_swizzle = false;
     for (unsigned int sdl_pos_idx = 0; sdl_pos_idx != ctx->chans_n; sdl_pos_idx++) {
@@ -668,7 +668,7 @@ static void swizzle_map_compute(struct ALSA_pcm_cfg_ctx *ctx, int *swizzle_map, 
 #define CHMAP_NOT_FOUND 2
 // Should always be a queried alsa channel map unless the queried alsa channel map was of type VAR,
 // namely we can program the channel positions directly from the SDL channel map.
-static int alsa_chmap_install(struct ALSA_pcm_cfg_ctx *ctx, unsigned int *chmap)
+static int alsa_chmap_install(struct ALSA_pcm_cfg_ctx *ctx, const unsigned int *chmap)
 {
     bool isstack;
     snd_pcm_chmap_t *chmap_to_install = (snd_pcm_chmap_t*)SDL_small_alloc(unsigned int, 1 + ctx->chans_n, &isstack);
@@ -698,7 +698,7 @@ static int alsa_chmap_install(struct ALSA_pcm_cfg_ctx *ctx, unsigned int *chmap)
 
 // We restrict the alsa channel maps because in the unordered matches we do only simple accounting.
 // In the end, this will handle mostly alsa channel maps with more than one SND_CHMAP_NA position fillers.
-static bool alsa_chmap_has_duplicate_position(struct ALSA_pcm_cfg_ctx *ctx, unsigned int *pos)
+static bool alsa_chmap_has_duplicate_position(const struct ALSA_pcm_cfg_ctx *ctx, const unsigned int *pos)
 {
     if (ctx->chans_n < 2) {// we need at least 2 positions
         LOGDEBUG("channel map:no duplicate");

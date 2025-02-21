@@ -428,7 +428,7 @@ static bool SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
    orientation, so when it's changed orientation to be used as a
    gamepad, change the sensor orientation to match.
  */
-static void AdjustSensorOrientation(SDL_Joystick *joystick, float *src, float *dst)
+static void AdjustSensorOrientation(const SDL_Joystick *joystick, const float *src, float *dst)
 {
     unsigned int i, j;
 
