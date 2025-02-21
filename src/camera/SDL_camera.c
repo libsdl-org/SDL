@@ -649,7 +649,7 @@ SDL_Camera *SDL_FindPhysicalCameraByCallback(bool (*callback)(SDL_Camera *device
 
 void SDL_CloseCamera(SDL_Camera *camera)
 {
-    SDL_Camera *device = (SDL_Camera *) camera;  // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ClosePhysicalCamera(device);
 }
 
@@ -663,7 +663,7 @@ bool SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
         return SDL_InvalidParamError("spec");
     }
 
-    SDL_Camera *device = (SDL_Camera *) camera;  // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ObtainPhysicalCameraObj(device);
     if (device->permission > 0) {
         SDL_copyp(spec, &device->spec);
@@ -1208,7 +1208,7 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
 
     ReleaseCamera(device);  // unlock, we're good to go!
 
-    return (SDL_Camera *) device;  // currently there's no separation between physical and logical device.
+    return device;  // currently there's no separation between physical and logical device.
 }
 
 SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS)
@@ -1222,7 +1222,7 @@ SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS)
         return NULL;
     }
 
-    SDL_Camera *device = (SDL_Camera *) camera;  // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
 
     ObtainPhysicalCameraObj(device);
 
@@ -1264,7 +1264,7 @@ void SDL_ReleaseCameraFrame(SDL_Camera *camera, SDL_Surface *frame)
         return;
     }
 
-    SDL_Camera *device = (SDL_Camera *) camera;  // currently there's no separation between physical and logical device.
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ObtainPhysicalCameraObj(device);
 
     SurfaceList *slistprev = &device->app_held_output_surfaces;
@@ -1306,7 +1306,7 @@ SDL_CameraID SDL_GetCameraID(SDL_Camera *camera)
     if (!camera) {
         SDL_InvalidParamError("camera");
     } else {
-        SDL_Camera *device = (SDL_Camera *) camera;  // currently there's no separation between physical and logical device.
+        SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
         ObtainPhysicalCameraObj(device);
         result = device->instance_id;
         ReleaseCamera(device);
@@ -1321,7 +1321,7 @@ SDL_PropertiesID SDL_GetCameraProperties(SDL_Camera *camera)
     if (!camera) {
         SDL_InvalidParamError("camera");
     } else {
-        SDL_Camera *device = (SDL_Camera *) camera;  // currently there's no separation between physical and logical device.
+        SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
         ObtainPhysicalCameraObj(device);
         if (device->props == 0) {
             device->props = SDL_CreateProperties();
@@ -1340,7 +1340,7 @@ int SDL_GetCameraPermissionState(SDL_Camera *camera)
         SDL_InvalidParamError("camera");
         result = -1;
     } else {
-        SDL_Camera *device = (SDL_Camera *) camera;  // currently there's no separation between physical and logical device.
+        SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
         ObtainPhysicalCameraObj(device);
         result = device->permission;
         ReleaseCamera(device);

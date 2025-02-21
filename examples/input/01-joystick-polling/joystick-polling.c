@@ -105,7 +105,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
         /* draw axes as bars going across middle of screen. We don't know if it's an X or Y or whatever axis, so we can't do more than this. */
         total = SDL_GetNumJoystickAxes(joystick);
-        y = (float) ((winh - (total * size)) / 2);
+        y = (winh - (total * size)) / 2;
         x = ((float) winw) / 2.0f;
         for (i = 0; i < total; i++) {
             const SDL_Color *color = &colors[i % SDL_arraysize(colors)];
@@ -119,7 +119,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
         /* draw buttons as blocks across top of window. We only know the button numbers, but not where they are on the device. */
         total = SDL_GetNumJoystickButtons(joystick);
-        x = (float) ((winw - (total * size)) / 2);
+        x = (winw - (total * size)) / 2;
         for (i = 0; i < total; i++) {
             const SDL_Color *color = &colors[i % SDL_arraysize(colors)];
             const SDL_FRect dst = { x, 0.0f, size, size };
@@ -136,7 +136,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
         /* draw hats across the bottom of the screen. */
         total = SDL_GetNumJoystickHats(joystick);
-        x = ((float) ((winw - (total * (size * 2.0f))) / 2.0f)) + (size / 2.0f);
+        x = ((winw - (total * (size * 2.0f))) / 2.0f) + (size / 2.0f);
         y = ((float) winh) - size;
         for (i = 0; i < total; i++) {
             const SDL_Color *color = &colors[i % SDL_arraysize(colors)];

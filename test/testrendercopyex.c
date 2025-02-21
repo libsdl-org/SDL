@@ -75,8 +75,8 @@ static void Draw(DrawState *s)
             s->scale_direction = 1;
         }
     }
-    s->sprite_rect.x = (float)((viewport.w - s->sprite_rect.w) / 2);
-    s->sprite_rect.y = (float)((viewport.h - s->sprite_rect.h) / 2);
+    s->sprite_rect.x = (viewport.w - s->sprite_rect.w) / 2;
+    s->sprite_rect.y = (viewport.h - s->sprite_rect.h) / 2;
 
     SDL_RenderTextureRotated(s->renderer, s->sprite, NULL, &s->sprite_rect, (double)s->sprite_rect.w, center, SDL_FLIP_NONE);
 

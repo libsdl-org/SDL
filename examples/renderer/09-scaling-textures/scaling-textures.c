@@ -92,8 +92,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     /* center this one and make it grow and shrink. */
     dst_rect.w = (float) texture_width + (texture_width * scale);
     dst_rect.h = (float) texture_height + (texture_height * scale);
-    dst_rect.x = ((float) (WINDOW_WIDTH - dst_rect.w)) / 2.0f;
-    dst_rect.y = ((float) (WINDOW_HEIGHT - dst_rect.h)) / 2.0f;
+    dst_rect.x = (WINDOW_WIDTH - dst_rect.w) / 2.0f;
+    dst_rect.y = (WINDOW_HEIGHT - dst_rect.h) / 2.0f;
     SDL_RenderTexture(renderer, texture, NULL, &dst_rect);
 
     SDL_RenderPresent(renderer);  /* put it all on the screen! */

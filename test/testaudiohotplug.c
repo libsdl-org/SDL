@@ -69,7 +69,7 @@ static void iteration(void)
                 done = 1;
             }
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_ADDED) {
-            const SDL_AudioDeviceID which = (SDL_AudioDeviceID) e.adevice.which;
+            const SDL_AudioDeviceID which = e.adevice.which;
             const bool recording = e.adevice.recording ? true : false;
             const char *name = SDL_GetAudioDeviceName(which);
             if (name) {
@@ -93,7 +93,7 @@ static void iteration(void)
                 }
             }
         } else if (e.type == SDL_EVENT_AUDIO_DEVICE_REMOVED) {
-            dev = (SDL_AudioDeviceID)e.adevice.which;
+            dev = e.adevice.which;
             SDL_Log("%s device %u removed.", devtypestr(e.adevice.recording), (unsigned int)dev);
             /* !!! FIXME: we need to keep track of our streams and destroy them here. */
         }

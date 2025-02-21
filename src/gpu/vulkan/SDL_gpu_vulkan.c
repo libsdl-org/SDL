@@ -5337,7 +5337,7 @@ static void VULKAN_DrawIndexedPrimitives(
     Uint32 firstInstance)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
 
     VULKAN_INTERNAL_BindGraphicsDescriptorSets(renderer, vulkanCommandBuffer);
 
@@ -5358,7 +5358,7 @@ static void VULKAN_DrawPrimitives(
     Uint32 firstInstance)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
 
     VULKAN_INTERNAL_BindGraphicsDescriptorSets(renderer, vulkanCommandBuffer);
 
@@ -5377,7 +5377,7 @@ static void VULKAN_DrawPrimitivesIndirect(
     Uint32 drawCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)buffer)->activeBuffer;
     Uint32 pitch = sizeof(SDL_GPUIndirectDrawCommand);
     Uint32 i;
@@ -5414,7 +5414,7 @@ static void VULKAN_DrawIndexedPrimitivesIndirect(
     Uint32 drawCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)buffer)->activeBuffer;
     Uint32 pitch = sizeof(SDL_GPUIndexedIndirectDrawCommand);
     Uint32 i;
@@ -5547,7 +5547,7 @@ static void VULKAN_InsertDebugLabel(
     const char *text)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VkDebugUtilsLabelEXT labelInfo;
 
     if (renderer->supportsDebugUtils) {
@@ -5566,7 +5566,7 @@ static void VULKAN_PushDebugGroup(
     const char *name)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VkDebugUtilsLabelEXT labelInfo;
 
     if (renderer->supportsDebugUtils) {
@@ -5584,7 +5584,7 @@ static void VULKAN_PopDebugGroup(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
 
     if (renderer->supportsDebugUtils) {
         renderer->vkCmdEndDebugUtilsLabelEXT(vulkanCommandBuffer->commandBuffer);
@@ -7307,8 +7307,8 @@ static void VULKAN_INTERNAL_SetCurrentViewport(
     VulkanCommandBuffer *commandBuffer,
     const SDL_GPUViewport *viewport)
 {
-    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanCommandBuffer *vulkanCommandBuffer = commandBuffer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
 
     vulkanCommandBuffer->currentViewport.x = viewport->x;
     vulkanCommandBuffer->currentViewport.width = viewport->w;
@@ -7341,7 +7341,7 @@ static void VULKAN_INTERNAL_SetCurrentScissor(
     VulkanCommandBuffer *vulkanCommandBuffer,
     const SDL_Rect *scissor)
 {
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
 
     vulkanCommandBuffer->currentScissor.offset.x = scissor->x;
     vulkanCommandBuffer->currentScissor.offset.y = scissor->y;
@@ -7370,7 +7370,7 @@ static void VULKAN_INTERNAL_SetCurrentBlendConstants(
     VulkanCommandBuffer *vulkanCommandBuffer,
     SDL_FColor blendConstants)
 {
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
 
     vulkanCommandBuffer->blendConstants[0] = blendConstants.r;
     vulkanCommandBuffer->blendConstants[1] = blendConstants.g;
@@ -7397,7 +7397,7 @@ static void VULKAN_INTERNAL_SetCurrentStencilReference(
     VulkanCommandBuffer *vulkanCommandBuffer,
     Uint8 reference)
 {
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
 
     vulkanCommandBuffer->stencilRef = reference;
 
@@ -7706,7 +7706,7 @@ static void VULKAN_BeginRenderPass(
     const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VkRenderPass renderPass;
     VulkanFramebuffer *framebuffer;
 
@@ -7918,7 +7918,7 @@ static void VULKAN_BindGraphicsPipeline(
     SDL_GPUGraphicsPipeline *graphicsPipeline)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanGraphicsPipeline *pipeline = (VulkanGraphicsPipeline *)graphicsPipeline;
 
     renderer->vkCmdBindPipeline(
@@ -7983,7 +7983,7 @@ static void VULKAN_BindIndexBuffer(
     SDL_GPUIndexElementSize indexElementSize)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)binding->buffer)->activeBuffer;
 
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, vulkanBuffer);
@@ -8031,7 +8031,7 @@ static void VULKAN_EndRenderPass(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     Uint32 i;
 
     renderer->vkCmdEndRenderPass(
@@ -8146,7 +8146,7 @@ static void VULKAN_BindComputePipeline(
     SDL_GPUComputePipeline *computePipeline)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanComputePipeline *vulkanComputePipeline = (VulkanComputePipeline *)computePipeline;
 
     renderer->vkCmdBindPipeline(
@@ -8541,7 +8541,7 @@ static void VULKAN_DispatchCompute(
     Uint32 groupcountZ)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
 
     VULKAN_INTERNAL_BindComputeDescriptorSets(renderer, vulkanCommandBuffer);
 
@@ -8558,7 +8558,7 @@ static void VULKAN_DispatchComputeIndirect(
     Uint32 offset)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanBuffer *vulkanBuffer = ((VulkanBufferContainer *)buffer)->activeBuffer;
 
     VULKAN_INTERNAL_BindComputeDescriptorSets(renderer, vulkanCommandBuffer);
@@ -8680,7 +8680,7 @@ static void VULKAN_UploadToTexture(
     bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)source->transfer_buffer;
     VulkanTextureContainer *vulkanTextureContainer = (VulkanTextureContainer *)destination->texture;
     VulkanTextureSubresource *vulkanTextureSubresource;
@@ -8736,7 +8736,7 @@ static void VULKAN_UploadToBuffer(
     bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)source->transfer_buffer;
     VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
@@ -8879,7 +8879,7 @@ static void VULKAN_CopyTextureToTexture(
     bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanTextureSubresource *srcSubresource;
     VulkanTextureSubresource *dstSubresource;
     VkImageCopy imageCopy;
@@ -8955,7 +8955,7 @@ static void VULKAN_CopyBufferToBuffer(
     bool cycle)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanBufferContainer *srcContainer = (VulkanBufferContainer *)source->buffer;
     VulkanBufferContainer *dstContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
@@ -9005,7 +9005,7 @@ static void VULKAN_GenerateMipmaps(
     SDL_GPUTexture *texture)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VulkanTextureContainer *container = (VulkanTextureContainer *)texture;
     VulkanTextureSubresource *srcTextureSubresource;
     VulkanTextureSubresource *dstTextureSubresource;
@@ -9106,7 +9106,7 @@ static void VULKAN_Blit(
     const SDL_GPUBlitInfo *info)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     TextureCommonHeader *srcHeader = (TextureCommonHeader *)info->source.texture;
     TextureCommonHeader *dstHeader = (TextureCommonHeader *)info->destination.texture;
     VkImageBlit region;
@@ -9839,7 +9839,7 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
     Uint32 *swapchainTextureHeight)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     Uint32 swapchainImageIndex;
     WindowData *windowData;
     VkResult acquireResult = VK_SUCCESS;
@@ -10457,7 +10457,7 @@ static bool VULKAN_Submit(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
-    VulkanRenderer *renderer = (VulkanRenderer *)vulkanCommandBuffer->renderer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
     VkSubmitInfo submitInfo;
     VkPresentInfoKHR presentInfo;
     VulkanPresentData *presentData;
@@ -11230,7 +11230,7 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         &queueFamilyCount,
         NULL);
 
-    queueProps = (VkQueueFamilyProperties *)SDL_stack_alloc(
+    queueProps = SDL_stack_alloc(
         VkQueueFamilyProperties,
         queueFamilyCount);
     renderer->vkGetPhysicalDeviceQueueFamilyProperties(

@@ -85,7 +85,7 @@ static void DrawOnViewport(SDL_Renderer *renderer)
     /* Add a box at the top */
     rect.w = 8.0f;
     rect.h = 8.0f;
-    rect.x = (float)((viewport.w - rect.w) / 2);
+    rect.x = (viewport.w - rect.w) / 2;
     rect.y = 0.0f;
     SDL_RenderFillRect(renderer, &rect);
 

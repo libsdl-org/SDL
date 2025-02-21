@@ -727,7 +727,7 @@ static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xd
 
 static void xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output)
 {
-    SDL_DisplayData *internal = (void *)data;
+    SDL_DisplayData *internal = data;
 
     /*
      * xdg-output.done events are deprecated and only apply below version 3 of the protocol.

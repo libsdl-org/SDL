@@ -42,7 +42,7 @@ static bool xsync_version_atleast(const int version, const int wantmajor, const 
 
 void X11_InitXsync(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->internal;
+    SDL_VideoData *data =  _this->internal;
 
     int version = 0;
     int event, error;
@@ -70,7 +70,7 @@ int X11_XsyncIsInitialized(void)
 int X11_InitResizeSync(SDL_Window *window)
 {
     SDL_assert(window != NULL);
-    SDL_WindowData *data = (SDL_WindowData *) window->internal;
+    SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
     Atom counter_prop = data->videodata->atoms._NET_WM_SYNC_REQUEST_COUNTER;
     XSyncCounter counter;
@@ -99,7 +99,7 @@ int X11_InitResizeSync(SDL_Window *window)
 
 void X11_TermResizeSync(SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->internal;
+    SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
     Atom counter_prop = data->videodata->atoms._NET_WM_SYNC_REQUEST_COUNTER;
     XSyncCounter counter = data->resize_counter;
@@ -112,7 +112,7 @@ void X11_TermResizeSync(SDL_Window *window)
 
 void X11_HandleSyncRequest(SDL_Window *window, XClientMessageEvent *event)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->internal;
+    SDL_WindowData *data = window->internal;
 
     data->resize_id.lo = event->data.l[2];
     data->resize_id.hi = event->data.l[3];
@@ -121,7 +121,7 @@ void X11_HandleSyncRequest(SDL_Window *window, XClientMessageEvent *event)
 
 void X11_HandleConfigure(SDL_Window *window, XConfigureEvent *event)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->internal;
+    SDL_WindowData *data = window->internal;
 
     if (data->resize_id.lo || data->resize_id.hi) {
         data->resize_in_progress = true;
@@ -130,7 +130,7 @@ void X11_HandleConfigure(SDL_Window *window, XConfigureEvent *event)
 
 void X11_HandlePresent(SDL_Window *window)
 {
-    SDL_WindowData *data = (SDL_WindowData *) window->internal;
+    SDL_WindowData *data = window->internal;
     Display *display = data->videodata->display;
     XSyncCounter counter = data->resize_counter;
 

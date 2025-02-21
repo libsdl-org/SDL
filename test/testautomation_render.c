@@ -1439,8 +1439,8 @@ static int SDLCALL render_testUVWrapping(void *arg)
 
     rect.w = (float)tface->w * 2;
     rect.h = (float)tface->h * 2;
-    rect.x = (float)(TESTRENDER_SCREEN_W - rect.w) / 2;
-    rect.y = (float)(TESTRENDER_SCREEN_H - rect.h) / 2;
+    rect.x = (TESTRENDER_SCREEN_W - rect.w) / 2;
+    rect.y = (TESTRENDER_SCREEN_H - rect.h) / 2;
 
     /*
      *   0--1
