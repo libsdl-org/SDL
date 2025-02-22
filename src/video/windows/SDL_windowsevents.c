@@ -895,17 +895,7 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
         }
     }
 
-    if (prod[0]) {
-        char *vendor_name = WIN_StringToUTF8W(vend);
-        char *product_name = WIN_StringToUTF8W(prod);
-        if (product_name) {
-            name = SDL_CreateDeviceName(attr.VendorID, attr.ProductID, vendor_name, product_name);
-        }
-        SDL_free(vendor_name);
-        SDL_free(product_name);
-    }
-
-    if (!name) {
+    if (!prod[0]) {
         SP_DEVINFO_DATA data;
         SDL_zero(data);
         data.cbSize = sizeof(data);
@@ -932,12 +922,20 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
                         size = (SDL_arraysize(prod) - 1);
                     }
                     prod[size] = 0;
-
-                    name = WIN_StringToUTF8W(prod);
                 }
                 break;
             }
         }
+    }
+
+    if (prod[0]) {
+        char *vendor_name = vend[0] ? WIN_StringToUTF8W(vend) : NULL;
+        char *product_name = WIN_StringToUTF8W(prod);
+        if (product_name) {
+            name = SDL_CreateDeviceName(attr.VendorID, attr.ProductID, vendor_name, product_name);
+        }
+        SDL_free(vendor_name);
+        SDL_free(product_name);
     }
     return name;
 }
