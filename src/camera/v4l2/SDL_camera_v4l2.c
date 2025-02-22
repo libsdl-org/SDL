@@ -438,10 +438,10 @@ static Uint32 format_sdl_to_v4l2(SDL_PixelFormat fmt)
     switch (fmt) {
         #define CASE(y, x)  case x: return y
         CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2);
-        CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_UNKNOWN);
+        CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_MJPG);
         #undef CASE
         default:
-            return true;
+            return 0;
     }
 }
 
