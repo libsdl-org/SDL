@@ -42,8 +42,8 @@
 #define pow SDL_pow
 #define ldexp SDL_scalbn
 
-#define STB_INTERNAL_SDL
 #define STB_IMAGE_STATIC
+#define STBI_NO_THREAD_LOCALS
 #define STBI_FAILURE_USERMSG
 #if defined(SDL_NEON_INTRINSICS)
 #define STBI_NEON
@@ -84,7 +84,7 @@ static bool SDL_ConvertPixels_MJPG_to_NV12(int width, int height, const void *sr
 
     void *pixels = stbi__jpeg_load(&s, &w, &h, &format, 4, &nv12, &ri);
     if (!pixels) {
-        return SDL_SetError("Couldn't decode image: %s", stbi_failure_reason());
+        return false;
     }
     return true;
 }
@@ -104,7 +104,7 @@ bool SDL_ConvertPixels_STB(int width, int height,
     int len = (src_format == SDL_PIXELFORMAT_MJPG) ? src_pitch : (height * src_pitch);
     void *pixels = stbi_load_from_memory(src, len, &w, &h, &format, 4);
     if (!pixels) {
-        return SDL_SetError("Couldn't decode image: %s", stbi_failure_reason());
+        return false;
     }
 
     if (w == width && h == height) {
