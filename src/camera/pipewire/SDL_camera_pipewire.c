@@ -374,10 +374,8 @@ static struct sdl_video_format {
     { SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_YUY2 },
     { SDL_PIXELFORMAT_UYVY, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_UYVY },
     { SDL_PIXELFORMAT_YVYU, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_YVYU },
-#if SDL_VERSION_ATLEAST(2,0,4)
     { SDL_PIXELFORMAT_NV12, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_NV12 },
-    { SDL_PIXELFORMAT_NV21, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_NV21 },
-#endif
+    { SDL_PIXELFORMAT_NV21, SDL_COLORSPACE_BT709_LIMITED, SPA_VIDEO_FORMAT_NV21 }
 };
 
 static uint32_t sdl_format_to_id(SDL_PixelFormat format)
@@ -500,14 +498,24 @@ static bool PIPEWIRECAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *
                     &device->hidden->stream_listener,
                     &stream_events, device);
 
-    params[n_params++] = spa_pod_builder_add_object(&b,
-		    SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
-		    SPA_FORMAT_mediaType, SPA_POD_Id(SPA_MEDIA_TYPE_video),
-                    SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
-                    SPA_FORMAT_VIDEO_format, SPA_POD_Id(sdl_format_to_id(spec->format)),
-                    SPA_FORMAT_VIDEO_size, SPA_POD_Rectangle(&SPA_RECTANGLE(spec->width, spec->height)),
-                    SPA_FORMAT_VIDEO_framerate,
-		        SPA_POD_Fraction(&SPA_FRACTION(spec->framerate_numerator, spec->framerate_denominator)));
+    if (spec->format == SDL_PIXELFORMAT_MJPG) {
+        params[n_params++] = spa_pod_builder_add_object(&b,
+                SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
+                SPA_FORMAT_mediaType, SPA_POD_Id(SPA_MEDIA_TYPE_video),
+                        SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_mjpg),
+                        SPA_FORMAT_VIDEO_size, SPA_POD_Rectangle(&SPA_RECTANGLE(spec->width, spec->height)),
+                        SPA_FORMAT_VIDEO_framerate,
+                    SPA_POD_Fraction(&SPA_FRACTION(spec->framerate_numerator, spec->framerate_denominator)));
+    } else {
+        params[n_params++] = spa_pod_builder_add_object(&b,
+                SPA_TYPE_OBJECT_Format, SPA_PARAM_EnumFormat,
+                SPA_FORMAT_mediaType, SPA_POD_Id(SPA_MEDIA_TYPE_video),
+                        SPA_FORMAT_mediaSubtype, SPA_POD_Id(SPA_MEDIA_SUBTYPE_raw),
+                        SPA_FORMAT_VIDEO_format, SPA_POD_Id(sdl_format_to_id(spec->format)),
+                        SPA_FORMAT_VIDEO_size, SPA_POD_Rectangle(&SPA_RECTANGLE(spec->width, spec->height)),
+                        SPA_FORMAT_VIDEO_framerate,
+                    SPA_POD_Fraction(&SPA_FRACTION(spec->framerate_numerator, spec->framerate_denominator)));
+    }
 
     if ((res = PIPEWIRE_pw_stream_connect(device->hidden->stream,
                                     PW_DIRECTION_INPUT,
@@ -573,7 +581,11 @@ static SDL_CameraFrameResult PIPEWIRECAMERA_AcquireFrame(SDL_Camera *device, SDL
     *timestampNS = SDL_GetTicksNS();
 #endif
     frame->pixels = b->buffer->datas[0].data;
-    frame->pitch = b->buffer->datas[0].chunk->stride;
+    if (frame->format == SDL_PIXELFORMAT_MJPG) {
+        frame->pitch = b->buffer->datas[0].chunk->size;
+    } else {
+        frame->pitch = b->buffer->datas[0].chunk->stride;
+    }
 
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
 
@@ -657,7 +669,7 @@ static void collect_size(CameraFormatAddData *data, struct param *p, SDL_PixelFo
     }
 }
 
-static void collect_format(CameraFormatAddData *data, struct param *p)
+static void collect_raw(CameraFormatAddData *data, struct param *p)
 {
     const struct spa_pod_prop *prop;
     SDL_PixelFormat sdlfmt;
@@ -688,7 +700,47 @@ static void collect_format(CameraFormatAddData *data, struct param *p)
         }
         break;
     default:
-        SDL_Log("CAMERA: unimplemented choice:%d", choice);
+        SDL_Log("CAMERA: unimplemented choice: %d", choice);
+        break;
+    }
+}
+
+static void collect_format(CameraFormatAddData *data, struct param *p)
+{
+    const struct spa_pod_prop *prop;
+    struct spa_pod * values;
+    uint32_t i, n_vals, choice, *ids;
+
+    prop = spa_pod_find_prop(p->param, NULL, SPA_FORMAT_mediaSubtype);
+    if (prop == NULL)
+        return;
+
+    values = spa_pod_get_values(&prop->value, &n_vals, &choice);
+    if (values->type != SPA_TYPE_Id || n_vals == 0)
+        return;
+
+    ids = SPA_POD_BODY(values);
+    switch (choice) {
+    case SPA_CHOICE_None:
+        n_vals = 1;
+    SDL_FALLTHROUGH;
+    case SPA_CHOICE_Enum:
+        for (i = 0; i < n_vals; i++) {
+            switch (ids[i]) {
+            case SPA_MEDIA_SUBTYPE_raw:
+                collect_raw(data, p);
+                break;
+            case SPA_MEDIA_SUBTYPE_mjpg:
+                collect_size(data, p, SDL_PIXELFORMAT_MJPG, SDL_COLORSPACE_JPEG);
+                break;
+            default:
+                // Unsupported format
+                break;
+            }
+        }
+        break;
+    default:
+        SDL_Log("CAMERA: unimplemented choice: %d", choice);
         break;
     }
 }
