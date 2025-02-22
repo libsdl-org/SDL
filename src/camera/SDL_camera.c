@@ -32,7 +32,6 @@
 
 // Available camera drivers
 static const CameraBootStrap *const bootstrap[] = {
-#ifndef SDL_CAMERA_DISABLED
 #ifdef SDL_CAMERA_DRIVER_V4L2
     &V4L2_bootstrap,
 #endif
@@ -56,7 +55,6 @@ static const CameraBootStrap *const bootstrap[] = {
 #endif
 #ifdef SDL_CAMERA_DRIVER_DUMMY
     &DUMMYCAMERA_bootstrap,
-#endif
 #endif
     NULL
 };
