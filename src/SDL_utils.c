@@ -420,6 +420,7 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
         const char *prefix;
         const char *replacement;
     } replacements[] = {
+        { "8BitDo Tech Ltd", "8BitDo" },
         { "ASTRO Gaming", "ASTRO" },
         { "Bensussen Deutsch & Associates,Inc.(BDA)", "BDA" },
         { "Guangzhou Chicken Run Network Technology Co., Ltd.", "GameSir" },
