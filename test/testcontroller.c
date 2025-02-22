@@ -2101,7 +2101,7 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     }
     screen_width = (int)SDL_ceilf(SCREEN_WIDTH * content_scale);
     screen_height = (int)SDL_ceilf(SCREEN_HEIGHT * content_scale);
-    window = SDL_CreateWindow("SDL Controller Test", screen_width, screen_height, 0);
+    window = SDL_CreateWindow("SDL Controller Test", screen_width, screen_height, SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (!window) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s", SDL_GetError());
         return SDL_APP_FAILURE;
