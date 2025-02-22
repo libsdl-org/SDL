@@ -1437,6 +1437,7 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Display *display = data->videodata->display;
     bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, true);
     bool position_is_absolute = false;
+    bool set_position = false;
     XEvent event;
 
     if (SDL_WINDOW_IS_POPUP(window)) {
@@ -1446,6 +1447,7 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         // Coordinates after X11_ConstrainPopup() are already in the global space.
         position_is_absolute = true;
+        set_position = true;
     }
 
     /* Whether XMapRaised focuses the window is based on the window type and it is
@@ -1454,20 +1456,6 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     if (!X11_IsWindowMapped(_this, window)) {
         X11_XMapRaised(display, data->xwindow);
-        if (data->pending_position) {
-            int x, y;
-            if (position_is_absolute) {
-                x = window->pending.x;
-                y = window->pending.y;
-            } else {
-                SDL_RelativeToGlobalForWindow(window,
-                                              window->pending.x, window->pending.y,
-                                              &x, &y);
-            }
-            data->pending_position = false;
-            X11_XMoveWindow(display, data->xwindow, x, y);
-        }
-
         /* Blocking wait for "MapNotify" event.
          * We use X11_XIfEvent because pXWindowEvent takes a mask rather than a type,
          * and XCheckTypedWindowEvent doesn't block */
@@ -1475,6 +1463,8 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             X11_XIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
         }
         X11_XFlush(display);
+        set_position = data->pending_position ||
+                       (!(window->flags & SDL_WINDOW_BORDERLESS) && !window->undefined_x && !window->undefined_y);
     }
 
     if (!data->videodata->net_wm) {
@@ -1492,6 +1482,23 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     // Get some valid border values, if we haven't received them yet
     if (data->border_left == 0 && data->border_right == 0 && data->border_top == 0 && data->border_bottom == 0) {
         X11_GetBorderValues(data);
+    }
+
+    if (set_position) {
+        // Apply the window position, accounting for offsets due to the borders appearing.
+        const int tx = data->pending_position ? window->pending.x : window->x;
+        const int ty = data->pending_position ? window->pending.y : window->y;
+        int x, y;
+        if (position_is_absolute) {
+            x = tx;
+            y = ty;
+        } else {
+            SDL_RelativeToGlobalForWindow(window,
+                                          tx - data->border_left, ty - data->border_top,
+                                          &x, &y);
+        }
+        data->pending_position = false;
+        X11_XMoveWindow(display, data->xwindow, x, y);
     }
 
     /* Some window managers can send garbage coordinates while mapping the window, so don't emit size and position
