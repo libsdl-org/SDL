@@ -44,7 +44,9 @@ enum PW_READY_FLAGS
 {
     PW_READY_FLAG_BUFFER_ADDED = 0x1,
     PW_READY_FLAG_STREAM_READY = 0x2,
-    PW_READY_FLAG_ALL_BITS = 0x3
+    PW_READY_FLAG_ALL_PREOPEN_BITS = 0x3,
+    PW_READY_FLAG_OPEN_COMPLETE = 0x4,
+    PW_READY_FLAG_ALL_BITS = 0x7
 };
 
 #define PW_ID_TO_HANDLE(x) (void *)((uintptr_t)x)
@@ -1215,12 +1217,13 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
         return SDL_SetError("Pipewire: Failed to start stream loop");
     }
 
-    // Wait until all init flags are set or the stream has failed.
+    // Wait until all pre-open init flags are set or the stream has failed.
     PIPEWIRE_pw_thread_loop_lock(priv->loop);
-    while (priv->stream_init_status != PW_READY_FLAG_ALL_BITS &&
+    while (priv->stream_init_status != PW_READY_FLAG_ALL_PREOPEN_BITS &&
            PIPEWIRE_pw_stream_get_state(priv->stream, NULL) != PW_STREAM_STATE_ERROR) {
         PIPEWIRE_pw_thread_loop_wait(priv->loop);
     }
+    priv->stream_init_status |= PW_READY_FLAG_OPEN_COMPLETE;
     PIPEWIRE_pw_thread_loop_unlock(priv->loop);
 
     if (PIPEWIRE_pw_stream_get_state(priv->stream, &error) == PW_STREAM_STATE_ERROR) {
