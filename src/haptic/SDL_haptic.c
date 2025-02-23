@@ -33,7 +33,6 @@ typedef struct SDL_Haptic_VIDPID_Naxes {
 
 static void SDL_Haptic_Load_Axes_List(SDL_Haptic_VIDPID_Naxes **entries, Uint16 *num_entries)
 {
-    // SDL_Haptic_VIDPID_Naxes *entries = *axes_list;
     SDL_Haptic_VIDPID_Naxes entry;
     char *spot;
 
@@ -81,7 +80,7 @@ static void SDL_Haptic_Load_Axes_List(SDL_Haptic_VIDPID_Naxes **entries, Uint16 
 static int SDL_Haptic_Naxes_List_Index(struct SDL_Haptic_VIDPID_Naxes *entries, Uint16 num_entries, Uint16 vid, Uint16 pid)
 {
     if (!entries)
-        return -2;
+        return -1;
 
     int i;
     for (i = 0; i < num_entries; ++i) {
