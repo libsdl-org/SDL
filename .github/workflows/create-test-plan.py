@@ -57,7 +57,6 @@ class SdlPlatform(Enum):
 class Msys2Platform(Enum):
     Mingw32 = "mingw32"
     Mingw64 = "mingw64"
-    Clang32 = "clang32"
     Clang64 = "clang64"
     Ucrt64 = "ucrt64"
 
@@ -107,7 +106,6 @@ class JobSpec:
 JOB_SPECS = {
     "msys2-mingw32": JobSpec(name="Windows (msys2, mingw32)",               os=JobOs.WindowsLatest, platform=SdlPlatform.Msys2,       artifact="SDL-mingw32",            msys2_platform=Msys2Platform.Mingw32, ),
     "msys2-mingw64": JobSpec(name="Windows (msys2, mingw64)",               os=JobOs.WindowsLatest, platform=SdlPlatform.Msys2,       artifact="SDL-mingw64",            msys2_platform=Msys2Platform.Mingw64, ),
-    "msys2-clang32": JobSpec(name="Windows (msys2, clang32)",               os=JobOs.WindowsLatest, platform=SdlPlatform.Msys2,       artifact="SDL-mingw32-clang",      msys2_platform=Msys2Platform.Clang32, ),
     "msys2-clang64": JobSpec(name="Windows (msys2, clang64)",               os=JobOs.WindowsLatest, platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-clang",      msys2_platform=Msys2Platform.Clang64, ),
     "msys2-ucrt64": JobSpec(name="Windows (msys2, ucrt64)",                 os=JobOs.WindowsLatest, platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-ucrt",       msys2_platform=Msys2Platform.Ucrt64, ),
     "msvc-x64": JobSpec(name="Windows (MSVC, x64)",                         os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-x64",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC/SDL.sln", ),
@@ -627,7 +625,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 "clang64": "mingw-w64-clang-x86_64",
                 "ucrt64": "mingw-w64-ucrt-x86_64",
             }[spec.msys2_platform.value]
-            job.msys2_no_perl = spec.msys2_platform in (Msys2Platform.Mingw32, Msys2Platform.Clang32)
+            job.msys2_no_perl = spec.msys2_platform in (Msys2Platform.Mingw32, )
             job.shared_lib = SharedLibType.WIN32
             job.static_lib = StaticLibType.A
         case SdlPlatform.Riscos:
