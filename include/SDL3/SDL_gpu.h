@@ -1495,8 +1495,8 @@ typedef struct SDL_GPUIndirectDispatchCommand
 /**
  * A structure specifying the parameters of a sampler.
  *
- * Note that mip_lod_bias is a no-op for the Metal driver.
- * For Metal, LOD bias must be applied via shader instead.
+ * Note that mip_lod_bias is a no-op for the Metal driver. For Metal, LOD bias
+ * must be applied via shader instead.
  *
  * \since This function is available since SDL 3.2.0.
  *
