@@ -31,12 +31,7 @@ typedef struct SDL_Haptic_VIDPID_Naxes {
     Uint16 naxes;
 } SDL_Haptic_VIDPID_Naxes;
 
-// struct SDL_Haptic_VIDPID_Naxes_List {
-//     struct SDL_Haptic_VIDPID_Naxes *entries;
-//     Uint32 num_entries;
-// };
-
-static void SDL_Haptic_Load_Axes_List(SDL_Haptic_VIDPID_Naxes **entries, uint *num_entries)
+static void SDL_Haptic_Load_Axes_List(SDL_Haptic_VIDPID_Naxes **entries, Uint16 *num_entries)
 {
     // SDL_Haptic_VIDPID_Naxes *entries = *axes_list;
     SDL_Haptic_VIDPID_Naxes entry;
@@ -77,11 +72,13 @@ static void SDL_Haptic_Load_Axes_List(SDL_Haptic_VIDPID_Naxes **entries, uint *n
         }
 
         (*entries)[(*num_entries)++] = entry;
+        if (*num_entries >= UINT16_MAX)
+            return;
     }
 }
 
 // /* Return -1 if not found */
-static int SDL_Haptic_Naxes_List_Index(struct SDL_Haptic_VIDPID_Naxes *entries, uint num_entries, Uint16 vid, Uint16 pid)
+static int SDL_Haptic_Naxes_List_Index(struct SDL_Haptic_VIDPID_Naxes *entries, Uint16 num_entries, Uint16 vid, Uint16 pid)
 {
     if (!entries)
         return -2;
@@ -98,7 +95,7 @@ static int SDL_Haptic_Naxes_List_Index(struct SDL_Haptic_VIDPID_Naxes *entries, 
 // Check if device needs a custom number of naxes
 static Uint16 SDL_Haptic_Get_Naxes(Uint16 vid, Uint16 pid)
 {
-    uint num_entries = 0;
+    Uint16 num_entries = 0;
     int index = 0, naxes = -1;
     SDL_Haptic_VIDPID_Naxes *naxes_list = NULL;
 
