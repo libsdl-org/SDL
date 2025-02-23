@@ -93,7 +93,7 @@ static int SDL_Haptic_Naxes_List_Index(struct SDL_Haptic_VIDPID_Naxes *entries, 
 }
 
 // Check if device needs a custom number of naxes
-static Uint16 SDL_Haptic_Get_Naxes(Uint16 vid, Uint16 pid)
+static int SDL_Haptic_Get_Naxes(Uint16 vid, Uint16 pid)
 {
     Uint16 num_entries = 0;
     int index = 0, naxes = -1;
@@ -377,9 +377,9 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
     // Check if cutom number of haptic axes was defined
     Uint16 vid = SDL_GetJoystickVendor(joystick);
     Uint16 pid = SDL_GetJoystickProduct(joystick);
-    Uint16 general_axes = SDL_GetNumJoystickAxes(joystick);
+    int general_axes = SDL_GetNumJoystickAxes(joystick);
 
-    Uint16 naxes = SDL_Haptic_Get_Naxes(vid, pid);
+    int naxes = SDL_Haptic_Get_Naxes(vid, pid);
     if (naxes > 0)
         haptic->naxes = naxes;
 
