@@ -169,7 +169,7 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 140, 0x08c */    SDL_SCANCODE_UNKNOWN,           // KEY_CALC
     /* 141, 0x08d */    SDL_SCANCODE_UNKNOWN,           // KEY_SETUP
     /* 142, 0x08e */    SDL_SCANCODE_SLEEP,             // KEY_SLEEP
-    /* 143, 0x08f */    SDL_SCANCODE_UNKNOWN,           // KEY_WAKEUP
+    /* 143, 0x08f */    SDL_SCANCODE_WAKE,              // KEY_WAKEUP
     /* 144, 0x090 */    SDL_SCANCODE_UNKNOWN,           // KEY_FILE
     /* 145, 0x091 */    SDL_SCANCODE_UNKNOWN,           // KEY_SENDFILE
     /* 146, 0x092 */    SDL_SCANCODE_UNKNOWN,           // KEY_DELETEFILE
@@ -282,7 +282,6 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 253, 0x0fd */    SDL_SCANCODE_UNKNOWN,
     /* 254, 0x0fe */    SDL_SCANCODE_UNKNOWN,
     /* 255, 0x0ff */    SDL_SCANCODE_UNKNOWN,
-#if 0 // We don't have any mapped scancodes after this point (yet)
     /* 256, 0x100 */    SDL_SCANCODE_UNKNOWN,
     /* 257, 0x101 */    SDL_SCANCODE_UNKNOWN,
     /* 258, 0x102 */    SDL_SCANCODE_UNKNOWN,
@@ -380,9 +379,9 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 350, 0x15e */    SDL_SCANCODE_UNKNOWN,
     /* 351, 0x15f */    SDL_SCANCODE_UNKNOWN,
     /* 352, 0x160 */    SDL_SCANCODE_UNKNOWN,            // KEY_OK
-    /* 353, 0x161 */    SDL_SCANCODE_UNKNOWN,            // KEY_SELECT
+    /* 353, 0x161 */    SDL_SCANCODE_SELECT,             // KEY_SELECT
     /* 354, 0x162 */    SDL_SCANCODE_UNKNOWN,            // KEY_GOTO
-    /* 355, 0x163 */    SDL_SCANCODE_UNKNOWN,            // KEY_CLEAR
+    /* 355, 0x163 */    SDL_SCANCODE_CLEAR,              // KEY_CLEAR
     /* 356, 0x164 */    SDL_SCANCODE_UNKNOWN,            // KEY_POWER2
     /* 357, 0x165 */    SDL_SCANCODE_UNKNOWN,            // KEY_OPTION
     /* 358, 0x166 */    SDL_SCANCODE_UNKNOWN,            // KEY_INFO
@@ -400,7 +399,7 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 370, 0x172 */    SDL_SCANCODE_UNKNOWN,            // KEY_SUBTITLE
     /* 371, 0x173 */    SDL_SCANCODE_UNKNOWN,            // KEY_ANGLE
     /* 372, 0x174 */    SDL_SCANCODE_UNKNOWN,            // KEY_FULL_SCREEN
-    /* 373, 0x175 */    SDL_SCANCODE_UNKNOWN,            // KEY_MODE
+    /* 373, 0x175 */    SDL_SCANCODE_MODE,               // KEY_MODE
     /* 374, 0x176 */    SDL_SCANCODE_UNKNOWN,            // KEY_KEYBOARD
     /* 375, 0x177 */    SDL_SCANCODE_UNKNOWN,            // KEY_ASPECT_RATIO
     /* 376, 0x178 */    SDL_SCANCODE_UNKNOWN,            // KEY_PC
@@ -429,8 +428,9 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 399, 0x18f */    SDL_SCANCODE_UNKNOWN,            // KEY_GREEN
     /* 400, 0x190 */    SDL_SCANCODE_UNKNOWN,            // KEY_YELLOW
     /* 401, 0x191 */    SDL_SCANCODE_UNKNOWN,            // KEY_BLUE
-    /* 402, 0x192 */    SDL_SCANCODE_UNKNOWN,            // KEY_CHANNELUP
-    /* 403, 0x193 */    SDL_SCANCODE_UNKNOWN,            // KEY_CHANNELDOWN
+    /* 402, 0x192 */    SDL_SCANCODE_CHANNEL_INCREMENT,  // KEY_CHANNELUP
+    /* 403, 0x193 */    SDL_SCANCODE_CHANNEL_DECREMENT,  // KEY_CHANNELDOWN
+#if 0 // We don't have any mapped scancodes after this point (yet)
     /* 404, 0x194 */    SDL_SCANCODE_UNKNOWN,            // KEY_FIRST
     /* 405, 0x195 */    SDL_SCANCODE_UNKNOWN,            // KEY_LAST
     /* 406, 0x196 */    SDL_SCANCODE_UNKNOWN,            // KEY_AB
