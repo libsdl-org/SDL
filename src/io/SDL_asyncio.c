@@ -57,12 +57,14 @@ SDL_AsyncIO *SDL_AsyncIOFromFile(const char *file, const char *mode)
     }
 
     SDL_AsyncIO *asyncio = (SDL_AsyncIO *)SDL_calloc(1, sizeof(*asyncio));
-    if (asyncio) {
-        asyncio->lock = SDL_CreateMutex();
-        if (!asyncio->lock) {
-            SDL_free(asyncio);
-            return NULL;
-        }
+    if (!asyncio) {
+        return NULL;
+    }
+
+    asyncio->lock = SDL_CreateMutex();
+    if (!asyncio->lock) {
+        SDL_free(asyncio);
+        return NULL;
     }
 
     if (!SDL_SYS_AsyncIOFromFile(file, binary_mode, asyncio)) {
