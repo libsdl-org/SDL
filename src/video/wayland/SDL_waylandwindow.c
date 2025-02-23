@@ -1864,6 +1864,10 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         } else {
             libdecor_frame_set_app_id(data->shell_surface.libdecor.frame, data->app_id);
             libdecor_frame_map(data->shell_surface.libdecor.frame);
+            if (window->flags & SDL_WINDOW_BORDERLESS) {
+                // Note: Calling this with 'true' immediately after mapping will cause the libdecor Cairo plugin to crash.
+                libdecor_frame_set_visibility(data->shell_surface.libdecor.frame, false);
+            }
 
             if (c->zxdg_exporter_v2) {
                 data->exported = zxdg_exporter_v2_export_toplevel(c->zxdg_exporter_v2, data->surface);
