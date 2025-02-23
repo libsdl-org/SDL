@@ -2928,7 +2928,7 @@ static bool D3D12_INTERNAL_ConvertVertexInputState(SDL_GPUVertexInputState verte
         desc[i].AlignedByteOffset = attribute.offset;
         desc[i].InputSlotClass = SDLToD3D12_InputRate[vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].input_rate];
         desc[i].InstanceDataStepRate = (vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE)
-            ? vertexInputState.vertex_buffer_descriptions[attribute.buffer_slot].instance_step_rate
+            ? 1
             : 0;
     }
 
@@ -3010,11 +3010,7 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
         return NULL;
     }
 
-    Uint32 sampleMask = createinfo->multisample_state.enable_mask ?
-        createinfo->multisample_state.sample_mask :
-        0xFFFFFFFF;
-
-    psoDesc.SampleMask = sampleMask;
+    psoDesc.SampleMask = 0xFFFFFFFF;
     psoDesc.SampleDesc.Count = SDLToD3D12_SampleCount[createinfo->multisample_state.sample_count];
     psoDesc.SampleDesc.Quality = (createinfo->multisample_state.sample_count > SDL_GPU_SAMPLECOUNT_1) ? D3D12_STANDARD_MULTISAMPLE_PATTERN : 0;
 

@@ -478,8 +478,6 @@ typedef struct MetalGraphicsPipeline
 {
     id<MTLRenderPipelineState> handle;
 
-    Uint32 sample_mask;
-
     SDL_GPURasterizerState rasterizerState;
     SDL_GPUPrimitiveType primitiveType;
 
@@ -1181,9 +1179,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
             for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i += 1) {
                 binding = METAL_FIRST_VERTEX_BUFFER_SLOT + createinfo->vertex_input_state.vertex_buffer_descriptions[i].slot;
                 vertexDescriptor.layouts[binding].stepFunction = SDLToMetal_StepFunction[createinfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate];
-                vertexDescriptor.layouts[binding].stepRate = (createinfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE)
-                    ? createinfo->vertex_input_state.vertex_buffer_descriptions[i].instance_step_rate
-                    : 1;
+                vertexDescriptor.layouts[binding].stepRate = 1;
                 vertexDescriptor.layouts[binding].stride = createinfo->vertex_input_state.vertex_buffer_descriptions[i].pitch;
             }
 
@@ -1202,13 +1198,8 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
             SET_ERROR_AND_RETURN("Creating render pipeline failed: %s", [[error description] UTF8String], NULL);
         }
 
-        Uint32 sampleMask = createinfo->multisample_state.enable_mask ?
-            createinfo->multisample_state.sample_mask :
-            0xFFFFFFFF;
-
         result = SDL_calloc(1, sizeof(MetalGraphicsPipeline));
         result->handle = pipelineState;
-        result->sample_mask = sampleMask;
         result->depth_stencil_state = depthStencilState;
         result->rasterizerState = createinfo->rasterizer_state;
         result->primitiveType = createinfo->primitive_type;
