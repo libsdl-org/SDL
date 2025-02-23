@@ -56,8 +56,6 @@ typedef struct VulkanExtensions
 
     // Core since 1.2, but requires annoying paperwork to implement
     Uint8 KHR_driver_properties;
-    // EXT, probably not going to be Core
-    Uint8 EXT_vertex_attribute_divisor;
     // Only required for special implementations (i.e. MoltenVK)
     Uint8 KHR_portability_subset;
     // Only required for decoding HDR ASTC textures
@@ -6202,11 +6200,8 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     VkPipelineShaderStageCreateInfo shaderStageCreateInfos[2];
 
     VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo;
-    VkPipelineVertexInputDivisorStateCreateInfoEXT divisorStateCreateInfo;
     VkVertexInputBindingDescription *vertexInputBindingDescriptions = SDL_stack_alloc(VkVertexInputBindingDescription, createinfo->vertex_input_state.num_vertex_buffers);
     VkVertexInputAttributeDescription *vertexInputAttributeDescriptions = SDL_stack_alloc(VkVertexInputAttributeDescription, createinfo->vertex_input_state.num_vertex_attributes);
-    VkVertexInputBindingDivisorDescriptionEXT *divisorDescriptions = SDL_stack_alloc(VkVertexInputBindingDivisorDescriptionEXT, createinfo->vertex_input_state.num_vertex_buffers);
-    Uint32 divisorDescriptionCount = 0;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo;
 
@@ -6289,10 +6284,6 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
         vertexInputBindingDescriptions[i].binding = createinfo->vertex_input_state.vertex_buffer_descriptions[i].slot;
         vertexInputBindingDescriptions[i].inputRate = SDLToVK_VertexInputRate[createinfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate];
         vertexInputBindingDescriptions[i].stride = createinfo->vertex_input_state.vertex_buffer_descriptions[i].pitch;
-
-        if (createinfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) {
-            divisorDescriptionCount += 1;
-        }
     }
 
     for (i = 0; i < createinfo->vertex_input_state.num_vertex_attributes; i += 1) {
@@ -6309,26 +6300,6 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     vertexInputStateCreateInfo.pVertexBindingDescriptions = vertexInputBindingDescriptions;
     vertexInputStateCreateInfo.vertexAttributeDescriptionCount = createinfo->vertex_input_state.num_vertex_attributes;
     vertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexInputAttributeDescriptions;
-
-    if (divisorDescriptionCount > 0) {
-        divisorDescriptionCount = 0;
-
-        for (i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i += 1) {
-            if (createinfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate == SDL_GPU_VERTEXINPUTRATE_INSTANCE) {
-                divisorDescriptions[divisorDescriptionCount].binding = createinfo->vertex_input_state.vertex_buffer_descriptions[i].slot;
-                divisorDescriptions[divisorDescriptionCount].divisor = createinfo->vertex_input_state.vertex_buffer_descriptions[i].instance_step_rate;
-
-                divisorDescriptionCount += 1;
-            }
-        }
-
-        divisorStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_DIVISOR_STATE_CREATE_INFO_EXT;
-        divisorStateCreateInfo.pNext = NULL;
-        divisorStateCreateInfo.vertexBindingDivisorCount = divisorDescriptionCount;
-        divisorStateCreateInfo.pVertexBindingDivisors = divisorDescriptions;
-
-        vertexInputStateCreateInfo.pNext = &divisorStateCreateInfo;
-    }
 
     // Topology
 
@@ -6376,9 +6347,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
 
     // Multisample
 
-    Uint32 sampleMask = createinfo->multisample_state.enable_mask ?
-        createinfo->multisample_state.sample_mask :
-        0xFFFFFFFF;
+    Uint32 sampleMask = 0xFFFFFFFF;
 
     multisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleStateCreateInfo.pNext = NULL;
@@ -6476,7 +6445,6 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
         SDL_stack_free(vertexInputBindingDescriptions);
         SDL_stack_free(vertexInputAttributeDescriptions);
         SDL_stack_free(colorBlendAttachmentStates);
-        SDL_stack_free(divisorDescriptions);
         SDL_free(graphicsPipeline);
         SET_STRING_ERROR_AND_RETURN("Failed to initialize pipeline resource layout!", NULL);
     }
@@ -6515,7 +6483,6 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     SDL_stack_free(vertexInputBindingDescriptions);
     SDL_stack_free(vertexInputAttributeDescriptions);
     SDL_stack_free(colorBlendAttachmentStates);
-    SDL_stack_free(divisorDescriptions);
 
     renderer->vkDestroyRenderPass(
         renderer->logicalDevice,
@@ -10898,7 +10865,7 @@ static inline Uint8 CheckDeviceExtensions(
         supports->ext = 1;                   \
     }
         CHECK(KHR_swapchain)
-        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(EXT_vertex_attribute_divisor) else CHECK(KHR_portability_subset) else CHECK(EXT_texture_compression_astc_hdr)
+        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) CHECK(KHR_portability_subset) else CHECK(EXT_texture_compression_astc_hdr)
 #undef CHECK
     }
 
@@ -10912,7 +10879,6 @@ static inline Uint32 GetDeviceExtensionCount(VulkanExtensions *supports)
         supports->KHR_swapchain +
         supports->KHR_maintenance1 +
         supports->KHR_driver_properties +
-        supports->EXT_vertex_attribute_divisor +
         supports->KHR_portability_subset +
         supports->EXT_texture_compression_astc_hdr);
 }
@@ -10929,7 +10895,6 @@ static inline void CreateDeviceExtensionArray(
     CHECK(KHR_swapchain)
     CHECK(KHR_maintenance1)
     CHECK(KHR_driver_properties)
-    CHECK(EXT_vertex_attribute_divisor)
     CHECK(KHR_portability_subset)
     CHECK(EXT_texture_compression_astc_hdr)
 #undef CHECK
