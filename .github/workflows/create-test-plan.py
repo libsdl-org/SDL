@@ -61,7 +61,6 @@ class Msys2Platform(Enum):
 
 
 class IntelCompiler(Enum):
-    Icc = "icc"
     Icx = "icx"
 
 
@@ -120,7 +119,6 @@ JOB_SPECS = {
     "ubuntu-22.04": JobSpec(name="Ubuntu 22.04",                            os=JobOs.Ubuntu22_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04",        autotools=True),
     "steamrt-sniper": JobSpec(name="Steam Linux Runtime (Sniper)",          os=JobOs.UbuntuLatest,  platform=SdlPlatform.Linux,       artifact="SDL-slrsniper",          container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:beta", ),
     "ubuntu-intel-icx": JobSpec(name="Ubuntu 22.04 (Intel oneAPI)",         os=JobOs.Ubuntu22_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04-oneapi", intel=IntelCompiler.Icx, ),
-    "ubuntu-intel-icc": JobSpec(name="Ubuntu 22.04 (Intel Compiler)",       os=JobOs.Ubuntu22_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04-icc",    intel=IntelCompiler.Icc, ),
     "macos-gnu-arm64-x64": JobSpec(name="MacOS (GNU prefix)",               os=JobOs.MacosLatest,   platform=SdlPlatform.MacOS,       artifact="SDL-macos-arm64-x64-gnu",autotools=True, apple_archs={AppleArch.X86_64, AppleArch.ARM64, },  ),
     "ios": JobSpec(name="iOS (CMake & xcode)",                              os=JobOs.MacosLatest,   platform=SdlPlatform.Ios,         artifact="SDL-ios-arm64",          xcode=True, ),
     "tvos": JobSpec(name="tvOS (CMake & xcode)",                            os=JobOs.MacosLatest,   platform=SdlPlatform.Tvos,        artifact="SDL-tvos-arm64",         xcode=True, ),
@@ -340,10 +338,6 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             case IntelCompiler.Icx:
                 job.cc = "icx"
                 job.cxx = "icpx"
-            case IntelCompiler.Icc:
-                job.cc = "icc"
-                job.cxx = "icpc"
-                job.cppflags.append("-diag-disable=10441")
             case _:
                 raise ValueError(f"Invalid intel={spec.intel}")
         job.source_cmd = f"source /opt/intel/oneapi/setvars.sh;"
