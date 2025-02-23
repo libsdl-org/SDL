@@ -68,7 +68,7 @@ static void SDL_Haptic_Load_Axes_List(SDL_Haptic_VIDPID_Naxes **entries, uint *n
             int new_max = *num_entries + 8;
             SDL_Haptic_VIDPID_Naxes *new_entries =
                 (SDL_Haptic_VIDPID_Naxes *)SDL_realloc(*entries, new_max * sizeof(**entries));
-            
+
             if (!new_entries) {
                 // Out of memory, go with what we have already
                 break;
@@ -380,9 +380,15 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
     // Check if cutom number of haptic axes was defined
     Uint16 vid = SDL_GetJoystickVendor(joystick);
     Uint16 pid = SDL_GetJoystickProduct(joystick);
+    Uint16 general_axes = SDL_GetNumJoystickAxes(joystick);
+
     Uint16 naxes = SDL_Haptic_Get_Naxes(vid, pid);
     if (naxes > 0)
         haptic->naxes = naxes;
+
+    // Limit to the actual number of axes found on the device
+    if (general_axes >= 0 && naxes > general_axes)
+        haptic->naxes = general_axes;
 
     // Add haptic to list
     ++haptic->ref_count;
