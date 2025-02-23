@@ -28,7 +28,6 @@ class JobOs(Enum):
     WindowsLatest = "windows-latest"
     UbuntuLatest = "ubuntu-latest"
     MacosLatest = "macos-latest"
-    Ubuntu20_04 = "ubuntu-20.04"
     Ubuntu22_04 = "ubuntu-22.04"
     Ubuntu24_04 = "ubuntu-24.04"
     Macos13 = "macos-13"
@@ -118,11 +117,10 @@ JOB_SPECS = {
     "msvc-arm64": JobSpec(name="Windows (MSVC, ARM64)",                     os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-arm64",           msvc_arch=MsvcArch.Arm64, ),
     "msvc-uwp-x64": JobSpec(name="UWP (MSVC, x64)",                         os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-UWP",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC-WinRT/SDL-UWP.sln", uwp=True, ),
     "msvc-gdk-x64": JobSpec(name="GDK (MSVC, x64)",                         os=JobOs.WindowsLatest, platform=SdlPlatform.Msvc,        artifact="SDL-VC-GDK",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC-GDK/SDL.sln", gdk=True, no_cmake=True, ),
-    "ubuntu-20.04": JobSpec(name="Ubuntu 20.04",                            os=JobOs.Ubuntu20_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu20.04",        autotools=True),
     "ubuntu-22.04": JobSpec(name="Ubuntu 22.04",                            os=JobOs.Ubuntu22_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04",        autotools=True),
     "steamrt-sniper": JobSpec(name="Steam Linux Runtime (Sniper)",          os=JobOs.UbuntuLatest,  platform=SdlPlatform.Linux,       artifact="SDL-slrsniper",          container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:beta", ),
-    "ubuntu-intel-icx": JobSpec(name="Ubuntu 20.04 (Intel oneAPI)",         os=JobOs.Ubuntu20_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu20.04-oneapi", intel=IntelCompiler.Icx, ),
-    "ubuntu-intel-icc": JobSpec(name="Ubuntu 20.04 (Intel Compiler)",       os=JobOs.Ubuntu20_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu20.04-icc",    intel=IntelCompiler.Icc, ),
+    "ubuntu-intel-icx": JobSpec(name="Ubuntu 22.04 (Intel oneAPI)",         os=JobOs.Ubuntu22_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04-oneapi", intel=IntelCompiler.Icx, ),
+    "ubuntu-intel-icc": JobSpec(name="Ubuntu 22.04 (Intel Compiler)",       os=JobOs.Ubuntu22_04,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04-icc",    intel=IntelCompiler.Icc, ),
     "macos-gnu-arm64-x64": JobSpec(name="MacOS (GNU prefix)",               os=JobOs.MacosLatest,   platform=SdlPlatform.MacOS,       artifact="SDL-macos-arm64-x64-gnu",autotools=True, apple_archs={AppleArch.X86_64, AppleArch.ARM64, },  ),
     "ios": JobSpec(name="iOS (CMake & xcode)",                              os=JobOs.MacosLatest,   platform=SdlPlatform.Ios,         artifact="SDL-ios-arm64",          xcode=True, ),
     "tvos": JobSpec(name="tvOS (CMake & xcode)",                            os=JobOs.MacosLatest,   platform=SdlPlatform.Tvos,        artifact="SDL-tvos-arm64",         xcode=True, ),
