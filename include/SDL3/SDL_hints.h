@@ -2201,16 +2201,16 @@ extern "C" {
  * `0xAAAA/0xBBBB/1,0xCCCC/0xDDDD/3`
  *
  * This hint supports a "wildcard" device that will set the number of haptic
- * axes on all initialized haptic devices which were not defined explicitly
- * in this hint.
+ * axes on all initialized haptic devices which were not defined explicitly in
+ * this hint.
  *
  * `0xFFFF/0xFFFF/1`
  *
- * This hint should be set before a controller is opened. The number of
- * haptic axes won't exceed the number of real axes found on the device.
+ * This hint should be set before a controller is opened. The number of haptic
+ * axes won't exceed the number of real axes found on the device.
  *
  * \since This hint is available since SDL 3.2.5.
-*/
+ */
 #define SDL_HINT_JOYSTICK_HAPTIC_AXES "SDL_JOYSTICK_HAPTIC_AXES"
 
 /**
