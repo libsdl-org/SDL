@@ -854,6 +854,12 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             SDL_assert_release(!"The number of vertex attributes in a vertex input state must not exceed 16!");
             return NULL;
         }
+        for (Uint32 i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_buffers; i += 1) {
+            if (graphicsPipelineCreateInfo->vertex_input_state.vertex_buffer_descriptions[i].instance_step_rate != 0) {
+                SDL_assert_release(!"For all vertex buffer descriptions, instance_step_rate must be 0!");
+                return NULL;
+            }
+        }
         Uint32 locations[MAX_VERTEX_ATTRIBUTES];
         for (Uint32 i = 0; i < graphicsPipelineCreateInfo->vertex_input_state.num_vertex_attributes; i += 1) {
             CHECK_VERTEXELEMENTFORMAT_ENUM_INVALID(graphicsPipelineCreateInfo->vertex_input_state.vertex_attributes[i].format, NULL);
@@ -862,8 +868,17 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             for (Uint32 j = 0; j < i; j += 1) {
                 if (locations[j] == locations[i]) {
                     SDL_assert_release(!"Each vertex attribute location in a vertex input state must be unique!");
+                    return NULL;
                 }
             }
+        }
+        if (graphicsPipelineCreateInfo->multisample_state.enable_mask) {
+            SDL_assert_release(!"For multisample states, enable_mask must be false!");
+            return NULL;
+        }
+        if (graphicsPipelineCreateInfo->multisample_state.sample_mask != 0) {
+            SDL_assert_release(!"For multisample states, sample_mask must be 0!");
+            return NULL;
         }
         if (graphicsPipelineCreateInfo->depth_stencil_state.enable_depth_test) {
             CHECK_COMPAREOP_ENUM_INVALID(graphicsPipelineCreateInfo->depth_stencil_state.compare_op, NULL)
