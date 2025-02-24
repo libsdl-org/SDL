@@ -34,7 +34,7 @@ typedef struct SDL_Haptic_VIDPID_Naxes {
 static void SDL_Haptic_Load_Axes_List(SDL_Haptic_VIDPID_Naxes **entries, Uint16 *num_entries)
 {
     SDL_Haptic_VIDPID_Naxes entry;
-    char *spot;
+    const char *spot;
 
     const char *hint = SDL_GetHint(SDL_HINT_JOYSTICK_HAPTIC_AXES);
     spot = (char *)hint;
