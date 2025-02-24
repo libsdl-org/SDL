@@ -34,7 +34,8 @@ typedef struct SDL_Haptic_VIDPID_Naxes {
 static void SDL_Haptic_Load_Axes_List(SDL_Haptic_VIDPID_Naxes **entries, Uint16 *num_entries)
 {
     SDL_Haptic_VIDPID_Naxes entry;
-    char *spot;
+    const char *spot;
+    char *spot_end;
 
     const char *hint = SDL_GetHint(SDL_HINT_JOYSTICK_HAPTIC_AXES);
     spot = (char *)hint;
@@ -44,19 +45,22 @@ static void SDL_Haptic_Load_Axes_List(SDL_Haptic_VIDPID_Naxes **entries, Uint16 
     }
 
     while ((spot = SDL_strstr(spot, "0x")) != NULL) {
-        entry.vid = (Uint16)SDL_strtol(spot, &spot, 0);
+        entry.vid = (Uint16)SDL_strtol(spot, &spot_end, 0);
+        spot = spot_end;
 
         spot = SDL_strstr(spot, "0x");
         if (!spot) {
             break;
         }
-        entry.pid = (Uint16)SDL_strtol(spot, &spot, 0);
+        entry.pid = (Uint16)SDL_strtol(spot, &spot_end, 0);
+        spot = spot_end;
 
         spot = SDL_strstr(spot, "0x");
         if (!spot) {
             break;
         }
-        entry.naxes = (Uint16)SDL_strtol(spot, &spot, 0);
+        entry.naxes = (Uint16)SDL_strtol(spot, &spot_end, 0);
+        spot = spot_end;
 
         if (*num_entries % 8 == 0) {
             int new_max = *num_entries + 8;
