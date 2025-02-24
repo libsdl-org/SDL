@@ -543,7 +543,7 @@ static void PULSEAUDIO_FlushRecording(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *h = device->hidden;
     const void *data = NULL;
-    size_t nbytes = 0;
+    size_t nbytes = 0, buflen = 0;
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
@@ -553,7 +553,8 @@ static void PULSEAUDIO_FlushRecording(SDL_AudioDevice *device)
         h->recordinglen = 0;
     }
 
-    while (!SDL_GetAtomicInt(&device->shutdown) && (PULSEAUDIO_pa_stream_readable_size(h->stream) > 0)) {
+    buflen = PULSEAUDIO_pa_stream_readable_size(h->stream);
+    while (!SDL_GetAtomicInt(&device->shutdown) && (buflen > 0)) {
         PULSEAUDIO_pa_threaded_mainloop_wait(pulseaudio_threaded_mainloop);
         if ((PULSEAUDIO_pa_context_get_state(pulseaudio_context) != PA_CONTEXT_READY) || (PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY)) {
             //SDL_Log("PULSEAUDIO DEVICE FAILURE IN FLUSHRECORDING!");
@@ -561,11 +562,11 @@ static void PULSEAUDIO_FlushRecording(SDL_AudioDevice *device)
             break;
         }
 
-        if (PULSEAUDIO_pa_stream_readable_size(h->stream) > 0) {
-            // a new fragment is available! Just dump it.
-            PULSEAUDIO_pa_stream_peek(h->stream, &data, &nbytes);
-            PULSEAUDIO_pa_stream_drop(h->stream); // drop this fragment.
-        }
+        // a fragment of audio present before FlushCapture was call is
+        // still available! Just drop it.
+        PULSEAUDIO_pa_stream_peek(h->stream, &data, &nbytes);
+        PULSEAUDIO_pa_stream_drop(h->stream);
+        buflen -= nbytes;
     }
 
     PULSEAUDIO_pa_threaded_mainloop_unlock(pulseaudio_threaded_mainloop);
