@@ -2195,20 +2195,21 @@ extern "C" {
  * A variable containing a list of devices and their desired number of haptic
  * (force feedback) enabled axis.
  *
- * The format of the string is a comma separated list of USB VID/PID/AXES
- * triples in hexadecimal form, e.g.
+ * The format of the string is a comma separated list of USB VID/PID pairs in
+ * hexadecimal form plus the number of desired axes, e.g.
  *
- * `0xAAAA/0xBBBB/0x01,0xCCCC/0xDDDD/0x3`
+ * `0xAAAA/0xBBBB/1,0xCCCC/0xDDDD/3`
  *
  * This hint supports a "wildcard" device that will set the number of haptic
  * axes on all initialized haptic devices which were not defined explicitly
  * in this hint.
  *
- * `0xFFFF/0xFFFF/0x1`
+ * `0xFFFF/0xFFFF/1`
  *
- * This hint should be set before a controller is opened.
+ * This hint should be set before a controller is opened. The number of
+ * haptic axes won't exceed the number of real axes found on the device.
  *
- * \since This hint is available since SDL 3.x.x. TODO: update since
+ * \since This hint is available since SDL 3.x.x.
 */
 #define SDL_HINT_JOYSTICK_HAPTIC_AXES "SDL_JOYSTICK_HAPTIC_AXES"
 
