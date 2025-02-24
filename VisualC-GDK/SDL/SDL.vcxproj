@@ -426,9 +426,11 @@
     <ClInclude Include="..\..\src\events\SDL_windowevents_c.h" />
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h" />
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h" />
+    <ClInclude Include="..\..\src\haptic\SDL_hidapihaptic.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h" />
+    <ClInclude Include="..\..\src\haptic\hidapi\SDL_hidapihaptic_c.h" />
     <ClInclude Include="..\..\src\hidapi\hidapi\hidapi.h" />
     <ClInclude Include="..\..\src\hidapi\SDL_hidapi_c.h" />
     <ClInclude Include="..\..\src\joystick\controller_type.h" />
@@ -617,6 +619,8 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">CompileAsCpp</CompileAs>
     </ClCompile>
+    <ClCompile Include="..\..\src\haptic\hidapi\SDL_hidapihaptic.c" />
+    <ClCompile Include="..\..\src\haptic\hidapi\SDL_hidapihaptic_lg4ff.c" />
     <ClCompile Include="..\..\src\hidapi\SDL_hidapi.c" />
     <ClCompile Include="..\..\src\joystick\controller_type.c" />
     <ClCompile Include="..\..\src\joystick\dummy\SDL_sysjoystick.c" />
@@ -637,6 +641,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360w.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_lg4ff.c" />
     <ClCompile Include="..\..\src\joystick\SDL_gamecontroller.c" />
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c" />
     <ClCompile Include="..\..\src\joystick\SDL_steam_virtual_gamepad.c" />

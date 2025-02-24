@@ -1077,6 +1077,19 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_STEAMDECK "SDL_JOYSTICK_HIDAPI_STEAMDECK"
 
 /**
+ * A variable controlling whether the HIDAPI driver for some Logitech wheels
+ * should be used.
+ *
+ * This variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used
+ * - "1": HIDAPI driver is used
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_LG4FF "SDL_JOYSTICK_HIDAPI_LG4FF"
+
+/**
  * A variable controlling whether the HIDAPI driver for Nintendo Switch
  * controllers should be used.
  *
