@@ -25,6 +25,7 @@
 #include "SDL_sysrender.h"
 #include "SDL_render_debug_font.h"
 #include "software/SDL_render_sw_c.h"
+#include "../events/SDL_windowevents_c.h"
 #include "../video/SDL_pixels_c.h"
 #include "../video/SDL_video_c.h"
 
@@ -820,8 +821,9 @@ const char *SDL_GetRenderDriver(int index)
 #endif
 }
 
-void SDL_RendererEventWatch(SDL_Renderer *renderer, SDL_Event *event)
+static bool SDL_RendererEventWatch(void *userdata, SDL_Event *event)
 {
+    SDL_Renderer *renderer = (SDL_Renderer *)userdata;
     SDL_Window *window = renderer->window;
 
     if (renderer->WindowEvent) {
@@ -849,6 +851,7 @@ void SDL_RendererEventWatch(SDL_Renderer *renderer, SDL_Event *event)
                event->type == SDL_EVENT_WINDOW_HDR_STATE_CHANGED) {
         UpdateHDRProperties(renderer);
     }
+    return true;
 }
 
 bool SDL_CreateWindowAndRenderer(const char *title, int width, int height, SDL_WindowFlags window_flags, SDL_Window **window, SDL_Renderer **renderer)
@@ -1106,6 +1109,10 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     }
 
     SDL_SetRenderViewport(renderer, NULL);
+
+    if (window) {
+        SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
+    }
 
     int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
     if (!SDL_SetRenderVSync(renderer, vsync)) {
@@ -5223,6 +5230,8 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
     SDL_assert(!renderer->destroyed);
 
     renderer->destroyed = true;
+
+    SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
 
     if (renderer->window) {
         SDL_PropertiesID props = SDL_GetWindowProperties(renderer->window);
