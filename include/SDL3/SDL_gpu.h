@@ -1550,7 +1550,7 @@ typedef struct SDL_GPUVertexBufferDescription
     Uint32 slot;                        /**< The binding slot of the vertex buffer. */
     Uint32 pitch;                       /**< The byte pitch between consecutive elements of the vertex buffer. */
     SDL_GPUVertexInputRate input_rate;  /**< Whether attribute addressing is a function of the vertex index or instance index. */
-    Uint32 instance_step_rate;          /**< Ignored, reserved for future use. */
+    Uint32 instance_step_rate;          /**< Reserved for future use. Must be set to 0. */
 } SDL_GPUVertexBufferDescription;
 
 /**
@@ -1757,8 +1757,8 @@ typedef struct SDL_GPURasterizerState
 typedef struct SDL_GPUMultisampleState
 {
     SDL_GPUSampleCount sample_count;  /**< The number of samples to be used in rasterization. */
-    Uint32 sample_mask;               /**< Ignored, reserved for future use. */
-    bool enable_mask;             /**< Ignored, reserved for future use. */
+    Uint32 sample_mask;               /**< Reserved for future use. Must be set to 0. */
+    bool enable_mask;             /**< Reserved for future use. Must be set to false. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
