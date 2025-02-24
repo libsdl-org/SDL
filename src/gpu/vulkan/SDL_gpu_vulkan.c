@@ -5549,8 +5549,8 @@ static void VULKAN_InsertDebugLabel(
     VkDebugUtilsLabelEXT labelInfo;
 
     if (renderer->supportsDebugUtils) {
+        SDL_zero(labelInfo);
         labelInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        labelInfo.pNext = NULL;
         labelInfo.pLabelName = text;
 
         renderer->vkCmdInsertDebugUtilsLabelEXT(
@@ -5568,8 +5568,8 @@ static void VULKAN_PushDebugGroup(
     VkDebugUtilsLabelEXT labelInfo;
 
     if (renderer->supportsDebugUtils) {
+        SDL_zero(labelInfo);
         labelInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-        labelInfo.pNext = NULL;
         labelInfo.pLabelName = name;
 
         renderer->vkCmdBeginDebugUtilsLabelEXT(
