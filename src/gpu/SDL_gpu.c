@@ -158,6 +158,9 @@
 
 #ifndef SDL_GPU_DISABLED
 static const SDL_GPUBootstrap *backends[] = {
+#ifdef SDL_GPU_PRIVATE
+    &PrivateGPUDriver,
+#endif
 #ifdef SDL_GPU_METAL
     &MetalDriver,
 #endif
