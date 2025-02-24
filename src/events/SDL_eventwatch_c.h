@@ -20,20 +20,26 @@
 */
 #include "SDL_internal.h"
 
-#ifndef SDL_windowevents_c_h_
-#define SDL_windowevents_c_h_
-
-typedef enum
+typedef struct SDL_EventWatcher
 {
-    SDL_WINDOW_EVENT_WATCH_EARLY,
-    SDL_WINDOW_EVENT_WATCH_NORMAL
-} SDL_WindowEventWatchPriority;
+    SDL_EventFilter callback;
+    void *userdata;
+    bool removed;
+} SDL_EventWatcher;
 
-extern void SDL_InitWindowEventWatch(void);
-extern void SDL_QuitWindowEventWatch(void);
-extern void SDL_AddWindowEventWatch(SDL_WindowEventWatchPriority priority, SDL_EventFilter filter, void *userdata);
-extern void SDL_RemoveWindowEventWatch(SDL_WindowEventWatchPriority priority, SDL_EventFilter filter, void *userdata);
+typedef struct SDL_EventWatchList
+{
+    SDL_Mutex *lock;
+    SDL_EventWatcher filter;
+    SDL_EventWatcher *watchers;
+    int count;
+    bool dispatching;
+    bool removed;
+} SDL_EventWatchList;
 
-extern bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data1, int data2);
 
-#endif // SDL_windowevents_c_h_
+extern bool SDL_InitEventWatchList(SDL_EventWatchList *list);
+extern void SDL_QuitEventWatchList(SDL_EventWatchList *list);
+extern bool SDL_DispatchEventWatchList(SDL_EventWatchList *list, SDL_Event *event);
+extern bool SDL_AddEventWatchList(SDL_EventWatchList *list, SDL_EventFilter filter, void *userdata);
+extern void SDL_RemoveEventWatchList(SDL_EventWatchList *list, SDL_EventFilter filter, void *userdata);

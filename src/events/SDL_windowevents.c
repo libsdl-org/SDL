@@ -23,9 +23,38 @@
 // Window event handling code for SDL
 
 #include "SDL_events_c.h"
+#include "SDL_eventwatch_c.h"
 #include "SDL_mouse_c.h"
-#include "../render/SDL_sysrender.h"
 #include "../tray/SDL_tray_utils.h"
+
+
+#define NUM_WINDOW_EVENT_WATCH_PRIORITIES (SDL_WINDOW_EVENT_WATCH_NORMAL + 1)
+
+static SDL_EventWatchList SDL_window_event_watchers[NUM_WINDOW_EVENT_WATCH_PRIORITIES];
+
+void SDL_InitWindowEventWatch(void)
+{
+    for (int i = 0; i < SDL_arraysize(SDL_window_event_watchers); ++i) {
+        SDL_InitEventWatchList(&SDL_window_event_watchers[i]);
+    }
+}
+
+void SDL_QuitWindowEventWatch(void)
+{
+    for (int i = 0; i < SDL_arraysize(SDL_window_event_watchers); ++i) {
+        SDL_QuitEventWatchList(&SDL_window_event_watchers[i]);
+    }
+}
+
+void SDL_AddWindowEventWatch(SDL_WindowEventWatchPriority priority, SDL_EventFilter filter, void *userdata)
+{
+    SDL_AddEventWatchList(&SDL_window_event_watchers[priority], filter, userdata);
+}
+
+void SDL_RemoveWindowEventWatch(SDL_WindowEventWatchPriority priority, SDL_EventFilter filter, void *userdata)
+{
+    SDL_RemoveEventWatchList(&SDL_window_event_watchers[priority], filter, userdata);
+}
 
 static bool SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *event)
 {
@@ -191,10 +220,8 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
     event.window.data2 = data2;
     event.window.windowID = window->id;
 
-    for (int i = 0; i < window->num_renderers; ++i) {
-        SDL_Renderer *renderer = window->renderers[i];
-        SDL_RendererEventWatch(renderer, &event);
-    }
+    SDL_DispatchEventWatchList(&SDL_window_event_watchers[SDL_WINDOW_EVENT_WATCH_EARLY], &event);
+    SDL_DispatchEventWatchList(&SDL_window_event_watchers[SDL_WINDOW_EVENT_WATCH_NORMAL], &event);
 
     if (SDL_EventEnabled(windowevent)) {
         // Fixes queue overflow with move/resize events that aren't processed
