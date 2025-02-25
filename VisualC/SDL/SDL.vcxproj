@@ -82,16 +82,16 @@
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)/../../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)../../src/video/khronos;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir)/../../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)../../src/video/khronos;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)/../../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)../../src/video/khronos;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)/../../src;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)../../src/video/khronos;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
@@ -430,6 +430,8 @@
     <ClCompile Include="..\..\src\gpu\SDL_gpu.c" />
     <ClCompile Include="..\..\src\gpu\d3d12\SDL_gpu_d3d12.c" />
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c" />
+    <ClCompile Include="..\..\src\gpu\xr\SDL_gpu_openxr.c" />
+    <ClCompile Include="..\..\src\gpu\xr\SDL_openxrdyn.c" />
     <ClCompile Include="..\..\src\io\generic\SDL_asyncio_generic.c" />
     <ClCompile Include="..\..\src\io\SDL_asyncio.c" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
@@ -459,6 +461,12 @@
     <ClInclude Include="..\..\src\video\dummy\SDL_nullevents_c.h" />
     <ClInclude Include="..\..\src\video\dummy\SDL_nullframebuffer_c.h" />
     <ClInclude Include="..\..\src\video\dummy\SDL_nullvideo.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_platform.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_reflection.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_reflection_parent_structs.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_loader_negotiation.h" />
+    <ClInclude Include="..\..\src\video\khronos\openxr\openxr_platform_defines.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_icd.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_layer.h" />
     <ClInclude Include="..\..\src\video\khronos\vulkan\vk_platform.h" />
