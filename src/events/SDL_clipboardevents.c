@@ -30,7 +30,10 @@ void SDL_SendClipboardUpdate(bool owner, char **mime_types, size_t num_mime_type
 {
     if (!owner) {
         // Clear our internal clipboard contents when external clipboard is set
-        SDL_CancelClipboardData(0);
+        // Wayland: https://github.com/libsdl-org/SDL/issues/12152
+        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") != 0)
+            SDL_CancelClipboardData(0);
+
         SDL_SaveClipboardMimeTypes((const char **)mime_types, num_mime_types);
     }
 
