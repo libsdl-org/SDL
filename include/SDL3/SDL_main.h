@@ -28,6 +28,9 @@
  * should look like this:
  *
  * ```c
+ * #include <SDL3/SDL.h>
+ * #include <SDL3/SDL_main.h>
+ *
  * int main(int argc, char *argv[])
  * {
  * }
@@ -38,7 +41,7 @@
  * This is also where an app can be configured to use the main callbacks, via
  * the SDL_MAIN_USE_CALLBACKS macro.
  *
- * This is a "single-header library," which is to say that including this
+ * SDL_main.h is a "single-header library," which is to say that including this
  * header inserts code into your program, and you should only include it once
  * in most cases. SDL.h does not include this header automatically.
  *
