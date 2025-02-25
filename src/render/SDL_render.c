@@ -5019,6 +5019,7 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 
     if (rect) {
         if (!SDL_GetRectIntersection(rect, &real_rect, &real_rect)) {
+            SDL_SetError("Can't read outside the current viewport");
             return NULL;
         }
     }
