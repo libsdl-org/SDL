@@ -1371,6 +1371,9 @@ bool SDL_RunOnMainThread(SDL_MainThreadCallback callback, void *userdata, bool w
     }
     SDL_UnlockMutex(SDL_main_callbacks_lock);
 
+    // If the main thread is waiting for events, wake it up
+    SDL_SendWakeupEvent();
+
     if (!wait_complete) {
         // Queued for execution, wait not requested
         return true;
