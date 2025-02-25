@@ -2247,17 +2247,21 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
 /**
  * Read pixels from the current rendering target.
  *
- * The returned surface contains pixels inside the desired area clipped to the current viewport, and should be freed with SDL_DestroySurface().
+ * The returned surface contains pixels inside the desired area clipped to the
+ * current viewport, and should be freed with SDL_DestroySurface().
  *
- * Note that this returns the actual pixels on the screen, so if you are using logical presentation you should use SDL_GetRenderLogicalPresentationRect() to get the area containing your content.
+ * Note that this returns the actual pixels on the screen, so if you are using
+ * logical presentation you should use SDL_GetRenderLogicalPresentationRect()
+ * to get the area containing your content.
  *
  * **WARNING**: This is a very slow operation, and should not be used
  * frequently. If you're using this on the main rendering target, it should be
  * called after rendering and before SDL_RenderPresent().
  *
  * \param renderer the rendering context.
- * \param rect an SDL_Rect structure representing the area to read, which will be clipped to the current viewport,
- *              or NULL for the entire viewport.
+ * \param rect an SDL_Rect structure representing the area to read, which will
+ *             be clipped to the current viewport, or NULL for the entire
+ *             viewport.
  * \returns a new SDL_Surface on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
