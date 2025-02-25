@@ -100,13 +100,28 @@ static void EMSCRIPTENCAMERA_CloseDevice(SDL_Camera *device)
 
 static void SDLEmscriptenCameraPermissionOutcome(SDL_Camera *device, int approved, int w, int h, int fps)
 {
+    device->spec.format = device->actual_spec.format = SDL_PIXELFORMAT_RGBA32;
     device->spec.width = device->actual_spec.width = w;
     device->spec.height = device->actual_spec.height = h;
     device->spec.framerate_numerator = device->actual_spec.framerate_numerator = fps;
     device->spec.framerate_denominator = device->actual_spec.framerate_denominator = 1;
     if (device->acquire_surface) {
-        device->acquire_surface->w = w;
-        device->acquire_surface->h = h;
+        SDL_DestroySurface(device->acquire_surface);
+        device->acquire_surface = SDL_CreateSurfaceFrom(device->spec.width, device->spec.height, device->spec.format, NULL, 0);
+    }
+    for (int i = 0; i < SDL_arraysize(device->output_surfaces); i++) {
+        if (device->output_surfaces[i].surface) {
+            SDL_DestroySurface(device->output_surfaces[i].surface);
+
+            SDL_Surface *surf;
+            if (device->needs_scaling || device->needs_conversion) {
+                surf = SDL_CreateSurface(device->spec.width, device->spec.height, device->spec.format);
+            } else {
+                surf = SDL_CreateSurfaceFrom(device->spec.width, device->spec.height, device->spec.format, NULL, 0);
+            }
+
+            device->output_surfaces[i].surface = surf;
+        }
     }
     SDL_CameraPermissionOutcome(device, approved ? true : false);
 }
