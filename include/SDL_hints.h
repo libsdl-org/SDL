@@ -1423,6 +1423,27 @@ extern "C" {
  */
 #define SDL_HINT_JOYSTICK_DEVICE "SDL_JOYSTICK_DEVICE"
 
+
+/**
+ * A variable containing a list of devices and their desired number of haptic
+ * (force feedback) enabled axis.
+ *
+ * The format of the string is a comma separated list of USB VID/PID pairs in
+ * hexadecimal form plus the number of desired axes, e.g.
+ *
+ * `0xAAAA/0xBBBB/1,0xCCCC/0xDDDD/3`
+ *
+ * This hint supports a "wildcard" device that will set the number of haptic
+ * axes on all initialized haptic devices which were not defined explicitly
+ * in this hint.
+ *
+ * `0xFFFF/0xFFFF/1`
+ *
+ * This hint should be set before a controller is opened. The number of
+ * haptic axes won't exceed the number of real axes found on the device.
+*/
+#define SDL_HINT_JOYSTICK_HAPTIC_AXES "SDL_JOYSTICK_HAPTIC_AXES"
+
 /**
  * A variable controlling whether joysticks on Linux will always treat 'hat'
  * axis inputs (ABS_HAT0X - ABS_HAT3Y) as 8-way digital hats without checking
