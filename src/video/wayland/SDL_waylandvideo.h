@@ -118,6 +118,7 @@ struct SDL_DisplayData
     SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
     int wl_output_done_count;
+    struct Wayland_ColorInfoState *color_info_state;
 };
 
 // Needed here to get wl_surface declaration, fixes GitHub#4594

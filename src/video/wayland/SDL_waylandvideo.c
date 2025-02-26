@@ -1118,21 +1118,12 @@ static const struct wl_output_listener output_listener = {
     display_handle_description // Version 4
 };
 
-static void Wayland_GetOutputColorInfo(SDL_DisplayData *display)
-{
-    Wayland_ColorInfo info;
-    SDL_zero(info);
-
-    if (Wayland_GetColorInfoForOutput(display, &info)) {
-        SDL_copyp(&display->HDR, &info.HDR);
-    }
-}
-
 static void handle_output_image_description_changed(void *data,
                                                     struct wp_color_management_output_v1 *wp_color_management_output_v1)
 {
+    SDL_DisplayData *display = (SDL_DisplayData *)data;
     // wl_display.done is called after this event, so the display HDR status will be updated there.
-    Wayland_GetOutputColorInfo(data);
+    Wayland_GetColorInfoForOutput(display, false);
 }
 
 static const struct wp_color_management_output_v1_listener wp_color_management_output_listener = {
@@ -1171,7 +1162,7 @@ static bool Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
     if (data->videodata->wp_color_manager_v1) {
         data->wp_color_management_output = wp_color_manager_v1_get_output(data->videodata->wp_color_manager_v1, output);
         wp_color_management_output_v1_add_listener(data->wp_color_management_output, &wp_color_management_output_listener, data);
-        Wayland_GetOutputColorInfo(data);
+        Wayland_GetColorInfoForOutput(data, true);
     }
     return true;
 }
@@ -1191,6 +1182,7 @@ static void Wayland_free_display(SDL_VideoDisplay *display, bool send_event)
         SDL_free(display_data->wl_output_name);
 
         if (display_data->wp_color_management_output) {
+            Wayland_FreeColorInfoState(display_data->color_info_state);
             wp_color_management_output_v1_destroy(display_data->wp_color_management_output);
         }
 
@@ -1221,7 +1213,7 @@ static void Wayland_FinalizeDisplays(SDL_VideoData *vid)
 
 static void Wayland_init_xdg_output(SDL_VideoData *d)
 {
-    for(int i = 0; i < d->output_count; ++i) {
+    for (int i = 0; i < d->output_count; ++i) {
         SDL_DisplayData *disp = d->output_list[i];
         disp->xdg_output = zxdg_output_manager_v1_get_xdg_output(disp->videodata->xdg_output_manager, disp->output);
         zxdg_output_v1_add_listener(disp->xdg_output, &xdg_output_listener, disp);
@@ -1234,7 +1226,7 @@ static void Wayland_InitColorManager(SDL_VideoData *d)
         SDL_DisplayData *disp = d->output_list[i];
         disp->wp_color_management_output = wp_color_manager_v1_get_output(disp->videodata->wp_color_manager_v1, disp->output);
         wp_color_management_output_v1_add_listener(disp->wp_color_management_output, &wp_color_management_output_listener, disp);
-        Wayland_GetOutputColorInfo(disp);
+        Wayland_GetColorInfoForOutput(disp, true);
     }
 }
 
