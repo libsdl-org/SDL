@@ -126,9 +126,10 @@ void SDL_QuitProperties(void)
     // this can't just DestroyHashTable with SDL_FreeProperties as the destructor, because
     //  other destructors under this might cause use to attempt a recursive lock on SDL_properties,
     //  which isn't allowed with rwlocks. So manually iterate and free everything.
-    SDL_IterateHashTable(SDL_properties, FreeOneProperties, NULL);
-    SDL_DestroyHashTable(SDL_properties);
+    SDL_HashTable *properties = SDL_properties;
     SDL_properties = NULL;
+    SDL_IterateHashTable(properties, FreeOneProperties, NULL);
+    SDL_DestroyHashTable(properties);
 
     SDL_SetInitialized(&SDL_properties_init, false);
 }
