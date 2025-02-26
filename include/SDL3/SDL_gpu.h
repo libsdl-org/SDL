@@ -1543,7 +1543,7 @@ typedef struct SDL_GPUSamplerCreateInfo
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUVertexAttribute
- * \sa SDL_GPUVertexInputState
+ * \sa SDL_GPUVertexInputRate
  */
 typedef struct SDL_GPUVertexBufferDescription
 {
