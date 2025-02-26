@@ -943,8 +943,20 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
     readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
 
-    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
-        return false;
+    const int MAX_ATTEMPTS = 3;
+    for (int attempt = 0; ; ++attempt) {
+        if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
+            return false;
+        }
+
+        if (factory_reply->stickFactoryCalibration.opData.unAddress == k_unSPIStickFactoryCalibrationStartOffset) {
+            // We successfully read the calibration data
+            break;
+        }
+
+        if (attempt == MAX_ATTEMPTS) {
+            return false;
+        }
     }
 
     // Automatically select the user calibration if magic bytes are set
@@ -1508,6 +1520,10 @@ static bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     ctx->m_bSyncWrite = true;
 
     if (!ctx->m_bInputOnly) {
+#ifdef SDL_PLATFORM_MACOS
+        // Wait for the OS to finish its handshake with the controller
+        SDL_Delay(250);
+#endif
         GetInitialInputMode(ctx);
         ctx->m_nCurrentInputMode = ctx->m_nInitialInputMode;
 
