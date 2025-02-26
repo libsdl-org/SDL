@@ -413,7 +413,7 @@ static int PrefixMatch(const char *a, const char *b)
     return matchlen;
 }
 
-char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name)
+char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name, const char *default_name)
 {
     static struct
     {
@@ -434,7 +434,7 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
         { "QANBA USA,LLC", "Qanba" },
         { "Unknown ", "" },
     };
-    char *name;
+    char *name = NULL;
     size_t i, len;
 
     if (!vendor_name) {
@@ -488,8 +488,8 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
             }
             break;
         }
-    } else {
-        name = SDL_strdup("Controller");
+    } else if (default_name) {
+        name = SDL_strdup(default_name);
     }
 
     if (!name) {
