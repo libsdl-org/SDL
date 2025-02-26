@@ -817,7 +817,9 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     SwitchSubcommandInputPacket_t *factory_reply = NULL;
     SwitchSPIOpData_t readUserParams;
     SwitchSPIOpData_t readFactoryParams;
-
+    const int MAX_ATTEMPTS = 3;
+    int attempt;
+    
     /* Read User Calibration Info */
     readUserParams.unAddress = k_unSPIStickUserCalibrationStartOffset;
     readUserParams.ucLength = k_unSPIStickUserCalibrationLength;
@@ -829,8 +831,19 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
     readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
 
-    if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
-        return SDL_FALSE;
+    for (attempt = 0; ; ++attempt) {
+        if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
+            return SDL_FALSE;
+        }
+
+        if (factory_reply->stickFactoryCalibration.opData.unAddress == k_unSPIStickFactoryCalibrationStartOffset) {
+            /* We successfully read the calibration data */
+            break;
+        }
+
+        if (attempt == MAX_ATTEMPTS) {
+            return SDL_FALSE;
+        }
     }
 
     /* Automatically select the user calibration if magic bytes are set */
@@ -1426,6 +1439,10 @@ static SDL_bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_
     ctx->m_bSyncWrite = SDL_TRUE;
 
     if (!ctx->m_bInputOnly) {
+#ifdef SDL_PLATFORM_MACOS
+        // Wait for the OS to finish its handshake with the controller
+        SDL_Delay(250);
+#endif
         GetInitialInputMode(ctx);
         ctx->m_nCurrentInputMode = ctx->m_nInitialInputMode;
 
