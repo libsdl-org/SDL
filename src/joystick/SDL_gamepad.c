@@ -1394,16 +1394,21 @@ static void SDL_UpdateGamepadFaceStyle(SDL_Gamepad *gamepad)
 static void SDL_FixupHIDAPIMapping(SDL_Gamepad *gamepad)
 {
     // Check to see if we need fixup
+    bool need_fixup = false;
     for (int i = 0; i < gamepad->num_bindings; ++i) {
         SDL_GamepadBinding *binding = &gamepad->bindings[i];
         if (binding->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON &&
-            binding->output.button == SDL_GAMEPAD_BUTTON_DPAD_UP) {
-            if (binding->input_type != SDL_GAMEPAD_BINDTYPE_BUTTON ||
-                binding->input.button != SDL_GAMEPAD_BUTTON_DPAD_UP) {
-                // New style binding
-                return;
+            binding->output.button >= SDL_GAMEPAD_BUTTON_DPAD_UP) {
+            if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON &&
+                binding->input.button == binding->output.button) {
+                // Old style binding
+                need_fixup = true;
             }
+            break;
         }
+    }
+    if (!need_fixup) {
+        return;
     }
 
     for (int i = 0; i < gamepad->num_bindings; ++i) {
