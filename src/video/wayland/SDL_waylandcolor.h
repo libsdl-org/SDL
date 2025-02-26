@@ -26,16 +26,10 @@
 
 #include "../SDL_sysvideo.h"
 
-typedef struct Wayland_ColorInfo
-{
-    SDL_HDROutputProperties HDR;
+struct Wayland_ColorInfoState;
 
-    // The ICC fd is only valid if the size is non-zero.
-    int icc_fd;
-    Uint32 icc_size;
-} Wayland_ColorInfo;
-
-extern bool Wayland_GetColorInfoForWindow(SDL_WindowData *window_data, Wayland_ColorInfo *info);
-extern bool Wayland_GetColorInfoForOutput(SDL_DisplayData *display_data, Wayland_ColorInfo *info);
+extern void Wayland_FreeColorInfoState(struct Wayland_ColorInfoState *state);
+extern void Wayland_GetColorInfoForWindow(SDL_WindowData *window_data, bool defer_event_processing);
+extern void Wayland_GetColorInfoForOutput(SDL_DisplayData *display_data, bool defer_event_processing);
 
 #endif // SDL_waylandcolor_h_
