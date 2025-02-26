@@ -363,7 +363,7 @@ static SDL_HIDAPI_Device *HIDAPI_GetDeviceByIndex(int device_index, SDL_Joystick
     SDL_AssertJoysticksLocked();
 
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
-        if (device->parent) {
+        if (device->parent || device->broken) {
             continue;
         }
         if (device->driver) {
@@ -685,7 +685,7 @@ bool HIDAPI_HasConnectedUSBDevice(const char *serial)
     }
 
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
-        if (!device->driver) {
+        if (!device->driver || device->broken) {
             continue;
         }
 
@@ -711,7 +711,7 @@ void HIDAPI_DisconnectBluetoothDevice(const char *serial)
     }
 
     for (device = SDL_HIDAPI_devices; device; device = device->next) {
-        if (!device->driver) {
+        if (!device->driver || device->broken) {
             continue;
         }
 
@@ -1016,6 +1016,10 @@ static bool HIDAPI_CreateCombinedJoyCons(void)
             // This device is already part of a combined device
             continue;
         }
+        if (device->broken) {
+            // This device can't be used
+            continue;
+        }
 
         SDL_GetJoystickGUIDInfo(device->guid, &vendor, &product, NULL, NULL);
 
@@ -1135,6 +1139,12 @@ check_removed:
                 // Update the device list again in case this device comes back
                 SDL_HIDAPI_change_count = 0;
             }
+        }
+        if (device->broken && device->parent) {
+            HIDAPI_DelDevice(device->parent);
+
+            // We deleted a different device here, restart the loop
+            goto check_removed;
         }
         device = next;
     }
@@ -1478,7 +1488,7 @@ static bool HIDAPI_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     SDL_AssertJoysticksLocked();
 
-    if (!device || !device->driver) {
+    if (!device || !device->driver || device->broken) {
         // This should never happen - validated before being called
         return SDL_SetError("Couldn't find HIDAPI device at index %d", device_index);
     }

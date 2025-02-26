@@ -2727,6 +2727,7 @@ static bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
 
     // Reconnect the Bluetooth device once the USB device is gone
     if (device->num_joysticks == 0 && device->is_bluetooth && packet_count > 0 &&
+        !device->parent &&
         !HIDAPI_HasConnectedUSBDevice(device->serial)) {
         HIDAPI_JoystickConnected(device, NULL);
     }

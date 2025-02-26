@@ -101,6 +101,10 @@ typedef struct SDL_HIDAPI_Device
     // Used to flag that the device is being updated
     bool updating;
 
+    // Used to flag devices that failed open
+    // This can happen on Windows with Bluetooth devices that have turned off
+    bool broken;
+
     struct SDL_HIDAPI_Device *parent;
     int num_children;
     struct SDL_HIDAPI_Device **children;
