@@ -869,33 +869,22 @@ static void SetEnhancedModeAvailable(SDL_DriverSwitch_Context *ctx)
     }
 }
 
-static void SetEnhancedMode(SDL_DriverSwitch_Context *ctx, bool bEnabled)
-{
-    if (bEnabled) {
-        SetEnhancedModeAvailable(ctx);
-    }
-
-    if (bEnabled != ctx->m_bEnhancedMode) {
-        ctx->m_bEnhancedMode = bEnabled;
-
-        UpdateInputMode(ctx);
-    }
-}
-
 static void SetEnhancedReportHint(SDL_DriverSwitch_Context *ctx, HIDAPI_Switch_EnhancedReportHint eEnhancedReportHint)
 {
+    ctx->m_eEnhancedReportHint = eEnhancedReportHint;
+
     switch (eEnhancedReportHint) {
     case SWITCH_ENHANCED_REPORT_HINT_OFF:
-        SetEnhancedMode(ctx, false);
+        ctx->m_bEnhancedMode = false;
         break;
     case SWITCH_ENHANCED_REPORT_HINT_ON:
-        SetEnhancedMode(ctx, true);
+        SetEnhancedModeAvailable(ctx);
+        ctx->m_bEnhancedMode = true;
         break;
     case SWITCH_ENHANCED_REPORT_HINT_AUTO:
         SetEnhancedModeAvailable(ctx);
         break;
     }
-    ctx->m_eEnhancedReportHint = eEnhancedReportHint;
 
     UpdateInputMode(ctx);
 }
