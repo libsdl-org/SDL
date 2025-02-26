@@ -2553,7 +2553,7 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
         return SDL_strdup(custom_name);
     }
 
-    return SDL_CreateDeviceName(vendor, product, vendor_name, product_name);
+    return SDL_CreateDeviceName(vendor, product, vendor_name, product_name, "Controller");
 }
 
 SDL_GUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version, const char *vendor_name, const char *product_name, Uint8 driver_signature, Uint8 driver_data)

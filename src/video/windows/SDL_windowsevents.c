@@ -861,14 +861,17 @@ static bool HasDeviceID(Uint32 deviceID, const Uint32 *list, int count)
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, bool hid_loaded)
+static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instance, const char *default_name, bool hid_loaded)
 {
+    char *vendor_name = NULL;
+    char *product_name = NULL;
     char *name = NULL;
 
     // These are 126 for USB, but can be longer for Bluetooth devices
     WCHAR vend[256], prod[256];
     vend[0] = 0;
     prod[0] = 0;
+
 
     HIDD_ATTRIBUTES attr;
     attr.VendorID = 0;
@@ -895,7 +898,13 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
         }
     }
 
-    if (!prod[0]) {
+    if (vend[0]) {
+        vendor_name = WIN_StringToUTF8W(vend);
+    }
+
+    if (prod[0]) {
+        product_name = WIN_StringToUTF8W(prod);
+    } else {
         SP_DEVINFO_DATA data;
         SDL_zero(data);
         data.cbSize = sizeof(data);
@@ -922,21 +931,25 @@ static char *GetDeviceName(HANDLE hDevice, HDEVINFO devinfo, const char *instanc
                         size = (SDL_arraysize(prod) - 1);
                     }
                     prod[size] = 0;
+
+                    if (attr.VendorID || attr.ProductID) {
+                        SDL_asprintf(&product_name, "%S (0x%.4x/0x%.4x)", prod, attr.VendorID, attr.ProductID);
+                    } else {
+                        product_name = WIN_StringToUTF8W(prod);
+                    }
                 }
                 break;
             }
         }
     }
 
-    if (prod[0]) {
-        char *vendor_name = vend[0] ? WIN_StringToUTF8W(vend) : NULL;
-        char *product_name = WIN_StringToUTF8W(prod);
-        if (product_name) {
-            name = SDL_CreateDeviceName(attr.VendorID, attr.ProductID, vendor_name, product_name);
-        }
-        SDL_free(vendor_name);
-        SDL_free(product_name);
+    if (!product_name && (attr.VendorID || attr.ProductID)) {
+        SDL_asprintf(&product_name, "%s (0x%.4x/0x%.4x)", default_name, attr.VendorID, attr.ProductID);
     }
+    name = SDL_CreateDeviceName(attr.VendorID, attr.ProductID, vendor_name, product_name, default_name);
+    SDL_free(vendor_name);
+    SDL_free(product_name);
+
     return name;
 }
 
@@ -1029,7 +1042,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 SDL_KeyboardID keyboardID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
                 if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
-                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, hid_loaded);
+                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, "Keyboard", hid_loaded);
                     SDL_AddKeyboard(keyboardID, name, send_event);
                     SDL_free(name);
                 }
@@ -1040,7 +1053,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 SDL_MouseID mouseID = (Uint32)(uintptr_t)raw_devices[i].hDevice;
                 AddDeviceID(mouseID, &new_mice, &new_mouse_count);
                 if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
-                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, hid_loaded);
+                    name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, "Mouse", hid_loaded);
                     SDL_AddMouse(mouseID, name, send_event);
                     SDL_free(name);
                 }
