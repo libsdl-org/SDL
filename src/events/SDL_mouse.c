@@ -1120,11 +1120,15 @@ void SDL_QuitMouse(void)
     SDL_mice = NULL;
 }
 
-void SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback transform, void *userdata)
+bool SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback transform, void *userdata)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+    if (mouse->relative_mode) {
+        return SDL_SetError("Can't set mouse transform while relative mode is active");
+    }
     mouse->InputTransform = transform;
     mouse->input_transform_data = userdata;
+    return true;
 }
 
 SDL_MouseButtonFlags SDL_GetMouseState(float *x, float *y)

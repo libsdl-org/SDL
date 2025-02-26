@@ -415,13 +415,19 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WarpMouseGlobal(float x, float y);
 /**
  * Set a user-defined function by which to transform relative mouse inputs.
  * This overrides the relative system scale and relative speed scale hints.
+ * Should be called prior to enabling relative mouse mode, fails otherwise.
+ * 
+ * \param callback a callback used to transform relative mouse motion, 
+                   or NULL for default behavior.
+ * \param userdata a pointer that will be passed to `callback`.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
  *
- * \param callback a callback used to transform relative mouse motion, or NULL for default behavior.
- * \param userdata a pointer that is passed to `callback`.
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.2.6.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback callback, void *userdata);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback callback, void *userdata);
 
 /**
  * Set relative mouse mode for a window.
