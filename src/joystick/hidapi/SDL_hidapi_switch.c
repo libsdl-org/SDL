@@ -813,6 +813,12 @@ static Uint8 GetDefaultInputMode(SDL_DriverSwitch_Context *ctx)
         }
         break;
     }
+
+    // Wired controllers break if they are put into simple controller state
+    if (input_mode == k_eSwitchInputReportIDs_SimpleControllerState &&
+        !ctx->device->is_bluetooth) {
+        input_mode = k_eSwitchInputReportIDs_FullControllerState;
+    }
     return input_mode;
 }
 
