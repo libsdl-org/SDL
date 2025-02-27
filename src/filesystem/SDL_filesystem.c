@@ -188,6 +188,12 @@ static bool WildcardMatch(const char *pattern, const char *str, bool *matched_to
             sch = *str;
             pch = *pattern;
         }
+
+#if defined(SDL_PLATFORM_WINDOWS)
+        if (sch == '\\') {
+            sch = '/';
+        }
+#endif
     }
 
     // '*' at the end can be ignored, they are allowed to match nothing.
