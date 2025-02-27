@@ -104,7 +104,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         /* If less than a full copy of the audio is queued for playback, put another copy in there.
            This is overkill, but easy when lots of RAM is cheap. One could be more careful and
            queue less at a time, as long as the stream doesn't run dry.  */
-        if (SDL_GetAudioStreamAvailable(sounds[i].stream) < ((int) sounds[i].wav_data_len)) {
+        if (SDL_GetAudioStreamQueued(sounds[i].stream) < ((int) sounds[i].wav_data_len)) {
             SDL_PutAudioStreamData(sounds[i].stream, sounds[i].wav_data, (int) sounds[i].wav_data_len);
         }
     }
