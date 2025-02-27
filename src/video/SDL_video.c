@@ -2767,9 +2767,16 @@ bool SDL_SetWindowTitle(SDL_Window *window, const char *title)
     if (title == window->title) {
         return true;
     }
+    if (!title) {
+        title = "";
+    }
+    if (window->title && SDL_strcmp(title, window->title) == 0) {
+        return true;
+    }
+
     SDL_free(window->title);
 
-    window->title = SDL_strdup(title ? title : "");
+    window->title = SDL_strdup(title);
 
     if (_this->SetWindowTitle) {
         _this->SetWindowTitle(_this, window);
