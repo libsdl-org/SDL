@@ -2781,6 +2781,7 @@ void Cocoa_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bo
         } else {
             data.border_toggled = true;
         }
+        Cocoa_UpdateClipCursor(window);
     }
 }
 
