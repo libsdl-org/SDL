@@ -35,13 +35,14 @@
  * can render offscreen entirely, perhaps for image processing, and not use a
  * window at all.
  *
- * Next the app prepares static data (things that are created once and used
+ * Next, the app prepares static data (things that are created once and used
  * over and over). For example:
  *
  * - Shaders (programs that run on the GPU): use SDL_CreateGPUShader().
- * - Vertex buffers (arrays of geometry data) and other data rendering will
- *   need: use SDL_UploadToGPUBuffer().
- * - Textures (images): use SDL_UploadToGPUTexture().
+ * - Vertex buffers (arrays of geometry data) and other rendering data: use
+ *   SDL_CreateGPUBuffer() and SDL_UploadToGPUBuffer().
+ * - Textures (images): use SDL_CreateGPUTexture() and
+ *   SDL_UploadToGPUTexture().
  * - Samplers (how textures should be read from): use SDL_CreateGPUSampler().
  * - Render pipelines (precalculated rendering state): use
  *   SDL_CreateGPUGraphicsPipeline()
