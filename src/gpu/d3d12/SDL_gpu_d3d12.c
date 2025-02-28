@@ -6735,7 +6735,7 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     swapchainDesc.SampleDesc.Quality = 0;
     swapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     swapchainDesc.BufferCount = windowData->swapchainTextureCount;
-    swapchainDesc.Scaling = DXGI_SCALING_STRETCH;
+    swapchainDesc.Scaling = DXGI_SCALING_NONE;
     swapchainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     swapchainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
     swapchainDesc.Flags = 0;
