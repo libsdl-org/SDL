@@ -54,6 +54,10 @@ extern void SDL_CameraThreadSetup(SDL_Camera *device);
 extern bool SDL_CameraThreadIterate(SDL_Camera *device);
 extern void SDL_CameraThreadShutdown(SDL_Camera *device);
 
+// Backends can call this if they have to finish initializing later, like Emscripten. Most backends should _not_ call this directly!
+extern bool SDL_PrepareCameraSurfaces(SDL_Camera *device);
+
+
 // common utility functionality to gather up camera specs. Not required!
 typedef struct CameraFormatAddData
 {

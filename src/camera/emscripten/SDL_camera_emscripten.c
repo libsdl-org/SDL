@@ -98,17 +98,24 @@ static void EMSCRIPTENCAMERA_CloseDevice(SDL_Camera *device)
     }
 }
 
-static void SDLEmscriptenCameraPermissionOutcome(SDL_Camera *device, int approved, int w, int h, int fps)
+static int SDLEmscriptenCameraPermissionOutcome(SDL_Camera *device, int approved, int w, int h, int fps)
 {
-    device->spec.width = device->actual_spec.width = w;
-    device->spec.height = device->actual_spec.height = h;
-    device->spec.framerate_numerator = device->actual_spec.framerate_numerator = fps;
-    device->spec.framerate_denominator = device->actual_spec.framerate_denominator = 1;
-    if (device->acquire_surface) {
-        device->acquire_surface->w = w;
-        device->acquire_surface->h = h;
+    if (approved) {
+        device->actual_spec.format = SDL_PIXELFORMAT_RGBA32;
+        device->actual_spec.width = w;
+        device->actual_spec.height = h;
+        device->actual_spec.framerate_numerator = fps;
+        device->actual_spec.framerate_denominator = 1;
+
+        if (!SDL_PrepareCameraSurfaces(device)) {
+            // uhoh, we're in trouble. Probably ran out of memory.
+            SDL_LogError(SDL_LOG_CATEGORY_ERROR, "Camera could not prepare surfaces: %s ... revoking approval!", SDL_GetError());
+            approved = 0;  // disconnecting the SDL camera might not be safe here, just mark it as denied by user.
+        }
     }
+
     SDL_CameraPermissionOutcome(device, approved ? true : false);
+    return approved;
 }
 
 static bool EMSCRIPTENCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
@@ -167,40 +174,40 @@ static bool EMSCRIPTENCAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec
                 const actualfps = settings.frameRate;
                 console.log("Camera is opened! Actual spec: (" + actualw + "x" + actualh + "), fps=" + actualfps);
 
-                dynCall('viiiii', outcome, [device, 1, actualw, actualh, actualfps]);
+                if (dynCall('iiiiii', outcome, [device, 1, actualw, actualh, actualfps])) {
+                    const video = document.createElement("video");
+                    video.width = actualw;
+                    video.height = actualh;
+                    video.style.display = 'none';    // we need to attach this to a hidden video node so we can read it as pixels.
+                    video.srcObject = stream;
 
-                const video = document.createElement("video");
-                video.width = actualw;
-                video.height = actualh;
-                video.style.display = 'none';    // we need to attach this to a hidden video node so we can read it as pixels.
-                video.srcObject = stream;
+                    const canvas = document.createElement("canvas");
+                    canvas.width = actualw;
+                    canvas.height = actualh;
+                    canvas.style.display = 'none';    // we need to attach this to a hidden video node so we can read it as pixels.
 
-                const canvas = document.createElement("canvas");
-                canvas.width = actualw;
-                canvas.height = actualh;
-                canvas.style.display = 'none';    // we need to attach this to a hidden video node so we can read it as pixels.
+                    const ctx2d = canvas.getContext('2d');
 
-                const ctx2d = canvas.getContext('2d');
+                    const SDL3 = Module['SDL3'];
+                    SDL3.camera.width = actualw;
+                    SDL3.camera.height = actualh;
+                    SDL3.camera.fps = actualfps;
+                    SDL3.camera.fpsincrms = 1000.0 / actualfps;
+                    SDL3.camera.stream = stream;
+                    SDL3.camera.video = video;
+                    SDL3.camera.canvas = canvas;
+                    SDL3.camera.ctx2d = ctx2d;
+                    SDL3.camera.next_frame_time = performance.now();
 
-                const SDL3 = Module['SDL3'];
-                SDL3.camera.width = actualw;
-                SDL3.camera.height = actualh;
-                SDL3.camera.fps = actualfps;
-                SDL3.camera.fpsincrms = 1000.0 / actualfps;
-                SDL3.camera.stream = stream;
-                SDL3.camera.video = video;
-                SDL3.camera.canvas = canvas;
-                SDL3.camera.ctx2d = ctx2d;
-                SDL3.camera.next_frame_time = performance.now();
-
-                video.play();
-                video.addEventListener('loadedmetadata', () => {
-                    grabNextCameraFrame();  // start this loop going.
-                });
+                    video.play();
+                    video.addEventListener('loadedmetadata', () => {
+                        grabNextCameraFrame();  // start this loop going.
+                    });
+                }
             })
             .catch((err) => {
                 console.error("Tried to open camera but it threw an error! " + err.name + ": " +  err.message);
-                dynCall('viiiii', outcome, [device, 0, 0, 0, 0]);   // we call this a permission error, because it probably is.
+                dynCall('iiiiii', outcome, [device, 0, 0, 0, 0]);   // we call this a permission error, because it probably is.
             });
     }, device, spec->width, spec->height, spec->framerate_numerator, spec->framerate_denominator, SDLEmscriptenCameraPermissionOutcome, SDL_CameraThreadIterate);
 

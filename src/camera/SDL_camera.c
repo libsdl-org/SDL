@@ -956,6 +956,112 @@ static int SDLCALL CameraThread(void *devicep)
     return 0;
 }
 
+bool SDL_PrepareCameraSurfaces(SDL_Camera *device)
+{
+    SDL_CameraSpec *appspec = &device->spec;           // the app wants this format.
+    const SDL_CameraSpec *devspec = &device->actual_spec;  // the hardware is set to this format.
+
+    SDL_assert(device->acquire_surface == NULL);   // shouldn't call this function twice on an opened camera!
+    SDL_assert(devspec->format != SDL_PIXELFORMAT_UNKNOWN);  // fix the backend, it should have an actual format by now.
+    SDL_assert(devspec->width >= 0);  // fix the backend, it should have an actual format by now.
+    SDL_assert(devspec->height >= 0);  // fix the backend, it should have an actual format by now.
+
+    if (appspec->width <= 0 || appspec->height <= 0) {
+        appspec->width = devspec->width;
+        appspec->height = devspec->height;
+    }
+
+    if (appspec->format == SDL_PIXELFORMAT_UNKNOWN) {
+        appspec->format = devspec->format;
+    }
+
+    if (appspec->framerate_denominator == 0) {
+        appspec->framerate_numerator = devspec->framerate_numerator;
+        appspec->framerate_denominator = devspec->framerate_denominator;
+    }
+
+    if ((devspec->width == appspec->width) && (devspec->height == appspec->height)) {
+        device->needs_scaling = 0;
+    } else {
+        const Uint64 srcarea = ((Uint64) devspec->width) * ((Uint64) devspec->height);
+        const Uint64 dstarea = ((Uint64) appspec->width) * ((Uint64) appspec->height);
+        if (dstarea <= srcarea) {
+            device->needs_scaling = -1;  // downscaling (or changing to new aspect ratio with same area)
+        } else {
+            device->needs_scaling = 1;  // upscaling
+        }
+    }
+
+    device->needs_conversion = (devspec->format != appspec->format);
+
+    device->acquire_surface = SDL_CreateSurfaceFrom(devspec->width, devspec->height, devspec->format, NULL, 0);
+    if (!device->acquire_surface) {
+        goto failed;
+    }
+    SDL_SetSurfaceColorspace(device->acquire_surface, devspec->colorspace);
+
+    // if we have to scale _and_ convert, we need a middleman surface, since we can't do both changes at once.
+    if (device->needs_scaling && device->needs_conversion) {
+        const bool downscaling_first = (device->needs_scaling < 0);
+        const SDL_CameraSpec *s = downscaling_first ? appspec : devspec;
+        const SDL_PixelFormat fmt = downscaling_first ? devspec->format : appspec->format;
+        device->conversion_surface = SDL_CreateSurface(s->width, s->height, fmt);
+        if (!device->conversion_surface) {
+            goto failed;
+        }
+        SDL_SetSurfaceColorspace(device->conversion_surface, devspec->colorspace);
+    }
+
+    // output surfaces are in the app-requested format. If no conversion is necessary, we'll just use the pointers
+    // the backend fills into acquired_surface, and you can get all the way from DMA access in the camera hardware
+    // to the app without a single copy. Otherwise, these will be full surfaces that hold converted/scaled copies.
+
+    for (int i = 0; i < (SDL_arraysize(device->output_surfaces) - 1); i++) {
+        device->output_surfaces[i].next = &device->output_surfaces[i + 1];
+    }
+    device->empty_output_surfaces.next = device->output_surfaces;
+
+    for (int i = 0; i < SDL_arraysize(device->output_surfaces); i++) {
+        SDL_Surface *surf;
+        if (device->needs_scaling || device->needs_conversion) {
+            surf = SDL_CreateSurface(appspec->width, appspec->height, appspec->format);
+        } else {
+            surf = SDL_CreateSurfaceFrom(appspec->width, appspec->height, appspec->format, NULL, 0);
+        }
+        if (!surf) {
+            ClosePhysicalCamera(device);
+            ReleaseCamera(device);
+            return NULL;
+        }
+        SDL_SetSurfaceColorspace(surf, devspec->colorspace);
+
+        device->output_surfaces[i].surface = surf;
+    }
+
+    return true;
+
+failed:
+    if (device->acquire_surface) {
+        SDL_DestroySurface(device->acquire_surface);
+        device->acquire_surface = NULL;
+    }
+
+    if (device->conversion_surface) {
+        SDL_DestroySurface(device->conversion_surface);
+        device->conversion_surface = NULL;
+    }
+
+    for (int i = 0; i < SDL_arraysize(device->output_surfaces); i++) {
+        SDL_Surface *surf = device->output_surfaces[i].surface;
+        if (surf) {
+            SDL_DestroySurface(surf);
+        }
+    }
+    SDL_zeroa(device->output_surfaces);
+
+    return false;
+}
+
 static void ChooseBestCameraSpec(SDL_Camera *device, const SDL_CameraSpec *spec, SDL_CameraSpec *closest)
 {
     // Find the closest available native format/size...
@@ -1108,85 +1214,19 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
         return NULL;
     }
 
-    if (spec) {
-        SDL_copyp(&device->spec, spec);
-        if (spec->width <= 0 || spec->height <= 0) {
-            device->spec.width = closest.width;
-            device->spec.height = closest.height;
-        }
-        if (spec->format == SDL_PIXELFORMAT_UNKNOWN) {
-            device->spec.format = closest.format;
-        }
-        if (spec->framerate_denominator == 0) {
-            device->spec.framerate_numerator = closest.framerate_numerator;
-            device->spec.framerate_denominator = closest.framerate_denominator;
-        }
-    } else {
-        SDL_copyp(&device->spec, &closest);
-    }
-
+    SDL_copyp(&device->spec, spec ? spec : &closest);
     SDL_copyp(&device->actual_spec, &closest);
 
-    if ((closest.width == device->spec.width) && (closest.height == device->spec.height)) {
-        device->needs_scaling = 0;
-    } else {
-        const Uint64 srcarea = ((Uint64) closest.width) * ((Uint64) closest.height);
-        const Uint64 dstarea = ((Uint64) device->spec.width) * ((Uint64) device->spec.height);
-        if (dstarea <= srcarea) {
-            device->needs_scaling = -1;  // downscaling (or changing to new aspect ratio with same area)
-        } else {
-            device->needs_scaling = 1;  // upscaling
-        }
-    }
-
-    device->needs_conversion = (closest.format != device->spec.format);
-
-    device->acquire_surface = SDL_CreateSurfaceFrom(closest.width, closest.height, closest.format, NULL, 0);
-    if (!device->acquire_surface) {
-        ClosePhysicalCamera(device);
-        ReleaseCamera(device);
-        return NULL;
-    }
-    SDL_SetSurfaceColorspace(device->acquire_surface, closest.colorspace);
-
-    // if we have to scale _and_ convert, we need a middleman surface, since we can't do both changes at once.
-    if (device->needs_scaling && device->needs_conversion) {
-        const bool downsampling_first = (device->needs_scaling < 0);
-        const SDL_CameraSpec *s = downsampling_first ? &device->spec : &closest;
-        const SDL_PixelFormat fmt = downsampling_first ? closest.format : device->spec.format;
-        device->conversion_surface = SDL_CreateSurface(s->width, s->height, fmt);
-        if (!device->conversion_surface) {
+    // SDL_PIXELFORMAT_UNKNOWN here is taken as a signal that the backend
+    //  doesn't know its format yet (Emscripten waiting for user permission,
+    //  in this case), and the backend will call SDL_PrepareCameraSurfaces()
+    //  itself, later but before the app is allowed to acquire images.
+    if (closest.format != SDL_PIXELFORMAT_UNKNOWN) {
+        if (!SDL_PrepareCameraSurfaces(device)) {
             ClosePhysicalCamera(device);
             ReleaseCamera(device);
             return NULL;
         }
-        SDL_SetSurfaceColorspace(device->conversion_surface, closest.colorspace);
-    }
-
-    // output surfaces are in the app-requested format. If no conversion is necessary, we'll just use the pointers
-    // the backend fills into acquired_surface, and you can get all the way from DMA access in the camera hardware
-    // to the app without a single copy. Otherwise, these will be full surfaces that hold converted/scaled copies.
-
-    for (int i = 0; i < (SDL_arraysize(device->output_surfaces) - 1); i++) {
-        device->output_surfaces[i].next = &device->output_surfaces[i + 1];
-    }
-    device->empty_output_surfaces.next = device->output_surfaces;
-
-    for (int i = 0; i < SDL_arraysize(device->output_surfaces); i++) {
-        SDL_Surface *surf;
-        if (device->needs_scaling || device->needs_conversion) {
-            surf = SDL_CreateSurface(device->spec.width, device->spec.height, device->spec.format);
-        } else {
-            surf = SDL_CreateSurfaceFrom(device->spec.width, device->spec.height, device->spec.format, NULL, 0);
-        }
-        if (!surf) {
-            ClosePhysicalCamera(device);
-            ReleaseCamera(device);
-            return NULL;
-        }
-        SDL_SetSurfaceColorspace(surf, closest.colorspace);
-
-        device->output_surfaces[i].surface = surf;
     }
 
     device->drop_frames = 1;
