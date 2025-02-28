@@ -513,8 +513,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderOutputSize(SDL_Renderer *renderer,
  * If a rendering target is active, this will return the size of the rendering
  * target in pixels, otherwise return the value of SDL_GetRenderOutputSize().
  *
- * Rendering target or not, the output will be adjusted by the current
- * logical presentation state, dictated by SDL_SetRenderLogicalPresentation().
+ * Rendering target or not, the output will be adjusted by the current logical
+ * presentation state, dictated by SDL_SetRenderLogicalPresentation().
  *
  * \param renderer the rendering context.
  * \param w a pointer filled in with the current width.
@@ -1370,10 +1370,10 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *rend
  * scale the output to whatever is available, regardless of how a user resizes
  * a window, or if the display is high DPI.
  *
- * Logical presentation can be used with both render target textures
- * and the renderer's window; the state is unique to each render target, and
- * this function sets the state for the current render target. It might be
- * useful to draw to a texture that matches the window dimensions with logical
+ * Logical presentation can be used with both render target textures and the
+ * renderer's window; the state is unique to each render target, and this
+ * function sets the state for the current render target. It might be useful
+ * to draw to a texture that matches the window dimensions with logical
  * presentation enabled, and then draw that texture across the entire window
  * with logical presentation disabled. Be careful not to render both with
  * logical presentation enabled, however, as this could produce
@@ -1386,13 +1386,13 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *rend
  * specific dimensions but to make fonts look sharp, the app turns off logical
  * presentation while drawing text, for example.
  *
- * For the renderer's window, letterboxing is drawn into the framebuffer
- * if logical presentation is enabled during SDL_RenderPresent; be sure to
+ * For the renderer's window, letterboxing is drawn into the framebuffer if
+ * logical presentation is enabled during SDL_RenderPresent; be sure to
  * reenable it before presenting if you were toggling it, otherwise the
  * letterbox areas might have artifacts from previous frames (or artifacts
  * from external overlays, etc). Letterboxing is never drawn into texture
- * render targets; be sure to call SDL_RenderClear() before drawing into
- * the texture so the letterboxing areas are cleared, if appropriate.
+ * render targets; be sure to call SDL_RenderClear() before drawing into the
+ * texture so the letterboxing areas are cleared, if appropriate.
  *
  * You can convert coordinates in an event into rendering coordinates using
  * SDL_ConvertEventToRenderCoordinates().
@@ -1651,8 +1651,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderSafeArea(SDL_Renderer *renderer, S
 /**
  * Set the clip rectangle for rendering on the specified target.
  *
- * Each render target has its own clip rectangle. This function
- * sets the cliprect for the current render target.
+ * Each render target has its own clip rectangle. This function sets the
+ * cliprect for the current render target.
  *
  * \param renderer the rendering context.
  * \param rect an SDL_Rect structure representing the clip area, relative to
@@ -1672,8 +1672,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, c
 /**
  * Get the clip rectangle for the current target.
  *
- * Each render target has its own clip rectangle. This function
- * gets the cliprect for the current render target.
+ * Each render target has its own clip rectangle. This function gets the
+ * cliprect for the current render target.
  *
  * \param renderer the rendering context.
  * \param rect an SDL_Rect structure filled in with the current clipping area
@@ -1693,8 +1693,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, S
 /**
  * Get whether clipping is enabled on the given render target.
  *
- * Each render target has its own clip rectangle. This function
- * checks the cliprect for the current render target.
+ * Each render target has its own clip rectangle. This function checks the
+ * cliprect for the current render target.
  *
  * \param renderer the rendering context.
  * \returns true if clipping is enabled or false if not; call SDL_GetError()
