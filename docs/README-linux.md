@@ -45,6 +45,10 @@ openSUSE Tumbleweed:
     sudo zypper in libunwind-devel libusb-1_0-devel Mesa-libGL-devel libxkbcommon-devel libdrm-devel \
     libgbm-devel pipewire-devel libpulse-devel sndio-devel Mesa-libEGL-devel
 
+Arch:
+    sudo pacman -S alsa-lib cmake hidapi ibus jack libdecor libgl libpulse libusb libx11 libxcursor libxext libxinerama libxkbcommon libxrandr libxrender libxss mesa ninja pipewire sndio vulkan-driver vulkan-headers wayland wayland-protocols
+
+
 Joystick does not work
 --------------------------------------------------------------------------------
 
