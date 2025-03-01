@@ -587,7 +587,18 @@ Sint64 SDL_GetResampleRate(int src_rate, int dst_rate)
     SDL_assert(src_rate > 0);
     SDL_assert(dst_rate > 0);
 
-    Sint64 sample_rate = ((Sint64)src_rate << 32) / (Sint64)dst_rate;
+    Sint64 numerator = (Sint64)src_rate << 32;
+    Sint64 denominator = (Sint64)dst_rate;
+
+    // Generally it's expected that `dst_frames = (src_frames * dst_rate) / src_rate`
+    // To match this as closely as possible without infinite precision, always round up the resample rate.
+    // For example, without rounding up, a sample ratio of 2:3 would have `sample_rate = 0xAAAAAAAA`
+    // After 3 frames, the position would be 0x1.FFFFFFFE, meaning we haven't fully consumed the second input frame.
+    // By rounding up to 0xAAAAAAAB, we would instead reach 0x2.00000001, fulling consuming the second frame.
+    // Technically you could say this is kicking the can 0x100000000 steps down the road, but I'm fine with that :)
+    // sample_rate = div_ceil(numerator, denominator)
+    Sint64 sample_rate = ((numerator - 1) / denominator) + 1;
+
     SDL_assert(sample_rate > 0);
 
     return sample_rate;
@@ -657,7 +668,7 @@ Sint64 SDL_GetResamplerOutputFrames(Sint64 input_frames, Sint64 resample_rate, S
     }
 
     // output_frames = div_ceil(input_offset, resample_rate)
-    Sint64 output_frames = (input_offset > 0) ? ((input_offset + resample_rate * 3 / 4) / resample_rate) : 0;
+    Sint64 output_frames = (input_offset > 0) ? ((input_offset - 1) / resample_rate) + 1 : 0;
 
     *inout_resample_offset = (output_frames * resample_rate) - input_offset;
 
