@@ -278,6 +278,8 @@ static void ClosePhysicalCamera(SDL_Camera *device)
 
     device->base_timestamp = 0;
     device->adjust_timestamp = 0;
+
+    SDL_zero(device->spec);
 }
 
 // Don't hold the device lock when calling this, as we may destroy the device!
