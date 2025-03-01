@@ -84,7 +84,7 @@ typedef struct SDL_DialogFileFilter
  * - A pointer to NULL, the user either didn't choose any file or canceled the
  *   dialog.
  * - A pointer to non-`NULL`, the user chose one or more files. The argument
- *   is a null-terminated list of pointers to C strings, each containing a
+ *   is a null-terminated array of pointers to UTF-8 encoded strings, each containing a
  *   path.
  *
  * The filelist argument should not be freed; it will automatically be freed
