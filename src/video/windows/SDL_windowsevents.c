@@ -1389,6 +1389,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             if (TrackMouseEvent(&trackMouseEvent)) {
                 data->mouse_tracked = true;
             }
+
+            WIN_CheckAsyncMouseRelease(WIN_GetEventTimestamp(), data);
         }
 
         if (!data->videodata->raw_mouse_enabled) {
