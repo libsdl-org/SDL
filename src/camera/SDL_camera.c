@@ -1031,7 +1031,7 @@ bool SDL_PrepareCameraSurfaces(SDL_Camera *device)
         if (!surf) {
             ClosePhysicalCamera(device);
             ReleaseCamera(device);
-            return NULL;
+            return false;
         }
         SDL_SetSurfaceColorspace(surf, devspec->colorspace);
 
