@@ -660,7 +660,8 @@ void X11_CreateInputContext(SDL_WindowData *data)
                                          NULL);
                 X11_XFree(attr);
             }
-        } else {
+        }
+        if (!data->ic) {
             data->ic = X11_XCreateIC(videodata->im,
                                      XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
                                      XNClientWindow, data->xwindow,
