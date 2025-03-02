@@ -1259,3 +1259,7 @@
 #define SDL_ClickTrayEntry SDL_ClickTrayEntry_REAL
 #define SDL_UpdateTrays SDL_UpdateTrays_REAL
 #define SDL_StretchSurface SDL_StretchSurface_REAL
+#define SDL_GetSystemPreference SDL_GetSystemPreference_REAL
+#define SDL_GetSystemAccentColor SDL_GetSystemAccentColor_REAL
+#define SDL_GetSystemTextScale SDL_GetSystemTextScale_REAL
+#define SDL_GetSystemCursorScale SDL_GetSystemCursorScale_REAL
