@@ -433,7 +433,7 @@ static void Cocoa_DisplayReconfigurationCallback(CGDirectDisplayID displayid, CG
         }
     }
 
-    if (flags & kCGDisplaySetModeFlag) {
+    if ((flags & kCGDisplaySetModeFlag) && !_this->setting_display_mode) {
         if (display) {
             CGDisplayModeRef moderef = CGDisplayCopyDisplayMode(displayid);
             if (moderef) {
