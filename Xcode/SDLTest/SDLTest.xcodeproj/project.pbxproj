@@ -167,6 +167,9 @@
 		F399C6512A7892D800C86979 /* testautomation_intrinsics.c in Sources */ = {isa = PBXBuildFile; fileRef = F399C6502A7892D800C86979 /* testautomation_intrinsics.c */; };
 		F399C6522A7892D800C86979 /* testautomation_intrinsics.c in Sources */ = {isa = PBXBuildFile; fileRef = F399C6502A7892D800C86979 /* testautomation_intrinsics.c */; };
 		F399C6552A78933100C86979 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F399C6542A78933000C86979 /* Cocoa.framework */; };
+		F3B7FD642D73FC630086D1D0 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
+		F3B7FD662D73FC630086D1D0 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F3B7FD6C2D73FC9E0086D1D0 /* testpen.c in Sources */ = {isa = PBXBuildFile; fileRef = F3B7FD6B2D73FC9E0086D1D0 /* testpen.c */; };
 		F3C17C7728E40BC800E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17C7928E40C6E00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
 		F3C17C7B28E40D4E00E1A26D /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
@@ -713,6 +716,17 @@
 			dstSubfolderSpec = 10;
 			files = (
 				F36C34232C0F85DB00991150 /* SDL3.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3B7FD652D73FC630086D1D0 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F3B7FD662D73FC630086D1D0 /* SDL3.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1356,6 +1370,8 @@
 		F399C6492A78929400C86979 /* gamepadutils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gamepadutils.c; sourceTree = "<group>"; };
 		F399C6502A7892D800C86979 /* testautomation_intrinsics.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_intrinsics.c; sourceTree = "<group>"; };
 		F399C6542A78933000C86979 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		F3B7FD6A2D73FC630086D1D0 /* testpen.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testpen.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3B7FD6B2D73FC9E0086D1D0 /* testpen.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testpen.c; sourceTree = "<group>"; };
 		F3C17C6A28E3FD4400E1A26D /* config.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = config.xcconfig; sourceTree = "<group>"; };
 		F3C17C7328E40ADE00E1A26D /* testutils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testutils.c; sourceTree = "<group>"; };
 		F3C17CD628E416AC00E1A26D /* testgeometry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgeometry.c; sourceTree = "<group>"; };
@@ -1732,6 +1748,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F3B7FD632D73FC630086D1D0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3B7FD642D73FC630086D1D0 /* SDL3.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F3C17CD928E416CF00E1A26D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1789,6 +1813,7 @@
 				083E4872006D84C97F000001 /* loopwave.c */,
 				0017958F1074216E00F5D044 /* testatomic.c */,
 				001795B01074222D00F5D044 /* testaudioinfo.c */,
+				F35E56CC2983130F00A43A5F /* testautomation.c */,
 				F35E56C42983130D00A43A5F /* testautomation_audio.c */,
 				F35E56BC2983130B00A43A5F /* testautomation_clipboard.c */,
 				F35E56BB2983130B00A43A5F /* testautomation_events.c */,
@@ -1815,7 +1840,6 @@
 				A1A8594B2BC72FC20045DD6C /* testautomation_time.c */,
 				F35E56BD2983130B00A43A5F /* testautomation_timer.c */,
 				F35E56C12983130C00A43A5F /* testautomation_video.c */,
-				F35E56CC2983130F00A43A5F /* testautomation.c */,
 				F36C342C2C0F869B00991150 /* testcamera.c */,
 				BBFC088E164C6820003E6A99 /* testcontroller.c */,
 				001797711074320D00F5D044 /* testdraw.c */,
@@ -1837,11 +1861,12 @@
 				092D6D75FFB313BB7F000001 /* testlock.c */,
 				DB166CBD16A1C74100A1396C /* testmessage.c */,
 				001798151074359B00F5D044 /* testmultiaudio.c */,
-				0017985A107436ED00F5D044 /* testnative.c */,
 				0017985B107436ED00F5D044 /* testnative.h */,
+				0017985A107436ED00F5D044 /* testnative.c */,
 				0017985C107436ED00F5D044 /* testnativecocoa.m */,
 				00179872107438D000F5D044 /* testnativex11.c */,
 				002F345209CA201C00EBEB88 /* testoverlay.c */,
+				F3B7FD6B2D73FC9E0086D1D0 /* testpen.c */,
 				002F346F09CA20A600EBEB88 /* testplatform.c */,
 				001798B910743A4900F5D044 /* testpower.c */,
 				DB166CBF16A1C74100A1396C /* testrelative.c */,
@@ -1918,6 +1943,7 @@
 				F3C17CDC28E416CF00E1A26D /* testgeometry.app */,
 				F35E56AA298312CB00A43A5F /* testautomation.app */,
 				F36C34272C0F85DB00991150 /* testcamera.app */,
+				F3B7FD6A2D73FC630086D1D0 /* testpen.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2756,6 +2782,23 @@
 			productReference = F36C34272C0F85DB00991150 /* testcamera.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F3B7FD602D73FC630086D1D0 /* testpen */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F3B7FD672D73FC630086D1D0 /* Build configuration list for PBXNativeTarget "testpen" */;
+			buildPhases = (
+				F3B7FD612D73FC630086D1D0 /* Sources */,
+				F3B7FD632D73FC630086D1D0 /* Frameworks */,
+				F3B7FD652D73FC630086D1D0 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testpen;
+			productName = testalpha;
+			productReference = F3B7FD6A2D73FC630086D1D0 /* testpen.app */;
+			productType = "com.apple.product-type.application";
+		};
 		F3C17CDB28E416CF00E1A26D /* testgeometry */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F3C17CE828E416D000E1A26D /* Build configuration list for PBXNativeTarget "testgeometry" */;
@@ -2972,6 +3015,7 @@
 				001798781074392D00F5D044 /* testnative */,
 				002F343C09CA1FB300EBEB88 /* testoverlay */,
 				002F345909CA204F00EBEB88 /* testplatform */,
+				F3B7FD602D73FC630086D1D0 /* testpen */,
 				0017989D107439DF00F5D044 /* testpower */,
 				DB166DDC16A1D50C00A1396C /* testrelative */,
 				DB166DF316A1D57C00A1396C /* testrendercopyex */,
@@ -3452,6 +3496,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				F36C342D2C0F869B00991150 /* testcamera.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3B7FD612D73FC630086D1D0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3B7FD6C2D73FC9E0086D1D0 /* testpen.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4704,6 +4756,26 @@
 			};
 			name = Release;
 		};
+		F3B7FD682D73FC630086D1D0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Debug;
+		};
+		F3B7FD692D73FC630086D1D0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Release;
+		};
 		F3C17CE928E416D000E1A26D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -5155,6 +5227,15 @@
 			buildConfigurations = (
 				F36C34252C0F85DB00991150 /* Debug */,
 				F36C34262C0F85DB00991150 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F3B7FD672D73FC630086D1D0 /* Build configuration list for PBXNativeTarget "testpen" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3B7FD682D73FC630086D1D0 /* Debug */,
+				F3B7FD692D73FC630086D1D0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
