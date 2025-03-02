@@ -356,7 +356,9 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_VIDEO);
             if (!SDL_VideoInit(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_VIDEO);
+                SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_EVENTS);
+                SDL_PopError();
                 goto quit_and_error;
             }
         } else {
@@ -381,7 +383,9 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_AUDIO);
             if (!SDL_InitAudio(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_AUDIO);
+                SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_EVENTS);
+                SDL_PopError();
                 goto quit_and_error;
             }
         } else {
@@ -406,7 +410,9 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_JOYSTICK);
             if (!SDL_InitJoysticks()) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_JOYSTICK);
+                SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_EVENTS);
+                SDL_PopError();
                 goto quit_and_error;
             }
         } else {
@@ -430,7 +436,9 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_GAMEPAD);
             if (!SDL_InitGamepads()) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_GAMEPAD);
+                SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+                SDL_PopError();
                 goto quit_and_error;
             }
         } else {
@@ -493,7 +501,9 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_IncrementSubsystemRefCount(SDL_INIT_CAMERA);
             if (!SDL_CameraInit(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_CAMERA);
+                SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_EVENTS);
+                SDL_PopError();
                 goto quit_and_error;
             }
         } else {
@@ -511,7 +521,11 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
     return SDL_ClearError();
 
 quit_and_error:
-    SDL_QuitSubSystem(flags_initialized);
+    {
+        SDL_PushError();
+        SDL_QuitSubSystem(flags_initialized);
+        SDL_PopError();
+    }
     return false;
 }
 
