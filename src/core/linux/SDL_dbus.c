@@ -699,7 +699,7 @@ int SDL_DBus_CameraPortalRequestAccess(void)
     DBusMessage *reply, *msg;
     int fd;
 
-    if (SDL_DetectSandbox() == SDL_SANDBOX_NONE) {
+    if (SDL_GetSandbox() == SDL_SANDBOX_NONE) {
         return -2;
     }
 
