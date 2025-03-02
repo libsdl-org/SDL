@@ -2641,7 +2641,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugTextFormat(SDL_Renderer *rendere
  * Set default scale mode for new textures for given renderer.
  *
  * When a renderer is created, scale_mode defaults to SDL_SCALEMODE_LINEAR.
- * 
+ *
  * \param renderer the renderer to update.
  * \param scale_mode the scale mode to change to for new textures.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -2660,7 +2660,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetDefaultTextureScaleMode(SDL_Renderer *re
  *
  * \param renderer the renderer to get data from.
  * \param scale_mode a SDL_ScaleMode filled with current default scale mode.
- *          See SDL_SetDefaultTextureScaleMode() for the meaning of the value.
+ *                   See SDL_SetDefaultTextureScaleMode() for the meaning of
+ *                   the value.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
