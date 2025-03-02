@@ -1435,6 +1435,11 @@ void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode 
 {
     SDL_DisplayMode last_mode;
 
+    if (display->fullscreen_window) {
+        // This is a temporary mode change, don't save the desktop mode
+        return;
+    }
+
     SDL_copyp(&last_mode, &display->desktop_mode);
 
     if (display->desktop_mode.internal) {
