@@ -2258,8 +2258,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9Grid(SDL_Renderer *renderer, 
  *              corner of `dstrect`, or 0.0f for an unscaled copy.
  * \param dstrect a pointer to the destination rectangle, or NULL for the
  *                entire rendering target.
- * \param tileScale the scale used to transform the borders and center of `srcrect` into the
- *              borders and middle of `dstrect`, or 1.0f for an unscaled copy.
+ * \param tileScale the scale used to transform the borders and center of
+ *                  `srcrect` into the borders and middle of `dstrect`, or
+ *                  1.0f for an unscaled copy.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
