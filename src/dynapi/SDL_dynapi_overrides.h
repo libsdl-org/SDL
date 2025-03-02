@@ -1259,3 +1259,7 @@
 #define SDL_ClickTrayEntry SDL_ClickTrayEntry_REAL
 #define SDL_UpdateTrays SDL_UpdateTrays_REAL
 #define SDL_StretchSurface SDL_StretchSurface_REAL
+#define SDL_SetRelativeMouseTransform SDL_SetRelativeMouseTransform_REAL
+#define SDL_RenderTexture9GridTiled SDL_RenderTexture9GridTiled_REAL
+#define SDL_SetDefaultTextureScaleMode SDL_SetDefaultTextureScaleMode_REAL
+#define SDL_GetDefaultTextureScaleMode SDL_GetDefaultTextureScaleMode_REAL

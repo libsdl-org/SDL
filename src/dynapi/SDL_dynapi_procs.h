@@ -1267,3 +1267,7 @@ SDL_DYNAPI_PROC(bool,SDL_AudioStreamDevicePaused,(SDL_AudioStream *a),(a),return
 SDL_DYNAPI_PROC(void,SDL_ClickTrayEntry,(SDL_TrayEntry *a),(a),)
 SDL_DYNAPI_PROC(void,SDL_UpdateTrays,(void),(),)
 SDL_DYNAPI_PROC(bool,SDL_StretchSurface,(SDL_Surface *a,const SDL_Rect *b,SDL_Surface *c,const SDL_Rect *d,SDL_ScaleMode e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(bool,SDL_SetRelativeMouseTransform,(SDL_MouseMotionTransformCallback a,void *b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_RenderTexture9GridTiled,(SDL_Renderer *a,SDL_Texture *b,const SDL_FRect *c,float d,float e,float f,float g,float h,const SDL_FRect *i,float j),(a,b,c,d,e,f,g,h,i,j),return)
+SDL_DYNAPI_PROC(bool,SDL_SetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_GetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode *b),(a,b),return)
