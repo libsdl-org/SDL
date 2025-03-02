@@ -433,7 +433,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WarpMouseGlobal(float x, float y);
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.2.6.
+ * \since This function is available since SDL 3.4.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback callback, void *userdata);
 

@@ -2266,7 +2266,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9Grid(SDL_Renderer *renderer, 
  *
  * \threadsafety This function should only be called on the main thread.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_RenderTexture
  */
