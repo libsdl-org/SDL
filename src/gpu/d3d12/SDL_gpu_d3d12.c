@@ -5815,7 +5815,7 @@ static void D3D12_UploadToTexture(
                 &destinationLocation,
                 destination->x,
                 destination->y,
-                sliceIndex,
+                destination->z + sliceIndex,
                 &sourceLocation,
                 NULL);
         }
