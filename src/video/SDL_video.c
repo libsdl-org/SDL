@@ -1435,7 +1435,7 @@ void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode 
 {
     SDL_DisplayMode last_mode;
 
-    if (display->fullscreen_window || (display->device && display->device->setting_display_mode)) {
+    if (display->fullscreen_window || _this->setting_display_mode) {
         // This is a temporary mode change, don't save the desktop mode
         return;
     }
