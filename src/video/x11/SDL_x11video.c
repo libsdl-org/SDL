@@ -251,6 +251,10 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->Vulkan_GetPresentationSupport = X11_Vulkan_GetPresentationSupport;
 #endif
 
+#ifdef SDL_VIDEO_WEBGPU
+    device->WebGPU_CreateSurface = X11_WebGPU_CreateSurface;
+#endif
+
 #ifdef SDL_USE_LIBDBUS
     if (SDL_SystemTheme_Init())
         device->system_theme = SDL_SystemTheme_Get();

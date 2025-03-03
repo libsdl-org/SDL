@@ -170,6 +170,9 @@ static const SDL_GPUBootstrap *backends[] = {
 #ifdef SDL_GPU_D3D12
     &D3D12Driver,
 #endif
+#ifdef SDL_GPU_WEBGPU
+    &WebGPUDriver,
+#endif
     NULL
 };
 #endif // !SDL_GPU_DISABLED
@@ -404,6 +407,9 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
     if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN, false)) {
         format_flags |= SDL_GPU_SHADERFORMAT_METALLIB;
     }
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_WGSL_BOOLEAN, false)) {
+        format_flags |= SDL_GPU_SHADERFORMAT_WGSL;
+    }
 
     gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);
     if (gpudriver == NULL) {
@@ -465,6 +471,9 @@ static void SDL_GPU_FillProperties(
     }
     if (format_flags & SDL_GPU_SHADERFORMAT_METALLIB) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN, true);
+    }
+    if (format_flags & SDL_GPU_SHADERFORMAT_WGSL) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_WGSL_BOOLEAN, true);        
     }
     SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, debug_mode);
     SDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, name);

@@ -954,6 +954,7 @@ typedef Uint32 SDL_GPUShaderFormat;
 #define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL SM6_0 shaders for D3D12. */
 #define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal. */
 #define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< Precompiled metallib shaders for Metal. */
+#define SDL_GPU_SHADERFORMAT_WGSL     (1u << 6) /**< WGSL shaders for WebGPU. */
 
 /**
  * Specifies the format of a vertex attribute.
@@ -2187,6 +2188,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN        "SDL.gpu.device.create.shaders.msl"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN   "SDL.gpu.device.create.shaders.metallib"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING "SDL.gpu.device.create.d3d12.semantic"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_WGSL_BOOLEAN       "SDL.gpu.device.create.shaders.wgsl"
 
 /**
  * Destroys a GPU context previously returned by SDL_CreateGPUDevice.
