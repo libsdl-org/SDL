@@ -1442,8 +1442,7 @@ static bool WebGPU_INTERNAL_CreateFence(
         renderer->availableFenceCapacity,
         renderer->availableFenceCapacity * 2);
 
-    renderer->availableFences[renderer->availableFenceCount] = fence;
-    renderer->availableFenceCount += 1;
+    renderer->availableFences[renderer->availableFenceCount++] = fence;
 
     return true;
 }
@@ -1503,8 +1502,7 @@ static WebGPUShader *WebGPU_INTERNAL_CompileShader(
     WGPUShaderModuleDescriptor shader_desc;
     WebGPUShader *shader = SDL_malloc(sizeof(WebGPUShader));
 
-    if (format == SDL_GPU_SHADERFORMAT_WGSL)
-    {
+    if (format == SDL_GPU_SHADERFORMAT_WGSL) {
         const char *wgsl = (const char *)code;
         WGPUShaderSourceWGSL wgsl_desc = {
             .chain = {
@@ -1521,28 +1519,24 @@ static WebGPUShader *WebGPU_INTERNAL_CompileShader(
             .nextInChain = (WGPUChainedStruct *)&wgsl_desc,
             .label = { label, SDL_strlen(label) },
         };
-    }
-    else if (format == SDL_GPU_SHADERFORMAT_SPIRV)
-    {
-       WGPUShaderSourceSPIRV spirv_desc = {
-           .chain = {
-               .sType = WGPUSType_ShaderSourceSPIRV,
-               .next = NULL,
-           },
-           .code = (const Uint32 *)code,
-           .codeSize = (Uint32)codeSize / 4,
-       };
+    } else if (format == SDL_GPU_SHADERFORMAT_SPIRV) {
+        WGPUShaderSourceSPIRV spirv_desc = {
+            .chain = {
+                .sType = WGPUSType_ShaderSourceSPIRV,
+                .next = NULL,
+            },
+            .code = (const Uint32 *)code,
+            .codeSize = (Uint32)codeSize / 4,
+        };
 
-       const char *label = "SDL_GPU WebGPU SPIRV Shader";
-       shader_desc = (WGPUShaderModuleDescriptor){
-           .nextInChain = (WGPUChainedStruct *)&spirv_desc,
-           .label = { label, SDL_strlen(label) },
-       };
-    }
-    else
-    {
-       SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU: Unsupported shader format %d", format);
-       return NULL;
+        const char *label = "SDL_GPU WebGPU SPIRV Shader";
+        shader_desc = (WGPUShaderModuleDescriptor){
+            .nextInChain = (WGPUChainedStruct *)&spirv_desc,
+            .label = { label, SDL_strlen(label) },
+        };
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU: Unsupported shader format %d", format);
+        return NULL;
     }
 
     shader->shaderModule = wgpuDeviceCreateShaderModule(renderer->device, &shader_desc);
@@ -1673,8 +1667,7 @@ static void WebGPU_INTERNAL_ReleaseFenceToPool(
         renderer->availableFenceCapacity,
         renderer->availableFenceCapacity * 2);
 
-    renderer->availableFences[renderer->availableFenceCount] = fence;
-    renderer->availableFenceCount += 1;
+    renderer->availableFences[renderer->availableFenceCount++] = fence;
 
     SDL_UnlockMutex(renderer->fenceLock);
 }
@@ -1707,8 +1700,7 @@ static void WebGPU_ReleaseTexture(
         renderer->textureContainersToDestroyCapacity,
         renderer->textureContainersToDestroyCapacity + 1);
 
-    renderer->textureContainersToDestroy[renderer->textureContainersToDestroyCount] = container;
-    renderer->textureContainersToDestroyCount += 1;
+    renderer->textureContainersToDestroy[renderer->textureContainersToDestroyCount++] = container;
 
     SDL_UnlockMutex(renderer->disposeLock);
 }
@@ -1796,7 +1788,7 @@ static WebGPUBuffer *WebGPU_INTERNAL_PrepareBufferForUse(
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create new buffer for cycling");
         return NULL;
     }
-    container->bufferCount++;
+    container->bufferCount += 1;
     container->activeBuffer = container->buffers[container->bufferCount - 1];
     return container->activeBuffer;
 }
@@ -1816,7 +1808,7 @@ static SDL_GPUBuffer *WebGPU_CreateBuffer(
 
     WGPUBufferUsage wgpuUsage = WGPUBufferUsage_CopyDst;
     wgpuUsage = SDLToWGPUBufferUsageFlags(usage);
-    
+
     container->size = size;
     container->bufferCapacity = 1;
     container->bufferCount = 1;
@@ -1853,8 +1845,7 @@ static void WebGPU_ReleaseBuffer(
         renderer->bufferContainersToDestroyCapacity,
         renderer->bufferContainersToDestroyCapacity + 1);
 
-    renderer->bufferContainersToDestroy[renderer->bufferContainersToDestroyCount] = container;
-    renderer->bufferContainersToDestroyCount += 1;
+    renderer->bufferContainersToDestroy[renderer->bufferContainersToDestroyCount++] = container;
 
     SDL_UnlockMutex(renderer->disposeLock);
 }
@@ -1931,8 +1922,12 @@ static void *WebGPU_MapTransferBuffer(
             return NULL;
         }
         if (cycle && SDL_GetAtomicInt(&container->activeBuffer->refCount) > 0) {
-            EXPAND_ARRAY_IF_NEEDED(container->buffers, WebGPUBuffer *, container->bufferCount + 1,
-                                   container->bufferCapacity, container->bufferCapacity + 1);
+            EXPAND_ARRAY_IF_NEEDED(
+                container->buffers,
+                WebGPUBuffer *,
+                container->bufferCount + 1,
+                container->bufferCapacity,
+                container->bufferCapacity + 1);
             container->buffers[container->bufferCount++] = newBuffer;
         } else {
             wgpuBufferDestroy(container->activeBuffer->handle);
@@ -2289,8 +2284,8 @@ static WebGPUTexture *WebGPU_INTERNAL_PrepareTextureForWrite(
     }
 
     SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "PrepareTextureForWrite - windowData: %p, frameCounter: %u, Container: %p, textures: %p, activeTexture: %p, handle: %p, refCount: %d",
-                windowData, windowData->frameCounter, container, container->textures, container->activeTexture,
-                container->activeTexture->handle, SDL_GetAtomicInt(&container->activeTexture->refCount));
+                 windowData, windowData->frameCounter, container, container->textures, container->activeTexture,
+                 container->activeTexture->handle, SDL_GetAtomicInt(&container->activeTexture->refCount));
     if (cycle && container->canBeCycled) {
         SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Cycling texture");
 
@@ -2425,7 +2420,7 @@ static WGPUVertexBufferLayout *WebGPU_INTERNAL_CreateVertexBufferLayouts(const S
                 numAttributes += 1;
             }
         }
-        
+
         // Build the vertex buffer layout for the current vertex buffer using the attributes list (can be NULL)
         // This is then passed to the vertex state for the render pipeline
         const SDL_GPUVertexBufferDescription *vertexBuffer = &vertexInputState->vertex_buffer_descriptions[i];
@@ -2675,15 +2670,13 @@ static SDL_GPUGraphicsPipeline *WebGPU_CreateGraphicsPipeline(
     // Cleanup
     SDL_free(colorTargets);
 
-    for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i++)
-    {
-        if (vertexBufferLayouts[i].attributes != NULL)
-        {
+    for (Uint32 i = 0; i < createinfo->vertex_input_state.num_vertex_buffers; i++) {
+        if (vertexBufferLayouts[i].attributes != NULL) {
             SDL_free((void *)vertexBufferLayouts[i].attributes);
         }
     }
-    
     SDL_free(vertexBufferLayouts);
+    
     wgpuPipelineLayoutRelease(pipelineLayout); // Pipeline holds a reference
     SDL_free(bindGroupEntries);
 
@@ -2694,6 +2687,7 @@ static void WebGPU_ReleaseGraphicsPipeline(
     SDL_GPURenderer *driverData,
     SDL_GPUGraphicsPipeline *graphicsPipeline)
 {
+    WebGPURenderer *renderer = (WebGPURenderer *)driverData;
     WebGPUGraphicsPipeline *webgpuGraphicsPipeline = (WebGPUGraphicsPipeline *)graphicsPipeline;
     if (webgpuGraphicsPipeline->handle) {
         wgpuRenderPipelineRelease(webgpuGraphicsPipeline->handle);
@@ -2704,6 +2698,13 @@ static void WebGPU_ReleaseGraphicsPipeline(
     if (webgpuGraphicsPipeline->bindGroupLayout) {
         wgpuBindGroupLayoutRelease(webgpuGraphicsPipeline->bindGroupLayout);
     }
+
+    // Iterate through our cache of pipeline bindings and drop it if it exists.
+    for (Uint32 i = 0; i < renderer->pipelineBindGroupCacheCount; i++) {
+        WebGPUPipelineBindGroupCache *cache = &renderer->pipelineBindGroupCache[i];
+        cache->pipeline = NULL;
+    }
+    
     SDL_free(webgpuGraphicsPipeline);
 }
 
@@ -2875,6 +2876,7 @@ static void WebGPU_INTERNAL_BindGraphicsResources(WebGPUCommandBuffer *commandBu
         if (cache->bindGroup) {
             wgpuBindGroupRelease(cache->bindGroup);
         }
+        cache->pipeline = graphicsPipeline;
         cache->bindGroup = newBindGroup;
         cache->resourcesDirty = false;
     } else {
@@ -2935,6 +2937,7 @@ static void WebGPU_BindGraphicsPipeline(
     for (Uint32 i = 0; i < renderer->pipelineBindGroupCacheCount; i++) {
         if (renderer->pipelineBindGroupCache[i].pipeline == webgpuGraphicsPipeline) {
             cache = &renderer->pipelineBindGroupCache[i];
+            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "PIPELINE CACHE: Found cached pipeline!");
             break;
         }
     }
@@ -2954,7 +2957,7 @@ static void WebGPU_BindGraphicsPipeline(
         cache->resourcesDirty = true;
         cache->lastFrameUsed = 0;
 
-        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Created new pipeline cache entry for pipeline %p", webgpuGraphicsPipeline);
+        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "PIPELINE CACHE: Created new pipeline cache entry for pipeline %p", webgpuGraphicsPipeline);
     }
 
     // Update the usage frame (this should be the in flight frame number)
@@ -2991,8 +2994,8 @@ static void WebGPU_BindGraphicsPipeline(
     webgpuCommandBuffer->needVertexUniformBind = cache->resourcesDirty;
     webgpuCommandBuffer->needFragmentUniformBind = cache->resourcesDirty;
 
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Pipeline bound: %p, cache: %p, resourcesDirty: %d",
-                webgpuGraphicsPipeline, cache, cache->resourcesDirty);
+    SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Pipeline bound: %p, cache: %p, resourcesDirty: %d",
+                 webgpuGraphicsPipeline, cache, cache->resourcesDirty);
 }
 
 static void WebGPU_DrawPrimitives(
@@ -3328,7 +3331,7 @@ static void WebGPU_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window
     if (windowData == NULL) {
         return;
     }
-    
+
     // Eliminate the window from the claimed windows
     for (Uint32 i = 0; i < renderer->claimedWindowCount; i += 1) {
         if (renderer->claimedWindows[i]->window == window) {
@@ -3352,7 +3355,7 @@ static WGPUTexture WebGPU_INTERNAL_AcquireSurfaceTexture(
     wgpuSurfaceGetCurrentTexture(windowData->surface, &surfaceTexture);
 
     SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Surface texture status: %d, texture: %p, frameCounter: %u",
-                surfaceTexture.status, surfaceTexture.texture, windowData->frameCounter);
+                 surfaceTexture.status, surfaceTexture.texture, windowData->frameCounter);
 
     switch (surfaceTexture.status) {
     case WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal:
@@ -3702,15 +3705,15 @@ static void WebGPU_INTERNAL_CleanCommandBuffer(
 
     // Return command buffer to pool
     SDL_LockMutex(renderer->acquireCommandBufferLock);
-    // FIXME: Should this use EXPAND_IF_NEEDED?
-    if (renderer->availableCommandBufferCount == renderer->availableCommandBufferCapacity) {
-        renderer->availableCommandBufferCapacity += 1;
-        renderer->availableCommandBuffers = SDL_realloc(
-            renderer->availableCommandBuffers,
-            renderer->availableCommandBufferCapacity * sizeof(WebGPUCommandBuffer *));
-    }
-    renderer->availableCommandBuffers[renderer->availableCommandBufferCount] = commandBuffer;
-    renderer->availableCommandBufferCount += 1;
+
+    EXPAND_ARRAY_IF_NEEDED(
+        renderer->availableCommandBuffers,
+        WebGPUCommandBuffer *,
+        renderer->availableCommandBufferCount + 1,
+        renderer->availableCommandBufferCapacity,
+        renderer->availableCommandBufferCapacity + 1);
+
+    renderer->availableCommandBuffers[renderer->availableCommandBufferCount++] = commandBuffer;
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
     // Remove this command buffer from the submitted list
@@ -3866,7 +3869,7 @@ static void WebGPU_BeginRenderPass(
     SDL_Rect scissorRect;
     SDL_FColor blendConstants;
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Beginning render pass, frame: %u", windowData ? windowData->frameCounter : 0);
-    
+
     // Set color attachments
     WGPURenderPassColorAttachment colorAttachments[numColorTargets];
     for (Uint32 i = 0; i < numColorTargets; i++) {
@@ -4162,6 +4165,10 @@ static void WebGPU_DestroyDevice(SDL_GPUDevice *device)
 
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SHUTDOWN: Released all claimed windows");
 
+    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SHUTDOWN: Releasing pipeline bindgroup cache");
+    SDL_free(renderer->pipelineBindGroupCache);
+    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SHUTDOWN: Released pipeline bindgroup cache");
+    
     // TODO: Release Blit resources
     // WebGPU_INTERNAL_DestroyBlitResources(renderer);
 
@@ -4191,19 +4198,7 @@ static void WebGPU_DestroyDevice(SDL_GPUDevice *device)
     SDL_free(renderer->submittedCommandBuffers);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SHUTDOWN: Released command buffer infra");
-
-
-    for (Uint32 i = 0; i < renderer->pipelineBindGroupCacheCount; i++) {
-        if (renderer->pipelineBindGroupCache[i].bindGroup) {
-            wgpuBindGroupRelease(renderer->pipelineBindGroupCache[i].bindGroup);
-            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SHUTDOWN: Releasing bindgroup: %u", i);
-        }
-    }
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SHUTDOWN: Releasing pipeline bindgroup cache");
-    SDL_free(renderer->pipelineBindGroupCache);
-
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SHUTDOWN: Released pipeline bindgroup cache");
-
+    
     // Release fence infrastructure
     for (Uint32 i = 0; i < renderer->availableFenceCount; i += 1) {
         SDL_free(renderer->availableFences[i]);
@@ -4305,7 +4300,11 @@ static SDL_GPUDevice *WebGPU_CreateDevice(bool debug, bool preferLowPower, SDL_P
     renderer->pipelineBindGroupCacheCapacity = 8;
     renderer->pipelineBindGroupCacheCount = 0;
     renderer->pipelineBindGroupCache = SDL_calloc(
-        renderer->pipelineBindGroupCacheCapacity, sizeof(WebGPUPipelineBindGroupCache *));
+        renderer->pipelineBindGroupCacheCapacity, sizeof(WebGPUPipelineBindGroupCache));
+
+    for (Uint32 i = 0; i < renderer->pipelineBindGroupCacheCapacity; i++){
+        renderer->pipelineBindGroupCache[i].pipeline = NULL;
+    }
 
     // TODO: We should initialize the blit pipelines here and then cache them
 
