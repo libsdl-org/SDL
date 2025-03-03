@@ -7131,6 +7131,7 @@ static XrResult VULKAN_CreateXRSwapchain(
         container->header.info.layer_count_or_depth = createInfo.arraySize;
         container->header.info.num_levels = createInfo.mipCount;
         container->header.info.sample_count = SDL_GPU_SAMPLECOUNT_1; /* TODO: convert this sample count correctly */
+        container->header.info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET; /* TODO: convert this correctly */
 
         container->externallyManaged = true;
         container->canBeCycled = false;
