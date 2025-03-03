@@ -62,7 +62,9 @@ static bool pipewire_initialized = false;
 
 // Pipewire entry points
 static const char *(*PIPEWIRE_pw_get_library_version)(void);
+#if PW_CHECK_VERSION(0, 3, 75)
 static bool (*PIPEWIRE_pw_check_library_version)(int major, int minor, int micro);
+#endif
 static void (*PIPEWIRE_pw_init)(int *, char ***);
 static void (*PIPEWIRE_pw_deinit)(void);
 static struct pw_main_loop *(*PIPEWIRE_pw_main_loop_new)(const struct spa_dict *loop);
@@ -158,7 +160,9 @@ static void unload_pipewire_library(void)
 static bool load_pipewire_syms(void)
 {
     SDL_PIPEWIRE_SYM(pw_get_library_version);
+#if PW_CHECK_VERSION(0, 3, 75)
     SDL_PIPEWIRE_SYM(pw_check_library_version);
+#endif
     SDL_PIPEWIRE_SYM(pw_init);
     SDL_PIPEWIRE_SYM(pw_deinit);
     SDL_PIPEWIRE_SYM(pw_main_loop_new);
@@ -1041,7 +1045,11 @@ static bool hotplug_loop_init(void)
 
     spa_list_init(&hotplug.global_list);
 
+#if PW_CHECK_VERSION(0, 3, 75)
     hotplug.have_1_0_5 = PIPEWIRE_pw_check_library_version(1,0,5);
+#else
+    hotplug.have_1_0_5 = false;
+#endif
 
     hotplug.loop = PIPEWIRE_pw_thread_loop_new("SDLPwCameraPlug", NULL);
     if (!hotplug.loop) {
