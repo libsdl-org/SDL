@@ -1135,12 +1135,13 @@ check_removed:
                 goto check_removed;
             } else {
                 HIDAPI_DelDevice(device);
+                device = NULL;
 
                 // Update the device list again in case this device comes back
                 SDL_HIDAPI_change_count = 0;
             }
         }
-        if (device->broken && device->parent) {
+        if (device && device->broken && device->parent) {
             HIDAPI_DelDevice(device->parent);
 
             // We deleted a different device here, restart the loop
