@@ -1984,17 +1984,23 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
              * This is also unnecessary on Cocoa, Wayland, Win32, and X11 (will send SDL_EVENT_WINDOW_RESIZED).
              */
             if (!SDL_SendsFullscreenDimensions(_this)) {
+                SDL_Rect displayRect;
+
                 if (mode) {
                     mode_w = mode->w;
                     mode_h = mode->h;
+                    SDL_GetDisplayBounds(mode->displayID, &displayRect);
                 } else {
                     mode_w = display->desktop_mode.w;
                     mode_h = display->desktop_mode.h;
+                    SDL_GetDisplayBounds(display->id, &displayRect);
                 }
 
                 if (window->w != mode_w || window->h != mode_h) {
                     resized = true;
                 }
+
+                SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, displayRect.x, displayRect.y);
 
                 if (resized) {
                     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, mode_w, mode_h);
@@ -2044,6 +2050,7 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
             }
 
             if (!SDL_SendsFullscreenDimensions(_this)) {
+                SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, window->windowed.x, window->windowed.y);
                 if (resized) {
                     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->windowed.w, window->windowed.h);
                 } else {
