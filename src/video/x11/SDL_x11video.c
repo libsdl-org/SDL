@@ -78,6 +78,23 @@ static bool X11_IsXWayland(Display *d)
     return X11_XQueryExtension(d, "XWAYLAND", &opcode, &event, &error) == True;
 }
 
+static bool X11_CheckCurrentDesktop(const char *name)
+{
+    SDL_Environment *env = SDL_GetEnvironment();
+
+    const char *desktopVar = SDL_GetEnvironmentVariable(env, "DESKTOP_SESSION");
+    if (desktopVar && SDL_strcasecmp(desktopVar, name) == 0) {
+        return true;
+    }
+
+    desktopVar = SDL_GetEnvironmentVariable(env, "XDG_CURRENT_DESKTOP");
+    if (desktopVar && SDL_strcasestr(desktopVar, name)) {
+        return true;
+    }
+
+    return false;
+}
+
 static SDL_VideoDevice *X11_CreateDevice(void)
 {
     SDL_VideoDevice *device;
@@ -256,8 +273,14 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         device->system_theme = SDL_SystemTheme_Get();
 #endif
 
-    device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
-                          VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
+    device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT;
+
+    /* Openbox doesn't send the new window dimensions when entering fullscreen, so the events must be synthesized.
+     * This is otherwise not wanted, as it can break fullscreen window positioning on multi-monitor configurations.
+     */
+    if (!X11_CheckCurrentDesktop("openbox")) {
+        device->device_caps |= VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES;
+    }
 
     data->is_xwayland = X11_IsXWayland(x11_display);
     if (data->is_xwayland) {
