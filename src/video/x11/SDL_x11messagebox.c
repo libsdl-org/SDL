@@ -55,7 +55,7 @@ static const char g_MessageBoxFont[] =
     "-*-*-*-*-*--*-*-*-*-*-*-iso10646-1,"  // just give me anything Unicode.
     "-*-*-medium-r-normal--*-120-*-*-*-*-iso8859-1,"  // explicitly latin1, in case low-ASCII works out.
     "-*-*-medium-r-*--*-120-*-*-*-*-iso8859-1,"  // explicitly latin1, in case low-ASCII works out.
-    "-misc-*-*-*-*--*-*-*-*-*-*-iso8859-1,";  // misc latin1 (fix for some systems)
+    "-misc-*-*-*-*--*-*-*-*-*-*-iso8859-1,"  // misc latin1 (fix for some systems)
     "-*-*-*-*-*--*-*-*-*-*-*-iso8859-1";  // just give me anything latin1.
 
 static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = {
