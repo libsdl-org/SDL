@@ -4,8 +4,17 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
   set(cmake_build_type_undefined 1)
 endif()
 
+# FIXME: remove this
+option(BUILD_FOR_NOKIA_NGAGE "Build for Nokia N-Gage" OFF)
+
 # See docs/release_checklist.md
 project(SDL3 LANGUAGES C VERSION "3.3.0")
+
+# FIXME: remove this
+if (BUILD_FOR_NOKIA_NGAGE)
+  include(cmake/nokia_ngage.cmake)
+  return()
+endif()
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL3_MAINPROJECT ON)

@@ -34,6 +34,8 @@
 
 #if defined(__SIZEOF_WCHAR_T__)
 #define SDL_SIZEOF_WCHAR_T __SIZEOF_WCHAR_T__
+#elif defined(SDL_PLATFORM_NGAGE)
+#define SDL_SIZEOF_WCHAR_T 2
 #elif defined(SDL_PLATFORM_WINDOWS)
 #define SDL_SIZEOF_WCHAR_T 2
 #else  // assume everything else is UTF-32 (add more tests if compiler-assert fails below!)
