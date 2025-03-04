@@ -110,7 +110,7 @@ typedef struct
 } SDL_DisabledEventBlock;
 
 static SDL_DisabledEventBlock *SDL_disabled_events[256];
-static Uint32 SDL_userevents = SDL_EVENT_USER;
+static SDL_AtomicInt SDL_userevents;
 
 typedef struct SDL_TemporaryMemory
 {
@@ -1893,9 +1893,11 @@ Uint32 SDL_RegisterEvents(int numevents)
 {
     Uint32 event_base = 0;
 
-    if ((numevents > 0) && (SDL_userevents + numevents <= SDL_EVENT_LAST)) {
-        event_base = SDL_userevents;
-        SDL_userevents += numevents;
+    if (numevents > 0) {
+        int value = SDL_AddAtomicInt(&SDL_userevents, numevents);
+        if (value >= 0 && value <= (SDL_EVENT_LAST - SDL_EVENT_USER)) {
+            event_base = (Uint32)(SDL_EVENT_USER + value);
+        }
     }
     return event_base;
 }
