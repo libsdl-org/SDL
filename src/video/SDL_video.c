@@ -1435,7 +1435,7 @@ void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode 
 {
     SDL_DisplayMode last_mode;
 
-    if (display->fullscreen_window || _this->setting_display_mode) {
+    if (display->fullscreen_active) {
         // This is a temporary mode change, don't save the desktop mode
         return;
     }
@@ -1949,6 +1949,8 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
             SDL_MinimizeWindow(display->fullscreen_window);
         }
 
+        display->fullscreen_active = window->fullscreen_exclusive;
+
         if (!SDL_SetDisplayModeForDisplay(display, mode)) {
             goto error;
         }
@@ -1966,6 +1968,7 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
                     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
                 }
             } else if (ret == SDL_FULLSCREEN_FAILED) {
+                display->fullscreen_active = false;
                 goto error;
             }
         }
@@ -2010,6 +2013,8 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
 
         // Restore the desktop mode
         if (display) {
+            display->fullscreen_active = false;
+
             SDL_SetDisplayModeForDisplay(display, NULL);
         }
         if (commit) {
