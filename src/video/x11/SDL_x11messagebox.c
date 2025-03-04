@@ -205,7 +205,7 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
         char **missing = NULL;
         int num_missing = 0;
         int i_font;
-        for (i_font = 0; g_MessageBoxFont[i]; ++i_font) {
+        for (i_font = 0; g_MessageBoxFont[i_font]; ++i_font) {
             data->font_set = X11_XCreateFontSet(data->display, g_MessageBoxFont[i_font],
                                                 &missing, &num_missing, NULL);
             if (missing) {
