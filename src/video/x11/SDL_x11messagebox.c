@@ -211,7 +211,7 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
             if (missing) {
                 X11_XFreeStringList(missing);
             }
-            if (!data->font_set) {
+            if (data->font_set) {
                 break;
             }
         }
