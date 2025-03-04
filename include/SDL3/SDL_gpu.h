@@ -1310,6 +1310,12 @@ typedef struct SDL_GPUViewport
  * A structure specifying parameters related to transferring data to or from a
  * texture.
  *
+ * If either of `pixels_per_row` or `rows_per_layer` is zero, then width and
+ * height of passed SDL_GPUTextureRegion to SDL_UploadToGPUTexture
+ *
+ * / SDL_DownloadFromGPUTexture are used as default values respectively and
+ * data is considered to be tightly packed.
+ *
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_UploadToGPUTexture
