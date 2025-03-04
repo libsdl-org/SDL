@@ -2385,8 +2385,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_RenderReadPixels(SDL_Renderer *ren
  * should not be done; you are only required to change back the rendering
  * target to default via `SDL_SetRenderTarget(renderer, NULL)` afterwards, as
  * textures by themselves do not have a concept of backbuffers. Calling
- * SDL_RenderPresent while rendering to a texture will still update the screen
- * with any current drawing that has been done _to the window itself_.
+ * SDL_RenderPresent while rendering to a texture will fail.
  *
  * \param renderer the rendering context.
  * \returns true on success or false on failure; call SDL_GetError() for more

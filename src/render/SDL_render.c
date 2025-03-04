@@ -5276,9 +5276,8 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
 
     CHECK_RENDERER_MAGIC(renderer, false);
 
-    SDL_Texture *target = renderer->target;
-    if (target) {
-        SDL_SetRenderTarget(renderer, NULL);
+    if (renderer->target) {
+        return SDL_SetError("You can't present on a render target");
     }
 
     SDL_RenderLogicalPresentation(renderer);
@@ -5297,10 +5296,6 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
 #endif
     if (!renderer->RenderPresent(renderer)) {
         presented = false;
-    }
-
-    if (target) {
-        SDL_SetRenderTarget(renderer, target);
     }
 
     if (renderer->simulate_vsync ||
