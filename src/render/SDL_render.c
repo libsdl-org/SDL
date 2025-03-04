@@ -462,8 +462,8 @@ static void UpdatePixelClipRect(SDL_Renderer *renderer, SDL_RenderViewState *vie
 {
     const float scale_x = view->current_scale.x;
     const float scale_y = view->current_scale.y;
-    view->pixel_clip_rect.x = (int)SDL_floorf((view->clip_rect.x * scale_x) + view->logical_offset.x);
-    view->pixel_clip_rect.y = (int)SDL_floorf((view->clip_rect.y * scale_y) + view->logical_offset.y);
+    view->pixel_clip_rect.x = (int)SDL_floorf(view->clip_rect.x * scale_x);
+    view->pixel_clip_rect.y = (int)SDL_floorf(view->clip_rect.y * scale_y);
     view->pixel_clip_rect.w = (int)SDL_ceilf(view->clip_rect.w * scale_x);
     view->pixel_clip_rect.h = (int)SDL_ceilf(view->clip_rect.h * scale_y);
 }
