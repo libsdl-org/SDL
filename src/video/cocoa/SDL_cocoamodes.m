@@ -644,7 +644,9 @@ static CGError SetDisplayModeForDisplay(CGDirectDisplayID display, SDL_DisplayMo
         result = CGDisplaySetDisplayMode(display, moderef, NULL);
         if (result == kCGErrorSuccess) {
             // If this mode works, try it first next time.
-            CFArrayExchangeValuesAtIndices(data->modes, i, 0);
+            if (i > 0) {
+                CFArrayExchangeValuesAtIndices(data->modes, i, 0);
+            }
             break;
         }
     }
