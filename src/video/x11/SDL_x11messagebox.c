@@ -48,15 +48,17 @@
 static const char g_MessageBoxFontLatin1[] =
     "-*-*-medium-r-normal--0-120-*-*-p-0-iso8859-1";
 
-static const char g_MessageBoxFont[] =
-    "-*-*-medium-r-normal--*-120-*-*-*-*-iso10646-1,"  // explicitly unicode (iso10646-1)
-    "-*-*-medium-r-*--*-120-*-*-*-*-iso10646-1,"  // explicitly unicode (iso10646-1)
-    "-misc-*-*-*-*--*-*-*-*-*-*-iso10646-1,"  // misc unicode (fix for some systems)
-    "-*-*-*-*-*--*-*-*-*-*-*-iso10646-1,"  // just give me anything Unicode.
-    "-*-*-medium-r-normal--*-120-*-*-*-*-iso8859-1,"  // explicitly latin1, in case low-ASCII works out.
-    "-*-*-medium-r-*--*-120-*-*-*-*-iso8859-1,"  // explicitly latin1, in case low-ASCII works out.
-    "-misc-*-*-*-*--*-*-*-*-*-*-iso8859-1,"  // misc latin1 (fix for some systems)
-    "-*-*-*-*-*--*-*-*-*-*-*-iso8859-1";  // just give me anything latin1.
+static const char* g_MessageBoxFont[] = {
+    "-*-*-medium-r-normal--*-120-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
+    "-*-*-medium-r-*--*-120-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
+    "-misc-*-*-*-*--*-*-*-*-*-*-iso10646-1",  // misc unicode (fix for some systems)
+    "-*-*-*-*-*--*-*-*-*-*-*-iso10646-1",  // just give me anything Unicode.
+    "-*-*-medium-r-normal--*-120-*-*-*-*-iso8859-1",  // explicitly latin1, in case low-ASCII works out.
+    "-*-*-medium-r-*--*-120-*-*-*-*-iso8859-1",  // explicitly latin1, in case low-ASCII works out.
+    "-misc-*-*-*-*--*-*-*-*-*-*-iso8859-1",  // misc latin1 (fix for some systems)
+    "-*-*-*-*-*--*-*-*-*-*-*-iso8859-1",  // just give me anything latin1.
+    NULL
+};
 
 static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = {
     { 56, 54, 53 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
@@ -202,13 +204,19 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
     if (SDL_X11_HAVE_UTF8) {
         char **missing = NULL;
         int num_missing = 0;
-        data->font_set = X11_XCreateFontSet(data->display, g_MessageBoxFont,
-                                            &missing, &num_missing, NULL);
-        if (missing) {
-            X11_XFreeStringList(missing);
+        int i_font;
+        for (i = 0; g_MessageBoxFont[i]; ++i) {
+            data->font_set = X11_XCreateFontSet(data->display, g_MessageBoxFont[i],
+                                                &missing, &num_missing, NULL);
+            if (missing) {
+                X11_XFreeStringList(missing);
+            }
+            if (!data->font_set) {
+                break;
+            }
         }
         if (!data->font_set) {
-            return SDL_SetError("Couldn't load font %s", g_MessageBoxFont);
+            return SDL_SetError("Couldn't load x11 message box font");
         }
     } else
 #endif
