@@ -373,8 +373,10 @@ dep_option(SDL_RENDER_D3D12        "Enable the Direct3D 12 render driver" ON "SD
 dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_RENDER;${APPLE}" OFF)
 dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RENDER;SDL_GPU" OFF)
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
+dep_option(SDL_WEBGPU              "Enable WebGPU support" OFF "SDL_RENDER;${EMSCRIPTEN}" OFF)
 dep_option(SDL_VULKAN              "Enable Vulkan support" ON "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR WINDOWS" OFF)
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
+dep_option(SDL_RENDER_WEBGPU       "Enable the WebGPU render driver" OFF "SDL_RENDER;SDL_WEBGPU" OFF)
 dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
 set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
 dep_option(SDL_KMSDRM              "Use KMS DRM video driver" ${UNIX_SYS} "SDL_VIDEO" OFF)
@@ -1543,6 +1545,12 @@ elseif(EMSCRIPTEN)
     set(SDL_VIDEO_DRIVER_EMSCRIPTEN 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/emscripten/*.c")
     set(HAVE_SDL_VIDEO TRUE)
+    #enable webgpu
+    if(SDL_GPU AND SDL_WEBGPU)
+      set(SDL_RENDER_WEBGPU ON)
+      set(HAVE_WEBGPU TRUE)
+      set(HAVE_RENDER_WEBGPU TRUE)
+    endif()
 
     #enable gles
     if(SDL_OPENGLES)
@@ -1890,6 +1898,42 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     set (HAVE_VSNPRINTF 0)
     set (USE_POSIX_SPAWN 1)
   endif()
+  
+  if(SDL_WEBGPU)  # Native platform WebGPU handling
+    set(SDL_VIDEO_WEBGPU 1)
+
+    # This should probably require a compilation flag with the path but for now
+    # SDL3/SDL_webgpu.h points to wgpu/ for the webgpu header.
+    # The user must provide a wgpu library of their choice.
+    set(SDL_WEBGPU_PATH "wgpu" CACHE PATH 
+              "Path to WebGPU library (must contain include/ and lib/ directories)")
+    if(NOT SDL_WEBGPU_PATH)
+        message(FATAL_ERROR "SDL_WEBGPU enabled but SDL_WEBGPU_PATH not specified! "
+              "Please provide path to WebGPU library installation.")
+    endif()
+  
+    # Verify library structure
+    find_path(WEBGPU_INCLUDE_DIR webgpu.h
+        PATHS "${SDL_WEBGPU_PATH}/include/webgpu/"
+        NO_DEFAULT_PATH
+        REQUIRED
+    )
+    find_library(WEBGPU_LIBRARY
+        NAMES wgpu_native
+        PATHS "${SDL_WEBGPU_PATH}/lib/"
+        NO_DEFAULT_PATH
+        REQUIRED
+    )
+
+    # Add to build system
+    sdl_include_directories(PRIVATE SYSTEM "${WEBGPU_INCLUDE_DIR}")
+    sdl_link_dependency(WebGPU LIBS "${WEBGPU_LIBRARY}")
+
+    set(SDL_RENDER_WEBGPU ON)
+    set(HAVE_WEBGPU TRUE)
+    set(HAVE_RENDER_WEBGPU TRUE)
+  endif()
+
 elseif(WINDOWS)
   check_c_source_compiles("
     #include <windows.h>
@@ -2107,6 +2151,39 @@ elseif(WINDOWS)
         set(HAVE_RENDER_VULKAN TRUE)
       endif()
     endif()
+    if(SDL_WEBGPU)  # Native platform WebGPU handling
+      set(SDL_VIDEO_WEBGPU 1)  
+      # This should probably require a compilation flag with the path but for now
+      # SDL3/SDL_webgpu.h points to wgpu/ for the webgpu header.
+      # The user must provide a webgpu library of their choice.
+      set(SDL_WEBGPU_PATH "wgpu" CACHE PATH 
+                "Path to WebGPU library (must contain include/ and lib/ directories)")
+      if(NOT SDL_WEBGPU_PATH)
+          message(FATAL_ERROR "SDL_WEBGPU enabled but SDL_WEBGPU_PATH not specified! "
+                "Please provide path to WebGPU library installation.")
+      endif()      
+      # Locate headers and static library
+      find_path(WEBGPU_INCLUDE_DIR webgpu.h
+          PATHS "${SDL_WEBGPU_PATH}/include/webgpu/"
+          NO_DEFAULT_PATH
+          REQUIRED
+      )
+      find_library(WEBGPU_LIBRARY
+          NAMES wgpu_native
+          PATHS "${SDL_WEBGPU_PATH}/lib/"
+          NO_DEFAULT_PATH
+          REQUIRED
+      )
+
+      # Add include directories
+      sdl_include_directories(PRIVATE SYSTEM "${WEBGPU_INCLUDE_DIR}")
+      sdl_link_dependency(WebGPU LIBS "${WEBGPU_LIBRARY}")
+            
+      set(SDL_RENDER_WEBGPU ON)
+      set(HAVE_WEBGPU TRUE)
+      set(HAVE_RENDER_WEBGPU TRUE)
+    endif()
+
 
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/windows/*.c")
     set(HAVE_SDL_TRAY TRUE)
@@ -3024,6 +3101,11 @@ if(SDL_GPU)
   if(SDL_VIDEO_VULKAN)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/vulkan/*.c")
     set(SDL_GPU_VULKAN 1)
+    set(HAVE_SDL_GPU TRUE)
+  endif()
+  if(SDL_RENDER_WEBGPU)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.c")
+    set(SDL_GPU_WEBGPU 1)
     set(HAVE_SDL_GPU TRUE)
   endif()
   if(SDL_RENDER_GPU)

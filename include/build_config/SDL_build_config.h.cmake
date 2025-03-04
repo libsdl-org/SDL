@@ -430,11 +430,15 @@
 /* Enable Metal support */
 #cmakedefine SDL_VIDEO_METAL 1
 
+/* Enable WebGPU support */
+#cmakedefine SDL_VIDEO_WEBGPU 1
+
 /* Enable GPU support */
 #cmakedefine SDL_GPU_D3D11 1
 #cmakedefine SDL_GPU_D3D12 1
 #cmakedefine SDL_GPU_VULKAN 1
 #cmakedefine SDL_GPU_METAL 1
+#cmakedefine SDL_GPU_WEBGPU 1
 
 /* Enable system power support */
 #cmakedefine SDL_POWER_ANDROID 1
