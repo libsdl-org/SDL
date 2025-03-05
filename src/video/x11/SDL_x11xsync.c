@@ -26,7 +26,7 @@
 #include "SDL_x11video.h"
 #include "SDL_x11xsync.h"
 
-static int xsync_initialized = 0;
+static bool xsync_initialized = false;
 
 static int query_xsync_version(Display *display, int major, int minor)
 {
@@ -59,15 +59,15 @@ void X11_InitXsync(SDL_VideoDevice *_this)
         return; /* X server does not support the version we want at all. */
     }
 
-    xsync_initialized = 1;
+    xsync_initialized = true;
 }
 
-int X11_XsyncIsInitialized(void)
+bool X11_XsyncIsInitialized(void)
 {
     return xsync_initialized;
 }
 
-int X11_InitResizeSync(SDL_Window *window)
+bool X11_InitResizeSync(SDL_Window *window)
 {
     SDL_assert(window != NULL);
     SDL_WindowData *data = window->internal;
@@ -94,7 +94,7 @@ int X11_InitResizeSync(SDL_Window *window)
     X11_XChangeProperty(display, data->xwindow, counter_prop, XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *)&counter_id, 1);
 
-    return 0;
+    return true;
 }
 
 void X11_TermResizeSync(SDL_Window *window)
@@ -145,4 +145,4 @@ void X11_HandlePresent(SDL_Window *window)
     data->resize_in_progress = false;
 }
 
-#endif /* SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_DRIVER_X11_XSYNC */
+#endif // SDL_VIDEO_DRIVER_X11 && SDL_VIDEO_DRIVER_X11_XSYNC
