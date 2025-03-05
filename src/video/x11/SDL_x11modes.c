@@ -223,6 +223,30 @@ SDL_PixelFormat X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *
 }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
+
+// This catches an error from XRRSetScreenSize, as a workaround for now.
+// !!! FIXME: remove this later when we have a better solution.
+static int (*LastErrorHandler)(Display *, XErrorEvent *) = NULL;
+static int SDL_XRRSetScreenSizeErrHandler(Display *d, XErrorEvent *e)
+{
+    // BadMatch: https://github.com/libsdl-org/SDL/issues/4561
+    // BadValue: https://github.com/libsdl-org/SDL/issues/4840
+    if ((e->error_code == BadMatch) || (e->error_code == BadValue)) {
+        return 0;
+    }
+
+    return LastErrorHandler(d, e);
+}
+
+static int SDL_XRRGetOutputInfoErrHandler(Display *d, XErrorEvent *e)
+{
+    // Ignore BadRROutput error, equivalent to RR_Disconnected
+    //
+    // We don't have the XRandR extension error base handy to check,
+    // so assume any errors are okay to ignore.
+    return 0;
+}
+
 static bool CheckXRandR(Display *display, int *major, int *minor)
 {
     // Default the extension not available
@@ -386,6 +410,20 @@ static void SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size
 #endif
 }
 
+static XRROutputInfo *GetXRandROutputInfo(Display *dpy, XRRScreenResources *res, RROutput outputid)
+{
+    XRROutputInfo *output_info;
+
+    // Make sure any previous errors are handled before we start
+    X11_XSync(dpy, False);
+
+    LastErrorHandler = X11_XSetErrorHandler(SDL_XRRGetOutputInfoErrHandler);
+    output_info = X11_XRRGetOutputInfo(dpy, res, outputid);
+    X11_XSetErrorHandler(LastErrorHandler);
+
+    return output_info;
+}
+
 static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int screen, RROutput outputid, XRRScreenResources *res, SDL_VideoDisplay *display, char *display_name, size_t display_name_size)
 {
     Atom EDID = X11_XInternAtom(dpy, "EDID", False);
@@ -429,7 +467,7 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
         X11_XFree(pixmapformats);
     }
 
-    output_info = X11_XRRGetOutputInfo(dpy, res, outputid);
+    output_info = GetXRandROutputInfo(dpy, res, outputid);
     if (!output_info || !output_info->crtc || output_info->connection == RR_Disconnected) {
         X11_XRRFreeOutputInfo(output_info);
         return false; // ignore this one.
@@ -859,7 +897,7 @@ bool X11_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display)
             XRROutputInfo *output_info;
             int i;
 
-            output_info = X11_XRRGetOutputInfo(display, res, data->xrandr_output);
+            output_info = GetXRandROutputInfo(display, res, data->xrandr_output);
             if (output_info && output_info->connection != RR_Disconnected) {
                 for (i = 0; i < output_info->nmode; ++i) {
                     modedata = (SDL_DisplayModeData *)SDL_calloc(1, sizeof(SDL_DisplayModeData));
@@ -883,19 +921,6 @@ bool X11_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display)
 }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
-// This catches an error from XRRSetScreenSize, as a workaround for now.
-// !!! FIXME: remove this later when we have a better solution.
-static int (*PreXRRSetScreenSizeErrorHandler)(Display *, XErrorEvent *) = NULL;
-static int SDL_XRRSetScreenSizeErrHandler(Display *d, XErrorEvent *e)
-{
-    // BadMatch: https://github.com/libsdl-org/SDL/issues/4561
-    // BadValue: https://github.com/libsdl-org/SDL/issues/4840
-    if ((e->error_code == BadMatch) || (e->error_code == BadValue)) {
-        return 0;
-    }
-
-    return PreXRRSetScreenSizeErrorHandler(d, e);
-}
 #endif
 
 bool X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_DisplayMode *mode)
@@ -929,7 +954,7 @@ bool X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, S
             return SDL_SetError("Couldn't get XRandR screen resources");
         }
 
-        output_info = X11_XRRGetOutputInfo(display, res, data->xrandr_output);
+        output_info = GetXRandROutputInfo(display, res, data->xrandr_output);
         if (!output_info || output_info->connection == RR_Disconnected) {
             X11_XRRFreeScreenResources(res);
             return SDL_SetError("Couldn't get XRandR output info");
@@ -969,11 +994,11 @@ bool X11_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, S
            is likely to cause subtle issues but is better than outright
            crashing */
         X11_XSync(display, False);
-        PreXRRSetScreenSizeErrorHandler = X11_XSetErrorHandler(SDL_XRRSetScreenSizeErrHandler);
+        LastErrorHandler = X11_XSetErrorHandler(SDL_XRRSetScreenSizeErrHandler);
         X11_XRRSetScreenSize(display, RootWindow(display, data->screen),
                              mode->w, mode->h, mm_width, mm_height);
         X11_XSync(display, False);
-        X11_XSetErrorHandler(PreXRRSetScreenSizeErrorHandler);
+        X11_XSetErrorHandler(LastErrorHandler);
 
         status = X11_XRRSetCrtcConfig(display, res, output_info->crtc, CurrentTime,
                                       crtc->x, crtc->y, modedata->xrandr_mode, crtc->rotation,
