@@ -2113,6 +2113,7 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
                 SDL_LogError(SDL_LOG_CATEGORY_VIDEO,
                              "Time out elapsed after mode switch on display %" SDL_PRIu32 " with no window becoming fullscreen; reverting", _this->displays[i]->id);
                 SDL_SetDisplayModeForDisplay(_this->displays[i], NULL);
+                _this->displays[i]->internal->mode_switch_deadline_ns = 0;
             }
         }
     }
