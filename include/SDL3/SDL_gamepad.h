@@ -1156,10 +1156,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasAxis(SDL_Gamepad *gamepad, SDL_Ga
  * return a negative value. Note that this differs from the value reported by
  * the lower-level SDL_GetJoystickAxis(), which normally uses the full range.
  *
+ * Note that for invalid gamepads or axes, this will return 0. Zero is also a
+ * valid value in normal operation; usually it means a centered axis.
+ *
  * \param gamepad a gamepad.
  * \param axis an axis index (one of the SDL_GamepadAxis values).
- * \returns axis state (including 0) on success or 0 (also) on failure; call
- *          SDL_GetError() for more information.
+ * \returns axis state.
  *
  * \since This function is available since SDL 3.2.0.
  *
