@@ -171,6 +171,18 @@ typedef struct WebGPUUniformBuffer
     Uint32 drawOffset;
 } WebGPUUniformBuffer;
 
+typedef struct BindGroupLayoutEntryInfo
+{
+    // These have to be extracted from the shader or else we don't
+    // have enought information to build our pipeline layouts.
+    WGPUTextureViewDimension sampleDimensions[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    WGPUTextureSampleType sampleTypes[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    WGPUSamplerBindingType sampleBindingType[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    WGPUStorageTextureAccess storageAccess[MAX_STORAGE_TEXTURES_PER_STAGE];
+    WGPUTextureViewDimension storageDimensions[MAX_STORAGE_TEXTURES_PER_STAGE];
+    WGPUTextureFormat storageFormats[MAX_STORAGE_TEXTURES_PER_STAGE];
+} BindGroupLayoutEntryInfo;
+
 typedef struct WebGPUShader
 {
     WGPUShaderModule shaderModule;
@@ -181,14 +193,7 @@ typedef struct WebGPUShader
     Uint32 storageBufferCount;
     Uint32 uniformBufferCount;
 
-    // These have to be extracted from the shader or else we don't
-    // have enought information to build our pipeline layouts.
-    WGPUTextureViewDimension sampleDimensions[MAX_TEXTURE_SAMPLERS_PER_STAGE];
-    WGPUTextureSampleType sampleTypes[MAX_TEXTURE_SAMPLERS_PER_STAGE];
-    WGPUSamplerBindingType sampleBindingType[MAX_TEXTURE_SAMPLERS_PER_STAGE];
-    WGPUStorageTextureAccess storageAccess[MAX_STORAGE_TEXTURES_PER_STAGE];
-    WGPUTextureViewDimension storageDimensions[MAX_STORAGE_TEXTURES_PER_STAGE];
-    WGPUTextureFormat storageFormats[MAX_STORAGE_TEXTURES_PER_STAGE];
+    BindGroupLayoutEntryInfo bgl;
 } WebGPUShader;
 
 typedef struct WebGPUGraphicsPipeline
@@ -217,6 +222,22 @@ typedef struct WebGPUGraphicsPipeline
 
     bool resourcesDirty;
 } WebGPUGraphicsPipeline;
+
+typedef struct WebGPUComputePipeline
+{
+    WGPUComputePipeline handle;
+    Uint32 numSamplers;
+    Uint32 numReadonlyStorageTextures;
+    Uint32 numReadWriteStorageTextures;
+    Uint32 numReadonlyStorageBuffers;
+    Uint32 numReadWriteStorageBuffers;
+    Uint32 numUniformBuffers;
+    Uint32 threadcountX;
+    Uint32 threadcountY;
+    Uint32 threadcountZ;
+
+    BindGroupLayoutEntryInfo bgl;
+} WebGPUComputePipeline;
 
 typedef struct WebGPUWindowData
 {
@@ -768,7 +789,11 @@ static WGPUTextureUsage SDLToWGPUTextureUsageFlags(SDL_GPUTextureUsageFlags usag
             wgpuFlags |= WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst;
         }
         if (usageFlags & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
+            // if (type != SDL_GPU_TEXTURETYPE_3D) {
             wgpuFlags |= WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_CopyDst;
+            // } else {
+            // wgpuFlags |= WGPUTextureUsage_CopyDst;
+            // }
         }
         if (usageFlags & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
             wgpuFlags |= WGPUTextureUsage_RenderAttachment;
@@ -1531,6 +1556,83 @@ static void WebGPU_INTERNAL_FrameCallback(WGPUQueueWorkDoneStatus status, void *
     }
 }
 
+static void WebGPU_INTERNAL_ParseBGL(
+    BindGroupLayoutEntryInfo *bgl,
+    const char *wgsl)
+{
+
+    // NOTE:
+    // We have a critical problem where we have to create our pipeline layout
+    // for a pipeline before any bindings are provided. If a texture is used,
+    // the pipeline layout expects us to provide an associated TextureViewDimension.
+    //
+    // Unfortunately I can only think to reflect here without changing the shader init
+    // process.
+    //
+    // We only look for the dimension associated with each texture*<*> provided in a shader.
+    // Unfortunately this also makes SPIRV support near impossible.
+
+    Uint32 countSampleType = 0;
+    Uint32 countSampleViewDimension = 0;
+    Uint32 countSamplerBindingType = 0;
+    Uint32 countStorageTextureAccess = 0;
+    Uint32 countStorageTextureViewDimension = 0;
+    bool found;
+
+    char *token;
+    char *copy = SDL_stack_alloc(char, SDL_strlen(wgsl));
+    SDL_strlcpy(copy, wgsl, SDL_strlen(wgsl));
+
+    // Naive approach, strtok and then check tokens.
+    while ((token = SDL_strtok_r(copy, "\n", &copy))) {
+        found = false;
+
+        // 1D textures are not supported in SDL3 GPU so they are ignored.
+        if (SDL_strstr(token, "texture_2d<")) {
+            SDL_Log("texture_2d: %s", token);
+            bgl->sampleDimensions[countSampleViewDimension++] = WGPUTextureViewDimension_2D;
+            found = true;
+        } else if (SDL_strstr(token, " texture_2d_array<")) {
+            SDL_Log("texture_2d_array: %s", token);
+            bgl->sampleDimensions[countSampleViewDimension++] = WGPUTextureViewDimension_2DArray;
+            found = true;
+        } else if (SDL_strstr(token, " texture_3d<")) {
+            SDL_Log("texture_3d: %s", token);
+            bgl->sampleDimensions[countSampleViewDimension++] = WGPUTextureViewDimension_3D;
+            found = true;
+        } else if (SDL_strstr(token, " texture_cube<")) {
+            SDL_Log("texture_cube: %s", token);
+            bgl->sampleDimensions[countSampleViewDimension++] = WGPUTextureViewDimension_Cube;
+            found = true;
+        } else if (SDL_strstr(token, " texture_cube_array<")) {
+            SDL_Log("texture_cube_array: %s", token);
+            bgl->sampleDimensions[countSampleViewDimension++] = WGPUTextureViewDimension_CubeArray;
+            found = true;
+        } else if (SDL_strstr(token, " sampler;")) {
+            SDL_Log("sampler: %s", token);
+            bgl->sampleBindingType[countSamplerBindingType++] = WGPUSamplerBindingType_Filtering;
+        } else if (SDL_strstr(token, " sampler_comparison;")) {
+            SDL_Log("comparison sampler: %s", token);
+            bgl->sampleBindingType[countSamplerBindingType++] = WGPUSamplerBindingType_Comparison;
+        } else if (SDL_strstr(token, " texture_storage")) {
+            SDL_Log("%s", token);
+        }
+
+        // If a texture-sampler pair is found, we need to take note of the type.
+        if (found) {
+            if (SDL_strstr(token, "<f32>")) {
+                bgl->sampleTypes[countSampleType++] = WGPUTextureSampleType_Float;
+            } else if (SDL_strstr(token, "<i32>")) {
+                bgl->sampleTypes[countSampleType++] = WGPUTextureSampleType_Sint;
+            } else if (SDL_strstr(token, "<u32>")) {
+                bgl->sampleTypes[countSampleType++] = WGPUTextureSampleType_Uint;
+            }
+        }
+    }
+
+    SDL_stack_free(copy);
+}
+
 static WebGPUShader *WebGPU_INTERNAL_CompileShader(
     WebGPURenderer *renderer,
     SDL_GPUShaderFormat format,
@@ -1539,7 +1641,7 @@ static WebGPUShader *WebGPU_INTERNAL_CompileShader(
     const char *entrypoint)
 {
     WGPUShaderModuleDescriptor shader_desc;
-    WebGPUShader *shader = SDL_malloc(sizeof(WebGPUShader));
+    WebGPUShader *shader = SDL_calloc(1, sizeof(WebGPUShader));
 
     if (format == SDL_GPU_SHADERFORMAT_WGSL) {
         const char *wgsl = (const char *)code;
@@ -1554,78 +1656,12 @@ static WebGPUShader *WebGPU_INTERNAL_CompileShader(
             },
         };
 
-        // NOTE:
-        // We have a critical problem where we have to create our pipeline layout
-        // for a pipeline before any bindings are provided. If a texture is used,
-        // the pipeline layout expects us to provide an associated TextureViewDimension.
-        //
-        // Unfortunately I can only think to reflect here without changing the shader init
-        // process.
-        //
-        // We only look for the dimension associated with each texture*<*> provided in a shader.
-        // Unfortunately this also makes SPIRV support near impossible.
+        // Set Shader BGLs by naively parsing the
+        // wgsl shader. We have to do this to build
+        // bind groups layout entries.
+        WebGPU_INTERNAL_ParseBGL(&shader->bgl, wgsl);
 
-        Uint32 countSampleType = 0;
-        Uint32 countSampleViewDimension = 0;
-        Uint32 countSamplerBindingType = 0;
-        Uint32 countStorageTextureAccess = 0;
-        Uint32 countStorageTextureViewDimension = 0;
-        bool found;
-
-        char *token;
-        char *copy = SDL_stack_alloc(char, SDL_strlen(wgsl));
-        SDL_strlcpy(copy, wgsl, SDL_strlen(wgsl));
-
-        // Naive approach, strtok and then check tokens.
-        while ((token = SDL_strtok_r(copy, "\n", &copy))) {
-            found = false;
-
-            // 1D textures are not supported in SDL3 GPU so they are ignored.
-            if (SDL_strstr(token, "texture_2d<")) {
-                SDL_Log("texture_2d: %s", token);
-                shader->sampleDimensions[countSampleViewDimension++] = WGPUTextureViewDimension_2D;
-                found = true;
-            } else if (SDL_strstr(token, " texture_2d_array<")) {
-                SDL_Log("texture_2d_array: %s", token);
-                shader->sampleDimensions[countSampleViewDimension++] = WGPUTextureViewDimension_2DArray;
-                found = true;
-            } else if (SDL_strstr(token, " texture_3d<")) {
-                SDL_Log("texture_3d: %s", token);
-                shader->sampleDimensions[countSampleViewDimension++] = WGPUTextureViewDimension_3D;
-                found = true;
-            } else if (SDL_strstr(token, " texture_cube<")) {
-                SDL_Log("texture_cube: %s", token);
-                shader->sampleDimensions[countSampleViewDimension++] = WGPUTextureViewDimension_Cube;
-                found = true;
-            } else if (SDL_strstr(token, " texture_cube_array<")) {
-                SDL_Log("texture_cube_array: %s", token);
-                shader->sampleDimensions[countSampleViewDimension++] = WGPUTextureViewDimension_Cube;
-                found = true;
-            } else if (SDL_strstr(token, " sampler;")) {
-                SDL_Log("sampler: %s", token);
-                shader->sampleBindingType[countSamplerBindingType++] = WGPUSamplerBindingType_Filtering;
-            } else if (SDL_strstr(token, " sampler_comparison;")) {
-                SDL_Log("comparison sampler: %s", token);
-                shader->sampleBindingType[countSamplerBindingType++] = WGPUSamplerBindingType_Comparison;
-            } else if (SDL_strstr(token, " texture_storage")) {
-                SDL_Log("%s", token);
-            }
-
-            // If a texture-sampler pair is found, we need to take note of the type.
-            if (found) {
-                if (SDL_strstr(token, "<f32>")) {
-                    shader->sampleTypes[countSampleType++] = WGPUTextureSampleType_Float;
-                } else if (SDL_strstr(token, "<i32>")) {
-                    shader->sampleTypes[countSampleType++] = WGPUTextureSampleType_Sint;
-                } else if (SDL_strstr(token, "<u32>")) {
-                    shader->sampleTypes[countSampleType++] = WGPUTextureSampleType_Uint;
-                }
-            }
-        }
-
-        SDL_stack_free(copy);
-
-        const char *label = "SDL_GPU WebGPU WGSL Shader";
+        const char *label = "SDL_GPU WGSL Shader";
         shader_desc = (WGPUShaderModuleDescriptor){
             .nextInChain = (WGPUChainedStruct *)&wgsl_desc,
             .label = { label, SDL_strlen(label) },
@@ -2361,13 +2397,6 @@ static WebGPUTexture *WebGPU_INTERNAL_CreateTexture(
     // Fix depth/array handling for different texture types
     if (createInfo->type == SDL_GPU_TEXTURETYPE_3D) {
         desc.size.depthOrArrayLayers = createInfo->layer_count_or_depth;
-
-        // WebGPU does not support 3D texture render targets. This can
-        // be solved my internally creating the 3D texture as a 2D texture array.
-        if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
-            desc.dimension = WGPUTextureDimension_2D;
-        }
-
     } else if (createInfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY ||
                createInfo->type == SDL_GPU_TEXTURETYPE_CUBE ||
                createInfo->type == SDL_GPU_TEXTURETYPE_CUBE_ARRAY) {
@@ -2756,6 +2785,13 @@ static SDL_GPUGraphicsPipeline *WebGPU_CreateGraphicsPipeline(
     // Step 1: Create Pipeline Layout
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "WebGPU: Creating pipeline layout");
 
+    // Get our bind group layout entry props from the shader info
+    // This sucks and breaks if the bindings are not in order.
+    //
+    // TODO: Update to check against group and binding number instead
+    // of making assumption on order binding order.
+    BindGroupLayoutEntryInfo *vertexBGL = &vertexShader->bgl;
+
     // Bind Group 0: Vertex - Sampled Textures (TEXTURE then SAMPLER), Storage Textures, Storage Buffers
     Uint32 bindGroup0Total = (vertexShader->samplerCount * 2) + vertexShader->storageTextureCount + vertexShader->storageBufferCount;
     WGPUBindGroupLayoutEntry *bg0Entries = SDL_calloc(bindGroup0Total, sizeof(WGPUBindGroupLayoutEntry));
@@ -2766,16 +2802,16 @@ static SDL_GPUGraphicsPipeline *WebGPU_CreateGraphicsPipeline(
         // TEXTURE
         bg0Entries[bindingIndex].binding = bindingIndex; // e.g., 0, 2, 4...
         bg0Entries[bindingIndex].visibility = WGPUShaderStage_Vertex;
-        bg0Entries[bindingIndex].texture.sampleType = vertexShader->sampleTypes[i];
-        bg0Entries[bindingIndex].texture.viewDimension = vertexShader->sampleDimensions[i];
+        bg0Entries[bindingIndex].texture.sampleType = vertexBGL->sampleTypes[i];
+        bg0Entries[bindingIndex].texture.viewDimension = vertexBGL->sampleDimensions[i];
         bindingIndex++;
 
-        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Texture Sample Type: %u, Dim: %u, Sampler Binding Type: %u", vertexShader->sampleTypes[i], vertexShader->sampleDimensions[i], vertexShader->sampleBindingType[i]);
+        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Texture Sample Type: %u, Dim: %u, Sampler Binding Type: %u", vertexBGL->sampleTypes[i], vertexBGL->sampleDimensions[i], vertexBGL->sampleBindingType[i]);
 
         // SAMPLER
         bg0Entries[bindingIndex].binding = bindingIndex; // e.g., 1, 3, 5...
         bg0Entries[bindingIndex].visibility = WGPUShaderStage_Vertex;
-        bg0Entries[bindingIndex].sampler.type = vertexShader->sampleBindingType[i];
+        bg0Entries[bindingIndex].sampler.type = vertexBGL->sampleBindingType[i];
         bindingIndex++;
     }
     // Storage Textures
@@ -2810,18 +2846,19 @@ static SDL_GPUGraphicsPipeline *WebGPU_CreateGraphicsPipeline(
     // Bind Group 2: Fragment - Similar to Bind Group 0 but with fragment visibility
     Uint32 bindGroup2Total = (fragmentShader->samplerCount * 2) + fragmentShader->storageTextureCount + fragmentShader->storageBufferCount;
     WGPUBindGroupLayoutEntry *bg2Entries = SDL_calloc(bindGroup2Total, sizeof(WGPUBindGroupLayoutEntry));
+    BindGroupLayoutEntryInfo *fragBGL = &fragmentShader->bgl;
     bindingIndex = 0;
     for (Uint32 i = 0; i < fragmentShader->samplerCount; i++) {
         bg2Entries[bindingIndex].binding = bindingIndex;
         bg2Entries[bindingIndex].visibility = WGPUShaderStage_Fragment;
-        bg2Entries[bindingIndex].texture.sampleType = fragmentShader->sampleTypes[i];
-        bg2Entries[bindingIndex].texture.viewDimension = fragmentShader->sampleDimensions[i];
+        bg2Entries[bindingIndex].texture.sampleType = fragBGL->sampleTypes[i];
+        bg2Entries[bindingIndex].texture.viewDimension = fragBGL->sampleDimensions[i];
         bindingIndex++;
 
-        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Texture Sample Type: %u, Dim: %u, Sampler Binding Type: %u", fragmentShader->sampleTypes[i], fragmentShader->sampleDimensions[i], fragmentShader->sampleBindingType[i]);
+        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Texture Sample Type: %u, Dim: %u, Sampler Binding Type: %u", fragBGL->sampleTypes[i], fragBGL->sampleDimensions[i], fragBGL->sampleBindingType[i]);
         bg2Entries[bindingIndex].binding = bindingIndex;
         bg2Entries[bindingIndex].visibility = WGPUShaderStage_Fragment;
-        bg2Entries[bindingIndex].sampler.type = fragmentShader->sampleBindingType[i];
+        bg2Entries[bindingIndex].sampler.type = fragBGL->sampleBindingType[i];
         bindingIndex++;
     }
     // Storage Textures
@@ -3054,6 +3091,181 @@ static void WebGPU_ReleaseGraphicsPipeline(
     }
 
     SDL_free(webgpuGraphicsPipeline);
+}
+
+static SDL_GPUComputePipeline *WebGPU_CreateComputePipeline(
+    SDL_GPURenderer *driverData,
+    const SDL_GPUComputePipelineCreateInfo *createInfo)
+{
+    WebGPURenderer *renderer = (WebGPURenderer *)driverData;
+    WebGPUComputePipeline *pipeline;
+    WGPUShaderModuleDescriptor shader_desc;
+    WGPUShaderModule module;
+
+    if (createInfo->format == SDL_GPU_SHADERFORMAT_WGSL) {
+        const char *wgsl = (const char *)createInfo->code;
+        WGPUShaderSourceWGSL wgsl_desc = {
+            .chain = {
+                .sType = WGPUSType_ShaderSourceWGSL,
+                .next = NULL,
+            },
+            .code = (WGPUStringView){
+                .data = wgsl,
+                .length = SDL_strlen(wgsl),
+            },
+        };
+
+        char *token;
+        char *copy = SDL_stack_alloc(char, SDL_strlen(wgsl));
+        SDL_strlcpy(copy, wgsl, SDL_strlen(wgsl));
+
+        // Create our compute pipeline
+        pipeline = SDL_calloc(1, sizeof(WebGPUComputePipeline));
+
+        pipeline->numSamplers = createInfo->num_samplers;
+        pipeline->numReadonlyStorageTextures = createInfo->num_readonly_storage_textures;
+        pipeline->numReadWriteStorageTextures = createInfo->num_readwrite_storage_textures;
+        pipeline->numReadonlyStorageBuffers = createInfo->num_readonly_storage_buffers;
+        pipeline->numReadWriteStorageBuffers = createInfo->num_readwrite_storage_buffers;
+        pipeline->numUniformBuffers = createInfo->num_uniform_buffers;
+        pipeline->threadcountX = createInfo->threadcount_x;
+        pipeline->threadcountY = createInfo->threadcount_y;
+        pipeline->threadcountZ = createInfo->threadcount_z;
+
+        WebGPU_INTERNAL_ParseBGL(&pipeline->bgl, wgsl);
+
+        const char *label = "SDL_GPU WGSL Comp Shader";
+        shader_desc = (WGPUShaderModuleDescriptor){
+            .nextInChain = (WGPUChainedStruct *)&wgsl_desc,
+            .label = { label, SDL_strlen(label) },
+        };
+        module = wgpuDeviceCreateShaderModule(renderer->device, &shader_desc);
+    }
+
+    // Get the information for our bind group layouts.
+    // Necessary to have our ComputePipeline validated against the shader and our bindings :/
+    BindGroupLayoutEntryInfo *pipelineBGL = &pipeline->bgl;
+
+    // Bind Group 0: Compute - Sampled Textures (TEXTURE then SAMPLER), Read Storage Textures, Read Storage Buffers
+    Uint32 readOnlyTotal = pipeline->numReadonlyStorageTextures + pipeline->numReadonlyStorageBuffers;
+    Uint32 bindGroup0Total = (pipeline->numSamplers * 2) + readOnlyTotal;
+    WGPUBindGroupLayoutEntry *bg0Entries = SDL_calloc(bindGroup0Total, sizeof(WGPUBindGroupLayoutEntry));
+    Uint32 bindingIndex = 0;
+    Uint32 i;
+
+    // Texture-Sampler Pairs
+    for (i = 0; i < pipeline->numSamplers; i++) {
+        // TEXTURE
+        bg0Entries[bindingIndex].binding = bindingIndex; // e.g., 0, 2, 4...
+        bg0Entries[bindingIndex].visibility = WGPUShaderStage_Compute;
+        bg0Entries[bindingIndex].texture.sampleType = pipelineBGL->sampleTypes[i];
+        bg0Entries[bindingIndex].texture.viewDimension = pipelineBGL->sampleDimensions[i];
+        bindingIndex++;
+
+        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Texture Sample Type: %u, Dim: %u, Sampler Binding Type: %u", pipelineBGL->sampleTypes[i], pipelineBGL->sampleDimensions[i], pipelineBGL->sampleBindingType[i]);
+
+        // SAMPLER
+        bg0Entries[bindingIndex].binding = bindingIndex; // e.g., 1, 3, 5...
+        bg0Entries[bindingIndex].visibility = WGPUShaderStage_Compute;
+        bg0Entries[bindingIndex].sampler.type = pipelineBGL->sampleBindingType[i];
+        bindingIndex++;
+    }
+
+    // Read only storage textures
+    for (i = 0; i < pipeline->numReadonlyStorageTextures; i++) {
+        bg0Entries[bindingIndex].binding = bindingIndex;
+        bg0Entries[bindingIndex].visibility = WGPUShaderStage_Compute;
+        bg0Entries[bindingIndex].storageTexture.access = WGPUStorageTextureAccess_ReadOnly;
+        bg0Entries[bindingIndex].storageTexture.format = WGPUTextureFormat_RGBA8Unorm;
+        bg0Entries[bindingIndex].storageTexture.viewDimension = pipelineBGL->storageDimensions[i];
+    }
+
+    for (i = 0; i < pipeline->numReadonlyStorageBuffers; i++) {
+        bg0Entries[bindingIndex].binding = bindingIndex;
+        bg0Entries[bindingIndex].visibility = WGPUShaderStage_Compute;
+        bg0Entries[bindingIndex].buffer.type = WGPUBufferBindingType_ReadOnlyStorage;
+    }
+
+    // Bind Group 1: Compute - Read-Write Storage Textures, Read-write Storage Buffers
+    Uint32 bindGroup1Total = pipeline->numReadWriteStorageTextures + pipeline->numReadWriteStorageBuffers;
+    WGPUBindGroupLayoutEntry *bg1Entries = SDL_calloc(bindGroup1Total, sizeof(WGPUBindGroupLayoutEntry));
+    bindingIndex = 0;
+    for (i = 0; i < pipeline->numReadWriteStorageTextures; i++) {
+        bg1Entries[bindingIndex].binding = bindingIndex;
+        bg1Entries[bindingIndex].visibility = WGPUShaderStage_Compute;
+        bg1Entries[bindingIndex].storageTexture.access = WGPUStorageTextureAccess_ReadWrite;
+        bg1Entries[bindingIndex].storageTexture.format = WGPUTextureFormat_RGBA8Unorm;
+        bg1Entries[bindingIndex].storageTexture.viewDimension = pipelineBGL->storageDimensions[i + readOnlyTotal];
+    }
+    for (i = 0; i < pipeline->numReadWriteStorageBuffers; i++) {
+        bg1Entries[bindingIndex].binding = bindingIndex;
+        bg1Entries[bindingIndex].visibility = WGPUShaderStage_Compute;
+        bg1Entries[bindingIndex].buffer.type = WGPUBufferBindingType_Storage;
+    }
+
+    // Bind Group 2: Compute - Uniform Buffers
+    Uint32 bindGroup2Total = pipeline->numUniformBuffers;
+    WGPUBindGroupLayoutEntry *bg2Entries = SDL_calloc(bindGroup2Total, sizeof(WGPUBindGroupLayoutEntry));
+    bindingIndex = 0;
+    for (Uint32 i = 0; i < pipeline->numUniformBuffers; i++) {
+        bg2Entries[bindingIndex].binding = bindingIndex;
+        bg2Entries[bindingIndex].visibility = WGPUShaderStage_Compute;
+        bg2Entries[bindingIndex].buffer.type = WGPUBufferBindingType_Uniform;
+        bg2Entries[bindingIndex].buffer.hasDynamicOffset = false;
+        bindingIndex++;
+    }
+
+    WGPUDevice device = renderer->device;
+    const char *labels[3] = {
+        "BG 0 Comp: Sampled Textures, READ Storage Textures, and READ Storage Buffers",
+        "BG 1 Comp: RW storage textures, RW Storage Buffers",
+        "BG 2 Comp: Uniform Buffers",
+    };
+
+    WGPUBindGroupLayout layouts[3] = {
+        wgpuDeviceCreateBindGroupLayout(device, &(WGPUBindGroupLayoutDescriptor){ .entries = bg0Entries, .entryCount = bindGroup0Total, .label = { labels[0], SDL_strlen(labels[0]) } }),
+        wgpuDeviceCreateBindGroupLayout(device, &(WGPUBindGroupLayoutDescriptor){ .entries = bg1Entries, .entryCount = bindGroup1Total, .label = { labels[1], SDL_strlen(labels[1]) } }),
+        wgpuDeviceCreateBindGroupLayout(device, &(WGPUBindGroupLayoutDescriptor){ .entries = bg2Entries, .entryCount = bindGroup2Total, .label = { labels[2], SDL_strlen(labels[2]) } }),
+    };
+
+    WGPUPipelineLayoutDescriptor pipelineLayoutDesc = {
+        .bindGroupLayoutCount = 3,
+        .bindGroupLayouts = layouts,
+    };
+
+    WGPUPipelineLayout pipelineLayout = wgpuDeviceCreatePipelineLayout(renderer->device, &pipelineLayoutDesc);
+    if (!pipelineLayout) {
+        wgpuBindGroupLayoutRelease(layouts[0]);
+        wgpuBindGroupLayoutRelease(layouts[1]);
+        wgpuBindGroupLayoutRelease(layouts[2]);
+        wgpuBindGroupLayoutRelease(layouts[3]);
+        SDL_free(bg0Entries);
+        SDL_free(bg1Entries);
+        SDL_free(bg2Entries);
+        SDL_assert_release(!"Failed to create pipeline layout");
+    }
+    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "WebGPU: Created pipeline layout");
+
+    // // Release bind group layouts (pipeline layout holds references)
+    wgpuBindGroupLayoutRelease(layouts[0]);
+    wgpuBindGroupLayoutRelease(layouts[1]);
+    wgpuBindGroupLayoutRelease(layouts[2]);
+    SDL_free(bg0Entries);
+    SDL_free(bg1Entries);
+    SDL_free(bg2Entries);
+
+    WGPUComputePipelineDescriptor desc = {
+        .layout = pipelineLayout,
+        .compute = {
+            .module = module,
+            .entryPoint = { "main", 4 },
+            .constants = NULL,
+            .constantCount = 0 },
+    };
+
+    pipeline->handle = wgpuDeviceCreateComputePipeline(renderer->device, &desc);
+
+    return (SDL_GPUComputePipeline *)pipeline;
 }
 
 // Helper to create or update the bind group
@@ -3966,19 +4178,19 @@ static SDL_GPUCommandBuffer *WebGPU_AcquireCommandBuffer(SDL_GPURenderer *driver
         commandBuffer->computeUniformBuffers[i] = NULL;
     }
 
-    // FIXME: Do we actually need to set this?
-    commandBuffer->needVertexSamplerBind = false;
-    commandBuffer->needVertexStorageTextureBind = false;
-    commandBuffer->needVertexStorageBufferBind = false;
-    commandBuffer->needVertexUniformBind = false;
-    commandBuffer->needFragmentSamplerBind = false;
-    commandBuffer->needFragmentStorageTextureBind = false;
-    commandBuffer->needFragmentStorageBufferBind = false;
-    commandBuffer->needFragmentUniformBind = false;
-    commandBuffer->needComputeSamplerBind = false;
-    commandBuffer->needComputeBufferBind = false;
-    commandBuffer->needComputeTextureBind = false;
-    commandBuffer->needComputeUniformBind = false;
+    // // FIXME: Do we actually need to set this?
+    // commandBuffer->needVertexSamplerBind = false;
+    // commandBuffer->needVertexStorageTextureBind = false;
+    // commandBuffer->needVertexStorageBufferBind = false;
+    // commandBuffer->needVertexUniformBind = false;
+    // commandBuffer->needFragmentSamplerBind = false;
+    // commandBuffer->needFragmentStorageTextureBind = false;
+    // commandBuffer->needFragmentStorageBufferBind = false;
+    // commandBuffer->needFragmentUniformBind = false;
+    // commandBuffer->needComputeSamplerBind = false;
+    // commandBuffer->needComputeBufferBind = false;
+    // commandBuffer->needComputeTextureBind = false;
+    // commandBuffer->needComputeUniformBind = false;
 
     commandBuffer->autoReleaseFence = true;
 
@@ -4180,14 +4392,15 @@ static void WebGPU_SetBlendConstants(
                                           });
 }
 
-static WGPUTextureView WebGPU_INTERNAL_CreateLayerView(WebGPUTextureContainer *container,
+static WGPUTextureView WebGPU_INTERNAL_CreateLayerView(WebGPURenderer *renderer,
+                                                       WebGPUTextureContainer *container,
                                                        uint32_t layer)
 {
     SDL_GPUTextureCreateInfo *info = &container->header.info;
     const char *view_desc_label = "SDL_GPU Temporary Layer View";
     WGPUTextureViewDescriptor viewDesc = {
         .format = SDLToWGPUTextureFormat(info->format),
-        .dimension = SDLToWGPUTextureViewDimension(info->type),
+        .dimension = WGPUTextureViewDimension_2D,
         .baseMipLevel = 0,
         .mipLevelCount = info->num_levels,
         .baseArrayLayer = layer,
@@ -4195,11 +4408,25 @@ static WGPUTextureView WebGPU_INTERNAL_CreateLayerView(WebGPUTextureContainer *c
         .label = { view_desc_label, SDL_strlen(view_desc_label) },
     };
 
+    WGPUTextureView view;
     if (info->type == SDL_GPU_TEXTURETYPE_3D && info->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
-        viewDesc.dimension = WGPUTextureViewDimension_2DArray;
+
+        // const char *label = "3D -> 2D Texture View";
+        // WGPUTexture newTex = wgpuDeviceCreateTexture(
+        //     renderer->device,
+        //     &(WGPUTextureDescriptor) {
+        //         .dimension = WGPUTextureDimension_2D,
+        //         .format = SDLToWGPUTextureFormat(info->format),
+        //         .mipLevelCount = info->num_levels,
+        //         .sampleCount = SDLToWGPUSampleCount(info->sample_count),
+        //         .usage = SDLToWGPUTextureUsageFlags(info->usage, info->format, info->type),
+        //         .label = { label, SDL_strlen(label) }
+        //     });
     }
 
-    return wgpuTextureCreateView(container->activeTexture->handle, &viewDesc);
+    view = wgpuTextureCreateView(container->activeTexture->handle, &viewDesc);
+
+    return view;
 }
 
 static void WebGPU_BeginRenderPass(
@@ -4244,6 +4471,7 @@ static void WebGPU_BeginRenderPass(
 
         // Create WGPU texture view from our texture so we can display it
         WGPUTextureView view = WebGPU_INTERNAL_CreateLayerView(
+            renderer,
             container,
             colorInfo->layer_or_depth_plane);
 
@@ -4272,6 +4500,7 @@ static void WebGPU_BeginRenderPass(
                 colorInfo->cycle_resolve_texture);
 
             colorAttachments[i].resolveTarget = WebGPU_INTERNAL_CreateLayerView(
+                renderer,
                 container,
                 colorInfo->resolve_layer);
 
@@ -4848,6 +5077,7 @@ static SDL_GPUDevice *WebGPU_CreateDevice(bool debug, bool preferLowPower, SDL_P
 
     result->CreateShader = WebGPU_CreateShader;
     result->ReleaseShader = WebGPU_ReleaseShader;
+    result->CreateComputePipeline = WebGPU_CreateComputePipeline;
     result->CreateGraphicsPipeline = WebGPU_CreateGraphicsPipeline;
     result->ReleaseGraphicsPipeline = WebGPU_ReleaseGraphicsPipeline;
     result->BindGraphicsPipeline = WebGPU_BindGraphicsPipeline;
