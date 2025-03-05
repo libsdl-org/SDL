@@ -555,22 +555,73 @@ static XRRScreenResources *X11_GetScreenResources(Display *dpy, int screen)
 
 static void X11_CheckDisplaysMoved(SDL_VideoDevice *_this, Display *dpy)
 {
-    const int screen = DefaultScreen(dpy);
-    XRRScreenResources *res = X11_GetScreenResources(dpy, screen);
-    if (!res) {
+    const int screencount = ScreenCount(dpy);
+
+    SDL_DisplayID *displays = SDL_GetDisplays(NULL);
+    if (!displays) {
         return;
     }
 
-    SDL_DisplayID *displays = SDL_GetDisplays(NULL);
-    if (displays) {
+    for (int screen = 0; screen < screencount; ++screen) {
+        XRRScreenResources *res = X11_GetScreenResources(dpy, screen);
+        if (!res) {
+            continue;
+        }
+
         for (int i = 0; displays[i]; ++i) {
             SDL_VideoDisplay *display = SDL_GetVideoDisplay(displays[i]);
             const SDL_DisplayData *displaydata = display->internal;
-            X11_UpdateXRandRDisplay(_this, dpy, screen, displaydata->xrandr_output, res, display);
+            if (displaydata->screen == screen) {
+                X11_UpdateXRandRDisplay(_this, dpy, screen, displaydata->xrandr_output, res, display);
+            }
         }
-        SDL_free(displays);
+        X11_XRRFreeScreenResources(res);
     }
-    X11_XRRFreeScreenResources(res);
+    SDL_free(displays);
+}
+
+static void X11_CheckDisplaysRemoved(SDL_VideoDevice *_this, Display *dpy)
+{
+    const int screencount = ScreenCount(dpy);
+    int num_displays = 0;
+
+    SDL_DisplayID *displays = SDL_GetDisplays(&num_displays);
+    if (!displays) {
+        return;
+    }
+
+    for (int screen = 0; screen < screencount; ++screen) {
+        XRRScreenResources *res = X11_GetScreenResources(dpy, screen);
+        if (!res) {
+            continue;
+        }
+
+        for (int output = 0; output < res->noutput; output++) {
+            for (int i = 0; i < num_displays; ++i) {
+                if (!displays[i]) {
+                    // We already removed this display from the list
+                    continue;
+                }
+
+                SDL_VideoDisplay *display = SDL_GetVideoDisplay(displays[i]);
+                const SDL_DisplayData *displaydata = display->internal;
+                if (displaydata->xrandr_output == res->outputs[output]) {
+                    // This display is active, remove it from the list
+                    displays[i] = 0;
+                    break;
+                }
+            }
+        }
+        X11_XRRFreeScreenResources(res);
+    }
+
+    for (int i = 0; i < num_displays; ++i) {
+        if (displays[i]) {
+            // This display wasn't in the XRandR list
+            SDL_DelVideoDisplay(displays[i], true);
+        }
+    }
+    SDL_free(displays);
 }
 
 static void X11_HandleXRandROutputChange(SDL_VideoDevice *_this, const XRROutputChangeNotifyEvent *ev)
@@ -580,8 +631,11 @@ static void X11_HandleXRandROutputChange(SDL_VideoDevice *_this, const XRROutput
     int i;
 
 #if 0
-    printf("XRROutputChangeNotifyEvent! [output=%u, crtc=%u, mode=%u, rotation=%u, connection=%u]", (unsigned int) ev->output, (unsigned int) ev->crtc, (unsigned int) ev->mode, (unsigned int) ev->rotation, (unsigned int) ev->connection);
+    printf("XRROutputChangeNotifyEvent! [output=%u, crtc=%u, mode=%u, rotation=%u, connection=%u]\n", (unsigned int) ev->output, (unsigned int) ev->crtc, (unsigned int) ev->mode, (unsigned int) ev->rotation, (unsigned int) ev->connection);
 #endif
+
+    // XWayland doesn't always send output disconnected events
+    X11_CheckDisplaysRemoved(_this, ev->display);
 
     displays = SDL_GetDisplays(NULL);
     if (displays) {
