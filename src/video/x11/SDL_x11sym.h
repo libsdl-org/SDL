@@ -182,6 +182,12 @@ SDL_X11_SYM(Status, XSyncDestroyCounter, (Display* a, XSyncCounter b), (a, b), r
 SDL_X11_SYM(Status, XSyncSetCounter, (Display* a, XSyncCounter b, XSyncValue c), (a, b, c), return)
 #endif
 
+#ifdef SDL_VIDEO_DRIVER_X11_XTEST
+SDL_X11_MODULE(XTEST)
+SDL_X11_SYM(Status, XTestQueryExtension, (Display* a, int* b, int* c), (a, b, c), return)
+SDL_X11_SYM(int, XTestFakeMotionEvent, (Display* a, int b, int c, int d, unsigned long e), (a, b, c, d, e), return)
+#endif
+
 #ifdef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 SDL_X11_SYM(Bool,XGetEventData,(Display* a,XGenericEventCookie* b),(a,b),return)
 SDL_X11_SYM(void,XFreeEventData,(Display* a,XGenericEventCookie* b),(a,b),)
