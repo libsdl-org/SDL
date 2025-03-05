@@ -458,7 +458,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_RemoveSurfaceAlternateImages(SDL_Surface *s
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function is not thread safe. The locking referred to by this function is making the pixels available for direct access, not thread-safe locking.
+ * \threadsafety This function is not thread safe. The locking referred to by
+ *               this function is making the pixels available for direct
+ *               access, not thread-safe locking.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -472,7 +474,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_LockSurface(SDL_Surface *surface);
  *
  * \param surface the SDL_Surface structure to be unlocked.
  *
- * \threadsafety This function is not thread safe. The locking referred to by this function is making the pixels available for direct access, not thread-safe locking.
+ * \threadsafety This function is not thread safe. The locking referred to by
+ *               this function is making the pixels available for direct
+ *               access, not thread-safe locking.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1190,7 +1194,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SD
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety Only one thread should be using the `src` and `dst` surfaces at any given time.
+ * \threadsafety Only one thread should be using the `src` and `dst` surfaces
+ *               at any given time.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1213,7 +1218,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurface(SDL_Surface *src, const SDL_Rec
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety Only one thread should be using the `src` and `dst` surfaces at any given time.
+ * \threadsafety Only one thread should be using the `src` and `dst` surfaces
+ *               at any given time.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1236,7 +1242,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceUnchecked(SDL_Surface *src, cons
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety Only one thread should be using the `src` and `dst` surfaces at any given time.
+ * \threadsafety Only one thread should be using the `src` and `dst` surfaces
+ *               at any given time.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1260,7 +1267,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceScaled(SDL_Surface *src, const S
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety Only one thread should be using the `src` and `dst` surfaces at any given time.
+ * \threadsafety Only one thread should be using the `src` and `dst` surfaces
+ *               at any given time.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1281,7 +1289,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety Only one thread should be using the `src` and `dst` surfaces at any given time.
+ * \threadsafety Only one thread should be using the `src` and `dst` surfaces
+ *               at any given time.
  *
  * \since This function is available since SDL 3.4.0.
  *
@@ -1305,7 +1314,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_StretchSurface(SDL_Surface *src, const SDL_
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety Only one thread should be using the `src` and `dst` surfaces at any given time.
+ * \threadsafety Only one thread should be using the `src` and `dst` surfaces
+ *               at any given time.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1333,7 +1343,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiled(SDL_Surface *src, const SD
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety Only one thread should be using the `src` and `dst` surfaces at any given time.
+ * \threadsafety Only one thread should be using the `src` and `dst` surfaces
+ *               at any given time.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1368,7 +1379,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceTiledWithScale(SDL_Surface *src,
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety Only one thread should be using the `src` and `dst` surfaces at any given time.
+ * \threadsafety Only one thread should be using the `src` and `dst` surfaces
+ *               at any given time.
  *
  * \since This function is available since SDL 3.2.0.
  *
