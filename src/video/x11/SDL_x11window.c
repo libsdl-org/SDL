@@ -934,6 +934,75 @@ static int X11_CatchAnyError(Display *d, XErrorEvent *e)
     return 0;
 }
 
+static void X11_ExternalResizeMoveSync(SDL_Window *window)
+{
+    SDL_WindowData *data = window->internal;
+    Display *display = data->videodata->display;
+    int (*prev_handler)(Display *, XErrorEvent *);
+    unsigned int childCount;
+    Window childReturn, root, parent;
+    Window *children;
+    XWindowAttributes attrs;
+    Uint64 timeout = 0;
+    int x, y;
+    const bool send_move = !!(data->pending_operation & X11_PENDING_OP_MOVE);
+    const bool send_resize = !!(data->pending_operation & X11_PENDING_OP_RESIZE);
+
+    X11_XSync(display, False);
+    X11_XQueryTree(display, data->xwindow, &root, &parent, &children, &childCount);
+    prev_handler = X11_XSetErrorHandler(X11_CatchAnyError);
+
+    /* Wait a brief time to see if the window manager decided to let the move or resize happen.
+     * If the window changes at all, even to an unexpected value, we break out.
+     */
+    timeout = SDL_GetTicksNS() + SDL_MS_TO_NS(100);
+    while (true) {
+        caught_x11_error = false;
+        X11_XSync(display, False);
+        X11_XGetWindowAttributes(display, data->xwindow, &attrs);
+        X11_XTranslateCoordinates(display, parent, DefaultRootWindow(display),
+                                  attrs.x, attrs.y, &x, &y, &childReturn);
+        SDL_GlobalToRelativeForWindow(window, x, y, &x, &y);
+
+        if (!caught_x11_error) {
+            if ((data->pending_operation & X11_PENDING_OP_MOVE) && (x == data->expected.x + data->border_left && y == data->expected.y + data->border_top)) {
+                data->pending_operation &= ~X11_PENDING_OP_MOVE;
+            }
+            if ((data->pending_operation & X11_PENDING_OP_RESIZE) && (attrs.width == data->expected.w && attrs.height == data->expected.h)) {
+                data->pending_operation &= ~X11_PENDING_OP_RESIZE;
+            }
+
+            if (data->pending_operation == X11_PENDING_OP_NONE) {
+                break;
+            }
+        }
+
+        if (SDL_GetTicksNS() >= timeout) {
+            // Timed out without the expected values. Update the requested data so future sync calls won't block.
+            data->pending_operation &= ~(X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE);
+            data->expected.x = x;
+            data->expected.y = y;
+            data->expected.w = attrs.width;
+            data->expected.h = attrs.height;
+            break;
+        }
+
+        SDL_Delay(10);
+    }
+
+    if (!caught_x11_error) {
+        if (send_move) {
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
+        }
+        if (send_resize) {
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, attrs.width, attrs.height);
+        }
+    }
+
+    X11_XSetErrorHandler(prev_handler);
+    caught_x11_error = false;
+}
+
 /* Wait a brief time, or not, to see if the window manager decided to move/resize the window.
  * Send MOVED and RESIZED window events */
 static bool X11_SyncWindowTimeout(SDL_VideoDevice *_this, SDL_Window *window, Uint64 param_timeout)
@@ -1214,9 +1283,10 @@ void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 
             X11_XGetWMNormalHints(display, data->xwindow, sizehints, &userhints);
 
-            sizehints->min_width = sizehints->max_width = window->pending.w;
-            sizehints->min_height = sizehints->max_height = window->pending.h;
+            data->expected.w = sizehints->min_width = sizehints->max_width = window->pending.w;
+            data->expected.h = sizehints->min_height = sizehints->max_height = window->pending.h;
             sizehints->flags |= PMinSize | PMaxSize;
+            data->pending_operation |= X11_PENDING_OP_RESIZE;
 
             X11_XSetWMNormalHints(display, data->xwindow, sizehints);
 
@@ -2223,6 +2293,15 @@ void X11_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 
 bool X11_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
+    SDL_WindowData *data = window->internal;
+
+    // If the window is external and has only a pending resize or move event, use the special external sync path to avoid processing events.
+    if ((window->flags & SDL_WINDOW_EXTERNAL) &&
+        (data->pending_operation & ~(X11_PENDING_OP_RESIZE | X11_PENDING_OP_MOVE)) == X11_PENDING_OP_NONE) {
+            X11_ExternalResizeMoveSync(window);
+            return true;
+    }
+
     const Uint64 current_time = SDL_GetTicksNS();
     Uint64 timeout = 0;
 
