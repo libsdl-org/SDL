@@ -521,7 +521,9 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             return false;
         }
 
-        SetupWindowInput(_this, window);
+        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_EXTERNAL_WINDOW_INPUT, true)) {
+            SetupWindowInput(_this, window);
+        }
         return true;
     }
 
