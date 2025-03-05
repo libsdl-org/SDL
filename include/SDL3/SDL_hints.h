@@ -3608,11 +3608,13 @@ extern "C" {
 #define SDL_HINT_VIDEO_WIN_D3DCOMPILER "SDL_VIDEO_WIN_D3DCOMPILER"
 
 /**
- * A variable controlling whether SDL should call XSelectInput() to enable input events on X11 windows wrapped by SDL windows.
+ * A variable controlling whether SDL should call XSelectInput() to enable
+ * input events on X11 windows wrapped by SDL windows.
  *
  * The variable can be set to the following values:
  *
- * - "0": Don't call XSelectInput(), assuming the native window code has done it already.
+ * - "0": Don't call XSelectInput(), assuming the native window code has done
+ *   it already.
  * - "1": Call XSelectInput() to enable input events. (default)
  *
  * This hint should be set before creating a window.
