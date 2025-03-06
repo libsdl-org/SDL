@@ -34,6 +34,7 @@
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandmouse.h"
+#include "SDL_waylandclipboard.h"
 
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
@@ -2258,17 +2259,25 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
 #ifdef SDL_USE_LIBDBUS
         if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_PORTAL_MIME)) {
             data_device->has_mime_file = true;
+            data_device->mime_type = FILE_PORTAL_MIME;
             wl_data_offer_accept(id, serial, FILE_PORTAL_MIME);
         }
 #endif
         if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_MIME)) {
             data_device->has_mime_file = true;
+            data_device->mime_type = FILE_MIME;
             wl_data_offer_accept(id, serial, FILE_MIME);
         }
 
-        if (Wayland_data_offer_has_mime(data_device->drag_offer, TEXT_MIME)) {
-            data_device->has_mime_text = true;
-            wl_data_offer_accept(id, serial, TEXT_MIME);
+        size_t mime_count = 0;
+        const char **text_mime_types = Wayland_GetTextMimeTypes(SDL_GetVideoDevice(), &mime_count);
+        for (size_t i = 0; i < mime_count; ++i) {
+            if (Wayland_data_offer_has_mime(data_device->drag_offer, text_mime_types[i])) {
+                data_device->has_mime_text = true;
+                data_device->mime_type = text_mime_types[i];
+                wl_data_offer_accept(id, serial, text_mime_types[i]);
+                break;
+            }
         }
 
         // SDL only supports "copy" style drag and drop
@@ -2411,9 +2420,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
          * non paths that are not visible to the application
          */
         if (!drop_handled) {
-            const char *mime_type = data_device->has_mime_file ? FILE_MIME : (data_device->has_mime_text ? TEXT_MIME : "");
-            void *buffer = Wayland_data_offer_receive(data_device->drag_offer,
-                                                      mime_type, &length);
+            void *buffer = Wayland_data_offer_receive(data_device->drag_offer, data_device->mime_type, &length);
             if (data_device->has_mime_file) {
                 if (buffer) {
                     char *saveptr = NULL;
