@@ -255,7 +255,6 @@ typedef struct
     VkRenderPass mainRenderpasses[VULKAN_RENDERPASS_COUNT];
     VkFramebuffer mainFramebuffer;
     VULKAN_Buffer stagingBuffer;
-    VkFilter scaleMode;
     SDL_Rect lockedRect;
     int width;
     int height;
@@ -2600,7 +2599,6 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     } else {
         textureData->shader = SHADER_ADVANCED;
     }
-    textureData->scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
 
 #ifdef SDL_HAVE_YUV
     // YUV textures must have even width and height.  Also create Ycbcr conversion
@@ -3091,17 +3089,6 @@ static void VULKAN_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     VULKAN_IssueBatch(rendererData);
 
     VULKAN_DestroyBuffer(rendererData, &textureData->stagingBuffer);
-}
-
-static void VULKAN_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
-{
-    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
-
-    if (!textureData) {
-        return;
-    }
-
-    textureData->scaleMode = (scaleMode == SDL_SCALEMODE_NEAREST) ? VK_FILTER_NEAREST : VK_FILTER_LINEAR;
 }
 
 static bool VULKAN_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -3775,7 +3762,7 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
 
     VULKAN_SetupShaderConstants(renderer, cmd, texture, &constants);
 
-    switch (textureData->scaleMode) {
+    switch (cmd->data.draw.texture_scale_mode) {
     case VK_FILTER_NEAREST:
         switch (cmd->data.draw.texture_address_mode) {
         case SDL_TEXTURE_ADDRESS_CLAMP:
@@ -3801,7 +3788,7 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
         }
         break;
     default:
-        return SDL_SetError("Unknown scale mode: %d", textureData->scaleMode);
+        return SDL_SetError("Unknown scale mode: %d", cmd->data.draw.texture_scale_mode);
     }
 
     if (textureData->mainImage.imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
@@ -4290,7 +4277,6 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
 #endif
     renderer->LockTexture = VULKAN_LockTexture;
     renderer->UnlockTexture = VULKAN_UnlockTexture;
-    renderer->SetTextureScaleMode = VULKAN_SetTextureScaleMode;
     renderer->SetRenderTarget = VULKAN_SetRenderTarget;
     renderer->QueueSetViewport = VULKAN_QueueNoOp;
     renderer->QueueSetDrawColor = VULKAN_QueueNoOp;
