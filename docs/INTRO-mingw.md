@@ -47,7 +47,7 @@ cd build
 
 # Other Distributions
 
-Things can get quite complicated with other distributions of MinGW. If you can't follow [the cmake intro](INTRO-cmake.md), perhaps due to issues getting cmake to understand your toolchain, we can provide a guide that should get you up and running.
+Things can get quite complicated with other distributions of MinGW. If you can't follow [the cmake intro](INTRO-cmake.md), perhaps due to issues getting cmake to understand your toolchain, this section should work.
 
 ## Acquire SDL
 

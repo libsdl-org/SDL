@@ -7,7 +7,7 @@ We'll start by creating a simple project to build and run [hello.c](hello.c)
 
 # Get a copy of the SDL source:
 ```sh
-git clone https://github.com/libsdl-org/SDL.git
+git clone https://github.com/libsdl-org/SDL.git vendored/SDL
 ```
 
 # Create the file CMakeLists.txt
@@ -37,19 +37,17 @@ cmake --build build
 ```
 
 # Run:
-## Windows (Visual Studio Generator)
-The executable should be in the `build/Debug` directory:
+The executable should be in the `build` directory:
+
 ```sh
-cd build/Debug
+cd build
 ./hello
 ```
 
-> NOTE: If there wasn't an executable here despite the above Build section running successfully, it's likely because you're following this guide using a different toolchain. This section is written with the assumption that you both had a Visual Studio toolchain installed, and that CMake selected to configure it's build for it. Please take a look just below.
+If there wasn't an executable there despite the above Build section running successfully, it's likely because you're following this guide using the Visual Studio toolchain, it should instead be in the `build/Debug` directory.
 
-## Linux/Mac/BSD/Windows (Non Visual Studio  Generator)/etc
-On other platforms the executable is in the `build` directory:
 ```sh
-cd build
+cd build/Debug
 ./hello
 ```
 
