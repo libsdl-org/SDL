@@ -37,8 +37,8 @@ So as I suspected, Dawn would have been the best pick to work with like I had or
 */
 
 #ifndef __EMSCRIPTEN__
-// #include "../../webgpu-headers/webgpu.h"
-#include "../../wgpu/include/webgpu/webgpu.h"
+// #include "../../wgpu/include/webgpu/webgpu.h"
+#include "../../wgpu/include/webgpu/wgpu.h"
 #endif // webgpu.h is provided by emscripten when using emcc with -sUSE_WEBGPU=1
  
 #include <SDL3/SDL_stdinc.h>
