@@ -2551,6 +2551,285 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
     }
 }
 
+// Convert between two 8888 pixels with differing formats.
+#define SWIZZLE_8888_SRC_ALPHA(src, dst, srcfmt, dstfmt)                \
+    do {                                                                \
+        dst = (((src >> srcfmt->Rshift) & 0xFF) << dstfmt->Rshift) |    \
+              (((src >> srcfmt->Gshift) & 0xFF) << dstfmt->Gshift) |    \
+              (((src >> srcfmt->Bshift) & 0xFF) << dstfmt->Bshift) |    \
+              (((src >> srcfmt->Ashift) & 0xFF) << dstfmt->Ashift);     \
+    } while (0)
+
+#define SWIZZLE_8888_DST_ALPHA(src, dst, srcfmt, dstfmt, dstAmask)      \
+    do {                                                                \
+        dst = (((src >> srcfmt->Rshift) & 0xFF) << dstfmt->Rshift) |    \
+              (((src >> srcfmt->Gshift) & 0xFF) << dstfmt->Gshift) |    \
+              (((src >> srcfmt->Bshift) & 0xFF) << dstfmt->Bshift) |    \
+              dstAmask;                                                 \
+    } while (0)
+
+#if defined(SDL_SSE4_1_INTRINSICS) || defined(SDL_AVX2_INTRINSICS) || (defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8))
+static void Get8888AlphaMaskAndShift(const SDL_PixelFormatDetails *fmt, Uint32 *mask, Uint32 *shift)
+{
+    if (fmt->Amask) {
+        *mask = fmt->Amask;
+        *shift = fmt->Ashift;
+    } else {
+        *mask = ~(fmt->Rmask | fmt->Gmask | fmt->Bmask);
+        switch (*mask) {
+        case 0x000000FF:
+            *shift = 0;
+            break;
+        case 0x0000FF00:
+            *shift = 8;
+            break;
+        case 0x00FF0000:
+            *shift = 16;
+            break;
+        case 0xFF000000:
+            *shift = 24;
+            break;
+        default:
+            // Should never happen
+            *shift = 0;
+            break;
+        }
+    }
+}
+#endif // SSE4.1, AVX2, and NEON implementations of Blit8888to8888PixelSwizzle
+
+#ifdef SDL_SSE4_1_INTRINSICS
+
+static void SDL_TARGETING("sse4.1") Blit8888to8888PixelSwizzleSSE41(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    bool fill_alpha = (!srcfmt->Amask || !dstfmt->Amask);
+    Uint32 srcAmask, srcAshift;
+    Uint32 dstAmask, dstAshift;
+
+    Get8888AlphaMaskAndShift(srcfmt, &srcAmask, &srcAshift);
+    Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
+
+    // The byte offsets for the start of each pixel
+    const __m128i mask_offsets = _mm_set_epi8(
+        12, 12, 12, 12, 8, 8, 8, 8, 4, 4, 4, 4, 0, 0, 0, 0);
+
+    const __m128i convert_mask = _mm_add_epi32(
+        _mm_set1_epi32(
+            ((srcfmt->Rshift >> 3) << dstfmt->Rshift) |
+            ((srcfmt->Gshift >> 3) << dstfmt->Gshift) |
+            ((srcfmt->Bshift >> 3) << dstfmt->Bshift) |
+            ((srcAshift >> 3) << dstAshift)),
+        mask_offsets);
+
+    const __m128i alpha_fill_mask = _mm_set1_epi32((int)dstAmask);
+
+    while (height--) {
+        int i = 0;
+
+        for (; i + 4 <= width; i += 4) {
+            // Load 4 src pixels
+            __m128i src128 = _mm_loadu_si128((__m128i *)src);
+
+            // Convert to dst format
+            src128 = _mm_shuffle_epi8(src128, convert_mask);
+
+            if (fill_alpha) {
+                // Set the alpha channels of src to 255
+                src128 = _mm_or_si128(src128, alpha_fill_mask);
+            }
+
+            // Save the result
+            _mm_storeu_si128((__m128i *)dst, src128);
+
+            src += 16;
+            dst += 16;
+        }
+
+        for (; i < width; ++i) {
+            Uint32 src32 = *(Uint32 *)src;
+            Uint32 dst32;
+            if (fill_alpha) {
+                SWIZZLE_8888_DST_ALPHA(src32, dst32, srcfmt, dstfmt, dstAmask);
+            } else {
+                SWIZZLE_8888_SRC_ALPHA(src32, dst32, srcfmt, dstfmt);
+            }
+            *(Uint32 *)dst = dst32;
+            src += 4;
+            dst += 4;
+        }
+
+        src += srcskip;
+        dst += dstskip;
+    }
+}
+
+#endif
+
+#ifdef SDL_AVX2_INTRINSICS
+
+static void SDL_TARGETING("avx2") Blit8888to8888PixelSwizzleAVX2(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    bool fill_alpha = (!srcfmt->Amask || !dstfmt->Amask);
+    Uint32 srcAmask, srcAshift;
+    Uint32 dstAmask, dstAshift;
+
+    Get8888AlphaMaskAndShift(srcfmt, &srcAmask, &srcAshift);
+    Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
+
+    // The byte offsets for the start of each pixel
+    const __m256i mask_offsets = _mm256_set_epi8(
+        28, 28, 28, 28, 24, 24, 24, 24, 20, 20, 20, 20, 16, 16, 16, 16, 12, 12, 12, 12, 8, 8, 8, 8, 4, 4, 4, 4, 0, 0, 0, 0);
+
+    const __m256i convert_mask = _mm256_add_epi32(
+        _mm256_set1_epi32(
+            ((srcfmt->Rshift >> 3) << dstfmt->Rshift) |
+            ((srcfmt->Gshift >> 3) << dstfmt->Gshift) |
+            ((srcfmt->Bshift >> 3) << dstfmt->Bshift) |
+            ((srcAshift >> 3) << dstAshift)),
+        mask_offsets);
+
+    const __m256i alpha_fill_mask = _mm256_set1_epi32((int)dstAmask);
+
+    while (height--) {
+        int i = 0;
+
+        for (; i + 8 <= width; i += 8) {
+            // Load 8 src pixels
+            __m256i src256 = _mm256_loadu_si256((__m256i *)src);
+
+            // Convert to dst format
+            src256 = _mm256_shuffle_epi8(src256, convert_mask);
+
+            if (fill_alpha) {
+                // Set the alpha channels of src to 255
+                src256 = _mm256_or_si256(src256, alpha_fill_mask);
+            }
+
+            // Save the result
+            _mm256_storeu_si256((__m256i *)dst, src256);
+
+            src += 32;
+            dst += 32;
+        }
+
+        for (; i < width; ++i) {
+            Uint32 src32 = *(Uint32 *)src;
+            Uint32 dst32;
+            if (fill_alpha) {
+                SWIZZLE_8888_DST_ALPHA(src32, dst32, srcfmt, dstfmt, dstAmask);
+            } else {
+                SWIZZLE_8888_SRC_ALPHA(src32, dst32, srcfmt, dstfmt);
+            }
+            *(Uint32 *)dst = dst32;
+            src += 4;
+            dst += 4;
+        }
+
+        src += srcskip;
+        dst += dstskip;
+    }
+}
+
+#endif
+
+#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8)
+
+static void Blit8888to8888PixelSwizzleNEON(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    bool fill_alpha = (!srcfmt->Amask || !dstfmt->Amask);
+    Uint32 srcAmask, srcAshift;
+    Uint32 dstAmask, dstAshift;
+
+    Get8888AlphaMaskAndShift(srcfmt, &srcAmask, &srcAshift);
+    Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
+
+    // The byte offsets for the start of each pixel
+    const uint8x16_t mask_offsets = vreinterpretq_u8_u64(vcombine_u64(
+        vcreate_u64(0x0404040400000000), vcreate_u64(0x0c0c0c0c08080808)));
+
+    const uint8x16_t convert_mask = vreinterpretq_u8_u32(vaddq_u32(
+        vreinterpretq_u32_u8(mask_offsets),
+        vdupq_n_u32(
+            ((srcfmt->Rshift >> 3) << dstfmt->Rshift) |
+            ((srcfmt->Gshift >> 3) << dstfmt->Gshift) |
+            ((srcfmt->Bshift >> 3) << dstfmt->Bshift) |
+            ((srcAshift >> 3) << dstAshift))));
+
+    const uint8x16_t alpha_fill_mask = vreinterpretq_u8_u32(vdupq_n_u32(dstAmask));
+
+    while (height--) {
+        int i = 0;
+
+        for (; i + 4 <= width; i += 4) {
+            // Load 4 src pixels
+            uint8x16_t src128 = vld1q_u8(src);
+
+            // Convert to dst format
+            src128 = vqtbl1q_u8(src128, convert_mask);
+
+            if (fill_alpha) {
+                // Set the alpha channels of src to 255
+                src128 = vorrq_u8(src128, alpha_fill_mask);
+            }
+
+            // Save the result
+            vst1q_u8(dst, src128);
+
+            src += 16;
+            dst += 16;
+        }
+
+        // Process 1 pixel per iteration, max 3 iterations, same calculations as above
+        for (; i < width; ++i) {
+            // Top 32-bits will be not used in src32
+            uint8x8_t src32 = vreinterpret_u8_u32(vld1_dup_u32((Uint32*)src));
+
+            // Convert to dst format
+            src32 = vtbl1_u8(src32, vget_low_u8(convert_mask));
+
+            if (fill_alpha) {
+                // Set the alpha channels of src to 255
+                src32 = vorr_u8(src32, vget_low_u8(alpha_fill_mask));
+            }
+
+            // Save the result, only low 32-bits
+            vst1_lane_u32((Uint32*)dst, vreinterpret_u32_u8(src32), 0);
+
+            src += 4;
+            dst += 4;
+        }
+
+        src += srcskip;
+        dst += dstskip;
+    }
+}
+
+#endif
+
 // Blit_3or4_to_3or4__same_rgb: 3 or 4 bpp, same RGB triplet
 static void Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo *info)
 {
@@ -2873,6 +3152,23 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
 
     switch (surface->map.info.flags & ~SDL_COPY_RLE_MASK) {
     case 0:
+        if (SDL_PIXELLAYOUT(srcfmt->format) == SDL_PACKEDLAYOUT_8888 &&
+            SDL_PIXELLAYOUT(dstfmt->format) == SDL_PACKEDLAYOUT_8888) {
+#ifdef SDL_AVX2_INTRINSICS
+            if (SDL_HasAVX2()) {
+                return Blit8888to8888PixelSwizzleAVX2;
+            }
+#endif
+#ifdef SDL_SSE4_1_INTRINSICS
+            if (SDL_HasSSE41()) {
+                return Blit8888to8888PixelSwizzleSSE41;
+            }
+#endif
+#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8)
+            return Blit8888to8888PixelSwizzleNEON;
+#endif
+        }
+
         blitfun = NULL;
         if (dstfmt->bits_per_pixel > 8) {
             Uint32 a_need = NO_ALPHA;
