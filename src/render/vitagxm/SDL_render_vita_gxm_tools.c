@@ -1122,6 +1122,12 @@ gxm_texture *create_gxm_texture(VITA_GXM_RenderData *data, unsigned int w, unsig
     return texture;
 }
 
+void gxm_texture_set_address_mode(gxm_texture *texture, SceGxmTextureAddrMode u_mode, SceGxmTextureAddrMode v_mode)
+{
+    sceGxmTextureSetUAddrMode(&texture->gxm_tex, u_mode);
+    sceGxmTextureSetVAddrMode(&texture->gxm_tex, v_mode);
+}
+
 void gxm_texture_set_filters(gxm_texture *texture, SceGxmTextureFilter min_filter, SceGxmTextureFilter mag_filter)
 {
     sceGxmTextureSetMinFilter(&texture->gxm_tex, min_filter);

@@ -1512,6 +1512,132 @@ static int SDLCALL render_testUVWrapping(void *arg)
     return TEST_COMPLETED;
 }
 
+/**
+ * Tests texture state changes
+ */
+static int SDLCALL render_testTextureState(void *arg)
+{
+    const Uint8 pixels[8] = {
+        0x00, 0x00, 0x00, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF
+    };
+    const SDL_Color expected[] = {
+        /* Step 0: plain copy */
+        { 0x00, 0x00, 0x00, 0xFF },
+        { 0xFF, 0xFF, 0xFF, 0xFF },
+        /* Step 1: color mod to red */
+        { 0x00, 0x00, 0x00, 0xFF },
+        { 0xFF, 0x00, 0x00, 0xFF },
+        /* Step 2: alpha mod to 128 (cleared to green) */
+        { 0x00, 0x7F, 0x00, 0xFF },
+        { 0x80, 0xFF, 0x80, 0xFF },
+        /* Step 3: nearest stretch */
+        { 0xFF, 0xFF, 0xFF, 0xFF },
+        { 0x00, 0xFF, 0x00, 0xFF },
+        /* Step 4: linear stretch */
+        { 0x80, 0x80, 0x80, 0xFF },
+        { 0x00, 0xFF, 0x00, 0xFF },
+    };
+    SDL_Texture *texture;
+    SDL_Rect rect;
+    SDL_FRect dst;
+    int i;
+
+    /* Clear surface to green */
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(renderer);
+
+    /* Create 2-pixel surface. */
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, 2, 1);
+    SDLTest_AssertCheck(texture != NULL, "Verify SDL_CreateTexture() result");
+    if (texture == NULL) {
+        return TEST_ABORTED;
+    }
+    SDL_UpdateTexture(texture, NULL, pixels, sizeof(pixels));
+
+    dst.x = 0.0f;
+    dst.y = 0.0f;
+    dst.w = 2.0f;
+    dst.h = 1.0f;
+
+    /* Step 0: plain copy */
+    SDL_RenderTexture(renderer, texture, NULL, &dst);
+    dst.y += 1;
+
+    /* Step 1: color mod to red */
+    SDL_SetTextureColorMod(texture, 0xFF, 0x00, 0x00);
+    SDL_RenderTexture(renderer, texture, NULL, &dst);
+    SDL_SetTextureColorMod(texture, 0xFF, 0xFF, 0xFF);
+    dst.y += 1;
+
+    /* Step 2: alpha mod to 128 */
+    SDL_SetTextureAlphaMod(texture, 0x80);
+    SDL_RenderTexture(renderer, texture, NULL, &dst);
+    SDL_SetTextureAlphaMod(texture, 0xFF);
+    dst.y += 1;
+
+    /* Step 3: nearest stretch */
+    dst.w = 1;
+    SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+    SDL_RenderTexture(renderer, texture, NULL, &dst);
+    dst.y += 1;
+
+    /* Step 4: linear stretch */
+    dst.w = 1;
+    SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_LINEAR);
+    SDL_RenderTexture(renderer, texture, NULL, &dst);
+    dst.y += 1;
+
+    /* Verify results */
+    rect.x = 0;
+    rect.y = 0;
+    rect.w = 2;
+    rect.h = 1;
+    for (i = 0; i < SDL_arraysize(expected); ) {
+        const int MAX_DELTA = 1;
+        SDL_Color actual;
+        int deltaR, deltaG, deltaB, deltaA;
+        SDL_Surface *surface = SDL_RenderReadPixels(renderer, &rect);
+
+        SDL_ReadSurfacePixel(surface, 0, 0, &actual.r, &actual.g, &actual.b, &actual.a);
+        deltaR = (actual.r - expected[i].r);
+        deltaG = (actual.g - expected[i].g);
+        deltaB = (actual.b - expected[i].b);
+        deltaA = (actual.a - expected[i].a);
+        SDLTest_AssertCheck(SDL_abs(deltaR) <= MAX_DELTA &&
+                            SDL_abs(deltaG) <= MAX_DELTA &&
+                            SDL_abs(deltaB) <= MAX_DELTA &&
+                            SDL_abs(deltaA) <= MAX_DELTA,
+                            "Validate left pixel at step %d, expected %d,%d,%d,%d, got %d,%d,%d,%d", i/2,
+                            expected[i].r, expected[i].g, expected[i].b, expected[i].a,
+                            actual.r, actual.g, actual.b, actual.a);
+        ++i;
+
+        SDL_ReadSurfacePixel(surface, 1, 0, &actual.r, &actual.g, &actual.b, &actual.a);
+        deltaR = (actual.r - expected[i].r);
+        deltaG = (actual.g - expected[i].g);
+        deltaB = (actual.b - expected[i].b);
+        deltaA = (actual.a - expected[i].a);
+        SDLTest_AssertCheck(SDL_abs(deltaR) <= MAX_DELTA &&
+                            SDL_abs(deltaG) <= MAX_DELTA &&
+                            SDL_abs(deltaB) <= MAX_DELTA &&
+                            SDL_abs(deltaA) <= MAX_DELTA,
+                            "Validate right pixel at step %d, expected %d,%d,%d,%d, got %d,%d,%d,%d", i/2,
+                            expected[i].r, expected[i].g, expected[i].b, expected[i].a,
+                            actual.r, actual.g, actual.b, actual.a);
+        ++i;
+
+        SDL_DestroySurface(surface);
+
+        rect.y += 1;
+    }
+
+    /* Clean up. */
+    SDL_DestroyTexture(texture);
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Render test cases */
@@ -1563,6 +1689,10 @@ static const SDLTest_TestCaseReference renderTestUVWrapping = {
     render_testUVWrapping, "render_testUVWrapping", "Tests geometry UV wrapping", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestTextureState = {
+    render_testTextureState, "render_testTextureState", "Tests texture state changes", TEST_ENABLED
+};
+
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestGetNumRenderDrivers,
@@ -1577,6 +1707,7 @@ static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestClipRect,
     &renderTestLogicalSize,
     &renderTestUVWrapping,
+    &renderTestTextureState,
     NULL
 };
 

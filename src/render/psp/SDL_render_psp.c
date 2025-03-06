@@ -75,6 +75,8 @@ typedef struct
     unsigned int color;
     int shadeModel;
     SDL_Texture *texture;
+    SDL_ScaleMode texture_scale_mode;
+    SDL_TextureAddressMode texture_address_mode;
 } PSP_BlendState;
 
 typedef struct
@@ -538,20 +540,44 @@ static bool TextureShouldSwizzle(PSP_TextureData *psp_texture, SDL_Texture *text
     return !((texture->access == SDL_TEXTUREACCESS_TARGET) && InVram(psp_texture->data)) && texture->access != SDL_TEXTUREACCESS_STREAMING && (texture->w >= 16 || texture->h >= 16);
 }
 
+static void SetTextureAddressMode(SDL_TextureAddressMode addressMode)
+{
+    switch (addressMode) {
+    case SDL_TEXTURE_ADDRESS_CLAMP:
+        sceGuTexWrap(GU_CLAMP, GU_CLAMP);
+        break;
+    case SDL_TEXTURE_ADDRESS_WRAP:
+        sceGuTexWrap(GU_REPEAT, GU_REPEAT);
+        break;
+    default:
+        break;
+    }
+}
+
+static void SetTextureScaleMode(SDL_ScaleMode scaleMode)
+{
+    switch (scaleMode) {
+    case SDL_SCALEMODE_NEAREST:
+        sceGuTexFilter(GU_NEAREST, GU_NEAREST);
+        break;
+    case SDL_SCALEMODE_LINEAR:
+        sceGuTexFilter(GU_LINEAR, GU_LINEAR);
+        break;
+    default:
+        break;
+    }
+}
+
 static void TextureActivate(SDL_Texture *texture)
 {
     PSP_TextureData *psp_texture = (PSP_TextureData *)texture->internal;
-    int scaleMode = (texture->scaleMode == SDL_SCALEMODE_NEAREST) ? GU_NEAREST : GU_LINEAR;
 
     // Swizzling is useless with small textures.
     if (TextureShouldSwizzle(psp_texture, texture)) {
         TextureSwizzle(psp_texture, NULL);
     }
 
-    sceGuTexWrap(GU_REPEAT, GU_REPEAT);
     sceGuTexMode(psp_texture->format, 0, 0, psp_texture->swizzled);
-    sceGuTexFilter(scaleMode, scaleMode); // GU_NEAREST good for tile-map
-    // GU_LINEAR good for scaling
     sceGuTexImage(0, psp_texture->textureWidth, psp_texture->textureHeight, psp_texture->textureWidth, psp_texture->data);
 }
 
@@ -606,11 +632,6 @@ static void PSP_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     rect.w = texture->w;
     rect.h = texture->h;
     PSP_UpdateTexture(renderer, texture, &rect, psp_texture->data, psp_texture->pitch);
-}
-
-static void PSP_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
-{
-    // Nothing to do because TextureActivate takes care of it
 }
 
 static bool PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -1034,6 +1055,11 @@ static void PSP_SetBlendState(PSP_RenderData *data, PSP_BlendState *state)
         }
     }
 
+    if (state->texture) {
+        SetTextureScaleMode(state->texture_scale_mode);
+        SetTextureAddressMode(state->texture_address_mode);
+    }
+
     *current = *state;
 }
 
@@ -1117,6 +1143,8 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             PSP_BlendState state = {
                 .color = drawstate.color,
                 .texture = NULL,
+                .texture_scale_mode = SDL_SCALEMODE_INVALID,
+                .texture_address_mode = SDL_TEXTURE_ADDRESS_INVALID,
                 .mode = cmd->data.draw.blend,
                 .shadeModel = GU_FLAT
             };
@@ -1132,6 +1160,8 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             PSP_BlendState state = {
                 .color = drawstate.color,
                 .texture = NULL,
+                .texture_scale_mode = SDL_SCALEMODE_INVALID,
+                .texture_address_mode = SDL_TEXTURE_ADDRESS_INVALID,
                 .mode = cmd->data.draw.blend,
                 .shadeModel = GU_FLAT
             };
@@ -1147,6 +1177,8 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             PSP_BlendState state = {
                 .color = drawstate.color,
                 .texture = NULL,
+                .texture_scale_mode = SDL_SCALEMODE_INVALID,
+                .texture_address_mode = SDL_TEXTURE_ADDRESS_INVALID,
                 .mode = cmd->data.draw.blend,
                 .shadeModel = GU_FLAT
             };
@@ -1162,6 +1194,8 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             PSP_BlendState state = {
                 .color = drawstate.color,
                 .texture = cmd->data.draw.texture,
+                .texture_scale_mode = cmd->data.draw.texture_scale_mode,
+                .texture_address_mode = cmd->data.draw.texture_address_mode,
                 .mode = cmd->data.draw.blend,
                 .shadeModel = GU_SMOOTH
             };
@@ -1176,6 +1210,8 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             PSP_BlendState state = {
                 .color = drawstate.color,
                 .texture = cmd->data.draw.texture,
+                .texture_scale_mode = cmd->data.draw.texture_scale_mode,
+                .texture_address_mode = cmd->data.draw.texture_address_mode,
                 .mode = cmd->data.draw.blend,
                 .shadeModel = GU_SMOOTH
             };
@@ -1197,11 +1233,12 @@ static bool PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                 const VertTCV *verts = (VertTCV *)(gpumem + cmd->data.draw.first);
                 PSP_BlendState state = {
                     .color = drawstate.color,
-                    .texture = NULL,
+                    .texture = cmd->data.draw.texture,
+                    .texture_scale_mode = cmd->data.draw.texture_scale_mode,
+                    .texture_address_mode = cmd->data.draw.texture_address_mode,
                     .mode = cmd->data.draw.blend,
-                    .shadeModel = GU_FLAT
+                    .shadeModel = GU_SMOOTH
                 };
-                TextureActivate(cmd->data.draw.texture);
                 PSP_SetBlendState(data, &state);
                 sceGuDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF | GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
             }
@@ -1310,7 +1347,6 @@ static bool PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     renderer->UpdateTexture = PSP_UpdateTexture;
     renderer->LockTexture = PSP_LockTexture;
     renderer->UnlockTexture = PSP_UnlockTexture;
-    renderer->SetTextureScaleMode = PSP_SetTextureScaleMode;
     renderer->SetRenderTarget = PSP_SetRenderTarget;
     renderer->QueueSetViewport = PSP_QueueNoOp;
     renderer->QueueSetDrawColor = PSP_QueueNoOp;

@@ -70,8 +70,6 @@ static bool VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 static void VITA_GXM_UnlockTexture(SDL_Renderer *renderer,
                                    SDL_Texture *texture);
 
-static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode);
-
 static bool VITA_GXM_SetRenderTarget(SDL_Renderer *renderer,
                                     SDL_Texture *texture);
 
@@ -216,7 +214,6 @@ static bool VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, 
 #endif
     renderer->LockTexture = VITA_GXM_LockTexture;
     renderer->UnlockTexture = VITA_GXM_UnlockTexture;
-    renderer->SetTextureScaleMode = VITA_GXM_SetTextureScaleMode;
     renderer->SetRenderTarget = VITA_GXM_SetRenderTarget;
     renderer->QueueSetViewport = VITA_GXM_QueueNoOp;
     renderer->QueueSetDrawColor = VITA_GXM_QueueSetDrawColor;
@@ -295,9 +292,10 @@ static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_OutOfMemory();
     }
 
-    texture->internal = vita_texture;
+    vita_texture->scale_mode = SDL_SCALEMODE_INVALID;
+    vita_texture->address_mode = SDL_TEXTURE_ADDRESS_INVALID;
 
-    VITA_GXM_SetTextureScaleMode(renderer, texture, texture->scaleMode);
+    texture->internal = vita_texture;
 
 #ifdef SDL_HAVE_YUV
     vita_texture->yuv = ((texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12));
@@ -580,25 +578,6 @@ static void VITA_GXM_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     // No need to update texture data on ps vita.
     // VITA_GXM_LockTexture already returns a pointer to the texture pixels buffer.
     // This really improves framerate when using lock/unlock.
-}
-
-static void VITA_GXM_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
-{
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
-
-    /*
-     set texture filtering according to scaleMode
-     supported hint values are nearest (0, default) or linear (1)
-     vitaScaleMode is either SCE_GXM_TEXTURE_FILTER_POINT (good for tile-map)
-     or SCE_GXM_TEXTURE_FILTER_LINEAR (good for scaling)
-     */
-
-    int vitaScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST
-                             ? SCE_GXM_TEXTURE_FILTER_POINT
-                             : SCE_GXM_TEXTURE_FILTER_LINEAR);
-    gxm_texture_set_filters(vita_texture->tex, vitaScaleMode, vitaScaleMode);
-
-    return;
 }
 
 static bool VITA_GXM_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
@@ -909,9 +888,41 @@ static bool SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd
         }
     }
 
+    if (texture) {
+        VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
+
+        if (cmd->data.draw.texture_scale_mode != vita_texture->scale_mode) {
+            switch (cmd->data.draw.texture_scale_mode) {
+            case SDL_SCALEMODE_NEAREST:
+                gxm_texture_set_filters(vita_texture->tex, SCE_GXM_TEXTURE_FILTER_POINT, SCE_GXM_TEXTURE_FILTER_POINT);
+                break;
+            case SDL_SCALEMODE_LINEAR:
+                gxm_texture_set_filters(vita_texture->tex, SCE_GXM_TEXTURE_FILTER_LINEAR, SCE_GXM_TEXTURE_FILTER_LINEAR);
+                break;
+            default:
+                break;
+            }
+            vita_texture->scale_mode = cmd->data.draw.texture_scale_mode;
+        }
+
+        if (cmd->data.draw.texture_address_mode != vita_texture->address_mode) {
+            switch (cmd->data.draw.texture_address_mode) {
+            case SDL_TEXTURE_ADDRESS_CLAMP:
+                gxm_texture_set_address_mode(vita_texture->tex, SCE_GXM_TEXTURE_ADDR_CLAMP, SCE_GXM_TEXTURE_ADDR_CLAMP);
+                break;
+            case SDL_TEXTURE_ADDRESS_WRAP:
+                gxm_texture_set_address_mode(vita_texture->tex, SCE_GXM_TEXTURE_ADDR_REPEAT, SCE_GXM_TEXTURE_ADDR_REPEAT);
+                break;
+            default:
+                break;
+            }
+            vita_texture->address_mode = cmd->data.draw.texture_address_mode;
+        }
+    }
+
     if (texture != data->drawstate.texture) {
         if (texture) {
-            VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)cmd->data.draw.texture->internal;
+            VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)texture->internal;
             sceGxmSetFragmentTexture(data->gxm_context, 0, &vita_texture->tex->gxm_tex);
         }
         data->drawstate.texture = texture;
