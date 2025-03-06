@@ -1070,10 +1070,6 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 }
 
-static void METAL_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
-{
-}
-
 static bool METAL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     @autoreleasepool {
@@ -1473,7 +1469,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
     if (texture != statecache->texture) {
         id<MTLSamplerState> mtlsampler;
 
-        if (texture->scaleMode == SDL_SCALEMODE_NEAREST) {
+        if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_NEAREST) {
             switch (cmd->data.draw.texture_address_mode) {
             case SDL_TEXTURE_ADDRESS_CLAMP:
                 mtlsampler = data.mtlsamplers[SDL_METAL_SAMPLER_NEAREST_CLAMP];
@@ -2129,7 +2125,6 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
 #endif
         renderer->LockTexture = METAL_LockTexture;
         renderer->UnlockTexture = METAL_UnlockTexture;
-        renderer->SetTextureScaleMode = METAL_SetTextureScaleMode;
         renderer->SetRenderTarget = METAL_SetRenderTarget;
         renderer->QueueSetViewport = METAL_QueueSetViewport;
         renderer->QueueSetDrawColor = METAL_QueueNoOp;

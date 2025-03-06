@@ -195,21 +195,6 @@ static bool PS2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     return true;
 }
 
-static void PS2_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture, SDL_ScaleMode scaleMode)
-{
-    GSTEXTURE *ps2_texture = (GSTEXTURE *)texture->internal;
-    /*
-     set texture filtering according to scaleMode
-     supported hint values are nearest (0, default) or linear (1)
-     gskit scale mode is either GS_FILTER_NEAREST (good for tile-map)
-     or GS_FILTER_LINEAR (good for scaling)
-     */
-    uint32_t gsKitScaleMode = (scaleMode == SDL_SCALEMODE_NEAREST
-                                   ? GS_FILTER_NEAREST
-                                   : GS_FILTER_LINEAR);
-    ps2_texture->Filter = gsKitScaleMode;
-}
-
 static bool PS2_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     return true;
@@ -458,6 +443,16 @@ static bool PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Rende
         const GSPRIMUVPOINT *verts = (GSPRIMUVPOINT *) (vertices + cmd->data.draw.first);
         GSTEXTURE *ps2_tex = (GSTEXTURE *)cmd->data.draw.texture->internal;
 
+        switch (cmd->data.draw.texture_scale_mode) {
+        case SDL_SCALEMODE_NEAREST:
+            ps2_tex->Filter = GS_FILTER_NEAREST;
+            break;
+        case SDL_SCALEMODE_LINEAR:
+            ps2_tex->Filter = GS_FILTER_LINEAR;
+            break;
+        default:
+            break;
+        }
         gsKit_TexManager_bind(data->gsGlobal, ps2_tex);
         gsKit_prim_list_triangle_goraud_texture_uv_3d(data->gsGlobal, ps2_tex, count, verts);
     } else {
@@ -695,7 +690,6 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     renderer->UpdateTexture = PS2_UpdateTexture;
     renderer->LockTexture = PS2_LockTexture;
     renderer->UnlockTexture = PS2_UnlockTexture;
-    renderer->SetTextureScaleMode = PS2_SetTextureScaleMode;
     renderer->SetRenderTarget = PS2_SetRenderTarget;
     renderer->QueueSetViewport = PS2_QueueSetViewport;
     renderer->QueueSetDrawColor = PS2_QueueNoOp;

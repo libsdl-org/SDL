@@ -573,6 +573,9 @@ static SDL_RenderCommand *PrepQueueCmdDraw(SDL_Renderer *renderer, const SDL_Ren
             cmd->data.draw.color = *color;
             cmd->data.draw.blend = blendMode;
             cmd->data.draw.texture = texture;
+            if (texture) {
+                cmd->data.draw.texture_scale_mode = texture->scaleMode;
+            }
             cmd->data.draw.texture_address_mode = SDL_TEXTURE_ADDRESS_CLAMP;
         }
     }
@@ -1964,8 +1967,6 @@ bool SDL_GetTextureBlendMode(SDL_Texture *texture, SDL_BlendMode *blendMode)
 
 bool SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
-    SDL_Renderer *renderer;
-
     CHECK_TEXTURE_MAGIC(texture, false);
 
     if (scaleMode != SDL_SCALEMODE_NEAREST &&
@@ -1973,12 +1974,10 @@ bool SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
         return SDL_InvalidParamError("scaleMode");
     }
 
-    renderer = texture->renderer;
     texture->scaleMode = scaleMode;
+
     if (texture->native) {
         return SDL_SetTextureScaleMode(texture->native, scaleMode);
-    } else {
-        renderer->SetTextureScaleMode(renderer, texture, scaleMode);
     }
     return true;
 }

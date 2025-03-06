@@ -205,6 +205,8 @@ typedef struct
     float wscale;
     bool yuv;
     bool nv12;
+    SDL_ScaleMode scale_mode;
+    SDL_TextureAddressMode address_mode;
 } VITA_GXM_TextureData;
 
 #endif // SDL_RENDER_VITA_GXM_TYPES_H
