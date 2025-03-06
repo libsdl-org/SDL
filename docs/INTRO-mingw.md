@@ -1,6 +1,6 @@
 # Introduction to SDL with MinGW
 
-Without getting deep into the history, MinGW is a long running project that aims to bring gcc to Windows. That said, there's many distributions, versions, and forks floating around. We recommend installing [MSYS2](https://www.msys2.org/), as it's the easiest way to get a modern MinGW(-w64) with a package manager to help with dependency management. This would allow you to follow the MSYS2 section below. 
+Without getting deep into the history, MinGW is a long running project that aims to bring gcc to Windows. That said, there's many distributions, versions, and forks floating around. We recommend installing [MSYS2](https://www.msys2.org/), as it's the easiest way to get a modern toolchain with a package manager to help with dependency management. This would allow you to follow the MSYS2 section below. 
 
 Otherwise you'll want to follow the "Other Distributions" section below.
 
