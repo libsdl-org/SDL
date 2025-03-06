@@ -39,7 +39,6 @@ cmake --build build
 
 ## Run:
 
-### Linux/Mac/BSD/Windows (Non Visual Studio  Generator)/etc
 The executable is in the `build` directory:
 ```sh
 cd build
