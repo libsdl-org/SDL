@@ -5,7 +5,12 @@ The easiest way to use SDL is to include it as a subproject in your project.
 
 We'll start by creating a simple project to build and run [hello.c](hello.c)
 
-Create the file CMakeLists.txt
+# Get a copy of the SDL source:
+```sh
+git clone https://github.com/libsdl-org/SDL.git
+```
+
+# Create the file CMakeLists.txt
 ```cmake
 cmake_minimum_required(VERSION 3.16)
 project(hello)
@@ -25,19 +30,24 @@ add_executable(hello WIN32 hello.c)
 target_link_libraries(hello PRIVATE SDL3::SDL3)
 ```
 
-Build:
+# Configure and Build:
 ```sh
 cmake -S . -B build
 cmake --build build
 ```
 
-Run:
-- On Windows the executable is in the build Debug directory:
+# Run:
+## Windows (Visual Studio Generator)
+The executable should be in the `build/Debug` directory:
 ```sh
 cd build/Debug
 ./hello
-``` 
-- On other platforms the executable is in the build directory:
+```
+
+> NOTE: If there wasn't an executable here despite the above Build section running successfully, it's likely because you're following this guide using a different toolchain. This section is written with the assumption that you both had a Visual Studio toolchain installed, and that CMake selected to configure it's build for it. Please take a look just below.
+
+## Linux/Mac/BSD/Windows (Non Visual Studio  Generator)/etc
+On other platforms the executable is in the `build` directory:
 ```sh
 cd build
 ./hello
