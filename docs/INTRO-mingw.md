@@ -50,7 +50,7 @@ cd build
 
 Things can get quite complicated with other distributions of MinGW. If you can't follow [the cmake intro](INTRO-cmake.md), perhaps due to issues getting cmake to understand your toolchain, we can provide a guide that should get you up and running.
 
-## Aquire SDL
+## Acquire SDL
 
 Download the `SDL3-devel-<version>-mingw.zip` asset from [the latest release.](https://github.com/libsdl-org/SDL/releases/latest) Then extract it inside your project folder such that the output of `ls SDL3-<version>` looks like `INSTALL.md  LICENSE.txt  Makefile  README.md  cmake  i686-w64-mingw32  x86_64-w64-mingw32`.
 
