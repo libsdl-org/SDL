@@ -104,6 +104,11 @@ bool SDL_CalculateSurfaceSize(SDL_PixelFormat format, int width, int height, siz
     }
 
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
+        if (format == SDL_PIXELFORMAT_MJPG) {
+            // We don't know in advance what it will be, we'll figure it out later.
+            return true;
+        }
+
         if (!SDL_CalculateYUVSize(format, width, height, &sz, &p)) {
             // Overflow...
             return false;
@@ -214,7 +219,7 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
         return NULL;
     }
 
-    if (surface->w && surface->h) {
+    if (surface->w && surface->h && format != SDL_PIXELFORMAT_MJPG) {
         surface->flags &= ~SDL_SURFACE_PREALLOCATED;
         surface->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), size);
         if (!surface->pixels) {
@@ -1917,7 +1922,17 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
     SDL_SetSurfaceColorspace(convert, colorspace);
 
     if (SDL_ISPIXELFORMAT_FOURCC(format) || SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
-        if (!SDL_ConvertPixelsAndColorspace(surface->w, surface->h, surface->format, src_colorspace, src_properties, surface->pixels, surface->pitch, convert->format, colorspace, props, convert->pixels, convert->pitch)) {
+        if (surface->format == SDL_PIXELFORMAT_MJPG && format == SDL_PIXELFORMAT_MJPG) {
+            // Just do a straight pixel copy of the JPEG image
+            size_t size = (size_t)surface->pitch;
+            convert->pixels = SDL_malloc(size);
+            if (!convert->pixels) {
+                goto error;
+            }
+            convert->pitch = surface->pitch;
+            SDL_memcpy(convert->pixels, surface->pixels, size);
+
+        } else if (!SDL_ConvertPixelsAndColorspace(surface->w, surface->h, surface->format, src_colorspace, src_properties, surface->pixels, surface->pitch, convert->format, colorspace, props, convert->pixels, convert->pitch)) {
             goto error;
         }
 
