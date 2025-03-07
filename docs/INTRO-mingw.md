@@ -81,7 +81,7 @@ gcc arch.c
 ./a.exe
 ```
 
-This should print out which library directory we'll need to use when compiling, keep this value in mind, you'll need to use it when compiling in the next section as `<arch>`. If you get "Unknown Architecture" please [make an issue](https://github.com/libsdl-org/SDL/issues);
+This should print out which library directory we'll need to use when compiling, keep this value in mind, you'll need to use it when compiling in the next section as `<arch>`. If you get "Unknown Architecture" please [report a bug](https://github.com/libsdl-org/SDL/issues).
 
 
 ## Build and Run
