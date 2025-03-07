@@ -406,14 +406,14 @@ static bool GL_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode
 static bool convert_format(Uint32 pixel_format, GLint *internalFormat, GLenum *format, GLenum *type)
 {
     switch (pixel_format) {
-    case SDL_PIXELFORMAT_ARGB8888:
-    case SDL_PIXELFORMAT_XRGB8888:
+    case SDL_PIXELFORMAT_BGRA32:
+    case SDL_PIXELFORMAT_BGRX32:
         *internalFormat = GL_RGBA8;
         *format = GL_BGRA;
         *type = GL_UNSIGNED_BYTE; // previously GL_UNSIGNED_INT_8_8_8_8_REV, seeing if this is better in modern times.
         break;
-    case SDL_PIXELFORMAT_ABGR8888:
-    case SDL_PIXELFORMAT_XBGR8888:
+    case SDL_PIXELFORMAT_RGBA32:
+    case SDL_PIXELFORMAT_RGBX32:
         *internalFormat = GL_RGBA8;
         *format = GL_RGBA;
         *type = GL_UNSIGNED_BYTE; // previously GL_UNSIGNED_INT_8_8_8_8_REV, seeing if this is better in modern times.
@@ -556,7 +556,8 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         renderdata->glTexParameteri(textype, GL_TEXTURE_STORAGE_HINT_APPLE,
                                     GL_STORAGE_CACHED_APPLE);
     }
-    if (texture->access == SDL_TEXTUREACCESS_STREAMING && texture->format == SDL_PIXELFORMAT_ARGB8888 && (texture->w % 8) == 0) {
+    if (!SDL_ISPIXELFORMAT_FOURCC(texture->format) && SDL_PIXELLAYOUT(texture->format) == SDL_PACKEDLAYOUT_8888 &&
+        texture->access == SDL_TEXTUREACCESS_STREAMING && (texture->w % 8) == 0) {
         renderdata->glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
         renderdata->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH,
@@ -621,7 +622,7 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     }
 #endif
 
-    if (texture->format == SDL_PIXELFORMAT_ABGR8888 || texture->format == SDL_PIXELFORMAT_ARGB8888) {
+    if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
         data->shader = SHADER_RGBA;
     } else {
         data->shader = SHADER_RGB;
@@ -1476,7 +1477,7 @@ static bool GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 static SDL_Surface *GL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->internal;
-    SDL_PixelFormat format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ARGB8888;
+    SDL_PixelFormat format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_RGBA32;
     GLint internalFormat;
     GLenum targetFormat, type;
     SDL_Surface *surface;
@@ -1688,10 +1689,11 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     renderer->window = window;
 
     renderer->name = GL_RenderDriver.name;
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XBGR8888);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
+    /* TODO: Check for required extensions? */
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
 
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
