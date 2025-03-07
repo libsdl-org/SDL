@@ -1324,6 +1324,14 @@ void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
         data->pending_operation |= X11_PENDING_OP_RESIZE;
         X11_XResizeWindow(display, data->xwindow, data->expected.w, data->expected.h);
     }
+
+    /* External windows may call this to update the renderer size, but not pump SDL events,
+     * so the size event needs to be synthesized for external windows. If it is wrong, the
+     * true size will be sent if/when events are processed.
+     */
+    if (window->flags & SDL_WINDOW_EXTERNAL) {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, window->pending.w, window->pending.h);
+    }
 }
 
 bool X11_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right)
