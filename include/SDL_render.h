@@ -787,7 +787,7 @@ extern DECLSPEC int SDLCALL SDL_SetRenderTarget(SDL_Renderer *renderer,
  * Get the current render target.
  *
  * The default render target is the window for which the renderer was created,
- * and is reported a NULL here.
+ * and is reported as NULL here.
  *
  * \param renderer the rendering context.
  * \returns the current render target or NULL for the default render target.
