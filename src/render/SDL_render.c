@@ -1124,12 +1124,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     }
 
     int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
-    if (!SDL_SetRenderVSync(renderer, vsync)) {
-        if (vsync == 0) {
-            // Some renderers require vsync enabled
-            SDL_SetRenderVSync(renderer, 1);
-        }
-    }
+    SDL_SetRenderVSync(renderer, vsync);
     SDL_CalculateSimulatedVSyncInterval(renderer, window);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
@@ -5626,7 +5621,8 @@ bool SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
     }
 #endif
 
-    if (!renderer->SetVSync) {
+    if (!renderer->SetVSync ||
+        !renderer->SetVSync(renderer, vsync)) {
         switch (vsync) {
         case 0:
             renderer->simulate_vsync = false;
@@ -5636,12 +5632,6 @@ bool SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
             break;
         default:
             return SDL_Unsupported();
-        }
-    } else if (!renderer->SetVSync(renderer, vsync)) {
-        if (vsync == 1) {
-            renderer->simulate_vsync = true;
-        } else {
-            return false;
         }
     }
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_VSYNC_NUMBER, vsync);
