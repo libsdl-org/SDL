@@ -3,6 +3,7 @@
 SDL supports a number of development environments:
 - [CMake](docs/INTRO-cmake.md)
 - [Visual Studio on Windows](docs/INTRO-visualstudio.md)
+- [gcc on Windows](docs/INTRO-mingw.md)
 - [Xcode on Apple platforms](docs/INTRO-xcode.md)
 - [Android Studio](docs/INTRO-androidstudio.md)
 - [Emscripten for web](docs/INTRO-emscripten.md)
