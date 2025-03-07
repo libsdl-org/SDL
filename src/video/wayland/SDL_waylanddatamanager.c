@@ -370,15 +370,10 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
     } else if (pipe2(pipefd, O_CLOEXEC | O_NONBLOCK) == -1) {
         SDL_SetError("Could not read pipe");
     } else {
-        struct wl_event_queue *queue = WAYLAND_wl_display_create_queue(data_device->video_data->display);
-        WAYLAND_wl_proxy_set_queue((struct wl_proxy *)offer->offer, queue);
-
         wl_data_offer_receive(offer->offer, mime_type, pipefd[1]);
         close(pipefd[1]);
 
-        WAYLAND_wl_display_roundtrip_queue(data_device->video_data->display, queue);
-        WAYLAND_wl_proxy_set_queue((struct wl_proxy *)offer->offer, NULL);
-        WAYLAND_wl_event_queue_destroy(queue);
+        WAYLAND_wl_display_flush(data_device->video_data->display);
 
         while (read_pipe(pipefd[0], &buffer, length) > 0) {
         }
@@ -409,15 +404,10 @@ void *Wayland_primary_selection_offer_receive(SDL_WaylandPrimarySelectionOffer *
     } else if (pipe2(pipefd, O_CLOEXEC | O_NONBLOCK) == -1) {
         SDL_SetError("Could not read pipe");
     } else {
-        struct wl_event_queue *queue = WAYLAND_wl_display_create_queue(primary_selection_device->video_data->display);
-        WAYLAND_wl_proxy_set_queue((struct wl_proxy *)offer->offer, queue);
-
         zwp_primary_selection_offer_v1_receive(offer->offer, mime_type, pipefd[1]);
         close(pipefd[1]);
 
-        WAYLAND_wl_display_roundtrip_queue(primary_selection_device->video_data->display, queue);
-        WAYLAND_wl_proxy_set_queue((struct wl_proxy *)offer->offer, NULL);
-        WAYLAND_wl_event_queue_destroy(queue);
+        WAYLAND_wl_display_flush(primary_selection_device->video_data->display);
 
         while (read_pipe(pipefd[0], &buffer, length) > 0) {
         }
