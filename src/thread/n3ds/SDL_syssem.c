@@ -102,7 +102,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 
 void SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
-    if (sem) {
+    if (!sem) {
         return;
     }
 
