@@ -85,7 +85,9 @@
 #include <kernel.h>
 #include <swis.h>
 #endif
-
+#ifdef SDL_PLATFORM_3DS
+#include <3ds.h>
+#endif
 #ifdef SDL_PLATFORM_PS2
 #include <kernel.h>
 #endif
@@ -1154,6 +1156,12 @@ int SDL_GetSystemRAM(void)
             if (_kernel_swi(OS_Memory, &regs, &regs) == NULL) {
                 SDL_SystemRAM = (int)(regs.r[1] * regs.r[2] / (1024 * 1024));
             }
+        }
+#endif
+#ifdef SDL_PLATFORM_3DS
+        if (SDL_SystemRAM <= 0) {
+            // The New3DS has 256MiB, the Old3DS 128MiB
+            SDL_SystemRAM = (int)(osGetMemRegionSize(MEMREGION_ALL) / (1024 * 1024));
         }
 #endif
 #ifdef SDL_PLATFORM_VITA
