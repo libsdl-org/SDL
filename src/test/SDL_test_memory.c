@@ -454,4 +454,5 @@ void SDLTest_LogAllocations(void)
 #undef ADD_LINE
 
     SDL_Log("%s", message);
+    SDL_free_orig(message);
 }
