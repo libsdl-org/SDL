@@ -37,6 +37,7 @@
 #include "SDL_uikitvulkan.h"
 #include "SDL_uikitmetalview.h"
 #include "SDL_uikitmessagebox.h"
+#include "SDL_uikitpen.h"
 
 #define UIKITVID_DRIVER_NAME "uikit"
 
@@ -170,6 +171,7 @@ static void UIKit_VideoQuit(SDL_VideoDevice *_this)
 
     SDL_QuitGCKeyboard();
     SDL_QuitGCMouse();
+    UIKit_QuitPen(_this);
 
     UIKit_QuitModes(_this);
 }
