@@ -1005,6 +1005,27 @@ static void Emscripten_unset_drag_event_callbacks(SDL_WindowData *data)
     }, data->canvas_id);
 }
 
+static const char *Emscripten_GetKeyboardTargetElement()
+{
+    const char *target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
+
+    if (!target || !*target) {
+        return EMSCRIPTEN_EVENT_TARGET_WINDOW;
+    }
+
+    if (SDL_strcmp(target, "#none") == 0) {
+        return NULL;
+    } else if (SDL_strcmp(target, "#window") == 0) {
+        return EMSCRIPTEN_EVENT_TARGET_WINDOW;
+    } else if (SDL_strcmp(target, "#document") == 0) {
+        return EMSCRIPTEN_EVENT_TARGET_DOCUMENT;
+    } else if (SDL_strcmp(target, "#screen") == 0) {
+        return EMSCRIPTEN_EVENT_TARGET_SCREEN;
+    }
+
+    return target;
+}
+
 void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
     const char *keyElement;
@@ -1033,12 +1054,8 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, data, 0, Emscripten_HandlePointerLockChange);
 
     // Keyboard events are awkward
-    keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
-    if (!keyElement || !*keyElement) {
-        keyElement = EMSCRIPTEN_EVENT_TARGET_WINDOW;
-    }
-
-    if (SDL_strcmp(keyElement, "#none") != 0) {
+    keyElement = Emscripten_GetKeyboardTargetElement();
+    if (keyElement) {
         emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
         emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);
         emscripten_set_keypress_callback(keyElement, data, 0, Emscripten_HandleKeyPress);
@@ -1094,12 +1111,8 @@ void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 
     emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
 
-    target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
-    if (!target || !*target) {
-        target = EMSCRIPTEN_EVENT_TARGET_WINDOW;
-    }
-
-    if (SDL_strcmp(target, "#none") != 0) {
+    target = Emscripten_GetKeyboardTargetElement();
+    if (target) {
         emscripten_set_keydown_callback(target, NULL, 0, NULL);
         emscripten_set_keyup_callback(target, NULL, 0, NULL);
         emscripten_set_keypress_callback(target, NULL, 0, NULL);
