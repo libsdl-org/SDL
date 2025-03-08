@@ -85,7 +85,9 @@
 #include <kernel.h>
 #include <swis.h>
 #endif
-
+#ifdef SDL_PLATFORM_3DS
+#include <3ds.h>
+#endif
 #ifdef SDL_PLATFORM_PS2
 #include <kernel.h>
 #endif
@@ -643,6 +645,15 @@ int SDL_GetNumLogicalCPUCores(void)
             SDL_NumLogicalCPUCores = info.dwNumberOfProcessors;
         }
 #endif
+#ifdef SDL_PLATFORM_3DS
+        if (SDL_NumLogicalCPUCores <= 0) {
+            bool isNew3DS = false;
+            APT_CheckNew3DS(&isNew3DS);
+            // 1 core is always dedicated to the OS
+            // Meaning that the New3DS has 3 available core, and the Old3DS only one.
+            SDL_NumLogicalCPUCores = isNew3DS ? 4 : 2;
+        }
+#endif
         // There has to be at least 1, right? :)
         if (SDL_NumLogicalCPUCores <= 0) {
             SDL_NumLogicalCPUCores = 1;
@@ -1154,6 +1165,12 @@ int SDL_GetSystemRAM(void)
             if (_kernel_swi(OS_Memory, &regs, &regs) == NULL) {
                 SDL_SystemRAM = (int)(regs.r[1] * regs.r[2] / (1024 * 1024));
             }
+        }
+#endif
+#ifdef SDL_PLATFORM_3DS
+        if (SDL_SystemRAM <= 0) {
+            // The New3DS has 255MiB, the Old3DS 127MiB
+            SDL_SystemRAM = (int)(osGetMemRegionSize(MEMREGION_ALL) / (1024 * 1024));
         }
 #endif
 #ifdef SDL_PLATFORM_VITA
