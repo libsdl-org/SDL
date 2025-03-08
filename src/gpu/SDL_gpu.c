@@ -404,6 +404,12 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
     if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN, false)) {
         format_flags |= SDL_GPU_SHADERFORMAT_METALLIB;
     }
+#ifndef HAVE_GPU_OPENXR
+    if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE, false)) {
+        SDL_SetError("OpenXR is not enabled in this build of SDL");
+        return NULL;
+    }
+#endif
 
     gpudriver = SDL_GetHint(SDL_HINT_GPU_DRIVER);
     if (gpudriver == NULL) {
@@ -418,7 +424,8 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
                     SDL_SetError("Required shader format for backend %s not provided!", gpudriver);
                     return NULL;
                 }
-                if (backends[i]->PrepareDriver(_this)) {
+
+                if (backends[i]->PrepareDriver(_this, props)) {
                     return backends[i];
                 }
             }
@@ -433,7 +440,8 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
             // Don't select a backend which doesn't support the app's shaders.
             continue;
         }
-        if (backends[i]->PrepareDriver(_this)) {
+
+        if (backends[i]->PrepareDriver(_this, props)) {
             return backends[i];
         }
     }
@@ -548,6 +556,13 @@ void SDL_DestroyGPUDevice(SDL_GPUDevice *device)
     CHECK_DEVICE_MAGIC(device, );
 
     device->DestroyDevice(device);
+}
+
+XrResult SDL_DestroyGPUXRSwapchain(SDL_GPUDevice *device, XrSwapchain swapchain, SDL_GPUTexture **swapchainImages)
+{
+    CHECK_DEVICE_MAGIC(device, XR_ERROR_HANDLE_INVALID);
+
+    return device->DestroyXRSwapchain(device->driverData, swapchain, swapchainImages);
 }
 
 int SDL_GetNumGPUDrivers(void)
@@ -2962,4 +2977,27 @@ Uint32 SDL_CalculateGPUTextureFormatSize(
     Uint32 blocksPerRow = (width + blockWidth - 1) / blockWidth;
     Uint32 blocksPerColumn = (height + blockHeight - 1) / blockHeight;
     return depth_or_layer_count * blocksPerRow * blocksPerColumn * SDL_GPUTextureFormatTexelBlockSize(format);
+}
+
+XrResult SDL_CreateGPUXRSession(
+    SDL_GPUDevice *device,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+    CHECK_DEVICE_MAGIC(device, XR_NULL_HANDLE);
+    
+    return device->CreateXRSession(device->driverData, createinfo, session);
+}
+
+XrResult SDL_CreateGPUXRSwapchain(
+    SDL_GPUDevice *device,
+    XrSession session,
+    const XrSwapchainCreateInfo *createinfo,
+    SDL_GPUTextureFormat *textureFormat,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+    CHECK_DEVICE_MAGIC(device, XR_NULL_HANDLE);
+
+    return device->CreateXRSwapchain(device->driverData, session, createinfo, textureFormat, swapchain, textures);
 }
