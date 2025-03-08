@@ -645,6 +645,15 @@ int SDL_GetNumLogicalCPUCores(void)
             SDL_NumLogicalCPUCores = info.dwNumberOfProcessors;
         }
 #endif
+#ifdef SDL_PLATFORM_3DS
+        if (SDL_NumLogicalCPUCores <= 0) {
+            bool isNew3DS = false;
+            APT_CheckNew3DS(&isNew3DS);
+            // 1 core is always dedicated to the OS
+            // Meaning that the New3DS has 3 available core, and the Old3DS only one.
+            SDL_NumLogicalCPUCores = isNew3DS ? 4 : 2;
+        }
+#endif
         // There has to be at least 1, right? :)
         if (SDL_NumLogicalCPUCores <= 0) {
             SDL_NumLogicalCPUCores = 1;
