@@ -1160,7 +1160,7 @@ int SDL_GetSystemRAM(void)
 #endif
 #ifdef SDL_PLATFORM_3DS
         if (SDL_SystemRAM <= 0) {
-            // The New3DS has 256MiB, the Old3DS 128MiB
+            // The New3DS has 255MiB, the Old3DS 127MiB
             SDL_SystemRAM = (int)(osGetMemRegionSize(MEMREGION_ALL) / (1024 * 1024));
         }
 #endif
