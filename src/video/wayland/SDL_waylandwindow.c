@@ -2299,8 +2299,8 @@ SDL_FullscreenResult Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Win
     }
 
     // Don't send redundant fullscreen set/unset events.
-    if (fullscreen != wind->is_fullscreen) {
-        wind->fullscreen_was_positioned = fullscreen;
+    if (!!fullscreen != wind->is_fullscreen) {
+        wind->fullscreen_was_positioned = !!fullscreen;
         SetFullscreen(window, fullscreen ? output : NULL);
     } else if (wind->is_fullscreen) {
         /*
