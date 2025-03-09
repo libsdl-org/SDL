@@ -2359,6 +2359,13 @@ void SDL_CopyGPUTextureToTexture(
             SDL_assert_release(!"Destination texture cannot be NULL!");
             return;
         }
+
+        TextureCommonHeader *srcHeader = (TextureCommonHeader *)source->texture;
+        TextureCommonHeader *dstHeader = (TextureCommonHeader *)destination->texture;
+        if (srcHeader->info.format != dstHeader->info.format) {
+            SDL_assert_release(!"Source and destination textures must have the same format!");
+            return;
+        }
     }
 
     COPYPASS_DEVICE->CopyTextureToTexture(
