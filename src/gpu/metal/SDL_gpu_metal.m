@@ -4276,8 +4276,34 @@ static bool METAL_SupportsTextureFormat(
 
 static bool METAL_PrepareDriver(SDL_VideoDevice *this)
 {
-    if (@available(macOS 10.14, iOS 13.0, tvOS 13.0, *)) {
-        return (this->Metal_CreateView != NULL);
+    if (@available(macOS 10.14, iOS 13.0, tvOS 13.0, *) && (this->Metal_CreateView != NULL)) {
+        id<MTLDevice> device = NULL;
+        bool hasHardwareSupport = false;
+
+        // Just use the default device, we don't care about low-power support for this check
+        device = MTLCreateSystemDefaultDevice();
+        if (device == NULL) {
+            SDL_SetError("Failed to create Metal device");
+            return false;
+        }
+
+#ifdef SDL_PLATFORM_MACOS
+        hasHardwareSupport = true;
+        if (@available(macOS 10.15, *)) {
+            hasHardwareSupport = [device supportsFamily:MTLGPUFamilyMac2];
+        } else if (@available(macOS 10.14, *)) {
+            hasHardwareSupport = [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily2_v1];
+        }
+#else
+        if (@available(iOS 13.0, tvOS 13.0, *)) {
+            hasHardwareSupport = [device supportsFamily:MTLGPUFamilyApple3];
+        }
+#endif
+
+        if (!hasHardwareSupport) {
+            SDL_SetError("Device does not meet the hardware requirements for SDL_GPU Metal");
+        }
+        return hasHardwareSupport;
     }
     return false;
 }
