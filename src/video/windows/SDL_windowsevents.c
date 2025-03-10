@@ -614,6 +614,11 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         return;
     }
 
+    SDL_Mouse *mouse = SDL_GetMouse();
+    if (!mouse) {
+        return;
+    }
+
     if (GetMouseMessageSource(rawmouse->ulExtraInformation) != SDL_MOUSE_EVENT_SOURCE_MOUSE) {
         return;
     }
@@ -682,7 +687,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                         }
                     }
                 }
-            } else {
+            } else if (mouse->pen_mouse_events) {
                 const int MAXIMUM_TABLET_RELATIVE_MOTION = 32;
                 if (SDL_abs(relX) > MAXIMUM_TABLET_RELATIVE_MOTION ||
                     SDL_abs(relY) > MAXIMUM_TABLET_RELATIVE_MOTION) {
@@ -690,6 +695,14 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
                 } else {
                     SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)relX, (float)relY);
                 }
+            } else {
+                int screen_x = virtual_desktop ? GetSystemMetrics(SM_XVIRTUALSCREEN) : 0;
+                int screen_y = virtual_desktop ? GetSystemMetrics(SM_YVIRTUALSCREEN) : 0;
+
+                if (!data->raw_input_fake_pen_id) {
+                    data->raw_input_fake_pen_id = SDL_AddPenDevice(timestamp, "raw mouse input", NULL, SDL_malloc(1));
+                }
+                SDL_SendPenMotion(timestamp, data->raw_input_fake_pen_id, window, (float)(x + screen_x - window->x), (float)(y + screen_y - window->y));
             }
 
             data->last_raw_mouse_position.x = x;
