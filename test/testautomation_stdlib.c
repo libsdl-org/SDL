@@ -412,6 +412,7 @@ int stdlib_sscanf(void *arg)
     long long long_long_output, expected_long_long_output, long_long_length;
     size_t size_output, expected_size_output;
     char text[128], text2[128];
+    unsigned int r = 0, g = 0, b = 0;
 
     expected_output = output = 123;
     expected_result = -1;
@@ -446,6 +447,17 @@ int stdlib_sscanf(void *arg)
     SDLTest_AssertCheck(expected_output == output, "Check output, expected: %i, got: %i", expected_output, output);
     SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
     SDLTest_AssertCheck(length == 1, "Check length, expected: 1, got: %i", length);
+
+    expected_result = 3;
+    result = SDL_sscanf("#026", "#%1x%1x%1x", &r, &g, &b);
+    SDLTest_AssertPass("Call to SDL_sscanf(\"#026\", \"#%%1x%%1x%%1x\", &r, &g, &b)");
+    expected_output = 0;
+    SDLTest_AssertCheck(r == expected_output, "Check output for r, expected: %i, got: %i", expected_output, r);
+    expected_output = 2;
+    SDLTest_AssertCheck(g == expected_output, "Check output for g, expected: %i, got: %i", expected_output, g);
+    expected_output = 6;
+    SDLTest_AssertCheck(b == expected_output, "Check output for b, expected: %i, got: %i", expected_output, b);
+    SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
 
 #define SIZED_TEST_CASE(type, var, printf_specifier, scanf_specifier)                                                                                                            \
     var##_output = 123;                                                                                                                                                          \
