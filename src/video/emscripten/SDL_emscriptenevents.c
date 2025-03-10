@@ -1011,7 +1011,7 @@ static bool Emscripten_ShouldSetKeyboardElement(SDL_WindowData* data)
         return SDL_strcmp(data->keyboard_element, "#none") != 0;
     }
     else {
-        return data->keyboard_element != EMSCRIPTEN_EVENT_TARGET_INVALID;
+        return data->keyboard_target != EMSCRIPTEN_EVENT_TARGET_INVALID;
     }
 }
 
