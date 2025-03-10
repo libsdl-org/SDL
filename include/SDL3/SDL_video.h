@@ -1280,6 +1280,19 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *
  * The window is implicitly shown if the "hidden" property is not set.
  *
+ * These are additional supported properties with Emscripten:
+ *
+ * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID`: the id given to the canvas element.
+ *    This should start with a '#' sign
+ * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT`: override the binding element
+ *   for keyboard inputs for this canvas. The variable can be one of:
+ * - "#window": the javascript window object (default)
+ * - "#document": the javascript document object
+ * - "#screen": the javascript window.screen object
+ * - "#canvas": the WebGL canvas element
+ * - "#none": Don't bind anything at all
+ * - any other string without a leading # sign applies to the element on the
+ *   page with that ID.
  * Windows with the "tooltip" and "menu" properties are popup windows and have
  * the behaviors and guidelines outlined in SDL_CreatePopupWindow().
  *
@@ -1341,6 +1354,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER                  "SDL.window.create.win32.hwnd"
 #define SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "SDL.window.create.win32.pixel_format_hwnd"
 #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"
+#define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID                "SDL.window.create.x11.canvas_id"
+#define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT         "SDL.window.create.x11.keyboard_element"
 
 /**
  * Get the numeric ID of a window.

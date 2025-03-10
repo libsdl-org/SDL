@@ -279,6 +279,14 @@ EMSCRIPTEN_KEEPALIVE void requestFullscreenThroughSDL(SDL_Window *window)
     SDL_SetWindowFullscreen(window, true);
 }
 
+static bool Emscripten_IsEventTarget(const char* target)
+{
+    return target == EMSCRIPTEN_EVENT_TARGET_INVALID ||
+            target == EMSCRIPTEN_EVENT_TARGET_DOCUMENT ||
+            target == EMSCRIPTEN_EVENT_TARGET_WINDOW ||
+            target == EMSCRIPTEN_EVENT_TARGET_SCREEN;
+}
+
 static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_WindowData *wdata;
@@ -292,12 +300,25 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
         return false;
     }
 
-    selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR);
-    if (!selector) {
-        selector = "#canvas";
-    }
-
+    selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, "#canvas");
     wdata->canvas_id = SDL_strdup(selector);
+
+    selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT, EMSCRIPTEN_EVENT_TARGET_WINDOW);
+
+    // Emscripten's event targets are not defined as actual strings
+    // For Clarification:
+    // #define EMSCRIPTEN_EVENT_TARGET_INVALID        0
+    // #define EMSCRIPTEN_EVENT_TARGET_DOCUMENT       ((const char*)1)
+    // #define EMSCRIPTEN_EVENT_TARGET_WINDOW         ((const char*)2)
+    // #define EMSCRIPTEN_EVENT_TARGET_SCREEN         ((const char*)3)
+    if(Emscripten_IsEventTarget(selector)) {
+        wdata->keyboard_target = selector;
+        wdata->keyboard_element_is_string = false;
+    }
+    else {
+        wdata->keyboard_element = SDL_strdup(selector);
+        wdata->keyboard_element_is_string = true;
+    }
 
     if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
         wdata->pixel_ratio = emscripten_get_device_pixel_ratio();

@@ -1005,31 +1005,18 @@ static void Emscripten_unset_drag_event_callbacks(SDL_WindowData *data)
     }, data->canvas_id);
 }
 
-static const char *Emscripten_GetKeyboardTargetElement()
+static bool Emscripten_ShouldSetKeyboardElement(SDL_WindowData* data)
 {
-    const char *target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
-
-    if (!target || !*target) {
-        return EMSCRIPTEN_EVENT_TARGET_WINDOW;
+    if (data->keyboard_element_is_string) {
+        return SDL_strcmp(data->keyboard_element, "#none") != 0;
     }
-
-    if (SDL_strcmp(target, "#none") == 0) {
-        return NULL;
-    } else if (SDL_strcmp(target, "#window") == 0) {
-        return EMSCRIPTEN_EVENT_TARGET_WINDOW;
-    } else if (SDL_strcmp(target, "#document") == 0) {
-        return EMSCRIPTEN_EVENT_TARGET_DOCUMENT;
-    } else if (SDL_strcmp(target, "#screen") == 0) {
-        return EMSCRIPTEN_EVENT_TARGET_SCREEN;
+    else {
+        return data->keyboard_element != EMSCRIPTEN_EVENT_TARGET_INVALID;
     }
-
-    return target;
 }
 
 void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
-    const char *keyElement;
-
     // There is only one window and that window is the canvas
     emscripten_set_mousemove_callback(data->canvas_id, data, 0, Emscripten_HandleMouseMove);
 
@@ -1053,12 +1040,10 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 
     emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, data, 0, Emscripten_HandlePointerLockChange);
 
-    // Keyboard events are awkward
-    keyElement = Emscripten_GetKeyboardTargetElement();
-    if (keyElement) {
-        emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
-        emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);
-        emscripten_set_keypress_callback(keyElement, data, 0, Emscripten_HandleKeyPress);
+    if (Emscripten_ShouldSetKeyboardElement(data)) {
+        emscripten_set_keydown_callback(data->keyboard_target, data, 0, Emscripten_HandleKey);
+        emscripten_set_keyup_callback(data->keyboard_target, data, 0, Emscripten_HandleKey);
+        emscripten_set_keypress_callback(data->keyboard_target, data, 0, Emscripten_HandleKeyPress);
     }
 
     emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, data, 0, Emscripten_HandleFullscreenChange);
@@ -1079,8 +1064,6 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 
 void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 {
-    const char *target;
-
     // !!! FIXME: currently Emscripten doesn't have a Drop Events functions like emscripten_set_*_callback, but we should use those when they do:
     Emscripten_unset_drag_event_callbacks(data);
 
@@ -1111,11 +1094,10 @@ void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 
     emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
 
-    target = Emscripten_GetKeyboardTargetElement();
-    if (target) {
-        emscripten_set_keydown_callback(target, NULL, 0, NULL);
-        emscripten_set_keyup_callback(target, NULL, 0, NULL);
-        emscripten_set_keypress_callback(target, NULL, 0, NULL);
+    if (Emscripten_ShouldSetKeyboardElement(data)) {
+        emscripten_set_keydown_callback(data->keyboard_target, NULL, 0, NULL);
+        emscripten_set_keyup_callback(data->keyboard_target, NULL, 0, NULL);
+        emscripten_set_keypress_callback(data->keyboard_target, NULL, 0, NULL);
     }
 
     emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
