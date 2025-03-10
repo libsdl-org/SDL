@@ -4277,9 +4277,13 @@ static bool METAL_SupportsTextureFormat(
 static bool METAL_PrepareDriver(SDL_VideoDevice *this)
 {
     @autoreleasepool {
-        if (@available(macOS 10.14, iOS 13.0, tvOS 13.0, *) && (this->Metal_CreateView != NULL)) {
+        if (@available(macOS 10.14, iOS 13.0, tvOS 13.0, *)) {
             id<MTLDevice> device = NULL;
             bool hasHardwareSupport = false;
+
+						if (_this->Metal_CreateView == NULL) {
+								return false;
+						}
 
             // Just use the default device, we don't care about low-power support for this check
             device = MTLCreateSystemDefaultDevice();
