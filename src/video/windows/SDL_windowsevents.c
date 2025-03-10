@@ -1640,7 +1640,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             POINT cursorPos;
             GetCursorPos(&cursorPos);
             ScreenToClient(hwnd, &cursorPos);
-            PostMessage(hwnd, WM_MOUSEMOVE, 0, cursorPos.x | cursorPos.y << 16);
+            PostMessage(hwnd, WM_MOUSEMOVE, 0, cursorPos.x | (((unsigned int)((short)cursorPos.y)) << 16));
         }
     } break;
 
