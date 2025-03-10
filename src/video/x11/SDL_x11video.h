@@ -39,6 +39,7 @@
 #include "SDL_x11settings.h"
 #include "SDL_x11window.h"
 #include "SDL_x11vulkan.h"
+#include "SDL_x11webgpu.h"
 
 // Private display data
 
