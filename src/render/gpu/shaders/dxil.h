@@ -1,0 +1,6 @@
+#include "linepoint.vert.dxil.h"
+#include "tri_color.vert.dxil.h"
+#include "tri_texture.vert.dxil.h"
+#include "color.frag.dxil.h"
+#include "texture_rgba.frag.dxil.h"
+#include "texture_rgb.frag.dxil.h"

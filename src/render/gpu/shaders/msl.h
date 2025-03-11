@@ -1,0 +1,6 @@
+#include "linepoint.vert.msl.h"
+#include "tri_color.vert.msl.h"
+#include "tri_texture.vert.msl.h"
+#include "color.frag.msl.h"
+#include "texture_rgba.frag.msl.h"
+#include "texture_rgb.frag.msl.h"

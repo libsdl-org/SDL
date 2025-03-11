@@ -45,7 +45,7 @@ typedef struct GPU_ShaderModuleSource
 #ifdef SDL_GPU_D3D12
 #define IF_D3D12(...)       __VA_ARGS__
 #define HAVE_DXIL60_SHADERS 1
-#include "shaders/dxil60.h"
+#include "shaders/dxil.h"
 #else
 #define IF_D3D12(...)
 #define HAVE_DXIL60_SHADERS 0
@@ -54,7 +54,7 @@ typedef struct GPU_ShaderModuleSource
 #ifdef SDL_GPU_METAL
 #define IF_METAL(...)      __VA_ARGS__
 #define HAVE_METAL_SHADERS 1
-#include "shaders/metal.h"
+#include "shaders/msl.h"
 #else
 #define IF_METAL(...)
 #define HAVE_METAL_SHADERS 0
@@ -84,22 +84,22 @@ static const GPU_ShaderSources vert_shader_sources[NUM_VERT_SHADERS] = {
         .num_samplers = 0,
         .num_uniform_buffers = 1,
         SHADER_SPIRV(linepoint_vert_spv)
-        SHADER_DXIL60(linepoint_vert_sm60_dxil)
-        SHADER_METAL(linepoint_vert_metal)
+        SHADER_DXIL60(linepoint_vert_dxil)
+        SHADER_METAL(linepoint_vert_msl)
     },
     [VERT_SHADER_TRI_COLOR] = {
         .num_samplers = 0,
         .num_uniform_buffers = 1,
         SHADER_SPIRV(tri_color_vert_spv)
-        SHADER_DXIL60(tri_color_vert_sm60_dxil)
-        SHADER_METAL(tri_color_vert_metal)
+        SHADER_DXIL60(tri_color_vert_dxil)
+        SHADER_METAL(tri_color_vert_msl)
     },
     [VERT_SHADER_TRI_TEXTURE] = {
         .num_samplers = 0,
         .num_uniform_buffers = 1,
         SHADER_SPIRV(tri_texture_vert_spv)
-        SHADER_DXIL60(tri_texture_vert_sm60_dxil)
-        SHADER_METAL(tri_texture_vert_metal)
+        SHADER_DXIL60(tri_texture_vert_dxil)
+        SHADER_METAL(tri_texture_vert_msl)
     },
 };
 
@@ -108,22 +108,22 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
         .num_samplers = 0,
         .num_uniform_buffers = 0,
         SHADER_SPIRV(color_frag_spv)
-        SHADER_DXIL60(color_frag_sm60_dxil)
-        SHADER_METAL(color_frag_metal)
+        SHADER_DXIL60(color_frag_dxil)
+        SHADER_METAL(color_frag_msl)
     },
     [FRAG_SHADER_TEXTURE_RGB] = {
         .num_samplers = 1,
         .num_uniform_buffers = 0,
         SHADER_SPIRV(texture_rgb_frag_spv)
-        SHADER_DXIL60(texture_rgb_frag_sm60_dxil)
-        SHADER_METAL(texture_rgb_frag_metal)
+        SHADER_DXIL60(texture_rgb_frag_dxil)
+        SHADER_METAL(texture_rgb_frag_msl)
     },
     [FRAG_SHADER_TEXTURE_RGBA] = {
         .num_samplers = 1,
         .num_uniform_buffers = 0,
         SHADER_SPIRV(texture_rgba_frag_spv)
-        SHADER_DXIL60(texture_rgba_frag_sm60_dxil)
-        SHADER_METAL(texture_rgba_frag_metal)
+        SHADER_DXIL60(texture_rgba_frag_dxil)
+        SHADER_METAL(texture_rgba_frag_msl)
     },
 };
 // clang-format on
