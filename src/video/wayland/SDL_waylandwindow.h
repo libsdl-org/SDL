@@ -30,8 +30,6 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandshmbuffer.h"
 
-struct SDL_WaylandInput;
-
 struct SDL_WindowData
 {
     SDL_Window *sdlwindow;
@@ -99,14 +97,10 @@ struct SDL_WindowData
     } wm_caps;
 
     struct wl_egl_window *egl_window;
-    struct SDL_WaylandInput *keyboard_device;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
-    struct zwp_locked_pointer_v1 *locked_pointer;
-    struct zwp_confined_pointer_v1 *confined_pointer;
     struct zxdg_toplevel_decoration_v1 *server_decoration;
-    struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
     struct zwp_idle_inhibitor_v1 *idle_inhibitor;
     struct xdg_activation_token_v1 *activation_token;
     struct wp_viewport *viewport;
@@ -132,6 +126,10 @@ struct SDL_WindowData
 
     struct Wayland_SHMBuffer *icon_buffers;
     int icon_buffer_count;
+
+    // Keyboard and pointer focus refcount.
+    int keyboard_focus_count;
+    int pointer_focus_count;
 
     struct
     {
@@ -183,6 +181,13 @@ struct SDL_WindowData
         int width;
         int height;
     } toplevel_bounds;
+
+    struct
+    {
+        int hint;
+        int purpose;
+        bool active;
+    } text_input_props;
 
     SDL_DisplayID last_displayID;
     int fullscreen_deadline_count;

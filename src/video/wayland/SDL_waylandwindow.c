@@ -707,9 +707,6 @@ static void surface_frame_done(void *data, struct wl_callback *cb, uint32_t time
             }
         }
 
-        // Create the pointer confinement region, if necessary.
-        Wayland_input_confine_pointer(wind->waylandData->input, wind->sdlwindow);
-
         /* If the window was initially set to the suspended state, send the occluded event now,
          * as we don't want to mark the window as occluded until at least one frame has been submitted.
          */
@@ -2223,9 +2220,17 @@ static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
  */
 static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *target_wind, bool set_serial)
 {
-    struct SDL_WaylandInput * input = data->input;
-    SDL_Window *focus = SDL_GetKeyboardFocus();
-    struct wl_surface *requesting_surface = focus ? focus->internal->surface : NULL;
+    SDL_WaylandSeat *seat = data->last_implicit_grab_seat;
+    SDL_WindowData *focus = NULL;
+
+    if (seat) {
+        focus = seat->keyboard.focus;
+        if (!focus) {
+            focus = seat->pointer.focus;
+        }
+    }
+
+    struct wl_surface *requesting_surface = focus ? focus->surface : NULL;
 
     if (data->activation_manager) {
         if (target_wind->activation_token) {
@@ -2249,8 +2254,8 @@ static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *target_
             // This specifies the surface from which the activation request is originating, not the activation target surface.
             xdg_activation_token_v1_set_surface(target_wind->activation_token, requesting_surface);
         }
-        if (set_serial && input && input->seat) {
-            xdg_activation_token_v1_set_serial(target_wind->activation_token, input->last_implicit_grab_serial, input->seat);
+        if (set_serial && seat && seat->wl_seat) {
+            xdg_activation_token_v1_set_serial(target_wind->activation_token, seat->last_implicit_grab_serial, seat->wl_seat);
         }
         xdg_activation_token_v1_commit(target_wind->activation_token);
     }
@@ -2505,35 +2510,31 @@ bool Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
      * Just know that this call lets you confine with a rect, SetWindowGrab
      * lets you confine without a rect.
      */
-    if (SDL_RectEmpty(&window->mouse_rect) && !(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
-        return Wayland_input_unconfine_pointer(data->input, window);
-    } else {
-        return Wayland_input_confine_pointer(data->input, window);
+    if (!data->pointer_constraints) {
+        return SDL_SetError("Failed to grab mouse: compositor lacks support for the required zwp_pointer_constraints_v1 protocol");
     }
+    Wayland_DisplayUpdatePointerGrabs(data, window->internal);
+    return true;
 }
 
 bool Wayland_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
     SDL_VideoData *data = _this->internal;
-
-    if (grabbed) {
-        return Wayland_input_confine_pointer(data->input, window);
-    } else if (SDL_RectEmpty(&window->mouse_rect)) {
-        return Wayland_input_unconfine_pointer(data->input, window);
+    if (!data->pointer_constraints) {
+        return SDL_SetError("Failed to grab mouse: compositor lacks support for the required zwp_pointer_constraints_v1 protocol");
     }
-
+    Wayland_DisplayUpdatePointerGrabs(data, window->internal);
     return true;
 }
 
 bool Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
     SDL_VideoData *data = _this->internal;
-
-    if (grabbed) {
-        return Wayland_input_grab_keyboard(window, data->input);
-    } else {
-        return Wayland_input_ungrab_keyboard(window);
+    if (!data->key_inhibitor_manager) {
+        return SDL_SetError("Failed to grab keyboard: compositor lacks support for the required zwp_keyboard_shortcuts_inhibit_manager_v1 protocol");
     }
+    Wayland_DisplayUpdateKeyboardGrabs(data, window->internal);
+    return true;
 }
 
 bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
@@ -2688,10 +2689,6 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
         }
     }
 #endif
-
-    if (c->relative_mouse_mode) {
-        Wayland_input_enable_relative_pointer(c->input);
-    }
 
     // We may need to create an idle inhibitor for this new window
     Wayland_SuspendScreenSaver(_this);
@@ -2994,6 +2991,11 @@ bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 {
     SDL_WindowData *wind = window->internal;
+    SDL_WaylandSeat *seat = wind->waylandData->last_implicit_grab_seat;
+
+    if (!seat) {
+        return;
+    }
 
     if (wind->scale_to_display) {
         x = PixelToPoint(window, x);
@@ -3003,13 +3005,13 @@ void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame) {
-            libdecor_frame_show_window_menu(wind->shell_surface.libdecor.frame, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
+            libdecor_frame_show_window_menu(wind->shell_surface.libdecor.frame, seat->wl_seat, seat->last_implicit_grab_serial, x, y);
         }
     } else
 #endif
     if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
         if (wind->shell_surface.xdg.toplevel.xdg_toplevel) {
-            xdg_toplevel_show_window_menu(wind->shell_surface.xdg.toplevel.xdg_toplevel, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
+            xdg_toplevel_show_window_menu(wind->shell_surface.xdg.toplevel.xdg_toplevel, seat->wl_seat, seat->last_implicit_grab_serial, x, y);
         }
     }
 }
