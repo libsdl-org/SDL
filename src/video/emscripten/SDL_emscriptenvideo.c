@@ -279,29 +279,6 @@ EMSCRIPTEN_KEEPALIVE void requestFullscreenThroughSDL(SDL_Window *window)
     SDL_SetWindowFullscreen(window, true);
 }
 
-static const char* Emscripten_GetKeyboardTargetElementAsString(const char* target)
-{
-    // Emscripten's event targets are not defined as actual strings
-    // For Clarification:
-    // #define EMSCRIPTEN_EVENT_TARGET_INVALID        0
-    // #define EMSCRIPTEN_EVENT_TARGET_DOCUMENT       ((const char*)1)
-    // #define EMSCRIPTEN_EVENT_TARGET_WINDOW         ((const char*)2)
-    // #define EMSCRIPTEN_EVENT_TARGET_SCREEN         ((const char*)3)
-    if (target == EMSCRIPTEN_EVENT_TARGET_INVALID) {
-        return "#none";
-    }
-    if (target == EMSCRIPTEN_EVENT_TARGET_DOCUMENT) {
-        return "#document";
-    }
-    if (target == EMSCRIPTEN_EVENT_TARGET_WINDOW) {
-        return "#window";
-    }
-    if (target == EMSCRIPTEN_EVENT_TARGET_SCREEN) {
-        return "#screen";
-    }
-    return target;
-}
-
 static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_WindowData *wdata;
@@ -323,9 +300,8 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
 
     selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
     if (!selector || !*selector) {
-        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT, EMSCRIPTEN_EVENT_TARGET_WINDOW);
+        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT, "#window");
     }
-    selector = Emscripten_GetKeyboardTargetElementAsString(selector);
     wdata->keyboard_element = SDL_strdup(selector);
 
     if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
