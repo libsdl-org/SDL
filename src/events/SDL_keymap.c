@@ -23,22 +23,17 @@
 #include "SDL_keymap_c.h"
 #include "SDL_keyboard_c.h"
 
-struct SDL_Keymap
-{
-    SDL_HashTable *scancode_to_keycode;
-    SDL_HashTable *keycode_to_scancode;
-};
-
 static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate);
 static SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate);
 
-SDL_Keymap *SDL_CreateKeymap(void)
+SDL_Keymap *SDL_CreateKeymap(bool auto_release)
 {
-    SDL_Keymap *keymap = (SDL_Keymap *)SDL_malloc(sizeof(*keymap));
+    SDL_Keymap *keymap = (SDL_Keymap *)SDL_calloc(1, sizeof(*keymap));
     if (!keymap) {
         return NULL;
     }
 
+    keymap->auto_release = auto_release;
     keymap->scancode_to_keycode = SDL_CreateHashTable(256, false, SDL_HashID, SDL_KeyMatchID, NULL, NULL);
     keymap->keycode_to_scancode = SDL_CreateHashTable(256, false, SDL_HashID, SDL_KeyMatchID, NULL, NULL);
     if (!keymap->scancode_to_keycode || !keymap->keycode_to_scancode) {
