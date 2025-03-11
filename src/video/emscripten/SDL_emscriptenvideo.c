@@ -322,7 +322,7 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     wdata->canvas_id = SDL_strdup(selector);
 
     selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
-    if(!selector) {
+    if (!selector || !*selector) {
         selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT, EMSCRIPTEN_EVENT_TARGET_WINDOW);
     }
     selector = Emscripten_GetKeyboardTargetElementAsString(selector);
