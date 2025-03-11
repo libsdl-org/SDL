@@ -20,6 +20,7 @@
 */
 
 #include "SDL_internal.h"
+#include "SDL_waylandevents_c.h"
 
 #ifndef SDL_waylanddatamanager_h_
 #define SDL_waylanddatamanager_h_
@@ -79,7 +80,7 @@ typedef struct
 typedef struct
 {
     struct wl_data_device *data_device;
-    SDL_VideoData *video_data;
+    struct SDL_WaylandSeat *seat;
 
     // Drag and Drop
     uint32_t drag_serial;
@@ -97,7 +98,7 @@ typedef struct
 typedef struct
 {
     struct zwp_primary_selection_device_v1 *primary_selection_device;
-    SDL_VideoData *video_data;
+    struct SDL_WaylandSeat *seat;
 
     uint32_t selection_serial;
     SDL_WaylandPrimarySelectionSource *selection_source;
