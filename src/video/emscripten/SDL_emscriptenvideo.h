@@ -37,7 +37,7 @@ struct SDL_WindowData
 
     char *canvas_id;
     union {
-      char* keyboard_element;
+      char *keyboard_element;
       const char* keyboard_target;
     };
     bool keyboard_element_is_string;

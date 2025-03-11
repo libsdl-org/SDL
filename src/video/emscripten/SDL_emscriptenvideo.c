@@ -320,8 +320,7 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     if(Emscripten_IsEventTarget(selector)) {
         wdata->keyboard_target = selector;
         wdata->keyboard_element_is_string = false;
-    }
-    else {
+    } else {
         wdata->keyboard_element = SDL_strdup(selector);
         wdata->keyboard_element_is_string = true;
     }
@@ -423,6 +422,10 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         // We can't destroy the canvas, so resize it to zero instead
         emscripten_set_canvas_element_size(data->canvas_id, 0, 0);
         SDL_free(data->canvas_id);
+
+        if(data->keyboard_element_is_string) {
+            SDL_free(data->keyboard_element);
+        }
 
         SDL_free(window->internal);
         window->internal = NULL;
