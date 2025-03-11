@@ -327,7 +327,7 @@ static void UpdateKeymap(SDL_CocoaVideoData *data, bool send_event)
 
     UInt32 keyboard_type = LMGetKbdType();
 
-    SDL_Keymap *keymap = SDL_CreateKeymap();
+    SDL_Keymap *keymap = SDL_CreateKeymap(true);
     for (int m = 0; m < SDL_arraysize(mods); ++m) {
         for (int i = 0; i < SDL_arraysize(darwin_scancode_table); i++) {
             OSStatus err;

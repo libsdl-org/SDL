@@ -409,6 +409,19 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
     }
 }
 
+void SDL_SetMouseName(SDL_MouseID mouseID, const char *name)
+{
+    SDL_assert(mouseID != 0);
+
+    const int mouse_index = SDL_GetMouseIndex(mouseID);
+
+    if (mouse_index >= 0) {
+        SDL_MouseInstance *instance = &SDL_mice[mouse_index];
+        SDL_free(instance->name);
+        instance->name = SDL_strdup(name ? name : "");
+    }
+}
+
 bool SDL_HasMouse(void)
 {
     return (SDL_mouse_count > 0);

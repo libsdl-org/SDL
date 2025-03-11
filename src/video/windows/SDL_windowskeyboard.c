@@ -96,7 +96,7 @@ void WIN_UpdateKeymap(bool send_event)
 
     WIN_ResetDeadKeys();
 
-    keymap = SDL_CreateKeymap();
+    keymap = SDL_CreateKeymap(true);
 
     for (int m = 0; m < SDL_arraysize(mods); ++m) {
         for (int i = 0; i < SDL_arraysize(windows_scancode_table); i++) {
