@@ -317,7 +317,7 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     // #define EMSCRIPTEN_EVENT_TARGET_DOCUMENT       ((const char*)1)
     // #define EMSCRIPTEN_EVENT_TARGET_WINDOW         ((const char*)2)
     // #define EMSCRIPTEN_EVENT_TARGET_SCREEN         ((const char*)3)
-    if(Emscripten_IsEventTarget(selector)) {
+    if (Emscripten_IsEventTarget(selector)) {
         wdata->keyboard_target = selector;
         wdata->keyboard_element_is_string = false;
     } else {
