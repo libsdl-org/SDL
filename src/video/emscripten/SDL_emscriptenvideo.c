@@ -423,7 +423,7 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         emscripten_set_canvas_element_size(data->canvas_id, 0, 0);
         SDL_free(data->canvas_id);
 
-        if(data->keyboard_element_is_string) {
+        if (data->keyboard_element_is_string) {
             SDL_free(data->keyboard_element);
         }
 
