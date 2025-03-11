@@ -300,10 +300,16 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
         return false;
     }
 
-    selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, "#canvas");
+    selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR);
+    if(!selector) {
+        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, "#canvas");
+    }
     wdata->canvas_id = SDL_strdup(selector);
 
-    selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT, EMSCRIPTEN_EVENT_TARGET_WINDOW);
+    selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
+    if(!selector) {
+        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT, EMSCRIPTEN_EVENT_TARGET_WINDOW);
+    }
 
     // Emscripten's event targets are not defined as actual strings
     // For Clarification:

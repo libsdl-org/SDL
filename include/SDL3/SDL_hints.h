@@ -707,6 +707,38 @@ extern "C" {
 #define SDL_HINT_EMSCRIPTEN_ASYNCIFY "SDL_EMSCRIPTEN_ASYNCIFY"
 
 /**
+ * Specify the CSS selector used for the "default" window/canvas.
+ *
+ * This hint only applies to the emscripten platform.
+ *
+ * This hint should be set before creating a window.
+ *
+ * \since This hint is available since SDL 3.2.0.
+ */
+#define SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR "SDL_EMSCRIPTEN_CANVAS_SELECTOR"
+
+/**
+ * Override the binding element for keyboard inputs for Emscripten builds.
+ *
+ * This hint only applies to the emscripten platform.
+ *
+ * The variable can be one of:
+ *
+ * - "#window": the javascript window object
+ * - "#document": the javascript document object
+ * - "#screen": the javascript window.screen object
+ * - "#canvas": the WebGL canvas element
+ * - "#none": Don't bind anything at all
+ * - any other string without a leading # sign applies to the element on the
+ *   page with that ID.
+ *
+ * This hint should be set before creating a window.
+ *
+ * \since This hint is available since SDL 3.2.0.
+ */
+#define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
+
+/**
  * A variable that controls whether the on-screen keyboard should be shown
  * when text input is active.
  *
