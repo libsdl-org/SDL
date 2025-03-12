@@ -533,6 +533,7 @@ void *SDL_aligned_alloc(size_t alignment, size_t size)
 {
     size_t padding;
     Uint8 *result = NULL;
+    size_t requested_size = size;
 
     if (alignment < sizeof(void*)) {
         alignment = sizeof(void*);
@@ -552,6 +553,11 @@ void *SDL_aligned_alloc(size_t alignment, size_t size)
 
             // Store the original pointer right before the returned value
             SDL_memcpy(result - sizeof(original), &original, sizeof(original));
+
+            // Initialize the padding to zero
+            if (padding > 0) {
+                SDL_memset(result + requested_size, 0, padding);
+            }
         }
     }
     return result;
