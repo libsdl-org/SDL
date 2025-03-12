@@ -1267,9 +1267,10 @@ static const float TONEMAP_CHROME = 2;
 
 //static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
-static const float TEXTURETYPE_NV12 = 2;
-static const float TEXTURETYPE_NV21 = 3;
-static const float TEXTURETYPE_YUV = 4;
+static const float TEXTURETYPE_RGB_PIXELART = 2;
+static const float TEXTURETYPE_NV12 = 3;
+static const float TEXTURETYPE_NV21 = 4;
+static const float TEXTURETYPE_YUV = 5;
 
 //static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -1282,6 +1283,11 @@ typedef struct
     float texture_type;
     float input_type;
     float color_scale;
+
+    float texel_width;
+    float texel_height;
+    float texture_width;
+    float texture_height;
 
     float tonemap_method;
     float tonemap_factor1;
@@ -1330,7 +1336,15 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
             constants->texture_type = TEXTURETYPE_NV12;
             break;
         default:
-            constants->texture_type = TEXTURETYPE_RGB;
+            if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+                constants->texture_type = TEXTURETYPE_RGB_PIXELART;
+                constants->texture_width = texture->w;
+                constants->texture_height = texture->h;
+                constants->texel_width = 1.0f / constants->texture_width;
+                constants->texel_height = 1.0f / constants->texture_height;
+            } else {
+                constants->texture_type = TEXTURETYPE_RGB;
+            }
         }
 
         switch (SDL_COLORSPACETRANSFER(texture->colorspace)) {

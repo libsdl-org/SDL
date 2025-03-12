@@ -1488,7 +1488,7 @@ static int SDLCALL surface_testScale(void *arg)
         SDL_PIXELFORMAT_ARGB128_FLOAT, SDL_PIXELFORMAT_RGBA128_FLOAT,
     };
     SDL_ScaleMode modes[] = {
-        SDL_SCALEMODE_NEAREST, SDL_SCALEMODE_LINEAR
+        SDL_SCALEMODE_NEAREST, SDL_SCALEMODE_LINEAR, SDL_SCALEMODE_PIXELART
     };
     SDL_Surface *surface, *result;
     SDL_PixelFormat format;
@@ -1525,7 +1525,9 @@ static int SDLCALL surface_testScale(void *arg)
                 deltaA <= MAXIMUM_ERROR,
                 "Checking %s %s scaling results, expected %.4f,%.4f,%.4f,%.4f got %.4f,%.4f,%.4f,%.4f",
                 SDL_GetPixelFormatName(format),
-                mode == SDL_SCALEMODE_NEAREST ? "nearest" : "linear",
+                mode == SDL_SCALEMODE_NEAREST ? "nearest" :
+                mode == SDL_SCALEMODE_LINEAR ? "linear" :
+                mode == SDL_SCALEMODE_PIXELART ? "pixelart" : "unknown",
                 srcR, srcG, srcB, srcA, actualR, actualG, actualB, actualA);
 
             SDL_DestroySurface(surface);

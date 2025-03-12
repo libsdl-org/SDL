@@ -921,6 +921,7 @@ static void UpdateTextureScaleMode(D3D_RenderData *data, SDL_ScaleMode scaleMode
 {
     if (scaleMode != data->scaleMode[index]) {
         switch (scaleMode) {
+        case SDL_SCALEMODE_PIXELART:
         case SDL_SCALEMODE_NEAREST:
             IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_MINFILTER, D3DTEXF_POINT);
             IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_MAGFILTER, D3DTEXF_POINT);

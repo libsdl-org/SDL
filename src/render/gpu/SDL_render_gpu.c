@@ -29,11 +29,19 @@
 #include "SDL_pipeline_gpu.h"
 #include "SDL_shaders_gpu.h"
 
-typedef struct GPU_ShaderUniformData
+typedef struct GPU_VertexShaderUniformData
 {
     Float4X4 mvp;
     SDL_FColor color;
-} GPU_ShaderUniformData;
+} GPU_VertexShaderUniformData;
+
+typedef struct GPU_FragmentShaderUniformData
+{
+    float texel_width;
+    float texel_height;
+    float texture_width;
+    float texture_height;
+} GPU_FragmentShaderUniformData;
 
 typedef struct GPU_RenderData
 {
@@ -73,10 +81,9 @@ typedef struct GPU_RenderData
         SDL_FColor draw_color;
         bool scissor_enabled;
         bool scissor_was_enabled;
-        GPU_ShaderUniformData shader_data;
     } state;
 
-    SDL_GPUSampler *samplers[2][2];
+    SDL_GPUSampler *samplers[3][2];
 } GPU_RenderData;
 
 typedef struct GPU_TextureData
@@ -469,7 +476,7 @@ static SDL_GPURenderPass *RestartRenderPass(GPU_RenderData *data)
 
 static void PushVertexUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
 {
-    GPU_ShaderUniformData uniforms;
+    GPU_VertexShaderUniformData uniforms;
     SDL_zero(uniforms);
     uniforms.mvp.m[0][0] = 2.0f / data->state.viewport.w;
     uniforms.mvp.m[1][1] = -2.0f / data->state.viewport.h;
@@ -483,8 +490,25 @@ static void PushVertexUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
     SDL_PushGPUVertexUniformData(data->state.command_buffer, 0, &uniforms, sizeof(uniforms));
 }
 
+static void PushFragmentUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
+{
+    if (cmd->data.draw.texture &&
+        cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+        SDL_Texture *texture = cmd->data.draw.texture;
+        GPU_FragmentShaderUniformData uniforms;
+        SDL_zero(uniforms);
+        uniforms.texture_width = texture->w;
+        uniforms.texture_height = texture->h;
+        uniforms.texel_width = 1.0f / uniforms.texture_width;
+        uniforms.texel_height = 1.0f / uniforms.texture_height;
+        SDL_PushGPUFragmentUniformData(data->state.command_buffer, 0, &uniforms, sizeof(uniforms));
+    }
+}
+
 static SDL_GPUSampler **SamplerPointer(GPU_RenderData *data, SDL_TextureAddressMode address_mode, SDL_ScaleMode scale_mode)
 {
+    SDL_assert(scale_mode < SDL_arraysize(data->samplers));
+    SDL_assert(address_mode < SDL_arraysize(data->samplers[0]));
     return &data->samplers[scale_mode][address_mode - 1];
 }
 
@@ -525,9 +549,17 @@ static void Draw(
         if (texture) {
             v_shader = VERT_SHADER_TRI_TEXTURE;
             if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
-                f_shader = FRAG_SHADER_TEXTURE_RGBA;
+                if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+                    f_shader = FRAG_SHADER_TEXTURE_RGBA_PIXELART;
+                } else {
+                    f_shader = FRAG_SHADER_TEXTURE_RGBA;
+                }
             } else {
-                f_shader = FRAG_SHADER_TEXTURE_RGB;
+                if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+                    f_shader = FRAG_SHADER_TEXTURE_RGB_PIXELART;
+                } else {
+                    f_shader = FRAG_SHADER_TEXTURE_RGB;
+                }
             }
         } else {
             v_shader = VERT_SHADER_TRI_COLOR;
@@ -566,6 +598,7 @@ static void Draw(
         sampler_bind.texture = tdata->texture;
         SDL_BindGPUFragmentSamplers(pass, 0, &sampler_bind, 1);
     }
+    PushFragmentUniforms(data, cmd);
 
     SDL_GPUBufferBinding buffer_bind;
     SDL_zero(buffer_bind);
@@ -1119,12 +1152,20 @@ static bool InitSamplers(GPU_RenderData *data)
             { SDL_GPU_SAMPLERADDRESSMODE_REPEAT, SDL_GPU_FILTER_LINEAR, SDL_GPU_SAMPLERMIPMAPMODE_LINEAR, 0 },
         },
         {
+            { SDL_TEXTURE_ADDRESS_CLAMP, SDL_SCALEMODE_PIXELART },
+            { SDL_GPU_SAMPLERADDRESSMODE_REPEAT, SDL_GPU_FILTER_NEAREST, SDL_GPU_SAMPLERMIPMAPMODE_NEAREST, 0 },
+        },
+        {
             { SDL_TEXTURE_ADDRESS_WRAP, SDL_SCALEMODE_NEAREST },
             { SDL_GPU_SAMPLERADDRESSMODE_REPEAT, SDL_GPU_FILTER_NEAREST, SDL_GPU_SAMPLERMIPMAPMODE_NEAREST, 0 },
         },
         {
             { SDL_TEXTURE_ADDRESS_WRAP, SDL_SCALEMODE_LINEAR },
             { SDL_GPU_SAMPLERADDRESSMODE_REPEAT, SDL_GPU_FILTER_LINEAR, SDL_GPU_SAMPLERMIPMAPMODE_LINEAR, 0 },
+        },
+        {
+            { SDL_TEXTURE_ADDRESS_WRAP, SDL_SCALEMODE_PIXELART },
+            { SDL_GPU_SAMPLERADDRESSMODE_REPEAT, SDL_GPU_FILTER_NEAREST, SDL_GPU_SAMPLERMIPMAPMODE_NEAREST, 0 },
         },
     };
 

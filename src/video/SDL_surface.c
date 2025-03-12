@@ -1097,8 +1097,17 @@ bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surfac
         return SDL_InvalidParamError("dst");
     } else if ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
-    } else if (scaleMode != SDL_SCALEMODE_NEAREST &&
-               scaleMode != SDL_SCALEMODE_LINEAR) {
+    }
+
+    switch (scaleMode) {
+    case SDL_SCALEMODE_NEAREST:
+        break;
+    case SDL_SCALEMODE_LINEAR:
+        break;
+    case SDL_SCALEMODE_PIXELART:
+        scaleMode = SDL_SCALEMODE_NEAREST;
+        break;
+    default:
         return SDL_InvalidParamError("scaleMode");
     }
 
@@ -1257,7 +1266,7 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
         SDL_InvalidateMap(&src->map);
     }
 
-    if (scaleMode == SDL_SCALEMODE_NEAREST) {
+    if (scaleMode == SDL_SCALEMODE_NEAREST || scaleMode == SDL_SCALEMODE_PIXELART) {
         if (!(src->map.info.flags & complex_copy_flags) &&
             src->format == dst->format &&
             !SDL_ISPIXELFORMAT_INDEXED(src->format) &&

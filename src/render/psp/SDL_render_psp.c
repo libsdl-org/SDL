@@ -557,6 +557,7 @@ static void SetTextureAddressMode(SDL_TextureAddressMode addressMode)
 static void SetTextureScaleMode(SDL_ScaleMode scaleMode)
 {
     switch (scaleMode) {
+    case SDL_SCALEMODE_PIXELART:
     case SDL_SCALEMODE_NEAREST:
         sceGuTexFilter(GU_NEAREST, GU_NEAREST);
         break;

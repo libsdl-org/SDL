@@ -893,6 +893,7 @@ static bool SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd
 
         if (cmd->data.draw.texture_scale_mode != vita_texture->scale_mode) {
             switch (cmd->data.draw.texture_scale_mode) {
+            case SDL_SCALEMODE_PIXELART:
             case SDL_SCALEMODE_NEAREST:
                 gxm_texture_set_filters(vita_texture->tex, SCE_GXM_TEXTURE_FILTER_POINT, SCE_GXM_TEXTURE_FILTER_POINT);
                 break;
