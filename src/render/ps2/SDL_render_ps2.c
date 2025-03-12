@@ -444,6 +444,7 @@ static bool PS2_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL_Rende
         GSTEXTURE *ps2_tex = (GSTEXTURE *)cmd->data.draw.texture->internal;
 
         switch (cmd->data.draw.texture_scale_mode) {
+        case SDL_SCALEMODE_PIXELART:
         case SDL_SCALEMODE_NEAREST:
             ps2_tex->Filter = GS_FILTER_NEAREST;
             break;

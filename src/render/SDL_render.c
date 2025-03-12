@@ -1964,8 +1964,12 @@ bool SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
 {
     CHECK_TEXTURE_MAGIC(texture, false);
 
-    if (scaleMode != SDL_SCALEMODE_NEAREST &&
-        scaleMode != SDL_SCALEMODE_LINEAR) {
+    switch (scaleMode) {
+    case SDL_SCALEMODE_NEAREST:
+    case SDL_SCALEMODE_LINEAR:
+    case SDL_SCALEMODE_PIXELART:
+        break;
+    default:
         return SDL_InvalidParamError("scaleMode");
     }
 
@@ -5707,7 +5711,7 @@ static bool CreateDebugTextAtlas(SDL_Renderer *renderer)
     // Convert temp surface into texture
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, atlas);
     if (texture) {
-        SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
+        SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_PIXELART);
         renderer->debug_char_texture_atlas = texture;
     }
     SDL_DestroySurface(atlas);

@@ -53,6 +53,7 @@ struct GL_ShaderContext
     PFNGLUNIFORM1IARBPROC glUniform1iARB;
     PFNGLUNIFORM1FARBPROC glUniform1fARB;
     PFNGLUNIFORM3FARBPROC glUniform3fARB;
+    PFNGLUNIFORM4FARBPROC glUniform4fARB;
     PFNGLUSEPROGRAMOBJECTARBPROC glUseProgramObjectARB;
 
     bool GL_ARB_texture_rectangle_supported;
@@ -261,6 +262,7 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "varying vec4 v_color;\n"
 "varying vec2 v_texCoord;\n"
 "uniform sampler2D tex0;\n"
+"uniform vec4 texel_size; // texel size (xy: texel size, zw: texture dimensions)\n"
 "\n"
 "void main()\n"
 "{\n"
@@ -284,6 +286,50 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "    gl_FragColor = texture2D(tex0, v_texCoord) * v_color;\n"
 "}"
     },
+
+    // SHADER_RGB_PIXELART
+    {
+        // vertex shader
+        TEXTURE_VERTEX_SHADER,
+        // fragment shader
+"varying vec4 v_color;\n"
+"varying vec2 v_texCoord;\n"
+"uniform sampler2D tex0;\n"
+"uniform vec4 texel_size;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    vec2 boxSize = clamp(fwidth(v_texCoord) * texel_size.zw, 1e-5, 1.0);\n"
+"    vec2 tx = v_texCoord * texel_size.zw - 0.5 * boxSize;\n"
+"    vec2 txOffset = smoothstep(vec2(1.0) - boxSize, vec2(1.0), fract(tx));\n"
+"    vec2 uv = (floor(tx) + 0.5 + txOffset) * texel_size.xy;\n"
+"    gl_FragColor = textureGrad(tex0, uv, dFdx(v_texCoord), dFdy(v_texCoord));\n"
+"    gl_FragColor.a = 1.0;\n"
+"    gl_FragColor *= v_color;\n"
+"}"
+    },
+
+    // SHADER_RGBA_PIXELART
+    {
+        // vertex shader
+        TEXTURE_VERTEX_SHADER,
+        // fragment shader
+"varying vec4 v_color;\n"
+"varying vec2 v_texCoord;\n"
+"uniform sampler2D tex0;\n"
+"uniform vec4 texel_size;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    vec2 boxSize = clamp(fwidth(v_texCoord) * texel_size.zw, 1e-5, 1.0);\n"
+"    vec2 tx = v_texCoord * texel_size.zw - 0.5 * boxSize;\n"
+"    vec2 txOffset = smoothstep(vec2(1.0) - boxSize, vec2(1.0), fract(tx));\n"
+"    vec2 uv = (floor(tx) + 0.5 + txOffset) * texel_size.xy;\n"
+"    gl_FragColor = textureGrad(tex0, uv, dFdx(v_texCoord), dFdy(v_texCoord));\n"
+"    gl_FragColor *= v_color;\n"
+"}"
+    },
+
 #ifdef SDL_HAVE_YUV
     // SHADER_YUV
     {
@@ -466,6 +512,7 @@ GL_ShaderContext *GL_CreateShaderContext(void)
         ctx->glUniform1iARB = (PFNGLUNIFORM1IARBPROC)SDL_GL_GetProcAddress("glUniform1iARB");
         ctx->glUniform1fARB = (PFNGLUNIFORM1FARBPROC)SDL_GL_GetProcAddress("glUniform1fARB");
         ctx->glUniform3fARB = (PFNGLUNIFORM3FARBPROC)SDL_GL_GetProcAddress("glUniform3fARB");
+        ctx->glUniform4fARB = (PFNGLUNIFORM4FARBPROC)SDL_GL_GetProcAddress("glUniform4fARB");
         ctx->glUseProgramObjectARB = (PFNGLUSEPROGRAMOBJECTARBPROC)SDL_GL_GetProcAddress("glUseProgramObjectARB");
         if (ctx->glGetError &&
             ctx->glAttachObjectARB &&
@@ -511,23 +558,36 @@ void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shade
     ctx->glUseProgramObjectARB(program);
 
     if (shader_params && shader_params != ctx->shader_params[shader]) {
-        // YUV shader params are Yoffset, 0, Rcoeff, 0, Gcoeff, 0, Bcoeff, 0
-        location = ctx->glGetUniformLocationARB(program, "Yoffset");
-        if (location >= 0) {
-            ctx->glUniform3fARB(location, shader_params[0], shader_params[1], shader_params[2]);
+        if (shader == SHADER_RGB_PIXELART ||
+            shader == SHADER_RGBA_PIXELART) {
+            location = ctx->glGetUniformLocationARB(program, "texel_size");
+            if (location >= 0) {
+                ctx->glUniform4fARB(location, shader_params[0], shader_params[1], shader_params[2], shader_params[3]);
+            }
         }
-        location = ctx->glGetUniformLocationARB(program, "Rcoeff");
-        if (location >= 0) {
-            ctx->glUniform3fARB(location, shader_params[4], shader_params[5], shader_params[6]);
+
+#ifdef SDL_HAVE_YUV
+        if (shader >= SHADER_YUV) {
+            // YUV shader params are Yoffset, 0, Rcoeff, 0, Gcoeff, 0, Bcoeff, 0
+            location = ctx->glGetUniformLocationARB(program, "Yoffset");
+            if (location >= 0) {
+                ctx->glUniform3fARB(location, shader_params[0], shader_params[1], shader_params[2]);
+            }
+            location = ctx->glGetUniformLocationARB(program, "Rcoeff");
+            if (location >= 0) {
+                ctx->glUniform3fARB(location, shader_params[4], shader_params[5], shader_params[6]);
+            }
+            location = ctx->glGetUniformLocationARB(program, "Gcoeff");
+            if (location >= 0) {
+                ctx->glUniform3fARB(location, shader_params[8], shader_params[9], shader_params[10]);
+            }
+            location = ctx->glGetUniformLocationARB(program, "Bcoeff");
+            if (location >= 0) {
+                ctx->glUniform3fARB(location, shader_params[12], shader_params[13], shader_params[14]);
+            }
         }
-        location = ctx->glGetUniformLocationARB(program, "Gcoeff");
-        if (location >= 0) {
-            ctx->glUniform3fARB(location, shader_params[8], shader_params[9], shader_params[10]);
-        }
-        location = ctx->glGetUniformLocationARB(program, "Bcoeff");
-        if (location >= 0) {
-            ctx->glUniform3fARB(location, shader_params[12], shader_params[13], shader_params[14]);
-        }
+#endif // SDL_HAVE_YUV
+
         ctx->shader_params[shader] = shader_params;
     }
 }

@@ -68,6 +68,7 @@ typedef struct
     int drawableh;
     SDL_BlendMode blend;
     GL_Shader shader;
+    float texel_size[4];
     const float *shader_params;
     bool cliprect_enabled_dirty;
     bool cliprect_enabled;
@@ -133,6 +134,7 @@ typedef struct
     GLenum format;
     GLenum formattype;
     GL_Shader shader;
+    float texel_size[4];
     const float *shader_params;
     void *pixels;
     int pitch;
@@ -627,6 +629,11 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         data->shader = SHADER_RGB;
     }
 
+    data->texel_size[2] = texture->w;
+    data->texel_size[3] = texture->h;
+    data->texel_size[0] = 1.0f / data->texel_size[2];
+    data->texel_size[1] = 1.0f / data->texel_size[3];
+
 #ifdef SDL_HAVE_YUV
     if (data->yuv || data->nv12) {
         if (data->yuv) {
@@ -1081,6 +1088,7 @@ static bool SetTextureScaleMode(GL_RenderData *data, GLenum textype, SDL_ScaleMo
         data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         break;
+    case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
     case SDL_SCALEMODE_LINEAR:
         data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1113,8 +1121,24 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
     SDL_Texture *texture = cmd->data.draw.texture;
     GL_TextureData *texturedata = (GL_TextureData *)texture->internal;
     const GLenum textype = data->textype;
+    GL_Shader shader = texturedata->shader;
+    const float *shader_params = texturedata->shader_params;
 
-    SetDrawState(data, cmd, texturedata->shader, texturedata->shader_params);
+    if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+        switch (shader) {
+        case SHADER_RGB:
+            shader = SHADER_RGB_PIXELART;
+            shader_params = texturedata->texel_size;
+            break;
+        case SHADER_RGBA:
+            shader = SHADER_RGBA_PIXELART;
+            shader_params = texturedata->texel_size;
+            break;
+        default:
+            break;
+        }
+    }
+    SetDrawState(data, cmd, shader, shader_params);
 
     if (texture != data->drawstate.texture) {
 #ifdef SDL_HAVE_YUV

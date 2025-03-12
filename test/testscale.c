@@ -132,6 +132,7 @@ int main(int argc, char *argv[])
             quit(2);
         }
         SDL_GetTextureSize(drawstate->sprite, &drawstate->sprite_rect.w, &drawstate->sprite_rect.h);
+        SDL_SetTextureScaleMode(drawstate->sprite, SDL_SCALEMODE_PIXELART);
         drawstate->scale_direction = 1;
     }
 
