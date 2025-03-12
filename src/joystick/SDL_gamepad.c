@@ -2630,15 +2630,14 @@ bool SDL_IsGamepad(SDL_JoystickID instance_id)
     SDL_LockJoysticks();
     {
         const void *value;
-        SDL_JoystickType js_type = SDL_GetJoystickTypeForID(instance_id);
-        if (js_type != SDL_JOYSTICK_TYPE_GAMEPAD && js_type != SDL_JOYSTICK_TYPE_UNKNOWN)
-        {
-            // avoid creating HIDAPI mapping if type is SDL_Joystick knows it is not a game pad
-            result = false;
-        } else if (SDL_FindInHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, &value)) {
+        if (SDL_FindInHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, &value)) {
             result = (bool)(uintptr_t)value;
         } else {
-            if (SDL_PrivateGetGamepadMapping(instance_id, true) != NULL) {
+            SDL_JoystickType js_type = SDL_GetJoystickTypeForID(instance_id);
+            if (js_type != SDL_JOYSTICK_TYPE_GAMEPAD && js_type != SDL_JOYSTICK_TYPE_UNKNOWN) {
+                // avoid creating HIDAPI mapping if SDL_Joystick knows it is not a game pad
+                result = false;
+            } else if (SDL_PrivateGetGamepadMapping(instance_id, true) != NULL) {
                 result = true;
             } else {
                 result = false;
