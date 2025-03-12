@@ -1249,7 +1249,7 @@ void WIN_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool res
 
 void WIN_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, bool on_top)
 {
-    WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
+    WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER, SDL_WINDOWRECT_CURRENT);
 }
 
 void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
