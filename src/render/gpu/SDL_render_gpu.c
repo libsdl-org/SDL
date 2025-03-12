@@ -33,7 +33,6 @@ typedef struct GPU_ShaderUniformData
 {
     Float4X4 mvp;
     SDL_FColor color;
-    float texture_size[2];
 } GPU_ShaderUniformData;
 
 typedef struct GPU_RenderData
@@ -434,8 +433,8 @@ static bool GPU_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
 
         if (texture) {
             float *uv_ = (float *)((char *)uv + j * uv_stride);
-            *(verts++) = uv_[0] * texture->w;
-            *(verts++) = uv_[1] * texture->h;
+            *(verts++) = uv_[0];
+            *(verts++) = uv_[1];
         }
     }
     return true;
@@ -480,11 +479,6 @@ static void PushVertexUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
     uniforms.mvp.m[3][3] = 1.0f;
 
     uniforms.color = data->state.draw_color;
-
-    if (cmd->data.draw.texture) {
-        uniforms.texture_size[0] = cmd->data.draw.texture->w;
-        uniforms.texture_size[1] = cmd->data.draw.texture->h;
-    }
 
     SDL_PushGPUVertexUniformData(data->state.command_buffer, 0, &uniforms, sizeof(uniforms));
 }

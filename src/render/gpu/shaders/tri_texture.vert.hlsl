@@ -1,7 +1,6 @@
 cbuffer Context : register(b0, space1) {
     float4x4 mvp;
     float4 color;  /* XXX unused */
-    float2 texture_size;
 };
 
 struct VSInput {
@@ -21,6 +20,6 @@ VSOutput main(VSInput input) {
     VSOutput output;
     output.gl_Position = mul(mvp, float4(input.a_position, 0.0, 1.0));
     output.v_color = input.a_color;
-    output.v_uv = input.a_uv / texture_size;
+    output.v_uv = input.a_uv;
     return output;
 }
