@@ -55,7 +55,6 @@ static const char *video_usage[] = {
     "[--input-focus]",
     "[--keyboard-grab]",
     "[--logical-presentation disabled|match|stretch|letterbox|overscan|integer_scale]",
-    "[--logical-scale-quality nearest|linear|best]",
     "[--logical WxH]",
     "[--max-geometry WxH]",
     "[--maximize]",
