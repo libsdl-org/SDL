@@ -29,7 +29,6 @@
 
 #include "SDL_vitavideo.h"
 #include "../SDL_egl_c.h"
-#include "SDL_vitagl_pvr_c.h"
 
 #define MAX_PATH 256 // vita limits are somehow wrong
 
