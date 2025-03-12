@@ -1,7 +1,6 @@
 cbuffer Context : register(b0, space1) {
     float4x4 mvp;  // Model-View-Projection matrix
     float4 color;  // Color
-    float2 texture_size;  // Unused
 };
 
 struct VSInput {
