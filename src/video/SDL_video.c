@@ -3919,6 +3919,30 @@ bool SDL_FlashWindow(SDL_Window *window, SDL_FlashOperation operation)
     return SDL_Unsupported();
 }
 
+bool SDL_SetWindowProgressState(SDL_Window *window, SDL_ProgressState state)
+{
+    CHECK_WINDOW_MAGIC(window, false);
+    CHECK_WINDOW_NOT_POPUP(window, false);
+
+    if (_this->SetWindowProgressState) {
+        return _this->SetWindowProgressState(_this, window, state);
+    }
+
+    return SDL_Unsupported();
+}
+
+bool SDL_SetWindowProgressValue(SDL_Window *window, float value)
+{
+    CHECK_WINDOW_MAGIC(window, false);
+    CHECK_WINDOW_NOT_POPUP(window, false);
+
+    if (_this->SetWindowProgressValue) {
+        return _this->SetWindowProgressValue(_this, window, value);
+    }
+
+    return SDL_Unsupported();
+}
+
 void SDL_OnWindowShown(SDL_Window *window)
 {
     // Set window state if we have pending window flags cached

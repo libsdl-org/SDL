@@ -1271,3 +1271,5 @@ SDL_DYNAPI_PROC(bool,SDL_SetRelativeMouseTransform,(SDL_MouseMotionTransformCall
 SDL_DYNAPI_PROC(bool,SDL_RenderTexture9GridTiled,(SDL_Renderer *a,SDL_Texture *b,const SDL_FRect *c,float d,float e,float f,float g,float h,const SDL_FRect *i,float j),(a,b,c,d,e,f,g,h,i,j),return)
 SDL_DYNAPI_PROC(bool,SDL_SetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode *b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_SetWindowProgressState,(SDL_Window *a,SDL_ProgressState b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_SetWindowProgressValue,(SDL_Window *a,float b),(a,b),return)
