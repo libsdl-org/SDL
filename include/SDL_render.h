@@ -244,7 +244,7 @@ extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window * window,
  * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_CreateRenderer
- * \sa SDL_CreateWindowRenderer
+ * \sa SDL_CreateWindowAndRenderer
  * \sa SDL_DestroyRenderer
  */
 extern DECLSPEC SDL_Renderer * SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface * surface);
