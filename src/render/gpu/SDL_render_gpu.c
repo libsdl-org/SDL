@@ -468,7 +468,7 @@ static SDL_GPURenderPass *RestartRenderPass(GPU_RenderData *data)
     return data->state.render_pass;
 }
 
-static void PushUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
+static void PushVertexUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
 {
     GPU_ShaderUniformData uniforms;
     SDL_zero(uniforms);
@@ -522,19 +522,19 @@ static void Draw(
         RestartRenderPass(data);
     }
 
+    SDL_GPURenderPass *pass = data->state.render_pass;
     GPU_VertexShaderID v_shader;
     GPU_FragmentShaderID f_shader;
-    SDL_GPURenderPass *pass = data->state.render_pass;
-    GPU_TextureData *tdata = NULL;
-
-    if (cmd->data.draw.texture) {
-        tdata = (GPU_TextureData *)cmd->data.draw.texture->internal;
-    }
 
     if (prim == SDL_GPU_PRIMITIVETYPE_TRIANGLELIST) {
-        if (cmd->data.draw.texture) {
+        SDL_Texture *texture = cmd->data.draw.texture;
+        if (texture) {
             v_shader = VERT_SHADER_TRI_TEXTURE;
-            f_shader = tdata->shader;
+            if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
+                f_shader = FRAG_SHADER_TEXTURE_RGBA;
+            } else {
+                f_shader = FRAG_SHADER_TEXTURE_RGB;
+            }
         } else {
             v_shader = VERT_SHADER_TRI_COLOR;
             f_shader = FRAG_SHADER_COLOR;
@@ -558,15 +558,14 @@ static void Draw(
     }
 
     SDL_GPUGraphicsPipeline *pipe = GPU_GetPipeline(&data->pipeline_cache, &data->shaders, data->device, &pipe_params);
-
     if (!pipe) {
         return;
     }
 
-    SetViewportAndScissor(data);
-    SDL_BindGPUGraphicsPipeline(data->state.render_pass, pipe);
+    SDL_BindGPUGraphicsPipeline(pass, pipe);
 
-    if (tdata) {
+    if (cmd->data.draw.texture) {
+        GPU_TextureData *tdata = (GPU_TextureData *)cmd->data.draw.texture->internal;
         SDL_GPUTextureSamplerBinding sampler_bind;
         SDL_zero(sampler_bind);
         sampler_bind.sampler = *SamplerPointer(data, cmd->data.draw.texture_address_mode, cmd->data.draw.texture_scale_mode);
@@ -578,10 +577,12 @@ static void Draw(
     SDL_zero(buffer_bind);
     buffer_bind.buffer = data->vertices.buffer;
     buffer_bind.offset = offset;
-
     SDL_BindGPUVertexBuffers(pass, 0, &buffer_bind, 1);
-    PushUniforms(data, cmd);
-    SDL_DrawGPUPrimitives(data->state.render_pass, num_verts, 1, 0, 0);
+    PushVertexUniforms(data, cmd);
+
+    SetViewportAndScissor(data);
+
+    SDL_DrawGPUPrimitives(pass, num_verts, 1, 0, 0);
 }
 
 static void ReleaseVertexBuffer(GPU_RenderData *data)
