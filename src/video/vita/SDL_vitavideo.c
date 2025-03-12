@@ -37,13 +37,7 @@
 #include "SDL_vitaframebuffer.h"
 #include "SDL_vitamessagebox.h"
 
-#ifdef SDL_VIDEO_VITA_PIB
-#include "SDL_vitagles_c.h"
-#elif defined(SDL_VIDEO_VITA_PVR)
-#include "SDL_vitagles_pvr_c.h"
-#ifdef SDL_VIDEO_VITA_PVR_OGL
-#include "SDL_vitagl_pvr_c.h"
-#endif
+#if defined(SDL_VIDEO_VITA_PVR)
 #define VITA_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal
 #define VITA_GLES_UnloadLibrary   SDL_EGL_UnloadLibrary
 #define VITA_GLES_SetSwapInterval SDL_EGL_SetSwapInterval

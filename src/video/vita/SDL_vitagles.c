@@ -25,7 +25,6 @@
 #include <string.h>
 
 #include "SDL_vitavideo.h"
-#include "SDL_vitagles_c.h"
 
 /*****************************************************************************/
 // SDL OpenGL/OpenGL ES functions
