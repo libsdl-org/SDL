@@ -88,9 +88,19 @@ int hints_getHint(void *arg)
     return TEST_COMPLETED;
 }
 
+typedef struct {
+    char *name;
+    char *value;
+    char *oldValue;
+} HintCallbackContext;
+
 static void SDLCALL hints_testHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    *(char **)userdata = hint ? SDL_strdup(hint) : NULL;
+    HintCallbackContext *context = userdata;
+
+    context->name = name ? SDL_strdup(name) : NULL;
+    context->value = hint ? SDL_strdup(hint) : NULL;
+    context->oldValue = oldValue ? SDL_strdup(oldValue) : NULL;
 }
 
 /**
@@ -102,7 +112,7 @@ int hints_setHint(void *arg)
     const char *originalValue;
     char *value;
     const char *testValue;
-    char *callbackValue;
+    HintCallbackContext callback_data;
     SDL_bool result;
     int i, j;
 
@@ -152,8 +162,10 @@ int hints_setHint(void *arg)
     SDLTest_AssertPass("Call to SDL_GetHint() after saving and restoring hint");
     originalValue = SDL_GetHint(testHint);
     value = (originalValue == NULL) ? NULL : SDL_strdup(originalValue);
-    SDL_SetHint(testHint, "temp");
-    SDL_SetHint(testHint, value);
+    result = SDL_SetHint(testHint, "temp");
+    SDLTest_AssertCheck(!result, "SDL_SetHint(\"%s\", \"temp\") should return false", testHint);
+    result = SDL_SetHint(testHint, value);
+    SDLTest_AssertCheck(!result, "SDL_SetHint(\"%s\", \"%s\" should return false", testHint, value);
     SDL_free(value);
     testValue = SDL_GetHint(testHint);
     SDLTest_AssertCheck(
@@ -162,15 +174,26 @@ int hints_setHint(void *arg)
         testValue);
 
     SDLTest_AssertPass("Call to SDL_SetHintWithPriority(NULL, SDL_HINT_DEFAULT)");
-    SDL_SetHintWithPriority(testHint, NULL, SDL_HINT_DEFAULT);
+    result = SDL_SetHintWithPriority(testHint, NULL, SDL_HINT_DEFAULT);
+    SDLTest_AssertCheck(!result, "SDL_SetHintWithPriority(\"%s\", NULL, SDL_HINT_DEFAULT) should return false", testHint);
     testValue = SDL_GetHint(testHint);
     SDLTest_AssertCheck(
         testValue && SDL_strcmp(testValue, "original") == 0,
         "testValue = %s, expected \"original\"",
         testValue);
 
+    SDLTest_AssertPass("Call to SDL_SetHint(\"\", \"data\")");
+    result = SDL_SetHint("", "data");
+    SDLTest_AssertCheck(result, "SDL_SetHint(\"\", \"data\") should return true");
+    testValue = SDL_GetHint("");
+    SDLTest_AssertCheck(
+        testValue && SDL_strcmp(testValue, "data") == 0,
+        "testValue = %s, expected \"data\"",
+        testValue);
+
     SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE)");
-    SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+    result = SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+    SDLTest_AssertCheck(result, "SDL_SetHintWithPriority(\"%s\", \"temp\", SDL_HINT_OVERRIDE) should return true", testHint);
     testValue = SDL_GetHint(testHint);
     SDLTest_AssertCheck(
         testValue && SDL_strcmp(testValue, "temp") == 0,
@@ -178,7 +201,8 @@ int hints_setHint(void *arg)
         testValue);
 
     SDLTest_AssertPass("Call to SDL_SetHintWithPriority(NULL, SDL_HINT_OVERRIDE)");
-    SDL_SetHintWithPriority(testHint, NULL, SDL_HINT_OVERRIDE);
+    result = SDL_SetHintWithPriority(testHint, NULL, SDL_HINT_OVERRIDE);
+    SDLTest_AssertCheck(result, "SDL_SetHintWithPriority(\"%s\", NULL, SDL_HINT_OVERRIDE) should return true", testHint);
     testValue = SDL_GetHint(testHint);
     SDLTest_AssertCheck(
         testValue == NULL,
@@ -194,49 +218,75 @@ int hints_setHint(void *arg)
         testValue);
 
     /* Make sure callback functionality works past a reset */
+    SDL_zero(callback_data);
     SDLTest_AssertPass("Call to SDL_AddHintCallback()");
-    callbackValue = NULL;
-    SDL_AddHintCallback(testHint, hints_testHintChanged, &callbackValue);
+    SDL_AddHintCallback(testHint, hints_testHintChanged, &callback_data);
     SDLTest_AssertCheck(
-        callbackValue && SDL_strcmp(callbackValue, "original") == 0,
-        "callbackValue = %s, expected \"original\"",
-        callbackValue);
-    SDL_free(callbackValue);
-
-    SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE), using callback");
-    callbackValue = NULL;
-    SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+        callback_data.name && SDL_strcmp(callback_data.name, testHint) == 0,
+        "callback_data.name = \"%s\", expected \"%s\"",
+        callback_data.name, testHint);
     SDLTest_AssertCheck(
-        callbackValue && SDL_strcmp(callbackValue, "temp") == 0,
-        "callbackValue = %s, expected \"temp\"",
-        callbackValue);
-    SDL_free(callbackValue);
+        callback_data.value && SDL_strcmp(callback_data.value, "original") == 0,
+        "callback_data.value = \"%s\", expected \"%s\"",
+        callback_data.value, "original");
+    SDL_free(callback_data.name);
+    SDL_free(callback_data.value);
+    SDL_free(callback_data.oldValue);
 
     SDLTest_AssertPass("Call to SDL_ResetHint(), using callback");
-    callbackValue = NULL;
+    SDL_zero(callback_data);
     SDL_ResetHint(testHint);
     SDLTest_AssertCheck(
-        callbackValue && SDL_strcmp(callbackValue, "original") == 0,
+        callback_data.value && SDL_strcmp(callback_data.value, "original") == 0,
         "callbackValue = %s, expected \"original\"",
-        callbackValue);
+        callback_data.value);
+    SDL_free(callback_data.name);
+    SDL_free(callback_data.value);
+    SDL_free(callback_data.oldValue);
 
     SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE), using callback after reset");
-    callbackValue = NULL;
-    SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+    SDL_zero(callback_data);
+    result = SDL_SetHintWithPriority(testHint, "temp", SDL_HINT_OVERRIDE);
+    SDLTest_AssertCheck(result, "SDL_SetHintWithPriority(\"%s\", \"temp\", SDL_HINT_OVERRIDE) should return true", testHint);
     SDLTest_AssertCheck(
-        callbackValue && SDL_strcmp(callbackValue, "temp") == 0,
+        callback_data.value && SDL_strcmp(callback_data.value, "temp") == 0,
         "callbackValue = %s, expected \"temp\"",
-        callbackValue);
-    SDL_free(callbackValue);
+        callback_data.value);
+    SDL_free(callback_data.name);
+    SDL_free(callback_data.value);
+    SDL_free(callback_data.oldValue);
 
     SDLTest_AssertPass("Call to SDL_ResetHint(), after clearing callback");
-    callbackValue = NULL;
-    SDL_DelHintCallback(testHint, hints_testHintChanged, &callbackValue);
+    SDL_zero(callback_data);
+    SDL_DelHintCallback(testHint, hints_testHintChanged, &callback_data);
     SDL_ResetHint(testHint);
     SDLTest_AssertCheck(
-        callbackValue == NULL,
+        !callback_data.value,
         "callbackValue = %s, expected \"(null)\"",
-        callbackValue);
+        callback_data.value);
+    SDL_free(callback_data.name);
+    SDL_free(callback_data.value);
+    SDL_free(callback_data.oldValue);
+
+    /* Make sure callback functionality work with hint renamed in sdl3 */
+    SDLTest_AssertPass("Call to SDL_AddHintCallback()");
+    SDL_AddHintCallback(SDL_HINT_ALLOW_TOPMOST, hints_testHintChanged, &callback_data);
+    SDLTest_AssertPass("Call to SDL_SetHintWithPriority(\"temp\", SDL_HINT_OVERRIDE), using callback");
+    SDL_zero(callback_data);
+    result = SDL_SetHintWithPriority(SDL_HINT_ALLOW_TOPMOST, "temp", SDL_HINT_OVERRIDE);
+    SDLTest_AssertCheck(result, "SDL_SetHintWithPriority(\"%s\", \"temp\", SDL_HINT_OVERRIDE) should return true", testHint);
+    SDLTest_AssertCheck(
+        callback_data.name && SDL_strcmp(callback_data.name, SDL_HINT_ALLOW_TOPMOST) == 0,
+        "callback_data.name = \"%s\", expected \"%s\"",
+        callback_data.name, SDL_HINT_ALLOW_TOPMOST);
+    SDLTest_AssertCheck(
+        callback_data.value && SDL_strcmp(callback_data.value, "temp") == 0,
+        "callback_data.value = \"%s\", expected \"%s\"",
+        callback_data.value, "temp");
+    SDL_free(callback_data.name);
+    SDL_free(callback_data.value);
+    SDL_free(callback_data.oldValue);
+    SDL_ResetHint(testHint);
 
     return TEST_COMPLETED;
 }
