@@ -238,7 +238,7 @@ static void SDLCALL SDL_MouseIntegerModeChanged(void *userdata, const char *name
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
-    mouse->integer_mode = SDL_GetStringBoolean(hint, false);
+    mouse->integer_mode_enabled = SDL_GetStringBoolean(hint, false);
 }
 
 // Public functions
@@ -735,10 +735,10 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
                 y *= mouse->normal_speed_scale;
             }
         }
-        if (mouse->integer_mode) {
+        if (mouse->integer_mode_enabled) {
             // Accumulate the fractional relative motion and only process the integer portion
-            mouse->xrel_frac = SDL_modff(mouse->xrel_frac + x, &x);
-            mouse->yrel_frac = SDL_modff(mouse->yrel_frac + y, &y);
+            mouse->integer_mode_residue[0] = SDL_modff(mouse->integer_mode_residue[0] + x, &x);
+            mouse->integer_mode_residue[1] = SDL_modff(mouse->integer_mode_residue[1] + y, &y);
         }
         xrel = x;
         yrel = y;
@@ -746,7 +746,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
         y = (mouse->last_y + yrel);
         ConstrainMousePosition(mouse, window, &x, &y);
     } else {
-        if (mouse->integer_mode) {
+        if (mouse->integer_mode_enabled) {
             // Discard the fractional component from absolute coordinates
             x = SDL_truncf(x);
             y = SDL_truncf(y);
@@ -1024,9 +1024,9 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
     }
 
     // Accumulate fractional wheel motion if integer mode is enabled
-    if (mouse->integer_mode) {
-        mouse->wheel_x_frac = SDL_modff(mouse->wheel_x_frac + x, &x);
-        mouse->wheel_y_frac = SDL_modff(mouse->wheel_y_frac + y, &y);
+    if (mouse->integer_mode_enabled) {
+        mouse->integer_mode_residue[2] = SDL_modff(mouse->integer_mode_residue[2] + x, &x);
+        mouse->integer_mode_residue[3] = SDL_modff(mouse->integer_mode_residue[3] + y, &y);
     }
 
     if (x == 0.0f && y == 0.0f) {
