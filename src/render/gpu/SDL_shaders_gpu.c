@@ -196,6 +196,9 @@ bool GPU_InitShaders(GPU_Shaders *shaders, SDL_GPUDevice *device)
     }
 
     for (int i = 0; i < SDL_arraysize(frag_shader_sources); ++i) {
+        if (i == FRAG_SHADER_TEXTURE_CUSTOM) {
+            continue;
+        }
         shaders->frag_shaders[i] = CompileShader(
             &frag_shader_sources[i], device, SDL_GPU_SHADERSTAGE_FRAGMENT);
         if (shaders->frag_shaders[i] == NULL) {
@@ -215,6 +218,9 @@ void GPU_ReleaseShaders(GPU_Shaders *shaders, SDL_GPUDevice *device)
     }
 
     for (int i = 0; i < SDL_arraysize(shaders->frag_shaders); ++i) {
+        if (i == FRAG_SHADER_TEXTURE_CUSTOM) {
+            continue;
+        }
         SDL_ReleaseGPUShader(device, shaders->frag_shaders[i]);
         shaders->frag_shaders[i] = NULL;
     }

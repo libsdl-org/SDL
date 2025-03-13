@@ -33,6 +33,7 @@ typedef struct GPU_PipelineParameters
     GPU_VertexShaderID vert_shader;
     SDL_GPUTextureFormat attachment_format;
     SDL_GPUPrimitiveType primitive_type;
+    SDL_GPUShader *custom_frag_shader;
 } GPU_PipelineParameters;
 
 typedef struct GPU_PipelineCache

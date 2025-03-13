@@ -541,6 +541,8 @@ static void Draw(
     }
 
     SDL_GPURenderPass *pass = data->state.render_pass;
+    SDL_GPURenderState *custom_state = cmd->data.draw.gpu_render_state;
+    SDL_GPUShader *custom_frag_shader = custom_state ? custom_state->fragment_shader : NULL;
     GPU_VertexShaderID v_shader;
     GPU_FragmentShaderID f_shader;
 
@@ -570,12 +572,18 @@ static void Draw(
         f_shader = FRAG_SHADER_COLOR;
     }
 
+    if (custom_frag_shader) {
+        f_shader = FRAG_SHADER_TEXTURE_CUSTOM;
+        data->shaders.frag_shaders[FRAG_SHADER_TEXTURE_CUSTOM] = custom_frag_shader;
+    }
+
     GPU_PipelineParameters pipe_params;
     SDL_zero(pipe_params);
     pipe_params.blend_mode = cmd->data.draw.blend;
     pipe_params.vert_shader = v_shader;
     pipe_params.frag_shader = f_shader;
     pipe_params.primitive_type = prim;
+    pipe_params.custom_frag_shader = custom_frag_shader;
 
     if (data->state.render_target) {
         pipe_params.attachment_format = ((GPU_TextureData *)data->state.render_target->internal)->format;
@@ -590,15 +598,34 @@ static void Draw(
 
     SDL_BindGPUGraphicsPipeline(pass, pipe);
 
+    Uint32 sampler_slot = 0;
     if (cmd->data.draw.texture) {
         GPU_TextureData *tdata = (GPU_TextureData *)cmd->data.draw.texture->internal;
         SDL_GPUTextureSamplerBinding sampler_bind;
         SDL_zero(sampler_bind);
         sampler_bind.sampler = *SamplerPointer(data, cmd->data.draw.texture_address_mode, cmd->data.draw.texture_scale_mode);
         sampler_bind.texture = tdata->texture;
-        SDL_BindGPUFragmentSamplers(pass, 0, &sampler_bind, 1);
+        SDL_BindGPUFragmentSamplers(pass, sampler_slot++, &sampler_bind, 1);
     }
-    PushFragmentUniforms(data, cmd);
+    if (custom_state) {
+        if (custom_state->num_sampler_bindings > 0) {
+            SDL_BindGPUFragmentSamplers(pass, sampler_slot, custom_state->sampler_bindings, custom_state->num_sampler_bindings);
+        }
+        if (custom_state->num_storage_textures > 0) {
+            SDL_BindGPUFragmentStorageTextures(pass, 0, custom_state->storage_textures, custom_state->num_storage_textures);
+        }
+        if (custom_state->num_storage_buffers > 0) {
+            SDL_BindGPUFragmentStorageBuffers(pass, 0, custom_state->storage_buffers, custom_state->num_storage_buffers);
+        }
+        if (custom_state->num_uniform_buffers > 0) {
+            for (int i = 0; i < custom_state->num_uniform_buffers; i++) {
+                SDL_GPURenderStateUniformBuffer *ub = &custom_state->uniform_buffers[i];
+                SDL_PushGPUFragmentUniformData(data->state.command_buffer, ub->slot_index, ub->data, ub->length);
+            }
+        }
+    } else {
+        PushFragmentUniforms(data, cmd);
+    }
 
     SDL_GPUBufferBinding buffer_bind;
     SDL_zero(buffer_bind);
