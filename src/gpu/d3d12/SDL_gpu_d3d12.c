@@ -121,18 +121,6 @@
 
 #define SDL_GPU_SHADERSTAGE_COMPUTE (SDL_GPUShaderStage)2
 
-#define EXPAND_ELEMENTS_IF_NEEDED(arr, initialValue, type) \
-    if (arr->count == arr->capacity) {                     \
-        if (arr->capacity == 0) {                          \
-            arr->capacity = initialValue;                  \
-        } else {                                           \
-            arr->capacity *= 2;                            \
-        }                                                  \
-        arr->elements = (type *)SDL_realloc(               \
-            arr->elements,                                 \
-            arr->capacity * sizeof(type));                 \
-    }
-
 #ifdef _WIN32
 #define HRESULT_FMT "(0x%08lX)"
 #else
@@ -1179,7 +1167,6 @@ static void D3D12_INTERNAL_SetError(
 // Release / Cleanup
 
 static void D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-    D3D12Renderer *renderer,
     D3D12StagingDescriptor *cpuDescriptor)
 {
     D3D12StagingDescriptorPool *pool = cpuDescriptor->pool;
@@ -1193,7 +1180,6 @@ static void D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
 }
 
 static void D3D12_INTERNAL_DestroyBuffer(
-    D3D12Renderer *renderer,
     D3D12Buffer *buffer)
 {
     if (!buffer) {
@@ -1207,13 +1193,10 @@ static void D3D12_INTERNAL_DestroyBuffer(
             NULL);
     }
     D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-        renderer,
         &buffer->srvDescriptor);
     D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-        renderer,
         &buffer->uavDescriptor);
     D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-        renderer,
         &buffer->cbvDescriptor);
 
     if (buffer->handle) {
@@ -1264,7 +1247,6 @@ static void D3D12_INTERNAL_ReleaseBufferContainer(
 }
 
 static void D3D12_INTERNAL_DestroyTexture(
-    D3D12Renderer *renderer,
     D3D12Texture *texture)
 {
     if (!texture) {
@@ -1275,24 +1257,20 @@ static void D3D12_INTERNAL_DestroyTexture(
         if (subresource->rtvHandles) {
             for (Uint32 depthIndex = 0; depthIndex < subresource->depth; depthIndex += 1) {
                 D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-                    renderer,
                     &subresource->rtvHandles[depthIndex]);
             }
             SDL_free(subresource->rtvHandles);
         }
 
         D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-            renderer,
             &subresource->uavHandle);
 
         D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-            renderer,
             &subresource->dsvHandle);
     }
     SDL_free(texture->subresources);
 
     D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-        renderer,
         &texture->srvHandle);
 
     if (texture->resource) {
@@ -1344,11 +1322,9 @@ static void D3D12_INTERNAL_ReleaseTextureContainer(
 }
 
 static void D3D12_INTERNAL_DestroySampler(
-    D3D12Renderer *renderer,
     D3D12Sampler *sampler)
 {
     D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-        renderer,
         &sampler->handle);
 
     SDL_free(sampler);
@@ -1503,7 +1479,6 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
     // Release uniform buffers
     for (Uint32 i = 0; i < renderer->uniformBufferPoolCount; i += 1) {
         D3D12_INTERNAL_DestroyBuffer(
-            renderer,
             renderer->uniformBufferPool[i]->buffer);
         SDL_free(renderer->uniformBufferPool[i]);
     }
@@ -2499,12 +2474,8 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
 }
 
 static bool D3D12_INTERNAL_CreateShaderBytecode(
-    D3D12Renderer *renderer,
-    Uint32 stage,
-    SDL_GPUShaderFormat format,
     const Uint8 *code,
     size_t codeSize,
-    const char *entrypointName,
     void **pBytecode,
     size_t *pBytecodeSize)
 {
@@ -2725,12 +2696,8 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     ID3D12PipelineState *pipelineState;
 
     if (!D3D12_INTERNAL_CreateShaderBytecode(
-            renderer,
-            SDL_GPU_SHADERSTAGE_COMPUTE,
-            createinfo->format,
             createinfo->code,
             createinfo->code_size,
-            createinfo->entrypoint,
             &bytecode,
             &bytecodeSize)) {
         return NULL;
@@ -3137,18 +3104,13 @@ static SDL_GPUShader *D3D12_CreateShader(
     SDL_GPURenderer *driverData,
     const SDL_GPUShaderCreateInfo *createinfo)
 {
-    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
     void *bytecode;
     size_t bytecodeSize;
     D3D12Shader *shader;
 
     if (!D3D12_INTERNAL_CreateShaderBytecode(
-            renderer,
-            createinfo->stage,
-            createinfo->format,
             createinfo->code,
             createinfo->code_size,
-            createinfo->entrypoint,
             &bytecode,
             &bytecodeSize)) {
         return NULL;
@@ -3273,7 +3235,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         (void **)&handle);
     if (FAILED(res)) {
         D3D12_INTERNAL_SetError(renderer, "Failed to create texture!", res);
-        D3D12_INTERNAL_DestroyTexture(renderer, texture);
+        D3D12_INTERNAL_DestroyTexture(texture);
         return NULL;
     }
 
@@ -3339,7 +3301,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     texture->subresources = (D3D12TextureSubresource *)SDL_calloc(
         texture->subresourceCount, sizeof(D3D12TextureSubresource));
     if (!texture->subresources) {
-        D3D12_INTERNAL_DestroyTexture(renderer, texture);
+        D3D12_INTERNAL_DestroyTexture(texture);
         return NULL;
     }
     for (Uint32 layerIndex = 0; layerIndex < layerCount; layerIndex += 1) {
@@ -3617,7 +3579,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
         (void **)&handle);
     if (FAILED(res)) {
         D3D12_INTERNAL_SetError(renderer, "Could not create buffer!", res);
-        D3D12_INTERNAL_DestroyBuffer(renderer, buffer);
+        D3D12_INTERNAL_DestroyBuffer(buffer);
         return NULL;
     }
 
@@ -3707,7 +3669,7 @@ static D3D12Buffer *D3D12_INTERNAL_CreateBuffer(
             (void **)&buffer->mapPointer);
         if (FAILED(res)) {
             D3D12_INTERNAL_SetError(renderer, "Failed to map upload buffer!", res);
-            D3D12_INTERNAL_DestroyBuffer(renderer, buffer);
+            D3D12_INTERNAL_DestroyBuffer(buffer);
             return NULL;
         }
     }
@@ -6633,10 +6595,8 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
     // Release views and clean up
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
         D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-            renderer,
             &windowData->textureContainers[i].activeTexture->srvHandle);
         D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-            renderer,
             &windowData->textureContainers[i].activeTexture->subresources[0].rtvHandles[0]);
 
         SDL_free(windowData->textureContainers[i].activeTexture->subresources[0].rtvHandles);
@@ -6684,10 +6644,8 @@ static void D3D12_INTERNAL_DestroySwapchain(
     // Release views and clean up
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
         D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-            renderer,
             &windowData->textureContainers[i].activeTexture->srvHandle);
         D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
-            renderer,
             &windowData->textureContainers[i].activeTexture->subresources[0].rtvHandles[0]);
 
         SDL_free(windowData->textureContainers[i].activeTexture->subresources[0].rtvHandles);
@@ -7439,7 +7397,6 @@ static void D3D12_INTERNAL_PerformPendingDestroys(D3D12Renderer *renderer)
     for (Sint32 i = renderer->buffersToDestroyCount - 1; i >= 0; i -= 1) {
         if (SDL_GetAtomicInt(&renderer->buffersToDestroy[i]->referenceCount) == 0) {
             D3D12_INTERNAL_DestroyBuffer(
-                renderer,
                 renderer->buffersToDestroy[i]);
 
             renderer->buffersToDestroy[i] = renderer->buffersToDestroy[renderer->buffersToDestroyCount - 1];
@@ -7450,7 +7407,6 @@ static void D3D12_INTERNAL_PerformPendingDestroys(D3D12Renderer *renderer)
     for (Sint32 i = renderer->texturesToDestroyCount - 1; i >= 0; i -= 1) {
         if (SDL_GetAtomicInt(&renderer->texturesToDestroy[i]->referenceCount) == 0) {
             D3D12_INTERNAL_DestroyTexture(
-                renderer,
                 renderer->texturesToDestroy[i]);
 
             renderer->texturesToDestroy[i] = renderer->texturesToDestroy[renderer->texturesToDestroyCount - 1];
@@ -7461,7 +7417,6 @@ static void D3D12_INTERNAL_PerformPendingDestroys(D3D12Renderer *renderer)
     for (Sint32 i = renderer->samplersToDestroyCount - 1; i >= 0; i -= 1) {
         if (SDL_GetAtomicInt(&renderer->samplersToDestroy[i]->referenceCount) == 0) {
             D3D12_INTERNAL_DestroySampler(
-                renderer,
                 renderer->samplersToDestroy[i]);
 
             renderer->samplersToDestroy[i] = renderer->samplersToDestroy[renderer->samplersToDestroyCount - 1];
