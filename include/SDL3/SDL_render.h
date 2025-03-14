@@ -2761,10 +2761,13 @@ typedef struct SDL_GPURenderState SDL_GPURenderState;
  * Create custom GPU render state.
  *
  * \param renderer the renderer to use.
- * \param desc GPU render state description, initialized using SDL_INIT_INTERFACE().
- * \returns a custom GPU render state or NULL on failure; call SDL_GetError() for more information.
+ * \param desc GPU render state description, initialized using
+ *             SDL_INIT_INTERFACE().
+ * \returns a custom GPU render state or NULL on failure; call SDL_GetError()
+ *          for more information.
  *
- * \threadsafety This function should be called on the thread that created the renderer.
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
  *
  * \since This function is available since SDL 3.4.0.
  *
@@ -2777,7 +2780,8 @@ extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Re
 /**
  * Set fragment shader uniform variables in a custom GPU render state.
  *
- * The data is copied and will be pushed using SDL_PushGPUFragmentUniformData() during draw call execution.
+ * The data is copied and will be pushed using
+ * SDL_PushGPUFragmentUniformData() during draw call execution.
  *
  * \param state the state to modify.
  * \param slot_index the fragment uniform slot to push data to.
@@ -2786,7 +2790,8 @@ extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Re
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should be called on the thread that created the renderer.
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
  *
  * \since This function is available since SDL 3.4.0.
  */
@@ -2795,14 +2800,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateFragmentUniforms(SDL_GPURe
 /**
  * Set custom GPU render state.
  *
- * This function sets custom GPU render state for subsequent draw calls. This allows using custom shaders with the GPU renderer.
+ * This function sets custom GPU render state for subsequent draw calls. This
+ * allows using custom shaders with the GPU renderer.
  *
  * \param renderer the renderer to use.
  * \param state the state to to use, or NULL to clear custom GPU render state.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should be called on the thread that created the renderer.
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
  *
  * \since This function is available since SDL 3.4.0.
  */
@@ -2813,7 +2820,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderGPUState(SDL_Renderer *renderer, S
  *
  * \param state the state to destroy.
  *
- * \threadsafety This function should be called on the thread that created the renderer.
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
  *
  * \since This function is available since SDL 3.4.0.
  *
