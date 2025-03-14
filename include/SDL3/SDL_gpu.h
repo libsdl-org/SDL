@@ -4145,7 +4145,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUTextureSupportsFormat(
  * \param device a GPU context.
  * \param format the texture format to check.
  * \param sample_count the sample count to check.
- * \returns a hardware-specific version of min(preferred, possible).
+ * \returns whether the sample count is supported for this texture format.
  *
  * \since This function is available since SDL 3.2.0.
  */
