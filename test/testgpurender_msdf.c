@@ -220,7 +220,7 @@ static bool InitGPURenderState(void)
     uniforms.distance_field_range = DISTANCE_FIELD_RANGE;
     uniforms.texture_width = (float)font_texture->w;
     uniforms.texture_height = (float)font_texture->h;
-    if (!SDL_SetGPURenderStateFragmentUniformData(render_state, 0, &uniforms, sizeof(uniforms))) {
+    if (!SDL_SetGPURenderStateFragmentUniforms(render_state, 0, &uniforms, sizeof(uniforms))) {
         SDL_Log("Couldn't set uniform data: %s", SDL_GetError());
         return false;
     }

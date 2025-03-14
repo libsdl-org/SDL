@@ -209,7 +209,7 @@ static bool InitGPURenderState(void)
             SDL_zero(uniforms);
             uniforms.texture_width = (float)target->w;
             uniforms.texture_height = (float)target->h;
-            if (!SDL_SetGPURenderStateFragmentUniformData(data->state, 0, &uniforms, sizeof(uniforms))) {
+            if (!SDL_SetGPURenderStateFragmentUniforms(data->state, 0, &uniforms, sizeof(uniforms))) {
                 SDL_Log("Couldn't set uniform data: %s", SDL_GetError());
                 return false;
             }

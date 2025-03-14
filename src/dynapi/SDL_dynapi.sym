@@ -1239,7 +1239,7 @@ SDL3_0.0.0 {
     SDL_SetDefaultTextureScaleMode;
     SDL_GetDefaultTextureScaleMode;
     SDL_CreateGPURenderState;
-    SDL_SetGPURenderStateFragmentUniformData;
+    SDL_SetGPURenderStateFragmentUniforms;
     SDL_SetRenderGPUState;
     SDL_DestroyGPURenderState;
     # extra symbols go here (don't modify this line)

@@ -5906,7 +5906,7 @@ SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURend
     return state;
 }
 
-bool SDL_SetGPURenderStateFragmentUniformData(SDL_GPURenderState *state, Uint32 slot_index, const void *data, Uint32 length)
+bool SDL_SetGPURenderStateFragmentUniforms(SDL_GPURenderState *state, Uint32 slot_index, const void *data, Uint32 length)
 {
     if (!state) {
         return SDL_InvalidParamError("state");
