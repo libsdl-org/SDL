@@ -508,7 +508,7 @@ static void PushFragmentUniforms(GPU_RenderData *data, SDL_RenderCommand *cmd)
 static SDL_GPUSampler **SamplerPointer(GPU_RenderData *data, SDL_TextureAddressMode address_mode, SDL_ScaleMode scale_mode)
 {
     SDL_assert(scale_mode < SDL_arraysize(data->samplers));
-    SDL_assert(address_mode < SDL_arraysize(data->samplers[0]));
+    SDL_assert((address_mode - 1) < SDL_arraysize(data->samplers[0]));
     return &data->samplers[scale_mode][address_mode - 1];
 }
 
