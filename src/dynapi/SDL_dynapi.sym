@@ -1246,6 +1246,7 @@ SDL3_0.0.0 {
     SDL_SetWindowProgressValue;
     SDL_GetWindowProgressState;
     SDL_GetWindowProgressValue;
+    SDL_IsUbuntuTouch;
     # extra symbols go here (don't modify this line)
   local: *;
 };
