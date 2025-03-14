@@ -13,6 +13,38 @@
 /* Helper functions */
 
 /* !
+ * \brief Private helper to check SDL_FRect equality
+ */
+static SDL_bool IsFRectEqual(const SDL_FRect *r1, const SDL_FRect *r2) {
+    static const float MAX_DELTA = 1e-5f;
+    SDL_FRect delta;
+    delta.x = r1->x - r2->x;
+    delta.y = r1->y - r2->y;
+    delta.w = r1->w - r2->w;
+    delta.h = r1->h - r2->h;
+
+    return -MAX_DELTA <= delta.x && delta.x <= MAX_DELTA
+        && -MAX_DELTA <= delta.y && delta.y <= MAX_DELTA
+        && -MAX_DELTA <= delta.w && delta.w <= MAX_DELTA
+        && -MAX_DELTA <= delta.w && delta.h <= MAX_DELTA;
+}
+
+/* !
+ * \brief Private helper to check SDL_FPoint equality
+ */
+static SDL_bool IsFPointEqual(const SDL_FPoint *p1, const SDL_FPoint *p2) {
+    static const float MAX_DELTA = 1e-5f;
+    SDL_FPoint delta;
+    delta.x = p1->x - p2->x;
+    delta.y = p1->y - p2->y;
+
+    return -MAX_DELTA <= delta.x && delta.x <= MAX_DELTA
+        && -MAX_DELTA <= delta.y && delta.y <= MAX_DELTA;
+}
+
+/* Helper functions */
+
+/* !
  * \brief Private helper to check SDL_IntersectRectAndLine results
  */
 void _validateIntersectRectAndLineResults(
@@ -1698,6 +1730,226 @@ int rect_testFRectEqualsParam(void *arg)
     return TEST_COMPLETED;
 }
 
+/* !
+ * \brief Test SDL_HasIntersectionF
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL2/SDL_HasIntersectionF
+ */
+int rect_testHasIntersectionF(void *arg)
+{
+    const struct {
+        SDL_FRect r1;
+        SDL_FRect r2;
+        SDL_bool expected;
+    } cases[] = {
+        { { 0, 0, 0, 0 },      {0, 0, 0, 0},            SDL_FALSE },
+        { { 0, 0, -200, 200 }, {0, 0, -200, 200},       SDL_FALSE },
+        { { 0, 0, 10, 10 },    {-5, 5, 10, 2},          SDL_TRUE },
+        { { 0, 0, 10, 10 },    {-5, -5, 10, 2},         SDL_FALSE },
+        { { 0, 0, 10, 10 },    {-5, -5, 2, 10},         SDL_FALSE },
+        { { 0, 0, 10, 10 },    {-5, -5, 5, 5},          SDL_FALSE },
+        { { 0, 0, 10, 10 },    {-5, -5, 5.1f, 5.1f},    SDL_TRUE },
+        { { 0, 0, 10, 10 },    {-4.99f, -4.99f, 5, 5},  SDL_TRUE },
+    };
+    size_t i;
+
+    for (i = 0; i < SDL_arraysize(cases); i++) {
+        SDL_bool result;
+        SDLTest_AssertPass("About to call SDL_HasIntersectionF(&{ %g, %g, %g, %g }, &{ %g, %g, %g, %g })",
+            cases[i].r1.x, cases[i].r1.y, cases[i].r1.w, cases[i].r1.h,
+            cases[i].r2.x, cases[i].r2.y, cases[i].r2.w, cases[i].r2.h
+        );
+        result = SDL_HasIntersectionF(&cases[i].r1, &cases[i].r2);
+        SDLTest_AssertCheck(result == cases[i].expected, "Got %d, expected %d", result, cases[i].expected);
+    }
+    return TEST_COMPLETED;
+}
+
+/* !
+ * \brief Test SDL_IntersectFRect
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL2/SDL_IntersectFRect
+ */
+int rect_testIntersectFRect(void *arg)
+{
+    const struct {
+        SDL_FRect r1;
+        SDL_FRect r2;
+        SDL_bool result;
+        SDL_FRect intersect;
+    } cases[] = {
+        { { 0, 0, 0, 0 },       { 0, 0, 0, 0 },         SDL_FALSE },
+        { { 0, 0, -200, 200 },  { 0, 0, -200, 200 },    SDL_FALSE },
+        { { 0, 0, 10, 10 },     { -5, 5, 9.9f, 2 },     SDL_TRUE,   { 0, 5, 4.9f, 2 } },
+        { { 0, 0, 10, 10 },     { -5, -5, 10, 2 },      SDL_FALSE},
+        { { 0, 0, 10, 10 },     { -5, -5, 2, 10 },      SDL_FALSE},
+        { { 0, 0, 10, 10 },     { -5, -5, 5, 5 },       SDL_FALSE},
+        { { 0, 0, 10, 10 },     { -5, -5, 5.5f, 6 },    SDL_TRUE,   { 0, 0, 0.5f, 1 } }
+    };
+    size_t i;
+
+    for (i = 0; i < SDL_arraysize(cases); i++) {
+        SDL_bool result;
+        SDL_FRect intersect;
+        SDLTest_AssertPass("About to call SDL_IntersectFRect(&{ %g, %g, %g, %g }, &{ %g, %g, %g, %g })",
+            cases[i].r1.x, cases[i].r1.y, cases[i].r1.w, cases[i].r1.h,
+            cases[i].r2.x, cases[i].r2.y, cases[i].r2.w, cases[i].r2.h
+        );
+        result = SDL_IntersectFRect(&cases[i].r1, &cases[i].r2, &intersect);
+        SDLTest_AssertCheck(result == cases[i].result, "Got %d, expected %d", result, cases[i].result);
+        if (cases[i].result) {
+            SDLTest_AssertCheck(IsFRectEqual(&intersect, &cases[i].intersect),
+                "Got { %g, %g, %g, %g }, expected { %g, %g, %g, %g }",
+                intersect.x, intersect.y, intersect.w, intersect.h,
+                cases[i].intersect.x, cases[i].intersect.y, cases[i].intersect.w, cases[i].intersect.h);
+        }
+    }
+    return TEST_COMPLETED;
+}
+
+/* !
+ * \brief Test SDL_UnionFRect
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL2/SDL_UnionFRect
+ */
+int rect_testUnionFRect(void *arg)
+{
+    const struct {
+        SDL_FRect r1;
+        SDL_FRect r2;
+        SDL_FRect expected;
+    } cases[] = {
+        { { 0, 0, 10, 10 },         { 19.9f, 20, 10, 10 },      { 0, 0, 29.9f, 30 } },
+        { { 0, 0, 0, 0 },           { 20, 20.1f, 10.1f, 10 },   { 20, 20.1f, 10.1f, 10 } },
+        { { -200, -4.5f, 450, 33 }, { 20, 20, 10, 10 },         { -200, -4.5f, 450, 34.5f } },
+        { { 0, 0, 15, 16.5f },      { 20, 20, 0, 0 },           { 0, 0, 15, 16.5f } }
+    };
+    size_t i;
+
+    for (i = 0; i < SDL_arraysize(cases); i++) {
+        SDL_FRect result;
+        SDLTest_AssertPass("About to call SDL_UnionFRect(&{ %g, %g, %g, %g }, &{ %g, %g, %g, %g })",
+            cases[i].r1.x, cases[i].r1.y, cases[i].r1.w, cases[i].r1.h,
+            cases[i].r2.x, cases[i].r2.y, cases[i].r2.w, cases[i].r2.h
+        );
+        SDL_UnionFRect(&cases[i].r1, &cases[i].r2, &result);
+        SDLTest_AssertCheck(IsFRectEqual(&result, &cases[i].expected),
+            "Got { %g, %g, %g, %g }, expected { %g, %g, %g, %g }",
+            result.x, result.y, result.w, result.h,
+            cases[i].expected.x, cases[i].expected.y, cases[i].expected.w, cases[i].expected.h);
+    }
+    return TEST_COMPLETED;
+}
+
+/* !
+ * \brief Test SDL_EncloseFPointsUnionFRect
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL2/SDL_EncloseFPoints
+ */
+int rect_testEncloseFPointsUnionFRect(void *arg)
+{
+    const struct {
+        SDL_bool with_clip;
+        SDL_FRect clip;
+        SDL_bool result;
+        SDL_FRect enclosing;
+    } cases[] = {
+        { SDL_TRUE,    { 0, 0, 10, 10 },    SDL_TRUE,   { 0.5f, 0.1f, 6, 8 }},
+        { SDL_TRUE,    { 1.2f, 1, 10, 10 }, SDL_TRUE,   { 1.5f, 1.1f, 5, 7 }},
+        { SDL_TRUE,    { -10, -10, 3, 3 },  SDL_FALSE },
+        { SDL_FALSE,   { 0 },               SDL_TRUE,   { 0.5, 0.1f, 6, 8 }}
+    };
+    const SDL_FPoint points[] = {
+        { 0.5f, 0.1f },
+        { 5.5f, 7.1f },
+        { 1.5f, 1.1f }
+    };
+    char points_str[256];
+    size_t i;
+
+    SDL_strlcpy(points_str, "{", sizeof(points_str));
+    for (i = 0; i < SDL_arraysize(points); i++) {
+        char point_str[32];
+        SDL_snprintf(point_str, sizeof(point_str), "{ %g, %g }, ", points[i].x, points[i].y);
+        SDL_strlcat(points_str, point_str, sizeof(points_str));
+    }
+    SDL_strlcat(points_str, "}", sizeof(points_str));
+    for (i = 0; i < SDL_arraysize(cases); i++) {
+        char clip_str[64];
+        SDL_bool result;
+        SDL_FRect enclosing;
+        const SDL_FRect* clip_ptr = NULL;
+        if (cases[i].with_clip) {
+            SDL_snprintf(clip_str, sizeof(clip_str), "&{ %g, %g, %g, %g }",
+                cases[i].clip.x, cases[i].clip.y, cases[i].clip.w, cases[i].clip.h);
+            clip_ptr = &cases[i].clip;
+        } else {
+            SDL_strlcpy(clip_str, "NULL", sizeof(clip_str));
+        }
+        SDLTest_AssertPass("About to call SDL_EncloseFPoints(&%s, %d, %s)", points_str, (int)SDL_arraysize(points), clip_str);
+        result = SDL_EncloseFPoints(points, SDL_arraysize(points), clip_ptr, &enclosing);
+        SDLTest_AssertCheck(result == cases[i].result, "Got %d, expected %d", result, cases[i].result);
+        if (cases[i].result) {
+        SDLTest_AssertCheck(IsFRectEqual(&enclosing, &cases[i].enclosing),
+            "Got { %g, %g, %g, %g }, expected { %g, %g, %g, %g }",
+            enclosing.x, enclosing.y, enclosing.w, enclosing.h,
+            cases[i].enclosing.x, cases[i].enclosing.y, cases[i].enclosing.w, cases[i].enclosing.h);
+        }
+    }
+    return TEST_COMPLETED;
+}
+
+/* !
+ * \brief Test SDL_IntersectFRectAndLine
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL2/SDL_IntersectFRectAndLine
+ */
+int rect_testIntersectFRectAndLine(void *arg)
+{
+    const struct {
+        SDL_FRect rect;
+        SDL_FPoint p1;
+        SDL_FPoint p2;
+        SDL_bool result;
+        SDL_FPoint expected1;
+        SDL_FPoint expected2;
+    } cases[] = {
+        { { 0, 0, 0, 0 },       { -4.8f, -4.8f },   { 5.2f, 5.2f},  SDL_FALSE },
+        { { 0, 0, 2, 2 },       { -1, -1 },         { 3.5f, 3.5f},  SDL_TRUE,   { 0, 0 }, { 1, 1 } },
+        { { -4, -4, 14, 14 },   { 8, 22 },          { 8, 33},       SDL_FALSE }
+
+    };
+    size_t i;
+
+    for (i = 0; i < SDL_arraysize(cases); i++) {
+        SDL_bool result;
+        SDL_FPoint p1 = cases[i].p1;
+        SDL_FPoint p2 = cases[i].p2;
+
+        SDLTest_AssertPass("About to call SDL_IntersectFRectAndLine(&{%g, %g, %g, %g}, &%g, &%g, &%g, &%g)",
+            cases[i].rect.x, cases[i].rect.y, cases[i].rect.w, cases[i].rect.h,
+            p1.x, p1.y, p2.x, p2.y);
+        result = SDL_IntersectFRectAndLine(&cases[i].rect, &p1.x, &p1.y, &p2.x, &p2.y);
+        SDLTest_AssertCheck(result == cases[i].result, "Got %d, expected %d", result, cases[i].result);
+        if (cases[i].result) {
+            SDLTest_AssertCheck(IsFPointEqual(&p1, &cases[i].p1) && IsFPointEqual(&p2, &cases[i].p2),
+                "Got p1={ %g, %g }, expected p1={ %g, %g }",
+                p1.x, p1.y,
+                cases[i].expected1.x, cases[i].expected1.y);
+            SDLTest_AssertCheck(IsFPointEqual(&p1, &cases[i].p1),
+                "Got p2={ %g, %g }, expected p2={ %g, %g }",
+                p2.x, p2.y,
+                cases[i].expected2.x, cases[i].expected2.y);
+        }
+    }
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Rect test cases */
@@ -1836,6 +2088,26 @@ static const SDLTest_TestCaseReference rectTest31 = {
     (SDLTest_TestCaseFp)rect_testFRectEqualsParam, "rect_testFRectEqualsParam", "Negative tests against SDL_FRectEquals with invalid parameters", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference rectTest32 = {
+    (SDLTest_TestCaseFp)rect_testHasIntersectionF, "rect_testHasIntersectionF", "Tests SDL_HasIntersectionF", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference rectTest33 = {
+    (SDLTest_TestCaseFp)rect_testIntersectFRect, "rect_IntersectFRect", "Tests SDL_IntersectFRect", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference rectTest34 = {
+    (SDLTest_TestCaseFp)rect_testUnionFRect, "rect_testUnionFRect", "Tests SDL_UnionFRect", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference rectTest35 = {
+    (SDLTest_TestCaseFp)rect_testUnionFRect, "rect_testEncloseFPointsUnionFRect", "Tests SDL_EncloseFPoints", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference rectTest36 = {
+    (SDLTest_TestCaseFp)rect_testUnionFRect, "rect_testIntersectFRectAndLine", "Tests SDL_IntersectFRectAndLine", TEST_ENABLED
+};
+
 /* !
  * \brief Sequence of Rect test cases; functions that handle simple rectangles including overlaps and merges.
  *
@@ -1845,7 +2117,7 @@ static const SDLTest_TestCaseReference rectTest31 = {
 static const SDLTest_TestCaseReference *rectTests[] = {
     &rectTest1, &rectTest2, &rectTest3, &rectTest4, &rectTest5, &rectTest6, &rectTest7, &rectTest8, &rectTest9, &rectTest10, &rectTest11, &rectTest12, &rectTest13, &rectTest14,
     &rectTest15, &rectTest16, &rectTest17, &rectTest18, &rectTest19, &rectTest20, &rectTest21, &rectTest22, &rectTest23, &rectTest24, &rectTest25, &rectTest26, &rectTest27,
-    &rectTest28, &rectTest29, &rectTest30, &rectTest31, NULL
+    &rectTest28, &rectTest29, &rectTest30, &rectTest31, &rectTest32, &rectTest33, &rectTest34, &rectTest35, &rectTest36, NULL
 };
 
 /* Rect test suite (global) */
