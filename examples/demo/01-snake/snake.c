@@ -23,7 +23,6 @@
 
 static SDL_Joystick *joystick = NULL;
 
-
 typedef enum
 {
     SNAKE_CELL_NOTHING = 0U,
@@ -242,23 +241,23 @@ static SDL_AppResult handle_key_event_(SnakeContext *ctx, SDL_Scancode key_code)
 }
 
 static SDL_AppResult handle_hat_event_(SnakeContext *ctx, Uint8 hat) {
-        switch (hat) {
-        case SDL_HAT_RIGHT:
-            snake_redir(ctx, SNAKE_DIR_RIGHT);
-            break;
-        case SDL_HAT_UP:
-            snake_redir(ctx, SNAKE_DIR_UP);
-            break;
-        case SDL_HAT_LEFT:
-            snake_redir(ctx, SNAKE_DIR_LEFT);
-            break;
-        case SDL_HAT_DOWN:
-            snake_redir(ctx, SNAKE_DIR_DOWN);
-            break;
-        default:
-                break;
-        }
-        return SDL_APP_CONTINUE;
+    switch (hat) {
+    case SDL_HAT_RIGHT:
+        snake_redir(ctx, SNAKE_DIR_RIGHT);
+        break;
+    case SDL_HAT_UP:
+        snake_redir(ctx, SNAKE_DIR_UP);
+        break;
+    case SDL_HAT_LEFT:
+        snake_redir(ctx, SNAKE_DIR_LEFT);
+        break;
+    case SDL_HAT_DOWN:
+        snake_redir(ctx, SNAKE_DIR_DOWN);
+        break;
+    default:
+        break;
+    }
+    return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate)
@@ -329,7 +328,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK)) {
-                SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
+        SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
@@ -340,7 +339,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     *appstate = as;
 
-    if (!SDL_CreateWindowAndRenderer("examples/snake", SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT, 0, &as->window, &as->renderer)) {
+    if (!SDL_CreateWindowAndRenderer("examples/demo/01-snake", SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT, 0, &as->window, &as->renderer)) {
         return SDL_APP_FAILURE;
     }
 
@@ -357,20 +356,20 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     switch (event->type) {
     case SDL_EVENT_QUIT:
         return SDL_APP_SUCCESS;
-        case SDL_EVENT_JOYSTICK_ADDED:
-                if (joystick == NULL) {
-                    joystick = SDL_OpenJoystick(event->jdevice.which);
-                    if (!joystick) {
-                        SDL_Log("Failed to open joystick ID %u: %s", (unsigned int) event->jdevice.which, SDL_GetError());
-                    }
-                }
-        case SDL_EVENT_JOYSTICK_REMOVED:
-                if (joystick && (SDL_GetJoystickID(joystick) == event->jdevice.which)) {
-                    SDL_CloseJoystick(joystick);
-                    joystick = NULL;
-                }
-        case SDL_EVENT_JOYSTICK_HAT_MOTION:
-                return handle_hat_event_(ctx, event->jhat.value);
+    case SDL_EVENT_JOYSTICK_ADDED:
+        if (joystick == NULL) {
+            joystick = SDL_OpenJoystick(event->jdevice.which);
+            if (!joystick) {
+                SDL_Log("Failed to open joystick ID %u: %s", (unsigned int) event->jdevice.which, SDL_GetError());
+            }
+        }
+    case SDL_EVENT_JOYSTICK_REMOVED:
+        if (joystick && (SDL_GetJoystickID(joystick) == event->jdevice.which)) {
+            SDL_CloseJoystick(joystick);
+            joystick = NULL;
+        }
+    case SDL_EVENT_JOYSTICK_HAT_MOTION:
+        return handle_hat_event_(ctx, event->jhat.value);
     case SDL_EVENT_KEY_DOWN:
         return handle_key_event_(ctx, event->key.scancode);
     }
@@ -379,8 +378,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
-        if (joystick) {
-            SDL_CloseJoystick(joystick);
+    if (joystick) {
+        SDL_CloseJoystick(joystick);
         }
     if (appstate != NULL) {
         AppState *as = (AppState *)appstate;
