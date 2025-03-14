@@ -339,7 +339,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     *appstate = as;
 
-    if (!SDL_CreateWindowAndRenderer("examples/demo/01-snake", SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT, 0, &as->window, &as->renderer)) {
+    if (!SDL_CreateWindowAndRenderer("examples/demo/snake", SDL_WINDOW_WIDTH, SDL_WINDOW_HEIGHT, 0, &as->window, &as->renderer)) {
         return SDL_APP_FAILURE;
     }
 
@@ -380,7 +380,7 @@ void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     if (joystick) {
         SDL_CloseJoystick(joystick);
-        }
+    }
     if (appstate != NULL) {
         AppState *as = (AppState *)appstate;
         SDL_DestroyRenderer(as->renderer);
