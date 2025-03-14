@@ -3421,7 +3421,7 @@ extern "C" {
  *
  * This hint can be set anytime.
  *
- * \since This hint is available since SDL 3.2.10.
+ * \since This hint is available since SDL 3.4.0.
  */
 #define SDL_HINT_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE "SDL_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE"
 
