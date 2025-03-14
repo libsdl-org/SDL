@@ -195,3 +195,30 @@ Sint32 JNI_OnLoad(JavaVM *vm, void *reserved)
     return 0x00010004; // JNI_VERSION_1_4
 }
 #endif
+
+#ifndef SDL_PLATFORM_LINUX
+
+bool SDL_IsUbuntuTouch(void)
+{
+    return false;
+}
+
+const char *SDL_GetUbuntuTouchAppID(void)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+const char *SDL_GetUbuntuTouchAppHook(void)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+const char *SDL_GetUbuntuTouchAppVersion(void)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+#endif

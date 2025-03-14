@@ -1285,6 +1285,10 @@ SDL3_0.0.0 {
     SDL_SetGPURenderStateStorageBuffers;
     SDL_GDKSuspendRenderer;
     SDL_GDKResumeRenderer;
+    SDL_IsUbuntuTouch;
+    SDL_GetUbuntuTouchAppID;
+    SDL_GetUbuntuTouchAppHook;
+    SDL_GetUbuntuTouchAppVersion;
     # extra symbols go here (don't modify this line)
   local: *;
 };

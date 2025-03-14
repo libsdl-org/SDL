@@ -53,6 +53,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetiOSEventPump(void);
 #if !defined(SDL_PLATFORM_LINUX)
 extern SDL_DECLSPEC void SDLCALL SDL_SetLinuxThreadPriority(void);
 extern SDL_DECLSPEC void SDLCALL SDL_SetLinuxThreadPriorityAndPolicy(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_IsUbuntuTouch(void);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetUbuntuTouchAppID(void);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetUbuntuTouchAppHook(void);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetUbuntuTouchAppVersion(void);
 #endif
 
 #if !(defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK))

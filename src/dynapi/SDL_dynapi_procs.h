@@ -1319,3 +1319,7 @@ SDL_DYNAPI_PROC(bool,SDL_SetGPURenderStateStorageTextures,(SDL_GPURenderState *a
 SDL_DYNAPI_PROC(bool,SDL_SetGPURenderStateStorageBuffers,(SDL_GPURenderState *a,int b,SDL_GPUBuffer *const*c),(a,b,c),return)
 SDL_DYNAPI_PROC(void,SDL_GDKSuspendRenderer,(SDL_Renderer *a),(a),)
 SDL_DYNAPI_PROC(void,SDL_GDKResumeRenderer,(SDL_Renderer *a),(a),)
+SDL_DYNAPI_PROC(bool,SDL_IsUbuntuTouch,(void),(),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetUbuntuTouchAppID,(void),(),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetUbuntuTouchAppHook,(void),(),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetUbuntuTouchAppVersion,(void),(),return)
