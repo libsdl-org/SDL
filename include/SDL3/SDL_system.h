@@ -631,7 +631,8 @@ typedef enum SDL_Sandbox
     SDL_SANDBOX_UNKNOWN_CONTAINER,
     SDL_SANDBOX_FLATPAK,
     SDL_SANDBOX_SNAP,
-    SDL_SANDBOX_MACOS
+    SDL_SANDBOX_MACOS,
+    SDL_SANDBOX_LOMIRI
 } SDL_Sandbox;
 
 /**
@@ -806,6 +807,22 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQu
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetGDKDefaultUser(XUserHandle *outUserHandle);
+
+#endif
+
+/*
+ * Functions used only with Ubuntu Touch
+ */
+#ifdef SDL_PLATFORM_LINUX
+
+/**
+ * Detect whether the current platform is Ubuntu Touch.
+ *
+ * \returns true if the platform is Ubuntu Touch; false otherwise.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsUbuntuTouch(void);
 
 #endif
 
