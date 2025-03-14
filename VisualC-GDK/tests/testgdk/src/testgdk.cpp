@@ -56,8 +56,7 @@ static struct
 static SDL_AudioStream *stream;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
+static void quit(int rc)
 {
     SDL_free(sprites);
     SDL_DestroyAudioStream(stream);
@@ -80,8 +79,7 @@ static int fillerup(void)
     return 0;
 }
 
-void
-UserLoggedIn(XUserHandle user)
+static void UserLoggedIn(XUserHandle user)
 {
     HRESULT hr;
     char gamertag[128];
@@ -96,8 +94,7 @@ UserLoggedIn(XUserHandle user)
     XUserCloseHandle(user);
 }
 
-void
-AddUserUICallback(XAsyncBlock *asyncBlock)
+static void AddUserUICallback(XAsyncBlock *asyncBlock)
 {
     HRESULT hr;
     XUserHandle user = NULL;
@@ -123,8 +120,7 @@ AddUserUICallback(XAsyncBlock *asyncBlock)
     delete asyncBlock;
 }
 
-void
-AddUserUI()
+static void AddUserUI()
 {
     HRESULT hr;
     XAsyncBlock *asyncBlock = new XAsyncBlock;
@@ -141,8 +137,7 @@ AddUserUI()
     }
 }
 
-void
-AddUserSilentCallback(XAsyncBlock *asyncBlock)
+static void AddUserSilentCallback(XAsyncBlock *asyncBlock)
 {
     HRESULT hr;
     XUserHandle user = NULL;
@@ -168,8 +163,7 @@ AddUserSilentCallback(XAsyncBlock *asyncBlock)
     delete asyncBlock;
 }
 
-void
-AddUserSilent()
+static void AddUserSilent()
 {
     HRESULT hr;
     XAsyncBlock *asyncBlock = new XAsyncBlock;
@@ -186,30 +180,27 @@ AddUserSilent()
     }
 }
 
-int
-LoadSprite(const char *file)
+static bool LoadSprite(const char *file)
 {
     int i;
 
     for (i = 0; i < state->num_windows; ++i) {
         /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
-        sprites[i] = LoadTexture(state->renderers[i], file, true, &sprite_w, &sprite_h);
+        sprites[i] = LoadTexture(state->renderers[i], file, true);
         if (!sprites[i]) {
-            return -1;
+            return false;
         }
-        if (!SDL_SetTextureBlendMode(sprites[i], blendMode)) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s", SDL_GetError());
-            SDL_DestroyTexture(sprites[i]);
-            return -1;
-        }
+        sprite_w = sprites[i]->w;
+        sprite_h = sprites[i]->h;
+
+        SDL_SetTextureBlendMode(sprites[i], blendMode);
     }
 
     /* We're ready to roll. :) */
-    return 0;
+    return true;
 }
 
-void
-DrawSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
+static void DrawSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
 {
     SDL_Rect viewport;
     SDL_FRect temp;
@@ -300,8 +291,7 @@ DrawSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     SDL_RenderPresent(renderer);
 }
 
-void
-loop()
+static void loop()
 {
     int i;
     SDL_Event event;
@@ -329,8 +319,7 @@ loop()
     fillerup();
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int i;
     const char *icon = "icon.bmp";
@@ -413,7 +402,7 @@ main(int argc, char *argv[])
         SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
         SDL_RenderClear(renderer);
     }
-    if (LoadSprite(icon) < 0) {
+    if (!LoadSprite(icon)) {
         quit(2);
     }
 

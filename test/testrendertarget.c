@@ -253,11 +253,11 @@ int main(int argc, char *argv[])
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
         if (test_composite) {
-            drawstate->sprite = LoadTexture(drawstate->renderer, "icon-alpha.bmp", true, NULL, NULL);
+            drawstate->sprite = LoadTexture(drawstate->renderer, "icon-alpha.bmp", true);
         } else {
-            drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", true, NULL, NULL);
+            drawstate->sprite = LoadTexture(drawstate->renderer, "icon.bmp", true);
         }
-        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", false, NULL, NULL);
+        drawstate->background = LoadTexture(drawstate->renderer, "sample.bmp", false);
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }

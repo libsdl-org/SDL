@@ -31,7 +31,6 @@ static bool use_target = false;
 static Uint32 wait_start;
 #endif
 static SDL_Texture *sprite;
-static int sprite_w, sprite_h;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -184,8 +183,7 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
-    sprite = LoadTexture(state->renderers[0], "icon.bmp", true, &sprite_w, &sprite_h);
-
+    sprite = LoadTexture(state->renderers[0], "icon.bmp", true);
     if (!sprite) {
         quit(2);
     }

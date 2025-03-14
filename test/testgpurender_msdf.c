@@ -55,7 +55,7 @@ static GlyphInfo glyphs[128];
 
 static bool LoadFontTexture(void)
 {
-    font_texture = LoadTexture(renderer, "msdf_font.bmp", false, NULL, NULL);
+    font_texture = LoadTexture(renderer, "msdf_font.bmp", false);
     if (!font_texture) {
         SDL_Log("Failed to create font texture: %s", SDL_GetError());
         return false;
