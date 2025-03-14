@@ -1272,6 +1272,6 @@ SDL_DYNAPI_PROC(bool,SDL_RenderTexture9GridTiled,(SDL_Renderer *a,SDL_Texture *b
 SDL_DYNAPI_PROC(bool,SDL_SetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_GPURenderState*,SDL_CreateGPURenderState,(SDL_Renderer *a,SDL_GPURenderStateDesc *b),(a,b),return)
-SDL_DYNAPI_PROC(bool,SDL_SetGPURenderStateFragmentUniformData,(SDL_GPURenderState *a,Uint32 b,const void *c,Uint32 d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(bool,SDL_SetGPURenderStateFragmentUniforms,(SDL_GPURenderState *a,Uint32 b,const void *c,Uint32 d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(bool,SDL_SetRenderGPUState,(SDL_Renderer *a,SDL_GPURenderState *b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_DestroyGPURenderState,(SDL_GPURenderState *a),(a),)

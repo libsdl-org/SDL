@@ -2751,7 +2751,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_GPURenderStateDesc_SIZE,
  * \since This struct is available since SDL 3.4.0.
  *
  * \sa SDL_CreateGPURenderState
- * \sa SDL_SetGPURenderStateFragmentUniformData
+ * \sa SDL_SetGPURenderStateFragmentUniforms
  * \sa SDL_SetRenderGPUState
  * \sa SDL_DestroyGPURenderState
  */
@@ -2768,7 +2768,7 @@ typedef struct SDL_GPURenderState SDL_GPURenderState;
  *
  * \since This function is available since SDL 3.4.0.
  *
- * \sa SDL_SetGPURenderStateFragmentUniformData
+ * \sa SDL_SetGPURenderStateFragmentUniforms
  * \sa SDL_SetRenderGPUState
  * \sa SDL_DestroyGPURenderState
  */
@@ -2790,7 +2790,7 @@ extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Re
  *
  * \since This function is available since SDL 3.4.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateFragmentUniformData(SDL_GPURenderState *state, Uint32 slot_index, const void *data, Uint32 length);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateFragmentUniforms(SDL_GPURenderState *state, Uint32 slot_index, const void *data, Uint32 length);
 
 /**
  * Set custom GPU render state.
