@@ -184,17 +184,14 @@ static bool InitGPURenderState(void)
         info.format = SDL_GPU_SHADERFORMAT_SPIRV;
         info.code = testgpurender_msdf_frag_spv;
         info.code_size = testgpurender_msdf_frag_spv_len;
-        info.entrypoint = "main";
     } else if (formats & SDL_GPU_SHADERFORMAT_DXIL) {
         info.format = SDL_GPU_SHADERFORMAT_DXIL;
         info.code = testgpurender_msdf_frag_dxil;
         info.code_size = testgpurender_msdf_frag_dxil_len;
-        info.entrypoint = "main";
     } else if (formats & SDL_GPU_SHADERFORMAT_MSL) {
         info.format = SDL_GPU_SHADERFORMAT_MSL;
         info.code = testgpurender_msdf_frag_msl;
         info.code_size = testgpurender_msdf_frag_msl_len;
-        info.entrypoint = "main0";
     } else {
         SDL_Log("No supported shader format found");
         return false;
