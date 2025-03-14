@@ -95,6 +95,10 @@ typedef struct
     SDL_MouseMotionTransformCallback InputTransform;
     void *input_transform_data;
 
+    // integer mode data
+    bool integer_mode_enabled;
+    float integer_mode_residue[4];
+
     // Data common to all mice
     SDL_Window *focus;
     float x;
@@ -102,13 +106,8 @@ typedef struct
     float x_accu;
     float y_accu;
     float last_x, last_y; // the last reported x and y coordinates
-    float xrel_frac;
-    float yrel_frac;
-    float wheel_x_frac;
-    float wheel_y_frac;
     double click_motion_x;
     double click_motion_y;
-    bool integer_mode;
     bool has_position;
     bool relative_mode;
     bool relative_mode_warp_motion;
