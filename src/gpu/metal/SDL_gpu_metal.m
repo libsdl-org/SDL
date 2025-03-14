@@ -840,6 +840,10 @@ static MetalLibraryFunction METAL_INTERNAL_CompileShader(
     dispatch_data_t data;
     id<MTLFunction> function;
 
+    if (!entrypoint) {
+        entrypoint = "main0";
+    }
+
     if (format == SDL_GPU_SHADERFORMAT_MSL) {
         NSString *codeString = [[NSString alloc]
             initWithBytes:code
