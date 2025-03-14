@@ -285,6 +285,29 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     char *result = NULL;
     char *ptr = NULL;
 
+#ifdef SDL_PLATFORM_LINUX
+    if (SDL_IsUbuntuTouch()) {
+        // On Ubuntu Touch, the only allowed data folder is:
+        //     ~/.local/share/<app id>/
+
+        SDL_PropertiesID props = SDL_GetGlobalProperties();
+
+        if (!props) {
+            return NULL;
+        }
+
+        const char *appid = SDL_GetStringProperty(props, SDL_PROP_GLOBAL_SYSTEM_UBUNTU_TOUCH_APPID_STRING, NULL);
+
+        if (!appid) {
+            SDL_SetError("Ubuntu Touch App ID missing from global properties");
+            return NULL;
+        }
+
+        app = appid;
+        org = "";
+    }
+#endif
+
     if (!envr) {
         // You end up with "$HOME/.local/share/Game Name 2"
         envr = SDL_getenv("HOME");
