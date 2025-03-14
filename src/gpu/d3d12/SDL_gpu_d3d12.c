@@ -8056,7 +8056,6 @@ static void D3D12_INTERNAL_InitBlitResources(
     shaderCreateInfo.code_size = sizeof(D3D12_FullscreenVert);
     shaderCreateInfo.stage = SDL_GPU_SHADERSTAGE_VERTEX;
     shaderCreateInfo.format = SDL_GPU_SHADERFORMAT_DXBC;
-    shaderCreateInfo.entrypoint = "main";
 
     renderer->blitVertexShader = D3D12_CreateShader(
         (SDL_GPURenderer *)renderer,

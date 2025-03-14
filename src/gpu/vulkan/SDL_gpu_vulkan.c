@@ -577,7 +577,7 @@ typedef struct VulkanSampler
 typedef struct VulkanShader
 {
     VkShaderModule shaderModule;
-    const char *entrypointName;
+    char *entrypointName;
     SDL_GPUShaderStage stage;
     Uint32 numSamplers;
     Uint32 numStorageTextures;
@@ -3115,7 +3115,7 @@ static void VULKAN_INTERNAL_DestroyShader(
         vulkanShader->shaderModule,
         NULL);
 
-    SDL_free((void *)vulkanShader->entrypointName);
+    SDL_free(vulkanShader->entrypointName);
     SDL_free(vulkanShader);
 }
 
@@ -6620,7 +6620,6 @@ static SDL_GPUShader *VULKAN_CreateShader(
     VkResult vulkanResult;
     VkShaderModuleCreateInfo vkShaderModuleCreateInfo;
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
-    size_t entryPointNameLength;
 
     vulkanShader = SDL_malloc(sizeof(VulkanShader));
     vkShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -6640,10 +6639,11 @@ static SDL_GPUShader *VULKAN_CreateShader(
         CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateShaderModule, NULL);
     }
 
-    entryPointNameLength = SDL_strlen(createinfo->entrypoint) + 1;
-    vulkanShader->entrypointName = SDL_malloc(entryPointNameLength);
-    SDL_utf8strlcpy((char *)vulkanShader->entrypointName, createinfo->entrypoint, entryPointNameLength);
-
+    const char *entrypoint = createinfo->entrypoint;
+    if (!entrypoint) {
+        entrypoint = "main";
+    }
+    vulkanShader->entrypointName = SDL_strdup(entrypoint);
     vulkanShader->stage = createinfo->stage;
     vulkanShader->numSamplers = createinfo->num_samplers;
     vulkanShader->numStorageTextures = createinfo->num_storage_textures;
