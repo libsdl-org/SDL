@@ -3412,11 +3412,12 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": SDL will not attempt to automatically set a matching mode on the destination display.
- *   If an exclusive fullscreen window is moved to a new display, the window will become
- *   fullscreen desktop.
- * - "1": SDL will attempt to automatically set a mode on the destination display that most closely
- *   matches the mode of the display that the exclusive fullscreen window was previously on. (default)
+ * - "0": SDL will not attempt to automatically set a matching mode on the
+ *   destination display. If an exclusive fullscreen window is moved to a new
+ *   display, the window will become fullscreen desktop.
+ * - "1": SDL will attempt to automatically set a mode on the destination
+ *   display that most closely matches the mode of the display that the
+ *   exclusive fullscreen window was previously on. (default)
  *
  * This hint can be set anytime.
  *
