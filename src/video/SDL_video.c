@@ -1854,6 +1854,7 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
     CHECK_WINDOW_MAGIC(window, false);
 
     window->fullscreen_exclusive = false;
+    window->update_fullscreen_on_display_changed = false;
 
     // If we are in the process of hiding don't go back to fullscreen
     if (window->is_destroying || window->is_hiding) {
@@ -3940,16 +3941,26 @@ void SDL_OnWindowHidden(SDL_Window *window)
 
 void SDL_OnWindowDisplayChanged(SDL_Window *window)
 {
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
+    // Don't run this if a fullscreen change was made in an event watcher callback in response to a display changed event.
+    if (window->update_fullscreen_on_display_changed && (window->flags & SDL_WINDOW_FULLSCREEN)) {
+        const bool auto_mode_switch = SDL_GetHintBoolean(SDL_HINT_VIDEO_MATCH_EXCLUSIVE_MODE_ON_MOVE, true);
 
-        if (window->requested_fullscreen_mode.w != 0 || window->requested_fullscreen_mode.h != 0) {
+        if (auto_mode_switch && (window->requested_fullscreen_mode.w != 0 || window->requested_fullscreen_mode.h != 0)) {
+            SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
             bool include_high_density_modes = false;
 
             if (window->requested_fullscreen_mode.pixel_density > 1.0f) {
                 include_high_density_modes = true;
             }
-            SDL_GetClosestFullscreenDisplayMode(displayID, window->requested_fullscreen_mode.w, window->requested_fullscreen_mode.h, window->requested_fullscreen_mode.refresh_rate, include_high_density_modes, &window->current_fullscreen_mode);
+            const bool found_match = SDL_GetClosestFullscreenDisplayMode(displayID, window->requested_fullscreen_mode.w, window->requested_fullscreen_mode.h,
+                                                                         window->requested_fullscreen_mode.refresh_rate, include_high_density_modes, &window->current_fullscreen_mode);
+
+            // If a mode without matching dimensions was not found, just go to fullscreen desktop.
+            if (!found_match ||
+                window->requested_fullscreen_mode.w != window->current_fullscreen_mode.w ||
+                window->requested_fullscreen_mode.h != window->current_fullscreen_mode.h) {
+                SDL_zero(window->current_fullscreen_mode);
+            }
         } else {
             SDL_zero(window->current_fullscreen_mode);
         }

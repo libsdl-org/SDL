@@ -103,6 +103,7 @@ struct SDL_Window
     bool restore_on_show; // Child was hidden recursively by the parent, restore when shown.
     bool last_position_pending; // This should NOT be cleared by the backend, as it is used for fullscreen positioning.
     bool last_size_pending; // This should be cleared by the backend if the new size cannot be applied.
+    bool update_fullscreen_on_display_changed;
     bool is_destroying;
     bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
 
