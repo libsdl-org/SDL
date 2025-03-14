@@ -1850,7 +1850,7 @@ int rect_testUnionFRect(void *arg)
  * \sa
  * http://wiki.libsdl.org/SDL2/SDL_EncloseFPoints
  */
-int rect_testEncloseFPointsUnionFRect(void *arg)
+int rect_testEncloseFPoints(void *arg)
 {
     const struct {
         SDL_bool with_clip;
@@ -1919,8 +1919,8 @@ int rect_testIntersectFRectAndLine(void *arg)
         SDL_FPoint expected1;
         SDL_FPoint expected2;
     } cases[] = {
-        { { 0, 0, 0, 0 },       { -4.8f, -4.8f },   { 5.2f, 5.2f},  SDL_FALSE },
-        { { 0, 0, 2, 2 },       { -1, -1 },         { 3.5f, 3.5f},  SDL_TRUE,   { 0, 0 }, { 1, 1 } },
+        { { 0, 0, 0, 0 },       { -4.8f, -4.8f },   { 5.2f, 5.2f }, SDL_FALSE },
+        { { 0, 0, 2, 2 },       { -1, -1 },         { 3.5f, 3.5f }, SDL_TRUE,   { 0, 0 }, { 1, 1 } },
         { { -4, -4, 14, 14 },   { 8, 22 },          { 8, 33},       SDL_FALSE }
 
     };
@@ -1937,11 +1937,11 @@ int rect_testIntersectFRectAndLine(void *arg)
         result = SDL_IntersectFRectAndLine(&cases[i].rect, &p1.x, &p1.y, &p2.x, &p2.y);
         SDLTest_AssertCheck(result == cases[i].result, "Got %d, expected %d", result, cases[i].result);
         if (cases[i].result) {
-            SDLTest_AssertCheck(IsFPointEqual(&p1, &cases[i].p1) && IsFPointEqual(&p2, &cases[i].p2),
+            SDLTest_AssertCheck(IsFPointEqual(&p1, &cases[i].expected1),
                 "Got p1={ %g, %g }, expected p1={ %g, %g }",
                 p1.x, p1.y,
                 cases[i].expected1.x, cases[i].expected1.y);
-            SDLTest_AssertCheck(IsFPointEqual(&p1, &cases[i].p1),
+            SDLTest_AssertCheck(IsFPointEqual(&p2, &cases[i].expected2),
                 "Got p2={ %g, %g }, expected p2={ %g, %g }",
                 p2.x, p2.y,
                 cases[i].expected2.x, cases[i].expected2.y);
@@ -2093,7 +2093,7 @@ static const SDLTest_TestCaseReference rectTest32 = {
 };
 
 static const SDLTest_TestCaseReference rectTest33 = {
-    (SDLTest_TestCaseFp)rect_testIntersectFRect, "rect_IntersectFRect", "Tests SDL_IntersectFRect", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testIntersectFRect, "rect_testIntersectFRect", "Tests SDL_IntersectFRect", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference rectTest34 = {
@@ -2101,11 +2101,11 @@ static const SDLTest_TestCaseReference rectTest34 = {
 };
 
 static const SDLTest_TestCaseReference rectTest35 = {
-    (SDLTest_TestCaseFp)rect_testUnionFRect, "rect_testEncloseFPointsUnionFRect", "Tests SDL_EncloseFPoints", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testEncloseFPoints, "rect_testEncloseFPoints", "Tests SDL_EncloseFPoints", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference rectTest36 = {
-    (SDLTest_TestCaseFp)rect_testUnionFRect, "rect_testIntersectFRectAndLine", "Tests SDL_IntersectFRectAndLine", TEST_ENABLED
+    (SDLTest_TestCaseFp)rect_testIntersectFRectAndLine, "rect_testIntersectFRectAndLine", "Tests SDL_IntersectFRectAndLine", TEST_ENABLED
 };
 
 /* !
