@@ -302,6 +302,8 @@ struct SDL_VideoDevice
     void (*OnWindowEnter)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*UpdateWindowShape)(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
     bool (*FlashWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
+    bool (*SetWindowProgressState)(SDL_VideoDevice *_this, SDL_Window *window, SDL_ProgressState state);
+    bool (*SetWindowProgressValue)(SDL_VideoDevice *_this, SDL_Window *window, float value);
     bool (*SetWindowFocusable)(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
     bool (*SyncWindow)(SDL_VideoDevice *_this, SDL_Window *window);
 

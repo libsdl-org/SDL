@@ -223,6 +223,7 @@
 #cmakedefine HAVE_TPCSHRD_H 1
 #cmakedefine HAVE_ROAPI_H 1
 #cmakedefine HAVE_SHELLSCALINGAPI_H 1
+#cmakedefine HAVE_SHOBJIDL_CORE_H 1
 
 #cmakedefine USE_POSIX_SPAWN 1
 

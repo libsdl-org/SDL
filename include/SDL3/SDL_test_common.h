@@ -87,6 +87,8 @@ typedef struct
     const char *window_icon;
     SDL_WindowFlags window_flags;
     bool flash_on_focus_loss;
+    SDL_ProgressState progress_state;
+    float progress_value;
     int window_x;
     int window_y;
     int window_w;

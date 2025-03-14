@@ -41,6 +41,7 @@
 /*#define HAVE_WINDOWS_GAMING_INPUT_H 1*/
 /*#define HAVE_ROAPI_H 1*/
 /*#define HAVE_SHELLSCALINGAPI_H 1*/
+/*#define HAVE_SHOBJIDL_CORE_H 1*/
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
 /*#define HAVE_TPCSHRD_H  1*/

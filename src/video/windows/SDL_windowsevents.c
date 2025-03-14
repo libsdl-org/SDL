@@ -51,6 +51,10 @@
 #include "wmmsg.h"
 #endif
 
+#ifdef HAVE_SHOBJIDL_CORE_H
+#include <shobjidl_core.h>
+#endif
+
 #ifdef SDL_PLATFORM_GDK
 #include "../../core/gdk/SDL_gdk.h"
 #endif
@@ -2423,6 +2427,22 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     }
+
+#ifdef HAVE_SHOBJIDL_CORE_H
+    if (data->videodata->WM_TASKBAR_BUTTON_CREATED) {
+        if (!data->videodata->taskbarlist) {
+            HRESULT ret = CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (LPVOID *)&data->videodata->taskbarlist);
+            if (SUCCEEDED(ret)) {
+                ITaskbarList3 *taskbarlist = data->videodata->taskbarlist;
+                ret = taskbarlist->lpVtbl->HrInit(taskbarlist);
+                if (FAILED(ret)) {
+                    taskbarlist->lpVtbl->Release(taskbarlist);
+                    taskbarlist = NULL;
+                }
+            }
+        }
+    }
+#endif
 
     // If there's a window proc, assume it's going to handle messages
     if (data->wndproc) {
