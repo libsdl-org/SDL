@@ -631,7 +631,8 @@ typedef enum SDL_Sandbox
     SDL_SANDBOX_UNKNOWN_CONTAINER,
     SDL_SANDBOX_FLATPAK,
     SDL_SANDBOX_SNAP,
-    SDL_SANDBOX_MACOS
+    SDL_SANDBOX_MACOS,
+    SDL_SANDBOX_LOMIRI
 } SDL_Sandbox;
 
 /**
@@ -806,6 +807,49 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQu
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetGDKDefaultUser(XUserHandle *outUserHandle);
+
+#endif
+
+/**
+ * The possible form factors for an Ubuntu Touch device.
+ *
+ * \since This enum is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetUbuntuTouchFormFactor
+ */
+typedef enum SDL_UTFormFactor {
+    SDL_UTFORMFACTOR_UNKNOWN,
+    SDL_UTFORMFACTOR_PHONE,
+    SDL_UTFORMFACTOR_TABLET,
+    SDL_UTFORMFACTOR_LAPTOP,
+    SDL_UTFORMFACTOR_DESKTOP
+} SDL_UTFormFactor;
+
+/*
+ * Functions used only with Ubuntu Touch
+ */
+#ifdef SDL_PLATFORM_LINUX
+
+/**
+ * Detect whether the current platform is Ubuntu Touch.
+ *
+ * \returns true if the platform is Ubuntu Touch; false otherwise.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsUbuntuTouch(void);
+
+/**
+ * Get the form factor of the current device.
+ *
+ * \returns the form factor of the current device, or SDL_UTFORMFACTOR_UNKNOWN
+ *          on error or if the current platform isn't Ubuntu Touch.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_UTFormFactor
+ */
+extern SDL_DECLSPEC SDL_UTFormFactor SDLCALL SDL_GetUbuntuTouchFormFactor(void);
 
 #endif
 

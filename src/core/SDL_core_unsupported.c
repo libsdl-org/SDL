@@ -211,3 +211,19 @@ Sint32 JNI_OnLoad(void *vm, void *reserved)
     return -1; // JNI_ERR
 }
 #endif
+
+#ifndef SDL_PLATFORM_LINUX
+
+SDL_DECLSPEC bool SDLCALL SDL_IsUbuntuTouch(void);
+bool SDL_IsUbuntuTouch(void)
+{
+    return false;
+}
+
+SDL_DECLSPEC SDL_UTFormFactor SDLCALL SDL_GetUbuntuTouchFormFactor(void);
+SDL_UTFormFactor SDL_GetUbuntuTouchFormFactor(void)
+{
+    return SDL_UTFORMFACTOR_UNKNOWN;
+}
+
+#endif
