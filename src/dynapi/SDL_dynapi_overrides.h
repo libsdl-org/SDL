@@ -1279,3 +1279,4 @@
 #define SDL_SetAudioIterationCallbacks SDL_SetAudioIterationCallbacks_REAL
 #define SDL_GetEventDescription SDL_GetEventDescription_REAL
 #define SDL_PutAudioStreamDataNoCopy SDL_PutAudioStreamDataNoCopy_REAL
+#define SDL_IsUbuntuTouch SDL_IsUbuntuTouch_REAL

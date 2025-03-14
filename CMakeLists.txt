@@ -1811,6 +1811,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     sdl_sources(
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.c"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_threadprio.c"
+      "${SDL3_SOURCE_DIR}/src/core/linux/SDL_ubuntu_touch.c"
     )
 
     # src/core/unix/*.c is included in a generic if(UNIX) section, elsewhere.
