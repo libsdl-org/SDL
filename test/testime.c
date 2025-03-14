@@ -987,18 +987,19 @@ int main(int argc, char *argv[])
         WindowState *ctx = &windowstate[i];
         SDL_Window *window = state->windows[i];
         SDL_Renderer *renderer = state->renderers[i];
-        int icon_w = 0, icon_h = 0;
 
         SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
         ctx->window = window;
         ctx->renderer = renderer;
         ctx->rendererID = i;
-        ctx->settings_icon = LoadTexture(renderer, "icon.bmp", true, &icon_w, &icon_h);
-        ctx->settings_rect.x = (float)WINDOW_WIDTH - icon_w - MARGIN;
-        ctx->settings_rect.y = MARGIN;
-        ctx->settings_rect.w = (float)icon_w;
-        ctx->settings_rect.h = (float)icon_h;
+        ctx->settings_icon = LoadTexture(renderer, "icon.bmp", true);
+        if (ctx->settings_icon) {
+            ctx->settings_rect.w = (float)ctx->settings_icon->w;
+            ctx->settings_rect.h = (float)ctx->settings_icon->h;
+            ctx->settings_rect.x = (float)WINDOW_WIDTH - ctx->settings_rect.w - MARGIN;
+            ctx->settings_rect.y = MARGIN;
+        }
 
         InitInput(ctx);
 

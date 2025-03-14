@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
     SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
     SDL_RenderClear(renderer);
 
-    sprite = LoadTexture(renderer, "icon.bmp", true, NULL, NULL);
+    sprite = LoadTexture(renderer, "icon.bmp", true);
     if (!sprite) {
         quit(6);
     }

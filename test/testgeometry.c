@@ -28,7 +28,6 @@ static bool use_texture = false;
 static SDL_Texture **sprites;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
 static float angle = 0.0f;
-static int sprite_w, sprite_h;
 static int translate_cx = 0;
 static int translate_cy = 0;
 
@@ -52,7 +51,7 @@ static int LoadSprite(const char *file)
 
     for (i = 0; i < state->num_windows; ++i) {
         /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
-        sprites[i] = LoadTexture(state->renderers[i], file, true, &sprite_w, &sprite_h);
+        sprites[i] = LoadTexture(state->renderers[i], file, true);
         if (!sprites[i]) {
             return -1;
         }
