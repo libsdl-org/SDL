@@ -1023,8 +1023,9 @@ class Releaser:
                     "cmake",
                     "-S", str(self.root),
                     "-B", str(build_dir),
-                    f'''-DCMAKE_C_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
-                    f'''-DCMAKE_CXX_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
+                    # NDK 21e does not support -ffile-prefix-map
+                    # f'''-DCMAKE_C_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
+                    # f'''-DCMAKE_CXX_FLAGS="-ffile-prefix-map={self.root}=/src/{self.project}"''',
                     f"-DCMAKE_TOOLCHAIN_FILE={cmake_toolchain_file}",
                     f"-DCMAKE_PREFIX_PATH={str(android_deps_path)}",
                     f"-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH",
@@ -1530,7 +1531,7 @@ def main(argv=None) -> int:
             parser.error("Invalid --android-api, and/or could not be detected")
         android_api_path = Path(args.android_home) / f"platforms/{args.android_api.name}"
         if not android_api_path.is_dir():
-            parser.error(f"Android API directory does not exist ({android_api_path})")
+            logger.warning(f"Android API directory does not exist ({android_api_path})")
         with section_printer.group("Android arguments"):
             print(f"android_home     = {args.android_home}")
             print(f"android_ndk_home = {args.android_ndk_home}")
