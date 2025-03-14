@@ -711,8 +711,6 @@ extern "C" {
  *
  * This hint only applies to the emscripten platform.
  *
- * The default value is "#canvas"
- *
  * This hint should be set before creating a window.
  *
  * \since This hint is available since SDL 3.2.0.
@@ -726,7 +724,7 @@ extern "C" {
  *
  * The variable can be one of:
  *
- * - "#window": the javascript window object (default)
+ * - "#window": the javascript window object
  * - "#document": the javascript document object
  * - "#screen": the javascript window.screen object
  * - "#canvas": the WebGL canvas element
