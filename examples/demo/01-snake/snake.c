@@ -188,6 +188,8 @@ void snake_step(SnakeContext *ctx)
     case SNAKE_DIR_DOWN:
         ++ctx->head_ypos;
         break;
+    default:
+        break;
     }
     wrap_around_(&ctx->head_xpos, SNAKE_GAME_WIDTH);
     wrap_around_(&ctx->head_ypos, SNAKE_GAME_HEIGHT);
@@ -217,6 +219,7 @@ static SDL_AppResult handle_key_event_(SnakeContext *ctx, SDL_Scancode key_code)
     case SDL_SCANCODE_ESCAPE:
     case SDL_SCANCODE_Q:
         return SDL_APP_SUCCESS;
+        break;
     /* Restart the game as if the program was launched. */
     case SDL_SCANCODE_R:
         snake_initialize(ctx);
@@ -356,6 +359,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     switch (event->type) {
     case SDL_EVENT_QUIT:
         return SDL_APP_SUCCESS;
+        break;
     case SDL_EVENT_JOYSTICK_ADDED:
         if (joystick == NULL) {
             joystick = SDL_OpenJoystick(event->jdevice.which);
@@ -363,16 +367,22 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
                 SDL_Log("Failed to open joystick ID %u: %s", (unsigned int) event->jdevice.which, SDL_GetError());
             }
         }
+        break;
     case SDL_EVENT_JOYSTICK_REMOVED:
         if (joystick && (SDL_GetJoystickID(joystick) == event->jdevice.which)) {
             SDL_CloseJoystick(joystick);
             joystick = NULL;
         }
+        break;
     case SDL_EVENT_JOYSTICK_HAT_MOTION:
         return handle_hat_event_(ctx, event->jhat.value);
+        break;
     case SDL_EVENT_KEY_DOWN:
         return handle_key_event_(ctx, event->key.scancode);
+        break;
     }
+    default:
+        break;
     return SDL_APP_CONTINUE;
 }
 
