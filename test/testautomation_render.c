@@ -1409,6 +1409,46 @@ static int SDLCALL render_testLogicalSize(void *arg)
     return TEST_COMPLETED;
 }
 
+/**
+ * @brief Tests setting and getting texture scale mode.
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL2/SDL_SetTextureScaleMode
+ * http://wiki.libsdl.org/SDL2/SDL_GetTextureScaleMode
+ */
+static int SDLCALL render_testGetSetTextureScaleMode(void *arg)
+{
+    const struct {
+        const char *name;
+        SDL_ScaleMode mode;
+    } modes[] = {
+        { "SDL_SCALEMODE_NEAREST", SDL_SCALEMODE_NEAREST },
+        { "SDL_SCALEMODE_LINEAR",  SDL_SCALEMODE_LINEAR },
+        { "SDL_SCALEMODE_PIXELART",  SDL_SCALEMODE_PIXELART },
+    };
+    size_t i;
+
+    for (i = 0; i < SDL_arraysize(modes); i++) {
+        SDL_Texture *texture;
+        bool result;
+        SDL_ScaleMode actual_mode = SDL_SCALEMODE_NEAREST;
+
+        SDL_ClearError();
+        SDLTest_AssertPass("About to call SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 16, 16)");
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 16, 16);
+        SDLTest_AssertCheck(texture != NULL, "SDL_CreateTexture must return a non-NULL texture");
+        SDLTest_AssertPass("About to call SDL_SetTextureScaleMode(texture, %s)", modes[i].name);
+        result = SDL_SetTextureScaleMode(texture, modes[i].mode);
+        SDLTest_AssertCheck(result == true, "SDL_SetTextureScaleMode returns %d, expected %d", result, true);
+        SDLTest_AssertPass("About to call SDL_GetTextureScaleMode(texture)");
+        result = SDL_GetTextureScaleMode(texture, &actual_mode);
+        SDLTest_AssertCheck(result == true, "SDL_SetTextureScaleMode returns %d, expected %d", result, true);
+        SDLTest_AssertCheck(actual_mode == modes[i].mode, "SDL_GetTextureScaleMode must return %s (%d), actual=%d",
+                            modes[i].name, modes[i].mode, actual_mode);
+    }
+    return TEST_COMPLETED;
+}
+
 /* Helper functions */
 
 /**
@@ -1880,6 +1920,10 @@ static const SDLTest_TestCaseReference renderTestTextureState = {
     render_testTextureState, "render_testTextureState", "Tests texture state changes", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestGetSetTextureScaleMode = {
+    render_testGetSetTextureScaleMode, "render_testGetSetTextureScaleMode", "Tests setting/getting texture scale mode", TEST_ENABLED
+};
+
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestGetNumRenderDrivers,
@@ -1896,6 +1940,7 @@ static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestLogicalSize,
     &renderTestUVWrapping,
     &renderTestTextureState,
+    &renderTestGetSetTextureScaleMode,
     NULL
 };
 
