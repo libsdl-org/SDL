@@ -774,6 +774,11 @@ bool SDL_IsTablet(void)
 #elif defined(SDL_PLATFORM_IOS)
     extern bool SDL_IsIPad(void);
     return SDL_IsIPad();
+#elif defined(SDL_PLATFORM_LINUX)
+    if (SDL_IsUbuntuTouch()) {
+        return SDL_GetUbuntuTouchFormFactor() == SDL_UTFORMFACTOR_TABLET;
+    }
+    return false;
 #else
     return false;
 #endif
@@ -802,6 +807,12 @@ static SDL_Sandbox SDL_DetectSandbox(void)
      * unrelated reasons. This is the same thing WebKitGTK does. */
     if (SDL_getenv("SNAP") && SDL_getenv("SNAP_NAME") && SDL_getenv("SNAP_REVISION")) {
         return SDL_SANDBOX_SNAP;
+    }
+
+    /* Ubuntu Touch also supports Snap; check for classic sandboxing only if
+     * Snap hasn't been detected. */
+    if (SDL_getenv("LOMIRI_APPLICATION_ISOLATION") || SDL_getenv("CLICKABLE_DESKTOP_MODE")) {
+        return SDL_SANDBOX_LOMIRI;
     }
 
     if (access("/run/host/container-manager", F_OK) == 0) {

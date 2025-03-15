@@ -1267,3 +1267,5 @@
 #define SDL_SetGPURenderStateFragmentUniforms SDL_SetGPURenderStateFragmentUniforms_REAL
 #define SDL_SetRenderGPUState SDL_SetRenderGPUState_REAL
 #define SDL_DestroyGPURenderState SDL_DestroyGPURenderState_REAL
+#define SDL_IsUbuntuTouch SDL_IsUbuntuTouch_REAL
+#define SDL_GetUbuntuTouchFormFactor SDL_GetUbuntuTouchFormFactor_REAL
