@@ -812,6 +812,46 @@ int render_testBlitBlend(void *arg)
 }
 
 /**
+ * @brief Tests setting and getting texture scale mode.
+ *
+ * \sa
+ * http://wiki.libsdl.org/SDL2/SDL_SetTextureScaleMode
+ * http://wiki.libsdl.org/SDL2/SDL_GetTextureScaleMode
+ */
+int render_testGetSetTextureScaleMode(void *arg)
+{
+    const struct {
+        const char *name;
+        SDL_ScaleMode mode;
+    } modes[] = {
+        { "SDL_ScaleModeNearest", SDL_ScaleModeNearest },
+        { "SDL_ScaleModeLinear",  SDL_ScaleModeLinear },
+        { "SDL_ScaleModeBest",    SDL_ScaleModeBest }
+    };
+    size_t i;
+
+    for (i = 0; i < SDL_arraysize(modes); i++) {
+        SDL_Texture *texture;
+        int result;
+        SDL_ScaleMode actual_mode = SDL_ScaleModeNearest;
+
+        SDL_ClearError();
+        SDLTest_AssertPass("About to call SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 16, 16)");
+        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 16, 16);
+        SDLTest_AssertCheck(texture != NULL, "SDL_CreateTexture must return a non-NULL texture");
+        SDLTest_AssertPass("About to call SDL_SetTextureScaleMode(texture, %s)", modes[i].name);
+        result = SDL_SetTextureScaleMode(texture, modes[i].mode);
+        SDLTest_AssertCheck(result == 0, "SDL_SetTextureScaleMode must return 0, actual %d", result);
+        SDLTest_AssertPass("About to call SDL_GetTextureScaleMode(texture)");
+        result = SDL_GetTextureScaleMode(texture, &actual_mode);
+        SDLTest_AssertCheck(result == 0, "SDL_SetTextureScaleMode must return 0, actual %d", result);
+        SDLTest_AssertCheck(actual_mode == modes[i].mode, "SDL_GetTextureScaleMode must return %s (%d), actual=%d",
+            modes[i].name, modes[i].mode, actual_mode);
+    }
+    return TEST_COMPLETED;
+}
+
+/**
  * @brief Checks to see if functionality is supported. Helper function.
  */
 static int
@@ -1161,9 +1201,13 @@ static const SDLTest_TestCaseReference renderTest7 = {
     (SDLTest_TestCaseFp)render_testBlitBlend, "render_testBlitBlend", "Tests blitting with blending", TEST_DISABLED
 };
 
+static const SDLTest_TestCaseReference renderTest8 = {
+    (SDLTest_TestCaseFp)render_testGetSetTextureScaleMode, "render_testGetSetTextureScaleMode", "Tests setting/getting texture scale mode", TEST_ENABLED
+};
+
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
-    &renderTest1, &renderTest2, &renderTest3, &renderTest4, &renderTest5, &renderTest6, &renderTest7, NULL
+    &renderTest1, &renderTest2, &renderTest3, &renderTest4, &renderTest5, &renderTest6, &renderTest7, &renderTest8, NULL
 };
 
 /* Render test suite (global) */
