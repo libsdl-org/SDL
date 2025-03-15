@@ -1628,26 +1628,44 @@ static bool SDL_ConvertPixels_SwapNV_std(int width, int height, const void *src,
     const int UVwidth = (width + 1) / 2;
     const int UVheight = (height + 1) / 2;
     const int srcUVPitch = ((src_pitch + 1) / 2) * 2;
-    const int srcUVPitchLeft = (srcUVPitch - UVwidth * 2) / sizeof(Uint16);
     const int dstUVPitch = ((dst_pitch + 1) / 2) * 2;
-    const int dstUVPitchLeft = (dstUVPitch - UVwidth * 2) / sizeof(Uint16);
-    const Uint16 *srcUV;
-    Uint16 *dstUV;
 
     // Skip the Y plane
     src = (const Uint8 *)src + height * src_pitch;
     dst = (Uint8 *)dst + height * dst_pitch;
 
-    srcUV = (const Uint16 *)src;
-    dstUV = (Uint16 *)dst;
-    y = UVheight;
-    while (y--) {
-        x = UVwidth;
-        while (x--) {
-            *dstUV++ = SDL_Swap16(*srcUV++);
+    bool aligned = (((uintptr_t)src | (uintptr_t)dst) & 1) == 0;
+    if (aligned) {
+        const int srcUVPitchLeft = (srcUVPitch - UVwidth * 2) / sizeof(Uint16);
+        const int dstUVPitchLeft = (dstUVPitch - UVwidth * 2) / sizeof(Uint16);
+        const Uint16 *srcUV = (const Uint16 *)src;
+        Uint16 *dstUV = (Uint16 *)dst;
+        y = UVheight;
+        while (y--) {
+            x = UVwidth;
+            while (x--) {
+                *dstUV++ = SDL_Swap16(*srcUV++);
+            }
+            srcUV += srcUVPitchLeft;
+            dstUV += dstUVPitchLeft;
         }
-        srcUV += srcUVPitchLeft;
-        dstUV += dstUVPitchLeft;
+    } else {
+        const int srcUVPitchLeft = (srcUVPitch - UVwidth * 2);
+        const int dstUVPitchLeft = (dstUVPitch - UVwidth * 2);
+        const Uint8 *srcUV = (const Uint8 *)src;
+        Uint8 *dstUV = (Uint8 *)dst;
+        y = UVheight;
+        while (y--) {
+            x = UVwidth;
+            while (x--) {
+                Uint8 u = *srcUV++;
+                Uint8 v = *srcUV++;
+                *dstUV++ = v;
+                *dstUV++ = u;
+            }
+            srcUV += srcUVPitchLeft;
+            dstUV += dstUVPitchLeft;
+        }
     }
     return true;
 }
