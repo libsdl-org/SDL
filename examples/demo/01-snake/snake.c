@@ -380,9 +380,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     case SDL_EVENT_KEY_DOWN:
         return handle_key_event_(ctx, event->key.scancode);
         break;
-    }
     default:
         break;
+    }
     return SDL_APP_CONTINUE;
 }
 
