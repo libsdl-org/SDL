@@ -25,14 +25,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-public class HIDDeviceManager {
+class HIDDeviceManager {
     private static final String TAG = "hidapi";
     private static final String ACTION_USB_PERMISSION = "org.libsdl.app.USB_PERMISSION";
 
     private static HIDDeviceManager sManager;
     private static int sManagerRefCount = 0;
 
-    public static HIDDeviceManager acquire(Context context) {
+    static HIDDeviceManager acquire(Context context) {
         if (sManagerRefCount == 0) {
             sManager = new HIDDeviceManager(context);
         }
@@ -40,7 +40,7 @@ public class HIDDeviceManager {
         return sManager;
     }
 
-    public static void release(HIDDeviceManager manager) {
+    static void release(HIDDeviceManager manager) {
         if (manager == sManager) {
             --sManagerRefCount;
             if (sManagerRefCount == 0) {
@@ -121,11 +121,11 @@ public class HIDDeviceManager {
         }
     }
 
-    public Context getContext() {
+    Context getContext() {
         return mContext;
     }
 
-    public int getDeviceIDForIdentifier(String identifier) {
+    int getDeviceIDForIdentifier(String identifier) {
         SharedPreferences.Editor spedit = mSharedPreferences.edit();
 
         int result = mSharedPreferences.getInt(identifier, 0);
@@ -439,7 +439,7 @@ public class HIDDeviceManager {
     // Chromebooks do not pass along ACTION_ACL_CONNECTED / ACTION_ACL_DISCONNECTED properly.
     // This function provides a sort of dummy version of that, watching for changes in the
     // connected devices and attempting to add controllers as things change.
-    public void chromebookConnectionHandler() {
+    void chromebookConnectionHandler() {
         if (!mIsChromebook) {
             return;
         }
@@ -478,7 +478,7 @@ public class HIDDeviceManager {
         }, 10000);
     }
 
-    public boolean connectBluetoothDevice(BluetoothDevice bluetoothDevice) {
+    boolean connectBluetoothDevice(BluetoothDevice bluetoothDevice) {
         Log.v(TAG, "connectBluetoothDevice device=" + bluetoothDevice);
         synchronized (this) {
             if (mBluetoothDevices.containsKey(bluetoothDevice)) {
@@ -499,7 +499,7 @@ public class HIDDeviceManager {
         return true;
     }
 
-    public void disconnectBluetoothDevice(BluetoothDevice bluetoothDevice) {
+    void disconnectBluetoothDevice(BluetoothDevice bluetoothDevice) {
         synchronized (this) {
             HIDDeviceBLESteamController device = mBluetoothDevices.get(bluetoothDevice);
             if (device == null)
@@ -513,7 +513,7 @@ public class HIDDeviceManager {
         }
     }
 
-    public boolean isSteamController(BluetoothDevice bluetoothDevice) {
+    boolean isSteamController(BluetoothDevice bluetoothDevice) {
         // Sanity check.  If you pass in a null device, by definition it is never a Steam Controller.
         if (bluetoothDevice == null) {
             return false;
@@ -540,7 +540,7 @@ public class HIDDeviceManager {
         }
     }
 
-    public void setFrozen(boolean frozen) {
+    void setFrozen(boolean frozen) {
         synchronized (this) {
             for (HIDDevice device : mDevicesById.values()) {
                 device.setFrozen(frozen);
@@ -567,7 +567,7 @@ public class HIDDeviceManager {
     ////////// JNI interface functions
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    public boolean initialize(boolean usb, boolean bluetooth) {
+    boolean initialize(boolean usb, boolean bluetooth) {
         Log.v(TAG, "initialize(" + usb + ", " + bluetooth + ")");
 
         if (usb) {
@@ -579,7 +579,7 @@ public class HIDDeviceManager {
         return true;
     }
 
-    public boolean openDevice(int deviceID) {
+    boolean openDevice(int deviceID) {
         Log.v(TAG, "openDevice deviceID=" + deviceID);
         HIDDevice device = getDevice(deviceID);
         if (device == null) {
@@ -621,7 +621,7 @@ public class HIDDeviceManager {
         return false;
     }
 
-    public int writeReport(int deviceID, byte[] report, boolean feature) {
+    int writeReport(int deviceID, byte[] report, boolean feature) {
         try {
             //Log.v(TAG, "writeReport deviceID=" + deviceID + " length=" + report.length);
             HIDDevice device;
@@ -638,7 +638,7 @@ public class HIDDeviceManager {
         return -1;
     }
 
-    public boolean readReport(int deviceID, byte[] report, boolean feature) {
+    boolean readReport(int deviceID, byte[] report, boolean feature) {
         try {
             //Log.v(TAG, "readReport deviceID=" + deviceID);
             HIDDevice device;
@@ -655,7 +655,7 @@ public class HIDDeviceManager {
         return false;
     }
 
-    public void closeDevice(int deviceID) {
+    void closeDevice(int deviceID) {
         try {
             Log.v(TAG, "closeDevice deviceID=" + deviceID);
             HIDDevice device;
