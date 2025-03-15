@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import org.libsdl.app.SDL;
 import org.libsdl.app.SDLActivity;
 
 import android.widget.Button;
