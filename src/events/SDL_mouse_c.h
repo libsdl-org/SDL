@@ -104,7 +104,7 @@ typedef struct
     float wheel_y_frac;
     double click_motion_x;
     double click_motion_y;
-    bool integer_mode;
+    Uint8 integer_mode;
     bool has_position;
     bool relative_mode;
     bool relative_mode_warp_motion;
