@@ -800,7 +800,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     ID3D12DescriptorHeap *rootDescriptorHeaps[2];
 
     // See if we need debug interfaces
-    createDebug = true;//SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, false);
+    createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, false);
 
 #ifdef SDL_PLATFORM_GDK
     CreateEventExFunc = CreateEventExW;
