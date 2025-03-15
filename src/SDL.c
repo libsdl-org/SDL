@@ -728,6 +728,8 @@ const char *SDL_GetPlatform(void)
     return "macOS";
 #elif defined(SDL_PLATFORM_NETBSD)
     return "NetBSD";
+#elif defined(SDL_PLATFORM_NGAGE)
+    return "Nokia N-Gage";
 #elif defined(SDL_PLATFORM_OPENBSD)
     return "OpenBSD";
 #elif defined(SDL_PLATFORM_OS2)
