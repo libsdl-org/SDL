@@ -237,9 +237,13 @@ struct GL_ShaderContext
  * NOTE: Always use sampler2D, etc here. We'll #define them to the
  *  texture_rectangle versions if we choose to use that extension.
  */
-static const char *shader_source[NUM_SHADERS][2] = {
+static struct {
+    const char *vertex_shader;
+    const char *fragment_shader;
+    const char *fragment_version;
+} shader_source[NUM_SHADERS] = {
     // SHADER_NONE
-    { NULL, NULL },
+    { NULL, NULL, NULL },
 
     // SHADER_SOLID
     {
@@ -251,7 +255,9 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "void main()\n"
 "{\n"
 "    gl_FragColor = v_color;\n"
-"}"
+"}",
+        // fragment version
+        NULL
     },
 
     // SHADER_RGB
@@ -269,7 +275,9 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "    gl_FragColor = texture2D(tex0, v_texCoord);\n"
 "    gl_FragColor.a = 1.0;\n"
 "    gl_FragColor *= v_color;\n"
-"}"
+"}",
+        // fragment version
+        NULL
     },
 
     // SHADER_RGBA
@@ -284,7 +292,9 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "void main()\n"
 "{\n"
 "    gl_FragColor = texture2D(tex0, v_texCoord) * v_color;\n"
-"}"
+"}",
+        // fragment version
+        NULL
     },
 
     // SHADER_RGB_PIXELART
@@ -306,7 +316,9 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "    gl_FragColor = textureGrad(tex0, uv, dFdx(v_texCoord), dFdy(v_texCoord));\n"
 "    gl_FragColor.a = 1.0;\n"
 "    gl_FragColor *= v_color;\n"
-"}"
+"}",
+        // fragment version
+        "#version 130\n"
     },
 
     // SHADER_RGBA_PIXELART
@@ -327,7 +339,9 @@ static const char *shader_source[NUM_SHADERS][2] = {
 "    vec2 uv = (floor(tx) + 0.5 + txOffset) * texel_size.xy;\n"
 "    gl_FragColor = textureGrad(tex0, uv, dFdx(v_texCoord), dFdy(v_texCoord));\n"
 "    gl_FragColor *= v_color;\n"
-"}"
+"}",
+        // fragment version
+        "#version 130\n"
     },
 
 #ifdef SDL_HAVE_YUV
@@ -337,7 +351,9 @@ static const char *shader_source[NUM_SHADERS][2] = {
         TEXTURE_VERTEX_SHADER,
         // fragment shader
         YUV_SHADER_PROLOGUE
-        YUV_SHADER_BODY
+        YUV_SHADER_BODY,
+        // fragment version
+        NULL
     },
     // SHADER_NV12_RA
     {
@@ -345,7 +361,9 @@ static const char *shader_source[NUM_SHADERS][2] = {
         TEXTURE_VERTEX_SHADER,
         // fragment shader
         NV12_SHADER_PROLOGUE
-        NV12_RA_SHADER_BODY
+        NV12_RA_SHADER_BODY,
+        // fragment version
+        NULL
     },
     // SHADER_NV12_RG
     {
@@ -353,7 +371,9 @@ static const char *shader_source[NUM_SHADERS][2] = {
         TEXTURE_VERTEX_SHADER,
         // fragment shader
         NV12_SHADER_PROLOGUE
-        NV12_RG_SHADER_BODY
+        NV12_RG_SHADER_BODY,
+        // fragment version
+        NULL
     },
     // SHADER_NV21_RA
     {
@@ -361,7 +381,9 @@ static const char *shader_source[NUM_SHADERS][2] = {
         TEXTURE_VERTEX_SHADER,
         // fragment shader
         NV12_SHADER_PROLOGUE
-        NV21_RA_SHADER_BODY
+        NV21_RA_SHADER_BODY,
+        // fragment version
+        NULL
     },
     // SHADER_NV21_RG
     {
@@ -369,20 +391,23 @@ static const char *shader_source[NUM_SHADERS][2] = {
         TEXTURE_VERTEX_SHADER,
         // fragment shader
         NV12_SHADER_PROLOGUE
-        NV21_RG_SHADER_BODY
+        NV21_RG_SHADER_BODY,
+        // fragment version
+        NULL
     },
 #endif // SDL_HAVE_YUV
 };
 
 /* *INDENT-ON* */ // clang-format on
 
-static bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *defines, const char *source)
+static bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *version, const char *defines, const char *source)
 {
     GLint status;
-    const char *sources[2];
+    const char *sources[3];
 
-    sources[0] = defines;
-    sources[1] = source;
+    sources[0] = version;
+    sources[1] = defines;
+    sources[2] = source;
 
     ctx->glShaderSourceARB(shader, SDL_arraysize(sources), sources, NULL);
     ctx->glCompileShaderARB(shader);
@@ -413,6 +438,7 @@ static bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData
     const int num_tmus_bound = 4;
     const char *vert_defines = "";
     const char *frag_defines = "";
+    const char *frag_version = "";
     int i;
     GLint location;
 
@@ -432,19 +458,22 @@ static bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData
         frag_defines =
             "#define UVCoordScale 1.0\n";
     }
+    if (shader_source[index].fragment_version) {
+        frag_version = shader_source[index].fragment_version;
+    }
 
     // Create one program object to rule them all
     data->program = ctx->glCreateProgramObjectARB();
 
     // Create the vertex shader
     data->vert_shader = ctx->glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
-    if (!CompileShader(ctx, data->vert_shader, vert_defines, shader_source[index][0])) {
+    if (!CompileShader(ctx, data->vert_shader, "", vert_defines, shader_source[index].vertex_shader)) {
         return false;
     }
 
     // Create the fragment shader
     data->frag_shader = ctx->glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
-    if (!CompileShader(ctx, data->frag_shader, frag_defines, shader_source[index][1])) {
+    if (!CompileShader(ctx, data->frag_shader, frag_version, frag_defines, shader_source[index].fragment_shader)) {
         return false;
     }
 
