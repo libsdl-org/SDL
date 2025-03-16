@@ -2251,6 +2251,33 @@ static int video_getWindowSurface(void *arg)
     return TEST_COMPLETED;
 }
 
+/**
+ * Tests SDL_SetWindowInputFocus
+ */
+static int video_setWindowInputFocus(void *arg)
+{
+    int result;
+    SDL_Window *window;
+
+    SDLTest_AssertPass("SDL_SetWindowInputFocus is not supported on dummy and SDL2 wayland driver");
+        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0 || SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+        return TEST_SKIPPED;
+    }
+
+    window = _createVideoSuiteTestWindow("video_setWindowInputFocus");
+    if (!window) {
+        return TEST_ABORTED;
+    }
+
+    SDLTest_AssertPass("About to call SDL_SetWindowInputFocus(window)");
+    result = SDL_SetWindowInputFocus(window);
+    SDLTest_AssertCheck(result == 0, "Result is %d, expected 0", result);
+
+    _destroyVideoSuiteTestWindow(window);
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Video test cases */
@@ -2338,6 +2365,9 @@ static const SDLTest_TestCaseReference videoTest24 =
 static const SDLTest_TestCaseReference videoTest25 = {
     (SDLTest_TestCaseFp)video_getWindowSurface, "video_getWindowSurface", "Checks window surface functionality", TEST_ENABLED
 };
+static const SDLTest_TestCaseReference videoTest26 = {
+    (SDLTest_TestCaseFp)video_setWindowInputFocus, "video_setWindowInputFocus", "Checks window input focus", TEST_ENABLED
+};
 
 /* Sequence of Video test cases */
 static const SDLTest_TestCaseReference *videoTests[] = {
@@ -2345,7 +2375,7 @@ static const SDLTest_TestCaseReference *videoTests[] = {
     &videoTest7, &videoTest8, &videoTest9, &videoTest10, &videoTest11, &videoTest12,
     &videoTest13, &videoTest14, &videoTest15, &videoTest16, &videoTest17,
     &videoTest18, &videoTest19, &videoTest20, &videoTest21, &videoTest22,
-    &videoTest23, &videoTest24, &videoTest25, NULL
+    &videoTest23, &videoTest24, &videoTest25, &videoTest26, NULL
 };
 
 /* Video test suite (global) */
