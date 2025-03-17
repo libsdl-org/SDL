@@ -1106,6 +1106,7 @@ struct VulkanRenderer
 
     VulkanMemoryAllocator *memoryAllocator;
     VkPhysicalDeviceMemoryProperties memoryProperties;
+    bool checkEmptyAllocations;
 
     WindowData **claimedWindows;
     Uint32 claimedWindowCount;
@@ -1545,6 +1546,10 @@ static void VULKAN_INTERNAL_RemoveMemoryUsedRegion(
         usedRegion->allocation,
         usedRegion->offset,
         usedRegion->size);
+
+    if (usedRegion->allocation->usedRegionCount == 0) {
+        renderer->checkEmptyAllocations = true;
+    }
 
     SDL_free(usedRegion);
 
@@ -10375,7 +10380,6 @@ static bool VULKAN_Submit(
     VkPipelineStageFlags waitStages[MAX_PRESENT_COUNT];
     Uint32 swapchainImageIndex;
     VulkanTextureSubresource *swapchainTextureSubresource;
-    Uint8 commandBufferCleaned = 0;
     VulkanMemorySubAllocator *allocator;
     bool presenting = false;
 
@@ -10491,12 +10495,10 @@ static bool VULKAN_Submit(
                 renderer,
                 renderer->submittedCommandBuffers[i],
                 false);
-
-            commandBufferCleaned = 1;
         }
     }
 
-    if (commandBufferCleaned) {
+    if (renderer->checkEmptyAllocations) {
         SDL_LockMutex(renderer->allocatorLock);
 
         for (Uint32 i = 0; i < VK_MAX_MEMORY_TYPES; i += 1) {
@@ -10511,6 +10513,8 @@ static bool VULKAN_Submit(
                 }
             }
         }
+
+        renderer->checkEmptyAllocations = false;
 
         SDL_UnlockMutex(renderer->allocatorLock);
     }
