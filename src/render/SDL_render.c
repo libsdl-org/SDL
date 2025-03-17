@@ -5841,7 +5841,7 @@ bool SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale
 
 SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateDesc *desc)
 {
-    CHECK_RENDERER_MAGIC(renderer, false);
+    CHECK_RENDERER_MAGIC(renderer, NULL);
 
     if (!desc) {
         SDL_InvalidParamError("desc");
