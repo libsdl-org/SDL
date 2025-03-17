@@ -1547,8 +1547,7 @@ static void VULKAN_INTERNAL_RemoveMemoryUsedRegion(
         usedRegion->offset,
         usedRegion->size);
 
-    if (usedRegion->allocation->usedRegionCount == 0)
-    {
+    if (usedRegion->allocation->usedRegionCount == 0) {
         renderer->checkEmptyAllocations = true;
     }
 
