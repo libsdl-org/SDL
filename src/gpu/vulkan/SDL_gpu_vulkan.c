@@ -1549,11 +1549,10 @@ static void VULKAN_INTERNAL_RemoveMemoryUsedRegion(
 
     if (usedRegion->allocation->usedRegionCount == 0)
     {
-        renderer->checkEmptyAllocations = 1;
+        renderer->checkEmptyAllocations = true;
     }
 
     SDL_free(usedRegion);
-
 
     SDL_UnlockMutex(renderer->allocatorLock);
 }
@@ -10516,7 +10515,7 @@ static bool VULKAN_Submit(
             }
         }
 
-        renderer->checkEmptyAllocations = 0;
+        renderer->checkEmptyAllocations = false;
 
         SDL_UnlockMutex(renderer->allocatorLock);
     }
