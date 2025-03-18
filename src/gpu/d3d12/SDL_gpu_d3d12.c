@@ -8999,13 +8999,13 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     result->props = SDL_CreateProperties();
 
-    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_PHYSICAL_NAME_STRING, adapterDesc.Description);
+    char *adapterDescUtf8 = SDL_iconv_wchar_utf8(&adapterDesc.Description[0]);
+    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_PHYSICAL_NAME_STRING, adapterDescUtf8);
+    SDL_free(adapterDescUtf8);
 
-    char driverVersionBuffer[256] = {0};
-
-    SDL_snprintf(driverVersionBuffer, 256, "%d.%d.%d.%d", HIWORD(umdVersion.HighPart), LOWORD(umdVersion.HighPart), HIWORD(umdVersion.LowPart), LOWORD(umdVersion.LowPart));
-
-    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING, driverVersionBuffer);
+    char driverMetadataBuffer[256] = { 0 };
+    SDL_snprintf(&driverMetadataBuffer[0], 256, "%d.%d.%d.%d", HIWORD(umdVersion.HighPart), LOWORD(umdVersion.HighPart), HIWORD(umdVersion.LowPart), LOWORD(umdVersion.LowPart));
+    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING, driverMetadataBuffer);
 
     return result;
 }
