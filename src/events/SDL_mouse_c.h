@@ -95,6 +95,13 @@ typedef struct
     SDL_MouseMotionTransformCallback InputTransform;
     void *input_transform_data;
 
+    // integer mode data
+    Uint8 integer_mode_flags; // 1 to enable mouse quantization, 2 to enable wheel quantization
+    float integer_mode_residual_motion_x;
+    float integer_mode_residual_motion_y;
+    float integer_mode_residual_scroll_x;
+    float integer_mode_residual_scroll_y;
+
     // Data common to all mice
     SDL_Window *focus;
     float x;
@@ -102,13 +109,8 @@ typedef struct
     float x_accu;
     float y_accu;
     float last_x, last_y; // the last reported x and y coordinates
-    float xrel_frac;
-    float yrel_frac;
-    float wheel_x_frac;
-    float wheel_y_frac;
     double click_motion_x;
     double click_motion_y;
-    Uint8 integer_mode;
     bool has_position;
     bool relative_mode;
     bool relative_mode_warp_motion;

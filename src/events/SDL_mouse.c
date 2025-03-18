@@ -239,9 +239,9 @@ static void SDLCALL SDL_MouseIntegerModeChanged(void *userdata, const char *name
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
     if (hint && *hint) {
-        mouse->integer_mode = (Uint8)SDL_atoi(hint);
+        mouse->integer_mode_flags = (Uint8)SDL_atoi(hint);
     } else {
-        mouse->integer_mode = 0;
+        mouse->integer_mode_flags = 0;
     }
 }
 
@@ -739,10 +739,10 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
                 y *= mouse->normal_speed_scale;
             }
         }
-        if (mouse->integer_mode >= 1) {
+        if (mouse->integer_mode_flags & 1) {
             // Accumulate the fractional relative motion and only process the integer portion
-            mouse->xrel_frac = SDL_modff(mouse->xrel_frac + x, &x);
-            mouse->yrel_frac = SDL_modff(mouse->yrel_frac + y, &y);
+            mouse->integer_mode_residual_motion_x = SDL_modff(mouse->integer_mode_residual_motion_x + x, &x);
+            mouse->integer_mode_residual_motion_y = SDL_modff(mouse->integer_mode_residual_motion_y + y, &y);
         }
         xrel = x;
         yrel = y;
@@ -750,7 +750,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
         y = (mouse->last_y + yrel);
         ConstrainMousePosition(mouse, window, &x, &y);
     } else {
-        if (mouse->integer_mode >= 1) {
+        if (mouse->integer_mode_flags & 1) {
             // Discard the fractional component from absolute coordinates
             x = SDL_truncf(x);
             y = SDL_truncf(y);
@@ -1028,9 +1028,9 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
     }
 
     // Accumulate fractional wheel motion if integer mode is enabled
-    if (mouse->integer_mode >= 2) {
-        mouse->wheel_x_frac = SDL_modff(mouse->wheel_x_frac + x, &x);
-        mouse->wheel_y_frac = SDL_modff(mouse->wheel_y_frac + y, &y);
+    if (mouse->integer_mode_flags & 2) {
+        mouse->integer_mode_residual_scroll_x = SDL_modff(mouse->integer_mode_residual_scroll_x + x, &x);
+        mouse->integer_mode_residual_scroll_y = SDL_modff(mouse->integer_mode_residual_scroll_y + y, &y);
     }
 
     if (x == 0.0f && y == 0.0f) {
