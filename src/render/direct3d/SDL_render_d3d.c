@@ -1033,27 +1033,30 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
         data->drawstate.texture = texture;
     } else if (texture) {
         D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
-        UpdateDirtyTexture(data->device, &texturedata->texture);
+        if (texturedata) {
+            UpdateDirtyTexture(data->device, &texturedata->texture);
 #ifdef SDL_HAVE_YUV
-        if (texturedata->yuv) {
-            UpdateDirtyTexture(data->device, &texturedata->utexture);
-            UpdateDirtyTexture(data->device, &texturedata->vtexture);
+            if (texturedata->yuv) {
+                UpdateDirtyTexture(data->device, &texturedata->utexture);
+                UpdateDirtyTexture(data->device, &texturedata->vtexture);
+            }
+#endif // SDL_HAVE_YUV
         }
-#endif
     }
 
     if (texture) {
-        D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
-
         UpdateTextureScaleMode(data, cmd->data.draw.texture_scale_mode, 0);
         UpdateTextureAddressMode(data, cmd->data.draw.texture_address_mode, 0);
 
+#ifdef SDL_HAVE_YUV
+        D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
         if (texturedata && texturedata->yuv) {
             UpdateTextureScaleMode(data, cmd->data.draw.texture_scale_mode, 1);
             UpdateTextureScaleMode(data, cmd->data.draw.texture_scale_mode, 2);
             UpdateTextureAddressMode(data, cmd->data.draw.texture_address_mode, 1);
             UpdateTextureAddressMode(data, cmd->data.draw.texture_address_mode, 2);
         }
+#endif // SDL_HAVE_YUV
     }
 
     if (blend != data->drawstate.blend) {
