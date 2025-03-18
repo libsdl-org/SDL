@@ -3049,7 +3049,7 @@ bool SDL_IsJoystickVIRTUAL(SDL_GUID guid)
     return (guid.data[14] == 'v') ? true : false;
 }
 
-static bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id)
+bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id)
 {
     return SDL_VIDPIDInList(vendor_id, product_id, &wheel_devices);
 }
