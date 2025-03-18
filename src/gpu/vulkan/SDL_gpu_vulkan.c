@@ -4735,7 +4735,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSemaphore, false);
         }
 
-        renderer->vkCreateSemaphore(
+        vulkanResult = renderer->vkCreateSemaphore(
             renderer->logicalDevice,
             &semaphoreCreateInfo,
             NULL,
