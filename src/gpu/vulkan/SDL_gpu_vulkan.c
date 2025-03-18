@@ -11595,7 +11595,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     
     result->props = SDL_CreateProperties();
     SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_PHYSICAL_NAME_STRING, renderer->physicalDeviceProperties.properties.deviceName);
-    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING, renderer->physicalDeviceDriverProperties.driverName);
+    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING, renderer->physicalDeviceDriverProperties.driverInfo);
 
     /*
      * Create initial swapchain array

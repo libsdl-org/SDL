@@ -9005,7 +9005,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     char driverMetadataBuffer[256] = { 0 };
     SDL_snprintf(&driverMetadataBuffer[0], 256, "%d.%d.%d.%d", HIWORD(umdVersion.HighPart), LOWORD(umdVersion.HighPart), HIWORD(umdVersion.LowPart), LOWORD(umdVersion.LowPart));
-    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING, driverMetadataBuffer);
+    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING, driverMetadataBuffer);
 
     return result;
 }
