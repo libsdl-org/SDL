@@ -4177,6 +4177,27 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_CalculateGPUTextureFormatSize(
     Uint32 height,
     Uint32 depth_or_layer_count);
 
+
+#define SDL_PROP_GPU_DEVICE_PHYSICAL_NAME_STRING    "SDL.gpu.device.physicalname"
+#define SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING      "SDL.gpu.device.drivername"
+
+/**
+ * Get readonly metadata properties of an existing GPU device.
+ * 
+ * Currently available properties:
+ * 
+ * - `SDL_PROP_GPU_DEVICE_PHYSICAL_NAME_STRING`: The physical name of the GPU device, as reported by the system driver.
+ * - `SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING`: System driver name of the GPU device. May be NULL on some platforms, like MacOS.
+ * 
+ * \param device GPU device to query
+ * 
+ * \returns a SDL_PropertiesID containing various data regarding the device or 0 on error. Use SDL_GetError() to get more information.
+ * 
+ * \since This function is available since SDL 3.2.0.
+ */
+extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(
+        SDL_GPUDevice *device);
+
 #ifdef SDL_PLATFORM_GDK
 
 /**

@@ -765,6 +765,8 @@ static void METAL_DestroyDevice(SDL_GPUDevice *device)
     // Release the command queue
     renderer->queue = nil;
 
+    SDL_DestroyProperties(device->props);
+
     // Free the primary structures
     SDL_free(renderer);
     SDL_free(device);
@@ -4569,6 +4571,10 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         ASSIGN_DRIVER(METAL)
         result->driverData = (SDL_GPURenderer *)renderer;
         renderer->sdlGPUDevice = result;
+
+        result->props = SDL_CreateProperties();
+
+        SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_PHYSICAL_NAME_STRING, [device.name UTF8String]);
 
         return result;
     }

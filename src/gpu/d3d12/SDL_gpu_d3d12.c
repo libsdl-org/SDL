@@ -1619,6 +1619,9 @@ static void D3D12_DestroyDevice(SDL_GPUDevice *device)
     }
 
     D3D12_INTERNAL_DestroyRenderer(renderer);
+
+    SDL_DestroyProperties(device->props);
+
     SDL_free(device);
 }
 
@@ -8993,6 +8996,16 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     result->driverData = (SDL_GPURenderer *)renderer;
     result->debug_mode = debugMode;
     renderer->sdlGPUDevice = result;
+
+    result->props = SDL_CreateProperties();
+
+    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_PHYSICAL_NAME_STRING, adapterDesc.Description);
+
+    char driverVersionBuffer[256] = {0};
+
+    SDL_snprintf(driverVersionBuffer, 256, "%d.%d.%d.%d", HIWORD(umdVersion.HighPart), LOWORD(umdVersion.HighPart), HIWORD(umdVersion.LowPart), LOWORD(umdVersion.LowPart));
+
+    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING, driverVersionBuffer);
 
     return result;
 }
