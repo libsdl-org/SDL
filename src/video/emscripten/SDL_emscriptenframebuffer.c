@@ -74,30 +74,43 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
         var canvasId = UTF8ToString($3);
         var canvas = document.querySelector(canvasId);
 
-        //TODO: this should store a context per canvas
-        if (!Module['SDL3']) Module['SDL3'] = {};
+        if (!Module['SDL3']) {
+            Module['SDL3'] = {};
+        }
+
         var SDL3 = Module['SDL3'];
-        if (SDL3.ctxCanvas !== canvas) {
-            SDL3.ctx = Module['createContext'](canvas, false, true);
-            SDL3.ctxCanvas = canvas;
+        if (!SDL3['window_data']) {
+            SDL3['window_data'] = {};
         }
-        if (SDL3.w !== w || SDL3.h !== h || SDL3.imageCtx !== SDL3.ctx) {
-            SDL3.image = SDL3.ctx.createImageData(w, h);
-            SDL3.w = w;
-            SDL3.h = h;
-            SDL3.imageCtx = SDL3.ctx;
+
+        var window_datas = SDL3['window_data'];
+        if (!window_datas[canvasId]) {
+            window_datas[canvasId] = {};
         }
-        var data = SDL3.image.data;
+
+        var window_data = window_datas[canvasId];
+
+        if (window_data.canvas !== canvas) {
+            window_data.ctx = Module['createContext'](canvas, false, true);
+            window_data.canvas = canvas;
+        }
+        if (window_data.w !== w || window_data.h !== h) {
+            window_data.image = window_data.ctx.createImageData(w, h);
+            window_data.w = w;
+            window_data.h = h;
+        }
+
+        var data = window_data.image.data;
         var src = pixels / 4;
         var dst = 0;
         var num;
 
-        if (SDL3.data32Data !== data) {
-            SDL3.data32 = new Int32Array(data.buffer);
-            SDL3.data8 = new Uint8Array(data.buffer);
-            SDL3.data32Data = data;
+        if (window_data.data32Data !== data) {
+            window_data.data32 = new Int32Array(data.buffer);
+            window_data.data8 = new Uint8Array(data.buffer);
+            window_data.data32Data = data;
         }
-        var data32 = SDL3.data32;
+        var data32 = window_data.data32;
         num = data32.length;
         // logically we need to do
         //      while (dst < num) {
@@ -108,7 +121,7 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
         // native SDL_memcpy efficiencies, and the remaining loop
         // just stores, not load + store, so it is faster
         data32.set(HEAP32.subarray(src, src + num));
-        var data8 = SDL3.data8;
+        var data8 = window_data.data8;
         var i = 3;
         var j = i + 4*num;
         if (num % 8 == 0) {
@@ -138,7 +151,7 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
             }
         }
 
-        SDL3.ctx.putImageData(SDL3.image, 0, 0);
+        window_data.ctx.putImageData(window_data.image, 0, 0);
     }, surface->w, surface->h, surface->pixels, data->canvas_id);
     /* *INDENT-ON* */ // clang-format on
 
