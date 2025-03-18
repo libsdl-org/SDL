@@ -854,7 +854,7 @@ static MetalLibraryFunction METAL_INTERNAL_CompileShader(
             code,
             codeSize,
             dispatch_get_global_queue(0, 0),
-            ^{ /* do nothing */ });
+            DISPATCH_DATA_DESTRUCTOR_DEFAULT);
         library = [renderer->device newLibraryWithData:data error:&error];
     } else {
         SDL_assert(!"SDL_gpu.c should have already validated this!");
