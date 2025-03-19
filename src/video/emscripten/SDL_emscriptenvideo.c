@@ -243,7 +243,7 @@ static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, 
             document.body.append(dialog);
 
             var h1 = document.createElement("h1");
-            h1.innerHTML = title;
+            h1.innerText = title;
             dialog.append(h1);
 
             var p = document.createElement("p");
