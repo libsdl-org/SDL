@@ -4177,10 +4177,6 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_CalculateGPUTextureFormatSize(
     Uint32 height,
     Uint32 depth_or_layer_count);
 
-
-#define SDL_PROP_GPU_DEVICE_PHYSICAL_NAME_STRING        "SDL.gpu.device.physical.name"
-#define SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING       "SDL.gpu.device.driver.version"
-
 /**
  * Get readonly metadata properties of an existing GPU device.
  * 
@@ -4197,6 +4193,9 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_CalculateGPUTextureFormatSize(
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(
         SDL_GPUDevice *device);
+
+#define SDL_PROP_GPU_DEVICE_PHYSICAL_NAME_STRING        "SDL.gpu.device.physical.name"
+#define SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING       "SDL.gpu.device.driver.version"
 
 #ifdef SDL_PLATFORM_GDK
 
