@@ -192,38 +192,6 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     return device;
 }
 
-static bool Emscripten_GetDialogResult(int id, int *buttonID) {
-    int dialog_open = EM_ASM_INT({
-        var dialog_id = $0;
-
-        var dialog = document.getElementById(dialog_id);
-        if (!dialog) {
-            return false;
-        }
-        return dialog.open;
-    }, id);
-    if (dialog_open) {
-        return false;
-    }
-
-    *buttonID = EM_ASM_INT({
-        var dialog_id = $0;
-        var dialog = document.getElementById(dialog_id);
-        if (!dialog) {
-            return 0;
-        }
-        try
-        {
-            return parseInt(dialog.returnValue);
-        }
-        catch(e)
-        {
-            return 0;
-        }
-    }, id);
-    return true;
-}
-
 static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, int *buttonID) {
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, true)) {
         char dialog_background[32];
@@ -256,16 +224,19 @@ static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, 
         }
 
         // TODO: Handle parent window when multiple windows can be added in Emscripten builds
-        const int dialog_id = EM_ASM_INT({
+        char dialog_id[64];
+        SDL_snprintf(dialog_id, sizeof(dialog_id), "SDL3_messagebox_%u", SDL_rand_bits());
+        EM_ASM({
             var title = UTF8ToString($0);
             var message = UTF8ToString($1);
             var background = UTF8ToString($2);
             var color = UTF8ToString($3);
-
-            var id = Date.now();
+            var id = UTF8ToString($4);
 
             // Dialogs are always put in the front of the DOM
             var dialog = document.createElement("dialog");
+            // Set class to allow for CSS selectors
+            dialog.classList.add("SDL3_messagebox");
             dialog.id = id;
             dialog.style.color = color;
             dialog.style.backgroundColor = background;
@@ -276,19 +247,18 @@ static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, 
             dialog.append(h1);
 
             var p = document.createElement("p");
-            p.innerHTML = message;
+            p.innerText = message;
             dialog.append(p);
 
             dialog.showModal();
-            return id;
-        }, messageboxdata->title, messageboxdata->message, dialog_background, dialog_color);
+        }, messageboxdata->title, messageboxdata->message, dialog_background, dialog_color, dialog_id);
 
         int i;
         for (i = 0; i < messageboxdata->numbuttons; ++i) {
             SDL_MessageBoxButtonData button = messageboxdata->buttons[i];
 
-            int created = EM_ASM_INT({
-                    var dialog_id = $0;
+            const int created = EM_ASM_INT({
+                    var dialog_id = UTF8ToString($0);
                     var text = UTF8ToString($1);
                     var responseId = $2;
                     var clickOnReturn = $3;
@@ -303,19 +273,11 @@ static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, 
                     }
 
                     var button = document.createElement("button");
-                    button.innerHTML = text;
-                    button.style.borderColor = `rgb(${border_r}, ${border_g}, ${border_b})`;
-                    button.style.backgroundColor = `rgb(${background_r}, ${background_g}, ${background_b})`;
-                    button.onmouseenter = function(e){
-                        button.style.backgroundColor = `rgb(${hovered_r}, ${hovered_g}, ${hovered_b})`;
-                    };
-                    button.onmouseleave = function(e){
-                        button.style.backgroundColor = `rgb(${background_r}, ${background_g}, ${background_b})`;
-                    };
-                    button.onclick = function(e) {
-                        dialog.close(responseId);
-                    };
-                    button.addEventListener('keypress', function(e){
+                    button.innerText = text;
+                    button.style.borderColor = border;
+                    button.style.backgroundColor = background;
+
+                    dialog.addEventListener('keydown', function(e) {
                         if (clickOnReturn && e.key === "Enter") {
                             e.preventDefault();
                             button.click();
@@ -324,7 +286,22 @@ static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, 
                             button.click();
                         }
                     });
+                    dialog.addEventListener('cancel', function(e){
+                        e.preventDefault();
+                    });
+
+                    button.onmouseenter = function(e){
+                        button.style.backgroundColor = hovered;
+                    };
+                    button.onmouseleave = function(e){
+                        button.style.backgroundColor = background;
+                    };
+                    button.onclick = function(e) {
+                        dialog.close(responseId);
+                    };
+
                     dialog.append(button);
+                    return true;
                 },
                 dialog_id,
                 button.text,
@@ -341,10 +318,42 @@ static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, 
             }
         }
 
-        while (!Emscripten_GetDialogResult(dialog_id, buttonID)){
+        while (true) {
             // give back control to browser for screen refresh
             emscripten_sleep(0);
+
+            const int dialog_open = EM_ASM_INT({
+                var dialog_id = UTF8ToString($0);
+
+                var dialog = document.getElementById(dialog_id);
+                if (!dialog) {
+                    return false;
+                }
+                return dialog.open;
+            }, dialog_id);
+
+            if (dialog_open) {
+                continue;
+            }
+
+            *buttonID = EM_ASM_INT({
+                var dialog_id = UTF8ToString($0);
+                var dialog = document.getElementById(dialog_id);
+                if (!dialog) {
+                    return 0;
+                }
+                try
+                {
+                    return parseInt(dialog.returnValue);
+                }
+                catch(e)
+                {
+                    return 0;
+                }
+            }, dialog_id);
+            break;
         }
+
     } else {
         // Cannot add elements to DOM and block without Asyncify. So, fall back to the alert function.
         EM_ASM({

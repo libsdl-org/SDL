@@ -203,8 +203,6 @@ int main(int argc, char *argv[])
        to work, since the message box events are dispatched by the Cocoa
        subsystem on the main thread.
      */
-    /* Threads and extra windows currently won't work on Emscripten */
-#if !SDL_PLATFORM_EMSCRIPTEN
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video subsystem: %s", SDL_GetError());
         return 1;
@@ -252,7 +250,6 @@ int main(int argc, char *argv[])
             }
         }
     }
-#endif
 
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
