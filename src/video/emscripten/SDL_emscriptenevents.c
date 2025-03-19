@@ -794,26 +794,14 @@ EMSCRIPTEN_KEEPALIVE void Emscripten_HandlePointerGeneric(SDL_WindowData *window
 static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
 {
     MAIN_THREAD_EM_ASM({
-        var id = UTF8ToString($1);
-        var target = document.querySelector(id);
+        var target = document.querySelector(UTF8ToString($1));
         if (target) {
             var data = $0;
 
-            if (!Module['SDL3']) {
+            if (typeof(Module['SDL3']) === 'undefined') {
                 Module['SDL3'] = {};
             }
-
             var SDL3 = Module['SDL3'];
-            if (!SDL3['window_data']) {
-                SDL3['window_data'] = {};
-            }
-
-            var window_datas = SDL3['window_data'];
-            if (!window_datas[id]) {
-                window_datas[id] = {};
-            }
-
-            var window_data = window_datas[id];
 
             var makePointerEventCStruct = function(event) {
                 var ptr = 0;
@@ -839,23 +827,23 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
                 return ptr;
             };
 
-            window_data.eventHandlerPointerEnter = function(event) {
+            SDL3.eventHandlerPointerEnter = function(event) {
                 var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerEnter(data, d); _SDL_free(d); }
             };
-            target.addEventListener("pointerenter", window_data.eventHandlerPointerEnter);
+            target.addEventListener("pointerenter", SDL3.eventHandlerPointerEnter);
 
-            window_data.eventHandlerPointerLeave = function(event) {
+            SDL3.eventHandlerPointerLeave = function(event) {
                 var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerLeave(data, d); _SDL_free(d); }
             };
-            target.addEventListener("pointerleave", window_data.eventHandlerPointerLeave);
-            target.addEventListener("pointercancel", window_data.eventHandlerPointerLeave);  // catch this, just in case.
+            target.addEventListener("pointerleave", SDL3.eventHandlerPointerLeave);
+            target.addEventListener("pointercancel", SDL3.eventHandlerPointerLeave);  // catch this, just in case.
 
-            window_data.eventHandlerPointerGeneric = function(event) {
+            SDL3.eventHandlerPointerGeneric = function(event) {
                 var d = makePointerEventCStruct(event); if (d != 0) { _Emscripten_HandlePointerGeneric(data, d); _SDL_free(d); }
             };
-            target.addEventListener("pointerdown", window_data.eventHandlerPointerGeneric);
-            target.addEventListener("pointerup", window_data.eventHandlerPointerGeneric);
-            target.addEventListener("pointermove", window_data.eventHandlerPointerGeneric);
+            target.addEventListener("pointerdown", SDL3.eventHandlerPointerGeneric);
+            target.addEventListener("pointerup", SDL3.eventHandlerPointerGeneric);
+            target.addEventListener("pointermove", SDL3.eventHandlerPointerGeneric);
         }
     }, data, data->canvas_id, sizeof (Emscripten_PointerEvent));
 }
@@ -863,21 +851,18 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
 static void Emscripten_unset_pointer_event_callbacks(SDL_WindowData *data)
 {
     MAIN_THREAD_EM_ASM({
-        var id = UTF8ToString($0);
-        var target = document.querySelector(id);
+        var target = document.querySelector(UTF8ToString($0));
         if (target) {
             var SDL3 = Module['SDL3'];
-            var window_datas = SDL3['window_data'];
-            var window_data = window_datas[id];
-            target.removeEventListener("pointerenter", window_data.eventHandlerPointerEnter);
-            target.removeEventListener("pointerleave", window_data.eventHandlerPointerLeave);
-            target.removeEventListener("pointercancel", window_data.eventHandlerPointerLeave);
-            target.removeEventListener("pointerdown", window_data.eventHandlerPointerGeneric);
-            target.removeEventListener("pointerup", window_data.eventHandlerPointerGeneric);
-            target.removeEventListener("pointermove", window_data.eventHandlerPointerGeneric);
-            window_data.eventHandlerPointerEnter = undefined;
-            window_data.eventHandlerPointerLeave = undefined;
-            window_data.eventHandlerPointerGeneric = undefined;
+            target.removeEventListener("pointerenter", SDL3.eventHandlerPointerEnter);
+            target.removeEventListener("pointerleave", SDL3.eventHandlerPointerLeave);
+            target.removeEventListener("pointercancel", SDL3.eventHandlerPointerLeave);
+            target.removeEventListener("pointerdown", SDL3.eventHandlerPointerGeneric);
+            target.removeEventListener("pointerup", SDL3.eventHandlerPointerGeneric);
+            target.removeEventListener("pointermove", SDL3.eventHandlerPointerGeneric);
+            SDL3.eventHandlerPointerEnter = undefined;
+            SDL3.eventHandlerPointerLeave = undefined;
+            SDL3.eventHandlerPointerGeneric = undefined;
         }
     }, data->canvas_id);
 }
@@ -914,26 +899,14 @@ EM_JS_DEPS(dragndrop, "$writeArrayToMemory");
 static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
 {
     MAIN_THREAD_EM_ASM({
-        var id = UTF8ToString($1);
-        var target = document.querySelector(id);
+        var target = document.querySelector(UTF8ToString($1));
         if (target) {
             var data = $0;
 
-            if (!Module['SDL3']) {
+            if (typeof(Module['SDL3']) === 'undefined') {
                 Module['SDL3'] = {};
             }
-
             var SDL3 = Module['SDL3'];
-            if (!SDL3['window_data']) {
-                SDL3['window_data'] = {};
-            }
-
-            var window_datas = SDL3['window_data'];
-            if (!window_datas[id]) {
-                window_datas[id] = {};
-            }
-
-            var window_data = window_datas[id];
 
             var makeDropEventCStruct = function(event) {
                 var ptr = 0;
@@ -947,23 +920,15 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
                 return ptr;
             };
 
-            window_data.eventHandlerDropDragover = function(event) {
+            SDL3.eventHandlerDropDragover = function(event) {
                 event.preventDefault();
                 var d = makeDropEventCStruct(event); if (d != 0) { _Emscripten_SendDragEvent(data, d); _SDL_free(d); }
             };
-            target.addEventListener("dragover", window_data.eventHandlerDropDragover);
+            target.addEventListener("dragover", SDL3.eventHandlerDropDragover);
 
-            window_data.drop_count = 0;
-            try
-            {
-                FS.mkdir("/tmp/filedrop")
-            }
-            catch(e)
-            {
-                // Throws if the directory already exists
-            }
-
-            window_data.eventHandlerDropDrop = function(event) {
+            SDL3.drop_count = 0;
+            FS.mkdir("/tmp/filedrop");
+            SDL3.eventHandlerDropDrop = function(event) {
                 event.preventDefault();
                 if (event.dataTransfer.types.includes("text/plain")) {
                     let plain_text = stringToNewUTF8(event.dataTransfer.getData("text/plain"));
@@ -975,8 +940,8 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
                         const file_reader = new FileReader();
                         file_reader.readAsArrayBuffer(file);
                         file_reader.onload = function(event) {
-                            const fs_dropdir = `/tmp/filedrop/${window_data.drop_count}`;
-                            window_data.drop_count += 1;
+                            const fs_dropdir = `/tmp/filedrop/${SDL3.drop_count}`;
+                            SDL3.drop_count += 1;
 
                             const fs_filepath = `${fs_dropdir}/${file.name}`;
                             const c_fs_filepath = stringToNewUTF8(fs_filepath);
@@ -995,14 +960,14 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
                 }
                 _Emscripten_SendDragCompleteEvent(data);
             };
-            target.addEventListener("drop", window_data.eventHandlerDropDrop);
+            target.addEventListener("drop", SDL3.eventHandlerDropDrop);
 
-            window_data.eventHandlerDropDragend = function(event) {
+            SDL3.eventHandlerDropDragend = function(event) {
                 event.preventDefault();
                 _Emscripten_SendDragCompleteEvent(data);
             };
-            target.addEventListener("dragend", window_data.eventHandlerDropDragend);
-            target.addEventListener("dragleave", window_data.eventHandlerDropDragend);
+            target.addEventListener("dragend", SDL3.eventHandlerDropDragend);
+            target.addEventListener("dragleave", SDL3.eventHandlerDropDragend);
         }
     }, data, data->canvas_id, sizeof (Emscripten_DropEvent));
 }
@@ -1010,29 +975,14 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
 static void Emscripten_unset_drag_event_callbacks(SDL_WindowData *data)
 {
     MAIN_THREAD_EM_ASM({
-        var id = UTF8ToString($0);
-        var target = document.querySelector(id);
+        var target = document.querySelector(UTF8ToString($0));
         if (target) {
             var SDL3 = Module['SDL3'];
-            var window_datas = SDL3['window_data'];
-            var window_data = window_datas[id];
-            target.removeEventListener("dragleave", window_data.eventHandlerDropDragend);
-            target.removeEventListener("dragend", window_data.eventHandlerDropDragend);
-            target.removeEventListener("drop", window_data.eventHandlerDropDrop);
-            window_data.drop_count = undefined;
+            target.removeEventListener("dragleave", SDL3.eventHandlerDropDragend);
+            target.removeEventListener("dragend", SDL3.eventHandlerDropDragend);
+            target.removeEventListener("drop", SDL3.eventHandlerDropDrop);
+            SDL3.drop_count = undefined;
 
-            function safeRemoveDir(path) {
-                try
-                {
-                    FS.rmdir(path);
-                }
-                catch(e)
-                {
-                    // Throws if directory doesn't exist
-                }
-            }
-
-            const path = "/tmp/filedrop";
             function recursive_remove(dirpath) {
                 FS.readdir(dirpath).forEach((filename) => {
                     const p = `${dirpath}/${filename}`;
@@ -1043,14 +993,14 @@ static void Emscripten_unset_drag_event_callbacks(SDL_WindowData *data)
                         recursive_remove(p);
                     }
                 });
-                safeRemoveDir(dirpath);
-            }(path);
+                FS.rmdir(dirpath);
+            }("/tmp/filedrop");
 
-            safeRemoveDir(path);
-            target.removeEventListener("dragover", window_data.eventHandlerDropDragover);
-            window_data.eventHandlerDropDragover = undefined;
-            window_data.eventHandlerDropDrop = undefined;
-            window_data.eventHandlerDropDragend = undefined;
+            FS.rmdir("/tmp/filedrop");
+            target.removeEventListener("dragover", SDL3.eventHandlerDropDragover);
+            SDL3.eventHandlerDropDragover = undefined;
+            SDL3.eventHandlerDropDrop = undefined;
+            SDL3.eventHandlerDropDragend = undefined;
         }
     }, data->canvas_id);
 }
