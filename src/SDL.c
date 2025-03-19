@@ -769,26 +769,58 @@ const char *SDL_GetPlatform(void)
 
 bool SDL_IsTablet(void)
 {
-#ifdef SDL_PLATFORM_ANDROID
-    return SDL_IsAndroidTablet();
-#elif defined(SDL_PLATFORM_IOS)
-    extern bool SDL_IsIPad(void);
-    return SDL_IsIPad();
-#else
-    return false;
-#endif
+    return SDL_GetDeviceFormFactor() == SDL_FORMFACTOR_TABLET;
 }
 
 bool SDL_IsTV(void)
 {
+    return SDL_GetDeviceFormFactor() == SDL_FORMFACTOR_TV;
+}
+
+SDL_FormFactor SDL_GetDeviceFormFactor(void)
+{
+    /* TODO: SDL private platforms? */
 #ifdef SDL_PLATFORM_ANDROID
-    return SDL_IsAndroidTV();
+    return SDL_GetAndroidDeviceFormFactor();
 #elif defined(SDL_PLATFORM_IOS)
-    extern bool SDL_IsAppleTV(void);
-    return SDL_IsAppleTV();
+    extern bool SDL_GetUIKitDeviceFormFactor(void);
+    return SDL_GetUIKitDeviceFormFactor();
+#elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES) || defined(SDL_PLATFORM_PS2)
+    return SDL_FORMFACTOR_CONSOLE;
+#elif defined(SDL_PLATFORM_PSP) || defined(SDL_PLATFORM_VITA) || defined(SDL_PLATFORM_3DS)
+    return SDL_FORMFACTOR_HANDHELD;
+#elif defined(SDL_PLATFORM_QNXNTO)
+    /* TODO: QNX is used in BlackBerry phones and tablets, and in many embedded devices */
+    return SDL_FORMFACTOR_UNKNOWN;
+#elif defined(SDL_PLATFORM_WINGDK)
+    /* TODO: GDK can be either desktop Windows or XBox */
+    return SDL_FORMFACTOR_UNKNOWN;
+#elif defined(SDL_PLATFORM_HAIKU) || defined(SDL_PLATFORM_BSDI) || defined(SDL_PLATFORM_HPUX) || defined(SDL_PLATFORM_IRIX) || defined(SDL_PLATFORM_EMSCRIPTEN) || defined(SDL_PLATFORM_OS2) || defined(SDL_PLATFORM_OSF) || defined(SDL_PLATFORM_RISCOS) || defined(SDL_PLATFORM_SOLARIS) || defined(SDL_PLATFORM_WIN32)
+    return SDL_FORMFACTOR_DESKTOP;
 #else
-    return false;
+    return SDL_FORMFACTOR_UNKNOWN;
 #endif
+}
+
+const char* SDL_GetDeviceFormFactorName(SDL_FormFactor form_factor)
+{
+    switch (form_factor)
+    {
+#define CASE(x) case x: return #x;
+    default:
+    CASE(SDL_FORMFACTOR_UNKNOWN)
+    CASE(SDL_FORMFACTOR_DESKTOP)
+    CASE(SDL_FORMFACTOR_LAPTOP)
+    CASE(SDL_FORMFACTOR_PHONE)
+    CASE(SDL_FORMFACTOR_TABLET)
+    CASE(SDL_FORMFACTOR_CONSOLE)
+    CASE(SDL_FORMFACTOR_HANDHELD)
+    CASE(SDL_FORMFACTOR_WATCH)
+    CASE(SDL_FORMFACTOR_TV)
+    CASE(SDL_FORMFACTOR_VR)
+    CASE(SDL_FORMFACTOR_CAR)
+#undef CASE
+    }
 }
 
 static SDL_Sandbox SDL_DetectSandbox(void)

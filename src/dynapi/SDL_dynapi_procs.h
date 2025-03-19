@@ -1286,3 +1286,5 @@ SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateGPURenderer,(SDL_Window *a,SDL_GPUShader
 SDL_DYNAPI_PROC(bool,SDL_PutAudioStreamPlanarData,(SDL_AudioStream *a,const void * const*b,int c,int d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(bool,SDL_SetAudioIterationCallbacks,(SDL_AudioDeviceID a,SDL_AudioIterationCallback b,SDL_AudioIterationCallback c,void *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_GetEventDescription,(const SDL_Event *a,char *b,int c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_FormFactor,SDL_GetDeviceFormFactor,(void),(),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetDeviceFormFactorName,(SDL_FormFactor a),(a),return)
