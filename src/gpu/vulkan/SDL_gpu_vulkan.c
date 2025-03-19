@@ -11132,7 +11132,8 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         !deviceFeatures.imageCubeArray ||
         !deviceFeatures.depthClamp ||
         !deviceFeatures.shaderClipDistance ||
-        !deviceFeatures.drawIndirectFirstInstance) {
+        !deviceFeatures.drawIndirectFirstInstance ||
+        !deviceFeatures.sampleRateShading) {
         return 0;
     }
 
@@ -11379,6 +11380,7 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     desiredDeviceFeatures.depthClamp = VK_TRUE;
     desiredDeviceFeatures.shaderClipDistance = VK_TRUE;
     desiredDeviceFeatures.drawIndirectFirstInstance = VK_TRUE;
+    desiredDeviceFeatures.sampleRateShading = VK_TRUE;
 
     if (haveDeviceFeatures.fillModeNonSolid) {
         desiredDeviceFeatures.fillModeNonSolid = VK_TRUE;

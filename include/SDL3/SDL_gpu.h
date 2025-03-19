@@ -222,6 +222,7 @@
  * - `depthClamp`
  * - `shaderClipDistance`
  * - `drawIndirectFirstInstance`
+ * - `sampleRateShading`
  *
  * **D3D12:** Supported on Windows 10 or newer, Xbox One (GDK), and Xbox
  * Series X|S (GDK). Requires a GPU that supports DirectX 12 Feature Level
