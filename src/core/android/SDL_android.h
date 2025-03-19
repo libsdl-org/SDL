@@ -151,6 +151,7 @@ int SDL_GetAndroidSDKVersion(void);
 
 bool SDL_IsAndroidTablet(void);
 bool SDL_IsAndroidTV(void);
+SDL_FormFactor SDL_GetAndroidDeviceFormFactor(void);
 
 char *SDL_GetAndroidPackageName(void);  // this is a SDL_malloc'd string the caller will own.
 
