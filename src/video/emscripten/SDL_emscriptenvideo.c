@@ -192,10 +192,181 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     return device;
 }
 
+static bool Emscripten_ShowMessagebox(const SDL_MessageBoxData *messageboxdata, int *buttonID) {
+    if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, true)) {
+        char dialog_background[32];
+        char dialog_color[32];
+        char button_border[32];
+        char button_background[32];
+        char button_hovered[32];
+
+        if (messageboxdata->colorScheme) {
+            SDL_MessageBoxColor color = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BACKGROUND];
+            SDL_snprintf(dialog_background, sizeof(dialog_background), "rgb(%u, %u, %u)", color.r, color.g, color.b);
+
+            color = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_TEXT];
+            SDL_snprintf(dialog_color, sizeof(dialog_color), "rgb(%u, %u, %u)", color.r, color.g, color.b);
+
+            color = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER];
+            SDL_snprintf(button_border, sizeof(button_border), "rgb(%u, %u, %u)", color.r, color.g, color.b);
+
+            color = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND];
+            SDL_snprintf(button_background, sizeof(button_background), "rgb(%u, %u, %u)", color.r, color.g, color.b);
+
+            color = messageboxdata->colorScheme->colors[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED];
+            SDL_snprintf(button_hovered, sizeof(button_hovered), "rgb(%u, %u, %u)", color.r, color.g, color.b);
+        } else {
+            SDL_zero(dialog_background);
+            SDL_zero(dialog_color);
+            SDL_zero(button_border);
+            SDL_zero(button_background);
+            SDL_zero(button_hovered);
+        }
+
+        // TODO: Handle parent window when multiple windows can be added in Emscripten builds
+        char dialog_id[64];
+        SDL_snprintf(dialog_id, sizeof(dialog_id), "SDL3_messagebox_%u", SDL_rand_bits());
+        EM_ASM({
+            var title = UTF8ToString($0);
+            var message = UTF8ToString($1);
+            var background = UTF8ToString($2);
+            var color = UTF8ToString($3);
+            var id = UTF8ToString($4);
+
+            // Dialogs are always put in the front of the DOM
+            var dialog = document.createElement("dialog");
+            // Set class to allow for CSS selectors
+            dialog.classList.add("SDL3_messagebox");
+            dialog.id = id;
+            dialog.style.color = color;
+            dialog.style.backgroundColor = background;
+            document.body.append(dialog);
+
+            var h1 = document.createElement("h1");
+            h1.innerText = title;
+            dialog.append(h1);
+
+            var p = document.createElement("p");
+            p.innerText = message;
+            dialog.append(p);
+
+            dialog.showModal();
+        }, messageboxdata->title, messageboxdata->message, dialog_background, dialog_color, dialog_id);
+
+        int i;
+        for (i = 0; i < messageboxdata->numbuttons; ++i) {
+            SDL_MessageBoxButtonData button = messageboxdata->buttons[i];
+
+            const int created = EM_ASM_INT({
+                    var dialog_id = UTF8ToString($0);
+                    var text = UTF8ToString($1);
+                    var responseId = $2;
+                    var clickOnReturn = $3;
+                    var clickOnEscape = $4;
+                    var border = UTF8ToString($5);
+                    var background = UTF8ToString($6);
+                    var hovered = UTF8ToString($7);
+
+                    var dialog = document.getElementById(dialog_id);
+                    if (!dialog) {
+                        return false;
+                    }
+
+                    var button = document.createElement("button");
+                    button.innerText = text;
+                    button.style.borderColor = border;
+                    button.style.backgroundColor = background;
+
+                    dialog.addEventListener('keydown', function(e) {
+                        if (clickOnReturn && e.key === "Enter") {
+                            e.preventDefault();
+                            button.click();
+                        } else if (clickOnEscape && e.key === "Escape") {
+                            e.preventDefault();
+                            button.click();
+                        }
+                    });
+                    dialog.addEventListener('cancel', function(e){
+                        e.preventDefault();
+                    });
+
+                    button.onmouseenter = function(e){
+                        button.style.backgroundColor = hovered;
+                    };
+                    button.onmouseleave = function(e){
+                        button.style.backgroundColor = background;
+                    };
+                    button.onclick = function(e) {
+                        dialog.close(responseId);
+                    };
+
+                    dialog.append(button);
+                    return true;
+                },
+                dialog_id,
+                button.text,
+                button.buttonID,
+                button.flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,
+                button.flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,
+                button_border,
+                button_background,
+                button_hovered
+            );
+
+            if (!created) {
+                return false;
+            }
+        }
+
+        while (true) {
+            // give back control to browser for screen refresh
+            emscripten_sleep(0);
+
+            const int dialog_open = EM_ASM_INT({
+                var dialog_id = UTF8ToString($0);
+
+                var dialog = document.getElementById(dialog_id);
+                if (!dialog) {
+                    return false;
+                }
+                return dialog.open;
+            }, dialog_id);
+
+            if (dialog_open) {
+                continue;
+            }
+
+            *buttonID = EM_ASM_INT({
+                var dialog_id = UTF8ToString($0);
+                var dialog = document.getElementById(dialog_id);
+                if (!dialog) {
+                    return 0;
+                }
+                try
+                {
+                    return parseInt(dialog.returnValue);
+                }
+                catch(e)
+                {
+                    return 0;
+                }
+            }, dialog_id);
+            break;
+        }
+
+    } else {
+        // Cannot add elements to DOM and block without Asyncify. So, fall back to the alert function.
+        EM_ASM({
+            alert(UTF8ToString($0) + "\n\n" + UTF8ToString($1));
+        }, messageboxdata->title, messageboxdata->message);
+    }
+    return true;
+}
+
 VideoBootStrap Emscripten_bootstrap = {
     EMSCRIPTENVID_DRIVER_NAME, "SDL emscripten video driver",
     Emscripten_CreateDevice,
-    NULL, // no ShowMessageBox implementation
+    Emscripten_ShowMessagebox,
     false
 };
 
