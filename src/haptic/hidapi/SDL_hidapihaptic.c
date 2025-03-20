@@ -22,6 +22,7 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
+#include "SDL_hidapihaptic.h"
 #include "SDL_hidapihaptic_c.h"
 #include "SDL3/SDL_mutex.h"
 #include "SDL3/SDL_error.h"
@@ -44,7 +45,7 @@ static SDL_HIDAPI_HapticDriver *drivers[] = {
     NULL
 };
 
-bool SDL_HIDAPI_HapticInit()
+bool SDL_HIDAPI_HapticInit(void)
 {
     haptic_list_head = NULL;
     haptic_list_mutex = SDL_CreateMutex();

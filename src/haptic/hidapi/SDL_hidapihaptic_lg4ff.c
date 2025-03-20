@@ -214,7 +214,6 @@ static Uint16 to_linux_direction(SDL_HapticDirection *src)
             tmp = (tmp * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
             return (Uint16)tmp;
         }
-        break;
     case SDL_HAPTIC_STEERING_AXIS:
         return 0x4000;
     default:
@@ -799,15 +798,15 @@ static int lg4ff_timer(struct lg4ff_device *device)
         }
     }
 
-    parameters[0].level = (Sint64)parameters[0].level * gain / 0xffff;
+    parameters[0].level = (Sint32)((Sint64)parameters[0].level * gain / 0xffff);
     parameters[1].clip = parameters[1].clip * device->spring_level / 100;
     parameters[2].clip = parameters[2].clip * device->damper_level / 100;
     parameters[3].clip = parameters[3].clip * device->friction_level / 100;
 
     ffb_level = abs32(parameters[0].level);
     for (i = 1; i < 4; i++) {
-        parameters[i].k1 = (Sint64)parameters[i].k1 * gain / 0xffff;
-        parameters[i].k2 = (Sint64)parameters[i].k2 * gain / 0xffff;
+        parameters[i].k1 = (Sint32)((Sint64)parameters[i].k1 * gain / 0xffff);
+        parameters[i].k2 = (Sint32)((Sint64)parameters[i].k2 * gain / 0xffff);
         parameters[i].clip = parameters[i].clip * gain / 0xffff;
         ffb_level = (Sint32)(ffb_level + parameters[i].clip * 0x7fff / 0xffff);
     }
