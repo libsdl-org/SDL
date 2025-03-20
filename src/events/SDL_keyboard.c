@@ -70,7 +70,6 @@ typedef struct SDL_Keyboard
 static SDL_Keyboard SDL_keyboard;
 static int SDL_keyboard_count;
 static SDL_KeyboardInstance *SDL_keyboards;
-static bool SDL_keyboard_active;
 
 static void SDLCALL SDL_KeycodeOptionsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -213,20 +212,6 @@ const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
         return NULL;
     }
     return SDL_GetPersistentString(SDL_keyboards[keyboard_index].name);
-}
-
-void SDL_SetKeyboardActive(bool active)
-{
-    SDL_keyboard_active = active;
-}
-
-bool SDL_HasActiveKeyboard(void)
-{
-    if (!SDL_HasKeyboard()) {
-        // No keyboards to be active
-        return false;
-    }
-    return SDL_keyboard_active;
 }
 
 void SDL_ResetKeyboard(void)
@@ -571,8 +556,6 @@ static bool SDL_SendKeyboardKeyInternal(Uint64 timestamp, Uint32 flags, SDL_Keyb
     }
 
     if (source == KEYBOARD_HARDWARE) {
-        // Primary input appears to be a keyboard
-        SDL_SetKeyboardActive(true);
         keyboard->hardware_timestamp = SDL_GetTicks();
     } else if (source == KEYBOARD_AUTORELEASE) {
         keyboard->autorelease_pending = true;
