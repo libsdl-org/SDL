@@ -5405,7 +5405,7 @@ bool SDL_GetTextInputMultiline(SDL_PropertiesID props)
 static bool AutoShowingScreenKeyboard(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
-    if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasActiveKeyboard()) ||
+    if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, false)) {
         return true;
     } else {

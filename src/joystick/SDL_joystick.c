@@ -2368,11 +2368,6 @@ void SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 butt
         return;
     }
 
-    if (!joystick->is_virtual) {
-        // Primary input appears to be a joystick
-        SDL_SetKeyboardActive(false);
-    }
-
     /* We ignore events if we don't have keyboard focus, except for button
      * release. */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
