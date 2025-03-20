@@ -17,23 +17,23 @@ import android.view.MotionEvent;
 import android.view.View;
 
 
-class SDLControllerManager
+public class SDLControllerManager
 {
 
-    static native int nativeSetupJNI();
+    public static native int nativeSetupJNI();
 
-    static native void nativeAddJoystick(int device_id, String name, String desc,
+    public static native void nativeAddJoystick(int device_id, String name, String desc,
                                                 int vendor_id, int product_id,
                                                 int button_mask,
                                                 int naxes, int axis_mask, int nhats, boolean can_rumble);
-    static native void nativeRemoveJoystick(int device_id);
-    static native void nativeAddHaptic(int device_id, String name);
-    static native void nativeRemoveHaptic(int device_id);
-    static native boolean onNativePadDown(int device_id, int keycode);
-    static native boolean onNativePadUp(int device_id, int keycode);
-    static native void onNativeJoy(int device_id, int axis,
+    public static native void nativeRemoveJoystick(int device_id);
+    public static native void nativeAddHaptic(int device_id, String name);
+    public static native void nativeRemoveHaptic(int device_id);
+    public static native boolean onNativePadDown(int device_id, int keycode);
+    public static native boolean onNativePadUp(int device_id, int keycode);
+    public static native void onNativeJoy(int device_id, int axis,
                                           float value);
-    static native void onNativeHat(int device_id, int hat_id,
+    public static native void onNativeHat(int device_id, int hat_id,
                                           int x, int y);
 
     protected static SDLJoystickHandler mJoystickHandler;
@@ -69,35 +69,35 @@ class SDLControllerManager
     /**
      * This method is called by SDL using JNI.
      */
-    static void pollInputDevices() {
+    public static void pollInputDevices() {
         mJoystickHandler.pollInputDevices();
     }
 
     /**
      * This method is called by SDL using JNI.
      */
-    static void pollHapticDevices() {
+    public static void pollHapticDevices() {
         mHapticHandler.pollHapticDevices();
     }
 
     /**
      * This method is called by SDL using JNI.
      */
-    static void hapticRun(int device_id, float intensity, int length) {
+    public static void hapticRun(int device_id, float intensity, int length) {
         mHapticHandler.run(device_id, intensity, length);
     }
 
     /**
      * This method is called by SDL using JNI.
      */
-    static void hapticRumble(int device_id, float low_frequency_intensity, float high_frequency_intensity, int length) {
+    public static void hapticRumble(int device_id, float low_frequency_intensity, float high_frequency_intensity, int length) {
         mHapticHandler.rumble(device_id, low_frequency_intensity, high_frequency_intensity, length);
     }
 
     /**
      * This method is called by SDL using JNI.
      */
-    static void hapticStop(int device_id)
+    public static void hapticStop(int device_id)
     {
         mHapticHandler.stop(device_id);
     }
