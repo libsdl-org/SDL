@@ -830,6 +830,10 @@ static bool SDL_RendererEventWatch(void *userdata, SDL_Event *event)
     SDL_Renderer *renderer = (SDL_Renderer *)userdata;
     SDL_Window *window = renderer->window;
 
+    if (event->window.windowID != SDL_GetWindowID(window)) {
+        return true;
+    }
+
     if (renderer->WindowEvent) {
         renderer->WindowEvent(renderer, &event->window);
     }
