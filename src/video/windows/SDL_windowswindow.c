@@ -535,7 +535,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     }
     if (!(window->flags & SDL_WINDOW_MINIMIZED)) {
         RECT rect;
-        if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+        if (GetClientRect(hwnd, &rect) && WIN_WindowRectValid(&rect)) {
             int w = rect.right;
             int h = rect.bottom;
 
@@ -1062,7 +1062,7 @@ void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *
     HWND hwnd = data->hwnd;
     RECT rect;
 
-    if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+    if (GetClientRect(hwnd, &rect) && WIN_WindowRectValid(&rect)) {
         *w = rect.right;
         *h = rect.bottom;
     } else if (window->last_pixel_w && window->last_pixel_h) {
