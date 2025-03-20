@@ -25,14 +25,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-class HIDDeviceManager {
+public class HIDDeviceManager {
     private static final String TAG = "hidapi";
     private static final String ACTION_USB_PERMISSION = "org.libsdl.app.USB_PERMISSION";
 
     private static HIDDeviceManager sManager;
     private static int sManagerRefCount = 0;
 
-    static HIDDeviceManager acquire(Context context) {
+    static public HIDDeviceManager acquire(Context context) {
         if (sManagerRefCount == 0) {
             sManager = new HIDDeviceManager(context);
         }
@@ -40,7 +40,7 @@ class HIDDeviceManager {
         return sManager;
     }
 
-    static void release(HIDDeviceManager manager) {
+    static public void release(HIDDeviceManager manager) {
         if (manager == sManager) {
             --sManagerRefCount;
             if (sManagerRefCount == 0) {
@@ -540,7 +540,7 @@ class HIDDeviceManager {
         }
     }
 
-    void setFrozen(boolean frozen) {
+    public void setFrozen(boolean frozen) {
         synchronized (this) {
             for (HIDDevice device : mDevicesById.values()) {
                 device.setFrozen(frozen);

@@ -17,7 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 
-class SDLControllerManager
+public class SDLControllerManager
 {
 
     static native int nativeSetupJNI();
@@ -29,8 +29,8 @@ class SDLControllerManager
     static native void nativeRemoveJoystick(int device_id);
     static native void nativeAddHaptic(int device_id, String name);
     static native void nativeRemoveHaptic(int device_id);
-    static native boolean onNativePadDown(int device_id, int keycode);
-    static native boolean onNativePadUp(int device_id, int keycode);
+    static public native boolean onNativePadDown(int device_id, int keycode);
+    static public native boolean onNativePadUp(int device_id, int keycode);
     static native void onNativeJoy(int device_id, int axis,
                                           float value);
     static native void onNativeHat(int device_id, int hat_id,
@@ -62,7 +62,7 @@ class SDLControllerManager
     }
 
     // Joystick glue code, just a series of stubs that redirect to the SDLJoystickHandler instance
-    static boolean handleJoystickMotionEvent(MotionEvent event) {
+    static public boolean handleJoystickMotionEvent(MotionEvent event) {
         return mJoystickHandler.handleMotionEvent(event);
     }
 
@@ -103,7 +103,7 @@ class SDLControllerManager
     }
 
     // Check if a given device is considered a possible SDL joystick
-    static boolean isDeviceSDLJoystick(int deviceId) {
+    static public boolean isDeviceSDLJoystick(int deviceId) {
         InputDevice device = InputDevice.getDevice(deviceId);
         // We cannot use InputDevice.isVirtual before API 16, so let's accept
         // only nonnegative device ids (VIRTUAL_KEYBOARD equals -1)

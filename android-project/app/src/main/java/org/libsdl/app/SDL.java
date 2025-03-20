@@ -8,18 +8,18 @@ import java.lang.reflect.Method;
 /**
     SDL library initialization
 */
-class SDL {
+public class SDL {
 
     // This function should be called first and sets up the native code
     // so it can call into the Java classes
-    static void setupJNI() {
+    static public void setupJNI() {
         SDLActivity.nativeSetupJNI();
         SDLAudioManager.nativeSetupJNI();
         SDLControllerManager.nativeSetupJNI();
     }
 
     // This function should be called each time the activity is started
-    static void initialize() {
+    static public void initialize() {
         setContext(null);
 
         SDLActivity.initialize();
@@ -28,12 +28,12 @@ class SDL {
     }
 
     // This function stores the current activity (SDL or not)
-    static void setContext(Context context) {
+    static public void setContext(Context context) {
         SDLAudioManager.setContext(context);
         mContext = context;
     }
 
-    static Context getContext() {
+    static public Context getContext() {
         return mContext;
     }
 
