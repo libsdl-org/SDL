@@ -43,6 +43,12 @@ extern void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, bool se
 // A keyboard has been removed from the system
 extern void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event);
 
+// Set whether keyboard input is active
+extern void SDL_SetKeyboardActive(bool active);
+
+// Get whether keyboard input is active
+extern bool SDL_HasActiveKeyboard(void);
+
 // Set the mapping of scancode to key codes
 extern void SDL_SetKeymap(SDL_Keymap *keymap, bool send_event);
 
