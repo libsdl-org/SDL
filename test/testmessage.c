@@ -23,8 +23,7 @@
 #endif
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
-quit(int rc)
+static void quit(int rc)
 {
     SDL_Quit();
     /* Let 'main()' return normally */
@@ -33,8 +32,7 @@ quit(int rc)
     }
 }
 
-static int SDLCALL
-button_messagebox(void *eventNumber)
+static int SDLCALL button_messagebox(void *eventNumber)
 {
     int i;
     const SDL_MessageBoxButtonData buttons[] = {
@@ -53,7 +51,7 @@ button_messagebox(void *eventNumber)
         NULL, /* no parent window */
         "Custom MessageBox",
         "This is a custom messagebox",
-        sizeof(buttons) / sizeof(SDL_MessageBoxButtonData),
+        SDL_arraysize(buttons),
         NULL, /* buttons */
         NULL  /* Default color scheme */
     };
