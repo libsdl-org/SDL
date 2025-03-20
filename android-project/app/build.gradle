@@ -5,7 +5,7 @@ plugins {
 def buildWithCMake = project.hasProperty('BUILD_WITH_CMAKE');
 
 android {
-    namespace "org.libsdl.app"
+    namespace = "org.libsdl.testsprite2"
     compileSdkVersion 35
     defaultConfig {
         minSdkVersion 21
@@ -53,7 +53,7 @@ android {
 
     }
     lint {
-        abortOnError false
+        abortOnError = false
     }
 }
 
