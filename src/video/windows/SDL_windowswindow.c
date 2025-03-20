@@ -1311,7 +1311,7 @@ SDL_FullscreenResult WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_DisplayData *displaydata = display->internal;
     SDL_WindowData *data = window->internal;
-    HWND hwnd = data->hwnd;
+    HWND hwnd = data ? data->hwnd : NULL;
     MONITORINFO minfo;
     DWORD style, styleEx;
     HWND top;
