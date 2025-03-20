@@ -2975,7 +2975,7 @@ Uint32 SDL_CalculateGPUTextureFormatSize(
 SDL_PropertiesID SDL_GetGPUDeviceProperties(
     SDL_GPUDevice *device) 
 {
-    CHECK_DEVICE_MAGIC(device, false);
+    CHECK_DEVICE_MAGIC(device, 0);
 
     return device->props;
 }
