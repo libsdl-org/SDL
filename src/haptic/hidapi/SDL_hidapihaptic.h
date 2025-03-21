@@ -26,7 +26,7 @@
 #ifndef SDL_hidapihaptic_h_
 #define SDL_hidapihaptic_h_
 
-bool SDL_HIDAPI_HapticInit();
+bool SDL_HIDAPI_HapticInit(void);
 bool SDL_HIDAPI_HapticIsHidapi(SDL_Haptic *haptic);
 bool SDL_HIDAPI_JoystickIsHaptic(SDL_Joystick *joystick);
 bool SDL_HIDAPI_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick);

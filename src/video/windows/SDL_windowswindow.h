@@ -87,8 +87,6 @@ struct SDL_WindowData
     RECT initial_size_rect;
     RECT cursor_clipped_rect; // last successfully committed clipping rect for this window
     RECT cursor_ctrlock_rect; // this is Windows-specific, but probably does not need to be per-window
-    UINT windowed_mode_corner_rounding;
-    COLORREF dwma_border_color;
     bool mouse_tracked;
     bool destroy_parent_with_window;
     SDL_DisplayID last_displayID;

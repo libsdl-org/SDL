@@ -22,7 +22,7 @@
 
 #include "SDL_syshaptic.h"
 #ifdef SDL_JOYSTICK_HIDAPI
-#include "SDL_hidapihaptic.h"
+#include "hidapi/SDL_hidapihaptic.h"
 #endif
 #include "SDL_haptic_c.h"
 #include "../joystick/SDL_joystick_c.h" // For SDL_IsJoystickValid

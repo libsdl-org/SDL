@@ -27,6 +27,7 @@
 #include <langinfo.h>
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 
 #if !defined(HAVE_CLOCK_GETTIME) && defined(SDL_PLATFORM_APPLE)
 #include <mach/clock.h>
@@ -186,7 +187,23 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
         dt->second = tm->tm_sec;
         dt->nanosecond = ticks % SDL_NS_PER_SECOND;
         dt->day_of_week = tm->tm_wday;
+
+        /* tm_gmtoff wasn't formally standardized until POSIX.1-2024, but practically it has been available on desktop
+         * *nix platforms such as Linux/glibc, FreeBSD, OpenBSD, NetBSD, OSX/macOS, and others since the 1990s.
+         *
+         * The notable exception is Solaris, where the timezone offset must still be retrieved in the strictly POSIX.1-2008
+         * compliant way.
+         */
+#if (_POSIX_VERSION >= 202405L) || (!defined(sun) && !defined(__sun))
         dt->utc_offset = (int)tm->tm_gmtoff;
+#else
+        if (localTime) {
+            tzset();
+            dt->utc_offset = (int)timezone;
+        } else {
+            dt->utc_offset = 0;
+        }
+#endif
 
         return true;
     }

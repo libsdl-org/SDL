@@ -309,12 +309,13 @@ bool SDL_LoadFileAsync(const char *file, SDL_AsyncIOQueue *queue, void *userdata
     if (asyncio) {
         asyncio->oneshot = true;
 
-        void *ptr = NULL;
+        Uint8 *ptr = NULL;
         const Sint64 flen = SDL_GetAsyncIOSize(asyncio);
         if (flen >= 0) {
             // !!! FIXME: check if flen > address space, since it'll truncate and we'll just end up with an incomplete buffer or a crash.
-            ptr = SDL_malloc((size_t) (flen + 1));  // over-allocate by one so we can add a null-terminator.
+            ptr = (Uint8 *) SDL_malloc((size_t) (flen + 1));  // over-allocate by one so we can add a null-terminator.
             if (ptr) {
+                ptr[flen] = '\0';
                 retval = SDL_ReadAsyncIO(asyncio, ptr, 0, (Uint64) flen, queue, userdata);
                 if (!retval) {
                     SDL_free(ptr);

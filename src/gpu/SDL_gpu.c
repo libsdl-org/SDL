@@ -2653,8 +2653,11 @@ bool SDL_ClaimWindowForGPUDevice(
 {
     CHECK_DEVICE_MAGIC(device, false);
     if (window == NULL) {
-        SDL_InvalidParamError("window");
-        return false;
+        return SDL_InvalidParamError("window");
+    }
+
+    if ((window->flags & SDL_WINDOW_TRANSPARENT) != 0) {
+        return SDL_SetError("The GPU API doesn't support transparent windows");
     }
 
     return device->ClaimWindow(

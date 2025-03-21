@@ -10,14 +10,14 @@ import android.util.Log;
 import java.util.Arrays;
 import java.util.ArrayList;
 
-public class SDLAudioManager {
+class SDLAudioManager {
     protected static final String TAG = "SDLAudio";
 
     protected static Context mContext;
 
     private static AudioDeviceCallback mAudioDeviceCallback;
 
-    public static void initialize() {
+    static void initialize() {
         mAudioDeviceCallback = null;
 
         if(Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */)
@@ -40,11 +40,11 @@ public class SDLAudioManager {
         }
     }
 
-    public static void setContext(Context context) {
+    static void setContext(Context context) {
         mContext = context;
     }
 
-    public static void release(Context context) {
+    static void release(Context context) {
         // no-op atm
     }
 
@@ -74,7 +74,7 @@ public class SDLAudioManager {
         return null;
     }
 
-    public static void registerAudioDeviceCallback() {
+    static void registerAudioDeviceCallback() {
         if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             // get an initial list now, before hotplug callbacks fire.
@@ -91,7 +91,7 @@ public class SDLAudioManager {
         }
     }
 
-    public static void unregisterAudioDeviceCallback() {
+    static void unregisterAudioDeviceCallback() {
         if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             audioManager.unregisterAudioDeviceCallback(mAudioDeviceCallback);
@@ -99,7 +99,7 @@ public class SDLAudioManager {
     }
 
     /** This method is called by SDL using JNI. */
-    public static void audioSetThreadPriority(boolean recording, int device_id) {
+    static void audioSetThreadPriority(boolean recording, int device_id) {
         try {
 
             /* Set thread name */
@@ -117,10 +117,10 @@ public class SDLAudioManager {
         }
     }
 
-    public static native int nativeSetupJNI();
+    static native int nativeSetupJNI();
 
-    public static native void removeAudioDevice(boolean recording, int deviceId);
+    static native void removeAudioDevice(boolean recording, int deviceId);
 
-    public static native void addAudioDevice(boolean recording, String name, int deviceId);
+    static native void addAudioDevice(boolean recording, String name, int deviceId);
 
 }

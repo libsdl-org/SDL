@@ -977,7 +977,7 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
             X11_HandleModifierKeys(videodata, scancode, true, true);
             SDL_SendKeyboardKeyIgnoreModifiers(timestamp, keyboardID, keycode, scancode, true);
 
-            if (*text) {
+            if (*text && !(SDL_GetModState() & (SDL_KMOD_CTRL | SDL_KMOD_ALT))) {
                 text[text_length] = '\0';
                 X11_ClearComposition(windowdata);
                 SDL_SendKeyboardText(text);

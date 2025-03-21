@@ -204,6 +204,11 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
         return NULL;
     }
 
+    if (format == SDL_PIXELFORMAT_UNKNOWN) {
+        SDL_InvalidParamError("format");
+        return NULL;
+    }
+
     if (!SDL_CalculateSurfaceSize(format, width, height, &size, &pitch, false /* not minimal pitch */)) {
         // Overflow...
         return NULL;
@@ -247,6 +252,11 @@ SDL_Surface *SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format
 
     if (height < 0) {
         SDL_InvalidParamError("height");
+        return NULL;
+    }
+
+    if (format == SDL_PIXELFORMAT_UNKNOWN) {
+        SDL_InvalidParamError("format");
         return NULL;
     }
 

@@ -84,6 +84,7 @@ struct SDL_Joystick
     Uint16 firmware_version _guarded;    // Firmware version, if available
     Uint64 steam_handle _guarded;        // Steam controller API handle
     bool swap_face_buttons _guarded;     // Whether we should swap face buttons
+    bool is_virtual _guarded;            // Whether this is a virtual joystick
 
     int naxes _guarded; // Number of axis controls on the joystick
     SDL_JoystickAxisInfo *axes _guarded;
