@@ -22,6 +22,10 @@
 
 #include "SDL_sysaudio.h"
 
+#ifdef SDL_NEON_INTRINSICS
+#include <fenv.h>
+#endif
+
 #define DIVBY2147483648 0.0000000004656612873077392578125f // 0x1p-31f
 
 // start fallback scalar converters
@@ -527,9 +531,27 @@ static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32* dst, const U
 #endif
 
 #ifdef SDL_NEON_INTRINSICS
+
+// C99 requires that all code modifying floating point environment should
+// be guarded by the STDC FENV_ACCESS pragma; otherwise, it's undefined
+// behavior. However, the compiler support for this pragma is bad.
+#if defined(__clang__)
+#if __clang_major__ >= 12
+#pragma STDC FENV_ACCESS ON
+#endif
+#elif defined(_MSC_VER)
+#pragma fenv_access (on)
+#elif defined(__GNUC__)
+// GCC does not support the pragma at all
+#else
+#pragma STDC FENV_ACCESS ON
+#endif
+
 static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("S8", "F32 (using NEON)");
+    fenv_t fenv;
+    feholdexcept(&fenv);
 
     CONVERT_16_REV({
         vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vdup_n_s32(src[i]), 7), 0);
@@ -549,11 +571,14 @@ static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_sam
         vst1q_f32(&dst[i + 8], floats2);
         vst1q_f32(&dst[i + 12], floats3);
     })
+    fesetenv(&fenv);
 }
 
 static void SDL_Convert_U8_to_F32_NEON(float *dst, const Uint8 *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("U8", "F32 (using NEON)");
+    fenv_t fenv;
+    feholdexcept(&fenv);
 
     uint8x16_t flipper = vdupq_n_u8(0x80);
 
@@ -575,11 +600,14 @@ static void SDL_Convert_U8_to_F32_NEON(float *dst, const Uint8 *src, int num_sam
         vst1q_f32(&dst[i + 8], floats2);
         vst1q_f32(&dst[i + 12], floats3);
     })
+    fesetenv(&fenv);
 }
 
 static void SDL_Convert_S16_to_F32_NEON(float *dst, const Sint16 *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("S16", "F32 (using NEON)");
+    fenv_t fenv;
+    feholdexcept(&fenv);
 
     CONVERT_16_REV({
         vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vdup_n_s32(src[i]), 15), 0);
@@ -597,11 +625,14 @@ static void SDL_Convert_S16_to_F32_NEON(float *dst, const Sint16 *src, int num_s
         vst1q_f32(&dst[i + 8], floats2);
         vst1q_f32(&dst[i + 12], floats3);
     })
+    fesetenv(&fenv);
 }
 
 static void SDL_Convert_S32_to_F32_NEON(float *dst, const Sint32 *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("S32", "F32 (using NEON)");
+    fenv_t fenv;
+    feholdexcept(&fenv);
 
     CONVERT_16_FWD({
         vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vld1_dup_s32(&src[i]), 31), 0);
@@ -621,11 +652,14 @@ static void SDL_Convert_S32_to_F32_NEON(float *dst, const Sint32 *src, int num_s
         vst1q_f32(&dst[i + 8], floats2);
         vst1q_f32(&dst[i + 12], floats3);
     })
+    fesetenv(&fenv);
 }
 
 static void SDL_Convert_F32_to_S8_NEON(Sint8 *dst, const float *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("F32", "S8 (using NEON)");
+    fenv_t fenv;
+    feholdexcept(&fenv);
 
     CONVERT_16_FWD({
         vst1_lane_s8(&dst[i], vreinterpret_s8_s32(vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31)), 3);
@@ -647,11 +681,14 @@ static void SDL_Convert_F32_to_S8_NEON(Sint8 *dst, const float *src, int num_sam
 
         vst1q_s8(&dst[i], bytes);
     })
+    fesetenv(&fenv);
 }
 
 static void SDL_Convert_F32_to_U8_NEON(Uint8 *dst, const float *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("F32", "U8 (using NEON)");
+    fenv_t fenv;
+    feholdexcept(&fenv);
 
     uint8x16_t flipper = vdupq_n_u8(0x80);
 
@@ -679,11 +716,14 @@ static void SDL_Convert_F32_to_U8_NEON(Uint8 *dst, const float *src, int num_sam
 
         vst1q_u8(&dst[i], bytes);
     })
+    fesetenv(&fenv);
 }
 
 static void SDL_Convert_F32_to_S16_NEON(Sint16 *dst, const float *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("F32", "S16 (using NEON)");
+    fenv_t fenv;
+    feholdexcept(&fenv);
 
     CONVERT_16_FWD({
         vst1_lane_s16(&dst[i], vreinterpret_s16_s32(vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31)), 1);
@@ -704,11 +744,14 @@ static void SDL_Convert_F32_to_S16_NEON(Sint16 *dst, const float *src, int num_s
         vst1q_s16(&dst[i], shorts0);
         vst1q_s16(&dst[i + 8], shorts1);
     })
+    fesetenv(&fenv);
 }
 
 static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_samples)
 {
     LOG_DEBUG_AUDIO_CONVERT("F32", "S32 (using NEON)");
+    fenv_t fenv;
+    feholdexcept(&fenv);
 
     CONVERT_16_FWD({
         vst1_lane_s32(&dst[i], vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31), 0);
@@ -728,6 +771,7 @@ static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_s
         vst1q_s32(&dst[i + 8], ints2);
         vst1q_s32(&dst[i + 12], ints3);
     })
+    fesetenv(&fenv);
 }
 
 static void SDL_Convert_Swap16_NEON(Uint16* dst, const Uint16* src, int num_samples)
@@ -767,6 +811,19 @@ static void SDL_Convert_Swap32_NEON(Uint32* dst, const Uint32* src, int num_samp
         vst1q_u8((Uint8*)&dst[i + 12], ints3);
     })
 }
+
+#if defined(__clang__)
+#if __clang_major__ >= 12
+#pragma STDC FENV_ACCESS DEFAULT
+#endif
+#elif defined(_MSC_VER)
+#pragma fenv_access (off)
+#elif defined(__GNUC__)
+//
+#else
+#pragma STDC FENV_ACCESS DEFAULT
+#endif
+
 #endif
 
 #undef CONVERT_16_FWD
