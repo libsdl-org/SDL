@@ -2457,7 +2457,7 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
             }
             break;
         case SDLK_P:
-            if (withControl) {
+            if (withAlt) {
                 /* Ctrl-P Cycle through progress states */
                 SDL_Window *window = SDL_GetWindowFromEvent(event);
                 if (window) {
@@ -2468,7 +2468,7 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                     SDL_SetWindowProgressState(window, state->progress_state);
                 }
             }
-            else if (withAlt)
+            else if (withControl)
             {
                 /* Alt-P Increase progress value */
                 SDL_Window *window = SDL_GetWindowFromEvent(event);
