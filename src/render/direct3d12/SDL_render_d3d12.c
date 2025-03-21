@@ -130,7 +130,6 @@ typedef struct
     DXGI_FORMAT mainTextureFormat;
     ID3D12Resource *stagingBuffer;
     D3D12_RESOURCE_STATES stagingResourceState;
-    Uint32 textureUpdateSequence;
     D3D12_Shader shader;
     const float *YCbCr_matrix;
 #ifdef SDL_HAVE_YUV
@@ -199,7 +198,6 @@ typedef struct
     ID3D12Debug *debugInterface;
     ID3D12CommandQueue *commandQueue;
     ID3D12GraphicsCommandList2 *commandList;
-    Uint32 commandListSequence;
     DXGI_SWAP_EFFECT swapEffect;
     UINT swapFlags;
     UINT syncInterval;
@@ -560,7 +558,6 @@ static void D3D12_ResetCommandList(D3D12_RenderData *data)
         D3D_SAFE_RELEASE(data->uploadBuffers[i]);
     }
     data->currentUploadBuffer = 0;
-    ++data->commandListSequence;
 
     ID3D12GraphicsCommandList2_SetDescriptorHeaps(data->commandList, 2, rootDescriptorHeaps);
 }
@@ -1047,7 +1044,6 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommandList"), result);
         goto done;
     }
-    data->commandListSequence = 1;
 
     // Set the descriptor heaps to the correct initial value
     ID3D12GraphicsCommandList2_SetDescriptorHeaps(data->commandList, 2, rootDescriptorHeaps);
@@ -1818,7 +1814,7 @@ static void D3D12_DestroyTexture(SDL_Renderer *renderer,
     texture->internal = NULL;
 }
 
-static bool D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, Uint32 textureUpdateSequence, ID3D12Resource *texture, int plane, int x, int y, int w, int h, const void *pixels, int pitch, D3D12_RESOURCE_STATES *resourceState)
+static bool D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Resource *texture, int plane, int x, int y, int w, int h, const void *pixels, int pitch, D3D12_RESOURCE_STATES *resourceState)
 {
     const Uint8 *src;
     Uint8 *dst;
@@ -1949,8 +1945,7 @@ static bool D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, Uint32 t
 
     rendererData->currentUploadBuffer++;
     // If we've used up all the upload buffers, we need to issue the batch
-    if (textureUpdateSequence == rendererData->commandListSequence ||
-        rendererData->currentUploadBuffer == SDL_D3D12_NUM_UPLOAD_BUFFERS) {
+    if (rendererData->currentUploadBuffer == SDL_D3D12_NUM_UPLOAD_BUFFERS) {
         D3D12_IssueBatch(rendererData);
     }
 
@@ -1968,7 +1963,7 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("Texture is not currently available");
     }
 
-    if (!D3D12_UpdateTextureInternal(rendererData, textureData->textureUpdateSequence, textureData->mainTexture, 0, rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch, &textureData->mainResourceState)) {
+    if (!D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 0, rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch, &textureData->mainResourceState)) {
         return false;
     }
 #ifdef SDL_HAVE_YUV
@@ -1976,13 +1971,13 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         // Skip to the correct offset into the next texture
         srcPixels = (const void *)((const Uint8 *)srcPixels + rect->h * srcPitch);
 
-        if (!D3D12_UpdateTextureInternal(rendererData, textureData->textureUpdateSequence, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureV : textureData->mainTextureU, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2, texture->format == SDL_PIXELFORMAT_YV12 ? &textureData->mainResourceStateV : &textureData->mainResourceStateU)) {
+        if (!D3D12_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureV : textureData->mainTextureU, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2, texture->format == SDL_PIXELFORMAT_YV12 ? &textureData->mainResourceStateV : &textureData->mainResourceStateU)) {
             return false;
         }
 
         // Skip to the correct offset into the next texture
         srcPixels = (const void *)((const Uint8 *)srcPixels + ((rect->h + 1) / 2) * ((srcPitch + 1) / 2));
-        if (!D3D12_UpdateTextureInternal(rendererData, textureData->textureUpdateSequence, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureU : textureData->mainTextureV, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2, texture->format == SDL_PIXELFORMAT_YV12 ? &textureData->mainResourceStateU : &textureData->mainResourceStateV)) {
+        if (!D3D12_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureU : textureData->mainTextureV, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1) / 2, texture->format == SDL_PIXELFORMAT_YV12 ? &textureData->mainResourceStateU : &textureData->mainResourceStateV)) {
             return false;
         }
     }
@@ -1996,12 +1991,11 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         } else {
             srcPitch = (srcPitch + 1) & ~1;
         }
-        if (!D3D12_UpdateTextureInternal(rendererData, textureData->textureUpdateSequence, textureData->mainTexture, 1, rect->x, rect->y, (rect->w + 1) & ~1, (rect->h + 1) & ~1, srcPixels, srcPitch, &textureData->mainResourceState)) {
+        if (!D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 1, rect->x, rect->y, (rect->w + 1) & ~1, (rect->h + 1) & ~1, srcPixels, srcPitch, &textureData->mainResourceState)) {
             return false;
         }
     }
 #endif // SDL_HAVE_YUV
-    textureData->textureUpdateSequence = rendererData->commandListSequence;
     return true;
 }
 
@@ -2019,16 +2013,15 @@ static bool D3D12_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("Texture is not currently available");
     }
 
-    if (!D3D12_UpdateTextureInternal(rendererData, textureData->textureUpdateSequence, textureData->mainTexture, 0, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch, &textureData->mainResourceState)) {
+    if (!D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 0, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch, &textureData->mainResourceState)) {
         return false;
     }
-    if (!D3D12_UpdateTextureInternal(rendererData, textureData->textureUpdateSequence, textureData->mainTextureU, 0, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Uplane, Upitch, &textureData->mainResourceStateU)) {
+    if (!D3D12_UpdateTextureInternal(rendererData, textureData->mainTextureU, 0, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Uplane, Upitch, &textureData->mainResourceStateU)) {
         return false;
     }
-    if (!D3D12_UpdateTextureInternal(rendererData, textureData->textureUpdateSequence, textureData->mainTextureV, 0, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Vplane, Vpitch, &textureData->mainResourceStateV)) {
+    if (!D3D12_UpdateTextureInternal(rendererData, textureData->mainTextureV, 0, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Vplane, Vpitch, &textureData->mainResourceStateV)) {
         return false;
     }
-    textureData->textureUpdateSequence = rendererData->commandListSequence;
     return true;
 }
 
@@ -2044,14 +2037,13 @@ static bool D3D12_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("Texture is not currently available");
     }
 
-    if (!D3D12_UpdateTextureInternal(rendererData, textureData->textureUpdateSequence, textureData->mainTexture, 0, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch, &textureData->mainResourceState)) {
+    if (!D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 0, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch, &textureData->mainResourceState)) {
         return false;
     }
 
-    if (!D3D12_UpdateTextureInternal(rendererData, textureData->textureUpdateSequence, textureData->mainTexture, 1, rect->x, rect->y, rect->w, rect->h, UVplane, UVpitch, &textureData->mainResourceState)) {
+    if (!D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 1, rect->x, rect->y, rect->w, rect->h, UVplane, UVpitch, &textureData->mainResourceState)) {
         return false;
     }
-    textureData->textureUpdateSequence = rendererData->commandListSequence;
     return true;
 }
 #endif
@@ -2712,7 +2704,7 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
         rendererData->currentSampler = *sampler;
     }
 
-    if (updateSubresource || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix)) != 0) {
+    if (updateSubresource == true || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix)) != 0) {
         SDL_memcpy(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix));
         ID3D12GraphicsCommandList2_SetGraphicsRoot32BitConstants(rendererData->commandList,
                  0,
@@ -2726,7 +2718,7 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
         shader_constants = &solid_constants;
     }
 
-    if (updateSubresource ||
+    if (updateSubresource == true ||
         SDL_memcmp(shader_constants, &currentPipelineState->shader_constants, sizeof(*shader_constants)) != 0) {
         ID3D12GraphicsCommandList2_SetGraphicsRoot32BitConstants(rendererData->commandList,
                  1,
