@@ -31,6 +31,23 @@
 #include <psp2/ime_dialog.h>
 #include <psp2/sysmodule.h>
 
+#ifdef SDL_VIDEO_VITA_PIB
+#include <psp2/gxm.h>
+#include <psp2/display.h>
+#include <pib.h>
+#include <EGL/egl.h>
+#include <EGL/eglext.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+typedef struct SDL_GLDriverData
+{
+    EGLDisplay display;
+    EGLContext context;
+    EGLSurface surface;
+    uint32_t swapinterval;
+} SDL_GLDriverData;
+#endif
+
 struct SDL_VideoData
 {
     bool egl_initialized; // OpenGL device initialization status

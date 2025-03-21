@@ -532,6 +532,7 @@ jobs:
         with:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Setup Android NDK'
+        id: setup-ndk
         uses: nttld/setup-ndk@v1
         with:
           local-cache: true
@@ -561,6 +562,8 @@ jobs:
         run: |
           python build-scripts/build-release.py \
             --actions android \
+            --android-api 23 \
+            --android-ndk-home "${{ steps.setup-ndk.outputs.ndk-path }}" \
             --commit ${{ inputs.commit }} \
             --root "${{ steps.tar.outputs.path }}" \
             --github \

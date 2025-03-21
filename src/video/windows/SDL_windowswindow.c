@@ -451,7 +451,6 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     data->videodata = videodata;
     data->initializing = true;
     data->last_displayID = window->last_displayID;
-    data->dwma_border_color = DWMWA_COLOR_DEFAULT;
     data->hint_erase_background_mode = GetEraseBackgroundModeHint();
 
 
@@ -539,7 +538,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     }
     if (!(window->flags & SDL_WINDOW_MINIMIZED)) {
         RECT rect;
-        if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+        if (GetClientRect(hwnd, &rect) && WIN_WindowRectValid(&rect)) {
             int w = rect.right;
             int h = rect.bottom;
 
@@ -1066,7 +1065,7 @@ void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *
     HWND hwnd = data->hwnd;
     RECT rect;
 
-    if (GetClientRect(hwnd, &rect) && !WIN_IsRectEmpty(&rect)) {
+    if (GetClientRect(hwnd, &rect) && WIN_WindowRectValid(&rect)) {
         *w = rect.right;
         *h = rect.bottom;
     } else if (window->last_pixel_w && window->last_pixel_h) {
@@ -1253,7 +1252,7 @@ void WIN_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool res
 
 void WIN_SetWindowAlwaysOnTop(SDL_VideoDevice *_this, SDL_Window *window, bool on_top)
 {
-    WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
+    WIN_SetWindowPositionInternal(window, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOOWNERZORDER, SDL_WINDOWRECT_CURRENT);
 }
 
 void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1269,42 +1268,30 @@ void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-static DWM_WINDOW_CORNER_PREFERENCE WIN_UpdateCornerRoundingForHWND(HWND hwnd, DWM_WINDOW_CORNER_PREFERENCE cornerPref)
+static void WIN_UpdateCornerRoundingForHWND(HWND hwnd, DWM_WINDOW_CORNER_PREFERENCE cornerPref)
 {
-    DWM_WINDOW_CORNER_PREFERENCE oldPref = DWMWCP_DEFAULT;
-
     SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
     if (handle) {
-        DwmGetWindowAttribute_t DwmGetWindowAttributeFunc = (DwmGetWindowAttribute_t)SDL_LoadFunction(handle, "DwmGetWindowAttribute");
         DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
-        if (DwmGetWindowAttributeFunc && DwmSetWindowAttributeFunc) {
-            DwmGetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &oldPref, sizeof(oldPref));
+        if (DwmSetWindowAttributeFunc) {
             DwmSetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
         }
 
         SDL_UnloadObject(handle);
     }
-
-    return oldPref;
 }
 
-static COLORREF WIN_UpdateBorderColorForHWND(HWND hwnd, COLORREF colorRef)
+static void WIN_UpdateBorderColorForHWND(HWND hwnd, COLORREF colorRef)
 {
-    COLORREF oldPref = DWMWA_COLOR_DEFAULT;
-
     SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
     if (handle) {
-        DwmGetWindowAttribute_t DwmGetWindowAttributeFunc = (DwmGetWindowAttribute_t)SDL_LoadFunction(handle, "DwmGetWindowAttribute");
         DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
-        if (DwmGetWindowAttributeFunc && DwmSetWindowAttributeFunc) {
-            DwmGetWindowAttributeFunc(hwnd, DWMWA_BORDER_COLOR, &oldPref, sizeof(oldPref));
+        if (DwmSetWindowAttributeFunc) {
             DwmSetWindowAttributeFunc(hwnd, DWMWA_BORDER_COLOR, &colorRef, sizeof(colorRef));
         }
 
         SDL_UnloadObject(handle);
     }
-
-    return oldPref;
 }
 
 /**
@@ -1315,7 +1302,7 @@ SDL_FullscreenResult WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_DisplayData *displaydata = display->internal;
     SDL_WindowData *data = window->internal;
-    HWND hwnd = data->hwnd;
+    HWND hwnd = data ? data->hwnd : NULL;
     MONITORINFO minfo;
     DWORD style, styleEx;
     HWND top;
@@ -1370,13 +1357,13 @@ SDL_FullscreenResult WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window 
         }
 
         // Disable corner rounding & border color (Windows 11+) so the window fills the full screen
-        data->windowed_mode_corner_rounding = WIN_UpdateCornerRoundingForHWND(hwnd, DWMWCP_DONOTROUND);
-        data->dwma_border_color = WIN_UpdateBorderColorForHWND(hwnd, DWMWA_COLOR_NONE);
+        WIN_UpdateCornerRoundingForHWND(hwnd, DWMWCP_DONOTROUND);
+        WIN_UpdateBorderColorForHWND(hwnd, DWMWA_COLOR_NONE);
     } else {
         BOOL menu;
 
-        WIN_UpdateCornerRoundingForHWND(hwnd, (DWM_WINDOW_CORNER_PREFERENCE)data->windowed_mode_corner_rounding);
-        WIN_UpdateBorderColorForHWND(hwnd, data->dwma_border_color);
+        WIN_UpdateCornerRoundingForHWND(hwnd, DWMWCP_DEFAULT);
+        WIN_UpdateBorderColorForHWND(hwnd, DWMWA_COLOR_DEFAULT);
 
         /* Restore window-maximization state, as applicable.
            Special care is taken to *not* do this if and when we're

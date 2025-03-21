@@ -427,6 +427,13 @@ static SDL_vidpid_list zero_centered_devices = {
         return result;                                          \
     }
 
+#define CHECK_JOYSTICK_VIRTUAL(joystick, result)                \
+    if (!joystick->is_virtual) {                                \
+        SDL_SetError("joystick isn't virtual");                 \
+        SDL_UnlockJoysticks();                                  \
+        return result;                                          \
+    }
+
 bool SDL_JoysticksInitialized(void)
 {
     return SDL_joysticks_initialized;
@@ -1115,6 +1122,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->attached = true;
     joystick->led_expiration = SDL_GetTicks();
     joystick->battery_percent = -1;
+    joystick->is_virtual = (driver == &SDL_VIRTUAL_JoystickDriver);
 
     if (!driver->Open(joystick, device_index)) {
         SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, false);
@@ -1247,6 +1255,7 @@ bool SDL_SetJoystickVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 value)
     SDL_LockJoysticks();
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
+        CHECK_JOYSTICK_VIRTUAL(joystick, false);
 
 #ifdef SDL_JOYSTICK_VIRTUAL
         result = SDL_SetJoystickVirtualAxisInner(joystick, axis, value);
@@ -1266,6 +1275,7 @@ bool SDL_SetJoystickVirtualBall(SDL_Joystick *joystick, int ball, Sint16 xrel, S
     SDL_LockJoysticks();
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
+        CHECK_JOYSTICK_VIRTUAL(joystick, false);
 
 #ifdef SDL_JOYSTICK_VIRTUAL
         result = SDL_SetJoystickVirtualBallInner(joystick, ball, xrel, yrel);
@@ -1285,6 +1295,7 @@ bool SDL_SetJoystickVirtualButton(SDL_Joystick *joystick, int button, bool down)
     SDL_LockJoysticks();
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
+        CHECK_JOYSTICK_VIRTUAL(joystick, false);
 
 #ifdef SDL_JOYSTICK_VIRTUAL
         result = SDL_SetJoystickVirtualButtonInner(joystick, button, down);
@@ -1304,6 +1315,7 @@ bool SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value)
     SDL_LockJoysticks();
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
+        CHECK_JOYSTICK_VIRTUAL(joystick, false);
 
 #ifdef SDL_JOYSTICK_VIRTUAL
         result = SDL_SetJoystickVirtualHatInner(joystick, hat, value);
@@ -1323,6 +1335,7 @@ bool SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystick, int touchpad, int fi
     SDL_LockJoysticks();
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
+        CHECK_JOYSTICK_VIRTUAL(joystick, false);
 
 #ifdef SDL_JOYSTICK_VIRTUAL
         result = SDL_SetJoystickVirtualTouchpadInner(joystick, touchpad, finger, down, x, y, pressure);
@@ -1342,6 +1355,7 @@ bool SDL_SendJoystickVirtualSensorData(SDL_Joystick *joystick, SDL_SensorType ty
     SDL_LockJoysticks();
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
+        CHECK_JOYSTICK_VIRTUAL(joystick, false);
 
 #ifdef SDL_JOYSTICK_VIRTUAL
         result = SDL_SendJoystickVirtualSensorDataInner(joystick, type, sensor_timestamp, data, num_values);
@@ -3049,7 +3063,7 @@ bool SDL_IsJoystickVIRTUAL(SDL_GUID guid)
     return (guid.data[14] == 'v') ? true : false;
 }
 
-static bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id)
+bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id)
 {
     return SDL_VIDPIDInList(vendor_id, product_id, &wheel_devices);
 }

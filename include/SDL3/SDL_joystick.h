@@ -107,6 +107,10 @@ typedef Uint32 SDL_JoystickID;
  * This is by no means a complete list of everything that can be plugged into
  * a computer.
  *
+ * You may refer to
+ * [XInput Controller Types](https://learn.microsoft.com/en-us/windows/win32/xinput/xinput-and-controller-subtypes)
+ * table for a general understanding of each joystick type.
+ *
  * \since This enum is available since SDL 3.2.0.
  */
 typedef enum SDL_JoystickType

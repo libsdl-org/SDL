@@ -39,7 +39,7 @@ add_library(sdltests_utils OBJECT
 )
 target_link_libraries(sdltests_utils PRIVATE SDL3::Headers)
 
-file(GLOB RESOURCE_FILES *.bmp *.wav *.hex moose.dat utf8.txt)
+file(GLOB RESOURCE_FILES *.bmp *.wav *.csv *.hex moose.dat utf8.txt)
 
 option(SDLTEST_TRACKMEM "Run tests with --trackmem" OFF)
 
@@ -348,6 +348,8 @@ add_sdl_test_executable(testgl SOURCES testgl.c)
 add_sdl_test_executable(testgles SOURCES testgles.c)
 add_sdl_test_executable(testgpu_simple_clear SOURCES testgpu_simple_clear.c)
 add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c)
+add_sdl_test_executable(testgpurender_effects MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_effects.c)
+add_sdl_test_executable(testgpurender_msdf MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_msdf.c)
 if(ANDROID)
     target_link_libraries(testgles PRIVATE GLESv1_CM)
 elseif(IOS OR TVOS)

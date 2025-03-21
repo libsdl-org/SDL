@@ -16,19 +16,19 @@ pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x
 
 ## Create the file CMakeLists.txt
 ```cmake
-project(sdl_test C CXX)
 cmake_minimum_required(VERSION 3.26)
+project(hello C CXX)
 
 find_package(SDL3 REQUIRED)
 
-add_executable(sdl_test)
+add_executable(hello)
 
-target_sources(sdl_test
+target_sources(hello
 PRIVATE
     hello.c
 )
 
-target_link_libraries(sdl_test SDL3::SDL3)
+target_link_libraries(hello SDL3::SDL3)
 ```
 
 ## Configure and Build:

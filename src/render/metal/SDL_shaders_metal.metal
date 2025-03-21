@@ -1,6 +1,7 @@
 #include <metal_common>
 #include <metal_texture>
 #include <metal_matrix>
+#include <metal_stdlib>
 
 using namespace metal;
 
@@ -11,9 +12,10 @@ using namespace metal;
 
 #define TEXTURETYPE_NONE        0
 #define TEXTURETYPE_RGB         1
-#define TEXTURETYPE_NV12        2
-#define TEXTURETYPE_NV21        3
-#define TEXTURETYPE_YUV         4
+#define TEXTURETYPE_RGB_PIXELART 2
+#define TEXTURETYPE_NV12        3
+#define TEXTURETYPE_NV21        4
+#define TEXTURETYPE_YUV         5
 
 #define INPUTTYPE_UNSPECIFIED   0
 #define INPUTTYPE_SRGB          1
@@ -26,6 +28,7 @@ struct ShaderConstants
     float texture_type;
     float input_type;
     float color_scale;
+    float4 texel_size;
 
     float tonemap_method;
     float tonemap_factor1;
@@ -246,7 +249,29 @@ fragment float4 SDL_Copy_fragment(CopyVertexOutput vert [[stage_in]],
                                   texture2d<float> tex [[texture(0)]],
                                   sampler s [[sampler(0)]])
 {
-    float4 rgba = tex.sample(s, vert.texcoord);
+    float4 rgba;
+
+    if (c.texture_type == TEXTURETYPE_RGB) {
+        rgba = tex.sample(s, vert.texcoord);
+    } else if (c.texture_type == TEXTURETYPE_RGB_PIXELART) {
+        // box filter size in texel units
+        float2 boxSize = clamp(fwidth(vert.texcoord) * c.texel_size.zw, 1e-5, 1);
+
+        // scale uv by texture size to get texel coordinate
+        float2 tx = vert.texcoord * c.texel_size.zw - 0.5 * boxSize;
+
+        // compute offset for pixel-sized box filter
+        float2 txOffset = smoothstep(1 - boxSize, 1, fract(tx));
+
+        // compute bilinear sample uv coordinates
+        float2 uv = (floor(tx) + 0.5 + txOffset) * c.texel_size.xy;
+
+        // sample the texture
+        rgba = tex.sample(s, uv, gradient2d(dfdx(vert.texcoord), dfdy(vert.texcoord)));
+    } else {
+        // Unexpected texture type, use magenta error color
+        rgba = float4(1.0, 0.0, 1.0, 1.0);
+    }
     return GetOutputColor(rgba, c) * vert.color;
 }
 

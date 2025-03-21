@@ -44,6 +44,7 @@ extern TitleStorageBootStrap GENERIC_titlebootstrap;
 // Steam does not have title storage APIs
 
 extern UserStorageBootStrap GENERIC_userbootstrap;
+extern UserStorageBootStrap PRIVATE_userbootstrap;
 extern UserStorageBootStrap STEAM_userbootstrap;
 
 extern SDL_Storage *GENERIC_OpenFileStorage(const char *path);

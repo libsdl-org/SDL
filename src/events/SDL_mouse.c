@@ -238,7 +238,11 @@ static void SDLCALL SDL_MouseIntegerModeChanged(void *userdata, const char *name
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
-    mouse->integer_mode = SDL_GetStringBoolean(hint, false);
+    if (hint && *hint) {
+        mouse->integer_mode = (Uint8)SDL_atoi(hint);
+    } else {
+        mouse->integer_mode = 0;
+    }
 }
 
 // Public functions
@@ -735,7 +739,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
                 y *= mouse->normal_speed_scale;
             }
         }
-        if (mouse->integer_mode) {
+        if (mouse->integer_mode >= 1) {
             // Accumulate the fractional relative motion and only process the integer portion
             mouse->xrel_frac = SDL_modff(mouse->xrel_frac + x, &x);
             mouse->yrel_frac = SDL_modff(mouse->yrel_frac + y, &y);
@@ -746,7 +750,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
         y = (mouse->last_y + yrel);
         ConstrainMousePosition(mouse, window, &x, &y);
     } else {
-        if (mouse->integer_mode) {
+        if (mouse->integer_mode >= 1) {
             // Discard the fractional component from absolute coordinates
             x = SDL_truncf(x);
             y = SDL_truncf(y);
@@ -1024,7 +1028,7 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
     }
 
     // Accumulate fractional wheel motion if integer mode is enabled
-    if (mouse->integer_mode) {
+    if (mouse->integer_mode >= 2) {
         mouse->wheel_x_frac = SDL_modff(mouse->wheel_x_frac + x, &x);
         mouse->wheel_y_frac = SDL_modff(mouse->wheel_y_frac + y, &y);
     }

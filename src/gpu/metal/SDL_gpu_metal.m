@@ -840,6 +840,10 @@ static MetalLibraryFunction METAL_INTERNAL_CompileShader(
     dispatch_data_t data;
     id<MTLFunction> function;
 
+    if (!entrypoint) {
+        entrypoint = "main0";
+    }
+
     if (format == SDL_GPU_SHADERFORMAT_MSL) {
         NSString *codeString = [[NSString alloc]
             initWithBytes:code
@@ -854,7 +858,7 @@ static MetalLibraryFunction METAL_INTERNAL_CompileShader(
             code,
             codeSize,
             dispatch_get_global_queue(0, 0),
-            ^{ /* do nothing */ });
+            DISPATCH_DATA_DESTRUCTOR_DEFAULT);
         library = [renderer->device newLibraryWithData:data error:&error];
     } else {
         SDL_assert(!"SDL_gpu.c should have already validated this!");

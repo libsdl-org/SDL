@@ -118,6 +118,36 @@ struct SDL_Texture
     SDL_Texture *next;
 };
 
+// Define the GPU render state structure
+typedef struct SDL_GPURenderStateUniformBuffer
+{
+    Uint32 slot_index;
+    void *data;
+    Uint32 length;
+} SDL_GPURenderStateUniformBuffer;
+
+// Define the GPU render state structure
+struct SDL_GPURenderState
+{
+    SDL_Renderer *renderer;
+
+    Uint32 last_command_generation; // last command queue generation this state was in.
+
+    SDL_GPUShader *fragment_shader;
+
+    int num_sampler_bindings;
+    SDL_GPUTextureSamplerBinding *sampler_bindings;
+
+    int num_storage_textures;
+    SDL_GPUTexture **storage_textures;
+
+    int num_storage_buffers;
+    SDL_GPUBuffer **storage_buffers;
+
+    int num_uniform_buffers;
+    SDL_GPURenderStateUniformBuffer *uniform_buffers;
+};
+
 typedef enum
 {
     SDL_RENDERCMD_NO_OP,
@@ -158,6 +188,7 @@ typedef struct SDL_RenderCommand
             SDL_Texture *texture;
             SDL_ScaleMode texture_scale_mode;
             SDL_TextureAddressMode texture_address_mode;
+            SDL_GPURenderState *gpu_render_state;
         } draw;
         struct
         {
@@ -282,6 +313,7 @@ struct SDL_Renderer
     SDL_FColor color;        /**< Color for drawing operations values */
     SDL_BlendMode blendMode; /**< The drawing blend mode */
     SDL_TextureAddressMode texture_address_mode;
+    SDL_GPURenderState *gpu_render_state;
 
     SDL_RenderCommand *render_commands;
     SDL_RenderCommand *render_commands_tail;
