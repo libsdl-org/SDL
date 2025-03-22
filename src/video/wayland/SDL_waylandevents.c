@@ -1025,8 +1025,8 @@ static void relative_pointer_handle_relative_motion(void *data,
             dx = wl_fixed_to_double(dx_unaccel_w);
             dy = wl_fixed_to_double(dy_unaccel_w);
         } else {
-            dx = wl_fixed_to_double(dx_w);
-            dy = wl_fixed_to_double(dy_w);
+            dx = wl_fixed_to_double(dx_w) * window->pointer_scale.x;
+            dy = wl_fixed_to_double(dy_w) * window->pointer_scale.y;
         }
 
         SDL_SendMouseMotion(timestamp, window->sdlwindow, input->pointer_id, true, (float)dx, (float)dy);
