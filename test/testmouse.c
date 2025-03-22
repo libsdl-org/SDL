@@ -332,6 +332,9 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    /* Window won't show on Emscripten without this */
+    SDL_ShowWindow(window);
+
     /* Main render loop */
 #ifdef SDL_PLATFORM_EMSCRIPTEN
     emscripten_set_main_loop_arg(loop, &loop_data, 0, 1);

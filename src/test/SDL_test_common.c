@@ -1395,13 +1395,21 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
                 }
             }
 
+            props = SDL_CreateProperties();
             if (state->num_windows > 1) {
                 (void)SDL_snprintf(title, SDL_arraysize(title), "%s %d",
                                    state->window_title, i + 1);
+#if SDL_PLATFORM_EMSCRIPTEN
+                if (i != 0) {
+                    char id[64];
+                    SDL_snprintf(id, sizeof(id), "#canvas%d", i + 1);
+                    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, id);
+                    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT, id);
+                }
+#endif
             } else {
                 SDL_strlcpy(title, state->window_title, SDL_arraysize(title));
             }
-            props = SDL_CreateProperties();
             SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title);
             SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, r.x);
             SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, r.y);

@@ -47,6 +47,9 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+static bool Emscripten_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
+static void Emscripten_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static void Emscripten_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 static bool pumpevents_has_run = false;
 static int pending_swap_interval = -1;
@@ -166,12 +169,12 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
 
     device->CreateSDLWindow = Emscripten_CreateWindow;
     device->SetWindowTitle = Emscripten_SetWindowTitle;
-    /*device->SetWindowIcon = Emscripten_SetWindowIcon;
-    device->SetWindowPosition = Emscripten_SetWindowPosition;*/
+    /*device->SetWindowIcon = Emscripten_SetWindowIcon;*/
+    device->SetWindowPosition = Emscripten_SetWindowPosition;
     device->SetWindowSize = Emscripten_SetWindowSize;
-    /*device->ShowWindow = Emscripten_ShowWindow;
+    device->ShowWindow = Emscripten_ShowWindow;
     device->HideWindow = Emscripten_HideWindow;
-    device->RaiseWindow = Emscripten_RaiseWindow;
+    /*device->RaiseWindow = Emscripten_RaiseWindow;
     device->MaximizeWindow = Emscripten_MaximizeWindow;
     device->MinimizeWindow = Emscripten_MinimizeWindow;
     device->RestoreWindow = Emscripten_RestoreWindow;
@@ -483,8 +486,7 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
         selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, "#canvas");
     }
 
-    // Since SDL3 doesn't create the canvas element in the DOM, it should be verified
-    // that the canvas ID refers to an HTML5CanvasElement.
+    // If an element with this id already exists, it should be verified that it is to an HTML5CanvasElement
     canvas_exists = MAIN_THREAD_EM_ASM_INT({
         var id = UTF8ToString($0);
         try
@@ -501,8 +503,75 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
         return false;
     }, selector);
 
+    // Create the canvas if it doesn't exist. Assign a class to the element to signal that it was created by SDL3
     if (!canvas_exists) {
-        SDL_SetError("Element '%s' is either not a HTMLCanvasElement or doesn't exist", selector);
+        int x = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_UNDEFINED);
+        if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
+            x = 0;
+        }
+        int y = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_UNDEFINED);
+        if (SDL_WINDOWPOS_ISUNDEFINED(y)) {
+            y = 0;
+        }
+        const int w = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 0);
+        const int h = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 0);
+        SDL_Window *parent = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, NULL);
+        const char *parent_id;
+        if (parent) {
+            SDL_WindowData *parent_window_data = parent->internal;
+            parent_id = parent_window_data->canvas_id;
+        } else {
+            parent_id = "body";
+        }
+        canvas_exists = MAIN_THREAD_EM_ASM_INT({
+            try
+            {
+                var id = UTF8ToString($0);
+                var x = $1;
+                var y = $2;
+                var w = $3;
+                var h = $4;
+                var parent_id = UTF8ToString($5);
+                var x_centered = $6;
+                var y_centered = $7;
+                if (x_centered) {
+                    x = window.innerWidth / 2 - w / 2;
+                }
+                if (y_centered) {
+                    y = window.innerHeight / 2 - h / 2;
+                }
+                var canvas = document.querySelector(id);
+                if (canvas) {
+                    // Element with this id is not a canvas
+                    return false;
+                }
+                canvas = document.createElement("canvas");
+                canvas.classList.add("SDL3_canvas");
+                canvas.id = id.replace("#", "");
+                canvas.oncontextmenu = (e) => { e.preventDefault(); };
+                canvas.style.position = "absolute";
+                canvas.style.left = `${x}px`;
+                canvas.style.top = `${y}px`;
+                canvas.width = w;
+                canvas.height = h;
+                var parent = document.querySelector(parent_id);
+                if (parent_id !== "body" && parent) {
+                    parent.parentNode.append(canvas);
+                } else {
+                    document.body.append(canvas);
+                }
+                return true;
+            }
+            catch(e)
+            {
+                // querySelector throws if id isn't a valid selector
+            }
+            return false;
+        }, selector, x, y, w, h, parent_id, SDL_WINDOWPOS_CENTERED_DISPLAY(x), SDL_WINDOWPOS_CENTERED_DISPLAY(y));
+    }
+
+    if (!canvas_exists) {
+        SDL_SetError("'%s' is not a valid selector or doesn't refer to an HTMLCanvasElement", selector);
         return false;
     }
 
@@ -624,8 +693,20 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         Emscripten_UnregisterEventHandlers(data);
 
-        // We can't destroy the canvas, so resize it to zero instead
-        emscripten_set_canvas_element_size(data->canvas_id, 0, 0);
+        MAIN_THREAD_EM_ASM({
+            var id = UTF8ToString($0);
+            var canvas = document.querySelector(id);
+            if (canvas) {
+                if (canvas.classList.contains("SDL3_canvas")) {
+                    canvas.remove();
+                } else {
+                    // Since the canvas wasn't created by SDL3, just resize it to zero instead.
+                    // TODO: Is this necessary?
+                    canvas.width = 0;
+                    canvas.height = 0;
+                }
+            }
+        }, data->canvas_id);
 
         vdata = _this->internal;
         SDL_SetBooleanProperty(vdata->window_map, data->canvas_id, false);
@@ -692,4 +773,57 @@ static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window
     emscripten_set_window_title(window->title);
 }
 
+static bool Emscripten_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    SDL_WindowData *window_data = window->internal;
+    return MAIN_THREAD_EM_ASM_INT({
+        try
+        {
+            var id = UTF8ToString($0);
+            var x = $1;
+            var y = $2;
+            var canvas = document.querySelector(id);
+            if (canvas && canvas.style.position && canvas.style.position !== 'static') {
+                canvas.style.left = `${x}px`;
+                canvas.style.top = `${y}px`;
+                return true;
+            }
+        }
+        catch(e)
+        {
+            // querySelector throws if id is not a valid selector
+        }
+        return false;
+    }, window_data->canvas_id, window->pending.x, window->pending.y);
+}
+
+static void Emscripten_SetWindowDisplay(SDL_Window *window, const char *display)
+{
+    SDL_WindowData *window_data = window->internal;
+    MAIN_THREAD_EM_ASM({
+        var id = UTF8ToString($0);
+        var display = UTF8ToString($1);
+        try
+        {
+            let canvas = document.querySelector(id);
+            if (canvas) {
+                canvas.style.display = display;
+            }
+        }
+        catch(e)
+        {
+            // querySelector throws if id is not a valid selector
+        }
+    }, window_data->canvas_id, display);
+}
+
+static void Emscripten_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    Emscripten_SetWindowDisplay(window, "");
+}
+
+static void Emscripten_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    Emscripten_SetWindowDisplay(window, "none");
+}
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN
