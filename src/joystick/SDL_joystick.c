@@ -1122,7 +1122,9 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->attached = true;
     joystick->led_expiration = SDL_GetTicks();
     joystick->battery_percent = -1;
+#ifdef SDL_JOYSTICK_VIRTUAL
     joystick->is_virtual = (driver == &SDL_VIRTUAL_JoystickDriver);
+#endif
 
     if (!driver->Open(joystick, device_index)) {
         SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, false);

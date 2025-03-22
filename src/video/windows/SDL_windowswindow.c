@@ -42,10 +42,6 @@
 #include <shobjidl_core.h>
 #endif
 
-// DWM setting support
-typedef HRESULT (WINAPI *DwmSetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
-typedef HRESULT (WINAPI *DwmGetWindowAttribute_t)(HWND hwnd, DWORD dwAttribute, PVOID pvAttribute, DWORD cbAttribute);
-
 // Dark mode support
 typedef enum {
     UXTHEME_APPMODE_DEFAULT,
@@ -83,46 +79,6 @@ typedef void (WINAPI *RefreshImmersiveColorPolicyState_t)(void);
 typedef UxthemePreferredAppMode (WINAPI *SetPreferredAppMode_t)(UxthemePreferredAppMode);
 typedef BOOL (WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
 typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
-
-// Corner rounding support  (Win 11+)
-#ifndef DWMWA_WINDOW_CORNER_PREFERENCE
-#define DWMWA_WINDOW_CORNER_PREFERENCE 33
-#endif
-typedef enum {
-    DWMWCP_DEFAULT = 0,
-    DWMWCP_DONOTROUND = 1,
-    DWMWCP_ROUND = 2,
-    DWMWCP_ROUNDSMALL = 3
-} DWM_WINDOW_CORNER_PREFERENCE;
-
-// Border Color support (Win 11+)
-#ifndef DWMWA_BORDER_COLOR
-#define DWMWA_BORDER_COLOR 34
-#endif
-
-#ifndef DWMWA_COLOR_DEFAULT
-#define DWMWA_COLOR_DEFAULT 0xFFFFFFFF
-#endif
-
-#ifndef DWMWA_COLOR_NONE
-#define DWMWA_COLOR_NONE 0xFFFFFFFE
-#endif
-
-// Transparent window support
-#ifndef DWM_BB_ENABLE
-#define DWM_BB_ENABLE 0x00000001
-#endif
-#ifndef DWM_BB_BLURREGION
-#define DWM_BB_BLURREGION 0x00000002
-#endif
-typedef struct
-{
-    DWORD flags;
-    BOOL enable;
-    HRGN blur_region;
-    BOOL transition_on_maxed;
-} DWM_BLURBEHIND;
-typedef HRESULT(WINAPI *DwmEnableBlurBehindWindow_t)(HWND hwnd, const DWM_BLURBEHIND *pBlurBehind);
 
 // Windows CE compatibility
 #ifndef SWP_NOCOPYBITS
@@ -767,6 +723,7 @@ static void WIN_SetKeyboardFocus(SDL_Window *window, bool set_active_focus)
 
 bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
+    SDL_VideoData *videodata = _this->internal;
     HWND hwnd = (HWND)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetPointerProperty(create_props, "sdl2-compat.external_window", NULL));
     HWND parent = NULL;
     if (hwnd) {
@@ -828,24 +785,19 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     // FIXME: does not work on all hardware configurations with different renders (i.e. hybrid GPUs)
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
-        SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
-        if (handle) {
-            DwmEnableBlurBehindWindow_t DwmEnableBlurBehindWindowFunc = (DwmEnableBlurBehindWindow_t)SDL_LoadFunction(handle, "DwmEnableBlurBehindWindow");
-            if (DwmEnableBlurBehindWindowFunc) {
-                /* The region indicates which part of the window will be blurred and rest will be transparent. This
-                   is because the alpha value of the window will be used for non-blurred areas
-                   We can use (-1, -1, 0, 0) boundary to make sure no pixels are being blurred
-                */
-                HRGN rgn = CreateRectRgn(-1, -1, 0, 0);
-                DWM_BLURBEHIND bb;
-                bb.flags = (DWM_BB_ENABLE | DWM_BB_BLURREGION);
-                bb.enable = TRUE;
-                bb.blur_region = rgn;
-                bb.transition_on_maxed = FALSE;
-                DwmEnableBlurBehindWindowFunc(hwnd, &bb);
-                DeleteObject(rgn);
-            }
-            SDL_UnloadObject(handle);
+        if (videodata->DwmEnableBlurBehindWindow) {
+            /* The region indicates which part of the window will be blurred and rest will be transparent. This
+               is because the alpha value of the window will be used for non-blurred areas
+               We can use (-1, -1, 0, 0) boundary to make sure no pixels are being blurred
+            */
+            HRGN rgn = CreateRectRgn(-1, -1, 0, 0);
+            DWM_BLURBEHIND bb;
+            bb.flags = (DWM_BB_ENABLE | DWM_BB_BLURREGION);
+            bb.enable = TRUE;
+            bb.blur_region = rgn;
+            bb.transition_on_maxed = FALSE;
+            videodata->DwmEnableBlurBehindWindow(hwnd, &bb);
+            DeleteObject(rgn);
         }
     }
 
@@ -1287,29 +1239,19 @@ void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 }
 
-static void WIN_UpdateCornerRoundingForHWND(HWND hwnd, DWM_WINDOW_CORNER_PREFERENCE cornerPref)
+static void WIN_UpdateCornerRoundingForHWND(SDL_VideoDevice *_this, HWND hwnd, DWM_WINDOW_CORNER_PREFERENCE cornerPref)
 {
-    SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
-    if (handle) {
-        DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
-        if (DwmSetWindowAttributeFunc) {
-            DwmSetWindowAttributeFunc(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
-        }
-
-        SDL_UnloadObject(handle);
+    SDL_VideoData *videodata = _this->internal;
+    if (videodata->DwmSetWindowAttribute) {
+        videodata->DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
     }
 }
 
-static void WIN_UpdateBorderColorForHWND(HWND hwnd, COLORREF colorRef)
+static void WIN_UpdateBorderColorForHWND(SDL_VideoDevice *_this, HWND hwnd, COLORREF colorRef)
 {
-    SDL_SharedObject *handle = SDL_LoadObject("dwmapi.dll");
-    if (handle) {
-        DwmSetWindowAttribute_t DwmSetWindowAttributeFunc = (DwmSetWindowAttribute_t)SDL_LoadFunction(handle, "DwmSetWindowAttribute");
-        if (DwmSetWindowAttributeFunc) {
-            DwmSetWindowAttributeFunc(hwnd, DWMWA_BORDER_COLOR, &colorRef, sizeof(colorRef));
-        }
-
-        SDL_UnloadObject(handle);
+    SDL_VideoData *videodata = _this->internal;
+    if (videodata->DwmSetWindowAttribute) {
+        videodata->DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &colorRef, sizeof(colorRef));
     }
 }
 
@@ -1376,13 +1318,13 @@ SDL_FullscreenResult WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window 
         }
 
         // Disable corner rounding & border color (Windows 11+) so the window fills the full screen
-        WIN_UpdateCornerRoundingForHWND(hwnd, DWMWCP_DONOTROUND);
-        WIN_UpdateBorderColorForHWND(hwnd, DWMWA_COLOR_NONE);
+        WIN_UpdateCornerRoundingForHWND(_this, hwnd, DWMWCP_DONOTROUND);
+        WIN_UpdateBorderColorForHWND(_this, hwnd, DWMWA_COLOR_NONE);
     } else {
         BOOL menu;
 
-        WIN_UpdateCornerRoundingForHWND(hwnd, DWMWCP_DEFAULT);
-        WIN_UpdateBorderColorForHWND(hwnd, DWMWA_COLOR_DEFAULT);
+        WIN_UpdateCornerRoundingForHWND(_this, hwnd, DWMWCP_DEFAULT);
+        WIN_UpdateBorderColorForHWND(_this, hwnd, DWMWA_COLOR_DEFAULT);
 
         /* Restore window-maximization state, as applicable.
            Special care is taken to *not* do this if and when we're

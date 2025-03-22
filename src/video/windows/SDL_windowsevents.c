@@ -1863,6 +1863,13 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     {
         if (wParam == (UINT_PTR)SDL_IterateMainCallbacks) {
             SDL_OnWindowLiveResizeUpdate(data->window);
+
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+            // Make sure graphics operations are complete for smooth refresh
+            if (data->videodata->DwmFlush) {
+                data->videodata->DwmFlush();
+            }
+#endif
             return 0;
         }
     } break;

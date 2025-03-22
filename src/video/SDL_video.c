@@ -2925,12 +2925,12 @@ bool SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
             }
         }
     } else {
-        const bool use_current = !(window->flags & SDL_WINDOW_HIDDEN) && !window->last_position_pending;
+        const bool use_pending = (window->flags & SDL_WINDOW_HIDDEN) && window->last_position_pending;
         if (x) {
-            *x = use_current ? window->x : window->pending.x;
+            *x = use_pending ? window->pending.x : window->x;
         }
         if (y) {
-            *y = use_current ? window->y : window->pending.y;
+            *y = use_pending ? window->pending.y : window->y;
         }
     }
     return true;
