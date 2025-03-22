@@ -228,6 +228,7 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
     return style;
 }
 
+#ifdef HAVE_SHOBJIDL_CORE_H
 static ITaskbarList3* GetTaskbarList(SDL_Window* window)
 {
     const SDL_WindowData *data = window->internal;
@@ -244,6 +245,7 @@ static ITaskbarList3* GetTaskbarList(SDL_Window* window)
     }
     return data->videodata->taskbar_list;
 }
+#endif
 
 /**
  * Returns arguments to pass to SetWindowPos - the window rect, including frame, in Windows coordinates.
