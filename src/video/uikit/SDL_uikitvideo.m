@@ -301,14 +301,26 @@ void SDL_NSLog(const char *prefix, const char *text)
  * This doesn't really have anything to do with the interfaces of the SDL video
  * subsystem, but we need to stuff this into an Objective-C source code file.
  */
-bool SDL_IsIPad(void)
-{
-    return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad);
-}
 
-bool SDL_IsAppleTV(void)
+bool SDL_GetUIKitDeviceFormFactor(void)
 {
-    return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomTV);
+    // TODO: Apple Watch
+    switch ([UIDevice currentDevice].userInterfaceIdiom) {
+    case UIUserInterfaceIdiomPhone:
+        return SDL_FORMFACTOR_PHONE;
+    case UIUserInterfaceIdiomPad:
+        return SDL_FORMFACTOR_TABLET;
+    case UIUserInterfaceIdiomTV:
+        return SDL_FORMFACTOR_TV;
+    case UIUserInterfaceIdiomCarPlay:
+        return SDL_FORMFACTOR_CAR;
+    case UIUserInterfaceIdiomMac:
+        return SDL_FORMFACTOR_DESKTOP;
+    case UIUserInterfaceIdiomVision:
+        return SDL_FORMFACTOR_VR;
+    default:
+        return SDL_FORMFACTOR_UNKNOWN;
+    }
 }
 
 #endif // SDL_VIDEO_DRIVER_UIKIT
