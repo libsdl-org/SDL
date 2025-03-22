@@ -228,6 +228,23 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
     return style;
 }
 
+static ITaskbarList3* GetTaskbarList(SDL_Window* window)
+{
+    const SDL_WindowData *data = window->internal;
+    if (data->videodata->taskbar_button_created && !data->videodata->taskbar_list) {
+        HRESULT ret = CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (LPVOID *)&data->videodata->taskbar_list);
+        if (SUCCEEDED(ret)) {
+            ITaskbarList3 *taskbarlist = data->videodata->taskbar_list;
+            ret = taskbarlist->lpVtbl->HrInit(taskbarlist);
+            if (FAILED(ret)) {
+                taskbarlist->lpVtbl->Release(taskbarlist);
+                taskbarlist = NULL;
+            }
+        }
+    }
+    return data->videodata->taskbar_list;
+}
+
 /**
  * Returns arguments to pass to SetWindowPos - the window rect, including frame, in Windows coordinates.
  * Can be called before we have a HWND.
@@ -2284,12 +2301,10 @@ bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 #ifndef HAVE_SHOBJIDL_CORE_H
     return false;
 #else
-    const SDL_WindowData *data = window->internal;
-    ITaskbarList3 *taskbarlist = data->videodata->taskbarlist;
-
-    if (!taskbarlist) {
+    ITaskbarList3 *taskbar_list = GetTaskbarList(window);
+    if (!taskbar_list) {
         return false;
-    }
+    };
 
     TBPFLAG tbpFlags;
     switch (state) {
@@ -2312,7 +2327,7 @@ bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_
         return SDL_Unsupported();
     }
 
-    HRESULT ret = taskbarlist->lpVtbl->SetProgressState(taskbarlist, data->hwnd, tbpFlags);
+    HRESULT ret = taskbar_list->lpVtbl->SetProgressState(taskbar_list, window->internal->hwnd, tbpFlags);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressState()", ret);
     }
@@ -2326,15 +2341,13 @@ bool WIN_SetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window, floa
 #ifndef HAVE_SHOBJIDL_CORE_H
     return false;
 #else
-    const SDL_WindowData *data = window->internal;
-    ITaskbarList3 *taskbarlist = data->videodata->taskbarlist;
-
-    if (!taskbarlist) {
+    ITaskbarList3 *taskbar_list = GetTaskbarList(window);
+    if (!taskbar_list) {
         return false;
-    }
+    };
 
     SDL_clamp(value, 0.0f, 1.f);
-    HRESULT ret = taskbarlist->lpVtbl->SetProgressValue(taskbarlist, data->hwnd, (ULONGLONG)(value * 10000.f), 10000);
+    HRESULT ret = taskbar_list->lpVtbl->SetProgressValue(taskbar_list, window->internal->hwnd, (ULONGLONG)(value * 10000.f), 10000);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressValue()", ret);
     }
