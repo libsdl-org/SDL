@@ -4917,6 +4917,8 @@ static void VULKAN_DestroyDevice(
     renderer->vkDestroyDevice(renderer->logicalDevice, NULL);
     renderer->vkDestroyInstance(renderer->instance, NULL);
 
+    SDL_DestroyProperties(device->props);
+
     SDL_free(renderer);
     SDL_free(device);
     SDL_Vulkan_UnloadLibrary();
@@ -11618,6 +11620,10 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     ASSIGN_DRIVER(VULKAN)
 
     result->driverData = (SDL_GPURenderer *)renderer;
+    
+    result->props = SDL_CreateProperties();
+    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_PHYSICAL_NAME_STRING, renderer->physicalDeviceProperties.properties.deviceName);
+    SDL_SetStringProperty(result->props, SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING, renderer->physicalDeviceDriverProperties.driverInfo);
 
     /*
      * Create initial swapchain array

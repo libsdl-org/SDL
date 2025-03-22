@@ -2973,3 +2973,12 @@ Uint32 SDL_CalculateGPUTextureFormatSize(
     Uint32 blocksPerColumn = (height + blockHeight - 1) / blockHeight;
     return depth_or_layer_count * blocksPerRow * blocksPerColumn * SDL_GPUTextureFormatTexelBlockSize(format);
 }
+
+
+SDL_PropertiesID SDL_GetGPUDeviceProperties(
+    SDL_GPUDevice *device) 
+{
+    CHECK_DEVICE_MAGIC(device, 0);
+
+    return device->props;
+}
