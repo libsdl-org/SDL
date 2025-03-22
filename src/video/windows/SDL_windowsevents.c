@@ -2429,7 +2429,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     }
 
 #ifdef HAVE_SHOBJIDL_CORE_H
-    if (data->videodata->WM_TASKBAR_BUTTON_CREATED) {
+    if (msg == data->videodata->WM_TASKBAR_BUTTON_CREATED) {
         if (!data->videodata->taskbarlist) {
             HRESULT ret = CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (LPVOID *)&data->videodata->taskbarlist);
             if (SUCCEEDED(ret)) {
