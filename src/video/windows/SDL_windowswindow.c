@@ -38,6 +38,10 @@
 // Dropfile support
 #include <shellapi.h>
 
+#ifdef HAVE_SHOBJIDL_CORE_H
+#include <shobjidl_core.h>
+#endif
+
 // Dark mode support
 typedef enum {
     UXTHEME_APPMODE_DEFAULT,
@@ -179,6 +183,33 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
     }
     return style;
 }
+
+#ifdef HAVE_SHOBJIDL_CORE_H
+static ITaskbarList3 *GetTaskbarList(SDL_Window* window)
+{
+    const SDL_WindowData *data = window->internal;
+    if (!data->videodata->taskbar_button_created) {
+        WIN_SetError("Missing taskbar button");
+        return NULL;
+    }
+    if (!data->videodata->taskbar_list) {
+        HRESULT ret = CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (LPVOID *)&data->videodata->taskbar_list);
+        if (FAILED(ret)) {
+            WIN_SetError("Unable to create taskbar list");
+            return NULL;
+        }
+        ITaskbarList3 *taskbarlist = data->videodata->taskbar_list;
+        ret = taskbarlist->lpVtbl->HrInit(taskbarlist);
+        if (FAILED(ret)) {
+            taskbarlist->lpVtbl->Release(taskbarlist);
+            data->videodata->taskbar_list = NULL;
+            WIN_SetError("Unable to initialize taskbar list");
+            return NULL;
+        }
+    }
+    return data->videodata->taskbar_list;
+}
+#endif
 
 /**
  * Returns arguments to pass to SetWindowPos - the window rect, including frame, in Windows coordinates.
@@ -694,7 +725,7 @@ static void WIN_SetKeyboardFocus(SDL_Window *window, bool set_active_focus)
     toplevel->internal->keyboard_focus = window;
 
     if (set_active_focus && !window->is_hiding && !window->is_destroying) {
-    	SDL_SetKeyboardFocus(window);
+        SDL_SetKeyboardFocus(window);
     }
 }
 
@@ -1051,7 +1082,7 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     if (window->flags & SDL_WINDOW_POPUP_MENU && bActivate) {
-	    WIN_SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
+        WIN_SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
     }
     if (window->flags & SDL_WINDOW_MODAL) {
         WIN_SetWindowModal(_this, window, true);
@@ -2215,6 +2246,66 @@ bool WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperat
     FlashWindowEx(&desc);
 
     return true;
+}
+
+bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_ProgressState state)
+{
+#ifndef HAVE_SHOBJIDL_CORE_H
+    return false;
+#else
+    ITaskbarList3 *taskbar_list = GetTaskbarList(window);
+    if (!taskbar_list) {
+        return false;
+    };
+
+    TBPFLAG tbpFlags;
+    switch (state) {
+    case SDL_PROGRESS_STATE_NONE:
+        tbpFlags = TBPF_NOPROGRESS;
+        break;
+    case SDL_PROGRESS_STATE_INDETERMINATE:
+        tbpFlags = TBPF_INDETERMINATE;
+        break;
+    case SDL_PROGRESS_STATE_NORMAL:
+        tbpFlags = TBPF_NORMAL;
+        break;
+    case SDL_PROGRESS_STATE_PAUSED:
+        tbpFlags = TBPF_PAUSED;
+        break;
+    case SDL_PROGRESS_STATE_ERROR:
+        tbpFlags = TBPF_ERROR;
+        break;
+    default:
+        return SDL_Unsupported();
+    }
+
+    HRESULT ret = taskbar_list->lpVtbl->SetProgressState(taskbar_list, window->internal->hwnd, tbpFlags);
+    if (FAILED(ret)) {
+        return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressState()", ret);
+    }
+
+    return true;
+#endif // HAVE_SHOBJIDL_CORE_H
+}
+
+bool WIN_SetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window, float value)
+{
+#ifndef HAVE_SHOBJIDL_CORE_H
+    return false;
+#else
+    ITaskbarList3 *taskbar_list = GetTaskbarList(window);
+    if (!taskbar_list) {
+        return false;
+    };
+
+    SDL_clamp(value, 0.0f, 1.f);
+    HRESULT ret = taskbar_list->lpVtbl->SetProgressValue(taskbar_list, window->internal->hwnd, (ULONGLONG)(value * 10000.f), 10000);
+    if (FAILED(ret)) {
+        return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressValue()", ret);
+    }
+
+    return true;
+#endif  // HAVE_SHOBJIDL_CORE_H
 }
 
 void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y)

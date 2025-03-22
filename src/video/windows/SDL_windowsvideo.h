@@ -308,6 +308,8 @@ typedef enum PROCESS_DPI_AWARENESS
 #include <shellscalingapi.h>
 #endif
 
+typedef struct ITaskbarList3 ITaskbarList3;
+
 #ifndef _DPI_AWARENESS_CONTEXTS_
 
 typedef enum DPI_AWARENESS
@@ -536,6 +538,12 @@ struct SDL_VideoData
 
     BYTE pre_hook_key_state[256];
     UINT _SDL_WAKEUP;
+
+#ifdef HAVE_SHOBJIDL_CORE_H
+    UINT WM_TASKBAR_BUTTON_CREATED;
+    bool taskbar_button_created;
+    ITaskbarList3 *taskbar_list;
+#endif
 };
 
 extern bool g_WindowsEnableMessageLoop;

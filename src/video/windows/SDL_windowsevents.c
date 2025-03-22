@@ -51,6 +51,10 @@
 #include "wmmsg.h"
 #endif
 
+#ifdef HAVE_SHOBJIDL_CORE_H
+#include <shobjidl_core.h>
+#endif
+
 #ifdef SDL_PLATFORM_GDK
 #include "../../core/gdk/SDL_gdk.h"
 #endif
@@ -2430,6 +2434,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     }
+
+#ifdef HAVE_SHOBJIDL_CORE_H
+    if (msg == data->videodata->WM_TASKBAR_BUTTON_CREATED) {
+        data->videodata->taskbar_button_created = true;
+    }
+#endif
 
     // If there's a window proc, assume it's going to handle messages
     if (data->wndproc) {

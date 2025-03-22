@@ -1242,6 +1242,8 @@ SDL3_0.0.0 {
     SDL_SetGPURenderStateFragmentUniforms;
     SDL_SetRenderGPUState;
     SDL_DestroyGPURenderState;
+    SDL_SetWindowProgressState;
+    SDL_SetWindowProgressValue;
     # extra symbols go here (don't modify this line)
   local: *;
 };

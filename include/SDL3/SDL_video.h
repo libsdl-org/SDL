@@ -308,6 +308,20 @@ typedef enum SDL_FlashOperation
 } SDL_FlashOperation;
 
 /**
+ * Window progress state
+ *
+ * \since This enum is available since SDL 3.2.8.
+ */
+typedef enum SDL_ProgressState
+{
+    SDL_PROGRESS_STATE_NONE,            /**< No progress bar is shown */
+    SDL_PROGRESS_STATE_INDETERMINATE,   /**< The progress bar is shown in a indeterminate state */
+    SDL_PROGRESS_STATE_NORMAL,          /**< The progress bar is shown in a normal state */
+    SDL_PROGRESS_STATE_PAUSED,          /**< The progress bar is shown in a paused state */
+    SDL_PROGRESS_STATE_ERROR            /**< The progress bar is shown in an error state */
+} SDL_ProgressState;
+
+/**
  * An opaque handle to an OpenGL context.
  *
  * \since This datatype is available since SDL 3.2.0.
@@ -2805,6 +2819,34 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowShape(SDL_Window *window, SDL_Surf
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOperation operation);
+
+/**
+ * Sets the state of the progress bar for the given window’s taskbar icon.
+ *
+ * \param window the window whose progress state is to be modified.
+ * \param state the progress state.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.2.8.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressState(SDL_Window *window, SDL_ProgressState state);
+
+/**
+ * Sets the value of the progress bar for the given window’s taskbar icon.
+ *
+ * \param window the window whose progress value is to be modified.
+ * \param value the progress value (0.0f - start, 1.0f - end).
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.2.8.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressValue(SDL_Window *window, float value);
 
 /**
  * Destroy a window.
