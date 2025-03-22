@@ -185,18 +185,26 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
 }
 
 #ifdef HAVE_SHOBJIDL_CORE_H
-static ITaskbarList3* GetTaskbarList(SDL_Window* window)
+static ITaskbarList3 *GetTaskbarList(SDL_Window* window)
 {
     const SDL_WindowData *data = window->internal;
-    if (data->videodata->taskbar_button_created && !data->videodata->taskbar_list) {
+    if (!data->videodata->taskbar_button_created) {
+        WIN_SetError("Missing taskbar button");
+        return NULL;
+    }
+    if (!data->videodata->taskbar_list) {
         HRESULT ret = CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (LPVOID *)&data->videodata->taskbar_list);
-        if (SUCCEEDED(ret)) {
-            ITaskbarList3 *taskbarlist = data->videodata->taskbar_list;
-            ret = taskbarlist->lpVtbl->HrInit(taskbarlist);
-            if (FAILED(ret)) {
-                taskbarlist->lpVtbl->Release(taskbarlist);
-                taskbarlist = NULL;
-            }
+        if (FAILED(ret)) {
+            WIN_SetError("Unable to create taskbar list");
+            return NULL;
+        }
+        ITaskbarList3 *taskbarlist = data->videodata->taskbar_list;
+        ret = taskbarlist->lpVtbl->HrInit(taskbarlist);
+        if (FAILED(ret)) {
+            taskbarlist->lpVtbl->Release(taskbarlist);
+            data->videodata->taskbar_list = NULL;
+            WIN_SetError("Unable to initialize taskbar list");
+            return NULL;
         }
     }
     return data->videodata->taskbar_list;
