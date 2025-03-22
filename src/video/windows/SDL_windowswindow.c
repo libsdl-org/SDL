@@ -2298,7 +2298,7 @@ bool WIN_SetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window, floa
         return false;
     };
 
-    SDL_clamp(value, 0.0f, 1.f);
+    value = SDL_clamp(value, 0.0f, 1.f);
     HRESULT ret = taskbar_list->lpVtbl->SetProgressValue(taskbar_list, window->internal->hwnd, (ULONGLONG)(value * 10000.f), 10000);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressValue()", ret);
