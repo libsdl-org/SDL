@@ -2646,9 +2646,13 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         SDL_Vulkan_UnloadLibrary();
     }
 
+    // Don't actually recreate the window in Emscripten because the SDL_WindowData's
+    // canvas_id and keyboard_element would be lost if destroyed
+#if !SDL_PLATFORM_EMSCRIPTEN
     if (_this->DestroyWindow && !(flags & SDL_WINDOW_EXTERNAL)) {
         _this->DestroyWindow(_this, window);
     }
+#endif
 
     if (need_gl_load) {
         if (!SDL_GL_LoadLibrary(NULL)) {
@@ -2676,6 +2680,11 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         window->w = window->windowed.w = window->floating.w;
         window->h = window->windowed.h = window->floating.h;
 
+#if SDL_PLATFORM_EMSCRIPTEN
+        // Prevent -Wunused-but-set-variable
+        (void)loaded_opengl;
+        (void)loaded_vulkan;
+#else
         if (!_this->CreateSDLWindow(_this, window, 0)) {
             if (loaded_opengl) {
                 SDL_GL_UnloadLibrary();
@@ -2687,6 +2696,7 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
             }
             return false;
         }
+#endif
     }
 
     if (flags & SDL_WINDOW_EXTERNAL) {
@@ -2717,7 +2727,9 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         _this->SetWindowHitTest(window, true);
     }
 
+#if !SDL_PLATFORM_EMSCRIPTEN
     SDL_FinishWindowCreation(window, flags);
+#endif
 
     return true;
 }

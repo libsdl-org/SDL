@@ -35,6 +35,10 @@ bool Emscripten_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
 
     // Free the old framebuffer surface
     SDL_WindowData *data = window->internal;
+    if (!data) {
+        // No framebuffer needed for this window
+        return true;
+    }
     surface = data->surface;
     SDL_DestroySurface(surface);
 
@@ -166,9 +170,10 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
 void Emscripten_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
-
-    SDL_DestroySurface(data->surface);
-    data->surface = NULL;
+    if (data) {
+        SDL_DestroySurface(data->surface);
+        data->surface = NULL;
+    }
 }
 
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN
