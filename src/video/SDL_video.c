@@ -3938,6 +3938,8 @@ bool SDL_SetWindowProgressValue(SDL_Window *window, float value)
     CHECK_WINDOW_MAGIC(window, false);
     CHECK_WINDOW_NOT_POPUP(window, false);
 
+    value = SDL_clamp(value, 0.0f, 1.f);
+
     if (_this->SetWindowProgressValue) {
         return _this->SetWindowProgressValue(_this, window, value);
     }
