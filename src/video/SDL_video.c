@@ -3926,6 +3926,10 @@ bool SDL_SetWindowProgressState(SDL_Window *window, SDL_ProgressState state)
     CHECK_WINDOW_MAGIC(window, false);
     CHECK_WINDOW_NOT_POPUP(window, false);
 
+    if (state < SDL_PROGRESS_STATE_NONE || state > SDL_PROGRESS_STATE_ERROR) {
+        return SDL_InvalidParamError("state");
+    }
+
     if (_this->SetWindowProgressState) {
         return _this->SetWindowProgressState(_this, window, state);
     }
