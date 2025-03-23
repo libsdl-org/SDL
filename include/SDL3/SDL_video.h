@@ -2824,8 +2824,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOp
  * Sets the state of the progress bar for the given window’s taskbar icon.
  *
  * \param window the window whose progress state is to be modified.
- * \param state the progress state.
- *              `SDL_PROGRESS_STATE_NONE` stops displaying the progress bar.
+ * \param state the progress state. `SDL_PROGRESS_STATE_NONE` stops displaying
+ *              the progress bar.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -2838,12 +2838,13 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressState(SDL_Window *window, 
 /**
  * Sets the value of the progress bar for the given window’s taskbar icon.
  *
- * If the state is `SDL_PROGRESS_STATE_NONE` or `SDL_PROGRESS_STATE_INDETERMINATE`,
- * it gets changed to `SDL_PROGRESS_STATE_NORMAL`.
+ * If the state is `SDL_PROGRESS_STATE_NONE` or
+ * `SDL_PROGRESS_STATE_INDETERMINATE`, it gets changed to
+ * `SDL_PROGRESS_STATE_NORMAL`.
  *
  * \param window the window whose progress value is to be modified.
- * \param value the progress value (0.0f - start, 1.0f - end).
- *              If the value is outside the valid range, it gets clamped.
+ * \param value the progress value (0.0f - start, 1.0f - end). If the value is
+ *              outside the valid range, it gets clamped.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
