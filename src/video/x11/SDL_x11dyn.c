@@ -101,16 +101,8 @@ static void *X11_GetSym(const char *fnname, int *pHasModule)
 #endif // SDL_VIDEO_DRIVER_X11_DYNAMIC
 
 // Define all the function pointers and wrappers...
-#define SDL_X11_SYM(rc, fn, params, args, ret) SDL_DYNX11FN_##fn X11_##fn = NULL;
+#define SDL_X11_SYM(rc, fn, params) SDL_DYNX11FN_##fn X11_##fn = NULL;
 #include "SDL_x11sym.h"
-
-// Annoying varargs entry point...
-#ifdef X_HAVE_UTF8_STRING
-SDL_DYNX11FN_XCreateIC X11_XCreateIC = NULL;
-SDL_DYNX11FN_XGetICValues X11_XGetICValues = NULL;
-SDL_DYNX11FN_XSetICValues X11_XSetICValues = NULL;
-SDL_DYNX11FN_XVaCreateNestedList X11_XVaCreateNestedList = NULL;
-#endif
 
 /* These SDL_X11_HAVE_* flags are here whether you have dynamic X11 or not. */
 #define SDL_X11_MODULE(modname) int SDL_X11_HAVE_##modname = 0;
@@ -129,7 +121,7 @@ void SDL_X11_UnloadSymbols(void)
 
             // set all the function pointers to NULL.
 #define SDL_X11_MODULE(modname)                SDL_X11_HAVE_##modname = 0;
-#define SDL_X11_SYM(rc, fn, params, args, ret) X11_##fn = NULL;
+#define SDL_X11_SYM(rc, fn, params) X11_##fn = NULL;
 #include "SDL_x11sym.h"
 
 #ifdef X_HAVE_UTF8_STRING
@@ -171,7 +163,7 @@ bool SDL_X11_LoadSymbols(void)
 #include "SDL_x11sym.h"
 
 #define SDL_X11_MODULE(modname)     thismod = &SDL_X11_HAVE_##modname;
-#define SDL_X11_SYM(a, fn, x, y, z) X11_##fn = (SDL_DYNX11FN_##fn)X11_GetSym(#fn, thismod);
+#define SDL_X11_SYM(rc, fn, params) X11_##fn = (SDL_DYNX11FN_##fn)X11_GetSym(#fn, thismod);
 #include "SDL_x11sym.h"
 
 #ifdef X_HAVE_UTF8_STRING
@@ -197,7 +189,7 @@ bool SDL_X11_LoadSymbols(void)
 #else // no dynamic X11
 
 #define SDL_X11_MODULE(modname)     SDL_X11_HAVE_##modname = 1; // default yes
-#define SDL_X11_SYM(a, fn, x, y, z) X11_##fn = (SDL_DYNX11FN_##fn)fn;
+#define SDL_X11_SYM(rc, fn, params) X11_##fn = (SDL_DYNX11FN_##fn)fn;
 #include "SDL_x11sym.h"
 
 #ifdef X_HAVE_UTF8_STRING
