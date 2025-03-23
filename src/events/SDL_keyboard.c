@@ -747,7 +747,7 @@ void SDL_SendKeyboardText(const char *text)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    if (!SDL_TextInputActive(keyboard->focus)) {
+    if (!keyboard->focus || !SDL_TextInputActive(keyboard->focus)) {
         return;
     }
 
@@ -778,7 +778,7 @@ void SDL_SendEditingText(const char *text, int start, int length)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    if (!SDL_TextInputActive(keyboard->focus)) {
+    if (!keyboard->focus || !SDL_TextInputActive(keyboard->focus)) {
         return;
     }
 
@@ -838,7 +838,7 @@ void SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int se
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    if (!SDL_TextInputActive(keyboard->focus)) {
+    if (!keyboard->focus || !SDL_TextInputActive(keyboard->focus)) {
         return;
     }
 
