@@ -2276,7 +2276,7 @@ bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_
         tbpFlags = TBPF_ERROR;
         break;
     default:
-        return SDL_Unsupported();
+        return SDL_SetError("Parameter 'state' is not supported");
     }
 
     HRESULT ret = taskbar_list->lpVtbl->SetProgressState(taskbar_list, window->internal->hwnd, tbpFlags);
