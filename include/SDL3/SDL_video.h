@@ -318,7 +318,8 @@ typedef enum SDL_ProgressState
     SDL_PROGRESS_STATE_INDETERMINATE,   /**< The progress bar is shown in a indeterminate state */
     SDL_PROGRESS_STATE_NORMAL,          /**< The progress bar is shown in a normal state */
     SDL_PROGRESS_STATE_PAUSED,          /**< The progress bar is shown in a paused state */
-    SDL_PROGRESS_STATE_ERROR            /**< The progress bar is shown in an error state */
+    SDL_PROGRESS_STATE_ERROR,            /**< The progress bar is shown in an error state */
+    SDL_PROGRESS_STATE_FAILURE = -1     /**< An invalid progress state indicating an error; check SDL_GetError() */
 } SDL_ProgressState;
 
 /**
@@ -2839,8 +2840,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressState(SDL_Window *window, 
 * Get the state of the progress bar for the given window’s taskbar icon.
 *
 * \param window the window to get the current progress state from.
-* \returns the progress state, or -1 on failure; call SDL_GetError() for more
-*          information.
+* \returns the progress state, or SDL_PROGRESS_STATE_FAILURE on failure; call
+*          SDL_GetError() for more information.
 *
 * \threadsafety This function should only be called on the main thread.
 *
