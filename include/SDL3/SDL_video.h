@@ -2836,6 +2836,19 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOp
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressState(SDL_Window *window, SDL_ProgressState state);
 
 /**
+* Get the state of the progress bar for the given window’s taskbar icon.
+*
+* \param window the window to get the current progress state from.
+* \returns the progress state, or -1 on failure; call SDL_GetError() for more
+*          information.
+*
+* \threadsafety This function should only be called on the main thread.
+*
+* \since This function is available since SDL 3.4.0.
+*/
+extern SDL_DECLSPEC SDL_ProgressState SDLCALL SDL_GetWindowProgressState(SDL_Window *window);
+
+/**
  * Sets the value of the progress bar for the given window’s taskbar icon.
  *
  * If the state is `SDL_PROGRESS_STATE_NONE` or
@@ -2853,6 +2866,19 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressState(SDL_Window *window, 
  * \since This function is available since SDL 3.4.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressValue(SDL_Window *window, float value);
+
+/**
+* Get the value of the progress bar for the given window’s taskbar icon.
+*
+* \param window the window to get the current progress value from.
+* \returns the progress value, (0.0f - start, 1.0f - end), or -1.0f on
+*          failure; call SDL_GetError() for more information.
+*
+* \threadsafety This function should only be called on the main thread.
+*
+* \since This function is available since SDL 3.4.0.
+*/
+extern SDL_DECLSPEC float SDLCALL SDL_GetWindowProgressValue(SDL_Window *window);
 
 /**
  * Destroy a window.

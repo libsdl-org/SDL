@@ -1269,3 +1269,5 @@
 #define SDL_DestroyGPURenderState SDL_DestroyGPURenderState_REAL
 #define SDL_SetWindowProgressState SDL_SetWindowProgressState_REAL
 #define SDL_SetWindowProgressValue SDL_SetWindowProgressValue_REAL
+#define SDL_GetWindowProgressState SDL_GetWindowProgressState_REAL
+#define SDL_GetWindowProgressValue SDL_GetWindowProgressValue_REAL

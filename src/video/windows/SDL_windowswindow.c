@@ -2256,7 +2256,7 @@ bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_
     ITaskbarList3 *taskbar_list = GetTaskbarList(window);
     if (!taskbar_list) {
         return false;
-    };
+    }
 
     TBPFLAG tbpFlags;
     switch (state) {
@@ -2283,8 +2283,22 @@ bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressState()", ret);
     }
+    window->internal->videodata->progress_state = state;
 
     return true;
+#endif // HAVE_SHOBJIDL_CORE_H
+}
+
+SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window)
+{
+#ifndef HAVE_SHOBJIDL_CORE_H
+    return -1;
+#else
+    if (!GetTaskbarList(window)) {
+        return -1;
+    }
+
+    return window->internal->videodata->progress_state;
 #endif // HAVE_SHOBJIDL_CORE_H
 }
 
@@ -2296,14 +2310,28 @@ bool WIN_SetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window, floa
     ITaskbarList3 *taskbar_list = GetTaskbarList(window);
     if (!taskbar_list) {
         return false;
-    };
+    }
 
     HRESULT ret = taskbar_list->lpVtbl->SetProgressValue(taskbar_list, window->internal->hwnd, (ULONGLONG)(value * 10000.f), 10000);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressValue()", ret);
     }
+    window->internal->videodata->progress_value = value;
 
     return true;
+#endif  // HAVE_SHOBJIDL_CORE_H
+}
+
+float WIN_GetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window)
+{
+#ifndef HAVE_SHOBJIDL_CORE_H
+    return -1.0f;
+#else
+    if (!GetTaskbarList(window)) {
+        return -1.0f;
+    }
+
+    return window->internal->videodata->progress_value;
 #endif  // HAVE_SHOBJIDL_CORE_H
 }
 

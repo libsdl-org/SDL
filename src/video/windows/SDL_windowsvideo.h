@@ -543,6 +543,8 @@ struct SDL_VideoData
     UINT WM_TASKBAR_BUTTON_CREATED;
     bool taskbar_button_created;
     ITaskbarList3 *taskbar_list;
+    SDL_ProgressState progress_state;
+    float progress_value;
 #endif
 };
 
