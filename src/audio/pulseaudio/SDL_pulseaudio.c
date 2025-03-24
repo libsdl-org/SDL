@@ -409,7 +409,7 @@ static bool PULSEAUDIO_WaitDevice(SDL_AudioDevice *device)
     struct SDL_PrivateAudioData *h = device->hidden;
     bool result = true;
 
-    //SDL_Log("PULSEAUDIO PLAYDEVICE START! mixlen=%d", available);
+    //SDL_Log("PULSEAUDIO WAITDEVICE START! mixlen=%d", available);
 
     PULSEAUDIO_pa_threaded_mainloop_lock(pulseaudio_threaded_mainloop);
 
