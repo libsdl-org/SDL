@@ -585,7 +585,7 @@ static bool OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
     struct SDL_PrivateAudioData *audiodata = device->hidden;
 
     // Create the audio buffer semaphore
-    audiodata->playsem = SDL_CreateSemaphore(NUM_BUFFERS - 1);
+    audiodata->playsem = SDL_CreateSemaphore(NUM_BUFFERS);
     if (!audiodata->playsem) {
         LOGE("cannot create Semaphore!");
         goto failed;
