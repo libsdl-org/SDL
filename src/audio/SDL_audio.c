@@ -1256,11 +1256,11 @@ static int SDLCALL PlaybackAudioThread(void *devicep)  // thread entry point
     SDL_assert(!device->recording);
     SDL_PlaybackAudioThreadSetup(device);
 
-    do {
+    while (SDL_PlaybackAudioThreadIterate(device)) {
         if (!device->WaitDevice(device)) {
             SDL_AudioDeviceDisconnected(device);  // doh. (but don't break out of the loop, just be a zombie for now!)
         }
-    } while (SDL_PlaybackAudioThreadIterate(device));
+    }
 
     SDL_PlaybackAudioThreadShutdown(device);
     return 0;
