@@ -2248,7 +2248,7 @@ bool WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperat
     return true;
 }
 
-bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_ProgressState state)
+bool WIN_SetWindowProgress(SDL_Window* window, SDL_ProgressState state, float value)
 {
 #ifndef HAVE_SHOBJIDL_CORE_H
     return false;
@@ -2283,10 +2283,22 @@ bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressState()", ret);
     }
-    window->internal->videodata->progress_state = state;
+
+    if (state >= SDL_PROGRESS_STATE_NORMAL) {
+        ret = taskbar_list->lpVtbl->SetProgressValue(taskbar_list, window->internal->hwnd, (ULONGLONG)(value * 10000.f), 10000);
+        if (FAILED(ret)) {
+            return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressValue()", ret);
+        }
+    }
 
     return true;
-#endif // HAVE_SHOBJIDL_CORE_H
+#endif
+}
+
+bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_ProgressState state)
+{
+    window->internal->videodata->progress_state = state;
+    return WIN_SetWindowProgress(window, state, window->internal->videodata->progress_value);
 }
 
 SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window)
@@ -2304,22 +2316,8 @@ SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window 
 
 bool WIN_SetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window, float value)
 {
-#ifndef HAVE_SHOBJIDL_CORE_H
-    return false;
-#else
-    ITaskbarList3 *taskbar_list = GetTaskbarList(window);
-    if (!taskbar_list) {
-        return false;
-    }
-
-    HRESULT ret = taskbar_list->lpVtbl->SetProgressValue(taskbar_list, window->internal->hwnd, (ULONGLONG)(value * 10000.f), 10000);
-    if (FAILED(ret)) {
-        return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressValue()", ret);
-    }
     window->internal->videodata->progress_value = value;
-
-    return true;
-#endif  // HAVE_SHOBJIDL_CORE_H
+    return WIN_SetWindowProgress(window, window->internal->videodata->progress_state, value);
 }
 
 float WIN_GetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window)

@@ -133,6 +133,7 @@ extern void WIN_UnclipCursorForWindow(SDL_Window *window);
 extern bool WIN_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern void WIN_AcceptDragAndDrop(SDL_Window *window, bool accept);
 extern bool WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
+extern bool WIN_SetWindowProgress(SDL_Window *window, SDL_ProgressState state, float value);
 extern bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_ProgressState state);
 extern SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool WIN_SetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window, float value);
