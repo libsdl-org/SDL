@@ -2297,8 +2297,13 @@ bool WIN_SetWindowProgress(SDL_Window* window, SDL_ProgressState state, float va
 
 bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_ProgressState state)
 {
-    window->internal->videodata->progress_state = state;
-    return WIN_SetWindowProgress(window, state, window->internal->videodata->progress_value);
+#ifndef HAVE_SHOBJIDL_CORE_H
+    return false;
+#else
+    SDL_WindowData *data = window->internal;
+    data->progress_state = state;
+    return WIN_SetWindowProgress(window, state, data->progress_value);
+#endif
 }
 
 SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window)
@@ -2310,14 +2315,19 @@ SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window 
         return -1;
     }
 
-    return window->internal->videodata->progress_state;
+    return window->internal->progress_state;
 #endif // HAVE_SHOBJIDL_CORE_H
 }
 
 bool WIN_SetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window, float value)
 {
-    window->internal->videodata->progress_value = value;
-    return WIN_SetWindowProgress(window, window->internal->videodata->progress_state, value);
+#ifndef HAVE_SHOBJIDL_CORE_H
+    return false;
+#else
+    SDL_WindowData *data = window->internal;
+    data->progress_value = value;
+    return WIN_SetWindowProgress(window, data->progress_state, value);
+#endif
 }
 
 float WIN_GetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window)
@@ -2329,7 +2339,7 @@ float WIN_GetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window)
         return -1.0f;
     }
 
-    return window->internal->videodata->progress_value;
+    return window->internal->progress_value;
 #endif  // HAVE_SHOBJIDL_CORE_H
 }
 

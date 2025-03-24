@@ -93,6 +93,8 @@ struct SDL_WindowData
     WCHAR *ICMFileName;
     SDL_Window *keyboard_focus;
     SDL_WindowEraseBackgroundMode hint_erase_background_mode;
+    SDL_ProgressState progress_state;
+    float progress_value;
     struct SDL_VideoData *videodata;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
