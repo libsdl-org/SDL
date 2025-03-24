@@ -2287,7 +2287,7 @@ bool WIN_ApplyWindowProgress(SDL_Window* window)
     }
 
     if (data->progress_state >= SDL_PROGRESS_STATE_NORMAL) {
-        ret = taskbar_list->lpVtbl->SetProgressValue(taskbar_list, data->hwnd, (ULONGLONG)(data->progress_value * 10000.f), 10000);
+        ret = taskbar_list->lpVtbl->SetProgressValue(taskbar_list, data->hwnd, (ULONGLONG)(data->progress_value * (LONGLONG)ULONG_MAX), ULONG_MAX);
         if (FAILED(ret)) {
             return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressValue()", ret);
         }
