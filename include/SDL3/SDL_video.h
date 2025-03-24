@@ -318,8 +318,8 @@ typedef enum SDL_ProgressState
     SDL_PROGRESS_STATE_INDETERMINATE,   /**< The progress bar is shown in a indeterminate state */
     SDL_PROGRESS_STATE_NORMAL,          /**< The progress bar is shown in a normal state */
     SDL_PROGRESS_STATE_PAUSED,          /**< The progress bar is shown in a paused state */
-    SDL_PROGRESS_STATE_ERROR,            /**< The progress bar is shown in an error state */
-    SDL_PROGRESS_STATE_FAILURE = -1     /**< An invalid progress state indicating an error; check SDL_GetError() */
+    SDL_PROGRESS_STATE_ERROR,           /**< The progress bar is shown in an error state */
+    SDL_PROGRESS_STATE_INVALID = -1     /**< An invalid progress state indicating an error; check SDL_GetError() */
 } SDL_ProgressState;
 
 /**

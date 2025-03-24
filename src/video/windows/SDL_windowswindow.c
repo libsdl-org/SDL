@@ -2310,10 +2310,10 @@ bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifndef HAVE_SHOBJIDL_CORE_H
-    return SDL_PROGRESS_STATE_FAILURE;
+    return SDL_PROGRESS_STATE_INVALID;
 #else
     if (!GetTaskbarList(window)) {
-        return SDL_PROGRESS_STATE_FAILURE;
+        return SDL_PROGRESS_STATE_INVALID;
     }
 
     return window->internal->progress_state;
