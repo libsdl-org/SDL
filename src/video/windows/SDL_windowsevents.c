@@ -2437,9 +2437,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
 #ifdef HAVE_SHOBJIDL_CORE_H
     if (msg == data->videodata->WM_TASKBAR_BUTTON_CREATED) {
-        SDL_VideoData* videodata = data->videodata;
-        videodata->taskbar_button_created = true;
-        WIN_SetWindowProgress(data->window, data->progress_state, data->progress_value);
+        data->videodata->taskbar_button_created = true;
+        WIN_ApplyWindowProgress(data->window);
     }
 #endif
 
