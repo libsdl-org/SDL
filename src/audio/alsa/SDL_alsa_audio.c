@@ -1187,7 +1187,6 @@ static bool ALSA_OpenDevice(SDL_AudioDevice *device)
         ALSA_snd_pcm_nonblock(cfg_ctx.device->hidden->pcm, 0);
     }
 #endif
-    ALSA_snd_pcm_start(cfg_ctx.device->hidden->pcm);
     return true;  // We're ready to rock and roll. :-)
 
 err_cleanup_ctx:
@@ -1198,6 +1197,13 @@ err_free_device_hidden:
     SDL_free(cfg_ctx.device->hidden);
     cfg_ctx.device->hidden = NULL;
     return false;
+}
+
+static void ALSA_ThreadInit(SDL_AudioDevice *device)
+{
+    SDL_SetCurrentThreadPriority(device->recording ? SDL_THREAD_PRIORITY_HIGH : SDL_THREAD_PRIORITY_TIME_CRITICAL);
+    // do snd_pcm_start as close to the first time we PlayDevice as possible to prevent an underrun at startup.
+    ALSA_snd_pcm_start(device->hidden->pcm);
 }
 
 static ALSA_Device *hotplug_devices = NULL;
@@ -1497,6 +1503,7 @@ static bool ALSA_Init(SDL_AudioDriverImpl *impl)
 
     impl->DetectDevices = ALSA_DetectDevices;
     impl->OpenDevice = ALSA_OpenDevice;
+    impl->ThreadInit = ALSA_ThreadInit;
     impl->WaitDevice = ALSA_WaitDevice;
     impl->GetDeviceBuf = ALSA_GetDeviceBuf;
     impl->PlayDevice = ALSA_PlayDevice;
