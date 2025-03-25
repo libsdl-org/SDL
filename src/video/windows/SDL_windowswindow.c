@@ -188,7 +188,7 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
 static ITaskbarList3 *GetTaskbarList(SDL_Window* window)
 {
     const SDL_WindowData *data = window->internal;
-    SDL_assert(data->videodata->taskbar_button_created);
+    SDL_assert(data->taskbar_button_created);
     if (!data->videodata->taskbar_list) {
         HRESULT ret = CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (LPVOID *)&data->videodata->taskbar_list);
         if (FAILED(ret)) {
@@ -2251,7 +2251,7 @@ bool WIN_ApplyWindowProgress(SDL_Window* window)
     return false;
 #else
     SDL_WindowData *data = window->internal;
-    if (!data->videodata->taskbar_button_created) {
+    if (!data->taskbar_button_created) {
         return true;
     }
 

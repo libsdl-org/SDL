@@ -93,6 +93,7 @@ struct SDL_WindowData
     WCHAR *ICMFileName;
     SDL_Window *keyboard_focus;
     SDL_WindowEraseBackgroundMode hint_erase_background_mode;
+    bool taskbar_button_created;
     SDL_ProgressState progress_state;
     float progress_value;
     struct SDL_VideoData *videodata;

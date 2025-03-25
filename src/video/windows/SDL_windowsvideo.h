@@ -541,7 +541,6 @@ struct SDL_VideoData
 
 #ifdef HAVE_SHOBJIDL_CORE_H
     UINT WM_TASKBAR_BUTTON_CREATED;
-    bool taskbar_button_created;
     ITaskbarList3 *taskbar_list;
 #endif
 };

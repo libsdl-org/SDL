@@ -593,7 +593,6 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
 #endif // !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 
 #if defined(HAVE_SHOBJIDL_CORE_H)
-    data->taskbar_button_created = false;
     if (data->taskbar_list) {
         IUnknown_Release(data->taskbar_list);
         data->taskbar_list = NULL;
