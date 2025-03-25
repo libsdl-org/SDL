@@ -2300,7 +2300,7 @@ bool WIN_ApplyWindowProgress(SDL_Window* window)
 bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_ProgressState state)
 {
 #ifndef HAVE_SHOBJIDL_CORE_H
-    return false;
+    return SDL_Unsupported();
 #else
     window->internal->progress_state = state;
     return WIN_ApplyWindowProgress(window);
@@ -2310,6 +2310,7 @@ bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_
 SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifndef HAVE_SHOBJIDL_CORE_H
+    SDL_Unsupported();
     return SDL_PROGRESS_STATE_INVALID;
 #else
     return window->internal->progress_state;
@@ -2319,7 +2320,7 @@ SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window 
 bool WIN_SetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window, float value)
 {
 #ifndef HAVE_SHOBJIDL_CORE_H
-    return false;
+    return SDL_Unsupported();
 #else
     window->internal->progress_value = value;
     return WIN_ApplyWindowProgress(window);
@@ -2329,6 +2330,7 @@ bool WIN_SetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window, floa
 float WIN_GetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifndef HAVE_SHOBJIDL_CORE_H
+    SDL_Unsupported();
     return -1.0f;
 #else
     return window->internal->progress_value;
