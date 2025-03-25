@@ -173,6 +173,7 @@ typedef struct GLES2_RenderData
 
     bool debug_enabled;
 
+    bool GL_OES_EGL_image_external_supported;
     bool GL_EXT_blend_minmax_supported;
 
 #define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
@@ -1623,9 +1624,12 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 #endif
 #ifdef GL_TEXTURE_EXTERNAL_OES
     case SDL_PIXELFORMAT_EXTERNAL_OES:
-        format = GL_NONE;
-        type = GL_NONE;
-        break;
+        if (renderdata->GL_OES_EGL_image_external_supported) {
+            format = GL_NONE;
+            type = GL_NONE;
+            break;
+        }
+        SDL_FALLTHROUGH;
 #endif
     default:
         return SDL_SetError("Texture format not supported");
@@ -2249,7 +2253,11 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
 #endif
 #ifdef GL_TEXTURE_EXTERNAL_OES
-    if (GLES2_CacheShader(data, GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES, GL_FRAGMENT_SHADER)) {
+    if (SDL_GL_ExtensionSupported("GL_OES_EGL_image_external")) {
+        data->GL_OES_EGL_image_external_supported = true;
+        if (!GLES2_CacheShader(data, GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES, GL_FRAGMENT_SHADER)) {
+            goto error;
+        }
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_EXTERNAL_OES);
     }
 #endif
