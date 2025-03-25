@@ -59,6 +59,10 @@ encounter limitations or behavior that is different from other windowing systems
   `SDL_APP_ID` hint string, the desktop entry file name should match the application ID. For example, if your
   application ID is set to `org.my_org.sdl_app`, the desktop entry file should be named `org.my_org.sdl_app.desktop`.
 
+### Keyboard grabs don't work when running under XWayland
+
+- One GNOME based desktops, the dconf setting `org/gnome/mutter/wayland/xwayland-allow-grabs` must be enabled.
+
 ## Using custom Wayland windowing protocols with SDL windows
 
 Under normal operation, an `SDL_Window` corresponds to an XDG toplevel window, which provides a standard desktop window.
