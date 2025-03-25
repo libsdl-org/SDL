@@ -314,12 +314,12 @@ typedef enum SDL_FlashOperation
  */
 typedef enum SDL_ProgressState
 {
+    SDL_PROGRESS_STATE_INVALID = -1,    /**< An invalid progress state indicating an error; check SDL_GetError() */
     SDL_PROGRESS_STATE_NONE,            /**< No progress bar is shown */
     SDL_PROGRESS_STATE_INDETERMINATE,   /**< The progress bar is shown in a indeterminate state */
     SDL_PROGRESS_STATE_NORMAL,          /**< The progress bar is shown in a normal state */
     SDL_PROGRESS_STATE_PAUSED,          /**< The progress bar is shown in a paused state */
-    SDL_PROGRESS_STATE_ERROR,           /**< The progress bar is shown in an error state */
-    SDL_PROGRESS_STATE_INVALID = -1     /**< An invalid progress state indicating an error; check SDL_GetError() */
+    SDL_PROGRESS_STATE_ERROR            /**< The progress bar is shown in a state indicating the application had an error */
 } SDL_ProgressState;
 
 /**
@@ -2840,7 +2840,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressState(SDL_Window *window, 
 * Get the state of the progress bar for the given window’s taskbar icon.
 *
 * \param window the window to get the current progress state from.
-* \returns the progress state, or SDL_PROGRESS_STATE_FAILURE on failure; call
+* \returns the progress state, or SDL_PROGRESS_STATE_INVALID on failure; call
 *          SDL_GetError() for more information.
 *
 * \threadsafety This function should only be called on the main thread.
@@ -2851,10 +2851,6 @@ extern SDL_DECLSPEC SDL_ProgressState SDLCALL SDL_GetWindowProgressState(SDL_Win
 
 /**
  * Sets the value of the progress bar for the given window’s taskbar icon.
- *
- * If the state is `SDL_PROGRESS_STATE_NONE` or
- * `SDL_PROGRESS_STATE_INDETERMINATE`, it gets changed to
- * `SDL_PROGRESS_STATE_NORMAL`.
  *
  * \param window the window whose progress value is to be modified.
  * \param value the progress value (0.0f - start, 1.0f - end). If the value is
@@ -2872,7 +2868,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressValue(SDL_Window *window, 
 * Get the value of the progress bar for the given window’s taskbar icon.
 *
 * \param window the window to get the current progress value from.
-* \returns the progress value, (0.0f - start, 1.0f - end), or -1.0f on
+* \returns the progress value in the range of [0.0 - 1.0], or -1 on
 *          failure; call SDL_GetError() for more information.
 *
 * \threadsafety This function should only be called on the main thread.
