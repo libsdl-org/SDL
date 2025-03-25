@@ -61,7 +61,7 @@ encounter limitations or behavior that is different from other windowing systems
 
 ### Keyboard grabs don't work when running under XWayland
 
-- One GNOME based desktops, the dconf setting `org/gnome/mutter/wayland/xwayland-allow-grabs` must be enabled.
+- On GNOME based desktops, the dconf setting `org/gnome/mutter/wayland/xwayland-allow-grabs` must be enabled.
 
 ## Using custom Wayland windowing protocols with SDL windows
 
