@@ -188,10 +188,7 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
 static ITaskbarList3 *GetTaskbarList(SDL_Window* window)
 {
     const SDL_WindowData *data = window->internal;
-    if (!data->videodata->taskbar_button_created) {
-        SDL_SetError("Missing taskbar button");
-        return NULL;
-    }
+    SDL_assert(data->videodata->taskbar_button_created);
     if (!data->videodata->taskbar_list) {
         HRESULT ret = CoCreateInstance(&CLSID_TaskbarList, NULL, CLSCTX_ALL, &IID_ITaskbarList3, (LPVOID *)&data->videodata->taskbar_list);
         if (FAILED(ret)) {
@@ -2253,12 +2250,15 @@ bool WIN_ApplyWindowProgress(SDL_Window* window)
 #ifndef HAVE_SHOBJIDL_CORE_H
     return false;
 #else
+    SDL_WindowData *data = window->internal;
+    if (!data->videodata->taskbar_button_created) {
+        return true;
+    }
+
     ITaskbarList3 *taskbar_list = GetTaskbarList(window);
     if (!taskbar_list) {
         return false;
     }
-
-    SDL_WindowData *data = window->internal;
 
     TBPFLAG tbpFlags;
     switch (data->progress_state) {
