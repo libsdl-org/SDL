@@ -273,7 +273,9 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->AcceptDragAndDrop = WIN_AcceptDragAndDrop;
     device->FlashWindow = WIN_FlashWindow;
     device->SetWindowProgressState = WIN_SetWindowProgressState;
+    device->GetWindowProgressState = WIN_GetWindowProgressState;
     device->SetWindowProgressValue = WIN_SetWindowProgressValue;
+    device->GetWindowProgressValue = WIN_GetWindowProgressValue;
     device->ShowWindowSystemMenu = WIN_ShowWindowSystemMenu;
     device->SetWindowFocusable = WIN_SetWindowFocusable;
     device->UpdateWindowShape = WIN_UpdateWindowShape;
@@ -591,7 +593,6 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
 #endif // !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 
 #if defined(HAVE_SHOBJIDL_CORE_H)
-    data->taskbar_button_created = false;
     if (data->taskbar_list) {
         IUnknown_Release(data->taskbar_list);
         data->taskbar_list = NULL;

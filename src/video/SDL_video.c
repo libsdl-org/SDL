@@ -3937,6 +3937,18 @@ bool SDL_SetWindowProgressState(SDL_Window *window, SDL_ProgressState state)
     return SDL_Unsupported();
 }
 
+SDL_ProgressState SDL_GetWindowProgressState(SDL_Window *window)
+{
+    CHECK_WINDOW_MAGIC(window, false);
+    CHECK_WINDOW_NOT_POPUP(window, false);
+
+    if (_this->GetWindowProgressState) {
+        return _this->GetWindowProgressState(_this, window);
+    }
+
+    return SDL_Unsupported();
+}
+
 bool SDL_SetWindowProgressValue(SDL_Window *window, float value)
 {
     CHECK_WINDOW_MAGIC(window, false);
@@ -3946,6 +3958,18 @@ bool SDL_SetWindowProgressValue(SDL_Window *window, float value)
 
     if (_this->SetWindowProgressValue) {
         return _this->SetWindowProgressValue(_this, window, value);
+    }
+
+    return SDL_Unsupported();
+}
+
+float SDL_GetWindowProgressValue(SDL_Window *window)
+{
+    CHECK_WINDOW_MAGIC(window, false);
+    CHECK_WINDOW_NOT_POPUP(window, false);
+
+    if (_this->GetWindowProgressValue) {
+        return _this->GetWindowProgressValue(_this, window);
     }
 
     return SDL_Unsupported();

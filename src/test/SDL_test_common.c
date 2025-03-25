@@ -2460,11 +2460,12 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                 /* Ctrl-P Cycle through progress states */
                 SDL_Window *window = SDL_GetWindowFromEvent(event);
                 if (window) {
-                    state->progress_state += 1;
-                    if (state->progress_state > SDL_PROGRESS_STATE_ERROR) {
-                        state->progress_state = SDL_PROGRESS_STATE_NONE;
+                    float progress_state = SDL_GetWindowProgressState(window);
+                    progress_state += 1;
+                    if (progress_state > SDL_PROGRESS_STATE_ERROR) {
+                        progress_state = SDL_PROGRESS_STATE_NONE;
                     }
-                    SDL_SetWindowProgressState(window, state->progress_state);
+                    SDL_SetWindowProgressState(window, progress_state);
                 }
             }
             else if (withControl)
@@ -2472,11 +2473,13 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                 /* Alt-P Increase progress value */
                 SDL_Window *window = SDL_GetWindowFromEvent(event);
                 if (window) {
-                    state->progress_value += 0.1f;
-                    if (state->progress_value > 1.f) {
-                        state->progress_value = 0.f;
+                    float progress_value = SDL_GetWindowProgressValue(window);
+                    if (withShift) {
+                        progress_value -= 0.1f;
+                    } else {
+                        progress_value += 0.1f;
                     }
-                    SDL_SetWindowProgressValue(window, state->progress_value);
+                    SDL_SetWindowProgressValue(window, progress_value);
                 }
             }
             break;
