@@ -123,6 +123,9 @@ struct SDL_Window
     SDL_HitTest hit_test;
     void *hit_test_data;
 
+    SDL_ProgressState progress_state;
+    float progress_value;
+
     SDL_PropertiesID props;
 
     int num_renderers;
@@ -303,10 +306,7 @@ struct SDL_VideoDevice
     void (*OnWindowEnter)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*UpdateWindowShape)(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape);
     bool (*FlashWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
-    bool (*SetWindowProgressState)(SDL_VideoDevice *_this, SDL_Window *window, SDL_ProgressState state);
-    SDL_ProgressState (*GetWindowProgressState)(SDL_VideoDevice *_this, SDL_Window *window);
-    bool (*SetWindowProgressValue)(SDL_VideoDevice *_this, SDL_Window *window, float value);
-    float (*GetWindowProgressValue)(SDL_VideoDevice *_this, SDL_Window *window);
+    bool (*ApplyWindowProgress)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*SetWindowFocusable)(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
     bool (*SyncWindow)(SDL_VideoDevice *_this, SDL_Window *window);
 
