@@ -2245,11 +2245,9 @@ bool WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperat
     return true;
 }
 
-bool WIN_ApplyWindowProgress(SDL_Window* window)
+bool WIN_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window* window)
 {
-#ifndef HAVE_SHOBJIDL_CORE_H
-    return false;
-#else
+#ifdef HAVE_SHOBJIDL_CORE_H
     SDL_WindowData *data = window->internal;
     if (!data->taskbar_button_created) {
         return true;
@@ -2261,7 +2259,7 @@ bool WIN_ApplyWindowProgress(SDL_Window* window)
     }
 
     TBPFLAG tbpFlags;
-    switch (data->progress_state) {
+    switch (window->progress_state) {
     case SDL_PROGRESS_STATE_NONE:
         tbpFlags = TBPF_NOPROGRESS;
         break;
@@ -2286,55 +2284,14 @@ bool WIN_ApplyWindowProgress(SDL_Window* window)
         return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressState()", ret);
     }
 
-    if (data->progress_state >= SDL_PROGRESS_STATE_NORMAL) {
-        ret = taskbar_list->lpVtbl->SetProgressValue(taskbar_list, data->hwnd, (ULONGLONG)(data->progress_value * 10000.f), 10000);
+    if (window->progress_state >= SDL_PROGRESS_STATE_NORMAL) {
+        ret = taskbar_list->lpVtbl->SetProgressValue(taskbar_list, data->hwnd, (ULONGLONG)(window->progress_value * 10000.f), 10000);
         if (FAILED(ret)) {
             return WIN_SetErrorFromHRESULT("ITaskbarList3::SetProgressValue()", ret);
         }
     }
-
+#endif
     return true;
-#endif
-}
-
-bool WIN_SetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window, SDL_ProgressState state)
-{
-#ifndef HAVE_SHOBJIDL_CORE_H
-    return SDL_Unsupported();
-#else
-    window->internal->progress_state = state;
-    return WIN_ApplyWindowProgress(window);
-#endif
-}
-
-SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window *window)
-{
-#ifndef HAVE_SHOBJIDL_CORE_H
-    SDL_Unsupported();
-    return SDL_PROGRESS_STATE_INVALID;
-#else
-    return window->internal->progress_state;
-#endif // HAVE_SHOBJIDL_CORE_H
-}
-
-bool WIN_SetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window, float value)
-{
-#ifndef HAVE_SHOBJIDL_CORE_H
-    return SDL_Unsupported();
-#else
-    window->internal->progress_value = value;
-    return WIN_ApplyWindowProgress(window);
-#endif
-}
-
-float WIN_GetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window)
-{
-#ifndef HAVE_SHOBJIDL_CORE_H
-    SDL_Unsupported();
-    return -1.0f;
-#else
-    return window->internal->progress_value;
-#endif  // HAVE_SHOBJIDL_CORE_H
 }
 
 void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y)

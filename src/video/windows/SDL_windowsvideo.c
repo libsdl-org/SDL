@@ -272,10 +272,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->SetWindowHitTest = WIN_SetWindowHitTest;
     device->AcceptDragAndDrop = WIN_AcceptDragAndDrop;
     device->FlashWindow = WIN_FlashWindow;
-    device->SetWindowProgressState = WIN_SetWindowProgressState;
-    device->GetWindowProgressState = WIN_GetWindowProgressState;
-    device->SetWindowProgressValue = WIN_SetWindowProgressValue;
-    device->GetWindowProgressValue = WIN_GetWindowProgressValue;
+    device->ApplyWindowProgress = WIN_ApplyWindowProgress;
     device->ShowWindowSystemMenu = WIN_ShowWindowSystemMenu;
     device->SetWindowFocusable = WIN_SetWindowFocusable;
     device->UpdateWindowShape = WIN_UpdateWindowShape;
