@@ -2837,16 +2837,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FlashWindow(SDL_Window *window, SDL_FlashOp
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressState(SDL_Window *window, SDL_ProgressState state);
 
 /**
-* Get the state of the progress bar for the given window’s taskbar icon.
-*
-* \param window the window to get the current progress state from.
-* \returns the progress state, or SDL_PROGRESS_STATE_INVALID on failure; call
-*          SDL_GetError() for more information.
-*
-* \threadsafety This function should only be called on the main thread.
-*
-* \since This function is available since SDL 3.4.0.
-*/
+ * Get the state of the progress bar for the given window’s taskbar icon.
+ *
+ * \param window the window to get the current progress state from.
+ * \returns the progress state, or SDL_PROGRESS_STATE_INVALID on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
 extern SDL_DECLSPEC SDL_ProgressState SDLCALL SDL_GetWindowProgressState(SDL_Window *window);
 
 /**
@@ -2865,16 +2865,16 @@ extern SDL_DECLSPEC SDL_ProgressState SDLCALL SDL_GetWindowProgressState(SDL_Win
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowProgressValue(SDL_Window *window, float value);
 
 /**
-* Get the value of the progress bar for the given window’s taskbar icon.
-*
-* \param window the window to get the current progress value from.
-* \returns the progress value in the range of [0.0 - 1.0], or -1 on
-*          failure; call SDL_GetError() for more information.
-*
-* \threadsafety This function should only be called on the main thread.
-*
-* \since This function is available since SDL 3.4.0.
-*/
+ * Get the value of the progress bar for the given window’s taskbar icon.
+ *
+ * \param window the window to get the current progress value from.
+ * \returns the progress value in the range of [0.0 - 1.0], or -1 on failure;
+ *          call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
 extern SDL_DECLSPEC float SDLCALL SDL_GetWindowProgressValue(SDL_Window *window);
 
 /**
