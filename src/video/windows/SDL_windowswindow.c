@@ -2312,10 +2312,6 @@ SDL_ProgressState WIN_GetWindowProgressState(SDL_VideoDevice *_this, SDL_Window 
 #ifndef HAVE_SHOBJIDL_CORE_H
     return SDL_PROGRESS_STATE_INVALID;
 #else
-    if (!GetTaskbarList(window)) {
-        return SDL_PROGRESS_STATE_INVALID;
-    }
-
     return window->internal->progress_state;
 #endif // HAVE_SHOBJIDL_CORE_H
 }
@@ -2335,10 +2331,6 @@ float WIN_GetWindowProgressValue(SDL_VideoDevice *_this, SDL_Window *window)
 #ifndef HAVE_SHOBJIDL_CORE_H
     return -1.0f;
 #else
-    if (!GetTaskbarList(window)) {
-        return -1.0f;
-    }
-
     return window->internal->progress_value;
 #endif  // HAVE_SHOBJIDL_CORE_H
 }
