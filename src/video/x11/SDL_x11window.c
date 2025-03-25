@@ -2097,6 +2097,33 @@ bool X11_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool 
             return true;
         }
 
+        /* GNOME needs the _XWAYLAND_MAY_GRAB_KEYBOARD message on XWayland:
+         *
+         * - message_type set to "_XWAYLAND_MAY_GRAB_KEYBOARD"
+         * - window set to the xid of the window on which the grab is to be issued
+         * - data.l[0] to a non-zero value
+         *
+         * The dconf setting `org/gnome/mutter/wayland/xwayland-allow-grabs` must be enabled as well.
+         *
+         * https://gitlab.gnome.org/GNOME/mutter/-/commit/5f132f39750f684c3732b4346dec810cd218d609
+         */
+        if (_this->internal->is_xwayland) {
+            Atom _XWAYLAND_MAY_GRAB_ATOM = X11_XInternAtom(display, "_XWAYLAND_MAY_GRAB_KEYBOARD", False);
+
+            if (_XWAYLAND_MAY_GRAB_ATOM != None) {
+                XClientMessageEvent client_message;
+                client_message.type = ClientMessage;
+                client_message.window = data->xwindow;
+                client_message.format = 32;
+                client_message.message_type = _XWAYLAND_MAY_GRAB_ATOM;
+                client_message.data.l[0] = 1;
+                client_message.data.l[1] = CurrentTime;
+
+                X11_XSendEvent(display, DefaultRootWindow(display), False, SubstructureNotifyMask | SubstructureRedirectMask, (XEvent *)&client_message);
+                X11_XFlush(display);
+            }
+        }
+
         X11_XGrabKeyboard(display, data->xwindow, True, GrabModeAsync,
                           GrabModeAsync, CurrentTime);
     } else {
