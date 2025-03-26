@@ -632,6 +632,10 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetPrimaryDisplay(void);
  *   responsible for any coordinate transformations needed to conform to the
  *   requested display orientation.
  *
+ * On Wayland:
+ *
+ * - `SDL_PROP_DISPLAY_WAYLAND_WL_OUTPUT_POINTER`: the wl_output associated with the display
+ *
  * \param displayID the instance ID of the display to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -644,6 +648,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_Displa
 
 #define SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN             "SDL.display.HDR_enabled"
 #define SDL_PROP_DISPLAY_KMSDRM_PANEL_ORIENTATION_NUMBER "SDL.display.KMSDRM.panel_orientation"
+#define SDL_PROP_DISPLAY_WAYLAND_WL_OUTPUT_POINTER       "SDL.display.wayland.wl_output"
 
 /**
  * Get the name of a display in UTF-8 encoding.

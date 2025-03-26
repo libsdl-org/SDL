@@ -1071,6 +1071,9 @@ static void display_handle_done(void *data,
         internal->placeholder.current_orientation = internal->orientation;
         internal->placeholder.internal = internal;
 
+        internal->placeholder.props = SDL_CreateProperties();
+        SDL_SetPointerProperty(internal->placeholder.props, SDL_PROP_DISPLAY_WAYLAND_WL_OUTPUT_POINTER, internal->output);
+
         // During initialization, the displays will be added after enumeration is complete.
         if (!video->initializing) {
             internal->display = SDL_AddVideoDisplay(&internal->placeholder, true);
