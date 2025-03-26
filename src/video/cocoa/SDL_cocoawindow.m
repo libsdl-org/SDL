@@ -3264,14 +3264,23 @@ bool Cocoa_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float op
 
 bool Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    bool result = true;
+    bool result = false;
 
     @autoreleasepool {
+        const Uint64 timeout = SDL_GetTicksNS() + SDL_MS_TO_NS(2500);
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
 
-        do {
+        for (;;) {
             SDL_PumpEvents();
-        } while ([data.listener hasPendingWindowOperation]);
+
+            result = ![data.listener hasPendingWindowOperation];
+            if (result || SDL_GetTicksNS() >= timeout) {
+                break;
+            }
+
+            // Small delay before going again.
+            SDL_Delay(10);
+        }
     }
 
     return result;
