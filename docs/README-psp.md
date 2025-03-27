@@ -29,7 +29,7 @@ cmake --install build
 
 
 ## Compiling a HelloWorld
-[PSP Hello World](https://psp-dev.org/doku.php?id=tutorial:hello_world)
+[PSP Hello World](https://pspdev.github.io/basic_programs.html#hello-world)
 
 ## To Do
 - PSP Screen Keyboard
