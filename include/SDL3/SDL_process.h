@@ -166,7 +166,9 @@ typedef enum SDL_ProcessIO
  * - `SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER`: an SDL_Environment
  *   pointer. If this property is set, it will be the entire environment for
  *   the process, otherwise the current environment is used.
- * - `SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING`: a UTF-8 encoded string representing the working directory for the process, defaults to the current working directory.
+ * - `SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING`: a UTF-8 encoded
+ *   string representing the working directory for the process, defaults to
+ *   the current working directory.
  * - `SDL_PROP_PROCESS_CREATE_STDIN_NUMBER`: an SDL_ProcessIO value describing
  *   where standard input for the process comes from, defaults to
  *   `SDL_PROCESS_STDIO_NULL`.
