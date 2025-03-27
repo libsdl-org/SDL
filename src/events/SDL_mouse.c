@@ -1065,10 +1065,12 @@ void SDL_QuitMouse(void)
 
     if (mouse->added_mouse_touch_device) {
         SDL_DelTouch(SDL_MOUSE_TOUCHID);
+        mouse->added_mouse_touch_device = false;
     }
 
     if (mouse->added_pen_touch_device) {
         SDL_DelTouch(SDL_PEN_TOUCHID);
+        mouse->added_pen_touch_device = false;
     }
 
     if (mouse->CaptureMouse) {
