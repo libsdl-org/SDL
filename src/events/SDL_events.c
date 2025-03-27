@@ -1944,6 +1944,18 @@ void SDL_SendSystemThemeChangedEvent(void)
     SDL_SendAppEvent(SDL_EVENT_SYSTEM_THEME_CHANGED);
 }
 
+void SDL_SendSystemPreferenceChangedEvent(SDL_SystemPreference preference)
+{
+    if (SDL_EventEnabled(SDL_EVENT_SYSTEM_PREFERENCE_CHANGED)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_SYSTEM_PREFERENCE_CHANGED;
+        event.common.timestamp = 0;
+        event.pref.pref = preference;
+
+        SDL_PushEvent(&event);
+    }
+}
+
 bool SDL_InitEvents(void)
 {
 #ifdef SDL_PLATFORM_ANDROID

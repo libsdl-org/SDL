@@ -98,6 +98,162 @@ static bool WIN_SuspendScreenSaver(SDL_VideoDevice *_this)
 extern void D3D12_XBOX_GetResolution(Uint32 *width, Uint32 *height);
 #endif
 
+static bool WIN_GetSystemPreference(SDL_SystemPreference preference)
+{
+    switch(preference)
+    {
+    case SDL_SYSTEM_PREFERENCE_REDUCED_MOTION:
+    {
+        BOOL option = false;
+
+        if (!SystemParametersInfoW(SPI_GETCLIENTAREAANIMATION, 0, &option, 0)) {
+            return WIN_SetError("Could not invoke SystemParametersInfoW with SDL_SYSTEM_PREFERENCE_REDUCED_MOTION");
+        }
+
+        return !option;
+    }
+
+    case SDL_SYSTEM_PREFERENCE_REDUCED_TRANSPARENCY:
+    {
+        HKEY hKey;
+        if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                         TEXT("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"),
+                         0,
+                         KEY_READ,
+                         &hKey) == ERROR_SUCCESS) {
+            DWORD enableTransparency;
+            DWORD size = sizeof(enableTransparency);
+            if (RegQueryValueEx(hKey, TEXT("EnableTransparency"), NULL, NULL, (LPBYTE)&enableTransparency, &size) == ERROR_SUCCESS) {
+                RegCloseKey(hKey);
+                return !enableTransparency;
+            }
+            RegCloseKey(hKey);
+        }
+
+        return false;
+    }
+
+    case SDL_SYSTEM_PREFERENCE_HIGH_CONTRAST:
+    {
+        HIGHCONTRAST high_contrast_data;
+        high_contrast_data.cbSize = sizeof(HIGHCONTRAST);
+
+        if (!SystemParametersInfoW(SPI_GETHIGHCONTRAST, sizeof(HIGHCONTRAST), &high_contrast_data, 0)) {
+            return WIN_SetError("Could not invoke SystemParametersInfoW with SDL_SYSTEM_PREFERENCE_HIGH_CONTRAST");
+        }
+
+        return high_contrast_data.dwFlags & HCF_HIGHCONTRASTON;
+    }
+
+    case SDL_SYSTEM_PREFERENCE_PERSIST_SCROLLBARS:
+    {
+        HKEY hKey;
+        if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                         TEXT("Control Panel\\Accessibility"),
+                         0,
+                         KEY_READ,
+                         &hKey) == ERROR_SUCCESS) {
+            DWORD autoHideScrollBars;
+            DWORD size = sizeof(autoHideScrollBars);
+            if (RegQueryValueEx(hKey, TEXT("DynamicScrollbars"), NULL, NULL, (LPBYTE)&autoHideScrollBars, &size) == ERROR_SUCCESS) {
+                RegCloseKey(hKey);
+                return !autoHideScrollBars;
+            }
+            RegCloseKey(hKey);
+        }
+
+        return false;
+    }
+
+    case SDL_SYSTEM_PREFERENCE_SCREEN_READER:
+    {
+        BOOL option = false;
+
+        // FIXME: Documentation states that this won't work if the screen
+        // reader is Windows' built-in "Narrator" program
+        if (!SystemParametersInfoW(SPI_GETSCREENREADER, 0, &option, 0)) {
+            return WIN_SetError("Could not invoke SystemParametersInfoW with SPI_GETSCREENREADER");
+        }
+
+        return option;
+    }
+
+    default:
+        return SDL_Unsupported();
+    }
+}
+
+static bool WIN_GetSystemAccentColor(SDL_Color *color)
+{
+    if (!color) {
+        return SDL_InvalidParamError("color");
+    }
+
+    HKEY hKey;
+    if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                     TEXT("SOFTWARE\\Microsoft\\Windows\\DWM"),
+                     0,
+                     KEY_READ,
+                     &hKey) == ERROR_SUCCESS) {
+        DWORD colordata;
+        DWORD size = sizeof(colordata);
+        if (RegQueryValueEx(hKey, TEXT("AccentColor"), NULL, NULL, (LPBYTE)&colordata, &size) == ERROR_SUCCESS) {
+            RegCloseKey(hKey);
+
+            // TODO: Check endianness?
+            color->r = colordata & 0x000000ff;
+            color->g = (colordata & 0x0000ff00) >> 8;
+            color->b = (colordata & 0x00ff0000) >> 16;
+            color->a = (colordata & 0xff000000) >> 24;
+
+            return true;
+        }
+        RegCloseKey(hKey);
+    }
+
+    return SDL_SetError("Could not fetch accent color registry key");
+}
+
+static float WIN_GetSystemTextScale(void)
+{
+    HKEY hKey;
+    if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                     TEXT("SOFTWARE\\Microsoft\\Accessibility"),
+                     0,
+                     KEY_READ,
+                     &hKey) == ERROR_SUCCESS) {
+        DWORD text;
+        DWORD size = sizeof(text);
+        if (RegQueryValueEx(hKey, TEXT("TestScaleFactor"), NULL, NULL, (LPBYTE)&text, &size) == ERROR_SUCCESS) {
+            RegCloseKey(hKey);
+            return ((float) text) / 100.0f;
+        }
+        RegCloseKey(hKey);
+    }
+
+    return 1.0f;
+}
+
+static float WIN_GetSystemCursorScale(void)
+{
+    HKEY hKey;
+    if (RegOpenKeyEx(HKEY_CURRENT_USER,
+                     TEXT("Control Panel\\Cursors"),
+                     0,
+                     KEY_READ,
+                     &hKey) == ERROR_SUCCESS) {
+        DWORD cursor;
+        DWORD size = sizeof(cursor);
+        if (RegQueryValueEx(hKey, TEXT("CursorBaseSize"), NULL, NULL, (LPBYTE)&cursor, &size) == ERROR_SUCCESS) {
+            RegCloseKey(hKey);
+            return ((float) cursor) / 32.0f;
+        }
+        RegCloseKey(hKey);
+    }
+
+    return 1.0f;
+}
+
 // Windows driver bootstrap functions
 
 static void WIN_DeleteDevice(SDL_VideoDevice *device)
@@ -347,6 +503,11 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
 
     device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT |
                           VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
+
+    device->GetSystemPreference = WIN_GetSystemPreference;
+    device->GetSystemAccentColor = WIN_GetSystemAccentColor;
+    device->GetSystemTextScale = WIN_GetSystemTextScale;
+    device->GetSystemCursorScale = WIN_GetSystemCursorScale;
 
     return device;
 }

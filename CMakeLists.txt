@@ -1735,6 +1735,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       sdl_sources(
         "${SDL3_SOURCE_DIR}/src/core/linux/SDL_dbus.c"
         "${SDL3_SOURCE_DIR}/src/core/linux/SDL_system_theme.c"
+        "${SDL3_SOURCE_DIR}/src/core/linux/SDL_system_preferences.c"
       )
     endif()
 

@@ -92,7 +92,7 @@ static SDL_SystemTheme Emscripten_GetSystemTheme(void)
     }
 }
 
-static void Emscripten_ListenSystemTheme(void)
+static void Emscripten_ListenEvents(void)
 {
     MAIN_THREAD_EM_ASM({
         if (window.matchMedia) {
@@ -108,19 +108,60 @@ static void Emscripten_ListenSystemTheme(void)
 
             SDL3.themeChangedMatchMedia = window.matchMedia('(prefers-color-scheme: dark)');
             SDL3.themeChangedMatchMedia.addEventListener('change', SDL3.eventHandlerThemeChanged);
+
+            SDL3.eventHandlerPrefMotionChanged = function(event) {
+                _Emscripten_SendSystemPrefMotionChangedEvent();
+            };
+
+            SDL3.prefMotionChangedMatchMedia = window.matchMedia('(prefers-reduced-motion)');
+            SDL3.prefMotionChangedMatchMedia.addEventListener('change', SDL3.eventHandlerPrefMotionChanged);
+
+            SDL3.eventHandlerPrefTransparencyChanged = function(event) {
+                _Emscripten_SendSystemPrefTransparencyChangedEvent();
+            };
+
+            SDL3.prefTransparencyChangedMatchMedia = window.matchMedia('(prefers-reduced-transparency)');
+            SDL3.prefTransparencyChangedMatchMedia.addEventListener('change', SDL3.eventHandlerPrefTransparencyChanged);
+
+            SDL3.eventHandlerPrefContrastChanged = function(event) {
+                _Emscripten_SendSystemPrefContrastChangedEvent();
+            };
+
+            SDL3.prefContrastChangedMatchMedia = window.matchMedia('(prefers-contrast)');
+            SDL3.prefContrastChangedMatchMedia.addEventListener('change', SDL3.eventHandlerPrefContrastChanged);
         }
     });
 }
 
-static void Emscripten_UnlistenSystemTheme(void)
+static void Emscripten_UnlistenEvents(void)
 {
     MAIN_THREAD_EM_ASM({
         if (typeof(Module['SDL3']) !== 'undefined') {
             var SDL3 = Module['SDL3'];
 
-            SDL3.themeChangedMatchMedia.removeEventListener('change', SDL3.eventHandlerThemeChanged);
-            SDL3.themeChangedMatchMedia = undefined;
-            SDL3.eventHandlerThemeChanged = undefined;
+            if (SDL3.themeChangedMatchMedia) {
+                SDL3.themeChangedMatchMedia.removeEventListener('change', SDL3.eventHandlerThemeChanged);
+                SDL3.themeChangedMatchMedia = undefined;
+                SDL3.eventHandlerThemeChanged = undefined;
+            }
+
+            if (SDL3.prefMotionChangedMatchMedia) {
+                SDL3.prefMotionChangedMatchMedia.removeEventListener('change', SDL3.eventHandlerPrefMotionChanged);
+                SDL3.prefMotionChangedMatchMedia = undefined;
+                SDL3.eventHandlerPrefMotionChanged = undefined;
+            }
+
+            if (SDL3.prefTransparencyChangedMatchMedia) {
+                SDL3.prefTransparencyChangedMatchMedia.removeEventListener('change', SDL3.eventHandlerPrefTransparencyChanged);
+                SDL3.prefTransparencyChangedMatchMedia = undefined;
+                SDL3.eventHandlerPrefTransparencyChanged = undefined;
+            }
+
+            if (SDL3.prefContrastChangedMatchMedia) {
+                SDL3.prefContrastChangedMatchMedia.removeEventListener('change', SDL3.eventHandlerPrefContrastChanged);
+                SDL3.prefContrastChangedMatchMedia = undefined;
+                SDL3.eventHandlerPrefContrastChanged = undefined;
+            }
         }
     });
 }
@@ -128,6 +169,138 @@ static void Emscripten_UnlistenSystemTheme(void)
 EMSCRIPTEN_KEEPALIVE void Emscripten_SendSystemThemeChangedEvent(void)
 {
     SDL_SetSystemTheme(Emscripten_GetSystemTheme());
+}
+
+static bool Emscripten_GetSystemPreference(SDL_SystemPreference preference)
+{
+    int enabled;
+
+    switch (preference) {
+
+#define MATCH(pref, css) \
+    case pref:                                                                 \
+        enabled = EM_ASM_INT({                                                 \
+            if (!window.matchMedia) {                                          \
+                return -1;                                                     \
+            }                                                                  \
+            return window.matchMedia(css).matches ? 1 : 0;                     \
+        });                                                                    \
+        return enabled;
+
+MATCH(SDL_SYSTEM_PREFERENCE_REDUCED_MOTION, '(prefers-reduced-motion)')
+MATCH(SDL_SYSTEM_PREFERENCE_REDUCED_TRANSPARENCY, '(prefers-reduced-transparency)')
+MATCH(SDL_SYSTEM_PREFERENCE_HIGH_CONTRAST, '(prefers-contrast: more)')
+
+#undef MATCH
+
+    default:
+        return SDL_Unsupported();
+    }
+}
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_SendSystemPrefMotionChangedEvent(void)
+{
+    SDL_SendSystemPreferenceChangedEvent(SDL_SYSTEM_PREFERENCE_REDUCED_MOTION);
+}
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_SendSystemPrefTransparencyChangedEvent(void)
+{
+    SDL_SendSystemPreferenceChangedEvent(SDL_SYSTEM_PREFERENCE_REDUCED_TRANSPARENCY);
+}
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_SendSystemPrefContrastChangedEvent(void)
+{
+    SDL_SendSystemPreferenceChangedEvent(SDL_SYSTEM_PREFERENCE_HIGH_CONTRAST);
+}
+
+// As of writing this (Jan 5, 2025), this works in latest Firefox and Safari,
+// and is implemented but disabled by default in Chromium-based browsers. Info:
+// https://developer.mozilla.org/en-US/docs/Web/CSS/system-color#accentcolor
+static bool Emscripten_GetSystemAccentColor(SDL_Color *color)
+{
+    if (!color) {
+        SDL_InvalidParamError("color");
+    }
+
+    // TODO: Static assert that sizeof(int) >= 4?
+    int color_info = EM_ASM_INT({
+        const a = document.createElement('div');
+        a.style.display = 'none';
+        a.style.color = 'AccentColor';
+
+         // It's less likely to mess with pages in the head (it needs to be in
+         // the document somewhere, else it won't work)
+        document.head.appendChild(a);
+
+        // Note: It can be any valid CSS color identifier, including non-rgb
+        // values. In practice, this should be rare, but it's not impossible.
+        // https://stackoverflow.com/questions/67005331/is-color-format-specified-in-the-spec-for-getcomputedstyle#answer-79292386
+        const color = window.getComputedStyle(a).color;
+        a.remove();
+
+        // Parse only rgb(a); too bad if it's in a different format.
+        const rgbMatch = color.match(/^rgba?\\(([0-9]+),? ([0-9]+),? ([0-9]+)(,? ([0-9]+))?\\)$/);
+
+        if (!rgbMatch) {
+            return 0;
+        }
+
+        let c = 0;
+        let n;
+        // Match format: ['rgba(1, 2, 3, 4)', '1', '2', '3', ', 4', '4']
+        //           or: ['rgb(1, 2, 3)', '1', '2', '3', undefined, undefined]
+        if (rgbMatch[5]) {
+            n = parseInt(rgbMatch[5]);
+            if (n < 0) n = 0;
+            if (n > 255) n = 255;
+            c += n;
+        }
+
+        c *= 255;
+        n = parseInt(rgbMatch[3]);
+        if (n < 0) n = 0;
+        if (n > 255) n = 255;
+        c += n;
+
+        c *= 255;
+        n = parseInt(rgbMatch[2]);
+        if (n < 0) n = 0;
+        if (n > 255) n = 255;
+        c += n;
+
+        c *= 255;
+        n = parseInt(rgbMatch[1]);
+        if (n < 0) n = 0;
+        if (n > 255) n = 255;
+        c += n;
+
+        return c;
+    });
+
+    if (color == 0) {
+        return false;
+    }
+
+    color->r = color_info % 255;
+    color->g = (color_info / 255) % 255;
+    color->b = (color_info / 65535) % 255;
+    color->a = (color_info / 16777216) % 255;
+
+    return true;
+}
+
+static float Emscripten_GetSystemTextScale(void)
+{
+    double scaling = EM_ASM_DOUBLE({
+        return parseFloat(window.getComputedStyle(document.documentElement).fontSize) / 16.0;
+    });
+
+    return (float) scaling;
+}
+
+static float Emscripten_GetSystemCursorScale(void)
+{
+    return 1.0f;
 }
 
 static SDL_VideoDevice *Emscripten_CreateDevice(void)
@@ -184,9 +357,14 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->GL_SwapWindow = Emscripten_GLES_SwapWindow;
     device->GL_DestroyContext = Emscripten_GLES_DestroyContext;
 
+    device->GetSystemPreference = Emscripten_GetSystemPreference;
+    device->GetSystemAccentColor = Emscripten_GetSystemAccentColor;
+    device->GetSystemTextScale = Emscripten_GetSystemTextScale;
+    device->GetSystemCursorScale = Emscripten_GetSystemCursorScale;
+
     device->free = Emscripten_DeleteDevice;
 
-    Emscripten_ListenSystemTheme();
+    Emscripten_ListenEvents();
     device->system_theme = Emscripten_GetSystemTheme();
 
     return device;
@@ -403,7 +581,7 @@ static bool Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *
 static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
 {
     Emscripten_QuitMouse();
-    Emscripten_UnlistenSystemTheme();
+    Emscripten_UnlistenEvents();
     pumpevents_has_run = false;
     pending_swap_interval = -1;
 }

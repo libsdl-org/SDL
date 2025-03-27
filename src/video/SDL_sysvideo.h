@@ -395,6 +395,12 @@ struct SDL_VideoDevice
     // Display the system-level window menu
     void (*ShowWindowSystemMenu)(SDL_Window *window, int x, int y);
 
+    // System preferences
+    bool (*GetSystemPreference)(SDL_SystemPreference preference);
+    bool (*GetSystemAccentColor)(SDL_Color *color);
+    float (*GetSystemTextScale)(void);
+    float (*GetSystemCursorScale)(void);
+
     /* * * */
     // Data common to all drivers
     SDL_ThreadID thread;
