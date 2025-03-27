@@ -189,6 +189,7 @@ typedef struct SDL_RenderCommand
             SDL_ScaleMode texture_scale_mode;
             SDL_TextureAddressMode texture_address_mode;
             SDL_GPURenderState *gpu_render_state;
+            Uint8 tentatively_named_rendergeometry_position_coordinate_count;
         } draw;
         struct
         {
