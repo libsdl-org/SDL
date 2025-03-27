@@ -28,8 +28,10 @@
 #include "../SDL_sysfilesystem.h"
 
 #include "../../core/windows/SDL_windows.h"
+#include "../../file/SDL_iostream_c.h"
 #include <shlobj.h>
 #include <initguid.h>
+#include <fileapi.h>
 
 // These aren't all defined in older SDKs, so define them here
 DEFINE_GUID(SDL_FOLDERID_Profile, 0x5E6C858F, 0x0E22, 0x4760, 0x9A, 0xFE, 0xEA, 0x33, 0x17, 0xB6, 0x71, 0x73);
@@ -377,6 +379,103 @@ char *SDL_SYS_GetCurrentDirectory(void)
     char *retval = WIN_StringToUTF8W(wstr);
     SDL_free(wstr);
     return retval;
+}
+
+SDL_IOStream *SDL_SYS_CreateSafeTempFile(void)
+{
+    wchar_t tmp_folder[MAX_PATH];
+    wchar_t tmp_file[MAX_PATH];
+    HANDLE hFile;
+
+    /* There exists GetTempPath2W, which is available only on Windows 11+ */
+    DWORD tmp_len = GetTempPathW(MAX_PATH, tmp_folder);
+
+    if (tmp_len == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get the temporary folder");
+        return NULL;
+    }
+
+    /* Note: Someone watching the temp folder could create a file with a
+       clashing name before it is re-created (TOCTOU). However, this shouldn't
+       give access to the contents of the file, because it will be created with
+       CREATE_NEW. */
+    UINT id = GetTempFileNameW(tmp_folder, L"tmp", 0, tmp_file);
+
+    if (id == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get a temporary file");
+        return NULL;
+    }
+
+    if (!DeleteFileW(tmp_file)) {
+        WIN_SetError("Couldn't delete the file created by GetTempFileNameW");
+        return NULL;
+    }
+
+    hFile = CreateFileW(tmp_file, GENERIC_READ | GENERIC_WRITE, 0,  NULL, CREATE_NEW,
+                        FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, NULL);
+
+    if (hFile == INVALID_HANDLE_VALUE) {
+        WIN_SetError("Couldn't create the temporary file safely");
+        return NULL;
+    }
+
+    return SDL_IOFromHandle(hFile, "w+", true);
+}
+
+char *SDL_SYS_CreateUnsafeTempFile(void)
+{
+    wchar_t tmp_folder[MAX_PATH];
+    wchar_t tmp_file[MAX_PATH];
+
+    /* There exists GetTempPath2W, which is available only on Windows 11+ */
+    DWORD tmp_len = GetTempPathW(MAX_PATH, tmp_folder);
+
+    if (tmp_len == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get the temporary folder");
+        return NULL;
+    }
+
+    UINT id = GetTempFileNameW(tmp_folder, L"tmp", 0, tmp_file);
+
+    if (id == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get a temporary file");
+        return NULL;
+    }
+
+    return WIN_StringToUTF8W(tmp_file);
+}
+
+char *SDL_SYS_CreateTempFolder(void)
+{
+    wchar_t tmp_folder[MAX_PATH];
+    wchar_t tmp_file[MAX_PATH];
+
+    /* There exists GetTempPath2W, which is available only on Windows 11+ */
+    DWORD tmp_len = GetTempPathW(MAX_PATH, tmp_folder);
+
+    if (tmp_len == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get the temporary folder");
+        return NULL;
+    }
+
+    UINT id = GetTempFileNameW(tmp_folder, L"tmp", 0, tmp_file);
+
+    if (id == 0 || tmp_len > MAX_PATH) {
+        WIN_SetError("Couldn't get a temporary subfolder");
+        return NULL;
+    }
+
+    if (!DeleteFileW(tmp_file)) {
+        WIN_SetError("Couldn't delete the file created by GetTempFileNameW");
+        return NULL;
+    }
+
+    if (!CreateDirectory(tmp_file, NULL)) {
+        WIN_SetError("Couldn't create temporary subfolder");
+        return NULL;
+    }
+
+    return WIN_StringToUTF8W(tmp_file);
 }
 
 #endif // SDL_FILESYSTEM_WINDOWS

@@ -46,6 +46,7 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_error.h>
+#include <SDL3/SDL_iostream.h>
 
 #include <SDL3/SDL_begin_code.h>
 
@@ -153,9 +154,10 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetPrefPath(const char *org, const char *
 /**
  * The type of the OS-provided default folder for a specific purpose.
  *
- * Note that the Trash folder isn't included here, because trashing files
- * usually involves extra OS-specific functionality to remember the file's
- * original location.
+ * Note that many common folders, like the Trash, the Temp folder or
+ * app-specific folders like AppData are not listed here; using them properly
+ * requires more treatment than fetching the folder path and using it. To use
+ * these folders, see their dedicated functions.
  *
  * The folders supported per platform are:
  *
@@ -493,6 +495,79 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GlobDirectory(const char *path, const ch
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC char * SDLCALL SDL_GetCurrentDirectory(void);
+
+/**
+ * Create a secure temporary file.
+ *
+ * This function is not path-based to avoid race conditions. Returning a path
+ * and letting the caller create the file opens a time-of-check-to-time-of-use
+ * (TOCTOU) safety issue, where an attacker can use the small delay between the
+ * moment the name is generated and the moment the file is created to create
+ * the file first and give it undesirable attributes, such as giving itself
+ * full read/write access to the file, or making the file a symlink to another,
+ * sensitive file.
+ *
+ * \returns an open IOStream object to the file, or NULL on error; call
+ *          SDL_GetError() for details.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateUnsafeTempFile
+ * \sa SDL_CreateTempFolder
+ */
+extern SDL_DECLSPEC SDL_IOStream *SDLCALL SDL_CreateSafeTempFile(void);
+
+/**
+ * Create a temporary file, with less security considerations.
+ *
+ * Unlike SDL_CreateSafeTempFile(), this function provides a path, which can
+ * then be used like any other file on the filesystem. This has security
+ * implications; an attacker could exploit the small delay between the moment
+ * the name is generated and the moment the file is created to create the file
+ * first and give it undesirable attributes, such as giving itself full
+ * read/write access to the file, or making the file a symlink to another,
+ * sensitive file.
+ *
+ * The path string is owned by the caller and must be freed with SDL_free().
+ *
+ * \returns an absolute path to the temporary file, or NULL on error; call
+ *          SDL_GetError() for details. If a path is returned, it is encoded in
+ *          OS-specific format.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateSafeTempFile
+ * \sa SDL_CreateTempFolder
+ */
+extern SDL_DECLSPEC char *SDLCALL SDL_CreateUnsafeTempFile(void);
+
+/**
+ * Create a temporary folder.
+ *
+ * Keep in mind any program running as the same user as your program can access
+ * the contents of the folders and the files in it. Do not perform sensitive
+ * tasks using the temporary folder. If you need one or more temporary files
+ * for sensitive purposes, use SDL_CreateSafeTempFile().
+ *
+ * The path string is owned by the caller and must be freed with SDL_free().
+ *
+ * \returns an absolute path to the temporary folder, or NULL on error; call
+ *          SDL_GetError() for details. If a path is returned, it is encoded in
+ *          OS-specific format, and is guaranteed to finish with a path
+ *          separator.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.0.0.
+ *
+ * \sa SDL_CreateSafeTempFile
+ * \sa SDL_CreateUnsafeTempFile
+ */
+extern SDL_DECLSPEC char *SDLCALL SDL_CreateTempFolder(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

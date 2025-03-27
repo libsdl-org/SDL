@@ -39,5 +39,9 @@ typedef bool (*SDL_GlobEnumeratorFunc)(const char *path, SDL_EnumerateDirectoryC
 typedef bool (*SDL_GlobGetPathInfoFunc)(const char *path, SDL_PathInfo *info, void *userdata);
 extern char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_GlobFlags flags, int *count, SDL_GlobEnumeratorFunc enumerator, SDL_GlobGetPathInfoFunc getpathinfo, void *userdata);
 
+extern SDL_IOStream *SDL_SYS_CreateSafeTempFile(void);
+extern char *SDL_SYS_CreateUnsafeTempFile(void);
+extern char *SDL_SYS_CreateTempFolder(void);
+
 #endif
 
