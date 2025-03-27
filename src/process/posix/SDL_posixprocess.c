@@ -37,6 +37,12 @@
 #include "../../io/SDL_iostream_c.h"
 
 
+#if defined(HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP) && \
+    !defined(HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR)
+#define HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR
+#define posix_spawn_file_actions_addchdir posix_spawn_file_actions_addchdir_np
+#endif
+
 #define READ_END 0
 #define WRITE_END 1
 
@@ -156,6 +162,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     char * const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
     SDL_Environment *env = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, SDL_GetEnvironment());
     char **envp = NULL;
+    const char *working_directory = SDL_GetStringProperty(props, SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING, NULL);
     SDL_ProcessIO stdin_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
     SDL_ProcessIO stdout_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_INHERITED);
     SDL_ProcessIO stderr_option = (SDL_ProcessIO)SDL_GetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_INHERITED);
@@ -190,6 +197,30 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     if (posix_spawn_file_actions_init(&fa) != 0) {
         SDL_SetError("posix_spawn_file_actions_init failed: %s", strerror(errno));
         goto posix_spawn_fail_attr;
+    }
+
+    if (working_directory) {
+#ifdef HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR
+#ifdef SDL_PLATFORM_APPLE
+        if (__builtin_available(macOS 10.15, *)) {
+            if (posix_spawn_file_actions_addchdir(&fa, working_directory) != 0) {
+                SDL_SetError("posix_spawn_file_actions_addchdir failed: %s", strerror(errno));
+                goto posix_spawn_fail_all;
+            }
+        } else {
+            SDL_SetError("Setting the working directory is only supported on macOS 10.15 and newer");
+            goto posix_spawn_fail_all;
+        }
+#else
+        if (posix_spawn_file_actions_addchdir(&fa, working_directory) != 0) {
+            SDL_SetError("posix_spawn_file_actions_addchdir failed: %s", strerror(errno));
+            goto posix_spawn_fail_all;
+        }
+#endif // SDL_PLATFORM_APPLE
+#else
+        SDL_SetError("Setting the working directory is not supported");
+        goto posix_spawn_fail_all;
+#endif
     }
 
     // Background processes don't have access to the terminal
