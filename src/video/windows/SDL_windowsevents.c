@@ -624,7 +624,7 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
 
     SDL_WindowData *windowdata = window->internal;
 
-    if (haveMotion) {
+    if (haveMotion && !windowdata->in_modal_loop) {
         if (!isAbsolute) {
             SDL_SendMouseMotion(timestamp, window, mouseID, true, (float)dx, (float)dy);
         } else {
