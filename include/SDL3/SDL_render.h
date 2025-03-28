@@ -2356,8 +2356,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
  * Set the texture addressing mode used in SDL_RenderGeometry().
  *
  * \param renderer the rendering context.
- * \param u_mode the SDL_TextureAddressMode to use for horizontal texture coordinates in SDL_RenderGeometry().
- * \param v_mode the SDL_TextureAddressMode to use for vertical texture coordinates in SDL_RenderGeometry().
+ * \param u_mode the SDL_TextureAddressMode to use for horizontal texture
+ *               coordinates in SDL_RenderGeometry().
+ * \param v_mode the SDL_TextureAddressMode to use for vertical texture
+ *               coordinates in SDL_RenderGeometry().
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -2373,8 +2375,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderTextureAddressMode(SDL_Renderer *r
  * Get the texture addressing mode used in SDL_RenderGeometry().
  *
  * \param renderer the rendering context.
- * \param u_mode a pointer filled in with the SDL_TextureAddressMode to use for horizontal texture coordinates in SDL_RenderGeometry(), may be NULL.
- * \param v_mode a pointer filled in with the SDL_TextureAddressMode to use for vertical texture coordinates in SDL_RenderGeometry(), may be NULL.
+ * \param u_mode a pointer filled in with the SDL_TextureAddressMode to use
+ *               for horizontal texture coordinates in SDL_RenderGeometry(),
+ *               may be NULL.
+ * \param v_mode a pointer filled in with the SDL_TextureAddressMode to use
+ *               for vertical texture coordinates in SDL_RenderGeometry(), may
+ *               be NULL.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
