@@ -96,7 +96,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     };
 
     float corners[16];
-    for (int i = 0; i < 8; i++) {
+    int i;
+
+    for (i = 0; i < 8; i++) {
         const float x = (i & 1) ? -0.5f : 0.5f;
         const float y = (i & 2) ? -0.5f : 0.5f;
         const float z = (i & 4) ? -0.5f : 0.5f;
@@ -107,7 +109,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
-    for (int i = 1; i < 7; i++) {
+    for (i = 1; i < 7; i++) {
         const int dir = 3 & ((i & 4) ? ~i : i);
         const int odd = (i & 1) ^ ((i & 2) >> 1) ^ ((i & 4) >> 2);
         if (0 < (odd ? 1.0f : -1.0f) * mat[5 + dir]) continue;
