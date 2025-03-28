@@ -106,7 +106,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         corners[1 + 2*i] = mat[3]*x + mat[4]*y + mat[5]*z;
     }
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderDrawColor(renderer, 0x42, 0x87, 0xf5, SDL_ALPHA_OPAQUE);  // light blue background.
     SDL_RenderClear(renderer);
 
     for (i = 1; i < 7; i++) {
