@@ -97,9 +97,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     float corners[16];
     for (int i = 0; i < 8; i++) {
-        const float x = (i & 1) ? 0.5f : -0.5f;
-        const float y = (i & 2) ? 0.5f : -0.5f;
-        const float z = (i & 4) ? 0.5f : -0.5f;
+        const float x = (i & 1) ? -0.5f : 0.5f;
+        const float y = (i & 2) ? -0.5f : 0.5f;
+        const float z = (i & 4) ? -0.5f : 0.5f;
         corners[0 + 2*i] = mat[0]*x + mat[1]*y + mat[2]*z;
         corners[1 + 2*i] = mat[3]*x + mat[4]*y + mat[5]*z;
     }
