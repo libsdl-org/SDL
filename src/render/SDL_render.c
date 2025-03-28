@@ -5083,22 +5083,60 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                           int num_vertices,
                           const void *indices, int num_indices, int size_indices)
 {
-    return SDL_RenderGeometryRawEx(renderer, texture, 
-        xy, xy_stride, 2,
-        color, color_stride, 
-        uv, uv_stride, 
-        num_vertices, 
-        indices, num_indices, size_indices);
+    SDL_RenderGeometryEx_Arg arg;
+    arg.arg_size = sizeof(SDL_RenderGeometryEx_Arg);
+    arg.pos = xy;
+    arg.pos_stride = xy_stride;
+    arg.pos_len = 2;
+    arg.col = color;
+    arg.col_stride = color_stride;
+    arg.tex = uv;
+    arg.tex_stride = uv_stride;
+    arg.ver_len = num_vertices;
+    arg.map = indices;
+    arg.map_len = num_indices;
+    arg.map_size = size_indices;
+    return SDL_RenderGeometryEx(renderer, texture, &arg);
 }
 
-bool SDL_RenderGeometryRawEx(SDL_Renderer *renderer,
+bool SDL_RenderGeometryEx(SDL_Renderer *renderer,
                           SDL_Texture *texture,
-                          const float *xy, int xy_stride, Uint8 pos_len,
-                          const SDL_FColor *color, int color_stride,
-                          const float *uv, int uv_stride,
-                          int num_vertices,
-                          const void *indices, int num_indices, int size_indices)
+                          const SDL_RenderGeometryEx_Arg *arg)
 {
+    if (!arg) {
+        return false;
+    }
+
+    const float *xy;
+    int xy_stride;
+    int pos_len;
+    const SDL_FColor *color;
+    int color_stride;
+    const float *uv;
+    int uv_stride;
+    int num_vertices;
+    const void *indices;
+    int num_indices;
+    int size_indices;
+
+    if (arg->arg_size < sizeof(SDL_RenderGeometryEx_Arg)) {
+        // older ABI with fewer arguments, set fallback values
+        return false; // placeholder for now
+    } else {
+        xy           = arg->pos;
+        xy_stride    = arg->pos_stride;
+        pos_len      = arg->pos_len;
+        color        = arg->col;
+        color_stride = arg->col_stride;
+        uv           = arg->tex;
+        uv_stride    = arg->tex_stride;
+        num_vertices = arg->ver_len;
+        indices      = arg->map;
+        num_indices  = arg->map_len;
+        size_indices = arg->map_size;
+    }
+
+
     int i;
     int count = indices ? num_indices : num_vertices;
     SDL_TextureAddressMode texture_address_mode;
