@@ -537,6 +537,9 @@
     <ClInclude Include="..\..\src\events\SDL_events_c.h">
       <Filter>events</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\events\SDL_eventfilter_c.h">
+      <Filter>events</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\events\SDL_keyboard_c.h">
       <Filter>events</Filter>
     </ClInclude>
@@ -959,7 +962,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_storage.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_time.h" />
     <ClInclude Include="..\..\src\events\SDL_categories_c.h" />
-    <ClInclude Include="..\..\src\events\SDL_eventwatch_c.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
@@ -1084,6 +1086,9 @@
       <Filter>events</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\events\SDL_events.c">
+      <Filter>events</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_eventfilter.c">
       <Filter>events</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\events\SDL_keyboard.c">
@@ -1598,12 +1603,11 @@
     <ClCompile Include="..\..\src\storage\generic\SDL_genericstorage.c" />
     <ClCompile Include="..\..\src\storage\steam\SDL_steamstorage.c" />
     <ClCompile Include="..\..\src\storage\SDL_storage.c" />
-    <ClCompile Include="..\..\src\events\SDL_eventwatch.c" />
-    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_8bitdo.c">
-      <Filter>joystick\hidapi</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="..\..\src\stdlib\SDL_mslibc_x64.masm" />
   </ItemGroup>
 </Project>
