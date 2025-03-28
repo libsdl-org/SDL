@@ -2294,6 +2294,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9GridTiled(SDL_Renderer *rende
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RenderGeometryRaw
+ * \sa SDL_RenderGeometryEx
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -2326,6 +2327,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RenderGeometry
+ * \sa SDL_RenderGeometryEx
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -2334,6 +2336,52 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                const float *uv, int uv_stride,
                                                int num_vertices,
                                                const void *indices, int num_indices, int size_indices);
+
+/**
+ * Argument struct for SDL_RenderGeometryEx.
+ *
+ * \since This struct is available since SDL 3.4.0.
+ */
+ typedef struct SDL_RenderGeometryEx_Arg
+ {
+    size_t arg_size;        /**< the size of this struct, must be set with sizeof() */
+    int ver_len;            /**< number of vertices. */
+
+    const void *map;        /**< (optional) An array of indices into the 'vertices' arrays, if NULL all vertices will be rendered in sequential order. */
+    int map_size;           /**< index size: 1 (byte), 2 (short), 4 (int). */
+    int map_len;            /**< number of indices. */
+    const float *pos;       /**< vertex positions. */
+    int pos_stride;         /**< byte size to move from one element to the next element. */
+    int pos_len;            /**< how many vertext position coordinates, must be 2, 3, or 4. */
+    const SDL_FColor *col;  /**< vertex colors (as SDL_FColor). */
+    int col_stride;         /**< byte size to move from one element to the next element. */
+
+    const float *tex;       /**< vertex normalized texture coordinates. */
+    int tex_stride;         /**< byte size to move from one element to the next element. */
+
+} SDL_RenderGeometryEx_Arg;
+
+/**
+ * Render a list of triangles, optionally using a texture and indices into the
+ * vertex arrays which can have up to 4 positional coordinates.
+ * Color and alpha modulation is done per vertex.
+ * (SDL_SetTextureColorMod and SDL_SetTextureAlphaMod are ignored).
+ *
+ * \param renderer the rendering context.
+ * \param texture (optional) The SDL texture to use.
+ * \param arg pointer to an SDL_RenderGeometryEx_Arg struct of vertex info.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_RenderGeometry
+ * \sa SDL_RenderGeometryRaw
+ */
+ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometryEx(SDL_Renderer *renderer,
+    SDL_Texture *texture, const SDL_RenderGeometryEx_Arg *arg);
 
 /**
  * Read pixels from the current rendering target.
