@@ -1271,3 +1271,4 @@
 #define SDL_SetWindowProgressValue SDL_SetWindowProgressValue_REAL
 #define SDL_GetWindowProgressState SDL_GetWindowProgressState_REAL
 #define SDL_GetWindowProgressValue SDL_GetWindowProgressValue_REAL
+#define SDL_GetDeviceFormFactor SDL_GetDeviceFormFactor_REAL
