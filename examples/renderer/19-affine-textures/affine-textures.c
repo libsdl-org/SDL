@@ -85,7 +85,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     const float px = SDL_min(WINDOW_WIDTH, WINDOW_HEIGHT) / SDL_sqrtf(3.0f);
 
     const Uint64 now = SDL_GetTicks();
-    const float rad = (((float) ((int) (now % 4000))) / 4000.0f) * SDL_PI_F * 2;
+    const float rad = (((float) ((int) (now % 2000))) / 2000.0f) * SDL_PI_F * 2;
     const float cos = SDL_cosf(rad);
     const float sin = SDL_sinf(rad);
     const float k[3] = { 3.0f / SDL_sqrtf(50.0f), 4.0f / SDL_sqrtf(50.0f), 5.0f / SDL_sqrtf(50.0f)};
