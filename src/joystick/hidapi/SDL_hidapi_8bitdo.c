@@ -345,18 +345,17 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         if (ctx->sensors_supported) {
             Uint64 sensor_timestamp;
             float values[3];
-            ABITDO_SENSORS sensors;
-            memcpy((Uint8 *)&sensors.sAccelX, (Uint8 *)&data[15], 12);
+            ABITDO_SENSORS *sensors = (ABITDO_SENSORS *)&data[15];
 
             sensor_timestamp = timestamp;
-            values[0] = (sensors.sGyroX) * (ctx->gyroScale);
-            values[1] = (sensors.sGyroZ) * (ctx->gyroScale);
-            values[2] = (sensors.sGyroY) * (ctx->gyroScale);
+            values[0] = (sensors->sGyroX) * (ctx->gyroScale);
+            values[1] = (sensors->sGyroZ) * (ctx->gyroScale);
+            values[2] = (sensors->sGyroY) * (ctx->gyroScale);
             SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
-            values[0] = (sensors.sAccelX) * (ctx->accelScale);
-            values[1] = (sensors.sAccelZ) * (ctx->accelScale);
-            values[2] = (sensors.sAccelY) * (ctx->accelScale);
+            values[0] = (sensors->sAccelX) * (ctx->accelScale);
+            values[1] = (sensors->sAccelZ) * (ctx->accelScale);
+            values[2] = (sensors->sAccelY) * (ctx->accelScale);
             SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, values, 3);
         }
 
