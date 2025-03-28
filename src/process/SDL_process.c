@@ -194,3 +194,32 @@ void SDL_DestroyProcess(SDL_Process *process)
     SDL_DestroyProperties(process->props);
     SDL_free(process);
 }
+
+int SDL_GetCurrentProcessId(void)
+{
+    return SDL_SYS_GetCurrentProcessId();
+}
+
+static char *CachedCurrentProcessName = NULL;
+
+const char *SDL_GetCurrentProcessName(void)
+{
+    if (!CachedCurrentProcessName) {
+        CachedCurrentProcessName = SDL_SYS_GetCurrentProcessName();
+    }
+
+    return CachedCurrentProcessName;
+}
+
+void SDL_InitProcessManagement(void)
+{
+}
+
+void SDL_QuitProcessManagement(void)
+{
+    if (CachedCurrentProcessName) {
+        SDL_free(CachedCurrentProcessName);
+    }
+
+    CachedCurrentProcessName = NULL;
+}

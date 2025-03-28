@@ -60,6 +60,7 @@
 #ifdef SDL_PLATFORM_ANDROID
 #include "core/android/SDL_android.h"
 #endif
+#include "process/SDL_process_c.h"
 
 #define SDL_INIT_EVERYTHING ~0U
 
@@ -279,6 +280,7 @@ void SDL_InitMainThread(void)
     SDL_InitEnvironment();
     SDL_InitTicks();
     SDL_InitFilesystem();
+    SDL_InitProcessManagement();
 
     if (!done_info) {
         const char *value;
@@ -301,6 +303,7 @@ static void SDL_QuitMainThread(void)
     SDL_QuitTicks();
     SDL_QuitEnvironment();
     SDL_QuitTLSData();
+    SDL_QuitProcessManagement();
 }
 
 bool SDL_InitSubSystem(SDL_InitFlags flags)
