@@ -405,15 +405,17 @@ static bool SDLCALL SDL_GamepadEventWatcher(void *userdata, SDL_Event *event)
     {
         SDL_AssertJoysticksLocked();
 
-        for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
-            if (gamepad->joystick->instance_id == event->jdevice.which) {
-                SDL_Event deviceevent;
+        if (SDL_EventEnabled(SDL_EVENT_GAMEPAD_UPDATE_COMPLETE)) {
+            for (gamepad = SDL_gamepads; gamepad; gamepad = gamepad->next) {
+                if (gamepad->joystick->instance_id == event->jdevice.which) {
+                    SDL_Event deviceevent;
 
-                deviceevent.type = SDL_EVENT_GAMEPAD_UPDATE_COMPLETE;
-                deviceevent.common.timestamp = event->jdevice.timestamp;
-                deviceevent.gdevice.which = event->jdevice.which;
-                SDL_PushEvent(&deviceevent);
-                break;
+                    deviceevent.type = SDL_EVENT_GAMEPAD_UPDATE_COMPLETE;
+                    deviceevent.common.timestamp = event->jdevice.timestamp;
+                    deviceevent.gdevice.which = event->jdevice.which;
+                    SDL_PushEvent(&deviceevent);
+                    break;
+                }
             }
         }
     } break;
