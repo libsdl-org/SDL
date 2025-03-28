@@ -1939,6 +1939,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
             if (!convert->pixels) {
                 goto error;
             }
+            convert->flags &= ~SDL_SURFACE_PREALLOCATED;
             convert->pitch = surface->pitch;
             SDL_memcpy(convert->pixels, surface->pixels, size);
 
