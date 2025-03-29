@@ -1865,10 +1865,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             SDL_OnWindowLiveResizeUpdate(data->window);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if 0 // This locks up the Windows compositor when called by Steam; disabling until we understand why
             // Make sure graphics operations are complete for smooth refresh
             if (data->videodata->DwmFlush) {
                 data->videodata->DwmFlush();
             }
+#endif
 #endif
             return 0;
         }
