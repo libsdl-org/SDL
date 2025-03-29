@@ -132,6 +132,11 @@ int main(int argc, char *argv[])
             quit(2);
         }
         SDL_GetTextureSize(drawstate->sprite, &drawstate->sprite_rect.w, &drawstate->sprite_rect.h);
+
+        /* Ensure each window will have a different scale to make each window have a unique display */
+        drawstate->sprite_rect.w *= i * 2.f;
+        drawstate->sprite_rect.h *= i * 2.f;
+
         SDL_SetTextureScaleMode(drawstate->sprite, SDL_SCALEMODE_PIXELART);
         drawstate->scale_direction = 1;
     }
