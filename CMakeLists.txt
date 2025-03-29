@@ -2188,6 +2188,7 @@ elseif(APPLE)
       set(SDL_CAMERA_DRIVER_COREMEDIA 1)
       set(HAVE_CAMERA TRUE)
       sdl_glob_sources("${SDL3_SOURCE_DIR}/src/camera/coremedia/*.m")
+      set(SDL_FRAMEWORK_AVFOUNDATION 1)
     endif()
   endif()
 
