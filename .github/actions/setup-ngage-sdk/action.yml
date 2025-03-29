@@ -1,0 +1,102 @@
+name: 'Setup Nonka N-Gage SDK'
+description: 'Download and setup Nokia N-Gage SDK'
+inputs:
+  path:
+    description: 'Installation path'
+    default: 'default'
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+    - name: 'Verify platform'
+      id: calc
+      shell: sh
+      run: |
+        case "${{ runner.os }}-${{ runner.arch }}" in
+          "Windows-X86" | "Windows-X64")
+            echo "ok!"
+            echo "cache-key=ngage-sdk-windows" >> ${GITHUB_OUTPUT}
+            default_install_path="C:/ngagesdk"
+            ;;
+          *)
+            echo "Unsupported ${{ runner.os }}-${{ runner.arch }}"
+            exit 1;
+            ;;
+        esac
+        install_path="${{ inputs.path }}"
+        if [ "x$install_path" = "xdefault" ]; then
+          install_path="$default_install_path"
+        fi
+        echo "install-path=$install_path" >> ${GITHUB_OUTPUT}
+
+        toolchain_repo="https://github.com/ngagesdk/ngage-toolchain"
+        toolchain_branch="main"
+        echo "toolchain-repo=${toolchain_repo}"     >> ${GITHUB_OUTPUT}
+        echo "toolchain-branch=${toolchain_branch}" >> ${GITHUB_OUTPUT}
+
+        sdk_repo="https://github.com/ngagesdk/sdk"
+        sdk_branch="main"
+        echo "sdk-repo=${sdk_repo}"       >> ${GITHUB_OUTPUT}
+        echo "sdk-branch=${sdk_branch}"   >> ${GITHUB_OUTPUT}
+
+        tools_repo="https://github.com/ngagesdk/tools"
+        tools_branch="main"
+        echo "tools-repo=${tools_repo}"       >> ${GITHUB_OUTPUT}
+        echo "tools-branch=${tools_branch}"   >> ${GITHUB_OUTPUT}
+
+        extras_repo="https://github.com/ngagesdk/extras"
+        extras_branch="main"
+        echo "extras-repo=${extras_repo}"       >> ${GITHUB_OUTPUT}
+        echo "extras-branch=${extras_branch}"   >> ${GITHUB_OUTPUT}
+#    - name: 'Restore cached ${{ steps.calc.outputs.archive }}'
+#      id: cache-restore
+#      uses: actions/cache/restore@v4
+#      with:
+#        path: '${{ runner.temp }}'
+#        key: ${{ steps.calc.outputs.cache-key }}
+    - name: 'Download N-Gage SDK'
+#      if: ${{ !steps.cache-restore.outputs.cache-hit || steps.cache-restore.outputs.cache-hit == 'false' }}
+      shell: pwsh
+      run: |
+
+        Invoke-WebRequest "${{ steps.calc.outputs.toolchain-repo }}/archive/refs/heads/${{ steps.calc.outputs.toolchain-branch }}.zip"  -OutFile "${{ runner.temp }}/ngage-toolchain.zip"
+        Invoke-WebRequest "${{ steps.calc.outputs.sdk-repo }}/archive/refs/heads/${{ steps.calc.outputs.sdk-branch }}.zip"              -OutFile "${{ runner.temp }}/sdk.zip"
+        Invoke-WebRequest "${{ steps.calc.outputs.tools-repo }}/archive/refs/heads/${{ steps.calc.outputs.tools-branch }}.zip"          -OutFile "${{ runner.temp }}/tools.zip"
+        Invoke-WebRequest "${{ steps.calc.outputs.extras-repo }}/archive/refs/heads/${{ steps.calc.outputs.extras-branch }}.zip"        -OutFile "${{ runner.temp }}/extras.zip"
+
+#    - name: 'Cache ${{ steps.calc.outputs.archive }}'
+#      if: ${{ !steps.cache-restore.outputs.cache-hit || steps.cache-restore.outputs.cache-hit == 'false' }}
+#      uses: actions/cache/save@v4
+#      with:
+#        path: |
+#          ${{ runner.temp }}/apps.zip
+#          ${{ runner.temp }}/sdk.zip
+#          ${{ runner.temp }}/tools.zip
+#        key: ${{ steps.calc.outputs.cache-key }}
+    - name: 'Extract N-Gage SDK'
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Path "${{ steps.calc.outputs.install-path }}" -Force
+
+        New-Item -ItemType Directory -Path "${{ runner.temp }}/ngage-toolchain-temp" -Force 
+        7z "-o${{ runner.temp }}/ngage-toolchain-temp"      x "${{ runner.temp }}/ngage-toolchain.zip"
+        Move-Item -Path "${{ runner.temp }}/ngage-toolchain-temp/ngage-toolchain-${{ steps.calc.outputs.toolchain-branch }}/*" -Destination "${{ steps.calc.outputs.install-path }}"
+
+        7z "-o${{ steps.calc.outputs.install-path }}/sdk"   x "${{ runner.temp }}/sdk.zip"
+        Move-Item -Path "${{ steps.calc.outputs.install-path }}/sdk/sdk-${{ steps.calc.outputs.sdk-branch }}"       -Destination "${{ steps.calc.outputs.install-path }}/sdk/sdk"
+
+        7z "-o${{ steps.calc.outputs.install-path }}/sdk"   x "${{ runner.temp }}/tools.zip"
+        Move-Item -Path "${{ steps.calc.outputs.install-path }}/sdk/tools-${{ steps.calc.outputs.tools-branch }}"   -Destination "${{ steps.calc.outputs.install-path }}/sdk/tools"
+
+        7z "-o${{ steps.calc.outputs.install-path }}/sdk"   x "${{ runner.temp }}/extras.zip"
+        Move-Item -Path "${{ steps.calc.outputs.install-path }}/sdk/extras-${{ steps.calc.outputs.extras-branch }}" -Destination "${{ steps.calc.outputs.install-path }}/sdk/extras"
+    - name: 'Set output variables'
+      id: final
+      shell: sh
+      run: |
+        echo "${{ steps.calc.outputs.install-path }}/sdk/sdk/6.1/Shared/EPOC32/gcc/bin" >> $GITHUB_PATH
+        echo "${{ steps.calc.outputs.install-path }}/sdk/sdk/6.1/Shared/EPOC32/ngagesdk/bin" >> $GITHUB_PATH
+        echo "NGAGESDK=${{ steps.calc.outputs.install-path }}" >> $GITHUB_ENV
+        echo "CMAKE_TOOLCHAIN_FILE=${{ steps.calc.outputs.install-path }}/cmake/ngage-toolchain.cmake" >> $GITHUB_ENV
