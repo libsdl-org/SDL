@@ -269,7 +269,7 @@ static void loop(void *arg)
 
     flags = SDL_GetGlobalMouseState(&fx, &fy);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDebugTextFormat(renderer, 0, 0, "Global Mouse State: x=%f y=%f flags=%u", fx, fy, flags);
+    SDL_RenderDebugTextFormat(renderer, 0, 0, "Global Mouse State: x=%f y=%f flags=%" SDL_PRIu32, fx, fy, flags);
 
     SDL_RenderPresent(renderer);
 
