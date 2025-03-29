@@ -18,22 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
-typedef struct SDL_ProcessData SDL_ProcessData;
+#ifndef SDL_process_c_h_
+#define SDL_process_c_h_
 
-struct SDL_Process
-{
-    bool alive;
-    bool background;
-    int exitcode;
-    SDL_PropertiesID props;
-    SDL_ProcessData *internal;
-};
+extern void SDL_InitProcessManagement(void);
+extern void SDL_QuitProcessManagement(void);
 
-bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props);
-bool SDL_SYS_KillProcess(SDL_Process *process, bool force);
-bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode);
-void SDL_SYS_DestroyProcess(SDL_Process *process);
-int SDL_SYS_GetCurrentProcessId(void);
-char *SDL_SYS_GetCurrentProcessName(void);
+#endif

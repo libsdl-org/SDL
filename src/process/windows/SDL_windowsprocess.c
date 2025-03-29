@@ -564,4 +564,49 @@ void SDL_SYS_DestroyProcess(SDL_Process *process)
     SDL_free(data);
 }
 
+int SDL_SYS_GetCurrentProcessId(void)
+{
+    return GetCurrentProcessId();
+}
+
+char *SDL_SYS_GetCurrentProcessName(void)
+{
+    DWORD buflen = 128;
+    WCHAR *path = NULL;
+    char *result = NULL;
+    DWORD len = 0;
+
+    // Copy paste from SDL_GetBasePath() - should this be a shared function?
+    while (true) {
+        void *ptr = SDL_realloc(path, buflen * sizeof(WCHAR));
+        if (!ptr) {
+            SDL_free(path);
+            return NULL;
+        }
+
+        path = (WCHAR *)ptr;
+
+        len = GetModuleFileNameW(NULL, path, buflen);
+        // if it truncated, then len >= buflen - 1
+        // if there was enough room (or failure), len < buflen - 1
+        if (len < buflen - 1) {
+            break;
+        }
+
+        // buffer too small? Try again.
+        buflen *= 2;
+    }
+
+    if (len == 0) {
+        SDL_free(path);
+        WIN_SetError("Couldn't locate our .exe");
+        return NULL;
+    }
+
+    result = WIN_StringToUTF8W(path);
+    SDL_free(path);
+
+    return result;
+}
+
 #endif // SDL_PROCESS_WINDOWS

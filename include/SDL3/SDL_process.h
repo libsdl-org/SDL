@@ -425,6 +425,37 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitProcess(SDL_Process *process, bool bloc
  */
 extern SDL_DECLSPEC void SDLCALL SDL_DestroyProcess(SDL_Process *process);
 
+/**
+ * Get the current process ID.
+ *
+ * It eventually maps to the platform-specific function to get the current process ID (getpid() on Unix and GetCurrentProcessId() on Windows).
+ * There is no direct usage for it in SDL right now, but you may use this value for debugging or other purposes.
+ *
+ * \returns PID of the current process
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetCurrentProcessName
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetCurrentProcessId(void);
+
+/**
+ * Get the current process name.
+ *
+ * Returned string is cached by SDL and should not be freed by the caller.
+ *
+ * \returns Name of the current process
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetCurrentProcessId
+ */
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetCurrentProcessName(void);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

@@ -511,4 +511,22 @@ void SDL_SYS_DestroyProcess(SDL_Process *process)
     SDL_free(process->internal);
 }
 
+int SDL_SYS_GetCurrentProcessId(void)
+{
+    return getpid();
+}
+
+char *SDL_SYS_GetCurrentProcessName(void)
+{
+#if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_FREEBSD)
+    char *processPath = SDL_strdup(getprogname());
+#elif defined(SDL_PLATFORM_LINUX)
+    char *processPath = SDL_strdup(program_invocation_name);
+#else
+    char *processPath = NULL;
+#endif
+
+    return processPath;
+}
+
 #endif // SDL_PROCESS_POSIX
