@@ -102,20 +102,12 @@ static const char *get_filename(const bool recording)
 
 static const char *AudioFormatString(SDL_AudioFormat fmt)
 {
-    switch (fmt) {
-        #define CHECK_FMT(x) case SDL_AUDIO_##x: return #x
-        CHECK_FMT(U8);
-        CHECK_FMT(S8);
-        CHECK_FMT(S16LE);
-        CHECK_FMT(S16BE);
-        CHECK_FMT(S32LE);
-        CHECK_FMT(S32BE);
-        CHECK_FMT(F32LE);
-        CHECK_FMT(F32BE);
-        #undef CHECK_FMT
-        default: break;
+    const char *str = SDL_GetAudioFormatName(fmt);
+    SDL_assert(str);
+    if (SDL_strncmp(str, "SDL_AUDIO_", 10) == 0) {
+        str += 10;  // so we return "S8" instead of "SDL_AUDIO_S8", etc.
     }
-    return "[unknown]";
+    return str;
 }
 
 static bool DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
