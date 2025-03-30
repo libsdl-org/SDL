@@ -25,7 +25,12 @@ int main(int argc, char *argv[])
     Uint64 prequit;
     (void)argc;
     (void)argv;
-    SDL_Init(0);
+    if (!SDL_Init(0))
+    {
+        SDL_Log("SDL_Init failure");
+        return 1;
+    }
+
     start = SDL_GetTicks();
     SDL_free(SDL_GetPrefPath("libsdl", "test_filesystem"));
     prequit = SDL_GetTicks();

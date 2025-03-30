@@ -1524,7 +1524,11 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
     }
 
     if (state->flags & SDL_INIT_CAMERA) {
-        SDL_InitSubSystem(SDL_INIT_CAMERA);
+        if (!SDL_InitSubSystem(SDL_INIT_CAMERA))
+        {
+            SDL_Log("Couldn't init camera subsystem: %s\n", SDL_GetError());
+            return false;
+        }
     }
 
     return true;
