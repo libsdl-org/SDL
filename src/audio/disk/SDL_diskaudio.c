@@ -100,6 +100,24 @@ static const char *get_filename(const bool recording)
     return devname;
 }
 
+static const char *AudioFormatString(SDL_AudioFormat fmt)
+{
+    switch (fmt) {
+        #define CHECK_FMT(x) case SDL_AUDIO_##x: return #x
+        CHECK_FMT(U8);
+        CHECK_FMT(S8);
+        CHECK_FMT(S16LE);
+        CHECK_FMT(S16BE);
+        CHECK_FMT(S32LE);
+        CHECK_FMT(S32BE);
+        CHECK_FMT(F32LE);
+        CHECK_FMT(F32BE);
+        #undef CHECK_FMT
+        default: break;
+    }
+    return "[unknown]";
+}
+
 static bool DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     bool recording = device->recording;
@@ -136,7 +154,9 @@ static bool DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
     }
 
     SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, "You are using the SDL disk i/o audio driver!");
-    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, " %s file [%s].", recording ? "Reading from" : "Writing to", fname);
+    SDL_LogCritical(SDL_LOG_CATEGORY_AUDIO, " %s file [%s], format=%s channels=%d freq=%d.",
+                    recording ? "Reading from" : "Writing to", fname,
+                    AudioFormatString(device->spec.format), device->spec.channels, device->spec.freq);
 
     return true;  // We're ready to rock and roll. :-)
 }
