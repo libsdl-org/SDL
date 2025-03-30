@@ -3312,6 +3312,11 @@ bool Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *w
         return SDL_SetError("No pointer to confine");
     }
 
+    // The confinement region will be created when the window is mapped.
+    if (w->shell_surface_status != WAYLAND_SHELL_SURFACE_STATUS_SHOWN) {
+        return true;
+    }
+
     /* A confine may already be active, in which case we should destroy it and
      * create a new one.
      */
