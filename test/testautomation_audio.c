@@ -67,6 +67,9 @@ static SDL_bool DriverIsProblematic(const char *driver)
          */
         "dsp",
 
+        /* Jack isn't always configured properly on end user systems */
+        "jack",
+
         /* OpenBSD sound API. Can be used on Linux, but very rare. */
         "sndio",
 
