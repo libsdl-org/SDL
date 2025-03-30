@@ -112,6 +112,13 @@ int main(int argc, char **argv)
         SDL_Event event;
 
         SDL_Window* window = SDL_CreateWindow("Sensor Test", 0, 0, SDL_WINDOW_FULLSCREEN);
+        if (!window) {
+            SDL_Log("Couldn't create window: %s", SDL_GetError());
+            SDL_Quit();
+            SDLTest_CommonDestroyState(state);
+            return 1;
+        }
+
         while (!done) {
             /* Update to get the current event state */
             SDL_PumpEvents();
