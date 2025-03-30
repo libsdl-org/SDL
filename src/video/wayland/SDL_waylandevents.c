@@ -3366,6 +3366,9 @@ bool Wayland_input_confine_pointer(struct SDL_WaylandInput *input, SDL_Window *w
         wl_region_destroy(confine_rect);
     }
 
+    // Commit the double-buffered confinement region.
+    wl_surface_commit(w->surface);
+
     w->confined_pointer = confined_pointer;
     return true;
 }
