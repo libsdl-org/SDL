@@ -89,7 +89,7 @@ typedef struct
     short sGyroZ;
 } ABITDO_SENSORS;
 
-#pragma pack()
+#pragma pack(pop)
 
 
 static void HIDAPI_Driver8BitDo_RegisterHints(SDL_HintCallback callback, void *userdata)
