@@ -1187,6 +1187,9 @@
     <ClCompile Include="..\..\src\joystick\gdk\SDL_gameinputjoystick.c">
       <Filter>joystick\gdk</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_8bitdo.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_combined.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
