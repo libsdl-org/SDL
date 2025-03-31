@@ -104,7 +104,9 @@ static void HIDAPI_Driver8BitDo_UnregisterHints(SDL_HintCallback callback, void 
 
 static bool HIDAPI_Driver8BitDo_IsEnabled(void)
 {
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
+    // We'll default this off for now, since we don't have a way to tell whether the controller is running firmware v1.03 and don't have a fallback for controllers running firmware v1.02 (the out-of-box firmware)
+    //return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, false);
 }
 
 static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
