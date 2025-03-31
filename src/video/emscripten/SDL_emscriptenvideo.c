@@ -569,7 +569,9 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
                 // querySelector throws if id isn't a valid selector
             }
             return false;
-        }, selector, x, y, w, h, parent_id, SDL_WINDOWPOS_CENTERED_DISPLAY(x), SDL_WINDOWPOS_CENTERED_DISPLAY(y));
+        }, selector, x, y, w, h, parent_id,
+            SDL_WINDOWPOS_ISCENTERED(x),
+            SDL_WINDOWPOS_ISCENTERED(y));
     }
 
     if (!canvas_exists) {
