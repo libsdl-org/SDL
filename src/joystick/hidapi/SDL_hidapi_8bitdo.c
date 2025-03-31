@@ -101,7 +101,6 @@ static void HIDAPI_Driver8BitDo_UnregisterHints(SDL_HintCallback callback, void 
 {
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, callback, userdata);
 }
-    // Read a report to see what mode we're in
 
 static bool HIDAPI_Driver8BitDo_IsEnabled(void)
 {
@@ -126,12 +125,9 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
 
     if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
         ctx->sensors_supported = true;
-        ctx->touchpad_01_supported = false;
-        ctx->touchpad_02_supported = false;
         ctx->rumble_supported = true;
         ctx->rumble_type = 0;
         ctx->rgb_supported = true;
-        ctx->player_led_supported = false;
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -318,50 +314,50 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 #undef READ_TRIGGER_AXIS
 
-        SDL_PowerState state;
-        int percent;
-        Uint8 status = data[14] >> 7;
-        Uint8 level = (data[14] & 0x7f);
-        if (level == 100) {
-            status = 2;
-        }
-        switch (status) {
-        case 0:
-            state = SDL_POWERSTATE_ON_BATTERY;
-            percent = level;
-            break;
-        case 1:
-            state = SDL_POWERSTATE_CHARGING;
-            percent = level;
-            break;
-        case 2:
-            state = SDL_POWERSTATE_CHARGED;
-            percent = 100;
-            break;
-        default:
-            state = SDL_POWERSTATE_UNKNOWN;
-            percent = 0;
-            break;
-        }
+    SDL_PowerState state;
+    int percent;
+    Uint8 status = data[14] >> 7;
+    Uint8 level = (data[14] & 0x7f);
+    if (level == 100) {
+        status = 2;
+    }
+    switch (status) {
+    case 0:
+        state = SDL_POWERSTATE_ON_BATTERY;
+        percent = level;
+        break;
+    case 1:
+        state = SDL_POWERSTATE_CHARGING;
+        percent = level;
+        break;
+    case 2:
+        state = SDL_POWERSTATE_CHARGED;
+        percent = 100;
+        break;
+    default:
+        state = SDL_POWERSTATE_UNKNOWN;
+        percent = 0;
+        break;
+    }
 
-        SDL_SendJoystickPowerInfo(joystick, state, percent);
+    SDL_SendJoystickPowerInfo(joystick, state, percent);
 
-        if (ctx->sensors_supported) {
-            Uint64 sensor_timestamp;
-            float values[3];
-            ABITDO_SENSORS *sensors = (ABITDO_SENSORS *)&data[15];
+    if (ctx->sensors_supported) {
+        Uint64 sensor_timestamp;
+        float values[3];
+        ABITDO_SENSORS *sensors = (ABITDO_SENSORS *)&data[15];
 
-            sensor_timestamp = timestamp;
-            values[0] = (sensors->sGyroX) * (ctx->gyroScale);
-            values[1] = (sensors->sGyroZ) * (ctx->gyroScale);
-            values[2] = (sensors->sGyroY) * (ctx->gyroScale);
-            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
+        sensor_timestamp = timestamp;
+        values[0] = (sensors->sGyroX) * (ctx->gyroScale);
+        values[1] = (sensors->sGyroZ) * (ctx->gyroScale);
+        values[2] = (sensors->sGyroY) * (ctx->gyroScale);
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
-            values[0] = (sensors->sAccelX) * (ctx->accelScale);
-            values[1] = (sensors->sAccelZ) * (ctx->accelScale);
-            values[2] = (sensors->sAccelY) * (ctx->accelScale);
-            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, values, 3);
-        }
+        values[0] = (sensors->sAccelX) * (ctx->accelScale);
+        values[1] = (sensors->sAccelZ) * (ctx->accelScale);
+        values[2] = (sensors->sAccelY) * (ctx->accelScale);
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, values, 3);
+    }
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
@@ -400,7 +396,6 @@ static void HIDAPI_Driver8BitDo_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
 static void HIDAPI_Driver8BitDo_FreeDevice(SDL_HIDAPI_Device *device)
 {
-
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_Driver8BitDo = {
