@@ -815,7 +815,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             /* The Wireless HORIPad for Steam has QAM, Steam, Capsense L/R Sticks, 2 rear buttons, and 2 misc buttons */
             SDL_strlcat(mapping_string, "paddle1:b13,paddle2:b12,paddle3:b15,paddle4:b14,misc2:b11,misc3:b16,misc4:b17", sizeof(mapping_string));
         } else if (SDL_IsJoystick8BitDoController(vendor, product)) {
-            SDL_strlcat(mapping_string, "paddle1:b13,paddle2:b12,paddle3:b15,paddle4:b14", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13", sizeof(mapping_string));
         } else {
             switch (SDL_GetGamepadTypeFromGUID(guid, NULL)) {
             case SDL_GAMEPAD_TYPE_PS4:
