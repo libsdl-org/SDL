@@ -50,6 +50,7 @@ static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window
 static bool Emscripten_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 static void Emscripten_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 static void Emscripten_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 static bool pumpevents_has_run = false;
 static int pending_swap_interval = -1;
@@ -182,6 +183,7 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->GetWindowSizeInPixels = Emscripten_GetWindowSizeInPixels;
     device->DestroyWindow = Emscripten_DestroyWindow;
     device->SetWindowFullscreen = Emscripten_SetWindowFullscreen;
+    device->SyncWindow = Emscripten_SyncWindow;
 
     device->CreateWindowFramebuffer = Emscripten_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = Emscripten_UpdateWindowFramebuffer;
@@ -825,5 +827,41 @@ static void Emscripten_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 static void Emscripten_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     Emscripten_SetWindowDisplay(window, "none");
+}
+
+static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    SDL_WindowData *window_data = window->internal;
+    window->x = MAIN_THREAD_EM_ASM_INT({
+        var id = UTF8ToString($0);
+        try
+        {
+            let canvas = document.querySelector(id);
+            if (canvas) {
+                var rect = canvas.getBoundingClientRect();
+                return rect.x;
+            }
+        }
+        catch(e)
+        {
+            // querySelector throws if id is not a valid selector
+        }
+    }, window_data->canvas_id);
+    window->y = MAIN_THREAD_EM_ASM_INT({
+        var id = UTF8ToString($0);
+        try
+        {
+            let canvas = document.querySelector(id);
+            if (canvas) {
+                var rect = canvas.getBoundingClientRect();
+                return rect.y;
+            }
+        }
+        catch(e)
+        {
+            // querySelector throws if id is not a valid selector
+        }
+    }, window_data->canvas_id);
+    return true;
 }
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN
