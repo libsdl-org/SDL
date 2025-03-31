@@ -7905,11 +7905,11 @@ static void VULKAN_BindVertexBuffers(
 
     for (Uint32 i = 0; i < numBindings; i += 1) {
         VulkanBuffer *buffer = ((VulkanBufferContainer *)bindings[i].buffer)->activeBuffer;
-        if (vulkanCommandBuffer->vertexBuffers[i] != buffer->buffer || vulkanCommandBuffer->vertexBufferOffsets[i] != bindings[i].offset) {
+        if (vulkanCommandBuffer->vertexBuffers[firstSlot + i] != buffer->buffer || vulkanCommandBuffer->vertexBufferOffsets[firstSlot + i] != bindings[i].offset) {
             VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, buffer);
 
-            vulkanCommandBuffer->vertexBuffers[i] = buffer->buffer;
-            vulkanCommandBuffer->vertexBufferOffsets[i] = bindings[i].offset;
+            vulkanCommandBuffer->vertexBuffers[firstSlot + i] = buffer->buffer;
+            vulkanCommandBuffer->vertexBufferOffsets[firstSlot + i] = bindings[i].offset;
             vulkanCommandBuffer->needVertexBufferBind = true;
         }
     }
