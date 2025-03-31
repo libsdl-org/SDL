@@ -99,6 +99,21 @@ typedef enum SDL_TextureAccess
 } SDL_TextureAccess;
 
 /**
+ * The addressing mode for a texture when used in SDL_RenderGeometry().
+ *
+ * This affects how texture coordinates are interpreted outside of [0, 1]
+ *
+ * \since This enum is available since SDL 3.4.0.
+ */
+typedef enum SDL_TextureAddressMode
+{
+    SDL_TEXTURE_ADDRESS_INVALID = -1,
+    SDL_TEXTURE_ADDRESS_AUTO,   /**< Wrapping is enabled if texture coordinates are outside [0, 1], this is the default */
+    SDL_TEXTURE_ADDRESS_CLAMP,  /**< Texture coordinates are clamped to the [0, 1] range */
+    SDL_TEXTURE_ADDRESS_WRAP,   /**< The texture is repeated (tiled) */
+} SDL_TextureAddressMode;
+
+/**
  * How the logical size is mapped to the output.
  *
  * \since This enum is available since SDL 3.2.0.
@@ -2294,6 +2309,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9GridTiled(SDL_Renderer *rende
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RenderGeometryRaw
+ * \sa SDL_SetRenderTextureAddressMode
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -2326,6 +2342,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometry(SDL_Renderer *renderer,
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RenderGeometry
+ * \sa SDL_SetRenderTextureAddressMode
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                SDL_Texture *texture,
@@ -2334,6 +2351,44 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderGeometryRaw(SDL_Renderer *renderer,
                                                const float *uv, int uv_stride,
                                                int num_vertices,
                                                const void *indices, int num_indices, int size_indices);
+
+/**
+ * Set the texture addressing mode used in SDL_RenderGeometry().
+ *
+ * \param renderer the rendering context.
+ * \param u_mode the SDL_TextureAddressMode to use for horizontal texture
+ *               coordinates in SDL_RenderGeometry().
+ * \param v_mode the SDL_TextureAddressMode to use for vertical texture
+ *               coordinates in SDL_RenderGeometry().
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_RenderGeometry
+ * \sa SDL_RenderGeometryRaw
+ * \sa SDL_GetRenderTextureAddressMode
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderTextureAddressMode(SDL_Renderer *renderer, SDL_TextureAddressMode u_mode, SDL_TextureAddressMode v_mode);
+
+/**
+ * Get the texture addressing mode used in SDL_RenderGeometry().
+ *
+ * \param renderer the rendering context.
+ * \param u_mode a pointer filled in with the SDL_TextureAddressMode to use
+ *               for horizontal texture coordinates in SDL_RenderGeometry(),
+ *               may be NULL.
+ * \param v_mode a pointer filled in with the SDL_TextureAddressMode to use
+ *               for vertical texture coordinates in SDL_RenderGeometry(), may
+ *               be NULL.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetRenderTextureAddressMode
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderTextureAddressMode(SDL_Renderer *renderer, SDL_TextureAddressMode *u_mode, SDL_TextureAddressMode *v_mode);
 
 /**
  * Read pixels from the current rendering target.

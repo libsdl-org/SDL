@@ -47,7 +47,8 @@ def main():
     for category in path.iterdir():
         if category.is_dir():
             for example in category.iterdir():
-                generate(category.name, example.name, get_c_source_filename(example))
+                if example.is_dir():
+                     generate(category.name, example.name, get_c_source_filename(example))
 
 
 if __name__ == "__main__":

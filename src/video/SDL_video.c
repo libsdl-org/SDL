@@ -855,7 +855,6 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, bool send_eve
     SDL_copyp(new_display, display);
     new_display->id = id;
     new_display->device = _this;
-    new_display->props = display->props;
     if (display->name) {
         new_display->name = SDL_strdup(display->name);
     } else {

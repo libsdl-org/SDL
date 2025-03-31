@@ -293,7 +293,8 @@ static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 
     vita_texture->scale_mode = SDL_SCALEMODE_INVALID;
-    vita_texture->address_mode = SDL_TEXTURE_ADDRESS_INVALID;
+    vita_texture->address_mode_u = SDL_TEXTURE_ADDRESS_INVALID;
+    vita_texture->address_mode_v = SDL_TEXTURE_ADDRESS_INVALID;
 
     texture->internal = vita_texture;
 
@@ -806,6 +807,19 @@ static bool VITA_GXM_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     return true;
 }
 
+static SceGxmTextureAddrMode TranslateAddressMode(SDL_TextureAddressMode mode)
+{
+    switch (mode) {
+    case SDL_TEXTURE_ADDRESS_CLAMP:
+        return SCE_GXM_TEXTURE_ADDR_CLAMP;
+    case SDL_TEXTURE_ADDRESS_WRAP:
+        return SCE_GXM_TEXTURE_ADDR_REPEAT;
+    default:
+        SDL_assert(!"Unknown texture address mode");
+        return SCE_GXM_TEXTURE_ADDR_CLAMP;
+    }
+}
+
 static bool SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
@@ -906,18 +920,13 @@ static bool SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd
             vita_texture->scale_mode = cmd->data.draw.texture_scale_mode;
         }
 
-        if (cmd->data.draw.texture_address_mode != vita_texture->address_mode) {
-            switch (cmd->data.draw.texture_address_mode) {
-            case SDL_TEXTURE_ADDRESS_CLAMP:
-                gxm_texture_set_address_mode(vita_texture->tex, SCE_GXM_TEXTURE_ADDR_CLAMP, SCE_GXM_TEXTURE_ADDR_CLAMP);
-                break;
-            case SDL_TEXTURE_ADDRESS_WRAP:
-                gxm_texture_set_address_mode(vita_texture->tex, SCE_GXM_TEXTURE_ADDR_REPEAT, SCE_GXM_TEXTURE_ADDR_REPEAT);
-                break;
-            default:
-                break;
-            }
-            vita_texture->address_mode = cmd->data.draw.texture_address_mode;
+        if (cmd->data.draw.texture_address_mode_u != vita_texture->address_mode_u ||
+            cmd->data.draw.texture_address_mode_v != vita_texture->address_mode_v) {
+            SceGxmTextureAddrMode mode_u = TranslateAddressMode(cmd->data.draw.texture_address_mode_u);
+            SceGxmTextureAddrMode mode_v = TranslateAddressMode(cmd->data.draw.texture_address_mode_v);
+            gxm_texture_set_address_mode(vita_texture->tex, mode_u, mode_v);
+            vita_texture->address_mode_u = cmd->data.draw.texture_address_mode_u;
+            vita_texture->address_mode_v = cmd->data.draw.texture_address_mode_v;
         }
     }
 
