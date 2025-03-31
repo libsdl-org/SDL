@@ -61,24 +61,6 @@ static void DestroyTestState(TestState *testState)
   }
 }
 
-static bool TestStateDone(TestState *testState)
-{
-#ifdef SDL_PLATFORM_EMSCRIPTEN
-  (void)testState;
-  return false;
-#else
-  int i;
-
-  for (i = 0; i < MAX_WINDOWS; ++i) {
-    if(testState->testWindows[i]) {
-      return false;
-    }
-  }
-
-  return true;
-#endif
-}
-
 static TestWindow *createTestWindowAtMousePosition(SDLTest_CommonState *state)
 {
   static int windowId = 0;
@@ -204,27 +186,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
   TestState *testState = appstate;
-  SDL_Window *targetWindow = SDL_GetWindowFromEvent(event);
-  int i;
 
   switch (event->type) {
     case SDL_EVENT_QUIT:
-      return SDL_APP_SUCCESS;
     case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-    case SDL_EVENT_WINDOW_DESTROYED:
-    case SDL_EVENT_MOUSE_BUTTON_DOWN:
-      if (targetWindow) {
-        for (i = 0; i < MAX_WINDOWS; ++i) {
-          if (testState->testWindows[i] && testState->testWindows[i]->window == targetWindow) {
-            DestroyTestWindow(testState->testWindows[i]);
-            SDL_zero(testState->testWindows[i]);
-            if (TestStateDone(testState)) {
-              return SDL_APP_SUCCESS;
-            }
-          }
-        }
-      }
-      break;
+      return SDL_APP_SUCCESS;
     default:
         break;
   }
@@ -245,10 +211,19 @@ SDL_AppResult SDL_AppIterate(void *appstate)
   }
 
   if (now - testState->lastCreate > 1000) {
+    bool added = false;
     for (i = 0; i < MAX_WINDOWS; ++i) {
       if (!testState->testWindows[i]) {
         testState->testWindows[i] = createTestWindowAtMousePosition(testState->state);
+        added = true;
         break;
+      }
+    }
+    /* Remove all windows if full */
+    if (!added) {
+      for (i = 0; i < MAX_WINDOWS; ++i) {
+        DestroyTestWindow(testState->testWindows[i]);
+        SDL_zero(testState->testWindows[i]);
       }
     }
     testState->lastCreate = now;
