@@ -79,6 +79,9 @@ typedef enum SDL_PowerState
  * It's possible a platform can only report battery percentage or time left
  * but not both.
  *
+ * On some platforms, retrieving power supply details might be expensive. It
+ * is not recommended to invoke this function every frame.
+ *
  * \param seconds a pointer filled in with the seconds of battery life left,
  *                or NULL to ignore. This will be filled in with -1 if we
  *                can't determine a value or there is no battery.
