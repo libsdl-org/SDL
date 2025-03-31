@@ -27,17 +27,36 @@ static void DestroyTestWindow(TestWindow *testWindow)
   SDL_DestroyWindow(testWindow->window);
 }
 
+static bool ColorIsBright(SDL_Color color)
+{
+  return (color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722) > 128.0;
+}
+
 static void RenderTestWindow(TestWindow *testWindow)
 {
+  SDL_Window *window = testWindow->window;
   SDL_Renderer *renderer = testWindow->renderer;
+  SDL_Color color = testWindow->color;
 
   if (renderer) {
-    SDL_SetRenderDrawColor(renderer,
-      testWindow->color.r,
-      testWindow->color.g,
-      testWindow->color.b,
-      testWindow->color.a);
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderClear(renderer);
+
+    if (ColorIsBright(color)) {
+      color.r = 0;
+      color.g = 0;
+      color.b = 0;
+    }
+    else {
+      color.r = 255;
+      color.g = 255;
+      color.b = 255;
+    }
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+
+    int x, y;
+    SDL_GetWindowPosition(window, &x, &y);
+    SDL_RenderDebugTextFormat(renderer, 0, 0, "Global Window Position: %d %d", x, y);
     SDL_RenderPresent(renderer);
   }
 }

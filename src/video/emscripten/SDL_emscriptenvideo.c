@@ -856,6 +856,7 @@ static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
         {
             // querySelector throws if id is not a valid selector
         }
+        return 0;
     }, window_data->canvas_id);
     window->y = MAIN_THREAD_EM_ASM_INT({
         var id = UTF8ToString($0);
@@ -871,6 +872,7 @@ static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
         {
             // querySelector throws if id is not a valid selector
         }
+        return 0;
     }, window_data->canvas_id);
     return true;
 }
