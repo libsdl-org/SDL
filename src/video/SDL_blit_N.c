@@ -22,6 +22,7 @@
 
 #ifdef SDL_HAVE_BLIT_N
 
+#include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
 #include "SDL_blit_copy.h"
 
