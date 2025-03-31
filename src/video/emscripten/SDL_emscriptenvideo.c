@@ -772,9 +772,17 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
     }
 }
 
+// Assume the first window that calls SDL_SetWindowTitle is the main window.
+static SDL_Window *mainWindow = NULL;
+
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    emscripten_set_window_title(window->title);
+    if (!mainWindow) {
+        mainWindow = window;
+    }
+    if (mainWindow == window) {
+        emscripten_set_window_title(window->title);
+    }
 }
 
 static bool Emscripten_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
