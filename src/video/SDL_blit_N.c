@@ -2568,36 +2568,6 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
               dstAmask;                                                 \
     } while (0)
 
-#if defined(SDL_SSE4_1_INTRINSICS) || defined(SDL_AVX2_INTRINSICS) || (defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8))
-static void Get8888AlphaMaskAndShift(const SDL_PixelFormatDetails *fmt, Uint32 *mask, Uint32 *shift)
-{
-    if (fmt->Amask) {
-        *mask = fmt->Amask;
-        *shift = fmt->Ashift;
-    } else {
-        *mask = ~(fmt->Rmask | fmt->Gmask | fmt->Bmask);
-        switch (*mask) {
-        case 0x000000FF:
-            *shift = 0;
-            break;
-        case 0x0000FF00:
-            *shift = 8;
-            break;
-        case 0x00FF0000:
-            *shift = 16;
-            break;
-        case 0xFF000000:
-            *shift = 24;
-            break;
-        default:
-            // Should never happen
-            *shift = 0;
-            break;
-        }
-    }
-}
-#endif // SSE4.1, AVX2, and NEON implementations of Blit8888to8888PixelSwizzle
-
 #ifdef SDL_SSE4_1_INTRINSICS
 
 static void SDL_TARGETING("sse4.1") Blit8888to8888PixelSwizzleSSE41(SDL_BlitInfo *info)
@@ -2614,8 +2584,8 @@ static void SDL_TARGETING("sse4.1") Blit8888to8888PixelSwizzleSSE41(SDL_BlitInfo
     Uint32 srcAmask, srcAshift;
     Uint32 dstAmask, dstAshift;
 
-    Get8888AlphaMaskAndShift(srcfmt, &srcAmask, &srcAshift);
-    Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
+    SDL_Get8888AlphaMaskAndShift(srcfmt, &srcAmask, &srcAshift);
+    SDL_Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
 
     // The byte offsets for the start of each pixel
     const __m128i mask_offsets = _mm_set_epi8(
@@ -2689,8 +2659,8 @@ static void SDL_TARGETING("avx2") Blit8888to8888PixelSwizzleAVX2(SDL_BlitInfo *i
     Uint32 srcAmask, srcAshift;
     Uint32 dstAmask, dstAshift;
 
-    Get8888AlphaMaskAndShift(srcfmt, &srcAmask, &srcAshift);
-    Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
+    SDL_Get8888AlphaMaskAndShift(srcfmt, &srcAmask, &srcAshift);
+    SDL_Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
 
     // The byte offsets for the start of each pixel
     const __m256i mask_offsets = _mm256_set_epi8(
@@ -2764,8 +2734,8 @@ static void Blit8888to8888PixelSwizzleNEON(SDL_BlitInfo *info)
     Uint32 srcAmask, srcAshift;
     Uint32 dstAmask, dstAshift;
 
-    Get8888AlphaMaskAndShift(srcfmt, &srcAmask, &srcAshift);
-    Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
+    SDL_Get8888AlphaMaskAndShift(srcfmt, &srcAmask, &srcAshift);
+    SDL_Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
 
     // The byte offsets for the start of each pixel
     const uint8x16_t mask_offsets = vreinterpretq_u8_u64(vcombine_u64(

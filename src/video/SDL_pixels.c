@@ -692,6 +692,34 @@ void SDL_QuitPixelFormatDetails(void)
     }
 }
 
+void SDL_Get8888AlphaMaskAndShift(const SDL_PixelFormatDetails *fmt, Uint32 *mask, Uint32 *shift)
+{
+    if (fmt->Amask) {
+        *mask = fmt->Amask;
+        *shift = fmt->Ashift;
+    } else {
+        *mask = ~(fmt->Rmask | fmt->Gmask | fmt->Bmask);
+        switch (*mask) {
+        case 0x000000FF:
+            *shift = 0;
+            break;
+        case 0x0000FF00:
+            *shift = 8;
+            break;
+        case 0x00FF0000:
+            *shift = 16;
+            break;
+        case 0xFF000000:
+            *shift = 24;
+            break;
+        default:
+            // Should never happen
+            *shift = 0;
+            break;
+        }
+    }
+}
+
 SDL_Colorspace SDL_GetDefaultColorspaceForFormat(SDL_PixelFormat format)
 {
     if (SDL_ISPIXELFORMAT_FOURCC(format)) {
