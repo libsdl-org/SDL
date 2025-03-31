@@ -219,7 +219,10 @@ static bool HIDAPI_Driver8BitDo_SendJoystickEffect(SDL_HIDAPI_Device *device, SD
 static bool HIDAPI_Driver8BitDo_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
    SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)device->context;
-   return ctx->sensors_supported;
+   if (ctx->sensors_supported) {
+       return true;
+   }
+   return SDL_Unsupported();
 }
 static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Driver8BitDo_Context *ctx, Uint8 *data, int size)
 {
