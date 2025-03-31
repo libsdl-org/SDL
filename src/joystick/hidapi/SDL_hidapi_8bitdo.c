@@ -60,7 +60,7 @@ typedef struct
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_Driver8BitDo_Context;
 
-#pragma pack(1)
+#pragma pack(push,1)
 typedef struct
 {
     bool sensors_supported;
