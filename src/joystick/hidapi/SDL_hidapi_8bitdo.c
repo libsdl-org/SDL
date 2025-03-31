@@ -322,8 +322,9 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         int percent;
         Uint8 status = data[14] >> 7;
         Uint8 level = (data[14] & 0x7f);
-        if (level == 100) 
+        if (level == 100) {
             status = 2;
+        }
         switch (status) {
         case 0:
             state = SDL_POWERSTATE_ON_BATTERY;
