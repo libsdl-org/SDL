@@ -463,6 +463,115 @@ static DXGI_FORMAT SDLToD3D12_DepthFormat[] = {
 };
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_DepthFormat, SDL_arraysize(SDLToD3D12_DepthFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
+static DXGI_FORMAT SDLToD3D12_TypelessFormat[] = {
+    DXGI_FORMAT_UNKNOWN,              // INVALID
+    DXGI_FORMAT_UNKNOWN,              // A8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R8G8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R16_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R16G16_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R10G10B10A2_UNORM
+    DXGI_FORMAT_UNKNOWN,              // B5G6R5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // B5G5R5A1_UNORM
+    DXGI_FORMAT_UNKNOWN,              // B4G4R4A4_UNORM
+    DXGI_FORMAT_UNKNOWN,              // B8G8R8A8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC1_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC2_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC3_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC4_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC7_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC6H_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // BC6H_UFLOAT
+    DXGI_FORMAT_UNKNOWN,              // R8_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R8G8_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R16_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R16G16_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R16_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R16G16_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R32_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R32G32_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R32G32B32A32_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R11G11B10_UFLOAT
+    DXGI_FORMAT_UNKNOWN,              // R8_UINT
+    DXGI_FORMAT_UNKNOWN,              // R8G8_UINT
+    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_UINT
+    DXGI_FORMAT_UNKNOWN,              // R16_UINT
+    DXGI_FORMAT_UNKNOWN,              // R16G16_UINT
+    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_UINT
+    DXGI_FORMAT_UNKNOWN,              // R32_UINT
+    DXGI_FORMAT_UNKNOWN,              // R32G32_UINT
+    DXGI_FORMAT_UNKNOWN,              // R32G32B32A32_UINT
+    DXGI_FORMAT_UNKNOWN,              // R8_INT
+    DXGI_FORMAT_UNKNOWN,              // R8G8_INT
+    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_INT
+    DXGI_FORMAT_UNKNOWN,              // R16_INT
+    DXGI_FORMAT_UNKNOWN,              // R16G16_INT
+    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_INT
+    DXGI_FORMAT_UNKNOWN,              // R32_INT
+    DXGI_FORMAT_UNKNOWN,              // R32G32_INT
+    DXGI_FORMAT_UNKNOWN,              // R32G32B32A32_INT
+    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // B8G8R8A8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // BC1_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // BC2_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // BC3_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // BC7_UNORM_SRGB
+    DXGI_FORMAT_R16_TYPELESS,         // D16_UNORM
+    DXGI_FORMAT_R24G8_TYPELESS,       // D24_UNORM
+    DXGI_FORMAT_R32_TYPELESS,         // D32_FLOAT
+    DXGI_FORMAT_R24G8_TYPELESS,       // D24_UNORM_S8_UINT
+    DXGI_FORMAT_R32G8X24_TYPELESS,    // D32_FLOAT_S8_UINT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_FLOAT
+};
+SDL_COMPILE_TIME_ASSERT(SDLToD3D12_TypelessFormat, SDL_arraysize(SDLToD3D12_TypelessFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
+
 static D3D12_COMPARISON_FUNC SDLToD3D12_CompareOp[] = {
     D3D12_COMPARISON_FUNC_NEVER,         // INVALID
     D3D12_COMPARISON_FUNC_NEVER,         // NEVER
@@ -3169,6 +3278,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         useClearValue = true;
+        clearValue.Format = format;
         clearValue.Color[0] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT, 0);
         clearValue.Color[1] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_G_FLOAT, 0);
         clearValue.Color[2] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_B_FLOAT, 0);
@@ -3178,9 +3288,10 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         useClearValue = true;
+        clearValue.Format = SDLToD3D12_DepthFormat[createinfo->format];
         clearValue.DepthStencil.Depth = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT, 0);
         clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_UINT8, 0);
-        format = SDLToD3D12_DepthFormat[createinfo->format];
+        format = SDLToD3D12_TypelessFormat[createinfo->format];
     }
 
     if (needsUAV) {
@@ -3222,7 +3333,6 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     }
 
     initialState = isSwapchainTexture ? D3D12_RESOURCE_STATE_PRESENT : D3D12_INTERNAL_DefaultTextureResourceState(createinfo->usage);
-    clearValue.Format = desc.Format;
 
     res = ID3D12Device_CreateCommittedResource(
         renderer->device,
