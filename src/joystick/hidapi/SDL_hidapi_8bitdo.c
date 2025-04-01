@@ -105,9 +105,7 @@ static void HIDAPI_Driver8BitDo_UnregisterHints(SDL_HintCallback callback, void 
 
 static bool HIDAPI_Driver8BitDo_IsEnabled(void)
 {
-    // We'll default this off for now, since we don't have a way to tell whether the controller is running firmware v1.03 and don't have a fallback for controllers running firmware v1.02 (the out-of-box firmware)
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
-    //return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, false);
 }
 
 static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -117,28 +115,21 @@ static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, con
 
 static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
 {
-    SDL_Driver8BitDo_Context *ctx;
-    Uint8 data[USB_PACKET_LENGTH];
-    int size;
-    ctx = (SDL_Driver8BitDo_Context *)SDL_calloc(1, sizeof(*ctx));
+    SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         return false;
     }
-
     device->context = ctx;
 
     if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
-        ctx->sensors_supported = true;
-        ctx->rumble_supported = true;
-        ctx->rumble_type = 0;
-        ctx->powerstate_supported = true;
-
-        size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
-        //ULTIMATE2_WIRELESS V1.02
-        if (size<30) {
-            ctx->powerstate_supported = false;
-            ctx->rumble_supported = false;
-            ctx->sensors_supported = false;
+        // The Ultimate 2 Wireless v1.02 firmware has X byte reports, v1.03 firmware has X byte reports
+        const int ULTIMATE2_WIRELESS_V103_REPORT_SIZE = 34;
+        Uint8 data[USB_PACKET_LENGTH];
+        int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
+        if (size >= ULTIMATE2_WIRELESS_V103_REPORT_SIZE) {
+            ctx->sensors_supported = true;
+            ctx->rumble_supported = true;
+            ctx->powerstate_supported = true;
         }
     }
 
@@ -208,9 +199,11 @@ static Uint32 HIDAPI_Driver8BitDo_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     if (ctx->rumble_supported) {
         caps |= SDL_JOYSTICK_CAP_RUMBLE;
     }
+#if 0 // HIDAPI_Driver8BitDo_SetJoystickLED() returns SDL_Unsupported()
     if (ctx->rgb_supported) {
         caps |= SDL_JOYSTICK_CAP_RGB_LED;
     }
+#endif
     return caps;
 }
 
