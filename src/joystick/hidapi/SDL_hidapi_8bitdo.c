@@ -29,7 +29,10 @@
 #ifdef SDL_JOYSTICK_HIDAPI_8BITDO
 
 // Define this if you want to log all packets from the controller
-// #define DEBUG_8BITDO_PROTOCOL
+#if 0
+#define DEBUG_8BITDO_PROTOCOL
+#endif
+
 enum
 {
     SDL_GAMEPAD_BUTTON_8BITDO_L4 = 11,
@@ -383,6 +386,9 @@ static bool HIDAPI_Driver8BitDo_UpdateDevice(SDL_HIDAPI_Device *device)
     }
 
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
+#ifdef DEBUG_8BITDO_PROTOCOL
+        HIDAPI_DumpPacket("8BitDo packet: size = %d", data, size);
+#endif
         if (!joystick) {
             continue;
         }
