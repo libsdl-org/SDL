@@ -52,6 +52,7 @@ typedef struct
     bool rumble_type;
     bool rgb_supported;
     bool player_led_supported;
+    bool powerstate_supported;
     Uint8 serial[6];
     Uint16 version;
     Uint16 version_beta;
@@ -105,8 +106,8 @@ static void HIDAPI_Driver8BitDo_UnregisterHints(SDL_HintCallback callback, void 
 static bool HIDAPI_Driver8BitDo_IsEnabled(void)
 {
     // We'll default this off for now, since we don't have a way to tell whether the controller is running firmware v1.03 and don't have a fallback for controllers running firmware v1.02 (the out-of-box firmware)
-    //return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
-    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, false);
+    return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
+    //return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, false);
 }
 
 static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
@@ -117,7 +118,8 @@ static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, con
 static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_Driver8BitDo_Context *ctx;
-
+    Uint8 data[USB_PACKET_LENGTH];
+    int size;
     ctx = (SDL_Driver8BitDo_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         return false;
@@ -129,7 +131,15 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
         ctx->sensors_supported = true;
         ctx->rumble_supported = true;
         ctx->rumble_type = 0;
-        ctx->rgb_supported = true;
+        ctx->powerstate_supported = true;
+
+        size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
+        //ULTIMATE2_WIRELESS V1.02
+        if (size<30) {
+            ctx->powerstate_supported = false;
+            ctx->rumble_supported = false;
+            ctx->sensors_supported = false;
+        }
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -316,33 +326,35 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 #undef READ_TRIGGER_AXIS
 
-    SDL_PowerState state;
-    int percent;
-    Uint8 status = data[14] >> 7;
-    Uint8 level = (data[14] & 0x7f);
-    if (level == 100) {
-        status = 2;
-    }
-    switch (status) {
-    case 0:
-        state = SDL_POWERSTATE_ON_BATTERY;
-        percent = level;
-        break;
-    case 1:
-        state = SDL_POWERSTATE_CHARGING;
-        percent = level;
-        break;
-    case 2:
-        state = SDL_POWERSTATE_CHARGED;
-        percent = 100;
-        break;
-    default:
-        state = SDL_POWERSTATE_UNKNOWN;
-        percent = 0;
-        break;
+    if (ctx->powerstate_supported) {
+        SDL_PowerState state;
+        int percent;
+        Uint8 status = data[14] >> 7;
+        Uint8 level = (data[14] & 0x7f);
+        if (level == 100) {
+            status = 2;
+        }
+        switch (status) {
+        case 0:
+            state = SDL_POWERSTATE_ON_BATTERY;
+            percent = level;
+            break;
+        case 1:
+            state = SDL_POWERSTATE_CHARGING;
+            percent = level;
+            break;
+        case 2:
+            state = SDL_POWERSTATE_CHARGED;
+            percent = 100;
+            break;
+        default:
+            state = SDL_POWERSTATE_UNKNOWN;
+            percent = 0;
+            break;
+        }
+        SDL_SendJoystickPowerInfo(joystick, state, percent);
     }
 
-    SDL_SendJoystickPowerInfo(joystick, state, percent);
 
     if (ctx->sensors_supported) {
         Uint64 sensor_timestamp;
