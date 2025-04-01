@@ -30,11 +30,11 @@ Observe the difference between the approaches taken by macOS and Windows:
 
 Proper high DPI support takes into account both the content scale and the pixel density.
 
-First, you'd create your window with the SDL_WINDOW_HIGH_PIXEL_DENSITY flag, assuming you want the highest detail possible. Then you'd get the display content scale to see how much your UI elements should be enlarged to be readable.
+First, you'd create your window with the `SDL_WINDOW_HIGH_PIXEL_DENSITY` flag, assuming you want the highest detail possible. Then you'd get the window display scale to see how much your UI elements should be enlarged to be readable.
 
-If you're using the SDL 2D renderer, SDL provides the function SDL_ConvertEventToRenderCoordinates() to convert mouse coordinates between window coordinates and rendering coordinates, and the more general functions SDL_RenderCoordinatesFromWindow() and SDL_RenderCoordinatesToWindow() to convert between them.
+If you're using the SDL 2D renderer, SDL provides the function `SDL_ConvertEventToRenderCoordinates()` to convert mouse coordinates between window coordinates and rendering coordinates, and the more general functions `SDL_RenderCoordinatesFromWindow()` and `SDL_RenderCoordinatesToWindow()` to do other conversion between them.
 
-If you're not using the 2D renderer, you can implement this yourself using SDL_GetWindowPixelDensity() as scale factor to convert from window coordinates to pixels.
+If you're not using the 2D renderer, you can implement this yourself using `SDL_GetWindowPixelDensity()` as scale factor to convert from window coordinates to pixels.
 
 Finally you'll want to test on both Windows and macOS if possible to make sure your high DPI support works in all environments.
 
