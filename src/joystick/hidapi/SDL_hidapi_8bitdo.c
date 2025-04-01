@@ -433,6 +433,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_Driver8BitDo = {
     HIDAPI_Driver8BitDo_FreeDevice,
 };
 
-#endif // SDL_JOYSTICK_HIDAPI_8BitDo
+#endif // SDL_JOYSTICK_HIDAPI_8BITDO
 
 #endif // SDL_JOYSTICK_HIDAPI
