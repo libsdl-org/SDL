@@ -2253,6 +2253,10 @@ bool WIN_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window* window)
         return true;
     }
 
+    if (window->progress_state == SDL_PROGRESS_STATE_NONE && !data->videodata->taskbar_list) {
+        return true;
+    }
+
     ITaskbarList3 *taskbar_list = GetTaskbarList(window);
     if (!taskbar_list) {
         return false;
