@@ -586,6 +586,13 @@ SDL_GPUShaderFormat SDL_GetGPUShaderFormats(SDL_GPUDevice *device)
     return device->shader_formats;
 }
 
+SDL_PropertiesID SDL_GetGPUDeviceDebugProperties(SDL_GPUDevice *device)
+{
+    CHECK_DEVICE_MAGIC(device, 0);
+
+    return device->GetDeviceDebugProperties(device);
+}
+
 Uint32 SDL_GPUTextureFormatTexelBlockSize(
     SDL_GPUTextureFormat format)
 {

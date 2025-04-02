@@ -765,6 +765,7 @@ struct D3D12Renderer
     // FIXME: these might not be necessary since we're not using custom heaps
     bool UMA;
     bool UMACacheCoherent;
+    SDL_PropertiesID debugProps;
     Uint32 allowedFramesInFlight;
 
     // Indirect command signatures
@@ -1535,6 +1536,8 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
     SDL_free(renderer->graphicsPipelinesToDestroy);
     SDL_free(renderer->computePipelinesToDestroy);
 
+    SDL_DestroyProperties(renderer->debugProps);
+
     // Tear down D3D12 objects
     if (renderer->indirectDrawCommandSignature) {
         ID3D12CommandSignature_Release(renderer->indirectDrawCommandSignature);
@@ -1620,6 +1623,12 @@ static void D3D12_DestroyDevice(SDL_GPUDevice *device)
 
     D3D12_INTERNAL_DestroyRenderer(renderer);
     SDL_free(device);
+}
+
+static SDL_PropertiesID D3D12_GetDeviceDebugProperties(SDL_GPUDevice *device)
+{
+    D3D12Renderer *renderer = (D3D12Renderer *)device->driverData;
+    return renderer->debugProps;
 }
 
 // Barriers
@@ -8512,6 +8521,11 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     D3D12_FEATURE_DATA_ARCHITECTURE architecture;
     D3D12_COMMAND_QUEUE_DESC queueDesc;
 
+    bool verboseLogs = SDL_GetBooleanProperty(
+        props,
+        SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN,
+        true);
+
     renderer = (D3D12Renderer *)SDL_calloc(1, sizeof(D3D12Renderer));
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
@@ -8612,15 +8626,39 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         CHECK_D3D12_ERROR_AND_RETURN("Could not get adapter driver version", NULL);
     }
 
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: D3D12");
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "D3D12 Adapter: %S", adapterDesc.Description);
-    SDL_LogInfo(
-        SDL_LOG_CATEGORY_GPU,
-        "D3D12 Driver: %d.%d.%d.%d",
+    renderer->debugProps = SDL_CreateProperties();
+    if (verboseLogs) {
+        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: D3D12");
+    }
+
+    // Record device name
+    char *deviceName = SDL_iconv_wchar_utf8(&adapterDesc.Description[0]);
+    SDL_SetStringProperty(
+        renderer->debugProps,
+        SDL_PROP_GPU_DEVICE_DEBUG_NAME_STRING,
+        deviceName);
+    if (verboseLogs) {
+        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "D3D12 Adapter: %s", deviceName);
+    }
+    SDL_free(deviceName);
+
+    // Record driver version
+    char driverVer[64];
+    (void)SDL_snprintf(
+        driverVer,
+        SDL_arraysize(driverVer),
+        "%d.%d.%d.%d",
         HIWORD(umdVersion.HighPart),
         LOWORD(umdVersion.HighPart),
         HIWORD(umdVersion.LowPart),
         LOWORD(umdVersion.LowPart));
+    SDL_SetStringProperty(
+        renderer->debugProps,
+        SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_VERSION_STRING,
+        driverVer);
+    if (verboseLogs) {
+        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "D3D12 Driver: %s", driverVer);
+    }
 #endif
 
     // Load the D3D library
