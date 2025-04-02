@@ -836,6 +836,17 @@ typedef struct MetalLibraryFunction
     id<MTLFunction> function;
 } MetalLibraryFunction;
 
+static bool METAL_INTERNAL_IsValidMetalLibrary(
+    const Uint8 *code,
+    size_t codeSize)
+{
+    // Metal libraries have a 4 byte header containing `MTLB`.
+    if (codeSize < 4 || code == NULL) {
+        return false;
+    }
+    return SDL_memcmp(code, "MTLB", 4) == 0;
+}
+
 // This function assumes that it's called from within an autorelease pool
 static MetalLibraryFunction METAL_INTERNAL_CompileShader(
     MetalRenderer *renderer,
@@ -864,6 +875,11 @@ static MetalLibraryFunction METAL_INTERNAL_CompileShader(
                          options:nil
                            error:&error];
     } else if (format == SDL_GPU_SHADERFORMAT_METALLIB) {
+        if (!METAL_INTERNAL_IsValidMetalLibrary(code, codeSize)) {
+            SET_STRING_ERROR_AND_RETURN(
+                "The provided shader code is not a valid Metal library!",
+                libraryFunction);
+        }
         data = dispatch_data_create(
             code,
             codeSize,

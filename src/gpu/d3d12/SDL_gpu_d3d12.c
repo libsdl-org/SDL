@@ -2482,12 +2482,32 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
     return d3d12GraphicsRootSignature;
 }
 
+static bool D3D12_INTERNAL_IsValidShaderBytecode(
+    const Uint8 *code,
+    size_t codeSize)
+{
+    // Both DXIL and DXBC bytecode have a 4 byte header containing `DXBC`.
+    if (codeSize < 4 || code == NULL) {
+        return false;
+    }
+    return SDL_memcmp(code, "DXBC", 4) == 0;
+}
+
 static bool D3D12_INTERNAL_CreateShaderBytecode(
+    D3D12Renderer *renderer,
     const Uint8 *code,
     size_t codeSize,
+    SDL_GPUShaderFormat format,
     void **pBytecode,
     size_t *pBytecodeSize)
 {
+    if (!D3D12_INTERNAL_IsValidShaderBytecode(code, codeSize)) {
+        if (format == SDL_GPU_SHADERFORMAT_DXBC) {
+            SET_STRING_ERROR_AND_RETURN("The provided shader code is not valid DXBC!", false);
+        }
+        SET_STRING_ERROR_AND_RETURN("The provided shader code is not valid DXIL!", false);
+    }
+
     if (pBytecode != NULL) {
         *pBytecode = SDL_malloc(codeSize);
         if (!*pBytecode) {
@@ -2705,8 +2725,10 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     ID3D12PipelineState *pipelineState;
 
     if (!D3D12_INTERNAL_CreateShaderBytecode(
+            renderer,
             createinfo->code,
             createinfo->code_size,
+            createinfo->format,
             &bytecode,
             &bytecodeSize)) {
         return NULL;
@@ -3113,13 +3135,16 @@ static SDL_GPUShader *D3D12_CreateShader(
     SDL_GPURenderer *driverData,
     const SDL_GPUShaderCreateInfo *createinfo)
 {
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
     void *bytecode;
     size_t bytecodeSize;
     D3D12Shader *shader;
 
     if (!D3D12_INTERNAL_CreateShaderBytecode(
+            renderer,
             createinfo->code,
             createinfo->code_size,
+            createinfo->format,
             &bytecode,
             &bytecodeSize)) {
         return NULL;

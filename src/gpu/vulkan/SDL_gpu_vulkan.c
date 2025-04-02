@@ -6511,6 +6511,25 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     return (SDL_GPUGraphicsPipeline *)graphicsPipeline;
 }
 
+static bool VULKAN_INTERNAL_IsValidShaderBytecode(
+    const Uint8 *code,
+    size_t codeSize)
+{
+    // SPIR-V bytecode has a 4 byte header containing 0x07230203. SPIR-V is
+    // defined as a stream of words and not a stream of bytes so both byte
+    // orders need to be considered.
+    //
+    // FIXME: It is uncertain if drivers are able to load both byte orders. If
+    // needed we may need to do an optional swizzle internally so apps can
+    // continue to treat shader code as an opaque blob.
+    if (codeSize < 4 || code == NULL) {
+        return false;
+    }
+    const Uint32 magic = 0x07230203;
+    const Uint32 magicInv = 0x03022307;
+    return SDL_memcmp(code, &magic, 4) == 0 || SDL_memcmp(code, &magicInv, 4) == 0;
+}
+
 static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
     SDL_GPURenderer *driverData,
     const SDL_GPUComputePipelineCreateInfo *createinfo)
@@ -6524,6 +6543,10 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
 
     if (createinfo->format != SDL_GPU_SHADERFORMAT_SPIRV) {
         SET_STRING_ERROR_AND_RETURN("Incompatible shader format for Vulkan!", NULL);
+    }
+
+    if (!VULKAN_INTERNAL_IsValidShaderBytecode(createinfo->code, createinfo->code_size)) {
+        SET_STRING_ERROR_AND_RETURN("The provided shader code is not valid SPIR-V!", NULL);
     }
 
     vulkanComputePipeline = SDL_malloc(sizeof(VulkanComputePipeline));
@@ -6670,6 +6693,10 @@ static SDL_GPUShader *VULKAN_CreateShader(
     VkResult vulkanResult;
     VkShaderModuleCreateInfo vkShaderModuleCreateInfo;
     VulkanRenderer *renderer = (VulkanRenderer *)driverData;
+
+    if (!VULKAN_INTERNAL_IsValidShaderBytecode(createinfo->code, createinfo->code_size)) {
+        SET_STRING_ERROR_AND_RETURN("The provided shader code is not valid SPIR-V!", NULL);
+    }
 
     vulkanShader = SDL_malloc(sizeof(VulkanShader));
     vkShaderModuleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
