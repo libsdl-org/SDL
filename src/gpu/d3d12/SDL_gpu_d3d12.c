@@ -8339,38 +8339,38 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
 }
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) && defined(HAVE_IDXGIINFOQUEUE)
-static void D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
+static bool D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
 {
     PFN_DXGI_GET_DEBUG_INTERFACE DXGIGetDebugInterfaceFunc;
     HRESULT res;
 
     renderer->dxgidebug_dll = SDL_LoadObject(DXGIDEBUG_DLL);
     if (renderer->dxgidebug_dll == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not find " DXGIDEBUG_DLL);
-        return;
+        return false;
     }
 
     DXGIGetDebugInterfaceFunc = (PFN_DXGI_GET_DEBUG_INTERFACE)SDL_LoadFunction(
         renderer->dxgidebug_dll,
         DXGI_GET_DEBUG_INTERFACE_FUNC);
     if (DXGIGetDebugInterfaceFunc == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not load function: " DXGI_GET_DEBUG_INTERFACE_FUNC);
-        return;
+        return false;
     }
 
     res = DXGIGetDebugInterfaceFunc(&D3D_IID_IDXGIDebug, (void **)&renderer->dxgiDebug);
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not get IDXGIDebug interface");
+        return false;
     }
 
     res = DXGIGetDebugInterfaceFunc(&D3D_IID_IDXGIInfoQueue, (void **)&renderer->dxgiInfoQueue);
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not get IDXGIInfoQueue interface");
+        return false;
     }
+
+    return true;
 }
 #endif
 
-static void D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer)
+static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer)
 {
     PFN_D3D12_GET_DEBUG_INTERFACE D3D12GetDebugInterfaceFunc;
     HRESULT res;
@@ -8379,21 +8379,20 @@ static void D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer)
         renderer->d3d12_dll,
         D3D12_GET_DEBUG_INTERFACE_FUNC);
     if (D3D12GetDebugInterfaceFunc == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not load function: " D3D12_GET_DEBUG_INTERFACE_FUNC);
-        return;
+        return false;
     }
 
     res = D3D12GetDebugInterfaceFunc(D3D_GUID(D3D_IID_ID3D12Debug), (void **)&renderer->d3d12Debug);
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not get ID3D12Debug interface");
-        return;
+        return false;
     }
 
     ID3D12Debug_EnableDebugLayer(renderer->d3d12Debug);
+    return true;
 }
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
-static bool D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *renderer)
+static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *renderer)
 {
     ID3D12InfoQueue *infoQueue = NULL;
     D3D12_MESSAGE_SEVERITY severities[] = { D3D12_MESSAGE_SEVERITY_INFO };
@@ -8405,7 +8404,7 @@ static bool D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *rende
         D3D_GUID(D3D_IID_ID3D12InfoQueue),
         (void **)&infoQueue);
     if (FAILED(res)) {
-        CHECK_D3D12_ERROR_AND_RETURN("Failed to convert ID3D12Device to ID3D12InfoQueue", false);
+        return;
     }
 
     SDL_zero(filter);
@@ -8421,8 +8420,6 @@ static bool D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *rende
         true);
 
     ID3D12InfoQueue_Release(infoQueue);
-
-    return true;
 }
 
 static void WINAPI D3D12_INTERNAL_OnD3D12DebugInfoMsg(
@@ -8571,9 +8568,12 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
 #ifdef HAVE_IDXGIINFOQUEUE
     // Initialize the DXGI debug layer, if applicable
+    bool hasDxgiDebug = false;
     if (debugMode) {
-        D3D12_INTERNAL_TryInitializeDXGIDebug(renderer);
+        hasDxgiDebug = D3D12_INTERNAL_TryInitializeDXGIDebug(renderer);
     }
+#else
+    bool hasDxgiDebug = true;
 #endif
 
     // Load the CreateDXGIFactory1 function
@@ -8706,7 +8706,20 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     // Initialize the D3D12 debug layer, if applicable
     if (debugMode) {
-        D3D12_INTERNAL_TryInitializeD3D12Debug(renderer);
+        bool hasD3d12Debug = D3D12_INTERNAL_TryInitializeD3D12Debug(renderer);
+        if (hasDxgiDebug && hasD3d12Debug) {
+            SDL_LogInfo(
+                SDL_LOG_CATEGORY_GPU,
+                "Validation layers enabled, expect debug level performance!");
+        } else if (hasDxgiDebug || hasD3d12Debug) {
+            SDL_LogWarn(
+                SDL_LOG_CATEGORY_GPU,
+                "Validation layers partially enabled, some warnings may not be available");
+        } else {
+            SDL_LogWarn(
+                SDL_LOG_CATEGORY_GPU,
+                "Validation layers not found, continuing without validation");
+        }
     }
 
     // Create the D3D12Device
@@ -8753,9 +8766,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     // Initialize the D3D12 debug info queue, if applicable
     if (debugMode) {
-        if (!D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(renderer)) {
-            return NULL;
-        }
+        D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(renderer);
         D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(renderer);
     }
 #endif
