@@ -1544,10 +1544,10 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *
  * On Emscripten:
  *
- * - `SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID`: the id the canvas
- * element will have
- * - `SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT`: the
- * keyboard element that associates keyboard events to this window
+ * - `SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID`: the id the canvas element will
+ *   have
+ * - `SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT`: the keyboard element that
+ *   associates keyboard events to this window
  *
  * \param window the window to query.
  * \returns a valid property ID on success or 0 on failure; call
