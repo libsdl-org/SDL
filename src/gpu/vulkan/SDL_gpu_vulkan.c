@@ -1096,6 +1096,7 @@ struct VulkanRenderer
 
     bool debugMode;
     bool preferLowPower;
+    SDL_PropertiesID debugProps;
     Uint32 allowedFramesInFlight;
 
     VulkanExtensions supports;
@@ -4917,9 +4918,18 @@ static void VULKAN_DestroyDevice(
     renderer->vkDestroyDevice(renderer->logicalDevice, NULL);
     renderer->vkDestroyInstance(renderer->instance, NULL);
 
+    SDL_DestroyProperties(renderer->debugProps);
+
     SDL_free(renderer);
     SDL_free(device);
     SDL_Vulkan_UnloadLibrary();
+}
+
+static SDL_PropertiesID VULKAN_GetDeviceDebugProperties(
+    SDL_GPUDevice *device)
+{
+    VulkanRenderer *renderer = (VulkanRenderer *)device->driverData;
+    return renderer->debugProps;
 }
 
 static DescriptorSetCache *VULKAN_INTERNAL_AcquireDescriptorSetCache(
@@ -11568,6 +11578,11 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     SDL_GPUDevice *result;
     Uint32 i;
 
+    bool verboseLogs = SDL_GetBooleanProperty(
+        props,
+        SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN,
+        true);
+
     if (!SDL_Vulkan_LoadLibrary(NULL)) {
         SDL_assert(!"This should have failed in PrepareDevice first!");
         return NULL;
@@ -11585,25 +11600,108 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         SET_STRING_ERROR_AND_RETURN("Failed to initialize Vulkan!", NULL);
     }
 
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: Vulkan");
-    SDL_LogInfo(
-        SDL_LOG_CATEGORY_GPU,
-        "Vulkan Device: %s",
-        renderer->physicalDeviceProperties.properties.deviceName);
+    renderer->debugProps = SDL_CreateProperties();
+    if (verboseLogs) {
+        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: Vulkan");
+    }
+
+    // Record device name
+    const char *deviceName = renderer->physicalDeviceProperties.properties.deviceName;
+    SDL_SetStringProperty(
+        renderer->debugProps,
+        SDL_PROP_GPU_DEVICE_DEBUG_NAME_STRING,
+        deviceName);
+    if (verboseLogs) {
+        SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Vulkan Device: %s", deviceName);
+    }
+
+    // Record driver version. This is provided as a backup if
+    // VK_KHR_driver_properties is not available but as most drivers support it
+    // this property should be rarely used.
+    //
+    // This uses a vendor-specific encoding and it isn't well documented. The
+    // vendor ID is the registered PCI ID of the vendor and can be found in
+    // online databases.
+    char driverVer[64];
+    Uint32 rawDriverVer = renderer->physicalDeviceProperties.properties.driverVersion;
+    Uint32 vendorId = renderer->physicalDeviceProperties.properties.vendorID;
+    if (vendorId == 0x10de) {
+        // Nvidia uses 10|8|8|6 encoding.
+        (void)SDL_snprintf(
+            driverVer,
+            SDL_arraysize(driverVer),
+            "%d.%d.%d.%d",
+            (rawDriverVer >> 22) & 0x3ff,
+            (rawDriverVer >> 14) & 0xff,
+            (rawDriverVer >> 6) & 0xff,
+            rawDriverVer & 0x3f);
+    }
+#ifdef SDL_PLATFORM_WINDOWS
+    else if (vendorId == 0x8086) {
+        // Intel uses 18|14 encoding on Windows only.
+        (void)SDL_snprintf(
+            driverVer,
+            SDL_arraysize(driverVer),
+            "%d.%d",
+            (rawDriverVer >> 14) & 0x3ffff,
+            rawDriverVer & 0x3fff);
+    }
+#endif
+    else {
+        // Assume standard Vulkan 10|10|12 encoding for everything else. AMD and
+        // Mesa are known to use this encoding.
+        (void)SDL_snprintf(
+            driverVer,
+            SDL_arraysize(driverVer),
+            "%d.%d.%d",
+            (rawDriverVer >> 22) & 0x3ff,
+            (rawDriverVer >> 12) & 0x3ff,
+            rawDriverVer & 0xfff);
+    }
+    SDL_SetStringProperty(
+        renderer->debugProps,
+        SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_VERSION_STRING,
+        driverVer);
+    // Log this only if VK_KHR_driver_properties is not available.
+
     if (renderer->supports.KHR_driver_properties) {
-        SDL_LogInfo(
-            SDL_LOG_CATEGORY_GPU,
-            "Vulkan Driver: %s %s",
-            renderer->physicalDeviceDriverProperties.driverName,
-            renderer->physicalDeviceDriverProperties.driverInfo);
-        SDL_LogInfo(
-            SDL_LOG_CATEGORY_GPU,
-            "Vulkan Conformance: %u.%u.%u",
+        // Record driver name and version
+        const char *driverName = renderer->physicalDeviceDriverProperties.driverName;
+        const char *driverInfo = renderer->physicalDeviceDriverProperties.driverInfo;
+        SDL_SetStringProperty(
+            renderer->debugProps,
+            SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_NAME_STRING,
+            driverName);
+        SDL_SetStringProperty(
+            renderer->debugProps,
+            SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_INFO_STRING,
+            driverInfo);
+        if (verboseLogs) {
+            // FIXME: driverInfo can be a multiline string.
+            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Vulkan Driver: %s %s", driverName, driverInfo);
+        }
+
+        // Record conformance level
+        char conformance[64];
+        (void)SDL_snprintf(
+            conformance,
+            SDL_arraysize(conformance),
+            "%u.%u.%u.%u",
             renderer->physicalDeviceDriverProperties.conformanceVersion.major,
             renderer->physicalDeviceDriverProperties.conformanceVersion.minor,
+            renderer->physicalDeviceDriverProperties.conformanceVersion.subminor,
             renderer->physicalDeviceDriverProperties.conformanceVersion.patch);
+        SDL_SetStringProperty(
+            renderer->debugProps,
+            SDL_PROP_GPU_DEVICE_DEBUG_VULKAN_CONFORMANCE_STRING,
+            conformance);
+        if (verboseLogs) {
+            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Vulkan Conformance: %s", conformance);
+        }
     } else {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "KHR_driver_properties unsupported! Bother your vendor about this!");
+        if (verboseLogs) {
+            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Vulkan Driver: %s", driverVer);
+        }
     }
 
     if (!VULKAN_INTERNAL_CreateLogicalDevice(

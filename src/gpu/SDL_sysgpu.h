@@ -459,9 +459,11 @@ typedef struct SDL_GPURenderer SDL_GPURenderer;
 
 struct SDL_GPUDevice
 {
-    // Quit
+    // Device
 
     void (*DestroyDevice)(SDL_GPUDevice *device);
+
+    SDL_PropertiesID (*GetDeviceDebugProperties)(SDL_GPUDevice *device);
 
     // State Creation
 
@@ -894,6 +896,7 @@ struct SDL_GPUDevice
     result->func = name##_##func;
 #define ASSIGN_DRIVER(name)                                 \
     ASSIGN_DRIVER_FUNC(DestroyDevice, name)                 \
+    ASSIGN_DRIVER_FUNC(GetDeviceDebugProperties, name)      \
     ASSIGN_DRIVER_FUNC(CreateComputePipeline, name)         \
     ASSIGN_DRIVER_FUNC(CreateGraphicsPipeline, name)        \
     ASSIGN_DRIVER_FUNC(CreateSampler, name)                 \
