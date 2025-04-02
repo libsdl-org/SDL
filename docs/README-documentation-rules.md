@@ -156,6 +156,23 @@ wikiheaders will wordwrap header comments so they fit in 80 columns, so if you
 don't leave a blank line between paragraphs, they will smush into a single
 block of text when wordwrapping.
 
+## Lists must be the start of a new paragraph.
+
+If you write this:
+
+```
+Here is some text without a blank line
+before an unordered list!
+- item a
+- item b
+- item c
+```
+
+...then wikiheaders will word wrap this as a single paragraph, mangling the list.
+
+Put a blank line before the list, and everything will format and wrap correctly.
+
+This is a limitation of wikiheaders. Don't get bit by it!
 
 ## Don't worry about word wrapping.
 
