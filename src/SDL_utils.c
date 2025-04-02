@@ -403,6 +403,10 @@ const char *SDL_GetPersistentString(const char *string)
 static int PrefixMatch(const char *a, const char *b)
 {
     int matchlen = 0;
+    // Fixes the "HORI HORl Taiko No Tatsujin Drum Controller"
+    if (SDL_strncmp(a, "HORI ", 5) == 0 && SDL_strncmp(b, "HORl ", 5) == 0) {
+        return 5;
+    }
     while (*a && *b) {
         if (SDL_tolower((unsigned char)*a++) == SDL_tolower((unsigned char)*b++)) {
             ++matchlen;
@@ -424,8 +428,8 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
         { "ASTRO Gaming", "ASTRO" },
         { "Bensussen Deutsch & Associates,Inc.(BDA)", "BDA" },
         { "Guangzhou Chicken Run Network Technology Co., Ltd.", "GameSir" },
-        { "HORI CO.,LTD", "HORI" },
         { "HORI CO.,LTD.", "HORI" },
+        { "HORI CO.,LTD", "HORI" },
         { "Mad Catz Inc.", "Mad Catz" },
         { "Nintendo Co., Ltd.", "Nintendo" },
         { "NVIDIA Corporation ", "" },

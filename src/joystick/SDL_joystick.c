@@ -2858,7 +2858,8 @@ bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
     }
     if (vendor_id == USB_VENDOR_HORI) {
         if (product_id == USB_PRODUCT_HORI_FIGHTING_COMMANDER_OCTA_SERIES_X ||
-            product_id == USB_PRODUCT_HORI_HORIPAD_PRO_SERIES_X) {
+            product_id == USB_PRODUCT_HORI_HORIPAD_PRO_SERIES_X ||
+            product_id == USB_PRODUCT_HORI_TAIKO_DRUM_CONTROLLER) {
             return true;
         }
     }
