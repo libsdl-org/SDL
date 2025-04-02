@@ -49,6 +49,7 @@ enum
 typedef struct
 {
     bool sensors_supported;
+    bool sensors_enabled;
     bool touchpad_01_supported;
     bool touchpad_02_supported;
     bool rumble_supported;
@@ -165,7 +166,7 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
 
-        
+
         ctx->accelScale = SDL_STANDARD_GRAVITY / ABITDO_ACCEL_SCALE;
         ctx->gyroScale = SDL_PI_F / 180.0f / ABITDO_GYRO_SCALE;
     }
@@ -202,11 +203,9 @@ static Uint32 HIDAPI_Driver8BitDo_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     if (ctx->rumble_supported) {
         caps |= SDL_JOYSTICK_CAP_RUMBLE;
     }
-#if 0 // HIDAPI_Driver8BitDo_SetJoystickLED() returns SDL_Unsupported()
     if (ctx->rgb_supported) {
         caps |= SDL_JOYSTICK_CAP_RGB_LED;
     }
-#endif
     return caps;
 }
 
@@ -222,11 +221,12 @@ static bool HIDAPI_Driver8BitDo_SendJoystickEffect(SDL_HIDAPI_Device *device, SD
 
 static bool HIDAPI_Driver8BitDo_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
-   SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)device->context;
-   if (ctx->sensors_supported) {
-       return true;
-   }
-   return SDL_Unsupported();
+    SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)device->context;
+    if (ctx->sensors_supported) {
+        ctx->sensors_enabled = enabled;
+        return true;
+    }
+    return SDL_Unsupported();
 }
 static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Driver8BitDo_Context *ctx, Uint8 *data, int size)
 {
@@ -272,7 +272,7 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
     }
 
-    
+
     if (ctx->last_state[8] != data[8]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data[8] & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data[8] & 0x02) != 0));
@@ -352,7 +352,7 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 
 
-    if (ctx->sensors_supported) {
+    if (ctx->sensors_enabled) {
         Uint64 sensor_timestamp;
         float values[3];
         ABITDO_SENSORS *sensors = (ABITDO_SENSORS *)&data[15];
