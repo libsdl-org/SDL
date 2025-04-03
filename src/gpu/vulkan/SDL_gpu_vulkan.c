@@ -5796,8 +5796,7 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
             &nameInfo);
     }
 
-    if (transitionToDefaultLayout)
-    {
+    if (transitionToDefaultLayout) {
         // Let's transition to the default barrier state, because for some reason Vulkan doesn't let us do that with initialLayout.
         VulkanCommandBuffer *barrierCommandBuffer = (VulkanCommandBuffer *)VULKAN_AcquireCommandBuffer((SDL_GPURenderer *)renderer);
         VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
@@ -10421,7 +10420,7 @@ static bool VULKAN_Submit(
     Uint32 swapchainImageIndex;
     VulkanTextureSubresource *swapchainTextureSubresource;
     VulkanMemorySubAllocator *allocator;
-    bool presenting = vulkanCommandBuffer->presentDataCount > 0;
+    bool presenting = (vulkanCommandBuffer->presentDataCount > 0);
 
     SDL_LockMutex(renderer->submitLock);
 
@@ -10444,8 +10443,7 @@ static bool VULKAN_Submit(
             swapchainTextureSubresource);
     }
 
-    if (
-        presenting &&
+    if (presenting &&
         renderer->allocationsToDefragCount > 0 &&
         !renderer->defragInProgress) {
         if (!VULKAN_INTERNAL_DefragmentMemory(renderer, vulkanCommandBuffer))
@@ -10530,8 +10528,7 @@ static bool VULKAN_Submit(
     }
 
     // If presenting, check if we can perform any cleanups
-    if (presenting)
-    {
+    if (presenting) {
         for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
             vulkanResult = renderer->vkGetFenceStatus(
                 renderer->logicalDevice,
