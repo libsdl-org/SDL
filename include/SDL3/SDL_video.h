@@ -1041,6 +1041,8 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
 /**
  * Create a window with the specified dimensions and flags.
  *
+ * The window size is a request and may be different than expected based on the desktop layout and window manager policies. Your application should be prepared to handle a window of any size.
+ *
  * `flags` may be any of the following OR'd together:
  *
  * - `SDL_WINDOW_FULLSCREEN`: fullscreen window at desktop resolution
@@ -1127,6 +1129,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindow(const char *title, int
 /**
  * Create a child popup window of the specified parent window.
  *
+ * The window size is a request and may be different than expected based on the desktop layout and window manager policies. Your application should be prepared to handle a window of any size.
+ *
  * The flags parameter **must** contain at least one of the following:
  *
  * - `SDL_WINDOW_TOOLTIP`: The popup window is a tooltip and will not pass any
@@ -1188,6 +1192,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
 
 /**
  * Create a window with the specified properties.
+ *
+ * The window size is a request and may be different than expected based on the desktop layout and window manager policies. Your application should be prepared to handle a window of any size.
  *
  * These are the supported properties:
  *
