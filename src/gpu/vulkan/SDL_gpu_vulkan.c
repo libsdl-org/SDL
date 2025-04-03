@@ -1096,7 +1096,7 @@ struct VulkanRenderer
 
     bool debugMode;
     bool preferLowPower;
-    SDL_PropertiesID debugProps;
+    SDL_PropertiesID props;
     Uint32 allowedFramesInFlight;
 
     VulkanExtensions supports;
@@ -4918,18 +4918,18 @@ static void VULKAN_DestroyDevice(
     renderer->vkDestroyDevice(renderer->logicalDevice, NULL);
     renderer->vkDestroyInstance(renderer->instance, NULL);
 
-    SDL_DestroyProperties(renderer->debugProps);
+    SDL_DestroyProperties(renderer->props);
 
     SDL_free(renderer);
     SDL_free(device);
     SDL_Vulkan_UnloadLibrary();
 }
 
-static SDL_PropertiesID VULKAN_GetDeviceDebugProperties(
+static SDL_PropertiesID VULKAN_GetDeviceProperties(
     SDL_GPUDevice *device)
 {
     VulkanRenderer *renderer = (VulkanRenderer *)device->driverData;
-    return renderer->debugProps;
+    return renderer->props;
 }
 
 static DescriptorSetCache *VULKAN_INTERNAL_AcquireDescriptorSetCache(
@@ -11600,7 +11600,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         SET_STRING_ERROR_AND_RETURN("Failed to initialize Vulkan!", NULL);
     }
 
-    renderer->debugProps = SDL_CreateProperties();
+    renderer->props = SDL_CreateProperties();
     if (verboseLogs) {
         SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: Vulkan");
     }
@@ -11608,8 +11608,8 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     // Record device name
     const char *deviceName = renderer->physicalDeviceProperties.properties.deviceName;
     SDL_SetStringProperty(
-        renderer->debugProps,
-        SDL_PROP_GPU_DEVICE_DEBUG_NAME_STRING,
+        renderer->props,
+        SDL_PROP_GPU_DEVICE_NAME_STRING,
         deviceName);
     if (verboseLogs) {
         SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Vulkan Device: %s", deviceName);
@@ -11659,8 +11659,8 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
             rawDriverVer & 0xfff);
     }
     SDL_SetStringProperty(
-        renderer->debugProps,
-        SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_VERSION_STRING,
+        renderer->props,
+        SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING,
         driverVer);
     // Log this only if VK_KHR_driver_properties is not available.
 
@@ -11669,12 +11669,12 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         const char *driverName = renderer->physicalDeviceDriverProperties.driverName;
         const char *driverInfo = renderer->physicalDeviceDriverProperties.driverInfo;
         SDL_SetStringProperty(
-            renderer->debugProps,
-            SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_NAME_STRING,
+            renderer->props,
+            SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING,
             driverName);
         SDL_SetStringProperty(
-            renderer->debugProps,
-            SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_INFO_STRING,
+            renderer->props,
+            SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING,
             driverInfo);
         if (verboseLogs) {
             // FIXME: driverInfo can be a multiline string.
@@ -11682,20 +11682,16 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         }
 
         // Record conformance level
-        char conformance[64];
-        (void)SDL_snprintf(
-            conformance,
-            SDL_arraysize(conformance),
-            "%u.%u.%u.%u",
-            renderer->physicalDeviceDriverProperties.conformanceVersion.major,
-            renderer->physicalDeviceDriverProperties.conformanceVersion.minor,
-            renderer->physicalDeviceDriverProperties.conformanceVersion.subminor,
-            renderer->physicalDeviceDriverProperties.conformanceVersion.patch);
-        SDL_SetStringProperty(
-            renderer->debugProps,
-            SDL_PROP_GPU_DEVICE_DEBUG_VULKAN_CONFORMANCE_STRING,
-            conformance);
         if (verboseLogs) {
+            char conformance[64];
+            (void)SDL_snprintf(
+                conformance,
+                SDL_arraysize(conformance),
+                "%u.%u.%u.%u",
+                renderer->physicalDeviceDriverProperties.conformanceVersion.major,
+                renderer->physicalDeviceDriverProperties.conformanceVersion.minor,
+                renderer->physicalDeviceDriverProperties.conformanceVersion.subminor,
+                renderer->physicalDeviceDriverProperties.conformanceVersion.patch);
             SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Vulkan Conformance: %s", conformance);
         }
     } else {

@@ -643,7 +643,7 @@ struct MetalRenderer
     id<MTLCommandQueue> queue;
 
     bool debugMode;
-    SDL_PropertiesID debugProps;
+    SDL_PropertiesID props;
     Uint32 allowedFramesInFlight;
 
     MetalWindowData **claimedWindows;
@@ -766,18 +766,18 @@ static void METAL_DestroyDevice(SDL_GPUDevice *device)
     // Release the command queue
     renderer->queue = nil;
 
-    // Release debug properties
-    SDL_DestroyProperties(renderer->debugProps);
+    // Release properties
+    SDL_DestroyProperties(renderer->props);
 
     // Free the primary structures
     SDL_free(renderer);
     SDL_free(device);
 }
 
-static SDL_PropertiesID METAL_GetDeviceDebugProperties(SDL_GPUDevice *device)
+static SDL_PropertiesID METAL_GetDeviceProperties(SDL_GPUDevice *device)
 {
     MetalRenderer *renderer = (MetalRenderer *)device->driverData;
-    return renderer->debugProps;
+    return renderer->props;
 }
 
 // Resource tracking
@@ -4512,7 +4512,7 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         renderer->device = device;
         renderer->queue = [device newCommandQueue];
 
-        renderer->debugProps = SDL_CreateProperties();
+        renderer->props = SDL_CreateProperties();
         if (verboseLogs) {
             SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: Metal");
         }
@@ -4520,8 +4520,8 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         // Record device name
         const char *deviceName = [device.name UTF8String];
         SDL_SetStringProperty(
-            renderer->debugProps,
-            SDL_PROP_GPU_DEVICE_DEBUG_NAME_STRING,
+            renderer->props,
+            SDL_PROP_GPU_DEVICE_NAME_STRING,
             deviceName);
         if (verboseLogs) {
             SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Metal Device: %s", deviceName);
