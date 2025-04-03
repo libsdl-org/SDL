@@ -390,6 +390,8 @@ bool Emscripten_VideoInit(SDL_VideoDevice *_this)
     SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
     SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
 
+    Emscripten_RegisterGlobalEventHandlers(_this);
+
     // We're done!
     return true;
 }
@@ -402,6 +404,7 @@ static bool Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *
 
 static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
 {
+    Emscripten_UnregisterGlobalEventHandlers(_this);
     Emscripten_QuitMouse();
     Emscripten_UnlistenSystemTheme();
     pumpevents_has_run = false;
