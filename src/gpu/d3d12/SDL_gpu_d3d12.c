@@ -3259,6 +3259,10 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     D3D12_CLEAR_VALUE clearValue;
     DXGI_FORMAT format;
     bool useClearValue = false;
+    bool needsSRV =
+        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
+        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
+        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ);
     bool needsUAV =
         (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) ||
         (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE);
@@ -3291,7 +3295,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         clearValue.Format = SDLToD3D12_DepthFormat[createinfo->format];
         clearValue.DepthStencil.Depth = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT, 0);
         clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_UINT8, 0);
-        format = SDLToD3D12_TypelessFormat[createinfo->format];
+        format = needsSRV ? SDLToD3D12_TypelessFormat[createinfo->format] : SDLToD3D12_DepthFormat[createinfo->format];
     }
 
     if (needsUAV) {
@@ -3352,9 +3356,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     texture->resource = handle;
 
     // Create the SRV if applicable
-    if ((createinfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
-        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
-        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
+    if (needsSRV) {
         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
 
         D3D12_INTERNAL_AssignStagingDescriptorHandle(
