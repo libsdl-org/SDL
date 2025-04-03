@@ -4264,6 +4264,7 @@ endif()
 ##### Uninstall target #####
 
 if(SDL_UNINSTALL)
+  set(HAVE_UNINSTALL ON)
   if(NOT TARGET uninstall)
     configure_file(cmake/cmake_uninstall.cmake.in cmake_uninstall.cmake IMMEDIATE @ONLY)
 
