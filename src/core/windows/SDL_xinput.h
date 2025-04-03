@@ -260,7 +260,6 @@ extern XInputSetState_t SDL_XInputSetState;
 extern XInputGetCapabilities_t SDL_XInputGetCapabilities;
 extern XInputGetCapabilitiesEx_t SDL_XInputGetCapabilitiesEx;
 extern XInputGetBatteryInformation_t SDL_XInputGetBatteryInformation;
-extern DWORD SDL_XInputVersion; // ((major << 16) & 0xFF00) | (minor & 0xFF)
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus
