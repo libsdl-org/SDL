@@ -160,3 +160,65 @@ function(SDL_AddCommonCompilerFlags TARGET)
     endif()
   endif()
 endfunction()
+
+function(check_x86_source_compiles BODY VAR)
+  if(ARGN)
+    message(FATAL_ERROR "Unknown arguments: ${ARGN}")
+  endif()
+  if(APPLE AND DEFINED CMAKE_OSX_ARCHITECTURES)
+    set(test_conditional 1)
+  else()
+    set(test_conditional 0)
+  endif()
+  check_c_source_compiles("
+    #if ${test_conditional}
+    # include \"TargetConditionals.h\"
+    # if TARGET_CPU_X86 || TARGET_CPU_X86_64
+    #  define test_enabled 1
+    # else
+    #  define test_enabled 0
+    # endif
+    #else
+    # define test_enabled 1
+    #endif
+    #if test_enabled
+    ${BODY}
+    #else
+    int main(int argc, char *argv[]) {
+      (void)argc;
+      (void)argv;
+      return 0;
+    }
+    #endif" ${VAR})
+endfunction()
+
+function(check_arm_source_compiles BODY VAR)
+  if(ARGN)
+    message(FATAL_ERROR "Unknown arguments: ${ARGN}")
+  endif()
+  if(APPLE AND DEFINED CMAKE_OSX_ARCHITECTURES)
+    set(test_conditional 1)
+  else()
+    set(test_conditional 0)
+  endif()
+  check_c_source_compiles("
+    #if ${test_conditional}
+    # include \"TargetConditionals.h\"
+    # if TARGET_CPU_ARM || TARGET_CPU_ARM64
+    #  define test_enabled 1
+    # else
+    #  define test_enabled 0
+    # endif
+    #else
+    # define test_enabled 1
+    #endif
+    #if test_enabled
+    ${BODY}
+    #else
+    int main(int argc, char *argv[]) {
+      (void)argc;
+      (void)argv;
+      return 0;
+    }
+    #endif" ${VAR})
+endfunction()
