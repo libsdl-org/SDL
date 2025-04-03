@@ -2819,7 +2819,7 @@ static bool D3D12_INTERNAL_ConvertBlendState(
     }
 
     SDL_zerop(blendDesc);
-    blendDesc->AlphaToCoverageEnable = FALSE;
+    blendDesc->AlphaToCoverageEnable = pipelineInfo->multisample_state.enable_alpha_to_coverage;
     blendDesc->IndependentBlendEnable = FALSE;
 
     for (UINT i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1) {

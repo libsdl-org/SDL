@@ -827,6 +827,12 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
                 SDL_assert_release(!"Format is not supported for color targets on this device!");
                 return NULL;
             }
+            if (graphicsPipelineCreateInfo->multisample_state.enable_alpha_to_coverage &&
+                (IsIntegerFormat(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format)
+                    || IsCompressedFormat(graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].format))) {
+                SDL_assert_release(!"Format is not compatible with alpha-to-coverage!");
+                return NULL;
+            }
             if (graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].blend_state.enable_blend) {
                 const SDL_GPUColorTargetBlendState *blend_state = &graphicsPipelineCreateInfo->target_info.color_target_descriptions[i].blend_state;
                 CHECK_BLENDFACTOR_ENUM_INVALID(blend_state->src_color_blendfactor, NULL)

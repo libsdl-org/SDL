@@ -1135,6 +1135,7 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
         // Multisample
 
         pipelineDescriptor.rasterSampleCount = SDLToMetal_SampleCount[createinfo->multisample_state.sample_count];
+        pipelineDescriptor.alphaToCoverageEnabled = createinfo->multisample_state.enable_alpha_to_coverage;
 
         // Depth Stencil
 

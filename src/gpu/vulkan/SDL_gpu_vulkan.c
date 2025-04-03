@@ -6342,7 +6342,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     multisampleStateCreateInfo.sampleShadingEnable = VK_FALSE;
     multisampleStateCreateInfo.minSampleShading = 1.0f;
     multisampleStateCreateInfo.pSampleMask = &sampleMask;
-    multisampleStateCreateInfo.alphaToCoverageEnable = VK_FALSE;
+    multisampleStateCreateInfo.alphaToCoverageEnable = createinfo->multisample_state.enable_alpha_to_coverage;
     multisampleStateCreateInfo.alphaToOneEnable = VK_FALSE;
 
     // Depth Stencil State
