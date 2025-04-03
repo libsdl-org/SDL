@@ -350,7 +350,7 @@ dep_option(SDL_WASAPI              "Use the Windows WASAPI audio driver" ON "WIN
 dep_option(SDL_RENDER_D3D          "Enable the Direct3D 9 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
 dep_option(SDL_RENDER_D3D11        "Enable the Direct3D 11 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
 dep_option(SDL_RENDER_D3D12        "Enable the Direct3D 12 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
-dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_RENDER;${APPLE}" OFF)
+dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_RENDER;APPLE" OFF)
 dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RENDER;SDL_GPU" OFF)
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
 dep_option(SDL_VULKAN              "Enable Vulkan support" ON "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR WINDOWS" OFF)
