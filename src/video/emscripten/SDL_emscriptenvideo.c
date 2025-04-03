@@ -714,7 +714,9 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
                     canvas.remove();
                 } else {
                     // Since the canvas wasn't created by SDL3, just resize it to zero instead.
-                    // TODO: Is this necessary?
+                    // TODO: Is this necessary or desired. If the goal is to make the window not
+                    // visible, then the better thing to do is:
+                    // canvas.style.display = 'none';
                     canvas.width = 0;
                     canvas.height = 0;
                 }
@@ -781,15 +783,14 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
     }
 }
 
-// Assume the first window that calls SDL_SetWindowTitle is the main window.
-static SDL_Window *mainWindow = NULL;
-
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    if (!mainWindow) {
-        mainWindow = window;
+    SDL_VideoData *videodata = _this->internal;
+    if (!videodata->mainWindow) {
+        // Assume that the first window to have its title set is the main window
+        videodata->mainWindow = window;
     }
-    if (mainWindow == window) {
+    if (videodata->mainWindow == window) {
         emscripten_set_window_title(window->title);
     }
 }

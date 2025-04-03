@@ -53,6 +53,7 @@ struct SDL_WindowData
 struct SDL_VideoData
 {
    SDL_PropertiesID window_map;
+   SDL_Window *mainWindow;
 };
 
 bool Emscripten_ShouldSetSwapInterval(int interval);
