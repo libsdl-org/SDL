@@ -139,7 +139,7 @@ EMSCRIPTEN_KEEPALIVE void Emscripten_SendSystemThemeChangedEvent(void)
 static SDL_VideoDevice *Emscripten_CreateDevice(void)
 {
     SDL_VideoDevice *device;
-    SDL_VideoData *vdata;
+    SDL_VideoData *videodata;
 
     // Initialize all variables that we clean on shutdown
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
