@@ -2578,6 +2578,14 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
     bool need_vulkan_load = false;
     SDL_WindowFlags graphics_flags;
 
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    // Don't actually recreate the window in Emscripten because the SDL_WindowData's
+    // canvas_id and keyboard_element would be lost if destroyed
+    const bool recreate_window = false;
+#else
+    const bool recreate_window = true;
+#endif
+
     // ensure no more than one of these flags is set
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
     if (graphics_flags & (graphics_flags - 1)) {
@@ -2646,13 +2654,9 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         SDL_Vulkan_UnloadLibrary();
     }
 
-    // Don't actually recreate the window in Emscripten because the SDL_WindowData's
-    // canvas_id and keyboard_element would be lost if destroyed
-#ifndef SDL_PLATFORM_EMSCRIPTEN
-    if (_this->DestroyWindow && !(flags & SDL_WINDOW_EXTERNAL)) {
+    if (recreate_window && _this->DestroyWindow && !(flags & SDL_WINDOW_EXTERNAL)) {
         _this->DestroyWindow(_this, window);
     }
-#endif
 
     if (need_gl_load) {
         if (!SDL_GL_LoadLibrary(NULL)) {
@@ -2680,12 +2684,7 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         window->w = window->windowed.w = window->floating.w;
         window->h = window->windowed.h = window->floating.h;
 
-#ifdef SDL_PLATFORM_EMSCRIPTEN
-        // Prevent -Wunused-but-set-variable
-        (void)loaded_opengl;
-        (void)loaded_vulkan;
-#else
-        if (!_this->CreateSDLWindow(_this, window, 0)) {
+        if (recreate_window && !_this->CreateSDLWindow(_this, window, 0)) {
             if (loaded_opengl) {
                 SDL_GL_UnloadLibrary();
                 window->flags &= ~SDL_WINDOW_OPENGL;
@@ -2696,7 +2695,6 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
             }
             return false;
         }
-#endif
     }
 
     if (flags & SDL_WINDOW_EXTERNAL) {
@@ -2727,9 +2725,7 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         _this->SetWindowHitTest(window, true);
     }
 
-#ifndef SDL_PLATFORM_EMSCRIPTEN
     SDL_FinishWindowCreation(window, flags);
-#endif
 
     return true;
 }

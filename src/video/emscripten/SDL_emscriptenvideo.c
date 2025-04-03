@@ -60,8 +60,8 @@ static int pending_swap_interval = -1;
 
 static void Emscripten_DeleteDevice(SDL_VideoDevice *device)
 {
-    SDL_VideoData *vdata = device->internal;
-    SDL_DestroyProperties(vdata->window_map);
+    SDL_VideoData *videodata = device->internal;
+    SDL_DestroyProperties(videodata->window_map);
     SDL_free(device);
 }
 
@@ -147,12 +147,12 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
         return NULL;
     }
 
-    vdata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
-    if (!vdata) {
+    videodata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
+    if (!videodata) {
         return NULL;
     }
-    vdata->window_map = SDL_CreateProperties();
-    device->internal = vdata;
+    videodata->window_map = SDL_CreateProperties();
+    device->internal = videodata;
 
     /* Firefox sends blur event which would otherwise prevent full screen
      * when the user clicks to allow full screen.
@@ -471,7 +471,7 @@ EMSCRIPTEN_KEEPALIVE void requestFullscreenThroughSDL(SDL_Window *window)
 static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_WindowData *wdata;
-    SDL_VideoData *vdata;
+    SDL_VideoData *videodata;
     double scaled_w, scaled_h;
     double css_w, css_h;
     const char *selector;
@@ -486,6 +486,11 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR);
     if (!selector || !*selector) {
         selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, "#canvas");
+    }
+
+    if (!*selector || selector[0] != '#') {
+        SDL_SetError("Canvas ID must begin with a '#' character.");
+        return false;
     }
 
     // If an element with this id already exists, it should be verified that it is to an HTML5CanvasElement
@@ -580,8 +585,8 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     }
 
     // Ensure that there isn't another window that is using this canvas ID
-    vdata = _this->internal;
-    if (SDL_GetBooleanProperty(vdata->window_map, selector, false)) {
+    videodata = _this->internal;
+    if (SDL_GetBooleanProperty(videodata->window_map, selector, false)) {
         SDL_SetError("A window already exists that refers to canvas '%s'", selector);
         return false;
     }
@@ -648,8 +653,12 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING, wdata->canvas_id);
     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, wdata->keyboard_element);
 
-    if (!SDL_SetBooleanProperty(vdata->window_map, wdata->canvas_id, true)) {
+    if (!SDL_SetBooleanProperty(videodata->window_map, wdata->canvas_id, true)) {
         return false;
+    }
+
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        Emscripten_HideWindow(_this, window);
     }
 
     // Window has been successfully created
@@ -690,7 +699,7 @@ static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window 
 static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
-    SDL_VideoData *vdata;
+    SDL_VideoData *videodata;
 
     if (window->internal) {
         data = window->internal;
@@ -712,8 +721,8 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             }
         }, data->canvas_id);
 
-        vdata = _this->internal;
-        SDL_SetBooleanProperty(vdata->window_map, data->canvas_id, false);
+        videodata = _this->internal;
+        SDL_SetBooleanProperty(videodata->window_map, data->canvas_id, false);
         SDL_free(data->canvas_id);
 
         SDL_free(data->keyboard_element);

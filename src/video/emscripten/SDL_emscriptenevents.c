@@ -1034,14 +1034,18 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
             target.addEventListener("dragover", window_data.eventHandlerDropDragover);
 
             window_data.drop_count = 0;
-            try
-            {
-                FS.mkdir("/tmp/filedrop")
+            function safeCreateDir(dir){
+                try
+                {
+                    FS.mkdir(dir)
+                }
+                catch(e)
+                {
+                    // Throws if the directory already exists
+                }
             }
-            catch(e)
-            {
-                // Throws if the directory already exists
-            }
+            safeCreateDir("/tmp/filedrop");
+            safeCreateDir(`/tmp/filedrop/${id}/`);
 
             window_data.eventHandlerDropDrop = function(event) {
                 event.preventDefault();
@@ -1055,7 +1059,7 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
                         const file_reader = new FileReader();
                         file_reader.readAsArrayBuffer(file);
                         file_reader.onload = function(event) {
-                            const fs_dropdir = `/tmp/filedrop/${window_data.drop_count}`;
+                            const fs_dropdir = `/tmp/filedrop/${id}/${window_data.drop_count}`;
                             window_data.drop_count += 1;
 
                             const fs_filepath = `${fs_dropdir}/${file.name}`;
@@ -1112,7 +1116,7 @@ static void Emscripten_unset_drag_event_callbacks(SDL_WindowData *data)
                 }
             }
 
-            const path = "/tmp/filedrop";
+            const path = `/tmp/filedrop/${id}/`;
             function recursive_remove(dirpath) {
                 FS.readdir(dirpath).forEach((filename) => {
                     const p = `${dirpath}/${filename}`;
