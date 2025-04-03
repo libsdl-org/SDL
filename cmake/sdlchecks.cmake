@@ -1,4 +1,4 @@
-macro(CHECK_C_SOURCE_COMPILES_STATIC SOURCE VAR)
+macro(check_c_source_compiles_static SOURCE VAR)
   set(saved_CMAKE_TRY_COMPILE_TARGET_TYPE "${CMAKE_TRY_COMPILE_TARGET_TYPE}")
   set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
   check_c_source_compiles("${SOURCE}" ${VAR} ${ARGN})
