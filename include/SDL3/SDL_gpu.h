@@ -2261,15 +2261,13 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGPUDeviceDriver(SDL_GPUDevice *d
 extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUDevice *device);
 
 /**
- * Returns a property group containing read-only debug information associated
- * with this GPU context.
+ * Get the properties associated with a GPU device.
  *
- * All properties are optionally provided and may differ between GPU backends
- * and SDL versions.
+ * All properties are optional and may differ between GPU backends and SDL versions.
  *
  * The following properties are provided by SDL:
  *
- * ### `SDL_PROP_GPU_DEVICE_DEBUG_NAME_STRING`
+ * ### `SDL_PROP_GPU_DEVICE_NAME_STRING`
  *
  * Contains the name of the underlying device as reported by the system
  * driver. This string has no standardized format, is highly inconsistent
@@ -2306,7 +2304,7 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * of a translation interface, the device may be emulated in software, or the
  * string may contain generic text that does not identify the device at all.
  *
- * ### `SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_NAME_STRING`
+ * ### `SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING`
  *
  * Contains the self-reported name of the underlying system driver.
  *
@@ -2319,11 +2317,11 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * - Mali-G715
  * - venus
  *
- * ### `SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_VERSION_STRING`
+ * ### `SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING`
  *
  * Contains the self-reported version of the underlying system driver. This is
  * a relatively short version string in an unspecified format. If
- * SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_INFO_STRING is available then that
+ * SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING is available then that
  * property should be preferred over this one as it may contain additional
  * information that is useful for identifying the exact driver version used.
  *
@@ -2333,12 +2331,12 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * - 0.405.2463
  * - 32.0.15.6614
  *
- * ### `SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_INFO_STRING`
+ * ### `SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING`
  *
  * Contains the detailed version information of the underlying system driver
  * as reported by the driver. This is an arbitrary string with no standardized
  * format and it may contain newlines. This property should be preferred over
- * SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_VERSION_STRING if it is available as it
+ * SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING if it is available as it
  * usually contains the same information but in a format that is easier to
  * read.
  *
@@ -2359,35 +2357,17 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * Driver Branch: promo490_3_Google
  * ```
  *
- * ### `SDL_PROP_GPU_DEVICE_DEBUG_VULKAN_CONFORMANCE_STRING`
- *
- * When using the Vulkan backend, contains the highest Vulkan version number
- * that the system driver claims that the underlying hardware conforms to.
- * This is self-reported and may not be truthful.
- *
- * Strings that have been found in the wild include:
- *
- * - 0.0.0.0
- * - 1.0.0.0
- * - 1.3.8.2
- *
  * \param device a GPU context to query.
- * \returns a valid property ID or 0. A value of 0 indicates that no
- *          properties are available and is not an error. The returned
- *          property group is owned by SDL and has the same lifetime as the
- *          containing context. It should not be destroyed manually when no
- *          longer needed.
+ * \returns a valid property ID on success or 0 on failure; call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 3.4.0.
  */
-extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceDebugProperties(
-    SDL_GPUDevice *device);
+extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUDevice *device);
 
-#define SDL_PROP_GPU_DEVICE_DEBUG_NAME_STRING               "SDL.gpu.device.debug.name"
-#define SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_NAME_STRING        "SDL.gpu.device.debug.driver_name"
-#define SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_VERSION_STRING     "SDL.gpu.device.debug.driver_version"
-#define SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_INFO_STRING        "SDL.gpu.device.debug.driver_info"
-#define SDL_PROP_GPU_DEVICE_DEBUG_VULKAN_CONFORMANCE_STRING "SDL.gpu.device.debug.vulkan.conformance"
+#define SDL_PROP_GPU_DEVICE_NAME_STRING               "SDL.gpu.device.name"
+#define SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING        "SDL.gpu.device.driver_name"
+#define SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING     "SDL.gpu.device.driver_version"
+#define SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING        "SDL.gpu.device.driver_info"
 
 /* State Creation */
 
