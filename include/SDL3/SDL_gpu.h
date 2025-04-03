@@ -2262,19 +2262,21 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
 
 /**
  * Returns a property group containing read-only debug information associated
- * with this GPU context. All properties are optionally provided and may differ
- * between GPU backends and SDL versions.
+ * with this GPU context.
+ *
+ * All properties are optionally provided and may differ between GPU backends
+ * and SDL versions.
  *
  * The following properties are provided by SDL:
  *
  * ### `SDL_PROP_GPU_DEVICE_DEBUG_NAME_STRING`
  *
- * Contains the name of the underlying device as reported by the system driver.
- * This string has no standardized format, is highly inconsistent between
- * hardware devices and drivers, and is able to change at any time. Do not
- * attempt to parse this string as it is bound to fail at some point in the
- * future when system drivers are updated, new hardware devices are introduced,
- * or when SDL adds new GPU backends or modifies existing ones.
+ * Contains the name of the underlying device as reported by the system
+ * driver. This string has no standardized format, is highly inconsistent
+ * between hardware devices and drivers, and is able to change at any time. Do
+ * not attempt to parse this string as it is bound to fail at some point in
+ * the future when system drivers are updated, new hardware devices are
+ * introduced, or when SDL adds new GPU backends or modifies existing ones.
  *
  * Strings that have been found in the wild include:
  *
@@ -2297,12 +2299,12 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * - unknown device
  *
  * The above list shows that the same device can have different formats, the
- * vendor name may or may not appear in the string, the included vendor name may
- * not be the vendor of the chipset on the device, some manufacturers include
- * pseudo-legal marks while others don't, some devices may not use a marketing
- * name in the string, the device string may be wrapped by the name of a
- * translation interface, the device may be emulated in software, or the string
- * may contain generic text that does not identify the device at all.
+ * vendor name may or may not appear in the string, the included vendor name
+ * may not be the vendor of the chipset on the device, some manufacturers
+ * include pseudo-legal marks while others don't, some devices may not use a
+ * marketing name in the string, the device string may be wrapped by the name
+ * of a translation interface, the device may be emulated in software, or the
+ * string may contain generic text that does not identify the device at all.
  *
  * ### `SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_NAME_STRING`
  *
@@ -2319,11 +2321,11 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  *
  * ### `SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_VERSION_STRING`
  *
- * Contains the self-reported version of the underlying system driver. This is a
- * relatively short version string in an unspecified format. If
- * SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_INFO_STRING is available then that property
- * should be preferred over this one as it may contain additional information
- * that is useful for identifying the exact driver version used.
+ * Contains the self-reported version of the underlying system driver. This is
+ * a relatively short version string in an unspecified format. If
+ * SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_INFO_STRING is available then that
+ * property should be preferred over this one as it may contain additional
+ * information that is useful for identifying the exact driver version used.
  *
  * Strings that have been found in the wild include:
  *
@@ -2333,11 +2335,12 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  *
  * ### `SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_INFO_STRING`
  *
- * Contains the detailed version information of the underlying system driver as
- * reported by the driver. This is an arbitrary string with no standardized
+ * Contains the detailed version information of the underlying system driver
+ * as reported by the driver. This is an arbitrary string with no standardized
  * format and it may contain newlines. This property should be preferred over
  * SDL_PROP_GPU_DEVICE_DEBUG_DRIVER_VERSION_STRING if it is available as it
- * usually contains the same information but in a format that is easier to read.
+ * usually contains the same information but in a format that is easier to
+ * read.
  *
  * Strings that have been found in the wild include:
  *
@@ -2359,8 +2362,8 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * ### `SDL_PROP_GPU_DEVICE_DEBUG_VULKAN_CONFORMANCE_STRING`
  *
  * When using the Vulkan backend, contains the highest Vulkan version number
- * that the system driver claims that the underlying hardware conforms to. This
- * is self-reported and may not be truthful.
+ * that the system driver claims that the underlying hardware conforms to.
+ * This is self-reported and may not be truthful.
  *
  * Strings that have been found in the wild include:
  *
@@ -2369,10 +2372,11 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * - 1.3.8.2
  *
  * \param device a GPU context to query.
- * \returns a valid property ID or 0. A value of 0 indicates that no properties
- *          are available and is not an error. The returned property group is
- *          owned by SDL and has the same lifetime as the containing context. It
- *          should not be destroyed manually when no longer needed.
+ * \returns a valid property ID or 0. A value of 0 indicates that no
+ *          properties are available and is not an error. The returned
+ *          property group is owned by SDL and has the same lifetime as the
+ *          containing context. It should not be destroyed manually when no
+ *          longer needed.
  *
  * \since This function is available since SDL 3.4.0.
  */
