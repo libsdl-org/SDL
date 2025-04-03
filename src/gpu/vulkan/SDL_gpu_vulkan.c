@@ -1194,7 +1194,7 @@ struct VulkanRenderer
 
 // Forward declarations
 
-static bool VULKAN_INTERNAL_DefragmentMemory(VulkanRenderer *renderer);
+static bool VULKAN_INTERNAL_DefragmentMemory(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
 static bool VULKAN_INTERNAL_BeginCommandBuffer(VulkanRenderer *renderer, VulkanCommandBuffer *commandBuffer);
 static void VULKAN_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window);
 static bool VULKAN_Wait(SDL_GPURenderer *driverData);
@@ -10421,7 +10421,7 @@ static bool VULKAN_Submit(
     Uint32 swapchainImageIndex;
     VulkanTextureSubresource *swapchainTextureSubresource;
     VulkanMemorySubAllocator *allocator;
-    bool presenting = false;
+    bool presenting = vulkanCommandBuffer->presentDataCount > 0;
 
     SDL_LockMutex(renderer->submitLock);
 
@@ -10442,6 +10442,16 @@ static bool VULKAN_Submit(
             vulkanCommandBuffer,
             VULKAN_TEXTURE_USAGE_MODE_PRESENT,
             swapchainTextureSubresource);
+    }
+
+    if (
+        presenting &&
+        renderer->allocationsToDefragCount > 0 &&
+        !renderer->defragInProgress) {
+        if (!VULKAN_INTERNAL_DefragmentMemory(renderer, vulkanCommandBuffer))
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to defragment memory, likely OOM!");
+        }
     }
 
     if (!VULKAN_INTERNAL_EndCommandBuffer(renderer, vulkanCommandBuffer)) {
@@ -10481,11 +10491,7 @@ static bool VULKAN_Submit(
     }
 
     // Present, if applicable
-    bool result = true;
-
     for (Uint32 j = 0; j < vulkanCommandBuffer->presentDataCount; j += 1) {
-        presenting = true;
-
         presentData = &vulkanCommandBuffer->presentDatas[j];
 
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -10561,23 +10567,14 @@ static bool VULKAN_Submit(
         }
 
         VULKAN_INTERNAL_PerformPendingDestroys(renderer);
-
-        // Defrag!
-        if (
-            renderer->allocationsToDefragCount > 0 &&
-            !renderer->defragInProgress) {
-            SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Defragging!");
-            result = VULKAN_INTERNAL_DefragmentMemory(renderer);
-        }
     }
 
     // Mark command buffer as submitted
-    // This must happen after defrag, because it will try to acquire new command buffers.
     VULKAN_INTERNAL_ReleaseCommandBuffer(vulkanCommandBuffer);
 
     SDL_UnlockMutex(renderer->submitLock);
 
-    return result;
+    return true;
 }
 
 static bool VULKAN_Cancel(
@@ -10604,14 +10601,10 @@ static bool VULKAN_Cancel(
 }
 
 static bool VULKAN_INTERNAL_DefragmentMemory(
-    VulkanRenderer *renderer)
+    VulkanRenderer *renderer,
+    VulkanCommandBuffer *commandBuffer)
 {
     renderer->defragInProgress = 1;
-
-    VulkanCommandBuffer *commandBuffer = (VulkanCommandBuffer *)VULKAN_AcquireCommandBuffer((SDL_GPURenderer *)renderer);
-    if (commandBuffer == NULL) {
-        return false;
-    }
     commandBuffer->isDefrag = 1;
 
     SDL_LockMutex(renderer->allocatorLock);
@@ -10639,6 +10632,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
 
             if (newBuffer == NULL) {
                 SDL_UnlockMutex(renderer->allocatorLock);
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to allocate defrag buffer!");
                 return false;
             }
 
@@ -10704,6 +10698,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
 
             if (newTexture == NULL) {
                 SDL_UnlockMutex(renderer->allocatorLock);
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to allocate defrag buffer!");
                 return false;
             }
 
@@ -10778,8 +10773,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
 
     SDL_UnlockMutex(renderer->allocatorLock);
 
-    return VULKAN_Submit(
-        (SDL_GPUCommandBuffer *)commandBuffer);
+    return true;
 }
 
 // Format Info
