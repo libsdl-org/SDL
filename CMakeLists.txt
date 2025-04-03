@@ -683,7 +683,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -mmmx")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <mmintrin.h>
       void ints_add(int *dest, int *a, int *b, unsigned size) {
         for (; size >= 2; size -= 2, dest += 2, a += 2, b += 2) {
@@ -693,7 +693,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char *argv[]) {
         ints_add((int*)0, (int*)0, (int*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_MMX)
+      }]==] COMPILER_SUPPORTS_MMX)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_MMX)
       set(HAVE_MMX TRUE)
@@ -704,7 +704,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -msse")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <xmmintrin.h>
       void floats_add(float *dest, float *a, float *b, unsigned size) {
         for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
@@ -714,7 +714,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         floats_add((float*)0, (float*)0, (float*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_SSE)
+      }]==] COMPILER_SUPPORTS_SSE)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE)
       set(HAVE_SSE TRUE)
@@ -725,7 +725,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -msse2")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <emmintrin.h>
       void doubles_add(double *dest, double *a, double *b, unsigned size) {
         for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
@@ -735,7 +735,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         doubles_add((double*)0, (double*)0, (double*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_SSE2)
+      }]==] COMPILER_SUPPORTS_SSE2)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE2)
       set(HAVE_SSE2 TRUE)
@@ -746,7 +746,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -msse3")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <pmmintrin.h>
       void ints_add(int *dest, int *a, int *b, unsigned size) {
         for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
@@ -756,7 +756,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         ints_add((int*)0, (int*)0, (int*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_SSE3)
+      }]==] COMPILER_SUPPORTS_SSE3)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE3)
       set(HAVE_SSE3 TRUE)
@@ -767,7 +767,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -msse4.1")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <smmintrin.h>
       void ints_mul(int *dest, int *a, int *b, unsigned size) {
         for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
@@ -777,7 +777,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         ints_mul((int*)0, (int*)0, (int*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_SSE4_1)
+      }]==] COMPILER_SUPPORTS_SSE4_1)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE4_1)
       set(HAVE_SSE4_1 TRUE)
@@ -788,14 +788,14 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -msse4.2")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <nmmintrin.h>
       __m128i bitmask;
       char data[16];
       int main(int argc, char **argv) {
         bitmask = _mm_cmpgt_epi64(_mm_set1_epi64x(0), _mm_loadu_si128((void*)data));
         return 0;
-      }" COMPILER_SUPPORTS_SSE4_2)
+      }]==] COMPILER_SUPPORTS_SSE4_2)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_SSE4_2)
       set(HAVE_SSE4_2 TRUE)
@@ -806,7 +806,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -mavx")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <immintrin.h>
       void floats_add(float *dest, float *a, float *b, unsigned size) {
         for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
@@ -816,7 +816,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         floats_add((float*)0, (float*)0, (float*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_AVX)
+      }]==] COMPILER_SUPPORTS_AVX)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_AVX)
       set(HAVE_AVX TRUE)
@@ -827,7 +827,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -mavx2")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <immintrin.h>
       void ints_add(int *dest, int *a, int *b, unsigned size) {
         for (; size >= 8; size -= 8, dest += 8, a += 8, b += 8) {
@@ -837,7 +837,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         ints_add((int*)0, (int*)0, (int*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_AVX2)
+      }]==] COMPILER_SUPPORTS_AVX2)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_AVX2)
       set(HAVE_AVX2 TRUE)
@@ -848,7 +848,7 @@ if(SDL_ASSEMBLY)
     if(USE_GCC OR USE_CLANG OR USE_INTELCC)
       string(APPEND CMAKE_REQUIRED_FLAGS " -mavx512f")
     endif()
-    check_c_source_compiles("
+    check_x86_source_compiles([==[
       #include <immintrin.h>
       void floats_add(float *dest, float *a, float *b, unsigned size) {
         for (; size >= 16; size -= 16, dest += 16, a += 16, b += 16) {
@@ -858,7 +858,7 @@ if(SDL_ASSEMBLY)
       int main(int argc, char **argv) {
         floats_add((float*)0, (float*)0, (float*)0, 0);
         return 0;
-      }" COMPILER_SUPPORTS_AVX512F)
+      }]==] COMPILER_SUPPORTS_AVX512F)
     cmake_pop_check_state()
     if(COMPILER_SUPPORTS_AVX512F)
       set(HAVE_AVX512F TRUE)
@@ -866,18 +866,17 @@ if(SDL_ASSEMBLY)
   endif()
 
   if(SDL_ARMNEON)
-    check_c_source_compiles("
-        #include <arm_neon.h>
-        void floats_add(float *dest, float *a, float *b, unsigned size) {
-          for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
-            vst1q_f32(dest, vaddq_f32(vld1q_f32(a), vld1q_f32(b)));
-          }
+    check_arm_source_compiles([==[
+      #include <arm_neon.h>
+      void floats_add(float *dest, float *a, float *b, unsigned size) {
+        for (; size >= 4; size -= 4, dest += 4, a += 4, b += 4) {
+          vst1q_f32(dest, vaddq_f32(vld1q_f32(a), vld1q_f32(b)));
         }
-        int main(int argc, char *argv[]) {
-          floats_add((float*)0, (float*)0, (float*)0, 0);
-          return 0;
-         }" COMPILER_SUPPORTS_ARMNEON)
-
+      }
+      int main(int argc, char *argv[]) {
+        floats_add((float*)0, (float*)0, (float*)0, 0);
+        return 0;
+      }]==] COMPILER_SUPPORTS_ARMNEON)
     if(COMPILER_SUPPORTS_ARMNEON)
       set(HAVE_ARMNEON TRUE)
     endif()
