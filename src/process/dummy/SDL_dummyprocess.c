@@ -45,4 +45,14 @@ void SDL_SYS_DestroyProcess(SDL_Process *process)
     return;
 }
 
+int SDL_GetCurrentProcessId(void)
+{
+    return -1;
+}
+
+char *SDL_SYS_GetCurrentProcessName(void)
+{
+    return NULL;
+}
+
 #endif // SDL_PROCESS_DUMMY
