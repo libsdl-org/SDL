@@ -1403,8 +1403,8 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
                 if (i != 0) {
                     char id[64];
                     SDL_snprintf(id, sizeof(id), "#canvas%d", i + 1);
-                    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, id);
-                    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT, id);
+                    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, id);
+                    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, id);
                 }
 #endif
             } else {

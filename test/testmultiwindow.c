@@ -115,7 +115,7 @@ static TestWindow *createTestWindowAtMousePosition(SDLTest_CommonState *state)
 
   props = SDL_CreateProperties();
   SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title);
-  SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, title);
+  SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, title);
   SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, rect.x);
   SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, rect.y);
   SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, rect.w);
