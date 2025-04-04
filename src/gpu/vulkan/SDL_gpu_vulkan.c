@@ -10433,7 +10433,9 @@ static bool VULKAN_Submit(
     Uint32 swapchainImageIndex;
     VulkanTextureSubresource *swapchainTextureSubresource;
     VulkanMemorySubAllocator *allocator;
-    bool presenting = (vulkanCommandBuffer->presentDataCount > 0);
+    bool performCleanups =
+        (renderer->claimedWindowCount > 0 && vulkanCommandBuffer->presentDataCount > 0) ||
+        renderer->claimedWindowCount == 0;
 
     SDL_LockMutex(renderer->submitLock);
 
@@ -10456,7 +10458,7 @@ static bool VULKAN_Submit(
             swapchainTextureSubresource);
     }
 
-    if (presenting &&
+    if (performCleanups &&
         renderer->allocationsToDefragCount > 0 &&
         !renderer->defragInProgress) {
         if (!VULKAN_INTERNAL_DefragmentMemory(renderer, vulkanCommandBuffer))
@@ -10540,8 +10542,7 @@ static bool VULKAN_Submit(
             (presentData->windowData->frameCounter + 1) % renderer->allowedFramesInFlight;
     }
 
-    // If presenting, check if we can perform any cleanups
-    if (presenting) {
+    if (performCleanups) {
         for (Sint32 i = renderer->submittedCommandBufferCount - 1; i >= 0; i -= 1) {
             vulkanResult = renderer->vkGetFenceStatus(
                 renderer->logicalDevice,
