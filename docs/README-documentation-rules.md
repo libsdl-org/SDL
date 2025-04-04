@@ -321,6 +321,11 @@ to the headers:
 - "Version"
 - "See Also"
 
+## Unrecognized sections are removed from the headers!
+
+If you add Doxygen with a `##` (`###`, etc) section header, it'll
+migrate to the wiki and be _removed_ from the headers. Generally
+the correct thing to do is _never use section headers in the Doxygen_.
 
 ## It's okay to repeat yourself.
 
