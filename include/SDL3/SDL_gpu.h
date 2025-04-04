@@ -2270,11 +2270,11 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  *
  * `SDL_PROP_GPU_DEVICE_NAME_STRING`: Contains the name of the underlying
  * device as reported by the system driver. This string has no standardized
- * format, is highly inconsistent between hardware devices and drivers, and
- * is able to change at any time. Do not attempt to parse this string as it
- * is bound to fail at some point in the future when system drivers are
- * updated, new hardware devices are introduced, or when SDL adds new GPU
- * backends or modifies existing ones.
+ * format, is highly inconsistent between hardware devices and drivers, and is
+ * able to change at any time. Do not attempt to parse this string as it is
+ * bound to fail at some point in the future when system drivers are updated,
+ * new hardware devices are introduced, or when SDL adds new GPU backends or
+ * modifies existing ones.
  *
  * Strings that have been found in the wild include:
  *
@@ -2333,9 +2333,8 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * information of the underlying system driver as reported by the driver. This
  * is an arbitrary string with no standardized format and it may contain
  * newlines. This property should be preferred over
- * SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING if it is available as it
- * usually contains the same information but in a format that is easier to
- * read.
+ * SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING if it is available as it usually
+ * contains the same information but in a format that is easier to read.
  *
  * Strings that have been found in the wild include:
  *
