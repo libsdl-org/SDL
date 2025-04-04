@@ -1227,6 +1227,7 @@ static inline const char *VkErrorMessages(VkResult code)
         ERR_TO_STR(VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT)
         ERR_TO_STR(VK_SUBOPTIMAL_KHR)
         ERR_TO_STR(VK_ERROR_NATIVE_WINDOW_IN_USE_KHR)
+        ERR_TO_STR(VK_ERROR_INVALID_SHADER_NV)
     default:
         return "Unhandled VkResult!";
     }
