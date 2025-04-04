@@ -48,41 +48,54 @@
  * Consider the following example:
  *
  * ```c
- * void ReadGameData(void)
+ * bool ReadGameData(void)
  * {
  *     extern char** fileNames;
  *     extern size_t numFiles;
  *     for (size_t i = 0; i < numFiles; i += 1) {
- *         FILE *data = fopen(fileNames[i], "rwb");
- *         if (data == NULL) {
+ *         FILE *file = fopen(fileNames[i], "rwb");
+ *         if (file == NULL) {
  *             // Something bad happened!
+ *             return false;
  *         } else {
  *             // A bunch of stuff happens here
- *             fclose(data);
+ *             fclose(file);
  *         }
  *     }
+ *     return true;
  * }
  *
- * void ReadSave(void)
+ * typedef struct SaveData_T
  * {
- *     FILE *save = fopen("saves/save0.sav", "rb");
- *     if (save == NULL) {
+ *     // Data for your saves here
+ * } SaveData_T;
+ *
+ * bool ReadSaveData(SaveData_T *saveData)
+ * {
+ *     FILE *saveFile = fopen("saves/save0.sav", "rb");
+ *     if (saveFile == NULL) {
  *         // Something bad happened!
+ *         return false;
  *     } else {
- *         // A bunch of stuff happens here
- *         fclose(save);
+ *         // A bunch of stuff reading saveFile, and putting data into
+ *         // saveData, happens here
+ *         fclose(saveFile);
  *     }
+ *     return true;
  * }
  *
- * void WriteSave(void)
+ * bool WriteSaveData(SaveData_T *saveData)
  * {
- *     FILE *save = fopen("saves/save0.sav", "wb");
- *     if (save == NULL) {
+ *     FILE *saveFile = fopen("saves/save0.sav", "wb");
+ *     if (saveFile == NULL) {
  *         // Something bad happened!
+ *         return false;
  *     } else {
- *         // A bunch of stuff happens here
- *         fclose(save);
+ *         // A bunch of stuff looking at saveData, and writing to saveFile,
+ *         // happens here
+ *         fclose(saveFile);
  *     }
+ *     return true;
  * }
  * ```
  *
@@ -116,92 +129,241 @@
  * trip over:
  *
  * ```c
- * void ReadGameData(void)
+ * bool ReadGameData(SDL_Storage *storage)
  * {
  *     extern char** fileNames;
  *     extern size_t numFiles;
- *
- *     SDL_Storage *title = SDL_OpenTitleStorage(NULL, 0);
- *     if (title == NULL) {
- *         // Something bad happened!
- *     }
- *     while (!SDL_StorageReady(title)) {
- *         SDL_Delay(1);
- *     }
  *
  *     for (size_t i = 0; i < numFiles; i += 1) {
  *         void* dst;
  *         Uint64 dstLen = 0;
  *
- *         if (SDL_GetStorageFileSize(title, fileNames[i], &dstLen) && dstLen > 0) {
+ *         if (SDL_GetStorageFileSize(storage, fileNames[i], &dstLen) && dstLen > 0) {
  *             dst = SDL_malloc(dstLen);
- *             if (SDL_ReadStorageFile(title, fileNames[i], dst, dstLen)) {
+ *             if (!dst) {
+ *                 // Something bad happened!
+ *                 return false;
+ *             }
+ *             if (SDL_ReadStorageFile(storage, fileNames[i], dst, dstLen)) {
  *                 // A bunch of stuff happens here
  *             } else {
  *                 // Something bad happened!
+ *                 return false;
  *             }
  *             SDL_free(dst);
  *         } else {
  *             // Something bad happened!
+ *             return false;
  *         }
  *     }
- *
- *     SDL_CloseStorage(title);
+ *     return true;
  * }
  *
- * void ReadSave(void)
+ * bool ReadSaveData(SDL_Storage *storage, SaveData_T *saveData)
  * {
- *     SDL_Storage *user = SDL_OpenUserStorage("libsdl", "Storage Example", 0);
- *     if (user == NULL) {
- *         // Something bad happened!
- *     }
- *     while (!SDL_StorageReady(user)) {
- *         SDL_Delay(1);
- *     }
- *
- *     Uint64 saveLen = 0;
- *     if (SDL_GetStorageFileSize(user, "save0.sav", &saveLen) && saveLen > 0) {
- *         void* dst = SDL_malloc(saveLen);
- *         if (SDL_ReadStorageFile(user, "save0.sav", dst, saveLen)) {
- *             // A bunch of stuff happens here
+ *     Uint64 dstLen = 0;
+ *     if (SDL_GetStorageFileSize(storage, "save0.sav", &dstLen) && dstLen > 0) {
+ *         void* dst = SDL_malloc(dstLen);
+ *         if (!dst) {
+ *             // Something bad happened!
+ *             return false;
+ *         }
+ *         if (SDL_ReadStorageFile(storage, "save0.sav", dst, dstLen)) {
+ *             // A bunch of stuff happens here, putting data into saveData
  *         } else {
  *             // Something bad happened!
+ *             SDL_free(dst);
+ *             return false;
  *         }
  *         SDL_free(dst);
  *     } else {
  *         // Something bad happened!
+ *         return false;
  *     }
- *
- *     SDL_CloseStorage(user);
  * }
  *
- * void WriteSave(void)
+ * bool WriteSaveData(SDL_Storage *storage, SaveData_T *saveData)
  * {
- *     SDL_Storage *user = SDL_OpenUserStorage("libsdl", "Storage Example", 0);
- *     if (user == NULL) {
+ *     void *dst;
+ *     Uint64 dstLen;
+ *
+ *     // A bunch of stuff happens here looking at saveData, setting up dst and
+ *     // dstLen.
+ *
+ *     if (!SDL_WriteStorageFile(storage, "save0.sav", dst, dstLen)) {
  *         // Something bad happened!
+ *         return false;
+ *     } else {
+ *         return true;
  *     }
- *     while (!SDL_StorageReady(user)) {
- *         SDL_Delay(1);
+ * }
+ *
+ * // You probably want to only read or only write save data at a time, not
+ * // both, so you could use an enum to control that.
+ * typedef enum SaveDataOp_T
+ * {
+ *     SAVE_DATA_OP_NONE,
+ *     SAVE_DATA_OP_READ,
+ *     SAVE_DATA_OP_WRITE
+ * } SaveDataOp_T;
+ *
+ * // main() function style
+ * int main(int argc, char **argv)
+ * {
+ *     const char * const userOrg = "libsdl";
+ *     const char * const userApp = "Storage Example";
+ *     bool readGameDataNow = false;
+ *     SaveDataOp_T saveDataOp;
+ *     SaveData_T saveData;
+ *     bool quit = false;
+ *     while (!quit) {
+ *         // This part is key: You must keep polling events when waiting on
+ *         // storage to be ready (SDL_StorageReady() returns true). Events
+ *         // polling can be required on some platforms for storage to become
+ *         // ready at all!
+ *         SDL_Event event;
+ *         while (SDL_PollEvent(&event)) {
+ *             switch (event.type) {
+ *             case SDL_EVENT_QUIT:
+ *                 quit = true;
+ *                 break;
+ *             // Other events processed here...
+ *             }
+ *         }
+ *
+ *         // Game/graphics/sound/etc. logic here, only using data known to
+ *         // already be valid right now. Logic would set readGameDataNow and/or
+ *         // saveDataOp when needed, then could wait for them every logic tick
+ *         // until they indicate the requested storage operation is done;
+ *         // readGameDataNow switching from true last tick to false this tick
+ *         // indicates game data is done reading, saveDataOp switching from
+ *         // SAVE_DATA_OP_READ/SAVE_DATA_OP_WRITE last tick to SAVE_DATA_OP_NONE
+ *         // this tick indicates the save operation is done.
+ *
+ *         // Remember, these operations won't complete if the storage they use
+ *         // isn't yet ready, so your game logic should be able to wait multiple
+ *         // ticks in case the storage operation(s) didn't complete the same tick
+ *         // the operation(s) were requested!
+ *         if (saveDataOp == SAVE_DATA_OP_READ) {
+ *             SDL_Storage *user = SDL_OpenUserStorage(userOrg, userApp, 0);
+ *             if (!user) {
+ *                 // Something bad happened!
+ *                 return 1;
+ *             } else if (SDL_StorageReady(user)) {
+ *                 if (!ReadSaveData(user, &saveData)) {
+ *                     // Something bad happened!
+ *                     return 1;
+ *                 }
+ *                 saveDataOp = SAVE_DATA_OP_NONE;
+ *             }
+ *             SDL_CloseStorage(user);
+ *         } else if (saveDataOp == SAVE_DATA_OP_WRITE) {
+ *             SDL_Storage *user = SDL_OpenUserStorage(userOrg, userApp, 0);
+ *             if (!user) {
+ *                 // Something bad happened!
+ *                 return 1;
+ *             } else if (SDL_StorageReady(user)) {
+ *                 if (!WriteSaveData(user, &saveData)) {
+ *                     // Something bad happened!
+ *                     return 1;
+ *                 }
+ *                 saveDataOp = SAVE_DATA_OP_NONE;
+ *             }
+ *             SDL_CloseStorage(user);
+ *         }
+ *         if (readGameDataNow) {
+ *             SDL_Storage *title = SDL_OpenTitleStorage(NULL, 0);
+ *             if (!title) {
+ *                 // Something bad happened!
+ *                 return 1;
+ *             } else if (SDL_StorageReady(title)) {
+ *                 if (!ReadGameData(title)) {
+ *                     // Something bad happened!
+ *                     return 1;
+ *                 }
+ *                 readGameDataNow = false;
+ *             }
+ *             SDL_CloseStorage(title);
+ *         }
+ *     }
+ *     return 0;
+ * }
+ *
+ * // App callbacks style
+ * // SDL takes care of polling events for you with app callbacks, so you're
+ * // good there already.
+ * const char * const userOrg = "libsdl";
+ * const char * const userApp = "Storage Example";
+ * bool readGameDataNow = false;
+ * SaveDataOp_T saveDataOp = SAVE_DATA_OP_NONE;
+ * SaveData_T saveData;
+ * SDL_AppResult SDL_AppIterate(void *appstate)
+ * {
+ *     // Game/graphics/sound/etc. logic here, only using data known to already be
+ *     // valid right now. Logic would set readGameDataNow and/or saveDataOp when
+ *     // needed, then could wait for them every logic tick until they indicate
+ *     // the requested storage operation is done; readGameDataNow switching from
+ *     // true last tick to false this tick indicates game data is done reading,
+ *     // saveDataOp switching from SAVE_DATA_OP_READ/SAVE_DATA_OP_WRITE last tick
+ *     // to SAVE_DATA_OP_NONE this tick indicates the save operation is done.
+ *
+ *     // Remember, these operations won't complete if the storage they use isn't
+ *     // yet ready, so your game logic should be able to wait multiple ticks in
+ *     // case the storage operation(s) didn't complete the same tick the
+ *     // operation(s) were requested!
+ *     if (saveDataOp == SAVE_DATA_OP_READ) {
+ *         SDL_Storage *user = SDL_OpenUserStorage(userOrg, userApp, 0);
+ *         if (!user) {
+ *             // Something bad happened!
+ *             return SDL_APP_FAILURE;
+ *         } else if (SDL_StorageReady(user)) {
+ *             if (!ReadSaveData(user, &saveData)) {
+ *                 // Something bad happened!
+ *                 return SDL_APP_FAILURE;
+ *             }
+ *             saveDataOp = SAVE_DATA_OP_NONE;
+ *         }
+ *         SDL_CloseStorage(user);
+ *     } else if (saveDataOp == SAVE_DATA_OP_WRITE) {
+ *         SDL_Storage *user = SDL_OpenUserStorage(userOrg, userApp, 0);
+ *         if (!user) {
+ *             // Something bad happened!
+ *             return SDL_APP_FAILURE;
+ *         } else if (SDL_StorageReady(user)) {
+ *             if (!WriteSaveData(user, &saveData)) {
+ *                 // Something bad happened!
+ *                 return SDL_APP_FAILURE;
+ *             }
+ *             saveDataOp = SAVE_DATA_OP_NONE;
+ *         }
+ *         SDL_CloseStorage(user);
+ *     }
+ *     if (readGameDataNow) {
+ *         SDL_Storage *title = SDL_OpenTitleStorage(NULL, 0);
+ *         if (!title) {
+ *             // Something bad happened!
+ *             return SDL_APP_FAILURE;
+ *         } else if (SDL_StorageReady(title)) {
+ *             if (!ReadGameData(title)) {
+ *                 // Something bad happened!
+ *                 return SDL_APP_FAILURE;
+ *             }
+ *             readGameDataNow = false;
+ *         }
+ *         SDL_CloseStorage(title);
  *     }
  *
- *     extern void *saveData; // A bunch of stuff happened here...
- *     extern Uint64 saveLen;
- *     if (!SDL_WriteStorageFile(user, "save0.sav", saveData, saveLen)) {
- *         // Something bad happened!
- *     }
- *
- *     SDL_CloseStorage(user);
+ *     return SDL_APP_CONTINUE;
  * }
  * ```
  *
  * Note the improvements that SDL_Storage makes:
  *
  * 1. **What to Access:** This code explicitly reads from a title or user
- * storage device based on the context of the function.
+ * storage device based on the context of the operation.
  *
  * 2. **How to Access:** This code explicitly uses either a read or write
- * function based on the context of the function.
+ * function based on the context of the operation.
  *
  * 3. **When to Access:** This code explicitly opens the device when it needs
  * to, and closes it when it is finished working with the filesystem.
@@ -450,7 +612,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CloseStorage(SDL_Storage *storage);
  *
  * This function should be called in regular intervals until it returns true -
  * however, it is not recommended to spinwait on this call, as the backend may
- * depend on a synchronous message loop. You might instead poll this in your
+ * depend on a synchronous message loop. You should instead poll this in your
  * game's main loop while processing events and drawing a loading screen.
  *
  * \param storage a storage container to query.
