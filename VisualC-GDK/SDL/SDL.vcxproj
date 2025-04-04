@@ -478,6 +478,7 @@
     <ClInclude Include="..\..\src\libm\math_private.h" />
     <ClInclude Include="..\..\src\locale\SDL_syslocale.h" />
     <ClInclude Include="..\..\src\main\SDL_main_callbacks.h" />
+    <ClInclude Include="..\..\src\main\SDL_runapp.h" />
     <ClInclude Include="..\..\src\misc\SDL_sysurl.h" />
     <ClInclude Include="..\..\src\power\SDL_syspower.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
@@ -543,8 +544,11 @@
     <ClCompile Include="..\..\src\io\generic\SDL_asyncio_generic.c" />
     <ClCompile Include="..\..\src\io\SDL_asyncio.c" />
     <ClCompile Include="..\..\src\io\windows\SDL_asyncio_windows_ioring.c" />
-    <ClCompile Include="..\..\src\main\gdk\SDL_sysmain_runapp.cpp" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
+    <ClCompile Include="..\..\src\main\gdk\SDL_sysmain_runapp.cpp" />
+    <ClCompile Include="..\..\src\main\windows\SDL_sysmain_runapp.c">
+      <ObjectFileName>$(IntDir)\src_main_windows_SDL_sysmain_runapp.obj</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_runapp.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
