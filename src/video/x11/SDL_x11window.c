@@ -534,7 +534,7 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     }
 
     const bool force_override_redirect = SDL_GetHintBoolean(SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT, false);
-    const bool use_resize_sync = !(window->flags & SDL_WINDOW_VULKAN); /* doesn't work well with Vulkan */
+    const bool use_resize_sync = !!(window->flags & SDL_WINDOW_OPENGL); // Doesn't work well with Vulkan
     SDL_WindowData *windowdata;
     Display *display = data->display;
     int screen = displaydata->screen;
