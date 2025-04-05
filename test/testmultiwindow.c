@@ -66,7 +66,7 @@ static void RenderTestWindow(TestWindow *testWindow)
 typedef struct {
   SDLTest_CommonState *state;
   TestWindow *testWindows[MAX_WINDOWS];
-  Uint32 lastCreate;
+  Uint64 lastCreate;
 } TestState;
 
 static void DestroyTestState(TestState *testState)
@@ -116,10 +116,10 @@ static TestWindow *createTestWindowAtMousePosition(SDLTest_CommonState *state)
   props = SDL_CreateProperties();
   SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title);
   SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, title);
-  SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, rect.x);
-  SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, rect.y);
-  SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, rect.w);
-  SDL_SetFloatProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, rect.h);
+  SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, rect.x);
+  SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, rect.y);
+  SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, rect.w);
+  SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, rect.h);
   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, state->window_flags);
 
   testWindow = SDL_calloc(1, sizeof(TestWindow));
@@ -220,7 +220,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
   TestState *testState = appstate;
-  const Uint32 now = SDL_GetTicks();
+  const Uint64 now = SDL_GetTicks();
   int i;
 
   for (i = 0; i < MAX_WINDOWS; ++i) {
