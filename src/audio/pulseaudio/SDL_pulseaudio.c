@@ -269,9 +269,19 @@ static const char *getAppName(void)
     return SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
 }
 
+static void ThreadedMainloopSignal(void)
+{
+    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // alert waiting threads to unblock.
+
+    // we need to kill any SDL_SetError state; we didn't create this thread
+    //  so its SDL TLS slot will leak otherwise, so we do this every time
+    //  we're (presumably) losing control of the thread.
+    SDL_CleanupTLS();
+}
+
 static void OperationStateChangeCallback(pa_operation *o, void *userdata)
 {
-    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // just signal any waiting code, it can look up the details.
+    ThreadedMainloopSignal();  // just signal any waiting code, it can look up the details.
 }
 
 /* This function assume you are holding `mainloop`'s lock. The operation is unref'd in here, assuming
@@ -313,7 +323,7 @@ static void DisconnectFromPulseServer(void)
 
 static void PulseContextStateChangeCallback(pa_context *context, void *userdata)
 {
-    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // just signal any waiting code, it can look up the details.
+    ThreadedMainloopSignal();  // just signal any waiting code, it can look up the details.
 }
 
 static bool ConnectToPulseServer(void)
@@ -400,7 +410,7 @@ static void WriteCallback(pa_stream *p, size_t nbytes, void *userdata)
     struct SDL_PrivateAudioData *h = (struct SDL_PrivateAudioData *)userdata;
     //SDL_Log("PULSEAUDIO WRITE CALLBACK! nbytes=%u", (unsigned int) nbytes);
     h->bytes_requested += nbytes;
-    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
+    ThreadedMainloopSignal();
 }
 
 // This function waits until it is possible to write a full sound buffer
@@ -471,7 +481,7 @@ static Uint8 *PULSEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 static void ReadCallback(pa_stream *p, size_t nbytes, void *userdata)
 {
     //SDL_Log("PULSEAUDIO READ CALLBACK! nbytes=%u", (unsigned int) nbytes);
-    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // the recording code queries what it needs, we just need to signal to end any wait
+    ThreadedMainloopSignal();  // the recording code queries what it needs, we just need to signal to end any wait
 }
 
 static bool PULSEAUDIO_WaitRecordingDevice(SDL_AudioDevice *device)
@@ -592,7 +602,7 @@ static void PULSEAUDIO_CloseDevice(SDL_AudioDevice *device)
 
 static void PulseStreamStateChangeCallback(pa_stream *stream, void *userdata)
 {
-    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);  // just signal any waiting code, it can look up the details.
+    ThreadedMainloopSignal();  // just signal any waiting code, it can look up the details.
 }
 
 static bool PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
@@ -793,7 +803,7 @@ static void SinkInfoCallback(pa_context *c, const pa_sink_info *i, int is_last, 
     if (i) {
         AddPulseAudioDevice(false, i->description, i->name, i->index, &i->sample_spec);
     }
-    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
+    ThreadedMainloopSignal();
 }
 
 // This is called when PulseAudio adds a recording ("source") device.
@@ -803,7 +813,7 @@ static void SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_la
     if (i && (include_monitors || (i->monitor_of_sink == PA_INVALID_INDEX))) {
         AddPulseAudioDevice(true, i->description, i->name, i->index, &i->sample_spec);
     }
-    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
+    ThreadedMainloopSignal();
 }
 
 static void ServerInfoCallback(pa_context *c, const pa_server_info *i, void *data)
@@ -828,7 +838,7 @@ static void ServerInfoCallback(pa_context *c, const pa_server_info *i, void *dat
         }
     }
 
-    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
+    ThreadedMainloopSignal();
 }
 
 static bool FindAudioDeviceByIndex(SDL_AudioDevice *device, void *userdata)
@@ -872,7 +882,7 @@ static void HotplugCallback(pa_context *c, pa_subscription_event_type_t t, uint3
             SDL_AudioDeviceDisconnected(SDL_FindPhysicalAudioDeviceByCallback(FindAudioDeviceByIndex, (void *)(uintptr_t)idx));
         }
     }
-    PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
+    ThreadedMainloopSignal();
 }
 
 static bool CheckDefaultDevice(const bool changed, char *device_path)
