@@ -508,6 +508,7 @@ static void X11_DispatchMapNotify(SDL_WindowData *data)
     SDL_Window *window = data->window;
 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+    data->was_shown = true;
 
     // This may be sent when restoring a minimized window.
     if (window->flags & SDL_WINDOW_MINIMIZED) {
@@ -528,6 +529,8 @@ static void X11_DispatchUnmapNotify(SDL_WindowData *data)
     if (!window->is_hiding) {
         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);
+    } else {
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HIDDEN, 0, 0);
     }
 }
 
