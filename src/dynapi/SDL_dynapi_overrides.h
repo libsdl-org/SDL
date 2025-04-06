@@ -1276,3 +1276,4 @@
 #define SDL_GetGPUDeviceProperties SDL_GetGPUDeviceProperties_REAL
 #define SDL_CreateGPURenderer SDL_CreateGPURenderer_REAL
 #define SDL_PutAudioStreamPlanarData SDL_PutAudioStreamPlanarData_REAL
+#define SDL_SetAudioIterationCallbacks SDL_SetAudioIterationCallbacks_REAL
