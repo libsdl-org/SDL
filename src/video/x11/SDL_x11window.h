@@ -115,6 +115,7 @@ struct SDL_WindowData
     bool previous_borders_nonzero;
     bool toggle_borders;
     bool fullscreen_borders_forced_on;
+    bool was_shown;
     SDL_HitTestResult hit_test_result;
 
     XPoint xim_spot;
