@@ -1284,3 +1284,4 @@ SDL_DYNAPI_PROC(bool,SDL_GetRenderTextureAddressMode,(SDL_Renderer *a,SDL_Textur
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetGPUDeviceProperties,(SDL_GPUDevice *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateGPURenderer,(SDL_Window *a,SDL_GPUShaderFormat b,SDL_GPUDevice **c),(a,b,c),return)
 SDL_DYNAPI_PROC(bool,SDL_PutAudioStreamPlanarData,(SDL_AudioStream *a,const void * const*b,int c),(a,b,c),return)
+SDL_DYNAPI_PROC(bool,SDL_SetAudioIterationCallbacks,(SDL_AudioDeviceID a,SDL_AudioIterationCallback b,SDL_AudioIterationCallback c,void *d),(a,b,c,d),return)
