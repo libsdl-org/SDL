@@ -852,38 +852,35 @@ static void Emscripten_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *window_data = window->internal;
-    window->x = MAIN_THREAD_EM_ASM_INT({
+    uint32_t array[4];
+    const bool success = MAIN_THREAD_EM_ASM_INT({
         var id = UTF8ToString($0);
+        var array = new Uint32Array(Module.HEAPU32.buffer, $1, 4);
         try
         {
             let canvas = document.querySelector(id);
             if (canvas) {
                 var rect = canvas.getBoundingClientRect();
-                return rect.x;
+                array[0] = rect.x;
+                array[1] = rect.y;
+                array[2] = rect.width;
+                array[3] = rect.height;
+                return true;
             }
         }
         catch(e)
         {
             // querySelector throws if id is not a valid selector
         }
-        return 0;
-    }, window_data->canvas_id);
-    window->y = MAIN_THREAD_EM_ASM_INT({
-        var id = UTF8ToString($0);
-        try
-        {
-            let canvas = document.querySelector(id);
-            if (canvas) {
-                var rect = canvas.getBoundingClientRect();
-                return rect.y;
-            }
-        }
-        catch(e)
-        {
-            // querySelector throws if id is not a valid selector
-        }
-        return 0;
-    }, window_data->canvas_id);
-    return true;
+        return false;
+    }, window_data->canvas_id, array);
+    if (success) {
+        window->x = array[0];
+        window->y = array[1];
+        window->w = array[2];
+        window->h = array[3];
+        return true;
+    }
+    return false;
 }
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN
