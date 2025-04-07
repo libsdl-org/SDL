@@ -244,9 +244,24 @@ SDL_GPUShader *GPU_GetFragmentShader(GPU_Shaders *shaders, GPU_FragmentShaderID 
 
 void GPU_FillSupportedShaderFormats(SDL_PropertiesID props)
 {
-    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, HAVE_SPIRV_SHADERS);
-    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, HAVE_DXIL60_SHADERS);
-    SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN, HAVE_METAL_SHADERS);
+    bool custom_shaders = false;
+    if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, false)) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, HAVE_SPIRV_SHADERS);
+        custom_shaders = true;
+    }
+    if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, false)) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, HAVE_DXIL60_SHADERS);
+        custom_shaders = true;
+    }
+    if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN, false)) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN, HAVE_METAL_SHADERS);
+        custom_shaders = true;
+    }
+    if (!custom_shaders) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, HAVE_SPIRV_SHADERS);
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, HAVE_DXIL60_SHADERS);
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN, HAVE_METAL_SHADERS);
+    }
 }
 
 #endif // SDL_VIDEO_RENDER_GPU

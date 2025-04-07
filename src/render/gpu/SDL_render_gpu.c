@@ -1128,21 +1128,26 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
     }
 
     for (Uint32 i = 0; i < SDL_arraysize(data->samplers); ++i) {
-        SDL_ReleaseGPUSampler(data->device, data->samplers[i]);
+        if (data->samplers[i]) {
+            SDL_ReleaseGPUSampler(data->device, data->samplers[i]);
+        }
     }
 
     if (data->backbuffer.texture) {
         SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
     }
 
-    if (renderer->window) {
+    if (renderer->window && data->device) {
         SDL_ReleaseWindowFromGPUDevice(data->device, renderer->window);
     }
 
     ReleaseVertexBuffer(data);
     GPU_DestroyPipelineCache(&data->pipeline_cache);
-    GPU_ReleaseShaders(&data->shaders, data->device);
-    SDL_DestroyGPUDevice(data->device);
+
+    if (data->device) {
+        GPU_ReleaseShaders(&data->shaders, data->device);
+        SDL_DestroyGPUDevice(data->device);
+    }
 
     SDL_free(data);
 }

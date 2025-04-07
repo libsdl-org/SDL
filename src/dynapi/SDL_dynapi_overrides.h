@@ -1274,3 +1274,4 @@
 #define SDL_SetRenderTextureAddressMode SDL_SetRenderTextureAddressMode_REAL
 #define SDL_GetRenderTextureAddressMode SDL_GetRenderTextureAddressMode_REAL
 #define SDL_GetGPUDeviceProperties SDL_GetGPUDeviceProperties_REAL
+#define SDL_CreateGPURenderer SDL_CreateGPURenderer_REAL
