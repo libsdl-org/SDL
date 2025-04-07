@@ -1187,6 +1187,37 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name)
     return renderer;
 }
 
+SDL_Renderer *SDL_CreateGPURenderer(SDL_Window *window, SDL_GPUShaderFormat format_flags, SDL_GPUDevice **device)
+{
+    if (!device) {
+        SDL_InvalidParamError("device");
+        return NULL;
+    }
+
+    *device = NULL;
+    SDL_Renderer *renderer;
+
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
+    if (format_flags & SDL_GPU_SHADERFORMAT_SPIRV) {
+        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, true);
+    }
+    if (format_flags & SDL_GPU_SHADERFORMAT_DXIL) {
+        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, true);
+    }
+    if (format_flags & SDL_GPU_SHADERFORMAT_MSL) {
+        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN, true);
+    }
+    SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, "gpu");
+
+    renderer = SDL_CreateRendererWithProperties(props);
+    if (renderer) {
+        *device = (SDL_GPUDevice *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, NULL);
+    }
+    SDL_DestroyProperties(props);
+    return renderer;
+}
+
 SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 {
 #ifdef SDL_VIDEO_RENDER_SW

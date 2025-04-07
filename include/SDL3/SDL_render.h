@@ -283,6 +283,12 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  *   present synchronized with the refresh rate. This property can take any
  *   value that is supported by SDL_SetRenderVSync() for the renderer.
  *
+ * With the SDL GPU renderer:
+ *
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN`: the app is able to provide SPIR-V shaders to SDL_GPURenderState, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN`: the app is able to provide DXIL shaders to SDL_GPURenderState, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN`: the app is able to provide MSL shaders to SDL_GPURenderState, optional.
+ *
  * With the vulkan renderer:
  *
  * - `SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER`: the VkInstance to use
@@ -319,12 +325,40 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_
 #define SDL_PROP_RENDERER_CREATE_SURFACE_POINTER                            "SDL.renderer.create.surface"
 #define SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER                   "SDL.renderer.create.output_colorspace"
 #define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER                       "SDL.renderer.create.present_vsync"
+#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN                  "SDL.renderer.create.gpu.shaders_spirv"
+#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN                   "SDL.renderer.create.gpu.shaders_dxil"
+#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN                    "SDL.renderer.create.gpu.shaders_msl"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER                    "SDL.renderer.create.vulkan.instance"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_SURFACE_NUMBER                      "SDL.renderer.create.vulkan.surface"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_PHYSICAL_DEVICE_POINTER             "SDL.renderer.create.vulkan.physical_device"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_DEVICE_POINTER                      "SDL.renderer.create.vulkan.device"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_GRAPHICS_QUEUE_FAMILY_INDEX_NUMBER  "SDL.renderer.create.vulkan.graphics_queue_family_index"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER   "SDL.renderer.create.vulkan.present_queue_family_index"
+
+/**
+ * Create a 2D GPU rendering context for a window, with support for the specified shader format.
+ *
+ * This is a convenience function to create a SDL GPU backed renderer, intended to be used with SDL_GPURenderState.
+ * The resulting renderer will support shaders in one of the specified shader formats.
+ *
+ * If no available GPU driver supports any of the specified shader formats, this function will fail.
+ *
+ * \param window the window where rendering is displayed.
+ * \param format_flags a bitflag indicating which shader formats the app is able to provide.
+ * \param device a pointer filled with the associated GPU device, or NULL on error.
+ * \returns a valid rendering context or NULL if there was an error; call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CreateRendererWithProperties
+ * \sa SDL_GetGPUShaderFormats
+ * \sa SDL_CreateGPUShader
+ * \sa SDL_CreateGPURenderState
+ * \sa SDL_SetRenderGPUState
+ */
+extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateGPURenderer(SDL_Window *window, SDL_GPUShaderFormat format_flags, SDL_GPUDevice **device);
 
 /**
  * Create a 2D software rendering context for a surface.
