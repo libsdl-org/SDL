@@ -64,6 +64,9 @@
 #define SDL_INCLUDE_STDBOOL_H
 #endif
 #endif
+#if defined(__APPLE__) && defined(__ppc__) && !defined(SDL_INCLUDE_STDBOOL_H)
+#define SDL_INCLUDE_STDBOOL_H
+#endif
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
     (defined(_MSC_VER) && (_MSC_VER >= 1910 /* Visual Studio 2017 */)) || \
     defined(SDL_INCLUDE_STDBOOL_H)
@@ -1145,7 +1148,11 @@ SDL_COMPILE_TIME_ASSERT(longlong_size64, sizeof(long long) == 8); /* using I64 f
 
 /** \cond */
 #ifndef DOXYGEN_SHOULD_IGNORE_THIS
+#if defined(__APPLE__) && defined(__ppc__) /* MacOSX PPC32 ABI is different. */
+SDL_COMPILE_TIME_ASSERT(bool_size, sizeof(bool) == 4);
+#else
 SDL_COMPILE_TIME_ASSERT(bool_size, sizeof(bool) == 1);
+#endif
 SDL_COMPILE_TIME_ASSERT(uint8_size, sizeof(Uint8) == 1);
 SDL_COMPILE_TIME_ASSERT(sint8_size, sizeof(Sint8) == 1);
 SDL_COMPILE_TIME_ASSERT(uint16_size, sizeof(Uint16) == 2);
