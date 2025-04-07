@@ -945,9 +945,9 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
             ASSEMBLE_RGB(dst, dstbpp, dst_fmt, dstR, dstG, dstB);
         } else {
             // SDL_PIXELFORMAT_ARGB2101010
-            Uint32 pixel;
-            ARGB2101010_FROM_RGBA(pixel, dstR, dstG, dstB, dstA);
-            *(Uint32 *)dst = pixel;
+            Uint32 pixelvalue;
+            ARGB2101010_FROM_RGBA(pixelvalue, dstR, dstG, dstB, dstA);
+            *(Uint32 *)dst = pixelvalue;
         }
     }
     TRIANGLE_END_LOOP

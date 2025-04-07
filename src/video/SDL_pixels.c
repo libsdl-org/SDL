@@ -1133,7 +1133,7 @@ Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
     unsigned int distance;
     int rd, gd, bd, ad;
     int i;
-    Uint8 pixel = 0;
+    Uint8 pixelvalue = 0;
 
     smallest = ~0U;
     for (i = 0; i < pal->ncolors; ++i) {
@@ -1143,14 +1143,14 @@ Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
         ad = pal->colors[i].a - a;
         distance = (rd * rd) + (gd * gd) + (bd * bd) + (ad * ad);
         if (distance < smallest) {
-            pixel = (Uint8)i;
+            pixelvalue = (Uint8)i;
             if (distance == 0) { // Perfect match!
                 break;
             }
             smallest = distance;
         }
     }
-    return pixel;
+    return pixelvalue;
 }
 
 Uint8 SDL_LookupRGBAColor(SDL_HashTable *palette_map, Uint32 pixelvalue, const SDL_Palette *pal)
