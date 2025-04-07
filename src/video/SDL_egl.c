@@ -51,7 +51,12 @@
 #define EGL_COLOR_COMPONENT_TYPE_EXT       0x3339
 #define EGL_COLOR_COMPONENT_TYPE_FIXED_EXT 0x333A
 #define EGL_COLOR_COMPONENT_TYPE_FLOAT_EXT 0x333B
-#endif
+#endif // EGL_EXT_pixel_format_float
+
+#ifndef EGL_EXT_platform_device
+#define EGL_EXT_platform_device 1
+#define EGL_PLATFORM_DEVICE_EXT 0x313F
+#endif // EGL_EXT_platform_device
 
 #ifndef EGL_EXT_present_opaque
 #define EGL_EXT_present_opaque 1
@@ -109,13 +114,6 @@
 
 #if defined(SDL_VIDEO_OPENGL) && !defined(SDL_VIDEO_VITA_PVR_OGL)
 #include <SDL3/SDL_opengl.h>
-#endif
-
-/** If we happen to not have this defined because of an older EGL version, just define it 0x0
-    as eglGetPlatformDisplayEXT will most likely be NULL if this is missing
-*/
-#ifndef EGL_PLATFORM_DEVICE_EXT
-#define EGL_PLATFORM_DEVICE_EXT 0x0
 #endif
 
 #ifdef SDL_VIDEO_OPENGL
