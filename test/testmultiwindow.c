@@ -15,11 +15,47 @@
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_test_common.h>
 
+#define VELOCITY 10
+#define MAX_BOUNCE 5
+
 typedef struct {
   SDL_Window *window;
   SDL_Renderer *renderer;
+  SDL_Point velocity;
   SDL_Color color;
+  Uint32 bounces;
 } TestWindow;
+
+static bool UpdateTestWindow(TestWindow *testWindow, SDL_Rect bounds) {
+  SDL_Window *window = testWindow->window;
+
+  int x, y;
+  SDL_GetWindowPosition(window, &x, &y);
+  int w, h;
+  SDL_GetWindowSize(window, &w, &h);
+
+  x += testWindow->velocity.x;
+  y += testWindow->velocity.y;
+
+  if (x < bounds.x) {
+    testWindow->velocity.x = VELOCITY;
+    ++testWindow->bounces;
+  } else if (x + w > bounds.x + bounds.w) {
+    testWindow->velocity.x = -VELOCITY;
+    ++testWindow->bounces;
+  }
+
+  if (y < bounds.y) {
+    testWindow->velocity.y = VELOCITY;
+    ++testWindow->bounces;
+  } else if (y + h > bounds.y + bounds.h) {
+    testWindow->velocity.y = -VELOCITY;
+    ++testWindow->bounces;
+  }
+
+  SDL_SetWindowPosition(window, x, y);
+  return testWindow->bounces < MAX_BOUNCE;
+}
 
 static void DestroyTestWindow(TestWindow *testWindow)
 {
@@ -27,36 +63,14 @@ static void DestroyTestWindow(TestWindow *testWindow)
   SDL_DestroyWindow(testWindow->window);
 }
 
-static bool ColorIsBright(SDL_Color color)
-{
-  return (color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722) > 128.0;
-}
-
 static void RenderTestWindow(TestWindow *testWindow)
 {
-  SDL_Window *window = testWindow->window;
   SDL_Renderer *renderer = testWindow->renderer;
   SDL_Color color = testWindow->color;
 
   if (renderer) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderClear(renderer);
-
-    if (ColorIsBright(color)) {
-      color.r = 0;
-      color.g = 0;
-      color.b = 0;
-    }
-    else {
-      color.r = 255;
-      color.g = 255;
-      color.b = 255;
-    }
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-
-    int x, y;
-    SDL_GetWindowPosition(window, &x, &y);
-    SDL_RenderDebugTextFormat(renderer, 0, 0, "Global Window Position: %d %d", x, y);
     SDL_RenderPresent(renderer);
   }
 }
@@ -67,6 +81,7 @@ typedef struct {
   SDLTest_CommonState *state;
   TestWindow *testWindows[MAX_WINDOWS];
   Uint64 lastCreate;
+  Uint64 lastUpdate;
 } TestState;
 
 static void DestroyTestState(TestState *testState)
@@ -100,8 +115,10 @@ static TestWindow *createTestWindowAtMousePosition(SDLTest_CommonState *state)
   rect.x = (int)SDL_ceilf(x);
   rect.y = (int)SDL_ceilf(y);
 
-  rect.w = state->window_w;
-  rect.h = state->window_h;
+  rect.w = SDL_rand(state->window_w);
+  rect.w = SDL_clamp(rect.w, 320, rect.w);
+  rect.h = SDL_rand(state->window_h);
+  rect.h = SDL_clamp(rect.w, 240, rect.h);
   if (state->auto_scale_content) {
     float scale = SDL_GetDisplayContentScale(state->displayID);
     rect.w = (int)SDL_ceilf(rect.w * scale);
@@ -170,12 +187,19 @@ static TestWindow *createTestWindowAtMousePosition(SDLTest_CommonState *state)
   testWindow->color.b = SDL_rand(256);
   testWindow->color.a = 255;
 
+  testWindow->velocity.x = VELOCITY * (SDL_rand(2) == 0 ? -1 : 1);
+  testWindow->velocity.y = VELOCITY * (SDL_rand(2) == 0 ? -1 : 1);
+
   SDL_ShowWindow(testWindow->window);
   return testWindow;
 }
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+  SDL_SetHint(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS, "1");
+#endif
+
   TestState *testState = SDL_calloc(1, sizeof(TestState));
   if (!testState) {
     return SDL_APP_FAILURE;
@@ -186,7 +210,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     return SDL_APP_FAILURE;
   }
 
-  testState->state->num_windows = 0;
+  testState->state->num_windows = 1;
 
   if (!SDLTest_CommonInit(testState->state)) {
     return SDL_APP_FAILURE;
@@ -208,8 +232,13 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
   switch (event->type) {
     case SDL_EVENT_QUIT:
-    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
       return SDL_APP_SUCCESS;
+    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:{
+      SDL_Window *window = SDL_GetWindowFromEvent(event);
+      if (window == testState->state->windows[0]) {
+        return SDL_APP_SUCCESS;
+      }
+    }break;
     default:
         break;
   }
@@ -220,8 +249,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
   TestState *testState = appstate;
+  SDL_Renderer *renderer = testState->state->renderers[0];
   const Uint64 now = SDL_GetTicks();
-  int i;
+  int i, textY;
 
   for (i = 0; i < MAX_WINDOWS; ++i) {
     if (testState->testWindows[i]) {
@@ -229,20 +259,41 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     }
   }
 
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  SDL_RenderClear(renderer);
+
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+  textY = 0;
+  for (i = 0; i < MAX_WINDOWS; ++i) {
+    if (!testState->testWindows[i]) {
+      continue;
+    }
+    int x, y;
+    SDL_GetWindowPosition(testState->testWindows[i]->window, &x, &y);
+    int w, h;
+    SDL_GetWindowSize(testState->testWindows[i]->window, &w, &h);
+    SDL_RenderDebugTextFormat(renderer, 0, textY, "#%d Window's Position: %d %d; Size: %d %d", i+1, x, y, w, h);
+    textY += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
+  }
+  SDL_RenderPresent(renderer);
+
+  if (now - testState->lastUpdate > 16) {
+    SDL_Rect bounds;
+    SDL_GetDisplayUsableBounds(testState->state->displayID, &bounds);
+    for (i = 0; i < MAX_WINDOWS; ++i) {
+      if (testState->testWindows[i] && !UpdateTestWindow(testState->testWindows[i], bounds)) {
+        DestroyTestWindow(testState->testWindows[i]);
+        testState->testWindows[i] = NULL;
+      }
+    }
+    testState->lastUpdate = now;
+  }
+
   if (now - testState->lastCreate > 1000) {
-    bool added = false;
     for (i = 0; i < MAX_WINDOWS; ++i) {
       if (!testState->testWindows[i]) {
         testState->testWindows[i] = createTestWindowAtMousePosition(testState->state);
-        added = true;
         break;
-      }
-    }
-    /* Remove all windows if full */
-    if (!added) {
-      for (i = 0; i < MAX_WINDOWS; ++i) {
-        DestroyTestWindow(testState->testWindows[i]);
-        SDL_zero(testState->testWindows[i]);
       }
     }
     testState->lastCreate = now;
