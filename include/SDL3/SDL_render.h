@@ -285,9 +285,12 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  *
  * With the SDL GPU renderer:
  *
- * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN`: the app is able to provide SPIR-V shaders to SDL_GPURenderState, optional.
- * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN`: the app is able to provide DXIL shaders to SDL_GPURenderState, optional.
- * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN`: the app is able to provide MSL shaders to SDL_GPURenderState, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN`: the app is able to
+ *   provide SPIR-V shaders to SDL_GPURenderState, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN`: the app is able to
+ *   provide DXIL shaders to SDL_GPURenderState, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN`: the app is able to
+ *   provide MSL shaders to SDL_GPURenderState, optional.
  *
  * With the vulkan renderer:
  *
@@ -336,17 +339,23 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_
 #define SDL_PROP_RENDERER_CREATE_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER   "SDL.renderer.create.vulkan.present_queue_family_index"
 
 /**
- * Create a 2D GPU rendering context for a window, with support for the specified shader format.
+ * Create a 2D GPU rendering context for a window, with support for the
+ * specified shader format.
  *
- * This is a convenience function to create a SDL GPU backed renderer, intended to be used with SDL_GPURenderState.
- * The resulting renderer will support shaders in one of the specified shader formats.
+ * This is a convenience function to create a SDL GPU backed renderer,
+ * intended to be used with SDL_GPURenderState. The resulting renderer will
+ * support shaders in one of the specified shader formats.
  *
- * If no available GPU driver supports any of the specified shader formats, this function will fail.
+ * If no available GPU driver supports any of the specified shader formats,
+ * this function will fail.
  *
  * \param window the window where rendering is displayed.
- * \param format_flags a bitflag indicating which shader formats the app is able to provide.
- * \param device a pointer filled with the associated GPU device, or NULL on error.
- * \returns a valid rendering context or NULL if there was an error; call SDL_GetError() for more information.
+ * \param format_flags a bitflag indicating which shader formats the app is
+ *                     able to provide.
+ * \param device a pointer filled with the associated GPU device, or NULL on
+ *               error.
+ * \returns a valid rendering context or NULL if there was an error; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety This function should only be called on the main thread.
  *
