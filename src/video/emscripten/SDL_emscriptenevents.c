@@ -690,6 +690,9 @@ static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *u
         }
     }
 
+    // Always re-sync the window when the browser window changes size
+    SDL_SyncWindow(window_data->window);
+
     if (!(window_data->window->flags & SDL_WINDOW_FULLSCREEN)) {
         // this will only work if the canvas size is set through css
         if (window_data->window->flags & SDL_WINDOW_RESIZABLE) {
