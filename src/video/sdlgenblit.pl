@@ -112,7 +112,6 @@ sub open_file {
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "SDL_surface_c.h"
 
 #ifdef SDL_HAVE_BLIT_AUTO
 
@@ -641,6 +640,14 @@ sub output_copyinc
 __EOF__
 }
 
+sub output_copyinc_h
+{
+    print FILE <<__EOF__;
+#include "SDL_blit.h"
+
+__EOF__
+}
+
 sub output_copyfunctable
 {
     print FILE <<__EOF__;
@@ -693,7 +700,7 @@ __EOF__
         }
     }
     print FILE <<__EOF__;
-    { 0, 0, 0, 0, NULL }
+    { SDL_PIXELFORMAT_UNKNOWN, SDL_PIXELFORMAT_UNKNOWN, 0, 0, NULL }
 };
 
 __EOF__
@@ -716,6 +723,7 @@ sub output_copyfunc_c
 }
 
 open_file("SDL_blit_auto.h");
+output_copyinc_h();
 output_copydefs();
 for (my $i = 0; $i <= $#src_formats; ++$i) {
     for (my $j = 0; $j <= $#dst_formats; ++$j) {

@@ -20,11 +20,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "SDL_blit.h"
 
 #ifdef SDL_HAVE_BLIT_AUTO
 
 /* *INDENT-OFF* */ // clang-format off
+
+#include "SDL_blit.h"
 
 extern SDL_BlitFuncEntry SDL_GeneratedBlitFuncTable[];
 
