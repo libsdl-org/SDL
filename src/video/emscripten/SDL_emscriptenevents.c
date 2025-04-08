@@ -1186,7 +1186,6 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
     const char *keyElement;
 
-    // There is only one window and that window is the canvas
     emscripten_set_mousemove_callback(data->canvas_id, data, 0, Emscripten_HandleMouseMove);
 
     emscripten_set_mousedown_callback(data->canvas_id, data, 0, Emscripten_HandleMouseButton);
