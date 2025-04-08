@@ -253,7 +253,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
   TestState *testState = appstate;
   SDL_Renderer *renderer = testState->state->renderers[0];
   const Uint64 now = SDL_GetTicks();
-  int i, textY;
+  int i;
+  float textY;
 
   for (i = 0; i < MAX_WINDOWS; ++i) {
     if (testState->testWindows[i]) {
