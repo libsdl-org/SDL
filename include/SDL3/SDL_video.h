@@ -2503,7 +2503,6 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowKeyboardGrab(SDL_Window *window, b
  *
  * \sa SDL_GetWindowMouseRect
  * \sa SDL_SetWindowMouseRect
- * \sa SDL_SetWindowMouseGrab
  * \sa SDL_SetWindowKeyboardGrab
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowMouseGrab(SDL_Window *window, bool grabbed);
