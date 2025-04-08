@@ -2563,6 +2563,15 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, w);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, h);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    // Must ensure that popup windows have a unique canvas_id
+    const char* canvas_id = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, "");
+    if (!canvas_id || !*canvas_id) {
+        char new_canvas_id[64];
+        SDL_snprintf(new_canvas_id, sizeof(new_canvas_id), "#popup%u", props);
+        SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, new_canvas_id);
+    }
+#endif
     window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     return window;

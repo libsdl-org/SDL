@@ -52,6 +52,8 @@ static void Emscripten_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 static void Emscripten_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
+static bool Emscripten_GetCanvasRect(const char *canvas_id, SDL_Rect *rect);
+
 static bool pumpevents_has_run = false;
 static int pending_swap_interval = -1;
 
@@ -200,6 +202,8 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->GL_DestroyContext = Emscripten_GLES_DestroyContext;
 
     device->free = Emscripten_DeleteDevice;
+
+    device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT;
 
     Emscripten_ListenSystemTheme();
     device->system_theme = Emscripten_GetSystemTheme();
@@ -476,6 +480,7 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     double css_w, css_h;
     const char *selector;
     bool canvas_exists;
+    SDL_Rect rect;
 
     // Allocate window internal data
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
@@ -510,18 +515,28 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
         return false;
     }, selector);
 
-    // Create the canvas if it doesn't exist. Assign a class to the element to signal that it was created by SDL3
+    rect.x = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_UNDEFINED);
+    if (SDL_WINDOWPOS_ISUNDEFINED(rect.x)) {
+        rect.x = 0;
+    }
+
+    rect.y = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_UNDEFINED);
+    if (SDL_WINDOWPOS_ISUNDEFINED(rect.y)) {
+        rect.y = 0;
+    }
+
+    // Offset position by parent's
+    if (window->parent) {
+        rect.x += window->parent->x;
+        rect.y += window->parent->y;
+    }
+
+    rect.w = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 0);
+    rect.h = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 0);
+
+    // Create the canvas if it doesn't exist.
+    // Assign a class to the element to signal that it was created by SDL3.
     if (!canvas_exists) {
-        int x = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_UNDEFINED);
-        if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
-            x = 0;
-        }
-        int y = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_UNDEFINED);
-        if (SDL_WINDOWPOS_ISUNDEFINED(y)) {
-            y = 0;
-        }
-        const int w = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 0);
-        const int h = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 0);
         SDL_Window *parent = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, NULL);
         const char *parent_id;
         if (parent) {
@@ -530,23 +545,24 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
         } else {
             parent_id = "body";
         }
+        if (SDL_WINDOWPOS_ISCENTERED(rect.x)) {
+            rect.x = MAIN_THREAD_EM_ASM_INT({
+                var w = $0;
+                return window.innerWidth / 2 - w / 2;
+            }, rect.w);
+        }
+        if (SDL_WINDOWPOS_ISCENTERED(rect.y)) {
+            rect.y = MAIN_THREAD_EM_ASM_INT({
+                var h = $0;
+                return window.innerHeight / 2 - h / 2;
+            }, rect.h);
+        }
         canvas_exists = MAIN_THREAD_EM_ASM_INT({
             try
             {
                 var id = UTF8ToString($0);
-                var x = $1;
-                var y = $2;
-                var w = $3;
-                var h = $4;
-                var parent_id = UTF8ToString($5);
-                var x_centered = $6;
-                var y_centered = $7;
-                if (x_centered) {
-                    x = window.innerWidth / 2 - w / 2;
-                }
-                if (y_centered) {
-                    y = window.innerHeight / 2 - h / 2;
-                }
+                var rect = new Int32Array(Module.HEAP32.buffer, $1, 4);
+                var parent_id = UTF8ToString($2);
                 var canvas = document.querySelector(id);
                 if (canvas) {
                     // Element with this id is not a canvas
@@ -557,10 +573,10 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
                 canvas.id = id.replace("#", "");
                 canvas.oncontextmenu = (e) => { e.preventDefault(); };
                 canvas.style.position = "absolute";
-                canvas.style.left = `${x}px`;
-                canvas.style.top = `${y}px`;
-                canvas.width = w;
-                canvas.height = h;
+                canvas.style.left = `${rect[0]}px`;
+                canvas.style.top = `${rect[1]}px`;
+                canvas.width = rect[2];
+                canvas.height = rect[3];
                 var parent = document.querySelector(parent_id);
                 if (parent_id !== "body" && parent) {
                     parent.parentNode.append(canvas);
@@ -574,15 +590,18 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
                 // querySelector throws if id isn't a valid selector
             }
             return false;
-        }, selector, x, y, w, h, parent_id,
-            SDL_WINDOWPOS_ISCENTERED(x),
-            SDL_WINDOWPOS_ISCENTERED(y));
+        }, selector, rect, parent_id);
     }
 
     if (!canvas_exists) {
         SDL_SetError("'%s' is not a valid selector or doesn't refer to an HTMLCanvasElement", selector);
         return false;
     }
+
+    window->x = rect.x;
+    window->y = rect.y;
+    window->w = rect.w;
+    window->h = rect.h;
 
     // Ensure that there isn't another window that is using this canvas ID
     videodata = _this->internal;
@@ -798,6 +817,14 @@ static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window
 static bool Emscripten_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *window_data = window->internal;
+    int x, y;
+    if (window->parent) {
+        x = window->parent->x;
+        y = window->parent->y;
+    } else {
+        x = 0;
+        y = 0;
+    }
     return MAIN_THREAD_EM_ASM_INT({
         try
         {
@@ -816,7 +843,7 @@ static bool Emscripten_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *win
             // querySelector throws if id is not a valid selector
         }
         return false;
-    }, window_data->canvas_id, window->pending.x, window->pending.y);
+    }, window_data->canvas_id, window->pending.x + x, window->pending.y + y);
 }
 
 static void Emscripten_SetWindowDisplay(SDL_Window *window, const char *display)
@@ -849,11 +876,9 @@ static void Emscripten_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Emscripten_SetWindowDisplay(window, "none");
 }
 
-static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
+static bool Emscripten_GetCanvasRect(const char *canvas_id, SDL_Rect *rect)
 {
-    SDL_WindowData *window_data = window->internal;
-    uint32_t array[4];
-    const bool success = MAIN_THREAD_EM_ASM_INT({
+    return MAIN_THREAD_EM_ASM_INT({
         var id = UTF8ToString($0);
         var array = new Uint32Array(Module.HEAPU32.buffer, $1, 4);
         try
@@ -873,14 +898,22 @@ static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
             // querySelector throws if id is not a valid selector
         }
         return false;
-    }, window_data->canvas_id, array);
-    if (success) {
-        window->x = array[0];
-        window->y = array[1];
-        window->w = array[2];
-        window->h = array[3];
-        return true;
+    }, canvas_id, rect);
+}
+
+static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    SDL_WindowData *window_data = window->internal;
+    SDL_Rect rect;
+    if (!Emscripten_GetCanvasRect(window_data->canvas_id, &rect)) {
+        SDL_SetError("Failed to find canvas element: %s", window_data->canvas_id);
+        return false;
     }
-    return false;
+
+    window->x = rect.x;
+    window->y = rect.y;
+    window->w = rect.w;
+    window->h = rect.h;
+    return true;
 }
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN

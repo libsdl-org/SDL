@@ -44,6 +44,7 @@ static bool UpdateTestWindow(TestWindow *testWindow, SDL_Rect bounds) {
     testWindow->velocity.x = -VELOCITY;
     ++testWindow->bounces;
   }
+  x = SDL_clamp(x, bounds.x, bounds.x + bounds.w - w);
 
   if (y < bounds.y) {
     testWindow->velocity.y = VELOCITY;
@@ -52,6 +53,7 @@ static bool UpdateTestWindow(TestWindow *testWindow, SDL_Rect bounds) {
     testWindow->velocity.y = -VELOCITY;
     ++testWindow->bounces;
   }
+  y = SDL_clamp(y, bounds.y, bounds.y + bounds.h - h);
 
   SDL_SetWindowPosition(window, x, y);
   return testWindow->bounces < MAX_BOUNCE;
