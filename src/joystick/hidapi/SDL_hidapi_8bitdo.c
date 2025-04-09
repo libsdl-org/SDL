@@ -126,7 +126,7 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
     device->context = ctx;
 
     if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
-        // The Ultimate 2 Wireless v1.02 firmware has < 30 byte reports, v1.03 firmware has 34 byte reports
+        // The Ultimate 2 Wireless v1.02 firmware has 12 byte reports, v1.03 firmware has 34 byte reports
         const int ULTIMATE2_WIRELESS_V103_REPORT_SIZE = 34;
         Uint8 data[USB_PACKET_LENGTH];
         int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
