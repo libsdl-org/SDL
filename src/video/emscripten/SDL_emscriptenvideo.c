@@ -732,12 +732,7 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 if (canvas.classList.contains("SDL3_canvas")) {
                     canvas.remove();
                 } else {
-                    // Since the canvas wasn't created by SDL3, just resize it to zero instead.
-                    // TODO: Is this necessary or desired. If the goal is to make the window not
-                    // visible, then the better thing to do is:
-                    // canvas.style.display = 'none';
-                    canvas.width = 0;
-                    canvas.height = 0;
+                    canvas.style.display = 'none';
                 }
             }
         }, data->canvas_id);
@@ -825,17 +820,21 @@ static bool Emscripten_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *win
         x = 0;
         y = 0;
     }
-    return MAIN_THREAD_EM_ASM_INT({
+    const bool success = MAIN_THREAD_EM_ASM_INT({
         try
         {
             var id = UTF8ToString($0);
             var x = $1;
             var y = $2;
             var canvas = document.querySelector(id);
-            if (canvas && canvas.style.position && canvas.style.position !== 'static') {
-                canvas.style.left = `${x}px`;
-                canvas.style.top = `${y}px`;
-                return true;
+            if (canvas) {
+                var style = window.getComputedStyle(canvas);
+                var position = style.getPropertyValue("position");
+                if (position && style.position !== 'static') {
+                    canvas.style.left = `${x}px`;
+                    canvas.style.top = `${y}px`;
+                    return true;
+                }
             }
         }
         catch(e)
@@ -844,6 +843,10 @@ static bool Emscripten_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *win
         }
         return false;
     }, window_data->canvas_id, window->pending.x + x, window->pending.y + y);
+    if (!success) {
+        SDL_SetError("Canvas is either not movable or doesn't exist");
+    }
+    return success;
 }
 
 static void Emscripten_SetWindowDisplay(SDL_Window *window, const char *display)
@@ -880,7 +883,7 @@ static bool Emscripten_GetCanvasRect(const char *canvas_id, SDL_Rect *rect)
 {
     return MAIN_THREAD_EM_ASM_INT({
         var id = UTF8ToString($0);
-        var array = new Uint32Array(Module.HEAPU32.buffer, $1, 4);
+        var array = new Uint32Array(Module.HEAP32.buffer, $1, 4);
         try
         {
             let canvas = document.querySelector(id);
