@@ -516,6 +516,14 @@ static void ShowFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_
 
     filters_str = win_get_filters(filters, nfilters);
 
+    DWORD flags = 0;
+    if (allow_many) {
+        flags |= OFN_ALLOWMULTISELECT;
+    }
+    if (is_save) {
+        flags |= OFN_OVERWRITEPROMPT;
+    }
+
     if (!filters_str && filters) {
         callback(userdata, NULL, -1);
         SDL_free(args);
@@ -526,7 +534,7 @@ static void ShowFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_
     args->filters_str = filters_str;
     args->default_file = default_location ? SDL_strdup(default_location) : NULL;
     args->parent = window;
-    args->flags = allow_many ? OFN_ALLOWMULTISELECT : 0;
+    args->flags = flags;
     args->callback = callback;
     args->userdata = userdata;
     args->title = title ? SDL_strdup(title) : NULL;
