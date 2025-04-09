@@ -517,13 +517,11 @@ static void ShowFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_
     filters_str = win_get_filters(filters, nfilters);
 
     DWORD flags = 0;
-    {
-        if (allow_many) {
-            flags |= OFN_ALLOWMULTISELECT;
-        }
-        if (is_save) {
-            flags |= OFN_OVERWRITEPROMPT;
-        }
+    if (allow_many) {
+        flags |= OFN_ALLOWMULTISELECT;
+    }
+    if (is_save) {
+        flags |= OFN_OVERWRITEPROMPT;
     }
 
     if (!filters_str && filters) {
