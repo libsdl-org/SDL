@@ -62,6 +62,10 @@
 #define wcsstr      SDL_wcsstr
 #define wcstol      SDL_wcstol
 
+// These functions conflict when linking both SDL and hidapi statically
+#define hid_winapi_descriptor_reconstruct_pp_data SDL_hid_winapi_descriptor_reconstruct_pp_data
+#define hid_winapi_get_container_id SDL_hid_winapi_get_container_id
+
 #undef HIDAPI_H__
 #include "windows/hid.c"
 #define HAVE_PLATFORM_BACKEND 1
