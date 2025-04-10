@@ -762,6 +762,10 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             return WIN_SetError("Couldn't create window");
         }
 
+        if (window->flags & SDL_WINDOW_BORDERLESS) {
+            SetWindowLongPtr(hwnd, GWL_STYLE, WS_OVERLAPPED);
+        }
+
         WIN_UpdateDarkModeForHWND(hwnd);
 
         WIN_PumpEvents(_this);
