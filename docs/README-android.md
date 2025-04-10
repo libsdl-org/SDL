@@ -149,7 +149,7 @@ target_link_libraries(yourgame PRIVATE SDL3::SDL3)
 
 If you use ndk-build, add the following before `include $(BUILD_SHARED_LIBRARY)` to your `Android.mk`:
 ```
-LOCAL_SHARED_LIBARARIES := SDL3 SDL3-Headers
+LOCAL_SHARED_LIBRARIES := SDL3 SDL3-Headers
 ```
 And add the following at the bottom:
 ```
