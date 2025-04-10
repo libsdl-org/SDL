@@ -47,6 +47,12 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this);
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
+static bool Emscripten_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
+static void Emscripten_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static void Emscripten_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
+static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
+
+static bool Emscripten_GetCanvasRect(const char *canvas_id, SDL_Rect *rect);
 
 static bool pumpevents_has_run = false;
 static int pending_swap_interval = -1;
@@ -56,6 +62,8 @@ static int pending_swap_interval = -1;
 
 static void Emscripten_DeleteDevice(SDL_VideoDevice *device)
 {
+    SDL_VideoData *videodata = device->internal;
+    SDL_DestroyProperties(videodata->window_map);
     SDL_free(device);
 }
 
@@ -133,12 +141,20 @@ EMSCRIPTEN_KEEPALIVE void Emscripten_SendSystemThemeChangedEvent(void)
 static SDL_VideoDevice *Emscripten_CreateDevice(void)
 {
     SDL_VideoDevice *device;
+    SDL_VideoData *videodata;
 
     // Initialize all variables that we clean on shutdown
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         return NULL;
     }
+
+    videodata = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
+    if (!videodata) {
+        return NULL;
+    }
+    videodata->window_map = SDL_CreateProperties();
+    device->internal = videodata;
 
     /* Firefox sends blur event which would otherwise prevent full screen
      * when the user clicks to allow full screen.
@@ -156,12 +172,12 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
 
     device->CreateSDLWindow = Emscripten_CreateWindow;
     device->SetWindowTitle = Emscripten_SetWindowTitle;
-    /*device->SetWindowIcon = Emscripten_SetWindowIcon;
-    device->SetWindowPosition = Emscripten_SetWindowPosition;*/
+    /*device->SetWindowIcon = Emscripten_SetWindowIcon;*/
+    device->SetWindowPosition = Emscripten_SetWindowPosition;
     device->SetWindowSize = Emscripten_SetWindowSize;
-    /*device->ShowWindow = Emscripten_ShowWindow;
+    device->ShowWindow = Emscripten_ShowWindow;
     device->HideWindow = Emscripten_HideWindow;
-    device->RaiseWindow = Emscripten_RaiseWindow;
+    /*device->RaiseWindow = Emscripten_RaiseWindow;
     device->MaximizeWindow = Emscripten_MaximizeWindow;
     device->MinimizeWindow = Emscripten_MinimizeWindow;
     device->RestoreWindow = Emscripten_RestoreWindow;
@@ -169,6 +185,7 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->GetWindowSizeInPixels = Emscripten_GetWindowSizeInPixels;
     device->DestroyWindow = Emscripten_DestroyWindow;
     device->SetWindowFullscreen = Emscripten_SetWindowFullscreen;
+    device->SyncWindow = Emscripten_SyncWindow;
 
     device->CreateWindowFramebuffer = Emscripten_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = Emscripten_UpdateWindowFramebuffer;
@@ -185,6 +202,8 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->GL_DestroyContext = Emscripten_GLES_DestroyContext;
 
     device->free = Emscripten_DeleteDevice;
+
+    device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT;
 
     Emscripten_ListenSystemTheme();
     device->system_theme = Emscripten_GetSystemTheme();
@@ -456,9 +475,12 @@ EMSCRIPTEN_KEEPALIVE void requestFullscreenThroughSDL(SDL_Window *window)
 static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
     SDL_WindowData *wdata;
+    SDL_VideoData *videodata;
     double scaled_w, scaled_h;
     double css_w, css_h;
     const char *selector;
+    bool canvas_exists;
+    SDL_Rect rect;
 
     // Allocate window internal data
     wdata = (SDL_WindowData *)SDL_calloc(1, sizeof(SDL_WindowData));
@@ -470,6 +492,124 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     if (!selector || !*selector) {
         selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, "#canvas");
     }
+
+    if (!*selector || selector[0] != '#') {
+        SDL_SetError("Canvas ID must begin with a '#' character.");
+        return false;
+    }
+
+    // If an element with this id already exists, it should be verified that it is to an HTML5CanvasElement
+    canvas_exists = MAIN_THREAD_EM_ASM_INT({
+        var id = UTF8ToString($0);
+        try
+        {
+            var element = document.querySelector(id);
+            if (element && element instanceof HTMLCanvasElement) {
+                return true;
+            }
+        }
+        catch(e)
+        {
+            // querySelector throws if the id isn't a valid selector
+        }
+        return false;
+    }, selector);
+
+    rect.x = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_UNDEFINED);
+    if (SDL_WINDOWPOS_ISUNDEFINED(rect.x)) {
+        rect.x = 0;
+    }
+
+    rect.y = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_UNDEFINED);
+    if (SDL_WINDOWPOS_ISUNDEFINED(rect.y)) {
+        rect.y = 0;
+    }
+
+    // Offset position by parent's
+    if (window->parent) {
+        rect.x += window->parent->x;
+        rect.y += window->parent->y;
+    }
+
+    rect.w = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 0);
+    rect.h = SDL_GetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 0);
+
+    // Create the canvas if it doesn't exist.
+    // Assign a class to the element to signal that it was created by SDL3.
+    if (!canvas_exists) {
+        SDL_Window *parent = SDL_GetPointerProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, NULL);
+        const char *parent_id;
+        if (parent) {
+            SDL_WindowData *parent_window_data = parent->internal;
+            parent_id = parent_window_data->canvas_id;
+        } else {
+            parent_id = "body";
+        }
+        if (SDL_WINDOWPOS_ISCENTERED(rect.x)) {
+            rect.x = MAIN_THREAD_EM_ASM_INT({
+                var w = $0;
+                return window.innerWidth / 2 - w / 2;
+            }, rect.w);
+        }
+        if (SDL_WINDOWPOS_ISCENTERED(rect.y)) {
+            rect.y = MAIN_THREAD_EM_ASM_INT({
+                var h = $0;
+                return window.innerHeight / 2 - h / 2;
+            }, rect.h);
+        }
+        canvas_exists = MAIN_THREAD_EM_ASM_INT({
+            try
+            {
+                var id = UTF8ToString($0);
+                var rect = new Int32Array(Module.HEAP32.buffer, $1, 4);
+                var parent_id = UTF8ToString($2);
+                var canvas = document.querySelector(id);
+                if (canvas) {
+                    // Element with this id is not a canvas
+                    return false;
+                }
+                canvas = document.createElement("canvas");
+                canvas.classList.add("SDL3_canvas");
+                canvas.id = id.replace("#", "");
+                canvas.oncontextmenu = (e) => { e.preventDefault(); };
+                canvas.style.position = "absolute";
+                canvas.style.left = `${rect[0]}px`;
+                canvas.style.top = `${rect[1]}px`;
+                canvas.width = rect[2];
+                canvas.height = rect[3];
+                var parent = document.querySelector(parent_id);
+                if (parent_id !== "body" && parent) {
+                    parent.parentNode.append(canvas);
+                } else {
+                    document.body.append(canvas);
+                }
+                return true;
+            }
+            catch(e)
+            {
+                // querySelector throws if id isn't a valid selector
+            }
+            return false;
+        }, selector, rect, parent_id);
+    }
+
+    if (!canvas_exists) {
+        SDL_SetError("'%s' is not a valid selector or doesn't refer to an HTMLCanvasElement", selector);
+        return false;
+    }
+
+    window->x = rect.x;
+    window->y = rect.y;
+    window->w = rect.w;
+    window->h = rect.h;
+
+    // Ensure that there isn't another window that is using this canvas ID
+    videodata = _this->internal;
+    if (SDL_GetBooleanProperty(videodata->window_map, selector, false)) {
+        SDL_SetError("A window already exists that refers to canvas '%s'", selector);
+        return false;
+    }
+
     wdata->canvas_id = SDL_strdup(selector);
 
     selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
@@ -532,6 +672,14 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING, wdata->canvas_id);
     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, wdata->keyboard_element);
 
+    if (!SDL_SetBooleanProperty(videodata->window_map, wdata->canvas_id, true)) {
+        return false;
+    }
+
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        Emscripten_HideWindow(_this, window);
+    }
+
     // Window has been successfully created
     return true;
 }
@@ -570,14 +718,27 @@ static void Emscripten_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window 
 static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data;
+    SDL_VideoData *videodata;
 
     if (window->internal) {
         data = window->internal;
 
         Emscripten_UnregisterEventHandlers(data);
 
-        // We can't destroy the canvas, so resize it to zero instead
-        emscripten_set_canvas_element_size(data->canvas_id, 0, 0);
+        MAIN_THREAD_EM_ASM({
+            var id = UTF8ToString($0);
+            var canvas = document.querySelector(id);
+            if (canvas) {
+                if (canvas.classList.contains("SDL3_canvas")) {
+                    canvas.remove();
+                } else {
+                    canvas.style.display = 'none';
+                }
+            }
+        }, data->canvas_id);
+
+        videodata = _this->internal;
+        SDL_SetBooleanProperty(videodata->window_map, data->canvas_id, false);
         SDL_free(data->canvas_id);
 
         SDL_free(data->keyboard_element);
@@ -638,7 +799,124 @@ static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_thi
 
 static void Emscripten_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    emscripten_set_window_title(window->title);
+    SDL_VideoData *videodata = _this->internal;
+    if (!videodata->mainWindow) {
+        // Assume that the first window to have its title set is the main window
+        videodata->mainWindow = window;
+    }
+    if (videodata->mainWindow == window) {
+        emscripten_set_window_title(window->title);
+    }
 }
 
+static bool Emscripten_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    SDL_WindowData *window_data = window->internal;
+    int x, y;
+    if (window->parent) {
+        x = window->parent->x;
+        y = window->parent->y;
+    } else {
+        x = 0;
+        y = 0;
+    }
+    const bool success = MAIN_THREAD_EM_ASM_INT({
+        try
+        {
+            var id = UTF8ToString($0);
+            var x = $1;
+            var y = $2;
+            var canvas = document.querySelector(id);
+            if (canvas) {
+                var style = window.getComputedStyle(canvas);
+                var position = style.getPropertyValue("position");
+                if (position && style.position !== 'static') {
+                    canvas.style.left = `${x}px`;
+                    canvas.style.top = `${y}px`;
+                    return true;
+                }
+            }
+        }
+        catch(e)
+        {
+            // querySelector throws if id is not a valid selector
+        }
+        return false;
+    }, window_data->canvas_id, window->pending.x + x, window->pending.y + y);
+    if (!success) {
+        SDL_SetError("Canvas is either not movable or doesn't exist");
+    }
+    return success;
+}
+
+static void Emscripten_SetWindowDisplay(SDL_Window *window, const char *display)
+{
+    SDL_WindowData *window_data = window->internal;
+    MAIN_THREAD_EM_ASM({
+        var id = UTF8ToString($0);
+        var display = UTF8ToString($1);
+        try
+        {
+            let canvas = document.querySelector(id);
+            if (canvas) {
+                canvas.style.display = display;
+            }
+        }
+        catch(e)
+        {
+            // querySelector throws if id is not a valid selector
+        }
+    }, window_data->canvas_id, display);
+}
+
+static void Emscripten_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    Emscripten_SetWindowDisplay(window, "");
+}
+
+static void Emscripten_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    Emscripten_SetWindowDisplay(window, "none");
+}
+
+static bool Emscripten_GetCanvasRect(const char *canvas_id, SDL_Rect *rect)
+{
+    return MAIN_THREAD_EM_ASM_INT({
+        var id = UTF8ToString($0);
+        var array = new Uint32Array(Module.HEAP32.buffer, $1, 4);
+        try
+        {
+            let canvas = document.querySelector(id);
+            if (canvas) {
+                var rect = canvas.getBoundingClientRect();
+                array[0] = rect.x;
+                array[1] = rect.y;
+                array[2] = rect.width;
+                array[3] = rect.height;
+                return true;
+            }
+        }
+        catch(e)
+        {
+            // querySelector throws if id is not a valid selector
+        }
+        return false;
+    }, canvas_id, rect);
+}
+
+static bool Emscripten_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    SDL_WindowData *window_data = window->internal;
+    SDL_Rect rect;
+    if (!Emscripten_GetCanvasRect(window_data->canvas_id, &rect)) {
+        SDL_SetError("Failed to find canvas element: %s", window_data->canvas_id);
+        return false;
+    }
+
+    window->x = rect.x;
+    window->y = rect.y;
+    window->w = rect.w;
+    window->h = rect.h;
+    return true;
+}
 #endif // SDL_VIDEO_DRIVER_EMSCRIPTEN
