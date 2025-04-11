@@ -1893,11 +1893,13 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     set (USE_POSIX_SPAWN 1)
   endif()
 elseif(WINDOWS)
+  enable_language(CXX)
   check_c_source_compiles("
     #include <windows.h>
     int main(int argc, char **argv) { return 0; }" HAVE_WIN32_CC)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/windows/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/windows/*.cpp")
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/windows/*.c")
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/io/windows/*.c")
 
@@ -2008,6 +2010,7 @@ elseif(WINDOWS)
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_WINDOWS 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/windows/*.c")
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/windows/*.cpp")
 
     CheckOpenVR()
 
@@ -2135,7 +2138,7 @@ elseif(WINDOWS)
       set(SDL_JOYSTICK_WGI 1)
     endif()
     if(HAVE_GAMEINPUT_H)
-      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/gdk/*.c")
+      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/gdk/*.cpp")
       set(SDL_JOYSTICK_GAMEINPUT 1)
     endif()
     set(HAVE_SDL_JOYSTICK TRUE)

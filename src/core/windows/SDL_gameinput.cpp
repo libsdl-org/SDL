@@ -25,15 +25,10 @@
 #include "SDL_windows.h"
 #include "SDL_gameinput.h"
 
-#ifdef SDL_PLATFORM_WIN32
-#include <initguid.h>
-// {11BE2A7E-4254-445A-9C09-FFC40F006918}
-DEFINE_GUID(SDL_IID_GameInput, 0x11BE2A7E, 0x4254, 0x445A, 0x9C, 0x09, 0xFF, 0xC4, 0x0F, 0x00, 0x69, 0x18);
-#endif
-
 static SDL_SharedObject *g_hGameInputDLL;
 static IGameInput *g_pGameInput;
 static int g_nGameInputRefCount;
+
 
 bool SDL_InitGameInput(IGameInput **ppGameInput)
 {
@@ -43,7 +38,7 @@ bool SDL_InitGameInput(IGameInput **ppGameInput)
             return false;
         }
 
-        typedef HRESULT (WINAPI *GameInputCreate_t)(IGameInput * *gameInput);
+        typedef HRESULT (WINAPI *GameInputCreate_t)(IGameInput **gameInput);
         GameInputCreate_t GameInputCreateFunc = (GameInputCreate_t)SDL_LoadFunction(g_hGameInputDLL, "GameInputCreate");
         if (!GameInputCreateFunc) {
             SDL_UnloadObject(g_hGameInputDLL);
@@ -58,15 +53,19 @@ bool SDL_InitGameInput(IGameInput **ppGameInput)
         }
 
 #ifdef SDL_PLATFORM_WIN32
-        hr = IGameInput_QueryInterface(pGameInput, &SDL_IID_GameInput, (void **)&g_pGameInput);
-        IGameInput_Release(pGameInput);
+#if GAMEINPUT_API_VERSION >= 1
+        hr = pGameInput->QueryInterface(IID_IGameInput, (void **)&g_pGameInput);
+#else
+        // We require GameInput v1.1 or newer
+        hr = E_NOINTERFACE;
+#endif
+        pGameInput->Release();
         if (FAILED(hr)) {
             SDL_UnloadObject(g_hGameInputDLL);
             return WIN_SetErrorFromHRESULT("GameInput QueryInterface failed", hr);
         }
 #else
         // Assume that the version we get is compatible with the current SDK
-        // If that isn't the case, define the correct GUID for SDL_IID_GameInput above
         g_pGameInput = pGameInput;
 #endif
     }
@@ -85,7 +84,7 @@ void SDL_QuitGameInput(void)
     --g_nGameInputRefCount;
     if (g_nGameInputRefCount == 0) {
         if (g_pGameInput) {
-            IGameInput_Release(g_pGameInput);
+            g_pGameInput->Release();
             g_pGameInput = NULL;
         }
         if (g_hGameInputDLL) {

@@ -381,9 +381,11 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 match spec.msvc_arch:
                     case MsvcArch.X86:
                         job.cflags.append("/clang:-m32")
+                        job.cxxflags.append("/clang:-m32")
                         job.ldflags.append("/MACHINE:X86")
                     case MsvcArch.X64:
                         job.cflags.append("/clang:-m64")
+                        job.cxxflags.append("/clang:-m64")
                         job.ldflags.append("/MACHINE:X64")
                     case _:
                         raise ValueError(f"Unsupported clang-cl architecture (arch={spec.msvc_arch})")
