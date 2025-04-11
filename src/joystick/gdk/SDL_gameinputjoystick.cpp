@@ -24,6 +24,7 @@
 
 #include "../SDL_sysjoystick.h"
 #include "../usb_ids.h"
+#include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_gameinput.h"
 
 // Default value for SDL_HINT_JOYSTICK_GAMEINPUT
@@ -66,7 +67,7 @@ typedef struct joystick_hwdata
 
 static GAMEINPUT_InternalList g_GameInputList = { NULL };
 static IGameInput *g_pGameInput = NULL;
-static GameInputCallbackToken g_GameInputCallbackToken = GAMEINPUT_INVALID_CALLBACK_TOKEN_VALUE;
+static GameInputCallbackToken g_GameInputCallbackToken = 0;
 static Uint64 g_GameInputTimestampOffset;
 
 static bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
@@ -93,15 +94,22 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 
     SDL_AssertJoysticksLocked();
 
-    info = IGameInputDevice_GetDeviceInfo(pDevice);
-    if (info->capabilities & GameInputDeviceCapabilityWireless) {
+#if GAMEINPUT_API_VERSION >= 1
+    HRESULT hr = pDevice->GetDeviceInfo(&info);
+    if (FAILED(hr)) {
+        return WIN_SetErrorFromHRESULT("IGameInputDevice::GetDeviceInfo", hr);
+    }
+#else
+    info = pDevice->GetDeviceInfo();
+#endif
+    if (false /*info->capabilities & GameInputDeviceCapabilityWireless*/) {
         bus = SDL_HARDWARE_BUS_BLUETOOTH;
     } else {
         bus = SDL_HARDWARE_BUS_USB;
     }
     vendor = info->vendorId;
     product = info->productId;
-    version = (info->firmwareVersion.major << 8) | info->firmwareVersion.minor;
+    //version = (info->firmwareVersion.major << 8) | info->firmwareVersion.minor;
 
     if (SDL_JoystickHandledByAnotherDriver(&SDL_GAMEINPUT_JoystickDriver, vendor, product, version, "")) {
         return true;
@@ -130,18 +138,20 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     // Generate a device path
     for (idx = 0; idx < APP_LOCAL_DEVICE_ID_SIZE; ++idx) {
         SDL_snprintf(tmp, SDL_arraysize(tmp), "%02hhX", info->deviceId.value[idx]);
-        SDL_strlcat(elem->path, tmp, SDL_arraysize(tmp));
+        SDL_strlcat(elem->path, tmp, SDL_arraysize(elem->path));
     }
 
-    if (info->deviceStrings) {
-        // In theory we could get the manufacturer and product strings here, but they're NULL for all the controllers I've tested
-    }
-
+#if GAMEINPUT_API_VERSION >= 1
     if (info->displayName) {
-        // This could give us a product string, but it's NULL for all the controllers I've tested
+        product_string = info->displayName;
     }
+#else
+    if (info->displayName) {
+        product_string = info->displayName->data;
+    }
+#endif
 
-    IGameInputDevice_AddRef(pDevice);
+    pDevice->AddRef();
     elem->device = pDevice;
     elem->name = SDL_CreateJoystickName(vendor, product, manufacturer_string, product_string);
     elem->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, manufacturer_string, product_string, 'g', 0);
@@ -168,7 +178,7 @@ static bool GAMEINPUT_InternalRemoveByIndex(int idx)
 
     elem = g_GameInputList.devices[idx];
     if (elem) {
-        IGameInputDevice_Release(elem->device);
+        elem->device->Release();
         SDL_free(elem->name);
         SDL_free(elem);
     }
@@ -232,10 +242,11 @@ static void CALLBACK GAMEINPUT_InternalJoystickDeviceCallback(
 }
 
 static void GAMEINPUT_JoystickDetect(void);
+static void GAMEINPUT_JoystickQuit(void);
 
 static bool GAMEINPUT_JoystickInit(void)
 {
-    HRESULT hR;
+    HRESULT hr;
 
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT)) {
         return true;
@@ -245,21 +256,21 @@ static bool GAMEINPUT_JoystickInit(void)
         return false;
     }
 
-    hR = IGameInput_RegisterDeviceCallback(g_pGameInput,
-                                           NULL,
+    hr = g_pGameInput->RegisterDeviceCallback(NULL,
                                            GameInputKindController,
                                            GameInputDeviceConnected,
                                            GameInputBlockingEnumeration,
                                            NULL,
                                            GAMEINPUT_InternalJoystickDeviceCallback,
                                            &g_GameInputCallbackToken);
-    if (FAILED(hR)) {
-        return SDL_SetError("IGameInput::RegisterDeviceCallback failure with HRESULT of %08lX", hR);
+    if (FAILED(hr)) {
+        GAMEINPUT_JoystickQuit();
+        return WIN_SetErrorFromHRESULT("IGameInput::RegisterDeviceCallback", hr);
     }
 
     // Calculate the relative offset between SDL timestamps and GameInput timestamps
     Uint64 now = SDL_GetTicksNS();
-    uint64_t timestampUS = IGameInput_GetCurrentTimestamp(g_pGameInput);
+    uint64_t timestampUS = g_pGameInput->GetCurrentTimestamp();
     g_GameInputTimestampOffset = (SDL_NS_TO_US(now) - timestampUS);
 
     GAMEINPUT_JoystickDetect();
@@ -292,7 +303,7 @@ static void GAMEINPUT_JoystickDetect(void)
             elem->isAdded = true;
         }
 
-        if (elem->isDeleteRequested || !(IGameInputDevice_GetDeviceStatus(elem->device) & GameInputDeviceConnected)) {
+        if (elem->isDeleteRequested || !(elem->device->GetDeviceStatus() & GameInputDeviceConnected)) {
             SDL_PrivateJoystickRemoved(elem->device_instance);
             GAMEINPUT_InternalRemoveByIndex(idx--);
         }
@@ -357,6 +368,7 @@ static SDL_JoystickID GAMEINPUT_JoystickGetDeviceInstanceID(int device_index)
 
 static void GAMEINPUT_UpdatePowerInfo(SDL_Joystick *joystick, IGameInputDevice *device)
 {
+#if 0
     GameInputBatteryState battery_state;
     SDL_PowerState state;
     int percent = 0;
@@ -385,10 +397,10 @@ static void GAMEINPUT_UpdatePowerInfo(SDL_Joystick *joystick, IGameInputDevice *
         percent = (int)SDL_roundf((battery_state.remainingCapacity / battery_state.fullChargeCapacity) * 100.0f);
     }
     SDL_SendJoystickPowerInfo(joystick, state, percent);
+#endif
 }
 
-#ifdef IGameInput_RegisterSystemButtonCallback
-
+#if GAMEINPUT_API_VERSION >= 1
 static void CALLBACK GAMEINPUT_InternalSystemButtonCallback(
     _In_ GameInputCallbackToken callbackToken,
     _In_ void * context,
@@ -415,8 +427,7 @@ static void CALLBACK GAMEINPUT_InternalSystemButtonCallback(
         SDL_UnlockJoysticks();
     }
 }
-
-#endif // IGameInput_RegisterSystemButtonCallback
+#endif // GAMEINPUT_API_VERSION >= 1
 
 static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
@@ -441,19 +452,15 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         joystick->nbuttons = 11;
         joystick->nhats = 1;
 
-#ifdef IGameInput_RegisterSystemButtonCallback
+#if GAMEINPUT_API_VERSION >= 1
         if (info->supportedSystemButtons != GameInputSystemButtonNone) {
             if (info->supportedSystemButtons & GameInputSystemButtonShare) {
                 ++joystick->nbuttons;
             }
 
-#if 1 // The C macro in GameInput.h version 10.0.26100 refers to a focus policy which I guess has been removed from the final API?
-#undef IGameInput_RegisterSystemButtonCallback
-#define IGameInput_RegisterSystemButtonCallback(This, device, buttonFilter, context, callbackFunc, callbackToken) ((This)->lpVtbl->RegisterSystemButtonCallback(This, device, buttonFilter, context, callbackFunc, callbackToken))
-#endif
-            IGameInput_RegisterSystemButtonCallback(g_pGameInput, elem->device, (GameInputSystemButtonGuide | GameInputSystemButtonShare), joystick, GAMEINPUT_InternalSystemButtonCallback, &hwdata->system_button_callback_token);
+            g_pGameInput->RegisterSystemButtonCallback(elem->device, (GameInputSystemButtonGuide | GameInputSystemButtonShare), joystick, GAMEINPUT_InternalSystemButtonCallback, &hwdata->system_button_callback_token);
         }
-#endif // IGameInput_RegisterSystemButtonCallback
+#endif // GAMEINPUT_API_VERSION >= 1
     } else {
         joystick->naxes = info->controllerAxisCount;
         joystick->nbuttons = info->controllerButtonCount;
@@ -467,6 +474,7 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
     }
 
+#if 0
     if (info->supportedInput & GameInputKindTouch) {
         SDL_PrivateJoystickAddTouchpad(joystick, info->touchPointCount);
     }
@@ -482,6 +490,7 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
     } else {
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
     }
+#endif
     return true;
 }
 
@@ -492,7 +501,7 @@ static bool GAMEINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequenc
     GameInputRumbleParams *params = &hwdata->rumbleParams;
     params->lowFrequency = (float)low_frequency_rumble / (float)SDL_MAX_UINT16;
     params->highFrequency = (float)high_frequency_rumble / (float)SDL_MAX_UINT16;
-    IGameInputDevice_SetRumbleState(hwdata->devref->device, params);
+    hwdata->devref->device->SetRumbleState(params);
     return true;
 }
 
@@ -503,7 +512,7 @@ static bool GAMEINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left
     GameInputRumbleParams *params = &hwdata->rumbleParams;
     params->leftTrigger = (float)left_rumble / (float)SDL_MAX_UINT16;
     params->rightTrigger = (float)right_rumble / (float)SDL_MAX_UINT16;
-    IGameInputDevice_SetRumbleState(hwdata->devref->device, params);
+    hwdata->devref->device->SetRumbleState(params);
     return true;
 }
 
@@ -531,15 +540,15 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
     IGameInputReading *reading = NULL;
     Uint64 timestamp;
     GameInputGamepadState state;
-    HRESULT hR;
+    HRESULT hr;
 
-    hR = IGameInput_GetCurrentReading(g_pGameInput, info->supportedInput, device, &reading);
-    if (FAILED(hR)) {
+    hr = g_pGameInput->GetCurrentReading(info->supportedInput, device, &reading);
+    if (FAILED(hr)) {
         // don't SetError here since there can be a legitimate case when there's no reading avail
         return;
     }
 
-    timestamp = SDL_US_TO_NS(IGameInputReading_GetTimestamp(reading) + g_GameInputTimestampOffset);
+    timestamp = SDL_US_TO_NS(reading->GetTimestamp() + g_GameInputTimestampOffset);
 
     if (GAMEINPUT_InternalIsGamepad(info)) {
         static WORD s_XInputButtons[] = {
@@ -557,7 +566,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
         };
         Uint8 btnidx = 0, hat = 0;
 
-        if (IGameInputReading_GetGamepadState(reading, &state)) {
+        if (reading->GetGamepadState(&state)) {
             for (btnidx = 0; btnidx < SDL_arraysize(s_XInputButtons); ++btnidx) {
                 WORD button_mask = s_XInputButtons[btnidx];
                 if (!button_mask) {
@@ -599,7 +608,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
 
         if (button_state) {
             uint32_t i;
-            uint32_t button_count = IGameInputReading_GetControllerButtonState(reading, info->controllerButtonCount, button_state);
+            uint32_t button_count = reading->GetControllerButtonState(info->controllerButtonCount, button_state);
             for (i = 0; i < button_count; ++i) {
                 SDL_SendJoystickButton(timestamp, joystick, (Uint8)i, button_state[i]);
             }
@@ -609,7 +618,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
 #define CONVERT_AXIS(v) (Sint16)((v)*65535.0f - 32768.0f)
         if (axis_state) {
             uint32_t i;
-            uint32_t axis_count = IGameInputReading_GetControllerAxisState(reading, info->controllerAxisCount, axis_state);
+            uint32_t axis_count = reading->GetControllerAxisState(info->controllerAxisCount, axis_state);
             for (i = 0; i < axis_count; ++i) {
                 SDL_SendJoystickAxis(timestamp, joystick, (Uint8)i, CONVERT_AXIS(axis_state[i]));
             }
@@ -619,7 +628,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
 
         if (switch_state) {
             uint32_t i;
-            uint32_t switch_count = IGameInputReading_GetControllerSwitchState(reading, info->controllerSwitchCount, switch_state);
+            uint32_t switch_count = reading->GetControllerSwitchState(info->controllerSwitchCount, switch_state);
             for (i = 0; i < switch_count; ++i) {
                 Uint8 hat;
                 switch (switch_state[i]) {
@@ -658,6 +667,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
         }
     }
 
+#if 0
     if (info->supportedInput & GameInputKindTouch) {
         GameInputTouchState *touch_state = SDL_stack_alloc(GameInputTouchState, info->touchPointCount);
         if (touch_state) {
@@ -679,8 +689,9 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
             // FIXME: How do we interpret the motion data?
         }
     }
+#endif
 
-    IGameInputReading_Release(reading);
+    reading->Release();
 
     // FIXME: We can poll this at a much lower rate
     GAMEINPUT_UpdatePowerInfo(joystick, device);
@@ -691,7 +702,11 @@ static void GAMEINPUT_JoystickClose(SDL_Joystick* joystick)
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
 
     if (hwdata->system_button_callback_token) {
-        IGameInput_UnregisterCallback(g_pGameInput, hwdata->system_button_callback_token, 5000);
+#if GAMEINPUT_API_VERSION >= 1
+        g_pGameInput->UnregisterCallback(hwdata->system_button_callback_token);
+#else
+        g_pGameInput->UnregisterCallback(hwdata->system_button_callback_token, 10000);
+#endif
     }
     SDL_free(hwdata);
 
@@ -702,8 +717,14 @@ static void GAMEINPUT_JoystickQuit(void)
 {
     if (g_pGameInput) {
         // free the callback
-        IGameInput_UnregisterCallback(g_pGameInput, g_GameInputCallbackToken, /*timeoutInUs:*/ 10000);
-        g_GameInputCallbackToken = GAMEINPUT_INVALID_CALLBACK_TOKEN_VALUE;
+        if (g_GameInputCallbackToken) {
+#if GAMEINPUT_API_VERSION >= 1
+            g_pGameInput->UnregisterCallback(g_GameInputCallbackToken);
+#else
+            g_pGameInput->UnregisterCallback(g_GameInputCallbackToken, 10000);
+#endif
+            g_GameInputCallbackToken = 0;
+        }
 
         // free the list
         while (g_GameInputList.count > 0) {
@@ -738,7 +759,7 @@ static bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     out->back.kind = EMappingKind_Button;
     out->back.target = SDL_GAMEPAD_BUTTON_BACK;
 
-#ifdef IGameInput_RegisterSystemButtonCallback
+#if GAMEINPUT_API_VERSION >= 1
     if (elem->info->supportedSystemButtons & GameInputSystemButtonGuide) {
         out->guide.kind = EMappingKind_Button;
         out->guide.target = SDL_GAMEPAD_BUTTON_GUIDE;
@@ -748,7 +769,7 @@ static bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
         out->misc1.kind = EMappingKind_Button;
         out->misc1.target = SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE;
     }
-#endif
+#endif // GAMEINPUT_API_VERSION >= 1
 
     out->start.kind = EMappingKind_Button;
     out->start.target = SDL_GAMEPAD_BUTTON_START;
