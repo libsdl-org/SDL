@@ -445,7 +445,6 @@ static void GPU_InvalidateCachedState(SDL_Renderer *renderer)
 {
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
 
-    data->state.render_target = NULL;
     data->state.scissor_enabled = false;
 }
 
