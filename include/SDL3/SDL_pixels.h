@@ -1261,7 +1261,7 @@ extern SDL_DECLSPEC const SDL_PixelFormatDetails * SDLCALL SDL_GetPixelFormatDet
  * \sa SDL_SetPaletteColors
  * \sa SDL_SetSurfacePalette
  */
-extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreatePalette(int ncolors);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreatePalette(int ncolors);
 
 /**
  * Set a range of colors in a palette.
