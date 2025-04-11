@@ -304,6 +304,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         if (stderr_option == SDL_PROCESS_STDIO_INHERITED) {
             stderr_option = SDL_PROCESS_STDIO_NULL;
         }
+        creation_flags |= CREATE_NO_WINDOW;
     }
 
     switch (stdin_option) {
