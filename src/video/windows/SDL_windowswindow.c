@@ -1439,7 +1439,7 @@ void *WIN_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t
     char *filename_utf8;
     void *iccProfileData = NULL;
 
-    filename_utf8 = WIN_StringToUTF8(data->ICMFileName);
+    filename_utf8 = WIN_StringToUTF8W(data->ICMFileName);
     if (filename_utf8) {
         iccProfileData = SDL_LoadFile(filename_utf8, size);
         if (!iccProfileData) {
@@ -2050,7 +2050,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
                              ". In Drop Text for   GlobalLock, format %08x '%s', memory (%lu) %p",
                              fetc.cfFormat, format_mime, (unsigned long)bsize, buffer);
                 if (buffer) {
-                    buffer = WIN_StringToUTF8((const wchar_t *)buffer);
+                    buffer = WIN_StringToUTF8W((const wchar_t *)buffer);
                     if (buffer) {
                         const size_t lbuffer = SDL_strlen((const char *)buffer);
                         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
@@ -2197,8 +2197,8 @@ void WIN_AcceptDragAndDrop(SDL_Window *window, bool accept)
                 drop_target->lpVtbl = vtDropTarget;
                 drop_target->window = window;
                 drop_target->hwnd = data->hwnd;
-                drop_target->format_file = RegisterClipboardFormat(L"text/uri-list");
-                drop_target->format_text = RegisterClipboardFormat(L"text/plain;charset=utf-8");
+                drop_target->format_file = RegisterClipboardFormatW(L"text/uri-list");
+                drop_target->format_text = RegisterClipboardFormatW(L"text/plain;charset=utf-8");
                 data->drop_target = drop_target;
                 SDLDropTarget_AddRef(drop_target);
                 RegisterDragDrop(data->hwnd, (LPDROPTARGET)drop_target);
