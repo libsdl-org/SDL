@@ -502,7 +502,7 @@ static bool X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
             const SDL_DisplayData *dpydata = dpy->internal;
             x = dpydata->x + ((dpy->current_mode->w - data->dialog_width) / 2);
             y = dpydata->y + ((dpy->current_mode->h - data->dialog_height) / 3);
-        } else if(SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, use_xrandr_by_default)) {
+        } else if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, use_xrandr_by_default)) {
             XRRScreenResources *screen = X11_XRRGetScreenResourcesCurrent(display, DefaultRootWindow(display));
             XRRCrtcInfo *crtc_info = X11_XRRGetCrtcInfo(display, screen, screen->crtcs[0]);
             x = (crtc_info->width - data->dialog_width) / 2;
