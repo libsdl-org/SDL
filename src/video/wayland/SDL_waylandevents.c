@@ -599,6 +599,73 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
 
         if (window->hit_test) {
             SDL_HitTestResult rc = window->hit_test(window, &seat->pointer.last_motion, window->hit_test_data);
+
+            // Apply the toplevel constraints if the window isn't resizable from those directions.
+            switch (rc) {
+            case SDL_HITTEST_RESIZE_TOPLEFT:
+                if ((window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_TOP) &&
+                    (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_LEFT)) {
+                    rc = SDL_HITTEST_NORMAL;
+                } else if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_TOP) {
+                    rc = SDL_HITTEST_RESIZE_LEFT;
+                } else if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_LEFT) {
+                    rc = SDL_HITTEST_RESIZE_TOP;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_TOP:
+                if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_TOP) {
+                    rc = SDL_HITTEST_NORMAL;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_TOPRIGHT:
+                if ((window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_TOP) &&
+                    (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_RIGHT)) {
+                    rc = SDL_HITTEST_NORMAL;
+                } else if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_TOP) {
+                    rc = SDL_HITTEST_RESIZE_RIGHT;
+                } else if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_RIGHT) {
+                    rc = SDL_HITTEST_RESIZE_TOP;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_RIGHT:
+                if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_RIGHT) {
+                    rc = SDL_HITTEST_NORMAL;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_BOTTOMRIGHT:
+                if ((window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM) &&
+                    (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_RIGHT)) {
+                    rc = SDL_HITTEST_NORMAL;
+                } else if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM) {
+                    rc = SDL_HITTEST_RESIZE_RIGHT;
+                } else if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_RIGHT) {
+                    rc = SDL_HITTEST_RESIZE_BOTTOM;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_BOTTOM:
+                if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM) {
+                    rc = SDL_HITTEST_NORMAL;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_BOTTOMLEFT:
+                if ((window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM) &&
+                    (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_LEFT)) {
+                    rc = SDL_HITTEST_NORMAL;
+                } else if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM) {
+                    rc = SDL_HITTEST_RESIZE_LEFT;
+                } else if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_LEFT) {
+                    rc = SDL_HITTEST_RESIZE_BOTTOM;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_LEFT:
+                if (window_data->toplevel_constraints & WAYLAND_TOPLEVEL_CONSTRAINED_LEFT) {
+                    rc = SDL_HITTEST_NORMAL;
+                }
+                break;
+            default:
+                break;
+            }
+
             if (rc != window_data->hit_test_result) {
                 window_data->hit_test_result = rc;
                 Wayland_SeatUpdateCursor(seat);

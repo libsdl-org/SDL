@@ -774,6 +774,7 @@ static void handle_configure_xdg_toplevel(void *data,
     bool active = false;
     bool resizing = false;
     bool suspended = false;
+    wind->toplevel_constraints = 0;
     wl_array_for_each (state, states) {
         switch (*state) {
         case XDG_TOPLEVEL_STATE_FULLSCREEN:
@@ -799,6 +800,18 @@ static void handle_configure_xdg_toplevel(void *data,
             break;
         case XDG_TOPLEVEL_STATE_SUSPENDED:
             suspended = true;
+            break;
+        case XDG_TOPLEVEL_STATE_CONSTRAINED_LEFT:
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_LEFT;
+            break;
+        case XDG_TOPLEVEL_STATE_CONSTRAINED_RIGHT:
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_RIGHT;
+            break;
+        case XDG_TOPLEVEL_STATE_CONSTRAINED_TOP:
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_TOP;
+            break;
+        case XDG_TOPLEVEL_STATE_CONSTRAINED_BOTTOM:
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM;
             break;
         default:
             break;
@@ -1205,6 +1218,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
 #if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
         resizing = (window_state & LIBDECOR_WINDOW_STATE_RESIZING) != 0;
 #endif
+        // TODO: Toplevel constraint passthrough is waiting on upstream libdecor changes.
     }
     const bool floating = !(fullscreen || maximized || tiled);
 

@@ -95,6 +95,13 @@ struct SDL_WindowData
                               WAYLAND_WM_CAPS_FULLSCREEN |
                               WAYLAND_WM_CAPS_MINIMIZE
     } wm_caps;
+    enum
+    {
+        WAYLAND_TOPLEVEL_CONSTRAINED_LEFT = 0x01,
+        WAYLAND_TOPLEVEL_CONSTRAINED_RIGHT = 0x02,
+        WAYLAND_TOPLEVEL_CONSTRAINED_TOP = 0x04,
+        WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM = 0x08
+    } toplevel_constraints;
 
     struct wl_egl_window *egl_window;
 #ifdef SDL_VIDEO_OPENGL_EGL
