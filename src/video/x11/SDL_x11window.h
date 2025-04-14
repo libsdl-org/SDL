@@ -75,7 +75,6 @@ struct SDL_WindowData
     Window xdnd_source;
     bool flashing_window;
     Uint64 flash_cancel_time;
-    SDL_Window *keyboard_focus;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif
