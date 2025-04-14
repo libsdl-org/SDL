@@ -146,7 +146,6 @@ typedef enum
 @property(nonatomic) BOOL was_zoomed;
 @property(nonatomic) NSInteger window_number;
 @property(nonatomic) NSInteger flash_request;
-@property(nonatomic) SDL_Window *keyboard_focus;
 @property(nonatomic) SDL3Cocoa_WindowListener *listener;
 @property(nonatomic) NSModalSession modal_session;
 @property(nonatomic) SDL_CocoaVideoData *videodata;

@@ -215,28 +215,30 @@ static void X11_ConstrainPopup(SDL_Window *window, bool output_to_pending)
         int abs_y = window->last_position_pending ? window->pending.y : window->floating.y;
         int offset_x = 0, offset_y = 0;
 
-        // Calculate the total offset from the parents
-        for (w = window->parent; SDL_WINDOW_IS_POPUP(w); w = w->parent) {
+        if (window->constrain_popup) {
+            // Calculate the total offset from the parents
+            for (w = window->parent; SDL_WINDOW_IS_POPUP(w); w = w->parent) {
+                offset_x += w->x;
+                offset_y += w->y;
+            }
+
             offset_x += w->x;
             offset_y += w->y;
-        }
+            abs_x += offset_x;
+            abs_y += offset_y;
 
-        offset_x += w->x;
-        offset_y += w->y;
-        abs_x += offset_x;
-        abs_y += offset_y;
+            displayID = SDL_GetDisplayForWindow(w);
 
-        displayID = SDL_GetDisplayForWindow(w);
-
-        SDL_GetDisplayBounds(displayID, &rect);
-        if (abs_x + window->w > rect.x + rect.w) {
-            abs_x -= (abs_x + window->w) - (rect.x + rect.w);
+            SDL_GetDisplayBounds(displayID, &rect);
+            if (abs_x + window->w > rect.x + rect.w) {
+                abs_x -= (abs_x + window->w) - (rect.x + rect.w);
+            }
+            if (abs_y + window->h > rect.y + rect.h) {
+                abs_y -= (abs_y + window->h) - (rect.y + rect.h);
+            }
+            abs_x = SDL_max(abs_x, rect.x);
+            abs_y = SDL_max(abs_y, rect.y);
         }
-        if (abs_y + window->h > rect.y + rect.h) {
-            abs_y -= (abs_y + window->h) - (rect.y + rect.h);
-        }
-        abs_x = SDL_max(abs_x, rect.x);
-        abs_y = SDL_max(abs_y, rect.y);
 
         if (output_to_pending) {
             window->pending.x = abs_x - offset_x;
@@ -257,7 +259,7 @@ static void X11_SetKeyboardFocus(SDL_Window *window, bool set_active_focus)
         toplevel = toplevel->parent;
     }
 
-    toplevel->internal->keyboard_focus = window;
+    toplevel->keyboard_focus = window;
 
     if (set_active_focus && !window->is_hiding && !window->is_destroying) {
         SDL_SetKeyboardFocus(window);
@@ -1550,9 +1552,9 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         X11_XFlush(display);
     }
 
-    // Popup menus grab the keyboard
-    if (window->flags & SDL_WINDOW_POPUP_MENU) {
-        X11_SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
+    // Grabbing popup menus get keyboard focus.
+    if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
+        X11_SetKeyboardFocus(window, true);
     }
 
     // Get some valid border values, if we haven't received them yet
@@ -1609,20 +1611,9 @@ void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     // Transfer keyboard focus back to the parent
-    if (window->flags & SDL_WINDOW_POPUP_MENU) {
-        SDL_Window *new_focus = window->parent;
-        bool set_focus = window == SDL_GetKeyboardFocus();
-
-        // Find the highest level window, up to the toplevel parent, that isn't being hidden or destroyed.
-        while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
-            new_focus = new_focus->parent;
-
-            // If some window in the chain currently had focus, set it to the new lowest-level window.
-            if (!set_focus) {
-                set_focus = new_focus == SDL_GetKeyboardFocus();
-            }
-        }
-
+    if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
+        SDL_Window *new_focus;
+        const bool set_focus = SDL_ShouldRelinquishPopupFocus(window, &new_focus);
         X11_SetKeyboardFocus(new_focus, set_focus);
     }
 
@@ -2340,20 +2331,36 @@ bool X11_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 bool X11_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable)
 {
-    SDL_WindowData *data = window->internal;
-    Display *display = data->videodata->display;
-    XWMHints *wmhints;
+    if (!SDL_WINDOW_IS_POPUP(window)) {
+        SDL_WindowData *data = window->internal;
+        Display *display = data->videodata->display;
+        XWMHints *wmhints;
 
-    wmhints = X11_XGetWMHints(display, data->xwindow);
-    if (!wmhints) {
-        return SDL_SetError("Couldn't get WM hints");
+        wmhints = X11_XGetWMHints(display, data->xwindow);
+        if (!wmhints) {
+            return SDL_SetError("Couldn't get WM hints");
+        }
+
+        wmhints->input = focusable ? True : False;
+        wmhints->flags |= InputHint;
+
+        X11_XSetWMHints(display, data->xwindow, wmhints);
+        X11_XFree(wmhints);
+    } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
+        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
+            if (!focusable && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+                SDL_Window *new_focus;
+                const bool set_focus = SDL_ShouldRelinquishPopupFocus(window, &new_focus);
+                X11_SetKeyboardFocus(new_focus, set_focus);
+            } else if (focusable) {
+                if (SDL_ShouldFocusPopup(window)) {
+                    X11_SetKeyboardFocus(window, true);
+                }
+            }
+        }
+
+        return true;
     }
-
-    wmhints->input = focusable ? True : False;
-    wmhints->flags |= InputHint;
-
-    X11_XSetWMHints(display, data->xwindow, wmhints);
-    X11_XFree(wmhints);
 
     return true;
 }

@@ -1677,7 +1677,7 @@ static const struct wp_color_management_surface_feedback_v1_listener color_manag
     feedback_surface_preferred_changed
 };
 
-static void SetKeyboardFocus(SDL_Window *window, bool set_focus)
+static void Wayland_SetKeyboardFocus(SDL_Window *window, bool set_focus)
 {
     SDL_Window *toplevel = window;
 
@@ -1686,7 +1686,7 @@ static void SetKeyboardFocus(SDL_Window *window, bool set_focus)
         toplevel = toplevel->parent;
     }
 
-    toplevel->internal->keyboard_focus = window;
+    toplevel->keyboard_focus = window;
 
     if (set_focus && !window->is_hiding && !window->is_destroying) {
         SDL_SetKeyboardFocus(window);
@@ -1916,8 +1916,9 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             data->shell_surface.xdg.popup.xdg_positioner = xdg_wm_base_create_positioner(c->shell.xdg);
             xdg_positioner_set_anchor(data->shell_surface.xdg.popup.xdg_positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
             xdg_positioner_set_anchor_rect(data->shell_surface.xdg.popup.xdg_positioner, 0, 0, parent->internal->current.logical_width, parent->internal->current.logical_width);
-            xdg_positioner_set_constraint_adjustment(data->shell_surface.xdg.popup.xdg_positioner,
-                                                     XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y);
+
+            const Uint32 constraint = window->constrain_popup ? (XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y) : XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE;
+            xdg_positioner_set_constraint_adjustment(data->shell_surface.xdg.popup.xdg_positioner, constraint);
             xdg_positioner_set_gravity(data->shell_surface.xdg.popup.xdg_positioner, XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
             xdg_positioner_set_size(data->shell_surface.xdg.popup.xdg_positioner, data->current.logical_width, data->current.logical_height);
 
@@ -1946,8 +1947,8 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 wl_region_add(region, 0, 0, 0, 0);
                 wl_surface_set_input_region(data->surface, region);
                 wl_region_destroy(region);
-            } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
-                SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
+            } else if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
+                Wayland_SetKeyboardFocus(window, true);
             }
 
             SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER, data->shell_surface.xdg.popup.xdg_popup);
@@ -2094,21 +2095,10 @@ static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
         return;
     }
 
-    if (popup->flags & SDL_WINDOW_POPUP_MENU) {
-        SDL_Window *new_focus = popup->parent;
-        bool set_focus = popup == SDL_GetKeyboardFocus();
-
-        // Find the highest level window, up to the toplevel parent, that isn't being hidden or destroyed.
-        while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
-            new_focus = new_focus->parent;
-
-            // If some window in the chain currently had focus, set it to the new lowest-level window.
-            if (!set_focus) {
-                set_focus = new_focus == SDL_GetKeyboardFocus();
-            }
-        }
-
-        SetKeyboardFocus(new_focus, set_focus);
+    if ((popup->flags & SDL_WINDOW_POPUP_MENU) && !(popup->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
+        SDL_Window *new_focus;
+        const bool set_focus = SDL_ShouldRelinquishPopupFocus(popup, &new_focus);
+        Wayland_SetKeyboardFocus(new_focus, set_focus);
     }
 
     xdg_popup_destroy(popupdata->shell_surface.xdg.popup.xdg_popup);
@@ -3000,6 +2990,27 @@ bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
     } while (wind->fullscreen_deadline_count || wind->maximized_restored_deadline_count);
 
     return true;
+}
+
+bool Wayland_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable)
+{
+    if (window->flags & SDL_WINDOW_POPUP_MENU) {
+        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
+            if (!focusable && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+                SDL_Window *new_focus;
+                const bool set_focus = SDL_ShouldRelinquishPopupFocus(window, &new_focus);
+                Wayland_SetKeyboardFocus(new_focus, set_focus);
+            } else if (focusable) {
+                if (SDL_ShouldFocusPopup(window)) {
+                    Wayland_SetKeyboardFocus(window, true);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    return SDL_SetError("wayland: focus can only be toggled on popup menu windows");
 }
 
 void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
