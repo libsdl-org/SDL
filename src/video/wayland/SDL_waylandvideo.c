@@ -632,6 +632,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->HasScreenKeyboardSupport = Wayland_HasScreenKeyboardSupport;
     device->ShowWindowSystemMenu = Wayland_ShowWindowSystemMenu;
     device->SyncWindow = Wayland_SyncWindow;
+    device->SetWindowFocusable = Wayland_SetWindowFocusable;
 
 #ifdef SDL_USE_LIBDBUS
     if (SDL_SystemTheme_Init())

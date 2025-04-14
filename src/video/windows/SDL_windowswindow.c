@@ -666,7 +666,7 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
 
 static void WIN_ConstrainPopup(SDL_Window *window, bool output_to_pending)
 {
-    // Clamp popup windows to the output borders
+    // Possibly clamp popup windows to the output borders
     if (SDL_WINDOW_IS_POPUP(window)) {
         SDL_Window *w;
         SDL_DisplayID displayID;
@@ -677,28 +677,30 @@ static void WIN_ConstrainPopup(SDL_Window *window, bool output_to_pending)
         const int height = window->last_size_pending ? window->pending.h : window->floating.h;
         int offset_x = 0, offset_y = 0;
 
-        // Calculate the total offset from the parents
-        for (w = window->parent; SDL_WINDOW_IS_POPUP(w); w = w->parent) {
+        if (window->constrain_popup) {
+            // Calculate the total offset from the parents
+            for (w = window->parent; SDL_WINDOW_IS_POPUP(w); w = w->parent) {
+                offset_x += w->x;
+                offset_y += w->y;
+            }
+
             offset_x += w->x;
             offset_y += w->y;
-        }
+            abs_x += offset_x;
+            abs_y += offset_y;
 
-        offset_x += w->x;
-        offset_y += w->y;
-        abs_x += offset_x;
-        abs_y += offset_y;
-
-        // Constrain the popup window to the display of the toplevel parent
-        displayID = SDL_GetDisplayForWindow(w);
-        SDL_GetDisplayBounds(displayID, &rect);
-        if (abs_x + width > rect.x + rect.w) {
-            abs_x -= (abs_x + width) - (rect.x + rect.w);
+            // Constrain the popup window to the display of the toplevel parent
+            displayID = SDL_GetDisplayForWindow(w);
+            SDL_GetDisplayBounds(displayID, &rect);
+            if (abs_x + width > rect.x + rect.w) {
+                abs_x -= (abs_x + width) - (rect.x + rect.w);
+            }
+            if (abs_y + height > rect.y + rect.h) {
+                abs_y -= (abs_y + height) - (rect.y + rect.h);
+            }
+            abs_x = SDL_max(abs_x, rect.x);
+            abs_y = SDL_max(abs_y, rect.y);
         }
-        if (abs_y + height > rect.y + rect.h) {
-            abs_y -= (abs_y + height) - (rect.y + rect.h);
-        }
-        abs_x = SDL_max(abs_x, rect.x);
-        abs_y = SDL_max(abs_y, rect.y);
 
         if (output_to_pending) {
             window->pending.x = abs_x - offset_x;
@@ -723,7 +725,7 @@ static void WIN_SetKeyboardFocus(SDL_Window *window, bool set_active_focus)
         toplevel = toplevel->parent;
     }
 
-    toplevel->internal->keyboard_focus = window;
+    toplevel->keyboard_focus = window;
 
     if (set_active_focus && !window->is_hiding && !window->is_destroying) {
         SDL_SetKeyboardFocus(window);
@@ -1082,8 +1084,8 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         SetWindowPos(hwnd, NULL, 0, 0, 0, 0, window->internal->copybits_flag | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
     }
 
-    if (window->flags & SDL_WINDOW_POPUP_MENU && bActivate) {
-        WIN_SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
+    if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE) && bActivate) {
+        WIN_SetKeyboardFocus(window, true);
     }
     if (window->flags & SDL_WINDOW_MODAL) {
         WIN_SetWindowModal(_this, window, true);
@@ -1100,21 +1102,10 @@ void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     ShowWindow(hwnd, SW_HIDE);
 
-    // Transfer keyboard focus back to the parent
-    if (window->flags & SDL_WINDOW_POPUP_MENU) {
-        SDL_Window *new_focus = window->parent;
-        bool set_focus = window == SDL_GetKeyboardFocus();
-
-        // Find the highest level window, up to the toplevel parent, that isn't being hidden or destroyed.
-        while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
-            new_focus = new_focus->parent;
-
-            // If some window in the chain currently had keyboard focus, set it to the new lowest-level window.
-            if (!set_focus) {
-                set_focus = new_focus == SDL_GetKeyboardFocus();
-            }
-        }
-
+    // Transfer keyboard focus back to the parent from a grabbing popup.
+    if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
+        SDL_Window *new_focus;
+        const bool set_focus = SDL_ShouldRelinquishPopupFocus(window, &new_focus);
         WIN_SetKeyboardFocus(new_focus, set_focus);
     }
 }
@@ -1152,7 +1143,7 @@ void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
     if (bActivate) {
         SetForegroundWindow(hwnd);
-        if (window->flags & SDL_WINDOW_POPUP_MENU) {
+        if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
             WIN_SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
         }
     } else {
@@ -2319,24 +2310,40 @@ void WIN_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 
 bool WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable)
 {
-    SDL_WindowData *data = window->internal;
-    HWND hwnd = data->hwnd;
-    const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    if (!SDL_WINDOW_IS_POPUP(window)) {
+        SDL_WindowData *data = window->internal;
+        HWND hwnd = data->hwnd;
+        const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
 
-    SDL_assert(style != 0);
+        SDL_assert(style != 0);
 
-    if (focusable) {
-        if (style & WS_EX_NOACTIVATE) {
-            if (SetWindowLong(hwnd, GWL_EXSTYLE, style & ~WS_EX_NOACTIVATE) == 0) {
-                return WIN_SetError("SetWindowLong()");
+        if (focusable) {
+            if (style & WS_EX_NOACTIVATE) {
+                if (SetWindowLong(hwnd, GWL_EXSTYLE, style & ~WS_EX_NOACTIVATE) == 0) {
+                    return WIN_SetError("SetWindowLong()");
+                }
+            }
+        } else {
+            if (!(style & WS_EX_NOACTIVATE)) {
+                if (SetWindowLong(hwnd, GWL_EXSTYLE, style | WS_EX_NOACTIVATE) == 0) {
+                    return WIN_SetError("SetWindowLong()");
+                }
             }
         }
-    } else {
-        if (!(style & WS_EX_NOACTIVATE)) {
-            if (SetWindowLong(hwnd, GWL_EXSTYLE, style | WS_EX_NOACTIVATE) == 0) {
-                return WIN_SetError("SetWindowLong()");
+    } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
+        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
+            if (!focusable && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+                SDL_Window *new_focus;
+                const bool set_focus = SDL_ShouldRelinquishPopupFocus(window, &new_focus);
+                WIN_SetKeyboardFocus(new_focus, set_focus);
+            } else if (focusable) {
+                if (SDL_ShouldFocusPopup(window)) {
+                    WIN_SetKeyboardFocus(window, true);
+                }
             }
         }
+
+        return true;
     }
 
     return true;
