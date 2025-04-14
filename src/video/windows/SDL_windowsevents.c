@@ -385,7 +385,7 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus, DWORD pos)
             }
         }
 
-        SDL_SetKeyboardFocus(data->keyboard_focus ? data->keyboard_focus : window);
+        SDL_SetKeyboardFocus(window->keyboard_focus ? window->keyboard_focus : window);
 
         // In relative mode we are guaranteed to have mouse focus if we have keyboard focus
         if (!SDL_GetMouse()->relative_mode) {
