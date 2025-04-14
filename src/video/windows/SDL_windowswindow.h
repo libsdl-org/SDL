@@ -92,7 +92,6 @@ struct SDL_WindowData
     bool destroy_parent_with_window;
     SDL_DisplayID last_displayID;
     WCHAR *ICMFileName;
-    SDL_Window *keyboard_focus;
     SDL_WindowEraseBackgroundMode hint_erase_background_mode;
     bool taskbar_button_created;
     struct SDL_VideoData *videodata;
