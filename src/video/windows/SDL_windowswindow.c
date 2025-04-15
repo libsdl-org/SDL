@@ -1627,7 +1627,7 @@ void WIN_UnclipCursorForWindow(SDL_Window *window) {
 void WIN_UpdateClipCursor(SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
-    if (data->in_title_click || data->focus_click_pending || data->skip_update_clipcursor) {
+    if (data->in_title_click || data->focus_click_pending || data->postpone_clipcursor) {
         return;
     }
 
