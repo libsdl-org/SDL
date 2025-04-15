@@ -1236,11 +1236,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_NCACTIVATE:
     {
         // Don't immediately clip the cursor in case we're clicking minimize/maximize buttons
-        // This is the only place that this flag is set. This causes all subsequent calls to
-        // WIN_UpdateClipCursor for this window to be no-ops in this frame's message-pumping.
-        // This flag is unset at the end of message pumping each frame for every window, and
-        // should never be carried over between frames.
-        data->skip_update_clipcursor = true;
+        data->postpone_clipcursor = true;
+        data->clipcursor_queued = true;
 
         /* Update the focus here, since it's possible to get WM_ACTIVATE and WM_SETFOCUS without
            actually being the foreground window, but this appears to get called in all cases where
@@ -1409,9 +1406,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 window->flags & (SDL_WINDOW_MOUSE_RELATIVE_MODE | SDL_WINDOW_MOUSE_GRABBED) ||
                 (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)
             );
-            if (wish_clip_cursor) {
-                data->skip_update_clipcursor = false;
-                WIN_UpdateClipCursor(window);
+            if (wish_clip_cursor) { // queue clipcursor refresh on pump finish
+                data->clipcursor_queued = true;
             }
         }
 
@@ -1436,6 +1432,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
             }
         }
+        
+        return 0;
+        
     } break;
 
     case WM_LBUTTONUP:
@@ -2591,13 +2590,27 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
         }
     }
 
-    // Update the clipping rect in case someone else has stolen it
+    // fire queued clipcursor refreshes
     if (_this) {
         SDL_Window *window = _this->windows;
         while (window) {
+            bool refresh_clipcursor = false;
             SDL_WindowData *data = window->internal;
-            if (data && data->skip_update_clipcursor) {
-                data->skip_update_clipcursor = false;
+            if (data) {
+                refresh_clipcursor = data->clipcursor_queued;
+                data->clipcursor_queued = false;    // Must be cleared unconditionally.
+                data->postpone_clipcursor = false;  // Must be cleared unconditionally.
+                                                    // Must happen before UpdateClipCursor.
+                                                    // Although its occurrence currently
+                                                    // always coincides with the queuing of
+                                                    // clipcursor, it is logically distinct
+                                                    // and this coincidence might no longer
+                                                    // be true in the future.
+                                                    // Ergo this placement concordantly
+                                                    // conveys its unconditionality 
+                                                    // vis-a-vis the queuing of clipcursor.
+            }
+            if (refresh_clipcursor) {
                 WIN_UpdateClipCursor(window);
             }
             window = window->next;
