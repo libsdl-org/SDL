@@ -79,6 +79,7 @@ struct SDL_WindowData
     bool in_title_click;
     Uint8 focus_click_pending;
     bool skip_update_clipcursor;
+    bool tentatively_named_clipcursor_queued_but_dont_skip;
     bool windowed_mode_was_maximized;
     bool in_window_deactivation;
     bool force_ws_maximizebox;

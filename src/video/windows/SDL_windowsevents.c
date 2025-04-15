@@ -1412,9 +1412,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 window->flags & (SDL_WINDOW_MOUSE_RELATIVE_MODE | SDL_WINDOW_MOUSE_GRABBED) ||
                 (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)
             );
-            if (wish_clip_cursor) {
-                data->skip_update_clipcursor = false;
-                WIN_UpdateClipCursor(window);
+            if (wish_clip_cursor) { // queue clipcursor refresh on pump finish
+                // TODO: make sense of the usage of skip_update_clipcursor
+                // to see if it can be absorbed into the same flag
+                data->tentatively_named_clipcursor_queued_but_dont_skip = true;
             }
         }
 
@@ -2606,7 +2607,8 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
         SDL_Window *window = _this->windows;
         while (window) {
             SDL_WindowData *data = window->internal;
-            if (data && data->skip_update_clipcursor) {
+            if (data && (data->skip_update_clipcursor || data->tentatively_named_clipcursor_queued_but_dont_skip)) {
+                data->tentatively_named_clipcursor_queued_but_dont_skip = false;
                 data->skip_update_clipcursor = false;
                 WIN_UpdateClipCursor(window);
             }
