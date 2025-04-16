@@ -118,38 +118,41 @@ void WIN_UpdateKeymap(SDL_bool send_event)
 {
     int i;
     SDL_Scancode scancode;
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    SDL_Keymap *keymap;
 
-    SDL_GetDefaultKeymap(keymap);
+    keymap = SDL_CreateKeymap();
 
     for (i = 0; i < SDL_arraysize(windows_scancode_table); i++) {
-        int vk;
+        int ch, vk;
+
         /* Make sure this scancode is a valid character scancode */
         scancode = windows_scancode_table[i];
         if (scancode == SDL_SCANCODE_UNKNOWN) {
             continue;
         }
 
-        /* If this key is one of the non-mappable keys, ignore it */
-        /* Uncomment the second part re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
-        if ((keymap[scancode] & SDLK_SCANCODE_MASK) /*|| scancode == SDL_SCANCODE_GRAVE*/) {
+        vk = MapVirtualKey(i, MAPVK_VSC_TO_VK);
+        if (!vk) {
             continue;
         }
 
-        vk = MapVirtualKey(i, MAPVK_VSC_TO_VK);
-        if (vk) {
-            int ch = (MapVirtualKey(vk, MAPVK_VK_TO_CHAR) & 0x7FFF);
-            if (ch) {
-                if (ch >= 'A' && ch <= 'Z') {
-                    keymap[scancode] = SDLK_a + (ch - 'A');
-                } else {
-                    keymap[scancode] = ch;
-                }
+        /* If this key is one of the non-mappable keys, ignore it */
+        /* Uncomment the second part re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
+        if ((vk & SDLK_SCANCODE_MASK) /*|| scancode == SDL_SCANCODE_GRAVE*/) {
+            continue;
+        }
+
+        ch = (MapVirtualKey(vk, MAPVK_VK_TO_CHAR) & 0x7FFF);
+        if (ch) {
+            if (ch >= 'A' && ch <= 'Z') {
+                SDL_SetKeymapEntry(keymap, scancode, SDLK_a + (ch - 'A'));
+            } else {
+                SDL_SetKeymapEntry(keymap, scancode, ch);
             }
         }
     }
 
-    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
+    SDL_SetKeymap(keymap, send_event);
 }
 
 void WIN_QuitKeyboard(_THIS)

@@ -25,6 +25,7 @@
 
 #include "SDL_keycode.h"
 #include "SDL_events.h"
+#include "SDL_keymap_c.h"
 
 /* Initialize the keyboard subsystem */
 extern int SDL_KeyboardInit(void);
@@ -32,17 +33,8 @@ extern int SDL_KeyboardInit(void);
 /* Get the default keymap */
 extern void SDL_GetDefaultKeymap(SDL_Keycode *keymap);
 
-/* Get the default key code for a scancode */
-extern SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode);
-
 /* Set the mapping of scancode to key codes */
-extern void SDL_SetKeymap(int start, const SDL_Keycode *keys, int length, SDL_bool send_event);
-
-/* Set a platform-dependent key name, overriding the default platform-agnostic
-   name. Encoded as UTF-8. The string is not copied, thus the pointer given to
-   this function must stay valid forever (or at least until the call to
-   VideoQuit()). */
-extern void SDL_SetScancodeName(SDL_Scancode scancode, const char *name);
+extern void SDL_SetKeymap(SDL_Keymap *keymap, SDL_bool send_event);
 
 /* Set the keyboard focus window */
 extern void SDL_SetKeyboardFocus(SDL_Window *window);

@@ -242,7 +242,6 @@ static void UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
     const void *chr_data;
     int i;
     SDL_Scancode scancode;
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
     CFDataRef uchrDataRef;
 
     /* See if the keymap needs to be updated */
@@ -251,8 +250,6 @@ static void UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
         return;
     }
     data.key_layout = key_layout;
-
-    SDL_GetDefaultKeymap(keymap);
 
     /* Try Unicode data first */
     uchrDataRef = TISGetInputSourceProperty(key_layout, kTISPropertyUnicodeKeyLayoutData);
@@ -266,6 +263,7 @@ static void UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
         UInt32 keyboard_type = LMGetKbdType();
         OSStatus err;
 
+        SDL_Keymap *keymap = SDL_CreateKeymap();
         for (i = 0; i < SDL_arraysize(darwin_scancode_table); i++) {
             UniChar s[8];
             UniCharCount len;
@@ -274,7 +272,8 @@ static void UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
             /* Make sure this scancode is a valid character scancode */
             scancode = darwin_scancode_table[i];
             if (scancode == SDL_SCANCODE_UNKNOWN ||
-                (keymap[scancode] & SDLK_SCANCODE_MASK)) {
+                scancode == SDL_SCANCODE_DELETE ||
+                (SDL_GetKeymapKeycode(NULL, scancode) & SDLK_SCANCODE_MASK)) {
                 continue;
             }
 
@@ -300,10 +299,11 @@ static void UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
             }
 
             if (len > 0 && s[0] != 0x10) {
-                keymap[scancode] = s[0];
+                SDL_SetKeymapEntry(keymap, scancode, s[0]);
             }
         }
-        SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
+        
+        SDL_SetKeymap(keymap, send_event);
         return;
     }
 

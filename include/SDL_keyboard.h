@@ -143,7 +143,8 @@ extern DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
  *
  * See SDL_Keycode for details.
  *
- * \param scancode the desired SDL_Scancode to query
+ * \param scancode the desired SDL_Scancode to query.
+ * \param key_event true if the keycode will be used in key events.
  * \returns the SDL_Keycode that corresponds to the given SDL_Scancode.
  *
  * \since This function is available since SDL 2.0.0.
@@ -151,7 +152,7 @@ extern DECLSPEC void SDLCALL SDL_SetModState(SDL_Keymod modstate);
  * \sa SDL_GetKeyName
  * \sa SDL_GetScancodeFromKey
  */
-extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scancode);
+extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_bool key_event);
 
 /**
  * Get the scancode corresponding to the given key code according to the
@@ -168,6 +169,24 @@ extern DECLSPEC SDL_Keycode SDLCALL SDL_GetKeyFromScancode(SDL_Scancode scancode
  * \sa SDL_GetScancodeName
  */
 extern DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromKey(SDL_Keycode key);
+
+/**
+ * Set a human-readable name for a scancode.
+ *
+ * \param scancode the desired SDL_Scancode.
+ * \param name the name to use for the scancode, encoded as UTF-8. The string
+ *             is not copied, so the pointer given to this function must stay
+ *             valid while SDL is being used.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is usually available since SDL 3.2.0 - we have backported it to SDL2
+ *
+ * \sa SDL_GetScancodeName
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_SetScancodeName(SDL_Scancode scancode, const char *name);
 
 /**
  * Get a human-readable name for a scancode.

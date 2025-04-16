@@ -870,3 +870,4 @@
 # ++'_SDL_GDKSuspendComplete'.'SDL2.dll'.'SDL_GDKSuspendComplete'
 ++'_SDL_HasWindowSurface'.'SDL2.dll'.'SDL_HasWindowSurface'
 ++'_SDL_DestroyWindowSurface'.'SDL2.dll'.'SDL_DestroyWindowSurface'
+++'_SDL_SetScancodeName'.'SDL2.dll'.'SDL_SetScancodeName'
