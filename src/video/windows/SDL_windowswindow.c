@@ -348,6 +348,10 @@ bool WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags, SDL_WindowRec
 
     // Update any child windows
     for (child_window = window->first_child; child_window; child_window = child_window->next_sibling) {
+        if (!child_window->internal) {
+            // This child window is not yet fully initialized.
+            continue;
+        }
         if (!WIN_SetWindowPositionInternal(child_window, flags, SDL_WINDOWRECT_CURRENT)) {
             result = false;
         }
