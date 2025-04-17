@@ -293,7 +293,7 @@ static bool QueryDeviceName(LPDIRECTINPUTDEVICE8 device, Uint16 vendor_id, Uint1
     }
 
     *manufacturer_string = NULL;
-    *product_string = WIN_StringToUTF8(dipstr.wsz);
+    *product_string = WIN_StringToUTF8W(dipstr.wsz);
 
     return true;
 }
