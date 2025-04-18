@@ -148,8 +148,8 @@ static SDL_MimeDataList *mime_data_list_find(struct wl_list *list,
 }
 
 static bool mime_data_list_add(struct wl_list *list,
-                              const char *mime_type,
-                              const void *buffer, size_t length)
+                               const char *mime_type,
+                               const void *buffer, size_t length)
 {
     bool result = true;
     size_t mime_type_length = 0;
@@ -231,7 +231,10 @@ ssize_t Wayland_data_source_send(SDL_WaylandDataSource *source, const char *mime
     const void *data = NULL;
     size_t length = 0;
 
-    if (source->callback) {
+    if (SDL_strcmp(mime_type, SDL_DATA_ORIGIN_MIME) == 0) {
+        data = source->data_device->id_str;
+        length = SDL_strlen(source->data_device->id_str);
+    } else if (source->callback) {
         data = source->callback(source->userdata.data, mime_type, &length);
     }
 
@@ -263,8 +266,8 @@ void Wayland_data_source_set_callback(SDL_WaylandDataSource *source,
 }
 
 void Wayland_primary_selection_source_set_callback(SDL_WaylandPrimarySelectionSource *source,
-                                                  SDL_ClipboardDataCallback callback,
-                                                  void *userdata)
+                                                   SDL_ClipboardDataCallback callback,
+                                                   void *userdata)
 {
     if (source) {
         source->callback = callback;
@@ -352,6 +355,113 @@ void Wayland_primary_selection_source_destroy(SDL_WaylandPrimarySelectionSource 
     }
 }
 
+static void offer_source_done_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
+{
+    if (!callback) {
+        return;
+    }
+
+    SDL_WaylandDataOffer *offer = data;
+    char *id = NULL;
+    size_t length = 0;
+
+    wl_callback_destroy(offer->callback);
+    offer->callback = NULL;
+
+    while (read_pipe(offer->read_fd, (void **)&id, &length) > 0) {
+    }
+    close(offer->read_fd);
+    offer->read_fd = -1;
+
+    if (id) {
+        const bool source_is_external = SDL_strncmp(offer->data_device->id_str, id, length) != 0;
+        SDL_free(id);
+        if (source_is_external) {
+            Wayland_data_offer_notify_from_mimes(offer, false);
+        }
+    }
+}
+
+static struct wl_callback_listener offer_source_listener = {
+    offer_source_done_handler
+};
+
+static void Wayland_data_offer_check_source(SDL_WaylandDataOffer *offer, const char *mime_type)
+{
+    SDL_WaylandDataDevice *data_device = NULL;
+    int pipefd[2];
+
+    if (!offer) {
+        SDL_SetError("Invalid data offer");
+    }
+    data_device = offer->data_device;
+    if (!data_device) {
+        SDL_SetError("Data device not initialized");
+    } else if (pipe2(pipefd, O_CLOEXEC | O_NONBLOCK) == -1) {
+        SDL_SetError("Could not read pipe");
+    } else {
+        if (offer->callback) {
+            wl_callback_destroy(offer->callback);
+        }
+        if (offer->read_fd >= 0) {
+            close(offer->read_fd);
+        }
+
+        offer->read_fd = pipefd[0];
+
+        wl_data_offer_receive(offer->offer, mime_type, pipefd[1]);
+        close(pipefd[1]);
+
+        offer->callback = wl_display_sync(offer->data_device->seat->display->display);
+        wl_callback_add_listener(offer->callback, &offer_source_listener, offer);
+
+        WAYLAND_wl_display_flush(data_device->seat->display->display);
+    }
+}
+
+void Wayland_data_offer_notify_from_mimes(SDL_WaylandDataOffer *offer, bool check_origin)
+{
+    int nformats = 0;
+    char **new_mime_types = NULL;
+    if (offer) {
+        size_t alloc_size = 0;
+
+        // Do a first pass to compute allocation size.
+        SDL_MimeDataList *item = NULL;
+        wl_list_for_each(item, &offer->mimes, link) {
+            // If origin metadata is found, queue a check and wait for confirmation that this offer isn't recursive.
+            if (check_origin && SDL_strcmp(item->mime_type, SDL_DATA_ORIGIN_MIME) == 0) {
+                Wayland_data_offer_check_source(offer, item->mime_type);
+                return;
+            }
+
+            ++nformats;
+            alloc_size += SDL_strlen(item->mime_type) + 1;
+        }
+
+        alloc_size += (nformats + 1) * sizeof(char *);
+
+        new_mime_types = SDL_AllocateTemporaryMemory(alloc_size);
+        if (!new_mime_types) {
+            SDL_LogError(SDL_LOG_CATEGORY_INPUT, "unable to allocate new_mime_types");
+            return;
+        }
+
+        // Second pass to fill.
+        char *strPtr = (char *)(new_mime_types + nformats + 1);
+        item = NULL;
+        int i = 0;
+        wl_list_for_each(item, &offer->mimes, link) {
+            new_mime_types[i] = strPtr;
+            strPtr = stpcpy(strPtr, item->mime_type) + 1;
+            i++;
+        }
+        new_mime_types[nformats] = NULL;
+    }
+
+    SDL_SendClipboardUpdate(false, new_mime_types, nformats);
+}
+
 void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
                                  const char *mime_type, size_t *length)
 {
@@ -433,7 +543,7 @@ bool Wayland_primary_selection_offer_add_mime(SDL_WaylandPrimarySelectionOffer *
 }
 
 bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
-                                     const char *mime_type)
+                                 const char *mime_type)
 {
     bool found = false;
 
@@ -444,7 +554,7 @@ bool Wayland_data_offer_has_mime(SDL_WaylandDataOffer *offer,
 }
 
 bool Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *offer,
-                                                  const char *mime_type)
+                                              const char *mime_type)
 {
     bool found = false;
 
@@ -457,6 +567,12 @@ bool Wayland_primary_selection_offer_has_mime(SDL_WaylandPrimarySelectionOffer *
 void Wayland_data_offer_destroy(SDL_WaylandDataOffer *offer)
 {
     if (offer) {
+        if (offer->callback) {
+            wl_callback_destroy(offer->callback);
+        }
+        if (offer->read_fd >= 0) {
+            close(offer->read_fd);
+        }
         wl_data_offer_destroy(offer->offer);
         mime_data_list_free(&offer->mimes);
         SDL_free(offer);
@@ -521,6 +637,9 @@ bool Wayland_data_device_set_selection(SDL_WaylandDataDevice *data_device,
             wl_data_source_offer(source->source,
                                  mime_type);
         }
+
+        // Advertise the data origin MIME
+        wl_data_source_offer(source->source, SDL_DATA_ORIGIN_MIME);
 
         if (index == 0) {
             Wayland_data_device_clear_selection(data_device);
