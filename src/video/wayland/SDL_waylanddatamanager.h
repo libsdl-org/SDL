@@ -31,6 +31,10 @@
 #define TEXT_MIME "text/plain;charset=utf-8"
 #define FILE_MIME "text/uri-list"
 #define FILE_PORTAL_MIME "application/vnd.portal.filetransfer"
+#define SDL_DATA_ORIGIN_MIME "application/x-sdl3-source-id"
+
+typedef struct SDL_WaylandDataDevice SDL_WaylandDataDevice;
+typedef struct SDL_WaylandPrimarySelectionDevice SDL_WaylandPrimarySelectionDevice;
 
 typedef struct
 {
@@ -49,7 +53,7 @@ typedef struct SDL_WaylandUserdata
 typedef struct
 {
     struct wl_data_source *source;
-    void *data_device;
+    SDL_WaylandDataDevice *data_device;
     SDL_ClipboardDataCallback callback;
     SDL_WaylandUserdata userdata;
 } SDL_WaylandDataSource;
@@ -57,8 +61,8 @@ typedef struct
 typedef struct
 {
     struct zwp_primary_selection_source_v1 *source;
-    void *data_device;
-    void *primary_selection_device;
+    SDL_WaylandDataDevice *data_device;
+    SDL_WaylandPrimarySelectionDevice *primary_selection_device;
     SDL_ClipboardDataCallback callback;
     SDL_WaylandUserdata userdata;
 } SDL_WaylandPrimarySelectionSource;
@@ -67,20 +71,21 @@ typedef struct
 {
     struct wl_data_offer *offer;
     struct wl_list mimes;
-    void *data_device;
+    SDL_WaylandDataDevice *data_device;
 } SDL_WaylandDataOffer;
 
 typedef struct
 {
     struct zwp_primary_selection_offer_v1 *offer;
     struct wl_list mimes;
-    void *primary_selection_device;
+    SDL_WaylandPrimarySelectionDevice *primary_selection_device;
 } SDL_WaylandPrimarySelectionOffer;
 
-typedef struct
+struct SDL_WaylandDataDevice
 {
     struct wl_data_device *data_device;
     struct SDL_WaylandSeat *seat;
+    char *id_str;
 
     // Drag and Drop
     uint32_t drag_serial;
@@ -93,9 +98,9 @@ typedef struct
     // Clipboard and Primary Selection
     uint32_t selection_serial;
     SDL_WaylandDataSource *selection_source;
-} SDL_WaylandDataDevice;
+};
 
-typedef struct
+struct SDL_WaylandPrimarySelectionDevice
 {
     struct zwp_primary_selection_device_v1 *primary_selection_device;
     struct SDL_WaylandSeat *seat;
@@ -103,7 +108,7 @@ typedef struct
     uint32_t selection_serial;
     SDL_WaylandPrimarySelectionSource *selection_source;
     SDL_WaylandPrimarySelectionOffer *selection_offer;
-} SDL_WaylandPrimarySelectionDevice;
+};
 
 // Wayland Data Source / Primary Selection Source - (Sending)
 extern SDL_WaylandDataSource *Wayland_data_source_create(SDL_VideoDevice *_this);

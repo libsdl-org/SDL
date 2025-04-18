@@ -29,17 +29,7 @@
 void SDL_SendClipboardUpdate(bool owner, char **mime_types, size_t num_mime_types)
 {
     if (!owner) {
-        /* Clear our internal clipboard contents when external clipboard is set.
-         *
-         * Wayland recursively sends a data offer to the client from which the clipboard data originated,
-         * and as the client can't determine the origin of the offer, the clipboard must not be cleared,
-         * or the original data may be destroyed. Cleanup will be done in the backend when an offer
-         * cancellation event arrives.
-         */
-        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") != 0) {
-            SDL_CancelClipboardData(0);
-        }
-
+        SDL_CancelClipboardData(0);
         SDL_SaveClipboardMimeTypes((const char **)mime_types, num_mime_types);
     }
 

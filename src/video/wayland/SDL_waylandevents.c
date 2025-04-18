@@ -2759,19 +2759,35 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
     data_device->drag_offer = NULL;
 }
 
-static void notifyFromMimes(struct wl_list *mimes)
+static void notifyFromMimes(SDL_WaylandDataOffer *offer)
 {
     int nformats = 0;
     char **new_mime_types = NULL;
-    if (mimes) {
-        nformats = WAYLAND_wl_list_length(mimes);
-        size_t alloc_size = (nformats + 1) * sizeof(char *);
+    if (offer) {
+        size_t alloc_size = 0;
 
         /* do a first pass to compute allocation size */
         SDL_MimeDataList *item = NULL;
-        wl_list_for_each(item, mimes, link) {
+        wl_list_for_each(item, &offer->mimes, link) {
+            // If origin metadata is found, check it and early-out if the data offer is recursive.
+            if (SDL_strcmp(item->mime_type, SDL_DATA_ORIGIN_MIME) == 0) {
+                size_t length = 0;
+                char *id = Wayland_data_offer_receive(offer, item->mime_type, &length);
+
+                if (id) {
+                    const bool id_match = SDL_strncmp(offer->data_device->id_str, id, length) == 0;
+                    SDL_free(id);
+                    if (id_match) {
+                        return;
+                    }
+                }
+            }
+
+            ++nformats;
             alloc_size += SDL_strlen(item->mime_type) + 1;
         }
+
+        alloc_size += (nformats + 1) * sizeof(char *);
 
         new_mime_types = SDL_AllocateTemporaryMemory(alloc_size);
         if (!new_mime_types) {
@@ -2783,7 +2799,7 @@ static void notifyFromMimes(struct wl_list *mimes)
         char *strPtr = (char *)(new_mime_types + nformats + 1);
         item = NULL;
         int i = 0;
-        wl_list_for_each(item, mimes, link) {
+        wl_list_for_each(item, &offer->mimes, link) {
             new_mime_types[i] = strPtr;
             strPtr = stpcpy(strPtr, item->mime_type) + 1;
             i++;
@@ -2812,7 +2828,7 @@ static void data_device_handle_selection(void *data, struct wl_data_device *wl_d
         data_device->selection_offer = offer;
     }
 
-    notifyFromMimes(offer ? &offer->mimes : NULL);
+    notifyFromMimes(offer);
 }
 
 static const struct wl_data_device_listener data_device_listener = {
@@ -2942,6 +2958,29 @@ static const struct zwp_text_input_v3_listener text_input_listener = {
     text_input_done
 };
 
+static void Wayland_SetDataDeviceID(SDL_WaylandDataDevice *data_device)
+{
+    if (!data_device->id_str)
+#ifdef SDL_USE_LIBDBUS
+    {
+        SDL_DBusContext *dbus = SDL_DBus_GetContext();
+        if (dbus) {
+            const char *id = dbus->bus_get_unique_name(dbus->session_conn);
+            if (id) {
+                data_device->id_str = SDL_strdup(id);
+            }
+        }
+    }
+    if (!data_device->id_str)
+#endif
+    {
+        char id[24];
+        Uint64 pid = (Uint64)getpid();
+        SDL_snprintf(id, sizeof(id), "%" SDL_PRIu64, pid);
+        data_device->id_str = SDL_strdup(id);
+    }
+}
+
 static void Wayland_SeatCreateDataDevice(SDL_WaylandSeat *seat)
 {
     if (!seat->display->data_device_manager) {
@@ -2960,6 +2999,7 @@ static void Wayland_SeatCreateDataDevice(SDL_WaylandSeat *seat)
     if (!data_device->data_device) {
         SDL_free(data_device);
     } else {
+        Wayland_SetDataDeviceID(data_device);
         wl_data_device_set_user_data(data_device->data_device, data_device);
         wl_data_device_add_listener(data_device->data_device,
                                     &data_device_listener, data_device);
@@ -3449,6 +3489,7 @@ void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool send_events)
                 wl_data_device_destroy(seat->data_device->data_device);
             }
         }
+        SDL_free(seat->data_device->id_str);
         SDL_free(seat->data_device);
     }
 
