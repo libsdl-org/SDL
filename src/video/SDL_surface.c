@@ -194,12 +194,12 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
     size_t pitch, size;
     SDL_Surface *surface;
 
-    if (width < 0) {
+    if (width < 1) {
         SDL_InvalidParamError("width");
         return NULL;
     }
 
-    if (height < 0) {
+    if (height < 1) {
         SDL_InvalidParamError("height");
         return NULL;
     }
@@ -245,12 +245,12 @@ SDL_Surface *SDL_CreateSurface(int width, int height, SDL_PixelFormat format)
  */
 SDL_Surface *SDL_CreateSurfaceFrom(int width, int height, SDL_PixelFormat format, void *pixels, int pitch)
 {
-    if (width < 0) {
+    if (width < 1) {
         SDL_InvalidParamError("width");
         return NULL;
     }
 
-    if (height < 0) {
+    if (height < 1) {
         SDL_InvalidParamError("height");
         return NULL;
     }
