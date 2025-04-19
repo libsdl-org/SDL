@@ -49,6 +49,7 @@ static bool LoadDBUSSyms(void)
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *, DBusError *), bus_register);
     SDL_DBUS_SYM(void (*)(DBusConnection *, const char *, DBusError *), bus_add_match);
     SDL_DBUS_SYM(void (*)(DBusConnection *, const char *, DBusError *), bus_remove_match);
+    SDL_DBUS_SYM(const char *(*)(DBusConnection *), bus_get_unique_name);
     SDL_DBUS_SYM(DBusConnection *(*)(const char *, DBusError *), connection_open_private);
     SDL_DBUS_SYM(void (*)(DBusConnection *, dbus_bool_t), connection_set_exit_on_disconnect);
     SDL_DBUS_SYM(dbus_bool_t (*)(DBusConnection *), connection_get_is_connected);

@@ -231,7 +231,10 @@ ssize_t Wayland_data_source_send(SDL_WaylandDataSource *source, const char *mime
     const void *data = NULL;
     size_t length = 0;
 
-    if (source->callback) {
+    if (SDL_strcmp(mime_type, SDL_DATA_ORIGIN_MIME) == 0) {
+        data = source->data_device->id_str;
+        length = SDL_strlen(source->data_device->id_str);
+    } else if (source->callback) {
         data = source->callback(source->userdata.data, mime_type, &length);
     }
 
@@ -374,7 +377,12 @@ void *Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
         wl_data_offer_receive(offer->offer, mime_type, pipefd[1]);
         close(pipefd[1]);
 
-        WAYLAND_wl_display_flush(data_device->seat->display->display);
+        // Need to roundtrip for the data origin, as the calling process may also need to send the data for this request.
+        if (SDL_strcmp(mime_type, SDL_DATA_ORIGIN_MIME) != 0) {
+            WAYLAND_wl_display_flush(data_device->seat->display->display);
+        } else {
+            WAYLAND_wl_display_roundtrip(data_device->seat->display->display);
+        }
 
         while (read_pipe(pipefd[0], &buffer, length) > 0) {
         }
@@ -521,6 +529,9 @@ bool Wayland_data_device_set_selection(SDL_WaylandDataDevice *data_device,
             wl_data_source_offer(source->source,
                                  mime_type);
         }
+
+        // Advertise the data origin MIME
+        wl_data_source_offer(source->source, SDL_DATA_ORIGIN_MIME);
 
         if (index == 0) {
             Wayland_data_device_clear_selection(data_device);

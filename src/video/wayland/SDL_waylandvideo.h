@@ -87,6 +87,8 @@ struct SDL_VideoData
 
     struct xkb_context *xkb_context;
 
+    char *unique_id_str;
+
     struct wl_list seat_list;
     struct SDL_WaylandSeat *last_implicit_grab_seat;
     struct SDL_WaylandSeat *last_incoming_data_offer_seat;
