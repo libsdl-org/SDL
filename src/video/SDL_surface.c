@@ -1142,6 +1142,13 @@ bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surfac
         return SDL_BlitSurface(src, srcrect, dst, dstrect);
     }
 
+    if (src_w == 0) {
+        src_w = 1;
+    }
+    if (src_h == 0) {
+        src_h = 1;
+    }
+
     scaling_w = (double)dst_w / src_w;
     scaling_h = (double)dst_h / src_h;
 
