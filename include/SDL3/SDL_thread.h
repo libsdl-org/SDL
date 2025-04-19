@@ -212,7 +212,7 @@ typedef int (SDLCALL *SDL_ThreadFunction) (void *data);
  * \sa SDL_CreateThreadWithProperties
  * \sa SDL_WaitThread
  */
-extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data);
 
 /**
  * Create a new thread with with the specified properties.
@@ -278,7 +278,7 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  * \sa SDL_CreateThread
  * \sa SDL_WaitThread
  */
-extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_PropertiesID props);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_PropertiesID props);
 
 #define SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER                  "SDL.thread.create.entry_function"
 #define SDL_PROP_THREAD_CREATE_NAME_STRING                             "SDL.thread.create.name"

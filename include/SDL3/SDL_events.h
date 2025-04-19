@@ -1563,7 +1563,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  * \sa SDL_WaitEvent
  * \sa SDL_WaitEventTimeout
  */
-extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromEvent(const SDL_Event *event);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromEvent(const SDL_Event *event);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
