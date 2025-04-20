@@ -495,6 +495,11 @@ static bool Wayland_IsPreferred(struct wl_display *display)
 
     wl_registry_destroy(registry);
 
+    if (!preferred_data.has_fifo_v1)
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, 
+                    "Your compositor doesn't appear to support fifo-v1, which SDL needs if it wants to use Wayland by default without harming GPU-bound performance and frame pacing due to swapchain starvation. You'll be getting Xwayland instead. Set SDL_VIDEODRIVER=wayland if you're okay with this, or ask your compositor maintainers to support fifo-v1.");
+                      
+
     return preferred_data.has_fifo_v1;
 }
 
