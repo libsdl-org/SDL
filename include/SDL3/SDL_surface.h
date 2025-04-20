@@ -1135,9 +1135,6 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SD
  * If either `srcrect` or `dstrect` are NULL, the entire surface (`src` or
  * `dst`) is copied while ensuring clipping to `dst->clip_rect`.
  *
- * The final blit rectangles are saved in `srcrect` and `dstrect` after all
- * clipping is performed.
- *
  * The blit function should not be called on a locked surface.
  *
  * The blit semantics for surfaces with and without blending and colorkey are
