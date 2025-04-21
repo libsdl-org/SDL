@@ -4,17 +4,8 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
   set(cmake_build_type_undefined 1)
 endif()
 
-# FIXME: remove this
-option(BUILD_FOR_NOKIA_NGAGE "Build for Nokia N-Gage" OFF)
-
 # See docs/release_checklist.md
 project(SDL3 LANGUAGES C VERSION "3.3.0")
-
-# FIXME: remove this
-if (BUILD_FOR_NOKIA_NGAGE)
-  include(cmake/nokia_ngage.cmake)
-  return()
-endif()
 
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   set(SDL3_MAINPROJECT ON)
@@ -85,6 +76,7 @@ include("${SDL3_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/3rdparty.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedMSVCCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedEmscriptenCache.cmake")
+include("${SDL3_SOURCE_DIR}/cmake/PreseedNokiaNGageCache.cmake")
 
 SDL_DetectCompiler()
 SDL_DetectTargetCPUArchitectures(SDL_CPUS)
@@ -164,7 +156,7 @@ endif()
 # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
 #  so we'll just use libusb when it's available. libusb does not support iOS,
 #  so we default to yes on iOS.
-if(IOS OR TVOS OR VISIONOS OR WATCHOS OR ANDROID)
+if(IOS OR TVOS OR VISIONOS OR WATCHOS OR ANDROID OR NGAGESDK)
   set(SDL_HIDAPI_LIBUSB_AVAILABLE FALSE)
 else()
   set(SDL_HIDAPI_LIBUSB_AVAILABLE TRUE)
@@ -228,7 +220,7 @@ if(EMSCRIPTEN)
   set(SDL_SHARED_AVAILABLE OFF)
 endif()
 
-if(VITA OR PSP OR PS2 OR N3DS OR RISCOS)
+if(VITA OR PSP OR PS2 OR N3DS OR RISCOS OR NGAGESDK)
   set(SDL_SHARED_AVAILABLE OFF)
 endif()
 
@@ -421,6 +413,26 @@ dep_option(SDL_EXAMPLES_LINK_SHARED "link examples to shared SDL library" "${SDL
 if(VITA)
   set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
   set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
+endif()
+
+if (NGAGESDK)
+  enable_language(CXX)
+
+  set(SDL_GPU              OFF)
+  set(SDL_CAMERA           OFF)
+  set(SDL_JOYSTICK         OFF)
+  set(SDL_HAPTIC           OFF)
+  set(SDL_HIDAPI           OFF)
+  set(SDL_POWER            OFF)
+  set(SDL_SENSOR           OFF)
+  set(SDL_DIALOG           OFF)
+  set(SDL_DISKAUDIO        OFF)
+  set(SDL_DUMMYAUDIO       OFF)
+  set(SDL_DUMMYCAMERA      OFF)
+  set(SDL_DUMMYVIDEO       OFF)
+  set(SDL_OFFSCREEN        OFF)
+  set(SDL_RENDER_GPU       OFF)
+  set(SDL_VIRTUAL_JOYSTICK OFF)
 endif()
 
 if(NOT (SDL_SHARED OR SDL_STATIC))
@@ -2940,6 +2952,57 @@ elseif(N3DS)
   set(HAVE_SDL_LOCALE TRUE)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/io/n3ds/*.c")
+
+elseif(NGAGESDK)
+
+  set(SDL_MAIN_USE_CALLBACKS 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ngage/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ngage/*.cpp")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ngage/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ngage/*.cpp")
+
+  if(SDL_AUDIO)
+    set(SDL_AUDIO_DRIVER_NGAGE 1)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/audio/ngage/*.c")
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/audio/ngage/*.cpp")
+    set(HAVE_SDL_AUDIO TRUE)
+  endif()
+
+  set(SDL_FILESYSTEM_NGAGE 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/ngage/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/ngage/*.cpp")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/*.c")
+  set(HAVE_SDL_FILESYSTEM TRUE)
+
+  set(SDL_THREADS_DISABLED 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/thread/*.c")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/thread/generic/*.c")
+  set(HAVE_SDL_THREADS TRUE)
+
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/ngage/*.cpp")
+
+  set(SDL_VIDEO_RENDER_NGAGE 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/render/ngage/*.c")
+
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/render/ngage/*.cpp")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/ngage/*.cpp")
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+
+  set(SDL_TIMER_NGAGE 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/ngage/*.cpp")
+
+  set(SDL_VIDEO_DRIVER_NGAGE 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/ngage/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
+  set(SDL_CAMERA_DISABLED    1)
+  set(SDL_ASSERT_LEVEL       0)
+  set(SDL_FSOPS_POSIX        1)
+  set(SDL_GPU_DISABLED       1)
+  set(SDL_HAPTIC_DISABLED    1)
+  set(SDL_JOYSTICK_DISABLED  1)
+  set(SDL_LEAN_AND_MEAN      1)
+  set(SDL_SENSOR_DISABLED    1)
 endif()
 
 sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog.c)
