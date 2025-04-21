@@ -181,15 +181,8 @@ static void Wayland_GetScaledMouseRect(SDL_Window *window, SDL_Rect *scaled_rect
 
 static Uint64 Wayland_GetEventTimestamp(Uint64 nsTimestamp)
 {
-    static Uint64 last;
-    static Uint64 timestamp_offset;
+    static Uint64 timestamp_offset = 0;
     const Uint64 now = SDL_GetTicksNS();
-
-    if (nsTimestamp < last) {
-        // 32-bit timer rollover, bump the offset
-        timestamp_offset += SDL_MS_TO_NS(0x100000000LLU);
-    }
-    last = nsTimestamp;
 
     if (!timestamp_offset) {
         timestamp_offset = (now - nsTimestamp);
@@ -214,10 +207,25 @@ static const struct zwp_input_timestamps_v1_listener timestamp_listener = {
     input_timestamp_listener
 };
 
+static Uint64 Wayland_EventTimestampMSToNS(Uint32 wl_timestamp_ms)
+{
+    static Uint64 timestamp_offset = 0;
+    static Uint32 last = 0;
+
+    // Handle 32-bit timer rollover.
+    if (wl_timestamp_ms < last) {
+        timestamp_offset += SDL_MS_TO_NS(SDL_UINT64_C(0x100000000));
+    }
+    last = wl_timestamp_ms;
+    wl_timestamp_ms += timestamp_offset;
+
+    return SDL_MS_TO_NS(wl_timestamp_ms) + timestamp_offset;
+}
+
 static Uint64 Wayland_GetKeyboardTimestamp(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
 {
     if (wl_timestamp_ms) {
-        return Wayland_GetEventTimestamp(seat->keyboard.highres_timestamp_ns ? seat->keyboard.highres_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+        return Wayland_GetEventTimestamp(seat->keyboard.highres_timestamp_ns ? seat->keyboard.highres_timestamp_ns : Wayland_EventTimestampMSToNS(wl_timestamp_ms));
     }
 
     return 0;
@@ -225,17 +233,13 @@ static Uint64 Wayland_GetKeyboardTimestamp(SDL_WaylandSeat *seat, Uint32 wl_time
 
 static Uint64 Wayland_GetKeyboardTimestampRaw(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
 {
-    if (wl_timestamp_ms) {
-        return seat->keyboard.highres_timestamp_ns ? seat->keyboard.highres_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms);
-    }
-
-    return 0;
+    return seat->keyboard.highres_timestamp_ns ? seat->keyboard.highres_timestamp_ns : Wayland_EventTimestampMSToNS(wl_timestamp_ms);
 }
 
 static Uint64 Wayland_GetPointerTimestamp(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
 {
     if (wl_timestamp_ms) {
-        return Wayland_GetEventTimestamp(seat->pointer.highres_timestamp_ns ? seat->pointer.highres_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+        return Wayland_GetEventTimestamp(seat->pointer.highres_timestamp_ns ? seat->pointer.highres_timestamp_ns : Wayland_EventTimestampMSToNS(wl_timestamp_ms));
     }
 
     return 0;
@@ -244,7 +248,7 @@ static Uint64 Wayland_GetPointerTimestamp(SDL_WaylandSeat *seat, Uint32 wl_times
 Uint64 Wayland_GetTouchTimestamp(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
 {
     if (wl_timestamp_ms) {
-        return Wayland_GetEventTimestamp(seat->touch.highres_timestamp_ns ? seat->touch.highres_timestamp_ns : SDL_MS_TO_NS(wl_timestamp_ms));
+        return Wayland_GetEventTimestamp(seat->touch.highres_timestamp_ns ? seat->touch.highres_timestamp_ns : Wayland_EventTimestampMSToNS(wl_timestamp_ms));
     }
 
     return 0;
@@ -738,11 +742,11 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     seat->pointer.focus = NULL;
     seat->pointer.buttons_pressed = 0;
-    SDL_SendMouseButton(Wayland_GetPointerTimestamp(seat, 0), window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_LEFT, false);
-    SDL_SendMouseButton(Wayland_GetPointerTimestamp(seat, 0), window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_RIGHT, false);
-    SDL_SendMouseButton(Wayland_GetPointerTimestamp(seat, 0), window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_MIDDLE, false);
-    SDL_SendMouseButton(Wayland_GetPointerTimestamp(seat, 0), window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_X1, false);
-    SDL_SendMouseButton(Wayland_GetPointerTimestamp(seat, 0), window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_X2, false);
+    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_LEFT, false);
+    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_RIGHT, false);
+    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_MIDDLE, false);
+    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_X1, false);
+    SDL_SendMouseButton(0, window->sdlwindow, seat->pointer.sdl_id, SDL_BUTTON_X2, false);
 
     /* A pointer leave event may be emitted if the compositor hides the pointer in response to receiving a touch event.
      * Don't relinquish focus if the surface has active touches, as the compositor is just transitioning from mouse to touch mode.
@@ -1295,7 +1299,7 @@ static void touch_handler_motion(void *data, struct wl_touch *touch, uint32_t ti
             const float x = (float)wl_fixed_to_double(fx) / window_data->current.logical_width;
             const float y = (float)wl_fixed_to_double(fy) / window_data->current.logical_height;
 
-            SDL_SendTouchMotion(Wayland_GetPointerTimestamp(seat, timestamp), (SDL_TouchID)(uintptr_t)touch,
+            SDL_SendTouchMotion(Wayland_GetTouchTimestamp(seat, timestamp), (SDL_TouchID)(uintptr_t)touch,
                                 (SDL_FingerID)(id + 1), window_data->sdlwindow, x, y, 1.0f);
         }
     }
@@ -3249,7 +3253,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
         return;  // Not a pen we report on.
     }
 
-    const Uint64 timestamp = Wayland_GetEventTimestamp(SDL_MS_TO_NS(time));
+    const Uint64 timestamp = Wayland_GetEventTimestamp(Wayland_EventTimestampMSToNS(time));
     const SDL_PenID instance_id = sdltool->instance_id;
     SDL_Window *window = sdltool->tool_focus;
 
