@@ -253,16 +253,15 @@
  * The GPU API uses a left-handed coordinate system, following the convention
  * of D3D12 and Metal. Specifically:
  *
- * - **Normalized Device Coordinates:** The
- * lower-left corner has an x,y coordinate of `(-1.0, -1.0)`. The upper-right
- * corner is `(1.0, 1.0)`. Z values range from `[0.0, 1.0]` where 0 is the
- * near plane.
- * - **Viewport Coordinates:** The top-left corner has an x,y
- * coordinate of `(0, 0)` and extends to the bottom-right corner at
- * `(viewportWidth, viewportHeight)`. +Y is down.
- * - **Texture Coordinates:**
- * The top-left corner has an x,y coordinate of `(0, 0)` and extends to the
- * bottom-right corner at `(1.0, 1.0)`. +Y is down.
+ * - **Normalized Device Coordinates:** The lower-left corner has an x,y
+ *   coordinate of `(-1.0, -1.0)`. The upper-right corner is `(1.0, 1.0)`. Z
+ *   values range from `[0.0, 1.0]` where 0 is the near plane.
+ * - **Viewport Coordinates:** The top-left corner has an x,y coordinate of
+ *   `(0, 0)` and extends to the bottom-right corner at `(viewportWidth,
+ *   viewportHeight)`. +Y is down.
+ * - **Texture Coordinates:** The top-left corner has an x,y coordinate of
+ *   `(0, 0)` and extends to the bottom-right corner at `(1.0, 1.0)`. +Y is
+ *   down.
  *
  * If the backend driver differs from this convention (e.g. Vulkan, which has
  * an NDC that assumes +Y is down), SDL will automatically convert the
