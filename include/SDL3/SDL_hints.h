@@ -1074,8 +1074,8 @@ extern "C" {
  *
  * By default, SDL will try all available GPU backends in a reasonable order
  * until it finds one that can work, but this hint allows the app or user to
- * force a specific target, such as "direct3d11" if, say, your hardware
- * supports D3D12 but want to try using D3D11 instead.
+ * force a specific target, such as "direct3d12" if, say, your hardware
+ * supports Vulkan but you want to try using D3D12 instead.
  *
  * This hint should be set before any GPU functions are called.
  *
