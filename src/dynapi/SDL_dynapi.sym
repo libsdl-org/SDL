@@ -1250,6 +1250,7 @@ SDL3_0.0.0 {
     SDL_GetRenderTextureAddressMode;
     SDL_GetGPUDeviceProperties;
     SDL_CreateGPURenderer;
+    SDL_PutAudioStreamPlanarData;
     # extra symbols go here (don't modify this line)
   local: *;
 };
