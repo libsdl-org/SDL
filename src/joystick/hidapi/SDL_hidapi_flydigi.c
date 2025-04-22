@@ -39,6 +39,7 @@ enum
     SDL_GAMEPAD_BUTTON_FLYDIGI_M2,
     SDL_GAMEPAD_BUTTON_FLYDIGI_M3,
     SDL_GAMEPAD_BUTTON_FLYDIGI_M4,
+    SDL_GAMEPAD_BUTTON_FLYDIGI_FN,
     SDL_GAMEPAD_BUTTON_FLYDIGI_C,
     SDL_GAMEPAD_BUTTON_FLYDIGI_Z,
     SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS_WITH_CZ,
@@ -131,7 +132,7 @@ static bool HIDAPI_DriverFlydigi_InitDevice(SDL_HIDAPI_Device *device)
         }
         const char VADER3_NAME[] = "Flydigi VADER3";
         const char VADER4_NAME[] = "Flydigi VADER4";
-        ctx->has_cz = SDL_strncmp(device->name, VADER3_NAME, sizeof(VADER3_NAME) - 1) == 0 || SDL_strncmp(device->name, VADER4_NAME, sizeof(VADER4_NAME) - 1);
+        ctx->has_cz = SDL_strncmp(device->name, VADER3_NAME, sizeof(VADER3_NAME)) == 0 || SDL_strncmp(device->name, VADER4_NAME, sizeof(VADER4_NAME)) == 0;
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -234,7 +235,8 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         return;
     }
 
-    if ((ctx->last_state[8] & 0x08) != (data[8] & 0x08)) {
+    if (ctx->last_state[8] != data[8]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_FLYDIGI_FN, ((data[8] & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data[8] & 0x08) != 0));
     }
 
