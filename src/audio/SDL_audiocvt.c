@@ -768,13 +768,45 @@ bool SDL_SetAudioStreamGain(SDL_AudioStream *stream, float gain)
 
 static bool CheckAudioStreamIsFullySetup(SDL_AudioStream *stream)
 {
-    if (stream->src_spec.format == 0) {
+    if (stream->src_spec.format == SDL_AUDIO_UNKNOWN) {
         return SDL_SetError("Stream has no source format");
-    } else if (stream->dst_spec.format == 0) {
+    } else if (stream->dst_spec.format == SDL_AUDIO_UNKNOWN) {
         return SDL_SetError("Stream has no destination format");
     }
 
     return true;
+}
+
+// you MUST hold `stream->lock` when calling this, and validate your parameters!
+static bool PutAudioStreamBufferInternal(SDL_AudioStream *stream, const SDL_AudioSpec *spec, const int *chmap, const void *buf, int len, SDL_ReleaseAudioBufferCallback callback, void* userdata)
+{
+    SDL_AudioTrack* track = NULL;
+
+    if (callback) {
+        track = SDL_CreateAudioTrack(stream->queue, spec, chmap, (Uint8 *)buf, len, len, callback, userdata);
+        if (!track) {
+            return false;
+        }
+    }
+
+    const int prev_available = stream->put_callback ? SDL_GetAudioStreamAvailable(stream) : 0;
+
+    bool retval = true;
+
+    if (track) {
+        SDL_AddTrackToAudioQueue(stream->queue, track);
+    } else {
+        retval = SDL_WriteToAudioQueue(stream->queue, spec, chmap, (const Uint8 *)buf, len);
+    }
+
+    if (retval) {
+        if (stream->put_callback) {
+            const int newavail = SDL_GetAudioStreamAvailable(stream) - prev_available;
+            stream->put_callback(stream->put_callback_userdata, stream, newavail, newavail);
+        }
+    }
+
+    return retval;
 }
 
 static bool PutAudioStreamBuffer(SDL_AudioStream *stream, const void *buf, int len, SDL_ReleaseAudioBufferCallback callback, void* userdata)
@@ -795,37 +827,11 @@ static bool PutAudioStreamBuffer(SDL_AudioStream *stream, const void *buf, int l
         return SDL_SetError("Can't add partial sample frames");
     }
 
-    SDL_AudioTrack* track = NULL;
-
-    if (callback) {
-        track = SDL_CreateAudioTrack(stream->queue, &stream->src_spec, stream->src_chmap, (Uint8 *)buf, len, len, callback, userdata);
-
-        if (!track) {
-            SDL_UnlockMutex(stream->lock);
-            return false;
-        }
-    }
-
-    const int prev_available = stream->put_callback ? SDL_GetAudioStreamAvailable(stream) : 0;
-
-    bool result = true;
-
-    if (track) {
-        SDL_AddTrackToAudioQueue(stream->queue, track);
-    } else {
-        result = SDL_WriteToAudioQueue(stream->queue, &stream->src_spec, stream->src_chmap, (const Uint8 *)buf, len);
-    }
-
-    if (result) {
-        if (stream->put_callback) {
-            const int newavail = SDL_GetAudioStreamAvailable(stream) - prev_available;
-            stream->put_callback(stream->put_callback_userdata, stream, newavail, newavail);
-        }
-    }
+    const bool retval = PutAudioStreamBufferInternal(stream, &stream->src_spec, stream->src_chmap, buf, len, callback, userdata);
 
     SDL_UnlockMutex(stream->lock);
 
-    return result;
+    return retval;
 }
 
 static void SDLCALL FreeAllocatedAudioBuffer(void *userdata, const void *buf, int len)
@@ -857,9 +863,8 @@ bool SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
         }
 
         SDL_memcpy(data, buf, len);
-        buf = data;
 
-        bool ret = PutAudioStreamBuffer(stream, buf, len, FreeAllocatedAudioBuffer, NULL);
+        bool ret = PutAudioStreamBuffer(stream, data, len, FreeAllocatedAudioBuffer, NULL);
         if (!ret) {
             SDL_free(data);
         }
@@ -867,6 +872,144 @@ bool SDL_PutAudioStreamData(SDL_AudioStream *stream, const void *buf, int len)
     }
 
     return PutAudioStreamBuffer(stream, buf, len, NULL, NULL);
+}
+
+
+#define GENERIC_INTERLEAVE_FUNCTION(bits) \
+    static void InterleaveAudioChannelsGeneric##bits(void *output, const void * const *channel_buffers, const int channels, int num_samples) { \
+        Uint##bits *dst = (Uint##bits *) output; \
+        const Uint##bits * const *srcs = (const Uint##bits * const *) channel_buffers; \
+        for (int frame = 0; frame < num_samples; frame++) { \
+            for (int channel = 0; channel < channels; channel++) { \
+                *(dst++) = srcs[channel][frame]; \
+            } \
+        } \
+    }
+
+GENERIC_INTERLEAVE_FUNCTION(8)
+GENERIC_INTERLEAVE_FUNCTION(16)
+GENERIC_INTERLEAVE_FUNCTION(32)
+//GENERIC_INTERLEAVE_FUNCTION(64)   (we don't have any 64-bit audio data types at the moment.)
+#undef GENERIC_INTERLEAVE_FUNCTION
+
+#define GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(bits) \
+    static void InterleaveAudioChannelsWithNullsGeneric##bits(void *output, const void * const *channel_buffers, const int channels, int num_samples, const int isilence) { \
+        const Uint##bits silence = (Uint##bits) isilence; \
+        Uint##bits *dst = (Uint##bits *) output; \
+        const Uint##bits * const *srcs = (const Uint##bits * const *) channel_buffers; \
+        for (int frame = 0; frame < num_samples; frame++) { \
+            for (int channel = 0; channel < channels; channel++) { \
+                *(dst++) = srcs[channel] ? srcs[channel][frame] : silence; \
+            } \
+        } \
+    }
+
+GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(8)
+GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(16)
+GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(32)
+//GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(64)   (we don't have any 64-bit audio data types at the moment.)
+#undef GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION
+
+static void InterleaveAudioChannels(void *output, const void * const *channel_buffers, int num_samples, const SDL_AudioSpec *spec)
+{
+    const int channels = spec->channels;
+
+    bool have_null_channel = false;
+    for (int i = 0; i < channels; i++) {
+        if (channel_buffers[i] == NULL) {
+            have_null_channel = true;
+            break;
+        }
+    }
+
+    if (have_null_channel) {
+        const int silence = SDL_GetSilenceValueForFormat(spec->format);
+        switch (SDL_AUDIO_BITSIZE(spec->format)) {
+            case 8: InterleaveAudioChannelsWithNullsGeneric8(output, channel_buffers, channels, num_samples, silence); break;
+            case 16: InterleaveAudioChannelsWithNullsGeneric16(output, channel_buffers, channels, num_samples, silence); break;
+            case 32: InterleaveAudioChannelsWithNullsGeneric32(output, channel_buffers, channels, num_samples, silence); break;
+            //case 64: InterleaveAudioChannelsGeneric64(output, channel_buffers, channels, num_samples); break;  (we don't have any 64-bit audio data types at the moment.)
+            default: SDL_assert(!"Missing needed generic audio interleave function!"); SDL_memset(output, 0, SDL_AUDIO_FRAMESIZE(*spec) * num_samples); break;
+        }
+    } else {
+        // !!! FIXME: it would be possible to do this really well in SIMD for stereo data, using unpack (intel) or zip (arm) instructions, etc.
+        switch (SDL_AUDIO_BITSIZE(spec->format)) {
+            case 8: InterleaveAudioChannelsGeneric8(output, channel_buffers, channels, num_samples); break;
+            case 16: InterleaveAudioChannelsGeneric16(output, channel_buffers, channels, num_samples); break;
+            case 32: InterleaveAudioChannelsGeneric32(output, channel_buffers, channels, num_samples); break;
+            //case 64: InterleaveAudioChannelsGeneric64(output, channel_buffers, channels, num_samples); break;  (we don't have any 64-bit audio data types at the moment.)
+            default: SDL_assert(!"Missing needed generic audio interleave function!"); SDL_memset(output, 0, SDL_AUDIO_FRAMESIZE(*spec) * num_samples); break;
+        }
+    }
+}
+
+bool SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *channel_buffers, int num_samples)
+{
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    } else if (!channel_buffers) {
+        return SDL_InvalidParamError("channel_buffers");
+    } else if (num_samples < 0) {
+        return SDL_InvalidParamError("num_samples");
+    } else if (num_samples == 0) {
+        return true; // nothing to do.
+    }
+
+    // we do the interleaving up front without the lock held, so the audio device doesn't starve while we work.
+    //  but we _do_ need to know the current input spec.
+    SDL_AudioSpec spec;
+    int chmap_copy[SDL_MAX_CHANNELMAP_CHANNELS];
+    int *chmap = NULL;
+    SDL_LockMutex(stream->lock);
+    if (!CheckAudioStreamIsFullySetup(stream)) {
+        SDL_UnlockMutex(stream->lock);
+        return false;
+    }
+    SDL_copyp(&spec, &stream->src_spec);
+    if (stream->src_chmap) {
+        chmap = chmap_copy;
+        SDL_memcpy(chmap, stream->src_chmap, sizeof (*chmap) * spec.channels);
+    }
+    SDL_UnlockMutex(stream->lock);
+
+    if (spec.channels == 1) {  // nothing to interleave, just use the usual function.
+        return SDL_PutAudioStreamData(stream, channel_buffers[0], SDL_AUDIO_FRAMESIZE(spec) * num_samples);
+    }
+
+    bool retval = false;
+
+    const int len = SDL_AUDIO_FRAMESIZE(spec) * num_samples;
+    #if DEBUG_AUDIOSTREAM
+    SDL_Log("AUDIOSTREAM: wants to put %d bytes of separated data", len);
+    #endif
+
+    // Is the data small enough to just interleave it on the stack and put it through the normal interface?
+    #define INTERLEAVE_STACK_SIZE 1024
+    Uint8 stackbuf[INTERLEAVE_STACK_SIZE];
+    void *data = stackbuf;
+    SDL_ReleaseAudioBufferCallback callback = NULL;
+
+    if (len > INTERLEAVE_STACK_SIZE) {
+        // too big for the stack? Just SDL_malloc a block and interleave into that. To avoid the extra copy, we'll just set it as a
+        //  new track in the queue (the distinction is specifying a callback to PutAudioStreamBufferInternal, to release the buffer).
+        data = SDL_malloc(len);
+        if (!data) {
+            return false;
+        }
+        callback = FreeAllocatedAudioBuffer;
+    }
+
+    InterleaveAudioChannels(data, channel_buffers, num_samples, &spec);
+
+    // it's okay if the stream format changed on another thread while we didn't hold the lock; PutAudioStreamBufferInternal will notice
+    //  and set up a new track with the right format, and the next SDL_PutAudioStreamData will notice that stream->src_spec doesn't
+    //  match the new track and set up a new one again. It's a bad idea to change the format on another thread while putting here,
+    //  but everything _will_ work out with the format that was (presumably) expected.
+    SDL_LockMutex(stream->lock);
+    retval = PutAudioStreamBufferInternal(stream, &spec, chmap, data, len, callback, NULL);
+    SDL_UnlockMutex(stream->lock);
+
+    return retval;
 }
 
 bool SDL_FlushAudioStream(SDL_AudioStream *stream)
