@@ -808,8 +808,8 @@ extern DECLSPEC int SDLCALL SDL_FillRects
  *
  * This assumes that the source and destination rectangles are the same size.
  * If either `srcrect` or `dstrect` are NULL, the entire surface (`src` or
- * `dst`) is copied. The final blit rectangle is saved in `dstrect` after
- * all clipping is performed.
+ * `dst`) is copied. The final blit rectangle is saved in `dstrect` after all
+ * clipping is performed.
  *
  * The blit function should not be called on a locked surface.
  *
