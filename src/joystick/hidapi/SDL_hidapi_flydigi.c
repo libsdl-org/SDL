@@ -41,11 +41,15 @@ enum
     SDL_GAMEPAD_BUTTON_FLYDIGI_M4,
     SDL_GAMEPAD_BUTTON_FLYDIGI_C,
     SDL_GAMEPAD_BUTTON_FLYDIGI_Z,
-    SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS,
+    SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS_WITH_CZ,
 };
+#define SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS_WITHOUT_CZ SDL_GAMEPAD_BUTTON_FLYDIGI_C
 
 #define FLYDIGI_ACCEL_SCALE 256.f
 #define SENSOR_INTERVAL_NS 8000000ULL
+#define FLYDIGI_CMD_REPORT_ID 0x05
+#define FLYDIGI_HAPTIC_COMMAND 0x0F
+#define FLYDIGI_GET_CONFIG_COMMAND 0xEB
 
 #define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
@@ -60,6 +64,7 @@ typedef struct
     bool rgb_supported;
     bool player_led_supported;
     bool powerstate_supported;
+    bool has_cz;
     Uint8 serial[6];
     Uint16 version;
     Uint16 version_beta;
@@ -124,6 +129,9 @@ static bool HIDAPI_DriverFlydigi_InitDevice(SDL_HIDAPI_Device *device)
             ctx->sensors_supported = true;
             ctx->rumble_supported = true;
         }
+        const char VADER3_NAME[] = "Flydigi VADER3";
+        const char VADER4_NAME[] = "Flydigi VADER4";
+        ctx->has_cz = SDL_strncmp(device->name, VADER3_NAME, sizeof(VADER3_NAME) - 1) == 0 || SDL_strncmp(device->name, VADER4_NAME, sizeof(VADER4_NAME) - 1);
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -151,7 +159,7 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     SDL_zeroa(ctx->last_state);
 
     // Initialize the joystick capabilities
-    joystick->nbuttons = SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS;
+    joystick->nbuttons = ctx->has_cz ? SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS_WITH_CZ : SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS_WITHOUT_CZ;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
@@ -170,7 +178,7 @@ static bool HIDAPI_DriverFlydigi_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
     if (ctx->rumble_supported) {
-        Uint8 rumble_packet[4] = { 0x05, 0x0F, 0x00, 0x00 };
+        Uint8 rumble_packet[4] = { FLYDIGI_CMD_REPORT_ID, FLYDIGI_HAPTIC_COMMAND, 0x00, 0x00 };
         rumble_packet[2] = low_frequency_rumble >> 8;
         rumble_packet[3] = high_frequency_rumble >> 8;
 
@@ -287,9 +295,6 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_FLYDIGI_M3, ((data[7] & 0x10) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_FLYDIGI_M4, ((data[7] & 0x20) != 0));
     }
-
-
-
 
 #define READ_STICK_AXIS(offset) \
     (data[offset] == 0x7f ? 0 : (Sint16)HIDAPI_RemapVal((float)((int)data[offset] - 0x7f), -0x7f, 0xff - 0x7f, SDL_MIN_SINT16, SDL_MAX_SINT16))
