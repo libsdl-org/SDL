@@ -120,10 +120,9 @@ static bool HIDAPI_DriverFlydigi_InitDevice(SDL_HIDAPI_Device *device)
         const int VADER4PRO_REPORT_SIZE = 32;
         Uint8 data[USB_PACKET_LENGTH];
         int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
-        if (size >= VADER4PRO_REPORT_SIZE) {
+        if (size == VADER4PRO_REPORT_SIZE) {
             ctx->sensors_supported = true;
             ctx->rumble_supported = true;
-            ctx->powerstate_supported = true;
         }
     }
 
@@ -162,7 +161,6 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
 
         ctx->accelScale = SDL_STANDARD_GRAVITY / FLYDIGI_ACCEL_SCALE;
-        ctx->gyroScale = DEG2RAD(1024) / INT16_MAX; // Hardware senses  +/- 2048 Degrees per second mapped to +/- INT16_MAX
     }
 
     return true;
@@ -196,9 +194,6 @@ static Uint32 HIDAPI_DriverFlydigi_GetJoystickCapabilities(SDL_HIDAPI_Device *de
     Uint32 caps = 0;
     if (ctx->rumble_supported) {
         caps |= SDL_JOYSTICK_CAP_RUMBLE;
-    }
-    if (ctx->rgb_supported) {
-        caps |= SDL_JOYSTICK_CAP_RGB_LED;
     }
     return caps;
 }
@@ -320,36 +315,6 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     }
 #undef READ_TRIGGER_AXIS
 
-//    if (ctx->powerstate_supported) {
-//        SDL_PowerState state;
-//        int percent;
-//        Uint8 status = data[14] >> 7;
-//        Uint8 level = (data[14] & 0x7f);
-//        if (level == 100) {
-//            status = 2;
-//        }
-//        switch (status) {
-//        case 0:
-//            state = SDL_POWERSTATE_ON_BATTERY;
-//            percent = level;
-//            break;
-//        case 1:
-//            state = SDL_POWERSTATE_CHARGING;
-//            percent = level;
-//            break;
-//        case 2:
-//            state = SDL_POWERSTATE_CHARGED;
-//            percent = 100;
-//            break;
-//        default:
-//            state = SDL_POWERSTATE_UNKNOWN;
-//            percent = 0;
-//            break;
-//        }
-//        SDL_SendJoystickPowerInfo(joystick, state, percent);
-//    }
-//
-//
     if (ctx->sensors_enabled) {
         Uint64 sensor_timestamp;
         float values[3];
@@ -363,11 +328,6 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 
         // This device's IMU values are reported differently from SDL
         // Thus we perform a rotation of the coordinate system to match the SDL standard.
-
-        // By observation of this device:
-        // Hardware x is reporting roll (rotation about the power jack's axis)
-        // Hardware y is reporting pitch (rotation about the horizontal axis)
-        // Hardware z is reporting yaw (rotation about the joysticks' center axis)
         values[0] = -LOAD16(data[26], data[27]) * DEG2RAD(65536) / INT16_MAX;  // Rotation around pitch axis
         values[1] = -LOAD16(data[18], data[20]) * DEG2RAD(65536) / INT16_MAX;   // Rotation around yaw axis
         values[2] = -LOAD16(data[29], data[30]) * DEG2RAD(1024) / INT16_MAX;  // Rotation around roll axis
