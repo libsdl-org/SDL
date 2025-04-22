@@ -2011,7 +2011,7 @@ SDL_AppResult SDLCALL SDL_AppIterate(void *appstate)
     } else {
         DrawGamepadWaiting(screen);
     }
-    SDL_Delay(16);
+    SDL_Delay(1);
     SDL_RenderPresent(screen);
 
     return SDL_APP_CONTINUE;
