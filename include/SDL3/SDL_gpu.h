@@ -2146,6 +2146,13 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsProperties(
 /**
  * Creates a GPU context.
  *
+ * The GPU driver name can be one of the following:
+ *
+ * - "vulkan": [Vulkan](CategoryGPU#vulkan)
+ * - "direct3d12": [D3D12](CategoryGPU#d3d12)
+ * - "metal": [Metal](CategoryGPU#metal)
+ * - NULL: let SDL pick the optimal driver
+ *
  * \param format_flags a bitflag indicating which shader formats the app is
  *                     able to provide.
  * \param debug_mode enable debug mode properties and validations.
@@ -2156,6 +2163,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsProperties(
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_CreateGPUDeviceWithProperties
  * \sa SDL_GetGPUShaderFormats
  * \sa SDL_GetGPUDeviceDriver
  * \sa SDL_DestroyGPUDevice
