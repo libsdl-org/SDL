@@ -192,10 +192,10 @@ typedef Uint32 SDL_MouseButtonFlags;
  * \sa SDL_SetRelativeMouseTransform
  */
 typedef void (SDLCALL *SDL_MouseMotionTransformCallback)(
-    void *userdata, 
-    Uint64 timestamp, 
-    SDL_Window *window, 
-    SDL_MouseID mouseID, 
+    void *userdata,
+    Uint64 timestamp,
+    SDL_Window *window,
+    SDL_MouseID mouseID,
     float *x, float *y
 );
 
@@ -570,10 +570,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CaptureMouse(bool enabled);
  * \sa SDL_DestroyCursor
  * \sa SDL_SetCursor
  */
-extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 *data,
-                                                     const Uint8 *mask,
-                                                     int w, int h, int hot_x,
-                                                     int hot_y);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 *data,
+                                                                        const Uint8 *mask,
+                                                                        int w, int h, int hot_x,
+                                                                        int hot_y);
 
 /**
  * Create a color cursor.
@@ -603,9 +603,9 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 *data,
  * \sa SDL_DestroyCursor
  * \sa SDL_SetCursor
  */
-extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateColorCursor(SDL_Surface *surface,
-                                                          int hot_x,
-                                                          int hot_y);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateColorCursor(SDL_Surface *surface,
+                                                                             int hot_x,
+                                                                             int hot_y);
 
 /**
  * Create a system cursor.
@@ -620,7 +620,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateColorCursor(SDL_Surface *surf
  *
  * \sa SDL_DestroyCursor
  */
-extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor id);
+extern SDL_NODISCARD SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateSystemCursor(SDL_SystemCursor id);
 
 /**
  * Set the active cursor.
