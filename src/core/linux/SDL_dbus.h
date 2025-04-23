@@ -47,6 +47,7 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*bus_register)(DBusConnection *, DBusError *);
     void (*bus_add_match)(DBusConnection *, const char *, DBusError *);
     void (*bus_remove_match)(DBusConnection *, const char *, DBusError *);
+    const char *(*bus_get_unique_name)(DBusConnection *);
     DBusConnection *(*connection_open_private)(const char *, DBusError *);
     void (*connection_set_exit_on_disconnect)(DBusConnection *, dbus_bool_t);
     dbus_bool_t (*connection_get_is_connected)(DBusConnection *);

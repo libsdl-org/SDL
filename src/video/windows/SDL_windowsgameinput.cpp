@@ -22,16 +22,14 @@
 
 #include "SDL_windowsvideo.h"
 
-// GameInput currently has a bug with keys stuck on focus change, and crashes on initialization on some systems, so we'll disable it until these issues are fixed.
-#undef HAVE_GAMEINPUT_H
-
 #ifdef HAVE_GAMEINPUT_H
 
 #include "../../core/windows/SDL_gameinput.h"
+extern "C" {
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/scancodes_windows.h"
-
+}
 
 #define MAX_GAMEINPUT_BUTTONS   7   // GameInputMouseWheelTiltRight is the highest button
 
@@ -75,7 +73,14 @@ static bool GAMEINPUT_InternalAddOrFind(WIN_GameInputData *data, IGameInputDevic
     const GameInputDeviceInfo *info;
     bool result = false;
 
-    info = IGameInputDevice_GetDeviceInfo(pDevice);
+#if GAMEINPUT_API_VERSION >= 1
+    HRESULT hr = pDevice->GetDeviceInfo(&info);
+    if (FAILED(hr)) {
+        return WIN_SetErrorFromHRESULT("IGameInputDevice_GetDeviceInfo", hr);
+    }
+#else
+    info = pDevice->GetDeviceInfo();
+#endif
 
     SDL_LockMutex(data->lock);
     {
@@ -100,15 +105,11 @@ static bool GAMEINPUT_InternalAddOrFind(WIN_GameInputData *data, IGameInputDevic
             goto done;
         }
 
-        if (info->deviceStrings) {
-            // In theory we could get the manufacturer and product strings here, but they're NULL for all the devices I've tested
-        }
-
         if (info->displayName) {
             // This could give us a product string, but it's NULL for all the devices I've tested
         }
 
-        IGameInputDevice_AddRef(pDevice);
+        pDevice->AddRef();
         device->pDevice = pDevice;
         device->instance_id = SDL_GetNextObjectID();
         device->info = info;
@@ -147,15 +148,15 @@ static bool GAMEINPUT_InternalRemoveByIndex(WIN_GameInputData *data, int idx)
                     SDL_RemoveKeyboard(device->instance_id, true);
                 }
                 if (device->last_mouse_reading) {
-                    IGameInputReading_Release(device->last_mouse_reading);
+                    device->last_mouse_reading->Release();
                     device->last_mouse_reading = NULL;
                 }
                 if (device->last_keyboard_reading) {
-                    IGameInputReading_Release(device->last_keyboard_reading);
+                    device->last_keyboard_reading->Release();
                     device->last_keyboard_reading = NULL;
                 }
             }
-            IGameInputDevice_Release(device->pDevice);
+            device->pDevice->Release();
             SDL_free(device->name);
             SDL_free(device);
         }
@@ -217,6 +218,8 @@ bool WIN_InitGameInput(SDL_VideoDevice *_this)
 {
     WIN_GameInputData *data;
     HRESULT hr;
+    Uint64 now;
+    uint64_t timestampUS;
     bool result = false;
 
     if (_this->internal->gameinput_context) {
@@ -238,22 +241,21 @@ bool WIN_InitGameInput(SDL_VideoDevice *_this)
         goto done;
     }
 
-    hr = IGameInput_RegisterDeviceCallback(data->pGameInput,
-                                           NULL,
-                                           (GameInputKindMouse | GameInputKindKeyboard),
-                                           GameInputDeviceConnected,
-                                           GameInputBlockingEnumeration,
-                                           data,
-                                           GAMEINPUT_InternalDeviceCallback,
-                                           &data->gameinput_callback_token);
+    hr = data->pGameInput->RegisterDeviceCallback(NULL,
+                                                  (GameInputKindMouse | GameInputKindKeyboard),
+                                                  GameInputDeviceConnected,
+                                                  GameInputBlockingEnumeration,
+                                                  data,
+                                                  GAMEINPUT_InternalDeviceCallback,
+                                                  &data->gameinput_callback_token);
     if (FAILED(hr)) {
-        SDL_SetError("IGameInput::RegisterDeviceCallback failure with HRESULT of %08X", hr);
+        WIN_SetErrorFromHRESULT("IGameInput::RegisterDeviceCallback", hr);
         goto done;
     }
 
     // Calculate the relative offset between SDL timestamps and GameInput timestamps
-    Uint64 now = SDL_GetTicksNS();
-    uint64_t timestampUS = IGameInput_GetCurrentTimestamp(data->pGameInput);
+    now = SDL_GetTicksNS();
+    timestampUS = data->pGameInput->GetCurrentTimestamp();
     data->timestamp_offset = (SDL_NS_TO_US(now) - timestampUS);
 
     result = true;
@@ -268,12 +270,12 @@ done:
 static void GAMEINPUT_InitialMouseReading(WIN_GameInputData *data, SDL_Window *window, GAMEINPUT_Device *device, IGameInputReading *reading)
 {
     GameInputMouseState state;
-    if (SUCCEEDED(IGameInputReading_GetMouseState(reading, &state))) {
-        Uint64 timestamp = SDL_US_TO_NS(IGameInputReading_GetTimestamp(reading) + data->timestamp_offset);
+    if (reading->GetMouseState(&state)) {
+        Uint64 timestamp = SDL_US_TO_NS(reading->GetTimestamp() + data->timestamp_offset);
         SDL_MouseID mouseID = device->instance_id;
 
         for (int i = 0; i < MAX_GAMEINPUT_BUTTONS; ++i) {
-            const GameInputMouseButtons mask = (1 << i);
+            const GameInputMouseButtons mask = GameInputMouseButtons(1 << i);
             bool down = ((state.buttons & mask) != 0);
             SDL_SendMouseButton(timestamp, window, mouseID, GAMEINPUT_button_map[i], down);
         }
@@ -284,9 +286,8 @@ static void GAMEINPUT_HandleMouseDelta(WIN_GameInputData *data, SDL_Window *wind
 {
     GameInputMouseState last;
     GameInputMouseState state;
-    if (SUCCEEDED(IGameInputReading_GetMouseState(last_reading, &last)) &&
-        SUCCEEDED(IGameInputReading_GetMouseState(reading, &state))) {
-        Uint64 timestamp = SDL_US_TO_NS(IGameInputReading_GetTimestamp(reading) + data->timestamp_offset);
+    if (last_reading->GetMouseState(&last) && reading->GetMouseState(&state)) {
+        Uint64 timestamp = SDL_US_TO_NS(reading->GetTimestamp() + data->timestamp_offset);
         SDL_MouseID mouseID = device->instance_id;
 
         GameInputMouseState delta;
@@ -301,7 +302,7 @@ static void GAMEINPUT_HandleMouseDelta(WIN_GameInputData *data, SDL_Window *wind
         }
         if (delta.buttons) {
             for (int i = 0; i < MAX_GAMEINPUT_BUTTONS; ++i) {
-                const GameInputMouseButtons mask = (1 << i);
+                const GameInputMouseButtons mask = GameInputMouseButtons(1 << i);
                 if (delta.buttons & mask) {
                     bool down = ((state.buttons & mask) != 0);
                     SDL_SendMouseButton(timestamp, window, mouseID, GAMEINPUT_button_map[i], down);
@@ -337,7 +338,7 @@ static bool KeysHaveScancode(const GameInputKeyState *keys, uint32_t count, SDL_
 
 static void GAMEINPUT_InitialKeyboardReading(WIN_GameInputData *data, SDL_Window *window, GAMEINPUT_Device *device, IGameInputReading *reading)
 {
-    Uint64 timestamp = SDL_US_TO_NS(IGameInputReading_GetTimestamp(reading) + data->timestamp_offset);
+    Uint64 timestamp = SDL_US_TO_NS(reading->GetTimestamp() + data->timestamp_offset);
     SDL_KeyboardID keyboardID = device->instance_id;
 
     uint32_t max_keys = device->info->keyboardInfo->maxSimultaneousKeys;
@@ -346,7 +347,7 @@ static void GAMEINPUT_InitialKeyboardReading(WIN_GameInputData *data, SDL_Window
         return;
     }
 
-    uint32_t num_keys = IGameInputReading_GetKeyState(reading, max_keys, keys);
+    uint32_t num_keys = reading->GetKeyState(max_keys, keys);
     if (!num_keys) {
         // FIXME: We probably need to track key state by keyboardID
         SDL_ResetKeyboard();
@@ -382,7 +383,7 @@ static void DumpKeys(const char *prefix, GameInputKeyState *keys, uint32_t count
 
 static void GAMEINPUT_HandleKeyboardDelta(WIN_GameInputData *data, SDL_Window *window, GAMEINPUT_Device *device, IGameInputReading *last_reading, IGameInputReading *reading)
 {
-    Uint64 timestamp = SDL_US_TO_NS(IGameInputReading_GetTimestamp(reading) + data->timestamp_offset);
+    Uint64 timestamp = SDL_US_TO_NS(reading->GetTimestamp() + data->timestamp_offset);
     SDL_KeyboardID keyboardID = device->instance_id;
 
     uint32_t max_keys = device->info->keyboardInfo->maxSimultaneousKeys;
@@ -394,8 +395,8 @@ static void GAMEINPUT_HandleKeyboardDelta(WIN_GameInputData *data, SDL_Window *w
 
     uint32_t index_last = 0;
     uint32_t index_keys = 0;
-    uint32_t num_last = IGameInputReading_GetKeyState(last_reading, max_keys, last);
-    uint32_t num_keys = IGameInputReading_GetKeyState(reading, max_keys, keys);
+    uint32_t num_last = last_reading->GetKeyState(max_keys, last);
+    uint32_t num_keys = reading->GetKeyState(max_keys, keys);
 #ifdef DEBUG_KEYS
     SDL_Log("Timestamp: %llu", timestamp);
     DumpKeys("Last keys:", last, num_last);
@@ -463,20 +464,20 @@ void WIN_UpdateGameInput(SDL_VideoDevice *_this)
             if (data->enabled_input & GameInputKindMouse) {
                 if (device->last_mouse_reading) {
                     HRESULT hr;
-                    while (SUCCEEDED(hr = IGameInput_GetNextReading(data->pGameInput, device->last_mouse_reading, GameInputKindMouse, device->pDevice, &reading))) {
+                    while (SUCCEEDED(hr = data->pGameInput->GetNextReading(device->last_mouse_reading, GameInputKindMouse, device->pDevice, &reading))) {
                         GAMEINPUT_HandleMouseDelta(data, window, device, device->last_mouse_reading, reading);
-                        IGameInputReading_Release(device->last_mouse_reading);
+                        device->last_mouse_reading->Release();
                         device->last_mouse_reading = reading;
                     }
                     if (hr != GAMEINPUT_E_READING_NOT_FOUND) {
-                        if (SUCCEEDED(IGameInput_GetCurrentReading(data->pGameInput, GameInputKindMouse, device->pDevice, &reading))) {
+                        if (SUCCEEDED(data->pGameInput->GetCurrentReading(GameInputKindMouse, device->pDevice, &reading))) {
                             GAMEINPUT_HandleMouseDelta(data, window, device, device->last_mouse_reading, reading);
-                            IGameInputReading_Release(device->last_mouse_reading);
+                            device->last_mouse_reading->Release();
                             device->last_mouse_reading = reading;
                         }
                     }
                 } else {
-                    if (SUCCEEDED(IGameInput_GetCurrentReading(data->pGameInput, GameInputKindMouse, device->pDevice, &reading))) {
+                    if (SUCCEEDED(data->pGameInput->GetCurrentReading(GameInputKindMouse, device->pDevice, &reading))) {
                         GAMEINPUT_InitialMouseReading(data, window, device, reading);
                         device->last_mouse_reading = reading;
                     }
@@ -487,26 +488,26 @@ void WIN_UpdateGameInput(SDL_VideoDevice *_this)
                 if (window->text_input_active) {
                     // Reset raw input while text input is active
                     if (device->last_keyboard_reading) {
-                        IGameInputReading_Release(device->last_keyboard_reading);
+                        device->last_keyboard_reading->Release();
                         device->last_keyboard_reading = NULL;
                     }
                 } else {
                     if (device->last_keyboard_reading) {
                         HRESULT hr;
-                        while (SUCCEEDED(hr = IGameInput_GetNextReading(data->pGameInput, device->last_keyboard_reading, GameInputKindKeyboard, device->pDevice, &reading))) {
+                        while (SUCCEEDED(hr = data->pGameInput->GetNextReading(device->last_keyboard_reading, GameInputKindKeyboard, device->pDevice, &reading))) {
                             GAMEINPUT_HandleKeyboardDelta(data, window, device, device->last_keyboard_reading, reading);
-                            IGameInputReading_Release(device->last_keyboard_reading);
+                            device->last_keyboard_reading->Release();
                             device->last_keyboard_reading = reading;
                         }
                         if (hr != GAMEINPUT_E_READING_NOT_FOUND) {
-                            if (SUCCEEDED(IGameInput_GetCurrentReading(data->pGameInput, GameInputKindKeyboard, device->pDevice, &reading))) {
+                            if (SUCCEEDED(data->pGameInput->GetCurrentReading(GameInputKindKeyboard, device->pDevice, &reading))) {
                                 GAMEINPUT_HandleKeyboardDelta(data, window, device, device->last_keyboard_reading, reading);
-                                IGameInputReading_Release(device->last_keyboard_reading);
+                                device->last_keyboard_reading->Release();
                                 device->last_keyboard_reading = reading;
                             }
                         }
                     } else {
-                        if (SUCCEEDED(IGameInput_GetCurrentReading(data->pGameInput, GameInputKindKeyboard, device->pDevice, &reading))) {
+                        if (SUCCEEDED(data->pGameInput->GetCurrentReading(GameInputKindKeyboard, device->pDevice, &reading))) {
                             GAMEINPUT_InitialKeyboardReading(data, window, device, reading);
                             device->last_keyboard_reading = reading;
                         }
@@ -534,12 +535,12 @@ bool WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this)
             GAMEINPUT_Device *device = data->devices[i];
 
             if (device->last_mouse_reading && !raw_mouse_enabled) {
-                IGameInputReading_Release(device->last_mouse_reading);
+                device->last_mouse_reading->Release();
                 device->last_mouse_reading = NULL;
             }
 
             if (device->last_keyboard_reading && !raw_keyboard_enabled) {
-                IGameInputReading_Release(device->last_keyboard_reading);
+                device->last_keyboard_reading->Release();
                 device->last_keyboard_reading = NULL;
             }
         }
@@ -559,9 +560,13 @@ void WIN_QuitGameInput(SDL_VideoDevice *_this)
 
     if (data->pGameInput) {
         // free the callback
-        if (data->gameinput_callback_token != GAMEINPUT_INVALID_CALLBACK_TOKEN_VALUE) {
-            IGameInput_UnregisterCallback(data->pGameInput, data->gameinput_callback_token, /*timeoutInUs:*/ 10000);
-            data->gameinput_callback_token = GAMEINPUT_INVALID_CALLBACK_TOKEN_VALUE;
+        if (data->gameinput_callback_token) {
+#if GAMEINPUT_API_VERSION >= 1
+            data->pGameInput->UnregisterCallback(data->gameinput_callback_token);
+#else
+            data->pGameInput->UnregisterCallback(data->gameinput_callback_token, 10000);
+#endif
+            data->gameinput_callback_token = 0;
         }
 
         // free the list
@@ -569,7 +574,7 @@ void WIN_QuitGameInput(SDL_VideoDevice *_this)
             GAMEINPUT_InternalRemoveByIndex(data, 0);
         }
 
-        IGameInput_Release(data->pGameInput);
+        data->pGameInput->Release();
         data->pGameInput = NULL;
     }
 

@@ -42,13 +42,13 @@ enum
     SDL_GAMEPAD_NUM_8BITDO_BUTTONS,
 };
 
-#define ABITDO_GYRO_SCALE  14.2842f
 #define ABITDO_ACCEL_SCALE 4096.f
-
+#define SENSOR_INTERVAL_NS 8000000ULL
 
 typedef struct
 {
     bool sensors_supported;
+    bool sensors_enabled;
     bool touchpad_01_supported;
     bool touchpad_02_supported;
     bool rumble_supported;
@@ -62,6 +62,7 @@ typedef struct
     float accelScale;
     float gyroScale;
     Uint8 last_state[USB_PACKET_LENGTH];
+    Uint64 sensor_timestamp; // Microseconds. Simulate onboard clock. Advance by known rate: SENSOR_INTERVAL_NS == 8ms = 125 Hz
 } SDL_Driver8BitDo_Context;
 
 #pragma pack(push,1)
@@ -125,7 +126,7 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
     device->context = ctx;
 
     if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
-        // The Ultimate 2 Wireless v1.02 firmware has < 30 byte reports, v1.03 firmware has 34 byte reports
+        // The Ultimate 2 Wireless v1.02 firmware has 12 byte reports, v1.03 firmware has 34 byte reports
         const int ULTIMATE2_WIRELESS_V103_REPORT_SIZE = 34;
         Uint8 data[USB_PACKET_LENGTH];
         int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
@@ -148,6 +149,10 @@ static void HIDAPI_Driver8BitDo_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 {
 }
 
+#ifndef DEG2RAD
+#define DEG2RAD(x) ((float)(x) * (float)(SDL_PI_F / 180.f))
+#endif
+
 static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)device->context;
@@ -162,12 +167,12 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     joystick->nhats = 1;
 
     if (ctx->sensors_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 125.0f);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 125.0f);
 
-        
+
         ctx->accelScale = SDL_STANDARD_GRAVITY / ABITDO_ACCEL_SCALE;
-        ctx->gyroScale = SDL_PI_F / 180.0f / ABITDO_GYRO_SCALE;
+        ctx->gyroScale = DEG2RAD(2048) / INT16_MAX; // Hardware senses  +/- 2048 Degrees per second mapped to +/- INT16_MAX
     }
 
     return true;
@@ -202,11 +207,9 @@ static Uint32 HIDAPI_Driver8BitDo_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     if (ctx->rumble_supported) {
         caps |= SDL_JOYSTICK_CAP_RUMBLE;
     }
-#if 0 // HIDAPI_Driver8BitDo_SetJoystickLED() returns SDL_Unsupported()
     if (ctx->rgb_supported) {
         caps |= SDL_JOYSTICK_CAP_RGB_LED;
     }
-#endif
     return caps;
 }
 
@@ -222,11 +225,12 @@ static bool HIDAPI_Driver8BitDo_SendJoystickEffect(SDL_HIDAPI_Device *device, SD
 
 static bool HIDAPI_Driver8BitDo_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
-   SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)device->context;
-   if (ctx->sensors_supported) {
-       return true;
-   }
-   return SDL_Unsupported();
+    SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)device->context;
+    if (ctx->sensors_supported) {
+        ctx->sensors_enabled = enabled;
+        return true;
+    }
+    return SDL_Unsupported();
 }
 static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Driver8BitDo_Context *ctx, Uint8 *data, int size)
 {
@@ -272,7 +276,7 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
     }
 
-    
+
     if (ctx->last_state[8] != data[8]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data[8] & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data[8] & 0x02) != 0));
@@ -352,20 +356,37 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 
 
-    if (ctx->sensors_supported) {
+    if (ctx->sensors_enabled) {
         Uint64 sensor_timestamp;
         float values[3];
         ABITDO_SENSORS *sensors = (ABITDO_SENSORS *)&data[15];
 
-        sensor_timestamp = timestamp;
-        values[0] = (sensors->sGyroX) * (ctx->gyroScale);
-        values[1] = (sensors->sGyroZ) * (ctx->gyroScale);
-        values[2] = (sensors->sGyroY) * (ctx->gyroScale);
+        // Note: we cannot use the time stamp of the receiving computer due to packet delay creating "spiky" timings.
+        // The imu time stamp is intended to be the sample time of the on-board hardware.
+        // In the absence of time stamp data from the data[], we can simulate that by
+        // advancing a time stamp by the observed/known imu clock rate. This is 8ms = 125 Hz
+        sensor_timestamp = ctx->sensor_timestamp;
+        ctx->sensor_timestamp += SENSOR_INTERVAL_NS;
+
+        // This device's IMU values are reported differently from SDL
+        // Thus we perform a rotation of the coordinate system to match the SDL standard.
+
+        // By observation of this device:
+        // Hardware x is reporting roll (rotation about the power jack's axis)
+        // Hardware y is reporting pitch (rotation about the horizontal axis)
+        // Hardware z is reporting yaw (rotation about the joysticks' center axis)
+        values[0] = -sensors->sGyroY * ctx->gyroScale;  // Rotation around pitch axis
+        values[1] = sensors->sGyroZ * ctx->gyroScale;   // Rotation around yaw axis
+        values[2] = -sensors->sGyroX * ctx->gyroScale;  // Rotation around roll axis
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
-        values[0] = (sensors->sAccelX) * (ctx->accelScale);
-        values[1] = (sensors->sAccelZ) * (ctx->accelScale);
-        values[2] = (sensors->sAccelY) * (ctx->accelScale);
+        // By observation of this device:
+        // Accelerometer X is positive when front of the controller points toward the sky.
+        // Accelerometer y is positive when left side of the controller points toward the sky.
+        // Accelerometer Z is positive when sticks point toward the sky.
+        values[0] = -sensors->sAccelY * ctx->accelScale; // Acceleration along pitch axis
+        values[1] = sensors->sAccelZ * ctx->accelScale;  // Acceleration along yaw axis
+        values[2] = -sensors->sAccelX * ctx->accelScale; // Acceleration along roll axis
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, values, 3);
     }
 

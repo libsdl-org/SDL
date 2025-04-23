@@ -60,30 +60,30 @@ my %format_type = (
 );
 
 my %get_rgba_string_ignore_alpha = (
-    "XRGB8888" => "_R = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _B = (Uint8)_pixel;",
-    "XBGR8888" => "_B = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _R = (Uint8)_pixel;",
-    "ARGB8888" => "_R = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _B = (Uint8)_pixel;",
-    "RGBA8888" => "_R = (Uint8)(_pixel >> 24); _G = (Uint8)(_pixel >> 16); _B = (Uint8)(_pixel >> 8);",
-    "ABGR8888" => "_B = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _R = (Uint8)_pixel;",
-    "BGRA8888" => "_B = (Uint8)(_pixel >> 24); _G = (Uint8)(_pixel >> 16); _R = (Uint8)(_pixel >> 8);",
+    "XRGB8888" => "__R = (Uint8)(__pixel_ >> 16); __G = (Uint8)(__pixel_ >> 8); __B = (Uint8)__pixel_;",
+    "XBGR8888" => "__B = (Uint8)(__pixel_ >> 16); __G = (Uint8)(__pixel_ >> 8); __R = (Uint8)__pixel_;",
+    "ARGB8888" => "__R = (Uint8)(__pixel_ >> 16); __G = (Uint8)(__pixel_ >> 8); __B = (Uint8)__pixel_;",
+    "RGBA8888" => "__R = (Uint8)(__pixel_ >> 24); __G = (Uint8)(__pixel_ >> 16); __B = (Uint8)(__pixel_ >> 8);",
+    "ABGR8888" => "__B = (Uint8)(__pixel_ >> 16); __G = (Uint8)(__pixel_ >> 8); __R = (Uint8)__pixel_;",
+    "BGRA8888" => "__B = (Uint8)(__pixel_ >> 24); __G = (Uint8)(__pixel_ >> 16); __R = (Uint8)(__pixel_ >> 8);",
 );
 
 my %get_rgba_string = (
     "XRGB8888" => $get_rgba_string_ignore_alpha{"XRGB8888"},
     "XBGR8888" => $get_rgba_string_ignore_alpha{"XBGR8888"},
-    "ARGB8888" => $get_rgba_string_ignore_alpha{"ARGB8888"} . " _A = (Uint8)(_pixel >> 24);",
-    "RGBA8888" => $get_rgba_string_ignore_alpha{"RGBA8888"} . " _A = (Uint8)_pixel;",
-    "ABGR8888" => $get_rgba_string_ignore_alpha{"ABGR8888"} . " _A = (Uint8)(_pixel >> 24);",
-    "BGRA8888" => $get_rgba_string_ignore_alpha{"BGRA8888"} . " _A = (Uint8)_pixel;",
+    "ARGB8888" => $get_rgba_string_ignore_alpha{"ARGB8888"} . " __A = (Uint8)(__pixel_ >> 24);",
+    "RGBA8888" => $get_rgba_string_ignore_alpha{"RGBA8888"} . " __A = (Uint8)__pixel_;",
+    "ABGR8888" => $get_rgba_string_ignore_alpha{"ABGR8888"} . " __A = (Uint8)(__pixel_ >> 24);",
+    "BGRA8888" => $get_rgba_string_ignore_alpha{"BGRA8888"} . " __A = (Uint8)__pixel_;",
 );
 
 my %set_rgba_string = (
-    "XRGB8888" => "_pixel = (_R << 16) | (_G << 8) | _B;",
-    "XBGR8888" => "_pixel = (_B << 16) | (_G << 8) | _R;",
-    "ARGB8888" => "_pixel = (_A << 24) | (_R << 16) | (_G << 8) | _B;",
-    "RGBA8888" => "_pixel = (_R << 24) | (_G << 16) | (_B << 8) | _A;",
-    "ABGR8888" => "_pixel = (_A << 24) | (_B << 16) | (_G << 8) | _R;",
-    "BGRA8888" => "_pixel = (_B << 24) | (_G << 16) | (_R << 8) | _A;",
+    "XRGB8888" => "__pixel_ = (__R << 16) | (__G << 8) | __B;",
+    "XBGR8888" => "__pixel_ = (__B << 16) | (__G << 8) | __R;",
+    "ARGB8888" => "__pixel_ = (__A << 24) | (__R << 16) | (__G << 8) | __B;",
+    "RGBA8888" => "__pixel_ = (__R << 24) | (__G << 16) | (__B << 8) | __A;",
+    "ABGR8888" => "__pixel_ = (__A << 24) | (__B << 16) | (__G << 8) | __R;",
+    "BGRA8888" => "__pixel_ = (__B << 24) | (__G << 16) | (__R << 8) | __A;",
 );
 
 sub open_file {
@@ -112,7 +112,6 @@ sub open_file {
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "SDL_surface_c.h"
 
 #ifdef SDL_HAVE_BLIT_AUTO
 
@@ -184,14 +183,19 @@ sub get_rgba
         $string = $get_rgba_string{$format};
     }
 
-    $string =~ s/_/$prefix/g;
+    $string =~ s/__/$prefix/g;
+    if ( $prefix eq "" ) {
+        $string =~ s/_/value/g;
+    } else {
+        $string =~ s/_//g;
+    }
     if ( $prefix ne "" ) {
         print FILE <<__EOF__;
             ${prefix}pixel = *$prefix;
 __EOF__
     } else {
         print FILE <<__EOF__;
-            pixel = *src;
+            pixelvalue = *src;
 __EOF__
     }
     print FILE <<__EOF__;
@@ -203,11 +207,18 @@ sub set_rgba
 {
     my $prefix = shift;
     my $format = shift;
+    my $suffix = "";
     my $string = $set_rgba_string{$format};
-    $string =~ s/_/$prefix/g;
+    $string =~ s/__/$prefix/g;
+    if ( $prefix eq "" ) {
+        $suffix = "value";
+        $string =~ s/_/value/g;
+    } else {
+        $string =~ s/_//g;
+    }
     print FILE <<__EOF__;
             $string
-            *dst = ${prefix}pixel;
+            *dst = ${prefix}pixel${suffix};
 __EOF__
 }
 
@@ -246,16 +257,16 @@ __EOF__
                 if ($da eq "A") {
                     # RGBA -> ARGB
                     print FILE <<__EOF__;
-            pixel = *src;
-            pixel = (pixel >> 8) | (pixel << 24);
-            *dst = pixel;
+            pixelvalue = *src;
+            pixelvalue = (pixelvalue >> 8) | (pixelvalue << 24);
+            *dst = pixelvalue;
 __EOF__
                 } else {
                     # ARGB -> RGBA -- unused
                     print FILE <<__EOF__;
-            pixel = *src;
-            pixel = (pixel << 8) | A;
-            *dst = pixel;
+            pixelvalue = *src;
+            pixelvalue = (pixelvalue << 8) | A;
+            *dst = pixelvalue;
 __EOF__
                 }
             } elsif ($dst_has_alpha) {
@@ -263,16 +274,16 @@ __EOF__
                 if ($da eq "A") {
                     # XRGB -> ARGB
                     print FILE <<__EOF__;
-            pixel = *src;
-            pixel |= (A << 24);
-            *dst = pixel;
+            pixelvalue = *src;
+            pixelvalue |= (A << 24);
+            *dst = pixelvalue;
 __EOF__
                 } else {
                     # XRGB -> RGBA -- unused
                     print FILE <<__EOF__;
-            pixel = *src;
-            pixel = (pixel << 8) | A;
-            *dst = pixel;
+            pixelvalue = *src;
+            pixelvalue = (pixelvalue << 8) | A;
+            *dst = pixelvalue;
 __EOF__
                 }
             } else {
@@ -280,16 +291,16 @@ __EOF__
                 if ($sa eq "A") {
                     # ARGB -> XRGB
                     print FILE <<__EOF__;
-            pixel = *src;
-            pixel &= 0xFFFFFF;
-            *dst = pixel;
+            pixelvalue = *src;
+            pixelvalue &= 0xFFFFFF;
+            *dst = pixelvalue;
 __EOF__
                 } else {
                     # RGBA -> XRGB
                     print FILE <<__EOF__;
-            pixel = *src;
-            pixel >>= 8;
-            *dst = pixel;
+            pixelvalue = *src;
+            pixelvalue >>= 8;
+            *dst = pixelvalue;
 __EOF__
                 }
             }
@@ -537,7 +548,7 @@ __EOF__
         }
     } elsif ( $modulate || $src ne $dst ) {
         print FILE <<__EOF__;
-    Uint32 pixel;
+    Uint32 pixelvalue;
 __EOF__
         if ( !$ignore_dst_alpha && !$src_has_alpha ) {
             if ( $modulate ) {
@@ -641,6 +652,14 @@ sub output_copyinc
 __EOF__
 }
 
+sub output_copyinc_h
+{
+    print FILE <<__EOF__;
+#include "SDL_blit.h"
+
+__EOF__
+}
+
 sub output_copyfunctable
 {
     print FILE <<__EOF__;
@@ -693,7 +712,7 @@ __EOF__
         }
     }
     print FILE <<__EOF__;
-    { 0, 0, 0, 0, NULL }
+    { SDL_PIXELFORMAT_UNKNOWN, SDL_PIXELFORMAT_UNKNOWN, 0, 0, NULL }
 };
 
 __EOF__
@@ -716,6 +735,7 @@ sub output_copyfunc_c
 }
 
 open_file("SDL_blit_auto.h");
+output_copyinc_h();
 output_copydefs();
 for (my $i = 0; $i <= $#src_formats; ++$i) {
     for (my $j = 0; $j <= $#dst_formats; ++$j) {

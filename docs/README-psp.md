@@ -1,13 +1,13 @@
 PSP
 ======
 SDL port for the Sony PSP contributed by:
-- Captian Lex
+- Captain Lex
 - Francisco Javier Trujillo Mata
 - Wouter Wijsman
 
 
 Credit to
-   Marcus R.Brown,Jim Paris,Matthew H for the original SDL 1.2 for PSP
+   Marcus R.Brown, Jim Paris, Matthew H for the original SDL 1.2 for PSP
    Geecko for his PSP GU lib "Glib2d"
 
 ## Building

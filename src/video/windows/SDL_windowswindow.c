@@ -376,6 +376,10 @@ bool WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags, SDL_WindowRec
 
     // Update any child windows
     for (child_window = window->first_child; child_window; child_window = child_window->next_sibling) {
+        if (!child_window->internal) {
+            // This child window is not yet fully initialized.
+            continue;
+        }
         if (!WIN_SetWindowPositionInternal(child_window, flags, SDL_WINDOWRECT_CURRENT)) {
             result = false;
         }
@@ -1246,18 +1250,22 @@ void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 static void WIN_UpdateCornerRoundingForHWND(SDL_VideoDevice *_this, HWND hwnd, DWM_WINDOW_CORNER_PREFERENCE cornerPref)
 {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_VideoData *videodata = _this->internal;
     if (videodata->DwmSetWindowAttribute) {
         videodata->DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
     }
+#endif
 }
 
 static void WIN_UpdateBorderColorForHWND(SDL_VideoDevice *_this, HWND hwnd, COLORREF colorRef)
 {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_VideoData *videodata = _this->internal;
     if (videodata->DwmSetWindowAttribute) {
         videodata->DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &colorRef, sizeof(colorRef));
     }
+#endif
 }
 
 /**
@@ -2250,6 +2258,10 @@ bool WIN_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window* window)
 #ifdef HAVE_SHOBJIDL_CORE_H
     SDL_WindowData *data = window->internal;
     if (!data->taskbar_button_created) {
+        return true;
+    }
+
+    if (window->progress_state == SDL_PROGRESS_STATE_NONE && !data->videodata->taskbar_list) {
         return true;
     }
 

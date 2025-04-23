@@ -1,3 +1,10 @@
+macro(check_c_source_compiles_static SOURCE VAR)
+  set(saved_CMAKE_TRY_COMPILE_TARGET_TYPE "${CMAKE_TRY_COMPILE_TARGET_TYPE}")
+  set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+  check_c_source_compiles("${SOURCE}" ${VAR} ${ARGN})
+  set(CMAKE_TRY_COMPILE_TARGET_TYPE "${saved_CMAKE_TRY_COMPILE_TARGET_TYPE}")
+endmacro()
+
 macro(FindLibraryAndSONAME _LIB)
   cmake_parse_arguments(_FLAS "" "" "LIBDIRS" ${ARGN})
 
@@ -369,7 +376,7 @@ macro(CheckX11)
 
       list(APPEND CMAKE_REQUIRED_LIBRARIES ${X11_LIB})
 
-      check_c_source_compiles("
+      check_c_source_compiles_static("
           #include <X11/Xlib.h>
           int main(int argc, char **argv) {
             Display *display;
@@ -410,7 +417,7 @@ macro(CheckX11)
         set(SDL_VIDEO_DRIVER_X11_XINPUT2 1)
 
         # Check for multitouch
-        check_c_source_compiles("
+        check_c_source_compiles_static("
             #include <X11/Xlib.h>
             #include <X11/Xproto.h>
             #include <X11/extensions/XInput2.h>
@@ -427,7 +434,7 @@ macro(CheckX11)
 
       # check along with XInput2.h because we use Xfixes with XIBarrierReleasePointer
       if(SDL_X11_XFIXES AND HAVE_XFIXES_H_ AND HAVE_XINPUT2_H)
-        check_c_source_compiles("
+        check_c_source_compiles_static("
             #include <X11/Xlib.h>
             #include <X11/Xproto.h>
             #include <X11/extensions/XInput2.h>
@@ -1097,7 +1104,7 @@ macro(CheckHIDAPI)
       if(LibUSB_FOUND)
         cmake_push_check_state()
         list(APPEND CMAKE_REQUIRED_LIBRARIES LibUSB::LibUSB)
-        check_c_source_compiles("
+        check_c_source_compiles_static("
           #include <stddef.h>
           #include <libusb.h>
           int main(int argc, char **argv) {

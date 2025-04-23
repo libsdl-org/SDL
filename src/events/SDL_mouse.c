@@ -409,6 +409,19 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
     }
 }
 
+void SDL_SetMouseName(SDL_MouseID mouseID, const char *name)
+{
+    SDL_assert(mouseID != 0);
+
+    const int mouse_index = SDL_GetMouseIndex(mouseID);
+
+    if (mouse_index >= 0) {
+        SDL_MouseInstance *instance = &SDL_mice[mouse_index];
+        SDL_free(instance->name);
+        instance->name = SDL_strdup(name ? name : "");
+    }
+}
+
 bool SDL_HasMouse(void)
 {
     return (SDL_mouse_count > 0);
@@ -1477,7 +1490,7 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
     SDL_Surface *surface;
     SDL_Cursor *cursor;
     int x, y;
-    Uint32 *pixel;
+    Uint32 *pixels;
     Uint8 datab = 0, maskb = 0;
     const Uint32 black = 0xFF000000;
     const Uint32 white = 0xFFFFFFFF;
@@ -1498,16 +1511,16 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
         return NULL;
     }
     for (y = 0; y < h; ++y) {
-        pixel = (Uint32 *)((Uint8 *)surface->pixels + y * surface->pitch);
+        pixels = (Uint32 *)((Uint8 *)surface->pixels + y * surface->pitch);
         for (x = 0; x < w; ++x) {
             if ((x % 8) == 0) {
                 datab = *data++;
                 maskb = *mask++;
             }
             if (maskb & 0x80) {
-                *pixel++ = (datab & 0x80) ? black : white;
+                *pixels++ = (datab & 0x80) ? black : white;
             } else {
-                *pixel++ = (datab & 0x80) ? inverted : transparent;
+                *pixels++ = (datab & 0x80) ? inverted : transparent;
             }
             datab <<= 1;
             maskb <<= 1;

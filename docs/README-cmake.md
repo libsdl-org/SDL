@@ -329,7 +329,7 @@ Configure your project with `-DSDL_LIBC=ON` to make use of sanitizers.
 
 Install the required system packages prior to running CMake.
 See [README-linux](linux#build-dependencies) for the list of dependencies on Linux.
-Other unix operationg systems should provide similar packages.
+Other unix operating systems should provide similar packages.
 
 If you **really** don't need to show windows, add `-DSDL_UNIX_CONSOLE_BUILD=ON` to the CMake configure command.
 

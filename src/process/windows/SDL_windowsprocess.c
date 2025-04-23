@@ -313,6 +313,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         if (stderr_option == SDL_PROCESS_STDIO_INHERITED) {
             stderr_option = SDL_PROCESS_STDIO_NULL;
         }
+        creation_flags |= CREATE_NO_WINDOW;
     }
 
     switch (stdin_option) {
@@ -338,7 +339,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         startup_info.hStdInput = stdin_pipe[READ_END];
         break;
     case SDL_PROCESS_STDIO_NULL:
-        startup_info.hStdInput = CreateFile(TEXT("\\\\.\\NUL"), GENERIC_ALL, 0, &security_attributes, OPEN_EXISTING, 0, NULL);
+        startup_info.hStdInput = CreateFile(TEXT("\\\\.\\NUL"), (GENERIC_READ | GENERIC_WRITE), 0, &security_attributes, OPEN_EXISTING, 0, NULL);
         break;
     case SDL_PROCESS_STDIO_INHERITED:
     default:
@@ -375,7 +376,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         startup_info.hStdOutput = stdout_pipe[WRITE_END];
         break;
     case SDL_PROCESS_STDIO_NULL:
-        startup_info.hStdOutput = CreateFile(TEXT("\\\\.\\NUL"), GENERIC_ALL, 0, &security_attributes, OPEN_EXISTING, 0, NULL);
+        startup_info.hStdOutput = CreateFile(TEXT("\\\\.\\NUL"), (GENERIC_READ | GENERIC_WRITE), 0, &security_attributes, OPEN_EXISTING, 0, NULL);
         break;
     case SDL_PROCESS_STDIO_INHERITED:
     default:
@@ -421,7 +422,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             startup_info.hStdError = stderr_pipe[WRITE_END];
             break;
         case SDL_PROCESS_STDIO_NULL:
-            startup_info.hStdError = CreateFile(TEXT("\\\\.\\NUL"), GENERIC_ALL, 0, &security_attributes, OPEN_EXISTING, 0, NULL);
+            startup_info.hStdError = CreateFile(TEXT("\\\\.\\NUL"), (GENERIC_READ | GENERIC_WRITE), 0, &security_attributes, OPEN_EXISTING, 0, NULL);
             break;
         case SDL_PROCESS_STDIO_INHERITED:
         default:

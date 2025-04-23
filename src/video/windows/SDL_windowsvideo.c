@@ -583,18 +583,18 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
     WIN_QuitKeyboard(_this);
     WIN_QuitMouse(_this);
 
-    if (data->oleinitialized) {
-        OleUninitialize();
-        data->oleinitialized = false;
-    }
-#endif // !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
-
 #if defined(HAVE_SHOBJIDL_CORE_H)
     if (data->taskbar_list) {
         IUnknown_Release(data->taskbar_list);
         data->taskbar_list = NULL;
     }
 #endif
+
+    if (data->oleinitialized) {
+        OleUninitialize();
+        data->oleinitialized = false;
+    }
+#endif // !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 
     if (data->coinitialized) {
         WIN_CoUninitialize();
