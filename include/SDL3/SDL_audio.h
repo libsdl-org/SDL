@@ -1434,11 +1434,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream,
  * Note that `num_samples` is the number of _samples per array_. This can also
  * be thought of as the number of _sample frames_ to be queued. A value of 1
  * with stereo arrays will queue two samples to the stream. This is different
- * than SDL_PutAudioStreamData, which wants the size of a single array in bytes.
+ * than SDL_PutAudioStreamData, which wants the size of a single array in
+ * bytes.
  *
  * \param stream the stream the audio data is being added to.
- * \param channel_buffers a pointer to an array of arrays, one array per channel.
- * \param num_samples the number of _samples_ per array to write to the stream.
+ * \param channel_buffers a pointer to an array of arrays, one array per
+ *                        channel.
+ * \param num_samples the number of _samples_ per array to write to the
+ *                    stream.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
