@@ -352,7 +352,7 @@ static void WIN_UpdateMouseCapture(void)
     }
 }
 
-static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
+static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus, DWORD pos)
 {
     SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
@@ -389,7 +389,8 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
 
         // In relative mode we are guaranteed to have mouse focus if we have keyboard focus
         if (!SDL_GetMouse()->relative_mode) {
-            GetCursorPos(&cursorPos);
+            cursorPos.x = (LONG)GET_X_LPARAM(pos);
+            cursorPos.y = (LONG)GET_Y_LPARAM(pos);
             ScreenToClient(hwnd, &cursorPos);
             SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, SDL_GLOBAL_MOUSE_ID, false, (float)cursorPos.x, (float)cursorPos.y);
         }
@@ -1244,13 +1245,13 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         /* Update the focus here, since it's possible to get WM_ACTIVATE and WM_SETFOCUS without
            actually being the foreground window, but this appears to get called in all cases where
            the global foreground window changes to and from this window. */
-        WIN_UpdateFocus(data->window, !!wParam);
+        WIN_UpdateFocus(data->window, !!wParam, GetMessagePos());
     } break;
 
     case WM_ACTIVATE:
     {
         // Update the focus in case we changed focus to a child window and then away from the application
-        WIN_UpdateFocus(data->window, !!LOWORD(wParam));
+        WIN_UpdateFocus(data->window, !!LOWORD(wParam), GetMessagePos());
     } break;
 
     case WM_MOUSEACTIVATE:
@@ -1273,14 +1274,14 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_SETFOCUS:
     {
         // Update the focus in case it's changing between top-level windows in the same application
-        WIN_UpdateFocus(data->window, true);
+        WIN_UpdateFocus(data->window, true, GetMessagePos());
     } break;
 
     case WM_KILLFOCUS:
     case WM_ENTERIDLE:
     {
         // Update the focus in case it's changing between top-level windows in the same application
-        WIN_UpdateFocus(data->window, false);
+        WIN_UpdateFocus(data->window, false, GetMessagePos());
     } break;
 
     case WM_POINTERENTER:
