@@ -33,12 +33,12 @@ bool SDL_HIDAPI_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystic
 bool SDL_HIDAPI_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick);
 void SDL_HIDAPI_HapticClose(SDL_Haptic *haptic);
 void SDL_HIDAPI_HapticQuit(void);
-int SDL_HIDAPI_HapticNewEffect(SDL_Haptic *haptic, const SDL_HapticEffect *base);
-bool SDL_HIDAPI_HapticUpdateEffect(SDL_Haptic *haptic, int id, const SDL_HapticEffect *data);
-bool SDL_HIDAPI_HapticRunEffect(SDL_Haptic *haptic, int id, Uint32 iterations);
-bool SDL_HIDAPI_HapticStopEffect(SDL_Haptic *haptic, int id);
-void SDL_HIDAPI_HapticDestroyEffect(SDL_Haptic *haptic, int id);
-bool SDL_HIDAPI_HapticGetEffectStatus(SDL_Haptic *haptic, int id);
+SDL_HapticEffectID SDL_HIDAPI_HapticNewEffect(SDL_Haptic *haptic, const SDL_HapticEffect *base);
+bool SDL_HIDAPI_HapticUpdateEffect(SDL_Haptic *haptic, SDL_HapticEffectID id, const SDL_HapticEffect *data);
+bool SDL_HIDAPI_HapticRunEffect(SDL_Haptic *haptic, SDL_HapticEffectID id, Uint32 iterations);
+bool SDL_HIDAPI_HapticStopEffect(SDL_Haptic *haptic, SDL_HapticEffectID id);
+void SDL_HIDAPI_HapticDestroyEffect(SDL_Haptic *haptic, SDL_HapticEffectID id);
+bool SDL_HIDAPI_HapticGetEffectStatus(SDL_Haptic *haptic, SDL_HapticEffectID id);
 bool SDL_HIDAPI_HapticSetGain(SDL_Haptic *haptic, int gain);
 bool SDL_HIDAPI_HapticSetAutocenter(SDL_Haptic *haptic, int autocenter);
 bool SDL_HIDAPI_HapticPause(SDL_Haptic *haptic);

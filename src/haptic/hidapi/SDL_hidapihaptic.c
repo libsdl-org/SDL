@@ -237,37 +237,37 @@ void SDL_HIDAPI_HapticQuit(void)
     }
 }
 
-int SDL_HIDAPI_HapticNewEffect(SDL_Haptic *haptic, const SDL_HapticEffect *base)
+SDL_HapticEffectID SDL_HIDAPI_HapticNewEffect(SDL_Haptic *haptic, const SDL_HapticEffect *base)
 {
     SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
     return device->driver->CreateEffect(device, base);
 }
 
-bool SDL_HIDAPI_HapticUpdateEffect(SDL_Haptic *haptic, int id, const SDL_HapticEffect *data)
+bool SDL_HIDAPI_HapticUpdateEffect(SDL_Haptic *haptic, SDL_HapticEffectID id, const SDL_HapticEffect *data)
 {
     SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
     return device->driver->UpdateEffect(device, id, data);
 }
 
-bool SDL_HIDAPI_HapticRunEffect(SDL_Haptic *haptic, int id, Uint32 iterations)
+bool SDL_HIDAPI_HapticRunEffect(SDL_Haptic *haptic, SDL_HapticEffectID id, Uint32 iterations)
 {
     SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
     return device->driver->RunEffect(device, id, iterations);
 }
 
-bool SDL_HIDAPI_HapticStopEffect(SDL_Haptic *haptic, int id)
+bool SDL_HIDAPI_HapticStopEffect(SDL_Haptic *haptic, SDL_HapticEffectID id)
 {
     SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
     return device->driver->StopEffect(device, id);
 }
 
-void SDL_HIDAPI_HapticDestroyEffect(SDL_Haptic *haptic, int id)
+void SDL_HIDAPI_HapticDestroyEffect(SDL_Haptic *haptic, SDL_HapticEffectID id)
 {
     SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
     device->driver->DestroyEffect(device, id);
 }
 
-bool SDL_HIDAPI_HapticGetEffectStatus(SDL_Haptic *haptic, int id)
+bool SDL_HIDAPI_HapticGetEffectStatus(SDL_Haptic *haptic, SDL_HapticEffectID id)
 {
     SDL_HIDAPI_HapticDevice *device = (SDL_HIDAPI_HapticDevice *)haptic->hwdata;
     return device->driver->GetEffectStatus(device, id);
