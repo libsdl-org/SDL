@@ -68,6 +68,7 @@ struct SDL_WindowData
     bool pending_move;
     SDL_Point pending_move_point;
     XConfigureEvent last_xconfigure;
+    XConfigureEvent pending_xconfigure;
     struct SDL_VideoData *videodata;
     unsigned long user_time;
     Atom xdnd_req;
@@ -116,6 +117,7 @@ struct SDL_WindowData
     bool toggle_borders;
     bool fullscreen_borders_forced_on;
     bool was_shown;
+    bool emit_size_move_after_property_notify;
     SDL_HitTestResult hit_test_result;
 
     XPoint xim_spot;
