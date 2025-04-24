@@ -101,7 +101,7 @@ SDL_GLContext Emscripten_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *
 
     context = emscripten_webgl_create_context(window_data->canvas_id, &attribs);
 
-    if (context < 0) {
+    if (!context) {
         SDL_SetError("Could not create webgl context");
         return NULL;
     }
