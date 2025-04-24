@@ -456,11 +456,6 @@ static Uint32 initial_flightstick_devices[] = {
     MAKE_VIDPID(0x044f, 0x0402), // HOTAS Warthog Joystick
     MAKE_VIDPID(0x044f, 0xb10a), // ThrustMaster, Inc. T.16000M Joystick
     MAKE_VIDPID(0x046d, 0xc215), // Logitech Extreme 3D
-    MAKE_VIDPID(0x0738, 0x2221), // Saitek Pro Flight X-56 Rhino Stick
-    MAKE_VIDPID(0x10f5, 0x7084), // Turtle Beach VelocityOne
-    MAKE_VIDPID(0x231d, 0x0126), // Gunfighter Mk.III 'Space Combat Edition' (right)
-    MAKE_VIDPID(0x231d, 0x0127), // Gunfighter Mk.III 'Space Combat Edition' (left)
-    MAKE_VIDPID(0x362c, 0x0001), // Yawman Arrow
     MAKE_VIDPID(0x0583, 0x6258), // Padix USB joystick with viewfinder
     MAKE_VIDPID(0x0583, 0x688f), // Padix QF-688uv Windstorm Pro
     MAKE_VIDPID(0x0583, 0x7070), // Padix QF-707u Bazooka
@@ -470,6 +465,11 @@ static Uint32 initial_flightstick_devices[] = {
     MAKE_VIDPID(0x0583, 0xb010), // Padix MetalStrike Pro
     MAKE_VIDPID(0x0583, 0xb012), // Padix Wireless MetalStrike
     MAKE_VIDPID(0x0583, 0xb013), // Padix USB Wireless 2.4GHZ
+    MAKE_VIDPID(0x0738, 0x2221), // Saitek Pro Flight X-56 Rhino Stick
+    MAKE_VIDPID(0x10f5, 0x7084), // Turtle Beach VelocityOne
+    MAKE_VIDPID(0x231d, 0x0126), // Gunfighter Mk.III 'Space Combat Edition' (right)
+    MAKE_VIDPID(0x231d, 0x0127), // Gunfighter Mk.III 'Space Combat Edition' (left)
+    MAKE_VIDPID(0x362c, 0x0001), // Yawman Arrow
 };
 static SDL_vidpid_list flightstick_devices = {
     SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES, 0, 0, NULL,
@@ -552,6 +552,14 @@ static Uint32 initial_wheel_devices[] = {
     MAKE_VIDPID(0x046d, 0xca03), // Logitech Momo Racing
     MAKE_VIDPID(0x0483, 0x0522), // Simagic Wheelbase (including M10, Alpha Mini, Alpha, Alpha U)
     MAKE_VIDPID(0x0483, 0xa355), // VRS DirectForce Pro Wheel Base
+    MAKE_VIDPID(0x0583, 0xa132), // Padix USB Wireless 2.4GHz Wheelpad
+    MAKE_VIDPID(0x0583, 0xa133), // Padix USB Wireless 2.4GHz Wheel
+    MAKE_VIDPID(0x0583, 0xa202), // Padix Force Feedback Wheel
+    MAKE_VIDPID(0x0583, 0xb002), // Padix Vibration USB Wheel
+    MAKE_VIDPID(0x0583, 0xb005), // Padix USB Wheel
+    MAKE_VIDPID(0x0583, 0xb008), // Padix USB Wireless 2.4GHz Wheel
+    MAKE_VIDPID(0x0583, 0xb009), // Padix USB Wheel
+    MAKE_VIDPID(0x0583, 0xb018), // Padix TW6 Wheel
     MAKE_VIDPID(0x0eb7, 0x0001), // Fanatec ClubSport Wheel Base V2
     MAKE_VIDPID(0x0eb7, 0x0004), // Fanatec ClubSport Wheel Base V2.5
     MAKE_VIDPID(0x0eb7, 0x0005), // Fanatec CSL Elite Wheel Base+ (PS4)
@@ -579,14 +587,6 @@ static Uint32 initial_wheel_devices[] = {
     MAKE_VIDPID(0x346e, 0x0004), // Moza R5 Wheelbase
     MAKE_VIDPID(0x346e, 0x0005), // Moza R3 Wheelbase
     MAKE_VIDPID(0x346e, 0x0006), // Moza R12 Wheelbase
-    MAKE_VIDPID(0x0583, 0xa132), // Padix USB Wireless 2.4GHz Wheelpad
-    MAKE_VIDPID(0x0583, 0xa133), // Padix USB Wireless 2.4GHz Wheel
-    MAKE_VIDPID(0x0583, 0xa202), // Padix Force Feedback Wheel
-    MAKE_VIDPID(0x0583, 0xb002), // Padix Vibration USB Wheel
-    MAKE_VIDPID(0x0583, 0xb005), // Padix USB Wheel
-    MAKE_VIDPID(0x0583, 0xb008), // Padix USB Wireless 2.4GHz Wheel
-    MAKE_VIDPID(0x0583, 0xb009), // Padix USB Wheel
-    MAKE_VIDPID(0x0583, 0xb018), // Padix TW6 Wheel
 };
 static SDL_vidpid_list wheel_devices = {
     SDL_HINT_JOYSTICK_WHEEL_DEVICES, 0, 0, NULL,
