@@ -1467,8 +1467,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
             if (SDL_GetMouseFocus() == data->window && !SDL_GetMouse()->relative_mode && !IsIconic(hwnd)) {
                 SDL_Mouse *mouse;
+                DWORD pos = GetMessagePos();
                 POINT cursorPos;
-                GetCursorPos(&cursorPos);
+                cursorPos.x = GET_X_LPARAM(pos);
+                cursorPos.y = GET_Y_LPARAM(pos);
                 ScreenToClient(hwnd, &cursorPos);
                 mouse = SDL_GetMouse();
                 if (!mouse->was_touch_mouse_events) { // we're not a touch handler causing a mouse leave?
@@ -1607,7 +1609,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         // Reference: https://gamedev.net/forums/topic/672094-keeping-things-moving-during-win32-moveresize-events/5254386/
         if (SendMessage(hwnd, WM_NCHITTEST, wParam, lParam) == HTCAPTION) {
             POINT cursorPos;
-            GetCursorPos(&cursorPos);
+            GetCursorPos(&cursorPos); // want the most current pos so as to not cause position change
             ScreenToClient(hwnd, &cursorPos);
             PostMessage(hwnd, WM_MOUSEMOVE, 0, cursorPos.x | (((Uint32)((Sint16)cursorPos.y)) << 16));
         }
