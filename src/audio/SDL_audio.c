@@ -1502,7 +1502,7 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
 
 const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
 {
-    bool isstack;
+    bool isstack = false;
     char *string = NULL;
     const char *result = NULL;
     SDL_AudioDevice *device = NULL;
