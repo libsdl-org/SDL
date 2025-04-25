@@ -168,8 +168,8 @@
     </Link>
     <PreBuildEvent>
       <Command>
-        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
-        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        call "$(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat" "$(ProjectDir)..\"
+        call "$(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat" "$(ProjectDir)..\"
       </Command>
     </PreBuildEvent>
     <PreBuildEvent>
