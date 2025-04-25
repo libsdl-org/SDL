@@ -1934,15 +1934,14 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_OpenAudioDeviceStream(SDL_Audi
 /**
  * A callback that fires around an audio device's processing work.
  *
- * This callback fires when a logical audio device is about to start
- * accessing its bound audio streams, and fires again when it has
- * finished accessing them. It covers the range of one "iteration" of
- * the audio device.
+ * This callback fires when a logical audio device is about to start accessing
+ * its bound audio streams, and fires again when it has finished accessing
+ * them. It covers the range of one "iteration" of the audio device.
  *
- * It can be useful to use this callback to update state that must
- * apply to all bound audio streams atomically: to make sure state
- * changes don't happen while half of the streams are already processed
- * for the latest audio buffer.
+ * It can be useful to use this callback to update state that must apply to
+ * all bound audio streams atomically: to make sure state changes don't happen
+ * while half of the streams are already processed for the latest audio
+ * buffer.
  *
  * This callback should run as quickly as possible and not block for any
  * significant time, as this callback delays submission of data to the audio
@@ -1997,8 +1996,10 @@ typedef void (SDLCALL *SDL_AudioIterationCallback)(void *userdata, SDL_AudioDevi
  * for both.
  *
  * \param devid the ID of an opened audio device.
- * \param start a callback function to be called at the start of an iteration. Can be NULL.
- * \param end a callback function to be called at the end of an iteration. Can be NULL.
+ * \param start a callback function to be called at the start of an iteration.
+ *              Can be NULL.
+ * \param end a callback function to be called at the end of an iteration. Can
+ *            be NULL.
  * \param userdata app-controlled pointer passed to callback. Can be NULL.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
