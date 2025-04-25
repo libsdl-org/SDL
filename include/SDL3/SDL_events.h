@@ -1578,12 +1578,12 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromEvent(const SDL_Event 
  * The exact format of the string is not guaranteed; it is intended for
  * logging purposes, to be read by a human, and not parsed by a computer.
  *
- * The returned value follows the same rules as SDL_snprintf(): `buf`
- * will always be NULL-terminated (unless `buflen` is zero), and will be
- * truncated if `buflen` is too small. The return code is the number of bytes
- * needed for the complete string, not counting the NULL-terminator, whether
- * the string was truncated or not. Unlike SDL_snprintf(), though, this
- * function never returns -1.
+ * The returned value follows the same rules as SDL_snprintf(): `buf` will
+ * always be NULL-terminated (unless `buflen` is zero), and will be truncated
+ * if `buflen` is too small. The return code is the number of bytes needed for
+ * the complete string, not counting the NULL-terminator, whether the string
+ * was truncated or not. Unlike SDL_snprintf(), though, this function never
+ * returns -1.
  *
  * \param event an event to describe. May be NULL.
  * \param buf the buffer to fill with the description string. May be NULL.
