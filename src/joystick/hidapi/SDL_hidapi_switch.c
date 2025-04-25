@@ -285,6 +285,7 @@ typedef struct
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
     bool m_bInputOnly;
+    bool m_bGameCube;
     bool m_bUseButtonLabels;
     bool m_bPlayerLights;
     int m_nPlayerIndex;
@@ -1130,7 +1131,20 @@ static Sint16 ApplySimpleStickCalibration(SDL_DriverSwitch_Context *ctx, int nSt
 
 static Uint8 RemapButton(SDL_DriverSwitch_Context *ctx, Uint8 button)
 {
-    if (ctx->m_bUseButtonLabels) {
+    if (ctx->m_bGameCube) {
+        switch (button) {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            return SDL_GAMEPAD_BUTTON_WEST;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            return SDL_GAMEPAD_BUTTON_SOUTH;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            return SDL_GAMEPAD_BUTTON_NORTH;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            return SDL_GAMEPAD_BUTTON_EAST;
+        default:
+            break;
+        }
+    } else if (ctx->m_bUseButtonLabels) {
         // Use button labels instead of positions, e.g. Nintendo Online Classic controllers
         switch (button) {
         case SDL_GAMEPAD_BUTTON_SOUTH:
@@ -1232,9 +1246,6 @@ static bool HasHomeLED(SDL_DriverSwitch_Context *ctx)
 static bool AlwaysUsesLabels(Uint16 vendor_id, Uint16 product_id, ESwitchDeviceInfoControllerType eControllerType)
 {
     // Some controllers don't have a diamond button configuration, so should always use labels
-    if (SDL_IsJoystickGameCube(vendor_id, product_id)) {
-        return true;
-    }
     switch (eControllerType) {
     case k_eSwitchDeviceInfoControllerType_HVCLeft:
     case k_eSwitchDeviceInfoControllerType_HVCRight:
@@ -1367,7 +1378,7 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
 
     if (ctx->m_bInputOnly) {
         if (SDL_IsJoystickGameCube(device->vendor_id, device->product_id)) {
-            device->type = SDL_GAMEPAD_TYPE_STANDARD;
+            device->type = SDL_GAMEPAD_TYPE_GAMECUBE;
         }
     } else {
         char serial[18];
@@ -1590,7 +1601,9 @@ static bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         }
     }
 
-    if (AlwaysUsesLabels(device->vendor_id, device->product_id, ctx->m_eControllerType)) {
+    if (SDL_IsJoystickGameCube(device->vendor_id, device->product_id)) {
+        ctx->m_bGameCube = true;
+    } else if (AlwaysUsesLabels(device->vendor_id, device->product_id, ctx->m_eControllerType)) {
         ctx->m_bUseButtonLabels = true;
     }
 
