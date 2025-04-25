@@ -366,7 +366,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     hidden->processed_bytes = 0;
     hidden->callback_bytes = 0;
 
-    hidden->semaphore = SDL_CreateSemaphore(recording ? 0 : hidden->num_buffers);
+    hidden->semaphore = SDL_CreateSemaphore(recording ? 0 : hidden->num_buffers - 1);
     if (!hidden->semaphore) {
         LOGI("SDL Failed SDL_CreateSemaphore %s recording:%d", SDL_GetError(), recording);
         return false;
