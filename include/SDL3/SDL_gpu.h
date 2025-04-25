@@ -1343,8 +1343,7 @@ typedef struct SDL_GPUViewport
  * texture.
  *
  * If either of `pixels_per_row` or `rows_per_layer` is zero, then width and
- * height of passed SDL_GPUTextureRegion to SDL_UploadToGPUTexture
- *
+ * height of passed SDL_GPUTextureRegion to SDL_UploadToGPUTexture or
  * SDL_DownloadFromGPUTexture are used as default values respectively and data
  * is considered to be tightly packed.
  *
