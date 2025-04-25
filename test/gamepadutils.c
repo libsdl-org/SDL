@@ -16,6 +16,7 @@
 #include "gamepad_front.h"
 #include "gamepad_back.h"
 #include "gamepad_face_abxy.h"
+#include "gamepad_face_axby.h"
 #include "gamepad_face_bayx.h"
 #include "gamepad_face_sony.h"
 #include "gamepad_battery.h"
@@ -95,6 +96,7 @@ struct GamepadImage
     SDL_Texture *front_texture;
     SDL_Texture *back_texture;
     SDL_Texture *face_abxy_texture;
+    SDL_Texture *face_axby_texture;
     SDL_Texture *face_bayx_texture;
     SDL_Texture *face_sony_texture;
     SDL_Texture *connection_texture[2];
@@ -159,6 +161,7 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
         SDL_GetTextureSize(ctx->front_texture, &ctx->gamepad_width, &ctx->gamepad_height);
 
         ctx->face_abxy_texture = CreateTexture(renderer, gamepad_face_abxy_bmp, gamepad_face_abxy_bmp_len);
+        ctx->face_axby_texture = CreateTexture(renderer, gamepad_face_axby_bmp, gamepad_face_axby_bmp_len);
         ctx->face_bayx_texture = CreateTexture(renderer, gamepad_face_bayx_bmp, gamepad_face_bayx_bmp_len);
         ctx->face_sony_texture = CreateTexture(renderer, gamepad_face_sony_bmp, gamepad_face_sony_bmp_len);
         SDL_GetTextureSize(ctx->face_abxy_texture, &ctx->face_width, &ctx->face_height);
@@ -547,14 +550,17 @@ void RenderGamepadImage(GamepadImage *ctx)
         dst.w = ctx->face_width;
         dst.h = ctx->face_height;
 
-        switch (SDL_GetGamepadButtonLabelForType(ctx->type, SDL_GAMEPAD_BUTTON_SOUTH)) {
-        case SDL_GAMEPAD_BUTTON_LABEL_A:
+        switch (SDL_GetGamepadButtonLabelForType(ctx->type, SDL_GAMEPAD_BUTTON_EAST)) {
+        case SDL_GAMEPAD_BUTTON_LABEL_B:
             SDL_RenderTexture(ctx->renderer, ctx->face_abxy_texture, NULL, &dst);
             break;
-        case SDL_GAMEPAD_BUTTON_LABEL_B:
+        case SDL_GAMEPAD_BUTTON_LABEL_X:
+            SDL_RenderTexture(ctx->renderer, ctx->face_axby_texture, NULL, &dst);
+            break;
+        case SDL_GAMEPAD_BUTTON_LABEL_A:
             SDL_RenderTexture(ctx->renderer, ctx->face_bayx_texture, NULL, &dst);
             break;
-        case SDL_GAMEPAD_BUTTON_LABEL_CROSS:
+        case SDL_GAMEPAD_BUTTON_LABEL_CIRCLE:
             SDL_RenderTexture(ctx->renderer, ctx->face_sony_texture, NULL, &dst);
             break;
         default:
@@ -664,6 +670,7 @@ void DestroyGamepadImage(GamepadImage *ctx)
         SDL_DestroyTexture(ctx->front_texture);
         SDL_DestroyTexture(ctx->back_texture);
         SDL_DestroyTexture(ctx->face_abxy_texture);
+        SDL_DestroyTexture(ctx->face_axby_texture);
         SDL_DestroyTexture(ctx->face_bayx_texture);
         SDL_DestroyTexture(ctx->face_sony_texture);
         for (i = 0; i < SDL_arraysize(ctx->battery_texture); ++i) {

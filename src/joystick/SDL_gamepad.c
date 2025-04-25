@@ -62,6 +62,7 @@ typedef enum
 {
     SDL_GAMEPAD_FACE_STYLE_UNKNOWN,
     SDL_GAMEPAD_FACE_STYLE_ABXY,
+    SDL_GAMEPAD_FACE_STYLE_AXBY,
     SDL_GAMEPAD_FACE_STYLE_BAYX,
     SDL_GAMEPAD_FACE_STYLE_SONY,
 } SDL_GamepadFaceStyle;
@@ -710,7 +711,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
     if ((vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) ||
         (vendor == USB_VENDOR_DRAGONRISE &&
          (product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1 ||
-          product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2))) {
+          product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2 ||
+          product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3))) {
         // GameCube driver has 12 buttons and 6 axes
         SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1~,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3~,start:b8,x:b2,y:b3,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
@@ -992,7 +994,8 @@ static const char *map_StringForGamepadType[] = {
     "switchpro",
     "joyconleft",
     "joyconright",
-    "joyconpair"
+    "joyconpair",
+    "gamecube"
 };
 SDL_COMPILE_TIME_ASSERT(map_StringForGamepadType, SDL_arraysize(map_StringForGamepadType) == SDL_GAMEPAD_TYPE_COUNT);
 
@@ -1347,6 +1350,8 @@ static SDL_GamepadFaceStyle SDL_GetGamepadFaceStyleFromString(const char *string
 {
     if (SDL_strcmp(string, "abxy") == 0) {
         return SDL_GAMEPAD_FACE_STYLE_ABXY;
+    } else if (SDL_strcmp(string, "axby") == 0) {
+        return SDL_GAMEPAD_FACE_STYLE_AXBY;
     } else if (SDL_strcmp(string, "bayx") == 0) {
         return SDL_GAMEPAD_FACE_STYLE_BAYX;
     } else if (SDL_strcmp(string, "sony") == 0) {
@@ -1368,6 +1373,8 @@ static SDL_GamepadFaceStyle SDL_GetGamepadFaceStyleForGamepadType(SDL_GamepadTyp
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
         return SDL_GAMEPAD_FACE_STYLE_BAYX;
+    case SDL_GAMEPAD_TYPE_GAMECUBE:
+        return SDL_GAMEPAD_FACE_STYLE_AXBY;
     default:
         return SDL_GAMEPAD_FACE_STYLE_ABXY;
     }
@@ -2989,6 +2996,24 @@ static SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForFaceStyle(SDL_GamepadF
             break;
         case SDL_GAMEPAD_BUTTON_WEST:
             label = SDL_GAMEPAD_BUTTON_LABEL_X;
+            break;
+        case SDL_GAMEPAD_BUTTON_NORTH:
+            label = SDL_GAMEPAD_BUTTON_LABEL_Y;
+            break;
+        default:
+            break;
+        }
+        break;
+    case SDL_GAMEPAD_FACE_STYLE_AXBY:
+        switch (button) {
+        case SDL_GAMEPAD_BUTTON_SOUTH:
+            label = SDL_GAMEPAD_BUTTON_LABEL_A;
+            break;
+        case SDL_GAMEPAD_BUTTON_EAST:
+            label = SDL_GAMEPAD_BUTTON_LABEL_X;
+            break;
+        case SDL_GAMEPAD_BUTTON_WEST:
+            label = SDL_GAMEPAD_BUTTON_LABEL_B;
             break;
         case SDL_GAMEPAD_BUTTON_NORTH:
             label = SDL_GAMEPAD_BUTTON_LABEL_Y;

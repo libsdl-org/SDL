@@ -479,7 +479,13 @@ static SDL_vidpid_list flightstick_devices = {
 };
 
 static Uint32 initial_gamecube_devices[] = {
+    MAKE_VIDPID(0x0079, 0x1843), // DragonRise GameCube Controller Adapter
+    MAKE_VIDPID(0x0079, 0x1844), // DragonRise GameCube Controller Adapter
+    MAKE_VIDPID(0x0079, 0x1846), // DragonRise GameCube Controller Adapter
+    MAKE_VIDPID(0x057e, 0x0337), // Nintendo Wii U GameCube Controller Adapter
+    MAKE_VIDPID(0x0926, 0x8888), // Cyber Gadget GameCube Controller
     MAKE_VIDPID(0x0e6f, 0x0185), // PDP Wired Fight Pad Pro for Nintendo Switch
+    MAKE_VIDPID(0x1a34, 0xf705), // GameCube {HuiJia USB box}
     MAKE_VIDPID(0x20d6, 0xa711), // PowerA Wired Controller Nintendo GameCube Style
 };
 static SDL_vidpid_list gamecube_devices = {
@@ -2937,8 +2943,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
         type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
 
     } else if (forUI && SDL_IsJoystickGameCube(vendor, product)) {
-        // We don't have a type for the Nintendo GameCube controller
-        type = SDL_GAMEPAD_TYPE_STANDARD;
+        type = SDL_GAMEPAD_TYPE_GAMECUBE;
 
     } else {
         switch (GuessControllerType(vendor, product)) {

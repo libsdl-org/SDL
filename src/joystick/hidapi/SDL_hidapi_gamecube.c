@@ -74,7 +74,8 @@ static bool HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, c
     }
     if (vendor_id == USB_VENDOR_DRAGONRISE &&
         (product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1 ||
-         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2)) {
+         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2 ||
+         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3)) {
         // EVORETRO GameCube Controller Adapter
         return true;
     }
@@ -232,10 +233,10 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
         joystick,                       \
         button,                         \
         ((packet[off] & flag) != 0));
-    READ_BUTTON(1, 0x02, 0) // A
-    READ_BUTTON(1, 0x04, 1) // B
-    READ_BUTTON(1, 0x08, 3) // Y
-    READ_BUTTON(1, 0x01, 2) // X
+    READ_BUTTON(1, 0x02, 0) // SOUTH (A)
+    READ_BUTTON(1, 0x01, 1) // EAST (X)
+    READ_BUTTON(1, 0x04, 2) // WEST (B)
+    READ_BUTTON(1, 0x08, 3) // NORTH (Y)
     READ_BUTTON(2, 0x80, 4) // DPAD_LEFT
     READ_BUTTON(2, 0x20, 5) // DPAD_RIGHT
     READ_BUTTON(2, 0x40, 6) // DPAD_DOWN
