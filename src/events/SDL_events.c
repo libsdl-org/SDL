@@ -430,25 +430,17 @@ static void SDLCALL SDL_EventLoggingChanged(void *userdata, const char *name, co
     SDL_EventLoggingVerbosity = (hint && *hint) ? SDL_clamp(SDL_atoi(hint), 0, 3) : 0;
 }
 
-static void SDL_LogEvent(const SDL_Event *event)
+int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
 {
+    if (!event) {
+        return SDL_snprintf(buf, buflen, "(null)");
+    }
+
     static const char *pen_axisnames[] = { "PRESSURE", "XTILT", "YTILT", "DISTANCE", "ROTATION", "SLIDER", "TANGENTIAL_PRESSURE" };
     SDL_COMPILE_TIME_ASSERT(pen_axisnames_array_matches, SDL_arraysize(pen_axisnames) == SDL_PEN_AXIS_COUNT);
 
     char name[64];
     char details[128];
-
-    // sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded.
-    if ((SDL_EventLoggingVerbosity < 2) &&
-        ((event->type == SDL_EVENT_MOUSE_MOTION) ||
-         (event->type == SDL_EVENT_FINGER_MOTION) ||
-         (event->type == SDL_EVENT_PEN_AXIS) ||
-         (event->type == SDL_EVENT_PEN_MOTION) ||
-         (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
-         (event->type == SDL_EVENT_GAMEPAD_SENSOR_UPDATE) ||
-         (event->type == SDL_EVENT_SENSOR_UPDATE))) {
-        return;
-    }
 
 // this is to make (void)SDL_snprintf() calls cleaner.
 #define uint unsigned int
@@ -879,12 +871,41 @@ static void SDL_LogEvent(const SDL_Event *event)
         }
         break;
     }
+#undef uint
 
+    int retval = 0;
     if (name[0]) {
-        SDL_Log("SDL EVENT: %s%s", name, details);
+        retval = SDL_snprintf(buf, buflen, "%s%s", name, details);
+    } else if (buf && (buflen > 0)) {
+        *buf = '\0';
+    }
+    return retval;
+}
+
+static void SDL_LogEvent(const SDL_Event *event)
+{
+    if (!event) {
+        return;
     }
 
-#undef uint
+    // sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded.
+    if ((SDL_EventLoggingVerbosity < 2) &&
+        ((event->type == SDL_EVENT_MOUSE_MOTION) ||
+         (event->type == SDL_EVENT_FINGER_MOTION) ||
+         (event->type == SDL_EVENT_PEN_AXIS) ||
+         (event->type == SDL_EVENT_PEN_MOTION) ||
+         (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
+         (event->type == SDL_EVENT_GAMEPAD_SENSOR_UPDATE) ||
+         (event->type == SDL_EVENT_SENSOR_UPDATE))) {
+        return;
+    }
+
+    char buf[256];
+    const int rc = SDL_GetEventDescription(event, buf, sizeof (buf));
+    SDL_assert(rc < sizeof (buf));  // if this overflows, we should make `buf` larger, but this is currently larger than the max SDL_GetEventDescription returns.
+    if (buf[0]) {
+        SDL_Log("SDL EVENT: %s", buf);
+    }
 }
 
 void SDL_StopEventLoop(void)
