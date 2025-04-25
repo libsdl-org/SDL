@@ -1114,7 +1114,13 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
 
     stream_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
     if (!stream_name || *stream_name == '\0') {
-        stream_name = "Audio Stream";
+        if (app_name) {
+            stream_name = app_name;
+        } else if (app_id) {
+            stream_name = app_id;
+        } else {
+            stream_name = "SDL Audio Stream";
+        }
     }
 
     /*
