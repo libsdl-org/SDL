@@ -1718,8 +1718,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_Window *win;
         const SDL_DisplayID original_displayID = data->last_displayID;
         const WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
-        const bool iconic = IsIconic(hwnd);
-        const bool zoomed = IsZoomed(hwnd);
+        bool iconic;
+        bool zoomed;
         RECT rect;
         int x, y;
         int w, h;
@@ -1727,6 +1727,11 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         if (windowpos->flags & SWP_SHOWWINDOW) {
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
         }
+
+        // These must be set after sending SDL_EVENT_WINDOW_SHOWN as that may apply pending
+        // window operations that change the window state.
+        iconic = IsIconic(hwnd);
+        zoomed = IsZoomed(hwnd);
 
         if (iconic) {
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
