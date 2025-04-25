@@ -1502,31 +1502,24 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
 
 const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
 {
-    bool isstack = false;
-    char *string = NULL;
     const char *result = NULL;
     SDL_AudioDevice *device = NULL;
 
-    // This does not call ObtainPhysicalAudioDevice() because the device's name never changes, so
-    // it doesn't have to lock the whole device. However, just to make sure the device pointer itself
-    // remains valid (in case the device is unplugged at the wrong moment), we hold the
-    // device_hash_lock while we copy the string.
-    SDL_LockRWLockForReading(current_audio.device_hash_lock);
-    SDL_FindInHashTable(current_audio.device_hash, (const void *) (uintptr_t) devid, (const void **) &device);
-    if (device) {
-        const size_t slen = SDL_strlen(device->name) + 1;
-        // SDL_GetPersistentString might _also_ makes a copy, but it might also create a TLS slot and a hashtable before doing a lookup, malloc+copy, and insert.
-        //  So just try to tuck this into a little stack space while we're holding device_hash_lock.
-        string = SDL_small_alloc(char, slen, &isstack);
-        if (string) {
-            SDL_strlcpy(string, device->name, slen);
+    if (!SDL_GetCurrentAudioDriver()) {
+        SDL_SetError("Audio subsystem is not initialized");
+    } else {
+        // This does not call ObtainPhysicalAudioDevice() because the device's name never changes, so
+        // it doesn't have to lock the whole device. However, just to make sure the device pointer itself
+        // remains valid (in case the device is unplugged at the wrong moment), we hold the
+        // device_hash_lock while we copy the string.
+        SDL_LockRWLockForReading(current_audio.device_hash_lock);
+        SDL_FindInHashTable(current_audio.device_hash, (const void *) (uintptr_t) devid, (const void **) &device);
+        if (!device) {
+            SDL_SetError("Invalid audio device instance ID");
+        } else {
+            result = SDL_GetPersistentString(device->name);
         }
-    }
-    SDL_UnlockRWLock(current_audio.device_hash_lock);
-
-    if (string) {
-        result = SDL_GetPersistentString(string);
-        SDL_small_free(string, isstack);
+        SDL_UnlockRWLock(current_audio.device_hash_lock);
     }
 
     return result;
