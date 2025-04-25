@@ -467,15 +467,17 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
                     SDL_SendPenAxis(0, pen->pen, window, (SDL_PenAxis) i, axes[i]);
                 }
             }
-        } else if (!pointer_emulated && xev->deviceid == videodata->xinput_master_pointer_device) {
-            // Use the master device for non-relative motion, as the slave devices can seemingly lag behind.
+        } else {
             SDL_Mouse *mouse = SDL_GetMouse();
-            if (!mouse->relative_mode) {
-                SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
-                if (window) {
-                    X11_ProcessHitTest(_this, window->internal, (float)xev->event_x, (float)xev->event_y, false);
-                    SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, false, (float)xev->event_x, (float)xev->event_y);
-                }
+            SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+            if (!mouse->relative_mode && !pointer_emulated && window &&
+                (xev->deviceid == videodata->xinput_master_pointer_device || window->internal->tracking_mouse_outside_window)) {
+                /* Use the master device for non-relative motion, as the slave devices can seemingly lag behind, unless
+                 * tracking the mouse outside the window, in which case the slave devices deliver coordinates, while the
+                 * master does not.
+                 */
+                X11_ProcessHitTest(_this, window->internal, (float)xev->event_x, (float)xev->event_y, false);
+                SDL_SendMouseMotion(0, window, SDL_GLOBAL_MOUSE_ID, false, (float)xev->event_x, (float)xev->event_y);
             }
         }
     } break;
