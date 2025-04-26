@@ -65,12 +65,12 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             const SDL_FPoint point = { event->button.x, event->button.y };
             if (SDL_PointInRectFloat(&point, &rect_left_button)) {  /* clicked left button? */
                 const Uint8 *planes[] = { left, NULL };  /* specify NULL to say "this specific channel is silent" */
-                SDL_PutAudioStreamPlanarData(stream, (const void * const *) planes, SDL_arraysize(left));
+                SDL_PutAudioStreamPlanarData(stream, (const void * const *) planes, -1, SDL_arraysize(left));
                 SDL_FlushAudioStream(stream);  /* that's all we're playing until it completes. */
                 playing_sound = -1;  /* left is playing */
             } else if (SDL_PointInRectFloat(&point, &rect_right_button)) {  /* clicked right button? */
                 const Uint8 *planes[] = { NULL, right };  /* specify NULL to say "this specific channel is silent" */
-                SDL_PutAudioStreamPlanarData(stream, (const void * const *) planes, SDL_arraysize(right));
+                SDL_PutAudioStreamPlanarData(stream, (const void * const *) planes, -1, SDL_arraysize(right));
                 SDL_FlushAudioStream(stream);  /* that's all we're playing until it completes. */
                 playing_sound = 1;  /* right is playing */
             }

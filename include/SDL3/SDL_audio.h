@@ -1431,6 +1431,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream,
  * individual array may be NULL; in this case, silence will be interleaved for
  * that channel.
  *
+ * `num_channels` specifies how many arrays are in `channel_buffers`. This can
+ * be used as a safety to prevent overflow, in case the stream format has
+ * changed elsewhere. If more channels are specified than the current input
+ * spec, they are ignored. If less channels are specified, the missing arrays
+ * are treated as if they are NULL (silence is written to those channels). If
+ * the count is -1, SDL will assume the array count matches the current input
+ * spec.
+ *
  * Note that `num_samples` is the number of _samples per array_. This can also
  * be thought of as the number of _sample frames_ to be queued. A value of 1
  * with stereo arrays will queue two samples to the stream. This is different
@@ -1440,6 +1448,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream,
  * \param stream the stream the audio data is being added to.
  * \param channel_buffers a pointer to an array of arrays, one array per
  *                        channel.
+ * \param num_channels the number of arrays in `channel_buffers` or -1.
  * \param num_samples the number of _samples_ per array to write to the
  *                    stream.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -1456,7 +1465,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream,
  * \sa SDL_GetAudioStreamData
  * \sa SDL_GetAudioStreamQueued
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *channel_buffers, int num_samples);
+extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *channel_buffers, int num_channels, int num_samples);
 
 /**
  * Get converted/resampled data from the stream.

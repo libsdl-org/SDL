@@ -910,15 +910,29 @@ GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(32)
 //GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(64)   (we don't have any 64-bit audio data types at the moment.)
 #undef GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION
 
-static void InterleaveAudioChannels(void *output, const void * const *channel_buffers, int num_samples, const SDL_AudioSpec *spec)
+static void InterleaveAudioChannels(void *output, const void * const *channel_buffers, int channels, int num_samples, const SDL_AudioSpec *spec)
 {
-    const int channels = spec->channels;
-
     bool have_null_channel = false;
-    for (int i = 0; i < channels; i++) {
-        if (channel_buffers[i] == NULL) {
-            have_null_channel = true;
-            break;
+    const void *channels_full[16];
+
+    // if didn't specify enough channels, pad out a channel array with NULLs.
+    if ((channels >= 0) && (channels < spec->channels)) {
+        have_null_channel = true;
+        SDL_assert(SDL_IsSupportedChannelCount(spec->channels));
+        SDL_assert(spec->channels <= SDL_arraysize(channels_full));
+        SDL_memcpy(channels_full, channel_buffers, channels * sizeof (*channel_buffers));
+        SDL_memset(channels_full + channels, 0, (spec->channels - channels) * sizeof (*channel_buffers));
+        channel_buffers = (const void * const *) channels_full;
+    }
+
+    channels = spec->channels;  // it's either < 0, needs to be clamped to spec->channels, or we just padded it out to spec->channels with channels_full.
+
+    if (!have_null_channel) {
+        for (int i = 0; i < channels; i++) {
+            if (channel_buffers[i] == NULL) {
+                have_null_channel = true;
+                break;
+            }
         }
     }
 
@@ -943,7 +957,7 @@ static void InterleaveAudioChannels(void *output, const void * const *channel_bu
     }
 }
 
-bool SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *channel_buffers, int num_samples)
+bool SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *channel_buffers, int num_channels, int num_samples)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -980,7 +994,7 @@ bool SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *c
 
     const int len = SDL_AUDIO_FRAMESIZE(spec) * num_samples;
     #if DEBUG_AUDIOSTREAM
-    SDL_Log("AUDIOSTREAM: wants to put %d bytes of separated data", len);
+    SDL_Log("AUDIOSTREAM: wants to put %d bytes of planar data", len);
     #endif
 
     // Is the data small enough to just interleave it on the stack and put it through the normal interface?
@@ -999,7 +1013,7 @@ bool SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *c
         callback = FreeAllocatedAudioBuffer;
     }
 
-    InterleaveAudioChannels(data, channel_buffers, num_samples, &spec);
+    InterleaveAudioChannels(data, channel_buffers, num_channels, num_samples, &spec);
 
     // it's okay if the stream format changed on another thread while we didn't hold the lock; PutAudioStreamBufferInternal will notice
     //  and set up a new track with the right format, and the next SDL_PutAudioStreamData will notice that stream->src_spec doesn't
