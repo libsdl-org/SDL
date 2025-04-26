@@ -6593,9 +6593,7 @@ static void D3D12_INTERNAL_DestroySwapchain(
 {
     renderer->commandQueue->PresentX(0, NULL, NULL);
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
-        D3D12_INTERNAL_DestroyTexture(
-            renderer,
-            windowData->textureContainers[i].activeTexture);
+        D3D12_INTERNAL_DestroyTexture(windowData->textureContainers[i].activeTexture);
     }
 }
 
@@ -6611,9 +6609,7 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
 
     // Clean up the previous swapchain textures
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
-        D3D12_INTERNAL_DestroyTexture(
-            renderer,
-            windowData->textureContainers[i].activeTexture);
+        D3D12_INTERNAL_DestroyTexture(windowData->textureContainers[i].activeTexture);
     }
 
     // Create a new swapchain
@@ -8673,6 +8669,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     renderer = (D3D12Renderer *)SDL_calloc(1, sizeof(D3D12Renderer));
 
+    bool hasDxgiDebug = false;
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     // Load the DXGI library
     renderer->dxgi_dll = SDL_LoadObject(DXGI_DLL);
@@ -8683,12 +8680,11 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
 #ifdef HAVE_IDXGIINFOQUEUE
     // Initialize the DXGI debug layer, if applicable
-    bool hasDxgiDebug = false;
     if (debugMode) {
         hasDxgiDebug = D3D12_INTERNAL_TryInitializeDXGIDebug(renderer);
     }
 #else
-    bool hasDxgiDebug = true;
+    hasDxgiDebug = true;
 #endif
 
     // Load the CreateDXGIFactory1 function
