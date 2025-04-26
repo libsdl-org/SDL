@@ -64,6 +64,8 @@
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
 #define USB_PRODUCT_BACKBONE_ONE_IOS_PS5                  0x0104
+#define USB_PRODUCT_BDA_XB1_CLASSIC                       0x581a
+#define USB_PRODUCT_BDA_XB1_FIGHTPAD                      0x791a
 #define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER              0x9400
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1            0x1843
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2            0x1844
@@ -93,6 +95,7 @@
 #define USB_PRODUCT_NINTENDO_WII_REMOTE2                  0x0330
 #define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103         0x7210
 #define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104         0x7214
+#define USB_PRODUCT_PDP_ROCK_CANDY                        0x0246
 #define USB_PRODUCT_RAZER_ATROX                           0x0a00
 #define USB_PRODUCT_RAZER_KITSUNE                         0x1012
 #define USB_PRODUCT_RAZER_PANTHERA                        0x0401
@@ -118,6 +121,7 @@
 #define USB_PRODUCT_SONY_DS4_STRIKEPAD                    0x05c5
 #define USB_PRODUCT_SONY_DS5                              0x0ce6
 #define USB_PRODUCT_SONY_DS5_EDGE                         0x0df2
+#define USB_PRODUCT_STEALTH_ULTRA_WIRED                   0x7073
 #define USB_PRODUCT_SWITCH_RETROBIT_CONTROLLER            0x0575
 #define USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO_PS4           0xd00e
 #define USB_PRODUCT_VALVE_STEAM_CONTROLLER_DONGLE         0x1142
