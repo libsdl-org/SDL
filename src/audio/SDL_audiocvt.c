@@ -332,7 +332,7 @@ void ConvertAudio(int num_frames,
                 buf[i] *= gain;
             }
         } else {
-            float *fsrc = (float *)src;
+            const float *fsrc = (const float *)src;
             for (int i = 0; i < total_samples; i++) {
                 buf[i] = fsrc[i] * gain;
             }
@@ -913,7 +913,7 @@ GENERIC_INTERLEAVE_WITH_NULLS_FUNCTION(32)
 static void InterleaveAudioChannels(void *output, const void * const *channel_buffers, int channels, int num_samples, const SDL_AudioSpec *spec)
 {
     bool have_null_channel = false;
-    const void *channels_full[16];
+    void *channels_full[16];
 
     // if didn't specify enough channels, pad out a channel array with NULLs.
     if ((channels >= 0) && (channels < spec->channels)) {
