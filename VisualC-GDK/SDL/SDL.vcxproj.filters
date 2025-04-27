@@ -64,6 +64,7 @@
     <ClCompile Include="..\..\src\joystick\gdk\SDL_gameinputjoystick.cpp" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_8bitdo.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_flydigi.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_combined.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamecube.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_luna.c" />
