@@ -743,7 +743,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (mouse->cursor_shown && mouse->cur_cursor && !mouse->relative_mode) {
+    if (mouse->cursor_visible && mouse->cur_cursor && !mouse->relative_mode) {
         return (__bridge NSCursor *)mouse->cur_cursor->internal;
     }
 
