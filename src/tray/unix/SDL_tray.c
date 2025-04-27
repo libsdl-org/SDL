@@ -58,8 +58,8 @@ typedef enum
 static gulong (*g_signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, GConnectFlags connect_flags);
 static void (*g_object_unref)(gpointer object);
 static gchar *(*g_mkdtemp)(gchar *template);
-gpointer (*g_object_ref_sink)(gpointer object);
-gpointer (*g_object_ref)(gpointer object);
+static gpointer (*g_object_ref_sink)(gpointer object);
+static gpointer (*g_object_ref)(gpointer object);
 
 // glib_typeof requires compiler-specific code and includes that are too complex
 // to be worth copy-pasting here
