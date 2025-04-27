@@ -1607,7 +1607,7 @@ bool SDL_SetCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    // Return immediately if setting the cursor to the currently set one (fixes #7151)
+    // already on this cursor, no further action required
     if (cursor == mouse->cur_cursor) {
         return true;
     }
@@ -1627,23 +1627,20 @@ bool SDL_SetCursor(SDL_Cursor *cursor)
             }
         }
         mouse->cur_cursor = cursor;
+    } else if (mouse->focus) {
+        cursor = mouse->cur_cursor;
     } else {
-        if (mouse->focus) {
-            cursor = mouse->cur_cursor;
-        } else {
-            cursor = mouse->def_cursor;
-        }
+        cursor = mouse->def_cursor;
     }
 
-    if (cursor && (!mouse->focus || (mouse->cursor_visible && (!mouse->relative_mode || !mouse->relative_mode_hide_cursor)))) {
-        if (mouse->ShowCursor) {
-            mouse->ShowCursor(cursor);
-        }
-    } else {
-        if (mouse->ShowCursor) {
-            mouse->ShowCursor(NULL);
-        }
+    if (mouse->focus && (!mouse->cursor_visible || (mouse->relative_mode && mouse->relative_mode_hide_cursor))) {
+        cursor = NULL;
     }
+
+    if (mouse->ShowCursor) {
+        mouse->ShowCursor(cursor);
+    }
+
     return true;
 }
 
