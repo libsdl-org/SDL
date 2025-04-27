@@ -978,8 +978,9 @@ static void PSP_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return;
     }
 
-    vfree(psp_tex->swizzledData);
-    if (texture->access != SDL_TEXTUREACCESS_STATIC) {
+    if (psp_tex->swizzledData) {
+        vfree(psp_tex->swizzledData);
+    } else if (texture->access != SDL_TEXTUREACCESS_STATIC) {
         vfree(psp_tex->data);
     } else {
         SDL_free(psp_tex->data);
