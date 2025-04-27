@@ -229,7 +229,7 @@ static void SDLCALL SDL_MouseRelativeCursorVisibleChanged(void *userdata, const 
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
-    mouse->relative_mode_cursor_visible = SDL_GetStringBoolean(hint, false);
+    mouse->relative_mode_hide_cursor = !(SDL_GetStringBoolean(hint, false));
 
     SDL_SetCursor(NULL); // Update cursor visibility
 }
@@ -1635,7 +1635,7 @@ bool SDL_SetCursor(SDL_Cursor *cursor)
         }
     }
 
-    if (cursor && (!mouse->focus || (mouse->cursor_visible && (!mouse->relative_mode || mouse->relative_mode_cursor_visible)))) {
+    if (cursor && (!mouse->focus || (mouse->cursor_visible && (!mouse->relative_mode || !mouse->relative_mode_hide_cursor)))) {
         if (mouse->ShowCursor) {
             mouse->ShowCursor(cursor);
         }

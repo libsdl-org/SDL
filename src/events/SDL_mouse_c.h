@@ -114,7 +114,7 @@ typedef struct
     bool has_position;
     bool relative_mode;
     bool relative_mode_warp_motion;
-    bool relative_mode_cursor_visible;
+    bool relative_mode_hide_cursor;
     bool relative_mode_center;
     bool warp_emulation_hint;
     bool warp_emulation_active;
