@@ -148,7 +148,7 @@ typedef struct
     SDL_Cursor *cursors;
     SDL_Cursor *def_cursor;
     SDL_Cursor *cur_cursor;
-    bool cursor_shown;
+    bool cursor_visible;
 
     // Driver-dependent data.
     void *internal;

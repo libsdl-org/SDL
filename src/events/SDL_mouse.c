@@ -304,7 +304,7 @@ bool SDL_PreInitMouse(void)
 
     mouse->was_touch_mouse_events = false; // no touch to mouse movement event pending
 
-    mouse->cursor_shown = true;
+    mouse->cursor_visible = true;
 
     return true;
 }
@@ -812,7 +812,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
     }
 
     // Move the mouse cursor, if needed
-    if (mouse->cursor_shown && !mouse->relative_mode &&
+    if (mouse->cursor_visible && !mouse->relative_mode &&
         mouse->MoveCursor && mouse->cur_cursor) {
         mouse->MoveCursor(mouse->cur_cursor);
     }
@@ -1289,7 +1289,7 @@ static void SDL_MaybeEnableWarpEmulation(SDL_Window *window, float x, float y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (!mouse->warp_emulation_prohibited && mouse->warp_emulation_hint && !mouse->cursor_shown && !mouse->warp_emulation_active) {
+    if (!mouse->warp_emulation_prohibited && mouse->warp_emulation_hint && !mouse->cursor_visible && !mouse->warp_emulation_active) {
         if (!window) {
             window = mouse->focus;
         }
@@ -1635,7 +1635,7 @@ bool SDL_SetCursor(SDL_Cursor *cursor)
         }
     }
 
-    if (cursor && (!mouse->focus || (mouse->cursor_shown && (!mouse->relative_mode || mouse->relative_mode_cursor_visible)))) {
+    if (cursor && (!mouse->focus || (mouse->cursor_visible && (!mouse->relative_mode || mouse->relative_mode_cursor_visible)))) {
         if (mouse->ShowCursor) {
             mouse->ShowCursor(cursor);
         }
@@ -1711,8 +1711,8 @@ bool SDL_ShowCursor(void)
         mouse->warp_emulation_active = false;
     }
 
-    if (!mouse->cursor_shown) {
-        mouse->cursor_shown = true;
+    if (!mouse->cursor_visible) {
+        mouse->cursor_visible = true;
         SDL_SetCursor(NULL);
     }
     return true;
@@ -1722,8 +1722,8 @@ bool SDL_HideCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (mouse->cursor_shown) {
-        mouse->cursor_shown = false;
+    if (mouse->cursor_visible) {
+        mouse->cursor_visible = false;
         SDL_SetCursor(NULL);
     }
     return true;
@@ -1733,5 +1733,5 @@ bool SDL_CursorVisible(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    return mouse->cursor_shown;
+    return mouse->cursor_visible;
 }
