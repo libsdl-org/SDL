@@ -1599,6 +1599,26 @@ SDL_Cursor *SDL_CreateSystemCursor(SDL_SystemCursor id)
     return cursor;
 }
 
+void SDL_RedrawCursor(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Cursor *cursor;
+
+    if (mouse->focus) {
+        cursor = mouse->cur_cursor;
+    } else {
+        cursor = mouse->def_cursor;
+    }
+
+    if (mouse->focus && (!mouse->cursor_visible || (mouse->relative_mode && mouse->relative_mode_hide_cursor))) {
+        cursor = NULL;
+    }
+
+    if (mouse->ShowCursor) {
+        mouse->ShowCursor(cursor);
+    }
+}
+
 /* SDL_SetCursor(NULL) can be used to force the cursor redraw,
    if this is desired for any reason.  This is used when setting
    the video mode and when the SDL window gains the mouse focus.
@@ -1629,19 +1649,7 @@ bool SDL_SetCursor(SDL_Cursor *cursor)
         mouse->cur_cursor = cursor;
     }
 
-    if (mouse->focus) {
-        cursor = mouse->cur_cursor;
-    } else {
-        cursor = mouse->def_cursor;
-    }
-
-    if (mouse->focus && (!mouse->cursor_visible || (mouse->relative_mode && mouse->relative_mode_hide_cursor))) {
-        cursor = NULL;
-    }
-
-    if (mouse->ShowCursor) {
-        mouse->ShowCursor(cursor);
-    }
+    SDL_RedrawCursor();
 
     return true;
 }

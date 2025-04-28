@@ -176,6 +176,9 @@ extern void SDL_SetMouseName(SDL_MouseID mouseID, const char *name);
 extern SDL_Mouse *SDL_GetMouse(void);
 
 // Set the default mouse cursor
+extern void SDL_RedrawCursor(void);
+
+// Set the default mouse cursor
 extern void SDL_SetDefaultCursor(SDL_Cursor *cursor);
 
 // Get the preferred default system cursor
