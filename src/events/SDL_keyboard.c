@@ -361,7 +361,6 @@ static int SDL_SendKeyboardKeyInternal(Uint8 source, Uint8 state, SDL_Scancode s
 
 int SDL_SendKeyboardUnicodeKey(Uint32 ch)
 {
-    SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
     uint16_t mod = 0;
 
@@ -369,8 +368,6 @@ int SDL_SendKeyboardUnicodeKey(Uint32 ch)
         code = SDL_ASCIIKeyInfoTable[ch].code;
         mod = SDL_ASCIIKeyInfoTable[ch].mod;
     }
-    
-    code = SDL_GetKeymapScancode(keyboard->keymap, ch);
 
     if (mod & KMOD_SHIFT) {
         /* If the character uses shift, press shift down */

@@ -26,11 +26,9 @@
 struct SDL_Keymap
 {
     SDL_Keycode scancode_to_keycode[SDL_NUM_SCANCODES];
-    SDL_Keycode keycode_to_scancode[SDL_NUM_SCANCODES];
 };
 
 static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode);
-static SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key);
 
 SDL_Keymap *SDL_CreateKeymap(void)
 {
@@ -41,7 +39,6 @@ SDL_Keymap *SDL_CreateKeymap(void)
     
     for (int i = 0; i < SDL_NUM_SCANCODES; ++i){
         keymap->scancode_to_keycode[i] = -1;
-        keymap->keycode_to_scancode[i] = -1;
     }
 
     return keymap;
@@ -53,6 +50,10 @@ void SDL_SetKeymapEntry(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keycode k
     if (!keymap) {
         return;
     }
+
+    if(scancode >= SDL_NUM_SCANCODES) {
+        return;
+    }
     
     existing_keycode = keymap->scancode_to_keycode[scancode];
     
@@ -62,7 +63,6 @@ void SDL_SetKeymapEntry(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keycode k
     }
     
     keymap->scancode_to_keycode[scancode] = keycode;
-    keymap->keycode_to_scancode[keycode] = scancode;
 }
 
 SDL_Keycode SDL_GetKeymapKeycode(SDL_Keymap *keymap, SDL_Scancode scancode)
@@ -82,15 +82,14 @@ SDL_Keycode SDL_GetKeymapKeycode(SDL_Keymap *keymap, SDL_Scancode scancode)
 SDL_Scancode SDL_GetKeymapScancode(SDL_Keymap *keymap, SDL_Keycode keycode)
 {
     SDL_Scancode scancode;
-    if (keymap) {
-        scancode = keymap->keycode_to_scancode[keycode];
-        if(scancode == -1) {
-            scancode = SDL_GetDefaultScancodeFromKey(keycode);
+
+    for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_NUM_SCANCODES;
+         ++scancode) {
+        if (SDL_GetKeymapKeycode(keymap, scancode) == keycode) {
+            return scancode;
         }
-    } else {
-        scancode = SDL_GetDefaultScancodeFromKey(keycode);
     }
-    return scancode;
+    return SDL_SCANCODE_UNKNOWN;
 }
 
 void SDL_DestroyKeymap(SDL_Keymap *keymap)
@@ -130,36 +129,6 @@ static const SDL_Keycode normal_default_symbols[] = {
     SDLK_COMMA,
     SDLK_PERIOD,
     SDLK_SLASH,
-};
-
-static const SDL_Keycode shifted_default_symbols[] = {
-    SDLK_EXCLAIM,
-    SDLK_AT,
-    SDLK_HASH,
-    SDLK_DOLLAR,
-    SDLK_PERCENT,
-    SDLK_CARET,
-    SDLK_AMPERSAND,
-    SDLK_ASTERISK,
-    SDLK_LEFTPAREN,
-    SDLK_RIGHTPAREN,
-    SDLK_RETURN,
-    SDLK_ESCAPE,
-    SDLK_BACKSPACE,
-    SDLK_TAB,
-    SDLK_SPACE,
-    SDLK_UNDERSCORE,
-    SDLK_PLUS,
-    SDLK_KP_LEFTBRACE,
-    SDLK_KP_RIGHTBRACE,
-    SDLK_KP_VERTICALBAR,
-    SDLK_HASH,
-    SDLK_COLON,
-    SDLK_QUOTEDBL,
-    SDLK_BACKQUOTE,
-    SDLK_LESS,
-    SDLK_GREATER,
-    SDLK_QUESTION
 };
 
 static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode)
@@ -492,43 +461,6 @@ static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode)
     default:
         return SDLK_UNKNOWN;
     }
-}
-
-static SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key)
-{
-    if (key == SDLK_UNKNOWN) {
-        return SDL_SCANCODE_UNKNOWN;
-    }
-
-    if (key & SDLK_SCANCODE_MASK) {
-        return (SDL_Scancode)(key & ~SDLK_SCANCODE_MASK);
-    }
-
-    if (key >= SDLK_a && key <= SDLK_z) {
-        return (SDL_Scancode)(SDL_SCANCODE_A + key - SDLK_a);
-    }
-
-    if (key >= 'A' && key <= 'Z') {
-        return (SDL_Scancode)(SDL_SCANCODE_A + key - 'A');
-    }
-
-    for (int i = 0; i < SDL_arraysize(normal_default_symbols); ++i) {
-        if (key == normal_default_symbols[i]) {
-            return(SDL_Scancode)(SDL_SCANCODE_1 + i);
-        }
-    }
-
-    for (int i = 0; i < SDL_arraysize(shifted_default_symbols); ++i) {
-        if (key == shifted_default_symbols[i]) {
-            return(SDL_Scancode)(SDL_SCANCODE_1 + i);
-        }
-    }
-
-    if (key == SDLK_DELETE) {
-        return SDL_SCANCODE_DELETE;
-    }
-
-    return SDL_SCANCODE_UNKNOWN;
 }
 
 static const char *SDL_scancode_names[SDL_NUM_SCANCODES] =
