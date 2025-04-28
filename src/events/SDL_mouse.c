@@ -1627,7 +1627,9 @@ bool SDL_SetCursor(SDL_Cursor *cursor)
             }
         }
         mouse->cur_cursor = cursor;
-    } else if (mouse->focus) {
+    }
+
+    if (mouse->focus) {
         cursor = mouse->cur_cursor;
     } else {
         cursor = mouse->def_cursor;
