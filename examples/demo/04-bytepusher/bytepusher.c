@@ -27,7 +27,6 @@
 
 typedef struct {
     Uint8 ram[RAM_SIZE + 8];
-    Uint8 screenbuf[SCREEN_W * SCREEN_H];
     Uint64 last_tick;
     Uint64 tick_acc;
     SDL_Window* window;
@@ -187,7 +186,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     }
 
     if (!(vm->screen = SDL_CreateSurfaceFrom(
-        SCREEN_W, SCREEN_H, SDL_PIXELFORMAT_INDEX8, vm->screenbuf, SCREEN_W
+        SCREEN_W, SCREEN_H, SDL_PIXELFORMAT_INDEX8, vm->ram, SCREEN_W
     ))) {
         return SDL_APP_FAILURE;
     }
@@ -296,18 +295,18 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
         SDL_UnlockTexture(vm->screentex);
 
         SDL_RenderTexture(vm->renderer, vm->screentex, NULL, NULL);
-    }
 
-    if (vm->display_help) {
-        print(vm, 4, 4, "Drop a BytePusher file in this");
-        print(vm, 8, 12, "window to load and run it!");
-        print(vm, 4, 28, "Press ENTER to switch between");
-        print(vm, 8, 36, "positional and symbolic input.");
-    }
+        if (vm->display_help) {
+            print(vm, 4, 4, "Drop a BytePusher file in this");
+            print(vm, 8, 12, "window to load and run it!");
+            print(vm, 4, 28, "Press ENTER to switch between");
+            print(vm, 8, 36, "positional and symbolic input.");
+        }
 
-    if (vm->status_ticks > 0) {
-        vm->status_ticks -= 1;
-        print(vm, 4, SCREEN_H - 12, vm->status);
+        if (vm->status_ticks > 0) {
+            vm->status_ticks -= 1;
+            print(vm, 4, SCREEN_H - 12, vm->status);
+        }
     }
 
     SDL_SetRenderTarget(vm->renderer, NULL);
