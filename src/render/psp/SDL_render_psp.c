@@ -813,8 +813,7 @@ static inline int PSP_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     colorA = cmd->data.color.a;
 
     sceGuClearColor(GU_RGBA(colorR, colorG, colorB, colorA));
-    sceGuClearDepth(0);
-    sceGuClear(GU_COLOR_BUFFER_BIT|GU_DEPTH_BUFFER_BIT);
+    sceGuClear(GU_FAST_CLEAR_BIT|GU_COLOR_BUFFER_BIT);
 
     return 0;
 }
