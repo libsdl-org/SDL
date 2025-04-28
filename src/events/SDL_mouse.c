@@ -234,6 +234,13 @@ static void SDLCALL SDL_MouseRelativeCursorVisibleChanged(void *userdata, const 
     SDL_RedrawCursor(); // Update cursor visibility
 }
 
+static void SDLCALL SDL_MouseCursorSuspendRedrawChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->cursor_auto_redraw = !(SDL_GetStringBoolean(hint, false));
+}
+
 static void SDLCALL SDL_MouseIntegerModeChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
@@ -298,6 +305,9 @@ bool SDL_PreInitMouse(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
                         SDL_MouseRelativeCursorVisibleChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_CURSOR_SUSPEND_REDRAW,
+                        SDL_MouseCursorSuspendRedrawChanged, mouse);
 
     SDL_AddHintCallback("SDL_MOUSE_INTEGER_MODE",
                         SDL_MouseIntegerModeChanged, mouse);
@@ -1158,6 +1168,9 @@ void SDL_QuitMouse(void)
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
                         SDL_MouseRelativeCursorVisibleChanged, mouse);
 
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_CURSOR_SUSPEND_REDRAW,
+                        SDL_MouseCursorSuspendRedrawChanged, mouse);
+
     SDL_RemoveHintCallback("SDL_MOUSE_INTEGER_MODE",
                         SDL_MouseIntegerModeChanged, mouse);
 
@@ -1599,10 +1612,16 @@ SDL_Cursor *SDL_CreateSystemCursor(SDL_SystemCursor id)
     return cursor;
 }
 
+// Cursor redraw command used by SDL internally
+// which checks whether or not to auto-redraw.
 void SDL_RedrawCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Cursor *cursor;
+
+    if (!mouse->cursor_auto_redraw) {
+        return;
+    }
 
     if (mouse->focus) {
         cursor = mouse->cur_cursor;
@@ -1649,7 +1668,21 @@ bool SDL_SetCursor(SDL_Cursor *cursor)
         mouse->cur_cursor = cursor;
     }
 
-    SDL_RedrawCursor();
+    // user-called SDL_SetCursor(NULL) are manually issued redraws,
+    // so code for SDL_RedrawCursor should be mirrored here.
+    if (mouse->focus) {
+        cursor = mouse->cur_cursor;
+    } else {
+        cursor = mouse->def_cursor;
+    }
+
+    if (mouse->focus && (!mouse->cursor_visible || (mouse->relative_mode && mouse->relative_mode_hide_cursor))) {
+        cursor = NULL;
+    }
+
+    if (mouse->ShowCursor) {
+        mouse->ShowCursor(cursor);
+    }
 
     return true;
 }

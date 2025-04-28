@@ -2653,6 +2653,21 @@ extern "C" {
 #define SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE "SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"
 
 /**
+ * A variable controlling whether SDL should leave cursor redraws to be manually
+ * issued by usercode instead of automatically refreshing on state changes.
+ *
+ * This variable can be set to the following values:
+ *
+ * - "0": SDL will issue redraws automatically when focus changes (default)
+ * - "1": The usercode is responsible for updating the cursor on focus change.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_MOUSE_CURSOR_SUSPEND_REDRAW "SDL_MOUSE_CURSOR_SUSPEND_REDRAW"
+
+/**
  * A variable controlling whether mouse events should generate synthetic touch
  * events.
  *
