@@ -1844,7 +1844,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
     Uint8 lo = (type & 0xff);
 
     if (SDL_disabled_events[hi] &&
-        (SDL_disabled_events[hi]->bits[lo / 32] & (1 << (lo & 31)))) {
+        (SDL_disabled_events[hi]->bits[lo / 32] & (1U << (lo & 31)))) {
         current_state = false;
     } else {
         current_state = true;
@@ -1853,7 +1853,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
     if ((enabled != false) != current_state) {
         if (enabled) {
             SDL_assert(SDL_disabled_events[hi] != NULL);
-            SDL_disabled_events[hi]->bits[lo / 32] &= ~(1 << (lo & 31));
+            SDL_disabled_events[hi]->bits[lo / 32] &= ~(1U << (lo & 31));
 
             // Gamepad events depend on joystick events
             switch (type) {
@@ -1884,7 +1884,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
             }
             // Out of memory, nothing we can do...
             if (SDL_disabled_events[hi]) {
-                SDL_disabled_events[hi]->bits[lo / 32] |= (1 << (lo & 31));
+                SDL_disabled_events[hi]->bits[lo / 32] |= (1U << (lo & 31));
                 SDL_FlushEvent(type);
             }
         }
@@ -1903,7 +1903,7 @@ bool SDL_EventEnabled(Uint32 type)
     Uint8 lo = (type & 0xff);
 
     if (SDL_disabled_events[hi] &&
-        (SDL_disabled_events[hi]->bits[lo / 32] & (1 << (lo & 31)))) {
+        (SDL_disabled_events[hi]->bits[lo / 32] & (1U << (lo & 31)))) {
         return false;
     } else {
         return true;
