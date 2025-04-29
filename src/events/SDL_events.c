@@ -1379,9 +1379,7 @@ bool SDL_RunOnMainThread(SDL_MainThreadCallback callback, void *userdata, bool w
         return true;
     }
 
-    // Maximum wait of 30 seconds to prevent deadlocking forever
-    const Sint32 MAX_CALLBACK_WAIT = 30 * 1000;
-    SDL_WaitSemaphoreTimeout(entry->semaphore, MAX_CALLBACK_WAIT);
+    SDL_WaitSemaphore(entry->semaphore);
 
     switch (SDL_GetAtomicInt(&entry->state)) {
     case SDL_MAIN_CALLBACK_COMPLETE:
