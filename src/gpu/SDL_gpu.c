@@ -1576,7 +1576,7 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
 
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
     commandBufferHeader->render_pass.in_progress = true;
-    for (Sint32 i = 0; i < num_color_targets; i += 1) {
+    for (Uint32 i = 0; i < num_color_targets; i += 1) {
         commandBufferHeader->render_pass.color_targets[i] = color_target_infos[i].texture;
     }
     commandBufferHeader->render_pass.num_color_targets = num_color_targets;
@@ -2024,7 +2024,7 @@ void SDL_EndGPURenderPass(
 
     commandBufferCommonHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
     commandBufferCommonHeader->render_pass.in_progress = false;
-    for (Sint32 i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1)
+    for (Uint32 i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1)
     {
         commandBufferCommonHeader->render_pass.color_targets[i] = NULL;
     }
