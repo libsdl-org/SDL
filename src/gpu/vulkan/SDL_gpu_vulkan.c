@@ -1206,6 +1206,9 @@ struct VulkanRenderer
     SDL_Mutex *acquireUniformBufferLock;
     SDL_Mutex *renderPassFetchLock;
     SDL_Mutex *framebufferFetchLock;
+    SDL_Mutex *graphicsPipelineLayoutFetchLock;
+    SDL_Mutex *computePipelineLayoutFetchLock;
+    SDL_Mutex *descriptorSetLayoutFetchLock;
     SDL_Mutex *windowLock;
 
     Uint8 defragInProgress;
@@ -3751,10 +3754,13 @@ static DescriptorSetLayout *VULKAN_INTERNAL_FetchDescriptorSetLayout(
     key.writeStorageBufferCount = writeStorageBufferCount;
     key.uniformBufferCount = uniformBufferCount;
 
+    SDL_LockMutex(renderer->descriptorSetLayoutFetchLock);
+
     if (SDL_FindInHashTable(
         renderer->descriptorSetLayoutHashTable,
         (const void *)&key,
         (const void **)&layout)) {
+        SDL_UnlockMutex(renderer->descriptorSetLayoutFetchLock);
         return layout;
     }
 
@@ -3837,7 +3843,10 @@ static DescriptorSetLayout *VULKAN_INTERNAL_FetchDescriptorSetLayout(
         NULL,
         &descriptorSetLayout);
 
-    CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateDescriptorSetLayout, NULL);
+    if (vulkanResult != VK_SUCCESS) {
+        SDL_UnlockMutex(renderer->descriptorSetLayoutFetchLock);
+        CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateDescriptorSetLayout, NULL);
+    }
 
     layout = SDL_malloc(sizeof(DescriptorSetLayout));
     layout->descriptorSetLayout = descriptorSetLayout;
@@ -3859,6 +3868,7 @@ static DescriptorSetLayout *VULKAN_INTERNAL_FetchDescriptorSetLayout(
         (const void *)allocedKey,
         (const void *)layout, true);
 
+    SDL_UnlockMutex(renderer->descriptorSetLayoutFetchLock);
     return layout;
 }
 
@@ -3879,10 +3889,14 @@ static VulkanGraphicsPipelineResourceLayout *VULKAN_INTERNAL_FetchGraphicsPipeli
     key.fragmentStorageTextureCount = fragmentShader->numStorageTextures;
     key.fragmentStorageBufferCount = fragmentShader->numStorageBuffers;
     key.fragmentUniformBufferCount = fragmentShader->numUniformBuffers;
+
+    SDL_LockMutex(renderer->graphicsPipelineLayoutFetchLock);
+
     if (SDL_FindInHashTable(
         renderer->graphicsPipelineResourceLayoutHashTable,
         (const void *)&key,
         (const void **)&pipelineResourceLayout)) {
+        SDL_UnlockMutex(renderer->graphicsPipelineLayoutFetchLock);
         return pipelineResourceLayout;
     }
 
@@ -3965,6 +3979,7 @@ static VulkanGraphicsPipelineResourceLayout *VULKAN_INTERNAL_FetchGraphicsPipeli
 
     if (vulkanResult != VK_SUCCESS) {
         VULKAN_INTERNAL_DestroyGraphicsPipelineResourceLayout(renderer, pipelineResourceLayout);
+        SDL_UnlockMutex(renderer->graphicsPipelineLayoutFetchLock);
         CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreatePipelineLayout, NULL);
     }
 
@@ -3976,6 +3991,7 @@ static VulkanGraphicsPipelineResourceLayout *VULKAN_INTERNAL_FetchGraphicsPipeli
         (const void *)allocedKey,
         (const void *)pipelineResourceLayout, true);
 
+    SDL_UnlockMutex(renderer->graphicsPipelineLayoutFetchLock);
     return pipelineResourceLayout;
 }
 
@@ -3994,10 +4010,13 @@ static VulkanComputePipelineResourceLayout *VULKAN_INTERNAL_FetchComputePipeline
     key.readWriteStorageBufferCount = createinfo->num_readwrite_storage_buffers;
     key.uniformBufferCount = createinfo->num_uniform_buffers;
 
+    SDL_LockMutex(renderer->computePipelineLayoutFetchLock);
+
     if (SDL_FindInHashTable(
         renderer->computePipelineResourceLayoutHashTable,
         (const void *)&key,
         (const void **)&pipelineResourceLayout)) {
+        SDL_UnlockMutex(renderer->computePipelineLayoutFetchLock);
         return pipelineResourceLayout;
     }
 
@@ -4066,6 +4085,7 @@ static VulkanComputePipelineResourceLayout *VULKAN_INTERNAL_FetchComputePipeline
 
     if (vulkanResult != VK_SUCCESS) {
         VULKAN_INTERNAL_DestroyComputePipelineResourceLayout(renderer, pipelineResourceLayout);
+        SDL_UnlockMutex(renderer->computePipelineLayoutFetchLock);
         CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreatePipelineLayout, NULL);
     }
 
@@ -4077,6 +4097,7 @@ static VulkanComputePipelineResourceLayout *VULKAN_INTERNAL_FetchComputePipeline
         (const void *)allocedKey,
         (const void *)pipelineResourceLayout, true);
 
+    SDL_UnlockMutex(renderer->computePipelineLayoutFetchLock);
     return pipelineResourceLayout;
 }
 
@@ -4947,6 +4968,9 @@ static void VULKAN_DestroyDevice(
     SDL_DestroyMutex(renderer->acquireUniformBufferLock);
     SDL_DestroyMutex(renderer->renderPassFetchLock);
     SDL_DestroyMutex(renderer->framebufferFetchLock);
+    SDL_DestroyMutex(renderer->graphicsPipelineLayoutFetchLock);
+    SDL_DestroyMutex(renderer->computePipelineLayoutFetchLock);
+    SDL_DestroyMutex(renderer->descriptorSetLayoutFetchLock);
     SDL_DestroyMutex(renderer->windowLock);
 
     renderer->vkDestroyDevice(renderer->logicalDevice, NULL);
@@ -11676,6 +11700,9 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->acquireUniformBufferLock = SDL_CreateMutex();
     renderer->renderPassFetchLock = SDL_CreateMutex();
     renderer->framebufferFetchLock = SDL_CreateMutex();
+    renderer->graphicsPipelineLayoutFetchLock = SDL_CreateMutex();
+    renderer->computePipelineLayoutFetchLock = SDL_CreateMutex();
+    renderer->descriptorSetLayoutFetchLock = SDL_CreateMutex();
     renderer->windowLock = SDL_CreateMutex();
 
     /*
@@ -11736,7 +11763,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 
     renderer->renderPassHashTable = SDL_CreateHashTable(
         0,  // !!! FIXME: a real guess here, for a _minimum_ if not a maximum, could be useful.
-        false,  // manually synchronized due to timing
+        false,  // manually synchronized due to lookup timing
         VULKAN_INTERNAL_RenderPassHashFunction,
         VULKAN_INTERNAL_RenderPassHashKeyMatch,
         VULKAN_INTERNAL_RenderPassHashDestroy,
@@ -11752,7 +11779,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 
     renderer->graphicsPipelineResourceLayoutHashTable = SDL_CreateHashTable(
         0,  // !!! FIXME: a real guess here, for a _minimum_ if not a maximum, could be useful.
-        true,  // thread-safe
+        false,  // manually synchronized due to lookup timing
         VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashFunction,
         VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashKeyMatch,
         VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashDestroy,
@@ -11760,7 +11787,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 
     renderer->computePipelineResourceLayoutHashTable = SDL_CreateHashTable(
         0,  // !!! FIXME: a real guess here, for a _minimum_ if not a maximum, could be useful.
-        true,  // thread-safe
+        false,  // manually synchronized due to lookup timing
         VULKAN_INTERNAL_ComputePipelineResourceLayoutHashFunction,
         VULKAN_INTERNAL_ComputePipelineResourceLayoutHashKeyMatch,
         VULKAN_INTERNAL_ComputePipelineResourceLayoutHashDestroy,
@@ -11768,7 +11795,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 
     renderer->descriptorSetLayoutHashTable = SDL_CreateHashTable(
         0,  // !!! FIXME: a real guess here, for a _minimum_ if not a maximum, could be useful.
-        true,  // thread-safe
+        false,  // manually synchronized due to lookup timing
         VULKAN_INTERNAL_DescriptorSetLayoutHashFunction,
         VULKAN_INTERNAL_DescriptorSetLayoutHashKeyMatch,
         VULKAN_INTERNAL_DescriptorSetLayoutHashDestroy,
