@@ -1318,7 +1318,7 @@ Uint8 SDL_EventState(Uint32 type, int state)
     Uint8 lo = (type & 0xff);
 
     if (SDL_disabled_events[hi] &&
-        (SDL_disabled_events[hi]->bits[lo / 32] & (1 << (lo & 31)))) {
+        (SDL_disabled_events[hi]->bits[lo / 32] & (1U << (lo & 31)))) {
         current_state = SDL_DISABLE;
     } else {
         current_state = SDL_ENABLE;
@@ -1332,11 +1332,11 @@ Uint8 SDL_EventState(Uint32 type, int state)
             }
             /* Out of memory, nothing we can do... */
             if (SDL_disabled_events[hi]) {
-                SDL_disabled_events[hi]->bits[lo / 32] |= (1 << (lo & 31));
+                SDL_disabled_events[hi]->bits[lo / 32] |= (1U << (lo & 31));
                 SDL_FlushEvent(type);
             }
         } else { // state == SDL_ENABLE
-            SDL_disabled_events[hi]->bits[lo / 32] &= ~(1 << (lo & 31));
+            SDL_disabled_events[hi]->bits[lo / 32] &= ~(1U << (lo & 31));
         }
 
 #ifndef SDL_JOYSTICK_DISABLED
