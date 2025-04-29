@@ -1135,11 +1135,14 @@ int HID_API_EXPORT hid_get_feature_report(hid_device *dev, unsigned char *data, 
 
 void HID_API_EXPORT hid_close(hid_device *dev)
 {
+	int disconnected;
+
 	if (!dev)
 		return;
 	
 	/* Disconnect the report callback before close. */
-	if (!dev->disconnected) {
+	disconnected = dev->disconnected;
+	if (!disconnected) {
 		IOHIDDeviceRegisterInputReportCallback(
 											   dev->device_handle, dev->input_report_buf, dev->max_input_report_len,
 											   NULL, dev);
@@ -1163,7 +1166,7 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 	/* Close the OS handle to the device, but only if it's not
 	 been unplugged. If it's been unplugged, then calling
 	 IOHIDDeviceClose() will crash. */
-	if (!dev->disconnected) {
+	if (!disconnected) {
 		IOHIDDeviceClose(dev->device_handle, kIOHIDOptionsTypeNone);
 	}
 	
