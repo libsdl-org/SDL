@@ -32,10 +32,19 @@ typedef struct Pass
     bool in_progress;
 } Pass;
 
+typedef struct RenderPass
+{
+    SDL_GPUCommandBuffer *command_buffer;
+    bool in_progress;
+    SDL_GPUTexture *color_targets[4];
+    Uint32 num_color_targets;
+    SDL_GPUTexture *depth_stencil_target;
+} RenderPass;
+
 typedef struct CommandBufferCommonHeader
 {
     SDL_GPUDevice *device;
-    Pass render_pass;
+    RenderPass render_pass;
     bool graphics_pipeline_bound;
     Pass compute_pass;
     bool compute_pipeline_bound;
