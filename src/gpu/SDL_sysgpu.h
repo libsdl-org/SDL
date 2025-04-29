@@ -24,6 +24,21 @@
 #ifndef SDL_GPU_DRIVER_H
 #define SDL_GPU_DRIVER_H
 
+// GraphicsDevice Limits
+
+#define MAX_TEXTURE_SAMPLERS_PER_STAGE 16
+#define MAX_STORAGE_TEXTURES_PER_STAGE 8
+#define MAX_STORAGE_BUFFERS_PER_STAGE  8
+#define MAX_UNIFORM_BUFFERS_PER_STAGE  4
+#define MAX_COMPUTE_WRITE_TEXTURES     8
+#define MAX_COMPUTE_WRITE_BUFFERS      8
+#define UNIFORM_BUFFER_SIZE            32768
+#define MAX_VERTEX_BUFFERS             16
+#define MAX_VERTEX_ATTRIBUTES          16
+#define MAX_COLOR_TARGET_BINDINGS      4
+#define MAX_PRESENT_COUNT              16
+#define MAX_FRAMES_IN_FLIGHT           3
+
 // Common Structs
 
 typedef struct Pass
@@ -32,10 +47,19 @@ typedef struct Pass
     bool in_progress;
 } Pass;
 
+typedef struct RenderPass
+{
+    SDL_GPUCommandBuffer *command_buffer;
+    bool in_progress;
+    SDL_GPUTexture *color_targets[MAX_COLOR_TARGET_BINDINGS];
+    Uint32 num_color_targets;
+    SDL_GPUTexture *depth_stencil_target;
+} RenderPass;
+
 typedef struct CommandBufferCommonHeader
 {
     SDL_GPUDevice *device;
-    Pass render_pass;
+    RenderPass render_pass;
     bool graphics_pipeline_bound;
     Pass compute_pass;
     bool compute_pipeline_bound;
@@ -384,21 +408,6 @@ static inline Uint32 BytesPerRow(
     Uint32 blocksPerRow = (width + blockWidth - 1) / blockWidth;
     return blocksPerRow * SDL_GPUTextureFormatTexelBlockSize(format);
 }
-
-// GraphicsDevice Limits
-
-#define MAX_TEXTURE_SAMPLERS_PER_STAGE 16
-#define MAX_STORAGE_TEXTURES_PER_STAGE 8
-#define MAX_STORAGE_BUFFERS_PER_STAGE  8
-#define MAX_UNIFORM_BUFFERS_PER_STAGE  4
-#define MAX_COMPUTE_WRITE_TEXTURES     8
-#define MAX_COMPUTE_WRITE_BUFFERS      8
-#define UNIFORM_BUFFER_SIZE            32768
-#define MAX_VERTEX_BUFFERS             16
-#define MAX_VERTEX_ATTRIBUTES          16
-#define MAX_COLOR_TARGET_BINDINGS      4
-#define MAX_PRESENT_COUNT              16
-#define MAX_FRAMES_IN_FLIGHT           3
 
 // Internal Macros
 

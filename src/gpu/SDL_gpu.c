@@ -56,9 +56,41 @@
     }
 
 #define CHECK_RENDERPASS                                     \
-    if (!((Pass *)render_pass)->in_progress) {                 \
+    if (!((RenderPass *)render_pass)->in_progress) {                 \
         SDL_assert_release(!"Render pass not in progress!"); \
         return;                                              \
+    }
+
+#define CHECK_SAMPLER_TEXTURES                                                                                                          \
+    RenderPass *rp = (RenderPass *)render_pass;                                                                                         \
+    for (Uint32 color_target_index = 0; color_target_index < rp->num_color_targets; color_target_index += 1) {                          \
+        for (Uint32 texture_sampler_index = 0; texture_sampler_index < num_bindings; texture_sampler_index += 1) {                      \
+            if (rp->color_targets[color_target_index] == texture_sampler_bindings[texture_sampler_index].texture) {                     \
+                SDL_assert_release(!"Texture cannot be simultaneously bound as a color target and a sampler!");                         \
+            }                                                                                                                           \
+        }                                                                                                                               \
+    }                                                                                                                                   \
+                                                                                                                                        \
+    for (Uint32 texture_sampler_index = 0; texture_sampler_index < num_bindings; texture_sampler_index += 1) {                          \
+        if (rp->depth_stencil_target != NULL && rp->depth_stencil_target == texture_sampler_bindings[texture_sampler_index].texture) {  \
+            SDL_assert_release(!"Texture cannot be simultaneously bound as a depth stencil target and a sampler!");                     \
+        }                                                                                                                               \
+    }
+
+#define CHECK_STORAGE_TEXTURES                                                                                              \
+    RenderPass *rp = (RenderPass *)render_pass;                                                                             \
+    for (Uint32 color_target_index = 0; color_target_index < rp->num_color_targets; color_target_index += 1) {              \
+        for (Uint32 texture_sampler_index = 0; texture_sampler_index < num_bindings; texture_sampler_index += 1) {          \
+            if (rp->color_targets[color_target_index] == storage_textures[texture_sampler_index]) {                         \
+                SDL_assert_release(!"Texture cannot be simultaneously bound as a color target and a storage texture!");     \
+            }                                                                                                               \
+        }                                                                                                                   \
+    }                                                                                                                       \
+                                                                                                                            \
+    for (Uint32 texture_sampler_index = 0; texture_sampler_index < num_bindings; texture_sampler_index += 1) {              \
+        if (rp->depth_stencil_target != NULL && rp->depth_stencil_target == storage_textures[texture_sampler_index]) {      \
+            SDL_assert_release(!"Texture cannot be simultaneously bound as a depth stencil target and a storage texture!"); \
+        }                                                                                                                   \
     }
 
 #define CHECK_GRAPHICS_PIPELINE_BOUND                                                       \
@@ -137,7 +169,7 @@
     ((CommandBufferCommonHeader *)command_buffer)->device
 
 #define RENDERPASS_COMMAND_BUFFER \
-    ((Pass *)render_pass)->command_buffer
+    ((RenderPass *)render_pass)->command_buffer
 
 #define RENDERPASS_DEVICE \
     ((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->device
@@ -1523,6 +1555,13 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
 
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
     commandBufferHeader->render_pass.in_progress = true;
+    for (Uint32 i = 0; i < num_color_targets; i += 1) {
+        commandBufferHeader->render_pass.color_targets[i] = color_target_infos[i].texture;
+    }
+    commandBufferHeader->render_pass.num_color_targets = num_color_targets;
+    if (depth_stencil_target_info != NULL) {
+        commandBufferHeader->render_pass.depth_stencil_target = depth_stencil_target_info->texture;
+    }
     return (SDL_GPURenderPass *)&(commandBufferHeader->render_pass);
 }
 
@@ -1696,6 +1735,7 @@ void SDL_BindGPUVertexSamplers(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
+        CHECK_SAMPLER_TEXTURES
     }
 
     RENDERPASS_DEVICE->BindVertexSamplers(
@@ -1722,6 +1762,7 @@ void SDL_BindGPUVertexStorageTextures(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
+        CHECK_STORAGE_TEXTURES
     }
 
     RENDERPASS_DEVICE->BindVertexStorageTextures(
@@ -1774,6 +1815,7 @@ void SDL_BindGPUFragmentSamplers(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
+        CHECK_SAMPLER_TEXTURES
     }
 
     RENDERPASS_DEVICE->BindFragmentSamplers(
@@ -1800,6 +1842,7 @@ void SDL_BindGPUFragmentStorageTextures(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
+        CHECK_STORAGE_TEXTURES
     }
 
     RENDERPASS_DEVICE->BindFragmentStorageTextures(
@@ -1960,6 +2003,12 @@ void SDL_EndGPURenderPass(
 
     commandBufferCommonHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
     commandBufferCommonHeader->render_pass.in_progress = false;
+    for (Uint32 i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1)
+    {
+        commandBufferCommonHeader->render_pass.color_targets[i] = NULL;
+    }
+    commandBufferCommonHeader->render_pass.num_color_targets = 0;
+    commandBufferCommonHeader->render_pass.depth_stencil_target = NULL;
     commandBufferCommonHeader->graphics_pipeline_bound = false;
 }
 
