@@ -1359,8 +1359,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         const Uint64 timestamp = WIN_GetEventTimestamp();
         SDL_Window *window = data->window;
 
+        const bool istouching = IS_POINTER_INCONTACT_WPARAM(wParam);
+
         // if lifting off, do it first, so any motion changes don't cause app issues.
-        if (msg == WM_POINTERUP) {
+        if (!istouching) {
             SDL_SendPenTouch(timestamp, pen, window, (pen_info.penFlags & PEN_FLAG_INVERTED) != 0, false);
         }
 
@@ -1390,7 +1392,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
 
         // if setting down, do it last, so the pen is positioned correctly from the first contact.
-        if (msg == WM_POINTERDOWN) {
+        if (istouching) {
             SDL_SendPenTouch(timestamp, pen, window, (pen_info.penFlags & PEN_FLAG_INVERTED) != 0, true);
         }
 
