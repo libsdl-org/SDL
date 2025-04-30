@@ -1359,7 +1359,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         const Uint64 timestamp = WIN_GetEventTimestamp();
         SDL_Window *window = data->window;
 
-        const bool istouching = IS_POINTER_INCONTACT_WPARAM(wParam);
+        const bool istouching = IS_POINTER_INCONTACT_WPARAM(wParam) && IS_POINTER_FIRSTBUTTON_WPARAM(wParam);
 
         // if lifting off, do it first, so any motion changes don't cause app issues.
         if (!istouching) {
