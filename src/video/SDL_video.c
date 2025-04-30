@@ -1731,11 +1731,24 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
     return SDL_GetVideoDisplay(displayID);
 }
 
+#define SDL_PROP_SDL2_COMPAT_WINDOW_PREFERRED_FULLSCREEN_DISPLAY "sdl2-compat.window.preferred_fullscreen_display"
+
 SDL_DisplayID SDL_GetDisplayForWindow(SDL_Window *window)
 {
     SDL_DisplayID displayID = 0;
 
     CHECK_WINDOW_MAGIC(window, 0);
+
+    /* sdl2-compat calls this function to get a display on which to make the window fullscreen,
+     * so pass it the preferred fullscreen display ID in a property.
+     */
+    SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
+    SDL_VideoDisplay *fs_display = SDL_GetVideoDisplayForFullscreenWindow(window);
+    if (fs_display) {
+        SDL_SetNumberProperty(window_props, SDL_PROP_SDL2_COMPAT_WINDOW_PREFERRED_FULLSCREEN_DISPLAY, fs_display->id);
+    } else {
+        SDL_ClearProperty(window_props, SDL_PROP_SDL2_COMPAT_WINDOW_PREFERRED_FULLSCREEN_DISPLAY);
+    }
 
     // An explicit fullscreen display overrides all
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
