@@ -2474,6 +2474,7 @@ static char *JoinMapping(MappingParts *parts)
         sort_order[i].index = i;
     }
     SDL_qsort(sort_order, parts->num_elements, sizeof(*sort_order), SortMapping);
+    MoveSortedEntry("face", sort_order, parts->num_elements, true);
     MoveSortedEntry("type", sort_order, parts->num_elements, true);
     MoveSortedEntry("platform", sort_order, parts->num_elements, true);
     MoveSortedEntry("crc", sort_order, parts->num_elements, true);
@@ -2809,6 +2810,8 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "Joy-Con (R)";
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
         return "Joy-Con Pair";
+    case SDL_GAMEPAD_TYPE_GAMECUBE:
+        return "GameCube";
     default:
         return "";
     }
