@@ -565,7 +565,7 @@ void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *wind
             event.pbutton.down = down;
             SDL_PushEvent(&event);
 
-            if (window && !pen_touching || (pen_touching == instance_id)) {
+            if (window && (!pen_touching || (pen_touching == instance_id))) {
                 SDL_Mouse *mouse = SDL_GetMouse();
                 if (mouse && mouse->pen_mouse_events) {
                     SDL_SendMouseButton(timestamp, window, SDL_PEN_MOUSEID, button + 1, down);
