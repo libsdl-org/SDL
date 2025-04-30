@@ -442,11 +442,6 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource(ULONG extrainfo)
             return SDL_MOUSE_EVENT_SOURCE_PEN;
         }
     }
-    /* Sometimes WM_INPUT events won't have the correct touch signature,
-      so we have to rely purely on the touch bit being set. */
-    if (SDL_TouchDevicesAvailable() && extrainfo & 0x80) {
-        return SDL_MOUSE_EVENT_SOURCE_TOUCH;
-    }
     return SDL_MOUSE_EVENT_SOURCE_MOUSE;
 }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -584,7 +579,8 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         return;
     }
 
-    if (GetMouseMessageSource(rawmouse->ulExtraInformation) != SDL_MOUSE_EVENT_SOURCE_MOUSE) {
+    if (GetMouseMessageSource(rawmouse->ulExtraInformation) != SDL_MOUSE_EVENT_SOURCE_MOUSE ||
+        (SDL_TouchDevicesAvailable() && (rawmouse->ulExtraInformation & 0x80) == 0x80)) {
         return;
     }
 
