@@ -478,6 +478,17 @@ static void CommitBindingElement(const char *binding, bool force)
         mapping = NULL;
     }
 
+    if (mapping && SDL_GetGamepadType(controller->gamepad) == SDL_GAMEPAD_TYPE_GAMECUBE) {
+        if (SDL_strstr(mapping, "face:") == NULL) {
+            char *new_mapping = NULL;
+            SDL_asprintf(&new_mapping, "%sface:axby,", mapping);
+            if (new_mapping) {
+                SDL_free(mapping);
+                mapping = new_mapping;
+            }
+        }
+    }
+
     /* If the controller generates multiple events for a single element, pick the best one */
     if (!force && binding_advance_time) {
         char *current = GetElementBinding(mapping, binding_element);

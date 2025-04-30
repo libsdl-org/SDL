@@ -1466,6 +1466,24 @@ static void SDL_FixupHIDAPIMapping(SDL_Gamepad *gamepad)
     }
 }
 
+static void SDL_FixupGameCubeMapping(SDL_Gamepad *gamepad, const char *pchString)
+{
+    if (SDL_strstr(gamepad->mapping->mapping, SDL_GAMEPAD_FACE_FIELD) != NULL) {
+        return;
+    }
+
+    for (int i = 0; i < gamepad->num_bindings; ++i) {
+        SDL_GamepadBinding *binding = &gamepad->bindings[i];
+        if (binding->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
+            if (binding->output.button == SDL_GAMEPAD_BUTTON_EAST) {
+                binding->output.button = SDL_GAMEPAD_BUTTON_WEST;
+            } else if (binding->output.button == SDL_GAMEPAD_BUTTON_WEST) {
+                binding->output.button = SDL_GAMEPAD_BUTTON_EAST;
+            }
+        }
+    }
+}
+
 /*
  * Make a new button mapping struct
  */
@@ -1489,6 +1507,10 @@ static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t 
 
     if (SDL_IsJoystickHIDAPI(pGamepadMapping->guid)) {
         SDL_FixupHIDAPIMapping(gamepad);
+    }
+
+    if (SDL_IsJoystickGameCube(SDL_GetGamepadVendor(gamepad), SDL_GetGamepadProduct(gamepad))) {
+        SDL_FixupGameCubeMapping(gamepad, pGamepadMapping->mapping);
     }
 
     // Set the zero point for triggers
