@@ -4102,6 +4102,8 @@
 		BECDF6B30761BA81005FE872 /* libSDL2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		BECDF6BE0761BA81005FE872 /* SDL2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SDL2; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB31407717554B71006C0E22 /* libSDL2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSDL2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		E25D89B42DA829FA00EA508B /* SDL_keymap.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_keymap.c; sourceTree = "<group>"; };
+		E25D89B52DA829FA00EA508B /* SDL_keymap_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_keymap_c.h; sourceTree = "<group>"; };
 		E2D187CF28A5673500D2B4F1 /* SDL2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SDL2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2D187D228A5673500D2B4F1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F31A92C628D4CB39003BFD6A /* SDL_offscreenopengles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_offscreenopengles.h; sourceTree = "<group>"; };
@@ -5315,6 +5317,8 @@
 		A7D8A92923E2514000DCD162 /* events */ = {
 			isa = PBXGroup;
 			children = (
+				E25D89B52DA829FA00EA508B /* SDL_keymap_c.h */,
+				E25D89B42DA829FA00EA508B /* SDL_keymap.c */,
 				A7D8A93223E2514000DCD162 /* blank_cursor.h */,
 				A7D8A93323E2514000DCD162 /* default_cursor.h */,
 				A7D8A93423E2514000DCD162 /* scancodes_darwin.h */,
@@ -5595,6 +5599,7 @@
 				A75FCDD623E25AB700529352 /* SDL_dynapi_procs.h in Headers */,
 				A75FCDD723E25AB700529352 /* vulkan_fuchsia.h in Headers */,
 				A75FCDD823E25AB700529352 /* SDL_touch.h in Headers */,
+				E25D89C62DA829FA00EA508B /* SDL_keymap_c.h in Headers */,
 				A75FCDD923E25AB700529352 /* SDL_types.h in Headers */,
 				A75FCDDA23E25AB700529352 /* usb_ids.h in Headers */,
 				A75FCDDB23E25AB700529352 /* SDL_gles2funcs.h in Headers */,
@@ -5824,6 +5829,7 @@
 				A75FCF8F23E25AC700529352 /* SDL_dynapi_procs.h in Headers */,
 				A75FCF9023E25AC700529352 /* vulkan_fuchsia.h in Headers */,
 				A75FCF9123E25AC700529352 /* SDL_touch.h in Headers */,
+				E25D89C72DA829FA00EA508B /* SDL_keymap_c.h in Headers */,
 				A75FCF9223E25AC700529352 /* SDL_types.h in Headers */,
 				A75FCF9323E25AC700529352 /* usb_ids.h in Headers */,
 				A75FCF9423E25AC700529352 /* SDL_gles2funcs.h in Headers */,
@@ -5983,6 +5989,7 @@
 				A769B14523E259AE00872273 /* SDL_rwopsbundlesupport.h in Headers */,
 				F386F6EC2884663E001840AA /* SDL_log_c.h in Headers */,
 				A769B14623E259AE00872273 /* SDL_syspower.h in Headers */,
+				E25D89C42DA829FA00EA508B /* SDL_keymap_c.h in Headers */,
 				A769B14723E259AE00872273 /* vulkan_macos.h in Headers */,
 				A769B14823E259AE00872273 /* vulkan_xcb.h in Headers */,
 				F382072C284F3643004DD584 /* SDL_guid.h in Headers */,
@@ -6200,6 +6207,7 @@
 				A7D88A1623E2437C00DCD162 /* begin_code.h in Headers */,
 				A7D8BB4623E2514500DCD162 /* blank_cursor.h in Headers */,
 				A7D88A1823E2437C00DCD162 /* close_code.h in Headers */,
+				E25D89C02DA829FA00EA508B /* SDL_keymap_c.h in Headers */,
 				A7D8B5B823E2514300DCD162 /* controller_type.h in Headers */,
 				A7D8BB4C23E2514500DCD162 /* default_cursor.h in Headers */,
 				A7D8B23D23E2514200DCD162 /* egl.h in Headers */,
@@ -6434,6 +6442,7 @@
 				A7D88BCC23E24BED00DCD162 /* begin_code.h in Headers */,
 				A7D8BB4723E2514500DCD162 /* blank_cursor.h in Headers */,
 				A7D88BCE23E24BED00DCD162 /* close_code.h in Headers */,
+				E25D89C12DA829FA00EA508B /* SDL_keymap_c.h in Headers */,
 				A7D8B5B923E2514300DCD162 /* controller_type.h in Headers */,
 				A7D8BB4D23E2514500DCD162 /* default_cursor.h in Headers */,
 				A7D8B23E23E2514200DCD162 /* egl.h in Headers */,
@@ -6620,6 +6629,7 @@
 				A7D8B5C723E2514300DCD162 /* SDL_rwopsbundlesupport.h in Headers */,
 				F386F6EB2884663E001840AA /* SDL_log_c.h in Headers */,
 				A7D8B61523E2514300DCD162 /* SDL_syspower.h in Headers */,
+				E25D89C32DA829FA00EA508B /* SDL_keymap_c.h in Headers */,
 				A7D8B28823E2514200DCD162 /* vulkan_macos.h in Headers */,
 				A7D8B29423E2514200DCD162 /* vulkan_xcb.h in Headers */,
 				F382072B284F3643004DD584 /* SDL_guid.h in Headers */,
@@ -6837,6 +6847,7 @@
 				AA7557FA1595D4D800BBD41B /* begin_code.h in Headers */,
 				A7D8BB4523E2514500DCD162 /* blank_cursor.h in Headers */,
 				AA7557FC1595D4D800BBD41B /* close_code.h in Headers */,
+				E25D89BF2DA829FA00EA508B /* SDL_keymap_c.h in Headers */,
 				A7D8B5B723E2514300DCD162 /* controller_type.h in Headers */,
 				A7D8BB4B23E2514500DCD162 /* default_cursor.h in Headers */,
 				A7D8B23C23E2514200DCD162 /* egl.h in Headers */,
@@ -7261,6 +7272,7 @@
 				DB313FF517554B71006C0E22 /* SDL_touch.h in Headers */,
 				DB313FF617554B71006C0E22 /* SDL_types.h in Headers */,
 				5616CA60252BB35E005D5928 /* SDL_sysurl.h in Headers */,
+				E25D89C52DA829FA00EA508B /* SDL_keymap_c.h in Headers */,
 				A7D8B57423E2514300DCD162 /* usb_ids.h in Headers */,
 				A7D8BA5A23E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
 				DB313FF717554B71006C0E22 /* SDL_version.h in Headers */,
@@ -7807,6 +7819,7 @@
 				A75FCE3023E25AB700529352 /* SDL_cocoamessagebox.m in Sources */,
 				A75FCE3123E25AB700529352 /* SDL_blendfillrect.c in Sources */,
 				A75FCE3223E25AB700529352 /* SDL_uikitvideo.m in Sources */,
+				E25D89BD2DA829FA00EA508B /* SDL_keymap.c in Sources */,
 				A75FCE3323E25AB700529352 /* SDL_cocoashape.m in Sources */,
 				A75FCE3423E25AB700529352 /* SDL_cocoamouse.m in Sources */,
 				A75FCE3523E25AB700529352 /* SDL_error.c in Sources */,
@@ -8003,6 +8016,7 @@
 				A75FCFE923E25AC700529352 /* SDL_cocoamessagebox.m in Sources */,
 				A75FCFEA23E25AC700529352 /* SDL_blendfillrect.c in Sources */,
 				A75FCFEB23E25AC700529352 /* SDL_uikitvideo.m in Sources */,
+				E25D89BE2DA829FA00EA508B /* SDL_keymap.c in Sources */,
 				A75FCFEC23E25AC700529352 /* SDL_cocoashape.m in Sources */,
 				A75FCFED23E25AC700529352 /* SDL_cocoamouse.m in Sources */,
 				A75FCFEE23E25AC700529352 /* SDL_error.c in Sources */,
@@ -8279,6 +8293,7 @@
 				A769B21023E259AE00872273 /* e_exp.c in Sources */,
 				F395C1A12569C68F00942BFF /* SDL_iokitjoystick.c in Sources */,
 				A1BB8B6827F6CF330057CFA8 /* SDL_list.c in Sources */,
+				E25D89BB2DA829FA00EA508B /* SDL_keymap.c in Sources */,
 				A769B21123E259AE00872273 /* SDL_quit.c in Sources */,
 				A769B21223E259AE00872273 /* SDL_cocoawindow.m in Sources */,
 				A769B21323E259AE00872273 /* SDL_sysmutex.c in Sources */,
@@ -8396,6 +8411,7 @@
 				A7D8AEB923E2514100DCD162 /* SDL_cocoamouse.m in Sources */,
 				A7D8B8E523E2514400DCD162 /* SDL_error.c in Sources */,
 				A7D8AD6923E2514100DCD162 /* SDL_blit.c in Sources */,
+				E25D89B72DA829FA00EA508B /* SDL_keymap.c in Sources */,
 				A7D8B5BE23E2514300DCD162 /* SDL_rwops.c in Sources */,
 				A7D8ACD023E2514100DCD162 /* SDL_uikitviewcontroller.m in Sources */,
 				A7D8BA9223E2514400DCD162 /* s_cos.c in Sources */,
@@ -8592,6 +8608,7 @@
 				A7D8AEBA23E2514100DCD162 /* SDL_cocoamouse.m in Sources */,
 				A7D8B8E623E2514400DCD162 /* SDL_error.c in Sources */,
 				A7D8AD6A23E2514100DCD162 /* SDL_blit.c in Sources */,
+				E25D89B82DA829FA00EA508B /* SDL_keymap.c in Sources */,
 				A7D8B5BF23E2514300DCD162 /* SDL_rwops.c in Sources */,
 				A7D8ACD123E2514100DCD162 /* SDL_uikitviewcontroller.m in Sources */,
 				A7D8BA9323E2514400DCD162 /* s_cos.c in Sources */,
@@ -8868,6 +8885,7 @@
 				A7D8BAE923E2514500DCD162 /* e_exp.c in Sources */,
 				F395C1A02569C68F00942BFF /* SDL_iokitjoystick.c in Sources */,
 				A1BB8B6727F6CF330057CFA8 /* SDL_list.c in Sources */,
+				E25D89BA2DA829FA00EA508B /* SDL_keymap.c in Sources */,
 				A7D8BB8523E2514500DCD162 /* SDL_quit.c in Sources */,
 				A7D8AEAA23E2514100DCD162 /* SDL_cocoawindow.m in Sources */,
 				A7D8B43E23E2514300DCD162 /* SDL_sysmutex.c in Sources */,
@@ -8992,6 +9010,7 @@
 				A7D8B8E423E2514400DCD162 /* SDL_error.c in Sources */,
 				A7D8AD6823E2514100DCD162 /* SDL_blit.c in Sources */,
 				A7D8B5BD23E2514300DCD162 /* SDL_rwops.c in Sources */,
+				E25D89B62DA829FA00EA508B /* SDL_keymap.c in Sources */,
 				A7D8BA9123E2514400DCD162 /* s_cos.c in Sources */,
 				A7D8B9D123E2514400DCD162 /* SDL_yuv_sw.c in Sources */,
 				A7D8B76A23E2514300DCD162 /* SDL_wave.c in Sources */,
@@ -9187,6 +9206,7 @@
 				A7D8B9D423E2514400DCD162 /* SDL_yuv_sw.c in Sources */,
 				A7D8B76D23E2514300DCD162 /* SDL_wave.c in Sources */,
 				A7D8BAD623E2514500DCD162 /* s_tan.c in Sources */,
+				E25D89B92DA829FA00EA508B /* SDL_keymap.c in Sources */,
 				A7D8BBF423E2574800DCD162 /* SDL_uikitmessagebox.m in Sources */,
 				A7D8AA6823E2514000DCD162 /* SDL_hints.c in Sources */,
 				A7D8B54223E2514300DCD162 /* SDL_hidapi_ps4.c in Sources */,
@@ -9382,6 +9402,7 @@
 				A7D8B5C223E2514300DCD162 /* SDL_rwops.c in Sources */,
 				A7D8ACD423E2514100DCD162 /* SDL_uikitviewcontroller.m in Sources */,
 				A7D8BA9623E2514400DCD162 /* s_cos.c in Sources */,
+				E25D89BC2DA829FA00EA508B /* SDL_keymap.c in Sources */,
 				A7D8B9D623E2514400DCD162 /* SDL_yuv_sw.c in Sources */,
 				A7D8B76F23E2514300DCD162 /* SDL_wave.c in Sources */,
 				A7D8BAD823E2514500DCD162 /* s_tan.c in Sources */,

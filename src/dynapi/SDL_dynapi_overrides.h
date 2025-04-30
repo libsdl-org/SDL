@@ -896,3 +896,4 @@
 #define SDL_GDKSuspendComplete SDL_GDKSuspendComplete_REAL
 #define SDL_HasWindowSurface SDL_HasWindowSurface_REAL
 #define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL
+#define SDL_SetScancodeName SDL_SetScancodeName_REAL

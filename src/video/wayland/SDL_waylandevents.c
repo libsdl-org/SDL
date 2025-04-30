@@ -891,7 +891,7 @@ static const struct wl_touch_listener touch_listener = {
 typedef struct Wayland_Keymap
 {
     xkb_layout_index_t layout;
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    SDL_Keymap *keymap;
 } Wayland_Keymap;
 
 static void Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
@@ -910,33 +910,33 @@ static void Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, vo
 
         if (!keycode) {
             const SDL_Scancode sc = SDL_GetScancodeFromKeySym(syms[0], key);
-            keycode = SDL_GetDefaultKeyFromScancode(sc);
+            keycode = SDL_GetKeymapKeycode(NULL, sc);
         }
 
-        if (keycode) {
-            sdlKeymap->keymap[scancode] = keycode;
-        } else {
+        if (!keycode) {
             switch (scancode) {
             case SDL_SCANCODE_RETURN:
-                sdlKeymap->keymap[scancode] = SDLK_RETURN;
+                keycode = SDLK_RETURN;
                 break;
             case SDL_SCANCODE_ESCAPE:
-                sdlKeymap->keymap[scancode] = SDLK_ESCAPE;
+                keycode = SDLK_ESCAPE;
                 break;
             case SDL_SCANCODE_BACKSPACE:
-                sdlKeymap->keymap[scancode] = SDLK_BACKSPACE;
+                keycode = SDLK_BACKSPACE;
                 break;
             case SDL_SCANCODE_TAB:
-                sdlKeymap->keymap[scancode] = SDLK_TAB;
+                keycode = SDLK_TAB;
                 break;
             case SDL_SCANCODE_DELETE:
-                sdlKeymap->keymap[scancode] = SDLK_DELETE;
+                keycode = SDLK_DELETE;
                 break;
             default:
-                sdlKeymap->keymap[scancode] = SDL_SCANCODE_TO_KEYCODE(scancode);
+                keycode = SDL_SCANCODE_TO_KEYCODE(scancode);
                 break;
             }
         }
+
+        SDL_SetKeymapEntry(sdlKeymap->keymap, scancode, keycode);
     }
 }
 
@@ -1003,13 +1003,13 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     if (input->xkb.current_group != XKB_GROUP_INVALID) {
         Wayland_Keymap keymap;
         keymap.layout = input->xkb.current_group;
-        SDL_GetDefaultKeymap(keymap.keymap);
+        keymap.keymap = SDL_CreateKeymap();
         if (!input->keyboard_is_virtual) {
             WAYLAND_xkb_keymap_key_for_each(input->xkb.keymap,
                                             Wayland_keymap_iter,
                                             &keymap);
         }
-        SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES, SDL_TRUE);
+        SDL_SetKeymap(keymap.keymap, SDL_TRUE);
     }
 
     /*
@@ -1287,13 +1287,13 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
     /* The layout changed, remap and fire an event. Virtual keyboards use the default keymap. */
     input->xkb.current_group = group;
     keymap.layout = group;
-    SDL_GetDefaultKeymap(keymap.keymap);
+    keymap.keymap = SDL_CreateKeymap();
     if (!input->keyboard_is_virtual) {
         WAYLAND_xkb_keymap_key_for_each(input->xkb.keymap,
                                         Wayland_keymap_iter,
                                         &keymap);
     }
-    SDL_SetKeymap(0, keymap.keymap, SDL_NUM_SCANCODES, SDL_TRUE);
+    SDL_SetKeymap(keymap.keymap, SDL_TRUE);
 }
 
 static void keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keyboard,

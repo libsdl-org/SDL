@@ -259,7 +259,7 @@ int X11_InitKeyboard(_THIS)
         }
     }
     if (best_index >= 0 && best_distance <= 2) {
-        SDL_Keycode default_keymap[SDL_NUM_SCANCODES];
+        SDL_Keymap *default_keymap = SDL_CreateKeymap();
         int table_size;
         const SDL_Scancode *table = SDL_GetScancodeTable(scancode_set[best_index], &table_size);
 
@@ -271,12 +271,6 @@ int X11_InitKeyboard(_THIS)
             table_size = (SDL_arraysize(data->key_layout) - min_keycode);
         }
         SDL_memcpy(&data->key_layout[min_keycode], table, sizeof(SDL_Scancode) * table_size);
-
-        /* Scancodes represent physical locations on the keyboard, unaffected by keyboard mapping.
-           However, there are a number of extended scancodes that have no standard location, so use
-           the X11 mapping for all non-character keys.
-         */
-        SDL_GetDefaultKeymap(default_keymap);
 
         for (i = min_keycode; i <= max_keycode; ++i) {
             SDL_Scancode scancode = X11_KeyCodeToSDLScancode(_this, i);
@@ -291,7 +285,7 @@ int X11_InitKeyboard(_THIS)
             if (scancode == data->key_layout[i]) {
                 continue;
             }
-            if (default_keymap[scancode] >= SDLK_SCANCODE_MASK && X11_ScancodeIsRemappable(scancode)) {
+            if (SDL_GetKeymapKeycode(default_keymap, scancode) >= SDLK_SCANCODE_MASK && X11_ScancodeIsRemappable(scancode)) {
                 /* Not a character key and the scancode is safe to remap */
 #ifdef DEBUG_KEYBOARD
                 SDL_Log("Changing scancode, was %d (%s), now %d (%s)\n", data->key_layout[i], SDL_GetScancodeName(data->key_layout[i]), scancode, SDL_GetScancodeName(scancode));
@@ -342,10 +336,10 @@ void X11_UpdateKeymap(_THIS, SDL_bool send_event)
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     int i;
     SDL_Scancode scancode;
-    SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    SDL_Keymap *keymap;
     unsigned char group = 0;
 
-    SDL_GetDefaultKeymap(keymap);
+    keymap = SDL_CreateKeymap();
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     if (data->xkb) {
@@ -369,34 +363,34 @@ void X11_UpdateKeymap(_THIS, SDL_bool send_event)
 
         /* See if there is a UCS keycode for this scancode */
         key = X11_KeyCodeToUcs4(_this, (KeyCode)i, group);
-        if (key) {
-            keymap[scancode] = key;
-        } else {
+        if (!key) {
             SDL_Scancode keyScancode = X11_KeyCodeToSDLScancode(_this, (KeyCode)i);
 
             switch (keyScancode) {
             case SDL_SCANCODE_RETURN:
-                keymap[scancode] = SDLK_RETURN;
+                key = SDLK_RETURN;
                 break;
             case SDL_SCANCODE_ESCAPE:
-                keymap[scancode] = SDLK_ESCAPE;
+                key = SDLK_ESCAPE;
                 break;
             case SDL_SCANCODE_BACKSPACE:
-                keymap[scancode] = SDLK_BACKSPACE;
+                key = SDLK_BACKSPACE;
                 break;
             case SDL_SCANCODE_TAB:
-                keymap[scancode] = SDLK_TAB;
+                key = SDLK_TAB;
                 break;
             case SDL_SCANCODE_DELETE:
-                keymap[scancode] = SDLK_DELETE;
+                key = SDLK_DELETE;
                 break;
             default:
-                keymap[scancode] = SDL_SCANCODE_TO_KEYCODE(keyScancode);
+                key = SDL_SCANCODE_TO_KEYCODE(keyScancode);
                 break;
             }
         }
+
+        SDL_SetKeymapEntry(keymap,scancode, key);
     }
-    SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES, send_event);
+    SDL_SetKeymap(keymap, send_event);
 }
 
 void X11_QuitKeyboard(_THIS)
