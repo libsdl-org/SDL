@@ -205,6 +205,7 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, bool is_monochrome)
 
 static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
+    HCURSOR hcursor = NULL;
     bool is_monochrome = IsMonochromeSurface(surface);
     ICONINFO ii = { 
         .fIcon = FALSE, 
@@ -219,7 +220,7 @@ static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
         goto cleanup;
     }
 
-    HCURSOR hcursor = CreateIconIndirect(&ii);
+    hcursor = CreateIconIndirect(&ii);
     if (!hcursor) {
         WIN_SetError("CreateIconIndirect failed");
     }
