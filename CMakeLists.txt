@@ -156,7 +156,7 @@ endif()
 # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
 #  so we'll just use libusb when it's available. libusb does not support iOS,
 #  so we default to yes on iOS.
-if(IOS OR TVOS OR VISIONOS OR WATCHOS OR ANDROID OR NGAGESDK)
+if(IOS OR TVOS OR VISIONOS OR WATCHOS OR ANDROID OR NGAGE)
   set(SDL_HIDAPI_LIBUSB_AVAILABLE FALSE)
 else()
   set(SDL_HIDAPI_LIBUSB_AVAILABLE TRUE)
@@ -220,7 +220,7 @@ if(EMSCRIPTEN)
   set(SDL_SHARED_AVAILABLE OFF)
 endif()
 
-if(VITA OR PSP OR PS2 OR N3DS OR RISCOS OR NGAGESDK)
+if(VITA OR PSP OR PS2 OR N3DS OR RISCOS OR NGAGE)
   set(SDL_SHARED_AVAILABLE OFF)
 endif()
 
@@ -415,7 +415,7 @@ if(VITA)
   set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
 endif()
 
-if (NGAGESDK)
+if (NGAGE)
   set(SDL_GPU              OFF)
   set(SDL_CAMERA           OFF)
   set(SDL_JOYSTICK         OFF)
@@ -2951,7 +2951,7 @@ elseif(N3DS)
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/io/n3ds/*.c")
 
-elseif(NGAGESDK)
+elseif(NGAGE)
 
   enable_language(CXX)
 
