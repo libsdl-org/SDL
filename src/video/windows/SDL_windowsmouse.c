@@ -205,7 +205,7 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, bool is_monochrome)
 
 static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
-    SDL_bool is_monochrome = IsMonochromeSurface(surface);
+    bool is_monochrome = IsMonochromeSurface(surface);
     ICONINFO ii = { 
         .fIcon = FALSE, 
         .xHotspot = (DWORD)hot_x, 
