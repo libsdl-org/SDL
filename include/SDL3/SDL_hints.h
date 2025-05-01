@@ -1968,8 +1968,8 @@ extern "C" {
 
 /**
  * A variable controlling whether the new HIDAPI driver for wired Xbox One
- * (GIP) controllers should reset the controller if it can't get the
- * metadata from the controller.
+ * (GIP) controllers should reset the controller if it can't get the metadata
+ * from the controller.
  *
  * The variable can be set to the following values:
  *
