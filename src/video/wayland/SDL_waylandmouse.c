@@ -967,7 +967,6 @@ static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float 
         SDL_WaylandSeat *seat;
         int off_x, off_y;
         SDL_RelativeToGlobalForWindow(mouse->focus, mouse->focus->x, mouse->focus->y, &off_x, &off_y);
-        SDL_GetMouseState(x, y);
         *x = mouse->x + off_x;
         *y = mouse->y + off_y;
 
