@@ -232,7 +232,7 @@ cleanup:
     if (ii.hbmColor) {
         DeleteObject(ii.hbmColor);
     }
-    
+
     return hcursor;
 }
 
