@@ -958,16 +958,23 @@ static bool Wayland_SetRelativeMouseMode(bool enabled)
  */
 static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float *y)
 {
-    SDL_Mouse *mouse = SDL_GetMouse();
+    const SDL_Mouse *mouse = SDL_GetMouse();
     SDL_MouseButtonFlags result = 0;
 
     // If there is no window with mouse focus, we have no idea what the actual position or button state is.
     if (mouse->focus) {
+        SDL_VideoData *video_data = SDL_GetVideoDevice()->internal;
+        SDL_WaylandSeat *seat;
         int off_x, off_y;
         SDL_RelativeToGlobalForWindow(mouse->focus, mouse->focus->x, mouse->focus->y, &off_x, &off_y);
-        result = SDL_GetMouseState(x, y);
+        SDL_GetMouseState(x, y);
         *x = mouse->x + off_x;
         *y = mouse->y + off_y;
+
+        // Query the buttons from the seats directly, as this may be called from within a hit test handler.
+        wl_list_for_each (seat, &video_data->seat_list, link) {
+            result |= seat->pointer.buttons_pressed;
+        }
     } else {
         *x = 0.f;
         *y = 0.f;
