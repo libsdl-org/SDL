@@ -916,7 +916,7 @@ static bool GIP_ParseMessageMetadata(GIP_MessageMetadata *metadata, const Uint8 
     return true;
 }
 
-bool GIP_ParseMetadata(GIP_Metadata *metadata, const Uint8* bytes, int num_bytes)
+static bool GIP_ParseMetadata(GIP_Metadata *metadata, const Uint8* bytes, int num_bytes)
 {
     int header_size;
     int metadata_size;
