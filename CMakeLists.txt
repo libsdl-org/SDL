@@ -2953,6 +2953,8 @@ elseif(N3DS)
 
 elseif(NGAGESDK)
 
+  enable_language(CXX)
+
   set(SDL_MAIN_USE_CALLBACKS 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ngage/*.c")
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ngage/*.cpp")
