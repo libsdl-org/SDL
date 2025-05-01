@@ -752,7 +752,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             ])
             job.continue_on_error = True  # FIXME: remove this
             job.setup_ninja = True
-            job.static_lib = None  # FIXME: should be StaticLibType.A
+            job.static_lib = StaticLibType.A
             job.shared_lib = None
             job.clang_tidy = False
             job.werror = False  # FIXME: enable SDL_WERROR
