@@ -828,8 +828,6 @@ bool SDL_InitJoysticks(void)
 
     SDL_joysticks_initialized = true;
 
-    SDL_InitGamepadMappings();
-
     SDL_LoadVIDPIDList(&old_xboxone_controllers);
     SDL_LoadVIDPIDList(&arcadestick_devices);
     SDL_LoadVIDPIDList(&blacklist_devices);
@@ -839,6 +837,8 @@ bool SDL_InitJoysticks(void)
     SDL_LoadVIDPIDList(&throttle_devices);
     SDL_LoadVIDPIDList(&wheel_devices);
     SDL_LoadVIDPIDList(&zero_centered_devices);
+
+    SDL_InitGamepadMappings();
 
     // See if we should allow joystick events while in the background
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
