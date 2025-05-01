@@ -416,8 +416,6 @@ if(VITA)
 endif()
 
 if (NGAGESDK)
-  enable_language(CXX)
-
   set(SDL_GPU              OFF)
   set(SDL_CAMERA           OFF)
   set(SDL_JOYSTICK         OFF)
