@@ -2185,9 +2185,6 @@ static bool HIDAPI_DriverGIP_InitDevice(SDL_HIDAPI_Device *device)
     ctx->metadata.device.in_system_messages[0] = GIP_DEFAULT_IN_SYSTEM_MESSAGES;
     ctx->metadata.device.out_system_messages[0] = GIP_DEFAULT_OUT_SYSTEM_MESSAGES;
     ctx->reset_for_metadata = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA, false);
-    if (device->vendor_id == USB_VENDOR_MICROSOFT && device->product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1) {
-        ctx->paddle_format = GIP_PADDLES_XBE1;
-    }
     GIP_HandleQuirks(ctx);
 
     if (ctx->quirks & GIP_QUIRK_NO_HELLO) {
@@ -2229,12 +2226,19 @@ static bool HIDAPI_DriverGIP_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
 
     // Initialize the joystick capabilities
     joystick->nbuttons = 11;
-    if (device->vendor_id == USB_VENDOR_MICROSOFT && device->product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
-        ctx->paddle_offset = 14;
-        ctx->paddle_format = GIP_PADDLES_XBE2;
-        if (ctx->firmware_major_version == 5 && ctx->firmware_minor_version < 17) {
-            ctx->paddle_format = GIP_PADDLES_XBE2_RAW;
+    if (device->vendor_id == USB_VENDOR_MICROSOFT) {
+        if (device->product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_1) {
+            ctx->paddle_offset = 28;
+            ctx->paddle_format = GIP_PADDLES_XBE1;
+        } else if (device->product_id == USB_PRODUCT_XBOX_ONE_ELITE_SERIES_2) {
+            ctx->paddle_offset = 14;
+            ctx->paddle_format = GIP_PADDLES_XBE2;
+            if (ctx->firmware_major_version == 5 && ctx->firmware_minor_version < 17) {
+                ctx->paddle_format = GIP_PADDLES_XBE2_RAW;
+            }
         }
+    }
+    if (ctx->paddle_offset > 0) {
         ctx->paddle_idx = (Uint8) joystick->nbuttons;
         joystick->nbuttons += 4;
     }
