@@ -1242,6 +1242,7 @@ static void init_xbox360(libusb_device_handle *device_handle, unsigned short idV
 	(void)conf_desc;
 
 	if ((idVendor == 0x05ac && idProduct == 0x055b) /* Gamesir-G3w */ ||
+	    (idVendor == 0x20d6 && idProduct == 0x4010) /* PowerA Battle Dragon Advanced Wireless Controller */ ||
 	    idVendor == 0x0f0d /* Hori Xbox controllers */) {
 		unsigned char data[20];
 
