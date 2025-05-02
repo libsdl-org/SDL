@@ -1062,8 +1062,9 @@ void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *
 
 void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
+    SDL_WindowData *data = window->internal;
+    HWND hwnd = data->hwnd;
     DWORD style;
-    HWND hwnd;
 
     bool bActivate = SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, true);
 
@@ -1072,17 +1073,30 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         WIN_SetWindowPosition(_this, window);
     }
 
-    hwnd = window->internal->hwnd;
+    // If the window isn't borderless and will be fullscreen, use the borderless style to hide the initial borders.
+    if (window->pending_flags & SDL_WINDOW_FULLSCREEN) {
+        if (!(window->flags & SDL_WINDOW_BORDERLESS)) {
+            window->flags |= SDL_WINDOW_BORDERLESS;
+            style = GetWindowLong(hwnd, GWL_STYLE);
+            style &= ~STYLE_MASK;
+            style |= GetWindowStyle(window);
+            SetWindowLong(hwnd, GWL_STYLE, style);
+            window->flags &= ~SDL_WINDOW_BORDERLESS;
+        }
+    }
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
     if (style & WS_EX_NOACTIVATE) {
         bActivate = false;
     }
+
+    data->showing_window = true;
     if (bActivate) {
         ShowWindow(hwnd, SW_SHOW);
     } else {
         // Use SetWindowPos instead of ShowWindow to avoid activating the parent window if this is a child window
         SetWindowPos(hwnd, NULL, 0, 0, 0, 0, window->internal->copybits_flag | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
     }
+    data->showing_window = false;
 
     if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE) && bActivate) {
         WIN_SetKeyboardFocus(window, true);
@@ -1230,10 +1244,12 @@ void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
-        HWND hwnd = data->hwnd;
-        data->expected_resize = true;
-        ShowWindow(hwnd, SW_RESTORE);
-        data->expected_resize = false;
+        if (!data->showing_window || window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED)) {
+            HWND hwnd = data->hwnd;
+            data->expected_resize = true;
+            ShowWindow(hwnd, SW_RESTORE);
+            data->expected_resize = false;
+        }
     } else {
         data->windowed_mode_was_maximized = false;
     }
