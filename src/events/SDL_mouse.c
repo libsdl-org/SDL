@@ -1040,18 +1040,14 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
         SDL_SetMouseFocus(window);
     }
 
-    // Accumulate fractional wheel motion if integer mode is enabled
-    if (mouse->integer_mode_flags & 2) {
-        mouse->integer_mode_residual_scroll_x = SDL_modff(mouse->integer_mode_residual_scroll_x + x, &x);
-        mouse->integer_mode_residual_scroll_y = SDL_modff(mouse->integer_mode_residual_scroll_y + y, &y);
-    }
-
     if (x == 0.0f && y == 0.0f) {
         return;
     }
 
     // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_MOUSE_WHEEL)) {
+        float integer_x, integer_y;
+
         if (!mouse->relative_mode || mouse->warp_emulation_active) {
             // We're not in relative mode, so all mouse events are global mouse events
             mouseID = SDL_GLOBAL_MOUSE_ID;
@@ -1062,11 +1058,26 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
         event.common.timestamp = timestamp;
         event.wheel.windowID = mouse->focus ? mouse->focus->id : 0;
         event.wheel.which = mouseID;
-        event.wheel.x = x;
-        event.wheel.y = y;
         event.wheel.direction = direction;
         event.wheel.mouse_x = mouse->x;
         event.wheel.mouse_y = mouse->y;
+
+        mouse->residual_scroll_x = SDL_modff(mouse->residual_scroll_x + x, &integer_x);
+        event.wheel.integer_x = (Sint32)integer_x;
+
+        mouse->residual_scroll_y = SDL_modff(mouse->residual_scroll_y + y, &integer_y);
+        event.wheel.integer_y = (Sint32)integer_y;
+
+        // Return the accumulated values in x/y when integer wheel mode is enabled.
+        // This is necessary for compatibility with sdl2-compat 2.32.54.
+        if (mouse->integer_mode_flags & 2) {
+            event.wheel.x = integer_x;
+            event.wheel.y = integer_y;
+        } else {
+            event.wheel.x = x;
+            event.wheel.y = y;
+        }
+
         SDL_PushEvent(&event);
     }
 }
