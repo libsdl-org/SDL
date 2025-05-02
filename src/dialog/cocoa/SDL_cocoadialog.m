@@ -47,6 +47,15 @@ static void AddFileExtensionType(NSMutableArray *types, const char *pattern_ptr)
     }
 }
 
+static void ReactivateAfterDialog(void)
+{
+    for (NSRunningApplication *i in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
+        [i activateWithOptions:0];
+        break;
+    }
+    [NSApp activateIgnoringOtherApps:YES];
+}
+
 void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
     SDL_Window* window = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
@@ -176,6 +185,8 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
                 const char *files[1] = { NULL };
                 callback(userdata, files, -1);
             }
+
+            ReactivateAfterDialog();
         }];
     } else {
         if ([dialog runModal] == NSModalResponseOK) {
@@ -195,6 +206,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
             const char *files[1] = { NULL };
             callback(userdata, files, -1);
         }
+        ReactivateAfterDialog();
     }
 }
 
