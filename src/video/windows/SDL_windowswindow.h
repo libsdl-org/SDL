@@ -84,6 +84,7 @@ struct SDL_WindowData
     bool in_window_deactivation;
     bool force_ws_maximizebox;
     bool disable_move_size_events;
+    bool showing_window;
     int in_modal_loop;
     RECT initial_size_rect;
     RECT cursor_clipped_rect; // last successfully committed clipping rect for this window
