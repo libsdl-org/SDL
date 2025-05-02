@@ -2960,6 +2960,7 @@ elseif(NGAGE)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ngage/*.cpp")
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ngage/*.c")
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ngage/*.cpp")
+  set(HAVE_SDL_MAIN_CALLBACKS TRUE)
 
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_NGAGE 1)

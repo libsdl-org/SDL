@@ -33,6 +33,7 @@
 #define SDL_AUDIO_DRIVER_NGAGE 1
 #define SDL_CAMERA_DISABLED    1
 #define SDL_ASSERT_LEVEL       0
+#define SDL_FILESYSTEM_DUMMY   0
 #define SDL_FSOPS_POSIX        1
 #define SDL_GPU_DISABLED       1
 #define SDL_HAPTIC_DISABLED    1

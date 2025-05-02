@@ -183,5 +183,7 @@ if(NGAGESDK)
     set(HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP        ""    CACHE INTERNAL "Have symbol addchdir_np")
     set(HAVE_FDATASYNC                                   ""    CACHE INTERNAL "Have symbol fdatasync")
 
+    set(HAVE_SDL_FSOPS                                   "1"   CACHE INTERNAL "Enable SDL_FSOPS")
+    set(HAVE_SDL_LOCALE                                  "1"   CACHE INTERNAL "Enable SDL_LOCALE")
   endfunction()
 endif()
