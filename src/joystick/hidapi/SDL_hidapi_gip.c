@@ -28,8 +28,14 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_GIP
 
+// This driver is based on the Microsoft GIP spec at:
+// https://aka.ms/gipdocs
+// https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-gipusb/e7c90904-5e21-426e-b9ad-d82adeee0dbc
+
 // Define this if you want to log all packets from the controller
-//#define DEBUG_XBOX_PROTOCOL
+#if 0
+#define DEBUG_XBOX_PROTOCOL
+#endif
 
 #define MAX_MESSAGE_LENGTH 0x4000
 
