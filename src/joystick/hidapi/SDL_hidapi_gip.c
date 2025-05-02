@@ -393,7 +393,7 @@ typedef struct GIP_Metadata
     Uint16 version_minor;
 
     GIP_DeviceMetadata device;
-    
+
     Uint8 num_messages;
     GIP_MessageMetadata *message_metadata;
 } GIP_Metadata;
@@ -575,6 +575,7 @@ static bool GIP_SupportsVendorMessage(GIP_Device *device, Uint8 command, bool up
 static Uint8 GIP_SequenceNext(GIP_Device *device, Uint8 command, bool system)
 {
     Uint8 seq;
+
     if (system) {
         switch (command) {
         case GIP_CMD_SECURITY:
@@ -603,6 +604,11 @@ static Uint8 GIP_SequenceNext(GIP_Device *device, Uint8 command, bool system)
             break;
         }
     } else {
+        if (command == GIP_CMD_DIRECT_MOTOR) {
+            // The motor sequence number is optional and always works with 0
+            return 0;
+        }
+
         seq = device->seq_vendor++;
         if (!seq) {
             seq = device->seq_vendor++;
@@ -792,7 +798,7 @@ static bool GIP_ParseDeviceMetadata(GIP_Metadata *metadata, const Uint8 *bytes, 
 
         for (i = 0; i < count; i++) {
             Uint8 message = bytes[buffer_offset + 1 + i];
-            device->in_system_messages[message >> 5] |= 1u << (message & 0x1F); 
+            device->in_system_messages[message >> 5] |= 1u << (message & 0x1F);
         }
     }
 
@@ -809,7 +815,7 @@ static bool GIP_ParseDeviceMetadata(GIP_Metadata *metadata, const Uint8 *bytes, 
 
         for (i = 0; i < count; i++) {
             Uint8 message = bytes[buffer_offset + 1 + i];
-            device->out_system_messages[message >> 5] |= 1u << (message & 0x1F); 
+            device->out_system_messages[message >> 5] |= 1u << (message & 0x1F);
         }
     }
 
@@ -1122,7 +1128,7 @@ static bool GIP_SendInitSequence(GIP_Device *device)
 
 static bool GIP_EnsureMetadata(GIP_Device *device)
 {
-        
+
     switch (device->got_metadata) {
     case GIP_METADATA_GOT:
     case GIP_METADATA_FAKED:
@@ -1147,8 +1153,6 @@ static bool GIP_EnsureMetadata(GIP_Device *device)
 
 static bool GIP_SetMetadataDefaults(GIP_Device *device)
 {
-    int seq;
-
     /* Some decent default settings */
     device->features |= GIP_FEATURE_MOTOR_CONTROL;
     device->device_type = GIP_TYPE_GAMEPAD;
@@ -1162,23 +1166,6 @@ static bool GIP_SetMetadataDefaults(GIP_Device *device)
 
     if (GIP_SupportsSystemMessage(device, GIP_CMD_FIRMWARE, false)) {
         GIP_SendQueryFirmware(device, 2);
-    }
-
-    if (device->features & GIP_FEATURE_MOTOR_CONTROL) {
-        for (seq = 1; seq < 0x100; seq++) {
-            Uint8 message[9] = {0};
-
-            /* Try all sequence numbers to reset it to 1 */
-            GIP_SendRawMessage(device,
-                GIP_CMD_DIRECT_MOTOR,
-                0,
-                (Uint8) seq,
-                message,
-                sizeof(message),
-                true,
-                NULL,
-                NULL);
-        }
     }
 
     device->got_metadata = GIP_METADATA_FAKED;
@@ -1512,7 +1499,7 @@ static bool GIP_HandleCommandGuideButtonStatus(
     if (!joystick) {
         return false;
     }
-    if (bytes[1] == VK_LWIN) { 
+    if (bytes[1] == VK_LWIN) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (bytes[0] & 0x01) != 0);
     }
 
@@ -1815,7 +1802,7 @@ static bool GIP_HandleLLInputReport(
                 (bytes[device->paddle_offset] & 0x08) != 0);
         }
     }
-    
+
     if ((device->features & GIP_FEATURE_CONSOLE_FUNCTION_MAP) && num_bytes >= 32) {
         int function_map_offset = -1;
         if (device->features & GIP_FEATURE_DYNAMIC_LATENCY_INPUT) {
@@ -2057,7 +2044,7 @@ static int GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_byt
                     device->fragment_data = NULL;
                 }
                 device->fragment_message = 0;
-            }    
+            }
             fragment_offset += header.length;
             device->fragment_offset = (Uint16) fragment_offset;
         }
