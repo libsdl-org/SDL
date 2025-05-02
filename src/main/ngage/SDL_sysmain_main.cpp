@@ -24,6 +24,11 @@ extern "C" {
 
 #include "SDL_internal.h"
 
+extern SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]);
+extern SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event);
+extern SDL_AppResult SDL_AppIterate(void* appstate);
+extern void SDL_AppQuit(void* appstate, SDL_AppResult result);
+
 #ifdef __cplusplus
 }
 #endif
