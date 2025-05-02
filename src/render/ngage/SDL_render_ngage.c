@@ -107,7 +107,7 @@ static bool NGAGE_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     renderer->UpdateTexture = NGAGE_UpdateTexture;
     renderer->LockTexture = NGAGE_LockTexture;
     renderer->UnlockTexture = NGAGE_UnlockTexture;
-    renderer->SetTextureScaleMode = NGAGE_SetTextureScaleMode;
+    // renderer->SetTextureScaleMode = NGAGE_SetTextureScaleMode;
     renderer->SetRenderTarget = NGAGE_SetRenderTarget;
     renderer->RenderReadPixels = NGAGE_RenderReadPixels;
     renderer->RenderPresent = NGAGE_RenderPresent;
