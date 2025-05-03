@@ -204,8 +204,8 @@ function(add_sdl_test_executable TARGET)
     target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
 endfunction()
 
-check_include_file(signal.h HAVE_SIGNAL_H)
-if(HAVE_SIGNAL_H)
+check_include_file(signal.h LIBC_HAS_SIGNAL_H)
+if(LIBC_HAS_SIGNAL_H)
     add_definitions(-DHAVE_SIGNAL_H)
 endif()
 
