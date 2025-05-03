@@ -2997,6 +2997,7 @@ elseif(NGAGE)
   set(SDL_LEAN_AND_MEAN      1)
   sdl_link_dependency(ngage
     LINK_OPTIONS "SHELL:-s MAIN_COMPAT=0"
+    PKG_CONFIG_LINK_OPTIONS "-s;MAIN_COMPAT=0"
     LIBS
       NRenderer
       3dtypes
