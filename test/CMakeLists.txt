@@ -131,6 +131,7 @@ function(add_sdl_test_executable TARGET)
         add_dependencies(${TARGET} ${AST_DEPENDS})
     endif()
 
+    set_propertY(TARGET ${TARGET} PROPERTY SDL_INSTALL "1")
     set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" APPEND PROPERTY SDL_TEST_EXECUTABLES "${TARGET}")
     set_property(TARGET ${TARGET} PROPERTY SDL_NOTRACKMEM ${AST_NOTRACKMEM})
     if(AST_NONINTERACTIVE)
@@ -194,6 +195,10 @@ function(add_sdl_test_executable TARGET)
         string(MD5 TARGET_MD5 "${TARGET}")
         string(SUBSTRING "${TARGET_MD5}" 0 8 TARGET_MD5_8)
         target_link_options(${TARGET} PRIVATE "SHELL:-s UID3=0x${TARGET_MD5_8}")
+        if(NOT AST_MAIN_CALLBACKS)
+            set_property(TARGET ${TARGET} PROPERTY "EXCLUDE_FROM_ALL" "1")
+            set_propertY(TARGET ${TARGET} PROPERTY SDL_INSTALL "0")
+        endif()
     endif()
 
     if(OPENGL_FOUND)
@@ -658,10 +663,15 @@ if(SDL_INSTALL_TESTS)
             DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
         )
     else()
-        install(
-            TARGETS ${SDL_TEST_EXECUTABLES}
-            DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
-        )
+        foreach(test IN_LIST SDL_TEST_EXECUTABLES)
+            get_property(install_target TARGET ${test} PROPERTY "SDL_INSTALL")
+            if(install_target)
+                install(
+                    TARGETS ${SDL_TEST_EXECUTABLES}
+                    DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
+                )
+            endif()
+        endforeach()
     endif()
     if(MSVC)
         foreach(test IN LISTS SDL_TEST_EXECUTABLES)
