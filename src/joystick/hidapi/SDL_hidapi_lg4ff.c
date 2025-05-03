@@ -75,7 +75,7 @@ static int HIDAPI_DriverLg4ff_GetNumberOfButtons(Uint32 device_id)
         case USB_DEVICE_ID_LOGITECH_G29_WHEEL:
             return 25;
         case USB_DEVICE_ID_LOGITECH_G27_WHEEL:
-            return 22;
+            return 23;
         case USB_DEVICE_ID_LOGITECH_G25_WHEEL:
             return 19;
         case USB_DEVICE_ID_LOGITECH_DFGT_WHEEL:
@@ -645,6 +645,19 @@ static bool HIDAPI_DriverLg4ff_HandleState(SDL_HIDAPI_Device *device,
             break;
         default:
             SDL_assert(0);
+    }
+
+    if (device->product_id == USB_DEVICE_ID_LOGITECH_G27_WHEEL) {
+        // ref https://github.com/sonik-br/lgff_wheel_adapter/blob/d97f7823154818e1b3edff6d51498a122c302728/pico_lgff_wheel_adapter/reports.h#L265-L310
+        // shifter_r is outside of the main button bit field for this particular wheel
+        num_buttons--;
+
+        bool button_on = HIDAPI_DriverLg4ff_GetBit(report_buf, 80, report_size);
+        bool button_was_on = HIDAPI_DriverLg4ff_GetBit(ctx->last_report_buf, 80, report_size);
+        if (button_on != button_was_on) {
+            state_changed = true;
+            SDL_SendJoystickButton(timestamp, joystick, (Uint8)(SDL_GAMEPAD_BUTTON_SOUTH + num_buttons), button_on);
+        }
     }
 
     for (int i = 0;i < num_buttons;i++) {
