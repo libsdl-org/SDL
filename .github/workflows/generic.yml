@@ -14,7 +14,6 @@ jobs:
     name: ${{ matrix.platform.name }}
     runs-on: ${{ matrix.platform.os }}
     container: ${{ matrix.platform.container }}
-    continue-on-error: ${{ matrix.platform.continue-on-error }}
     defaults:
       run:
         shell: ${{ matrix.platform.shell }}
