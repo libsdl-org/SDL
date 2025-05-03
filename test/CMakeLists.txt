@@ -663,7 +663,7 @@ if(SDL_INSTALL_TESTS)
             DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
         )
     else()
-        foreach(test IN_LIST SDL_TEST_EXECUTABLES)
+        foreach(test IN LISTS SDL_TEST_EXECUTABLES)
             get_property(install_target TARGET ${test} PROPERTY "SDL_INSTALL")
             if(install_target)
                 install(
