@@ -166,7 +166,6 @@ class JobDetails:
     artifact: str
     no_cmake: bool
     ccache: bool = False
-    continue_on_error: bool = False
     build_tests: bool = True
     container: str = ""
     cmake_build_type: str = "RelWithDebInfo"
@@ -236,7 +235,6 @@ class JobDetails:
             "ccache": self.ccache,
             "container": self.container if self.container else "",
             "platform": self.platform,
-            "continue-on-error": self.continue_on_error,
             "artifact": self.artifact,
             "enable-artifacts": enable_artifacts,
             "shell": self.shell,
@@ -748,10 +746,6 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     job.cpactions_install_cmd = "sudo -E pkgin -y install cmake dbus pkgconf ninja-build pulseaudio libxkbcommon wayland wayland-protocols libinotify libusb1"
         case SdlPlatform.NGage:
             job.cmake_build_type = "Release"
-            job.cmake_arguments.extend([
-                "-DBUILD_FOR_NOKIA_NGAGE=ON",  # FIXME: remove this
-            ])
-            job.continue_on_error = True  # FIXME: remove this
             job.setup_ninja = True
             job.static_lib = StaticLibType.A
             job.shared_lib = None
