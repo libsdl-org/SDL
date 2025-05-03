@@ -2975,15 +2975,12 @@ elseif(NGAGE)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/*.c")
   set(HAVE_SDL_FILESYSTEM TRUE)
 
-  set(SDL_THREADS_DISABLED 1)
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/thread/*.c")
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/thread/generic/*.c")
-  set(HAVE_SDL_THREADS TRUE)
-
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/ngage/*.cpp")
 
-  set(SDL_VIDEO_RENDER_NGAGE 1)
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/render/ngage/*.c")
+  if(SDL_RENDER)
+    set(SDL_VIDEO_RENDER_NGAGE 1)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/render/ngage/*.c")
+  endif()
 
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/render/ngage/*.cpp")
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/ngage/*.cpp")
@@ -2996,14 +2993,33 @@ elseif(NGAGE)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/ngage/*.c")
   set(HAVE_SDL_TIMERS TRUE)
 
-  set(SDL_CAMERA_DISABLED    1)
-  set(SDL_ASSERT_LEVEL       0)
+#  set(SDL_CAMERA_DISABLED    1)
   set(SDL_FSOPS_POSIX        1)
-  set(SDL_GPU_DISABLED       1)
-  set(SDL_HAPTIC_DISABLED    1)
-  set(SDL_JOYSTICK_DISABLED  1)
+#  set(SDL_GPU_DISABLED       1)
+#  set(SDL_HAPTIC_DISABLED    1)
+#  set(SDL_JOYSTICK_DISABLED  1)
   set(SDL_LEAN_AND_MEAN      1)
-  set(SDL_SENSOR_DISABLED    1)
+#  set(SDL_SENSOR_DISABLED    1)
+  sdl_link_dependency(ngage
+    LINK_OPTIONS "SHELL:-s MAIN_COMPAT=0"
+    LIBS
+      NRenderer
+      3dtypes
+      cone
+      libgcc
+      libgcc_ngage
+      mediaclientaudiostream
+      charconv
+      bitgdi
+      euser
+      estlib
+      ws32
+      hal
+      fbscli
+      efsrv
+      scdv
+      gdi
+  )
 endif()
 
 sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog.c)
@@ -3184,8 +3200,8 @@ endif()
 
 # We always need to have threads and timers around
 if(NOT HAVE_SDL_THREADS)
-  # The emscripten platform has been carefully vetted to work without threads
-  if(EMSCRIPTEN)
+  # The Emscripten and N-Gage platform has been carefully vetted to work without threads
+  if(EMSCRIPTEN OR NGAGE)
     set(SDL_THREADS_DISABLED 1)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/thread/generic/*.c")
   else()
