@@ -2993,13 +2993,8 @@ elseif(NGAGE)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/ngage/*.c")
   set(HAVE_SDL_TIMERS TRUE)
 
-#  set(SDL_CAMERA_DISABLED    1)
   set(SDL_FSOPS_POSIX        1)
-#  set(SDL_GPU_DISABLED       1)
-#  set(SDL_HAPTIC_DISABLED    1)
-#  set(SDL_JOYSTICK_DISABLED  1)
   set(SDL_LEAN_AND_MEAN      1)
-#  set(SDL_SENSOR_DISABLED    1)
   sdl_link_dependency(ngage
     LINK_OPTIONS "SHELL:-s MAIN_COMPAT=0"
     LIBS
