@@ -638,14 +638,9 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             fpic = False
             job.run_tests = False
             job.apt_packages.append("ccache")
-            job.cc = "x86_64-unknown-haiku-gcc"
-            job.cxx = "x86_64-unknown-haiku-g++"
+            job.test_pkg_config = False
+            job.cmake_toolchain_file = "/__w/SDL/SDL/build-scripts/cmake-toolchain-haiku-x86_64.cmake"
             job.sudo = ""
-            job.cmake_arguments.extend((
-                f"-DCMAKE_C_COMPILER={job.cc}",
-                f"-DCMAKE_CXX_COMPILER={job.cxx}",
-                "-DSDL_UNIX_CONSOLE_BUILD=ON",
-            ))
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
         case SdlPlatform.PowerPC64 | SdlPlatform.PowerPC:
