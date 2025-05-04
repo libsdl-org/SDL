@@ -667,7 +667,7 @@ if(SDL_INSTALL_TESTS)
             get_property(install_target TARGET ${test} PROPERTY "SDL_INSTALL")
             if(install_target)
                 install(
-                    TARGETS ${SDL_TEST_EXECUTABLES}
+                    TARGETS ${test}
                     DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
                 )
             endif()
