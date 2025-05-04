@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#ifdef SDL_TIME_NGAGE
+
 #include <bautils.h>
 #include <e32base.h>
 #include <e32cons.h>
@@ -28,6 +30,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+static TTime UnixEpoch();
 
 void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 {
@@ -146,6 +150,35 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
     }
 }
 
+bool SDL_GetCurrentTime(SDL_Time *ticks)
+{
+    if (!ticks) {
+        return SDL_InvalidParamError("ticks");
+    }
+
+    TTime now;
+    now.UniversalTime();
+
+    TTimeIntervalMicroSeconds interval = now.MicroSecondsFrom(UnixEpoch());
+    TInt64 interval_ns = interval.Int64() * 1000;
+    Uint32 ns_low = interval_ns.Low();
+    Uint32 ns_high = interval_ns.High();
+
+    *ticks = ((Uint64)ns_high << 32) | ns_low;
+
+    return true;
+}
+
+static TTime UnixEpoch()
+{
+    _LIT(KUnixEpoch, "19700101:000000.000000");
+    TTime epochTime;
+    epochTime.Set(KUnixEpoch);
+    return epochTime;
+}
+
 #ifdef __cplusplus
 }
 #endif
+
+#endif // SDL_TIME_NGAGE
