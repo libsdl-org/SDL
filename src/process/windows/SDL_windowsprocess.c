@@ -106,9 +106,12 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
     len = 0;
     for (i = 0; args[i]; i++) {
         const char *a = args[i];
+        bool quotes = *a == '\0' || strpbrk(a, " \r\n\t\v") != NULL;
 
-        /* two double quotes to surround an argument with */
+        if (quotes) {
+            /* surround the argument with double quote if it is empty or contains whitespaces */
         len += 2;
+        }
 
         for (; *a; a++) {
             switch (*a) {
@@ -116,8 +119,8 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
                 len += 2;
                 break;
             case '\\':
-                /* only escape backslashes that precede a double quote */
-                len += (a[1] == '"' || a[1] == '\0') ? 2 : 1;
+                /* only escape backslashes that precede a double quote (including the enclosing double quote) */
+                len += (a[1] == '"' || (quotes && a[1] == '\0')) ? 2 : 1;
                 break;
             case ' ':
             case '^':
@@ -149,8 +152,11 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
     i_out = 0;
     for (i = 0; args[i]; i++) {
         const char *a = args[i];
+        bool quotes = *a == '\0' || strpbrk(a, " \r\n\t\v") != NULL;
 
+        if (quotes) {
         result[i_out++] = '"';
+        }
         for (; *a; a++) {
             switch (*a) {
             case '"':
@@ -163,7 +169,7 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
                 break;
             case '\\':
                 result[i_out++] = *a;
-                if (a[1] == '"' || a[1] == '\0') {
+                if (a[1] == '"' || (quotes && a[1] == '\0')) {
                     result[i_out++] = *a;
                 }
                 break;
@@ -188,7 +194,9 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
                 break;
             }
         }
+        if (quotes) {
         result[i_out++] = '"';
+        }
         result[i_out++] = ' ';
     }
     SDL_assert(i_out == len);
