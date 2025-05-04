@@ -366,6 +366,7 @@
 #cmakedefine SDL_TIME_PSP 1
 #cmakedefine SDL_TIME_PS2 1
 #cmakedefine SDL_TIME_N3DS 1
+#cmakedefine SDL_TIME_NGAGE 1
 
 /* Enable various timer systems */
 #cmakedefine SDL_TIMER_HAIKU 1

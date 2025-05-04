@@ -2982,8 +2982,10 @@ elseif(NGAGE)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/render/ngage/*.c")
   endif()
 
-  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/render/ngage/*.cpp")
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/ngage/*.cpp")
+  set(SDL_TIME_NGAGE 1)
+
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/render/ngage/*.cpp")
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
 
   set(SDL_TIMER_NGAGE 1)
