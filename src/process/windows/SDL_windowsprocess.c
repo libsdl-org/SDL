@@ -110,7 +110,7 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
 
         if (quotes) {
             /* surround the argument with double quote if it is empty or contains whitespaces */
-        len += 2;
+            len += 2;
         }
 
         for (; *a; a++) {
@@ -155,7 +155,7 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
         bool quotes = *a == '\0' || strpbrk(a, " \r\n\t\v") != NULL;
 
         if (quotes) {
-        result[i_out++] = '"';
+            result[i_out++] = '"';
         }
         for (; *a; a++) {
             switch (*a) {
@@ -195,7 +195,7 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
             }
         }
         if (quotes) {
-        result[i_out++] = '"';
+            result[i_out++] = '"';
         }
         result[i_out++] = ' ';
     }
@@ -245,6 +245,7 @@ static bool join_env(char **env, LPWSTR *env_out)
 bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props)
 {
     const char * const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
+    const char *cmdline = SDL_GetStringProperty(props, SDL_PROP_PROCESS_CREATE_CMDLINE_STRING, NULL);
     SDL_Environment *env = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, SDL_GetEnvironment());
     char **envp = NULL;
     const char *working_directory = SDL_GetStringProperty(props, SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING, NULL);
@@ -294,7 +295,12 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     security_attributes.bInheritHandle = TRUE;
     security_attributes.lpSecurityDescriptor = NULL;
 
-    if (!join_arguments(args, &createprocess_cmdline)) {
+    if (cmdline) {
+        createprocess_cmdline = WIN_UTF8ToString(cmdline);
+        if (!createprocess_cmdline) {
+            goto done;
+        }
+    } else if (!join_arguments(args, &createprocess_cmdline)) {
         goto done;
     }
 
