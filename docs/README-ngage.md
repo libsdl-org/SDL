@@ -33,7 +33,7 @@ software renderer has been removed.
 The outcome is a significantly leaner and more efficient SDL port, which we hope
 will breathe new life into this beloved yet obscure platform.
 
-## To the Stubborn Legends of the DC Scene
+## To the Stubborn Legends of the DC Scene  
 
 This port is lovingly dedicated to the ever-nostalgic Dreamcast homebrew
 scene—because if we managed to pull this off for the N-Gage (yes, the N-Gage),
@@ -54,3 +54,5 @@ dial-up dev habits.
 - It is recommended initialising SDLs audio sub-system even when it
  is not required. The backend is started at a higher level.  Initialising
  SDLs audio sub-system ensures that the backend is properly deinitialised.
+
+- Dependency tracking is currently non-functional.
