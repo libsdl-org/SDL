@@ -127,7 +127,7 @@
 #define CPU_CFG2_LSX  (1 << 6)
 #define CPU_CFG2_LASX (1 << 7)
 
-#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(__MACOSX__) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
+#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(__MACOSX__) && !defined(__OpenBSD__) && !defined(__FreeBSD__) && (defined(__LINUX__) && !defined(HAVE_GETAUXVAL))
 /* This is the brute force way of detecting instruction sets...
    the idea is borrowed from the libmpeg2 library - thanks!
  */
@@ -356,6 +356,8 @@ static int CPU_haveAltiVec(void)
     elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
     altivec = cpufeatures & PPC_FEATURE_HAS_ALTIVEC;
     return altivec;
+#elif defined(__LINUX__) && defined(__powerpc__) && defined(HAVE_GETAUXVAL)
+    altivec = getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC;
 #elif defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
     void (*handler)(int sig);
     handler = signal(SIGILL, illegal_instruction);
