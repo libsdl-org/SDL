@@ -756,6 +756,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.run_tests = False
             job.setup_gage_sdk_path = "C:/ngagesdk"
             job.cmake_toolchain_file = "C:/ngagesdk/cmake/ngage-toolchain.cmake"
+            job.test_pkg_config = False
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 
