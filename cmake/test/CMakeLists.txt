@@ -96,12 +96,14 @@ if(TEST_STATIC)
     add_executable(gui-static WIN32 main_gui.c)
     target_link_libraries(gui-static PRIVATE SDL3::SDL3-static)
 
-    # Assume SDL library has been built with `set(CMAKE_POSITION_INDEPENDENT_CODE ON)`
-    add_library(sharedlib-static SHARED main_lib.c)
-    target_link_libraries(sharedlib-static PRIVATE SDL3::SDL3-static)
-    generate_export_header(sharedlib-static EXPORT_MACRO_NAME MYLIBRARY_EXPORT)
-    target_compile_definitions(sharedlib-static PRIVATE "EXPORT_HEADER=\"${CMAKE_CURRENT_BINARY_DIR}/sharedlib-static_export.h\"")
-    set_target_properties(sharedlib-static PROPERTIES C_VISIBILITY_PRESET "hidden")
+    if(TEST_SHARED)
+        # Assume SDL library has been built with `set(CMAKE_POSITION_INDEPENDENT_CODE ON)`
+        add_library(sharedlib-static SHARED main_lib.c)
+        target_link_libraries(sharedlib-static PRIVATE SDL3::SDL3-static)
+        generate_export_header(sharedlib-static EXPORT_MACRO_NAME MYLIBRARY_EXPORT)
+        target_compile_definitions(sharedlib-static PRIVATE "EXPORT_HEADER=\"${CMAKE_CURRENT_BINARY_DIR}/sharedlib-static_export.h\"")
+        set_target_properties(sharedlib-static PROPERTIES C_VISIBILITY_PRESET "hidden")
+    endif()
 
     if(TEST_TEST)
         add_executable(sdltest-static sdltest.c)
