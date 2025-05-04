@@ -106,7 +106,7 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
     len = 0;
     for (i = 0; args[i]; i++) {
         const char *a = args[i];
-        bool quotes = *a == '\0' || strpbrk(a, " \r\n\t\v") != NULL;
+        bool quotes = *a == '\0' || SDL_strpbrk(a, " \r\n\t\v") != NULL;
 
         if (quotes) {
             /* surround the argument with double quote if it is empty or contains whitespaces */
@@ -152,7 +152,7 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
     i_out = 0;
     for (i = 0; args[i]; i++) {
         const char *a = args[i];
-        bool quotes = *a == '\0' || strpbrk(a, " \r\n\t\v") != NULL;
+        bool quotes = *a == '\0' || SDL_strpbrk(a, " \r\n\t\v") != NULL;
 
         if (quotes) {
             result[i_out++] = '"';
