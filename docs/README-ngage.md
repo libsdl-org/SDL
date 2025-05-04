@@ -33,6 +33,14 @@ software renderer has been removed.
 The outcome is a significantly leaner and more efficient SDL port, which we hope
 will breathe new life into this beloved yet obscure platform.
 
+## To the Stubborn Legends of the DC Scene
+
+This port is lovingly dedicated to the ever-nostalgic Dreamcast homebrew
+scene—because if we managed to pull this off for the N-Gage (yes, the N-Gage),
+surely you guys can stop clinging to SDL2 like it's a rare Shenmue prototype and
+finally make the leap to SDL3. Come on, it's 2025, not 1999—time to retire the
+dial-up dev habits.
+
 ## Existing Issues  
 
 - For now, the new
