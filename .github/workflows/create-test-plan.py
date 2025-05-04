@@ -145,7 +145,7 @@ JOB_SPECS = {
 
 
 class StaticLibType(Enum):
-    MSVC = "SDL3-static.lib"
+    STATIC_LIB = "SDL3-static.lib"
     A = "libSDL3.a"
 
 
@@ -369,7 +369,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.msvc_project_flags.append("-p:TreatWarningsAsError=true")
             job.test_pkg_config = False
             job.shared_lib = SharedLibType.WIN32
-            job.static_lib = StaticLibType.MSVC
+            job.static_lib = StaticLibType.STATIC_LIB
             job.cmake_arguments.extend((
                 "-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=ProgramDatabase",
                 "-DCMAKE_EXE_LINKER_FLAGS=-DEBUG",
@@ -748,7 +748,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             build_parallel = False
             job.cmake_build_type = "Release"
             job.setup_ninja = True
-            job.static_lib = StaticLibType.A
+            job.static_lib = StaticLibType.STATIC_LIB
             job.shared_lib = None
             job.clang_tidy = False
             job.werror = False  # FIXME: enable SDL_WERROR
