@@ -82,7 +82,7 @@ static int SDLCALL process_testArguments(void *arg)
         "",
         "  ",
         "a b c",
-        "a\tb\tc\t",
+        "a\tb\tc\t\v\r\n",
         "\"a b\" c",
         "'a' 'b' 'c'",
         "%d%%%s",
