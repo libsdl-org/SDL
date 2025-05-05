@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-    bool NGAGE_IsClassicModel();
+bool NGAGE_IsClassicModel();
 
 #ifdef __cplusplus
 }
