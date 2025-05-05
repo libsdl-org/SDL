@@ -331,26 +331,18 @@ static void NGAGE_InvalidateCachedState(SDL_Renderer* renderer)
 static bool NGAGE_RunCommandQueue(SDL_Renderer* renderer, SDL_RenderCommand* cmd, void* vertices, size_t vertsize)
 {
     NGAGE_RendererData *phdata = (NGAGE_RendererData *)renderer->internal;
-    if (!phdata)
-    {
+    if (!phdata) {
         return false;
     }
     phdata->viewport = 0;
 
-    while (cmd)
-    {
-        switch (cmd->command)
-        {
-            case SDL_RENDERCMD_NO_OP:
-            {
-                break;
-            }
-
-            case SDL_RENDERCMD_SETVIEWPORT:
-            {
-                phdata->viewport = &cmd->data.viewport.rect;
-                break;
-            }
+    while (cmd) {
+        switch (cmd->command) {
+        case SDL_RENDERCMD_NO_OP:
+            break;
+        case SDL_RENDERCMD_SETVIEWPORT:
+            phdata->viewport = &cmd->data.viewport.rect;
+            break;
 
             case SDL_RENDERCMD_SETCLIPRECT:
             {
