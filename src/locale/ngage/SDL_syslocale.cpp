@@ -71,8 +71,10 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             locale = "fi_FI";
             break;
         case ELangPortuguese:
-        case ELangBrazilianPortuguese:
             locale = "pt_PT";
+            break;
+        case ELangBrazilianPortuguese:
+            locale = "pt_BR";
             break;
         case ELangTurkish:
         case ELangCyprusTurkish:
