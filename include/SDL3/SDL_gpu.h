@@ -2986,6 +2986,9 @@ extern SDL_DECLSPEC SDL_GPUCommandBuffer * SDLCALL SDL_AcquireGPUCommandBuffer(
  * terms this means you must ensure that vec3 and vec4 fields are 16-byte
  * aligned.
  *
+ * For detailed information about accessing uniform data from a shader, please
+ * refer to SDL_CreateGPUShader.
+ *
  * \param command_buffer a command buffer.
  * \param slot_index the vertex uniform slot to push data to.
  * \param data client data to write.
