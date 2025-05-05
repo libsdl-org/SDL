@@ -34,7 +34,11 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     switch (language) {
         case ELangFrench:
         case ELangSwissFrench:
+            locale = "fr_CH";
+            break;
         case ELangBelgianFrench:
+            locale = "fr_BE";
+            break;
         case ELangInternationalFrench:
             locale = "fr_FR";
             break;
