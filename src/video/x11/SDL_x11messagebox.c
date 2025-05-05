@@ -425,10 +425,12 @@ static bool X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
     Display *display = data->display;
     SDL_WindowData *windowdata = NULL;
     const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 #ifdef XRANDR_DISABLED_BY_DEFAULT
     const bool use_xrandr_by_default = false;
 #else
     const bool use_xrandr_by_default = true;
+#endif
 #endif
 
     if (messageboxdata->window) {
@@ -502,12 +504,16 @@ static bool X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
             const SDL_DisplayData *dpydata = dpy->internal;
             x = dpydata->x + ((dpy->current_mode->w - data->dialog_width) / 2);
             y = dpydata->y + ((dpy->current_mode->h - data->dialog_height) / 3);
-        } else if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, use_xrandr_by_default)) {
+        }
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
+        else if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, use_xrandr_by_default)) {
             XRRScreenResources *screen = X11_XRRGetScreenResourcesCurrent(display, DefaultRootWindow(display));
             XRRCrtcInfo *crtc_info = X11_XRRGetCrtcInfo(display, screen, screen->crtcs[0]);
             x = (crtc_info->width - data->dialog_width) / 2;
             y = (crtc_info->height - data->dialog_height) / 3;
-        } else {
+        }
+#endif
+        else {
             // oh well. This will misposition on a multi-head setup. Init first next time.
             x = (DisplayWidth(display, data->screen) - data->dialog_width) / 2;
             y = (DisplayHeight(display, data->screen) - data->dialog_height) / 3;
