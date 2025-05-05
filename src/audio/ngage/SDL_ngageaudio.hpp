@@ -24,28 +24,28 @@
 
 #include <e32base.h>
 #include <e32std.h>
-#include <mdaaudiooutputstream.h>
 #include <mda/common/audio.h>
+#include <mdaaudiooutputstream.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "SDL_ngageaudio.h"
 #include "../SDL_sysaudio.h"
+#include "SDL_ngageaudio.h"
 
 #ifdef __cplusplus
 }
 #endif
 
 TBool AudioIsReady();
-void InitAudio(TInt* aLatency);
+void InitAudio(TInt *aLatency);
 void DeinitAudio();
 
 class CAudio : public CActive, public MMdaAudioOutputStreamCallback
 {
-public:
-    static CAudio* NewL(TInt aLatency);
+  public:
+    static CAudio *NewL(TInt aLatency);
     ~CAudio();
 
     void ConstructL(TInt aLatency);
@@ -55,14 +55,15 @@ public:
     void RunL();
     void DoCancel();
 
-    static TInt ProcessThreadCB(TAny* /*aPtr*/);
+    static TInt ProcessThreadCB(TAny * /*aPtr*/);
 
     // From MMdaAudioOutputStreamCallback
     void MaoscOpenComplete(TInt aError);
-    void MaoscBufferCopied(TInt aError, const TDesC8& aBuffer);
+    void MaoscBufferCopied(TInt aError, const TDesC8 &aBuffer);
     void MaoscPlayComplete(TInt aError);
 
-    enum {
+    enum
+    {
         EStateNone = 0,
         EStateOpening,
         EStatePlaying,
@@ -70,12 +71,12 @@ public:
         EStateDone
     } iState;
 
-private:
+  private:
     CAudio();
     void StartThread();
     void StopThread();
 
-    CMdaAudioOutputStream* iStream;
+    CMdaAudioOutputStream *iStream;
     TMdaAudioDataSettings iStreamSettings;
     TBool iStreamStarted;
 
@@ -93,6 +94,5 @@ private:
 
     RThread iProcess;
 };
-
 
 #endif // SDL_ngageaudio_hpp

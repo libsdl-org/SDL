@@ -33,19 +33,17 @@ SDL_AudioDevice *NGAGE_GetAudioDeviceAddr()
     return devptr;
 }
 
-static bool NGAGEAUDIO_OpenDevice(SDL_AudioDevice* device)
+static bool NGAGEAUDIO_OpenDevice(SDL_AudioDevice *device)
 {
     SDL_PrivateAudioData *phdata = SDL_calloc(1, sizeof(SDL_PrivateAudioData));
-    if (!phdata)
-    {
+    if (!phdata) {
         SDL_OutOfMemory();
         return false;
     }
     device->hidden = phdata;
 
     phdata->buffer = SDL_calloc(1, device->buffer_size);
-    if (!phdata->buffer)
-    {
+    if (!phdata->buffer) {
         SDL_OutOfMemory();
         SDL_free(phdata);
         return false;
@@ -66,11 +64,10 @@ static bool NGAGEAUDIO_OpenDevice(SDL_AudioDevice* device)
     return true;
 }
 
-static Uint8* NGAGEAUDIO_GetDeviceBuf(SDL_AudioDevice* device, int* buffer_size)
+static Uint8 *NGAGEAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
     SDL_PrivateAudioData *phdata = (SDL_PrivateAudioData *)device->hidden;
-    if (!phdata)
-    {
+    if (!phdata) {
         *buffer_size = 0;
         return 0;
     }
@@ -79,10 +76,9 @@ static Uint8* NGAGEAUDIO_GetDeviceBuf(SDL_AudioDevice* device, int* buffer_size)
     return phdata->buffer;
 }
 
-static void NGAGEAUDIO_CloseDevice(SDL_AudioDevice* device)
+static void NGAGEAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
-    if (device->hidden)
-    {
+    if (device->hidden) {
         SDL_free(device->hidden->buffer);
         SDL_free(device->hidden);
     }

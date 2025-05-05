@@ -46,7 +46,7 @@ void NGAGE_printf(const char *fmt, ...)
     va_end(ap);
 
     TBuf<512> buf;
-    buf.Copy(TPtrC8((TText8*)buffer));
+    buf.Copy(TPtrC8((TText8 *)buffer));
 
     RDebug::Print(_L("%S"), &buf);
 }
@@ -58,7 +58,7 @@ void NGAGE_vnprintf(char *buf, size_t size, const char *fmt, va_list ap)
     vsprintf(buffer, fmt, ap);
 
     TBuf<512> tbuf;
-    tbuf.Copy(TPtrC8((TText8*)buffer));
+    tbuf.Copy(TPtrC8((TText8 *)buffer));
 
     RDebug::Print(_L("%S"), &tbuf);
 

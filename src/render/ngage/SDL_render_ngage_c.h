@@ -22,7 +22,7 @@
 #ifndef ngage_video_render_ngage_c_h
 #define ngage_video_render_ngage_c_h
 
-#define NGAGE_SCREEN_WIDTH 176
+#define NGAGE_SCREEN_WIDTH  176
 #define NGAGE_SCREEN_HEIGHT 208
 
 #ifdef __cplusplus
@@ -31,72 +31,72 @@ extern "C" {
 
 #include "../SDL_sysrender.h"
 
-    typedef struct NGAGE_RendererData
+typedef struct NGAGE_RendererData
+{
+    SDL_Rect *viewport;
+
+} NGAGE_RendererData;
+
+typedef struct NGAGE_Vertex
+{
+    int x;
+    int y;
+
+    struct
     {
-        SDL_Rect* viewport;
+        Uint8 a;
+        Uint8 r;
+        Uint8 g;
+        Uint8 b;
 
-    } NGAGE_RendererData;
+    } color;
 
-    typedef struct NGAGE_Vertex
+} NGAGE_Vertex;
+
+typedef struct CFbsBitmap CFbsBitmap;
+
+typedef struct NGAGE_TextureData
+{
+    CFbsBitmap *bitmap;
+    SDL_Surface *surface;
+
+} NGAGE_TextureData;
+
+typedef struct NGAGE_CopyExData
+{
+    SDL_Rect srcrect;
+    SDL_Rect dstrect;
+
+    int angle;
+
+    struct
     {
         int x;
         int y;
 
-        struct
-        {
-            Uint8 a;
-            Uint8 r;
-            Uint8 g;
-            Uint8 b;
+    } center;
 
-        } color;
+    SDL_FlipMode flip;
 
-    } NGAGE_Vertex;
+    int scale_x;
+    int scale_y;
 
-    typedef struct CFbsBitmap CFbsBitmap;
+} NGAGE_CopyExData;
 
-    typedef struct NGAGE_TextureData
-    {
-        CFbsBitmap *bitmap;
-        SDL_Surface* surface;
-
-    } NGAGE_TextureData;
-
-    typedef struct NGAGE_CopyExData
-    {
-        SDL_Rect srcrect;
-        SDL_Rect dstrect;
-
-        int angle;
-
-        struct
-        {
-            int x;
-            int y;
-
-        } center;
-
-        SDL_FlipMode flip;
-
-        int scale_x;
-        int scale_y;
-
-    } NGAGE_CopyExData;
-
-    void NGAGE_Clear(const Uint32 color);
-    Uint32 NGAGE_ConvertColor(float r, float g, float b, float a, float color_scale);
-    bool NGAGE_Copy(SDL_Renderer* renderer, SDL_Texture* texture, SDL_Rect* srcrect, SDL_Rect* dstrect);
-    bool NGAGE_CopyEx(SDL_Renderer *renderer, SDL_Texture *texture, NGAGE_CopyExData *copydata);
-    bool NGAGE_CreateTextureData(NGAGE_TextureData* data, const int width, const int height);
-    void NGAGE_DestroyTextureData(NGAGE_TextureData* data);
-    void NGAGE_DrawLines(NGAGE_Vertex* verts, const int count);
-    void NGAGE_DrawPoints(NGAGE_Vertex* verts, const int count);
-    void NGAGE_FillRects(NGAGE_Vertex* verts, const int count);
-    void NGAGE_Flip(void);
-    void NGAGE_SetClipRect(const SDL_Rect* rect);
-    void NGAGE_SetDrawColor(const Uint32 color);
-    void NGAGE_PumpEventsInternal(void);
-    void NGAGE_SuspendScreenSaverInternal(bool suspend);
+void NGAGE_Clear(const Uint32 color);
+Uint32 NGAGE_ConvertColor(float r, float g, float b, float a, float color_scale);
+bool NGAGE_Copy(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *srcrect, SDL_Rect *dstrect);
+bool NGAGE_CopyEx(SDL_Renderer *renderer, SDL_Texture *texture, NGAGE_CopyExData *copydata);
+bool NGAGE_CreateTextureData(NGAGE_TextureData *data, const int width, const int height);
+void NGAGE_DestroyTextureData(NGAGE_TextureData *data);
+void NGAGE_DrawLines(NGAGE_Vertex *verts, const int count);
+void NGAGE_DrawPoints(NGAGE_Vertex *verts, const int count);
+void NGAGE_FillRects(NGAGE_Vertex *verts, const int count);
+void NGAGE_Flip(void);
+void NGAGE_SetClipRect(const SDL_Rect *rect);
+void NGAGE_SetDrawColor(const Uint32 color);
+void NGAGE_PumpEventsInternal(void);
+void NGAGE_SuspendScreenSaverInternal(bool suspend);
 
 #ifdef __cplusplus
 }

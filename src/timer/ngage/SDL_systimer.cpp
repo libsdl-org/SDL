@@ -20,27 +20,27 @@
 */
 #include "SDL_internal.h"
 
-#include <e32std.h>
 #include <e32hal.h>
+#include <e32std.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    Uint64 SDL_GetPerformanceCounter(void)
-    {
-        return (Uint64)User::TickCount();
-    }
+Uint64 SDL_GetPerformanceCounter(void)
+{
+    return (Uint64)User::TickCount();
+}
 
-    Uint64 SDL_GetPerformanceFrequency(void)
-    {
-        return (Uint64)1000000u;
-    }
+Uint64 SDL_GetPerformanceFrequency(void)
+{
+    return (Uint64)1000000u;
+}
 
-    void SDL_SYS_DelayNS(Uint64 ns)
-    {
-        User::After(SDL_NS_TO_US(ns));
-    }
+void SDL_SYS_DelayNS(Uint64 ns)
+{
+    User::After(SDL_NS_TO_US(ns));
+}
 
 #ifdef __cplusplus
 }
