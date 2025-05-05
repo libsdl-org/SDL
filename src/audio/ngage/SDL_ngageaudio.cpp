@@ -23,9 +23,9 @@
 extern "C" {
 #endif
 
-#include "SDL_internal.h"
 #include "SDL_ngageaudio.h"
 #include "../SDL_sysaudio.h"
+#include "SDL_internal.h"
 
 #ifdef __cplusplus
 }
@@ -37,9 +37,9 @@ extern "C" {
 
 CAudio::CAudio() : CActive(EPriorityStandard), iBufDes(NULL, 0) {}
 
-CAudio* CAudio::NewL(TInt aLatency)
+CAudio *CAudio::NewL(TInt aLatency)
 {
-    CAudio* self = new (ELeave) CAudio();
+    CAudio *self = new (ELeave) CAudio();
     CleanupStack::PushL(self);
     self->ConstructL(aLatency);
     CleanupStack::Pop(self);
@@ -53,8 +53,7 @@ void CAudio::ConstructL(TInt aLatency)
     iTimerCreated = ETrue;
 
     iStream = CMdaAudioOutputStream::NewL(*this);
-    if (!iStream)
-    {
+    if (!iStream) {
         SDL_Log("Error: Failed to create audio stream");
         User::Leave(KErrNoMemory);
     }
@@ -75,12 +74,10 @@ void CAudio::ConstructL(TInt aLatency)
 
 CAudio::~CAudio()
 {
-    if (iStream)
-    {
+    if (iStream) {
         iStream->Stop();
 
-        while (iState != EStateDone)
-        {
+        while (iState != EStateDone) {
             User::After(100000); // 100ms.
         }
 
@@ -90,16 +87,13 @@ CAudio::~CAudio()
 
 void CAudio::Start()
 {
-    if (iStream)
-    {
+    if (iStream) {
         // Set to 8kHz mono audio.
         iStreamSettings.iChannels = TMdaAudioDataSettings::EChannelsMono;
         iStreamSettings.iSampleRate = TMdaAudioDataSettings::ESampleRate8000Hz;
         iStream->Open(&iStreamSettings);
         iState = EStateOpening;
-    }
-    else
-    {
+    } else {
         SDL_Log("Error: Failed to open audio stream");
     }
 }
@@ -109,8 +103,7 @@ void CAudio::Feed()
 {
     // If a WriteL is already in progress, or we aren't even playing;
     // do nothing!
-    if ((iState != EStateWriting) && (iState != EStatePlaying))
-    {
+    if ((iState != EStateWriting) && (iState != EStatePlaying)) {
         return;
     }
 
@@ -125,19 +118,16 @@ void CAudio::Feed()
     // Determine the difference between the number of samples written to
     // CMdaAudioOutputStream and the number of samples it has played.
     // The difference is the amount of data in the buffers.
-    if ( played < 0 )
-    {
+    if (played < 0) {
         played = 0;
     }
 
     TInt buffered = iSamplesWritten - played;
-    if (buffered < 0)
-    {
+    if (buffered < 0) {
         buffered = 0;
     }
 
-    if (iState == EStateWriting)
-    {
+    if (iState == EStateWriting) {
         return;
     }
 
@@ -148,12 +138,10 @@ void CAudio::Feed()
 
     // Do not write very small blocks. This should improve efficiency, since
     // writes to the streaming API are likely to be expensive.
-    if (samplesToWrite < iMinWrite)
-    {
+    if (samplesToWrite < iMinWrite) {
         // Not enough data to write, set up a timer to fire after a while.
         // Try againwhen it expired.
-        if (iTimerActive)
-        {
+        if (iTimerActive) {
             return;
         }
         iTimerActive = ETrue;
@@ -164,14 +152,12 @@ void CAudio::Feed()
 
     // Do not write more than the set number of samples at once.
     int numSamples = samplesToWrite;
-    if (numSamples > iMaxWrite)
-    {
+    if (numSamples > iMaxWrite) {
         numSamples = iMaxWrite;
     }
 
     SDL_AudioDevice *device = NGAGE_GetAudioDeviceAddr();
-    if (device)
-    {
+    if (device) {
         SDL_PrivateAudioData *phdata = (SDL_PrivateAudioData *)device->hidden;
 
         iBufDes.Set(phdata->buffer, 2 * numSamples, 2 * numSamples);
@@ -180,12 +166,9 @@ void CAudio::Feed()
 
         // Keep track of the number of samples written (for latency calculations).
         iSamplesWritten += numSamples;
-    }
-    else
-    {
+    } else {
         // Output device not ready yet. Let's go for another round.
-        if (iTimerActive)
-        {
+        if (iTimerActive) {
             return;
         }
         iTimerActive = ETrue;
@@ -208,44 +191,36 @@ void CAudio::DoCancel()
 
 void CAudio::StartThread()
 {
-    TInt heapMinSize = 8192; // 8 KB initial heap size.
+    TInt heapMinSize = 8192;        // 8 KB initial heap size.
     TInt heapMaxSize = 1024 * 1024; // 1 MB maximum heap size.
 
     TInt err = iProcess.Create(_L("ProcessThread"), ProcessThreadCB, KDefaultStackSize * 2, heapMinSize, heapMaxSize, this);
-    if (err == KErrNone)
-    {
+    if (err == KErrNone) {
         iProcess.SetPriority(EPriorityLess);
         iProcess.Resume();
-    }
-    else
-    {
+    } else {
         SDL_Log("Error: Failed to create audio processing thread: %d", err);
     }
 }
 
 void CAudio::StopThread()
 {
-    if (iStreamStarted)
-    {
+    if (iStreamStarted) {
         iProcess.Kill(KErrNone);
         iProcess.Close();
         iStreamStarted = EFalse;
     }
 }
 
-TInt CAudio::ProcessThreadCB(TAny* aPtr)
+TInt CAudio::ProcessThreadCB(TAny *aPtr)
 {
-    CAudio* self = static_cast<CAudio*>(aPtr);
-    SDL_AudioDevice* device = NGAGE_GetAudioDeviceAddr();
+    CAudio *self = static_cast<CAudio *>(aPtr);
+    SDL_AudioDevice *device = NGAGE_GetAudioDeviceAddr();
 
-    while (self->iStreamStarted)
-    {
-        if (device)
-        {
+    while (self->iStreamStarted) {
+        if (device) {
             SDL_PlaybackAudioThreadIterate(device);
-        }
-        else
-        {
+        } else {
             device = NGAGE_GetAudioDeviceAddr();
         }
         User::After(100000); // 100ms.
@@ -255,33 +230,25 @@ TInt CAudio::ProcessThreadCB(TAny* aPtr)
 
 void CAudio::MaoscOpenComplete(TInt aError)
 {
-    if (aError == KErrNone)
-    {
+    if (aError == KErrNone) {
         iStream->SetVolume(1);
         iStreamStarted = ETrue;
         StartThread();
 
-    }
-    else
-    {
+    } else {
         SDL_Log("Error: Failed to open audio stream: %d", aError);
     }
 }
 
-void CAudio::MaoscBufferCopied(TInt aError, const TDesC8& /*aBuffer*/)
+void CAudio::MaoscBufferCopied(TInt aError, const TDesC8 & /*aBuffer*/)
 {
-    if (aError == KErrNone)
-    {
+    if (aError == KErrNone) {
         iState = EStatePlaying;
         Feed();
-    }
-    else if (aError == KErrAbort)
-    {
+    } else if (aError == KErrAbort) {
         // The stream has been stopped.
         iState = EStateDone;
-    }
-    else
-    {
+    } else {
         SDL_Log("Error: Failed to copy audio buffer: %d", aError);
     }
 }
@@ -292,8 +259,7 @@ void CAudio::MaoscPlayComplete(TInt aError)
     // Normally KErrUnderlow is raised   at stream end, but in our case the API
     // should never see the stream end -- we are continuously feeding it more
     // data!  Many underflow errors mean that the latency target is too low.
-    if (aError == KErrUnderflow)
-    {
+    if (aError == KErrUnderflow) {
         // The number of samples played gets resetted to zero when we restart
         // playback after underflow.
         iBaseSamplesPlayed = iSamplesWritten;
@@ -307,9 +273,7 @@ void CAudio::MaoscPlayComplete(TInt aError)
         Feed();
         return;
 
-    }
-    else if (aError != KErrNone)
-    {
+    } else if (aError != KErrNone) {
         // Handle error.
     }
 
@@ -324,17 +288,15 @@ TBool AudioIsReady()
     return gAudioRunning;
 }
 
-TInt AudioThreadCB(TAny* aParams)
+TInt AudioThreadCB(TAny *aParams)
 {
-    CTrapCleanup* cleanup = CTrapCleanup::New();
-    if (!cleanup)
-    {
+    CTrapCleanup *cleanup = CTrapCleanup::New();
+    if (!cleanup) {
         return KErrNoMemory;
     }
 
-    CActiveScheduler* scheduler = new CActiveScheduler();
-    if (!scheduler)
-    {
+    CActiveScheduler *scheduler = new CActiveScheduler();
+    if (!scheduler) {
         delete cleanup;
         return KErrNoMemory;
     }
@@ -342,39 +304,36 @@ TInt AudioThreadCB(TAny* aParams)
     CActiveScheduler::Install(scheduler);
 
     TRAPD(err,
-        {
-            TInt latency = *(TInt*)aParams;
-            CAudio* audio = CAudio::NewL(latency);
-            CleanupStack::PushL(audio);
+          {
+              TInt latency = *(TInt *)aParams;
+              CAudio *audio = CAudio::NewL(latency);
+              CleanupStack::PushL(audio);
 
-            gAudioRunning = ETrue;
-            audio->Start();
-            TBool once = EFalse;
+              gAudioRunning = ETrue;
+              audio->Start();
+              TBool once = EFalse;
 
-            while (gAudioRunning)
-            {
-                // Allow active scheduler to process any events.
-                TInt error;
-                CActiveScheduler::RunIfReady(error, CActive::EPriorityIdle);
+              while (gAudioRunning) {
+                  // Allow active scheduler to process any events.
+                  TInt error;
+                  CActiveScheduler::RunIfReady(error, CActive::EPriorityIdle);
 
-                if (!once)
-                {
-                    SDL_AudioDevice* device = NGAGE_GetAudioDeviceAddr();
-                    if (device)
-                    {
-                        // Stream ready; start feeding audio data.
-                        // After feeding it once, the callbacks will take over.
-                        audio->iState = CAudio::EStatePlaying;
-                        audio->Feed();
-                        once = ETrue;
-                    }
-                }
+                  if (!once) {
+                      SDL_AudioDevice *device = NGAGE_GetAudioDeviceAddr();
+                      if (device) {
+                          // Stream ready; start feeding audio data.
+                          // After feeding it once, the callbacks will take over.
+                          audio->iState = CAudio::EStatePlaying;
+                          audio->Feed();
+                          once = ETrue;
+                      }
+                  }
 
-                User::After(100000); // 100ms.
-            }
+                  User::After(100000); // 100ms.
+              }
 
-            CleanupStack::PopAndDestroy(audio);
-        });
+              CleanupStack::PopAndDestroy(audio);
+          });
 
     delete scheduler;
     delete cleanup;
@@ -383,13 +342,12 @@ TInt AudioThreadCB(TAny* aParams)
 
 RThread audioThread;
 
-void InitAudio(TInt* aLatency)
+void InitAudio(TInt *aLatency)
 {
     _LIT(KAudioThreadName, "AudioThread");
 
     TInt err = audioThread.Create(KAudioThreadName, AudioThreadCB, KDefaultStackSize, 0, aLatency);
-    if (err != KErrNone)
-    {
+    if (err != KErrNone) {
         User::Leave(err);
     }
 
@@ -398,13 +356,13 @@ void InitAudio(TInt* aLatency)
 
 void DeinitAudio()
 {
-   gAudioRunning = EFalse;
+    gAudioRunning = EFalse;
 
-   TRequestStatus status;
-   audioThread.Logon(status);
-   User::WaitForRequest(status);
+    TRequestStatus status;
+    audioThread.Logon(status);
+    User::WaitForRequest(status);
 
-   audioThread.Close();
+    audioThread.Close();
 }
 
 #endif // SDL_AUDIO_DRIVER_NGAGE

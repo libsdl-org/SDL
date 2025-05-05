@@ -22,9 +22,9 @@
 extern "C" {
 #endif
 
-#include "SDL_internal.h"
-#include "../SDL_sysrender.h"
 #include "../../events/SDL_keyboard_c.h"
+#include "../SDL_sysrender.h"
+#include "SDL_internal.h"
 #include "SDL_render_ngage_c.h"
 
 #ifdef __cplusplus
@@ -38,91 +38,89 @@ extern "C" {
 
 const TUint32 WindowClientHandle = 0x571D0A;
 
-extern CRenderer* gRenderer;
+extern CRenderer *gRenderer;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-    void NGAGE_Clear(const Uint32 color)
-    {
-        gRenderer->Clear(color);
-    }
+void NGAGE_Clear(const Uint32 color)
+{
+    gRenderer->Clear(color);
+}
 
-    bool NGAGE_Copy(SDL_Renderer* renderer, SDL_Texture* texture, SDL_Rect* srcrect, SDL_Rect* dstrect)
-    {
-        return gRenderer->Copy(renderer, texture, srcrect, dstrect);
-    }
+bool NGAGE_Copy(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Rect *srcrect, SDL_Rect *dstrect)
+{
+    return gRenderer->Copy(renderer, texture, srcrect, dstrect);
+}
 
-    bool NGAGE_CopyEx(SDL_Renderer* renderer, SDL_Texture* texture, NGAGE_CopyExData* copydata)
-    {
-        return gRenderer->CopyEx(renderer, texture, copydata);
-    }
+bool NGAGE_CopyEx(SDL_Renderer *renderer, SDL_Texture *texture, NGAGE_CopyExData *copydata)
+{
+    return gRenderer->CopyEx(renderer, texture, copydata);
+}
 
-    bool NGAGE_CreateTextureData(NGAGE_TextureData *data, const int width, const int height)
-    {
-        return gRenderer->CreateTextureData(data, width, height);
-    }
+bool NGAGE_CreateTextureData(NGAGE_TextureData *data, const int width, const int height)
+{
+    return gRenderer->CreateTextureData(data, width, height);
+}
 
-    void NGAGE_DestroyTextureData(NGAGE_TextureData *data)
-    {
-        if (data)
-        {
-            delete data->bitmap;
-            data->bitmap = NULL;
-        }
+void NGAGE_DestroyTextureData(NGAGE_TextureData *data)
+{
+    if (data) {
+        delete data->bitmap;
+        data->bitmap = NULL;
     }
+}
 
-    void NGAGE_DrawLines(NGAGE_Vertex* verts, const int count)
-    {
-        gRenderer->DrawLines(verts, count);
-    }
+void NGAGE_DrawLines(NGAGE_Vertex *verts, const int count)
+{
+    gRenderer->DrawLines(verts, count);
+}
 
-    void NGAGE_DrawPoints(NGAGE_Vertex* verts, const int count)
-    {
-        gRenderer->DrawPoints(verts, count);
-    }
+void NGAGE_DrawPoints(NGAGE_Vertex *verts, const int count)
+{
+    gRenderer->DrawPoints(verts, count);
+}
 
-    void NGAGE_FillRects(NGAGE_Vertex* verts, const int count)
-    {
-        gRenderer->FillRects(verts, count);
-    }
+void NGAGE_FillRects(NGAGE_Vertex *verts, const int count)
+{
+    gRenderer->FillRects(verts, count);
+}
 
-    void NGAGE_Flip()
-    {
-        gRenderer->Flip();
-    }
+void NGAGE_Flip()
+{
+    gRenderer->Flip();
+}
 
-    void NGAGE_SetClipRect(const SDL_Rect* rect)
-    {
-        gRenderer->SetClipRect(rect->x, rect->y, rect->w, rect->h);
-    }
+void NGAGE_SetClipRect(const SDL_Rect *rect)
+{
+    gRenderer->SetClipRect(rect->x, rect->y, rect->w, rect->h);
+}
 
-    void NGAGE_SetDrawColor(const Uint32 color)
-    {
-        if (gRenderer)
-        {
-            gRenderer->SetDrawColor(color);
-        }
+void NGAGE_SetDrawColor(const Uint32 color)
+{
+    if (gRenderer) {
+        gRenderer->SetDrawColor(color);
     }
+}
 
-    void NGAGE_PumpEventsInternal()
-    {
-        gRenderer->PumpEvents();
-    }
+void NGAGE_PumpEventsInternal()
+{
+    gRenderer->PumpEvents();
+}
 
-    void NGAGE_SuspendScreenSaverInternal(bool suspend)
-    {
-        gRenderer->SuspendScreenSaver(suspend);
-    }
+void NGAGE_SuspendScreenSaverInternal(bool suspend)
+{
+    gRenderer->SuspendScreenSaver(suspend);
+}
 
 #ifdef __cplusplus
 }
 #endif
 
-CRenderer* CRenderer::NewL()
+CRenderer *CRenderer::NewL()
 {
-    CRenderer* self = new (ELeave) CRenderer();
+    CRenderer *self = new (ELeave) CRenderer();
     CleanupStack::PushL(self);
     self->ConstructL();
     CleanupStack::Pop(self);
@@ -147,7 +145,7 @@ void CRenderer::ConstructL()
         User::Leave(error);
     }
 
-    iWsScreen = new(ELeave) CWsScreenDevice(iWsSession);
+    iWsScreen = new (ELeave) CWsScreenDevice(iWsSession);
     error = iWsScreen->Construct();
     if (error != KErrNone) {
         SDL_Log("Failed to construct screen device: %d", error);
@@ -177,8 +175,7 @@ void CRenderer::ConstructL()
 
     iWsWindow = RWindow(iWsSession);
     error = iWsWindow.Construct(iWsWindowGroup, WindowClientHandle - 1);
-    if (error != KErrNone)
-    {
+    if (error != KErrNone) {
         SDL_Log("Failed to construct window: %d", error);
         User::Leave(error);
     }
@@ -191,8 +188,7 @@ void CRenderer::ConstructL()
     iWsWindowGroupID = iWsWindowGroup.Identifier();
 
     TRAPD(errc, iRenderer = iRenderer->NewL());
-    if (errc != KErrNone)
-    {
+    if (errc != KErrNone) {
         SDL_Log("Failed to create renderer: %d", errc);
         return;
     }
@@ -204,9 +200,8 @@ void CRenderer::ConstructL()
 
     // Select font.
     TFontSpec fontSpec(_L("LatinBold12"), 12);
-    TInt errd = iWsScreen->GetNearestFontInTwips((CFont*&)iFont, fontSpec);
-    if (errd != KErrNone)
-    {
+    TInt errd = iWsScreen->GetNearestFontInTwips((CFont *&)iFont, fontSpec);
+    if (errd != KErrNone) {
         SDL_Log("Failed to get font: %d", errd);
         return;
     }
@@ -221,11 +216,9 @@ void CRenderer::ConstructL()
     iShowFPS = EFalse;
     iSuspendScreenSaver = EFalse;
 
-    if (!iDirectScreen->IsActive())
-    {
+    if (!iDirectScreen->IsActive()) {
         TRAPD(err, iDirectScreen->StartL());
-        if (KErrNone != err)
-        {
+        if (KErrNone != err) {
             return;
         }
         iDirectScreen->ScreenDevice()->SetAutoUpdate(ETrue);
@@ -234,11 +227,9 @@ void CRenderer::ConstructL()
 
 void CRenderer::Restart(RDirectScreenAccess::TTerminationReasons aReason)
 {
-    if (!iDirectScreen->IsActive())
-    {
+    if (!iDirectScreen->IsActive()) {
         TRAPD(err, iDirectScreen->StartL());
-        if (KErrNone != err)
-        {
+        if (KErrNone != err) {
             return;
         }
         iDirectScreen->ScreenDevice()->SetAutoUpdate(ETrue);
@@ -247,16 +238,14 @@ void CRenderer::Restart(RDirectScreenAccess::TTerminationReasons aReason)
 
 void CRenderer::AbortNow(RDirectScreenAccess::TTerminationReasons aReason)
 {
-    if (iDirectScreen->IsActive())
-    {
+    if (iDirectScreen->IsActive()) {
         iDirectScreen->Cancel();
     }
 }
 
 void CRenderer::Clear(TUint32 iColor)
 {
-    if (iRenderer && iRenderer->Gc())
-    {
+    if (iRenderer && iRenderer->Gc()) {
         iRenderer->Gc()->SetBrushColor(iColor);
         iRenderer->Gc()->Clear();
     }
@@ -297,47 +286,41 @@ Uint32 NGAGE_ConvertColor(float r, float g, float b, float a, float color_scale)
 }
 #endif
 
-bool CRenderer::Copy(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_Rect* srcrect, const SDL_Rect* dstrect)
+bool CRenderer::Copy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *srcrect, const SDL_Rect *dstrect)
 {
-    if (!texture)
-    {
+    if (!texture) {
         return false;
     }
 
     NGAGE_TextureData *phdata = (NGAGE_TextureData *)texture->internal;
-    if (!phdata)
-    {
+    if (!phdata) {
         return false;
     }
 
-    SDL_FColor* c = &texture->color;
+    SDL_FColor *c = &texture->color;
     int w = phdata->surface->w;
     int h = phdata->surface->h;
     int pitch = phdata->surface->pitch;
-    void* source = phdata->surface->pixels;
-    void* dest;
+    void *source = phdata->surface->pixels;
+    void *dest;
 
-    if (!source)
-    {
+    if (!source) {
         return false;
     }
 
-    void* pixel_buffer_a = SDL_calloc(1, pitch * h);
-    if (!pixel_buffer_a)
-    {
+    void *pixel_buffer_a = SDL_calloc(1, pitch * h);
+    if (!pixel_buffer_a) {
         return false;
     }
     dest = pixel_buffer_a;
 
-    void* pixel_buffer_b = SDL_calloc(1, pitch * h);
-    if (!pixel_buffer_b)
-    {
+    void *pixel_buffer_b = SDL_calloc(1, pitch * h);
+    if (!pixel_buffer_b) {
         SDL_free(pixel_buffer_a);
         return false;
     }
 
-    if (c->a != 1.f || c->r != 1.f || c->g != 1.f || c->b != 1.f)
-    {
+    if (c->a != 1.f || c->r != 1.f || c->g != 1.f || c->b != 1.f) {
         ApplyColorMod(dest, source, pitch, w, h, texture->color);
 
         source = dest;
@@ -347,8 +330,7 @@ bool CRenderer::Copy(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_Rec
     float sy;
     SDL_GetRenderScale(renderer, &sx, &sy);
 
-    if (sx != 1.f || sy != 1.f)
-    {
+    if (sx != 1.f || sy != 1.f) {
         TFixed scale_x = Real2Fix(sx);
         TFixed scale_y = Real2Fix(sy);
         TFixed center_x = Int2Fix(w / 2);
@@ -365,8 +347,7 @@ bool CRenderer::Copy(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_Rec
     SDL_free(pixel_buffer_a);
     SDL_free(pixel_buffer_b);
 
-    if (phdata->bitmap)
-    {
+    if (phdata->bitmap) {
         TRect aSource(TPoint(srcrect->x, srcrect->y), TSize(srcrect->w, srcrect->h));
         TPoint aDest(dstrect->x, dstrect->y);
         iRenderer->Gc()->BitBlt(aDest, phdata->bitmap, aSource);
@@ -375,62 +356,54 @@ bool CRenderer::Copy(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_Rec
     return true;
 }
 
-bool CRenderer::CopyEx(SDL_Renderer* renderer, SDL_Texture* texture, const NGAGE_CopyExData* copydata)
+bool CRenderer::CopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const NGAGE_CopyExData *copydata)
 {
     NGAGE_TextureData *phdata = (NGAGE_TextureData *)texture->internal;
-    if (!phdata)
-    {
+    if (!phdata) {
         return false;
     }
 
-    SDL_FColor* c = &texture->color;
+    SDL_FColor *c = &texture->color;
     int w = phdata->surface->w;
     int h = phdata->surface->h;
     int pitch = phdata->surface->pitch;
-    void* source = phdata->surface->pixels;
-    void* dest;
+    void *source = phdata->surface->pixels;
+    void *dest;
 
-    if (!source)
-    {
+    if (!source) {
         return false;
     }
 
-    void* pixel_buffer_a = SDL_calloc(1, pitch * h);
-    if (!pixel_buffer_a)
-    {
+    void *pixel_buffer_a = SDL_calloc(1, pitch * h);
+    if (!pixel_buffer_a) {
         return false;
     }
     dest = pixel_buffer_a;
 
-    void* pixel_buffer_b = SDL_calloc(1, pitch * h);
-    if (!pixel_buffer_a)
-    {
+    void *pixel_buffer_b = SDL_calloc(1, pitch * h);
+    if (!pixel_buffer_a) {
         SDL_free(pixel_buffer_a);
         return false;
     }
 
-    if (copydata->flip)
-    {
+    if (copydata->flip) {
         ApplyFlip(dest, source, pitch, w, h, copydata->flip);
         source = dest;
     }
 
-    if (copydata->scale_x != 1.f || copydata->scale_y != 1.f)
-    {
+    if (copydata->scale_x != 1.f || copydata->scale_y != 1.f) {
         dest == pixel_buffer_a ? dest = pixel_buffer_b : dest = pixel_buffer_a;
         ApplyScale(dest, source, pitch, w, h, copydata->center.x, copydata->center.y, copydata->scale_x, copydata->scale_y);
         source = dest;
     }
 
-    if (copydata->angle)
-    {
+    if (copydata->angle) {
         dest == pixel_buffer_a ? dest = pixel_buffer_b : dest = pixel_buffer_a;
         ApplyRotation(dest, source, pitch, w, h, copydata->center.x, copydata->center.y, copydata->angle);
         source = dest;
     }
 
-    if (c->a != 1.f || c->r != 1.f || c->g != 1.f || c->b != 1.f)
-    {
+    if (c->a != 1.f || c->r != 1.f || c->g != 1.f || c->b != 1.f) {
         dest == pixel_buffer_a ? dest = pixel_buffer_b : dest = pixel_buffer_a;
         ApplyColorMod(dest, source, pitch, w, h, texture->color);
         source = dest;
@@ -440,8 +413,7 @@ bool CRenderer::CopyEx(SDL_Renderer* renderer, SDL_Texture* texture, const NGAGE
     SDL_free(pixel_buffer_a);
     SDL_free(pixel_buffer_b);
 
-    if (phdata->bitmap)
-    {
+    if (phdata->bitmap) {
         TRect aSource(TPoint(copydata->srcrect.x, copydata->srcrect.y), TSize(copydata->srcrect.w, copydata->srcrect.h));
         TPoint aDest(copydata->dstrect.x, copydata->dstrect.y);
         iRenderer->Gc()->BitBlt(aDest, phdata->bitmap, aSource);
@@ -450,22 +422,19 @@ bool CRenderer::CopyEx(SDL_Renderer* renderer, SDL_Texture* texture, const NGAGE
     return true;
 }
 
-bool CRenderer::CreateTextureData(NGAGE_TextureData* aTextureData, const TInt aWidth, const TInt aHeight)
+bool CRenderer::CreateTextureData(NGAGE_TextureData *aTextureData, const TInt aWidth, const TInt aHeight)
 {
-    if (!aTextureData)
-    {
+    if (!aTextureData) {
         return false;
     }
 
     aTextureData->bitmap = new CFbsBitmap();
-    if (!aTextureData->bitmap)
-    {
+    if (!aTextureData->bitmap) {
         return false;
     }
 
     TInt error = aTextureData->bitmap->Create(TSize(aWidth, aHeight), EColor4K);
-    if (error != KErrNone)
-    {
+    if (error != KErrNone) {
         delete aTextureData->bitmap;
         aTextureData->bitmap = NULL;
         return false;
@@ -474,22 +443,19 @@ bool CRenderer::CreateTextureData(NGAGE_TextureData* aTextureData, const TInt aW
     return true;
 }
 
-void CRenderer::DrawLines(NGAGE_Vertex* aVerts, const TInt aCount)
+void CRenderer::DrawLines(NGAGE_Vertex *aVerts, const TInt aCount)
 {
-    if (iRenderer && iRenderer->Gc())
-    {
-        TPoint* aPoints = new TPoint[aCount];
+    if (iRenderer && iRenderer->Gc()) {
+        TPoint *aPoints = new TPoint[aCount];
 
-        for (TInt i = 0; i < aCount; i++)
-        {
+        for (TInt i = 0; i < aCount; i++) {
             aPoints[i] = TPoint(aVerts[i].x, aVerts[i].y);
         }
 
-        TUint32 aColor = (
-            ((TUint8)aVerts->color.a << 24) |
-            ((TUint8)aVerts->color.b << 16) |
-            ((TUint8)aVerts->color.g << 8) |
-            (TUint8)aVerts->color.r);
+        TUint32 aColor = (((TUint8)aVerts->color.a << 24) |
+                          ((TUint8)aVerts->color.b << 16) |
+                          ((TUint8)aVerts->color.g << 8) |
+                          (TUint8)aVerts->color.r);
 
         iRenderer->Gc()->SetPenColor(aColor);
         iRenderer->Gc()->DrawPolyLineNoEndPoint(aPoints, aCount);
@@ -498,17 +464,14 @@ void CRenderer::DrawLines(NGAGE_Vertex* aVerts, const TInt aCount)
     }
 }
 
-void CRenderer::DrawPoints(NGAGE_Vertex* aVerts, const TInt aCount)
+void CRenderer::DrawPoints(NGAGE_Vertex *aVerts, const TInt aCount)
 {
-    if (iRenderer && iRenderer->Gc())
-    {
-        for (TInt i = 0; i < aCount; i++, aVerts++)
-        {
-            TUint32 aColor = (
-                ((TUint8)aVerts->color.a << 24) |
-                ((TUint8)aVerts->color.b << 16) |
-                ((TUint8)aVerts->color.g << 8) |
-                (TUint8)aVerts->color.r);
+    if (iRenderer && iRenderer->Gc()) {
+        for (TInt i = 0; i < aCount; i++, aVerts++) {
+            TUint32 aColor = (((TUint8)aVerts->color.a << 24) |
+                              ((TUint8)aVerts->color.b << 16) |
+                              ((TUint8)aVerts->color.g << 8) |
+                              (TUint8)aVerts->color.r);
 
             iRenderer->Gc()->SetPenColor(aColor);
             iRenderer->Gc()->Plot(TPoint(aVerts->x, aVerts->y));
@@ -516,23 +479,20 @@ void CRenderer::DrawPoints(NGAGE_Vertex* aVerts, const TInt aCount)
     }
 }
 
-void CRenderer::FillRects(NGAGE_Vertex* aVerts, const TInt aCount)
+void CRenderer::FillRects(NGAGE_Vertex *aVerts, const TInt aCount)
 {
-    if (iRenderer && iRenderer->Gc())
-    {
-        for (TInt i = 0; i < aCount; i++, aVerts++)
-        {
+    if (iRenderer && iRenderer->Gc()) {
+        for (TInt i = 0; i < aCount; i++, aVerts++) {
             TPoint pos(aVerts[i].x, aVerts[i].y);
             TSize size(
                 aVerts[i + 1].x,
                 aVerts[i + 1].y);
             TRect rect(pos, size);
 
-            TUint32 aColor = (
-                ((TUint8)aVerts->color.a << 24) |
-                ((TUint8)aVerts->color.b << 16) |
-                ((TUint8)aVerts->color.g << 8) |
-                (TUint8)aVerts->color.r);
+            TUint32 aColor = (((TUint8)aVerts->color.a << 24) |
+                              ((TUint8)aVerts->color.b << 16) |
+                              ((TUint8)aVerts->color.g << 8) |
+                              (TUint8)aVerts->color.r);
 
             iRenderer->Gc()->SetPenColor(aColor);
             iRenderer->Gc()->SetBrushColor(aColor);
@@ -543,21 +503,18 @@ void CRenderer::FillRects(NGAGE_Vertex* aVerts, const TInt aCount)
 
 void CRenderer::Flip()
 {
-    if (!iRenderer)
-    {
+    if (!iRenderer) {
         SDL_Log("iRenderer is NULL.");
         return;
     }
 
-    if (!iIsFocused)
-    {
+    if (!iIsFocused) {
         return;
     }
 
     iRenderer->Gc()->UseFont(iFont);
 
-    if (iShowFPS && iRenderer->Gc())
-    {
+    if (iShowFPS && iRenderer->Gc()) {
         UpdateFPS();
 
         TBuf<64> info;
@@ -574,9 +531,7 @@ void CRenderer::Flip()
         // Draw messages.
         info.Format(_L("FPS: %d"), iFPS);
         iRenderer->Gc()->DrawText(info, TPoint(5, 203));
-    }
-    else
-    {
+    } else {
         // This is a workaround that helps regulating the FPS.
         iRenderer->Gc()->DrawText(_L(""), TPoint(0, 0));
     }
@@ -584,8 +539,7 @@ void CRenderer::Flip()
     iRenderer->Flip(iDirectScreen);
 
     // Keep the backlight on.
-    if (iSuspendScreenSaver)
-    {
+    if (iSuspendScreenSaver) {
         User::ResetInactivityTime();
     }
     // Suspend the current thread for a short while.
@@ -595,15 +549,13 @@ void CRenderer::Flip()
 
 void CRenderer::SetDrawColor(TUint32 iColor)
 {
-    if (iRenderer && iRenderer->Gc())
-    {
+    if (iRenderer && iRenderer->Gc()) {
         iRenderer->Gc()->SetPenColor(iColor);
         iRenderer->Gc()->SetBrushColor(iColor);
         iRenderer->Gc()->SetBrushStyle(CGraphicsContext::ESolidBrush);
 
         TRAPD(err, iRenderer->SetCurrentColor(iColor));
-        if (err != KErrNone)
-        {
+        if (err != KErrNone) {
             return;
         }
     }
@@ -611,8 +563,7 @@ void CRenderer::SetDrawColor(TUint32 iColor)
 
 void CRenderer::SetClipRect(TInt aX, TInt aY, TInt aWidth, TInt aHeight)
 {
-    if (iRenderer && iRenderer->Gc())
-    {
+    if (iRenderer && iRenderer->Gc()) {
         TRect viewportRect(aX, aY, aX + aWidth, aY + aHeight);
         iRenderer->Gc()->SetClippingRect(viewportRect);
     }
@@ -630,8 +581,7 @@ void CRenderer::UpdateFPS()
 
     TTimeIntervalMicroSeconds timeDiff = currentTime.MicroSecondsFrom(lastTime);
 
-    if (timeDiff.Int64() >= KOneSecond)
-    {
+    if (timeDiff.Int64() >= KOneSecond) {
         // Calculate FPS.
         iFPS = frameCount;
 
@@ -650,135 +600,126 @@ static SDL_Scancode ConvertScancode(int key)
 {
     SDL_Keycode keycode;
 
-    switch(key)
-    {
-        case EStdKeyBackspace: // Clear key
-            keycode = SDLK_BACKSPACE;
-            break;
-        case 0x31: // 1
-            keycode = SDLK_1;
-            break;
-        case 0x32: // 2
-            keycode = SDLK_2;
-            break;
-        case 0x33: // 3
-            keycode = SDLK_3;
-            break;
-        case 0x34: // 4
-            keycode = SDLK_4;
-            break;
-        case 0x35: // 5
-            keycode = SDLK_5;
-            break;
-        case 0x36: // 6
-            keycode = SDLK_6;
-            break;
-        case 0x37: // 7
-            keycode = SDLK_7;
-            break;
-        case 0x38: // 8
-            keycode = SDLK_8;
-            break;
-        case 0x39: // 9
-            keycode = SDLK_9;
-            break;
-        case 0x30: // 0
-            keycode = SDLK_0;
-            break;
-        case 0x2a: // Asterisk
-            keycode = SDLK_ASTERISK;
-            break;
-        case EStdKeyHash: // Hash
-            keycode = SDLK_HASH;
-            break;
-        case EStdKeyDevice0: // Left softkey
-            keycode = SDLK_SOFTLEFT;
-            break;
-        case EStdKeyDevice1: // Right softkey
-            keycode = SDLK_SOFTRIGHT;
-            break;
-        case EStdKeyApplication0: // Call softkey
-            keycode = SDLK_CALL;
-            break;
-        case EStdKeyApplication1: // End call softkey
-            keycode = SDLK_ENDCALL;
-            break;
-        case EStdKeyDevice3: // Middle softkey
-            keycode = SDLK_SELECT;
-            break;
-        case EStdKeyUpArrow: // Up arrow
-            keycode = SDLK_UP;
-            break;
-        case EStdKeyDownArrow: // Down arrow
-            keycode = SDLK_DOWN;
-            break;
-        case EStdKeyLeftArrow: // Left arrow
-            keycode = SDLK_LEFT;
-            break;
-        case EStdKeyRightArrow: // Right arrow
-            keycode = SDLK_RIGHT;
-            break;
-        default:
-            keycode = SDLK_UNKNOWN;
-            break;
+    switch (key) {
+    case EStdKeyBackspace: // Clear key
+        keycode = SDLK_BACKSPACE;
+        break;
+    case 0x31: // 1
+        keycode = SDLK_1;
+        break;
+    case 0x32: // 2
+        keycode = SDLK_2;
+        break;
+    case 0x33: // 3
+        keycode = SDLK_3;
+        break;
+    case 0x34: // 4
+        keycode = SDLK_4;
+        break;
+    case 0x35: // 5
+        keycode = SDLK_5;
+        break;
+    case 0x36: // 6
+        keycode = SDLK_6;
+        break;
+    case 0x37: // 7
+        keycode = SDLK_7;
+        break;
+    case 0x38: // 8
+        keycode = SDLK_8;
+        break;
+    case 0x39: // 9
+        keycode = SDLK_9;
+        break;
+    case 0x30: // 0
+        keycode = SDLK_0;
+        break;
+    case 0x2a: // Asterisk
+        keycode = SDLK_ASTERISK;
+        break;
+    case EStdKeyHash: // Hash
+        keycode = SDLK_HASH;
+        break;
+    case EStdKeyDevice0: // Left softkey
+        keycode = SDLK_SOFTLEFT;
+        break;
+    case EStdKeyDevice1: // Right softkey
+        keycode = SDLK_SOFTRIGHT;
+        break;
+    case EStdKeyApplication0: // Call softkey
+        keycode = SDLK_CALL;
+        break;
+    case EStdKeyApplication1: // End call softkey
+        keycode = SDLK_ENDCALL;
+        break;
+    case EStdKeyDevice3: // Middle softkey
+        keycode = SDLK_SELECT;
+        break;
+    case EStdKeyUpArrow: // Up arrow
+        keycode = SDLK_UP;
+        break;
+    case EStdKeyDownArrow: // Down arrow
+        keycode = SDLK_DOWN;
+        break;
+    case EStdKeyLeftArrow: // Left arrow
+        keycode = SDLK_LEFT;
+        break;
+    case EStdKeyRightArrow: // Right arrow
+        keycode = SDLK_RIGHT;
+        break;
+    default:
+        keycode = SDLK_UNKNOWN;
+        break;
     }
 
     return SDL_GetScancodeFromKey(keycode, NULL);
 }
 
-void CRenderer::HandleEvent(const TWsEvent& aWsEvent)
+void CRenderer::HandleEvent(const TWsEvent &aWsEvent)
 {
     Uint64 timestamp;
 
-    switch (aWsEvent.Type())
-    {
-        case EEventKeyDown: /* Key events */
-            timestamp = SDL_GetPerformanceCounter();
-            SDL_SendKeyboardKey(timestamp, 1, aWsEvent.Key()->iCode, ConvertScancode(aWsEvent.Key()->iScanCode), true);
+    switch (aWsEvent.Type()) {
+    case EEventKeyDown: /* Key events */
+        timestamp = SDL_GetPerformanceCounter();
+        SDL_SendKeyboardKey(timestamp, 1, aWsEvent.Key()->iCode, ConvertScancode(aWsEvent.Key()->iScanCode), true);
 
-            if (aWsEvent.Key()->iScanCode == EStdKeyHash)
-            {
-                if (iShowFPS)
-                {
-                    iShowFPS = EFalse;
-                }
-                else
-                {
-                    iShowFPS = ETrue;
-                }
+        if (aWsEvent.Key()->iScanCode == EStdKeyHash) {
+            if (iShowFPS) {
+                iShowFPS = EFalse;
+            } else {
+                iShowFPS = ETrue;
             }
-
-            break;
-        case EEventKeyUp: /* Key events */
-            timestamp = SDL_GetPerformanceCounter();
-            SDL_SendKeyboardKey(timestamp, 1, aWsEvent.Key()->iCode, ConvertScancode(aWsEvent.Key()->iScanCode), false);
-
-        case EEventFocusGained:
-            DisableKeyBlocking();
-            if (!iDirectScreen->IsActive())
-            {
-                TRAPD(err, iDirectScreen->StartL());
-                if (KErrNone != err)
-                {
-                    return;
-                }
-                iDirectScreen->ScreenDevice()->SetAutoUpdate(ETrue);
-                iIsFocused = ETrue;
-            }
-            Flip();
-            break;
-        case EEventFocusLost:
-        {
-            if (iDirectScreen->IsActive())
-            {
-                iDirectScreen->Cancel();
-            }
-
-            iIsFocused = EFalse;
-            break;
         }
-        default:
-            break;
+
+        break;
+    case EEventKeyUp: /* Key events */
+        timestamp = SDL_GetPerformanceCounter();
+        SDL_SendKeyboardKey(timestamp, 1, aWsEvent.Key()->iCode, ConvertScancode(aWsEvent.Key()->iScanCode), false);
+
+    case EEventFocusGained:
+        DisableKeyBlocking();
+        if (!iDirectScreen->IsActive()) {
+            TRAPD(err, iDirectScreen->StartL());
+            if (KErrNone != err) {
+                return;
+            }
+            iDirectScreen->ScreenDevice()->SetAutoUpdate(ETrue);
+            iIsFocused = ETrue;
+        }
+        Flip();
+        break;
+    case EEventFocusLost:
+    {
+        if (iDirectScreen->IsActive()) {
+            iDirectScreen->Cancel();
+        }
+
+        iIsFocused = EFalse;
+        break;
+    }
+    default:
+        break;
     }
 }
 
@@ -792,8 +733,7 @@ void CRenderer::DisableKeyBlocking()
 
 void CRenderer::PumpEvents()
 {
-    while (iWsEventStatus != KRequestPending)
-    {
+    while (iWsEventStatus != KRequestPending) {
         iWsSession.GetEvent(iWsEvent);
         HandleEvent(iWsEvent);
         iWsEventStatus = KRequestPending;

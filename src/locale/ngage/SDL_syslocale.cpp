@@ -18,18 +18,18 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 #include "../SDL_syslocale.h"
+#include "SDL_internal.h"
 
-#include <e32std.h>
 #include <bautils.h>
 #include <e32base.h>
 #include <e32cons.h>
+#include <e32std.h>
 
 bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     TLanguage language = User::Language();
-    const char* locale;
+    const char *locale;
 
     switch (language) {
     case ELangFrench:

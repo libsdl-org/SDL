@@ -22,25 +22,25 @@
 #ifndef ngage_video_render_ngage_c_hpp
 #define ngage_video_render_ngage_c_hpp
 
+#include "SDL_render_ngage_c.h"
 #include <NRenderer.h>
 #include <e32std.h>
 #include <w32std.h>
-#include "SDL_render_ngage_c.h"
 
-class CRenderer: public MDirectScreenAccess
+class CRenderer : public MDirectScreenAccess
 {
-public:
-    static CRenderer* NewL();
+  public:
+    static CRenderer *NewL();
     virtual ~CRenderer();
 
     // Rendering functions.
     void Clear(TUint32 iColor);
-    bool Copy(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_Rect* srcrect, const SDL_Rect* dstrect);
-    bool CopyEx(SDL_Renderer* renderer, SDL_Texture* texture, const NGAGE_CopyExData* copydata);
-    bool CreateTextureData(NGAGE_TextureData* aTextureData, const TInt aWidth, const TInt aHeight);
-    void DrawLines(NGAGE_Vertex* aVerts, const TInt aCount);
-    void DrawPoints(NGAGE_Vertex* aVerts, const TInt aCount);
-    void FillRects(NGAGE_Vertex* aVerts, const TInt aCount);
+    bool Copy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *srcrect, const SDL_Rect *dstrect);
+    bool CopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const NGAGE_CopyExData *copydata);
+    bool CreateTextureData(NGAGE_TextureData *aTextureData, const TInt aWidth, const TInt aHeight);
+    void DrawLines(NGAGE_Vertex *aVerts, const TInt aCount);
+    void DrawPoints(NGAGE_Vertex *aVerts, const TInt aCount);
+    void FillRects(NGAGE_Vertex *aVerts, const TInt aCount);
     void Flip();
     void SetDrawColor(TUint32 iColor);
     void SetClipRect(TInt aX, TInt aY, TInt aWidth, TInt aHeight);
@@ -49,10 +49,10 @@ public:
 
     // Event handling.
     void DisableKeyBlocking();
-    void HandleEvent(const TWsEvent& aWsEvent);
+    void HandleEvent(const TWsEvent &aWsEvent);
     void PumpEvents();
 
-private:
+  private:
     CRenderer();
     void ConstructL(void);
 
@@ -60,29 +60,29 @@ private:
     CNRenderer *iRenderer;
 
     // Direct screen access.
-	CDirectScreenAccess* iDirectScreen;
-	CFbsBitGc *iScreenGc;
+    CDirectScreenAccess *iDirectScreen;
+    CFbsBitGc *iScreenGc;
     TBool iIsFocused;
 
     // Window server session.
-    RWsSession       iWsSession;
-    RWindowGroup     iWsWindowGroup;
-    TInt             iWsWindowGroupID;
-    RWindow          iWsWindow;
-    CWsScreenDevice* iWsScreen;
+    RWsSession iWsSession;
+    RWindowGroup iWsWindowGroup;
+    TInt iWsWindowGroupID;
+    RWindow iWsWindow;
+    CWsScreenDevice *iWsScreen;
 
     // Event handling.
     TRequestStatus iWsEventStatus;
-    TWsEvent       iWsEvent;
+    TWsEvent iWsEvent;
 
     // MDirectScreenAccess functions.
-	void Restart  (RDirectScreenAccess::TTerminationReasons aReason);
-	void AbortNow (RDirectScreenAccess::TTerminationReasons aReason);
+    void Restart(RDirectScreenAccess::TTerminationReasons aReason);
+    void AbortNow(RDirectScreenAccess::TTerminationReasons aReason);
 
     // Frame per second.
     TBool iShowFPS;
     TUint iFPS;
-    const CFont* iFont;
+    const CFont *iFont;
 
     // Screen saver.
     TBool iSuspendScreenSaver;

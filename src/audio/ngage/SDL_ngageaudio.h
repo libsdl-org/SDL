@@ -35,7 +35,7 @@ extern "C" {
 
 #include "../SDL_sysaudio.h"
 
-    SDL_AudioDevice* NGAGE_GetAudioDeviceAddr();
+SDL_AudioDevice *NGAGE_GetAudioDeviceAddr();
 
 #ifdef __cplusplus
 }
