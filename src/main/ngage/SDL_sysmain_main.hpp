@@ -20,6 +20,9 @@
 */
 #include "SDL_internal.h"
 
+#ifndef SDL_sysmain_main_hpp_
+#define SDL_sysmain_main_hpp_
+
 #include <e32std.h>
 
 class CSDLmain : public CActive
@@ -39,3 +42,5 @@ private:
     void ConstructL();
     SDL_AppResult iResult;
 };
+
+#endif // SDL_sysmain_main_hpp_
