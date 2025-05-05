@@ -1338,8 +1338,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, false, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
-        // We ungrab in LeaveNotify, so we may need to grab again here
-        SDL_UpdateWindowGrab(data->window);
+        // We ungrab in LeaveNotify, so we may need to grab again here, but not if captured, as the capture can be lost.
+        if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+            SDL_UpdateWindowGrab(data->window);
+        }
 
         X11_ProcessHitTest(_this, data, mouse->last_x, mouse->last_y, true);
     } break;
