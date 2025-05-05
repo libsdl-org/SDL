@@ -68,7 +68,4 @@
 #define HAVE_SQRT     1
 #define HAVE_TAN      1
 
-#define isnanf(x) SDL_uclibc_isnanf(x);
-#define isinff(x) SDL_uclibc_isinff(x);
-
 #endif /* SDL_build_config_ngage_h_ */
