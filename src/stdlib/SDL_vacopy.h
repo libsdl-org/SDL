@@ -20,7 +20,7 @@
 */
 
 // Do our best to make sure va_copy is working
-#if defined(_MSC_VER) && _MSC_VER <= 1800
+#if (defined(_MSC_VER) && _MSC_VER <= 1800) || defined(__SYMBIAN32__)
 // Visual Studio 2013 tries to link with _vacopy in the C runtime. Newer versions do an inline assignment
 #undef va_copy
 #define va_copy(dst, src) dst = src
@@ -28,6 +28,4 @@
 #elif defined(__GNUC__) && (__GNUC__ < 3)
 #define va_copy(dst, src) __va_copy(dst, src)
 
-#elif defined(__SYMBIAN32__)
-extern void va_copy(char* dest, char* src);
 #endif
