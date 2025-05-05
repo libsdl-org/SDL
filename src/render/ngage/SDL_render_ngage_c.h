@@ -92,7 +92,7 @@ extern "C" {
     void NGAGE_DrawLines(NGAGE_Vertex* verts, const int count);
     void NGAGE_DrawPoints(NGAGE_Vertex* verts, const int count);
     void NGAGE_FillRects(NGAGE_Vertex* verts, const int count);
-    void NGAGE_Flip();
+    void NGAGE_Flip(void);
     void NGAGE_SetClipRect(const SDL_Rect* rect);
     void NGAGE_SetDrawColor(const Uint32 color);
     void NGAGE_PumpEventsInternal();
