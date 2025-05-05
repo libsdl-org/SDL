@@ -151,6 +151,30 @@ bool Emscripten_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL
         if (context != window_data->gl_context) {
             return SDL_SetError("Cannot make context current to another window");
         }
+
+        // Emscripten only applies WebGL rendering to the canvas: Module['canvas']
+        // So, the canvas in the Module object will be updated to the one associated to this window
+        const int canvas_set = MAIN_THREAD_EM_ASM_INT({
+            try
+            {
+                var id = UTF8ToString($0);
+                var canvas = document.querySelector(id);
+                if (!canvas) {
+                    return false;
+                }
+                Module['canvas'] = canvas;
+                return true;
+            }
+            catch(e)
+            {
+                // querySelector throws if id isn't a valid selector
+            }
+            return false;
+        }, window_data->canvas_id);
+        if (!canvas_set) {
+            SDL_SetError("Canvas '%s' is not present in DOM", window_data->canvas_id);
+            return false;
+        }
     }
 
     if (emscripten_webgl_make_context_current((EMSCRIPTEN_WEBGL_CONTEXT_HANDLE)context) != EMSCRIPTEN_RESULT_SUCCESS) {

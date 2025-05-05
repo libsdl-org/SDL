@@ -212,6 +212,7 @@ static void loop(void)
     if (SDL_GetTicks() > tooltip_timer) {
         if (!tooltip.win) {
             create_popup(&tooltip, false);
+            tooltip_timer = SDL_GetTicks();
         }
     }
 
@@ -226,6 +227,10 @@ static void loop(void)
     for (i = 0; i < num_menus; ++i) {
         const SDL_Color *c = &colors[i % SDL_arraysize(colors)];
         SDL_Renderer *renderer = menus[i].renderer;
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+        SDL_SyncWindow(menus[i].win);
+#endif
 
         SDL_SetRenderDrawColor(renderer, c->r, c->g, c->b, c->a);
         SDL_RenderClear(renderer);
@@ -257,6 +262,10 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     int i;
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    SDL_SetHint(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS, "1");
+#endif
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);

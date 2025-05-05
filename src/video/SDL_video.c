@@ -2577,6 +2577,15 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, w);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, h);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    // Must ensure that popup windows have a unique canvas_id
+    const char* canvas_id = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, "");
+    if (!canvas_id || !*canvas_id) {
+        char new_canvas_id[64];
+        SDL_snprintf(new_canvas_id, sizeof(new_canvas_id), "#popup%u", props);
+        SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, new_canvas_id);
+    }
+#endif
     window = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
     return window;
@@ -2591,6 +2600,14 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
     bool need_vulkan_unload = false;
     bool need_vulkan_load = false;
     SDL_WindowFlags graphics_flags;
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+    // Don't actually recreate the window in Emscripten because the SDL_WindowData's
+    // canvas_id and keyboard_element would be lost if destroyed
+    const bool recreate_window = false;
+#else
+    const bool recreate_window = true;
+#endif
 
     // ensure no more than one of these flags is set
     graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
@@ -2660,7 +2677,7 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         SDL_Vulkan_UnloadLibrary();
     }
 
-    if (_this->DestroyWindow && !(flags & SDL_WINDOW_EXTERNAL)) {
+    if (recreate_window && _this->DestroyWindow && !(flags & SDL_WINDOW_EXTERNAL)) {
         _this->DestroyWindow(_this, window);
     }
 
@@ -2690,7 +2707,7 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
         window->w = window->windowed.w = window->floating.w;
         window->h = window->windowed.h = window->floating.h;
 
-        if (!_this->CreateSDLWindow(_this, window, 0)) {
+        if (recreate_window && !_this->CreateSDLWindow(_this, window, 0)) {
             if (loaded_opengl) {
                 SDL_GL_UnloadLibrary();
                 window->flags &= ~SDL_WINDOW_OPENGL;
