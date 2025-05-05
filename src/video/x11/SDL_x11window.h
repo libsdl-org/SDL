@@ -118,7 +118,6 @@ struct SDL_WindowData
     bool fullscreen_borders_forced_on;
     bool was_shown;
     bool emit_size_move_after_property_notify;
-    bool tracking_mouse_outside_window;
     SDL_HitTestResult hit_test_result;
 
     XPoint xim_spot;
