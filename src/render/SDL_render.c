@@ -3257,7 +3257,6 @@ bool SDL_SetRenderDrawColorFloat(SDL_Renderer *renderer, float r, float g, float
     renderer->color.g = g;
     renderer->color.b = b;
     renderer->color.a = a;
-
     return true;
 }
 
