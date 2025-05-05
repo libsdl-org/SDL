@@ -88,8 +88,10 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
             locale = "hu_HU";
             break;
         case ELangDutch:
-        case ELangBelgianFlemish:
             locale = "nl_NL";
+            break;
+        case ELangBelgianFlemish:
+            locale = "nl_BE";
             break;
         case ELangAustralian:
         case ELangNewZealand:
