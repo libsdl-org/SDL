@@ -157,7 +157,7 @@ flags to the compiler.
 - Use [`CMAKE_EXE_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_EXE_LINKER_FLAGS.html) to pass extra option to the linker for executables.
 - Use [`CMAKE_SHARED_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_SHARED_LINKER_FLAGS.html) to pass extra options to the linker for shared libraries.
 
-#### Examples
+#### Compile Options Examples
 
 - build a SDL library optimized for (more) modern x64 microprocessor architectures.
 
@@ -240,7 +240,7 @@ Append with a version number to target a specific SDK revision: e.g. `iphoneos12
 
 CMake documentation: [link](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_SYSROOT.html)
 
-#### Examples
+#### Apple Examples
 
 - for macOS, building a dylib and/or static library for x86_64 and arm64:
 

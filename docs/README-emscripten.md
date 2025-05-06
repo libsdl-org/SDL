@@ -230,7 +230,7 @@ tools.
 mkdir build
 cd build
 emcmake cmake ..
-# you can also do `emcmake cmake -G Ninja ..` and then use `ninja` instead of this command.
+# you can also try `emcmake cmake -G Ninja ..` and then use `ninja` instead of this command.
 emmake make -j4
 ```
 
