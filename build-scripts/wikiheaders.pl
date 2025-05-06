@@ -2713,7 +2713,7 @@ __EOF__
             }
             closedir(DH);
 
-            open(FH, '>', "$wikipath/README.md") or die("Can't open '$wikipath/README.md': $!\n");
+            open(FH, '>', "$wikipath/READMEs.md") or die("Can't open '$wikipath/READMEs.md': $!\n");
             print FH "# All READMEs available here\n\n";
             foreach (sort @pages) {
                 my $wikiname = $_;
