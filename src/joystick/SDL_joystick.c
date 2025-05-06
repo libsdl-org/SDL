@@ -3177,7 +3177,9 @@ bool SDL_IsJoystickHoriSteamController(Uint16 vendor_id, Uint16 product_id)
 
 bool SDL_IsJoystick8BitDoController(Uint16 vendor_id, Uint16 product_id)
 {
-    return vendor_id == USB_VENDOR_8BITDO && (product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS);
+    return vendor_id == USB_VENDOR_8BITDO &&
+           (product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS || product_id == USB_PRODUCT_8BITDO_SN30_Pro || product_id == USB_PRODUCT_8BITDO_SN30_Pro_BT ||
+            product_id == USB_PRODUCT_8BITDO_SF30_Pro ||product_id == USB_PRODUCT_8BITDO_Pro_2 || product_id == USB_PRODUCT_8BITDO_Pro_2_BT);
 }
 
 bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id)
