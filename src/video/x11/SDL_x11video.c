@@ -25,6 +25,7 @@
 #include <unistd.h> // For getpid() and readlink()
 
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../core/linux/SDL_progressbar.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../SDL_pixels_c.h"
@@ -204,6 +205,9 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
     device->UpdateWindowShape = X11_UpdateWindowShape;
     device->FlashWindow = X11_FlashWindow;
+#ifdef SDL_USE_LIBDBUS
+    device->ApplyWindowProgress = DBUS_ApplyWindowProgress;
+#endif // SDL_USE_LIBDBUS
     device->ShowWindowSystemMenu = X11_ShowWindowSystemMenu;
     device->SetWindowFocusable = X11_SetWindowFocusable;
     device->SyncWindow = X11_SyncWindow;

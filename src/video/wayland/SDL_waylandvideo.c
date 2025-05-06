@@ -24,6 +24,7 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../core/linux/SDL_progressbar.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandclipboard.h"
@@ -629,6 +630,9 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
     device->FlashWindow = Wayland_FlashWindow;
+#ifdef SDL_USE_LIBDBUS
+    device->ApplyWindowProgress = DBUS_ApplyWindowProgress;
+#endif // SDL_USE_LIBDBUS
     device->HasScreenKeyboardSupport = Wayland_HasScreenKeyboardSupport;
     device->ShowWindowSystemMenu = Wayland_ShowWindowSystemMenu;
     device->SyncWindow = Wayland_SyncWindow;
