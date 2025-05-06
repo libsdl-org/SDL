@@ -2707,8 +2707,8 @@ __EOF__
             opendir(DH, $wikipath) or die("Can't opendir '$wikipath': $!\n");
             while (my $d = readdir(DH)) {
                 my $dent = $d;
-                if ($dent =~ /\AREADME\-.*?\.md\Z/) {
-                    push @pages, $dent;
+                if ($dent =~ /\(AREADME\-.*?)\.md\Z/) {
+                    push @pages, $1;
                 }
             }
             closedir(DH);
