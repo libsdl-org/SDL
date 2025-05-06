@@ -542,12 +542,12 @@ static bool OPENVR_SetupJoystickBasedOnLoadedActionManifest(SDL_VideoData * vide
     virtual_id = SDL_AttachVirtualJoystick(&desc);
 
     if (!virtual_id) {
+        return SDL_SetError("OPENVR: Couldn't attach virtual joystick device: %s", SDL_GetError());
+    }
+
+    videodata->virtual_joystick = SDL_OpenJoystick(virtual_id);
+    if (!videodata->virtual_joystick) {
         return SDL_SetError("OPENVR: Couldn't open virtual joystick device: %s", SDL_GetError());
-    } else {
-        videodata->virtual_joystick = SDL_OpenJoystick(virtual_index);
-        if (!videodata->virtual_joystick) {
-            return SDL_SetError("OPENVR: Couldn't open virtual joystick device: %s", SDL_GetError());
-        }
     }
 
 #ifdef DEBUG_OPENVR
