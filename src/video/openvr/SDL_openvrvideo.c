@@ -712,7 +712,7 @@ static bool OPENVR_ReleaseFrame(SDL_VideoDevice *_this)
     if (videodata->overlaytexture != 0 &&
         videodata->targh == videodata->last_targh &&
         videodata->targw == videodata->last_targw) {
-        // Only submit frames to OpenVR if the textu re exists.
+        // Only submit frames to OpenVR if the texture exists.
         struct Texture_t tex;
 
         // Setup a Texture_t object to send in the texture.
