@@ -781,7 +781,7 @@ typedef struct SDL_TouchFingerEvent
 } SDL_TouchFingerEvent;
 
 /**
- * Pressure-sensitive pen proximity event structure (event.pmotion.*)
+ * Pressure-sensitive pen proximity event structure (event.pproximity.*)
  *
  * When a pen becomes visible to the system (it is close enough to a tablet,
  * etc), SDL will send an SDL_EVENT_PEN_PROXIMITY_IN event with the new pen's
