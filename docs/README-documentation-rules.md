@@ -327,6 +327,16 @@ If you add Doxygen with a `##` (`###`, etc) section header, it'll
 migrate to the wiki and be _removed_ from the headers. Generally
 the correct thing to do is _never use section headers in the Doxygen_.
 
+## wikiheaders will reorder standard sections.
+
+The standard sections are always kept in a consistent order by
+wikiheaders, both in the headers and the wiki. If they're placed in
+a non-standard order, wikiheaders will reorder them.
+
+For sections that aren't standard, wikiheaders will place them at
+the end of the wiki page, in the order they were seen when it loaded
+the page for processing.
+
 ## It's okay to repeat yourself.
 
 Each individual piece of documentation becomes a separate page on the wiki, so
