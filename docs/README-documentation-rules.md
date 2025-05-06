@@ -340,7 +340,7 @@ through, header users can search for the function name.
 
 You might be reading this document on the wiki! Any `README-*.md` files in
 the docs directory are bridged to the wiki, so `docs/README-linux.md` lands
-at https://wiki.libsdl.org/SDL3/README/linux ...these are just copied directly
+at https://wiki.libsdl.org/SDL3/README-linux ...these are just copied directly
 without any further processing by wikiheaders, and changes go in both
 directions.
 
