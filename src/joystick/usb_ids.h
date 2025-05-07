@@ -101,6 +101,7 @@
 #define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103         0x7210
 #define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104         0x7214
 #define USB_PRODUCT_PDP_ROCK_CANDY                        0x0246
+#define USB_PRODUCT_POWERA_MINI                           0x541a
 #define USB_PRODUCT_RAZER_ATROX                           0x0a00
 #define USB_PRODUCT_RAZER_KITSUNE                         0x1012
 #define USB_PRODUCT_RAZER_PANTHERA                        0x0401
