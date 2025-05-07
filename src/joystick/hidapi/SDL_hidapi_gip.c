@@ -64,14 +64,25 @@
 #define GIP_CMD_DEBUG 0x1f
 #define GIP_AUDIO_DATA 0x60
 
-/* Vendor messages */
+/* Navigation vendor messages */
 #define GIP_CMD_DIRECT_MOTOR 0x09
-#define GIP_CMD_INITIAL_REPORTS_REQUEST 0x0a
-#define GIP_CMD_SET_APPLICATION_MEMORY 0x0b
 #define GIP_LL_INPUT_REPORT 0x20
+#define GIP_LL_OVERFLOW_INPUT_REPORT 0x26
+
+/* Wheel and ArcadeStick vendor messages */
+#define GIP_CMD_INITIAL_REPORTS_REQUEST 0x0a
 #define GIP_LL_STATIC_CONFIGURATION 0x21
 #define GIP_LL_BUTTON_INFO_REPORT 0x22
-#define GIP_LL_OVERFLOW_INPUT_REPORT 0x26
+
+/* Wheel vendor messages */
+#define GIP_CMD_SET_APPLICATION_MEMORY 0x0b
+#define GIP_CMD_SET_EQUATIONS_STATES 0x0c
+#define GIP_CMD_SET_EQUATION 0x0d
+
+/* FlightStick vendor messages */
+#define GIP_CMD_DEVICE_CAPABILITIES 0x00
+#define GIP_CMD_LED_CAPABILITIES 0x01
+#define GIP_CMD_SET_LED_STATE 0x02
 
 /* Undocumented Elite 2 vendor messages */
 #define GIP_CMD_RAW_REPORT 0x0c
