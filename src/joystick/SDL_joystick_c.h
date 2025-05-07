@@ -135,9 +135,6 @@ extern bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id);
 // Function to return whether a joystick is a HORI Steam controller
 extern bool SDL_IsJoystickHoriSteamController(Uint16 vendor_id, Uint16 product_id);
 
-// Function to return whether a joystick is a 8BitDo controller
-extern bool SDL_IsJoystick8BitDoController(Uint16 vendor_id, Uint16 product_id);
-
 // Function to return whether a joystick is a Steam Deck
 extern bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id);
 

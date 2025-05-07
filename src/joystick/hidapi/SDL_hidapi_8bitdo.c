@@ -126,7 +126,21 @@ static int ReadFeatureReport(SDL_hid_device *dev, Uint8 report_id, Uint8 *report
 
 static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
-    return SDL_IsJoystick8BitDoController(vendor_id, product_id);
+    if (vendor_id == USB_VENDOR_8BITDO) {
+        switch (product_id) {
+        case USB_PRODUCT_8BITDO_SF30_PRO:
+        case USB_PRODUCT_8BITDO_SF30_PRO_BT:
+        case USB_PRODUCT_8BITDO_SN30_PRO:
+        case USB_PRODUCT_8BITDO_SN30_PRO_BT:
+        case USB_PRODUCT_8BITDO_PRO_2:
+        case USB_PRODUCT_8BITDO_PRO_2_BT:
+        case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
+            return true;
+        default:
+            break;
+        }
+    }
+    return false;
 }
 
 static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
@@ -147,19 +161,22 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
             ctx->rumble_supported = true;
             ctx->powerstate_supported = true;
         }
-    } else if (device->product_id == USB_PRODUCT_8BITDO_SN30_PRO || device->product_id == USB_PRODUCT_8BITDO_SN30_PRO_BT ||
-               device->product_id == USB_PRODUCT_8BITDO_SF30_PRO  || device->product_id == USB_PRODUCT_8BITDO_PRO_2 ||
-                device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT) {
+    } else {
         Uint8 data[USB_PACKET_LENGTH];
         int size = ReadFeatureReport(device->dev, SDL_8BITDO_FEATURE_REPORTID_ENABLE_SDL_REPORTID, data, sizeof(data));
         if (size > 0) {
             ctx->sensors_supported = true;
             ctx->rumble_supported = true;
             ctx->powerstate_supported = true;
-        } else {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "HIDAPI_Driver8BitDo_InitDevice(): Couldn't read feature report 0x06");
         }
+    }
+
+    if (device->product_id == USB_PRODUCT_8BITDO_SF30_PRO || device->product_id == USB_PRODUCT_8BITDO_SF30_PRO_BT) {
+        HIDAPI_SetDeviceName(device, "8BitDo SF30 Pro");
+    } else if (device->product_id == USB_PRODUCT_8BITDO_SN30_PRO || device->product_id == USB_PRODUCT_8BITDO_SN30_PRO_BT) {
+        HIDAPI_SetDeviceName(device, "8BitDo SN30 Pro");
+    } else if (device->product_id == USB_PRODUCT_8BITDO_PRO_2 || device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT) {
+        HIDAPI_SetDeviceName(device, "8BitDo Pro 2");
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -187,7 +204,14 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     SDL_zeroa(ctx->last_state);
 
     // Initialize the joystick capabilities
-    joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_BUTTONS;
+    if (device->product_id == USB_PRODUCT_8BITDO_PRO_2 ||
+        device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT ||
+        device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
+        // This controller has additional buttons
+        joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_BUTTONS;
+    } else {
+        joystick->nbuttons = 11;
+    }
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
 
@@ -257,12 +281,95 @@ static bool HIDAPI_Driver8BitDo_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *dev
     }
     return SDL_Unsupported();
 }
+
+static void HIDAPI_Driver8BitDo_HandleOldStatePacket(SDL_Joystick *joystick, SDL_Driver8BitDo_Context *ctx, Uint8 *data, int size)
+{
+    Sint16 axis;
+    Uint64 timestamp = SDL_GetTicksNS();
+
+    if (ctx->last_state[2] != data[2]) {
+        Uint8 hat;
+
+        switch (data[2]) {
+        case 0:
+            hat = SDL_HAT_UP;
+            break;
+        case 1:
+            hat = SDL_HAT_RIGHTUP;
+            break;
+        case 2:
+            hat = SDL_HAT_RIGHT;
+            break;
+        case 3:
+            hat = SDL_HAT_RIGHTDOWN;
+            break;
+        case 4:
+            hat = SDL_HAT_DOWN;
+            break;
+        case 5:
+            hat = SDL_HAT_LEFTDOWN;
+            break;
+        case 6:
+            hat = SDL_HAT_LEFT;
+            break;
+        case 7:
+            hat = SDL_HAT_LEFTUP;
+            break;
+        default:
+            hat = SDL_HAT_CENTERED;
+            break;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+    }
+
+    if (ctx->last_state[0] != data[0]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data[0] & 0x01) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data[0] & 0x02) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data[0] & 0x08) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data[0] & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data[0] & 0x40) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[0] & 0x80) != 0));
+    }
+
+    if (ctx->last_state[1] != data[1]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data[1] & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, ((data[1] & 0x04) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, ((data[1] & 0x08) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((data[1] & 0x20) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((data[1] & 0x40) != 0));
+
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, (data[1] & 0x01) ? SDL_MAX_SINT16 : SDL_MIN_SINT16);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, (data[1] & 0x02) ? SDL_MAX_SINT16 : SDL_MIN_SINT16);
+    }
+
+#define READ_STICK_AXIS(offset) \
+    (data[offset] == 0x7f ? 0 : (Sint16)HIDAPI_RemapVal((float)((int)data[offset] - 0x7f), -0x7f, 0xff - 0x7f, SDL_MIN_SINT16, SDL_MAX_SINT16))
+    {
+        axis = READ_STICK_AXIS(3);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
+        axis = READ_STICK_AXIS(4);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
+        axis = READ_STICK_AXIS(5);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+        axis = READ_STICK_AXIS(6);
+        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
+    }
+#undef READ_STICK_AXIS
+
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+}
+
 static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Driver8BitDo_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
     Uint64 timestamp = SDL_GetTicksNS();
-    if (data[0] != SDL_8BITDO_REPORTID_SDL_REPORTID && data[0] != SDL_8BITDO_REPORTID_NOT_SUPPORTED_SDL_REPORTID &&
-        data[0] != SDL_8BITDO_BT_REPORTID_SDL_REPORTID) {
+
+    switch (data[0]) {
+    case SDL_8BITDO_REPORTID_NOT_SUPPORTED_SDL_REPORTID:    // Firmware without enhanced mode
+    case SDL_8BITDO_REPORTID_SDL_REPORTID:                  // Enhanced mode USB report
+    case SDL_8BITDO_BT_REPORTID_SDL_REPORTID:               // Enhanced mode Bluetooth report
+        break;
+    default:
         // We don't know how to handle this report
         return;
     }
@@ -323,7 +430,7 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((data[9] & 0x40) != 0));
     }
 
-    if (ctx->last_state[10] != data[10]) {
+    if (size > 10 && ctx->last_state[10] != data[10]) {
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_L4, ((data[10] & 0x01) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_R4, ((data[10] & 0x02) != 0));
     }
@@ -380,7 +487,6 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         }
         SDL_SendJoystickPowerInfo(joystick, state, percent);
     }
-
 
     if (ctx->sensors_enabled) {
         Uint64 sensor_timestamp;
@@ -440,7 +546,12 @@ static bool HIDAPI_Driver8BitDo_UpdateDevice(SDL_HIDAPI_Device *device)
             continue;
         }
 
-        HIDAPI_Driver8BitDo_HandleStatePacket(joystick, ctx, data, size);
+        if (size == 9) {
+            // Old firmware USB report for the SF30 Pro and SN30 Pro controllers
+            HIDAPI_Driver8BitDo_HandleOldStatePacket(joystick, ctx, data, size);
+        } else {
+            HIDAPI_Driver8BitDo_HandleStatePacket(joystick, ctx, data, size);
+        }
     }
 
     if (size < 0) {
