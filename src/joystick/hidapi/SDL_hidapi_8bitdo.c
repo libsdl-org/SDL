@@ -42,10 +42,10 @@ enum
     SDL_GAMEPAD_NUM_8BITDO_BUTTONS,
 };
 
-#define SDL_8BitDo_FeatureReportIdEnableSDLReport 0x06
-#define SDL_8BitDo_ReportIdSDLReport              0x04
-#define SDL_8BitDo_ReportIdNotSupportedSDLReport  0x03
-#define SDL_8BitDo_BT_ReportIdSDLReport           0x01
+#define SDL_8BITDO_FEATURE_REPORTID_ENABLE_SDL_REPORTID         0x06
+#define SDL_8BITDO_REPORTID_SDL_REPORTID                        0x04
+#define SDL_8BITDO_REPORTID_NOT_SUPPORTED_SDL_REPORTID          0x03
+#define SDL_8BITDO_BT_REPORTID_SDL_REPORTID                     0x01
 
 #define ABITDO_ACCEL_SCALE 4096.f
 #define SENSOR_INTERVAL_NS 8000000ULL
