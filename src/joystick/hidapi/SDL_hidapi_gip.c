@@ -314,6 +314,8 @@ typedef struct GIP_Quirks
     Uint32 extra_in_system[8];
     Uint32 extra_out_system[8];
     GIP_AttachmentType device_type;
+    Uint8 extra_buttons;
+    Uint8 extra_axes;
 } GIP_Quirks;
 
 static const GIP_Quirks quirks[] = {
@@ -347,6 +349,12 @@ static const GIP_Quirks quirks[] = {
     { USB_VENDOR_RAZER, USB_PRODUCT_RAZER_ATROX, 0,
       .filtered_features = GIP_FEATURE_MOTOR_CONTROL,
       .device_type = GIP_TYPE_ARCADE_STICK },
+
+    { USB_VENDOR_THRUSTMASTER, USB_PRODUCT_THRUSTMASTER_T_FLIGHT_HOTAS_ONE, 0,
+      .filtered_features = GIP_FEATURE_MOTOR_CONTROL,
+      .device_type = GIP_TYPE_FLIGHT_STICK,
+      .extra_buttons = 5,
+      .extra_axes = 3 },
 
     {0},
 };
@@ -451,6 +459,10 @@ typedef struct GIP_Attachment
     Uint8 share_button_idx;
     Uint8 paddle_idx;
     int paddle_offset;
+
+    Uint8 extra_button_idx;
+    int extra_buttons;
+    int extra_axes;
 } GIP_Attachment;
 
 typedef struct GIP_Device
@@ -658,6 +670,9 @@ static void GIP_HandleQuirks(GIP_Attachment *attachment)
             attachment->metadata.device.in_system_messages[j] |= quirks[i].extra_in_system[j];
             attachment->metadata.device.out_system_messages[j] |= quirks[i].extra_out_system[j];
         }
+
+        attachment->extra_buttons = quirks[i].extra_buttons;
+        attachment->extra_axes = quirks[i].extra_axes;
         break;
     }
 }
@@ -1166,6 +1181,10 @@ static bool GIP_SendInitSequence(GIP_Attachment *attachment)
     if (GIP_SupportsVendorMessage(attachment, GIP_CMD_INITIAL_REPORTS_REQUEST, false)) {
         GIP_InitialReportsRequest request = { 0 };
         GIP_SendVendorMessage(attachment, GIP_CMD_INITIAL_REPORTS_REQUEST, 0, (const Uint8 *)&request, sizeof(request));
+    }
+
+    if (GIP_SupportsVendorMessage(attachment, GIP_CMD_DEVICE_CAPABILITIES, false)) {
+        GIP_SendVendorMessage(attachment, GIP_CMD_DEVICE_CAPABILITIES, 0, NULL, 0);
     }
 
     if (!attachment->joystick) {
@@ -1833,6 +1852,67 @@ static void GIP_HandleArcadeStickReport(
     }
 }
 
+static void GIP_HandleFlightStickReport(
+    GIP_Attachment *attachment,
+    SDL_Joystick *joystick,
+    Uint64 timestamp,
+    const Uint8 *bytes,
+    int num_bytes)
+{
+    Sint16 axis;
+    int i;
+
+    if (num_bytes < 19) {
+        return;
+    }
+
+    if (attachment->last_input[2] != bytes[2]) {
+        /* Fire 1 and 2 */
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((bytes[2] & 0x01) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((bytes[2] & 0x02) != 0));
+    }
+    for (i = 0; i < attachment->extra_buttons;) {
+        if (attachment->last_input[i / 8 + 3] != bytes[i / 8 + 3]) {
+            for (; i < attachment->extra_buttons; i++) {
+                SDL_SendJoystickButton(timestamp,
+                    joystick,
+                    (Uint8) (attachment->extra_button_idx + i),
+                    ((bytes[i / 8 + 3] & (1u << i)) != 0));
+            }
+        } else {
+            i += 8;
+        }
+    }
+
+    /* Roll, pitch and yaw are signed. Throttle and any extra axes are unsigned. All values are full-range. */
+    axis = bytes[11];
+    axis |= bytes[12] << 8;
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
+
+    axis = bytes[13];
+    axis |= bytes[14] << 8;
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
+
+    axis = bytes[15];
+    axis |= bytes[16] << 8;
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+
+    /* There are no more signed values, so skip RIGHTY */
+
+    axis = (bytes[18] << 8) - 0x8000;
+    axis |= bytes[17];
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
+
+    for (i = 0; i < attachment->extra_axes; i++) {
+        if (20 + i * 2 >= num_bytes) {
+            return;
+        }
+        axis = (bytes[20 + i * 2] << 8) - 0x8000;
+        axis |= bytes[19 + i * 2];
+        SDL_SendJoystickAxis(timestamp, joystick, (Uint8) (SDL_GAMEPAD_AXIS_RIGHT_TRIGGER + i), axis);
+    }
+}
+
 static bool GIP_HandleLLInputReport(
     GIP_Attachment *attachment,
     const GIP_Header *header,
@@ -1874,6 +1954,9 @@ static bool GIP_HandleLLInputReport(
         break;
     case GIP_TYPE_ARCADE_STICK:
         GIP_HandleArcadeStickReport(attachment, joystick, timestamp, bytes, num_bytes);
+        break;
+    case GIP_TYPE_FLIGHT_STICK:
+        GIP_HandleFlightStickReport(attachment, joystick, timestamp, bytes, num_bytes);
         break;
     }
 
@@ -2395,8 +2478,17 @@ static bool HIDAPI_DriverGIP_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
         attachment->share_button_idx = (Uint8) joystick->nbuttons;
         joystick->nbuttons++;
     }
+    if (attachment->extra_buttons > 0) {
+        attachment->extra_button_idx = (Uint8) joystick->nbuttons;
+        joystick->nbuttons += attachment->extra_buttons;
+    }
 
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
+    if (attachment->attachment_type == GIP_TYPE_FLIGHT_STICK) {
+        /* Flight sticks have at least 4 axes, but only 3 are signed values, so we leave RIGHTY unused */
+        joystick->naxes += attachment->extra_axes - 1;
+    }
+
     joystick->nhats = 1;
 
     return true;
