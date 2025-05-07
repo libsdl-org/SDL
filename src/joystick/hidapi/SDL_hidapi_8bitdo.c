@@ -42,6 +42,11 @@ enum
     SDL_GAMEPAD_NUM_8BITDO_BUTTONS,
 };
 
+#define SDL_8BitDo_FeatureReportIdEnableSDLReport 0x06
+#define SDL_8BitDo_ReportIdSDLReport              0x04
+#define SDL_8BitDo_ReportIdNotSupportedSDLReport  0x03
+#define SDL_8BitDo_BT_ReportIdSDLReport           0x01
+
 #define ABITDO_ACCEL_SCALE 4096.f
 #define SENSOR_INTERVAL_NS 8000000ULL
 
@@ -146,7 +151,7 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
                device->product_id == USB_PRODUCT_8BITDO_SF30_PRO  || device->product_id == USB_PRODUCT_8BITDO_PRO_2 ||
                 device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT) {
         Uint8 data[USB_PACKET_LENGTH];
-        int size = ReadFeatureReport(device->dev, 0x06, data, sizeof(data));
+        int size = ReadFeatureReport(device->dev, SDL_8BitDo_FeatureReportIdEnableSDLReport, data, sizeof(data));
         if (size > 0) {
             ctx->sensors_supported = true;
             ctx->rumble_supported = true;
@@ -256,7 +261,8 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
 {
     Sint16 axis;
     Uint64 timestamp = SDL_GetTicksNS();
-    if (data[0] != 0x03 && data[0] != 0x01 && data[0] != 0x04) {
+    if (data[0] != SDL_8BitDo_BT_ReportIdSDLReport && data[0] != SDL_8BitDo_ReportIdNotSupportedSDLReport &&
+        data[0] != SDL_8BitDo_ReportIdSDLReport) {
         // We don't know how to handle this report
         return;
     }
