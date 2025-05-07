@@ -103,7 +103,7 @@ getting started.
 
 Another option is to use SDL' main callbacks, which handle this for you
 without platform-specific code in your app. Please refer to
-[the wiki](https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3)
+[the wiki](https://wiki.libsdl.org/SDL3/README-main-functions#main-callbacks-in-sdl3)
 or `docs/README-main-functions.md` in the SDL source code.
 
 
