@@ -1400,8 +1400,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
         }
         
-        return 0;
-        
     } break;
 
     case WM_LBUTTONUP:
