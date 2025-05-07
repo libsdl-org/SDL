@@ -2209,7 +2209,7 @@ static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
  *
  * As you might expect from Wayland, the general policy is to go with #2 unless
  * the client can prove to the compositor beyond a reasonable doubt that raising
- * the window will not be malicuous behavior.
+ * the window will not be malicious behavior.
  *
  * For SDL this means RaiseWindow and FlashWindow both use the same protocol,
  * but in different ways: RaiseWindow will provide as _much_ information as
