@@ -42,6 +42,11 @@ enum
     SDL_GAMEPAD_NUM_8BITDO_BUTTONS,
 };
 
+#define SDL_8BITDO_FEATURE_REPORTID_ENABLE_SDL_REPORTID         0x06
+#define SDL_8BITDO_REPORTID_SDL_REPORTID                        0x04
+#define SDL_8BITDO_REPORTID_NOT_SUPPORTED_SDL_REPORTID          0x03
+#define SDL_8BITDO_BT_REPORTID_SDL_REPORTID                     0x01
+
 #define ABITDO_ACCEL_SCALE 4096.f
 #define SENSOR_INTERVAL_NS 8000000ULL
 
@@ -112,6 +117,13 @@ static bool HIDAPI_Driver8BitDo_IsEnabled(void)
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_8BITDO, SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
 }
 
+static int ReadFeatureReport(SDL_hid_device *dev, Uint8 report_id, Uint8 *report, size_t length)
+{
+    SDL_memset(report, 0, length);
+    report[0] = report_id;
+    return SDL_hid_get_feature_report(dev, report, length);
+}
+
 static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     return SDL_IsJoystick8BitDoController(vendor_id, product_id);
@@ -134,6 +146,19 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
             ctx->sensors_supported = true;
             ctx->rumble_supported = true;
             ctx->powerstate_supported = true;
+        }
+    } else if (device->product_id == USB_PRODUCT_8BITDO_SN30_PRO || device->product_id == USB_PRODUCT_8BITDO_SN30_PRO_BT ||
+               device->product_id == USB_PRODUCT_8BITDO_SF30_PRO  || device->product_id == USB_PRODUCT_8BITDO_PRO_2 ||
+                device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT) {
+        Uint8 data[USB_PACKET_LENGTH];
+        int size = ReadFeatureReport(device->dev, SDL_8BITDO_FEATURE_REPORTID_ENABLE_SDL_REPORTID, data, sizeof(data));
+        if (size > 0) {
+            ctx->sensors_supported = true;
+            ctx->rumble_supported = true;
+            ctx->powerstate_supported = true;
+        } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                         "HIDAPI_Driver8BitDo_InitDevice(): Couldn't read feature report 0x06");
         }
     }
 
@@ -236,7 +261,8 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
 {
     Sint16 axis;
     Uint64 timestamp = SDL_GetTicksNS();
-    if (data[0] != 0x03 && data[0] != 0x01) {
+    if (data[0] != SDL_8BITDO_REPORTID_SDL_REPORTID && data[0] != SDL_8BITDO_REPORTID_NOT_SUPPORTED_SDL_REPORTID &&
+        data[0] != SDL_8BITDO_BT_REPORTID_SDL_REPORTID) {
         // We don't know how to handle this report
         return;
     }
