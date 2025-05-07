@@ -25,6 +25,7 @@
 #include <windows.h>
 #include <commdlg.h>
 #include <shlobj.h>
+#include <shobjidl.h>
 #include "../../core/windows/SDL_windows.h"
 #include "../../thread/SDL_systhread.h"
 
@@ -35,9 +36,11 @@ typedef struct
 {
     bool is_save;
     wchar_t *filters_str;
+    int nfilters;
     char *default_file;
     SDL_Window *parent;
     DWORD flags;
+    bool allow_many;
     SDL_DialogFileCallback callback;
     void *userdata;
     char *title;
@@ -48,6 +51,7 @@ typedef struct
 typedef struct
 {
     SDL_Window *parent;
+    bool allow_many;
     SDL_DialogFileCallback callback;
     char *default_folder;
     void *userdata;
@@ -101,18 +105,318 @@ char *clear_filt_names(const char *filt)
     return cleared;
 }
 
+bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const char *default_file, SDL_Window *parent, bool allow_many, SDL_DialogFileCallback callback, void *userdata, const char *title, const char *accept, const char *cancel, wchar_t *filter_wchar, int nfilters)
+{
+    bool is_save = dialog_type == SDL_FILEDIALOG_SAVEFILE;
+    bool is_folder = dialog_type == SDL_FILEDIALOG_OPENFOLDER;
+
+    if (is_save) {
+        // Just in case; the code relies on that
+        allow_many = false;
+    }
+
+    IFileDialog *pFileDialog = NULL;
+    IFileOpenDialog *pFileOpenDialog = NULL;
+    IFileDialog2 *pFileDialog2 = NULL;
+    IShellItemArray *pItemArray = NULL;
+    IShellItem *pItem = NULL;
+    IShellItem *pFolderItem = NULL;
+    LPWSTR filePath = NULL;
+    COMDLG_FILTERSPEC *filter_data = NULL;
+    char **files = NULL;
+    wchar_t *title_w = NULL;
+    wchar_t *accept_w = NULL;
+    wchar_t *cancel_w = NULL;
+    FILEOPENDIALOGOPTIONS pfos;
+
+    wchar_t *default_file_w = NULL;
+    wchar_t *default_folder_w = NULL;
+
+    bool success = false;
+    bool co_init = false;
+
+    if (filter_wchar && nfilters > 0) {
+        wchar_t *filter_ptr = filter_wchar;
+        filter_data = SDL_calloc(sizeof(COMDLG_FILTERSPEC), nfilters);
+        if (!filter_data) {
+            goto quit;
+        }
+
+        for (int i = 0; i < nfilters; i++) {
+            filter_data[i].pszName = filter_ptr;
+            filter_ptr += SDL_wcslen(filter_ptr) + 1;
+            filter_data[i].pszSpec = filter_ptr;
+            filter_ptr += SDL_wcslen(filter_ptr) + 1;
+        }
+
+        // assert(*filter_ptr == L'\0');
+    }
+
+    if (title && !(title_w = WIN_UTF8ToStringW(title))) {
+        goto quit;
+    }
+
+    if (accept && !(accept_w = WIN_UTF8ToStringW(accept))) {
+        goto quit;
+    }
+
+    if (cancel && !(cancel_w = WIN_UTF8ToStringW(cancel))) {
+        goto quit;
+    }
+
+    if (default_file) {
+        default_folder_w = WIN_UTF8ToStringW(default_file);
+
+        if (!default_folder_w) {
+            goto quit;
+        }
+
+        for (wchar_t *chrptr = default_folder_w; *chrptr; chrptr++) {
+            if (*chrptr == L'/' || *chrptr == L'\\') {
+                default_file_w = chrptr;
+            }
+        }
+
+        if (!default_file_w) {
+            default_file_w = default_folder_w;
+            default_folder_w = NULL;
+        } else {
+            *default_file_w = L'\0';
+            default_file_w++;
+
+            if (SDL_wcslen(default_file_w) == 0) {
+                default_file_w = NULL;
+            }
+        }
+    }
+
+#define CHECK(op) if (!SUCCEEDED(op)) { goto quit; }
+
+    CHECK(WIN_CoInitialize());
+
+    co_init = true;
+
+    CHECK(CoCreateInstance(is_save ? &CLSID_FileSaveDialog : &CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, &IID_IFileDialog, (void**)&pFileDialog));
+    CHECK(pFileDialog->lpVtbl->QueryInterface(pFileDialog, &IID_IFileDialog2, (void**)&pFileDialog2));
+
+    if (allow_many) {
+        CHECK(pFileDialog->lpVtbl->QueryInterface(pFileDialog, &IID_IFileOpenDialog, (void**)&pFileOpenDialog));
+    }
+
+    CHECK(pFileDialog2->lpVtbl->GetOptions(pFileDialog2, &pfos));
+
+    pfos |= FOS_NOCHANGEDIR;
+    if (allow_many) pfos |= FOS_ALLOWMULTISELECT;
+    if (is_save) pfos |= FOS_OVERWRITEPROMPT;
+    if (is_folder) pfos |= FOS_PICKFOLDERS;
+
+    CHECK(pFileDialog2->lpVtbl->SetOptions(pFileDialog2, pfos));
+
+    if (cancel_w) {
+        CHECK(pFileDialog2->lpVtbl->SetCancelButtonLabel(pFileDialog2, cancel_w));
+    }
+
+    if (accept_w) {
+        CHECK(pFileDialog->lpVtbl->SetOkButtonLabel(pFileDialog, accept_w));
+    }
+
+    if (title_w) {
+        CHECK(pFileDialog->lpVtbl->SetTitle(pFileDialog, title_w));
+    }
+
+    if (filter_data) {
+        CHECK(pFileDialog->lpVtbl->SetFileTypes(pFileDialog, nfilters, filter_data));
+    }
+
+    // SetFolder would enforce using the same location each and every time, but
+    // Windows docs recommend against it
+    if (default_folder_w) {
+        CHECK(SHCreateItemFromParsingName(default_folder_w, NULL, &IID_IShellItem, (void**)&pFolderItem));
+        CHECK(pFileDialog->lpVtbl->SetDefaultFolder(pFileDialog, pFolderItem));
+    }
+
+    if (default_file_w) {
+        CHECK(pFileDialog->lpVtbl->SetFileName(pFileDialog, default_file_w));
+    }
+
+    if (parent) {
+        HWND window = (HWND) SDL_GetPointerProperty(SDL_GetWindowProperties(parent), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+
+        HRESULT hr = pFileDialog->lpVtbl->Show(pFileDialog, window);
+
+        if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
+            const char * const results[] = { NULL };
+            UINT selected_filter;
+
+            // This is a one-based index, not zero-based. Doc link in similar comment below
+            CHECK(pFileDialog->lpVtbl->GetFileTypeIndex(pFileDialog, &selected_filter));
+            callback(userdata, results, selected_filter - 1);
+            success = true;
+            goto quit;
+        } else if (!SUCCEEDED(hr)) {
+            goto quit;
+        }
+    } else {
+        HRESULT hr = pFileDialog->lpVtbl->Show(pFileDialog, NULL);
+
+        if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
+            const char * const results[] = { NULL };
+            UINT selected_filter;
+
+            // This is a one-based index, not zero-based. Doc link in similar comment below
+            CHECK(pFileDialog->lpVtbl->GetFileTypeIndex(pFileDialog, &selected_filter));
+            callback(userdata, results, selected_filter - 1);
+            success = true;
+            goto quit;
+        } else if (!SUCCEEDED(hr)) {
+            goto quit;
+        }
+    }
+
+    if (allow_many) {
+        DWORD nResults;
+        UINT selected_filter;
+
+        CHECK(pFileOpenDialog->lpVtbl->GetResults(pFileOpenDialog, &pItemArray));
+        CHECK(pFileDialog->lpVtbl->GetFileTypeIndex(pFileDialog, &selected_filter));
+        CHECK(pItemArray->lpVtbl->GetCount(pItemArray, &nResults));
+
+        files = SDL_calloc(nResults + 1, sizeof(char*));
+        if (!files) {
+            goto quit;
+        }
+        char** files_ptr = files;
+
+        for (DWORD i = 0; i < nResults; i++) {
+            CHECK(pItemArray->lpVtbl->GetItemAt(pItemArray, i, &pItem));
+            CHECK(pItem->lpVtbl->GetDisplayName(pItem, SIGDN_FILESYSPATH, &filePath));
+
+            *(files_ptr++) = WIN_StringToUTF8(filePath);
+
+            CoTaskMemFree(filePath);
+            filePath = NULL;
+            pItem->lpVtbl->Release(pItem);
+            pItem = NULL;
+        }
+
+        callback(userdata, (const char * const *) files, selected_filter - 1);
+        success = true;
+    } else {
+        // This is a one-based index, not zero-based.
+        // https://learn.microsoft.com/en-us/windows/win32/api/shobjidl_core/nf-shobjidl_core-ifiledialog-getfiletypeindex#parameters
+        UINT selected_filter;
+
+        CHECK(pFileDialog->lpVtbl->GetResult(pFileDialog, &pItem));
+        CHECK(pFileDialog->lpVtbl->GetFileTypeIndex(pFileDialog, &selected_filter));
+        CHECK(pItem->lpVtbl->GetDisplayName(pItem, SIGDN_FILESYSPATH, &filePath));
+
+        char *file = WIN_StringToUTF8(filePath);
+        if (!file) {
+            goto quit;
+        }
+        const char * const results[] = { file, NULL };
+        callback(userdata, results, selected_filter - 1);
+        success = true;
+        SDL_free(file);
+    }
+
+    success = true;
+
+#undef CHECK
+
+quit:
+    if (!success) {
+        WIN_SetError("dialogg");
+        callback(userdata, NULL, -1);
+    }
+
+    if (co_init) {
+        WIN_CoUninitialize();
+    }
+
+    if (pFileOpenDialog) {
+        pFileOpenDialog->lpVtbl->Release(pFileOpenDialog);
+    }
+
+    if (pFileDialog2) {
+        pFileDialog2->lpVtbl->Release(pFileDialog2);
+    }
+
+    if (pFileDialog) {
+        pFileDialog->lpVtbl->Release(pFileDialog);
+    }
+
+    if (pItem) {
+        pItem->lpVtbl->Release(pItem);
+    }
+
+    if (pFolderItem) {
+        pFolderItem->lpVtbl->Release(pFolderItem);
+    }
+
+    if (pItemArray) {
+        pItemArray->lpVtbl->Release(pItemArray);
+    }
+
+    if (filePath) {
+        CoTaskMemFree(filePath);
+    }
+
+    // If both default_file_w and default_folder_w are non-NULL, then
+    // default_file_w is a pointer into default_folder_w.
+    if (default_folder_w) {
+        SDL_free(default_folder_w);
+    } else if (default_file_w) {
+        SDL_free(default_file_w);
+    }
+
+    if (title_w) {
+        SDL_free(title_w);
+    }
+
+    if (accept_w) {
+        SDL_free(accept_w);
+    }
+
+    if (cancel_w) {
+        SDL_free(cancel_w);
+    }
+
+    if (filter_data) {
+        SDL_free(filter_data);
+    }
+
+    if (files) {
+        for (char** files_ptr = files; *files_ptr; files_ptr++) {
+            SDL_free(*files_ptr);
+        }
+        SDL_free(files);
+    }
+
+    return success;
+}
+
 // TODO: The new version of file dialogs
 void windows_ShowFileDialog(void *ptr)
 {
+
     winArgs *args = (winArgs *) ptr;
     bool is_save = args->is_save;
     const char *default_file = args->default_file;
     SDL_Window *parent = args->parent;
     DWORD flags = args->flags;
+    bool allow_many = args->allow_many;
     SDL_DialogFileCallback callback = args->callback;
     void *userdata = args->userdata;
     const char *title = args->title;
+    const char *accept = args->accept;
+    const char *cancel = args->cancel;
     wchar_t *filter_wchar = args->filters_str;
+    int nfilters = args->nfilters;
+
+    if (windows_ShowModernFileFolderDialog(is_save ? SDL_FILEDIALOG_SAVEFILE : SDL_FILEDIALOG_OPENFILE, default_file, parent, allow_many, callback, userdata, title, accept, cancel, filter_wchar, nfilters)) {
+        return;
+    }
 
     /* GetOpenFileName and GetSaveFileName have the same signature
        (yes, LPOPENFILENAMEW even for the save dialog) */
@@ -407,7 +711,15 @@ void windows_ShowFolderDialog(void *ptr)
     SDL_DialogFileCallback callback = args->callback;
     void *userdata = args->userdata;
     HWND parent = NULL;
+    int allow_many = args->allow_many;
+    char *default_folder = args->default_folder;
     const char *title = args->title;
+    const char *accept = args->accept;
+    const char *cancel = args->cancel;
+
+    if (windows_ShowModernFileFolderDialog(SDL_FILEDIALOG_OPENFOLDER, default_folder, window, allow_many, callback, userdata, title, accept, cancel, NULL, 0)) {
+        return;
+    }
 
     if (window) {
         parent = (HWND) SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
@@ -532,9 +844,11 @@ static void ShowFileDialog(SDL_DialogFileCallback callback, void *userdata, SDL_
 
     args->is_save = is_save;
     args->filters_str = filters_str;
+    args->nfilters = nfilters;
     args->default_file = default_location ? SDL_strdup(default_location) : NULL;
     args->parent = window;
     args->flags = flags;
+    args->allow_many = allow_many;
     args->callback = callback;
     args->userdata = userdata;
     args->title = title ? SDL_strdup(title) : NULL;
@@ -571,6 +885,7 @@ void ShowFolderDialog(SDL_DialogFileCallback callback, void *userdata, SDL_Windo
     }
 
     args->parent = window;
+    args->allow_many = allow_many;
     args->callback = callback;
     args->default_folder = default_location ? SDL_strdup(default_location) : NULL;
     args->userdata = userdata;
