@@ -142,9 +142,9 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
             ctx->rumble_supported = true;
             ctx->powerstate_supported = true;
         }
-    } else if (device->product_id == USB_PRODUCT_8BITDO_SN30_Pro || device->product_id == USB_PRODUCT_8BITDO_SN30_Pro_BT ||
-               device->product_id == USB_PRODUCT_8BITDO_SF30_Pro  || device->product_id == USB_PRODUCT_8BITDO_Pro_2 ||
-                device->product_id == USB_PRODUCT_8BITDO_Pro_2_BT) {
+    } else if (device->product_id == USB_PRODUCT_8BITDO_SN30_PRO || device->product_id == USB_PRODUCT_8BITDO_SN30_PRO_BT ||
+               device->product_id == USB_PRODUCT_8BITDO_SF30_PRO  || device->product_id == USB_PRODUCT_8BITDO_PRO_2 ||
+                device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT) {
         Uint8 data[USB_PACKET_LENGTH];
         int size = ReadFeatureReport(device->dev, 0x06, data, sizeof(data));
         if (size > 0) {
