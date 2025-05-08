@@ -115,7 +115,11 @@
 #define CPU_CFG2_LSX  (1 << 6)
 #define CPU_CFG2_LASX (1 << 7)
 
-#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(SDL_PLATFORM_MACOS) && !defined(SDL_PLATFORM_OPENBSD) && !defined(SDL_PLATFORM_FREEBSD) && (defined(SDL_PLATFORM_LINUX) && !defined(HAVE_GETAUXVAL))
+#if !defined(SDL_CPUINFO_DISABLED) && \
+    !((defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))) || (defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__))) && \
+    !(defined(SDL_PLATFORM_FREEBSD) && defined(__powerpc__)) && \
+    !(defined(SDL_PLATFORM_LINUX) && defined(__powerpc__) && defined(HAVE_GETAUXVAL)) && \
+    defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
 /* This is the brute force way of detecting instruction sets...
    the idea is borrowed from the libmpeg2 library - thanks!
  */
