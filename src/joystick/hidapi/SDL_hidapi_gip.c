@@ -1210,11 +1210,7 @@ static bool GIP_EnsureMetadata(GIP_Attachment *attachment)
     case GIP_METADATA_FAKED:
         return true;
     case GIP_METADATA_NONE:
-        if (attachment->quirks & GIP_QUIRK_BROKEN_METADATA) {
-            GIP_SendSystemMessage(attachment, GIP_CMD_METADATA, 0, NULL, 0);
-            GIP_SetMetadataDefaults(attachment);
-            return GIP_SendInitSequence(attachment);
-        } else if (attachment->device->got_hello) {
+        if (attachment->device->got_hello) {
             attachment->device->timeout = GIP_ACME_TIMEOUT;
             attachment->got_metadata = GIP_METADATA_PENDING;
             attachment->metadata_next = SDL_GetTicks() + 500;
@@ -2633,7 +2629,7 @@ static bool HIDAPI_DriverGIP_UpdateDevice(SDL_HIDAPI_Device *device)
             timestamp >= attachment->metadata_next &&
             attachment->fragment_message != GIP_CMD_METADATA)
         {
-            if (attachment->metadata_retries < 5) {
+            if (attachment->metadata_retries < 3) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "GIP: Retrying metadata request");
                 attachment->metadata_retries++;
                 attachment->metadata_next = timestamp + 500;
@@ -2647,6 +2643,7 @@ static bool HIDAPI_DriverGIP_UpdateDevice(SDL_HIDAPI_Device *device)
                 GIP_SendSetDeviceState(attachment, GIP_STATE_RESET);
             } else {
                 GIP_SetMetadataDefaults(attachment);
+                GIP_SendInitSequence(attachment);
             }
             perform_reset = false;
         }
