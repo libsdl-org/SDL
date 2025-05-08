@@ -2171,7 +2171,7 @@ static bool GIP_HandleMessage(
     return false;
 }
 
-static int GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_bytes)
+static void GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_bytes)
 {
     GIP_Header header;
     int offset = 3;
@@ -2183,7 +2183,7 @@ static int GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_byt
     GIP_Attachment* attachment;
 
     if (num_bytes < 5) {
-        return -1;
+        return;
     }
 
     header.message_type = bytes[0];
@@ -2216,7 +2216,7 @@ static int GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_byt
             }
             offset += GIP_DecodeLength(&total_length, &bytes[offset], num_bytes - offset);
             if (total_length > MAX_MESSAGE_LENGTH) {
-                return -1;
+                return;
             }
             attachment->total_length = (Uint16) total_length;
             attachment->fragment_message = header.message_type;
@@ -2224,13 +2224,13 @@ static int GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_byt
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
                     "GIP: Received fragment that claims to be %" SDL_PRIu64 " bytes, expected %i",
                     header.length, num_bytes - offset);
-                return -1;
+                return;
             }
             if (header.length > total_length) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
                     "GIP: Received too long fragment, %" SDL_PRIu64 " bytes, exceeds %d",
                     header.length, attachment->total_length);
-                return -1;
+                return;
             }
             attachment->fragment_data = SDL_malloc(attachment->total_length);
             SDL_memcpy(attachment->fragment_data, &bytes[offset], (size_t) header.length);
@@ -2243,7 +2243,7 @@ static int GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_byt
                     "GIP: Received out of sequence message type %02x, expected %02x",
                     header.message_type, attachment->fragment_message);
                 GIP_FragmentFailed(attachment, &header);
-                return -1;
+                return;
             }
 
             offset += GIP_DecodeLength(&fragment_offset, &bytes[offset], num_bytes - offset);
@@ -2251,16 +2251,17 @@ static int GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_byt
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
                     "GIP: Received out of sequence fragment, (claimed %" SDL_PRIu64 ", expected %d)",
                     fragment_offset, attachment->fragment_offset);
-                return GIP_Acknowledge(device,
+                GIP_Acknowledge(device,
                     &header,
                     attachment->fragment_offset,
                     (Uint16) (attachment->total_length - attachment->fragment_offset));
+                return;
             } else if (fragment_offset + header.length > attachment->total_length) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
                     "GIP: Received too long fragment, %" SDL_PRIu64 " exceeds %d",
                     fragment_offset + header.length, attachment->total_length);
                 GIP_FragmentFailed(attachment, &header);
-                return -1;
+                return;
             }
 
             bytes_remaining = attachment->total_length - (Uint16) (fragment_offset + header.length);
@@ -2282,7 +2283,7 @@ static int GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_byt
         SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
             "GIP: Received message with erroneous length (claimed %" SDL_PRIu64 ", actual %d), discarding",
             header.length + offset, num_bytes);
-        return -1;
+        return;
     } else {
         num_bytes -= offset;
         bytes += offset;
@@ -2293,7 +2294,6 @@ static int GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_byt
     if (ok && (header.flags & GIP_FLAG_ACME)) {
         GIP_Acknowledge(device, &header, (Uint32) fragment_offset, bytes_remaining);
     }
-    return offset + (Uint16) header.length;
 }
 
 static void HIDAPI_DriverGIP_RumbleSent(void *userdata)
@@ -2611,10 +2611,7 @@ static bool HIDAPI_DriverGIP_UpdateDevice(SDL_HIDAPI_Device *device)
 
     while ((num_bytes = SDL_hid_read_timeout(device->dev, bytes, sizeof(bytes), ctx->timeout)) > 0) {
         ctx->timeout = 0;
-        int parsed = GIP_ReceivePacket(ctx, bytes, num_bytes);
-        if (parsed <= 0) {
-            break;
-        }
+        GIP_ReceivePacket(ctx, bytes, num_bytes);
     }
 
     timestamp = SDL_GetTicks();
