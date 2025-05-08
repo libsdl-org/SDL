@@ -154,12 +154,21 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
     if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
         // The Ultimate 2 Wireless v1.02 firmware has 12 byte reports, v1.03 firmware has 34 byte reports
         const int ULTIMATE2_WIRELESS_V103_REPORT_SIZE = 34;
-        Uint8 data[USB_PACKET_LENGTH];
-        int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
-        if (size >= ULTIMATE2_WIRELESS_V103_REPORT_SIZE) {
-            ctx->sensors_supported = true;
-            ctx->rumble_supported = true;
-            ctx->powerstate_supported = true;
+        const int MAX_ATTEMPTS = 3;
+
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
+            Uint8 data[USB_PACKET_LENGTH];
+            int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
+            if (size == 0) {
+                // Try again
+                continue;
+            }
+            if (size >= ULTIMATE2_WIRELESS_V103_REPORT_SIZE) {
+                ctx->sensors_supported = true;
+                ctx->rumble_supported = true;
+                ctx->powerstate_supported = true;
+            }
+            break;
         }
     } else {
         Uint8 data[USB_PACKET_LENGTH];
