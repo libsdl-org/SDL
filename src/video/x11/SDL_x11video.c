@@ -279,7 +279,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
      * This is otherwise not wanted, as it can break fullscreen window positioning on multi-monitor configurations.
      */
     if (!X11_CheckCurrentDesktop("openbox")) {
-        device->device_caps |= VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES;
+        device->device_caps |= VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
     }
 
     data->is_xwayland = X11_IsXWayland(x11_display);
