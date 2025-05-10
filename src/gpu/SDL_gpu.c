@@ -1735,7 +1735,11 @@ void SDL_BindGPUVertexSamplers(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
-        CHECK_SAMPLER_TEXTURES
+
+        if (!((CommandBufferCommonHeader*)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation)
+        {
+            CHECK_SAMPLER_TEXTURES
+        }
     }
 
     RENDERPASS_DEVICE->BindVertexSamplers(
@@ -1815,7 +1819,11 @@ void SDL_BindGPUFragmentSamplers(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
-        CHECK_SAMPLER_TEXTURES
+
+        if (!((CommandBufferCommonHeader*)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation)
+        {
+            CHECK_SAMPLER_TEXTURES
+        }
     }
 
     RENDERPASS_DEVICE->BindFragmentSamplers(
@@ -2577,11 +2585,19 @@ void SDL_GenerateMipmapsForGPUTexture(
             SDL_assert_release(!"GenerateMipmaps texture must be created with SAMPLER and COLOR_TARGET usage flags!");
             return;
         }
+
+        CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
+        commandBufferHeader->ignore_render_pass_texture_validation = true;
     }
 
     COMMAND_BUFFER_DEVICE->GenerateMipmaps(
         command_buffer,
         texture);
+
+    if (COMMAND_BUFFER_DEVICE->debug_mode) {
+        CommandBufferCommonHeader *commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
+        commandBufferHeader->ignore_render_pass_texture_validation = false;
+    }
 }
 
 void SDL_BlitGPUTexture(
