@@ -459,6 +459,9 @@
     <ClInclude Include="..\..\src\main\SDL_main_callbacks.h">
       <Filter>main</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\main\SDL_runapp.h">
+      <Filter>main</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\SDL_error_c.h" />
     <ClInclude Include="..\..\src\SDL_hashtable.h" />
     <ClInclude Include="..\..\src\SDL_list.h" />
