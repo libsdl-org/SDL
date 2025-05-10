@@ -18,14 +18,60 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
-// Do our best to make sure va_copy is working
-#if (defined(_MSC_VER) && _MSC_VER <= 1800) || defined(__SYMBIAN32__)
-// Visual Studio 2013 tries to link with _vacopy in the C runtime. Newer versions do an inline assignment
-#undef va_copy
-#define va_copy(dst, src) dst = src
+#include <e32std.h>
+#include <e32svr.h>
+#include <hal.h>
 
-#elif defined(__GNUC__) && (__GNUC__ < 3)
-#define va_copy(dst, src) __va_copy(dst, src)
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+bool NGAGE_IsClassicModel()
+{
+    int phone_id;
+    HAL::Get(HALData::EMachineUid, phone_id);
+
+    return (0x101f8c19 == phone_id);
+}
+
+void NGAGE_printf(const char *fmt, ...)
+{
+    char buffer[512] = { 0 };
+
+    va_list ap;
+    va_start(ap, fmt);
+    vsprintf(buffer, fmt, ap);
+    va_end(ap);
+
+    TBuf<512> buf;
+    buf.Copy(TPtrC8((TText8 *)buffer));
+
+    RDebug::Print(_L("%S"), &buf);
+}
+
+void NGAGE_vnprintf(char *buf, size_t size, const char *fmt, va_list ap)
+{
+    char buffer[512] = { 0 };
+
+    vsprintf(buffer, fmt, ap);
+
+    TBuf<512> tbuf;
+    tbuf.Copy(TPtrC8((TText8 *)buffer));
+
+    RDebug::Print(_L("%S"), &tbuf);
+
+    strncpy(buf, buffer, size - 1);
+    buf[size - 1] = '\0';
+}
+
+TInt NGAGE_GetFreeHeapMemory()
+{
+    TInt free = 0;
+    return User::Available(free);
+}
+
+#ifdef __cplusplus
+}
 #endif

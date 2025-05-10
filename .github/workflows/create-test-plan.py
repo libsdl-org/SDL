@@ -54,6 +54,7 @@ class SdlPlatform(Enum):
     Riscos = "riscos"
     FreeBSD = "freebsd"
     NetBSD = "netbsd"
+    NGage = "ngage"
 
 
 class Msys2Platform(Enum):
@@ -139,11 +140,12 @@ JOB_SPECS = {
     "riscos": JobSpec(name="RISC OS",                                       os=JobOs.UbuntuLatest,      platform=SdlPlatform.Riscos,      artifact="SDL-riscos",             container="riscosdotinfo/riscos-gccsdk-4.7:latest", ),
     "netbsd": JobSpec(name="NetBSD",                                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.NetBSD,      artifact="SDL-netbsd-x64", ),
     "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
+    "ngage": JobSpec(name="N-Gage",                                         os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
 }
 
 
 class StaticLibType(Enum):
-    MSVC = "SDL3-static.lib"
+    STATIC_LIB = "SDL3-static.lib"
     A = "libSDL3.a"
 
 
@@ -223,6 +225,7 @@ class JobDetails:
     check_sources: bool = False
     setup_python: bool = False
     pypi_packages: list[str] = dataclasses.field(default_factory=list)
+    setup_gage_sdk_path: str = ""
 
     def to_workflow(self, enable_artifacts: bool) -> dict[str, str|bool]:
         data = {
@@ -290,6 +293,7 @@ class JobDetails:
             "check-sources": self.check_sources,
             "setup-python": self.setup_python,
             "pypi-packages": my_shlex_join(self.pypi_packages),
+            "setup-ngage-sdk-path": self.setup_gage_sdk_path,
         }
         return {k: v for k, v in data.items() if v != ""}
 
@@ -365,7 +369,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.msvc_project_flags.append("-p:TreatWarningsAsError=true")
             job.test_pkg_config = False
             job.shared_lib = SharedLibType.WIN32
-            job.static_lib = StaticLibType.MSVC
+            job.static_lib = StaticLibType.STATIC_LIB
             job.cmake_arguments.extend((
                 "-DCMAKE_MSVC_DEBUG_INFORMATION_FORMAT=ProgramDatabase",
                 "-DCMAKE_EXE_LINKER_FLAGS=-DEBUG",
@@ -740,6 +744,19 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     job.cpactions_arch = "x86-64"
                     job.cpactions_setup_cmd = "export PATH=\"/usr/pkg/sbin:/usr/pkg/bin:/sbin:$PATH\"; export PKG_CONFIG_PATH=\"/usr/pkg/lib/pkgconfig\";export PKG_PATH=\"https://cdn.netBSD.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r|cut -f \"1 2\" -d.)/All/\";echo \"PKG_PATH=$PKG_PATH\";echo \"uname -a -> \"$(uname -a)\"\";sudo -E sysctl -w security.pax.aslr.enabled=0;sudo -E sysctl -w security.pax.aslr.global=0;sudo -E pkgin clean;sudo -E pkgin update"
                     job.cpactions_install_cmd = "sudo -E pkgin -y install cmake dbus pkgconf ninja-build pulseaudio libxkbcommon wayland wayland-protocols libinotify libusb1"
+        case SdlPlatform.NGage:
+            build_parallel = False
+            job.cmake_build_type = "Release"
+            job.setup_ninja = True
+            job.static_lib = StaticLibType.STATIC_LIB
+            job.shared_lib = None
+            job.clang_tidy = False
+            job.werror = False  # FIXME: enable SDL_WERROR
+            job.shared = False
+            job.run_tests = False
+            job.setup_gage_sdk_path = "C:/ngagesdk"
+            job.cmake_toolchain_file = "C:/ngagesdk/cmake/ngage-toolchain.cmake"
+            job.test_pkg_config = False
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 
