@@ -279,6 +279,8 @@ bool SDL_PreInitMouse(void)
 #ifdef SDL_PLATFORM_VITA
     SDL_AddHintCallback(SDL_HINT_VITA_TOUCH_MOUSE_DEVICE,
                         SDL_VitaTouchMouseDeviceChanged, mouse);
+
+    mouse->vita_touch_mouse_device = 1;
 #endif
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
