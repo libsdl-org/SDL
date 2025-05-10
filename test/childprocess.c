@@ -2,6 +2,11 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
+#ifdef SDL_PLATFORM_WINDOWS
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 
@@ -102,6 +107,11 @@ int main(int argc, char *argv[]) {
 
     if (print_arguments) {
         int print_i;
+#ifdef SDL_PLATFORM_WINDOWS
+        /* reopen stdout as binary to prevent newline conversion */
+        _setmode(_fileno(stdout), _O_BINARY);
+#endif
+
         for (print_i = 0; i + print_i < argc; print_i++) {
             fprintf(stdout, "|%d=%s|\r\n", print_i, argv[i + print_i]);
         }
