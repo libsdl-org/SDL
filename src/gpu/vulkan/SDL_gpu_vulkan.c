@@ -703,7 +703,7 @@ typedef struct WindowData
 
     // Synchronization primitives
     VkSemaphore imageAvailableSemaphore[MAX_FRAMES_IN_FLIGHT];
-    VkSemaphore renderFinishedSemaphore[MAX_FRAMES_IN_FLIGHT];
+    VkSemaphore *renderFinishedSemaphore;
     SDL_GPUFence *inFlightFences[MAX_FRAMES_IN_FLIGHT];
 
     Uint32 frameCounter;
@@ -3164,7 +3164,6 @@ static void VULKAN_INTERNAL_DestroySwapchain(
         SDL_free(windowData->textureContainers[i].activeTexture->subresources);
         SDL_free(windowData->textureContainers[i].activeTexture);
     }
-    windowData->imageCount = 0;
 
     SDL_free(windowData->textureContainers);
     windowData->textureContainers = NULL;
@@ -3193,7 +3192,8 @@ static void VULKAN_INTERNAL_DestroySwapchain(
                 NULL);
             windowData->imageAvailableSemaphore[i] = VK_NULL_HANDLE;
         }
-
+    }
+    for (i = 0; i < windowData->imageCount; i += 1) {
         if (windowData->renderFinishedSemaphore[i]) {
             renderer->vkDestroySemaphore(
                 renderer->logicalDevice,
@@ -3202,6 +3202,10 @@ static void VULKAN_INTERNAL_DestroySwapchain(
             windowData->renderFinishedSemaphore[i] = VK_NULL_HANDLE;
         }
     }
+    SDL_free(windowData->renderFinishedSemaphore);
+    windowData->renderFinishedSemaphore = NULL;
+
+    windowData->imageCount = 0;
 }
 
 static void VULKAN_INTERNAL_DestroyGraphicsPipelineResourceLayout(
@@ -4779,6 +4783,12 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSemaphore, false);
         }
 
+        windowData->inFlightFences[i] = NULL;
+    }
+    
+    windowData->renderFinishedSemaphore = SDL_malloc(
+        sizeof(VkSemaphore) * windowData->imageCount);
+    for (i = 0; i < windowData->imageCount; i += 1) {
         vulkanResult = renderer->vkCreateSemaphore(
             renderer->logicalDevice,
             &semaphoreCreateInfo,
@@ -4798,8 +4808,6 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             windowData->swapchain = VK_NULL_HANDLE;
             CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSemaphore, false);
         }
-
-        windowData->inFlightFences[i] = NULL;
     }
 
     windowData->needsSwapchainRecreate = false;
@@ -10020,7 +10028,7 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
     }
 
     vulkanCommandBuffer->signalSemaphores[vulkanCommandBuffer->signalSemaphoreCount] =
-        windowData->renderFinishedSemaphore[windowData->frameCounter];
+        windowData->renderFinishedSemaphore[swapchainImageIndex];
     vulkanCommandBuffer->signalSemaphoreCount += 1;
 
     *swapchainTexture = (SDL_GPUTexture *)swapchainTextureContainer;
@@ -10561,7 +10569,7 @@ static bool VULKAN_Submit(
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.pNext = NULL;
         presentInfo.pWaitSemaphores =
-            &presentData->windowData->renderFinishedSemaphore[presentData->windowData->frameCounter];
+            &presentData->windowData->renderFinishedSemaphore[presentData->swapchainImageIndex];
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pSwapchains = &presentData->windowData->swapchain;
         presentInfo.swapchainCount = 1;
