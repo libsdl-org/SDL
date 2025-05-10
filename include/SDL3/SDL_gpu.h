@@ -1691,6 +1691,9 @@ typedef struct SDL_GPUStencilOpState
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUColorTargetDescription
+ * \sa SDL_GPUBlendFactor
+ * \sa SDL_GPUBlendOp
+ * \sa SDL_GPUColorComponentFlags
  */
 typedef struct SDL_GPUColorTargetBlendState
 {
