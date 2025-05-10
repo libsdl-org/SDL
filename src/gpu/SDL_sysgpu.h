@@ -66,6 +66,8 @@ typedef struct CommandBufferCommonHeader
     Pass copy_pass;
     bool swapchain_texture_acquired;
     bool submitted;
+    // used to avoid tripping assert on GenerateMipmaps
+    bool ignore_render_pass_texture_validation;
 } CommandBufferCommonHeader;
 
 typedef struct TextureCommonHeader
