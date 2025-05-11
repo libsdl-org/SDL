@@ -1121,7 +1121,7 @@ void Wayland_SeatUpdateCursor(SDL_WaylandSeat *seat)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_WindowData *pointer_focus = seat->pointer.focus;
 
-    if (pointer_focus) {
+    if (pointer_focus && mouse->cursor_visible) {
         const bool has_relative_focus = Wayland_SeatHasRelativePointerFocus(seat);
 
         if (!seat->display->relative_mode_enabled || !has_relative_focus || !mouse->relative_mode_hide_cursor) {
