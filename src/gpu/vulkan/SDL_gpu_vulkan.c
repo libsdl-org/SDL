@@ -11616,13 +11616,15 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     renderer = (VulkanRenderer *)SDL_calloc(1, sizeof(*renderer));
     if (renderer) {
         // Opt out device features (higher compatibility in exchange for reduced functionality)
-        renderer->desiredDeviceFeatures.independentBlend = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_INDEPENDENTBLEND_BOOL, true) ? VK_TRUE : VK_FALSE;
         renderer->desiredDeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOL, true) ? VK_TRUE : VK_FALSE;
-        renderer->desiredDeviceFeatures.imageCubeArray = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_IMAGECUBEARRAY_BOOL, true) ? VK_TRUE : VK_FALSE;
         renderer->desiredDeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOL, true) ? VK_TRUE : VK_FALSE;
         renderer->desiredDeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOL, true) ? VK_TRUE : VK_FALSE;
         renderer->desiredDeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOL, true) ? VK_TRUE : VK_FALSE;
-        renderer->desiredDeviceFeatures.sampleRateShading = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERATESHADING_BOOL, true) ? VK_TRUE : VK_FALSE;
+
+        // These features have near universal support so they are always enabled
+        renderer->desiredDeviceFeatures.independentBlend = VK_TRUE;
+        renderer->desiredDeviceFeatures.sampleRateShading = VK_TRUE;
+        renderer->desiredDeviceFeatures.imageCubeArray = VK_TRUE;
 
         result = VULKAN_INTERNAL_PrepareVulkan(renderer);
         if (result) {
@@ -11663,13 +11665,15 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->allowedFramesInFlight = 2;
 
     // Opt out device features (higher compatibility in exchange for reduced functionality)
-    renderer->desiredDeviceFeatures.independentBlend = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_INDEPENDENTBLEND_BOOL, true) ? VK_TRUE : VK_FALSE;
     renderer->desiredDeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOL, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredDeviceFeatures.imageCubeArray = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_IMAGECUBEARRAY_BOOL, true) ? VK_TRUE : VK_FALSE;
     renderer->desiredDeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOL, true) ? VK_TRUE : VK_FALSE;
     renderer->desiredDeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOL, true) ? VK_TRUE : VK_FALSE;
     renderer->desiredDeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOL, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredDeviceFeatures.sampleRateShading = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERATESHADING_BOOL, true) ? VK_TRUE : VK_FALSE;
+
+    // These features have near universal support so they are always enabled
+    renderer->desiredDeviceFeatures.independentBlend = VK_TRUE;
+    renderer->desiredDeviceFeatures.sampleRateShading = VK_TRUE;
+    renderer->desiredDeviceFeatures.imageCubeArray = VK_TRUE;
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
         SDL_free(renderer);

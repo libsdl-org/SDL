@@ -2256,21 +2256,12 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *
  * With the Vulkan renderer:
  *
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_IMAGECUBEARRAY_BOOL`: Enable device feature
- *   imageCubeArray. If disabled, texture type SDL_GPU_TEXTURETYPE_CUBE_ARRAY
- *   cannot be used. Defaults to true.
  * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOL`: Enable device feature
  *   shaderClipDistance. If disabled, clip distances are not supported in shader code.
  *   Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERATESHADING_BOOL`: Enable device feature
- *   sampleRateShading. If disabled, shader modules cannot declare the SampleRateShading
- *   capability. Defaults to true.
  * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOL`: Enable device feature
  *   depthClamp. if disabled, there is no depth clamp support and enable_depth_clip in
  *   SDL_GPURasterizerState must always be set to true. Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_INDEPENDENTBLEND_BOOL`: Enable device feature
- *   independentBlend. if disabled, SDL_GPUColorTargetBlendState must be identical for
- *   all num_color_targets of SDL_GPUGraphicsPipelineTargetInfo. Defaults to true.
  * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOL`: Enable device feature
  *   drawIndirectFirstInstance. If disabled, the argument first_instance of
  *   SDL_GPUIndirectDrawCommand must be set to zero. Defaults to true.
@@ -2303,11 +2294,8 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN            "SDL.gpu.device.create.shaders.msl"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN       "SDL.gpu.device.create.shaders.metallib"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING     "SDL.gpu.device.create.d3d12.semantic"
-#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_IMAGECUBEARRAY_BOOL     "SDL.gpu.device.create.vulkan.imagecubearray"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOL "SDL.gpu.device.create.vulkan.shaderclipdistance"
-#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERATESHADING_BOOL  "SDL.gpu.device.create.vulkan.samplerateshading"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOL         "SDL.gpu.device.create.vulkan.depthclamp"
-#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_INDEPENDENTBLEND_BOOL   "SDL.gpu.device.create.vulkan.independentblend"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOL  "SDL.gpu.device.create.vulkan.drawindirectfirstinstance"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOL  "SDL.gpu.device.create.vulkan.sampleranisotropy"
 
