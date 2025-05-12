@@ -205,6 +205,7 @@ extern bool Wayland_SeatHasRelativePointerFocus(SDL_WaylandSeat *seat);
 extern void Wayland_SeatUpdatePointerGrab(SDL_WaylandSeat *seat);
 extern void Wayland_DisplayUpdatePointerGrabs(SDL_VideoData *display, SDL_WindowData *window);
 extern void Wayland_DisplayUpdateKeyboardGrabs(SDL_VideoData *display, SDL_WindowData *window);
+extern void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_WindowData *window);
 
 /* The implicit grab serial needs to be updated on:
  * - Keyboard key down/up
