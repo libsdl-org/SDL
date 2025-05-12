@@ -3093,6 +3093,12 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             WAYLAND_wl_display_roundtrip(data->display);
         }
 
+        /* The compositor should have relinquished keyboard, pointer, touch, and tablet tool focus when the toplevel
+         * window was destroyed upon being hidden, but there is no guarantee of this, so ensure that all references
+         * to the window held by seats are released before destroying the underlying surface and struct.
+         */
+        Wayland_DisplayRemoveWindowReferencesFromSeats(data, wind);
+
 #ifdef SDL_VIDEO_OPENGL_EGL
         if (wind->egl_surface) {
             SDL_EGL_DestroySurface(_this, wind->egl_surface);

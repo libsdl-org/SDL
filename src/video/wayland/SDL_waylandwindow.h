@@ -132,9 +132,10 @@ struct SDL_WindowData
     struct Wayland_SHMBuffer *icon_buffers;
     int icon_buffer_count;
 
-    // Keyboard and pointer focus refcount.
+    // Keyboard, pointer, and touch focus refcount.
     int keyboard_focus_count;
     int pointer_focus_count;
+    int active_touch_count;
 
     struct
     {

@@ -90,7 +90,7 @@
 // Scoped function declarations
 static void Wayland_SeatUpdateKeyboardGrab(SDL_WaylandSeat *seat);
 
-struct SDL_WaylandTouchPoint
+typedef struct
 {
     SDL_TouchID id;
     wl_fixed_t fx;
@@ -98,11 +98,11 @@ struct SDL_WaylandTouchPoint
     struct wl_surface *surface;
 
     struct wl_list link;
-};
+} SDL_WaylandTouchPoint;
 
 static void Wayland_SeatAddTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fixed_t fx, wl_fixed_t fy, struct wl_surface *surface)
 {
-    struct SDL_WaylandTouchPoint *tp = SDL_malloc(sizeof(struct SDL_WaylandTouchPoint));
+    SDL_WaylandTouchPoint *tp = SDL_malloc(sizeof(SDL_WaylandTouchPoint));
 
     SDL_zerop(tp);
     tp->id = id;
@@ -113,9 +113,37 @@ static void Wayland_SeatAddTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fixed
     WAYLAND_wl_list_insert(&seat->touch.points, &tp->link);
 }
 
+static void Wayland_SeatCancelTouch(SDL_WaylandSeat *seat, SDL_WaylandTouchPoint *tp)
+{
+    if (tp->surface) {
+        SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(tp->surface);
+
+        if (window_data) {
+            const float x = (float)(wl_fixed_to_double(tp->fx) / window_data->current.logical_width);
+            const float y = (float)(wl_fixed_to_double(tp->fy) / window_data->current.logical_height);
+
+            SDL_SendTouch(0, (SDL_TouchID)(uintptr_t)seat->touch.wl_touch,
+                          (SDL_FingerID)(tp->id + 1), window_data->sdlwindow, SDL_EVENT_FINGER_CANCELED, x, y, 0.0f);
+
+            --window_data->active_touch_count;
+
+            /* If the window currently has mouse focus and has no currently active keyboards, pointers,
+             * or touch events, then consider mouse focus to be lost.
+             */
+            if (SDL_GetMouseFocus() == window_data->sdlwindow && !window_data->keyboard_focus_count &&
+                !window_data->pointer_focus_count && !window_data->active_touch_count) {
+                SDL_SetMouseFocus(NULL);
+            }
+        }
+    }
+
+    WAYLAND_wl_list_remove(&tp->link);
+    SDL_free(tp);
+}
+
 static void Wayland_SeatUpdateTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fixed_t fx, wl_fixed_t fy, struct wl_surface **surface)
 {
-    struct SDL_WaylandTouchPoint *tp;
+    SDL_WaylandTouchPoint *tp;
 
     wl_list_for_each (tp, &seat->touch.points, link) {
         if (tp->id == id) {
@@ -131,7 +159,7 @@ static void Wayland_SeatUpdateTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fi
 
 static void Wayland_SeatRemoveTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fixed_t *fx, wl_fixed_t *fy, struct wl_surface **surface)
 {
-    struct SDL_WaylandTouchPoint *tp;
+    SDL_WaylandTouchPoint *tp;
 
     wl_list_for_each (tp, &seat->touch.points, link) {
         if (tp->id == id) {
@@ -150,23 +178,6 @@ static void Wayland_SeatRemoveTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fi
             break;
         }
     }
-}
-
-static bool Wayland_SurfaceHasActiveTouches(SDL_VideoData *display, struct wl_surface *surface)
-{
-    struct SDL_WaylandTouchPoint *tp;
-    SDL_WaylandSeat *seat;
-
-    // Check all seats for active touches on the surface.
-    wl_list_for_each (seat, &display->seat_list, link) {
-        wl_list_for_each (tp, &seat->touch.points, link) {
-            if (tp->surface == surface) {
-                return true;
-            }
-        }
-    }
-
-    return false;
 }
 
 static void Wayland_GetScaledMouseRect(SDL_Window *window, SDL_Rect *scaled_rect)
@@ -751,7 +762,7 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
      */
     SDL_Window *mouse_focus = SDL_GetMouseFocus();
     const bool had_focus = mouse_focus && window->sdlwindow == mouse_focus;
-    if (!--window->pointer_focus_count && had_focus && !Wayland_SurfaceHasActiveTouches(seat->display, surface)) {
+    if (!--window->pointer_focus_count && had_focus && !window->active_touch_count) {
         SDL_SetMouseFocus(NULL);
     }
 
@@ -1243,6 +1254,7 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
             y = (float)wl_fixed_to_double(fy) / (window_data->current.logical_height - 1);
         }
 
+        ++window_data->active_touch_count;
         SDL_SetMouseFocus(window_data->sdlwindow);
 
         SDL_SendTouch(Wayland_GetTouchTimestamp(seat, timestamp), (SDL_TouchID)(uintptr_t)touch,
@@ -1269,11 +1281,13 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
             SDL_SendTouch(Wayland_GetTouchTimestamp(seat, timestamp), (SDL_TouchID)(uintptr_t)touch,
                           (SDL_FingerID)(id + 1), window_data->sdlwindow, SDL_EVENT_FINGER_UP, x, y, 0.0f);
 
-            /* If the window currently has mouse focus, the keyboard focus is another window or NULL, the window has no
-             * pointers active on it, and the surface has no active touch events, then consider mouse focus to be lost.
+            --window_data->active_touch_count;
+
+            /* If the window currently has mouse focus and has no currently active keyboards, pointers,
+             * or touch events, then consider mouse focus to be lost.
              */
-            if (SDL_GetMouseFocus() == window_data->sdlwindow && seat->keyboard.focus != window_data &&
-                !window_data->pointer_focus_count && !Wayland_SurfaceHasActiveTouches(seat->display, surface)) {
+            if (SDL_GetMouseFocus() == window_data->sdlwindow && !window_data->keyboard_focus_count &&
+                !window_data->pointer_focus_count && !window_data->active_touch_count) {
                 SDL_SetMouseFocus(NULL);
             }
         }
@@ -1308,39 +1322,11 @@ static void touch_handler_frame(void *data, struct wl_touch *touch)
 static void touch_handler_cancel(void *data, struct wl_touch *touch)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
-    struct SDL_WaylandTouchPoint *tp, *temp;
+    SDL_WaylandTouchPoint *tp, *temp;
 
+    // Need the safe loop variant here as cancelling a touch point removes it from the list.
     wl_list_for_each_safe (tp, temp, &seat->touch.points, link) {
-        bool removed = false;
-
-        if (tp->surface) {
-            SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(tp->surface);
-
-            if (window_data) {
-                const float x = (float)(wl_fixed_to_double(tp->fx) / window_data->current.logical_width);
-                const float y = (float)(wl_fixed_to_double(tp->fy) / window_data->current.logical_height);
-
-                SDL_SendTouch(0, (SDL_TouchID)(uintptr_t)touch,
-                              (SDL_FingerID)(tp->id + 1), window_data->sdlwindow, SDL_EVENT_FINGER_CANCELED, x, y, 0.0f);
-
-                // Remove the touch from the list before checking for still-active touches on the surface.
-                WAYLAND_wl_list_remove(&tp->link);
-                removed = true;
-
-                /* If the window currently has mouse focus, the keyboard focus is another window or NULL, the window has no
-                 * pointers active on it, and the surface has no active touch events, then consider mouse focus to be lost.
-                 */
-                if (SDL_GetMouseFocus() == window_data->sdlwindow && seat->keyboard.focus != window_data &&
-                    !window_data->pointer_focus_count && !Wayland_SurfaceHasActiveTouches(seat->display, tp->surface)) {
-                    SDL_SetMouseFocus(NULL);
-                }
-            }
-        }
-
-        if (!removed) {
-            WAYLAND_wl_list_remove(&tp->link);
-        }
-        SDL_free(tp);
+        Wayland_SeatCancelTouch(seat, tp);
     }
 }
 
@@ -1924,8 +1910,7 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     /* If the window has mouse focus, has no pointers within it, and no active touches, consider
      * mouse focus to be lost.
      */
-    if (SDL_GetMouseFocus() == window->sdlwindow && !window->pointer_focus_count &&
-        !Wayland_SurfaceHasActiveTouches(seat->display, surface)) {
+    if (SDL_GetMouseFocus() == window->sdlwindow && !window->pointer_focus_count && !window->active_touch_count) {
         SDL_SetMouseFocus(NULL);
     }
 }
@@ -3414,6 +3399,36 @@ void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, 
     }
 
     WAYLAND_wl_display_flush(display->display);
+}
+
+void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_WindowData *window)
+{
+    SDL_WaylandSeat *seat;
+    wl_list_for_each (seat, &display->seat_list, link)
+    {
+        if (seat->keyboard.focus == window) {
+            keyboard_handle_leave(seat, seat->keyboard.wl_keyboard, 0, window->surface);
+        }
+
+        if (seat->pointer.focus == window) {
+            pointer_handle_leave(seat, seat->pointer.wl_pointer, 0, window->surface);
+        }
+
+        // Need the safe loop variant here as cancelling a touch point removes it from the list.
+        SDL_WaylandTouchPoint *tp, *temp;
+        wl_list_for_each_safe (tp, temp, &seat->touch.points, link) {
+            if (tp->surface == window->surface) {
+                Wayland_SeatCancelTouch(seat, tp);
+            }
+        }
+
+        SDL_WaylandPenTool *tool;
+        wl_list_for_each (tool, &seat->tablet.tool_list, link) {
+            if (tool->tool_focus == window->sdlwindow) {
+                tablet_tool_handle_proximity_out(tool, tool->wltool);
+            }
+        }
+    }
 }
 
 void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool send_events)
