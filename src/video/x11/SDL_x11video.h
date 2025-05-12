@@ -140,8 +140,6 @@ struct SDL_VideoData
     int xinput_master_pointer_device;
     bool xinput_hierarchy_changed;
 
-    unsigned long last_key_down_serial;
-
     int xrandr_event_base;
     struct
     {
