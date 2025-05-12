@@ -197,8 +197,8 @@ typedef enum SDL_ProcessIO
  *   available, and will always be 0.
  * - `SDL_PROP_PROCESS_CREATE_CMDLINE_STRING`: a string containing the program
  *   to run and any parameters. This string is passed directly to
- *   `CreateProcess` on Windows, and does nothing on other platforms.
- *   This property is only important if you want to start programs that does
+ *   `CreateProcess` on Windows, and does nothing on other platforms. This
+ *   property is only important if you want to start programs that does
  *   non-standard command-line processing, and in most cases using
  *   `SDL_PROP_PROCESS_CREATE_ARGS_POINTER` is sufficient.
  *
