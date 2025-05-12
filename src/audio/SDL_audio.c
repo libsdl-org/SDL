@@ -1523,8 +1523,10 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
 
 const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
 {
+    // bit #1 of devid is set for physical devices and unset for logical.
+    const bool islogical = !(devid & (1<<1));
     const char *result = NULL;
-    SDL_AudioDevice *device = NULL;
+    const void *vdev = NULL;
 
     if (!SDL_GetCurrentAudioDriver()) {
         SDL_SetError("Audio subsystem is not initialized");
@@ -1534,10 +1536,14 @@ const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
         // remains valid (in case the device is unplugged at the wrong moment), we hold the
         // device_hash_lock while we copy the string.
         SDL_LockRWLockForReading(current_audio.device_hash_lock);
-        SDL_FindInHashTable(current_audio.device_hash, (const void *) (uintptr_t) devid, (const void **) &device);
-        if (!device) {
+        SDL_FindInHashTable(current_audio.device_hash, (const void *) (uintptr_t) devid, &vdev);
+        if (!vdev) {
             SDL_SetError("Invalid audio device instance ID");
+        } else if (islogical) {
+            const SDL_LogicalAudioDevice *logdev = (const SDL_LogicalAudioDevice *) vdev;
+            result = SDL_GetPersistentString(logdev->physical_device->name);
         } else {
+            const SDL_AudioDevice *device = (const SDL_AudioDevice *) vdev;
             result = SDL_GetPersistentString(device->name);
         }
         SDL_UnlockRWLock(current_audio.device_hash_lock);
