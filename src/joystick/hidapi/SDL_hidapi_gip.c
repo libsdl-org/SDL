@@ -22,6 +22,7 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
+#include "../../events/SDL_keyboard_c.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
@@ -427,6 +428,7 @@ typedef struct GIP_Attachment
     struct GIP_Device *device;
     Uint8 attachment_index;
     SDL_JoystickID joystick;
+    SDL_KeyboardID keyboard;
 
     Uint8 fragment_message;
     Uint16 total_length;
@@ -460,6 +462,12 @@ typedef struct GIP_Attachment
     Uint8 right_vibration_level;
 
     Uint8 last_input[64];
+
+    Uint8 last_modifiers;
+    bool capslock;
+    SDL_Keycode last_key;
+    Uint32 altcode;
+    int altcode_digit;
 
     GIP_AttachmentType attachment_type;
     GIP_PaddleFormat paddle_format;
@@ -769,6 +777,11 @@ static bool GIP_SendVendorMessage(
         NULL);
 }
 
+static bool GIP_AttachmentIsController(GIP_Attachment *attachment)
+{
+    return attachment->attachment_type != GIP_TYPE_CHATPAD;
+}
+
 static void GIP_MetadataFree(GIP_Metadata *metadata)
 {
     if (metadata->device.audio_formats) {
@@ -933,6 +946,9 @@ static bool GIP_ParseDeviceMetadata(GIP_Metadata *metadata, const Uint8 *bytes, 
             }
             device->hid_descriptor = SDL_malloc(device->hid_descriptor_size);
             SDL_memcpy(device->hid_descriptor, &bytes[buffer_offset + 1], device->hid_descriptor_size);
+#ifdef DEBUG_XBOX_PROTOCOL
+            HIDAPI_DumpPacket("GIP received HID descriptor: size = %d", device->hid_descriptor, device->hid_descriptor_size);
+#endif
         }
     }
 
@@ -1197,8 +1213,12 @@ static bool GIP_SendInitSequence(GIP_Attachment *attachment)
         GIP_SendVendorMessage(attachment, GIP_CMD_DEVICE_CAPABILITIES, 0, NULL, 0);
     }
 
-    if (!attachment->joystick) {
+    if ((!attachment->attachment_index || GIP_AttachmentIsController(attachment)) && !attachment->joystick) {
         return HIDAPI_JoystickConnected(attachment->device->device, &attachment->joystick);
+    }
+    if (attachment->attachment_type == GIP_TYPE_CHATPAD && !attachment->keyboard) {
+        attachment->keyboard = (SDL_KeyboardID)(uintptr_t) attachment;
+        SDL_AddKeyboard(attachment->keyboard, "Xbox One Chatpad", true);
     }
     return true;
 }
@@ -1424,7 +1444,7 @@ static bool GIP_HandleCommandMetadataRespose(
 {
     GIP_Metadata metadata = {0};
     const GUID *expected_guid = NULL;
-    bool found_expected_guid = false;
+    bool found_expected_guid;
     bool found_controller_guid = false;
     int i;
 
@@ -1494,6 +1514,7 @@ static bool GIP_HandleCommandMetadataRespose(
         }
     }
 
+    found_expected_guid = !expected_guid;
     for (i = 0; i < metadata.device.num_supported_interfaces; i++) {
         const GUID* guid = &metadata.device.supported_interfaces[i];
 #ifdef DEBUG_XBOX_PROTOCOL
@@ -1539,7 +1560,7 @@ static bool GIP_HandleCommandMetadataRespose(
         }
     }
 
-    if (!found_expected_guid || !found_controller_guid) {
+    if (!found_expected_guid || (GIP_AttachmentIsController(attachment) && !found_controller_guid)) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
             "GIP: Controller was missing expected GUID. This controller probably won't work on an actual Xbox.");
     }
@@ -1701,9 +1722,95 @@ static bool GIP_HandleCommandHidReport(
     const Uint8 *bytes,
     int num_bytes)
 {
-    // TODO
-    SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GIP: Unimplemented HID Report message");
-    return false;
+    Uint64 timestamp = SDL_GetTicksNS();
+    // SDL doesn't have HID descriptor parsing, so we have to hardcode for the Chatpad descriptor instead.
+    // I don't know of any other devices that emit HID reports, so this should be safe.
+    if (attachment->attachment_type != GIP_TYPE_CHATPAD || !attachment->keyboard || num_bytes != 8) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "GIP: Unimplemented HID Report message");
+        return false;
+    }
+
+    Uint8 modifiers = bytes[0];
+    Uint8 changed_modifiers = modifiers ^ attachment->last_modifiers;
+    if (changed_modifiers & 0x02) {
+        if (modifiers & 0x02) {
+            SDL_SendKeyboardKey(timestamp, attachment->keyboard, 0, SDL_SCANCODE_LSHIFT, true);
+        } else {
+            SDL_SendKeyboardKey(timestamp, attachment->keyboard, 0, SDL_SCANCODE_LSHIFT, false);
+        }
+    }
+    // The chatpad has several non-ASCII characters that it sends as Alt codes
+    if (changed_modifiers & 0x04) {
+        if (modifiers & 0x04) {
+            attachment->altcode_digit = 0;
+            attachment->altcode = 0;
+        } else {
+            if (attachment->altcode_digit == 4) {
+                char utf8[4] = {0};
+                // Some Alt codes don't match their Unicode codepoint for some reason
+                switch (attachment->altcode) {
+                case 128:
+                    SDL_UCS4ToUTF8(0x20AC, utf8);
+                    break;
+                case 138:
+                    SDL_UCS4ToUTF8(0x0160, utf8);
+                    break;
+                case 140:
+                    SDL_UCS4ToUTF8(0x0152, utf8);
+                    break;
+                case 154:
+                    SDL_UCS4ToUTF8(0x0161, utf8);
+                    break;
+                case 156:
+                    SDL_UCS4ToUTF8(0x0153, utf8);
+                    break;
+                default:
+                    SDL_UCS4ToUTF8(attachment->altcode, utf8);
+                    break;
+                }
+                SDL_SendKeyboardText(utf8);
+            }
+            attachment->altcode_digit = -1;
+            SDL_SendKeyboardKey(timestamp, attachment->keyboard, 0, SDL_SCANCODE_NUMLOCKCLEAR, true);
+            SDL_SendKeyboardKey(timestamp, attachment->keyboard, 0, SDL_SCANCODE_NUMLOCKCLEAR, false);
+        }
+    }
+
+    if (!bytes[2] && attachment->last_key) {
+        if (attachment->last_key == SDL_SCANCODE_CAPSLOCK) {
+            attachment->capslock = !attachment->capslock;
+        }
+        SDL_SendKeyboardKey(timestamp, attachment->keyboard, 0, attachment->last_key, false);
+        if (!(attachment->last_modifiers & 0xfd)) {
+            SDL_Keycode keycode = SDL_GetKeymapKeycode(NULL,
+                attachment->last_key,
+                ((attachment->last_modifiers & 0x02) || attachment->capslock) ? SDL_KMOD_SHIFT : 0);
+            if (keycode && keycode < 0x80) {
+                char text[2] = { (char)keycode };
+                SDL_SendKeyboardText(text);
+            }
+        }
+        attachment->last_key = 0;
+    } else {
+        SDL_SendKeyboardKey(timestamp, attachment->keyboard, 0, bytes[2], true);
+        attachment->last_key = bytes[2];
+
+        if ((modifiers & 0x04) && attachment->altcode_digit >= 0) {
+            int digit = bytes[2] - SDL_SCANCODE_KP_1 + 1;
+            if (digit < 1 || digit > 10) {
+                attachment->altcode_digit = -1;
+            } else {
+                attachment->altcode_digit++;
+                attachment->altcode *= 10;
+                if (digit < 10) {
+                    attachment->altcode += digit;
+                }
+            }
+        }
+    }
+
+    attachment->last_modifiers = modifiers;
+    return true;
 }
 
 static bool GIP_HandleCommandExtended(
@@ -2085,6 +2192,18 @@ static bool GIP_HandleSystemMessage(
     const Uint8 *bytes,
     int num_bytes)
 {
+    if (attachment->attachment_index > 0 && attachment->attachment_type == GIP_TYPE_UNKNOWN) {
+        // XXX If we reattach to a controller after it's been initialized, it might have
+        // attachments we don't know about. Try to figure out what this one is.
+        if (header->message_type == GIP_CMD_HID_REPORT && num_bytes == 8) {
+            if (!attachment->keyboard) {
+                attachment->keyboard = (SDL_KeyboardID)(uintptr_t) attachment;
+                SDL_AddKeyboard(attachment->keyboard, "Xbox One Chatpad", true);
+            }
+            attachment->attachment_type = GIP_TYPE_CHATPAD;
+            attachment->metadata.device.in_system_messages[0] |= (1u << GIP_CMD_HID_REPORT);
+        }
+    }
     if (!GIP_SupportsSystemMessage(attachment, header->message_type, true)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_INPUT,
             "GIP: Received claimed-unsupported system message type %02x",
@@ -2128,6 +2247,9 @@ static GIP_Attachment * GIP_EnsureAttachment(GIP_Device *device, Uint8 attachmen
     if (!attachment) {
         attachment = SDL_calloc(1, sizeof(*attachment));
         attachment->attachment_index = attachment_index;
+        if (attachment_index > 0) {
+            attachment->attachment_type = GIP_TYPE_UNKNOWN;
+        }
         attachment->device = device;
         attachment->metadata.device.in_system_messages[0] = GIP_DEFAULT_IN_SYSTEM_MESSAGES;
         attachment->metadata.device.out_system_messages[0] = GIP_DEFAULT_OUT_SYSTEM_MESSAGES;
@@ -2678,6 +2800,9 @@ static void HIDAPI_DriverGIP_FreeDevice(SDL_HIDAPI_Device *device)
         if (attachment->fragment_data) {
             SDL_free(attachment->fragment_data);
             attachment->fragment_data = NULL;
+        }
+        if (attachment->keyboard) {
+            SDL_RemoveKeyboard(attachment->keyboard, true);
         }
         GIP_MetadataFree(&attachment->metadata);
         SDL_free(attachment);
