@@ -4307,7 +4307,7 @@ static bool METAL_SupportsTextureFormat(
 
 // Device Creation
 
-static bool METAL_PrepareDriver(SDL_VideoDevice *this)
+static bool METAL_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
 {
     if (@available(macOS 10.14, iOS 13.0, tvOS 13.0, *)) {
         return (this->Metal_CreateView != NULL);

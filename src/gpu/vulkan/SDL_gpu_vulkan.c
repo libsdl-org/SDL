@@ -1088,6 +1088,7 @@ struct VulkanRenderer
     VkPhysicalDevice physicalDevice;
     VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
     VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties;
+    VkPhysicalDeviceFeatures desiredDeviceFeatures;
     VkDevice logicalDevice;
     Uint8 integratedMemoryNotification;
     Uint8 outOfDeviceLocalMemoryWarning;
@@ -11220,12 +11221,14 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     renderer->vkGetPhysicalDeviceFeatures(
         physicalDevice,
         &deviceFeatures);
-    if (!deviceFeatures.independentBlend ||
-        !deviceFeatures.imageCubeArray ||
-        !deviceFeatures.depthClamp ||
-        !deviceFeatures.shaderClipDistance ||
-        !deviceFeatures.drawIndirectFirstInstance ||
-        !deviceFeatures.sampleRateShading) {
+
+    if ((!deviceFeatures.independentBlend && renderer->desiredDeviceFeatures.independentBlend) ||
+        (!deviceFeatures.imageCubeArray && renderer->desiredDeviceFeatures.imageCubeArray) ||
+        (!deviceFeatures.depthClamp && renderer->desiredDeviceFeatures.depthClamp) ||
+        (!deviceFeatures.shaderClipDistance && renderer->desiredDeviceFeatures.shaderClipDistance) ||
+        (!deviceFeatures.drawIndirectFirstInstance && renderer->desiredDeviceFeatures.drawIndirectFirstInstance) ||
+        (!deviceFeatures.sampleRateShading && renderer->desiredDeviceFeatures.sampleRateShading) ||
+        (!deviceFeatures.samplerAnisotropy && renderer->desiredDeviceFeatures.samplerAnisotropy)) {
         return 0;
     }
 
@@ -11441,7 +11444,6 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
 {
     VkResult vulkanResult;
     VkDeviceCreateInfo deviceCreateInfo;
-    VkPhysicalDeviceFeatures desiredDeviceFeatures;
     VkPhysicalDeviceFeatures haveDeviceFeatures;
     VkPhysicalDevicePortabilitySubsetFeaturesKHR portabilityFeatures;
     const char **deviceExtensions;
@@ -11465,22 +11467,13 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
 
     // specifying used device features
 
-    SDL_zero(desiredDeviceFeatures);
-    desiredDeviceFeatures.independentBlend = VK_TRUE;
-    desiredDeviceFeatures.samplerAnisotropy = VK_TRUE;
-    desiredDeviceFeatures.imageCubeArray = VK_TRUE;
-    desiredDeviceFeatures.depthClamp = VK_TRUE;
-    desiredDeviceFeatures.shaderClipDistance = VK_TRUE;
-    desiredDeviceFeatures.drawIndirectFirstInstance = VK_TRUE;
-    desiredDeviceFeatures.sampleRateShading = VK_TRUE;
-
     if (haveDeviceFeatures.fillModeNonSolid) {
-        desiredDeviceFeatures.fillModeNonSolid = VK_TRUE;
+        renderer->desiredDeviceFeatures.fillModeNonSolid = VK_TRUE;
         renderer->supportsFillModeNonSolid = true;
     }
 
     if (haveDeviceFeatures.multiDrawIndirect) {
-        desiredDeviceFeatures.multiDrawIndirect = VK_TRUE;
+        renderer->desiredDeviceFeatures.multiDrawIndirect = VK_TRUE;
         renderer->supportsMultiDrawIndirect = true;
     }
 
@@ -11521,7 +11514,7 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
         deviceCreateInfo.enabledExtensionCount);
     CreateDeviceExtensionArray(&renderer->supports, deviceExtensions);
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions;
-    deviceCreateInfo.pEnabledFeatures = &desiredDeviceFeatures;
+    deviceCreateInfo.pEnabledFeatures = &renderer->desiredDeviceFeatures;
 
     vulkanResult = renderer->vkCreateDevice(
         renderer->physicalDevice,
@@ -11606,7 +11599,7 @@ static bool VULKAN_INTERNAL_PrepareVulkan(
     return true;
 }
 
-static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this)
+static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 {
     // Set up dummy VulkanRenderer
     VulkanRenderer *renderer;
@@ -11622,6 +11615,15 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this)
 
     renderer = (VulkanRenderer *)SDL_calloc(1, sizeof(*renderer));
     if (renderer) {
+        // Opt out device features (higher compatibility in exchange for reduced functionality)
+        renderer->desiredDeviceFeatures.independentBlend = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_INDEPENDENTBLEND_BOOL, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredDeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOL, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredDeviceFeatures.imageCubeArray = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_IMAGECUBEARRAY_BOOL, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredDeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOL, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredDeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOL, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredDeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOL, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredDeviceFeatures.sampleRateShading = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERATESHADING_BOOL, true) ? VK_TRUE : VK_FALSE;
+
         result = VULKAN_INTERNAL_PrepareVulkan(renderer);
         if (result) {
             renderer->vkDestroyInstance(renderer->instance, NULL);
@@ -11659,6 +11661,15 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->debugMode = debugMode;
     renderer->preferLowPower = preferLowPower;
     renderer->allowedFramesInFlight = 2;
+
+    // Opt out device features (higher compatibility in exchange for reduced functionality)
+    renderer->desiredDeviceFeatures.independentBlend = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_INDEPENDENTBLEND_BOOL, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredDeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOL, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredDeviceFeatures.imageCubeArray = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_IMAGECUBEARRAY_BOOL, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredDeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOL, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredDeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOL, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredDeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOL, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredDeviceFeatures.sampleRateShading = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERATESHADING_BOOL, true) ? VK_TRUE : VK_FALSE;
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
         SDL_free(renderer);
