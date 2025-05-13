@@ -4818,7 +4818,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
 
         windowData->inFlightFences[i] = NULL;
     }
-    
+
     windowData->renderFinishedSemaphore = SDL_malloc(
         sizeof(VkSemaphore) * windowData->imageCount);
     for (i = 0; i < windowData->imageCount; i += 1) {
@@ -11609,7 +11609,7 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this)
 {
     // Set up dummy VulkanRenderer
     VulkanRenderer *renderer;
-    Uint8 result;
+    bool result = false;
 
     if (_this->Vulkan_CreateSurface == NULL) {
         return false;
@@ -11619,16 +11619,16 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this)
         return false;
     }
 
-    renderer = (VulkanRenderer *)SDL_malloc(sizeof(VulkanRenderer));
-    SDL_memset(renderer, '\0', sizeof(VulkanRenderer));
-
-    result = VULKAN_INTERNAL_PrepareVulkan(renderer);
-
-    if (result) {
-        renderer->vkDestroyInstance(renderer->instance, NULL);
+    renderer = (VulkanRenderer *)SDL_calloc(1, sizeof(*renderer));
+    if (renderer) {
+        result = VULKAN_INTERNAL_PrepareVulkan(renderer);
+        if (result) {
+            renderer->vkDestroyInstance(renderer->instance, NULL);
+        }
+        SDL_free(renderer);
     }
-    SDL_free(renderer);
     SDL_Vulkan_UnloadLibrary();
+
     return result;
 }
 
@@ -11644,8 +11644,12 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         return NULL;
     }
 
-    renderer = (VulkanRenderer *)SDL_malloc(sizeof(VulkanRenderer));
-    SDL_memset(renderer, '\0', sizeof(VulkanRenderer));
+    renderer = (VulkanRenderer *)SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        SDL_Vulkan_UnloadLibrary();
+        return false;
+    }
+
     renderer->debugMode = debugMode;
     renderer->preferLowPower = preferLowPower;
     renderer->allowedFramesInFlight = 2;
