@@ -45,6 +45,7 @@ SDL_X11_SYM(Cursor,XCreatePixmapCursor,(Display* a,Pixmap b,Pixmap c,XColor* d,X
 SDL_X11_SYM(Cursor,XCreateFontCursor,(Display* a,unsigned int b))
 SDL_X11_SYM(XFontSet,XCreateFontSet,(Display* a, _Xconst char* b, char*** c, int* d, char** e))
 SDL_X11_SYM(GC,XCreateGC,(Display* a,Drawable b,unsigned long c,XGCValues* d))
+SDL_X11_SYM(Status,XAllocColor,(Display *a, Colormap b, XColor *c))
 SDL_X11_SYM(XImage*,XCreateImage,(Display* a,Visual* b,unsigned int c,int d,int e,char* f,unsigned int g,unsigned int h,int i,int j))
 SDL_X11_SYM(Window,XCreateWindow,(Display* a,Window b,int c,int d,unsigned int e,unsigned int f,unsigned int g,int h,unsigned int i,Visual* j,unsigned long k,XSetWindowAttributes* l))
 SDL_X11_SYM(int,XDefineCursor,(Display* a,Window b,Cursor c))
