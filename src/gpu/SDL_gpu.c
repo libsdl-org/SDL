@@ -1522,37 +1522,46 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
 
             if (color_target_infos[i].cycle && color_target_infos[i].load_op == SDL_GPU_LOADOP_LOAD) {
                 SDL_assert_release(!"Cannot cycle color target when load op is LOAD!");
+                return NULL;
             }
 
             if (color_target_infos[i].store_op == SDL_GPU_STOREOP_RESOLVE || color_target_infos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
                 if (color_target_infos[i].resolve_texture == NULL) {
                     SDL_assert_release(!"Store op is RESOLVE or RESOLVE_AND_STORE but resolve_texture is NULL!");
+                    return NULL;
                 } else {
                     TextureCommonHeader *resolveTextureHeader = (TextureCommonHeader *)color_target_infos[i].resolve_texture;
                     if (textureHeader->info.sample_count == SDL_GPU_SAMPLECOUNT_1) {
                         SDL_assert_release(!"Store op is RESOLVE or RESOLVE_AND_STORE but texture is not multisample!");
+                        return NULL;
                     }
                     if (resolveTextureHeader->info.sample_count != SDL_GPU_SAMPLECOUNT_1) {
                         SDL_assert_release(!"Resolve texture must have a sample count of 1!");
+                        return NULL;
                     }
                     if (resolveTextureHeader->info.format != textureHeader->info.format) {
                         SDL_assert_release(!"Resolve texture must have the same format as its corresponding color target!");
+                        return NULL;
                     }
                     if (resolveTextureHeader->info.type == SDL_GPU_TEXTURETYPE_3D) {
                         SDL_assert_release(!"Resolve texture must not be of TEXTURETYPE_3D!");
+                        return NULL;
                     }
                     if (!(resolveTextureHeader->info.usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)) {
                         SDL_assert_release(!"Resolve texture usage must include COLOR_TARGET!");
+                        return NULL;
                     }
                 }
             }
 
             if (color_target_infos[i].layer_or_depth_plane >= textureHeader->info.layer_count_or_depth) {
                 SDL_assert_release(!"Color target layer index must be less than the texture's layer count!");
+                return NULL;
             }
 
             if (color_target_infos[i].mip_level >= textureHeader->info.num_levels) {
                 SDL_assert_release(!"Color target mip level must be less than the texture's level count!");
+                return NULL;
             }
         }
 
@@ -1561,10 +1570,12 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
             TextureCommonHeader *textureHeader = (TextureCommonHeader *)depth_stencil_target_info->texture;
             if (!(textureHeader->info.usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
                 SDL_assert_release(!"Depth target must have been created with the DEPTH_STENCIL_TARGET usage flag!");
+                return NULL;
             }
 
             if (depth_stencil_target_info->cycle && (depth_stencil_target_info->load_op == SDL_GPU_LOADOP_LOAD || depth_stencil_target_info->stencil_load_op == SDL_GPU_LOADOP_LOAD)) {
                 SDL_assert_release(!"Cannot cycle depth target when load op or stencil load op is LOAD!");
+                return NULL;
             }
 
             if (depth_stencil_target_info->store_op == SDL_GPU_STOREOP_RESOLVE ||
@@ -1572,6 +1583,7 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
                 depth_stencil_target_info->store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE ||
                 depth_stencil_target_info->stencil_store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
                 SDL_assert_release(!"RESOLVE store ops are not supported for depth-stencil targets!");
+                return NULL;
             }
         }
     }
@@ -2093,10 +2105,12 @@ SDL_GPUComputePass *SDL_BeginGPUComputePass(
 
             if (storage_texture_bindings[i].layer >= header->info.layer_count_or_depth) {
                 SDL_assert_release(!"Storage texture layer index must be less than the texture's layer count!");
+                return NULL;
             }
 
             if (storage_texture_bindings[i].mip_level >= header->info.num_levels) {
                 SDL_assert_release(!"Storage texture mip level must be less than the texture's level count!");
+                return NULL;
             }
         }
 
