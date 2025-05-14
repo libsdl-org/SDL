@@ -538,27 +538,17 @@ void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
     SDL_MouseWheelDirection direction;
     CGFloat x, y;
 
-    x = -[event deltaX];
-    y = [event deltaY];
+    x = -[event scrollingDeltaX];
+    y = [event scrollingDeltaY];
     direction = SDL_MOUSEWHEEL_NORMAL;
 
     if ([event isDirectionInvertedFromDevice] == YES) {
         direction = SDL_MOUSEWHEEL_FLIPPED;
     }
 
-    /* For discrete scroll events from conventional mice, always send a full tick.
-       For continuous scroll events from trackpads, send fractional deltas for smoother scrolling. */
-    if (![event hasPreciseScrollingDeltas]) {
-        if (x > 0) {
-            x = SDL_ceil(x);
-        } else if (x < 0) {
-            x = SDL_floor(x);
-        }
-        if (y > 0) {
-            y = SDL_ceil(y);
-        } else if (y < 0) {
-            y = SDL_floor(y);
-        }
+    if ([event hasPreciseScrollingDeltas]) {
+        x *= 0.1;
+        y *= 0.1;
     }
 
     SDL_SendMouseWheel(Cocoa_GetEventTimestamp([event timestamp]), window, mouseID, x, y, direction);
