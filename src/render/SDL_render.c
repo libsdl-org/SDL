@@ -2573,7 +2573,7 @@ static void UpdateLogicalPresentation(SDL_Renderer *renderer)
     const float logical_h = view->logical_h;
     int iwidth, iheight;
 
-    if (renderer->target) {
+    if (!is_main_view && renderer->target) {
         iwidth = (int)renderer->target->w;
         iheight = (int)renderer->target->h;
     } else {
