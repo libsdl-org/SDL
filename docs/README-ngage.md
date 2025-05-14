@@ -10,13 +10,13 @@ contributed by:
 
 Many thanks to:
 
-- Big thanks to icculus and slouken for always making room for us—even when we
- show up in 2025 still waving the N-Gage flag.
+- icculus and slouken for always making room for us — even when we show up in 2025
+ still waving the N-Gage flag.
 
 - The Nokia N-Gage [Discord community](https://discord.gg/dbUzqJ26vs)
  who keeps the platform alive.
 
-- A big thank you to the staff and supporters of the
+- The staff and supporters of the
  [Suomen pelimuseo](https://www.vapriikki.fi/nayttelyt/fantastinen-floppi/), and
  to Heikki Jungmann, for their ongoing love and dedication for the Nokia N-Gage — you
  guys are awesome!
