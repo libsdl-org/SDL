@@ -780,7 +780,9 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             break;
         }
     } else if (vendor == USB_VENDOR_8BITDO &&
-               (product == USB_PRODUCT_8BITDO_SN30_PRO ||
+               (product == USB_PRODUCT_8BITDO_SF30_PRO ||
+                product == USB_PRODUCT_8BITDO_SF30_PRO_BT ||
+                product == USB_PRODUCT_8BITDO_SN30_PRO ||
                 product == USB_PRODUCT_8BITDO_SN30_PRO_BT ||
                 product == USB_PRODUCT_8BITDO_PRO_2 ||
                 product == USB_PRODUCT_8BITDO_PRO_2_BT)) {
