@@ -868,6 +868,13 @@ bool SDL_GPUTextureSupportsFormat(
         CHECK_TEXTUREFORMAT_ENUM_INVALID(format, false)
     }
 
+    if ((usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) || 
+        (usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE)) {
+        if (!TextureFormatIsComputeWritable[format]) {
+            return false;
+        }
+    }
+
     return device->SupportsTextureFormat(
         device->driverData,
         format,
@@ -2218,11 +2225,6 @@ SDL_GPUComputePass *SDL_BeginGPUComputePass(
 
             if (storage_texture_bindings[i].mip_level >= header->info.num_levels) {
                 SDL_assert_release(!"Storage texture mip level must be less than the texture's level count!");
-                return NULL;
-            }
-
-            if (!TextureFormatIsComputeWritable[header->info.format]) {
-                SDL_assert_release(!"The format of this storage texture is invalid for writing in a compute pipeline!");
                 return NULL;
             }
         }
