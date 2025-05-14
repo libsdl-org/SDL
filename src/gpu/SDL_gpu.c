@@ -1525,6 +1525,14 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
                     }
                 }
             }
+
+            if (color_target_infos[i].layer_or_depth_plane >= textureHeader->info.layer_count_or_depth) {
+                SDL_assert_release(!"Color target layer index must be less than the texture's layer count!");
+            }
+
+            if (color_target_infos[i].mip_level >= textureHeader->info.num_levels) {
+                SDL_assert_release(!"Color target mip level must be less than the texture's level count!");
+            }
         }
 
         if (depth_stencil_target_info != NULL) {
@@ -2060,6 +2068,14 @@ SDL_GPUComputePass *SDL_BeginGPUComputePass(
             if (!(header->info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) && !(header->info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE)) {
                 SDL_assert_release(!"Texture must be created with COMPUTE_STORAGE_WRITE or COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE flag");
                 return NULL;
+            }
+
+            if (storage_texture_bindings[i].layer >= header->info.layer_count_or_depth) {
+                SDL_assert_release(!"Storage texture layer index must be less than the texture's layer count!");
+            }
+
+            if (storage_texture_bindings[i].mip_level >= header->info.num_levels) {
+                SDL_assert_release(!"Storage texture mip level must be less than the texture's level count!");
             }
         }
 
