@@ -100,6 +100,9 @@ typedef struct SDL_MessageBoxDataX11
     long event_mask;
     Atom wm_protocols;
     Atom wm_delete_message;
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
+	bool xrandr; // Whether Xrandr is present or not
+#endif
 
     int dialog_width;  // Dialog box width.
     int dialog_height; // Dialog box height.
@@ -197,7 +200,12 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
     if (!data->display) {
         return SDL_SetError("Couldn't open X11 display");
     }
-
+    
+#ifdef SDL_VIDEO_DRIVER_X11_XRANDR
+	int xrandr_event_base, xrandr_error_base;
+	data->xrandr = X11_XRRQueryExtension(data->display, &xrandr_event_base, &xrandr_error_base);
+#endif
+    
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
         char **missing = NULL;
@@ -514,7 +522,7 @@ static bool X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
             y = dpydata->y + ((dpy->current_mode->h - data->dialog_height) / 3);
         }
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
-        else if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, use_xrandr_by_default)) {
+        else if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, use_xrandr_by_default) && data->xrandr) {
             XRRScreenResources *screen = X11_XRRGetScreenResourcesCurrent(display, DefaultRootWindow(display));
             XRRCrtcInfo *crtc_info = X11_XRRGetCrtcInfo(display, screen, screen->crtcs[0]);
             x = (crtc_info->width - data->dialog_width) / 2;
