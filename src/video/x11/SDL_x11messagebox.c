@@ -524,13 +524,25 @@ static bool X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
         else if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, use_xrandr_by_default) && data->xrandr) {
             XRRScreenResources *screen = X11_XRRGetScreenResourcesCurrent(display, DefaultRootWindow(display));
+            if (!screen) {
+				goto XRANDRBAIL;
+			}
+            if (!screen->ncrtc) {
+				goto XRANDRBAIL;
+			}
+
             XRRCrtcInfo *crtc_info = X11_XRRGetCrtcInfo(display, screen, screen->crtcs[0]);
-            x = (crtc_info->width - data->dialog_width) / 2;
-            y = (crtc_info->height - data->dialog_height) / 3;
+            if (crtc_info) {
+				x = (crtc_info->width - data->dialog_width) / 2;
+				y = (crtc_info->height - data->dialog_height) / 3;
+			} else {
+				goto XRANDRBAIL;
+			}
         }
 #endif
         else {
             // oh well. This will misposition on a multi-head setup. Init first next time.
+			XRANDRBAIL:
             x = (DisplayWidth(display, data->screen) - data->dialog_width) / 2;
             y = (DisplayHeight(display, data->screen) - data->dialog_height) / 3;
         }
