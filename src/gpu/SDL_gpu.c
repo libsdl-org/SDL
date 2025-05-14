@@ -186,6 +186,114 @@
 #define COPYPASS_DEVICE \
     ((CommandBufferCommonHeader *)COPYPASS_COMMAND_BUFFER)->device
 
+static bool TextureFormatIsComputeWritable[] = {
+    false, // INVALID
+    false, // A8_UNORM
+    true,  // R8_UNORM
+    true,  // R8G8_UNORM
+    true,  // R8G8B8A8_UNORM
+    true,  // R16_UNORM
+    true,  // R16G16_UNORM
+    true,  // R16G16B16A16_UNORM
+    false, // R10G10B10A2_UNORM
+    false, // B5G6R5_UNORM
+    false, // B5G5R5A1_UNORM
+    false, // B4G4R4A4_UNORM
+    false, // B8G8R8A8_UNORM
+    false, // BC1_UNORM
+    false, // BC2_UNORM
+    false, // BC3_UNORM
+    false, // BC4_UNORM
+    false, // BC5_UNORM
+    false, // BC7_UNORM
+    false, // BC6H_FLOAT
+    false, // BC6H_UFLOAT
+    true,  // R8_SNORM
+    true,  // R8G8_SNORM
+    true,  // R8G8B8A8_SNORM
+    true,  // R16_SNORM
+    true,  // R16G16_SNORM
+    true,  // R16G16B16A16_SNORM
+    true,  // R16_FLOAT
+    true,  // R16G16_FLOAT
+    true,  // R16G16B16A16_FLOAT
+    true,  // R32_FLOAT
+    true,  // R32G32_FLOAT
+    true,  // R32G32B32A32_FLOAT
+    false, // R11G11B10_UFLOAT
+    true,  // R8_UINT
+    true,  // R8G8_UINT
+    true,  // R8G8B8A8_UINT
+    true,  // R16_UINT
+    true,  // R16G16_UINT
+    true,  // R16G16B16A16_UINT
+    true,  // R32_UINT
+    true,  // R32G32_UINT
+    true,  // R32G32B32A32_UINT
+    true,  // R8_INT
+    true,  // R8G8_INT
+    true,  // R8G8B8A8_INT
+    true,  // R16_INT
+    true,  // R16G16_INT
+    true,  // R16G16B16A16_INT
+    true,  // R32_INT
+    true,  // R32G32_INT
+    true,  // R32G32B32A32_INT
+    false, // R8G8B8A8_UNORM_SRGB
+    false, // B8G8R8A8_UNORM_SRGB
+    false, // BC1_UNORM_SRGB
+    false, // BC3_UNORM_SRGB
+    false, // BC3_UNORM_SRGB
+    false, // BC7_UNORM_SRGB
+    false, // D16_UNORM
+    false, // D24_UNORM
+    false, // D32_FLOAT
+    false, // D24_UNORM_S8_UINT
+    false, // D32_FLOAT_S8_UINT
+    false, // ASTC_4x4_UNORM
+    false, // ASTC_5x4_UNORM
+    false, // ASTC_5x5_UNORM
+    false, // ASTC_6x5_UNORM
+    false, // ASTC_6x6_UNORM
+    false, // ASTC_8x5_UNORM
+    false, // ASTC_8x6_UNORM
+    false, // ASTC_8x8_UNORM
+    false, // ASTC_10x5_UNORM
+    false, // ASTC_10x6_UNORM
+    false, // ASTC_10x8_UNORM
+    false, // ASTC_10x10_UNORM
+    false, // ASTC_12x10_UNORM
+    false, // ASTC_12x12_UNORM
+    false, // ASTC_4x4_UNORM_SRGB
+    false, // ASTC_5x4_UNORM_SRGB
+    false, // ASTC_5x5_UNORM_SRGB
+    false, // ASTC_6x5_UNORM_SRGB
+    false, // ASTC_6x6_UNORM_SRGB
+    false, // ASTC_8x5_UNORM_SRGB
+    false, // ASTC_8x6_UNORM_SRGB
+    false, // ASTC_8x8_UNORM_SRGB
+    false, // ASTC_10x5_UNORM_SRGB
+    false, // ASTC_10x6_UNORM_SRGB
+    false, // ASTC_10x8_UNORM_SRGB
+    false, // ASTC_10x10_UNORM_SRGB
+    false, // ASTC_12x10_UNORM_SRGB
+    false, // ASTC_12x12_UNORM_SRGB
+    false, // ASTC_4x4_FLOAT
+    false, // ASTC_5x4_FLOAT
+    false, // ASTC_5x5_FLOAT
+    false, // ASTC_6x5_FLOAT
+    false, // ASTC_6x6_FLOAT
+    false, // ASTC_8x5_FLOAT
+    false, // ASTC_8x6_FLOAT
+    false, // ASTC_8x8_FLOAT
+    false, // ASTC_10x5_FLOAT
+    false, // ASTC_10x6_FLOAT
+    false, // ASTC_10x8_FLOAT
+    false, // ASTC_10x10_FLOAT
+    false, // ASTC_12x10_FLOAT
+    false  // ASTC_12x12_FLOAT
+};
+
 // Drivers
 
 #ifndef SDL_GPU_DISABLED
@@ -758,6 +866,13 @@ bool SDL_GPUTextureSupportsFormat(
 
     if (device->debug_mode) {
         CHECK_TEXTUREFORMAT_ENUM_INVALID(format, false)
+    }
+
+    if ((usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) || 
+        (usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE)) {
+        if (!TextureFormatIsComputeWritable[format]) {
+            return false;
+        }
     }
 
     return device->SupportsTextureFormat(
