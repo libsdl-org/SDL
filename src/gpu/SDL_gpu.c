@@ -450,7 +450,7 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
                     SDL_SetError("Required shader format for backend %s not provided!", gpudriver);
                     return NULL;
                 }
-                if (backends[i]->PrepareDriver(_this)) {
+                if (backends[i]->PrepareDriver(_this, props)) {
                     return backends[i];
                 }
             }
@@ -465,7 +465,7 @@ static const SDL_GPUBootstrap * SDL_GPUSelectBackend(SDL_PropertiesID props)
             // Don't select a backend which doesn't support the app's shaders.
             continue;
         }
-        if (backends[i]->PrepareDriver(_this)) {
+        if (backends[i]->PrepareDriver(_this, props)) {
             return backends[i];
         }
     }
