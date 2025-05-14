@@ -55,10 +55,10 @@ state-of-the-art C23 compiler.  The irony writes itself.
  is not required. The backend is started at a higher level.  Initialising
  SDLs audio sub-system ensures that the backend is properly deinitialised.
 
-- Because some devices may change the audio sample rate during phone calls,
- the sample rate is currently fixed at 8kHz to ensure stable behavior.
- Although dynamically adjusting the sample rate is theoretically possible,
- the current implementation doesn't support it yet.  This limitation is
+- Because the audio sample rate can change during phone calls, the sample
+ rate is currently fixed at 8kHz to ensure stable behavior.  Although
+ dynamically adjusting the sample rate is theoretically possible, the
+ current implementation doesn't support it yet.  This limitation is
  expected to be resolved in a future update.
 
 - Dependency tracking is currently non-functional.
