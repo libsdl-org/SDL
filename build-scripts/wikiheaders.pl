@@ -427,6 +427,7 @@ sub dewikify_chunk {
         # make sure these can't become part of roff syntax.
         $str =~ s/\./\\[char46]/gms;
         $str =~ s/"/\\(dq/gms;
+        $str =~ s/'/\\(aq/gms;
 
         if ($wikitype eq 'mediawiki') {
             # Dump obvious wikilinks.
