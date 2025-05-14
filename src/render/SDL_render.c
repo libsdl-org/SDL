@@ -2627,11 +2627,12 @@ static void UpdateLogicalPresentation(SDL_Renderer *renderer)
     const float logical_h = view->logical_h;
     int iwidth, iheight;
 
-    if (!is_main_view && renderer->target) {
+    if (is_main_view) {
+        SDL_GetRenderOutputSize(renderer, &iwidth, &iheight);
+    } else {
+        SDL_assert(renderer->target != NULL);
         iwidth = (int)renderer->target->w;
         iheight = (int)renderer->target->h;
-    } else {
-        SDL_GetRenderOutputSize(renderer, &iwidth, &iheight);
     }
 
     view->logical_src_rect.x = 0.0f;
