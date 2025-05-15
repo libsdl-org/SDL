@@ -11,7 +11,7 @@
 - [macOS](README-macos.md)
 - [NetBSD](README-bsd.md)
 - [Nintendo Switch](README-switch.md)
-- [Nintendo 3DS](README-3ds.md)
+- [Nintendo 3DS](README-n3ds.md)
 - [OpenBSD](README-bsd.md)
 - [PlayStation 2](README-ps2.md)
 - [PlayStation 4](README-ps4.md)
