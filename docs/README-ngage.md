@@ -38,8 +38,8 @@ will breathe new life into this beloved yet obscure platform.
 This port is lovingly dedicated to the ever-nostalgic Dreamcast homebrew scene —
 because if we managed to pull this off for the N-Gage (yes, the N-Gage), surely
 you guys can stop clinging to SDL2 like it's a rare Shenmue prototype and finally
-make the leap to SDL3.  It’s 2025, not 1999—and let’s be honest, you’re rocking a
-state-of-the-art C23 compiler.  The irony writes itself.
+make the leap to SDL3.  It’s 2025, not 1999 — and let’s be honest, you’re rocking
+a state-of-the-art C23 compiler.  The irony writes itself.
 
 ## Existing Issues and Limitations
 
