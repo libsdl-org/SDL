@@ -2256,20 +2256,20 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *
  * With the Vulkan renderer:
  *
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOL`: Enable
+ * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN`: Enable
  *   device feature shaderClipDistance. If disabled, clip distances are not
  *   supported in shader code: gl_ClipDistance[] built-ins of GLSL,
  *   SV_ClipDistance0/1 semantics of HLSL and [[clip_distance]] attribute of
  *   Metal. Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOL`: Enable device
+ * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOLEAN`: Enable device
  *   feature depthClamp. If disabled, there is no depth clamp support and
  *   enable_depth_clip in SDL_GPURasterizerState must always be set to true.
  *   Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOL`: Enable device
+ * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN`: Enable device
  *   feature drawIndirectFirstInstance. If disabled, the argument
  *   first_instance of SDL_GPUIndirectDrawCommand must be set to zero.
  *   Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOL`: Enable device
+ * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN`: Enable device
  *   feature samplerAnisotropy. If disabled, enable_anisotropy of
  *   SDL_GPUSamplerCreateInfo must be set to false. Defaults to true.
  *
