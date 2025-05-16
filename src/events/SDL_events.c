@@ -895,8 +895,12 @@ static void SDL_LogEvent(const SDL_Event *event)
          (event->type == SDL_EVENT_FINGER_MOTION) ||
          (event->type == SDL_EVENT_PEN_AXIS) ||
          (event->type == SDL_EVENT_PEN_MOTION) ||
-         (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
+         (event->type == SDL_EVENT_GAMEPAD_AXIS_MOTION) ||
          (event->type == SDL_EVENT_GAMEPAD_SENSOR_UPDATE) ||
+         (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
+         (event->type == SDL_EVENT_GAMEPAD_UPDATE_COMPLETE) ||
+         (event->type == SDL_EVENT_JOYSTICK_AXIS_MOTION) ||
+         (event->type == SDL_EVENT_JOYSTICK_UPDATE_COMPLETE) ||
          (event->type == SDL_EVENT_SENSOR_UPDATE))) {
         return;
     }
