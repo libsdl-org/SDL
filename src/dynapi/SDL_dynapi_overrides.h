@@ -1291,3 +1291,4 @@
 #define SDL_SavePNG_IO SDL_SavePNG_IO_REAL
 #define SDL_SavePNG SDL_SavePNG_REAL
 #define SDL_GetSystemPageSize SDL_GetSystemPageSize_REAL
+#define SDL_GetPenDeviceType SDL_GetPenDeviceType_REAL
