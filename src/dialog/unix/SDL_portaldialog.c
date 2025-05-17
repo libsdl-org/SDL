@@ -137,6 +137,20 @@ static void DBus_AppendFilters(SDL_DBusContext *dbus, DBusMessageIter *options, 
     dbus->message_iter_close_container(options, &options_pair);
 }
 
+static void DBus_AppendCurrentFilter(SDL_DBusContext *dbus, DBusMessageIter *options, const SDL_DialogFileFilter filter)
+{
+    DBusMessageIter options_pair, options_value;
+    static const char *current_filter_name = "current_filter";
+
+    dbus->message_iter_open_container(options, DBUS_TYPE_DICT_ENTRY, NULL, &options_pair);
+    dbus->message_iter_append_basic(&options_pair, DBUS_TYPE_STRING, &current_filter_name);
+    dbus->message_iter_open_container(&options_pair, DBUS_TYPE_VARIANT, "(sa(us))", &options_value);
+    DBus_AppendFilter(dbus, &options_value, filter);
+    dbus->message_iter_close_container(&options_pair, &options_value);
+    dbus->message_iter_close_container(options, &options_pair);
+
+}
+
 static void DBus_AppendByteArray(SDL_DBusContext *dbus, DBusMessageIter *options, const char *key, const char *value)
 {
     DBusMessageIter options_pair, options_value, options_array;
@@ -291,8 +305,11 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     SDL_Window* window = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
     SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
     int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
+    int current_filter = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_CURRENT_FILTER_NUMBER, -1);
     bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
     const char* default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
+    const char* current_name = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_CURRENT_NAME_STRING, NULL);
+    const char* current_file = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_CURRENT_FILE_STRING, NULL);
     const char* accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
     bool open_folders = false;
 
@@ -408,9 +425,18 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     }
     if (filters) {
         DBus_AppendFilters(dbus, &options, filters, nfilters);
+        if (current_filter >= 0 && current_filter < nfilters) {
+            DBus_AppendCurrentFilter(dbus, &options, filters[current_filter]);
+        }
     }
     if (default_location) {
         DBus_AppendByteArray(dbus, &options, "current_folder", default_location);
+    }
+    if (current_file) {
+        DBus_AppendByteArray(dbus, &options, "current_file", current_file);
+    }
+    if (current_name) {
+        DBus_AppendStringOption(dbus, &options, "current_name", current_name);
     }
     if (accept) {
         DBus_AppendStringOption(dbus, &options, "accept_label", accept);
