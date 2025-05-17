@@ -6,7 +6,14 @@ inputs:
 runs:
   using: 'composite'
   steps:
+    - uses: actions/cache/restore@v4
+      id: restore-cache
+      with:
+        path: /opt/native
+        key: harmony-${{ inputs.version }}
+
     - name: Download Harmony toolchain
+      if: ${{ !steps.restore-cache.outputs.cache-hit }}
       shell: bash
       run: |
         wget https://repo.huaweicloud.com/openharmony/os/${{ inputs.version }}/ohos-sdk-windows_linux-public.tar.gz
@@ -14,6 +21,11 @@ runs:
         mkdir -p /opt
 
         unzip linux/native*.zip -d /opt
+    - uses: actions/cache/save@v4
+      if: ${{ !steps.restore-cache.outputs.cache-hit }}
+      with:
+        path: /opt/native
+        key: harmony-${{ inputs.version }}
     - name: 'Set output vars'
       id: final
       shell: bash
