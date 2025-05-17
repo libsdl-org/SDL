@@ -767,6 +767,8 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             ))
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
+            job.run_tests = False
+            job.test_pkg_config = False
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 

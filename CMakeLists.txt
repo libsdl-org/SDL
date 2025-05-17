@@ -1506,6 +1506,9 @@ elseif(OHOS)
   # disable warnings from the toolchain
   sdl_compile_options(PRIVATE "-Wno-unused-command-line-argument")
 
+  set(CMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN "")
+  set(CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN "")
+
   find_library(OHOS_ACE_LIBRARY NAMES libace_napi.z.so ace)
   find_library(OHOS_LOG_LIBRARY NAMES libhilog_ndk.z.so hilog)
   find_library(OHOS_NDK_LIBRARY NAMES libace_ndk.z.so ndk)
