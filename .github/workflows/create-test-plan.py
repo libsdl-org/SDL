@@ -90,6 +90,7 @@ class JobSpec:
     android_arch: Optional[str] = None
     android_abi: Optional[str] = None
     android_platform: Optional[int] = None
+    harmony_arch: Optional[str] = None
     msys2_platform: Optional[Msys2Platform] = None
     intel: Optional[IntelCompiler] = None
     apple_framework: Optional[bool] = None
@@ -761,6 +762,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.test_pkg_config = False
         case SdlPlatform.Harmony:
             job.cmake_arguments.extend((
+                f"-DOHOS_ARCH={spec.harmony_arch}",
                 "-DCMAKE_TOOLCHAIN_FILE=${HARMONY_NATIVE_SDK}/build/cmake/ohos.toolchain.cmake",
             ))
             job.shared_lib = SharedLibType.SO_0
