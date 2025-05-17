@@ -52,6 +52,7 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_touch.h>
 
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -83,7 +84,6 @@ typedef Uint32 SDL_PenID;
  * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_PEN_TOUCHID ((SDL_TouchID)-2)
-
 
 /**
  * Pen input flags, as reported by various pen events' `pen_state` field.
@@ -127,10 +127,36 @@ typedef enum SDL_PenAxis
     SDL_PEN_AXIS_COUNT       /**< Total known pen axis types in this version of SDL. This number may grow in future releases! */
 } SDL_PenAxis;
 
+/**
+ * An enum that describes the type of a pen device.
+ *
+ * \since This enum is available since SDL 3.4.0.
+ */
+typedef enum SDL_PenDeviceType
+{
+    SDL_PEN_DEVICE_TYPE_INVALID = -1,
+    SDL_PEN_DEVICE_TYPE_UNKNOWN,
+    SDL_PEN_DEVICE_TYPE_DIRECT,
+    SDL_PEN_DEVICE_TYPE_INDIRECT
+} SDL_PenDeviceType;
+
+/**
+ * Get the device type of the given pen.
+ *
+ * \param instance_id the pen instance ID.
+ * \returns the device type of the given pen, or SDL_PEN_DEVICE_TYPE_INVALID on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC SDL_PenDeviceType SDLCALL SDL_GetPenDeviceType(SDL_PenID instance_id);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
 #endif
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_pen_h_ */
 

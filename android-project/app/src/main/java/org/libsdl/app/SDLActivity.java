@@ -229,9 +229,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private static SDLFileDialogState mFileDialogState = null;
     protected static boolean mDispatchingKeyEvent = false;
 
-    protected static SDLGenericMotionListener_API14 getMotionListener() {
+    public static SDLGenericMotionListener_API14 getMotionListener() {
         if (mMotionListener == null) {
-            if (Build.VERSION.SDK_INT >= 26 /* Android 8.0 (O) */) {
+            if (Build.VERSION.SDK_INT >= 29 /* Android 10 (Q) */) {
+                mMotionListener = new SDLGenericMotionListener_API29();
+            } else if (Build.VERSION.SDK_INT >= 26 /* Android 8.0 (O) */) {
                 mMotionListener = new SDLGenericMotionListener_API26();
             } else if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
                 mMotionListener = new SDLGenericMotionListener_API24();
@@ -1063,7 +1065,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void onNativeTouch(int touchDevId, int pointerFingerId,
                                             int action, float x,
                                             float y, float p);
-    public static native void onNativePen(int penId, int button, int action, float x, float y, float p);
+    public static native void onNativePen(int penId, int device_type, int button, int action, float x, float y, float p);
     public static native void onNativeAccel(float x, float y, float z);
     public static native void onNativeClipboardChanged();
     public static native void onNativeSurfaceCreated();
