@@ -1101,9 +1101,9 @@ bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surfac
     int dst_w, dst_h;
 
     // Make sure the surfaces aren't locked
-    if (!SDL_SurfaceValid(src)) {
+    if (!SDL_SurfaceValid(src) || !src->pixels) {
         return SDL_InvalidParamError("src");
-    } else if (!SDL_SurfaceValid(dst)) {
+    } else if (!SDL_SurfaceValid(dst) || !dst->pixels) {
         return SDL_InvalidParamError("dst");
     } else if ((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
@@ -1140,6 +1140,13 @@ bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surfac
     if (dst_w == src_w && dst_h == src_h) {
         // No scaling, defer to regular blit
         return SDL_BlitSurface(src, srcrect, dst, dstrect);
+    }
+
+    if (src_w == 0) {
+        src_w = 1;
+    }
+    if (src_h == 0) {
+        src_h = 1;
     }
 
     scaling_w = (double)dst_w / src_w;
@@ -1948,6 +1955,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
             if (!convert->pixels) {
                 goto error;
             }
+            convert->flags &= ~SDL_SURFACE_PREALLOCATED;
             convert->pitch = surface->pitch;
             SDL_memcpy(convert->pixels, surface->pixels, size);
 

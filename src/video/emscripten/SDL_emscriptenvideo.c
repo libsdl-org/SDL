@@ -390,6 +390,8 @@ bool Emscripten_VideoInit(SDL_VideoDevice *_this)
     SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
     SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
 
+    Emscripten_RegisterGlobalEventHandlers(_this);
+
     // We're done!
     return true;
 }
@@ -402,6 +404,7 @@ static bool Emscripten_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *
 
 static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
 {
+    Emscripten_UnregisterGlobalEventHandlers(_this);
     Emscripten_QuitMouse();
     Emscripten_UnlistenSystemTheme();
     pumpevents_has_run = false;
@@ -465,13 +468,13 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
 
     selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_CANVAS_SELECTOR);
     if (!selector || !*selector) {
-        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, "#canvas");
+        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, "#canvas");
     }
     wdata->canvas_id = SDL_strdup(selector);
 
     selector = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
     if (!selector || !*selector) {
-        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT, "#window");
+        selector = SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, "#window");
     }
     wdata->keyboard_element = SDL_strdup(selector);
 
@@ -524,6 +527,10 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
             _requestFullscreenThroughSDL($0);
         };
     }, window);
+
+    // Ensure canvas_id and keyboard_element are added to the window's properties
+    SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING, wdata->canvas_id);
+    SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, wdata->keyboard_element);
 
     // Window has been successfully created
     return true;

@@ -100,7 +100,7 @@ RECENT REVISION HISTORY:
  Bug & warning fixes
     Marc LeBlanc            David Woo          Guillaume George     Martins Mozeiko
     Christpher Lloyd        Jerry Jansson      Joseph Thomson       Blazej Dariusz Roszkowski
-    Phil Jordan                                Dave Moore           Roy Eltham
+    Phil Jordan             Henner Zeller      Dave Moore           Roy Eltham
     Hayaki Saito            Nathan Reed        Won Chun
     Luke Graham             Johan Duparc       Nick Verigakis       the Horde3D community
     Thomas Ruf              Ronny Chevalier                         github:rlyeh
@@ -1914,6 +1914,7 @@ static unsigned char *stbi__convert_format(unsigned char *data, int img_n, int r
    int i,j;
    unsigned char *good;
 
+   if (data == NULL) return data;
    if (req_comp == img_n) return data;
    STBI_ASSERT(req_comp >= 1 && req_comp <= 4);
 
@@ -6543,26 +6544,26 @@ static void *stbi__psd_load(stbi__context *s, int *x, int *y, int *comp, int req
    if (channelCount >= 4) {
       if (ri->bits_per_channel == 16) {
          for (i=0; i < w*h; ++i) {
-            stbi__uint16 *pixel = (stbi__uint16 *) out + 4*i;
-            if (pixel[3] != 0 && pixel[3] != 65535) {
-               float a = pixel[3] / 65535.0f;
+            stbi__uint16 *pixels = (stbi__uint16 *) out + 4*i;
+            if (pixels[3] != 0 && pixels[3] != 65535) {
+               float a = pixels[3] / 65535.0f;
                float ra = 1.0f / a;
                float inv_a = 65535.0f * (1 - ra);
-               pixel[0] = (stbi__uint16) (pixel[0]*ra + inv_a);
-               pixel[1] = (stbi__uint16) (pixel[1]*ra + inv_a);
-               pixel[2] = (stbi__uint16) (pixel[2]*ra + inv_a);
+               pixels[0] = (stbi__uint16) (pixels[0]*ra + inv_a);
+               pixels[1] = (stbi__uint16) (pixels[1]*ra + inv_a);
+               pixels[2] = (stbi__uint16) (pixels[2]*ra + inv_a);
             }
          }
       } else {
          for (i=0; i < w*h; ++i) {
-            unsigned char *pixel = out + 4*i;
-            if (pixel[3] != 0 && pixel[3] != 255) {
-               float a = pixel[3] / 255.0f;
+            unsigned char *pixels = out + 4*i;
+            if (pixels[3] != 0 && pixels[3] != 255) {
+               float a = pixels[3] / 255.0f;
                float ra = 1.0f / a;
                float inv_a = 255.0f * (1 - ra);
-               pixel[0] = (unsigned char) (pixel[0]*ra + inv_a);
-               pixel[1] = (unsigned char) (pixel[1]*ra + inv_a);
-               pixel[2] = (unsigned char) (pixel[2]*ra + inv_a);
+               pixels[0] = (unsigned char) (pixels[0]*ra + inv_a);
+               pixels[1] = (unsigned char) (pixels[1]*ra + inv_a);
+               pixels[2] = (unsigned char) (pixels[2]*ra + inv_a);
             }
          }
       }

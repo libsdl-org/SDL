@@ -28,8 +28,10 @@
 #include "../SDL_sysvideo.h"
 
 #ifdef HAVE_DXGI_H
+#ifndef __cplusplus
 #define CINTERFACE
 #define COBJMACROS
+#endif
 #include <dxgi.h>
 #endif
 

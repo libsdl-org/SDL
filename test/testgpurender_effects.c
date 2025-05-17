@@ -148,12 +148,6 @@ static bool InitGPURenderState(void)
     SDL_GPURenderStateDesc desc;
     int i;
 
-    device = (SDL_GPUDevice *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, NULL);
-    if (!device) {
-        SDL_Log("Couldn't get GPU device");
-        return false;
-    }
-
     formats = SDL_GetGPUShaderFormats(device);
     if (formats == SDL_GPU_SHADERFORMAT_INVALID) {
         SDL_Log("Couldn't get supported shader formats: %s", SDL_GetError());
@@ -250,8 +244,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    renderer = SDL_CreateRenderer(window, "gpu");
-    if (!renderer) {
+    renderer = SDL_CreateGPURenderer(window, SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL, &device);
+    if (!renderer || !device) {
         SDL_Log("Couldn't create renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }

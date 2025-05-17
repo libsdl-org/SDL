@@ -26,7 +26,8 @@
 
 extern void Wayland_InitMouse(void);
 extern void Wayland_FiniMouse(SDL_VideoData *data);
-extern void Wayland_SetHitTestCursor(SDL_HitTestResult rc);
+extern void Wayland_SeatUpdateCursor(SDL_WaylandSeat *seat);
+extern void Wayland_SeatWarpMouse(SDL_WaylandSeat *seat, SDL_WindowData *window, float x, float y);
 #if 0  // TODO RECONNECT: See waylandvideo.c for more information!
 extern void Wayland_RecreateCursors(void);
 #endif // 0

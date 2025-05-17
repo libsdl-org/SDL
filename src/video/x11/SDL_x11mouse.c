@@ -552,7 +552,7 @@ void X11_QuitMouse(SDL_VideoDevice *_this)
 void X11_SetHitTestCursor(SDL_HitTestResult rc)
 {
     if (rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) {
-        SDL_SetCursor(NULL);
+        SDL_RedrawCursor();
     } else {
         X11_ShowCursor(sys_cursors[rc]);
     }

@@ -125,6 +125,172 @@ static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
 static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static bool SDL_joystick_allows_background_events = false;
 
+static Uint32 initial_old_xboxone_controllers[] = {
+    MAKE_VIDPID(0x0000, 0x6686),
+    MAKE_VIDPID(0x0079, 0x18a1),
+    MAKE_VIDPID(0x0079, 0x18c2),
+    MAKE_VIDPID(0x0079, 0x18c8),
+    MAKE_VIDPID(0x0079, 0x18cf),
+    MAKE_VIDPID(0x03f0, 0x0495),
+    MAKE_VIDPID(0x045e, 0x02d1),
+    MAKE_VIDPID(0x045e, 0x02dd),
+    MAKE_VIDPID(0x045e, 0x02e0),
+    MAKE_VIDPID(0x045e, 0x02e3),
+    MAKE_VIDPID(0x045e, 0x02ea),
+    MAKE_VIDPID(0x045e, 0x02fd),
+    MAKE_VIDPID(0x045e, 0x02ff),
+    MAKE_VIDPID(0x045e, 0x0867),
+    MAKE_VIDPID(0x045e, 0x0b00),
+    MAKE_VIDPID(0x045e, 0x0b05),
+    MAKE_VIDPID(0x045e, 0x0b0a),
+    MAKE_VIDPID(0x045e, 0x0b0c),
+    MAKE_VIDPID(0x045e, 0x0b20),
+    MAKE_VIDPID(0x045e, 0x0b21),
+    MAKE_VIDPID(0x045e, 0x0b22),
+    MAKE_VIDPID(0x046d, 0x0000),
+    MAKE_VIDPID(0x046d, 0x1004),
+    MAKE_VIDPID(0x046d, 0x1007),
+    MAKE_VIDPID(0x046d, 0x1008),
+    MAKE_VIDPID(0x046d, 0xf301),
+    MAKE_VIDPID(0x0738, 0x02a0),
+    MAKE_VIDPID(0x0738, 0x4a01),
+    MAKE_VIDPID(0x0738, 0x7263),
+    MAKE_VIDPID(0x0738, 0xb738),
+    MAKE_VIDPID(0x0738, 0xcb29),
+    MAKE_VIDPID(0x0738, 0xf401),
+    MAKE_VIDPID(0x0c12, 0x0e17),
+    MAKE_VIDPID(0x0c12, 0x0e1c),
+    MAKE_VIDPID(0x0c12, 0x0e22),
+    MAKE_VIDPID(0x0c12, 0x0e30),
+    MAKE_VIDPID(0x0d62, 0x9a1a),
+    MAKE_VIDPID(0x0d62, 0x9a1b),
+    MAKE_VIDPID(0x0e00, 0x0e00),
+    MAKE_VIDPID(0x0e6f, 0x012a),
+    MAKE_VIDPID(0x0e6f, 0x0139),
+    MAKE_VIDPID(0x0e6f, 0x013B),
+    MAKE_VIDPID(0x0e6f, 0x013a),
+    MAKE_VIDPID(0x0e6f, 0x0145),
+    MAKE_VIDPID(0x0e6f, 0x0146),
+    MAKE_VIDPID(0x0e6f, 0x0152),
+    MAKE_VIDPID(0x0e6f, 0x015b),
+    MAKE_VIDPID(0x0e6f, 0x015c),
+    MAKE_VIDPID(0x0e6f, 0x015d),
+    MAKE_VIDPID(0x0e6f, 0x015f),
+    MAKE_VIDPID(0x0e6f, 0x0160),
+    MAKE_VIDPID(0x0e6f, 0x0161),
+    MAKE_VIDPID(0x0e6f, 0x0162),
+    MAKE_VIDPID(0x0e6f, 0x0163),
+    MAKE_VIDPID(0x0e6f, 0x0164),
+    MAKE_VIDPID(0x0e6f, 0x0165),
+    MAKE_VIDPID(0x0e6f, 0x0166),
+    MAKE_VIDPID(0x0e6f, 0x0167),
+    MAKE_VIDPID(0x0e6f, 0x0205),
+    MAKE_VIDPID(0x0e6f, 0x0206),
+    MAKE_VIDPID(0x0e6f, 0x0246),
+    MAKE_VIDPID(0x0e6f, 0x0261),
+    MAKE_VIDPID(0x0e6f, 0x0262),
+    MAKE_VIDPID(0x0e6f, 0x02a0),
+    MAKE_VIDPID(0x0e6f, 0x02a1),
+    MAKE_VIDPID(0x0e6f, 0x02a2),
+    MAKE_VIDPID(0x0e6f, 0x02a3),
+    MAKE_VIDPID(0x0e6f, 0x02a4),
+    MAKE_VIDPID(0x0e6f, 0x02a5),
+    MAKE_VIDPID(0x0e6f, 0x02a6),
+    MAKE_VIDPID(0x0e6f, 0x02a7),
+    MAKE_VIDPID(0x0e6f, 0x02a8),
+    MAKE_VIDPID(0x0e6f, 0x02a9),
+    MAKE_VIDPID(0x0e6f, 0x02aa),
+    MAKE_VIDPID(0x0e6f, 0x02ab),
+    MAKE_VIDPID(0x0e6f, 0x02ac),
+    MAKE_VIDPID(0x0e6f, 0x02ad),
+    MAKE_VIDPID(0x0e6f, 0x02ae),
+    MAKE_VIDPID(0x0e6f, 0x02af),
+    MAKE_VIDPID(0x0e6f, 0x02b0),
+    MAKE_VIDPID(0x0e6f, 0x02b1),
+    MAKE_VIDPID(0x0e6f, 0x02b2),
+    MAKE_VIDPID(0x0e6f, 0x02b3),
+    MAKE_VIDPID(0x0e6f, 0x02b5),
+    MAKE_VIDPID(0x0e6f, 0x02b6),
+    MAKE_VIDPID(0x0e6f, 0x02b8),
+    MAKE_VIDPID(0x0e6f, 0x02bd),
+    MAKE_VIDPID(0x0e6f, 0x02be),
+    MAKE_VIDPID(0x0e6f, 0x02bf),
+    MAKE_VIDPID(0x0e6f, 0x02c0),
+    MAKE_VIDPID(0x0e6f, 0x02c1),
+    MAKE_VIDPID(0x0e6f, 0x02c2),
+    MAKE_VIDPID(0x0e6f, 0x02c3),
+    MAKE_VIDPID(0x0e6f, 0x02c4),
+    MAKE_VIDPID(0x0e6f, 0x02c5),
+    MAKE_VIDPID(0x0e6f, 0x02c6),
+    MAKE_VIDPID(0x0e6f, 0x02c7),
+    MAKE_VIDPID(0x0e6f, 0x02c8),
+    MAKE_VIDPID(0x0e6f, 0x02c9),
+    MAKE_VIDPID(0x0e6f, 0x02ca),
+    MAKE_VIDPID(0x0e6f, 0x02cb),
+    MAKE_VIDPID(0x0e6f, 0x02cd),
+    MAKE_VIDPID(0x0e6f, 0x02ce),
+    MAKE_VIDPID(0x0e6f, 0x02cf),
+    MAKE_VIDPID(0x0e6f, 0x02d5),
+    MAKE_VIDPID(0x0e6f, 0x0346),
+    MAKE_VIDPID(0x0e6f, 0x0446),
+    MAKE_VIDPID(0x0e6f, 0xf501),
+    MAKE_VIDPID(0x0f0d, 0x0063),
+    MAKE_VIDPID(0x0f0d, 0x0067),
+    MAKE_VIDPID(0x0f0d, 0x0078),
+    MAKE_VIDPID(0x0f0d, 0x0097),
+    MAKE_VIDPID(0x0f0d, 0x00ba),
+    MAKE_VIDPID(0x0f0d, 0x00c0),
+    MAKE_VIDPID(0x0f0d, 0x00c5),
+    MAKE_VIDPID(0x0f0d, 0x00d8),
+    MAKE_VIDPID(0x0f0d, 0x00ed),
+    MAKE_VIDPID(0x0fff, 0x02a1),
+    MAKE_VIDPID(0x12ab, 0x0304),
+    MAKE_VIDPID(0x1430, 0x0291),
+    MAKE_VIDPID(0x1430, 0x02a9),
+    MAKE_VIDPID(0x1430, 0x070b),
+    MAKE_VIDPID(0x1430, 0x0719),
+    MAKE_VIDPID(0x146b, 0x0611),
+    MAKE_VIDPID(0x1532, 0x0a00),
+    MAKE_VIDPID(0x1532, 0x0a03),
+    MAKE_VIDPID(0x1532, 0x0a14),
+    MAKE_VIDPID(0x1532, 0x0a15),
+    MAKE_VIDPID(0x16d0, 0x0f3f),
+    MAKE_VIDPID(0x1bad, 0x028e),
+    MAKE_VIDPID(0x1bad, 0x02a0),
+    MAKE_VIDPID(0x1bad, 0x5500),
+    MAKE_VIDPID(0x20ab, 0x55ef),
+    MAKE_VIDPID(0x24c6, 0x541a),
+    MAKE_VIDPID(0x24c6, 0x542a),
+    MAKE_VIDPID(0x24c6, 0x543a),
+    MAKE_VIDPID(0x24c6, 0x5509),
+    MAKE_VIDPID(0x24c6, 0x551a),
+    MAKE_VIDPID(0x24c6, 0x561a),
+    MAKE_VIDPID(0x24c6, 0x581a),
+    MAKE_VIDPID(0x24c6, 0x591a),
+    MAKE_VIDPID(0x24c6, 0x592a),
+    MAKE_VIDPID(0x24c6, 0x791a),
+    MAKE_VIDPID(0x2516, 0x0069),
+    MAKE_VIDPID(0x25b1, 0x0360),
+    MAKE_VIDPID(0x2c22, 0x2203),
+    MAKE_VIDPID(0x2e24, 0x0652),
+    MAKE_VIDPID(0x2e24, 0x1618),
+    MAKE_VIDPID(0x2e24, 0x1688),
+    MAKE_VIDPID(0x2f24, 0x0011),
+    MAKE_VIDPID(0x2f24, 0x002e),
+    MAKE_VIDPID(0x2f24, 0x0050),
+    MAKE_VIDPID(0x2f24, 0x0053),
+    MAKE_VIDPID(0x2f24, 0x008f),
+    MAKE_VIDPID(0x2f24, 0x0091),
+    MAKE_VIDPID(0x2f24, 0x00b7),
+    MAKE_VIDPID(0xd2d2, 0xd2d2),
+};
+static SDL_vidpid_list old_xboxone_controllers = {
+    "SDL_JOYSTICK_OLD_XBOXONE_CONTROLLERS", 0, 0, NULL,
+    "SDL_JOYSTICK_OLD_XBOXONE_CONTROLLERS_EXCLUDED", 0, 0, NULL,
+    SDL_arraysize(initial_old_xboxone_controllers), initial_old_xboxone_controllers,
+    false
+};
+
 static Uint32 initial_arcadestick_devices[] = {
     MAKE_VIDPID(0x0079, 0x181a), // Venom Arcade Stick
     MAKE_VIDPID(0x0079, 0x181b), // Venom Arcade Stick
@@ -277,6 +443,7 @@ static Uint32 initial_blacklist_devices[] = {
     MAKE_VIDPID(0x1532, 0x0282), // Razer Huntsman Mini Analog, non-functional DInput device
     MAKE_VIDPID(0x26ce, 0x01a2), // ASRock LED Controller
     MAKE_VIDPID(0x20d6, 0x0002), // PowerA Enhanced Wireless Controller for Nintendo Switch (charging port only)
+    MAKE_VIDPID(0x3434, 0x0211), // Keychron K1 Pro System Control
 };
 static SDL_vidpid_list blacklist_devices = {
     SDL_HINT_JOYSTICK_BLACKLIST_DEVICES, 0, 0, NULL,
@@ -289,7 +456,17 @@ static Uint32 initial_flightstick_devices[] = {
     MAKE_VIDPID(0x044f, 0x0402), // HOTAS Warthog Joystick
     MAKE_VIDPID(0x044f, 0xb10a), // ThrustMaster, Inc. T.16000M Joystick
     MAKE_VIDPID(0x046d, 0xc215), // Logitech Extreme 3D
+    MAKE_VIDPID(0x0583, 0x6258), // Padix USB joystick with viewfinder
+    MAKE_VIDPID(0x0583, 0x688f), // Padix QF-688uv Windstorm Pro
+    MAKE_VIDPID(0x0583, 0x7070), // Padix QF-707u Bazooka
+    MAKE_VIDPID(0x0583, 0xa019), // Padix USB vibration joystick with viewfinder
+    MAKE_VIDPID(0x0583, 0xa131), // Padix USB Wireless 2.4GHz
+    MAKE_VIDPID(0x0583, 0xa209), // Padix MetalStrike ForceFeedback
+    MAKE_VIDPID(0x0583, 0xb010), // Padix MetalStrike Pro
+    MAKE_VIDPID(0x0583, 0xb012), // Padix Wireless MetalStrike
+    MAKE_VIDPID(0x0583, 0xb013), // Padix USB Wireless 2.4GHZ
     MAKE_VIDPID(0x0738, 0x2221), // Saitek Pro Flight X-56 Rhino Stick
+    MAKE_VIDPID(0x10f5, 0x7084), // Turtle Beach VelocityOne
     MAKE_VIDPID(0x231d, 0x0126), // Gunfighter Mk.III 'Space Combat Edition' (right)
     MAKE_VIDPID(0x231d, 0x0127), // Gunfighter Mk.III 'Space Combat Edition' (left)
     MAKE_VIDPID(0x362c, 0x0001), // Yawman Arrow
@@ -302,7 +479,13 @@ static SDL_vidpid_list flightstick_devices = {
 };
 
 static Uint32 initial_gamecube_devices[] = {
+    MAKE_VIDPID(0x0079, 0x1843), // DragonRise GameCube Controller Adapter
+    MAKE_VIDPID(0x0079, 0x1844), // DragonRise GameCube Controller Adapter
+    MAKE_VIDPID(0x0079, 0x1846), // DragonRise GameCube Controller Adapter
+    MAKE_VIDPID(0x057e, 0x0337), // Nintendo Wii U GameCube Controller Adapter
+    MAKE_VIDPID(0x0926, 0x8888), // Cyber Gadget GameCube Controller
     MAKE_VIDPID(0x0e6f, 0x0185), // PDP Wired Fight Pad Pro for Nintendo Switch
+    MAKE_VIDPID(0x1a34, 0xf705), // GameCube {HuiJia USB box}
     MAKE_VIDPID(0x20d6, 0xa711), // PowerA Wired Controller Nintendo GameCube Style
 };
 static SDL_vidpid_list gamecube_devices = {
@@ -331,6 +514,7 @@ static SDL_vidpid_list rog_gamepad_mice = {
 static Uint32 initial_throttle_devices[] = {
     MAKE_VIDPID(0x044f, 0x0404), // HOTAS Warthog Throttle
     MAKE_VIDPID(0x0738, 0xa221), // Saitek Pro Flight X-56 Rhino Throttle
+    MAKE_VIDPID(0x10f5, 0x7085), // Turtle Beach VelocityOne Throttle
 };
 static SDL_vidpid_list throttle_devices = {
     SDL_HINT_JOYSTICK_THROTTLE_DEVICES, 0, 0, NULL,
@@ -374,6 +558,14 @@ static Uint32 initial_wheel_devices[] = {
     MAKE_VIDPID(0x046d, 0xca03), // Logitech Momo Racing
     MAKE_VIDPID(0x0483, 0x0522), // Simagic Wheelbase (including M10, Alpha Mini, Alpha, Alpha U)
     MAKE_VIDPID(0x0483, 0xa355), // VRS DirectForce Pro Wheel Base
+    MAKE_VIDPID(0x0583, 0xa132), // Padix USB Wireless 2.4GHz Wheelpad
+    MAKE_VIDPID(0x0583, 0xa133), // Padix USB Wireless 2.4GHz Wheel
+    MAKE_VIDPID(0x0583, 0xa202), // Padix Force Feedback Wheel
+    MAKE_VIDPID(0x0583, 0xb002), // Padix Vibration USB Wheel
+    MAKE_VIDPID(0x0583, 0xb005), // Padix USB Wheel
+    MAKE_VIDPID(0x0583, 0xb008), // Padix USB Wireless 2.4GHz Wheel
+    MAKE_VIDPID(0x0583, 0xb009), // Padix USB Wheel
+    MAKE_VIDPID(0x0583, 0xb018), // Padix TW6 Wheel
     MAKE_VIDPID(0x0eb7, 0x0001), // Fanatec ClubSport Wheel Base V2
     MAKE_VIDPID(0x0eb7, 0x0004), // Fanatec ClubSport Wheel Base V2.5
     MAKE_VIDPID(0x0eb7, 0x0005), // Fanatec CSL Elite Wheel Base+ (PS4)
@@ -636,8 +828,7 @@ bool SDL_InitJoysticks(void)
 
     SDL_joysticks_initialized = true;
 
-    SDL_InitGamepadMappings();
-
+    SDL_LoadVIDPIDList(&old_xboxone_controllers);
     SDL_LoadVIDPIDList(&arcadestick_devices);
     SDL_LoadVIDPIDList(&blacklist_devices);
     SDL_LoadVIDPIDList(&flightstick_devices);
@@ -646,6 +837,8 @@ bool SDL_InitJoysticks(void)
     SDL_LoadVIDPIDList(&throttle_devices);
     SDL_LoadVIDPIDList(&wheel_devices);
     SDL_LoadVIDPIDList(&zero_centered_devices);
+
+    SDL_InitGamepadMappings();
 
     // See if we should allow joystick events while in the background
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
@@ -1816,6 +2009,14 @@ bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
             result = true;
         } else {
             result = joystick->driver->RumbleTriggers(joystick, left_rumble, right_rumble);
+            if (result) {
+                joystick->trigger_rumble_resend = SDL_GetTicks() + SDL_RUMBLE_RESEND_MS;
+                if (joystick->trigger_rumble_resend == 0) {
+                    joystick->trigger_rumble_resend = 1;
+                }
+            } else {
+                joystick->trigger_rumble_resend = 0;
+            }
         }
 
         if (result) {
@@ -1826,6 +2027,7 @@ bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
                 joystick->trigger_rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
             } else {
                 joystick->trigger_rumble_expiration = 0;
+                joystick->trigger_rumble_resend = 0;
             }
         }
     }
@@ -1989,6 +2191,7 @@ void SDL_QuitJoysticks(void)
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
+    SDL_FreeVIDPIDList(&old_xboxone_controllers);
     SDL_FreeVIDPIDList(&arcadestick_devices);
     SDL_FreeVIDPIDList(&blacklist_devices);
     SDL_FreeVIDPIDList(&flightstick_devices);
@@ -2480,6 +2683,15 @@ void SDL_UpdateJoysticks(void)
 
         if (joystick->trigger_rumble_expiration && now >= joystick->trigger_rumble_expiration) {
             SDL_RumbleJoystickTriggers(joystick, 0, 0, 0);
+            joystick->trigger_rumble_resend = 0;
+        }
+
+        if (joystick->trigger_rumble_resend && now >= joystick->trigger_rumble_resend) {
+            joystick->driver->RumbleTriggers(joystick, joystick->left_trigger_rumble, joystick->right_trigger_rumble);
+            joystick->trigger_rumble_resend = now + SDL_RUMBLE_RESEND_MS;
+            if (joystick->trigger_rumble_resend == 0) {
+                joystick->trigger_rumble_resend = 1;
+            }
         }
     }
 
@@ -2731,8 +2943,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
         type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
 
     } else if (forUI && SDL_IsJoystickGameCube(vendor, product)) {
-        // We don't have a type for the Nintendo GameCube controller
-        type = SDL_GAMEPAD_TYPE_STANDARD;
+        type = SDL_GAMEPAD_TYPE_GAMECUBE;
 
     } else {
         switch (GuessControllerType(vendor, product)) {
@@ -2834,77 +3045,12 @@ bool SDL_IsJoystickXboxOneElite(Uint16 vendor_id, Uint16 product_id)
 
 bool SDL_IsJoystickXboxSeriesX(Uint16 vendor_id, Uint16 product_id)
 {
-    if (vendor_id == USB_VENDOR_MICROSOFT) {
-        if (product_id == USB_PRODUCT_XBOX_SERIES_X ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_BLE) {
-            return true;
-        }
+    // Most new controllers have the share button, so we'll default to true and
+    // have a list of older XBox One controllers that are known not to have it.
+    if (SDL_VIDPIDInList(vendor_id, product_id, &old_xboxone_controllers)) {
+        return false;
     }
-    if (vendor_id == USB_VENDOR_PDP) {
-        if (product_id == USB_PRODUCT_XBOX_SERIES_X_VICTRIX_GAMBIT ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_PDP_BLUE ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_PDP_AFTERGLOW) {
-            return true;
-        }
-    }
-    if (vendor_id == USB_VENDOR_POWERA_ALT) {
-        if ((product_id >= 0x2001 && product_id <= 0x201a) ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO2 ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO4 ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO_WIRELESS_USB ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_FUSION_PRO_WIRELESS_DONGLE ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_MOGA_XP_ULTRA ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_POWERA_SPECTRA) {
-            return true;
-        }
-    }
-    if (vendor_id == USB_VENDOR_HORI) {
-        if (product_id == USB_PRODUCT_HORI_FIGHTING_COMMANDER_OCTA_SERIES_X ||
-            product_id == USB_PRODUCT_HORI_HORIPAD_PRO_SERIES_X) {
-            return true;
-        }
-    }
-    if (vendor_id == USB_VENDOR_HP) {
-        if (product_id == USB_PRODUCT_XBOX_SERIES_X_HP_HYPERX ||
-            product_id == USB_PRODUCT_XBOX_SERIES_X_HP_HYPERX_RGB) {
-            return true;
-        }
-    }
-    if (vendor_id == USB_VENDOR_RAZER) {
-        if (product_id == USB_PRODUCT_RAZER_WOLVERINE_V2 ||
-            product_id == USB_PRODUCT_RAZER_WOLVERINE_V2_CHROMA ||
-            product_id == USB_PRODUCT_RAZER_WOLVERINE_V3_PRO) {
-            return true;
-        }
-    }
-    if (vendor_id == USB_VENDOR_THRUSTMASTER) {
-        if (product_id == USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO_SERIES_X) {
-            return true;
-        }
-    }
-    if (vendor_id == USB_VENDOR_TURTLE_BEACH) {
-        if (product_id == USB_PRODUCT_TURTLE_BEACH_SERIES_X_REACT_R ||
-            product_id == USB_PRODUCT_TURTLE_BEACH_SERIES_X_RECON) {
-            return true;
-        }
-    }
-    if (vendor_id == USB_VENDOR_8BITDO) {
-        if (product_id == USB_PRODUCT_8BITDO_XBOX_CONTROLLER1 ||
-            product_id == USB_PRODUCT_8BITDO_XBOX_CONTROLLER2) {
-            return true;
-        }
-    }
-    if (vendor_id == USB_VENDOR_GAMESIR) {
-        if (product_id == USB_PRODUCT_GAMESIR_G7) {
-            return true;
-        }
-    }
-    if (vendor_id == USB_VENDOR_ASUS) {
-        if (product_id == USB_PRODUCT_ROG_RAIKIRI) {
-            return true;
-        }
-    }
-    return false;
+    return true;
 }
 
 bool SDL_IsJoystickBluetoothXboxOne(Uint16 vendor_id, Uint16 product_id)

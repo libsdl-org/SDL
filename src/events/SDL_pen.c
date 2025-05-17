@@ -565,10 +565,19 @@ void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *wind
             event.pbutton.down = down;
             SDL_PushEvent(&event);
 
-            if (window && (pen_touching == instance_id)) {
+            if (window && (!pen_touching || (pen_touching == instance_id))) {
                 SDL_Mouse *mouse = SDL_GetMouse();
                 if (mouse && mouse->pen_mouse_events) {
-                    SDL_SendMouseButton(timestamp, window, SDL_PEN_MOUSEID, button + 1, down);
+                    static const Uint8 mouse_buttons[] = {
+                        SDL_BUTTON_LEFT,
+                        SDL_BUTTON_RIGHT,
+                        SDL_BUTTON_MIDDLE,
+                        SDL_BUTTON_X1,
+                        SDL_BUTTON_X2
+                    };
+                    if (button < SDL_arraysize(mouse_buttons)) {
+                        SDL_SendMouseButton(timestamp, window, SDL_PEN_MOUSEID, mouse_buttons[button], down);
+                    }
                 }
             }
         }

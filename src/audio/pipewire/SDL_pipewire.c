@@ -266,13 +266,11 @@ static bool pipewire_core_version_at_least(int major, int minor, int patch)
 static bool io_list_check_add(struct io_node *node)
 {
     struct io_node *n;
-    bool ret = true;
 
     // See if the node is already in the list
     spa_list_for_each (n, &hotplug_io_list, link) {
         if (n->id == node->id) {
-            ret = false;
-            goto dup_found;
+            return false;
         }
     }
 
@@ -283,9 +281,7 @@ static bool io_list_check_add(struct io_node *node)
         SDL_AddAudioDevice(node->recording, node->name, &node->spec, PW_ID_TO_HANDLE(node->id));
     }
 
-dup_found:
-
-    return ret;
+    return true;
 }
 
 static void io_list_remove(Uint32 id)
@@ -1118,7 +1114,13 @@ static bool PIPEWIRE_OpenDevice(SDL_AudioDevice *device)
 
     stream_name = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME);
     if (!stream_name || *stream_name == '\0') {
-        stream_name = "Audio Stream";
+        if (app_name) {
+            stream_name = app_name;
+        } else if (app_id) {
+            stream_name = app_id;
+        } else {
+            stream_name = "SDL Audio Stream";
+        }
     }
 
     /*

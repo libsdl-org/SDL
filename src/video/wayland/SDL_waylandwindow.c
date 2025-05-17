@@ -774,6 +774,7 @@ static void handle_configure_xdg_toplevel(void *data,
     bool active = false;
     bool resizing = false;
     bool suspended = false;
+    wind->toplevel_constraints = 0;
     wl_array_for_each (state, states) {
         switch (*state) {
         case XDG_TOPLEVEL_STATE_FULLSCREEN:
@@ -799,6 +800,18 @@ static void handle_configure_xdg_toplevel(void *data,
             break;
         case XDG_TOPLEVEL_STATE_SUSPENDED:
             suspended = true;
+            break;
+        case XDG_TOPLEVEL_STATE_CONSTRAINED_LEFT:
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_LEFT;
+            break;
+        case XDG_TOPLEVEL_STATE_CONSTRAINED_RIGHT:
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_RIGHT;
+            break;
+        case XDG_TOPLEVEL_STATE_CONSTRAINED_TOP:
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_TOP;
+            break;
+        case XDG_TOPLEVEL_STATE_CONSTRAINED_BOTTOM:
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM;
             break;
         default:
             break;
@@ -1205,6 +1218,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
 #if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
         resizing = (window_state & LIBDECOR_WINDOW_STATE_RESIZING) != 0;
 #endif
+        // TODO: Toplevel constraint passthrough is waiting on upstream libdecor changes.
     }
     const bool floating = !(fullscreen || maximized || tiled);
 
@@ -1663,7 +1677,7 @@ static const struct wp_color_management_surface_feedback_v1_listener color_manag
     feedback_surface_preferred_changed
 };
 
-static void SetKeyboardFocus(SDL_Window *window, bool set_focus)
+static void Wayland_SetKeyboardFocus(SDL_Window *window, bool set_focus)
 {
     SDL_Window *toplevel = window;
 
@@ -1672,7 +1686,7 @@ static void SetKeyboardFocus(SDL_Window *window, bool set_focus)
         toplevel = toplevel->parent;
     }
 
-    toplevel->internal->keyboard_focus = window;
+    toplevel->keyboard_focus = window;
 
     if (set_focus && !window->is_hiding && !window->is_destroying) {
         SDL_SetKeyboardFocus(window);
@@ -1902,8 +1916,9 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             data->shell_surface.xdg.popup.xdg_positioner = xdg_wm_base_create_positioner(c->shell.xdg);
             xdg_positioner_set_anchor(data->shell_surface.xdg.popup.xdg_positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
             xdg_positioner_set_anchor_rect(data->shell_surface.xdg.popup.xdg_positioner, 0, 0, parent->internal->current.logical_width, parent->internal->current.logical_width);
-            xdg_positioner_set_constraint_adjustment(data->shell_surface.xdg.popup.xdg_positioner,
-                                                     XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y);
+
+            const Uint32 constraint = window->constrain_popup ? (XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y) : XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE;
+            xdg_positioner_set_constraint_adjustment(data->shell_surface.xdg.popup.xdg_positioner, constraint);
             xdg_positioner_set_gravity(data->shell_surface.xdg.popup.xdg_positioner, XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT);
             xdg_positioner_set_size(data->shell_surface.xdg.popup.xdg_positioner, data->current.logical_width, data->current.logical_height);
 
@@ -1932,8 +1947,8 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 wl_region_add(region, 0, 0, 0, 0);
                 wl_surface_set_input_region(data->surface, region);
                 wl_region_destroy(region);
-            } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
-                SetKeyboardFocus(window, window->parent == SDL_GetKeyboardFocus());
+            } else if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
+                Wayland_SetKeyboardFocus(window, true);
             }
 
             SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER, data->shell_surface.xdg.popup.xdg_popup);
@@ -2052,6 +2067,10 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     struct wl_callback *cb = wl_display_sync(_this->internal->display);
     wl_callback_add_listener(cb, &show_hide_sync_listener, (void*)((uintptr_t)window->id));
 
+    data->showing_window = true;
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+    data->showing_window = false;
+
     // Send an exposure event to signal that the client should draw.
     if (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_FRAME) {
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
@@ -2076,21 +2095,10 @@ static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
         return;
     }
 
-    if (popup->flags & SDL_WINDOW_POPUP_MENU) {
-        SDL_Window *new_focus = popup->parent;
-        bool set_focus = popup == SDL_GetKeyboardFocus();
-
-        // Find the highest level window, up to the toplevel parent, that isn't being hidden or destroyed.
-        while (SDL_WINDOW_IS_POPUP(new_focus) && (new_focus->is_hiding || new_focus->is_destroying)) {
-            new_focus = new_focus->parent;
-
-            // If some window in the chain currently had focus, set it to the new lowest-level window.
-            if (!set_focus) {
-                set_focus = new_focus == SDL_GetKeyboardFocus();
-            }
-        }
-
-        SetKeyboardFocus(new_focus, set_focus);
+    if ((popup->flags & SDL_WINDOW_POPUP_MENU) && !(popup->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
+        SDL_Window *new_focus;
+        const bool set_focus = SDL_ShouldRelinquishPopupFocus(popup, &new_focus);
+        Wayland_SetKeyboardFocus(new_focus, set_focus);
     }
 
     xdg_popup_destroy(popupdata->shell_surface.xdg.popup.xdg_popup);
@@ -2201,7 +2209,7 @@ static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
  *
  * As you might expect from Wayland, the general policy is to go with #2 unless
  * the client can prove to the compositor beyond a reasonable doubt that raising
- * the window will not be malicuous behavior.
+ * the window will not be malicious behavior.
  *
  * For SDL this means RaiseWindow and FlashWindow both use the same protocol,
  * but in different ways: RaiseWindow will provide as _much_ information as
@@ -2216,9 +2224,17 @@ static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
  */
 static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *target_wind, bool set_serial)
 {
-    struct SDL_WaylandInput * input = data->input;
-    SDL_Window *focus = SDL_GetKeyboardFocus();
-    struct wl_surface *requesting_surface = focus ? focus->internal->surface : NULL;
+    SDL_WaylandSeat *seat = data->last_implicit_grab_seat;
+    SDL_WindowData *focus = NULL;
+
+    if (seat) {
+        focus = seat->keyboard.focus;
+        if (!focus) {
+            focus = seat->pointer.focus;
+        }
+    }
+
+    struct wl_surface *requesting_surface = focus ? focus->surface : NULL;
 
     if (data->activation_manager) {
         if (target_wind->activation_token) {
@@ -2242,8 +2258,8 @@ static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *target_
             // This specifies the surface from which the activation request is originating, not the activation target surface.
             xdg_activation_token_v1_set_surface(target_wind->activation_token, requesting_surface);
         }
-        if (set_serial && input && input->seat) {
-            xdg_activation_token_v1_set_serial(target_wind->activation_token, input->last_implicit_grab_serial, input->seat);
+        if (set_serial && seat && seat->wl_seat) {
+            xdg_activation_token_v1_set_serial(target_wind->activation_token, seat->last_implicit_grab_serial, seat->wl_seat);
         }
         xdg_activation_token_v1_commit(target_wind->activation_token);
     }
@@ -2272,6 +2288,11 @@ SDL_FullscreenResult Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Win
     // Custom surfaces have no toplevel to make fullscreen.
     if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_CUSTOM) {
         return SDL_FULLSCREEN_FAILED;
+    }
+
+    // Drop fullscreen leave requests when showing the window.
+    if (wind->showing_window && fullscreen == SDL_FULLSCREEN_OP_LEAVE) {
+        return SDL_FULLSCREEN_SUCCEEDED;
     }
 
     if (wind->show_hide_sync_required) {
@@ -2327,6 +2348,11 @@ SDL_FullscreenResult Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Win
 void Wayland_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *wind = window->internal;
+
+    // Drop restore requests when showing the window.
+    if (wind->showing_window) {
+        return;
+    }
 
     // Not currently fullscreen or maximized, and no state pending; nothing to do.
     if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) &&
@@ -2488,35 +2514,31 @@ bool Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
      * Just know that this call lets you confine with a rect, SetWindowGrab
      * lets you confine without a rect.
      */
-    if (SDL_RectEmpty(&window->mouse_rect) && !(window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
-        return Wayland_input_unconfine_pointer(data->input, window);
-    } else {
-        return Wayland_input_confine_pointer(data->input, window);
+    if (!data->pointer_constraints) {
+        return SDL_SetError("Failed to grab mouse: compositor lacks support for the required zwp_pointer_constraints_v1 protocol");
     }
+    Wayland_DisplayUpdatePointerGrabs(data, window->internal);
+    return true;
 }
 
 bool Wayland_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
     SDL_VideoData *data = _this->internal;
-
-    if (grabbed) {
-        return Wayland_input_confine_pointer(data->input, window);
-    } else if (SDL_RectEmpty(&window->mouse_rect)) {
-        return Wayland_input_unconfine_pointer(data->input, window);
+    if (!data->pointer_constraints) {
+        return SDL_SetError("Failed to grab mouse: compositor lacks support for the required zwp_pointer_constraints_v1 protocol");
     }
-
+    Wayland_DisplayUpdatePointerGrabs(data, window->internal);
     return true;
 }
 
 bool Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
     SDL_VideoData *data = _this->internal;
-
-    if (grabbed) {
-        return Wayland_input_grab_keyboard(window, data->input);
-    } else {
-        return Wayland_input_ungrab_keyboard(window);
+    if (!data->key_inhibitor_manager) {
+        return SDL_SetError("Failed to grab keyboard: compositor lacks support for the required zwp_keyboard_shortcuts_inhibit_manager_v1 protocol");
     }
+    Wayland_DisplayUpdateKeyboardGrabs(data, window->internal);
+    return true;
 }
 
 bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
@@ -2671,10 +2693,6 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
         }
     }
 #endif
-
-    if (c->relative_mouse_mode) {
-        Wayland_input_enable_relative_pointer(c->input);
-    }
 
     // We may need to create an idle inhibitor for this new window
     Wayland_SuspendScreenSaver(_this);
@@ -2974,9 +2992,35 @@ bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return true;
 }
 
+bool Wayland_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable)
+{
+    if (window->flags & SDL_WINDOW_POPUP_MENU) {
+        if (!(window->flags & SDL_WINDOW_HIDDEN)) {
+            if (!focusable && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+                SDL_Window *new_focus;
+                const bool set_focus = SDL_ShouldRelinquishPopupFocus(window, &new_focus);
+                Wayland_SetKeyboardFocus(new_focus, set_focus);
+            } else if (focusable) {
+                if (SDL_ShouldFocusPopup(window)) {
+                    Wayland_SetKeyboardFocus(window, true);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    return SDL_SetError("wayland: focus can only be toggled on popup menu windows");
+}
+
 void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 {
     SDL_WindowData *wind = window->internal;
+    SDL_WaylandSeat *seat = wind->waylandData->last_implicit_grab_seat;
+
+    if (!seat) {
+        return;
+    }
 
     if (wind->scale_to_display) {
         x = PixelToPoint(window, x);
@@ -2986,13 +3030,13 @@ void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 #ifdef HAVE_LIBDECOR_H
     if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
         if (wind->shell_surface.libdecor.frame) {
-            libdecor_frame_show_window_menu(wind->shell_surface.libdecor.frame, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
+            libdecor_frame_show_window_menu(wind->shell_surface.libdecor.frame, seat->wl_seat, seat->last_implicit_grab_serial, x, y);
         }
     } else
 #endif
     if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
         if (wind->shell_surface.xdg.toplevel.xdg_toplevel) {
-            xdg_toplevel_show_window_menu(wind->shell_surface.xdg.toplevel.xdg_toplevel, wind->waylandData->input->seat, wind->waylandData->input->last_implicit_grab_serial, x, y);
+            xdg_toplevel_show_window_menu(wind->shell_surface.xdg.toplevel.xdg_toplevel, seat->wl_seat, seat->last_implicit_grab_serial, x, y);
         }
     }
 }
@@ -3048,6 +3092,12 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         if (wind->show_hide_sync_required) {
             WAYLAND_wl_display_roundtrip(data->display);
         }
+
+        /* The compositor should have relinquished keyboard, pointer, touch, and tablet tool focus when the toplevel
+         * window was destroyed upon being hidden, but there is no guarantee of this, so ensure that all references
+         * to the window held by seats are released before destroying the underlying surface and struct.
+         */
+        Wayland_DisplayRemoveWindowReferencesFromSeats(data, wind);
 
 #ifdef SDL_VIDEO_OPENGL_EGL
         if (wind->egl_surface) {

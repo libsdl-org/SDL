@@ -103,7 +103,7 @@ getting started.
 
 Another option is to use SDL' main callbacks, which handle this for you
 without platform-specific code in your app. Please refer to
-[the wiki](https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3)
+[the wiki](https://wiki.libsdl.org/SDL3/README-main-functions#main-callbacks-in-sdl3)
 or `docs/README-main-functions.md` in the SDL source code.
 
 
@@ -230,7 +230,7 @@ tools.
 mkdir build
 cd build
 emcmake cmake ..
-# you can also do `emcmake cmake -G Ninja ..` and then use `ninja` instead of this command.
+# you can also try `emcmake cmake -G Ninja ..` and then use `ninja` instead of this command.
 emmake make -j4
 ```
 

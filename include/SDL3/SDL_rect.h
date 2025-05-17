@@ -324,7 +324,7 @@ SDL_FORCE_INLINE bool SDL_PointInRectFloat(const SDL_FPoint *p, const SDL_FRect 
 }
 
 /**
- * Determine whether a floating point rectangle can contain any point.
+ * Determine whether a floating point rectangle takes no space.
  *
  * A rectangle is considered "empty" for this function if `r` is NULL, or if
  * `r`'s width and/or height are < 0.0f.

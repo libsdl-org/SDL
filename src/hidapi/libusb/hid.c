@@ -879,9 +879,13 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 		0x1532, /* Razer Wildcat */
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
+		0x294b, /* Snakebyte */
 		0x2dc8, /* 8BitDo */
 		0x2e24, /* Hyperkin */
+		0x2e95, /* SCUF */
+		0x3285, /* Nacon */
 		0x3537, /* GameSir */
+		0x366c, /* ByoWave */
 	};
 
 	if (intf_desc->bInterfaceNumber == 0 &&
@@ -1238,6 +1242,7 @@ static void init_xbox360(libusb_device_handle *device_handle, unsigned short idV
 	(void)conf_desc;
 
 	if ((idVendor == 0x05ac && idProduct == 0x055b) /* Gamesir-G3w */ ||
+	    (idVendor == 0x20d6 && idProduct == 0x4010) /* PowerA Battle Dragon Advanced Wireless Controller */ ||
 	    idVendor == 0x0f0d /* Hori Xbox controllers */) {
 		unsigned char data[20];
 

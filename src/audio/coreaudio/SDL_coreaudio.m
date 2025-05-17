@@ -341,7 +341,7 @@ static void ResumeAudioDevices(void)
 
 static void InterruptionBegin(SDL_AudioDevice *device)
 {
-    if (device != NULL && device->hidden->audioQueue != NULL) {
+    if (device != NULL && device->hidden != NULL && device->hidden->audioQueue != NULL) {
         device->hidden->interrupted = true;
         AudioQueuePause(device->hidden->audioQueue);
     }
@@ -366,7 +366,7 @@ static void InterruptionEnd(SDL_AudioDevice *device)
 {
     @synchronized(self) {
         NSNumber *type = note.userInfo[AVAudioSessionInterruptionTypeKey];
-        if (type.unsignedIntegerValue == AVAudioSessionInterruptionTypeBegan) {
+        if (type && (type.unsignedIntegerValue == AVAudioSessionInterruptionTypeBegan)) {
             InterruptionBegin(self.device);
         } else {
             InterruptionEnd(self.device);

@@ -229,9 +229,9 @@ static void SDLCALL SDL_MouseRelativeCursorVisibleChanged(void *userdata, const 
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
-    mouse->relative_mode_cursor_visible = SDL_GetStringBoolean(hint, false);
+    mouse->relative_mode_hide_cursor = !(SDL_GetStringBoolean(hint, false));
 
-    SDL_SetCursor(NULL); // Update cursor visibility
+    SDL_RedrawCursor(); // Update cursor visibility
 }
 
 static void SDLCALL SDL_MouseIntegerModeChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -304,7 +304,7 @@ bool SDL_PreInitMouse(void)
 
     mouse->was_touch_mouse_events = false; // no touch to mouse movement event pending
 
-    mouse->cursor_shown = true;
+    mouse->cursor_visible = true;
 
     return true;
 }
@@ -406,6 +406,19 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
         event.type = SDL_EVENT_MOUSE_REMOVED;
         event.mdevice.which = mouseID;
         SDL_PushEvent(&event);
+    }
+}
+
+void SDL_SetMouseName(SDL_MouseID mouseID, const char *name)
+{
+    SDL_assert(mouseID != 0);
+
+    const int mouse_index = SDL_GetMouseIndex(mouseID);
+
+    if (mouse_index >= 0) {
+        SDL_MouseInstance *instance = &SDL_mice[mouse_index];
+        SDL_free(instance->name);
+        instance->name = SDL_strdup(name ? name : "");
     }
 }
 
@@ -593,7 +606,7 @@ void SDL_SetMouseFocus(SDL_Window *window)
     }
 
     // Update cursor visibility
-    SDL_SetCursor(NULL);
+    SDL_RedrawCursor();
 }
 
 bool SDL_MousePositionInWindow(SDL_Window *window, float x, float y)
@@ -799,7 +812,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
     }
 
     // Move the mouse cursor, if needed
-    if (mouse->cursor_shown && !mouse->relative_mode &&
+    if (mouse->cursor_visible && !mouse->relative_mode &&
         mouse->MoveCursor && mouse->cur_cursor) {
         mouse->MoveCursor(mouse->cur_cursor);
     }
@@ -1027,18 +1040,14 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
         SDL_SetMouseFocus(window);
     }
 
-    // Accumulate fractional wheel motion if integer mode is enabled
-    if (mouse->integer_mode_flags & 2) {
-        mouse->integer_mode_residual_scroll_x = SDL_modff(mouse->integer_mode_residual_scroll_x + x, &x);
-        mouse->integer_mode_residual_scroll_y = SDL_modff(mouse->integer_mode_residual_scroll_y + y, &y);
-    }
-
     if (x == 0.0f && y == 0.0f) {
         return;
     }
 
     // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_MOUSE_WHEEL)) {
+        float integer_x, integer_y;
+
         if (!mouse->relative_mode || mouse->warp_emulation_active) {
             // We're not in relative mode, so all mouse events are global mouse events
             mouseID = SDL_GLOBAL_MOUSE_ID;
@@ -1049,11 +1058,26 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
         event.common.timestamp = timestamp;
         event.wheel.windowID = mouse->focus ? mouse->focus->id : 0;
         event.wheel.which = mouseID;
-        event.wheel.x = x;
-        event.wheel.y = y;
         event.wheel.direction = direction;
         event.wheel.mouse_x = mouse->x;
         event.wheel.mouse_y = mouse->y;
+
+        mouse->residual_scroll_x = SDL_modff(mouse->residual_scroll_x + x, &integer_x);
+        event.wheel.integer_x = (Sint32)integer_x;
+
+        mouse->residual_scroll_y = SDL_modff(mouse->residual_scroll_y + y, &integer_y);
+        event.wheel.integer_y = (Sint32)integer_y;
+
+        // Return the accumulated values in x/y when integer wheel mode is enabled.
+        // This is necessary for compatibility with sdl2-compat 2.32.54.
+        if (mouse->integer_mode_flags & 2) {
+            event.wheel.x = integer_x;
+            event.wheel.y = integer_y;
+        } else {
+            event.wheel.x = x;
+            event.wheel.y = y;
+        }
+
         SDL_PushEvent(&event);
     }
 }
@@ -1276,7 +1300,7 @@ static void SDL_MaybeEnableWarpEmulation(SDL_Window *window, float x, float y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (!mouse->warp_emulation_prohibited && mouse->warp_emulation_hint && !mouse->cursor_shown && !mouse->warp_emulation_active) {
+    if (!mouse->warp_emulation_prohibited && mouse->warp_emulation_hint && !mouse->cursor_visible && !mouse->warp_emulation_active) {
         if (!window) {
             window = mouse->focus;
         }
@@ -1290,8 +1314,9 @@ static void SDL_MaybeEnableWarpEmulation(SDL_Window *window, float x, float y)
                 // Require two consecutive warps to the center within a certain timespan to enter warp emulation mode.
                 const Uint64 now = SDL_GetTicksNS();
                 if (now - mouse->last_center_warp_time_ns < WARP_EMULATION_THRESHOLD_NS) {
-                    if (SDL_SetRelativeMouseMode(true)) {
-                        mouse->warp_emulation_active = true;
+                    mouse->warp_emulation_active = true;
+                    if (!SDL_SetRelativeMouseMode(true)) {
+                        mouse->warp_emulation_active = false;
                     }
                 }
 
@@ -1347,7 +1372,7 @@ bool SDL_SetRelativeMouseMode(bool enabled)
 
     if (enabled) {
         // Update cursor visibility before we potentially warp the mouse
-        SDL_SetCursor(NULL);
+        SDL_RedrawCursor();
     }
 
     if (enabled && focusWindow) {
@@ -1367,7 +1392,7 @@ bool SDL_SetRelativeMouseMode(bool enabled)
 
     if (!enabled) {
         // Update cursor visibility after we restore the mouse position
-        SDL_SetCursor(NULL);
+        SDL_RedrawCursor();
     }
 
     // Flush pending mouse motion - ideally we would pump events, but that's not always safe
@@ -1477,7 +1502,7 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
     SDL_Surface *surface;
     SDL_Cursor *cursor;
     int x, y;
-    Uint32 *pixel;
+    Uint32 *pixels;
     Uint8 datab = 0, maskb = 0;
     const Uint32 black = 0xFF000000;
     const Uint32 white = 0xFFFFFFFF;
@@ -1498,16 +1523,16 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
         return NULL;
     }
     for (y = 0; y < h; ++y) {
-        pixel = (Uint32 *)((Uint8 *)surface->pixels + y * surface->pitch);
+        pixels = (Uint32 *)((Uint8 *)surface->pixels + y * surface->pitch);
         for (x = 0; x < w; ++x) {
             if ((x % 8) == 0) {
                 datab = *data++;
                 maskb = *mask++;
             }
             if (maskb & 0x80) {
-                *pixel++ = (datab & 0x80) ? black : white;
+                *pixels++ = (datab & 0x80) ? black : white;
             } else {
-                *pixel++ = (datab & 0x80) ? inverted : transparent;
+                *pixels++ = (datab & 0x80) ? inverted : transparent;
             }
             datab <<= 1;
             maskb <<= 1;
@@ -1586,6 +1611,26 @@ SDL_Cursor *SDL_CreateSystemCursor(SDL_SystemCursor id)
     return cursor;
 }
 
+void SDL_RedrawCursor(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Cursor *cursor;
+
+    if (mouse->focus) {
+        cursor = mouse->cur_cursor;
+    } else {
+        cursor = mouse->def_cursor;
+    }
+
+    if (mouse->focus && (!mouse->cursor_visible || (mouse->relative_mode && mouse->relative_mode_hide_cursor))) {
+        cursor = NULL;
+    }
+
+    if (mouse->ShowCursor) {
+        mouse->ShowCursor(cursor);
+    }
+}
+
 /* SDL_SetCursor(NULL) can be used to force the cursor redraw,
    if this is desired for any reason.  This is used when setting
    the video mode and when the SDL window gains the mouse focus.
@@ -1594,7 +1639,7 @@ bool SDL_SetCursor(SDL_Cursor *cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    // Return immediately if setting the cursor to the currently set one (fixes #7151)
+    // already on this cursor, no further action required
     if (cursor == mouse->cur_cursor) {
         return true;
     }
@@ -1614,23 +1659,10 @@ bool SDL_SetCursor(SDL_Cursor *cursor)
             }
         }
         mouse->cur_cursor = cursor;
-    } else {
-        if (mouse->focus) {
-            cursor = mouse->cur_cursor;
-        } else {
-            cursor = mouse->def_cursor;
-        }
     }
 
-    if (cursor && (!mouse->focus || (mouse->cursor_shown && (!mouse->relative_mode || mouse->relative_mode_cursor_visible)))) {
-        if (mouse->ShowCursor) {
-            mouse->ShowCursor(cursor);
-        }
-    } else {
-        if (mouse->ShowCursor) {
-            mouse->ShowCursor(NULL);
-        }
-    }
+    SDL_RedrawCursor();
+
     return true;
 }
 
@@ -1698,9 +1730,9 @@ bool SDL_ShowCursor(void)
         mouse->warp_emulation_active = false;
     }
 
-    if (!mouse->cursor_shown) {
-        mouse->cursor_shown = true;
-        SDL_SetCursor(NULL);
+    if (!mouse->cursor_visible) {
+        mouse->cursor_visible = true;
+        SDL_RedrawCursor();
     }
     return true;
 }
@@ -1709,9 +1741,9 @@ bool SDL_HideCursor(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (mouse->cursor_shown) {
-        mouse->cursor_shown = false;
-        SDL_SetCursor(NULL);
+    if (mouse->cursor_visible) {
+        mouse->cursor_visible = false;
+        SDL_RedrawCursor();
     }
     return true;
 }
@@ -1720,5 +1752,5 @@ bool SDL_CursorVisible(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    return mouse->cursor_shown;
+    return mouse->cursor_visible;
 }

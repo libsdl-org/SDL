@@ -106,9 +106,12 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
     len = 0;
     for (i = 0; args[i]; i++) {
         const char *a = args[i];
+        bool quotes = *a == '\0' || SDL_strpbrk(a, " \r\n\t\v") != NULL;
 
-        /* two double quotes to surround an argument with */
-        len += 2;
+        if (quotes) {
+            /* surround the argument with double quote if it is empty or contains whitespaces */
+            len += 2;
+        }
 
         for (; *a; a++) {
             switch (*a) {
@@ -116,8 +119,8 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
                 len += 2;
                 break;
             case '\\':
-                /* only escape backslashes that precede a double quote */
-                len += (a[1] == '"' || a[1] == '\0') ? 2 : 1;
+                /* only escape backslashes that precede a double quote (including the enclosing double quote) */
+                len += (a[1] == '"' || (quotes && a[1] == '\0')) ? 2 : 1;
                 break;
             case ' ':
             case '^':
@@ -149,8 +152,11 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
     i_out = 0;
     for (i = 0; args[i]; i++) {
         const char *a = args[i];
+        bool quotes = *a == '\0' || SDL_strpbrk(a, " \r\n\t\v") != NULL;
 
-        result[i_out++] = '"';
+        if (quotes) {
+            result[i_out++] = '"';
+        }
         for (; *a; a++) {
             switch (*a) {
             case '"':
@@ -163,7 +169,7 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
                 break;
             case '\\':
                 result[i_out++] = *a;
-                if (a[1] == '"' || a[1] == '\0') {
+                if (a[1] == '"' || (quotes && a[1] == '\0')) {
                     result[i_out++] = *a;
                 }
                 break;
@@ -188,7 +194,9 @@ static bool join_arguments(const char * const *args, LPWSTR *args_out)
                 break;
             }
         }
-        result[i_out++] = '"';
+        if (quotes) {
+            result[i_out++] = '"';
+        }
         result[i_out++] = ' ';
     }
     SDL_assert(i_out == len);
@@ -237,6 +245,7 @@ static bool join_env(char **env, LPWSTR *env_out)
 bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID props)
 {
     const char * const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
+    const char *cmdline = SDL_GetStringProperty(props, SDL_PROP_PROCESS_CREATE_CMDLINE_STRING, NULL);
     SDL_Environment *env = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ENVIRONMENT_POINTER, SDL_GetEnvironment());
     char **envp = NULL;
     const char *working_directory = SDL_GetStringProperty(props, SDL_PROP_PROCESS_CREATE_WORKING_DIRECTORY_STRING, NULL);
@@ -286,7 +295,12 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
     security_attributes.bInheritHandle = TRUE;
     security_attributes.lpSecurityDescriptor = NULL;
 
-    if (!join_arguments(args, &createprocess_cmdline)) {
+    if (cmdline) {
+        createprocess_cmdline = WIN_UTF8ToString(cmdline);
+        if (!createprocess_cmdline) {
+            goto done;
+        }
+    } else if (!join_arguments(args, &createprocess_cmdline)) {
         goto done;
     }
 
@@ -313,6 +327,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         if (stderr_option == SDL_PROCESS_STDIO_INHERITED) {
             stderr_option = SDL_PROCESS_STDIO_NULL;
         }
+        creation_flags |= CREATE_NO_WINDOW;
     }
 
     switch (stdin_option) {
@@ -338,7 +353,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         startup_info.hStdInput = stdin_pipe[READ_END];
         break;
     case SDL_PROCESS_STDIO_NULL:
-        startup_info.hStdInput = CreateFile(TEXT("\\\\.\\NUL"), GENERIC_ALL, 0, &security_attributes, OPEN_EXISTING, 0, NULL);
+        startup_info.hStdInput = CreateFile(TEXT("\\\\.\\NUL"), (GENERIC_READ | GENERIC_WRITE), 0, &security_attributes, OPEN_EXISTING, 0, NULL);
         break;
     case SDL_PROCESS_STDIO_INHERITED:
     default:
@@ -375,7 +390,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         startup_info.hStdOutput = stdout_pipe[WRITE_END];
         break;
     case SDL_PROCESS_STDIO_NULL:
-        startup_info.hStdOutput = CreateFile(TEXT("\\\\.\\NUL"), GENERIC_ALL, 0, &security_attributes, OPEN_EXISTING, 0, NULL);
+        startup_info.hStdOutput = CreateFile(TEXT("\\\\.\\NUL"), (GENERIC_READ | GENERIC_WRITE), 0, &security_attributes, OPEN_EXISTING, 0, NULL);
         break;
     case SDL_PROCESS_STDIO_INHERITED:
     default:
@@ -421,7 +436,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
             startup_info.hStdError = stderr_pipe[WRITE_END];
             break;
         case SDL_PROCESS_STDIO_NULL:
-            startup_info.hStdError = CreateFile(TEXT("\\\\.\\NUL"), GENERIC_ALL, 0, &security_attributes, OPEN_EXISTING, 0, NULL);
+            startup_info.hStdError = CreateFile(TEXT("\\\\.\\NUL"), (GENERIC_READ | GENERIC_WRITE), 0, &security_attributes, OPEN_EXISTING, 0, NULL);
             break;
         case SDL_PROCESS_STDIO_INHERITED:
         default:

@@ -2444,6 +2444,33 @@ static int SDLCALL video_getWindowSurface(void *arg)
     return TEST_COMPLETED;
 }
 
+/**
+ * Tests SDL_RaiseWindow
+ */
+static int SDLCALL video_raiseWindow(void *arg)
+{
+    bool result;
+    SDL_Window *window;
+
+    SDLTest_AssertPass("SDL_SetWindowInputFocus is not supported on dummy and SDL2 wayland driver");
+        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0 || SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+        return TEST_SKIPPED;
+    }
+
+    window = createVideoSuiteTestWindow("video_raiseWindow");
+    if (!window) {
+        return TEST_ABORTED;
+    }
+
+    SDLTest_AssertPass("About to call SDL_RaiseWindow(window)");
+    result = SDL_RaiseWindow(window);
+    SDLTest_AssertCheck(result, "Result is %d, expected 1 (%s)", result, SDL_GetError());
+
+    destroyVideoSuiteTestWindow(window);
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Video test cases */
@@ -2534,6 +2561,9 @@ static const SDLTest_TestCaseReference videoTestCreateMaximized = {
 static const SDLTest_TestCaseReference videoTestGetWindowSurface = {
     video_getWindowSurface, "video_getWindowSurface", "Checks window surface functionality", TEST_ENABLED
 };
+static const SDLTest_TestCaseReference videoTestRaiseWindow = {
+    video_raiseWindow, "video_raiseWindow", "Checks window focus", TEST_ENABLED
+};
 
 /* Sequence of Video test cases */
 static const SDLTest_TestCaseReference *videoTests[] = {
@@ -2559,6 +2589,7 @@ static const SDLTest_TestCaseReference *videoTests[] = {
     &videoTestCreateMinimized,
     &videoTestCreateMaximized,
     &videoTestGetWindowSurface,
+    &videoTestRaiseWindow,
     NULL
 };
 

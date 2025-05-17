@@ -32,14 +32,6 @@
 extern "C" {
 #endif
 
-typedef enum SDL_TextureAddressMode
-{
-    SDL_TEXTURE_ADDRESS_INVALID = -1,
-    SDL_TEXTURE_ADDRESS_AUTO,
-    SDL_TEXTURE_ADDRESS_CLAMP,
-    SDL_TEXTURE_ADDRESS_WRAP,
-} SDL_TextureAddressMode;
-
 /**
  * A rectangle, with the origin at the upper left (double precision).
  */
@@ -187,7 +179,8 @@ typedef struct SDL_RenderCommand
             SDL_BlendMode blend;
             SDL_Texture *texture;
             SDL_ScaleMode texture_scale_mode;
-            SDL_TextureAddressMode texture_address_mode;
+            SDL_TextureAddressMode texture_address_mode_u;
+            SDL_TextureAddressMode texture_address_mode_v;
             SDL_GPURenderState *gpu_render_state;
             Uint8 tentatively_named_rendergeometry_position_coordinate_count;
         } draw;
@@ -313,7 +306,8 @@ struct SDL_Renderer
     float color_scale;
     SDL_FColor color;        /**< Color for drawing operations values */
     SDL_BlendMode blendMode; /**< The drawing blend mode */
-    SDL_TextureAddressMode texture_address_mode;
+    SDL_TextureAddressMode texture_address_mode_u;
+    SDL_TextureAddressMode texture_address_mode_v;
     SDL_GPURenderState *gpu_render_state;
 
     SDL_RenderCommand *render_commands;
@@ -373,6 +367,12 @@ extern SDL_RenderDriver GPU_RenderDriver;
 
 // Clean up any renderers at shutdown
 extern void SDL_QuitRender(void);
+
+#define RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v)    \
+    (((scale_mode == SDL_SCALEMODE_NEAREST) << 0) |                 \
+     ((address_u == SDL_TEXTURE_ADDRESS_WRAP) << 1) |               \
+     ((address_v == SDL_TEXTURE_ADDRESS_WRAP) << 2))
+#define RENDER_SAMPLER_COUNT (((1 << 0) | (1 << 1) | (1 << 2)) + 1)
 
 // Add a supported texture format to a renderer
 extern bool SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelFormat format);

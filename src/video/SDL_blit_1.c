@@ -434,7 +434,7 @@ static void Blit1toNAlpha(SDL_BlitInfo *info)
     const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
     const SDL_Color *srcpal = info->src_pal->colors;
     int dstbpp;
-    Uint32 pixel;
+    Uint32 pixelvalue;
     unsigned sR, sG, sB, sA;
     unsigned dR, dG, dB, dA;
     const unsigned A = info->a;
@@ -450,7 +450,7 @@ static void Blit1toNAlpha(SDL_BlitInfo *info)
             sG = srcpal[*src].g;
             sB = srcpal[*src].b;
             sA = (srcpal[*src].a * A) / 255;
-            DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixel, dR, dG, dB, dA);
+            DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixelvalue, dR, dG, dB, dA);
             ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
             ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
             src++;
@@ -475,7 +475,7 @@ static void Blit1toNAlphaKey(SDL_BlitInfo *info)
     const SDL_Color *srcpal = info->src_pal->colors;
     Uint32 ckey = info->colorkey;
     int dstbpp;
-    Uint32 pixel;
+    Uint32 pixelvalue;
     unsigned sR, sG, sB, sA;
     unsigned dR, dG, dB, dA;
     const unsigned A = info->a;
@@ -492,7 +492,7 @@ static void Blit1toNAlphaKey(SDL_BlitInfo *info)
                 sG = srcpal[*src].g;
                 sB = srcpal[*src].b;
                 sA = (srcpal[*src].a * A) / 255;
-                DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixel, dR, dG, dB, dA);
+                DISEMBLE_RGBA(dst, dstbpp, dstfmt, pixelvalue, dR, dG, dB, dA);
                 ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
                 ASSEMBLE_RGBA(dst, dstbpp, dstfmt, dR, dG, dB, dA);
             }

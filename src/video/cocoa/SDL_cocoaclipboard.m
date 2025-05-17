@@ -158,6 +158,17 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
         NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+
+        // SetClipboardText specialization so text is available after the app quits
+        if (_this->clipboard_callback && _this->num_clipboard_mime_types == 1) {
+            if (SDL_strncmp(_this->clipboard_mime_types[0], "text/plain;charset=utf-8", 24) == 0) {
+                [pasteboard declareTypes:@[ NSPasteboardTypeString ] owner:nil];
+                [pasteboard setString:@((char *)_this->clipboard_userdata) forType:NSPasteboardTypeString];
+                data.clipboard_count = [pasteboard changeCount];
+                return true;
+            }
+        }
+
         NSPasteboardItem *newItem = [NSPasteboardItem new];
         NSMutableArray *utiTypes = [NSMutableArray new];
         Cocoa_PasteboardDataProvider *provider = [[Cocoa_PasteboardDataProvider alloc] initWith: _this->clipboard_callback userData: _this->clipboard_userdata];

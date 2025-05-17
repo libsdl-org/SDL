@@ -98,15 +98,16 @@ static int SDLCALL button_messagebox(void *eventNumber)
         }
         SDL_Log("Pressed button: %d, %s", button, button == -1 ? "[closed]" : text);
 
+        if (button == 2) {
+            continue;
+        }
+
         if (eventNumber) {
             SDL_Event event;
             event.type = (Uint32)(intptr_t)eventNumber;
             SDL_PushEvent(&event);
         }
 
-        if (button == 2) {
-            continue;
-        }
         return 0;
     }
 }

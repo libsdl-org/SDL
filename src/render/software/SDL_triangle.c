@@ -42,7 +42,9 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                                   SDL_Point s2_x_area, SDL_Rect dstrect, int area, int bias_w0, int bias_w1, int bias_w2,
                                   int d2d1_y, int d1d2_x, int d0d2_y, int d2d0_x, int d1d0_y, int d0d1_x,
                                   int s2s0_x, int s2s1_x, int s2s0_y, int s2s1_y, int w0_row, int w1_row, int w2_row,
-                                  SDL_Color c0, SDL_Color c1, SDL_Color c2, bool is_uniform, SDL_TextureAddressMode texture_address_mode);
+                                  SDL_Color c0, SDL_Color c1, SDL_Color c2, bool is_uniform,
+                                  SDL_TextureAddressMode texture_address_mode_u,
+                                  SDL_TextureAddressMode texture_address_mode_v);
 
 #if 0
 bool SDL_BlitTriangle(SDL_Surface *src, const SDL_Point srcpoints[3], SDL_Surface *dst, const SDL_Point dstpoints[3])
@@ -184,11 +186,13 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
 #define TRIANGLE_GET_TEXTCOORD                                                          \
     int srcx = (int)(((Sint64)w0 * s2s0_x + (Sint64)w1 * s2s1_x + s2_x_area.x) / area); \
     int srcy = (int)(((Sint64)w0 * s2s0_y + (Sint64)w1 * s2s1_y + s2_x_area.y) / area); \
-    if (texture_address_mode == SDL_TEXTURE_ADDRESS_WRAP) {                             \
+    if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_WRAP) {                           \
         srcx %= src_surface->w;                                                         \
         if (srcx < 0) {                                                                 \
             srcx += (src_surface->w - 1);                                               \
         }                                                                               \
+    }                                                                                   \
+    if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_WRAP) {                           \
         srcy %= src_surface->h;                                                         \
         if (srcy < 0) {                                                                 \
             srcy += (src_surface->h - 1);                                               \
@@ -465,7 +469,8 @@ bool SDL_SW_BlitTriangle(
     SDL_Surface *dst,
     SDL_Point *d0, SDL_Point *d1, SDL_Point *d2,
     SDL_Color c0, SDL_Color c1, SDL_Color c2,
-    SDL_TextureAddressMode texture_address_mode)
+    SDL_TextureAddressMode texture_address_mode_u,
+    SDL_TextureAddressMode texture_address_mode_v)
 {
     bool result = true;
     SDL_Surface *src_surface = src;
@@ -539,32 +544,36 @@ bool SDL_SW_BlitTriangle(
     SDL_GetSurfaceBlendMode(src, &blend);
 
     // TRIANGLE_GET_TEXTCOORD interpolates up to the max values included, so reduce by 1
-    if (texture_address_mode == SDL_TEXTURE_ADDRESS_CLAMP) {
+    if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_CLAMP ||
+        texture_address_mode_v == SDL_TEXTURE_ADDRESS_CLAMP) {
         SDL_Rect srcrect;
-        int maxx, maxy;
         bounding_rect(s0, s1, s2, &srcrect);
-        maxx = srcrect.x + srcrect.w;
-        maxy = srcrect.y + srcrect.h;
-        if (srcrect.w > 0) {
-            if (s0->x == maxx) {
-                s0->x--;
-            }
-            if (s1->x == maxx) {
-                s1->x--;
-            }
-            if (s2->x == maxx) {
-                s2->x--;
+        if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_CLAMP) {
+            int maxx = srcrect.x + srcrect.w;
+            if (srcrect.w > 0) {
+                if (s0->x == maxx) {
+                    s0->x--;
+                }
+                if (s1->x == maxx) {
+                    s1->x--;
+                }
+                if (s2->x == maxx) {
+                    s2->x--;
+                }
             }
         }
-        if (srcrect.h > 0) {
-            if (s0->y == maxy) {
-                s0->y--;
-            }
-            if (s1->y == maxy) {
-                s1->y--;
-            }
-            if (s2->y == maxy) {
-                s2->y--;
+        if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_CLAMP) {
+            int maxy = srcrect.y + srcrect.h;
+            if (srcrect.h > 0) {
+                if (s0->y == maxy) {
+                    s0->y--;
+                }
+                if (s1->y == maxy) {
+                    s1->y--;
+                }
+                if (s2->y == maxy) {
+                    s2->y--;
+                }
             }
         }
     }
@@ -716,7 +725,7 @@ bool SDL_SW_BlitTriangle(
         SDL_BlitTriangle_Slow(&tmp_info, s2_x_area, dstrect, (int)area, bias_w0, bias_w1, bias_w2,
                               d2d1_y, d1d2_x, d0d2_y, d2d0_x, d1d0_y, d0d1_x,
                               s2s0_x, s2s1_x, s2s0_y, s2s1_y, (int)w0_row, (int)w1_row, (int)w2_row,
-                              c0, c1, c2, is_uniform, texture_address_mode);
+                              c0, c1, c2, is_uniform, texture_address_mode_u, texture_address_mode_v);
 
         goto end;
     }
@@ -788,7 +797,9 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
                                   SDL_Point s2_x_area, SDL_Rect dstrect, int area, int bias_w0, int bias_w1, int bias_w2,
                                   int d2d1_y, int d1d2_x, int d0d2_y, int d2d0_x, int d1d0_y, int d0d1_x,
                                   int s2s0_x, int s2s1_x, int s2s0_y, int s2s1_y, int w0_row, int w1_row, int w2_row,
-                                  SDL_Color c0, SDL_Color c1, SDL_Color c2, bool is_uniform, SDL_TextureAddressMode texture_address_mode)
+                                  SDL_Color c0, SDL_Color c1, SDL_Color c2, bool is_uniform,
+                                  SDL_TextureAddressMode texture_address_mode_u,
+                                  SDL_TextureAddressMode texture_address_mode_v)
 {
     SDL_Surface *src_surface = info->src_surface;
     const int flags = info->flags;
@@ -934,9 +945,9 @@ static void SDL_BlitTriangle_Slow(SDL_BlitInfo *info,
             ASSEMBLE_RGB(dst, dstbpp, dst_fmt, dstR, dstG, dstB);
         } else {
             // SDL_PIXELFORMAT_ARGB2101010
-            Uint32 pixel;
-            ARGB2101010_FROM_RGBA(pixel, dstR, dstG, dstB, dstA);
-            *(Uint32 *)dst = pixel;
+            Uint32 pixelvalue;
+            ARGB2101010_FROM_RGBA(pixelvalue, dstR, dstG, dstB, dstA);
+            *(Uint32 *)dst = pixelvalue;
         }
     }
     TRIANGLE_END_LOOP
