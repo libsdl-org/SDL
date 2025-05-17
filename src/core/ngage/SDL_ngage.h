@@ -18,14 +18,19 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
 
-// Do our best to make sure va_copy is working
-#if (defined(_MSC_VER) && _MSC_VER <= 1800) || defined(__SYMBIAN32__)
-// Visual Studio 2013 tries to link with _vacopy in the C runtime. Newer versions do an inline assignment
-#undef va_copy
-#define va_copy(dst, src) dst = src
+#ifndef SDL_ngage_h
+#define SDL_ngage_h
 
-#elif defined(__GNUC__) && (__GNUC__ < 3)
-#define va_copy(dst, src) __va_copy(dst, src)
-
+#ifdef __cplusplus
+extern "C" {
 #endif
+
+bool NGAGE_IsClassicModel();
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* SDL_ngage_h */

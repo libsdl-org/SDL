@@ -32,8 +32,6 @@ if(NOT (MSVC AND SDL_CPU_ARM64))
     find_package(OpenGL)
 endif()
 
-set(SDL_TEST_EXECUTABLES)
-
 add_library(sdltests_utils OBJECT
     testutils.c
 )
@@ -101,7 +99,7 @@ define_property(TARGET PROPERTY SDL_NONINTERACTIVE BRIEF_DOCS "If true, target i
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_ARGUMENTS BRIEF_DOCS "Argument(s) to run executable in non-interactive mode." FULL_DOCS "Argument(s) to run executable in non-interactive mode.")
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_TIMEOUT BRIEF_DOCS "Timeout for noninteractive executable." FULL_DOCS "Timeout for noninteractive executable.")
 
-macro(add_sdl_test_executable TARGET)
+function(add_sdl_test_executable TARGET)
     cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;THREADS;NO_C90;MAIN_CALLBACKS;NOTRACKMEM" "" "DEPENDS;DISABLE_THREADS_ARGS;NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;INSTALLED_ARGS;SOURCES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unknown argument(s): ${AST_UNPARSED_ARGUMENTS}")
@@ -133,7 +131,8 @@ macro(add_sdl_test_executable TARGET)
         add_dependencies(${TARGET} ${AST_DEPENDS})
     endif()
 
-    list(APPEND SDL_TEST_EXECUTABLES ${TARGET})
+    set_propertY(TARGET ${TARGET} PROPERTY SDL_INSTALL "1")
+    set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" APPEND PROPERTY SDL_TEST_EXECUTABLES "${TARGET}")
     set_property(TARGET ${TARGET} PROPERTY SDL_NOTRACKMEM ${AST_NOTRACKMEM})
     if(AST_NONINTERACTIVE)
         set_property(TARGET ${TARGET} PROPERTY SDL_NONINTERACTIVE 1)
@@ -192,6 +191,14 @@ macro(add_sdl_test_executable TARGET)
         target_link_options(${TARGET} PRIVATE "SHELL:--pre-js ${CMAKE_CURRENT_SOURCE_DIR}/emscripten/pre.js")
         target_link_options(${TARGET} PRIVATE "-sEXIT_RUNTIME=1")
         set_property(TARGET ${TARGET} APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/emscripten/pre.js")
+    elseif(NGAGE)
+        string(MD5 TARGET_MD5 "${TARGET}")
+        string(SUBSTRING "${TARGET_MD5}" 0 8 TARGET_MD5_8)
+        target_link_options(${TARGET} PRIVATE "SHELL:-s UID3=0x${TARGET_MD5_8}")
+        if(NOT AST_MAIN_CALLBACKS)
+            set_property(TARGET ${TARGET} PROPERTY "EXCLUDE_FROM_ALL" "1")
+            set_propertY(TARGET ${TARGET} PROPERTY SDL_INSTALL "0")
+        endif()
     endif()
 
     if(OPENGL_FOUND)
@@ -200,10 +207,10 @@ macro(add_sdl_test_executable TARGET)
 
     # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
     target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
-endmacro()
+endfunction()
 
-check_include_file(signal.h HAVE_SIGNAL_H)
-if(HAVE_SIGNAL_H)
+check_include_file(signal.h LIBC_HAS_SIGNAL_H)
+if(LIBC_HAS_SIGNAL_H)
     add_definitions(-DHAVE_SIGNAL_H)
 endif()
 
@@ -424,6 +431,8 @@ add_sdl_test_executable(testprocess
 )
 add_sdl_test_executable(childprocess SOURCES childprocess.c)
 add_dependencies(testprocess childprocess)
+
+get_property(SDL_TEST_EXECUTABLES DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY SDL_TEST_EXECUTABLES)
 
 if (HAVE_WAYLAND)
     # Set the GENERATED property on the protocol file, since it is first created at build time
@@ -654,10 +663,15 @@ if(SDL_INSTALL_TESTS)
             DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
         )
     else()
-        install(
-            TARGETS ${SDL_TEST_EXECUTABLES}
-            DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
-        )
+        foreach(test IN LISTS SDL_TEST_EXECUTABLES)
+            get_property(install_target TARGET ${test} PROPERTY "SDL_INSTALL")
+            if(install_target)
+                install(
+                    TARGETS ${test}
+                    DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
+                )
+            endif()
+        endforeach()
     endif()
     if(MSVC)
         foreach(test IN LISTS SDL_TEST_EXECUTABLES)

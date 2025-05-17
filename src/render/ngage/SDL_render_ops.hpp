@@ -19,13 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-// Do our best to make sure va_copy is working
-#if (defined(_MSC_VER) && _MSC_VER <= 1800) || defined(__SYMBIAN32__)
-// Visual Studio 2013 tries to link with _vacopy in the C runtime. Newer versions do an inline assignment
-#undef va_copy
-#define va_copy(dst, src) dst = src
+#ifndef ngage_video_render_ops_hpp
+#define ngage_video_render_ops_hpp
 
-#elif defined(__GNUC__) && (__GNUC__ < 3)
-#define va_copy(dst, src) __va_copy(dst, src)
+#include <3dtypes.h>
 
-#endif
+void ApplyColorMod(void* dest, void* source, int pitch, int width, int height, SDL_FColor color);
+void ApplyFlip(void* dest, void* source, int pitch, int width, int height, SDL_FlipMode flip);
+void ApplyRotation(void* dest, void* source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed angle);
+void ApplyScale(void* dest, void* source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed scale_x, TFixed scale_y);
+
+#endif // ngage_video_render_ops_hpp
