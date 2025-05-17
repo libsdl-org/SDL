@@ -102,7 +102,7 @@ class JobSpec:
 
 
 JOB_SPECS = {
-    "msys2-mingw32": JobSpec(name="Windows (msys2, mingw32)",               os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw32",            msys2_platform=Msys2Platform.Mingw32, ),
+    """"msys2-mingw32": JobSpec(name="Windows (msys2, mingw32)",               os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw32",            msys2_platform=Msys2Platform.Mingw32, ),
     "msys2-mingw64": JobSpec(name="Windows (msys2, mingw64)",               os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64",            msys2_platform=Msys2Platform.Mingw64, ),
     "msys2-clang64": JobSpec(name="Windows (msys2, clang64)",               os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-clang",      msys2_platform=Msys2Platform.Clang64, ),
     "msys2-ucrt64": JobSpec(name="Windows (msys2, ucrt64)",                 os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-ucrt",       msys2_platform=Msys2Platform.Ucrt64, ),
@@ -140,7 +140,7 @@ JOB_SPECS = {
     "vita-pvr": JobSpec(name="Sony PlayStation Vita (GLES w/ PVR_PSP2)",    os=JobOs.UbuntuLatest,      platform=SdlPlatform.Vita,        artifact="SDL-vita-pvr",           container="vitasdk/vitasdk:latest", vita_gles=VitaGLES.Pvr, ),
     "riscos": JobSpec(name="RISC OS",                                       os=JobOs.UbuntuLatest,      platform=SdlPlatform.Riscos,      artifact="SDL-riscos",             container="riscosdotinfo/riscos-gccsdk-4.7:latest", ),
     "netbsd": JobSpec(name="NetBSD",                                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.NetBSD,      artifact="SDL-netbsd-x64", ),
-    "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
+    "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),"""
     "harmony": JobSpec(name="Harmony",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",      harmony_arch="arm64-v8a",),
 }
 
