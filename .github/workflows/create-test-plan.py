@@ -55,7 +55,7 @@ class SdlPlatform(Enum):
     FreeBSD = "freebsd"
     NetBSD = "netbsd"
     NGage = "ngage"
-    HarmonyOS = "harmony"
+    Harmony = "harmony"
 
 
 class Msys2Platform(Enum):
