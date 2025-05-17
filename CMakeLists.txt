@@ -1268,7 +1268,7 @@ if(UNIX OR APPLE)
   endif()
 endif()
 
-if(UNIX OR APPLE OR HAIKU OR RISCOS)
+if(UNIX OR APPLE OR HAIKU OR RISCOS OR OHOS)
   CheckO_CLOEXEC()
 endif()
 
@@ -1483,7 +1483,30 @@ if(ANDROID)
       endif()
     endif()
   endif()
+elseif(OHOS)
+  # disable warnings from the toolchain
+  sdl_compile_options(PRIVATE "-Wno-unused-command-line-argument")
 
+  find_library(OHOS_ACE_LIBRARY NAMES libace_napi.z.so ace)
+  find_library(OHOS_LOG_LIBRARY NAMES libhilog_ndk.z.so hilog)
+  find_library(OHOS_NDK_LIBRARY NAMES libace_ndk.z.so ndk)
+  find_library(OHOS_RAWFILE_LIBRARY NAMES librawfile.z.so rawfile)
+  find_library(OHOS_PIXELMAP_LIBRARY NAMES libpixelmap_ndk.z.so pixelmap)
+  sdl_link_dependency(OHOS_LIBS LIBS ${OHOS_ACE_LIBRARY} ${OHOS_LOG_LIBRARY} ${OHOS_NDK_LIBRARY} ${OHOS_RAWFILE_LIBRARY} ${OHOS_PIXELMAP_LIBRARY})
+
+  set(SDL_LOADSO_DLOPEN 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
+  set(HAVE_SDL_LOADSO TRUE)
+
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
+  CheckPTHREAD()
 elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
