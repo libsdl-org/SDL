@@ -1,0 +1,20 @@
+name: 'Setup Harmony toolchain'
+inputs:
+  version:
+    description: 'Harmony version'
+    default: '5.0.0-Release'
+runs:
+  steps:
+    - name: Download Harmony toolchain
+      shell: bash
+      run: |
+        wget https://repo.huaweicloud.com/openharmony/os/${{ inputs.version }}/ohos-sdk-windows_linux-public.tar.gz
+        tar -zxvf ohos-sdk-windows_linux-public.tar.gz
+        mkdir -p /opt
+
+        unzip linux/native*.zip -d /opt
+    - name: 'Set output vars'
+      id: final
+      shell: bash
+      run: |
+        echo "HARMONY_NATIVE_SDK=/opt/native" >> $GITHUB_OUTPUT

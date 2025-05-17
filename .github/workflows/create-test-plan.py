@@ -54,6 +54,7 @@ class SdlPlatform(Enum):
     Riscos = "riscos"
     FreeBSD = "freebsd"
     NetBSD = "netbsd"
+    HarmonyOS = "harmony"
 
 
 class Msys2Platform(Enum):
@@ -139,6 +140,7 @@ JOB_SPECS = {
     "riscos": JobSpec(name="RISC OS",                                       os=JobOs.UbuntuLatest,      platform=SdlPlatform.Riscos,      artifact="SDL-riscos",             container="riscosdotinfo/riscos-gccsdk-4.7:latest", ),
     "netbsd": JobSpec(name="NetBSD",                                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.NetBSD,      artifact="SDL-netbsd-x64", ),
     "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
+    "harmony": JobSpec(name="Harmony",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",      harmony_arch="arm64-v8a",),
 }
 
 
@@ -740,6 +742,12 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     job.cpactions_arch = "x86-64"
                     job.cpactions_setup_cmd = "export PATH=\"/usr/pkg/sbin:/usr/pkg/bin:/sbin:$PATH\"; export PKG_CONFIG_PATH=\"/usr/pkg/lib/pkgconfig\";export PKG_PATH=\"https://cdn.netBSD.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r|cut -f \"1 2\" -d.)/All/\";echo \"PKG_PATH=$PKG_PATH\";echo \"uname -a -> \"$(uname -a)\"\";sudo -E sysctl -w security.pax.aslr.enabled=0;sudo -E sysctl -w security.pax.aslr.global=0;sudo -E pkgin clean;sudo -E pkgin update"
                     job.cpactions_install_cmd = "sudo -E pkgin -y install cmake dbus pkgconf ninja-build pulseaudio libxkbcommon wayland wayland-protocols libinotify libusb1"
+        case SdlPlatform.Harmony:
+            job.cmake_arguments.extend((
+                "-DCMAKE_TOOLCHAIN_FILE=${HARMONY_NATIVE_SDK}/build/cmake/ohos.toolchain.cmake",
+            ))
+            job.shared_lib = SharedLibType.SO_0
+            job.static_lib = StaticLibType.A
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 

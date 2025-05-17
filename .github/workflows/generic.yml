@@ -51,6 +51,9 @@ jobs:
         uses: ./.github/actions/setup-msvc-libusb
         with:
           arch: ${{ matrix.platform.setup-libusb-arch }}
+      - name: 'Set up Harmony toolchain'
+        if: ${{ matrix.platform.platform == 'harmony' }}
+        uses: ./.github/actions/setup-harmony-toolchain
       - uses: mymindstorm/setup-emsdk@v14
         if: ${{ matrix.platform.platform == 'emscripten' }}
         with:
@@ -102,6 +105,7 @@ jobs:
         uses: ./.github/actions/setup-loongarch64-toolchain
         id: setup-loongarch64-toolchain
         if: ${{ matrix.platform.platform == 'loongarch64' }}
+      
       - name: 'Setup Intel oneAPI toolchain'
         id: intel
         if: ${{ matrix.platform.intel }}
