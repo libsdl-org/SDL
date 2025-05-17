@@ -537,14 +537,18 @@ static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32* dst, const U
 // behavior. However, the compiler support for this pragma is bad.
 #if defined(__clang__)
 #if __clang_major__ >= 12
+#ifndef SDL_PLATFORM_OHOS
 #pragma STDC FENV_ACCESS ON
+#endif
 #endif
 #elif defined(_MSC_VER)
 #pragma fenv_access (on)
 #elif defined(__GNUC__)
 // GCC does not support the pragma at all
 #else
+#ifndef SDL_PLATFORM_OHOS
 #pragma STDC FENV_ACCESS ON
+#endif
 #endif
 
 static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_samples)
@@ -814,14 +818,18 @@ static void SDL_Convert_Swap32_NEON(Uint32* dst, const Uint32* src, int num_samp
 
 #if defined(__clang__)
 #if __clang_major__ >= 12
+#ifndef SDL_PLATFORM_OHOS
 #pragma STDC FENV_ACCESS DEFAULT
+#endif
 #endif
 #elif defined(_MSC_VER)
 #pragma fenv_access (off)
 #elif defined(__GNUC__)
 //
 #else
+#ifndef SDL_PLATFORM_OHOS
 #pragma STDC FENV_ACCESS DEFAULT
+#endif
 #endif
 
 #endif
