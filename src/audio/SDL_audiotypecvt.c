@@ -33,7 +33,8 @@
 // This code requires that floats are in the IEEE-754 binary32 format
 SDL_COMPILE_TIME_ASSERT(float_bits, sizeof(float) == sizeof(Uint32));
 
-union float_bits {
+union float_bits
+{
     Uint32 u32;
     float f32;
 };
@@ -185,7 +186,7 @@ static void SDL_Convert_F32_to_S32_Scalar(Sint32 *dst, const float *src, int num
 
 #undef SIGNMASK
 
-static void SDL_Convert_Swap16_Scalar(Uint16* dst, const Uint16* src, int num_samples)
+static void SDL_Convert_Swap16_Scalar(Uint16 *dst, const Uint16 *src, int num_samples)
 {
     int i;
 
@@ -194,7 +195,7 @@ static void SDL_Convert_Swap16_Scalar(Uint16* dst, const Uint16* src, int num_sa
     }
 }
 
-static void SDL_Convert_Swap32_Scalar(Uint32* dst, const Uint32* src, int num_samples)
+static void SDL_Convert_Swap32_Scalar(Uint32 *dst, const Uint32 *src, int num_samples)
 {
     int i;
 
@@ -206,22 +207,37 @@ static void SDL_Convert_Swap32_Scalar(Uint32* dst, const Uint32* src, int num_sa
 // end fallback scalar converters
 
 // Convert forwards, when sizeof(*src) >= sizeof(*dst)
-#define CONVERT_16_FWD(CVT1, CVT16)                          \
-    int i = 0;                                               \
-    if (num_samples >= 16) {                                 \
-        while ((uintptr_t)(&dst[i]) & 15) { CVT1  ++i;     } \
-        while ((i + 16) <= num_samples)   { CVT16 i += 16; } \
-    }                                                        \
-    while (i < num_samples)               { CVT1  ++i;     }
+#define CONVERT_16_FWD(CVT1, CVT16)         \
+    int i = 0;                              \
+    if (num_samples >= 16) {                \
+        while ((uintptr_t)(&dst[i]) & 15) { \
+            CVT1++ i;                       \
+        }                                   \
+        while ((i + 16) <= num_samples) {   \
+            CVT16 i += 16;                  \
+        }                                   \
+    }                                       \
+    while (i < num_samples) {               \
+        CVT1++ i;                           \
+    }
 
 // Convert backwards, when sizeof(*src) <= sizeof(*dst)
-#define CONVERT_16_REV(CVT1, CVT16)                          \
-    int i = num_samples;                                     \
-    if (i >= 16) {                                           \
-        while ((uintptr_t)(&dst[i]) & 15) { --i;     CVT1  } \
-        while (i >= 16)                   { i -= 16; CVT16 } \
-    }                                                        \
-    while (i > 0)                         { --i;     CVT1  }
+#define CONVERT_16_REV(CVT1, CVT16)         \
+    int i = num_samples;                    \
+    if (i >= 16) {                          \
+        while ((uintptr_t)(&dst[i]) & 15) { \
+            --i;                            \
+            CVT1                            \
+        }                                   \
+        while (i >= 16) {                   \
+            i -= 16;                        \
+            CVT16                           \
+        }                                   \
+    }                                       \
+    while (i > 0) {                         \
+        --i;                                \
+        CVT1                                \
+    }
 
 #ifdef SDL_SSE2_INTRINSICS
 static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const Sint8 *src, int num_samples)
@@ -237,9 +253,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const S
 
     LOG_DEBUG_AUDIO_CONVERT("S8", "F32 (using SSE2)");
 
-    CONVERT_16_REV({
-        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint8)src[i] ^ 0x47800080u)), offset));
-    }, {
+    CONVERT_16_REV({ _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint8)src[i] ^ 0x47800080u)), offset)); }, {
         const __m128i bytes = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i]), flipper);
 
         const __m128i shorts0 = _mm_unpacklo_epi8(bytes, zero);
@@ -253,8 +267,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S8_to_F32_SSE2(float *dst, const S
         _mm_store_ps(&dst[i], floats0);
         _mm_store_ps(&dst[i + 4], floats1);
         _mm_store_ps(&dst[i + 8], floats2);
-        _mm_store_ps(&dst[i + 12], floats3);
-    })
+        _mm_store_ps(&dst[i + 12], floats3); })
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_U8_to_F32_SSE2(float *dst, const Uint8 *src, int num_samples)
@@ -268,9 +281,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_U8_to_F32_SSE2(float *dst, const U
 
     LOG_DEBUG_AUDIO_CONVERT("U8", "F32 (using SSE2)");
 
-    CONVERT_16_REV({
-        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint8)src[i] ^ 0x47800000u)), offset));
-    }, {
+    CONVERT_16_REV({ _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint8)src[i] ^ 0x47800000u)), offset)); }, {
         const __m128i bytes = _mm_loadu_si128((const __m128i *)&src[i]);
 
         const __m128i shorts0 = _mm_unpacklo_epi8(bytes, zero);
@@ -284,8 +295,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_U8_to_F32_SSE2(float *dst, const U
         _mm_store_ps(&dst[i], floats0);
         _mm_store_ps(&dst[i + 4], floats1);
         _mm_store_ps(&dst[i + 8], floats2);
-        _mm_store_ps(&dst[i + 12], floats3);
-    })
+        _mm_store_ps(&dst[i + 12], floats3); })
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_S16_to_F32_SSE2(float *dst, const Sint16 *src, int num_samples)
@@ -300,9 +310,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S16_to_F32_SSE2(float *dst, const 
 
     LOG_DEBUG_AUDIO_CONVERT("S16", "F32 (using SSE2)");
 
-    CONVERT_16_REV({
-        _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint16)src[i] ^ 0x43808000u)), offset));
-    }, {
+    CONVERT_16_REV({ _mm_store_ss(&dst[i], _mm_add_ss(_mm_castsi128_ps(_mm_cvtsi32_si128((Uint16)src[i] ^ 0x43808000u)), offset)); }, {
         const __m128i shorts0 = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i]), flipper);
         const __m128i shorts1 = _mm_xor_si128(_mm_loadu_si128((const __m128i *)&src[i + 8]), flipper);
 
@@ -314,8 +322,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S16_to_F32_SSE2(float *dst, const 
         _mm_store_ps(&dst[i], floats0);
         _mm_store_ps(&dst[i + 4], floats1);
         _mm_store_ps(&dst[i + 8], floats2);
-        _mm_store_ps(&dst[i + 12], floats3);
-    })
+        _mm_store_ps(&dst[i + 12], floats3); })
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_S32_to_F32_SSE2(float *dst, const Sint32 *src, int num_samples)
@@ -325,9 +332,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S32_to_F32_SSE2(float *dst, const 
 
     LOG_DEBUG_AUDIO_CONVERT("S32", "F32 (using SSE2)");
 
-    CONVERT_16_FWD({
-        _mm_store_ss(&dst[i], _mm_mul_ss(_mm_cvt_si2ss(_mm_setzero_ps(), src[i]), scaler));
-    }, {
+    CONVERT_16_FWD({ _mm_store_ss(&dst[i], _mm_mul_ss(_mm_cvt_si2ss(_mm_setzero_ps(), src[i]), scaler)); }, {
         const __m128i ints0 = _mm_loadu_si128((const __m128i *)&src[i]);
         const __m128i ints1 = _mm_loadu_si128((const __m128i *)&src[i + 4]);
         const __m128i ints2 = _mm_loadu_si128((const __m128i *)&src[i + 8]);
@@ -341,8 +346,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_S32_to_F32_SSE2(float *dst, const 
         _mm_store_ps(&dst[i], floats0);
         _mm_store_ps(&dst[i + 4], floats1);
         _mm_store_ps(&dst[i + 8], floats2);
-        _mm_store_ps(&dst[i + 12], floats3);
-    })
+        _mm_store_ps(&dst[i + 12], floats3); })
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S8_SSE2(Sint8 *dst, const float *src, int num_samples)
@@ -358,8 +362,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S8_SSE2(Sint8 *dst, const f
 
     CONVERT_16_FWD({
         const __m128i ints = _mm_castps_si128(_mm_add_ss(_mm_load_ss(&src[i]), offset));
-        dst[i] = (Sint8)(_mm_cvtsi128_si32(_mm_packs_epi16(ints, ints)) & 0xFF);
-    }, {
+        dst[i] = (Sint8)(_mm_cvtsi128_si32(_mm_packs_epi16(ints, ints)) & 0xFF); }, {
         const __m128 floats0 = _mm_loadu_ps(&src[i]);
         const __m128 floats1 = _mm_loadu_ps(&src[i + 4]);
         const __m128 floats2 = _mm_loadu_ps(&src[i + 8]);
@@ -375,8 +378,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S8_SSE2(Sint8 *dst, const f
 
         const __m128i bytes = _mm_packus_epi16(shorts0, shorts1);
 
-        _mm_store_si128((__m128i*)&dst[i], bytes);
-    })
+        _mm_store_si128((__m128i*)&dst[i], bytes); })
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(Uint8 *dst, const float *src, int num_samples)
@@ -392,8 +394,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(Uint8 *dst, const f
 
     CONVERT_16_FWD({
         const __m128i ints = _mm_castps_si128(_mm_add_ss(_mm_load_ss(&src[i]), offset));
-        dst[i] = (Uint8)(_mm_cvtsi128_si32(_mm_packus_epi16(ints, ints)) & 0xFF);
-    }, {
+        dst[i] = (Uint8)(_mm_cvtsi128_si32(_mm_packus_epi16(ints, ints)) & 0xFF); }, {
         const __m128 floats0 = _mm_loadu_ps(&src[i]);
         const __m128 floats1 = _mm_loadu_ps(&src[i + 4]);
         const __m128 floats2 = _mm_loadu_ps(&src[i + 8]);
@@ -409,8 +410,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_U8_SSE2(Uint8 *dst, const f
 
         const __m128i bytes = _mm_packus_epi16(shorts0, shorts1);
 
-        _mm_store_si128((__m128i*)&dst[i], bytes);
-    })
+        _mm_store_si128((__m128i*)&dst[i], bytes); })
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S16_SSE2(Sint16 *dst, const float *src, int num_samples)
@@ -426,8 +426,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S16_SSE2(Sint16 *dst, const
 
     CONVERT_16_FWD({
         const __m128i ints = _mm_sub_epi32(_mm_castps_si128(_mm_add_ss(_mm_load_ss(&src[i]), offset)), _mm_castps_si128(offset));
-        dst[i] = (Sint16)(_mm_cvtsi128_si32(_mm_packs_epi32(ints, ints)) & 0xFFFF);
-    }, {
+        dst[i] = (Sint16)(_mm_cvtsi128_si32(_mm_packs_epi32(ints, ints)) & 0xFFFF); }, {
         const __m128 floats0 = _mm_loadu_ps(&src[i]);
         const __m128 floats1 = _mm_loadu_ps(&src[i + 4]);
         const __m128 floats2 = _mm_loadu_ps(&src[i + 8]);
@@ -442,8 +441,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S16_SSE2(Sint16 *dst, const
         const __m128i shorts1 = _mm_packs_epi32(ints2, ints3);
 
         _mm_store_si128((__m128i*)&dst[i], shorts0);
-        _mm_store_si128((__m128i*)&dst[i + 8], shorts1);
-    })
+        _mm_store_si128((__m128i*)&dst[i + 8], shorts1); })
 }
 
 static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const float *src, int num_samples)
@@ -460,8 +458,7 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
         const __m128 floats = _mm_load_ss(&src[i]);
         const __m128 values = _mm_mul_ss(floats, limit);
         const __m128i ints = _mm_xor_si128(_mm_cvttps_epi32(values), _mm_castps_si128(_mm_cmpge_ss(values, limit)));
-        dst[i] = (Sint32)_mm_cvtsi128_si32(ints);
-    }, {
+        dst[i] = (Sint32)_mm_cvtsi128_si32(ints); }, {
         const __m128 floats0 = _mm_loadu_ps(&src[i]);
         const __m128 floats1 = _mm_loadu_ps(&src[i + 4]);
         const __m128 floats2 = _mm_loadu_ps(&src[i + 8]);
@@ -480,20 +477,17 @@ static void SDL_TARGETING("sse2") SDL_Convert_F32_to_S32_SSE2(Sint32 *dst, const
         _mm_store_si128((__m128i*)&dst[i], ints0);
         _mm_store_si128((__m128i*)&dst[i + 4], ints1);
         _mm_store_si128((__m128i*)&dst[i + 8], ints2);
-        _mm_store_si128((__m128i*)&dst[i + 12], ints3);
-    })
+        _mm_store_si128((__m128i*)&dst[i + 12], ints3); })
 }
 #endif
 
 // FIXME: SDL doesn't have SSSE3 detection, so use the next one up
 #ifdef SDL_SSE4_1_INTRINSICS
-static void SDL_TARGETING("ssse3") SDL_Convert_Swap16_SSSE3(Uint16* dst, const Uint16* src, int num_samples)
+static void SDL_TARGETING("ssse3") SDL_Convert_Swap16_SSSE3(Uint16 *dst, const Uint16 *src, int num_samples)
 {
     const __m128i shuffle = _mm_set_epi8(14, 15, 12, 13, 10, 11, 8, 9, 6, 7, 4, 5, 2, 3, 0, 1);
 
-    CONVERT_16_FWD({
-        dst[i] = SDL_Swap16(src[i]);
-    }, {
+    CONVERT_16_FWD({ dst[i] = SDL_Swap16(src[i]); }, {
         __m128i ints0 = _mm_loadu_si128((const __m128i*)&src[i]);
         __m128i ints1 = _mm_loadu_si128((const __m128i*)&src[i + 8]);
 
@@ -501,17 +495,14 @@ static void SDL_TARGETING("ssse3") SDL_Convert_Swap16_SSSE3(Uint16* dst, const U
         ints1 = _mm_shuffle_epi8(ints1, shuffle);
 
         _mm_store_si128((__m128i*)&dst[i], ints0);
-        _mm_store_si128((__m128i*)&dst[i + 8], ints1);
-    })
+        _mm_store_si128((__m128i*)&dst[i + 8], ints1); })
 }
 
-static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32* dst, const Uint32* src, int num_samples)
+static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32 *dst, const Uint32 *src, int num_samples)
 {
     const __m128i shuffle = _mm_set_epi8(12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3);
 
-    CONVERT_16_FWD({
-        dst[i] = SDL_Swap32(src[i]);
-    }, {
+    CONVERT_16_FWD({ dst[i] = SDL_Swap32(src[i]); }, {
         __m128i ints0 = _mm_loadu_si128((const __m128i*)&src[i]);
         __m128i ints1 = _mm_loadu_si128((const __m128i*)&src[i + 4]);
         __m128i ints2 = _mm_loadu_si128((const __m128i*)&src[i + 8]);
@@ -525,8 +516,7 @@ static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32* dst, const U
         _mm_store_si128((__m128i*)&dst[i], ints0);
         _mm_store_si128((__m128i*)&dst[i + 4], ints1);
         _mm_store_si128((__m128i*)&dst[i + 8], ints2);
-        _mm_store_si128((__m128i*)&dst[i + 12], ints3);
-    })
+        _mm_store_si128((__m128i*)&dst[i + 12], ints3); })
 }
 #endif
 
@@ -537,14 +527,18 @@ static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32* dst, const U
 // behavior. However, the compiler support for this pragma is bad.
 #if defined(__clang__)
 #if __clang_major__ >= 12
+#ifndef SDL_PLATFORM_OHOS
 #pragma STDC FENV_ACCESS ON
 #endif
+#endif
 #elif defined(_MSC_VER)
-#pragma fenv_access (on)
+#pragma fenv_access(on)
 #elif defined(__GNUC__)
 // GCC does not support the pragma at all
 #else
+#ifndef SDL_PLATFORM_OHOS
 #pragma STDC FENV_ACCESS ON
+#endif
 #endif
 
 static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_samples)
@@ -553,9 +547,7 @@ static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_sam
     fenv_t fenv;
     feholdexcept(&fenv);
 
-    CONVERT_16_REV({
-        vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vdup_n_s32(src[i]), 7), 0);
-    }, {
+    CONVERT_16_REV({ vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vdup_n_s32(src[i]), 7), 0); }, {
         int8x16_t bytes = vld1q_s8(&src[i]);
 
         int16x8_t shorts0 = vmovl_s8(vget_low_s8(bytes));
@@ -569,8 +561,7 @@ static void SDL_Convert_S8_to_F32_NEON(float *dst, const Sint8 *src, int num_sam
         vst1q_f32(&dst[i], floats0);
         vst1q_f32(&dst[i + 4], floats1);
         vst1q_f32(&dst[i + 8], floats2);
-        vst1q_f32(&dst[i + 12], floats3);
-    })
+        vst1q_f32(&dst[i + 12], floats3); })
     fesetenv(&fenv);
 }
 
@@ -582,9 +573,7 @@ static void SDL_Convert_U8_to_F32_NEON(float *dst, const Uint8 *src, int num_sam
 
     uint8x16_t flipper = vdupq_n_u8(0x80);
 
-    CONVERT_16_REV({
-        vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vdup_n_s32((Sint8)(src[i] ^ 0x80)), 7), 0);
-    }, {
+    CONVERT_16_REV({ vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vdup_n_s32((Sint8)(src[i] ^ 0x80)), 7), 0); }, {
         int8x16_t bytes = vreinterpretq_s8_u8(veorq_u8(vld1q_u8(&src[i]), flipper));
 
         int16x8_t shorts0 = vmovl_s8(vget_low_s8(bytes));
@@ -598,8 +587,7 @@ static void SDL_Convert_U8_to_F32_NEON(float *dst, const Uint8 *src, int num_sam
         vst1q_f32(&dst[i], floats0);
         vst1q_f32(&dst[i + 4], floats1);
         vst1q_f32(&dst[i + 8], floats2);
-        vst1q_f32(&dst[i + 12], floats3);
-    })
+        vst1q_f32(&dst[i + 12], floats3); })
     fesetenv(&fenv);
 }
 
@@ -609,9 +597,7 @@ static void SDL_Convert_S16_to_F32_NEON(float *dst, const Sint16 *src, int num_s
     fenv_t fenv;
     feholdexcept(&fenv);
 
-    CONVERT_16_REV({
-        vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vdup_n_s32(src[i]), 15), 0);
-    }, {
+    CONVERT_16_REV({ vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vdup_n_s32(src[i]), 15), 0); }, {
         int16x8_t shorts0 = vld1q_s16(&src[i]);
         int16x8_t shorts1 = vld1q_s16(&src[i + 8]);
 
@@ -623,8 +609,7 @@ static void SDL_Convert_S16_to_F32_NEON(float *dst, const Sint16 *src, int num_s
         vst1q_f32(&dst[i], floats0);
         vst1q_f32(&dst[i + 4], floats1);
         vst1q_f32(&dst[i + 8], floats2);
-        vst1q_f32(&dst[i + 12], floats3);
-    })
+        vst1q_f32(&dst[i + 12], floats3); })
     fesetenv(&fenv);
 }
 
@@ -634,9 +619,7 @@ static void SDL_Convert_S32_to_F32_NEON(float *dst, const Sint32 *src, int num_s
     fenv_t fenv;
     feholdexcept(&fenv);
 
-    CONVERT_16_FWD({
-        vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vld1_dup_s32(&src[i]), 31), 0);
-    }, {
+    CONVERT_16_FWD({ vst1_lane_f32(&dst[i], vcvt_n_f32_s32(vld1_dup_s32(&src[i]), 31), 0); }, {
         int32x4_t ints0 = vld1q_s32(&src[i]);
         int32x4_t ints1 = vld1q_s32(&src[i + 4]);
         int32x4_t ints2 = vld1q_s32(&src[i + 8]);
@@ -650,8 +633,7 @@ static void SDL_Convert_S32_to_F32_NEON(float *dst, const Sint32 *src, int num_s
         vst1q_f32(&dst[i], floats0);
         vst1q_f32(&dst[i + 4], floats1);
         vst1q_f32(&dst[i + 8], floats2);
-        vst1q_f32(&dst[i + 12], floats3);
-    })
+        vst1q_f32(&dst[i + 12], floats3); })
     fesetenv(&fenv);
 }
 
@@ -661,9 +643,7 @@ static void SDL_Convert_F32_to_S8_NEON(Sint8 *dst, const float *src, int num_sam
     fenv_t fenv;
     feholdexcept(&fenv);
 
-    CONVERT_16_FWD({
-        vst1_lane_s8(&dst[i], vreinterpret_s8_s32(vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31)), 3);
-    }, {
+    CONVERT_16_FWD({ vst1_lane_s8(&dst[i], vreinterpret_s8_s32(vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31)), 3); }, {
         float32x4_t floats0 = vld1q_f32(&src[i]);
         float32x4_t floats1 = vld1q_f32(&src[i + 4]);
         float32x4_t floats2 = vld1q_f32(&src[i + 8]);
@@ -679,8 +659,7 @@ static void SDL_Convert_F32_to_S8_NEON(Sint8 *dst, const float *src, int num_sam
 
         int8x16_t bytes = vcombine_s8(vshrn_n_s16(shorts0, 8), vshrn_n_s16(shorts1, 8));
 
-        vst1q_s8(&dst[i], bytes);
-    })
+        vst1q_s8(&dst[i], bytes); })
     fesetenv(&fenv);
 }
 
@@ -692,11 +671,10 @@ static void SDL_Convert_F32_to_U8_NEON(Uint8 *dst, const float *src, int num_sam
 
     uint8x16_t flipper = vdupq_n_u8(0x80);
 
-    CONVERT_16_FWD({
-        vst1_lane_u8(&dst[i],
-            veor_u8(vreinterpret_u8_s32(vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31)),
-                vget_low_u8(flipper)), 3);
-    }, {
+    CONVERT_16_FWD({ vst1_lane_u8(&dst[i],
+                                  veor_u8(vreinterpret_u8_s32(vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31)),
+                                          vget_low_u8(flipper)),
+                                  3); }, {
         float32x4_t floats0 = vld1q_f32(&src[i]);
         float32x4_t floats1 = vld1q_f32(&src[i + 4]);
         float32x4_t floats2 = vld1q_f32(&src[i + 8]);
@@ -714,8 +692,7 @@ static void SDL_Convert_F32_to_U8_NEON(Uint8 *dst, const float *src, int num_sam
             vcombine_s8(vshrn_n_s16(shorts0, 8), vshrn_n_s16(shorts1, 8))),
             flipper);
 
-        vst1q_u8(&dst[i], bytes);
-    })
+        vst1q_u8(&dst[i], bytes); })
     fesetenv(&fenv);
 }
 
@@ -725,9 +702,7 @@ static void SDL_Convert_F32_to_S16_NEON(Sint16 *dst, const float *src, int num_s
     fenv_t fenv;
     feholdexcept(&fenv);
 
-    CONVERT_16_FWD({
-        vst1_lane_s16(&dst[i], vreinterpret_s16_s32(vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31)), 1);
-    }, {
+    CONVERT_16_FWD({ vst1_lane_s16(&dst[i], vreinterpret_s16_s32(vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31)), 1); }, {
         float32x4_t floats0 = vld1q_f32(&src[i]);
         float32x4_t floats1 = vld1q_f32(&src[i + 4]);
         float32x4_t floats2 = vld1q_f32(&src[i + 8]);
@@ -742,8 +717,7 @@ static void SDL_Convert_F32_to_S16_NEON(Sint16 *dst, const float *src, int num_s
         int16x8_t shorts1 = vcombine_s16(vshrn_n_s32(ints2, 16), vshrn_n_s32(ints3, 16));
 
         vst1q_s16(&dst[i], shorts0);
-        vst1q_s16(&dst[i + 8], shorts1);
-    })
+        vst1q_s16(&dst[i + 8], shorts1); })
     fesetenv(&fenv);
 }
 
@@ -753,9 +727,7 @@ static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_s
     fenv_t fenv;
     feholdexcept(&fenv);
 
-    CONVERT_16_FWD({
-        vst1_lane_s32(&dst[i], vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31), 0);
-    }, {
+    CONVERT_16_FWD({ vst1_lane_s32(&dst[i], vcvt_n_s32_f32(vld1_dup_f32(&src[i]), 31), 0); }, {
         float32x4_t floats0 = vld1q_f32(&src[i]);
         float32x4_t floats1 = vld1q_f32(&src[i + 4]);
         float32x4_t floats2 = vld1q_f32(&src[i + 8]);
@@ -769,16 +741,13 @@ static void SDL_Convert_F32_to_S32_NEON(Sint32 *dst, const float *src, int num_s
         vst1q_s32(&dst[i], ints0);
         vst1q_s32(&dst[i + 4], ints1);
         vst1q_s32(&dst[i + 8], ints2);
-        vst1q_s32(&dst[i + 12], ints3);
-    })
+        vst1q_s32(&dst[i + 12], ints3); })
     fesetenv(&fenv);
 }
 
-static void SDL_Convert_Swap16_NEON(Uint16* dst, const Uint16* src, int num_samples)
+static void SDL_Convert_Swap16_NEON(Uint16 *dst, const Uint16 *src, int num_samples)
 {
-    CONVERT_16_FWD({
-        dst[i] = SDL_Swap16(src[i]);
-    }, {
+    CONVERT_16_FWD({ dst[i] = SDL_Swap16(src[i]); }, {
         uint8x16_t ints0 = vld1q_u8((const Uint8*)&src[i]);
         uint8x16_t ints1 = vld1q_u8((const Uint8*)&src[i + 8]);
 
@@ -786,15 +755,12 @@ static void SDL_Convert_Swap16_NEON(Uint16* dst, const Uint16* src, int num_samp
         ints1 = vrev16q_u8(ints1);
 
         vst1q_u8((Uint8*)&dst[i], ints0);
-        vst1q_u8((Uint8*)&dst[i + 8], ints1);
-    })
+        vst1q_u8((Uint8*)&dst[i + 8], ints1); })
 }
 
-static void SDL_Convert_Swap32_NEON(Uint32* dst, const Uint32* src, int num_samples)
+static void SDL_Convert_Swap32_NEON(Uint32 *dst, const Uint32 *src, int num_samples)
 {
-    CONVERT_16_FWD({
-        dst[i] = SDL_Swap32(src[i]);
-    }, {
+    CONVERT_16_FWD({ dst[i] = SDL_Swap32(src[i]); }, {
         uint8x16_t ints0 = vld1q_u8((const Uint8*)&src[i]);
         uint8x16_t ints1 = vld1q_u8((const Uint8*)&src[i + 4]);
         uint8x16_t ints2 = vld1q_u8((const Uint8*)&src[i + 8]);
@@ -808,16 +774,17 @@ static void SDL_Convert_Swap32_NEON(Uint32* dst, const Uint32* src, int num_samp
         vst1q_u8((Uint8*)&dst[i], ints0);
         vst1q_u8((Uint8*)&dst[i + 4], ints1);
         vst1q_u8((Uint8*)&dst[i + 8], ints2);
-        vst1q_u8((Uint8*)&dst[i + 12], ints3);
-    })
+        vst1q_u8((Uint8*)&dst[i + 12], ints3); })
 }
 
 #if defined(__clang__)
 #if __clang_major__ >= 12
+#ifndef SDL_PLATFORM_OHOS
 #pragma STDC FENV_ACCESS DEFAULT
 #endif
+#endif
 #elif defined(_MSC_VER)
-#pragma fenv_access (off)
+#pragma fenv_access(off)
 #elif defined(__GNUC__)
 //
 #else
@@ -839,89 +806,99 @@ static void (*SDL_Convert_F32_to_U8)(Uint8 *dst, const float *src, int num_sampl
 static void (*SDL_Convert_F32_to_S16)(Sint16 *dst, const float *src, int num_samples) = NULL;
 static void (*SDL_Convert_F32_to_S32)(Sint32 *dst, const float *src, int num_samples) = NULL;
 
-static void (*SDL_Convert_Swap16)(Uint16* dst, const Uint16* src, int num_samples) = NULL;
-static void (*SDL_Convert_Swap32)(Uint32* dst, const Uint32* src, int num_samples) = NULL;
+static void (*SDL_Convert_Swap16)(Uint16 *dst, const Uint16 *src, int num_samples) = NULL;
+static void (*SDL_Convert_Swap32)(Uint32 *dst, const Uint32 *src, int num_samples) = NULL;
 
 void ConvertAudioToFloat(float *dst, const void *src, int num_samples, SDL_AudioFormat src_fmt)
 {
     switch (src_fmt) {
-        case SDL_AUDIO_S8:
-            SDL_Convert_S8_to_F32(dst, (const Sint8 *) src, num_samples);
-            break;
+    case SDL_AUDIO_S8:
+        SDL_Convert_S8_to_F32(dst, (const Sint8 *)src, num_samples);
+        break;
 
-        case SDL_AUDIO_U8:
-            SDL_Convert_U8_to_F32(dst, (const Uint8 *) src, num_samples);
-            break;
+    case SDL_AUDIO_U8:
+        SDL_Convert_U8_to_F32(dst, (const Uint8 *)src, num_samples);
+        break;
 
-        case SDL_AUDIO_S16:
-            SDL_Convert_S16_to_F32(dst, (const Sint16 *) src, num_samples);
-            break;
+    case SDL_AUDIO_S16:
+        SDL_Convert_S16_to_F32(dst, (const Sint16 *)src, num_samples);
+        break;
 
-        case SDL_AUDIO_S16 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_Swap16((Uint16*) dst, (const Uint16*) src, num_samples);
-            SDL_Convert_S16_to_F32(dst, (const Sint16 *) dst, num_samples);
-            break;
+    case SDL_AUDIO_S16 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+        SDL_Convert_Swap16((Uint16 *)dst, (const Uint16 *)src, num_samples);
+        SDL_Convert_S16_to_F32(dst, (const Sint16 *)dst, num_samples);
+        break;
 
-        case SDL_AUDIO_S32:
-            SDL_Convert_S32_to_F32(dst, (const Sint32 *) src, num_samples);
-            break;
+    case SDL_AUDIO_S32:
+        SDL_Convert_S32_to_F32(dst, (const Sint32 *)src, num_samples);
+        break;
 
-        case SDL_AUDIO_S32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples);
-            SDL_Convert_S32_to_F32(dst, (const Sint32 *) dst, num_samples);
-            break;
+    case SDL_AUDIO_S32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+        SDL_Convert_Swap32((Uint32 *)dst, (const Uint32 *)src, num_samples);
+        SDL_Convert_S32_to_F32(dst, (const Sint32 *)dst, num_samples);
+        break;
 
-        case SDL_AUDIO_F32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples);
-            break;
+    case SDL_AUDIO_F32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+        SDL_Convert_Swap32((Uint32 *)dst, (const Uint32 *)src, num_samples);
+        break;
 
-        default: SDL_assert(!"Unexpected audio format!"); break;
+    default:
+        SDL_assert(!"Unexpected audio format!");
+        break;
     }
 }
 
 void ConvertAudioFromFloat(void *dst, const float *src, int num_samples, SDL_AudioFormat dst_fmt)
 {
     switch (dst_fmt) {
-        case SDL_AUDIO_S8:
-            SDL_Convert_F32_to_S8((Sint8 *) dst, src, num_samples);
-            break;
+    case SDL_AUDIO_S8:
+        SDL_Convert_F32_to_S8((Sint8 *)dst, src, num_samples);
+        break;
 
-        case SDL_AUDIO_U8:
-            SDL_Convert_F32_to_U8((Uint8 *) dst, src, num_samples);
-            break;
+    case SDL_AUDIO_U8:
+        SDL_Convert_F32_to_U8((Uint8 *)dst, src, num_samples);
+        break;
 
-        case SDL_AUDIO_S16:
-            SDL_Convert_F32_to_S16((Sint16 *) dst, src, num_samples);
-            break;
+    case SDL_AUDIO_S16:
+        SDL_Convert_F32_to_S16((Sint16 *)dst, src, num_samples);
+        break;
 
-        case SDL_AUDIO_S16 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_F32_to_S16((Sint16 *) dst, src, num_samples);
-            SDL_Convert_Swap16((Uint16*) dst, (const Uint16*) dst, num_samples);
-            break;
+    case SDL_AUDIO_S16 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+        SDL_Convert_F32_to_S16((Sint16 *)dst, src, num_samples);
+        SDL_Convert_Swap16((Uint16 *)dst, (const Uint16 *)dst, num_samples);
+        break;
 
-        case SDL_AUDIO_S32:
-            SDL_Convert_F32_to_S32((Sint32 *) dst, src, num_samples);
-            break;
+    case SDL_AUDIO_S32:
+        SDL_Convert_F32_to_S32((Sint32 *)dst, src, num_samples);
+        break;
 
-        case SDL_AUDIO_S32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_F32_to_S32((Sint32 *) dst, src, num_samples);
-            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) dst, num_samples);
-            break;
+    case SDL_AUDIO_S32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+        SDL_Convert_F32_to_S32((Sint32 *)dst, src, num_samples);
+        SDL_Convert_Swap32((Uint32 *)dst, (const Uint32 *)dst, num_samples);
+        break;
 
-        case SDL_AUDIO_F32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
-            SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples);
-            break;
+    case SDL_AUDIO_F32 ^ SDL_AUDIO_MASK_BIG_ENDIAN:
+        SDL_Convert_Swap32((Uint32 *)dst, (const Uint32 *)src, num_samples);
+        break;
 
-        default: SDL_assert(!"Unexpected audio format!"); break;
+    default:
+        SDL_assert(!"Unexpected audio format!");
+        break;
     }
 }
 
-void ConvertAudioSwapEndian(void* dst, const void* src, int num_samples, int bitsize)
+void ConvertAudioSwapEndian(void *dst, const void *src, int num_samples, int bitsize)
 {
     switch (bitsize) {
-        case 16: SDL_Convert_Swap16((Uint16*) dst, (const Uint16*) src, num_samples); break;
-        case 32: SDL_Convert_Swap32((Uint32*) dst, (const Uint32*) src, num_samples); break;
-        default: SDL_assert(!"Unexpected audio format!"); break;
+    case 16:
+        SDL_Convert_Swap16((Uint16 *)dst, (const Uint16 *)src, num_samples);
+        break;
+    case 32:
+        SDL_Convert_Swap32((Uint32 *)dst, (const Uint32 *)src, num_samples);
+        break;
+    default:
+        SDL_assert(!"Unexpected audio format!");
+        break;
     }
 }
 
@@ -932,7 +909,7 @@ void SDL_ChooseAudioConverters(void)
         return;
     }
 
-#define SET_CONVERTER_FUNCS(fntype) \
+#define SET_CONVERTER_FUNCS(fntype)                   \
     SDL_Convert_Swap16 = SDL_Convert_Swap16_##fntype; \
     SDL_Convert_Swap32 = SDL_Convert_Swap32_##fntype;
 
@@ -942,7 +919,7 @@ void SDL_ChooseAudioConverters(void)
     } else
 #endif
 #ifdef SDL_NEON_INTRINSICS
-    if (SDL_HasNEON()) {
+        if (SDL_HasNEON()) {
         SET_CONVERTER_FUNCS(NEON);
     } else
 #endif
@@ -952,15 +929,15 @@ void SDL_ChooseAudioConverters(void)
 
 #undef SET_CONVERTER_FUNCS
 
-#define SET_CONVERTER_FUNCS(fntype) \
-    SDL_Convert_S8_to_F32 = SDL_Convert_S8_to_F32_##fntype; \
-    SDL_Convert_U8_to_F32 = SDL_Convert_U8_to_F32_##fntype; \
+#define SET_CONVERTER_FUNCS(fntype)                           \
+    SDL_Convert_S8_to_F32 = SDL_Convert_S8_to_F32_##fntype;   \
+    SDL_Convert_U8_to_F32 = SDL_Convert_U8_to_F32_##fntype;   \
     SDL_Convert_S16_to_F32 = SDL_Convert_S16_to_F32_##fntype; \
     SDL_Convert_S32_to_F32 = SDL_Convert_S32_to_F32_##fntype; \
-    SDL_Convert_F32_to_S8 = SDL_Convert_F32_to_S8_##fntype; \
-    SDL_Convert_F32_to_U8 = SDL_Convert_F32_to_U8_##fntype; \
+    SDL_Convert_F32_to_S8 = SDL_Convert_F32_to_S8_##fntype;   \
+    SDL_Convert_F32_to_U8 = SDL_Convert_F32_to_U8_##fntype;   \
     SDL_Convert_F32_to_S16 = SDL_Convert_F32_to_S16_##fntype; \
-    SDL_Convert_F32_to_S32 = SDL_Convert_F32_to_S32_##fntype; \
+    SDL_Convert_F32_to_S32 = SDL_Convert_F32_to_S32_##fntype;
 
 #ifdef SDL_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
@@ -968,7 +945,7 @@ void SDL_ChooseAudioConverters(void)
     } else
 #endif
 #ifdef SDL_NEON_INTRINSICS
-    if (SDL_HasNEON()) {
+        if (SDL_HasNEON()) {
         SET_CONVERTER_FUNCS(NEON);
     } else
 #endif
