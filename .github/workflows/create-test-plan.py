@@ -54,7 +54,7 @@ class SdlPlatform(Enum):
     Riscos = "riscos"
     FreeBSD = "freebsd"
     NetBSD = "netbsd"
-    HarmonyOS = "harmony"
+    Harmony = "harmony"
 
 
 class Msys2Platform(Enum):
