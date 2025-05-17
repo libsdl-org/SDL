@@ -2265,12 +2265,12 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   feature depthClamp. If disabled, there is no depth clamp support and
  *   enable_depth_clip in SDL_GPURasterizerState must always be set to true.
  *   Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN`: Enable device
- *   feature drawIndirectFirstInstance. If disabled, the argument
+ * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN`: Enable
+ *   device feature drawIndirectFirstInstance. If disabled, the argument
  *   first_instance of SDL_GPUIndirectDrawCommand must be set to zero.
  *   Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN`: Enable device
- *   feature samplerAnisotropy. If disabled, enable_anisotropy of
+ * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN`: Enable
+ *   device feature samplerAnisotropy. If disabled, enable_anisotropy of
  *   SDL_GPUSamplerCreateInfo must be set to false. Defaults to true.
  *
  * \param props the properties to use.
