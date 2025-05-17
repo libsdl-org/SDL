@@ -4,6 +4,7 @@ inputs:
     description: 'Harmony version'
     default: '5.0.0-Release'
 runs:
+  using: 'composite'
   steps:
     - name: Download Harmony toolchain
       shell: bash
