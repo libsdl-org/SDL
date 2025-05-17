@@ -4129,6 +4129,20 @@ extern "C" {
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD "SDL_WINDOWS_RAW_KEYBOARD"
 
 /**
+ * A variable controlling whether to block hotkeys when raw keyboard events are enabled.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Hotkeys are not blocked. (default)
+ * - "1": Hotkeys are blocked.
+ *
+ * This hint must be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.2.16.
+ */
+#define SDL_HINT_WINDOWS_RAW_KEYBOARD_NOHOTKEY "SDL_WINDOWS_RAW_KEYBOARD_NOHOTKEY"
+
+/**
  * A variable controlling whether SDL uses Kernel Semaphores on Windows.
  *
  * Kernel Semaphores are inter-process and require a context switch on every
