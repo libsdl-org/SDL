@@ -779,6 +779,22 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             }
             break;
         }
+    } else if (vendor == USB_VENDOR_8BITDO &&
+               (product == USB_PRODUCT_8BITDO_SF30_PRO ||
+                product == USB_PRODUCT_8BITDO_SF30_PRO_BT ||
+                product == USB_PRODUCT_8BITDO_SN30_PRO ||
+                product == USB_PRODUCT_8BITDO_SN30_PRO_BT ||
+                product == USB_PRODUCT_8BITDO_PRO_2 ||
+                product == USB_PRODUCT_8BITDO_PRO_2_BT)) {
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+            if (product == USB_PRODUCT_8BITDO_PRO_2 || product == USB_PRODUCT_8BITDO_PRO_2_BT) {
+                SDL_strlcat(mapping_string, "paddle1:b14,paddle2:b13,", sizeof(mapping_string));
+            }
+    } else if (vendor == USB_VENDOR_8BITDO &&
+               (product == USB_PRODUCT_8BITDO_SF30_PRO ||
+                product == USB_PRODUCT_8BITDO_SF30_PRO_BT)) {
+            // This controller has no guide button
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes
         if (SDL_IsJoystickGameCube(vendor, product)) {
@@ -802,20 +818,20 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             SDL_strlcat(mapping_string, "misc1:b11,", sizeof(mapping_string));
         } else if (SDL_IsJoystickGoogleStadiaController(vendor, product)) {
             // The Google Stadia controller has a share button and a Google Assistant button
-            SDL_strlcat(mapping_string, "misc1:b11,misc2:b12", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "misc1:b11,misc2:b12,", sizeof(mapping_string));
         } else if (SDL_IsJoystickNVIDIASHIELDController(vendor, product)) {
             // The NVIDIA SHIELD controller has a share button between back and start buttons
             SDL_strlcat(mapping_string, "misc1:b11,", sizeof(mapping_string));
 
             if (product == USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103) {
                 // The original SHIELD controller has a touchpad and plus/minus buttons as well
-                SDL_strlcat(mapping_string, "touchpad:b12,misc2:b13,misc3:b14", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "touchpad:b12,misc2:b13,misc3:b14,", sizeof(mapping_string));
             }
         } else if (SDL_IsJoystickHoriSteamController(vendor, product)) {
             /* The Wireless HORIPad for Steam has QAM, Steam, Capsense L/R Sticks, 2 rear buttons, and 2 misc buttons */
-            SDL_strlcat(mapping_string, "paddle1:b13,paddle2:b12,paddle3:b15,paddle4:b14,misc2:b11,misc3:b16,misc4:b17", sizeof(mapping_string));
-        } else if (SDL_IsJoystick8BitDoController(vendor, product)) {
-            SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "paddle1:b13,paddle2:b12,paddle3:b15,paddle4:b14,misc2:b11,misc3:b16,misc4:b17,", sizeof(mapping_string));
+        } else if (vendor == USB_VENDOR_8BITDO && product == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
+            SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
         } else {
             switch (SDL_GetGamepadTypeFromGUID(guid, NULL)) {
             case SDL_GAMEPAD_TYPE_PS4:
@@ -1295,7 +1311,7 @@ static bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
 static bool SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char *pchString)
 {
     char szGameButton[20];
-    char szJoystickButton[20];
+    char szJoystickButton[128];
     bool bGameButton = true;
     int i = 0;
     const char *pchPos = pchString;

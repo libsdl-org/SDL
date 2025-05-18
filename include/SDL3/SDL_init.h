@@ -101,7 +101,7 @@ typedef Uint32 SDL_InitFlags;
  * to run.
  *
  * See
- * [Main callbacks in SDL3](https://wiki.libsdl.org/SDL3/README/main-functions#main-callbacks-in-sdl3)
+ * [Main callbacks in SDL3](https://wiki.libsdl.org/SDL3/README-main-functions#main-callbacks-in-sdl3)
  * for complete details.
  *
  * \since This enum is available since SDL 3.2.0.

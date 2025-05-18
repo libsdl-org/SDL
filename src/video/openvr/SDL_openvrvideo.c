@@ -22,7 +22,9 @@
 
 #ifdef SDL_VIDEO_DRIVER_OPENVR
 
+#if 0
 #define DEBUG_OPENVR
+#endif
 
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -445,7 +447,7 @@ static void OPENVR_VirtualControllerUpdate(void *userdata)
 static bool OPENVR_SetupJoystickBasedOnLoadedActionManifest(SDL_VideoData * videodata)
 {
     SDL_VirtualJoystickDesc desc;
-    int virtual_index;
+    SDL_JoystickID virtual_id;
 
     EVRInputError e = 0;
 
@@ -537,22 +539,22 @@ static bool OPENVR_SetupJoystickBasedOnLoadedActionManifest(SDL_VideoData * vide
     desc.RumbleTriggers = OPENVR_VirtualControllerRumbleTriggers;
     desc.Update = OPENVR_VirtualControllerUpdate;
     desc.userdata = videodata;
-    virtual_index = SDL_AttachVirtualJoystick(&desc);
+    virtual_id = SDL_AttachVirtualJoystick(&desc);
 
-    if (virtual_index < 0) {
+    if (!virtual_id) {
+        return SDL_SetError("OPENVR: Couldn't attach virtual joystick device: %s", SDL_GetError());
+    }
+
+    videodata->virtual_joystick = SDL_OpenJoystick(virtual_id);
+    if (!videodata->virtual_joystick) {
         return SDL_SetError("OPENVR: Couldn't open virtual joystick device: %s", SDL_GetError());
-    } else {
-        videodata->virtual_joystick = SDL_OpenJoystick(virtual_index);
-        if (!videodata->virtual_joystick) {
-            return SDL_SetError("OPENVR: Couldn't open virtual joystick device: %s", SDL_GetError());
-        }
     }
 
 #ifdef DEBUG_OPENVR
     SDL_Log("Loaded virtual joystick with %d buttons and %d axes", videodata->input_action_handles_buttons_count, videodata->input_action_handles_axes_count);
 #endif
 
-    return false;
+    return true;
 }
 
 static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this,SDL_Window *window)
@@ -710,7 +712,7 @@ static bool OPENVR_ReleaseFrame(SDL_VideoDevice *_this)
     if (videodata->overlaytexture != 0 &&
         videodata->targh == videodata->last_targh &&
         videodata->targw == videodata->last_targw) {
-        // Only submit frames to OpenVR if the textu re exists.
+        // Only submit frames to OpenVR if the texture exists.
         struct Texture_t tex;
 
         // Setup a Texture_t object to send in the texture.

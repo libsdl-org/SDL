@@ -47,7 +47,7 @@
  *
  * For more information, see:
  *
- * https://wiki.libsdl.org/SDL3/README/main-functions
+ * https://wiki.libsdl.org/SDL3/README-main-functions
  */
 
 #ifndef SDL_main_h_
@@ -68,7 +68,7 @@
  * proper entry point for the platform, and all the other magic details
  * needed, like manually calling SDL_SetMainReady.
  *
- * Please see [README/main-functions](README/main-functions), (or
+ * Please see [README-main-functions](README-main-functions), (or
  * docs/README-main-functions.md in the source tree) for a more detailed
  * explanation.
  *
@@ -85,7 +85,7 @@
  * SDL_AppQuit. The app should not provide a `main` function in this case, and
  * doing so will likely cause the build to fail.
  *
- * Please see [README/main-functions](README/main-functions), (or
+ * Please see [README-main-functions](README-main-functions), (or
  * docs/README-main-functions.md in the source tree) for a more detailed
  * explanation.
  *
@@ -512,7 +512,7 @@ typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
  * SDL_MAIN_USE_CALLBACKS.
  *
  * Program startup is a surprisingly complex topic. Please see
- * [README/main-functions](README/main-functions), (or
+ * [README-main-functions](README-main-functions), (or
  * docs/README-main-functions.md in the source tree) for a more detailed
  * explanation.
  *

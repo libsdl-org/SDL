@@ -1314,8 +1314,9 @@ static void SDL_MaybeEnableWarpEmulation(SDL_Window *window, float x, float y)
                 // Require two consecutive warps to the center within a certain timespan to enter warp emulation mode.
                 const Uint64 now = SDL_GetTicksNS();
                 if (now - mouse->last_center_warp_time_ns < WARP_EMULATION_THRESHOLD_NS) {
-                    if (SDL_SetRelativeMouseMode(true)) {
-                        mouse->warp_emulation_active = true;
+                    mouse->warp_emulation_active = true;
+                    if (!SDL_SetRelativeMouseMode(true)) {
+                        mouse->warp_emulation_active = false;
                     }
                 }
 

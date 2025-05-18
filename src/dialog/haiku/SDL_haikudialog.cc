@@ -251,9 +251,9 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     SDLBRefFilter *filter = new(std::nothrow) SDLBRefFilter(filters, nfilters);
 
     if (looper == NULL || messenger == NULL || filter == NULL) {
-        SDL_free(looper);
-        SDL_free(messenger);
-        SDL_free(filter);
+        delete looper;
+        delete messenger;
+        delete filter;
         SDL_OutOfMemory();
         callback(userdata, NULL, -1);
         return;

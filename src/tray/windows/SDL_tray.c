@@ -544,7 +544,7 @@ void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
     mii.dwTypeData = label_w;
     mii.cch = (UINT) SDL_wcslen(label_w);
 
-    if (!SetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, TRUE, &mii)) {
+    if (!SetMenuItemInfoW(entry->parent->hMenu, (UINT) entry->id, FALSE, &mii)) {
         SDL_SetError("Couldn't update tray entry label");
     }
 

@@ -187,7 +187,7 @@ typedef Uint32 SDL_MouseButtonFlags;
  *               with proper synchronization practices when adding other side
  *               effects beyond mutation of the x and y values.
  *
- * \since This datatype is available since SDL 3.2.6.
+ * \since This datatype is available since SDL 3.4.0.
  *
  * \sa SDL_SetRelativeMouseTransform
  */

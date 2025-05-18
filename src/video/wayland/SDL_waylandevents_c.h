@@ -191,7 +191,6 @@ extern int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 
 extern void Wayland_DisplayInitInputTimestampManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitCursorShapeManager(SDL_VideoData *display);
-extern void Wayland_DisplayInitRelativePointerManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitTabletManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitDataDeviceManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitPrimarySelectionDeviceManager(SDL_VideoData *display);
@@ -201,10 +200,10 @@ extern void Wayland_DisplayCreateTextInputManager(SDL_VideoData *d, uint32_t id)
 extern void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, Uint32 id);
 extern void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool send_events);
 
-extern bool Wayland_SeatHasRelativePointerFocus(SDL_WaylandSeat *seat);
 extern void Wayland_SeatUpdatePointerGrab(SDL_WaylandSeat *seat);
 extern void Wayland_DisplayUpdatePointerGrabs(SDL_VideoData *display, SDL_WindowData *window);
 extern void Wayland_DisplayUpdateKeyboardGrabs(SDL_VideoData *display, SDL_WindowData *window);
+extern void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_WindowData *window);
 
 /* The implicit grab serial needs to be updated on:
  * - Keyboard key down/up

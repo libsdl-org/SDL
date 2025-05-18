@@ -492,17 +492,7 @@ static void X11_DispatchFocusOut(SDL_VideoDevice *_this, SDL_WindowData *data)
     /* If another window has already processed a focus in, then don't try to
      * remove focus here.  Doing so will incorrectly remove focus from that
      * window, and the focus lost event for this window will have already
-     * been dispatched anyway.
-     */
-    if (data->tracking_mouse_outside_window && data->window == SDL_GetMouseFocus()) {
-        // If tracking the pointer and keyboard focus is lost, raise all buttons and relinquish mouse focus.
-        SDL_SendMouseButton(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_BUTTON_LEFT, false);
-        SDL_SendMouseButton(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_BUTTON_MIDDLE, false);
-        SDL_SendMouseButton(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_BUTTON_RIGHT, false);
-        SDL_SendMouseButton(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_BUTTON_X1, false);
-        SDL_SendMouseButton(0, data->window, SDL_GLOBAL_MOUSE_ID, SDL_BUTTON_X2, false);
-        SDL_SetMouseFocus(NULL);
-    }
+     * been dispatched anyway. */
     if (data->window == SDL_GetKeyboardFocus()) {
         SDL_SetKeyboardFocus(NULL);
     }
@@ -997,26 +987,29 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
         }
     }
 
+    if (!handled_by_ime) {
+        if (pressed) {
+            X11_HandleModifierKeys(videodata, scancode, true, true);
+            SDL_SendKeyboardKeyIgnoreModifiers(timestamp, keyboardID, keycode, scancode, true);
+
+            if (*text && !(SDL_GetModState() & (SDL_KMOD_CTRL | SDL_KMOD_ALT))) {
+                text[text_length] = '\0';
+                X11_ClearComposition(windowdata);
+                SDL_SendKeyboardText(text);
+            }
+        } else {
+            if (X11_KeyRepeat(display, xevent)) {
+                // We're about to get a repeated key down, ignore the key up
+                return;
+            }
+
+            X11_HandleModifierKeys(videodata, scancode, false, true);
+            SDL_SendKeyboardKeyIgnoreModifiers(timestamp, keyboardID, keycode, scancode, false);
+        }
+    }
+
     if (pressed) {
-        X11_HandleModifierKeys(videodata, scancode, true, true);
-        SDL_SendKeyboardKeyIgnoreModifiers(timestamp, keyboardID, keycode, scancode, true);
-
-        // Synthesize a text event if the IME didn't consume a printable character
-        if (*text && !(SDL_GetModState() & (SDL_KMOD_CTRL | SDL_KMOD_ALT))) {
-            text[text_length] = '\0';
-            X11_ClearComposition(windowdata);
-            SDL_SendKeyboardText(text);
-        }
-
         X11_UpdateUserTime(windowdata, xevent->xkey.time);
-    } else {
-        if (X11_KeyRepeat(display, xevent)) {
-            // We're about to get a repeated key down, ignore the key up
-            return;
-        }
-
-        X11_HandleModifierKeys(videodata, scancode, false, true);
-        SDL_SendKeyboardKeyIgnoreModifiers(timestamp, keyboardID, keycode, scancode, false);
     }
 }
 
@@ -1084,16 +1077,6 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
             // see explanation at case ButtonPress
             button -= (8 - SDL_BUTTON_X1);
         }
-
-        /* If the mouse is captured and all buttons are now released, clear the capture
-         * flag so the focus will be cleared if the mouse is outside the window.
-         */
-        if ((window->flags & SDL_WINDOW_MOUSE_CAPTURE)  &&
-            !(SDL_GetMouseState(NULL, NULL) & ~SDL_BUTTON_MASK(button))) {
-            window->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
-            windowdata->tracking_mouse_outside_window = false;
-        }
-
         SDL_SendMouseButton(timestamp, window, mouseID, button, false);
     }
 }
@@ -1339,8 +1322,6 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             SDL_Log("Mode: NotifyUngrab");
         }
 #endif
-        data->tracking_mouse_outside_window = false;
-
         SDL_SetMouseFocus(data->window);
 
         mouse->last_x = xevent->xcrossing.x;
@@ -1360,8 +1341,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, false, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
-        // We ungrab in LeaveNotify, so we may need to grab again here
-        SDL_UpdateWindowGrab(data->window);
+        // We ungrab in LeaveNotify, so we may need to grab again here, but not if captured, as the capture can be lost.
+        if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+            SDL_UpdateWindowGrab(data->window);
+        }
 
         X11_ProcessHitTest(_this, data, mouse->last_x, mouse->last_y, true);
     } break;
@@ -1387,17 +1370,14 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         if (xevent->xcrossing.mode != NotifyGrab &&
             xevent->xcrossing.mode != NotifyUngrab &&
             xevent->xcrossing.detail != NotifyInferior) {
-            if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
-                /* In order for interaction with the window decorations and menu to work properly
-                   on Mutter, we need to ungrab the keyboard when the mouse leaves. */
-                if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-                    X11_SetWindowKeyboardGrab(_this, data->window, false);
-                }
 
-                SDL_SetMouseFocus(NULL);
-            } else {
-                data->tracking_mouse_outside_window = true;
+            /* In order for interaction with the window decorations and menu to work properly
+               on Mutter, we need to ungrab the keyboard when the mouse leaves. */
+            if (!(data->window->flags & SDL_WINDOW_FULLSCREEN)) {
+                X11_SetWindowKeyboardGrab(_this, data->window, false);
             }
+
+            SDL_SetMouseFocus(NULL);
         }
     } break;
 

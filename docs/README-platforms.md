@@ -13,7 +13,7 @@ SDL3 has been known to work on the following platforms at some point:
 - [macOS](README-macos.md) (10.14 and later)
 - [NetBSD](README-bsd.md)
 - [Nintendo Switch](README-switch.md) (Separate NDA-only fork)
-- [Nintendo 3DS](README-3ds.md) (Homebrew)
+- [Nintendo 3DS](README-n3ds.md) (Homebrew)
 - [OpenBSD](README-bsd.md)
 - [PlayStation 2](README-ps2.md) (Homebrew)
 - [PlayStation 4](README-ps4.md) (Separate NDA-only fork)

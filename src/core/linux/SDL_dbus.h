@@ -67,6 +67,7 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*message_is_signal)(DBusMessage *, const char *, const char *);
     dbus_bool_t (*message_has_path)(DBusMessage *, const char *);
     DBusMessage *(*message_new_method_call)(const char *, const char *, const char *, const char *);
+    DBusMessage *(*message_new_signal)(const char *, const char *, const char *);
     dbus_bool_t (*message_append_args)(DBusMessage *, int, ...);
     dbus_bool_t (*message_append_args_valist)(DBusMessage *, int, va_list);
     void (*message_iter_init_append)(DBusMessage *, DBusMessageIter *);

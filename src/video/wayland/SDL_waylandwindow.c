@@ -2209,7 +2209,7 @@ static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
  *
  * As you might expect from Wayland, the general policy is to go with #2 unless
  * the client can prove to the compositor beyond a reasonable doubt that raising
- * the window will not be malicuous behavior.
+ * the window will not be malicious behavior.
  *
  * For SDL this means RaiseWindow and FlashWindow both use the same protocol,
  * but in different ways: RaiseWindow will provide as _much_ information as
@@ -3092,6 +3092,12 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         if (wind->show_hide_sync_required) {
             WAYLAND_wl_display_roundtrip(data->display);
         }
+
+        /* The compositor should have relinquished keyboard, pointer, touch, and tablet tool focus when the toplevel
+         * window was destroyed upon being hidden, but there is no guarantee of this, so ensure that all references
+         * to the window held by seats are released before destroying the underlying surface and struct.
+         */
+        Wayland_DisplayRemoveWindowReferencesFromSeats(data, wind);
 
 #ifdef SDL_VIDEO_OPENGL_EGL
         if (wind->egl_surface) {

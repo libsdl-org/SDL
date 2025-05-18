@@ -24,6 +24,7 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../core/linux/SDL_progressbar.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandclipboard.h"
@@ -629,6 +630,9 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
     device->FlashWindow = Wayland_FlashWindow;
+#ifdef SDL_USE_LIBDBUS
+    device->ApplyWindowProgress = DBUS_ApplyWindowProgress;
+#endif // SDL_USE_LIBDBUS
     device->HasScreenKeyboardSupport = Wayland_HasScreenKeyboardSupport;
     device->ShowWindowSystemMenu = Wayland_ShowWindowSystemMenu;
     device->SyncWindow = Wayland_SyncWindow;
@@ -1263,7 +1267,6 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
         d->relative_pointer_manager = wl_registry_bind(d->registry, id, &zwp_relative_pointer_manager_v1_interface, 1);
-        Wayland_DisplayInitRelativePointerManager(d);
     } else if (SDL_strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
         d->pointer_constraints = wl_registry_bind(d->registry, id, &zwp_pointer_constraints_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_keyboard_shortcuts_inhibit_manager_v1") == 0) {

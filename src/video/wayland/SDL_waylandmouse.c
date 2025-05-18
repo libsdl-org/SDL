@@ -881,8 +881,7 @@ static bool Wayland_WarpMouseRelative(SDL_Window *window, float x, float y)
 
     if (d->pointer_constraints) {
         wl_list_for_each (seat, &d->seat_list, link) {
-            if (wind == seat->pointer.focus ||
-                (!seat->pointer.focus && wind == seat->keyboard.focus)) {
+            if (wind == seat->pointer.focus) {
                 Wayland_SeatWarpMouse(seat, wind, x, y);
             }
         }
@@ -939,7 +938,7 @@ static bool Wayland_SetRelativeMouseMode(bool enabled)
         return SDL_SetError("Failed to enable relative mode: compositor lacks support for the required zwp_pointer_constraints_v1 protocol");
     }
 
-    data->relative_mode_enabled = enabled;
+    // Windows have a relative mode flag, so just update the grabs on a state change.
     Wayland_DisplayUpdatePointerGrabs(data, NULL);
     return true;
 }
@@ -1121,14 +1120,11 @@ void Wayland_SeatUpdateCursor(SDL_WaylandSeat *seat)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_WindowData *pointer_focus = seat->pointer.focus;
 
-    if (pointer_focus) {
-        const bool has_relative_focus = Wayland_SeatHasRelativePointerFocus(seat);
-
-        if (!seat->display->relative_mode_enabled || !has_relative_focus || !mouse->relative_mode_hide_cursor) {
+    if (pointer_focus && mouse->cursor_visible) {
+        if (!seat->pointer.relative_pointer || !mouse->relative_mode_hide_cursor) {
             const SDL_HitTestResult rc = pointer_focus->hit_test_result;
 
-            if ((seat->display->relative_mode_enabled && has_relative_focus) ||
-                rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) {
+            if (seat->pointer.relative_pointer || rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) {
                 Wayland_SeatSetCursor(seat, mouse->cur_cursor);
             } else {
                 Wayland_SeatSetCursor(seat, sys_cursors[rc]);
