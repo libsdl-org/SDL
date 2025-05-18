@@ -9182,8 +9182,23 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         return NULL;
     }
 
+    SDL_GPUShaderFormat shaderFormats = SDL_GPU_SHADERFORMAT_DXBC;
+
+    D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
+    shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_0;
+
+    res = ID3D12Device_CheckFeatureSupport(
+        renderer->device,
+        D3D12_FEATURE_SHADER_MODEL,
+        &shaderModel,
+        sizeof(shaderModel));
+    if (SUCCEEDED(res) && shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_0) {
+        shaderFormats |= SDL_GPU_SHADERFORMAT_DXIL;
+    }
+
     ASSIGN_DRIVER(D3D12)
     result->driverData = (SDL_GPURenderer *)renderer;
+    result->shader_formats = shaderFormats;
     result->debug_mode = debugMode;
     renderer->sdlGPUDevice = result;
 
