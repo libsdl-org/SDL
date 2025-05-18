@@ -11693,6 +11693,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     ASSIGN_DRIVER(VULKAN)
 
     result->driverData = (SDL_GPURenderer *)renderer;
+    result->shader_formats = SDL_GPU_SHADERFORMAT_SPIRV;
 
     /*
      * Create initial swapchain array

@@ -4570,6 +4570,7 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         SDL_GPUDevice *result = SDL_calloc(1, sizeof(SDL_GPUDevice));
         ASSIGN_DRIVER(METAL)
         result->driverData = (SDL_GPURenderer *)renderer;
+        result->shader_formats = SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB;
         renderer->sdlGPUDevice = result;
 
         return result;

@@ -672,7 +672,6 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
         result = selectedBackend->CreateDevice(debug_mode, preferLowPower, props);
         if (result != NULL) {
             result->backend = selectedBackend->name;
-            result->shader_formats = selectedBackend->shader_formats;
             result->debug_mode = debug_mode;
         }
     }
