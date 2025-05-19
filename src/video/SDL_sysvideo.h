@@ -405,8 +405,7 @@ struct SDL_VideoDevice
     bool checked_texture_framebuffer;
     bool is_dummy;
     bool suspend_screensaver;
-    SDL_Window *wakeup_window;
-    SDL_Mutex *wakeup_lock; // Initialized only if WaitEventTimeout/SendWakeupEvent are supported
+    void *wakeup_window;
     int num_displays;
     SDL_VideoDisplay **displays;
     SDL_Rect desktop_bounds;
