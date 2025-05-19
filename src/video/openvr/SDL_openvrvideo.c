@@ -60,7 +60,7 @@ struct SDL_GLContextState
 #endif
 
 SDL_ELF_NOTE_DLOPEN(
-    "video-openvr
+    "video-openvr",
     "Support for OpenVR video",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_OPENVR_DRIVER_DYNAMIC

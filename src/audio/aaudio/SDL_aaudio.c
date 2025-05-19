@@ -53,7 +53,7 @@ struct SDL_PrivateAudioData
 
 #define LIB_AAUDIO_SO "libaaudio.so"
 
-SDL_ELF_NOTE_DLOPEN(,
+SDL_ELF_NOTE_DLOPEN(
     "audio-aaudio",
     "Support for audio through AAudio",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
