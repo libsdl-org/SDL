@@ -8333,6 +8333,17 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     IDXGIFactory6 *factory6;
     IDXGIAdapter1 *adapter;
 
+    // Early check to see if the app has _any_ D3D12 formats, if not we don't
+    // have to fuss with loading D3D in the first place.
+    bool has_dxbc = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN, false);
+    bool has_dxil = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, false);
+    bool supports_dxil = false;
+    // TODO SM7: bool has_spirv = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, false);
+    // TODO SM7: bool supports_spirv = false;
+    if (!has_dxbc && !has_dxil) {
+        return false;
+    }
+
     // Can we load D3D12?
 
     d3d12Dll = SDL_LoadObject(D3D12_DLL);
@@ -8427,6 +8438,18 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         (void **)&device);
 
     if (SUCCEEDED(res)) {
+        D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
+        shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_0;
+
+        res = ID3D12Device_CheckFeatureSupport(
+            device,
+            D3D12_FEATURE_SHADER_MODEL,
+            &shaderModel,
+            sizeof(shaderModel));
+        if (SUCCEEDED(res) && shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_0) {
+            supports_dxil = true;
+        }
+
         ID3D12Device_Release(device);
     }
     IDXGIAdapter1_Release(adapter);
@@ -8434,6 +8457,11 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
     SDL_UnloadObject(d3d12Dll);
     SDL_UnloadObject(dxgiDll);
+
+    if (!supports_dxil && !has_dxbc) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: DXIL is not supported and DXBC is not being provided");
+        return false;
+    }
 
     if (FAILED(res)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not create D3D12Device with feature level " D3D_FEATURE_LEVEL_CHOICE_STR);
@@ -9207,7 +9235,6 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
 SDL_GPUBootstrap D3D12Driver = {
     "direct3d12",
-    SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_DXBC,
     D3D12_PrepareDriver,
     D3D12_CreateDevice
 };
