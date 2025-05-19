@@ -1102,16 +1102,11 @@ static void SDL_SendWakeupEvent(void)
         return;
     }
 
-    SDL_LockMutex(_this->wakeup_lock);
-    {
-        if (_this->wakeup_window) {
-            _this->SendWakeupEvent(_this, _this->wakeup_window);
-
-            // No more wakeup events needed until we enter a new wait
-            _this->wakeup_window = NULL;
-        }
+    // We only want to do this once while waiting for an event, so set it to NULL atomically here
+    SDL_Window *wakeup_window = (SDL_Window *)SDL_SetAtomicPointer(&_this->wakeup_window, NULL);
+    if (wakeup_window) {
+        _this->SendWakeupEvent(_this, wakeup_window);
     }
-    SDL_UnlockMutex(_this->wakeup_lock);
 #endif
 }
 
@@ -1549,18 +1544,7 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
         */
         SDL_PumpEventsInternal(true);
 
-        SDL_LockMutex(_this->wakeup_lock);
-        {
-            status = SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
-            // If status == 0 we are going to block so wakeup will be needed.
-            if (status == 0) {
-                _this->wakeup_window = wakeup_window;
-            } else {
-                _this->wakeup_window = NULL;
-            }
-        }
-        SDL_UnlockMutex(_this->wakeup_lock);
-
+        status = SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
         if (status < 0) {
             // Got an error: return
             break;
@@ -1573,8 +1557,6 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
         if (timeoutNS > 0) {
             Sint64 elapsed = SDL_GetTicksNS() - start;
             if (elapsed >= timeoutNS) {
-                // Set wakeup_window to NULL without holding the lock.
-                _this->wakeup_window = NULL;
                 return 0;
             }
             loop_timeoutNS = (timeoutNS - elapsed);
@@ -1587,9 +1569,9 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
                 loop_timeoutNS = poll_intervalNS;
             }
         }
+        SDL_SetAtomicPointer(&_this->wakeup_window, wakeup_window);
         status = _this->WaitEventTimeout(_this, loop_timeoutNS);
-        // Set wakeup_window to NULL without holding the lock.
-        _this->wakeup_window = NULL;
+        SDL_SetAtomicPointer(&_this->wakeup_window, NULL);
         if (status == 0 && poll_intervalNS != SDL_MAX_SINT64 && loop_timeoutNS == poll_intervalNS) {
             // We may have woken up to poll. Try again
             continue;
