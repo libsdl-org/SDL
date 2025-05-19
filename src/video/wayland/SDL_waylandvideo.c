@@ -446,9 +446,6 @@ static void Wayland_DeleteDevice(SDL_VideoDevice *device)
         WAYLAND_wl_display_disconnect(data->display);
         SDL_ClearProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER);
     }
-    if (device->wakeup_lock) {
-        SDL_DestroyMutex(device->wakeup_lock);
-    }
     SDL_free(data);
     SDL_free(device);
     SDL_WAYLAND_UnloadSymbols();
@@ -589,7 +586,6 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     }
 
     device->internal = data;
-    device->wakeup_lock = SDL_CreateMutex();
 
     // Set the function pointers
     device->VideoInit = Wayland_VideoInit;
