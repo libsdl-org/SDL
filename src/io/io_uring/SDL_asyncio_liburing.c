@@ -44,8 +44,16 @@ static bool (*AsyncIOFromFile)(const char *file, const char *mode, SDL_AsyncIO *
 // we never link directly to liburing.
 // (this says "-ffi" which sounds like a scripting language binding thing, but the non-ffi version
 // is static-inline code we can't lookup with dlsym. This is by design.)
-static const char *liburing_library = "liburing-ffi.so.2";
+#define SDL_DRIVER_LIBURING_DYNAMIC "liburing-ffi.so.2"
+static const char *liburing_library = SDL_DRIVER_LIBURING_DYNAMIC;
 static void *liburing_handle = NULL;
+
+SDL_ELF_NOTE_DLOPEN(
+    "io-io_uring",
+    "Support for async IO through liburing",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED,
+    SDL_DRIVER_LIBURING_DYNAMIC
+);
 
 #define SDL_LIBURING_FUNCS \
     SDL_LIBURING_FUNC(int, io_uring_queue_init, (unsigned entries, struct io_uring *ring, unsigned flags)) \

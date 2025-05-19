@@ -109,6 +109,13 @@ static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, 
 
 #ifdef SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC
 
+SDL_ELF_NOTE_DLOPEN(
+    "camera-libpipewire",
+    "Support for camera through libalsa",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC
+);
+
 static const char *pipewire_library = SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC;
 static SDL_SharedObject *pipewire_handle = NULL;
 

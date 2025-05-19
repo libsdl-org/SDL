@@ -320,6 +320,7 @@ dep_option(SDL_ARMNEON             "Use NEON assembly routines" ON "SDL_ASSEMBLY
 dep_option(SDL_LSX                 "Use LSX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 dep_option(SDL_LASX                "Use LASX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 
+dep_option(SDL_DLOPEN_NOTES        "Record dlopen dependencies in .note.dlopen section" TRUE UNIX_SYS OFF)
 set_option(SDL_LIBC                "Use the system C library" ${SDL_LIBC_DEFAULT})
 set_option(SDL_SYSTEM_ICONV        "Use iconv() from system-installed libraries" ${SDL_SYSTEM_ICONV_DEFAULT})
 set_option(SDL_LIBICONV            "Prefer iconv() from libiconv, if available, over libc version" OFF)
@@ -1559,6 +1560,25 @@ elseif(EMSCRIPTEN)
   CheckLibUnwind()
 
 elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
+
+  if(SDL_DLOPEN_NOTES)
+    set(CHECK_ELF_DLNOTES_SRC [==[
+    #ifndef __ELF__
+      ELF DL notes is only supported on ELF platforms
+    #endif
+    __attribute__ ((used,aligned(4),section(".note.dlopen"))) static const struct {
+      struct { int a; int b; int c; } hdr; char name[4]; __attribute__((aligned(4))) char json[24];
+    } dlnote = { { 4, 0x407c0c0aU, 16 }, "FDO", "[\\"a\\":{\\"a\\":\\"1\\",\\"b\\":\\"2\\"}]" };
+    int main(int argc, char *argv[]) {
+      return argc + dlnote.hdr.a;
+    }
+    ]==])
+    check_c_source_compiles("${CHECK_ELF_DLNOTES_SRC}" COMPILER_SUPPORTS_ELFNOTES)
+    if(COMPILER_SUPPORTS_ELFNOTES)
+      set(HAVE_DLOPEN_NOTES TRUE)
+    endif()
+  endif()
+
   if(SDL_AUDIO)
     if(NETBSD)
         set(SDL_AUDIO_DRIVER_NETBSD 1)

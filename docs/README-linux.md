@@ -26,7 +26,7 @@ Ubuntu 22.04+ can also add `libpipewire-0.3-dev libwayland-dev libdecor-0-dev li
 Fedora 35, all available features enabled:
 
     sudo yum install gcc git-core make cmake \
-    alsa-lib-devel pulseaudio-libs-devel nas-devel pipewire-devel \
+    alsa-lib-devel pulseaudio-libs-devel pipewire-devel \
     libX11-devel libXext-devel libXrandr-devel libXcursor-devel libXfixes-devel \
     libXi-devel libXScrnSaver-devel dbus-devel ibus-devel \
     systemd-devel mesa-libGL-devel libxkbcommon-devel mesa-libGLES-devel \

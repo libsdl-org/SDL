@@ -133,6 +133,13 @@ static bool load_pulseaudio_syms(void);
 
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
 
+SDL_ELF_NOTE_DLOPEN(
+    "audio-libpulseaudio",
+    "Support for audio through libpulseaudio",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
+);
+
 static const char *pulseaudio_library = SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC;
 static SDL_SharedObject *pulseaudio_handle = NULL;
 

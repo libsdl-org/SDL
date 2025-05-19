@@ -39,6 +39,13 @@
 #define DEFAULT_X11_XCB "libX11-xcb.so.1"
 #endif
 
+SDL_ELF_NOTE_DLOPEN(
+    "x11-vulkan",
+    "Support for vulkan on X11",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_VULKAN, DEFAULT_X11_XCB
+);
+
 /*
 typedef uint32_t xcb_window_t;
 typedef uint32_t xcb_visualid_t;

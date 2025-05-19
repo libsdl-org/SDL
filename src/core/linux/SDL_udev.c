@@ -38,6 +38,17 @@
 
 static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
 
+#ifdef SDL_UDEV_DYNAMIC
+
+SDL_ELF_NOTE_DLOPEN(
+    "events-udev",
+    "Support for events through libudev",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_UDEV_DYNAMIC
+);
+
+#endif
+
 static SDL_UDEV_PrivateData *_this = NULL;
 
 static bool SDL_UDEV_load_sym(const char *fn, void **addr);

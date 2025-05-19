@@ -207,6 +207,13 @@ static bool load_alsa_syms(void)
 
 #ifdef SDL_AUDIO_DRIVER_ALSA_DYNAMIC
 
+SDL_ELF_NOTE_DLOPEN(
+    "audio-libalsa",
+    "Support for audio through libalsa",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_AUDIO_DRIVER_ALSA_DYNAMIC
+);
+
 static void UnloadALSALibrary(void)
 {
     if (alsa_handle) {
