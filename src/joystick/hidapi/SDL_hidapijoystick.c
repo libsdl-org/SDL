@@ -822,11 +822,12 @@ SDL_bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJo
 
     ++SDL_HIDAPI_numjoysticks;
 
-    SDL_PrivateJoystickAdded(joystickID);
-
     if (pJoystickID) {
         *pJoystickID = joystickID;
     }
+
+    SDL_PrivateJoystickAdded(joystickID);
+
     return SDL_TRUE;
 }
 
