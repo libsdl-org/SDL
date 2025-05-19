@@ -221,7 +221,6 @@ static Uint64 Wayland_EventTimestampMSToNS(Uint32 wl_timestamp_ms)
         timestamp_offset += SDL_MS_TO_NS(SDL_UINT64_C(0x100000000));
     }
     last = wl_timestamp_ms;
-    wl_timestamp_ms += timestamp_offset;
 
     return SDL_MS_TO_NS(wl_timestamp_ms) + timestamp_offset;
 }
