@@ -170,7 +170,8 @@ typedef struct SDL_WaylandSeat
     struct
     {
         struct zwp_text_input_v3 *zwp_text_input;
-        SDL_Rect cursor_rect;
+        SDL_Rect text_input_rect;
+        int text_input_cursor;
         bool enabled;
         bool has_preedit;
     } text_input;
