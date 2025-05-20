@@ -4961,6 +4961,8 @@ static void D3D12_INTERNAL_BindGraphicsResources(
             0,
             commandBuffer->vertexBufferCount,
             vertexBufferViews);
+
+        commandBuffer->needVertexBufferBind = false;
     }
 
     if (commandBuffer->needVertexSamplerBind) {
