@@ -3350,7 +3350,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
     if (createinfo->type != SDL_GPU_TEXTURETYPE_3D) {
         desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-        desc.Alignment = isSwapchainTexture ? 0 : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+        desc.Alignment = isSwapchainTexture ? 0 : isMultisample ? D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
         desc.Width = createinfo->width;
         desc.Height = createinfo->height;
         desc.DepthOrArraySize = (UINT16)createinfo->layer_count_or_depth;
