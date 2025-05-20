@@ -195,7 +195,7 @@ static bool TextureFormatIsComputeWritable[] = {
     true,  // R16_UNORM
     true,  // R16G16_UNORM
     true,  // R16G16B16A16_UNORM
-    false, // R10G10B10A2_UNORM
+    true,  // R10G10B10A2_UNORM
     false, // B5G6R5_UNORM
     false, // B5G5R5A1_UNORM
     false, // B4G4R4A4_UNORM
@@ -220,7 +220,7 @@ static bool TextureFormatIsComputeWritable[] = {
     true,  // R32_FLOAT
     true,  // R32G32_FLOAT
     true,  // R32G32B32A32_FLOAT
-    false, // R11G11B10_UFLOAT
+    true,  // R11G11B10_UFLOAT
     true,  // R8_UINT
     true,  // R8G8_UINT
     true,  // R8G8B8A8_UINT
@@ -860,7 +860,7 @@ bool SDL_GPUTextureSupportsFormat(
         CHECK_TEXTUREFORMAT_ENUM_INVALID(format, false)
     }
 
-    if ((usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) || 
+    if ((usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) ||
         (usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE)) {
         if (!TextureFormatIsComputeWritable[format]) {
             return false;
