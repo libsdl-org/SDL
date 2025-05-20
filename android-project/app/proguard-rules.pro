@@ -50,6 +50,8 @@
     boolean supportsRelativeMouse();
     int openFileDescriptor(java.lang.String, java.lang.String);
     boolean showFileDialog(java.lang.String[], boolean, boolean, int);
+    java.lang.String getPreferredLocales();
+    java.lang.String formatLocale(java.util.Locale);
 }
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.HIDDeviceManager {
