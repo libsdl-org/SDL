@@ -541,7 +541,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
         return NULL;
     }
 
-    entry->submenu->menu = (GtkMenuShell *)gtk_menu_new();
+    entry->submenu->menu = g_object_ref_sink(gtk_menu_new());
     entry->submenu->parent_tray = NULL;
     entry->submenu->parent_entry = entry;
     entry->submenu->nEntries = 0;
