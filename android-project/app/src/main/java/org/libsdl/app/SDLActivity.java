@@ -2129,8 +2129,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 if (i != 0) result += ",";
                 result += formatLocale(locales.get(i));
             }
-        }
-        else if (mCurrentLocale != null) {
+        } else if (mCurrentLocale != null) {
             result = formatLocale(mCurrentLocale);
         }
         return result;
@@ -2142,19 +2141,16 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (locale.getLanguage() == "in") {
             // Indonesian is "id" according to ISO 639.2, but on Android is "in" because of Java backwards compatibility
             lang = "id";
-        }
-        else if (locale.getLanguage() == "") {
+        } else if (locale.getLanguage() == "") {
             // Make sure language is never empty
             lang = "und";
-        }
-        else {
+        } else {
             lang = locale.getLanguage();
         }
 
         if (locale.getCountry() == "") {
             result = lang;
-        }
-        else {
+        } else {
             result = lang + "_" + locale.getCountry();
         }
         return result;
