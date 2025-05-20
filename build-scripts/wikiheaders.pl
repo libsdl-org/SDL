@@ -2972,10 +2972,12 @@ __EOF__
         }
 
         if (defined $returns) {
+            # Check for md link in return type: ([SDL_Renderer](SDL_Renderer) *)
+            # This would've prevented the next regex from working properly (it'd leave " *)")
+            $returns =~ s/\A\(\[.*?\]\((.*?)\)/\($1/ms;
             # Chop datatype in parentheses off the front.
-            if(!($returns =~ s/\A\([^\[]*\[[^\]]*\]\([^\)]*\)[^\)]*\) //ms)) {
-                $returns =~ s/\A\([^\)]*\) //ms;
-            }
+            $returns =~ s/\A\(.*?\) //;
+
             $returns = dewikify($wikitype, $returns);
             $str .= ".SH RETURN VALUE\n";
             $str .= "$returns\n";
