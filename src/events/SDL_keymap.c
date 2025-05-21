@@ -1059,7 +1059,7 @@ const char *SDL_GetKeyName(SDL_Keycode key)
             // but the key name is defined as the letter printed on that key,
             // which is usually the shifted capital letter.
             if (key > 0x7F || (key >= 'a' && key <= 'z')) {
-                SDL_Keymap *keymap = SDL_GetCurrentKeymap();
+                SDL_Keymap *keymap = SDL_GetCurrentKeymap(false);
                 SDL_Keymod modstate;
                 SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, &modstate);
                 if (scancode != SDL_SCANCODE_UNKNOWN && !(modstate & SDL_KMOD_SHIFT)) {
@@ -1127,7 +1127,7 @@ SDL_Keycode SDL_GetKeyFromName(const char *name)
             // SDL_Keycode is defined as the unshifted key on the keyboard,
             // but the key name is defined as the letter printed on that key,
             // which is usually the shifted capital letter.
-            SDL_Keymap *keymap = SDL_GetCurrentKeymap();
+            SDL_Keymap *keymap = SDL_GetCurrentKeymap(false);
             SDL_Keymod modstate;
             SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, &modstate);
             if (scancode != SDL_SCANCODE_UNKNOWN && (modstate & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS))) {

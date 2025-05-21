@@ -239,20 +239,22 @@ void SDL_ResetKeyboard(void)
     }
 }
 
-SDL_Keymap *SDL_GetCurrentKeymap(void)
+SDL_Keymap *SDL_GetCurrentKeymap(bool ignore_options)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Keymap *keymap = SDL_keyboard.keymap;
 
-    if (keymap && keymap->thai_keyboard) {
-        // Thai keyboards are QWERTY plus Thai characters, use the default QWERTY keymap
-        return NULL;
-    }
+    if (!ignore_options) {
+        if (keymap && keymap->thai_keyboard) {
+            // Thai keyboards are QWERTY plus Thai characters, use the default QWERTY keymap
+            return NULL;
+        }
 
-    if ((keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS) &&
-        keymap && !keymap->latin_letters) {
-        // We'll use the default QWERTY keymap
-        return NULL;
+        if ((keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS) &&
+            keymap && !keymap->latin_letters) {
+            // We'll use the default QWERTY keymap
+            return NULL;
+        }
     }
 
     return keyboard->keymap;
@@ -490,7 +492,7 @@ SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, b
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
     if (key_event) {
-        SDL_Keymap *keymap = SDL_GetCurrentKeymap();
+        SDL_Keymap *keymap = SDL_GetCurrentKeymap(false);
         bool numlock = (modstate & SDL_KMOD_NUM) != 0;
         SDL_Keycode keycode;
 
