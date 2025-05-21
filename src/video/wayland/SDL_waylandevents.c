@@ -308,6 +308,15 @@ void Wayland_DisplayInitCursorShapeManager(SDL_VideoData *display)
 static bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint64 elapsed)
 {
     bool ret = false;
+
+    /* Cap the elapsed time to something sane in case the compositor sends a bad timestamp,
+     * which can result it in it looking like the key has been pressed for a *very* long time,
+     * bringing everything to a halt while it tries to enqueue all the repeat events.
+     *
+     * 3 seconds seems reasonable.
+     */
+    elapsed = SDL_min(elapsed, SDL_MS_TO_NS(3000));
+
     while (elapsed >= repeat_info->next_repeat_ns) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
             const Uint64 timestamp = repeat_info->wl_press_time_ns + repeat_info->next_repeat_ns;
