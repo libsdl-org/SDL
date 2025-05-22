@@ -389,7 +389,6 @@
 		F338A1182D1B37D8007CDFDF /* SDL_tray.m in Sources */ = {isa = PBXBuildFile; fileRef = F338A1172D1B37D8007CDFDF /* SDL_tray.m */; };
 		F338A11A2D1B37E4007CDFDF /* SDL_tray.c in Sources */ = {isa = PBXBuildFile; fileRef = F338A1192D1B37E4007CDFDF /* SDL_tray.c */; };
 		F3395BA82D9A5971007246C8 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = F3395BA72D9A5971007246C8 /* SDL_hidapi_8bitdo.c */; };
-		F3395BA82D9A5971007246C9 /* SDL_hidapi_flydigi.c in Sources */ = {isa = PBXBuildFile; fileRef = F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */; };
 		F34400342D40217A003F26D7 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = F373DA182D388A1E002158FA /* LICENSE.txt */; };
 		F34400362D40217A003F26D7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = F373DA192D388A1E002158FA /* README.md */; };
 		F344003D2D4022E1003F26D7 /* INSTALL.md in Resources */ = {isa = PBXBuildFile; fileRef = F344003C2D4022E1003F26D7 /* INSTALL.md */; };
@@ -542,6 +541,7 @@
 		F3FA5A232B59ACE000FEAD97 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FA5A1A2B59ACE000FEAD97 /* yuv_rgb_lsx.c */; };
 		F3FA5A242B59ACE000FEAD97 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1B2B59ACE000FEAD97 /* yuv_rgb_lsx.h */; };
 		F3FA5A252B59ACE000FEAD97 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1C2B59ACE000FEAD97 /* yuv_rgb_common.h */; };
+		F3FBB1082DDF93AB0000F99F /* SDL_hidapi_flydigi.c in Sources */ = {isa = PBXBuildFile; fileRef = F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */; };
 		F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */; };
 		F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Required, ); }; };
@@ -1930,8 +1930,8 @@
 			isa = PBXGroup;
 			children = (
 				F3395BA72D9A5971007246C8 /* SDL_hidapi_8bitdo.c */,
-				F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */,
 				F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */,
+				F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */,
 				A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */,
 				F3B6B8092DC3EA54004954FD /* SDL_hidapi_gip.c */,
 				89E5801D2D03602200DAF6D3 /* SDL_hidapi_lg4ff.c */,
@@ -3089,6 +3089,7 @@
 				00001B2471F503DD3C1B0000 /* SDL_camera_dummy.c in Sources */,
 				00002B20A48E055EB0350000 /* SDL_camera_coremedia.m in Sources */,
 				000080903BC03006F24E0000 /* SDL_filesystem.c in Sources */,
+				F3FBB1082DDF93AB0000F99F /* SDL_hidapi_flydigi.c in Sources */,
 				0000481D255AF155B42C0000 /* SDL_sysfsops.c in Sources */,
 				0000494CC93F3E624D3C0000 /* SDL_systime.c in Sources */,
 				000095FA1BDE436CF3AF0000 /* SDL_time.c in Sources */,
