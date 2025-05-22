@@ -19,30 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_internal.h"
+#ifndef SDL_runapp_h_
+#define SDL_runapp_h_
 
-#ifdef SDL_PLATFORM_3DS
+// Call the provided main function.
+// If the provided argv is non-NULL, SDL will pass it forward to mainFunction as-is.
+// If the provided argv is NULL, the behavior is platform-dependent.
+// SDL may try to get the command-line arguments for the current process and use those instead,
+// or it may fall back on a simple dummy argv.
+int SDL_CallMain(int argc, char* argv[], SDL_main_func mainFunction);
 
-#include <3ds.h>
-
-#include "../SDL_runapp.h"
-
-int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
-{
-    int result;
-    (void)reserved;
-
-    // init
-    osSetSpeedupEnable(true);
-    romfsInit();
-
-    SDL_SetMainReady();
-    result = SDL_CallMain(argc, argv, mainFunction);
-
-    // quit
-    romfsExit();
-
-    return result;
-}
-
-#endif
+#endif // SDL_runapp_h_

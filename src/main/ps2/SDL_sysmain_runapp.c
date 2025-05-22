@@ -36,6 +36,8 @@
 #include <sbv_patches.h>
 #include <ps2_filesystem_driver.h>
 
+#include "../SDL_runapp.h"
+
 __attribute__((weak)) void reset_IOP(void)
 {
     SifInitRpc(0);
@@ -74,7 +76,7 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
 
     SDL_SetMainReady();
 
-    res = mainFunction(argc, argv);
+    res = SDL_CallMain(argc, argv, mainFunction);
 
     deinit_drivers();
 

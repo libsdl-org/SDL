@@ -27,6 +27,8 @@
 
 #include <pspkernel.h>
 #include <pspthreadman.h>
+
+#include "../SDL_runapp.h"
 #include "../../events/SDL_events_c.h"
 
 /* If application's main() is redefined as SDL_main, and libSDL_main is
@@ -76,7 +78,7 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
 
     SDL_SetMainReady();
 
-    return mainFunction(argc, argv);
+    return SDL_CallMain(argc, argv, mainFunction);
 }
 
 #endif // SDL_PLATFORM_PSP
