@@ -4656,7 +4656,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_atanf(float x);
  *
  * Domain: `-INF <= x <= INF`, `-INF <= y <= INF`
  *
- * Range: `-Pi/2 <= y <= Pi/2`
+ * Range: `-Pi <= y <= Pi`
  *
  * This function operates on double-precision floating point values, use
  * SDL_atan2f for single-precision floats.
@@ -4692,7 +4692,7 @@ extern SDL_DECLSPEC double SDLCALL SDL_atan2(double y, double x);
  *
  * Domain: `-INF <= x <= INF`, `-INF <= y <= INF`
  *
- * Range: `-Pi/2 <= y <= Pi/2`
+ * Range: `-Pi <= y <= Pi`
  *
  * This function operates on single-precision floating point values, use
  * SDL_atan2 for double-precision floats.
