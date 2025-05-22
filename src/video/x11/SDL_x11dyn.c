@@ -32,78 +32,113 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
 
-#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
-#define SDL_X11_DYNAMIC_XEXT_APPEND ,SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
-#else
-#define SDL_X11_DYNAMIC_XEXT_APPEND
-#endif
-
-#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR
-#define SDL_X11_DYNAMIC_XCURSOR_APPEND ,SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR
-#else
-#define SDL_X11_DYNAMIC_XCURSOR_APPEND
-#endif
-
-#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2
-#define SDL_X11_DYNAMIC_XINPUT2_APPEND ,SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2
-#else
-#define SDL_X11_DYNAMIC_XINPUT2_APPEND
-#endif
-
-#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES
-#define SDL_X11_DYNAMIC_XFIXES_APPEND ,SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES
-#else
-#define SDL_X11_DYNAMIC_XFIXES_APPEND
-#endif
-
-#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR
-#define SDL_X11_DYNAMIC_XRANDR_APPEND ,SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR
-#else
-#define SDL_X11_DYNAMIC_XRANDR_APPEND
-#endif
-
-#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS
-#define SDL_X11_DYNAMIC_XSS_APPEND ,SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS
-#else
-#define SDL_X11_DYNAMIC_XSS_APPEND
-#endif
-
-#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST
-#define SDL_X11_DYNAMIC_XTEST_APPEND ,SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST
-#else
-#define SDL_X11_DYNAMIC_XTEST_APPEND
-#endif
-
-#define SDL_X11_DYNAMIC_LIBS \
-    SDL_VIDEO_DRIVER_X11_DYNAMIC \
-    SDL_X11_DYNAMIC_XEXT_APPEND \
-    SDL_X11_DYNAMIC_XCURSOR_APPEND \
-    SDL_X11_DYNAMIC_XINPUT2_APPEND \
-    SDL_X11_DYNAMIC_XFIXES_APPEND \
-    SDL_X11_DYNAMIC_XRANDR_APPEND \
-    SDL_X11_DYNAMIC_XSS_APPEND \
-    SDL_X11_DYNAMIC_XTEST_APPEND
+typedef struct {
+    SDL_SharedObject *lib;
+    const char *libname;
+} x11dynlib;
 
 SDL_ELF_NOTE_DLOPEN(
     "x11",
     "Support for video through X11 backend",
-    SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED,
-    SDL_X11_DYNAMIC_LIBS
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_VIDEO_DRIVER_X11_DYNAMIC
 );
 
-static const char *x11libnames[] = {
-    SDL_X11_DYNAMIC_LIBS
-};
+#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
+SDL_ELF_NOTE_DLOPEN(
+    "x11-xcursor",
+    "Support for video through X11 backend",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
+);
+#else
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT NULL
+#endif
 
-static SDL_SharedObject *x11libs[SDL_arraysize(x11libnames)];
+#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR
+SDL_ELF_NOTE_DLOPEN(
+    "x11-xext",
+    "Support for video through X11 backend",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR
+);
+#else
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR NULL
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2
+SDL_ELF_NOTE_DLOPEN(
+    "x11-xinput2",
+    "Support for video through X11 backend",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2
+);
+#else
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 NULL
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES
+SDL_ELF_NOTE_DLOPEN(
+    "x11-xfixes",
+    "Support for video through X11 backend",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES
+);
+#else
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES NULL
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR
+SDL_ELF_NOTE_DLOPEN(
+    "x11-xrandr",
+    "Support for video through X11 backend",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR
+);
+#else
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR NULL
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS
+SDL_ELF_NOTE_DLOPEN(
+    "x11-xss",
+    "Support for video through X11 backend",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS
+);
+#else
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS NULL
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST
+SDL_ELF_NOTE_DLOPEN(
+    "x11-xtest",
+    "Support for video through X11 backend",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST
+);
+#else
+#define SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST NULL
+#endif
+
+static x11dynlib x11libs[] = {
+    { NULL, SDL_VIDEO_DRIVER_X11_DYNAMIC },
+    { NULL, SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT },
+    { NULL, SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR },
+    { NULL, SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 },
+    { NULL, SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES },
+    { NULL, SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR },
+    { NULL, SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS },
+    { NULL, SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST }
+};
 
 static void *X11_GetSym(const char *fnname, int *pHasModule)
 {
     int i;
     void *fn = NULL;
     for (i = 0; i < SDL_arraysize(x11libs); i++) {
-        if (x11libs[i]) {
-            fn = SDL_LoadFunction(x11libs[i], fnname);
+        if (x11libs[i].lib) {
+            fn = SDL_LoadFunction(x11libs[i].lib, fnname);
             if (fn) {
                 break;
             }
@@ -112,7 +147,7 @@ static void *X11_GetSym(const char *fnname, int *pHasModule)
 
 #if DEBUG_DYNAMIC_X11
     if (fn)
-        printf("X11: Found '%s' in %s (%p)\n", fnname, x11libnames[i], fn);
+        printf("X11: Found '%s' in %s (%p)\n", fnname, x11libs[i].libname, fn);
     else
         printf("X11: Symbol '%s' NOT FOUND!\n", fnname);
 #endif
@@ -159,9 +194,9 @@ void SDL_X11_UnloadSymbols(void)
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
             for (i = 0; i < SDL_arraysize(x11libs); i++) {
-                if (x11libs[i]) {
-                    SDL_UnloadObject(x11libs[i]);
-                    x11libs[i] = NULL;
+                if (x11libs[i].lib) {
+                    SDL_UnloadObject(x11libs[i].lib);
+                    x11libs[i].lib = NULL;
                 }
             }
 #endif
@@ -180,7 +215,9 @@ bool SDL_X11_LoadSymbols(void)
         int i;
         int *thismod = NULL;
         for (i = 0; i < SDL_arraysize(x11libs); i++) {
-            x11libs[i] = SDL_LoadObject(x11libnames[i]);
+            if (x11libs[i].libname) {
+                x11libs[i].lib = SDL_LoadObject(x11libs[i].libname);
+            }
         }
 
 #define SDL_X11_MODULE(modname) SDL_X11_HAVE_##modname = 1; // default yes

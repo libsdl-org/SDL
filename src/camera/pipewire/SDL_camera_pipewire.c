@@ -111,7 +111,7 @@ static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, 
 
 SDL_ELF_NOTE_DLOPEN(
     "camera-libpipewire",
-    "Support for camera through libalsa",
+    "Support for camera through libpipewire",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC
 );

@@ -35,7 +35,7 @@
 
 SDL_ELF_NOTE_DLOPEN(
     "storage-steam",
-    "Support for Steam storage",
+    "Support for Steam user storage",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_DRIVER_STEAMAPI_DYNAMIC
 );

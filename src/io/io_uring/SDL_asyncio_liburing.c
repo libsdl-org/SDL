@@ -51,7 +51,7 @@ static void *liburing_handle = NULL;
 SDL_ELF_NOTE_DLOPEN(
     "io-io_uring",
     "Support for async IO through liburing",
-    SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED,
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_DRIVER_LIBURING_DYNAMIC
 );
 

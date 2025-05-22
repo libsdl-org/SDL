@@ -28,54 +28,75 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL
-#define SDL_WAYLAND_EGL_APPEND ,SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL
-#else
-#define SDL_WAYLAND_EGL_APPEND
-#endif
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR
-#define SDL_WAYLAND_CURSOR_APPEND ,SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR
-#else
-#define SDL_WAYLAND_CURSOR_APPEND
-#endif
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON
-#define SDL_WAYLAND_XKBCOMMON_APPEND ,SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON
-#else
-#define SDL_WAYLAND_XKBCOMMON_APPEND
-#endif
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR
-#define SDL_WAYLAND_LIBDECOR_APPEND ,SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR
-#else
-#define SDL_WAYLAND_LIBDECOR_APPEND
-#endif
-
-#define SDL_WAYLAND_DYNAMIC_LIBS \
-    SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC \
-    SDL_WAYLAND_EGL_APPEND \
-    SDL_WAYLAND_CURSOR_APPEND \
-    SDL_WAYLAND_XKBCOMMON_APPEND \
-    SDL_WAYLAND_LIBDECOR_APPEND
-
 SDL_ELF_NOTE_DLOPEN(
     "wayland",
     "Support for Wayland video",
-    SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED,
-    SDL_WAYLAND_DYNAMIC_LIBS
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
 );
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL
+SDL_ELF_NOTE_DLOPEN(
+    "wayland-egl",
+    "Support for Wayland video",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL
+);
+#endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR
+SDL_ELF_NOTE_DLOPEN(
+    "wayland-cursor",
+    "Support for Wayland video",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR
+);
+#endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON
+SDL_ELF_NOTE_DLOPEN(
+    "wayland-xkbcommon",
+    "Support for Wayland video",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON
+);
+#endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR
+SDL_ELF_NOTE_DLOPEN(
+    "wayland-libdecor",
+    "Support for Wayland video",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR
+);
+#endif
 
-static const char *waylandlibnames[] = {
-    SDL_WAYLAND_DYNAMIC_LIBS
+typedef struct
+{
+    SDL_SharedObject *lib;
+    const char *libname;
+} waylanddynlib;
+
+static waylanddynlib waylandlibs[] = {
+    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC },
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL
+    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL },
+#endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR
+    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR },
+#endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON
+    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON },
+#endif
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR
+    { NULL, SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_LIBDECOR },
+#endif
+    { NULL, NULL }
 };
-
-static SDL_SharedObject *waylandlibs[SDL_arraysize(waylandlibnames)];
 
 static void *WAYLAND_GetSym(const char *fnname, int *pHasModule, bool required)
 {
-    size_t i;
     void *fn = NULL;
-    for (i = 0; i < SDL_arraysize(waylandlibnames); i++) {
-        if (waylandlibs[i]) {
-            fn = SDL_LoadFunction(waylandlibs[i], fnname);
+    waylanddynlib *dynlib;
+    for (dynlib = waylandlibs; dynlib->libname; dynlib++) {
+        if (dynlib->lib) {
+            fn = SDL_LoadFunction(dynlib->lib, fnname);
             if (fn) {
                 break;
             }
@@ -130,9 +151,9 @@ void SDL_WAYLAND_UnloadSymbols(void)
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
             for (i = 0; i < SDL_arraysize(waylandlibs); i++) {
-                if (waylandlibs[i]) {
-                    SDL_UnloadObject(waylandlibs[i]);
-                    waylandlibs[i] = NULL;
+                if (waylandlibs[i].lib) {
+                    SDL_UnloadObject(waylandlibs[i].lib);
+                    waylandlibs[i].lib = NULL;
                 }
             }
 #endif
@@ -150,8 +171,10 @@ bool SDL_WAYLAND_LoadSymbols(void)
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
         int i;
         int *thismod = NULL;
-        for (i = 0; i < SDL_arraysize(waylandlibnames); i++) {
-            waylandlibs[i] = SDL_LoadObject(waylandlibnames[i]);
+        for (i = 0; i < SDL_arraysize(waylandlibs); i++) {
+            if (waylandlibs[i].libname) {
+                waylandlibs[i].lib = SDL_LoadObject(waylandlibs[i].libname);
+            }
         }
 
 #define SDL_WAYLAND_MODULE(modname) SDL_WAYLAND_HAVE_##modname = 1; // default yes
