@@ -18,8 +18,8 @@ Many thanks to:
 
 - The staff and supporters of the
  [Suomen pelimuseo](https://www.vapriikki.fi/nayttelyt/fantastinen-floppi/), and
- to Heikki Jungmann, for their ongoing love and dedication for the Nokia N-Gage — you
- guys are awesome!
+ to Heikki Jungmann, for their ongoing love and dedication for the Nokia N-Gage --
+ you guys are awesome!
 
 ## History
 
@@ -35,7 +35,7 @@ will breathe new life into this beloved yet obscure platform.
 
 ## To the Stubborn Legends of the DC Scene
 
-This port is lovingly dedicated to the ever-nostalgic Dreamcast homebrew scene —
+This port is lovingly dedicated to the ever-nostalgic Dreamcast homebrew scene --
 because if we managed to pull this off for the N-Gage (yes, the N-Gage), surely
 you guys can stop clinging to SDL2 like it's a rare Shenmue prototype and finally
 make the leap to SDL3.  It's 2025, not 1999 -- and let's be honest, you're rocking
