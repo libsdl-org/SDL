@@ -317,7 +317,7 @@ static void keyboard_repeat_set(SDL_WaylandKeyboardRepeat *repeat_info, Uint32 k
     repeat_info->next_repeat_ns = SDL_MS_TO_NS(repeat_info->repeat_delay_ms);
     repeat_info->scancode = scancode;
     if (has_text) {
-        SDL_copyp(repeat_info->text, text);
+        SDL_memcpy(repeat_info->text, text, sizeof(repeat_info->text));
     } else {
         repeat_info->text[0] = '\0';
     }
