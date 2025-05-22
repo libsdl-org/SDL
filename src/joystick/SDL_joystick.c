@@ -3175,6 +3175,11 @@ bool SDL_IsJoystickHoriSteamController(Uint16 vendor_id, Uint16 product_id)
     return vendor_id == USB_VENDOR_HORI && (product_id == USB_PRODUCT_HORI_STEAM_CONTROLLER || product_id == USB_PRODUCT_HORI_STEAM_CONTROLLER_BT);
 }
 
+bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
+{
+    return vendor_id == USB_VENDOR_FLYDIGI && (product_id == USB_PRODUCT_FLYDIGI_VADER4_PRO);
+}
+
 bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id)
 {
     EControllerType eType = GuessControllerType(vendor_id, product_id);

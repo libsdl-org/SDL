@@ -389,6 +389,7 @@
 		F338A1182D1B37D8007CDFDF /* SDL_tray.m in Sources */ = {isa = PBXBuildFile; fileRef = F338A1172D1B37D8007CDFDF /* SDL_tray.m */; };
 		F338A11A2D1B37E4007CDFDF /* SDL_tray.c in Sources */ = {isa = PBXBuildFile; fileRef = F338A1192D1B37E4007CDFDF /* SDL_tray.c */; };
 		F3395BA82D9A5971007246C8 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = F3395BA72D9A5971007246C8 /* SDL_hidapi_8bitdo.c */; };
+		F3395BA82D9A5971007246C9 /* SDL_hidapi_flydigi.c in Sources */ = {isa = PBXBuildFile; fileRef = F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */; };
 		F34400342D40217A003F26D7 /* LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = F373DA182D388A1E002158FA /* LICENSE.txt */; };
 		F34400362D40217A003F26D7 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = F373DA192D388A1E002158FA /* README.md */; };
 		F344003D2D4022E1003F26D7 /* INSTALL.md in Resources */ = {isa = PBXBuildFile; fileRef = F344003C2D4022E1003F26D7 /* INSTALL.md */; };
@@ -949,6 +950,7 @@
 		F338A1172D1B37D8007CDFDF /* SDL_tray.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SDL_tray.m; sourceTree = "<group>"; };
 		F338A1192D1B37E4007CDFDF /* SDL_tray.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_tray.c; sourceTree = "<group>"; };
 		F3395BA72D9A5971007246C8 /* SDL_hidapi_8bitdo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_8bitdo.c; sourceTree = "<group>"; };
+		F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_flydigi.c; sourceTree = "<group>"; };
 		F344003C2D4022E1003F26D7 /* INSTALL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = INSTALL.md; sourceTree = "<group>"; };
 		F362B9152B3349E200D30B94 /* controller_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_list.h; sourceTree = "<group>"; };
 		F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamepad_c.h; sourceTree = "<group>"; };
@@ -1928,6 +1930,7 @@
 			isa = PBXGroup;
 			children = (
 				F3395BA72D9A5971007246C8 /* SDL_hidapi_8bitdo.c */,
+				F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */,
 				F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */,
 				A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */,
 				F3B6B8092DC3EA54004954FD /* SDL_hidapi_gip.c */,
