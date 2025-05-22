@@ -2990,6 +2990,8 @@ elseif(NGAGE)
   set(SDL_TIMER_NGAGE 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/ngage/*.cpp")
 
+  set(SDL_FSOPS_POSIX        1)
+
   set(SDL_VIDEO_DRIVER_NGAGE 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/ngage/*.c")
   set(HAVE_SDL_TIMERS TRUE)
