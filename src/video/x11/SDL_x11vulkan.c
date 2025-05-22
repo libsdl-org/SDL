@@ -43,7 +43,14 @@ SDL_ELF_NOTE_DLOPEN(
     "x11-vulkan",
     "Support for vulkan on X11",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    DEFAULT_VULKAN, DEFAULT_X11_XCB
+    DEFAULT_VULKAN
+);
+
+SDL_ELF_NOTE_DLOPEN(
+    "x11-vulkan",
+    "Support for vulkan on X11",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_X11_XCB
 );
 
 /*

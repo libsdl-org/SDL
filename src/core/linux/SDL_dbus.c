@@ -34,7 +34,7 @@ static SDL_DBusContext dbus;
 SDL_ELF_NOTE_DLOPEN(
     "core-libdbus",
     "Support for D-Bus IPC",
-    SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED,
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_DRIVER_DBUS_DYNAMIC
 );
 

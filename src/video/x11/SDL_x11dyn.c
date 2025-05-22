@@ -32,7 +32,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
 
-typedef struct {
+typedef struct
+{
     SDL_SharedObject *lib;
     const char *libname;
 } x11dynlib;
@@ -46,7 +47,7 @@ SDL_ELF_NOTE_DLOPEN(
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
 SDL_ELF_NOTE_DLOPEN(
-    "x11-xcursor",
+    "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
@@ -57,7 +58,7 @@ SDL_ELF_NOTE_DLOPEN(
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR
 SDL_ELF_NOTE_DLOPEN(
-    "x11-xext",
+    "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR
@@ -68,7 +69,7 @@ SDL_ELF_NOTE_DLOPEN(
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2
 SDL_ELF_NOTE_DLOPEN(
-    "x11-xinput2",
+    "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2
@@ -79,7 +80,7 @@ SDL_ELF_NOTE_DLOPEN(
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES
 SDL_ELF_NOTE_DLOPEN(
-    "x11-xfixes",
+    "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XFIXES
@@ -90,7 +91,7 @@ SDL_ELF_NOTE_DLOPEN(
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR
 SDL_ELF_NOTE_DLOPEN(
-    "x11-xrandr",
+    "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR
@@ -101,7 +102,7 @@ SDL_ELF_NOTE_DLOPEN(
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS
 SDL_ELF_NOTE_DLOPEN(
-    "x11-xss",
+    "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS
@@ -112,7 +113,7 @@ SDL_ELF_NOTE_DLOPEN(
 
 #ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST
 SDL_ELF_NOTE_DLOPEN(
-    "x11-xtest",
+    "x11",
     "Support for video through X11 backend",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
     SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST

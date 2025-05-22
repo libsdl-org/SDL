@@ -130,7 +130,7 @@ SDL_ELF_NOTE_DLOPEN(
     DEFAULT_OGL_ES2
 );
 SDL_ELF_NOTE_DLOPEN(
-    "egl-es-prv",
+    "egl-es-pvr",
     "Support for EGL ES PVR",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_OGL_ES_PVR
