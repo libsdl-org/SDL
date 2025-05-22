@@ -439,6 +439,7 @@
 		F3B439532C935C2C00792030 /* SDL_posixprocess.c in Sources */ = {isa = PBXBuildFile; fileRef = F3B439522C935C2C00792030 /* SDL_posixprocess.c */; };
 		F3B439562C937DAB00792030 /* SDL_process.c in Sources */ = {isa = PBXBuildFile; fileRef = F3B439542C937DAB00792030 /* SDL_process.c */; };
 		F3B439572C937DAB00792030 /* SDL_sysprocess.h in Headers */ = {isa = PBXBuildFile; fileRef = F3B439552C937DAB00792030 /* SDL_sysprocess.h */; };
+		F3B6B80A2DC3EA54004954FD /* SDL_hidapi_gip.c in Sources */ = {isa = PBXBuildFile; fileRef = F3B6B8092DC3EA54004954FD /* SDL_hidapi_gip.c */; };
 		F3C1BD752D1F1A3000846529 /* SDL_tray_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C1BD742D1F1A3000846529 /* SDL_tray_utils.c */; };
 		F3C1BD762D1F1A3000846529 /* SDL_tray_utils.h in Headers */ = {isa = PBXBuildFile; fileRef = F3C1BD732D1F1A3000846529 /* SDL_tray_utils.h */; };
 		F3C2CB222C5DDDB2004D7998 /* SDL_categories_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F3C2CB202C5DDDB2004D7998 /* SDL_categories_c.h */; };
@@ -1014,6 +1015,7 @@
 		F3B439522C935C2C00792030 /* SDL_posixprocess.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_posixprocess.c; sourceTree = "<group>"; };
 		F3B439542C937DAB00792030 /* SDL_process.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_process.c; sourceTree = "<group>"; };
 		F3B439552C937DAB00792030 /* SDL_sysprocess.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysprocess.h; sourceTree = "<group>"; };
+		F3B6B8092DC3EA54004954FD /* SDL_hidapi_gip.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_gip.c; sourceTree = "<group>"; };
 		F3C1BD732D1F1A3000846529 /* SDL_tray_utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_tray_utils.h; sourceTree = "<group>"; };
 		F3C1BD742D1F1A3000846529 /* SDL_tray_utils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_tray_utils.c; sourceTree = "<group>"; };
 		F3C2CB202C5DDDB2004D7998 /* SDL_categories_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_categories_c.h; sourceTree = "<group>"; };
@@ -1931,6 +1933,7 @@
 				F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */,
 				F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */,
 				A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */,
+				F3B6B8092DC3EA54004954FD /* SDL_hidapi_gip.c */,
 				89E5801D2D03602200DAF6D3 /* SDL_hidapi_lg4ff.c */,
 				F3F07D59269640160074468B /* SDL_hidapi_luna.c */,
 				F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */,
@@ -3059,6 +3062,7 @@
 				A7D8BA5B23E2514400DCD162 /* SDL_shaders_gles2.c in Sources */,
 				A7D8B14023E2514200DCD162 /* SDL_blit_1.c in Sources */,
 				A7D8BBDB23E2574800DCD162 /* SDL_uikitmetalview.m in Sources */,
+				F3B6B80A2DC3EA54004954FD /* SDL_hidapi_gip.c in Sources */,
 				A7D8BB1523E2514500DCD162 /* SDL_mouse.c in Sources */,
 				F395C19C2569C68F00942BFF /* SDL_iokitjoystick.c in Sources */,
 				A7D8B4B223E2514300DCD162 /* SDL_sysjoystick.c in Sources */,

@@ -302,7 +302,7 @@ static Uint16 get_effect_replay_delay(SDL_HapticEffect *effect)
   Bernat Arlandis <berarma@hotmail.com>
   `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
 */
-static int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int value)
+static int lg4ff_play_effect(struct lg4ff_device *device, SDL_HapticEffectID effect_id, int value)
 {
     struct lg4ff_effect_state *state;
     Uint64 now = get_time_ms();
@@ -334,7 +334,7 @@ static int lg4ff_play_effect(struct lg4ff_device *device, int effect_id, int val
   Bernat Arlandis <berarma@hotmail.com>
   `git blame 1a2d5727876dd7befce23d9695924e9446b31c4b hid-lg4ff.c`, https://github.com/berarma/new-lg4ff.git
 */
-static int lg4ff_upload_effect(struct lg4ff_device *device, const SDL_HapticEffect *effect, int id)
+static int lg4ff_upload_effect(struct lg4ff_device *device, const SDL_HapticEffect *effect, SDL_HapticEffectID id)
 {
     struct lg4ff_effect_state *state;
     Uint64 now = get_time_ms();
@@ -995,11 +995,11 @@ static int SDL_HIDAPI_HapticDriverLg4ff_NumAxes(SDL_HIDAPI_HapticDevice *device)
     return 1;
 }
 
-static int SDL_HIDAPI_HapticDriverLg4ff_CreateEffect(SDL_HIDAPI_HapticDevice *device, const SDL_HapticEffect *data)
+static SDL_HapticEffectID SDL_HIDAPI_HapticDriverLg4ff_CreateEffect(SDL_HIDAPI_HapticDevice *device, const SDL_HapticEffect *data)
 {
     lg4ff_device *ctx = (lg4ff_device *)device->ctx;
-    int i;
-    int state_slot = -1;
+    SDL_HapticEffectID i;
+    SDL_HapticEffectID state_slot = -1;
     int ret;
     if (!SDL_HIDAPI_HapticDriverLg4ff_EffectSupported(device, data)) {
         SDL_SetError("Unsupported effect");
@@ -1031,7 +1031,7 @@ static int SDL_HIDAPI_HapticDriverLg4ff_CreateEffect(SDL_HIDAPI_HapticDevice *de
 }
 
 // assumes ctx->mutex locked
-static bool lg4ff_effect_slot_valid_active(lg4ff_device *ctx, int id)
+static bool lg4ff_effect_slot_valid_active(lg4ff_device *ctx, SDL_HapticEffectID id)
 {
     if (id >= LG4FF_MAX_EFFECTS || id < 0) {
         return false;
@@ -1042,7 +1042,7 @@ static bool lg4ff_effect_slot_valid_active(lg4ff_device *ctx, int id)
     return true;
 }
 
-static bool SDL_HIDAPI_HapticDriverLg4ff_UpdateEffect(SDL_HIDAPI_HapticDevice *device, int id, const SDL_HapticEffect *data)
+static bool SDL_HIDAPI_HapticDriverLg4ff_UpdateEffect(SDL_HIDAPI_HapticDevice *device, SDL_HapticEffectID id, const SDL_HapticEffect *data)
 {
     lg4ff_device *ctx = (lg4ff_device *)device->ctx;
     int ret;
@@ -1060,7 +1060,7 @@ static bool SDL_HIDAPI_HapticDriverLg4ff_UpdateEffect(SDL_HIDAPI_HapticDevice *d
     return ret == 0;
 }
 
-static bool SDL_HIDAPI_HapticDriverLg4ff_RunEffect(SDL_HIDAPI_HapticDevice *device, int id, Uint32 iterations)
+static bool SDL_HIDAPI_HapticDriverLg4ff_RunEffect(SDL_HIDAPI_HapticDevice *device, SDL_HapticEffectID id, Uint32 iterations)
 {
     lg4ff_device *ctx = (lg4ff_device *)device->ctx;
     int ret;
@@ -1078,12 +1078,12 @@ static bool SDL_HIDAPI_HapticDriverLg4ff_RunEffect(SDL_HIDAPI_HapticDevice *devi
     return ret == 0;
 }
 
-static bool SDL_HIDAPI_HapticDriverLg4ff_StopEffect(SDL_HIDAPI_HapticDevice *device, int id)
+static bool SDL_HIDAPI_HapticDriverLg4ff_StopEffect(SDL_HIDAPI_HapticDevice *device, SDL_HapticEffectID id)
 {
     return SDL_HIDAPI_HapticDriverLg4ff_RunEffect(device, id, 0);
 }
 
-static void SDL_HIDAPI_HapticDriverLg4ff_DestroyEffect(SDL_HIDAPI_HapticDevice *device, int id)
+static void SDL_HIDAPI_HapticDriverLg4ff_DestroyEffect(SDL_HIDAPI_HapticDevice *device, SDL_HapticEffectID id)
 {
     lg4ff_device *ctx = (lg4ff_device *)device->ctx;
     struct lg4ff_effect_state *state;
@@ -1101,7 +1101,7 @@ static void SDL_HIDAPI_HapticDriverLg4ff_DestroyEffect(SDL_HIDAPI_HapticDevice *
     SDL_UnlockMutex(ctx->mutex);
 }
 
-static bool SDL_HIDAPI_HapticDriverLg4ff_GetEffectStatus(SDL_HIDAPI_HapticDevice *device, int id)
+static bool SDL_HIDAPI_HapticDriverLg4ff_GetEffectStatus(SDL_HIDAPI_HapticDevice *device, SDL_HapticEffectID id)
 {
     lg4ff_device *ctx = (lg4ff_device *)device->ctx;
     bool ret = false;

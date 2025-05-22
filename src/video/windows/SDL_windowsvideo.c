@@ -124,9 +124,6 @@ static void WIN_DeleteDevice(SDL_VideoDevice *device)
         SDL_UnloadObject(data->dxgiDLL);
     }
 #endif
-    if (device->wakeup_lock) {
-        SDL_DestroyMutex(device->wakeup_lock);
-    }
     SDL_free(device->internal->rawinput);
     SDL_free(device->internal);
     SDL_free(device);
@@ -152,7 +149,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
         return NULL;
     }
     device->internal = data;
-    device->wakeup_lock = SDL_CreateMutex();
     device->system_theme = WIN_GetSystemTheme();
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

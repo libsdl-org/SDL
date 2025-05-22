@@ -34,7 +34,10 @@ typedef struct SDL_Keymap
   bool thai_keyboard;
 } SDL_Keymap;
 
-SDL_Keymap *SDL_GetCurrentKeymap(void);
+/* This may return null even when a keymap is bound, depending on the current keyboard mapping options.
+ * Set 'ignore_options' to true to always return the keymap that is actually bound.
+ */
+SDL_Keymap *SDL_GetCurrentKeymap(bool ignore_options);
 SDL_Keymap *SDL_CreateKeymap(bool auto_release);
 void SDL_SetKeymapEntry(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod modstate, SDL_Keycode keycode);
 SDL_Keycode SDL_GetKeymapKeycode(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod modstate);

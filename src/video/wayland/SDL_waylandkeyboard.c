@@ -61,6 +61,8 @@ void Wayland_UpdateTextInput(SDL_VideoData *display)
 
             if (seat->text_input.zwp_text_input) {
                 if (focus && focus->text_input_props.active) {
+                    SDL_Window *window = focus->sdlwindow;
+
                     // Enabling will reset all state, so don't do it redundantly.
                     if (!seat->text_input.enabled) {
                         seat->text_input.enabled = true;
@@ -68,15 +70,24 @@ void Wayland_UpdateTextInput(SDL_VideoData *display)
 
                         // Now that it's enabled, set the input properties
                         zwp_text_input_v3_set_content_type(seat->text_input.zwp_text_input, focus->text_input_props.hint, focus->text_input_props.purpose);
-                        if (!SDL_RectEmpty(&focus->sdlwindow->text_input_rect)) {
-                            SDL_copyp(&seat->text_input.cursor_rect, &focus->sdlwindow->text_input_rect);
+                        if (!SDL_RectEmpty(&window->text_input_rect)) {
+                            const SDL_Rect scaled_rect = {
+                                (int)SDL_floor(window->text_input_rect.x / focus->pointer_scale.x),
+                                (int)SDL_floor(window->text_input_rect.y / focus->pointer_scale.y),
+                                (int)SDL_ceil(window->text_input_rect.w / focus->pointer_scale.x),
+                                (int)SDL_ceil(window->text_input_rect.h / focus->pointer_scale.y)
+                            };
+                            const int scaled_cursor = (int)SDL_floor(window->text_input_cursor / focus->pointer_scale.x);
 
-                            // This gets reset on enable so we have to cache it
+                            SDL_copyp(&seat->text_input.text_input_rect, &scaled_rect);
+                            seat->text_input.text_input_cursor = scaled_cursor;
+
+                            // Clamp the x value so it doesn't run too far past the end of the text input area.
                             zwp_text_input_v3_set_cursor_rectangle(seat->text_input.zwp_text_input,
-                                                                   focus->sdlwindow->text_input_rect.x,
-                                                                   focus->sdlwindow->text_input_rect.y,
-                                                                   focus->sdlwindow->text_input_rect.w,
-                                                                   focus->sdlwindow->text_input_rect.h);
+                                                                   SDL_min(scaled_rect.x + scaled_cursor, scaled_rect.x + scaled_rect.w),
+                                                                   scaled_rect.y,
+                                                                   1,
+                                                                   scaled_rect.h);
                         }
                         zwp_text_input_v3_commit(seat->text_input.zwp_text_input);
 
@@ -88,7 +99,8 @@ void Wayland_UpdateTextInput(SDL_VideoData *display)
                 } else {
                     if (seat->text_input.enabled) {
                         seat->text_input.enabled = false;
-                        SDL_zero(seat->text_input.cursor_rect);
+                        SDL_zero(seat->text_input.text_input_rect);
+                        seat->text_input.text_input_cursor = 0;
                         zwp_text_input_v3_disable(seat->text_input.zwp_text_input);
                         zwp_text_input_v3_commit(seat->text_input.zwp_text_input);
                     }
@@ -203,13 +215,25 @@ bool Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 
         wl_list_for_each (seat, &internal->seat_list, link) {
             if (seat->text_input.zwp_text_input && seat->keyboard.focus == window->internal) {
-                if (!SDL_RectsEqual(&window->text_input_rect, &seat->text_input.cursor_rect)) {
-                    SDL_copyp(&seat->text_input.cursor_rect, &window->text_input_rect);
+                SDL_WindowData *wind = window->internal;
+                const SDL_Rect scaled_rect = {
+                    (int)SDL_floor(window->text_input_rect.x / wind->pointer_scale.x),
+                    (int)SDL_floor(window->text_input_rect.y / wind->pointer_scale.y),
+                    (int)SDL_ceil(window->text_input_rect.w / wind->pointer_scale.x),
+                    (int)SDL_ceil(window->text_input_rect.h / wind->pointer_scale.y)
+                };
+                const int scaled_cursor = (int)SDL_floor(window->text_input_cursor / wind->pointer_scale.x);
+
+                if (!SDL_RectsEqual(&scaled_rect, &seat->text_input.text_input_rect) || scaled_cursor != seat->text_input.text_input_cursor) {
+                    SDL_copyp(&seat->text_input.text_input_rect, &scaled_rect);
+                    seat->text_input.text_input_cursor = scaled_cursor;
+
+                    // Clamp the x value so it doesn't run too far past the end of the text input area.
                     zwp_text_input_v3_set_cursor_rectangle(seat->text_input.zwp_text_input,
-                                                           window->text_input_rect.x,
-                                                           window->text_input_rect.y,
-                                                           window->text_input_rect.w,
-                                                           window->text_input_rect.h);
+                                                           SDL_min(scaled_rect.x + scaled_cursor, scaled_rect.x + scaled_rect.w),
+                                                           scaled_rect.y,
+                                                           1,
+                                                           scaled_rect.h);
                     zwp_text_input_v3_commit(seat->text_input.zwp_text_input);
                 }
             }

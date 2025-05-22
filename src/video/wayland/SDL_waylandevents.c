@@ -90,7 +90,7 @@
 // Scoped function declarations
 static void Wayland_SeatUpdateKeyboardGrab(SDL_WaylandSeat *seat);
 
-struct SDL_WaylandTouchPoint
+typedef struct
 {
     SDL_TouchID id;
     wl_fixed_t fx;
@@ -98,11 +98,11 @@ struct SDL_WaylandTouchPoint
     struct wl_surface *surface;
 
     struct wl_list link;
-};
+} SDL_WaylandTouchPoint;
 
 static void Wayland_SeatAddTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fixed_t fx, wl_fixed_t fy, struct wl_surface *surface)
 {
-    struct SDL_WaylandTouchPoint *tp = SDL_malloc(sizeof(struct SDL_WaylandTouchPoint));
+    SDL_WaylandTouchPoint *tp = SDL_malloc(sizeof(SDL_WaylandTouchPoint));
 
     SDL_zerop(tp);
     tp->id = id;
@@ -113,9 +113,37 @@ static void Wayland_SeatAddTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fixed
     WAYLAND_wl_list_insert(&seat->touch.points, &tp->link);
 }
 
+static void Wayland_SeatCancelTouch(SDL_WaylandSeat *seat, SDL_WaylandTouchPoint *tp)
+{
+    if (tp->surface) {
+        SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(tp->surface);
+
+        if (window_data) {
+            const float x = (float)(wl_fixed_to_double(tp->fx) / window_data->current.logical_width);
+            const float y = (float)(wl_fixed_to_double(tp->fy) / window_data->current.logical_height);
+
+            SDL_SendTouch(0, (SDL_TouchID)(uintptr_t)seat->touch.wl_touch,
+                          (SDL_FingerID)(tp->id + 1), window_data->sdlwindow, SDL_EVENT_FINGER_CANCELED, x, y, 0.0f);
+
+            --window_data->active_touch_count;
+
+            /* If the window currently has mouse focus and has no currently active keyboards, pointers,
+             * or touch events, then consider mouse focus to be lost.
+             */
+            if (SDL_GetMouseFocus() == window_data->sdlwindow && !window_data->keyboard_focus_count &&
+                !window_data->pointer_focus_count && !window_data->active_touch_count) {
+                SDL_SetMouseFocus(NULL);
+            }
+        }
+    }
+
+    WAYLAND_wl_list_remove(&tp->link);
+    SDL_free(tp);
+}
+
 static void Wayland_SeatUpdateTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fixed_t fx, wl_fixed_t fy, struct wl_surface **surface)
 {
-    struct SDL_WaylandTouchPoint *tp;
+    SDL_WaylandTouchPoint *tp;
 
     wl_list_for_each (tp, &seat->touch.points, link) {
         if (tp->id == id) {
@@ -131,7 +159,7 @@ static void Wayland_SeatUpdateTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fi
 
 static void Wayland_SeatRemoveTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fixed_t *fx, wl_fixed_t *fy, struct wl_surface **surface)
 {
-    struct SDL_WaylandTouchPoint *tp;
+    SDL_WaylandTouchPoint *tp;
 
     wl_list_for_each (tp, &seat->touch.points, link) {
         if (tp->id == id) {
@@ -152,23 +180,6 @@ static void Wayland_SeatRemoveTouch(SDL_WaylandSeat *seat, SDL_TouchID id, wl_fi
     }
 }
 
-static bool Wayland_SurfaceHasActiveTouches(SDL_VideoData *display, struct wl_surface *surface)
-{
-    struct SDL_WaylandTouchPoint *tp;
-    SDL_WaylandSeat *seat;
-
-    // Check all seats for active touches on the surface.
-    wl_list_for_each (seat, &display->seat_list, link) {
-        wl_list_for_each (tp, &seat->touch.points, link) {
-            if (tp->surface == surface) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
 static void Wayland_GetScaledMouseRect(SDL_Window *window, SDL_Rect *scaled_rect)
 {
     SDL_WindowData *window_data = window->internal;
@@ -179,7 +190,7 @@ static void Wayland_GetScaledMouseRect(SDL_Window *window, SDL_Rect *scaled_rect
     scaled_rect->h = (int)SDL_ceil(window->mouse_rect.h / window_data->pointer_scale.y);
 }
 
-static Uint64 Wayland_GetEventTimestamp(Uint64 nsTimestamp)
+static Uint64 Wayland_AdjustEventTimestampBase(Uint64 nsTimestamp)
 {
     static Uint64 timestamp_offset = 0;
     const Uint64 now = SDL_GetTicksNS();
@@ -197,16 +208,9 @@ static Uint64 Wayland_GetEventTimestamp(Uint64 nsTimestamp)
     return nsTimestamp;
 }
 
-static void input_timestamp_listener(void *data, struct zwp_input_timestamps_v1 *zwp_input_timestamps_v1,
-                                             uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec)
-{
-    *((Uint64 *)data) = ((((Uint64)tv_sec_hi << 32) | (Uint64)tv_sec_lo) * SDL_NS_PER_SECOND) + tv_nsec;
-}
-
-static const struct zwp_input_timestamps_v1_listener timestamp_listener = {
-    input_timestamp_listener
-};
-
+/* This should only be called with 32-bit millisecond timestamps received in Wayland events!
+ * No synthetic or high-res timestamps, as they can corrupt the rollover offset!
+ */
 static Uint64 Wayland_EventTimestampMSToNS(Uint32 wl_timestamp_ms)
 {
     static Uint64 timestamp_offset = 0;
@@ -217,42 +221,41 @@ static Uint64 Wayland_EventTimestampMSToNS(Uint32 wl_timestamp_ms)
         timestamp_offset += SDL_MS_TO_NS(SDL_UINT64_C(0x100000000));
     }
     last = wl_timestamp_ms;
-    wl_timestamp_ms += timestamp_offset;
 
     return SDL_MS_TO_NS(wl_timestamp_ms) + timestamp_offset;
 }
 
-static Uint64 Wayland_GetKeyboardTimestamp(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
-{
-    if (wl_timestamp_ms) {
-        return Wayland_GetEventTimestamp(seat->keyboard.highres_timestamp_ns ? seat->keyboard.highres_timestamp_ns : Wayland_EventTimestampMSToNS(wl_timestamp_ms));
-    }
-
-    return 0;
-}
+/* Even if high-res timestamps are available, the millisecond timestamps are still processed
+ * to accumulate the rollover offset if needed later.
+ */
 
 static Uint64 Wayland_GetKeyboardTimestampRaw(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
 {
-    return seat->keyboard.highres_timestamp_ns ? seat->keyboard.highres_timestamp_ns : Wayland_EventTimestampMSToNS(wl_timestamp_ms);
+    const Uint64 adjustedTimestampMS = Wayland_EventTimestampMSToNS(wl_timestamp_ms);
+    return seat->keyboard.timestamps ? seat->keyboard.highres_timestamp_ns : adjustedTimestampMS;
 }
 
 static Uint64 Wayland_GetPointerTimestamp(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
 {
-    if (wl_timestamp_ms) {
-        return Wayland_GetEventTimestamp(seat->pointer.highres_timestamp_ns ? seat->pointer.highres_timestamp_ns : Wayland_EventTimestampMSToNS(wl_timestamp_ms));
-    }
-
-    return 0;
+    const Uint64 adjustedTimestampMS = Wayland_EventTimestampMSToNS(wl_timestamp_ms);
+    return Wayland_AdjustEventTimestampBase(seat->pointer.timestamps ? seat->pointer.highres_timestamp_ns : adjustedTimestampMS);
 }
 
 Uint64 Wayland_GetTouchTimestamp(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
 {
-    if (wl_timestamp_ms) {
-        return Wayland_GetEventTimestamp(seat->touch.highres_timestamp_ns ? seat->touch.highres_timestamp_ns : Wayland_EventTimestampMSToNS(wl_timestamp_ms));
-    }
-
-    return 0;
+    const Uint64 adjustedTimestampMS = Wayland_EventTimestampMSToNS(wl_timestamp_ms);
+    return Wayland_AdjustEventTimestampBase(seat->touch.timestamps ? seat->touch.highres_timestamp_ns : adjustedTimestampMS);
 }
+
+static void input_timestamp_listener(void *data, struct zwp_input_timestamps_v1 *zwp_input_timestamps_v1,
+                                             uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec)
+{
+    *((Uint64 *)data) = ((((Uint64)tv_sec_hi << 32) | (Uint64)tv_sec_lo) * SDL_NS_PER_SECOND) + tv_nsec;
+}
+
+static const struct zwp_input_timestamps_v1_listener timestamp_listener = {
+    input_timestamp_listener
+};
 
 static void Wayland_SeatRegisterInputTimestampListeners(SDL_WaylandSeat *seat)
 {
@@ -305,10 +308,19 @@ void Wayland_DisplayInitCursorShapeManager(SDL_VideoData *display)
 static bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint64 elapsed)
 {
     bool ret = false;
+
+    /* Cap the elapsed time to something sane in case the compositor sends a bad timestamp,
+     * which can result it in it looking like the key has been pressed for a *very* long time,
+     * bringing everything to a halt while it tries to enqueue all the repeat events.
+     *
+     * 3 seconds seems reasonable.
+     */
+    elapsed = SDL_min(elapsed, SDL_MS_TO_NS(3000));
+
     while (elapsed >= repeat_info->next_repeat_ns) {
         if (repeat_info->scancode != SDL_SCANCODE_UNKNOWN) {
             const Uint64 timestamp = repeat_info->wl_press_time_ns + repeat_info->next_repeat_ns;
-            SDL_SendKeyboardKeyIgnoreModifiers(Wayland_GetEventTimestamp(timestamp), repeat_info->keyboard_id, repeat_info->key, repeat_info->scancode, true);
+            SDL_SendKeyboardKeyIgnoreModifiers(Wayland_AdjustEventTimestampBase(timestamp), repeat_info->keyboard_id, repeat_info->key, repeat_info->scancode, true);
         }
         if (repeat_info->text[0]) {
             SDL_SendKeyboardText(repeat_info->text);
@@ -341,7 +353,7 @@ static void keyboard_repeat_set(SDL_WaylandKeyboardRepeat *repeat_info, Uint32 k
     repeat_info->next_repeat_ns = SDL_MS_TO_NS(repeat_info->repeat_delay_ms);
     repeat_info->scancode = scancode;
     if (has_text) {
-        SDL_copyp(repeat_info->text, text);
+        SDL_memcpy(repeat_info->text, text, sizeof(repeat_info->text));
     } else {
         repeat_info->text[0] = '\0';
     }
@@ -435,7 +447,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     // If key repeat is active, we'll need to cap our maximum wait time to handle repeats
     wl_list_for_each (seat, &d->seat_list, link) {
         if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
-            if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap()) {
+            if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap(true)) {
                 SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
                 SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
             }
@@ -474,7 +486,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
             // If key repeat is active, we might have woken up to generate a key event
             if (key_repeat_active) {
                 wl_list_for_each (seat, &d->seat_list, link) {
-                    if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap()) {
+                    if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap(true)) {
                         SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
                         SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
                     }
@@ -545,7 +557,7 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
 
     wl_list_for_each (seat, &d->seat_list, link) {
         if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
-            if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap()) {
+            if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap(true)) {
                 SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
                 SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
             }
@@ -574,17 +586,15 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     }
 }
 
-static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
-                                  uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
+static void pointer_handle_motion_common(SDL_WaylandSeat *seat, Uint64 nsTimestamp, wl_fixed_t sx_w, wl_fixed_t sy_w)
 {
-    SDL_WaylandSeat *seat = data;
     SDL_WindowData *window_data = seat->pointer.focus;
     SDL_Window *window = window_data ? window_data->sdlwindow : NULL;
 
     if (window_data) {
         const float sx = (float)(wl_fixed_to_double(sx_w) * window_data->pointer_scale.x);
         const float sy = (float)(wl_fixed_to_double(sy_w) * window_data->pointer_scale.y);
-        SDL_SendMouseMotion(Wayland_GetPointerTimestamp(seat, time), window_data->sdlwindow, seat->pointer.sdl_id, false, sx, sy);
+        SDL_SendMouseMotion(nsTimestamp, window_data->sdlwindow, seat->pointer.sdl_id, false, sx, sy);
 
         seat->pointer.last_motion.x = (int)SDL_floorf(sx);
         seat->pointer.last_motion.y = (int)SDL_floorf(sy);
@@ -678,6 +688,13 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
     }
 }
 
+static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
+                                  uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
+{
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+    pointer_handle_motion_common(seat, Wayland_GetPointerTimestamp(seat, time), sx_w, sy_w);
+}
+
 static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
                                  uint32_t serial, struct wl_surface *surface,
                                  wl_fixed_t sx_w, wl_fixed_t sy_w)
@@ -706,7 +723,7 @@ static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
      * FIXME: This causes a movement event with an anomalous timestamp when
      *        the cursor enters the window.
      */
-    pointer_handle_motion(data, pointer, 0, sx_w, sy_w);
+    pointer_handle_motion_common(seat, 0, sx_w, sy_w);
 
     // Update the pointer grab state.
     Wayland_SeatUpdatePointerGrab(seat);
@@ -753,7 +770,7 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
      */
     SDL_Window *mouse_focus = SDL_GetMouseFocus();
     const bool had_focus = mouse_focus && window->sdlwindow == mouse_focus;
-    if (!--window->pointer_focus_count && had_focus && !Wayland_SurfaceHasActiveTouches(seat->display, surface)) {
+    if (!--window->pointer_focus_count && had_focus && !window->active_touch_count) {
         SDL_SetMouseFocus(NULL);
     }
 
@@ -845,11 +862,10 @@ static bool Wayland_ProcessHitTest(SDL_WaylandSeat *seat, Uint32 serial)
 }
 
 static void pointer_handle_button_common(SDL_WaylandSeat *seat, uint32_t serial,
-                                         uint32_t time, uint32_t button, uint32_t state_w)
+                                         Uint64 nsTimestamp, uint32_t button, uint32_t state_w)
 {
     SDL_WindowData *window = seat->pointer.focus;
     enum wl_pointer_button_state state = state_w;
-    Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
     Uint8 sdl_button;
     const bool down = (state != 0);
 
@@ -904,7 +920,7 @@ static void pointer_handle_button_common(SDL_WaylandSeat *seat, uint32_t serial,
          *
          * The mouse is not captured in relative mode.
          */
-        if (!seat->display->relative_mode_enabled || !Wayland_SeatHasRelativePointerFocus(seat)) {
+        if (!seat->pointer.relative_pointer) {
             if (seat->pointer.buttons_pressed != 0) {
                 window->sdlwindow->flags |= SDL_WINDOW_MOUSE_CAPTURE;
             } else {
@@ -913,7 +929,7 @@ static void pointer_handle_button_common(SDL_WaylandSeat *seat, uint32_t serial,
         }
 
         if (!ignore_click) {
-            SDL_SendMouseButton(timestamp, window->sdlwindow, seat->pointer.sdl_id, sdl_button, down);
+            SDL_SendMouseButton(nsTimestamp, window->sdlwindow, seat->pointer.sdl_id, sdl_button, down);
         }
     }
 }
@@ -922,15 +938,13 @@ static void pointer_handle_button(void *data, struct wl_pointer *pointer, uint32
                                   uint32_t time, uint32_t button, uint32_t state_w)
 {
     SDL_WaylandSeat *seat = data;
-
-    pointer_handle_button_common(seat, serial, time, button, state_w);
+    pointer_handle_button_common(seat, serial, Wayland_GetPointerTimestamp(seat, time), button, state_w);
 }
 
 static void pointer_handle_axis_common_v1(SDL_WaylandSeat *seat,
-                                          uint32_t time, uint32_t axis, wl_fixed_t value)
+                                          Uint64 nsTimestamp, uint32_t axis, wl_fixed_t value)
 {
     SDL_WindowData *window = seat->pointer.focus;
-    const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
     const enum wl_pointer_axis a = axis;
 
     if (seat->pointer.focus) {
@@ -952,7 +966,7 @@ static void pointer_handle_axis_common_v1(SDL_WaylandSeat *seat,
         x /= WAYLAND_WHEEL_AXIS_UNIT;
         y /= WAYLAND_WHEEL_AXIS_UNIT;
 
-        SDL_SendMouseWheel(timestamp, window->sdlwindow, seat->pointer.sdl_id, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(nsTimestamp, window->sdlwindow, seat->pointer.sdl_id, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
 }
 
@@ -1033,12 +1047,13 @@ static void pointer_handle_axis(void *data, struct wl_pointer *pointer,
                                 uint32_t time, uint32_t axis, wl_fixed_t value)
 {
     SDL_WaylandSeat *seat = data;
+    const Uint64 nsTimestamp = Wayland_GetPointerTimestamp(seat, time);
 
     if (wl_seat_get_version(seat->wl_seat) >= WL_POINTER_FRAME_SINCE_VERSION) {
-        seat->pointer.current_axis_info.timestamp_ns = Wayland_GetPointerTimestamp(seat, time);
+        seat->pointer.current_axis_info.timestamp_ns = nsTimestamp;
         pointer_handle_axis_common(seat, AXIS_EVENT_CONTINUOUS, axis, value);
     } else {
-        pointer_handle_axis_common_v1(seat, time, axis, value);
+        pointer_handle_axis_common_v1(seat, nsTimestamp, axis, value);
     }
 }
 
@@ -1157,30 +1172,23 @@ static void relative_pointer_handle_relative_motion(void *data,
                                                     wl_fixed_t dy_unaccel_w)
 {
     SDL_WaylandSeat *seat = data;
+    SDL_WindowData *window = seat->pointer.focus;
+    SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (seat->display->relative_mode_enabled) {
-        SDL_WindowData *window = seat->pointer.focus;
+    // Relative pointer event times are in microsecond granularity.
+    const Uint64 timestamp = Wayland_AdjustEventTimestampBase(SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo));
 
-        // Relative motion follows keyboard focus.
-        if (Wayland_SeatHasRelativePointerFocus(seat)) {
-            SDL_Mouse *mouse = SDL_GetMouse();
-
-            // Relative pointer event times are in microsecond granularity.
-            const Uint64 timestamp = Wayland_GetEventTimestamp(SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo));
-
-            double dx;
-            double dy;
-            if (mouse->InputTransform || !mouse->enable_relative_system_scale) {
-                dx = wl_fixed_to_double(dx_unaccel_w);
-                dy = wl_fixed_to_double(dy_unaccel_w);
-            } else {
-                dx = wl_fixed_to_double(dx_w) * window->pointer_scale.x;
-                dy = wl_fixed_to_double(dy_w) * window->pointer_scale.y;
-            }
-
-            SDL_SendMouseMotion(timestamp, window->sdlwindow, seat->pointer.sdl_id, true, (float)dx, (float)dy);
-        }
+    double dx;
+    double dy;
+    if (mouse->InputTransform || !mouse->enable_relative_system_scale) {
+        dx = wl_fixed_to_double(dx_unaccel_w);
+        dy = wl_fixed_to_double(dy_unaccel_w);
+    } else {
+        dx = wl_fixed_to_double(dx_w) * window->pointer_scale.x;
+        dy = wl_fixed_to_double(dy_w) * window->pointer_scale.y;
     }
+
+    SDL_SendMouseMotion(timestamp, window->sdlwindow, seat->pointer.sdl_id, true, (float)dx, (float)dy);
 }
 
 static const struct zwp_relative_pointer_v1_listener relative_pointer_listener = {
@@ -1247,6 +1255,7 @@ static void touch_handler_down(void *data, struct wl_touch *touch, uint32_t seri
             y = (float)wl_fixed_to_double(fy) / (window_data->current.logical_height - 1);
         }
 
+        ++window_data->active_touch_count;
         SDL_SetMouseFocus(window_data->sdlwindow);
 
         SDL_SendTouch(Wayland_GetTouchTimestamp(seat, timestamp), (SDL_TouchID)(uintptr_t)touch,
@@ -1273,11 +1282,13 @@ static void touch_handler_up(void *data, struct wl_touch *touch, uint32_t serial
             SDL_SendTouch(Wayland_GetTouchTimestamp(seat, timestamp), (SDL_TouchID)(uintptr_t)touch,
                           (SDL_FingerID)(id + 1), window_data->sdlwindow, SDL_EVENT_FINGER_UP, x, y, 0.0f);
 
-            /* If the window currently has mouse focus, the keyboard focus is another window or NULL, the window has no
-             * pointers active on it, and the surface has no active touch events, then consider mouse focus to be lost.
+            --window_data->active_touch_count;
+
+            /* If the window currently has mouse focus and has no currently active keyboards, pointers,
+             * or touch events, then consider mouse focus to be lost.
              */
-            if (SDL_GetMouseFocus() == window_data->sdlwindow && seat->keyboard.focus != window_data &&
-                !window_data->pointer_focus_count && !Wayland_SurfaceHasActiveTouches(seat->display, surface)) {
+            if (SDL_GetMouseFocus() == window_data->sdlwindow && !window_data->keyboard_focus_count &&
+                !window_data->pointer_focus_count && !window_data->active_touch_count) {
                 SDL_SetMouseFocus(NULL);
             }
         }
@@ -1312,39 +1323,11 @@ static void touch_handler_frame(void *data, struct wl_touch *touch)
 static void touch_handler_cancel(void *data, struct wl_touch *touch)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
-    struct SDL_WaylandTouchPoint *tp, *temp;
+    SDL_WaylandTouchPoint *tp, *temp;
 
+    // Need the safe loop variant here as cancelling a touch point removes it from the list.
     wl_list_for_each_safe (tp, temp, &seat->touch.points, link) {
-        bool removed = false;
-
-        if (tp->surface) {
-            SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(tp->surface);
-
-            if (window_data) {
-                const float x = (float)(wl_fixed_to_double(tp->fx) / window_data->current.logical_width);
-                const float y = (float)(wl_fixed_to_double(tp->fy) / window_data->current.logical_height);
-
-                SDL_SendTouch(0, (SDL_TouchID)(uintptr_t)touch,
-                              (SDL_FingerID)(tp->id + 1), window_data->sdlwindow, SDL_EVENT_FINGER_CANCELED, x, y, 0.0f);
-
-                // Remove the touch from the list before checking for still-active touches on the surface.
-                WAYLAND_wl_list_remove(&tp->link);
-                removed = true;
-
-                /* If the window currently has mouse focus, the keyboard focus is another window or NULL, the window has no
-                 * pointers active on it, and the surface has no active touch events, then consider mouse focus to be lost.
-                 */
-                if (SDL_GetMouseFocus() == window_data->sdlwindow && seat->keyboard.focus != window_data &&
-                    !window_data->pointer_focus_count && !Wayland_SurfaceHasActiveTouches(seat->display, tp->surface)) {
-                    SDL_SetMouseFocus(NULL);
-                }
-            }
-        }
-
-        if (!removed) {
-            WAYLAND_wl_list_remove(&tp->link);
-        }
-        SDL_free(tp);
+        Wayland_SeatCancelTouch(seat, tp);
     }
 }
 
@@ -1828,7 +1811,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     seat->keyboard.focus = window;
 
     // Restore the keyboard focus to the child popup that was holding it
-    SDL_SetKeyboardFocus(window->keyboard_focus ? window->keyboard_focus : window->sdlwindow);
+    SDL_SetKeyboardFocus(window->sdlwindow->keyboard_focus ? window->sdlwindow->keyboard_focus : window->sdlwindow);
 
     // Update the keyboard grab and any relative pointer grabs related to this keyboard focus.
     Wayland_SeatUpdateKeyboardGrab(seat);
@@ -1846,7 +1829,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     Uint64 timestamp = SDL_GetTicksNS();
     window->last_focus_event_time_ns = timestamp;
 
-    if (SDL_GetCurrentKeymap() != seat->keyboard.sdl_keymap) {
+    if (SDL_GetCurrentKeymap(true) != seat->keyboard.sdl_keymap) {
         SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
     }
 
@@ -1928,8 +1911,7 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     /* If the window has mouse focus, has no pointers within it, and no active touches, consider
      * mouse focus to be lost.
      */
-    if (SDL_GetMouseFocus() == window->sdlwindow && !window->pointer_focus_count &&
-        !Wayland_SurfaceHasActiveTouches(seat->display, surface)) {
+    if (SDL_GetMouseFocus() == window->sdlwindow && !window->pointer_focus_count && !window->active_touch_count) {
         SDL_SetMouseFocus(NULL);
     }
 }
@@ -1997,7 +1979,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
     Wayland_UpdateImplicitGrabSerial(seat, serial);
 
-    if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap()) {
+    if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap(true)) {
         SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
         SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
     }
@@ -2022,7 +2004,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
     const SDL_Scancode scancode = Wayland_GetScancodeForKey(seat, key);
     Wayland_HandleModifierKeys(seat, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
-    Uint64 timestamp = Wayland_GetKeyboardTimestamp(seat, time);
+    Uint64 timestamp = Wayland_AdjustEventTimestampBase(timestamp_raw_ns);
 
     SDL_SendKeyboardKeyIgnoreModifiers(timestamp, seat->keyboard.sdl_id, key, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
 
@@ -2096,26 +2078,6 @@ static const struct wl_keyboard_listener keyboard_listener = {
     keyboard_handle_repeat_info, // Version 4
 };
 
-static void Wayland_SeatCreateRelativePointer(SDL_WaylandSeat *seat)
-{
-    if (seat->display->relative_pointer_manager) {
-        if (seat->pointer.wl_pointer && !seat->pointer.relative_pointer) {
-            seat->pointer.relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(seat->display->relative_pointer_manager, seat->pointer.wl_pointer);
-            zwp_relative_pointer_v1_add_listener(seat->pointer.relative_pointer,
-                                                 &relative_pointer_listener,
-                                                 seat);
-        }
-    }
-}
-
-void Wayland_DisplayInitRelativePointerManager(SDL_VideoData *display)
-{
-    SDL_WaylandSeat *seat;
-    wl_list_for_each(seat, &display->seat_list, link) {
-        Wayland_SeatCreateRelativePointer(seat);
-    }
-}
-
 static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat, bool send_event)
 {
     // Make sure focus is removed from a surface before the pointer is destroyed.
@@ -2178,7 +2140,7 @@ static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat, bool send_event)
     SDL_RemoveKeyboard(seat->keyboard.sdl_id, send_event);
 
     if (seat->keyboard.sdl_keymap) {
-        if (seat->keyboard.sdl_keymap == SDL_GetCurrentKeymap()) {
+        if (seat->keyboard.sdl_keymap == SDL_GetCurrentKeymap(true)) {
             SDL_SetKeymap(NULL, false);
         }
         SDL_DestroyKeymap(seat->keyboard.sdl_keymap);
@@ -2257,8 +2219,6 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
 
         wl_pointer_set_user_data(seat->pointer.wl_pointer, seat);
         wl_pointer_add_listener(seat->pointer.wl_pointer, &pointer_listener, seat);
-
-        Wayland_SeatCreateRelativePointer(seat);
 
         seat->pointer.sdl_id = SDL_GetNextObjectID();
 
@@ -2522,6 +2482,7 @@ static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_
         data_device->seat->display->last_incoming_data_offer_seat = data_device->seat;
         data_offer->offer = id;
         data_offer->data_device = data_device;
+        data_offer->read_fd = -1;
         WAYLAND_wl_list_init(&(data_offer->mimes));
         wl_data_offer_set_user_data(id, data_offer);
         wl_data_offer_add_listener(id, &data_offer_listener, data_offer);
@@ -2763,41 +2724,6 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
     data_device->drag_offer = NULL;
 }
 
-static void notifyFromMimes(struct wl_list *mimes)
-{
-    int nformats = 0;
-    char **new_mime_types = NULL;
-    if (mimes) {
-        nformats = WAYLAND_wl_list_length(mimes);
-        size_t alloc_size = (nformats + 1) * sizeof(char *);
-
-        /* do a first pass to compute allocation size */
-        SDL_MimeDataList *item = NULL;
-        wl_list_for_each(item, mimes, link) {
-            alloc_size += SDL_strlen(item->mime_type) + 1;
-        }
-
-        new_mime_types = SDL_AllocateTemporaryMemory(alloc_size);
-        if (!new_mime_types) {
-            SDL_LogError(SDL_LOG_CATEGORY_INPUT, "unable to allocate new_mime_types");
-            return;
-        }
-
-        /* second pass to fill*/
-        char *strPtr = (char *)(new_mime_types + nformats + 1);
-        item = NULL;
-        int i = 0;
-        wl_list_for_each(item, mimes, link) {
-            new_mime_types[i] = strPtr;
-            strPtr = stpcpy(strPtr, item->mime_type) + 1;
-            i++;
-        }
-        new_mime_types[nformats] = NULL;
-    }
-
-    SDL_SendClipboardUpdate(false, new_mime_types, nformats);
-}
-
 static void data_device_handle_selection(void *data, struct wl_data_device *wl_data_device,
                                          struct wl_data_offer *id)
 {
@@ -2816,7 +2742,7 @@ static void data_device_handle_selection(void *data, struct wl_data_device *wl_d
         data_device->selection_offer = offer;
     }
 
-    notifyFromMimes(offer ? &offer->mimes : NULL);
+    Wayland_data_offer_notify_from_mimes(offer, true);
 }
 
 static const struct wl_data_device_listener data_device_listener = {
@@ -2946,6 +2872,29 @@ static const struct zwp_text_input_v3_listener text_input_listener = {
     text_input_done
 };
 
+static void Wayland_DataDeviceSetID(SDL_WaylandDataDevice *data_device)
+{
+    if (!data_device->id_str)
+#ifdef SDL_USE_LIBDBUS
+    {
+        SDL_DBusContext *dbus = SDL_DBus_GetContext();
+        if (dbus) {
+            const char *id = dbus->bus_get_unique_name(dbus->session_conn);
+            if (id) {
+                data_device->id_str = SDL_strdup(id);
+            }
+        }
+    }
+    if (!data_device->id_str)
+#endif
+    {
+        char id[24];
+        Uint64 pid = (Uint64)getpid();
+        SDL_snprintf(id, sizeof(id), "%" SDL_PRIu64, pid);
+        data_device->id_str = SDL_strdup(id);
+    }
+}
+
 static void Wayland_SeatCreateDataDevice(SDL_WaylandSeat *seat)
 {
     if (!seat->display->data_device_manager) {
@@ -2964,6 +2913,7 @@ static void Wayland_SeatCreateDataDevice(SDL_WaylandSeat *seat)
     if (!data_device->data_device) {
         SDL_free(data_device);
     } else {
+        Wayland_DataDeviceSetID(data_device);
         wl_data_device_set_user_data(data_device->data_device, data_device);
         wl_data_device_add_listener(data_device->data_device,
                                     &data_device_listener, data_device);
@@ -3253,7 +3203,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
         return;  // Not a pen we report on.
     }
 
-    const Uint64 timestamp = Wayland_GetEventTimestamp(Wayland_EventTimestampMSToNS(time));
+    const Uint64 timestamp = Wayland_AdjustEventTimestampBase(Wayland_EventTimestampMSToNS(time));
     const SDL_PenID instance_id = sdltool->instance_id;
     SDL_Window *window = sdltool->tool_focus;
 
@@ -3430,6 +3380,36 @@ void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, 
     WAYLAND_wl_display_flush(display->display);
 }
 
+void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_WindowData *window)
+{
+    SDL_WaylandSeat *seat;
+    wl_list_for_each (seat, &display->seat_list, link)
+    {
+        if (seat->keyboard.focus == window) {
+            keyboard_handle_leave(seat, seat->keyboard.wl_keyboard, 0, window->surface);
+        }
+
+        if (seat->pointer.focus == window) {
+            pointer_handle_leave(seat, seat->pointer.wl_pointer, 0, window->surface);
+        }
+
+        // Need the safe loop variant here as cancelling a touch point removes it from the list.
+        SDL_WaylandTouchPoint *tp, *temp;
+        wl_list_for_each_safe (tp, temp, &seat->touch.points, link) {
+            if (tp->surface == window->surface) {
+                Wayland_SeatCancelTouch(seat, tp);
+            }
+        }
+
+        SDL_WaylandPenTool *tool;
+        wl_list_for_each (tool, &seat->tablet.tool_list, link) {
+            if (tool->tool_focus == window->sdlwindow) {
+                tablet_tool_handle_proximity_out(tool, tool->wltool);
+            }
+        }
+    }
+}
+
 void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool send_events)
 {
     if (!seat) {
@@ -3453,6 +3433,7 @@ void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool send_events)
                 wl_data_device_destroy(seat->data_device->data_device);
             }
         }
+        SDL_free(seat->data_device->id_str);
         SDL_free(seat->data_device);
     }
 
@@ -3488,16 +3469,36 @@ void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool send_events)
     SDL_free(seat);
 }
 
-bool Wayland_SeatHasRelativePointerFocus(SDL_WaylandSeat *seat)
+static void Wayland_SeatUpdateRelativePointer(SDL_WaylandSeat *seat)
 {
-    /* If a seat has both keyboard and pointer capabilities, relative focus will follow the keyboard
-     * attached to that seat. Otherwise, relative focus will be gained if any other seat has keyboard
-     * focus on the window with pointer focus.
-     */
-    if (seat->keyboard.wl_keyboard) {
-        return seat->keyboard.focus && seat->keyboard.focus == seat->pointer.focus;
-    } else {
-        return seat->pointer.focus && seat->pointer.focus->keyboard_focus_count != 0;
+    if (seat->display->relative_pointer_manager) {
+        bool relative_focus = false;
+
+        if (seat->pointer.focus) {
+            /* If a seat has both keyboard and pointer capabilities, relative focus will follow the keyboard
+             * attached to that seat. Otherwise, relative focus will be gained if any other seat has keyboard
+             * focus on the window with pointer focus.
+             */
+            if (seat->pointer.focus->sdlwindow->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE) {
+                if (seat->keyboard.wl_keyboard) {
+                    relative_focus = seat->keyboard.focus == seat->pointer.focus;
+                } else {
+                    relative_focus = seat->pointer.focus->keyboard_focus_count != 0;
+                }
+            } else {
+                relative_focus = SDL_GetMouse()->warp_emulation_active;
+            }
+        }
+
+        if (relative_focus) {
+            if (!seat->pointer.relative_pointer) {
+                seat->pointer.relative_pointer = zwp_relative_pointer_manager_v1_get_relative_pointer(seat->display->relative_pointer_manager, seat->pointer.wl_pointer);
+                zwp_relative_pointer_v1_add_listener(seat->pointer.relative_pointer, &relative_pointer_listener, seat);
+            }
+        } else if (seat->pointer.relative_pointer) {
+            zwp_relative_pointer_v1_destroy(seat->pointer.relative_pointer);
+            seat->pointer.relative_pointer = NULL;
+        }
     }
 }
 
@@ -3530,11 +3531,10 @@ static void Wayland_SeatUpdateKeyboardGrab(SDL_WaylandSeat *seat)
 void Wayland_SeatUpdatePointerGrab(SDL_WaylandSeat *seat)
 {
     SDL_VideoData *display = seat->display;
+    Wayland_SeatUpdateRelativePointer(seat);
 
     if (display->pointer_constraints) {
-        const bool has_relative_focus = Wayland_SeatHasRelativePointerFocus(seat);
-
-        if (seat->pointer.locked_pointer && (!display->relative_mode_enabled || !has_relative_focus)) {
+        if (seat->pointer.locked_pointer && !seat->pointer.relative_pointer) {
             zwp_locked_pointer_v1_destroy(seat->pointer.locked_pointer);
             seat->pointer.locked_pointer = NULL;
 
@@ -3544,7 +3544,7 @@ void Wayland_SeatUpdatePointerGrab(SDL_WaylandSeat *seat)
 
         if (seat->pointer.wl_pointer) {
             // If relative mode is active, and the pointer focus matches the keyboard focus, lock it.
-            if (seat->display->relative_mode_enabled && has_relative_focus) {
+            if (seat->pointer.relative_pointer) {
                 if (!seat->pointer.locked_pointer) {
                     // Creating a lock on a surface with an active confinement region on the same seat is a protocol error.
                     if (seat->pointer.confined_pointer) {

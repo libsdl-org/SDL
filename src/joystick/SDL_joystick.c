@@ -456,6 +456,15 @@ static Uint32 initial_flightstick_devices[] = {
     MAKE_VIDPID(0x044f, 0x0402), // HOTAS Warthog Joystick
     MAKE_VIDPID(0x044f, 0xb10a), // ThrustMaster, Inc. T.16000M Joystick
     MAKE_VIDPID(0x046d, 0xc215), // Logitech Extreme 3D
+    MAKE_VIDPID(0x0583, 0x6258), // Padix USB joystick with viewfinder
+    MAKE_VIDPID(0x0583, 0x688f), // Padix QF-688uv Windstorm Pro
+    MAKE_VIDPID(0x0583, 0x7070), // Padix QF-707u Bazooka
+    MAKE_VIDPID(0x0583, 0xa019), // Padix USB vibration joystick with viewfinder
+    MAKE_VIDPID(0x0583, 0xa131), // Padix USB Wireless 2.4GHz
+    MAKE_VIDPID(0x0583, 0xa209), // Padix MetalStrike ForceFeedback
+    MAKE_VIDPID(0x0583, 0xb010), // Padix MetalStrike Pro
+    MAKE_VIDPID(0x0583, 0xb012), // Padix Wireless MetalStrike
+    MAKE_VIDPID(0x0583, 0xb013), // Padix USB Wireless 2.4GHZ
     MAKE_VIDPID(0x0738, 0x2221), // Saitek Pro Flight X-56 Rhino Stick
     MAKE_VIDPID(0x10f5, 0x7084), // Turtle Beach VelocityOne
     MAKE_VIDPID(0x231d, 0x0126), // Gunfighter Mk.III 'Space Combat Edition' (right)
@@ -470,7 +479,13 @@ static SDL_vidpid_list flightstick_devices = {
 };
 
 static Uint32 initial_gamecube_devices[] = {
+    MAKE_VIDPID(0x0079, 0x1843), // DragonRise GameCube Controller Adapter
+    MAKE_VIDPID(0x0079, 0x1844), // DragonRise GameCube Controller Adapter
+    MAKE_VIDPID(0x0079, 0x1846), // DragonRise GameCube Controller Adapter
+    MAKE_VIDPID(0x057e, 0x0337), // Nintendo Wii U GameCube Controller Adapter
+    MAKE_VIDPID(0x0926, 0x8888), // Cyber Gadget GameCube Controller
     MAKE_VIDPID(0x0e6f, 0x0185), // PDP Wired Fight Pad Pro for Nintendo Switch
+    MAKE_VIDPID(0x1a34, 0xf705), // GameCube {HuiJia USB box}
     MAKE_VIDPID(0x20d6, 0xa711), // PowerA Wired Controller Nintendo GameCube Style
 };
 static SDL_vidpid_list gamecube_devices = {
@@ -543,6 +558,14 @@ static Uint32 initial_wheel_devices[] = {
     MAKE_VIDPID(0x046d, 0xca03), // Logitech Momo Racing
     MAKE_VIDPID(0x0483, 0x0522), // Simagic Wheelbase (including M10, Alpha Mini, Alpha, Alpha U)
     MAKE_VIDPID(0x0483, 0xa355), // VRS DirectForce Pro Wheel Base
+    MAKE_VIDPID(0x0583, 0xa132), // Padix USB Wireless 2.4GHz Wheelpad
+    MAKE_VIDPID(0x0583, 0xa133), // Padix USB Wireless 2.4GHz Wheel
+    MAKE_VIDPID(0x0583, 0xa202), // Padix Force Feedback Wheel
+    MAKE_VIDPID(0x0583, 0xb002), // Padix Vibration USB Wheel
+    MAKE_VIDPID(0x0583, 0xb005), // Padix USB Wheel
+    MAKE_VIDPID(0x0583, 0xb008), // Padix USB Wireless 2.4GHz Wheel
+    MAKE_VIDPID(0x0583, 0xb009), // Padix USB Wheel
+    MAKE_VIDPID(0x0583, 0xb018), // Padix TW6 Wheel
     MAKE_VIDPID(0x0eb7, 0x0001), // Fanatec ClubSport Wheel Base V2
     MAKE_VIDPID(0x0eb7, 0x0004), // Fanatec ClubSport Wheel Base V2.5
     MAKE_VIDPID(0x0eb7, 0x0005), // Fanatec CSL Elite Wheel Base+ (PS4)
@@ -805,8 +828,6 @@ bool SDL_InitJoysticks(void)
 
     SDL_joysticks_initialized = true;
 
-    SDL_InitGamepadMappings();
-
     SDL_LoadVIDPIDList(&old_xboxone_controllers);
     SDL_LoadVIDPIDList(&arcadestick_devices);
     SDL_LoadVIDPIDList(&blacklist_devices);
@@ -816,6 +837,8 @@ bool SDL_InitJoysticks(void)
     SDL_LoadVIDPIDList(&throttle_devices);
     SDL_LoadVIDPIDList(&wheel_devices);
     SDL_LoadVIDPIDList(&zero_centered_devices);
+
+    SDL_InitGamepadMappings();
 
     // See if we should allow joystick events while in the background
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
@@ -1986,6 +2009,14 @@ bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
             result = true;
         } else {
             result = joystick->driver->RumbleTriggers(joystick, left_rumble, right_rumble);
+            if (result) {
+                joystick->trigger_rumble_resend = SDL_GetTicks() + SDL_RUMBLE_RESEND_MS;
+                if (joystick->trigger_rumble_resend == 0) {
+                    joystick->trigger_rumble_resend = 1;
+                }
+            } else {
+                joystick->trigger_rumble_resend = 0;
+            }
         }
 
         if (result) {
@@ -1996,6 +2027,7 @@ bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
                 joystick->trigger_rumble_expiration = SDL_GetTicks() + SDL_min(duration_ms, SDL_MAX_RUMBLE_DURATION_MS);
             } else {
                 joystick->trigger_rumble_expiration = 0;
+                joystick->trigger_rumble_resend = 0;
             }
         }
     }
@@ -2651,6 +2683,15 @@ void SDL_UpdateJoysticks(void)
 
         if (joystick->trigger_rumble_expiration && now >= joystick->trigger_rumble_expiration) {
             SDL_RumbleJoystickTriggers(joystick, 0, 0, 0);
+            joystick->trigger_rumble_resend = 0;
+        }
+
+        if (joystick->trigger_rumble_resend && now >= joystick->trigger_rumble_resend) {
+            joystick->driver->RumbleTriggers(joystick, joystick->left_trigger_rumble, joystick->right_trigger_rumble);
+            joystick->trigger_rumble_resend = now + SDL_RUMBLE_RESEND_MS;
+            if (joystick->trigger_rumble_resend == 0) {
+                joystick->trigger_rumble_resend = 1;
+            }
         }
     }
 
@@ -2902,8 +2943,7 @@ SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, cons
         type = SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR;
 
     } else if (forUI && SDL_IsJoystickGameCube(vendor, product)) {
-        // We don't have a type for the Nintendo GameCube controller
-        type = SDL_GAMEPAD_TYPE_STANDARD;
+        type = SDL_GAMEPAD_TYPE_GAMECUBE;
 
     } else {
         switch (GuessControllerType(vendor, product)) {
@@ -3133,11 +3173,6 @@ bool SDL_IsJoystickSteamController(Uint16 vendor_id, Uint16 product_id)
 bool SDL_IsJoystickHoriSteamController(Uint16 vendor_id, Uint16 product_id)
 {
     return vendor_id == USB_VENDOR_HORI && (product_id == USB_PRODUCT_HORI_STEAM_CONTROLLER || product_id == USB_PRODUCT_HORI_STEAM_CONTROLLER_BT);
-}
-
-bool SDL_IsJoystick8BitDoController(Uint16 vendor_id, Uint16 product_id)
-{
-    return vendor_id == USB_VENDOR_8BITDO && (product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS);
 }
 
 bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)

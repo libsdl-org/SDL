@@ -25,6 +25,7 @@
 #include <unistd.h> // For getpid() and readlink()
 
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../core/linux/SDL_progressbar.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../SDL_pixels_c.h"
@@ -64,9 +65,6 @@ static void X11_DeleteDevice(SDL_VideoDevice *device)
         X11_XCloseDisplay(data->request_display);
     }
     SDL_free(data->windowlist);
-    if (device->wakeup_lock) {
-        SDL_DestroyMutex(device->wakeup_lock);
-    }
     SDL_free(device->internal);
     SDL_free(device);
 
@@ -147,8 +145,6 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         return NULL;
     }
 
-    device->wakeup_lock = SDL_CreateMutex();
-
 #ifdef X11_DEBUG
     X11_XSynchronize(data->display, True);
 #endif
@@ -204,6 +200,9 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->AcceptDragAndDrop = X11_AcceptDragAndDrop;
     device->UpdateWindowShape = X11_UpdateWindowShape;
     device->FlashWindow = X11_FlashWindow;
+#ifdef SDL_USE_LIBDBUS
+    device->ApplyWindowProgress = DBUS_ApplyWindowProgress;
+#endif // SDL_USE_LIBDBUS
     device->ShowWindowSystemMenu = X11_ShowWindowSystemMenu;
     device->SetWindowFocusable = X11_SetWindowFocusable;
     device->SyncWindow = X11_SyncWindow;
@@ -280,11 +279,13 @@ static SDL_VideoDevice *X11_CreateDevice(void)
      * This is otherwise not wanted, as it can break fullscreen window positioning on multi-monitor configurations.
      */
     if (!X11_CheckCurrentDesktop("openbox")) {
-        device->device_caps |= VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES;
+        device->device_caps |= VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
     }
 
     data->is_xwayland = X11_IsXWayland(x11_display);
     if (data->is_xwayland) {
+        SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "Detected XWayland");
+
         device->device_caps |= VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED |
                                VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS;
     }

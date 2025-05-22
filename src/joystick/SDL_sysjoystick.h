@@ -113,6 +113,7 @@ struct SDL_Joystick
     Uint16 left_trigger_rumble _guarded;
     Uint16 right_trigger_rumble _guarded;
     Uint64 trigger_rumble_expiration _guarded;
+    Uint64 trigger_rumble_resend _guarded;
 
     Uint8 led_red _guarded;
     Uint8 led_green _guarded;

@@ -418,7 +418,7 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
 
 void SDL_CloseHaptic(SDL_Haptic *haptic)
 {
-    int i;
+    SDL_HapticEffectID i;
     SDL_Haptic *hapticlist;
     SDL_Haptic *hapticlistprev;
 
@@ -522,9 +522,9 @@ bool SDL_HapticEffectSupported(SDL_Haptic *haptic, const SDL_HapticEffect *effec
     return false;
 }
 
-int SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
+SDL_HapticEffectID SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
 {
-    int i;
+    SDL_HapticEffectID i;
 
     CHECK_HAPTIC_MAGIC(haptic, -1);
 
@@ -564,7 +564,7 @@ int SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEffect *effect)
     return -1;
 }
 
-static bool ValidEffect(SDL_Haptic *haptic, int effect)
+static bool ValidEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect)
 {
     if ((effect < 0) || (effect >= haptic->neffects)) {
         SDL_SetError("Haptic: Invalid effect identifier.");
@@ -573,7 +573,7 @@ static bool ValidEffect(SDL_Haptic *haptic, int effect)
     return true;
 }
 
-bool SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effect, const SDL_HapticEffect *data)
+bool SDL_UpdateHapticEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect, const SDL_HapticEffect *data)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -606,7 +606,7 @@ bool SDL_UpdateHapticEffect(SDL_Haptic *haptic, int effect, const SDL_HapticEffe
     return true;
 }
 
-bool SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, Uint32 iterations)
+bool SDL_RunHapticEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect, Uint32 iterations)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -628,7 +628,7 @@ bool SDL_RunHapticEffect(SDL_Haptic *haptic, int effect, Uint32 iterations)
     return true;
 }
 
-bool SDL_StopHapticEffect(SDL_Haptic *haptic, int effect)
+bool SDL_StopHapticEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
@@ -650,7 +650,7 @@ bool SDL_StopHapticEffect(SDL_Haptic *haptic, int effect)
     return true;
 }
 
-void SDL_DestroyHapticEffect(SDL_Haptic *haptic, int effect)
+void SDL_DestroyHapticEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect)
 {
     CHECK_HAPTIC_MAGIC(haptic,);
 
@@ -673,7 +673,7 @@ void SDL_DestroyHapticEffect(SDL_Haptic *haptic, int effect)
     SDL_SYS_HapticDestroyEffect(haptic, &haptic->effects[effect]);
 }
 
-bool SDL_GetHapticEffectStatus(SDL_Haptic *haptic, int effect)
+bool SDL_GetHapticEffectStatus(SDL_Haptic *haptic, SDL_HapticEffectID effect)
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 

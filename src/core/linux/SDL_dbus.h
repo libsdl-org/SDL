@@ -47,6 +47,7 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*bus_register)(DBusConnection *, DBusError *);
     void (*bus_add_match)(DBusConnection *, const char *, DBusError *);
     void (*bus_remove_match)(DBusConnection *, const char *, DBusError *);
+    const char *(*bus_get_unique_name)(DBusConnection *);
     DBusConnection *(*connection_open_private)(const char *, DBusError *);
     void (*connection_set_exit_on_disconnect)(DBusConnection *, dbus_bool_t);
     dbus_bool_t (*connection_get_is_connected)(DBusConnection *);
@@ -66,6 +67,7 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*message_is_signal)(DBusMessage *, const char *, const char *);
     dbus_bool_t (*message_has_path)(DBusMessage *, const char *);
     DBusMessage *(*message_new_method_call)(const char *, const char *, const char *, const char *);
+    DBusMessage *(*message_new_signal)(const char *, const char *, const char *);
     dbus_bool_t (*message_append_args)(DBusMessage *, int, ...);
     dbus_bool_t (*message_append_args_valist)(DBusMessage *, int, va_list);
     void (*message_iter_init_append)(DBusMessage *, DBusMessageIter *);

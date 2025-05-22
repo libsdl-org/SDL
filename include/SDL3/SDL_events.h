@@ -492,6 +492,8 @@ typedef struct SDL_MouseWheelEvent
     SDL_MouseWheelDirection direction; /**< Set to one of the SDL_MOUSEWHEEL_* defines. When FLIPPED the values in X and Y will be opposite. Multiply by -1 to change them back */
     float mouse_x;      /**< X coordinate, relative to window */
     float mouse_y;      /**< Y coordinate, relative to window */
+    Sint32 integer_x;   /**< The amount scrolled horizontally, accumulated to whole scroll "ticks" (added in 3.2.12) */
+    Sint32 integer_y;   /**< The amount scrolled vertically, accumulated to whole scroll "ticks" (added in 3.2.12) */
 } SDL_MouseWheelEvent;
 
 /**
@@ -779,7 +781,7 @@ typedef struct SDL_TouchFingerEvent
 } SDL_TouchFingerEvent;
 
 /**
- * Pressure-sensitive pen proximity event structure (event.pmotion.*)
+ * Pressure-sensitive pen proximity event structure (event.pproximity.*)
  *
  * When a pen becomes visible to the system (it is close enough to a tablet,
  * etc), SDL will send an SDL_EVENT_PEN_PROXIMITY_IN event with the new pen's
@@ -1564,6 +1566,38 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  * \sa SDL_WaitEventTimeout
  */
 extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromEvent(const SDL_Event *event);
+
+/**
+ * Generate a human-readable description of an event.
+ *
+ * This will fill `buf` with a null-terminated string that might look
+ * something like this:
+ *
+ * ```
+ * SDL_EVENT_MOUSE_MOTION (timestamp=1140256324 windowid=2 which=0 state=0 x=492.99 y=139.09 xrel=52 yrel=6)
+ * ```
+ *
+ * The exact format of the string is not guaranteed; it is intended for
+ * logging purposes, to be read by a human, and not parsed by a computer.
+ *
+ * The returned value follows the same rules as SDL_snprintf(): `buf` will
+ * always be NULL-terminated (unless `buflen` is zero), and will be truncated
+ * if `buflen` is too small. The return code is the number of bytes needed for
+ * the complete string, not counting the NULL-terminator, whether the string
+ * was truncated or not. Unlike SDL_snprintf(), though, this function never
+ * returns -1.
+ *
+ * \param event an event to describe. May be NULL.
+ * \param buf the buffer to fill with the description string. May be NULL.
+ * \param buflen the maximum bytes that can be written to `buf`.
+ * \returns number of bytes needed for the full string, not counting the
+ *          null-terminator byte.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

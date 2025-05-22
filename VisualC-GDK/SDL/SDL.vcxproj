@@ -168,8 +168,8 @@
     </Link>
     <PreBuildEvent>
       <Command>
-        call $(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat $(ProjectDir)..\
-        call $(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat $(ProjectDir)..\
+        call "$(ProjectDir)..\..\src\render\direct3d12\compile_shaders_xbox.bat" "$(ProjectDir)..\"
+        call "$(ProjectDir)..\..\src\gpu\d3d12\compile_shaders_xbox.bat" "$(ProjectDir)..\"
       </Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -716,6 +716,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_flydigi.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_combined.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamecube.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gip.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_luna.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps3.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps4.c" />

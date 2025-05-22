@@ -807,6 +807,8 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 #define hid_send_feature_report      LIBUSB_hid_send_feature_report
 #define hid_set_nonblocking          LIBUSB_hid_set_nonblocking
 #define hid_write                    LIBUSB_hid_write
+#define hid_version                  LIBUSB_hid_version
+#define hid_version_str              LIBUSB_hid_version_str
 #define input_report                 LIBUSB_input_report
 #define make_path                    LIBUSB_make_path
 #define new_hid_device               LIBUSB_new_hid_device
@@ -1176,9 +1178,9 @@ int SDL_hid_init(void)
         if (libusb_ctx.libhandle != NULL) {
             bool loaded = true;
 #ifdef SDL_LIBUSB_DYNAMIC
-#define LOAD_LIBUSB_SYMBOL(type, func)                                                        \
-    if (!(libusb_ctx.func = (type)SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func))) { \
-        loaded = false;                                                                   \
+#define LOAD_LIBUSB_SYMBOL(type, func)                                                                  \
+    if ((libusb_ctx.func = (type)SDL_LoadFunction(libusb_ctx.libhandle, "libusb_" #func)) == NULL) {    \
+        loaded = false;                                                                                 \
     }
 #else
 #define LOAD_LIBUSB_SYMBOL(type, func) \

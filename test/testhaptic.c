@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     char *name = NULL;
     int index = -1;
     SDL_HapticEffect efx[9];
-    int id[9];
+    SDL_HapticEffectID id[9];
     int nefx;
     unsigned int supported;
     SDL_HapticID *haptics;

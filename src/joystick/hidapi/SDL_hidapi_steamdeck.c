@@ -233,6 +233,18 @@ static void HIDAPI_DriverSteamDeck_HandleState(SDL_HIDAPI_Device *device,
     values[1] = (pInReport->payload.deckState.sAccelZ / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
     values[2] = (-pInReport->payload.deckState.sAccelY / 32768.0f) * 2.0f * SDL_STANDARD_GRAVITY;
     SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->sensor_timestamp_us, values, 3);
+
+    SDL_SendJoystickTouchpad(timestamp, joystick, 0, 0,
+            pInReport->payload.deckState.sPressurePadLeft > 0,
+            pInReport->payload.deckState.sLeftPadX        / 65536.0f + 0.5f,
+            pInReport->payload.deckState.sLeftPadY        / 65536.0f + 0.5f,
+            pInReport->payload.deckState.sPressurePadLeft / 32768.0f);
+
+    SDL_SendJoystickTouchpad(timestamp, joystick, 1, 0,
+            pInReport->payload.deckState.sPressurePadRight > 0,
+            pInReport->payload.deckState.sRightPadX        / 65536.0f + 0.5f,
+            pInReport->payload.deckState.sRightPadY        / 65536.0f + 0.5f,
+            pInReport->payload.deckState.sPressurePadRight / 32768.0f);
 }
 
 /*****************************************************************************************************/
@@ -365,6 +377,9 @@ static bool HIDAPI_DriverSteamDeck_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, update_rate_in_hz);
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, update_rate_in_hz);
+
+    SDL_PrivateJoystickAddTouchpad(joystick, 1);
+    SDL_PrivateJoystickAddTouchpad(joystick, 1);
 
     return true;
 }

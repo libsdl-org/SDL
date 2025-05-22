@@ -74,7 +74,8 @@ static bool HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, c
     }
     if (vendor_id == USB_VENDOR_DRAGONRISE &&
         (product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1 ||
-         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2)) {
+         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2 ||
+         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3)) {
         // EVORETRO GameCube Controller Adapter
         return true;
     }

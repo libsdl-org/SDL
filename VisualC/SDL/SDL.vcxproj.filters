@@ -1194,6 +1194,9 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gamecube.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_gip.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_luna.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>

@@ -59,6 +59,15 @@ encounter limitations or behavior that is different from other windowing systems
   `SDL_APP_ID` hint string, the desktop entry file name should match the application ID. For example, if your
   application ID is set to `org.my_org.sdl_app`, the desktop entry file should be named `org.my_org.sdl_app.desktop`.
 
+### The application progress bar can't be set via ```SDL_SetWindowProgressState()``` or ```SDL_SetWindowProgressValue()```
+
+- Only some Desktop Environemnts support the underlying API. Known compatible DEs: Unity, KDE
+- The underlying API requires a desktop entry file, aka a `.desktop` file.
+  Please see the [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/) for
+  more information on the format of this file. Note that if your application manually sets the application ID via the
+  `SDL_APP_ID` hint string, the desktop entry file name should match the application ID. For example, if your
+  application ID is set to `org.my_org.sdl_app`, the desktop entry file should be named `org.my_org.sdl_app.desktop`.
+
 ### Keyboard grabs don't work when running under XWayland
 
 - On GNOME based desktops, the dconf setting `org/gnome/mutter/wayland/xwayland-allow-grabs` must be enabled.

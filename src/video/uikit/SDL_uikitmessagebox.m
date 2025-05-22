@@ -124,31 +124,30 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
     return YES;
 }
 
-static void UIKit_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID, int *result)
+typedef struct UIKit_ShowMessageBoxData
+{
+    const SDL_MessageBoxData *messageboxdata;
+    int *buttonID;
+    bool result;
+} UIKit_ShowMessageBoxData;
+
+static void SDLCALL UIKit_ShowMessageBoxMainThreadCallback(void *userdata)
 {
     @autoreleasepool {
-        if (UIKit_ShowMessageBoxAlertController(messageboxdata, buttonID)) {
-            *result = true;
-        } else {
-            *result = SDL_SetError("Could not show message box.");
-        }
+        UIKit_ShowMessageBoxData *data = (UIKit_ShowMessageBoxData *) userdata;
+        data->result = UIKit_ShowMessageBoxAlertController(data->messageboxdata, data->buttonID);
     }
 }
 
 bool UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
-    @autoreleasepool {
-        __block int result = true;
-
-        if ([NSThread isMainThread]) {
-            UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &result);
-        } else {
-            dispatch_sync(dispatch_get_main_queue(), ^{
-              UIKit_ShowMessageBoxImpl(messageboxdata, buttonID, &result);
-            });
-        }
-        return result;
+    UIKit_ShowMessageBoxData data = { messageboxdata, buttonID, false };
+    if (!SDL_RunOnMainThread(UIKit_ShowMessageBoxMainThreadCallback, &data, true)) {
+        return false;
+    } else if (!data.result) {
+        return SDL_SetError("Could not show message box.");
     }
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_UIKIT

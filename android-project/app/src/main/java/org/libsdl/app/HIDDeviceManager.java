@@ -288,9 +288,13 @@ public class HIDDeviceManager {
             0x1532, // Razer Wildcat
             0x20d6, // PowerA
             0x24c6, // PowerA
+            0x294b, // Snakebyte
             0x2dc8, // 8BitDo
             0x2e24, // Hyperkin
+            0x2e95, // SCUF
+            0x3285, // Nacon
             0x3537, // GameSir
+            0x366c, // ByoWave
         };
 
         if (usbInterface.getId() == 0 &&

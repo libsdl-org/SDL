@@ -96,9 +96,7 @@ struct SDL_VideoData
     int output_count;
     int output_max;
 
-    bool relative_mode_enabled;
     bool display_externally_owned;
-
     bool scale_to_display_enabled;
 };
 

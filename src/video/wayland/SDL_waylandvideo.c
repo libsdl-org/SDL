@@ -24,6 +24,7 @@
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include "../../core/linux/SDL_system_theme.h"
+#include "../../core/linux/SDL_progressbar.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandclipboard.h"
@@ -446,9 +447,6 @@ static void Wayland_DeleteDevice(SDL_VideoDevice *device)
         WAYLAND_wl_display_disconnect(data->display);
         SDL_ClearProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER);
     }
-    if (device->wakeup_lock) {
-        SDL_DestroyMutex(device->wakeup_lock);
-    }
     SDL_free(data);
     SDL_free(device);
     SDL_WAYLAND_UnloadSymbols();
@@ -495,6 +493,9 @@ static bool Wayland_IsPreferred(struct wl_display *display)
 
     wl_registry_destroy(registry);
 
+    if (!preferred_data.has_fifo_v1) {
+        SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "This compositor lacks support for the fifo-v1 protocol; falling back to XWayland for GPU performance reasons (set SDL_VIDEO_DRIVER=wayland to override)");
+    }
     return preferred_data.has_fifo_v1;
 }
 
@@ -572,7 +573,6 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     }
 
     device->internal = data;
-    device->wakeup_lock = SDL_CreateMutex();
 
     // Set the function pointers
     device->VideoInit = Wayland_VideoInit;
@@ -626,9 +626,13 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
     device->FlashWindow = Wayland_FlashWindow;
+#ifdef SDL_USE_LIBDBUS
+    device->ApplyWindowProgress = DBUS_ApplyWindowProgress;
+#endif // SDL_USE_LIBDBUS
     device->HasScreenKeyboardSupport = Wayland_HasScreenKeyboardSupport;
     device->ShowWindowSystemMenu = Wayland_ShowWindowSystemMenu;
     device->SyncWindow = Wayland_SyncWindow;
+    device->SetWindowFocusable = Wayland_SetWindowFocusable;
 
 #ifdef SDL_USE_LIBDBUS
     if (SDL_SystemTheme_Init())
@@ -1259,7 +1263,6 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
         d->relative_pointer_manager = wl_registry_bind(d->registry, id, &zwp_relative_pointer_manager_v1_interface, 1);
-        Wayland_DisplayInitRelativePointerManager(d);
     } else if (SDL_strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
         d->pointer_constraints = wl_registry_bind(d->registry, id, &zwp_pointer_constraints_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_keyboard_shortcuts_inhibit_manager_v1") == 0) {

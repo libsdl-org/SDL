@@ -463,6 +463,115 @@ static DXGI_FORMAT SDLToD3D12_DepthFormat[] = {
 };
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_DepthFormat, SDL_arraysize(SDLToD3D12_DepthFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
+static DXGI_FORMAT SDLToD3D12_TypelessFormat[] = {
+    DXGI_FORMAT_UNKNOWN,              // INVALID
+    DXGI_FORMAT_UNKNOWN,              // A8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R8G8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R16_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R16G16_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_UNORM
+    DXGI_FORMAT_UNKNOWN,              // R10G10B10A2_UNORM
+    DXGI_FORMAT_UNKNOWN,              // B5G6R5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // B5G5R5A1_UNORM
+    DXGI_FORMAT_UNKNOWN,              // B4G4R4A4_UNORM
+    DXGI_FORMAT_UNKNOWN,              // B8G8R8A8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC1_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC2_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC3_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC4_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC7_UNORM
+    DXGI_FORMAT_UNKNOWN,              // BC6H_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // BC6H_UFLOAT
+    DXGI_FORMAT_UNKNOWN,              // R8_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R8G8_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R16_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R16G16_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_SNORM
+    DXGI_FORMAT_UNKNOWN,              // R16_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R16G16_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R32_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R32G32_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R32G32B32A32_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // R11G11B10_UFLOAT
+    DXGI_FORMAT_UNKNOWN,              // R8_UINT
+    DXGI_FORMAT_UNKNOWN,              // R8G8_UINT
+    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_UINT
+    DXGI_FORMAT_UNKNOWN,              // R16_UINT
+    DXGI_FORMAT_UNKNOWN,              // R16G16_UINT
+    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_UINT
+    DXGI_FORMAT_UNKNOWN,              // R32_UINT
+    DXGI_FORMAT_UNKNOWN,              // R32G32_UINT
+    DXGI_FORMAT_UNKNOWN,              // R32G32B32A32_UINT
+    DXGI_FORMAT_UNKNOWN,              // R8_INT
+    DXGI_FORMAT_UNKNOWN,              // R8G8_INT
+    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_INT
+    DXGI_FORMAT_UNKNOWN,              // R16_INT
+    DXGI_FORMAT_UNKNOWN,              // R16G16_INT
+    DXGI_FORMAT_UNKNOWN,              // R16G16B16A16_INT
+    DXGI_FORMAT_UNKNOWN,              // R32_INT
+    DXGI_FORMAT_UNKNOWN,              // R32G32_INT
+    DXGI_FORMAT_UNKNOWN,              // R32G32B32A32_INT
+    DXGI_FORMAT_UNKNOWN,              // R8G8B8A8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // B8G8R8A8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // BC1_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // BC2_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // BC3_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // BC7_UNORM_SRGB
+    DXGI_FORMAT_R16_TYPELESS,         // D16_UNORM
+    DXGI_FORMAT_R24G8_TYPELESS,       // D24_UNORM
+    DXGI_FORMAT_R32_TYPELESS,         // D32_FLOAT
+    DXGI_FORMAT_R24G8_TYPELESS,       // D24_UNORM_S8_UINT
+    DXGI_FORMAT_R32G8X24_TYPELESS,    // D32_FLOAT_S8_UINT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_UNORM
+    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_UNORM_SRGB
+    DXGI_FORMAT_UNKNOWN,              // ASTC_4x4_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x4_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_5x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_6x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_8x8_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x5_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x6_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x8_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_10x10_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x10_FLOAT
+    DXGI_FORMAT_UNKNOWN,              // ASTC_12x12_FLOAT
+};
+SDL_COMPILE_TIME_ASSERT(SDLToD3D12_TypelessFormat, SDL_arraysize(SDLToD3D12_TypelessFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
+
 static D3D12_COMPARISON_FUNC SDLToD3D12_CompareOp[] = {
     D3D12_COMPARISON_FUNC_NEVER,         // INVALID
     D3D12_COMPARISON_FUNC_NEVER,         // NEVER
@@ -2482,12 +2591,32 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
     return d3d12GraphicsRootSignature;
 }
 
+static bool D3D12_INTERNAL_IsValidShaderBytecode(
+    const Uint8 *code,
+    size_t codeSize)
+{
+    // Both DXIL and DXBC bytecode have a 4 byte header containing `DXBC`.
+    if (codeSize < 4 || code == NULL) {
+        return false;
+    }
+    return SDL_memcmp(code, "DXBC", 4) == 0;
+}
+
 static bool D3D12_INTERNAL_CreateShaderBytecode(
+    D3D12Renderer *renderer,
     const Uint8 *code,
     size_t codeSize,
+    SDL_GPUShaderFormat format,
     void **pBytecode,
     size_t *pBytecodeSize)
 {
+    if (!D3D12_INTERNAL_IsValidShaderBytecode(code, codeSize)) {
+        if (format == SDL_GPU_SHADERFORMAT_DXBC) {
+            SET_STRING_ERROR_AND_RETURN("The provided shader code is not valid DXBC!", false);
+        }
+        SET_STRING_ERROR_AND_RETURN("The provided shader code is not valid DXIL!", false);
+    }
+
     if (pBytecode != NULL) {
         *pBytecode = SDL_malloc(codeSize);
         if (!*pBytecode) {
@@ -2705,8 +2834,10 @@ static SDL_GPUComputePipeline *D3D12_CreateComputePipeline(
     ID3D12PipelineState *pipelineState;
 
     if (!D3D12_INTERNAL_CreateShaderBytecode(
+            renderer,
             createinfo->code,
             createinfo->code_size,
+            createinfo->format,
             &bytecode,
             &bytecodeSize)) {
         return NULL;
@@ -3113,13 +3244,16 @@ static SDL_GPUShader *D3D12_CreateShader(
     SDL_GPURenderer *driverData,
     const SDL_GPUShaderCreateInfo *createinfo)
 {
+    D3D12Renderer *renderer = (D3D12Renderer *)driverData;
     void *bytecode;
     size_t bytecodeSize;
     D3D12Shader *shader;
 
     if (!D3D12_INTERNAL_CreateShaderBytecode(
+            renderer,
             createinfo->code,
             createinfo->code_size,
+            createinfo->format,
             &bytecode,
             &bytecodeSize)) {
         return NULL;
@@ -3159,6 +3293,10 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     D3D12_CLEAR_VALUE clearValue;
     DXGI_FORMAT format;
     bool useClearValue = false;
+    bool needsSRV =
+        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
+        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
+        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ);
     bool needsUAV =
         (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) ||
         (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE);
@@ -3178,6 +3316,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
         useClearValue = true;
+        clearValue.Format = format;
         clearValue.Color[0] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT, 0);
         clearValue.Color[1] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_G_FLOAT, 0);
         clearValue.Color[2] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_B_FLOAT, 0);
@@ -3187,9 +3326,10 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
         resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
         useClearValue = true;
+        clearValue.Format = SDLToD3D12_DepthFormat[createinfo->format];
         clearValue.DepthStencil.Depth = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT, 0);
-        clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_UINT8, 0);
-        format = SDLToD3D12_DepthFormat[createinfo->format];
+        clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_NUMBER, 0);
+        format = needsSRV ? SDLToD3D12_TypelessFormat[createinfo->format] : SDLToD3D12_DepthFormat[createinfo->format];
     }
 
     if (needsUAV) {
@@ -3206,7 +3346,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 
     if (createinfo->type != SDL_GPU_TEXTURETYPE_3D) {
         desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-        desc.Alignment = isSwapchainTexture ? 0 : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+        desc.Alignment = isSwapchainTexture ? 0 : isMultisample ? D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
         desc.Width = createinfo->width;
         desc.Height = createinfo->height;
         desc.DepthOrArraySize = (UINT16)createinfo->layer_count_or_depth;
@@ -3231,7 +3371,6 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     }
 
     initialState = isSwapchainTexture ? D3D12_RESOURCE_STATE_PRESENT : D3D12_INTERNAL_DefaultTextureResourceState(createinfo->usage);
-    clearValue.Format = desc.Format;
 
     res = ID3D12Device_CreateCommittedResource(
         renderer->device,
@@ -3251,9 +3390,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     texture->resource = handle;
 
     // Create the SRV if applicable
-    if ((createinfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
-        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
-        (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
+    if (needsSRV) {
         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc;
 
         D3D12_INTERNAL_AssignStagingDescriptorHandle(
@@ -4820,6 +4957,8 @@ static void D3D12_INTERNAL_BindGraphicsResources(
             0,
             commandBuffer->vertexBufferCount,
             vertexBufferViews);
+
+        commandBuffer->needVertexBufferBind = false;
     }
 
     if (commandBuffer->needVertexSamplerBind) {
@@ -5797,6 +5936,10 @@ static void D3D12_UploadToTexture(
         D3D12_INTERNAL_ReleaseBuffer(
             d3d12CommandBuffer->renderer,
             temporaryBuffer);
+
+        if (d3d12CommandBuffer->renderer->debug_mode) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Texture upload row pitch not aligned to 256 bytes! This is suboptimal on D3D12!");
+        }
     } else if (needsPlacementCopy) {
         temporaryBuffer = D3D12_INTERNAL_CreateBuffer(
             d3d12CommandBuffer->renderer,
@@ -5834,7 +5977,9 @@ static void D3D12_UploadToTexture(
             d3d12CommandBuffer->renderer,
             temporaryBuffer);
 
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Texture upload offset not aligned to 512 bytes! This is suboptimal on D3D12!");
+        if (d3d12CommandBuffer->renderer->debug_mode) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Texture upload offset not aligned to 512 bytes! This is suboptimal on D3D12!");
+        }
     } else {
         sourceLocation.pResource = transferBufferContainer->activeBuffer->handle;
         sourceLocation.PlacedFootprint.Offset = source->offset;
@@ -6105,6 +6250,9 @@ static void D3D12_DownloadFromTexture(
 
         destinationLocation.pResource = textureDownload->temporaryBuffer->handle;
         destinationLocation.PlacedFootprint.Offset = 0;
+        if (d3d12CommandBuffer->renderer->debug_mode) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Texture pitch or offset not aligned properly! This is suboptimal on D3D12!");
+        }
     } else {
         destinationLocation.pResource = destinationBuffer->handle;
         destinationLocation.PlacedFootprint.Offset = destination->offset;
@@ -6447,9 +6595,7 @@ static void D3D12_INTERNAL_DestroySwapchain(
 {
     renderer->commandQueue->PresentX(0, NULL, NULL);
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
-        D3D12_INTERNAL_DestroyTexture(
-            renderer,
-            windowData->textureContainers[i].activeTexture);
+        D3D12_INTERNAL_DestroyTexture(windowData->textureContainers[i].activeTexture);
     }
 }
 
@@ -6465,9 +6611,7 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
 
     // Clean up the previous swapchain textures
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
-        D3D12_INTERNAL_DestroyTexture(
-            renderer,
-            windowData->textureContainers[i].activeTexture);
+        D3D12_INTERNAL_DestroyTexture(windowData->textureContainers[i].activeTexture);
     }
 
     // Create a new swapchain
@@ -8175,7 +8319,7 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 }
 
-static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
+static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 {
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     return true;
@@ -8190,6 +8334,17 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
     IDXGIFactory4 *factory4;
     IDXGIFactory6 *factory6;
     IDXGIAdapter1 *adapter;
+
+    // Early check to see if the app has _any_ D3D12 formats, if not we don't
+    // have to fuss with loading D3D in the first place.
+    bool has_dxbc = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN, false);
+    bool has_dxil = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, false);
+    bool supports_dxil = false;
+    // TODO SM7: bool has_spirv = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, false);
+    // TODO SM7: bool supports_spirv = false;
+    if (!has_dxbc && !has_dxil) {
+        return false;
+    }
 
     // Can we load D3D12?
 
@@ -8285,6 +8440,18 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
         (void **)&device);
 
     if (SUCCEEDED(res)) {
+        D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
+        shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_0;
+
+        res = ID3D12Device_CheckFeatureSupport(
+            device,
+            D3D12_FEATURE_SHADER_MODEL,
+            &shaderModel,
+            sizeof(shaderModel));
+        if (SUCCEEDED(res) && shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_0) {
+            supports_dxil = true;
+        }
+
         ID3D12Device_Release(device);
     }
     IDXGIAdapter1_Release(adapter);
@@ -8292,6 +8459,11 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
 
     SDL_UnloadObject(d3d12Dll);
     SDL_UnloadObject(dxgiDll);
+
+    if (!supports_dxil && !has_dxbc) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: DXIL is not supported and DXBC is not being provided");
+        return false;
+    }
 
     if (FAILED(res)) {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not create D3D12Device with feature level " D3D_FEATURE_LEVEL_CHOICE_STR);
@@ -8303,38 +8475,38 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this)
 }
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) && defined(HAVE_IDXGIINFOQUEUE)
-static void D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
+static bool D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
 {
     PFN_DXGI_GET_DEBUG_INTERFACE DXGIGetDebugInterfaceFunc;
     HRESULT res;
 
     renderer->dxgidebug_dll = SDL_LoadObject(DXGIDEBUG_DLL);
     if (renderer->dxgidebug_dll == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not find " DXGIDEBUG_DLL);
-        return;
+        return false;
     }
 
     DXGIGetDebugInterfaceFunc = (PFN_DXGI_GET_DEBUG_INTERFACE)SDL_LoadFunction(
         renderer->dxgidebug_dll,
         DXGI_GET_DEBUG_INTERFACE_FUNC);
     if (DXGIGetDebugInterfaceFunc == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not load function: " DXGI_GET_DEBUG_INTERFACE_FUNC);
-        return;
+        return false;
     }
 
     res = DXGIGetDebugInterfaceFunc(&D3D_IID_IDXGIDebug, (void **)&renderer->dxgiDebug);
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not get IDXGIDebug interface");
+        return false;
     }
 
     res = DXGIGetDebugInterfaceFunc(&D3D_IID_IDXGIInfoQueue, (void **)&renderer->dxgiInfoQueue);
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not get IDXGIInfoQueue interface");
+        return false;
     }
+
+    return true;
 }
 #endif
 
-static void D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer)
+static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer)
 {
     PFN_D3D12_GET_DEBUG_INTERFACE D3D12GetDebugInterfaceFunc;
     HRESULT res;
@@ -8343,21 +8515,20 @@ static void D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer)
         renderer->d3d12_dll,
         D3D12_GET_DEBUG_INTERFACE_FUNC);
     if (D3D12GetDebugInterfaceFunc == NULL) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not load function: " D3D12_GET_DEBUG_INTERFACE_FUNC);
-        return;
+        return false;
     }
 
     res = D3D12GetDebugInterfaceFunc(D3D_GUID(D3D_IID_ID3D12Debug), (void **)&renderer->d3d12Debug);
     if (FAILED(res)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Could not get ID3D12Debug interface");
-        return;
+        return false;
     }
 
     ID3D12Debug_EnableDebugLayer(renderer->d3d12Debug);
+    return true;
 }
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
-static bool D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *renderer)
+static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *renderer)
 {
     ID3D12InfoQueue *infoQueue = NULL;
     D3D12_MESSAGE_SEVERITY severities[] = { D3D12_MESSAGE_SEVERITY_INFO };
@@ -8369,7 +8540,7 @@ static bool D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *rende
         D3D_GUID(D3D_IID_ID3D12InfoQueue),
         (void **)&infoQueue);
     if (FAILED(res)) {
-        CHECK_D3D12_ERROR_AND_RETURN("Failed to convert ID3D12Device to ID3D12InfoQueue", false);
+        return;
     }
 
     SDL_zero(filter);
@@ -8385,8 +8556,6 @@ static bool D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *rende
         true);
 
     ID3D12InfoQueue_Release(infoQueue);
-
-    return true;
 }
 
 static void WINAPI D3D12_INTERNAL_OnD3D12DebugInfoMsg(
@@ -8530,6 +8699,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     renderer = (D3D12Renderer *)SDL_calloc(1, sizeof(D3D12Renderer));
 
+    bool hasDxgiDebug = false;
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     // Load the DXGI library
     renderer->dxgi_dll = SDL_LoadObject(DXGI_DLL);
@@ -8541,8 +8711,10 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 #ifdef HAVE_IDXGIINFOQUEUE
     // Initialize the DXGI debug layer, if applicable
     if (debugMode) {
-        D3D12_INTERNAL_TryInitializeDXGIDebug(renderer);
+        hasDxgiDebug = D3D12_INTERNAL_TryInitializeDXGIDebug(renderer);
     }
+#else
+    hasDxgiDebug = true;
 #endif
 
     // Load the CreateDXGIFactory1 function
@@ -8699,7 +8871,20 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     // Initialize the D3D12 debug layer, if applicable
     if (debugMode) {
-        D3D12_INTERNAL_TryInitializeD3D12Debug(renderer);
+        bool hasD3d12Debug = D3D12_INTERNAL_TryInitializeD3D12Debug(renderer);
+        if (hasDxgiDebug && hasD3d12Debug) {
+            SDL_LogInfo(
+                SDL_LOG_CATEGORY_GPU,
+                "Validation layers enabled, expect debug level performance!");
+        } else if (hasDxgiDebug || hasD3d12Debug) {
+            SDL_LogWarn(
+                SDL_LOG_CATEGORY_GPU,
+                "Validation layers partially enabled, some warnings may not be available");
+        } else {
+            SDL_LogWarn(
+                SDL_LOG_CATEGORY_GPU,
+                "Validation layers not found, continuing without validation");
+        }
     }
 
     // Create the D3D12Device
@@ -8746,9 +8931,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
     // Initialize the D3D12 debug info queue, if applicable
     if (debugMode) {
-        if (!D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(renderer)) {
-            return NULL;
-        }
+        D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(renderer);
         D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(renderer);
     }
 #endif
@@ -9029,8 +9212,23 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         return NULL;
     }
 
+    SDL_GPUShaderFormat shaderFormats = SDL_GPU_SHADERFORMAT_DXBC;
+
+    D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
+    shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_0;
+
+    res = ID3D12Device_CheckFeatureSupport(
+        renderer->device,
+        D3D12_FEATURE_SHADER_MODEL,
+        &shaderModel,
+        sizeof(shaderModel));
+    if (SUCCEEDED(res) && shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_0) {
+        shaderFormats |= SDL_GPU_SHADERFORMAT_DXIL;
+    }
+
     ASSIGN_DRIVER(D3D12)
     result->driverData = (SDL_GPURenderer *)renderer;
+    result->shader_formats = shaderFormats;
     result->debug_mode = debugMode;
     renderer->sdlGPUDevice = result;
 
@@ -9039,7 +9237,6 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 
 SDL_GPUBootstrap D3D12Driver = {
     "direct3d12",
-    SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_DXBC,
     D3D12_PrepareDriver,
     D3D12_CreateDevice
 };
