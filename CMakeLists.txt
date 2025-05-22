@@ -2994,10 +2994,13 @@ elseif(NGAGE)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/ngage/*.c")
   set(HAVE_SDL_TIMERS TRUE)
 
-  sdl_compile_definitions(
-    PRIVATE
-    SDL_LEAN_AND_MEAN
-  )
+  set_option(SDL_LEAN_AND_MEAN "Enable lean and mean" ON)
+  if(SDL_LEAN_AND_MEAN)
+    sdl_compile_definitions(
+      PRIVATE
+      SDL_LEAN_AND_MEAN
+    )
+  endif()
 
   sdl_link_dependency(ngage
     LINK_OPTIONS "SHELL:-s MAIN_COMPAT=0"
