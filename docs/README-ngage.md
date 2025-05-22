@@ -20,7 +20,7 @@ Many thanks to:
  [Suomen pelimuseo](https://www.vapriikki.fi/nayttelyt/fantastinen-floppi/), and
  to Heikki Jungmann, for their ongoing love and dedication for the Nokia N-Gage — you
  guys are awesome!
- 
+
 ## History
 
 When SDL support was discontinued due to the lack of C99 support at the time,
@@ -33,7 +33,7 @@ software renderer has been removed.
 The outcome is a significantly leaner and more efficient SDL port, which we hope
 will breathe new life into this beloved yet obscure platform.
 
-## To the Stubborn Legends of the DC Scene  
+## To the Stubborn Legends of the DC Scene
 
 This port is lovingly dedicated to the ever-nostalgic Dreamcast homebrew scene —
 because if we managed to pull this off for the N-Gage (yes, the N-Gage), surely

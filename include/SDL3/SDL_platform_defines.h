@@ -476,7 +476,8 @@
 #ifdef __NGAGE__
 
 /**
- * A preprocessor macro that is only defined if compiling for the Nokia N-Gage.
+ * A preprocessor macro that is only defined if compiling for the Nokia
+ * N-Gage.
  *
  * \since This macro is available since SDL 3.4.0.
  */
