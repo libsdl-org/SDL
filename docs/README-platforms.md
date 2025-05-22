@@ -24,6 +24,7 @@
 - [Windows](README-windows.md)
 - [Windows GDK](README-gdk.md)
 - [Xbox](README-gdk.md)
+- [Nokia N-Gage](README-ngage.md)
 
 ## Unsupported Platforms
 
@@ -33,7 +34,6 @@ All of these still work with [SDL2](/SDL2), which is an incompatible API, but an
 
 - Google Stadia
 - NaCL
-- Nokia N-Gage
 - OS/2
 - QNX
 - WinPhone
