@@ -3177,7 +3177,7 @@ bool SDL_IsJoystickHoriSteamController(Uint16 vendor_id, Uint16 product_id)
 
 bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
 {
-    return vendor_id == USB_VENDOR_FLYDIGI && (product_id == USB_PRODUCT_FLYDIGI_VADER4_PRO);
+    return vendor_id == USB_VENDOR_FLYDIGI && (product_id == USB_PRODUCT_FLYDIGI_GAMEPAD);
 }
 
 bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id)

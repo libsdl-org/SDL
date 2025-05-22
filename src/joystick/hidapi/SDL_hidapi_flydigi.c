@@ -39,59 +39,29 @@ enum
     SDL_GAMEPAD_BUTTON_FLYDIGI_M2,
     SDL_GAMEPAD_BUTTON_FLYDIGI_M3,
     SDL_GAMEPAD_BUTTON_FLYDIGI_M4,
-    SDL_GAMEPAD_BUTTON_FLYDIGI_FN,
-    SDL_GAMEPAD_BUTTON_FLYDIGI_C,
-    SDL_GAMEPAD_BUTTON_FLYDIGI_Z,
-    SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS_WITH_CZ,
+    SDL_GAMEPAD_NUM_BASE_FLYDIGI_BUTTONS
 };
-#define SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS_WITHOUT_CZ SDL_GAMEPAD_BUTTON_FLYDIGI_C
 
-#define FLYDIGI_ACCEL_SCALE 256.f
 #define SENSOR_INTERVAL_NS 8000000ULL
 #define FLYDIGI_CMD_REPORT_ID 0x05
 #define FLYDIGI_HAPTIC_COMMAND 0x0F
 #define FLYDIGI_GET_CONFIG_COMMAND 0xEB
+#define FLYDIGI_GET_INFO_COMMAND 0xEC
 
 #define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
 typedef struct
 {
+    Uint8 deviceID;
+    bool has_cz;
+    bool wireless;
     bool sensors_supported;
     bool sensors_enabled;
-    bool touchpad_01_supported;
-    bool touchpad_02_supported;
-    bool rumble_supported;
-    bool rumble_type;
-    bool rgb_supported;
-    bool player_led_supported;
-    bool powerstate_supported;
-    bool has_cz;
-    Uint8 serial[6];
-    Uint16 version;
-    Uint16 version_beta;
-    float accelScale;
-    float gyroScale;
-    Uint8 last_state[USB_PACKET_LENGTH];
+    Uint16 firmware_version;
     Uint64 sensor_timestamp; // Microseconds. Simulate onboard clock. Advance by known rate: SENSOR_INTERVAL_NS == 8ms = 125 Hz
+    float accelScale;
+    Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverFlydigi_Context;
-
-#pragma pack(push,1)
-typedef struct
-{
-    bool sensors_supported;
-    bool touchpad_01_supported;
-    bool touchpad_02_supported;
-    bool rumble_supported;
-    bool rumble_type;
-    bool rgb_supported;
-    Uint8 device_type;
-    Uint8 serial[6];
-    Uint16 version;
-    Uint16 version_beta;
-    Uint16 pid;
-} FLYDIGI_DEVICE_INFO;
-
-#pragma pack(pop)
 
 
 static void HIDAPI_DriverFlydigi_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -114,6 +84,129 @@ static bool HIDAPI_DriverFlydigi_IsSupportedDevice(SDL_HIDAPI_Device *device, co
     return SDL_IsJoystickFlydigiController(vendor_id, product_id) && interface_number == 2;
 }
 
+static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
+
+    for (int attempt = 0; ctx->deviceID == 0 && attempt < 3; ++attempt) {
+        const Uint8 request[] = { FLYDIGI_CMD_REPORT_ID, FLYDIGI_GET_INFO_COMMAND, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        int size = SDL_hid_write(device->dev, request, sizeof(request));
+        if (size < 0) {
+            break;
+        }
+
+        // Read the reply
+        for (int i = 0; i < 100; ++i) {
+            SDL_Delay(1);
+
+            Uint8 data[USB_PACKET_LENGTH];
+            size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0);
+            if (size < 0) {
+                break;
+            }
+            if (size == 0) {
+                continue;
+            }
+
+#ifdef DEBUG_FLYDIGI_PROTOCOL
+            HIDAPI_DumpPacket("Flydigi packet: size = %d", data, size);
+#endif
+            if (size == 32 && data[15] == 236) {
+                ctx->deviceID = data[3];
+                ctx->firmware_version = data[9] | (data[10] << 8);
+
+                char serial[9];
+                (void)SDL_snprintf(serial, sizeof(serial), "%.2x%.2x%.2x%.2x", data[5], data[6], data[7], data[8]);
+                HIDAPI_SetDeviceSerial(device, serial);
+
+                // The Vader 2 with firmware 6.0.4.9 doesn't report the connection state
+                if (ctx->firmware_version >= 0x6400) {
+                    switch (data[13]) {
+                    case 0:
+                        // Wireless connection
+                        ctx->wireless = true;
+                        break;
+                    case 1:
+                        // Wired connection
+                        ctx->wireless = false;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+
+                // Done!
+                break;
+            }
+        }
+    }
+
+    if (ctx->deviceID == 0) {
+        // Try to guess from the name of the controller
+        if (SDL_strstr(device->name, "VADER") != NULL) {
+            if (SDL_strstr(device->name, "VADER2") != NULL) {
+                ctx->deviceID = 20;
+            } else if (SDL_strstr(device->name, "VADER3") != NULL) {
+                ctx->deviceID = 28;
+            } else if (SDL_strstr(device->name, "VADER4") != NULL) {
+                ctx->deviceID = 85;
+            }
+        } else if (SDL_strstr(device->name, "APEX") != NULL) {
+            if (SDL_strstr(device->name, "APEX2") != NULL) {
+                ctx->deviceID = 19;
+            } else if (SDL_strstr(device->name, "APEX3") != NULL) {
+                ctx->deviceID = 24;
+            } else if (SDL_strstr(device->name, "APEX4") != NULL) {
+                ctx->deviceID = 84;
+            }
+        }
+    }
+    device->guid.data[15] = ctx->deviceID;
+
+    switch (ctx->deviceID) {
+    case 19:
+        HIDAPI_SetDeviceName(device, "Flydigi Apex 2");
+        break;
+    case 24:
+    case 26:
+    case 29:
+        HIDAPI_SetDeviceName(device, "Flydigi Apex 3");
+        break;
+    case 84:
+        // The Apex 4 controller has sensors, but they're only reported when gyro mouse is enabled
+        HIDAPI_SetDeviceName(device, "Flydigi Apex 4");
+        break;
+    case 20:
+    case 21:
+    case 23:
+        // The Vader 2 controller has sensors, but they're only reported when gyro mouse is enabled
+        HIDAPI_SetDeviceName(device, "Flydigi Vader 2");
+        ctx->has_cz = true;
+        break;
+    case 22:
+        HIDAPI_SetDeviceName(device, "Flydigi Vader 2 Pro");
+        ctx->has_cz = true;
+        break;
+    case 28:
+        HIDAPI_SetDeviceName(device, "Flydigi Vader 3");
+        ctx->has_cz = true;
+        break;
+    case 80:
+    case 81:
+        HIDAPI_SetDeviceName(device, "Flydigi Vader 3 Pro");
+        ctx->has_cz = true;
+        break;
+    case 85:
+        HIDAPI_SetDeviceName(device, "Flydigi Vader 4 Pro");
+        ctx->has_cz = true;
+        ctx->sensors_supported = true;
+        ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        break;
+    default:
+        break;
+    }
+}
+
 static bool HIDAPI_DriverFlydigi_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)SDL_calloc(1, sizeof(*ctx));
@@ -122,18 +215,7 @@ static bool HIDAPI_DriverFlydigi_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
-    if (device->product_id == USB_PRODUCT_FLYDIGI_VADER4_PRO) {
-        const int VADER4PRO_REPORT_SIZE = 32;
-        Uint8 data[USB_PACKET_LENGTH];
-        int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 80);
-        if (size == VADER4PRO_REPORT_SIZE) {
-            ctx->sensors_supported = true;
-            ctx->rumble_supported = true;
-        }
-        const char VADER3_NAME[] = "Flydigi VADER3";
-        const char VADER4_NAME[] = "Flydigi VADER4";
-        ctx->has_cz = SDL_strncmp(device->name, VADER3_NAME, sizeof(VADER3_NAME)) == 0 || SDL_strncmp(device->name, VADER4_NAME, sizeof(VADER4_NAME)) == 0;
-    }
+    UpdateDeviceIdentity(device);
 
     return HIDAPI_JoystickConnected(device, NULL);
 }
@@ -160,16 +242,20 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     SDL_zeroa(ctx->last_state);
 
     // Initialize the joystick capabilities
-    joystick->nbuttons = ctx->has_cz ? SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS_WITH_CZ : SDL_GAMEPAD_NUM_FLYDIGI_BUTTONS_WITHOUT_CZ;
+    joystick->nbuttons = SDL_GAMEPAD_NUM_BASE_FLYDIGI_BUTTONS;
+    if (ctx->has_cz) {
+        joystick->nbuttons += 2;
+    }
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
+
+    if (ctx->wireless) {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
+    }
 
     if (ctx->sensors_supported) {
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 125.0f);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 125.0f);
-
-
-        ctx->accelScale = SDL_STANDARD_GRAVITY / FLYDIGI_ACCEL_SCALE;
     }
 
     return true;
@@ -177,19 +263,14 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
 static bool HIDAPI_DriverFlydigi_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
-    if (ctx->rumble_supported) {
-        Uint8 rumble_packet[4] = { FLYDIGI_CMD_REPORT_ID, FLYDIGI_HAPTIC_COMMAND, 0x00, 0x00 };
-        rumble_packet[2] = low_frequency_rumble >> 8;
-        rumble_packet[3] = high_frequency_rumble >> 8;
+    Uint8 rumble_packet[4] = { FLYDIGI_CMD_REPORT_ID, FLYDIGI_HAPTIC_COMMAND, 0x00, 0x00 };
+    rumble_packet[2] = low_frequency_rumble >> 8;
+    rumble_packet[3] = high_frequency_rumble >> 8;
 
-        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
-            return SDL_SetError("Couldn't send rumble packet");
-        }
-        return true;
-    } else {
-        return SDL_Unsupported();
+    if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+        return SDL_SetError("Couldn't send rumble packet");
     }
+    return true;
 }
 
 static bool HIDAPI_DriverFlydigi_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
@@ -199,12 +280,7 @@ static bool HIDAPI_DriverFlydigi_RumbleJoystickTriggers(SDL_HIDAPI_Device *devic
 
 static Uint32 HIDAPI_DriverFlydigi_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
-    Uint32 caps = 0;
-    if (ctx->rumble_supported) {
-        caps |= SDL_JOYSTICK_CAP_RUMBLE;
-    }
-    return caps;
+    return SDL_JOYSTICK_CAP_RUMBLE;
 }
 
 static bool HIDAPI_DriverFlydigi_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
@@ -235,10 +311,7 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         return;
     }
 
-    if (ctx->last_state[8] != data[8]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_FLYDIGI_FN, ((data[8] & 0x01) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data[8] & 0x08) != 0));
-    }
+    Uint8 extra_button_index = SDL_GAMEPAD_NUM_BASE_FLYDIGI_BUTTONS;
 
     if (ctx->last_state[9] != data[9]) {
         Uint8 hat;
@@ -290,12 +363,22 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
     }
 
     if (ctx->last_state[7] != data[7]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_FLYDIGI_C, ((data[7] & 0x01) != 0));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_FLYDIGI_Z, ((data[7] & 0x02) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_FLYDIGI_M1, ((data[7] & 0x04) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_FLYDIGI_M2, ((data[7] & 0x08) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_FLYDIGI_M3, ((data[7] & 0x10) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_FLYDIGI_M4, ((data[7] & 0x20) != 0));
+        if (ctx->has_cz) {
+            SDL_SendJoystickButton(timestamp, joystick, extra_button_index++, ((data[7] & 0x01) != 0));
+            SDL_SendJoystickButton(timestamp, joystick, extra_button_index++, ((data[7] & 0x02) != 0));
+        }
+    }
+
+    if (ctx->last_state[8] != data[8]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data[8] & 0x08) != 0));
+        // The '+' button is used to toggle gyro mouse mode, so don't pass that to the application
+        //SDL_SendJoystickButton(timestamp, joystick, extra_button_index++, ((data[8] & 0x01) != 0));
+        // The '-' button is only available on the Vader 2, for simplicity let's ignore that
+        //SDL_SendJoystickButton(timestamp, joystick, extra_button_index++, ((data[8] & 0x10) != 0));
     }
 
 #define READ_STICK_AXIS(offset) \
