@@ -10,7 +10,7 @@ contributed by:
 
 Many thanks to:
 
-- icculus and slouken for always making room for us — even when we show up in 2025
+- icculus and slouken for always making room for us, even when we show up in 2025
  still waving the N-Gage flag.
 
 - The Nokia N-Gage [Discord community](https://discord.gg/dbUzqJ26vs)
