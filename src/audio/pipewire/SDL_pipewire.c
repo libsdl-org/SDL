@@ -96,7 +96,7 @@ static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, 
 SDL_ELF_NOTE_DLOPEN(
     "audio-libpipewire",
     "Support for audio through libpipewire",
-    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
 );
 
