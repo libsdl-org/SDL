@@ -273,7 +273,7 @@ void windows_ShowFileDialog(void *ptr)
             SDL_strlcpy(chosen_file, chosen_folder, MAX_PATH);
             chosen_file[chosen_folder_size] = '\\';
 
-            file_ptr += SDL_strlen(chosen_folder) + 1;
+            file_ptr += SDL_wcslen(file_ptr) + 1;
 
             while (*file_ptr) {
                 nfiles++;
@@ -308,7 +308,7 @@ void windows_ShowFileDialog(void *ptr)
                     return;
                 }
 
-                file_ptr += SDL_strlen(chosen_file) + 1 - diff;
+                file_ptr += SDL_wcslen(file_ptr) + 1;
 
                 chosen_files_list[nfiles - 1] = SDL_strdup(chosen_file);
 
