@@ -1717,6 +1717,8 @@ typedef struct SDL_GPUColorTargetBlendState
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUShader
+ * \sa SDL_GPUShaderFormat
+ * \sa SDL_GPUShaderStage
  */
 typedef struct SDL_GPUShaderCreateInfo
 {
