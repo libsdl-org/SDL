@@ -34,6 +34,12 @@ things, you might confuse it. This is to the benefit of documentation, though,
 where we would rather you not do surprising things.
 
 
+## UTF-8 only!
+
+All text must be UTF-8 encoded. The wiki will refuse to update files that are
+malformed.
+
+
 ## We _sort of_ write in Doxygen format.
 
 To document a symbol, we use something that looks like Doxygen (and Javadoc)
