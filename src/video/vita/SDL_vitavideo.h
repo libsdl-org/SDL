@@ -60,8 +60,6 @@ extern SDL_Window *Vita_Window;
 // Display and window functions
 extern bool VITA_VideoInit(SDL_VideoDevice *_this);
 extern void VITA_VideoQuit(SDL_VideoDevice *_this);
-extern bool VITA_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-extern bool VITA_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern bool VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void VITA_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool VITA_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
