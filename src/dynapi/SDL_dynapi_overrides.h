@@ -1278,3 +1278,5 @@
 #define SDL_PutAudioStreamPlanarData SDL_PutAudioStreamPlanarData_REAL
 #define SDL_SetAudioIterationCallbacks SDL_SetAudioIterationCallbacks_REAL
 #define SDL_GetEventDescription SDL_GetEventDescription_REAL
+#define SDL_GetDeviceFormFactor SDL_GetDeviceFormFactor_REAL
+#define SDL_GetDeviceFormFactorName SDL_GetDeviceFormFactorName_REAL
