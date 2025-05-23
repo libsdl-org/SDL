@@ -323,14 +323,17 @@ typedef enum SDL_FileDialogType
  */
 extern SDL_DECLSPEC void SDLCALL SDL_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props);
 
-#define SDL_PROP_FILE_DIALOG_FILTERS_POINTER     "SDL.filedialog.filters"
-#define SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER     "SDL.filedialog.nfilters"
-#define SDL_PROP_FILE_DIALOG_WINDOW_POINTER      "SDL.filedialog.window"
-#define SDL_PROP_FILE_DIALOG_LOCATION_STRING     "SDL.filedialog.location"
-#define SDL_PROP_FILE_DIALOG_MANY_BOOLEAN        "SDL.filedialog.many"
-#define SDL_PROP_FILE_DIALOG_TITLE_STRING        "SDL.filedialog.title"
-#define SDL_PROP_FILE_DIALOG_ACCEPT_STRING       "SDL.filedialog.accept"
-#define SDL_PROP_FILE_DIALOG_CANCEL_STRING       "SDL.filedialog.cancel"
+#define SDL_PROP_FILE_DIALOG_FILTERS_POINTER       "SDL.filedialog.filters"
+#define SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER       "SDL.filedialog.nfilters"
+#define SDL_PROP_FILE_DIALOG_CURRENT_FILTER_NUMBER "SDL.filedialog.current_filter"
+#define SDL_PROP_FILE_DIALOG_WINDOW_POINTER        "SDL.filedialog.window"
+#define SDL_PROP_FILE_DIALOG_LOCATION_STRING       "SDL.filedialog.location"
+#define SDL_PROP_FILE_DIALOG_CURRENT_NAME_STRING   "SDL.filedialog.current_name"
+#define SDL_PROP_FILE_DIALOG_CURRENT_FILE_STRING   "SDL.filedialog.current_file"
+#define SDL_PROP_FILE_DIALOG_MANY_BOOLEAN          "SDL.filedialog.many"
+#define SDL_PROP_FILE_DIALOG_TITLE_STRING          "SDL.filedialog.title"
+#define SDL_PROP_FILE_DIALOG_ACCEPT_STRING         "SDL.filedialog.accept"
+#define SDL_PROP_FILE_DIALOG_CANCEL_STRING         "SDL.filedialog.cancel"
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

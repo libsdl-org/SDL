@@ -23,6 +23,8 @@ const SDL_DialogFileFilter filters[] = {
 };
 
 static void SDLCALL callback(void *userdata, const char * const *files, int filter) {
+    char **save_path = userdata;
+
     if (files) {
         const char* filter_name = "(filter fetching unsupported)";
 
@@ -35,6 +37,11 @@ static void SDLCALL callback(void *userdata, const char * const *files, int filt
         }
 
         SDL_Log("Filter used: '%s'", filter_name);
+
+        if (save_path && *files) {
+            SDL_free(*save_path);
+            *save_path = SDL_strdup(*files);
+        }
 
         while (*files) {
             SDL_Log("'%s'", *files);
@@ -52,9 +59,11 @@ int main(int argc, char *argv[])
     SDLTest_CommonState *state;
     const SDL_FRect open_file_rect = { 50, 50, 220, 140 };
     const SDL_FRect save_file_rect = { 50, 290, 220, 140 };
+    const SDL_FRect save_adv_file_rect = { 370, 290, 220, 140 };
     const SDL_FRect open_folder_rect = { 370, 50, 220, 140 };
     int i;
     const char *initial_path = NULL;
+    char *save_path = NULL;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -117,6 +126,18 @@ int main(int argc, char *argv[])
                     SDL_ShowOpenFolderDialog(callback, NULL, w, initial_path, 1);
                 } else if (SDL_PointInRectFloat(&p, &save_file_rect)) {
                     SDL_ShowSaveFileDialog(callback, NULL, w, filters, SDL_arraysize(filters), initial_path);
+                } else if (SDL_PointInRectFloat(&p, &save_adv_file_rect)) {
+                    SDL_PropertiesID props = SDL_CreateProperties();
+                    SDL_SetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, SDL_arraysize(filters));
+                    SDL_SetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, (void *) filters);
+                    SDL_SetNumberProperty(props, SDL_PROP_FILE_DIALOG_CURRENT_FILTER_NUMBER, 1);
+                    if(save_path) {
+                        SDL_SetStringProperty(props, SDL_PROP_FILE_DIALOG_CURRENT_FILE_STRING, save_path);
+                    } else {
+                        SDL_SetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, initial_path);
+                        SDL_SetStringProperty(props, SDL_PROP_FILE_DIALOG_CURRENT_NAME_STRING, "Untitled.index");
+                    }
+                    SDL_ShowFileDialogWithProperties(SDL_FILEDIALOG_SAVEFILE, callback, &save_path, props);
                 }
             }
         }
@@ -134,12 +155,16 @@ int main(int argc, char *argv[])
         SDL_SetRenderDrawColor(r, 0, 255, 0, SDL_ALPHA_OPAQUE);
         SDL_RenderFillRect(r, &save_file_rect);
 
+        SDL_SetRenderDrawColor(r, 0, 255, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(r, &save_adv_file_rect);
+
         SDL_SetRenderDrawColor(r, 0, 0, 255, SDL_ALPHA_OPAQUE);
         SDL_RenderFillRect(r, &open_folder_rect);
 
         SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDLTest_DrawString(r, open_file_rect.x+5, open_file_rect.y+open_file_rect.h/2, "Open File...");
         SDLTest_DrawString(r, save_file_rect.x+5, save_file_rect.y+save_file_rect.h/2, "Save File...");
+        SDLTest_DrawString(r, save_adv_file_rect.x+5, save_adv_file_rect.y+save_adv_file_rect.h/2, "Save File with props...");
         SDLTest_DrawString(r, open_folder_rect.x+5, open_folder_rect.y+open_folder_rect.h/2, "Open Folder...");
 
         SDL_RenderPresent(r);
