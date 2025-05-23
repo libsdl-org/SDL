@@ -237,14 +237,14 @@ static Uint64 Wayland_GetKeyboardTimestamp(SDL_WaylandSeat *seat, Uint32 wl_time
 
 static Uint64 Wayland_GetPointerTimestamp(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
 {
-    const Uint64 adjustedTimestampMS = Wayland_EventTimestampMSToNS(wl_timestamp_ms);
-    return Wayland_AdjustEventTimestampBase(seat->pointer.timestamps ? seat->pointer.highres_timestamp_ns : adjustedTimestampMS);
+    const Uint64 adjustedTimestampNS = Wayland_EventTimestampMSToNS(wl_timestamp_ms);
+    return Wayland_AdjustEventTimestampBase(seat->pointer.timestamps ? seat->pointer.highres_timestamp_ns : adjustedTimestampNS);
 }
 
 Uint64 Wayland_GetTouchTimestamp(SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms)
 {
-    const Uint64 adjustedTimestampMS = Wayland_EventTimestampMSToNS(wl_timestamp_ms);
-    return Wayland_AdjustEventTimestampBase(seat->touch.timestamps ? seat->touch.highres_timestamp_ns : adjustedTimestampMS);
+    const Uint64 adjustedTimestampNS = Wayland_EventTimestampMSToNS(wl_timestamp_ms);
+    return Wayland_AdjustEventTimestampBase(seat->touch.timestamps ? seat->touch.highres_timestamp_ns : adjustedTimestampNS);
 }
 
 static void input_timestamp_listener(void *data, struct zwp_input_timestamps_v1 *zwp_input_timestamps_v1,
@@ -579,15 +579,15 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     }
 }
 
-static void pointer_handle_motion_common(SDL_WaylandSeat *seat, Uint64 nsTimestamp, wl_fixed_t sx_w, wl_fixed_t sy_w)
+static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
 {
     SDL_WindowData *window_data = seat->pointer.focus;
     SDL_Window *window = window_data ? window_data->sdlwindow : NULL;
 
     if (window_data) {
-        const float sx = (float)(wl_fixed_to_double(sx_w) * window_data->pointer_scale.x);
-        const float sy = (float)(wl_fixed_to_double(sy_w) * window_data->pointer_scale.y);
-        SDL_SendMouseMotion(nsTimestamp, window_data->sdlwindow, seat->pointer.sdl_id, false, sx, sy);
+        const float sx = (float)(wl_fixed_to_double(seat->pointer.pending_frame.absolute.sx) * window_data->pointer_scale.x);
+        const float sy = (float)(wl_fixed_to_double(seat->pointer.pending_frame.absolute.sy) * window_data->pointer_scale.y);
+        SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, sx, sy);
 
         seat->pointer.last_motion.x = (int)SDL_floorf(sx);
         seat->pointer.last_motion.y = (int)SDL_floorf(sy);
@@ -682,10 +682,26 @@ static void pointer_handle_motion_common(SDL_WaylandSeat *seat, Uint64 nsTimesta
 }
 
 static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
-                                  uint32_t time, wl_fixed_t sx_w, wl_fixed_t sy_w)
+                                  uint32_t time, wl_fixed_t sx, wl_fixed_t sy)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
-    pointer_handle_motion_common(seat, Wayland_GetPointerTimestamp(seat, time), sx_w, sy_w);
+
+    seat->pointer.pending_frame.have_absolute = true;
+    seat->pointer.pending_frame.absolute.sx = sx;
+    seat->pointer.pending_frame.absolute.sy = sy;
+
+    /* The relative pointer timestamp is higher resolution than the default millisecond timestamp,
+     * but lower than the highres timestamp. Use the best timer available for this frame, but still
+     * process the pending millisecond timestamp to update the offset value for other events.
+     */
+    const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+    if (!seat->pointer.pending_frame.have_relative || seat->pointer.timestamps) {
+        seat->pointer.pending_frame.timestamp_ns = timestamp;
+    }
+
+    if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+        pointer_dispatch_absolute_motion(seat);
+    }
 }
 
 static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
@@ -713,23 +729,36 @@ static void pointer_handle_enter(void *data, struct wl_pointer *pointer,
      * event with no following motion event, but with the new coordinates
      * as part of the enter event.
      *
-     * FIXME: This causes a movement event with an anomalous timestamp when
-     *        the cursor enters the window.
+     * If another event with a real timestamp is part of this frame, use it.
+     * Otherwise, set it to 0 to use the current system timer.
      */
-    pointer_handle_motion_common(seat, 0, sx_w, sy_w);
+    if (!seat->pointer.pending_frame.have_absolute &&
+        !seat->pointer.pending_frame.have_relative &&
+        !seat->pointer.pending_frame.have_axis) {
+        seat->pointer.pending_frame.timestamp_ns = 0;
+    }
+    seat->pointer.pending_frame.absolute.sx = sx_w;
+    seat->pointer.pending_frame.absolute.sy = sy_w;
 
-    // Update the pointer grab state.
-    Wayland_SeatUpdatePointerGrab(seat);
+    seat->pointer.pending_frame.have_absolute = true;
+    seat->pointer.pending_frame.have_enter = true;
 
-    /* If the cursor was changed while our window didn't have pointer
-     * focus, we might need to trigger another call to
-     * wl_pointer_set_cursor() for the new cursor to be displayed.
-     *
-     * This will also update the cursor if a second pointer entered a
-     * window that already has focus, as the focus change sequence
-     * won't be run.
-     */
-    Wayland_SeatUpdateCursor(seat);
+    if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+        pointer_dispatch_absolute_motion(seat);
+
+        // Update the pointer grab state.
+        Wayland_SeatUpdatePointerGrab(seat);
+
+        /* If the cursor was changed while our window didn't have pointer
+         * focus, we might need to trigger another call to
+         * wl_pointer_set_cursor() for the new cursor to be displayed.
+         *
+         * This will also update the cursor if a second pointer entered a
+         * window that already has focus, as the focus change sequence
+         * won't be run.
+         */
+        Wayland_SeatUpdateCursor(seat);
+    }
 }
 
 static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
@@ -969,65 +998,67 @@ static void pointer_handle_axis_common(SDL_WaylandSeat *seat, enum SDL_WaylandAx
     const enum wl_pointer_axis a = axis;
 
     if (seat->pointer.focus) {
+        seat->pointer.pending_frame.have_axis = true;
+
         switch (a) {
         case WL_POINTER_AXIS_VERTICAL_SCROLL:
             switch (type) {
-            case AXIS_EVENT_VALUE120:
+            case SDL_WAYLAND_AXIS_EVENT_VALUE120:
                 /*
                  * High resolution scroll event. The spec doesn't state that axis_value120
                  * events are limited to one per frame, so the values are accumulated.
                  */
-                if (seat->pointer.current_axis_info.y_axis_type != AXIS_EVENT_VALUE120) {
-                    seat->pointer.current_axis_info.y_axis_type = AXIS_EVENT_VALUE120;
-                    seat->pointer.current_axis_info.y = 0.0f;
+                if (seat->pointer.pending_frame.axis.y_axis_type != SDL_WAYLAND_AXIS_EVENT_VALUE120) {
+                    seat->pointer.pending_frame.axis.y_axis_type = SDL_WAYLAND_AXIS_EVENT_VALUE120;
+                    seat->pointer.pending_frame.axis.y = 0.0f;
                 }
-                seat->pointer.current_axis_info.y += 0 - (float)wl_fixed_to_double(value);
+                seat->pointer.pending_frame.axis.y += 0 - (float)wl_fixed_to_double(value);
                 break;
-            case AXIS_EVENT_DISCRETE:
+            case SDL_WAYLAND_AXIS_EVENT_DISCRETE:
                 /*
                  * This is a discrete axis event, so we process it and set the
                  * flag to ignore future continuous axis events in this frame.
                  */
-                if (seat->pointer.current_axis_info.y_axis_type != AXIS_EVENT_DISCRETE) {
-                    seat->pointer.current_axis_info.y_axis_type = AXIS_EVENT_DISCRETE;
-                    seat->pointer.current_axis_info.y = 0 - (float)wl_fixed_to_double(value);
+                if (seat->pointer.pending_frame.axis.y_axis_type != SDL_WAYLAND_AXIS_EVENT_DISCRETE) {
+                    seat->pointer.pending_frame.axis.y_axis_type = SDL_WAYLAND_AXIS_EVENT_DISCRETE;
+                    seat->pointer.pending_frame.axis.y = 0 - (float)wl_fixed_to_double(value);
                 }
                 break;
-            case AXIS_EVENT_CONTINUOUS:
+            case SDL_WAYLAND_AXIS_EVENT_CONTINUOUS:
                 // Only process continuous events if no discrete events have been received.
-                if (seat->pointer.current_axis_info.y_axis_type == AXIS_EVENT_CONTINUOUS) {
-                    seat->pointer.current_axis_info.y = 0 - (float)wl_fixed_to_double(value);
+                if (seat->pointer.pending_frame.axis.y_axis_type == SDL_WAYLAND_AXIS_EVENT_CONTINUOUS) {
+                    seat->pointer.pending_frame.axis.y = 0 - (float)wl_fixed_to_double(value);
                 }
                 break;
             }
             break;
         case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
             switch (type) {
-            case AXIS_EVENT_VALUE120:
+            case SDL_WAYLAND_AXIS_EVENT_VALUE120:
                 /*
                  * High resolution scroll event. The spec doesn't state that axis_value120
                  * events are limited to one per frame, so the values are accumulated.
                  */
-                if (seat->pointer.current_axis_info.x_axis_type != AXIS_EVENT_VALUE120) {
-                    seat->pointer.current_axis_info.x_axis_type = AXIS_EVENT_VALUE120;
-                    seat->pointer.current_axis_info.x = 0.0f;
+                if (seat->pointer.pending_frame.axis.x_axis_type != SDL_WAYLAND_AXIS_EVENT_VALUE120) {
+                    seat->pointer.pending_frame.axis.x_axis_type = SDL_WAYLAND_AXIS_EVENT_VALUE120;
+                    seat->pointer.pending_frame.axis.x = 0.0f;
                 }
-                seat->pointer.current_axis_info.x += (float)wl_fixed_to_double(value);
+                seat->pointer.pending_frame.axis.x += (float)wl_fixed_to_double(value);
                 break;
-            case AXIS_EVENT_DISCRETE:
+            case SDL_WAYLAND_AXIS_EVENT_DISCRETE:
                 /*
                  * This is a discrete axis event, so we process it and set the
                  * flag to ignore future continuous axis events in this frame.
                  */
-                if (seat->pointer.current_axis_info.x_axis_type != AXIS_EVENT_DISCRETE) {
-                    seat->pointer.current_axis_info.x_axis_type = AXIS_EVENT_DISCRETE;
-                    seat->pointer.current_axis_info.x = (float)wl_fixed_to_double(value);
+                if (seat->pointer.pending_frame.axis.x_axis_type != SDL_WAYLAND_AXIS_EVENT_DISCRETE) {
+                    seat->pointer.pending_frame.axis.x_axis_type = SDL_WAYLAND_AXIS_EVENT_DISCRETE;
+                    seat->pointer.pending_frame.axis.x = (float)wl_fixed_to_double(value);
                 }
                 break;
-            case AXIS_EVENT_CONTINUOUS:
+            case SDL_WAYLAND_AXIS_EVENT_CONTINUOUS:
                 // Only process continuous events if no discrete events have been received.
-                if (seat->pointer.current_axis_info.x_axis_type == AXIS_EVENT_CONTINUOUS) {
-                    seat->pointer.current_axis_info.x = (float)wl_fixed_to_double(value);
+                if (seat->pointer.pending_frame.axis.x_axis_type == SDL_WAYLAND_AXIS_EVENT_CONTINUOUS) {
+                    seat->pointer.pending_frame.axis.x = (float)wl_fixed_to_double(value);
                 }
                 break;
             }
@@ -1043,8 +1074,8 @@ static void pointer_handle_axis(void *data, struct wl_pointer *pointer,
     const Uint64 nsTimestamp = Wayland_GetPointerTimestamp(seat, time);
 
     if (wl_seat_get_version(seat->wl_seat) >= WL_POINTER_FRAME_SINCE_VERSION) {
-        seat->pointer.current_axis_info.timestamp_ns = nsTimestamp;
-        pointer_handle_axis_common(seat, AXIS_EVENT_CONTINUOUS, axis, value);
+        seat->pointer.pending_frame.timestamp_ns = nsTimestamp;
+        pointer_handle_axis_common(seat, SDL_WAYLAND_AXIS_EVENT_CONTINUOUS, axis, value);
     } else {
         pointer_handle_axis_common_v1(seat, nsTimestamp, axis, value);
     }
@@ -1059,58 +1090,103 @@ static void pointer_handle_axis_relative_direction(void *data, struct wl_pointer
     }
     switch (axis_relative_direction) {
     case WL_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL:
-        seat->pointer.current_axis_info.direction = SDL_MOUSEWHEEL_NORMAL;
+        seat->pointer.pending_frame.axis.direction = SDL_MOUSEWHEEL_NORMAL;
         break;
     case WL_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED:
-        seat->pointer.current_axis_info.direction = SDL_MOUSEWHEEL_FLIPPED;
+        seat->pointer.pending_frame.axis.direction = SDL_MOUSEWHEEL_FLIPPED;
         break;
     }
 }
 
-static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
+static void pointer_dispatch_relative_motion(SDL_WaylandSeat *seat)
 {
-    SDL_WaylandSeat *seat = data;
     SDL_WindowData *window = seat->pointer.focus;
-    float x, y;
-    SDL_MouseWheelDirection direction = seat->pointer.current_axis_info.direction;
+    SDL_Mouse *mouse = SDL_GetMouse();
 
-    switch (seat->pointer.current_axis_info.x_axis_type) {
-    case AXIS_EVENT_CONTINUOUS:
-        x = seat->pointer.current_axis_info.x / WAYLAND_WHEEL_AXIS_UNIT;
+    double dx;
+    double dy;
+    if (mouse->InputTransform || !mouse->enable_relative_system_scale) {
+        dx = wl_fixed_to_double(seat->pointer.pending_frame.relative.dx_unaccel);
+        dy = wl_fixed_to_double(seat->pointer.pending_frame.relative.dy_unaccel);
+    } else {
+        dx = wl_fixed_to_double(seat->pointer.pending_frame.relative.dx) * window->pointer_scale.x;
+        dy = wl_fixed_to_double(seat->pointer.pending_frame.relative.dy) * window->pointer_scale.y;
+    }
+
+    SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window->sdlwindow, seat->pointer.sdl_id, true, (float)dx, (float)dy);
+}
+
+static void pointer_dispatch_axis(SDL_WaylandSeat *seat)
+{
+    float x, y;
+    SDL_MouseWheelDirection direction = seat->pointer.pending_frame.axis.direction;
+
+    switch (seat->pointer.pending_frame.axis.x_axis_type) {
+    case SDL_WAYLAND_AXIS_EVENT_CONTINUOUS:
+        x = seat->pointer.pending_frame.axis.x / WAYLAND_WHEEL_AXIS_UNIT;
         break;
-    case AXIS_EVENT_DISCRETE:
-        x = seat->pointer.current_axis_info.x;
+    case SDL_WAYLAND_AXIS_EVENT_DISCRETE:
+        x = seat->pointer.pending_frame.axis.x;
         break;
-    case AXIS_EVENT_VALUE120:
-        x = seat->pointer.current_axis_info.x / 120.0f;
+    case SDL_WAYLAND_AXIS_EVENT_VALUE120:
+        x = seat->pointer.pending_frame.axis.x / 120.0f;
         break;
     default:
         x = 0.0f;
         break;
     }
 
-    switch (seat->pointer.current_axis_info.y_axis_type) {
-    case AXIS_EVENT_CONTINUOUS:
-        y = seat->pointer.current_axis_info.y / WAYLAND_WHEEL_AXIS_UNIT;
+    switch (seat->pointer.pending_frame.axis.y_axis_type) {
+    case SDL_WAYLAND_AXIS_EVENT_CONTINUOUS:
+        y = seat->pointer.pending_frame.axis.y / WAYLAND_WHEEL_AXIS_UNIT;
         break;
-    case AXIS_EVENT_DISCRETE:
-        y = seat->pointer.current_axis_info.y;
+    case SDL_WAYLAND_AXIS_EVENT_DISCRETE:
+        y = seat->pointer.pending_frame.axis.y;
         break;
-    case AXIS_EVENT_VALUE120:
-        y = seat->pointer.current_axis_info.y / 120.0f;
+    case SDL_WAYLAND_AXIS_EVENT_VALUE120:
+        y = seat->pointer.pending_frame.axis.y / 120.0f;
         break;
     default:
         y = 0.0f;
         break;
     }
 
-    // clear pointer.current_axis_info for next frame
-    SDL_memset(&seat->pointer.current_axis_info, 0, sizeof(seat->pointer.current_axis_info));
+    SDL_SendMouseWheel(seat->pointer.pending_frame.timestamp_ns,
+                       seat->pointer.focus->sdlwindow, seat->pointer.sdl_id, x, y, direction);
+}
 
-    if (x != 0.0f || y != 0.0f) {
-        SDL_SendMouseWheel(seat->pointer.current_axis_info.timestamp_ns,
-                           window->sdlwindow, seat->pointer.sdl_id, x, y, direction);
+static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
+{
+    SDL_WaylandSeat *seat = data;
+
+    if (seat->pointer.pending_frame.have_absolute) {
+        pointer_dispatch_absolute_motion(seat);
+
+        if (seat->pointer.pending_frame.have_enter) {
+            // Update the pointer grab state.
+            Wayland_SeatUpdatePointerGrab(seat);
+
+            /* If the cursor was changed while our window didn't have pointer
+             * focus, we might need to trigger another call to
+             * wl_pointer_set_cursor() for the new cursor to be displayed.
+             *
+             * This will also update the cursor if a second pointer entered a
+             * window that already has focus, as the focus change sequence
+             * won't be run.
+             */
+            Wayland_SeatUpdateCursor(seat);
+        }
     }
+
+    if (seat->pointer.pending_frame.have_relative) {
+        pointer_dispatch_relative_motion(seat);
+    }
+
+    if (seat->pointer.pending_frame.have_axis) {
+        pointer_dispatch_axis(seat);
+    }
+
+    SDL_zero(seat->pointer.pending_frame);
 }
 
 static void pointer_handle_axis_source(void *data, struct wl_pointer *pointer,
@@ -1130,7 +1206,7 @@ static void pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
 {
     SDL_WaylandSeat *seat = data;
 
-    pointer_handle_axis_common(seat, AXIS_EVENT_DISCRETE, axis, wl_fixed_from_int(discrete));
+    pointer_handle_axis_common(seat, SDL_WAYLAND_AXIS_EVENT_DISCRETE, axis, wl_fixed_from_int(discrete));
 }
 
 static void pointer_handle_axis_value120(void *data, struct wl_pointer *pointer,
@@ -1138,7 +1214,7 @@ static void pointer_handle_axis_value120(void *data, struct wl_pointer *pointer,
 {
     SDL_WaylandSeat *seat = data;
 
-    pointer_handle_axis_common(seat, AXIS_EVENT_VALUE120, axis, wl_fixed_from_int(value120));
+    pointer_handle_axis_common(seat, SDL_WAYLAND_AXIS_EVENT_VALUE120, axis, wl_fixed_from_int(value120));
 }
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -1159,29 +1235,24 @@ static void relative_pointer_handle_relative_motion(void *data,
                                                     struct zwp_relative_pointer_v1 *pointer,
                                                     uint32_t time_hi,
                                                     uint32_t time_lo,
-                                                    wl_fixed_t dx_w,
-                                                    wl_fixed_t dy_w,
-                                                    wl_fixed_t dx_unaccel_w,
-                                                    wl_fixed_t dy_unaccel_w)
+                                                    wl_fixed_t dx,
+                                                    wl_fixed_t dy,
+                                                    wl_fixed_t dx_unaccel,
+                                                    wl_fixed_t dy_unaccel)
 {
     SDL_WaylandSeat *seat = data;
-    SDL_WindowData *window = seat->pointer.focus;
-    SDL_Mouse *mouse = SDL_GetMouse();
 
     // Relative pointer event times are in microsecond granularity.
-    const Uint64 timestamp = Wayland_AdjustEventTimestampBase(SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo));
+    seat->pointer.pending_frame.have_relative = true;
+    seat->pointer.pending_frame.relative.dx = dx;
+    seat->pointer.pending_frame.relative.dy = dy;
+    seat->pointer.pending_frame.relative.dx_unaccel = dx;
+    seat->pointer.pending_frame.relative.dy_unaccel = dy;
+    seat->pointer.pending_frame.timestamp_ns = Wayland_AdjustEventTimestampBase(SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo));
 
-    double dx;
-    double dy;
-    if (mouse->InputTransform || !mouse->enable_relative_system_scale) {
-        dx = wl_fixed_to_double(dx_unaccel_w);
-        dy = wl_fixed_to_double(dy_unaccel_w);
-    } else {
-        dx = wl_fixed_to_double(dx_w) * window->pointer_scale.x;
-        dy = wl_fixed_to_double(dy_w) * window->pointer_scale.y;
+    if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
+        pointer_dispatch_relative_motion(seat);
     }
-
-    SDL_SendMouseMotion(timestamp, window->sdlwindow, seat->pointer.sdl_id, true, (float)dx, (float)dy);
 }
 
 static const struct zwp_relative_pointer_v1_listener relative_pointer_listener = {
@@ -2214,7 +2285,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
 
     if ((capabilities & WL_SEAT_CAPABILITY_POINTER) && !seat->pointer.wl_pointer) {
         seat->pointer.wl_pointer = wl_seat_get_pointer(wl_seat);
-        SDL_memset(&seat->pointer.current_axis_info, 0, sizeof(seat->pointer.current_axis_info));
+        SDL_memset(&seat->pointer.pending_frame.axis, 0, sizeof(seat->pointer.pending_frame.axis));
 
         Wayland_SeatCreateCursorShape(seat);
 
