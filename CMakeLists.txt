@@ -1516,6 +1516,8 @@ elseif(OHOS)
   find_library(OHOS_PIXELMAP_LIBRARY NAMES libpixelmap_ndk.z.so pixelmap)
   sdl_link_dependency(OHOS_LIBS LIBS ${OHOS_ACE_LIBRARY} ${OHOS_LOG_LIBRARY} ${OHOS_NDK_LIBRARY} ${OHOS_RAWFILE_LIBRARY} ${OHOS_PIXELMAP_LIBRARY})
 
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ohos/*.c")
+
   set(SDL_LOADSO_DLOPEN 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
   set(HAVE_SDL_LOADSO TRUE)
