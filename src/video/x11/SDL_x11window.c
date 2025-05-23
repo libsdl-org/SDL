@@ -1584,6 +1584,12 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     X11_PumpEvents(_this);
     data->size_move_event_flags = 0;
 
+    /* A MapNotify or PropertyNotify may not have arrived, so ensure that the shown event is dispatched
+     * to apply pending state before clearing the flag.
+     */
+    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
+    data->was_shown = true;
+
     // If a configure event was received (type is non-zero), send the final window size and coordinates.
     if (data->last_xconfigure.type) {
         int x, y;
