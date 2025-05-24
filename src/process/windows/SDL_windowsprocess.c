@@ -520,8 +520,23 @@ done:
     return result;
 }
 
+static BOOL CALLBACK terminate_app(HWND hwnd, LPARAM proc_id)
+{
+    DWORD current_proc_id = 0;
+    GetWindowThreadProcessId(hwnd, &current_proc_id);
+    if (current_proc_id == (DWORD) proc_id) {
+        PostMessage(hwnd, WM_CLOSE, 0, 0);
+    }
+    return TRUE;
+}
+
 bool SDL_SYS_KillProcess(SDL_Process *process, bool force)
 {
+    if (!force) {
+        EnumWindows(terminate_app, (LPARAM) process->internal->process_information.dwProcessId);
+        PostThreadMessage(process->internal->process_information.dwThreadId, WM_CLOSE, 0, 0);
+        return true;
+    }
     if (!TerminateProcess(process->internal->process_information.hProcess, 1)) {
         return WIN_SetError("TerminateProcess failed");
     }
