@@ -92,7 +92,7 @@ if(NOT TARGET SDL3::Headers)
     add_library(SDL3::Headers INTERFACE IMPORTED)
     set_target_properties(SDL3::Headers
         PROPERTIES
-            INTERFACE_COMPILE_OPTIONS "SHELL:-F \"${_sdl3_framework_parent_path}\""
+            INTERFACE_COMPILE_OPTIONS "-F${_sdl3_framework_parent_path}"
     )
 endif()
 set(SDL3_Headers_FOUND TRUE)
