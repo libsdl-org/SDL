@@ -5,7 +5,7 @@
 static SDL_VideoDevice *OHOS_CreateDevice(void)
 {
     SDL_VideoDevice *device;
-    SDL_VideoData *data;
+    SDL_VideoData *data = NULL;
 
     // Initialize all variables that we clean on shutdown
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -13,11 +13,11 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
         return NULL;
     }
 
-    data = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
+    /*data = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
     if (!data) {
         SDL_free(device);
         return NULL;
-    }
+    }*/
 
     device->internal = data;
 #ifdef SDL_VIDEO_VULKAN
