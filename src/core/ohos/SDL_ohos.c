@@ -15,33 +15,13 @@
 #define OHOS_INDEX_ARG6       6
 
 #include "napi/native_api.h"
+#include <ace/xcomponent/native_interface_xcomponent.h>
 
+OHNativeWindow *nativeWindow;
+SDL_WindowData *windowData;
 SDL_DisplayOrientation displayOrientation;
-SDL_Mutex *g_ohosPageMutex = NULL;
-SDL_Semaphore *g_ohosPauseSem = NULL;
-SDL_Semaphore *g_ohosResumeSem = NULL;
-void SDL_OHOS_PAGEMUTEX_Lock()
-{
-    SDL_LockMutex(g_ohosPageMutex);
-}
-void SDL_OHOS_PAGEMUTEX_Unlock()
-{
-    SDL_UnlockMutex(g_ohosPageMutex);
-}
-void SDL_OHOS_PAGEMUTEX_LockRunning()
-{
-    int pauseSignaled = 0;
-    int resumeSignaled = 0;
-retry:
-    SDL_LockMutex(g_ohosPageMutex);
-    pauseSignaled = SDL_GetSemaphoreValue(g_ohosPauseSem);
-    resumeSignaled = SDL_GetSemaphoreValue(g_ohosResumeSem);
-    if (pauseSignaled > resumeSignaled) {
-        SDL_UnlockMutex(g_ohosPageMutex);
-        SDL_Delay(OHOS_DELAY_FIFTY);
-        goto retry;
-    }
-}
+static OH_NativeXComponent_Callback callback;
+static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
 
 void SDL_OHOS_SetDisplayOrientation(int orientation)
 {
@@ -78,12 +58,51 @@ static napi_value add(napi_env env, napi_callback_info info)
     return sum;
 }
 
+static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
+{
+    nativeWindow = (OHNativeWindow *)window;
+}
+static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window) {}
+static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window) {}
+static void onKeyEvent(OH_NativeXComponent *component, void *window) {}
+static void onNativeTouch(OH_NativeXComponent *component, void *window) {}
+static void onNativeMouse(OH_NativeXComponent *component, void *window) {}
+static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window) {}
+void OnHoverEvent(OH_NativeXComponent *component, bool isHover) {}
+void OnFocusEvent(OH_NativeXComponent *component, void *window) {}
+void OnBlurEvent(OH_NativeXComponent *component, void *window) {}
+
 static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
         { "add", NULL, add, NULL, NULL, NULL, napi_default, NULL }
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
+
+    napi_value exportInstance = NULL;
+    if (napi_get_named_property(env, exports, OH_NATIVE_XCOMPONENT_OBJ, &exportInstance) != napi_ok) {
+        return exports;
+    }
+    OH_NativeXComponent *nativeXComponent;
+    if (napi_unwrap(env, exportInstance, (void **)(&nativeXComponent)) != napi_ok) {
+        return exports;
+    }
+
+    callback.OnSurfaceCreated = OnSurfaceCreatedCB;
+    callback.OnSurfaceChanged = OnSurfaceChangedCB;
+    callback.OnSurfaceDestroyed = OnSurfaceDestroyedCB;
+    callback.DispatchTouchEvent = onNativeTouch;
+    OH_NativeXComponent_RegisterCallback(nativeXComponent, &callback);
+
+    mouseCallback.DispatchMouseEvent = OnDispatchTouchEventCB;
+    mouseCallback.DispatchMouseEvent = onNativeMouse;
+    mouseCallback.DispatchHoverEvent = OnHoverEvent;
+    OH_NativeXComponent_RegisterMouseEventCallback(nativeXComponent, &mouseCallback);
+
+    OH_NativeXComponent_RegisterKeyEventCallback(nativeXComponent, onKeyEvent);
+    OH_NativeXComponent_RegisterFocusEventCallback(nativeXComponent, OnFocusEvent);
+    OH_NativeXComponent_RegisterBlurEventCallback(nativeXComponent, OnBlurEvent);
+
     return exports;
 }
 

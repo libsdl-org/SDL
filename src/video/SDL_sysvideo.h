@@ -58,8 +58,8 @@ struct SDL_Window
     SDL_WindowFlags pending_flags;
     float display_scale;
     bool external_graphics_context;
-    bool fullscreen_exclusive;  // The window is currently fullscreen exclusive
-    SDL_DisplayID last_fullscreen_exclusive_display;  // The last fullscreen_exclusive display
+    bool fullscreen_exclusive;                       // The window is currently fullscreen exclusive
+    SDL_DisplayID last_fullscreen_exclusive_display; // The last fullscreen_exclusive display
     SDL_DisplayID last_displayID;
 
     /* Stored position and size for the window in the non-fullscreen state,
@@ -100,9 +100,9 @@ struct SDL_Window
     bool surface_valid;
 
     bool is_hiding;
-    bool restore_on_show; // Child was hidden recursively by the parent, restore when shown.
+    bool restore_on_show;       // Child was hidden recursively by the parent, restore when shown.
     bool last_position_pending; // This should NOT be cleared by the backend, as it is used for fullscreen positioning.
-    bool last_size_pending; // This should be cleared by the backend if the new size cannot be applied.
+    bool last_size_pending;     // This should be cleared by the backend if the new size cannot be applied.
     bool update_fullscreen_on_display_changed;
     bool constrain_popup;
     bool is_destroying;
@@ -145,9 +145,9 @@ struct SDL_Window
     SDL_Window *prev_sibling;
     SDL_Window *next_sibling;
 };
-#define SDL_WINDOW_FULLSCREEN_VISIBLE(W)        \
-    ((((W)->flags & SDL_WINDOW_FULLSCREEN) != 0) &&   \
-     (((W)->flags & SDL_WINDOW_HIDDEN) == 0) && \
+#define SDL_WINDOW_FULLSCREEN_VISIBLE(W)            \
+    ((((W)->flags & SDL_WINDOW_FULLSCREEN) != 0) && \
+     (((W)->flags & SDL_WINDOW_HIDDEN) == 0) &&     \
      (((W)->flags & SDL_WINDOW_MINIMIZED) == 0))
 
 #define SDL_WINDOW_IS_POPUP(W) \
@@ -336,7 +336,7 @@ struct SDL_VideoDevice
      */
     bool (*Vulkan_LoadLibrary)(SDL_VideoDevice *_this, const char *path);
     void (*Vulkan_UnloadLibrary)(SDL_VideoDevice *_this);
-    char const* const* (*Vulkan_GetInstanceExtensions)(SDL_VideoDevice *_this, Uint32 *count);
+    char const *const *(*Vulkan_GetInstanceExtensions)(SDL_VideoDevice *_this, Uint32 *count);
     bool (*Vulkan_CreateSurface)(SDL_VideoDevice *_this, SDL_Window *window, VkInstance instance, const struct VkAllocationCallbacks *allocator, VkSurfaceKHR *surface);
     void (*Vulkan_DestroySurface)(SDL_VideoDevice *_this, VkInstance instance, VkSurfaceKHR surface, const struct VkAllocationCallbacks *allocator);
     bool (*Vulkan_GetPresentationSupport)(SDL_VideoDevice *_this, VkInstance instance, VkPhysicalDevice physicalDevice, Uint32 queueFamilyIndex);
@@ -513,7 +513,7 @@ typedef struct VideoBootStrap
     const char *name;
     const char *desc;
     SDL_VideoDevice *(*create)(void);
-    bool (*ShowMessageBox)(const SDL_MessageBoxData *messageboxdata, int *buttonID);  // can be done without initializing backend!
+    bool (*ShowMessageBox)(const SDL_MessageBoxData *messageboxdata, int *buttonID); // can be done without initializing backend!
     bool is_preferred;
 } VideoBootStrap;
 
@@ -525,6 +525,7 @@ extern VideoBootStrap WINDOWS_bootstrap;
 extern VideoBootStrap HAIKU_bootstrap;
 extern VideoBootStrap UIKIT_bootstrap;
 extern VideoBootStrap Android_bootstrap;
+extern VideoBootStrap OHOS_bootstrap;
 extern VideoBootStrap PS2_bootstrap;
 extern VideoBootStrap PSP_bootstrap;
 extern VideoBootStrap VITA_bootstrap;

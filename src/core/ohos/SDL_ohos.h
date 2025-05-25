@@ -2,12 +2,11 @@
 #define SDL_OHOS_H
 
 #include "SDL3/SDL_mutex.h"
+#include "video/SDL_sysvideo.h"
+#include <native_window/external_window.h>
 
-extern SDL_Mutex *g_ohosPageMutex;
-extern SDL_Semaphore *g_ohosPauseSem;
-extern SDL_Semaphore *g_ohosResumeSem;
-void SDL_OHOS_PAGEMUTEX_Lock();
-void SDL_OHOS_PAGEMUTEX_Unlock();
-void SDL_OHOS_PAGEMUTEX_LockRunning();
+void SDL_OHOS_SetDisplayOrientation(int orientation);
+SDL_DisplayOrientation SDL_OHOS_GetDisplayOrientation();
+extern OHNativeWindow *nativeWindow;
 
 #endif
