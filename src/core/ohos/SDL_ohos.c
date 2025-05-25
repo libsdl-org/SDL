@@ -1,8 +1,57 @@
+#include "SDL_ohos.h"
 #include "SDL_internal.h"
 
 #ifdef SDL_PLATFORM_OHOS
 
+#define OHOS_DELAY_FIFTY      50
+#define OHOS_DELAY_TEN        10
+#define OHOS_START_ARGS_INDEX 2
+#define OHOS_INDEX_ARG0       0
+#define OHOS_INDEX_ARG1       1
+#define OHOS_INDEX_ARG2       2
+#define OHOS_INDEX_ARG3       3
+#define OHOS_INDEX_ARG4       4
+#define OHOS_INDEX_ARG5       5
+#define OHOS_INDEX_ARG6       6
+
 #include "napi/native_api.h"
+
+SDL_DisplayOrientation displayOrientation;
+SDL_Mutex *g_ohosPageMutex = NULL;
+SDL_Semaphore *g_ohosPauseSem = NULL;
+SDL_Semaphore *g_ohosResumeSem = NULL;
+void SDL_OHOS_PAGEMUTEX_Lock()
+{
+    SDL_LockMutex(g_ohosPageMutex);
+}
+void SDL_OHOS_PAGEMUTEX_Unlock()
+{
+    SDL_UnlockMutex(g_ohosPageMutex);
+}
+void SDL_OHOS_PAGEMUTEX_LockRunning()
+{
+    int pauseSignaled = 0;
+    int resumeSignaled = 0;
+retry:
+    SDL_LockMutex(g_ohosPageMutex);
+    pauseSignaled = SDL_GetSemaphoreValue(g_ohosPauseSem);
+    resumeSignaled = SDL_GetSemaphoreValue(g_ohosResumeSem);
+    if (pauseSignaled > resumeSignaled) {
+        SDL_UnlockMutex(g_ohosPageMutex);
+        SDL_Delay(OHOS_DELAY_FIFTY);
+        goto retry;
+    }
+}
+
+void SDL_OHOS_SetDisplayOrientation(int orientation)
+{
+    displayOrientation = (SDL_DisplayOrientation)orientation;
+}
+
+SDL_DisplayOrientation SDL_OHOS_GetDisplayOrientation()
+{
+    return displayOrientation;
+}
 
 static napi_value add(napi_env env, napi_callback_info info)
 {
