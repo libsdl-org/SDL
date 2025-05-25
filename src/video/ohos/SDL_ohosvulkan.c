@@ -1,5 +1,5 @@
 #include "SDL_internal.h"
-#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_OHOS)
+#if defined(SDL_VIDEO_VULKAN)
 #include "../SDL_vulkan_internal.h"
 
 #include "SDL_ohosvideo.h"

@@ -6,7 +6,7 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_vulkan_internal.h"
 
-#if defined(SDL_VIDEO_VULKAN) && defined(SDL_VIDEO_DRIVER_OHOS)
+#if defined(SDL_VIDEO_VULKAN)
 
 extern bool OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 extern void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);

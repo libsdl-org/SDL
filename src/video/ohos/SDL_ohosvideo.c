@@ -1,5 +1,4 @@
 #include "SDL_internal.h"
-#ifdef SDL_VIDEO_DRIVER_OHOS
 #include "../SDL_sysvideo.h"
 #include "SDL_ohosvideo.h"
 
@@ -38,4 +37,3 @@ VideoBootStrap OHOS_bootstrap = {
     NULL,
     false
 };
-#endif
