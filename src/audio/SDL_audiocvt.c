@@ -1026,6 +1026,29 @@ bool SDL_PutAudioStreamPlanarData(SDL_AudioStream *stream, const void * const *c
     return retval;
 }
 
+static void SDLCALL DontFreeThisAudioBuffer(void *userdata, const void *buf, int len)
+{
+    // We don't own the buffer, but know it will outlive the stream
+}
+
+bool SDL_PutAudioStreamDataNoCopy(SDL_AudioStream *stream, const void *buf, int len, SDL_AudioStreamDataCompleteCallback callback, void *userdata)
+{
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    } else if (!buf) {
+        return SDL_InvalidParamError("buf");
+    } else if (len < 0) {
+        return SDL_InvalidParamError("len");
+    } else if (len == 0) {
+        if (callback) {
+            callback(userdata, buf, len);
+        }
+        return true; // nothing to do.
+    }
+
+    return PutAudioStreamBuffer(stream, buf, len, callback ? callback : DontFreeThisAudioBuffer, userdata);
+}
+
 bool SDL_FlushAudioStream(SDL_AudioStream *stream)
 {
     if (!stream) {
@@ -1483,11 +1506,6 @@ void SDL_DestroyAudioStream(SDL_AudioStream *stream)
     SDL_free(stream);
 }
 
-static void SDLCALL DontFreeThisAudioBuffer(void *userdata, const void *buf, int len)
-{
-    // We don't own the buffer, but know it will outlive the stream
-}
-
 bool SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const Uint8 *src_data, int src_len, const SDL_AudioSpec *dst_spec, Uint8 **dst_data, int *dst_len)
 {
     if (dst_data) {
@@ -1514,8 +1532,7 @@ bool SDL_ConvertAudioSamples(const SDL_AudioSpec *src_spec, const Uint8 *src_dat
 
     SDL_AudioStream *stream = SDL_CreateAudioStream(src_spec, dst_spec);
     if (stream) {
-        if (PutAudioStreamBuffer(stream, src_data, src_len, DontFreeThisAudioBuffer, NULL) &&
-            SDL_FlushAudioStream(stream)) {
+        if (SDL_PutAudioStreamDataNoCopy(stream, src_data, src_len, NULL, NULL) && SDL_FlushAudioStream(stream)) {
             dstlen = SDL_GetAudioStreamAvailable(stream);
             if (dstlen >= 0) {
                 dst = (Uint8 *)SDL_malloc(dstlen);
