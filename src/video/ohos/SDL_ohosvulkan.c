@@ -9,7 +9,7 @@
 #include "SDL_loadso.h"
 #include "SDL_ohosvulkan.h"
 
-int loadedCount = 0;
+static int loadedCount = 0;
 int OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     Uint32 i = 0;
@@ -17,34 +17,41 @@ int OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
     SDL_bool hasXComponentExtension = SDL_FALSE;
     SDL_bool hasOHOSXComponentExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
-    loadedCount++;
-    if (loadedCount == 1)
+    if (loadedCount == 1) {
         return 0;
+    }
     /* Load the Vulkan loader library */
-    if (!path)
+    if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
-    if (!path)
+    }
+    if (!path) {
         path = "libvulkan.so";
+    }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
-    if (!_this->vulkan_config.loader_handle)
+    if (!_this->vulkan_config.loader_handle) {
         return -1;
+    }
+    loadedCount++;
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
                 SDL_arraysize(_this->vulkan_config.loader_path));
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
         _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
-    if (!vkGetInstanceProcAddr)
+    if (!vkGetInstanceProcAddr) {
         goto fail;
+    }
     _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
         (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
             VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
-    if (!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
+    if (!_this->vulkan_config.vkEnumerateInstanceExtensionProperties) {
         goto fail;
+    }
     return 0;
 
 fail:
     SDL_UnloadObject(_this->vulkan_config.loader_handle);
     _this->vulkan_config.loader_handle = NULL;
+    loadedCount--;
     return -1;
 }
 
