@@ -1418,9 +1418,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream,
  * A callback that fires for completed SDL_PutAudioStreamDataNoCopy() data.
  *
  * When using SDL_PutAudioStreamDataNoCopy() to provide data to an
- * SDL_AudioStream, it's not safe to dispose of the data until the stream
- * has completely consumed it. Often times it's difficult to know exactly
- * when this has happened.
+ * SDL_AudioStream, it's not safe to dispose of the data until the stream has
+ * completely consumed it. Often times it's difficult to know exactly when
+ * this has happened.
  *
  * This callback fires once when the stream no longer needs the buffer,
  * allowing the app to easily free or reuse it.
@@ -1459,11 +1459,11 @@ typedef void (SDLCALL *SDL_AudioStreamDataCompleteCallback)(void *userdata, cons
  * stream if it hasn't been changed.
  *
  * An optional callback may be provided, which is called when the stream no
- * longer needs the data. Once this callback fires, the stream will not
- * access the data again.
+ * longer needs the data. Once this callback fires, the stream will not access
+ * the data again.
  *
- * Note that there is still an allocation to store tracking information,
- * so this function is more efficient for larger blocks of data. If you're
+ * Note that there is still an allocation to store tracking information, so
+ * this function is more efficient for larger blocks of data. If you're
  * planning to put a few samples at a time, it will be more efficient to use
  * SDL_PutAudioStreamData(), which allocates and buffers in blocks.
  *
