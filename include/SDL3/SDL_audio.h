@@ -1445,7 +1445,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PutAudioStreamData(SDL_AudioStream *stream,
 typedef void (SDLCALL *SDL_AudioStreamDataCompleteCallback)(void *userdata, const void *buf, int buflen);
 
 /**
- * Add constant data to the stream.
+ * Add external data to an audio stream without copying it.
  *
  * Unlike SDL_PutAudioStreamData(), this function does not make a copy of the
  * provided data, instead storing the provided pointer. This means that the
