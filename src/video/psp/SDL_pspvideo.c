@@ -118,6 +118,8 @@ static SDL_VideoDevice *PSP_Create(void)
 
     device->PumpEvents = PSP_PumpEvents;
 
+    device->device_caps = VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY;
+
     return device;
 }
 
