@@ -1460,7 +1460,8 @@ typedef void (SDLCALL *SDL_AudioStreamDataCompleteCallback)(void *userdata, cons
  *
  * An optional callback may be provided, which is called when the stream no
  * longer needs the data. Once this callback fires, the stream will not access
- * the data again.
+ * the data again. This callback will fire for any reason the data is no
+ * longer needed, including clearing or destroying the stream.
  *
  * Note that there is still an allocation to store tracking information, so
  * this function is more efficient for larger blocks of data. If you're
@@ -1469,7 +1470,7 @@ typedef void (SDLCALL *SDL_AudioStreamDataCompleteCallback)(void *userdata, cons
  *
  * \param stream the stream the audio data is being added to.
  * \param buf a pointer to the audio data to add.
- * \param len the number of bytes to write to the stream.
+ * \param len the number of bytes to add to the stream.
  * \param callback the callback function to call when the data is no longer
  *                 needed by the stream. May be NULL.
  * \param userdata an opaque pointer provided to the callback for its own
