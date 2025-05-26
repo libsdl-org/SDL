@@ -621,6 +621,64 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_IsTV(void);
 
 /**
+ * The possible form factors for a device.
+ *
+ * \since This enum is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetDeviceFormFactor
+ * \sa SDL_GetDeviceFormFactorName
+ */
+typedef enum SDL_FormFactor {
+    SDL_FORMFACTOR_UNKNOWN = 0,
+    SDL_FORMFACTOR_DESKTOP,
+    SDL_FORMFACTOR_LAPTOP,
+    SDL_FORMFACTOR_PHONE,
+    SDL_FORMFACTOR_TABLET,
+    SDL_FORMFACTOR_CONSOLE,
+    SDL_FORMFACTOR_HANDHELD,
+    SDL_FORMFACTOR_WATCH,
+    SDL_FORMFACTOR_TV,
+    SDL_FORMFACTOR_VR,
+    SDL_FORMFACTOR_CAR
+} SDL_FormFactor;
+
+/**
+ * Get the form factor of the current device.
+ *
+ * This function guesses what the device may be, but may report inaccurate or
+ * outright wrong results. For example, it may report a laptop as a desktop, or
+ * a car device as a phone.
+ *
+ * Depending on the usage, there may be different functions better suited for
+ * each purpose. For example, activating touch controls can be done by detecting
+ * the presence of a touchscreen rather than restricting to phones and tablets.
+ *
+ * \returns the best guess for the form factor of the current device.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_FormFactor
+ * \sa SDL_GetDeviceFormFactorName
+ */
+extern SDL_DECLSPEC SDL_FormFactor SDLCALL SDL_GetDeviceFormFactor(void);
+
+/**
+ * Get a short name for the current device.
+ *
+ * The name will be in English.
+ *
+ * \param form_factor the form factor to query.
+ * \returns a human-readable name for the given form factor, or
+ *          "SDL_FORMFACTOR_UNKNOWN" if the form factor isn't recognized.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_FormFactor
+ * \sa SDL_GetDeviceFormFactor
+ */
+extern SDL_DECLSPEC const char* SDLCALL SDL_GetDeviceFormFactorName(SDL_FormFactor form_factor);
+
+/**
  * Application sandbox environment.
  *
  * \since This enum is available since SDL 3.2.0.

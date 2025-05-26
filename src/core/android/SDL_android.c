@@ -346,6 +346,7 @@ static jmethodID midClipboardSetText;
 static jmethodID midCreateCustomCursor;
 static jmethodID midDestroyCustomCursor;
 static jmethodID midGetContext;
+static jmethodID midGetDeviceFormFactor;
 static jmethodID midGetManifestEnvironmentVariables;
 static jmethodID midGetNativeSurface;
 static jmethodID midInitTouch;
@@ -636,6 +637,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midCreateCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "createCustomCursor", "([IIIII)I");
     midDestroyCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "destroyCustomCursor", "(I)V");
     midGetContext = (*env)->GetStaticMethodID(env, mActivityClass, "getContext", "()Landroid/content/Context;");
+    midGetDeviceFormFactor = (*env)->GetStaticMethodID(env, mActivityClass, "getDeviceFormFactor", "()Ljava/lang/String;");
     midGetManifestEnvironmentVariables = (*env)->GetStaticMethodID(env, mActivityClass, "getManifestEnvironmentVariables", "()Z");
     midGetNativeSurface = (*env)->GetStaticMethodID(env, mActivityClass, "getNativeSurface", "()Landroid/view/Surface;");
     midInitTouch = (*env)->GetStaticMethodID(env, mActivityClass, "initTouch", "()V");
@@ -669,6 +671,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midCreateCustomCursor ||
         !midDestroyCustomCursor ||
         !midGetContext ||
+        !midGetDeviceFormFactor ||
         !midGetManifestEnvironmentVariables ||
         !midGetNativeSurface ||
         !midInitTouch ||
@@ -2795,6 +2798,39 @@ bool Android_JNI_OpenFileDialog(
     }
 
     return true;
+}
+
+SDL_FormFactor SDL_GetAndroidDeviceFormFactor(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    SDL_FormFactor form_factor = SDL_FORMFACTOR_UNKNOWN;
+    jstring string;
+
+    string = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetDeviceFormFactor);
+    if (string) {
+        const char *utf = (*env)->GetStringUTFChars(env, string, 0);
+        if (utf) {
+            if (SDL_strcmp(utf, "tv") == 0) {
+                form_factor = SDL_FORMFACTOR_TV;
+            } else if (SDL_strcmp(utf, "tablet") == 0) {
+                form_factor = SDL_FORMFACTOR_TABLET;
+            } else if (SDL_strcmp(utf, "phone") == 0) {
+                form_factor = SDL_FORMFACTOR_PHONE;
+            } else if (SDL_strcmp(utf, "car") == 0) {
+                form_factor = SDL_FORMFACTOR_CAR;
+            } else if (SDL_strcmp(utf, "vr") == 0) {
+                form_factor = SDL_FORMFACTOR_VR;
+            } else if (SDL_strcmp(utf, "watch") == 0) {
+                form_factor = SDL_FORMFACTOR_WATCH;
+            } else {
+                form_factor = SDL_FORMFACTOR_UNKNOWN;
+            }
+            (*env)->ReleaseStringUTFChars(env, string, utf);
+        }
+        (*env)->DeleteLocalRef(env, string);
+    }
+
+    return form_factor;
 }
 
 #endif // SDL_PLATFORM_ANDROID
