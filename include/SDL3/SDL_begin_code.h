@@ -281,6 +281,48 @@
  */
 #define SDL_HAS_BUILTIN(x) __has_builtin(x)
 
+/**
+ * A macro to specify data alignment.
+ *
+ * This informs the compiler that a given datatype or variable must be aligned
+ * to a specific byte count.
+ *
+ * For example:
+ *
+ * ```c
+ * // make sure this is struct is aligned to 16 bytes for SIMD access.
+ * typedef struct {
+ *    float x, y, z, w;
+ * } SDL_ALIGNED(16) MySIMDAlignedData;
+ *
+
+ * // make sure this one field in a struct is aligned to 16 bytes for SIMD access.
+ * typedef struct {
+ *    SomeStuff stuff;
+ *    float position[4] SDL_ALIGNED(16);
+ *    SomeOtherStuff other_stuff;
+ * } MyStruct;
+ *
+ * // make sure this variable is aligned to 32 bytes.
+ * int SDL_ALIGNED(32) myval = 0;
+ * ```
+ *
+ * Alignment is only guaranteed for things the compiler places: local
+ * variables on the stack and global/static variables. To dynamically allocate
+ * something that respects this alignment, use SDL_aligned_alloc() or some
+ * other mechanism.
+ *
+ * On compilers without alignment support, this macro is defined to an
+ * invalid symbol, to make it clear that the current compiler is likely to
+ * generate incorrect code when it sees this macro.
+ *
+ * \param x the byte count to align to, so the data's address will be a
+ *          multiple of this value.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ */
+#define SDL_ALIGNED(x) __attribute__((aligned(x)))
+
 /* end of wiki documentation section. */
 #endif
 
@@ -484,3 +526,18 @@
 #define SDL_ALLOC_SIZE2(p1, p2)
 #endif
 #endif /* SDL_ALLOC_SIZE2 not defined */
+
+#ifndef SDL_ALIGNED
+#if defined(__clang__) || defined(__GNUC__)
+#define SDL_ALIGNED(x) __attribute__((aligned(x)))
+#elif defined(_MSC_VER)
+#define SDL_ALIGNED(x) __declspec(align(x))
+#elif defined(__cplusplus) && (__cplusplus >= 201103L)
+#define SDL_ALIGNED(x) alignas(x)
+#elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+#define SDL_ALIGNED(x) _Alignas(x)
+#else
+#define SDL_ALIGNED(x) PLEASE_DEFINE_SDL_ALIGNED
+#endif
+#endif /* SDL_ALIGNED not defined */
+
