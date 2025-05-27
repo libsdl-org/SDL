@@ -295,7 +295,7 @@
  *    float x, y, z, w;
  * } SDL_ALIGNED(16) MySIMDAlignedData;
  *
-
+ *
  * // make sure this one field in a struct is aligned to 16 bytes for SIMD access.
  * typedef struct {
  *    SomeStuff stuff;
@@ -312,9 +312,9 @@
  * something that respects this alignment, use SDL_aligned_alloc() or some
  * other mechanism.
  *
- * On compilers without alignment support, this macro is defined to an
- * invalid symbol, to make it clear that the current compiler is likely to
- * generate incorrect code when it sees this macro.
+ * On compilers without alignment support, this macro is defined to an invalid
+ * symbol, to make it clear that the current compiler is likely to generate
+ * incorrect code when it sees this macro.
  *
  * \param x the byte count to align to, so the data's address will be a
  *          multiple of this value.
