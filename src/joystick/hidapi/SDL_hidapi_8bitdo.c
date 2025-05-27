@@ -172,11 +172,20 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
         }
     } else {
         Uint8 data[USB_PACKET_LENGTH];
-        int size = ReadFeatureReport(device->dev, SDL_8BITDO_FEATURE_REPORTID_ENABLE_SDL_REPORTID, data, sizeof(data));
-        if (size > 0) {
-            ctx->sensors_supported = true;
-            ctx->rumble_supported = true;
-            ctx->powerstate_supported = true;
+        const int MAX_ATTEMPTS = 5;
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
+            int size = ReadFeatureReport(device->dev, SDL_8BITDO_FEATURE_REPORTID_ENABLE_SDL_REPORTID, data, sizeof(data));
+            if (size <= 0) {
+                SDL_Delay(10);
+                // Try again
+               continue;
+            }
+            if (size > 0) {
+                ctx->sensors_supported = true;
+                ctx->rumble_supported = true;
+                ctx->powerstate_supported = true;
+            }
+            break;
         }
     }
 
