@@ -8821,6 +8821,12 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     // Initialize the D3D12 debug layer, if applicable
     if (debugMode) {
         bool hasD3d12Debug = D3D12_INTERNAL_TryInitializeD3D12Debug(renderer);
+#if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+        if (hasD3d12Debug) {
+            SDL_LogInfo(
+                SDL_LOG_CATEGORY_GPU,
+                "Validation layers enabled, expect debug level performance!");
+#else
         if (hasDxgiDebug && hasD3d12Debug) {
             SDL_LogInfo(
                 SDL_LOG_CATEGORY_GPU,
@@ -8829,6 +8835,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
             SDL_LogWarn(
                 SDL_LOG_CATEGORY_GPU,
                 "Validation layers partially enabled, some warnings may not be available");
+#endif
         } else {
             SDL_LogWarn(
                 SDL_LOG_CATEGORY_GPU,
