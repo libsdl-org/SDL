@@ -24,6 +24,8 @@
 
 #include <emscripten/emscripten.h>
 
+#include "../SDL_runapp.h"
+
 EM_JS_DEPS(sdlrunapp, "$dynCall,$stringToNewUTF8");
 
 int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
@@ -50,7 +52,7 @@ int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserv
         }
     }, SDL_setenv_unsafe);
 
-    return mainFunction(argc, argv);
+    return SDL_CallMain(argc, argv, mainFunction);
 }
 
 #endif
