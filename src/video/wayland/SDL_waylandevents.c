@@ -2352,25 +2352,9 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
 static void seat_handle_name(void *data, struct wl_seat *wl_seat, const char *name)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
-    char name_fmt[256];
 
     if (name && *name != '\0') {
         seat->name = SDL_strdup(name);
-
-        if (seat->keyboard.wl_keyboard) {
-            SDL_snprintf(name_fmt, sizeof(name_fmt), "%s (%s)", WAYLAND_DEFAULT_KEYBOARD_NAME, seat->name);
-            SDL_SetKeyboardName(seat->keyboard.sdl_id, name_fmt);
-        }
-
-        if (seat->pointer.wl_pointer) {
-            SDL_snprintf(name_fmt, sizeof(name_fmt), "%s (%s)", WAYLAND_DEFAULT_POINTER_NAME, seat->name);
-            SDL_SetMouseName(seat->pointer.sdl_id, name_fmt);
-        }
-
-        if (seat->touch.wl_touch) {
-            SDL_snprintf(name_fmt, sizeof(name_fmt), "%s (%s)", WAYLAND_DEFAULT_TOUCH_NAME, seat->name);
-            SDL_SetTouchName((SDL_TouchID)(uintptr_t)seat->touch.wl_touch, name_fmt);
-        }
     }
 }
 
