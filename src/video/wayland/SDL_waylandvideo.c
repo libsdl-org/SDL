@@ -74,7 +74,7 @@
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
-// Clamp certain core protocol versions on older versions of libwayland.
+// Clamp core protocol versions on older versions of libwayland.
 #if SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
 #define SDL_WL_COMPOSITOR_VERSION 6
 #else
@@ -97,7 +97,13 @@
 #define SDL_WL_OUTPUT_VERSION 3
 #endif
 
-// The SDL wayland-client minimum is 1.18, which supports version 3.
+#if SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
+#define SDL_WL_SHM_VERSION 2
+#else
+#define SDL_WL_SHM_VERSION 1
+#endif
+
+// The SDL libwayland-client minimum is 1.18, which supports version 3.
 #define SDL_WL_DATA_DEVICE_VERSION 3
 
 // wl_fixes was introduced in 1.24.0
@@ -1281,7 +1287,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, SDL_min(version, 7));
         xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
     } else if (SDL_strcmp(interface, "wl_shm") == 0) {
-        d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
+        d->shm = wl_registry_bind(registry, id, &wl_shm_interface, SDL_min(SDL_WL_SHM_VERSION, version));
     } else if (SDL_strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
         d->relative_pointer_manager = wl_registry_bind(d->registry, id, &zwp_relative_pointer_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
@@ -1574,7 +1580,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     }
 
     if (data->shm) {
-        wl_shm_destroy(data->shm);
+        if (wl_shm_get_version(data->shm) >= WL_SHM_RELEASE_SINCE_VERSION) {
+            wl_shm_release(data->shm);
+        } else {
+            wl_shm_destroy(data->shm);
+        }
         data->shm = NULL;
     }
 
