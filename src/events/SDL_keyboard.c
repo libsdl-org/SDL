@@ -172,19 +172,6 @@ void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event)
     }
 }
 
-void SDL_SetKeyboardName(SDL_KeyboardID keyboardID, const char *name)
-{
-    SDL_assert(keyboardID != 0);
-
-    const int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
-
-    if (keyboard_index >= 0) {
-        SDL_KeyboardInstance *instance = &SDL_keyboards[keyboard_index];
-        SDL_free(instance->name);
-        instance->name = SDL_strdup(name ? name : "");
-    }
-}
-
 bool SDL_HasKeyboard(void)
 {
     return (SDL_keyboard_count > 0);
