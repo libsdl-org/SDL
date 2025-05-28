@@ -179,6 +179,14 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
                 ctx->sensors_supported = true;
                 ctx->rumble_supported = true;
                 ctx->powerstate_supported = true;
+
+                // Set the serial number to the Bluetooth MAC address
+                if (size >= 12 && data[10] != 0) {
+                    char serial[18];
+                    (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                                       data[10], data[9], data[8], data[7], data[6], data[5]);
+                    HIDAPI_SetDeviceSerial(device, serial);
+                }
                 break;
             }
 
