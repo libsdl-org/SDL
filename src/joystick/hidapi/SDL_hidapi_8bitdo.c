@@ -48,7 +48,9 @@ enum
 #define SDL_8BITDO_BT_REPORTID_SDL_REPORTID                     0x01
 
 #define ABITDO_ACCEL_SCALE 4096.f
-#define SENSOR_INTERVAL_NS 8000000ULL
+#define ABITDO_SENSOR_POLLING_RATE 125.f
+#define SENSOR_INTERVAL_NS         8000000ULL
+#define ABITDO_GYRO_MAX_DEGREES_PER_SECOND 2000.f
 
 typedef struct
 {
@@ -67,7 +69,7 @@ typedef struct
     float accelScale;
     float gyroScale;
     Uint8 last_state[USB_PACKET_LENGTH];
-    Uint64 sensor_timestamp; // Microseconds. Simulate onboard clock. Advance by known rate: SENSOR_INTERVAL_NS == 8ms = 125 Hz
+    Uint64 sensor_timestamp; // Nanoseconds.  Simulate onboard clock. Advance by known rate: SENSOR_INTERVAL_NS == 8ms = 125 Hz
 } SDL_Driver8BitDo_Context;
 
 #pragma pack(push,1)
@@ -201,7 +203,7 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "8BitDo SN30 Pro");
     } else if (device->product_id == USB_PRODUCT_8BITDO_PRO_2 || device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT) {
         HIDAPI_SetDeviceName(device, "8BitDo Pro 2");
-    }
+    } 
 
     return HIDAPI_JoystickConnected(device, NULL);
 }
@@ -240,12 +242,12 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     joystick->nhats = 1;
 
     if (ctx->sensors_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 125.0f);
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 125.0f);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, ABITDO_SENSOR_POLLING_RATE);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, ABITDO_SENSOR_POLLING_RATE);
 
 
         ctx->accelScale = SDL_STANDARD_GRAVITY / ABITDO_ACCEL_SCALE;
-        ctx->gyroScale = DEG2RAD(2048) / INT16_MAX; // Hardware senses  +/- 2048 Degrees per second mapped to +/- INT16_MAX
+        ctx->gyroScale = DEG2RAD(ABITDO_GYRO_MAX_DEGREES_PER_SECOND) / INT16_MAX; /* Hardware senses  +/- N Degrees per second mapped to +/- INT16_MAX */
     }
 
     return true;
