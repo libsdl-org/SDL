@@ -1729,9 +1729,9 @@ bool KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         }
 
         /* Create the window surfaces with the size we have just chosen.
-           Needs the window diverdata in place. */
+           Needs the window driverdata in place. */
         if (!KMSDRM_CreateSurfaces(_this, window)) {
-            return SDL_SetError("Can't window GBM/EGL surfaces on window creation.");
+            return SDL_SetError("Can't create GBM/EGL surfaces on window creation.");
         }
     } // NON-Vulkan block ends.
 
