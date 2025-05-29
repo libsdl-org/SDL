@@ -247,7 +247,8 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 
 
         ctx->accelScale = SDL_STANDARD_GRAVITY / ABITDO_ACCEL_SCALE;
-        ctx->gyroScale = DEG2RAD(ABITDO_GYRO_MAX_DEGREES_PER_SECOND) / INT16_MAX; /* Hardware senses  +/- N Degrees per second mapped to +/- INT16_MAX */
+        // Hardware senses +/- N Degrees per second mapped to +/- INT16_MAX
+        ctx->gyroScale = DEG2RAD(ABITDO_GYRO_MAX_DEGREES_PER_SECOND) / INT16_MAX;
     }
 
     return true;
