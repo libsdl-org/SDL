@@ -1502,7 +1502,8 @@ if(ANDROID)
       endif()
     endif()
   endif()
-
+elseif(OHOS)
+  CheckPTHREAD()
 elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
