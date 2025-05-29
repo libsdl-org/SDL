@@ -203,7 +203,7 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "8BitDo SN30 Pro");
     } else if (device->product_id == USB_PRODUCT_8BITDO_PRO_2 || device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT) {
         HIDAPI_SetDeviceName(device, "8BitDo Pro 2");
-    } 
+    }
 
     return HIDAPI_JoystickConnected(device, NULL);
 }
