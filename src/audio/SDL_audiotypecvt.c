@@ -536,8 +536,10 @@ static void SDL_TARGETING("ssse3") SDL_Convert_Swap32_SSSE3(Uint32* dst, const U
 // be guarded by the STDC FENV_ACCESS pragma; otherwise, it's undefined
 // behavior. However, the compiler support for this pragma is bad.
 #if defined(__clang__)
+#ifndef SDL_PLATFORM_OHOS
 #if __clang_major__ >= 12
 #pragma STDC FENV_ACCESS ON
+#endif
 #endif
 #elif defined(_MSC_VER)
 #pragma fenv_access (on)
@@ -813,8 +815,10 @@ static void SDL_Convert_Swap32_NEON(Uint32* dst, const Uint32* src, int num_samp
 }
 
 #if defined(__clang__)
+#ifndef SDL_PLATFORM_OHOS
 #if __clang_major__ >= 12
 #pragma STDC FENV_ACCESS DEFAULT
+#endif
 #endif
 #elif defined(_MSC_VER)
 #pragma fenv_access (off)

@@ -1502,7 +1502,28 @@ if(ANDROID)
       endif()
     endif()
   endif()
+elseif(OHOS)
+  # disable warnings from the toolchain
+  sdl_compile_options(PRIVATE "-Wno-unused-command-line-argument")
 
+  set(CMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN "")
+  set(CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN "")
+
+  sdl_link_dependency(OHOS_LIBS LIBS ace_napi.z hilog_ndk.z ace_ndk.z rawfile.z pixelmap_ndk.z)
+
+  set(SDL_LOADSO_DLOPEN 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
+  set(HAVE_SDL_LOADSO TRUE)
+
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
+  CheckPTHREAD()
 elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
