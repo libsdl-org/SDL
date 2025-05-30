@@ -327,8 +327,8 @@
 
 /* `restrict` is from C99, but __restrict works with both Visual Studio and GCC. */
 #ifndef SDL_RESTRICT
-#  if defined(restrict) || ((defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901)))
-#    defined SDL_RESTRICT restrict
+#  if defined(restrict) || ((defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)))
+#    define SDL_RESTRICT restrict
 #  elif defined(_MSC_VER) || defined(__GNUC__) || defined(__clang__)
 #    define SDL_RESTRICT __restrict
 #  else
