@@ -14,6 +14,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
+#include <SDL3/SDL_iostream.h>
 
 const SDL_DialogFileFilter filters[] = {
     { "All files", "*" },
@@ -23,6 +24,8 @@ const SDL_DialogFileFilter filters[] = {
 };
 
 static void SDLCALL callback(void *userdata, const char * const *files, int filter) {
+    char **saved_path = userdata;
+
     if (files) {
         const char* filter_name = "(filter fetching unsupported)";
 
@@ -35,6 +38,13 @@ static void SDLCALL callback(void *userdata, const char * const *files, int filt
         }
 
         SDL_Log("Filter used: '%s'", filter_name);
+
+        if (*files && saved_path) {
+            *saved_path = SDL_strdup(*files);
+            /* Create the file */
+            SDL_IOStream* stream = SDL_IOFromFile(*saved_path, "w");
+            SDL_CloseIO(stream);
+        }
 
         while (*files) {
             SDL_Log("'%s'", *files);
@@ -55,6 +65,7 @@ int main(int argc, char *argv[])
     const SDL_FRect open_folder_rect = { 370, 50, 220, 140 };
     int i;
     const char *initial_path = NULL;
+    char *saved_path = NULL;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -116,7 +127,19 @@ int main(int argc, char *argv[])
                 } else if (SDL_PointInRectFloat(&p, &open_folder_rect)) {
                     SDL_ShowOpenFolderDialog(callback, NULL, w, initial_path, 1);
                 } else if (SDL_PointInRectFloat(&p, &save_file_rect)) {
-                    SDL_ShowSaveFileDialog(callback, NULL, w, filters, SDL_arraysize(filters), initial_path);
+                    const char *default_filename = "Untitled.index";
+                    const size_t save_path_total_length = SDL_strlen(initial_path) + SDL_strlen(default_filename) + 1;
+                    char *save_path;
+                    if (saved_path) {
+                        save_path = SDL_strdup(saved_path);
+                    } else {
+                        save_path = (char *)SDL_malloc(save_path_total_length);
+                        *save_path = '\0';
+                        SDL_strlcat(save_path, initial_path, save_path_total_length);
+                        SDL_strlcat(save_path, default_filename, save_path_total_length);
+                    }
+                    SDL_ShowSaveFileDialog(callback, &saved_path, w, filters, SDL_arraysize(filters), save_path);
+                    SDL_free(save_path);
                 }
             }
         }
