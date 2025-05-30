@@ -160,3 +160,55 @@ function(SDL_AddCommonCompilerFlags TARGET)
     endif()
   endif()
 endfunction()
+
+function(check_x86_source_compiles FUNC_DECL MAIN_BODY VAR)
+  if(ARGN)
+    message(FATAL_ERROR "Unknown arguments: ${ARGN}")
+  endif()
+  check_c_source_compiles("
+    #ifdef __APPLE__
+    # include \"TargetConditionals.h\"
+    # if TARGET_CPU_X86 || TARGET_CPU_X86_64
+    #  define test_enabled 1
+    # else
+    #  define test_enabled 0
+    # endif
+    #else
+    # define test_enabled 1
+    #endif
+    #if test_enabled
+    ${FUNC_DECL}
+    #endif
+    int main(int argc, char *argv[]) {
+    # if test_enabled
+      ${MAIN_BODY}
+    # endif
+      return 0;
+    }" ${VAR})
+endfunction()
+
+function(check_arm_source_compiles FUNC_DECL MAIN_BODY VAR)
+  if(ARGN)
+    message(FATAL_ERROR "Unknown arguments: ${ARGN}")
+  endif()
+  check_c_source_compiles("
+    #ifdef __APPLE__
+    # include \"TargetConditionals.h\"
+    # if TARGET_CPU_ARM || TARGET_CPU_ARM64
+    #  define test_enabled 1
+    # else
+    #  define test_enabled 0
+    # endif
+    #else
+    # define test_enabled 1
+    #endif
+    #if test_enabled
+    ${FUNC_DECL}
+    #endif
+    int main(int argc, char *argv[]) {
+    # if test_enabled
+      ${MAIN_BODY}
+    # endif
+      return 0;
+    }" ${VAR})
+endfunction()
