@@ -55,6 +55,7 @@ class SdlPlatform(Enum):
     FreeBSD = "freebsd"
     NetBSD = "netbsd"
     NGage = "ngage"
+    Harmony = "harmony"
 
 
 class Msys2Platform(Enum):
@@ -141,6 +142,7 @@ JOB_SPECS = {
     "netbsd": JobSpec(name="NetBSD",                                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.NetBSD,      artifact="SDL-netbsd-x64", ),
     "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
     "ngage": JobSpec(name="N-Gage",                                         os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
+    "harmony": JobSpec(name="Harmony",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="arm64-v8a"),
 }
 
 
@@ -756,6 +758,15 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.run_tests = False
             job.setup_gage_sdk_path = "C:/ngagesdk"
             job.cmake_toolchain_file = "C:/ngagesdk/cmake/ngage-toolchain.cmake"
+            job.test_pkg_config = False
+        case SdlPlatform.Harmony:
+            job.cmake_arguments.extend((
+                f"-DOHOS_ARCH={spec.harmony_arch}",
+                "-DCMAKE_TOOLCHAIN_FILE=/opt/native/build/cmake/ohos.toolchain.cmake",
+            ))
+            job.shared_lib = SharedLibType.SO_0
+            job.static_lib = StaticLibType.A
+            job.run_tests = False
             job.test_pkg_config = False
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
