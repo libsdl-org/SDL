@@ -63,6 +63,7 @@
 #include "SDL_build_config.h"
 
 #include "dynapi/SDL_dynapi.h"
+#include "dynapi/SDL_dynapi_dlopennote.h"
 
 #if SDL_DYNAMIC_API
 #include "dynapi/SDL_dynapi_overrides.h"
