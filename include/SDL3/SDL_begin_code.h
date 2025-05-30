@@ -261,9 +261,9 @@
  *
  * On compilers without restrict support, this is defined to nothing.
  *
- * \since This macro is available since SDL 3.2.0.
+ * \since This macro is available since SDL 3.4.0.
  */
-#define SDL_RESTRICT __restrict__
+#define SDL_RESTRICT __restrict
 
 /**
  * Check if the compiler supports a given builtin functionality.
@@ -323,6 +323,17 @@
 #define SDL_ALIGNED(x) __attribute__((aligned(x)))
 
 /* end of wiki documentation section. */
+#endif
+
+/* `restrict` is from C99, but __restrict works with both Visual Studio and GCC. */
+#ifndef SDL_RESTRICT
+#  if defined(restrict) || ((defined(__STDC_VERSION__) && (__STDC_VERSION__ < 199901)))
+#    defined SDL_RESTRICT restrict
+#  elif defined(_MSC_VER) || defined(__GNUC__) || defined(__clang__)
+#    define SDL_RESTRICT __restrict
+#  else
+#    define SDL_RESTRICT
+#  endif
 #endif
 
 #ifndef SDL_HAS_BUILTIN
