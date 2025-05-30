@@ -99,6 +99,7 @@ class JobSpec:
     clang_cl: bool = False
     gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
+    harmony_arch: Optional[str] = None
 
 
 JOB_SPECS = {
