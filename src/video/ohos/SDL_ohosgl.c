@@ -1,0 +1,49 @@
+#include "SDL_internal.h"
+#ifdef SDL_VIDEO_DRIVER_OHOS
+#include "SDL_ohosvideo.h"
+#include "../../core/ohos/SDL_ohos.h"
+
+bool OHOS_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
+{
+    if (window && context)
+    {
+        return SDL_EGL_MakeCurrent(_this, window->internal->egl_xcomponent, context);
+    }
+    else
+    {
+        return SDL_EGL_MakeCurrent(_this, NULL, NULL);
+    }
+}
+
+SDL_GLContext OHOS_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    SDL_GLContext result;
+
+    SDL_LockMutex(g_ohosPageMutex);
+
+    result = SDL_EGL_CreateContext(_this, window->internal->egl_xcomponent);
+
+    SDL_UnlockMutex(g_ohosPageMutex);
+
+    return result;
+}
+
+bool OHOS_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    bool result;
+
+    SDL_LockMutex(g_ohosPageMutex);
+
+    result = SDL_EGL_SwapBuffers(_this, window->internal->egl_xcomponent);
+
+    SDL_UnlockMutex(g_ohosPageMutex);
+
+    return result;
+}
+
+bool OHOS_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
+{
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)0, 0);
+}
+
+#endif

@@ -1502,7 +1502,48 @@ if(ANDROID)
       endif()
     endif()
   endif()
+elseif(OHOS)
+  # disable warnings from the toolchain
+  sdl_compile_options(PRIVATE "-Wno-unused-command-line-argument")
 
+  set(CMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN "")
+  set(CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN "")
+
+  sdl_link_dependency(OHOS_LIBS LIBS ace_napi.z hilog_ndk.z ace_ndk.z rawfile.z pixelmap_ndk.z)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ohos/*.c")
+
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_OHOS 1)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/ohos/*.c")
+    set(HAVE_SDL_VIDEO TRUE)
+    set(SDL_VULKAN ON)
+    set(HAVE_VULKAN ON)
+    set(SDL_VIDEO_VULKAN ON)
+    set(HAVE_RENDER_VULKAN TRUE)
+
+    if(SDL_OPENGLES)
+      set(SDL_VIDEO_OPENGL_EGL 1)
+      set(HAVE_OPENGLES TRUE)
+      set(SDL_VIDEO_OPENGL_ES2 1)
+      set(SDL_VIDEO_RENDER_OGL_ES2 1)
+
+      sdl_link_dependency(opengles LIBS GLESv2)
+    endif()
+  endif()
+
+  set(SDL_LOADSO_DLOPEN 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
+  set(HAVE_SDL_LOADSO TRUE)
+
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
+  CheckPTHREAD()
 elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
@@ -3532,6 +3573,8 @@ if(SDL_SHARED)
         RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
       )
     endif()
+  elseif(OHOS)
+    # disable libtool postfix
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL3-shared PROPERTIES
       VERSION "${SDL_SO_VERSION}"
