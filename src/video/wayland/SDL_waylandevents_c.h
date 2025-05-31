@@ -94,22 +94,22 @@ typedef struct SDL_WaylandSeat
             struct xkb_compose_table *compose_table;
             struct xkb_compose_state *compose_state;
 
-            // Keyboard layout "group"
-            Uint32 current_group;
+            // Current keyboard layout (aka 'group')
+            xkb_layout_index_t current_layout;
 
             // Modifier bitshift values
-            Uint32 idx_shift;
-            Uint32 idx_ctrl;
-            Uint32 idx_alt;
-            Uint32 idx_gui;
-            Uint32 idx_mod3;
-            Uint32 idx_mod5;
-            Uint32 idx_num;
-            Uint32 idx_caps;
+            xkb_mod_mask_t shift_mask;
+            xkb_mod_mask_t ctrl_mask;
+            xkb_mod_mask_t alt_mask;
+            xkb_mod_mask_t gui_mask;
+            xkb_mod_mask_t level3_mask;
+            xkb_mod_mask_t level5_mask;
+            xkb_mod_mask_t num_mask;
+            xkb_mod_mask_t caps_mask;
 
             // Current system modifier flags
-            Uint32 wl_pressed_modifiers;
-            Uint32 wl_locked_modifiers;
+            xkb_mod_mask_t wl_pressed_modifiers;
+            xkb_mod_mask_t wl_locked_modifiers;
         } xkb;
     } keyboard;
 
