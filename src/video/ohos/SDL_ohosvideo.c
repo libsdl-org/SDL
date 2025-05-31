@@ -26,6 +26,8 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
     device->Vulkan_LoadLibrary = OHOS_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = OHOS_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = OHOS_Vulkan_GetInstanceExtensions;
+    device->Vulkan_CreateSurface = OHOS_Vulkan_CreateSurface;
+    device->Vulkan_DestroySurface = OHOS_Vulkan_DestroySurface;
 #endif
 
 
