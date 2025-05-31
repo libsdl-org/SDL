@@ -3,6 +3,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
 #include "SDL_ohosvulkan.h"
+#include "../../core/ohos/SDL_ohos.h"
 
 bool OHOS_VideoInit(SDL_VideoDevice *_this)
 {
@@ -19,6 +20,8 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
     if (!device) {
         return NULL;
     }
+
+    device->internal = &videoData;
 
     device->VideoInit = OHOS_VideoInit;
     device->VideoQuit = OHOS_VideoQuit;
