@@ -283,6 +283,7 @@ static X11_PenHandle *X11_MaybeAddPen(SDL_VideoDevice *_this, const XIDeviceInfo
 
 X11_PenHandle *X11_MaybeAddPenByDeviceID(SDL_VideoDevice *_this, int deviceid)
 {
+    if (!X11_Xinput2IsInitialized()) return NULL;
     SDL_VideoData *data = _this->internal;
     int num_device_info = 0;
     XIDeviceInfo *device_info = X11_XIQueryDevice(data->display, deviceid, &num_device_info);
@@ -297,6 +298,7 @@ X11_PenHandle *X11_MaybeAddPenByDeviceID(SDL_VideoDevice *_this, int deviceid)
 
 void X11_RemovePenByDeviceID(int deviceid)
 {
+    if (!X11_Xinput2IsInitialized()) return;
     X11_PenHandle *handle = X11_FindPenByDeviceID(deviceid);
     if (handle) {
         SDL_RemovePenDevice(0, handle->pen);
@@ -306,6 +308,7 @@ void X11_RemovePenByDeviceID(int deviceid)
 
 void X11_InitPen(SDL_VideoDevice *_this)
 {
+    if (!X11_Xinput2IsInitialized()) return;
     SDL_VideoData *data = _this->internal;
 
     #define LOOKUP_PEN_ATOM(X) X11_XInternAtom(data->display, X, False)
@@ -335,6 +338,7 @@ static void X11_FreePenHandle(SDL_PenID instance_id, void *handle, void *userdat
 
 void X11_QuitPen(SDL_VideoDevice *_this)
 {
+    if (!X11_Xinput2IsInitialized()) return;
     SDL_RemoveAllPenDevices(X11_FreePenHandle, NULL);
 }
 
