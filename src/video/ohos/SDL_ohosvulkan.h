@@ -6,6 +6,7 @@
 
 bool OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path);
 void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this);
+char const* const* OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count);
 #endif
 
 #endif
