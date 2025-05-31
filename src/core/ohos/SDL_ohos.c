@@ -15,13 +15,12 @@
 #include "SDL3/SDL_mutex.h"
 #include "../../video/ohos/SDL_ohoskeyboard.h"
 
-OHNativeWindow *nativeWindow;
+OHNativeWindow *g_ohosNativeWindow;
 SDL_Mutex *g_ohosPageMutex = NULL;
 static OH_NativeXComponent_Callback callback;
 static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
 SDL_WindowData windowData;
-SDL_VideoData videoData;
-struct
+static struct
 {
     napi_env env;
     napi_threadsafe_function func;
@@ -103,7 +102,7 @@ static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
 
 static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
 {
-    nativeWindow = (OHNativeWindow *)window;
+    g_ohosNativeWindow = (OHNativeWindow *)window;
 
     uint64_t width;
     uint64_t height;
@@ -112,10 +111,8 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
     OH_NativeXComponent_GetXComponentSize(component, window, &width, &height);
     OH_NativeXComponent_GetXComponentOffset(component, window, &offsetX, &offsetY);
 
-    SDL_Log("Native Window: %p", nativeWindow);
-
     SDL_LockMutex(g_ohosPageMutex);
-    windowData.native_window = nativeWindow;
+    windowData.native_window = g_ohosNativeWindow;
     windowData.width = width;
     windowData.height = height;
     windowData.x = offsetX;
@@ -124,7 +121,7 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
 }
 static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
 {
-    nativeWindow = (OHNativeWindow *)window;
+    g_ohosNativeWindow = (OHNativeWindow *)window;
 
     uint64_t width;
     uint64_t height;
@@ -133,10 +130,8 @@ static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
     OH_NativeXComponent_GetXComponentSize(component, window, &width, &height);
     OH_NativeXComponent_GetXComponentOffset(component, window, &offsetX, &offsetY);
 
-    SDL_Log("Native Window: %p", nativeWindow);
-
     SDL_LockMutex(g_ohosPageMutex);
-    windowData.native_window = nativeWindow;
+    windowData.native_window = g_ohosNativeWindow;
     windowData.width = width;
     windowData.height = height;
     windowData.x = offsetX;
@@ -184,12 +179,14 @@ static void onKeyEvent(OH_NativeXComponent *component, void *window)
         }
     }
 }
+
+// TODO
 static void onNativeTouch(OH_NativeXComponent *component, void *window) {}
 static void onNativeMouse(OH_NativeXComponent *component, void *window) {}
 static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window) {}
-void OnHoverEvent(OH_NativeXComponent *component, bool isHover) {}
-void OnFocusEvent(OH_NativeXComponent *component, void *window) {}
-void OnBlurEvent(OH_NativeXComponent *component, void *window) {}
+static void OnHoverEvent(OH_NativeXComponent *component, bool isHover) {}
+static void OnFocusEvent(OH_NativeXComponent *component, void *window) {}
+static void OnBlurEvent(OH_NativeXComponent *component, void *window) {}
 
 static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 {

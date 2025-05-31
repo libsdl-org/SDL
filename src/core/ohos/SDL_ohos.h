@@ -6,9 +6,8 @@
 #include <native_window/external_window.h>
 
 extern SDL_Mutex *g_ohosPageMutex;
-extern OHNativeWindow *nativeWindow;
+extern OHNativeWindow *g_ohosNativeWindow;
 extern SDL_WindowData windowData;
-extern SDL_VideoData videoData;
 
 typedef struct SDL_VideoData {
     SDL_Rect textRect;

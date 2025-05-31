@@ -111,7 +111,7 @@ bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     createInfo.sType = VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_OHOS;
     createInfo.pNext = NULL;
     createInfo.flags = 0;
-    createInfo.window = nativeWindow;
+    createInfo.window = g_ohosNativeWindow;
     result = vkCreateSurfaceOHOS(instance, &createInfo, NULL, surface);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateSurfaceOHOS failed: %d", result);

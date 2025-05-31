@@ -21,13 +21,19 @@ void OHOS_DeviceFree(SDL_VideoDevice *device)
 static SDL_VideoDevice *OHOS_CreateDevice(void)
 {
     SDL_VideoDevice *device;
+    SDL_VideoData *data;
 
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         return NULL;
     }
 
-    device->internal = &videoData;
+    data = (SDL_VideoData *)SDL_calloc(1, sizeof(SDL_VideoData));
+    if (!data) {
+        return NULL;
+    }
+
+    device->internal = data;
     device->free = OHOS_DeviceFree;
 
     device->VideoInit = OHOS_VideoInit;
