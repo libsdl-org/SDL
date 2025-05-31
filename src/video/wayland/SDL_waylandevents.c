@@ -1489,6 +1489,16 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         return;
     }
 
+#if SDL_XKBCOMMON_CHECK_VERSION(1, 10, 0)
+    seat->keyboard.xkb.idx_shift = WAYLAND_xkb_keymap_mod_get_mask(seat->keyboard.xkb.keymap, XKB_MOD_NAME_SHIFT);
+    seat->keyboard.xkb.idx_ctrl = WAYLAND_xkb_keymap_mod_get_mask(seat->keyboard.xkb.keymap, XKB_MOD_NAME_CTRL);
+    seat->keyboard.xkb.idx_alt = WAYLAND_xkb_keymap_mod_get_mask(seat->keyboard.xkb.keymap, XKB_VMOD_NAME_ALT);
+    seat->keyboard.xkb.idx_gui = WAYLAND_xkb_keymap_mod_get_mask(seat->keyboard.xkb.keymap, XKB_VMOD_NAME_SUPER);
+    seat->keyboard.xkb.idx_mod5 = WAYLAND_xkb_keymap_mod_get_mask(seat->keyboard.xkb.keymap, XKB_VMOD_NAME_LEVEL3);
+    seat->keyboard.xkb.idx_mod3 = WAYLAND_xkb_keymap_mod_get_mask(seat->keyboard.xkb.keymap, XKB_VMOD_NAME_LEVEL5);
+    seat->keyboard.xkb.idx_num = WAYLAND_xkb_keymap_mod_get_mask(seat->keyboard.xkb.keymap, XKB_VMOD_NAME_NUM);
+    seat->keyboard.xkb.idx_caps = WAYLAND_xkb_keymap_mod_get_mask(seat->keyboard.xkb.keymap, XKB_MOD_NAME_CAPS);
+#else
 #define GET_MOD_INDEX(mod) \
     WAYLAND_xkb_keymap_mod_get_index(seat->keyboard.xkb.keymap, XKB_MOD_NAME_##mod)
     seat->keyboard.xkb.idx_shift = 1 << GET_MOD_INDEX(SHIFT);
@@ -1500,6 +1510,7 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     seat->keyboard.xkb.idx_num = 1 << GET_MOD_INDEX(NUM);
     seat->keyboard.xkb.idx_caps = 1 << GET_MOD_INDEX(CAPS);
 #undef GET_MOD_INDEX
+#endif
 
     if (seat->keyboard.xkb.state != NULL) {
         /* if there's already a state, throw it away rather than leaking it before
