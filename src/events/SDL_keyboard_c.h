@@ -43,9 +43,6 @@ extern void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, bool se
 // A keyboard has been removed from the system
 extern void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event);
 
-// Set or update the name of a keyboard instance.
-extern void SDL_SetKeyboardName(SDL_KeyboardID keyboardID, const char *name);
-
 // Set the mapping of scancode to key codes
 extern void SDL_SetKeymap(SDL_Keymap *keymap, bool send_event);
 
