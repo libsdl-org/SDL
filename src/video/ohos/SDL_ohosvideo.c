@@ -3,6 +3,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
 #include "SDL_ohosvulkan.h"
+#include "SDL_ohosgl.h"
 #include "SDL_ohoswindow.h"
 #include "../../core/ohos/SDL_ohos.h"
 
@@ -12,6 +13,10 @@ bool OHOS_VideoInit(SDL_VideoDevice *_this)
 }
 void OHOS_VideoQuit(SDL_VideoDevice *_this)
 {
+}
+void OHOS_DeviceFree(SDL_VideoDevice *device)
+{
+    SDL_free(device);
 }
 static SDL_VideoDevice *OHOS_CreateDevice(void)
 {
@@ -23,6 +28,7 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
     }
 
     device->internal = &videoData;
+    device->free = OHOS_DeviceFree;
 
     device->VideoInit = OHOS_VideoInit;
     device->VideoQuit = OHOS_VideoQuit;
@@ -35,6 +41,18 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
 #endif
     device->CreateSDLWindow = OHOS_CreateWindow;
     device->DestroyWindow = OHOS_DestroyWindow;
+
+#ifdef SDL_VIDEO_OPENGL_EGL
+    device->GL_LoadLibrary = OHOS_GLES_LoadLibrary;
+    device->GL_MakeCurrent = OHOS_GLES_MakeCurrent;
+    device->GL_CreateContext = OHOS_GLES_CreateContext;
+    device->GL_SwapWindow = OHOS_GLES_SwapWindow;
+    device->GL_GetProcAddress = SDL_EGL_GetProcAddressInternal;
+    device->GL_UnloadLibrary = SDL_EGL_UnloadLibrary;
+    device->GL_SetSwapInterval = SDL_EGL_SetSwapInterval;
+    device->GL_GetSwapInterval = SDL_EGL_GetSwapInterval;
+    device->GL_DestroyContext = SDL_EGL_DestroyContext;
+#endif
 
     return device;
 }
