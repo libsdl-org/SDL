@@ -6,10 +6,10 @@
 #include "video/SDL_sysvideo.h"
 #include <native_window/external_window.h>
 
-extern SDL_Mutex *g_ohosPageMutex;
-
 void OHOS_windowDataFill(SDL_Window* w);
 void OHOS_removeWindow(SDL_Window* w);
+void OHOS_LockPage();
+void OHOS_UnlockPage();
 
 typedef struct SDL_VideoData {
     SDL_Rect textRect;

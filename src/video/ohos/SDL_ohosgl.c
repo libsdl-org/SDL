@@ -19,11 +19,11 @@ SDL_GLContext OHOS_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window
 {
     SDL_GLContext result;
 
-    SDL_LockMutex(g_ohosPageMutex);
+    OHOS_LockPage();
 
     result = SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 
-    SDL_UnlockMutex(g_ohosPageMutex);
+    OHOS_UnlockPage();
 
     return result;
 }
@@ -32,11 +32,11 @@ bool OHOS_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     bool result;
 
-    SDL_LockMutex(g_ohosPageMutex);
+    OHOS_LockPage();
 
     result = SDL_EGL_SwapBuffers(_this, window->internal->egl_surface);
 
-    SDL_UnlockMutex(g_ohosPageMutex);
+    OHOS_UnlockPage();
 
     return result;
 }

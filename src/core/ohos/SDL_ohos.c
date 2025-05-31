@@ -130,6 +130,15 @@ void OHOS_removeWindow(SDL_Window* w)
 #endif
 }
 
+void OHOS_LockPage()
+{
+    SDL_LockMutex(g_ohosPageMutex);
+}
+void OHOS_UnlockPage()
+{
+    SDL_UnlockMutex(g_ohosPageMutex);
+}
+
 static napi_value minus(napi_env env, napi_callback_info info)
 {
     size_t argc = 2;
