@@ -15,11 +15,11 @@
 #include "SDL3/SDL_mutex.h"
 #include "../../video/ohos/SDL_ohoskeyboard.h"
 
-OHNativeWindow *g_ohosNativeWindow;
+static OHNativeWindow *g_ohosNativeWindow;
 SDL_Mutex *g_ohosPageMutex = NULL;
 static OH_NativeXComponent_Callback callback;
 static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
-SDL_WindowData windowData;
+static int x, y, wid, hei;
 static struct
 {
     napi_env env;
@@ -50,6 +50,29 @@ typedef struct
     napiCallbackArg arg7;
     napiCallbackArg arg8;
 } napiCallbackData;
+
+void OHOS_windowDataFill(SDL_Window* w)
+{
+    w->internal = SDL_calloc(1, sizeof(SDL_WindowData));
+    w->x = x;
+    w->y = y;
+    w->w = wid;
+    w->h = hei;
+    w->internal->native_window = g_ohosNativeWindow;
+
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+#ifdef SDL_VIDEO_OPENGL_EGL
+    if (w->flags & SDL_WINDOW_OPENGL) {
+        SDL_LockMutex(g_ohosPageMutex);
+        if (w->internal->egl_surface == EGL_NO_SURFACE)
+        {
+            w->internal->egl_surface = SDL_EGL_CreateSurface(_this, w, (NativeWindowType)g_ohosNativeWindow);
+        }
+        SDL_UnlockMutex(g_ohosPageMutex);
+    }
+#endif
+}
 
 static napi_value minus(napi_env env, napi_callback_info info)
 {
@@ -112,11 +135,10 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
     OH_NativeXComponent_GetXComponentOffset(component, window, &offsetX, &offsetY);
 
     SDL_LockMutex(g_ohosPageMutex);
-    windowData.native_window = g_ohosNativeWindow;
-    windowData.width = width;
-    windowData.height = height;
-    windowData.x = offsetX;
-    windowData.y = offsetY;
+    wid = width;
+    hei = height;
+    x = (int)offsetX;
+    y = (int)offsetY;
     SDL_UnlockMutex(g_ohosPageMutex);
 }
 static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
@@ -131,27 +153,14 @@ static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
     OH_NativeXComponent_GetXComponentOffset(component, window, &offsetX, &offsetY);
 
     SDL_LockMutex(g_ohosPageMutex);
-    windowData.native_window = g_ohosNativeWindow;
-    windowData.width = width;
-    windowData.height = height;
-    windowData.x = offsetX;
-    windowData.y = offsetY;
-
+    wid = width;
+    hei = height;
+    x = (int)offsetX;
+    y = (int)offsetY;
     SDL_UnlockMutex(g_ohosPageMutex);
 }
 static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
 {
-    SDL_VideoDevice* _this = SDL_GetVideoDevice();
-#ifdef SDL_VIDEO_OPENGL_EGL
-    if (windowData.egl_context)
-    {
-        SDL_EGL_DestroyContext(_this, windowData.egl_context);
-    }
-    if (windowData.egl_xcomponent)
-    {
-        SDL_EGL_DestroySurface(_this, windowData.egl_xcomponent);
-    }
-#endif
 }
 static void onKeyEvent(OH_NativeXComponent *component, void *window)
 {

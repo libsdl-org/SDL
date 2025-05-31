@@ -7,7 +7,7 @@ bool OHOS_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLCon
 {
     if (window && context)
     {
-        return SDL_EGL_MakeCurrent(_this, window->internal->egl_xcomponent, context);
+        return SDL_EGL_MakeCurrent(_this, window->internal->egl_surface, context);
     }
     else
     {
@@ -21,7 +21,7 @@ SDL_GLContext OHOS_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window
 
     SDL_LockMutex(g_ohosPageMutex);
 
-    result = SDL_EGL_CreateContext(_this, window->internal->egl_xcomponent);
+    result = SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 
     SDL_UnlockMutex(g_ohosPageMutex);
 
@@ -34,7 +34,7 @@ bool OHOS_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     SDL_LockMutex(g_ohosPageMutex);
 
-    result = SDL_EGL_SwapBuffers(_this, window->internal->egl_xcomponent);
+    result = SDL_EGL_SwapBuffers(_this, window->internal->egl_surface);
 
     SDL_UnlockMutex(g_ohosPageMutex);
 

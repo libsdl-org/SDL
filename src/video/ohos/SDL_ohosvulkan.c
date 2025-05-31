@@ -8,6 +8,7 @@
 #include "../SDL_sysvideo.h"
 #include "../../core/ohos/SDL_ohos.h"
 #include "vulkan/vulkan_ohos.h"
+#include "SDL_ohosvideo.h"
 #include <native_window/external_window.h>
 
 static int loadedCount = 0;
@@ -111,7 +112,7 @@ bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
     createInfo.sType = VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_OHOS;
     createInfo.pNext = NULL;
     createInfo.flags = 0;
-    createInfo.window = g_ohosNativeWindow;
+    createInfo.window = window->internal->native_window;
     result = vkCreateSurfaceOHOS(instance, &createInfo, NULL, surface);
     if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateSurfaceOHOS failed: %d", result);
