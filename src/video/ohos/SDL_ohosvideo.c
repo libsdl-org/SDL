@@ -25,6 +25,7 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
 #ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = OHOS_Vulkan_LoadLibrary;
     device->Vulkan_UnloadLibrary = OHOS_Vulkan_UnloadLibrary;
+    device->Vulkan_GetInstanceExtensions = OHOS_Vulkan_GetInstanceExtensions;
 #endif
 
 

@@ -1,6 +1,6 @@
 #include "SDL_ohosvulkan.h"
 #include "SDL_internal.h"
-#include "../khronos/vulkan/vulkan.h"
+#include "../khronos/vulkan/vulkan_ohos.h"
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
 
@@ -65,18 +65,15 @@ void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-/*bool OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, SDL_Window *window, unsigned *count,
-    const char **names)
+char const* const* OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForOHOS[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_OHOS_XCOMPONENT_EXTENSION_NAME
     };
-    if (!_this->vulkan_config.loader_handle) {
-        SDL_SetError("Vulkan is not loaded");
-        return false;
+    if (count) {
+        *count = SDL_arraysize(extensionsForOHOS);
     }
-    return SDL_Vulkan_GetInstanceExtensions_Helper(
-        count, names, SDL_arraysize(extensionsForOHOS), extensionsForOHOS);
-}*/
+    return extensionsForOHOS;
+}
 
 #endif
