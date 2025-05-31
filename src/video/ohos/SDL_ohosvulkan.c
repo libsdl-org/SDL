@@ -1,9 +1,14 @@
 #include "SDL_ohosvulkan.h"
 #include "SDL_internal.h"
-#include "../khronos/vulkan/vulkan_ohos.h"
+#include <vulkan/vulkan_core.h>
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
+#define VK_USE_PLATFORM_OHOS 1
+#include "vulkan/vulkan.h"
 #include "../SDL_sysvideo.h"
+#include "../../core/ohos/SDL_ohos.h"
+#include "vulkan/vulkan_ohos.h"
+#include <native_window/external_window.h>
 
 static int loadedCount = 0;
 bool OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
@@ -69,12 +74,63 @@ void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 char const* const* OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForOHOS[] = {
-        VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_OHOS_XCOMPONENT_EXTENSION_NAME
+        VK_KHR_SURFACE_EXTENSION_NAME, VK_OHOS_SURFACE_EXTENSION_NAME
     };
     if (count) {
         *count = SDL_arraysize(extensionsForOHOS);
     }
     return extensionsForOHOS;
+}
+
+bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
+    SDL_Window *window,
+    VkInstance instance,
+    const struct VkAllocationCallbacks *allocator,
+    VkSurfaceKHR *surface)
+{
+    VkResult result;
+
+    PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+        (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
+    PFN_vkCreateSurfaceOHOS vkCreateSurfaceOHOS =
+        (PFN_vkCreateSurfaceOHOS)vkGetInstanceProcAddr(instance, "vkCreateSurfaceOHOS");
+    VkSurfaceCreateInfoOHOS createInfo;
+
+    if (!_this->vulkan_config.loader_handle) {
+        SDL_SetError("Vulkan is not loaded");
+        return false;
+    }
+
+    if (!vkCreateSurfaceOHOS) {
+        SDL_SetError(VK_OHOS_SURFACE_EXTENSION_NAME
+                     " extension is not enabled in the Vulkan instance.");
+        return false;
+    }
+
+    SDL_zero(createInfo);
+    createInfo.sType = VK_STRUCTURE_TYPE_SURFACE_CREATE_INFO_OHOS;
+    createInfo.pNext = NULL;
+    createInfo.flags = 0;
+    createInfo.window = nativeWindow;
+    result = vkCreateSurfaceOHOS(instance, &createInfo, NULL, surface);
+    if (result != VK_SUCCESS) {
+        SDL_SetError("vkCreateSurfaceOHOS failed: %d", result);
+        return false;
+    }
+    return true;
+}
+
+void OHOS_Vulkan_DestroySurface(SDL_VideoDevice *_this,
+    VkInstance instance,
+    VkSurfaceKHR surface,
+    const struct VkAllocationCallbacks *allocator)
+{
+    if (_this->vulkan_config.loader_handle) {
+        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
+            (PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr;
+        PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR = (PFN_vkDestroySurfaceKHR)vkGetInstanceProcAddr(instance, "vkDestroySurfaceKHR");
+        vkDestroySurfaceKHR(instance, surface, allocator);
+    }
 }
 
 #endif
