@@ -30,7 +30,6 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
     device->Vulkan_DestroySurface = OHOS_Vulkan_DestroySurface;
 #endif
 
-
     return device;
 }
 VideoBootStrap OHOS_bootstrap = {

@@ -7,5 +7,6 @@
 
 extern SDL_Mutex *g_ohosPageMutex;
 extern OHNativeWindow *nativeWindow;
+extern SDL_WindowData data;
 
 #endif
