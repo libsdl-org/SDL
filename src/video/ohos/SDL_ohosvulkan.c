@@ -3,6 +3,7 @@
 #include "../khronos/vulkan/vulkan_ohos.h"
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
+#include "../SDL_sysvideo.h"
 
 static int loadedCount = 0;
 bool OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
