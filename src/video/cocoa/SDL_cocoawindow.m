@@ -2022,6 +2022,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 @interface SDL3View : NSView
 {
     SDL_Window *_sdlWindow;
+    NSTrackingArea *_trackingArea;   // only used on macOS <= 11.0
 }
 
 - (void)setSDLWindow:(SDL_Window *)window;
@@ -2033,6 +2034,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent;
 - (BOOL)wantsUpdateLayer;
 - (void)updateLayer;
+- (void)updateTrackingAreas;
 @end
 
 @implementation SDL3View
@@ -2113,6 +2115,21 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     }
 }
 
+- (void)updateTrackingAreas
+{
+    [super updateTrackingAreas];
+
+    if (@available(macOS 12.0, *)) {
+        // we (currently) use the tracking areas as a workaround for older macOSes, but we might be safe everywhere...
+    } else {
+        SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)_sdlWindow->internal;
+        if (_trackingArea) {
+            [self removeTrackingArea:_trackingArea];
+        }
+        _trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:NSTrackingMouseEnteredAndExited|NSTrackingActiveAlways owner:windata.listener userInfo:nil];
+        [self addTrackingArea:_trackingArea];
+    }
+}
 @end
 
 static void Cocoa_UpdateMouseFocus()
