@@ -9,6 +9,7 @@
 #include <ace/xcomponent/native_interface_xcomponent.h>
 #include "../../video/ohos/SDL_ohosvideo.h"
 #include "SDL3/SDL_mutex.h"
+#include "../../video/ohos/SDL_ohoskeyboard.h"
 
 OHNativeWindow *nativeWindow;
 SDL_Mutex *g_ohosPageMutex = NULL;
@@ -99,7 +100,32 @@ static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
     }
 #endif
 }
-static void onKeyEvent(OH_NativeXComponent *component, void *window) {}
+static void onKeyEvent(OH_NativeXComponent *component, void *window)
+{
+    OH_NativeXComponent_KeyEvent *keyEvent = NULL;
+    if (OH_NativeXComponent_GetKeyEvent(component, &keyEvent) >= 0)
+    {
+        OH_NativeXComponent_KeyAction action;
+        OH_NativeXComponent_KeyCode code;
+        OH_NativeXComponent_EventSourceType sourceType;
+
+        OH_NativeXComponent_GetKeyEventAction(keyEvent, &action);
+        OH_NativeXComponent_GetKeyEventCode(keyEvent, &code);
+        OH_NativeXComponent_GetKeyEventSourceType(keyEvent, &sourceType);
+
+        if (sourceType == OH_NATIVEXCOMPONENT_SOURCE_TYPE_KEYBOARD)
+            {
+            if (OH_NATIVEXCOMPONENT_KEY_ACTION_DOWN == action)
+            {
+                OHOS_OnKeyDown(code);
+            }
+            else if (OH_NATIVEXCOMPONENT_KEY_ACTION_UP == action)
+            {
+                OHOS_OnKeyUp(code);
+            }
+        }
+    }
+}
 static void onNativeTouch(OH_NativeXComponent *component, void *window) {}
 static void onNativeMouse(OH_NativeXComponent *component, void *window) {}
 static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window) {}
