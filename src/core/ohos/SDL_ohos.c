@@ -1,6 +1,10 @@
 #include "SDL_internal.h"
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
+#include <js_native_api.h>
+#include <js_native_api_types.h>
+#include <node_api.h>
+#include <node_api_types.h>
 
 #ifdef SDL_PLATFORM_OHOS
 
@@ -17,6 +21,36 @@ static OH_NativeXComponent_Callback callback;
 static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
 SDL_WindowData windowData;
 SDL_VideoData videoData;
+struct
+{
+    napi_env env;
+    napi_threadsafe_function func;
+    napi_ref interface;
+} napiEnv;
+
+typedef union
+{
+    int i;
+    short s;
+    char c;
+    long long l;
+    float f;
+    double d;
+    const char* str;
+    bool b;
+} napiCallbackArg;
+typedef struct
+{
+    const char* func;
+    napiCallbackArg arg1;
+    napiCallbackArg arg2;
+    napiCallbackArg arg3;
+    napiCallbackArg arg4;
+    napiCallbackArg arg5;
+    napiCallbackArg arg6;
+    napiCallbackArg arg7;
+    napiCallbackArg arg8;
+} napiCallbackData;
 
 static napi_value minus(napi_env env, napi_callback_info info)
 {
@@ -41,6 +75,30 @@ static napi_value minus(napi_env env, napi_callback_info info)
     napi_create_double(env, value0 - value1, &sum);
 
     return sum;
+}
+
+static void sdlJSCallback(napi_env env, napi_value jsCb, void* content, void* data)
+{
+
+}
+
+static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
+{
+    napiEnv.env = env;
+    size_t argc = 1;
+    napi_value args[1] = { NULL };
+
+    napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+
+    napi_create_reference(env, args[0], 1, &napiEnv.interface);
+
+    napi_value resName = NULL;
+    napi_create_string_utf8(env, "SDLThreadSafe", NAPI_AUTO_LENGTH, &resName);
+    napi_create_threadsafe_function(env, args[0], NULL, resName, 0, 1, NULL, NULL, NULL, sdlJSCallback, &napiEnv.func);
+
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
 }
 
 static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
@@ -136,7 +194,8 @@ void OnBlurEvent(OH_NativeXComponent *component, void *window) {}
 static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
-        { "minus", NULL, minus, NULL, NULL, NULL, napi_default, NULL }
+        { "minus", NULL, minus, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlCallbackInit", NULL, sdlCallbackInit, NULL, NULL, NULL, napi_default, NULL }
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
 
