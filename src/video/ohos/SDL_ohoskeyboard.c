@@ -1,7 +1,5 @@
-#include "SDL3/SDL_log.h"
-#include "SDL3/SDL_oldnames.h"
-#include "SDL3/SDL_scancode.h"
 #include "SDL_internal.h"
+#include "SDL3/SDL_scancode.h"
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
 
