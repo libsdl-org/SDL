@@ -87,7 +87,17 @@ static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
 }
 static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
 {
-    // SDL_VideoDevice* _this = SDL_GetVideoDevice();
+    SDL_VideoDevice* _this = SDL_GetVideoDevice();
+#ifdef SDL_VIDEO_OPENGL_EGL
+    if (windowData.egl_context)
+    {
+        SDL_EGL_DestroyContext(_this, windowData.egl_context);
+    }
+    if (windowData.egl_xcomponent)
+    {
+        SDL_EGL_DestroySurface(_this, windowData.egl_xcomponent);
+    }
+#endif
 }
 static void onKeyEvent(OH_NativeXComponent *component, void *window) {}
 static void onNativeTouch(OH_NativeXComponent *component, void *window) {}

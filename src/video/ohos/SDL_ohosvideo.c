@@ -3,6 +3,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
 #include "SDL_ohosvulkan.h"
+#include "SDL_ohoswindow.h"
 #include "../../core/ohos/SDL_ohos.h"
 
 bool OHOS_VideoInit(SDL_VideoDevice *_this)
@@ -32,6 +33,8 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
     device->Vulkan_CreateSurface = OHOS_Vulkan_CreateSurface;
     device->Vulkan_DestroySurface = OHOS_Vulkan_DestroySurface;
 #endif
+    device->CreateSDLWindow = OHOS_CreateWindow;
+    device->DestroyWindow = OHOS_DestroyWindow;
 
     return device;
 }
