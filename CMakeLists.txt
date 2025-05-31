@@ -1520,6 +1520,15 @@ elseif(OHOS)
     set(HAVE_VULKAN ON)
     set(SDL_VIDEO_VULKAN ON)
     set(HAVE_RENDER_VULKAN TRUE)
+
+    if(SDL_OPENGLES)
+      set(SDL_VIDEO_OPENGL_EGL 1)
+      set(HAVE_OPENGLES TRUE)
+      set(SDL_VIDEO_OPENGL_ES2 1)
+      set(SDL_VIDEO_RENDER_OGL_ES2 1)
+
+      sdl_link_dependency(opengles LIBS GLESv2)
+    endif()
   endif()
 
   set(SDL_LOADSO_DLOPEN 1)

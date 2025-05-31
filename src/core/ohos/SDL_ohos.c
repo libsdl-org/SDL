@@ -5,11 +5,13 @@
 #include "napi/native_api.h"
 #include "SDL_ohos.h"
 #include <ace/xcomponent/native_interface_xcomponent.h>
+#include "../../video/ohos/SDL_ohosvideo.h"
 
 OHNativeWindow *nativeWindow;
 SDL_Mutex *g_ohosPageMutex = NULL;
 static OH_NativeXComponent_Callback callback;
 static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
+SDL_WindowData data;
 
 static napi_value minus(napi_env env, napi_callback_info info)
 {
@@ -40,7 +42,20 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
 {
     nativeWindow = (OHNativeWindow *)window;
 
+    uint64_t width;
+    uint64_t height;
+    double offsetX;
+    double offsetY;
+    OH_NativeXComponent_GetXComponentSize(component, window, &width, &height);
+    OH_NativeXComponent_GetXComponentOffset(component, window, &offsetX, &offsetY);
+
     SDL_Log("Native Window: %p", nativeWindow);
+
+    data.native_window = nativeWindow;
+    data.width = width;
+    data.height = height;
+    data.x = offsetX;
+    data.y = offsetY;
 }
 static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window) {}
 static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window) {}
