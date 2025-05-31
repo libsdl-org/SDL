@@ -9,6 +9,7 @@
 extern SDL_Mutex *g_ohosPageMutex;
 
 void OHOS_windowDataFill(SDL_Window* w);
+void OHOS_removeWindow(SDL_Window* w);
 
 typedef struct SDL_VideoData {
     SDL_Rect textRect;

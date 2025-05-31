@@ -1,3 +1,4 @@
+#include "SDL3/SDL_video.h"
 #include "SDL_internal.h"
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
@@ -62,6 +63,16 @@ void OHOS_windowDataFill(SDL_Window* w)
 
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
+    if (_this->windows == NULL)
+    {
+        _this->windows = w;
+    }
+    else
+    {
+        _this->windows->next = w;
+        w->prev = _this->windows;
+    }
+
 #ifdef SDL_VIDEO_OPENGL_EGL
     if (w->flags & SDL_WINDOW_OPENGL) {
         SDL_LockMutex(g_ohosPageMutex);
@@ -71,6 +82,51 @@ void OHOS_windowDataFill(SDL_Window* w)
         }
         SDL_UnlockMutex(g_ohosPageMutex);
     }
+#endif
+}
+void OHOS_removeWindow(SDL_Window* w)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this->windows == w)
+    {
+        _this->windows = _this->windows->next;
+    }
+    else
+    {
+        SDL_Window* curWin = _this->windows;
+        while (curWin != NULL)
+        {
+            if (curWin == w)
+            {
+                if (curWin->next == NULL)
+                {
+                    curWin->prev->next = NULL;
+                }
+                else
+                {
+                    curWin->prev->next = curWin->next;
+                    curWin->next->prev = curWin->prev;
+                }
+                break;
+            }
+            curWin = curWin->next;
+        }
+    }
+
+#ifdef SDL_VIDEO_OPENGL_EGL
+    if (w->flags & SDL_WINDOW_OPENGL) {
+        SDL_LockMutex(g_ohosPageMutex);
+        if (w->internal->egl_context)
+        {
+            SDL_EGL_DestroyContext(_this, w->internal->egl_context);
+        }
+        if (w->internal->egl_surface != EGL_NO_SURFACE)
+        {
+            SDL_EGL_DestroySurface(_this, w->internal->egl_surface);
+        }
+        SDL_UnlockMutex(g_ohosPageMutex);
+    }
+    SDL_free(w->internal);
 #endif
 }
 
