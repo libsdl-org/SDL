@@ -7,6 +7,13 @@
 
 extern SDL_Mutex *g_ohosPageMutex;
 extern OHNativeWindow *nativeWindow;
-extern SDL_WindowData data;
+extern SDL_WindowData windowData;
+extern SDL_VideoData videoData;
+
+typedef struct SDL_VideoData {
+    SDL_Rect textRect;
+    int      isPaused;
+    int      isPausing;
+} SDL_VideoData;
 
 #endif

@@ -1,4 +1,6 @@
 #include "SDL_internal.h"
+#include <EGL/egl.h>
+#include <EGL/eglplatform.h>
 
 #ifdef SDL_PLATFORM_OHOS
 
@@ -6,12 +8,14 @@
 #include "SDL_ohos.h"
 #include <ace/xcomponent/native_interface_xcomponent.h>
 #include "../../video/ohos/SDL_ohosvideo.h"
+#include "SDL3/SDL_mutex.h"
 
 OHNativeWindow *nativeWindow;
 SDL_Mutex *g_ohosPageMutex = NULL;
 static OH_NativeXComponent_Callback callback;
 static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
-SDL_WindowData data;
+SDL_WindowData windowData;
+SDL_VideoData videoData;
 
 static napi_value minus(napi_env env, napi_callback_info info)
 {
@@ -51,14 +55,40 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
 
     SDL_Log("Native Window: %p", nativeWindow);
 
-    data.native_window = nativeWindow;
-    data.width = width;
-    data.height = height;
-    data.x = offsetX;
-    data.y = offsetY;
+    SDL_LockMutex(g_ohosPageMutex);
+    windowData.native_window = nativeWindow;
+    windowData.width = width;
+    windowData.height = height;
+    windowData.x = offsetX;
+    windowData.y = offsetY;
+    SDL_UnlockMutex(g_ohosPageMutex);
 }
-static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window) {}
-static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window) {}
+static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
+{
+    nativeWindow = (OHNativeWindow *)window;
+
+    uint64_t width;
+    uint64_t height;
+    double offsetX;
+    double offsetY;
+    OH_NativeXComponent_GetXComponentSize(component, window, &width, &height);
+    OH_NativeXComponent_GetXComponentOffset(component, window, &offsetX, &offsetY);
+
+    SDL_Log("Native Window: %p", nativeWindow);
+
+    SDL_LockMutex(g_ohosPageMutex);
+    windowData.native_window = nativeWindow;
+    windowData.width = width;
+    windowData.height = height;
+    windowData.x = offsetX;
+    windowData.y = offsetY;
+
+    SDL_UnlockMutex(g_ohosPageMutex);
+}
+static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
+{
+    // SDL_VideoDevice* _this = SDL_GetVideoDevice();
+}
 static void onKeyEvent(OH_NativeXComponent *component, void *window) {}
 static void onNativeTouch(OH_NativeXComponent *component, void *window) {}
 static void onNativeMouse(OH_NativeXComponent *component, void *window) {}
