@@ -1747,9 +1747,14 @@ static bool OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec
        something low quality, like an old game using S8/8000Hz audio, from ruining a music thing playing at CD quality that tries to open later.
        (or some VoIP library that opens for mono output ruining your surround-sound game because it got there first).
        These are just requests! The backend may change any of these values during OpenDevice method! */
-    device->spec.format = (SDL_AUDIO_BITSIZE(device->default_spec.format) >= SDL_AUDIO_BITSIZE(spec.format)) ? device->default_spec.format : spec.format;
-    device->spec.freq = SDL_max(device->default_spec.freq, spec.freq);
-    device->spec.channels = SDL_max(device->default_spec.channels, spec.channels);
+
+    const SDL_AudioFormat minimum_format = device->recording ? DEFAULT_AUDIO_RECORDING_FORMAT : DEFAULT_AUDIO_PLAYBACK_FORMAT;
+    const int minimum_channels = device->recording ? DEFAULT_AUDIO_RECORDING_CHANNELS : DEFAULT_AUDIO_PLAYBACK_CHANNELS;
+    const int minimum_freq = device->recording ? DEFAULT_AUDIO_RECORDING_FREQUENCY : DEFAULT_AUDIO_PLAYBACK_FREQUENCY;
+
+    device->spec.format = (SDL_AUDIO_BITSIZE(minimum_format) >= SDL_AUDIO_BITSIZE(spec.format)) ? minimum_format : spec.format;
+    device->spec.channels = SDL_max(minimum_channels, spec.channels);
+    device->spec.freq = SDL_max(minimum_freq, spec.freq);
     device->sample_frames = SDL_GetDefaultSampleFramesFromFreq(device->spec.freq);
     SDL_UpdatedAudioDeviceFormat(device);  // start this off sane.
 
