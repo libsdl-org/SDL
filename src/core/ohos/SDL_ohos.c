@@ -1,3 +1,4 @@
+#include "SDL3/SDL_events.h"
 #include "SDL_internal.h"
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
@@ -14,6 +15,7 @@
 #include "SDL_ohos.h"
 #include <ace/xcomponent/native_interface_xcomponent.h>
 #include "../../video/ohos/SDL_ohosvideo.h"
+#include "../../video/ohos/SDL_ohostouch.h"
 #include "SDL3/SDL_mutex.h"
 #include "../../video/ohos/SDL_ohoskeyboard.h"
 
@@ -355,10 +357,51 @@ static void onKeyEvent(OH_NativeXComponent *component, void *window)
     }
 }
 
+static void onNativeTouch(OH_NativeXComponent *component, void *window)
+{
+    OH_NativeXComponent_TouchEvent touchEvent;
+    OH_NativeXComponent_TouchPointToolType toolType = OH_NATIVEXCOMPONENT_TOOL_TYPE_UNKNOWN;
+
+    OHOS_LockPage();
+    OH_NativeXComponent_GetTouchEvent(component, window, &touchEvent);
+    OH_NativeXComponent_GetTouchPointToolType(component, 0, &toolType);
+
+    for (int i = 0; i < touchEvent.numPoints; i++)
+    {
+        SDL_OHOSTouchEvent e;
+        e.timestamp = touchEvent.timeStamp;
+        e.deviceId = touchEvent.deviceId;
+        e.fingerId = touchEvent.touchPoints[i].id;
+        e.area = touchEvent.touchPoints[i].size;
+        e.x = touchEvent.touchPoints[i].x / (float)wid;
+        e.y = touchEvent.touchPoints[i].y / (float)hei;
+        e.p = touchEvent.touchPoints[i].force;
+
+        switch (touchEvent.touchPoints[i].type) {
+            case OH_NATIVEXCOMPONENT_DOWN:
+                e.type = SDL_EVENT_FINGER_DOWN;
+                break;
+            case OH_NATIVEXCOMPONENT_MOVE:
+                e.type = SDL_EVENT_FINGER_MOTION;
+                break;
+            case OH_NATIVEXCOMPONENT_UP:
+                e.type = SDL_EVENT_FINGER_UP;
+                break;
+            case OH_NATIVEXCOMPONENT_CANCEL:
+            case OH_NATIVEXCOMPONENT_UNKNOWN:
+                e.type = SDL_EVENT_FINGER_CANCELED;
+                break;
+        }
+
+        OHOS_OnTouch(e);
+    }
+}
+static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window)
+{
+    onNativeTouch(component, window);
+}
 // TODO
-static void onNativeTouch(OH_NativeXComponent *component, void *window) {}
 static void onNativeMouse(OH_NativeXComponent *component, void *window) {}
-static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window) {}
 static void OnHoverEvent(OH_NativeXComponent *component, bool isHover) {}
 static void OnFocusEvent(OH_NativeXComponent *component, void *window) {}
 static void OnBlurEvent(OH_NativeXComponent *component, void *window) {}

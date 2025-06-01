@@ -1,7 +1,6 @@
 #ifndef SDL_OHOS_H
 #define SDL_OHOS_H
 
-#include "SDL3/SDL_mutex.h"
 #include "SDL3/SDL_video.h"
 #include "video/SDL_sysvideo.h"
 #include <native_window/external_window.h>
@@ -18,5 +17,16 @@ typedef struct SDL_VideoData {
     int      isPaused;
     int      isPausing;
 } SDL_VideoData;
+
+typedef struct SDL_OHOSTouchEvent {
+    int64_t deviceId;
+    int32_t fingerId;
+    int type;
+    float x;
+    float y;
+    float p;
+    float area;
+    int64_t timestamp;
+} SDL_OHOSTouchEvent;
 
 #endif
