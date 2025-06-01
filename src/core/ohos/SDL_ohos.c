@@ -1,6 +1,8 @@
+#include "SDL3/SDL_log.h"
 #include "SDL_internal.h"
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
+#include <dlfcn.h>
 #include <js_native_api.h>
 #include <js_native_api_types.h>
 #include <node_api.h>
@@ -189,7 +191,28 @@ static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
 
 static napi_value sdlLaunchMain(napi_env env, napi_callback_info info)
 {
+    size_t argc = 2;
+    napi_value args[2] = { NULL, NULL };
+    napi_get_cb_info(env, info, &argc, args, NULL, NULL);
 
+    size_t libstringSize = 0;
+    napi_get_value_string_utf8(env, args[0], NULL, 0, &libstringSize);
+    char* libname = SDL_malloc(libstringSize + 1);
+    napi_get_value_string_utf8(env, args[0], libname, libstringSize + 1, &libstringSize);
+
+    size_t fstringSize = 0;
+    napi_get_value_string_utf8(env, args[1], NULL, 0, &fstringSize);
+    char* fname = SDL_malloc(fstringSize + 1);
+    napi_get_value_string_utf8(env, args[1], libname, fstringSize + 1, &fstringSize);
+
+    void* lib = dlopen(libname, RTLD_LAZY);
+    void* func = dlsym(lib, fname);
+    SDL_Log("Main func: %lld", (long long)func);
+    dlclose(lib);
+
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
 }
 
 static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
