@@ -202,11 +202,12 @@ static napi_value sdlLaunchMain(napi_env env, napi_callback_info info)
     size_t fstringSize = 0;
     napi_get_value_string_utf8(env, args[1], NULL, 0, &fstringSize);
     char* fname = SDL_malloc(fstringSize + 1);
-    napi_get_value_string_utf8(env, args[1], libname, fstringSize + 1, &fstringSize);
+    napi_get_value_string_utf8(env, args[1], fname, fstringSize + 1, &fstringSize);
 
     void* lib = dlopen(libname, RTLD_LAZY);
     void* func = dlsym(lib, fname);
-    SDL_Log("Main func: %lld", (long long)func);
+    typedef int (*test)();
+    ((test)func)();
     dlclose(lib);
 
     napi_value result;
