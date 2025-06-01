@@ -11,7 +11,6 @@
 
 bool OHOS_VideoInit(SDL_VideoDevice *_this)
 {
-    _this->num_displays = 1;
     SDL_DisplayMode mode;
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGBA32;
@@ -20,11 +19,8 @@ bool OHOS_VideoInit(SDL_VideoDevice *_this)
     mode.refresh_rate = 60;
 
     SDL_DisplayID displayID = SDL_AddBasicVideoDisplay(&mode);
-    if (displayID == 0) {
-        return false;
-    }
-    _this->displays = SDL_calloc(1, sizeof(SDL_VideoDisplay*));
-    _this->displays[0] = SDL_GetVideoDisplay(displayID);
+    SDL_Log("testvid: %u", displayID);
+    SDL_Log("testvid: %u", _this->displays[0]->id);
     return true;
 }
 void OHOS_VideoQuit(SDL_VideoDevice *_this)
