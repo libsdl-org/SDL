@@ -1743,9 +1743,9 @@ static bool OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec
     SDL_copyp(&spec, inspec ? inspec : &device->default_spec);
     PrepareAudioFormat(device->recording, &spec);
 
-    /* We allow the device format to change if it's better than the current settings (by various definitions of "better"). This prevents
-       something low quality, like an old game using S8/8000Hz audio, from ruining a music thing playing at CD quality that tries to open later.
-       (or some VoIP library that opens for mono output ruining your surround-sound game because it got there first).
+    /* We impose a simple minimum on device formats. This prevents something low quality, like an old game using S8/8000Hz audio,
+       from ruining a music thing playing at CD quality that tries to open later, or some VoIP library that opens for mono output
+       ruining your surround-sound game because it got there first.
        These are just requests! The backend may change any of these values during OpenDevice method! */
 
     const SDL_AudioFormat minimum_format = device->recording ? DEFAULT_AUDIO_RECORDING_FORMAT : DEFAULT_AUDIO_PLAYBACK_FORMAT;
