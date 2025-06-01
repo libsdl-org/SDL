@@ -16,7 +16,7 @@
 #include "../../video/ohos/SDL_ohoskeyboard.h"
 
 static OHNativeWindow *g_ohosNativeWindow;
-SDL_Mutex *g_ohosPageMutex = NULL;
+static SDL_Mutex *g_ohosPageMutex = NULL;
 static OH_NativeXComponent_Callback callback;
 static OH_NativeXComponent_MouseEvent_Callback mouseCallback;
 static int x, y, wid, hei;
@@ -187,6 +187,11 @@ static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
     return result;
 }
 
+static napi_value sdlLaunchMain(napi_env env, napi_callback_info info)
+{
+
+}
+
 static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
 {
     g_ohosNativeWindow = (OHNativeWindow *)window;
@@ -265,7 +270,8 @@ static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
         { "minus", NULL, minus, NULL, NULL, NULL, napi_default, NULL },
-        { "sdlCallbackInit", NULL, sdlCallbackInit, NULL, NULL, NULL, napi_default, NULL }
+        { "sdlCallbackInit", NULL, sdlCallbackInit, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlLaunchMain", NULL, sdlLaunchMain, NULL, NULL, NULL, napi_default, NULL }
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
 
