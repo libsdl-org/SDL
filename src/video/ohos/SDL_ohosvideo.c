@@ -33,6 +33,7 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
         return NULL;
     }
 
+    device->num_displays = 1;
     device->internal = data;
     device->free = OHOS_DeviceFree;
 
