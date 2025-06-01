@@ -2,14 +2,14 @@
 #define SDL_OHOSTOUCH_H
 
 typedef struct SDL_OHOSTouchEvent {
-    int64_t deviceId;
-    int32_t fingerId;
+    long long deviceId;
+    int fingerId;
     int type;
     float x;
     float y;
     float p;
     float area;
-    int64_t timestamp;
+    long long timestamp;
 } SDL_OHOSTouchEvent;
 
 void OHOS_OnTouch(SDL_OHOSTouchEvent event);
