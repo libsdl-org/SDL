@@ -139,6 +139,15 @@ void OHOS_UnlockPage()
     SDL_UnlockMutex(g_ohosPageMutex);
 }
 
+int OHOS_FetchWidth()
+{
+    return wid;
+}
+int OHOS_FetchHeight()
+{
+    return hei;
+}
+
 static napi_value minus(napi_env env, napi_callback_info info)
 {
     size_t argc = 2;

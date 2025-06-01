@@ -10,6 +10,8 @@ void OHOS_windowDataFill(SDL_Window* w);
 void OHOS_removeWindow(SDL_Window* w);
 void OHOS_LockPage();
 void OHOS_UnlockPage();
+int OHOS_FetchWidth();
+int OHOS_FetchHeight();
 
 typedef struct SDL_VideoData {
     SDL_Rect textRect;

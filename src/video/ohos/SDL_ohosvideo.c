@@ -1,3 +1,5 @@
+#include "SDL3/SDL_pixels.h"
+#include "SDL3/SDL_video.h"
 #include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
@@ -9,6 +11,20 @@
 
 bool OHOS_VideoInit(SDL_VideoDevice *_this)
 {
+    _this->num_displays = 1;
+    SDL_DisplayMode mode;
+    SDL_zero(mode);
+    mode.format = SDL_PIXELFORMAT_RGBA32;
+    mode.w = OHOS_FetchWidth();
+    mode.h = OHOS_FetchHeight();
+    mode.refresh_rate = 60;
+
+    SDL_DisplayID displayID = SDL_AddBasicVideoDisplay(&mode);
+    if (displayID == 0) {
+        return false;
+    }
+    _this->displays = SDL_calloc(1, sizeof(SDL_VideoDisplay*));
+    _this->displays[0] = SDL_GetVideoDisplay(displayID);
     return true;
 }
 void OHOS_VideoQuit(SDL_VideoDevice *_this)
@@ -33,7 +49,6 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
         return NULL;
     }
 
-    device->num_displays = 1;
     device->internal = data;
     device->free = OHOS_DeviceFree;
 
