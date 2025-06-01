@@ -1,4 +1,4 @@
-#include "../../core/ohos/SDL_ohos.h"
+#include "SDL_ohostouch.h"
 #include "SDL3/SDL_events.h"
 #include "SDL3/SDL_touch.h"
 #include "events/SDL_events_c.h"
