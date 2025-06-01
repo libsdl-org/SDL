@@ -1,5 +1,3 @@
-#include "SDL3/SDL_pixels.h"
-#include "SDL3/SDL_video.h"
 #include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
