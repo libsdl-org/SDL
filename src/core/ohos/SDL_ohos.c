@@ -6,6 +6,7 @@
 #include <js_native_api_types.h>
 #include <node_api.h>
 #include <node_api_types.h>
+#include <stdint.h>
 
 #ifdef SDL_PLATFORM_OHOS
 
@@ -28,28 +29,32 @@ static struct
     napi_ref interface;
 } napiEnv;
 
-typedef union
+typedef enum
 {
-    int i;
-    short s;
-    char c;
-    long long l;
-    float f;
-    double d;
-    const char* str;
-    bool b;
+    Int,
+    Long,
+    Double,
+    String
+} napiArgType;
+
+typedef struct
+{
+    napiArgType type;
+    union
+    {
+        int i;
+        long long l;
+        double d;
+        const char* str;
+    } data;
 } napiCallbackArg;
 typedef struct
 {
     const char* func;
-    napiCallbackArg arg1;
-    napiCallbackArg arg2;
-    napiCallbackArg arg3;
-    napiCallbackArg arg4;
-    napiCallbackArg arg5;
-    napiCallbackArg arg6;
-    napiCallbackArg arg7;
-    napiCallbackArg arg8;
+    int argCount;
+    napiCallbackArg arg[16];
+    napiArgType type;
+    napiCallbackArg ret;
 } napiCallbackData;
 
 void OHOS_windowDataFill(SDL_Window* w)
@@ -175,11 +180,61 @@ static napi_value minus(napi_env env, napi_callback_info info)
 
 static void sdlJSCallback(napi_env env, napi_value jsCb, void* content, void* data)
 {
+    napiCallbackData* ar = (napiCallbackData*) data;
+
     napi_value callb = NULL;
     napi_get_reference_value(env, napiEnv.interface, &callb);
     napi_value jsMethod = NULL;
-    napi_get_named_property(env, callb, "test", &jsMethod);
-    napi_call_function(env, NULL, jsMethod, 0, NULL, NULL);
+    napi_get_named_property(env, callb, ar->func, &jsMethod);
+
+    napi_value args[16];
+    for (int i = 0; i < ar->argCount; i++)
+    {
+        switch (ar->arg[i].type)
+        {
+            case Int: {
+                napi_create_int32(env, ar->arg[i].data.i, args + i);
+                break;
+            }
+            case Long: {
+                napi_create_int64(env, ar->arg[i].data.l, args + i);
+                break;
+            }
+            case Double: {
+                napi_create_double(env, ar->arg[i].data.d, args + i);
+                break;
+            }
+            case String: {
+                napi_create_string_utf8(env, ar->arg[i].data.str, SDL_strlen(ar->arg[i].data.str), args + i);
+                break;
+            }
+        }
+    }
+
+    napi_value v;
+    napi_call_function(env, NULL, jsMethod, ar->argCount, args, &v);
+    switch (ar->type) {
+        case Int: {
+            napi_get_value_int32(env, v, &ar->ret.data.i);
+            break;
+        }
+        case Long: {
+            napi_get_value_int64(env, v, (int64_t*) &ar->ret.data.l);
+            break;
+        }
+        case String: {
+            size_t stringSize = 0;
+            napi_get_value_string_utf8(env, args[1], NULL, 0, &stringSize);
+            char* value = SDL_malloc(stringSize + 1);
+            napi_get_value_string_utf8(env, args[1], value, stringSize + 1, &stringSize);
+            ar->ret.data.str = value;
+            break;
+        }
+        case Double: {
+            napi_get_value_double(env, v, &ar->ret.data.d);
+            break;
+        }
+    }
 }
 
 static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
@@ -196,7 +251,11 @@ static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
     napi_create_string_utf8(env, "SDLThreadSafe", NAPI_AUTO_LENGTH, &resName);
     napi_create_threadsafe_function(env, args[0], NULL, resName, 0, 1, NULL, NULL, NULL, sdlJSCallback, &napiEnv.func);
 
-    napi_call_threadsafe_function(napiEnv.func, NULL, napi_tsfn_nonblocking);
+    napiCallbackData data;
+    data.func = "test";
+    data.argCount = 0;
+
+    napi_call_threadsafe_function(napiEnv.func, &data, napi_tsfn_nonblocking);
 
     napi_value result;
     napi_create_int32(env, 0, &result);
