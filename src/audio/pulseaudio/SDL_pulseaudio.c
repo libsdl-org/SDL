@@ -672,7 +672,8 @@ static bool PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     paspec.rate = device->spec.freq;
 
     // Reduced prebuffering compared to the defaults.
-    paattr.fragsize = device->buffer_size;   // despite the name, this is only used for recording devices, according to PulseAudio docs!
+
+    paattr.fragsize = device->buffer_size * 2;   // despite the name, this is only used for recording devices, according to PulseAudio docs!  (times 2 because we want _more_ than our buffer size sent from the server at a time, which helps some drivers).
     paattr.tlength = device->buffer_size;
     paattr.prebuf = -1;
     paattr.maxlength = -1;
