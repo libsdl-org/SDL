@@ -1,7 +1,7 @@
 #include "SDL_ohostouch.h"
-#include "SDL3/SDL_events.h"
-#include "SDL3/SDL_touch.h"
-#include "events/SDL_events_c.h"
+#include "SDL_internal.h"
+#include "../../events/SDL_touch_c.h"
+
 void OHOS_OnTouch(SDL_OHOSTouchEvent event)
 {
     if (SDL_AddTouch(event.deviceId, SDL_TOUCH_DEVICE_DIRECT, "") < 0)
