@@ -1,4 +1,3 @@
-#include "SDL3/SDL_video.h"
 #include "SDL_internal.h"
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
