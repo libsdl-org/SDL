@@ -23,7 +23,8 @@ manpageheaderfiletext = Defined in %fname%
 # A handful of others we fix up in the header itself with /* WIKI CATEGORY: x */ comments.
 headercategoryeval = s/\ASDL_config_.*?\.h\Z//; s/\ASDL_test_.*?\.h\Z//; s/\ASDL_?(.*?)\.h\Z/$1/; ucfirst();
 
-quickrefenabled = 0  # !!! FIXME: maybe later, but there are probably documentation gaps to fix first.
+# !!! FIXME: maybe later, but there are probably documentation gaps to fix first.
+quickrefenabled = 0
 quickrefcategoryorder = Init,Hints,Error,Version,Properties,Log,Video,Events,Keyboard,Mouse,Touch,Gesture,GameController,Joystick,Haptic,Audio,Timer,Render,LoadSO,Thread,Mutex,Atomic,Filesystem,RWOPS,Pixels,Surface,Blendmode,Rect,Clipboard,Messagebox,Vulkan,Metal,Platform,Power,Sensor,Bits,Endian,Assert,CPUInfo,Locale,System,Misc,GUID,Main,Stdinc
 quickreftitle = SDL2 API Quick Reference
 quickrefurl = https://libsdl.org/
