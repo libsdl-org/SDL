@@ -790,6 +790,8 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
     if (mouseID == SDL_TOUCH_MOUSEID && !SDL_GetMouseButtonState(mouse, mouseID, true)) {
         xrel = 0.0f;
         yrel = 0.0f;
+        mouse->x = x;
+        mouse->y = y;
     }
 
     // modify internal state
