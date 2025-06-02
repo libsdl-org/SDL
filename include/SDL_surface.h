@@ -801,14 +801,13 @@ extern DECLSPEC int SDLCALL SDL_FillRect
 extern DECLSPEC int SDLCALL SDL_FillRects
     (SDL_Surface * dst, const SDL_Rect * rects, int count, Uint32 color);
 
-/* !!! FIXME: merge this documentation with the wiki */
-
 /**
  * Performs a fast blit from the source surface to the destination surface.
  *
  * This assumes that the source and destination rectangles are the same size.
- * If either `srcrect` or `dstrect` are NULL, the entire surface (`src` or
- * `dst`) is copied. The final blit rectangle is saved in `dstrect` after all
+ * `dstrect`'s width and height are ignored, only its position is used. If
+ * either `srcrect` or `dstrect` are NULL, the entire surface (`src` or `dst`)
+ * is copied. The final blit rectangle is saved in `dstrect` after all
  * clipping is performed.
  *
  * The blit function should not be called on a locked surface.
@@ -859,7 +858,17 @@ extern DECLSPEC int SDLCALL SDL_FillRects
  * You should call SDL_BlitSurface() unless you know exactly how SDL blitting
  * works internally and how to use the other blit functions.
  *
- * \returns 0 if the blit is successful, otherwise it returns -1.
+ * \param src the SDL_Surface structure to be copied from.
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied, or NULL to copy the entire surface.
+ * \param dst the SDL_Surface structure that is the blit target.
+ * \param dstrect the SDL_Rect structure representing the x and y position in
+ *                the destination surface, or NULL for (0,0). The width and
+ *                height are ignored, and are copied from `srcrect`. If you
+ *                want a specific width and height, you should use
+ *                SDL_BlitScaled().
+ * \returns 0 if the blit is successful or a negative error code on failure;
+ *          call SDL_GetError() for more information.
  */
 #define SDL_BlitSurface SDL_UpperBlit
 
@@ -868,6 +877,18 @@ extern DECLSPEC int SDLCALL SDL_FillRects
  *
  * SDL_UpperBlit() has been replaced by SDL_BlitSurface(), which is merely a
  * macro for this function with a less confusing name.
+ *
+ * \param src the SDL_Surface structure to be copied from.
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied, or NULL to copy the entire surface.
+ * \param dst the SDL_Surface structure that is the blit target.
+ * \param dstrect the SDL_Rect structure representing the x and y position in
+ *                the destination surface, or NULL for (0,0). The width and
+ *                height are ignored, and are copied from `srcrect`. If you
+ *                want a specific width and height, you should use
+ *                SDL_BlitScaled().
+ * \returns 0 if the blit is successful or a negative error code on failure;
+ *          call SDL_GetError() for more information.
  *
  * \since This function is available since SDL 2.0.0.
  *
@@ -910,6 +931,13 @@ extern DECLSPEC int SDLCALL SDL_LowerBlit
  *
  * Please use SDL_BlitScaled() instead.
  *
+ * \param src the surface to be copied from.
+ * \param srcrect the rectangle to be copied.
+ * \param dst the surface that is the blit target.
+ * \param dstrect the rectangle that is copied into.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
  * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
@@ -919,6 +947,13 @@ extern DECLSPEC int SDLCALL SDL_SoftStretch(SDL_Surface * src,
 
 /**
  * Perform bilinear scaling between two surfaces of the same format, 32BPP.
+ *
+ * \param src the surface to be copied from.
+ * \param srcrect the rectangle to be copied.
+ * \param dst the surface that is the blit target.
+ * \param dstrect the rectangle that is copied into.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 2.0.16.
  */
@@ -933,6 +968,15 @@ extern DECLSPEC int SDLCALL SDL_SoftStretchLinear(SDL_Surface * src,
  *
  * SDL_UpperBlitScaled() has been replaced by SDL_BlitScaled(), which is
  * merely a macro for this function with a less confusing name.
+ *
+ * \param src the SDL_Surface structure to be copied from.
+ * \param srcrect the SDL_Rect structure representing the rectangle to be
+ *                copied, or NULL to copy the entire surface.
+ * \param dst the SDL_Surface structure that is the blit target.
+ * \param dstrect the SDL_Rect structure representing the rectangle that is
+ *                copied into, or NULL to copy into the entire surface.
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
  *
  * \since This function is available since SDL 2.0.0.
  *
@@ -971,12 +1015,16 @@ extern DECLSPEC int SDLCALL SDL_LowerBlitScaled
 /**
  * Set the YUV conversion mode
  *
+ * \param mode the YUV conversion mode.
+ *
  * \since This function is available since SDL 2.0.8.
  */
 extern DECLSPEC void SDLCALL SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_MODE mode);
 
 /**
  * Get the YUV conversion mode
+ *
+ * \returns YUV conversion mode.
  *
  * \since This function is available since SDL 2.0.8.
  */
@@ -985,6 +1033,10 @@ extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionMode(void);
 /**
  * Get the YUV conversion mode, returning the correct mode for the resolution
  * when the current conversion mode is SDL_YUV_CONVERSION_AUTOMATIC
+ *
+ * \param width the resolution width.
+ * \param height the resolution height.
+ * \returns YUV conversion mode.
  *
  * \since This function is available since SDL 2.0.8.
  */
