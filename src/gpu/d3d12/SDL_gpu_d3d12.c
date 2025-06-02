@@ -1027,6 +1027,9 @@ struct D3D12CommandBuffer
     D3D12Texture *computeReadOnlyStorageTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
     D3D12Buffer *computeReadOnlyStorageBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
 
+    D3D12_CPU_DESCRIPTOR_HANDLE computeReadWriteStorageTextureDescriptorHandles[MAX_COMPUTE_WRITE_TEXTURES];
+    D3D12_CPU_DESCRIPTOR_HANDLE computeReadWriteStorageBufferDescriptorHandles[MAX_COMPUTE_WRITE_BUFFERS];
+
     // Track these separately because they are bound when the compute pass begins
     D3D12TextureSubresource *computeReadWriteStorageTextureSubresources[MAX_COMPUTE_WRITE_TEXTURES];
     Uint32 computeReadWriteStorageTextureSubresourceCount;
@@ -4906,7 +4909,7 @@ static void D3D12_INTERNAL_SetGPUDescriptorHeaps(D3D12CommandBuffer *commandBuff
         heaps);
 }
 
-static void D3D12_INTERNAL_WriteGPUDescriptors(
+static bool D3D12_INTERNAL_WriteGPUDescriptors(
     D3D12CommandBuffer *commandBuffer,
     D3D12_DESCRIPTOR_HEAP_TYPE heapType,
     D3D12_CPU_DESCRIPTOR_HANDLE *resourceDescriptorHandles,
@@ -4915,6 +4918,7 @@ static void D3D12_INTERNAL_WriteGPUDescriptors(
 {
     D3D12DescriptorHeap *heap;
     D3D12_CPU_DESCRIPTOR_HANDLE gpuHeapCpuHandle;
+    bool success = true;
 
     /* Descriptor overflow, acquire new heaps */
     if (commandBuffer->gpuDescriptorHeaps[heapType]->currentDescriptorIndex >= commandBuffer->gpuDescriptorHeaps[heapType]->maxDescriptors) {
@@ -4928,16 +4932,26 @@ static void D3D12_INTERNAL_WriteGPUDescriptors(
     gpuBaseDescriptor->ptr = heap->descriptorHeapGPUStart.ptr + (heap->currentDescriptorIndex * heap->descriptorSize);
 
     for (Uint32 i = 0; i < resourceHandleCount; i += 1) {
-        ID3D12Device_CopyDescriptorsSimple(
-            commandBuffer->renderer->device,
-            1,
-            gpuHeapCpuHandle,
-            resourceDescriptorHandles[i],
-            heapType);
+        // This will crash the driver if it gets a null handle! Cool!
+        if (resourceDescriptorHandles[i].ptr != 0)
+        {
+            ID3D12Device_CopyDescriptorsSimple(
+                commandBuffer->renderer->device,
+                1,
+                gpuHeapCpuHandle,
+                resourceDescriptorHandles[i],
+                heapType);
 
-        heap->currentDescriptorIndex += 1;
-        gpuHeapCpuHandle.ptr += heap->descriptorSize;
+            heap->currentDescriptorIndex += 1;
+            gpuHeapCpuHandle.ptr += heap->descriptorSize;
+        }
+        else
+        {
+            success = false;
+        }
     }
+
+    return success;
 }
 
 static void D3D12_INTERNAL_BindGraphicsResources(
@@ -4976,12 +4990,15 @@ static void D3D12_INTERNAL_BindGraphicsResources(
                 cpuHandles[i] = commandBuffer->vertexSamplerDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
                 cpuHandles,
                 graphicsPipeline->vertexSamplerCount,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing vertex sampler!");
+            }
 
             ID3D12GraphicsCommandList_SetGraphicsRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -4992,12 +5009,15 @@ static void D3D12_INTERNAL_BindGraphicsResources(
                 cpuHandles[i] = commandBuffer->vertexSamplerTextureDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
                 graphicsPipeline->vertexSamplerCount,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing vertex texture!");
+            }
 
             ID3D12GraphicsCommandList_SetGraphicsRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5013,12 +5033,15 @@ static void D3D12_INTERNAL_BindGraphicsResources(
                 cpuHandles[i] = commandBuffer->vertexStorageTextureDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
                 graphicsPipeline->vertexStorageTextureCount,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing vertex storage texture!");
+            }
 
             ID3D12GraphicsCommandList_SetGraphicsRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5034,12 +5057,15 @@ static void D3D12_INTERNAL_BindGraphicsResources(
                 cpuHandles[i] = commandBuffer->vertexStorageBufferDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
                 graphicsPipeline->vertexStorageBufferCount,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing vertex storage buffer!");
+            }
 
             ID3D12GraphicsCommandList_SetGraphicsRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5067,12 +5093,15 @@ static void D3D12_INTERNAL_BindGraphicsResources(
                 cpuHandles[i] = commandBuffer->fragmentSamplerDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
                 cpuHandles,
                 graphicsPipeline->fragmentSamplerCount,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing fragment sampler!");
+            }
 
             ID3D12GraphicsCommandList_SetGraphicsRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5083,12 +5112,15 @@ static void D3D12_INTERNAL_BindGraphicsResources(
                 cpuHandles[i] = commandBuffer->fragmentSamplerTextureDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
                 graphicsPipeline->fragmentSamplerCount,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing fragment texture!");
+            }
 
             ID3D12GraphicsCommandList_SetGraphicsRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5104,12 +5136,15 @@ static void D3D12_INTERNAL_BindGraphicsResources(
                 cpuHandles[i] = commandBuffer->fragmentStorageTextureDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
                 graphicsPipeline->fragmentStorageTextureCount,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing fragment storage texture!");
+            }
 
             ID3D12GraphicsCommandList_SetGraphicsRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5125,12 +5160,15 @@ static void D3D12_INTERNAL_BindGraphicsResources(
                 cpuHandles[i] = commandBuffer->fragmentStorageBufferDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
                 graphicsPipeline->fragmentStorageBufferCount,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing fragment storage buffer!");
+            }
 
             ID3D12GraphicsCommandList_SetGraphicsRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5349,6 +5387,7 @@ static void D3D12_BeginComputePass(
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
             d3d12CommandBuffer->computeReadWriteStorageTextureSubresources[i] = subresource;
+            d3d12CommandBuffer->computeReadWriteStorageTextureDescriptorHandles[i] = subresource->uavHandle.cpuHandle;
 
             D3D12_INTERNAL_TrackTexture(
                 d3d12CommandBuffer,
@@ -5367,6 +5406,7 @@ static void D3D12_BeginComputePass(
                 D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 
             d3d12CommandBuffer->computeReadWriteStorageBuffers[i] = buffer;
+            d3d12CommandBuffer->computeReadWriteStorageBufferDescriptorHandles[i] = buffer->uavDescriptor.cpuHandle;
 
             D3D12_INTERNAL_TrackBuffer(
                 d3d12CommandBuffer,
@@ -5420,15 +5460,18 @@ static void D3D12_BindComputePipeline(
     // Bind write-only resources after setting root signature
     if (pipeline->numReadWriteStorageTextures > 0) {
         for (Uint32 i = 0; i < pipeline->numReadWriteStorageTextures; i += 1) {
-            cpuHandles[i] = d3d12CommandBuffer->computeReadWriteStorageTextureSubresources[i]->uavHandle.cpuHandle;
+            cpuHandles[i] = d3d12CommandBuffer->computeReadWriteStorageTextureDescriptorHandles[i];
         }
 
-        D3D12_INTERNAL_WriteGPUDescriptors(
+        if (!D3D12_INTERNAL_WriteGPUDescriptors(
             d3d12CommandBuffer,
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             cpuHandles,
             d3d12CommandBuffer->computeReadWriteStorageTextureSubresourceCount,
-            &gpuDescriptorHandle);
+            &gpuDescriptorHandle))
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute read-write storage texture!");
+        }
 
         ID3D12GraphicsCommandList_SetComputeRootDescriptorTable(
             d3d12CommandBuffer->graphicsCommandList,
@@ -5438,15 +5481,18 @@ static void D3D12_BindComputePipeline(
 
     if (pipeline->numReadWriteStorageBuffers > 0) {
         for (Uint32 i = 0; i < pipeline->numReadWriteStorageBuffers; i += 1) {
-            cpuHandles[i] = d3d12CommandBuffer->computeReadWriteStorageBuffers[i]->uavDescriptor.cpuHandle;
+            cpuHandles[i] = d3d12CommandBuffer->computeReadWriteStorageBufferDescriptorHandles[i];
         }
 
-        D3D12_INTERNAL_WriteGPUDescriptors(
+        if (!D3D12_INTERNAL_WriteGPUDescriptors(
             d3d12CommandBuffer,
             D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
             cpuHandles,
             d3d12CommandBuffer->computeReadWriteStorageBufferCount,
-            &gpuDescriptorHandle);
+            &gpuDescriptorHandle))
+        {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute read-write storage buffer!");
+        }
 
         ID3D12GraphicsCommandList_SetComputeRootDescriptorTable(
             d3d12CommandBuffer->graphicsCommandList,
@@ -5597,12 +5643,15 @@ static void D3D12_INTERNAL_BindComputeResources(
                 cpuHandles[i] = commandBuffer->computeSamplerDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER,
                 cpuHandles,
                 computePipeline->numSamplers,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute sampler!");
+            }
 
             ID3D12GraphicsCommandList_SetComputeRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5613,12 +5662,15 @@ static void D3D12_INTERNAL_BindComputeResources(
                 cpuHandles[i] = commandBuffer->computeSamplerTextureDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
                 computePipeline->numSamplers,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute texture!");
+            }
 
             ID3D12GraphicsCommandList_SetComputeRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5634,12 +5686,15 @@ static void D3D12_INTERNAL_BindComputeResources(
                 cpuHandles[i] = commandBuffer->computeReadOnlyStorageTextureDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
                 computePipeline->numReadOnlyStorageTextures,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute storage texture!");
+            }
 
             ID3D12GraphicsCommandList_SetComputeRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5655,12 +5710,15 @@ static void D3D12_INTERNAL_BindComputeResources(
                 cpuHandles[i] = commandBuffer->computeReadOnlyStorageBufferDescriptorHandles[i];
             }
 
-            D3D12_INTERNAL_WriteGPUDescriptors(
+            if (!D3D12_INTERNAL_WriteGPUDescriptors(
                 commandBuffer,
                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
                 cpuHandles,
                 computePipeline->numReadOnlyStorageBuffers,
-                &gpuDescriptorHandle);
+                &gpuDescriptorHandle))
+            {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing expected compute storage buffer!");
+            }
 
             ID3D12GraphicsCommandList_SetComputeRootDescriptorTable(
                 commandBuffer->graphicsCommandList,
@@ -5773,6 +5831,9 @@ static void D3D12_EndComputePass(
 
     SDL_zeroa(d3d12CommandBuffer->computeSamplerTextureDescriptorHandles);
     SDL_zeroa(d3d12CommandBuffer->computeSamplerDescriptorHandles);
+
+    SDL_zeroa(d3d12CommandBuffer->computeReadWriteStorageTextureDescriptorHandles);
+    SDL_zeroa(d3d12CommandBuffer->computeReadWriteStorageBufferDescriptorHandles);
 
     d3d12CommandBuffer->currentComputePipeline = NULL;
 }
