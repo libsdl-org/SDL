@@ -93,10 +93,10 @@
         }                                                                                                                   \
     }
 
-#define CHECK_GRAPHICS_PIPELINE_BOUND                                                       \
-    if (!((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->graphics_pipeline_bound) { \
-        SDL_assert_release(!"Graphics pipeline not bound!");                                \
-        return;                                                                             \
+#define CHECK_GRAPHICS_PIPELINE_BOUND                                                   \
+    if (!((RenderPass *)render_pass)->graphics_pipeline) { \
+        SDL_assert_release(!"Graphics pipeline not bound!");                            \
+        return;                                                                         \
     }
 
 #define CHECK_COMPUTEPASS                                     \
@@ -106,7 +106,7 @@
     }
 
 #define CHECK_COMPUTE_PIPELINE_BOUND                                                        \
-    if (!((CommandBufferCommonHeader *)COMPUTEPASS_COMMAND_BUFFER)->compute_pipeline_bound) { \
+    if (!((ComputePass *)compute_pass)->compute_pipeline) { \
         SDL_assert_release(!"Compute pipeline not bound!");                                 \
         return;                                                                             \
     }
@@ -174,11 +174,17 @@
 #define RENDERPASS_DEVICE \
     ((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->device
 
+#define RENDERPASS_BOUND_PIPELINE \
+    ((RenderPass *)render_pass)->graphics_pipeline
+
 #define COMPUTEPASS_COMMAND_BUFFER \
     ((Pass *)compute_pass)->command_buffer
 
 #define COMPUTEPASS_DEVICE \
     ((CommandBufferCommonHeader *)COMPUTEPASS_COMMAND_BUFFER)->device
+
+#define COMPUTEPASS_BOUND_PIPELINE \
+    ((ComputePass *)compute_pass)->compute_pipeline
 
 #define COPYPASS_COMMAND_BUFFER \
     ((Pass *)copy_pass)->command_buffer
@@ -509,6 +515,73 @@ void SDL_GPU_BlitCommon(
 
     SDL_DrawGPUPrimitives(render_pass, 3, 1, 0, 0);
     SDL_EndGPURenderPass(render_pass);
+}
+
+static void SDL_GPU_CheckGraphicsBindings(SDL_GPURenderPass *render_pass)
+{
+    RenderPass *rp = (RenderPass *)render_pass;
+    GraphicsPipelineCommonHeader *pipeline = (GraphicsPipelineCommonHeader *)RENDERPASS_BOUND_PIPELINE;
+    for (Uint32 i = 0; i < pipeline->num_vertex_samplers; i += 1) {
+        if (!rp->vertex_sampler_bound[i]) {
+            SDL_assert_release(!"Missing vertex sampler binding!");
+        }
+    }
+    for (Uint32 i = 0; i < pipeline->num_vertex_storage_textures; i += 1) {
+        if (!rp->vertex_storage_texture_bound[i]) {
+            SDL_assert_release(!"Missing vertex storage texture binding!");
+        }
+    }
+    for (Uint32 i = 0; i < pipeline->num_vertex_storage_buffers; i += 1) {
+        if (!rp->vertex_storage_buffer_bound[i]) {
+            SDL_assert_release(!"Missing vertex storage buffer binding!");
+        }
+    }
+    for (Uint32 i = 0; i < pipeline->num_fragment_samplers; i += 1) {
+        if (!rp->fragment_sampler_bound[i]) {
+            SDL_assert_release(!"Missing fragment sampler binding!");
+        }
+    }
+    for (Uint32 i = 0; i < pipeline->num_fragment_storage_textures; i += 1) {
+        if (!rp->fragment_storage_texture_bound[i]) {
+            SDL_assert_release(!"Missing fragment storage texture binding!");
+        }
+    }
+    for (Uint32 i = 0; i < pipeline->num_fragment_storage_buffers; i += 1) {
+        if (!rp->fragment_storage_buffer_bound[i]) {
+            SDL_assert_release(!"Missing fragment storage buffer binding!");
+        }
+    }
+}
+
+static void SDL_GPU_CheckComputeBindings(SDL_GPUComputePass *compute_pass)
+{
+    ComputePass *cp = (ComputePass *)compute_pass;
+    ComputePipelineCommonHeader *pipeline = (ComputePipelineCommonHeader *)COMPUTEPASS_BOUND_PIPELINE;
+    for (Uint32 i = 0; i < pipeline->numSamplers; i += 1) {
+        if (!cp->sampler_bound[i]) {
+            SDL_assert_release(!"Missing compute sampler binding!");
+        }
+    }
+    for (Uint32 i = 0; i < pipeline->numReadonlyStorageTextures; i += 1) {
+        if (!cp->read_only_storage_texture_bound[i]) {
+            SDL_assert_release(!"Missing compute readonly storage texture binding!");
+        }
+    }
+    for (Uint32 i = 0; i < pipeline->numReadonlyStorageBuffers; i += 1) {
+        if (!cp->read_only_storage_buffer_bound[i]) {
+            SDL_assert_release(!"Missing compute readonly storage buffer binding!");
+        }
+    }
+    for (Uint32 i = 0; i < pipeline->numReadWriteStorageTextures; i += 1) {
+        if (!cp->read_write_storage_texture_bound[i]) {
+            SDL_assert_release(!"Missing compute read-write storage texture binding!");
+        }
+    }
+    for (Uint32 i = 0; i < pipeline->numReadWriteStorageBuffers; i += 1) {
+        if (!cp->read_write_storage_buffer_bound[i]) {
+            SDL_assert_release(!"Missing compute read-write storage buffer bbinding!");
+        }
+    }
 }
 
 // Driver Functions
@@ -1489,15 +1562,29 @@ SDL_GPUCommandBuffer *SDL_AcquireGPUCommandBuffer(
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
     commandBufferHeader->device = device;
     commandBufferHeader->render_pass.command_buffer = command_buffer;
-    commandBufferHeader->render_pass.in_progress = false;
-    commandBufferHeader->graphics_pipeline_bound = false;
     commandBufferHeader->compute_pass.command_buffer = command_buffer;
-    commandBufferHeader->compute_pass.in_progress = false;
-    commandBufferHeader->compute_pipeline_bound = false;
     commandBufferHeader->copy_pass.command_buffer = command_buffer;
-    commandBufferHeader->copy_pass.in_progress = false;
-    commandBufferHeader->swapchain_texture_acquired = false;
-    commandBufferHeader->submitted = false;
+
+    if (device->debug_mode) {
+        commandBufferHeader->render_pass.in_progress = false;
+        commandBufferHeader->render_pass.graphics_pipeline = NULL;
+        commandBufferHeader->compute_pass.in_progress = false;
+        commandBufferHeader->compute_pass.compute_pipeline = NULL;
+        commandBufferHeader->copy_pass.in_progress = false;
+        commandBufferHeader->swapchain_texture_acquired = false;
+        commandBufferHeader->submitted = false;
+        SDL_zeroa(commandBufferHeader->render_pass.vertex_sampler_bound);
+        SDL_zeroa(commandBufferHeader->render_pass.vertex_storage_texture_bound);
+        SDL_zeroa(commandBufferHeader->render_pass.vertex_storage_buffer_bound);
+        SDL_zeroa(commandBufferHeader->render_pass.fragment_sampler_bound);
+        SDL_zeroa(commandBufferHeader->render_pass.fragment_storage_texture_bound);
+        SDL_zeroa(commandBufferHeader->render_pass.fragment_storage_buffer_bound);
+        SDL_zeroa(commandBufferHeader->compute_pass.sampler_bound);
+        SDL_zeroa(commandBufferHeader->compute_pass.read_only_storage_texture_bound);
+        SDL_zeroa(commandBufferHeader->compute_pass.read_only_storage_buffer_bound);
+        SDL_zeroa(commandBufferHeader->compute_pass.read_write_storage_texture_bound);
+        SDL_zeroa(commandBufferHeader->compute_pass.read_write_storage_buffer_bound);
+    }
 
     return command_buffer;
 }
@@ -1688,14 +1775,18 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         depth_stencil_target_info);
 
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
-    commandBufferHeader->render_pass.in_progress = true;
-    for (Uint32 i = 0; i < num_color_targets; i += 1) {
-        commandBufferHeader->render_pass.color_targets[i] = color_target_infos[i].texture;
+
+    if (COMMAND_BUFFER_DEVICE->debug_mode) {
+        commandBufferHeader->render_pass.in_progress = true;
+        for (Uint32 i = 0; i < num_color_targets; i += 1) {
+            commandBufferHeader->render_pass.color_targets[i] = color_target_infos[i].texture;
+        }
+        commandBufferHeader->render_pass.num_color_targets = num_color_targets;
+        if (depth_stencil_target_info != NULL) {
+            commandBufferHeader->render_pass.depth_stencil_target = depth_stencil_target_info->texture;
+        }
     }
-    commandBufferHeader->render_pass.num_color_targets = num_color_targets;
-    if (depth_stencil_target_info != NULL) {
-        commandBufferHeader->render_pass.depth_stencil_target = depth_stencil_target_info->texture;
-    }
+
     return (SDL_GPURenderPass *)&(commandBufferHeader->render_pass);
 }
 
@@ -1703,8 +1794,6 @@ void SDL_BindGPUGraphicsPipeline(
     SDL_GPURenderPass *render_pass,
     SDL_GPUGraphicsPipeline *graphics_pipeline)
 {
-    CommandBufferCommonHeader *commandBufferHeader;
-
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
@@ -1718,8 +1807,10 @@ void SDL_BindGPUGraphicsPipeline(
         RENDERPASS_COMMAND_BUFFER,
         graphics_pipeline);
 
-    commandBufferHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
-    commandBufferHeader->graphics_pipeline_bound = true;
+
+    if (RENDERPASS_DEVICE->debug_mode) {
+        RENDERPASS_BOUND_PIPELINE = graphics_pipeline;
+    }
 }
 
 void SDL_SetGPUViewport(
@@ -1874,6 +1965,10 @@ void SDL_BindGPUVertexSamplers(
         {
             CHECK_SAMPLER_TEXTURES
         }
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            ((RenderPass *)render_pass)->vertex_sampler_bound[first_slot + i] = true;
+        }
     }
 
     RENDERPASS_DEVICE->BindVertexSamplers(
@@ -1901,6 +1996,10 @@ void SDL_BindGPUVertexStorageTextures(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
         CHECK_STORAGE_TEXTURES
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            ((RenderPass *)render_pass)->vertex_storage_texture_bound[first_slot + i] = true;
+        }
     }
 
     RENDERPASS_DEVICE->BindVertexStorageTextures(
@@ -1927,6 +2026,10 @@ void SDL_BindGPUVertexStorageBuffers(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            ((RenderPass *)render_pass)->vertex_storage_buffer_bound[first_slot + i] = true;
+        }
     }
 
     RENDERPASS_DEVICE->BindVertexStorageBuffers(
@@ -1954,9 +2057,12 @@ void SDL_BindGPUFragmentSamplers(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
 
-        if (!((CommandBufferCommonHeader*)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation)
-        {
+        if (!((CommandBufferCommonHeader*)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation) {
             CHECK_SAMPLER_TEXTURES
+        }
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            ((RenderPass *)render_pass)->fragment_sampler_bound[first_slot + i] = true;
         }
     }
 
@@ -1985,6 +2091,10 @@ void SDL_BindGPUFragmentStorageTextures(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
         CHECK_STORAGE_TEXTURES
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            ((RenderPass *)render_pass)->fragment_storage_texture_bound[first_slot + i] = true;
+        }
     }
 
     RENDERPASS_DEVICE->BindFragmentStorageTextures(
@@ -2011,6 +2121,10 @@ void SDL_BindGPUFragmentStorageBuffers(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            ((RenderPass *)render_pass)->fragment_storage_buffer_bound[first_slot + i] = true;
+        }
     }
 
     RENDERPASS_DEVICE->BindFragmentStorageBuffers(
@@ -2036,6 +2150,7 @@ void SDL_DrawGPUIndexedPrimitives(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
+        SDL_GPU_CheckGraphicsBindings(render_pass);
     }
 
     RENDERPASS_DEVICE->DrawIndexedPrimitives(
@@ -2062,6 +2177,7 @@ void SDL_DrawGPUPrimitives(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
+        SDL_GPU_CheckGraphicsBindings(render_pass);
     }
 
     RENDERPASS_DEVICE->DrawPrimitives(
@@ -2090,6 +2206,7 @@ void SDL_DrawGPUPrimitivesIndirect(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
+        SDL_GPU_CheckGraphicsBindings(render_pass);
     }
 
     RENDERPASS_DEVICE->DrawPrimitivesIndirect(
@@ -2117,6 +2234,7 @@ void SDL_DrawGPUIndexedPrimitivesIndirect(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
+        SDL_GPU_CheckGraphicsBindings(render_pass);
     }
 
     RENDERPASS_DEVICE->DrawIndexedPrimitivesIndirect(
@@ -2130,6 +2248,7 @@ void SDL_EndGPURenderPass(
     SDL_GPURenderPass *render_pass)
 {
     CommandBufferCommonHeader *commandBufferCommonHeader;
+    commandBufferCommonHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
 
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
@@ -2143,15 +2262,22 @@ void SDL_EndGPURenderPass(
     RENDERPASS_DEVICE->EndRenderPass(
         RENDERPASS_COMMAND_BUFFER);
 
-    commandBufferCommonHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
-    commandBufferCommonHeader->render_pass.in_progress = false;
-    for (Uint32 i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1)
-    {
-        commandBufferCommonHeader->render_pass.color_targets[i] = NULL;
+    if (RENDERPASS_DEVICE->debug_mode) {
+        commandBufferCommonHeader->render_pass.in_progress = false;
+        for (Uint32 i = 0; i < MAX_COLOR_TARGET_BINDINGS; i += 1)
+        {
+            commandBufferCommonHeader->render_pass.color_targets[i] = NULL;
+        }
+        commandBufferCommonHeader->render_pass.num_color_targets = 0;
+        commandBufferCommonHeader->render_pass.depth_stencil_target = NULL;
+        commandBufferCommonHeader->render_pass.graphics_pipeline = NULL;
+        SDL_zeroa(commandBufferCommonHeader->render_pass.vertex_sampler_bound);
+        SDL_zeroa(commandBufferCommonHeader->render_pass.vertex_storage_texture_bound);
+        SDL_zeroa(commandBufferCommonHeader->render_pass.vertex_storage_buffer_bound);
+        SDL_zeroa(commandBufferCommonHeader->render_pass.fragment_sampler_bound);
+        SDL_zeroa(commandBufferCommonHeader->render_pass.fragment_storage_texture_bound);
+        SDL_zeroa(commandBufferCommonHeader->render_pass.fragment_storage_buffer_bound);
     }
-    commandBufferCommonHeader->render_pass.num_color_targets = 0;
-    commandBufferCommonHeader->render_pass.depth_stencil_target = NULL;
-    commandBufferCommonHeader->graphics_pipeline_bound = false;
 }
 
 // Compute Pass
@@ -2218,7 +2344,19 @@ SDL_GPUComputePass *SDL_BeginGPUComputePass(
         num_storage_buffer_bindings);
 
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
-    commandBufferHeader->compute_pass.in_progress = true;
+
+    if (COMMAND_BUFFER_DEVICE->debug_mode) {
+        commandBufferHeader->compute_pass.in_progress = true;
+
+        for (Uint32 i = 0; i < num_storage_texture_bindings; i += 1) {
+            commandBufferHeader->compute_pass.read_write_storage_texture_bound[i] = true;
+        }
+
+        for (Uint32 i = 0; i < num_storage_buffer_bindings; i += 1) {
+            commandBufferHeader->compute_pass.read_write_storage_buffer_bound[i] = true;
+        }
+    }
+
     return (SDL_GPUComputePass *)&(commandBufferHeader->compute_pass);
 }
 
@@ -2226,8 +2364,6 @@ void SDL_BindGPUComputePipeline(
     SDL_GPUComputePass *compute_pass,
     SDL_GPUComputePipeline *compute_pipeline)
 {
-    CommandBufferCommonHeader *commandBufferHeader;
-
     if (compute_pass == NULL) {
         SDL_InvalidParamError("compute_pass");
         return;
@@ -2245,8 +2381,10 @@ void SDL_BindGPUComputePipeline(
         COMPUTEPASS_COMMAND_BUFFER,
         compute_pipeline);
 
-    commandBufferHeader = (CommandBufferCommonHeader *)COMPUTEPASS_COMMAND_BUFFER;
-    commandBufferHeader->compute_pipeline_bound = true;
+
+    if (COMPUTEPASS_DEVICE->debug_mode) {
+        COMPUTEPASS_BOUND_PIPELINE = compute_pipeline;
+    }
 }
 
 void SDL_BindGPUComputeSamplers(
@@ -2266,6 +2404,10 @@ void SDL_BindGPUComputeSamplers(
 
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            ((ComputePass *)compute_pass)->sampler_bound[first_slot + i] = true;
+        }
     }
 
     COMPUTEPASS_DEVICE->BindComputeSamplers(
@@ -2292,6 +2434,10 @@ void SDL_BindGPUComputeStorageTextures(
 
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            ((ComputePass *)compute_pass)->read_only_storage_texture_bound[first_slot + i] = true;
+        }
     }
 
     COMPUTEPASS_DEVICE->BindComputeStorageTextures(
@@ -2318,6 +2464,10 @@ void SDL_BindGPUComputeStorageBuffers(
 
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            ((ComputePass *)compute_pass)->read_only_storage_buffer_bound[first_slot + i] = true;
+        }
     }
 
     COMPUTEPASS_DEVICE->BindComputeStorageBuffers(
@@ -2341,6 +2491,7 @@ void SDL_DispatchGPUCompute(
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
         CHECK_COMPUTE_PIPELINE_BOUND
+        SDL_GPU_CheckComputeBindings(compute_pass);
     }
 
     COMPUTEPASS_DEVICE->DispatchCompute(
@@ -2363,6 +2514,7 @@ void SDL_DispatchGPUComputeIndirect(
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
         CHECK_COMPUTE_PIPELINE_BOUND
+        SDL_GPU_CheckComputeBindings(compute_pass);
     }
 
     COMPUTEPASS_DEVICE->DispatchComputeIndirect(
@@ -2388,9 +2540,16 @@ void SDL_EndGPUComputePass(
     COMPUTEPASS_DEVICE->EndComputePass(
         COMPUTEPASS_COMMAND_BUFFER);
 
-    commandBufferCommonHeader = (CommandBufferCommonHeader *)COMPUTEPASS_COMMAND_BUFFER;
-    commandBufferCommonHeader->compute_pass.in_progress = false;
-    commandBufferCommonHeader->compute_pipeline_bound = false;
+    if (COMPUTEPASS_DEVICE->debug_mode) {
+        commandBufferCommonHeader = (CommandBufferCommonHeader *)COMPUTEPASS_COMMAND_BUFFER;
+        commandBufferCommonHeader->compute_pass.in_progress = false;
+        commandBufferCommonHeader->compute_pass.compute_pipeline = false;
+        SDL_zeroa(commandBufferCommonHeader->compute_pass.sampler_bound);
+        SDL_zeroa(commandBufferCommonHeader->compute_pass.read_only_storage_texture_bound);
+        SDL_zeroa(commandBufferCommonHeader->compute_pass.read_only_storage_buffer_bound);
+        SDL_zeroa(commandBufferCommonHeader->compute_pass.read_write_storage_texture_bound);
+        SDL_zeroa(commandBufferCommonHeader->compute_pass.read_write_storage_buffer_bound);
+    }
 }
 
 // TransferBuffer Data
@@ -2448,7 +2607,11 @@ SDL_GPUCopyPass *SDL_BeginGPUCopyPass(
         command_buffer);
 
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
-    commandBufferHeader->copy_pass.in_progress = true;
+
+    if (COMMAND_BUFFER_DEVICE->debug_mode) {
+        commandBufferHeader->copy_pass.in_progress = true;
+    }
+
     return (SDL_GPUCopyPass *)&(commandBufferHeader->copy_pass);
 }
 
@@ -2699,7 +2862,9 @@ void SDL_EndGPUCopyPass(
     COPYPASS_DEVICE->EndCopyPass(
         COPYPASS_COMMAND_BUFFER);
 
-    ((CommandBufferCommonHeader *)COPYPASS_COMMAND_BUFFER)->copy_pass.in_progress = false;
+    if (COPYPASS_DEVICE->debug_mode) {
+        ((CommandBufferCommonHeader *)COPYPASS_COMMAND_BUFFER)->copy_pass.in_progress = false;
+    }
 }
 
 void SDL_GenerateMipmapsForGPUTexture(
