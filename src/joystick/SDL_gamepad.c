@@ -2878,6 +2878,7 @@ SDL_Gamepad *SDL_OpenGamepad(SDL_JoystickID instance_id)
 
     gamepad->joystick = SDL_OpenJoystick(instance_id);
     if (!gamepad->joystick) {
+        SDL_SetObjectValid(gamepad, SDL_OBJECT_TYPE_GAMEPAD, false);
         SDL_free(gamepad);
         SDL_UnlockJoysticks();
         return NULL;
@@ -2886,6 +2887,7 @@ SDL_Gamepad *SDL_OpenGamepad(SDL_JoystickID instance_id)
     if (gamepad->joystick->naxes) {
         gamepad->last_match_axis = (SDL_GamepadBinding **)SDL_calloc(gamepad->joystick->naxes, sizeof(*gamepad->last_match_axis));
         if (!gamepad->last_match_axis) {
+            SDL_SetObjectValid(gamepad, SDL_OBJECT_TYPE_GAMEPAD, false);
             SDL_CloseJoystick(gamepad->joystick);
             SDL_free(gamepad);
             SDL_UnlockJoysticks();
@@ -2895,6 +2897,7 @@ SDL_Gamepad *SDL_OpenGamepad(SDL_JoystickID instance_id)
     if (gamepad->joystick->nhats) {
         gamepad->last_hat_mask = (Uint8 *)SDL_calloc(gamepad->joystick->nhats, sizeof(*gamepad->last_hat_mask));
         if (!gamepad->last_hat_mask) {
+            SDL_SetObjectValid(gamepad, SDL_OBJECT_TYPE_GAMEPAD, false);
             SDL_CloseJoystick(gamepad->joystick);
             SDL_free(gamepad->last_match_axis);
             SDL_free(gamepad);
