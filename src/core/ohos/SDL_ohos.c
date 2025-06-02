@@ -1,3 +1,4 @@
+#include "SDL3/SDL_video.h"
 #include "SDL_internal.h"
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
@@ -328,6 +329,24 @@ static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
 }
 static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
 {
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_Window *win = _this->windows;
+    while (win != NULL)
+    {
+#ifdef SDL_VIDEO_OPENGL_EGL
+        if (win->flags & SDL_WINDOW_OPENGL) {
+            if (win->internal->egl_context)
+            {
+                SDL_EGL_DestroyContext(_this, win->internal->egl_context);
+            }
+            if (win->internal->egl_surface)
+            {
+                SDL_EGL_DestroySurface(_this, win->internal->egl_surface);
+            }
+        }
+#endif
+        win = win->next;
+    }
 }
 static void onKeyEvent(OH_NativeXComponent *component, void *window)
 {
