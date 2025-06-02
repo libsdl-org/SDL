@@ -829,6 +829,8 @@ typedef struct VulkanGraphicsPipelineResourceLayout
 
 typedef struct VulkanGraphicsPipeline
 {
+    GraphicsPipelineCommonHeader header;
+
     VkPipeline pipeline;
     SDL_GPUPrimitiveType primitiveType;
 
@@ -872,6 +874,8 @@ typedef struct VulkanComputePipelineResourceLayout
 
 typedef struct VulkanComputePipeline
 {
+    ComputePipelineCommonHeader header;
+
     VkShaderModule shaderModule;
     VkPipeline pipeline;
     VulkanComputePipelineResourceLayout *resourceLayout;
@@ -5119,16 +5123,6 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
 
             writeCount += 1;
             imageInfoCount += 1;
-
-            if (commandBuffer->vertexSamplerBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing vertex sampler!");
-            }
-
-            if (commandBuffer->vertexSamplerTextureViewBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing vertex texture!");
-            }
         }
 
         for (Uint32 i = 0; i < resourceLayout->vertexStorageTextureCount; i += 1) {
@@ -5152,11 +5146,6 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
 
             writeCount += 1;
             imageInfoCount += 1;
-
-            if (commandBuffer->vertexStorageTextureViewBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing vertex storage texture!");
-            }
         }
 
         for (Uint32 i = 0; i < resourceLayout->vertexStorageBufferCount; i += 1) {
@@ -5180,11 +5169,6 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
 
             writeCount += 1;
             bufferInfoCount += 1;
-
-            if (commandBuffer->vertexStorageBufferBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing vertex storage buffer!");
-            }
         }
 
         commandBuffer->needNewVertexResourceDescriptorSet = false;
@@ -5258,16 +5242,6 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
 
             writeCount += 1;
             imageInfoCount += 1;
-
-            if (commandBuffer->fragmentSamplerBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing fragment sampler!");
-            }
-
-            if (commandBuffer->fragmentSamplerTextureViewBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing fragment texture!");
-            }
         }
 
         for (Uint32 i = 0; i < resourceLayout->fragmentStorageTextureCount; i += 1) {
@@ -5291,11 +5265,6 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
 
             writeCount += 1;
             imageInfoCount += 1;
-
-            if (commandBuffer->fragmentStorageTextureViewBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing fragment storage texture!");
-            }
         }
 
         for (Uint32 i = 0; i < resourceLayout->fragmentStorageBufferCount; i += 1) {
@@ -5319,11 +5288,6 @@ static void VULKAN_INTERNAL_BindGraphicsDescriptorSets(
 
             writeCount += 1;
             bufferInfoCount += 1;
-
-            if (commandBuffer->fragmentStorageBufferBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing fragment storage buffer!");
-            }
         }
 
         commandBuffer->needNewFragmentResourceDescriptorSet = false;
@@ -6589,6 +6553,16 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
             &nameInfo);
     }
 
+    // Put this data in the pipeline we can do validation in gpu.c
+    graphicsPipeline->header.vertexSamplerCount = graphicsPipeline->resourceLayout->vertexSamplerCount;
+    graphicsPipeline->header.vertexStorageBufferCount = graphicsPipeline->resourceLayout->vertexStorageBufferCount;
+    graphicsPipeline->header.vertexStorageTextureCount = graphicsPipeline->resourceLayout->vertexStorageTextureCount;
+    graphicsPipeline->header.vertexUniformBufferCount = graphicsPipeline->resourceLayout->vertexUniformBufferCount;
+    graphicsPipeline->header.fragmentSamplerCount = graphicsPipeline->resourceLayout->fragmentSamplerCount;
+    graphicsPipeline->header.fragmentStorageBufferCount = graphicsPipeline->resourceLayout->fragmentStorageBufferCount;
+    graphicsPipeline->header.fragmentStorageTextureCount = graphicsPipeline->resourceLayout->fragmentStorageTextureCount;
+    graphicsPipeline->header.fragmentUniformBufferCount = graphicsPipeline->resourceLayout->fragmentUniformBufferCount;
+
     return (SDL_GPUGraphicsPipeline *)graphicsPipeline;
 }
 
@@ -6705,6 +6679,14 @@ static SDL_GPUComputePipeline *VULKAN_CreateComputePipeline(
             renderer->logicalDevice,
             &nameInfo);
     }
+
+    // Track these here for debug layer
+    vulkanComputePipeline->header.numSamplers = vulkanComputePipeline->resourceLayout->numSamplers;
+    vulkanComputePipeline->header.numReadonlyStorageTextures = vulkanComputePipeline->resourceLayout->numReadonlyStorageTextures;
+    vulkanComputePipeline->header.numReadonlyStorageBuffers = vulkanComputePipeline->resourceLayout->numReadonlyStorageBuffers;
+    vulkanComputePipeline->header.numReadWriteStorageTextures = vulkanComputePipeline->resourceLayout->numReadWriteStorageTextures;
+    vulkanComputePipeline->header.numReadWriteStorageBuffers = vulkanComputePipeline->resourceLayout->numReadWriteStorageBuffers;
+    vulkanComputePipeline->header.numUniformBuffers = vulkanComputePipeline->resourceLayout->numUniformBuffers;
 
     return (SDL_GPUComputePipeline *)vulkanComputePipeline;
 }
@@ -8440,16 +8422,6 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             writeCount += 1;
             imageInfoCount += 1;
-
-            if (commandBuffer->computeSamplerBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute sampler!");
-            }
-
-            if (commandBuffer->computeSamplerTextureViewBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute texture!");
-            }
         }
 
         for (Uint32 i = 0; i < resourceLayout->numReadonlyStorageTextures; i += 1) {
@@ -8473,11 +8445,6 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             writeCount += 1;
             imageInfoCount += 1;
-
-            if (commandBuffer->readOnlyComputeStorageTextureViewBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute storage texture!");
-            }
         }
 
         for (Uint32 i = 0; i < resourceLayout->numReadonlyStorageBuffers; i += 1) {
@@ -8501,11 +8468,6 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             writeCount += 1;
             bufferInfoCount += 1;
-
-            if (commandBuffer->readOnlyComputeStorageBufferBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute storage buffer!");
-            }
         }
 
         commandBuffer->needNewComputeReadOnlyDescriptorSet = false;
@@ -8540,11 +8502,6 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             writeCount += 1;
             imageInfoCount += 1;
-
-            if (commandBuffer->readWriteComputeStorageTextureViewBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute read-write storage texture binding!");
-            }
         }
 
         for (Uint32 i = 0; i < resourceLayout->numReadWriteStorageBuffers; i += 1) {
@@ -8568,11 +8525,6 @@ static void VULKAN_INTERNAL_BindComputeDescriptorSets(
 
             writeCount += 1;
             bufferInfoCount += 1;
-
-            if (commandBuffer->readWriteComputeStorageBufferBindings[i] == VK_NULL_HANDLE)
-            {
-                SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Missing compute read-write storage buffer binding!");
-            }
         }
 
         commandBuffer->needNewComputeReadWriteDescriptorSet = false;
