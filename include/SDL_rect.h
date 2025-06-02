@@ -106,6 +106,10 @@ typedef struct SDL_FRect
 
 /**
  * Returns true if point resides inside a rectangle.
+ *
+ * \param p the point to test.
+ * \param r the rectangle to test.
+ * \returns SDL_TRUE if `p` is contained by `r`, SDL_FALSE otherwise.
  */
 SDL_FORCE_INLINE SDL_bool SDL_PointInRect(const SDL_Point *p, const SDL_Rect *r)
 {
@@ -115,6 +119,9 @@ SDL_FORCE_INLINE SDL_bool SDL_PointInRect(const SDL_Point *p, const SDL_Rect *r)
 
 /**
  * Returns true if the rectangle has no area.
+ *
+ * \param r the rectangle to test.
+ * \returns SDL_TRUE if the rectangle is "empty", SDL_FALSE otherwise.
  */
 SDL_FORCE_INLINE SDL_bool SDL_RectEmpty(const SDL_Rect *r)
 {
@@ -123,6 +130,10 @@ SDL_FORCE_INLINE SDL_bool SDL_RectEmpty(const SDL_Rect *r)
 
 /**
  * Returns true if the two rectangles are equal.
+ *
+ * \param a the first rectangle to test.
+ * \param b the second rectangle to test.
+ * \returns SDL_TRUE if the rectangles are equal, SDL_FALSE otherwise.
  */
 SDL_FORCE_INLINE SDL_bool SDL_RectEquals(const SDL_Rect *a, const SDL_Rect *b)
 {
@@ -229,6 +240,10 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IntersectRectAndLine(const SDL_Rect *
 
 /**
  * Returns true if point resides inside a rectangle.
+ *
+ * \param p the point to test.
+ * \param r the rectangle to test.
+ * \returns SDL_TRUE if `p` is contained by `r`, SDL_FALSE otherwise.
  */
 SDL_FORCE_INLINE SDL_bool SDL_PointInFRect(const SDL_FPoint *p, const SDL_FRect *r)
 {
@@ -238,6 +253,9 @@ SDL_FORCE_INLINE SDL_bool SDL_PointInFRect(const SDL_FPoint *p, const SDL_FRect 
 
 /**
  * Returns true if the rectangle has no area.
+ *
+ * \param r the rectangle to test.
+ * \returns SDL_TRUE if the rectangle is "empty", SDL_FALSE otherwise.
  */
 SDL_FORCE_INLINE SDL_bool SDL_FRectEmpty(const SDL_FRect *r)
 {
@@ -246,6 +264,11 @@ SDL_FORCE_INLINE SDL_bool SDL_FRectEmpty(const SDL_FRect *r)
 
 /**
  * Returns true if the two rectangles are equal, within some given epsilon.
+ *
+ * \param a the first rectangle to test.
+ * \param b the second rectangle to test.
+ * \param epsilon the epsilon value for comparison.
+ * \returns SDL_TRUE if the rectangles are equal, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 2.0.22.
  */
@@ -261,6 +284,10 @@ SDL_FORCE_INLINE SDL_bool SDL_FRectEqualsEpsilon(const SDL_FRect *a, const SDL_F
 
 /**
  * Returns true if the two rectangles are equal, using a default epsilon.
+ *
+ * \param a the first rectangle to test.
+ * \param b the second rectangle to test.
+ * \returns SDL_TRUE if the rectangles are equal, SDL_FALSE otherwise.
  *
  * \since This function is available since SDL 2.0.22.
  */
