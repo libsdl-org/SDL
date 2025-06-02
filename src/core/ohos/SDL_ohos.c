@@ -252,11 +252,13 @@ static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
     napi_create_string_utf8(env, "SDLThreadSafe", NAPI_AUTO_LENGTH, &resName);
     napi_create_threadsafe_function(env, args[0], NULL, resName, 0, 1, NULL, NULL, NULL, sdlJSCallback, &napiEnv.func);
 
-    napiCallbackData data;
-    data.func = "test";
-    data.argCount = 0;
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    data->func = "test";
+    data->argCount = 0;
 
-    napi_call_threadsafe_function(napiEnv.func, &data, napi_tsfn_nonblocking);
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    
+    SDL_free(data);
 
     napi_value result;
     napi_create_int32(env, 0, &result);
