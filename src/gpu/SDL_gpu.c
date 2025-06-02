@@ -521,32 +521,32 @@ static void SDL_GPU_CheckGraphicsBindings(SDL_GPURenderPass *render_pass)
 {
     RenderPass *rp = (RenderPass *)render_pass;
     GraphicsPipelineCommonHeader *pipeline = (GraphicsPipelineCommonHeader *)RENDERPASS_BOUND_PIPELINE;
-    for (Uint32 i = 0; i < pipeline->vertexSamplerCount; i += 1) {
+    for (Uint32 i = 0; i < pipeline->num_vertex_samplers; i += 1) {
         if (!rp->vertex_sampler_bound[i]) {
             SDL_assert_release(!"Missing vertex sampler binding!");
         }
     }
-    for (Uint32 i = 0; i < pipeline->vertexStorageTextureCount; i += 1) {
+    for (Uint32 i = 0; i < pipeline->num_vertex_storage_textures; i += 1) {
         if (!rp->vertex_storage_texture_bound[i]) {
             SDL_assert_release(!"Missing vertex storage texture binding!");
         }
     }
-    for (Uint32 i = 0; i < pipeline->vertexStorageBufferCount; i += 1) {
+    for (Uint32 i = 0; i < pipeline->num_vertex_storage_buffers; i += 1) {
         if (!rp->vertex_storage_buffer_bound[i]) {
             SDL_assert_release(!"Missing vertex storage buffer binding!");
         }
     }
-    for (Uint32 i = 0; i < pipeline->fragmentSamplerCount; i += 1) {
+    for (Uint32 i = 0; i < pipeline->num_fragment_samplers; i += 1) {
         if (!rp->fragment_sampler_bound[i]) {
             SDL_assert_release(!"Missing fragment sampler binding!");
         }
     }
-    for (Uint32 i = 0; i < pipeline->fragmentStorageTextureCount; i += 1) {
+    for (Uint32 i = 0; i < pipeline->num_fragment_storage_textures; i += 1) {
         if (!rp->fragment_storage_texture_bound[i]) {
             SDL_assert_release(!"Missing fragment storage texture binding!");
         }
     }
-    for (Uint32 i = 0; i < pipeline->fragmentStorageBufferCount; i += 1) {
+    for (Uint32 i = 0; i < pipeline->num_fragment_storage_buffers; i += 1) {
         if (!rp->fragment_storage_buffer_bound[i]) {
             SDL_assert_release(!"Missing fragment storage buffer binding!");
         }

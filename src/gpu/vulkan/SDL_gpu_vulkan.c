@@ -793,13 +793,13 @@ typedef struct DescriptorSetLayout
 typedef struct GraphicsPipelineResourceLayoutHashTableKey
 {
     Uint32 vertexSamplerCount;
-    Uint32 vertexStorageBufferCount;
     Uint32 vertexStorageTextureCount;
+    Uint32 vertexStorageBufferCount;
     Uint32 vertexUniformBufferCount;
 
     Uint32 fragmentSamplerCount;
-    Uint32 fragmentStorageBufferCount;
     Uint32 fragmentStorageTextureCount;
+    Uint32 fragmentStorageBufferCount;
     Uint32 fragmentUniformBufferCount;
 } GraphicsPipelineResourceLayoutHashTableKey;
 
@@ -817,13 +817,13 @@ typedef struct VulkanGraphicsPipelineResourceLayout
     DescriptorSetLayout *descriptorSetLayouts[4];
 
     Uint32 vertexSamplerCount;
-    Uint32 vertexStorageBufferCount;
     Uint32 vertexStorageTextureCount;
+    Uint32 vertexStorageBufferCount;
     Uint32 vertexUniformBufferCount;
 
     Uint32 fragmentSamplerCount;
-    Uint32 fragmentStorageBufferCount;
     Uint32 fragmentStorageTextureCount;
+    Uint32 fragmentStorageBufferCount;
     Uint32 fragmentUniformBufferCount;
 } VulkanGraphicsPipelineResourceLayout;
 
@@ -6554,14 +6554,14 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     }
 
     // Put this data in the pipeline we can do validation in gpu.c
-    graphicsPipeline->header.vertexSamplerCount = graphicsPipeline->resourceLayout->vertexSamplerCount;
-    graphicsPipeline->header.vertexStorageBufferCount = graphicsPipeline->resourceLayout->vertexStorageBufferCount;
-    graphicsPipeline->header.vertexStorageTextureCount = graphicsPipeline->resourceLayout->vertexStorageTextureCount;
-    graphicsPipeline->header.vertexUniformBufferCount = graphicsPipeline->resourceLayout->vertexUniformBufferCount;
-    graphicsPipeline->header.fragmentSamplerCount = graphicsPipeline->resourceLayout->fragmentSamplerCount;
-    graphicsPipeline->header.fragmentStorageBufferCount = graphicsPipeline->resourceLayout->fragmentStorageBufferCount;
-    graphicsPipeline->header.fragmentStorageTextureCount = graphicsPipeline->resourceLayout->fragmentStorageTextureCount;
-    graphicsPipeline->header.fragmentUniformBufferCount = graphicsPipeline->resourceLayout->fragmentUniformBufferCount;
+    graphicsPipeline->header.num_vertex_samplers = graphicsPipeline->resourceLayout->vertexSamplerCount;
+    graphicsPipeline->header.num_vertex_storage_buffers = graphicsPipeline->resourceLayout->vertexStorageBufferCount;
+    graphicsPipeline->header.num_vertex_storage_textures = graphicsPipeline->resourceLayout->vertexStorageTextureCount;
+    graphicsPipeline->header.num_vertex_uniform_buffers = graphicsPipeline->resourceLayout->vertexUniformBufferCount;
+    graphicsPipeline->header.num_fragment_samplers = graphicsPipeline->resourceLayout->fragmentSamplerCount;
+    graphicsPipeline->header.num_fragment_storage_buffers = graphicsPipeline->resourceLayout->fragmentStorageBufferCount;
+    graphicsPipeline->header.num_fragment_storage_textures = graphicsPipeline->resourceLayout->fragmentStorageTextureCount;
+    graphicsPipeline->header.num_fragment_uniform_buffers = graphicsPipeline->resourceLayout->fragmentUniformBufferCount;
 
     return (SDL_GPUGraphicsPipeline *)graphicsPipeline;
 }

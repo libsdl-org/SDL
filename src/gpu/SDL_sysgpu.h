@@ -101,15 +101,15 @@ typedef struct TextureCommonHeader
 
 typedef struct GraphicsPipelineCommonHeader
 {
-    Uint32 vertexSamplerCount;
-    Uint32 vertexStorageBufferCount;
-    Uint32 vertexStorageTextureCount;
-    Uint32 vertexUniformBufferCount;
+    Uint32 num_vertex_samplers;
+    Uint32 num_vertex_storage_textures;
+    Uint32 num_vertex_storage_buffers;
+    Uint32 num_vertex_uniform_buffers;
 
-    Uint32 fragmentSamplerCount;
-    Uint32 fragmentStorageBufferCount;
-    Uint32 fragmentStorageTextureCount;
-    Uint32 fragmentUniformBufferCount;
+    Uint32 num_fragment_samplers;
+    Uint32 num_fragment_storage_textures;
+    Uint32 num_fragment_storage_buffers;
+    Uint32 num_fragment_uniform_buffers;
 } GraphicsPipelineCommonHeader;
 
 typedef struct ComputePipelineCommonHeader
