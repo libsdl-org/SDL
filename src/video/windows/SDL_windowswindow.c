@@ -33,6 +33,7 @@
 #include "../SDL_sysvideo.h"
 
 #include "SDL_windowsvideo.h"
+#include "SDL_windowskeyboard.h"
 #include "SDL_windowswindow.h"
 
 // Dropfile support
@@ -749,6 +750,9 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             }
             return false;
         }
+
+        // Ensure that the IME isn't active on the new window until explicitly requested.
+        WIN_StopTextInput(_this, window);
 
         // Inform Windows of the frame change so we can respond to WM_NCCALCSIZE
         SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
