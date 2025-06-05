@@ -1680,7 +1680,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetWindowTitle(SDL_Window *window);
 /**
  * Set the icon for a window.
  *
- * If this function is passed a surface with alternate representations, the
+ * If this function is passed a surface with alternate representations added using SDL_AddSurfaceAlternateImage(), the
  * surface will be interpreted as the content to be used for 100% display
  * scale, and the alternate representations will be used for high DPI
  * situations. For example, if the original surface is 32x32, then on a 2x
@@ -1698,6 +1698,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetWindowTitle(SDL_Window *window);
  * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_AddSurfaceAlternateImage
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon);
 

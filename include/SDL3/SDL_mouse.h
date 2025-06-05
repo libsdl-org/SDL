@@ -578,7 +578,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 *data,
 /**
  * Create a color cursor.
  *
- * If this function is passed a surface with alternate representations, the
+ * If this function is passed a surface with alternate representations added with SDL_AddSurfaceAlternateImage(), the
  * surface will be interpreted as the content to be used for 100% display
  * scale, and the alternate representations will be used for high DPI
  * situations. For example, if the original surface is 32x32, then on a 2x
@@ -598,6 +598,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 *data,
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_AddSurfaceAlternateImage
  * \sa SDL_CreateCursor
  * \sa SDL_CreateSystemCursor
  * \sa SDL_DestroyCursor
