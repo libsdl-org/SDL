@@ -14,7 +14,6 @@ Works out of box.
 Windows:
 Unfortunately there is no windows support as of yet. Support for Windows 7 is planned, but we currently have no way to test. If you have a Windows 7 WM_TOUCH supported device, and are willing to help test please contact me at jim.tla+sdl_touch@gmail.com
 
-===========================================================================
 Events
 ===========================================================================
 SDL_FINGERDOWN:
@@ -39,7 +38,6 @@ Fields:
 Same as SDL_FINGERDOWN.
 
 
-===========================================================================
 Functions
 ===========================================================================
 SDL provides the ability to access the underlying SDL_Finger structures.
@@ -76,7 +74,6 @@ A SDL_Finger has the following fields:
 	The pressure of the touch.
 
 
-===========================================================================
 Notes
 ===========================================================================
 For a complete example see test/testgesture.c
