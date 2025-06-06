@@ -86,6 +86,23 @@ static Bool X11_XIfEventTimeout(Display *display, XEvent *event_return, Bool (*p
 }
 */
 
+static bool X11_CheckCurrentDesktop(const char *name)
+{
+    SDL_Environment *env = SDL_GetEnvironment();
+    const char *desktopVar = SDL_GetEnvironmentVariable(env, "DESKTOP_SESSION");
+    if (desktopVar && SDL_strcasecmp(desktopVar, name) == 0) {
+        return true;
+    }
+
+    desktopVar = SDL_GetEnvironmentVariable(env, "XDG_CURRENT_DESKTOP");
+
+    if (desktopVar && SDL_strcasestr(desktopVar, name)) {
+        return true;
+    }
+
+    return false;
+}
+
 static bool X11_IsWindowMapped(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
@@ -1574,6 +1591,15 @@ void X11_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         data->pending_position = false;
         X11_XMoveWindow(display, data->xwindow, x, y);
+    }
+
+    /* XMonad ignores size hints and shrinks the client area to overlay borders on fixed-size windows,
+     * even if no borders were requested, resulting in the window client area being smaller than
+     * requested. Calling XResizeWindow after mapping seems to fix it, even though resizing fixed-size
+     * windows in this manner doesn't work on any other window manager.
+     */
+    if (!(window->flags & SDL_WINDOW_RESIZABLE) && X11_CheckCurrentDesktop("xmonad")) {
+        X11_XResizeWindow(display, data->xwindow, window->w, window->h);
     }
 
     /* Some window managers can send garbage coordinates while mapping the window, so don't emit size and position
