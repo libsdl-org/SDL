@@ -1412,16 +1412,70 @@ static bool GIP_HandleCommandStatusDevice(
     const Uint8 *bytes,
     int num_bytes)
 {
-    GIP_ExtendedStatus status = {{0}};
+    GIP_ExtendedStatus status;
+    SDL_Joystick *joystick = NULL;
+    SDL_PowerState power_state;
+    int power_percent = 0;
     int i;
 
     if (num_bytes < 1) {
         return false;
     }
+    SDL_zero(status);
     status.base.battery_level = bytes[0] & 3;
     status.base.battery_type = (bytes[0] >> 2) & 3;
     status.base.charge = (bytes[0] >> 4) & 3;
     status.base.power_level = (bytes[0] >> 6) & 3;
+
+    if (attachment->joystick) {
+        joystick = SDL_GetJoystickFromID(attachment->joystick);
+    }
+    if (joystick) {
+        switch (status.base.battery_level) {
+        case GIP_BATTERY_CRITICAL:
+            power_percent = 1;
+            break;
+        case GIP_BATTERY_LOW:
+            power_percent = 25;
+            break;
+        case GIP_BATTERY_MEDIUM:
+            power_percent = 50;
+            break;
+        case GIP_BATTERY_FULL:
+            power_percent = 100;
+            break;
+        }
+        switch (status.base.charge) {
+        case GIP_CHARGING:
+            if (status.base.battery_level == GIP_BATTERY_FULL) {
+                power_state = SDL_POWERSTATE_CHARGED;
+            } else {
+                power_state = SDL_POWERSTATE_CHARGING;
+            }
+            break;
+        case GIP_NOT_CHARGING:
+            power_state = SDL_POWERSTATE_ON_BATTERY;
+            break;
+        case GIP_CHARGE_ERROR:
+        default:
+            power_state = SDL_POWERSTATE_UNKNOWN;
+            break;
+        }
+
+        switch (status.base.battery_type) {
+        case GIP_BATTERY_ABSENT:
+            power_state = SDL_POWERSTATE_NO_BATTERY;
+            break;
+        case GIP_BATTERY_STANDARD:
+        case GIP_BATTERY_RECHARGEABLE:
+            break;
+        default:
+            power_state = SDL_POWERSTATE_UNKNOWN;
+            break;
+        }
+
+        SDL_SendJoystickPowerInfo(joystick, power_state, power_percent);
+    }
 
     if (num_bytes >= 4) {
         status.device_active = bytes[1] & 1;
