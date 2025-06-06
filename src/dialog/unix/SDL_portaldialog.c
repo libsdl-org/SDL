@@ -25,9 +25,11 @@
 
 #ifdef SDL_USE_LIBDBUS
 
+#include <libgen.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #define PORTAL_DESTINATION "org.freedesktop.portal.Desktop"
@@ -294,7 +296,12 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
     const char* default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
     const char* accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
+    char* location_name = NULL;
+    char* location_folder = NULL;
+    struct stat statbuf;
     bool open_folders = false;
+    bool save_file_existing = false;
+    bool save_file_new_named = false;
 
     switch (type) {
     case SDL_FILEDIALOG_OPENFILE:
@@ -305,6 +312,22 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     case SDL_FILEDIALOG_SAVEFILE:
         method = "SaveFile";
         method_title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, "Save File");
+        if (default_location) {
+            if (stat(default_location, &statbuf) == 0) {
+                save_file_existing = S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode);
+            } else if (errno == ENOENT) {
+                char *dirc = SDL_strdup(default_location);
+                location_folder = SDL_strdup(dirname(dirc));
+                SDL_free(dirc);
+                save_file_new_named = (stat(location_folder, &statbuf) == 0) && S_ISDIR(statbuf.st_mode);
+            }
+
+            if (save_file_existing || save_file_new_named) {
+                char *basec = SDL_strdup(default_location);
+                location_name = SDL_strdup(basename(basec));
+                SDL_free(basec);
+            }
+        }
         break;
 
     case SDL_FILEDIALOG_OPENFOLDER:
@@ -410,8 +433,26 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
         DBus_AppendFilters(dbus, &options, filters, nfilters);
     }
     if (default_location) {
-        DBus_AppendByteArray(dbus, &options, "current_folder", default_location);
+        if (save_file_existing) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Create save dialog for existing file");
+            DBus_AppendByteArray(dbus, &options, "current_file", default_location);
+            /* Setting "current_name" should not be necessary however the kde-desktop-portal sets the filename without an extension.
+             * An alternative would be to match the extension to a filter and set "current_filter".
+             */
+            DBus_AppendStringOption(dbus, &options, "current_name", location_name);
+        } else if (save_file_new_named) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Create save dialog for new file");
+            DBus_AppendByteArray(dbus, &options, "current_folder", location_folder);
+            DBus_AppendStringOption(dbus, &options, "current_name", location_name);
+        } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Create dialog at folder");
+            DBus_AppendByteArray(dbus, &options, "current_folder", default_location);
+        }
+
+        SDL_free(location_name);
+        SDL_free(location_folder);
     }
+
     if (accept) {
         DBus_AppendStringOption(dbus, &options, "accept_label", accept);
     }
