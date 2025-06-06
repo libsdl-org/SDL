@@ -29,12 +29,13 @@ extern "C" {
 
 Uint64 SDL_GetPerformanceCounter(void)
 {
-    return (Uint64)User::TickCount();
+    return static_cast<Uint64>(User::TickCount());
 }
 
 Uint64 SDL_GetPerformanceFrequency(void)
 {
-    return (Uint64)1000000u;
+    // On Symbian S60v1, tick frequency is 64 Hz => 1 tick = 15,625 microseconds.
+    return 64;
 }
 
 void SDL_SYS_DelayNS(Uint64 ns)

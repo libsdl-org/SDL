@@ -61,7 +61,7 @@ static SDL_CameraFrameResult EMSCRIPTENCAMERA_AcquireFrame(SDL_Camera *device, S
 
         SDL3.camera.ctx2d.drawImage(SDL3.camera.video, 0, 0, w, h);
         const imgrgba = SDL3.camera.ctx2d.getImageData(0, 0, w, h).data;
-        Module.HEAPU8.set(imgrgba, rgba);
+        HEAPU8.set(imgrgba, rgba);
 
         return 1;
     }, device->actual_spec.width, device->actual_spec.height, rgba);

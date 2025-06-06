@@ -105,7 +105,7 @@ bool GDK_RegisterChangeNotifications(void)
         SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "[GDK] in RegisterAppConstrainedChangeNotification handler");
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
         if (_this) {
-            if (constrained) {
+            if (constrained && !((_this->windows) && _this->windows->text_input_active)) {
                 SDL_SetKeyboardFocus(NULL);
             } else {
                 SDL_SetKeyboardFocus(_this->windows);

@@ -69,6 +69,8 @@ void NGAGE_DestroyTextureData(NGAGE_TextureData *data)
     if (data) {
         delete data->bitmap;
         data->bitmap = NULL;
+        delete data->mask;
+        data->mask = NULL;
     }
 }
 
@@ -350,7 +352,29 @@ bool CRenderer::Copy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rec
     if (phdata->bitmap) {
         TRect aSource(TPoint(srcrect->x, srcrect->y), TSize(srcrect->w, srcrect->h));
         TPoint aDest(dstrect->x, dstrect->y);
-        iRenderer->Gc()->BitBlt(aDest, phdata->bitmap, aSource);
+
+        w = phdata->surface->w;
+        pitch = phdata->surface->pitch;
+        Uint16 *src = (Uint16 *)phdata->surface->pixels;
+        Uint16 *mask = (Uint16 *)phdata->mask->DataAddress();
+
+        for (int y = 0; y < srcrect->h; ++y) {
+            int src_y = srcrect->y + y;
+            if (src_y < 0 || src_y >= phdata->surface->h) {
+                continue;
+            }
+            for (int x = 0; x < srcrect->w; ++x) {
+                int src_x = srcrect->x + x;
+                if (src_x < 0 || src_x >= phdata->surface->w) {
+                    continue;
+                }
+                Uint16 pixel = src[src_y * (pitch / 2) + src_x];
+                Uint8 alpha = (pixel & 0xF000) >> 12;
+                mask[src_y * w + src_x] = (alpha == 0) ? 0x0000 : 0xFFFF;
+            }
+        }
+
+        iRenderer->Gc()->BitBltMasked(aDest, phdata->bitmap, aSource, phdata->mask, EFalse);
     }
 
     return true;
@@ -416,7 +440,29 @@ bool CRenderer::CopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const NGAGE
     if (phdata->bitmap) {
         TRect aSource(TPoint(copydata->srcrect.x, copydata->srcrect.y), TSize(copydata->srcrect.w, copydata->srcrect.h));
         TPoint aDest(copydata->dstrect.x, copydata->dstrect.y);
-        iRenderer->Gc()->BitBlt(aDest, phdata->bitmap, aSource);
+
+        w = phdata->surface->w;
+        pitch = phdata->surface->pitch;
+        Uint16 *src = (Uint16 *)phdata->surface->pixels;
+        Uint16 *mask = (Uint16 *)phdata->mask->DataAddress();
+
+        for (int y = 0; y < copydata->srcrect.h; ++y) {
+            int src_y = copydata->srcrect.y + y;
+            if (src_y < 0 || src_y >= phdata->surface->h) {
+                continue;
+            }
+            for (int x = 0; x < copydata->srcrect.w; ++x) {
+                int src_x = copydata->srcrect.x + x;
+                if (src_x < 0 || src_x >= phdata->surface->w) {
+                    continue;
+                }
+                Uint16 pixel = src[src_y * (pitch / 2) + src_x];
+                Uint8 alpha = (pixel & 0xF000) >> 12;
+                mask[src_y * w + src_x] = (alpha == 0) ? 0x0000 : 0xFFFF;
+            }
+        }
+
+        iRenderer->Gc()->BitBltMasked(aDest, phdata->bitmap, aSource, phdata->mask, EFalse);
     }
 
     return true;
@@ -437,6 +483,18 @@ bool CRenderer::CreateTextureData(NGAGE_TextureData *aTextureData, const TInt aW
     if (error != KErrNone) {
         delete aTextureData->bitmap;
         aTextureData->bitmap = NULL;
+        return false;
+    }
+
+    aTextureData->mask = new CFbsBitmap();
+    if (!aTextureData->mask) {
+        return false;
+    }
+
+    error = aTextureData->mask->Create(TSize(aWidth, aHeight), EColor4K);
+    if (error != KErrNone) {
+        delete aTextureData->mask;
+        aTextureData->mask = NULL;
         return false;
     }
 

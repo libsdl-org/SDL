@@ -826,7 +826,7 @@ endmacro()
 macro(CheckPTHREAD)
   cmake_push_check_state()
   if(SDL_PTHREADS)
-    if(ANDROID)
+    if(ANDROID OR SDL_PTHREADS_PRIVATE)
       # the android libc provides built-in support for pthreads, so no
       # additional linking or compile flags are necessary
     elseif(LINUX)

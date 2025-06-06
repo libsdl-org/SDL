@@ -33,6 +33,10 @@
 
 #cmakedefine SDL_PLATFORM_PRIVATE 1
 
+#ifdef SDL_PLATFORM_PRIVATE
+#include "SDL_begin_config_private.h"
+#endif
+
 #cmakedefine HAVE_GCC_ATOMICS 1
 #cmakedefine HAVE_GCC_SYNC_LOCK_TEST_AND_SET 1
 
@@ -369,6 +373,8 @@
 #cmakedefine SDL_TIME_N3DS 1
 #cmakedefine SDL_TIME_NGAGE 1
 
+#cmakedefine SDL_TIME_PRIVATE 1
+
 /* Enable various timer systems */
 #cmakedefine SDL_TIMER_HAIKU 1
 #cmakedefine SDL_TIMER_UNIX 1
@@ -473,6 +479,8 @@
 #cmakedefine SDL_GPU_VULKAN 1
 #cmakedefine SDL_GPU_METAL 1
 
+#cmakedefine SDL_GPU_PRIVATE 1
+
 /* Enable system power support */
 #cmakedefine SDL_POWER_ANDROID 1
 #cmakedefine SDL_POWER_LINUX 1
@@ -506,6 +514,8 @@
 
 /* Enable system storage support */
 #cmakedefine SDL_STORAGE_STEAM @SDL_STORAGE_STEAM@
+
+#cmakedefine SDL_STORAGE_PRIVATE 1
 
 /* Enable system FSops support */
 #cmakedefine SDL_FSOPS_POSIX 1
