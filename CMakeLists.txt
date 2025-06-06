@@ -1543,6 +1543,8 @@ elseif(OHOS)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
   set(HAVE_SDL_TIMERS TRUE)
 
+  set(SDL_PTHREADS 1)
+
   CheckPTHREAD()
 elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new

@@ -829,7 +829,7 @@ macro(CheckPTHREAD)
     if(ANDROID OR SDL_PTHREADS_PRIVATE)
       # the android libc provides built-in support for pthreads, so no
       # additional linking or compile flags are necessary
-    elseif(LINUX)
+    elseif(LINUX OR OHOS)
       set(PTHREAD_CFLAGS "-D_REENTRANT")
       set(PTHREAD_LDFLAGS "-pthread")
     elseif(BSDI)
