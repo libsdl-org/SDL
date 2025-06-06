@@ -1786,6 +1786,11 @@ static GamepadMapping_t *SDL_PrivateGenerateAutomaticGamepadMapping(const char *
     char name_string[128];
     char mapping[1024];
 
+    // Remove the CRC from the GUID
+    // We already know that this GUID doesn't have a mapping without the CRC, and we want newly
+    // added mappings without a CRC to override this mapping.
+    SDL_SetJoystickGUIDCRC(&guid, 0);
+
     // Remove any commas in the name
     SDL_strlcpy(name_string, name, sizeof(name_string));
     {
