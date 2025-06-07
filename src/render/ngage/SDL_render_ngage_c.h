@@ -58,7 +58,6 @@ typedef struct CFbsBitmap CFbsBitmap;
 typedef struct NGAGE_TextureData
 {
     CFbsBitmap *bitmap;
-    CFbsBitmap *mask;
     SDL_Surface *surface;
 
 } NGAGE_TextureData;
