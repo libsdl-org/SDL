@@ -1506,9 +1506,6 @@ elseif(OHOS)
   # disable warnings from the toolchain
   sdl_compile_options(PRIVATE "-Wno-unused-command-line-argument")
 
-  set(CMAKE_C_COMPILER_EXTERNAL_TOOLCHAIN "")
-  set(CMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN "")
-
   sdl_link_dependency(OHOS_LIBS LIBS ace_napi.z hilog_ndk.z ace_ndk.z rawfile.z pixelmap_ndk.z)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ohos/*.c")
 
