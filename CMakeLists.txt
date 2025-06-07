@@ -1506,7 +1506,7 @@ elseif(OHOS)
   # disable warnings from the toolchain
   sdl_compile_options(PRIVATE "-Wno-unused-command-line-argument")
 
-  sdl_link_dependency(OHOS_LIBS LIBS ace_napi.z hilog_ndk.z ace_ndk.z rawfile.z pixelmap_ndk.z)
+  sdl_link_dependency(ohos LIBS ace_napi.z hilog_ndk.z ace_ndk.z rawfile.z pixelmap_ndk.z)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ohos/*.c")
 
   if(SDL_VIDEO)
@@ -3572,8 +3572,6 @@ if(SDL_SHARED)
         RESOURCE "${SDL_FRAMEWORK_RESOURCES}"
       )
     endif()
-  elseif(OHOS)
-    # disable libtool postfix
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL3-shared PROPERTIES
       VERSION "${SDL_SO_VERSION}"
