@@ -765,10 +765,11 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 f"-DOHOS_ARCH={spec.harmony_arch}",
                 "-DCMAKE_TOOLCHAIN_FILE=/opt/native/build/cmake/ohos.toolchain.cmake",
             ))
-            job.shared_lib = SharedLibType.SO_0
+            job.shared_lib = SharedLibType.SO
             job.static_lib = StaticLibType.A
             job.run_tests = False
             job.test_pkg_config = False
+            job.werror = False
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 
