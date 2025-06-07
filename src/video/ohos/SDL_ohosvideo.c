@@ -1,11 +1,11 @@
-#include "SDL_internal.h"
 #include "../SDL_sysvideo.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
-#include "SDL_ohosvulkan.h"
-#include "SDL_ohosgl.h"
-#include "SDL_ohoswindow.h"
 #include "../../core/ohos/SDL_ohos.h"
+#include "SDL_ohosgl.h"
+#include "SDL_ohosvulkan.h"
+#include "SDL_ohoswindow.h"
 
 bool OHOS_VideoInit(SDL_VideoDevice *_this)
 {

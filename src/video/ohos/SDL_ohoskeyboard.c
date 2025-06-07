@@ -1,5 +1,5 @@
-#include "SDL_internal.h"
 #include "SDL3/SDL_scancode.h"
+#include "SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
 
@@ -21,11 +21,11 @@ static SDL_Scancode OHOS_Keycodes[] = {
     SDL_SCANCODE_MEDIA_NEXT_TRACK,
     SDL_SCANCODE_MEDIA_PREVIOUS_TRACK,
     SDL_SCANCODE_MEDIA_REWIND,
-    SDL_SCANCODE_UNKNOWN,  // KEY_MEDIA_FAST_FORWARD
+    SDL_SCANCODE_UNKNOWN, // KEY_MEDIA_FAST_FORWARD
     SDL_SCANCODE_VOLUMEUP,
     SDL_SCANCODE_VOLUMEDOWN,
     SDL_SCANCODE_POWER,
-    SDL_SCANCODE_UNKNOWN,  // KEY_CAMERA
+    SDL_SCANCODE_UNKNOWN, // KEY_CAMERA
     SDL_SCANCODE_UNKNOWN,
     SDL_SCANCODE_UNKNOWN,
     SDL_SCANCODE_MUTE,
@@ -2019,9 +2019,9 @@ static SDL_Scancode OHOS_Keycodes[] = {
     SDL_SCANCODE_UNKNOWN, // KEY_STAR
     SDL_SCANCODE_UNKNOWN, // KEY_POUND
     SDL_SCANCODE_UP,
-    SDL_SCANCODE_DOWN, // KEY_DPAD_DOWN
-    SDL_SCANCODE_LEFT, // KEY_DPAD_LEFT
-    SDL_SCANCODE_RIGHT, // KEY_DPAD_RIGHT
+    SDL_SCANCODE_DOWN,   // KEY_DPAD_DOWN
+    SDL_SCANCODE_LEFT,   // KEY_DPAD_LEFT
+    SDL_SCANCODE_RIGHT,  // KEY_DPAD_RIGHT
     SDL_SCANCODE_SELECT, // KEY_DPAD_CENTER
     SDL_SCANCODE_A,
     SDL_SCANCODE_B,
@@ -2082,8 +2082,8 @@ static SDL_Scancode OHOS_Keycodes[] = {
     SDL_SCANCODE_RCTRL,
     SDL_SCANCODE_CAPSLOCK,
     SDL_SCANCODE_SCROLLLOCK,
-    SDL_SCANCODE_LGUI, // KEY_META_LEFT
-    SDL_SCANCODE_RGUI, // KEY_META_RIGHT
+    SDL_SCANCODE_LGUI,    // KEY_META_LEFT
+    SDL_SCANCODE_RGUI,    // KEY_META_RIGHT
     SDL_SCANCODE_UNKNOWN, // KEY_FUNCTION
     SDL_SCANCODE_SYSREQ,
     SDL_SCANCODE_PAUSE, // KEY_BREAK
@@ -3123,16 +3123,13 @@ static SDL_Scancode OHOS_Keycodes[] = {
 static SDL_Scancode TranslateKeycode(int keycode)
 {
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
-    if (keycode <= -1)
-    {
+    if (keycode <= -1) {
         return SDL_SCANCODE_UNKNOWN;
     }
-    if (keycode < SDL_arraysize(OHOS_Keycodes))
-    {
+    if (keycode < SDL_arraysize(OHOS_Keycodes)) {
         scancode = OHOS_Keycodes[keycode];
     }
-    if (scancode == SDL_SCANCODE_UNKNOWN)
-    {
+    if (scancode == SDL_SCANCODE_UNKNOWN) {
         SDL_Log("Unknown keycode %d", keycode);
     }
     return scancode;

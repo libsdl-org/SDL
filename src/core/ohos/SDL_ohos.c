@@ -10,13 +10,13 @@
 
 #ifdef SDL_PLATFORM_OHOS
 
-#include "napi/native_api.h"
-#include "SDL_ohos.h"
-#include <ace/xcomponent/native_interface_xcomponent.h>
-#include "../../video/ohos/SDL_ohosvideo.h"
-#include "../../video/ohos/SDL_ohostouch.h"
-#include "SDL3/SDL_mutex.h"
 #include "../../video/ohos/SDL_ohoskeyboard.h"
+#include "../../video/ohos/SDL_ohostouch.h"
+#include "../../video/ohos/SDL_ohosvideo.h"
+#include "SDL3/SDL_mutex.h"
+#include "SDL_ohos.h"
+#include "napi/native_api.h"
+#include <ace/xcomponent/native_interface_xcomponent.h>
 
 static OHNativeWindow *g_ohosNativeWindow;
 static SDL_Mutex *g_ohosPageMutex = NULL;
@@ -46,19 +46,19 @@ typedef struct
         int i;
         long long l;
         double d;
-        const char* str;
+        const char *str;
     } data;
 } napiCallbackArg;
 typedef struct
 {
-    const char* func;
+    const char *func;
     int argCount;
     napiCallbackArg arg[16];
     napiArgType type;
     napiCallbackArg ret;
 } napiCallbackData;
 
-void OHOS_windowDataFill(SDL_Window* w)
+void OHOS_windowDataFill(SDL_Window *w)
 {
     w->internal = SDL_calloc(1, sizeof(SDL_WindowData));
     w->x = x;
@@ -69,12 +69,9 @@ void OHOS_windowDataFill(SDL_Window* w)
 
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-    if (_this->windows == NULL)
-    {
+    if (_this->windows == NULL) {
         _this->windows = w;
-    }
-    else
-    {
+    } else {
         _this->windows->next = w;
         w->prev = _this->windows;
     }
@@ -82,34 +79,25 @@ void OHOS_windowDataFill(SDL_Window* w)
 #ifdef SDL_VIDEO_OPENGL_EGL
     if (w->flags & SDL_WINDOW_OPENGL) {
         SDL_LockMutex(g_ohosPageMutex);
-        if (w->internal->egl_surface == EGL_NO_SURFACE)
-        {
+        if (w->internal->egl_surface == EGL_NO_SURFACE) {
             w->internal->egl_surface = SDL_EGL_CreateSurface(_this, w, (NativeWindowType)g_ohosNativeWindow);
         }
         SDL_UnlockMutex(g_ohosPageMutex);
     }
 #endif
 }
-void OHOS_removeWindow(SDL_Window* w)
+void OHOS_removeWindow(SDL_Window *w)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (_this->windows == w)
-    {
+    if (_this->windows == w) {
         _this->windows = _this->windows->next;
-    }
-    else
-    {
-        SDL_Window* curWin = _this->windows;
-        while (curWin != NULL)
-        {
-            if (curWin == w)
-            {
-                if (curWin->next == NULL)
-                {
+    } else {
+        SDL_Window *curWin = _this->windows;
+        while (curWin != NULL) {
+            if (curWin == w) {
+                if (curWin->next == NULL) {
                     curWin->prev->next = NULL;
-                }
-                else
-                {
+                } else {
                     curWin->prev->next = curWin->next;
                     curWin->next->prev = curWin->prev;
                 }
@@ -122,12 +110,10 @@ void OHOS_removeWindow(SDL_Window* w)
 #ifdef SDL_VIDEO_OPENGL_EGL
     if (w->flags & SDL_WINDOW_OPENGL) {
         SDL_LockMutex(g_ohosPageMutex);
-        if (w->internal->egl_context)
-        {
+        if (w->internal->egl_context) {
             SDL_EGL_DestroyContext(_this, w->internal->egl_context);
         }
-        if (w->internal->egl_surface != EGL_NO_SURFACE)
-        {
+        if (w->internal->egl_surface != EGL_NO_SURFACE) {
             SDL_EGL_DestroySurface(_this, w->internal->egl_surface);
         }
         SDL_UnlockMutex(g_ohosPageMutex);
@@ -179,9 +165,9 @@ static napi_value minus(napi_env env, napi_callback_info info)
     return sum;
 }
 
-static void sdlJSCallback(napi_env env, napi_value jsCb, void* content, void* data)
+static void sdlJSCallback(napi_env env, napi_value jsCb, void *content, void *data)
 {
-    napiCallbackData* ar = (napiCallbackData*) data;
+    napiCallbackData *ar = (napiCallbackData *)data;
 
     napi_value callb = NULL;
     napi_get_reference_value(env, napiEnv.interface, &callb);
@@ -189,52 +175,58 @@ static void sdlJSCallback(napi_env env, napi_value jsCb, void* content, void* da
     napi_get_named_property(env, callb, ar->func, &jsMethod);
 
     napi_value args[16];
-    for (int i = 0; i < ar->argCount; i++)
-    {
-        switch (ar->arg[i].type)
+    for (int i = 0; i < ar->argCount; i++) {
+        switch (ar->arg[i].type) {
+        case Int:
         {
-            case Int: {
-                napi_create_int32(env, ar->arg[i].data.i, args + i);
-                break;
-            }
-            case Long: {
-                napi_create_int64(env, ar->arg[i].data.l, args + i);
-                break;
-            }
-            case Double: {
-                napi_create_double(env, ar->arg[i].data.d, args + i);
-                break;
-            }
-            case String: {
-                napi_create_string_utf8(env, ar->arg[i].data.str, SDL_strlen(ar->arg[i].data.str), args + i);
-                break;
-            }
+            napi_create_int32(env, ar->arg[i].data.i, args + i);
+            break;
+        }
+        case Long:
+        {
+            napi_create_int64(env, ar->arg[i].data.l, args + i);
+            break;
+        }
+        case Double:
+        {
+            napi_create_double(env, ar->arg[i].data.d, args + i);
+            break;
+        }
+        case String:
+        {
+            napi_create_string_utf8(env, ar->arg[i].data.str, SDL_strlen(ar->arg[i].data.str), args + i);
+            break;
+        }
         }
     }
 
     napi_value v;
     napi_call_function(env, NULL, jsMethod, ar->argCount, args, &v);
     switch (ar->type) {
-        case Int: {
-            napi_get_value_int32(env, v, &ar->ret.data.i);
-            break;
-        }
-        case Long: {
-            napi_get_value_int64(env, v, (int64_t*) &ar->ret.data.l);
-            break;
-        }
-        case String: {
-            size_t stringSize = 0;
-            napi_get_value_string_utf8(env, args[1], NULL, 0, &stringSize);
-            char* value = SDL_malloc(stringSize + 1);
-            napi_get_value_string_utf8(env, args[1], value, stringSize + 1, &stringSize);
-            ar->ret.data.str = value;
-            break;
-        }
-        case Double: {
-            napi_get_value_double(env, v, &ar->ret.data.d);
-            break;
-        }
+    case Int:
+    {
+        napi_get_value_int32(env, v, &ar->ret.data.i);
+        break;
+    }
+    case Long:
+    {
+        napi_get_value_int64(env, v, (int64_t *)&ar->ret.data.l);
+        break;
+    }
+    case String:
+    {
+        size_t stringSize = 0;
+        napi_get_value_string_utf8(env, args[1], NULL, 0, &stringSize);
+        char *value = SDL_malloc(stringSize + 1);
+        napi_get_value_string_utf8(env, args[1], value, stringSize + 1, &stringSize);
+        ar->ret.data.str = value;
+        break;
+    }
+    case Double:
+    {
+        napi_get_value_double(env, v, &ar->ret.data.d);
+        break;
+    }
     }
 }
 
@@ -257,7 +249,7 @@ static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
     data->argCount = 0;
 
     napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
-    
+
     SDL_free(data);
 
     napi_value result;
@@ -273,16 +265,16 @@ static napi_value sdlLaunchMain(napi_env env, napi_callback_info info)
 
     size_t libstringSize = 0;
     napi_get_value_string_utf8(env, args[0], NULL, 0, &libstringSize);
-    char* libname = SDL_malloc(libstringSize + 1);
+    char *libname = SDL_malloc(libstringSize + 1);
     napi_get_value_string_utf8(env, args[0], libname, libstringSize + 1, &libstringSize);
 
     size_t fstringSize = 0;
     napi_get_value_string_utf8(env, args[1], NULL, 0, &fstringSize);
-    char* fname = SDL_malloc(fstringSize + 1);
+    char *fname = SDL_malloc(fstringSize + 1);
     napi_get_value_string_utf8(env, args[1], fname, fstringSize + 1, &fstringSize);
 
-    void* lib = dlopen(libname, RTLD_LAZY);
-    void* func = dlsym(lib, fname);
+    void *lib = dlopen(libname, RTLD_LAZY);
+    void *func = dlsym(lib, fname);
     typedef int (*test)();
     ((test)func)();
     dlclose(lib);
@@ -332,16 +324,13 @@ static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     SDL_Window *win = _this->windows;
-    while (win != NULL)
-    {
+    while (win != NULL) {
 #ifdef SDL_VIDEO_OPENGL_EGL
         if (win->flags & SDL_WINDOW_OPENGL) {
-            if (win->internal->egl_context)
-            {
+            if (win->internal->egl_context) {
                 SDL_EGL_DestroyContext(_this, win->internal->egl_context);
             }
-            if (win->internal->egl_surface)
-            {
+            if (win->internal->egl_surface) {
                 SDL_EGL_DestroySurface(_this, win->internal->egl_surface);
             }
         }
@@ -352,8 +341,7 @@ static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
 static void onKeyEvent(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_KeyEvent *keyEvent = NULL;
-    if (OH_NativeXComponent_GetKeyEvent(component, &keyEvent) >= 0)
-    {
+    if (OH_NativeXComponent_GetKeyEvent(component, &keyEvent) >= 0) {
         OH_NativeXComponent_KeyAction action;
         OH_NativeXComponent_KeyCode code;
         OH_NativeXComponent_EventSourceType sourceType;
@@ -362,14 +350,10 @@ static void onKeyEvent(OH_NativeXComponent *component, void *window)
         OH_NativeXComponent_GetKeyEventCode(keyEvent, &code);
         OH_NativeXComponent_GetKeyEventSourceType(keyEvent, &sourceType);
 
-        if (sourceType == OH_NATIVEXCOMPONENT_SOURCE_TYPE_KEYBOARD)
-            {
-            if (OH_NATIVEXCOMPONENT_KEY_ACTION_DOWN == action)
-            {
+        if (sourceType == OH_NATIVEXCOMPONENT_SOURCE_TYPE_KEYBOARD) {
+            if (OH_NATIVEXCOMPONENT_KEY_ACTION_DOWN == action) {
                 OHOS_OnKeyDown(code);
-            }
-            else if (OH_NATIVEXCOMPONENT_KEY_ACTION_UP == action)
-            {
+            } else if (OH_NATIVEXCOMPONENT_KEY_ACTION_UP == action) {
                 OHOS_OnKeyUp(code);
             }
         }
@@ -385,8 +369,7 @@ static void onNativeTouch(OH_NativeXComponent *component, void *window)
     OH_NativeXComponent_GetTouchEvent(component, window, &touchEvent);
     OH_NativeXComponent_GetTouchPointToolType(component, 0, &toolType);
 
-    for (int i = 0; i < touchEvent.numPoints; i++)
-    {
+    for (int i = 0; i < touchEvent.numPoints; i++) {
         SDL_OHOSTouchEvent e;
         e.timestamp = touchEvent.timeStamp;
         e.deviceId = touchEvent.deviceId;
@@ -397,19 +380,19 @@ static void onNativeTouch(OH_NativeXComponent *component, void *window)
         e.p = touchEvent.touchPoints[i].force;
 
         switch (touchEvent.touchPoints[i].type) {
-            case OH_NATIVEXCOMPONENT_DOWN:
-                e.type = SDL_EVENT_FINGER_DOWN;
-                break;
-            case OH_NATIVEXCOMPONENT_MOVE:
-                e.type = SDL_EVENT_FINGER_MOTION;
-                break;
-            case OH_NATIVEXCOMPONENT_UP:
-                e.type = SDL_EVENT_FINGER_UP;
-                break;
-            case OH_NATIVEXCOMPONENT_CANCEL:
-            case OH_NATIVEXCOMPONENT_UNKNOWN:
-                e.type = SDL_EVENT_FINGER_CANCELED;
-                break;
+        case OH_NATIVEXCOMPONENT_DOWN:
+            e.type = SDL_EVENT_FINGER_DOWN;
+            break;
+        case OH_NATIVEXCOMPONENT_MOVE:
+            e.type = SDL_EVENT_FINGER_MOTION;
+            break;
+        case OH_NATIVEXCOMPONENT_UP:
+            e.type = SDL_EVENT_FINGER_UP;
+            break;
+        case OH_NATIVEXCOMPONENT_CANCEL:
+        case OH_NATIVEXCOMPONENT_UNKNOWN:
+            e.type = SDL_EVENT_FINGER_CANCELED;
+            break;
         }
 
         OHOS_OnTouch(e);
@@ -448,7 +431,7 @@ static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 
     mouseCallback.DispatchMouseEvent = OnDispatchTouchEventCB;
     mouseCallback.DispatchMouseEvent = onNativeMouse;
-OH_NativeXComponent_RegisterMouseEventCallback(nativeXComponent, &mouseCallback);
+    OH_NativeXComponent_RegisterMouseEventCallback(nativeXComponent, &mouseCallback);
 
     OH_NativeXComponent_RegisterKeyEventCallback(nativeXComponent, onKeyEvent);
 

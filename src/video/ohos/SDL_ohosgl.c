@@ -1,16 +1,13 @@
 #include "SDL_internal.h"
 #ifdef SDL_VIDEO_DRIVER_OHOS
-#include "SDL_ohosvideo.h"
 #include "../../core/ohos/SDL_ohos.h"
+#include "SDL_ohosvideo.h"
 
 bool OHOS_GLES_MakeCurrent(SDL_VideoDevice *_this, SDL_Window *window, SDL_GLContext context)
 {
-    if (window && context)
-    {
+    if (window && context) {
         return SDL_EGL_MakeCurrent(_this, window->internal->egl_surface, context);
-    }
-    else
-    {
+    } else {
         return SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
 }

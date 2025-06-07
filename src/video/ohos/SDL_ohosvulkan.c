@@ -4,50 +4,44 @@
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
 #define VK_USE_PLATFORM_OHOS 1
-#include "vulkan/vulkan.h"
-#include "../SDL_sysvideo.h"
 #include "../../core/ohos/SDL_ohos.h"
-#include "vulkan/vulkan_ohos.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_ohosvideo.h"
+#include "vulkan/vulkan.h"
+#include "vulkan/vulkan_ohos.h"
 #include <native_window/external_window.h>
 
 static int loadedCount = 0;
 bool OHOS_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
-    if (_this->vulkan_config.loader_handle)
-    {
+    if (_this->vulkan_config.loader_handle) {
         return SDL_SetError("Vulkan already loaded");
     }
 
     /* Load the Vulkan loader library */
-    if (!path)
-    {
+    if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     }
-    if (!path)
-    {
+    if (!path) {
         path = "libvulkan.so";
     }
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
-    if (!_this->vulkan_config.loader_handle)
-    {
+    if (!_this->vulkan_config.loader_handle) {
         return false;
     }
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
                 SDL_arraysize(_this->vulkan_config.loader_path));
     vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
         _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
-    if (!vkGetInstanceProcAddr)
-    {
+    if (!vkGetInstanceProcAddr) {
         goto fail;
     }
     _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
         (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
             VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
-    if (!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
-    {
+    if (!_this->vulkan_config.vkEnumerateInstanceExtensionProperties) {
         goto fail;
     }
     loadedCount++;
@@ -61,8 +55,7 @@ fail:
 
 void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 {
-    if (loadedCount == 0)
-    {
+    if (loadedCount == 0) {
         return;
     }
     loadedCount--;
@@ -72,7 +65,7 @@ void OHOS_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const* const* OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
+char const *const *OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForOHOS[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_OHOS_SURFACE_EXTENSION_NAME
@@ -84,10 +77,10 @@ char const* const* OHOS_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uin
 }
 
 bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
-    SDL_Window *window,
-    VkInstance instance,
-    const struct VkAllocationCallbacks *allocator,
-    VkSurfaceKHR *surface)
+                               SDL_Window *window,
+                               VkInstance instance,
+                               const struct VkAllocationCallbacks *allocator,
+                               VkSurfaceKHR *surface)
 {
     VkResult result;
 
@@ -122,9 +115,9 @@ bool OHOS_Vulkan_CreateSurface(SDL_VideoDevice *_this,
 }
 
 void OHOS_Vulkan_DestroySurface(SDL_VideoDevice *_this,
-    VkInstance instance,
-    VkSurfaceKHR surface,
-    const struct VkAllocationCallbacks *allocator)
+                                VkInstance instance,
+                                VkSurfaceKHR surface,
+                                const struct VkAllocationCallbacks *allocator)
 {
     if (_this->vulkan_config.loader_handle) {
         PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr =
