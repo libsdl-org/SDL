@@ -236,7 +236,7 @@ jobs:
           ${{ matrix.platform.source-cmd }}
           cmake --build build --config ${{ matrix.platform.cmake-build-type }} --verbose -- ${{ matrix.platform.cmake-build-arguments }}
       - name: 'Verify SDL_REVISION'
-        if: ${{ !matrix.platform.no-cmake && matrix.platform.platform != 'harmony' }}
+        if: ${{ !matrix.platform.no-cmake }}
         run: |
           echo "This should show us the SDL_REVISION"
           echo "Shared library:"
