@@ -421,9 +421,6 @@ static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window)
 }
 // TODO
 static void onNativeMouse(OH_NativeXComponent *component, void *window) {}
-static void OnHoverEvent(OH_NativeXComponent *component, bool isHover) {}
-static void OnFocusEvent(OH_NativeXComponent *component, void *window) {}
-static void OnBlurEvent(OH_NativeXComponent *component, void *window) {}
 
 static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 {
@@ -451,12 +448,9 @@ static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 
     mouseCallback.DispatchMouseEvent = OnDispatchTouchEventCB;
     mouseCallback.DispatchMouseEvent = onNativeMouse;
-    mouseCallback.DispatchHoverEvent = OnHoverEvent;
-    OH_NativeXComponent_RegisterMouseEventCallback(nativeXComponent, &mouseCallback);
+OH_NativeXComponent_RegisterMouseEventCallback(nativeXComponent, &mouseCallback);
 
     OH_NativeXComponent_RegisterKeyEventCallback(nativeXComponent, onKeyEvent);
-    OH_NativeXComponent_RegisterFocusEventCallback(nativeXComponent, OnFocusEvent);
-    OH_NativeXComponent_RegisterBlurEventCallback(nativeXComponent, OnBlurEvent);
 
     g_ohosPageMutex = SDL_CreateMutex();
 
