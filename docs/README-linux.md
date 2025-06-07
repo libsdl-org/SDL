@@ -46,6 +46,7 @@ openSUSE Tumbleweed:
     libgbm-devel pipewire-devel libpulse-devel sndio-devel Mesa-libEGL-devel
 
 Arch:
+
     sudo pacman -S alsa-lib cmake hidapi ibus jack libdecor libgl libpulse libusb libx11 libxcursor libxext libxinerama libxkbcommon libxrandr libxrender libxss libxtst mesa ninja pipewire sndio vulkan-driver vulkan-headers wayland wayland-protocols
 
 
