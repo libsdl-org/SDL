@@ -766,7 +766,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 "-DCMAKE_TOOLCHAIN_FILE=/opt/native/build/cmake/ohos.toolchain.cmake",
                 "-DCMAKE_PLATFORM_NO_VERSIONED_SONAME=1"
             ))
-            job.shared_lib = SharedLibType.SO_0
+            job.shared_lib = SharedLibType.SO
             job.static_lib = StaticLibType.A
             job.run_tests = False
             job.test_pkg_config = False
