@@ -105,7 +105,7 @@ static bool NGAGE_VideoInit(SDL_VideoDevice *device)
     phdata->mode.w = 176;
     phdata->mode.h = 208;
     phdata->mode.refresh_rate = 60.0f;
-    phdata->mode.format = SDL_PIXELFORMAT_ARGB4444;
+    phdata->mode.format = SDL_PIXELFORMAT_XRGB4444;
 
     phdata->display.name = "N-Gage";
     phdata->display.desktop_mode = phdata->mode;

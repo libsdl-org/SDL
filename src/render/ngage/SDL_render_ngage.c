@@ -119,7 +119,7 @@ static bool NGAGE_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     renderer->window = window;
     renderer->internal = phdata;
 
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB4444);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB4444);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);
     SDL_SetHintWithPriority(SDL_HINT_RENDER_LINE_METHOD, "2", SDL_HINT_OVERRIDE);
 
