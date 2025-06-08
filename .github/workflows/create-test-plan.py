@@ -145,7 +145,7 @@ JOB_SPECS = {
     "ngage": JobSpec(name="N-Gage",                                         os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
     "harmony-arm64": JobSpec(name="Harmony (Arm64)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="arm64-v8a"),
     "harmony-arm32": JobSpec(name="Harmony (Arm32)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm32",     harmony_arch="armeabi-v7a"),
-    "harmony-x86_64": JobSpec(name="Harmony (x86_64)",                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-x86_64",     harmony_arch="x86_64"),
+    "harmony-x86_64": JobSpec(name="Harmony (x86-64)",                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-x86_64",     harmony_arch="x86_64"),
 }
 
 
