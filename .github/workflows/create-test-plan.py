@@ -143,9 +143,9 @@ JOB_SPECS = {
     "netbsd": JobSpec(name="NetBSD",                                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.NetBSD,      artifact="SDL-netbsd-x64", ),
     "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
     "ngage": JobSpec(name="N-Gage",                                         os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
-    "harmony": JobSpec(name="Harmony (Arm64)",                              os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="arm64-v8a"),
-    "harmony": JobSpec(name="Harmony (Arm32)",                              os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="armeabi-v7a"),
-    "harmony": JobSpec(name="Harmony (x86_64)",                             os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="x86_64"),
+    "harmony-arm64": JobSpec(name="Harmony (Arm64)",                              os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="arm64-v8a"),
+    "harmony-arm32": JobSpec(name="Harmony (Arm32)",                              os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="armeabi-v7a"),
+    "harmony-x86_64": JobSpec(name="Harmony (x86_64)",                             os=JobOs.UbuntuLatest,      platform=SdlPlatform.Harmony,     artifact="SDL-harmony-arm64",     harmony_arch="x86_64"),
 }
 
 
