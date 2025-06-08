@@ -868,7 +868,7 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
         data->drawstate.cliprect_enabled_dirty = SDL_FALSE;
     }
 
-    if (data->drawstate.cliprect_enabled && data->drawstate.cliprect_dirty) {
+    if ((data->drawstate.cliprect_enabled || data->drawstate.viewport_is_set) && data->drawstate.cliprect_dirty) {
         const SDL_Rect *rect = &data->drawstate.cliprect;
         set_clip_rectangle(data, rect->x, rect->y, rect->x + rect->w, rect->y + rect->h);
         data->drawstate.cliprect_dirty = SDL_FALSE;
@@ -925,18 +925,25 @@ static int SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
 static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->driverdata;
+    int w, h;
+
     StartDrawing(renderer);
 
     data->drawstate.target = renderer->target;
     if (!data->drawstate.target) {
-        int w, h;
         SDL_GL_GetDrawableSize(renderer->window, &w, &h);
-        if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
-            data->drawstate.viewport_dirty = SDL_TRUE; // if the window dimensions changed, invalidate the current viewport, etc.
-            data->drawstate.cliprect_dirty = SDL_TRUE;
-            data->drawstate.drawablew = w;
-            data->drawstate.drawableh = h;
+    } else {
+        if (SDL_QueryTexture(renderer->target, NULL, NULL, &w, &h) < 0) {
+            w = data->drawstate.drawablew;
+            h = data->drawstate.drawableh;
         }
+    }
+
+    if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
+        data->drawstate.viewport_dirty = SDL_TRUE; // if the window dimensions changed, invalidate the current viewport, etc.
+        data->drawstate.cliprect_dirty = SDL_TRUE;
+        data->drawstate.drawablew = w;
+        data->drawstate.drawableh = h;
     }
 
     while (cmd) {
@@ -949,6 +956,16 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
                 SDL_copyp(viewport, &cmd->data.viewport.rect);
                 data->drawstate.viewport_dirty = SDL_TRUE;
                 data->drawstate.cliprect_dirty = SDL_TRUE;
+                data->drawstate.viewport_is_set = viewport->x != 0 || viewport->y != 0 || viewport->w != data->drawstate.drawablew || viewport->h != data->drawstate.drawableh;
+                if (!data->drawstate.cliprect_enabled) {
+                    if (data->drawstate.viewport_is_set) {
+                        SDL_copyp(&data->drawstate.cliprect, viewport);
+                        data->drawstate.cliprect.x = 0;
+                        data->drawstate.cliprect.y = 0;
+                    } else {
+                        data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
+                    }
+                }
             }
             break;
         }
@@ -956,9 +973,15 @@ static int VITA_GXM_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *c
         case SDL_RENDERCMD_SETCLIPRECT:
         {
             const SDL_Rect *rect = &cmd->data.cliprect.rect;
+            const SDL_Rect *viewport = &data->drawstate.viewport;
             if (data->drawstate.cliprect_enabled != cmd->data.cliprect.enabled) {
                 data->drawstate.cliprect_enabled = cmd->data.cliprect.enabled;
                 data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
+                if (!data->drawstate.cliprect_enabled && data->drawstate.viewport_is_set) {
+                    SDL_copyp(&data->drawstate.cliprect, viewport);
+                    data->drawstate.cliprect.x = 0;
+                    data->drawstate.cliprect.y = 0;
+                }
             }
 
             if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof(*rect)) != 0) {
