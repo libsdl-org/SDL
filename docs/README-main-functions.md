@@ -55,7 +55,7 @@ macro before including the header:
 
 
 ```c
-#define SDL_MAIN_NOIMPL
+#define SDL_MAIN_HANDLED
 ```
 
 If you are moving from SDL2, remove any references to the SDLmain static
