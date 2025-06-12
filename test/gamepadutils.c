@@ -1055,7 +1055,6 @@ void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_FRect *area)
     SDL_copyp(&ctx->area, area);
 }
 
-
 static bool GetBindingString(const char *label, const char *mapping, char *text, size_t size)
 {
     char *key;
@@ -1826,8 +1825,8 @@ float RenderEulerReadout(GyroDisplay *ctx, GamepadDisplay *gamepad_display )
     SDLTest_DrawString(ctx->renderer, log_gyro_euler_text_x + 2.0f, log_y, text);
 
     return log_y + new_line_height; // Return the next y position for further rendering
-
 }
+
 // Draws the 3D cube, circles and accel arrow,
 // positioning itself relative to the calibrate button.
 void RenderGyroGizmo(GyroDisplay *ctx, SDL_Gamepad *gamepad, float top)
@@ -2535,8 +2534,6 @@ struct GamepadButton
     bool highlight;
     bool pressed;
 };
-
-
 
 GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label)
 {

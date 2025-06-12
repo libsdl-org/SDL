@@ -18,7 +18,6 @@ typedef enum
 {
     CONTROLLER_MODE_TESTING,
     CONTROLLER_MODE_BINDING,
-    // TODO: Add a new mode for gyro calibration testing
 } ControllerDisplayMode;
 
 enum
@@ -150,7 +149,7 @@ extern void InitCirclePoints3D();
 extern GyroDisplay *CreateGyroDisplay(SDL_Renderer *renderer);
 extern void SetGyroDisplayArea(GyroDisplay *ctx, const SDL_FRect *area);
 extern bool BHasCachedGyroDriftSolution(GyroDisplay *ctx);
-extern void SetGamepadDisplayIMUValues(GyroDisplay *ctx, float *gyro_drift_solution, float *euler_displacement_angles, Quaternion *gyro_quaternion, int reported_senor_rate_hz, int estimated_sensor_rate_hz, float drift_calibration_progress_frac, float accelerometer_noise_sq); // todo: simplify now that we have the data all piped through.
+extern void SetGamepadDisplayIMUValues(GyroDisplay *ctx, float *gyro_drift_solution, float *euler_displacement_angles, Quaternion *gyro_quaternion, int reported_senor_rate_hz, int estimated_sensor_rate_hz, float drift_calibration_progress_frac, float accelerometer_noise_sq); 
 extern GamepadButton *GetGyroResetButton(GyroDisplay *ctx);
 extern GamepadButton *GetGyroCalibrateButton(GyroDisplay *ctx);
 extern void RenderGyroDisplay(GyroDisplay *ctx, GamepadDisplay *gamepadElements, SDL_Gamepad *gamepad);

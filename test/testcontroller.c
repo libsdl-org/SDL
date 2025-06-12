@@ -485,7 +485,7 @@ static void ClearButtonHighlights(void)
     ClearGamepadImage(image);
     SetGamepadDisplayHighlight(gamepad_elements, SDL_GAMEPAD_ELEMENT_INVALID, false);
     SetGamepadTypeDisplayHighlight(gamepad_type, SDL_GAMEPAD_TYPE_UNSELECTED, false);
-    SetGamepadButtonHighlight( GetGyroResetButton( gyro_elements ), false, false);
+    SetGamepadButtonHighlight(GetGyroResetButton( gyro_elements ), false, false);
     SetGamepadButtonHighlight(GetGyroCalibrateButton(gyro_elements), false, false);
     SetGamepadButtonHighlight(setup_mapping_button, false, false);
     SetGamepadButtonHighlight(done_mapping_button, false, false);
@@ -847,7 +847,6 @@ static void ClearBinding(void)
     CommitBindingElement(NULL, true);
 }
 
-
 static void SetDisplayMode(ControllerDisplayMode mode)
 {
     float x, y;
@@ -1140,7 +1139,6 @@ static void AddController(SDL_JoystickID id, bool verbose)
     if (new_controller->joystick) {
         new_controller->num_axes = SDL_GetNumJoystickAxes(new_controller->joystick);
         new_controller->axis_state = (AxisState *)SDL_calloc(new_controller->num_axes, sizeof(*new_controller->axis_state));
-
         new_controller->imu_state = (IMUState *)SDL_calloc(1, sizeof(*new_controller->imu_state));
         ResetIMUState(new_controller->imu_state);
     }
@@ -1190,7 +1188,6 @@ static void DelController(SDL_JoystickID id)
     if (controllers[i].imu_state) {
         SDL_free(controllers[i].imu_state);
     }
-
     if (controllers[i].joystick) {
         SDL_CloseJoystick(controllers[i].joystick);
     }
@@ -1369,7 +1366,7 @@ static void HandleGamepadAccelerometerEvent(SDL_Event *event)
 {
     // Copy fresh accelerometer data into the IMU state.
     controller->imu_state->accelerometer_packet_number++;
-    SDL_memcpy(controller->imu_state->accel_data, event->gsensor.data,sizeof(controller->imu_state->accel_data));
+    SDL_memcpy(controller->imu_state->accel_data, event->gsensor.data, sizeof(controller->imu_state->accel_data));
 }
 
 static void HandleGamepadGyroEvent(SDL_Event *event)
@@ -1425,8 +1422,7 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
     }  
 
     // This is where we can update the quaternion because we need to have a drift solution, which requires both accelerometer and gyro events are received before progressing.
-    if ( controller->imu_state->accelerometer_packet_number == controller->imu_state->gyro_packet_number )
-    {
+    if ( controller->imu_state->accelerometer_packet_number == controller->imu_state->gyro_packet_number ) {
         
         EstimatePacketRate(event);
         Uint64 sensorTimeStampDelta_ns = event->gsensor.sensor_timestamp - controller->imu_state->last_sensor_time_stamp_ns ;
@@ -2319,10 +2315,8 @@ SDL_AppResult SDLCALL SDL_AppIterate(void *appstate)
         RenderJoystickDisplay(joystick_elements, controller->joystick);
 
         if (display_mode == CONTROLLER_MODE_TESTING) {
-            
             RenderGamepadButton(setup_mapping_button);
             RenderGyroDisplay(gyro_elements, gamepad_elements, controller->gamepad);
-            
         } else if (display_mode == CONTROLLER_MODE_BINDING) {
             DrawBindingTips(screen);
             RenderGamepadButton(done_mapping_button);
