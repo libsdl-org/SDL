@@ -2213,6 +2213,10 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
                 SDL_ReloadGamepadMappings();
             } else if (event->key.key == SDLK_ESCAPE) {
                 done = true;
+            } else if (event->key.key == SDLK_SPACE) {
+                if (controller && controller->imu_state) {
+                    ResetGyroOrientation(controller->imu_state);
+                }
             }
         } else if (display_mode == CONTROLLER_MODE_BINDING) {
             if (event->key.key == SDLK_C && (event->key.mod & SDL_KMOD_CTRL)) {

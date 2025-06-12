@@ -32,6 +32,8 @@
 
 #include <limits.h>
 
+#define RAD_TO_DEG (180.0f / SDL_PI_F)
+
 /* Used to draw a 3D cube to represent the gyroscope orientation */
 typedef struct
 {
@@ -1621,7 +1623,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             if (has_gyro) {
                 SDL_strlcpy(text, "Gyro:", sizeof(text));
                 SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
-                SDL_snprintf(text, sizeof(text), "(%.2f,%.2f,%.2f) (%s/s)", ctx->gyro_data[0], ctx->gyro_data[1], ctx->gyro_data[2], DEGREE_UTF8 );
+                SDL_snprintf(text, sizeof(text), "(%.2f,%.2f,%.2f) (%s/s)", ctx->gyro_data[0] * RAD_TO_DEG, ctx->gyro_data[1] * RAD_TO_DEG, ctx->gyro_data[2] * RAD_TO_DEG, DEGREE_UTF8);
                 SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
             }
 
