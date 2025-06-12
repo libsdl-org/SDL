@@ -1376,7 +1376,7 @@ static void HandleGamepadGyroEvent(SDL_Event *event)
 }
 
 #define SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT 2048
-static void EstimatePacketRate(SDL_Event *event)
+static void EstimatePacketRate()
 {
     Uint64 now_ns = SDL_GetTicksNS();
     if (controller->imu_state->imu_packet_counter == 0) {
@@ -1424,7 +1424,7 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
     // This is where we can update the quaternion because we need to have a drift solution, which requires both accelerometer and gyro events are received before progressing.
     if ( controller->imu_state->accelerometer_packet_number == controller->imu_state->gyro_packet_number ) {
         
-        EstimatePacketRate(event);
+        EstimatePacketRate();
         Uint64 sensorTimeStampDelta_ns = event->gsensor.sensor_timestamp - controller->imu_state->last_sensor_time_stamp_ns ;
         UpdateGamepadOrientation(sensorTimeStampDelta_ns);
 
@@ -1611,7 +1611,9 @@ static void VirtualGamepadMouseDown(float x, float y)
     int element = GetGamepadImageElementAt(image, x, y);
 
     if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
-        SDL_FPoint point = { x, y };
+        SDL_FPoint point;
+        point.x = x;
+        point.y = y;
         SDL_FRect touchpad;
         GetGamepadTouchpadArea(image, &touchpad);
         if (SDL_PointInRectFloat(&point, &touchpad)) {
