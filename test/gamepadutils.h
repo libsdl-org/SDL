@@ -18,6 +18,7 @@ typedef enum
 {
     CONTROLLER_MODE_TESTING,
     CONTROLLER_MODE_BINDING,
+    // TODO: Add a new mode for gyro calibration testing
 } ControllerDisplayMode;
 
 enum
@@ -48,7 +49,18 @@ enum
 #define PRESSED_COLOR           175, 238, 238, SDL_ALPHA_OPAQUE
 #define PRESSED_TEXTURE_MOD     175, 238, 238
 #define SELECTED_COLOR          224, 255, 224, SDL_ALPHA_OPAQUE
+#define GYRO_COLOR_RED          255, 0, 0, SDL_ALPHA_OPAQUE
+#define GYRO_COLOR_GREEN        0, 255, 0, SDL_ALPHA_OPAQUE
+#define GYRO_COLOR_BLUE         0, 0, 255, SDL_ALPHA_OPAQUE
+#define GYRO_COLOR_ORANGE       255, 128, 0, SDL_ALPHA_OPAQUE
 
+/* Shared layout constants */
+#define BUTTON_PADDING          12.0f
+#define MINIMUM_BUTTON_WIDTH 96.0f
+
+/*  Symbol */
+#define DEGREE_UTF8 "\xC2\xB0"
+#define SQUARED_UTF8 "\xC2\xB2"
 /* Gamepad image display */
 
 extern GamepadImage *CreateGamepadImage(SDL_Renderer *renderer);
@@ -118,6 +130,7 @@ extern void DestroyJoystickDisplay(JoystickDisplay *ctx);
 typedef struct GamepadButton GamepadButton;
 
 extern GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label);
+extern void SetGamepadButtonLabel(GamepadButton *ctx, const char *label);
 extern void SetGamepadButtonArea(GamepadButton *ctx, const SDL_FRect *area);
 extern void GetGamepadButtonArea(GamepadButton *ctx, SDL_FRect *area);
 extern void SetGamepadButtonHighlight(GamepadButton *ctx, bool highlight, bool pressed);
@@ -127,7 +140,25 @@ extern bool GamepadButtonContains(GamepadButton *ctx, float x, float y);
 extern void RenderGamepadButton(GamepadButton *ctx);
 extern void DestroyGamepadButton(GamepadButton *ctx);
 
-/* Working with mappings and bindings */
+
+/* Gyro element Display */
+#define ACCELEROMETER_NOISE_THRESHOLD 0.125f
+typedef struct Quaternion Quaternion;
+typedef struct GyroDisplay GyroDisplay;
+
+extern void InitCirclePoints3D();
+extern GyroDisplay *CreateGyroDisplay(SDL_Renderer *renderer);
+extern void SetGyroDisplayArea(GyroDisplay *ctx, const SDL_FRect *area);
+extern bool BHasCachedGyroDriftSolution(GyroDisplay *ctx);
+extern void SetGamepadDisplayIMUValues(GyroDisplay *ctx, float *gyro_drift_solution, float *euler_displacement_angles, Quaternion *gyro_quaternion, int reported_senor_rate_hz, int estimated_sensor_rate_hz, float drift_calibration_progress_frac, float accelerometer_noise_sq); // todo: simplify now that we have the data all piped through.
+extern GamepadButton *GetGyroResetButton(GyroDisplay *ctx);
+extern GamepadButton *GetGyroCalibrateButton(GyroDisplay *ctx);
+extern void RenderGyroDisplay(GyroDisplay *ctx, GamepadDisplay *gamepadElements, SDL_Gamepad *gamepad);
+extern void DestroyGyroDisplay(GyroDisplay *ctx);
+
+
+
+    /* Working with mappings and bindings */
 
 /* Return whether a mapping has any bindings */
 extern bool MappingHasBindings(const char *mapping);
