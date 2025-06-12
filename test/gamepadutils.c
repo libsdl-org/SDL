@@ -1661,7 +1661,7 @@ void RenderSensorTimingInfo(GyroDisplay *ctx, GamepadDisplay *gamepad_display)
     if (ctx->reported_sensor_rate_hz > 0) {
         /* Convert to micro seconds */
         const Uint64 delta_time_us = (Uint64)1e6 / ctx->reported_sensor_rate_hz;
-        SDL_snprintf(text, sizeof(text), "%lldus %dhz", delta_time_us, ctx->reported_sensor_rate_hz);
+        SDL_snprintf(text, sizeof(text), "%lluus %dhz", delta_time_us, ctx->reported_sensor_rate_hz);
     } else {
         SDL_strlcpy(text, "????us ???hz", sizeof(text));
     }
@@ -1680,7 +1680,7 @@ void RenderSensorTimingInfo(GyroDisplay *ctx, GamepadDisplay *gamepad_display)
     if (ctx->estimated_sensor_rate_hz > 0) {
         /* Convert to micro seconds */
         const Uint64 delta_time_us = (Uint64)1e6 / ctx->estimated_sensor_rate_hz;
-        SDL_snprintf(text, sizeof(text), "%lldus %dhz", delta_time_us, ctx->estimated_sensor_rate_hz);
+        SDL_snprintf(text, sizeof(text), "%lluus %dhz", delta_time_us, ctx->estimated_sensor_rate_hz);
     } else {
         SDL_strlcpy(text, "????us ???hz", sizeof(text));
     }
