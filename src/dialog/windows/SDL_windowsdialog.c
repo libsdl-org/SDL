@@ -617,3 +617,117 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
         break;
     };
 }
+
+void SDL_SYS_ShowInputDialogWithProperties(SDL_DialogInputCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    SDL_Unsupported();
+    callback(userdata, NULL, SDL_DIALOGRESULT_ERROR);
+}
+
+SDL_ProgressDialog* SDL_SYS_ShowProgressDialogWithProperties(SDL_DialogProgressCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    SDL_Unsupported();
+    callback(userdata, SDL_DIALOGRESULT_ERROR);
+
+    // In case the callback calls SDL_SetError()
+    SDL_Unsupported();
+    return NULL;
+}
+
+void SDL_SYS_UpdateProgressDialog(SDL_ProgressDialog* dialog, float progress, const char *new_prompt)
+{
+    SDL_Unsupported();
+}
+
+void SDL_SYS_DestroyProgressDialog(SDL_ProgressDialog* dialog)
+{
+    SDL_Unsupported();
+}
+
+void SDL_SYS_ShowColorPickerDialogWithProperties(SDL_DialogColorCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    SDL_Window *window = SDL_GetPointerProperty(props, SDL_PROP_COLOR_DIALOG_WINDOW_POINTER, NULL);
+    SDL_Color *default_color = SDL_GetPointerProperty(props, SDL_PROP_COLOR_DIALOG_DEFAULT_POINTER, NULL);
+    SDL_Color result;
+
+    result.r = 0;
+    result.g = 0;
+    result.b = 0;
+    result.a = 0;
+
+    typedef BOOL (WINAPI *pfnChooseColorW)(LPCHOOSECOLOR);
+    typedef DWORD (WINAPI *pfnCommDlgExtendedError)(void);
+    HMODULE lib = LoadLibraryW(L"Comdlg32.dll");
+    pfnChooseColorW pChooseColor = NULL;
+    pfnCommDlgExtendedError pCommDlgExtendedError = NULL;
+
+    if (lib) {
+        pChooseColor = (pfnChooseColorW) GetProcAddress(lib, "ChooseColorW");
+        pCommDlgExtendedError = (pfnCommDlgExtendedError) GetProcAddress(lib, "CommDlgExtendedError");
+    } else {
+        SDL_SetError("Couldn't load Comdlg32.dll");
+        callback(userdata, result, SDL_DIALOGRESULT_ERROR);
+        return;
+    }
+
+    if (!pChooseColor) {
+        SDL_SetError("Couldn't load ChooseColor from library");
+        callback(userdata, result, SDL_DIALOGRESULT_ERROR);
+        return;
+    }
+
+    if (!pCommDlgExtendedError) {
+        SDL_SetError("Couldn't load CommDlgExtendedError from library");
+        callback(userdata, result, SDL_DIALOGRESULT_ERROR);
+        return;
+    }
+
+    // Custom color history is generally expected to persist across invocations
+    static COLORREF acrCustClr[16];
+
+    CHOOSECOLOR cc;
+
+    ZeroMemory(&cc, sizeof(cc));
+    cc.lStructSize = sizeof(cc);
+    cc.lpCustColors = acrCustClr;
+    cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+
+    if (window) {
+        HWND hwnd = (HWND) SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+        if (hwnd) {
+            cc.hwndOwner = hwnd;
+        }
+    }
+
+    if (default_color) {
+        cc.rgbResult = RGB(default_color->r, default_color->g, default_color->b);
+    }
+
+    if (pChooseColor(&cc)) {
+        result.r = GetRValue(cc.rgbResult);
+        result.g = GetGValue(cc.rgbResult);
+        result.b = GetBValue(cc.rgbResult);
+        result.a = SDL_ALPHA_OPAQUE;
+        callback(userdata, result, SDL_DIALOGRESULT_SUCCESS);
+    } else {
+        DWORD error = pCommDlgExtendedError();
+        // Error code 0 means the user clicked the cancel button.
+        if (error == 0) {
+            callback(userdata, result, SDL_DIALOGRESULT_CANCEL);
+        } else {
+            WIN_SetError("Error while invoking color picker dialog");
+            callback(userdata, result, SDL_DIALOGRESULT_ERROR);
+        }
+    }
+}
+
+void SDL_SYS_ShowDatePickerDialogWithProperties(SDL_DialogDateCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    SDL_Date date;
+    date.y = 0;
+    date.m = 0;
+    date.d = 0;
+
+    SDL_Unsupported();
+    callback(userdata, date, SDL_DIALOGRESULT_ERROR);
+}
