@@ -60,6 +60,7 @@ enum
 /*  Symbol */
 #define DEGREE_UTF8 "\xC2\xB0"
 #define SQUARED_UTF8 "\xC2\xB2"
+#define MICRO_UTF8   "\xC2\xB5"
 /* Gamepad image display */
 
 extern GamepadImage *CreateGamepadImage(SDL_Renderer *renderer);
