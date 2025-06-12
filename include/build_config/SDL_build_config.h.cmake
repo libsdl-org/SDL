@@ -550,6 +550,9 @@
 #cmakedefine SDL_DISABLE_WINDOWS_IME 1
 #cmakedefine SDL_GDK_TEXTINPUT 1
 
+/* Enable object validity check */
+#cmakedefine SDL_OBJECT_VALIDITY_CHECK
+
 /* Platform specific definitions */
 #cmakedefine SDL_IPHONE_KEYBOARD 1
 #cmakedefine SDL_IPHONE_LAUNCHSCREEN 1

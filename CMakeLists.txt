@@ -410,6 +410,15 @@ set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Timeout multiplier to account
 set_option(SDL_EXAMPLES           "Build the examples directory")
 dep_option(SDL_EXAMPLES_LINK_SHARED "link examples to shared SDL library" "${SDL_SHARED}" "SDL_SHARED;SDL_STATIC" "${SDL_SHARED}")
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(SDL_OBJECT_VALIDITY_CHECK_DEFAULT ON)
+else()
+  set(SDL_OBJECT_VALIDITY_CHECK_DEFAULT OFF)
+endif()
+
+set_option(SDL_OBJECT_VALIDITY_CHECK "Enable object validity check" ${SDL_OBJECT_VALIDITY_CHECK_DEFAULT})
+set(HAVE_OBJECT_VALIDITY_CHECK ${SDL_OBJECT_VALIDITY_CHECK})
+
 if(VITA)
   set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
   set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)

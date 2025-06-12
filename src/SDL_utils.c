@@ -150,6 +150,7 @@ static bool SDL_KeyMatchObject(void *unused, const void *a, const void *b)
 
 void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
 {
+#ifdef SDL_OBJECT_VALIDITY_CHECK
     SDL_assert(object != NULL);
 
     if (SDL_ShouldInit(&SDL_objects_init)) {
@@ -166,6 +167,7 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
     } else {
         SDL_RemoveFromHashTable(SDL_objects, object);
     }
+#endif
 }
 
 bool SDL_ObjectValid(void *object, SDL_ObjectType type)
@@ -174,12 +176,15 @@ bool SDL_ObjectValid(void *object, SDL_ObjectType type)
         return false;
     }
 
+#ifdef SDL_OBJECT_VALIDITY_CHECK
     const void *object_type;
     if (!SDL_FindInHashTable(SDL_objects, object, &object_type)) {
         return false;
     }
-
     return (((SDL_ObjectType)(uintptr_t)object_type) == type);
+#else
+    return true;
+#endif
 }
 
 typedef struct GetOneObjectData
