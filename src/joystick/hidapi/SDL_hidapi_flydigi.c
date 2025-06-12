@@ -195,6 +195,8 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     case 81:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 3 Pro");
         ctx->has_cz = true;
+        ctx->sensors_supported = true;
+        ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
         break;
     case 85:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 4 Pro");
