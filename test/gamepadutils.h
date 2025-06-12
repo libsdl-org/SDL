@@ -90,6 +90,7 @@ typedef struct GamepadDisplay GamepadDisplay;
 extern GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer);
 extern void SetGamepadDisplayDisplayMode(GamepadDisplay *ctx, ControllerDisplayMode display_mode);
 extern void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_FRect *area);
+extern void SetGamepadDisplayGyroDriftCorrection(GamepadDisplay *ctx, float *gyro_drift_correction);
 extern int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float x, float y);
 extern void SetGamepadDisplayHighlight(GamepadDisplay *ctx, int element, bool pressed);
 extern void SetGamepadDisplaySelected(GamepadDisplay *ctx, int element);
@@ -140,8 +141,8 @@ extern bool GamepadButtonContains(GamepadButton *ctx, float x, float y);
 extern void RenderGamepadButton(GamepadButton *ctx);
 extern void DestroyGamepadButton(GamepadButton *ctx);
 
-
 /* Gyro element Display */
+/* If you want to calbirate against a known rotation (i.e. a turn table test) Increase ACCELEROMETER_NOISE_THRESHOLD to about 5, or drift correction will be constantly reset.*/
 #define ACCELEROMETER_NOISE_THRESHOLD 0.125f
 typedef struct Quaternion Quaternion;
 typedef struct GyroDisplay GyroDisplay;
@@ -156,9 +157,7 @@ extern GamepadButton *GetGyroCalibrateButton(GyroDisplay *ctx);
 extern void RenderGyroDisplay(GyroDisplay *ctx, GamepadDisplay *gamepadElements, SDL_Gamepad *gamepad);
 extern void DestroyGyroDisplay(GyroDisplay *ctx);
 
-
-
-    /* Working with mappings and bindings */
+/* Working with mappings and bindings */
 
 /* Return whether a mapping has any bindings */
 extern bool MappingHasBindings(const char *mapping);

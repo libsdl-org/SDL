@@ -1448,6 +1448,9 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
             controller->imu_state->accelerometer_length_squared
         );
 
+        /* Also show the gyro correction next to the gyro speed - this is useful in turntable tests as you can use a turntable to calibrate for drift, and that drift correction is functionally the same as the turn table speed (ignoring drift) */
+        SetGamepadDisplayGyroDriftCorrection(gamepad_elements, controller->imu_state->gyro_drift_solution);
+
         controller->imu_state->last_sensor_time_stamp_ns = event->gsensor.sensor_timestamp;
     }
 }

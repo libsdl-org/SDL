@@ -946,6 +946,7 @@ struct GamepadDisplay
 
     float accel_data[3];
     float gyro_data[3];
+    float gyro_drift_correction_data[3];
 
     Uint64 last_sensor_update;
 
@@ -973,7 +974,8 @@ GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer)
         ctx->element_selected = SDL_GAMEPAD_ELEMENT_INVALID;
 
         SDL_zeroa(ctx->accel_data);
-        SDL_zeroa(ctx->gyro_data);        
+        SDL_zeroa(ctx->gyro_data);
+        SDL_zeroa(ctx->gyro_drift_correction_data);
     }
     return ctx;
 }
@@ -1048,6 +1050,16 @@ void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_FRect *area)
     }
 
     SDL_copyp(&ctx->area, area);
+}
+void SetGamepadDisplayGyroDriftCorrection(GamepadDisplay *ctx, float *gyro_drift_correction)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->gyro_drift_correction_data[0] = gyro_drift_correction[0];
+    ctx->gyro_drift_correction_data[1] = gyro_drift_correction[1];
+    ctx->gyro_drift_correction_data[2] = gyro_drift_correction[2];
 }
 
 static bool GetBindingString(const char *label, const char *mapping, char *text, size_t size)
@@ -1615,7 +1627,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             if (has_accel) {
                 SDL_strlcpy(text, "Accelerometer:", sizeof(text));
                 SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
-                SDL_snprintf(text, sizeof(text), "(%.2f,%.2f,%.2f) (m/s%s)", ctx->accel_data[0], ctx->accel_data[1], ctx->accel_data[2], SQUARED_UTF8 );
+                SDL_snprintf(text, sizeof(text), "[%.2f,%.2f,%.2f]m/s%s", ctx->accel_data[0], ctx->accel_data[1], ctx->accel_data[2], SQUARED_UTF8 );
                 SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
                 y += ctx->button_height + 2.0f;
             }
@@ -1623,8 +1635,21 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             if (has_gyro) {
                 SDL_strlcpy(text, "Gyro:", sizeof(text));
                 SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
-                SDL_snprintf(text, sizeof(text), "(%.2f,%.2f,%.2f) (%s/s)", ctx->gyro_data[0] * RAD_TO_DEG, ctx->gyro_data[1] * RAD_TO_DEG, ctx->gyro_data[2] * RAD_TO_DEG, DEGREE_UTF8);
+                SDL_snprintf(text, sizeof(text), "[%.2f,%.2f,%.2f]%s/s", ctx->gyro_data[0] * RAD_TO_DEG, ctx->gyro_data[1] * RAD_TO_DEG, ctx->gyro_data[2] * RAD_TO_DEG, DEGREE_UTF8);
                 SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
+           
+
+                /* Display a smoothed version of the above for the sake of turntable tests */
+
+                if (ctx->gyro_drift_correction_data[0] != 0.0f && ctx->gyro_drift_correction_data[2] != 0.0f && ctx->gyro_drift_correction_data[2] != 0.0f )
+                {
+                    y += ctx->button_height + 2.0f;
+                    SDL_strlcpy(text, "Gyro Drift:", sizeof(text));
+                    SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
+                    SDL_snprintf(text, sizeof(text), "[%.2f,%.2f,%.2f]%s/s", ctx->gyro_drift_correction_data[0] * RAD_TO_DEG, ctx->gyro_drift_correction_data[1] * RAD_TO_DEG, ctx->gyro_drift_correction_data[2] * RAD_TO_DEG, DEGREE_UTF8);
+                    SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
+                }
+
             }
 
             ctx->last_sensor_update = now;
