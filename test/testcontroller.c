@@ -144,33 +144,34 @@ float Normalize180(float angle)
 
 typedef struct
 {
-    Uint64 gyro_packet_number; // individual event count
-    Uint64 accelerometer_packet_number; // individual event count
-    Uint64 imu_packet_counter; // When both gyro and accelerometer events have been processed, we can increment this and use it to calculate polling rate over time.
+    Uint64 gyro_packet_number;
+    Uint64 accelerometer_packet_number;
+    /* When both gyro and accelerometer events have been processed, we can increment this and use it to calculate polling rate over time.*/
+    Uint64 imu_packet_counter; 
 
     Uint64 starting_time_stamp_ns; /* Use this to help estimate how many packets are received over a duration */
-    Uint16 imu_estimated_sensor_rate; // in Hz, used to estimate how many packets are received over a duration
+    Uint16 imu_estimated_sensor_rate; /* in Hz, used to estimate how many packets are received over a duration */
 
-    Uint64 last_sensor_time_stamp_ns;// Comes from the event data/HID implementation. Official PS5/Edge gives true hardware time stamps. Others are simulated. Nanoseconds  i.e. 1e9
+    Uint64 last_sensor_time_stamp_ns;/* Comes from the event data/HID implementation. Official PS5/Edge gives true hardware time stamps. Others are simulated. Nanoseconds  i.e. 1e9 */
 
-    // Fresh data copied from sensor events.
-    float accel_data[3];
-    float gyro_data[3];
+    /* Fresh data copied from sensor events. */
+    float accel_data[3]; /* Meters per second squared, i.e. 9.81f means 9.81 meters per second squared */
+    float gyro_data[3]; /* Degrees per second, i.e. 100.0f means 100 degrees per second */
 
-    float last_accel_data[3];// Needed to detect motion (and inhibit drift calibration)
+    float last_accel_data[3];/* Needed to detect motion (and inhibit drift calibration) */
     float accelerometer_length_squared;
     float gyro_drift_accumulator[3];
-    bool is_calibrating_drift; // Starts on, but can be turned back on by the user to restart the drift calibration.
+    bool is_calibrating_drift; /* Starts on, but can be turned back on by the user to restart the drift calibration. */
     int gyro_drift_sample_count;
-    float gyro_drift_solution[3]; // Non zero if calibration is complete.
+    float gyro_drift_solution[3]; /* Non zero if calibration is complete. */
 
-    Quaternion integrated_rotation; // Used to help test whether the time stamps and gyro degrees per second are set up correctly by the HID implementation
+    Quaternion integrated_rotation; /* Used to help test whether the time stamps and gyro degrees per second are set up correctly by the HID implementation */
 } IMUState;
 
-// Reset the Drift calculation state
+/* Reset the Drift calculation state */
 void StartGyroDriftCalibration(IMUState *imustate)
 {
-    imustate->is_calibrating_drift = true; // Start calibration
+    imustate->is_calibrating_drift = true;
     imustate->gyro_drift_sample_count = 0;
     SDL_zeroa(imustate->gyro_drift_solution);
     SDL_zeroa(imustate->gyro_drift_accumulator);
@@ -193,11 +194,13 @@ void ResetGyroOrientation(IMUState *imustate)
     imustate->integrated_rotation = quat_identity;
 }
 
-// More samples = more accurate drift correction, but also more time to calibrate.
+/* More samples = more accurate drift correction, but also more time to calibrate.*/
 #define SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT 1024
 
-// Average drift per packet as opposed to per second drift
-// This reduces a small amount of overhead when applying the drift correction.
+/*
+ * Average drift _per packet_ as opposed to _per second_
+ * This reduces a small amount of overhead when applying the drift correction.
+ */
 void FinalizeDriftSolution(IMUState *imustate)
 {
     if (imustate->gyro_drift_sample_count >= SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT) {
@@ -210,13 +213,13 @@ void FinalizeDriftSolution(IMUState *imustate)
     ResetGyroOrientation(imustate);
 }
 
-// Sample gyro packet in order to calculate drift
+/* Sample gyro packet in order to calculate drift*/
 void SampleGyroPacketForDrift( IMUState *imustate )
 {
     if ( !imustate->is_calibrating_drift )
         return;
 
-    // get the length squared difference of the last accelerometer data vs. the new one
+    /* Get the length squared difference of the last accelerometer data vs. the new one */
     float accelerometer_difference[3];
     accelerometer_difference[0] = imustate->accel_data[0] - imustate->last_accel_data[0];
     accelerometer_difference[1] = imustate->accel_data[1] - imustate->last_accel_data[1];
@@ -225,13 +228,13 @@ void SampleGyroPacketForDrift( IMUState *imustate )
 
     imustate->accelerometer_length_squared = accelerometer_difference[0] * accelerometer_difference[0] + accelerometer_difference[1] * accelerometer_difference[1] + accelerometer_difference[2] * accelerometer_difference[2];
 
-    // Ideal threshold will vary considerably depending on IMU. PS5 needs a low value (0.05f). Nintendo Switch needs a higher value (0.15f).
+    /* Ideal threshold will vary considerably depending on IMU. PS5 needs a low value (0.05f). Nintendo Switch needs a higher value (0.15f). */
     const float flAccelerometerMovementThreshold = ACCELEROMETER_NOISE_THRESHOLD;
     if (imustate->accelerometer_length_squared > flAccelerometerMovementThreshold * flAccelerometerMovementThreshold) {
-        // Reset the drift calibration if the accelerometer has moved significantly
+        /* Reset the drift calibration if the accelerometer has moved significantly */
         StartGyroDriftCalibration(imustate);
     } else {
-        // Sensor is stationary enough to evaluate for drift.
+        /* Sensor is stationary enough to evaluate for drift.*/
         ++imustate->gyro_drift_sample_count;
 
         imustate->gyro_drift_accumulator[0] += imustate->gyro_data[0];
@@ -253,15 +256,13 @@ void ApplyDriftSolution(float *gyro_data, const float *drift_solution)
 
 void UpdateGyroRotation(IMUState *imustate, Uint64 sensorTimeStampDelta_ns)
 {
-    //float flEstimatedTimeStamp = imustate->imu_estimated_sensor_rate > 0 ? 1000.f / imustate->imu_estimated_sensor_rate;
-
-    // Convert from nanoseconds to seconds
     float sensorTimeDeltaTimeSeconds = SDL_NS_TO_SECONDS((float)sensorTimeStampDelta_ns);
-    // Integrate speeds to get Rotational Displacement
+    /* Integrate speeds to get Rotational Displacement*/
     float pitch  = imustate->gyro_data[0] * sensorTimeDeltaTimeSeconds;
     float yaw = imustate->gyro_data[1] * sensorTimeDeltaTimeSeconds;
     float roll  = imustate->gyro_data[2] * sensorTimeDeltaTimeSeconds;
 
+    /* Use quaternions to avoid gimbal lock*/
     Quaternion delta_rotation = QuaternionFromEuler(pitch, yaw, roll);
     imustate->integrated_rotation = MultiplyQuaternion(imustate->integrated_rotation, delta_rotation);
     NormalizeQuaternion(&imustate->integrated_rotation);
@@ -1364,7 +1365,6 @@ static void HandleGamepadRemoved(SDL_JoystickID id)
 }
 static void HandleGamepadAccelerometerEvent(SDL_Event *event)
 {
-    // Copy fresh accelerometer data into the IMU state.
     controller->imu_state->accelerometer_packet_number++;
     SDL_memcpy(controller->imu_state->accel_data, event->gsensor.data, sizeof(controller->imu_state->accel_data));
 }
@@ -1383,13 +1383,13 @@ static void EstimatePacketRate()
         controller->imu_state->starting_time_stamp_ns = now_ns;
     }
 
-    // Require a significant sample size before averaging rate.
+    /* Require a significant sample size before averaging rate. */
     if (controller->imu_state->imu_packet_counter >= SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT) {
         Uint64 deltatime_ns = now_ns - controller->imu_state->starting_time_stamp_ns;
         controller->imu_state->imu_estimated_sensor_rate = (Uint16)((controller->imu_state->imu_packet_counter * 1000000000ULL) / deltatime_ns);
     }
 
-    // Flush sampled data after a brief period so that the imu_estimated_sensor_rate value can be read.
+    /* Flush sampled data after a brief period so that the imu_estimated_sensor_rate value can be read.*/
     if (controller->imu_state->imu_packet_counter >= SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT * 2) {
         controller->imu_state->starting_time_stamp_ns = now_ns;
         controller->imu_state->imu_packet_counter = 0;
@@ -1421,7 +1421,10 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
         HandleGamepadAccelerometerEvent(event);
     }  
 
-    // This is where we can update the quaternion because we need to have a drift solution, which requires both accelerometer and gyro events are received before progressing.
+    /*
+    This is where we can update the quaternion because we need to have a drift solution, which requires both
+    accelerometer and gyro events are received before progressing.
+    */
     if ( controller->imu_state->accelerometer_packet_number == controller->imu_state->gyro_packet_number ) {
         
         EstimatePacketRate();
@@ -1434,7 +1437,7 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
         float drift_calibration_progress_frac = controller->imu_state->gyro_drift_sample_count / (float)SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT;
         int reported_polling_rate_hz = sensorTimeStampDelta_ns > 0 ? (int)(SDL_NS_PER_SECOND / sensorTimeStampDelta_ns) : 0;
 
-        // Send the results to the frontend
+        /* Send the results to the frontend */
         SetGamepadDisplayIMUValues(gyro_elements,
             controller->imu_state->gyro_drift_solution,
             display_euler_angles,
@@ -2475,7 +2478,7 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
 
     gyro_elements = CreateGyroDisplay(screen);
     const float vidReservedHeight = 24.0f;
-    // Bottom right third of the screen
+    /* Bottom right of the screen */
     area.w = SCREEN_WIDTH * 0.375f;
     area.h = SCREEN_HEIGHT * 0.475f;
     area.x = SCREEN_WIDTH - area.w;
@@ -2483,9 +2486,6 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SetGyroDisplayArea(gyro_elements, &area);
     InitCirclePoints3D();
-
-    // TODO: let's do a restart_calibration_button so that the auto calibration doesn't kick in all the time, and we can hide noisey ui.
-    // But... it'd be good to be able to draw that in situ with the other gyro display elements - and even move the reset_gyro_button inside the gyro_elements too?
 
     gamepad_type = CreateGamepadTypeDisplay(screen);
     area.x = 0;
