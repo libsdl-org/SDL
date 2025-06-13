@@ -32,12 +32,9 @@
 #define TITLE_HEIGHT 48.0f
 #define PANEL_SPACING 25.0f
 #define PANEL_WIDTH 250.0f
-#define MINIMUM_BUTTON_WIDTH 96.0f
-#define BUTTON_MARGIN 16.0f
-#define BUTTON_PADDING 12.0f
 #define GAMEPAD_WIDTH 512.0f
 #define GAMEPAD_HEIGHT 560.0f
-
+#define BUTTON_MARGIN  16.0f
 #define SCREEN_WIDTH  (PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING + PANEL_WIDTH)
 #define SCREEN_HEIGHT (TITLE_HEIGHT + GAMEPAD_HEIGHT)
 
@@ -49,6 +46,228 @@ typedef struct
     int m_nFarthestValue;
 } AxisState;
 
+struct Quaternion
+{
+    float x, y, z, w;
+};
+
+static Quaternion quat_identity = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+Quaternion QuaternionFromEuler(float roll, float pitch, float yaw)
+{
+    Quaternion q;
+    float cy = SDL_cosf(yaw * 0.5f);
+    float sy = SDL_sinf(yaw * 0.5f);
+    float cp = SDL_cosf(pitch * 0.5f);
+    float sp = SDL_sinf(pitch * 0.5f);
+    float cr = SDL_cosf(roll * 0.5f);
+    float sr = SDL_sinf(roll * 0.5f);
+
+    q.w = cr * cp * cy + sr * sp * sy;
+    q.x = sr * cp * cy - cr * sp * sy;
+    q.y = cr * sp * cy + sr * cp * sy;
+    q.z = cr * cp * sy - sr * sp * cy;
+
+    return q;
+}
+
+static void EulerFromQuaternion(Quaternion q, float *roll, float *pitch, float *yaw)
+{
+    float sinr_cosp = 2.0f * (q.w * q.x + q.y * q.z);
+    float cosr_cosp = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
+    float roll_rad = SDL_atan2f(sinr_cosp, cosr_cosp);
+
+    float sinp = 2.0f * (q.w * q.y - q.z * q.x);
+    float pitch_rad;
+    if (SDL_fabsf(sinp) >= 1.0f) {
+        pitch_rad = SDL_copysignf(SDL_PI_F / 2.0f, sinp);
+    } else {
+        pitch_rad = SDL_asinf(sinp);
+    }
+
+    float siny_cosp = 2.0f * (q.w * q.z + q.x * q.y);
+    float cosy_cosp = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
+    float yaw_rad = SDL_atan2f(siny_cosp, cosy_cosp);
+
+    if (roll)
+        *roll = roll_rad;
+    if (pitch)
+        *pitch = pitch_rad;
+    if (yaw)
+        *yaw = yaw_rad;
+}
+
+static void EulerDegreesFromQuaternion(Quaternion q, float *pitch, float *yaw, float *roll)
+{
+    float pitch_rad, yaw_rad, roll_rad;
+    EulerFromQuaternion(q, &pitch_rad, &yaw_rad, &roll_rad);
+    if (pitch) {
+        *pitch = pitch_rad * (180.0f / SDL_PI_F);
+    }
+    if (yaw) {
+        *yaw = yaw_rad * (180.0f / SDL_PI_F);
+    }
+    if (roll) {
+        *roll = roll_rad * (180.0f / SDL_PI_F);
+    }
+}
+
+Quaternion MultiplyQuaternion(Quaternion a, Quaternion b)
+{
+    Quaternion q;
+    q.x = a.x * b.w + a.y * b.z - a.z * b.y + a.w * b.x;
+    q.y = -a.x * b.z + a.y * b.w + a.z * b.x + a.w * b.y;
+    q.z = a.x * b.y - a.y * b.x + a.z * b.w + a.w * b.z;
+    q.w = -a.x * b.x - a.y * b.y - a.z * b.z + a.w * b.w;
+    return q;
+}
+
+void NormalizeQuaternion(Quaternion *q)
+{
+    float mag = SDL_sqrtf(q->x * q->x + q->y * q->y + q->z * q->z + q->w * q->w);
+    if (mag > 0.0f) {
+        q->x /= mag;
+        q->y /= mag;
+        q->z /= mag;
+        q->w /= mag;
+    }
+}
+
+float Normalize180(float angle)
+{
+    angle = SDL_fmodf(angle + 180.0f, 360.0f);
+    if (angle < 0.0f) {
+        angle += 360.0f;
+    }
+    return angle - 180.0f;
+}
+
+typedef struct
+{
+    Uint64 gyro_packet_number;
+    Uint64 accelerometer_packet_number;
+    /* When both gyro and accelerometer events have been processed, we can increment this and use it to calculate polling rate over time.*/
+    Uint64 imu_packet_counter; 
+
+    Uint64 starting_time_stamp_ns; /* Use this to help estimate how many packets are received over a duration */
+    Uint16 imu_estimated_sensor_rate; /* in Hz, used to estimate how many packets are received over a duration */
+
+    Uint64 last_sensor_time_stamp_ns;/* Comes from the event data/HID implementation. Official PS5/Edge gives true hardware time stamps. Others are simulated. Nanoseconds  i.e. 1e9 */
+
+    /* Fresh data copied from sensor events. */
+    float accel_data[3]; /* Meters per second squared, i.e. 9.81f means 9.81 meters per second squared */
+    float gyro_data[3]; /* Degrees per second, i.e. 100.0f means 100 degrees per second */
+
+    float last_accel_data[3];/* Needed to detect motion (and inhibit drift calibration) */
+    float accelerometer_length_squared;
+    float gyro_drift_accumulator[3];
+    bool is_calibrating_drift; /* Starts on, but can be turned back on by the user to restart the drift calibration. */
+    int gyro_drift_sample_count;
+    float gyro_drift_solution[3]; /* Non zero if calibration is complete. */
+
+    Quaternion integrated_rotation; /* Used to help test whether the time stamps and gyro degrees per second are set up correctly by the HID implementation */
+} IMUState;
+
+/* Reset the Drift calculation state */
+void StartGyroDriftCalibration(IMUState *imustate)
+{
+    imustate->is_calibrating_drift = true;
+    imustate->gyro_drift_sample_count = 0;
+    SDL_zeroa(imustate->gyro_drift_solution);
+    SDL_zeroa(imustate->gyro_drift_accumulator);
+}
+void ResetIMUState(IMUState *imustate)
+{
+    imustate->gyro_packet_number = 0;
+    imustate->accelerometer_packet_number = 0;
+    imustate->starting_time_stamp_ns = SDL_GetTicksNS();
+    imustate->integrated_rotation = quat_identity;
+    imustate->accelerometer_length_squared = 0.0f;
+    imustate->integrated_rotation = quat_identity;
+    SDL_zeroa(imustate->last_accel_data);
+    SDL_zeroa(imustate->gyro_drift_solution);
+    StartGyroDriftCalibration(imustate);
+}
+
+void ResetGyroOrientation(IMUState *imustate)
+{
+    imustate->integrated_rotation = quat_identity;
+}
+
+/* More samples = more accurate drift correction, but also more time to calibrate.*/
+#define SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT 1024
+
+/*
+ * Average drift _per packet_ as opposed to _per second_
+ * This reduces a small amount of overhead when applying the drift correction.
+ */
+void FinalizeDriftSolution(IMUState *imustate)
+{
+    if (imustate->gyro_drift_sample_count >= SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT) {
+        imustate->gyro_drift_solution[0] = imustate->gyro_drift_accumulator[0] / (float)imustate->gyro_drift_sample_count;
+        imustate->gyro_drift_solution[1] = imustate->gyro_drift_accumulator[1] / (float)imustate->gyro_drift_sample_count;
+        imustate->gyro_drift_solution[2] = imustate->gyro_drift_accumulator[2] / (float)imustate->gyro_drift_sample_count;
+    }
+
+    imustate->is_calibrating_drift = false;
+    ResetGyroOrientation(imustate);
+}
+
+/* Sample gyro packet in order to calculate drift*/
+void SampleGyroPacketForDrift( IMUState *imustate )
+{
+    if ( !imustate->is_calibrating_drift )
+        return;
+
+    /* Get the length squared difference of the last accelerometer data vs. the new one */
+    float accelerometer_difference[3];
+    accelerometer_difference[0] = imustate->accel_data[0] - imustate->last_accel_data[0];
+    accelerometer_difference[1] = imustate->accel_data[1] - imustate->last_accel_data[1];
+    accelerometer_difference[2] = imustate->accel_data[2] - imustate->last_accel_data[2];
+    SDL_memcpy(imustate->last_accel_data, imustate->accel_data, sizeof(imustate->last_accel_data));
+
+    imustate->accelerometer_length_squared = accelerometer_difference[0] * accelerometer_difference[0] + accelerometer_difference[1] * accelerometer_difference[1] + accelerometer_difference[2] * accelerometer_difference[2];
+
+    /* Ideal threshold will vary considerably depending on IMU. PS5 needs a low value (0.05f). Nintendo Switch needs a higher value (0.15f). */
+    const float flAccelerometerMovementThreshold = ACCELEROMETER_NOISE_THRESHOLD;
+    if (imustate->accelerometer_length_squared > flAccelerometerMovementThreshold * flAccelerometerMovementThreshold) {
+        /* Reset the drift calibration if the accelerometer has moved significantly */
+        StartGyroDriftCalibration(imustate);
+    } else {
+        /* Sensor is stationary enough to evaluate for drift.*/
+        ++imustate->gyro_drift_sample_count;
+
+        imustate->gyro_drift_accumulator[0] += imustate->gyro_data[0];
+        imustate->gyro_drift_accumulator[1] += imustate->gyro_data[1];
+        imustate->gyro_drift_accumulator[2] += imustate->gyro_data[2];
+
+        if (imustate->gyro_drift_sample_count >= SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT) {
+            FinalizeDriftSolution(imustate);
+        }
+    }    
+}
+
+void ApplyDriftSolution(float *gyro_data, const float *drift_solution)
+{
+    gyro_data[0] -= drift_solution[0];
+    gyro_data[1] -= drift_solution[1];
+    gyro_data[2] -= drift_solution[2];
+}
+
+void UpdateGyroRotation(IMUState *imustate, Uint64 sensorTimeStampDelta_ns)
+{
+    float sensorTimeDeltaTimeSeconds = SDL_NS_TO_SECONDS((float)sensorTimeStampDelta_ns);
+    /* Integrate speeds to get Rotational Displacement*/
+    float pitch  = imustate->gyro_data[0] * sensorTimeDeltaTimeSeconds;
+    float yaw = imustate->gyro_data[1] * sensorTimeDeltaTimeSeconds;
+    float roll  = imustate->gyro_data[2] * sensorTimeDeltaTimeSeconds;
+
+    /* Use quaternions to avoid gimbal lock*/
+    Quaternion delta_rotation = QuaternionFromEuler(pitch, yaw, roll);
+    imustate->integrated_rotation = MultiplyQuaternion(imustate->integrated_rotation, delta_rotation);
+    NormalizeQuaternion(&imustate->integrated_rotation);
+}
+
 typedef struct
 {
     SDL_JoystickID id;
@@ -56,6 +275,7 @@ typedef struct
     SDL_Joystick *joystick;
     int num_axes;
     AxisState *axis_state;
+    IMUState *imu_state;
 
     SDL_Gamepad *gamepad;
     char *mapping;
@@ -71,6 +291,7 @@ static SDL_Renderer *screen = NULL;
 static ControllerDisplayMode display_mode = CONTROLLER_MODE_TESTING;
 static GamepadImage *image = NULL;
 static GamepadDisplay *gamepad_elements = NULL;
+static GyroDisplay *gyro_elements = NULL;
 static GamepadTypeDisplay *gamepad_type = NULL;
 static JoystickDisplay *joystick_elements = NULL;
 static GamepadButton *setup_mapping_button = NULL;
@@ -265,6 +486,8 @@ static void ClearButtonHighlights(void)
     ClearGamepadImage(image);
     SetGamepadDisplayHighlight(gamepad_elements, SDL_GAMEPAD_ELEMENT_INVALID, false);
     SetGamepadTypeDisplayHighlight(gamepad_type, SDL_GAMEPAD_TYPE_UNSELECTED, false);
+    SetGamepadButtonHighlight(GetGyroResetButton( gyro_elements ), false, false);
+    SetGamepadButtonHighlight(GetGyroCalibrateButton(gyro_elements), false, false);
     SetGamepadButtonHighlight(setup_mapping_button, false, false);
     SetGamepadButtonHighlight(done_mapping_button, false, false);
     SetGamepadButtonHighlight(cancel_button, false, false);
@@ -276,6 +499,8 @@ static void ClearButtonHighlights(void)
 static void UpdateButtonHighlights(float x, float y, bool button_down)
 {
     ClearButtonHighlights();
+    SetGamepadButtonHighlight(GetGyroResetButton(gyro_elements), GamepadButtonContains(GetGyroResetButton(gyro_elements), x, y), button_down);
+    SetGamepadButtonHighlight(GetGyroCalibrateButton(gyro_elements), GamepadButtonContains(GetGyroCalibrateButton(gyro_elements), x, y), button_down);
 
     if (display_mode == CONTROLLER_MODE_TESTING) {
         SetGamepadButtonHighlight(setup_mapping_button, GamepadButtonContains(setup_mapping_button, x, y), button_down);
@@ -915,6 +1140,8 @@ static void AddController(SDL_JoystickID id, bool verbose)
     if (new_controller->joystick) {
         new_controller->num_axes = SDL_GetNumJoystickAxes(new_controller->joystick);
         new_controller->axis_state = (AxisState *)SDL_calloc(new_controller->num_axes, sizeof(*new_controller->axis_state));
+        new_controller->imu_state = (IMUState *)SDL_calloc(1, sizeof(*new_controller->imu_state));
+        ResetIMUState(new_controller->imu_state);
     }
 
     joystick = new_controller->joystick;
@@ -958,6 +1185,9 @@ static void DelController(SDL_JoystickID id)
     SDL_assert(controllers[i].gamepad == NULL);
     if (controllers[i].axis_state) {
         SDL_free(controllers[i].axis_state);
+    }
+    if (controllers[i].imu_state) {
+        SDL_free(controllers[i].imu_state);
     }
     if (controllers[i].joystick) {
         SDL_CloseJoystick(controllers[i].joystick);
@@ -1133,6 +1363,97 @@ static void HandleGamepadRemoved(SDL_JoystickID id)
         controllers[i].gamepad = NULL;
     }
 }
+static void HandleGamepadAccelerometerEvent(SDL_Event *event)
+{
+    controller->imu_state->accelerometer_packet_number++;
+    SDL_memcpy(controller->imu_state->accel_data, event->gsensor.data, sizeof(controller->imu_state->accel_data));
+}
+
+static void HandleGamepadGyroEvent(SDL_Event *event)
+{
+    controller->imu_state->gyro_packet_number++;
+    SDL_memcpy(controller->imu_state->gyro_data, event->gsensor.data, sizeof(controller->imu_state->gyro_data));
+}
+
+#define SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT 2048
+static void EstimatePacketRate()
+{
+    Uint64 now_ns = SDL_GetTicksNS();
+    if (controller->imu_state->imu_packet_counter == 0) {
+        controller->imu_state->starting_time_stamp_ns = now_ns;
+    }
+
+    /* Require a significant sample size before averaging rate. */
+    if (controller->imu_state->imu_packet_counter >= SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT) {
+        Uint64 deltatime_ns = now_ns - controller->imu_state->starting_time_stamp_ns;
+        controller->imu_state->imu_estimated_sensor_rate = (Uint16)((controller->imu_state->imu_packet_counter * 1000000000ULL) / deltatime_ns);
+    }
+
+    /* Flush sampled data after a brief period so that the imu_estimated_sensor_rate value can be read.*/
+    if (controller->imu_state->imu_packet_counter >= SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT * 2) {
+        controller->imu_state->starting_time_stamp_ns = now_ns;
+        controller->imu_state->imu_packet_counter = 0;
+    }
+    ++controller->imu_state->imu_packet_counter;
+}
+
+static void UpdateGamepadOrientation( Uint64 delta_time_ns )
+{
+    if (!controller || !controller->imu_state)
+        return;
+
+    SampleGyroPacketForDrift(controller->imu_state);
+    ApplyDriftSolution(controller->imu_state->gyro_data, controller->imu_state->gyro_drift_solution);
+    UpdateGyroRotation(controller->imu_state, delta_time_ns);
+}
+
+static void HandleGamepadSensorEvent( SDL_Event* event )
+{
+    if (!controller)
+        return;   
+
+    if (controller->id != event->gsensor.which)
+        return;
+
+    if (event->gsensor.sensor == SDL_SENSOR_GYRO) {
+        HandleGamepadGyroEvent(event);
+    } else if (event->gsensor.sensor == SDL_SENSOR_ACCEL) {
+        HandleGamepadAccelerometerEvent(event);
+    }  
+
+    /*
+    This is where we can update the quaternion because we need to have a drift solution, which requires both
+    accelerometer and gyro events are received before progressing.
+    */
+    if ( controller->imu_state->accelerometer_packet_number == controller->imu_state->gyro_packet_number ) {
+        
+        EstimatePacketRate();
+        Uint64 sensorTimeStampDelta_ns = event->gsensor.sensor_timestamp - controller->imu_state->last_sensor_time_stamp_ns ;
+        UpdateGamepadOrientation(sensorTimeStampDelta_ns);
+
+        float display_euler_angles[3];
+        EulerDegreesFromQuaternion(controller->imu_state->integrated_rotation, &display_euler_angles[0], &display_euler_angles[1], &display_euler_angles[2]);
+
+        float drift_calibration_progress_frac = controller->imu_state->gyro_drift_sample_count / (float)SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT;
+        int reported_polling_rate_hz = sensorTimeStampDelta_ns > 0 ? (int)(SDL_NS_PER_SECOND / sensorTimeStampDelta_ns) : 0;
+
+        /* Send the results to the frontend */
+        SetGamepadDisplayIMUValues(gyro_elements,
+            controller->imu_state->gyro_drift_solution,
+            display_euler_angles,
+            &controller->imu_state->integrated_rotation,
+            reported_polling_rate_hz,
+            controller->imu_state->imu_estimated_sensor_rate,
+            drift_calibration_progress_frac,
+            controller->imu_state->accelerometer_length_squared
+        );
+
+        /* Also show the gyro correction next to the gyro speed - this is useful in turntable tests as you can use a turntable to calibrate for drift, and that drift correction is functionally the same as the turn table speed (ignoring drift) */
+        SetGamepadDisplayGyroDriftCorrection(gamepad_elements, controller->imu_state->gyro_drift_solution);
+
+        controller->imu_state->last_sensor_time_stamp_ns = event->gsensor.sensor_timestamp;
+    }
+}
 
 static Uint16 ConvertAxisToRumble(Sint16 axisval)
 {
@@ -1296,7 +1617,9 @@ static void VirtualGamepadMouseDown(float x, float y)
     int element = GetGamepadImageElementAt(image, x, y);
 
     if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
-        SDL_FPoint point = { x, y };
+        SDL_FPoint point;
+        point.x = x;
+        point.y = y;
         SDL_FRect touchpad;
         GetGamepadTouchpadArea(image, &touchpad);
         if (SDL_PointInRectFloat(&point, &touchpad)) {
@@ -1738,8 +2061,9 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         break;
 #endif /* VERBOSE_TOUCHPAD */
 
-#ifdef VERBOSE_SENSORS
+
     case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
+#ifdef VERBOSE_SENSORS
         SDL_Log("Gamepad %" SDL_PRIu32 " sensor %s: %.2f, %.2f, %.2f (%" SDL_PRIu64 ")",
                 event->gsensor.which,
                 GetSensorName((SDL_SensorType) event->gsensor.sensor),
@@ -1747,8 +2071,10 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
                 event->gsensor.data[1],
                 event->gsensor.data[2],
                 event->gsensor.sensor_timestamp);
-        break;
+        
 #endif /* VERBOSE_SENSORS */
+        HandleGamepadSensorEvent(event);
+        break;
 
 #ifdef VERBOSE_AXES
     case SDL_EVENT_GAMEPAD_AXIS_MOTION:
@@ -1807,7 +2133,11 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         }
 
         if (display_mode == CONTROLLER_MODE_TESTING) {
-            if (GamepadButtonContains(setup_mapping_button, event->button.x, event->button.y)) {
+            if (GamepadButtonContains(GetGyroResetButton(gyro_elements), event->button.x, event->button.y)) {
+                ResetGyroOrientation(controller->imu_state);
+            } else if (GamepadButtonContains(GetGyroCalibrateButton(gyro_elements), event->button.x, event->button.y)) {
+                StartGyroDriftCalibration(controller->imu_state);
+            } else if (GamepadButtonContains(setup_mapping_button, event->button.x, event->button.y)) {
                 SetDisplayMode(CONTROLLER_MODE_BINDING);
             }
         } else if (display_mode == CONTROLLER_MODE_BINDING) {
@@ -1886,6 +2216,10 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
                 SDL_ReloadGamepadMappings();
             } else if (event->key.key == SDLK_ESCAPE) {
                 done = true;
+            } else if (event->key.key == SDLK_SPACE) {
+                if (controller && controller->imu_state) {
+                    ResetGyroOrientation(controller->imu_state);
+                }
             }
         } else if (display_mode == CONTROLLER_MODE_BINDING) {
             if (event->key.key == SDLK_C && (event->key.mod & SDL_KMOD_CTRL)) {
@@ -1994,6 +2328,7 @@ SDL_AppResult SDLCALL SDL_AppIterate(void *appstate)
 
         if (display_mode == CONTROLLER_MODE_TESTING) {
             RenderGamepadButton(setup_mapping_button);
+            RenderGyroDisplay(gyro_elements, gamepad_elements, controller->gamepad);
         } else if (display_mode == CONTROLLER_MODE_BINDING) {
             DrawBindingTips(screen);
             RenderGamepadButton(done_mapping_button);
@@ -2148,6 +2483,17 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     area.h = GAMEPAD_HEIGHT;
     SetGamepadDisplayArea(gamepad_elements, &area);
 
+    gyro_elements = CreateGyroDisplay(screen);
+    const float vidReservedHeight = 24.0f;
+    /* Bottom right of the screen */
+    area.w = SCREEN_WIDTH * 0.375f;
+    area.h = SCREEN_HEIGHT * 0.475f;
+    area.x = SCREEN_WIDTH - area.w;
+    area.y = SCREEN_HEIGHT - area.h - vidReservedHeight;
+
+    SetGyroDisplayArea(gyro_elements, &area);
+    InitCirclePoints3D();
+
     gamepad_type = CreateGamepadTypeDisplay(screen);
     area.x = 0;
     area.y = TITLE_HEIGHT;
@@ -2227,6 +2573,7 @@ void SDLCALL SDL_AppQuit(void *appstate, SDL_AppResult result)
     SDL_free(controller_name);
     DestroyGamepadImage(image);
     DestroyGamepadDisplay(gamepad_elements);
+    DestroyGyroDisplay(gyro_elements);
     DestroyGamepadTypeDisplay(gamepad_type);
     DestroyJoystickDisplay(joystick_elements);
     DestroyGamepadButton(setup_mapping_button);
