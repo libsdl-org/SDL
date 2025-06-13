@@ -42,7 +42,10 @@ enum
     SDL_GAMEPAD_NUM_BASE_FLYDIGI_BUTTONS
 };
 
-#define SENSOR_INTERVAL_NS 8000000ULL
+/* Rate of IMU Sensor Packets over wireless Dongle observed in testcontroller tool at 1000hz */
+#define SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS (SDL_NS_PER_SECOND / 1000)
+/* Rate of IMU Sensor Packets over wired observed in testcontroller tool connection at 500hz */
+#define SENSOR_INTERVAL_VADER_PRO4_WIRED_NS (SDL_NS_PER_SECOND / 500)
 #define FLYDIGI_CMD_REPORT_ID 0x05
 #define FLYDIGI_HAPTIC_COMMAND 0x0F
 #define FLYDIGI_GET_CONFIG_COMMAND 0xEB
@@ -58,7 +61,8 @@ typedef struct
     bool sensors_supported;
     bool sensors_enabled;
     Uint16 firmware_version;
-    Uint64 sensor_timestamp; // Microseconds. Simulate onboard clock. Advance by known rate: SENSOR_INTERVAL_NS == 8ms = 125 Hz
+    Uint64 sensor_timestamp_ns; // Simulate onboard clock. Advance by known time step. Nanoseconds. 
+    Uint64 sensor_timestamp_step_ns; // Based on observed rate of receipt of IMU sensor packets.
     float accelScale;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverFlydigi_Context;
@@ -163,6 +167,11 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     }
     device->guid.data[15] = ctx->deviceID;
 
+    // sensor_timestamp_step_ns differs between connection types, and models.
+    // Default to the observation of the Flydigi Vader Pro 4 (1000 hz when connected by dongle. 500hz when connected by wire)
+    // Observations can be made in the testcontroller tool.
+    ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER_PRO4_WIRED_NS;
+
     switch (ctx->deviceID) {
     case 19:
         HIDAPI_SetDeviceName(device, "Flydigi Apex 2");
@@ -195,14 +204,13 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     case 81:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 3 Pro");
         ctx->has_cz = true;
-        ctx->sensors_supported = true;
-        ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
         break;
     case 85:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 4 Pro");
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER_PRO4_WIRED_NS;
         break;
     default:
         break;
@@ -411,12 +419,10 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         Uint64 sensor_timestamp;
         float values[3];
 
-        // Note: we cannot use the time stamp of the receiving computer due to packet delay creating "spiky" timings.
-        // The imu time stamp is intended to be the sample time of the on-board hardware.
-        // In the absence of time stamp data from the data[], we can simulate that by
-        // advancing a time stamp by the observed/known imu clock rate. This is 8ms = 125 Hz
-        sensor_timestamp = ctx->sensor_timestamp;
-        ctx->sensor_timestamp += SENSOR_INTERVAL_NS;
+        // Advance the imu sensor time stamp based on the observed rate of receipt of packets in the testcontroller app.
+        // This varies between Product ID and connection type.
+        sensor_timestamp = ctx->sensor_timestamp_ns;
+        ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
 
         // This device's IMU values are reported differently from SDL
         // Thus we perform a rotation of the coordinate system to match the SDL standard.
