@@ -43,9 +43,11 @@ enum
 };
 
 /* Rate of IMU Sensor Packets over wireless Dongle observed in testcontroller tool at 1000hz */
-#define SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS (SDL_NS_PER_SECOND / 1000)
+#define SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ 1000
+#define SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS    (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ)
 /* Rate of IMU Sensor Packets over wired observed in testcontroller tool connection at 500hz */
-#define SENSOR_INTERVAL_VADER_PRO4_WIRED_NS (SDL_NS_PER_SECOND / 500)
+#define SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ  500
+#define SENSOR_INTERVAL_VADER_PRO4_WIRED_NS     (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ)
 #define FLYDIGI_CMD_REPORT_ID 0x05
 #define FLYDIGI_HAPTIC_COMMAND 0x0F
 #define FLYDIGI_GET_CONFIG_COMMAND 0xEB
@@ -167,10 +169,9 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     }
     device->guid.data[15] = ctx->deviceID;
 
-    // sensor_timestamp_step_ns differs between connection types, and models.
-    // Default to the observation of the Flydigi Vader Pro 4 (1000 hz when connected by dongle. 500hz when connected by wire)
-    // Observations can be made in the testcontroller tool.
-    ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER_PRO4_WIRED_NS;
+    // This is the previous sensor default of 125hz.
+    // Override this in the switch statement below based on observed sensor packet rate.
+    ctx->sensor_timestamp_step_ns = SDL_NS_PER_SECOND / 125;
 
     switch (ctx->deviceID) {
     case 19:
@@ -264,8 +265,10 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     }
 
     if (ctx->sensors_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 125.0f);
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 125.0f);
+
+        const float flSensorRate = (float)(SDL_NS_PER_SECOND / ctx->sensor_timestamp_step_ns);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, flSensorRate);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, flSensorRate);
     }
 
     return true;
