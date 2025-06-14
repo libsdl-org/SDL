@@ -42,7 +42,13 @@ enum
     SDL_GAMEPAD_NUM_BASE_FLYDIGI_BUTTONS
 };
 
-#define SENSOR_INTERVAL_NS 8000000ULL
+/* Rate of IMU Sensor Packets over wireless Dongle observed in testcontroller tool at 1000hz */
+#define SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ 1000
+#define SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS    (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ)
+/* Rate of IMU Sensor Packets over wired observed in testcontroller tool connection at 500hz */
+#define SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ  500
+#define SENSOR_INTERVAL_VADER_PRO4_WIRED_NS     (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ)
+
 #define FLYDIGI_CMD_REPORT_ID 0x05
 #define FLYDIGI_HAPTIC_COMMAND 0x0F
 #define FLYDIGI_GET_CONFIG_COMMAND 0xEB
@@ -58,7 +64,8 @@ typedef struct
     bool sensors_supported;
     bool sensors_enabled;
     Uint16 firmware_version;
-    Uint64 sensor_timestamp; // Microseconds. Simulate onboard clock. Advance by known rate: SENSOR_INTERVAL_NS == 8ms = 125 Hz
+    Uint64 sensor_timestamp_ns; // Simulate onboard clock. Advance by known time step. Nanoseconds. 
+    Uint64 sensor_timestamp_step_ns; // Based on observed rate of receipt of IMU sensor packets.
     float accelScale;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverFlydigi_Context;
@@ -163,6 +170,10 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     }
     device->guid.data[15] = ctx->deviceID;
 
+    // This is the previous sensor default of 125hz.
+    // Override this in the switch statement below based on observed sensor packet rate.
+    ctx->sensor_timestamp_step_ns = SDL_NS_PER_SECOND / 125;
+
     switch (ctx->deviceID) {
     case 19:
         HIDAPI_SetDeviceName(device, "Flydigi Apex 2");
@@ -197,12 +208,14 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER_PRO4_WIRED_NS;
         break;
     case 85:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 4 Pro");
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER_PRO4_WIRED_NS;
         break;
     default:
         break;
@@ -256,8 +269,10 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     }
 
     if (ctx->sensors_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 125.0f);
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 125.0f);
+
+        const float flSensorRate = ctx->wireless ? (float)SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ : (float)SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ;
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, flSensorRate);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, flSensorRate);
     }
 
     return true;
@@ -411,18 +426,20 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         Uint64 sensor_timestamp;
         float values[3];
 
-        // Note: we cannot use the time stamp of the receiving computer due to packet delay creating "spiky" timings.
-        // The imu time stamp is intended to be the sample time of the on-board hardware.
-        // In the absence of time stamp data from the data[], we can simulate that by
-        // advancing a time stamp by the observed/known imu clock rate. This is 8ms = 125 Hz
-        sensor_timestamp = ctx->sensor_timestamp;
-        ctx->sensor_timestamp += SENSOR_INTERVAL_NS;
+        // Advance the imu sensor time stamp based on the observed rate of receipt of packets in the testcontroller app.
+        // This varies between Product ID and connection type.
+        sensor_timestamp = ctx->sensor_timestamp_ns;
+        ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
 
-        // This device's IMU values are reported differently from SDL
-        // Thus we perform a rotation of the coordinate system to match the SDL standard.
-        values[0] = -LOAD16(data[26], data[27]) * DEG2RAD(65536) / INT16_MAX;  // Rotation around pitch axis
-        values[1] = -LOAD16(data[18], data[20]) * DEG2RAD(65536) / INT16_MAX;   // Rotation around yaw axis
-        values[2] = -LOAD16(data[29], data[30]) * DEG2RAD(1024) / INT16_MAX;  // Rotation around roll axis
+        // Pitch and yaw scales may be receiving extra filtering for the sake of bespoke direct mouse output.
+        // As result, roll has a different scaling factor than pitch and yaw.
+        // These values were estimated using the testcontroller tool in lieux of hard data sheet references.
+        const float flPitchAndYawScale = DEG2RAD(72000.0f);
+        const float flRollScale = DEG2RAD(1200.0f);
+        values[0] = HIDAPI_RemapVal(-1.0f * LOAD16(data[26], data[27]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
+        values[1] = HIDAPI_RemapVal(-1.0f * LOAD16(data[18], data[20]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
+        values[2] = HIDAPI_RemapVal(-1.0f * LOAD16(data[29], data[30]), INT16_MIN, INT16_MAX, -flRollScale, flRollScale);
+
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
         values[0] = -LOAD16(data[11], data[12])  * ctx->accelScale; // Acceleration along pitch axis
