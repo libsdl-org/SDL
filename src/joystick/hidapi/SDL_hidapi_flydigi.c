@@ -270,7 +270,7 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
     if (ctx->sensors_supported) {
 
-        const float flSensorRate = (float)(SDL_NS_PER_SECOND / ctx->sensor_timestamp_step_ns);
+        const float flSensorRate = ctx->wireless ? (float)SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ : (float)SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ;
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, flSensorRate);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, flSensorRate);
     }
