@@ -48,6 +48,7 @@ enum
 /* Rate of IMU Sensor Packets over wired observed in testcontroller tool connection at 500hz */
 #define SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ  500
 #define SENSOR_INTERVAL_VADER_PRO4_WIRED_NS     (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ)
+
 #define FLYDIGI_CMD_REPORT_ID 0x05
 #define FLYDIGI_HAPTIC_COMMAND 0x0F
 #define FLYDIGI_GET_CONFIG_COMMAND 0xEB
@@ -205,6 +206,9 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     case 81:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 3 Pro");
         ctx->has_cz = true;
+        ctx->sensors_supported = true;
+        ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER_PRO4_WIRED_NS;
         break;
     case 85:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 4 Pro");
