@@ -143,7 +143,7 @@ extern void DestroyGamepadButton(GamepadButton *ctx);
 
 /* Gyro element Display */
 /* If you want to calbirate against a known rotation (i.e. a turn table test) Increase ACCELEROMETER_NOISE_THRESHOLD to about 5, or drift correction will be constantly reset.*/
-#define ACCELEROMETER_NOISE_THRESHOLD 0.125f
+#define ACCELEROMETER_NOISE_THRESHOLD 0.5f
 typedef struct Quaternion Quaternion;
 typedef struct GyroDisplay GyroDisplay;
 

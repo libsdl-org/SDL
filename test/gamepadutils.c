@@ -1611,8 +1611,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         has_gyro = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO);
 
         if (has_accel || has_gyro) {
-            const float gyro_sensor_rate = has_gyro ? SDL_GetGamepadSensorDataRate(gamepad, SDL_SENSOR_GYRO) : 0;
-            const int SENSOR_UPDATE_INTERVAL_MS = gyro_sensor_rate > 0.0f ? (int)( 1000.0f / gyro_sensor_rate ) : 100;
+            const int SENSOR_UPDATE_INTERVAL_MS = 100;
             Uint64 now = SDL_GetTicks();
 
             if (now >= ctx->last_sensor_update + SENSOR_UPDATE_INTERVAL_MS) {
@@ -1622,6 +1621,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                 if (has_gyro) {
                     SDL_GetGamepadSensorData(gamepad, SDL_SENSOR_GYRO, ctx->gyro_data, SDL_arraysize(ctx->gyro_data));
                 }
+                ctx->last_sensor_update = now;
             }
 
             if (has_accel) {
@@ -1639,8 +1639,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                 SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
            
 
-                /* Display a smoothed version of the above for the sake of turntable tests */
-
+                /* Display the testcontroller tool's evaluation of drift. This is also useful to get an average rate of turn in calibrated turntable tests. */
                 if (ctx->gyro_drift_correction_data[0] != 0.0f && ctx->gyro_drift_correction_data[2] != 0.0f && ctx->gyro_drift_correction_data[2] != 0.0f )
                 {
                     y += ctx->button_height + 2.0f;
@@ -1652,7 +1651,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
 
             }
 
-            ctx->last_sensor_update = now;
+            
         }
     }
     SDL_free(mapping);
@@ -1830,12 +1829,12 @@ float RenderEulerReadout(GyroDisplay *ctx, GamepadDisplay *gamepad_display )
 
     /* Yaw Readout */
     log_y += new_line_height;
-    SDL_snprintf(text, sizeof(text), "Yaw: %6.2f%s", ctx->euler_displacement_angles[1], DEGREE_UTF8);
+    SDL_snprintf(text, sizeof(text), "  Yaw: %6.2f%s", ctx->euler_displacement_angles[1], DEGREE_UTF8);
     SDLTest_DrawString(ctx->renderer, log_gyro_euler_text_x + 2.0f, log_y, text);
 
     /* Roll Readout */
     log_y += new_line_height;
-    SDL_snprintf(text, sizeof(text), "Roll: %6.2f%s", ctx->euler_displacement_angles[2], DEGREE_UTF8);
+    SDL_snprintf(text, sizeof(text), " Roll: %6.2f%s", ctx->euler_displacement_angles[2], DEGREE_UTF8);
     SDLTest_DrawString(ctx->renderer, log_gyro_euler_text_x + 2.0f, log_y, text);
 
     return log_y + new_line_height; /* Return the next y position for further rendering */
