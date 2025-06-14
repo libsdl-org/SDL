@@ -431,11 +431,15 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         sensor_timestamp = ctx->sensor_timestamp_ns;
         ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
 
-        // This device's IMU values are reported differently from SDL
-        // Thus we perform a rotation of the coordinate system to match the SDL standard.
-        values[0] = -LOAD16(data[26], data[27]) * DEG2RAD(65536) / INT16_MAX;  // Rotation around pitch axis
-        values[1] = -LOAD16(data[18], data[20]) * DEG2RAD(65536) / INT16_MAX;   // Rotation around yaw axis
-        values[2] = -LOAD16(data[29], data[30]) * DEG2RAD(1024) / INT16_MAX;  // Rotation around roll axis
+        // Pitch and yaw scales may be receiving extra filtering for the sake of bespoke direct mouse output.
+        // As result, roll has a different scaling factor than pitch and yaw.
+        // These values were estimated using the testcontroller tool in lieux of hard data sheet references.
+        const float flPitchAndYawScale = DEG2RAD(72000.0f);
+        const float flRollScale = DEG2RAD(1200.0f);
+        values[0] = HIDAPI_RemapVal(-1.0f * LOAD16(data[26], data[27]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
+        values[1] = HIDAPI_RemapVal(-1.0f * LOAD16(data[18], data[20]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
+        values[2] = HIDAPI_RemapVal(-1.0f * LOAD16(data[29], data[30]), INT16_MIN, INT16_MAX, -flRollScale, flRollScale);
+
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
         values[0] = -LOAD16(data[11], data[12])  * ctx->accelScale; // Acceleration along pitch axis
