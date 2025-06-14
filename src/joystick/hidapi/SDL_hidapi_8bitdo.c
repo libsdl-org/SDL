@@ -48,8 +48,6 @@ enum
 #define SDL_8BITDO_BT_REPORTID_SDL_REPORTID                     0x01
 
 #define ABITDO_ACCEL_SCALE 4096.f
-#define ABITDO_SENSOR_POLLING_RATE 125.f
-#define SENSOR_INTERVAL_NS         8000000ULL
 #define ABITDO_GYRO_MAX_DEGREES_PER_SECOND 2000.f
 
 typedef struct
@@ -69,7 +67,8 @@ typedef struct
     float accelScale;
     float gyroScale;
     Uint8 last_state[USB_PACKET_LENGTH];
-    Uint64 sensor_timestamp; // Nanoseconds.  Simulate onboard clock. Advance by known rate: SENSOR_INTERVAL_NS == 8ms = 125 Hz
+    Uint64 sensor_timestamp; // Nanoseconds.  Simulate onboard clock. Different models have different rates vs different connection styles.
+    Uint64 sensor_timestamp_interval;
 } SDL_Driver8BitDo_Context;
 
 #pragma pack(push,1)
@@ -217,6 +216,27 @@ static void HIDAPI_Driver8BitDo_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 {
 }
 
+// TODO: If gyro time stamp is sent, these fixed settings from observation can be replaced
+static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(Uint16 product_id)
+{
+    switch (product_id) {
+    // Note, This is estimated by observation of Bluetooth packets received in the testcontroller tool
+    case USB_PRODUCT_8BITDO_SN30_PRO_BT: 
+    case USB_PRODUCT_8BITDO_SF30_PRO_BT: 
+        return 90;
+    case USB_PRODUCT_8BITDO_SF30_PRO:
+    case USB_PRODUCT_8BITDO_SN30_PRO:
+    case USB_PRODUCT_8BITDO_PRO_2:
+    case USB_PRODUCT_8BITDO_PRO_2_BT:// Note, labelled as "BT" but appears this way when wired. Actual bluetooth seems to be 90hz
+        return 100;
+    case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
+    default:
+        return 120;
+        break;
+    }
+}
+
+
 #ifndef DEG2RAD
 #define DEG2RAD(x) ((float)(x) * (float)(SDL_PI_F / 180.f))
 #endif
@@ -242,9 +262,13 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     joystick->nhats = 1;
 
     if (ctx->sensors_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, ABITDO_SENSOR_POLLING_RATE);
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, ABITDO_SENSOR_POLLING_RATE);
 
+        // Different 8Bitdo controllers in different connection modes have different polling rates.
+        const Uint64 imu_polling_rate = HIDAPI_Driver8BitDo_GetIMURateForProductID(device->product_id);
+        ctx->sensor_timestamp_interval = SDL_NS_PER_SECOND / imu_polling_rate;
+
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, (float)imu_polling_rate);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, (float)imu_polling_rate);
 
         ctx->accelScale = SDL_STANDARD_GRAVITY / ABITDO_ACCEL_SCALE;
         // Hardware senses +/- N Degrees per second mapped to +/- INT16_MAX
@@ -525,7 +549,7 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         // In the absence of time stamp data from the data[], we can simulate that by
         // advancing a time stamp by the observed/known imu clock rate. This is 8ms = 125 Hz
         sensor_timestamp = ctx->sensor_timestamp;
-        ctx->sensor_timestamp += SENSOR_INTERVAL_NS;
+        ctx->sensor_timestamp += ctx->sensor_timestamp_interval;
 
         // This device's IMU values are reported differently from SDL
         // Thus we perform a rotation of the coordinate system to match the SDL standard.
