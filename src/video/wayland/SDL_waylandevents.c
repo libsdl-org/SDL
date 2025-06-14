@@ -3309,7 +3309,6 @@ static const struct zwp_tablet_seat_v2_listener tablet_seat_listener = {
 
 static void Wayland_SeatInitTabletSupport(SDL_WaylandSeat *seat)
 {
-    WAYLAND_wl_list_init(&seat->tablet.tool_list);
     seat->tablet.wl_tablet_seat = zwp_tablet_manager_v2_get_tablet_seat(seat->display->tablet_manager, seat->wl_seat);
     zwp_tablet_seat_v2_add_listener(seat->tablet.wl_tablet_seat, &tablet_seat_listener, seat);
 }
@@ -3342,7 +3341,7 @@ static void Wayland_SeatDestroyTablet(SDL_WaylandSeat *seat, bool send_events)
         SDL_RemoveAllPenDevices(Wayland_remove_all_pens_callback, NULL);
     }
 
-    if (seat && seat->tablet.wl_tablet_seat) {
+    if (seat->tablet.wl_tablet_seat) {
         zwp_tablet_seat_v2_destroy(seat->tablet.wl_tablet_seat);
         seat->tablet.wl_tablet_seat = NULL;
     }
@@ -3362,6 +3361,7 @@ void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, 
     WAYLAND_wl_list_insert(display->seat_list.prev, &seat->link);
 
     WAYLAND_wl_list_init(&seat->touch.points);
+    WAYLAND_wl_list_init(&seat->tablet.tool_list);
     seat->wl_seat = wl_seat;
     seat->display = display;
     seat->registry_id = id;
