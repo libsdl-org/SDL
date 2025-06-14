@@ -216,26 +216,26 @@ static void HIDAPI_Driver8BitDo_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 {
 }
 
-// TODO: If gyro time stamp is sent, these fixed settings from observation can be replaced
-static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(Uint16 product_id)
+static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(SDL_HIDAPI_Device *device)
 {
-    switch (product_id) {
+    // TODO: If sensor time stamp is sent, these fixed settings from observation can be replaced
+    switch (device->product_id) {
     // Note, This is estimated by observation of Bluetooth packets received in the testcontroller tool
     case USB_PRODUCT_8BITDO_SN30_PRO_BT: 
     case USB_PRODUCT_8BITDO_SF30_PRO_BT: 
-        return 90;
+        return 90; // Observed to be anywhere between 60-90 hz. Possibly lossy in current state
     case USB_PRODUCT_8BITDO_SF30_PRO:
     case USB_PRODUCT_8BITDO_SN30_PRO:
-    case USB_PRODUCT_8BITDO_PRO_2:
-    case USB_PRODUCT_8BITDO_PRO_2_BT:// Note, labelled as "BT" but appears this way when wired. Actual bluetooth seems to be 90hz
         return 100;
+    case USB_PRODUCT_8BITDO_PRO_2:
+    case USB_PRODUCT_8BITDO_PRO_2_BT:// Note, labelled as "BT" but appears this way when wired. Observed bluetooth packet rate seems to be 80-90hz
+        return (device->is_bluetooth ? 85 : 100);
     case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
     default:
         return 120;
         break;
     }
 }
-
 
 #ifndef DEG2RAD
 #define DEG2RAD(x) ((float)(x) * (float)(SDL_PI_F / 180.f))
@@ -264,7 +264,7 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     if (ctx->sensors_supported) {
 
         // Different 8Bitdo controllers in different connection modes have different polling rates.
-        const Uint64 imu_polling_rate = HIDAPI_Driver8BitDo_GetIMURateForProductID(device->product_id);
+        const Uint64 imu_polling_rate = HIDAPI_Driver8BitDo_GetIMURateForProductID(device);
         ctx->sensor_timestamp_interval = SDL_NS_PER_SECOND / imu_polling_rate;
 
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, (float)imu_polling_rate);
