@@ -1149,9 +1149,9 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetAudioStreamFrequencyRatio(SDL_AudioStre
  *
  * The frequency ratio is used to adjust the rate at which input data is
  * consumed. Changing this effectively modifies the speed and pitch of the
- * audio. A value greater than 1.0f will play the audio faster, and at a higher
- * pitch. A value less than 1.0f will play the audio slower, and at a lower
- * pitch. 1.0f means play at normal speed.
+ * audio. A value greater than 1.0f will play the audio faster, and at a
+ * higher pitch. A value less than 1.0f will play the audio slower, and at a
+ * lower pitch. 1.0f means play at normal speed.
  *
  * This is applied during SDL_GetAudioStreamData, and can be continuously
  * changed to create various effects.
