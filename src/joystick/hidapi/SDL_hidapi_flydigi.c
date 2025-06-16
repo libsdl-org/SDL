@@ -95,19 +95,18 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
 
-    for (int attempt = 0; ctx->deviceID == 0 && attempt < 3; ++attempt) {
+    // Detecting the Vader 2 can take over 1000 read retries, so be generous here
+    for (int attempt = 0; ctx->deviceID == 0 && attempt < 30; ++attempt) {
         const Uint8 request[] = { FLYDIGI_CMD_REPORT_ID, FLYDIGI_GET_INFO_COMMAND, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        int size = SDL_hid_write(device->dev, request, sizeof(request));
-        if (size < 0) {
-            break;
-        }
+        // This write will occasionally return -1, so ignore failure here and try again
+        (void)SDL_hid_write(device->dev, request, sizeof(request));
 
         // Read the reply
         for (int i = 0; i < 100; ++i) {
             SDL_Delay(1);
 
             Uint8 data[USB_PACKET_LENGTH];
-            size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0);
+            int size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0);
             if (size < 0) {
                 break;
             }
