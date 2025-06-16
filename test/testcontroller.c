@@ -1375,7 +1375,16 @@ static void HandleGamepadGyroEvent(SDL_Event *event)
     SDL_memcpy(controller->imu_state->gyro_data, event->gsensor.data, sizeof(controller->imu_state->gyro_data));
 }
 
+/* Two strategies for evaluating polling rate - one based on a fixed packet count, and one using a fixed time window.
+ * Smaller values in either will give you a more responsive polling rate estimate, but this may fluctuate more.
+ * Larger values in either will give you a more stable average but they will require more time to evaluate.
+ * Generally, wired connections tend to give much more stable 
+ */
+/* #define SDL_USE_FIXED_PACKET_COUNT_FOR_ESTIMATION */
 #define SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT 2048
+#define SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_TIME_NS (SDL_NS_PER_SECOND * 2)
+
+
 static void EstimatePacketRate()
 {
     Uint64 now_ns = SDL_GetTicksNS();
@@ -1384,17 +1393,22 @@ static void EstimatePacketRate()
     }
 
     /* Require a significant sample size before averaging rate. */
+#ifdef SDL_USE_FIXED_PACKET_COUNT_FOR_ESTIMATION
     if (controller->imu_state->imu_packet_counter >= SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT) {
         Uint64 deltatime_ns = now_ns - controller->imu_state->starting_time_stamp_ns;
-        controller->imu_state->imu_estimated_sensor_rate = (Uint16)((controller->imu_state->imu_packet_counter * 1000000000ULL) / deltatime_ns);
-    }
-
-    /* Flush sampled data after a brief period so that the imu_estimated_sensor_rate value can be read.*/
-    if (controller->imu_state->imu_packet_counter >= SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT * 2) {
-        controller->imu_state->starting_time_stamp_ns = now_ns;
+        controller->imu_state->imu_estimated_sensor_rate = (Uint16)((controller->imu_state->imu_packet_counter * SDL_NS_PER_SECOND) / deltatime_ns);
         controller->imu_state->imu_packet_counter = 0;
     }
-    ++controller->imu_state->imu_packet_counter;
+#else
+    Uint64 deltatime_ns = now_ns - controller->imu_state->starting_time_stamp_ns;
+    if (deltatime_ns >= SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_TIME_NS) {
+        controller->imu_state->imu_estimated_sensor_rate = (Uint16)((controller->imu_state->imu_packet_counter * SDL_NS_PER_SECOND) / deltatime_ns);
+        controller->imu_state->imu_packet_counter = 0;
+    }
+#endif
+    else {
+        ++controller->imu_state->imu_packet_counter;
+    }
 }
 
 static void UpdateGamepadOrientation( Uint64 delta_time_ns )
