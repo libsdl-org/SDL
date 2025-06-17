@@ -823,7 +823,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS8(SDL_IOStream *src, Sint8 *value);
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -846,7 +846,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -869,7 +869,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS16LE(SDL_IOStream *src, Sint16 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -892,7 +892,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU16BE(SDL_IOStream *src, Uint16 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -915,7 +915,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS16BE(SDL_IOStream *src, Sint16 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -938,7 +938,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU32LE(SDL_IOStream *src, Uint32 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -961,7 +961,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS32LE(SDL_IOStream *src, Sint32 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -984,7 +984,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU32BE(SDL_IOStream *src, Uint32 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -1007,7 +1007,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS32BE(SDL_IOStream *src, Sint32 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -1030,7 +1030,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU64LE(SDL_IOStream *src, Uint64 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -1053,7 +1053,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS64LE(SDL_IOStream *src, Sint64 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
@@ -1076,7 +1076,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU64BE(SDL_IOStream *src, Uint64 *value)
  *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
- * \returns true on successful write or false on failure; call SDL_GetError()
+ * \returns true on successful read or false on failure; call SDL_GetError()
  *          for more information.
  *
  * \threadsafety This function is not thread safe.
