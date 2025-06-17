@@ -64,7 +64,7 @@ typedef struct
     bool sensors_supported;
     bool sensors_enabled;
     Uint16 firmware_version;
-    Uint64 sensor_timestamp_ns; // Simulate onboard clock. Advance by known time step. Nanoseconds. 
+    Uint64 sensor_timestamp_ns; // Simulate onboard clock. Advance by known time step. Nanoseconds.
     Uint64 sensor_timestamp_step_ns; // Based on observed rate of receipt of IMU sensor packets.
     float accelScale;
     Uint8 last_state[USB_PACKET_LENGTH];
@@ -210,6 +210,7 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER_PRO4_WIRED_NS;
         break;
     case 85:
+    case 105:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 4 Pro");
         ctx->has_cz = true;
         ctx->sensors_supported = true;
@@ -217,6 +218,7 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER_PRO4_WIRED_NS;
         break;
     default:
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Unknown FlyDigi controller with ID %d, name '%s'", ctx->deviceID, device->name);
         break;
     }
 }
