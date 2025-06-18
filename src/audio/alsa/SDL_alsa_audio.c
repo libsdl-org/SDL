@@ -348,26 +348,22 @@ static char *get_pcm_str(void *handle)
 // This function waits until it is possible to write a full sound buffer
 static bool ALSA_WaitDevice(SDL_AudioDevice *device)
 {
-    const int fulldelay = (int) ((((Uint64) device->sample_frames) * 1000) / device->spec.freq);
-    const int delay = SDL_max(fulldelay, 10);
+    const int sample_frames = device->sample_frames;
+    const int fulldelay = (int) ((((Uint64) sample_frames) * 1000) / device->spec.freq);
+    const int delay = SDL_clamp(fulldelay, 1, 5);
+    int total_delays = 0;
 
-    while (!SDL_GetAtomicInt(&device->shutdown)) {
-        const int rc = ALSA_snd_pcm_wait(device->hidden->pcm, delay);
-        if (rc < 0 && (rc != -EAGAIN)) {
-            const int status = ALSA_snd_pcm_recover(device->hidden->pcm, rc, 0);
-            if (status < 0) {
-                // Hmm, not much we can do - abort
-                SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA: snd_pcm_wait failed (unrecoverable): %s", ALSA_snd_strerror(rc));
-                return false;
-            }
-            continue;
+    SDL_assert(fulldelay > 0);  // so the `fulldelay * 5` below produces a reasonable result.
+
+    while (!SDL_GetAtomicInt(&device->shutdown) && (ALSA_snd_pcm_avail(device->hidden->pcm) < sample_frames)) {
+        if (total_delays >= (fulldelay * 5)) {
+            // Hmm, not much we can do - abort
+            SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA: hardware seems to have frozen, giving up on it.");
+            return false;
+        } else {
+            SDL_Delay(delay);
+            total_delays += delay;  // THIS IS NOT EXACT, but just so we don't wait forever on problems...
         }
-
-        if (rc > 0) {
-            break;  // ready to go!
-        }
-
-        // Timed out! Make sure we aren't shutting down and then wait again.
     }
 
     return true;
@@ -431,8 +427,11 @@ static int ALSA_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
     SDL_assert((buflen % frame_size) == 0);
 
     const snd_pcm_sframes_t total_available = ALSA_snd_pcm_avail(device->hidden->pcm);
-    const int total_frames = SDL_min(buflen / frame_size, total_available);
+    if (total_available == 0) {
+        return 0;  // go back to WaitDevice and try again.
+    }
 
+    const int total_frames = SDL_min(buflen / frame_size, total_available);
     const int rc = ALSA_snd_pcm_readi(device->hidden->pcm, buffer, total_frames);
 
     SDL_assert(rc != -EAGAIN);  // assuming this can't happen if we used snd_pcm_wait and queried for available space. snd_pcm_recover won't handle it!
