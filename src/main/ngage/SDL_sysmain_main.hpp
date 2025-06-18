@@ -28,7 +28,7 @@
 class CSDLmain : public CActive
 {
 public:
-    static CSDLmain* NewL();
+    static CSDLmain *NewL();
     ~CSDLmain();
 
     void Start();

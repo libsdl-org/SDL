@@ -6024,7 +6024,7 @@ void SDL_Vulkan_UnloadLibrary(void)
     }
 }
 
-char const* const* SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
+char const * const *SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
 {
     return _this->Vulkan_GetInstanceExtensions(_this, count);
 }

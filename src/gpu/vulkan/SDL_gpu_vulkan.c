@@ -3297,7 +3297,7 @@ static void SDLCALL VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashDestroy(vo
     VulkanRenderer *renderer = (VulkanRenderer *)userdata;
     VulkanGraphicsPipelineResourceLayout *resourceLayout = (VulkanGraphicsPipelineResourceLayout *)value;
     VULKAN_INTERNAL_DestroyGraphicsPipelineResourceLayout(renderer, resourceLayout);
-    SDL_free((void*)key);
+    SDL_free((void *)key);
 }
 
 static Uint32 SDLCALL VULKAN_INTERNAL_ComputePipelineResourceLayoutHashFunction(void *userdata, const void *key)
@@ -3328,7 +3328,7 @@ static void SDLCALL VULKAN_INTERNAL_ComputePipelineResourceLayoutHashDestroy(voi
     VulkanRenderer *renderer = (VulkanRenderer *)userdata;
     VulkanComputePipelineResourceLayout *resourceLayout = (VulkanComputePipelineResourceLayout *)value;
     VULKAN_INTERNAL_DestroyComputePipelineResourceLayout(renderer, resourceLayout);
-    SDL_free((void*)key);
+    SDL_free((void *)key);
 }
 
 static Uint32 SDLCALL VULKAN_INTERNAL_DescriptorSetLayoutHashFunction(void *userdata, const void *key)
@@ -3361,7 +3361,7 @@ static void SDLCALL VULKAN_INTERNAL_DescriptorSetLayoutHashDestroy(void *userdat
     VulkanRenderer *renderer = (VulkanRenderer *)userdata;
     DescriptorSetLayout *layout = (DescriptorSetLayout *)value;
     VULKAN_INTERNAL_DestroyDescriptorSetLayout(renderer, layout);
-    SDL_free((void*)key);
+    SDL_free((void *)key);
 }
 
 static Uint32 SDLCALL VULKAN_INTERNAL_CommandPoolHashFunction(void *userdata, const void *key)
@@ -10111,7 +10111,7 @@ static SDL_GPUTextureFormat VULKAN_GetSwapchainTextureFormat(
     SDL_GPURenderer *driverData,
     SDL_Window *window)
 {
-    VulkanRenderer *renderer = (VulkanRenderer*)driverData;
+    VulkanRenderer *renderer = (VulkanRenderer *)driverData;
     WindowData *windowData = VULKAN_INTERNAL_FetchWindowData(window);
 
     if (windowData == NULL) {
@@ -10622,7 +10622,7 @@ static bool VULKAN_Submit(
 
         if (presentResult == VK_SUCCESS || presentResult == VK_SUBOPTIMAL_KHR || presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
             // If presenting, the swapchain is using the in-flight fence
-            presentData->windowData->inFlightFences[presentData->windowData->frameCounter] = (SDL_GPUFence*)vulkanCommandBuffer->inFlightFence;
+            presentData->windowData->inFlightFences[presentData->windowData->frameCounter] = (SDL_GPUFence *)vulkanCommandBuffer->inFlightFence;
             (void)SDL_AtomicIncRef(&vulkanCommandBuffer->inFlightFence->referenceCount);
 
             if (presentResult == VK_SUBOPTIMAL_KHR || presentResult == VK_ERROR_OUT_OF_DATE_KHR) {

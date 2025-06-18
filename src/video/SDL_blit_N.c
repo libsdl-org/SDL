@@ -2258,7 +2258,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
             /* *INDENT-OFF* */ // clang-format off
             DUFFS_LOOP(
             {
-                Uint32 *src32 = (Uint32*)src;
+                Uint32 *src32 = (Uint32 *)src;
 
                 if ((*src32 & rgbmask) != ckey) {
                     dst[0] = src[p0];
@@ -2366,7 +2366,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
             /* *INDENT-OFF* */ // clang-format off
             DUFFS_LOOP(
             {
-                Uint32 *src32 = (Uint32*)src;
+                Uint32 *src32 = (Uint32 *)src;
                 if ((*src32 & rgbmask) != ckey) {
                     dst[0] = src[p0];
                     dst[1] = src[p1];
@@ -2516,7 +2516,7 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
             /* *INDENT-OFF* */ // clang-format off
             DUFFS_LOOP(
             {
-                Uint32 *src32 = (Uint32*)src;
+                Uint32 *src32 = (Uint32 *)src;
                 if ((*src32 & rgbmask) != ckey) {
                     dst[0] = src[p0];
                     dst[1] = src[p1];
@@ -2777,7 +2777,7 @@ static void Blit8888to8888PixelSwizzleNEON(SDL_BlitInfo *info)
         // Process 1 pixel per iteration, max 3 iterations, same calculations as above
         for (; i < width; ++i) {
             // Top 32-bits will be not used in src32
-            uint8x8_t src32 = vreinterpret_u8_u32(vld1_dup_u32((Uint32*)src));
+            uint8x8_t src32 = vreinterpret_u8_u32(vld1_dup_u32((Uint32 *)src));
 
             // Convert to dst format
             src32 = vtbl1_u8(src32, vget_low_u8(convert_mask));
@@ -2788,7 +2788,7 @@ static void Blit8888to8888PixelSwizzleNEON(SDL_BlitInfo *info)
             }
 
             // Save the result, only low 32-bits
-            vst1_lane_u32((Uint32*)dst, vreinterpret_u32_u8(src32), 0);
+            vst1_lane_u32((Uint32 *)dst, vreinterpret_u32_u8(src32), 0);
 
             src += 4;
             dst += 4;
@@ -2829,7 +2829,7 @@ static void Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo *info)
             /* *INDENT-OFF* */ // clang-format off
             DUFFS_LOOP(
             {
-                Uint32 *dst32 = (Uint32*)dst;
+                Uint32 *dst32 = (Uint32 *)dst;
                 Uint8 s0 = src[i0];
                 Uint8 s1 = src[i1];
                 Uint8 s2 = src[i2];
@@ -2901,7 +2901,7 @@ static void Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo *info)
                 /* *INDENT-OFF* */ // clang-format off
                 DUFFS_LOOP(
                 {
-                    Uint32 *dst32 = (Uint32*)dst;
+                    Uint32 *dst32 = (Uint32 *)dst;
                     Uint8 s0 = src[i0];
                     Uint8 s1 = src[i1];
                     Uint8 s2 = src[i2];
@@ -2929,7 +2929,7 @@ static void Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo *info)
                 /* *INDENT-OFF* */ // clang-format off
                 DUFFS_LOOP(
                 {
-                    Uint32 *dst32 = (Uint32*)dst;
+                    Uint32 *dst32 = (Uint32 *)dst;
                     Uint8 s0 = src[i0];
                     Uint8 s1 = src[i1];
                     Uint8 s2 = src[i2];

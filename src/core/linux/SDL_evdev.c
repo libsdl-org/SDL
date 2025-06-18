@@ -287,8 +287,8 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
 }
 #endif // SDL_USE_LIBUDEV
 
-void SDL_EVDEV_SetVTSwitchCallbacks(void (*release_callback)(void*), void *release_callback_data,
-                                    void (*acquire_callback)(void*), void *acquire_callback_data)
+void SDL_EVDEV_SetVTSwitchCallbacks(void (*release_callback)(void *), void *release_callback_data,
+                                    void (*acquire_callback)(void *), void *acquire_callback_data)
 {
     SDL_EVDEV_kbd_set_vt_switch_callbacks(_this->kbd,
                                           release_callback, release_callback_data,

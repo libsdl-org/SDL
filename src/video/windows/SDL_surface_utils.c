@@ -46,7 +46,7 @@ HICON CreateIconFromSurface(SDL_Surface *surface)
     bmpInfo.bmiHeader.biCompression = BI_RGB;
 
     HDC hdc = GetDC(NULL);
-    void* pBits = NULL;
+    void *pBits = NULL;
     HBITMAP hBitmap = CreateDIBSection(hdc, &bmpInfo, DIB_RGB_COLORS, &pBits, NULL, 0);
     if (!hBitmap) {
         ReleaseDC(NULL, hdc);

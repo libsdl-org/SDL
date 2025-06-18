@@ -110,7 +110,7 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
         data32.set(HEAP32.subarray(src, src + num));
         var data8 = SDL3.data8;
         var i = 3;
-        var j = i + 4*num;
+        var j = i + 4 * num;
         if (num % 8 == 0) {
             // unrolling gives big speedups
             while (i < j) {

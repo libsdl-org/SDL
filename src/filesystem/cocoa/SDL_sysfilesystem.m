@@ -136,7 +136,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         return NULL;
 #else
         char *result = NULL;
-        const char* base;
+        const char *base;
         NSArray *array;
         NSSearchPathDirectory dir;
         NSString *str;

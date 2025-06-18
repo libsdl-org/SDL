@@ -244,7 +244,7 @@ void Cocoa_VideoQuit(SDL_VideoDevice *_this)
 SDL_SystemTheme Cocoa_GetSystemTheme(void)
 {
     if (@available(macOS 10.14, *)) {
-        NSAppearance* appearance = [[NSApplication sharedApplication] effectiveAppearance];
+        NSAppearance *appearance = [[NSApplication sharedApplication] effectiveAppearance];
 
         if ([appearance.name containsString: @"Dark"]) {
             return SDL_SYSTEM_THEME_DARK;

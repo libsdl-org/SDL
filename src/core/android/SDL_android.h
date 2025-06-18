@@ -151,7 +151,7 @@ bool SDL_IsAndroidTablet(void);
 bool SDL_IsAndroidTV(void);
 
 // File Dialogs
-bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void* userdata,
+bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void *userdata,
     const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
     bool multiple);
 

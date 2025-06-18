@@ -24,10 +24,10 @@ extern "C" {
 
 #include "SDL_internal.h"
 
-extern SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]);
-extern SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event);
-extern SDL_AppResult SDL_AppIterate(void* appstate);
-extern void SDL_AppQuit(void* appstate, SDL_AppResult result);
+extern SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[]);
+extern SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event);
+extern SDL_AppResult SDL_AppIterate(void *appstate);
+extern void SDL_AppQuit(void *appstate, SDL_AppResult result);
 
 #ifdef __cplusplus
 }
@@ -48,14 +48,14 @@ GLDEF_C TInt E32Main()
 {
     // Get args and environment.
     int argc = 1;
-    char* argv[] = { "game", NULL };
-    char** envp = NULL;
+    char *argv[] = { "game", NULL };
+    char **envp = NULL;
 
     // Create lvalue variables for __crt0 arguments.
-    char** argv_lvalue = argv;
-    char** envp_lvalue = envp;
+    char **argv_lvalue = argv;
+    char **envp_lvalue = envp;
 
-    CTrapCleanup* cleanup = CTrapCleanup::New();
+    CTrapCleanup *cleanup = CTrapCleanup::New();
     if (!cleanup)
     {
         return KErrNoMemory;
@@ -63,7 +63,7 @@ GLDEF_C TInt E32Main()
 
     TRAPD(err,
     {
-        CActiveScheduler* scheduler = new (ELeave) CActiveScheduler();
+        CActiveScheduler *scheduler = new (ELeave) CActiveScheduler();
         CleanupStack::PushL(scheduler);
         CActiveScheduler::Install(scheduler);
 
@@ -77,7 +77,7 @@ GLDEF_C TInt E32Main()
         __crt0(argc, argv_lvalue, envp_lvalue);
 
         // Increase heap size.
-        RHeap* newHeap = User::ChunkHeap(NULL, 7500000, 7500000, KMinHeapGrowBy);
+        RHeap *newHeap = User::ChunkHeap(NULL, 7500000, 7500000, KMinHeapGrowBy);
         if (!newHeap)
         {
             SDL_Log("Error: Failed to create new heap");
@@ -85,7 +85,7 @@ GLDEF_C TInt E32Main()
         }
         CleanupStack::PushL(newHeap);
 
-        RHeap* oldHeap = User::SwitchHeap(newHeap);
+        RHeap *oldHeap = User::SwitchHeap(newHeap);
 
         TInt targetLatency = 225;
         InitAudio(&targetLatency);
@@ -101,7 +101,7 @@ GLDEF_C TInt E32Main()
         CleanupStack::PushL(gRenderer);
 
         // Create and start the SDL main runner.
-        CSDLmain* mainApp = CSDLmain::NewL();
+        CSDLmain *mainApp = CSDLmain::NewL();
         CleanupStack::PushL(mainApp);
         mainApp->Start();
 
@@ -125,9 +125,9 @@ GLDEF_C TInt E32Main()
     return err;
 }
 
-CSDLmain* CSDLmain::NewL()
+CSDLmain *CSDLmain::NewL()
 {
-    CSDLmain* self = new (ELeave) CSDLmain();
+    CSDLmain *self = new (ELeave) CSDLmain();
     CleanupStack::PushL(self);
     self->ConstructL();
     CleanupStack::Pop(self);
@@ -149,7 +149,7 @@ CSDLmain::~CSDLmain()
 void CSDLmain::Start()
 {
     SetActive();
-    TRequestStatus* status = &iStatus;
+    TRequestStatus *status = &iStatus;
     User::RequestComplete(status, KErrNone);
 }
 

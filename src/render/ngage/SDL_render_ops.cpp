@@ -48,10 +48,10 @@ void ApplyColorMod(void *dest, void *source, int pitch, int width, int height, S
     }
 }
 
-void ApplyFlip(void* dest, void* source, int pitch, int width, int height, SDL_FlipMode flip)
+void ApplyFlip(void *dest, void *source, int pitch, int width, int height, SDL_FlipMode flip)
 {
-    TUint16* src_pixels = static_cast<TUint16*>(source);
-    TUint16* dst_pixels = static_cast<TUint16*>(dest);
+    TUint16 *src_pixels = static_cast<TUint16 *>(source);
+    TUint16 *dst_pixels = static_cast<TUint16 *>(dest);
 
     for (int y = 0; y < height; ++y)
     {
@@ -75,10 +75,10 @@ void ApplyFlip(void* dest, void* source, int pitch, int width, int height, SDL_F
     }
 }
 
-void ApplyRotation(void* dest, void* source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed angle)
+void ApplyRotation(void *dest, void *source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed angle)
 {
-    TUint16* src_pixels = static_cast<TUint16*>(source);
-    TUint16* dst_pixels = static_cast<TUint16*>(dest);
+    TUint16 *src_pixels = static_cast<TUint16 *>(source);
+    TUint16 *dst_pixels = static_cast<TUint16 *>(dest);
 
     TFixed cos_angle = 0;
     TFixed sin_angle = 0;
@@ -117,10 +117,10 @@ void ApplyRotation(void* dest, void* source, int pitch, int width, int height, T
     }
 }
 
-void ApplyScale(void* dest, void* source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed scale_x, TFixed scale_y)
+void ApplyScale(void *dest, void *source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed scale_x, TFixed scale_y)
 {
-    TUint16* src_pixels = static_cast<TUint16*>(source);
-    TUint16* dst_pixels = static_cast<TUint16*>(dest);
+    TUint16 *src_pixels = static_cast<TUint16 *>(source);
+    TUint16 *dst_pixels = static_cast<TUint16 *>(dest);
 
     for (int y = 0; y < height; ++y)
     {

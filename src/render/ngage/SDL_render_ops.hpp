@@ -24,9 +24,9 @@
 
 #include <3dtypes.h>
 
-void ApplyColorMod(void* dest, void* source, int pitch, int width, int height, SDL_FColor color);
-void ApplyFlip(void* dest, void* source, int pitch, int width, int height, SDL_FlipMode flip);
-void ApplyRotation(void* dest, void* source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed angle);
-void ApplyScale(void* dest, void* source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed scale_x, TFixed scale_y);
+void ApplyColorMod(void *dest, void *source, int pitch, int width, int height, SDL_FColor color);
+void ApplyFlip(void *dest, void *source, int pitch, int width, int height, SDL_FlipMode flip);
+void ApplyRotation(void *dest, void *source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed angle);
+void ApplyScale(void *dest, void *source, int pitch, int width, int height, TFixed center_x, TFixed center_y, TFixed scale_x, TFixed scale_y);
 
 #endif // ngage_video_render_ops_hpp
