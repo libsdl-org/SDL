@@ -58,13 +58,13 @@ static void ReactivateAfterDialog(void)
 
 void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
-    SDL_Window* window = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
+    SDL_Window *window = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
     SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
     int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
     bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
-    const char* default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
-    const char* title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, NULL);
-    const char* accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
+    const char *default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
+    const char *title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, NULL);
+    const char *accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
 
     if (filters) {
         const char *msg = validate_filters(filters, nfilters);
@@ -170,7 +170,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
         [dialog beginSheetModalForWindow:w completionHandler:^(NSInteger result) {
             if (result == NSModalResponseOK) {
                 if (dialog_as_open) {
-                    NSArray* urls = [dialog_as_open URLs];
+                    NSArray *urls = [dialog_as_open URLs];
                     const char *files[[urls count] + 1];
                     for (int i = 0; i < [urls count]; i++) {
                         files[i] = [[[urls objectAtIndex:i] path] UTF8String];
@@ -191,7 +191,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     } else {
         if ([dialog runModal] == NSModalResponseOK) {
             if (dialog_as_open) {
-                NSArray* urls = [dialog_as_open URLs];
+                NSArray *urls = [dialog_as_open URLs];
                 const char *files[[urls count] + 1];
                 for (int i = 0; i < [urls count]; i++) {
                     files[i] = [[[urls objectAtIndex:i] path] UTF8String];

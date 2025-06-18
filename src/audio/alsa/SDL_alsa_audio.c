@@ -87,7 +87,7 @@ static int (*ALSA_snd_device_name_free_hint)(void **);
 static snd_pcm_sframes_t (*ALSA_snd_pcm_avail)(snd_pcm_t *);
 static size_t (*ALSA_snd_ctl_card_info_sizeof)(void);
 static size_t (*ALSA_snd_pcm_info_sizeof)(void);
-static int (*ALSA_snd_card_next)(int*);
+static int (*ALSA_snd_card_next)(int *);
 static int (*ALSA_snd_ctl_open)(snd_ctl_t **,const char *,int);
 static int (*ALSA_snd_ctl_close)(snd_ctl_t *);
 static int (*ALSA_snd_ctl_card_info)(snd_ctl_t *, snd_ctl_card_info_t *);
@@ -670,7 +670,7 @@ static void swizzle_map_compute(const struct ALSA_pcm_cfg_ctx *ctx, int *swizzle
 static int alsa_chmap_install(struct ALSA_pcm_cfg_ctx *ctx, const unsigned int *chmap)
 {
     bool isstack;
-    snd_pcm_chmap_t *chmap_to_install = (snd_pcm_chmap_t*)SDL_small_alloc(unsigned int, 1 + ctx->chans_n, &isstack);
+    snd_pcm_chmap_t *chmap_to_install = (snd_pcm_chmap_t *)SDL_small_alloc(unsigned int, 1 + ctx->chans_n, &isstack);
     if (!chmap_to_install) {
         return -1;
     }
@@ -1214,7 +1214,7 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
     unsigned int subdev_idx = 0;
     const bool recording = direction == SND_PCM_STREAM_CAPTURE ? true : false; // used for the unicity of the device
     bool isstack;
-    snd_pcm_info_t *pcm_info = (snd_pcm_info_t*)SDL_small_alloc(Uint8, ALSA_snd_pcm_info_sizeof(), &isstack);
+    snd_pcm_info_t *pcm_info = (snd_pcm_info_t *)SDL_small_alloc(Uint8, ALSA_snd_pcm_info_sizeof(), &isstack);
     SDL_memset(pcm_info, 0, ALSA_snd_pcm_info_sizeof());
 
     while (true) {
@@ -1453,10 +1453,10 @@ static void ALSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevi
     bool has_default_playback = false, has_default_recording = false;
     ALSA_HotplugIteration(&has_default_playback, &has_default_recording); // run once now before a thread continues to check.
     if (has_default_playback) {
-        *default_playback = SDL_AddAudioDevice(/*recording=*/false, "ALSA default playback device", NULL, (void*)&default_playback_handle);
+        *default_playback = SDL_AddAudioDevice(/*recording=*/false, "ALSA default playback device", NULL, (void *)&default_playback_handle);
     }
     if (has_default_recording) {
-        *default_recording = SDL_AddAudioDevice(/*recording=*/true, "ALSA default recording device", NULL, (void*)&default_recording_handle);
+        *default_recording = SDL_AddAudioDevice(/*recording=*/true, "ALSA default recording device", NULL, (void *)&default_recording_handle);
     }
 
 #if SDL_ALSA_HOTPLUG_THREAD

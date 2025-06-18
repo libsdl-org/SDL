@@ -40,7 +40,7 @@
 /* Glib 2.0 */
 
 typedef unsigned long gulong;
-typedef void* gpointer;
+typedef void *gpointer;
 typedef char gchar;
 typedef int gint;
 typedef unsigned int guint;
@@ -88,11 +88,11 @@ typedef struct _GtkCheckMenuItem GtkCheckMenuItem;
 
 static gboolean (*gtk_init_check)(int *argc, char ***argv);
 static gboolean (*gtk_main_iteration_do)(gboolean blocking);
-static GtkWidget* (*gtk_menu_new)(void);
-static GtkWidget* (*gtk_separator_menu_item_new)(void);
-static GtkWidget* (*gtk_menu_item_new_with_label)(const gchar *label);
+static GtkWidget *(*gtk_menu_new)(void);
+static GtkWidget *(*gtk_separator_menu_item_new)(void);
+static GtkWidget *(*gtk_menu_item_new_with_label)(const gchar *label);
 static void (*gtk_menu_item_set_submenu)(GtkMenuItem *menu_item, GtkWidget *submenu);
-static GtkWidget* (*gtk_check_menu_item_new_with_label)(const gchar *label);
+static GtkWidget *(*gtk_check_menu_item_new_with_label)(const gchar *label);
 static void (*gtk_check_menu_item_set_active)(GtkCheckMenuItem *check_menu_item, gboolean is_active);
 static void (*gtk_widget_set_sensitive)(GtkWidget *widget, gboolean sensitive);
 static void (*gtk_widget_show)(GtkWidget *widget);

@@ -324,7 +324,7 @@ protected:
 	}
 
 	virtual void
-	SetTitle(const char* aTitle)
+	SetTitle(const char *aTitle)
 	{
 		fTitle = aTitle;
 		BAlert::SetTitle(aTitle);

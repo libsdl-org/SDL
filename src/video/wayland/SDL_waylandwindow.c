@@ -1794,7 +1794,7 @@ static struct wl_callback_listener show_hide_sync_listener = {
 
 static void exported_handle_handler(void *data, struct zxdg_exported_v2 *zxdg_exported_v2, const char *handle)
 {
-    SDL_WindowData *wind = (SDL_WindowData*)data;
+    SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_PropertiesID props = SDL_GetWindowProperties(wind->sdlwindow);
 
     SDL_SetStringProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING, handle);
@@ -2065,7 +2065,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     data->show_hide_sync_required = true;
     struct wl_callback *cb = wl_display_sync(_this->internal->display);
-    wl_callback_add_listener(cb, &show_hide_sync_listener, (void*)((uintptr_t)window->id));
+    wl_callback_add_listener(cb, &show_hide_sync_listener, (void *)((uintptr_t)window->id));
 
     data->showing_window = true;
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
@@ -2181,7 +2181,7 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     wind->show_hide_sync_required = true;
     struct wl_callback *cb = wl_display_sync(_this->internal->display);
-    wl_callback_add_listener(cb, &show_hide_sync_listener, (void*)((uintptr_t)window->id));
+    wl_callback_add_listener(cb, &show_hide_sync_listener, (void *)((uintptr_t)window->id));
 }
 
 static void handle_xdg_activation_done(void *data,

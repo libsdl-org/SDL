@@ -87,7 +87,7 @@ static void SDLCALL CleanupHintProperty(void *userdata, void *value)
     SDL_free(hint);
 }
 
-static const char* GetHintEnvironmentVariable(const char *name)
+static const char *GetHintEnvironmentVariable(const char *name)
 {
     const char *result = SDL_getenv(name);
     if (!result && name && *name) {

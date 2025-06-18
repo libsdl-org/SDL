@@ -144,8 +144,7 @@ void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          Uint32 *count)
+char const * const *X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     SDL_VideoData *videoData = _this->internal;
     if (videoData->vulkan_xlib_xcb_library) {
