@@ -147,7 +147,7 @@ typedef struct
     Uint64 gyro_packet_number;
     Uint64 accelerometer_packet_number;
     /* When both gyro and accelerometer events have been processed, we can increment this and use it to calculate polling rate over time.*/
-    Uint64 imu_packet_counter; 
+    Uint64 imu_packet_counter;
 
     Uint64 starting_time_stamp_ns; /* Use this to help estimate how many packets are received over a duration */
     Uint16 imu_estimated_sensor_rate; /* in Hz, used to estimate how many packets are received over a duration */
@@ -244,7 +244,7 @@ void SampleGyroPacketForDrift( IMUState *imustate )
         if (imustate->gyro_drift_sample_count >= SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT) {
             FinalizeDriftSolution(imustate);
         }
-    }    
+    }
 }
 
 void ApplyDriftSolution(float *gyro_data, const float *drift_solution)
@@ -1433,14 +1433,13 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
         HandleGamepadGyroEvent(event);
     } else if (event->gsensor.sensor == SDL_SENSOR_ACCEL) {
         HandleGamepadAccelerometerEvent(event);
-    }  
+    }
 
     /*
     This is where we can update the quaternion because we need to have a drift solution, which requires both
     accelerometer and gyro events are received before progressing.
     */
     if ( controller->imu_state->accelerometer_packet_number == controller->imu_state->gyro_packet_number ) {
-        
         EstimatePacketRate();
         Uint64 sensorTimeStampDelta_ns = event->gsensor.sensor_timestamp - controller->imu_state->last_sensor_time_stamp_ns ;
         UpdateGamepadOrientation(sensorTimeStampDelta_ns);
@@ -2085,7 +2084,6 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
                 event->gsensor.data[1],
                 event->gsensor.data[2],
                 event->gsensor.sensor_timestamp);
-        
 #endif /* VERBOSE_SENSORS */
         HandleGamepadSensorEvent(event);
         break;

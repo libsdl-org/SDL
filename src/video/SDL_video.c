@@ -3672,6 +3672,10 @@ bool SDL_SetWindowParent(SDL_Window *window, SDL_Window *parent)
         CHECK_WINDOW_NOT_POPUP(parent, false);
     }
 
+    if (window == parent) {
+        return SDL_SetError("Cannot set the parent of a window to itself.");
+    }
+
     if (!_this->SetWindowParent) {
         return SDL_Unsupported();
     }
@@ -6020,7 +6024,7 @@ void SDL_Vulkan_UnloadLibrary(void)
     }
 }
 
-char const* const* SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
+char const * const *SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
 {
     return _this->Vulkan_GetInstanceExtensions(_this, count);
 }

@@ -42,7 +42,7 @@ typedef struct
 
 struct Quaternion
 {
-    float x, y, z, w; 
+    float x, y, z, w;
 };
 
 static const Vector3 debug_cube_vertices[] = {
@@ -227,15 +227,15 @@ void DrawAccelerometerDebugArrow(SDL_Renderer *renderer, const Quaternion *gyro_
     SDL_FPoint accel_screen = ProjectVec3ToRect(&rotated_accel, bounds);
 
     /* Draw the line from origin to the rotated accelerometer vector */
-    SDL_SetRenderDrawColor(renderer, GYRO_COLOR_ORANGE); 
+    SDL_SetRenderDrawColor(renderer, GYRO_COLOR_ORANGE);
     SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, accel_screen.x, accel_screen.y);
 
     const float head_width = 4.0f;
     SDL_FRect arrow_head_rect;
-    arrow_head_rect.x = accel_screen.x - head_width * 0.5f; 
+    arrow_head_rect.x = accel_screen.x - head_width * 0.5f;
     arrow_head_rect.y = accel_screen.y - head_width * 0.5f;
-    arrow_head_rect.w = head_width;                  
-    arrow_head_rect.h = head_width;                 
+    arrow_head_rect.w = head_width;
+    arrow_head_rect.h = head_width;
     SDL_RenderRect(renderer, &arrow_head_rect);
 
     /* Restore current color */
@@ -1024,7 +1024,6 @@ void SetGyroDisplayArea(GyroDisplay *ctx, const SDL_FRect *area)
     }
 
     SDL_copyp(&ctx->area, area);
-        
     /* Place the reset button to the bottom right of the gyro display area.*/
     SDL_FRect reset_button_area;
     reset_button_area.w = SDL_max(MINIMUM_BUTTON_WIDTH, GetGamepadButtonLabelWidth(ctx->reset_gyro_button) + 2 * BUTTON_PADDING);
@@ -1648,10 +1647,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                     SDL_snprintf(text, sizeof(text), "[%.2f,%.2f,%.2f]%s/s", ctx->gyro_drift_correction_data[0] * RAD_TO_DEG, ctx->gyro_drift_correction_data[1] * RAD_TO_DEG, ctx->gyro_drift_correction_data[2] * RAD_TO_DEG, DEGREE_UTF8);
                     SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
                 }
-
             }
-
-            
         }
     }
     SDL_free(mapping);
@@ -1781,7 +1777,7 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
 
         /* Drift progress bar */
         /* Demonstrate how far we are through the drift progress, and how it resets when there's "high noise", i.e if flNoiseFraction == 1.0f */
-        SDL_FRect progress_bar_rect; 
+        SDL_FRect progress_bar_rect;
         progress_bar_rect.x = recalibrate_button_area.x + BUTTON_PADDING;
         progress_bar_rect.y = recalibrate_button_area.y + recalibrate_button_area.h * 0.5f + BUTTON_PADDING * 0.5f;
         progress_bar_rect.w = recalibrate_button_area.w - BUTTON_PADDING * 2.0f;
@@ -1797,7 +1793,6 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
 
         /* Set the color based on the drift calibration progress fraction */
         SDL_SetRenderDrawColor(ctx->renderer, GYRO_COLOR_GREEN);        /* red when too much noise, green when low noise*/
-                                                                        
         /* Now draw the bars with the filled, then empty rectangles */
         SDL_RenderFillRect(ctx->renderer, &progress_bar_fill);          /* draw the filled rectangle*/
         SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);      /* gray box*/
@@ -1906,7 +1901,6 @@ void RenderGyroDisplay(GyroDisplay *ctx, GamepadDisplay *gamepadElements, SDL_Ga
     if (bHasCachedDriftSolution) {
         float bottom = RenderEulerReadout(ctx, gamepadElements);
         RenderGyroGizmo(ctx, gamepad, bottom);
-        
     }
     SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
 }

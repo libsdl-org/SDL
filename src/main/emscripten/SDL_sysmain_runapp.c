@@ -26,7 +26,7 @@
 
 EM_JS_DEPS(sdlrunapp, "$dynCall,$stringToNewUTF8");
 
-int SDL_RunApp(int argc, char* argv[], SDL_main_func mainFunction, void * reserved)
+int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
     (void)reserved;
 

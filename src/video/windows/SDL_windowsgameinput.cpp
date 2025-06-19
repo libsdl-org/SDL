@@ -185,7 +185,7 @@ done:
 
 static void CALLBACK GAMEINPUT_InternalDeviceCallback(
     _In_ GameInputCallbackToken callbackToken,
-    _In_ void* context,
+    _In_ void *context,
     _In_ IGameInputDevice *pDevice,
     _In_ uint64_t timestamp,
     _In_ GameInputDeviceStatus currentStatus,
@@ -594,7 +594,7 @@ void WIN_QuitGameInput(SDL_VideoDevice *_this)
 
 #else // !HAVE_GAMEINPUT_H
 
-bool WIN_InitGameInput(SDL_VideoDevice* _this)
+bool WIN_InitGameInput(SDL_VideoDevice *_this)
 {
     return SDL_Unsupported();
 }
@@ -604,12 +604,12 @@ bool WIN_UpdateGameInputEnabled(SDL_VideoDevice *_this)
     return SDL_Unsupported();
 }
 
-void WIN_UpdateGameInput(SDL_VideoDevice* _this)
+void WIN_UpdateGameInput(SDL_VideoDevice *_this)
 {
     return;
 }
 
-void WIN_QuitGameInput(SDL_VideoDevice* _this)
+void WIN_QuitGameInput(SDL_VideoDevice *_this)
 {
     return;
 }

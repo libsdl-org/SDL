@@ -59,7 +59,7 @@ char *HAIKU_GetClipboardText(SDL_VideoDevice *_this) {
     if (be_clipboard->Lock()) {
         if ((clip = be_clipboard->Data())) {
             // Presumably the string of characters is ascii-format
-            clip->FindData("text/plain", B_MIME_TYPE, (const void**)&text,
+            clip->FindData("text/plain", B_MIME_TYPE, (const void **)&text,
                 &length);
         }
         be_clipboard->Unlock();

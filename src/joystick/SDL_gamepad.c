@@ -841,6 +841,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             case 80:
             case 81:
             case 85:
+            case 105:
                 // Vader series of controllers have C/Z buttons
                 SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
                 break;

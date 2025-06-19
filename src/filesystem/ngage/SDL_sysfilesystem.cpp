@@ -37,7 +37,7 @@ extern "C" {
 extern "C" {
 #endif
 
-void NGAGE_GetAppPath(char* path)
+void NGAGE_GetAppPath(char *path)
 {
     TBuf<512> aPath;
 
@@ -50,7 +50,7 @@ void NGAGE_GetAppPath(char* path)
     CnvUtfConverter::ConvertFromUnicodeToUtf8(utf8Path, aPath);
 
     // Copy UTF-8 data to the provided char* buffer.
-    strncpy(path, (const char*)utf8Path.Ptr(), utf8Path.Length());
+    strncpy(path, (const char *)utf8Path.Ptr(), utf8Path.Length());
     path[utf8Path.Length()] = '\0';
 
     // Replace backslashes with forward slashes.

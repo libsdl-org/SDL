@@ -186,7 +186,7 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
 }
 
 #ifdef HAVE_SHOBJIDL_CORE_H
-static ITaskbarList3 *GetTaskbarList(SDL_Window* window)
+static ITaskbarList3 *GetTaskbarList(SDL_Window *window)
 {
     const SDL_WindowData *data = window->internal;
     SDL_assert(data->taskbar_button_created);
@@ -2264,7 +2264,7 @@ bool WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperat
     return true;
 }
 
-bool WIN_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window* window)
+bool WIN_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef HAVE_SHOBJIDL_CORE_H
     SDL_WindowData *data = window->internal;

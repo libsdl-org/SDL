@@ -377,7 +377,7 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
   if (!config_home || config_home[0] == 0)
     {
       l = SDL_strlen (home_dir) + SDL_strlen ("/.config/user-dirs.dirs") + 1;
-      config_file = (char*) SDL_malloc (l);
+      config_file = (char *)SDL_malloc (l);
       if (!config_file)
         goto error;
 
@@ -387,7 +387,7 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
   else
     {
       l = SDL_strlen (config_home) + SDL_strlen ("/user-dirs.dirs") + 1;
-      config_file = (char*) SDL_malloc (l);
+      config_file = (char *)SDL_malloc (l);
       if (!config_file)
         goto error;
 
@@ -449,7 +449,7 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
       if (relative)
         {
           l = SDL_strlen (home_dir) + 1 + SDL_strlen (p) + 1;
-          user_dir = (char*) SDL_malloc (l);
+          user_dir = (char *)SDL_malloc (l);
           if (!user_dir)
             goto error2;
 
@@ -458,7 +458,7 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
         }
       else
         {
-          user_dir = (char*) SDL_malloc (SDL_strlen (p) + 1);
+          user_dir = (char *)SDL_malloc (SDL_strlen (p) + 1);
           if (!user_dir)
             goto error2;
 
@@ -503,7 +503,7 @@ static char *xdg_user_dir_lookup (const char *type)
     // Special case desktop for historical compatibility
     if (SDL_strcmp(type, "DESKTOP") == 0) {
         size_t length = SDL_strlen(home_dir) + SDL_strlen("/Desktop") + 1;
-        user_dir = (char*) SDL_malloc(length);
+        user_dir = (char *)SDL_malloc(length);
         if (!user_dir)
             return NULL;
 

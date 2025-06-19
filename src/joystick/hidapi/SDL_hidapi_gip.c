@@ -901,7 +901,7 @@ static bool GIP_ParseDeviceMetadata(GIP_Metadata *metadata, const Uint8 *bytes, 
     }
     if (buffer_offset > 0) {
         device->num_preferred_types = bytes[buffer_offset];
-        device->preferred_types = SDL_calloc(device->num_preferred_types, sizeof(char*));
+        device->preferred_types = SDL_calloc(device->num_preferred_types, sizeof(char *));
         buffer_offset++;
         for (i = 0; i < device->num_preferred_types; i++) {
             if (buffer_offset + 2 >= length) {
@@ -1013,7 +1013,7 @@ static bool GIP_ParseMessageMetadata(GIP_MessageMetadata *metadata, const Uint8 
     return true;
 }
 
-static bool GIP_ParseMetadata(GIP_Metadata *metadata, const Uint8* bytes, int num_bytes)
+static bool GIP_ParseMetadata(GIP_Metadata *metadata, const Uint8 *bytes, int num_bytes)
 {
     int header_size;
     int metadata_size;
@@ -2427,7 +2427,7 @@ static void GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_by
     Uint16 bytes_remaining = 0;
     bool is_fragment;
     Uint8 attachment_index;
-    GIP_Attachment* attachment;
+    GIP_Attachment *attachment;
 
     if (num_bytes < 5) {
         return;

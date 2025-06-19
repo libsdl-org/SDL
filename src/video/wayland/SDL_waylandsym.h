@@ -84,13 +84,13 @@ SDL_WAYLAND_SYM(const char * const *, wl_proxy_get_tag, (struct wl_proxy *))
  * non-optional when we are compiling against Wayland 1.20. We don't
  * explicitly call them ourselves, though, so if we are only compiling
  * against Wayland 1.18, they're unnecessary. */
-SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interfac, uint32_t version, uint32_t flags, ...))
-SDL_WAYLAND_SYM(struct wl_proxy*, wl_proxy_marshal_array_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version,  uint32_t flags, union wl_argument *args))
+SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interfac, uint32_t version, uint32_t flags, ...))
+SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_array_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version,  uint32_t flags, union wl_argument *args))
 #endif
 
 #if 0 // TODO RECONNECT: See waylandvideo.c for more information!
 #if SDL_WAYLAND_CHECK_VERSION(broken, on, purpose)
-SDL_WAYLAND_SYM(int, wl_display_reconnect, (struct wl_display*))
+SDL_WAYLAND_SYM(int, wl_display_reconnect, (struct wl_display *))
 #endif
 #endif // 0
 
@@ -149,7 +149,7 @@ SDL_WAYLAND_SYM(void, xkb_compose_state_unref, (struct xkb_compose_state *) )
 SDL_WAYLAND_SYM(enum xkb_compose_feed_result, xkb_compose_state_feed, (struct xkb_compose_state *, xkb_keysym_t) )
 SDL_WAYLAND_SYM(enum xkb_compose_status, xkb_compose_state_get_status, (struct xkb_compose_state *) )
 SDL_WAYLAND_SYM(xkb_keysym_t, xkb_compose_state_get_one_sym, (struct xkb_compose_state *) )
-SDL_WAYLAND_SYM(void, xkb_keymap_key_for_each, (struct xkb_keymap *, xkb_keymap_key_iter_t, void*) )
+SDL_WAYLAND_SYM(void, xkb_keymap_key_for_each, (struct xkb_keymap *, xkb_keymap_key_iter_t, void *) )
 SDL_WAYLAND_SYM(int, xkb_keymap_key_get_syms_by_level, (struct xkb_keymap *,
                                                         xkb_keycode_t,
                                                         xkb_layout_index_t,
@@ -158,9 +158,9 @@ SDL_WAYLAND_SYM(int, xkb_keymap_key_get_syms_by_level, (struct xkb_keymap *,
 SDL_WAYLAND_SYM(uint32_t, xkb_keysym_to_utf32, (xkb_keysym_t) )
 SDL_WAYLAND_SYM(uint32_t, xkb_keymap_mod_get_index, (struct xkb_keymap *,
                                                       const char *) )
-SDL_WAYLAND_SYM(const char *, xkb_keymap_layout_get_name, (struct xkb_keymap*, xkb_layout_index_t))
+SDL_WAYLAND_SYM(const char *, xkb_keymap_layout_get_name, (struct xkb_keymap *, xkb_layout_index_t))
 #if SDL_XKBCOMMON_CHECK_VERSION(1, 10, 0)
-SDL_WAYLAND_SYM(xkb_mod_mask_t, xkb_keymap_mod_get_mask, (struct xkb_keymap*, const char*))
+SDL_WAYLAND_SYM(xkb_mod_mask_t, xkb_keymap_mod_get_mask, (struct xkb_keymap *, const char *))
 #endif
 
 #ifdef HAVE_LIBDECOR_H

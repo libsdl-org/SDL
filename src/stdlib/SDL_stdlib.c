@@ -535,8 +535,8 @@ void *SDL_aligned_alloc(size_t alignment, size_t size)
     Uint8 *result = NULL;
     size_t requested_size = size;
 
-    if (alignment < sizeof(void*)) {
-        alignment = sizeof(void*);
+    if (alignment < sizeof(void *)) {
+        alignment = sizeof(void *);
     }
     padding = (alignment - (size % alignment));
 

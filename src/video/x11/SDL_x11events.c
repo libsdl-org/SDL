@@ -771,7 +771,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             /* the new mime formats are the SDL_FORMATS property as an array of Atoms */
             Atom atom = None;
             Atom *patom;
-            unsigned char* data = NULL;
+            unsigned char *data = NULL;
             int format_property = 0;
             unsigned long length = 0;
             unsigned long bytes_left = 0;
@@ -780,8 +780,8 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             X11_XGetWindowProperty(display, GetWindow(_this), videodata->atoms.SDL_FORMATS, 0, 200,
                                             0, XA_ATOM, &atom, &format_property, &length, &bytes_left, &data);
 
-            int allocationsize = (length + 1) * sizeof(char*);
-            for (j = 0, patom = (Atom*)data; j < length; j++, patom++) {
+            int allocationsize = (length + 1) * sizeof(char *);
+            for (j = 0, patom = (Atom *)data; j < length; j++, patom++) {
                 char *atomStr = X11_XGetAtomName(display, *patom);
                 allocationsize += SDL_strlen(atomStr) + 1;
                 X11_XFree(atomStr);
@@ -791,7 +791,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             if (new_mime_types) {
                 char *strPtr = (char *)(new_mime_types + length + 1);
 
-                for (j = 0, patom = (Atom*)data; j < length; j++, patom++) {
+                for (j = 0, patom = (Atom *)data; j < length; j++, patom++) {
                     char *atomStr = X11_XGetAtomName(display, *patom);
                     new_mime_types[j] = strPtr;
                     strPtr = stpcpy(strPtr, atomStr) + 1;

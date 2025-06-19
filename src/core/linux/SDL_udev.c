@@ -224,7 +224,7 @@ bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *pr
     struct stat statbuf;
     char type;
     struct udev_device *dev;
-    const char* val;
+    const char *val;
     int class_temp;
 
     if (!_this) {

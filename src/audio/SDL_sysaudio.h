@@ -112,7 +112,7 @@ extern void SDL_AudioThreadFinalize(SDL_AudioDevice *device);
 
 extern void ConvertAudioToFloat(float *dst, const void *src, int num_samples, SDL_AudioFormat src_fmt);
 extern void ConvertAudioFromFloat(void *dst, const float *src, int num_samples, SDL_AudioFormat dst_fmt);
-extern void ConvertAudioSwapEndian(void* dst, const void* src, int num_samples, int bitsize);
+extern void ConvertAudioSwapEndian(void *dst, const void *src, int num_samples, int bitsize);
 
 extern bool SDL_ChannelMapIsDefault(const int *map, int channels);
 extern bool SDL_ChannelMapIsBogus(const int *map, int channels);
@@ -121,7 +121,7 @@ extern bool SDL_ChannelMapIsBogus(const int *map, int channels);
 extern void ConvertAudio(int num_frames,
                          const void *src, SDL_AudioFormat src_format, int src_channels, const int *src_map,
                          void *dst, SDL_AudioFormat dst_format, int dst_channels, const int *dst_map,
-                         void* scratch, float gain);
+                         void *scratch, float gain);
 
 // Compare two SDL_AudioSpecs, return true if they match exactly.
 // Using SDL_memcmp directly isn't safe, since potential padding might not be initialized.
@@ -201,7 +201,7 @@ struct SDL_AudioQueue; // forward decl.
 
 struct SDL_AudioStream
 {
-    SDL_Mutex* lock;
+    SDL_Mutex *lock;
 
     SDL_PropertiesID props;
 
@@ -217,7 +217,7 @@ struct SDL_AudioStream
     float freq_ratio;
     float gain;
 
-    struct SDL_AudioQueue* queue;
+    struct SDL_AudioQueue *queue;
 
     SDL_AudioSpec input_spec; // The spec of input data currently being processed
     int *input_chmap;

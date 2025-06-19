@@ -32,6 +32,7 @@ my $wikisubdir = '';
 my $incsubdir = 'include';
 my $readmesubdir = undef;
 my $apiprefixregex = undef;
+my $apipropertyregex = undef;
 my $versionfname = 'include/SDL_version.h';
 my $versionmajorregex = '\A\#define\s+SDL_MAJOR_VERSION\s+(\d+)\Z';
 my $versionminorregex = '\A\#define\s+SDL_MINOR_VERSION\s+(\d+)\Z';
@@ -110,6 +111,7 @@ if (defined $optionsfname) {
             $srcpath = $val, next if $key eq 'srcpath';
             $wikipath = $val, next if $key eq 'wikipath';
             $apiprefixregex = $val, next if $key eq 'apiprefixregex';
+            $apipropertyregex = $val, next if $key eq 'apipropertyregex';
             $projectfullname = $val, next if $key eq 'projectfullname';
             $projectshortname = $val, next if $key eq 'projectshortname';
             $wikisubdir = $val, next if $key eq 'wikisubdir';
@@ -1366,7 +1368,7 @@ while (my $d = readdir(DH)) {
                     # update strings now that we know everything pending is to be applied to this declaration. Add pending blank lines and the new text.
 
                     # At Sam's request, don't list property defines with functions. (See #9440)
-                    my $is_property = /\A\s*\#\s*define\s+SDL_PROP_/;
+                    my $is_property = (defined $apipropertyregex) ? /$apipropertyregex/ : 0;
                     if (!$is_property) {
                         if ($blank_lines > 0) {
                             while ($blank_lines > 0) {

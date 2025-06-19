@@ -22,7 +22,7 @@
 
 #ifdef SDL_PLATFORM_NGAGE
 
-int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
+int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {
     // Intentionally does nothing; Callbacks are called using the RunL() method.
     return 0;
