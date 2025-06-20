@@ -1415,6 +1415,7 @@ static int SDLCALL RecordingAudioThread(void *devicep)  // thread entry point
 typedef struct CountAudioDevicesData
 {
     int devs_seen;
+    int devs_skipped;
     const int num_devices;
     SDL_AudioDeviceID *result;
     const bool recording;
@@ -1430,7 +1431,13 @@ static bool SDLCALL CountAudioDevices(void *userdata, const SDL_HashTable *table
     const bool isphysical = !!(devid & (1<<1));
     if (isphysical && (devid_recording == data->recording)) {
         SDL_assert(data->devs_seen < data->num_devices);
-        data->result[data->devs_seen++] = devid;
+        SDL_AudioDevice *device = (SDL_AudioDevice *) value;  // this is normally risky, but we hold the device_hash_lock here.
+        const bool zombie = SDL_GetAtomicInt(&device->zombie) != 0;
+        if (zombie) {
+            data->devs_skipped++;
+        } else {
+            data->result[data->devs_seen++] = devid;
+        }
     }
     return true;  // keep iterating.
 }
@@ -1446,10 +1453,11 @@ static SDL_AudioDeviceID *GetAudioDevices(int *count, bool recording)
             num_devices = SDL_GetAtomicInt(recording ? &current_audio.recording_device_count : &current_audio.playback_device_count);
             result = (SDL_AudioDeviceID *) SDL_malloc((num_devices + 1) * sizeof (SDL_AudioDeviceID));
             if (result) {
-                CountAudioDevicesData data = { 0, num_devices, result, recording };
+                CountAudioDevicesData data = { 0, 0, num_devices, result, recording };
                 SDL_IterateHashTable(current_audio.device_hash, CountAudioDevices, &data);
-                SDL_assert(data.devs_seen == num_devices);
-                result[data.devs_seen] = 0;  // null-terminated.
+                SDL_assert((data.devs_seen + data.devs_skipped) == num_devices);
+                num_devices = data.devs_seen;  // might be less if we skipped any.
+                result[num_devices] = 0;  // null-terminated.
             }
         }
         SDL_UnlockRWLock(current_audio.device_hash_lock);
