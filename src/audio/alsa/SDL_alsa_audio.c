@@ -357,8 +357,8 @@ static bool ALSA_WaitDevice(SDL_AudioDevice *device)
 
     while (!SDL_GetAtomicInt(&device->shutdown) && (ALSA_snd_pcm_avail(device->hidden->pcm) < sample_frames)) {
         if (total_delays >= (fulldelay * 5)) {
-            // Hmm, not much we can do - abort
-            SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA: hardware seems to have frozen, giving up on it.");
+            // Hmm, not much we can do - probably disconnected, abort
+            //SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA: hardware seems to have frozen, giving up on it.");
             return false;
         } else {
             SDL_Delay(delay);
