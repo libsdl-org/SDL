@@ -38,6 +38,7 @@
 
 #include "../SDL_sysaudio.h"
 #include "SDL_alsa_audio.h"
+#include "../../core/linux/SDL_udev.h"
 
 #if SDL_ALSA_DEBUG
 #define LOGDEBUG(...) SDL_LogDebug(SDL_LOG_CATEGORY_AUDIO, "ALSA: " __VA_ARGS__)
@@ -1441,6 +1442,65 @@ static int SDLCALL ALSA_HotplugThread(void *arg)
 }
 #endif
 
+#ifdef SDL_USE_LIBUDEV
+
+static bool udev_initialized;
+
+static void ALSA_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
+{
+    if (!devpath) {
+        return;
+    }
+
+    switch (udev_type) {
+    case SDL_UDEV_DEVICEADDED:
+        ALSA_HotplugIteration(NULL, NULL);
+        break;
+
+    case SDL_UDEV_DEVICEREMOVED:
+        ALSA_HotplugIteration(NULL, NULL);
+        break;
+
+    default:
+        break;
+    }
+}
+
+static bool ALSA_start_udev()
+{
+    udev_initialized = SDL_UDEV_Init();
+    if (udev_initialized) {
+        // Set up the udev callback
+        if (!SDL_UDEV_AddCallback(ALSA_udev_callback)) {
+            SDL_UDEV_Quit();
+            udev_initialized = false;
+        }
+    }
+    return udev_initialized;
+}
+
+static void ALSA_stop_udev()
+{
+    if (udev_initialized) {
+        SDL_UDEV_DelCallback(ALSA_udev_callback);
+        SDL_UDEV_Quit();
+        udev_initialized = false;
+    }
+}
+
+#else
+
+static bool ALSA_start_udev()
+{
+    return false;
+}
+
+static void ALSA_stop_udev()
+{
+}
+
+#endif // SDL_USE_LIBUDEV
+
 static void ALSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
     ALSA_guess_device_prefix();
@@ -1456,11 +1516,13 @@ static void ALSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevi
         *default_recording = SDL_AddAudioDevice(/*recording=*/true, "ALSA default recording device", NULL, (void *)&default_recording_handle);
     }
 
+    if (!ALSA_start_udev()) {
 #if SDL_ALSA_HOTPLUG_THREAD
-    SDL_SetAtomicInt(&ALSA_hotplug_shutdown, 0);
-    ALSA_hotplug_thread = SDL_CreateThread(ALSA_HotplugThread, "SDLHotplugALSA", NULL);
-    // if the thread doesn't spin, oh well, you just don't get further hotplug events.
+        SDL_SetAtomicInt(&ALSA_hotplug_shutdown, 0);
+        ALSA_hotplug_thread = SDL_CreateThread(ALSA_HotplugThread, "SDLHotplugALSA", NULL);
+        // if the thread doesn't spin, oh well, you just don't get further hotplug events.
 #endif
+    }
 }
 
 static void ALSA_DeinitializeStart(void)
@@ -1475,6 +1537,7 @@ static void ALSA_DeinitializeStart(void)
         ALSA_hotplug_thread = NULL;
     }
 #endif
+    ALSA_stop_udev();
 
     // Shutting down! Clean up any data we've gathered.
     for (dev = hotplug_devices; dev; dev = next) {
