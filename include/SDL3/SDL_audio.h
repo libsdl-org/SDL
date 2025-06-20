@@ -1021,7 +1021,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
 /**
  * Query an audio stream for its currently-bound device.
  *
- * This reports the logical audio device that an audio stream is currently bound to.
+ * This reports the logical audio device that an audio stream is currently
+ * bound to.
  *
  * If not bound, or invalid, this returns zero, which is not a valid device
  * ID.
