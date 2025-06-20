@@ -820,6 +820,35 @@ static SceGxmTextureAddrMode TranslateAddressMode(SDL_TextureAddressMode mode)
     }
 }
 
+static void ClampCliprectToViewport(SDL_Rect *clip, const SDL_Rect *viewport)
+{
+    int max_x_v, max_y_v, max_x_c, max_y_c;
+
+    if (clip->x < 0) {
+        clip->w += clip->x;
+        clip->x = 0;
+    }
+
+    if (clip->y < 0) {
+        clip->h += clip->y;
+        clip->y = 0;
+    }
+
+    max_x_c = clip->x + clip->w;
+    max_y_c = clip->y + clip->h;
+
+    max_x_v = viewport->x + viewport->w;
+    max_y_v = viewport->y + viewport->h;
+
+    if (max_x_c > max_x_v) {
+        clip->w -= (max_x_v - max_x_c);
+    }
+
+    if (max_y_c > max_y_v) {
+        clip->h -= (max_y_v - max_y_c);
+    }
+}
+
 static bool SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
@@ -863,8 +892,12 @@ static bool SetDrawState(VITA_GXM_RenderData *data, const SDL_RenderCommand *cmd
     }
 
     if ((data->drawstate.cliprect_enabled || data->drawstate.viewport_is_set) && data->drawstate.cliprect_dirty) {
-        const SDL_Rect *rect = &data->drawstate.cliprect;
-        set_clip_rectangle(data, rect->x, rect->y, rect->x + rect->w, rect->y + rect->h);
+        SDL_Rect rect;
+        SDL_copyp(&rect, &data->drawstate.cliprect);
+        if (data->drawstate.viewport_is_set) {
+            ClampCliprectToViewport(&rect, &data->drawstate.viewport);
+        }
+        set_clip_rectangle(data, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h);
         data->drawstate.cliprect_dirty = false;
     }
 
