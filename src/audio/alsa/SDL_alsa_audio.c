@@ -351,21 +351,18 @@ static bool ALSA_WaitDevice(SDL_AudioDevice *device)
     const int sample_frames = device->sample_frames;
     const int fulldelay = (int) ((((Uint64) sample_frames) * 1000) / device->spec.freq);
     const int delay = SDL_clamp(fulldelay, 1, 5);
-    int total_delays = 0;
 
-    SDL_assert(fulldelay > 0);  // so the `fulldelay * 5` below produces a reasonable result.
-
-    while (!SDL_GetAtomicInt(&device->shutdown) && (ALSA_snd_pcm_avail(device->hidden->pcm) < sample_frames)) {
-        if (total_delays >= (fulldelay * 5)) {
-            // Hmm, not much we can do - probably disconnected, abort
-            //SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA: hardware seems to have frozen, giving up on it.");
+    while (!SDL_GetAtomicInt(&device->shutdown)) {
+        const int rc = ALSA_snd_pcm_avail(device->hidden->pcm);
+        if (rc < 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA wait failed (unrecoverable): %s", ALSA_snd_strerror(rc));
             return false;
-        } else {
-            SDL_Delay(delay);
-            total_delays += delay;  // THIS IS NOT EXACT, but just so we don't wait forever on problems...
         }
+        if (rc >= sample_frames) {
+            break;
+        }
+        SDL_Delay(delay);
     }
-
     return true;
 }
 
