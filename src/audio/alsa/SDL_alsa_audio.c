@@ -356,8 +356,12 @@ static bool ALSA_WaitDevice(SDL_AudioDevice *device)
     while (!SDL_GetAtomicInt(&device->shutdown)) {
         const int rc = ALSA_snd_pcm_avail(device->hidden->pcm);
         if (rc < 0) {
-            SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA wait failed (unrecoverable): %s", ALSA_snd_strerror(rc));
-            return false;
+            const int status = ALSA_snd_pcm_recover(device->hidden->pcm, rc, 0);
+            if (status < 0) {
+                // Hmm, not much we can do - abort
+                SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA wait failed (unrecoverable): %s", ALSA_snd_strerror(rc));
+                return false;
+            }
         }
         if (rc >= sample_frames) {
             break;
