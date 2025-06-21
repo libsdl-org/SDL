@@ -71,6 +71,11 @@ extern "C" {
 #define DETACH_KERNEL_DRIVER
 #endif
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:5287) /* operands are different enum types */
+#endif
+
 /* Uncomment to enable the retrieval of Usage and Usage Page in
 hid_enumerate(). Warning, on platforms different from FreeBSD
 this is very invasive as it requires the detach
@@ -2139,6 +2144,10 @@ uint16_t get_usb_code_for_current_locale(void)
 	/* Found nothing. */
 	return 0x0;
 }
+
+#if defined(_MSC_VER)
+#pragma warning (pop)
+#endif
 
 #ifdef __cplusplus
 }
