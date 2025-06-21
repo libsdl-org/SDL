@@ -1157,7 +1157,7 @@ static bool ALSA_OpenDevice(SDL_AudioDevice *device)
     #if SDL_ALSA_DEBUG
     snd_pcm_uframes_t bufsize;
     ALSA_snd_pcm_hw_params_get_buffer_size(cfg_ctx.hwparams, &bufsize);
-    SDL_LogError(SDL_LOG_CATEGORY_AUDIO,
+    SDL_LogDebug(SDL_LOG_CATEGORY_AUDIO,
                      "ALSA: period size = %ld, periods = %u, buffer size = %lu",
                      cfg_ctx.persize, cfg_ctx.periods, bufsize);
     #endif
