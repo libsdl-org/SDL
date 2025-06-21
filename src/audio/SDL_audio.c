@@ -941,6 +941,9 @@ bool SDL_InitAudio(const char *driver_name)
         driver_name = SDL_GetHint(SDL_HINT_AUDIO_DRIVER);
     }
 
+    // save this off in case we kept any streams from a previous init/quit.
+    SDL_AudioStream *streams = current_audio.existing_streams;
+
     bool initialized = false;
     bool tried_to_init = false;
 
@@ -1024,6 +1027,8 @@ bool SDL_InitAudio(const char *driver_name)
 
     CompleteAudioEntryPoints();
 
+    current_audio.existing_streams = streams;  // in case we kept any.
+
     // Make sure we have a list of devices available at startup...
     SDL_AudioDevice *default_playback = NULL;
     SDL_AudioDevice *default_recording = NULL;
@@ -1073,9 +1078,13 @@ void SDL_QuitAudio(void)
 
     current_audio.impl.DeinitializeStart();
 
-    // Destroy any audio streams that still exist...
-    while (current_audio.existing_streams) {
-        SDL_DestroyAudioStream(current_audio.existing_streams);
+    // Destroy any audio streams that still exist...unless app asked to keep it.
+    SDL_AudioStream *next = NULL;
+    for (SDL_AudioStream *i = current_audio.existing_streams; i; i = next) {
+        next = i->next;
+        if (i->simplified || !SDL_GetBooleanProperty(i->props, SDL_PROP_AUDIOSTREAM_KEEP_ON_SHUTDOWN_BOOLEAN, false)) {
+            SDL_DestroyAudioStream(i);
+        }
     }
 
     SDL_LockRWLockForWriting(current_audio.device_hash_lock);

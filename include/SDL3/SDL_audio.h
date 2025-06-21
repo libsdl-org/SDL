@@ -1064,6 +1064,15 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
 /**
  * Get the properties associated with an audio stream.
  *
+ * The application can hang any data it wants here, but
+ * the following properties are understood by SDL:
+ *
+ * - `SDL_PROP_AUDIOSTREAM_KEEP_ON_SHUTDOWN_BOOLEAN`: if true, the stream will
+ *   not be automatically destroyed during SDL_Quit(). This property is
+ *   ignored for streams created through SDL_OpenAudioDeviceStream(). Streams
+ *   bound to devices that aren't destroyed will still be unbound.
+ *   Default false. (since SDL 3.4.0)
+ *
  * \param stream the SDL_AudioStream to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -1073,6 +1082,9 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetAudioStreamProperties(SDL_AudioStream *stream);
+
+#define SDL_PROP_AUDIOSTREAM_KEEP_ON_SHUTDOWN_BOOLEAN "SDL.audiostream.keep_on_shutdown"
+
 
 /**
  * Query the current format of an audio stream.
