@@ -679,6 +679,16 @@ void SetupVulkanRenderProperties(VulkanVideoContext *context, SDL_PropertiesID p
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_CREATE_VULKAN_GRAPHICS_QUEUE_FAMILY_INDEX_NUMBER, context->graphicsQueueFamilyIndex);
 }
 
+#if LIBAVUTIL_VERSION_MAJOR >= 59
+static void AddQueueFamily(AVVulkanDeviceContext *ctx, int idx, int num, VkQueueFlagBits flags)
+{
+    AVVulkanDeviceQueueFamily *entry = &ctx->qf[ctx->nb_qf++];
+    entry->idx = idx;
+    entry->num = num;
+    entry->flags = flags;
+}
+#endif /* LIBAVUTIL_VERSION_MAJOR */
+
 void SetupVulkanDeviceContextData(VulkanVideoContext *context, AVVulkanDeviceContext *ctx)
 {
     ctx->get_proc_addr = context->vkGetInstanceProcAddr;
@@ -690,6 +700,12 @@ void SetupVulkanDeviceContextData(VulkanVideoContext *context, AVVulkanDeviceCon
     ctx->nb_enabled_inst_extensions = context->instanceExtensionsCount;
     ctx->enabled_dev_extensions = context->deviceExtensions;
     ctx->nb_enabled_dev_extensions = context->deviceExtensionsCount;
+#if LIBAVUTIL_VERSION_MAJOR >= 59
+    AddQueueFamily(ctx, context->graphicsQueueFamilyIndex, context->graphicsQueueCount, VK_QUEUE_GRAPHICS_BIT);
+    AddQueueFamily(ctx, context->transferQueueFamilyIndex, context->transferQueueCount, VK_QUEUE_TRANSFER_BIT);
+    AddQueueFamily(ctx, context->computeQueueFamilyIndex, context->computeQueueCount, VK_QUEUE_COMPUTE_BIT);
+    AddQueueFamily(ctx, context->decodeQueueFamilyIndex, context->decodeQueueCount, VK_QUEUE_VIDEO_DECODE_BIT_KHR);
+#else
     ctx->queue_family_index = context->graphicsQueueFamilyIndex;
     ctx->nb_graphics_queues = context->graphicsQueueCount;
     ctx->queue_family_tx_index = context->transferQueueFamilyIndex;
@@ -700,6 +716,7 @@ void SetupVulkanDeviceContextData(VulkanVideoContext *context, AVVulkanDeviceCon
     ctx->nb_encode_queues = 0;
     ctx->queue_family_decode_index = context->decodeQueueFamilyIndex;
     ctx->nb_decode_queues = context->decodeQueueCount;
+#endif /* LIBAVUTIL_VERSION_MAJOR */
 }
 
 static int CreateCommandBuffers(VulkanVideoContext *context, SDL_Renderer *renderer)
