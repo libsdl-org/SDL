@@ -941,9 +941,6 @@ bool SDL_InitAudio(const char *driver_name)
         driver_name = SDL_GetHint(SDL_HINT_AUDIO_DRIVER);
     }
 
-    // save this off in case we kept any streams from a previous init/quit.
-    SDL_AudioStream *streams = current_audio.existing_streams;
-
     bool initialized = false;
     bool tried_to_init = false;
 
