@@ -16,9 +16,7 @@ bool OHOS_VideoInit(SDL_VideoDevice *_this)
     mode.h = OHOS_FetchHeight();
     mode.refresh_rate = 60;
 
-    SDL_DisplayID displayID = SDL_AddBasicVideoDisplay(&mode);
-    SDL_Log("testvid: %u", displayID);
-    SDL_Log("testvid: %u", _this->displays[0]->id);
+    SDL_AddBasicVideoDisplay(&mode);
     return true;
 }
 void OHOS_VideoQuit(SDL_VideoDevice *_this)

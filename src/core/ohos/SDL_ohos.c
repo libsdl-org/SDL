@@ -1,4 +1,5 @@
 #include "SDL_internal.h"
+#include "dynapi/SDL_dynapi_overrides.h"
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
 #include <dlfcn.h>
@@ -140,31 +141,6 @@ int OHOS_FetchHeight()
     return hei;
 }
 
-static napi_value minus(napi_env env, napi_callback_info info)
-{
-    size_t argc = 2;
-    napi_value args[2] = { NULL };
-
-    napi_get_cb_info(env, info, &argc, args, NULL, NULL);
-
-    napi_valuetype valuetype0;
-    napi_typeof(env, args[0], &valuetype0);
-
-    napi_valuetype valuetype1;
-    napi_typeof(env, args[1], &valuetype1);
-
-    double value0;
-    napi_get_value_double(env, args[0], &value0);
-
-    double value1;
-    napi_get_value_double(env, args[1], &value1);
-
-    napi_value sum;
-    napi_create_double(env, value0 - value1, &sum);
-
-    return sum;
-}
-
 static void sdlJSCallback(napi_env env, napi_value jsCb, void *content, void *data)
 {
     napiCallbackData *ar = (napiCallbackData *)data;
@@ -248,9 +224,9 @@ static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
     data->func = "test";
     data->argCount = 0;
 
-    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_blocking);
 
-    SDL_free(data);
+    // SDL_free(data);
 
     napi_value result;
     napi_create_int32(env, 0, &result);
@@ -286,6 +262,7 @@ static napi_value sdlLaunchMain(napi_env env, napi_callback_info info)
 
 static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
 {
+    SDL_Log("Native window: %p", window);
     g_ohosNativeWindow = (OHNativeWindow *)window;
 
     uint64_t width;
@@ -408,7 +385,6 @@ static void onNativeMouse(OH_NativeXComponent *component, void *window) {}
 static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
-        { "minus", NULL, minus, NULL, NULL, NULL, napi_default, NULL },
         { "sdlCallbackInit", NULL, sdlCallbackInit, NULL, NULL, NULL, napi_default, NULL },
         { "sdlLaunchMain", NULL, sdlLaunchMain, NULL, NULL, NULL, napi_default, NULL }
     };
