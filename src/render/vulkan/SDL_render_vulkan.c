@@ -3763,7 +3763,7 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
     VULKAN_SetupShaderConstants(renderer, cmd, texture, &constants);
 
     switch (cmd->data.draw.texture_scale_mode) {
-    case VK_FILTER_NEAREST:
+    case SDL_SCALEMODE_NEAREST:
         switch (cmd->data.draw.texture_address_mode) {
         case SDL_TEXTURE_ADDRESS_CLAMP:
             textureSampler = rendererData->samplers[VULKAN_SAMPLER_NEAREST_CLAMP];
@@ -3775,7 +3775,7 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
             return SDL_SetError("Unknown texture address mode: %d", cmd->data.draw.texture_address_mode);
         }
         break;
-    case VK_FILTER_LINEAR:
+    case SDL_SCALEMODE_LINEAR:
         switch (cmd->data.draw.texture_address_mode) {
         case SDL_TEXTURE_ADDRESS_CLAMP:
             textureSampler = rendererData->samplers[VULKAN_SAMPLER_LINEAR_CLAMP];
