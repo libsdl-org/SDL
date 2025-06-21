@@ -1079,6 +1079,9 @@ void SDL_QuitAudio(void)
         next = i->next;
         if (i->simplified || !SDL_GetBooleanProperty(i->props, SDL_PROP_AUDIOSTREAM_KEEP_ON_SHUTDOWN_BOOLEAN, false)) {
             SDL_DestroyAudioStream(i);
+        } else {
+            i->prev = NULL;
+            i->next = NULL;
         }
     }
 
