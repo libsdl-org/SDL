@@ -1024,8 +1024,6 @@ bool SDL_InitAudio(const char *driver_name)
 
     CompleteAudioEntryPoints();
 
-    current_audio.existing_streams = streams;  // in case we kept any.
-
     // Make sure we have a list of devices available at startup...
     SDL_AudioDevice *default_playback = NULL;
     SDL_AudioDevice *default_recording = NULL;
