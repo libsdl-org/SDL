@@ -817,7 +817,7 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     SwitchSPIOpData_t readFactoryParams;
     const int MAX_ATTEMPTS = 3;
     int attempt;
-    
+
     /* Read User Calibration Info */
     readUserParams.unAddress = k_unSPIStickUserCalibrationStartOffset;
     readUserParams.ucLength = k_unSPIStickUserCalibrationLength;
@@ -860,7 +860,7 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     /* Stick calibration values are 12-bits each and are packed by bit
      * For whatever reason the fields are in a different order for each stick
      * Left:  X-Max, Y-Max, X-Center, Y-Center, X-Min, Y-Min
-     * Right: X-Center, Y-Center, X-Min, Y-Min, X-Max, Y-Max
+     * Right: X-Center, Y-Center, X-Max, Y-Max, X-Min, Y-Min
      */
 
     /* Left stick */
@@ -874,10 +874,10 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     /* Right stick */
     ctx->m_StickCalData[1].axis[0].sCenter = ((pRightStickCal[1] << 8) & 0xF00) | pRightStickCal[0]; /* X Axis center */
     ctx->m_StickCalData[1].axis[1].sCenter = (pRightStickCal[2] << 4) | (pRightStickCal[1] >> 4);    /* Y Axis center */
-    ctx->m_StickCalData[1].axis[0].sMin = ((pRightStickCal[4] << 8) & 0xF00) | pRightStickCal[3];    /* X Axis min below center */
-    ctx->m_StickCalData[1].axis[1].sMin = (pRightStickCal[5] << 4) | (pRightStickCal[4] >> 4);       /* Y Axis min below center */
-    ctx->m_StickCalData[1].axis[0].sMax = ((pRightStickCal[7] << 8) & 0xF00) | pRightStickCal[6];    /* X Axis max above center */
-    ctx->m_StickCalData[1].axis[1].sMax = (pRightStickCal[8] << 4) | (pRightStickCal[7] >> 4);       /* Y Axis max above center */
+    ctx->m_StickCalData[1].axis[0].sMax = ((pRightStickCal[4] << 8) & 0xF00) | pRightStickCal[3];    /* X Axis max above center */
+    ctx->m_StickCalData[1].axis[1].sMax = (pRightStickCal[5] << 4) | (pRightStickCal[4] >> 4);       /* Y Axis max above center */
+    ctx->m_StickCalData[1].axis[0].sMin = ((pRightStickCal[7] << 8) & 0xF00) | pRightStickCal[6];    /* X Axis min below center */
+    ctx->m_StickCalData[1].axis[1].sMin = (pRightStickCal[8] << 4) | (pRightStickCal[7] >> 4);       /* Y Axis min below center */
 
     /* Filter out any values that were uninitialized (0xFFF) in the SPI read */
     for (stick = 0; stick < 2; ++stick) {
@@ -990,15 +990,17 @@ static Sint16 ApplyStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, i
 {
     sRawValue -= ctx->m_StickCalData[nStick].axis[nAxis].sCenter;
 
-    if (sRawValue > ctx->m_StickExtents[nStick].axis[nAxis].sMax) {
-        ctx->m_StickExtents[nStick].axis[nAxis].sMax = sRawValue;
+    if (sRawValue >= 0) {
+        if (sRawValue > ctx->m_StickExtents[nStick].axis[nAxis].sMax) {
+            ctx->m_StickExtents[nStick].axis[nAxis].sMax = sRawValue;
+        }
+        return (Sint16)HIDAPI_RemapVal(sRawValue, 0, ctx->m_StickExtents[nStick].axis[nAxis].sMax, 0, SDL_MAX_SINT16);
+    } else {
+        if (sRawValue < ctx->m_StickExtents[nStick].axis[nAxis].sMin) {
+            ctx->m_StickExtents[nStick].axis[nAxis].sMin = sRawValue;
+        }
+        return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_StickExtents[nStick].axis[nAxis].sMin, 0, SDL_MIN_SINT16, 0);
     }
-    if (sRawValue < ctx->m_StickExtents[nStick].axis[nAxis].sMin) {
-        ctx->m_StickExtents[nStick].axis[nAxis].sMin = sRawValue;
-    }
-
-    return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_StickExtents[nStick].axis[nAxis].sMin, ctx->m_StickExtents[nStick].axis[nAxis].sMax,
-                                   SDL_MIN_SINT16, SDL_MAX_SINT16);
 }
 
 static Sint16 ApplySimpleStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, int nAxis, Sint16 sRawValue)
@@ -1008,15 +1010,17 @@ static Sint16 ApplySimpleStickCalibration(SDL_DriverSwitch_Context *ctx, int nSt
 
     sRawValue -= usJoystickCenter;
 
-    if (sRawValue > ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax) {
-        ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax = sRawValue;
+    if (sRawValue >= 0) {
+        if (sRawValue > ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax) {
+            ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax = sRawValue;
+        }
+        return (Sint16)HIDAPI_RemapVal(sRawValue, 0, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax, 0, SDL_MAX_SINT16);
+    } else {
+        if (sRawValue < ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin) {
+            ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin = sRawValue;
+        }
+        return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin, 0, SDL_MIN_SINT16, 0);
     }
-    if (sRawValue < ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin) {
-        ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin = sRawValue;
-    }
-
-    return (Sint16)HIDAPI_RemapVal(sRawValue, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMin, ctx->m_SimpleStickExtents[nStick].axis[nAxis].sMax,
-                                   SDL_MIN_SINT16, SDL_MAX_SINT16);
 }
 
 static void SDLCALL SDL_GameControllerButtonReportingHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
