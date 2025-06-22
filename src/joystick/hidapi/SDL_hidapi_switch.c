@@ -860,7 +860,7 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     /* Stick calibration values are 12-bits each and are packed by bit
      * For whatever reason the fields are in a different order for each stick
      * Left:  X-Max, Y-Max, X-Center, Y-Center, X-Min, Y-Min
-     * Right: X-Center, Y-Center, X-Max, Y-Max, X-Min, Y-Min
+     * Right: X-Center, Y-Center, X-Min, Y-Min, X-Max, Y-Max
      */
 
     /* Left stick */
@@ -874,10 +874,10 @@ static SDL_bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     /* Right stick */
     ctx->m_StickCalData[1].axis[0].sCenter = ((pRightStickCal[1] << 8) & 0xF00) | pRightStickCal[0]; /* X Axis center */
     ctx->m_StickCalData[1].axis[1].sCenter = (pRightStickCal[2] << 4) | (pRightStickCal[1] >> 4);    /* Y Axis center */
-    ctx->m_StickCalData[1].axis[0].sMax = ((pRightStickCal[4] << 8) & 0xF00) | pRightStickCal[3];    /* X Axis max above center */
-    ctx->m_StickCalData[1].axis[1].sMax = (pRightStickCal[5] << 4) | (pRightStickCal[4] >> 4);       /* Y Axis max above center */
-    ctx->m_StickCalData[1].axis[0].sMin = ((pRightStickCal[7] << 8) & 0xF00) | pRightStickCal[6];    /* X Axis min below center */
-    ctx->m_StickCalData[1].axis[1].sMin = (pRightStickCal[8] << 4) | (pRightStickCal[7] >> 4);       /* Y Axis min below center */
+    ctx->m_StickCalData[1].axis[0].sMin = ((pRightStickCal[4] << 8) & 0xF00) | pRightStickCal[3];    /* X Axis min below center */
+    ctx->m_StickCalData[1].axis[1].sMin = (pRightStickCal[5] << 4) | (pRightStickCal[4] >> 4);       /* Y Axis min below center */
+    ctx->m_StickCalData[1].axis[0].sMax = ((pRightStickCal[7] << 8) & 0xF00) | pRightStickCal[6];    /* X Axis max above center */
+    ctx->m_StickCalData[1].axis[1].sMax = (pRightStickCal[8] << 4) | (pRightStickCal[7] >> 4);       /* Y Axis max above center */
 
     /* Filter out any values that were uninitialized (0xFFF) in the SPI read */
     for (stick = 0; stick < 2; ++stick) {
