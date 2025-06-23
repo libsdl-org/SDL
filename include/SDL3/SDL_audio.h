@@ -1067,11 +1067,7 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
  * The application can hang any data it wants here, but the following
  * properties are understood by SDL:
  *
- * - `SDL_PROP_AUDIOSTREAM_KEEP_ON_SHUTDOWN_BOOLEAN`: if true, the stream will
- *   not be automatically destroyed during SDL_Quit(). This property is
- *   ignored for streams created through SDL_OpenAudioDeviceStream(). Streams
- *   bound to devices that aren't destroyed will still be unbound. Default
- *   false. (since SDL 3.4.0)
+ * - `SDL_PROP_AUDIOSTREAM_AUTO_CLEANUP_BOOLEAN`: if true (the default), the stream be automatically cleaned up when the audio subsystem quits. If set to false, the streams will persist beyond that. This property is ignored for streams created through SDL_OpenAudioDeviceStream(), and will always be cleaned up. Streams that are not cleaned up will still be unbound from devices when the audio subsystem quits. This property was added in SDL 3.4.0.
  *
  * \param stream the SDL_AudioStream to query.
  * \returns a valid property ID on success or 0 on failure; call
@@ -1083,7 +1079,7 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetAudioStreamProperties(SDL_AudioStream *stream);
 
-#define SDL_PROP_AUDIOSTREAM_KEEP_ON_SHUTDOWN_BOOLEAN "SDL.audiostream.keep_on_shutdown"
+#define SDL_PROP_AUDIOSTREAM_AUTO_CLEANUP_BOOLEAN "SDL.audiostream.auto_cleanup"
 
 
 /**
