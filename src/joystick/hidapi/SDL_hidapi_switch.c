@@ -935,6 +935,7 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     SwitchSubcommandInputPacket_t *factory_reply = NULL;
     SwitchSPIOpData_t readUserParams;
     SwitchSPIOpData_t readFactoryParams;
+    Uint8 userParamsReadSuccessCount = 0;
 
     // Read User Calibration Info
     readUserParams.unAddress = k_unSPIStickUserCalibrationStartOffset;
@@ -947,33 +948,40 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
     readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
 
-    const int MAX_ATTEMPTS = 3;
-    for (int attempt = 0; ; ++attempt) {
-        if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
-            return false;
-        }
-
-        if (factory_reply->stickFactoryCalibration.opData.unAddress == k_unSPIStickFactoryCalibrationStartOffset) {
-            // We successfully read the calibration data
-            break;
-        }
-
-        if (attempt == MAX_ATTEMPTS) {
-            return false;
-        }
-    }
-
     // Automatically select the user calibration if magic bytes are set
     if (user_reply && user_reply->stickUserCalibration.rgucLeftMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucLeftMagic[1] == 0xA1) {
+        userParamsReadSuccessCount += 1;
         pLeftStickCal = user_reply->stickUserCalibration.rgucLeftCalibration;
-    } else {
-        pLeftStickCal = factory_reply->stickFactoryCalibration.rgucLeftCalibration;
     }
 
     if (user_reply && user_reply->stickUserCalibration.rgucRightMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucRightMagic[1] == 0xA1) {
+        userParamsReadSuccessCount += 1;
         pRightStickCal = user_reply->stickUserCalibration.rgucRightCalibration;
-    } else {
-        pRightStickCal = factory_reply->stickFactoryCalibration.rgucRightCalibration;
+    } 
+
+    // Only read the factory calibration info if we failed to receive the correct magic bytes
+    if (userParamsReadSuccessCount < 2) {
+        // Read Factory Calibration Info
+        readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
+        readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
+
+        const int MAX_ATTEMPTS = 3;
+        for (int attempt = 0;; ++attempt) {
+            if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
+                return false;
+            }
+
+            if (factory_reply->stickFactoryCalibration.opData.unAddress == k_unSPIStickFactoryCalibrationStartOffset) {
+                // We successfully read the calibration data
+                pLeftStickCal = factory_reply->stickFactoryCalibration.rgucLeftCalibration;
+                pRightStickCal = factory_reply->stickFactoryCalibration.rgucRightCalibration;
+                break;
+            }
+
+            if (attempt == MAX_ATTEMPTS) {
+                return false;
+            }
+        }
     }
 
     /* Stick calibration values are 12-bits each and are packed by bit
