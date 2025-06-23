@@ -928,8 +928,8 @@ static bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, bool enabled)
 
 static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 *pLeftStickCal;
-    Uint8 *pRightStickCal;
+    Uint8 *pLeftStickCal = NULL;
+    Uint8 *pRightStickCal = NULL;
     size_t stick, axis;
     SwitchSubcommandInputPacket_t *user_reply = NULL;
     SwitchSubcommandInputPacket_t *factory_reply = NULL;
@@ -982,6 +982,12 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
                 return false;
             }
         }
+    }
+
+    // If we still don't have calibration data, return false
+    if (pLeftStickCal == NULL || pRightStickCal == NULL)
+    {
+        return false;
     }
 
     /* Stick calibration values are 12-bits each and are packed by bit
