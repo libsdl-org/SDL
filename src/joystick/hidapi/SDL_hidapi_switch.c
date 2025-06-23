@@ -935,6 +935,7 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     SwitchSubcommandInputPacket_t *factory_reply = NULL;
     SwitchSPIOpData_t readUserParams;
     SwitchSPIOpData_t readFactoryParams;
+    Uint8 userParamsReadSuccessCount = 0;
 
     // Read User Calibration Info
     readUserParams.unAddress = k_unSPIStickUserCalibrationStartOffset;
@@ -943,43 +944,45 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     // This isn't readable on all controllers, so ignore failure
     WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readUserParams, sizeof(readUserParams), &user_reply);
 
-    // Read Factory Calibration Info
-    readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
-    readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
-
-    const int MAX_ATTEMPTS = 3;
-    for (int attempt = 0; ; ++attempt) {
-        if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
-            return false;
-        }
-
-        if (factory_reply->stickFactoryCalibration.opData.unAddress == k_unSPIStickFactoryCalibrationStartOffset) {
-            // We successfully read the calibration data
-            break;
-        }
-
-        if (attempt == MAX_ATTEMPTS) {
-            return false;
-        }
-    }
-
     // Automatically select the user calibration if magic bytes are set
     if (user_reply && user_reply->stickUserCalibration.rgucLeftMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucLeftMagic[1] == 0xA1) {
+        userParamsReadSuccessCount += 1;
         pLeftStickCal = user_reply->stickUserCalibration.rgucLeftCalibration;
-    } else {
-        pLeftStickCal = factory_reply->stickFactoryCalibration.rgucLeftCalibration;
-    }
+    } 
 
     if (user_reply && user_reply->stickUserCalibration.rgucRightMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucRightMagic[1] == 0xA1) {
+        userParamsReadSuccessCount += 1;
         pRightStickCal = user_reply->stickUserCalibration.rgucRightCalibration;
-    } else {
-        pRightStickCal = factory_reply->stickFactoryCalibration.rgucRightCalibration;
+    } 
+
+    // Only read the factory calibration info if we failed to receive the correct magic bytes
+    if (userParamsReadSuccessCount < 2)
+    {
+        // Read Factory Calibration Info
+        readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
+        readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
+
+        const int MAX_ATTEMPTS = 3;
+        for (int attempt = 0;; ++attempt) {
+            if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
+                return false;
+            }
+
+            if (factory_reply->stickFactoryCalibration.opData.unAddress == k_unSPIStickFactoryCalibrationStartOffset) {
+                // We successfully read the calibration data
+                break;
+            }
+
+            if (attempt == MAX_ATTEMPTS) {
+                return false;
+            }
+        }
     }
 
     /* Stick calibration values are 12-bits each and are packed by bit
      * For whatever reason the fields are in a different order for each stick
      * Left:  X-Max, Y-Max, X-Center, Y-Center, X-Min, Y-Min
-     * Right: X-Center, Y-Center, X-Max, Y-Max, X-Min, Y-Min
+     * Right: X-Center, Y-Center, X-Min, Y-Min, X-Max, Y-Max
      */
 
     // Left stick
@@ -993,10 +996,10 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     // Right stick
     ctx->m_StickCalData[1].axis[0].sCenter = ((pRightStickCal[1] << 8) & 0xF00) | pRightStickCal[0]; // X Axis center
     ctx->m_StickCalData[1].axis[1].sCenter = (pRightStickCal[2] << 4) | (pRightStickCal[1] >> 4);    // Y Axis center
-    ctx->m_StickCalData[1].axis[0].sMax = ((pRightStickCal[4] << 8) & 0xF00) | pRightStickCal[3];    // X Axis max above center
-    ctx->m_StickCalData[1].axis[1].sMax = (pRightStickCal[5] << 4) | (pRightStickCal[4] >> 4);       // Y Axis max above center
-    ctx->m_StickCalData[1].axis[0].sMin = ((pRightStickCal[7] << 8) & 0xF00) | pRightStickCal[6];    // X Axis min below center
-    ctx->m_StickCalData[1].axis[1].sMin = (pRightStickCal[8] << 4) | (pRightStickCal[7] >> 4);       // Y Axis min below center
+    ctx->m_StickCalData[1].axis[0].sMin = ((pRightStickCal[4] << 8) & 0xF00) | pRightStickCal[3];    // X Axis max above center
+    ctx->m_StickCalData[1].axis[1].sMin = (pRightStickCal[5] << 4) | (pRightStickCal[4] >> 4);       // Y Axis max above center
+    ctx->m_StickCalData[1].axis[0].sMax = ((pRightStickCal[7] << 8) & 0xF00) | pRightStickCal[6];    // X Axis min below center
+    ctx->m_StickCalData[1].axis[1].sMax = (pRightStickCal[8] << 4) | (pRightStickCal[7] >> 4);       // Y Axis min below center
 
     // Filter out any values that were uninitialized (0xFFF) in the SPI read
     for (stick = 0; stick < 2; ++stick) {
