@@ -1064,14 +1064,14 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
 /**
  * Get the properties associated with an audio stream.
  *
- * The application can hang any data it wants here, but
- * the following properties are understood by SDL:
+ * The application can hang any data it wants here, but the following
+ * properties are understood by SDL:
  *
  * - `SDL_PROP_AUDIOSTREAM_KEEP_ON_SHUTDOWN_BOOLEAN`: if true, the stream will
  *   not be automatically destroyed during SDL_Quit(). This property is
  *   ignored for streams created through SDL_OpenAudioDeviceStream(). Streams
- *   bound to devices that aren't destroyed will still be unbound.
- *   Default false. (since SDL 3.4.0)
+ *   bound to devices that aren't destroyed will still be unbound. Default
+ *   false. (since SDL 3.4.0)
  *
  * \param stream the SDL_AudioStream to query.
  * \returns a valid property ID on success or 0 on failure; call
