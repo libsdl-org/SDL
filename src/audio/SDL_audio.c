@@ -1575,7 +1575,9 @@ int *SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int *count)
     SDL_AudioDevice *device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
     if (device) {
         channels = device->spec.channels;
-        result = SDL_ChannelMapDup(device->chmap, channels);
+        if (channels > 0 && device->chmap) {
+            result = SDL_ChannelMapDup(device->chmap, channels);
+        }
     }
     ReleaseAudioDevice(device);
 
