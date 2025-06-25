@@ -44,8 +44,8 @@
 
 #define HOJA_DEVICE_REPORT_ID_JOYSTICK_INPUT    0x01
 #define HOJA_DEVICE_REPORT_ID_HAPTIC_OUTPUT     0x02
-#define HOJA_DEVICE_REPORT_ID_COMMAND_OUTPUT    0x03
-#define HOJA_DEVICE_REPORT_ID_COMMAND_INPUT     0x04
+#define HOJA_DEVICE_REPORT_ID_FEATFLAGS_FEATURE 0x03
+#define HOJA_DEVICE_REPORT_ID_PLAYERLED_FEATURE 0x04
 
 #define HOJA_DEVICE_COMMAND_GETINFO         0x01
 #define HOJA_DEVICE_COMMAND_SETPLAYERNUM    0x02
@@ -71,7 +71,7 @@
 #define HOJA_REPORT_IDX_PLUG_STATUS     1
 #define HOJA_REPORT_IDX_CHARGE_LEVEL    2
 
-#define HOJA_OVERRIDE_SUPPORTED_DEBUG 1
+//#define HOJA_OVERRIDE_SUPPORTED_DEBUG 1
 
 #ifndef EXTRACTSINT16
 #define EXTRACTSINT16(data, idx) ((Sint16)((data)[(idx)] | ((data)[(idx) + 1] << 8)))
@@ -81,21 +81,27 @@
 #define EXTRACTUINT16(data, idx) ((Uint16)((data)[(idx)] | ((data)[(idx) + 1] << 8)))
 #endif
 
+typedef union
+{
+    struct
+    {
+        uint8_t haptics_supported : 1;
+        uint8_t player_leds_supported : 1;
+        uint8_t accelerometer_supported : 1;
+        uint8_t gyroscope_supported : 1;
+        uint8_t left_analog_stick_supported : 1;
+        uint8_t right_analog_stick_supported : 1;
+        uint8_t left_analog_trigger_supported : 1;
+        uint8_t right_analog_trigger_supported : 1;
+    };
+    uint8_t value;
+} HOJA_FEATURE_FLAGS_U;
 
 typedef struct
 {
-    bool gyro_supported;
-    bool accel_supported;
-    bool haptics_supported;
-
-    bool left_joystick_supported;
-    bool right_joystick_supported;
-
-    bool left_analog_trigger_supported;
-    bool right_analog_trigger_supported;
-
-    bool player_led_supported;
-    bool powerstate_supported;
+    SDL_HIDAPI_Device *device;
+    SDL_Joystick *joystick;
+    HOJA_FEATURE_FLAGS_U feature_flags;
 
     char device_name[HOJA_DEVICE_NAME_SIZE];
 
@@ -124,23 +130,21 @@ typedef struct
     short sGyroZ;
 } HOJA_SENSORS;
 
-typedef union
+
+// Converts raw int16_t gyro scale setting to radians/sec
+static inline float CalculateGyroScale(uint16_t dps_range)
 {
-    struct
-    {
-        Uint8 haptics_supported : 1;
-        Uint8 player_led_supported : 1;
-        Uint8 accel_supported : 1;
-        Uint8 gyro_supported : 1;
+    // full scale is -32768 to +32767, so use 32768.0 as divisor
+    // Multiply by PI/180 to convert degrees/sec to radians/sec
+    return ((float)dps_range / 32768.0f) * (SDL_PI_F / 180.0f);
+}
 
-        Uint8 left_joystick_supported : 1;
-        Uint8 right_joystick_supported : 1;
-
-        Uint8 left_analog_trigger_supported : 1;
-        Uint8 right_analog_trigger_supported : 1;
-    };
-    Uint8 value;
-} HOJA_FEATURE_FLAGS;
+// Converts raw int16_t accel scale setting to m/s²
+static inline float CalculateAccelScale(uint16_t g_range)
+{
+    // g_range is the ±G value (e.g., 2, 4, 8, 16)
+    return ((float)g_range / 32768.0f) * SDL_STANDARD_GRAVITY;
+}
 
 static void HIDAPI_DriverHoja_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -170,84 +174,55 @@ static bool HIDAPI_DriverHoja_IsSupportedDevice(SDL_HIDAPI_Device *device, const
     return false;
 }
 
+
 static bool HIDAPI_DriverHoja_InitDevice(SDL_HIDAPI_Device *device)
 {
+    SDL_Log("Hoja device Init");
     SDL_DriverHoja_Context *ctx = (SDL_DriverHoja_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         return false;
     }
+    ctx->device = device;
     device->context = ctx;
 
-    // Write our command to get device info
-    Uint8 commandBuffer[HOJA_DEVICE_REPORT_SIZE-1] = { HOJA_DEVICE_REPORT_ID_COMMAND_OUTPUT, HOJA_DEVICE_COMMAND_GETINFO};
+    Uint8 featureFlagsData[HOJA_DEVICE_REPORT_SIZE] = { HOJA_DEVICE_REPORT_ID_FEATFLAGS_FEATURE };
 
-    //if (SDL_hid_write(device->dev, commandBuffer, sizeof(commandBuffer)) != sizeof(commandBuffer)) {
-    //    SDL_free(ctx);
-    //    return SDL_SetError("Couldn't send command to Hoja device");
-    //}
+    int featureFlagsReceivedCount = SDL_hid_get_feature_report(device->dev, featureFlagsData, HOJA_DEVICE_REPORT_SIZE);
 
-    // Read the response from the device
-    Uint8 deviceInfoData[HOJA_DEVICE_REPORT_SIZE];
-
-    int deviceInfoAttempts = 6;
-
-    while (deviceInfoAttempts-- > 0) {
-        // Read the device info report
-        int size = SDL_hid_read_timeout(device->dev, deviceInfoData, HOJA_DEVICE_REPORT_SIZE, 1000);
-        if (size == HOJA_DEVICE_REPORT_SIZE && deviceInfoData[0] == HOJA_DEVICE_REPORT_ID_COMMAND_INPUT && deviceInfoData[1] == HOJA_DEVICE_COMMAND_GETINFO) {
-            break; // We got a valid response
-        }
-        SDL_Delay(100); // Wait before retrying
-    }
-
-    if (!deviceInfoAttempts) {
+    if (featureFlagsReceivedCount < 0) {
+        SDL_Log("Hoja device feature flags not received: %s", SDL_GetError());
         SDL_free(ctx);
-        return SDL_SetError("Couldn't read device info from Hoja device");
+        return false;
     }
 
-    // Extract information
-    HOJA_FEATURE_FLAGS features = { .value = 0 };
-    features.value = deviceInfoData[2];
-
-    ctx->haptics_supported      = features.haptics_supported;
-    ctx->player_led_supported   = features.player_led_supported;
-    ctx->accel_supported        = features.accel_supported;
-    ctx->gyro_supported         = features.gyro_supported;
-    ctx->left_joystick_supported    = features.left_joystick_supported;
-    ctx->right_joystick_supported   = features.right_joystick_supported;
-    ctx->left_analog_trigger_supported  = features.left_analog_trigger_supported;
-    ctx->right_analog_trigger_supported = features.right_analog_trigger_supported;
-
-    #if defined(HOJA_OVERRIDE_SUPPORTED_DEBUG) && (HOJA_OVERRIDE_SUPPORTED_DEBUG==1)
-    ctx->haptics_supported      = 1;
-    ctx->player_led_supported   = 1;
-    ctx->accel_supported    = 1;
-    ctx->gyro_supported     = 1;
-    ctx->left_joystick_supported    = 1;
-    ctx->right_joystick_supported   = 1;
-    ctx->left_analog_trigger_supported  = 1;
-    ctx->right_analog_trigger_supported = 1;
-    #endif
-
-    ctx->api_version    = EXTRACTUINT16(deviceInfoData, 4);
-    ctx->accelRange     = EXTRACTUINT16(deviceInfoData, 6); // Range in g-force
-    ctx->gyroRange      = EXTRACTUINT16(deviceInfoData, 8); // Range in degrees per second
-
-    // Determine device name
-    const char name[HOJA_DEVICE_NAME_SIZE] = "Hoja Gamepad";
-
-    // Use the name from the device if it isn't blank
-    if (deviceInfoData[10] != 0) {
-        // Copy the device name from the report
-        SDL_utf8strlcpy(ctx->device_name, (const char *)&deviceInfoData[10], HOJA_DEVICE_NAME_SIZE);
-    } else {
-        // If the name is blank, we use the default name
-        SDL_utf8strlcpy(ctx->device_name, name, HOJA_DEVICE_NAME_SIZE);
+    if (featureFlagsReceivedCount < HOJA_DEVICE_REPORT_SIZE) {
+        SDL_Log("Hoja device feature flags incomplete: %d bytes received, expected %d", featureFlagsReceivedCount, HOJA_DEVICE_REPORT_SIZE);
+        SDL_free(ctx);
+        return false;
     }
 
-    // Set the device name
+    ctx->feature_flags.value = featureFlagsData[1];
+
+    ctx->api_version    = (Uint16)(featureFlagsData[2] | (featureFlagsData[3] << 8));
+    ctx->accelRange     = (Uint16)(featureFlagsData[4] | (featureFlagsData[5] << 8));
+    ctx->gyroRange      = (Uint16)(featureFlagsData[6] | (featureFlagsData[7] << 8));
+
+    ctx->accelScale = CalculateAccelScale(ctx->accelRange);
+    ctx->gyroScale  = CalculateGyroScale(ctx->gyroRange);
+
+    // Check if the device name is empty
+    if (featureFlagsData[8] != 0) {
+        SDL_memcpy(ctx->device_name, &featureFlagsData[8], HOJA_DEVICE_NAME_SIZE - 1);
+    }
+    else
+    {
+        const char *default_name = "Hoja Gamepad";
+        SDL_utf8strlcpy(ctx->device_name, default_name, sizeof(default_name));
+    }
+
+    // Set device name
     HIDAPI_SetDeviceName(device, ctx->device_name);
-
+    
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -258,36 +233,44 @@ static int HIDAPI_DriverHoja_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL
 
 static void HIDAPI_DriverHoja_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
-    player_index = SDL_clamp(player_index, 0, 255); // Hoja supports 8 players, but up to 255 is allowed
+    player_index = SDL_clamp(player_index+1, 0, 255); // Hoja supports 8 players, but up to 255 is allowed
     Uint8 player_num = (Uint8)player_index;
-    Uint8 playerCommandBuffer[HOJA_DEVICE_REPORT_SIZE-1] = { HOJA_DEVICE_REPORT_ID_COMMAND_OUTPUT, HOJA_DEVICE_COMMAND_SETPLAYERNUM, player_num };
+    Uint8 playerCommandBuffer[HOJA_DEVICE_REPORT_SIZE] = { HOJA_DEVICE_REPORT_ID_PLAYERLED_FEATURE, player_num };
 
-    SDL_hid_write(device->dev, playerCommandBuffer, sizeof(playerCommandBuffer));
+    SDL_hid_send_feature_report(device->dev, playerCommandBuffer, HOJA_DEVICE_REPORT_SIZE);
+    //SDL_hid_write(device->dev, playerCommandBuffer, HOJA_DEVICE_REPORT_SIZE);
+
 }
-
 
 #ifndef DEG2RAD
 #define DEG2RAD(x) ((float)(x) * (float)(SDL_PI_F / 180.f))
 #endif
 
+
+
 static bool HIDAPI_DriverHoja_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+    SDL_Log("Hoja device Open");
+
     SDL_DriverHoja_Context *ctx = (SDL_DriverHoja_Context *)device->context;
 
     SDL_AssertJoysticksLocked();
+
+    ctx->joystick = joystick;
+
 
     SDL_zeroa(ctx->last_state);
 
     joystick->nbuttons = 32; 
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
 
-    if (ctx->accel_supported) {
+    if (ctx->feature_flags.accelerometer_supported) {
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, (float)HOJA_DEVICE_POLLING_RATE);
 
         ctx->accelScale = SDL_STANDARD_GRAVITY / ctx->accelRange;
     }
 
-    if (ctx->gyro_supported) {
+    if (ctx->feature_flags.gyroscope_supported) {
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, (float)HOJA_DEVICE_POLLING_RATE);
         // Hardware senses +/- N Degrees per second mapped to +/- INT16_MAX
         ctx->gyroScale = DEG2RAD(ctx->gyroRange) / INT16_MAX;
@@ -313,10 +296,10 @@ static Uint32 HIDAPI_DriverHoja_GetJoystickCapabilities(SDL_HIDAPI_Device *devic
     SDL_DriverHoja_Context *ctx = (SDL_DriverHoja_Context *)device->context;
 
     Uint32 caps = 0;
-    if (ctx->haptics_supported) {
+    if (ctx->feature_flags.haptics_supported) {
         caps |= SDL_JOYSTICK_CAP_RUMBLE;
     }
-    if (ctx->player_led_supported) {
+    if (ctx->feature_flags.player_leds_supported) {
         caps |= SDL_JOYSTICK_CAP_PLAYER_LED;
     }
     return caps;
@@ -384,7 +367,7 @@ static void HIDAPI_DriverHoja_HandleStatePacket(SDL_Joystick *joystick, SDL_Driv
 
     // Our analog inputs map to a signed Sint16 range of -32768 to 32767 from the device.
 
-    if (ctx->left_joystick_supported) {
+    if (ctx->feature_flags.left_analog_stick_supported) {
         axis = (Sint16)(data[HOJA_REPORT_IDX_LEFT_X] | (data[HOJA_REPORT_IDX_LEFT_X + 1] << 8));
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
 
@@ -392,7 +375,7 @@ static void HIDAPI_DriverHoja_HandleStatePacket(SDL_Joystick *joystick, SDL_Driv
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
     }
 
-    if (ctx->right_joystick_supported) {
+    if (ctx->feature_flags.right_analog_stick_supported) {
         axis = (Sint16)(data[HOJA_REPORT_IDX_RIGHT_X] | (data[HOJA_REPORT_IDX_RIGHT_X + 1] << 8));
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
 
@@ -400,12 +383,12 @@ static void HIDAPI_DriverHoja_HandleStatePacket(SDL_Joystick *joystick, SDL_Driv
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
     }
 
-    if (ctx->left_analog_trigger_supported) {
+    if (ctx->feature_flags.left_analog_trigger_supported) {
         axis = (Sint16)(data[HOJA_REPORT_IDX_LEFT_TRIGGER] | (data[HOJA_REPORT_IDX_LEFT_TRIGGER + 1] << 8));
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
     }
 
-    if (ctx->right_analog_trigger_supported) {
+    if (ctx->feature_flags.right_analog_trigger_supported) {
         axis = (Sint16)(data[HOJA_REPORT_IDX_RIGHT_TRIGGER] | (data[HOJA_REPORT_IDX_RIGHT_TRIGGER + 1] << 8));
         SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
     }
@@ -413,33 +396,29 @@ static void HIDAPI_DriverHoja_HandleStatePacket(SDL_Joystick *joystick, SDL_Driv
     if (ctx->last_state[HOJA_REPORT_IDX_PLUG_STATUS] != data[HOJA_REPORT_IDX_PLUG_STATUS] ||
         ctx->last_state[HOJA_REPORT_IDX_CHARGE_LEVEL] != data[HOJA_REPORT_IDX_CHARGE_LEVEL]) {
 
-        if (ctx->powerstate_supported) {
-            SDL_PowerState state;
-            Uint8 status    = data[HOJA_REPORT_IDX_PLUG_STATUS];
-            int percent     = data[HOJA_REPORT_IDX_CHARGE_LEVEL];
+        SDL_PowerState state;
+        Uint8 status = data[HOJA_REPORT_IDX_PLUG_STATUS];
+        int percent = data[HOJA_REPORT_IDX_CHARGE_LEVEL];
 
-            percent = SDL_clamp(percent, 0, 100); // Ensure percent is within valid range
+        percent = SDL_clamp(percent, 0, 100); // Ensure percent is within valid range
 
-            switch (status) {
-            case 0:
-                state = SDL_POWERSTATE_ON_BATTERY;
-                break;
-            case 2:
-                state = SDL_POWERSTATE_CHARGING;
-                break;
-            case 3:
-                state = SDL_POWERSTATE_CHARGED;
-                percent = 100;
-                break;
-            default:
-                state = SDL_POWERSTATE_UNKNOWN;
-                percent = 0;
-                break;
-            }
-            SDL_SendJoystickPowerInfo(joystick, state, percent);
-        } else {
-            SDL_SendJoystickPowerInfo(joystick, SDL_POWERSTATE_NO_BATTERY, 100);
+        switch (status) {
+        case 0:
+            state = SDL_POWERSTATE_ON_BATTERY;
+            break;
+        case 2:
+            state = SDL_POWERSTATE_CHARGING;
+            break;
+        case 3:
+            state = SDL_POWERSTATE_CHARGED;
+            percent = 100;
+            break;
+        default:
+            state = SDL_POWERSTATE_UNKNOWN;
+            percent = 0;
+            break;
         }
+        SDL_SendJoystickPowerInfo(joystick, state, percent);
     }
 
     // Extract the IMU timestamp delta (in microseconds)
@@ -452,7 +431,7 @@ static void HIDAPI_DriverHoja_HandleStatePacket(SDL_Joystick *joystick, SDL_Driv
         ctx->imu_timestamp += ((Uint64) imu_timestamp_delta * 1000);
 
         // Process Accelerometer
-        if (ctx->accel_supported) {
+        if (ctx->feature_flags.accelerometer_supported) {
 
             accel = (Sint16)(data[HOJA_REPORT_IDX_IMU_ACCEL_X] | (data[HOJA_REPORT_IDX_IMU_ACCEL_X + 1] << 8));
             imu_values[0] = (float)accel * ctx->accelScale; // X-axis acceleration
@@ -467,7 +446,7 @@ static void HIDAPI_DriverHoja_HandleStatePacket(SDL_Joystick *joystick, SDL_Driv
         }
 
         // Process Gyroscope
-        if (ctx->gyro_supported) {
+        if (ctx->feature_flags.accelerometer_supported) {
             gyro = (Sint16)(data[HOJA_REPORT_IDX_IMU_GYRO_X] | (data[HOJA_REPORT_IDX_IMU_GYRO_X + 1] << 8));
             imu_values[0] = (float)gyro * ctx->gyroScale; // X-axis rotation
 
@@ -479,7 +458,7 @@ static void HIDAPI_DriverHoja_HandleStatePacket(SDL_Joystick *joystick, SDL_Driv
 
             SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->imu_timestamp, imu_values, 3);
         }
-    }
+    }    
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
