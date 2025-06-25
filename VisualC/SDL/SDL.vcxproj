@@ -444,6 +444,7 @@
     <ClCompile Include="..\..\src\gpu\vulkan\SDL_gpu_vulkan.c" />
     <ClCompile Include="..\..\src\io\generic\SDL_asyncio_generic.c" />
     <ClCompile Include="..\..\src\io\SDL_asyncio.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_hoja.c" />
     <ClCompile Include="..\..\src\main\generic\SDL_sysmain_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_runapp.c" />
