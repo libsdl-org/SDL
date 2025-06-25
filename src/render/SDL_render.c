@@ -2743,6 +2743,8 @@ static void UpdateLogicalPresentation(SDL_Renderer *renderer)
     view->pixel_h = (int) view->logical_dst_rect.h;
     UpdatePixelViewport(renderer, view);
     UpdatePixelClipRect(renderer, view);
+    QueueCmdSetViewport(renderer);
+    QueueCmdSetClipRect(renderer);
 }
 
 bool SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_RendererLogicalPresentation mode)
@@ -3663,7 +3665,7 @@ bool SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count
 #endif
 
     SDL_RenderViewState *view = renderer->view;
-    const bool islogical = ((view == &renderer->main_view) && (view->logical_presentation_mode != SDL_LOGICAL_PRESENTATION_DISABLED));
+    const bool islogical = (view->logical_presentation_mode != SDL_LOGICAL_PRESENTATION_DISABLED);
 
     if (islogical || (renderer->line_method == SDL_RENDERLINEMETHOD_GEOMETRY)) {
         const float scale_x = view->current_scale.x;
@@ -3682,7 +3684,7 @@ bool SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count
             int num_indices = 0;
             const int size_indices = 4;
             int cur_index = -4;
-            const int is_looping = (points[0].x == points[count - 1].x && points[0].y == points[count - 1].y);
+            const bool is_looping = (points[0].x == points[count - 1].x && points[0].y == points[count - 1].y);
             SDL_FPoint p; // previous point
             p.x = p.y = 0.0f;
             /*       p            q
@@ -3714,7 +3716,7 @@ bool SDL_RenderLines(SDL_Renderer *renderer, const SDL_FPoint *points, int count
     num_indices += 3;
 
                 // closed polyline, don´t draw twice the point
-                if (i || is_looping == 0) {
+                if (i || !is_looping) {
                     ADD_TRIANGLE(4, 5, 6)
                     ADD_TRIANGLE(4, 6, 7)
                 }
