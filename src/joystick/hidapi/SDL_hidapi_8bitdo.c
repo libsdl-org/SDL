@@ -22,6 +22,7 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
+#include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
@@ -47,8 +48,16 @@ enum
 #define SDL_8BITDO_REPORTID_NOT_SUPPORTED_SDL_REPORTID          0x03
 #define SDL_8BITDO_BT_REPORTID_SDL_REPORTID                     0x01
 
+#define SDL_8BITDO_SENSOR_TIMESTAMP_ENABLE                      0xAA
 #define ABITDO_ACCEL_SCALE 4096.f
 #define ABITDO_GYRO_MAX_DEGREES_PER_SECOND 2000.f
+
+
+#define LOAD32(A, B, C, D) ((((Uint32)(A)) << 0) |  \
+                            (((Uint32)(B)) << 8) |  \
+                            (((Uint32)(C)) << 16) | \
+                            (((Uint32)(D)) << 24))
+
 
 typedef struct
 {
@@ -61,6 +70,7 @@ typedef struct
     bool rgb_supported;
     bool player_led_supported;
     bool powerstate_supported;
+    bool sensor_timestamp_supported;
     Uint8 serial[6];
     Uint16 version;
     Uint16 version_beta;
@@ -69,6 +79,7 @@ typedef struct
     Uint8 last_state[USB_PACKET_LENGTH];
     Uint64 sensor_timestamp; // Nanoseconds.  Simulate onboard clock. Different models have different rates vs different connection styles.
     Uint64 sensor_timestamp_interval;
+    Uint32 last_tick;
 } SDL_Driver8BitDo_Context;
 
 #pragma pack(push,1)
@@ -181,6 +192,9 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
                 ctx->rumble_supported = true;
                 ctx->powerstate_supported = true;
 
+                if (data[13] == SDL_8BITDO_SENSOR_TIMESTAMP_ENABLE) {
+                    ctx->sensor_timestamp_supported = true;
+                }
                 // Set the serial number to the Bluetooth MAC address
                 if (size >= 12 && data[10] != 0) {
                     char serial[18];
@@ -543,6 +557,18 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         Uint64 sensor_timestamp;
         float values[3];
         ABITDO_SENSORS *sensors = (ABITDO_SENSORS *)&data[15];
+
+         if (ctx->sensor_timestamp_supported) {
+            Uint32 delta;
+            Uint32 tick = LOAD32(data[27], data[28], data[29], data[30]);
+            if (ctx->last_tick < tick) {
+                delta = (tick - ctx->last_tick);
+            } else {
+                delta = (SDL_MAX_UINT32 - ctx->last_tick + tick + 1);
+            }
+            ctx->last_tick = tick;
+            ctx->sensor_timestamp_interval = SDL_US_TO_NS(delta);
+        }
 
         // Note: we cannot use the time stamp of the receiving computer due to packet delay creating "spiky" timings.
         // The imu time stamp is intended to be the sample time of the on-board hardware.
