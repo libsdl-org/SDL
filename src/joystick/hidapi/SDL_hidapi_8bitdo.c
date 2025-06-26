@@ -589,7 +589,10 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
                 } else {
                     delta = (SDL_MAX_UINT32 - ctx->last_tick + tick + 1);
                 }
-                ctx->sensor_timestamp_interval = SDL_US_TO_NS(delta);
+                // Sanity check the delta value
+                if (delta < 100000) {
+                    ctx->sensor_timestamp_interval = SDL_US_TO_NS(delta);
+                }
             }
             ctx->last_tick = tick;
         }
