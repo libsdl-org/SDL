@@ -215,14 +215,19 @@ void DrawGyroDebugAxes(SDL_Renderer *renderer, const Quaternion *orientation, co
     SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
 
     Vector3 origin = { 0.0f, 0.0f, 0.0f };
+
     Vector3 right = { 1.0f, 0.0f, 0.0f };
-    Vector3 forward = { 0.0f, 2.0f, 0.0f };
-    Vector3 up = { 0.0f, 0.0f, 3.0f };
+    Vector3 forward = { 0.0f, 1.0f, 0.0f };
+    Vector3 up = { 0.0f, 0.0f, 1.0f };
+
+    Vector3 world_right = RotateVectorByQuaternion(&right, orientation);
+    Vector3 world_forward = RotateVectorByQuaternion(&forward, orientation);
+    Vector3 world_up = RotateVectorByQuaternion(&up, orientation);
 
     SDL_FPoint origin_screen = ProjectVec3ToRect(&origin, bounds);
-    SDL_FPoint right_screen = ProjectVec3ToRect(&right, bounds);
-    SDL_FPoint forward_screen = ProjectVec3ToRect(&forward, bounds);
-    SDL_FPoint up_screen = ProjectVec3ToRect(&up, bounds);
+    SDL_FPoint right_screen = ProjectVec3ToRect(&world_right, bounds);
+    SDL_FPoint forward_screen = ProjectVec3ToRect(&world_forward, bounds);
+    SDL_FPoint up_screen = ProjectVec3ToRect(&world_up, bounds);
 
     SDL_SetRenderDrawColor(renderer, GYRO_COLOR_RED);
     SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, right_screen.x, right_screen.y);
