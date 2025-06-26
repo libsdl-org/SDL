@@ -163,8 +163,7 @@ extern DECLSPEC void SDLCALL SDL_LogResetPriorities(void);
 /**
  * Log a message with SDL_LOG_CATEGORY_APPLICATION and SDL_LOG_PRIORITY_INFO.
  *
- * = * \param fmt a printf() style message format string
- *
+ * \param fmt a printf() style message format string.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any.
  *
