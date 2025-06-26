@@ -163,7 +163,7 @@ public:
         case B_CANCEL: // Whenever the dialog is closed (Cancel but also after Open and Save)
         {
             nFiles = m_files.size();
-            const char* files[nFiles + 1];
+            const char *files[nFiles + 1];
             for (int i = 0; i < nFiles; i++) {
                 files[i] = m_files[i].c_str();
             }
@@ -194,14 +194,14 @@ private:
 
 void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
-    SDL_Window* window = (SDL_Window*) SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
-    SDL_DialogFileFilter* filters = (SDL_DialogFileFilter*) SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
+    SDL_Window *window = (SDL_Window *)SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_WINDOW_POINTER, NULL);
+    SDL_DialogFileFilter *filters = (SDL_DialogFileFilter *)SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
     int nfilters = (int) SDL_GetNumberProperty(props, SDL_PROP_FILE_DIALOG_NFILTERS_NUMBER, 0);
     bool many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
-    const char* location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
-    const char* title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, NULL);
-    const char* accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
-    const char* cancel = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_CANCEL_STRING, NULL);
+    const char *location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
+    const char *title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, NULL);
+    const char *accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
+    const char *cancel = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_CANCEL_STRING, NULL);
 
     bool modal = !!window;
 
@@ -222,7 +222,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     };
 
     if (!SDL_InitBeApp()) {
-        char* err = SDL_strdup(SDL_GetError());
+        char *err = SDL_strdup(SDL_GetError());
         SDL_SetError("Couldn't init Be app: %s", err);
         SDL_free(err);
         callback(userdata, NULL, -1);
@@ -251,9 +251,9 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     SDLBRefFilter *filter = new(std::nothrow) SDLBRefFilter(filters, nfilters);
 
     if (looper == NULL || messenger == NULL || filter == NULL) {
-        SDL_free(looper);
-        SDL_free(messenger);
-        SDL_free(filter);
+        delete looper;
+        delete messenger;
+        delete filter;
         SDL_OutOfMemory();
         callback(userdata, NULL, -1);
         return;

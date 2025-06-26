@@ -38,6 +38,7 @@
 #include "cursor-shape-v1-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
+#include "pointer-warp-v1-client-protocol.h"
 
 #include "../../SDL_hints_c.h"
 
@@ -196,7 +197,7 @@ static DBusHandlerResult Wayland_DBusCursorMessageFilter(DBusConnection *conn, D
 
             if (dbus_cursor_size != new_cursor_size) {
                 dbus_cursor_size = new_cursor_size;
-                SDL_SetCursor(NULL); // Force cursor update
+                SDL_RedrawCursor(); // Force cursor update
             }
         } else if (SDL_strcmp(CURSOR_THEME_KEY, key) == 0) {
             const char *new_cursor_theme = NULL;
@@ -223,7 +224,7 @@ static DBusHandlerResult Wayland_DBusCursorMessageFilter(DBusConnection *conn, D
 
                 // Purge the current cached themes and force a cursor refresh.
                 Wayland_FreeCursorThemes(vdata);
-                SDL_SetCursor(NULL);
+                SDL_RedrawCursor();
             }
         } else {
             goto not_our_signal;
@@ -832,43 +833,50 @@ void Wayland_SeatWarpMouse(SDL_WaylandSeat *seat, SDL_WindowData *window, float 
     SDL_VideoData *d = vd->internal;
 
     if (seat->pointer.wl_pointer) {
-        bool toggle_lock = !seat->pointer.locked_pointer;
-        bool update_grabs = false;
+        if (d->wp_pointer_warp_v1) {
+            // It's a protocol error to warp the pointer outside of the surface, so clamp the position.
+            const wl_fixed_t f_x = wl_fixed_from_double(SDL_clamp(x / window->pointer_scale.x, 0, window->current.logical_width));
+            const wl_fixed_t f_y = wl_fixed_from_double(SDL_clamp(y / window->pointer_scale.y, 0, window->current.logical_height));
+            wp_pointer_warp_v1_warp_pointer(d->wp_pointer_warp_v1, window->surface, seat->pointer.wl_pointer, f_x, f_y, seat->pointer.enter_serial);
+        } else {
+            bool toggle_lock = !seat->pointer.locked_pointer;
+            bool update_grabs = false;
 
-        /* The pointer confinement protocol allows setting a hint to warp the pointer,
-         * but only when the pointer is locked.
-         *
-         * Lock the pointer, set the position hint, unlock, and hope for the best.
-         */
-        if (toggle_lock) {
-            if (seat->pointer.confined_pointer) {
-                zwp_confined_pointer_v1_destroy(seat->pointer.confined_pointer);
-                seat->pointer.confined_pointer = NULL;
-                update_grabs = true;
+            /* The pointer confinement protocol allows setting a hint to warp the pointer,
+             * but only when the pointer is locked.
+             *
+             * Lock the pointer, set the position hint, unlock, and hope for the best.
+             */
+            if (toggle_lock) {
+                if (seat->pointer.confined_pointer) {
+                    zwp_confined_pointer_v1_destroy(seat->pointer.confined_pointer);
+                    seat->pointer.confined_pointer = NULL;
+                    update_grabs = true;
+                }
+                seat->pointer.locked_pointer = zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints, window->surface,
+                                                                                       seat->pointer.wl_pointer, NULL,
+                                                                                       ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
             }
-            seat->pointer.locked_pointer = zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints, window->surface,
-                                                                                   seat->pointer.wl_pointer, NULL,
-                                                                                   ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
-        }
 
-        const wl_fixed_t f_x = wl_fixed_from_double(x / window->pointer_scale.x);
-        const wl_fixed_t f_y = wl_fixed_from_double(y / window->pointer_scale.y);
-        zwp_locked_pointer_v1_set_cursor_position_hint(seat->pointer.locked_pointer, f_x, f_y);
-        wl_surface_commit(window->surface);
+            const wl_fixed_t f_x = wl_fixed_from_double(x / window->pointer_scale.x);
+            const wl_fixed_t f_y = wl_fixed_from_double(y / window->pointer_scale.y);
+            zwp_locked_pointer_v1_set_cursor_position_hint(seat->pointer.locked_pointer, f_x, f_y);
+            wl_surface_commit(window->surface);
 
-        if (toggle_lock) {
-            zwp_locked_pointer_v1_destroy(seat->pointer.locked_pointer);
-            seat->pointer.locked_pointer = NULL;
+            if (toggle_lock) {
+                zwp_locked_pointer_v1_destroy(seat->pointer.locked_pointer);
+                seat->pointer.locked_pointer = NULL;
 
-            if (update_grabs) {
-                Wayland_SeatUpdatePointerGrab(seat);
+                if (update_grabs) {
+                    Wayland_SeatUpdatePointerGrab(seat);
+                }
             }
-        }
 
-        /* NOTE: There is a pending warp event under discussion that should replace this when available.
-         * https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/340
-         */
-        SDL_SendMouseMotion(0, window->sdlwindow, seat->pointer.sdl_id, false, x, y);
+            /* NOTE: There is a pending warp event under discussion that should replace this when available.
+             * https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/340
+             */
+            SDL_SendMouseMotion(0, window->sdlwindow, seat->pointer.sdl_id, false, x, y);
+        }
     }
 }
 
@@ -881,8 +889,7 @@ static bool Wayland_WarpMouseRelative(SDL_Window *window, float x, float y)
 
     if (d->pointer_constraints) {
         wl_list_for_each (seat, &d->seat_list, link) {
-            if (wind == seat->pointer.focus ||
-                (!seat->pointer.focus && wind == seat->keyboard.focus)) {
+            if (wind == seat->pointer.focus) {
                 Wayland_SeatWarpMouse(seat, wind, x, y);
             }
         }
@@ -939,7 +946,7 @@ static bool Wayland_SetRelativeMouseMode(bool enabled)
         return SDL_SetError("Failed to enable relative mode: compositor lacks support for the required zwp_pointer_constraints_v1 protocol");
     }
 
-    data->relative_mode_enabled = enabled;
+    // Windows have a relative mode flag, so just update the grabs on a state change.
     Wayland_DisplayUpdatePointerGrabs(data, NULL);
     return true;
 }
@@ -958,16 +965,22 @@ static bool Wayland_SetRelativeMouseMode(bool enabled)
  */
 static SDL_MouseButtonFlags SDLCALL Wayland_GetGlobalMouseState(float *x, float *y)
 {
-    SDL_Mouse *mouse = SDL_GetMouse();
+    const SDL_Mouse *mouse = SDL_GetMouse();
     SDL_MouseButtonFlags result = 0;
 
     // If there is no window with mouse focus, we have no idea what the actual position or button state is.
     if (mouse->focus) {
+        SDL_VideoData *video_data = SDL_GetVideoDevice()->internal;
+        SDL_WaylandSeat *seat;
         int off_x, off_y;
         SDL_RelativeToGlobalForWindow(mouse->focus, mouse->focus->x, mouse->focus->y, &off_x, &off_y);
-        result = SDL_GetMouseState(x, y);
         *x = mouse->x + off_x;
         *y = mouse->y + off_y;
+
+        // Query the buttons from the seats directly, as this may be called from within a hit test handler.
+        wl_list_for_each (seat, &video_data->seat_list, link) {
+            result |= seat->pointer.buttons_pressed;
+        }
     } else {
         *x = 0.f;
         *y = 0.f;
@@ -1025,7 +1038,7 @@ void Wayland_RecreateCursors(void)
     }
     if (mouse->cur_cursor) {
         Wayland_RecreateCursor(mouse->cur_cursor, vdata);
-        if (mouse->cursor_shown) {
+        if (mouse->cursor_visible) {
             Wayland_ShowCursor(mouse->cur_cursor);
         }
     }
@@ -1115,14 +1128,11 @@ void Wayland_SeatUpdateCursor(SDL_WaylandSeat *seat)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_WindowData *pointer_focus = seat->pointer.focus;
 
-    if (pointer_focus) {
-        const bool has_relative_focus = Wayland_SeatHasRelativePointerFocus(seat);
-
-        if (!seat->display->relative_mode_enabled || !has_relative_focus || mouse->relative_mode_cursor_visible) {
+    if (pointer_focus && mouse->cursor_visible) {
+        if (!seat->pointer.relative_pointer || !mouse->relative_mode_hide_cursor) {
             const SDL_HitTestResult rc = pointer_focus->hit_test_result;
 
-            if ((seat->display->relative_mode_enabled && has_relative_focus) ||
-                rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) {
+            if (seat->pointer.relative_pointer || rc == SDL_HITTEST_NORMAL || rc == SDL_HITTEST_DRAGGABLE) {
                 Wayland_SeatSetCursor(seat, mouse->cur_cursor);
             } else {
                 Wayland_SeatSetCursor(seat, sys_cursors[rc]);

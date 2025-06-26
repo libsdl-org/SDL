@@ -317,7 +317,7 @@
 #define SDL_PLATFORM_CYGWIN 1
 #endif
 
-#if defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+#if (defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)) && !defined(__NGAGE__)
 
 /**
  * A preprocessor macro that is only defined if compiling for Windows.
@@ -471,6 +471,17 @@
  * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_PLATFORM_3DS 1
+#endif
+
+#ifdef __NGAGE__
+
+/**
+ * A preprocessor macro that is only defined if compiling for the Nokia
+ * N-Gage.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ */
+#define SDL_PLATFORM_NGAGE 1
 #endif
 
 #endif /* SDL_platform_defines_h_ */

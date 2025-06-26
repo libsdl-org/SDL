@@ -1003,8 +1003,8 @@ static bool HIDAPI_DriverPS4_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device
 
 static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS4_Context *ctx, PS4StatePacket_t *packet, int size)
 {
-    static const float TOUCHPAD_SCALEX = 1.0f / 1920;
-    static const float TOUCHPAD_SCALEY = 1.0f / 920; // This is noted as being 944 resolution, but 920 feels better
+    static const float TOUCHPAD_SCALEX = 5.20833333e-4f; // 1.0f / 1920
+    static const float TOUCHPAD_SCALEY = 1.08695652e-3f; // 1.0f / 920 // This is noted as being 944 resolution, but 920 feels better
     Sint16 axis;
     bool touchpad_down;
     int touchpad_x, touchpad_y;

@@ -111,7 +111,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
         return NULL;
     }
 
-    folderPath = (char*) SDL_malloc(MAX_PATH);
+    folderPath = (char *)SDL_malloc(MAX_PATH);
     do {
         result = XGameSaveFilesGetFolderWithUiResult(&block, MAX_PATH, folderPath);
     } while (result == E_PENDING);

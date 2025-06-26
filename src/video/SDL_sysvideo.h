@@ -104,6 +104,7 @@ struct SDL_Window
     bool last_position_pending; // This should NOT be cleared by the backend, as it is used for fullscreen positioning.
     bool last_size_pending; // This should be cleared by the backend if the new size cannot be applied.
     bool update_fullscreen_on_display_changed;
+    bool constrain_popup;
     bool is_destroying;
     bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
 
@@ -132,6 +133,9 @@ struct SDL_Window
     SDL_Renderer **renderers;
 
     SDL_WindowData *internal;
+
+    // If a toplevel window, holds the current keyboard focus for grabbing popups.
+    SDL_Window *keyboard_focus;
 
     SDL_Window *prev;
     SDL_Window *next;
@@ -332,7 +336,7 @@ struct SDL_VideoDevice
      */
     bool (*Vulkan_LoadLibrary)(SDL_VideoDevice *_this, const char *path);
     void (*Vulkan_UnloadLibrary)(SDL_VideoDevice *_this);
-    char const* const* (*Vulkan_GetInstanceExtensions)(SDL_VideoDevice *_this, Uint32 *count);
+    char const * const *(*Vulkan_GetInstanceExtensions)(SDL_VideoDevice *_this, Uint32 *count);
     bool (*Vulkan_CreateSurface)(SDL_VideoDevice *_this, SDL_Window *window, VkInstance instance, const struct VkAllocationCallbacks *allocator, VkSurfaceKHR *surface);
     void (*Vulkan_DestroySurface)(SDL_VideoDevice *_this, VkInstance instance, VkSurfaceKHR surface, const struct VkAllocationCallbacks *allocator);
     bool (*Vulkan_GetPresentationSupport)(SDL_VideoDevice *_this, VkInstance instance, VkPhysicalDevice physicalDevice, Uint32 queueFamilyIndex);
@@ -401,8 +405,7 @@ struct SDL_VideoDevice
     bool checked_texture_framebuffer;
     bool is_dummy;
     bool suspend_screensaver;
-    SDL_Window *wakeup_window;
-    SDL_Mutex *wakeup_lock; // Initialized only if WaitEventTimeout/SendWakeupEvent are supported
+    void *wakeup_window;
     int num_displays;
     SDL_VideoDisplay **displays;
     SDL_Rect desktop_bounds;
@@ -527,6 +530,7 @@ extern VideoBootStrap PSP_bootstrap;
 extern VideoBootStrap VITA_bootstrap;
 extern VideoBootStrap RISCOS_bootstrap;
 extern VideoBootStrap N3DS_bootstrap;
+extern VideoBootStrap NGAGE_bootstrap;
 extern VideoBootStrap RPI_bootstrap;
 extern VideoBootStrap KMSDRM_bootstrap;
 extern VideoBootStrap DUMMY_bootstrap;
@@ -571,6 +575,8 @@ extern bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags);
 extern bool SDL_HasWindows(void);
 extern void SDL_RelativeToGlobalForWindow(SDL_Window *window, int rel_x, int rel_y, int *abs_x, int *abs_y);
 extern void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int *rel_x, int *rel_y);
+extern bool SDL_ShouldFocusPopup(SDL_Window *window);
+extern bool SDL_ShouldRelinquishPopupFocus(SDL_Window *window, SDL_Window **new_focus);
 
 extern void SDL_OnDisplayAdded(SDL_VideoDisplay *display);
 extern void SDL_OnDisplayMoved(SDL_VideoDisplay *display);

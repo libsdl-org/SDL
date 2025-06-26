@@ -675,7 +675,7 @@ static HRESULT GetDefaultStride(IMFMediaType *pType, LONG *plStride)
     LONG lStride = 0;
 
     // Try to get the default stride from the media type.
-    HRESULT ret = IMFMediaType_GetUINT32(pType, &SDL_MF_MT_DEFAULT_STRIDE, (UINT32*)&lStride);
+    HRESULT ret = IMFMediaType_GetUINT32(pType, &SDL_MF_MT_DEFAULT_STRIDE, (UINT32 *)&lStride);
     if (FAILED(ret)) {
         // Attribute not set. Try to calculate the default stride.
 
@@ -741,7 +741,7 @@ static bool MEDIAFOUNDATION_OpenDevice(SDL_Camera *device, const SDL_CameraSpec 
     SDL_Log("CAMERA: opening device with symlink of '%s'", utf8symlink);
     #endif
 
-    wstrsymlink = WIN_UTF8ToString(utf8symlink);
+    wstrsymlink = WIN_UTF8ToStringW(utf8symlink);
     if (!wstrsymlink) {
         goto failed;
     }
@@ -901,7 +901,7 @@ static char *QueryActivationObjectString(IMFActivate *activation, const GUID *pg
         return NULL;
     }
 
-    char *utf8str = WIN_StringToUTF8(wstr);
+    char *utf8str = WIN_StringToUTF8W(wstr);
     CoTaskMemFree(wstr);
     return utf8str;
 }
@@ -1001,7 +1001,7 @@ static void MaybeAddDevice(IMFActivate *activation)
     if (name && symlink) {
         IMFMediaSource *source = NULL;
         // "activating" here only creates an object, it doesn't open the actual camera hardware or start recording.
-        HRESULT ret = IMFActivate_ActivateObject(activation, &SDL_IID_IMFMediaSource, (void**)&source);
+        HRESULT ret = IMFActivate_ActivateObject(activation, &SDL_IID_IMFMediaSource, (void **)&source);
         if (SUCCEEDED(ret) && source) {
             CameraFormatAddData add_data;
             GatherCameraSpecs(source, &add_data);

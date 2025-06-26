@@ -33,6 +33,10 @@
 
 #cmakedefine SDL_PLATFORM_PRIVATE 1
 
+#ifdef SDL_PLATFORM_PRIVATE
+#include "SDL_begin_config_private.h"
+#endif
+
 #cmakedefine HAVE_GCC_ATOMICS 1
 #cmakedefine HAVE_GCC_SYNC_LOCK_TEST_AND_SET 1
 
@@ -277,6 +281,7 @@
 #cmakedefine SDL_AUDIO_DRIVER_PSP 1
 #cmakedefine SDL_AUDIO_DRIVER_PS2 1
 #cmakedefine SDL_AUDIO_DRIVER_N3DS 1
+#cmakedefine SDL_AUDIO_DRIVER_NGAGE 1
 #cmakedefine SDL_AUDIO_DRIVER_QNX 1
 
 #cmakedefine SDL_AUDIO_DRIVER_PRIVATE 1
@@ -365,6 +370,9 @@
 #cmakedefine SDL_TIME_PSP 1
 #cmakedefine SDL_TIME_PS2 1
 #cmakedefine SDL_TIME_N3DS 1
+#cmakedefine SDL_TIME_NGAGE 1
+
+#cmakedefine SDL_TIME_PRIVATE 1
 
 /* Enable various timer systems */
 #cmakedefine SDL_TIMER_HAIKU 1
@@ -387,6 +395,7 @@
 #cmakedefine SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC @SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC@
 #cmakedefine SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM @SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM@
 #cmakedefine SDL_VIDEO_DRIVER_N3DS 1
+#cmakedefine SDL_VIDEO_DRIVER_NGAGE 1
 #cmakedefine SDL_VIDEO_DRIVER_OFFSCREEN 1
 #cmakedefine SDL_VIDEO_DRIVER_PS2 1
 #cmakedefine SDL_VIDEO_DRIVER_PSP 1
@@ -438,6 +447,7 @@
 #cmakedefine SDL_VIDEO_RENDER_VULKAN 1
 #cmakedefine SDL_VIDEO_RENDER_OGL 1
 #cmakedefine SDL_VIDEO_RENDER_OGL_ES2 1
+#cmakedefine SDL_VIDEO_RENDER_NGAGE 1
 #cmakedefine SDL_VIDEO_RENDER_PS2 1
 #cmakedefine SDL_VIDEO_RENDER_PSP 1
 #cmakedefine SDL_VIDEO_RENDER_VITA_GXM 1
@@ -466,6 +476,8 @@
 #cmakedefine SDL_GPU_D3D12 1
 #cmakedefine SDL_GPU_VULKAN 1
 #cmakedefine SDL_GPU_METAL 1
+
+#cmakedefine SDL_GPU_PRIVATE 1
 
 /* Enable system power support */
 #cmakedefine SDL_POWER_ANDROID 1
@@ -500,6 +512,8 @@
 
 /* Enable system storage support */
 #cmakedefine SDL_STORAGE_STEAM @SDL_STORAGE_STEAM@
+
+#cmakedefine SDL_STORAGE_PRIVATE 1
 
 /* Enable system FSops support */
 #cmakedefine SDL_FSOPS_POSIX 1
@@ -543,6 +557,11 @@
 #cmakedefine SDL_VIDEO_VITA_PIB 1
 #cmakedefine SDL_VIDEO_VITA_PVR 1
 #cmakedefine SDL_VIDEO_VITA_PVR_OGL 1
+
+/* xkbcommon version info */
+#define SDL_XKBCOMMON_VERSION_MAJOR @SDL_XKBCOMMON_VERSION_MAJOR@
+#define SDL_XKBCOMMON_VERSION_MINOR @SDL_XKBCOMMON_VERSION_MINOR@
+#define SDL_XKBCOMMON_VERSION_PATCH @SDL_XKBCOMMON_VERSION_PATCH@
 
 /* Libdecor version info */
 #define SDL_LIBDECOR_VERSION_MAJOR @SDL_LIBDECOR_VERSION_MAJOR@

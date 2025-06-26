@@ -41,7 +41,7 @@ typedef struct SDL_HIDAPI_HapticDevice
 
 struct SDL_HIDAPI_HapticDriver
 {
-    bool (*JoystickSupported)(SDL_Joystick *joystick); /* return SDL_TRUE if haptic can be opened from the joystick */
+    bool (*JoystickSupported)(SDL_Joystick *joystick); /* return true if haptic can be opened from the joystick */
     void *(*Open)(SDL_Joystick *joystick); /* returns a driver context allocated with SDL_malloc, or null if it cannot be allocated */
   
     /* functions below need to handle the possibility of a null joystick instance, indicating the absence of the joystick */
@@ -52,17 +52,17 @@ struct SDL_HIDAPI_HapticDriver
     int (*NumEffectsPlaying)(SDL_HIDAPI_HapticDevice *device); /* returns supported number of effects the device can play concurrently */
     Uint32 (*GetFeatures)(SDL_HIDAPI_HapticDevice *device); /* returns supported effects in a bitmask */
     int (*NumAxes)(SDL_HIDAPI_HapticDevice *device); /* returns the number of haptic axes */
-    int (*CreateEffect)(SDL_HIDAPI_HapticDevice *device, const SDL_HapticEffect *data); /* returns effect id if created correctly, negative number on error */
-    bool (*UpdateEffect)(SDL_HIDAPI_HapticDevice *device, int id, const SDL_HapticEffect *data); /* returns 0 on success, negative number on error */
-    bool (*RunEffect)(SDL_HIDAPI_HapticDevice *device, int id, Uint32 iterations); /* returns 0 on success, negative number on error */
-    bool (*StopEffect)(SDL_HIDAPI_HapticDevice *device, int id); /* returns 0 on success, negative number on error */
-    void (*DestroyEffect)(SDL_HIDAPI_HapticDevice *device, int id); /* returns 0 on success, negative number on error */
-    bool (*GetEffectStatus)(SDL_HIDAPI_HapticDevice *device, int id); /* returns 0 if not playing, 1 if playing, negative number on error */
-    bool (*SetGain)(SDL_HIDAPI_HapticDevice *device, int gain); /* gain 0 - 100, returns 0 on success, negative number on error */
-    bool (*SetAutocenter)(SDL_HIDAPI_HapticDevice *device, int autocenter); /* gain 0 - 100, returns 0 on success, negative number on error */
-    bool (*Pause)(SDL_HIDAPI_HapticDevice *device); /* returns 0 on success, negative number on error */
-    bool (*Resume)(SDL_HIDAPI_HapticDevice *device); /* returns 0 on success, negative number on error */
-    bool (*StopEffects)(SDL_HIDAPI_HapticDevice *device); /* returns 0 on success, negative number on error */
+    SDL_HapticEffectID (*CreateEffect)(SDL_HIDAPI_HapticDevice *device, const SDL_HapticEffect *data); /* returns effect id if created correctly, negative number on error */
+    bool (*UpdateEffect)(SDL_HIDAPI_HapticDevice *device, SDL_HapticEffectID id, const SDL_HapticEffect *data); /* returns true on success, false on error */
+    bool (*RunEffect)(SDL_HIDAPI_HapticDevice *device, SDL_HapticEffectID id, Uint32 iterations); /* returns true on success, false on error */
+    bool (*StopEffect)(SDL_HIDAPI_HapticDevice *device, SDL_HapticEffectID id); /* returns true on success, false on error */
+    void (*DestroyEffect)(SDL_HIDAPI_HapticDevice *device, SDL_HapticEffectID id);
+    bool (*GetEffectStatus)(SDL_HIDAPI_HapticDevice *device, SDL_HapticEffectID id); /* returns true if playing, false if not playing or on error */
+    bool (*SetGain)(SDL_HIDAPI_HapticDevice *device, int gain); /* gain 0 - 100, returns true on success, false on error */
+    bool (*SetAutocenter)(SDL_HIDAPI_HapticDevice *device, int autocenter); /* autocenter 0 - 100, returns true on success, false on error */
+    bool (*Pause)(SDL_HIDAPI_HapticDevice *device); /* returns true on success, false on error */
+    bool (*Resume)(SDL_HIDAPI_HapticDevice *device); /* returns true on success, false on error */
+    bool (*StopEffects)(SDL_HIDAPI_HapticDevice *device); /* returns true on success, false on error */
 };
 
 extern SDL_HIDAPI_HapticDriver SDL_HIDAPI_HapticDriverLg4ff;

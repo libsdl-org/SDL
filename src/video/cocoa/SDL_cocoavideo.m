@@ -49,9 +49,6 @@ static void Cocoa_VideoQuit(SDL_VideoDevice *_this);
 static void Cocoa_DeleteDevice(SDL_VideoDevice *device)
 {
     @autoreleasepool {
-        if (device->wakeup_lock) {
-            SDL_DestroyMutex(device->wakeup_lock);
-        }
         CFBridgingRelease(device->internal);
         SDL_free(device);
     }
@@ -81,7 +78,6 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
             return NULL;
         }
         device->internal = (SDL_VideoData *)CFBridgingRetain(data);
-        device->wakeup_lock = SDL_CreateMutex();
         device->system_theme = Cocoa_GetSystemTheme();
 
         // Set the function pointers
@@ -248,7 +244,7 @@ void Cocoa_VideoQuit(SDL_VideoDevice *_this)
 SDL_SystemTheme Cocoa_GetSystemTheme(void)
 {
     if (@available(macOS 10.14, *)) {
-        NSAppearance* appearance = [[NSApplication sharedApplication] effectiveAppearance];
+        NSAppearance *appearance = [[NSApplication sharedApplication] effectiveAppearance];
 
         if ([appearance.name containsString: @"Dark"]) {
             return SDL_SYSTEM_THEME_DARK;

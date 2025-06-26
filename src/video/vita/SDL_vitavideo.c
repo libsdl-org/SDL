@@ -147,6 +147,8 @@ static SDL_VideoDevice *VITA_Create(void)
 
     device->PumpEvents = VITA_PumpEvents;
 
+    device->device_caps = VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY;
+
     return device;
 }
 

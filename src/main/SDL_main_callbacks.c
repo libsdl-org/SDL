@@ -94,7 +94,7 @@ bool SDL_HasMainCallbacks(void)
     return false;
 }
 
-SDL_AppResult SDL_InitMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
+SDL_AppResult SDL_InitMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {
     SDL_main_iteration_callback = appiter;
     SDL_main_event_callback = appevent;

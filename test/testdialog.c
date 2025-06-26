@@ -15,8 +15,9 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-const SDL_DialogFileFilter filters[3] = {
+const SDL_DialogFileFilter filters[] = {
     { "All files", "*" },
+    { "SVI Session Indexes", "index;svi-index;index.pb" },
     { "JPG images", "jpg;jpeg" },
     { "PNG images", "png" }
 };
@@ -54,7 +55,6 @@ int main(int argc, char *argv[])
     const SDL_FRect open_folder_rect = { 370, 50, 220, 140 };
     int i;
     const char *initial_path = NULL;
-    const int nfilters = sizeof(filters) / sizeof(*filters);
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -112,11 +112,11 @@ int main(int argc, char *argv[])
                  * - Nonzero if the user is allowed to choose multiple entries (not for SDL_ShowSaveFileDialog)
                  */
                 if (SDL_PointInRectFloat(&p, &open_file_rect)) {
-                    SDL_ShowOpenFileDialog(callback, NULL, w, filters, nfilters, initial_path, 1);
+                    SDL_ShowOpenFileDialog(callback, NULL, w, filters, SDL_arraysize(filters), initial_path, 1);
                 } else if (SDL_PointInRectFloat(&p, &open_folder_rect)) {
                     SDL_ShowOpenFolderDialog(callback, NULL, w, initial_path, 1);
                 } else if (SDL_PointInRectFloat(&p, &save_file_rect)) {
-                    SDL_ShowSaveFileDialog(callback, NULL, w, filters, nfilters, initial_path);
+                    SDL_ShowSaveFileDialog(callback, NULL, w, filters, SDL_arraysize(filters), initial_path);
                 }
             }
         }

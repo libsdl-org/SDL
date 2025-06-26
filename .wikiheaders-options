@@ -9,6 +9,7 @@ versionfname = include/SDL3/SDL_version.h
 versionmajorregex = \A\#define\s+SDL_MAJOR_VERSION\s+(\d+)\Z
 versionminorregex = \A\#define\s+SDL_MINOR_VERSION\s+(\d+)\Z
 versionmicroregex = \A\#define\s+SDL_MICRO_VERSION\s+(\d+)\Z
+apipropertyregex = \A\s*\#\s*define\s+SDL_PROP_
 selectheaderregex = \ASDL.*?\.h\Z
 projecturl = https://libsdl.org/
 wikiurl = https://wiki.libsdl.org
@@ -25,7 +26,7 @@ manpagesymbolfilterregex = \A[US]int\d+\Z
 headercategoryeval = s/\ASDL_test_?.*?\.h\Z//; s/\ASDL_?(.*?)\.h\Z/$1/; ucfirst();
 
 quickrefenabled = 1
-quickrefcategoryorder = Init,Hints,Error,Version,Properties,Log,Video,Events,Keyboard,Mouse,Touch,Gamepad,Joystick,Haptic,Audio,Time,Timer,Render,SharedObject,Thread,Mutex,Atomic,Filesystem,IOStream,AsyncIO,Storage,Pixels,Surface,Blendmode,Rect,Camera,Clipboard,Dialog,GPU,Messagebox,Vulkan,Metal,Platform,Power,Sensor,Process,Bits,Endian,Assert,CPUInfo,Intrinsics,Locale,System,Misc,GUID,Main,Stdinc
+quickrefcategoryorder = Init,Hints,Error,Version,Properties,Log,Video,Events,Keyboard,Mouse,Touch,Gamepad,Joystick,Haptic,Audio,Time,Timer,Render,SharedObject,Thread,Mutex,Atomic,Filesystem,IOStream,AsyncIO,Storage,Pixels,Surface,Blendmode,Rect,Camera,Clipboard,Dialog,Tray,Messagebox,GPU,Vulkan,Metal,Platform,Power,Sensor,Process,Bits,Endian,Assert,CPUInfo,Intrinsics,Locale,System,Misc,GUID,Main,Stdinc
 quickreftitle = SDL3 API Quick Reference
 quickrefurl = https://libsdl.org/
 quickrefdesc = The latest version of this document can be found at https://wiki.libsdl.org/SDL3/QuickReference

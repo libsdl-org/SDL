@@ -319,7 +319,7 @@ private:
 	hid_buffer_entry *m_pFree;
 };
 
-static jbyteArray NewByteArray( JNIEnv* env, const uint8_t *pData, size_t nDataLen )
+static jbyteArray NewByteArray( JNIEnv *env, const uint8_t *pData, size_t nDataLen )
 {
 	jbyteArray array = env->NewByteArray( (jsize)nDataLen );
 	jbyte *pBuf = env->GetByteArrayElements( array, NULL );
@@ -333,7 +333,7 @@ static char *CreateStringFromJString( JNIEnv *env, const jstring &sString )
 {
 	size_t nLength = env->GetStringUTFLength( sString );
 	const char *pjChars = env->GetStringUTFChars( sString, NULL );
-	char *psString = (char*)malloc( nLength + 1 );
+	char *psString = (char *)malloc( nLength + 1 );
 	SDL_memcpy( psString, pjChars, nLength );
 	psString[ nLength ] = '\0';
 	env->ReleaseStringUTFChars( sString, pjChars );
@@ -344,7 +344,7 @@ static wchar_t *CreateWStringFromJString( JNIEnv *env, const jstring &sString )
 {
 	size_t nLength = env->GetStringLength( sString );
 	const jchar *pjChars = env->GetStringChars( sString, NULL );
-	wchar_t *pwString = (wchar_t*)malloc( ( nLength + 1 ) * sizeof( wchar_t ) );
+	wchar_t *pwString = (wchar_t *)malloc( ( nLength + 1 ) * sizeof( wchar_t ) );
 	wchar_t *pwChars = pwString;
 	for ( size_t iIndex = 0; iIndex < nLength; ++iIndex )
 	{
@@ -358,7 +358,7 @@ static wchar_t *CreateWStringFromJString( JNIEnv *env, const jstring &sString )
 static wchar_t *CreateWStringFromWString( const wchar_t *pwSrc )
 {
 	size_t nLength = SDL_wcslen( pwSrc );
-	wchar_t *pwString = (wchar_t*)malloc( ( nLength + 1 ) * sizeof( wchar_t ) );
+	wchar_t *pwString = (wchar_t *)malloc( ( nLength + 1 ) * sizeof( wchar_t ) );
 	SDL_memcpy( pwString, pwSrc, nLength * sizeof( wchar_t ) );
 	pwString[ nLength ] = '\0';
 	return pwString;
@@ -997,7 +997,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceInputReport)(J
 	hid_device_ref<CHIDDevice> pDevice = FindDevice( nDeviceID );
 	if ( pDevice )
 	{
-		pDevice->ProcessInput( reinterpret_cast< const uint8_t* >( pBuf ), nBufSize );
+		pDevice->ProcessInput( reinterpret_cast< const uint8_t * >( pBuf ), nBufSize );
 	}
 
 	env->ReleaseByteArrayElements(value, pBuf, 0);
@@ -1013,7 +1013,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceReportResponse
 	hid_device_ref<CHIDDevice> pDevice = FindDevice( nDeviceID );
 	if ( pDevice )
 	{
-		pDevice->ProcessReportResponse( reinterpret_cast< const uint8_t* >( pBuf ), nBufSize );
+		pDevice->ProcessReportResponse( reinterpret_cast< const uint8_t * >( pBuf ), nBufSize );
 	}
 
 	env->ReleaseByteArrayElements(value, pBuf, 0);
@@ -1375,7 +1375,7 @@ int hid_get_report_descriptor(hid_device *device, unsigned char *buf, size_t buf
     return -1;
 }
 
-HID_API_EXPORT const wchar_t* HID_API_CALL hid_error(hid_device *device)
+HID_API_EXPORT const wchar_t * HID_API_CALL hid_error(hid_device *device)
 {
 	return NULL;
 }

@@ -115,7 +115,11 @@
 #define CPU_CFG2_LSX  (1 << 6)
 #define CPU_CFG2_LASX (1 << 7)
 
-#if defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP) && !defined(SDL_PLATFORM_MACOS) && !defined(SDL_PLATFORM_OPENBSD) && !defined(SDL_PLATFORM_FREEBSD)
+#if !defined(SDL_CPUINFO_DISABLED) && \
+    !((defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))) || (defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__))) && \
+    !(defined(SDL_PLATFORM_FREEBSD) && defined(__powerpc__)) && \
+    !(defined(SDL_PLATFORM_LINUX) && defined(__powerpc__) && defined(HAVE_GETAUXVAL)) && \
+    defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
 /* This is the brute force way of detecting instruction sets...
    the idea is borrowed from the libmpeg2 library - thanks!
  */
@@ -344,6 +348,8 @@ static int CPU_haveAltiVec(void)
     elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
     altivec = cpufeatures & PPC_FEATURE_HAS_ALTIVEC;
     return altivec;
+#elif defined(SDL_PLATFORM_LINUX) && defined(__powerpc__) && defined(HAVE_GETAUXVAL)
+    altivec = getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC;
 #elif defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
     void (*handler)(int sig);
     handler = signal(SIGILL, illegal_instruction);
@@ -415,6 +421,12 @@ static int CPU_haveARMSIMD(void)
     return regs.r[0];
 }
 
+#elif defined(SDL_PLATFORM_NGAGE)
+static int CPU_haveARMSIMD(void)
+{
+    // The RM920T is based on the ARMv4T architecture and doesn't have SIMD.
+    return 0;
+}
 #else
 static int CPU_haveARMSIMD(void)
 {
@@ -462,6 +474,8 @@ static int CPU_haveNEON(void)
     return 1;
 #elif defined(SDL_PLATFORM_3DS)
     return 0;
+#elif defined(SDL_PLATFORM_NGAGE)
+    return 0; // The ARM920T is based on the ARMv4T architecture and doesn't have NEON.
 #elif defined(SDL_PLATFORM_APPLE) && defined(__ARM_ARCH) && (__ARM_ARCH >= 7)
     // (note that sysctlbyname("hw.optional.neon") doesn't work!)
     return 1; // all Apple ARMv7 chips and later have NEON.

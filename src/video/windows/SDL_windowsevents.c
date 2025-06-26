@@ -321,42 +321,7 @@ static void WIN_CheckAsyncMouseRelease(Uint64 timestamp, SDL_WindowData *data)
     data->mouse_button_flags = (WPARAM)-1;
 }
 
-static void WIN_UpdateMouseCapture(void)
-{
-    SDL_Window *focusWindow = SDL_GetKeyboardFocus();
-
-    if (focusWindow && (focusWindow->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
-        SDL_WindowData *data = focusWindow->internal;
-
-        if (!data->mouse_tracked) {
-            POINT cursorPos;
-
-            if (GetCursorPos(&cursorPos) && ScreenToClient(data->hwnd, &cursorPos)) {
-                bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
-                SDL_MouseID mouseID = SDL_GLOBAL_MOUSE_ID;
-
-                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, mouseID, false, (float)cursorPos.x, (float)cursorPos.y);
-                SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID,
-                                    !swapButtons ? SDL_BUTTON_LEFT : SDL_BUTTON_RIGHT,
-                                    (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0);
-                SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID,
-                                    !swapButtons ? SDL_BUTTON_RIGHT : SDL_BUTTON_LEFT,
-                                    (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0);
-                SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID,
-                                    SDL_BUTTON_MIDDLE,
-                                    (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0);
-                SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID,
-                                    SDL_BUTTON_X1,
-                                    (GetAsyncKeyState(VK_XBUTTON1) & 0x8000) != 0);
-                SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID,
-                                    SDL_BUTTON_X2,
-                                    (GetAsyncKeyState(VK_XBUTTON2) & 0x8000) != 0);
-            }
-        }
-    }
-}
-
-static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
+static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus, DWORD pos)
 {
     SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
@@ -389,11 +354,12 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus)
             }
         }
 
-        SDL_SetKeyboardFocus(data->keyboard_focus ? data->keyboard_focus : window);
+        SDL_SetKeyboardFocus(window->keyboard_focus ? window->keyboard_focus : window);
 
         // In relative mode we are guaranteed to have mouse focus if we have keyboard focus
         if (!SDL_GetMouse()->relative_mode) {
-            GetCursorPos(&cursorPos);
+            cursorPos.x = (LONG)GET_X_LPARAM(pos);
+            cursorPos.y = (LONG)GET_Y_LPARAM(pos);
             ScreenToClient(hwnd, &cursorPos);
             SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, SDL_GLOBAL_MOUSE_ID, false, (float)cursorPos.x, (float)cursorPos.y);
         }
@@ -475,11 +441,6 @@ static SDL_MOUSE_EVENT_SOURCE GetMouseMessageSource(ULONG extrainfo)
         } else {
             return SDL_MOUSE_EVENT_SOURCE_PEN;
         }
-    }
-    /* Sometimes WM_INPUT events won't have the correct touch signature,
-      so we have to rely purely on the touch bit being set. */
-    if (SDL_TouchDevicesAvailable() && extrainfo & 0x80) {
-        return SDL_MOUSE_EVENT_SOURCE_TOUCH;
     }
     return SDL_MOUSE_EVENT_SOURCE_MOUSE;
 }
@@ -618,7 +579,8 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
         return;
     }
 
-    if (GetMouseMessageSource(rawmouse->ulExtraInformation) != SDL_MOUSE_EVENT_SOURCE_MOUSE) {
+    if (GetMouseMessageSource(rawmouse->ulExtraInformation) != SDL_MOUSE_EVENT_SOURCE_MOUSE ||
+        (SDL_TouchDevicesAvailable() && (rawmouse->ulExtraInformation & 0x80) == 0x80)) {
         return;
     }
 
@@ -739,6 +701,10 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
             float fAmount = (float)amount / WHEEL_DELTA;
             SDL_SendMouseWheel(WIN_GetEventTimestamp(), window, mouseID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
         }
+
+        /* Invalidate the mouse button flags. If we don't do this then disabling raw input
+           will cause held down mouse buttons to persist when released. */
+        windowdata->mouse_button_flags = (WPARAM)-1;
     }
 }
 
@@ -1239,22 +1205,19 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_NCACTIVATE:
     {
         // Don't immediately clip the cursor in case we're clicking minimize/maximize buttons
-        // This is the only place that this flag is set. This causes all subsequent calls to
-        // WIN_UpdateClipCursor for this window to be no-ops in this frame's message-pumping.
-        // This flag is unset at the end of message pumping each frame for every window, and
-        // should never be carried over between frames.
-        data->skip_update_clipcursor = true;
+        data->postpone_clipcursor = true;
+        data->clipcursor_queued = true;
 
         /* Update the focus here, since it's possible to get WM_ACTIVATE and WM_SETFOCUS without
            actually being the foreground window, but this appears to get called in all cases where
            the global foreground window changes to and from this window. */
-        WIN_UpdateFocus(data->window, !!wParam);
+        WIN_UpdateFocus(data->window, !!wParam, GetMessagePos());
     } break;
 
     case WM_ACTIVATE:
     {
         // Update the focus in case we changed focus to a child window and then away from the application
-        WIN_UpdateFocus(data->window, !!LOWORD(wParam));
+        WIN_UpdateFocus(data->window, !!LOWORD(wParam), GetMessagePos());
     } break;
 
     case WM_MOUSEACTIVATE:
@@ -1277,14 +1240,14 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_SETFOCUS:
     {
         // Update the focus in case it's changing between top-level windows in the same application
-        WIN_UpdateFocus(data->window, true);
+        WIN_UpdateFocus(data->window, true, GetMessagePos());
     } break;
 
     case WM_KILLFOCUS:
     case WM_ENTERIDLE:
     {
         // Update the focus in case it's changing between top-level windows in the same application
-        WIN_UpdateFocus(data->window, false);
+        WIN_UpdateFocus(data->window, false, GetMessagePos());
     } break;
 
     case WM_POINTERENTER:
@@ -1365,8 +1328,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         const Uint64 timestamp = WIN_GetEventTimestamp();
         SDL_Window *window = data->window;
 
+        const bool istouching = IS_POINTER_INCONTACT_WPARAM(wParam) && IS_POINTER_FIRSTBUTTON_WPARAM(wParam);
+
         // if lifting off, do it first, so any motion changes don't cause app issues.
-        if (msg == WM_POINTERUP) {
+        if (!istouching) {
             SDL_SendPenTouch(timestamp, pen, window, (pen_info.penFlags & PEN_FLAG_INVERTED) != 0, false);
         }
 
@@ -1396,7 +1361,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
 
         // if setting down, do it last, so the pen is positioned correctly from the first contact.
-        if (msg == WM_POINTERDOWN) {
+        if (istouching) {
             SDL_SendPenTouch(timestamp, pen, window, (pen_info.penFlags & PEN_FLAG_INVERTED) != 0, true);
         }
 
@@ -1412,9 +1377,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 window->flags & (SDL_WINDOW_MOUSE_RELATIVE_MODE | SDL_WINDOW_MOUSE_GRABBED) ||
                 (window->mouse_rect.w > 0 && window->mouse_rect.h > 0)
             );
-            if (wish_clip_cursor) {
-                data->skip_update_clipcursor = false;
-                WIN_UpdateClipCursor(window);
+            if (wish_clip_cursor) { // queue clipcursor refresh on pump finish
+                data->clipcursor_queued = true;
             }
         }
 
@@ -1439,6 +1403,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
             }
         }
+        
     } break;
 
     case WM_LBUTTONUP:
@@ -1502,8 +1467,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
             if (SDL_GetMouseFocus() == data->window && !SDL_GetMouse()->relative_mode && !IsIconic(hwnd)) {
                 SDL_Mouse *mouse;
+                DWORD pos = GetMessagePos();
                 POINT cursorPos;
-                GetCursorPos(&cursorPos);
+                cursorPos.x = GET_X_LPARAM(pos);
+                cursorPos.y = GET_Y_LPARAM(pos);
                 ScreenToClient(hwnd, &cursorPos);
                 mouse = SDL_GetMouse();
                 if (!mouse->was_touch_mouse_events) { // we're not a touch handler causing a mouse leave?
@@ -1642,7 +1609,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         // Reference: https://gamedev.net/forums/topic/672094-keeping-things-moving-during-win32-moveresize-events/5254386/
         if (SendMessage(hwnd, WM_NCHITTEST, wParam, lParam) == HTCAPTION) {
             POINT cursorPos;
-            GetCursorPos(&cursorPos);
+            GetCursorPos(&cursorPos); // want the most current pos so as to not cause position change
             ScreenToClient(hwnd, &cursorPos);
             PostMessage(hwnd, WM_MOUSEMOVE, 0, cursorPos.x | (((Uint32)((Sint16)cursorPos.y)) << 16));
         }
@@ -1751,8 +1718,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         SDL_Window *win;
         const SDL_DisplayID original_displayID = data->last_displayID;
         const WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
-        const bool iconic = IsIconic(hwnd);
-        const bool zoomed = IsZoomed(hwnd);
+        bool iconic;
+        bool zoomed;
         RECT rect;
         int x, y;
         int w, h;
@@ -1760,6 +1727,11 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         if (windowpos->flags & SWP_SHOWWINDOW) {
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
         }
+
+        // These must be set after sending SDL_EVENT_WINDOW_SHOWN as that may apply pending
+        // window operations that change the window state.
+        iconic = IsIconic(hwnd);
+        zoomed = IsZoomed(hwnd);
 
         if (iconic) {
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
@@ -1856,6 +1828,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             data->initial_size_rect.bottom = data->window->y + data->window->h;
 
             SetTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks, USER_TIMER_MINIMUM, NULL);
+
+            // Reset the keyboard, as we won't get any key up events during the modal loop
+            SDL_ResetKeyboard();
         }
     } break;
 
@@ -2521,10 +2496,6 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
 #pragma warning(pop)
 #endif
     int new_messages = 0;
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    const bool *keystate;
-    SDL_Window *focusWindow;
-#endif
 
     if (_this->internal->gameinput_context) {
         WIN_UpdateGameInput(_this);
@@ -2580,7 +2551,7 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
        You won't get a KEYUP until both are released, and that keyup will only be for the second
        key you released. Take heroic measures and check the keystate as of the last handled event,
        and if we think a key is pressed when Windows doesn't, unstick it in SDL's state. */
-    keystate = SDL_GetKeyboardState(NULL);
+    const bool *keystate = SDL_GetKeyboardState(NULL);
     if (keystate[SDL_SCANCODE_LSHIFT] && !(GetKeyState(VK_LSHIFT) & 0x8000)) {
         SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_LSHIFT, false);
     }
@@ -2591,7 +2562,7 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
     /* The Windows key state gets lost when using Windows+Space or Windows+G shortcuts and
        not grabbing the keyboard. Note: If we *are* grabbing the keyboard, GetKeyState()
        will return inaccurate results for VK_LWIN and VK_RWIN but we don't need it anyway. */
-    focusWindow = SDL_GetKeyboardFocus();
+    SDL_Window *focusWindow = SDL_GetKeyboardFocus();
     if (!focusWindow || !(focusWindow->flags & SDL_WINDOW_KEYBOARD_GRABBED)) {
         if (keystate[SDL_SCANCODE_LGUI] && !(GetKeyState(VK_LWIN) & 0x8000)) {
             SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, SDL_SCANCODE_LGUI, false);
@@ -2601,21 +2572,68 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
         }
     }
 
-    // Update the clipping rect in case someone else has stolen it
+    // fire queued clipcursor refreshes
     if (_this) {
         SDL_Window *window = _this->windows;
         while (window) {
+            bool refresh_clipcursor = false;
             SDL_WindowData *data = window->internal;
-            if (data && data->skip_update_clipcursor) {
-                data->skip_update_clipcursor = false;
+            if (data) {
+                refresh_clipcursor = data->clipcursor_queued;
+                data->clipcursor_queued = false;    // Must be cleared unconditionally.
+                data->postpone_clipcursor = false;  // Must be cleared unconditionally.
+                                                    // Must happen before UpdateClipCursor.
+                                                    // Although its occurrence currently
+                                                    // always coincides with the queuing of
+                                                    // clipcursor, it is logically distinct
+                                                    // and this coincidence might no longer
+                                                    // be true in the future.
+                                                    // Ergo this placement concordantly
+                                                    // conveys its unconditionality 
+                                                    // vis-a-vis the queuing of clipcursor.
+            }
+            if (refresh_clipcursor) {
                 WIN_UpdateClipCursor(window);
             }
             window = window->next;
         }
     }
 
-    // Update mouse capture
-    WIN_UpdateMouseCapture();
+    // Synchronize internal mouse capture state to the most current cursor state
+    // since for whatever reason we are not depending exclusively on SetCapture/
+    // ReleaseCapture to pipe in out-of-window mouse events.
+    // Formerly WIN_UpdateMouseCapture().
+    // TODO: can this go before clipcursor?
+    focusWindow = SDL_GetKeyboardFocus();
+    if (focusWindow && (focusWindow->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+        SDL_WindowData *data = focusWindow->internal;
+
+        if (!data->mouse_tracked) {
+            POINT cursorPos;
+
+            if (GetCursorPos(&cursorPos) && ScreenToClient(data->hwnd, &cursorPos)) {
+                bool swapButtons = GetSystemMetrics(SM_SWAPBUTTON) != 0;
+                SDL_MouseID mouseID = SDL_GLOBAL_MOUSE_ID;
+
+                SDL_SendMouseMotion(WIN_GetEventTimestamp(), data->window, mouseID, false, (float)cursorPos.x, (float)cursorPos.y);
+                SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID,
+                                    !swapButtons ? SDL_BUTTON_LEFT : SDL_BUTTON_RIGHT,
+                                    (GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0);
+                SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID,
+                                    !swapButtons ? SDL_BUTTON_RIGHT : SDL_BUTTON_LEFT,
+                                    (GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0);
+                SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID,
+                                    SDL_BUTTON_MIDDLE,
+                                    (GetAsyncKeyState(VK_MBUTTON) & 0x8000) != 0);
+                SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID,
+                                    SDL_BUTTON_X1,
+                                    (GetAsyncKeyState(VK_XBUTTON1) & 0x8000) != 0);
+                SDL_SendMouseButton(WIN_GetEventTimestamp(), data->window, mouseID,
+                                    SDL_BUTTON_X2,
+                                    (GetAsyncKeyState(VK_XBUTTON2) & 0x8000) != 0);
+            }
+        }
+    }
 
     if (!_this->internal->gameinput_context) {
         WIN_CheckKeyboardAndMouseHotplug(_this, false);

@@ -240,7 +240,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         int i;
         SDL_MouseButtonFlags buttons = SDL_GetMouseState(NULL, NULL);
 
-        for (i = 0; i < MAX_MOUSE_BUTTONS; ++i) {
+        for (i = 1; i <= MAX_MOUSE_BUTTONS; ++i) {
             if (buttons & SDL_BUTTON_MASK(i)) {
                 SDL_SendMouseButton(UIKit_GetEventTimestamp([touch timestamp]), sdlwindow, SDL_GLOBAL_MOUSE_ID, (Uint8)i, false);
             }

@@ -771,7 +771,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             /* the new mime formats are the SDL_FORMATS property as an array of Atoms */
             Atom atom = None;
             Atom *patom;
-            unsigned char* data = NULL;
+            unsigned char *data = NULL;
             int format_property = 0;
             unsigned long length = 0;
             unsigned long bytes_left = 0;
@@ -780,8 +780,8 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             X11_XGetWindowProperty(display, GetWindow(_this), videodata->atoms.SDL_FORMATS, 0, 200,
                                             0, XA_ATOM, &atom, &format_property, &length, &bytes_left, &data);
 
-            int allocationsize = (length + 1) * sizeof(char*);
-            for (j = 0, patom = (Atom*)data; j < length; j++, patom++) {
+            int allocationsize = (length + 1) * sizeof(char *);
+            for (j = 0, patom = (Atom *)data; j < length; j++, patom++) {
                 char *atomStr = X11_XGetAtomName(display, *patom);
                 allocationsize += SDL_strlen(atomStr) + 1;
                 X11_XFree(atomStr);
@@ -791,7 +791,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             if (new_mime_types) {
                 char *strPtr = (char *)(new_mime_types + length + 1);
 
-                for (j = 0, patom = (Atom*)data; j < length; j++, patom++) {
+                for (j = 0, patom = (Atom *)data; j < length; j++, patom++) {
                     char *atomStr = X11_XGetAtomName(display, *patom);
                     new_mime_types[j] = strPtr;
                     strPtr = stpcpy(strPtr, atomStr) + 1;
@@ -1111,6 +1111,41 @@ void X11_GetBorderValues(SDL_WindowData *data)
     }
 }
 
+void X11_EmitConfigureNotifyEvents(SDL_WindowData *data, XConfigureEvent *xevent)
+{
+    if (xevent->x != data->last_xconfigure.x ||
+        xevent->y != data->last_xconfigure.y) {
+        if (!data->size_move_event_flags) {
+            SDL_Window *w;
+            int x = xevent->x;
+            int y = xevent->y;
+
+            data->pending_operation &= ~X11_PENDING_OP_MOVE;
+            SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
+
+            for (w = data->window->first_child; w; w = w->next_sibling) {
+                // Don't update hidden child popup windows, their relative position doesn't change
+                if (SDL_WINDOW_IS_POPUP(w) && !(w->flags & SDL_WINDOW_HIDDEN)) {
+                    X11_UpdateWindowPosition(w, true);
+                }
+            }
+        }
+    }
+
+    if (xevent->width != data->last_xconfigure.width ||
+        xevent->height != data->last_xconfigure.height) {
+        if (!data->size_move_event_flags) {
+            data->pending_operation &= ~X11_PENDING_OP_RESIZE;
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
+                                xevent->width,
+                                xevent->height);
+        }
+    }
+
+    SDL_copyp(&data->last_xconfigure, xevent);
+}
+
 static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 {
     SDL_VideoData *videodata = _this->internal;
@@ -1306,8 +1341,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             SDL_SendMouseMotion(0, data->window, SDL_GLOBAL_MOUSE_ID, false, (float)xevent->xcrossing.x, (float)xevent->xcrossing.y);
         }
 
-        // We ungrab in LeaveNotify, so we may need to grab again here
-        SDL_UpdateWindowGrab(data->window);
+        // We ungrab in LeaveNotify, so we may need to grab again here, but not if captured, as the capture can be lost.
+        if (!(data->window->flags & SDL_WINDOW_MOUSE_CAPTURE)) {
+            SDL_UpdateWindowGrab(data->window);
+        }
 
         X11_ProcessHitTest(_this, data, mouse->last_x, mouse->last_y, true);
     } break;
@@ -1462,9 +1499,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                xevent->xconfigure.x, xevent->xconfigure.y,
                xevent->xconfigure.width, xevent->xconfigure.height);
 #endif
-            // Real configure notify events are relative to the parent, synthetic events are absolute.
-            if (!xevent->xconfigure.send_event)
-        {
+        // Real configure notify events are relative to the parent, synthetic events are absolute.
+        if (!xevent->xconfigure.send_event) {
             unsigned int NumChildren;
             Window ChildReturn, Root, Parent;
             Window *Children;
@@ -1477,41 +1513,24 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                                       &ChildReturn);
         }
 
-        if (xevent->xconfigure.x != data->last_xconfigure.x ||
-            xevent->xconfigure.y != data->last_xconfigure.y) {
-            if (!data->size_move_event_flags) {
-                SDL_Window *w;
-                int x = xevent->xconfigure.x;
-                int y = xevent->xconfigure.y;
+        /* Some window managers send ConfigureNotify before PropertyNotify when changing state (Xfce and
+         * fvwm are known to do this), which is backwards from other window managers, as well as what is
+         * expected by SDL and its clients. Defer emitting the size/move events until the corresponding
+         * PropertyNotify arrives for consistency.
+         */
+        const Uint32 changed = X11_GetNetWMState(_this, data->window, xevent->xproperty.window) ^ data->window->flags;
+        if (changed & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) {
+            SDL_copyp(&data->pending_xconfigure, &xevent->xconfigure);
+            data->emit_size_move_after_property_notify = true;
+        }
 
-                data->pending_operation &= ~X11_PENDING_OP_MOVE;
-                SDL_GlobalToRelativeForWindow(data->window, x, y, &x, &y);
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MOVED, x, y);
-
-                for (w = data->window->first_child; w; w = w->next_sibling) {
-                    // Don't update hidden child popup windows, their relative position doesn't change
-                    if (SDL_WINDOW_IS_POPUP(w) && !(w->flags & SDL_WINDOW_HIDDEN)) {
-                        X11_UpdateWindowPosition(w, true);
-                    }
-                }
-            }
+        if (!data->emit_size_move_after_property_notify) {
+            X11_EmitConfigureNotifyEvents(data, &xevent->xconfigure);
         }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XSYNC
         X11_HandleConfigure(data->window, &xevent->xconfigure);
 #endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
-
-        if (xevent->xconfigure.width != data->last_xconfigure.width ||
-            xevent->xconfigure.height != data->last_xconfigure.height) {
-            if (!data->size_move_event_flags) {
-                data->pending_operation &= ~X11_PENDING_OP_RESIZE;
-                SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED,
-                                    xevent->xconfigure.width,
-                                    xevent->xconfigure.height);
-            }
-        }
-
-        data->last_xconfigure = xevent->xconfigure;
     } break;
 
         // Have we been requested to quit (or another client message?)
@@ -1909,6 +1928,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                         }
                     }
                 }
+                if (data->emit_size_move_after_property_notify) {
+                    X11_EmitConfigureNotifyEvents(data, &data->pending_xconfigure);
+                    data->emit_size_move_after_property_notify = false;
+                }
                 if ((flags & SDL_WINDOW_INPUT_FOCUS)) {
                     if (data->pending_move) {
                         DispatchWindowMove(_this, data, &data->pending_move_point);
@@ -1928,13 +1951,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                right approach, but it seems to work. */
             X11_UpdateKeymap(_this, true);
         } else if (xevent->xproperty.atom == videodata->atoms._NET_FRAME_EXTENTS) {
-            /* Events are disabled when leaving fullscreen until the borders appear to avoid
-             * incorrect size/position events.
-             */
+            X11_GetBorderValues(data);
             if (data->size_move_event_flags) {
+                /* Events are disabled when leaving fullscreen until the borders appear to avoid
+                 * incorrect size/position events on compositing window managers.
+                 */
                 data->size_move_event_flags &= ~X11_SIZE_MOVE_EVENTS_WAIT_FOR_BORDERS;
-                X11_GetBorderValues(data);
-
             }
             if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
                 data->toggle_borders = false;

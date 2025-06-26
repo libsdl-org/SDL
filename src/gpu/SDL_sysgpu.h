@@ -24,6 +24,21 @@
 #ifndef SDL_GPU_DRIVER_H
 #define SDL_GPU_DRIVER_H
 
+// GraphicsDevice Limits
+
+#define MAX_TEXTURE_SAMPLERS_PER_STAGE 16
+#define MAX_STORAGE_TEXTURES_PER_STAGE 8
+#define MAX_STORAGE_BUFFERS_PER_STAGE  8
+#define MAX_UNIFORM_BUFFERS_PER_STAGE  4
+#define MAX_COMPUTE_WRITE_TEXTURES     8
+#define MAX_COMPUTE_WRITE_BUFFERS      8
+#define UNIFORM_BUFFER_SIZE            32768
+#define MAX_VERTEX_BUFFERS             16
+#define MAX_VERTEX_ATTRIBUTES          16
+#define MAX_COLOR_TARGET_BINDINGS      4
+#define MAX_PRESENT_COUNT              16
+#define MAX_FRAMES_IN_FLIGHT           3
+
 // Common Structs
 
 typedef struct Pass
@@ -32,22 +47,80 @@ typedef struct Pass
     bool in_progress;
 } Pass;
 
+typedef struct ComputePass
+{
+    SDL_GPUCommandBuffer *command_buffer;
+    bool in_progress;
+
+    SDL_GPUComputePipeline *compute_pipeline;
+
+    bool sampler_bound[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    bool read_only_storage_texture_bound[MAX_STORAGE_TEXTURES_PER_STAGE];
+    bool read_only_storage_buffer_bound[MAX_STORAGE_BUFFERS_PER_STAGE];
+    bool read_write_storage_texture_bound[MAX_COMPUTE_WRITE_TEXTURES];
+    bool read_write_storage_buffer_bound[MAX_COMPUTE_WRITE_BUFFERS];
+} ComputePass;
+
+typedef struct RenderPass
+{
+    SDL_GPUCommandBuffer *command_buffer;
+    bool in_progress;
+    SDL_GPUTexture *color_targets[MAX_COLOR_TARGET_BINDINGS];
+    Uint32 num_color_targets;
+    SDL_GPUTexture *depth_stencil_target;
+
+    SDL_GPUGraphicsPipeline *graphics_pipeline;
+
+    bool vertex_sampler_bound[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    bool vertex_storage_texture_bound[MAX_STORAGE_TEXTURES_PER_STAGE];
+    bool vertex_storage_buffer_bound[MAX_STORAGE_BUFFERS_PER_STAGE];
+
+    bool fragment_sampler_bound[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    bool fragment_storage_texture_bound[MAX_STORAGE_TEXTURES_PER_STAGE];
+    bool fragment_storage_buffer_bound[MAX_STORAGE_BUFFERS_PER_STAGE];
+} RenderPass;
+
 typedef struct CommandBufferCommonHeader
 {
     SDL_GPUDevice *device;
-    Pass render_pass;
-    bool graphics_pipeline_bound;
-    Pass compute_pass;
-    bool compute_pipeline_bound;
+
+    RenderPass render_pass;
+    ComputePass compute_pass;
+
     Pass copy_pass;
     bool swapchain_texture_acquired;
     bool submitted;
+    // used to avoid tripping assert on GenerateMipmaps
+    bool ignore_render_pass_texture_validation;
 } CommandBufferCommonHeader;
 
 typedef struct TextureCommonHeader
 {
     SDL_GPUTextureCreateInfo info;
 } TextureCommonHeader;
+
+typedef struct GraphicsPipelineCommonHeader
+{
+    Uint32 num_vertex_samplers;
+    Uint32 num_vertex_storage_textures;
+    Uint32 num_vertex_storage_buffers;
+    Uint32 num_vertex_uniform_buffers;
+
+    Uint32 num_fragment_samplers;
+    Uint32 num_fragment_storage_textures;
+    Uint32 num_fragment_storage_buffers;
+    Uint32 num_fragment_uniform_buffers;
+} GraphicsPipelineCommonHeader;
+
+typedef struct ComputePipelineCommonHeader
+{
+    Uint32 numSamplers;
+    Uint32 numReadonlyStorageTextures;
+    Uint32 numReadonlyStorageBuffers;
+    Uint32 numReadWriteStorageTextures;
+    Uint32 numReadWriteStorageBuffers;
+    Uint32 numUniformBuffers;
+} ComputePipelineCommonHeader;
 
 typedef struct BlitFragmentUniforms
 {
@@ -438,6 +511,89 @@ static inline bool IsCompressedFormat(
     }
 }
 
+static inline bool FormatHasAlpha(
+    SDL_GPUTextureFormat format)
+{
+    switch (format) {
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT:
+            // ASTC textures may or may not have alpha; return true as this is mainly intended for validation
+            return true;
+
+        case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_A8_UNORM:
+        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
+        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM:
+        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
+        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
+        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
+        case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT:
+        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT:
+        case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT:
+        case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT:
+        case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB:
+        case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
+            return true;
+
+        default:
+            return false;
+    }
+}
+
 static inline Uint32 IndexSize(SDL_GPUIndexElementSize size)
 {
     return (size == SDL_GPU_INDEXELEMENTSIZE_16BIT) ? 2 : 4;
@@ -451,21 +607,6 @@ static inline Uint32 BytesPerRow(
     Uint32 blocksPerRow = (width + blockWidth - 1) / blockWidth;
     return blocksPerRow * SDL_GPUTextureFormatTexelBlockSize(format);
 }
-
-// GraphicsDevice Limits
-
-#define MAX_TEXTURE_SAMPLERS_PER_STAGE 16
-#define MAX_STORAGE_TEXTURES_PER_STAGE 8
-#define MAX_STORAGE_BUFFERS_PER_STAGE  8
-#define MAX_UNIFORM_BUFFERS_PER_STAGE  4
-#define MAX_COMPUTE_WRITE_TEXTURES     8
-#define MAX_COMPUTE_WRITE_BUFFERS      8
-#define UNIFORM_BUFFER_SIZE            32768
-#define MAX_VERTEX_BUFFERS             16
-#define MAX_VERTEX_ATTRIBUTES          16
-#define MAX_COLOR_TARGET_BINDINGS      4
-#define MAX_PRESENT_COUNT              16
-#define MAX_FRAMES_IN_FLIGHT           3
 
 // Internal Macros
 
@@ -1047,8 +1188,7 @@ struct SDL_GPUDevice
 typedef struct SDL_GPUBootstrap
 {
     const char *name;
-    const SDL_GPUShaderFormat shader_formats;
-    bool (*PrepareDriver)(SDL_VideoDevice *_this);
+    bool (*PrepareDriver)(SDL_VideoDevice *_this, SDL_PropertiesID props);
     SDL_GPUDevice *(*CreateDevice)(bool debug_mode, bool prefer_low_power, SDL_PropertiesID props);
 } SDL_GPUBootstrap;
 

@@ -205,39 +205,30 @@ static HBITMAP CreateMaskBitmap(SDL_Surface *surface, bool is_monochrome)
 
 static HCURSOR WIN_CreateHCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
-    HCURSOR hcursor;
-    ICONINFO ii;
+    HCURSOR hcursor = NULL;
     bool is_monochrome = IsMonochromeSurface(surface);
-
-    SDL_zero(ii);
-    ii.fIcon = FALSE;
-    ii.xHotspot = (DWORD)hot_x;
-    ii.yHotspot = (DWORD)hot_y;
-    ii.hbmMask = CreateMaskBitmap(surface, is_monochrome);
-    ii.hbmColor = is_monochrome ? NULL : CreateColorBitmap(surface);
+    ICONINFO ii = { 
+        .fIcon = FALSE, 
+        .xHotspot = (DWORD)hot_x, 
+        .yHotspot = (DWORD)hot_y,
+        .hbmMask = CreateMaskBitmap(surface, is_monochrome),
+        .hbmColor = is_monochrome ? NULL : CreateColorBitmap(surface) 
+    };
 
     if (!ii.hbmMask || (!is_monochrome && !ii.hbmColor)) {
         SDL_SetError("Couldn't create cursor bitmaps");
-        if (ii.hbmMask) {
-            DeleteObject(ii.hbmMask);
-        }
-        if (ii.hbmColor) {
-            DeleteObject(ii.hbmColor);
-        }
-        return NULL;
+        goto cleanup;
     }
 
     hcursor = CreateIconIndirect(&ii);
     if (!hcursor) {
-        WIN_SetError("CreateIconIndirect()");
-        DeleteObject(ii.hbmMask);
-        if (ii.hbmColor) {
-            DeleteObject(ii.hbmColor);
-        }
-        return NULL;
+        WIN_SetError("CreateIconIndirect failed");
     }
 
-    DeleteObject(ii.hbmMask);
+cleanup:
+    if (ii.hbmMask) {
+        DeleteObject(ii.hbmMask);
+    }
     if (ii.hbmColor) {
         DeleteObject(ii.hbmColor);
     }
@@ -705,8 +696,8 @@ static void ReadMouseCurve(int v, Uint64 xs[5], Uint64 ys[5])
     ys[0] = 0; // first node must always be origin
     int i;
     for (i = 1; i < 5; i++) {
-        xs[i] = (7 * (Uint64)xbuff[i*2]);
-        ys[i] = (v * (Uint64)ybuff[i*2]) << 17;
+        xs[i] = (7 * (Uint64)xbuff[i * 2]);
+        ys[i] = (v * (Uint64)ybuff[i * 2]) << 17;
     }
 }
 

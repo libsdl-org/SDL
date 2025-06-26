@@ -209,8 +209,8 @@ static GAMEINPUT_InternalDevice *GAMEINPUT_InternalFindByIndex(int idx)
 
 static void CALLBACK GAMEINPUT_InternalJoystickDeviceCallback(
     _In_ GameInputCallbackToken callbackToken,
-    _In_ void* context,
-    _In_ IGameInputDevice* device,
+    _In_ void *context,
+    _In_ IGameInputDevice *device,
     _In_ uint64_t timestamp,
     _In_ GameInputDeviceStatus currentStatus,
     _In_ GameInputDeviceStatus previousStatus)
@@ -697,7 +697,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
     GAMEINPUT_UpdatePowerInfo(joystick, device);
 }
 
-static void GAMEINPUT_JoystickClose(SDL_Joystick* joystick)
+static void GAMEINPUT_JoystickClose(SDL_Joystick *joystick)
 {
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
 

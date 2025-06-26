@@ -99,8 +99,6 @@ typedef struct
     Uint8 integer_mode_flags; // 1 to enable mouse quantization, 2 to enable wheel quantization
     float integer_mode_residual_motion_x;
     float integer_mode_residual_motion_y;
-    float integer_mode_residual_scroll_x;
-    float integer_mode_residual_scroll_y;
 
     // Data common to all mice
     SDL_Window *focus;
@@ -109,12 +107,14 @@ typedef struct
     float x_accu;
     float y_accu;
     float last_x, last_y; // the last reported x and y coordinates
+    float residual_scroll_x;
+    float residual_scroll_y;
     double click_motion_x;
     double click_motion_y;
     bool has_position;
     bool relative_mode;
     bool relative_mode_warp_motion;
-    bool relative_mode_cursor_visible;
+    bool relative_mode_hide_cursor;
     bool relative_mode_center;
     bool warp_emulation_hint;
     bool warp_emulation_active;
@@ -148,7 +148,7 @@ typedef struct
     SDL_Cursor *cursors;
     SDL_Cursor *def_cursor;
     SDL_Cursor *cur_cursor;
-    bool cursor_shown;
+    bool cursor_visible;
 
     // Driver-dependent data.
     void *internal;
@@ -174,6 +174,9 @@ extern void SDL_SetMouseName(SDL_MouseID mouseID, const char *name);
 
 // Get the mouse state structure
 extern SDL_Mouse *SDL_GetMouse(void);
+
+// Set the default mouse cursor
+extern void SDL_RedrawCursor(void);
 
 // Set the default mouse cursor
 extern void SDL_SetDefaultCursor(SDL_Cursor *cursor);

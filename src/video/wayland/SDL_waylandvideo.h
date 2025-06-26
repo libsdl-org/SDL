@@ -65,6 +65,7 @@ struct SDL_VideoData
     } shell;
     struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
     struct zwp_pointer_constraints_v1 *pointer_constraints;
+    struct wp_pointer_warp_v1 *wp_pointer_warp_v1;
     struct wp_cursor_shape_manager_v1 *cursor_shape_manager;
     struct wl_data_device_manager *data_device_manager;
     struct zwp_primary_selection_device_manager_v1 *primary_selection_device_manager;
@@ -96,9 +97,7 @@ struct SDL_VideoData
     int output_count;
     int output_max;
 
-    bool relative_mode_enabled;
     bool display_externally_owned;
-
     bool scale_to_display_enabled;
 };
 

@@ -132,7 +132,7 @@ extern "C" {
     #define SDL_TriggerBreakpoint() __debugbreak()
 #elif defined(_MSC_VER) && defined(_M_IX86)
     #define SDL_TriggerBreakpoint() { _asm { int 0x03 }  }
-#elif defined(ANDROID)
+#elif defined(ANDROID) || defined(__SYMBIAN32__)
     #include <assert.h>
     #define SDL_TriggerBreakpoint() assert(0)
 #elif SDL_HAS_BUILTIN(__builtin_debugtrap)

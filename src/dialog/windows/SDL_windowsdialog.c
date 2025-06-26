@@ -261,7 +261,7 @@ void windows_ShowFileDialog(void *ptr)
 
             chosen_files_list[nfiles] = NULL;
 
-            if (WideCharToMultiByte(CP_UTF8, 0, file_ptr, -1, chosen_folder, MAX_PATH, NULL, NULL) >= MAX_PATH) {
+            if (WideCharToMultiByte(CP_UTF8, 0, file_ptr, -1, chosen_folder, MAX_PATH, NULL, NULL) == 0) {
                 SDL_SetError("Path too long or invalid character in path");
                 SDL_free(chosen_files_list);
                 callback(userdata, NULL, -1);
@@ -273,11 +273,11 @@ void windows_ShowFileDialog(void *ptr)
             SDL_strlcpy(chosen_file, chosen_folder, MAX_PATH);
             chosen_file[chosen_folder_size] = '\\';
 
-            file_ptr += SDL_strlen(chosen_folder) + 1;
+            file_ptr += SDL_wcslen(file_ptr) + 1;
 
             while (*file_ptr) {
                 nfiles++;
-                char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char*) * (nfiles + 1));
+                char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char *) * (nfiles + 1));
 
                 if (!new_cfl) {
                     for (size_t i = 0; i < nfiles - 1; i++) {
@@ -295,7 +295,7 @@ void windows_ShowFileDialog(void *ptr)
 
                 int diff = ((int) chosen_folder_size) + 1;
 
-                if (WideCharToMultiByte(CP_UTF8, 0, file_ptr, -1, chosen_file + diff, MAX_PATH - diff, NULL, NULL) >= MAX_PATH - diff) {
+                if (WideCharToMultiByte(CP_UTF8, 0, file_ptr, -1, chosen_file + diff, MAX_PATH - diff, NULL, NULL) == 0) {
                     SDL_SetError("Path too long or invalid character in path");
 
                     for (size_t i = 0; i < nfiles - 1; i++) {
@@ -308,7 +308,7 @@ void windows_ShowFileDialog(void *ptr)
                     return;
                 }
 
-                file_ptr += SDL_strlen(chosen_file) + 1 - diff;
+                file_ptr += SDL_wcslen(file_ptr) + 1;
 
                 chosen_files_list[nfiles - 1] = SDL_strdup(chosen_file);
 
@@ -327,7 +327,7 @@ void windows_ShowFileDialog(void *ptr)
             // If the user chose only one file, it's all just one string
             if (nfiles == 0) {
                 nfiles++;
-                char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char*) * (nfiles + 1));
+                char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char *) * (nfiles + 1));
 
                 if (!new_cfl) {
                     SDL_free(chosen_files_list);
@@ -348,7 +348,7 @@ void windows_ShowFileDialog(void *ptr)
                 }
             }
 
-            callback(userdata, (const char * const*) chosen_files_list, getFilterIndex(dialog.nFilterIndex));
+            callback(userdata, (const char * const *) chosen_files_list, getFilterIndex(dialog.nFilterIndex));
 
             for (size_t i = 0; i < nfiles; i++) {
                 SDL_free(chosen_files_list[i]);
@@ -443,11 +443,11 @@ void windows_ShowFolderDialog(void *ptr)
         SHGetPathFromIDListW(lpItem, buffer);
         char *chosen_file = WIN_StringToUTF8W(buffer);
         const char *files[2] = { chosen_file, NULL };
-        callback(userdata, (const char * const*) files, -1);
+        callback(userdata, (const char * const *) files, -1);
         SDL_free(chosen_file);
     } else {
         const char *files[1] = { NULL };
-        callback(userdata, (const char * const*) files, -1);
+        callback(userdata, (const char * const *) files, -1);
     }
 }
 

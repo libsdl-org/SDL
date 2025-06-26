@@ -49,6 +49,9 @@ struct PopupWindow
 static struct PopupWindow *menus;
 static struct PopupWindow tooltip;
 
+static bool no_constraints;
+static bool no_grab;
+
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void quit(int rc)
 {
@@ -95,14 +98,27 @@ static bool create_popup(struct PopupWindow *new_popup, bool is_menu)
     const int w = is_menu ? MENU_WIDTH : TOOLTIP_WIDTH;
     const int h = is_menu ? MENU_HEIGHT : TOOLTIP_HEIGHT;
     const int v_off = is_menu ? 0 : 32;
-    const SDL_WindowFlags flags = is_menu ? SDL_WINDOW_POPUP_MENU : SDL_WINDOW_TOOLTIP;
     float x, y;
 
     focus = SDL_GetMouseFocus();
 
     SDL_GetMouseState(&x, &y);
-    new_win = SDL_CreatePopupWindow(focus,
-                                    (int)x, (int)y + v_off, w, h, flags);
+
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_PARENT_POINTER, focus);
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN, !no_constraints);
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_FOCUSABLE_BOOLEAN, !no_grab);
+    if (is_menu) {
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_MENU_BOOLEAN, true);
+    } else {
+        SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_TOOLTIP_BOOLEAN, true);
+    }
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, w);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, h);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, (int)x);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, (int)y + v_off);
+    new_win = SDL_CreateWindowWithProperties(props);
+    SDL_DestroyProperties(props);
 
     if (new_win) {
         new_renderer = SDL_CreateRenderer(new_win, state->renderdriver);
@@ -249,8 +265,30 @@ int main(int argc, char *argv[])
     }
 
     /* Parse commandline */
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return 1;
+    for (i = 1; i < argc;) {
+        int consumed;
+
+        consumed = SDLTest_CommonArg(state, i);
+        if (consumed == 0) {
+            consumed = -1;
+            if (SDL_strcasecmp(argv[i], "--no-constraints") == 0) {
+                no_constraints = true;
+                consumed = 1;
+            } else if (SDL_strcasecmp(argv[i], "--no-grab") == 0) {
+                no_grab = true;
+                consumed = 1;
+            }
+        }
+        if (consumed < 0) {
+            static const char *options[] = {
+                "[--no-constraints]",
+                "[--no-grab]",
+                NULL
+            };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return 1;
+        }
+        i += consumed;
     }
 
     if (!SDLTest_CommonInit(state)) {

@@ -40,7 +40,7 @@
 /* Glib 2.0 */
 
 typedef unsigned long gulong;
-typedef void* gpointer;
+typedef void *gpointer;
 typedef char gchar;
 typedef int gint;
 typedef unsigned int guint;
@@ -58,8 +58,8 @@ typedef enum
 static gulong (*g_signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, GConnectFlags connect_flags);
 static void (*g_object_unref)(gpointer object);
 static gchar *(*g_mkdtemp)(gchar *template);
-gpointer (*g_object_ref_sink)(gpointer object);
-gpointer (*g_object_ref)(gpointer object);
+static gpointer (*g_object_ref_sink)(gpointer object);
+static gpointer (*g_object_ref)(gpointer object);
 
 // glib_typeof requires compiler-specific code and includes that are too complex
 // to be worth copy-pasting here
@@ -88,11 +88,11 @@ typedef struct _GtkCheckMenuItem GtkCheckMenuItem;
 
 static gboolean (*gtk_init_check)(int *argc, char ***argv);
 static gboolean (*gtk_main_iteration_do)(gboolean blocking);
-static GtkWidget* (*gtk_menu_new)(void);
-static GtkWidget* (*gtk_separator_menu_item_new)(void);
-static GtkWidget* (*gtk_menu_item_new_with_label)(const gchar *label);
+static GtkWidget *(*gtk_menu_new)(void);
+static GtkWidget *(*gtk_separator_menu_item_new)(void);
+static GtkWidget *(*gtk_menu_item_new_with_label)(const gchar *label);
 static void (*gtk_menu_item_set_submenu)(GtkMenuItem *menu_item, GtkWidget *submenu);
-static GtkWidget* (*gtk_check_menu_item_new_with_label)(const gchar *label);
+static GtkWidget *(*gtk_check_menu_item_new_with_label)(const gchar *label);
 static void (*gtk_check_menu_item_set_active)(GtkCheckMenuItem *check_menu_item, gboolean is_active);
 static void (*gtk_widget_set_sensitive)(GtkWidget *widget, gboolean sensitive);
 static void (*gtk_widget_show)(GtkWidget *widget);
@@ -541,7 +541,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
         return NULL;
     }
 
-    entry->submenu->menu = (GtkMenuShell *)gtk_menu_new();
+    entry->submenu->menu = g_object_ref_sink(gtk_menu_new());
     entry->submenu->parent_tray = NULL;
     entry->submenu->parent_entry = entry;
     entry->submenu->nEntries = 0;

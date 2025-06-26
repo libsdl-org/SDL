@@ -302,7 +302,7 @@ bool RISCOS_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SD
     }
 
     // Update cursor visibility, since it may have been disabled by the mode change.
-    SDL_SetCursor(NULL);
+    SDL_RedrawCursor();
 
     return true;
 }

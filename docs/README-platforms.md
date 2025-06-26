@@ -11,7 +11,7 @@
 - [macOS](README-macos.md)
 - [NetBSD](README-bsd.md)
 - [Nintendo Switch](README-switch.md)
-- [Nintendo 3DS](README-3ds.md)
+- [Nintendo 3DS](README-n3ds.md)
 - [OpenBSD](README-bsd.md)
 - [PlayStation 2](README-ps2.md)
 - [PlayStation 4](README-ps4.md)
@@ -24,6 +24,7 @@
 - [Windows](README-windows.md)
 - [Windows GDK](README-gdk.md)
 - [Xbox](README-gdk.md)
+- [Nokia N-Gage](README-ngage.md)
 
 ## Unsupported Platforms
 
@@ -33,7 +34,6 @@ All of these still work with [SDL2](/SDL2), which is an incompatible API, but an
 
 - Google Stadia
 - NaCL
-- Nokia N-Gage
 - OS/2
 - QNX
 - WinPhone

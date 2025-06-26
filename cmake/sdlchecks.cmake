@@ -594,6 +594,18 @@ macro(CheckWayland)
         sdl_link_dependency(wayland LIBS PkgConfig::PC_WAYLAND PKG_CONFIG_PREFIX PC_WAYLAND PKG_CONFIG_SPECS ${WAYLAND_PKG_CONFIG_SPEC})
       endif()
 
+      # xkbcommon doesn't provide internal version defines, so generate them here.
+      if (PC_WAYLAND_xkbcommon_VERSION MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)")
+        set(SDL_XKBCOMMON_VERSION_MAJOR ${CMAKE_MATCH_1})
+        set(SDL_XKBCOMMON_VERSION_MINOR ${CMAKE_MATCH_2})
+        set(SDL_XKBCOMMON_VERSION_PATCH ${CMAKE_MATCH_3})
+      else()
+        message(WARNING "Failed to parse xkbcommon version; defaulting to lowest supported (0.5.0)")
+        set(SDL_XKBCOMMON_VERSION_MAJOR 0)
+        set(SDL_XKBCOMMON_VERSION_MINOR 5)
+        set(SDL_XKBCOMMON_VERSION_PATCH 0)
+      endif()
+
       if(SDL_WAYLAND_LIBDECOR)
         set(LibDecor_PKG_CONFIG_SPEC libdecor-0)
         pkg_check_modules(PC_LIBDECOR IMPORTED_TARGET ${LibDecor_PKG_CONFIG_SPEC})
@@ -814,7 +826,7 @@ endmacro()
 macro(CheckPTHREAD)
   cmake_push_check_state()
   if(SDL_PTHREADS)
-    if(ANDROID)
+    if(ANDROID OR SDL_PTHREADS_PRIVATE)
       # the android libc provides built-in support for pthreads, so no
       # additional linking or compile flags are necessary
     elseif(LINUX)

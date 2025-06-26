@@ -157,7 +157,7 @@ flags to the compiler.
 - Use [`CMAKE_EXE_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_EXE_LINKER_FLAGS.html) to pass extra option to the linker for executables.
 - Use [`CMAKE_SHARED_LINKER_FLAGS`](https://cmake.org/cmake/help/latest/variable/CMAKE_SHARED_LINKER_FLAGS.html) to pass extra options to the linker for shared libraries.
 
-#### Examples
+#### Compile Options Examples
 
 - build a SDL library optimized for (more) modern x64 microprocessor architectures.
 
@@ -240,7 +240,7 @@ Append with a version number to target a specific SDK revision: e.g. `iphoneos12
 
 CMake documentation: [link](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_SYSROOT.html)
 
-#### Examples
+#### Apple Examples
 
 - for macOS, building a dylib and/or static library for x86_64 and arm64:
 
@@ -328,7 +328,7 @@ Configure your project with `-DSDL_LIBC=ON` to make use of sanitizers.
 ### CMake fails to build without X11 or Wayland support
 
 Install the required system packages prior to running CMake.
-See [README-linux](linux#build-dependencies) for the list of dependencies on Linux.
+See [README-linux.md](README-linux.md#build-dependencies) for the list of dependencies on Linux.
 Other unix operating systems should provide similar packages.
 
 If you **really** don't need to show windows, add `-DSDL_UNIX_CONSOLE_BUILD=ON` to the CMake configure command.

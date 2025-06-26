@@ -78,7 +78,7 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
         if (!Module['SDL3']) Module['SDL3'] = {};
         var SDL3 = Module['SDL3'];
         if (SDL3.ctxCanvas !== canvas) {
-            SDL3.ctx = Module['createContext'](canvas, false, true);
+            SDL3.ctx = Browser.createContext(canvas, false, true);
             SDL3.ctxCanvas = canvas;
         }
         if (SDL3.w !== w || SDL3.h !== h || SDL3.imageCtx !== SDL3.ctx) {
@@ -110,7 +110,7 @@ bool Emscripten_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *wind
         data32.set(HEAP32.subarray(src, src + num));
         var data8 = SDL3.data8;
         var i = 3;
-        var j = i + 4*num;
+        var j = i + 4 * num;
         if (num % 8 == 0) {
             // unrolling gives big speedups
             while (i < j) {

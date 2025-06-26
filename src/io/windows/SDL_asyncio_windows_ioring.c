@@ -50,7 +50,7 @@ static void *ioring_handle = NULL;
     SDL_IORING_FUNC(BOOL, IsIoRingOpSupported, (HIORING ioRing, IORING_OP_CODE op)) \
     SDL_IORING_FUNC(HRESULT, CreateIoRing, (IORING_VERSION ioringVersion, IORING_CREATE_FLAGS flags, UINT32 submissionQueueSize, UINT32 completionQueueSize, HIORING* h)) \
     SDL_IORING_FUNC(HRESULT, GetIoRingInfo, (HIORING ioRing, IORING_INFO* info)) \
-    SDL_IORING_FUNC(HRESULT, SubmitIoRing, (HIORING ioRing, UINT32 waitOperations, UINT32 milliseconds, UINT32* submittedEntries)) \
+    SDL_IORING_FUNC(HRESULT, SubmitIoRing, (HIORING ioRing, UINT32 waitOperations, UINT32 milliseconds, UINT32 * submittedEntries)) \
     SDL_IORING_FUNC(HRESULT, CloseIoRing, (HIORING ioRing)) \
     SDL_IORING_FUNC(HRESULT, PopIoRingCompletion, (HIORING ioRing, IORING_CQE* cqe)) \
     SDL_IORING_FUNC(HRESULT, SetIoRingCompletionEvent, (HIORING ioRing, HANDLE hEvent)) \

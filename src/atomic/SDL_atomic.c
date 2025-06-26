@@ -163,7 +163,7 @@ bool SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval)
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_bool_compare_and_swap(&a->value, oldval, newval);
 #elif defined(SDL_PLATFORM_MACOS) // this is deprecated in 10.12 sdk; favor gcc atomics.
-    return OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t*)&a->value);
+    return OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t *)&a->value);
 #elif defined(SDL_PLATFORM_SOLARIS)
     SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(uint_t) == sizeof(a->value));
     return ((Uint32)atomic_cas_uint((volatile uint_t *)&a->value, (uint_t)oldval, (uint_t)newval) == oldval);

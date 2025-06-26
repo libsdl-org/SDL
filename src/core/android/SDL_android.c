@@ -371,6 +371,7 @@ static jmethodID midShowTextInput;
 static jmethodID midSupportsRelativeMouse;
 static jmethodID midOpenFileDescriptor;
 static jmethodID midShowFileDialog;
+static jmethodID midGetPreferredLocales;
 
 // audio manager
 static jclass mAudioManagerClass;
@@ -660,6 +661,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midSupportsRelativeMouse = (*env)->GetStaticMethodID(env, mActivityClass, "supportsRelativeMouse", "()Z");
     midOpenFileDescriptor = (*env)->GetStaticMethodID(env, mActivityClass, "openFileDescriptor", "(Ljava/lang/String;Ljava/lang/String;)I");
     midShowFileDialog = (*env)->GetStaticMethodID(env, mActivityClass, "showFileDialog", "([Ljava/lang/String;ZZI)Z");
+    midGetPreferredLocales = (*env)->GetStaticMethodID(env, mActivityClass, "getPreferredLocales", "()Ljava/lang/String;");
 
     if (!midClipboardGetText ||
         !midClipboardHasText ||
@@ -691,7 +693,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midShowTextInput ||
         !midSupportsRelativeMouse ||
         !midOpenFileDescriptor ||
-        !midShowFileDialog) {
+        !midShowFileDialog ||
+        !midGetPreferredLocales) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -2585,65 +2588,22 @@ bool Android_JNI_ShowToast(const char *message, int duration, int gravity, int x
 
 bool Android_JNI_GetLocale(char *buf, size_t buflen)
 {
-    AConfiguration *cfg;
-
-    SDL_assert(buflen > 6);
-
-    // Need to re-create the asset manager if locale has changed (SDL_EVENT_LOCALE_CHANGED)
-    Internal_Android_Destroy_AssetManager();
-
-    if (!asset_manager) {
-        Internal_Android_Create_AssetManager();
-    }
-
-    if (!asset_manager) {
-        return false;
-    }
-
-    cfg = AConfiguration_new();
-    if (!cfg) {
-        return false;
-    }
-
-    {
-        char language[2] = {};
-        char country[2] = {};
-        size_t id = 0;
-
-        AConfiguration_fromAssetManager(cfg, asset_manager);
-        AConfiguration_getLanguage(cfg, language);
-        AConfiguration_getCountry(cfg, country);
-
-        // Indonesian is "id" according to ISO 639.2, but on Android is "in" because of Java backwards compatibility
-        if (language[0] == 'i' && language[1] == 'n') {
-            language[1] = 'd';
-        }
-
-        // copy language (not null terminated)
-        if (language[0]) {
-            buf[id++] = language[0];
-            if (language[1]) {
-                buf[id++] = language[1];
+    bool result = false;
+    if (buf && buflen > 0) {
+        *buf = '\0';
+        JNIEnv *env = Android_JNI_GetEnv();
+        jstring string = (jstring)(*env)->CallStaticObjectMethod(env, mActivityClass, midGetPreferredLocales);
+        if (string) {
+            const char *utf8string = (*env)->GetStringUTFChars(env, string, NULL);
+            if (utf8string) {
+                result = true;
+                SDL_strlcpy(buf, utf8string, buflen);
+                (*env)->ReleaseStringUTFChars(env, string, utf8string);
             }
+            (*env)->DeleteLocalRef(env, string);
         }
-
-        buf[id++] = '_';
-
-        // copy country (not null terminated)
-        if (country[0]) {
-            buf[id++] = country[0];
-            if (country[1]) {
-                buf[id++] = country[1];
-            }
-        }
-
-        buf[id++] = '\0';
-        SDL_assert(id <= buflen);
     }
-
-    AConfiguration_delete(cfg);
-
-    return true;
+    return result;
 }
 
 bool Android_JNI_OpenURL(const char *url)
@@ -2731,7 +2691,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 
         // Convert fileList to string
         size_t count = (*env)->GetArrayLength(env, fileList);
-        char **charFileList = SDL_calloc(count + 1, sizeof(char*));
+        char **charFileList = SDL_calloc(count + 1, sizeof(char *));
 
         if (charFileList == NULL) {
             mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, NULL, -1);
@@ -2787,7 +2747,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 }
 
 bool Android_JNI_OpenFileDialog(
-    SDL_DialogFileCallback callback, void* userdata,
+    SDL_DialogFileCallback callback, void *userdata,
     const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
     bool multiple)
 {

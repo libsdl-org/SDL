@@ -110,7 +110,7 @@ typedef enum SDL_TextureAddressMode
     SDL_TEXTURE_ADDRESS_INVALID = -1,
     SDL_TEXTURE_ADDRESS_AUTO,   /**< Wrapping is enabled if texture coordinates are outside [0, 1], this is the default */
     SDL_TEXTURE_ADDRESS_CLAMP,  /**< Texture coordinates are clamped to the [0, 1] range */
-    SDL_TEXTURE_ADDRESS_WRAP,   /**< The texture is repeated (tiled) */
+    SDL_TEXTURE_ADDRESS_WRAP    /**< The texture is repeated (tiled) */
 } SDL_TextureAddressMode;
 
 /**
@@ -1666,8 +1666,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, S
  * Return whether an explicit rectangle was set as the viewport.
  *
  * This is useful if you're saving and restoring the viewport and want to know
- * whether you should restore a specific rectangle or NULL. Note that the
- * viewport is always reset when changing rendering targets.
+ * whether you should restore a specific rectangle or NULL.
  *
  * Each render target has its own viewport. This function checks the viewport
  * for the current render target.
