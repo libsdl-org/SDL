@@ -1863,20 +1863,26 @@ float RenderEulerReadout(GyroDisplay *ctx, GamepadDisplay *gamepad_display )
     const float new_line_height = gamepad_display->button_height + 2.0f;
     float log_gyro_euler_text_x = gyro_calibrate_button_rect.x;
 
+    Uint8 r, g, b, a;
+    SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
     /* Pitch Readout */
+    SDL_SetRenderDrawColor(ctx->renderer, GYRO_COLOR_RED);
     SDL_snprintf(text, sizeof(text), "Pitch: %6.2f%s", ctx->euler_displacement_angles[0], DEGREE_UTF8);
     SDLTest_DrawString(ctx->renderer, log_gyro_euler_text_x + 2.0f, log_y, text);
 
     /* Yaw Readout */
+    SDL_SetRenderDrawColor(ctx->renderer, GYRO_COLOR_GREEN);
     log_y += new_line_height;
     SDL_snprintf(text, sizeof(text), "  Yaw: %6.2f%s", ctx->euler_displacement_angles[1], DEGREE_UTF8);
     SDLTest_DrawString(ctx->renderer, log_gyro_euler_text_x + 2.0f, log_y, text);
 
     /* Roll Readout */
+    SDL_SetRenderDrawColor(ctx->renderer, GYRO_COLOR_BLUE);
     log_y += new_line_height;
     SDL_snprintf(text, sizeof(text), " Roll: %6.2f%s", ctx->euler_displacement_angles[2], DEGREE_UTF8);
     SDLTest_DrawString(ctx->renderer, log_gyro_euler_text_x + 2.0f, log_y, text);
 
+    SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
     return log_y + new_line_height; /* Return the next y position for further rendering */
 }
 
