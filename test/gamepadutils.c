@@ -1375,21 +1375,19 @@ void SetGamepadDisplayIMUValues(GyroDisplay *ctx, float *gyro_drift_solution, fl
         return;
     }
 
-    SDL_memcpy(ctx->gyro_drift_solution, gyro_drift_solution, sizeof(ctx->gyro_drift_solution));
-    ctx->estimated_sensor_rate_hz = estimated_sensor_rate_hz;
-
-    if (reported_senor_rate_hz != 0)
+    const int SENSOR_UPDATE_INTERVAL_MS = 100;
+    Uint64 now = SDL_GetTicks();
+    if (now > ctx->next_reported_sensor_time)
     {
-        const int SENSOR_UPDATE_INTERVAL_MS = 100;
-        Uint64 now = SDL_GetTicks();
-
-        if (now > ctx->next_reported_sensor_time)
+        ctx->estimated_sensor_rate_hz = estimated_sensor_rate_hz;
+        if (reported_senor_rate_hz != 0)
         {
             ctx->reported_sensor_rate_hz = reported_senor_rate_hz;
-            ctx->next_reported_sensor_time = now + SENSOR_UPDATE_INTERVAL_MS;
         }
+        ctx->next_reported_sensor_time = now + SENSOR_UPDATE_INTERVAL_MS;
     }
 
+    SDL_memcpy(ctx->gyro_drift_solution, gyro_drift_solution, sizeof(ctx->gyro_drift_solution));
     SDL_memcpy(ctx->euler_displacement_angles, euler_displacement_angles, sizeof(ctx->euler_displacement_angles));
     ctx->gyro_quaternion = *gyro_quaternion;
     ctx->drift_calibration_progress_frac = drift_calibration_progress_frac;
