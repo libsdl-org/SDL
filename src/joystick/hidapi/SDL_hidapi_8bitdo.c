@@ -22,7 +22,6 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
-#include "../../SDL_hints_c.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
@@ -235,8 +234,8 @@ static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(SDL_HIDAPI_Device *devi
     // TODO: If sensor time stamp is sent, these fixed settings from observation can be replaced
     switch (device->product_id) {
     // Note, This is estimated by observation of Bluetooth packets received in the testcontroller tool
-    case USB_PRODUCT_8BITDO_SN30_PRO_BT: 
-    case USB_PRODUCT_8BITDO_SF30_PRO_BT: 
+    case USB_PRODUCT_8BITDO_SN30_PRO_BT:
+    case USB_PRODUCT_8BITDO_SF30_PRO_BT:
         return 90; // Observed to be anywhere between 60-90 hz. Possibly lossy in current state
     case USB_PRODUCT_8BITDO_SF30_PRO:
     case USB_PRODUCT_8BITDO_SN30_PRO:
@@ -569,7 +568,7 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
                     delta = (SDL_MAX_UINT32 - ctx->last_tick + tick + 1);
                 }
                 ctx->sensor_timestamp_interval = SDL_US_TO_NS(delta);
-            } 
+            }
             ctx->last_tick = tick;
         }
 
