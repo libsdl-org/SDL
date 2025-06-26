@@ -279,6 +279,9 @@ static void GAMEINPUT_InitialMouseReading(WIN_GameInputData *data, SDL_Window *w
             bool down = ((state.buttons & mask) != 0);
             SDL_SendMouseButton(timestamp, window, mouseID, GAMEINPUT_button_map[i], down);
         }
+
+        // Invalidate mouse button flags
+        window->internal->mouse_button_flags = (WPARAM)-1;
     }
 }
 
@@ -308,6 +311,9 @@ static void GAMEINPUT_HandleMouseDelta(WIN_GameInputData *data, SDL_Window *wind
                     SDL_SendMouseButton(timestamp, window, mouseID, GAMEINPUT_button_map[i], down);
                 }
             }
+
+            // Invalidate mouse button flags
+            window->internal->mouse_button_flags = (WPARAM)-1;
         }
         if (delta.wheelX || delta.wheelY) {
             float fAmountX = (float)delta.wheelX / WHEEL_DELTA;

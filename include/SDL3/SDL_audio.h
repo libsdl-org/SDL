@@ -1021,7 +1021,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
 /**
  * Query an audio stream for its currently-bound device.
  *
- * This reports the audio device that an audio stream is currently bound to.
+ * This reports the logical audio device that an audio stream is currently
+ * bound to.
  *
  * If not bound, or invalid, this returns zero, which is not a valid device
  * ID.
@@ -1063,6 +1064,17 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
 /**
  * Get the properties associated with an audio stream.
  *
+ * The application can hang any data it wants here, but the following
+ * properties are understood by SDL:
+ *
+ * - `SDL_PROP_AUDIOSTREAM_AUTO_CLEANUP_BOOLEAN`: if true (the default), the
+ *   stream be automatically cleaned up when the audio subsystem quits. If set
+ *   to false, the streams will persist beyond that. This property is ignored
+ *   for streams created through SDL_OpenAudioDeviceStream(), and will always
+ *   be cleaned up. Streams that are not cleaned up will still be unbound from
+ *   devices when the audio subsystem quits. This property was added in SDL
+ *   3.4.0.
+ *
  * \param stream the SDL_AudioStream to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -1072,6 +1084,9 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetAudioStreamProperties(SDL_AudioStream *stream);
+
+#define SDL_PROP_AUDIOSTREAM_AUTO_CLEANUP_BOOLEAN "SDL.audiostream.auto_cleanup"
+
 
 /**
  * Query the current format of an audio stream.

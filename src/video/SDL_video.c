@@ -4139,7 +4139,7 @@ void SDL_OnWindowLiveResizeUpdate(SDL_Window *window)
         SDL_IterateMainCallbacks(false);
     } else {
         // Send an expose event so the application can redraw
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 1, 0);
     }
 
     SDL_PumpEventMaintenance();
