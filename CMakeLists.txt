@@ -1358,9 +1358,7 @@ if(ANDROID)
     set(HAVE_SDL_HAPTIC TRUE)
   endif()
 
-  if(SDL_HIDAPI)
-    CheckHIDAPI()
-  endif()
+  CheckHIDAPI()
 
   if(SDL_JOYSTICK)
     set(SDL_JOYSTICK_ANDROID 1)
