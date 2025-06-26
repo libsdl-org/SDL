@@ -71,45 +71,39 @@ Quaternion QuaternionFromEuler(float pitch, float yaw, float roll)
     return q;
 }
 
-static void EulerFromQuaternion(Quaternion q, float *roll, float *pitch, float *yaw)
+#define RAD_TO_DEG (180.0f / SDL_PI_F)
+
+/* Decomposes quaternion into Yaw (Y), Pitch (X), Roll (Z) using Y-X-Z order in a left-handed system */
+void QuaternionToYXZ(Quaternion q, float *pitch, float *yaw, float *roll)
 {
-    float sinr_cosp = 2.0f * (q.w * q.x + q.y * q.z);
-    float cosr_cosp = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
-    float roll_rad = SDL_atan2f(sinr_cosp, cosr_cosp);
+    /* Precalculate repeated expressions */
+    float qxx = q.x * q.x;
+    float qyy = q.y * q.y;
+    float qzz = q.z * q.z;
 
-    float sinp = 2.0f * (q.w * q.y - q.z * q.x);
-    float pitch_rad;
-    if (SDL_fabsf(sinp) >= 1.0f) {
-        pitch_rad = SDL_copysignf(SDL_PI_F / 2.0f, sinp);
-    } else {
-        pitch_rad = SDL_asinf(sinp);
-    }
+    float qxy = q.x * q.y;
+    float qxz = q.x * q.z;
+    float qyz = q.y * q.z;
+    float qwx = q.w * q.x;
+    float qwy = q.w * q.y;
+    float qwz = q.w * q.z;
 
-    float siny_cosp = 2.0f * (q.w * q.z + q.x * q.y);
-    float cosy_cosp = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
-    float yaw_rad = SDL_atan2f(siny_cosp, cosy_cosp);
-
-    if (roll)
-        *roll = roll_rad;
-    if (pitch)
-        *pitch = pitch_rad;
+    /* Yaw (around Y) */
     if (yaw)
-        *yaw = yaw_rad;
-}
+        *yaw = SDL_atan2f(2.0f * (qwy + qxz), 1.0f - 2.0f * (qyy + qzz)) * RAD_TO_DEG;
 
-static void EulerDegreesFromQuaternion(Quaternion q, float *pitch, float *yaw, float *roll)
-{
-    float pitch_rad, yaw_rad, roll_rad;
-    EulerFromQuaternion(q, &pitch_rad, &yaw_rad, &roll_rad);
+    /* Pitch (around X) */
+    float sinp = 2.0f * (qwx - qyz);
     if (pitch) {
-        *pitch = pitch_rad * (180.0f / SDL_PI_F);
+        if (SDL_fabsf(sinp) >= 1.0f)
+            *pitch = copysignf(90.0f, sinp); // Clamp to avoid domain error
+        else
+            *pitch = SDL_asinf(sinp) * RAD_TO_DEG;
     }
-    if (yaw) {
-        *yaw = yaw_rad * (180.0f / SDL_PI_F);
-    }
-    if (roll) {
-        *roll = roll_rad * (180.0f / SDL_PI_F);
-    }
+
+    /* Roll (around Z) */
+    if (roll)
+        *roll = SDL_atan2f(2.0f * (qwz + qxy), 1.0f - 2.0f * (qxx + qzz)) * RAD_TO_DEG;
 }
 
 Quaternion MultiplyQuaternion(Quaternion a, Quaternion b)
@@ -1445,7 +1439,7 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
         UpdateGamepadOrientation(sensorTimeStampDelta_ns);
 
         float display_euler_angles[3];
-        EulerDegreesFromQuaternion(controller->imu_state->integrated_rotation, &display_euler_angles[0], &display_euler_angles[1], &display_euler_angles[2]);
+        QuaternionToYXZ(controller->imu_state->integrated_rotation, &display_euler_angles[0], &display_euler_angles[1], &display_euler_angles[2]);
 
         float drift_calibration_progress_frac = controller->imu_state->gyro_drift_sample_count / (float)SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT;
         int reported_polling_rate_hz = sensorTimeStampDelta_ns > 0 ? (int)(SDL_NS_PER_SECOND / sensorTimeStampDelta_ns) : 0;
