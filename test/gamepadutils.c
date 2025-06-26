@@ -990,6 +990,8 @@ struct GyroDisplay
     /* This part displays extra info from the IMUstate in order to figure out actual polling rates. */
     float gyro_drift_solution[3];
     int reported_sensor_rate_hz;           /*hz - comes from HIDsdl implementation. Could be fixed, platform time, or true sensor time*/
+    Uint64 next_reported_sensor_time;      /* SDL ticks used to throttle the display */
+
     int estimated_sensor_rate_hz;          /*hz - our estimation of the actual polling rate by observing packets received*/
     float euler_displacement_angles[3];    /* pitch, yaw, roll */
     Quaternion gyro_quaternion;            /* Rotation since startup/reset, comprised of each gyro speed packet times sensor delta time. */
@@ -1009,7 +1011,8 @@ GyroDisplay *CreateGyroDisplay(SDL_Renderer *renderer)
         SDL_zeroa(ctx->gyro_drift_solution);
         Quaternion quat_identity = { 0.0f, 0.0f, 0.0f, 1.0f };
         ctx->gyro_quaternion = quat_identity;
-
+        ctx->reported_sensor_rate_hz = 0;
+        ctx->next_reported_sensor_time = 0;
         ctx->reset_gyro_button = CreateGamepadButton(renderer, "Reset View");
         ctx->calibrate_gyro_button = CreateGamepadButton(renderer, "Recalibrate Drift");
     }
@@ -1343,7 +1346,16 @@ void SetGamepadDisplayIMUValues(GyroDisplay *ctx, float *gyro_drift_solution, fl
     ctx->estimated_sensor_rate_hz = estimated_sensor_rate_hz;
 
     if (reported_senor_rate_hz != 0)
-        ctx->reported_sensor_rate_hz = reported_senor_rate_hz;
+    {
+        const int SENSOR_UPDATE_INTERVAL_MS = 100;
+        Uint64 now = SDL_GetTicks();
+
+        if (now > ctx->next_reported_sensor_time)
+        {
+            ctx->reported_sensor_rate_hz = reported_senor_rate_hz;
+            ctx->next_reported_sensor_time = now + SENSOR_UPDATE_INTERVAL_MS;
+        }
+    }
 
     SDL_memcpy(ctx->euler_displacement_angles, euler_displacement_angles, sizeof(ctx->euler_displacement_angles));
     ctx->gyro_quaternion = *gyro_quaternion;
