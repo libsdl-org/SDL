@@ -207,6 +207,34 @@ void DrawGyroDebugCircle(SDL_Renderer *renderer, const Quaternion *orientation, 
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
 }
 
+
+void DrawGyroDebugAxes(SDL_Renderer *renderer, const Quaternion *orientation, const SDL_FRect *bounds)
+{
+    /* Store current color */
+    Uint8 r, g, b, a;
+    SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+
+    Vector3 origin = { 0.0f, 0.0f, 0.0f };
+    Vector3 right = { 1.0f, 0.0f, 0.0f };
+    Vector3 forward = { 0.0f, 2.0f, 0.0f };
+    Vector3 up = { 0.0f, 0.0f, 3.0f };
+
+    SDL_FPoint origin_screen = ProjectVec3ToRect(&origin, bounds);
+    SDL_FPoint right_screen = ProjectVec3ToRect(&right, bounds);
+    SDL_FPoint forward_screen = ProjectVec3ToRect(&forward, bounds);
+    SDL_FPoint up_screen = ProjectVec3ToRect(&up, bounds);
+
+    SDL_SetRenderDrawColor(renderer, GYRO_COLOR_RED);
+    SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, right_screen.x, right_screen.y);
+    SDL_SetRenderDrawColor(renderer, GYRO_COLOR_GREEN);
+    SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, forward_screen.x, forward_screen.y);
+    SDL_SetRenderDrawColor(renderer, GYRO_COLOR_BLUE);
+    SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, up_screen.x, up_screen.y);
+    
+    /* Restore current color */
+    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+}
+
 void DrawAccelerometerDebugArrow(SDL_Renderer *renderer, const Quaternion *gyro_quaternion, const float *accel_data, const SDL_FRect *bounds)
 {
     /* Store current color */
@@ -1865,6 +1893,9 @@ void RenderGyroGizmo(GyroDisplay *ctx, SDL_Gamepad *gamepad, float top)
 
     /* Draw the rotated cube */
     DrawGyroDebugCube(ctx->renderer, &ctx->gyro_quaternion, &gizmoRect);
+
+    /* Draw positive axes */
+    DrawGyroDebugAxes(ctx->renderer, &ctx->gyro_quaternion, &gizmoRect);
 
     /* Overlay the XYZ circles */
     DrawGyroDebugCircle(ctx->renderer, &ctx->gyro_quaternion, &gizmoRect);
