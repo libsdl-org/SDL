@@ -30,7 +30,10 @@
 #include <X11/keysym.h>
 #include <locale.h>
 
+#ifndef SDL_FORK_MESSAGEBOX
 #define SDL_FORK_MESSAGEBOX 1
+#endif
+
 #define SDL_SET_LOCALE      1
 
 #if SDL_FORK_MESSAGEBOX
