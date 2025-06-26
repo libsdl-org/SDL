@@ -96,7 +96,7 @@ void QuaternionToYXZ(Quaternion q, float *pitch, float *yaw, float *roll)
     float sinp = 2.0f * (qwx - qyz);
     if (pitch) {
         if (SDL_fabsf(sinp) >= 1.0f)
-            *pitch = copysignf(90.0f, sinp); /* Clamp to avoid domain error */
+            *pitch = SDL_copysignf(90.0f, sinp); /* Clamp to avoid domain error */
         else
             *pitch = SDL_asinf(sinp) * RAD_TO_DEG;
     }
