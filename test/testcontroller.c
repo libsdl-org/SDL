@@ -53,20 +53,20 @@ struct Quaternion
 
 static Quaternion quat_identity = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-Quaternion QuaternionFromEuler(float roll, float pitch, float yaw)
+Quaternion QuaternionFromEuler(float pitch, float yaw, float roll)
 {
-    Quaternion q;
+    float cx = SDL_cosf(pitch * 0.5f);
+    float sx = SDL_sinf(pitch * 0.5f);
     float cy = SDL_cosf(yaw * 0.5f);
     float sy = SDL_sinf(yaw * 0.5f);
-    float cp = SDL_cosf(pitch * 0.5f);
-    float sp = SDL_sinf(pitch * 0.5f);
-    float cr = SDL_cosf(roll * 0.5f);
-    float sr = SDL_sinf(roll * 0.5f);
+    float cz = SDL_cosf(roll * 0.5f);
+    float sz = SDL_sinf(roll * 0.5f);
 
-    q.w = cr * cp * cy + sr * sp * sy;
-    q.x = sr * cp * cy - cr * sp * sy;
-    q.y = cr * sp * cy + sr * cp * sy;
-    q.z = cr * cp * sy - sr * sp * cy;
+    Quaternion q;
+    q.w = cx * cy * cz + sx * sy * sz;
+    q.x = sx * cy * cz - cx * sy * sz;
+    q.y = cx * sy * cz + sx * cy * sz;
+    q.z = cx * cy * sz - sx * sy * cz;
 
     return q;
 }

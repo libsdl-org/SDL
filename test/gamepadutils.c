@@ -217,24 +217,24 @@ void DrawGyroDebugAxes(SDL_Renderer *renderer, const Quaternion *orientation, co
     Vector3 origin = { 0.0f, 0.0f, 0.0f };
 
     Vector3 right = { 1.0f, 0.0f, 0.0f };
-    Vector3 forward = { 0.0f, 1.0f, 0.0f };
-    Vector3 up = { 0.0f, 0.0f, 1.0f };
+    Vector3 up = { 0.0f, 1.0f, 0.0f };
+    Vector3 back = { 0.0f, 0.0f, 1.0f };
 
     Vector3 world_right = RotateVectorByQuaternion(&right, orientation);
-    Vector3 world_forward = RotateVectorByQuaternion(&forward, orientation);
     Vector3 world_up = RotateVectorByQuaternion(&up, orientation);
+    Vector3 world_back = RotateVectorByQuaternion(&back, orientation);
 
     SDL_FPoint origin_screen = ProjectVec3ToRect(&origin, bounds);
     SDL_FPoint right_screen = ProjectVec3ToRect(&world_right, bounds);
-    SDL_FPoint forward_screen = ProjectVec3ToRect(&world_forward, bounds);
     SDL_FPoint up_screen = ProjectVec3ToRect(&world_up, bounds);
+    SDL_FPoint back_screen = ProjectVec3ToRect(&world_back, bounds);
 
     SDL_SetRenderDrawColor(renderer, GYRO_COLOR_RED);
     SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, right_screen.x, right_screen.y);
     SDL_SetRenderDrawColor(renderer, GYRO_COLOR_GREEN);
-    SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, forward_screen.x, forward_screen.y);
-    SDL_SetRenderDrawColor(renderer, GYRO_COLOR_BLUE);
     SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, up_screen.x, up_screen.y);
+    SDL_SetRenderDrawColor(renderer, GYRO_COLOR_BLUE);
+    SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, back_screen.x, back_screen.y);
     
     /* Restore current color */
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
