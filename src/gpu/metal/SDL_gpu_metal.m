@@ -3745,7 +3745,7 @@ static bool METAL_ClaimWindow(
                 SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window", false);
             }
         } else {
-            SET_ERROR_AND_RETURN("%s", "Window already claimed!", false);
+            SET_STRING_ERROR_AND_RETURN("Window already claimed!", false);
         }
     }
 }
@@ -3759,7 +3759,7 @@ static void METAL_ReleaseWindow(
         MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
 
         if (windowData == NULL) {
-            SET_STRING_ERROR_AND_RETURN("Window is not claimed by this SDL_GpuDevice", );
+            SET_STRING_ERROR_AND_RETURN("Window already unclaimed!", );
         }
 
         METAL_Wait(driverData);
@@ -3838,7 +3838,7 @@ static bool METAL_INTERNAL_AcquireSwapchainTexture(
 
         windowData = METAL_INTERNAL_FetchWindowData(window);
         if (windowData == NULL) {
-            SET_STRING_ERROR_AND_RETURN("Window is not claimed by this SDL_GpuDevice", false);
+            SET_STRING_ERROR_AND_RETURN("Cannot acquire a swapchain texture from an unclaimed window!", false);
         }
 
         // Update the window size
@@ -3957,15 +3957,15 @@ static bool METAL_SetSwapchainParameters(
         CGColorSpaceRef colorspace;
 
         if (windowData == NULL) {
-            SET_STRING_ERROR_AND_RETURN("Cannot set swapchain parameters, window has not been claimed!", false);
+            SET_STRING_ERROR_AND_RETURN("Cannot set swapchain parameters on unclaimed window!", false);
         }
 
         if (!METAL_SupportsSwapchainComposition(driverData, window, swapchainComposition)) {
-            SET_STRING_ERROR_AND_RETURN("Swapchain composition not supported", false);
+            SET_STRING_ERROR_AND_RETURN("Swapchain composition not supported!", false);
         }
 
         if (!METAL_SupportsPresentMode(driverData, window, presentMode)) {
-            SET_STRING_ERROR_AND_RETURN("Present mode not supported", false);
+            SET_STRING_ERROR_AND_RETURN("Present mode not supported!", false);
         }
 
         METAL_Wait(driverData);

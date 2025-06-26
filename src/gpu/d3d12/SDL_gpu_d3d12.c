@@ -7023,7 +7023,7 @@ static bool D3D12_ClaimWindow(
             SET_STRING_ERROR_AND_RETURN("Could not create swapchain, failed to claim window!", false);
         }
     } else {
-        SET_STRING_ERROR_AND_RETURN("Window already claimed", false);
+        SET_STRING_ERROR_AND_RETURN("Window already claimed!", false);
     }
 }
 
