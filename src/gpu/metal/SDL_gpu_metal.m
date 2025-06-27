@@ -3759,7 +3759,7 @@ static void METAL_ReleaseWindow(
         MetalWindowData *windowData = METAL_INTERNAL_FetchWindowData(window);
 
         if (windowData == NULL) {
-            SET_STRING_ERROR_AND_RETURN("Window already unclaimed!", );
+            return;
         }
 
         METAL_Wait(driverData);

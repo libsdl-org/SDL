@@ -9815,7 +9815,7 @@ static void VULKAN_ReleaseWindow(
     Uint32 i;
 
     if (windowData == NULL) {
-        SET_STRING_ERROR_AND_RETURN("Window already unclaimed!", );
+        return;
     }
 
     VULKAN_Wait(driverData);
