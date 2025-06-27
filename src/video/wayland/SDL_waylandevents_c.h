@@ -129,6 +129,7 @@ typedef struct SDL_WaylandSeat
         Uint32 enter_serial;
         SDL_MouseButtonFlags buttons_pressed;
         SDL_Point last_motion;
+        bool is_confined;
 
         SDL_MouseID sdl_id;
 

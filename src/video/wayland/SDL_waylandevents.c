@@ -592,16 +592,9 @@ static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
         seat->pointer.last_motion.x = (int)SDL_floorf(sx);
         seat->pointer.last_motion.y = (int)SDL_floorf(sy);
 
-        /* Pointer confinement regions are created only when the pointer actually enters the region via
-         * a motion event received from the compositor.
-         */
-        if (!SDL_RectEmpty(&window->mouse_rect) && !seat->pointer.confined_pointer) {
-            SDL_Rect scaled_mouse_rect;
-            Wayland_GetScaledMouseRect(window, &scaled_mouse_rect);
-
-            if (SDL_PointInRect(&seat->pointer.last_motion, &scaled_mouse_rect)) {
-                Wayland_SeatUpdatePointerGrab(seat);
-            }
+        // If the pointer should be confined, but wasn't for some reason, keep trying until it is.
+        if (!SDL_RectEmpty(&window->mouse_rect) && !seat->pointer.is_confined) {
+            Wayland_SeatUpdatePointerGrab(seat);
         }
 
         if (window->hit_test) {
@@ -802,7 +795,7 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
 
 static bool Wayland_ProcessHitTest(SDL_WaylandSeat *seat, Uint32 serial)
 {
-    // Locked in relative mode, do nothing.
+    // Pointer is immobilized, do nothing.
     if (seat->pointer.locked_pointer) {
         return false;
     }
@@ -1259,14 +1252,16 @@ static const struct zwp_relative_pointer_v1_listener relative_pointer_listener =
     relative_pointer_handle_relative_motion,
 };
 
-static void locked_pointer_locked(void *data,
-                                  struct zwp_locked_pointer_v1 *locked_pointer)
+static void locked_pointer_locked(void *data, struct zwp_locked_pointer_v1 *locked_pointer)
 {
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+    seat->pointer.is_confined = true;
 }
 
-static void locked_pointer_unlocked(void *data,
-                                    struct zwp_locked_pointer_v1 *locked_pointer)
+static void locked_pointer_unlocked(void *data, struct zwp_locked_pointer_v1 *locked_pointer)
 {
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+    seat->pointer.is_confined = false;
 }
 
 static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
@@ -1274,14 +1269,16 @@ static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
     locked_pointer_unlocked,
 };
 
-static void confined_pointer_confined(void *data,
-                                      struct zwp_confined_pointer_v1 *confined_pointer)
+static void confined_pointer_confined(void *data, struct zwp_confined_pointer_v1 *confined_pointer)
 {
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+    seat->pointer.is_confined = true;
 }
 
-static void confined_pointer_unconfined(void *data,
-                                        struct zwp_confined_pointer_v1 *confined_pointer)
+static void confined_pointer_unconfined(void *data, struct zwp_confined_pointer_v1 *confined_pointer)
 {
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+    seat->pointer.is_confined = false;
 }
 
 static const struct zwp_confined_pointer_v1_listener confined_pointer_listener = {
@@ -3664,17 +3661,18 @@ void Wayland_SeatUpdatePointerGrab(SDL_WaylandSeat *seat)
                 SDL_Rect scaled_mouse_rect;
                 Wayland_GetScaledMouseRect(window, &scaled_mouse_rect);
 
+                confine_rect = wl_compositor_create_region(display->compositor);
+                wl_region_add(confine_rect,
+                              scaled_mouse_rect.x,
+                              scaled_mouse_rect.y,
+                              scaled_mouse_rect.w,
+                              scaled_mouse_rect.h);
+
                 /* Some compositors will only confine the pointer to an arbitrary region if the pointer
-                 * is already within the confinement area when it is created.
+                 * is already within the confinement area when it is created. Warp the pointer to the
+                 * closest point within the confinement zone if outside.
                  */
-                if (SDL_PointInRect(&seat->pointer.last_motion, &scaled_mouse_rect)) {
-                    confine_rect = wl_compositor_create_region(display->compositor);
-                    wl_region_add(confine_rect,
-                                  scaled_mouse_rect.x,
-                                  scaled_mouse_rect.y,
-                                  scaled_mouse_rect.w,
-                                  scaled_mouse_rect.h);
-                } else {
+                if (!SDL_PointInRect(&seat->pointer.last_motion, &scaled_mouse_rect)) {
                     /* Warp the pointer to the closest point within the confinement zone if outside,
                      * The confinement region will be created when a true position event is received.
                      */
@@ -3698,16 +3696,32 @@ void Wayland_SeatUpdatePointerGrab(SDL_WaylandSeat *seat)
             }
 
             if (confine_rect || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
-                seat->pointer.confined_pointer =
-                    zwp_pointer_constraints_v1_confine_pointer(display->pointer_constraints,
-                                                               w->surface,
-                                                               seat->pointer.wl_pointer,
-                                                               confine_rect,
-                                                               ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
-                zwp_confined_pointer_v1_add_listener(seat->pointer.confined_pointer,
-                                                     &confined_pointer_listener,
-                                                     window);
-
+                if (window->mouse_rect.w != 1 && window->mouse_rect.h != 1) {
+                    seat->pointer.confined_pointer =
+                        zwp_pointer_constraints_v1_confine_pointer(display->pointer_constraints,
+                                                                   w->surface,
+                                                                   seat->pointer.wl_pointer,
+                                                                   confine_rect,
+                                                                   ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+                    zwp_confined_pointer_v1_add_listener(seat->pointer.confined_pointer,
+                                                         &confined_pointer_listener,
+                                                         seat);
+                } else {
+                    /* Use a lock for 1x1 confinement regions, as the pointer can exhibit subpixel motion otherwise.
+                     * A null region is used since the warp *should* have placed the pointer where we want it, but
+                     * better to lock it slightly off than let the pointer escape, as confining to a specific region
+                     * seems to be a racy operation on some compositors.
+                     */
+                    seat->pointer.locked_pointer =
+                        zwp_pointer_constraints_v1_lock_pointer(display->pointer_constraints,
+                                                                w->surface,
+                                                                seat->pointer.wl_pointer,
+                                                                NULL,
+                                                                ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+                    zwp_locked_pointer_v1_add_listener(seat->pointer.locked_pointer,
+                                                       &locked_pointer_listener,
+                                                       seat);
+                }
                 if (confine_rect) {
                     wl_region_destroy(confine_rect);
                 }
