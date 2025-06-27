@@ -1377,11 +1377,9 @@ void SetGamepadDisplayIMUValues(GyroDisplay *ctx, float *gyro_drift_solution, fl
 
     const int SENSOR_UPDATE_INTERVAL_MS = 100;
     Uint64 now = SDL_GetTicks();
-    if (now > ctx->next_reported_sensor_time)
-    {
+    if (now > ctx->next_reported_sensor_time) {
         ctx->estimated_sensor_rate_hz = estimated_sensor_rate_hz;
-        if (reported_senor_rate_hz != 0)
-        {
+        if (reported_senor_rate_hz != 0) {
             ctx->reported_sensor_rate_hz = reported_senor_rate_hz;
         }
         ctx->next_reported_sensor_time = now + SENSOR_UPDATE_INTERVAL_MS;

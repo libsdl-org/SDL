@@ -89,21 +89,24 @@ void QuaternionToYXZ(Quaternion q, float *pitch, float *yaw, float *roll)
     float qwz = q.w * q.z;
 
     /* Yaw (around Y) */
-    if (yaw)
+    if (yaw) {
         *yaw = SDL_atan2f(2.0f * (qwy + qxz), 1.0f - 2.0f * (qyy + qzz)) * RAD_TO_DEG;
+    }
 
     /* Pitch (around X) */
     float sinp = 2.0f * (qwx - qyz);
     if (pitch) {
-        if (SDL_fabsf(sinp) >= 1.0f)
+        if (SDL_fabsf(sinp) >= 1.0f) {
             *pitch = SDL_copysignf(90.0f, sinp); /* Clamp to avoid domain error */
-        else
+        } else {
             *pitch = SDL_asinf(sinp) * RAD_TO_DEG;
+        }
     }
 
     /* Roll (around Z) */
-    if (roll)
+    if (roll) {
         *roll = SDL_atan2f(2.0f * (qwz + qxy), 1.0f - 2.0f * (qxx + qzz)) * RAD_TO_DEG;
+    }
 }
 
 Quaternion MultiplyQuaternion(Quaternion a, Quaternion b)
