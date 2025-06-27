@@ -592,6 +592,25 @@ extern "C" {
 #define SDL_HINT_CAMERA_DRIVER "SDL_CAMERA_DRIVER"
 
 /**
+ * A variable that controls whether object validity checks are enabled.
+ *
+ * Object validity checks prevent undefined behaviour when passing invalid
+ * pointers to SDL functions. A function will return invalid argument error
+ * if you pass pointer to uninitialized/freed SDL object. You may want to
+ * disable these checks to improve performance.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable object validity checks
+ * - "1": Enable object validity checks
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is avaliable since ???
+ */
+#define SDL_HINT_CHECK_OBJECT_VALIDITY "SDL_CHECK_OBJECT_VALIDITY"
+
+/**
  * A variable that limits what CPU features are available.
  *
  * By default, SDL marks all features the current CPU supports as available.
