@@ -101,8 +101,9 @@ static SDL_FPoint ProjectVec3ToRect(const Vector3 *v, const SDL_FRect *rect)
     float fovScaleX = fovScaleY * aspect;
 
     float relZ = cameraZ - v->z;
-    if (relZ < 0.01f)
+    if (relZ < 0.01f) {
         relZ = 0.01f; /* Prevent division by 0 or negative depth */
+    }
 
     float ndc_x = (v->x / relZ) / fovScaleX;
     float ndc_y = (v->y / relZ) / fovScaleY;
