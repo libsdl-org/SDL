@@ -17,7 +17,8 @@ SDL_GLContext OHOS_GLES_CreateContext(SDL_VideoDevice *_this, SDL_Window *window
     SDL_GLContext result;
 
     OHOS_LockPage();
-
+    
+    OHOS_windowDataFill(window);
     result = SDL_EGL_CreateContext(_this, window->internal->egl_surface);
 
     OHOS_UnlockPage();

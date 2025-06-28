@@ -67,6 +67,8 @@ void OHOS_windowDataFill(SDL_Window *w)
     w->w = wid;
     w->h = hei;
     w->internal->native_window = g_ohosNativeWindow;
+    
+    SDL_SetWindowSize(w, wid, hei);
 
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -224,13 +226,33 @@ static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
     data->func = "test";
     data->argCount = 0;
 
-    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_blocking);
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
 
     // SDL_free(data);
 
     napi_value result;
     napi_create_int32(env, 0, &result);
     return result;
+}
+
+typedef struct entrypoint_info_ {
+    char* libname;
+    char* func;
+} entrypoint_info;
+static int sdlLaunchMainInternal(void* reserved)
+{
+    if (!reserved) {
+        return -1;
+    }
+    entrypoint_info *data = (entrypoint_info*)reserved;
+    void *lib = dlopen(data->libname, RTLD_LAZY);
+    void *func = dlsym(lib, data->func);
+    typedef int (*test)();
+    int d = ((test)func)();
+    dlclose(lib);
+    SDL_free(reserved);
+    
+    return d;
 }
 
 static napi_value sdlLaunchMain(napi_env env, napi_callback_info info)
@@ -248,12 +270,12 @@ static napi_value sdlLaunchMain(napi_env env, napi_callback_info info)
     napi_get_value_string_utf8(env, args[1], NULL, 0, &fstringSize);
     char *fname = SDL_malloc(fstringSize + 1);
     napi_get_value_string_utf8(env, args[1], fname, fstringSize + 1, &fstringSize);
-
-    void *lib = dlopen(libname, RTLD_LAZY);
-    void *func = dlsym(lib, fname);
-    typedef int (*test)();
-    ((test)func)();
-    dlclose(lib);
+    
+    entrypoint_info *entry = (entrypoint_info*)SDL_malloc(sizeof(entrypoint_info));
+    entry->func = fname;
+    entry->libname = libname;
+    SDL_Thread* m = SDL_CreateThread(sdlLaunchMainInternal, "SDL App Thread", entry);
+    SDL_SetMainReady();
 
     napi_value result;
     napi_create_int32(env, 0, &result);
@@ -278,6 +300,12 @@ static void OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)
     x = (int)offsetX;
     y = (int)offsetY;
     SDL_UnlockMutex(g_ohosPageMutex);
+    
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    data->func = "onMainLaunch";
+    data->argCount = 0;
+
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
 }
 static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
 {
@@ -296,6 +324,13 @@ static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
     x = (int)offsetX;
     y = (int)offsetY;
     SDL_UnlockMutex(g_ohosPageMutex);
+    
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_Window *win = _this->windows;
+    while (win != NULL) {
+        OHOS_windowDataFill(win);
+        win = win->next;
+    }
 }
 static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
 {
@@ -318,6 +353,7 @@ static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)
 static void onKeyEvent(OH_NativeXComponent *component, void *window)
 {
     OH_NativeXComponent_KeyEvent *keyEvent = NULL;
+    SDL_Log("key!");
     if (OH_NativeXComponent_GetKeyEvent(component, &keyEvent) >= 0) {
         OH_NativeXComponent_KeyAction action;
         OH_NativeXComponent_KeyCode code;
@@ -349,7 +385,8 @@ static void onNativeTouch(OH_NativeXComponent *component, void *window)
     for (int i = 0; i < touchEvent.numPoints; i++) {
         SDL_OHOSTouchEvent e;
         e.timestamp = touchEvent.timeStamp;
-        e.deviceId = touchEvent.deviceId;
+        // skip assertions
+        e.deviceId = touchEvent.deviceId + 1;
         e.fingerId = touchEvent.touchPoints[i].id;
         e.area = touchEvent.touchPoints[i].size;
         e.x = touchEvent.touchPoints[i].x / (float)wid;
@@ -374,13 +411,13 @@ static void onNativeTouch(OH_NativeXComponent *component, void *window)
 
         OHOS_OnTouch(e);
     }
+    
+    OHOS_UnlockPage();
 }
-static void OnDispatchTouchEventCB(OH_NativeXComponent *component, void *window)
-{
+// TODO mouse data
+static void onNativeMouse(OH_NativeXComponent *component, void *window) {
     onNativeTouch(component, window);
 }
-// TODO
-static void onNativeMouse(OH_NativeXComponent *component, void *window) {}
 
 static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 {
@@ -405,7 +442,6 @@ static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
     callback.DispatchTouchEvent = onNativeTouch;
     OH_NativeXComponent_RegisterCallback(nativeXComponent, &callback);
 
-    mouseCallback.DispatchMouseEvent = OnDispatchTouchEventCB;
     mouseCallback.DispatchMouseEvent = onNativeMouse;
     OH_NativeXComponent_RegisterMouseEventCallback(nativeXComponent, &mouseCallback);
 
