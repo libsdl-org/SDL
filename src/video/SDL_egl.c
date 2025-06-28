@@ -19,7 +19,6 @@
  *  3. This notice may not be removed or altered from any source distribution.
  */
 #include "SDL_internal.h"
-#include "dynapi/SDL_dynapi_overrides.h"
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 
