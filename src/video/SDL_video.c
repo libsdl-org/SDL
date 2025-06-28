@@ -107,6 +107,9 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_ANDROID
     &Android_bootstrap,
 #endif
+#ifdef SDL_VIDEO_DRIVER_OHOS
+    &OHOS_bootstrap,
+#endif
 #ifdef SDL_VIDEO_DRIVER_PS2
     &PS2_bootstrap,
 #endif
@@ -148,9 +151,6 @@ static VideoBootStrap *bootstrap[] = {
 #endif
 #ifdef SDL_VIDEO_DRIVER_OPENVR
     &OPENVR_bootstrap,
-#endif
-#ifdef SDL_VIDEO_DRIVER_OHOS
-    &OHOS_bootstrap,
 #endif
     NULL
 };
