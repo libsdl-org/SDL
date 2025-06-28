@@ -13,6 +13,7 @@ int OHOS_FetchWidth();
 int OHOS_FetchHeight();
 
 void OHOS_MessageBox(const char* title, const char* message);
+const char* OHOS_Locale();
 
 typedef struct SDL_VideoData {
     SDL_Rect textRect;

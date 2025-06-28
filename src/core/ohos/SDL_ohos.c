@@ -1,5 +1,4 @@
 #include "SDL_internal.h"
-#include "dynapi/SDL_dynapi_overrides.h"
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
 #include <dlfcn.h>
@@ -58,6 +57,7 @@ typedef struct
     napiCallbackArg arg[16];
     napiArgType type;
     napiCallbackArg ret;
+    bool returned;
 } napiCallbackData;
 
 void OHOS_windowUpdateAttributes(SDL_Window *w)
@@ -209,9 +209,9 @@ static void sdlJSCallback(napi_env env, napi_value jsCb, void *content, void *da
     case String:
     {
         size_t stringSize = 0;
-        napi_get_value_string_utf8(env, args[1], NULL, 0, &stringSize);
+        napi_get_value_string_utf8(env, v, NULL, 0, &stringSize);
         char *value = SDL_malloc(stringSize + 1);
-        napi_get_value_string_utf8(env, args[1], value, stringSize + 1, &stringSize);
+        napi_get_value_string_utf8(env, v, value, stringSize + 1, &stringSize);
         ar->ret.data.str = value;
         break;
     }
@@ -221,6 +221,7 @@ static void sdlJSCallback(napi_env env, napi_value jsCb, void *content, void *da
         break;
     }
     }
+    ar->returned = true;
 }
 
 void OHOS_MessageBox(const char* title, const char* message)
@@ -237,6 +238,24 @@ void OHOS_MessageBox(const char* title, const char* message)
     data->arg[1].data.str = message;
 
     napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+}
+
+const char* OHOS_Locale()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "fetchLocale";
+    data->argCount = 0;
+    data->type = String;
+    data->returned = false;
+    
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    
+    while (!data->returned) {}
+    
+    const char* d = data->ret.data.str;
+    SDL_free(data);
+    return d;
 }
 
 static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
