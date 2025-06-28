@@ -42,6 +42,7 @@ typedef enum
 typedef struct
 {
     napiArgType type;
+    bool enabled;
     union
     {
         int i;
@@ -59,16 +60,21 @@ typedef struct
     napiCallbackArg ret;
 } napiCallbackData;
 
-void OHOS_windowDataFill(SDL_Window *w)
+void OHOS_windowUpdateAttributes(SDL_Window *w)
 {
-    w->internal = SDL_calloc(1, sizeof(SDL_WindowData));
     w->x = x;
     w->y = y;
     w->w = wid;
     w->h = hei;
-    w->internal->native_window = g_ohosNativeWindow;
     
     SDL_SetWindowSize(w, wid, hei);
+}
+
+void OHOS_windowDataFill(SDL_Window *w)
+{
+    w->internal = SDL_calloc(1, sizeof(SDL_WindowData));
+    OHOS_windowUpdateAttributes(w);
+    w->internal->native_window = g_ohosNativeWindow;
 
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
@@ -153,7 +159,11 @@ static void sdlJSCallback(napi_env env, napi_value jsCb, void *content, void *da
     napi_get_named_property(env, callb, ar->func, &jsMethod);
 
     napi_value args[16];
+    SDL_Log("[SDL] calling js function %s with %d args", ar->func, ar->argCount);
     for (int i = 0; i < ar->argCount; i++) {
+        if (!ar->arg[i].enabled) {
+            continue;
+        }
         switch (ar->arg[i].type) {
         case Int:
         {
@@ -172,7 +182,12 @@ static void sdlJSCallback(napi_env env, napi_value jsCb, void *content, void *da
         }
         case String:
         {
-            napi_create_string_utf8(env, ar->arg[i].data.str, SDL_strlen(ar->arg[i].data.str), args + i);
+            const char* p = ar->arg[i].data.str; int l = 0;
+            while (*p) {
+                l++;
+                p++;
+            }
+            napi_create_string_utf8(env, ar->arg[i].data.str, l, args + i);
             break;
         }
         }
@@ -208,6 +223,22 @@ static void sdlJSCallback(napi_env env, napi_value jsCb, void *content, void *da
     }
 }
 
+void OHOS_MessageBox(const char* title, const char* message)
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "showDialog";
+    data->argCount = 2;
+    data->arg[0].type = String;
+    data->arg[0].enabled = true;
+    data->arg[0].data.str = title;
+    data->arg[1].type = String;
+    data->arg[1].enabled = true;
+    data->arg[1].data.str = message;
+
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+}
+
 static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
 {
     napiEnv.env = env;
@@ -221,14 +252,6 @@ static napi_value sdlCallbackInit(napi_env env, napi_callback_info info)
     napi_value resName = NULL;
     napi_create_string_utf8(env, "SDLThreadSafe", NAPI_AUTO_LENGTH, &resName);
     napi_create_threadsafe_function(env, args[0], NULL, resName, 0, 1, NULL, NULL, NULL, sdlJSCallback, &napiEnv.func);
-
-    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
-    data->func = "test";
-    data->argCount = 0;
-
-    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
-
-    // SDL_free(data);
 
     napi_value result;
     napi_create_int32(env, 0, &result);
@@ -255,6 +278,8 @@ static int sdlLaunchMainInternal(void* reserved)
     return d;
 }
 
+static SDL_Thread *mainThread;
+
 static napi_value sdlLaunchMain(napi_env env, napi_callback_info info)
 {
     size_t argc = 2;
@@ -274,7 +299,7 @@ static napi_value sdlLaunchMain(napi_env env, napi_callback_info info)
     entrypoint_info *entry = (entrypoint_info*)SDL_malloc(sizeof(entrypoint_info));
     entry->func = fname;
     entry->libname = libname;
-    SDL_Thread* m = SDL_CreateThread(sdlLaunchMainInternal, "SDL App Thread", entry);
+    mainThread = SDL_CreateThread(sdlLaunchMainInternal, "SDL App Thread", entry);
     SDL_SetMainReady();
 
     napi_value result;
@@ -326,10 +351,9 @@ static void OnSurfaceChangedCB(OH_NativeXComponent *component, void *window)
     SDL_UnlockMutex(g_ohosPageMutex);
     
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_Window *win = _this->windows;
-    while (win != NULL) {
-        OHOS_windowDataFill(win);
-        win = win->next;
+    if (_this && _this->windows) {
+        SDL_Window *win = _this->windows;
+        OHOS_windowUpdateAttributes(win);
     }
 }
 static void OnSurfaceDestroyedCB(OH_NativeXComponent *component, void *window)

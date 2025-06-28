@@ -70,10 +70,21 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
 
     return device;
 }
+bool OHOS_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+{
+    int length1 = SDL_strlen(messageboxdata->title) + 1;
+    char* titlecopy = (char*)SDL_malloc(length1);
+    SDL_memcpy(titlecopy, messageboxdata->title, length1);
+    length1 = SDL_strlen(messageboxdata->message) + 1;
+    char* messagecopy = (char*)SDL_malloc(length1);
+    SDL_memcpy(messagecopy, messageboxdata->message, length1);
+    OHOS_MessageBox(titlecopy, messagecopy);
+    return true;
+}
 VideoBootStrap OHOS_bootstrap = {
     "ohos", "OpenHarmony video driver",
     OHOS_CreateDevice,
-    NULL,
+    OHOS_ShowMessageBox,
     false
 };
 #endif

@@ -12,6 +12,8 @@ void OHOS_UnlockPage();
 int OHOS_FetchWidth();
 int OHOS_FetchHeight();
 
+void OHOS_MessageBox(const char* title, const char* message);
+
 typedef struct SDL_VideoData {
     SDL_Rect textRect;
     int      isPaused;
