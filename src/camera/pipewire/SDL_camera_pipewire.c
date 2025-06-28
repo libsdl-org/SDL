@@ -838,7 +838,7 @@ static void node_event_info(void *object, const struct pw_node_info *info)
             if (!(info->params[i].flags & SPA_PARAM_INFO_READ))
                 continue;
 
-            res = pw_node_enum_params((struct pw_node*)g->proxy,
+            res = pw_node_enum_params((struct pw_node *)g->proxy,
                         ++SPA_PARAMS_INFO_SEQ(info->params[i]), id, 0, -1, NULL);
             if (SPA_RESULT_IS_ASYNC(res))
                 SPA_PARAMS_INFO_SEQ(info->params[i]) = res;

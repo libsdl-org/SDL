@@ -110,8 +110,7 @@ void WIN_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const* const* WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          Uint32 *count)
+char const * const *WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForWin32[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME

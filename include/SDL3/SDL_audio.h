@@ -1021,7 +1021,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStream(SDL_AudioStream *stream);
 /**
  * Query an audio stream for its currently-bound device.
  *
- * This reports the audio device that an audio stream is currently bound to.
+ * This reports the logical audio device that an audio stream is currently
+ * bound to.
  *
  * If not bound, or invalid, this returns zero, which is not a valid device
  * ID.
@@ -1063,6 +1064,17 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
 /**
  * Get the properties associated with an audio stream.
  *
+ * The application can hang any data it wants here, but the following
+ * properties are understood by SDL:
+ *
+ * - `SDL_PROP_AUDIOSTREAM_AUTO_CLEANUP_BOOLEAN`: if true (the default), the
+ *   stream be automatically cleaned up when the audio subsystem quits. If set
+ *   to false, the streams will persist beyond that. This property is ignored
+ *   for streams created through SDL_OpenAudioDeviceStream(), and will always
+ *   be cleaned up. Streams that are not cleaned up will still be unbound from
+ *   devices when the audio subsystem quits. This property was added in SDL
+ *   3.4.0.
+ *
  * \param stream the SDL_AudioStream to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -1072,6 +1084,9 @@ extern SDL_DECLSPEC SDL_AudioStream * SDLCALL SDL_CreateAudioStream(const SDL_Au
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetAudioStreamProperties(SDL_AudioStream *stream);
+
+#define SDL_PROP_AUDIOSTREAM_AUTO_CLEANUP_BOOLEAN "SDL.audiostream.auto_cleanup"
+
 
 /**
  * Query the current format of an audio stream.
@@ -1149,14 +1164,14 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetAudioStreamFrequencyRatio(SDL_AudioStre
  *
  * The frequency ratio is used to adjust the rate at which input data is
  * consumed. Changing this effectively modifies the speed and pitch of the
- * audio. A value greater than 1.0 will play the audio faster, and at a higher
- * pitch. A value less than 1.0 will play the audio slower, and at a lower
- * pitch.
+ * audio. A value greater than 1.0f will play the audio faster, and at a
+ * higher pitch. A value less than 1.0f will play the audio slower, and at a
+ * lower pitch. 1.0f means play at normal speed.
  *
  * This is applied during SDL_GetAudioStreamData, and can be continuously
  * changed to create various effects.
  *
- * \param stream the stream the frequency ratio is being changed.
+ * \param stream the stream on which the frequency ratio is being changed.
  * \param ratio the frequency ratio. 1.0 is normal speed. Must be between 0.01
  *              and 100.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -1332,7 +1347,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamInputChannelMap(SDL_AudioStre
  * Channel maps are optional; most things do not need them, instead passing
  * data in the [order that SDL expects](CategoryAudio#channel-layouts).
  *
- * The output channel map reorders data that leaving a stream via
+ * The output channel map reorders data that is leaving a stream via
  * SDL_GetAudioStreamData.
  *
  * Each item in the array represents an input channel, and its value is the

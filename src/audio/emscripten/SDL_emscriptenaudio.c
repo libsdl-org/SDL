@@ -56,7 +56,7 @@ static bool EMSCRIPTENAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buf
             }
 
             for (var j = 0; j < $1; ++j) {
-                channelData[j] = HEAPF32[buf + (j*numChannels + c)];
+                channelData[j] = HEAPF32[buf + (j * numChannels + c)];
             }
         }
     }, buffer, buffer_size / framelen);

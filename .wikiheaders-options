@@ -9,6 +9,7 @@ versionfname = include/SDL3/SDL_version.h
 versionmajorregex = \A\#define\s+SDL_MAJOR_VERSION\s+(\d+)\Z
 versionminorregex = \A\#define\s+SDL_MINOR_VERSION\s+(\d+)\Z
 versionmicroregex = \A\#define\s+SDL_MICRO_VERSION\s+(\d+)\Z
+apipropertyregex = \A\s*\#\s*define\s+SDL_PROP_
 selectheaderregex = \ASDL.*?\.h\Z
 projecturl = https://libsdl.org/
 wikiurl = https://wiki.libsdl.org

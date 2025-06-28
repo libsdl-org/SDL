@@ -40,7 +40,7 @@ static BOOL OutOfMemory(void)
 /* Gets the arguments with GetCommandLine, converts them to argc and argv
    and calls SDL_main */
 extern "C"
-int SDL_RunApp(int, char**, SDL_main_func mainFunction, void *reserved)
+int SDL_RunApp(int, char **, SDL_main_func mainFunction, void *reserved)
 {
     LPWSTR *argvw;
     char **argv;

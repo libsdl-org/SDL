@@ -239,7 +239,7 @@ static void COREMEDIA_CloseDevice(SDL_Camera *device)
             hidden.session = nil;
             [session stopRunning];
             [session removeInput:[session.inputs objectAtIndex:0]];
-            [session removeOutput:(AVCaptureVideoDataOutput*)[session.outputs objectAtIndex:0]];
+            [session removeOutput:(AVCaptureVideoDataOutput *)[session.outputs objectAtIndex:0]];
             session = nil;
         }
 

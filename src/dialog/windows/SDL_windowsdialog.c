@@ -277,7 +277,7 @@ void windows_ShowFileDialog(void *ptr)
 
             while (*file_ptr) {
                 nfiles++;
-                char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char*) * (nfiles + 1));
+                char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char *) * (nfiles + 1));
 
                 if (!new_cfl) {
                     for (size_t i = 0; i < nfiles - 1; i++) {
@@ -327,7 +327,7 @@ void windows_ShowFileDialog(void *ptr)
             // If the user chose only one file, it's all just one string
             if (nfiles == 0) {
                 nfiles++;
-                char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char*) * (nfiles + 1));
+                char **new_cfl = (char **) SDL_realloc(chosen_files_list, sizeof(char *) * (nfiles + 1));
 
                 if (!new_cfl) {
                     SDL_free(chosen_files_list);
@@ -348,7 +348,7 @@ void windows_ShowFileDialog(void *ptr)
                 }
             }
 
-            callback(userdata, (const char * const*) chosen_files_list, getFilterIndex(dialog.nFilterIndex));
+            callback(userdata, (const char * const *) chosen_files_list, getFilterIndex(dialog.nFilterIndex));
 
             for (size_t i = 0; i < nfiles; i++) {
                 SDL_free(chosen_files_list[i]);
@@ -443,11 +443,11 @@ void windows_ShowFolderDialog(void *ptr)
         SHGetPathFromIDListW(lpItem, buffer);
         char *chosen_file = WIN_StringToUTF8W(buffer);
         const char *files[2] = { chosen_file, NULL };
-        callback(userdata, (const char * const*) files, -1);
+        callback(userdata, (const char * const *) files, -1);
         SDL_free(chosen_file);
     } else {
         const char *files[1] = { NULL };
-        callback(userdata, (const char * const*) files, -1);
+        callback(userdata, (const char * const *) files, -1);
     }
 }
 

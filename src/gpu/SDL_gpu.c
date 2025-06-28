@@ -1954,7 +1954,7 @@ void SDL_BindGPUVertexSamplers(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
 
-        if (!((CommandBufferCommonHeader*)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation)
+        if (!((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation)
         {
             CHECK_SAMPLER_TEXTURES
         }
@@ -2050,7 +2050,7 @@ void SDL_BindGPUFragmentSamplers(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
 
-        if (!((CommandBufferCommonHeader*)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation) {
+        if (!((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation) {
             CHECK_SAMPLER_TEXTURES
         }
 

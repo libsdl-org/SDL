@@ -30,7 +30,10 @@
 #include <X11/keysym.h>
 #include <locale.h>
 
+#ifndef SDL_FORK_MESSAGEBOX
 #define SDL_FORK_MESSAGEBOX 1
+#endif
+
 #define SDL_SET_LOCALE      1
 
 #if SDL_FORK_MESSAGEBOX
@@ -48,7 +51,7 @@
 static const char g_MessageBoxFontLatin1[] =
     "-*-*-medium-r-normal--0-120-*-*-p-0-iso8859-1";
 
-static const char* g_MessageBoxFont[] = {
+static const char *g_MessageBoxFont[] = {
     "-*-*-medium-r-normal--*-120-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
     "-*-*-medium-r-*--*-120-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
     "-misc-*-*-*-*--*-*-*-*-*-*-iso10646-1",  // misc unicode (fix for some systems)
@@ -242,9 +245,9 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
     // Convert colors to 16 bpc XColor format
     for (i = 0; i < SDL_MESSAGEBOX_COLOR_COUNT; i++) {
         data->xcolor[i].flags = DoRed|DoGreen|DoBlue;
-        data->xcolor[i].red = colorhints[i].r*257;
-        data->xcolor[i].green = colorhints[i].g*257;
-        data->xcolor[i].blue = colorhints[i].b*257;
+        data->xcolor[i].red = colorhints[i].r * 257;
+        data->xcolor[i].green = colorhints[i].g * 257;
+        data->xcolor[i].blue = colorhints[i].b * 257;
     }
 
     return true;

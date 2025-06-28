@@ -1894,7 +1894,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowSafeArea(SDL_Window *window, SDL_R
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowAspectRatio(SDL_Window *window, float min_aspect, float max_aspect);
 
 /**
- * Get the size of a window's client area.
+ * Get the aspect ratio of a window's client area.
  *
  * \param window the window to query the width and height from.
  * \param min_aspect a pointer filled in with the minimum aspect ratio of the

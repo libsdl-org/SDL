@@ -117,8 +117,7 @@ void VIVANTE_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const* const* VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                              Uint32 *count)
+char const * const *VIVANTE_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForVivante[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME

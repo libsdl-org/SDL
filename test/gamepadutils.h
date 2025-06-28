@@ -48,7 +48,19 @@ enum
 #define PRESSED_COLOR           175, 238, 238, SDL_ALPHA_OPAQUE
 #define PRESSED_TEXTURE_MOD     175, 238, 238
 #define SELECTED_COLOR          224, 255, 224, SDL_ALPHA_OPAQUE
+#define GYRO_COLOR_RED          255, 0, 0, SDL_ALPHA_OPAQUE
+#define GYRO_COLOR_GREEN        0, 255, 0, SDL_ALPHA_OPAQUE
+#define GYRO_COLOR_BLUE         0, 0, 255, SDL_ALPHA_OPAQUE
+#define GYRO_COLOR_ORANGE       255, 128, 0, SDL_ALPHA_OPAQUE
 
+/* Shared layout constants */
+#define BUTTON_PADDING          12.0f
+#define MINIMUM_BUTTON_WIDTH 96.0f
+
+/*  Symbol */
+#define DEGREE_UTF8 "\xC2\xB0"
+#define SQUARED_UTF8 "\xC2\xB2"
+#define MICRO_UTF8   "\xC2\xB5"
 /* Gamepad image display */
 
 extern GamepadImage *CreateGamepadImage(SDL_Renderer *renderer);
@@ -78,6 +90,7 @@ typedef struct GamepadDisplay GamepadDisplay;
 extern GamepadDisplay *CreateGamepadDisplay(SDL_Renderer *renderer);
 extern void SetGamepadDisplayDisplayMode(GamepadDisplay *ctx, ControllerDisplayMode display_mode);
 extern void SetGamepadDisplayArea(GamepadDisplay *ctx, const SDL_FRect *area);
+extern void SetGamepadDisplayGyroDriftCorrection(GamepadDisplay *ctx, float *gyro_drift_correction);
 extern int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float x, float y);
 extern void SetGamepadDisplayHighlight(GamepadDisplay *ctx, int element, bool pressed);
 extern void SetGamepadDisplaySelected(GamepadDisplay *ctx, int element);
@@ -118,6 +131,7 @@ extern void DestroyJoystickDisplay(JoystickDisplay *ctx);
 typedef struct GamepadButton GamepadButton;
 
 extern GamepadButton *CreateGamepadButton(SDL_Renderer *renderer, const char *label);
+extern void SetGamepadButtonLabel(GamepadButton *ctx, const char *label);
 extern void SetGamepadButtonArea(GamepadButton *ctx, const SDL_FRect *area);
 extern void GetGamepadButtonArea(GamepadButton *ctx, SDL_FRect *area);
 extern void SetGamepadButtonHighlight(GamepadButton *ctx, bool highlight, bool pressed);
@@ -126,6 +140,22 @@ extern float GetGamepadButtonLabelHeight(GamepadButton *ctx);
 extern bool GamepadButtonContains(GamepadButton *ctx, float x, float y);
 extern void RenderGamepadButton(GamepadButton *ctx);
 extern void DestroyGamepadButton(GamepadButton *ctx);
+
+/* Gyro element Display */
+/* If you want to calbirate against a known rotation (i.e. a turn table test) Increase ACCELEROMETER_NOISE_THRESHOLD to about 5, or drift correction will be constantly reset.*/
+#define ACCELEROMETER_NOISE_THRESHOLD 0.5f
+typedef struct Quaternion Quaternion;
+typedef struct GyroDisplay GyroDisplay;
+
+extern void InitCirclePoints3D();
+extern GyroDisplay *CreateGyroDisplay(SDL_Renderer *renderer);
+extern void SetGyroDisplayArea(GyroDisplay *ctx, const SDL_FRect *area);
+extern bool BHasCachedGyroDriftSolution(GyroDisplay *ctx);
+extern void SetGamepadDisplayIMUValues(GyroDisplay *ctx, float *gyro_drift_solution, float *euler_displacement_angles, Quaternion *gyro_quaternion, int reported_senor_rate_hz, int estimated_sensor_rate_hz, float drift_calibration_progress_frac, float accelerometer_noise_sq); 
+extern GamepadButton *GetGyroResetButton(GyroDisplay *ctx);
+extern GamepadButton *GetGyroCalibrateButton(GyroDisplay *ctx);
+extern void RenderGyroDisplay(GyroDisplay *ctx, GamepadDisplay *gamepadElements, SDL_Gamepad *gamepad);
+extern void DestroyGyroDisplay(GyroDisplay *ctx);
 
 /* Working with mappings and bindings */
 

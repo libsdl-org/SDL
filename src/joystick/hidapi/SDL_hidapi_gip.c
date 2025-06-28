@@ -317,6 +317,14 @@ MAKE_GUID(GUID_Wheel, 0x646979cf, 0x6b71, 0x4e96, 0x8d, 0xf9, 0x59, 0xe3, 0x98, 
  * MAKE_GUID(GUID_IProgrammableGamepad, 0x31c1034d, 0xb5b7, 0x4551, 0x98, 0x13, 0x87, 0x69, 0xd4, 0xa0, 0xe4, 0xf9);
  * MAKE_GUID(GUID_IVirtualDevice, 0xdfd26825, 0x110a, 0x4e94, 0xb9, 0x37, 0xb2, 0x7c, 0xe4, 0x7b, 0x25, 0x40);
  * MAKE_GUID(GUID_OnlineDevAuth, 0x632b1fd1, 0xa3e9, 0x44f9, 0x84, 0x20, 0x5c, 0xe3, 0x44, 0xa0, 0x64, 0x04);
+ *
+ * Seen on Elite Controller, Adaptive Controller: 9ebd00a3-b5e6-4c08-a33b-673126459ec4
+ * Seen on Adaptive Controller: ce1e58c5-221c-4bdb-9c24-bf3941601320
+ * Seen on Elite 2 Controller: f758dc66-022c-48b8-a4f6-457ba80e2a5b (IControllerProfileModeState)
+ * Seen on Elite 2 Controller: 31c1034d-b5b7-4551-9813-8769d4a0e4f9 (IProgrammableGamepad)
+ * Seen on Elite 2 Controller: 34ad9b1e-36ad-4fb5-8ac7-17234c9f546f (IExtendedDeviceFlags)
+ * Seen on Elite 2 Controller: 88e0b694-6bd9-4416-a560-e7fafdfa528f
+ * Seen on Elite 2 Controller: ea96c8c0-b216-448b-be80-7e5deb0698e2
  */
 
 static const int GIP_DataClassMtu[8] = { 64, 64, 64, 2048, 0, 0, 0, 0 };
@@ -901,7 +909,7 @@ static bool GIP_ParseDeviceMetadata(GIP_Metadata *metadata, const Uint8 *bytes, 
     }
     if (buffer_offset > 0) {
         device->num_preferred_types = bytes[buffer_offset];
-        device->preferred_types = SDL_calloc(device->num_preferred_types, sizeof(char*));
+        device->preferred_types = SDL_calloc(device->num_preferred_types, sizeof(char *));
         buffer_offset++;
         for (i = 0; i < device->num_preferred_types; i++) {
             if (buffer_offset + 2 >= length) {
@@ -1013,7 +1021,7 @@ static bool GIP_ParseMessageMetadata(GIP_MessageMetadata *metadata, const Uint8 
     return true;
 }
 
-static bool GIP_ParseMetadata(GIP_Metadata *metadata, const Uint8* bytes, int num_bytes)
+static bool GIP_ParseMetadata(GIP_Metadata *metadata, const Uint8 *bytes, int num_bytes)
 {
     int header_size;
     int metadata_size;
@@ -1687,7 +1695,7 @@ static bool GIP_HandleCommandGuideButtonStatus(
         return false;
     }
     if (bytes[1] == VK_LWIN) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (bytes[0] & 0x01) != 0);
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (bytes[0] & 0x03) != 0);
     }
 
     return true;
@@ -2427,7 +2435,7 @@ static void GIP_ReceivePacket(GIP_Device *device, const Uint8 *bytes, int num_by
     Uint16 bytes_remaining = 0;
     bool is_fragment;
     Uint8 attachment_index;
-    GIP_Attachment* attachment;
+    GIP_Attachment *attachment;
 
     if (num_bytes < 5) {
         return;

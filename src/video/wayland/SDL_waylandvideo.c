@@ -66,6 +66,7 @@
 #include "xdg-shell-client-protocol.h"
 #include "xdg-toplevel-icon-v1-client-protocol.h"
 #include "color-management-v1-client-protocol.h"
+#include "pointer-warp-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1311,6 +1312,8 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     } else if (SDL_strcmp(interface, "wp_color_manager_v1") == 0) {
         d->wp_color_manager_v1 = wl_registry_bind(d->registry, id, &wp_color_manager_v1_interface, 1);
         Wayland_InitColorManager(d);
+    } else if (SDL_strcmp(interface, "wp_pointer_warp_v1") == 0) {
+        d->wp_pointer_warp_v1 = wl_registry_bind(d->registry, id, &wp_pointer_warp_v1_interface, 1);
     }
 }
 
@@ -1618,6 +1621,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->wp_color_manager_v1) {
         wp_color_manager_v1_destroy(data->wp_color_manager_v1);
         data->wp_color_manager_v1 = NULL;
+    }
+
+    if (data->wp_pointer_warp_v1) {
+        wp_pointer_warp_v1_destroy(data->wp_pointer_warp_v1);
+        data->wp_pointer_warp_v1 = NULL;
     }
 
     if (data->compositor) {

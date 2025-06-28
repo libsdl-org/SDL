@@ -771,7 +771,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             /* the new mime formats are the SDL_FORMATS property as an array of Atoms */
             Atom atom = None;
             Atom *patom;
-            unsigned char* data = NULL;
+            unsigned char *data = NULL;
             int format_property = 0;
             unsigned long length = 0;
             unsigned long bytes_left = 0;
@@ -780,8 +780,8 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             X11_XGetWindowProperty(display, GetWindow(_this), videodata->atoms.SDL_FORMATS, 0, 200,
                                             0, XA_ATOM, &atom, &format_property, &length, &bytes_left, &data);
 
-            int allocationsize = (length + 1) * sizeof(char*);
-            for (j = 0, patom = (Atom*)data; j < length; j++, patom++) {
+            int allocationsize = (length + 1) * sizeof(char *);
+            for (j = 0, patom = (Atom *)data; j < length; j++, patom++) {
                 char *atomStr = X11_XGetAtomName(display, *patom);
                 allocationsize += SDL_strlen(atomStr) + 1;
                 X11_XFree(atomStr);
@@ -791,7 +791,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             if (new_mime_types) {
                 char *strPtr = (char *)(new_mime_types + length + 1);
 
-                for (j = 0, patom = (Atom*)data; j < length; j++, patom++) {
+                for (j = 0, patom = (Atom *)data; j < length; j++, patom++) {
                     char *atomStr = X11_XGetAtomName(display, *patom);
                     new_mime_types[j] = strPtr;
                     strPtr = stpcpy(strPtr, atomStr) + 1;
@@ -1513,9 +1513,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                                       &ChildReturn);
         }
 
-        /* Xfce sends ConfigureNotify before PropertyNotify when toggling fullscreen and maximized, which
-         * is backwards from every other window manager, as well as what is expected by SDL and its clients.
-         * Defer emitting the size/move events until the corresponding PropertyNotify arrives.
+        /* Some window managers send ConfigureNotify before PropertyNotify when changing state (Xfce and
+         * fvwm are known to do this), which is backwards from other window managers, as well as what is
+         * expected by SDL and its clients. Defer emitting the size/move events until the corresponding
+         * PropertyNotify arrives for consistency.
          */
         const Uint32 changed = X11_GetNetWMState(_this, data->window, xevent->xproperty.window) ^ data->window->flags;
         if (changed & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) {
@@ -1950,13 +1951,12 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                right approach, but it seems to work. */
             X11_UpdateKeymap(_this, true);
         } else if (xevent->xproperty.atom == videodata->atoms._NET_FRAME_EXTENTS) {
-            /* Events are disabled when leaving fullscreen until the borders appear to avoid
-             * incorrect size/position events.
-             */
+            X11_GetBorderValues(data);
             if (data->size_move_event_flags) {
+                /* Events are disabled when leaving fullscreen until the borders appear to avoid
+                 * incorrect size/position events on compositing window managers.
+                 */
                 data->size_move_event_flags &= ~X11_SIZE_MOVE_EVENTS_WAIT_FOR_BORDERS;
-                X11_GetBorderValues(data);
-
             }
             if (!(data->window->flags & SDL_WINDOW_FULLSCREEN) && data->toggle_borders) {
                 data->toggle_borders = false;

@@ -140,8 +140,7 @@ void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 // members of the VkInstanceCreateInfo struct passed to
 // vkCreateInstance().
 /*********************************************************************/
-char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                             Uint32 *count)
+char const * const *KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForKMSDRM[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME

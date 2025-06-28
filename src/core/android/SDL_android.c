@@ -2691,7 +2691,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 
         // Convert fileList to string
         size_t count = (*env)->GetArrayLength(env, fileList);
-        char **charFileList = SDL_calloc(count + 1, sizeof(char*));
+        char **charFileList = SDL_calloc(count + 1, sizeof(char *));
 
         if (charFileList == NULL) {
             mAndroidFileDialogData.callback(mAndroidFileDialogData.userdata, NULL, -1);
@@ -2747,7 +2747,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
 }
 
 bool Android_JNI_OpenFileDialog(
-    SDL_DialogFileCallback callback, void* userdata,
+    SDL_DialogFileCallback callback, void *userdata,
     const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
     bool multiple)
 {
