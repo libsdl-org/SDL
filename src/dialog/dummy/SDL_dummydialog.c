@@ -26,8 +26,57 @@
 
 void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
-  SDL_Unsupported();
-  callback(userdata, NULL, -1);
+    SDL_Unsupported();
+    callback(userdata, NULL, -1);
+}
+
+void SDL_SYS_ShowInputDialogWithProperties(SDL_DialogInputCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    SDL_Unsupported();
+    callback(userdata, NULL, SDL_DIALOGRESULT_ERROR);
+}
+
+SDL_ProgressDialog* SDL_SYS_ShowProgressDialogWithProperties(SDL_DialogProgressCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    SDL_Unsupported();
+    callback(userdata, SDL_DIALOGRESULT_ERROR);
+
+    // In case the callback calls SDL_SetError()
+    SDL_Unsupported();
+    return NULL;
+}
+
+void SDL_SYS_UpdateProgressDialog(SDL_ProgressDialog* dialog, float progress, const char *new_prompt)
+{
+    SDL_Unsupported();
+}
+
+void SDL_SYS_DestroyProgressDialog(SDL_ProgressDialog* dialog)
+{
+    SDL_Unsupported();
+}
+
+void SDL_SYS_ShowColorPickerDialogWithProperties(SDL_DialogColorCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    SDL_Color color;
+    color.r = 0;
+    color.g = 0;
+    color.b = 0;
+    color.a = 0;
+
+    SDL_Unsupported();
+    callback(userdata, color, SDL_DIALOGRESULT_ERROR);
+}
+
+void SDL_SYS_ShowDatePickerDialogWithProperties(SDL_DialogDateCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    SDL_Date date;
+    date.y = 0;
+    date.m = 0;
+    date.d = 0;
+
+    SDL_Unsupported();
+    callback(userdata, date, SDL_DIALOGRESULT_ERROR);
 }
 
 #endif // SDL_DIALOG_DUMMY
