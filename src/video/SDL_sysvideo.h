@@ -542,6 +542,7 @@ extern VideoBootStrap Emscripten_bootstrap;
 extern VideoBootStrap OFFSCREEN_bootstrap;
 extern VideoBootStrap QNX_bootstrap;
 extern VideoBootStrap OPENVR_bootstrap;
+extern VideoBootStrap OHOS_bootstrap;
 
 extern bool SDL_UninitializedVideo(void);
 // Use SDL_OnVideoThread() sparingly, to avoid regressions in use cases that currently happen to work
