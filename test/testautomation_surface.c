@@ -989,6 +989,45 @@ static int SDLCALL surface_testBlitInvalid(void *arg)
     return TEST_COMPLETED;
 }
 
+static int SDLCALL surface_testBlitsWithBadCoordinates(void *arg)
+{
+    const SDL_Rect rect[8] = {
+        { SDL_MAX_SINT32, 0, 2, 2 },
+        { 0, SDL_MAX_SINT32, 2, 2 },
+        { 0, 0, SDL_MAX_SINT32, 2 },
+        { 0, 0, 2, SDL_MAX_SINT32 },
+        { SDL_MIN_SINT32, 0, 2, 2 },
+        { 0, SDL_MIN_SINT32, 2, 2 },
+        { 0, 0, SDL_MIN_SINT32, 2 },
+        { 0, 0, 2, SDL_MIN_SINT32 }
+    };
+
+    SDL_Surface *s;
+    bool result;
+    int i;
+
+    s = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA8888);
+    SDLTest_AssertCheck(s != NULL, "Check surface creation");
+
+    for (i = 0; i < 8; i++) {
+        result = SDL_BlitSurface(s, NULL, s, &rect[i]);
+        SDLTest_AssertCheck(result == true, "SDL_BlitSurface(valid, NULL, valid, &rect), result = %s", result ? "true" : "false");
+
+        result = SDL_BlitSurface(s, &rect[i], s, NULL);
+        SDLTest_AssertCheck(result == true, "SDL_BlitSurface(valid, &rect, valid, NULL), result = %s", result ? "true" : "false");
+
+        result = SDL_BlitSurfaceScaled(s, NULL, s, &rect[i], SDL_SCALEMODE_NEAREST);
+        SDLTest_AssertCheck(result == true, "SDL_BlitSurfaceScaled(valid, NULL, valid, &rect, SDL_SCALEMODE_NEAREST), result = %s", result ? "true" : "false");
+
+        result = SDL_BlitSurfaceScaled(s, &rect[i], s, NULL, SDL_SCALEMODE_NEAREST);
+        SDLTest_AssertCheck(result == true, "SDL_BlitSurfaceScaled(valid, &rect, valid, NULL, SDL_SCALEMODE_NEAREST), result = %s", result ? "true" : "false");
+    }
+
+    SDL_DestroySurface(s);
+
+    return TEST_COMPLETED;
+}
+
 static int SDLCALL surface_testOverflow(void *arg)
 {
     char buf[1024];
@@ -1664,6 +1703,10 @@ static const SDLTest_TestCaseReference surfaceTestBlitInvalid = {
     surface_testBlitInvalid, "surface_testBlitInvalid", "Tests blitting routines with invalid surfaces.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTestBlitsWithBadCoordinates = {
+    surface_testBlitsWithBadCoordinates, "surface_testBlitsWithBadCoordinates", "Test blitting routines with bad coordinates.", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference surfaceTestOverflow = {
     surface_testOverflow, "surface_testOverflow", "Test overflow detection.", TEST_ENABLED
 };
@@ -1713,6 +1756,7 @@ static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestBlitBlendMod,
     &surfaceTestBlitBlendMul,
     &surfaceTestBlitInvalid,
+    &surfaceTestBlitsWithBadCoordinates,
     &surfaceTestOverflow,
     &surfaceTestFlip,
     &surfaceTestPalette,
