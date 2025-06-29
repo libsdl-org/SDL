@@ -2543,7 +2543,7 @@ void SDL_EndGPUComputePass(
     if (COMPUTEPASS_DEVICE->debug_mode) {
         commandBufferCommonHeader = (CommandBufferCommonHeader *)COMPUTEPASS_COMMAND_BUFFER;
         commandBufferCommonHeader->compute_pass.in_progress = false;
-        commandBufferCommonHeader->compute_pass.compute_pipeline = false;
+        commandBufferCommonHeader->compute_pass.compute_pipeline = NULL;
         SDL_zeroa(commandBufferCommonHeader->compute_pass.sampler_bound);
         SDL_zeroa(commandBufferCommonHeader->compute_pass.read_only_storage_texture_bound);
         SDL_zeroa(commandBufferCommonHeader->compute_pass.read_only_storage_buffer_bound);
