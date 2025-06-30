@@ -1415,6 +1415,8 @@ static SDL_bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     if (device->is_bluetooth) {
         if (HIDAPI_HasConnectedUSBDevice(device->serial)) {
             return SDL_TRUE;
+        } else if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_Unknown) {
+            return SDL_FALSE;
         }
     } else {
         HIDAPI_DisconnectBluetoothDevice(device->serial);
