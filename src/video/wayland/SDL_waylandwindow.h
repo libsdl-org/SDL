@@ -46,7 +46,6 @@ struct SDL_WindowData
         struct
         {
             struct libdecor_frame *frame;
-            bool initial_configure_seen;
         } libdecor;
 #endif
         struct
@@ -64,7 +63,6 @@ struct SDL_WindowData
                     struct xdg_positioner *xdg_positioner;
                 } popup;
             };
-            bool initial_configure_seen;
         } xdg;
     } shell_surface;
     enum
