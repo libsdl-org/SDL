@@ -25,7 +25,7 @@
 
 #ifndef SDL_PLATFORM_IOS
 
-static int callback_rate_increment = 0;
+static Uint64 callback_rate_increment = 0;
 static bool iterate_after_waitevent = false;
 
 static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
