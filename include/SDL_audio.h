@@ -648,7 +648,7 @@ extern DECLSPEC int SDLCALL SDL_GetDefaultAudioInfo(char **name,
  * \param obtained an SDL_AudioSpec structure filled in with the actual output
  *                 format; see SDL_OpenAudio() for more information.
  * \param allowed_changes 0, or one or more flags OR'd together.
- * \returns a valid device ID that is > 0 on success or 0 on failure; call
+ * \returns a valid device ID > 0 on success or 0 on failure; call
  *          SDL_GetError() for more information.
  *
  *          For compatibility with SDL 1.2, this will never return 1, since
