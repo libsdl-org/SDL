@@ -12,6 +12,7 @@
 - [NetBSD](README-bsd.md)
 - [Nintendo Switch](README-switch.md)
 - [Nintendo 3DS](README-n3ds.md)
+- [Nokia N-Gage](README-ngage.md)]
 - [OpenBSD](README-bsd.md)
 - [PlayStation 2](README-ps2.md)
 - [PlayStation 4](README-ps4.md)
@@ -24,7 +25,6 @@
 - [Windows](README-windows.md)
 - [Windows GDK](README-gdk.md)
 - [Xbox](README-gdk.md)
-- [Nokia N-Gage](README-ngage.md)
 
 ## Unsupported Platforms
 
