@@ -405,6 +405,49 @@ static inline void prepareTextureForDownload(SDL_Texture *texture)
     sceKernelDcacheInvalidateRange(psp_tex->data, psp_tex->size);
 }
 
+static inline void PSP_SetBlendMode(PSP_RenderData *data, PSP_BlendInfo blendInfo)
+{
+    // Update the blend mode if necessary
+    if (data->blendInfo.mode != blendInfo.mode) {
+        switch (blendInfo.mode) {
+        case SDL_BLENDMODE_NONE:
+            sceGuShadeModel(GU_SMOOTH);
+            sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
+            sceGuDisable(GU_BLEND);
+            break;
+        case SDL_BLENDMODE_BLEND:
+            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+            sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
+            sceGuEnable(GU_BLEND);
+            break;
+        case SDL_BLENDMODE_ADD:
+            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+            sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_FIX, 0, 0x00FFFFFF);
+            sceGuEnable(GU_BLEND);
+            break;
+        case SDL_BLENDMODE_MOD:
+            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+            sceGuBlendFunc(GU_ADD, GU_FIX, GU_SRC_COLOR, 0, 0);
+            sceGuEnable(GU_BLEND);
+            break;
+        case SDL_BLENDMODE_MUL:
+            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
+            /* FIXME SDL_BLENDMODE_MUL is simplified, and dstA is in fact un-changed.*/
+            sceGuBlendFunc(GU_ADD, GU_DST_COLOR, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
+            sceGuEnable(GU_BLEND);
+            break;
+        }
+
+        data->blendInfo.mode = blendInfo.mode;
+    }
+
+    // Update shade model if needed
+    if (data->blendInfo.shade != blendInfo.shade) {
+        sceGuShadeModel(blendInfo.shade);
+        data->blendInfo.shade = blendInfo.shade;
+    }
+}
+
 static void PSP_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
 }
@@ -710,7 +753,7 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
     return 0;
 }
 
-static int PSP_RenderSetViewPort(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+static inline int PSP_RenderSetViewPort(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     const SDL_Rect *viewport = &cmd->data.viewport.rect;
 
@@ -719,49 +762,6 @@ static int PSP_RenderSetViewPort(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     sceGuScissor(viewport->x, viewport->y, viewport->w, viewport->h);
 
     return 0;
-}
-
-static void PSP_SetBlendMode(PSP_RenderData *data, PSP_BlendInfo blendInfo)
-{
-    // Update the blend mode if necessary
-    if (data->blendInfo.mode != blendInfo.mode) {
-        switch (blendInfo.mode) {
-        case SDL_BLENDMODE_NONE:
-            sceGuShadeModel(GU_SMOOTH);
-            sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGBA);
-            sceGuDisable(GU_BLEND);
-            break;
-        case SDL_BLENDMODE_BLEND:
-            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-            sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
-            sceGuEnable(GU_BLEND);
-            break;
-        case SDL_BLENDMODE_ADD:
-            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-            sceGuBlendFunc(GU_ADD, GU_SRC_ALPHA, GU_FIX, 0, 0x00FFFFFF);
-            sceGuEnable(GU_BLEND);
-            break;
-        case SDL_BLENDMODE_MOD:
-            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-            sceGuBlendFunc(GU_ADD, GU_FIX, GU_SRC_COLOR, 0, 0);
-            sceGuEnable(GU_BLEND);
-            break;
-        case SDL_BLENDMODE_MUL:
-            sceGuTexFunc(GU_TFX_MODULATE, GU_TCC_RGBA);
-            /* FIXME SDL_BLENDMODE_MUL is simplified, and dstA is in fact un-changed.*/
-            sceGuBlendFunc(GU_ADD, GU_DST_COLOR, GU_ONE_MINUS_SRC_ALPHA, 0, 0);
-            sceGuEnable(GU_BLEND);
-            break;
-        }
-
-        data->blendInfo.mode = blendInfo.mode;
-    }
-
-    // Update shade model if needed
-    if (data->blendInfo.shade != blendInfo.shade) {
-        sceGuShadeModel(blendInfo.shade);
-        data->blendInfo.shade = blendInfo.shade;
-    }
 }
 
 static inline int PSP_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
