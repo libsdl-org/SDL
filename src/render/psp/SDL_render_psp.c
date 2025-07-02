@@ -26,75 +26,75 @@
 #include "SDL_hints.h"
 #include "SDL_render_psp.h"
 
+#include <pspdisplay.h>
 #include <pspgu.h>
 #include <pspintrman.h>
-#include <vram.h>
 #include <psputils.h>
-#include <pspdisplay.h>
+#include <vram.h>
 
 #define GPU_LIST_SIZE 256 * 1024
 
 typedef struct
 {
-    uint8_t shade;        /**< GU_FLAT or GU_SMOOTH */
-    uint8_t mode;        /**< GU_ADD, GU_SUBTRACT, GU_REVERSE_SUBTRACT, GU_MIN, GU_MAX */
+    uint8_t shade; /**< GU_FLAT or GU_SMOOTH */
+    uint8_t mode;  /**< GU_ADD, GU_SUBTRACT, GU_REVERSE_SUBTRACT, GU_MIN, GU_MAX */
 } PSP_BlendInfo;
 
 typedef struct
 {
     uint32_t __attribute__((aligned(16))) guList[2][GPU_LIST_SIZE];
-    void *frontbuffer;         /**< main screen buffer */
-    void *backbuffer;          /**< buffer presented to display */
-    PSP_BlendInfo blendInfo;   /**< current blend info */
-    uint8_t drawBufferFormat;  /**< GU_PSM_8888 or GU_PSM_5650 or GU_PSM_4444 */
-    uint8_t currentDrawBufferFormat;  /**< GU_PSM_8888 or GU_PSM_5650 or GU_PSM_4444 */
-    uint8_t vsync; /* 0 (Disabled), 1 (Enabled), 2 (Dynamic) */
+    void *frontbuffer;               /**< main screen buffer */
+    void *backbuffer;                /**< buffer presented to display */
+    PSP_BlendInfo blendInfo;         /**< current blend info */
+    uint8_t drawBufferFormat;        /**< GU_PSM_8888 or GU_PSM_5650 or GU_PSM_4444 */
+    uint8_t currentDrawBufferFormat; /**< GU_PSM_8888 or GU_PSM_5650 or GU_PSM_4444 */
+    uint8_t vsync;                   /* 0 (Disabled), 1 (Enabled), 2 (Dynamic) */
     uint8_t list_idx;
     SDL_bool vblank_not_reached; /**< whether vblank wasn't reached */
 } PSP_RenderData;
 
 typedef struct
 {
-    void *data;             /**< Image data. */
-    void *swizzledData;     /**< Swizzled image data. */
-    uint32_t textureWidth;  /**< Texture width (power of two). */
-    uint32_t textureHeight; /**< Texture height (power of two). */
-    uint32_t width;         /**< Image width. */
-    uint32_t height;        /**< Image height. */
-    uint32_t pitch;         /**< Image pitch. */
-    uint32_t swizzledWidth; /**< Swizzled image width. */
-    uint32_t swizzledHeight;/**< Swizzled image height. */
-    uint32_t swizzledPitch; /**< Swizzled image pitch. */
-    uint32_t size;          /**< Image size in bytes. */
-    uint32_t swizzledSize;  /**< Swizzled image size in bytes. */
-    uint8_t format;         /**< Image format - one of ::pgePixelFormat. */
-    uint8_t filter;         /**< Image filter - one of GU_NEAREST or GU_LINEAR. */
-    uint8_t swizzled;       /**< Whether the image is swizzled or not. */
+    void *data;              /**< Image data. */
+    void *swizzledData;      /**< Swizzled image data. */
+    uint32_t textureWidth;   /**< Texture width (power of two). */
+    uint32_t textureHeight;  /**< Texture height (power of two). */
+    uint32_t width;          /**< Image width. */
+    uint32_t height;         /**< Image height. */
+    uint32_t pitch;          /**< Image pitch. */
+    uint32_t swizzledWidth;  /**< Swizzled image width. */
+    uint32_t swizzledHeight; /**< Swizzled image height. */
+    uint32_t swizzledPitch;  /**< Swizzled image pitch. */
+    uint32_t size;           /**< Image size in bytes. */
+    uint32_t swizzledSize;   /**< Swizzled image size in bytes. */
+    uint8_t format;          /**< Image format - one of ::pgePixelFormat. */
+    uint8_t filter;          /**< Image filter - one of GU_NEAREST or GU_LINEAR. */
+    uint8_t swizzled;        /**< Whether the image is swizzled or not. */
 } PSP_Texture;
 
 typedef struct
 {
     float x, y, z;
-} __attribute__ ((packed)) VertV;
+} __attribute__((packed)) VertV;
 
 typedef struct
 {
     SDL_Color col;
     float x, y, z;
-} __attribute__ ((packed)) VertCV;
+} __attribute__((packed)) VertCV;
 
 typedef struct
 {
     float u, v;
     SDL_Color col;
     float x, y, z;
-} __attribute__ ((packed)) VertTCV;
+} __attribute__((packed)) VertTCV;
 
 typedef struct
 {
     float u, v;
     float x, y, z;
-} __attribute__ ((packed)) VertTV;
+} __attribute__((packed)) VertTV;
 
 typedef struct
 {
@@ -102,8 +102,7 @@ typedef struct
     int height;
 } SliceSize;
 
-
-int SDL_PSP_RenderGetProp(SDL_Renderer *r, enum SDL_PSP_RenderProps which, void** out)
+int SDL_PSP_RenderGetProp(SDL_Renderer *r, enum SDL_PSP_RenderProps which, void **out)
 {
     PSP_RenderData *rd;
     if (r == NULL) {
@@ -111,16 +110,15 @@ int SDL_PSP_RenderGetProp(SDL_Renderer *r, enum SDL_PSP_RenderProps which, void*
     }
     rd = r->driverdata;
     switch (which) {
-        case SDL_PSP_RENDERPROPS_FRONTBUFFER:
-            *out = rd->frontbuffer;
-            return 0;
-        case SDL_PSP_RENDERPROPS_BACKBUFFER:
-            *out = rd->backbuffer;
-            return 0;
+    case SDL_PSP_RENDERPROPS_FRONTBUFFER:
+        *out = rd->frontbuffer;
+        return 0;
+    case SDL_PSP_RENDERPROPS_BACKBUFFER:
+        *out = rd->backbuffer;
+        return 0;
     }
     return -1;
 }
-static int vsync_sema_id = 0;
 
 /* PRIVATE METHODS */
 static void psp_on_vblank(u32 sub, PSP_RenderData *data)
@@ -132,27 +130,26 @@ static void psp_on_vblank(u32 sub, PSP_RenderData *data)
 
 static inline unsigned int getMemorySize(unsigned int width, unsigned int height, unsigned int psm)
 {
-	switch (psm)
-	{
-		case GU_PSM_T4:
-			return (width * height) >> 1;
+    switch (psm) {
+    case GU_PSM_T4:
+        return (width * height) >> 1;
 
-		case GU_PSM_T8:
-			return width * height;
+    case GU_PSM_T8:
+        return width * height;
 
-		case GU_PSM_5650:
-		case GU_PSM_5551:
-		case GU_PSM_4444:
-		case GU_PSM_T16:
-			return 2 * width * height;
+    case GU_PSM_5650:
+    case GU_PSM_5551:
+    case GU_PSM_4444:
+    case GU_PSM_T16:
+        return 2 * width * height;
 
-		case GU_PSM_8888:
-		case GU_PSM_T32:
-			return 4 * width * height;
+    case GU_PSM_8888:
+    case GU_PSM_T32:
+        return 4 * width * height;
 
-		default:
-			return 0;
-	}
+    default:
+        return 0;
+    }
 }
 
 static inline int pixelFormatToPSPFMT(Uint32 format)
@@ -219,7 +216,7 @@ static inline int calculateNextPow2(int value)
     return i;
 }
 
-static inline int calculateBestSliceSizeForSprite(SDL_Renderer *renderer, const SDL_FRect *dstrect, SliceSize *sliceSize, SliceSize *sliceDimension) 
+static inline int calculateBestSliceSizeForSprite(SDL_Renderer *renderer, const SDL_FRect *dstrect, SliceSize *sliceSize, SliceSize *sliceDimension)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
 
@@ -230,23 +227,24 @@ static inline int calculateBestSliceSizeForSprite(SDL_Renderer *renderer, const 
     case GU_PSM_5650:
     case GU_PSM_5551:
     case GU_PSM_4444:
-        sliceSize->width = dstrect->w > 64 ? 64: dstrect->w;
+        sliceSize->width = dstrect->w > 64 ? 64 : dstrect->w;
         break;
     case GU_PSM_8888:
-        sliceSize->width = dstrect->w > 32 ? 32: dstrect->w;
+        sliceSize->width = dstrect->w > 32 ? 32 : dstrect->w;
         break;
     default:
         return -1;
     }
     sliceSize->height = dstrect->h;
-    
+
     sliceDimension->width = SDL_ceilf(dstrect->w / sliceSize->width);
     sliceDimension->height = SDL_ceilf(dstrect->h / sliceSize->height);
 
     return 0;
 }
 
-static inline void fillSingleSliceVertices(VertTV *vertices, const SDL_Rect *srcrect, const SDL_FRect *dstrect) {
+static inline void fillSingleSliceVertices(VertTV *vertices, const SDL_Rect *srcrect, const SDL_FRect *dstrect)
+{
     vertices[0].x = dstrect->x;
     vertices[0].y = dstrect->y;
     vertices[0].z = 0.0f;
@@ -261,7 +259,7 @@ static inline void fillSingleSliceVertices(VertTV *vertices, const SDL_Rect *src
 }
 
 static inline void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, SliceSize *sliceSize,
-                         const SDL_Rect *srcrect, const SDL_FRect *dstrect)
+                                      const SDL_Rect *srcrect, const SDL_FRect *dstrect)
 {
 
     int i, j;
@@ -281,7 +279,7 @@ static inline void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, S
     remainingHeight = (int)dstrect->h % sliceSize->height;
     hasRemainingWidth = remainingWidth > 0;
     hasRemainingHeight = remainingHeight > 0;
-    srcrectRateWidth =  (float)(abs(srcrect->w - dimensions->width)) / (float)(abs(dstrect->w - dimensions->width));
+    srcrectRateWidth = (float)(abs(srcrect->w - dimensions->width)) / (float)(abs(dstrect->w - dimensions->width));
     srcrectRateHeight = (float)(abs(srcrect->h - dimensions->height)) / (float)(abs(dstrect->h - dimensions->height));
     srcWidth = sliceSize->width * srcrectRateWidth;
     srcHeight = sliceSize->height * srcrectRateHeight;
@@ -304,7 +302,7 @@ static inline void fillSpriteVertices(VertTV *vertices, SliceSize *dimensions, S
                 vertices[currentIndex + 1].u = vertices[currentIndex].u + srcWidth;
                 vertices[currentIndex + 1].x = vertices[currentIndex].x + sliceSize->width;
             }
-            
+
             if (j == dimensions->height - 1 && hasRemainingHeight) {
                 vertices[currentIndex + 1].v = vertices[currentIndex].v + remainingSrcHeight;
                 vertices[currentIndex + 1].y = vertices[currentIndex].y + remainingHeight;
@@ -340,7 +338,7 @@ static inline int swizzle(PSP_Texture *psp_tex)
             memcpy(dstBlock, srcBlock, blockSizeBytes);
         }
     }
-    
+
     return 1;
 }
 
@@ -364,16 +362,16 @@ static inline int unswizzle(PSP_Texture *psp_tex)
             memcpy(dstBlock, srcBlock, blockSizeBytes);
         }
     }
-    
+
     return 1;
 }
 
 static inline void prepareTextureForUpload(SDL_Texture *texture)
 {
     PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
-    if (texture->access != SDL_TEXTUREACCESS_STATIC || psp_tex->swizzled )
+    if (texture->access != SDL_TEXTUREACCESS_STATIC || psp_tex->swizzled)
         return;
-    
+
     psp_tex->swizzledData = vramalloc(psp_tex->swizzledSize);
     if (!psp_tex->swizzledData) {
         sceKernelDcacheWritebackRange(psp_tex->data, psp_tex->size);
@@ -393,7 +391,7 @@ static inline void prepareTextureForDownload(SDL_Texture *texture)
 
     if (texture->access != SDL_TEXTUREACCESS_STATIC || !psp_tex->swizzled)
         return;
-    
+
     psp_tex->data = SDL_malloc(psp_tex->size);
     if (!psp_tex->data) {
         sceKernelDcacheInvalidateRange(psp_tex->swizzledData, psp_tex->swizzledSize);
@@ -509,8 +507,8 @@ static void PSP_SetTextureScaleMode(SDL_Renderer *renderer, SDL_Texture *texture
      or GU_LINEAR (good for scaling)
      */
     uint32_t guScaleMode = (scaleMode == SDL_ScaleModeNearest
-                                   ? GU_NEAREST
-                                   : GU_LINEAR);
+                                ? GU_NEAREST
+                                : GU_LINEAR);
     psp_tex->filter = guScaleMode;
 }
 
@@ -523,7 +521,7 @@ static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         sceGuDrawBufferList(psp_tex->format, vrelptr(psp_tex->data), psp_tex->width);
         data->currentDrawBufferFormat = psp_tex->format;
 
-        if(psp_tex->format == GU_PSM_5551) {
+        if (psp_tex->format == GU_PSM_5551) {
             sceGuEnable(GU_STENCIL_TEST);
             sceGuStencilOp(GU_REPLACE, GU_REPLACE, GU_REPLACE);
             sceGuStencilFunc(GU_GEQUAL, 0xff, 0xff);
@@ -534,9 +532,9 @@ static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
             sceGuDisable(GU_ALPHA_TEST);
         }
 
-        //Enable scissor to avoid drawing outside viewport
+        // Enable scissor to avoid drawing outside viewport
         sceGuEnable(GU_SCISSOR_TEST);
-        sceGuScissor(0,0,psp_tex->width, psp_tex->height);
+        sceGuScissor(0, 0, psp_tex->width, psp_tex->height);
 
     } else {
         sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
@@ -583,8 +581,8 @@ static int PSP_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     size_indices = indices ? size_indices : 0;
 
     if (texture) {
-        VertTCV *vertices = (VertTCV *) SDL_AllocateRenderVertices(renderer, count * sizeof (VertTCV), 4, &cmd->data.draw.first);
-        PSP_Texture *psp_tex = (PSP_Texture *) texture->driverdata;
+        VertTCV *vertices = (VertTCV *)SDL_AllocateRenderVertices(renderer, count * sizeof(VertTCV), 4, &cmd->data.draw.first);
+        PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
 
         if (!vertices) {
             return -1;
@@ -699,12 +697,12 @@ static int PSP_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Tex
 
     if (calculateBestSliceSizeForSprite(renderer, dstrect, &sliceSize, &sliceDimension))
         return -1;
-    
+
     verticesCount = sliceDimension.width * sliceDimension.height * 2;
     verts = (VertTV *)SDL_AllocateRenderVertices(renderer, verticesCount * sizeof(VertTV), 4, &cmd->data.draw.first);
     if (verts == NULL)
         return -1;
-    
+
     fillSpriteVertices(verts, &sliceDimension, &sliceSize, srcrect, dstrect);
 
     cmd->data.draw.count = verticesCount;
@@ -765,7 +763,7 @@ static void PSP_SetBlendMode(PSP_RenderData *data, PSP_BlendInfo blendInfo)
             break;
         }
         }
-        
+
         data->blendInfo.mode = blendInfo.mode;
     }
 
@@ -813,7 +811,7 @@ static inline int PSP_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd
     colorA = cmd->data.color.a;
 
     sceGuClearColor(GU_RGBA(colorR, colorG, colorB, colorA));
-    sceGuClear(GU_FAST_CLEAR_BIT|GU_COLOR_BUFFER_BIT);
+    sceGuClear(GU_FAST_CLEAR_BIT | GU_COLOR_BUFFER_BIT);
 
     return 0;
 }
@@ -834,7 +832,7 @@ static inline int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL
         uint32_t tbw;
         void *twp;
         const VertTCV *verts = (VertTCV *)(vertices + cmd->data.draw.first);
-        
+
         PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
 
         prepareTextureForUpload(texture);
@@ -888,7 +886,6 @@ static inline int PSP_RenderFillRects(SDL_Renderer *renderer, void *vertices, SD
     return 0;
 }
 
-
 static inline int PSP_RenderPoints(SDL_Renderer *renderer, void *vertices, SDL_RenderCommand *cmd)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
@@ -933,7 +930,7 @@ static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_Ren
     sceGuDrawArray(GU_SPRITES, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
     sceGuDisable(GU_TEXTURE_2D);
 
-    return 0;   
+    return 0;
 }
 
 static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
@@ -955,7 +952,6 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         case SDL_RENDERCMD_SETVIEWPORT:
         {
             PSP_RenderSetViewPort(renderer, cmd);
-            /* FIXME: We need to update the clip rect too, see https://github.com/libsdl-org/SDL/issues/9094 */
             break;
         }
         case SDL_RENDERCMD_SETCLIPRECT:
@@ -1021,12 +1017,12 @@ static int PSP_RenderPresent(SDL_Renderer *renderer)
     int g_packet_size = sceGuFinish();
     void *pkt = data->guList[data->list_idx];
     SDL_assert(g_packet_size < GPU_LIST_SIZE);
-    sceKernelDcacheWritebackRange(pkt, g_packet_size) ;
+    sceKernelDcacheWritebackRange(pkt, g_packet_size);
 
     sceGuSync(GU_SYNC_FINISH, GU_SYNC_WHAT_DONE);
 
     if (((data->vsync == 2) && (data->vblank_not_reached)) || // Dynamic
-        (data->vsync == 1)) { // Normal VSync
+        (data->vsync == 1)) {                                 // Normal VSync
         sceDisplayWaitVblankStart();
     }
     data->vblank_not_reached = SDL_TRUE;
@@ -1085,11 +1081,6 @@ static void PSP_DestroyRenderer(SDL_Renderer *renderer)
 
         SDL_free(data);
     }
-
-    if (vsync_sema_id >= 0) {
-        // DeleteSema(vsync_sema_id);
-    }
-
 }
 
 static int PSP_SetVSync(SDL_Renderer *renderer, const int vsync)
@@ -1115,7 +1106,8 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     // flush cache so that no stray data remains
     sceKernelDcacheWritebackAll();
 
-    data->drawBufferFormat = pixelFormatToPSPFMT(SDL_GetWindowPixelFormat(window));;
+    data->drawBufferFormat = pixelFormatToPSPFMT(SDL_GetWindowPixelFormat(window));
+    ;
     data->currentDrawBufferFormat = data->drawBufferFormat;
 
     /* Specific GU init */
@@ -1127,27 +1119,27 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     sceGuStart(GU_DIRECT, data->guList[0]);
     sceGuDrawBuffer(data->drawBufferFormat, vrelptr(data->frontbuffer), PSP_FRAME_BUFFER_WIDTH);
     sceGuDispBuffer(PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
-	
+
     sceGuOffset(2048 - (PSP_SCREEN_WIDTH >> 1), 2048 - (PSP_SCREEN_HEIGHT >> 1));
     sceGuViewport(2048, 2048, PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT);
-	
+
     sceGuDisable(GU_DEPTH_TEST);
 
-	sceGuScissor(0, 0, PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT);
-	sceGuEnable(GU_SCISSOR_TEST);
-	
-	sceGuFinish();
-	sceGuSync(GU_SYNC_FINISH, GU_SYNC_WHAT_DONE);
+    sceGuScissor(0, 0, PSP_SCREEN_WIDTH, PSP_SCREEN_HEIGHT);
+    sceGuEnable(GU_SCISSOR_TEST);
 
-	sceDisplayWaitVblankStart();
-	sceGuDisplay(GU_TRUE);
+    sceGuFinish();
+    sceGuSync(GU_SYNC_FINISH, GU_SYNC_WHAT_DONE);
+
+    sceDisplayWaitVblankStart();
+    sceGuDisplay(GU_TRUE);
 
     // Starting the first frame
     data->list_idx = 0;
 
     sceGuStart(GU_SEND, data->guList[data->list_idx]);
     sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
-    
+
     // Clear the screen
     sceGuClearColor(0);
     sceGuClear(GU_COLOR_BUFFER_BIT);
@@ -1191,7 +1183,7 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
 SDL_RenderDriver PSP_RenderDriver = {
     .CreateRenderer = PSP_CreateRenderer,
     .info = {
-        .name = "PSP GU",
+        .name = "PSP_GU",
         .flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE,
         .num_texture_formats = 4,
         .texture_formats = {
