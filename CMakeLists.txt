@@ -2666,6 +2666,7 @@ elseif(VITA)
 #  CheckPTHREAD()
 
 elseif(PSP)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsingle-precision-constant -ffast-math")
  file(GLOB PSP_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/psp/*.c)
  list(APPEND SDLMAIN_SOURCES ${PSP_MAIN_SOURCES})
 
