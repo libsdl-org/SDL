@@ -12,7 +12,7 @@
 - [NetBSD](README-bsd.md)
 - [Nintendo Switch](README-switch.md)
 - [Nintendo 3DS](README-n3ds.md)
-- [Nokia N-Gage](README-ngage.md)]
+- [Nokia N-Gage](README-ngage.md)
 - [OpenBSD](README-bsd.md)
 - [PlayStation 2](README-ps2.md)
 - [PlayStation 4](README-ps4.md)
