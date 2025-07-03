@@ -923,6 +923,25 @@ static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_Ren
     return 0;
 }
 
+static inline void PSP_SendQueueToGPU(SDL_Renderer *renderer) {
+    PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
+
+    int g_packet_size = sceGuFinish();
+    void *pkt = data->guList[data->list_idx];
+    SDL_assert(g_packet_size < GPU_LIST_SIZE);
+    sceKernelDcacheWritebackRange(pkt, g_packet_size);
+
+    sceGuSync(GU_SYNC_SEND, GU_SYNC_WHAT_DONE);
+
+    // Send the packet to the GPU
+    sceGuSendList(GU_TAIL, data->guList[data->list_idx], NULL);
+
+    // Starting a new list
+    data->list_idx = (data->list_idx != 0) ? 0 : 1;
+
+    sceGuStart(GU_SEND, data->guList[data->list_idx]);
+}
+
 static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     /* note that before the renderer interface change, this would do extrememly small
@@ -991,6 +1010,9 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         }
         cmd = cmd->next;
     }
+
+    PSP_SendQueueToGPU(renderer);
+
     return 0;
 }
 
@@ -1004,13 +1026,6 @@ static int PSP_RenderPresent(SDL_Renderer *renderer)
 {
     PSP_RenderData *data = (PSP_RenderData *)renderer->driverdata;
 
-    int g_packet_size = sceGuFinish();
-    void *pkt = data->guList[data->list_idx];
-    SDL_assert(g_packet_size < GPU_LIST_SIZE);
-    sceKernelDcacheWritebackRange(pkt, g_packet_size);
-
-    sceGuSync(GU_SYNC_FINISH, GU_SYNC_WHAT_DONE);
-
     if (((data->vsync == 2) && (data->vblank_not_reached)) || // Dynamic
         (data->vsync == 1)) {                                 // Normal VSync
         sceDisplayWaitVblankStart();
@@ -1020,13 +1035,6 @@ static int PSP_RenderPresent(SDL_Renderer *renderer)
     data->backbuffer = data->frontbuffer;
     data->frontbuffer = vabsptr(sceGuSwapBuffers());
 
-    // Send the packet to the GPU
-    sceGuSendList(GU_TAIL, data->guList[data->list_idx], NULL);
-
-    // Starting a new frame
-    data->list_idx = (data->list_idx != 0) ? 0 : 1;
-
-    sceGuStart(GU_SEND, data->guList[data->list_idx]);
     sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
 
     return 0;
