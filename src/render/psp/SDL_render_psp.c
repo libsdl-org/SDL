@@ -43,7 +43,7 @@ typedef struct
 
 typedef struct
 {
-    uint32_t __attribute__((aligned(16))) guList[2][GPU_LIST_SIZE];
+    uint32_t __attribute__((aligned(16))) guList[3][GPU_LIST_SIZE];
     void *frontbuffer;               /**< main screen buffer */
     void *backbuffer;                /**< buffer presented to display */
     PSP_BlendInfo blendInfo;         /**< current blend info */
@@ -983,7 +983,7 @@ static inline void PSP_SendQueueToGPU(SDL_Renderer *renderer) {
     sceGuSendList(GU_TAIL, data->guList[data->list_idx], NULL);
 
     // Starting a new list
-    data->list_idx = (data->list_idx != 0) ? 0 : 1;
+    data->list_idx = (data->list_idx + 1) % 3;
 
     sceGuStart(GU_SEND, data->guList[data->list_idx]);
 }
