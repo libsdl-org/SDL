@@ -846,13 +846,13 @@ SDL_DisplayID SDL_AddVideoDisplay(const SDL_VideoDisplay *display, bool send_eve
 
     new_display = (SDL_VideoDisplay *)SDL_malloc(sizeof(*new_display));
     if (!new_display) {
-        return true;
+        return 0;
     }
 
     displays = (SDL_VideoDisplay **)SDL_realloc(_this->displays, (_this->num_displays + 1) * sizeof(*displays));
     if (!displays) {
         SDL_free(new_display);
-        return true;
+        return 0;
     }
     _this->displays = displays;
     _this->displays[_this->num_displays++] = new_display;

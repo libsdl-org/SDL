@@ -220,7 +220,7 @@ struct SDL_VideoDevice
 
     /*
      * Initialize the native video subsystem, filling in the list of
-     * displays for this driver, returning 0 or -1 if there's an error.
+     * displays for this driver, returning true (success) or false (error).
      */
     bool (*VideoInit)(SDL_VideoDevice *_this);
 

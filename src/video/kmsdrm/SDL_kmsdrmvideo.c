@@ -1543,7 +1543,7 @@ void KMSDRM_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 /**********************************************************************/
 // We simply IGNORE if it's a fullscreen window, window->flags don't
-// reflect it: if it's fullscreen, KMSDRM_SetWindwoFullscreen() will
+// reflect it: if it's fullscreen, KMSDRM_SetWindowFullscreen() will
 // be called by SDL later, and we can manage it there.
 /**********************************************************************/
 bool KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)

@@ -839,37 +839,39 @@ void Wayland_SeatWarpMouse(SDL_WaylandSeat *seat, SDL_WindowData *window, float 
             const wl_fixed_t f_y = wl_fixed_from_double(SDL_clamp(y / window->pointer_scale.y, 0, window->current.logical_height));
             wp_pointer_warp_v1_warp_pointer(d->wp_pointer_warp_v1, window->surface, seat->pointer.wl_pointer, f_x, f_y, seat->pointer.enter_serial);
         } else {
-            bool toggle_lock = !seat->pointer.locked_pointer;
             bool update_grabs = false;
+
+            // Pointers can only have one confinement type active on a surface at one time.
+            if (seat->pointer.confined_pointer) {
+                zwp_confined_pointer_v1_destroy(seat->pointer.confined_pointer);
+                seat->pointer.confined_pointer = NULL;
+                update_grabs = true;
+            }
+            if (seat->pointer.locked_pointer) {
+                zwp_locked_pointer_v1_destroy(seat->pointer.locked_pointer);
+                seat->pointer.locked_pointer = NULL;
+                update_grabs = true;
+            }
 
             /* The pointer confinement protocol allows setting a hint to warp the pointer,
              * but only when the pointer is locked.
              *
              * Lock the pointer, set the position hint, unlock, and hope for the best.
              */
-            if (toggle_lock) {
-                if (seat->pointer.confined_pointer) {
-                    zwp_confined_pointer_v1_destroy(seat->pointer.confined_pointer);
-                    seat->pointer.confined_pointer = NULL;
-                    update_grabs = true;
-                }
-                seat->pointer.locked_pointer = zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints, window->surface,
-                                                                                       seat->pointer.wl_pointer, NULL,
-                                                                                       ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
-            }
+            struct zwp_locked_pointer_v1 *warp_lock =
+                zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints, window->surface,
+                                                        seat->pointer.wl_pointer, NULL,
+                                                        ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
 
             const wl_fixed_t f_x = wl_fixed_from_double(x / window->pointer_scale.x);
             const wl_fixed_t f_y = wl_fixed_from_double(y / window->pointer_scale.y);
-            zwp_locked_pointer_v1_set_cursor_position_hint(seat->pointer.locked_pointer, f_x, f_y);
+            zwp_locked_pointer_v1_set_cursor_position_hint(warp_lock, f_x, f_y);
             wl_surface_commit(window->surface);
 
-            if (toggle_lock) {
-                zwp_locked_pointer_v1_destroy(seat->pointer.locked_pointer);
-                seat->pointer.locked_pointer = NULL;
+            zwp_locked_pointer_v1_destroy(warp_lock);
 
-                if (update_grabs) {
-                    Wayland_SeatUpdatePointerGrab(seat);
-                }
+            if (update_grabs) {
+                Wayland_SeatUpdatePointerGrab(seat);
             }
 
             /* NOTE: There is a pending warp event under discussion that should replace this when available.
