@@ -130,9 +130,33 @@ static void psp_on_vblank(u32 sub, PSP_RenderData *data)
     }
 }
 
+// This is a trick to be able of getting the semaphore ID from the signal callback
+// From the value received on the signal callback, we can just use the lower 16 bits
+// So in order to get the semaphore ID (which is 32 bits), we have done this trick.
+// Where on the sceGuSignalSemaphore we send 2 consecutive signals, one with the high 16 bits
+// and the other with the low 16 bits.
+// Then on the psp_on_signal we identify if we are reading the high or the low 16 bits 
+// by using the psp_on_signal_read_high variable. 
+// So we can get the semaphore ID by combining the high and low 16 bits.
+static uint8_t psp_on_signal_read_high = 0;
+static uint16_t psp_on_signal_high = 0;
 static void psp_on_signal(int id)
+{   
+    uint16_t value = id & 0xFFFF;
+    if (psp_on_signal_read_high) {
+        uint32_t semaphore = (psp_on_signal_high << 16) | value;
+        sceKernelSignalSema(semaphore, 1);
+        psp_on_signal_read_high = 0;
+    } else {
+        psp_on_signal_high = value;
+        psp_on_signal_read_high = 1;
+    }
+}
+
+static inline void sceGuSignalSemaphore(uint32_t semaphore)
 {
-    sceKernelSignalSema(id, 1);
+    sceGuSignal(GU_SIGNAL_NOWAIT, (semaphore >> 16) & 0xFFFF);
+    sceGuSignal(GU_SIGNAL_NOWAIT, (semaphore & 0xFFFF));
 }
 
 static inline uint32_t createSemaphore(SDL_Texture *texture)
@@ -618,7 +642,7 @@ static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         sceGuEnable(GU_SCISSOR_TEST);
         sceGuScissor(0, 0, psp_tex->width, psp_tex->height);
 
-        sceGuSignal(GU_SIGNAL_NOWAIT, psp_tex->semaphore);
+        sceGuSignalSemaphore(psp_tex->semaphore);
     } else {
         sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
         data->currentDrawBufferFormat = data->drawBufferFormat;
@@ -877,7 +901,7 @@ static inline int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL
         sceGuEnable(GU_TEXTURE_2D);
         sceGuDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF | GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
         sceGuDisable(GU_TEXTURE_2D);
-        sceGuSignal(GU_SIGNAL_NOWAIT, psp_tex->semaphore);
+        sceGuSignalSemaphore(psp_tex->semaphore);
     } else {
         const VertCV *verts = (VertCV *)(vertices + cmd->data.draw.first);
         sceGuDrawArray(GU_TRIANGLES, GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
@@ -964,7 +988,7 @@ static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_Ren
     sceGuEnable(GU_TEXTURE_2D);
     sceGuDrawArray(GU_SPRITES, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
     sceGuDisable(GU_TEXTURE_2D);
-    sceGuSignal(GU_SIGNAL_NOWAIT, psp_tex->semaphore);
+    sceGuSignalSemaphore(psp_tex->semaphore);
 
     return 0;
 }
