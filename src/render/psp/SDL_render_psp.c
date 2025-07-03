@@ -618,7 +618,7 @@ static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         sceGuEnable(GU_SCISSOR_TEST);
         sceGuScissor(0, 0, psp_tex->width, psp_tex->height);
 
-        sceGuSignal(GU_SIGNAL_WAIT, psp_tex->semaphore);
+        sceGuSignal(GU_SIGNAL_NOWAIT, psp_tex->semaphore);
     } else {
         sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
         data->currentDrawBufferFormat = data->drawBufferFormat;
@@ -877,7 +877,7 @@ static inline int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL
         sceGuEnable(GU_TEXTURE_2D);
         sceGuDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF | GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
         sceGuDisable(GU_TEXTURE_2D);
-        sceGuSignal(GU_SIGNAL_WAIT, psp_tex->semaphore);
+        sceGuSignal(GU_SIGNAL_NOWAIT, psp_tex->semaphore);
     } else {
         const VertCV *verts = (VertCV *)(vertices + cmd->data.draw.first);
         sceGuDrawArray(GU_TRIANGLES, GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
@@ -964,7 +964,7 @@ static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_Ren
     sceGuEnable(GU_TEXTURE_2D);
     sceGuDrawArray(GU_SPRITES, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
     sceGuDisable(GU_TEXTURE_2D);
-    sceGuSignal(GU_SIGNAL_WAIT, psp_tex->semaphore);
+    sceGuSignal(GU_SIGNAL_NOWAIT, psp_tex->semaphore);
 
     return 0;
 }
