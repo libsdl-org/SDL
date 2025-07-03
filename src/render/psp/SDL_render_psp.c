@@ -28,6 +28,7 @@
 
 #include <pspdisplay.h>
 #include <pspgu.h>
+#include <pspthreadman.h>
 #include <pspintrman.h>
 #include <psputils.h>
 #include <vram.h>
@@ -57,6 +58,7 @@ typedef struct
 {
     void *data;              /**< Image data. */
     void *swizzledData;      /**< Swizzled image data. */
+    uint32_t semaphore;      /**< Semaphore for the texture. */
     uint32_t textureWidth;   /**< Texture width (power of two). */
     uint32_t textureHeight;  /**< Texture height (power of two). */
     uint32_t width;          /**< Image width. */
@@ -125,6 +127,34 @@ static void psp_on_vblank(u32 sub, PSP_RenderData *data)
 {
     if (data) {
         data->vblank_not_reached = SDL_FALSE;
+    }
+}
+
+static void psp_on_signal(int id)
+{
+    sceKernelSignalSema(id, 1);
+}
+
+static inline uint32_t createSemaphore(SDL_Texture *texture)
+{
+    uint32_t semaphore;
+    char semaphoreName[31];
+    snprintf(semaphoreName, sizeof(semaphoreName), "PSP_Tex_Sem_%p", texture);
+    semaphore = sceKernelCreateSema(semaphoreName, 0, 1, 1, NULL);
+    if (semaphore < 0) {
+        SDL_SetError("Failed to create texture semaphore");
+        return -1;
+    }
+    return semaphore;
+}
+
+static inline void destroySemaphore(uint32_t semaphore)
+{
+    if (semaphore != -1) {
+        // Wait for all threads to finish using the semaphore
+        sceKernelWaitSema(semaphore, 1, NULL);
+        sceKernelDeleteSema(semaphore);
+        semaphore = -1;
     }
 }
 
@@ -460,6 +490,10 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return SDL_OutOfMemory();
     }
 
+    psp_tex->semaphore = createSemaphore(texture);
+    if (psp_tex->semaphore == -1) {
+        return SDL_OutOfMemory();
+    }
     psp_tex->format = pixelFormatToPSPFMT(texture->format);
     psp_tex->textureWidth = calculateNextPow2(texture->w);
     psp_tex->textureHeight = calculateNextPow2(texture->h);
@@ -475,12 +509,14 @@ static int PSP_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (texture->access != SDL_TEXTUREACCESS_STATIC) {
         psp_tex->data = vramalloc(psp_tex->size);
         if (!psp_tex->data) {
+            destroySemaphore(psp_tex->semaphore);
             vfree(psp_tex);
             return SDL_OutOfMemory();
         }
     } else {
         psp_tex->data = SDL_calloc(1, psp_tex->size);
         if (!psp_tex->data) {
+            destroySemaphore(psp_tex->semaphore);
             SDL_free(psp_tex);
             return SDL_OutOfMemory();
         }
@@ -500,6 +536,7 @@ static int PSP_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     // How a pointer to the texture data is returned it need to be unswizzled before it can be used
     prepareTextureForDownload(texture);
 
+    sceKernelWaitSema(psp_tex->semaphore, 1, NULL);
     *pixels =
         (void *)((Uint8 *)psp_tex->data + rect->y * psp_tex->pitch +
                  rect->x * SDL_BYTESPERPIXEL(texture->format));
@@ -513,6 +550,7 @@ static void PSP_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
 
     sceKernelDcacheWritebackRange(psp_tex->data, psp_tex->size);
+    sceKernelSignalSema(psp_tex->semaphore, 1);
 }
 
 static int PSP_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -561,6 +599,7 @@ static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
     if (texture) {
         PSP_Texture *psp_tex = (PSP_Texture *)texture->driverdata;
+        sceKernelWaitSema(psp_tex->semaphore, 1, NULL);
         sceGuDrawBufferList(psp_tex->format, vrelptr(psp_tex->data), psp_tex->width);
         data->currentDrawBufferFormat = psp_tex->format;
 
@@ -579,6 +618,7 @@ static int PSP_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         sceGuEnable(GU_SCISSOR_TEST);
         sceGuScissor(0, 0, psp_tex->width, psp_tex->height);
 
+        sceGuSignal(GU_SIGNAL_WAIT, psp_tex->semaphore);
     } else {
         sceGuDrawBufferList(data->drawBufferFormat, vrelptr(data->backbuffer), PSP_FRAME_BUFFER_WIDTH);
         data->currentDrawBufferFormat = data->drawBufferFormat;
@@ -830,12 +870,14 @@ static inline int PSP_RenderGeometry(SDL_Renderer *renderer, void *vertices, SDL
         tbw = psp_tex->swizzled ? psp_tex->swizzledWidth : psp_tex->width;
         twp = psp_tex->swizzled ? psp_tex->swizzledData : psp_tex->data;
 
+        sceKernelWaitSema(psp_tex->semaphore, 1, NULL);
         sceGuTexMode(psp_tex->format, 0, 0, psp_tex->swizzled);
         sceGuTexImage(0, psp_tex->textureWidth, psp_tex->textureHeight, tbw, twp);
         sceGuTexFilter(psp_tex->filter, psp_tex->filter);
         sceGuEnable(GU_TEXTURE_2D);
         sceGuDrawArray(GU_TRIANGLES, GU_TEXTURE_32BITF | GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
         sceGuDisable(GU_TEXTURE_2D);
+        sceGuSignal(GU_SIGNAL_WAIT, psp_tex->semaphore);
     } else {
         const VertCV *verts = (VertCV *)(vertices + cmd->data.draw.first);
         sceGuDrawArray(GU_TRIANGLES, GU_COLOR_8888 | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
@@ -909,6 +951,9 @@ static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_Ren
     PSP_SetBlendMode(data, blendInfo);
 
     prepareTextureForUpload(texture);
+    // We can't use sceKernelWaitSema here because several consecutive SDL_RenderCopy calls
+    // could be performed by the user.
+    sceKernelPollSema(psp_tex->semaphore, 1);
 
     tbw = psp_tex->swizzled ? psp_tex->textureWidth : psp_tex->width;
     twp = psp_tex->swizzled ? psp_tex->swizzledData : psp_tex->data;
@@ -919,6 +964,7 @@ static inline int PSP_RenderCopy(SDL_Renderer *renderer, void *vertices, SDL_Ren
     sceGuEnable(GU_TEXTURE_2D);
     sceGuDrawArray(GU_SPRITES, GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, count, 0, verts);
     sceGuDisable(GU_TEXTURE_2D);
+    sceGuSignal(GU_SIGNAL_WAIT, psp_tex->semaphore);
 
     return 0;
 }
@@ -1053,6 +1099,8 @@ static void PSP_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return;
     }
 
+    destroySemaphore(psp_tex->semaphore);
+
     if (psp_tex->swizzledData) {
         vfree(psp_tex->swizzledData);
     } else if (texture->access != SDL_TEXTUREACCESS_STATIC) {
@@ -1150,6 +1198,9 @@ static int PSP_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
         sceKernelEnableSubIntr(PSP_VBLANK_INT, 0);
     }
     data->vblank_not_reached = SDL_TRUE;
+
+    // Set the callback for the texture semaphores
+    sceGuSetCallback(GU_CALLBACK_SIGNAL, psp_on_signal);
 
     renderer->WindowEvent = PSP_WindowEvent;
     renderer->CreateTexture = PSP_CreateTexture;
