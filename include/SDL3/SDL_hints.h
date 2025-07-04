@@ -1756,7 +1756,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI
  */
-#define SDL_HINT_JOYSTICK_HIDAPI_HOJA "SDL_JOYSTICK_HIDAPI_HOJA"
+#define SDL_HINT_JOYSTICK_HIDAPI_SINPUT "SDL_JOYSTICK_HIDAPI_HOJA"
 
 /**
  * A variable controlling whether the HIDAPI driver for Flydigi controllers

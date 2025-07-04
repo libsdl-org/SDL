@@ -59,7 +59,7 @@
 #define USB_VENDOR_SWITCH       0x2563
 #define USB_VENDOR_VALVE        0x28de
 #define USB_VENDOR_ZEROPLUS     0x0c12
-#define USB_VENDOR_RASPBERRYPI  0x2e8a
+#define USB_VENDOR_RASPBERRYPI  0x2e8a // Commercial hardware from various companies are registered under this VID
 
 #define USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS             0x6012
 #define USB_PRODUCT_8BITDO_SF30_PRO                       0x6000    // B + START
@@ -160,7 +160,9 @@
 #define USB_PRODUCT_XBOX_SERIES_X_BLE                     0x0b13
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER           0x02ff // XBOXGIP driver software PID
 #define USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD                 0x11ff
-#define USB_PRODUCT_HANDHELDLEGEND_HOJA_GAMEPAD           0x10c6 // Hoja Gamepad by Handheld Legend (various models)
+#define USB_PRODUCT_HANDHELDLEGEND_HOJA_GAMEPAD           0x10c6 // Hoja Gamepad by Handheld Legend (API Generic)
+#define USB_PRODUCT_HANDHELDLEGEND_PROGCC                 0x10dd
+#define USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE             0x10de
 
 // USB usage pages
 #define USB_USAGEPAGE_GENERIC_DESKTOP 0x0001

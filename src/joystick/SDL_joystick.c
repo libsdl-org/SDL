@@ -3201,6 +3201,16 @@ bool SDL_IsJoystickHoriSteamController(Uint16 vendor_id, Uint16 product_id)
     return vendor_id == USB_VENDOR_HORI && (product_id == USB_PRODUCT_HORI_STEAM_CONTROLLER || product_id == USB_PRODUCT_HORI_STEAM_CONTROLLER_BT);
 }
 
+bool SDL_IsJoystickSInputController(Uint16 vendor_id, Uint16 product_id)
+{
+    bool vendor_match = (vendor_id == USB_VENDOR_RASPBERRYPI);
+    bool product_match =
+        (product_id == USB_PRODUCT_HANDHELDLEGEND_HOJA_GAMEPAD) |
+        (product_id == USB_PRODUCT_HANDHELDLEGEND_PROGCC) |
+        (product_id == USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE);
+    return (vendor_match && product_match);
+}
+
 bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
 {
     return vendor_id == USB_VENDOR_FLYDIGI && product_id == USB_PRODUCT_FLYDIGI_GAMEPAD;

@@ -1611,7 +1611,7 @@
     <ClCompile Include="..\..\src\core\windows\pch_cpp.cpp">
       <Filter>core\windows</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_hoja.c">
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_sinput.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
   </ItemGroup>

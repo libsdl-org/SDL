@@ -97,8 +97,8 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI_FLYDIGI
     &SDL_HIDAPI_DriverFlydigi,
 #endif
-#ifdef SDL_JOYSTICK_HIDAPI_HOJA
-    &SDL_HIDAPI_DriverHoja,
+#ifdef SDL_JOYSTICK_HIDAPI_SINPUT
+    &SDL_HIDAPI_DriverSInput,
 #endif
 };
 static int SDL_HIDAPI_numdrivers = 0;
