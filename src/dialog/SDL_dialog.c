@@ -129,3 +129,109 @@ void SDL_ShowOpenFolderDialog(SDL_DialogFileCallback callback, void *userdata, S
     SDL_DestroyProperties(props);
 #endif
 }
+
+// TODO: Dialogs after this should be implemented with XDG Portals
+
+void SDL_ShowInputDialogWithProperties(SDL_DialogInputCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    if (!callback) {
+        return;
+    }
+#ifdef SDL_DIALOG_DISABLED
+    SDL_SetError("SDL not built with dialog support");
+    callback(userdata, NULL, SDL_DIALOGRESULT_ERROR);
+#else
+    SDL_SYS_ShowInputDialogWithProperties(callback, userdata, props);
+#endif
+}
+
+SDL_ProgressDialog* SDL_ShowProgressDialogWithProperties(SDL_DialogProgressCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    if (!callback) {
+        return NULL;
+    }
+#ifdef SDL_DIALOG_DISABLED
+    SDL_SetError("SDL not built with dialog support");
+    callback(userdata, NULL, SDL_DIALOGRESULT_ERROR);
+    return NULL;
+#else
+    return SDL_SYS_ShowProgressDialogWithProperties(callback, userdata, props);
+#endif
+}
+
+void SDL_UpdateProgressDialog(SDL_ProgressDialog* dialog, float progress, const char *new_prompt)
+{
+#ifdef SDL_DIALOG_DISABLED
+    SDL_SetError("SDL not built with dialog support");
+#else
+    if (!dialog) {
+        SDL_InvalidParamError("dialog");
+        return;
+    }
+    if (progress < 0.0f || progress > 1.0f) {
+        SDL_InvalidParamError("progress");
+        return;
+    }
+    SDL_SYS_UpdateProgressDialog(dialog, progress, new_prompt);
+#endif
+}
+
+void SDL_DestroyProgressDialog(SDL_ProgressDialog* dialog)
+{
+#ifdef SDL_DIALOG_DISABLED
+    SDL_SetError("SDL not built with dialog support");
+#else
+    if (!dialog) {
+        SDL_InvalidParamError("dialog");
+        return;
+    }
+    SDL_SYS_DestroyProgressDialog(dialog);
+#endif
+}
+
+void SDL_ShowColorPickerDialogWithProperties(SDL_DialogColorCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    if (!callback) {
+        return;
+    }
+
+#ifdef SDL_DIALOG_DISABLED
+    SDL_Color c;
+    c.r = 0;
+    c.g = 0;
+    c.b = 0;
+    c.a = 0;
+
+    SDL_SetError("SDL not built with dialog support");
+    callback(userdata, c, SDL_DIALOGRESULT_ERROR);
+#else
+    SDL_SYS_ShowColorPickerDialogWithProperties(callback, userdata, props);
+#endif
+}
+
+void SDL_ShowDatePickerDialogWithProperties(SDL_DialogDateCallback callback, void *userdata, SDL_PropertiesID props)
+{
+    if (!callback) {
+        return;
+    }
+
+    SDL_Date d;
+    d.y = 0;
+    d.m = 0;
+    d.d = 0;
+
+#ifdef SDL_DIALOG_DISABLED
+    SDL_SetError("SDL not built with dialog support");
+    callback(userdata, d, SDL_DIALOGRESULT_ERROR);
+#else
+    SDL_Date *date = SDL_GetPointerProperty(props, SDL_PROP_DATE_DIALOG_DEFAULT_POINTER, NULL);
+
+    // A value of 0 is "null" for that field
+    if (date && (date->y > 9999 || date->m > 12 || date->d > 31)) {
+        SDL_SetError("Invalid default date: %d-%d-%d", date->y, date->m, date->d);
+        callback(userdata, d, SDL_DIALOGRESULT_ERROR);
+    }
+
+    SDL_SYS_ShowDatePickerDialogWithProperties(callback, userdata, props);
+#endif
+}
