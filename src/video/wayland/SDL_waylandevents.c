@@ -2048,6 +2048,16 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
     Wayland_UpdateImplicitGrabSerial(seat, serial);
 
+    if (state == WL_KEYBOARD_KEY_STATE_REPEATED) {
+        // If this key shouldn't be repeated, just return.
+        if (seat->keyboard.xkb.keymap && !WAYLAND_xkb_keymap_key_repeats(seat->keyboard.xkb.keymap, key + 8)) {
+            return;
+        }
+
+        // SDL automatically handles key tracking and repeat status, so just map 'repeated' to 'pressed'.
+        state = WL_KEYBOARD_KEY_STATE_PRESSED;
+    }
+
     if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap(true)) {
         SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
         SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
@@ -2342,25 +2352,9 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
 static void seat_handle_name(void *data, struct wl_seat *wl_seat, const char *name)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
-    char name_fmt[256];
 
     if (name && *name != '\0') {
         seat->name = SDL_strdup(name);
-
-        if (seat->keyboard.wl_keyboard) {
-            SDL_snprintf(name_fmt, sizeof(name_fmt), "%s (%s)", WAYLAND_DEFAULT_KEYBOARD_NAME, seat->name);
-            SDL_SetKeyboardName(seat->keyboard.sdl_id, name_fmt);
-        }
-
-        if (seat->pointer.wl_pointer) {
-            SDL_snprintf(name_fmt, sizeof(name_fmt), "%s (%s)", WAYLAND_DEFAULT_POINTER_NAME, seat->name);
-            SDL_SetMouseName(seat->pointer.sdl_id, name_fmt);
-        }
-
-        if (seat->touch.wl_touch) {
-            SDL_snprintf(name_fmt, sizeof(name_fmt), "%s (%s)", WAYLAND_DEFAULT_TOUCH_NAME, seat->name);
-            SDL_SetTouchName((SDL_TouchID)(uintptr_t)seat->touch.wl_touch, name_fmt);
-        }
     }
 }
 
