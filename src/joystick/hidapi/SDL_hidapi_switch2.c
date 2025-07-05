@@ -51,6 +51,9 @@ static bool HIDAPI_DriverSwitch2_IsEnabled(void)
 static bool HIDAPI_DriverSwitch2_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
+        if (product_id == USB_PRODUCT_NINTENDO_SWITCH2_PRO) {
+            return true;
+        }
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER) {
             return true;
         }
@@ -61,7 +64,7 @@ static bool HIDAPI_DriverSwitch2_IsSupportedDevice(SDL_HIDAPI_Device *device, co
 
 static bool HIDAPI_DriverSwitch2_InitDevice(SDL_HIDAPI_Device *device)
 {
-    return SDL_Unsupported();
+    return HIDAPI_JoystickConnected(device, NULL);
 }
 
 static int HIDAPI_DriverSwitch2_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
@@ -75,12 +78,130 @@ static void HIDAPI_DriverSwitch2_SetDevicePlayerIndex(SDL_HIDAPI_Device *device,
 
 static bool HIDAPI_DriverSwitch2_UpdateDevice(SDL_HIDAPI_Device *device)
 {
-    return SDL_Unsupported();
+    const struct {
+        int byte;
+        unsigned char mask;
+    } buttons[] = {
+        {3, 0x01}, // B
+        {3, 0x02}, // A
+        {3, 0x04}, // Y
+        {3, 0x08}, // X
+        {3, 0x10}, // R (GameCube R Click)
+        {3, 0x20}, // ZR (GameCube Z)
+        {3, 0x40}, // PLUS (GameCube Start)
+        {3, 0x80}, // RS (not on GameCube)
+        {4, 0x01}, // DPAD_DOWN
+        {4, 0x02}, // DPAD_RIGHT
+        {4, 0x04}, // DPAD_LEFT
+        {4, 0x08}, // DPAD_UP
+        {4, 0x10}, // L (GameCube L Click)
+        {4, 0x20}, // ZL
+        {4, 0x40}, // MINUS (not on GameCube)
+        {4, 0x80}, // LS (not on GameCube)
+        {5, 0x01}, // Home
+        {5, 0x02}, // Capture
+        {5, 0x04}, // GR (not on GameCube)
+        {5, 0x08}, // GL (not on GameCube)
+        {5, 0x10}, // C
+    };
+
+    SDL_Joystick *joystick = NULL;
+    if (device->num_joysticks > 0) {
+        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+    }
+    if (joystick == NULL) {
+        return true;
+    }
+
+    // Read input packet
+
+    Uint8 packet[USB_PACKET_LENGTH];
+    int size;
+    while ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
+        if (size < 15) {
+            continue;
+        }
+
+        Uint64 timestamp = SDL_GetTicksNS();
+        for (size_t i = 0; i < SDL_arraysize(buttons); ++i) {
+            SDL_SendJoystickButton(
+                timestamp,
+                joystick,
+                (Uint8) i,
+                (packet[buttons[i].byte] & buttons[i].mask) != 0
+            );
+        }
+        SDL_SendJoystickAxis(
+            timestamp,
+            joystick,
+            SDL_GAMEPAD_AXIS_LEFTX,
+            (Sint16) HIDAPI_RemapVal(
+                (float) (packet[6] | ((packet[7] & 0x0F) << 8)),
+                0,
+                4096,
+                SDL_MIN_SINT16,
+                SDL_MAX_SINT16
+            )
+        );
+        SDL_SendJoystickAxis(
+            timestamp,
+            joystick,
+            SDL_GAMEPAD_AXIS_LEFTY,
+            (Sint16) HIDAPI_RemapVal(
+                (float) ((packet[7] >> 4) | (packet[8] << 4)),
+                0,
+                4096,
+                SDL_MIN_SINT16,
+                SDL_MAX_SINT16
+            )
+        );
+        SDL_SendJoystickAxis(
+            timestamp,
+            joystick,
+            SDL_GAMEPAD_AXIS_RIGHTX,
+            (Sint16) HIDAPI_RemapVal(
+                (float) (packet[9] | ((packet[10] & 0x0F) << 8)),
+                0,
+                4096,
+                SDL_MIN_SINT16,
+                SDL_MAX_SINT16
+            )
+        );
+        SDL_SendJoystickAxis(
+            timestamp,
+            joystick,
+            SDL_GAMEPAD_AXIS_RIGHTY,
+            (Sint16) HIDAPI_RemapVal(
+                (float) ((packet[10] >> 4) | (packet[11] << 4)),
+                0,
+                4096,
+                SDL_MIN_SINT16,
+                SDL_MAX_SINT16
+            )
+        );
+        SDL_SendJoystickAxis(
+            timestamp,
+            joystick,
+            SDL_GAMEPAD_AXIS_LEFT_TRIGGER,
+            (Sint16) HIDAPI_RemapVal(packet[13], 0, 255, SDL_MIN_SINT16, SDL_MAX_SINT16)
+        );
+        SDL_SendJoystickAxis(
+            timestamp,
+            joystick,
+            SDL_GAMEPAD_AXIS_RIGHT_TRIGGER,
+            (Sint16) HIDAPI_RemapVal(packet[14], 0, 255, SDL_MIN_SINT16, SDL_MAX_SINT16)
+        );
+    }
+    return true;
 }
 
 static bool HIDAPI_DriverSwitch2_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_Unsupported();
+    // Initialize the joystick capabilities
+    joystick->nbuttons = 21;
+    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
+
+    return true;
 }
 
 static bool HIDAPI_DriverSwitch2_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)

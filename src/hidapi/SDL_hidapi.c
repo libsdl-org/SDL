@@ -743,6 +743,14 @@ static struct
         int *actual_length,
         unsigned int timeout
     );
+    int (LIBUSB_CALL *bulk_transfer)(
+        libusb_device_handle *dev_handle,
+        unsigned char endpoint,
+        unsigned char *data,
+        int length,
+        int *transferred,
+        unsigned int timeout
+    );
     int (LIBUSB_CALL *handle_events)(libusb_context *ctx);
     int (LIBUSB_CALL *handle_events_completed)(libusb_context *ctx, int *completed);
     const char * (LIBUSB_CALL *error_name)(int errcode);
@@ -776,6 +784,7 @@ static struct
 #define libusb_free_transfer                libusb_ctx.free_transfer
 #define libusb_control_transfer             libusb_ctx.control_transfer
 #define libusb_interrupt_transfer           libusb_ctx.interrupt_transfer
+#define libusb_bulk_transfer                libusb_ctx.bulk_transfer
 #define libusb_handle_events                libusb_ctx.handle_events
 #define libusb_handle_events_completed      libusb_ctx.handle_events_completed
 #define libusb_error_name                   libusb_ctx.error_name
@@ -843,6 +852,7 @@ typedef struct LIBUSB_hid_device_ LIBUSB_hid_device;
 #undef libusb_free_transfer
 #undef libusb_control_transfer
 #undef libusb_interrupt_transfer
+#undef libusb_bulk_transfer
 #undef libusb_handle_events
 #undef libusb_handle_events_completed
 #undef libusb_error_name
@@ -889,7 +899,9 @@ static const struct {
     Uint16 vendor;
     Uint16 product;
 } SDL_libusb_whitelist[] = {
-    { 0x057e, 0x0337 } // Nintendo WUP-028, Wii U/Switch GameCube Adapter
+    { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER },
+    { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_PRO },
+    { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER },
 };
 
 static bool IsInWhitelist(Uint16 vendor, Uint16 product)
@@ -1212,6 +1224,7 @@ int SDL_hid_init(void)
             LOAD_LIBUSB_SYMBOL(void (LIBUSB_CALL *)(struct libusb_transfer *), free_transfer)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, uint8_t, uint8_t, uint16_t, uint16_t, unsigned char *, uint16_t, unsigned int), control_transfer)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, unsigned char, unsigned char *, int, int *, unsigned int), interrupt_transfer)
+            LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_device_handle *, unsigned char, unsigned char *, int, int *, unsigned int), bulk_transfer)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context *), handle_events)
             LOAD_LIBUSB_SYMBOL(int (LIBUSB_CALL *)(libusb_context *, int *), handle_events_completed)
             LOAD_LIBUSB_SYMBOL(const char * (LIBUSB_CALL *)(int), error_name)

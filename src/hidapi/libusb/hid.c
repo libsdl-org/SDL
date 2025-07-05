@@ -1307,6 +1307,79 @@ static void init_xboxone(libusb_device_handle *device_handle, unsigned short idV
 	}
 }
 
+static bool is_ns2(unsigned short idVendor, unsigned short idProduct)
+{
+	if (idVendor == 0x057e) {
+		if (idProduct == 0x2069) {
+			return true;
+		}
+		if (idProduct == 0x2073) {
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool ns2_find_bulk_out_endpoint(libusb_device_handle* handle, uint8_t* endpoint_out)
+{
+	struct libusb_config_descriptor* config;
+	if (libusb_get_config_descriptor(libusb_get_device(handle), 0, &config) != 0) {
+		return false;
+	}
+
+	for (int i = 0; i < config->bNumInterfaces; i++) {
+		const struct libusb_interface* iface = &config->interface[i];
+		for (int j = 0; j < iface->num_altsetting; j++) {
+			const struct libusb_interface_descriptor* altsetting = &iface->altsetting[j];
+			if (altsetting->bInterfaceNumber == 1) {
+				for (int k = 0; k < altsetting->bNumEndpoints; k++) {
+					const struct libusb_endpoint_descriptor* ep = &altsetting->endpoint[k];
+					if ((ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK) == LIBUSB_TRANSFER_TYPE_BULK && (ep->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK) == LIBUSB_ENDPOINT_OUT) {
+						*endpoint_out = ep->bEndpointAddress;
+						libusb_free_config_descriptor(config);
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	libusb_free_config_descriptor(config);
+	return false;
+}
+
+static void init_ns2(libusb_device_handle *device_handle)
+{
+	const unsigned char DEFAULT_REPORT_DATA[] = {
+		0x03, 0x91, 0x00, 0x0d, 0x00, 0x08,
+		0x00, 0x00, 0x01, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+	};
+	const unsigned char SET_LED_DATA[] = {
+		0x09, 0x91, 0x00, 0x07, 0x00, 0x08,
+		0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+	};
+
+	uint8_t endpoint_out = 0;
+	if (!ns2_find_bulk_out_endpoint(device_handle, &endpoint_out)) {
+		return;
+	}
+
+	int transferred;
+	libusb_bulk_transfer(device_handle,
+				endpoint_out,
+				(unsigned char*)DEFAULT_REPORT_DATA,
+				sizeof(DEFAULT_REPORT_DATA),
+				&transferred,
+				1000);
+
+	libusb_bulk_transfer(device_handle,
+				endpoint_out,
+				(unsigned char*)SET_LED_DATA,
+				sizeof(SET_LED_DATA),
+				&transferred,
+				1000);
+}
+
 static void calculate_device_quirks(hid_device *dev, unsigned short idVendor, unsigned short idProduct)
 {
 	static const int VENDOR_SONY = 0x054c;
@@ -1366,6 +1439,11 @@ static int hidapi_initialize_device(hid_device *dev, const struct libusb_interfa
 	/* Initialize XBox One controllers */
 	if (is_xboxone(desc.idVendor, intf_desc)) {
 		init_xboxone(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
+	}
+
+	/* Initialize NSO GameCube controllers */
+	if (is_ns2(desc.idVendor, desc.idProduct)) {
+		init_ns2(dev->device_handle);
 	}
 
 	/* Store off the string descriptor indexes */
