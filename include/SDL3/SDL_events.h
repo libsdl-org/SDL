@@ -175,6 +175,8 @@ typedef enum SDL_EventType
     SDL_EVENT_KEYBOARD_ADDED,          /**< A new keyboard has been inserted into the system */
     SDL_EVENT_KEYBOARD_REMOVED,        /**< A keyboard has been removed */
     SDL_EVENT_TEXT_EDITING_CANDIDATES, /**< Keyboard text editing candidates */
+    SDL_EVENT_KEYBOARD_FIRST = SDL_EVENT_KEY_DOWN,
+    SDL_EVENT_KEYBOARD_LAST = SDL_EVENT_TEXT_EDITING_CANDIDATES,
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
@@ -183,6 +185,8 @@ typedef enum SDL_EventType
     SDL_EVENT_MOUSE_WHEEL,             /**< Mouse wheel motion */
     SDL_EVENT_MOUSE_ADDED,             /**< A new mouse has been inserted into the system */
     SDL_EVENT_MOUSE_REMOVED,           /**< A mouse has been removed */
+    SDL_EVENT_MOUSE_FIRST = SDL_EVENT_MOUSE_MOTION,
+    SDL_EVENT_MOUSE_LAST = SDL_EVENT_MOUSE_REMOVED,
 
     /* Joystick events */
     SDL_EVENT_JOYSTICK_AXIS_MOTION  = 0x600, /**< Joystick axis motion */
@@ -194,6 +198,8 @@ typedef enum SDL_EventType
     SDL_EVENT_JOYSTICK_REMOVED,              /**< An opened joystick has been removed */
     SDL_EVENT_JOYSTICK_BATTERY_UPDATED,      /**< Joystick battery level change */
     SDL_EVENT_JOYSTICK_UPDATE_COMPLETE,      /**< Joystick update is complete */
+    SDL_EVENT_JOYSTICK_FIRST = SDL_EVENT_JOYSTICK_AXIS_MOTION,
+    SDL_EVENT_JOYSTICK_LAST = SDL_EVENT_JOYSTICK_UPDATE_COMPLETE,
 
     /* Gamepad events */
     SDL_EVENT_GAMEPAD_AXIS_MOTION  = 0x650, /**< Gamepad axis motion */
@@ -208,12 +214,16 @@ typedef enum SDL_EventType
     SDL_EVENT_GAMEPAD_SENSOR_UPDATE,        /**< Gamepad sensor was updated */
     SDL_EVENT_GAMEPAD_UPDATE_COMPLETE,      /**< Gamepad update is complete */
     SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED,  /**< Gamepad Steam handle has changed */
+    SDL_EVENT_GAMEPAD_FIRST = SDL_EVENT_GAMEPAD_AXIS_MOTION,
+    SDL_EVENT_GAMEPAD_LAST = SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED,
 
     /* Touch events */
     SDL_EVENT_FINGER_DOWN      = 0x700,
     SDL_EVENT_FINGER_UP,
     SDL_EVENT_FINGER_MOTION,
     SDL_EVENT_FINGER_CANCELED,
+    SDL_EVENT_FINGER_FIRST = SDL_EVENT_FINGER_DOWN,
+    SDL_EVENT_FINGER_LAST = SDL_EVENT_FINGER_CANCELLED,
 
     /* 0x800, 0x801, and 0x802 were the Gesture events from SDL2. Do not reuse these values! sdl2-compat needs them! */
 
@@ -226,11 +236,15 @@ typedef enum SDL_EventType
     SDL_EVENT_DROP_BEGIN,                /**< A new set of drops is beginning (NULL filename) */
     SDL_EVENT_DROP_COMPLETE,             /**< Current set of drops is now complete (NULL filename) */
     SDL_EVENT_DROP_POSITION,             /**< Position while moving over the window */
+    SDL_EVENT_DROP_FIRST = SDL_EVENT_DROP_FILE,
+    SDL_EVENT_DROP_LAST = SDL_EVENT_DROP_POSITION,
 
     /* Audio hotplug events */
     SDL_EVENT_AUDIO_DEVICE_ADDED = 0x1100,  /**< A new audio device is available */
     SDL_EVENT_AUDIO_DEVICE_REMOVED,         /**< An audio device has been removed. */
     SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED,  /**< An audio device's format has been changed by the system. */
+    SDL_EVENT_AUDIO_FIRST = SDL_EVENT_AUDIO_DEVICE_ADDED,
+    SDL_EVENT_AUDIO_LAST = SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED,
 
     /* Sensor events */
     SDL_EVENT_SENSOR_UPDATE = 0x1200,     /**< A sensor was updated */
@@ -244,18 +258,24 @@ typedef enum SDL_EventType
     SDL_EVENT_PEN_BUTTON_UP,              /**< Pressure-sensitive pen button released */
     SDL_EVENT_PEN_MOTION,                 /**< Pressure-sensitive pen is moving on the tablet */
     SDL_EVENT_PEN_AXIS,                   /**< Pressure-sensitive pen angle/pressure/etc changed */
+    SDL_EVENT_PEN_FIRST = SDL_EVENT_PEN_PROXIMITY_IN,
+    SDL_EVENT_PEN_LAST = SDL_EVENT_PEN_AXIS,
 
     /* Camera hotplug events */
     SDL_EVENT_CAMERA_DEVICE_ADDED = 0x1400,  /**< A new camera device is available */
     SDL_EVENT_CAMERA_DEVICE_REMOVED,         /**< A camera device has been removed. */
     SDL_EVENT_CAMERA_DEVICE_APPROVED,        /**< A camera device has been approved for use by the user. */
     SDL_EVENT_CAMERA_DEVICE_DENIED,          /**< A camera device has been denied for use by the user. */
+    SDL_EVENT_CAMERA_FIRST = SDL_EVENT_CAMERA_DEVICE_ADDED,
+    SDL_EVENT_CAMERA_LAST = SDL_EVENT_CAMERA_DEVICE_DENIED,
 
     /* Render events */
     SDL_EVENT_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
     SDL_EVENT_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
     SDL_EVENT_RENDER_DEVICE_LOST, /**< The device has been lost and can't be recovered. */
-
+    SDL_EVENT_RENDER_FIRST = SDL_EVENT_RENDER_TARGETS_RESET,
+    SDL_EVENT_RENDER_LAST = SDL_EVENT_RENDER_DEVICE_LOST,
+    
     /* Reserved events for private platforms */
     SDL_EVENT_PRIVATE0 = 0x4000,
     SDL_EVENT_PRIVATE1,
