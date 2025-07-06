@@ -39,8 +39,9 @@
 #define SINPUT_DEVICE_POLLING_RATE  1000 // 1000 Hz
 #define SINPUT_DEVICE_REPORT_SIZE   64   // Size of all reports
 
-#define SINPUT_DEVICE_REPORT_ID_JOYSTICK_INPUT     0x01
-#define SINPUT_DEVICE_REPORT_ID_OUTPUT             0x02
+#define SINPUT_DEVICE_REPORT_ID_JOYSTICK_INPUT  0x01
+#define SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT   0x02
+#define SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT    0x03
 
 #define SINPUT_DEVICE_COMMAND_HAPTIC    0x01
 #define SINPUT_DEVICE_COMMAND_FEATURES  0x02
@@ -67,9 +68,8 @@
 #define SINPUT_REPORT_IDX_IMU_GYRO_Y      29
 #define SINPUT_REPORT_IDX_IMU_GYRO_Z      31
 
-#define SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID   33
-#define SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK 34
-#define SINPUT_REPORT_COMMAND_RESPONSE_LEN      30
+#define SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID   1
+#define SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK 2
 
 #define SINPUT_REPORT_IDX_PLUG_STATUS     1
 #define SINPUT_REPORT_IDX_CHARGE_LEVEL    2
@@ -158,6 +158,7 @@ typedef struct
 
     Uint8 player_idx;
     bool feature_flags_obtained;
+    bool feature_flags_sent;
 
     Uint16 api_version; // Version of the API this device supports
     Uint8  sub_type;    // Subtype of the device, 0 in most cases
@@ -241,8 +242,10 @@ static void ProcessFeatureFlagResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->accelScale = CalculateAccelScale(ctx->accelRange);
     ctx->gyroScale  = CalculateGyroScale(ctx->gyroRange);
 
+    ctx->feature_flags_obtained = true;
+
     // Set player number, finalizing the setup
-    Uint8 playerLedCommand[SINPUT_DEVICE_REPORT_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT, SINPUT_DEVICE_COMMAND_PLAYERLED, ctx->player_idx };
+    Uint8 playerLedCommand[SINPUT_DEVICE_REPORT_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_PLAYERLED, ctx->player_idx };
     int playerNumBytesWritten = SDL_HIDAPI_SendRumble(device, playerLedCommand, SINPUT_DEVICE_REPORT_SIZE);
 
     if (playerNumBytesWritten < 0) {
@@ -312,7 +315,7 @@ static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     SDL_Log("RUMBLIN");
 
     SINPUT_HAPTIC_S hapticData = { 0 };
-    Uint8 hapticReport[64] = { SINPUT_DEVICE_REPORT_ID_OUTPUT, SINPUT_DEVICE_COMMAND_HAPTIC };
+    Uint8 hapticReport[64] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_HAPTIC };
 
     hapticData.type = 1;
 
@@ -558,18 +561,21 @@ static bool HIDAPI_DriverSInput_UpdateDevice(SDL_HIDAPI_Device *device)
             continue;
         }
 
-        if (!ctx->feature_flags_obtained)
+        if (!ctx->feature_flags_obtained && !ctx->feature_flags_sent)
         {
-            Uint8 featureFlagCommand[SINPUT_DEVICE_REPORT_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT, SINPUT_DEVICE_COMMAND_FEATURES };
-            int featureFlagBytesWritten = SDL_HIDAPI_SendRumble(device, featureFlagCommand, SINPUT_DEVICE_REPORT_SIZE);
+            // Send feature get command
+            // Set player number, finalizing the setup
+            Uint8 featuresGetCommand[SINPUT_DEVICE_REPORT_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_FEATURES };
+            int featureNumBytesWritten = SDL_HIDAPI_SendRumble(device, featuresGetCommand, SINPUT_DEVICE_REPORT_SIZE);
 
-            if (featureFlagBytesWritten < 0) {
-                SDL_Log("SInput device feature flags command could not write");
-            }
+            if (featureNumBytesWritten < 0) {
+                SDL_Log("SInput device features get command could not write");
+            } else
+                ctx->feature_flags_sent = true;
         }
 
         // Handle command response information
-        if (data[SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID] > 0)
+        if (data[0] == SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT)
         {
             switch (data[SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID])
             {
@@ -582,9 +588,9 @@ static bool HIDAPI_DriverSInput_UpdateDevice(SDL_HIDAPI_Device *device)
                 ctx->feature_flags_obtained = true;
                 break;
             }
+        } else {
+            HIDAPI_DriverSInput_HandleStatePacket(joystick, ctx, data, size);
         }
-
-        HIDAPI_DriverSInput_HandleStatePacket(joystick, ctx, data, size);
     }
 
     if (size < 0) {
