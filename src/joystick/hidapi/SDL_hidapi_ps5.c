@@ -812,14 +812,19 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
     }
 
     if (ctx->sensors_supported) {
+        // Standard DualSense sensor update rate is 250 Hz over USB
+        float update_rate = 250.0f;
+        
         if (ctx->device->is_bluetooth) {
             // Bluetooth sensor update rate appears to be 1000 Hz
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 1000.0f);
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 1000.0f);
-        } else {
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 250.0f);
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 250.0f);
+            update_rate = 1000.0f;
+        } else if (SDL_IsJoystickDualSenseEdge(ctx->device->vendor_id, ctx->device->product_id)) {
+            // DualSense Edge sensor update rate is 1000 Hz over USB
+            update_rate = 1000.0f;
         }
+
+        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, update_rate);
+        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, update_rate);
     }
 
     ctx->report_battery = true;
