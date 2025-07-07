@@ -160,6 +160,7 @@ static int load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_avail);
     SDL_ALSA_SYM(snd_pcm_info);
     SDL_ALSA_SYM(snd_pcm_info_get_card);
+    SDL_ALSA_SYM(snd_pcm_info_get_name);
     SDL_ALSA_SYM(snd_card_get_name);
     SDL_ALSA_SYM(snd_pcm_info_malloc);
     SDL_ALSA_SYM(snd_pcm_info_free);
