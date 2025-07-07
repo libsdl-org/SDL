@@ -83,6 +83,12 @@ static int (*ALSA_snd_device_name_hint)(int, const char *, void ***);
 static char *(*ALSA_snd_device_name_get_hint)(const void *, const char *);
 static int (*ALSA_snd_device_name_free_hint)(void **);
 static snd_pcm_sframes_t (*ALSA_snd_pcm_avail)(snd_pcm_t *);
+static int (*ALSA_snd_pcm_info)(snd_pcm_t *, snd_pcm_info_t *);
+static const char *(*ALSA_snd_pcm_info_get_name)(const snd_pcm_info_t *);
+static int (*ALSA_snd_pcm_info_get_card)(const snd_pcm_info_t *);
+static int (*ALSA_snd_card_get_name)(int, char **);
+static int (*ALSA_snd_pcm_info_malloc)(snd_pcm_info_t **);
+static int (*ALSA_snd_pcm_info_free)(snd_pcm_info_t *);
 #ifdef SND_CHMAP_API_VERSION
 static snd_pcm_chmap_t *(*ALSA_snd_pcm_get_chmap)(snd_pcm_t *);
 static int (*ALSA_snd_pcm_chmap_print)(const snd_pcm_chmap_t *map, size_t maxlen, char *buf);
@@ -152,6 +158,11 @@ static int load_alsa_syms(void)
     SDL_ALSA_SYM(snd_device_name_get_hint);
     SDL_ALSA_SYM(snd_device_name_free_hint);
     SDL_ALSA_SYM(snd_pcm_avail);
+    SDL_ALSA_SYM(snd_pcm_info);
+    SDL_ALSA_SYM(snd_pcm_info_get_card);
+    SDL_ALSA_SYM(snd_card_get_name);
+    SDL_ALSA_SYM(snd_pcm_info_malloc);
+    SDL_ALSA_SYM(snd_pcm_info_free);
 #ifdef SND_CHMAP_API_VERSION
     SDL_ALSA_SYM(snd_pcm_get_chmap);
     SDL_ALSA_SYM(snd_pcm_chmap_print);
@@ -464,6 +475,58 @@ static void ALSA_CloseDevice(_THIS)
     }
     SDL_free(this->hidden->mixbuf);
     SDL_free(this->hidden);
+}
+
+static int ALSA_GetDefaultAudioInfo(char **name, SDL_AudioSpec *spec, int iscapture)
+{
+    const char *device = "default";
+    snd_pcm_t *pcm_handle;
+    snd_pcm_info_t *pcm_info;
+    snd_pcm_stream_t stream;
+    int card_index;
+    const char *dev_name;
+    char *card_name = NULL;
+    char final_name[256];
+
+    SDL_zero(final_name);
+    stream = iscapture ? SND_PCM_STREAM_CAPTURE : SND_PCM_STREAM_PLAYBACK;
+
+    if (ALSA_snd_pcm_open(&pcm_handle, device, stream, SND_PCM_NONBLOCK) < 0) {
+        return SDL_SetError("ALSA: Couldn't open default device");
+    }
+
+    if (ALSA_snd_pcm_info_malloc(&pcm_info) < 0) {
+        ALSA_snd_pcm_close(pcm_handle);
+        return SDL_SetError("ALSA: Couldn't allocate pcm_info");
+    }
+
+    if (ALSA_snd_pcm_info(pcm_handle, pcm_info) < 0) {
+        ALSA_snd_pcm_info_free(pcm_info);
+        ALSA_snd_pcm_close(pcm_handle);
+        return SDL_SetError("ALSA: Couldn't get PCM info");
+    }
+
+    card_index = ALSA_snd_pcm_info_get_card(pcm_info);
+    dev_name = ALSA_snd_pcm_info_get_name(pcm_info);
+
+    if (card_index >= 0 && ALSA_snd_card_get_name(card_index, &card_name) >= 0) {
+        SDL_snprintf(final_name, sizeof(final_name), "%s, %s", card_name, dev_name);
+        *name = SDL_strdup(final_name);
+    } else {
+        *name = SDL_strdup(dev_name ? dev_name : "Unknown ALSA Device");
+    }
+
+    if (spec) {
+        SDL_zero(*spec);
+        spec->freq = 48000;
+        spec->format = AUDIO_S16SYS;
+        spec->channels = 2;
+        spec->samples = 512;
+    }
+
+    ALSA_snd_pcm_info_free(pcm_info);
+    ALSA_snd_pcm_close(pcm_handle);
+    return 0;
 }
 
 static int ALSA_set_buffer_size(_THIS, snd_pcm_hw_params_t *params)
@@ -975,6 +1038,7 @@ static SDL_bool ALSA_Init(SDL_AudioDriverImpl *impl)
     impl->Deinitialize = ALSA_Deinitialize;
     impl->CaptureFromDevice = ALSA_CaptureFromDevice;
     impl->FlushCapture = ALSA_FlushCapture;
+    impl->GetDefaultAudioInfo = ALSA_GetDefaultAudioInfo;
 
     impl->HasCaptureSupport = SDL_TRUE;
     impl->SupportsNonPow2Samples = SDL_TRUE;
