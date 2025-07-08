@@ -161,8 +161,8 @@
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER           0x02ff // XBOXGIP driver software PID
 #define USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD                 0x11ff
 #define USB_PRODUCT_HANDHELDLEGEND_HOJA_GAMEPAD           0x10c6 // Hoja Gamepad by Handheld Legend (API Generic)
-#define USB_PRODUCT_HANDHELDLEGEND_PROGCC                 0x10dd
-#define USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE             0x10de
+#define USB_PRODUCT_HANDHELDLEGEND_PROGCC                 0x10de
+#define USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE             0x10dd
 
 // USB usage pages
 #define USB_USAGEPAGE_GENERIC_DESKTOP 0x0001

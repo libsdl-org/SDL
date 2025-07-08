@@ -35,7 +35,7 @@
 #define DEBUG_SINPUT_PROTOCOL
 #endif
 
-#if 0
+#if 1
 #define DEBUG_SINPUT_INIT
 #endif
 
@@ -55,6 +55,9 @@
 
 #define SINPUT_HAPTIC_TYPE_PRECISE          0x01
 #define SINPUT_HAPTIC_TYPE_ERMSIMULATION    0x02
+
+#define SINPUT_DEFAULT_GYRO_SENS  2000
+#define SINPUT_DEFAULT_ACCEL_SENS 8
 
 #define SINPUT_REPORT_IDX_BUTTONS_0   3
 #define SINPUT_REPORT_IDX_BUTTONS_1   4
@@ -89,6 +92,78 @@
 #ifndef EXTRACTUINT16
 #define EXTRACTUINT16(data, idx) ((Uint16)((data)[(idx)] | ((data)[(idx) + 1] << 8)))
 #endif
+
+#pragma pack(push, 1) // Ensure byte alignment
+// Input report (Report ID: 1)
+typedef struct
+{
+    uint8_t plug_status;    // Plug Status (0 = unplug, 1 = plug, 2 = charge)
+    uint8_t charge_percent; // 0-100
+
+    union
+    {
+        struct
+        {
+            uint8_t button_b : 1;
+            uint8_t button_a : 1;
+            uint8_t button_y : 1;
+            uint8_t button_x : 1;
+            uint8_t dpad_up : 1;
+            uint8_t dpad_down : 1;
+            uint8_t dpad_left : 1;
+            uint8_t dpad_right : 1;
+        };
+        uint8_t buttons_1;
+    };
+
+    union
+    {
+        struct
+        {
+            uint8_t button_stick_left : 1;
+            uint8_t button_stick_right : 1;
+            uint8_t button_l : 1;
+            uint8_t button_r : 1;
+            uint8_t button_zl : 1;
+            uint8_t button_zr : 1;
+            uint8_t button_gl : 1;
+            uint8_t button_gr : 1;
+        };
+        uint8_t buttons_2;
+    };
+
+    union
+    {
+        struct
+        {
+            uint8_t button_plus : 1;
+            uint8_t button_minus : 1;
+            uint8_t button_home : 1;
+            uint8_t button_capture : 1;
+            uint8_t button_power : 1;
+            uint8_t reserved_b3 : 3; // Reserved bits
+        };
+        uint8_t buttons_3;
+    };
+
+    uint8_t buttons_reserved;
+    int16_t left_x;             // Left stick X
+    int16_t left_y;             // Left stick Y
+    int16_t right_x;            // Right stick X
+    int16_t right_y;            // Right stick Y
+    int16_t trigger_l;          // Left trigger
+    int16_t trigger_r;          // Right trigger
+    uint16_t gyro_elapsed_time; // Microseconds, 0 if unchanged
+    int16_t accel_x;            // Accelerometer X
+    int16_t accel_y;            // Accelerometer Y
+    int16_t accel_z;            // Accelerometer Z
+    int16_t gyro_x;             // Gyroscope X
+    int16_t gyro_y;             // Gyroscope Y
+    int16_t gyro_z;             // Gyroscope Z
+
+    uint8_t reserved_bulk[31]; // Reserved for future input data types
+} SINPUT_INPUT_S;
+#pragma pack(pop)
 
 #pragma pack(push, 1) // Ensure byte alignment
 typedef struct
@@ -272,6 +347,27 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
 
     ctx->device = device;
     device->context = ctx;
+
+    // Set default feature flags
+    SINPUT_FEATURE_FLAGS_U flags = {
+        .accelerometer_supported = 1,
+        .gyroscope_supported = 1,
+        .haptics_supported = 1,
+        .left_analog_stick_supported = 1,
+        .right_analog_stick_supported = 1,
+        .player_leds_supported = 1,
+        .left_analog_trigger_supported = 1,
+        .right_analog_trigger_supported = 1,
+    };
+
+#if !defined(DEBUG_SINPUT_INIT)
+    ctx->feature_flags.value = flags.value;
+    ctx->accelRange = SINPUT_DEFAULT_ACCEL_SENS;
+    ctx->gyroRange  = SINPUT_DEFAULT_GYRO_SENS;
+
+    ctx->accelScale = CalculateAccelScale(ctx->accelRange);
+    ctx->gyroScale = CalculateGyroScale(ctx->gyroRange);
+#endif
     
     return HIDAPI_JoystickConnected(device, NULL);
 }
