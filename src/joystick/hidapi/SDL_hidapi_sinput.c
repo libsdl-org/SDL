@@ -348,6 +348,7 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
     ctx->device = device;
     device->context = ctx;
 
+#if !defined(DEBUG_SINPUT_INIT)
     // Set default feature flags
     SINPUT_FEATURE_FLAGS_U flags = {
         .accelerometer_supported = 1,
@@ -360,14 +361,14 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
         .right_analog_trigger_supported = 1,
     };
 
-#if !defined(DEBUG_SINPUT_INIT)
+
     ctx->feature_flags.value = flags.value;
     ctx->accelRange = SINPUT_DEFAULT_ACCEL_SENS;
     ctx->gyroRange  = SINPUT_DEFAULT_GYRO_SENS;
 
     ctx->accelScale = CalculateAccelScale(ctx->accelRange);
     ctx->gyroScale = CalculateGyroScale(ctx->gyroRange);
-#endif
+#endif 
     
     return HIDAPI_JoystickConnected(device, NULL);
 }
@@ -417,8 +418,6 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 
 static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
-
     SINPUT_HAPTIC_S hapticData = { 0 };
     Uint8 hapticReport[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_HAPTIC };
 
@@ -452,8 +451,6 @@ static bool HIDAPI_DriverSInput_RumbleJoystickTriggers(SDL_HIDAPI_Device *device
 
 static Uint32 HIDAPI_DriverSInput_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
-
     Uint32 caps = 0;
     caps |= SDL_JOYSTICK_CAP_RUMBLE;
     caps |= SDL_JOYSTICK_CAP_PLAYER_LED;
@@ -472,8 +469,6 @@ static bool HIDAPI_DriverSInput_SendJoystickEffect(SDL_HIDAPI_Device *device, SD
 
 static bool HIDAPI_DriverSInput_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
-    // Our sensors are always enabled if supported, so we just set the flag
-    SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
     return true;
 }
 
