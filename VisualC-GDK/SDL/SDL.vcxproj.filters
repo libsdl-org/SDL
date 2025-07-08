@@ -74,6 +74,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps5.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_rumble.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_shield.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_sinput.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_stadia.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steam.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_steam_hori.c" />
