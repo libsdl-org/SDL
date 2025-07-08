@@ -37,11 +37,13 @@
 
 #define SINPUT_DEVICE_NAME_SIZE     32
 #define SINPUT_DEVICE_POLLING_RATE  1000 // 1000 Hz
-#define SINPUT_DEVICE_REPORT_SIZE   64   // Size of all reports
+#define SINPUT_DEVICE_REPORT_SIZE   64   // Size of input reports (And CMD Input reports)
+#define SINPUT_DEVICE_REPORT_COMMAND_SIZE 48 // Size of command OUTPUT reports
 
 #define SINPUT_DEVICE_REPORT_ID_JOYSTICK_INPUT  0x01
-#define SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT   0x02
-#define SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT    0x03
+#define SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT    0x02
+#define SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT   0x03
+
 
 #define SINPUT_DEVICE_COMMAND_HAPTIC    0x01
 #define SINPUT_DEVICE_COMMAND_FEATURES  0x02
@@ -245,8 +247,8 @@ static void ProcessFeatureFlagResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->feature_flags_obtained = true;
 
     // Set player number, finalizing the setup
-    Uint8 playerLedCommand[SINPUT_DEVICE_REPORT_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_PLAYERLED, ctx->player_idx };
-    int playerNumBytesWritten = SDL_HIDAPI_SendRumble(device, playerLedCommand, SINPUT_DEVICE_REPORT_SIZE);
+    Uint8 playerLedCommand[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_PLAYERLED, ctx->player_idx };
+    int playerNumBytesWritten = SDL_HIDAPI_SendRumble(device, playerLedCommand, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
 
     if (playerNumBytesWritten < 0) {
         SDL_Log("SInput device player led command could not write");
@@ -315,7 +317,7 @@ static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     SDL_Log("RUMBLIN");
 
     SINPUT_HAPTIC_S hapticData = { 0 };
-    Uint8 hapticReport[64] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_HAPTIC };
+    Uint8 hapticReport[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_HAPTIC };
 
     hapticData.type = 1;
 
@@ -335,7 +337,7 @@ static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 
     SDL_memcpy( &(hapticReport[2]), &hapticData, sizeof(SINPUT_HAPTIC_S) );
 
-    SDL_HIDAPI_SendRumble(device, hapticReport, SINPUT_DEVICE_REPORT_SIZE);
+    SDL_HIDAPI_SendRumble(device, hapticReport, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
 
     return true;
 }
@@ -561,22 +563,30 @@ static bool HIDAPI_DriverSInput_UpdateDevice(SDL_HIDAPI_Device *device)
             continue;
         }
 
-        if (!ctx->feature_flags_obtained && !ctx->feature_flags_sent)
+        if (!ctx->feature_flags_obtained && !ctx->feature_flags_sent && ctx->player_idx > 0)
         {
             // Send feature get command
             // Set player number, finalizing the setup
-            Uint8 featuresGetCommand[SINPUT_DEVICE_REPORT_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_FEATURES };
-            int featureNumBytesWritten = SDL_HIDAPI_SendRumble(device, featuresGetCommand, SINPUT_DEVICE_REPORT_SIZE);
+            Uint8 featuresGetCommand[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_FEATURES };
+            int featureNumBytesWritten = SDL_HIDAPI_SendRumble(device, featuresGetCommand, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
 
             if (featureNumBytesWritten < 0) {
                 SDL_Log("SInput device features get command could not write");
-            } else
+            }
+            else
+            {
+                SDL_Log("SInput device features get command written");
                 ctx->feature_flags_sent = true;
+            }
         }
+
+        if (data[0] != 0x01)
+            SDL_Log("G");
 
         // Handle command response information
         if (data[0] == SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT)
         {
+            SDL_Log("Got Input Command Data SInput Device");
             switch (data[SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID])
             {
                 default:
