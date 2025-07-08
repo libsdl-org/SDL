@@ -1747,7 +1747,7 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_8BITDO "SDL_JOYSTICK_HIDAPI_8BITDO"
 
 /**
- * A variable controlling whether the HIDAPI driver for HOJA controllers
+ * A variable controlling whether the HIDAPI driver for SInput controllers
  * should be used.
  *
  * This variable can be set to the following values:
@@ -1756,7 +1756,7 @@ extern "C" {
  *
  * The default is the value of SDL_HINT_JOYSTICK_HIDAPI
  */
-#define SDL_HINT_JOYSTICK_HIDAPI_SINPUT "SDL_JOYSTICK_HIDAPI_HOJA"
+#define SDL_HINT_JOYSTICK_HIDAPI_SINPUT "SDL_JOYSTICK_HIDAPI_SINPUT"
 
 /**
  * A variable controlling whether the HIDAPI driver for Flydigi controllers
