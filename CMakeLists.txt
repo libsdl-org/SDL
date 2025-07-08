@@ -654,6 +654,11 @@ if(MSVC)
     # Mark SDL3.dll as compatible with Control-flow Enforcement Technology (CET)
     sdl_shared_link_options("-CETCOMPAT")
   endif()
+
+  # for VS >= 17.14 targeting ARM64: inline the Interlocked funcs
+  if(MSVC_VERSION GREATER 1943 AND SDL_CPU_ARM64 AND NOT SDL_LIBC)
+    sdl_compile_options(PRIVATE "/forceInterlockedFunctions-")
+  endif()
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
