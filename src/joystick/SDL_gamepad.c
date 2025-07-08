@@ -838,12 +838,12 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             switch (product) {
             case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
                 // Copy ProGCC Map
-                SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:b17,leftx:a0,lefty:a1,misc1:b15,rightshoulder:b10,rightstick:b8,righttrigger:b16,rightx:a2,righty:a3,start:b6,x:b2,y:b3,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:b17,leftx:a0,lefty:a1,misc1:b15,rightshoulder:b10,rightstick:b8,righttrigger:b16,rightx:a2,righty:a3,start:b6,x:b2,y:b3,misc2:b21,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
                 break;
 
             case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
                 // Copy GC Ultimate Map
-                SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,misc1:b15,paddle1:b16,paddle2:b17,rightshoulder:b10,rightstick:b8,rightx:a2,righty:a3,start:b6,x:b2,y:b3,lefttrigger:a4,righttrigger:a5,!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+                SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,misc1:b15,paddle1:b16,paddle2:b17,rightshoulder:b10,rightstick:b8,rightx:a2,righty:a3,start:b6,x:b2,y:b3,lefttrigger:a4,righttrigger:a5,misc2:b21,!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
                 break;
 
             case USB_PRODUCT_HANDHELDLEGEND_HOJA_GAMEPAD:

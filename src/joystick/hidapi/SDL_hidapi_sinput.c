@@ -406,7 +406,7 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 
     SDL_zeroa(ctx->last_state);
 
-    joystick->nbuttons = 19; 
+    joystick->nbuttons = 32; 
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, (float)SINPUT_DEVICE_POLLING_RATE);
@@ -544,7 +544,8 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
 
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x04));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x08));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TOUCHPAD, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x10));
+
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC2, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x10));
     }
 
     // Analog inputs map to a signed Sint16 range of -32768 to 32767 from the device.
