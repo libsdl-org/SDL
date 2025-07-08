@@ -35,6 +35,10 @@
 #define DEBUG_SINPUT_PROTOCOL
 #endif
 
+#if 0
+#define DEBUG_SINPUT_INIT
+#endif
+
 #define SINPUT_DEVICE_NAME_SIZE     32
 #define SINPUT_DEVICE_POLLING_RATE  1000 // 1000 Hz
 #define SINPUT_DEVICE_REPORT_SIZE   64   // Size of input reports (And CMD Input reports)
@@ -77,8 +81,6 @@
 #define SINPUT_REPORT_IDX_CHARGE_LEVEL    2
 
 #define SINPUT_RUMBLE_WRITE_FREQUENCY_MS 4
-
-//#define SINPUT_OVERRIDE_SUPPORTED_DEBUG 1
 
 #ifndef EXTRACTSINT16
 #define EXTRACTSINT16(data, idx) ((Sint16)((data)[(idx)] | ((data)[(idx) + 1] << 8)))
@@ -226,8 +228,6 @@ static void ProcessFeatureFlagResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 
     ctx->feature_flags.value = data[0];
 
-    SDL_Log("DBG: %x", data[0]);
-
     // data[1] reserved byte
 
     ctx->sub_type = data[2];
@@ -236,10 +236,14 @@ static void ProcessFeatureFlagResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->api_version = (Uint16)(data[4] | (data[5] << 8));
 
     ctx->accelRange = (Uint16)(data[6] | (data[7] << 8));
+#if defined(DEBUG_SINPUT_INIT)
     SDL_Log("Accelerometer Range: %d", ctx->accelRange);
+#endif
 
     ctx->gyroRange = (Uint16)(data[8] | (data[9] << 8));
+#if defined(DEBUG_SINPUT_INIT)
     SDL_Log("Gyro Range: %d", ctx->gyroRange);
+#endif
 
     ctx->accelScale = CalculateAccelScale(ctx->accelRange);
     ctx->gyroScale  = CalculateGyroScale(ctx->gyroRange);
@@ -257,7 +261,10 @@ static void ProcessFeatureFlagResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 
 static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
 {
-    SDL_Log("Hoja device Init");
+#if defined(DEBUG_SINPUT_INIT)
+    SDL_Log("SInput device Init");
+#endif
+
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         return false;
@@ -291,7 +298,9 @@ static void HIDAPI_DriverSInput_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 
 static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+#if defined(DEBUG_SINPUT_INIT)
     SDL_Log("SInput device Open");
+#endif
 
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
@@ -313,8 +322,6 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
-
-    SDL_Log("RUMBLIN");
 
     SINPUT_HAPTIC_S hapticData = { 0 };
     Uint8 hapticReport[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_HAPTIC };
@@ -571,29 +578,30 @@ static bool HIDAPI_DriverSInput_UpdateDevice(SDL_HIDAPI_Device *device)
             int featureNumBytesWritten = SDL_HIDAPI_SendRumble(device, featuresGetCommand, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
 
             if (featureNumBytesWritten < 0) {
-                SDL_Log("SInput device features get command could not write");
+                SDL_SetError("SInput device features get command could not write");
             }
             else
             {
-                SDL_Log("SInput device features get command written");
+                SDL_SetError("SInput device features get command written");
                 ctx->feature_flags_sent = true;
             }
         }
 
-        if (data[0] != 0x01)
-            SDL_Log("G");
-
         // Handle command response information
         if (data[0] == SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT)
         {
+#if defined(DEBUG_SINPUT_INIT)
             SDL_Log("Got Input Command Data SInput Device");
+#endif
             switch (data[SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID])
             {
                 default:
                 break;
 
                 case SINPUT_DEVICE_COMMAND_FEATURES:
-                SDL_Log("Got Feature Response Data SInput Device");
+#if defined(DEBUG_SINPUT_INIT)
+                    SDL_Log("Got Feature Response Data SInput Device");
+#endif
                 ProcessFeatureFlagResponse(device, &(data[SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK]));
                 ctx->feature_flags_obtained = true;
                 break;
