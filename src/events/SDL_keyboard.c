@@ -61,7 +61,6 @@ typedef struct SDL_Keyboard
     Uint32 keycode_options;
     bool autorelease_pending;
     Uint64 hardware_timestamp;
-    int next_reserved_scancode;
 } SDL_Keyboard;
 
 static SDL_Keyboard SDL_keyboard;
@@ -295,16 +294,12 @@ void SDL_SetKeymap(SDL_Keymap *keymap, bool send_event)
 static SDL_Scancode GetNextReservedScancode(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
-    SDL_Scancode scancode;
 
-    if (keyboard->next_reserved_scancode && keyboard->next_reserved_scancode < SDL_SCANCODE_RESERVED + 100) {
-        scancode = (SDL_Scancode)keyboard->next_reserved_scancode;
-    } else {
-        scancode = SDL_SCANCODE_RESERVED;
+    if (!keyboard->keymap) {
+        keyboard->keymap = SDL_CreateKeymap(true);
     }
-    keyboard->next_reserved_scancode = (int)scancode + 1;
 
-    return scancode;
+    return SDL_GetKeymapNextReservedScancode(keyboard->keymap);
 }
 
 static void SetKeymapEntry(SDL_Scancode scancode, SDL_Keymod modstate, SDL_Keycode keycode)

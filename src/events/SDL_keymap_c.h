@@ -25,13 +25,14 @@
 
 typedef struct SDL_Keymap
 {
-  SDL_HashTable *scancode_to_keycode;
-  SDL_HashTable *keycode_to_scancode;
-  bool auto_release;
-  bool layout_determined;
-  bool french_numbers;
-  bool latin_letters;
-  bool thai_keyboard;
+    SDL_HashTable *scancode_to_keycode;
+    SDL_HashTable *keycode_to_scancode;
+    SDL_Scancode next_reserved_scancode;
+    bool auto_release;
+    bool layout_determined;
+    bool french_numbers;
+    bool latin_letters;
+    bool thai_keyboard;
 } SDL_Keymap;
 
 /* This may return null even when a keymap is bound, depending on the current keyboard mapping options.
@@ -42,6 +43,7 @@ SDL_Keymap *SDL_CreateKeymap(bool auto_release);
 void SDL_SetKeymapEntry(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod modstate, SDL_Keycode keycode);
 SDL_Keycode SDL_GetKeymapKeycode(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod modstate);
 SDL_Scancode SDL_GetKeymapScancode(SDL_Keymap *keymap, SDL_Keycode keycode, SDL_Keymod *modstate);
+SDL_Scancode SDL_GetKeymapNextReservedScancode(SDL_Keymap *keymap);
 void SDL_DestroyKeymap(SDL_Keymap *keymap);
 
 #endif // SDL_keymap_c_h_
