@@ -153,8 +153,15 @@ SDL_WAYLAND_SYM(void, xkb_keymap_key_for_each, (struct xkb_keymap *, xkb_keymap_
 SDL_WAYLAND_SYM(int, xkb_keymap_key_get_syms_by_level, (struct xkb_keymap *,
                                                         xkb_keycode_t,
                                                         xkb_layout_index_t,
-                                                        xkb_layout_index_t,
+                                                        xkb_level_index_t,
                                                         const xkb_keysym_t **) )
+SDL_WAYLAND_SYM(xkb_level_index_t, xkb_keymap_num_levels_for_key, (struct xkb_keymap *, xkb_keycode_t, xkb_layout_index_t) )
+SDL_WAYLAND_SYM(size_t, xkb_keymap_key_get_mods_for_level, (struct xkb_keymap *,
+                                                            xkb_keycode_t,
+                                                            xkb_layout_index_t,
+                                                            xkb_level_index_t,
+                                                            xkb_mod_mask_t *,
+                                                            size_t masks_size) )
 SDL_WAYLAND_SYM(uint32_t, xkb_keysym_to_utf32, (xkb_keysym_t) )
 SDL_WAYLAND_SYM(uint32_t, xkb_keymap_mod_get_index, (struct xkb_keymap *,
                                                       const char *) )
