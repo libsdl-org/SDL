@@ -75,7 +75,7 @@ typedef struct SDL_WaylandSeat
         struct zwp_input_timestamps_v1 *timestamps;
         struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
         SDL_WindowData *focus;
-        SDL_Keymap *sdl_keymap;
+        SDL_Keymap **sdl_keymap;
         char *current_locale;
 
         SDL_WaylandKeyboardRepeat repeat;
@@ -96,6 +96,7 @@ typedef struct SDL_WaylandSeat
             struct xkb_compose_state *compose_state;
 
             // Current keyboard layout (aka 'group')
+            xkb_layout_index_t num_layouts;
             xkb_layout_index_t current_layout;
 
             // Modifier bitshift values
