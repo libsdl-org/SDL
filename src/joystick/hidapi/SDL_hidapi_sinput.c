@@ -483,6 +483,7 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         ctx->digital_trigger_l = data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x10;
         ctx->digital_trigger_r = data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x20;
 
+        // Paddle 1 pair
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,  (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x40));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x80));
     }
@@ -491,6 +492,7 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x01));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK,  (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x02));
 
+        // Home/Guide
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x04));
 
         // Capture/Share
@@ -499,9 +501,28 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         // Power/Misc2
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC2, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x10));
 
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,  (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x20));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x40));
+        // Paddle 2 pair
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE2, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x20));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x40));
+
+        // Touchpad button
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TOUCHPAD, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x80));
     }
+
+    if (ctx->last_state[SINPUT_REPORT_IDX_BUTTONS_3] != data[SINPUT_REPORT_IDX_BUTTONS_3]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC3, (data[SINPUT_REPORT_IDX_BUTTONS_3] & 0x01));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC4, (data[SINPUT_REPORT_IDX_BUTTONS_3] & 0x02));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC5, (data[SINPUT_REPORT_IDX_BUTTONS_3] & 0x04));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC6, (data[SINPUT_REPORT_IDX_BUTTONS_3] & 0x08));
+
+        // Unused Misc Buttons (Maybe support later if the need arises)
+        /*
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC7, (data[SINPUT_REPORT_IDX_BUTTONS_3] & 0x10));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC8, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x20));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC9, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x40));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC10, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x80));
+        */
+    } 
 
     // Analog inputs map to a signed Sint16 range of -32768 to 32767 from the device.
 
