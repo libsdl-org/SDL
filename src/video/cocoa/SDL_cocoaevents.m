@@ -294,7 +294,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
        hidden dock if you're moving the mouse during launch, so change the default
        behaviour there.  https://github.com/libsdl-org/SDL/issues/10340
        (13.6 still needs it, presumably 13.7 does, too.) */
-    SDL_bool background_app_default = SDL_FALSE
+    SDL_bool background_app_default = SDL_FALSE;
     if (@available(macOS 14.0, *)) {
         background_app_default = SDL_TRUE;  /* by default, don't explicitly activate the dock and then us again to force to foreground */
     }
