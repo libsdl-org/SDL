@@ -927,6 +927,22 @@ static int should_enumerate_interface(unsigned short vendor_id, const struct lib
 	return 0;
 }
 
+static int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
+{
+	size_t i;
+	static const struct { unsigned short vid; unsigned short pid; } known_bad[] = {
+		{ 0x1532, 0x0227 }  /* Razer Huntsman Gaming keyboard - long delay asking for device details */
+	};
+
+	for (i = 0; i < (sizeof(known_bad)/sizeof(known_bad[0])); i++) {
+		if ((vendor_id == known_bad[i].vid) && (product_id == known_bad[i].pid || known_bad[i].pid == 0x0000)) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
 	libusb_device **devs;
@@ -957,7 +973,8 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		unsigned short dev_pid = desc.idProduct;
 
 		if ((vendor_id != 0x0 && vendor_id != dev_vid) ||
-		    (product_id != 0x0 && product_id != dev_pid)) {
+		    (product_id != 0x0 && product_id != dev_pid) ||
+		    hid_blacklist(dev_vid, dev_pid)) {
 			continue;
 		}
 
