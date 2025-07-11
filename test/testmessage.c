@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
         quit(1);
     }
 
-    success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+    success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_WARNING,
                                        "Simple MessageBox",
                                        "This is a simple MessageBox with a newline:\r\nHello world!",
                                        NULL);
