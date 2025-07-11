@@ -88,6 +88,8 @@ Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence);
 size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOStatus *status);
 size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SDL_IOStatus *status);
 bool Android_JNI_FileClose(void *userdata);
+bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata);
+bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info);
 
 // Environment support
 void Android_JNI_GetManifestEnvironmentVariables(void);
