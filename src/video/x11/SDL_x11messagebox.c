@@ -81,7 +81,7 @@ typedef struct SDL_MessageBoxButtonDataX11
     int length;     // Text length
     int text_a;
     int text_d;
-	
+    
     SDL_Rect text_rect;
     SDL_Rect rect; // Rectangle for entire button
 
@@ -110,7 +110,7 @@ typedef struct SDL_MessageBoxDataX11
     Atom wm_protocols;
     Atom wm_delete_message;
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
-	bool xrandr; // Whether Xrandr is present or not
+    bool xrandr; // Whether Xrandr is present or not
 #endif
 
     int dialog_width;  // Dialog box width.
@@ -122,12 +122,12 @@ typedef struct SDL_MessageBoxDataX11
     int text_height;          // Height for text lines.
     TextLineData *linedata;
 
-	char icon_char; // Icon, '\0' indicates that the messsage box has no icon.
-	XFontStruct *icon_char_font;
-	SDL_Rect icon_box_rect;
-	int icon_char_x;
-	int icon_char_y;
-	
+    char icon_char; // Icon, '\0' indicates that the messsage box has no icon.
+    XFontStruct *icon_char_font;
+    SDL_Rect icon_box_rect;
+    int icon_char_x;
+    int icon_char_y;
+    
     int *pbuttonid; // Pointer to user return buttonID value.
 
     int button_press_index; // Index into buttondata/buttonpos for button which is pressed (or -1).
@@ -150,8 +150,8 @@ static SDL_INLINE int IntMax(int a, int b)
 
 static void GetTextWidthHeightForFont(SDL_MessageBoxDataX11 *data, XFontStruct *font, const char *str, int nbytes, int *pwidth, int *pheight, int *font_ascent)
 {
-	XCharStruct text_structure;
-	int font_direction, font_descent;
+    XCharStruct text_structure;
+    int font_direction, font_descent;
     X11_XTextExtents(font, str, nbytes,
                      &font_direction, font_ascent, &font_descent,
                      &text_structure);
@@ -164,14 +164,14 @@ static void GetTextWidthHeight(SDL_MessageBoxDataX11 *data, const char *str, int
 {
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
-		XFontSetExtents *extents;
+        XFontSetExtents *extents;
         XRectangle overall_ink, overall_logical;
         extents = X11_XExtentsOfFontSet(data->font_set);
         X11_Xutf8TextExtents(data->font_set, str, nbytes, &overall_ink, &overall_logical);
         *pwidth = overall_logical.width;
         *pheight = overall_logical.height;
         *font_ascent = -extents->max_logical_extent.y;
-		*font_descent = extents->max_logical_extent.height - *font_ascent;
+        *font_descent = extents->max_logical_extent.height - *font_ascent;
     } else
 #endif
     {
@@ -237,7 +237,7 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
         data->icon_char = 'i';
         break;
     default:
-		data->icon_char = '\0';
+        data->icon_char = '\0';
     }
 
     data->display = X11_XOpenDisplay(NULL);
@@ -246,8 +246,8 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
     }
     
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
-	int xrandr_event_base, xrandr_error_base;
-	data->xrandr = X11_XRRQueryExtension(data->display, &xrandr_event_base, &xrandr_error_base);
+    int xrandr_event_base, xrandr_error_base;
+    data->xrandr = X11_XRRQueryExtension(data->display, &xrandr_event_base, &xrandr_error_base);
 #endif
     
 #ifdef X_HAVE_UTF8_STRING
@@ -278,15 +278,15 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
     }
 
     if (data->icon_char != '\0') {
-		data->icon_char_font = X11_XLoadQueryFont(data->display, g_IconFont);
-		if (!data->icon_char_font) {
-			data->icon_char_font = X11_XLoadQueryFont(data->display, g_MessageBoxFontLatin1);
-			if (!data->icon_char_font) {
-				data->icon_char = '\0';
-			}
-		} 
-	}
-	
+        data->icon_char_font = X11_XLoadQueryFont(data->display, g_IconFont);
+        if (!data->icon_char_font) {
+            data->icon_char_font = X11_XLoadQueryFont(data->display, g_MessageBoxFontLatin1);
+            if (!data->icon_char_font) {
+                data->icon_char = '\0';
+            }
+        } 
+    }
+    
     if (messageboxdata->colorScheme) {
         colorhints = messageboxdata->colorScheme->colors;
     } else {
@@ -318,54 +318,54 @@ static int CountLinesOfText(const char *text)
 // Calculate and initialize text and button locations.
 static bool X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
 {
-	int paddingx2;
-	int padding2x2;	
-	int text_width_max;
-	int text_height_total;
-	int button_height_max;
-	int button_width_max;
-	int button_width_total;
-	int elems_total_height;
-	int text_ix;
-	int i;
-	int t;
-	const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
+    int paddingx2;
+    int padding2x2;    
+    int text_width_max;
+    int text_height_total;
+    int button_height_max;
+    int button_width_max;
+    int button_width_total;
+    int elems_total_height;
+    int text_ix;
+    int i;
+    int t;
+    const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
 
-	/* Optimization and initialization */
-	text_height_total = 0;
-	text_width_max = 0;
-	paddingx2 = SDL_DIALOG_ELEMENT_PADDING * 2;
-	padding2x2 = SDL_DIALOG_ELEMENT_PADDING_2 * 2;
-	data->icon_char_y = 0;
-	data->icon_box_rect.w = 0;
-	data->icon_box_rect.h = 0;
-	text_ix = 0;
-	t = 0;
-	button_width_max = MIN_BUTTON_WIDTH;
-	button_height_max = 0;
-	
-	/* Calculate icon sizing */
-	if (data->icon_char != '\0') {
-		int icon_char_w;
-		int icon_char_h;
-		int icon_char_a;
-		int	icon_char_max;
-		
-		GetTextWidthHeightForFont(data, data->icon_char_font, &data->icon_char, 1, &icon_char_w, &icon_char_h, &icon_char_a);
-		data->icon_box_rect.w = icon_char_w + paddingx2;
-		data->icon_box_rect.h = icon_char_h + paddingx2;
-		icon_char_max = IntMax(data->icon_box_rect.w, data->icon_box_rect.h);
-		data->icon_box_rect.w = icon_char_max;
-		data->icon_box_rect.h = icon_char_max;		
-		data->icon_box_rect.y = 0;
-		data->icon_box_rect.x = 0;
-		data->icon_char_y = icon_char_a + data->icon_box_rect.y + (data->icon_box_rect.h - icon_char_h)/2 + 1;
-		data->icon_char_x = data->icon_box_rect.x + (data->icon_box_rect.w - icon_char_w)/2 + 1;
-	} 
-	
+    /* Optimization and initialization */
+    text_height_total = 0;
+    text_width_max = 0;
+    paddingx2 = SDL_DIALOG_ELEMENT_PADDING * 2;
+    padding2x2 = SDL_DIALOG_ELEMENT_PADDING_2 * 2;
+    data->icon_char_y = 0;
+    data->icon_box_rect.w = 0;
+    data->icon_box_rect.h = 0;
+    text_ix = 0;
+    t = 0;
+    button_width_max = MIN_BUTTON_WIDTH;
+    button_height_max = 0;
+    
+    /* Calculate icon sizing */
+    if (data->icon_char != '\0') {
+        int icon_char_w;
+        int icon_char_h;
+        int icon_char_a;
+        int    icon_char_max;
+        
+        GetTextWidthHeightForFont(data, data->icon_char_font, &data->icon_char, 1, &icon_char_w, &icon_char_h, &icon_char_a);
+        data->icon_box_rect.w = icon_char_w + paddingx2;
+        data->icon_box_rect.h = icon_char_h + paddingx2;
+        icon_char_max = IntMax(data->icon_box_rect.w, data->icon_box_rect.h);
+        data->icon_box_rect.w = icon_char_max;
+        data->icon_box_rect.h = icon_char_max;        
+        data->icon_box_rect.y = 0;
+        data->icon_box_rect.x = 0;
+        data->icon_char_y = icon_char_a + data->icon_box_rect.y + (data->icon_box_rect.h - icon_char_h)/2 + 1;
+        data->icon_char_x = data->icon_box_rect.x + (data->icon_box_rect.w - icon_char_w)/2 + 1;
+    } 
+    
     // Go over text and break linefeeds into separate lines.
     if (messageboxdata && messageboxdata->message[0]) {
-		int iascent;
+        int iascent;
         const char *text = messageboxdata->message;
         const int linecount = CountLinesOfText(text);
         TextLineData *plinedata = (TextLineData *)SDL_malloc(sizeof(TextLineData) * linecount);
@@ -376,14 +376,14 @@ static bool X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
 
         data->linedata = plinedata;
         data->numlines = linecount;
-		iascent = 0;
-		
+        iascent = 0;
+        
         for (i = 0; i < linecount; i++) {
             const char *lf = SDL_strchr(text, '\n');
             const int length = lf ? (lf - text) : SDL_strlen(text);
-			int ascent;
-			int descent;
-		
+            int ascent;
+            int descent;
+        
             plinedata[i].text = text;
 
             GetTextWidthHeight(data, text, length, &plinedata[i].rect.w, &plinedata[i].rect.h, &ascent, &descent);
@@ -396,13 +396,13 @@ static bool X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
                 plinedata[i].length--;
             }
 
-			if (i > 0) {
-				plinedata[i].rect.y = ascent + descent + plinedata[i-1].rect.y; 
-			} else {
-				plinedata[i].rect.y = data->icon_box_rect.y + SDL_DIALOG_ELEMENT_PADDING +  ascent;
-				iascent = ascent;
-			}
-			plinedata[i].rect.x = text_ix = data->icon_box_rect.x + data->icon_box_rect.w + SDL_DIALOG_ELEMENT_PADDING_2;
+            if (i > 0) {
+                plinedata[i].rect.y = ascent + descent + plinedata[i-1].rect.y; 
+            } else {
+                plinedata[i].rect.y = data->icon_box_rect.y + SDL_DIALOG_ELEMENT_PADDING +  ascent;
+                iascent = ascent;
+            }
+            plinedata[i].rect.x = text_ix = data->icon_box_rect.x + data->icon_box_rect.w + SDL_DIALOG_ELEMENT_PADDING_2;
             text += length + 1;
 
             // Break if there are no more linefeeds.
@@ -414,8 +414,8 @@ static bool X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
         text_height_total = plinedata[linecount-1].rect.y +  plinedata[linecount-1].rect.h - iascent - data->icon_box_rect.y - SDL_DIALOG_ELEMENT_PADDING;  
     }
     
-	// Loop through all buttons and calculate the button widths and height.
-	for (i = 0; i < data->numbuttons; i++) {
+    // Loop through all buttons and calculate the button widths and height.
+    for (i = 0; i < data->numbuttons; i++) {
         data->buttonpos[i].buttondata = &data->buttondata[i];
         data->buttonpos[i].length = SDL_strlen(data->buttondata[i].text);
 
@@ -428,101 +428,101 @@ static bool X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
     button_width_total = button_width_max * data->numbuttons + SDL_DIALOG_ELEMENT_PADDING * (data->numbuttons - 1);
     button_width_total += padding2x2;
   
-	/* Dialog width */
-	if (button_width_total < (text_ix + text_width_max + padding2x2)) {
-		data->dialog_width = IntMax(data->dialog_width, (text_ix + text_width_max + padding2x2));		
-	} else {
-		data->dialog_width = IntMax(data->dialog_width, button_width_total);			
-	}
-	
-	/* X position of text and icon */
-	t = (data->dialog_width - (text_ix + text_width_max))/2;
-	if (data->icon_char != '\0') {
-		data->icon_box_rect.y = 0;
-		if (data->numlines) {
-			data->icon_box_rect.x += t;
-			data->icon_char_x += t;
-		} else {
-			int tt;
-			
-			tt = t;
-			t = (data->dialog_width - data->icon_box_rect.w)/2;
-			data->icon_box_rect.x += t;
-			data->icon_char_x += t;
-			t = tt;
-		}
-	} 		
-	for (i = 0; i < data->numlines; i++) {
-		data->linedata[i].rect.x += t;
-	}
+    /* Dialog width */
+    if (button_width_total < (text_ix + text_width_max + padding2x2)) {
+        data->dialog_width = IntMax(data->dialog_width, (text_ix + text_width_max + padding2x2));        
+    } else {
+        data->dialog_width = IntMax(data->dialog_width, button_width_total);            
+    }
+    
+    /* X position of text and icon */
+    t = (data->dialog_width - (text_ix + text_width_max))/2;
+    if (data->icon_char != '\0') {
+        data->icon_box_rect.y = 0;
+        if (data->numlines) {
+            data->icon_box_rect.x += t;
+            data->icon_char_x += t;
+        } else {
+            int tt;
+            
+            tt = t;
+            t = (data->dialog_width - data->icon_box_rect.w)/2;
+            data->icon_box_rect.x += t;
+            data->icon_char_x += t;
+            t = tt;
+        }
+    }         
+    for (i = 0; i < data->numlines; i++) {
+        data->linedata[i].rect.x += t;
+    }
         
     /* Button poistioning */
- 	for (i = 0; i < data->numbuttons; i++) {
-		data->buttonpos[i].rect.w = button_width_max;
-		data->buttonpos[i].text_rect.x = (data->buttonpos[i].rect.w - data->buttonpos[i].text_rect.w)/2;
-		data->buttonpos[i].rect.h = button_height_max;
-		data->buttonpos[i].text_rect.y = data->buttonpos[i].text_a + (data->buttonpos[i].rect.h - data->buttonpos[i].text_rect.h)/2;
-		if (i > 0) {
-			data->buttonpos[i].rect.x += data->buttonpos[i-1].rect.x + data->buttonpos[i-1].rect.w + SDL_DIALOG_ELEMENT_PADDING_3;
-			data->buttonpos[i].text_rect.x += data->buttonpos[i].rect.x;
-		}
-	}	
-	button_width_total = data->buttonpos[data->numbuttons-1].rect.x + data->buttonpos[data->numbuttons-1].rect.w;
-	data->dialog_width = IntMax(data->dialog_width, (button_width_total + padding2x2));		
-	if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
-		for (i = 0; i < data->numbuttons; i++) {
-			data->buttonpos[i].rect.x += (data->dialog_width - button_width_total)/2;
-			data->buttonpos[i].text_rect.x += (data->dialog_width - button_width_total)/2;
-			if (data->icon_box_rect.h > text_height_total) {
-				data->buttonpos[i].text_rect.y += data->icon_box_rect.h + SDL_DIALOG_ELEMENT_PADDING_2 - 2;
-				data->buttonpos[i].rect.y += data->icon_box_rect.h + SDL_DIALOG_ELEMENT_PADDING_2;
-			} else {
-				int a;
-				
-				a = 0;
-				if (data->numlines) {
-					a = data->linedata[data->numlines - 1].rect.y + data->linedata[data->numlines - 1].rect.h;
-				}
-				data->buttonpos[i].text_rect.y += a + SDL_DIALOG_ELEMENT_PADDING_2 - 2;
-				data->buttonpos[i].rect.y += a + SDL_DIALOG_ELEMENT_PADDING_2;
-			}
-		}	
-	} else {
-		for (i = data->numbuttons; i != -1; i--) {
-			data->buttonpos[i].rect.x += (data->dialog_width - button_width_total)/2;
-			data->buttonpos[i].text_rect.x += (data->dialog_width - button_width_total)/2;
-			if (data->icon_box_rect.h > text_height_total) {
-				data->buttonpos[i].text_rect.y += data->icon_box_rect.h + SDL_DIALOG_ELEMENT_PADDING_2 - 2;
-				data->buttonpos[i].rect.y += data->icon_box_rect.h + SDL_DIALOG_ELEMENT_PADDING_2;
-			} else {
-				int a;
-				
-				a = 0;
-				if (data->numlines) {
-					a = data->linedata[data->numlines - 1].rect.y + data->linedata[data->numlines - 1].rect.h;
-				}
-				data->buttonpos[i].text_rect.y += a + SDL_DIALOG_ELEMENT_PADDING_2 - 2;
-				data->buttonpos[i].rect.y += a + SDL_DIALOG_ELEMENT_PADDING_2;
-			}
-		}		
-	}
+     for (i = 0; i < data->numbuttons; i++) {
+        data->buttonpos[i].rect.w = button_width_max;
+        data->buttonpos[i].text_rect.x = (data->buttonpos[i].rect.w - data->buttonpos[i].text_rect.w)/2;
+        data->buttonpos[i].rect.h = button_height_max;
+        data->buttonpos[i].text_rect.y = data->buttonpos[i].text_a + (data->buttonpos[i].rect.h - data->buttonpos[i].text_rect.h)/2;
+        if (i > 0) {
+            data->buttonpos[i].rect.x += data->buttonpos[i-1].rect.x + data->buttonpos[i-1].rect.w + SDL_DIALOG_ELEMENT_PADDING_3;
+            data->buttonpos[i].text_rect.x += data->buttonpos[i].rect.x;
+        }
+    }    
+    button_width_total = data->buttonpos[data->numbuttons-1].rect.x + data->buttonpos[data->numbuttons-1].rect.w;
+    data->dialog_width = IntMax(data->dialog_width, (button_width_total + padding2x2));        
+    if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
+        for (i = 0; i < data->numbuttons; i++) {
+            data->buttonpos[i].rect.x += (data->dialog_width - button_width_total)/2;
+            data->buttonpos[i].text_rect.x += (data->dialog_width - button_width_total)/2;
+            if (data->icon_box_rect.h > text_height_total) {
+                data->buttonpos[i].text_rect.y += data->icon_box_rect.h + SDL_DIALOG_ELEMENT_PADDING_2 - 2;
+                data->buttonpos[i].rect.y += data->icon_box_rect.h + SDL_DIALOG_ELEMENT_PADDING_2;
+            } else {
+                int a;
+                
+                a = 0;
+                if (data->numlines) {
+                    a = data->linedata[data->numlines - 1].rect.y + data->linedata[data->numlines - 1].rect.h;
+                }
+                data->buttonpos[i].text_rect.y += a + SDL_DIALOG_ELEMENT_PADDING_2 - 2;
+                data->buttonpos[i].rect.y += a + SDL_DIALOG_ELEMENT_PADDING_2;
+            }
+        }    
+    } else {
+        for (i = data->numbuttons; i != -1; i--) {
+            data->buttonpos[i].rect.x += (data->dialog_width - button_width_total)/2;
+            data->buttonpos[i].text_rect.x += (data->dialog_width - button_width_total)/2;
+            if (data->icon_box_rect.h > text_height_total) {
+                data->buttonpos[i].text_rect.y += data->icon_box_rect.h + SDL_DIALOG_ELEMENT_PADDING_2 - 2;
+                data->buttonpos[i].rect.y += data->icon_box_rect.h + SDL_DIALOG_ELEMENT_PADDING_2;
+            } else {
+                int a;
+                
+                a = 0;
+                if (data->numlines) {
+                    a = data->linedata[data->numlines - 1].rect.y + data->linedata[data->numlines - 1].rect.h;
+                }
+                data->buttonpos[i].text_rect.y += a + SDL_DIALOG_ELEMENT_PADDING_2 - 2;
+                data->buttonpos[i].rect.y += a + SDL_DIALOG_ELEMENT_PADDING_2;
+            }
+        }        
+    }
 
-	/* Dialog height */
-	elems_total_height = data->buttonpos[data->numbuttons-1].rect.y + data->buttonpos[data->numbuttons-1].rect.h;
-	data->dialog_height = IntMax(data->dialog_height, (elems_total_height + padding2x2));			
-	t = (data->dialog_height - elems_total_height)/2;
-	if (data->icon_char != '\0') {
-		data->icon_box_rect.y += t;
-		data->icon_char_y += t;			
-	}
- 	for (i = 0; i < data->numbuttons; i++) {
-		data->buttonpos[i].text_rect.y += t;
-		data->buttonpos[i].rect.y += t;
-	}	
-	for (i = 0; i < data->numlines; i++) {
-		data->linedata[i].rect.y += t;
-	}
-	return true;
+    /* Dialog height */
+    elems_total_height = data->buttonpos[data->numbuttons-1].rect.y + data->buttonpos[data->numbuttons-1].rect.h;
+    data->dialog_height = IntMax(data->dialog_height, (elems_total_height + padding2x2));            
+    t = (data->dialog_height - elems_total_height)/2;
+    if (data->icon_char != '\0') {
+        data->icon_box_rect.y += t;
+        data->icon_char_y += t;            
+    }
+     for (i = 0; i < data->numbuttons; i++) {
+        data->buttonpos[i].text_rect.y += t;
+        data->buttonpos[i].rect.y += t;
+    }    
+    for (i = 0; i < data->numlines; i++) {
+        data->linedata[i].rect.y += t;
+    }
+    return true;
 }
 
 // Free SDL_MessageBoxData data.
@@ -540,7 +540,7 @@ static void X11_MessageBoxShutdown(SDL_MessageBoxDataX11 *data)
     
     if (data->icon_char != '\0') {
         X11_XFreeFont(data->display, data->icon_char_font);
-		data->icon_char_font = NULL;
+        data->icon_char_font = NULL;
     }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
@@ -592,9 +592,9 @@ static bool X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
     data->visual = DefaultVisual(display, data->screen);
     data->cmap = DefaultColormap(display, data->screen);
     for (i = 0; i < SDL_MESSAGEBOX_COLOR_COUNT; i++) {
-        X11_XAllocColor(display, data->cmap, &data->xcolor[i]);	
+        X11_XAllocColor(display, data->cmap, &data->xcolor[i]);    
     }
- 	
+     
     data->event_mask = ExposureMask |
                        ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask |
                        StructureNotifyMask | FocusChangeMask | PointerMotionMask;
@@ -664,24 +664,24 @@ static bool X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
         else if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, use_xrandr_by_default) && data->xrandr) {
             XRRScreenResources *screen = X11_XRRGetScreenResourcesCurrent(display, DefaultRootWindow(display));
             if (!screen) {
-				goto XRANDRBAIL;
-			}
+                goto XRANDRBAIL;
+            }
             if (!screen->ncrtc) {
-				goto XRANDRBAIL;
-			}
+                goto XRANDRBAIL;
+            }
 
             XRRCrtcInfo *crtc_info = X11_XRRGetCrtcInfo(display, screen, screen->crtcs[0]);
             if (crtc_info) {
-				x = (crtc_info->width - data->dialog_width) / 2;
-				y = (crtc_info->height - data->dialog_height) / 3;
-			} else {
-				goto XRANDRBAIL;
-			}
+                x = (crtc_info->width - data->dialog_width) / 2;
+                y = (crtc_info->height - data->dialog_height) / 3;
+            } else {
+                goto XRANDRBAIL;
+            }
         }
 #endif
         else {
             // oh well. This will misposition on a multi-head setup. Init first next time.
-			XRANDRBAIL:
+            XRANDRBAIL:
             x = (DisplayWidth(display, data->screen) - data->dialog_width) / 2;
             y = (DisplayHeight(display, data->screen) - data->dialog_height) / 3;
         }
@@ -736,21 +736,21 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx, bool utf8)
     }
 #endif
 
-	X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel);
+    X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel);
     X11_XFillRectangle(display, window, ctx, 0, 0, data->dialog_width, data->dialog_height);
 
-	if(data->icon_char != '\0') {
-		X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
-		X11_XFillArc(display, window, ctx, data->icon_box_rect.x, data->icon_box_rect.y, data->icon_box_rect.w, data->icon_box_rect.h, 0, 360 * 64);
-		
-		X11_XSetFont(display, ctx, data->icon_char_font->fid); 
-		X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel);
-		X11_XDrawString(display, window, ctx, data->icon_char_x, data->icon_char_y, &data->icon_char, 1);
-		if (!utf8) {
-			X11_XSetFont(display, ctx, data->font_struct->fid); 
-		}
-	}
-	
+    if(data->icon_char != '\0') {
+        X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
+        X11_XFillArc(display, window, ctx, data->icon_box_rect.x, data->icon_box_rect.y, data->icon_box_rect.w, data->icon_box_rect.h, 0, 360 * 64);
+        
+        X11_XSetFont(display, ctx, data->icon_char_font->fid); 
+        X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel);
+        X11_XDrawString(display, window, ctx, data->icon_char_x, data->icon_char_y, &data->icon_char, 1);
+        if (!utf8) {
+            X11_XSetFont(display, ctx, data->font_struct->fid); 
+        }
+    }
+    
     X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
     for (i = 0; i < data->numlines; i++) {
         TextLineData *plinedata = &data->linedata[i];
@@ -769,7 +769,7 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx, bool utf8)
         }
     }
 
-	X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
+    X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
     for (i = 0; i < data->numbuttons; i++) {
         SDL_MessageBoxButtonDataX11 *buttondatax11 = &data->buttonpos[i];
         const SDL_MessageBoxButtonData *buttondata = buttondatax11->buttondata;
@@ -1009,19 +1009,19 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     *buttonID = -1;
 
     // Init and display the message box.
-	if (!X11_MessageBoxInit(&data, messageboxdata, buttonID)) {
-		goto done;
-	}
-	
-	if (!X11_MessageBoxInitPositions(&data))  {
-		goto done;
-	}
-	
-	if (!X11_MessageBoxCreateWindow(&data))  {
-		goto done;
-	}	
-	
-	result = X11_MessageBoxLoop(&data);
+    if (!X11_MessageBoxInit(&data, messageboxdata, buttonID)) {
+        goto done;
+    }
+    
+    if (!X11_MessageBoxInitPositions(&data))  {
+        goto done;
+    }
+    
+    if (!X11_MessageBoxCreateWindow(&data))  {
+        goto done;
+    }    
+    
+    result = X11_MessageBoxLoop(&data);
 
 done:
     X11_MessageBoxShutdown(&data);
