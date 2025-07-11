@@ -1495,7 +1495,6 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 {
     SDL_WaylandSeat *seat = data;
     char *map_str;
-    const char *locale;
 
     if (!data) {
         close(fd);
@@ -1588,7 +1587,7 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
      */
 
     // Look up the preferred locale, falling back to "C" as default
-    locale = SDL_getenv("LC_ALL");
+    const char *locale = SDL_getenv("LC_ALL");
     if (!locale) {
         locale = SDL_getenv("LC_CTYPE");
         if (!locale) {
@@ -1599,26 +1598,38 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         }
     }
 
-    // Set up XKB compose table
-    if (seat->keyboard.xkb.compose_table != NULL) {
-        WAYLAND_xkb_compose_table_unref(seat->keyboard.xkb.compose_table);
-        seat->keyboard.xkb.compose_table = NULL;
-    }
-    seat->keyboard.xkb.compose_table = WAYLAND_xkb_compose_table_new_from_locale(seat->display->xkb_context,
-                                                                         locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
-    if (seat->keyboard.xkb.compose_table) {
-        // Set up XKB compose state
-        if (seat->keyboard.xkb.compose_state != NULL) {
-            WAYLAND_xkb_compose_state_unref(seat->keyboard.xkb.compose_state);
-            seat->keyboard.xkb.compose_state = NULL;
-        }
-        seat->keyboard.xkb.compose_state = WAYLAND_xkb_compose_state_new(seat->keyboard.xkb.compose_table,
-                                                                 XKB_COMPOSE_STATE_NO_FLAGS);
-        if (!seat->keyboard.xkb.compose_state) {
-            SDL_SetError("could not create XKB compose state");
+    /* Set up the XKB compose table.
+     *
+     * This is a very slow operation, so it is only done during initialization,
+     * or if the locale envvar changed during runtime.
+     */
+    if (!seat->keyboard.current_locale || SDL_strcmp(seat->keyboard.current_locale, locale) != 0) {
+        // Cache the current locale for later comparison.
+        SDL_free(seat->keyboard.current_locale);
+        seat->keyboard.current_locale = SDL_strdup(locale);
+
+        if (seat->keyboard.xkb.compose_table != NULL) {
             WAYLAND_xkb_compose_table_unref(seat->keyboard.xkb.compose_table);
             seat->keyboard.xkb.compose_table = NULL;
         }
+        seat->keyboard.xkb.compose_table = WAYLAND_xkb_compose_table_new_from_locale(seat->display->xkb_context,
+                                                                                     locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
+        if (seat->keyboard.xkb.compose_table) {
+            // Set up XKB compose state
+            if (seat->keyboard.xkb.compose_state != NULL) {
+                WAYLAND_xkb_compose_state_unref(seat->keyboard.xkb.compose_state);
+                seat->keyboard.xkb.compose_state = NULL;
+            }
+            seat->keyboard.xkb.compose_state = WAYLAND_xkb_compose_state_new(seat->keyboard.xkb.compose_table,
+                                                                             XKB_COMPOSE_STATE_NO_FLAGS);
+            if (!seat->keyboard.xkb.compose_state) {
+                SDL_SetError("could not create XKB compose state");
+                WAYLAND_xkb_compose_table_unref(seat->keyboard.xkb.compose_table);
+                seat->keyboard.xkb.compose_table = NULL;
+            }
+        }
+    } else if (seat->keyboard.xkb.compose_state) {
+        WAYLAND_xkb_compose_state_reset(seat->keyboard.xkb.compose_state);
     }
 }
 
@@ -2215,6 +2226,8 @@ static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat, bool send_event)
             wl_keyboard_destroy(seat->keyboard.wl_keyboard);
         }
     }
+
+    SDL_free(seat->keyboard.current_locale);
 
     if (seat->keyboard.xkb.compose_state) {
         WAYLAND_xkb_compose_state_unref(seat->keyboard.xkb.compose_state);
