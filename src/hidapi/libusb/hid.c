@@ -923,7 +923,7 @@ static int should_enumerate_interface(unsigned short vendor_id, const struct lib
 	return 0;
 }
 
-static int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
+static int libusb_blacklist(unsigned short vendor_id, unsigned short product_id)
 {
 	size_t i;
 	static const struct { unsigned short vid; unsigned short pid; } known_bad[] = {
@@ -970,7 +970,7 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 
 		if ((vendor_id != 0x0 && vendor_id != dev_vid) ||
 		    (product_id != 0x0 && product_id != dev_pid) ||
-		    hid_blacklist(dev_vid, dev_pid)) {
+		    libusb_blacklist(dev_vid, dev_pid)) {
 			continue;
 		}
 
