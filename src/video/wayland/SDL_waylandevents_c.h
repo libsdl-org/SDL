@@ -76,6 +76,7 @@ typedef struct SDL_WaylandSeat
         struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
         SDL_WindowData *focus;
         SDL_Keymap *sdl_keymap;
+        char *current_locale;
 
         SDL_WaylandKeyboardRepeat repeat;
         Uint64 highres_timestamp_ns;
