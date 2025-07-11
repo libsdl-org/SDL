@@ -1573,6 +1573,7 @@ SDL_GPUCommandBuffer *SDL_AcquireGPUCommandBuffer(
         commandBufferHeader->copy_pass.in_progress = false;
         commandBufferHeader->swapchain_texture_acquired = false;
         commandBufferHeader->submitted = false;
+        commandBufferHeader->ignore_render_pass_texture_validation = false;
         SDL_zeroa(commandBufferHeader->render_pass.vertex_sampler_bound);
         SDL_zeroa(commandBufferHeader->render_pass.vertex_storage_texture_bound);
         SDL_zeroa(commandBufferHeader->render_pass.vertex_storage_buffer_bound);
