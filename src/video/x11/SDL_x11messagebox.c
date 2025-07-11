@@ -69,11 +69,11 @@ static const char *g_MessageBoxFont[] = {
 static const char *g_IconFont = "-*-*-bold-r-normal-*-18-*-*-*-*-*-iso8859-1[33 88 105]";
 
 static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = {
-    { 56, 54, 53 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
-    { 209, 207, 205 }, // SDL_MESSAGEBOX_COLOR_TEXT,
-    { 140, 135, 129 }, // SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
-    { 105, 102, 99 },  // SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
-    { 205, 202, 53 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
+    { 212, 212, 212 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
+    { 0, 0, 0 }, // SDL_MESSAGEBOX_COLOR_TEXT,
+    { 0, 0, 0 }, // SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
+    { 175, 175, 175 },  // SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
+    { 255, 255, 255 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
 };
 
 typedef struct SDL_MessageBoxButtonDataX11
@@ -138,6 +138,13 @@ typedef struct SDL_MessageBoxDataX11
     SDL_MessageBoxButtonDataX11 buttonpos[MAX_BUTTONS];
 
     XColor xcolor[SDL_MESSAGEBOX_COLOR_COUNT];
+    XColor xcolor_black;
+    XColor xcolor_red;
+    XColor xcolor_red_darker;
+    XColor xcolor_white;
+    XColor xcolor_yellow;
+    XColor xcolor_blue;
+    XColor xcolor_bg_shadow;
 
     const SDL_MessageBoxData *messageboxdata;
 } SDL_MessageBoxDataX11;
@@ -301,6 +308,43 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
         data->xcolor[i].blue = colorhints[i].b * 257;
     }
 
+    if (data->icon_char != '\0') {
+        data->xcolor_black.flags = DoRed|DoGreen|DoBlue;
+        data->xcolor_black.red = 0;
+        data->xcolor_black.green = 0;
+        data->xcolor_black.blue = 0;
+      
+        data->xcolor_black.flags = DoRed|DoGreen|DoBlue;
+        data->xcolor_white.red = 65535;
+        data->xcolor_white.green = 65535;
+        data->xcolor_white.blue = 65535;
+        
+        data->xcolor_red.flags = DoRed|DoGreen|DoBlue;
+        data->xcolor_red.red = 65535;
+        data->xcolor_red.green = 0;
+        data->xcolor_red.blue = 0;
+    
+        data->xcolor_red_darker.flags = DoRed|DoGreen|DoBlue;
+        data->xcolor_red_darker.red = 40535;
+        data->xcolor_red_darker.green = 0;
+        data->xcolor_red_darker.blue = 0;
+        
+        data->xcolor_yellow.flags = DoRed|DoGreen|DoBlue;
+        data->xcolor_yellow.red = 65535;
+        data->xcolor_yellow.green = 65535;
+        data->xcolor_yellow.blue = 0;
+        
+        data->xcolor_blue.flags = DoRed|DoGreen|DoBlue;
+        data->xcolor_blue.red = 0;
+        data->xcolor_blue.green = 0;
+        data->xcolor_blue.blue = 65535;   
+            
+        data->xcolor_bg_shadow.flags = DoRed|DoGreen|DoBlue;
+        data->xcolor_bg_shadow.red = data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red - 12500;
+        data->xcolor_bg_shadow.green = data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green - 12500;
+        data->xcolor_bg_shadow.blue = data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue - 12500;
+    }
+    
     return true;
 }
 
@@ -349,18 +393,20 @@ static bool X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
         int icon_char_w;
         int icon_char_h;
         int icon_char_a;
-        int    icon_char_max;
+        int icon_char_max;
         
         GetTextWidthHeightForFont(data, data->icon_char_font, &data->icon_char, 1, &icon_char_w, &icon_char_h, &icon_char_a);
         data->icon_box_rect.w = icon_char_w + paddingx2;
         data->icon_box_rect.h = icon_char_h + paddingx2;
-        icon_char_max = IntMax(data->icon_box_rect.w, data->icon_box_rect.h);
+        icon_char_max = IntMax(data->icon_box_rect.w, data->icon_box_rect.h) + 2;
         data->icon_box_rect.w = icon_char_max;
         data->icon_box_rect.h = icon_char_max;        
         data->icon_box_rect.y = 0;
         data->icon_box_rect.x = 0;
         data->icon_char_y = icon_char_a + data->icon_box_rect.y + (data->icon_box_rect.h - icon_char_h)/2 + 1;
         data->icon_char_x = data->icon_box_rect.x + (data->icon_box_rect.w - icon_char_w)/2 + 1;
+        data->icon_box_rect.w += 2;
+        data->icon_box_rect.h += 2;
     } 
     
     // Go over text and break linefeeds into separate lines.
@@ -513,7 +559,9 @@ static bool X11_MessageBoxInitPositions(SDL_MessageBoxDataX11 *data)
     t = (data->dialog_height - elems_total_height)/2;
     if (data->icon_char != '\0') {
         data->icon_box_rect.y += t;
-        data->icon_char_y += t;            
+        data->icon_char_y += t;    
+        data->icon_box_rect.w -= 2;
+        data->icon_box_rect.h -= 2;        
     }
      for (i = 0; i < data->numbuttons; i++) {
         data->buttonpos[i].text_rect.y += t;
@@ -594,7 +642,16 @@ static bool X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
     for (i = 0; i < SDL_MESSAGEBOX_COLOR_COUNT; i++) {
         X11_XAllocColor(display, data->cmap, &data->xcolor[i]);    
     }
-     
+    if (data->icon_char != '\0') {
+        X11_XAllocColor(display, data->cmap, &data->xcolor_black);    
+        X11_XAllocColor(display, data->cmap, &data->xcolor_white);    
+        X11_XAllocColor(display, data->cmap, &data->xcolor_red);    
+        X11_XAllocColor(display, data->cmap, &data->xcolor_red_darker);    
+        X11_XAllocColor(display, data->cmap, &data->xcolor_yellow);    
+        X11_XAllocColor(display, data->cmap, &data->xcolor_blue);    
+        X11_XAllocColor(display, data->cmap, &data->xcolor_bg_shadow);    
+    }
+        
     data->event_mask = ExposureMask |
                        ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask |
                        StructureNotifyMask | FocusChangeMask | PointerMotionMask;
@@ -740,11 +797,36 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx, bool utf8)
     X11_XFillRectangle(display, window, ctx, 0, 0, data->dialog_width, data->dialog_height);
 
     if(data->icon_char != '\0') {
-        X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
-        X11_XFillArc(display, window, ctx, data->icon_box_rect.x, data->icon_box_rect.y, data->icon_box_rect.w, data->icon_box_rect.h, 0, 360 * 64);
-        
+        X11_XSetForeground(display, ctx, data->xcolor_bg_shadow.pixel);
+        X11_XFillArc(display, window, ctx, data->icon_box_rect.x + 2, data->icon_box_rect.y + 2, data->icon_box_rect.w, data->icon_box_rect.h, 0, 360 * 64);
+        switch (data->messageboxdata->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION)) {
+        case SDL_MESSAGEBOX_ERROR:
+                X11_XSetForeground(display, ctx, data->xcolor_red_darker.pixel);
+                X11_XFillArc(display, window, ctx, data->icon_box_rect.x, data->icon_box_rect.y, data->icon_box_rect.w, data->icon_box_rect.h, 0, 360 * 64);
+                X11_XSetForeground(display, ctx, data->xcolor_red.pixel);
+                X11_XFillArc(display, window, ctx, data->icon_box_rect.x+1, data->icon_box_rect.y+1, data->icon_box_rect.w-2, data->icon_box_rect.h-2, 0, 360 * 64);
+                X11_XSetForeground(display, ctx, data->xcolor_white.pixel);
+                break;
+        case SDL_MESSAGEBOX_WARNING:
+                X11_XSetForeground(display, ctx, data->xcolor_black.pixel);
+                X11_XFillArc(display, window, ctx, data->icon_box_rect.x, data->icon_box_rect.y, data->icon_box_rect.w, data->icon_box_rect.h, 0, 360 * 64);
+                X11_XSetForeground(display, ctx, data->xcolor_yellow.pixel);
+                X11_XFillArc(display, window, ctx, data->icon_box_rect.x+1, data->icon_box_rect.y+1, data->icon_box_rect.w-2, data->icon_box_rect.h-2, 0, 360 * 64);
+                X11_XSetForeground(display, ctx, data->xcolor_black.pixel);
+                break;
+        case SDL_MESSAGEBOX_INFORMATION:
+                X11_XSetForeground(display, ctx, data->xcolor_white.pixel);
+                X11_XFillArc(display, window, ctx, data->icon_box_rect.x, data->icon_box_rect.y, data->icon_box_rect.w, data->icon_box_rect.h, 0, 360 * 64);
+                X11_XSetForeground(display, ctx, data->xcolor_blue.pixel);
+                X11_XFillArc(display, window, ctx, data->icon_box_rect.x+1, data->icon_box_rect.y+1, data->icon_box_rect.w-2, data->icon_box_rect.h-2, 0, 360 * 64);
+                X11_XSetForeground(display, ctx, data->xcolor_white.pixel);
+                break;
+        default:
+                X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
+                X11_XFillArc(display, window, ctx, data->icon_box_rect.x, data->icon_box_rect.y, data->icon_box_rect.w, data->icon_box_rect.h, 0, 360 * 64);
+                X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel);
+        }
         X11_XSetFont(display, ctx, data->icon_char_font->fid); 
-        X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel);
         X11_XDrawString(display, window, ctx, data->icon_char_x, data->icon_char_y, &data->icon_char, 1);
         if (!utf8) {
             X11_XSetFont(display, ctx, data->font_struct->fid); 
@@ -773,14 +855,17 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx, bool utf8)
     for (i = 0; i < data->numbuttons; i++) {
         SDL_MessageBoxButtonDataX11 *buttondatax11 = &data->buttonpos[i];
         const SDL_MessageBoxButtonData *buttondata = buttondatax11->buttondata;
-        int border = (buttondata->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) ? 2 : 0;
         
         X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].pixel);
         X11_XFillRectangle(display, window, ctx,
-                           buttondatax11->rect.x - border, buttondatax11->rect.y - border,
-                           buttondatax11->rect.w + 2 * border, buttondatax11->rect.h + 2 * border);
+                           buttondatax11->rect.x, buttondatax11->rect.y,
+                           buttondatax11->rect.w, buttondatax11->rect.h);
 
-        X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].pixel);
+        if (buttondata->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
+            X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED].pixel);
+        } else {
+            X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].pixel);
+        }
         X11_XDrawRectangle(display, window, ctx,
                            buttondatax11->rect.x, buttondatax11->rect.y,
                            buttondatax11->rect.w, buttondatax11->rect.h);
