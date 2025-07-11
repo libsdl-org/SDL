@@ -141,6 +141,9 @@ bool WIN_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
         SDL_LoadFunction(handle, "wglMakeCurrent");
     _this->gl_data->wglShareLists = (BOOL (WINAPI *)(HGLRC, HGLRC))
         SDL_LoadFunction(handle, "wglShareLists");
+    _this->gl_data->wglSwapLayerBuffers = (BOOL (WINAPI *)(HDC, UINT))
+        SDL_LoadFunction(handle, "wglSwapLayerBuffers");
+
     /* *INDENT-ON* */ // clang-format on
 
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
@@ -886,8 +889,14 @@ bool WIN_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
     HDC hdc = window->internal->hdc;
 
-    if (!SwapBuffers(hdc)) {
-        return WIN_SetError("SwapBuffers()");
+    if (_this->gl_data->wglSwapLayerBuffers) {
+        if (!_this->gl_data->wglSwapLayerBuffers(hdc, WGL_SWAP_MAIN_PLANE)) {
+            return WIN_SetError("wglSwapLayerBuffers()");
+        }
+    } else {
+        if (!SwapBuffers(hdc)) {
+            return WIN_SetError("SwapBuffers()");
+        }
     }
     return true;
 }

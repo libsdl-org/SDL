@@ -53,62 +53,59 @@ struct Quaternion
 
 static Quaternion quat_identity = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-Quaternion QuaternionFromEuler(float roll, float pitch, float yaw)
+Quaternion QuaternionFromEuler(float pitch, float yaw, float roll)
 {
-    Quaternion q;
+    float cx = SDL_cosf(pitch * 0.5f);
+    float sx = SDL_sinf(pitch * 0.5f);
     float cy = SDL_cosf(yaw * 0.5f);
     float sy = SDL_sinf(yaw * 0.5f);
-    float cp = SDL_cosf(pitch * 0.5f);
-    float sp = SDL_sinf(pitch * 0.5f);
-    float cr = SDL_cosf(roll * 0.5f);
-    float sr = SDL_sinf(roll * 0.5f);
+    float cz = SDL_cosf(roll * 0.5f);
+    float sz = SDL_sinf(roll * 0.5f);
 
-    q.w = cr * cp * cy + sr * sp * sy;
-    q.x = sr * cp * cy - cr * sp * sy;
-    q.y = cr * sp * cy + sr * cp * sy;
-    q.z = cr * cp * sy - sr * sp * cy;
+    Quaternion q;
+    q.w = cx * cy * cz + sx * sy * sz;
+    q.x = sx * cy * cz - cx * sy * sz;
+    q.y = cx * sy * cz + sx * cy * sz;
+    q.z = cx * cy * sz - sx * sy * cz;
 
     return q;
 }
 
-static void EulerFromQuaternion(Quaternion q, float *roll, float *pitch, float *yaw)
+#define RAD_TO_DEG (180.0f / SDL_PI_F)
+
+/* Decomposes quaternion into Yaw (Y), Pitch (X), Roll (Z) using Y-X-Z order in a left-handed system */
+void QuaternionToYXZ(Quaternion q, float *pitch, float *yaw, float *roll)
 {
-    float sinr_cosp = 2.0f * (q.w * q.x + q.y * q.z);
-    float cosr_cosp = 1.0f - 2.0f * (q.x * q.x + q.y * q.y);
-    float roll_rad = SDL_atan2f(sinr_cosp, cosr_cosp);
+    /* Precalculate repeated expressions */
+    float qxx = q.x * q.x;
+    float qyy = q.y * q.y;
+    float qzz = q.z * q.z;
 
-    float sinp = 2.0f * (q.w * q.y - q.z * q.x);
-    float pitch_rad;
-    if (SDL_fabsf(sinp) >= 1.0f) {
-        pitch_rad = SDL_copysignf(SDL_PI_F / 2.0f, sinp);
-    } else {
-        pitch_rad = SDL_asinf(sinp);
-    }
+    float qxy = q.x * q.y;
+    float qxz = q.x * q.z;
+    float qyz = q.y * q.z;
+    float qwx = q.w * q.x;
+    float qwy = q.w * q.y;
+    float qwz = q.w * q.z;
 
-    float siny_cosp = 2.0f * (q.w * q.z + q.x * q.y);
-    float cosy_cosp = 1.0f - 2.0f * (q.y * q.y + q.z * q.z);
-    float yaw_rad = SDL_atan2f(siny_cosp, cosy_cosp);
-
-    if (roll)
-        *roll = roll_rad;
-    if (pitch)
-        *pitch = pitch_rad;
-    if (yaw)
-        *yaw = yaw_rad;
-}
-
-static void EulerDegreesFromQuaternion(Quaternion q, float *pitch, float *yaw, float *roll)
-{
-    float pitch_rad, yaw_rad, roll_rad;
-    EulerFromQuaternion(q, &pitch_rad, &yaw_rad, &roll_rad);
-    if (pitch) {
-        *pitch = pitch_rad * (180.0f / SDL_PI_F);
-    }
+    /* Yaw (around Y) */
     if (yaw) {
-        *yaw = yaw_rad * (180.0f / SDL_PI_F);
+        *yaw = SDL_atan2f(2.0f * (qwy + qxz), 1.0f - 2.0f * (qyy + qzz)) * RAD_TO_DEG;
     }
+
+    /* Pitch (around X) */
+    float sinp = 2.0f * (qwx - qyz);
+    if (pitch) {
+        if (SDL_fabsf(sinp) >= 1.0f) {
+            *pitch = SDL_copysignf(90.0f, sinp); /* Clamp to avoid domain error */
+        } else {
+            *pitch = SDL_asinf(sinp) * RAD_TO_DEG;
+        }
+    }
+
+    /* Roll (around Z) */
     if (roll) {
-        *roll = roll_rad * (180.0f / SDL_PI_F);
+        *roll = SDL_atan2f(2.0f * (qwz + qxy), 1.0f - 2.0f * (qxx + qzz)) * RAD_TO_DEG;
     }
 }
 
@@ -1375,7 +1372,16 @@ static void HandleGamepadGyroEvent(SDL_Event *event)
     SDL_memcpy(controller->imu_state->gyro_data, event->gsensor.data, sizeof(controller->imu_state->gyro_data));
 }
 
+/* Two strategies for evaluating polling rate - one based on a fixed packet count, and one using a fixed time window.
+ * Smaller values in either will give you a more responsive polling rate estimate, but this may fluctuate more.
+ * Larger values in either will give you a more stable average but they will require more time to evaluate.
+ * Generally, wired connections tend to give much more stable 
+ */
+/* #define SDL_USE_FIXED_PACKET_COUNT_FOR_ESTIMATION */
 #define SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT 2048
+#define SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_TIME_NS (SDL_NS_PER_SECOND * 2)
+
+
 static void EstimatePacketRate()
 {
     Uint64 now_ns = SDL_GetTicksNS();
@@ -1384,17 +1390,22 @@ static void EstimatePacketRate()
     }
 
     /* Require a significant sample size before averaging rate. */
+#ifdef SDL_USE_FIXED_PACKET_COUNT_FOR_ESTIMATION
     if (controller->imu_state->imu_packet_counter >= SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT) {
         Uint64 deltatime_ns = now_ns - controller->imu_state->starting_time_stamp_ns;
-        controller->imu_state->imu_estimated_sensor_rate = (Uint16)((controller->imu_state->imu_packet_counter * 1000000000ULL) / deltatime_ns);
-    }
-
-    /* Flush sampled data after a brief period so that the imu_estimated_sensor_rate value can be read.*/
-    if (controller->imu_state->imu_packet_counter >= SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT * 2) {
-        controller->imu_state->starting_time_stamp_ns = now_ns;
+        controller->imu_state->imu_estimated_sensor_rate = (Uint16)((controller->imu_state->imu_packet_counter * SDL_NS_PER_SECOND) / deltatime_ns);
         controller->imu_state->imu_packet_counter = 0;
     }
-    ++controller->imu_state->imu_packet_counter;
+#else
+    Uint64 deltatime_ns = now_ns - controller->imu_state->starting_time_stamp_ns;
+    if (deltatime_ns >= SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_TIME_NS) {
+        controller->imu_state->imu_estimated_sensor_rate = (Uint16)((controller->imu_state->imu_packet_counter * SDL_NS_PER_SECOND) / deltatime_ns);
+        controller->imu_state->imu_packet_counter = 0;
+    }
+#endif
+    else {
+        ++controller->imu_state->imu_packet_counter;
+    }
 }
 
 static void UpdateGamepadOrientation( Uint64 delta_time_ns )
@@ -1409,13 +1420,11 @@ static void UpdateGamepadOrientation( Uint64 delta_time_ns )
 
 static void HandleGamepadSensorEvent( SDL_Event* event )
 {
-    if (!controller) {
-        return;
-    }
+    if (!controller)
+        return;   
 
-    if (controller->id != event->gsensor.which) {
+    if (controller->id != event->gsensor.which)
         return;
-    }
 
     if (event->gsensor.sensor == SDL_SENSOR_GYRO) {
         HandleGamepadGyroEvent(event);
@@ -1428,13 +1437,12 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
     accelerometer and gyro events are received before progressing.
     */
     if ( controller->imu_state->accelerometer_packet_number == controller->imu_state->gyro_packet_number ) {
-
         EstimatePacketRate();
         Uint64 sensorTimeStampDelta_ns = event->gsensor.sensor_timestamp - controller->imu_state->last_sensor_time_stamp_ns ;
         UpdateGamepadOrientation(sensorTimeStampDelta_ns);
 
         float display_euler_angles[3];
-        EulerDegreesFromQuaternion(controller->imu_state->integrated_rotation, &display_euler_angles[0], &display_euler_angles[1], &display_euler_angles[2]);
+        QuaternionToYXZ(controller->imu_state->integrated_rotation, &display_euler_angles[0], &display_euler_angles[1], &display_euler_angles[2]);
 
         float drift_calibration_progress_frac = controller->imu_state->gyro_drift_sample_count / (float)SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT;
         int reported_polling_rate_hz = sensorTimeStampDelta_ns > 0 ? (int)(SDL_NS_PER_SECOND / sensorTimeStampDelta_ns) : 0;
@@ -2073,7 +2081,6 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
                 event->gsensor.data[1],
                 event->gsensor.data[2],
                 event->gsensor.sensor_timestamp);
-
 #endif /* VERBOSE_SENSORS */
         HandleGamepadSensorEvent(event);
         break;

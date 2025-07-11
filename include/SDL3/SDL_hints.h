@@ -2512,6 +2512,10 @@ extern "C" {
  * This defaults to 0, and specifying NULL for the hint's value will restore
  * the default.
  *
+ * This doesn't have to be an integer value. For example, "59.94" won't be
+ * rounded to an integer rate; the digits after the decimal are actually
+ * respected.
+ *
  * This hint can be set anytime.
  *
  * \since This hint is available since SDL 3.2.0.

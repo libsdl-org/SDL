@@ -152,6 +152,7 @@ typedef enum
 @property(nonatomic) bool pending_size;
 @property(nonatomic) bool pending_position;
 @property(nonatomic) bool border_toggled;
+@property(nonatomic) bool has_modal_dialog;
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 @property(nonatomic) EGLSurface egl_surface;

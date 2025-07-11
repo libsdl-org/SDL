@@ -35,9 +35,9 @@
 
 enum SDL_WaylandAxisEvent
 {
-    AXIS_EVENT_CONTINUOUS = 0,
-    AXIS_EVENT_DISCRETE,
-    AXIS_EVENT_VALUE120
+    SDL_WAYLAND_AXIS_EVENT_CONTINUOUS = 0,
+    SDL_WAYLAND_AXIS_EVENT_DISCRETE,
+    SDL_WAYLAND_AXIS_EVENT_VALUE120
 };
 
 typedef struct
@@ -129,22 +129,46 @@ typedef struct SDL_WaylandSeat
         Uint32 enter_serial;
         SDL_MouseButtonFlags buttons_pressed;
         SDL_Point last_motion;
+        bool is_confined;
 
         SDL_MouseID sdl_id;
 
         // Information about axis events on the current frame
         struct
         {
-            enum SDL_WaylandAxisEvent x_axis_type;
-            float x;
+            bool have_absolute;
+            bool have_relative;
+            bool have_axis;
+            bool have_enter;
 
-            enum SDL_WaylandAxisEvent y_axis_type;
-            float y;
+            struct
+            {
+                wl_fixed_t sx;
+                wl_fixed_t sy;
+            } absolute;
+
+            struct
+            {
+                wl_fixed_t dx;
+                wl_fixed_t dy;
+                wl_fixed_t dx_unaccel;
+                wl_fixed_t dy_unaccel;
+            } relative;
+
+            struct
+            {
+                enum SDL_WaylandAxisEvent x_axis_type;
+                float x;
+
+                enum SDL_WaylandAxisEvent y_axis_type;
+                float y;
+
+                SDL_MouseWheelDirection direction;
+            } axis;
 
             // Event timestamp in nanoseconds
             Uint64 timestamp_ns;
-            SDL_MouseWheelDirection direction;
-        } current_axis_info;
+        } pending_frame;
 
         // Cursor state
         struct
