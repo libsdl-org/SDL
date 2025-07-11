@@ -27,6 +27,8 @@
 #import <Cocoa/Cocoa.h>
 #import <UniformTypeIdentifiers/UTType.h>
 
+extern void Cocoa_SetWindowHasModalDialog(SDL_Window *window, bool has_modal);
+
 static void AddFileExtensionType(NSMutableArray *types, const char *pattern_ptr)
 {
     if (!*pattern_ptr) {
@@ -163,6 +165,9 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
 
     if (window) {
         w = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+        if (w) {
+            Cocoa_SetWindowHasModalDialog(window, true);
+        }
     }
 
     if (w) {
@@ -186,6 +191,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
                 callback(userdata, files, -1);
             }
 
+            Cocoa_SetWindowHasModalDialog(window, false);
             ReactivateAfterDialog();
         }];
     } else {
@@ -206,6 +212,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
             const char *files[1] = { NULL };
             callback(userdata, files, -1);
         }
+
         ReactivateAfterDialog();
     }
 }

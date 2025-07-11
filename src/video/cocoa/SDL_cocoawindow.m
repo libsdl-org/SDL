@@ -432,6 +432,18 @@ bool Cocoa_IsWindowZoomed(SDL_Window *window)
     return zoomed;
 }
 
+bool Cocoa_IsShowingModalDialog(SDL_Window *window)
+{
+    SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+    return data.has_modal_dialog;
+}
+
+void Cocoa_SetWindowHasModalDialog(SDL_Window *window, bool has_modal)
+{
+    SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+    data.has_modal_dialog = has_modal;
+}
+
 typedef enum CocoaMenuVisibility
 {
     COCOA_MENU_VISIBILITY_AUTO = 0,
