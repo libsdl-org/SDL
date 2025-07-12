@@ -38,6 +38,16 @@ typedef enum
     k_eSwitchDeviceInfoControllerType_SEGA_Genesis = 13,
 } ESwitchDeviceInfoControllerType;
 
+// TODO NS2: Is this from the hardware or do we get to make this one up?
+typedef enum
+{
+    k_eSwitch2DeviceInfoControllerType_Unknown = 0,
+    k_eSwitch2DeviceInfoControllerType_JoyConLeft = 1,
+    k_eSwitch2DeviceInfoControllerType_JoyConRight = 2,
+    k_eSwitch2DeviceInfoControllerType_ProController = 3,
+    k_eSwitch2DeviceInfoControllerType_GameCube = 4,
+} ESwitch2DeviceInfoControllerType;
+
 // These values are used internally but can be updated as needed
 typedef enum
 {
