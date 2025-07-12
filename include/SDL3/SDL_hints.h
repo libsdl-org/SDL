@@ -1748,7 +1748,7 @@ extern "C" {
 
 /**
  * A variable controlling whether the HIDAPI driver for SInput controllers
- * should be used.
+ * should be used. More info - https://github.com/HandHeldLegend/SInput-HID
  *
  * This variable can be set to the following values:
  *

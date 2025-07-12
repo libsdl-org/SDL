@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 2025 Mitchell Cairns <mitch.cairns@handheldlegend.com>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,8 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_SINPUT
 
+/*****************************************************************************************************/
+
 // Define this if you want to log all packets from the controller
 #if 0
 #define DEBUG_SINPUT_PROTOCOL
@@ -39,19 +41,19 @@
 #define DEBUG_SINPUT_INIT
 #endif
 
-#define SINPUT_DEVICE_NAME_SIZE     32
-#define SINPUT_DEVICE_POLLING_RATE  1000 // 1000 Hz
-#define SINPUT_DEVICE_REPORT_SIZE   64   // Size of input reports (And CMD Input reports)
-#define SINPUT_DEVICE_REPORT_COMMAND_SIZE 48 // Size of command OUTPUT reports
+
+#define SINPUT_DEVICE_POLLING_RATE_MS       1000 // 1000 Hz
+
+#define SINPUT_DEVICE_REPORT_SIZE           64 // Size of input reports (And CMD Input reports)
+#define SINPUT_DEVICE_REPORT_COMMAND_SIZE   48 // Size of command OUTPUT reports
 
 #define SINPUT_DEVICE_REPORT_ID_JOYSTICK_INPUT  0x01
 #define SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT    0x02
 #define SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT   0x03
 
-
-#define SINPUT_DEVICE_COMMAND_HAPTIC    0x01
-#define SINPUT_DEVICE_COMMAND_FEATURES  0x02
-#define SINPUT_DEVICE_COMMAND_PLAYERLED 0x03
+#define SINPUT_DEVICE_COMMAND_HAPTIC        0x01
+#define SINPUT_DEVICE_COMMAND_FEATURES      0x02
+#define SINPUT_DEVICE_COMMAND_PLAYERLED     0x03
 
 #define SINPUT_HAPTIC_TYPE_PRECISE          0x01
 #define SINPUT_HAPTIC_TYPE_ERMSIMULATION    0x02
@@ -59,23 +61,29 @@
 #define SINPUT_DEFAULT_GYRO_SENS  2000
 #define SINPUT_DEFAULT_ACCEL_SENS 8
 
-#define SINPUT_REPORT_IDX_BUTTONS_0   3
-#define SINPUT_REPORT_IDX_BUTTONS_1   4
-#define SINPUT_REPORT_IDX_BUTTONS_2   5
-#define SINPUT_REPORT_IDX_BUTTONS_3   6
-#define SINPUT_REPORT_IDX_LEFT_X      7
-#define SINPUT_REPORT_IDX_LEFT_Y      9
-#define SINPUT_REPORT_IDX_RIGHT_X     11
-#define SINPUT_REPORT_IDX_RIGHT_Y     13
-#define SINPUT_REPORT_IDX_LEFT_TRIGGER    15
-#define SINPUT_REPORT_IDX_RIGHT_TRIGGER   17
-#define SINPUT_REPORT_IDX_IMU_TIMESTAMP   19
-#define SINPUT_REPORT_IDX_IMU_ACCEL_X     21
-#define SINPUT_REPORT_IDX_IMU_ACCEL_Y     23
-#define SINPUT_REPORT_IDX_IMU_ACCEL_Z     25
-#define SINPUT_REPORT_IDX_IMU_GYRO_X      27
-#define SINPUT_REPORT_IDX_IMU_GYRO_Y      29
-#define SINPUT_REPORT_IDX_IMU_GYRO_Z      31
+#define SINPUT_REPORT_IDX_BUTTONS_0         3
+#define SINPUT_REPORT_IDX_BUTTONS_1         4
+#define SINPUT_REPORT_IDX_BUTTONS_2         5
+#define SINPUT_REPORT_IDX_BUTTONS_3         6
+#define SINPUT_REPORT_IDX_LEFT_X            7
+#define SINPUT_REPORT_IDX_LEFT_Y            9
+#define SINPUT_REPORT_IDX_RIGHT_X           11
+#define SINPUT_REPORT_IDX_RIGHT_Y           13
+#define SINPUT_REPORT_IDX_LEFT_TRIGGER      15
+#define SINPUT_REPORT_IDX_RIGHT_TRIGGER     17
+#define SINPUT_REPORT_IDX_IMU_TIMESTAMP     19
+#define SINPUT_REPORT_IDX_IMU_ACCEL_X       21
+#define SINPUT_REPORT_IDX_IMU_ACCEL_Y       23
+#define SINPUT_REPORT_IDX_IMU_ACCEL_Z       25
+#define SINPUT_REPORT_IDX_IMU_GYRO_X        27
+#define SINPUT_REPORT_IDX_IMU_GYRO_Y        29
+#define SINPUT_REPORT_IDX_IMU_GYRO_Z        31
+#define SINPUT_REPORT_IDX_TOUCH1_X          33
+#define SINPUT_REPORT_IDX_TOUCH1_Y          35
+#define SINPUT_REPORT_IDX_TOUCH1_P          37
+#define SINPUT_REPORT_IDX_TOUCH2_X          39
+#define SINPUT_REPORT_IDX_TOUCH2_Y          41
+#define SINPUT_REPORT_IDX_TOUCH2_P          43
 
 #define SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID   1
 #define SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK 2
@@ -83,7 +91,7 @@
 #define SINPUT_REPORT_IDX_PLUG_STATUS     1
 #define SINPUT_REPORT_IDX_CHARGE_LEVEL    2
 
-#define SINPUT_RUMBLE_WRITE_FREQUENCY_MS 4
+#define SINPUT_MAX_ALLOWED_TOUCHPADS 2
 
 #ifndef EXTRACTSINT16
 #define EXTRACTSINT16(data, idx) ((Sint16)((data)[(idx)] | ((data)[(idx) + 1] << 8)))
@@ -93,26 +101,22 @@
 #define EXTRACTUINT16(data, idx) ((Uint16)((data)[(idx)] | ((data)[(idx) + 1] << 8)))
 #endif
 
-#pragma pack(push, 1) // Ensure byte alignment
+
 typedef struct
 {
     uint8_t type;
 
-    union
-    {
+    union {
         // Frequency Amplitude pairs
-        struct
-        {
-            struct
-            {
+        struct {
+            struct {
                 uint16_t frequency_1;
                 uint16_t amplitude_1;
                 uint16_t frequency_2;
                 uint16_t amplitude_2;
             } left;
 
-            struct
-            {
+            struct {
                 uint16_t frequency_1;
                 uint16_t amplitude_1;
                 uint16_t frequency_2;
@@ -122,16 +126,13 @@ typedef struct
         } type_1;
 
         // Basic ERM simulation model
-        struct
-        {
-            struct
-            {
+        struct {
+            struct {
                 uint8_t amplitude;
                 bool brake;
             } left;
 
-            struct
-            {
+            struct {
                 uint8_t amplitude;
                 bool brake;
             } right;
@@ -139,16 +140,14 @@ typedef struct
         } type_2;
     };
 } SINPUT_HAPTIC_S;
-#pragma pack(pop)
 
 typedef struct
 {
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
+    bool sensors_enabled;
 
     Uint8 player_idx;
-    bool feature_flags_obtained;
-    bool feature_flags_sent;
 
     bool player_leds_supported;
     bool haptics_supported;
@@ -158,12 +157,19 @@ typedef struct
     bool right_analog_stick_supported;
     bool left_analog_trigger_supported;
     bool right_analog_trigger_supported;
+    bool touchpad_supported;
+
+    bool left_digital_trigger_supported;
+    bool right_digital_trigger_supported;
+
+    Uint8 touchpad_count;        // 2 touchpads maximum
+    Uint8 touchpad_finger_count; // 2 fingers for one touchpad, or 1 per touchpad (2 max)
 
     Uint16 api_version; // Version of the API this device supports
     Uint8  sub_type;    // Subtype of the device, 0 in most cases
 
     Uint16 accelRange; // Example would be 2,4,8,16 +/- (g-force)
-    Uint16 gyroRange;  // Example would be 125,250,500,1000,2000,4000 +/- (degrees per second)
+    Uint16 gyroRange;  // Example would be 1000,2000,4000 +/- (degrees per second)
 
     float accelScale; // Scale factor for accelerometer values
     float gyroScale;  // Scale factor for gyroscope values
@@ -172,37 +178,166 @@ typedef struct
     bool digital_trigger_l; // Current digital trigger states
     bool digital_trigger_r;
 
+    Uint8 buttons_count;
+    Uint8 usage_masks[4];
+
     Uint64 imu_timestamp; // Nanoseconds. We accumulate with received deltas
 } SDL_DriverSInput_Context;
 
-static inline void FeatureFlagsUnpack(SDL_HIDAPI_Device *device, Uint8 *data)
+// Converts raw int16_t gyro scale setting
+static inline float CalculateGyroScale(uint16_t dps_range)
+{
+    return SDL_PI_F / 180.0f / (32768.0f / (float)dps_range);
+}
+
+// Converts raw int16_t accel scale setting
+static inline float CalculateAccelScale(uint16_t g_range)
+{
+    return SDL_STANDARD_GRAVITY / (32768.0f / (float)g_range);
+}
+
+static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 {
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
     // Bitfields are not portable, so we unpack them into a struct value
-    ctx->haptics_supported       = (data[0] & 0x01);
-    ctx->player_leds_supported   = (data[0] & 0x02);
-    ctx->accelerometer_supported = (data[0] & 0x04);
-    ctx->gyroscope_supported     = (data[0] & 0x08);
+    ctx->haptics_supported = (data[0] & 0x01) != 0;
+    ctx->player_leds_supported = (data[0] & 0x02) != 0;
+    ctx->accelerometer_supported = (data[0] & 0x04) != 0;
+    ctx->gyroscope_supported = (data[0] & 0x08) != 0;
 
-    ctx->left_analog_stick_supported    = (data[0] & 0x10);
-    ctx->right_analog_stick_supported   = (data[0] & 0x20);
-    ctx->left_analog_trigger_supported  = (data[0] & 0x40);
-    ctx->right_analog_trigger_supported = (data[0] & 0x80);
+    ctx->left_analog_stick_supported = (data[0] & 0x10) != 0;
+    ctx->right_analog_stick_supported = (data[0] & 0x20) != 0;
+    ctx->left_analog_trigger_supported = (data[0] & 0x40) != 0;
+    ctx->right_analog_trigger_supported = (data[0] & 0x80) != 0;
+
+    ctx->touchpad_supported = (data[1] & 0x01);
 
     // Data[1] reserved
-    ctx->sub_type    = data[2];
-    // Data[3] reserved
-    ctx->api_version = (Uint16)(data[4] | (data[5] << 8));
-    ctx->accelRange  = (Uint16)(data[6] | (data[7] << 8));
-    ctx->gyroRange   = (Uint16)(data[8] | (data[9] << 8));
+
+    SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
+    type = (SDL_GamepadType)SDL_clamp(data[2], SDL_GAMEPAD_TYPE_UNKNOWN, SDL_GAMEPAD_TYPE_COUNT);
+    device->type = type;
+
+    ctx->sub_type = data[3];
+    device->guid.data[15] = ctx->sub_type;
+
+    // Reserved API version
+    ctx->api_version = EXTRACTUINT16(data, 4);
+
+    ctx->accelRange = EXTRACTUINT16(data, 6);
+    ctx->gyroRange = EXTRACTUINT16(data, 8);
+
+    // How many buttons are available to use
+    ctx->buttons_count = data[10];
+
+    // Masks in LSB to MSB
+    // South, East, West, North, DUp, DDown, DLeft, DRight
+    ctx->usage_masks[0] = data[11];
+
+    // Stick Left, Stick Right, L Shoulder, R Shoulder,
+    // L Trigger, R Trigger, L Paddle 1, R Paddle 1
+    ctx->usage_masks[1] = data[12];
+
+    // Start, Back, Guide, Capture, L Paddle 2, R Paddle 2, Touchpad L, Touchpad R
+    ctx->usage_masks[2] = data[13];
+
+    // Power, Misc 4 to 10
+    ctx->usage_masks[3] = data[14];
+
+    // Extract digital trigger capability
+    ctx->left_digital_trigger_supported  = (ctx->usage_masks[1] & 0x10) != 0;
+    ctx->right_digital_trigger_supported = (ctx->usage_masks[1] & 0x20) != 0;
+
+    // Get and validate touchpad parameters
+    ctx->touchpad_count = data[15];
+    ctx->touchpad_finger_count = data[16];
+
+#if defined(DEBUG_SINPUT_INIT)
+    SDL_Log("Accelerometer Range: %d", ctx->accelRange);
+#endif
+
+#if defined(DEBUG_SINPUT_INIT)
+    SDL_Log("Gyro Range: %d", ctx->gyroRange);
+#endif
+
+    ctx->accelScale = CalculateAccelScale(ctx->accelRange);
+    ctx->gyroScale = CalculateGyroScale(ctx->gyroRange);
 }
 
-static inline void HapticsType1Pack(SINPUT_HAPTIC_S* in, Uint8* out)
+static bool RetrieveSDLFeatures(SDL_HIDAPI_Device *device)
 {
-    // Bitfields are not portable, so we pack them accordingly
-    // 
-    // Type
+    int written = 0;
+
+    // Attempt to send the SDL features get command. 
+    for (int attempt = 0; attempt < 8; ++attempt) {
+        const Uint8 featuresGetCommand[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_FEATURES };
+        // This write will occasionally return -1, so ignore failure here and try again
+        written = SDL_hid_write(device->dev, featuresGetCommand, sizeof(featuresGetCommand));
+
+        if (written == SINPUT_DEVICE_REPORT_COMMAND_SIZE) {
+            break;
+        }
+    }
+
+    if (written < SINPUT_DEVICE_REPORT_COMMAND_SIZE) {
+        SDL_SetError("SInput device SDL Features GET command could not write");
+        return false;
+    } 
+
+    int read = 0;
+
+    // Read the reply
+    for (int i = 0; i < 100; ++i) {
+        SDL_Delay(1);
+
+        Uint8 data[USB_PACKET_LENGTH];
+        read = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0);
+        if (read < 0) {
+            SDL_SetError("SInput device SDL Features GET command could not read");
+            return false;
+        }
+        if (read == 0) {
+            continue;
+        }
+
+#ifdef DEBUG_SINPUT_PROTOCOL
+        HIDAPI_DumpPacket("SInput packet: size = %d", data, size);
+#endif
+
+        if ((read == USB_PACKET_LENGTH) && (data[0] == SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT) && (data[1] == SINPUT_DEVICE_COMMAND_FEATURES)) {
+            ProcessSDLFeaturesResponse(device, &(data[SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK]));
+#if defined(DEBUG_SINPUT_INIT)
+            SDL_Log("Received SInput SDL Features command response");
+#endif
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+// Type 2 haptics are for more traditional rumble such as
+// ERM motors or simulated ERM motors
+static inline void HapticsType2Pack(SINPUT_HAPTIC_S *in, Uint8 *out)
+{
+    // Type of haptics
+    out[0] = 2;
+
+    out[1] = in->type_2.left.amplitude;
+    out[2] = in->type_2.left.brake;
+
+    out[3] = in->type_2.right.amplitude;
+    out[4] = in->type_2.right.brake;
+}
+
+// Type 1 feedback is for more basic haptic responses
+// which are composed of two frequencies that are combined
+// with PCM sample generation or otherwise
+static inline void HapticsType1Pack(SINPUT_HAPTIC_S *in, Uint8 *out)
+{
+    // Type of haptics
     out[0] = 1;
 
     // Pack left channel
@@ -232,18 +367,6 @@ static inline void HapticsType1Pack(SINPUT_HAPTIC_S* in, Uint8* out)
     out[16] = (in->type_1.right.amplitude_2 >> 8) & 0xFF;
 }
 
-// Converts raw int16_t gyro scale setting
-static inline float CalculateGyroScale(uint16_t dps_range)
-{
-    return SDL_PI_F / 180.0f / (32768.0f / (float)dps_range);
-}
-
-// Converts raw int16_t accel scale setting
-static inline float CalculateAccelScale(uint16_t g_range)
-{
-    return SDL_STANDARD_GRAVITY / (32768.0f / (float)g_range);
-}
-
 static void HIDAPI_DriverSInput_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SINPUT, callback, userdata);
@@ -264,35 +387,6 @@ static bool HIDAPI_DriverSInput_IsSupportedDevice(SDL_HIDAPI_Device *device, con
     return SDL_IsJoystickSInputController(vendor_id, product_id);
 }
 
-static void ProcessFeatureFlagResponse(SDL_HIDAPI_Device *device, Uint8 *data)
-{
-    SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
-
-    FeatureFlagsUnpack(device, data);
-
-#if defined(DEBUG_SINPUT_INIT)
-    SDL_Log("Accelerometer Range: %d", ctx->accelRange);
-#endif
-
-
-#if defined(DEBUG_SINPUT_INIT)
-    SDL_Log("Gyro Range: %d", ctx->gyroRange);
-#endif
-
-    ctx->accelScale = CalculateAccelScale(ctx->accelRange);
-    ctx->gyroScale  = CalculateGyroScale(ctx->gyroRange);
-
-    ctx->feature_flags_obtained = true;
-
-    // Set player number, finalizing the setup
-    Uint8 playerLedCommand[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_PLAYERLED, ctx->player_idx };
-    int playerNumBytesWritten = SDL_HIDAPI_SendRumble(device, playerLedCommand, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
-
-    if (playerNumBytesWritten < 0) {
-        SDL_SetError("SInput device player led command could not write");
-    }
-}
-
 static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
 {
 #if defined(DEBUG_SINPUT_INIT)
@@ -307,21 +401,9 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
     ctx->device = device;
     device->context = ctx;
 
-#if !defined(DEBUG_SINPUT_INIT)
-    ctx->haptics_supported = true;
-    ctx->player_leds_supported = true;
-    ctx->accelerometer_supported = true;
-    ctx->gyroscope_supported = true;
-    ctx->left_analog_stick_supported = true;
-    ctx->right_analog_stick_supported = true;
-    ctx->left_analog_trigger_supported = true;
-    ctx->right_analog_trigger_supported = true;
-    ctx->accelRange = SINPUT_DEFAULT_ACCEL_SENS;
-    ctx->gyroRange = SINPUT_DEFAULT_GYRO_SENS;
-
-    ctx->accelScale = CalculateAccelScale(ctx->accelRange);
-    ctx->gyroScale  = CalculateGyroScale(ctx->gyroRange);
-#endif 
+    if (!RetrieveSDLFeatures(device)) {
+        return false;
+    }
     
     return HIDAPI_JoystickConnected(device, NULL);
 }
@@ -333,12 +415,22 @@ static int HIDAPI_DriverSInput_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, S
 
 static void HIDAPI_DriverSInput_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
-    player_index = SDL_clamp(player_index+1, 0, 255);
-    Uint8 player_num = (Uint8)player_index;
-
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
-    ctx->player_idx = player_num;
+    if (ctx->player_leds_supported) {
+        player_index = SDL_clamp(player_index + 1, 0, 255);
+        Uint8 player_num = (Uint8)player_index;
+
+        ctx->player_idx = player_num;
+
+        // Set player number, finalizing the setup
+        Uint8 playerLedCommand[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_PLAYERLED, ctx->player_idx };
+        int playerNumBytesWritten = SDL_hid_write(device->dev, playerLedCommand, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
+
+        if (playerNumBytesWritten < 0) {
+            SDL_SetError("SInput device player led command could not write");
+        }
+    }
 }
 
 #ifndef DEG2RAD
@@ -358,59 +450,102 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 
     ctx->joystick = joystick;
 
+    joystick->nbuttons = ctx->buttons_count;
+
     SDL_zeroa(ctx->last_state);
 
-    joystick->nbuttons = 32; 
-    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
-    joystick->nhats = 1;
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, (float)SINPUT_DEVICE_POLLING_RATE);
-    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, (float)SINPUT_DEVICE_POLLING_RATE);
+    int axes = 0;
+    if (ctx->left_analog_stick_supported) {
+        axes += 2;
+    }
+
+    if (ctx->right_analog_stick_supported) {
+        axes += 2;
+    }
+
+    if (ctx->left_analog_trigger_supported || ctx->left_digital_trigger_supported) {
+        ++axes;
+    }
+
+    if (ctx->right_analog_trigger_supported || ctx->right_digital_trigger_supported) {
+        ++axes;
+    }
+
+    joystick->naxes = axes;
+
+    if (ctx->accelerometer_supported) {
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, (float)SINPUT_DEVICE_POLLING_RATE_MS);
+    }
+
+    if (ctx->gyroscope_supported) {
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, (float)SINPUT_DEVICE_POLLING_RATE_MS);
+    }
+
+    if (ctx->touchpad_supported) {
+        // If touchpad is supported, minimum 1, max is capped
+        ctx->touchpad_count = SDL_clamp(ctx->touchpad_count, 1, SINPUT_MAX_ALLOWED_TOUCHPADS);
+
+        if (ctx->touchpad_count > 1) {
+            // Support two separate touchpads with 1 finger each
+            // or support one touchpad with 2 fingers max
+            ctx->touchpad_finger_count = 1;
+        }
+
+        if (ctx->touchpad_count > 0) {
+            SDL_PrivateJoystickAddTouchpad(joystick, ctx->touchpad_finger_count);
+        }
+
+        if (ctx->touchpad_count > 1) {
+            SDL_PrivateJoystickAddTouchpad(joystick, ctx->touchpad_finger_count);
+        }
+    }
 
     return true;
 }
 
-static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    SINPUT_HAPTIC_S hapticData = { 0 };
-    Uint8 hapticReport[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_HAPTIC };
+static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble) {
 
-    hapticData.type = 1;
+    SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
-    hapticData.type_1.left.frequency_1 = 85;
-    hapticData.type_1.left.frequency_2 = 170;
+    if (ctx->haptics_supported) {
+        SINPUT_HAPTIC_S hapticData = { 0 };
+        Uint8 hapticReport[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_HAPTIC };
 
-    hapticData.type_1.right.frequency_1 = 85;
-    hapticData.type_1.right.frequency_2 = 170;
+        // Low Frequency  = Left
+        // High Frequency = Right
+        hapticData.type_2.left.amplitude = (Uint8) (low_frequency_rumble >> 8);
+        hapticData.type_2.right.amplitude = (Uint8)(high_frequency_rumble >> 8);
 
-    // It's really left and right amplitude, not low frequency and high frequency...
-    hapticData.type_1.left.amplitude_1 = low_frequency_rumble;
-    hapticData.type_1.left.amplitude_2 = low_frequency_rumble;
+        HapticsType2Pack(&hapticData, &(hapticReport[2]));
 
-    hapticData.type_1.right.amplitude_1 = high_frequency_rumble;
-    hapticData.type_1.right.amplitude_2 = high_frequency_rumble;
+        SDL_HIDAPI_SendRumble(device, hapticReport, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
 
-    HapticsType1Pack(&hapticData, &(hapticReport[2]));
+        return true;
+    }
 
-    SDL_HIDAPI_SendRumble(device, hapticReport, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
-
-    return true;
-}
-
-static bool HIDAPI_DriverSInput_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
     return SDL_Unsupported();
 }
 
-static Uint32 HIDAPI_DriverSInput_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
+static bool HIDAPI_DriverSInput_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble) {
+    return SDL_Unsupported();
+}
+
+static Uint32 HIDAPI_DriverSInput_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick) {
+    SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
+
     Uint32 caps = 0;
-    caps |= SDL_JOYSTICK_CAP_RUMBLE;
-    caps |= SDL_JOYSTICK_CAP_PLAYER_LED;
+    if (ctx->haptics_supported) {
+        caps |= SDL_JOYSTICK_CAP_RUMBLE;
+    }
+
+    if (ctx->player_leds_supported) {
+        caps |= SDL_JOYSTICK_CAP_PLAYER_LED;
+    }
+    
     return caps;
 }
 
-static bool HIDAPI_DriverSInput_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
+static bool HIDAPI_DriverSInput_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue) {
     return SDL_Unsupported();
 }
 
@@ -419,156 +554,110 @@ static bool HIDAPI_DriverSInput_SendJoystickEffect(SDL_HIDAPI_Device *device, SD
     return SDL_Unsupported();
 }
 
-static bool HIDAPI_DriverSInput_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return true;
+static bool HIDAPI_DriverSInput_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled) {
+    SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
+
+    if (ctx->accelerometer_supported || ctx->gyroscope_supported) {
+        ctx->sensors_enabled = enabled;
+        return true;
+    }
+    return SDL_Unsupported();
 }
 
-static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverSInput_Context *ctx, Uint8 *data, int size)
-{
+static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverSInput_Context *ctx, Uint8 *data, int size) {
     Sint16 axis = 0;
     Sint16 accel = 0;
     Sint16 gyro = 0;
     Uint64 timestamp = SDL_GetTicksNS();
     float imu_values[3] = { 0 };
 
-    if (ctx->last_state[SINPUT_REPORT_IDX_BUTTONS_0] != data[SINPUT_REPORT_IDX_BUTTONS_0]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, (data[SINPUT_REPORT_IDX_BUTTONS_0] & 0x01));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST,  (data[SINPUT_REPORT_IDX_BUTTONS_0] & 0x02));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST,  (data[SINPUT_REPORT_IDX_BUTTONS_0] & 0x04));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, (data[SINPUT_REPORT_IDX_BUTTONS_0] & 0x08));
+    const Uint8 masks[8] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
+    Uint8 output_idx = 0;
 
-        Uint8 hat;
-        switch ((data[SINPUT_REPORT_IDX_BUTTONS_0] & 0xF0) >> 4) {
-        case 0b0001:
-            hat = SDL_HAT_UP;
-            break;
-        case 0b1001:
-            hat = SDL_HAT_RIGHTUP;
-            break;
-        case 0b1000:
-            hat = SDL_HAT_RIGHT;
-            break;
-        case 0b1010:
-            hat = SDL_HAT_RIGHTDOWN;
-            break;
-        case 0b0010:
-            hat = SDL_HAT_DOWN;
-            break;
-        case 0b0110:
-            hat = SDL_HAT_LEFTDOWN;
-            break;
-        case 0b0100:
-            hat = SDL_HAT_LEFT;
-            break;
-        case 0b0101:
-            hat = SDL_HAT_LEFTUP;
-            break;
-        default:
-            hat = SDL_HAT_CENTERED;
-            break;
+    // Extract digital triggers
+    ctx->digital_trigger_l = (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x10) != 0;
+    ctx->digital_trigger_r = (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x20) != 0;
+
+    // Process digital buttons according to the supplied
+    // button mask to create a contiguous button input set
+    for (Uint8 processes = 0; processes < 4; ++processes) {
+
+        Uint8 button_idx = SINPUT_REPORT_IDX_BUTTONS_0 + processes;
+
+        for (Uint8 buttons = 0; buttons < 8; ++buttons) {
+
+            // If a button is enabled by our usage mask
+            if ((ctx->usage_masks[processes] & masks[buttons]) != 0) {
+
+                bool down = (data[button_idx] & masks[buttons]) != 0;
+
+                if ( (output_idx < SDL_GAMEPAD_BUTTON_COUNT) && (ctx->last_state[button_idx] != data[button_idx]) ) {
+                    SDL_SendJoystickButton(timestamp, joystick, output_idx, down);
+                }
+
+                ++output_idx;
+            }
         }
-        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
     }
-
-    
-    if (ctx->last_state[SINPUT_REPORT_IDX_BUTTONS_1] != data[SINPUT_REPORT_IDX_BUTTONS_1]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK,  (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x01));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x02));
-
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,  (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x04));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x08));
-
-        // Store digital trigger in our context for later use
-        ctx->digital_trigger_l = data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x10;
-        ctx->digital_trigger_r = data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x20;
-
-        // Paddle 1 pair
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,  (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x40));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x80));
-    }
-
-    if (ctx->last_state[SINPUT_REPORT_IDX_BUTTONS_2] != data[SINPUT_REPORT_IDX_BUTTONS_2]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x01));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK,  (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x02));
-
-        // Home/Guide
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x04));
-
-        // Capture/Share
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC1, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x08));
-
-        // Power/Misc2
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC2, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x10));
-
-        // Paddle 2 pair
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_PADDLE2, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x20));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x40));
-
-        // Touchpad button
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TOUCHPAD, (data[SINPUT_REPORT_IDX_BUTTONS_2] & 0x80));
-    }
-
-    if (ctx->last_state[SINPUT_REPORT_IDX_BUTTONS_3] != data[SINPUT_REPORT_IDX_BUTTONS_3]) {
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC3, (data[SINPUT_REPORT_IDX_BUTTONS_3] & 0x01));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC4, (data[SINPUT_REPORT_IDX_BUTTONS_3] & 0x02));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC5, (data[SINPUT_REPORT_IDX_BUTTONS_3] & 0x04));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC6, (data[SINPUT_REPORT_IDX_BUTTONS_3] & 0x08));
-
-        // Unused Misc Buttons (Maybe support later if the need arises)
-        /*
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC7, (data[SINPUT_REPORT_IDX_BUTTONS_3] & 0x10));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC8, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x20));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC9, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x40));
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_MISC10, (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x80));
-        */
-    } 
 
     // Analog inputs map to a signed Sint16 range of -32768 to 32767 from the device.
+    // Use an axis index because not all gamepads will have the same axis inputs.
+    Uint8 axis_idx = 0;
 
     // Left Analog Stick
     axis = 0; // Reset axis value for joystick
     if (ctx->left_analog_stick_supported) {
-        axis = (Sint16)(data[SINPUT_REPORT_IDX_LEFT_X] | (data[SINPUT_REPORT_IDX_LEFT_X + 1] << 8));
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
+        axis = EXTRACTSINT16(data, SINPUT_REPORT_IDX_LEFT_X);
+        SDL_SendJoystickAxis(timestamp, joystick, axis_idx, axis);
+        ++axis_idx;
 
-        axis = (Sint16)(data[SINPUT_REPORT_IDX_LEFT_Y] | (data[SINPUT_REPORT_IDX_LEFT_Y + 1] << 8));
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
+        axis = EXTRACTSINT16(data, SINPUT_REPORT_IDX_LEFT_Y);
+        SDL_SendJoystickAxis(timestamp, joystick, axis_idx, axis);
+        ++axis_idx;
     }
     
     // Right Analog Stick
     axis = 0; // Reset axis value for joystick
     if (ctx->right_analog_stick_supported) {
-        axis = (Sint16)(data[SINPUT_REPORT_IDX_RIGHT_X] | (data[SINPUT_REPORT_IDX_RIGHT_X + 1] << 8));
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+        axis = EXTRACTSINT16(data, SINPUT_REPORT_IDX_RIGHT_X);
+        SDL_SendJoystickAxis(timestamp, joystick, axis_idx, axis);
+        ++axis_idx;
 
-        axis = (Sint16)(data[SINPUT_REPORT_IDX_RIGHT_Y] | (data[SINPUT_REPORT_IDX_RIGHT_Y + 1] << 8));
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
+        axis = EXTRACTSINT16(data, SINPUT_REPORT_IDX_RIGHT_Y);
+        SDL_SendJoystickAxis(timestamp, joystick, axis_idx, axis);
+        ++axis_idx;
     }
 
     // Left Analog Trigger
     axis = SDL_MIN_SINT16; // Reset axis value for trigger
     if (ctx->left_analog_trigger_supported) {
-        axis = (Sint16)(data[SINPUT_REPORT_IDX_LEFT_TRIGGER] | (data[SINPUT_REPORT_IDX_LEFT_TRIGGER + 1] << 8));
+        axis = EXTRACTSINT16(data, SINPUT_REPORT_IDX_LEFT_TRIGGER);
     }
 
     // Our digital trigger L will override the analog value
     if (ctx->digital_trigger_l) {
         axis = SDL_MAX_SINT16;
     }
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
-    
 
+    if (ctx->left_analog_trigger_supported || ctx->left_digital_trigger_supported) {
+        SDL_SendJoystickAxis(timestamp, joystick, axis_idx, axis);
+        ++axis_idx;
+    }
+    
+    
     // Right Analog Trigger
     axis = SDL_MIN_SINT16; // Reset axis value for trigger
     if (ctx->right_analog_trigger_supported) {
-        axis = (Sint16)(data[SINPUT_REPORT_IDX_RIGHT_TRIGGER] | (data[SINPUT_REPORT_IDX_RIGHT_TRIGGER + 1] << 8));
+        axis = EXTRACTSINT16(data, SINPUT_REPORT_IDX_RIGHT_TRIGGER);
     }
     // Our digital trigger L will override the analog value
     if (ctx->digital_trigger_r) {
         axis = SDL_MAX_SINT16;
     }
-    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
+
+    if (ctx->right_analog_trigger_supported || ctx->right_digital_trigger_supported) {
+        SDL_SendJoystickAxis(timestamp, joystick, axis_idx, axis);
+    }
 
     // Battery/Power state handling
     if (ctx->last_state[SINPUT_REPORT_IDX_PLUG_STATUS]  != data[SINPUT_REPORT_IDX_PLUG_STATUS] ||
@@ -602,8 +691,8 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     // Extract the IMU timestamp delta (in microseconds)
     Uint16 imu_timestamp_delta = EXTRACTUINT16(data, SINPUT_REPORT_IDX_IMU_TIMESTAMP);
 
-    // Check if we should process IMU data
-    if (imu_timestamp_delta > 0) {
+    // Check if we should process IMU data and if sensors are enabled
+    if ((imu_timestamp_delta > 0) && (ctx->sensors_enabled)) {
 
         // Process IMU timestamp by adding the delta to the accumulated timestamp and converting to nanoseconds
         ctx->imu_timestamp += ((Uint64) imu_timestamp_delta * 1000);
@@ -611,13 +700,13 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         // Process Accelerometer
         if (ctx->accelerometer_supported) {
 
-            accel = (Sint16)(data[SINPUT_REPORT_IDX_IMU_ACCEL_Y] | (data[SINPUT_REPORT_IDX_IMU_ACCEL_Y + 1] << 8));
+            accel = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_ACCEL_Y);
             imu_values[2] = -(float)accel * ctx->accelScale; // Y-axis acceleration
 
-            accel = (Sint16)(data[SINPUT_REPORT_IDX_IMU_ACCEL_Z] | (data[SINPUT_REPORT_IDX_IMU_ACCEL_Z + 1] << 8));
+            accel = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_ACCEL_Z);
             imu_values[1] = (float)accel * ctx->accelScale; // Z-axis acceleration
 
-            accel = (Sint16)(data[SINPUT_REPORT_IDX_IMU_ACCEL_X] | (data[SINPUT_REPORT_IDX_IMU_ACCEL_X + 1] << 8));
+            accel = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_ACCEL_X);
             imu_values[0] = -(float)accel * ctx->accelScale; // X-axis acceleration
 
             SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->imu_timestamp, imu_values, 3);
@@ -626,18 +715,52 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         // Process Gyroscope
         if (ctx->gyroscope_supported) {
             
-            gyro = (Sint16)(data[SINPUT_REPORT_IDX_IMU_GYRO_Y] | (data[SINPUT_REPORT_IDX_IMU_GYRO_Y + 1] << 8));
+            gyro = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_GYRO_Y);
             imu_values[2] = -(float)gyro * ctx->gyroScale; // Y-axis rotation
 
-            gyro = (Sint16)(data[SINPUT_REPORT_IDX_IMU_GYRO_Z] | (data[SINPUT_REPORT_IDX_IMU_GYRO_Z + 1] << 8));
+            gyro = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_GYRO_Z);
             imu_values[1] = (float)gyro * ctx->gyroScale; // Z-axis rotation
 
-            gyro = (Sint16)(data[SINPUT_REPORT_IDX_IMU_GYRO_X] | (data[SINPUT_REPORT_IDX_IMU_GYRO_X + 1] << 8));
+            gyro = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_GYRO_X);
             imu_values[0] = -(float)gyro * ctx->gyroScale; // X-axis rotation
 
             SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->imu_timestamp, imu_values, 3);
         }
-    }    
+    }
+
+    // Check if we should process touchpad
+    if (ctx->touchpad_supported && ctx->touchpad_count > 0) {
+        Uint8 touchpad = 0;
+        Uint8 finger = 0;
+
+        Sint16 touch1X = EXTRACTSINT16(data, SINPUT_REPORT_IDX_TOUCH1_X);
+        Sint16 touch1Y = EXTRACTSINT16(data, SINPUT_REPORT_IDX_TOUCH1_Y);
+        Uint16 touch1P = EXTRACTUINT16(data, SINPUT_REPORT_IDX_TOUCH1_P);
+
+        Sint16 touch2X = EXTRACTSINT16(data, SINPUT_REPORT_IDX_TOUCH2_X);
+        Sint16 touch2Y = EXTRACTSINT16(data, SINPUT_REPORT_IDX_TOUCH2_Y);
+        Uint16 touch2P = EXTRACTUINT16(data, SINPUT_REPORT_IDX_TOUCH2_P);
+
+        SDL_SendJoystickTouchpad(timestamp, joystick, touchpad, finger,
+            touch1P > 0,
+            touch1X / 65536.0f + 0.5f,
+            touch1Y / 65536.0f + 0.5f,
+            touch1P / 32768.0f);
+
+        if (ctx->touchpad_count > 1) {
+            ++touchpad;
+        } else if (ctx->touchpad_finger_count > 1) {
+            ++finger;
+        }
+
+        if ((touchpad > 0) || (finger > 0)) {
+            SDL_SendJoystickTouchpad(timestamp, joystick, touchpad, finger,
+                                     touch2P > 0,
+                                     touch2X / 65536.0f + 0.5f,
+                                     touch2Y / 65536.0f + 0.5f,
+                                     touch2P / 32768.0f);
+        }
+    }
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
@@ -663,42 +786,8 @@ static bool HIDAPI_DriverSInput_UpdateDevice(SDL_HIDAPI_Device *device)
             continue;
         }
 
-        if (!ctx->feature_flags_obtained && !ctx->feature_flags_sent && ctx->player_idx > 0)
-        {
-            // Send feature get command
-            // Set player number, finalizing the setup
-            Uint8 featuresGetCommand[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_FEATURES };
-            int featureNumBytesWritten = SDL_HIDAPI_SendRumble(device, featuresGetCommand, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
-
-            if (featureNumBytesWritten < 0) {
-                SDL_SetError("SInput device features get command could not write");
-            }
-            else
-            {
-                ctx->feature_flags_sent = true;
-            }
-        }
-
         // Handle command response information
-        if (data[0] == SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT)
-        {
-#if defined(DEBUG_SINPUT_INIT)
-            SDL_Log("Got Input Command Data SInput Device");
-#endif
-            switch (data[SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID])
-            {
-                default:
-                break;
-
-                case SINPUT_DEVICE_COMMAND_FEATURES:
-#if defined(DEBUG_SINPUT_INIT)
-                    SDL_Log("Got Feature Response Data SInput Device");
-#endif
-                ProcessFeatureFlagResponse(device, &(data[SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK]));
-                ctx->feature_flags_obtained = true;
-                break;
-            }
-        } else {
+        if (data[0] == SINPUT_DEVICE_REPORT_ID_JOYSTICK_INPUT) {
             HIDAPI_DriverSInput_HandleStatePacket(joystick, ctx, data, size);
         }
     }
