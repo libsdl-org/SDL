@@ -317,7 +317,6 @@ static bool RetrieveSDLFeatures(SDL_HIDAPI_Device *device)
     return false;
 }
 
-
 // Type 2 haptics are for more traditional rumble such as
 // ERM motors or simulated ERM motors
 static inline void HapticsType2Pack(SINPUT_HAPTIC_S *in, Uint8 *out)
@@ -330,41 +329,6 @@ static inline void HapticsType2Pack(SINPUT_HAPTIC_S *in, Uint8 *out)
 
     out[3] = in->type_2.right.amplitude;
     out[4] = in->type_2.right.brake;
-}
-
-// Type 1 feedback is for more basic haptic responses
-// which are composed of two frequencies that are combined
-// with PCM sample generation or otherwise
-static inline void HapticsType1Pack(SINPUT_HAPTIC_S *in, Uint8 *out)
-{
-    // Type of haptics
-    out[0] = 1;
-
-    // Pack left channel
-    out[1] = in->type_1.left.frequency_1 & 0xFF;
-    out[2] = (in->type_1.left.frequency_1 >> 8) & 0xFF;
-
-    out[3] = in->type_1.left.amplitude_1 & 0xFF;
-    out[4] = (in->type_1.left.amplitude_1 >> 8) & 0xFF;
-
-    out[5] = in->type_1.left.frequency_2 & 0xFF;
-    out[6] = (in->type_1.left.frequency_2 >> 8) & 0xFF;
-
-    out[7] = in->type_1.left.amplitude_2 & 0xFF;
-    out[8] = (in->type_1.left.amplitude_2 >> 8) & 0xFF;
-
-    // Pack right channel
-    out[9]  = in->type_1.right.frequency_1 & 0xFF;
-    out[10] = (in->type_1.right.frequency_1 >> 8) & 0xFF;
-
-    out[11] = in->type_1.right.amplitude_1 & 0xFF;
-    out[12] = (in->type_1.right.amplitude_1 >> 8) & 0xFF;
-
-    out[13] = in->type_1.right.frequency_2 & 0xFF;
-    out[14] = (in->type_1.right.frequency_2 >> 8) & 0xFF;
-
-    out[15] = in->type_1.right.amplitude_2 & 0xFF;
-    out[16] = (in->type_1.right.amplitude_2 >> 8) & 0xFF;
 }
 
 static void HIDAPI_DriverSInput_RegisterHints(SDL_HintCallback callback, void *userdata)
