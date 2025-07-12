@@ -467,6 +467,11 @@ typedef void (SDLCALL *SDL_free_func)(void *mem);
 /**
  * Get the original set of SDL memory functions
  *
+ * \param malloc_func filled with malloc function.
+ * \param calloc_func filled with calloc function.
+ * \param realloc_func filled with realloc function.
+ * \param free_func filled with free function.
+ *
  * \since This function is available since SDL 2.24.0.
  */
 extern DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func *malloc_func,
@@ -476,6 +481,11 @@ extern DECLSPEC void SDLCALL SDL_GetOriginalMemoryFunctions(SDL_malloc_func *mal
 
 /**
  * Get the current set of SDL memory functions
+ *
+ * \param malloc_func filled with malloc function.
+ * \param calloc_func filled with calloc function.
+ * \param realloc_func filled with realloc function.
+ * \param free_func filled with free function.
  *
  * \since This function is available since SDL 2.0.7.
  */
@@ -487,6 +497,13 @@ extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func
 /**
  * Replace SDL's memory allocation functions with a custom set
  *
+ * \param malloc_func custom malloc function.
+ * \param calloc_func custom calloc function.
+ * \param realloc_func custom realloc function.
+ * \param free_func custom free function.
+ * \returns 0 on success or -1 on failure; call SDL_GetError() for more
+ *          information.
+ *
  * \since This function is available since SDL 2.0.7.
  */
 extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
@@ -496,6 +513,8 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 
 /**
  * Get the number of outstanding (unfreed) allocations
+ *
+ * \returns number of unfreed allocations.
  *
  * \since This function is available since SDL 2.0.7.
  */
@@ -715,6 +734,12 @@ extern DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
  * This function converts a buffer or string between encodings in one pass,
  * returning a string that must be freed with SDL_free() or NULL on error.
  *
+ * \param tocode the character encoding of the output string.
+ * \param fromcode the character encoding of data in `inbuf`.
+ * \param inbuf the string to convert to a different encoding.
+ * \param inbytesleft the size of the input string _in bytes_.
+ * \returns a new string, converted to the new encoding, or NULL on error.
+ *
  * \since This function is available since SDL 2.0.0.
  */
 extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
@@ -806,6 +831,11 @@ SDL_FORCE_INLINE void *SDL_memcpy4(SDL_OUT_BYTECAP(dwords*4) void *dst, SDL_IN_B
  *
  * Otherwise store a * b via ret and return 0.
  *
+ * \param a the multiplicand.
+ * \param b the multiplier.
+ * \param ret on non-overflow output, stores the multiplication result.
+ * \returns -1 on overflow, 0 if result is multiplied without overflow.
+ *
  * \since This function is available since SDL 2.24.0.
  */
 SDL_FORCE_INLINE int SDL_size_mul_overflow (size_t a,
@@ -836,6 +866,11 @@ SDL_FORCE_INLINE int _SDL_size_mul_overflow_builtin (size_t a,
  * If a + b would overflow, return -1.
  *
  * Otherwise store a + b via ret and return 0.
+ *
+ * \param a the first addend.
+ * \param b the second addend.
+ * \param ret on non-overflow output, stores the addition result.
+ * \returns false on overflow, true if result is added without overflow.
  *
  * \since This function is available since SDL 2.24.0.
  */
