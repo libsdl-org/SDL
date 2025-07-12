@@ -456,7 +456,10 @@ main(int argc, char *argv[])
     while (!done) {
         SDL_Event event;
         double deltaTime = updateDeltaTime();
+        SDL_bool hasEvents = SDL_FALSE;
+        
         while (SDL_PollEvent(&event)) {
+            hasEvents = SDL_TRUE;
             if (event.type == SDL_QUIT) {
                 done = 1;
             }
@@ -466,10 +469,17 @@ main(int argc, char *argv[])
                 spawnEmitterParticle(x, y);
             }
         }
-        stepParticles(deltaTime);
-        drawParticles();
-        SDL_GL_SwapWindow(window);
-        SDL_Delay(1);
+        
+        /* Only update and render if we have active particles or just received events */
+        if (num_active_particles > 0 || hasEvents) {
+            stepParticles(deltaTime);
+            drawParticles();
+            SDL_GL_SwapWindow(window);
+            SDL_Delay(16); // Target 60 FPS when active
+        } else {
+            /* Idle state - wait for events with longer delay to save CPU */
+            SDL_Delay(100); // Much longer delay when idle
+        }
     }
 
     /* delete textures */
