@@ -20,3 +20,9 @@
 */
 
 void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props);
+void SDL_SYS_ShowInputDialogWithProperties(SDL_DialogInputCallback callback, void *userdata, SDL_PropertiesID props);
+SDL_ProgressDialog* SDL_SYS_ShowProgressDialogWithProperties(SDL_DialogProgressCallback callback, void *userdata, SDL_PropertiesID props);
+void SDL_SYS_UpdateProgressDialog(SDL_ProgressDialog* dialog, float progress, const char *new_prompt);
+void SDL_SYS_DestroyProgressDialog(SDL_ProgressDialog* dialog);
+void SDL_SYS_ShowColorPickerDialogWithProperties(SDL_DialogColorCallback callback, void *userdata, SDL_PropertiesID props);
+void SDL_SYS_ShowDatePickerDialogWithProperties(SDL_DialogDateCallback callback, void *userdata, SDL_PropertiesID props);
