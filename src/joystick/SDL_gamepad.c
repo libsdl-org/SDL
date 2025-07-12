@@ -795,6 +795,26 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 product == USB_PRODUCT_8BITDO_SF30_PRO_BT)) {
             // This controller has no guide button
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+    } else if (SDL_IsJoystickSInputController(vendor, product)) {
+        switch (product) {
+        case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
+            // ProGCC Mapping
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b15,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b8,lefttrigger:b12,leftx:a0,lefty:a1,misc1:b17,rightshoulder:b11,rightstick:b9,righttrigger:b13,rightx:a2,righty:a3,start:b14,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+            break;
+
+        case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
+            // GC Ultimate Map
+            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b17,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,guide:b18,leftshoulder:b10,leftstick:b8,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b19,misc2:b21,misc3:b20,paddle1:b13,paddle2:b12,rightshoulder:b11,rightstick:b9,righttrigger:a5,rightx:a2,righty:a3,start:b16,x:b1,y:b3,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
+            break;
+
+        case USB_PRODUCT_BONJIRICHANNEL_FIREBIRD:
+        case USB_PRODUCT_HANDHELDLEGEND_HOJA_GAMEPAD:
+        default:
+            // Do not use a map for these devices
+            // Community devices will require a mapping externally
+            SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
+            break;
+        }
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes
         if (SDL_IsJoystickGameCube(vendor, product)) {
@@ -830,28 +850,6 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         } else if (SDL_IsJoystickHoriSteamController(vendor, product)) {
             /* The Wireless HORIPad for Steam has QAM, Steam, Capsense L/R Sticks, 2 rear buttons, and 2 misc buttons */
             SDL_strlcat(mapping_string, "paddle1:b13,paddle2:b12,paddle3:b15,paddle4:b14,misc2:b11,misc3:b16,misc4:b17", sizeof(mapping_string));
-        } else if (SDL_IsJoystickSInputController(vendor, product)) {
-            switch (product) {
-            case USB_PRODUCT_HANDHELDLEGEND_PROGCC: 
-                // Clear and copy ProGCC Mapping
-                SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
-                SDL_strlcat(mapping_string, "a:b1,b:b0,back:b15,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b8,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b17,rightshoulder:b11,rightstick:b9,righttrigger:a5,rightx:a2,righty:a3,start:b14,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
-                break;
-
-
-            case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
-                // Clear and copy GC Ultimate Map
-                SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
-                SDL_strlcat(mapping_string, "a:b0,b:b2,x:b1,y:b3,dpup:b4,dpdown:b5,dpleft:b6,dpright:b7,leftstick:b8,rightstick:b9,leftshoulder:b10,rightshoulder:b11,paddle2:b14,paddle1:b15,start:b16,back:b17,guide:b18,misc1:b19,misc3:b20,misc2:b21,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
-                break;
-
-            case USB_PRODUCT_BONJIRICHANNEL_FIREBIRD:
-            case USB_PRODUCT_HANDHELDLEGEND_HOJA_GAMEPAD:
-            default:
-                // Do not use a map for these devices
-                // Community devices will require a mapping externally
-                break;
-            }
         } else if (SDL_IsJoystickFlydigiController(vendor, product)) {
             SDL_strlcat(mapping_string, "paddle1:b11,paddle2:b12,paddle3:b13,paddle4:b14,", sizeof(mapping_string));
             switch (guid.data[15]) {

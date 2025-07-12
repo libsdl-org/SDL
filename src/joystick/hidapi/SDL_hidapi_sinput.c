@@ -41,9 +41,6 @@
 #define DEBUG_SINPUT_INIT
 #endif
 
-
-#define SINPUT_DEVICE_POLLING_RATE_MS       1000 // 1000 Hz
-
 #define SINPUT_DEVICE_REPORT_SIZE           64 // Size of input reports (And CMD Input reports)
 #define SINPUT_DEVICE_REPORT_COMMAND_SIZE   48 // Size of command OUTPUT reports
 
@@ -54,6 +51,7 @@
 #define SINPUT_DEVICE_COMMAND_HAPTIC        0x01
 #define SINPUT_DEVICE_COMMAND_FEATURES      0x02
 #define SINPUT_DEVICE_COMMAND_PLAYERLED     0x03
+#define SINPUT_DEVICE_COMMAND_JOYSTICKRGB   0x04
 
 #define SINPUT_HAPTIC_TYPE_PRECISE          0x01
 #define SINPUT_HAPTIC_TYPE_ERMSIMULATION    0x02
@@ -150,7 +148,8 @@ typedef struct
     Uint8 player_idx;
 
     bool player_leds_supported;
-    bool haptics_supported;
+    bool joystick_rgb_supported;
+    bool rumble_supported;
     bool accelerometer_supported;
     bool gyroscope_supported;
     bool left_analog_stick_supported;
@@ -159,13 +158,10 @@ typedef struct
     bool right_analog_trigger_supported;
     bool touchpad_supported;
 
-    bool left_digital_trigger_supported;
-    bool right_digital_trigger_supported;
-
     Uint8 touchpad_count;        // 2 touchpads maximum
     Uint8 touchpad_finger_count; // 2 fingers for one touchpad, or 1 per touchpad (2 max)
 
-    Uint16 api_version; // Version of the API this device supports
+    Uint8  polling_rate_ms;
     Uint8  sub_type;    // Subtype of the device, 0 in most cases
 
     Uint16 accelRange; // Example would be 2,4,8,16 +/- (g-force)
@@ -174,9 +170,6 @@ typedef struct
     float accelScale; // Scale factor for accelerometer values
     float gyroScale;  // Scale factor for gyroscope values
     Uint8 last_state[USB_PACKET_LENGTH];
-
-    bool digital_trigger_l; // Current digital trigger states
-    bool digital_trigger_r;
 
     Uint8 buttons_count;
     Uint8 usage_masks[4];
@@ -201,7 +194,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
     // Bitfields are not portable, so we unpack them into a struct value
-    ctx->haptics_supported = (data[0] & 0x01) != 0;
+    ctx->rumble_supported = (data[0] & 0x01) != 0;
     ctx->player_leds_supported = (data[0] & 0x02) != 0;
     ctx->accelerometer_supported = (data[0] & 0x04) != 0;
     ctx->gyroscope_supported = (data[0] & 0x08) != 0;
@@ -211,7 +204,8 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->left_analog_trigger_supported = (data[0] & 0x40) != 0;
     ctx->right_analog_trigger_supported = (data[0] & 0x80) != 0;
 
-    ctx->touchpad_supported = (data[1] & 0x01);
+    ctx->touchpad_supported = (data[1] & 0x01) != 0;
+    ctx->joystick_rgb_supported = (data[1] & 0x02) != 0;
 
     // Data[1] reserved
 
@@ -222,8 +216,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->sub_type = data[3];
     device->guid.data[15] = ctx->sub_type;
 
-    // Reserved API version
-    ctx->api_version = EXTRACTUINT16(data, 4);
+    ctx->polling_rate_ms = data[4];
 
     ctx->accelRange = EXTRACTUINT16(data, 6);
     ctx->gyroRange = EXTRACTUINT16(data, 8);
@@ -244,10 +237,6 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 
     // Power, Misc 4 to 10
     ctx->usage_masks[3] = data[14];
-
-    // Extract digital trigger capability
-    ctx->left_digital_trigger_supported  = (ctx->usage_masks[1] & 0x10) != 0;
-    ctx->right_digital_trigger_supported = (ctx->usage_masks[1] & 0x20) != 0;
 
     // Get and validate touchpad parameters
     ctx->touchpad_count = data[15];
@@ -427,22 +416,22 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         axes += 2;
     }
 
-    if (ctx->left_analog_trigger_supported || ctx->left_digital_trigger_supported) {
+    if (ctx->left_analog_trigger_supported) {
         ++axes;
     }
 
-    if (ctx->right_analog_trigger_supported || ctx->right_digital_trigger_supported) {
+    if (ctx->right_analog_trigger_supported) {
         ++axes;
     }
 
     joystick->naxes = axes;
 
     if (ctx->accelerometer_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, (float)SINPUT_DEVICE_POLLING_RATE_MS);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, (float)1000.0f/ctx->polling_rate_ms);
     }
 
     if (ctx->gyroscope_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, (float)SINPUT_DEVICE_POLLING_RATE_MS);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, (float)1000.0f / ctx->polling_rate_ms);
     }
 
     if (ctx->touchpad_supported) {
@@ -467,11 +456,12 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     return true;
 }
 
-static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble) {
+static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+{
 
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
-    if (ctx->haptics_supported) {
+    if (ctx->rumble_supported) {
         SINPUT_HAPTIC_S hapticData = { 0 };
         Uint8 hapticReport[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_HAPTIC };
 
@@ -490,26 +480,48 @@ static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     return SDL_Unsupported();
 }
 
-static bool HIDAPI_DriverSInput_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble) {
+static bool HIDAPI_DriverSInput_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
+{
     return SDL_Unsupported();
 }
 
-static Uint32 HIDAPI_DriverSInput_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick) {
+static Uint32 HIDAPI_DriverSInput_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
+{
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
     Uint32 caps = 0;
-    if (ctx->haptics_supported) {
+    if (ctx->rumble_supported) {
         caps |= SDL_JOYSTICK_CAP_RUMBLE;
     }
 
     if (ctx->player_leds_supported) {
         caps |= SDL_JOYSTICK_CAP_PLAYER_LED;
     }
+
+    if (ctx->joystick_rgb_supported) {
+        caps |= SDL_JOYSTICK_CAP_RGB_LED;
+    }
     
     return caps;
 }
 
-static bool HIDAPI_DriverSInput_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue) {
+static bool HIDAPI_DriverSInput_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
+{
+    SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
+
+    if (ctx->player_leds_supported) {
+
+        // Set player number, finalizing the setup
+        Uint8 joystickRGBCommand[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_JOYSTICKRGB, red, green, blue };
+        int joystickRGBBytesWritten = SDL_hid_write(device->dev, joystickRGBCommand, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
+
+        if (joystickRGBBytesWritten < 0) {
+            SDL_SetError("SInput device joystick rgb command could not write");
+            return false;
+        }
+
+        return true;
+    }
     return SDL_Unsupported();
 }
 
@@ -518,7 +530,8 @@ static bool HIDAPI_DriverSInput_SendJoystickEffect(SDL_HIDAPI_Device *device, SD
     return SDL_Unsupported();
 }
 
-static bool HIDAPI_DriverSInput_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled) {
+static bool HIDAPI_DriverSInput_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
+{
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
     if (ctx->accelerometer_supported || ctx->gyroscope_supported) {
@@ -528,7 +541,8 @@ static bool HIDAPI_DriverSInput_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *dev
     return SDL_Unsupported();
 }
 
-static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverSInput_Context *ctx, Uint8 *data, int size) {
+static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverSInput_Context *ctx, Uint8 *data, int size)
+{
     Sint16 axis = 0;
     Sint16 accel = 0;
     Sint16 gyro = 0;
@@ -537,10 +551,6 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
 
     const Uint8 masks[8] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
     Uint8 output_idx = 0;
-
-    // Extract digital triggers
-    ctx->digital_trigger_l = (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x10) != 0;
-    ctx->digital_trigger_r = (data[SINPUT_REPORT_IDX_BUTTONS_1] & 0x20) != 0;
 
     // Process digital buttons according to the supplied
     // button mask to create a contiguous button input set
@@ -596,30 +606,14 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     axis = SDL_MIN_SINT16; // Reset axis value for trigger
     if (ctx->left_analog_trigger_supported) {
         axis = EXTRACTSINT16(data, SINPUT_REPORT_IDX_LEFT_TRIGGER);
-    }
-
-    // Our digital trigger L will override the analog value
-    if (ctx->digital_trigger_l) {
-        axis = SDL_MAX_SINT16;
-    }
-
-    if (ctx->left_analog_trigger_supported || ctx->left_digital_trigger_supported) {
         SDL_SendJoystickAxis(timestamp, joystick, axis_idx, axis);
         ++axis_idx;
     }
-    
     
     // Right Analog Trigger
     axis = SDL_MIN_SINT16; // Reset axis value for trigger
     if (ctx->right_analog_trigger_supported) {
         axis = EXTRACTSINT16(data, SINPUT_REPORT_IDX_RIGHT_TRIGGER);
-    }
-    // Our digital trigger L will override the analog value
-    if (ctx->digital_trigger_r) {
-        axis = SDL_MAX_SINT16;
-    }
-
-    if (ctx->right_analog_trigger_supported || ctx->right_digital_trigger_supported) {
         SDL_SendJoystickAxis(timestamp, joystick, axis_idx, axis);
     }
 
@@ -627,15 +621,16 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     if (ctx->last_state[SINPUT_REPORT_IDX_PLUG_STATUS]  != data[SINPUT_REPORT_IDX_PLUG_STATUS] ||
         ctx->last_state[SINPUT_REPORT_IDX_CHARGE_LEVEL] != data[SINPUT_REPORT_IDX_CHARGE_LEVEL]) {
 
-        SDL_PowerState state;
+        SDL_PowerState state = SDL_POWERSTATE_NO_BATTERY;
         Uint8 status = data[SINPUT_REPORT_IDX_PLUG_STATUS];
         int percent = data[SINPUT_REPORT_IDX_CHARGE_LEVEL];
 
         percent = SDL_clamp(percent, 0, 100); // Ensure percent is within valid range
 
         switch (status) {
-        case 0:
-            state = SDL_POWERSTATE_ON_BATTERY;
+        case 1:
+            state = SDL_POWERSTATE_NO_BATTERY;
+            percent = 0;
             break;
         case 2:
             state = SDL_POWERSTATE_CHARGING;
@@ -644,12 +639,18 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
             state = SDL_POWERSTATE_CHARGED;
             percent = 100;
             break;
-        default:
+        case 4:
+            state = SDL_POWERSTATE_ON_BATTERY;
+            break;
+        default: // Wired/No Battery Supported
             state = SDL_POWERSTATE_UNKNOWN;
             percent = 0;
             break;
         }
-        SDL_SendJoystickPowerInfo(joystick, state, percent);
+
+        if (state > 0) {
+            SDL_SendJoystickPowerInfo(joystick, state, percent);
+        } 
     }
 
     // Extract the IMU timestamp delta (in microseconds)
