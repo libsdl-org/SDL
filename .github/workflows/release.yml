@@ -181,7 +181,7 @@ jobs:
 
   msvc:
     needs: [src]
-    runs-on: windows-2019
+    runs-on: windows-2025
     outputs:
       VC-x86: ${{ steps.releaser.outputs.VC-x86 }}
       VC-x64: ${{ steps.releaser.outputs.VC-x64 }}
