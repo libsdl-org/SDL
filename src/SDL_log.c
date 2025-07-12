@@ -36,6 +36,10 @@
 #include <android/log.h>
 #endif
 
+#ifdef SDL_PLATFORM_OHOS
+#include <hilog/log.h>
+#endif
+
 #include "stdlib/SDL_vacopy.h"
 
 // The size of the stack buffer to use for rendering log messages.
@@ -119,6 +123,19 @@ static int SDL_android_priority[] = {
 };
 SDL_COMPILE_TIME_ASSERT(android_priority, SDL_arraysize(SDL_android_priority) == SDL_LOG_PRIORITY_COUNT);
 #endif // SDL_PLATFORM_ANDROID
+
+#ifdef SDL_PLATFORM_OHOS
+static int SDL_ohos_priority[] = {
+    LOG_DEBUG,
+    LOG_DEBUG,
+    LOG_DEBUG,
+    LOG_DEBUG,
+    LOG_INFO,
+    LOG_WARN,
+    LOG_ERROR,
+    LOG_FATAL
+};
+#endif
 
 static void SDLCALL SDL_LoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -556,7 +573,7 @@ void SDL_LogMessage(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_ST
     va_end(ap);
 }
 
-#ifdef SDL_PLATFORM_ANDROID
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OHOS)
 static const char *GetCategoryPrefix(int category)
 {
     if (category < SDL_LOG_CATEGORY_RESERVED2) {
@@ -567,7 +584,7 @@ static const char *GetCategoryPrefix(int category)
     }
     return "CUSTOM";
 }
-#endif // SDL_PLATFORM_ANDROID
+#endif
 
 void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 {
@@ -750,6 +767,13 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
 
         SDL_snprintf(tag, SDL_arraysize(tag), "SDL/%s", GetCategoryPrefix(category));
         __android_log_write(SDL_android_priority[priority], tag, message);
+    }
+    #elif defined(SDL_PLATFORM_OHOS)
+    {
+        char tag[32];
+
+        SDL_snprintf(tag, SDL_arraysize(tag), "SDL/%s", GetCategoryPrefix(category));
+        OH_LOG_Print(LOG_APP, SDL_ohos_priority[priority], 0, tag, "%{public}s", message);
     }
 #elif defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))
     /* Technically we don't need Cocoa/UIKit, but that's where this function is defined for now.
