@@ -807,13 +807,19 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             SDL_strlcat(mapping_string, "a:b0,b:b2,back:b15,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b8,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b17,misc3:b18,paddle1:b13,paddle2:b12,rightshoulder:b11,rightstick:b9,righttrigger:a5,rightx:a2,righty:a3,start:b14,x:b1,y:b3,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
             break;
 
-        case USB_PRODUCT_BONJIRICHANNEL_FIREBIRD:
         case USB_PRODUCT_HANDHELDLEGEND_HOJA_GAMEPAD:
-        default:
-            // Do not use a map for these devices
-            // Community devices will require a mapping externally
-            SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
+            // SuperGamepad+ Map
+            if (guid.data[15] == 1) {
+                SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,leftshoulder:b8,rightshoulder:b9,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+            } else {
+                return NULL;
+            }
             break;
+
+        default:
+        case USB_PRODUCT_BONJIRICHANNEL_FIREBIRD:
+            // Unmapped devices
+            return NULL;
         }
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes

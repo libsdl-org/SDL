@@ -142,7 +142,6 @@ typedef struct
 typedef struct
 {
     SDL_HIDAPI_Device *device;
-    SDL_Joystick *joystick;
     bool sensors_enabled;
 
     Uint8 player_idx;
@@ -216,31 +215,45 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->sub_type = data[3];
     device->guid.data[15] = ctx->sub_type;
 
+#if defined(DEBUG_SINPUT_INIT)
+    SDL_Log("SInput Sub-type: %d", ctx->sub_type);
+#endif
+
     ctx->polling_rate_ms = data[4];
 
     ctx->accelRange = EXTRACTUINT16(data, 6);
     ctx->gyroRange = EXTRACTUINT16(data, 8);
 
-    // How many buttons are available to use
-    ctx->buttons_count = data[10];
-
     // Masks in LSB to MSB
     // South, East, West, North, DUp, DDown, DLeft, DRight
-    ctx->usage_masks[0] = data[11];
+    ctx->usage_masks[0] = data[10];
 
     // Stick Left, Stick Right, L Shoulder, R Shoulder,
     // L Trigger, R Trigger, L Paddle 1, R Paddle 1
-    ctx->usage_masks[1] = data[12];
+    ctx->usage_masks[1] = data[11];
 
     // Start, Back, Guide, Capture, L Paddle 2, R Paddle 2, Touchpad L, Touchpad R
-    ctx->usage_masks[2] = data[13];
+    ctx->usage_masks[2] = data[12];
 
     // Power, Misc 4 to 10
-    ctx->usage_masks[3] = data[14];
+    ctx->usage_masks[3] = data[13];
+
+    // Derive button count from mask
+    for (Uint8 byte = 0; byte < 4; ++byte) {
+        for (Uint8 bit = 0; bit < 8; ++bit) {
+            if ((ctx->usage_masks[byte] & (1 << bit)) != 0) {
+                ++ctx->buttons_count;
+            }
+        }
+    }
+
+#if defined(DEBUG_SINPUT_INIT)
+    SDL_Log("Buttons count: %d", ctx->buttons_count);
+#endif
 
     // Get and validate touchpad parameters
-    ctx->touchpad_count = data[15];
-    ctx->touchpad_finger_count = data[16];
+    ctx->touchpad_count = data[14];
+    ctx->touchpad_finger_count = data[15];
 
 #if defined(DEBUG_SINPUT_INIT)
     SDL_Log("Accelerometer Range: %d", ctx->accelRange);
@@ -401,8 +414,6 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 
     SDL_AssertJoysticksLocked();
 
-    ctx->joystick = joystick;
-
     joystick->nbuttons = ctx->buttons_count;
 
     SDL_zeroa(ctx->last_state);
@@ -548,8 +559,6 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     Sint16 gyro = 0;
     Uint64 timestamp = SDL_GetTicksNS();
     float imu_values[3] = { 0 };
-
-    const Uint8 masks[8] = { 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80 };
     Uint8 output_idx = 0;
 
     // Process digital buttons according to the supplied
@@ -561,9 +570,10 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         for (Uint8 buttons = 0; buttons < 8; ++buttons) {
 
             // If a button is enabled by our usage mask
-            if ((ctx->usage_masks[processes] & masks[buttons]) != 0) {
+            const Uint8 mask = (0x01 << buttons);
+            if ((ctx->usage_masks[processes] & mask) != 0) {
 
-                bool down = (data[button_idx] & masks[buttons]) != 0;
+                bool down = (data[button_idx] & mask) != 0;
 
                 if ( (output_idx < SDL_GAMEPAD_BUTTON_COUNT) && (ctx->last_state[button_idx] != data[button_idx]) ) {
                     SDL_SendJoystickButton(timestamp, joystick, output_idx, down);
