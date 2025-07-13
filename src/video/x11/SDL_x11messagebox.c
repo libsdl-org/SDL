@@ -69,11 +69,11 @@ static const char *g_MessageBoxFont[] = {
 static const char *g_IconFont = "-*-*-bold-r-normal-*-18-*-*-*-*-*-iso8859-1[33 88 105]";
 
 static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = {
-    { 212, 212, 212 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
+    { 191, 184, 191 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
     { 0, 0, 0 }, // SDL_MESSAGEBOX_COLOR_TEXT,
-    { 0, 0, 0 }, // SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
-    { 175, 175, 175 },  // SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
-    { 255, 255, 255 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
+    { 127, 120, 127 }, // SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
+    { 191, 184, 191 },  // SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
+    { 235, 235, 235 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
 };
 
 typedef struct SDL_MessageBoxButtonDataX11
@@ -137,7 +137,14 @@ typedef struct SDL_MessageBoxDataX11
     const SDL_MessageBoxButtonData *buttondata;
     SDL_MessageBoxButtonDataX11 buttonpos[MAX_BUTTONS];
 
+    /* Colors for rendering widgets */
     XColor xcolor[SDL_MESSAGEBOX_COLOR_COUNT];
+    XColor xcolor_bevel_l1;
+    XColor xcolor_bevel_l2;
+    XColor xcolor_bevel_d;
+    XColor xcolor_pressed;
+
+    /* Colors for rendering icons */
     XColor xcolor_black;
     XColor xcolor_red;
     XColor xcolor_red_darker;
@@ -149,10 +156,17 @@ typedef struct SDL_MessageBoxDataX11
     const SDL_MessageBoxData *messageboxdata;
 } SDL_MessageBoxDataX11;
 
-// Maximum helper for ints.
+// Int helpers
 static SDL_INLINE int IntMax(int a, int b)
 {
     return (a > b) ? a : b;
+}
+
+static SDL_INLINE int IntClamp(int a, int b, int c)
+{
+  if (a < b) return b;
+  if (a > c) return c;
+  return a;
 }
 
 static void GetTextWidthHeightForFont(SDL_MessageBoxDataX11 *data, XFontStruct *font, const char *str, int nbytes, int *pwidth, int *pheight, int *font_ascent)
@@ -307,7 +321,29 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
         data->xcolor[i].green = colorhints[i].g * 257;
         data->xcolor[i].blue = colorhints[i].b * 257;
     }
+    
+    /* Generate bevel and pressed colors */
+    data->xcolor_bevel_l1.flags = DoRed|DoGreen|DoBlue;
+    data->xcolor_bevel_l1.red = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].red + 12500, 0, 65535);
+    data->xcolor_bevel_l1.green = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].green + 12500, 0, 65535);
+    data->xcolor_bevel_l1.blue = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].blue + 12500, 0, 65535);
 
+    data->xcolor_bevel_l2.flags = DoRed|DoGreen|DoBlue;
+    data->xcolor_bevel_l2.red = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].red + 32500, 0, 65535);
+    data->xcolor_bevel_l2.green = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].green + 32500, 0, 65535);
+    data->xcolor_bevel_l2.blue = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].blue + 32500, 0, 65535);
+
+    data->xcolor_bevel_d.flags = DoRed|DoGreen|DoBlue;
+    data->xcolor_bevel_d.red = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].red - 22500, 0, 65535);
+    data->xcolor_bevel_d.green = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].green - 22500, 0, 65535);
+    data->xcolor_bevel_d.blue = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].blue - 22500, 0, 65535);
+    
+    data->xcolor_pressed.flags = DoRed|DoGreen|DoBlue;
+    data->xcolor_pressed.red = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].red - 12500, 0, 65535);
+    data->xcolor_pressed.green = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].green - 12500, 0, 65535);
+    data->xcolor_pressed.blue = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].blue - 12500, 0, 65535);
+
+    /* Icon colors */
     if (data->icon_char != '\0') {
         data->xcolor_black.flags = DoRed|DoGreen|DoBlue;
         data->xcolor_black.red = 0;
@@ -340,9 +376,9 @@ static bool X11_MessageBoxInit(SDL_MessageBoxDataX11 *data, const SDL_MessageBox
         data->xcolor_blue.blue = 65535;   
             
         data->xcolor_bg_shadow.flags = DoRed|DoGreen|DoBlue;
-        data->xcolor_bg_shadow.red = data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red - 12500;
-        data->xcolor_bg_shadow.green = data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green - 12500;
-        data->xcolor_bg_shadow.blue = data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue - 12500;
+        data->xcolor_bg_shadow.red = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red - 12500, 0, 65535);
+        data->xcolor_bg_shadow.green = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green - 12500, 0, 65535);
+        data->xcolor_bg_shadow.blue = IntClamp(data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue - 12500, 0, 65535);
     }
     
     return true;
@@ -642,6 +678,10 @@ static bool X11_MessageBoxCreateWindow(SDL_MessageBoxDataX11 *data)
     for (i = 0; i < SDL_MESSAGEBOX_COLOR_COUNT; i++) {
         X11_XAllocColor(display, data->cmap, &data->xcolor[i]);    
     }
+    X11_XAllocColor(display, data->cmap, &data->xcolor_bevel_l1);    
+    X11_XAllocColor(display, data->cmap, &data->xcolor_bevel_l2);    
+    X11_XAllocColor(display, data->cmap, &data->xcolor_bevel_d);        
+    X11_XAllocColor(display, data->cmap, &data->xcolor_pressed);    
     if (data->icon_char != '\0') {
         X11_XAllocColor(display, data->cmap, &data->xcolor_black);    
         X11_XAllocColor(display, data->cmap, &data->xcolor_white);    
@@ -856,23 +896,88 @@ static void X11_MessageBoxDraw(SDL_MessageBoxDataX11 *data, GC ctx, bool utf8)
         SDL_MessageBoxButtonDataX11 *buttondatax11 = &data->buttonpos[i];
         const SDL_MessageBoxButtonData *buttondata = buttondatax11->buttondata;
         
-        X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].pixel);
-        X11_XFillRectangle(display, window, ctx,
-                           buttondatax11->rect.x, buttondatax11->rect.y,
-                           buttondatax11->rect.w, buttondatax11->rect.h);
-
-        if (buttondata->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
-            X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED].pixel);
-        } else {
+        /* Draw bevel */
+        if (data->button_press_index == i) {
+            X11_XSetForeground(display, ctx, data->xcolor_bevel_d.pixel);
+            X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x, buttondatax11->rect.y,
+                                   buttondatax11->rect.w, buttondatax11->rect.h);
+            
+            X11_XSetForeground(display, ctx, data->xcolor_bevel_l2.pixel);
+            X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x, buttondatax11->rect.y,
+                                   buttondatax11->rect.w - 1, buttondatax11->rect.h - 1);
+                
+           
+            X11_XSetForeground(display, ctx, data->xcolor_bevel_l1.pixel);
+            X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x + 1, buttondatax11->rect.y + 1,
+                                   buttondatax11->rect.w - 3, buttondatax11->rect.h - 2);
+                                                       
             X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].pixel);
+            X11_XFillRectangle(display, window, ctx,
+                               buttondatax11->rect.x + 1, buttondatax11->rect.y + 1,
+                               buttondatax11->rect.w - 3, buttondatax11->rect.h - 3);
+
+            X11_XSetForeground(display, ctx, data->xcolor_pressed.pixel);
+            X11_XFillRectangle(display, window, ctx,
+                               buttondatax11->rect.x + 2, buttondatax11->rect.y + 2,
+                               buttondatax11->rect.w - 4, buttondatax11->rect.h - 4);
+        } else {
+            if (buttondata->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
+                X11_XSetForeground(display, ctx, data->xcolor_bevel_d.pixel);
+                X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x, buttondatax11->rect.y,
+                                   buttondatax11->rect.w, buttondatax11->rect.h);
+
+                X11_XSetForeground(display, ctx, data->xcolor_bevel_l2.pixel);
+                X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x + 1, buttondatax11->rect.y + 1,
+                                   buttondatax11->rect.w - 3, buttondatax11->rect.h - 3);
+          
+                X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].pixel);
+                X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x + 2, buttondatax11->rect.y + 2,
+                                   buttondatax11->rect.w - 4, buttondatax11->rect.h - 4);
+           
+                X11_XSetForeground(display, ctx, data->xcolor_bevel_l1.pixel);
+                X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x + 2, buttondatax11->rect.y + 2,
+                                   buttondatax11->rect.w - 5, buttondatax11->rect.h - 5);
+           
+                X11_XSetForeground(display, ctx, (data->mouse_over_index == i) ? data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED].pixel : data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].pixel);
+                X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x + 3, buttondatax11->rect.y + 3,
+                                   buttondatax11->rect.w - 6, buttondatax11->rect.h - 6);
+            } else {
+                X11_XSetForeground(display, ctx, data->xcolor_bevel_d.pixel);
+                X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x, buttondatax11->rect.y,
+                                   buttondatax11->rect.w, buttondatax11->rect.h);
+
+                X11_XSetForeground(display, ctx, data->xcolor_bevel_l2.pixel);
+                X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x, buttondatax11->rect.y,
+                                   buttondatax11->rect.w - 1, buttondatax11->rect.h - 1);
+          
+                X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].pixel);
+                X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x + 1, buttondatax11->rect.y + 1,
+                                   buttondatax11->rect.w - 2, buttondatax11->rect.h - 2);
+           
+                X11_XSetForeground(display, ctx, data->xcolor_bevel_l1.pixel);
+                X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x + 1, buttondatax11->rect.y + 1,
+                                   buttondatax11->rect.w - 3, buttondatax11->rect.h - 3);
+           
+                X11_XSetForeground(display, ctx, (data->mouse_over_index == i) ? data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED].pixel : data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].pixel);
+                X11_XFillRectangle(display, window, ctx,
+                                   buttondatax11->rect.x + 2, buttondatax11->rect.y + 2,
+                                   buttondatax11->rect.w - 4, buttondatax11->rect.h - 4);
+            }
         }
-        X11_XDrawRectangle(display, window, ctx,
-                           buttondatax11->rect.x, buttondatax11->rect.y,
-                           buttondatax11->rect.w, buttondatax11->rect.h);
-
-        X11_XSetForeground(display, ctx, (data->mouse_over_index == i) ? data->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED].pixel : data->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
-
-
+                                                                                             
+        X11_XSetForeground(display, ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
 #ifdef X_HAVE_UTF8_STRING
         if (SDL_X11_HAVE_UTF8) {
             X11_Xutf8DrawString(display, window, data->font_set, ctx,
