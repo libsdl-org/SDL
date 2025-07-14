@@ -195,6 +195,8 @@ extern "C" {
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetTicksNS
  */
 extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetTicks(void);
 

@@ -96,12 +96,6 @@ typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
 
 // #define HIGHDPI_DEBUG
 
-// Fake window to help with DirectInput events.
-HWND SDL_HelperWindow = NULL;
-static const TCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
-static const TCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
-static ATOM SDL_HelperWindowClass = 0;
-
 /* For borderless Windows, still want the following flag:
    - WS_MINIMIZEBOX: window will respond to Windows minimize commands sent to all windows, such as windows key + m, shaking title bar, etc.
    Additionally, non-fullscreen windows can add:
@@ -1538,72 +1532,6 @@ void WIN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     CleanupWindowData(_this, window);
 }
 
-/*
- * Creates a HelperWindow used for DirectInput.
- */
-bool SDL_HelperWindowCreate(void)
-{
-    HINSTANCE hInstance = GetModuleHandle(NULL);
-    WNDCLASS wce;
-
-    // Make sure window isn't created twice.
-    if (SDL_HelperWindow != NULL) {
-        return true;
-    }
-
-    // Create the class.
-    SDL_zero(wce);
-    wce.lpfnWndProc = DefWindowProc;
-    wce.lpszClassName = SDL_HelperWindowClassName;
-    wce.hInstance = hInstance;
-
-    // Register the class.
-    SDL_HelperWindowClass = RegisterClass(&wce);
-    if (SDL_HelperWindowClass == 0 && GetLastError() != ERROR_CLASS_ALREADY_EXISTS) {
-        return WIN_SetError("Unable to create Helper Window Class");
-    }
-
-    // Create the window.
-    SDL_HelperWindow = CreateWindowEx(0, SDL_HelperWindowClassName,
-                                      SDL_HelperWindowName,
-                                      WS_OVERLAPPED, CW_USEDEFAULT,
-                                      CW_USEDEFAULT, CW_USEDEFAULT,
-                                      CW_USEDEFAULT, HWND_MESSAGE, NULL,
-                                      hInstance, NULL);
-    if (!SDL_HelperWindow) {
-        UnregisterClass(SDL_HelperWindowClassName, hInstance);
-        return WIN_SetError("Unable to create Helper Window");
-    }
-
-    return true;
-}
-
-/*
- * Destroys the HelperWindow previously created with SDL_HelperWindowCreate.
- */
-void SDL_HelperWindowDestroy(void)
-{
-    HINSTANCE hInstance = GetModuleHandle(NULL);
-
-    // Destroy the window.
-    if (SDL_HelperWindow != NULL) {
-        if (DestroyWindow(SDL_HelperWindow) == 0) {
-            WIN_SetError("Unable to destroy Helper Window");
-            return;
-        }
-        SDL_HelperWindow = NULL;
-    }
-
-    // Unregister the class.
-    if (SDL_HelperWindowClass != 0) {
-        if ((UnregisterClass(SDL_HelperWindowClassName, hInstance)) == 0) {
-            WIN_SetError("Unable to destroy Helper Window Class");
-            return;
-        }
-        SDL_HelperWindowClass = 0;
-    }
-}
-
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window)
 {
@@ -2373,38 +2301,38 @@ bool WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool foc
 void WIN_UpdateDarkModeForHWND(HWND hwnd)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_SharedObject *ntdll = SDL_LoadObject("ntdll.dll");
+    HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
     if (!ntdll) {
         return;
     }
     // There is no function to get Windows build number, so let's get it here via RtlGetVersion
-    RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)SDL_LoadFunction(ntdll, "RtlGetVersion");
+    RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)GetProcAddress(ntdll, "RtlGetVersion");
     NT_OSVERSIONINFOW os_info;
     os_info.dwOSVersionInfoSize = sizeof(NT_OSVERSIONINFOW);
     os_info.dwBuildNumber = 0;
     if (RtlGetVersionFunc) {
         RtlGetVersionFunc(&os_info);
     }
-    SDL_UnloadObject(ntdll);
+    FreeLibrary(ntdll);
     os_info.dwBuildNumber &= ~0xF0000000;
     if (os_info.dwBuildNumber < 17763) {
         // Too old to support dark mode
         return;
     }
-    SDL_SharedObject *uxtheme = SDL_LoadObject("uxtheme.dll");
+    HMODULE uxtheme = LoadLibrary(TEXT("uxtheme.dll"));
     if (!uxtheme) {
         return;
     }
-    RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(104));
-    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(132));
-    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(133));
+    RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(104));
+    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(132));
+    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(133));
     if (os_info.dwBuildNumber < 18362) {
-        AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(135));
+        AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
         if (AllowDarkModeForAppFunc) {
             AllowDarkModeForAppFunc(true);
         }
     } else {
-        SetPreferredAppMode_t SetPreferredAppModeFunc = (SetPreferredAppMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(135));
+        SetPreferredAppMode_t SetPreferredAppModeFunc = (SetPreferredAppMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
         if (SetPreferredAppModeFunc) {
             SetPreferredAppModeFunc(UXTHEME_APPMODE_ALLOW_DARK);
         }
@@ -2422,7 +2350,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
     } else {
         value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
     }
-    SDL_UnloadObject(uxtheme);
+    FreeLibrary(uxtheme);
     if (os_info.dwBuildNumber < 18362) {
         SetProp(hwnd, TEXT("UseImmersiveDarkModeColors"), SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
     } else {

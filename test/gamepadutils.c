@@ -101,8 +101,9 @@ static SDL_FPoint ProjectVec3ToRect(const Vector3 *v, const SDL_FRect *rect)
     float fovScaleX = fovScaleY * aspect;
 
     float relZ = cameraZ - v->z;
-    if (relZ < 0.01f)
+    if (relZ < 0.01f) {
         relZ = 0.01f; /* Prevent division by 0 or negative depth */
+    }
 
     float ndc_x = (v->x / relZ) / fovScaleX;
     float ndc_y = (v->y / relZ) / fovScaleY;
@@ -203,6 +204,39 @@ void DrawGyroDebugCircle(SDL_Renderer *renderer, const Quaternion *orientation, 
     DrawGyroCircle(renderer, kCirclePoints3D_XZ_Plane, CIRCLE_SEGMENTS, orientation, bounds, GYRO_COLOR_GREEN); /* Y axis - yaw */
     DrawGyroCircle(renderer, kCirclePoints3D_XY_Plane, CIRCLE_SEGMENTS, orientation, bounds, GYRO_COLOR_BLUE);  /* Z axis - Roll */
 
+    /* Restore current color */
+    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+}
+
+
+void DrawGyroDebugAxes(SDL_Renderer *renderer, const Quaternion *orientation, const SDL_FRect *bounds)
+{
+    /* Store current color */
+    Uint8 r, g, b, a;
+    SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+
+    Vector3 origin = { 0.0f, 0.0f, 0.0f };
+
+    Vector3 right = { 1.0f, 0.0f, 0.0f };
+    Vector3 up = { 0.0f, 1.0f, 0.0f };
+    Vector3 back = { 0.0f, 0.0f, 1.0f };
+
+    Vector3 world_right = RotateVectorByQuaternion(&right, orientation);
+    Vector3 world_up = RotateVectorByQuaternion(&up, orientation);
+    Vector3 world_back = RotateVectorByQuaternion(&back, orientation);
+
+    SDL_FPoint origin_screen = ProjectVec3ToRect(&origin, bounds);
+    SDL_FPoint right_screen = ProjectVec3ToRect(&world_right, bounds);
+    SDL_FPoint up_screen = ProjectVec3ToRect(&world_up, bounds);
+    SDL_FPoint back_screen = ProjectVec3ToRect(&world_back, bounds);
+
+    SDL_SetRenderDrawColor(renderer, GYRO_COLOR_RED);
+    SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, right_screen.x, right_screen.y);
+    SDL_SetRenderDrawColor(renderer, GYRO_COLOR_GREEN);
+    SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, up_screen.x, up_screen.y);
+    SDL_SetRenderDrawColor(renderer, GYRO_COLOR_BLUE);
+    SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, back_screen.x, back_screen.y);
+    
     /* Restore current color */
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
 }
@@ -990,6 +1024,8 @@ struct GyroDisplay
     /* This part displays extra info from the IMUstate in order to figure out actual polling rates. */
     float gyro_drift_solution[3];
     int reported_sensor_rate_hz;           /*hz - comes from HIDsdl implementation. Could be fixed, platform time, or true sensor time*/
+    Uint64 next_reported_sensor_time;      /* SDL ticks used to throttle the display */
+
     int estimated_sensor_rate_hz;          /*hz - our estimation of the actual polling rate by observing packets received*/
     float euler_displacement_angles[3];    /* pitch, yaw, roll */
     Quaternion gyro_quaternion;            /* Rotation since startup/reset, comprised of each gyro speed packet times sensor delta time. */
@@ -1009,7 +1045,8 @@ GyroDisplay *CreateGyroDisplay(SDL_Renderer *renderer)
         SDL_zeroa(ctx->gyro_drift_solution);
         Quaternion quat_identity = { 0.0f, 0.0f, 0.0f, 1.0f };
         ctx->gyro_quaternion = quat_identity;
-
+        ctx->reported_sensor_rate_hz = 0;
+        ctx->next_reported_sensor_time = 0;
         ctx->reset_gyro_button = CreateGamepadButton(renderer, "Reset View");
         ctx->calibrate_gyro_button = CreateGamepadButton(renderer, "Recalibrate Drift");
     }
@@ -1024,7 +1061,6 @@ void SetGyroDisplayArea(GyroDisplay *ctx, const SDL_FRect *area)
     }
 
     SDL_copyp(&ctx->area, area);
-
     /* Place the reset button to the bottom right of the gyro display area.*/
     SDL_FRect reset_button_area;
     reset_button_area.w = SDL_max(MINIMUM_BUTTON_WIDTH, GetGamepadButtonLabelWidth(ctx->reset_gyro_button) + 2 * BUTTON_PADDING);
@@ -1340,12 +1376,17 @@ void SetGamepadDisplayIMUValues(GyroDisplay *ctx, float *gyro_drift_solution, fl
         return;
     }
 
+    const int SENSOR_UPDATE_INTERVAL_MS = 100;
+    Uint64 now = SDL_GetTicks();
+    if (now > ctx->next_reported_sensor_time) {
+        ctx->estimated_sensor_rate_hz = estimated_sensor_rate_hz;
+        if (reported_senor_rate_hz != 0) {
+            ctx->reported_sensor_rate_hz = reported_senor_rate_hz;
+        }
+        ctx->next_reported_sensor_time = now + SENSOR_UPDATE_INTERVAL_MS;
+    }
+
     SDL_memcpy(ctx->gyro_drift_solution, gyro_drift_solution, sizeof(ctx->gyro_drift_solution));
-    ctx->estimated_sensor_rate_hz = estimated_sensor_rate_hz;
-
-    if (reported_senor_rate_hz != 0)
-        ctx->reported_sensor_rate_hz = reported_senor_rate_hz;
-
     SDL_memcpy(ctx->euler_displacement_angles, euler_displacement_angles, sizeof(ctx->euler_displacement_angles));
     ctx->gyro_quaternion = *gyro_quaternion;
     ctx->drift_calibration_progress_frac = drift_calibration_progress_frac;
@@ -1637,7 +1678,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                 SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
                 SDL_snprintf(text, sizeof(text), "[%.2f,%.2f,%.2f]%s/s", ctx->gyro_data[0] * RAD_TO_DEG, ctx->gyro_data[1] * RAD_TO_DEG, ctx->gyro_data[2] * RAD_TO_DEG, DEGREE_UTF8);
                 SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
-
+           
 
                 /* Display the testcontroller tool's evaluation of drift. This is also useful to get an average rate of turn in calibrated turntable tests. */
                 if (ctx->gyro_drift_correction_data[0] != 0.0f && ctx->gyro_drift_correction_data[2] != 0.0f && ctx->gyro_drift_correction_data[2] != 0.0f )
@@ -1648,10 +1689,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                     SDL_snprintf(text, sizeof(text), "[%.2f,%.2f,%.2f]%s/s", ctx->gyro_drift_correction_data[0] * RAD_TO_DEG, ctx->gyro_drift_correction_data[1] * RAD_TO_DEG, ctx->gyro_drift_correction_data[2] * RAD_TO_DEG, DEGREE_UTF8);
                     SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
                 }
-
             }
-
-
         }
     }
     SDL_free(mapping);
@@ -1797,7 +1835,6 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
 
         /* Set the color based on the drift calibration progress fraction */
         SDL_SetRenderDrawColor(ctx->renderer, GYRO_COLOR_GREEN);        /* red when too much noise, green when low noise*/
-
         /* Now draw the bars with the filled, then empty rectangles */
         SDL_RenderFillRect(ctx->renderer, &progress_bar_fill);          /* draw the filled rectangle*/
         SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255);      /* gray box*/
@@ -1823,20 +1860,26 @@ float RenderEulerReadout(GyroDisplay *ctx, GamepadDisplay *gamepad_display )
     const float new_line_height = gamepad_display->button_height + 2.0f;
     float log_gyro_euler_text_x = gyro_calibrate_button_rect.x;
 
+    Uint8 r, g, b, a;
+    SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
     /* Pitch Readout */
+    SDL_SetRenderDrawColor(ctx->renderer, GYRO_COLOR_RED);
     SDL_snprintf(text, sizeof(text), "Pitch: %6.2f%s", ctx->euler_displacement_angles[0], DEGREE_UTF8);
     SDLTest_DrawString(ctx->renderer, log_gyro_euler_text_x + 2.0f, log_y, text);
 
     /* Yaw Readout */
+    SDL_SetRenderDrawColor(ctx->renderer, GYRO_COLOR_GREEN);
     log_y += new_line_height;
     SDL_snprintf(text, sizeof(text), "  Yaw: %6.2f%s", ctx->euler_displacement_angles[1], DEGREE_UTF8);
     SDLTest_DrawString(ctx->renderer, log_gyro_euler_text_x + 2.0f, log_y, text);
 
     /* Roll Readout */
+    SDL_SetRenderDrawColor(ctx->renderer, GYRO_COLOR_BLUE);
     log_y += new_line_height;
     SDL_snprintf(text, sizeof(text), " Roll: %6.2f%s", ctx->euler_displacement_angles[2], DEGREE_UTF8);
     SDLTest_DrawString(ctx->renderer, log_gyro_euler_text_x + 2.0f, log_y, text);
 
+    SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
     return log_y + new_line_height; /* Return the next y position for further rendering */
 }
 
@@ -1858,6 +1901,9 @@ void RenderGyroGizmo(GyroDisplay *ctx, SDL_Gamepad *gamepad, float top)
 
     /* Draw the rotated cube */
     DrawGyroDebugCube(ctx->renderer, &ctx->gyro_quaternion, &gizmoRect);
+
+    /* Draw positive axes */
+    DrawGyroDebugAxes(ctx->renderer, &ctx->gyro_quaternion, &gizmoRect);
 
     /* Overlay the XYZ circles */
     DrawGyroDebugCircle(ctx->renderer, &ctx->gyro_quaternion, &gizmoRect);
@@ -1906,7 +1952,6 @@ void RenderGyroDisplay(GyroDisplay *ctx, GamepadDisplay *gamepadElements, SDL_Ga
     if (bHasCachedDriftSolution) {
         float bottom = RenderEulerReadout(ctx, gamepadElements);
         RenderGyroGizmo(ctx, gamepad, bottom);
-
     }
     SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
 }

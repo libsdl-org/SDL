@@ -74,14 +74,16 @@
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
-// Clamp certain core protocol versions on older versions of libwayland.
+// Clamp core protocol versions on older versions of libwayland.
 #if SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
 #define SDL_WL_COMPOSITOR_VERSION 6
 #else
 #define SDL_WL_COMPOSITOR_VERSION 4
 #endif
 
-#if SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
+#if SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
+#define SDL_WL_SEAT_VERSION 10
+#elif SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
 #define SDL_WL_SEAT_VERSION 9
 #elif SDL_WAYLAND_CHECK_VERSION(1, 21, 0)
 #define SDL_WL_SEAT_VERSION 8
@@ -93,6 +95,20 @@
 #define SDL_WL_OUTPUT_VERSION 4
 #else
 #define SDL_WL_OUTPUT_VERSION 3
+#endif
+
+#if SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
+#define SDL_WL_SHM_VERSION 2
+#else
+#define SDL_WL_SHM_VERSION 1
+#endif
+
+// The SDL libwayland-client minimum is 1.18, which supports version 3.
+#define SDL_WL_DATA_DEVICE_VERSION 3
+
+// wl_fixes was introduced in 1.24.0
+#if SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
+#define SDL_WL_FIXES_VERSION 1
 #endif
 
 #ifdef SDL_USE_LIBDBUS
@@ -456,6 +472,7 @@ static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 typedef struct
 {
     bool has_fifo_v1;
+    struct wl_fixes *wl_fixes;
 } SDL_WaylandPreferredData;
 
 static void wayland_preferred_check_handle_global(void *data, struct wl_registry *registry, uint32_t id,
@@ -466,6 +483,11 @@ static void wayland_preferred_check_handle_global(void *data, struct wl_registry
     if (SDL_strcmp(interface, "wp_fifo_manager_v1") == 0) {
         d->has_fifo_v1 = true;
     }
+#ifdef SDL_WL_FIXES_VERSION
+    else if (SDL_strcmp(interface, "wl_fixes") == 0) {
+        d->wl_fixes = wl_registry_bind(registry, id, &wl_fixes_interface, SDL_min(SDL_WL_FIXES_VERSION, version));
+    }
+#endif
 }
 
 static void wayland_preferred_check_remove_global(void *data, struct wl_registry *registry, uint32_t id)
@@ -492,6 +514,10 @@ static bool Wayland_IsPreferred(struct wl_display *display)
 
     WAYLAND_wl_display_roundtrip(display);
 
+    if (preferred_data.wl_fixes) {
+        wl_fixes_destroy_registry(preferred_data.wl_fixes, registry);
+        wl_fixes_destroy(preferred_data.wl_fixes);
+    }
     wl_registry_destroy(registry);
 
     if (!preferred_data.has_fifo_v1) {
@@ -1261,7 +1287,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, SDL_min(version, 7));
         xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
     } else if (SDL_strcmp(interface, "wl_shm") == 0) {
-        d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
+        d->shm = wl_registry_bind(registry, id, &wl_shm_interface, SDL_min(SDL_WL_SHM_VERSION, version));
     } else if (SDL_strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
         d->relative_pointer_manager = wl_registry_bind(d->registry, id, &zwp_relative_pointer_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
@@ -1315,6 +1341,11 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
     } else if (SDL_strcmp(interface, "wp_pointer_warp_v1") == 0) {
         d->wp_pointer_warp_v1 = wl_registry_bind(d->registry, id, &wp_pointer_warp_v1_interface, 1);
     }
+#ifdef SDL_WL_FIXES_VERSION
+    else if (SDL_strcmp(interface, "wl_fixes") == 0) {
+        d->wl_fixes = wl_registry_bind(d->registry, id, &wl_fixes_interface, SDL_min(SDL_WL_FIXES_VERSION, version));
+    }
+#endif
 }
 
 static void display_remove_global(void *data, struct wl_registry *registry, uint32_t id)
@@ -1549,7 +1580,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     }
 
     if (data->shm) {
-        wl_shm_destroy(data->shm);
+        if (wl_shm_get_version(data->shm) >= WL_SHM_RELEASE_SINCE_VERSION) {
+            wl_shm_release(data->shm);
+        } else {
+            wl_shm_destroy(data->shm);
+        }
         data->shm = NULL;
     }
 
@@ -1634,6 +1669,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     }
 
     if (data->registry) {
+        if (data->wl_fixes) {
+            wl_fixes_destroy_registry(data->wl_fixes, data->registry);
+            wl_fixes_destroy(data->wl_fixes);
+            data->wl_fixes = NULL;
+        }
         wl_registry_destroy(data->registry);
         data->registry = NULL;
     }

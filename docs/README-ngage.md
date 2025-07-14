@@ -44,7 +44,7 @@ a state-of-the-art C23 compiler.  The irony writes itself.
 ## Existing Issues and Limitations
 
 - For now, the new
- [SDL3 main callbacks](https://wiki.libsdl.org/SDL3/README/main-functions#how-to-use-main-callbacks-in-sdl3)
+ [SDL3 main callbacks](https://wiki.libsdl.org/SDL3/README-main-functions#main-callbacks-in-sdl3)
  are not optional and must be used. This is important as the callbacks
  are optional on other platforms.
 

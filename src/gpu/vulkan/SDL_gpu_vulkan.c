@@ -11700,7 +11700,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer = (VulkanRenderer *)SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
         SDL_Vulkan_UnloadLibrary();
-        return false;
+        return NULL;
     }
 
     renderer->debugMode = debugMode;

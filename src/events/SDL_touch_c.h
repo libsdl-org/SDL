@@ -42,9 +42,6 @@ extern bool SDL_TouchDevicesAvailable(void);
 // Add a touch, returning the index of the touch, or -1 if there was an error.
 extern int SDL_AddTouch(SDL_TouchID id, SDL_TouchDeviceType type, const char *name);
 
-// Set or update the name of a touch.
-extern void SDL_SetTouchName(SDL_TouchID id, const char *name);
-
 // Get the touch with a given id
 extern SDL_Touch *SDL_GetTouch(SDL_TouchID id);
 

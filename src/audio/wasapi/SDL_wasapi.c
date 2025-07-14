@@ -337,7 +337,7 @@ typedef struct
 static bool mgmtthrtask_DetectDevices(void *userdata)
 {
     mgmtthrtask_DetectDevicesData *data = (mgmtthrtask_DetectDevicesData *)userdata;
-    SDL_IMMDevice_EnumerateEndpoints(data->default_playback, data->default_recording);
+    SDL_IMMDevice_EnumerateEndpoints(data->default_playback, data->default_recording, SDL_AUDIO_F32);
     return true;
 }
 

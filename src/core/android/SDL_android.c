@@ -1853,6 +1853,62 @@ bool Android_JNI_FileClose(void *userdata)
     return true;
 }
 
+bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
+{
+    SDL_assert((*path == '\0') || (path[SDL_strlen(path) - 1] == '/'));  // SDL_SYS_EnumerateDirectory() should have verified this.
+
+    if (!asset_manager) {
+        Internal_Android_Create_AssetManager();
+        if (!asset_manager) {
+            return SDL_SetError("Couldn't create asset manager");
+        }
+    }
+
+    AAssetDir *adir = AAssetManager_openDir(asset_manager, path);
+    if (!adir) {
+        return SDL_SetError("AAssetManager_openDir failed");
+    }
+
+    SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
+    const char *ent;
+    while ((result == SDL_ENUM_CONTINUE) && ((ent = AAssetDir_getNextFileName(adir)) != NULL)) {
+        result = cb(userdata, path, ent);
+    }
+
+    AAssetDir_close(adir);
+
+    return (result != SDL_ENUM_FAILURE);
+}
+
+bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info)
+{
+    if (!asset_manager) {
+        Internal_Android_Create_AssetManager();
+        if (!asset_manager) {
+            return SDL_SetError("Couldn't create asset manager");
+        }
+    }
+
+    // this is sort of messy, but there isn't a stat()-like interface to the Assets.
+    AAssetDir *adir = AAssetManager_openDir(asset_manager, path);
+    if (adir) {  // it's a directory!
+        AAssetDir_close(adir);
+        info->type = SDL_PATHTYPE_DIRECTORY;
+        info->size = 0;
+        return true;
+    }
+
+    AAsset *aasset = AAssetManager_open(asset_manager, path, AASSET_MODE_UNKNOWN);
+    if (aasset) {  // it's a file!
+        info->type = SDL_PATHTYPE_FILE;
+        info->size = (Uint64) AAsset_getLength64(aasset);
+        AAsset_close(aasset);
+        return true;
+    }
+
+    return SDL_SetError("Couldn't open asset '%s'", path);
+}
+
 bool Android_JNI_SetClipboardText(const char *text)
 {
     JNIEnv *env = Android_JNI_GetEnv();
