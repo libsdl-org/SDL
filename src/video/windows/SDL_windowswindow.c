@@ -2301,38 +2301,38 @@ bool WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool foc
 void WIN_UpdateDarkModeForHWND(HWND hwnd)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_SharedObject *ntdll = SDL_LoadObject("ntdll.dll");
+    HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
     if (!ntdll) {
         return;
     }
     // There is no function to get Windows build number, so let's get it here via RtlGetVersion
-    RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)SDL_LoadFunction(ntdll, "RtlGetVersion");
+    RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)GetProcAddress(ntdll, "RtlGetVersion");
     NT_OSVERSIONINFOW os_info;
     os_info.dwOSVersionInfoSize = sizeof(NT_OSVERSIONINFOW);
     os_info.dwBuildNumber = 0;
     if (RtlGetVersionFunc) {
         RtlGetVersionFunc(&os_info);
     }
-    SDL_UnloadObject(ntdll);
+    FreeLibrary(ntdll);
     os_info.dwBuildNumber &= ~0xF0000000;
     if (os_info.dwBuildNumber < 17763) {
         // Too old to support dark mode
         return;
     }
-    SDL_SharedObject *uxtheme = SDL_LoadObject("uxtheme.dll");
+    HMODULE uxtheme = LoadLibrary(TEXT("uxtheme.dll"));
     if (!uxtheme) {
         return;
     }
-    RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(104));
-    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(132));
-    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(133));
+    RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(104));
+    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(132));
+    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(133));
     if (os_info.dwBuildNumber < 18362) {
-        AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(135));
+        AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
         if (AllowDarkModeForAppFunc) {
             AllowDarkModeForAppFunc(true);
         }
     } else {
-        SetPreferredAppMode_t SetPreferredAppModeFunc = (SetPreferredAppMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(135));
+        SetPreferredAppMode_t SetPreferredAppModeFunc = (SetPreferredAppMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
         if (SetPreferredAppModeFunc) {
             SetPreferredAppModeFunc(UXTHEME_APPMODE_ALLOW_DARK);
         }
@@ -2350,7 +2350,7 @@ void WIN_UpdateDarkModeForHWND(HWND hwnd)
     } else {
         value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
     }
-    SDL_UnloadObject(uxtheme);
+    FreeLibrary(uxtheme);
     if (os_info.dwBuildNumber < 18362) {
         SetProp(hwnd, TEXT("UseImmersiveDarkModeColors"), SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
     } else {
