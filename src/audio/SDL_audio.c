@@ -1006,7 +1006,9 @@ bool SDL_InitAudio(const char *driver_name)
         }
     }
 
-    if (!initialized) {
+    if (initialized) {
+        SDL_LogBackend("audio", current_audio.name);
+    } else {
         // specific drivers will set the error message if they fail, but otherwise we do it here.
         if (!tried_to_init) {
             if (driver_name) {
