@@ -46,29 +46,13 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     const char *envr = "ux0:/data/";
     char *result = NULL;
     char *ptr = NULL;
-    size_t len = 0;
-
-    if (!app) {
-        SDL_InvalidParamError("app");
-        return NULL;
-    }
-    if (!org) {
-        org = "";
-    }
-
-    len = SDL_strlen(envr);
-
-    len += SDL_strlen(org) + SDL_strlen(app) + 3;
+    size_t len = SDL_strlen(envr) + SDL_strlen(org) + SDL_strlen(app) + 3;
     result = (char *)SDL_malloc(len);
     if (!result) {
         return NULL;
     }
 
-    if (*org) {
-        SDL_snprintf(result, len, "%s%s/%s/", envr, org, app);
-    } else {
-        SDL_snprintf(result, len, "%s%s/", envr, app);
-    }
+    SDL_snprintf(result, len, "%s%s/%s/", envr, org, app);
 
     for (ptr = result + 1; *ptr; ptr++) {
         if (*ptr == '/') {

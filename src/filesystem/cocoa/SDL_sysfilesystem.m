@@ -69,14 +69,6 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
         char *result = NULL;
         NSArray *array;
 
-        if (!app) {
-            SDL_InvalidParamError("app");
-            return NULL;
-        }
-        if (!org) {
-            org = "";
-        }
-
 #ifndef SDL_PLATFORM_TVOS
         array = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
 #else
@@ -107,12 +99,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
                 result = (char *)SDL_malloc(len);
                 if (result != NULL) {
                     char *ptr;
-                    if (*org) {
-                        SDL_snprintf(result, len, "%s/%s/%s/", base, org, app);
-                    } else {
-                        SDL_snprintf(result, len, "%s/%s/", base, app);
-                    }
-                    for (ptr = result + 1; *ptr; ptr++) {
+                    for (char *ptr = result + 1; *ptr; ptr++) {
                         if (*ptr == '/') {
                             *ptr = '\0';
                             mkdir(result, 0700);

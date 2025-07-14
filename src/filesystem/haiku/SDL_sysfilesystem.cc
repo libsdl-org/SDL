@@ -72,25 +72,13 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     const char *append = "/config/settings/";
     size_t len = SDL_strlen(home);
 
-    if (!app) {
-        SDL_InvalidParamError("app");
-        return NULL;
-    }
-    if (!org) {
-        org = "";
-    }
-
     if (!len || (home[len - 1] == '/')) {
         ++append; // home empty or ends with separator, skip the one from append
     }
     len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
     char *result = (char *) SDL_malloc(len);
     if (result) {
-        if (*org) {
-            SDL_snprintf(result, len, "%s%s%s/%s/", home, append, org, app);
-        } else {
-            SDL_snprintf(result, len, "%s%s%s/", home, append, app);
-        }
+        SDL_snprintf(result, len, "%s%s%s/%s/", home, append, org, app);
         create_directory(result, 0700);  // Haiku api: creates missing dirs
     }
 

@@ -90,11 +90,6 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     HRESULT result;
     const char *csid = SDL_GetHint("SDL_GDK_SERVICE_CONFIGURATION_ID");
 
-    if (!app) {
-        SDL_InvalidParamError("app");
-        return NULL;
-    }
-
     // This should be set before calling SDL_GetPrefPath!
     if (!csid) {
         SDL_LogWarn(SDL_LOG_CATEGORY_SYSTEM, "Set SDL_GDK_SERVICE_CONFIGURATION_ID before calling SDL_GetPrefPath!");

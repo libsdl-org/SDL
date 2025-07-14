@@ -33,7 +33,7 @@ char *SDL_SYS_GetBasePath(void)
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
     char *pref_path = NULL;
-    if (SDL_asprintf(&pref_path, "C:/System/Apps/%s/%s/", org ? org : "SDL_App", app) < 0) {
+    if (SDL_asprintf(&pref_path, "C:/System/Apps/%s/%s/", org, app) < 0) {
         return NULL;
     }
     return pref_path;
