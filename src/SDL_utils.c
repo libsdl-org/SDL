@@ -552,3 +552,12 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
 
     return name;
 }
+
+void SDL_LogBackend(const char *subsystem, const char *backend)
+{
+    if (SDL_GetHintBoolean(SDL_HINT_LOG_BACKENDS, false)) {
+        SDL_Log("SDL_BACKEND: %s -> '%s'", subsystem, backend);
+    }
+}
+
+

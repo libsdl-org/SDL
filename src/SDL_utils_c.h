@@ -75,4 +75,7 @@ extern const char *SDL_GetPersistentString(const char *string);
 
 extern char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name, const char *default_name);
 
+// Log what backend a subsystem chose, if a hint was set to do so. Useful for debugging.
+extern void SDL_LogBackend(const char *subsystem, const char *backend);
+
 #endif // SDL_utils_h_
