@@ -206,17 +206,17 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->touchpad_supported = (data[1] & 0x01) != 0;
     ctx->joystick_rgb_supported = (data[1] & 0x02) != 0;
 
-    // Data[1] reserved
-
     SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
     type = (SDL_GamepadType)SDL_clamp(data[2], SDL_GAMEPAD_TYPE_UNKNOWN, SDL_GAMEPAD_TYPE_COUNT);
     device->type = type;
 
-    ctx->sub_type = data[3];
-    device->guid.data[15] = ctx->sub_type;
+    // The 4 MSB represent a button layout style SDL_GamepadFaceStyle
+    // The 4 LSB represent a device sub-type
+    device->guid.data[15] = data[3];
 
 #if defined(DEBUG_SINPUT_INIT)
-    SDL_Log("SInput Sub-type: %d", ctx->sub_type);
+        SDL_Log("SInput Face Style: %d", (data[3] & 0xF0) >> 4);
+        SDL_Log("SInput Sub-type: %d", (data[3] & 0xF));
 #endif
 
     ctx->polling_rate_ms = data[4];

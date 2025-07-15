@@ -799,6 +799,9 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             // This controller has no guide button
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
     } else if (SDL_IsJoystickSInputController(vendor, product)) {
+        Uint8 face_style = (guid.data[15] & 0xF0) >> 4;
+        Uint8 u_id = guid.data[15] & 0x0F;
+
         switch (product) {
         case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
             // ProGCC Mapping
@@ -811,11 +814,30 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             break;
 
         case USB_PRODUCT_HANDHELDLEGEND_HOJA_GAMEPAD:
-            // SuperGamepad+ Map
-            if (guid.data[15] == 1) {
-                SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,leftshoulder:b8,rightshoulder:b9,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
-            } else {
+            if ((u_id == 0) && (face_style == 0)) {
                 return NULL;
+            }
+
+            // SuperGamepad+ Map
+            if (u_id == 1) {
+                SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,leftshoulder:b8,rightshoulder:b9,start:b10,x:b3,y:b2,", sizeof(mapping_string));
+            }
+
+            // Apply face style
+            switch (face_style) {
+            default:
+            case 1:
+                SDL_strlcat(mapping_string, "face:abxy,", sizeof(mapping_string));
+                break;
+            case 2:
+                SDL_strlcat(mapping_string, "face:axby,", sizeof(mapping_string));
+                break;
+            case 3:
+                SDL_strlcat(mapping_string, "face:bayx,", sizeof(mapping_string));
+                break;
+            case 4:
+                SDL_strlcat(mapping_string, "face:sony,", sizeof(mapping_string));
+                break;
             }
             break;
 
