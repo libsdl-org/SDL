@@ -256,9 +256,9 @@ static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(SDL_HIDAPI_Device *devi
             // This firmware appears to update at 100 Hz over USB
             return 100;
         }
-    case USB_PRODUCT_8BITDO_PRO_3:
     case USB_PRODUCT_8BITDO_PRO_2:
     case USB_PRODUCT_8BITDO_PRO_2_BT: // Note, labeled as "BT" but appears this way when wired.
+    case USB_PRODUCT_8BITDO_PRO_3:
         if (device->is_bluetooth) {
             // Note, This is estimated by observation of Bluetooth packets received in the testcontroller tool
             return 85; // Observed Bluetooth packet rate seems to be 80-90hz
