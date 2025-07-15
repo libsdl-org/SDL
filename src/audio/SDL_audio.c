@@ -1165,6 +1165,8 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
             // We should have updated this elsewhere if the format changed!
             SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &device->spec, NULL, NULL));
 
+            SDL_assert(stream->src_spec.format != SDL_AUDIO_UNKNOWN);
+
             int br = 0;
 
             if (!SDL_GetAtomicInt(&logdev->paused)) {
@@ -1223,6 +1225,8 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
                 for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
                     // We should have updated this elsewhere if the format changed!
                     SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &outspec, NULL, NULL));
+
+                    SDL_assert(stream->src_spec.format != SDL_AUDIO_UNKNOWN);
 
                     /* this will hold a lock on `stream` while getting. We don't explicitly lock the streams
                        for iterating here because the binding linked list can only change while the device lock is held.
@@ -1363,6 +1367,7 @@ bool SDL_RecordingAudioThreadIterate(SDL_AudioDevice *device)
                     SDL_assert(stream->src_spec.format == ((logdev->postmix || (logdev->gain != 1.0f)) ? SDL_AUDIO_F32 : device->spec.format));
                     SDL_assert(stream->src_spec.channels == device->spec.channels);
                     SDL_assert(stream->src_spec.freq == device->spec.freq);
+                    SDL_assert(stream->dst_spec.format != SDL_AUDIO_UNKNOWN);
 
                     void *final_buf = output_buffer;
 
@@ -2024,10 +2029,6 @@ bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream * const *stre
     } else if (logdev->simplified) {
         result = SDL_SetError("Cannot change stream bindings on device opened with SDL_OpenAudioDeviceStream");
     } else {
-
-        // !!! FIXME: We'll set the device's side's format below, but maybe we should refuse to bind a stream if the app's side doesn't have a format set yet.
-        // !!! FIXME: Actually, why do we allow there to be an invalid format, again?
-
         // make sure start of list is sane.
         SDL_assert(!logdev->bound_streams || (logdev->bound_streams->prev_binding == NULL));
 
@@ -2062,9 +2063,17 @@ bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream * const *stre
 
     if (result) {
         // Now that everything is verified, chain everything together.
+        const bool recording = device->recording;
         for (int i = 0; i < num_streams; i++) {
             SDL_AudioStream *stream = streams[i];
             if (stream) {  // shouldn't be NULL, but just in case...
+                // if the stream never had its non-device-end format set, just set it to the device end's format.
+                if (recording && (stream->dst_spec.format == SDL_AUDIO_UNKNOWN)) {
+                    SDL_copyp(&stream->dst_spec, &device->spec);
+                } else if (!recording && (stream->src_spec.format == SDL_AUDIO_UNKNOWN)) {
+                    SDL_copyp(&stream->src_spec, &device->spec);
+                }
+
                 stream->bound_device = logdev;
                 stream->prev_binding = NULL;
                 stream->next_binding = logdev->bound_streams;
