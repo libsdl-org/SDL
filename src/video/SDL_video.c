@@ -679,7 +679,9 @@ bool SDL_VideoInit(const char *driver_name)
             }
         }
     }
-    if (!video) {
+    if (video) {
+        SDL_LogBackend("video", bootstrap[i]->name);
+    } else {
         if (driver_name) {
             SDL_SetError("%s not available", driver_name);
             goto pre_driver_error;

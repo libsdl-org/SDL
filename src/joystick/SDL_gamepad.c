@@ -785,10 +785,13 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 product == USB_PRODUCT_8BITDO_SN30_PRO ||
                 product == USB_PRODUCT_8BITDO_SN30_PRO_BT ||
                 product == USB_PRODUCT_8BITDO_PRO_2 ||
-                product == USB_PRODUCT_8BITDO_PRO_2_BT)) {
+                product == USB_PRODUCT_8BITDO_PRO_2_BT ||
+                product == USB_PRODUCT_8BITDO_PRO_3)) {
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
             if (product == USB_PRODUCT_8BITDO_PRO_2 || product == USB_PRODUCT_8BITDO_PRO_2_BT) {
                 SDL_strlcat(mapping_string, "paddle1:b14,paddle2:b13,", sizeof(mapping_string));
+            } else if (product == USB_PRODUCT_8BITDO_PRO_3) {
+                SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
             }
     } else if (vendor == USB_VENDOR_8BITDO &&
                (product == USB_PRODUCT_8BITDO_SF30_PRO ||

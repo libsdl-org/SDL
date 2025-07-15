@@ -369,6 +369,7 @@ struct GamepadImage
     bool showing_front;
     bool showing_touchpad;
     SDL_GamepadType type;
+    SDL_GamepadButtonLabel east_label;
     ControllerDisplayMode display_mode;
 
     bool elements[SDL_GAMEPAD_ELEMENT_MAX];
@@ -674,6 +675,7 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
     }
 
     ctx->type = SDL_GetGamepadType(gamepad);
+    ctx->east_label = SDL_GetGamepadButtonLabel(gamepad, SDL_GAMEPAD_BUTTON_EAST);
     char *mapping = SDL_GetGamepadMapping(gamepad);
     if (mapping) {
         if (SDL_strstr(mapping, "SDL_GAMECONTROLLER_USE_BUTTON_LABELS")) {
@@ -795,7 +797,7 @@ void RenderGamepadImage(GamepadImage *ctx)
         dst.w = ctx->face_width;
         dst.h = ctx->face_height;
 
-        switch (SDL_GetGamepadButtonLabelForType(ctx->type, SDL_GAMEPAD_BUTTON_EAST)) {
+        switch (ctx->east_label) {
         case SDL_GAMEPAD_BUTTON_LABEL_B:
             SDL_RenderTexture(ctx->renderer, ctx->face_abxy_texture, NULL, &dst);
             break;

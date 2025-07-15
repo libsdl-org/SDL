@@ -85,8 +85,6 @@ struct SDL_GLDriverData
     BOOL (WINAPI *wglGetPixelFormatAttribivARB)(HDC hdc, int iPixelFormat, int iLayerPlane, UINT nAttributes, const int *piAttributes, int *piValues);
     BOOL (WINAPI *wglSwapIntervalEXT)(int interval);
     int (WINAPI *wglGetSwapIntervalEXT)(void);
-    BOOL (WINAPI *wglSwapLayerBuffers)(HDC hdc, UINT flags);
-
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     BOOL (WINAPI *wglSwapBuffers)(HDC hdc);
     int (WINAPI *wglDescribePixelFormat)(HDC hdc,
