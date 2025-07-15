@@ -151,6 +151,7 @@ typedef struct SDL_joylist_item
     SDL_JoystickID device_instance;
     char *path; // "/dev/input/event2" or whatever
     char *name; // "SideWinder 3D Pro" or whatever
+    char *driver; // "xpad" or whatever
     SDL_GUID guid;
     dev_t devnum;
     int steam_virtual_gamepad_slot;
@@ -274,19 +275,20 @@ static bool GuessIsSensor(int fd)
     return false;
 }
 
-static bool IsJoystick(const char *path, int *fd, char **name_return, Uint16 *vendor_return, Uint16 *product_return, SDL_GUID *guid)
+static bool IsJoystick(const char *path, int *fd, char **name_return, Uint16 *vendor_return, Uint16 *product_return, SDL_GUID *guid, char **driver_return)
 {
     struct input_id inpid;
-    char *name;
+    char *name = NULL;
+    char *driver = NULL;
     char product_string[128];
     int class = 0;
 
     SDL_zero(inpid);
 #ifdef SDL_USE_LIBUDEV
     // Opening input devices can generate synchronous device I/O, so avoid it if we can
-    if (SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version, &class) &&
+    if (SDL_UDEV_GetProductInfo(path, &inpid, &class, &driver) &&
         !(class & SDL_UDEV_DEVICE_JOYSTICK)) {
-        return false;
+        goto error;
     }
 #endif
 
@@ -294,34 +296,33 @@ static bool IsJoystick(const char *path, int *fd, char **name_return, Uint16 *ve
         *fd = open(path, O_RDONLY | O_CLOEXEC, 0);
     }
     if (!fd || *fd < 0) {
-        return false;
+        goto error;
     }
 
     if (ioctl(*fd, JSIOCGNAME(sizeof(product_string)), product_string) <= 0) {
         // When udev enumeration or classification, we only got joysticks here, so no need to test
         if (enumeration_method != ENUMERATION_LIBUDEV && !class && !GuessIsJoystick(*fd)) {
-            return false;
+            goto error;
         }
 
         // Could have vendor and product already from udev, but should agree with evdev
         if (ioctl(*fd, EVIOCGID, &inpid) < 0) {
-            return false;
+            goto error;
         }
 
         if (ioctl(*fd, EVIOCGNAME(sizeof(product_string)), product_string) < 0) {
-            return false;
+            goto error;
         }
     }
 
     name = SDL_CreateJoystickName(inpid.vendor, inpid.product, NULL, product_string);
     if (!name) {
-        return false;
+        goto error;
     }
 
     if (!IsVirtualJoystick(inpid.vendor, inpid.product, inpid.version, name) &&
         SDL_JoystickHandledByAnotherDriver(&SDL_LINUX_JoystickDriver, inpid.vendor, inpid.product, inpid.version, name)) {
-        SDL_free(name);
-        return false;
+        goto error;
     }
 
     FixupDeviceInfoForMapping(*fd, &inpid);
@@ -331,14 +332,23 @@ static bool IsJoystick(const char *path, int *fd, char **name_return, Uint16 *ve
 #endif
 
     if (SDL_ShouldIgnoreJoystick(inpid.vendor, inpid.product, inpid.version, name)) {
-        SDL_free(name);
-        return false;
+        goto error;
     }
     *name_return = name;
+    *driver_return = driver;
     *vendor_return = inpid.vendor;
     *product_return = inpid.product;
     *guid = SDL_CreateJoystickGUID(inpid.bustype, inpid.vendor, inpid.product, inpid.version, NULL, product_string, 0, 0);
     return true;
+
+error:
+    if (driver) {
+        SDL_free(driver);
+    }
+    if (name) {
+        SDL_free(name);
+    }
+    return false;
 }
 
 static bool IsSensor(const char *path, int *fd)
@@ -349,7 +359,7 @@ static bool IsSensor(const char *path, int *fd)
     SDL_zero(inpid);
 #ifdef SDL_USE_LIBUDEV
     // Opening input devices can generate synchronous device I/O, so avoid it if we can
-    if (SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version, &class) &&
+    if (SDL_UDEV_GetProductInfo(path, &inpid, &class, NULL) &&
         !(class & SDL_UDEV_DEVICE_ACCELEROMETER)) {
         return false;
     }
@@ -422,6 +432,9 @@ static void FreeJoylistItem(SDL_joylist_item *item)
     SDL_free(item->mapping);
     SDL_free(item->path);
     SDL_free(item->name);
+    if (item->driver) {
+        SDL_free(item->driver);
+    }
     SDL_free(item);
 }
 
@@ -436,6 +449,7 @@ static void MaybeAddDevice(const char *path)
     struct stat sb;
     int fd = -1;
     char *name = NULL;
+    char *driver = NULL;
     Uint16 vendor, product;
     SDL_GUID guid;
     SDL_joylist_item *item;
@@ -473,7 +487,7 @@ static void MaybeAddDevice(const char *path)
     SDL_Log("Checking %s", path);
 #endif
 
-    if (IsJoystick(path, &fd, &name, &vendor, &product, &guid)) {
+    if (IsJoystick(path, &fd, &name, &vendor, &product, &guid, &driver)) {
 #ifdef DEBUG_INPUT_EVENTS
         SDL_Log("found joystick: %s", path);
 #endif
@@ -488,6 +502,7 @@ static void MaybeAddDevice(const char *path)
         item->path = SDL_strdup(path);
         item->name = name;
         item->guid = guid;
+        item->driver = driver;
 
         if (vendor == USB_VENDOR_VALVE &&
             product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
@@ -861,7 +876,7 @@ static void LINUX_ScanSteamVirtualGamepads(void)
         // Opening input devices can generate synchronous device I/O, so avoid it if we can
         class = 0;
         SDL_zero(inpid);
-        if (SDL_UDEV_GetProductInfo(path, &inpid.vendor, &inpid.product, &inpid.version, &class) &&
+        if (SDL_UDEV_GetProductInfo(path, &inpid, &class, NULL) &&
             (inpid.vendor != USB_VENDOR_VALVE || inpid.product != USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
             free(entries[i]); // This should NOT be SDL_free()
             continue;
@@ -2609,6 +2624,27 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
             SDL_Log("Mapped DPUP+DOWN to axis %d (ABS_HAT0Y)", out->dpup.target);
             SDL_Log("Mapped DPLEFT+RIGHT to axis %d (ABS_HAT0X)", out->dpleft.target);
 #endif
+        } else if (item->driver && SDL_strcmp(item->driver, "xpad") == 0) {
+            // xpad will sometimes map the D-Pad as BTN_TRIGGER_HAPPY1 - BTN_TRIGGER_HAPPY4
+            if (joystick->hwdata->has_key[BTN_TRIGGER_HAPPY1] &&
+                joystick->hwdata->has_key[BTN_TRIGGER_HAPPY2] &&
+                joystick->hwdata->has_key[BTN_TRIGGER_HAPPY3] &&
+                joystick->hwdata->has_key[BTN_TRIGGER_HAPPY4]) {
+                out->dpleft.kind = EMappingKind_Button;
+                out->dpright.kind = EMappingKind_Button;
+                out->dpup.kind = EMappingKind_Button;
+                out->dpdown.kind = EMappingKind_Button;
+                out->dpleft.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY1];
+                out->dpright.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY2];
+                out->dpup.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY3];
+                out->dpdown.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY4];
+#ifdef DEBUG_GAMEPAD_MAPPING
+                SDL_Log("Mapped DPLEFT to button %d (BTN_TRIGGER_HAPPY1)", out->dpleft.target);
+                SDL_Log("Mapped DPRIGHT to button %d (BTN_TRIGGER_HAPPY2)", out->dpright.target);
+                SDL_Log("Mapped DPUP to button %d (BTN_TRIGGER_HAPPY3)", out->dpup.target);
+                SDL_Log("Mapped DPDOWN to button %d (BTN_TRIGGER_HAPPY4)", out->dpdown.target);
+#endif
+            }
         }
     }
 
@@ -2653,7 +2689,7 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
 #endif
     }
 
-    if (SDL_GetJoystickVendor(joystick) == USB_VENDOR_MICROSOFT) {
+    if (item->driver && SDL_strcmp(item->driver, "xpad") == 0) {
         // The Xbox Elite controllers have the paddles as BTN_TRIGGER_HAPPY5 - BTN_TRIGGER_HAPPY8
         if (joystick->hwdata->has_key[BTN_TRIGGER_HAPPY5] &&
             joystick->hwdata->has_key[BTN_TRIGGER_HAPPY6] &&
@@ -2674,15 +2710,36 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
             SDL_Log("Mapped LEFT_PADDLE2 to button %d (BTN_TRIGGER_HAPPY8)", out->left_paddle2.target);
 #endif
         }
-
-        // The Xbox Series X controllers have the Share button as KEY_RECORD
-        if (joystick->hwdata->has_key[KEY_RECORD]) {
-            out->misc1.kind = EMappingKind_Button;
-            out->misc1.target = joystick->hwdata->key_map[KEY_RECORD];
+    } else if (SDL_GetJoystickVendor(joystick) == USB_VENDOR_MICROSOFT) {
+        // The Xbox Elite controllers have the paddles as BTN_TRIGGER_HAPPY1 - BTN_TRIGGER_HAPPY4
+        if (joystick->hwdata->has_key[BTN_TRIGGER_HAPPY1] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY2] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY3] &&
+            joystick->hwdata->has_key[BTN_TRIGGER_HAPPY4]) {
+            out->right_paddle1.kind = EMappingKind_Button;
+            out->right_paddle1.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY1];
+            out->left_paddle1.kind = EMappingKind_Button;
+            out->left_paddle1.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY2];
+            out->right_paddle2.kind = EMappingKind_Button;
+            out->right_paddle2.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY3];
+            out->left_paddle2.kind = EMappingKind_Button;
+            out->left_paddle2.target = joystick->hwdata->key_map[BTN_TRIGGER_HAPPY4];
 #ifdef DEBUG_GAMEPAD_MAPPING
-            SDL_Log("Mapped MISC1 to button %d (KEY_RECORD)", out->misc1.target);
+            SDL_Log("Mapped RIGHT_PADDLE1 to button %d (BTN_TRIGGER_HAPPY1)", out->right_paddle1.target);
+            SDL_Log("Mapped LEFT_PADDLE1 to button %d (BTN_TRIGGER_HAPPY2)", out->left_paddle1.target);
+            SDL_Log("Mapped RIGHT_PADDLE2 to button %d (BTN_TRIGGER_HAPPY3)", out->right_paddle2.target);
+            SDL_Log("Mapped LEFT_PADDLE2 to button %d (BTN_TRIGGER_HAPPY4)", out->left_paddle2.target);
 #endif
         }
+    }
+
+    // Xbox Series controllers have the Share button as KEY_RECORD
+    if (joystick->hwdata->has_key[KEY_RECORD]) {
+        out->misc1.kind = EMappingKind_Button;
+        out->misc1.target = joystick->hwdata->key_map[KEY_RECORD];
+#ifdef DEBUG_GAMEPAD_MAPPING
+        SDL_Log("Mapped MISC1 to button %d (KEY_RECORD)", out->misc1.target);
+#endif
     }
 
     // Cache the mapping for later
