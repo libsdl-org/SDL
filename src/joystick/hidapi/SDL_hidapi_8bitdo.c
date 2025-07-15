@@ -145,6 +145,7 @@ static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, con
         case USB_PRODUCT_8BITDO_SN30_PRO_BT:
         case USB_PRODUCT_8BITDO_PRO_2:
         case USB_PRODUCT_8BITDO_PRO_2_BT:
+        case USB_PRODUCT_8BITDO_PRO_3:
         case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
             return true;
         default:
@@ -219,6 +220,8 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "8BitDo SN30 Pro");
     } else if (device->product_id == USB_PRODUCT_8BITDO_PRO_2 || device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT) {
         HIDAPI_SetDeviceName(device, "8BitDo Pro 2");
+    } else if (device->product_id == USB_PRODUCT_8BITDO_PRO_3) {
+        HIDAPI_SetDeviceName(device, "8BitDo Pro 3");
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -253,6 +256,7 @@ static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(SDL_HIDAPI_Device *devi
             // This firmware appears to update at 100 Hz over USB
             return 100;
         }
+    case USB_PRODUCT_8BITDO_PRO_3:
     case USB_PRODUCT_8BITDO_PRO_2:
     case USB_PRODUCT_8BITDO_PRO_2_BT: // Note, labeled as "BT" but appears this way when wired.
         if (device->is_bluetooth) {
@@ -287,6 +291,7 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     // Initialize the joystick capabilities
     if (device->product_id == USB_PRODUCT_8BITDO_PRO_2 ||
         device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT ||
+        device->product_id == USB_PRODUCT_8BITDO_PRO_3 ||
         device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
         // This controller has additional buttons
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_BUTTONS;
