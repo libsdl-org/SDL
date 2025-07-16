@@ -79,7 +79,7 @@
 #define SINPUT_REPORT_IDX_IMU_COUNTER       33
 #define SINPUT_REPORT_IDX_TOUCH1_X          34
 #define SINPUT_REPORT_IDX_TOUCH1_Y          36
-#define SINPUT_REPORT_IDX_TOUCH1_P          37
+#define SINPUT_REPORT_IDX_TOUCH1_P          38
 #define SINPUT_REPORT_IDX_TOUCH2_X          40
 #define SINPUT_REPORT_IDX_TOUCH2_Y          42
 #define SINPUT_REPORT_IDX_TOUCH2_P          44
@@ -667,9 +667,8 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     // Extract the IMU timestamp delta (in microseconds)
     Uint32 imu_timestamp_delta = (Uint32) EXTRACTUINT16(data, SINPUT_REPORT_IDX_IMU_TIMESTAMP);
 
-    // Extract the IMU packet counter
-    Uint8 imu_packet_counter = data[SINPUT_REPORT_IDX_IMU_COUNTER];
-    Uint8 imu_counter_delta = (Uint8)((imu_packet_counter - ctx->last_state[SINPUT_REPORT_IDX_IMU_COUNTER]) & 0xFF);
+    // Extract the IMU packet counter delta
+    Uint8 imu_counter_delta = (Uint8)((data[SINPUT_REPORT_IDX_IMU_COUNTER] - ctx->last_state[SINPUT_REPORT_IDX_IMU_COUNTER]) & 0xFF);
 
     // If a packet is dropped, this delta will
     // be larger than 1
