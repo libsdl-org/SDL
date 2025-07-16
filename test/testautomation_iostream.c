@@ -312,6 +312,52 @@ static int SDLCALL iostrm_testConstMem(void *arg)
     return TEST_COMPLETED;
 }
 
+static int free_call_count;
+void SDLCALL test_free(void* mem) {
+    free_call_count++;
+    SDL_free(mem);
+}
+
+static int SDLCALL iostrm_testMemWithFree(void *arg)
+{
+    void *mem;
+    SDL_IOStream *rw;
+    int result;
+
+    /* Allocate some memory */
+    mem = SDL_malloc(sizeof(IOStreamHelloWorldCompString) - 1);
+    if (mem == NULL) {
+        return TEST_ABORTED;
+    }
+
+    /* Open handle */
+    rw = SDL_IOFromMem(mem, sizeof(IOStreamHelloWorldCompString) - 1);
+    SDLTest_AssertPass("Call to SDL_IOFromMem() succeeded");
+    SDLTest_AssertCheck(rw != NULL, "Verify opening memory with SDL_IOFromMem does not return NULL");
+
+    /* Bail out if NULL */
+    if (rw == NULL) {
+        return TEST_ABORTED;
+    }
+
+    /* Set the free function */
+    free_call_count = 0;
+    result = SDL_SetPointerProperty(SDL_GetIOProperties(rw), SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC, test_free);
+    SDLTest_AssertPass("Call to SDL_SetPointerProperty() succeeded");
+    SDLTest_AssertCheck(result == true, "Verify result value is true; got %d", result);
+
+    /* Run generic tests */
+    testGenericIOStreamValidations(rw, true);
+
+    /* Close handle */
+    result = SDL_CloseIO(rw);
+    SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
+    SDLTest_AssertCheck(result == true, "Verify result value is true; got: %d", result);
+    SDLTest_AssertCheck(free_call_count == 1, "Verify the custom free function was called once; call count: %d", free_call_count);
+
+    return TEST_COMPLETED;
+}
+
 /**
  * Tests dynamic memory
  *
@@ -686,10 +732,14 @@ static const SDLTest_TestCaseReference iostrmTest9 = {
     iostrm_testCompareRWFromMemWithRWFromFile, "iostrm_testCompareRWFromMemWithRWFromFile", "Compare RWFromMem and RWFromFile IOStream for read and seek", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference iostrmTest10 = {
+    iostrm_testMemWithFree, "iostrm_testMemWithFree", "Tests opening from memory with free on close", TEST_ENABLED
+};
+
 /* Sequence of IOStream test cases */
 static const SDLTest_TestCaseReference *iostrmTests[] = {
     &iostrmTest1, &iostrmTest2, &iostrmTest3, &iostrmTest4, &iostrmTest5, &iostrmTest6,
-    &iostrmTest7, &iostrmTest8, &iostrmTest9, NULL
+    &iostrmTest7, &iostrmTest8, &iostrmTest9, &iostrmTest10, NULL
 };
 
 /* IOStream test suite (global) */
