@@ -70,18 +70,18 @@
 #define SINPUT_REPORT_IDX_LEFT_TRIGGER      15
 #define SINPUT_REPORT_IDX_RIGHT_TRIGGER     17
 #define SINPUT_REPORT_IDX_IMU_TIMESTAMP     19
-#define SINPUT_REPORT_IDX_IMU_ACCEL_X       21
-#define SINPUT_REPORT_IDX_IMU_ACCEL_Y       23
-#define SINPUT_REPORT_IDX_IMU_ACCEL_Z       25
-#define SINPUT_REPORT_IDX_IMU_GYRO_X        27
-#define SINPUT_REPORT_IDX_IMU_GYRO_Y        29
-#define SINPUT_REPORT_IDX_IMU_GYRO_Z        31
-#define SINPUT_REPORT_IDX_TOUCH1_X          33
-#define SINPUT_REPORT_IDX_TOUCH1_Y          35
-#define SINPUT_REPORT_IDX_TOUCH1_P          37
-#define SINPUT_REPORT_IDX_TOUCH2_X          39
-#define SINPUT_REPORT_IDX_TOUCH2_Y          41
-#define SINPUT_REPORT_IDX_TOUCH2_P          43
+#define SINPUT_REPORT_IDX_IMU_ACCEL_X       23
+#define SINPUT_REPORT_IDX_IMU_ACCEL_Y       25
+#define SINPUT_REPORT_IDX_IMU_ACCEL_Z       27
+#define SINPUT_REPORT_IDX_IMU_GYRO_X        29
+#define SINPUT_REPORT_IDX_IMU_GYRO_Y        31
+#define SINPUT_REPORT_IDX_IMU_GYRO_Z        33
+#define SINPUT_REPORT_IDX_TOUCH1_X          35
+#define SINPUT_REPORT_IDX_TOUCH1_Y          37
+#define SINPUT_REPORT_IDX_TOUCH1_P          39
+#define SINPUT_REPORT_IDX_TOUCH2_X          41
+#define SINPUT_REPORT_IDX_TOUCH2_Y          43
+#define SINPUT_REPORT_IDX_TOUCH2_P          45
 
 #define SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID   1
 #define SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK 2
@@ -97,6 +97,10 @@
 
 #ifndef EXTRACTUINT16
 #define EXTRACTUINT16(data, idx) ((Uint16)((data)[(idx)] | ((data)[(idx) + 1] << 8)))
+#endif
+
+#ifndef EXTRACTUINT32
+#define EXTRACTUINT32(data, idx) ((Uint32)((data)[(idx)] | ((data)[(idx) + 1] << 8) | ((data)[(idx) + 2] << 16) | ((data)[(idx) + 3] << 24)))
 #endif
 
 
@@ -142,6 +146,7 @@ typedef struct
 typedef struct
 {
     SDL_HIDAPI_Device *device;
+    Uint16 protocol_version;
     bool sensors_enabled;
 
     Uint8 player_idx;
@@ -173,7 +178,9 @@ typedef struct
     Uint8 buttons_count;
     Uint8 usage_masks[4];
 
-    Uint64 imu_timestamp; // Nanoseconds. We accumulate with received deltas
+    Uint32 last_imu_timestamp_us;
+
+    Uint64 imu_timestamp_ns; // Nanoseconds. We accumulate with received deltas
 } SDL_DriverSInput_Context;
 
 // Converts raw int16_t gyro scale setting
@@ -192,51 +199,54 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 {
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
+    // Obtain protocol version
+    ctx->protocol_version = EXTRACTUINT16(data, 0);
+
     // Bitfields are not portable, so we unpack them into a struct value
-    ctx->rumble_supported = (data[0] & 0x01) != 0;
-    ctx->player_leds_supported = (data[0] & 0x02) != 0;
-    ctx->accelerometer_supported = (data[0] & 0x04) != 0;
-    ctx->gyroscope_supported = (data[0] & 0x08) != 0;
+    ctx->rumble_supported = (data[2] & 0x01) != 0;
+    ctx->player_leds_supported = (data[2] & 0x02) != 0;
+    ctx->accelerometer_supported = (data[2] & 0x04) != 0;
+    ctx->gyroscope_supported = (data[2] & 0x08) != 0;
 
-    ctx->left_analog_stick_supported = (data[0] & 0x10) != 0;
-    ctx->right_analog_stick_supported = (data[0] & 0x20) != 0;
-    ctx->left_analog_trigger_supported = (data[0] & 0x40) != 0;
-    ctx->right_analog_trigger_supported = (data[0] & 0x80) != 0;
+    ctx->left_analog_stick_supported = (data[2] & 0x10) != 0;
+    ctx->right_analog_stick_supported = (data[2] & 0x20) != 0;
+    ctx->left_analog_trigger_supported = (data[2] & 0x40) != 0;
+    ctx->right_analog_trigger_supported = (data[2] & 0x80) != 0;
 
-    ctx->touchpad_supported = (data[1] & 0x01) != 0;
-    ctx->joystick_rgb_supported = (data[1] & 0x02) != 0;
+    ctx->touchpad_supported = (data[3] & 0x01) != 0;
+    ctx->joystick_rgb_supported = (data[3] & 0x02) != 0;
 
     SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
-    type = (SDL_GamepadType)SDL_clamp(data[2], SDL_GAMEPAD_TYPE_UNKNOWN, SDL_GAMEPAD_TYPE_COUNT);
+    type = (SDL_GamepadType)SDL_clamp(data[4], SDL_GAMEPAD_TYPE_UNKNOWN, SDL_GAMEPAD_TYPE_COUNT);
     device->type = type;
 
     // The 4 MSB represent a button layout style SDL_GamepadFaceStyle
     // The 4 LSB represent a device sub-type
-    device->guid.data[15] = data[3];
+    device->guid.data[15] = data[5];
 
 #if defined(DEBUG_SINPUT_INIT)
-        SDL_Log("SInput Face Style: %d", (data[3] & 0xF0) >> 4);
-        SDL_Log("SInput Sub-type: %d", (data[3] & 0xF));
+        SDL_Log("SInput Face Style: %d", (data[5] & 0xF0) >> 4);
+        SDL_Log("SInput Sub-type: %d", (data[5] & 0xF));
 #endif
 
-    ctx->polling_rate_ms = data[4];
+    ctx->polling_rate_ms = data[6];
 
-    ctx->accelRange = EXTRACTUINT16(data, 6);
-    ctx->gyroRange = EXTRACTUINT16(data, 8);
+    ctx->accelRange = EXTRACTUINT16(data, 8);
+    ctx->gyroRange = EXTRACTUINT16(data, 10);
 
     // Masks in LSB to MSB
     // South, East, West, North, DUp, DDown, DLeft, DRight
-    ctx->usage_masks[0] = data[10];
+    ctx->usage_masks[0] = data[12];
 
     // Stick Left, Stick Right, L Shoulder, R Shoulder,
     // L Trigger, R Trigger, L Paddle 1, R Paddle 1
-    ctx->usage_masks[1] = data[11];
+    ctx->usage_masks[1] = data[13];
 
     // Start, Back, Guide, Capture, L Paddle 2, R Paddle 2, Touchpad L, Touchpad R
-    ctx->usage_masks[2] = data[12];
+    ctx->usage_masks[2] = data[14];
 
     // Power, Misc 4 to 10
-    ctx->usage_masks[3] = data[13];
+    ctx->usage_masks[3] = data[15];
 
     // Derive button count from mask
     for (Uint8 byte = 0; byte < 4; ++byte) {
@@ -252,8 +262,8 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 #endif
 
     // Get and validate touchpad parameters
-    ctx->touchpad_count = data[14];
-    ctx->touchpad_finger_count = data[15];
+    ctx->touchpad_count = data[16];
+    ctx->touchpad_finger_count = data[17];
 
 #if defined(DEBUG_SINPUT_INIT)
     SDL_Log("Accelerometer Range: %d", ctx->accelRange);
@@ -664,13 +674,24 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 
     // Extract the IMU timestamp delta (in microseconds)
-    Uint16 imu_timestamp_delta = EXTRACTUINT16(data, SINPUT_REPORT_IDX_IMU_TIMESTAMP);
+    Uint32 imu_timestamp_us = EXTRACTUINT32(data, SINPUT_REPORT_IDX_IMU_TIMESTAMP);
+    Uint32 imu_time_delta_us = 0;
 
     // Check if we should process IMU data and if sensors are enabled
-    if ((imu_timestamp_delta > 0) && (ctx->sensors_enabled)) {
+    if (ctx->sensors_enabled) {
 
-        // Process IMU timestamp by adding the delta to the accumulated timestamp and converting to nanoseconds
-        ctx->imu_timestamp += ((Uint64) imu_timestamp_delta * 1000);
+        if (imu_timestamp_us >= ctx->last_imu_timestamp_us) {
+            imu_time_delta_us = (imu_timestamp_us - ctx->last_imu_timestamp_us);
+        } else {
+            // Handle rollover case
+            imu_time_delta_us = (UINT32_MAX - ctx->last_imu_timestamp_us) + imu_timestamp_us + 1;
+        }
+
+        // Convert delta to nanoseconds and update running timestamp
+        ctx->imu_timestamp_ns += (Uint64)imu_time_delta_us * 1000;
+
+        // Update last timestamp
+        ctx->last_imu_timestamp_us = imu_timestamp_us;
 
         // Process Accelerometer
         if (ctx->accelerometer_supported) {
@@ -684,7 +705,7 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
             accel = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_ACCEL_X);
             imu_values[0] = -(float)accel * ctx->accelScale; // X-axis acceleration
 
-            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->imu_timestamp, imu_values, 3);
+            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, ctx->imu_timestamp_ns, imu_values, 3);
         }
 
         // Process Gyroscope
@@ -699,7 +720,7 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
             gyro = EXTRACTSINT16(data, SINPUT_REPORT_IDX_IMU_GYRO_X);
             imu_values[0] = -(float)gyro * ctx->gyroScale; // X-axis rotation
 
-            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->imu_timestamp, imu_values, 3);
+            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, ctx->imu_timestamp_ns, imu_values, 3);
         }
     }
 
