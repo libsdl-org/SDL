@@ -76,12 +76,13 @@
 #define SINPUT_REPORT_IDX_IMU_GYRO_X        27
 #define SINPUT_REPORT_IDX_IMU_GYRO_Y        29
 #define SINPUT_REPORT_IDX_IMU_GYRO_Z        31
-#define SINPUT_REPORT_IDX_TOUCH1_X          33
-#define SINPUT_REPORT_IDX_TOUCH1_Y          35
+#define SINPUT_REPORT_IDX_IMU_COUNTER       33
+#define SINPUT_REPORT_IDX_TOUCH1_X          34
+#define SINPUT_REPORT_IDX_TOUCH1_Y          36
 #define SINPUT_REPORT_IDX_TOUCH1_P          37
-#define SINPUT_REPORT_IDX_TOUCH2_X          39
-#define SINPUT_REPORT_IDX_TOUCH2_Y          41
-#define SINPUT_REPORT_IDX_TOUCH2_P          43
+#define SINPUT_REPORT_IDX_TOUCH2_X          40
+#define SINPUT_REPORT_IDX_TOUCH2_Y          42
+#define SINPUT_REPORT_IDX_TOUCH2_P          44
 
 #define SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID   1
 #define SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK 2
@@ -664,7 +665,18 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     }
 
     // Extract the IMU timestamp delta (in microseconds)
-    Uint16 imu_timestamp_delta = EXTRACTUINT16(data, SINPUT_REPORT_IDX_IMU_TIMESTAMP);
+    Uint32 imu_timestamp_delta = (Uint32) EXTRACTUINT16(data, SINPUT_REPORT_IDX_IMU_TIMESTAMP);
+
+    // Extract the IMU packet counter
+    Uint8 imu_packet_counter = data[SINPUT_REPORT_IDX_IMU_COUNTER];
+    Uint8 imu_counter_delta = (Uint8)((imu_packet_counter - ctx->last_state[SINPUT_REPORT_IDX_IMU_COUNTER]) & 0xFF);
+
+    // If a packet is dropped, this delta will
+    // be larger than 1
+    // If the delta is 0 or 1, this is ignored
+    if (imu_counter_delta > 1) {
+        imu_timestamp_delta *= (Uint32)imu_counter_delta;
+    }
 
     // Check if we should process IMU data and if sensors are enabled
     if ((imu_timestamp_delta > 0) && (ctx->sensors_enabled)) {
