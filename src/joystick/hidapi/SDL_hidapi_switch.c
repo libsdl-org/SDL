@@ -34,7 +34,9 @@
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH
 
 // Define this if you want to log all packets from the controller
-// #define DEBUG_SWITCH_PROTOCOL
+#if 0
+#define DEBUG_SWITCH_PROTOCOL
+#endif
 
 // Define this to get log output for rumble logic
 // #define DEBUG_RUMBLE
@@ -957,7 +959,7 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     if (user_reply && user_reply->stickUserCalibration.rgucRightMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucRightMagic[1] == 0xA1) {
         userParamsReadSuccessCount += 1;
         pRightStickCal = user_reply->stickUserCalibration.rgucRightCalibration;
-    } 
+    }
 
     // Only read the factory calibration info if we failed to receive the correct magic bytes
     if (userParamsReadSuccessCount < 2) {
@@ -1583,7 +1585,8 @@ static bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_NESRight &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SNES &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_N64 &&
-            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SEGA_Genesis) {
+            ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_SEGA_Genesis &&
+            !(device->vendor_id == USB_VENDOR_PDP && device->product_id == USB_PRODUCT_PDP_REALMZ_WIRELESS)) {
             if (LoadIMUCalibration(ctx)) {
                 ctx->m_bSensorsSupported = true;
             }
