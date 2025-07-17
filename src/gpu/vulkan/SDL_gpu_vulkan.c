@@ -6951,6 +6951,8 @@ static void VULKAN_ReleaseTexture(
         VULKAN_INTERNAL_ReleaseTexture(renderer, vulkanTextureContainer->textures[i]);
     }
 
+    SDL_DestroyProperties(vulkanTextureContainer->header.info.props);
+
     // Containers are just client handles, so we can destroy immediately
     if (vulkanTextureContainer->debugName != NULL) {
         SDL_free(vulkanTextureContainer->debugName);
