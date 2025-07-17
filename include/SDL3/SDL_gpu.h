@@ -1549,7 +1549,7 @@ typedef struct SDL_GPUSamplerCreateInfo
 typedef struct SDL_GPUVertexBufferDescription
 {
     Uint32 slot;                        /**< The binding slot of the vertex buffer. */
-    Uint32 pitch;                       /**< The byte pitch between consecutive elements of the vertex buffer. */
+    Uint32 pitch;                       /**< The size of a single element + the offset between elements. */
     SDL_GPUVertexInputRate input_rate;  /**< Whether attribute addressing is a function of the vertex index or instance index. */
     Uint32 instance_step_rate;          /**< Reserved for future use. Must be set to 0. */
 } SDL_GPUVertexBufferDescription;
