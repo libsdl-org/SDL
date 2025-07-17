@@ -1420,6 +1420,8 @@ static void D3D12_INTERNAL_ReleaseTextureContainer(
             container->textures[i]);
     }
 
+    SDL_DestroyProperties(container->header.info.props);
+
     // Containers are just client handles, so we can destroy immediately
     if (container->debugName) {
         SDL_free(container->debugName);
