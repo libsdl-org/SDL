@@ -2667,7 +2667,8 @@ extern SDL_DECLSPEC SDL_GPUShader * SDLCALL SDL_CreateGPUShader(
  * Creates a texture object to be used in graphics or compute workflows.
  *
  * The contents of this texture are undefined until data is written to the
- * texture.
+ * texture, either via SDL_UploadToGPUTexture or by performing a render or
+ * compute pass with this texture as a target.
  *
  * Note that certain combinations of usage flags are invalid. For example, a
  * texture cannot have both the SAMPLER and GRAPHICS_STORAGE_READ flags.
@@ -2709,6 +2710,8 @@ extern SDL_DECLSPEC SDL_GPUShader * SDLCALL SDL_CreateGPUShader(
  *
  * \sa SDL_UploadToGPUTexture
  * \sa SDL_DownloadFromGPUTexture
+ * \sa SDL_BeginGPURenderPass
+ * \sa SDL_BeginGPUComputePass
  * \sa SDL_BindGPUVertexSamplers
  * \sa SDL_BindGPUVertexStorageTextures
  * \sa SDL_BindGPUFragmentSamplers
