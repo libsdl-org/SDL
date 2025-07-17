@@ -34,6 +34,11 @@
 #define SDL_GAMEINPUT_DEFAULT false
 #endif
 
+// Enable sensor support in GameInput 2.0, once we have a device that can be used for testing
+#if GAMEINPUT_API_VERSION >= 2
+//#define GAMEINPUT_SENSOR_SUPPORT
+#endif
+
 enum
 {
     SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE = 11
@@ -474,21 +479,15 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
     }
 
-#if 0
-    if (info->supportedInput & GameInputKindTouch) {
-        SDL_PrivateJoystickAddTouchpad(joystick, info->touchPointCount);
-    }
-
-    if (info->supportedInput & GameInputKindMotion) {
+#ifdef GAMEINPUT_SENSOR_SUPPORT
+    if (info->supportedInput & GameInputKindSensors) {
         // FIXME: What's the sensor update rate?
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
-    }
-
-    if (info->capabilities & GameInputDeviceCapabilityWireless) {
-        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
-    } else {
-        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
+        if (info->sensorsInfo->supportedSensors & GameInputSensorsGyrometer) {
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 250.0f);
+        }
+        if (info->sensorsInfo->supportedSensors & GameInputSensorsAccelerometer) {
+            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 250.0f);
+        }
     }
 #endif
     return true;
@@ -667,29 +666,30 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
         }
     }
 
-#if 0
-    if (info->supportedInput & GameInputKindTouch) {
-        GameInputTouchState *touch_state = SDL_stack_alloc(GameInputTouchState, info->touchPointCount);
-        if (touch_state) {
-            uint32_t i;
-            uint32_t touch_count = IGameInputReading_GetTouchState(reading, info->touchPointCount, touch_state);
-            for (i = 0; i < touch_count; ++i) {
-                GameInputTouchState *touch = &touch_state[i];
-                // FIXME: We should use touch->touchId to track fingers instead of using i below
-                SDL_SendJoystickTouchpad(timestamp, joystick, 0, i, true, touch->positionX * info->touchSensorInfo[i].resolutionX, touch->positionY * info->touchSensorInfo[0].resolutionY, touch->pressure);
-            }
-            SDL_stack_free(touch_state);
-        }
-    }
-
+#ifdef GAMEINPUT_SENSOR_SUPPORT
     if (hwdata->report_sensors) {
-        GameInputMotionState motion_state;
+        GameInputSensorsState sensor_state;
 
-        if (IGameInputReading_GetMotionState(reading, &motion_state)) {
-            // FIXME: How do we interpret the motion data?
+        if (reading->GetSensorsState(&sensor_state)) {
+            if ((info->sensorsInfo->supportedSensors & GameInputSensorsGyrometer) != 0) {
+                float data[3] = {
+                    sensor_state.angularVelocityInRadPerSecX,
+                    sensor_state.angularVelocityInRadPerSecY,
+                    sensor_state.angularVelocityInRadPerSecZ
+                };
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, timestamp, data, SDL_arraysize(data));
+            }
+            if ((info->sensorsInfo->supportedSensors & GameInputSensorsAccelerometer) != 0) {
+                float data[3] = {
+                    sensor_state.accelerationInGX * SDL_STANDARD_GRAVITY,
+                    sensor_state.accelerationInGY * SDL_STANDARD_GRAVITY,
+                    sensor_state.accelerationInGZ * SDL_STANDARD_GRAVITY
+                };
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, data, SDL_arraysize(data));
+            }
         }
     }
-#endif
+#endif // GAMEINPUT_SENSOR_SUPPORT
 
     reading->Release();
 
