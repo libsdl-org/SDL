@@ -448,11 +448,11 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     joystick->naxes = axes;
 
     if (ctx->accelerometer_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, (float)1000.0f/ctx->polling_rate_ms);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 1000.0f / ctx->polling_rate_ms);
     }
 
     if (ctx->gyroscope_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, (float)1000.0f / ctx->polling_rate_ms);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 1000.0f / ctx->polling_rate_ms);
     }
 
     if (ctx->touchpad_supported) {
