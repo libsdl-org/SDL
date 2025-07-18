@@ -295,10 +295,10 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     }
 
     // Convert DPAD to hat
-    const DPAD_MASK = (1 << SINPUT_BUTTON_IDX_DPAD_UP) |
-                      (1 << SINPUT_BUTTON_IDX_DPAD_DOWN) |
-                      (1 << SINPUT_BUTTON_IDX_DPAD_LEFT) |
-                      (1 << SINPUT_BUTTON_IDX_DPAD_RIGHT);
+    const int DPAD_MASK = (1 << SINPUT_BUTTON_IDX_DPAD_UP) |
+                          (1 << SINPUT_BUTTON_IDX_DPAD_DOWN) |
+                          (1 << SINPUT_BUTTON_IDX_DPAD_LEFT) |
+                          (1 << SINPUT_BUTTON_IDX_DPAD_RIGHT);
     if ((ctx->usage_masks[0] & DPAD_MASK) == DPAD_MASK) {
         ctx->dpad_supported = true;
         ctx->usage_masks[0] &= ~DPAD_MASK;
@@ -711,7 +711,7 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     if (ctx->last_state[SINPUT_REPORT_IDX_PLUG_STATUS]  != data[SINPUT_REPORT_IDX_PLUG_STATUS] ||
         ctx->last_state[SINPUT_REPORT_IDX_CHARGE_LEVEL] != data[SINPUT_REPORT_IDX_CHARGE_LEVEL]) {
 
-        SDL_PowerState state = SDL_POWERSTATE_NO_BATTERY;
+        SDL_PowerState state = SDL_POWERSTATE_UNKNOWN;
         Uint8 status = data[SINPUT_REPORT_IDX_PLUG_STATUS];
         int percent = data[SINPUT_REPORT_IDX_CHARGE_LEVEL];
 
@@ -732,13 +732,11 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
         case 4:
             state = SDL_POWERSTATE_ON_BATTERY;
             break;
-        default: // Wired/No Battery Supported
-            state = SDL_POWERSTATE_UNKNOWN;
-            percent = 0;
+        default:
             break;
         }
 
-        if (state > 0) {
+        if (state != SDL_POWERSTATE_UNKNOWN) {
             SDL_SendJoystickPowerInfo(joystick, state, percent);
         }
     }
