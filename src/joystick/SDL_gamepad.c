@@ -805,22 +805,23 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         switch (product) {
         case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
             // ProGCC Mapping
-            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b15,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b8,lefttrigger:b12,leftx:a0,lefty:a1,misc1:b17,rightshoulder:b11,rightstick:b9,righttrigger:b13,rightx:a2,righty:a3,start:b14,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
             break;
 
         case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
             // GC Ultimate Map
-            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b15,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b8,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b17,misc2:b18,rightshoulder:b11,rightstick:b9,righttrigger:a5,rightx:a2,righty:a3,start:b14,x:b1,y:b3,misc3:b12,misc4:b13,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,x:b1,y:b3,misc3:b8,misc4:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
             break;
 
         case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
-            if (u_id != 1) {
+            switch (u_id) {
+            case 1:
+                // SuperGamepad+ Map
+                SDL_strlcat(mapping_string, "a:b1,b:b0,back:b7,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,rightshoulder:b5,start:b6,x:b3,y:b2,", sizeof(mapping_string));
+                break;
+            default:
+                // Unknown mapping
                 return NULL;
-            }
-
-            // SuperGamepad+ Map
-            if (u_id == 1) {
-                SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,leftshoulder:b8,rightshoulder:b9,start:b10,x:b3,y:b2,", sizeof(mapping_string));
             }
 
             // Apply face style
