@@ -316,7 +316,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     // Get device Serial - MAC address
     char serial[18];
     (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
-                       data[23], data[22], data[21], data[20], data[19], data[18]);
+                       data[18], data[19], data[20], data[21], data[22], data[23]);
 #if defined(DEBUG_SINPUT_INIT)
     SDL_Log("Serial num: %s", serial);
 #endif
