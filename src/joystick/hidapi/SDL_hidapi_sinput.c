@@ -313,6 +313,15 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->touchpad_count = data[16];
     ctx->touchpad_finger_count = data[17];
 
+    // Get device Serial - MAC address
+    char serial[18];
+    (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                       data[23], data[22], data[21], data[20], data[19], data[18]);
+#if defined(DEBUG_SINPUT_INIT)
+    SDL_Log("Serial num: %s", serial);
+#endif
+    HIDAPI_SetDeviceSerial(device, serial);
+
 #if defined(DEBUG_SINPUT_INIT)
     SDL_Log("Accelerometer Range: %d", ctx->accelRange);
 #endif
