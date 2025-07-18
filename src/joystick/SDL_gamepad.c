@@ -810,7 +810,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
 
         case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
             // GC Ultimate Map
-            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b15,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b8,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b17,misc2:b18,rightshoulder:b11,rightstick:b9,righttrigger:a5,rightx:a2,righty:a3,start:b14,x:b1,y:b3,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b15,dpdown:b5,dpleft:b6,dpright:b7,dpup:b4,guide:b16,leftshoulder:b10,leftstick:b8,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b17,misc2:b18,rightshoulder:b11,rightstick:b9,righttrigger:a5,rightx:a2,righty:a3,start:b14,x:b1,y:b3,misc3:b12,misc4:b13,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
             break;
 
         case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
