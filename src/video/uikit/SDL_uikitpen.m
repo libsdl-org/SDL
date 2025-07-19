@@ -63,6 +63,7 @@ bool UIKit_InitPen(SDL_VideoDevice *_this)
 // we only have one Apple Pencil at a time, and it must be paired to the iOS device.
 // We only know about its existence when it first sends an event, so add an single SDL pen
 // device here if we haven't already.
+#include <Availability.h>
 static SDL_PenID UIKit_AddPenIfNecesary()
 {
     if (!apple_pencil_id) {
@@ -73,13 +74,14 @@ static SDL_PenID UIKit_AddPenIfNecesary()
         info.num_buttons = 0;
         info.subtype = SDL_PEN_TYPE_PENCIL;
 
-        if (@available(iOS 17.5, *)) {  // need rollAngle method.
-            info.capabilities |= SDL_PEN_CAPABILITY_ROTATION;
-        }
 
-        if (@available(ios 16.1, *)) {  // need zOffset method.
+        #if __IPHONE_OS_VERSION_MIN_REQUIRED >= 170500  // iOS 17.5 or newer
+            info.capabilities |= SDL_PEN_CAPABILITY_ROTATION;
+        #endif
+
+        #if __IPHONE_OS_VERSION_MIN_REQUIRED >= 160100  // iOS 16.1 or newer
             info.capabilities |= SDL_PEN_CAPABILITY_DISTANCE;
-        }
+        #endif
 
         // Apple Pencil and iOS can report when the pencil is being "squeezed" but it's a boolean thing,
         // so we can't use it for tangential pressure.
@@ -136,24 +138,24 @@ static void UIKit_HandlePenAxes(SDL_Window *window, NSTimeInterval nstimestamp, 
 extern void UIKit_HandlePenHover(SDL_uikitview *view, UIHoverGestureRecognizer *recognizer)
 {
     float zOffset = 0.0f;
-    if (@available(iOS 16.1, *)) {
-        zOffset = (float) [recognizer zOffset];
-    }
+    #if __IPHONE_OS_VERSION_MIN_REQUIRED >= 161000  // iOS 16.1 or newer
+        zOffset = (float)[recognizer zOffset];
+    #endif
 
     float azimuthAngleInView = 0.0f;
-    if (@available(iOS 16.4, *)) {
-        azimuthAngleInView = (float) [recognizer azimuthAngleInView:view];
-    }
+    #if __IPHONE_OS_VERSION_MIN_REQUIRED >= 160400  // iOS 16.4 or newer
+        azimuthAngleInView = (float)[recognizer azimuthAngleInView:view];
+    #endif
 
     float altitudeAngle = 0.0f;
-    if (@available(iOS 16.4, *)) {
+    #if __IPHONE_OS_VERSION_MIN_REQUIRED >= 160400  // iOS 16.4 or newer
         altitudeAngle = (float) [recognizer altitudeAngle];
-    }
+    #endif
 
     float rollAngle = 0.0f;
-    if (@available(iOS 17.5, *)) {
+    #if __IPHONE_OS_VERSION_MIN_REQUIRED >= 170500
         rollAngle = (float) [recognizer rollAngle];
-    }
+    #endif
 
     SDL_Window *window = [view getSDLWindow];
     const CGPoint point = [recognizer locationInView:view];
@@ -168,9 +170,9 @@ static void UIKit_HandlePenAxesFromUITouch(SDL_uikitview *view, UITouch *pencil)
 {
     float rollAngle = 0.0f;
 #if !defined(SDL_PLATFORM_TVOS)
-    if (@available(iOS 17.5, *)) {
+    #if __IPHONE_OS_VERSION_MIN_REQUIRED >= 170500
         rollAngle = (float) [pencil rollAngle];
-    }
+    #endif
 #endif
 
     SDL_Window *window = [view getSDLWindow];
