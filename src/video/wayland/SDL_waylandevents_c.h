@@ -31,7 +31,6 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
 #include "SDL_waylanddatamanager.h"
-#include "SDL_waylandkeyboard.h"
 
 enum SDL_WaylandAxisEvent
 {

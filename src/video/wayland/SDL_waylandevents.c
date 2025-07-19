@@ -35,6 +35,7 @@
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandmouse.h"
 #include "SDL_waylandclipboard.h"
+#include "SDL_waylandkeyboard.h"
 
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
@@ -1897,7 +1898,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     Wayland_DisplayUpdatePointerGrabs(seat->display, window);
 
     // Update text input and IME focus.
-    Wayland_UpdateTextInput(seat->display);
+    Wayland_SeatUpdateTextInput(seat);
 
 #ifdef SDL_USE_IME
     if (!seat->text_input.zwp_text_input) {
@@ -1979,7 +1980,7 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     seat->keyboard.pressed_modifiers = SDL_KMOD_NONE;
 
     // Update text input and IME focus.
-    Wayland_UpdateTextInput(seat->display);
+    Wayland_SeatUpdateTextInput(seat);
 
 #ifdef SDL_USE_IME
     if (!seat->text_input.zwp_text_input && !window->keyboard_focus_count) {
