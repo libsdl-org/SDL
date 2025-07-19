@@ -1758,6 +1758,110 @@ clearScreen(void)
 }
 
 /**
+ * Tests geometry UV clamping
+ */
+static int SDLCALL render_testUVClamping(void *arg)
+{
+    SDL_Vertex vertices[6];
+    SDL_Vertex *verts = vertices;
+    SDL_FColor color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    SDL_FRect rect;
+    float min_U = -0.5f;
+    float max_U = 1.5f;
+    float min_V = -0.5f;
+    float max_V = 1.5f;
+    SDL_Texture *tface;
+    SDL_Surface *referenceSurface = NULL;
+
+    /* Clear surface. */
+    clearScreen();
+
+    /* Create face surface. */
+    tface = loadTestFace();
+    SDLTest_AssertCheck(tface != NULL, "Verify loadTestFace() result");
+    if (tface == NULL) {
+        return TEST_ABORTED;
+    }
+
+    rect.w = (float)tface->w * 2;
+    rect.h = (float)tface->h * 2;
+    rect.x = (TESTRENDER_SCREEN_W - rect.w) / 2;
+    rect.y = (TESTRENDER_SCREEN_H - rect.h) / 2;
+
+    /*
+     *   0--1
+     *   | /|
+     *   |/ |
+     *   3--2
+     *
+     *  Draw sprite2 as triangles that can be recombined as rect by software renderer
+     */
+
+    /* 0 */
+    verts->position.x = rect.x;
+    verts->position.y = rect.y;
+    verts->color = color;
+    verts->tex_coord.x = min_U;
+    verts->tex_coord.y = min_V;
+    verts++;
+    /* 1 */
+    verts->position.x = rect.x + rect.w;
+    verts->position.y = rect.y;
+    verts->color = color;
+    verts->tex_coord.x = max_U;
+    verts->tex_coord.y = min_V;
+    verts++;
+    /* 2 */
+    verts->position.x = rect.x + rect.w;
+    verts->position.y = rect.y + rect.h;
+    verts->color = color;
+    verts->tex_coord.x = max_U;
+    verts->tex_coord.y = max_V;
+    verts++;
+    /* 0 */
+    verts->position.x = rect.x;
+    verts->position.y = rect.y;
+    verts->color = color;
+    verts->tex_coord.x = min_U;
+    verts->tex_coord.y = min_V;
+    verts++;
+    /* 2 */
+    verts->position.x = rect.x + rect.w;
+    verts->position.y = rect.y + rect.h;
+    verts->color = color;
+    verts->tex_coord.x = max_U;
+    verts->tex_coord.y = max_V;
+    verts++;
+    /* 3 */
+    verts->position.x = rect.x;
+    verts->position.y = rect.y + rect.h;
+    verts->color = color;
+    verts->tex_coord.x = min_U;
+    verts->tex_coord.y = max_V;
+    verts++;
+
+    /* Set texture address mode to clamp */
+    SDL_SetRenderTextureAddressMode(renderer, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+
+    /* Blit sprites as triangles onto the screen */
+    SDL_RenderGeometry(renderer, tface, vertices, 6, NULL, 0);
+
+    /* See if it's the same */
+    referenceSurface = SDLTest_ImageClampedSprite();
+    compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+    /* Make current */
+    SDL_RenderPresent(renderer);
+
+    /* Clean up. */
+    SDL_DestroyTexture(tface);
+    SDL_DestroySurface(referenceSurface);
+    referenceSurface = NULL;
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Tests geometry UV wrapping
  */
 static int SDLCALL render_testUVWrapping(void *arg)
@@ -2035,6 +2139,10 @@ static const SDLTest_TestCaseReference renderTestLogicalSize = {
     render_testLogicalSize, "render_testLogicalSize", "Tests logical size", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestUVClamping = {
+    render_testUVClamping, "render_testUVClamping", "Tests geometry UV clamping", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference renderTestUVWrapping = {
     render_testUVWrapping, "render_testUVWrapping", "Tests geometry UV wrapping", TEST_ENABLED
 };
@@ -2065,6 +2173,7 @@ static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestViewport,
     &renderTestClipRect,
     &renderTestLogicalSize,
+    &renderTestUVClamping,
     &renderTestUVWrapping,
     &renderTestTextureState,
     &renderTestGetSetTextureScaleMode,
