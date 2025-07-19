@@ -61,26 +61,26 @@ Draw(DrawState *s)
 
     SDL_SetRenderTextureAddressMode(s->renderer, u_mode, v_mode);
 
-    vertices[0].position.x = 0.0f;
-    vertices[0].position.y = 0.0f;
-    vertices[1].position.x = (float)viewport.w;
-    vertices[1].position.y = 0.0f;
-    vertices[2].position.x = 0.0f;
-    vertices[2].position.y = (float)viewport.h;
-    vertices[3].position.x = (float)viewport.w;
-    vertices[3].position.y = (float)viewport.h;
+    vertices[0].position.x = viewport.w * 0.25f;
+    vertices[0].position.y = viewport.h * 0.25f;
+    vertices[1].position.x = viewport.w * 0.75f;
+    vertices[1].position.y = viewport.h * 0.25f;
+    vertices[2].position.x = viewport.w * 0.25f;
+    vertices[2].position.y = viewport.h * 0.75f;
+    vertices[3].position.x = viewport.w * 0.75f;
+    vertices[3].position.y = viewport.h * 0.75f;
     vertices[0].color = color;
     vertices[1].color = color;
     vertices[2].color = color;
     vertices[3].color = color;
-    vertices[0].tex_coord.x = -1.0f;
-    vertices[0].tex_coord.y = -1.0f;
-    vertices[1].tex_coord.x =  2.0f;
-    vertices[1].tex_coord.y = -1.0f;
-    vertices[2].tex_coord.x = -1.0f;
-    vertices[2].tex_coord.y =  2.0f;
-    vertices[3].tex_coord.x =  2.0f;
-    vertices[3].tex_coord.y =  2.0f;
+    vertices[0].tex_coord.x = -0.1f;
+    vertices[0].tex_coord.y = -0.1f;
+    vertices[1].tex_coord.x =  1.1f;
+    vertices[1].tex_coord.y = -0.1f;
+    vertices[2].tex_coord.x = -0.1f;
+    vertices[2].tex_coord.y =  1.1f;
+    vertices[3].tex_coord.x =  1.1f;
+    vertices[3].tex_coord.y =  1.1f;
     SDL_RenderGeometry(s->renderer, s->texture, vertices, 4, indices, 6);
 
     SDL_RenderPresent(s->renderer);
