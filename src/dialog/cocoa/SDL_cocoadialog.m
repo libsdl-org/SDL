@@ -158,7 +158,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     [dialog setAllowsOtherFileTypes:YES];
 
     if (default_location) {
-        [dialog setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:default_location]]];
+        [dialog setNameFieldStringValue:[NSString stringWithUTF8String:default_location]];
     }
 
     NSWindow *w = NULL;
