@@ -342,7 +342,7 @@ static int SDLCALL iostrm_testMemWithFree(void *arg)
 
     /* Set the free function */
     free_call_count = 0;
-    result = SDL_SetPointerProperty(SDL_GetIOProperties(rw), SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC, test_free);
+    result = SDL_SetPointerProperty(SDL_GetIOProperties(rw), SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC_POINTER, test_free);
     SDLTest_AssertPass("Call to SDL_SetPointerProperty() succeeded");
     SDLTest_AssertCheck(result == true, "Verify result value is true; got %d", result);
 
