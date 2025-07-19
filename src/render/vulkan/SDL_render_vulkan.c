@@ -3735,6 +3735,28 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_
             SDL_SetError("Unknown scale mode: %d", scale_mode);
             return VK_NULL_HANDLE;
         }
+        switch (address_u) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            break;
+        default:
+            SDL_SetError("Unknown texture address mode: %d", address_u);
+            return VK_NULL_HANDLE;
+        }
+        switch (address_v) {
+        case SDL_TEXTURE_ADDRESS_CLAMP:
+            samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            break;
+        case SDL_TEXTURE_ADDRESS_WRAP:
+            samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+            break;
+        default:
+            SDL_SetError("Unknown texture address mode: %d", address_v);
+            return VK_NULL_HANDLE;
+        }
         VkResult result = vkCreateSampler(data->device, &samplerCreateInfo, NULL, &data->samplers[key]);
         if (result != VK_SUCCESS) {
             SET_ERROR_CODE("vkCreateSampler()", result);
