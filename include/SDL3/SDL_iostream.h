@@ -301,7 +301,7 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromFile(const char *file, cons
  *
  * Additionally, the following properties are recognized:
  *
- * - `SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC`: if this property is set to a
+ * - `SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC_POINTER`: if this property is set to a
  *   non-NULL value it will be interpreted as a function of SDL_free_func type
  *   and called with the passed `mem` pointer when closing the stream. By
  *   default it is unset, i.e., the memory will not be freed.
@@ -327,7 +327,7 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromMem(void *mem, size_t size)
 
 #define SDL_PROP_IOSTREAM_MEMORY_POINTER "SDL.iostream.memory.base"
 #define SDL_PROP_IOSTREAM_MEMORY_SIZE_NUMBER  "SDL.iostream.memory.size"
-#define SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC "SDL.iostream.memory.free"
+#define SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC_POINTER "SDL.iostream.memory.free"
 
 /**
  * Use this function to prepare a read-only memory buffer for use with
@@ -354,7 +354,7 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromMem(void *mem, size_t size)
  *
  * Additionally, the following properties are recognized:
  *
- * - `SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC`: if this property is set to a
+ * - `SDL_PROP_IOSTREAM_MEMORY_FREE_FUNC_POINTER`: if this property is set to a
  *   non-NULL value it will be interpreted as a function of SDL_free_func type
  *   and called with the passed `mem` pointer when closing the stream. By
  *   default it is unset, i.e., the memory will not be freed.
