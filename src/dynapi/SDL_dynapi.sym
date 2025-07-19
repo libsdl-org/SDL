@@ -1254,6 +1254,7 @@ SDL3_0.0.0 {
     SDL_SetAudioIterationCallbacks;
     SDL_GetEventDescription;
     SDL_PutAudioStreamDataNoCopy;
+    SDL_IsTraySupported;
     # extra symbols go here (don't modify this line)
   local: *;
 };
