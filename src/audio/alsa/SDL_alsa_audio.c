@@ -62,6 +62,7 @@ static int (*ALSA_snd_pcm_hw_params_set_access)(snd_pcm_t *, snd_pcm_hw_params_t
 static int (*ALSA_snd_pcm_hw_params_set_format)(snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_format_t);
 static int (*ALSA_snd_pcm_hw_params_set_channels)(snd_pcm_t *, snd_pcm_hw_params_t *, unsigned int);
 static int (*ALSA_snd_pcm_hw_params_get_channels)(const snd_pcm_hw_params_t *, unsigned int *);
+static int (*ALSA_snd_pcm_hw_params_get_rate)(snd_pcm_hw_params_t *, unsigned int*, int*);
 static int (*ALSA_snd_pcm_hw_params_set_rate_near)(snd_pcm_t *, snd_pcm_hw_params_t *, unsigned int *, int *);
 static int (*ALSA_snd_pcm_hw_params_set_period_size_near)(snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_uframes_t *, int *);
 static int (*ALSA_snd_pcm_hw_params_get_period_size)(const snd_pcm_hw_params_t *, snd_pcm_uframes_t *, int *);
@@ -138,6 +139,7 @@ static int load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_hw_params_set_format);
     SDL_ALSA_SYM(snd_pcm_hw_params_set_channels);
     SDL_ALSA_SYM(snd_pcm_hw_params_get_channels);
+    SDL_ALSA_SYM(snd_pcm_hw_params_get_rate);
     SDL_ALSA_SYM(snd_pcm_hw_params_set_rate_near);
     SDL_ALSA_SYM(snd_pcm_hw_params_set_period_size_near);
     SDL_ALSA_SYM(snd_pcm_hw_params_get_period_size);
@@ -780,6 +782,16 @@ static void add_device(const int iscapture, const char *name, void *hint, ALSA_D
     char *desc;
     char *handle = NULL;
     char *ptr;
+    snd_pcm_t *pcm_handle;
+    snd_pcm_stream_t stream;
+    snd_pcm_hw_params_t *hwparams;
+
+    unsigned int freq = 0;
+    int dir;
+    unsigned int channels = 0;
+    snd_pcm_uframes_t samples = 0;
+
+    SDL_AudioSpec spec;
 
     if (!dev) {
         return;
@@ -819,12 +831,36 @@ static void add_device(const int iscapture, const char *name, void *hint, ALSA_D
         SDL_free(dev);
         return;
     }
+    stream = iscapture ? SND_PCM_STREAM_CAPTURE : SND_PCM_STREAM_PLAYBACK;
+    
+    if (ALSA_snd_pcm_open(&pcm_handle, handle, stream, SND_PCM_NONBLOCK) < 0) {
+	SDL_free(dev);
+	return;
+    }
 
-    /* Note that spec is NULL, because we are required to open the device before
-     * acquiring the mix format, making this information inaccessible at
-     * enumeration time
-     */
-    SDL_AddAudioDevice(iscapture, desc, NULL, handle);
+    snd_pcm_hw_params_alloca(&hwparams);
+    ALSA_snd_pcm_hw_params_any(pcm_handle, hwparams);
+
+    ALSA_snd_pcm_hw_params_get_rate(hwparams, &freq, &dir);
+    ALSA_snd_pcm_hw_params_get_channels(hwparams, &channels);
+    ALSA_snd_pcm_hw_params_get_period_size(hwparams, &samples, &dir);
+
+    ALSA_snd_pcm_close(pcm_handle);
+
+    /* Let's fill the spec */
+
+    spec.freq = freq;
+    spec.channels = channels;
+    spec.samples = samples;
+    spec.silence = 0;
+    spec.padding = 0;
+    /* Can't calculate size yet because this is an exploratory device opening
+     * so we don't know the sample format.
+     * Probably AUDIO_S16SYS/SND_PCM_FORMAT_S16_LE would be a good default
+     * if required.*/
+    spec.size = 0;
+
+    SDL_AddAudioDevice(iscapture, desc, &spec, handle);
     if (hint) {
         free(desc);
     }
