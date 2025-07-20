@@ -453,6 +453,10 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
         if (ctx->sub_type == SINPUT_GENERIC_SUBTYPE_SUPERGAMEPADPLUS) {
             HIDAPI_SetDeviceName(device, "HHL SuperGamepad+");
         }
+        break;
+    default:
+        // Use the USB product name
+        break;
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
