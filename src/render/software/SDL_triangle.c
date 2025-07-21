@@ -149,19 +149,6 @@ static void bounding_rect_fixedpoint(const SDL_Point *a, const SDL_Point *b, con
     r->h = (max_y - min_y) >> FP_BITS;
 }
 
-// bounding rect of three points
-static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Point *c, SDL_Rect *r)
-{
-    int min_x = SDL_min(a->x, SDL_min(b->x, c->x));
-    int max_x = SDL_max(a->x, SDL_max(b->x, c->x));
-    int min_y = SDL_min(a->y, SDL_min(b->y, c->y));
-    int max_y = SDL_max(a->y, SDL_max(b->y, c->y));
-    r->x = min_x;
-    r->y = min_y;
-    r->w = (max_x - min_x);
-    r->h = (max_y - min_y);
-}
-
 /* Triangle rendering, using Barycentric coordinates (w0, w1, w2)
  *
  * The cross product isn't computed from scratch at each iteration,
@@ -186,13 +173,25 @@ static void bounding_rect(const SDL_Point *a, const SDL_Point *b, const SDL_Poin
 #define TRIANGLE_GET_TEXTCOORD                                                          \
     int srcx = (int)(((Sint64)w0 * s2s0_x + (Sint64)w1 * s2s1_x + s2_x_area.x) / area); \
     int srcy = (int)(((Sint64)w0 * s2s0_y + (Sint64)w1 * s2s1_y + s2_x_area.y) / area); \
-    if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_WRAP) {                           \
+    if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_CLAMP) {                          \
+        if (srcx < 0) {                                                                 \
+            srcx = 0;                                                                   \
+        } else if (srcx >= src_surface->w) {                                            \
+            srcx = src_surface->w - 1;                                                  \
+        }                                                                               \
+    } else if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_WRAP) {                    \
         srcx %= src_surface->w;                                                         \
         if (srcx < 0) {                                                                 \
             srcx += (src_surface->w - 1);                                               \
         }                                                                               \
     }                                                                                   \
-    if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_WRAP) {                           \
+    if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_CLAMP) {                          \
+        if (srcy < 0) {                                                                 \
+            srcy = 0;                                                                   \
+        } else if (srcy >= src_surface->h) {                                            \
+            srcy = src_surface->h - 1;                                                  \
+        }                                                                               \
+    } else if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_WRAP) {                    \
         srcy %= src_surface->h;                                                         \
         if (srcy < 0) {                                                                 \
             srcy += (src_surface->h - 1);                                               \
@@ -542,41 +541,6 @@ bool SDL_SW_BlitTriangle(
     bounding_rect_fixedpoint(d0, d1, d2, &dstrect);
 
     SDL_GetSurfaceBlendMode(src, &blend);
-
-    // TRIANGLE_GET_TEXTCOORD interpolates up to the max values included, so reduce by 1
-    if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_CLAMP ||
-        texture_address_mode_v == SDL_TEXTURE_ADDRESS_CLAMP) {
-        SDL_Rect srcrect;
-        bounding_rect(s0, s1, s2, &srcrect);
-        if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_CLAMP) {
-            int maxx = srcrect.x + srcrect.w;
-            if (srcrect.w > 0) {
-                if (s0->x == maxx) {
-                    s0->x--;
-                }
-                if (s1->x == maxx) {
-                    s1->x--;
-                }
-                if (s2->x == maxx) {
-                    s2->x--;
-                }
-            }
-        }
-        if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_CLAMP) {
-            int maxy = srcrect.y + srcrect.h;
-            if (srcrect.h > 0) {
-                if (s0->y == maxy) {
-                    s0->y--;
-                }
-                if (s1->y == maxy) {
-                    s1->y--;
-                }
-                if (s2->y == maxy) {
-                    s2->y--;
-                }
-            }
-        }
-    }
 
     if (is_uniform) {
         // SDL_GetSurfaceColorMod(src, &r, &g, &b);
