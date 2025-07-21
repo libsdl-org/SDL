@@ -156,23 +156,39 @@ typedef struct
     float gyro_data[3]; /* Degrees per second, i.e. 100.0f means 100 degrees per second */
 
     float last_accel_data[3];/* Needed to detect motion (and inhibit drift calibration) */
-    float accelerometer_length_squared;
+    float accelerometer_length_squared; /* The current length squared from last packet to this packet */
+    float accelerometer_tolerance_squared; /* In phase one of calibration we calculate this as the largest accelerometer_length_squared over the time period */
+
     float gyro_drift_accumulator[3];
-    bool is_calibrating_drift; /* Starts on, but can be turned back on by the user to restart the drift calibration. */
+
+    EGyroCalibrationPhase calibration_phase;      /* [ GYRO_CALIBRATION_PHASE_OFF, GYRO_CALIBRATION_PHASE_NOISE_PROFILING, GYRO_CALIBRATION_PHASE_DRIFT_PROFILING,GYRO_CALIBRATION_PHASE_COMPLETE ] */
+    Uint64 calibration_phase_start_time_ticks_ns; /* Set each time a calibration phase begins so that we can a real time number for evaluation of drift. Previously we would use a fixed number of packets but given that gyro polling rates vary wildly this made the duration very different. */
+
     int gyro_drift_sample_count;
     float gyro_drift_solution[3]; /* Non zero if calibration is complete. */
 
     Quaternion integrated_rotation; /* Used to help test whether the time stamps and gyro degrees per second are set up correctly by the HID implementation */
 } IMUState;
 
-/* Reset the Drift calculation state */
-void StartGyroDriftCalibration(IMUState *imustate)
+/* First stage of calibration - get the noise profile of the accelerometer */
+void BeginNoiseCalibrationPhase(IMUState *imustate)
 {
-    imustate->is_calibrating_drift = true;
+    imustate->accelerometer_tolerance_squared = ACCELEROMETER_NOISE_THRESHOLD;
+    imustate->calibration_phase = GYRO_CALIBRATION_PHASE_NOISE_PROFILING;
+    imustate->calibration_phase_start_time_ticks_ns = SDL_GetTicksNS();
+}
+
+/* Reset the Drift calculation state */
+void BeginDriftCalibrationPhase(IMUState *imustate)
+{
+    imustate->calibration_phase = GYRO_CALIBRATION_PHASE_DRIFT_PROFILING;
+    imustate->calibration_phase_start_time_ticks_ns = SDL_GetTicksNS();
     imustate->gyro_drift_sample_count = 0;
     SDL_zeroa(imustate->gyro_drift_solution);
     SDL_zeroa(imustate->gyro_drift_accumulator);
 }
+
+/* Initial/full reset of state */
 void ResetIMUState(IMUState *imustate)
 {
     imustate->gyro_packet_number = 0;
@@ -180,10 +196,13 @@ void ResetIMUState(IMUState *imustate)
     imustate->starting_time_stamp_ns = SDL_GetTicksNS();
     imustate->integrated_rotation = quat_identity;
     imustate->accelerometer_length_squared = 0.0f;
+    imustate->accelerometer_tolerance_squared = ACCELEROMETER_NOISE_THRESHOLD;
+    imustate->calibration_phase = GYRO_CALIBRATION_PHASE_OFF;
+    imustate->calibration_phase_start_time_ticks_ns = SDL_GetTicksNS();
     imustate->integrated_rotation = quat_identity;
     SDL_zeroa(imustate->last_accel_data);
     SDL_zeroa(imustate->gyro_drift_solution);
-    StartGyroDriftCalibration(imustate);
+    SDL_zeroa(imustate->gyro_drift_accumulator);
 }
 
 void ResetGyroOrientation(IMUState *imustate)
@@ -191,8 +210,40 @@ void ResetGyroOrientation(IMUState *imustate)
     imustate->integrated_rotation = quat_identity;
 }
 
-/* More samples = more accurate drift correction, but also more time to calibrate.*/
-#define SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT 1024
+/* More time = more accurate drift correction*/
+#define SDL_GAMEPAD_IMU_NOISE_SETTLING_PERIOD_NS            (1 * SDL_NS_PER_SECOND)
+#define SDL_GAMEPAD_IMU_NOISE_EVALUATION_PERIOD_NS            (4 * SDL_NS_PER_SECOND)
+#define SDL_GAMEPAD_IMU_NOISE_PROFILING_PHASE_DURATION_NS   (SDL_GAMEPAD_IMU_NOISE_SETTLING_PERIOD_NS + SDL_GAMEPAD_IMU_NOISE_EVALUATION_PERIOD_NS)
+#define SDL_GAMEPAD_IMU_CALIBRATION_PHASE_DURATION_NS       (5 * SDL_NS_PER_SECOND)
+
+/*
+ * Find the maximum accelerometer noise over the duration of the GYRO_CALIBRATION_PHASE_NOISE_PROFILING phase.
+ */
+void CalibrationPhase_NoiseProfiling(IMUState *imustate)
+{
+    /* If we have really large movement (i.e. greater than a fraction of G), then we want to start noise evaluation over. The frontend will warn the user to put down the controller. */
+    const float flAbsoluteMaxAccelerationG = 0.125f;
+    if (imustate->accelerometer_length_squared > (flAbsoluteMaxAccelerationG * flAbsoluteMaxAccelerationG) ) {
+        BeginNoiseCalibrationPhase(imustate);
+        return;
+    }
+    
+    Uint64 now = SDL_GetTicksNS();
+    Uint64 delta_ns = now - imustate->calibration_phase_start_time_ticks_ns;
+
+    /* Nuanced behavior - give the evaluation system some time to settle after placing the controller down before _actually_ evaluating, as the accelerometer could still be "ringing" after the user has placed it down, resulting in exaggerated tolerances */
+    if (delta_ns > SDL_GAMEPAD_IMU_NOISE_SETTLING_PERIOD_NS) {
+        /* Get the largest noise spike in the period of evaluation */
+        if (imustate->accelerometer_length_squared > imustate->accelerometer_tolerance_squared) {
+            imustate->accelerometer_tolerance_squared = imustate->accelerometer_length_squared;
+        }
+    }
+
+    /* Switch phase if we go over the time limit */
+    if (delta_ns >= SDL_GAMEPAD_IMU_NOISE_PROFILING_PHASE_DURATION_NS) {
+        BeginDriftCalibrationPhase(imustate);
+    }
+}
 
 /*
  * Average drift _per packet_ as opposed to _per second_
@@ -200,36 +251,22 @@ void ResetGyroOrientation(IMUState *imustate)
  */
 void FinalizeDriftSolution(IMUState *imustate)
 {
-    if (imustate->gyro_drift_sample_count >= SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT) {
+    if (imustate->gyro_drift_sample_count >= 0) {
         imustate->gyro_drift_solution[0] = imustate->gyro_drift_accumulator[0] / (float)imustate->gyro_drift_sample_count;
         imustate->gyro_drift_solution[1] = imustate->gyro_drift_accumulator[1] / (float)imustate->gyro_drift_sample_count;
         imustate->gyro_drift_solution[2] = imustate->gyro_drift_accumulator[2] / (float)imustate->gyro_drift_sample_count;
     }
 
-    imustate->is_calibrating_drift = false;
+    imustate->calibration_phase = GYRO_CALIBRATION_PHASE_COMPLETE;
     ResetGyroOrientation(imustate);
 }
 
-/* Sample gyro packet in order to calculate drift*/
-void SampleGyroPacketForDrift( IMUState *imustate )
+void CalibrationPhase_DriftProfiling(IMUState *imustate)
 {
-    if ( !imustate->is_calibrating_drift )
-        return;
-
-    /* Get the length squared difference of the last accelerometer data vs. the new one */
-    float accelerometer_difference[3];
-    accelerometer_difference[0] = imustate->accel_data[0] - imustate->last_accel_data[0];
-    accelerometer_difference[1] = imustate->accel_data[1] - imustate->last_accel_data[1];
-    accelerometer_difference[2] = imustate->accel_data[2] - imustate->last_accel_data[2];
-    SDL_memcpy(imustate->last_accel_data, imustate->accel_data, sizeof(imustate->last_accel_data));
-
-    imustate->accelerometer_length_squared = accelerometer_difference[0] * accelerometer_difference[0] + accelerometer_difference[1] * accelerometer_difference[1] + accelerometer_difference[2] * accelerometer_difference[2];
-
     /* Ideal threshold will vary considerably depending on IMU. PS5 needs a low value (0.05f). Nintendo Switch needs a higher value (0.15f). */
-    const float flAccelerometerMovementThreshold = ACCELEROMETER_NOISE_THRESHOLD;
-    if (imustate->accelerometer_length_squared > flAccelerometerMovementThreshold * flAccelerometerMovementThreshold) {
+    if (imustate->accelerometer_length_squared > imustate->accelerometer_tolerance_squared) {
         /* Reset the drift calibration if the accelerometer has moved significantly */
-        StartGyroDriftCalibration(imustate);
+        BeginDriftCalibrationPhase(imustate);
     } else {
         /* Sensor is stationary enough to evaluate for drift.*/
         ++imustate->gyro_drift_sample_count;
@@ -238,10 +275,31 @@ void SampleGyroPacketForDrift( IMUState *imustate )
         imustate->gyro_drift_accumulator[1] += imustate->gyro_data[1];
         imustate->gyro_drift_accumulator[2] += imustate->gyro_data[2];
 
-        if (imustate->gyro_drift_sample_count >= SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT) {
+        /* Finish phase if we go over the time limit */
+        Uint64 now = SDL_GetTicksNS();
+        Uint64 delta_ns = now - imustate->calibration_phase_start_time_ticks_ns;
+        if (delta_ns >= SDL_GAMEPAD_IMU_CALIBRATION_PHASE_DURATION_NS) {
             FinalizeDriftSolution(imustate);
         }
     }
+}
+
+/* Sample gyro packet in order to calculate drift*/
+void SampleGyroPacketForDrift(IMUState *imustate)
+{
+    /* Get the length squared difference of the last accelerometer data vs. the new one */
+    float accelerometer_difference[3];
+    accelerometer_difference[0] = imustate->accel_data[0] - imustate->last_accel_data[0];
+    accelerometer_difference[1] = imustate->accel_data[1] - imustate->last_accel_data[1];
+    accelerometer_difference[2] = imustate->accel_data[2] - imustate->last_accel_data[2];
+    SDL_memcpy(imustate->last_accel_data, imustate->accel_data, sizeof(imustate->last_accel_data));
+    imustate->accelerometer_length_squared = accelerometer_difference[0] * accelerometer_difference[0] + accelerometer_difference[1] * accelerometer_difference[1] + accelerometer_difference[2] * accelerometer_difference[2];
+
+    if (imustate->calibration_phase == GYRO_CALIBRATION_PHASE_NOISE_PROFILING)
+        CalibrationPhase_NoiseProfiling(imustate);
+
+    if (imustate->calibration_phase == GYRO_CALIBRATION_PHASE_DRIFT_PROFILING)
+        CalibrationPhase_DriftProfiling(imustate);
 }
 
 void ApplyDriftSolution(float *gyro_data, const float *drift_solution)
@@ -1444,7 +1502,18 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
         float display_euler_angles[3];
         QuaternionToYXZ(controller->imu_state->integrated_rotation, &display_euler_angles[0], &display_euler_angles[1], &display_euler_angles[2]);
 
-        float drift_calibration_progress_frac = controller->imu_state->gyro_drift_sample_count / (float)SDL_GAMEPAD_IMU_MIN_GYRO_DRIFT_SAMPLE_COUNT;
+        /* Show how far we are through the current phase. When off, just default to zero progress */
+        Uint64 now = SDL_GetTicksNS();
+        float duration = 0.0f;
+        if (controller->imu_state->calibration_phase == GYRO_CALIBRATION_PHASE_NOISE_PROFILING) {
+            duration = SDL_GAMEPAD_IMU_NOISE_PROFILING_PHASE_DURATION_NS;
+        } else if (controller->imu_state->calibration_phase == GYRO_CALIBRATION_PHASE_DRIFT_PROFILING) {
+            duration = SDL_GAMEPAD_IMU_CALIBRATION_PHASE_DURATION_NS;
+        }
+
+        Uint64 delta_ns = now - controller->imu_state->calibration_phase_start_time_ticks_ns;
+        float drift_calibration_progress_frac = duration > 0.0f ? ((float)delta_ns / (float)duration) : 0.0f;
+
         int reported_polling_rate_hz = sensorTimeStampDelta_ns > 0 ? (int)(SDL_NS_PER_SECOND / sensorTimeStampDelta_ns) : 0;
 
         /* Send the results to the frontend */
@@ -1454,8 +1523,11 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
             &controller->imu_state->integrated_rotation,
             reported_polling_rate_hz,
             controller->imu_state->imu_estimated_sensor_rate,
+            controller->imu_state->calibration_phase,
             drift_calibration_progress_frac,
-            controller->imu_state->accelerometer_length_squared
+            controller->imu_state->accelerometer_length_squared,
+            controller->imu_state->accelerometer_tolerance_squared
+
         );
 
         /* Also show the gyro correction next to the gyro speed - this is useful in turntable tests as you can use a turntable to calibrate for drift, and that drift correction is functionally the same as the turn table speed (ignoring drift) */
@@ -2145,7 +2217,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
             if (GamepadButtonContains(GetGyroResetButton(gyro_elements), event->button.x, event->button.y)) {
                 ResetGyroOrientation(controller->imu_state);
             } else if (GamepadButtonContains(GetGyroCalibrateButton(gyro_elements), event->button.x, event->button.y)) {
-                StartGyroDriftCalibration(controller->imu_state);
+                BeginNoiseCalibrationPhase(controller->imu_state);
             } else if (GamepadButtonContains(setup_mapping_button, event->button.x, event->button.y)) {
                 SetDisplayMode(CONTROLLER_MODE_BINDING);
             }
