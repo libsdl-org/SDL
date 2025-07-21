@@ -157,7 +157,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     // Keep behavior consistent with other platforms
     [dialog setAllowsOtherFileTypes:YES];
 
-    if (default_location) {
+    if (default_location && *default_location) {
         char last = default_location[SDL_strlen(default_location) - 1];
         NSURL* url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:default_location]];
         if (last == '/') {
