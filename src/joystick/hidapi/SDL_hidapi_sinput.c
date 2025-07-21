@@ -56,6 +56,8 @@
 #define SINPUT_DEVICE_COMMAND_PLAYERLED     0x03
 #define SINPUT_DEVICE_COMMAND_JOYSTICKRGB   0x04
 
+#define SINPUT_GENERIC_SUBTYPE_SUPERGAMEPADPLUS 0x01
+
 #define SINPUT_HAPTIC_TYPE_PRECISE          0x01
 #define SINPUT_HAPTIC_TYPE_ERMSIMULATION    0x02
 
@@ -266,6 +268,8 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
         SDL_Log("SInput Sub-type: %d", (data[5] & 0xF));
 #endif
 
+    ctx->sub_type = (data[5] & 0xF);
+
     ctx->polling_rate_ms = data[6];
 
     ctx->accelRange = EXTRACTUINT16(data, 8);
@@ -436,6 +440,23 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
 
     if (!RetrieveSDLFeatures(device)) {
         return false;
+    }
+
+    switch (device->product_id) {
+    case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
+        HIDAPI_SetDeviceName(device, "HHL GC Ultimate");
+        break;
+    case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
+        HIDAPI_SetDeviceName(device, "HHL ProGCC");
+        break;
+    case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
+        if (ctx->sub_type == SINPUT_GENERIC_SUBTYPE_SUPERGAMEPADPLUS) {
+            HIDAPI_SetDeviceName(device, "HHL SuperGamepad+");
+        }
+        break;
+    default:
+        // Use the USB product name
+        break;
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
