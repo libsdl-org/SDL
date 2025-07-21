@@ -3204,13 +3204,15 @@ bool SDL_IsJoystickHoriSteamController(Uint16 vendor_id, Uint16 product_id)
 
 bool SDL_IsJoystickSInputController(Uint16 vendor_id, Uint16 product_id)
 {
-    bool vendor_match = (vendor_id == USB_VENDOR_RASPBERRYPI);
-    bool product_match =
-        (product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC) |
-        (product_id == USB_PRODUCT_HANDHELDLEGEND_PROGCC) |
-        (product_id == USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE) |
-        (product_id == USB_PRODUCT_BONJIRICHANNEL_FIREBIRD);
-    return (vendor_match && product_match);
+    if (vendor_id == USB_VENDOR_RASPBERRYPI) {
+        if (product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC ||
+            product_id == USB_PRODUCT_HANDHELDLEGEND_PROGCC ||
+            product_id == USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE ||
+            product_id == USB_PRODUCT_BONJIRICHANNEL_FIREBIRD) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
