@@ -99,15 +99,15 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
 /**
  * Check whether or not tray icons can be created.
  *
- * Note that this function does not guarantee that SDL_CreateTray() will or will
- * not work; you should still check SDL_CreateTray() for errors.
+ * Note that this function does not guarantee that SDL_CreateTray() will or
+ * will not work; you should still check SDL_CreateTray() for errors.
  *
  * Using tray icons require the video subsystem.
  *
  * \returns true if trays are available, false otherwise.
  *
- * \threadsafety This function should only be called on the main thread. It will
- *               return false if not called on the main thread.
+ * \threadsafety This function should only be called on the main thread. It
+ *               will return false if not called on the main thread.
  *
  * \since This function is available since SDL 3.4.0.
  *
