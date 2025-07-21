@@ -1310,7 +1310,12 @@ static void init_xboxone(libusb_device_handle *device_handle, unsigned short idV
 static bool is_ns2(unsigned short idVendor, unsigned short idProduct)
 {
 	if (idVendor == 0x057e) {
-		return (idProduct == 0x2073);
+		if (idProduct == 0x2069) {
+			return true;
+		}
+		if (idProduct == 0x2073) {
+			return true;
+		}
 	}
 	return false;
 }
