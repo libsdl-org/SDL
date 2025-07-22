@@ -1786,8 +1786,7 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
     SetGamepadButtonArea(start_calibration_button, &recalibrate_button_area);
     RenderGamepadButton(start_calibration_button);  
 
-    const float flAbsoluteMaxAccelerationG = 0.125f;
-    bool bExtremeNoise = ctx->accelerometer_noise_sq > (flAbsoluteMaxAccelerationG * flAbsoluteMaxAccelerationG);
+    bool bExtremeNoise = ctx->accelerometer_noise_sq > ACCELEROMETER_MAX_NOISE_G_SQ;
     /* Explicit warning message if we detect too much movement */
     if (ctx->current_calibration_phase == GYRO_CALIBRATION_PHASE_OFF) {
         
@@ -1803,10 +1802,9 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
     if (ctx->current_calibration_phase == GYRO_CALIBRATION_PHASE_NOISE_PROFILING
         || ctx->current_calibration_phase == GYRO_CALIBRATION_PHASE_DRIFT_PROFILING)
     {
-        float flAbsoluteNoiseFraction = SDL_clamp(ctx->accelerometer_noise_sq / (flAbsoluteMaxAccelerationG * flAbsoluteMaxAccelerationG), 0.0f, 1.0f);
-        float flAbsoluteToleranceFraction = SDL_clamp(ctx->accelerometer_noise_tolerance_sq / (flAbsoluteMaxAccelerationG * flAbsoluteMaxAccelerationG), 0.0f, 1.0f);
+        float flAbsoluteNoiseFraction = SDL_clamp(ctx->accelerometer_noise_sq / ACCELEROMETER_MAX_NOISE_G_SQ, 0.0f, 1.0f);
+        float flAbsoluteToleranceFraction = SDL_clamp(ctx->accelerometer_noise_tolerance_sq / ACCELEROMETER_MAX_NOISE_G_SQ, 0.0f, 1.0f);
         float flRelativeNoiseFraction = SDL_clamp(ctx->accelerometer_noise_sq / ctx->accelerometer_noise_tolerance_sq, 0.0f, 1.0f);
-        bool bTooMuchNoise = (flAbsoluteNoiseFraction == 1.0f);
 
         float noise_bar_height = gamepad_display->button_height;
         SDL_FRect noise_bar_rect;
@@ -1815,12 +1813,10 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
         noise_bar_rect.w = recalibrate_button_area.w;
         noise_bar_rect.h = noise_bar_height;
 
-        //SDL_strlcpy(label_text, "Place GamePad On Table", sizeof(label_text));
         SDL_snprintf(label_text, sizeof(label_text), "Noise Tolerance: %3.3fG ", SDL_sqrtf(ctx->accelerometer_noise_tolerance_sq) );
         SDLTest_DrawString(ctx->renderer, recalibrate_button_area.x, recalibrate_button_area.y + recalibrate_button_area.h + new_line_height * 2, label_text);
 
         /* Adjust the noise bar rectangle based on the accelerometer noise value */
-
         float noise_bar_fill_width = flAbsoluteNoiseFraction * noise_bar_rect.w; /* Scale the width based on the noise value */
         SDL_FRect noise_bar_fill_rect;
         noise_bar_fill_rect.x = noise_bar_rect.x + (noise_bar_rect.w - noise_bar_fill_width) * 0.5f;
@@ -1848,6 +1844,7 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
         SDL_RenderRect(ctx->renderer, &noise_bar_rect);            /* draw the outline rectangle */
 
         /* Explicit warning message if we detect too much movement */
+        bool bTooMuchNoise = (flAbsoluteNoiseFraction == 1.0f);
         if (bTooMuchNoise) {
             SDL_strlcpy(label_text, "Place GamePad Down!", sizeof(label_text));
             SDLTest_DrawString(ctx->renderer, recalibrate_button_area.x, noise_bar_rect.y + noise_bar_rect.h + new_line_height, label_text);
