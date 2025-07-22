@@ -145,7 +145,7 @@ extern void DestroyGamepadButton(GamepadButton *ctx);
 
 /* This is used as the initial noise tolernace threshold. It's set very close to zero to avoid divide by zero while we're evaluating the noise profile. Each controller may have a very different noise profile.*/
 #define ACCELEROMETER_NOISE_THRESHOLD 1e-6f
-
+#define ACCELEROMETER_MAX_NOISE_G_SQ  ( 0.125f * 0.125f )
 /* Gyro Calibration Phases */
 typedef enum
 {
