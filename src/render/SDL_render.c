@@ -1064,7 +1064,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         }
 
         if (rc) {
-            SDL_LogBackend("render", renderer->name);
+            SDL_DebugLogBackend("render", renderer->name);
         } else {
             if (driver_name) {
                 SDL_SetError("%s not available", driver_name);

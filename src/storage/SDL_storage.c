@@ -119,7 +119,7 @@ SDL_Storage *SDL_OpenTitleStorage(const char *override, SDL_PropertiesID props)
         }
     }
     if (storage) {
-        SDL_LogBackend("title_storage", titlebootstrap[i]->name);
+        SDL_DebugLogBackend("title_storage", titlebootstrap[i]->name);
     } else {
         if (driver_name) {
             SDL_SetError("%s not available", driver_name);
@@ -163,7 +163,7 @@ SDL_Storage *SDL_OpenUserStorage(const char *org, const char *app, SDL_Propertie
         }
     }
     if (storage) {
-        SDL_LogBackend("user_storage", userbootstrap[i]->name);
+        SDL_DebugLogBackend("user_storage", userbootstrap[i]->name);
     } else {
         if (driver_name) {
             SDL_SetError("%s not available", driver_name);

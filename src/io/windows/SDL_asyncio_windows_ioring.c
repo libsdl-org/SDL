@@ -511,12 +511,12 @@ static void MaybeInitializeWinIoRing(void)
 {
     if (SDL_ShouldInit(&ioring_init)) {
         if (LoadWinIoRing()) {
-            SDL_LogBackend("asyncio", "ioring");
+            SDL_DebugLogBackend("asyncio", "ioring");
             CreateAsyncIOQueue = SDL_SYS_CreateAsyncIOQueue_ioring;
             QuitAsyncIO = SDL_SYS_QuitAsyncIO_ioring;
             AsyncIOFromFile = SDL_SYS_AsyncIOFromFile_ioring;
         } else {  // can't use ioring? Use the "generic" threadpool implementation instead.
-            SDL_LogBackend("asyncio", "generic");
+            SDL_DebugLogBackend("asyncio", "generic");
             CreateAsyncIOQueue = SDL_SYS_CreateAsyncIOQueue_Generic;
             QuitAsyncIO = SDL_SYS_QuitAsyncIO_Generic;
             AsyncIOFromFile = SDL_SYS_AsyncIOFromFile_Generic;
