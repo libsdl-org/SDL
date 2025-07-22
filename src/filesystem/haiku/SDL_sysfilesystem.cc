@@ -72,14 +72,6 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     const char *append = "/config/settings/";
     size_t len = SDL_strlen(home);
 
-    if (!app) {
-        SDL_InvalidParamError("app");
-        return NULL;
-    }
-    if (!org) {
-        org = "";
-    }
-
     if (!len || (home[len - 1] == '/')) {
         ++append; // home empty or ends with separator, skip the one from append
     }
