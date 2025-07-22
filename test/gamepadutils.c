@@ -236,7 +236,7 @@ void DrawGyroDebugAxes(SDL_Renderer *renderer, const Quaternion *orientation, co
     SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, up_screen.x, up_screen.y);
     SDL_SetRenderDrawColor(renderer, GYRO_COLOR_BLUE);
     SDL_RenderLine(renderer, origin_screen.x, origin_screen.y, back_screen.x, back_screen.y);
-    
+
     /* Restore current color */
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
 }
@@ -1053,7 +1053,7 @@ GyroDisplay *CreateGyroDisplay(SDL_Renderer *renderer)
         ctx->next_reported_sensor_time = 0;
         ctx->current_calibration_phase = GYRO_CALIBRATION_PHASE_OFF;
         ctx->calibration_phase_progress_fraction = 0.0f; /* [0..1] */
-        ctx->accelerometer_noise_sq = 0.0f;              
+        ctx->accelerometer_noise_sq = 0.0f;
         ctx->accelerometer_noise_tolerance_sq = ACCELEROMETER_NOISE_THRESHOLD; /* Will be overwritten but this avoids divide by zero. */
         ctx->reset_gyro_button = CreateGamepadButton(renderer, "Reset View");
         ctx->calibrate_gyro_button = CreateGamepadButton(renderer, "Recalibrate Drift");
@@ -1678,7 +1678,6 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                 SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
                 SDL_snprintf(text, sizeof(text), "[%.2f,%.2f,%.2f]%s/s", ctx->gyro_data[0] * RAD_TO_DEG, ctx->gyro_data[1] * RAD_TO_DEG, ctx->gyro_data[2] * RAD_TO_DEG, DEGREE_UTF8);
                 SDLTest_DrawString(ctx->renderer, x + center + 2.0f, y, text);
-           
 
                 /* Display the testcontroller tool's evaluation of drift. This is also useful to get an average rate of turn in calibrated turntable tests. */
                 if (ctx->gyro_drift_correction_data[0] != 0.0f && ctx->gyro_drift_correction_data[2] != 0.0f && ctx->gyro_drift_correction_data[2] != 0.0f )
@@ -1758,7 +1757,6 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
     const float new_line_height = gamepad_display->button_height + 2.0f;
     GamepadButton *start_calibration_button = GetGyroCalibrateButton(ctx);
 
-
     /* Show the recalibration progress bar. */
     float recalibrate_button_width = GetGamepadButtonLabelWidth(start_calibration_button) + 2 * BUTTON_PADDING;
     SDL_FRect recalibrate_button_area;
@@ -1784,14 +1782,12 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
 
     SetGamepadButtonLabel(start_calibration_button, label_text);
     SetGamepadButtonArea(start_calibration_button, &recalibrate_button_area);
-    RenderGamepadButton(start_calibration_button);  
+    RenderGamepadButton(start_calibration_button);
 
     bool bExtremeNoise = ctx->accelerometer_noise_sq > ACCELEROMETER_MAX_NOISE_G_SQ;
     /* Explicit warning message if we detect too much movement */
     if (ctx->current_calibration_phase == GYRO_CALIBRATION_PHASE_OFF) {
-        
-        if (bExtremeNoise)
-        {
+        if (bExtremeNoise) {
             SDL_strlcpy(label_text, "GamePad Must Be Still", sizeof(label_text));
             SDLTest_DrawString(ctx->renderer, recalibrate_button_area.x, recalibrate_button_area.y + recalibrate_button_area.h + new_line_height, label_text);
             SDL_strlcpy(label_text, "Place GamePad On Table", sizeof(label_text));
@@ -1799,12 +1795,14 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
         }
     }
 
-    if (ctx->current_calibration_phase == GYRO_CALIBRATION_PHASE_NOISE_PROFILING
-        || ctx->current_calibration_phase == GYRO_CALIBRATION_PHASE_DRIFT_PROFILING)
+    if (ctx->current_calibration_phase == GYRO_CALIBRATION_PHASE_NOISE_PROFILING ||
+        ctx->current_calibration_phase == GYRO_CALIBRATION_PHASE_DRIFT_PROFILING)
     {
         float flAbsoluteNoiseFraction = SDL_clamp(ctx->accelerometer_noise_sq / ACCELEROMETER_MAX_NOISE_G_SQ, 0.0f, 1.0f);
         float flAbsoluteToleranceFraction = SDL_clamp(ctx->accelerometer_noise_tolerance_sq / ACCELEROMETER_MAX_NOISE_G_SQ, 0.0f, 1.0f);
-        float flRelativeNoiseFraction = SDL_clamp(ctx->accelerometer_noise_sq / ctx->accelerometer_noise_tolerance_sq, 0.0f, 1.0f);
+
+        float flMaxNoiseForThisPhase = ctx->current_calibration_phase == GYRO_CALIBRATION_PHASE_NOISE_PROFILING ? ACCELEROMETER_MAX_NOISE_G_SQ : ctx->accelerometer_noise_tolerance_sq;
+        float flRelativeNoiseFraction = SDL_clamp(ctx->accelerometer_noise_sq / flMaxNoiseForThisPhase, 0.0f, 1.0f);
 
         float noise_bar_height = gamepad_display->button_height;
         SDL_FRect noise_bar_rect;
@@ -1813,7 +1811,7 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
         noise_bar_rect.w = recalibrate_button_area.w;
         noise_bar_rect.h = noise_bar_height;
 
-        SDL_snprintf(label_text, sizeof(label_text), "Noise Tolerance: %3.3fG ", SDL_sqrtf(ctx->accelerometer_noise_tolerance_sq) );
+        SDL_snprintf(label_text, sizeof(label_text), "Accelerometer Noise Tolerance: %3.3fG ", SDL_sqrtf(ctx->accelerometer_noise_tolerance_sq) );
         SDLTest_DrawString(ctx->renderer, recalibrate_button_area.x, recalibrate_button_area.y + recalibrate_button_area.h + new_line_height * 2, label_text);
 
         /* Adjust the noise bar rectangle based on the accelerometer noise value */
@@ -1837,7 +1835,7 @@ void RenderGyroDriftCalibrationButton(GyroDisplay *ctx, GamepadDisplay *gamepad_
         tolerance_bar_rect.w = tolerance_bar_fill_width;
         tolerance_bar_rect.h = noise_bar_height;
 
-        SDL_SetRenderDrawColor(ctx->renderer, 128, 128, 0, 255); 
+        SDL_SetRenderDrawColor(ctx->renderer, 128, 128, 0, 255);
         SDL_RenderRect(ctx->renderer, &tolerance_bar_rect);        /* draw the tolerance rectangle */
 
         SDL_SetRenderDrawColor(ctx->renderer, 100, 100, 100, 255); /* gray box */
@@ -1985,7 +1983,6 @@ void RenderGyroDisplay(GyroDisplay *ctx, GamepadDisplay *gamepadElements, SDL_Ga
         float bottom = RenderEulerReadout(ctx, gamepadElements);
         RenderGyroGizmo(ctx, gamepad, bottom);
     }
-
     SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
 }
 

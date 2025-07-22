@@ -211,7 +211,7 @@ void ResetGyroOrientation(IMUState *imustate)
 }
 
 /* More time = more accurate drift correction*/
-#define SDL_GAMEPAD_IMU_NOISE_SETTLING_PERIOD_NS            (1 * SDL_NS_PER_SECOND)
+#define SDL_GAMEPAD_IMU_NOISE_SETTLING_PERIOD_NS            ( SDL_NS_PER_SECOND / 2)
 #define SDL_GAMEPAD_IMU_NOISE_EVALUATION_PERIOD_NS            (4 * SDL_NS_PER_SECOND)
 #define SDL_GAMEPAD_IMU_NOISE_PROFILING_PHASE_DURATION_NS   (SDL_GAMEPAD_IMU_NOISE_SETTLING_PERIOD_NS + SDL_GAMEPAD_IMU_NOISE_EVALUATION_PERIOD_NS)
 #define SDL_GAMEPAD_IMU_CALIBRATION_PHASE_DURATION_NS       (5 * SDL_NS_PER_SECOND)
@@ -222,12 +222,11 @@ void ResetGyroOrientation(IMUState *imustate)
 void CalibrationPhase_NoiseProfiling(IMUState *imustate)
 {
     /* If we have really large movement (i.e. greater than a fraction of G), then we want to start noise evaluation over. The frontend will warn the user to put down the controller. */
-    const float flAbsoluteMaxAccelerationG = 0.125f;
-    if (imustate->accelerometer_length_squared > (flAbsoluteMaxAccelerationG * flAbsoluteMaxAccelerationG) ) {
+    if (imustate->accelerometer_length_squared > ACCELEROMETER_MAX_NOISE_G_SQ) {
         BeginNoiseCalibrationPhase(imustate);
         return;
     }
-    
+
     Uint64 now = SDL_GetTicksNS();
     Uint64 delta_ns = now - imustate->calibration_phase_start_time_ticks_ns;
 
@@ -1433,7 +1432,7 @@ static void HandleGamepadGyroEvent(SDL_Event *event)
 /* Two strategies for evaluating polling rate - one based on a fixed packet count, and one using a fixed time window.
  * Smaller values in either will give you a more responsive polling rate estimate, but this may fluctuate more.
  * Larger values in either will give you a more stable average but they will require more time to evaluate.
- * Generally, wired connections tend to give much more stable 
+ * Generally, wired connections tend to give much more stable
  */
 /* #define SDL_USE_FIXED_PACKET_COUNT_FOR_ESTIMATION */
 #define SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_COUNT 2048
@@ -1479,7 +1478,7 @@ static void UpdateGamepadOrientation( Uint64 delta_time_ns )
 static void HandleGamepadSensorEvent( SDL_Event* event )
 {
     if (!controller)
-        return;   
+        return;
 
     if (controller->id != event->gsensor.which)
         return;
@@ -1504,7 +1503,7 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
 
         /* Show how far we are through the current phase. When off, just default to zero progress */
         Uint64 now = SDL_GetTicksNS();
-        float duration = 0.0f;
+        Uint64 duration = 0;
         if (controller->imu_state->calibration_phase == GYRO_CALIBRATION_PHASE_NOISE_PROFILING) {
             duration = SDL_GAMEPAD_IMU_NOISE_PROFILING_PHASE_DURATION_NS;
         } else if (controller->imu_state->calibration_phase == GYRO_CALIBRATION_PHASE_DRIFT_PROFILING) {
@@ -1512,7 +1511,7 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
         }
 
         Uint64 delta_ns = now - controller->imu_state->calibration_phase_start_time_ticks_ns;
-        float drift_calibration_progress_frac = duration > 0.0f ? ((float)delta_ns / (float)duration) : 0.0f;
+        float drift_calibration_progress_fraction = duration > 0.0f ? ((float)delta_ns / (float)duration) : 0.0f;
 
         int reported_polling_rate_hz = sensorTimeStampDelta_ns > 0 ? (int)(SDL_NS_PER_SECOND / sensorTimeStampDelta_ns) : 0;
 
@@ -1524,10 +1523,9 @@ static void HandleGamepadSensorEvent( SDL_Event* event )
             reported_polling_rate_hz,
             controller->imu_state->imu_estimated_sensor_rate,
             controller->imu_state->calibration_phase,
-            drift_calibration_progress_frac,
+            drift_calibration_progress_fraction,
             controller->imu_state->accelerometer_length_squared,
             controller->imu_state->accelerometer_tolerance_squared
-
         );
 
         /* Also show the gyro correction next to the gyro speed - this is useful in turntable tests as you can use a turntable to calibrate for drift, and that drift correction is functionally the same as the turn table speed (ignoring drift) */
