@@ -48,7 +48,6 @@ struct SDL_WindowData
         struct
         {
             struct libdecor_frame *frame;
-            bool initial_configure_seen;
         } libdecor;
 #endif
         struct
@@ -66,7 +65,6 @@ struct SDL_WindowData
                     struct xdg_positioner *xdg_positioner;
                 } popup;
             };
-            bool initial_configure_seen;
         } xdg;
     } shell_surface;
     enum
@@ -124,8 +122,6 @@ struct SDL_WindowData
 
     SDL_DisplayData **outputs;
     int num_outputs;
-
-    SDL_Window *keyboard_focus;
 
     char *app_id;
     double scale_factor;
@@ -237,6 +233,7 @@ extern void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y);
 extern void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool Wayland_SuspendScreenSaver(SDL_VideoDevice *_this);
 extern bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
+extern bool Wayland_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
 extern float Wayland_GetWindowContentScale(SDL_VideoDevice *_this, SDL_Window *window);
 extern void *Wayland_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
 

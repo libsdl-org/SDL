@@ -265,6 +265,12 @@ extern "C" {
 #include "SDL_utils_c.h"
 #include "SDL_hashtable.h"
 
+#define PUSH_SDL_ERROR() \
+    { char *_error = SDL_strdup(SDL_GetError());
+
+#define POP_SDL_ERROR() \
+    SDL_SetError("%s", _error); SDL_free(_error); }
+
 // Do any initialization that needs to happen before threads are started
 extern void SDL_InitMainThread(void);
 

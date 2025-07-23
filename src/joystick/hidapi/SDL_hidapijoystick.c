@@ -751,11 +751,12 @@ bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoysti
 
     ++SDL_HIDAPI_numjoysticks;
 
-    SDL_PrivateJoystickAdded(joystickID);
-
     if (pJoystickID) {
         *pJoystickID = joystickID;
     }
+
+    SDL_PrivateJoystickAdded(joystickID);
+
     return true;
 }
 
@@ -1051,6 +1052,11 @@ static bool HIDAPI_CreateCombinedJoyCons(void)
             info.usage = USB_USAGE_GENERIC_GAMEPAD;
             info.manufacturer_string = L"Nintendo";
             info.product_string = L"Switch Joy-Con (L/R)";
+            if (children[0]->is_bluetooth || children[1]->is_bluetooth) {
+                info.bus_type = SDL_HID_API_BUS_BLUETOOTH;
+            } else {
+                info.bus_type = SDL_HID_API_BUS_USB;
+            }
 
             combined = HIDAPI_AddDevice(&info, 2, children);
             if (combined && combined->driver) {

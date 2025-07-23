@@ -24,6 +24,21 @@
 #ifndef SDL_GPU_DRIVER_H
 #define SDL_GPU_DRIVER_H
 
+// GraphicsDevice Limits
+
+#define MAX_TEXTURE_SAMPLERS_PER_STAGE 16
+#define MAX_STORAGE_TEXTURES_PER_STAGE 8
+#define MAX_STORAGE_BUFFERS_PER_STAGE  8
+#define MAX_UNIFORM_BUFFERS_PER_STAGE  4
+#define MAX_COMPUTE_WRITE_TEXTURES     8
+#define MAX_COMPUTE_WRITE_BUFFERS      8
+#define UNIFORM_BUFFER_SIZE            32768
+#define MAX_VERTEX_BUFFERS             16
+#define MAX_VERTEX_ATTRIBUTES          16
+#define MAX_COLOR_TARGET_BINDINGS      4
+#define MAX_PRESENT_COUNT              16
+#define MAX_FRAMES_IN_FLIGHT           3
+
 // Common Structs
 
 typedef struct Pass
@@ -32,22 +47,80 @@ typedef struct Pass
     bool in_progress;
 } Pass;
 
+typedef struct ComputePass
+{
+    SDL_GPUCommandBuffer *command_buffer;
+    bool in_progress;
+
+    SDL_GPUComputePipeline *compute_pipeline;
+
+    bool sampler_bound[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    bool read_only_storage_texture_bound[MAX_STORAGE_TEXTURES_PER_STAGE];
+    bool read_only_storage_buffer_bound[MAX_STORAGE_BUFFERS_PER_STAGE];
+    bool read_write_storage_texture_bound[MAX_COMPUTE_WRITE_TEXTURES];
+    bool read_write_storage_buffer_bound[MAX_COMPUTE_WRITE_BUFFERS];
+} ComputePass;
+
+typedef struct RenderPass
+{
+    SDL_GPUCommandBuffer *command_buffer;
+    bool in_progress;
+    SDL_GPUTexture *color_targets[MAX_COLOR_TARGET_BINDINGS];
+    Uint32 num_color_targets;
+    SDL_GPUTexture *depth_stencil_target;
+
+    SDL_GPUGraphicsPipeline *graphics_pipeline;
+
+    bool vertex_sampler_bound[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    bool vertex_storage_texture_bound[MAX_STORAGE_TEXTURES_PER_STAGE];
+    bool vertex_storage_buffer_bound[MAX_STORAGE_BUFFERS_PER_STAGE];
+
+    bool fragment_sampler_bound[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    bool fragment_storage_texture_bound[MAX_STORAGE_TEXTURES_PER_STAGE];
+    bool fragment_storage_buffer_bound[MAX_STORAGE_BUFFERS_PER_STAGE];
+} RenderPass;
+
 typedef struct CommandBufferCommonHeader
 {
     SDL_GPUDevice *device;
-    Pass render_pass;
-    bool graphics_pipeline_bound;
-    Pass compute_pass;
-    bool compute_pipeline_bound;
+
+    RenderPass render_pass;
+    ComputePass compute_pass;
+
     Pass copy_pass;
     bool swapchain_texture_acquired;
     bool submitted;
+    // used to avoid tripping assert on GenerateMipmaps
+    bool ignore_render_pass_texture_validation;
 } CommandBufferCommonHeader;
 
 typedef struct TextureCommonHeader
 {
     SDL_GPUTextureCreateInfo info;
 } TextureCommonHeader;
+
+typedef struct GraphicsPipelineCommonHeader
+{
+    Uint32 num_vertex_samplers;
+    Uint32 num_vertex_storage_textures;
+    Uint32 num_vertex_storage_buffers;
+    Uint32 num_vertex_uniform_buffers;
+
+    Uint32 num_fragment_samplers;
+    Uint32 num_fragment_storage_textures;
+    Uint32 num_fragment_storage_buffers;
+    Uint32 num_fragment_uniform_buffers;
+} GraphicsPipelineCommonHeader;
+
+typedef struct ComputePipelineCommonHeader
+{
+    Uint32 numSamplers;
+    Uint32 numReadonlyStorageTextures;
+    Uint32 numReadonlyStorageBuffers;
+    Uint32 numReadWriteStorageTextures;
+    Uint32 numReadWriteStorageBuffers;
+    Uint32 numUniformBuffers;
+} ComputePipelineCommonHeader;
 
 typedef struct BlitFragmentUniforms
 {
@@ -136,6 +209,7 @@ static inline Sint32 Texture_GetBlockWidth(
     case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT:
     case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT:
     case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
@@ -253,6 +327,7 @@ static inline Sint32 Texture_GetBlockHeight(
     case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT:
     case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT:
     case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM:
@@ -384,21 +459,6 @@ static inline Uint32 BytesPerRow(
     Uint32 blocksPerRow = (width + blockWidth - 1) / blockWidth;
     return blocksPerRow * SDL_GPUTextureFormatTexelBlockSize(format);
 }
-
-// GraphicsDevice Limits
-
-#define MAX_TEXTURE_SAMPLERS_PER_STAGE 16
-#define MAX_STORAGE_TEXTURES_PER_STAGE 8
-#define MAX_STORAGE_BUFFERS_PER_STAGE  8
-#define MAX_UNIFORM_BUFFERS_PER_STAGE  4
-#define MAX_COMPUTE_WRITE_TEXTURES     8
-#define MAX_COMPUTE_WRITE_BUFFERS      8
-#define UNIFORM_BUFFER_SIZE            32768
-#define MAX_VERTEX_BUFFERS             16
-#define MAX_VERTEX_ATTRIBUTES          16
-#define MAX_COLOR_TARGET_BINDINGS      4
-#define MAX_PRESENT_COUNT              16
-#define MAX_FRAMES_IN_FLIGHT           3
 
 // Internal Macros
 

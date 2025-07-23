@@ -146,13 +146,13 @@ typedef enum
 @property(nonatomic) BOOL was_zoomed;
 @property(nonatomic) NSInteger window_number;
 @property(nonatomic) NSInteger flash_request;
-@property(nonatomic) SDL_Window *keyboard_focus;
 @property(nonatomic) SDL3Cocoa_WindowListener *listener;
 @property(nonatomic) NSModalSession modal_session;
 @property(nonatomic) SDL_CocoaVideoData *videodata;
 @property(nonatomic) bool pending_size;
 @property(nonatomic) bool pending_position;
 @property(nonatomic) bool border_toggled;
+@property(nonatomic) bool has_modal_dialog;
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 @property(nonatomic) EGLSurface egl_surface;

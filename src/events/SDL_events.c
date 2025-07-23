@@ -633,9 +633,10 @@ static void SDL_LogEvent(const SDL_Event *event)
 #undef PRINT_MBUTTON_EVENT
 
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_WHEEL)
-        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u x=%g y=%g direction=%s)",
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u which=%u x=%g y=%g integer_x=%d integer_y=%d direction=%s)",
                            (uint)event->wheel.timestamp, (uint)event->wheel.windowID,
                            (uint)event->wheel.which, event->wheel.x, event->wheel.y,
+                           (int)event->wheel.integer_x, (int)event->wheel.integer_y,
                            event->wheel.direction == SDL_MOUSEWHEEL_NORMAL ? "normal" : "flipped");
         break;
 
@@ -1076,16 +1077,11 @@ static void SDL_SendWakeupEvent(void)
         return;
     }
 
-    SDL_LockMutex(_this->wakeup_lock);
-    {
-        if (_this->wakeup_window) {
-            _this->SendWakeupEvent(_this, _this->wakeup_window);
-
-            // No more wakeup events needed until we enter a new wait
-            _this->wakeup_window = NULL;
-        }
+    // We only want to do this once while waiting for an event, so set it to NULL atomically here
+    SDL_Window *wakeup_window = (SDL_Window *)SDL_SetAtomicPointer(&_this->wakeup_window, NULL);
+    if (wakeup_window) {
+        _this->SendWakeupEvent(_this, wakeup_window);
     }
-    SDL_UnlockMutex(_this->wakeup_lock);
 #endif
 }
 
@@ -1379,9 +1375,7 @@ bool SDL_RunOnMainThread(SDL_MainThreadCallback callback, void *userdata, bool w
         return true;
     }
 
-    // Maximum wait of 30 seconds to prevent deadlocking forever
-    const Sint32 MAX_CALLBACK_WAIT = 30 * 1000;
-    SDL_WaitSemaphoreTimeout(entry->semaphore, MAX_CALLBACK_WAIT);
+    SDL_WaitSemaphore(entry->semaphore);
 
     switch (SDL_GetAtomicInt(&entry->state)) {
     case SDL_MAIN_CALLBACK_COMPLETE:
@@ -1525,18 +1519,7 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
         */
         SDL_PumpEventsInternal(true);
 
-        SDL_LockMutex(_this->wakeup_lock);
-        {
-            status = SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
-            // If status == 0 we are going to block so wakeup will be needed.
-            if (status == 0) {
-                _this->wakeup_window = wakeup_window;
-            } else {
-                _this->wakeup_window = NULL;
-            }
-        }
-        SDL_UnlockMutex(_this->wakeup_lock);
-
+        status = SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST);
         if (status < 0) {
             // Got an error: return
             break;
@@ -1549,8 +1532,6 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
         if (timeoutNS > 0) {
             Sint64 elapsed = SDL_GetTicksNS() - start;
             if (elapsed >= timeoutNS) {
-                // Set wakeup_window to NULL without holding the lock.
-                _this->wakeup_window = NULL;
                 return 0;
             }
             loop_timeoutNS = (timeoutNS - elapsed);
@@ -1563,9 +1544,9 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
                 loop_timeoutNS = poll_intervalNS;
             }
         }
+        SDL_SetAtomicPointer(&_this->wakeup_window, wakeup_window);
         status = _this->WaitEventTimeout(_this, loop_timeoutNS);
-        // Set wakeup_window to NULL without holding the lock.
-        _this->wakeup_window = NULL;
+        SDL_SetAtomicPointer(&_this->wakeup_window, NULL);
         if (status == 0 && poll_intervalNS != SDL_MAX_SINT64 && loop_timeoutNS == poll_intervalNS) {
             // We may have woken up to poll. Try again
             continue;
@@ -1823,7 +1804,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
     Uint8 lo = (type & 0xff);
 
     if (SDL_disabled_events[hi] &&
-        (SDL_disabled_events[hi]->bits[lo / 32] & (1 << (lo & 31)))) {
+        (SDL_disabled_events[hi]->bits[lo / 32] & (1U << (lo & 31)))) {
         current_state = false;
     } else {
         current_state = true;
@@ -1832,7 +1813,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
     if ((enabled != false) != current_state) {
         if (enabled) {
             SDL_assert(SDL_disabled_events[hi] != NULL);
-            SDL_disabled_events[hi]->bits[lo / 32] &= ~(1 << (lo & 31));
+            SDL_disabled_events[hi]->bits[lo / 32] &= ~(1U << (lo & 31));
 
             // Gamepad events depend on joystick events
             switch (type) {
@@ -1863,7 +1844,7 @@ void SDL_SetEventEnabled(Uint32 type, bool enabled)
             }
             // Out of memory, nothing we can do...
             if (SDL_disabled_events[hi]) {
-                SDL_disabled_events[hi]->bits[lo / 32] |= (1 << (lo & 31));
+                SDL_disabled_events[hi]->bits[lo / 32] |= (1U << (lo & 31));
                 SDL_FlushEvent(type);
             }
         }
@@ -1882,7 +1863,7 @@ bool SDL_EventEnabled(Uint32 type)
     Uint8 lo = (type & 0xff);
 
     if (SDL_disabled_events[hi] &&
-        (SDL_disabled_events[hi]->bits[lo / 32] & (1 << (lo & 31)))) {
+        (SDL_disabled_events[hi]->bits[lo / 32] & (1U << (lo & 31)))) {
         return false;
     } else {
         return true;

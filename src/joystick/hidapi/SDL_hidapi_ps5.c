@@ -812,14 +812,19 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
     }
 
     if (ctx->sensors_supported) {
+        // Standard DualSense sensor update rate is 250 Hz over USB
+        float update_rate = 250.0f;
+        
         if (ctx->device->is_bluetooth) {
             // Bluetooth sensor update rate appears to be 1000 Hz
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 1000.0f);
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 1000.0f);
-        } else {
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, 250.0f);
-            SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, 250.0f);
+            update_rate = 1000.0f;
+        } else if (SDL_IsJoystickDualSenseEdge(ctx->device->vendor_id, ctx->device->product_id)) {
+            // DualSense Edge sensor update rate is 1000 Hz over USB
+            update_rate = 1000.0f;
         }
+
+        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, update_rate);
+        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, update_rate);
     }
 
     ctx->report_battery = true;
@@ -1355,8 +1360,8 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
 
 static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacket_t *packet, Uint64 timestamp)
 {
-    static const float TOUCHPAD_SCALEX = 1.0f / 1920;
-    static const float TOUCHPAD_SCALEY = 1.0f / 1070;
+    static const float TOUCHPAD_SCALEX = 5.20833333e-4f; // 1.0f / 1920
+    static const float TOUCHPAD_SCALEY = 9.34579439e-4f; // 1.0f / 1070
     bool touchpad_down;
     int touchpad_x, touchpad_y;
 
@@ -1406,8 +1411,8 @@ static void HIDAPI_DriverPS5_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
 
 static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverPS5_Context *ctx, PS5StatePacketAlt_t *packet, Uint64 timestamp)
 {
-    static const float TOUCHPAD_SCALEX = 1.0f / 1920;
-    static const float TOUCHPAD_SCALEY = 1.0f / 1070;
+    static const float TOUCHPAD_SCALEX = 5.20833333e-4f; // 1.0f / 1920
+    static const float TOUCHPAD_SCALEY = 9.34579439e-4f; // 1.0f / 1070
     bool touchpad_down;
     int touchpad_x, touchpad_y;
 

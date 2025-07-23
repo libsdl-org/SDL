@@ -476,33 +476,21 @@ typedef struct MetalShader
 
 typedef struct MetalGraphicsPipeline
 {
+    GraphicsPipelineCommonHeader header;
+
     id<MTLRenderPipelineState> handle;
 
     SDL_GPURasterizerState rasterizerState;
     SDL_GPUPrimitiveType primitiveType;
 
     id<MTLDepthStencilState> depth_stencil_state;
-
-    Uint32 vertexSamplerCount;
-    Uint32 vertexUniformBufferCount;
-    Uint32 vertexStorageBufferCount;
-    Uint32 vertexStorageTextureCount;
-
-    Uint32 fragmentSamplerCount;
-    Uint32 fragmentUniformBufferCount;
-    Uint32 fragmentStorageBufferCount;
-    Uint32 fragmentStorageTextureCount;
 } MetalGraphicsPipeline;
 
 typedef struct MetalComputePipeline
 {
+    ComputePipelineCommonHeader header;
+
     id<MTLComputePipelineState> handle;
-    Uint32 numSamplers;
-    Uint32 numReadonlyStorageTextures;
-    Uint32 numReadWriteStorageTextures;
-    Uint32 numReadonlyStorageBuffers;
-    Uint32 numReadWriteStorageBuffers;
-    Uint32 numUniformBuffers;
     Uint32 threadcountX;
     Uint32 threadcountY;
     Uint32 threadcountZ;
@@ -900,6 +888,7 @@ static void METAL_INTERNAL_DestroyTextureContainer(
         container->textures[i]->handle = nil;
         SDL_free(container->textures[i]);
     }
+    SDL_DestroyProperties(container->header.info.props);
     if (container->debugName != NULL) {
         SDL_free(container->debugName);
     }
@@ -1059,12 +1048,12 @@ static SDL_GPUComputePipeline *METAL_CreateComputePipeline(
 
         pipeline = SDL_calloc(1, sizeof(MetalComputePipeline));
         pipeline->handle = handle;
-        pipeline->numSamplers = createinfo->num_samplers;
-        pipeline->numReadonlyStorageTextures = createinfo->num_readonly_storage_textures;
-        pipeline->numReadWriteStorageTextures = createinfo->num_readwrite_storage_textures;
-        pipeline->numReadonlyStorageBuffers = createinfo->num_readonly_storage_buffers;
-        pipeline->numReadWriteStorageBuffers = createinfo->num_readwrite_storage_buffers;
-        pipeline->numUniformBuffers = createinfo->num_uniform_buffers;
+        pipeline->header.numSamplers = createinfo->num_samplers;
+        pipeline->header.numReadonlyStorageTextures = createinfo->num_readonly_storage_textures;
+        pipeline->header.numReadWriteStorageTextures = createinfo->num_readwrite_storage_textures;
+        pipeline->header.numReadonlyStorageBuffers = createinfo->num_readonly_storage_buffers;
+        pipeline->header.numReadWriteStorageBuffers = createinfo->num_readwrite_storage_buffers;
+        pipeline->header.numUniformBuffers = createinfo->num_uniform_buffers;
         pipeline->threadcountX = createinfo->threadcount_x;
         pipeline->threadcountY = createinfo->threadcount_y;
         pipeline->threadcountZ = createinfo->threadcount_z;
@@ -1207,14 +1196,14 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
         result->depth_stencil_state = depthStencilState;
         result->rasterizerState = createinfo->rasterizer_state;
         result->primitiveType = createinfo->primitive_type;
-        result->vertexSamplerCount = vertexShader->numSamplers;
-        result->vertexUniformBufferCount = vertexShader->numUniformBuffers;
-        result->vertexStorageBufferCount = vertexShader->numStorageBuffers;
-        result->vertexStorageTextureCount = vertexShader->numStorageTextures;
-        result->fragmentSamplerCount = fragmentShader->numSamplers;
-        result->fragmentUniformBufferCount = fragmentShader->numUniformBuffers;
-        result->fragmentStorageBufferCount = fragmentShader->numStorageBuffers;
-        result->fragmentStorageTextureCount = fragmentShader->numStorageTextures;
+        result->header.num_vertex_samplers = vertexShader->numSamplers;
+        result->header.num_vertex_uniform_buffers = vertexShader->numUniformBuffers;
+        result->header.num_vertex_storage_buffers = vertexShader->numStorageBuffers;
+        result->header.num_vertex_storage_textures = vertexShader->numStorageTextures;
+        result->header.num_fragment_samplers = fragmentShader->numSamplers;
+        result->header.num_fragment_uniform_buffers = fragmentShader->numUniformBuffers;
+        result->header.num_fragment_storage_buffers = fragmentShader->numStorageBuffers;
+        result->header.num_fragment_storage_textures = fragmentShader->numStorageTextures;
         return (SDL_GPUGraphicsPipeline *)result;
     }
 }
@@ -2412,14 +2401,14 @@ static void METAL_BindGraphicsPipeline(
             metalCommandBuffer->needFragmentUniformBufferBind[i] = true;
         }
 
-        for (i = 0; i < pipeline->vertexUniformBufferCount; i += 1) {
+        for (i = 0; i < pipeline->header.num_vertex_uniform_buffers; i += 1) {
             if (metalCommandBuffer->vertexUniformBuffers[i] == NULL) {
                 metalCommandBuffer->vertexUniformBuffers[i] = METAL_INTERNAL_AcquireUniformBufferFromPool(
                     metalCommandBuffer);
             }
         }
 
-        for (i = 0; i < pipeline->fragmentUniformBufferCount; i += 1) {
+        for (i = 0; i < pipeline->header.num_fragment_uniform_buffers; i += 1) {
             if (metalCommandBuffer->fragmentUniformBuffers[i] == NULL) {
                 metalCommandBuffer->fragmentUniformBuffers[i] = METAL_INTERNAL_AcquireUniformBufferFromPool(
                     metalCommandBuffer);
@@ -2650,11 +2639,11 @@ static void METAL_INTERNAL_BindGraphicsResources(
     // Vertex Samplers+Textures
 
     if (commandBuffer->needVertexSamplerBind) {
-        if (graphicsPipeline->vertexSamplerCount > 0) {
+        if (graphicsPipeline->header.num_vertex_samplers > 0) {
             [commandBuffer->renderEncoder setVertexSamplerStates:commandBuffer->vertexSamplers
-                                                       withRange:NSMakeRange(0, graphicsPipeline->vertexSamplerCount)];
+                                                       withRange:NSMakeRange(0, graphicsPipeline->header.num_vertex_samplers)];
             [commandBuffer->renderEncoder setVertexTextures:commandBuffer->vertexTextures
-                                                  withRange:NSMakeRange(0, graphicsPipeline->vertexSamplerCount)];
+                                                  withRange:NSMakeRange(0, graphicsPipeline->header.num_vertex_samplers)];
         }
         commandBuffer->needVertexSamplerBind = false;
     }
@@ -2662,10 +2651,10 @@ static void METAL_INTERNAL_BindGraphicsResources(
     // Vertex Storage Textures
 
     if (commandBuffer->needVertexStorageTextureBind) {
-        if (graphicsPipeline->vertexStorageTextureCount > 0) {
+        if (graphicsPipeline->header.num_vertex_storage_textures > 0) {
             [commandBuffer->renderEncoder setVertexTextures:commandBuffer->vertexStorageTextures
-                                                  withRange:NSMakeRange(graphicsPipeline->vertexSamplerCount,
-                                                                        graphicsPipeline->vertexStorageTextureCount)];
+                                                  withRange:NSMakeRange(graphicsPipeline->header.num_vertex_samplers,
+                                                                        graphicsPipeline->header.num_vertex_storage_textures)];
         }
         commandBuffer->needVertexStorageTextureBind = false;
     }
@@ -2673,20 +2662,20 @@ static void METAL_INTERNAL_BindGraphicsResources(
     // Vertex Storage Buffers
 
     if (commandBuffer->needVertexStorageBufferBind) {
-        if (graphicsPipeline->vertexStorageBufferCount > 0) {
+        if (graphicsPipeline->header.num_vertex_storage_buffers > 0) {
             [commandBuffer->renderEncoder setVertexBuffers:commandBuffer->vertexStorageBuffers
                                                    offsets:offsets
-                                                 withRange:NSMakeRange(graphicsPipeline->vertexUniformBufferCount,
-                                                                       graphicsPipeline->vertexStorageBufferCount)];
+                                                 withRange:NSMakeRange(graphicsPipeline->header.num_vertex_uniform_buffers,
+                                                                       graphicsPipeline->header.num_vertex_storage_buffers)];
         }
         commandBuffer->needVertexStorageBufferBind = false;
     }
 
     // Vertex Uniform Buffers
 
-    for (Uint32 i = 0; i < graphicsPipeline->vertexUniformBufferCount; i += 1) {
+    for (Uint32 i = 0; i < graphicsPipeline->header.num_vertex_uniform_buffers; i += 1) {
         if (commandBuffer->needVertexUniformBufferBind[i]) {
-            if (graphicsPipeline->vertexUniformBufferCount > i) {
+            if (graphicsPipeline->header.num_vertex_uniform_buffers > i) {
                 [commandBuffer->renderEncoder
                     setVertexBuffer:commandBuffer->vertexUniformBuffers[i]->handle
                              offset:commandBuffer->vertexUniformBuffers[i]->drawOffset
@@ -2699,11 +2688,11 @@ static void METAL_INTERNAL_BindGraphicsResources(
     // Fragment Samplers+Textures
 
     if (commandBuffer->needFragmentSamplerBind) {
-        if (graphicsPipeline->fragmentSamplerCount > 0) {
+        if (graphicsPipeline->header.num_fragment_samplers > 0) {
             [commandBuffer->renderEncoder setFragmentSamplerStates:commandBuffer->fragmentSamplers
-                                                         withRange:NSMakeRange(0, graphicsPipeline->fragmentSamplerCount)];
+                                                         withRange:NSMakeRange(0, graphicsPipeline->header.num_fragment_samplers)];
             [commandBuffer->renderEncoder setFragmentTextures:commandBuffer->fragmentTextures
-                                                    withRange:NSMakeRange(0, graphicsPipeline->fragmentSamplerCount)];
+                                                    withRange:NSMakeRange(0, graphicsPipeline->header.num_fragment_samplers)];
         }
         commandBuffer->needFragmentSamplerBind = false;
     }
@@ -2711,10 +2700,10 @@ static void METAL_INTERNAL_BindGraphicsResources(
     // Fragment Storage Textures
 
     if (commandBuffer->needFragmentStorageTextureBind) {
-        if (graphicsPipeline->fragmentStorageTextureCount > 0) {
+        if (graphicsPipeline->header.num_fragment_storage_textures > 0) {
             [commandBuffer->renderEncoder setFragmentTextures:commandBuffer->fragmentStorageTextures
-                                                    withRange:NSMakeRange(graphicsPipeline->fragmentSamplerCount,
-                                                                          graphicsPipeline->fragmentStorageTextureCount)];
+                                                    withRange:NSMakeRange(graphicsPipeline->header.num_fragment_samplers,
+                                                                          graphicsPipeline->header.num_fragment_storage_textures)];
         }
         commandBuffer->needFragmentStorageTextureBind = false;
     }
@@ -2722,20 +2711,20 @@ static void METAL_INTERNAL_BindGraphicsResources(
     // Fragment Storage Buffers
 
     if (commandBuffer->needFragmentStorageBufferBind) {
-        if (graphicsPipeline->fragmentStorageBufferCount > 0) {
+        if (graphicsPipeline->header.num_fragment_storage_buffers > 0) {
             [commandBuffer->renderEncoder setFragmentBuffers:commandBuffer->fragmentStorageBuffers
                                                      offsets:offsets
-                                                   withRange:NSMakeRange(graphicsPipeline->fragmentUniformBufferCount,
-                                                                         graphicsPipeline->fragmentStorageBufferCount)];
+                                                   withRange:NSMakeRange(graphicsPipeline->header.num_fragment_uniform_buffers,
+                                                                         graphicsPipeline->header.num_fragment_storage_buffers)];
         }
         commandBuffer->needFragmentStorageBufferBind = false;
     }
 
     // Fragment Uniform Buffers
 
-    for (Uint32 i = 0; i < graphicsPipeline->fragmentUniformBufferCount; i += 1) {
+    for (Uint32 i = 0; i < graphicsPipeline->header.num_fragment_uniform_buffers; i += 1) {
         if (commandBuffer->needFragmentUniformBufferBind[i]) {
-            if (graphicsPipeline->fragmentUniformBufferCount > i) {
+            if (graphicsPipeline->header.num_fragment_uniform_buffers > i) {
                 [commandBuffer->renderEncoder
                     setFragmentBuffer:commandBuffer->fragmentUniformBuffers[i]->handle
                             offset:commandBuffer->fragmentUniformBuffers[i]->drawOffset
@@ -2754,38 +2743,38 @@ static void METAL_INTERNAL_BindComputeResources(
     NSUInteger offsets[MAX_STORAGE_BUFFERS_PER_STAGE] = { 0 };
 
     if (commandBuffer->needComputeSamplerBind) {
-        if (computePipeline->numSamplers > 0) {
+        if (computePipeline->header.numSamplers > 0) {
             [commandBuffer->computeEncoder setTextures:commandBuffer->computeSamplerTextures
-                                             withRange:NSMakeRange(0, computePipeline->numSamplers)];
+                                             withRange:NSMakeRange(0, computePipeline->header.numSamplers)];
             [commandBuffer->computeEncoder setSamplerStates:commandBuffer->computeSamplers
-                                                  withRange:NSMakeRange(0, computePipeline->numSamplers)];
+                                                  withRange:NSMakeRange(0, computePipeline->header.numSamplers)];
         }
         commandBuffer->needComputeSamplerBind = false;
     }
 
     if (commandBuffer->needComputeReadOnlyStorageTextureBind) {
-        if (computePipeline->numReadonlyStorageTextures > 0) {
+        if (computePipeline->header.numReadonlyStorageTextures > 0) {
             [commandBuffer->computeEncoder setTextures:commandBuffer->computeReadOnlyTextures
                                              withRange:NSMakeRange(
-                                                           computePipeline->numSamplers,
-                                                           computePipeline->numReadonlyStorageTextures)];
+                                                           computePipeline->header.numSamplers,
+                                                           computePipeline->header.numReadonlyStorageTextures)];
         }
         commandBuffer->needComputeReadOnlyStorageTextureBind = false;
     }
 
     if (commandBuffer->needComputeReadOnlyStorageBufferBind) {
-        if (computePipeline->numReadonlyStorageBuffers > 0) {
+        if (computePipeline->header.numReadonlyStorageBuffers > 0) {
             [commandBuffer->computeEncoder setBuffers:commandBuffer->computeReadOnlyBuffers
                                               offsets:offsets
-                                            withRange:NSMakeRange(computePipeline->numUniformBuffers,
-                                                                  computePipeline->numReadonlyStorageBuffers)];
+                                            withRange:NSMakeRange(computePipeline->header.numUniformBuffers,
+                                                                  computePipeline->header.numReadonlyStorageBuffers)];
         }
         commandBuffer->needComputeReadOnlyStorageBufferBind = false;
     }
 
     for (Uint32 i = 0; i < MAX_UNIFORM_BUFFERS_PER_STAGE; i += 1) {
         if (commandBuffer->needComputeUniformBufferBind[i]) {
-            if (computePipeline->numUniformBuffers > i) {
+            if (computePipeline->header.numUniformBuffers > i) {
                 [commandBuffer->computeEncoder
                     setBuffer:commandBuffer->computeUniformBuffers[i]->handle
                     offset:commandBuffer->computeUniformBuffers[i]->drawOffset
@@ -3133,7 +3122,7 @@ static void METAL_BindComputePipeline(
             metalCommandBuffer->needComputeUniformBufferBind[i] = true;
         }
 
-        for (Uint32 i = 0; i < pipeline->numUniformBuffers; i += 1) {
+        for (Uint32 i = 0; i < pipeline->header.numUniformBuffers; i += 1) {
             if (metalCommandBuffer->computeUniformBuffers[i] == NULL) {
                 metalCommandBuffer->computeUniformBuffers[i] = METAL_INTERNAL_AcquireUniformBufferFromPool(
                     metalCommandBuffer);
@@ -3141,22 +3130,22 @@ static void METAL_BindComputePipeline(
         }
 
         // Bind write-only resources
-        if (pipeline->numReadWriteStorageTextures > 0) {
+        if (pipeline->header.numReadWriteStorageTextures > 0) {
             [metalCommandBuffer->computeEncoder setTextures:metalCommandBuffer->computeReadWriteTextures
                                                   withRange:NSMakeRange(
-                                                        pipeline->numSamplers +
-                                                            pipeline->numReadonlyStorageTextures,
-                                                        pipeline->numReadWriteStorageTextures)];
+                                                        pipeline->header.numSamplers +
+                                                            pipeline->header.numReadonlyStorageTextures,
+                                                        pipeline->header.numReadWriteStorageTextures)];
         }
 
         NSUInteger offsets[MAX_COMPUTE_WRITE_BUFFERS] = { 0 };
-        if (pipeline->numReadWriteStorageBuffers > 0) {
+        if (pipeline->header.numReadWriteStorageBuffers > 0) {
             [metalCommandBuffer->computeEncoder setBuffers:metalCommandBuffer->computeReadWriteBuffers
                                                    offsets:offsets
                                                  withRange:NSMakeRange(
-                                                        pipeline->numUniformBuffers +
-                                                            pipeline->numReadonlyStorageBuffers,
-                                                        pipeline->numReadWriteStorageBuffers)];
+                                                        pipeline->header.numUniformBuffers +
+                                                            pipeline->header.numReadonlyStorageBuffers,
+                                                        pipeline->header.numReadWriteStorageBuffers)];
         }
     }
 }
@@ -4570,6 +4559,7 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         SDL_GPUDevice *result = SDL_calloc(1, sizeof(SDL_GPUDevice));
         ASSIGN_DRIVER(METAL)
         result->driverData = (SDL_GPURenderer *)renderer;
+        result->shader_formats = SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_METALLIB;
         renderer->sdlGPUDevice = result;
 
         return result;

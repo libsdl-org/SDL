@@ -26,7 +26,8 @@
 typedef struct SDL_WaylandTextInput
 {
     struct zwp_text_input_v3 *text_input;
-    SDL_Rect cursor_rect;
+    SDL_Rect text_input_rect;
+    int text_input_cursor;
     bool has_preedit;
 } SDL_WaylandTextInput;
 

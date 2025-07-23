@@ -308,6 +308,12 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     ctx.AAudioStreamBuilder_setFormat(builder, format);
     ctx.AAudioStreamBuilder_setSampleRate(builder, device->spec.freq);
     ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
+	
+    // If no specific buffer size has been requested, the device will pick the optimal 
+	if(SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES)) {
+	    ctx.AAudioStreamBuilder_setBufferCapacityInFrames(builder, 2 * device->sample_frames); // AAudio requires that the buffer capacity is at least
+	    ctx.AAudioStreamBuilder_setFramesPerDataCallback(builder, device->sample_frames);      // twice the size of the data callback buffer size
+	}
 
     const aaudio_direction_t direction = (recording ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
     ctx.AAudioStreamBuilder_setDirection(builder, direction);
@@ -366,7 +372,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     hidden->processed_bytes = 0;
     hidden->callback_bytes = 0;
 
-    hidden->semaphore = SDL_CreateSemaphore(recording ? 0 : hidden->num_buffers);
+    hidden->semaphore = SDL_CreateSemaphore(recording ? 0 : hidden->num_buffers - 1);
     if (!hidden->semaphore) {
         LOGI("SDL Failed SDL_CreateSemaphore %s recording:%d", SDL_GetError(), recording);
         return false;

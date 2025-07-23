@@ -71,6 +71,11 @@ extern "C" {
 #define DETACH_KERNEL_DRIVER
 #endif
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable:5287) /* operands are different enum types */
+#endif
+
 /* Uncomment to enable the retrieval of Usage and Usage Page in
 hid_enumerate(). Warning, on platforms different from FreeBSD
 this is very invasive as it requires the detach
@@ -918,6 +923,22 @@ static int should_enumerate_interface(unsigned short vendor_id, const struct lib
 	return 0;
 }
 
+static int libusb_blacklist(unsigned short vendor_id, unsigned short product_id)
+{
+	size_t i;
+	static const struct { unsigned short vid; unsigned short pid; } known_bad[] = {
+		{ 0x1532, 0x0227 }  /* Razer Huntsman Gaming keyboard - long delay asking for device details */
+	};
+
+	for (i = 0; i < (sizeof(known_bad)/sizeof(known_bad[0])); i++) {
+		if ((vendor_id == known_bad[i].vid) && (product_id == known_bad[i].pid || known_bad[i].pid == 0x0000)) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
 	libusb_device **devs;
@@ -948,7 +969,8 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		unsigned short dev_pid = desc.idProduct;
 
 		if ((vendor_id != 0x0 && vendor_id != dev_vid) ||
-		    (product_id != 0x0 && product_id != dev_pid)) {
+		    (product_id != 0x0 && product_id != dev_pid) ||
+		    libusb_blacklist(dev_vid, dev_pid)) {
 			continue;
 		}
 
@@ -1238,6 +1260,7 @@ static void init_xbox360(libusb_device_handle *device_handle, unsigned short idV
 	(void)conf_desc;
 
 	if ((idVendor == 0x05ac && idProduct == 0x055b) /* Gamesir-G3w */ ||
+	    (idVendor == 0x20d6 && idProduct == 0x4010) /* PowerA Battle Dragon Advanced Wireless Controller */ ||
 	    idVendor == 0x0f0d /* Hori Xbox controllers */) {
 		unsigned char data[20];
 
@@ -2138,6 +2161,10 @@ uint16_t get_usb_code_for_current_locale(void)
 	/* Found nothing. */
 	return 0x0;
 }
+
+#if defined(_MSC_VER)
+#pragma warning (pop)
+#endif
 
 #ifdef __cplusplus
 }

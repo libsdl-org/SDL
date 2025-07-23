@@ -78,11 +78,13 @@ struct SDL_WindowData
     bool in_border_change;
     bool in_title_click;
     Uint8 focus_click_pending;
-    bool skip_update_clipcursor;
+    bool postpone_clipcursor;
+    bool clipcursor_queued;
     bool windowed_mode_was_maximized;
     bool in_window_deactivation;
     bool force_ws_maximizebox;
     bool disable_move_size_events;
+    bool showing_window;
     int in_modal_loop;
     RECT initial_size_rect;
     RECT cursor_clipped_rect; // last successfully committed clipping rect for this window
@@ -91,7 +93,6 @@ struct SDL_WindowData
     bool destroy_parent_with_window;
     SDL_DisplayID last_displayID;
     WCHAR *ICMFileName;
-    SDL_Window *keyboard_focus;
     SDL_WindowEraseBackgroundMode hint_erase_background_mode;
     struct SDL_VideoData *videodata;
 #ifdef SDL_VIDEO_OPENGL_EGL

@@ -58,8 +58,8 @@ typedef enum
 static gulong (*g_signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, GConnectFlags connect_flags);
 static void (*g_object_unref)(gpointer object);
 static gchar *(*g_mkdtemp)(gchar *template);
-gpointer (*g_object_ref_sink)(gpointer object);
-gpointer (*g_object_ref)(gpointer object);
+static gpointer (*g_object_ref_sink)(gpointer object);
+static gpointer (*g_object_ref)(gpointer object);
 
 // glib_typeof requires compiler-specific code and includes that are too complex
 // to be worth copy-pasting here
@@ -541,7 +541,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
         return NULL;
     }
 
-    entry->submenu->menu = (GtkMenuShell *)gtk_menu_new();
+    entry->submenu->menu = g_object_ref_sink(gtk_menu_new());
     entry->submenu->parent_tray = NULL;
     entry->submenu->parent_entry = entry;
     entry->submenu->nEntries = 0;

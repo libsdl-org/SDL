@@ -1368,9 +1368,14 @@ bool KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
                                             dispdata->mode.hdisplay, dispdata->mode.vdisplay,
                                             surface_fmt, surface_flags);
-
+    if (!windata->gs && errno == ENOSYS) {
+        // Try again without the scanout flags, needed on NVIDIA drivers
+        windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
+                                                dispdata->mode.hdisplay, dispdata->mode.vdisplay,
+                                                surface_fmt, 0);
+    }
     if (!windata->gs) {
-        return SDL_SetError("Could not create GBM surface");
+        return SDL_SetError("Could not create GBM surface: %s", strerror(errno));
     }
 
     /* We can't get the EGL context yet because SDL_CreateRenderer has not been called,
@@ -1729,9 +1734,9 @@ bool KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
         }
 
         /* Create the window surfaces with the size we have just chosen.
-           Needs the window diverdata in place. */
+           Needs the window driverdata in place. */
         if (!KMSDRM_CreateSurfaces(_this, window)) {
-            return SDL_SetError("Can't window GBM/EGL surfaces on window creation.");
+            return false;
         }
     } // NON-Vulkan block ends.
 
