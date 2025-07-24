@@ -173,7 +173,11 @@ static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     elem->guid = SDL_CreateJoystickGUID(bus, vendor, product, version, manufacturer_string, product_string, 'g', 0);
     elem->device_instance = SDL_GetNextObjectID();
     elem->info = info;
+#if GAMEINPUT_API_VERSION >= 1
     elem->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(info->pnpPath);
+#else
+    elem->steam_virtual_gamepad_slot = -1;
+#endif
 
     g_GameInputList.devices = devicelist;
     g_GameInputList.devices[g_GameInputList.count++] = elem;
