@@ -580,11 +580,6 @@ void WIN_QuitGameInput(SDL_VideoDevice *_this)
             GAMEINPUT_InternalRemoveByIndex(data, 0);
         }
 
-        data->pGameInput->Release();
-        data->pGameInput = NULL;
-    }
-
-    if (data->pGameInput) {
         SDL_QuitGameInput();
         data->pGameInput = NULL;
     }
