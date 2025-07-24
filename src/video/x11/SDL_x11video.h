@@ -24,6 +24,7 @@
 #define SDL_x11video_h_
 
 #include "../SDL_sysvideo.h"
+#include "../../events/SDL_keymap_c.h"
 
 #include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
@@ -125,7 +126,6 @@ struct SDL_VideoData
         Atom pen_atom_wacom_tool_type;
     } atoms;
 
-    SDL_Scancode key_layout[256];
     bool selection_waiting;
     bool selection_incr_waiting;
 
@@ -144,21 +144,43 @@ struct SDL_VideoData
     int xrandr_event_base;
     struct
     {
-#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
-        XkbDescPtr desc_ptr;
+        bool xkb_enabled;
+        SDL_Scancode key_layout[256];
+
+        union
+        {
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLIB
+            struct
+            {
+                XkbDescPtr desc_ptr;
+                SDL_Keymap *keymaps[XkbNumKbdGroups];
+                unsigned long last_map_serial;
+                int event;
+                Uint32 current_group;
+            } xkb; // Modern XKB keyboard handling
 #endif
-        int event;
-        unsigned int current_group;
-        unsigned int xkb_modifiers;
+            struct
+            {
+                KeySym *keysym_map;
+                int keysyms_per_key;
+                int min_keycode;
+                int max_keycode;
+            } core; // Legacy core keyboard handling
+        };
+        Uint32 pressed_modifiers;
+        Uint32 locked_modifiers;
+        SDL_Keymod sdl_pressed_modifiers;
+        SDL_Keymod sdl_physically_pressed_modifiers;
+        SDL_Keymod sdl_locked_modifiers;
 
-        SDL_Keymod sdl_modifiers;
-
+        // Virtual modifiers looked up by name.
+        Uint32 alt_mask;
+        Uint32 gui_mask;
+        Uint32 level3_mask;
+        Uint32 level5_mask;
         Uint32 numlock_mask;
         Uint32 scrolllock_mask;
-    } xkb;
-
-    KeyCode filter_code;
-    Time filter_time;
+    } keyboard;
 
 #ifdef SDL_VIDEO_VULKAN
     // Vulkan variables only valid if _this->vulkan_config.loader_handle is not NULL
