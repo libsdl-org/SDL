@@ -71,6 +71,7 @@ SDL_X11_SYM(int,XFreePixmap,(Display* a,Pixmap b))
 SDL_X11_SYM(void,XFreeStringList,(char** a))
 SDL_X11_SYM(char*,XGetAtomName,(Display *a,Atom b))
 SDL_X11_SYM(int,XGetInputFocus,(Display *a,Window *b,int *c))
+SDL_X11_SYM(KeySym*,XGetKeyboardMapping,(Display *a, KeyCode b, int c, int *d))
 SDL_X11_SYM(int,XGetErrorDatabaseText,(Display* a,_Xconst char* b,_Xconst char* c,_Xconst char* d,char* e,int f))
 SDL_X11_SYM(XModifierKeymap*,XGetModifierMapping,(Display* a))
 SDL_X11_SYM(int,XGetPointerControl,(Display* a,int* b,int* c,int* d))
@@ -196,33 +197,19 @@ SDL_X11_SYM(Bool,XGetEventData,(Display* a,XGenericEventCookie* b))
 SDL_X11_SYM(void,XFreeEventData,(Display* a,XGenericEventCookie* b))
 #endif
 
-#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLIB
 SDL_X11_SYM(Bool,XkbQueryExtension,(Display* a,int * b,int * c,int * d,int * e, int *f))
-#if NeedWidePrototypes
-SDL_X11_SYM(Bool,XkbLookupKeySym,(Display* a, unsigned int b, unsigned int c, unsigned int* d, KeySym* e))
-#else
-SDL_X11_SYM(Bool,XkbLookupKeySym,(Display* a, KeyCode b, unsigned int c, unsigned int* d, KeySym* e))
-#endif
+SDL_X11_SYM(KeySym,XkbKeycodeToKeysym,(Display* a, KeyCode b, unsigned int c, unsigned int d))
+SDL_X11_SYM(Bool,XkbSelectEvents,(Display* a, unsigned int b, unsigned int c, unsigned long d))
+SDL_X11_SYM(Bool,XkbSelectEventDetails,(Display* a, unsigned int b, unsigned int c, unsigned long d, unsigned long e))
+SDL_X11_SYM(Status,XkbGetNames,(Display *a, unsigned int b, XkbDescPtr c))
 SDL_X11_SYM(Status,XkbGetState,(Display* a,unsigned int b,XkbStatePtr c))
 SDL_X11_SYM(Status,XkbGetUpdatedMap,(Display* a,unsigned int b,XkbDescPtr c))
 SDL_X11_SYM(XkbDescPtr,XkbGetMap,(Display* a,unsigned int b,unsigned int c))
 SDL_X11_SYM(void,XkbFreeClientMap,(XkbDescPtr a,unsigned int b, Bool c))
 SDL_X11_SYM(void,XkbFreeKeyboard,(XkbDescPtr a,unsigned int b, Bool c))
+SDL_X11_SYM(Status,XkbRefreshKeyboardMapping,(XkbMapNotifyEvent *a))
 SDL_X11_SYM(Bool,XkbSetDetectableAutoRepeat,(Display* a, Bool b, Bool* c))
-#endif
-
-// XKeycodeToKeysym is a deprecated function
-#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-#if NeedWidePrototypes
-SDL_X11_SYM(KeySym,XKeycodeToKeysym,(Display* a,unsigned int b,int c))
-#else
-SDL_X11_SYM(KeySym,XKeycodeToKeysym,(Display* a,KeyCode b,int c))
-#endif
-#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
-#pragma GCC diagnostic pop
 #endif
 
 #ifdef X_HAVE_UTF8_STRING
