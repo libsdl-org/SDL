@@ -66,7 +66,7 @@ static bool AAUDIO_LoadFunctions(AAUDIO_Data *data)
 #define SDL_PROC(ret, func, params)                                                             \
     do {                                                                                        \
         data->func = (ret (*) params)SDL_LoadFunction(data->handle, #func);                     \
-        if (!data->func) {                                                          \
+        if (!data->func) {                                                                      \
             return SDL_SetError("Couldn't load AAUDIO function %s: %s", #func, SDL_GetError()); \
         }                                                                                       \
     } while (0);

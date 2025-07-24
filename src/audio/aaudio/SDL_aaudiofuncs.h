@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_PROC_OPTIONAL(ret, func, params)
+#ifndef SDL_PROC_OPTIONAL
 #define SDL_PROC_OPTIONAL(ret, func, params) SDL_PROC(ret, func, params)
 #endif
 
