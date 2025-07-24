@@ -311,7 +311,7 @@ void SDL_PrivateGamepadAdded(SDL_JoystickID instance_id)
 {
     SDL_Event event;
 
-    if (!SDL_gamepads_initialized) {
+    if (!SDL_gamepads_initialized || SDL_IsJoystickBeingAdded()) {
         return;
     }
 
