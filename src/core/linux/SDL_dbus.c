@@ -24,11 +24,19 @@
 
 #ifdef SDL_USE_LIBDBUS
 // we never link directly to libdbus.
-static const char *dbus_library = "libdbus-1.so.3";
+#define SDL_DRIVER_DBUS_DYNAMIC "libdbus-1.so.3"
+static const char *dbus_library = SDL_DRIVER_DBUS_DYNAMIC;
 static SDL_SharedObject *dbus_handle = NULL;
 static char *inhibit_handle = NULL;
 static unsigned int screensaver_cookie = 0;
 static SDL_DBusContext dbus;
+
+SDL_ELF_NOTE_DLOPEN(
+    "core-libdbus",
+    "Support for D-Bus IPC",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_DRIVER_DBUS_DYNAMIC
+);
 
 static bool LoadDBUSSyms(void)
 {
