@@ -78,6 +78,7 @@ static bool GAMEINPUT_InternalIsGamepad(const GameInputDeviceInfo *info)
     return false;
 }
 
+#if GAMEINPUT_API_VERSION >= 1
 static int GetSteamVirtualGamepadSlot(const char *device_path)
 {
     int slot = -1;
@@ -87,6 +88,7 @@ static int GetSteamVirtualGamepadSlot(const char *device_path)
     (void)SDL_sscanf(device_path, "\\\\.\\pipe\\HID#VID_045E&PID_028E&IG_00#%*X&%*X&%*X#%d#%*u", &slot);
     return slot;
 }
+#endif // GAMEINPUT_API_VERSION >= 1
 
 static bool GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
 {
