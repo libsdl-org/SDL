@@ -2316,6 +2316,7 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
     SDL_JoystickDriver *driver;
     int device_index;
     int player_index = -1;
+    bool is_gamepad;
 
     SDL_AssertJoysticksLocked();
 
@@ -2350,9 +2351,12 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
         }
     }
 
+    // This might create an automatic gamepad mapping, so wait to send the event
+    is_gamepad = SDL_IsGamepad(instance_id);
+
     SDL_joystick_being_added = false;
 
-    if (SDL_IsGamepad(instance_id)) {
+    if (is_gamepad) {
         SDL_PrivateGamepadAdded(instance_id);
     }
 }
