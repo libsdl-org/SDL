@@ -28,7 +28,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xresource.h>
 
-#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLIB
 #include <X11/XKBlib.h>
 #endif
 
