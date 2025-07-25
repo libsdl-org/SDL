@@ -272,7 +272,6 @@ static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(SDL_HIDAPI_Device *devi
     case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
     default:
         return 120;
-        break;
     }
 }
 
