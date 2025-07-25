@@ -1251,7 +1251,6 @@ SDL3_0.0.0 {
     SDL_GetGPUDeviceProperties;
     SDL_CreateGPURenderer;
     SDL_PutAudioStreamPlanarData;
-    SDL_SetAudioIterationCallbacks;
     SDL_GetEventDescription;
     SDL_PutAudioStreamDataNoCopy;
     SDL_IsTraySupported;

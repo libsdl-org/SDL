@@ -1164,23 +1164,9 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
 
             // We should have updated this elsewhere if the format changed!
             SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &device->spec, NULL, NULL));
-
             SDL_assert(stream->src_spec.format != SDL_AUDIO_UNKNOWN);
 
-            int br = 0;
-
-            if (!SDL_GetAtomicInt(&logdev->paused)) {
-                if (logdev->iteration_start) {
-                    logdev->iteration_start(logdev->iteration_userdata, logdev->instance_id, true);
-                }
-
-                br = SDL_GetAudioStreamDataAdjustGain(stream, device_buffer, buffer_size, logdev->gain);
-
-                if (logdev->iteration_end) {
-                    logdev->iteration_end(logdev->iteration_userdata, logdev->instance_id, false);
-                }
-            }
-
+            const int br = SDL_GetAtomicInt(&logdev->paused) ? 0 : SDL_GetAudioStreamDataAdjustGain(stream, device_buffer, buffer_size, logdev->gain);
             if (br < 0) {  // Probably OOM. Kill the audio device; the whole thing is likely dying soon anyhow.
                 failed = true;
                 SDL_memset(device_buffer, device->silence_value, buffer_size);  // just supply silence to the device before we die.
@@ -1218,10 +1204,6 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
                     SDL_memset(mix_buffer, '\0', work_buffer_size);  // start with silence.
                 }
 
-                if (logdev->iteration_start) {
-                    logdev->iteration_start(logdev->iteration_userdata, logdev->instance_id, true);
-                }
-
                 for (SDL_AudioStream *stream = logdev->bound_streams; stream; stream = stream->next_binding) {
                     // We should have updated this elsewhere if the format changed!
                     SDL_assert(SDL_AudioSpecsEqual(&stream->dst_spec, &outspec, NULL, NULL));
@@ -1244,10 +1226,6 @@ bool SDL_PlaybackAudioThreadIterate(SDL_AudioDevice *device)
                         }
                         MixFloat32Audio(mix_buffer, (float *) device->work_buffer, br);
                     }
-                }
-
-                if (logdev->iteration_end) {
-                    logdev->iteration_end(logdev->iteration_userdata, logdev->instance_id, false);
                 }
 
                 if (postmix) {
@@ -1986,21 +1964,6 @@ bool SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallba
         }
 
         UpdateAudioStreamFormatsPhysical(device);
-    }
-    ReleaseAudioDevice(device);
-    return result;
-}
-
-bool SDL_SetAudioIterationCallbacks(SDL_AudioDeviceID devid, SDL_AudioIterationCallback iter_start, SDL_AudioIterationCallback iter_end, void *userdata)
-{
-    SDL_AudioDevice *device = NULL;
-    SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
-    bool result = false;
-    if (logdev) {
-        logdev->iteration_start = iter_start;
-        logdev->iteration_end = iter_end;
-        logdev->iteration_userdata = userdata;
-        result = true;
     }
     ReleaseAudioDevice(device);
     return result;
