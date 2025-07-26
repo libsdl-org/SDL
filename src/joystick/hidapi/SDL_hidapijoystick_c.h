@@ -35,6 +35,7 @@
 #define SDL_JOYSTICK_HIDAPI_STEAM
 #define SDL_JOYSTICK_HIDAPI_STEAMDECK
 #define SDL_JOYSTICK_HIDAPI_SWITCH
+#define SDL_JOYSTICK_HIDAPI_SWITCH2
 #define SDL_JOYSTICK_HIDAPI_WII
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
@@ -158,6 +159,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamDeck;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch2;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
