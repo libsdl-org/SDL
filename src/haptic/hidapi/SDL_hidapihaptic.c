@@ -27,8 +27,6 @@
 #include "SDL3/SDL_mutex.h"
 #include "SDL3/SDL_error.h"
 
-extern struct SDL_JoystickDriver SDL_HIDAPI_JoystickDriver;
-
 typedef struct haptic_list_node
 {
     SDL_Haptic *haptic;
