@@ -393,6 +393,7 @@ static void Wayland_data_offer_check_source(SDL_WaylandDataOffer *offer, const c
 
     if (!offer) {
         SDL_SetError("Invalid data offer");
+        return;
     }
     data_device = offer->data_device;
     if (!data_device) {
