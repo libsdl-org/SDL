@@ -2242,13 +2242,13 @@ void SDL_DrawGPUIndexedPrimitivesIndirect(
 void SDL_EndGPURenderPass(
     SDL_GPURenderPass *render_pass)
 {
-    CommandBufferCommonHeader *commandBufferCommonHeader;
-    commandBufferCommonHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
-
     if (render_pass == NULL) {
         SDL_InvalidParamError("render_pass");
         return;
     }
+
+    CommandBufferCommonHeader *commandBufferCommonHeader;
+    commandBufferCommonHeader = (CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER;
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
