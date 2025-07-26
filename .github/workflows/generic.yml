@@ -177,7 +177,7 @@ jobs:
         #shell: ${{ matrix.platform.shell }}
         run: |
           ${{ matrix.platform.source-cmd }}
-          ${{ matrix.platform.cmake-config-emulator }} cmake -S . -B build -GNinja \
+          ${{ matrix.platform.cmake-config-emulator }} cmake -S . -B build -G "${{ matrix.platform.cmake-generator }}" \
             -Wdeprecated -Wdev -Werror \
             ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
             -DSDL_WERROR=${{ matrix.platform.werror }} \
@@ -207,9 +207,9 @@ jobs:
         run: |
           echo "This should show us the SDL_REVISION"
           echo "Shared library:"
-          ${{ (matrix.platform.shared-lib && format('strings build/{0} | grep "Github Workflow"', matrix.platform.shared-lib)) || 'echo "<Shared library not supported by platform>"' }}
+          ${{ (matrix.platform.shared-lib && format('{0} build/{1} | grep "Github Workflow"', matrix.platform.binutils-strings, matrix.platform.shared-lib)) || 'echo "<Shared library not supported by platform>"' }}
           echo "Static library:"
-          ${{ (matrix.platform.static-lib && format('strings build/{0} | grep "Github Workflow"', matrix.platform.static-lib)) || 'echo "<Static library not supported by platform>"' }}
+          ${{ (matrix.platform.static-lib && format('{0} build/{1} | grep "Github Workflow"', matrix.platform.binutils-strings, matrix.platform.static-lib)) || 'echo "<Static library not supported by platform>"' }}
       - name: 'Run build-time tests (CMake)'
         id: cmake-tests
         if: ${{ !matrix.platform.no-cmake && matrix.platform.run-tests }}
