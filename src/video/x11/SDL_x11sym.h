@@ -45,6 +45,7 @@ SDL_X11_SYM(Cursor,XCreatePixmapCursor,(Display* a,Pixmap b,Pixmap c,XColor* d,X
 SDL_X11_SYM(Cursor,XCreateFontCursor,(Display* a,unsigned int b))
 SDL_X11_SYM(XFontSet,XCreateFontSet,(Display* a, _Xconst char* b, char*** c, int* d, char** e))
 SDL_X11_SYM(GC,XCreateGC,(Display* a,Drawable b,unsigned long c,XGCValues* d))
+SDL_X11_SYM(void,XSetFont,(Display* a,GC b,Font c))
 SDL_X11_SYM(Status,XAllocColor,(Display *a, Colormap b, XColor *c))
 SDL_X11_SYM(XImage*,XCreateImage,(Display* a,Visual* b,unsigned int c,int d,int e,char* f,unsigned int g,unsigned int h,int i,int j))
 SDL_X11_SYM(Window,XCreateWindow,(Display* a,Window b,int c,int d,unsigned int e,unsigned int f,unsigned int g,int h,unsigned int i,Visual* j,unsigned long k,XSetWindowAttributes* l))
@@ -53,6 +54,7 @@ SDL_X11_SYM(int,XDeleteProperty,(Display* a,Window b,Atom c))
 SDL_X11_SYM(int,XDestroyWindow,(Display* a,Window b))
 SDL_X11_SYM(int,XDisplayKeycodes,(Display* a,int* b,int* c))
 SDL_X11_SYM(int,XDrawRectangle,(Display* a,Drawable b,GC c,int d,int e,unsigned int f,unsigned int g))
+SDL_X11_SYM(int,XFillArc,(Display* a,Drawable b,GC c,int d,int e,unsigned int f,unsigned int g, int h, int i))
 SDL_X11_SYM(char*,XDisplayName,(_Xconst char* a))
 SDL_X11_SYM(int,XDrawString,(Display* a,Drawable b,GC c,int d,int e,_Xconst char* f,int g))
 SDL_X11_SYM(int,XEventsQueued,(Display* a,int b))
@@ -240,6 +242,7 @@ SDL_X11_SYM(void,Xutf8DrawString,(Display *a, Drawable b, XFontSet c, GC d, int 
 SDL_X11_SYM(int,Xutf8TextExtents,(XFontSet a, _Xconst char* b, int c, XRectangle* d, XRectangle* e))
 SDL_X11_SYM(char*,XSetLocaleModifiers,(const char *a))
 SDL_X11_SYM(char*,Xutf8ResetIC,(XIC a))
+SDL_X11_SYM(XFontSetExtents*,XExtentsOfFontSet,(XFontSet a))
 #endif
 
 #ifndef NO_SHARED_MEMORY
