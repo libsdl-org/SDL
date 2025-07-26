@@ -3869,10 +3869,14 @@ case "$host" in
         if test x$enable_audio = xyes; then
           case $ARCH in
             sysv5|solaris|hpux)
-                AC_DEFINE(SDL_AUDIO_DRIVER_SUNAUDIO, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/audio/sun/*.c"
-                SUMMARY_audio="${SUMMARY_audio} sun"
-                have_audio=yes
+                dnl Newer Solaris-based systems, like OpenIndiana, don't have this interface anymore. Check for the header first.
+                AC_CHECK_HEADER(audio/audiolib.h,have_sys_audiolib=yes,have_sys_audiolib=no)
+                if test x$have_sys_audiolib = xyes; then
+                    AC_DEFINE(SDL_AUDIO_DRIVER_SUNAUDIO, 1, [ ])
+                    SOURCES="$SOURCES $srcdir/src/audio/sun/*.c"
+                    SUMMARY_audio="${SUMMARY_audio} sun"
+                    have_audio=yes
+                fi
             ;;
             netbsd)  # Don't use this on OpenBSD, it's busted.
                 AC_DEFINE(SDL_AUDIO_DRIVER_NETBSD, 1, [ ])
