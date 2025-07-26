@@ -1470,7 +1470,7 @@ static void ALSA_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, c
     }
 }
 
-static bool ALSA_start_udev()
+static bool ALSA_start_udev(void)
 {
     udev_initialized = SDL_UDEV_Init();
     if (udev_initialized) {
@@ -1483,7 +1483,7 @@ static bool ALSA_start_udev()
     return udev_initialized;
 }
 
-static void ALSA_stop_udev()
+static void ALSA_stop_udev(void)
 {
     if (udev_initialized) {
         SDL_UDEV_DelCallback(ALSA_udev_callback);
@@ -1494,12 +1494,12 @@ static void ALSA_stop_udev()
 
 #else
 
-static bool ALSA_start_udev()
+static bool ALSA_start_udev(void)
 {
     return false;
 }
 
-static void ALSA_stop_udev()
+static void ALSA_stop_udev(void)
 {
 }
 

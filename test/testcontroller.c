@@ -1439,7 +1439,7 @@ static void HandleGamepadGyroEvent(SDL_Event *event)
 #define SDL_GAMEPAD_IMU_MIN_POLLING_RATE_ESTIMATION_TIME_NS (SDL_NS_PER_SECOND * 2)
 
 
-static void EstimatePacketRate()
+static void EstimatePacketRate(void)
 {
     Uint64 now_ns = SDL_GetTicksNS();
     if (controller->imu_state->imu_packet_counter == 0) {
