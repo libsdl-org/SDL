@@ -174,6 +174,7 @@ class JobDetails:
     brew_packages: list[str] = dataclasses.field(default_factory=list)
     cmake_toolchain_file: str = ""
     cmake_arguments: list[str] = dataclasses.field(default_factory=list)
+    cmake_generator: str = "Ninja"
     cmake_build_arguments: list[str] = dataclasses.field(default_factory=list)
     clang_tidy: bool = True
     cppflags: list[str] = dataclasses.field(default_factory=list)
@@ -222,6 +223,7 @@ class JobDetails:
     check_sources: bool = False
     setup_python: bool = False
     pypi_packages: list[str] = dataclasses.field(default_factory=list)
+    binutils_strings: str = "strings"
 
     def to_workflow(self, enable_artifacts: bool) -> dict[str, str|bool]:
         data = {
@@ -255,6 +257,7 @@ class JobDetails:
             "cflags": my_shlex_join(self.cppflags + self.cflags),
             "cxxflags": my_shlex_join(self.cppflags + self.cxxflags),
             "ldflags": my_shlex_join(self.ldflags),
+            "cmake-generator": self.cmake_generator,
             "cmake-toolchain-file": self.cmake_toolchain_file,
             "clang-tidy": self.clang_tidy,
             "cmake-arguments": my_shlex_join(self.cmake_arguments),
@@ -289,6 +292,7 @@ class JobDetails:
             "check-sources": self.check_sources,
             "setup-python": self.setup_python,
             "pypi-packages": my_shlex_join(self.pypi_packages),
+            "binutils-strings": self.binutils_strings,
         }
         return {k: v for k, v in data.items() if v != ""}
 
@@ -675,13 +679,16 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
         case SdlPlatform.N3ds:
-            job.ccache = True
+            job.cmake_generator = "Unix Makefiles"
+            job.cmake_build_arguments.append("-j$(nproc)")
+            job.ccache = False
             job.shared = False
-            job.apt_packages = ["ccache", "ninja-build", "binutils"]
+            job.apt_packages = []
             job.clang_tidy = False
             job.run_tests = False
             job.cc_from_cmake = True
             job.cmake_toolchain_file = "${DEVKITPRO}/cmake/3DS.cmake"
+            job.binutils_strings = "/opt/devkitpro/devkitARM/bin/arm-none-eabi-strings"
             job.static_lib = StaticLibType.A
         case SdlPlatform.Msys2:
             job.ccache = True
