@@ -130,7 +130,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetCurrentTime(SDL_Time *ticks);
  * the SDL_DateTime format.
  *
  * \param ticks the SDL_Time to be converted.
- * \param dt the resulting SDL_DateTime.
+ * \param dt the resulting SDL_DateTime. The data pointed to is written by
+ *           this function.
  * \param localTime the resulting SDL_DateTime will be expressed in local time
  *                  if true, otherwise it will be in Universal Coordinated
  *                  Time (UTC).
@@ -147,8 +148,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime
  * This function ignores the day_of_week member of the SDL_DateTime struct, so
  * it may remain unset.
  *
- * \param dt the source SDL_DateTime.
- * \param ticks the resulting SDL_Time.
+ * \param dt the source SDL_DateTime. The data pointed to is read by this
+ *           function and not retained after the call returns.
+ * \param ticks the resulting SDL_Time. The value pointed to is written by
+ *              this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -164,9 +167,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_
  *
  * \param ticks the time to convert.
  * \param dwLowDateTime a pointer filled in with the low portion of the
- *                      Windows FILETIME value.
+ *                      Windows FILETIME value. The value pointed to is written
+ *                      by this function.
  * \param dwHighDateTime a pointer filled in with the high portion of the
- *                       Windows FILETIME value.
+ *                       Windows FILETIME value. The value pointed to is written
+ *                       by this function.
  *
  * \since This function is available since SDL 3.2.0.
  */

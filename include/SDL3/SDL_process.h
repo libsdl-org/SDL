@@ -259,7 +259,8 @@ extern SDL_DECLSPEC SDL_Process * SDLCALL SDL_CreateProcessWithProperties(SDL_Pr
  * - `SDL_PROP_PROCESS_BACKGROUND_BOOLEAN`: true if the process is running in
  *   the background.
  *
- * \param process the process to query.
+ * \param process the process to query. The data pointed to is read by this
+ *                function and not retained after the call returns.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
  *
@@ -291,13 +292,16 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetProcessProperties(SDL_Proces
  *
  * The data should be freed with SDL_free().
  *
- * \param process The process to read.
+ * \param process The process to read. The data pointed to is read by this
+ *                function and not retained after the call returns.
  * \param datasize a pointer filled in with the number of bytes read, may be
- *                 NULL.
+ *                 NULL. If provided, the value pointed to is written by this
+ *                 function.
  * \param exitcode a pointer filled in with the process exit code if the
- *                 process has exited, may be NULL.
+ *                 process has exited, may be NULL. If provided, the value
+ *                 pointed to is written by this function.
  * \returns the data or NULL on failure; call SDL_GetError() for more
- *          information.
+ *          information. The returned pointer should be freed with SDL_free().
  *
  * \threadsafety This function is not thread safe.
  *
@@ -321,9 +325,12 @@ extern SDL_DECLSPEC void * SDLCALL SDL_ReadProcess(SDL_Process *process, size_t 
  * if so you may need to call SDL_GetProcessOutput() and read the output in
  * parallel with writing input.
  *
- * \param process The process to get the input stream for.
+ * \param process The process to get the input stream for. The data pointed to
+ *                is read by this function and not retained after the call
+ *                returns.
  * \returns the input stream or NULL on failure; call SDL_GetError() for more
- *          information.
+ *          information. The returned pointer is owned by SDL and should not
+ *          be freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -345,9 +352,12 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_GetProcessInput(SDL_Process *proc
  * Reading from this stream can return 0 with SDL_GetIOStatus() returning
  * SDL_IO_STATUS_NOT_READY if no output is available yet.
  *
- * \param process The process to get the output stream for.
+ * \param process The process to get the output stream for. The data pointed to
+ *                is read by this function and not retained after the call
+ *                returns.
  * \returns the output stream or NULL on failure; call SDL_GetError() for more
- *          information.
+ *          information. The returned pointer is owned by SDL and should not
+ *          be freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
