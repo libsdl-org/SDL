@@ -79,7 +79,7 @@ typedef struct SDL_SharedObject SDL_SharedObject;
 /**
  * Dynamically load a shared object.
  *
- * \param sofile a system-dependent name of the object file.
+ * \param sofile a system-dependent name of the object file. This string is not retained by SDL.
  * \returns an opaque pointer to the object handle or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -108,7 +108,7 @@ extern SDL_DECLSPEC SDL_SharedObject * SDLCALL SDL_LoadObject(const char *sofile
  * If the requested function doesn't exist, NULL is returned.
  *
  * \param handle a valid shared object handle returned by SDL_LoadObject().
- * \param name the name of the function to look up.
+ * \param name the name of the function to look up. This string is not retained by SDL.
  * \returns a pointer to the function or NULL on failure; call SDL_GetError()
  *          for more information.
  *

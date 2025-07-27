@@ -50,6 +50,7 @@ extern "C" {
  *
  * \returns the name of the platform. If the correct platform name is not
  *          available, returns a string beginning with the text "Unknown".
+ *          The returned string is owned by SDL and should not be modified or freed by the application.
  *
  * \since This function is available since SDL 3.2.0.
  */
