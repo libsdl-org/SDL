@@ -451,7 +451,7 @@ def get_header_list() -> list[Path]:
 
     return ret
 
-# Write the new API in files: _procs.h _overrivides.h and .sym
+# Write the new API in files: _procs.h _overrides.h and .sym
 def add_dyn_api(proc: SdlProcedure) -> None:
     decl_args: list[str] = []
     call_args = []

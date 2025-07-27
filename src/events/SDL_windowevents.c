@@ -56,7 +56,7 @@ void SDL_RemoveWindowEventWatch(SDL_WindowEventWatchPriority priority, SDL_Event
     SDL_RemoveEventWatchList(&SDL_window_event_watchers[priority], filter, userdata);
 }
 
-static bool SDLCALL RemoveSupercededWindowEvents(void *userdata, SDL_Event *event)
+static bool SDLCALL RemoveSupersededWindowEvents(void *userdata, SDL_Event *event)
 {
     SDL_Event *new_event = (SDL_Event *)userdata;
 
@@ -232,7 +232,7 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
             windowevent == SDL_EVENT_WINDOW_SAFE_AREA_CHANGED ||
             windowevent == SDL_EVENT_WINDOW_EXPOSED ||
             windowevent == SDL_EVENT_WINDOW_OCCLUDED) {
-            SDL_FilterEvents(RemoveSupercededWindowEvents, &event);
+            SDL_FilterEvents(RemoveSupersededWindowEvents, &event);
         }
         posted = SDL_PushEvent(&event);
     }

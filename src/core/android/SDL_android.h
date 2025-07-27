@@ -61,7 +61,7 @@ void Android_SetAllowRecreateActivity(bool enabled);
 extern void Android_JNI_SetActivityTitle(const char *title);
 extern void Android_JNI_SetWindowStyle(bool fullscreen);
 extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint);
-extern void Android_JNI_MinizeWindow(void);
+extern void Android_JNI_MinimizeWindow(void);
 extern bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
 extern bool Android_JNI_GetAccelerometerValues(float values[3]);

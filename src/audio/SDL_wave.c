@@ -813,7 +813,7 @@ static bool IMA_ADPCM_Init(WaveFile *file, size_t datalength)
 
     if (format->formattag == EXTENSIBLE_CODE) {
         /* There's no specification for this, but it's basically the same
-         * format because the extensible header has wSampePerBlocks too.
+         * format because the extensible header has wSamplePerBlocks too.
          */
     } else {
         // The Standards Update says there 'should' be 2 bytes for wSamplesPerBlock.
@@ -1852,7 +1852,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
 
     /* Step through all chunks and save information on the fmt, data, and fact
      * chunks. Ignore the chunks we don't know as per specification. This
-     * currently also ignores cue, list, and slnt chunks.
+     * currently also ignores cue, list, and inst chunks.
      */
     while ((Uint64)RIFFend > (Uint64)chunk->position + chunk->length + (chunk->length & 1)) {
         // Abort after too many chunks or else corrupt files may waste time.

@@ -729,7 +729,7 @@ static void onCameraAvailable(void *context, const char *cameraId)
 static void onCameraUnavailable(void *context, const char *cameraId)
 {
     #if DEBUG_CAMERA
-    SDL_Log("CAMERA: CB onCameraUnvailable('%s')", cameraId);
+    SDL_Log("CAMERA: CB onCameraUnavailable('%s')", cameraId);
     #endif
 
     SDL_assert(cameraId != NULL);
