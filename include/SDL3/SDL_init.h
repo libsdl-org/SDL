@@ -378,11 +378,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RunOnMainThread(SDL_MainThreadCallback call
  * SDL_SetAppMetadataProperty().
  *
  * \param appname The name of the application ("My Game 2: Bad Guy's
- *                Revenge!").
+ *                Revenge!"). This string is copied by the function.
  * \param appversion The version of the application ("1.0.0beta5" or a git
- *                   hash, or whatever makes sense).
+ *                   hash, or whatever makes sense). This string is copied by the function.
  * \param appidentifier A unique string in reverse-domain format that
- *                      identifies this app ("com.example.mygame2").
+ *                      identifies this app ("com.example.mygame2"). This string is copied by the function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -443,8 +443,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAppMetadata(const char *appname, const c
  *   Future versions of SDL might add new types. This defaults to
  *   "application".
  *
- * \param name the name of the metadata property to set.
- * \param value the value of the property, or NULL to remove that property.
+ * \param name the name of the metadata property to set. This string is not retained by SDL.
+ * \param value the value of the property, or NULL to remove that property. This string is copied by the function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -472,9 +472,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAppMetadataProperty(const char *name, co
  * SDL_SetAppMetadataProperty(). See SDL_SetAppMetadataProperty() for the list
  * of available properties and their meanings.
  *
- * \param name the name of the metadata property to get.
+ * \param name the name of the metadata property to get. This string is not retained by SDL.
  * \returns the current value of the metadata property, or the default if it
- *          is not set, NULL for properties with no default.
+ *          is not set, NULL for properties with no default. The returned string is owned by SDL
+ *          and should not be modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread, although
  *               the string returned is not protected and could potentially be
