@@ -32,11 +32,11 @@ char *SDL_SYS_GetBasePath(void)
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
-    char *pref_path;
-    if (SDL_asprintf(&pref_path, "C:/System/Apps/%s/%s/", org, app) < 0)
+    char *pref_path = NULL;
+    if (SDL_asprintf(&pref_path, "C:/System/Apps/%s/%s/", org ? org : "SDL_App", app) < 0) {
         return NULL;
-    else
-        return pref_path;
+    }
+    return pref_path;
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)

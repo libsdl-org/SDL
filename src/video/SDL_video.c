@@ -177,9 +177,10 @@ static VideoBootStrap *bootstrap[] = {
     }
 
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_VIDEO_DRIVER_COCOA)
-// Support for macOS fullscreen spaces
+// Support for macOS fullscreen spaces, etc.
 extern bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window);
 extern bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, bool state, bool blocking);
+extern bool Cocoa_IsShowingModalDialog(SDL_Window *window);
 #endif
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
@@ -681,7 +682,9 @@ bool SDL_VideoInit(const char *driver_name)
             }
         }
     }
-    if (!video) {
+    if (video) {
+        SDL_DebugLogBackend("video", bootstrap[i]->name);
+    } else {
         if (driver_name) {
             SDL_SetError("%s not available", driver_name);
             goto pre_driver_error;
@@ -4248,7 +4251,9 @@ static bool SDL_ShouldMinimizeOnFocusLoss(SDL_Window *window)
 
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_VIDEO_DRIVER_COCOA)
     if (SDL_strcmp(_this->name, "cocoa") == 0) { // don't do this for X11, etc
-        if (Cocoa_IsWindowInFullscreenSpace(window)) {
+        if (Cocoa_IsShowingModalDialog(window)) {
+            return false;  // modal system dialogs can live over fullscreen windows, don't minimize.
+        } else if (Cocoa_IsWindowInFullscreenSpace(window)) {
             return false;
         }
     }

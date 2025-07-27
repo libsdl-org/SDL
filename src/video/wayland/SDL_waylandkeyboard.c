@@ -51,65 +51,59 @@ void Wayland_QuitKeyboard(SDL_VideoDevice *_this)
 #endif
 }
 
-void Wayland_UpdateTextInput(SDL_VideoData *display)
+void Wayland_SeatUpdateTextInput(SDL_WaylandSeat *seat)
 {
-    SDL_WaylandSeat *seat = NULL;
+    if (seat->text_input.zwp_text_input) {
+        SDL_WindowData *focus = seat->keyboard.focus;
 
-    if (display->text_input_manager) {
-        wl_list_for_each(seat, &display->seat_list, link) {
-            SDL_WindowData *focus = seat->keyboard.focus;
+        if (focus && focus->text_input_props.active) {
+            SDL_Window *window = focus->sdlwindow;
 
-            if (seat->text_input.zwp_text_input) {
-                if (focus && focus->text_input_props.active) {
-                    SDL_Window *window = focus->sdlwindow;
+            // Enabling will reset all state, so don't do it redundantly.
+            if (!seat->text_input.enabled) {
+                seat->text_input.enabled = true;
+                zwp_text_input_v3_enable(seat->text_input.zwp_text_input);
 
-                    // Enabling will reset all state, so don't do it redundantly.
-                    if (!seat->text_input.enabled) {
-                        seat->text_input.enabled = true;
-                        zwp_text_input_v3_enable(seat->text_input.zwp_text_input);
+                // Now that it's enabled, set the input properties
+                zwp_text_input_v3_set_content_type(seat->text_input.zwp_text_input, focus->text_input_props.hint, focus->text_input_props.purpose);
+                if (!SDL_RectEmpty(&window->text_input_rect)) {
+                    const SDL_Rect scaled_rect = {
+                        (int)SDL_floor(window->text_input_rect.x / focus->pointer_scale.x),
+                        (int)SDL_floor(window->text_input_rect.y / focus->pointer_scale.y),
+                        (int)SDL_ceil(window->text_input_rect.w / focus->pointer_scale.x),
+                        (int)SDL_ceil(window->text_input_rect.h / focus->pointer_scale.y)
+                    };
+                    const int scaled_cursor = (int)SDL_floor(window->text_input_cursor / focus->pointer_scale.x);
 
-                        // Now that it's enabled, set the input properties
-                        zwp_text_input_v3_set_content_type(seat->text_input.zwp_text_input, focus->text_input_props.hint, focus->text_input_props.purpose);
-                        if (!SDL_RectEmpty(&window->text_input_rect)) {
-                            const SDL_Rect scaled_rect = {
-                                (int)SDL_floor(window->text_input_rect.x / focus->pointer_scale.x),
-                                (int)SDL_floor(window->text_input_rect.y / focus->pointer_scale.y),
-                                (int)SDL_ceil(window->text_input_rect.w / focus->pointer_scale.x),
-                                (int)SDL_ceil(window->text_input_rect.h / focus->pointer_scale.y)
-                            };
-                            const int scaled_cursor = (int)SDL_floor(window->text_input_cursor / focus->pointer_scale.x);
+                    SDL_copyp(&seat->text_input.text_input_rect, &scaled_rect);
+                    seat->text_input.text_input_cursor = scaled_cursor;
 
-                            SDL_copyp(&seat->text_input.text_input_rect, &scaled_rect);
-                            seat->text_input.text_input_cursor = scaled_cursor;
-
-                            // Clamp the x value so it doesn't run too far past the end of the text input area.
-                            zwp_text_input_v3_set_cursor_rectangle(seat->text_input.zwp_text_input,
-                                                                   SDL_min(scaled_rect.x + scaled_cursor, scaled_rect.x + scaled_rect.w),
-                                                                   scaled_rect.y,
-                                                                   1,
-                                                                   scaled_rect.h);
-                        }
-                        zwp_text_input_v3_commit(seat->text_input.zwp_text_input);
-
-                        if (seat->keyboard.xkb.compose_state) {
-                            // Reset compose state so composite and dead keys don't carry over
-                            WAYLAND_xkb_compose_state_reset(seat->keyboard.xkb.compose_state);
-                        }
-                    }
-                } else {
-                    if (seat->text_input.enabled) {
-                        seat->text_input.enabled = false;
-                        SDL_zero(seat->text_input.text_input_rect);
-                        seat->text_input.text_input_cursor = 0;
-                        zwp_text_input_v3_disable(seat->text_input.zwp_text_input);
-                        zwp_text_input_v3_commit(seat->text_input.zwp_text_input);
-                    }
-
-                    if (seat->keyboard.xkb.compose_state) {
-                        // Reset compose state so composite and dead keys don't carry over
-                        WAYLAND_xkb_compose_state_reset(seat->keyboard.xkb.compose_state);
-                    }
+                    // Clamp the x value so it doesn't run too far past the end of the text input area.
+                    zwp_text_input_v3_set_cursor_rectangle(seat->text_input.zwp_text_input,
+                                                           SDL_min(scaled_rect.x + scaled_cursor, scaled_rect.x + scaled_rect.w),
+                                                           scaled_rect.y,
+                                                           1,
+                                                           scaled_rect.h);
                 }
+                zwp_text_input_v3_commit(seat->text_input.zwp_text_input);
+
+                if (seat->keyboard.xkb.compose_state) {
+                    // Reset compose state so composite and dead keys don't carry over
+                    WAYLAND_xkb_compose_state_reset(seat->keyboard.xkb.compose_state);
+                }
+            }
+        } else {
+            if (seat->text_input.enabled) {
+                seat->text_input.enabled = false;
+                SDL_zero(seat->text_input.text_input_rect);
+                seat->text_input.text_input_cursor = 0;
+                zwp_text_input_v3_disable(seat->text_input.zwp_text_input);
+                zwp_text_input_v3_commit(seat->text_input.zwp_text_input);
+            }
+
+            if (seat->keyboard.xkb.compose_state) {
+                // Reset compose state so composite and dead keys don't carry over
+                WAYLAND_xkb_compose_state_reset(seat->keyboard.xkb.compose_state);
             }
         }
     }
@@ -182,12 +176,18 @@ bool Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
         }
 
         wind->text_input_props.active = true;
-        Wayland_UpdateTextInput(display);
+
+        SDL_WaylandSeat *seat;
+        wl_list_for_each (seat, &display->seat_list, link) {
+            if (seat->keyboard.focus == wind) {
+                Wayland_SeatUpdateTextInput(seat);
+            }
+        }
 
         return true;
     }
 
-    return false;
+    return SDL_SetError("wayland: cannot enable text input; compositor lacks support for the required zwp_text_input_v3 protocol");
 }
 
 bool Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
@@ -195,8 +195,15 @@ bool Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_VideoData *display = _this->internal;
 
     if (display->text_input_manager) {
-        window->internal->text_input_props.active = false;
-        Wayland_UpdateTextInput(display);
+        SDL_WaylandSeat *seat;
+        SDL_WindowData *wind = window->internal;
+        wind->text_input_props.active = false;
+
+        wl_list_for_each (seat, &display->seat_list, link) {
+            if (seat->keyboard.focus == wind) {
+                Wayland_SeatUpdateTextInput(seat);
+            }
+        }
     }
 #ifdef SDL_USE_IME
     else {
@@ -212,10 +219,10 @@ bool Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_VideoData *internal = _this->internal;
     if (internal->text_input_manager) {
         SDL_WaylandSeat *seat;
+        SDL_WindowData *wind = window->internal;
 
         wl_list_for_each (seat, &internal->seat_list, link) {
-            if (seat->text_input.zwp_text_input && seat->keyboard.focus == window->internal) {
-                SDL_WindowData *wind = window->internal;
+            if (seat->text_input.zwp_text_input && seat->keyboard.focus == wind) {
                 const SDL_Rect scaled_rect = {
                     (int)SDL_floor(window->text_input_rect.x / wind->pointer_scale.x),
                     (int)SDL_floor(window->text_input_rect.y / wind->pointer_scale.y),

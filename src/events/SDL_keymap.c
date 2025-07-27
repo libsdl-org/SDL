@@ -183,6 +183,24 @@ SDL_Scancode SDL_GetKeymapScancode(SDL_Keymap *keymap, SDL_Keycode keycode, SDL_
     return scancode;
 }
 
+SDL_Scancode SDL_GetKeymapNextReservedScancode(SDL_Keymap *keymap)
+{
+    SDL_Scancode scancode;
+
+    if (!keymap) {
+        return SDL_SCANCODE_UNKNOWN;
+    }
+
+    if (keymap->next_reserved_scancode && keymap->next_reserved_scancode < SDL_SCANCODE_RESERVED + 100) {
+        scancode = keymap->next_reserved_scancode;
+    } else {
+        scancode = SDL_SCANCODE_RESERVED;
+    }
+    keymap->next_reserved_scancode = scancode + 1;
+
+    return scancode;
+}
+
 void SDL_DestroyKeymap(SDL_Keymap *keymap)
 {
     if (!keymap) {

@@ -35,6 +35,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#ifdef SDL_PLATFORM_ANDROID
+#include "../../core/android/SDL_android.h"
+#endif
+
 bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     char *pathwithsep = NULL;
@@ -51,8 +55,14 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 
     DIR *dir = opendir(pathwithsep);
     if (!dir) {
+        #ifdef SDL_PLATFORM_ANDROID  // Maybe it's an asset...?
+        const bool retval = Android_JNI_EnumerateAssetDirectory(pathwithsep, cb, userdata);
+        SDL_free(pathwithsep);
+        return retval;
+        #else
         SDL_free(pathwithsep);
         return SDL_SetError("Can't open directory: %s", strerror(errno));
+        #endif
     }
 
     // make sure there's a path separator at the end now for the actual callback.
@@ -173,7 +183,11 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     struct stat statbuf;
     const int rc = stat(path, &statbuf);
     if (rc < 0) {
+        #ifdef SDL_PLATFORM_ANDROID  // Maybe it's an asset...?
+        return Android_JNI_GetAssetPathInfo(path, info);
+        #else
         return SDL_SetError("Can't stat: %s", strerror(errno));
+        #endif
     } else if (S_ISREG(statbuf.st_mode)) {
         info->type = SDL_PATHTYPE_FILE;
         info->size = (Uint64) statbuf.st_size;
@@ -203,7 +217,7 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     return true;
 }
 
-// Note that this isn't actually part of filesystem, not fsops, but everything that uses posix fsops uses this implementation, even with separate filesystem code.
+// Note that this is actually part of filesystem, not fsops, but everything that uses posix fsops uses this implementation, even with separate filesystem code.
 char *SDL_SYS_GetCurrentDirectory(void)
 {
     size_t buflen = 64;

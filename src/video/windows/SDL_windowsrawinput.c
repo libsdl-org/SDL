@@ -112,7 +112,9 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
     }
 
     devices[0].dwFlags |= RIDEV_REMOVE;
+    devices[0].hwndTarget = NULL;
     devices[1].dwFlags |= RIDEV_REMOVE;
+    devices[1].hwndTarget = NULL;
     RegisterRawInputDevices(devices, count, sizeof(devices[0]));
 
     DestroyWindow(window);

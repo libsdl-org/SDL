@@ -512,10 +512,12 @@ static void MaybeInitializeLibUring(void)
 {
     if (SDL_ShouldInit(&liburing_init)) {
         if (LoadLibUring()) {
+            SDL_DebugLogBackend("asyncio", "liburing");
             CreateAsyncIOQueue = SDL_SYS_CreateAsyncIOQueue_liburing;
             QuitAsyncIO = SDL_SYS_QuitAsyncIO_liburing;
             AsyncIOFromFile = SDL_SYS_AsyncIOFromFile_liburing;
         } else {  // can't use liburing? Use the "generic" threadpool implementation instead.
+            SDL_DebugLogBackend("asyncio", "generic");
             CreateAsyncIOQueue = SDL_SYS_CreateAsyncIOQueue_Generic;
             QuitAsyncIO = SDL_SYS_QuitAsyncIO_Generic;
             AsyncIOFromFile = SDL_SYS_AsyncIOFromFile_Generic;

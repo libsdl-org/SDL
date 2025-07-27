@@ -502,6 +502,16 @@ const char *SDL_GetUserFolder(SDL_Folder folder)
 
 char *SDL_GetPrefPath(const char *org, const char *app)
 {
+    if (!app) {
+        SDL_InvalidParamError("app");
+        return NULL;
+    }
+
+    // if org is NULL, just make it "" so backends don't have to check both.
+    if (!org) {
+        org = "";
+    }
+
     return SDL_SYS_GetPrefPath(org, app);
 }
 

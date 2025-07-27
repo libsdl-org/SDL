@@ -110,14 +110,6 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     size_t new_wpath_len = 0;
     BOOL api_result = FALSE;
 
-    if (!app) {
-        SDL_InvalidParamError("app");
-        return NULL;
-    }
-    if (!org) {
-        org = "";
-    }
-
     hr = SHGetFolderPathW(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, path);
     if (!SUCCEEDED(hr)) {
         WIN_SetErrorFromHRESULT("Couldn't locate our prefpath", hr);

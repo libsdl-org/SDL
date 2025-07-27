@@ -298,7 +298,7 @@
  * // make sure this one field in a struct is aligned to 16 bytes for SIMD access.
  * typedef struct {
  *    SomeStuff stuff;
- *    float position[4] SDL_ALIGNED(16);
+ *    float SDL_ALIGNED(16) position[4];
  *    SomeOtherStuff other_stuff;
  * } MyStruct;
  *

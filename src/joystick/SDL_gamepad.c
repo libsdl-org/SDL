@@ -312,7 +312,7 @@ void SDL_PrivateGamepadAdded(SDL_JoystickID instance_id)
 {
     SDL_Event event;
 
-    if (!SDL_gamepads_initialized) {
+    if (!SDL_gamepads_initialized || SDL_IsJoystickBeingAdded()) {
         return;
     }
 
@@ -785,16 +785,68 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 product == USB_PRODUCT_8BITDO_SN30_PRO ||
                 product == USB_PRODUCT_8BITDO_SN30_PRO_BT ||
                 product == USB_PRODUCT_8BITDO_PRO_2 ||
-                product == USB_PRODUCT_8BITDO_PRO_2_BT)) {
+                product == USB_PRODUCT_8BITDO_PRO_2_BT ||
+                product == USB_PRODUCT_8BITDO_PRO_3)) {
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
             if (product == USB_PRODUCT_8BITDO_PRO_2 || product == USB_PRODUCT_8BITDO_PRO_2_BT) {
                 SDL_strlcat(mapping_string, "paddle1:b14,paddle2:b13,", sizeof(mapping_string));
+            } else if (product == USB_PRODUCT_8BITDO_PRO_3) {
+                SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
             }
     } else if (vendor == USB_VENDOR_8BITDO &&
                (product == USB_PRODUCT_8BITDO_SF30_PRO ||
                 product == USB_PRODUCT_8BITDO_SF30_PRO_BT)) {
             // This controller has no guide button
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+    } else if (SDL_IsJoystickSInputController(vendor, product)) {
+        Uint8 face_style = (guid.data[15] & 0xF0) >> 4;
+        Uint8 u_id = guid.data[15] & 0x0F;
+
+        switch (product) {
+        case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
+            // ProGCC Mapping
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+            break;
+
+        case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
+            // GC Ultimate Map
+            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,x:b1,y:b3,misc3:b8,misc4:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
+            break;
+
+        case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
+            switch (u_id) {
+            case 1:
+                // SuperGamepad+ Map
+                SDL_strlcat(mapping_string, "a:b1,b:b0,back:b7,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,rightshoulder:b5,start:b6,x:b3,y:b2,", sizeof(mapping_string));
+                break;
+            default:
+                // Unknown mapping
+                return NULL;
+            }
+
+            // Apply face style
+            switch (face_style) {
+            default:
+            case 1:
+                SDL_strlcat(mapping_string, "face:abxy,", sizeof(mapping_string));
+                break;
+            case 2:
+                SDL_strlcat(mapping_string, "face:axby,", sizeof(mapping_string));
+                break;
+            case 3:
+                SDL_strlcat(mapping_string, "face:bayx,", sizeof(mapping_string));
+                break;
+            case 4:
+                SDL_strlcat(mapping_string, "face:sony,", sizeof(mapping_string));
+                break;
+            }
+            break;
+
+        default:
+        case USB_PRODUCT_BONJIRICHANNEL_FIREBIRD:
+            // Unmapped devices
+            return NULL;
+        }
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes
         if (SDL_IsJoystickGameCube(vendor, product)) {
@@ -1232,6 +1284,7 @@ static bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
     if (SDL_strstr(gamepad->mapping->mapping, ",hint:SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1") != NULL) {
         baxy_mapping = true;
     }
+
     // FIXME: We fix these up when loading the mapping, does this ever get hit?
     //SDL_assert(!axby_mapping && !baxy_mapping);
 

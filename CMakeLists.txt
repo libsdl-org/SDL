@@ -189,9 +189,12 @@ if(MSVC)
     # Make sure /RTC1 is disabled, otherwise it will use functions from the CRT
     foreach(flag_var
         CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
       string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
     endforeach(flag_var)
+    set(CMAKE_MSVC_RUNTIME_CHECKS "")
   endif()
 
   if(MSVC_CLANG)
@@ -653,6 +656,11 @@ if(MSVC)
   if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
     # Mark SDL3.dll as compatible with Control-flow Enforcement Technology (CET)
     sdl_shared_link_options("-CETCOMPAT")
+  endif()
+
+  # for VS >= 17.14 targeting ARM64: inline the Interlocked funcs
+  if(MSVC_VERSION GREATER 1943 AND SDL_CPU_ARM64 AND NOT SDL_LIBC)
+    sdl_compile_options(PRIVATE "/forceInterlockedFunctions-")
   endif()
 endif()
 

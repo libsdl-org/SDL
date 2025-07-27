@@ -32,7 +32,7 @@
 #define UnityLauncherAPI_DBUS_INTERFACE "com.canonical.Unity.LauncherEntry"
 #define UnityLauncherAPI_DBUS_SIGNAL    "Update"
 
-static char *GetDBUSObjectPath()
+static char *GetDBUSObjectPath(void)
 {
     char *app_id = SDL_strdup(SDL_GetAppID());
 
@@ -62,7 +62,7 @@ static char *GetDBUSObjectPath()
     return SDL_strdup(path);
 }
 
-static char *GetAppDesktopPath()
+static char *GetAppDesktopPath(void)
 {
     const char *desktop_suffix = ".desktop";
     const char *app_id = SDL_GetAppID();

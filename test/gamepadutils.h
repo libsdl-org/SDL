@@ -142,16 +142,29 @@ extern void RenderGamepadButton(GamepadButton *ctx);
 extern void DestroyGamepadButton(GamepadButton *ctx);
 
 /* Gyro element Display */
-/* If you want to calbirate against a known rotation (i.e. a turn table test) Increase ACCELEROMETER_NOISE_THRESHOLD to about 5, or drift correction will be constantly reset.*/
-#define ACCELEROMETER_NOISE_THRESHOLD 0.5f
+
+/* This is used as the initial noise tolerance threshold. It's set very close to zero to avoid divide by zero while we're evaluating the noise profile. Each controller may have a very different noise profile.*/
+#define ACCELEROMETER_NOISE_THRESHOLD 1e-6f
+/* The value below is based on observation of a Dualshock controller. Of all gamepads observed, the Dualshock (PS4) tends to have one of the noisiest accelerometers. Increase this threshold if a controller is failing to pass the noise profiling stage while stationary on a table. */
+#define ACCELEROMETER_MAX_NOISE_G 0.075f
+#define ACCELEROMETER_MAX_NOISE_G_SQ (ACCELEROMETER_MAX_NOISE_G * ACCELEROMETER_MAX_NOISE_G)
+
+/* Gyro Calibration Phases */
+typedef enum
+{
+    GYRO_CALIBRATION_PHASE_OFF,              /* Calibration has not yet been evaluated - signal to the user to put the controller on a flat surface before beginning the calibration process */
+    GYRO_CALIBRATION_PHASE_NOISE_PROFILING,  /* Find the max accelerometer noise for a fixed period */
+    GYRO_CALIBRATION_PHASE_DRIFT_PROFILING,  /* Find the drift while the accelerometer is below the accelerometer noise tolerance */
+    GYRO_CALIBRATION_PHASE_COMPLETE,         /* Calibration has finished */
+} EGyroCalibrationPhase;
+
 typedef struct Quaternion Quaternion;
 typedef struct GyroDisplay GyroDisplay;
 
-extern void InitCirclePoints3D();
+extern void InitCirclePoints3D(void);
 extern GyroDisplay *CreateGyroDisplay(SDL_Renderer *renderer);
 extern void SetGyroDisplayArea(GyroDisplay *ctx, const SDL_FRect *area);
-extern bool BHasCachedGyroDriftSolution(GyroDisplay *ctx);
-extern void SetGamepadDisplayIMUValues(GyroDisplay *ctx, float *gyro_drift_solution, float *euler_displacement_angles, Quaternion *gyro_quaternion, int reported_senor_rate_hz, int estimated_sensor_rate_hz, float drift_calibration_progress_frac, float accelerometer_noise_sq); 
+extern void SetGamepadDisplayIMUValues(GyroDisplay *ctx, float *gyro_drift_solution, float *euler_displacement_angles, Quaternion *gyro_quaternion, int reported_senor_rate_hz, int estimated_sensor_rate_hz, EGyroCalibrationPhase calibration_phase, float drift_calibration_progress_frac, float accelerometer_noise_sq, float accelerometer_noise_tolerance_sq);
 extern GamepadButton *GetGyroResetButton(GyroDisplay *ctx);
 extern GamepadButton *GetGyroCalibrateButton(GyroDisplay *ctx);
 extern void RenderGyroDisplay(GyroDisplay *ctx, GamepadDisplay *gamepadElements, SDL_Gamepad *gamepad);

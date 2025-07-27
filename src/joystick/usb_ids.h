@@ -59,14 +59,16 @@
 #define USB_VENDOR_SWITCH       0x2563
 #define USB_VENDOR_VALVE        0x28de
 #define USB_VENDOR_ZEROPLUS     0x0c12
+#define USB_VENDOR_RASPBERRYPI  0x2e8a // Commercial hardware from various companies are registered under this VID
 
-#define USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS             0x6012
 #define USB_PRODUCT_8BITDO_SF30_PRO                       0x6000    // B + START
 #define USB_PRODUCT_8BITDO_SF30_PRO_BT                    0x6100    // B + START
 #define USB_PRODUCT_8BITDO_SN30_PRO                       0x6001    // B + START
 #define USB_PRODUCT_8BITDO_SN30_PRO_BT                    0x6101    // B + START
-#define USB_PRODUCT_8BITDO_PRO_2                          0x6003    // mode switch to D 
-#define USB_PRODUCT_8BITDO_PRO_2_BT                       0x6006    // mode switch to D 
+#define USB_PRODUCT_8BITDO_PRO_2                          0x6003    // mode switch to D
+#define USB_PRODUCT_8BITDO_PRO_2_BT                       0x6006    // mode switch to D
+#define USB_PRODUCT_8BITDO_PRO_3                          0x6009    // mode switch to D
+#define USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS             0x6012    // mode switch to BT
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                0x0419
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
 #define USB_PRODUCT_BACKBONE_ONE_IOS                      0x0103
@@ -106,6 +108,7 @@
 #define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V103         0x7210
 #define USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104         0x7214
 #define USB_PRODUCT_PDP_ROCK_CANDY                        0x0246
+#define USB_PRODUCT_PDP_REALMZ_WIRELESS                   0x018c
 #define USB_PRODUCT_POWERA_MINI                           0x541a
 #define USB_PRODUCT_RAZER_ATROX                           0x0a00
 #define USB_PRODUCT_RAZER_KITSUNE                         0x1012
@@ -159,6 +162,10 @@
 #define USB_PRODUCT_XBOX_SERIES_X_BLE                     0x0b13
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER           0x02ff // XBOXGIP driver software PID
 #define USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD                 0x11ff
+#define USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC         0x10c6
+#define USB_PRODUCT_HANDHELDLEGEND_PROGCC                 0x10df
+#define USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE             0x10dd
+#define USB_PRODUCT_BONJIRICHANNEL_FIREBIRD               0x10e0 
 
 // USB usage pages
 #define USB_USAGEPAGE_GENERIC_DESKTOP 0x0001

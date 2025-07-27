@@ -27,6 +27,8 @@
 #import <Cocoa/Cocoa.h>
 #import <UniformTypeIdentifiers/UTType.h>
 
+extern void Cocoa_SetWindowHasModalDialog(SDL_Window *window, bool has_modal);
+
 static void AddFileExtensionType(NSMutableArray *types, const char *pattern_ptr)
 {
     if (!*pattern_ptr) {
@@ -155,14 +157,24 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     // Keep behavior consistent with other platforms
     [dialog setAllowsOtherFileTypes:YES];
 
-    if (default_location) {
-        [dialog setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:default_location]]];
+    if (default_location && *default_location) {
+        char last = default_location[SDL_strlen(default_location) - 1];
+        NSURL* url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:default_location]];
+        if (last == '/') {
+            [dialog setDirectoryURL:url];
+        } else {
+            [dialog setDirectoryURL:[url URLByDeletingLastPathComponent]];
+            [dialog setNameFieldStringValue:[url lastPathComponent]];
+        }
     }
 
     NSWindow *w = NULL;
 
     if (window) {
         w = (__bridge NSWindow *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, NULL);
+        if (w) {
+            Cocoa_SetWindowHasModalDialog(window, true);
+        }
     }
 
     if (w) {
@@ -186,6 +198,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
                 callback(userdata, files, -1);
             }
 
+            Cocoa_SetWindowHasModalDialog(window, false);
             ReactivateAfterDialog();
         }];
     } else {
@@ -206,6 +219,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
             const char *files[1] = { NULL };
             callback(userdata, files, -1);
         }
+
         ReactivateAfterDialog();
     }
 }

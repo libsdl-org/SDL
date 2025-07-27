@@ -35,6 +35,7 @@
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandmouse.h"
 #include "SDL_waylandclipboard.h"
+#include "SDL_waylandkeyboard.h"
 
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
@@ -304,6 +305,16 @@ void Wayland_DisplayInitCursorShapeManager(SDL_VideoData *display)
     }
 }
 
+static void Wayland_SeatSetKeymap(SDL_WaylandSeat *seat)
+{
+    if (seat->keyboard.sdl_keymap &&
+        seat->keyboard.xkb.current_layout < seat->keyboard.xkb.num_layouts &&
+        seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout] != SDL_GetCurrentKeymap(true)) {
+        SDL_SetKeymap(seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout], true);
+        SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
+    }
+}
+
 // Returns true if a key repeat event was due
 static bool keyboard_repeat_handle(SDL_WaylandKeyboardRepeat *repeat_info, Uint64 elapsed)
 {
@@ -440,10 +451,7 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     // If key repeat is active, we'll need to cap our maximum wait time to handle repeats
     wl_list_for_each (seat, &d->seat_list, link) {
         if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
-            if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap(true)) {
-                SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
-                SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
-            }
+            Wayland_SeatSetKeymap(seat);
 
             const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
             if (keyboard_repeat_handle(&seat->keyboard.repeat, elapsed)) {
@@ -479,14 +487,13 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
             // If key repeat is active, we might have woken up to generate a key event
             if (key_repeat_active) {
                 wl_list_for_each (seat, &d->seat_list, link) {
-                    if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap(true)) {
-                        SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
-                        SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
-                    }
+                    if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
+                        Wayland_SeatSetKeymap(seat);
 
-                    const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
-                    if (keyboard_repeat_handle(&seat->keyboard.repeat, elapsed)) {
-                        ++ret;
+                        const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
+                        if (keyboard_repeat_handle(&seat->keyboard.repeat, elapsed)) {
+                            ++ret;
+                        }
                     }
                 }
             }
@@ -550,10 +557,7 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
 
     wl_list_for_each (seat, &d->seat_list, link) {
         if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
-            if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap(true)) {
-                SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
-                SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
-            }
+            Wayland_SeatSetKeymap(seat);
 
             const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
             keyboard_repeat_handle(&seat->keyboard.repeat, elapsed);
@@ -1410,108 +1414,82 @@ static const struct wl_touch_listener touch_listener = {
     touch_handler_orientation // Version 6
 };
 
-typedef struct Wayland_KeymapBuilderState
+static void Wayland_KeymapIterator(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 {
-    SDL_Keymap *keymap;
-    struct xkb_state *state;
-    SDL_Keymod modstate;
-} Wayland_KeymapBuilderState;
-
-static void Wayland_keymap_iter(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
-{
-    Wayland_KeymapBuilderState *sdlKeymap = (Wayland_KeymapBuilderState *)data;
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     const xkb_keysym_t *syms;
-    const SDL_Scancode scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, (key - 8));
-    if (scancode == SDL_SCANCODE_UNKNOWN) {
-        return;
+    const xkb_mod_mask_t xkb_valid_mod_mask = seat->keyboard.xkb.shift_mask |
+                                              seat->keyboard.xkb.alt_mask |
+                                              seat->keyboard.xkb.gui_mask |
+                                              seat->keyboard.xkb.level3_mask |
+                                              seat->keyboard.xkb.level5_mask |
+                                              seat->keyboard.xkb.caps_mask;
+    SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
+
+    // Look up the scancode for hardware keyboards. Virtual keyboards get the scancode from the keysym.
+    if (!seat->keyboard.is_virtual) {
+        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, (key - 8));
+        if (scancode == SDL_SCANCODE_UNKNOWN) {
+            return;
+        }
     }
 
-    if (WAYLAND_xkb_state_key_get_syms(sdlKeymap->state, key, &syms) > 0) {
-        SDL_Keycode keycode = SDL_GetKeyCodeFromKeySym(syms[0], key, sdlKeymap->modstate);
+    for (xkb_layout_index_t layout = 0; layout < seat->keyboard.xkb.num_layouts; ++layout) {
+        const xkb_level_index_t num_levels = WAYLAND_xkb_keymap_num_levels_for_key(seat->keyboard.xkb.keymap, key, layout);
+        for (xkb_level_index_t level = 0; level < num_levels; ++level) {
+            if (WAYLAND_xkb_keymap_key_get_syms_by_level(seat->keyboard.xkb.keymap, key, layout, level, &syms) > 0) {
+                /* If the keyboard is virtual or the key didn't have a corresponding hardware scancode, try to
+                 * look it up from the keysym. If there is still no corresponding scancode, skip this mapping
+                 * for now, as it will be dynamically added with a reserved scancode on first use.
+                 */
+                if (scancode == SDL_SCANCODE_UNKNOWN) {
+                    scancode = SDL_GetScancodeFromKeySym(syms[0], key);
+                    if (scancode == SDL_SCANCODE_UNKNOWN) {
+                        continue;
+                    }
+                }
 
-        if (!keycode) {
-            switch (scancode) {
-            case SDL_SCANCODE_RETURN:
-                keycode = SDLK_RETURN;
-                break;
-            case SDL_SCANCODE_ESCAPE:
-                keycode = SDLK_ESCAPE;
-                break;
-            case SDL_SCANCODE_BACKSPACE:
-                keycode = SDLK_BACKSPACE;
-                break;
-            case SDL_SCANCODE_DELETE:
-                keycode = SDLK_DELETE;
-                break;
-            default:
-                keycode = SDL_SCANCODE_TO_KEYCODE(scancode);
-                break;
+                xkb_mod_mask_t xkb_mod_masks[16];
+                const size_t num_masks = WAYLAND_xkb_keymap_key_get_mods_for_level(seat->keyboard.xkb.keymap, key, layout, level, xkb_mod_masks, SDL_arraysize(xkb_mod_masks));
+                for (size_t mask = 0; mask < num_masks; ++mask) {
+                    // Ignore this modifier set if it uses unsupported modifier types.
+                    if ((xkb_mod_masks[mask] | xkb_valid_mod_mask) != xkb_valid_mod_mask) {
+                        continue;
+                    }
+
+                    const SDL_Keymod sdl_mod = (xkb_mod_masks[mask] & seat->keyboard.xkb.shift_mask ? SDL_KMOD_SHIFT : 0) |
+                                               (xkb_mod_masks[mask] & seat->keyboard.xkb.alt_mask ? SDL_KMOD_ALT : 0) |
+                                               (xkb_mod_masks[mask] & seat->keyboard.xkb.gui_mask ? SDL_KMOD_GUI : 0) |
+                                               (xkb_mod_masks[mask] & seat->keyboard.xkb.level3_mask ? SDL_KMOD_MODE : 0) |
+                                               (xkb_mod_masks[mask] & seat->keyboard.xkb.level5_mask ? SDL_KMOD_LEVEL5 : 0) |
+                                               (xkb_mod_masks[mask] & seat->keyboard.xkb.caps_mask ? SDL_KMOD_CAPS : 0);
+
+                    SDL_Keycode keycode = SDL_GetKeyCodeFromKeySym(syms[0], key, sdl_mod);
+
+                    if (!keycode) {
+                        switch (scancode) {
+                        case SDL_SCANCODE_RETURN:
+                            keycode = SDLK_RETURN;
+                            break;
+                        case SDL_SCANCODE_ESCAPE:
+                            keycode = SDLK_ESCAPE;
+                            break;
+                        case SDL_SCANCODE_BACKSPACE:
+                            keycode = SDLK_BACKSPACE;
+                            break;
+                        case SDL_SCANCODE_DELETE:
+                            keycode = SDLK_DELETE;
+                            break;
+                        default:
+                            keycode = SDL_SCANCODE_TO_KEYCODE(scancode);
+                            break;
+                        }
+                    }
+
+                    SDL_SetKeymapEntry(seat->keyboard.sdl_keymap[layout], scancode, sdl_mod, keycode);
+                }
             }
         }
-
-        SDL_SetKeymapEntry(sdlKeymap->keymap, scancode, sdlKeymap->modstate, keycode);
-    }
-}
-
-static void Wayland_UpdateKeymap(SDL_WaylandSeat *seat)
-{
-    struct Keymod_masks
-    {
-        SDL_Keymod sdl_mask;
-        xkb_mod_mask_t xkb_mask;
-    } const keymod_masks[] = {
-        { SDL_KMOD_NONE, 0 },
-        { SDL_KMOD_SHIFT, seat->keyboard.xkb.shift_mask },
-        { SDL_KMOD_CAPS, seat->keyboard.xkb.caps_mask },
-        { SDL_KMOD_SHIFT | SDL_KMOD_CAPS, seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask },
-        { SDL_KMOD_MODE, seat->keyboard.xkb.level3_mask },
-        { SDL_KMOD_MODE | SDL_KMOD_SHIFT, seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask },
-        { SDL_KMOD_MODE | SDL_KMOD_CAPS, seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.caps_mask },
-        { SDL_KMOD_MODE | SDL_KMOD_SHIFT | SDL_KMOD_CAPS, seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask },
-        { SDL_KMOD_LEVEL5, seat->keyboard.xkb.level5_mask },
-        { SDL_KMOD_LEVEL5 | SDL_KMOD_SHIFT, seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask },
-        { SDL_KMOD_LEVEL5 | SDL_KMOD_CAPS, seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.caps_mask },
-        { SDL_KMOD_LEVEL5 | SDL_KMOD_SHIFT | SDL_KMOD_CAPS, seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask },
-        { SDL_KMOD_LEVEL5 | SDL_KMOD_MODE, seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.level3_mask },
-        { SDL_KMOD_LEVEL5 | SDL_KMOD_MODE | SDL_KMOD_SHIFT, seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask },
-        { SDL_KMOD_LEVEL5 | SDL_KMOD_MODE | SDL_KMOD_CAPS, seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.caps_mask },
-        { SDL_KMOD_LEVEL5 | SDL_KMOD_MODE | SDL_KMOD_SHIFT | SDL_KMOD_CAPS, seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask },
-    };
-
-    if (!seat->keyboard.is_virtual) {
-        Wayland_KeymapBuilderState keymap;
-
-        keymap.keymap = SDL_CreateKeymap(false);
-        if (!keymap.keymap) {
-            return;
-        }
-
-        keymap.state = WAYLAND_xkb_state_new(seat->keyboard.xkb.keymap);
-        if (!keymap.state) {
-            SDL_SetError("failed to create XKB state");
-            SDL_DestroyKeymap(keymap.keymap);
-            return;
-        }
-
-        for (int i = 0; i < SDL_arraysize(keymod_masks); ++i) {
-            keymap.modstate = keymod_masks[i].sdl_mask;
-            WAYLAND_xkb_state_update_mask(keymap.state,
-                                          keymod_masks[i].xkb_mask & (seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.level5_mask), 0, keymod_masks[i].xkb_mask & seat->keyboard.xkb.caps_mask,
-                                          0, 0, seat->keyboard.xkb.current_layout);
-            WAYLAND_xkb_keymap_key_for_each(seat->keyboard.xkb.keymap,
-                                            Wayland_keymap_iter,
-                                            &keymap);
-        }
-
-        WAYLAND_xkb_state_unref(keymap.state);
-        SDL_SetKeymap(keymap.keymap, true);
-        SDL_DestroyKeymap(seat->keyboard.sdl_keymap);
-        seat->keyboard.sdl_keymap = keymap.keymap;
-    } else {
-        // Virtual keyboards use the default keymap.
-        SDL_SetKeymap(NULL, true);
-        SDL_DestroyKeymap(seat->keyboard.sdl_keymap);
-        seat->keyboard.sdl_keymap = NULL;
     }
 }
 
@@ -1520,7 +1498,6 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 {
     SDL_WaylandSeat *seat = data;
     char *map_str;
-    const char *locale;
 
     if (!data) {
         close(fd);
@@ -1546,9 +1523,9 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         seat->keyboard.xkb.keymap = NULL;
     }
     seat->keyboard.xkb.keymap = WAYLAND_xkb_keymap_new_from_string(seat->display->xkb_context,
-                                                           map_str,
-                                                           XKB_KEYMAP_FORMAT_TEXT_V1,
-                                                           0);
+                                                                   map_str,
+                                                                   XKB_KEYMAP_FORMAT_TEXT_V1,
+                                                                   0);
     munmap(map_str, size);
     close(fd);
 
@@ -1556,6 +1533,14 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         SDL_SetError("failed to compile keymap");
         return;
     }
+
+    // Clear the old layouts.
+    for (xkb_layout_index_t i = 0; i < seat->keyboard.xkb.num_layouts; ++i) {
+        SDL_DestroyKeymap(seat->keyboard.sdl_keymap[i]);
+    }
+    SDL_free(seat->keyboard.sdl_keymap);
+    seat->keyboard.sdl_keymap = NULL;
+    seat->keyboard.xkb.num_layouts = 0;
 
 #if SDL_XKBCOMMON_CHECK_VERSION(1, 10, 0)
     seat->keyboard.xkb.shift_mask = WAYLAND_xkb_keymap_mod_get_mask(seat->keyboard.xkb.keymap, XKB_MOD_NAME_SHIFT);
@@ -1602,9 +1587,19 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
      */
     seat->keyboard.is_virtual = WAYLAND_xkb_keymap_layout_get_name(seat->keyboard.xkb.keymap, 0) == NULL;
 
-    // Update the keymap if changed.
-    if (seat->keyboard.xkb.current_layout != XKB_LAYOUT_INVALID) {
-        Wayland_UpdateKeymap(seat);
+    // Allocate and populate the new layout maps.
+    seat->keyboard.xkb.num_layouts = WAYLAND_xkb_keymap_num_layouts(seat->keyboard.xkb.keymap);
+    if (seat->keyboard.xkb.num_layouts) {
+        seat->keyboard.sdl_keymap = SDL_calloc(seat->keyboard.xkb.num_layouts, sizeof(SDL_Keymap *));
+        for (xkb_layout_index_t i = 0; i < seat->keyboard.xkb.num_layouts; ++i) {
+            seat->keyboard.sdl_keymap[i] = SDL_CreateKeymap(false);
+            if (!seat->keyboard.sdl_keymap) {
+                return;
+            }
+        }
+
+        WAYLAND_xkb_keymap_key_for_each(seat->keyboard.xkb.keymap, Wayland_KeymapIterator, seat);
+        Wayland_SeatSetKeymap(seat);
     }
 
     /*
@@ -1613,7 +1608,7 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
      */
 
     // Look up the preferred locale, falling back to "C" as default
-    locale = SDL_getenv("LC_ALL");
+    const char *locale = SDL_getenv("LC_ALL");
     if (!locale) {
         locale = SDL_getenv("LC_CTYPE");
         if (!locale) {
@@ -1624,26 +1619,38 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         }
     }
 
-    // Set up XKB compose table
-    if (seat->keyboard.xkb.compose_table != NULL) {
-        WAYLAND_xkb_compose_table_unref(seat->keyboard.xkb.compose_table);
-        seat->keyboard.xkb.compose_table = NULL;
-    }
-    seat->keyboard.xkb.compose_table = WAYLAND_xkb_compose_table_new_from_locale(seat->display->xkb_context,
-                                                                         locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
-    if (seat->keyboard.xkb.compose_table) {
-        // Set up XKB compose state
-        if (seat->keyboard.xkb.compose_state != NULL) {
-            WAYLAND_xkb_compose_state_unref(seat->keyboard.xkb.compose_state);
-            seat->keyboard.xkb.compose_state = NULL;
-        }
-        seat->keyboard.xkb.compose_state = WAYLAND_xkb_compose_state_new(seat->keyboard.xkb.compose_table,
-                                                                 XKB_COMPOSE_STATE_NO_FLAGS);
-        if (!seat->keyboard.xkb.compose_state) {
-            SDL_SetError("could not create XKB compose state");
+    /* Set up the XKB compose table.
+     *
+     * This is a very slow operation, so it is only done during initialization,
+     * or if the locale envvar changed during runtime.
+     */
+    if (!seat->keyboard.current_locale || SDL_strcmp(seat->keyboard.current_locale, locale) != 0) {
+        // Cache the current locale for later comparison.
+        SDL_free(seat->keyboard.current_locale);
+        seat->keyboard.current_locale = SDL_strdup(locale);
+
+        if (seat->keyboard.xkb.compose_table != NULL) {
             WAYLAND_xkb_compose_table_unref(seat->keyboard.xkb.compose_table);
             seat->keyboard.xkb.compose_table = NULL;
         }
+        seat->keyboard.xkb.compose_table = WAYLAND_xkb_compose_table_new_from_locale(seat->display->xkb_context,
+                                                                                     locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
+        if (seat->keyboard.xkb.compose_table) {
+            // Set up XKB compose state
+            if (seat->keyboard.xkb.compose_state != NULL) {
+                WAYLAND_xkb_compose_state_unref(seat->keyboard.xkb.compose_state);
+                seat->keyboard.xkb.compose_state = NULL;
+            }
+            seat->keyboard.xkb.compose_state = WAYLAND_xkb_compose_state_new(seat->keyboard.xkb.compose_table,
+                                                                             XKB_COMPOSE_STATE_NO_FLAGS);
+            if (!seat->keyboard.xkb.compose_state) {
+                SDL_SetError("could not create XKB compose state");
+                WAYLAND_xkb_compose_table_unref(seat->keyboard.xkb.compose_table);
+                seat->keyboard.xkb.compose_table = NULL;
+            }
+        }
+    } else if (seat->keyboard.xkb.compose_state) {
+        WAYLAND_xkb_compose_state_reset(seat->keyboard.xkb.compose_state);
     }
 }
 
@@ -1651,16 +1658,20 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
  * Virtual keyboards can have arbitrary layouts, arbitrary scancodes/keycodes, etc...
  * Key presses from these devices must be looked up by their keysym value.
  */
-static SDL_Scancode Wayland_GetScancodeForKey(SDL_WaylandSeat *seat, uint32_t key)
+static SDL_Scancode Wayland_GetScancodeForKey(SDL_WaylandSeat *seat, uint32_t key, const xkb_keysym_t **syms)
 {
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
 
     if (!seat->keyboard.is_virtual) {
         scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, key);
-    } else {
-        const xkb_keysym_t *syms;
-        if (WAYLAND_xkb_keymap_key_get_syms_by_level(seat->keyboard.xkb.keymap, key + 8, seat->keyboard.xkb.current_layout, 0, &syms) > 0) {
-            scancode = SDL_GetScancodeFromKeySym(syms[0], key);
+    }
+    if (scancode == SDL_SCANCODE_UNKNOWN) {
+        const xkb_keysym_t *keysym;
+        if (WAYLAND_xkb_state_key_get_syms(seat->keyboard.xkb.state, key + 8, &keysym) > 0) {
+            scancode = SDL_GetScancodeFromKeySym(keysym[0], key + 8);
+            if (syms) {
+                *syms = keysym;
+            }
         }
     }
 
@@ -1887,7 +1898,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     Wayland_DisplayUpdatePointerGrabs(seat->display, window);
 
     // Update text input and IME focus.
-    Wayland_UpdateTextInput(seat->display);
+    Wayland_SeatUpdateTextInput(seat);
 
 #ifdef SDL_USE_IME
     if (!seat->text_input.zwp_text_input) {
@@ -1898,30 +1909,30 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     Uint64 timestamp = SDL_GetTicksNS();
     window->last_focus_event_time_ns = timestamp;
 
-    if (SDL_GetCurrentKeymap(true) != seat->keyboard.sdl_keymap) {
-        SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
-    }
+    Wayland_SeatSetKeymap(seat);
 
     wl_array_for_each (key, keys) {
-        const SDL_Scancode scancode = Wayland_GetScancodeForKey(seat, *key);
-        const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false);
+        const SDL_Scancode scancode = Wayland_GetScancodeForKey(seat, *key, NULL);
+        if (scancode != SDL_SCANCODE_UNKNOWN) {
+            const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false);
 
-        switch (keycode) {
-        case SDLK_LSHIFT:
-        case SDLK_RSHIFT:
-        case SDLK_LCTRL:
-        case SDLK_RCTRL:
-        case SDLK_LALT:
-        case SDLK_RALT:
-        case SDLK_LGUI:
-        case SDLK_RGUI:
-        case SDLK_MODE:
-        case SDLK_LEVEL5_SHIFT:
-            Wayland_HandleModifierKeys(seat, scancode, true);
-            SDL_SendKeyboardKeyIgnoreModifiers(timestamp, seat->keyboard.sdl_id, *key, scancode, true);
-            break;
-        default:
-            break;
+            switch (keycode) {
+            case SDLK_LSHIFT:
+            case SDLK_RSHIFT:
+            case SDLK_LCTRL:
+            case SDLK_RCTRL:
+            case SDLK_LALT:
+            case SDLK_RALT:
+            case SDLK_LGUI:
+            case SDLK_RGUI:
+            case SDLK_MODE:
+            case SDLK_LEVEL5_SHIFT:
+                Wayland_HandleModifierKeys(seat, scancode, true);
+                SDL_SendKeyboardKeyIgnoreModifiers(timestamp, seat->keyboard.sdl_id, *key, scancode, true);
+                break;
+            default:
+                break;
+            }
         }
     }
 }
@@ -1969,7 +1980,7 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     seat->keyboard.pressed_modifiers = SDL_KMOD_NONE;
 
     // Update text input and IME focus.
-    Wayland_UpdateTextInput(seat->display);
+    Wayland_SeatUpdateTextInput(seat);
 
 #ifdef SDL_USE_IME
     if (!seat->text_input.zwp_text_input && !window->keyboard_focus_count) {
@@ -2048,10 +2059,17 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
     Wayland_UpdateImplicitGrabSerial(seat, serial);
 
-    if (seat->keyboard.sdl_keymap != SDL_GetCurrentKeymap(true)) {
-        SDL_SetKeymap(seat->keyboard.sdl_keymap, true);
-        SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
+    if (state == WL_KEYBOARD_KEY_STATE_REPEATED) {
+        // If this key shouldn't be repeated, just return.
+        if (seat->keyboard.xkb.keymap && !WAYLAND_xkb_keymap_key_repeats(seat->keyboard.xkb.keymap, key + 8)) {
+            return;
+        }
+
+        // SDL automatically handles key tracking and repeat status, so just map 'repeated' to 'pressed'.
+        state = WL_KEYBOARD_KEY_STATE_PRESSED;
     }
+
+    Wayland_SeatSetKeymap(seat);
 
     if (state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         SDL_Window *keyboard_focus = SDL_GetKeyboardFocus();
@@ -2072,8 +2090,26 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
         keyboard_input_get_text(text, seat, key, false, &handled_by_ime);
     }
 
-    const SDL_Scancode scancode = Wayland_GetScancodeForKey(seat, key);
+    const xkb_keysym_t *syms = NULL;
+    SDL_Scancode scancode = Wayland_GetScancodeForKey(seat, key, &syms);
     Wayland_HandleModifierKeys(seat, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
+
+    // If we have a key with unknown scancode, check if the keysym corresponds to a valid Unicode value, and assign it a reserved scancode.
+    if (scancode == SDL_SCANCODE_UNKNOWN && syms) {
+        const SDL_Keycode keycode = (SDL_Keycode)SDL_KeySymToUcs4(syms[0]);
+        if (keycode != SDLK_UNKNOWN) {
+            SDL_Keymod modstate = SDL_KMOD_NONE;
+
+            // Check if this keycode already exists in the keymap.
+            scancode = SDL_GetKeymapScancode(seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout], keycode, &modstate);
+
+            // Make sure we have this keycode in our keymap
+            if (scancode == SDL_SCANCODE_UNKNOWN && keycode < SDLK_SCANCODE_MASK) {
+                scancode = SDL_GetKeymapNextReservedScancode(seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout]);
+                SDL_SetKeymapEntry(seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout], scancode, modstate, keycode);
+            }
+        }
+    }
 
     SDL_SendKeyboardKeyIgnoreModifiers(timestamp_ns, seat->keyboard.sdl_id, key, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
 
@@ -2120,13 +2156,15 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
         }
     }
 
-    if (group == seat->keyboard.xkb.current_layout) {
-        return;
-    }
+    if (group != seat->keyboard.xkb.current_layout) {
+        seat->keyboard.xkb.current_layout = group;
+        Wayland_SeatSetKeymap(seat);
 
-    // The layout changed, remap and fire an event. Virtual keyboards use the default keymap.
-    seat->keyboard.xkb.current_layout = group;
-    Wayland_UpdateKeymap(seat);
+        if (seat->keyboard.xkb.compose_state) {
+            // Reset the compose state so composite and dead keys don't carry over.
+            WAYLAND_xkb_compose_state_reset(seat->keyboard.xkb.compose_state);
+        }
+    }
 }
 
 static void keyboard_handle_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
@@ -2209,10 +2247,16 @@ static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat, bool send_event)
     SDL_RemoveKeyboard(seat->keyboard.sdl_id, send_event);
 
     if (seat->keyboard.sdl_keymap) {
-        if (seat->keyboard.sdl_keymap == SDL_GetCurrentKeymap(true)) {
+        if (seat->keyboard.xkb.current_layout < seat->keyboard.xkb.num_layouts &&
+            seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout] == SDL_GetCurrentKeymap(true)) {
             SDL_SetKeymap(NULL, false);
+            SDL_SetModState(SDL_KMOD_NONE);
         }
-        SDL_DestroyKeymap(seat->keyboard.sdl_keymap);
+        for (xkb_layout_index_t i = 0; i < seat->keyboard.xkb.num_layouts; ++i) {
+            SDL_DestroyKeymap(seat->keyboard.sdl_keymap[i]);
+        }
+        SDL_free(seat->keyboard.sdl_keymap);
+        seat->keyboard.sdl_keymap = NULL;
     }
 
     if (seat->keyboard.key_inhibitor) {
@@ -2230,6 +2274,8 @@ static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat, bool send_event)
             wl_keyboard_destroy(seat->keyboard.wl_keyboard);
         }
     }
+
+    SDL_free(seat->keyboard.current_locale);
 
     if (seat->keyboard.xkb.compose_state) {
         WAYLAND_xkb_compose_state_unref(seat->keyboard.xkb.compose_state);
@@ -2342,25 +2388,9 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
 static void seat_handle_name(void *data, struct wl_seat *wl_seat, const char *name)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
-    char name_fmt[256];
 
     if (name && *name != '\0') {
         seat->name = SDL_strdup(name);
-
-        if (seat->keyboard.wl_keyboard) {
-            SDL_snprintf(name_fmt, sizeof(name_fmt), "%s (%s)", WAYLAND_DEFAULT_KEYBOARD_NAME, seat->name);
-            SDL_SetKeyboardName(seat->keyboard.sdl_id, name_fmt);
-        }
-
-        if (seat->pointer.wl_pointer) {
-            SDL_snprintf(name_fmt, sizeof(name_fmt), "%s (%s)", WAYLAND_DEFAULT_POINTER_NAME, seat->name);
-            SDL_SetMouseName(seat->pointer.sdl_id, name_fmt);
-        }
-
-        if (seat->touch.wl_touch) {
-            SDL_snprintf(name_fmt, sizeof(name_fmt), "%s (%s)", WAYLAND_DEFAULT_TOUCH_NAME, seat->name);
-            SDL_SetTouchName((SDL_TouchID)(uintptr_t)seat->touch.wl_touch, name_fmt);
-        }
     }
 }
 
