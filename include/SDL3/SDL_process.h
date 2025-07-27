@@ -82,7 +82,9 @@ typedef struct SDL_Process SDL_Process;
  *
  * See SDL_CreateProcessWithProperties() for more details.
  *
- * \param args the path and arguments for the new process.
+ * \param args the path and arguments for the new process. The array of
+ *             strings is read by this function and not retained after the
+ *             function returns.
  * \param pipe_stdio true to create pipes to the process's standard input and
  *                   from the process's standard output, false for the process
  *                   to have no input and inherit the application's standard

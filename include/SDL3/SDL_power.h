@@ -85,11 +85,13 @@ typedef enum SDL_PowerState
  *
  * \param seconds a pointer filled in with the seconds of battery life left,
  *                or NULL to ignore. This will be filled in with -1 if we
- *                can't determine a value or there is no battery.
+ *                can't determine a value or there is no battery. If provided,
+ *                the value pointed to is written by this function.
  * \param percent a pointer filled in with the percentage of battery life
  *                left, between 0 and 100, or NULL to ignore. This will be
  *                filled in with -1 we can't determine a value or there is no
- *                battery.
+ *                battery. If provided, the value pointed to is written by
+ *                this function.
  * \returns the current battery state or `SDL_POWERSTATE_ERROR` on failure;
  *          call SDL_GetError() for more information.
  *
