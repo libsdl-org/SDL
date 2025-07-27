@@ -683,7 +683,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetDisplayName(SDL_DisplayID displa
  * different location depending on monitor layout.
  *
  * \param displayID the instance ID of the display to query.
- * \param rect the SDL_Rect structure filled in with the display bounds.
+ * \param rect the SDL_Rect structure filled in with the display bounds. The
+ *             structure pointed to is written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -709,7 +710,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetDisplayBounds(SDL_DisplayID displayID, S
  * non-fullscreen window.
  *
  * \param displayID the instance ID of the display to query.
- * \param rect the SDL_Rect structure filled in with the display bounds.
+ * \param rect the SDL_Rect structure filled in with the display bounds. The
+ *             structure pointed to is written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -825,7 +827,8 @@ extern SDL_DECLSPEC SDL_DisplayMode ** SDLCALL SDL_GetFullscreenDisplayModes(SDL
  * \param include_high_density_modes boolean to include high density modes in
  *                                   the search.
  * \param closest a pointer filled in with the closest display mode equal to
- *                or larger than the desired mode.
+ *                or larger than the desired mode. The structure pointed to is
+ *                written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -883,7 +886,8 @@ extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetCurrentDisplayMode(SD
 /**
  * Get the display containing a point.
  *
- * \param point the point to query.
+ * \param point the point to query. The data pointed to is read by this function
+ *              and not retained after the function returns.
  * \returns the instance ID of the display containing the point or 0 on
  *          failure; call SDL_GetError() for more information.
  *
@@ -899,7 +903,8 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForPoint(const SDL_Point
 /**
  * Get the display primarily containing a rect.
  *
- * \param rect the rect to query.
+ * \param rect the rect to query. The data pointed to is read by this function
+ *             and not retained after the function returns.
  * \returns the instance ID of the display entirely containing the rect or
  *          closest to the center of the rect on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -1772,9 +1777,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowPosition(SDL_Window *window, int x
  *
  * \param window the window to query.
  * \param x a pointer filled in with the x position of the window, may be
- *          NULL.
+ *          NULL. If provided, the value pointed to is written by this function.
  * \param y a pointer filled in with the y position of the window, may be
- *          NULL.
+ *          NULL. If provided, the value pointed to is written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
