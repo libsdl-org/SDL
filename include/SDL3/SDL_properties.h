@@ -249,8 +249,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetPointerProperty(SDL_PropertiesID props, 
  * preserve the data after this call completes.
  *
  * \param props the properties to modify.
- * \param name the name of the property to modify.
- * \param value the new value of the property, or NULL to delete the property.
+ * \param name the name of the property to modify. This string is not retained by SDL.
+ * \param value the new value of the property, or NULL to delete the property. This string is copied by the function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -381,10 +381,11 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetPointerProperty(SDL_PropertiesID props
  * Get a string property from a group of properties.
  *
  * \param props the properties to query.
- * \param name the name of the property to query.
+ * \param name the name of the property to query. This string is not retained by SDL.
  * \param default_value the default value of the property.
  * \returns the value of the property, or `default_value` if it is not set or
- *          not a string property.
+ *          not a string property. The returned string is owned by SDL
+ *          and should not be modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread, although
  *               the data returned is not protected and could potentially be
