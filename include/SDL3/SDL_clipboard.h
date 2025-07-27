@@ -90,7 +90,7 @@ extern "C" {
 /**
  * Put UTF-8 text into the clipboard.
  *
- * \param text the text to store in the clipboard.
+ * \param text the text to store in the clipboard. This string is copied by the function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *

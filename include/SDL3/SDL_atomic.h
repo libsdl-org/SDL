@@ -87,7 +87,8 @@ typedef int SDL_SpinLock;
  * ***Please note that spinlocks are dangerous if you don't know what you're
  * doing. Please be careful using any sort of spinlock!***
  *
- * \param lock a pointer to a lock variable.
+ * \param lock a pointer to a lock variable. The data pointed to is read and
+ *             written by this function.
  * \returns true if the lock succeeded, false if the lock is already held.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -105,7 +106,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TryLockSpinlock(SDL_SpinLock *lock);
  * ***Please note that spinlocks are dangerous if you don't know what you're
  * doing. Please be careful using any sort of spinlock!***
  *
- * \param lock a pointer to a lock variable.
+ * \param lock a pointer to a lock variable. The data pointed to is read and
+ *             written by this function.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -124,7 +126,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_LockSpinlock(SDL_SpinLock *lock);
  * ***Please note that spinlocks are dangerous if you don't know what you're
  * doing. Please be careful using any sort of spinlock!***
  *
- * \param lock a pointer to a lock variable.
+ * \param lock a pointer to a lock variable. The data pointed to is written
+ *             by this function.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -400,7 +403,8 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param a a pointer to an SDL_AtomicInt variable to be modified. The data
+ *          pointed to is read and written by this function.
  * \param oldval the old value.
  * \param newval the new value.
  * \returns true if the atomic variable was set, false otherwise.
@@ -422,7 +426,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, i
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param a a pointer to an SDL_AtomicInt variable to be modified. The data
+ *          pointed to is written by this function.
  * \param v the desired value.
  * \returns the previous value of the atomic variable.
  *
@@ -440,7 +445,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAtomicInt(SDL_AtomicInt *a, int v);
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicInt variable.
+ * \param a a pointer to an SDL_AtomicInt variable. The data pointed to is
+ *          read by this function.
  * \returns the current value of an atomic variable.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -459,7 +465,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAtomicInt(SDL_AtomicInt *a);
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param a a pointer to an SDL_AtomicInt variable to be modified. The data
+ *          pointed to is read and written by this function.
  * \param v the desired value to add.
  * \returns the previous value of the atomic variable.
  *
@@ -545,7 +552,8 @@ typedef struct SDL_AtomicU32 { Uint32 value; } SDL_AtomicU32;
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified. The data
+ *          pointed to is read and written by this function.
  * \param oldval the old value.
  * \param newval the new value.
  * \returns true if the atomic variable was set, false otherwise.
@@ -567,7 +575,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, U
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified. The data
+ *          pointed to is written by this function.
  * \param v the desired value.
  * \returns the previous value of the atomic variable.
  *
@@ -585,7 +594,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v);
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to an SDL_AtomicU32 variable.
+ * \param a a pointer to an SDL_AtomicU32 variable. The data pointed to is
+ *          read by this function.
  * \returns the current value of an atomic variable.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -602,7 +612,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to a pointer.
+ * \param a a pointer to a pointer. The data pointed to is read and written
+ *          by this function.
  * \param oldval the old pointer value.
  * \param newval the new pointer value.
  * \returns true if the pointer was set, false otherwise.
@@ -623,7 +634,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicPointer(void **a, void 
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to a pointer.
+ * \param a a pointer to a pointer. The data pointed to is written by this
+ *          function.
  * \param v the desired pointer value.
  * \returns the previous value of the pointer.
  *
@@ -642,7 +654,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_SetAtomicPointer(void **a, void *v);
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
  *
- * \param a a pointer to a pointer.
+ * \param a a pointer to a pointer. The data pointed to is read by this
+ *          function.
  * \returns the current value of a pointer.
  *
  * \threadsafety It is safe to call this function from any thread.

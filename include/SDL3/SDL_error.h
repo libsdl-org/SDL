@@ -73,7 +73,9 @@ extern "C" {
  * }
  * ```
  *
- * \param fmt a printf()-style message format string.
+ * \param fmt a printf()-style message format string. The string is copied
+ *            by the function, so the original can be freed after this call
+ *            returns.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any.
  * \returns false.
@@ -93,7 +95,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const cha
  *
  * Calling this function will replace any previous error message that was set.
  *
- * \param fmt a printf()-style message format string.
+ * \param fmt a printf()-style message format string. The string is copied
+ *            by the function, so the original can be freed after this call
+ *            returns.
  * \param ap a variable argument list.
  * \returns false.
  *

@@ -134,11 +134,14 @@ typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * cons
  *
  * \param callback a function pointer to be invoked when the user selects a
  *                 file and accepts, or cancels the dialog, or an error
- *                 occurs.
+ *                 occurs. The function pointer is not retained after this
+ *                 call returns.
  * \param userdata an optional pointer to pass extra data to the callback when
- *                 it will be invoked.
+ *                 it will be invoked. The data pointed to is not accessed by
+ *                 SDL directly and is not retained after this call returns.
  * \param window the window that the dialog should be modal for, may be NULL.
- *               Not all platforms support this option.
+ *               Not all platforms support this option. The window object is
+ *               not retained after this call returns.
  * \param filters a list of filters, may be NULL. Not all platforms support
  *                this option, and platforms that do support it may allow the
  *                user to ignore the filters. If non-NULL, it must remain
@@ -146,6 +149,7 @@ typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * cons
  * \param nfilters the number of filters. Ignored if filters is NULL.
  * \param default_location the default folder or file to start the dialog at,
  *                         may be NULL. Not all platforms support this option.
+ *                         The string is not retained after this call returns.
  * \param allow_many if non-zero, the user will be allowed to select multiple
  *                   entries. Not all platforms support this option.
  *
@@ -185,11 +189,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  *
  * \param callback a function pointer to be invoked when the user selects a
  *                 file and accepts, or cancels the dialog, or an error
- *                 occurs.
+ *                 occurs. The function pointer is not retained after this
+ *                 call returns.
  * \param userdata an optional pointer to pass extra data to the callback when
- *                 it will be invoked.
+ *                 it will be invoked. The data pointed to is not accessed by
+ *                 SDL directly and is not retained after this call returns.
  * \param window the window that the dialog should be modal for, may be NULL.
- *               Not all platforms support this option.
+ *               Not all platforms support this option. The window object is
+ *               not retained after this call returns.
  * \param filters a list of filters, may be NULL. Not all platforms support
  *                this option, and platforms that do support it may allow the
  *                user to ignore the filters. If non-NULL, it must remain
@@ -197,6 +204,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  * \param nfilters the number of filters. Ignored if filters is NULL.
  * \param default_location the default folder or file to start the dialog at,
  *                         may be NULL. Not all platforms support this option.
+ *                         The string is not retained after this call returns.
  *
  * \threadsafety This function should be called only from the main thread. The
  *               callback may be invoked from the same thread or from a
@@ -234,13 +242,17 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  *
  * \param callback a function pointer to be invoked when the user selects a
  *                 file and accepts, or cancels the dialog, or an error
- *                 occurs.
+ *                 occurs. The function pointer is not retained after this
+ *                 call returns.
  * \param userdata an optional pointer to pass extra data to the callback when
- *                 it will be invoked.
+ *                 it will be invoked. The data pointed to is not accessed by
+ *                 SDL directly and is not retained after this call returns.
  * \param window the window that the dialog should be modal for, may be NULL.
- *               Not all platforms support this option.
+ *               Not all platforms support this option. The window object is
+ *               not retained after this call returns.
  * \param default_location the default folder or file to start the dialog at,
  *                         may be NULL. Not all platforms support this option.
+ *                         The string is not retained after this call returns.
  * \param allow_many if non-zero, the user will be allowed to select multiple
  *                   entries. Not all platforms support this option.
  *
@@ -303,9 +315,11 @@ typedef enum SDL_FileDialogType
  * \param type the type of file dialog.
  * \param callback a function pointer to be invoked when the user selects a
  *                 file and accepts, or cancels the dialog, or an error
- *                 occurs.
+ *                 occurs. The function pointer is not retained after this
+ *                 call returns.
  * \param userdata an optional pointer to pass extra data to the callback when
- *                 it will be invoked.
+ *                 it will be invoked. The data pointed to is not accessed by
+ *                 SDL directly and is not retained after this call returns.
  * \param props the properties to use.
  *
  * \threadsafety This function should be called only from the main thread. The

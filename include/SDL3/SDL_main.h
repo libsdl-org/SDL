@@ -556,12 +556,16 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetMainReady(void);
  * \param argc the argc parameter from the application's main() function, or 0
  *             if the platform's main-equivalent has no argc.
  * \param argv the argv parameter from the application's main() function, or
- *             NULL if the platform's main-equivalent has no argv.
+ *             NULL if the platform's main-equivalent has no argv. If provided,
+ *             the array of strings is read by this function and not retained
+ *             after the call returns.
  * \param mainFunction your SDL app's C-style main(). NOT the function you're
  *                     calling this from! Its name doesn't matter; it doesn't
- *                     literally have to be `main`.
+ *                     literally have to be `main`. The function pointer is not
+ *                     retained after this call returns.
  * \param reserved should be NULL (reserved for future use, will probably be
- *                 platform-specific then).
+ *                 platform-specific then). If provided, the pointer is not
+ *                 retained after this call returns.
  * \returns the return value from mainFunction: 0 on success, otherwise
  *          failure; SDL_GetError() might have more information on the
  *          failure.
@@ -586,11 +590,16 @@ extern SDL_DECLSPEC int SDLCALL SDL_RunApp(int argc, char *argv[], SDL_main_func
  * _really_ know what you're doing.
  *
  * \param argc standard Unix main argc.
- * \param argv standard Unix main argv.
- * \param appinit the application's SDL_AppInit function.
- * \param appiter the application's SDL_AppIterate function.
- * \param appevent the application's SDL_AppEvent function.
- * \param appquit the application's SDL_AppQuit function.
+ * \param argv standard Unix main argv. The array of strings is read by this
+ *             function and not retained after the call returns.
+ * \param appinit the application's SDL_AppInit function. The function pointer
+ *               is not retained after this call returns.
+ * \param appiter the application's SDL_AppIterate function. The function
+ *               pointer is not retained after this call returns.
+ * \param appevent the application's SDL_AppEvent function. The function
+ *                pointer is not retained after this call returns.
+ * \param appquit the application's SDL_AppQuit function. The function pointer
+ *               is not retained after this call returns.
  * \returns standard Unix main return value.
  *
  * \threadsafety It is not safe to call this anywhere except as the only
@@ -616,12 +625,14 @@ extern SDL_DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char *argv[]
  * will call it when initializing the video subsystem.
  *
  * \param name the window class name, in UTF-8 encoding. If NULL, SDL
- *             currently uses "SDL_app" but this isn't guaranteed.
+ *             currently uses "SDL_app" but this isn't guaranteed. If provided,
+ *             the string is not retained after this call returns.
  * \param style the value to use in WNDCLASSEX::style. If `name` is NULL, SDL
  *              currently uses `(CS_BYTEALIGNCLIENT \| CS_OWNDC)` regardless
  *              of what is specified here.
  * \param hInst the HINSTANCE to use in WNDCLASSEX::hInstance. If zero, SDL
- *              will use `GetModuleHandle(NULL)` instead.
+ *              will use `GetModuleHandle(NULL)` instead. The pointer is not
+ *              retained after this call returns.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *

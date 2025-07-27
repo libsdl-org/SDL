@@ -194,7 +194,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumRenderDrivers(void);
  * \param index the index of the rendering driver; the value ranges from 0 to
  *              SDL_GetNumRenderDrivers() - 1.
  * \returns the name of the rendering driver at the requested index, or NULL
- *          if an invalid index was specified.
+ *          if an invalid index was specified. The returned string is owned by
+ *          SDL and should not be modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -207,7 +208,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetRenderDriver(int index);
 /**
  * Create a window and default renderer.
  *
- * \param title the title of the window, in UTF-8 encoding.
+ * \param title the title of the window, in UTF-8 encoding. This string is copied by the function.
  * \param width the width of the window.
  * \param height the height of the window.
  * \param window_flags the flags used to create the window (see
@@ -244,7 +245,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CreateWindowAndRenderer(const char *title, 
  *
  * \param window the window where rendering is displayed.
  * \param name the name of the rendering driver to initialize, or NULL to let
- *             SDL choose one.
+ *             SDL choose one. This string is not retained by SDL.
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
@@ -421,7 +422,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetRenderWindow(SDL_Renderer *rende
  *
  * \param renderer the rendering context.
  * \returns the name of the selected renderer, or NULL on failure; call
- *          SDL_GetError() for more information.
+ *          SDL_GetError() for more information. The returned string is owned
+ *          by SDL and should not be modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -2730,7 +2732,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderVSync(SDL_Renderer *renderer, int 
  * \param renderer the renderer which should draw a line of text.
  * \param x the x coordinate where the top-left corner of the text will draw.
  * \param y the y coordinate where the top-left corner of the text will draw.
- * \param str the string to render.
+ * \param str the string to render. This string is not retained by SDL.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -2756,7 +2758,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, flo
  * \param renderer the renderer which should draw the text.
  * \param x the x coordinate where the top-left corner of the text will draw.
  * \param y the y coordinate where the top-left corner of the text will draw.
- * \param fmt the format string to draw.
+ * \param fmt the format string to draw. This string is not retained by SDL.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any.
  * \returns true on success or false on failure; call SDL_GetError() for more

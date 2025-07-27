@@ -552,7 +552,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumVideoDrivers(void);
  *
  * \param index the index of a video driver.
  * \returns the name of the video driver with the given **index**, or NULL if
- *          index is out of bounds.
+ *          index is out of bounds. The returned string is owned by SDL and
+ *          should not be modified or freed by the application.
  *
  * \threadsafety This function should only be called on the main thread.
  *
@@ -570,7 +571,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetVideoDriver(int index);
  * to be proper names.
  *
  * \returns the name of the current video driver or NULL if no driver has been
- *          initialized.
+ *          initialized. The returned string is owned by SDL and should not be
+ *          modified or freed by the application.
  *
  * \threadsafety This function should only be called on the main thread.
  *
@@ -663,7 +665,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetDisplayProperties(SDL_Displa
  *
  * \param displayID the instance ID of the display to query.
  * \returns the name of a display or NULL on failure; call SDL_GetError() for
- *          more information.
+ *          more information. The returned string is owned by SDL and should
+ *          not be modified or freed by the application.
  *
  * \threadsafety This function should only be called on the main thread.
  *
@@ -680,7 +683,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetDisplayName(SDL_DisplayID displa
  * different location depending on monitor layout.
  *
  * \param displayID the instance ID of the display to query.
- * \param rect the SDL_Rect structure filled in with the display bounds.
+ * \param rect the SDL_Rect structure filled in with the display bounds. The
+ *             structure pointed to is written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -706,7 +710,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetDisplayBounds(SDL_DisplayID displayID, S
  * non-fullscreen window.
  *
  * \param displayID the instance ID of the display to query.
- * \param rect the SDL_Rect structure filled in with the display bounds.
+ * \param rect the SDL_Rect structure filled in with the display bounds. The
+ *             structure pointed to is written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -822,7 +827,8 @@ extern SDL_DECLSPEC SDL_DisplayMode ** SDLCALL SDL_GetFullscreenDisplayModes(SDL
  * \param include_high_density_modes boolean to include high density modes in
  *                                   the search.
  * \param closest a pointer filled in with the closest display mode equal to
- *                or larger than the desired mode.
+ *                or larger than the desired mode. The structure pointed to is
+ *                written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -880,7 +886,8 @@ extern SDL_DECLSPEC const SDL_DisplayMode * SDLCALL SDL_GetCurrentDisplayMode(SD
 /**
  * Get the display containing a point.
  *
- * \param point the point to query.
+ * \param point the point to query. The data pointed to is read by this function
+ *              and not retained after the function returns.
  * \returns the instance ID of the display containing the point or 0 on
  *          failure; call SDL_GetError() for more information.
  *
@@ -896,7 +903,8 @@ extern SDL_DECLSPEC SDL_DisplayID SDLCALL SDL_GetDisplayForPoint(const SDL_Point
 /**
  * Get the display primarily containing a rect.
  *
- * \param rect the rect to query.
+ * \param rect the rect to query. The data pointed to is read by this function
+ *             and not retained after the function returns.
  * \returns the instance ID of the display entirely containing the rect or
  *          closest to the center of the rect on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -1138,7 +1146,9 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  * loader or link to a dynamic library version. This limitation may be removed
  * in a future version of SDL.
  *
- * \param title the title of the window, in UTF-8 encoding.
+ * \param title the title of the window, in UTF-8 encoding. The string is
+ *              copied by the function, so the original can be freed after
+ *              this call returns.
  * \param w the width of the window.
  * \param h the height of the window.
  * \param flags 0, or one or more SDL_WindowFlags OR'd together.
@@ -1657,7 +1667,9 @@ extern SDL_DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *windo
  * This string is expected to be in UTF-8 encoding.
  *
  * \param window the window to change.
- * \param title the desired window title in UTF-8 format.
+ * \param title the desired window title in UTF-8 format. The string is
+ *              copied by the function, so the original can be freed after
+ *              this call returns.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -1674,7 +1686,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowTitle(SDL_Window *window, const ch
  *
  * \param window the window to query.
  * \returns the title of the window in UTF-8 format or "" if there is no
- *          title.
+ *          title. The returned string is owned by SDL and should not be
+ *          modified or freed by the application. The string remains valid
+ *          until the window title is changed or the window is destroyed.
  *
  * \threadsafety This function should only be called on the main thread.
  *
@@ -1763,9 +1777,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowPosition(SDL_Window *window, int x
  *
  * \param window the window to query.
  * \param x a pointer filled in with the x position of the window, may be
- *          NULL.
+ *          NULL. If provided, the value pointed to is written by this function.
  * \param y a pointer filled in with the y position of the window, may be
- *          NULL.
+ *          NULL. If provided, the value pointed to is written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -3022,7 +3036,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_DisableScreenSaver(void);
  * program from the dynamic library using SDL_GL_GetProcAddress().
  *
  * \param path the platform dependent OpenGL library name, or NULL to open the
- *             default OpenGL library.
+ *             default OpenGL library. This string is not retained by SDL.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -3076,7 +3090,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_LoadLibrary(const char *path);
  *   code. This will ensure the proper calling convention is followed on
  *   platforms where this matters (Win32) thereby avoiding stack corruption.
  *
- * \param proc the name of an OpenGL function.
+ * \param proc the name of an OpenGL function. This string is not retained by SDL.
  * \returns a pointer to the named OpenGL function. The returned pointer
  *          should be cast to the appropriate function signature.
  *
@@ -3097,7 +3111,7 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_GL_GetProcAddress(const char
  * points for EGL functions. This is useful to provide to an EGL API and
  * extension loader.
  *
- * \param proc the name of an EGL function.
+ * \param proc the name of an EGL function. This string is not retained by SDL.
  * \returns a pointer to the named EGL function. The returned pointer should
  *          be cast to the appropriate function signature.
  *
@@ -3134,7 +3148,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_UnloadLibrary(void);
  * context and save that information somewhere instead of calling the function
  * every time you need to know.
  *
- * \param extension the name of the extension to check.
+ * \param extension the name of the extension to check. This string is not retained by SDL.
  * \returns true if the extension is supported, false otherwise.
  *
  * \threadsafety This function should only be called on the main thread.

@@ -163,7 +163,8 @@ extern SDL_DECLSPEC SDL_SensorID * SDLCALL SDL_GetSensors(int *count);
  * This can be called before any sensors are opened.
  *
  * \param instance_id the sensor instance ID.
- * \returns the sensor name, or NULL if `instance_id` is not valid.
+ * \returns the sensor name, or NULL if `instance_id` is not valid. The returned string is owned by SDL
+ *          and should not be modified or freed by the application.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -233,7 +234,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSensorProperties(SDL_Sensor 
  *
  * \param sensor the SDL_Sensor object.
  * \returns the sensor name or NULL on failure; call SDL_GetError() for more
- *          information.
+ *          information. The returned string is owned by SDL and should not be modified or freed by the application.
  *
  * \since This function is available since SDL 3.2.0.
  */

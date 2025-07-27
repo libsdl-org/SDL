@@ -204,8 +204,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowMessageBox(const SDL_MessageBoxData *me
  * to stderr if you can.
  *
  * \param flags an SDL_MessageBoxFlags value.
- * \param title UTF-8 title text.
- * \param message UTF-8 message text.
+ * \param title UTF-8 title text. This string is not retained by SDL.
+ * \param message UTF-8 message text. This string is not retained by SDL.
  * \param window the parent window, or NULL for no parent.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.

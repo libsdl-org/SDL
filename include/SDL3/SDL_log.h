@@ -211,7 +211,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
  *
  * \param priority the SDL_LogPriority to modify.
  * \param prefix the prefix to use for that log priority, or NULL to use no
- *               prefix.
+ *               prefix. This string is copied by the function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -227,7 +227,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetLogPriorityPrefix(SDL_LogPriority priori
 /**
  * Log a message with SDL_LOG_CATEGORY_APPLICATION and SDL_LOG_PRIORITY_INFO.
  *
- * \param fmt a printf() style message format string.
+ * \param fmt a printf() style message format string. This string is not retained by SDL.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any.
  *
@@ -251,7 +251,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fm
  * Log a message with SDL_LOG_PRIORITY_TRACE.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param fmt a printf() style message format string. This string is not retained by SDL.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -276,7 +276,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogTrace(int category, SDL_PRINTF_FORMAT_ST
  * Log a message with SDL_LOG_PRIORITY_VERBOSE.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param fmt a printf() style message format string. This string is not retained by SDL.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -299,7 +299,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogVerbose(int category, SDL_PRINTF_FORMAT_
  * Log a message with SDL_LOG_PRIORITY_DEBUG.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param fmt a printf() style message format string. This string is not retained by SDL.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -323,7 +323,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogDebug(int category, SDL_PRINTF_FORMAT_ST
  * Log a message with SDL_LOG_PRIORITY_INFO.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param fmt a printf() style message format string. This string is not retained by SDL.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -347,7 +347,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogInfo(int category, SDL_PRINTF_FORMAT_STR
  * Log a message with SDL_LOG_PRIORITY_WARN.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param fmt a printf() style message format string. This string is not retained by SDL.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -371,7 +371,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogWarn(int category, SDL_PRINTF_FORMAT_STR
  * Log a message with SDL_LOG_PRIORITY_ERROR.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param fmt a printf() style message format string. This string is not retained by SDL.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -395,7 +395,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogError(int category, SDL_PRINTF_FORMAT_ST
  * Log a message with SDL_LOG_PRIORITY_CRITICAL.
  *
  * \param category the category of the message.
- * \param fmt a printf() style message format string.
+ * \param fmt a printf() style message format string. This string is not retained by SDL.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -420,7 +420,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogCritical(int category, SDL_PRINTF_FORMAT
  *
  * \param category the category of the message.
  * \param priority the priority of the message.
- * \param fmt a printf() style message format string.
+ * \param fmt a printf() style message format string. This string is not retained by SDL.
  * \param ... additional parameters matching % tokens in the **fmt** string,
  *            if any.
  *
@@ -447,7 +447,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LogMessage(int category,
  *
  * \param category the category of the message.
  * \param priority the priority of the message.
- * \param fmt a printf() style message format string.
+ * \param fmt a printf() style message format string. This string is not retained by SDL.
  * \param ap a variable argument list.
  *
  * \threadsafety It is safe to call this function from any thread.

@@ -515,7 +515,8 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, bool
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
  *
- * \param file the BMP file to load.
+ * \param file the BMP file to load. The filename is not retained by SDL
+ *             after this function returns.
  * \returns a pointer to a new SDL_Surface structure or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -564,7 +565,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStre
  * not supported.
  *
  * \param surface the SDL_Surface structure containing the image to be saved.
- * \param file a file to save to.
+ * \param file a file to save to. The filename is not retained by SDL
+ *             after this function returns.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *

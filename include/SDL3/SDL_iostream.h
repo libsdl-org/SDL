@@ -254,9 +254,11 @@ typedef struct SDL_IOStream SDL_IOStream;
  *   the filesystem. If SDL used some other method to access the filesystem,
  *   this property will not be set.
  *
- * \param file a UTF-8 string representing the filename to open.
+ * \param file a UTF-8 string representing the filename to open. The filename
+ *             is not retained by SDL after this function returns.
  * \param mode an ASCII string representing the mode to be used for opening
- *             the file.
+ *             the file. The mode string is not retained by SDL after this
+ *             function returns.
  * \returns a pointer to the SDL_IOStream structure that is created or NULL on
  *          failure; call SDL_GetError() for more information.
  *

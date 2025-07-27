@@ -338,7 +338,7 @@ typedef struct SDL_Storage SDL_Storage;
  * When the path override is not provided, the generic implementation will use
  * the output of SDL_GetBasePath as the base path.
  *
- * \param override a path to override the backend's default title root.
+ * \param override a path to override the backend's default title root. This string is not retained by SDL.
  * \param props a property list that may contain backend-specific information.
  * \returns a title storage container on success or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -360,8 +360,8 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenTitleStorage(const char *overr
  * This allows the backend to properly batch file operations and flush them
  * when the container has been closed; ensuring safe and optimal save I/O.
  *
- * \param org the name of your organization.
- * \param app the name of your application.
+ * \param org the name of your organization. This string is not retained by SDL.
+ * \param app the name of your application. This string is not retained by SDL.
  * \param props a property list that may contain backend-specific information.
  * \returns a user storage container on success or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -386,7 +386,7 @@ extern SDL_DECLSPEC SDL_Storage * SDLCALL SDL_OpenUserStorage(const char *org, c
  * SDL_OpenUserStorage() for access to user data.
  *
  * \param path the base path prepended to all storage paths, or NULL for no
- *             base path.
+ *             base path. This string is not retained by SDL.
  * \returns a filesystem storage container on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *

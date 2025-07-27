@@ -220,6 +220,7 @@ extern SDL_DECLSPEC SDL_JoystickID * SDLCALL SDL_GetJoysticks(int *count);
  * \param instance_id the joystick instance ID.
  * \returns the name of the selected joystick. If no name can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
+ *          The returned string is owned by SDL and should not be modified or freed by the application.
  *
  * \since This function is available since SDL 3.2.0.
  *

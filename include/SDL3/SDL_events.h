@@ -1107,7 +1107,8 @@ typedef enum SDL_EventAction
  *
  * \param events destination buffer for the retrieved events, may be NULL to
  *               leave the events in the queue and return the number of events
- *               that would have been stored.
+ *               that would have been stored. If provided, the data pointed to
+ *               is written by this function.
  * \param numevents if action is SDL_ADDEVENT, the number of events to add
  *                  back to the event queue; if action is SDL_PEEKEVENT or
  *                  SDL_GETEVENT, the maximum number of events to retrieve.
@@ -1257,7 +1258,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType)
  * ```
  *
  * \param event the SDL_Event structure to be filled with the next event from
- *              the queue, or NULL.
+ *              the queue, or NULL. If provided, the data pointed to is written
+ *              by this function.
  * \returns true if this got an event or false if there are none available.
  *
  * \threadsafety This function should only be called on the main thread.
@@ -1280,7 +1282,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PollEvent(SDL_Event *event);
  * this function in the thread that initialized the video subsystem.
  *
  * \param event the SDL_Event structure to be filled in with the next event
- *              from the queue, or NULL.
+ *              from the queue, or NULL. If provided, the data pointed to is
+ *              written by this function.
  * \returns true on success or false if there was an error while waiting for
  *          events; call SDL_GetError() for more information.
  *
@@ -1308,7 +1311,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitEvent(SDL_Event *event);
  * system scheduling.
  *
  * \param event the SDL_Event structure to be filled in with the next event
- *              from the queue, or NULL.
+ *              from the queue, or NULL. If provided, the data pointed to is
+ *              written by this function.
  * \param timeoutMS the maximum number of milliseconds to wait for the next
  *                  available event.
  * \returns true if this got an event or false if the timeout elapsed without

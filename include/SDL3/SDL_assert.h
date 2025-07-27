@@ -302,9 +302,12 @@ typedef struct SDL_AssertData
  *
  * Use the SDL_assert macros instead.
  *
- * \param data assert data structure.
- * \param func function name.
- * \param file file name.
+ * \param data assert data structure. The data pointed to is read by this
+ *             function and not retained after the function returns.
+ * \param func function name. The string is read by this function and not
+ *             retained after the function returns.
+ * \param file file name. The string is read by this function and not
+ *             retained after the function returns.
  * \param line line number.
  * \returns assert state.
  *
@@ -590,7 +593,8 @@ extern SDL_DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetDefaultAssertionHandler(
  * data, it is safe to pass a NULL pointer to this function to ignore it.
  *
  * \param puserdata pointer which is filled with the "userdata" pointer that
- *                  was passed to SDL_SetAssertionHandler().
+ *                  was passed to SDL_SetAssertionHandler(). If provided, the
+ *                  value pointed to is written by this function.
  * \returns the SDL_AssertionHandler that is called when an assert triggers.
  *
  * \threadsafety It is safe to call this function from any thread.

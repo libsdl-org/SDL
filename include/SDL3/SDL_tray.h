@@ -124,10 +124,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsTraySupported(void);
  *
  * Using tray icons require the video subsystem.
  *
- * \param icon a surface to be used as icon. May be NULL.
+ * \param icon a surface to be used as icon. May be NULL. The data pointed to is
+ *             read by this function and not retained after the call returns.
  * \param tooltip a tooltip to be displayed when the mouse hovers the icon in
  *                UTF-8 encoding. Not supported on all platforms. May be NULL.
- * \returns The newly created system tray icon.
+ *                The string is not retained after this call returns.
+ * \returns The newly created system tray icon or NULL on failure; call
+ *          SDL_GetError() for more information. The returned pointer should
+ *          be freed with SDL_DestroyTray().
  *
  * \threadsafety This function should only be called on the main thread.
  *
@@ -142,8 +146,10 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const c
 /**
  * Updates the system tray icon's icon.
  *
- * \param tray the tray icon to be updated.
- * \param icon the new icon. May be NULL.
+ * \param tray the tray icon to be updated. The data pointed to is read by this
+ *             function and not retained after the call returns.
+ * \param icon the new icon. May be NULL. The data pointed to is read by this
+ *             function and not retained after the call returns.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -157,8 +163,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *ic
 /**
  * Updates the system tray icon's tooltip.
  *
- * \param tray the tray icon to be updated.
- * \param tooltip the new tooltip in UTF-8 encoding. May be NULL.
+ * \param tray the tray icon to be updated. The data pointed to is read by this
+ *             function and not retained after the call returns.
+ * \param tooltip the new tooltip in UTF-8 encoding. May be NULL. The string
+ *                is not retained after this call returns.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -179,8 +187,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayTooltip(SDL_Tray *tray, const char *
  *
  * A menu does not need to be destroyed; it will be destroyed with the tray.
  *
- * \param tray the tray to bind the menu to.
- * \returns the newly created menu.
+ * \param tray the tray to bind the menu to. The data pointed to is read by this
+ *             function and not retained after the call returns.  
+ * \returns the newly created menu or NULL on failure; call SDL_GetError() for
+ *          more information. The returned pointer is owned by SDL and should
+ *          not be freed by the application.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -203,8 +214,11 @@ extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_CreateTrayMenu(SDL_Tray *tray);
  *
  * A menu does not need to be destroyed; it will be destroyed with the tray.
  *
- * \param entry the tray entry to bind the menu to.
- * \returns the newly created menu.
+ * \param entry the tray entry to bind the menu to. The data pointed to is read
+ *              by this function and not retained after the call returns.
+ * \returns the newly created menu or NULL on failure; call SDL_GetError() for
+ *          more information. The returned pointer is owned by SDL and should
+ *          not be freed by the application.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -228,8 +242,11 @@ extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_CreateTraySubmenu(SDL_TrayEntry *
  *
  * A menu does not need to be destroyed; it will be destroyed with the tray.
  *
- * \param tray the tray entry to bind the menu to.
- * \returns the newly created menu.
+ * \param tray the tray entry to bind the menu to. The data pointed to is read
+ *             by this function and not retained after the call returns.
+ * \returns the newly created menu or NULL if no menu has been created; call
+ *          SDL_GetError() for more information. The returned pointer is owned
+ *          by SDL and should not be freed by the application.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -252,8 +269,11 @@ extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_GetTrayMenu(SDL_Tray *tray);
  *
  * A menu does not need to be destroyed; it will be destroyed with the tray.
  *
- * \param entry the tray entry to bind the menu to.
- * \returns the newly created menu.
+ * \param entry the tray entry to bind the menu to. The data pointed to is read
+ *              by this function and not retained after the call returns.
+ * \returns the newly created menu or NULL if no menu has been created; call
+ *          SDL_GetError() for more information. The returned pointer is owned
+ *          by SDL and should not be freed by the application.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -268,12 +288,15 @@ extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_GetTraySubmenu(SDL_TrayEntry *ent
 /**
  * Returns a list of entries in the menu, in order.
  *
- * \param menu The menu to get entries from.
+ * \param menu The menu to get entries from. The data pointed to is read by
+ *             this function and not retained after the call returns.
  * \param count An optional pointer to obtain the number of entries in the
- *              menu.
+ *              menu. If provided, the value pointed to is written by this
+ *              function.
  * \returns a NULL-terminated list of entries within the given menu. The
  *          pointer becomes invalid when any function that inserts or deletes
- *          entries in the menu is called.
+ *          entries in the menu is called. The returned pointer is owned by
+ *          SDL and should not be freed by the application.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -288,7 +311,8 @@ extern SDL_DECLSPEC const SDL_TrayEntry ** SDLCALL SDL_GetTrayEntries(SDL_TrayMe
 /**
  * Removes a tray entry.
  *
- * \param entry The entry to be deleted.
+ * \param entry The entry to be deleted. The data pointed to is read by this
+ *              function and not retained after the call returns.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -308,13 +332,17 @@ extern SDL_DECLSPEC void SDLCALL SDL_RemoveTrayEntry(SDL_TrayEntry *entry);
  *
  * An entry does not need to be destroyed; it will be destroyed with the tray.
  *
- * \param menu the menu to append the entry to.
+ * \param menu the menu to append the entry to. The data pointed to is read by
+ *             this function and not retained after the call returns.
  * \param pos the desired position for the new entry. Entries at or following
  *            this place will be moved. If pos is -1, the entry is appended.
  * \param label the text to be displayed on the entry, in UTF-8 encoding, or
- *              NULL for a separator.
+ *              NULL for a separator. The string is not retained after this
+ *              call returns.
  * \param flags a combination of flags, some of which are mandatory.
- * \returns the newly created entry, or NULL if pos is out of bounds.
+ * \returns the newly created entry, or NULL if pos is out of bounds; call
+ *          SDL_GetError() for more information. The returned pointer is owned
+ *          by SDL and should not be freed by the application.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -336,8 +364,10 @@ extern SDL_DECLSPEC SDL_TrayEntry * SDLCALL SDL_InsertTrayEntryAt(SDL_TrayMenu *
  * label (separators), or to set a NULL label to an entry that has a non-NULL
  * label. The function will silently fail if that happens.
  *
- * \param entry the entry to be updated.
- * \param label the new label for the entry in UTF-8 encoding.
+ * \param entry the entry to be updated. The data pointed to is read by this
+ *              function and not retained after the call returns.
+ * \param label the new label for the entry in UTF-8 encoding. The string is
+ *              not retained after this call returns.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -355,8 +385,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, con
  *
  * If the returned value is NULL, the entry is a separator.
  *
- * \param entry the entry to be read.
- * \returns the label of the entry in UTF-8 encoding.
+ * \param entry the entry to be read. The data pointed to is read by this
+ *              function and not retained after the call returns.
+ * \returns the label of the entry in UTF-8 encoding or NULL if the entry is
+ *          a separator. The returned pointer is owned by SDL and should not
+ *          be modified or freed by the application.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -374,7 +407,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetTrayEntryLabel(SDL_TrayEntry *en
  *
  * The entry must have been created with the SDL_TRAYENTRY_CHECKBOX flag.
  *
- * \param entry the entry to be updated.
+ * \param entry the entry to be updated. The data pointed to is read by this
+ *              function and not retained after the call returns.
  * \param checked true if the entry should be checked; false otherwise.
  *
  * \threadsafety This function should be called on the thread that created the
@@ -393,7 +427,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, b
  *
  * The entry must have been created with the SDL_TRAYENTRY_CHECKBOX flag.
  *
- * \param entry the entry to be read.
+ * \param entry the entry to be read. The data pointed to is read by this
+ *              function and not retained after the call returns.
  * \returns true if the entry is checked; false otherwise.
  *
  * \threadsafety This function should be called on the thread that created the
@@ -410,7 +445,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryChecked(SDL_TrayEntry *entry);
 /**
  * Sets whether or not an entry is enabled.
  *
- * \param entry the entry to be updated.
+ * \param entry the entry to be updated. The data pointed to is read by this
+ *              function and not retained after the call returns.
  * \param enabled true if the entry should be enabled; false otherwise.
  *
  * \threadsafety This function should be called on the thread that created the
@@ -427,7 +463,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, b
 /**
  * Gets whether or not an entry is enabled.
  *
- * \param entry the entry to be read.
+ * \param entry the entry to be read. The data pointed to is read by this
+ *              function and not retained after the call returns.
  * \returns true if the entry is enabled; false otherwise.
  *
  * \threadsafety This function should be called on the thread that created the
@@ -444,10 +481,13 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry);
 /**
  * Sets a callback to be invoked when the entry is selected.
  *
- * \param entry the entry to be updated.
- * \param callback a callback to be invoked when the entry is selected.
+ * \param entry the entry to be updated. The data pointed to is read by this
+ *              function and not retained after the call returns.
+ * \param callback a callback to be invoked when the entry is selected. The
+ *                 function pointer is not retained after this call returns.
  * \param userdata an optional pointer to pass extra data to the callback when
- *                 it will be invoked.
+ *                 it will be invoked. The pointer is not retained after this
+ *                 call returns.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -462,7 +502,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, 
 /**
  * Simulate a click on a tray entry.
  *
- * \param entry The entry to activate.
+ * \param entry The entry to activate. The data pointed to is read by this
+ *              function and not retained after the call returns.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -476,7 +517,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_ClickTrayEntry(SDL_TrayEntry *entry);
  *
  * This also destroys all associated menus and entries.
  *
- * \param tray the tray icon to be destroyed.
+ * \param tray the tray icon to be destroyed. The data pointed to is read by
+ *             this function and not retained after the call returns.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -490,8 +532,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyTray(SDL_Tray *tray);
 /**
  * Gets the menu containing a certain tray entry.
  *
- * \param entry the entry for which to get the parent menu.
- * \returns the parent menu.
+ * \param entry the entry for which to get the parent menu. The data pointed
+ *              to is read by this function and not retained after the call
+ *              returns.
+ * \returns the parent menu or NULL on failure; call SDL_GetError() for more
+ *          information. The returned pointer is owned by SDL and should not
+ *          be freed by the application.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -509,8 +555,11 @@ extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_GetTrayEntryParent(SDL_TrayEntry 
  * Either this function or SDL_GetTrayMenuParentTray() will return non-NULL
  * for any given menu.
  *
- * \param menu the menu for which to get the parent entry.
- * \returns the parent entry, or NULL if this menu is not a submenu.
+ * \param menu the menu for which to get the parent entry. The data pointed to
+ *             is read by this function and not retained after the call returns.
+ * \returns the parent entry, or NULL if this menu is not a submenu. The
+ *          returned pointer is owned by SDL and should not be freed by the
+ *          application.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.
@@ -529,8 +578,11 @@ extern SDL_DECLSPEC SDL_TrayEntry * SDLCALL SDL_GetTrayMenuParentEntry(SDL_TrayM
  * Either this function or SDL_GetTrayMenuParentEntry() will return non-NULL
  * for any given menu.
  *
- * \param menu the menu for which to get the parent enttrayry.
- * \returns the parent tray, or NULL if this menu is a submenu.
+ * \param menu the menu for which to get the parent enttrayry. The data pointed
+ *             to is read by this function and not retained after the call
+ *             returns.
+ * \returns the parent tray, or NULL if this menu is a submenu. The returned
+ *          pointer is owned by SDL and should not be freed by the application.
  *
  * \threadsafety This function should be called on the thread that created the
  *               tray.

@@ -201,7 +201,7 @@ typedef int (SDLCALL *SDL_ThreadFunction) (void *data);
  * and let the macros hide the details.
  *
  * \param fn the SDL_ThreadFunction function to call in the new thread.
- * \param name the name of the thread.
+ * \param name the name of the thread. This string is copied by the function.
  * \param data a pointer that is passed to `fn`.
  * \returns an opaque pointer to the new thread object on success, NULL if the
  *          new thread could not be created; call SDL_GetError() for more
@@ -360,7 +360,8 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithPropertiesRuntime(S
  *
  * \param thread the thread to query.
  * \returns a pointer to a UTF-8 string that names the specified thread, or
- *          NULL if it doesn't have a name.
+ *          NULL if it doesn't have a name. The returned string is owned by SDL
+ *          and should not be modified or freed by the application.
  *
  * \since This function is available since SDL 3.2.0.
  */

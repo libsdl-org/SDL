@@ -166,7 +166,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetVersion(void);
  * purposes. The string is not intended to be reliable in any way.
  *
  * \returns an arbitrary string, uniquely identifying the exact revision of
- *          the SDL library in use.
+ *          the SDL library in use. The returned string is owned by SDL and
+ *          should not be modified or freed by the application. It remains
+ *          valid for the lifetime of the program.
  *
  * \since This function is available since SDL 3.2.0.
  *

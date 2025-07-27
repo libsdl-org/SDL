@@ -61,7 +61,7 @@ extern "C" {
  * test it on every platform you target.
  *
  * \param url a valid URL/URI to open. Use `file:///full/path/to/file` for
- *            local files, if supported.
+ *            local files, if supported. This string is not retained by SDL.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
