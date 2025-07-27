@@ -26,7 +26,7 @@ cd $srcdir
 build=build
 buildandroid=$build/android
 platform=android-21
-abi="arm64-v8a" # "armeabi-v7a arm64-v8a x86 x86_64"
+abi="arm64-v8a armeabi-v7a x86 x86_64"
 obj=
 lib=
 ndk_args=
