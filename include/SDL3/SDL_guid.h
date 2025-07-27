@@ -68,7 +68,8 @@ typedef struct SDL_GUID {
  * Get an ASCII string representation for a given SDL_GUID.
  *
  * \param guid the SDL_GUID you wish to convert to string.
- * \param pszGUID buffer in which to write the ASCII string.
+ * \param pszGUID buffer in which to write the ASCII string. The buffer pointed
+ *                to is written by this function.
  * \param cbGUID the size of pszGUID, should be at least 33 bytes.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -86,7 +87,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_GUIDToString(SDL_GUID guid, char *pszGUID, 
  * an invalid GUID, the function will silently succeed, but the GUID generated
  * will not be useful.
  *
- * \param pchGUID string containing an ASCII representation of a GUID.
+ * \param pchGUID string containing an ASCII representation of a GUID. The
+ *                string is read by this function and not retained after the
+ *                function returns.
  * \returns a SDL_GUID structure.
  *
  * \threadsafety It is safe to call this function from any thread.

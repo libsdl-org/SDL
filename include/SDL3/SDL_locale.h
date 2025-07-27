@@ -96,7 +96,8 @@ typedef struct SDL_Locale
  * preferred locales.
  *
  * \param count a pointer filled in with the number of locales returned, may
- *              be NULL.
+ *              be NULL. If provided, the value pointed to is written by this
+ *              function.
  * \returns a NULL terminated array of locale pointers, or NULL on failure;
  *          call SDL_GetError() for more information. This is a single
  *          allocation that should be freed with SDL_free() when it is no
