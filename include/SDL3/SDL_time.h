@@ -100,9 +100,11 @@ typedef enum SDL_TimeFormat
  * preference outside of your program.
  *
  * \param dateFormat a pointer to the SDL_DateFormat to hold the returned date
- *                   format, may be NULL.
+ *                   format, may be NULL. If provided, the value pointed to is
+ *                   written by this function.
  * \param timeFormat a pointer to the SDL_TimeFormat to hold the returned time
- *                   format, may be NULL.
+ *                   format, may be NULL. If provided, the value pointed to is
+ *                   written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -114,7 +116,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetDateTimeLocalePreferences(SDL_DateFormat
  * Gets the current value of the system realtime clock in nanoseconds since
  * Jan 1, 1970 in Universal Coordinated Time (UTC).
  *
- * \param ticks the SDL_Time to hold the returned tick count.
+ * \param ticks the SDL_Time to hold the returned tick count. The value pointed
+ *              to is written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
