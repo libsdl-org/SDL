@@ -90,7 +90,7 @@ static bool QSA_WaitDevice(SDL_AudioDevice *device)
 {
     // Setup timeout for playing one fragment equal to 2 seconds
     // If timeout occurred then something wrong with hardware or driver
-    // For example, Vortex 8820 audio driver sticks on second DAC because
+    // For example, Vortex 8820 audio driver hangs on second DAC because
     // it doesn't exist !
     const int result = SDL_IOReady(device->hidden->audio_fd,
                                    device->recording ? SDL_IOR_READ : SDL_IOR_WRITE,
