@@ -4439,8 +4439,8 @@ typedef enum SDL_HintPriority
  * value. Hints will replace existing hints of their priority and lower.
  * Environment variables are considered to have override priority.
  *
- * \param name the hint to set.
- * \param value the value of the hint variable.
+ * \param name the hint to set. This string is not retained by SDL.
+ * \param value the value of the hint variable. This string is copied by the function.
  * \param priority the SDL_HintPriority level for the hint.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
@@ -4462,8 +4462,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetHintWithPriority(const char *name, const
  * variable that takes precedence. You can use SDL_SetHintWithPriority() to
  * set the hint with override priority instead.
  *
- * \param name the hint to set.
- * \param value the value of the hint variable.
+ * \param name the hint to set. This string is not retained by SDL.
+ * \param value the value of the hint variable. This string is copied by the function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -4484,7 +4484,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetHint(const char *name, const char *value
  * the environment isn't set. Callbacks will be called normally with this
  * change.
  *
- * \param name the hint to set.
+ * \param name the hint to set. This string is not retained by SDL.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -4515,8 +4515,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
 /**
  * Get the value of a hint.
  *
- * \param name the hint to query.
- * \returns the string value of a hint or NULL if the hint isn't set.
+ * \param name the hint to query. This string is not retained by SDL.
+ * \returns the string value of a hint or NULL if the hint isn't set. The returned string is owned by SDL
+ *          and should not be modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread, however the
  *               return value only remains valid until the hint is changed; if
@@ -4535,7 +4536,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 /**
  * Get the boolean value of a hint variable.
  *
- * \param name the name of the hint to get the boolean value from.
+ * \param name the name of the hint to get the boolean value from. This string is not retained by SDL.
  * \param default_value the value to return if the hint does not exist.
  * \returns the boolean value of a hint or the provided default value if the
  *          hint does not exist.

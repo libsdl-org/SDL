@@ -104,7 +104,8 @@ extern SDL_DECLSPEC SDL_KeyboardID * SDLCALL SDL_GetKeyboards(int *count);
  *
  * \param instance_id the keyboard instance ID.
  * \returns the name of the selected keyboard or NULL on failure; call
- *          SDL_GetError() for more information.
+ *          SDL_GetError() for more information. The returned string is owned by SDL
+ *          and should not be modified or freed by the application.
  *
  * \threadsafety This function should only be called on the main thread.
  *
