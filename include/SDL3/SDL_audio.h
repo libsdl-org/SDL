@@ -490,7 +490,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
  * \param index the index of the audio driver; the value ranges from 0 to
  *              SDL_GetNumAudioDrivers() - 1.
  * \returns the name of the audio driver at the requested index, or NULL if an
- *          invalid index was specified.
+ *          invalid index was specified. The returned string is owned by SDL
+ *          and should not be modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -508,7 +509,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDriver(int index);
  * meant to be proper names.
  *
  * \returns the name of the current audio driver or NULL if no driver has been
- *          initialized.
+ *          initialized. The returned string is owned by SDL and should not be
+ *          modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -579,7 +581,8 @@ extern SDL_DECLSPEC SDL_AudioDeviceID * SDLCALL SDL_GetAudioRecordingDevices(int
  *
  * \param devid the instance ID of the device to query.
  * \returns the name of the audio device, or NULL on failure; call
- *          SDL_GetError() for more information.
+ *          SDL_GetError() for more information. The returned string is owned
+ *          by SDL and should not be modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -2216,7 +2219,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio,
  * SDL_LoadWAV_IO(SDL_IOFromFile(path, "rb"), true, spec, audio_buf, audio_len);
  * ```
  *
- * \param path the file path of the WAV file to open.
+ * \param path the file path of the WAV file to open. This string is not retained by SDL.
  * \param spec a pointer to an SDL_AudioSpec that will be set to the WAVE
  *             data's format details on successful return.
  * \param audio_buf a pointer filled with the audio data, allocated by the
@@ -2314,7 +2317,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ConvertAudioSamples(const SDL_AudioSpec *sr
  *
  * \param format the audio format to query.
  * \returns the human readable name of the specified audio format or
- *          "SDL_AUDIO_UNKNOWN" if the format isn't recognized.
+ *          "SDL_AUDIO_UNKNOWN" if the format isn't recognized. The returned
+ *          string is owned by SDL and should not be modified or freed by the
+ *          application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
