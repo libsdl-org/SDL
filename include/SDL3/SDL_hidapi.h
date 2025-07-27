@@ -231,7 +231,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_hid_device_change_count(void);
  * \returns a pointer to a linked list of type SDL_hid_device_info, containing
  *          information about the HID devices attached to the system, or NULL
  *          in the case of failure. Free this linked list by calling
- *          SDL_hid_free_enumeration().
+ *          SDL_hid_free_enumeration(). The returned pointer should be freed
+ *          with SDL_hid_free_enumeration().
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -245,7 +246,8 @@ extern SDL_DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_enumerate(unsigned sho
  * This function frees a linked list created by SDL_hid_enumerate().
  *
  * \param devs pointer to a list of struct_device returned from
- *             SDL_hid_enumerate().
+ *             SDL_hid_enumerate(). The data pointed to is read by this
+ *             function and not retained after the call returns.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -261,9 +263,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_hid_free_enumeration(SDL_hid_device_info *d
  * \param vendor_id the Vendor ID (VID) of the device to open.
  * \param product_id the Product ID (PID) of the device to open.
  * \param serial_number the Serial Number of the device to open (Optionally
- *                      NULL).
+ *                      NULL). The string is not retained after this call
+ *                      returns.
  * \returns a pointer to a SDL_hid_device object on success or NULL on
- *          failure; call SDL_GetError() for more information.
+ *          failure; call SDL_GetError() for more information. The returned
+ *          pointer should be freed with SDL_hid_close().
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -275,9 +279,11 @@ extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_
  * The path name be determined by calling SDL_hid_enumerate(), or a
  * platform-specific path name can be used (eg: /dev/hidraw0 on Linux).
  *
- * \param path the path name of the device to open.
+ * \param path the path name of the device to open. The string is not retained
+ *             after this call returns.
  * \returns a pointer to a SDL_hid_device object on success or NULL on
- *          failure; call SDL_GetError() for more information.
+ *          failure; call SDL_GetError() for more information. The returned
+ *          pointer should be freed with SDL_hid_close().
  *
  * \since This function is available since SDL 3.2.0.
  */
