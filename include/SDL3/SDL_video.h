@@ -1138,7 +1138,9 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  * loader or link to a dynamic library version. This limitation may be removed
  * in a future version of SDL.
  *
- * \param title the title of the window, in UTF-8 encoding.
+ * \param title the title of the window, in UTF-8 encoding. The string is
+ *              copied by the function, so the original can be freed after
+ *              this call returns.
  * \param w the width of the window.
  * \param h the height of the window.
  * \param flags 0, or one or more SDL_WindowFlags OR'd together.
@@ -1657,7 +1659,9 @@ extern SDL_DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *windo
  * This string is expected to be in UTF-8 encoding.
  *
  * \param window the window to change.
- * \param title the desired window title in UTF-8 format.
+ * \param title the desired window title in UTF-8 format. The string is
+ *              copied by the function, so the original can be freed after
+ *              this call returns.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -1674,7 +1678,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowTitle(SDL_Window *window, const ch
  *
  * \param window the window to query.
  * \returns the title of the window in UTF-8 format or "" if there is no
- *          title.
+ *          title. The returned string is owned by SDL and should not be
+ *          modified or freed by the application. The string remains valid
+ *          until the window title is changed or the window is destroyed.
  *
  * \threadsafety This function should only be called on the main thread.
  *
