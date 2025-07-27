@@ -1676,9 +1676,10 @@ extern SDL_DECLSPEC SDL_Environment * SDLCALL SDL_CreateEnvironment(bool populat
  * Get the value of a variable in the environment.
  *
  * \param env the environment to query.
- * \param name the name of the variable to get.
+ * \param name the name of the variable to get. This string is not retained by SDL.
  * \returns a pointer to the value of the variable or NULL if it can't be
- *          found.
+ *          found. The returned string is owned by SDL and should not be
+ *          modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1717,8 +1718,8 @@ extern SDL_DECLSPEC char ** SDLCALL SDL_GetEnvironmentVariables(SDL_Environment 
  * Set the value of a variable in the environment.
  *
  * \param env the environment to modify.
- * \param name the name of the variable to set.
- * \param value the value of the variable to set.
+ * \param name the name of the variable to set. This string is copied by the function.
+ * \param value the value of the variable to set. This string is copied by the function.
  * \param overwrite true to overwrite the variable if it exists, false to
  *                  return success without setting the variable if it already
  *                  exists.
@@ -1741,7 +1742,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetEnvironmentVariable(SDL_Environment *env
  * Clear a variable from the environment.
  *
  * \param env the environment to modify.
- * \param name the name of the variable to unset.
+ * \param name the name of the variable to unset. This string is not retained by SDL.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -1777,9 +1778,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyEnvironment(SDL_Environment *env);
  *
  * This function uses SDL's cached copy of the environment and is thread-safe.
  *
- * \param name the name of the variable to get.
+ * \param name the name of the variable to get. This string is not retained by SDL.
  * \returns a pointer to the value of the variable or NULL if it can't be
- *          found.
+ *          found. The returned string is owned by SDL and should not be
+ *          modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1793,9 +1795,10 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_getenv(const char *name);
  * This function bypasses SDL's cached copy of the environment and is not
  * thread-safe.
  *
- * \param name the name of the variable to get.
+ * \param name the name of the variable to get. This string is not retained by SDL.
  * \returns a pointer to the value of the variable or NULL if it can't be
- *          found.
+ *          found. The returned string is owned by the system environment
+ *          and should not be modified or freed by the application.
  *
  * \threadsafety This function is not thread safe, consider using SDL_getenv()
  *               instead.
@@ -1809,8 +1812,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_getenv_unsafe(const char *name);
 /**
  * Set the value of a variable in the environment.
  *
- * \param name the name of the variable to set.
- * \param value the value of the variable to set.
+ * \param name the name of the variable to set. This string is not retained by SDL.
+ * \param value the value of the variable to set. This string is not retained by SDL.
  * \param overwrite 1 to overwrite the variable if it exists, 0 to return
  *                  success without setting the variable if it already exists.
  * \returns 0 on success, -1 on error.
@@ -1827,7 +1830,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_setenv_unsafe(const char *name, const char *
 /**
  * Clear a variable from the environment.
  *
- * \param name the name of the variable to unset.
+ * \param name the name of the variable to unset. This string is not retained by SDL.
  * \returns 0 on success, -1 on error.
  *
  * \threadsafety This function is not thread safe, consider using
@@ -3125,7 +3128,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst
  * The returned string is owned by the caller, and should be passed to
  * SDL_free when no longer needed.
  *
- * \param str the string to copy.
+ * \param str the string to copy. This string is not retained by SDL.
  * \returns a pointer to the newly-allocated string.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -3148,7 +3151,7 @@ extern SDL_DECLSPEC SDL_MALLOC char * SDLCALL SDL_strdup(const char *str);
  * The returned string is owned by the caller, and should be passed to
  * SDL_free when no longer needed.
  *
- * \param str the string to copy.
+ * \param str the string to copy. This string is not retained by SDL.
  * \param maxlen the maximum length of the copied string, not counting the
  *               null-terminator character.
  * \returns a pointer to the newly-allocated string.
@@ -4118,7 +4121,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_vsscanf(const char *text, SDL_SCANF_FORMAT_S
  *
  * \param text the buffer to write the string into. Must not be NULL.
  * \param maxlen the maximum bytes to write, including the null-terminator.
- * \param fmt a printf-style format string. Must not be NULL.
+ * \param fmt a printf-style format string. Must not be NULL. This string is not retained by SDL.
  * \param ... a list of values to be used with the format string.
  * \returns the number of bytes that should be written, not counting the
  *          null-terminator char, or a negative value on error.
@@ -4172,7 +4175,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text
  *
  * \param text the buffer to write the string into. Must not be NULL.
  * \param maxlen the maximum bytes to write, including the null-terminator.
- * \param fmt a printf-style format string. Must not be NULL.
+ * \param fmt a printf-style format string. Must not be NULL. This string is not retained by SDL.
  * \param ap a `va_list` values to be used with the format string.
  * \returns the number of bytes that should be written, not counting the
  *          null-terminator char, or a negative value on error.
@@ -4222,7 +4225,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_vswprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *tex
  * SDL_free when no longer needed.
  *
  * \param strp on output, is set to the new string. Must not be NULL.
- * \param fmt a printf-style format string. Must not be NULL.
+ * \param fmt a printf-style format string. Must not be NULL. This string is not retained by SDL.
  * \param ... a list of values to be used with the format string.
  * \returns the number of bytes in the newly-allocated string, not counting
  *          the null-terminator char, or a negative value on error.
@@ -4241,7 +4244,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_asprintf(char **strp, SDL_PRINTF_FORMAT_STRI
  * instead of using `...` variable arguments.
  *
  * \param strp on output, is set to the new string. Must not be NULL.
- * \param fmt a printf-style format string. Must not be NULL.
+ * \param fmt a printf-style format string. Must not be NULL. This string is not retained by SDL.
  * \param ap a `va_list` values to be used with the format string.
  * \returns the number of bytes in the newly-allocated string, not counting
  *          the null-terminator char, or a negative value on error.
@@ -5789,8 +5792,8 @@ typedef struct SDL_iconv_data_t *SDL_iconv_t;
  * This function allocates a context for the specified character set
  * conversion.
  *
- * \param tocode The target character encoding, must not be NULL.
- * \param fromcode The source character encoding, must not be NULL.
+ * \param tocode The target character encoding, must not be NULL. This string is not retained by SDL.
+ * \param fromcode The source character encoding, must not be NULL. This string is not retained by SDL.
  * \returns a handle that must be freed with SDL_iconv_close, or
  *          SDL_ICONV_ERROR on failure.
  *
@@ -5876,9 +5879,9 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_iconv(SDL_iconv_t cd, const char **inbuf,
  * SDL_free when no longer needed.
  *
  * \param tocode the character encoding of the output string. Examples are
- *               "UTF-8", "UCS-4", etc.
- * \param fromcode the character encoding of data in `inbuf`.
- * \param inbuf the string to convert to a different encoding.
+ *               "UTF-8", "UCS-4", etc. This string is not retained by SDL.
+ * \param fromcode the character encoding of data in `inbuf`. This string is not retained by SDL.
+ * \param inbuf the string to convert to a different encoding. This buffer is not retained by SDL.
  * \param inbytesleft the size of the input string _in bytes_.
  * \returns a new string, converted to the new encoding, or NULL on error.
  *
