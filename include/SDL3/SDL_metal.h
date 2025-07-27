@@ -62,7 +62,8 @@ typedef void *SDL_MetalView;
  * The returned handle can be casted directly to a NSView or UIView. To access
  * the backing CAMetalLayer, call SDL_Metal_GetLayer().
  *
- * \param window the window.
+ * \param window the window. The window object is not retained after this call
+ *               returns.
  * \returns handle NSView or UIView.
  *
  * \since This function is available since SDL 3.2.0.
