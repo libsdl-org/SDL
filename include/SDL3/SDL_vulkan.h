@@ -120,6 +120,7 @@ struct VkAllocationCallbacks;
  * library version.
  *
  * \param path the platform dependent Vulkan loader library name or NULL.
+ *             If provided, the string is not retained after this call returns.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -147,7 +148,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_LoadLibrary(const char *path);
  * (PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr();`
  *
  * \returns the function pointer for `vkGetInstanceProcAddr` or NULL on
- *          failure; call SDL_GetError() for more information.
+ *          failure; call SDL_GetError() for more information. The returned
+ *          function pointer is owned by SDL and should not be freed by the
+ *          application.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -190,8 +193,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  * You should not free the returned array; it is owned by SDL.
  *
  * \param count a pointer filled in with the number of extensions returned.
+ *              If provided, the value pointed to is written by this function.
  * \returns an array of extension name strings on success, NULL on failure;
- *          call SDL_GetError() for more information.
+ *          call SDL_GetError() for more information. The returned array is
+ *          owned by SDL and should not be modified or freed by the
+ *          application. It remains valid until the next call to this function
+ *          or until SDL_Quit() is called.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -209,12 +216,17 @@ extern SDL_DECLSPEC char const * const * SDLCALL SDL_Vulkan_GetInstanceExtension
  * If `allocator` is NULL, Vulkan will use the system default allocator. This
  * argument is passed directly to Vulkan and isn't used by SDL itself.
  *
- * \param window the window to which to attach the Vulkan surface.
+ * \param window the window to which to attach the Vulkan surface. The data
+ *               pointed to is read by this function and not retained after
+ *               the call returns.
  * \param instance the Vulkan instance handle.
  * \param allocator a VkAllocationCallbacks struct, which lets the app set the
- *                  allocator that creates the surface. Can be NULL.
+ *                  allocator that creates the surface. Can be NULL. If
+ *                  provided, the data pointed to is read by this function and
+ *                  not retained after the call returns.
  * \param surface a pointer to a VkSurfaceKHR handle to output the newly
- *                created surface.
+ *                created surface. The value pointed to is written by this
+ *                function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -244,7 +256,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_Vulkan_CreateSurface(SDL_Window *window,
  * \param instance the Vulkan instance handle.
  * \param surface vkSurfaceKHR handle to destroy.
  * \param allocator a VkAllocationCallbacks struct, which lets the app set the
- *                  allocator that destroys the surface. Can be NULL.
+ *                  allocator that destroys the surface. Can be NULL. If
+ *                  provided, the data pointed to is read by this function and
+ *                  not retained after the call returns.
  *
  * \since This function is available since SDL 3.2.0.
  *
