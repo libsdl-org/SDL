@@ -1176,7 +1176,10 @@ typedef struct SDL_PixelFormatDetails
  *
  * \param format the pixel format to query.
  * \returns the human readable name of the specified pixel format or
- *          "SDL_PIXELFORMAT_UNKNOWN" if the format isn't recognized.
+ *          "SDL_PIXELFORMAT_UNKNOWN" if the format isn't recognized. The
+ *          returned string is owned by SDL and should not be modified or
+ *          freed by the application. It remains valid for the lifetime of
+ *          the program.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1188,11 +1191,16 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetPixelFormatName(SDL_PixelFormat 
  * Convert one of the enumerated pixel formats to a bpp value and RGBA masks.
  *
  * \param format one of the SDL_PixelFormat values.
- * \param bpp a bits per pixel value; usually 15, 16, or 32.
- * \param Rmask a pointer filled in with the red mask for the format.
- * \param Gmask a pointer filled in with the green mask for the format.
- * \param Bmask a pointer filled in with the blue mask for the format.
- * \param Amask a pointer filled in with the alpha mask for the format.
+ * \param bpp a bits per pixel value; usually 15, 16, or 32. If provided, the
+ *            value pointed to is written by this function.
+ * \param Rmask a pointer filled in with the red mask for the format. If
+ *              provided, the value pointed to is written by this function.
+ * \param Gmask a pointer filled in with the green mask for the format. If
+ *              provided, the value pointed to is written by this function.
+ * \param Bmask a pointer filled in with the blue mask for the format. If
+ *              provided, the value pointed to is written by this function.
+ * \param Amask a pointer filled in with the alpha mask for the format. If
+ *              provided, the value pointed to is written by this function.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -1235,7 +1243,10 @@ extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetPixelFormatForMasks(int bpp, 
  *
  * \param format one of the SDL_PixelFormat values.
  * \returns a pointer to a SDL_PixelFormatDetails structure or NULL on
- *          failure; call SDL_GetError() for more information.
+ *          failure; call SDL_GetError() for more information. The returned
+ *          pointer is owned by SDL and should not be modified or freed by the
+ *          application. It remains valid until the next call to this function
+ *          or until SDL_Quit() is called.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1251,7 +1262,8 @@ extern SDL_DECLSPEC const SDL_PixelFormatDetails * SDLCALL SDL_GetPixelFormatDet
  * \param ncolors represents the number of color entries in the color palette.
  * \returns a new SDL_Palette structure on success or NULL on failure (e.g. if
  *          there wasn't enough memory); call SDL_GetError() for more
- *          information.
+ *          information. The returned pointer should be freed with
+ *          SDL_DestroyPalette().
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1266,8 +1278,11 @@ extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreatePalette(int ncolors);
 /**
  * Set a range of colors in a palette.
  *
- * \param palette the SDL_Palette structure to modify.
+ * \param palette the SDL_Palette structure to modify. The data pointed to is
+ *                written by this function.
  * \param colors an array of SDL_Color structures to copy into the palette.
+ *               The data pointed to is read by this function and not retained
+ *               after the call returns.
  * \param firstcolor the index of the first palette entry to modify.
  * \param ncolors the number of entries to modify.
  * \returns true on success or false on failure; call SDL_GetError() for more
@@ -1283,7 +1298,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetPaletteColors(SDL_Palette *palette, cons
 /**
  * Free a palette created with SDL_CreatePalette().
  *
- * \param palette the SDL_Palette structure to be freed.
+ * \param palette the SDL_Palette structure to be freed. The pointer is not
+ *                retained after this call returns.
  *
  * \threadsafety It is safe to call this function from any thread, as long as
  *               the palette is not modified or destroyed in another thread.
@@ -1313,8 +1329,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroyPalette(SDL_Palette *palette);
  * for an 8-bpp format).
  *
  * \param format a pointer to SDL_PixelFormatDetails describing the pixel
- *               format.
- * \param palette an optional palette for indexed formats, may be NULL.
+ *               format. The data pointed to is read by this function and not
+ *               retained after the call returns.
+ * \param palette an optional palette for indexed formats, may be NULL. If
+ *                provided, the data pointed to is read by this function and
+ *                not retained after the call returns.
  * \param r the red component of the pixel in the range 0-255.
  * \param g the green component of the pixel in the range 0-255.
  * \param b the blue component of the pixel in the range 0-255.
@@ -1351,8 +1370,11 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGB(const SDL_PixelFormatDetails *form
  * for an 8-bpp format).
  *
  * \param format a pointer to SDL_PixelFormatDetails describing the pixel
- *               format.
- * \param palette an optional palette for indexed formats, may be NULL.
+ *               format. The data pointed to is read by this function and not
+ *               retained after the call returns.
+ * \param palette an optional palette for indexed formats, may be NULL. If
+ *                provided, the data pointed to is read by this function and
+ *                not retained after the call returns.
  * \param r the red component of the pixel in the range 0-255.
  * \param g the green component of the pixel in the range 0-255.
  * \param b the blue component of the pixel in the range 0-255.
@@ -1381,11 +1403,17 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapRGBA(const SDL_PixelFormatDetails *for
  *
  * \param pixelvalue a pixel value.
  * \param format a pointer to SDL_PixelFormatDetails describing the pixel
- *               format.
- * \param palette an optional palette for indexed formats, may be NULL.
- * \param r a pointer filled in with the red component, may be NULL.
- * \param g a pointer filled in with the green component, may be NULL.
- * \param b a pointer filled in with the blue component, may be NULL.
+ *               format. The data pointed to is read by this function and not
+ *               retained after the call returns.
+ * \param palette an optional palette for indexed formats, may be NULL. If
+ *                provided, the data pointed to is read by this function and
+ *                not retained after the call returns.
+ * \param r a pointer filled in with the red component, may be NULL. If
+ *         provided, the value pointed to is written by this function.
+ * \param g a pointer filled in with the green component, may be NULL. If
+ *         provided, the value pointed to is written by this function.
+ * \param b a pointer filled in with the blue component, may be NULL. If
+ *         provided, the value pointed to is written by this function.
  *
  * \threadsafety It is safe to call this function from any thread, as long as
  *               the palette is not modified.
@@ -1412,12 +1440,19 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixelvalue, const SDL_PixelFo
  *
  * \param pixelvalue a pixel value.
  * \param format a pointer to SDL_PixelFormatDetails describing the pixel
- *               format.
- * \param palette an optional palette for indexed formats, may be NULL.
- * \param r a pointer filled in with the red component, may be NULL.
- * \param g a pointer filled in with the green component, may be NULL.
- * \param b a pointer filled in with the blue component, may be NULL.
- * \param a a pointer filled in with the alpha component, may be NULL.
+ *               format. The data pointed to is read by this function and not
+ *               retained after the call returns.
+ * \param palette an optional palette for indexed formats, may be NULL. If
+ *                provided, the data pointed to is read by this function and
+ *                not retained after the call returns.
+ * \param r a pointer filled in with the red component, may be NULL. If
+ *         provided, the value pointed to is written by this function.
+ * \param g a pointer filled in with the green component, may be NULL. If
+ *         provided, the value pointed to is written by this function.
+ * \param b a pointer filled in with the blue component, may be NULL. If
+ *         provided, the value pointed to is written by this function.
+ * \param a a pointer filled in with the alpha component, may be NULL. If
+ *         provided, the value pointed to is written by this function.
  *
  * \threadsafety It is safe to call this function from any thread, as long as
  *               the palette is not modified.
