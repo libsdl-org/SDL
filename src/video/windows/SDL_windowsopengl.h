@@ -64,6 +64,7 @@ struct SDL_GLDriverData
     SDL_bool HAS_WGL_ARB_context_flush_control;
     SDL_bool HAS_WGL_ARB_create_context_robustness;
     SDL_bool HAS_WGL_ARB_create_context_no_error;
+    SDL_bool HAS_WGL_ARB_pixel_format_float;
 
     /* Max version of OpenGL ES context that can be created if the
        implementation supports WGL_EXT_create_context_es2_profile.

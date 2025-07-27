@@ -399,6 +399,7 @@ struct SDL_VideoDevice
         int no_error;
         int retained_backing;
         int driver_loaded;
+        int HAS_GL_ARB_color_buffer_float;
         char driver_path[256];
         void *dll_handle;
     } gl_config;

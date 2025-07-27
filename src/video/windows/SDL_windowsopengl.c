@@ -511,6 +511,10 @@ void WIN_GL_InitExtensions(_THIS)
         _this->gl_data->HAS_WGL_ARB_create_context_no_error = SDL_TRUE;
     }
 
+    /* Check for WGL_ARB_pixel_format_float */
+    _this->gl_data->HAS_WGL_ARB_pixel_format_float =
+        HasExtension("WGL_ARB_pixel_format_float", extensions);
+
     _this->gl_data->wglMakeCurrent(hdc, NULL);
     _this->gl_data->wglDeleteContext(hglrc);
     ReleaseDC(hwnd, hdc);
@@ -641,7 +645,7 @@ static int WIN_GL_SetupWindowInternal(_THIS, SDL_Window *window)
         *iAttr++ = _this->gl_config.multisamplesamples;
     }
 
-    if (_this->gl_config.floatbuffers) {
+    if (_this->gl_data->HAS_WGL_ARB_pixel_format_float && _this->gl_config.floatbuffers) {
         *iAttr++ = WGL_PIXEL_TYPE_ARB;
         *iAttr++ = WGL_TYPE_RGBA_FLOAT_ARB;
     }
@@ -824,6 +828,9 @@ SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window *window)
         WIN_GL_DeleteContext(_this, context);
         return NULL;
     }
+
+    _this->gl_config.HAS_GL_ARB_color_buffer_float =
+        SDL_GL_ExtensionSupported("GL_ARB_color_buffer_float");
 
     return context;
 }

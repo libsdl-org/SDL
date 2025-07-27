@@ -70,6 +70,10 @@
 #include <dlfcn.h>
 #endif
 
+#ifndef GL_RGBA_FLOAT_MODE_ARB
+#define GL_RGBA_FLOAT_MODE_ARB 0x8820
+#endif /* GL_RGBA_FLOAT_MODE_ARB */
+
 /* Available video drivers */
 static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_COCOA
@@ -4036,6 +4040,15 @@ int SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
             *value = _this->gl_config.no_error;
             return 0;
         }
+    case SDL_GL_FLOATBUFFERS:
+    {
+        if (_this->gl_config.HAS_GL_ARB_color_buffer_float) {
+            attrib = GL_RGBA_FLOAT_MODE_ARB;
+            break;
+        } else {
+            return 0;
+        }
+    }
     default:
         return SDL_SetError("Unknown OpenGL attribute");
     }
