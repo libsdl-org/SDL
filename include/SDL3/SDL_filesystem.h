@@ -87,7 +87,8 @@ extern "C" {
  * \returns an absolute path in UTF-8 encoding to the application data
  *          directory. NULL will be returned on error or when the platform
  *          doesn't implement this functionality, call SDL_GetError() for more
- *          information.
+ *          information. The returned string is owned by SDL and should not be
+ *          modified or freed by the application.
  *
  * \since This function is available since SDL 3.2.0.
  *

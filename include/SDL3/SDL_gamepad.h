@@ -324,7 +324,7 @@ typedef struct SDL_GamepadBinding
  * "341a3608000000000000504944564944,Afterglow PS3 Controller,a:b1,b:b2,y:b3,x:b0,start:b9,guide:b12,back:b8,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftshoulder:b4,rightshoulder:b5,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7"
  * ```
  *
- * \param mapping the mapping string.
+ * \param mapping the mapping string. This string is copied by the function.
  * \returns 1 if a new mapping is added, 0 if an existing mapping is updated,
  *          -1 on failure; call SDL_GetError() for more information.
  *
@@ -398,7 +398,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, 
  * specified will be ignored (i.e. mappings for Linux will be ignored in
  * Windows, etc).
  *
- * \param file the mappings file to load.
+ * \param file the mappings file to load. This string is not retained by SDL.
  * \returns the number of mappings added or -1 on failure; call SDL_GetError()
  *          for more information.
  *
@@ -543,6 +543,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsGamepad(SDL_JoystickID instance_id);
  * \param instance_id the joystick instance ID.
  * \returns the name of the selected gamepad. If no name can be found, this
  *          function returns NULL; call SDL_GetError() for more information.
+ *          The returned string is owned by SDL and should not be modified or
+ *          freed by the application.
  *
  * \since This function is available since SDL 3.2.0.
  *
