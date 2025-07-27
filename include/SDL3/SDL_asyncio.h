@@ -207,11 +207,13 @@ typedef struct SDL_AsyncIOQueue SDL_AsyncIOQueue;
  * under the assumption that doing so is generally a fast operation. Future
  * reads and writes to the opened file will be async, however.
  *
- * \param file a UTF-8 string representing the filename to open.
+ * \param file a UTF-8 string representing the filename to open. The string is
+ *             not retained after this call returns.
  * \param mode an ASCII string representing the mode to be used for opening
- *             the file.
+ *             the file. The string is not retained after this call returns.
  * \returns a pointer to the SDL_AsyncIO structure that is created or NULL on
- *          failure; call SDL_GetError() for more information.
+ *          failure; call SDL_GetError() for more information. The returned
+ *          pointer should be freed with SDL_CloseAsyncIO().
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -227,7 +229,9 @@ extern SDL_DECLSPEC SDL_AsyncIO * SDLCALL SDL_AsyncIOFromFile(const char *file, 
  * This call is _not_ asynchronous; it assumes that obtaining this info is a
  * non-blocking operation in most reasonable cases.
  *
- * \param asyncio the SDL_AsyncIO to get the size of the data stream from.
+ * \param asyncio the SDL_AsyncIO to get the size of the data stream from. The
+ *                data pointed to is read by this function and not retained
+ *                after the call returns.
  * \returns the size of the data stream in the SDL_IOStream on success or a
  *          negative error code on failure; call SDL_GetError() for more
  *          information.
@@ -257,13 +261,16 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetAsyncIOSize(SDL_AsyncIO *asyncio);
  * An SDL_AsyncIOQueue must be specified. The newly-created task will be added
  * to it when it completes its work.
  *
- * \param asyncio a pointer to an SDL_AsyncIO structure.
- * \param ptr a pointer to a buffer to read data into.
+ * \param asyncio a pointer to an SDL_AsyncIO structure. The data pointed to is
+ *                read by this function and not retained after the call returns.
+ * \param ptr a pointer to a buffer to read data into. The data pointed to is
+ *            written by this function.
  * \param offset the position to start reading in the data source.
  * \param size the number of bytes to read from the data source.
- * \param queue a queue to add the new SDL_AsyncIO to.
+ * \param queue a queue to add the new SDL_AsyncIO to. The data pointed to is
+ *              read by this function and not retained after the call returns.
  * \param userdata an app-defined pointer that will be provided with the task
- *                 results.
+ *                 results. The pointer is not retained after this call returns.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
