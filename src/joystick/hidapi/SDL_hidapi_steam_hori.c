@@ -312,7 +312,7 @@ static void HIDAPI_DriverSteamHori_HandleStatePacket(SDL_Joystick *joystick, SDL
         ctx->sensor_ticks += delta;
 
         /* Sensor timestamp is in 1us units, but there seems to be some issues with the values reported from the device */
-        sensor_timestamp = timestamp; // if the values were good we woudl call SDL_US_TO_NS(ctx->sensor_ticks);
+        sensor_timestamp = timestamp; // if the values were good we would call SDL_US_TO_NS(ctx->sensor_ticks);
 
         const float accelScale = SDL_STANDARD_GRAVITY * 8 / 32768.0f;
         const float gyroScale = DEG2RAD(2048);

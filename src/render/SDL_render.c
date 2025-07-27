@@ -4872,7 +4872,7 @@ static bool SDLCALL SDL_SW_RenderGeometryRaw(SDL_Renderer *renderer,
             continue;
         }
 
-        /* Two triangles forming a quadialateral,
+        /* Two triangles forming a quadrilateral,
          * prev and current triangles must have exactly 2 common vertices */
         {
             int cnt = 0, j = 3;

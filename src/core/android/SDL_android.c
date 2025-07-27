@@ -1644,7 +1644,7 @@ SDL_DisplayOrientation Android_JNI_GetDisplayCurrentOrientation(void)
     return displayCurrentOrientation;
 }
 
-void Android_JNI_MinizeWindow(void)
+void Android_JNI_MinimizeWindow(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midMinimizeWindow);
