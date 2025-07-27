@@ -455,6 +455,7 @@ struct SDL_VideoDevice
         int retained_backing;
         int egl_platform;
         int driver_loaded;
+        int HAS_GL_ARB_color_buffer_float;
         char driver_path[256];
         SDL_SharedObject *dll_handle;
     } gl_config;
