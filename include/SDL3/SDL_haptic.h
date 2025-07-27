@@ -982,7 +982,7 @@ extern SDL_DECLSPEC SDL_HapticID * SDLCALL SDL_GetHaptics(int *count);
  * \param instance_id the haptic device instance ID.
  * \returns the name of the selected haptic device. If no name can be found,
  *          this function returns NULL; call SDL_GetError() for more
- *          information.
+ *          information. The returned string is owned by SDL and should not be modified or freed by the application.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1045,7 +1045,7 @@ extern SDL_DECLSPEC SDL_HapticID SDLCALL SDL_GetHapticID(SDL_Haptic *haptic);
  * \param haptic the SDL_Haptic obtained from SDL_OpenJoystick().
  * \returns the name of the selected haptic device. If no name can be found,
  *          this function returns NULL; call SDL_GetError() for more
- *          information.
+ *          information. The returned string is owned by SDL and should not be modified or freed by the application.
  *
  * \since This function is available since SDL 3.2.0.
  *

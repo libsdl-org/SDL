@@ -174,7 +174,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumCameraDrivers(void);
  * \param index the index of the camera driver; the value ranges from 0 to
  *              SDL_GetNumCameraDrivers() - 1.
  * \returns the name of the camera driver at the requested index, or NULL if
- *          an invalid index was specified.
+ *          an invalid index was specified. The returned string is owned by SDL
+ *          and should not be modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -192,7 +193,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetCameraDriver(int index);
  * meant to be proper names.
  *
  * \returns the name of the current camera driver or NULL if no driver has
- *          been initialized.
+ *          been initialized. The returned string is owned by SDL and should not be modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -261,7 +262,8 @@ extern SDL_DECLSPEC SDL_CameraSpec ** SDLCALL SDL_GetCameraSupportedFormats(SDL_
  *
  * \param instance_id the camera device instance ID.
  * \returns a human-readable device name or NULL on failure; call
- *          SDL_GetError() for more information.
+ *          SDL_GetError() for more information. The returned string is owned by SDL
+ *          and should not be modified or freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
