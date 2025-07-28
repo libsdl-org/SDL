@@ -1347,7 +1347,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitEventTimeout(SDL_Event *event, Sint32 t
  * get an event type that does not conflict with other code that also wants
  * its own custom event types.
  *
- * \param event the SDL_Event to be added to the queue.
+ * \param event the SDL_Event to be added to the queue. The data pointed to is
+ *              copied by this function and not retained after the call returns.
  * \returns true on success, false if the event was filtered or on failure;
  *          call SDL_GetError() for more information. A common reason for
  *          error is the event queue being full.
@@ -1409,8 +1410,10 @@ typedef bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
  * the event filter, but events pushed onto the queue with SDL_PeepEvents() do
  * not.
  *
- * \param filter an SDL_EventFilter function to call when an event happens.
- * \param userdata a pointer that is passed to `filter`.
+ * \param filter an SDL_EventFilter function to call when an event happens. The
+ *               function pointer is not retained by SDL.
+ * \param userdata a pointer that is passed to `filter`. This pointer is not
+ *                 retained by SDL.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1430,9 +1433,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetEventFilter(SDL_EventFilter filter, void
  * This function can be used to "chain" filters, by saving the existing filter
  * before replacing it with a function that will call that saved filter.
  *
- * \param filter the current callback function will be stored here.
+ * \param filter the current callback function will be stored here. If provided,
+ *               the pointer pointed to is written by this function.
  * \param userdata the pointer that is passed to the current event filter will
- *                 be stored here.
+ *                 be stored here. If provided, the pointer pointed to is
+ *                 written by this function.
  * \returns true on success or false if there is no event filter set.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1461,8 +1466,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetEventFilter(SDL_EventFilter *filter, voi
  * callback set with SDL_SetEventFilter(), nor for events posted by the user
  * through SDL_PeepEvents().
  *
- * \param filter an SDL_EventFilter function to call when an event happens.
- * \param userdata a pointer that is passed to `filter`.
+ * \param filter an SDL_EventFilter function to call when an event happens. The
+ *               function pointer is not retained by SDL.
+ * \param userdata a pointer that is passed to `filter`. This pointer is not
+ *                 retained by SDL.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -1481,8 +1488,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AddEventWatch(SDL_EventFilter filter, void 
  * This function takes the same input as SDL_AddEventWatch() to identify and
  * delete the corresponding callback.
  *
- * \param filter the function originally passed to SDL_AddEventWatch().
- * \param userdata the pointer originally passed to SDL_AddEventWatch().
+ * \param filter the function originally passed to SDL_AddEventWatch(). The
+ *               function pointer is not retained by SDL.
+ * \param userdata the pointer originally passed to SDL_AddEventWatch(). This
+ *                 pointer is not retained by SDL.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1501,7 +1510,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_RemoveEventWatch(SDL_EventFilter filter, vo
  * supplied filter until this function returns.
  *
  * \param filter the SDL_EventFilter function to call when an event happens.
- * \param userdata a pointer that is passed to `filter`.
+ *               The function pointer is not retained by SDL.
+ * \param userdata a pointer that is passed to `filter`. This pointer is not
+ *                 retained by SDL.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1559,7 +1570,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 /**
  * Get window associated with an event.
  *
- * \param event an event containing a `windowID`.
+ * \param event an event containing a `windowID`. The data pointed to is read
+ *              by this function and not retained after the call returns.
  * \returns the associated window on success or NULL if there is none.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -1592,8 +1604,10 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromEvent(const SDL_Event 
  * was truncated or not. Unlike SDL_snprintf(), though, this function never
  * returns -1.
  *
- * \param event an event to describe. May be NULL.
- * \param buf the buffer to fill with the description string. May be NULL.
+ * \param event an event to describe. May be NULL. The data pointed to is read
+ *              by this function and not retained after the call returns.
+ * \param buf the buffer to fill with the description string. May be NULL. If
+ *            provided, the data pointed to is written by this function.
  * \param buflen the maximum bytes that can be written to `buf`.
  * \returns number of bytes needed for the full string, not counting the
  *          null-terminator byte.

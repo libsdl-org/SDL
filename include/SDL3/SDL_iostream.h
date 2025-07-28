@@ -426,8 +426,10 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromDynamicMem(void);
  * it around after this call.
  *
  * \param iface the interface that implements this SDL_IOStream, initialized
- *              using SDL_INIT_INTERFACE().
+ *              using SDL_INIT_INTERFACE(). The data pointed to is copied by
+ *              this function and not retained after the call returns.
  * \param userdata the pointer that will be passed to the interface functions.
+ *                 This pointer is not retained by SDL.
  * \returns a pointer to the allocated memory on success or NULL on failure;
  *          call SDL_GetError() for more information.
  *
@@ -582,8 +584,11 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  * the stream is not at EOF, SDL_GetIOStatus() will return a different error
  * value and SDL_GetError() will offer a human-readable message.
  *
- * \param context a pointer to an SDL_IOStream structure.
- * \param ptr a pointer to a buffer to read data into.
+ * \param context a pointer to an SDL_IOStream structure. The data pointed to
+ *                is read by this function and not retained after the call
+ *                returns.
+ * \param ptr a pointer to a buffer to read data into. The data pointed to is
+ *            written by this function.
  * \param size the number of bytes to read from the data source.
  * \returns the number of bytes read, or 0 on end of file or other failure;
  *          call SDL_GetError() for more information.
@@ -611,8 +616,12 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, 
  * recoverable, such as a non-blocking write that can simply be retried later,
  * or a fatal error.
  *
- * \param context a pointer to an SDL_IOStream structure.
- * \param ptr a pointer to a buffer containing data to write.
+ * \param context a pointer to an SDL_IOStream structure. The data pointed to
+ *                is read by this function and not retained after the call
+ *                returns.
+ * \param ptr a pointer to a buffer containing data to write. The data pointed
+ *            to is read by this function and not retained after the call
+ *            returns.
  * \param size the number of bytes to write.
  * \returns the number of bytes written, which will be less than `size` on
  *          failure; call SDL_GetError() for more information.
@@ -699,13 +708,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FlushIO(SDL_IOStream *context);
  *
  * The data should be freed with SDL_free().
  *
- * \param src the SDL_IOStream to read all available data from.
+ * \param src the SDL_IOStream to read all available data from. The data
+ *            pointed to is read by this function and not retained after the
+ *            call returns.
  * \param datasize a pointer filled in with the number of bytes read, may be
- *                 NULL.
+ *                 NULL. If provided, the value pointed to is written by this
+ *                 function.
  * \param closeio if true, calls SDL_CloseIO() on `src` before returning, even
  *                in the case of an error.
  * \returns the data or NULL on failure; call SDL_GetError() for more
- *          information.
+ *          information. The returned pointer should be freed with SDL_free().
  *
  * \threadsafety This function is not thread safe.
  *
@@ -725,10 +737,12 @@ extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *da
  *
  * The data should be freed with SDL_free().
  *
- * \param file the path to read all available data from.
- * \param datasize if not NULL, will store the number of bytes read.
+ * \param file the path to read all available data from. The string is not
+ *             retained by SDL after this function returns.
+ * \param datasize if not NULL, will store the number of bytes read. If
+ *                 provided, the value pointed to is written by this function.
  * \returns the data or NULL on failure; call SDL_GetError() for more
- *          information.
+ *          information. The returned pointer should be freed with SDL_free().
  *
  * \threadsafety This function is not thread safe.
  *
@@ -794,8 +808,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveFile(const char *file, const void *data
  * and the stream is not at EOF, SDL_GetIOStatus() will return a different
  * error value and SDL_GetError() will offer a human-readable message.
  *
- * \param src the SDL_IOStream to read from.
- * \param value a pointer filled in with the data read.
+ * \param src the SDL_IOStream to read from. The data pointed to is read by
+ *            this function and not retained after the call returns.
+ * \param value a pointer filled in with the data read. The value pointed to
+ *              is written by this function.
  * \returns true on success or false on failure or EOF; call SDL_GetError()
  *          for more information.
  *

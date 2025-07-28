@@ -74,8 +74,8 @@ extern "C" {
  * ```
  *
  * \param fmt a printf()-style message format string. The string is copied
- *            by the function, so the original can be freed after this call
- *            returns.
+ *            by the function and not retained after the call returns, so the
+ *            original can be freed after this call returns.
  * \param ... additional parameters matching % tokens in the `fmt` string, if
  *            any.
  * \returns false.
@@ -96,8 +96,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetError(SDL_PRINTF_FORMAT_STRING const cha
  * Calling this function will replace any previous error message that was set.
  *
  * \param fmt a printf()-style message format string. The string is copied
- *            by the function, so the original can be freed after this call
- *            returns.
+ *            by the function and not retained after the call returns, so the
+ *            original can be freed after this call returns.
  * \param ap a variable argument list.
  * \returns false.
  *
@@ -150,7 +150,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_OutOfMemory(void);
  *
  * \returns a message with information about the specific error that occurred,
  *          or an empty string if there hasn't been an error message set since
- *          the last call to SDL_ClearError().
+ *          the last call to SDL_ClearError(). The returned pointer is owned
+ *          by SDL and should not be freed by the application.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

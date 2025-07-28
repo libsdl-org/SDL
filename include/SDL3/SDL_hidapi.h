@@ -305,9 +305,11 @@ extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path)
  * exists. If it does not, it will send the data through the Control Endpoint
  * (Endpoint 0).
  *
- * \param dev a device handle returned from SDL_hid_open().
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
  * \param data the data to send, including the report number as the first
- *             byte.
+ *             byte. The data pointed to is read by this function and not
+ *             retained after the call returns.
  * \param length the length in bytes of the data to send.
  * \returns the actual number of bytes written and -1 on on failure; call
  *          SDL_GetError() for more information.
@@ -323,8 +325,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_write(SDL_hid_device *dev, const unsigne
  * The first byte will contain the Report number if the device uses numbered
  * reports.
  *
- * \param dev a device handle returned from SDL_hid_open().
- * \param data a buffer to put the read data into.
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
+ * \param data a buffer to put the read data into. The data pointed to is
+ *             written by this function.
  * \param length the number of bytes to read. For devices with multiple
  *               reports, make sure to read an extra byte for the report
  *               number.
@@ -344,8 +348,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_read_timeout(SDL_hid_device *dev, unsign
  * The first byte will contain the Report number if the device uses numbered
  * reports.
  *
- * \param dev a device handle returned from SDL_hid_open().
- * \param data a buffer to put the read data into.
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
+ * \param data a buffer to put the read data into. The data pointed to is
+ *             written by this function.
  * \param length the number of bytes to read. For devices with multiple
  *               reports, make sure to read an extra byte for the report
  *               number.
@@ -367,7 +373,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_read(SDL_hid_device *dev, unsigned char 
  *
  * Nonblocking can be turned on and off at any time.
  *
- * \param dev a device handle returned from SDL_hid_open().
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
  * \param nonblock enable or not the nonblocking reads - 1 to enable
  *                 nonblocking - 0 to disable nonblocking.
  * \returns 0 on success or a negative error code on failure; call
@@ -390,9 +397,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_set_nonblocking(SDL_hid_device *dev, int
  * devices which do not use numbered reports), followed by the report data (16
  * bytes). In this example, the length passed in would be 17.
  *
- * \param dev a device handle returned from SDL_hid_open().
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
  * \param data the data to send, including the report number as the first
- *             byte.
+ *             byte. The data pointed to is read by this function and not
+ *             retained after the call returns.
  * \param length the length in bytes of the data to send, including the report
  *               number.
  * \returns the actual number of bytes written and -1 on failure; call
@@ -410,11 +419,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_send_feature_report(SDL_hid_device *dev,
  * first byte will still contain the Report ID, and the report data will start
  * in data[1].
  *
- * \param dev a device handle returned from SDL_hid_open().
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
  * \param data a buffer to put the read data into, including the Report ID.
  *             Set the first byte of `data` to the Report ID of the report to
  *             be read, or set it to zero if your device does not use numbered
- *             reports.
+ *             reports. The data pointed to is written by this function.
  * \param length the number of bytes to read, including an extra byte for the
  *               report ID. The buffer can be longer than the actual report.
  * \returns the number of bytes read plus one for the report ID (which is
@@ -433,11 +443,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, 
  * first byte will still contain the Report ID, and the report data will start
  * in data[1].
  *
- * \param dev a device handle returned from SDL_hid_open().
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
  * \param data a buffer to put the read data into, including the Report ID.
  *             Set the first byte of `data` to the Report ID of the report to
  *             be read, or set it to zero if your device does not use numbered
- *             reports.
+ *             reports. The data pointed to is written by this function.
  * \param length the number of bytes to read, including an extra byte for the
  *               report ID. The buffer can be longer than the actual report.
  * \returns the number of bytes read plus one for the report ID (which is
@@ -451,7 +462,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_input_report(SDL_hid_device *dev, un
 /**
  * Close a HID device.
  *
- * \param dev a device handle returned from SDL_hid_open().
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
@@ -462,8 +474,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_close(SDL_hid_device *dev);
 /**
  * Get The Manufacturer String from a HID device.
  *
- * \param dev a device handle returned from SDL_hid_open().
- * \param string a wide string buffer to put the data into.
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
+ * \param string a wide string buffer to put the data into. The data pointed to
+ *               is written by this function.
  * \param maxlen the length of the buffer in multiples of wchar_t.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -475,8 +489,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_manufacturer_string(SDL_hid_device *
 /**
  * Get The Product String from a HID device.
  *
- * \param dev a device handle returned from SDL_hid_open().
- * \param string a wide string buffer to put the data into.
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
+ * \param string a wide string buffer to put the data into. The data pointed to
+ *               is written by this function.
  * \param maxlen the length of the buffer in multiples of wchar_t.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -488,8 +504,10 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_product_string(SDL_hid_device *dev, 
 /**
  * Get The Serial Number String from a HID device.
  *
- * \param dev a device handle returned from SDL_hid_open().
- * \param string a wide string buffer to put the data into.
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
+ * \param string a wide string buffer to put the data into. The data pointed to
+ *               is written by this function.
  * \param maxlen the length of the buffer in multiples of wchar_t.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -501,9 +519,11 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_serial_number_string(SDL_hid_device 
 /**
  * Get a string from a HID device, based on its string index.
  *
- * \param dev a device handle returned from SDL_hid_open().
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
  * \param string_index the index of the string to get.
- * \param string a wide string buffer to put the data into.
+ * \param string a wide string buffer to put the data into. The data pointed to
+ *               is written by this function.
  * \param maxlen the length of the buffer in multiples of wchar_t.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
@@ -515,10 +535,13 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, 
 /**
  * Get the device info from a HID device.
  *
- * \param dev a device handle returned from SDL_hid_open().
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
  * \returns a pointer to the SDL_hid_device_info for this hid_device or NULL
  *          on failure; call SDL_GetError() for more information. This struct
- *          is valid until the device is closed with SDL_hid_close().
+ *          is valid until the device is closed with SDL_hid_close(). The
+ *          returned pointer is owned by SDL and should not be freed by the
+ *          application.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -530,8 +553,10 @@ extern SDL_DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_get_device_info(SDL_hi
  * User has to provide a preallocated buffer where descriptor will be copied
  * to. The recommended size for a preallocated buffer is 4096 bytes.
  *
- * \param dev a device handle returned from SDL_hid_open().
- * \param buf the buffer to copy descriptor into.
+ * \param dev a device handle returned from SDL_hid_open(). The data pointed to
+ *            is read by this function and not retained after the call returns.
+ * \param buf the buffer to copy descriptor into. The data pointed to is
+ *            written by this function.
  * \param buf_size the size of the buffer in bytes.
  * \returns the number of bytes actually copied or -1 on failure; call
  *          SDL_GetError() for more information.
