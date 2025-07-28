@@ -78,4 +78,4 @@ extern char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *ven
 // Log what backend a subsystem chose, if a hint was set to do so. Useful for debugging.
 extern void SDL_DebugLogBackend(const char *subsystem, const char *backend);
 
-#endif
+#endif // SDL_utils_h_
