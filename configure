@@ -28741,15 +28741,16 @@ printf "%s\n" "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
         if test x$enable_audio = xyes; then
           case $ARCH in
             sysv5|solaris|hpux)
-                                ac_fn_c_check_header_compile "$LINENO" "audio/audiolib.h" "ac_cv_header_audio_audiolib_h" "$ac_includes_default"
-if test "x$ac_cv_header_audio_audiolib_h" = xyes
+                # Newer Solaris-based systems, like OpenIndiana, don't have this interface anymore. Check for the header first.
+                ac_fn_c_check_header_compile "$LINENO" "sys/audioio.h" "ac_cv_header_sys_audioio_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_audioio_h" = xyes
 then :
-  have_sys_audiolib=yes
+  have_sys_audioio_h=yes
 else $as_nop
-  have_sys_audiolib=no
+  have_sys_audioio_h=no
 fi
 
-                if test x$have_sys_audiolib = xyes; then
+                if test x$have_sys_audioio_h = xyes; then
 
 printf "%s\n" "#define SDL_AUDIO_DRIVER_SUNAUDIO 1" >>confdefs.h
 

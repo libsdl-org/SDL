@@ -1471,7 +1471,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
   if(SDL_AUDIO)
     if(SYSV5 OR SOLARIS OR HPUX)
         # Newer Solaris-based systems, like OpenIndiana, don't have this interface anymore. Check for the header first.
-        check_include_file(sys/audioio HAVE_SYS_AUDIOIO_H)
+        check_include_file(sys/audioio.h HAVE_SYS_AUDIOIO_H)
         if(HAVE_SYS_AUDIOIO_H)
             set(SDL_AUDIO_DRIVER_SUNAUDIO 1)
             file(GLOB SUN_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/sun/*.c)
