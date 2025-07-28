@@ -799,8 +799,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             // This controller has no guide button
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
     } else if (SDL_IsJoystickSInputController(vendor, product)) {
-        Uint8 face_style = (guid.data[15] & 0xF0) >> 4;
-        Uint8 u_id = guid.data[15] & 0x0F;
+        Uint8 face_style = (guid.data[15] & 0xE0) >> 5;
+        Uint8 sinput_id  = guid.data[15] & 0x1F;
 
         switch (product) {
         case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
@@ -814,14 +814,13 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             break;
 
         case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
-            switch (u_id) {
-            case 1:
-                // SuperGamepad+ Map
-                SDL_strlcat(mapping_string, "a:b1,b:b0,back:b7,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,rightshoulder:b5,start:b6,x:b3,y:b2,", sizeof(mapping_string));
-                break;
+            // Apply mapping profile for type
+            switch (sinput_id) {
             default:
-                // Unknown mapping
-                return NULL;
+            case 0:
+                // Default Fully Exposed Mapping
+                SDL_strlcat(mapping_string, "b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,lefttrigger:b8,righttrigger:b9,paddle1:b10,paddle2:b11,start:b12,back:b13,guide:b14,misc1:b15,paddle3:b16,paddle4:b17,touchpad:b18,misc2:b19,misc3:b20,misc4:b21,misc5:b22,misc6:b23", sizeof(mapping_string));
+                break;
             }
 
             // Apply face style
