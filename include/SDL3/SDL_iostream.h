@@ -808,8 +808,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveFile(const char *file, const void *data
  * and the stream is not at EOF, SDL_GetIOStatus() will return a different
  * error value and SDL_GetError() will offer a human-readable message.
  *
- * \param src the SDL_IOStream to read from.
- * \param value a pointer filled in with the data read.
+ * \param src the SDL_IOStream to read from. The data pointed to is read by
+ *            this function and not retained after the call returns.
+ * \param value a pointer filled in with the data read. The value pointed to
+ *              is written by this function.
  * \returns true on success or false on failure or EOF; call SDL_GetError()
  *          for more information.
  *
