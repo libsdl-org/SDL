@@ -78,16 +78,4 @@ extern char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *ven
 // Log what backend a subsystem chose, if a hint was set to do so. Useful for debugging.
 extern void SDL_DebugLogBackend(const char *subsystem, const char *backend);
 
-static SDL_INLINE int SDL_IntMax(int a, int b)
-{
-    return (a > b) ? a : b;
-}
-
-static SDL_INLINE int SDL_IntClamp(int a, int b, int c)
-{
-  if (a < b) return b;
-  if (a > c) return c;
-  return a;
-}
-
 #endif

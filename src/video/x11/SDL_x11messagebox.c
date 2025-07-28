@@ -27,7 +27,7 @@
 #include "SDL_x11toolkit.h"
 
 #ifndef SDL_FORK_MESSAGEBOX
-#define SDL_FORK_MESSAGEBOX 0
+#define SDL_FORK_MESSAGEBOX 1
 #endif
 
 #if SDL_FORK_MESSAGEBOX
@@ -98,8 +98,8 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     for (i = 0; i < messageboxdata->numbuttons; i++) {
         buttons[i] = X11Toolkit_CreateButtonControl(window, &messageboxdata->buttons[i]);
         X11Toolkit_RegisterCallbackForButtonControl(buttons[i], &data, X11_MessageBoxButtonCallback);
-        max_button_w = SDL_IntMax(max_button_w, buttons[i]->rect.w);
-        max_button_h = SDL_IntMax(max_button_h, buttons[i]->rect.h);
+        max_button_w = SDL_max(max_button_w, buttons[i]->rect.w);
+        max_button_h = SDL_max(max_button_h, buttons[i]->rect.h);
         buttons[i]->rect.x = 0;
     }
     if (icon) {

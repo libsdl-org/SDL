@@ -219,24 +219,24 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
     
     /* Generate bevel and pressed colors */
     window->xcolor_bevel_l1.flags = DoRed|DoGreen|DoBlue;
-    window->xcolor_bevel_l1.red = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].red + 12500, 0, 65535);
-    window->xcolor_bevel_l1.green = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].green + 12500, 0, 65535);
-    window->xcolor_bevel_l1.blue = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].blue + 12500, 0, 65535);
+    window->xcolor_bevel_l1.red = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].red + 12500, 0, 65535);
+    window->xcolor_bevel_l1.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].green + 12500, 0, 65535);
+    window->xcolor_bevel_l1.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].blue + 12500, 0, 65535);
 
     window->xcolor_bevel_l2.flags = DoRed|DoGreen|DoBlue;
-    window->xcolor_bevel_l2.red = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].red + 32500, 0, 65535);
-    window->xcolor_bevel_l2.green = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].green + 32500, 0, 65535);
-    window->xcolor_bevel_l2.blue = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].blue + 32500, 0, 65535);
+    window->xcolor_bevel_l2.red = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].red + 32500, 0, 65535);
+    window->xcolor_bevel_l2.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].green + 32500, 0, 65535);
+    window->xcolor_bevel_l2.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].blue + 32500, 0, 65535);
 
     window->xcolor_bevel_d.flags = DoRed|DoGreen|DoBlue;
-    window->xcolor_bevel_d.red = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].red - 22500, 0, 65535);
-    window->xcolor_bevel_d.green = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].green - 22500, 0, 65535);
-    window->xcolor_bevel_d.blue = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].blue - 22500, 0, 65535);
+    window->xcolor_bevel_d.red = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].red - 22500, 0, 65535);
+    window->xcolor_bevel_d.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].green - 22500, 0, 65535);
+    window->xcolor_bevel_d.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].blue - 22500, 0, 65535);
     
     window->xcolor_pressed.flags = DoRed|DoGreen|DoBlue;
-    window->xcolor_pressed.red = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].red - 12500, 0, 65535);
-    window->xcolor_pressed.green = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].green - 12500, 0, 65535);
-    window->xcolor_pressed.blue = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].blue - 12500, 0, 65535);
+    window->xcolor_pressed.red = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].red - 12500, 0, 65535);
+    window->xcolor_pressed.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].green - 12500, 0, 65535);
+    window->xcolor_pressed.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].blue - 12500, 0, 65535);
     
     window->parent = parent;
     if (parent) {
@@ -333,7 +333,7 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
     wnd_attr.event_mask = data->event_mask;
     wnd_attr.colormap = data->cmap;
 
-	root_win = RootWindow(display, data->screen);
+    root_win = RootWindow(display, data->screen);
     data->window = X11_XCreateWindow(
         display, root_win,
         0, 0,
@@ -395,77 +395,77 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
         }
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
         else if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, use_xrandr_by_default) && data->xrandr) {
-			XRRScreenResources *screen_res;			
-			XRRCrtcInfo *crtc_info;
-			RROutput default_out;
-		
-			screen_res = X11_XRRGetScreenResourcesCurrent(display, root_win);
-			if (!screen_res) {
-				goto NOXRANDR;
-			}
-			
-			default_out = X11_XRRGetOutputPrimary(display, root_win);
-			if (default_out != None) {
-				XRROutputInfo *out_info;
-	
-				out_info = X11_XRRGetOutputInfo(display, screen_res, default_out);			
-				if (out_info->connection != RR_Connected) {		
-					X11_XRRFreeOutputInfo(out_info);
-					goto FIRSTOUTPUTXRANDR;
-				}		
-				
-				crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtc);
-				if (crtc_info) {
-					x = (crtc_info->width - data->window_width) / 2;
-					y = (crtc_info->height - data->window_height) / 3;
-					X11_XRRFreeOutputInfo(out_info);
-					X11_XRRFreeCrtcInfo(crtc_info);
-					X11_XRRFreeScreenResources(screen_res);
-				} else {
-					X11_XRRFreeOutputInfo(out_info);
-					goto NOXRANDR;
-				}	
-			} else {
-					FIRSTOUTPUTXRANDR:
-					if (screen_res->noutput > 0) {
-						XRROutputInfo *out_info;
-	
-						out_info = X11_XRRGetOutputInfo(display, screen_res, screen_res->outputs[0]);			
-						if (!out_info) {
-							goto FIRSTCRTCXRANDR;
-						}
-						
-						crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtc);
-						if (!crtc_info) {
-							X11_XRRFreeOutputInfo(out_info);
-							goto FIRSTCRTCXRANDR;
-						}
-						
-						x = (crtc_info->width - data->window_width) / 2;
-						y = (crtc_info->height - data->window_height) / 3;
-						X11_XRRFreeOutputInfo(out_info);
-						X11_XRRFreeCrtcInfo(crtc_info);
-						X11_XRRFreeScreenResources(screen_res);
-						goto MOVEWINDOW;
-					}
-					
-					FIRSTCRTCXRANDR:
-					if (!screen_res->ncrtc) {
-						X11_XRRFreeScreenResources(screen_res);
-						goto NOXRANDR;
-					}
+            XRRScreenResources *screen_res;            
+            XRRCrtcInfo *crtc_info;
+            RROutput default_out;
+        
+            screen_res = X11_XRRGetScreenResourcesCurrent(display, root_win);
+            if (!screen_res) {
+                goto NOXRANDR;
+            }
+            
+            default_out = X11_XRRGetOutputPrimary(display, root_win);
+            if (default_out != None) {
+                XRROutputInfo *out_info;
+    
+                out_info = X11_XRRGetOutputInfo(display, screen_res, default_out);            
+                if (out_info->connection != RR_Connected) {        
+                    X11_XRRFreeOutputInfo(out_info);
+                    goto FIRSTOUTPUTXRANDR;
+                }        
+                
+                crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtc);
+                if (crtc_info) {
+                    x = (crtc_info->width - data->window_width) / 2;
+                    y = (crtc_info->height - data->window_height) / 3;
+                    X11_XRRFreeOutputInfo(out_info);
+                    X11_XRRFreeCrtcInfo(crtc_info);
+                    X11_XRRFreeScreenResources(screen_res);
+                } else {
+                    X11_XRRFreeOutputInfo(out_info);
+                    goto NOXRANDR;
+                }    
+            } else {
+                    FIRSTOUTPUTXRANDR:
+                    if (screen_res->noutput > 0) {
+                        XRROutputInfo *out_info;
+    
+                        out_info = X11_XRRGetOutputInfo(display, screen_res, screen_res->outputs[0]);            
+                        if (!out_info) {
+                            goto FIRSTCRTCXRANDR;
+                        }
+                        
+                        crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtc);
+                        if (!crtc_info) {
+                            X11_XRRFreeOutputInfo(out_info);
+                            goto FIRSTCRTCXRANDR;
+                        }
+                        
+                        x = (crtc_info->width - data->window_width) / 2;
+                        y = (crtc_info->height - data->window_height) / 3;
+                        X11_XRRFreeOutputInfo(out_info);
+                        X11_XRRFreeCrtcInfo(crtc_info);
+                        X11_XRRFreeScreenResources(screen_res);
+                        goto MOVEWINDOW;
+                    }
+                    
+                    FIRSTCRTCXRANDR:
+                    if (!screen_res->ncrtc) {
+                        X11_XRRFreeScreenResources(screen_res);
+                        goto NOXRANDR;
+                    }
 
-					crtc_info = X11_XRRGetCrtcInfo(display, screen_res, screen_res->crtcs[0]);
-					if (crtc_info) {
-						x = (crtc_info->width - data->window_width) / 2;
-						y = (crtc_info->height - data->window_height) / 3;
-						X11_XRRFreeCrtcInfo(crtc_info);
-						X11_XRRFreeScreenResources(screen_res);
-					} else {
-						X11_XRRFreeScreenResources(screen_res);
-						goto NOXRANDR;
-					}		
-			}
+                    crtc_info = X11_XRRGetCrtcInfo(display, screen_res, screen_res->crtcs[0]);
+                    if (crtc_info) {
+                        x = (crtc_info->width - data->window_width) / 2;
+                        y = (crtc_info->height - data->window_height) / 3;
+                        X11_XRRFreeCrtcInfo(crtc_info);
+                        X11_XRRFreeScreenResources(screen_res);
+                    } else {
+                        X11_XRRFreeScreenResources(screen_res);
+                        goto NOXRANDR;
+                    }        
+            }
         }
 #endif
         else {
@@ -606,11 +606,11 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
     SDL_ToolkitControlX11 *previous_control;
     SDL_ToolkitControlX11 *key_control_esc;
     SDL_ToolkitControlX11 *key_control_enter;
-	KeySym last_key_pressed = XK_VoidSymbol;
-	int i;
+    KeySym last_key_pressed = XK_VoidSymbol;
+    int i;
     
     data->close = false;
-	key_control_esc = key_control_enter = NULL;
+    key_control_esc = key_control_enter = NULL;
     while (!data->close) {
         XEvent e;
         bool draw;
@@ -618,7 +618,7 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
         // can't use XWindowEvent() because it can't handle ClientMessage events.
         // can't use XNextEvent() because we only want events for this window.
         draw = false;
-		X11_XIfEvent(data->display, &e, X11Toolkit_EventTest, (XPointer)data);
+        X11_XIfEvent(data->display, &e, X11Toolkit_EventTest, (XPointer)data);
 
         /* If X11_XFilterEvent returns True, then some input method has filtered the
            event, and the client should discard the event. */
@@ -700,21 +700,21 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
             last_key_pressed = X11_XLookupKeysym(&e.xkey, 0);
            
             if (last_key_pressed == XK_Escape) {
-				for (i = 0; i < data->controls_sz; i++) {				
-					if(data->controls[i]->is_default_esc) {
-						data->controls[i]->state = SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED;
-						draw = true;
-						key_control_esc = data->controls[i];
-					}
-				}
+                for (i = 0; i < data->controls_sz; i++) {                
+                    if(data->controls[i]->is_default_esc) {
+                        data->controls[i]->state = SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED;
+                        draw = true;
+                        key_control_esc = data->controls[i];
+                    }
+                }
             } else if ((last_key_pressed == XK_Return) || (last_key_pressed == XK_KP_Enter)) {
-				for (i = 0; i < data->controls_sz; i++) {				
-					if(data->controls[i]->is_default_enter) {
-						data->controls[i]->state = SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED;
-						draw = true;
-						key_control_enter = data->controls[i];
-					}
-				}
+                for (i = 0; i < data->controls_sz; i++) {                
+                    if(data->controls[i]->is_default_enter) {
+                        data->controls[i]->state = SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED;
+                        draw = true;
+                        key_control_enter = data->controls[i];
+                    }
+                }
             }
             break;
         case KeyRelease:
@@ -726,20 +726,20 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
                 break;
             }
             if (key == XK_Escape) {
-				if (key_control_esc) {
-					if (key_control_esc->func_on_state_change) {
+                if (key_control_esc) {
+                    if (key_control_esc->func_on_state_change) {
                         key_control_esc->func_on_state_change(key_control_esc);
-                    }		
-				}
+                    }        
+                }
             } else if ((key == XK_Return) || (key == XK_KP_Enter)) {
-				if (key_control_enter) {
-					if (key_control_enter->func_on_state_change) {
+                if (key_control_enter) {
+                    if (key_control_enter->func_on_state_change) {
                         key_control_enter->func_on_state_change(key_control_enter);
-                    }		
-				}
-			}	
+                    }        
+                }
+            }    
             break;
-			}
+            }
 
         }
         
@@ -828,8 +828,8 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window
     base_control->selected = false;
     base_control->dynamic = false;  
     base_control->is_default_enter = false;  
-	base_control->is_default_esc = false;  
-	control->flags = flags;
+    base_control->is_default_esc = false;  
+    control->flags = flags;
     control->icon_char_font = X11_XLoadQueryFont(window->display, g_IconFont);
     if (!control->icon_char_font) {
         control->icon_char_font = X11_XLoadQueryFont(window->display, g_ToolkitFontLatin1);
@@ -891,15 +891,15 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window
     }
             
     control->xcolor_bg_shadow.flags = DoRed|DoGreen|DoBlue;
-    control->xcolor_bg_shadow.red = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red - 12500, 0, 65535);
-    control->xcolor_bg_shadow.green = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green - 12500, 0, 65535);
-    control->xcolor_bg_shadow.blue = SDL_IntClamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue - 12500, 0, 65535);
+    control->xcolor_bg_shadow.red = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red - 12500, 0, 65535);
+    control->xcolor_bg_shadow.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green - 12500, 0, 65535);
+    control->xcolor_bg_shadow.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue - 12500, 0, 65535);
     X11_XAllocColor(window->display, window->cmap, &control->xcolor_bg_shadow);    
 
     GetTextWidthHeightForFont(control->icon_char_font, &control->icon_char, 1, &icon_char_w, &icon_char_h, &control->icon_char_a);
     base_control->rect.w = icon_char_w + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2;
     base_control->rect.h = icon_char_h + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2;
-    icon_char_max = SDL_IntMax(base_control->rect.w, base_control->rect.h) + 2;
+    icon_char_max = SDL_max(base_control->rect.w, base_control->rect.h) + 2;
     base_control->rect.w = icon_char_max;
     base_control->rect.h = icon_char_max;        
     base_control->rect.y = 0;
@@ -1072,13 +1072,13 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
     base_control->selected = false;
     base_control->dynamic = true;    
     base_control->is_default_enter = false;  
-	base_control->is_default_esc = false;  
-	if (data->flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
-		base_control->is_default_esc = true;  
-	}
-	if (data->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
-		base_control->is_default_enter = true;  
-	}
+    base_control->is_default_esc = false;  
+    if (data->flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
+        base_control->is_default_esc = true;  
+    }
+    if (data->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
+        base_control->is_default_enter = true;  
+    }
     control->data = data;
     control->str_sz = SDL_strlen(control->data->text);
     control->cb = NULL;
@@ -1228,9 +1228,10 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
     base_control->selected = false;
     base_control->dynamic = false;    
     base_control->rect.w = 0;
+    base_control->rect.h = 0;
     base_control->is_default_enter = false;  
-	base_control->is_default_esc = false;  
-	control->sz = CountLinesOfText(utf8);
+    base_control->is_default_esc = false;  
+    control->sz = CountLinesOfText(utf8);
     control->lines = (char **)SDL_malloc(sizeof(char *) * control->sz);
     control->y = (int *)SDL_calloc(control->sz, sizeof(int));
     control->szs = (size_t *)SDL_calloc(control->sz, sizeof(size_t));
@@ -1242,7 +1243,7 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
         
         control->lines[i] = utf8;
         GetTextWidthHeight(window, utf8, length, &w, &h, &ascent, &descent);
-        base_control->rect.w = SDL_IntMax(base_control->rect.w, w);
+        base_control->rect.w = SDL_max(base_control->rect.w, w);
 
         control->szs[i] = length;
         if (lf && (lf > utf8) && (lf[-1] == '\r')) {
