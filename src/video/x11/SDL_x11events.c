@@ -194,7 +194,7 @@ static bool X11_KeyRepeat(Display *display, XEvent *event)
     return d.found;
 }
 
-static bool X11_IsWheelEvent(Display *display, int button, int *xticks, int *yticks)
+bool X11_IsWheelEvent(int button, int *xticks, int *yticks)
 {
     /* according to the xlib docs, no specific mouse wheel events exist.
        However, the defacto standard is that the vertical wheel is X buttons
@@ -1016,8 +1016,6 @@ void X11_HandleKeyEvent(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_
 void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button, float x, float y, unsigned long time)
 {
     SDL_Window *window = windowdata->window;
-    const SDL_VideoData *videodata = _this->internal;
-    Display *display = videodata->display;
     int xticks = 0, yticks = 0;
     Uint64 timestamp = X11_GetEventTimestamp(time);
 
@@ -1031,7 +1029,7 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
         SDL_SendMouseMotion(timestamp, window, mouseID, false, x, y);
     }
 
-    if (X11_IsWheelEvent(display, button, &xticks, &yticks)) {
+    if (X11_IsWheelEvent(button, &xticks, &yticks)) {
         SDL_SendMouseWheel(timestamp, window, mouseID, (float)-xticks, (float)yticks, SDL_MOUSEWHEEL_NORMAL);
     } else {
         bool ignore_click = false;
@@ -1063,8 +1061,6 @@ void X11_HandleButtonPress(SDL_VideoDevice *_this, SDL_WindowData *windowdata, S
 void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata, SDL_MouseID mouseID, int button, unsigned long time)
 {
     SDL_Window *window = windowdata->window;
-    const SDL_VideoData *videodata = _this->internal;
-    Display *display = videodata->display;
     // The X server sends a Release event for each Press for wheels. Ignore them.
     int xticks = 0, yticks = 0;
     Uint64 timestamp = X11_GetEventTimestamp(time);
@@ -1072,7 +1068,7 @@ void X11_HandleButtonRelease(SDL_VideoDevice *_this, SDL_WindowData *windowdata,
 #ifdef DEBUG_XEVENTS
     SDL_Log("window 0x%lx: ButtonRelease (X11 button = %d)", windowdata->xwindow, button);
 #endif
-    if (!X11_IsWheelEvent(display, button, &xticks, &yticks)) {
+    if (!X11_IsWheelEvent(button, &xticks, &yticks)) {
         if (button > 7) {
             // see explanation at case ButtonPress
             button -= (8 - SDL_BUTTON_X1);
