@@ -312,6 +312,7 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
     SDL_WindowData *windowdata = NULL;
     Display *display = data->display;
     XGCValues ctx_vals;
+    Window root_win;
     unsigned long gcflags = GCForeground | GCBackground;
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 #ifdef XRANDR_DISABLED_BY_DEFAULT
@@ -332,8 +333,9 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
     wnd_attr.event_mask = data->event_mask;
     wnd_attr.colormap = data->cmap;
 
+	root_win = RootWindow(display, data->screen);
     data->window = X11_XCreateWindow(
-        display, RootWindow(display, data->screen),
+        display, root_win,
         0, 0,
         data->window_width, data->window_height,
         0, DefaultDepth(display, data->screen), InputOutput, data->visual,
@@ -393,30 +395,87 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
         }
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
         else if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_XRANDR, use_xrandr_by_default) && data->xrandr) {
-            XRRScreenResources *screen = X11_XRRGetScreenResourcesCurrent(display, DefaultRootWindow(display));
-            if (!screen) {
-                goto XRANDRBAIL;
-            }
-            if (!screen->ncrtc) {
-                goto XRANDRBAIL;
-            }
+			XRRScreenResources *screen_res;			
+			XRRCrtcInfo *crtc_info;
+			RROutput default_out;
+		
+			screen_res = X11_XRRGetScreenResourcesCurrent(display, root_win);
+			if (!screen_res) {
+				goto NOXRANDR;
+			}
+			
+			default_out = X11_XRRGetOutputPrimary(display, root_win);
+			if (default_out != None) {
+				XRROutputInfo *out_info;
+	
+				out_info = X11_XRRGetOutputInfo(display, screen_res, default_out);			
+				if (out_info->connection != RR_Connected) {		
+					X11_XRRFreeOutputInfo(out_info);
+					goto FIRSTOUTPUTXRANDR;
+				}		
+				
+				crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtc);
+				if (crtc_info) {
+					x = (crtc_info->width - data->window_width) / 2;
+					y = (crtc_info->height - data->window_height) / 3;
+					X11_XRRFreeOutputInfo(out_info);
+					X11_XRRFreeCrtcInfo(crtc_info);
+					X11_XRRFreeScreenResources(screen_res);
+				} else {
+					X11_XRRFreeOutputInfo(out_info);
+					goto NOXRANDR;
+				}	
+			} else {
+					FIRSTOUTPUTXRANDR:
+					if (screen_res->noutput > 0) {
+						XRROutputInfo *out_info;
+	
+						out_info = X11_XRRGetOutputInfo(display, screen_res, screen_res->outputs[0]);			
+						if (!out_info) {
+							goto FIRSTCRTCXRANDR;
+						}
+						
+						crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtc);
+						if (!crtc_info) {
+							X11_XRRFreeOutputInfo(out_info);
+							goto FIRSTCRTCXRANDR;
+						}
+						
+						x = (crtc_info->width - data->window_width) / 2;
+						y = (crtc_info->height - data->window_height) / 3;
+						X11_XRRFreeOutputInfo(out_info);
+						X11_XRRFreeCrtcInfo(crtc_info);
+						X11_XRRFreeScreenResources(screen_res);
+						goto MOVEWINDOW;
+					}
+					
+					FIRSTCRTCXRANDR:
+					if (!screen_res->ncrtc) {
+						X11_XRRFreeScreenResources(screen_res);
+						goto NOXRANDR;
+					}
 
-            XRRCrtcInfo *crtc_info = X11_XRRGetCrtcInfo(display, screen, screen->crtcs[0]);
-            if (crtc_info) {
-                x = (crtc_info->width - data->window_width) / 2;
-                y = (crtc_info->height - data->window_height) / 3;
-            } else {
-                goto XRANDRBAIL;
-            }
+					crtc_info = X11_XRRGetCrtcInfo(display, screen_res, screen_res->crtcs[0]);
+					if (crtc_info) {
+						x = (crtc_info->width - data->window_width) / 2;
+						y = (crtc_info->height - data->window_height) / 3;
+						X11_XRRFreeCrtcInfo(crtc_info);
+						X11_XRRFreeScreenResources(screen_res);
+					} else {
+						X11_XRRFreeScreenResources(screen_res);
+						goto NOXRANDR;
+					}		
+			}
         }
 #endif
         else {
             // oh well. This will misposition on a multi-head setup. Init first next time.
-            XRANDRBAIL:
+            NOXRANDR:
             x = (DisplayWidth(display, data->screen) - data->window_width) / 2;
             y = (DisplayHeight(display, data->screen) - data->window_height) / 3;
         }
     }
+    MOVEWINDOW:
     X11_XMoveWindow(display, data->window, x, y);
 
     sizehints = X11_XAllocSizeHints();
@@ -1090,6 +1149,13 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
         X11_XCloseDisplay(data->display);
         data->display = NULL;
     }
+    
+#if SDL_SET_LOCALE
+    if (data->origlocale) {
+        (void)setlocale(LC_ALL, data->origlocale);
+        SDL_free(data->origlocale);
+    }
+#endif
 
     SDL_free(data);
 }
