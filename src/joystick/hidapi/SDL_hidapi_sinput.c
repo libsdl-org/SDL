@@ -200,6 +200,7 @@ typedef struct
     bool right_analog_trigger_supported;
     bool dpad_supported;
     bool touchpad_supported;
+    bool is_handheld;
 
     Uint8 touchpad_count;        // 2 touchpads maximum
     Uint8 touchpad_finger_count; // 2 fingers for one touchpad, or 1 per touchpad (2 max)
@@ -255,39 +256,55 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->touchpad_supported = (data[3] & 0x01) != 0;
     ctx->joystick_rgb_supported = (data[3] & 0x02) != 0;
 
+    ctx->is_handheld = (data[3] & 0x04) != 0;
+
     SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
     type = (SDL_GamepadType)SDL_clamp(data[4], SDL_GAMEPAD_TYPE_UNKNOWN, SDL_GAMEPAD_TYPE_COUNT);
     device->type = type;
 
-    // The 4 MSB represent a button layout style SDL_GamepadFaceStyle
-    // The 4 LSB represent a device sub-type
+    // The 3 MSB represent a button layout style SDL_GamepadFaceStyle
+    // The 5 LSB represent a device sub-type
     device->guid.data[15] = data[5];
 
-#if defined(DEBUG_SINPUT_INIT)
-        SDL_Log("SInput Face Style: %d", (data[5] & 0xF0) >> 4);
-        SDL_Log("SInput Sub-type: %d", (data[5] & 0xF));
-#endif
-
-    ctx->sub_type = (data[5] & 0xF);
+    ctx->sub_type = (data[5] & 0x1F);
 
     ctx->polling_rate_ms = data[6];
 
     ctx->accelRange = EXTRACTUINT16(data, 8);
     ctx->gyroRange = EXTRACTUINT16(data, 10);
 
-    // Masks in LSB to MSB
-    // South, East, West, North, DUp, DDown, DLeft, DRight
-    ctx->usage_masks[0] = data[12];
+    if ((device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC) && (device->vendor_id == USB_VENDOR_RASPBERRYPI)) {
 
-    // Stick Left, Stick Right, L Shoulder, R Shoulder,
-    // L Trigger, R Trigger, L Paddle 1, R Paddle 1
-    ctx->usage_masks[1] = data[13];
+#if defined(DEBUG_SINPUT_INIT)
+        SDL_Log("SInput Face Style: %d", (data[5] & 0xE0) >> 5);
+        SDL_Log("SInput Sub-type: %d", (data[5] & 0x1F));
+#endif
 
-    // Start, Back, Guide, Capture, L Paddle 2, R Paddle 2, Touchpad L, Touchpad R
-    ctx->usage_masks[2] = data[14];
+        switch (ctx->sub_type) {
+        // Default generic device, exposes all buttons
+        default:
+        case 0:
+            ctx->usage_masks[0] = 0xFF;
+            ctx->usage_masks[1] = 0xFF;
+            ctx->usage_masks[2] = 0xFF;
+            ctx->usage_masks[3] = 0xFF;
+            break;
+        }
+    } else {
+        // Masks in LSB to MSB
+        // South, East, West, North, DUp, DDown, DLeft, DRight
+        ctx->usage_masks[0] = data[12];
 
-    // Power, Misc 4 to 10
-    ctx->usage_masks[3] = data[15];
+        // Stick Left, Stick Right, L Shoulder, R Shoulder,
+        // L Trigger, R Trigger, L Paddle 1, R Paddle 1
+        ctx->usage_masks[1] = data[13];
+
+        // Start, Back, Guide, Capture, L Paddle 2, R Paddle 2, Touchpad L, Touchpad R
+        ctx->usage_masks[2] = data[14];
+
+        // Power, Misc 4 to 10
+        ctx->usage_masks[3] = data[15];
+    }
 
     // Derive button count from mask
     for (Uint8 byte = 0; byte < 4; ++byte) {
@@ -448,11 +465,6 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
         break;
     case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
         HIDAPI_SetDeviceName(device, "HHL ProGCC");
-        break;
-    case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
-        if (ctx->sub_type == SINPUT_GENERIC_SUBTYPE_SUPERGAMEPADPLUS) {
-            HIDAPI_SetDeviceName(device, "HHL SuperGamepad+");
-        }
         break;
     default:
         // Use the USB product name
