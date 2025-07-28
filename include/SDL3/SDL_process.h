@@ -372,7 +372,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_GetProcessOutput(SDL_Process *pro
 /**
  * Stop a process.
  *
- * \param process The process to stop.
+ * \param process The process to stop. The data pointed to is read by this
+ *                function and not retained after the call returns.
  * \param force true to terminate the process immediately, false to try to
  *              stop the process gracefully. In general you should try to stop
  *              the process gracefully first as terminating a process may
@@ -407,11 +408,13 @@ extern SDL_DECLSPEC bool SDLCALL SDL_KillProcess(SDL_Process *process, bool forc
  * blocked indefinitely waiting for output to be read and SDL_WaitProcess()
  * will never return true;
  *
- * \param process The process to wait for.
+ * \param process The process to wait for. The data pointed to is read by this
+ *                function and not retained after the call returns.
  * \param block If true, block until the process finishes; otherwise, report
  *              on the process' status.
  * \param exitcode a pointer filled in with the process exit code if the
- *                 process has exited, may be NULL.
+ *                 process has exited, may be NULL. If provided, the value
+ *                 pointed to is written by this function.
  * \returns true if the process exited, false otherwise.
  *
  * \threadsafety This function is not thread safe.
@@ -432,7 +435,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitProcess(SDL_Process *process, bool bloc
  * to track it. If you want to stop the process you should use
  * SDL_KillProcess().
  *
- * \param process The process object to destroy.
+ * \param process The process object to destroy. The data pointed to is read by
+ *                this function and not retained after the call returns.
  *
  * \threadsafety This function is not thread safe.
  *
