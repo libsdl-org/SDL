@@ -154,7 +154,7 @@ class HAIKU_SDL_MessageBox : public BAlert
 		(aMessageBoxData->message[0]) ?
 			SetMessageText(aMessageBoxData->message) : SetMessageText(HAIKU_SDL_DefMessage);
 
-		SetType(ConvertMessageBoxType(aMessageBoxData->flags));
+		SetType(ConvertMessageBoxType(static_cast<SDL_MessageBoxFlags>(aMessageBoxData->flags)));
 	}
 
 	void
@@ -264,12 +264,23 @@ class HAIKU_SDL_MessageBox : public BAlert
 
 		size_t countButtons = fButtons.size();
 		for (size_t i = 0; i < countButtons; ++i) {
-			if (fButtons[i]->flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
-                fCloseButton = static_cast<int>(i);
-            }
-			if (fButtons[i]->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
-                fDefaultButton = static_cast<int>(i);
-            }
+			switch (fButtons[i]->flags)
+			{
+				case SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT:
+				{
+					fCloseButton = static_cast<int>(i);
+					break;
+				}
+				case SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT:
+				{
+					fDefaultButton = static_cast<int>(i);
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
 			AddButton(fButtons[i]->text);
 		}
 
