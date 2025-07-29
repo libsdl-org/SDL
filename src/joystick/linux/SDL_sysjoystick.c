@@ -444,9 +444,7 @@ static void FreeJoylistItem(SDL_joylist_item *item)
     SDL_free(item->mapping);
     SDL_free(item->path);
     SDL_free(item->name);
-    if (item->driver) {
-        SDL_free(item->driver);
-    }
+    SDL_free(item->driver);
     SDL_free(item);
 }
 
