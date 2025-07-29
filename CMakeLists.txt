@@ -1506,12 +1506,13 @@ if(ANDROID)
         add_custom_target(SDL3-javadoc ALL DEPENDS "${javadoc_index_html}" "${javadocjar}")
         set_property(TARGET SDL3-javadoc PROPERTY OUTPUT_DIR "${javadocdir}")
       endif()
-      if(TARGET SDL3-shared)
-        target_link_options(SDL3-shared PRIVATE "-Wl,-z,max-page-size=16384")
-        target_link_options(SDL3-shared PRIVATE "-Wl,-z,common-page-size=16384")
-      endif()
     endif()
   endif()
+
+if(TARGET SDL3-shared)
+  target_link_options(SDL3-shared PRIVATE "-Wl,-z,max-page-size=16384")
+  target_link_options(SDL3-shared PRIVATE "-Wl,-z,common-page-size=16384")
+endif()
 
 elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
