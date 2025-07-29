@@ -335,28 +335,28 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         Uint8 hat;
 
         switch (data[9] & 0x0F) {
-        case 0b0001:
+        case 0x01u:
             hat = SDL_HAT_UP;
             break;
-        case 0b0011:
+        case 0x02u | 0x01u:
             hat = SDL_HAT_RIGHTUP;
             break;
-        case 0b0010:
+        case 0x02u:
             hat = SDL_HAT_RIGHT;
             break;
-        case 0b0110:
+        case 0x02u | 0x04u:
             hat = SDL_HAT_RIGHTDOWN;
             break;
-        case 0b0100:
+        case 0x04u:
             hat = SDL_HAT_DOWN;
             break;
-        case 0b1100:
+        case 0x08u | 0x04u:
             hat = SDL_HAT_LEFTDOWN;
             break;
-        case 0b1000:
+        case 0x08u:
             hat = SDL_HAT_LEFT;
             break;
-        case 0b1001:
+        case 0x08u | 0x01u:
             hat = SDL_HAT_LEFTUP;
             break;
         default:
