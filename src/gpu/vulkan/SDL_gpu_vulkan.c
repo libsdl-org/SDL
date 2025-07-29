@@ -1277,13 +1277,20 @@ static inline const char *VkErrorMessages(VkResult code)
 #undef ERR_TO_STR
 }
 
-#define SET_ERROR_AND_RETURN(fmt, msg, ret)               \
+#define SET_ERROR(fmt, msg)                               \
     do {                                                  \
         if (renderer->debugMode) {                        \
             SDL_LogError(SDL_LOG_CATEGORY_GPU, fmt, msg); \
         }                                                 \
         SDL_SetError((fmt), (msg));                       \
-        return ret;                                       \
+    } while (0)
+
+#define SET_STRING_ERROR(msg) SET_ERROR("%s", msg)
+
+#define SET_ERROR_AND_RETURN(fmt, msg, ret) \
+    do {                                    \
+        SET_ERROR(fmt, msg);                \
+        return ret;                         \
     } while (0)
 
 #define SET_STRING_ERROR_AND_RETURN(msg, ret) SET_ERROR_AND_RETURN("%s", msg, ret)
@@ -11696,9 +11703,10 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->allowedFramesInFlight = 2;
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
+        SET_STRING_ERROR("Failed to initialize Vulkan!");
         SDL_free(renderer);
         SDL_Vulkan_UnloadLibrary();
-        SET_STRING_ERROR_AND_RETURN("Failed to initialize Vulkan!", NULL);
+        return NULL;
     }
 
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: Vulkan");
@@ -11724,9 +11732,10 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 
     if (!VULKAN_INTERNAL_CreateLogicalDevice(
             renderer)) {
+        SET_STRING_ERROR("Failed to create logical device!");
         SDL_free(renderer);
         SDL_Vulkan_UnloadLibrary();
-        SET_STRING_ERROR_AND_RETURN("Failed to create logical device!", NULL);
+        return NULL;
     }
 
     // FIXME: just move this into this function
