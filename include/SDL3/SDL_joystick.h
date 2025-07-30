@@ -29,8 +29,8 @@
  * instead.
  *
  * The term "instance_id" is the current instantiation of a joystick device in
- * the system, if the joystick is removed and then re-inserted then it will
- * get a new instance_id, instance_id's are monotonically increasing
+ * the system. If the joystick is removed and then re-inserted then it will
+ * get a new instance_id. instance_id's are monotonically increasing
  * identifiers of a joystick plugged in.
  *
  * The term "player_index" is the number assigned to a player on a specific
@@ -48,6 +48,14 @@
  * If you would like to receive joystick updates while the application is in
  * the background, you should set the following hint before calling
  * SDL_Init(): SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS
+ *
+ * SDL can provide virtual joysticks as well: the app defines an imaginary
+ * controller with SDL_AttachVirtualJoystick(), and then can provide inputs
+ * for it via SDL_SetJoystickVirtualAxis(), SDL_SetJoystickVirtualButton(),
+ * etc. As this data is supplied, it will look like a normal joystick to SDL,
+ * just not backed by a hardware driver. This has been used to make unusual
+ * devices, like VR headset controllers, look like normal joysticks, or
+ * provide recording/playback of game inputs, etc.
  */
 
 #ifndef SDL_joystick_h_
