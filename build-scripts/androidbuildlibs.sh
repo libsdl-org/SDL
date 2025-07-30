@@ -81,5 +81,5 @@ ndk-build \
     APP_ABI="$abi" \
     APP_PLATFORM="$platform" \
     APP_MODULES="SDL3" \
-    APP_SUPPORT_FLEXIBLE_PAGE_SIZES := $flexpage \
+    APP_SUPPORT_FLEXIBLE_PAGE_SIZES="$flexpage" \
     $ndk_args
