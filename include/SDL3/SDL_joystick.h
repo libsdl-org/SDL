@@ -477,6 +477,18 @@ SDL_COMPILE_TIME_ASSERT(SDL_VirtualJoystickDesc_SIZE,
 /**
  * Attach a new virtual joystick.
  *
+ * Apps can create virtual joysticks, that exist without hardware directly
+ * backing them, and have program-supplied inputs. Once attached, a virtual
+ * joystick looks like any other joystick that SDL can access. These can be
+ * used to make other things look like joysticks, or provide pre-recorded
+ * input, etc.
+ *
+ * Once attached, the app can send joystick inputs to the new virtual joystick
+ * using SDL_SetJoystickVirtualAxis(), etc.
+ *
+ * When no longer needed, the virtual joystick can be removed by calling
+ * SDL_DetachVirtualJoystick().
+ *
  * \param desc joystick description, initialized using SDL_INIT_INTERFACE().
  * \returns the joystick instance ID, or 0 on failure; call SDL_GetError() for
  *          more information.
@@ -484,6 +496,12 @@ SDL_COMPILE_TIME_ASSERT(SDL_VirtualJoystickDesc_SIZE,
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_DetachVirtualJoystick
+ * \sa SDL_SetJoystickVirtualAxis
+ * \sa SDL_SetJoystickVirtualButton
+ * \sa SDL_SetJoystickVirtualBall
+ * \sa SDL_SetJoystickVirtualHat
+ * \sa SDL_SetJoystickVirtualTouchpad
+ * \sa SDL_SetJoystickVirtualSensorData
  */
 extern SDL_DECLSPEC SDL_JoystickID SDLCALL SDL_AttachVirtualJoystick(const SDL_VirtualJoystickDesc *desc);
 
@@ -531,6 +549,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsJoystickVirtual(SDL_JoystickID instance_i
  *          information.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetJoystickVirtualButton
+ * \sa SDL_SetJoystickVirtualBall
+ * \sa SDL_SetJoystickVirtualHat
+ * \sa SDL_SetJoystickVirtualTouchpad
+ * \sa SDL_SetJoystickVirtualSensorData
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickVirtualAxis(SDL_Joystick *joystick, int axis, Sint16 value);
 
@@ -551,6 +575,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickVirtualAxis(SDL_Joystick *joysti
  *          information.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetJoystickVirtualAxis
+ * \sa SDL_SetJoystickVirtualButton
+ * \sa SDL_SetJoystickVirtualHat
+ * \sa SDL_SetJoystickVirtualTouchpad
+ * \sa SDL_SetJoystickVirtualSensorData
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickVirtualBall(SDL_Joystick *joystick, int ball, Sint16 xrel, Sint16 yrel);
 
@@ -570,6 +600,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickVirtualBall(SDL_Joystick *joysti
  *          information.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetJoystickVirtualAxis
+ * \sa SDL_SetJoystickVirtualBall
+ * \sa SDL_SetJoystickVirtualHat
+ * \sa SDL_SetJoystickVirtualTouchpad
+ * \sa SDL_SetJoystickVirtualSensorData
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickVirtualButton(SDL_Joystick *joystick, int button, bool down);
 
@@ -589,6 +625,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickVirtualButton(SDL_Joystick *joys
  *          information.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetJoystickVirtualAxis
+ * \sa SDL_SetJoystickVirtualButton
+ * \sa SDL_SetJoystickVirtualBall
+ * \sa SDL_SetJoystickVirtualTouchpad
+ * \sa SDL_SetJoystickVirtualSensorData
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystick, int hat, Uint8 value);
 
@@ -615,6 +657,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickVirtualHat(SDL_Joystick *joystic
  *          information.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetJoystickVirtualAxis
+ * \sa SDL_SetJoystickVirtualButton
+ * \sa SDL_SetJoystickVirtualBall
+ * \sa SDL_SetJoystickVirtualHat
+ * \sa SDL_SetJoystickVirtualSensorData
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickVirtualTouchpad(SDL_Joystick *joystick, int touchpad, int finger, bool down, float x, float y, float pressure);
 
@@ -637,6 +685,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickVirtualTouchpad(SDL_Joystick *jo
  *          information.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetJoystickVirtualAxis
+ * \sa SDL_SetJoystickVirtualButton
+ * \sa SDL_SetJoystickVirtualBall
+ * \sa SDL_SetJoystickVirtualHat
+ * \sa SDL_SetJoystickVirtualTouchpad
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SendJoystickVirtualSensorData(SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
 
