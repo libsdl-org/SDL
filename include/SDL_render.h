@@ -30,6 +30,7 @@
  * - single pixel lines
  * - filled rectangles
  * - texture images
+ * - 2D polygons
  *
  * The primitives may be drawn in opaque, blended, or additive modes.
  *
@@ -38,7 +39,7 @@
  * may also be stretched with linear interpolation.
  *
  * This API is designed to accelerate simple 2D operations. You may want more
- * functionality such as polygons and particle effects and in that case you
+ * functionality such as 3D polygons and particle effects and in that case you
  * should use SDL's OpenGL/Direct3D support or one of the many good 3D
  * engines.
  *
