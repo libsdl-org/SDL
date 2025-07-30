@@ -531,6 +531,12 @@ bool SDL_UnlockAudioStream(SDL_AudioStream *stream)
 bool SDL_GetAudioStreamFormat(SDL_AudioStream *stream, SDL_AudioSpec *src_spec, SDL_AudioSpec *dst_spec)
 {
     if (!stream) {
+        if (src_spec) {
+            SDL_zerop(src_spec);
+        }
+        if (dst_spec) {
+            SDL_zerop(dst_spec);
+        }
         return SDL_InvalidParamError("stream");
     }
 
