@@ -114,7 +114,7 @@ static bool PSPAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
     } else {
         rc = sceAudioOutputPannedBlocking(device->hidden->channel, PSP_AUDIO_VOLUME_MAX, PSP_AUDIO_VOLUME_MAX, (void *) buffer);
     }
-    return (rc == 0);
+    return (rc >= 0);
 }
 
 static bool PSPAUDIO_WaitDevice(SDL_AudioDevice *device)
