@@ -705,6 +705,10 @@ typedef struct SDL_GamepadSensorEvent
 /**
  * Audio device event structure (event.adevice.*)
  *
+ * Note that SDL will send a SDL_EVENT_AUDIO_DEVICE_ADDED event for every
+ * device it discovers during initialization. After that, this event will only
+ * arrive when a device is hotplugged during the program's run.
+ *
  * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_AudioDeviceEvent
