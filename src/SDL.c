@@ -30,6 +30,10 @@
 // this checks for HAVE_DBUS_DBUS_H internally.
 #include "core/linux/SDL_dbus.h"
 
+#ifdef SDL_PLATFORM_UNIX
+#include "core/unix/SDL_gtk.h"
+#endif
+
 #ifdef SDL_PLATFORM_EMSCRIPTEN
 #include <emscripten.h>
 #endif
@@ -661,6 +665,10 @@ void SDL_Quit(void)
 
 #ifdef SDL_USE_LIBDBUS
     SDL_DBus_Quit();
+#endif
+
+#ifdef SDL_PLATFORM_UNIX
+    SDL_Gtk_Quit();
 #endif
 
     SDL_QuitTimers();
