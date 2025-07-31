@@ -42,10 +42,6 @@
 #include "../video/android/SDL_androidevents.h"
 #endif
 
-#ifdef SDL_PLATFORM_UNIX
-#include "../core/unix/SDL_gtk.h"
-#endif
-
 // An arbitrary limit so we don't have unbounded growth
 #define SDL_MAX_QUEUED_EVENTS 65535
 

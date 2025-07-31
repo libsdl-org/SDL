@@ -30,7 +30,7 @@
 // this checks for HAVE_DBUS_DBUS_H internally.
 #include "core/linux/SDL_dbus.h"
 
-#ifdef SDL_PLATFORM_UNIX
+#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID)
 #include "core/unix/SDL_gtk.h"
 #endif
 
@@ -667,7 +667,7 @@ void SDL_Quit(void)
     SDL_DBus_Quit();
 #endif
 
-#ifdef SDL_PLATFORM_UNIX
+#if defined(SDL_PLATFORM_UNIX) && !defined(SDL_PLATFORM_ANDROID)
     SDL_Gtk_Quit();
 #endif
 
