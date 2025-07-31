@@ -533,6 +533,16 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         ++axes;
     }
 
+    if ((device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC) && (device->vendor_id == USB_VENDOR_RASPBERRYPI)) {
+        switch (ctx->sub_type) {
+        // Default generic device, exposes all axes
+        default:
+        case 0:
+            axes = 6;
+            break;
+        }
+    } 
+
     joystick->naxes = axes;
 
     if (ctx->dpad_supported) {
