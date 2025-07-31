@@ -67,8 +67,6 @@ static void (*app_indicator_set_menu)(AppIndicator *self, GtkMenu *menu);
 /* ------------------------------------------------------------------------- */
 #endif
 
-#ifndef APPINDICATOR_HEADER
-
 static void *libappindicator = NULL;
 
 static void quit_appindicator(void)
@@ -130,7 +128,6 @@ static bool init_appindicator(void)
 
     return true;
 }
-#endif
 
 struct SDL_TrayMenu {
     GtkMenuShell *menu;
@@ -254,7 +251,7 @@ bool SDL_IsTraySupported(void)
     static bool has_been_detected_once = false;
 
     if (!has_been_detected_once) {
-        has_trays = SDL_Gtk_Init();
+        has_trays = init_appindicator() && SDL_Gtk_Init();
         has_been_detected_once = true;
     }
 
@@ -268,12 +265,17 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
         return NULL;
     }
 
+    if (!init_appindicator()) {
+        return NULL;
+    }
+
+    SDL_Tray *tray = NULL;
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (!gtk) {
         goto error;
     }
 
-    SDL_Tray *tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
+    tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
     if (!tray) {
         goto error;
     }
@@ -506,12 +508,13 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         pos = menu->nEntries;
     }
 
+    SDL_TrayEntry *entry = NULL;
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (!gtk) {
         goto error;
     }
 
-    SDL_TrayEntry *entry = (SDL_TrayEntry *)SDL_calloc(1, sizeof(*entry));
+    entry = (SDL_TrayEntry *)SDL_calloc(1, sizeof(*entry));
     if (!entry) {
         goto error;
     }
