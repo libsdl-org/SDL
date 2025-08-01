@@ -299,8 +299,7 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
     tray->indicator = app_indicator_new(get_appindicator_id(), tray->icon_path,
                                         APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
-    puts("good");
-
+                                        
     app_indicator_set_status(tray->indicator, APP_INDICATOR_STATUS_ACTIVE);
 
     // The tray icon isn't shown before a menu is created; create one early.

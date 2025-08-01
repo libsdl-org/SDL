@@ -101,6 +101,6 @@ typedef struct SDL_GlibContext
 } SDL_GlibContext;
 
 extern bool SDL_GlibContext_Init(SDL_GlibContext *ctx, void *lib, bool do_unload, bool bypass_hint);
-extern bool SDL_GlibContext_Cleanup(SDL_GlibContext *ctx);
+extern void SDL_GlibContext_Cleanup(SDL_GlibContext *ctx);
 
 #endif // SDL_glib_h_

@@ -77,7 +77,7 @@ bool SDL_GlibContext_Init(SDL_GlibContext *ctx, void *lib, bool do_unload, bool 
     return true;
 }
 
-bool SDL_GlibContext_Cleanup(SDL_GlibContext *ctx) 
+void SDL_GlibContext_Cleanup(SDL_GlibContext *ctx) 
 {
 	if (ctx->library && ctx->do_unload) {
 		SDL_UnloadObject(ctx->library);
