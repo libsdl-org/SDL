@@ -2127,12 +2127,6 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
         wind->server_decoration = NULL;
     }
 
-    // Be sure to detach after this is done, otherwise ShowWindow crashes!
-    if (wind->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP) {
-        wl_surface_attach(wind->surface, NULL, 0, 0);
-        wl_surface_commit(wind->surface);
-    }
-
     // Clean up the export handle.
     if (wind->exported) {
         zxdg_exported_v2_destroy(wind->exported);
@@ -2168,6 +2162,12 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
             xdg_surface_destroy(wind->shell_surface.xdg.surface);
             SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER, NULL);
         }
+    }
+
+    // Be sure to detach after this is done, otherwise ShowWindow crashes!
+    if (wind->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP) {
+        wl_surface_attach(wind->surface, NULL, 0, 0);
+        wl_surface_commit(wind->surface);
     }
 
     SDL_zero(wind->shell_surface);
