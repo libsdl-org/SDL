@@ -812,7 +812,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             // GC Ultimate Map
             SDL_strlcat(mapping_string, "a:b0,b:b2,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,x:b1,y:b3,misc3:b8,misc4:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
             break;
-
+        default:
+        case USB_PRODUCT_BONJIRICHANNEL_FIREBIRD:
         case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
             // Apply mapping profile for type
             switch (sinput_id) {
@@ -840,11 +841,6 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 break;
             }
             break;
-
-        default:
-        case USB_PRODUCT_BONJIRICHANNEL_FIREBIRD:
-            // Unmapped devices
-            return NULL;
         }
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes
