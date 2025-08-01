@@ -2153,11 +2153,9 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
     }
 
-    // Be sure to detach after this is done, otherwise ShowWindow crashes!
-    if (wind->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP) {
-        wl_surface_attach(wind->surface, NULL, 0, 0);
-        wl_surface_commit(wind->surface);
-    }
+    // Attach a null buffer to unmap the surface.
+    wl_surface_attach(wind->surface, NULL, 0, 0);
+    wl_surface_commit(wind->surface);
 
     SDL_zero(wind->shell_surface);
     wind->show_hide_sync_required = true;
