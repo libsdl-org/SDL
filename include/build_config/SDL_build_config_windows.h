@@ -95,7 +95,7 @@ typedef unsigned int uintptr_t;
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0603  /* Windows 8.1 SDK */
 #define HAVE_SHELLSCALINGAPI_H 1
 #endif
-#if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0601  /* Windows 7 SDK */
+#if !defined(__MINGW32__) && defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0601  /* Windows 7 SDK */
 #define HAVE_SHOBJIDL_CORE_H 1
 #endif
 #define HAVE_MMDEVICEAPI_H 1
