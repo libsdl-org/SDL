@@ -12,6 +12,9 @@
 
 /* Gamepad image */
 
+#ifndef gamepadutils_h_
+#define gamepadutils_h_
+
 typedef struct GamepadImage GamepadImage;
 
 typedef enum
@@ -210,3 +213,5 @@ extern bool MappingHasBinding(const char *mapping, const char *binding);
 
 /* Clear any previous binding */
 extern char *ClearMappingBinding(char *mapping, const char *binding);
+
+#endif /* gamepadutils_h_ */
