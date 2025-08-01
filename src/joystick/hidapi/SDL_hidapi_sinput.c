@@ -390,7 +390,7 @@ static bool RetrieveSDLFeatures(SDL_HIDAPI_Device *device)
         }
 
 #ifdef DEBUG_SINPUT_PROTOCOL
-        HIDAPI_DumpPacket("SInput packet: size = %d", data, size);
+        HIDAPI_DumpPacket("SInput packet: size = %d", data, read);
 #endif
 
         if ((read == USB_PACKET_LENGTH) && (data[0] == SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT) && (data[1] == SINPUT_DEVICE_COMMAND_FEATURES)) {
