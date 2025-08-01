@@ -632,7 +632,7 @@ static bool HIDAPI_DriverSInput_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Jo
 {
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
-    if (ctx->player_leds_supported) {
+    if (ctx->joystick_rgb_supported) {
 
         // Set player number, finalizing the setup
         Uint8 joystickRGBCommand[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_JOYSTICKRGB, red, green, blue };
