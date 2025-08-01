@@ -36,4 +36,4 @@ extern SDL_Surface *SDLTest_ImageBlendingBackground(void);
 extern SDL_Surface *SDLTest_ImageBlendingSprite(void);
 extern SDL_Surface *SDLTest_ImageWrappingSprite(void);
 
-#endif // testautomation_images_h_
+#endif /* testautomation_images_h_ */
