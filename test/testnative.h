@@ -48,4 +48,4 @@ extern NativeWindowFactory X11WindowFactory;
 extern NativeWindowFactory CocoaWindowFactory;
 #endif
 
-#endif // testnative_h_
+#endif /* testnative_h_ */
