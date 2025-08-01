@@ -68,7 +68,7 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
         // in the Xrm database.
         SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
         if (gtk) {
-            GtkSettings *gtksettings = gtk->gtk.settings_get_default();
+            GtkSettings *gtksettings = gtk->settings_get_default();
             if (gtksettings) {
                 int dpi = 0;
                 gtk->g.object_get(gtksettings, "gtk-xft-dpi", &dpi, NULL);

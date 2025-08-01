@@ -32,7 +32,7 @@
 typedef struct X11_SettingsData {
     XSettingsClient *xsettings;
     GtkSettings *gtksettings;
-    guint xft_dpi_signal_handler_id;
+    SDL_guint xft_dpi_signal_handler_id;
 } SDLX11_SettingsData;
 
 extern void X11_InitXsettings(SDL_VideoDevice *_this);
