@@ -12,6 +12,9 @@
 
 /* These functions are designed for testing correctness, not for speed */
 
+#ifndef testyuv_cvt_h_
+#define testyuv_cvt_h_
+
 typedef enum
 {
     YUV_CONVERSION_JPEG,        /**< Full range JPEG */
@@ -26,3 +29,5 @@ extern YUV_CONVERSION_MODE GetYUVConversionModeForResolution(int width, int heig
 extern SDL_Colorspace GetColorspaceForYUVConversionMode(YUV_CONVERSION_MODE mode);
 extern bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance);
 extern int CalculateYUVPitch(Uint32 format, int width);
+
+#endif /* testyuv_cvt_h_ */
