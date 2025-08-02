@@ -2686,7 +2686,7 @@ bool SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g
 {
     Uint32 pixel = 0;
     size_t bytes_per_pixel;
-    Uint8 unused;
+    Uint8 unused = 0;
     Uint8 *p;
     bool result = false;
 
@@ -2774,7 +2774,7 @@ bool SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g
 
 bool SDL_ReadSurfacePixelFloat(SDL_Surface *surface, int x, int y, float *r, float *g, float *b, float *a)
 {
-    float unused;
+    float unused = 0.0f;
     bool result = false;
 
     if (r) {
