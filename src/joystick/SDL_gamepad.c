@@ -30,6 +30,7 @@
 #include "controller_type.h"
 #include "usb_ids.h"
 #include "hidapi/SDL_hidapi_nintendo.h"
+#include "hidapi/SDL_hidapi_sinput.h"
 #include "../events/SDL_events_c.h"
 
 
@@ -802,22 +803,36 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         Uint8 face_style = (guid.data[15] & 0xE0) >> 5;
         Uint8 sinput_id  = guid.data[15] & 0x1F;
 
-        switch (product) {
-        case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
-            // ProGCC Mapping
+        if (vendor == USB_VENDOR_RASPBERRYPI && product == USB_PRODUCT_HANDHELDLEGEND_PROGCC)
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
-            break;
-
-        case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
-            // GC Ultimate Map
+        else if (vendor == USB_VENDOR_RASPBERRYPI && product == USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE)
             SDL_strlcat(mapping_string, "a:b0,b:b2,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,x:b1,y:b3,misc3:b8,misc4:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
-            break;
-
-        case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
+        else {
             // Apply mapping profile for type
             switch (sinput_id) {
+            case k_eSinputControllerType_XInputOnly:
+                SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,start:b8,back:b9,guide:b10,", sizeof(mapping_string));
+                break;
+            case k_eSinputControllerType_XInputShareNone:
+                SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,start:b8,back:b9,guide:b10,misc1:b11,", sizeof(mapping_string));
+                break;
+            case k_eSinputControllerType_XInputShareDual:
+                SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b8,paddle2:b9,start:b10,back:b11,guide:b12,misc1:b13,", sizeof(mapping_string));
+                break;
+            case k_eSinputControllerType_XInputShareQuad:
+                SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b8,paddle2:b9,start:b10,back:b11,guide:b12,misc1:b13,paddle3:b14,paddle4:b15,", sizeof(mapping_string));
+                break;
+            case k_eSinputControllerType_XInputShareNoneClick:
+                SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,start:b8,back:b9,guide:b10,misc1:b11,touchpad:b12,", sizeof(mapping_string));
+                break;
+            case k_eSinputControllerType_XInputShareDualClick:
+                SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b8,paddle2:b9,start:b10,back:b11,guide:b12,misc1:b13,touchpad:b14,", sizeof(mapping_string));
+                break;
+            case k_eSinputControllerType_XInputShareQuadClick:
+                SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b8,paddle2:b9,start:b10,back:b11,guide:b12,misc1:b13,paddle3:b14,paddle4:b15,touchpad:b16,", sizeof(mapping_string));
+                break;
             default:
-            case 0:
+            case k_eSinputControllerType_FullMapping:
                 // Default Fully Exposed Mapping
                 SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b10,paddle2:b11,start:b12,back:b13,guide:b14,misc1:b15,paddle3:b16,paddle4:b17,touchpad:b18,misc2:b19,misc3:b20,misc4:b21,misc5:b22,misc6:b23", sizeof(mapping_string));
                 break;
@@ -839,12 +854,6 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 SDL_strlcat(mapping_string, "face:sony,", sizeof(mapping_string));
                 break;
             }
-            break;
-
-        default:
-        case USB_PRODUCT_BONJIRICHANNEL_FIREBIRD:
-            // Unmapped devices
-            return NULL;
         }
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes
