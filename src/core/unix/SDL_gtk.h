@@ -74,7 +74,7 @@ typedef struct _GtkSettings GtkSettings;
 typedef struct SDL_GtkContext
 {
 	/* Glib 2.0 */
-	struct 
+	struct
 	{
 		gulong (*signal_connect)(gpointer instance, const gchar *detailed_signal, void *c_handler, gpointer data);
 		gulong (*signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, SDL_GConnectFlags connect_flags);
@@ -86,7 +86,7 @@ typedef struct SDL_GtkContext
 		void (*signal_handler_disconnect)(gpointer instance, gulong handler_id);
 		void (*main_context_push_thread_default)(GMainContext *context);
 		void (*main_context_pop_thread_default)(GMainContext *context);
-		GMainContext *(*main_context_new)(void);
+		GMainContext *(*main_context_default)(void);
 		gboolean (*main_context_acquire)(GMainContext *context);
 		gboolean (*main_context_iteration)(GMainContext *context, gboolean may_block);
 	} g;

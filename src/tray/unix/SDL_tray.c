@@ -166,7 +166,7 @@ struct SDL_Tray {
     GtkMenuShell *menu_cached;
 };
 
-static void call_callback(GtkMenuItem *item, GParamSpec *pspec, gpointer ptr)
+static void call_callback(GtkMenuItem *item, gpointer ptr)
 {
     SDL_TrayEntry *entry = ptr;
 
@@ -404,7 +404,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
         SDL_SetError("Cannot create submenu for entry not created with SDL_TRAYENTRY_SUBMENU");
         return NULL;
     }
-    
+
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (!gtk) {
         return NULL;
