@@ -106,6 +106,10 @@ EControllerType GuessControllerType( int nVID, int nPID )
 		{
 			return k_eControllerType_SteamController;
 		}
+		if ( SDL_strncasecmp( pszOverride, "sinput", 5 ) == 0 )
+		{
+			return k_eControllerType_Sinput;
+		}
 		return k_eControllerType_UnknownNonSteamController;
 	}
 

@@ -27,6 +27,7 @@
 
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_sinput.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_SINPUT
 
@@ -291,35 +292,76 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     // For backwards compatibility with existing firmwares
     // when we know the PID, we will passthrough the mask.
     // sub_type is only 5 bits, so 0xff can be used.
-    bool known = (
-        device->product_id == USB_PRODUCT_HANDHELDLEGEND_PROGCC ||
-        device->product_id == USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE
-    );
-    if (known)
-        ctx->sub_type = 0xFF;
+    if (
+        device->vendor_id == USB_VENDOR_RASPBERRYPI && (device->product_id == USB_PRODUCT_HANDHELDLEGEND_PROGCC ||
+                                                        device->product_id == USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE))
+        ctx->sub_type = k_eSinputControllerType_LoadFirmware;
 
     switch (ctx->sub_type) {
-        case 0xFF:
-            ctx->usage_masks[0] = buttons[0];
-            ctx->usage_masks[1] = buttons[1];
-            ctx->usage_masks[2] = buttons[2];
-            ctx->usage_masks[3] = buttons[3];
-            ctx->left_analog_stick_supported = left_analog_stick_supported;
-            ctx->right_analog_stick_supported = right_analog_stick_supported;
-            ctx->left_analog_trigger_supported = left_analog_trigger_supported;
-            ctx->right_analog_trigger_supported = right_analog_trigger_supported;
-            break;
-        default:
-            ctx->usage_masks[0] = 0xFF;
-            ctx->usage_masks[1] = 0xFF;
-            ctx->usage_masks[2] = 0xFF;
-            ctx->usage_masks[3] = 0xFF;
-            ctx->left_analog_stick_supported = true;
-            ctx->right_analog_stick_supported = true;
-            ctx->left_analog_trigger_supported = true;
-            ctx->right_analog_trigger_supported = true;
-            break;
-        }
+    case k_eSinputControllerType_XInputOnly:
+    case k_eSinputControllerType_XInputShareNone:
+    case k_eSinputControllerType_XInputShareDual:
+    case k_eSinputControllerType_XInputShareQuad:
+    case k_eSinputControllerType_XInputShareNoneClick:
+    case k_eSinputControllerType_XInputShareDualClick:
+    case k_eSinputControllerType_XInputShareQuadClick:
+        // Basic xinput mask with share
+        ctx->usage_masks[0] = 0xFF;
+        ctx->usage_masks[1] = 0x0F;
+        ctx->usage_masks[2] = 0x0F;
+        ctx->usage_masks[3] = 0x00;
+        ctx->left_analog_stick_supported = true;
+        ctx->right_analog_stick_supported = true;
+        ctx->left_analog_trigger_supported = true;
+        ctx->right_analog_trigger_supported = true;
+
+        // Add primary paddles
+        if (
+            ctx->sub_type == k_eSinputControllerType_XInputShareDual ||
+            ctx->sub_type == k_eSinputControllerType_XInputShareQuad ||
+            ctx->sub_type == k_eSinputControllerType_XInputShareDualClick ||
+            ctx->sub_type == k_eSinputControllerType_XInputShareQuadClick)
+            ctx->usage_masks[1] |= 0xC0;
+
+        // Remove share/capture button if not supported
+        if (ctx->sub_type == k_eSinputControllerType_XInputOnly)
+            ctx->usage_masks[2] &= ~0x08;
+
+        // Add secondary paddles
+        if (
+            ctx->sub_type == k_eSinputControllerType_XInputShareQuad ||
+            ctx->sub_type == k_eSinputControllerType_XInputShareQuadClick)
+            ctx->usage_masks[2] |= 0x30;
+
+        // Add touchpad click
+        if (
+            ctx->sub_type == k_eSinputControllerType_XInputShareNoneClick ||
+            ctx->sub_type == k_eSinputControllerType_XInputShareDualClick ||
+            ctx->sub_type == k_eSinputControllerType_XInputShareQuadClick)
+            ctx->usage_masks[2] |= 0x40;
+        break;
+    case k_eSinputControllerType_LoadFirmware:
+        ctx->usage_masks[0] = buttons[0];
+        ctx->usage_masks[1] = buttons[1];
+        ctx->usage_masks[2] = buttons[2];
+        ctx->usage_masks[3] = buttons[3];
+        ctx->left_analog_stick_supported = left_analog_stick_supported;
+        ctx->right_analog_stick_supported = right_analog_stick_supported;
+        ctx->left_analog_trigger_supported = left_analog_trigger_supported;
+        ctx->right_analog_trigger_supported = right_analog_trigger_supported;
+        break;
+    case k_eSinputControllerType_FullMapping:
+    default:
+        ctx->usage_masks[0] = 0xFF;
+        ctx->usage_masks[1] = 0xFF;
+        ctx->usage_masks[2] = 0xFF;
+        ctx->usage_masks[3] = 0xFF;
+        ctx->left_analog_stick_supported = true;
+        ctx->right_analog_stick_supported = true;
+        ctx->left_analog_trigger_supported = true;
+        ctx->right_analog_trigger_supported = true;
+        break;
+    }
 
     // Since SDL uses fixed mappings, unfortunately we cannot use the
     // button mask from the protocol. SInput defines a set of predefined

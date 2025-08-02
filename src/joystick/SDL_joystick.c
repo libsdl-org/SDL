@@ -3216,7 +3216,9 @@ bool SDL_IsJoystickSInputController(Uint16 vendor_id, Uint16 product_id)
             return true;
         }
     }
-    return false;
+
+    EControllerType eType = GuessControllerType(vendor_id, product_id);
+    return eType == k_eControllerType_Sinput;
 }
 
 bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
