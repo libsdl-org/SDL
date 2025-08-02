@@ -426,6 +426,17 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             // Otherwise assume a regular mouse
             SDL_WindowData *windowdata = xinput2_get_sdlwindowdata(videodata, xev->event);
 
+            /* Discard wheel events from "Master" devices to avoid duplicates.
+             * X doesn't have specific wheel events, but buttons 4 through 7
+             * represent one 'tick' of the wheel in a specific direction.
+             *
+             * Other buttons must be passed through for pointer emulation when
+             * using a pen to work correctly.
+             */
+            if (button >= 4 && button <= 7 && xev->deviceid != xev->sourceid) {
+                break;
+            }
+
             if (down) {
                 X11_HandleButtonPress(_this, windowdata, (SDL_MouseID)xev->sourceid, button,
                                       (float)xev->event_x, (float)xev->event_y, xev->time);
