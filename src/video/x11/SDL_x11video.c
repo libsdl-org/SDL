@@ -468,6 +468,7 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     }
 #endif
 
+    X11_QuitXinput2(_this);
     X11_QuitModes(_this);
     X11_QuitKeyboard(_this);
     X11_QuitMouse(_this);
