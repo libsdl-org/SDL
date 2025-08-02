@@ -805,7 +805,6 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         // Apply face style according to gamepad response
         switch (face_style) {
         default:
-        case 1:
             SDL_strlcat(mapping_string, "face:abxy,", sizeof(mapping_string));
             break;
         case 2:
@@ -823,7 +822,6 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
             switch (sub_type) {
             default:
-            case 0:
                 // ProGCC Primary Mapping
                 SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
                 break;
@@ -832,7 +830,6 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
             switch (sub_type) {
             default:
-            case 0:
                 // GC Ultimate Primary Map
                 SDL_strlcat(mapping_string, "a:b0,b:b2,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,x:b1,y:b3,misc3:b8,misc4:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
                 break;
@@ -841,14 +838,17 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
             switch (sub_type) {
             default:
-            case 0:
                 // Default Fully Exposed Mapping (Development Purposes)
                 SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b10,paddle2:b11,start:b12,back:b13,guide:b14,misc1:b15,paddle3:b16,paddle4:b17,touchpad:b18,misc2:b19,misc3:b20,misc4:b21,misc5:b22,misc6:b23", sizeof(mapping_string));
                 break;
             }
-        default:
+
         case USB_PRODUCT_BONZIRICHANNEL_FIREBIRD:
-            // Unmapped devices
+            // Unmapped device
+            return NULL;
+
+        default:
+            // Unmapped device
             return NULL;
         }
     } else {
