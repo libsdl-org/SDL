@@ -554,6 +554,14 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (void)textFieldTextDidChange:(NSNotification *)notification
 {
+    // When opening a password manager overlay to select a password and have it auto-filled,
+    // text input becomes stopped as a result of the keyboard being hidden or the text field losing focus.
+    // As a workaround, ensure text input is activated on any changes to the text field.
+    bool startTextInputMomentarily = !SDL_TextInputActive(window);
+
+    if (startTextInputMomentarily)
+        SDL_StartTextInput(window);
+
     if (textField.markedTextRange == nil) {
         NSUInteger compareLength = SDL_min(textField.text.length, committedText.length);
         NSUInteger matchLength;
@@ -588,6 +596,9 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         }
         committedText = textField.text;
     }
+
+    if (startTextInputMomentarily)
+        SDL_StopTextInput(window);
 }
 
 - (void)updateKeyboard
@@ -633,7 +644,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
     if (textField.markedTextRange == nil) {
-        if (textField.text.length < 16) {
+        if ([string length] == 0 && textField.text.length < 16) {
             [self resetTextState];
         }
     }
