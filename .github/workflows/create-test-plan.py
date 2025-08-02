@@ -654,7 +654,6 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 f"-DCMAKE_C_COMPILER={job.cc}",
                 f"-DCMAKE_CXX_COMPILER={job.cxx}",
                 "-DCMAKE_SYSTEM_NAME=Haiku",
-                "-DSDL_UNIX_CONSOLE_BUILD=ON",
             ))
             job.shared_lib = SharedLibType.SO_0
             job.static_lib = StaticLibType.A
