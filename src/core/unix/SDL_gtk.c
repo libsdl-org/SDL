@@ -21,6 +21,8 @@
 #include "SDL_internal.h"
 #include "SDL_gtk.h"
 
+#include <dlfcn.h>
+
 #define SDL_GTK_SYM2_OPTIONAL(ctx, lib, sub, fn, sym)                     \
     ctx.sub.fn = (void *)SDL_LoadFunction(lib, #sym)
 
@@ -35,25 +37,19 @@
 #define SDL_GTK_SYM(ctx, lib, sub, fn) \
     SDL_GTK_SYM2(ctx, lib, sub, fn, sub##_##fn)
 
+#ifdef SDL_PLATFORM_OPENBSD
+#define GDK3_LIB "libgdk-3.so"
+#else
+#define GDK3_LIB "libgdk-3.so.0"
+#endif
+
+#ifdef SDL_PLATFORM_OPENBSD
+#define GTK3_LIB "libgtk-3.so"
+#else
+#define GTK3_LIB "libgtk-3.so.0"
+#endif
+
 // we never link directly to gtk
-static const char *gdk_names[] = {
-#ifdef SDL_PLATFORM_OPENBSD
-    "libgdk-3.so",
-#else
-    "libgdk-3.so.0",
-#endif
-    NULL
-};
-
-static const char *gtk_names[] = {
-#ifdef SDL_PLATFORM_OPENBSD
-    "libgtk-3.so",
-#else
-    "libgtk-3.so.0",
-#endif
-    NULL
-};
-
 static void *libgdk = NULL;
 static void *libgtk = NULL;
 
@@ -74,18 +70,6 @@ static void QuitGtk(void)
     libgtk = NULL;
 }
 
-static void *FindLib(const char **names)
-{
-    const char **name_ptr = names;
-    void *handle = NULL;
-
-    do {
-        handle = SDL_LoadObject(*name_ptr);
-    } while (*++name_ptr && !handle);
-
-    return handle;
-}
-
 static bool IsGtkInit()
 {
     return libgdk != NULL && libgtk != NULL;
@@ -101,8 +85,22 @@ static bool InitGtk(void)
         return true;
     }
 
-    libgdk = FindLib(gdk_names);
-    libgtk = FindLib(gtk_names);
+    // GTK only allows a single version to be loaded into a process at a time,
+    // so if there is one already loaded ensure it is the version we use.
+    void *progress_get_type = dlsym(RTLD_DEFAULT, "gtk_progress_get_type");
+    void *misc_get_type = dlsym(RTLD_DEFAULT, "gtk_misc_get_type");
+    if (progress_get_type || misc_get_type) {
+        void *libgtk3 = dlopen(GTK3_LIB, RTLD_NOLOAD | RTLD_LAZY);
+        if (!libgtk3) {
+            QuitGtk();
+            return SDL_SetError("Could not load GTK-3, another GTK version already present");
+        }
+
+        dlclose(libgtk3);
+    }
+
+    libgdk = SDL_LoadObject(GDK3_LIB);
+    libgtk = SDL_LoadObject(GTK3_LIB);
 
     if (!libgdk || !libgtk) {
         QuitGtk();
