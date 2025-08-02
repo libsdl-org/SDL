@@ -475,7 +475,7 @@ static void SetupWindowInput(SDL_VideoDevice *_this, SDL_Window *window)
     }
 #endif
 
-    X11_Xinput2SelectTouch(_this, window);
+    X11_Xinput2Select(_this, window);
 
     {
         unsigned int x11_keyboard_events = KeyPressMask | KeyReleaseMask;
