@@ -134,7 +134,7 @@ static bool InitGtk(void)
     SDL_GTK_SYM(gtk, libgdk, g, signal_handler_disconnect);
     SDL_GTK_SYM(gtk, libgdk, g, main_context_push_thread_default);
     SDL_GTK_SYM(gtk, libgdk, g, main_context_pop_thread_default);
-    SDL_GTK_SYM(gtk, libgdk, g, main_context_default);
+    SDL_GTK_SYM(gtk, libgdk, g, main_context_new);
     SDL_GTK_SYM(gtk, libgdk, g, main_context_acquire);
     SDL_GTK_SYM(gtk, libgdk, g, main_context_iteration);
 
@@ -145,7 +145,7 @@ static bool InitGtk(void)
         return SDL_SetError("Could not init GTK");
     }
 
-    sdl_main_context = gtk.g.main_context_default();
+    sdl_main_context = gtk.g.main_context_new();
     if (!sdl_main_context) {
         QuitGtk();
         return SDL_SetError("Could not create GTK context");
@@ -223,5 +223,6 @@ void SDL_UpdateGtk(void)
 {
     if (IsGtkInit()) {
         gtk.g.main_context_iteration(sdl_main_context, GTK_FALSE);
+        gtk.g.main_context_iteration(NULL, GTK_FALSE);
     }
 }

@@ -86,7 +86,7 @@ typedef struct SDL_GtkContext
 		void (*signal_handler_disconnect)(gpointer instance, gulong handler_id);
 		void (*main_context_push_thread_default)(GMainContext *context);
 		void (*main_context_pop_thread_default)(GMainContext *context);
-		GMainContext *(*main_context_default)(void);
+		GMainContext *(*main_context_new)(void);
 		gboolean (*main_context_acquire)(GMainContext *context);
 		gboolean (*main_context_iteration)(GMainContext *context, gboolean may_block);
 	} g;
