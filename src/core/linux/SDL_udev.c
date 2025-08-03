@@ -68,6 +68,7 @@ static bool SDL_UDEV_load_syms(void)
 
     SDL_UDEV_SYM(udev_device_get_action);
     SDL_UDEV_SYM(udev_device_get_devnode);
+    SDL_UDEV_SYM(udev_device_get_driver);
     SDL_UDEV_SYM(udev_device_get_syspath);
     SDL_UDEV_SYM(udev_device_get_subsystem);
     SDL_UDEV_SYM(udev_device_get_parent_with_subsystem_devtype);
@@ -219,7 +220,7 @@ bool SDL_UDEV_Scan(void)
     return true;
 }
 
-bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *product, Uint16 *version, int *class)
+bool SDL_UDEV_GetProductInfo(const char *device_path, struct input_id *inpid, int *class, char **driver)
 {
     struct stat statbuf;
     char type;
@@ -253,17 +254,27 @@ bool SDL_UDEV_GetProductInfo(const char *device_path, Uint16 *vendor, Uint16 *pr
 
     val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
     if (val) {
-        *vendor = (Uint16)SDL_strtol(val, NULL, 16);
+        inpid->vendor = (Uint16)SDL_strtol(val, NULL, 16);
     }
 
     val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
     if (val) {
-        *product = (Uint16)SDL_strtol(val, NULL, 16);
+        inpid->product = (Uint16)SDL_strtol(val, NULL, 16);
     }
 
     val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
     if (val) {
-        *version = (Uint16)SDL_strtol(val, NULL, 16);
+        inpid->version = (Uint16)SDL_strtol(val, NULL, 16);
+    }
+
+    if (driver) {
+        val = _this->syms.udev_device_get_driver(dev);
+        if (!val) {
+            val = _this->syms.udev_device_get_property_value(dev, "ID_USB_DRIVER");
+        }
+        if (val) {
+            *driver = SDL_strdup(val);
+        }
     }
 
     class_temp = device_class(dev);

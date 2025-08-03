@@ -20,6 +20,9 @@
 */
 #include "SDL_internal.h"
 
+#ifndef SDL_sysprocess_h_
+#define SDL_sysprocess_h_
+
 typedef struct SDL_ProcessData SDL_ProcessData;
 
 struct SDL_Process
@@ -35,3 +38,5 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
 bool SDL_SYS_KillProcess(SDL_Process *process, bool force);
 bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode);
 void SDL_SYS_DestroyProcess(SDL_Process *process);
+
+#endif // SDL_sysprocess_h_

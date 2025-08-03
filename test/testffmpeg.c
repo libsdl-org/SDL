@@ -925,7 +925,7 @@ static bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     glEGLImageTargetTexture2DOESFunc(GL_TEXTURE_EXTERNAL_OES, image);
     return true;
 }
-#endif // HAVE_EGL
+#endif /* HAVE_EGL */
 
 static bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {

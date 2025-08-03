@@ -446,3 +446,19 @@ Beyond stripping the initial ` * ` portion off each line, these comments are
 treated as pure Markdown. They don't support any Doxygen tags like `\sa` or
 `\since`.
 
+## Enum/struct versioning
+
+If you have an enum or struct, it'll list its `\since` field as the first SDL
+release it was available in. However, we might later add new values to an enum
+or fields to a struct. These lines, arriving in a newer version, should have a
+note about that, like this one on SDL_SCALEMODE_PIXELART:
+
+```c
+typedef enum SDL_ScaleMode
+{
+    SDL_SCALEMODE_INVALID = -1,
+    SDL_SCALEMODE_NEAREST,  /**< nearest pixel sampling */
+    SDL_SCALEMODE_LINEAR,   /**< linear filtering */
+    SDL_SCALEMODE_PIXELART  /**< nearest pixel sampling with improved scaling for pixel art (since SDL 3.3.0) */
+} SDL_ScaleMode;
+```

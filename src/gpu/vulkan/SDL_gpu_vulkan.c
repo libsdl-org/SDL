@@ -1079,6 +1079,7 @@ typedef struct VulkanCommandBuffer
     VulkanFenceHandle *inFlightFence;
     bool autoReleaseFence;
 
+    bool swapchainRequested;
     bool isDefrag; // Whether this CB was created for defragging
 } VulkanCommandBuffer;
 
@@ -1250,13 +1251,20 @@ static inline const char *VkErrorMessages(VkResult code)
 #undef ERR_TO_STR
 }
 
-#define SET_ERROR_AND_RETURN(fmt, msg, ret)               \
+#define SET_ERROR(fmt, msg)                               \
     do {                                                  \
         if (renderer->debugMode) {                        \
             SDL_LogError(SDL_LOG_CATEGORY_GPU, fmt, msg); \
         }                                                 \
         SDL_SetError((fmt), (msg));                       \
-        return ret;                                       \
+    } while (0)
+
+#define SET_STRING_ERROR(msg) SET_ERROR("%s", msg)
+
+#define SET_ERROR_AND_RETURN(fmt, msg, ret) \
+    do {                                    \
+        SET_ERROR(fmt, msg);                \
+        return ret;                         \
     } while (0)
 
 #define SET_STRING_ERROR_AND_RETURN(msg, ret) SET_ERROR_AND_RETURN("%s", msg, ret)
@@ -9927,6 +9935,14 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
         SET_STRING_ERROR_AND_RETURN("Cannot acquire a swapchain texture from an unclaimed window!", false);
     }
 
+    // The command buffer is flagged for cleanup when the swapchain is requested as a cleanup timing mechanism
+    vulkanCommandBuffer->swapchainRequested = true;
+
+    if (window->flags & SDL_WINDOW_HIDDEN) {
+        // Edge case, texture is filled in with NULL but not an error
+        return true;
+    }
+
     // If window data marked as needing swapchain recreate, try to recreate
     if (windowData->needsSwapchainRecreate) {
         Uint32 recreateSwapchainResult = VULKAN_INTERNAL_RecreateSwapchain(renderer, windowData);
@@ -9942,13 +9958,6 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
             }
             return true;
         }
-    }
-
-    if (swapchainTextureWidth) {
-        *swapchainTextureWidth = windowData->width;
-    }
-    if (swapchainTextureHeight) {
-        *swapchainTextureHeight = windowData->height;
     }
 
     if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
@@ -10000,6 +10009,14 @@ static bool VULKAN_INTERNAL_AcquireSwapchainTexture(
             // Edge case, texture is filled in with NULL but not an error
             return true;
         }
+    }
+
+    if (swapchainTextureWidth) {
+        *swapchainTextureWidth = windowData->width;
+    }
+
+    if (swapchainTextureHeight) {
+        *swapchainTextureHeight = windowData->height;
     }
 
     swapchainTextureContainer = &windowData->textureContainers[swapchainImageIndex];
@@ -10379,6 +10396,7 @@ static void VULKAN_INTERNAL_CleanCommandBuffer(
     commandBuffer->presentDataCount = 0;
     commandBuffer->waitSemaphoreCount = 0;
     commandBuffer->signalSemaphoreCount = 0;
+    commandBuffer->swapchainRequested = false;
 
     // Reset defrag state
 
@@ -10535,7 +10553,7 @@ static bool VULKAN_Submit(
     VulkanTextureSubresource *swapchainTextureSubresource;
     VulkanMemorySubAllocator *allocator;
     bool performCleanups =
-        (renderer->claimedWindowCount > 0 && vulkanCommandBuffer->presentDataCount > 0) ||
+        (renderer->claimedWindowCount > 0 && vulkanCommandBuffer->swapchainRequested) ||
         renderer->claimedWindowCount == 0;
 
     SDL_LockMutex(renderer->submitLock);
@@ -11721,9 +11739,10 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->desiredDeviceFeatures.imageCubeArray = VK_TRUE;
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
+        SET_STRING_ERROR("Failed to initialize Vulkan!");
         SDL_free(renderer);
         SDL_Vulkan_UnloadLibrary();
-        SET_STRING_ERROR_AND_RETURN("Failed to initialize Vulkan!", NULL);
+        return NULL;
     }
 
     renderer->props = SDL_CreateProperties();
@@ -11828,9 +11847,10 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 
     if (!VULKAN_INTERNAL_CreateLogicalDevice(
             renderer)) {
+        SET_STRING_ERROR("Failed to create logical device!");
         SDL_free(renderer);
         SDL_Vulkan_UnloadLibrary();
-        SET_STRING_ERROR_AND_RETURN("Failed to create logical device!", NULL);
+        return NULL;
     }
 
     // FIXME: just move this into this function

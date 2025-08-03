@@ -425,6 +425,14 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         } else {
             // Otherwise assume a regular mouse
             SDL_WindowData *windowdata = xinput2_get_sdlwindowdata(videodata, xev->event);
+            int x_ticks = 0, y_ticks = 0;
+
+            /* Discard wheel events from "Master" devices to avoid duplicates,
+             * as coarse wheel events are stateless and can't be deduplicated.
+             */
+            if (xev->deviceid != xev->sourceid && X11_IsWheelEvent(button, &x_ticks, &y_ticks)) {
+                break;
+            }
 
             if (down) {
                 X11_HandleButtonPress(_this, windowdata, (SDL_MouseID)xev->sourceid, button,

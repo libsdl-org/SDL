@@ -26,6 +26,8 @@
 #include "SDL_x11video.h"
 #include "SDL_x11settings.h"
 
+#include "core/unix/SDL_gtk.h"
+
 #define SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR "Gdk/WindowScalingFactor"
 #define SDL_XSETTINGS_XFT_DPI "Xft/DPI"
 
@@ -65,13 +67,53 @@ static void X11_XsettingsNotify(const char *name, XSettingsAction action, XSetti
     }
 }
 
+static void OnGtkXftDpi(GtkSettings *settings, GParamSpec *pspec, gpointer ptr)
+{
+    SDL_VideoDevice *_this = (SDL_VideoDevice *)ptr;
+
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        int dpi = 0;
+        gtk->g.object_get(settings, "gtk-xft-dpi", &dpi, NULL);
+        
+        if (dpi != 0) {
+            float scale_factor = dpi / 1024.f / 96.f;
+
+            for (int i = 0; i < _this->num_displays; ++i) {
+                SDL_VideoDisplay *display = _this->displays[i];
+                SDL_SetDisplayContentScale(display, scale_factor);
+            }
+        }
+        SDL_Gtk_ExitContext(gtk);
+    }
+}
+
 void X11_InitXsettings(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
     SDLX11_SettingsData *xsettings_data = &data->xsettings_data;
 
-    xsettings_data->xsettings = xsettings_client_new(data->display,
-        DefaultScreen(data->display), X11_XsettingsNotify, NULL, _this);
+    GtkSettings *gtksettings = NULL;
+    guint xft_dpi_signal_handler_id = 0;
+
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        // Prefer to listen for DPI changes from gtk. In XWayland this is necessary as XSettings
+        // are not updated dynamically.
+        gtksettings = gtk->gtk.settings_get_default();
+        if (gtksettings) {
+            xft_dpi_signal_handler_id = gtk->g.signal_connect(gtksettings, "notify::gtk-xft-dpi", &OnGtkXftDpi, _this);
+        }
+        SDL_Gtk_ExitContext(gtk);
+    }
+
+    if (gtksettings && xft_dpi_signal_handler_id) {
+        xsettings_data->gtksettings = gtksettings;
+        xsettings_data->xft_dpi_signal_handler_id = xft_dpi_signal_handler_id;
+    } else {
+        xsettings_data->xsettings = xsettings_client_new(data->display,
+            DefaultScreen(data->display), X11_XsettingsNotify, NULL, _this);
+    }
 
 }
 
@@ -82,8 +124,17 @@ void X11_QuitXsettings(SDL_VideoDevice *_this)
 
     if (xsettings_data->xsettings) {
         xsettings_client_destroy(xsettings_data->xsettings);
-        xsettings_data->xsettings = NULL;
     }
+
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        if (xsettings_data->gtksettings && xsettings_data->xft_dpi_signal_handler_id) {
+            gtk->g.signal_handler_disconnect(xsettings_data->gtksettings, xsettings_data->xft_dpi_signal_handler_id);
+        }
+        SDL_Gtk_ExitContext(gtk);
+    }
+
+    SDL_zero(xsettings_data);
 }
 
 void X11_HandleXsettings(SDL_VideoDevice *_this, const XEvent *xevent)

@@ -215,32 +215,32 @@ static void EnsurePopupPositionIsValid(SDL_Window *window, int *x, int *y)
     int adj_count = 0;
 
     /* Per the xdg-positioner spec, child popup windows must intersect or at
-     * least be partially adjacent to the parent window.
+     * least be partially adjoining the parent window.
      *
      * Failure to ensure this on a compositor that enforces this restriction
      * can result in behavior ranging from the window being spuriously closed
      * to a protocol violation.
      */
-    if (*x + window->w < 0) {
+    if (*x + window->w <= 0) {
         *x = -window->w;
         ++adj_count;
     }
-    if (*y + window->h < 0) {
+    if (*y + window->h <= 0) {
         *y = -window->h;
         ++adj_count;
     }
-    if (*x > window->parent->w) {
+    if (*x >= window->parent->w) {
         *x = window->parent->w;
         ++adj_count;
     }
-    if (*y > window->parent->h) {
+    if (*y >= window->parent->h) {
         *y = window->parent->h;
         ++adj_count;
     }
 
     /* If adjustment was required on the x and y axes, the popup is aligned with
-     * the parent corner-to-corner and is neither overlapping nor adjacent, so it
-     * must be nudged by 1 to be considered adjacent.
+     * the parent corner-to-corner and is neither overlapping nor adjoining, so it
+     * must be nudged by 1 to be considered adjoining.
      */
     if (adj_count > 1) {
         *x += *x < 0 ? 1 : -1;
@@ -2127,12 +2127,6 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
         wind->server_decoration = NULL;
     }
 
-    // Be sure to detach after this is done, otherwise ShowWindow crashes!
-    if (wind->shell_surface_type != WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP) {
-        wl_surface_attach(wind->surface, NULL, 0, 0);
-        wl_surface_commit(wind->surface);
-    }
-
     // Clean up the export handle.
     if (wind->exported) {
         zxdg_exported_v2_destroy(wind->exported);
@@ -2169,6 +2163,10 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
             SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER, NULL);
         }
     }
+
+    // Attach a null buffer to unmap the surface.
+    wl_surface_attach(wind->surface, NULL, 0, 0);
+    wl_surface_commit(wind->surface);
 
     SDL_zero(wind->shell_surface);
     wind->show_hide_sync_required = true;

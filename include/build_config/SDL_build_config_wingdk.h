@@ -43,7 +43,6 @@
 #define HAVE_D3D11_H 1
 #define HAVE_ROAPI_H 1
 #define HAVE_SHELLSCALINGAPI_H 1
-#define HAVE_SHOBJIDL_CORE_H 1
 #define HAVE_MMDEVICEAPI_H 1
 #define HAVE_AUDIOCLIENT_H 1
 #define HAVE_TPCSHRD_H 1
@@ -146,7 +145,7 @@
 #define HAVE_TRUNC 1
 #define HAVE_TRUNCF 1
 #define HAVE__FSEEKI64 1
-#endif    /* _MSC_VER */
+#endif /* _MSC_VER */
 
 /* Enable various audio drivers */
 #if defined(HAVE_MMDEVICEAPI_H) && defined(HAVE_AUDIOCLIENT_H)
