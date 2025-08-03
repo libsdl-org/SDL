@@ -756,6 +756,36 @@ extern "C" {
 #define SDL_HINT_ENABLE_SCREEN_KEYBOARD "SDL_ENABLE_SCREEN_KEYBOARD"
 
 /**
+ * A variable that controls whether or not the GTK3 library is used.
+ * Only the tray subsystem and some X11 video scaling functions use GTK3 as of writing.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Do not use GTK3.
+ * - "1": Use GTK3, if available.
+ *
+ * This hint must be set before SDL is initialized and SDL_CreateTray() or SDL_IsTraySupported() are called.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_ENABLE_GTK "SDL_ENABLE_GTK"
+
+/**
+ * A variable that controls whether or not the GLib library is used.
+ * Only the tray subsystem uses GLib as of writing.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Do not use GLib.
+ * - "1": Use GLib, if available.
+ *
+ * This hint must be set before SDL_IsTraySupported() is called.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_ENABLE_GLIB "SDL_ENABLE_GLIB"
+
+/**
  * A variable containing a list of evdev devices to use if udev is not
  * available.
  *
@@ -3317,6 +3347,25 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_TRACKPAD_IS_TOUCH_ONLY "SDL_TRACKPAD_IS_TOUCH_ONLY"
+
+/**
+ * A variable controlling whether or not tray support is checked on *NIX platforms.
+ *
+ * On Linux and some other platforms, SDL_IsTraySupported checks if you have a tray plugin installed
+ * on certain desktops that do not support trays out of the box (like GNOME), this variable can be used
+ * to bypass this check.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Desktop tray support will be checked. (default)
+ * - "1": Desktop tray support will not be checked, SDL_IsTraySupported will return SDL_TRAYSUPPORT_UNKNOWN in most cases.
+ *
+ * This hint should be set before SDL_IsTraySupported is called.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_TRAY_SKIP_CHECK "SDL_TRAY_SKIP_CHECK"
+
 
 /**
  * A variable controlling whether the Android / tvOS remotes should be listed

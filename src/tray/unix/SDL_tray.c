@@ -22,6 +22,7 @@
 #include "SDL_internal.h"
 
 #include "../SDL_tray_utils.h"
+#include "../../core/unix/SDL_de.h"
 
 #include <dlfcn.h>
 #include <errno.h>
@@ -240,22 +241,106 @@ void SDL_UpdateTrays(void)
     SDL_UpdateGtk();
 }
 
-bool SDL_IsTraySupported(void)
-{
-    if (!SDL_IsMainThread()) {
-        SDL_SetError("This function should be called on the main thread");
-        return false;
-    }
+SDL_TraySupport IsTraySupportedDesktop(void) {
+	SDL_GlibContext g;
+	
+	if (SDL_CheckCurrentDesktop("GNOME")) {
+		const gchar * const *schemas;
+		int i;
+		bool has_schema;
+		#define GNOME_SHELL_SCHEMA "org.gnome.shell"
+		
+		i = 0;
+		has_schema = false;
+		SDL_GlibContext_Init(&g, NULL, true, false, true);
+		schemas = g.settings_list_schemas();
+		if (!schemas) {
+			SDL_GlibContext_Cleanup(&g);
+			return SDL_TRAYSUPPORT_UNAVAILABLE;
+		}
+		
+		while (schemas[i]) {
+			if (!SDL_strcmp(schemas[i], GNOME_SHELL_SCHEMA)) {
+				has_schema = true;
+			}
+			i++;
+		}
+		
+		if (has_schema) {
+			GSettings *settings;
+			gchar **extensions;
+			bool found_extension;
+			
+			i = 0;
+			found_extension = false;
+			settings = g.settings_new(GNOME_SHELL_SCHEMA);
+			if (!settings) {
+				SDL_GlibContext_Cleanup(&g);
+				return SDL_TRAYSUPPORT_UNAVAILABLE;
+			}
+			
+			extensions = g.settings_get_strv(settings, "enabled-extensions"); 
+			if (!extensions) {
+				SDL_GlibContext_Cleanup(&g);
+				g.object_unref(settings);
+				return SDL_TRAYSUPPORT_UNAVAILABLE;
+			}
+	
+		
+			while (extensions[i]) {				
+				if (!SDL_strcmp(extensions[i], "appindicatorsupport@rgcjonas.gmail.com")) {
+					found_extension = true;
+				}
+				
+				if (!SDL_strcmp(extensions[i], "trayIconsReloaded@selfmade.pl")) {
+					found_extension = true;
+				}
+				
+				i++;
+			}
+			
+			g.strfreev(extensions);
+			g.object_unref(settings);		
+			SDL_GlibContext_Cleanup(&g);
+			if (found_extension) {
+				return SDL_TRAYSUPPORT_AVAILABLE;
+			} else {
+				return SDL_TRAYSUPPORT_UNAVAILABLE;			
+			}
+		} else {
+			SDL_GlibContext_Cleanup(&g);
+			return SDL_TRAYSUPPORT_UNAVAILABLE;
+		}
+	} else {
+		// TODO: Check other desktops like Panthenon!
+		return SDL_TRAYSUPPORT_AVAILABLE;
+	}
+}
 
+SDL_TraySupport SDL_IsTraySupported(void)
+{
     static bool has_trays = false;
     static bool has_been_detected_once = false;
+
+    if (!SDL_IsMainThread()) {
+        SDL_SetError("This function should be called on the main thread");
+        return SDL_TRAYSUPPORT_UNAVAILABLE;
+    }
 
     if (!has_been_detected_once) {
         has_trays = init_appindicator() && SDL_Gtk_Init();
         has_been_detected_once = true;
     }
 
-    return has_trays;
+    if (has_trays) {
+        if (SDL_GetHintBoolean(SDL_HINT_TRAY_SKIP_CHECK, false)) {
+            return SDL_TRAYSUPPORT_UNKNOWN;
+        } else {
+            return IsTraySupportedDesktop();
+        }
+    } else {
+        return SDL_TRAYSUPPORT_UNAVAILABLE;		
+    }
 }
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
@@ -299,11 +384,11 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
     tray->indicator = app_indicator_new(get_appindicator_id(), tray->icon_path,
                                         APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
-
+                                        
     app_indicator_set_status(tray->indicator, APP_INDICATOR_STATUS_ACTIVE);
 
     // The tray icon isn't shown before a menu is created; create one early.
-    tray->menu_cached = (GtkMenuShell *)gtk->g.object_ref_sink(gtk->gtk.menu_new());
+    tray->menu_cached = (GtkMenuShell *)gtk->g.object_ref_sink(gtk->menu_new());
     app_indicator_set_menu(tray->indicator, GTK_MENU(tray->menu_cached));
 
     SDL_RegisterTray(tray);
@@ -416,13 +501,13 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
         return NULL;
     }
 
-    entry->submenu->menu = gtk->g.object_ref_sink(gtk->gtk.menu_new());
+    entry->submenu->menu = gtk->g.object_ref_sink(gtk->menu_new());
     entry->submenu->parent_tray = NULL;
     entry->submenu->parent_entry = entry;
     entry->submenu->nEntries = 0;
     entry->submenu->entries = NULL;
 
-    gtk->gtk.menu_item_set_submenu(GTK_MENU_ITEM(entry->item), GTK_WIDGET(entry->submenu->menu));
+    gtk->menu_item_set_submenu(GTK_MENU_ITEM(entry->item), GTK_WIDGET(entry->submenu->menu));
 
     SDL_Gtk_ExitContext(gtk);
 
@@ -486,7 +571,7 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
 
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (gtk) {
-        gtk->gtk.widget_destroy(entry->item);
+        gtk->widget_destroy(entry->item);
         SDL_Gtk_ExitContext(gtk);
     }
     SDL_free(entry);
@@ -528,17 +613,17 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
     entry->submenu = NULL;
 
     if (label == NULL) {
-        entry->item = gtk->gtk.separator_menu_item_new();
+        entry->item = gtk->separator_menu_item_new();
     } else if (flags & SDL_TRAYENTRY_CHECKBOX) {
-        entry->item = gtk->gtk.check_menu_item_new_with_label(label);
+        entry->item = gtk->check_menu_item_new_with_label(label);
         gboolean active = ((flags & SDL_TRAYENTRY_CHECKED) != 0);
-        gtk->gtk.check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), active);
+        gtk->check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), active);
     } else {
-        entry->item = gtk->gtk.menu_item_new_with_label(label);
+        entry->item = gtk->menu_item_new_with_label(label);
     }
 
     gboolean sensitive = ((flags & SDL_TRAYENTRY_DISABLED) == 0);
-    gtk->gtk.widget_set_sensitive(entry->item, sensitive);
+    gtk->widget_set_sensitive(entry->item, sensitive);
 
     SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, (menu->nEntries + 2) * sizeof(*new_entries));
 
@@ -556,8 +641,8 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
     new_entries[pos] = entry;
     new_entries[menu->nEntries] = NULL;
 
-    gtk->gtk.widget_show(entry->item);
-    gtk->gtk.menu_shell_insert(menu->menu, entry->item, (pos == menu->nEntries) ? -1 : pos);
+    gtk->widget_show(entry->item);
+    gtk->menu_shell_insert(menu->menu, entry->item, (pos == menu->nEntries) ? -1 : pos);
 
     gtk->g.signal_connect(entry->item, "activate", call_callback, entry);
 
@@ -585,7 +670,7 @@ void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
 
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (gtk) {
-        gtk->gtk.menu_item_set_label(GTK_MENU_ITEM(entry->item), label);
+        gtk->menu_item_set_label(GTK_MENU_ITEM(entry->item), label);
         SDL_Gtk_ExitContext(gtk);
     }
 }
@@ -601,7 +686,7 @@ const char *SDL_GetTrayEntryLabel(SDL_TrayEntry *entry)
 
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (gtk) {
-        label = gtk->gtk.menu_item_get_label(GTK_MENU_ITEM(entry->item));
+        label = gtk->menu_item_get_label(GTK_MENU_ITEM(entry->item));
         SDL_Gtk_ExitContext(gtk);
     }
 
@@ -617,7 +702,7 @@ void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (gtk) {
         entry->ignore_signal = true;
-        gtk->gtk.check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), checked);
+        gtk->check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), checked);
         entry->ignore_signal = false;
         SDL_Gtk_ExitContext(gtk);
     }
@@ -633,7 +718,7 @@ bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (gtk) {
-        checked = gtk->gtk.check_menu_item_get_active(GTK_CHECK_MENU_ITEM(entry->item));
+        checked = gtk->check_menu_item_get_active(GTK_CHECK_MENU_ITEM(entry->item));
         SDL_Gtk_ExitContext(gtk);
     }
 
@@ -648,7 +733,7 @@ void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
 
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (gtk) {
-        gtk->gtk.widget_set_sensitive(entry->item, enabled);
+        gtk->widget_set_sensitive(entry->item, enabled);
         SDL_Gtk_ExitContext(gtk);
     }
 }
@@ -663,7 +748,7 @@ bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
 
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (gtk) {
-        enabled = gtk->gtk.widget_get_sensitive(entry->item);
+        enabled = gtk->widget_get_sensitive(entry->item);
         SDL_Gtk_ExitContext(gtk);
     }
 

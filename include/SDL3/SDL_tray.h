@@ -84,6 +84,21 @@ typedef Uint32 SDL_TrayEntryFlags;
 #define SDL_TRAYENTRY_CHECKED     0x40000000u /**< Make the entry checked. This is valid only for checkboxes. Optional. */
 
 /**
+ * Datatype signifiying tray support availability.
+ *
+ * \since This datatype is available since SDL 3.4.0.
+ * 
+ * \sa SDL_IsTraySupported
+ */
+typedef Uint32 SDL_TraySupport;
+
+#define SDL_TRAYSUPPORT_UNAVAILABLE	0 /**< No tray support. */
+#define SDL_TRAYSUPPORT_UNKNOWN		1 /**< Tray support unknown. */
+#define SDL_TRAYSUPPORT_AVAILABLE	2 /**< Tray support is present. */
+#define SDL_TRAYSUPPORT_TOOLTIPS    0x80000000u /**< Flag indicating if tray tooltips are supported. */
+#define SDL_TRAYSUPPORT_ENUM_MASK 	3 /**< Mask for non-flag values. */
+
+/**
  * A callback that is invoked when a tray entry is selected.
  *
  * \param userdata an optional pointer to pass extra data to the callback when
@@ -102,9 +117,12 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  * Note that this function does not guarantee that SDL_CreateTray() will or
  * will not work; you should still check SDL_CreateTray() for errors.
  *
- * Using tray icons require the video subsystem.
+ * Using tray icons requires the video subsystem.
  *
- * \returns true if trays are available, false otherwise.
+ * \returns SDL_TRAYSUPPORT_UNAVAILABLE is returned if trays are unsupported,
+ *          SDL_TRAYSUPPORT_UNKNOWN is returned if tray support can not be determined,
+ *          SDL_TRAYSUPPORT_AVAILABLE is returned if trays are supported,
+ *          the SDL_TRAYSUPPORT_TOOLTIPS flag is set if tray tooltips are supported.
  *
  * \threadsafety This function should only be called on the main thread. It
  *               will return false if not called on the main thread.
@@ -112,8 +130,9 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_CreateTray
+ * \sa SDL_TraySupport
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_IsTraySupported(void);
+extern SDL_DECLSPEC SDL_TraySupport SDLCALL SDL_IsTraySupported(void);
 
 /**
  * Create an icon to be placed in the operating system's tray, or equivalent.

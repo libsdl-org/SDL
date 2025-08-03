@@ -100,7 +100,7 @@ void X11_InitXsettings(SDL_VideoDevice *_this)
     if (gtk) {
         // Prefer to listen for DPI changes from gtk. In XWayland this is necessary as XSettings
         // are not updated dynamically.
-        gtksettings = gtk->gtk.settings_get_default();
+        gtksettings = gtk->settings_get_default();
         if (gtksettings) {
             xft_dpi_signal_handler_id = gtk->g.signal_connect(gtksettings, "notify::gtk-xft-dpi", &OnGtkXftDpi, _this);
         }

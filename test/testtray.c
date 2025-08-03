@@ -537,6 +537,21 @@ int main(int argc, char **argv)
         SDL_Log("Couldn't load icon 2, proceeding without: %s", SDL_GetError());
     }
 
+    SDL_TraySupport tray_support = SDL_IsTraySupported();
+    switch (tray_support & SDL_TRAYSUPPORT_ENUM_MASK) {
+		case SDL_TRAYSUPPORT_UNKNOWN:
+			SDL_Log("Tray support unknown.");
+			break;
+		case SDL_TRAYSUPPORT_AVAILABLE:
+			SDL_Log("Tray support present.");
+			if (tray_support & SDL_TRAYSUPPORT_TOOLTIPS) {
+				SDL_Log("Tray tooltip support present.");	
+			}
+			break;
+		default:
+			SDL_Log("Tray support not present.");
+	}
+	
     SDL_Tray *tray = SDL_CreateTray(icon, "SDL Tray control menu");
 
     if (!tray) {

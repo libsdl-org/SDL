@@ -23,20 +23,7 @@
 
 #include <dlfcn.h>
 
-#define SDL_GTK_SYM2_OPTIONAL(ctx, lib, sub, fn, sym)                     \
-    ctx.sub.fn = (void *)SDL_LoadFunction(lib, #sym)
-
-#define SDL_GTK_SYM2(ctx, lib, sub, fn, sym)                              \
-    if (!(ctx.sub.fn = (void *)SDL_LoadFunction(lib, #sym))) {            \
-        return SDL_SetError("Could not load GTK functions");              \
-    }
-
-#define SDL_GTK_SYM_OPTIONAL(ctx, lib, sub, fn) \
-    SDL_GTK_SYM2_OPTIONAL(ctx, lib, sub, fn, sub##_##fn)
-
-#define SDL_GTK_SYM(ctx, lib, sub, fn) \
-    SDL_GTK_SYM2(ctx, lib, sub, fn, sub##_##fn)
-
+// we never link directly to gtk
 #ifdef SDL_PLATFORM_OPENBSD
 #define GDK3_LIB "libgdk-3.so"
 #else
@@ -49,7 +36,7 @@
 #define GTK3_LIB "libgtk-3.so.0"
 #endif
 
-// we never link directly to gtk
+
 static void *libgdk = NULL;
 static void *libgtk = NULL;
 
@@ -63,6 +50,7 @@ gulong signal_connect(gpointer instance, const gchar *detailed_signal, void *c_h
 
 static void QuitGtk(void)
 {
+	SDL_GlibContext_Cleanup(&gtk.g);
     SDL_UnloadObject(libgdk);
     SDL_UnloadObject(libgtk);
 
@@ -77,7 +65,7 @@ static bool IsGtkInit()
 
 static bool InitGtk(void)
 {
-    if (!SDL_GetHintBoolean("SDL_ENABLE_GTK", true)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_ENABLE_GTK, true)) {
         return false;
     }
 
@@ -89,8 +77,10 @@ static bool InitGtk(void)
     // so if there is one already loaded ensure it is the version we use.
     void *progress_get_type = dlsym(RTLD_DEFAULT, "gtk_progress_get_type");
     void *misc_get_type = dlsym(RTLD_DEFAULT, "gtk_misc_get_type");
-    if (progress_get_type || misc_get_type) {
+    void *snapshot_new = dlsym(RTLD_DEFAULT, "gtk_snapshot_new");
+    if (progress_get_type || misc_get_type || snapshot_new) {
         void *libgtk3 = dlopen(GTK3_LIB, RTLD_NOLOAD | RTLD_LAZY);
+        
         if (!libgtk3) {
             QuitGtk();
             return SDL_SetError("Could not load GTK-3, another GTK version already present");
@@ -107,40 +97,28 @@ static bool InitGtk(void)
         return SDL_SetError("Could not load GTK libraries");
     }
 
-    SDL_GTK_SYM(gtk, libgtk, gtk, init_check);
-    SDL_GTK_SYM(gtk, libgtk, gtk, menu_new);
-    SDL_GTK_SYM(gtk, libgtk, gtk, separator_menu_item_new);
-    SDL_GTK_SYM(gtk, libgtk, gtk, menu_item_new_with_label);
-    SDL_GTK_SYM(gtk, libgtk, gtk, menu_item_set_submenu);
-    SDL_GTK_SYM(gtk, libgtk, gtk, menu_item_get_label);
-    SDL_GTK_SYM(gtk, libgtk, gtk, menu_item_set_label);
-	SDL_GTK_SYM(gtk, libgtk, gtk, menu_shell_append);
-	SDL_GTK_SYM(gtk, libgtk, gtk, menu_shell_insert);
-    SDL_GTK_SYM(gtk, libgtk, gtk, check_menu_item_new_with_label);
-    SDL_GTK_SYM(gtk, libgtk, gtk, check_menu_item_get_active);
-    SDL_GTK_SYM(gtk, libgtk, gtk, check_menu_item_set_active);
-    SDL_GTK_SYM(gtk, libgtk, gtk, widget_show);
-    SDL_GTK_SYM(gtk, libgtk, gtk, widget_destroy);
-    SDL_GTK_SYM(gtk, libgtk, gtk, widget_get_sensitive);
-    SDL_GTK_SYM(gtk, libgtk, gtk, widget_set_sensitive);
-    SDL_GTK_SYM(gtk, libgtk, gtk, settings_get_default);
-
-    SDL_GTK_SYM(gtk, libgdk, g, signal_connect_data);
-    SDL_GTK_SYM(gtk, libgdk, g, mkdtemp);
-    SDL_GTK_SYM(gtk, libgdk, g, object_ref);
-    SDL_GTK_SYM(gtk, libgdk, g, object_ref_sink);
-    SDL_GTK_SYM(gtk, libgdk, g, object_unref);
-    SDL_GTK_SYM(gtk, libgdk, g, object_get);
-    SDL_GTK_SYM(gtk, libgdk, g, signal_handler_disconnect);
-    SDL_GTK_SYM(gtk, libgdk, g, main_context_push_thread_default);
-    SDL_GTK_SYM(gtk, libgdk, g, main_context_pop_thread_default);
-    SDL_GTK_SYM(gtk, libgdk, g, main_context_new);
-    SDL_GTK_SYM(gtk, libgdk, g, main_context_acquire);
-    SDL_GTK_SYM(gtk, libgdk, g, main_context_iteration);
-
+    SDL_GlibContext_Init(&gtk.g, libgdk, false, false, false);
     gtk.g.signal_connect = signal_connect;
 
-    if (gtk.gtk.init_check(0, NULL) == GTK_FALSE) {
+    SDL_GLIB_SYM(gtk, libgtk, gtk, init_check);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, menu_new);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, separator_menu_item_new);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, menu_item_new_with_label);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, menu_item_set_submenu);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, menu_item_get_label);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, menu_item_set_label);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, menu_shell_append);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, menu_shell_insert);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, check_menu_item_new_with_label);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, check_menu_item_get_active);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, check_menu_item_set_active);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, widget_show);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, widget_destroy);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, widget_get_sensitive);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, widget_set_sensitive);
+    SDL_GLIB_SYM(gtk, libgtk, gtk, settings_get_default);
+    
+    if (gtk.init_check(0, NULL) == G_FALSE) {
         QuitGtk();
         return SDL_SetError("Could not init GTK");
     }
@@ -222,7 +200,7 @@ void SDL_Gtk_ExitContext(SDL_GtkContext *ctx)
 void SDL_UpdateGtk(void)
 {
     if (IsGtkInit()) {
-        gtk.g.main_context_iteration(sdl_main_context, GTK_FALSE);
-        gtk.g.main_context_iteration(NULL, GTK_FALSE);
+        gtk.g.main_context_iteration(sdl_main_context, G_FALSE);
+        gtk.g.main_context_iteration(NULL, G_FALSE);
     }
 }
