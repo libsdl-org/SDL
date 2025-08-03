@@ -30,6 +30,7 @@
 #include "controller_type.h"
 #include "usb_ids.h"
 #include "hidapi/SDL_hidapi_nintendo.h"
+#include "hidapi/SDL_hidapi_sinput.h"
 #include "../events/SDL_events_c.h"
 
 
@@ -56,16 +57,6 @@
 
 static bool SDL_gamepads_initialized;
 static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-
-// The face button style of a gamepad
-typedef enum
-{
-    SDL_GAMEPAD_FACE_STYLE_UNKNOWN,
-    SDL_GAMEPAD_FACE_STYLE_ABXY,
-    SDL_GAMEPAD_FACE_STYLE_AXBY,
-    SDL_GAMEPAD_FACE_STYLE_BAYX,
-    SDL_GAMEPAD_FACE_STYLE_SONY,
-} SDL_GamepadFaceStyle;
 
 // our hard coded list of mapping support
 typedef enum
@@ -697,10 +688,11 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
     char mapping_string[1024];
     Uint16 vendor;
     Uint16 product;
+    Uint16 version;
 
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, NULL);
 
     if (SDL_IsJoystickWheel(vendor, product)) {
         // We don't want to pick up Logitech FFB wheels here
@@ -799,55 +791,42 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             // This controller has no guide button
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
     } else if (SDL_IsJoystickSInputController(vendor, product)) {
-        Uint8 face_style = (guid.data[15] & 0xE0) >> 5;
-        Uint8 sub_type  = guid.data[15] & 0x1F;
+        struct SDL_SInputFeatures features;
+        HIDAPI_DriverSInput_GetControllerType(vendor, product, version, guid.data[15], &features);
 
-        // Apply face style according to gamepad response
-        switch (face_style) {
+        // Apply mapping profile for type
+        switch (features.controller_type) {
+        case k_eSInputControllerType_HHL_PROGCC:
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+            break;
+        case k_eSInputControllerType_HHL_GCCULT:
+            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,x:b1,y:b3,misc3:b8,misc4:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
+            break;
         default:
-            SDL_strlcat(mapping_string, "face:abxy,", sizeof(mapping_string));
-            break;
-        case 2:
-            SDL_strlcat(mapping_string, "face:axby,", sizeof(mapping_string));
-            break;
-        case 3:
-            SDL_strlcat(mapping_string, "face:bayx,", sizeof(mapping_string));
-            break;
-        case 4:
-            SDL_strlcat(mapping_string, "face:sony,", sizeof(mapping_string));
+        case k_eSInputControllerType_Dynamic:
+            // Default Fully Exposed Mapping
+            // TODO...
+            SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b10,paddle2:b11,start:b12,back:b13,guide:b14,misc1:b15,paddle3:b16,paddle4:b17,touchpad:b18,misc2:b19,misc3:b20,misc4:b21,misc5:b22,misc6:b23", sizeof(mapping_string));
             break;
         }
 
-        switch (product) {
-        case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
-            switch (sub_type) {
-            default:
-                // ProGCC Primary Mapping
-                SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
-                break;
-            }
+        // Apply face style
+        switch (features.face_style) {
+        case SDL_GAMEPAD_FACE_STYLE_ABXY:
+            SDL_strlcat(mapping_string, "face:abxy,", sizeof(mapping_string));
             break;
-        case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
-            switch (sub_type) {
-            default:
-                // GC Ultimate Primary Map
-                SDL_strlcat(mapping_string, "a:b0,b:b2,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,x:b1,y:b3,misc3:b8,misc4:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
-                break;
-            } 
+        case SDL_GAMEPAD_FACE_STYLE_AXBY:
+            SDL_strlcat(mapping_string, "face:axby,", sizeof(mapping_string));
             break;
-        case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
-            switch (sub_type) {
-            default:
-                // Default Fully Exposed Mapping (Development Purposes)
-                SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b10,paddle2:b11,start:b12,back:b13,guide:b14,misc1:b15,paddle3:b16,paddle4:b17,touchpad:b18,misc2:b19,misc3:b20,misc4:b21,misc5:b22,misc6:b23", sizeof(mapping_string));
-                break;
-            }
+        case SDL_GAMEPAD_FACE_STYLE_BAYX:
+            SDL_strlcat(mapping_string, "face:bayx,", sizeof(mapping_string));
             break;
-        
-        case USB_PRODUCT_BONZIRICHANNEL_FIREBIRD:
+        case SDL_GAMEPAD_FACE_STYLE_SONY:
+            SDL_strlcat(mapping_string, "face:sony,", sizeof(mapping_string));
+            break;
+        case SDL_GAMEPAD_FACE_STYLE_UNKNOWN:
         default:
-            // Unmapped device
-            return NULL;
+            break;
         }
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes

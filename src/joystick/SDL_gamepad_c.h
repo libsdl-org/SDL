@@ -24,6 +24,16 @@
 
 #include "SDL_internal.h"
 
+// The face button style of a gamepad
+typedef enum
+{
+    SDL_GAMEPAD_FACE_STYLE_UNKNOWN,
+    SDL_GAMEPAD_FACE_STYLE_ABXY,
+    SDL_GAMEPAD_FACE_STYLE_AXBY,
+    SDL_GAMEPAD_FACE_STYLE_BAYX,
+    SDL_GAMEPAD_FACE_STYLE_SONY,
+} SDL_GamepadFaceStyle;
+
 // Useful functions and variables from SDL_gamepad.c
 
 // Initialization and shutdown functions

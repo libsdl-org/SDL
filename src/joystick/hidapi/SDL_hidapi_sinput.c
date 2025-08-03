@@ -27,6 +27,7 @@
 
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_sinput.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_SINPUT
 
@@ -61,63 +62,6 @@
 
 #define SINPUT_DEFAULT_GYRO_SENS  2000
 #define SINPUT_DEFAULT_ACCEL_SENS 8
-
-#define SINPUT_REPORT_IDX_BUTTONS_0         3
-#define SINPUT_REPORT_IDX_BUTTONS_1         4
-#define SINPUT_REPORT_IDX_BUTTONS_2         5
-#define SINPUT_REPORT_IDX_BUTTONS_3         6
-#define SINPUT_REPORT_IDX_LEFT_X            7
-#define SINPUT_REPORT_IDX_LEFT_Y            9
-#define SINPUT_REPORT_IDX_RIGHT_X           11
-#define SINPUT_REPORT_IDX_RIGHT_Y           13
-#define SINPUT_REPORT_IDX_LEFT_TRIGGER      15
-#define SINPUT_REPORT_IDX_RIGHT_TRIGGER     17
-#define SINPUT_REPORT_IDX_IMU_TIMESTAMP     19
-#define SINPUT_REPORT_IDX_IMU_ACCEL_X       23
-#define SINPUT_REPORT_IDX_IMU_ACCEL_Y       25
-#define SINPUT_REPORT_IDX_IMU_ACCEL_Z       27
-#define SINPUT_REPORT_IDX_IMU_GYRO_X        29
-#define SINPUT_REPORT_IDX_IMU_GYRO_Y        31
-#define SINPUT_REPORT_IDX_IMU_GYRO_Z        33
-#define SINPUT_REPORT_IDX_TOUCH1_X          35
-#define SINPUT_REPORT_IDX_TOUCH1_Y          37
-#define SINPUT_REPORT_IDX_TOUCH1_P          39
-#define SINPUT_REPORT_IDX_TOUCH2_X          41
-#define SINPUT_REPORT_IDX_TOUCH2_Y          43
-#define SINPUT_REPORT_IDX_TOUCH2_P          45
-
-#define SINPUT_BUTTON_IDX_EAST              0
-#define SINPUT_BUTTON_IDX_SOUTH             1
-#define SINPUT_BUTTON_IDX_NORTH             2
-#define SINPUT_BUTTON_IDX_WEST              3
-#define SINPUT_BUTTON_IDX_DPAD_UP           4
-#define SINPUT_BUTTON_IDX_DPAD_DOWN         5
-#define SINPUT_BUTTON_IDX_DPAD_LEFT         6
-#define SINPUT_BUTTON_IDX_DPAD_RIGHT        7
-#define SINPUT_BUTTON_IDX_LEFT_STICK        8
-#define SINPUT_BUTTON_IDX_RIGHT_STICK       9
-#define SINPUT_BUTTON_IDX_LEFT_BUMPER       10
-#define SINPUT_BUTTON_IDX_RIGHT_BUMPER      11
-#define SINPUT_BUTTON_IDX_LEFT_TRIGGER      12
-#define SINPUT_BUTTON_IDX_RIGHT_TRIGGER     13
-#define SINPUT_BUTTON_IDX_LEFT_PADDLE1      14
-#define SINPUT_BUTTON_IDX_RIGHT_PADDLE1     15
-#define SINPUT_BUTTON_IDX_START             16
-#define SINPUT_BUTTON_IDX_BACK              17
-#define SINPUT_BUTTON_IDX_GUIDE             18
-#define SINPUT_BUTTON_IDX_CAPTURE           19
-#define SINPUT_BUTTON_IDX_LEFT_PADDLE2      20
-#define SINPUT_BUTTON_IDX_RIGHT_PADDLE2     21
-#define SINPUT_BUTTON_IDX_TOUCHPAD1         22
-#define SINPUT_BUTTON_IDX_TOUCHPAD2         23
-#define SINPUT_BUTTON_IDX_POWER             24
-#define SINPUT_BUTTON_IDX_MISC4             25
-#define SINPUT_BUTTON_IDX_MISC5             26
-#define SINPUT_BUTTON_IDX_MISC6             27
-#define SINPUT_BUTTON_IDX_MISC7             28
-#define SINPUT_BUTTON_IDX_MISC8             29
-#define SINPUT_BUTTON_IDX_MISC9             30
-#define SINPUT_BUTTON_IDX_MISC10            31
 
 #define SINPUT_REPORT_IDX_COMMAND_RESPONSE_ID   1
 #define SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK 2
@@ -204,7 +148,8 @@ typedef struct
     Uint8 touchpad_finger_count; // 2 fingers for one touchpad, or 1 per touchpad (2 max)
 
     Uint8  polling_rate_ms;
-    Uint8  sub_type;    // Subtype of the device, 0 in most cases
+    Uint8  subtype;
+    struct SDL_SInputFeatures features;
 
     Uint16 accelRange; // Example would be 2,4,8,16 +/- (g-force)
     Uint16 gyroRange;  // Example would be 1000,2000,4000 +/- (degrees per second)
@@ -239,71 +184,153 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 
     // Obtain protocol version
     ctx->protocol_version = EXTRACTUINT16(data, 0);
+    Uint8 *fflags = data + 2;
+    Uint8 *buttons = data + 12;
+    
+    //
+    // Unpack feature flags into context
+    //
+    ctx->rumble_supported = (fflags[0] & 0x01) != 0;
+    ctx->player_leds_supported = (fflags[0] & 0x02) != 0;
+    ctx->accelerometer_supported = (fflags[0] & 0x04) != 0;
+    ctx->gyroscope_supported = (fflags[0] & 0x08) != 0;
 
-    // Bitfields are not portable, so we unpack them into a struct value
-    ctx->rumble_supported = (data[2] & 0x01) != 0;
-    ctx->player_leds_supported = (data[2] & 0x02) != 0;
-    ctx->accelerometer_supported = (data[2] & 0x04) != 0;
-    ctx->gyroscope_supported = (data[2] & 0x08) != 0;
+    // Axes cannot be dynamic, so we only sanity check them
+    bool left_analog_stick_supported = (fflags[0] & 0x10) != 0;
+    bool right_analog_stick_supported = (fflags[0] & 0x20) != 0;
+    bool left_analog_trigger_supported = (fflags[0] & 0x40) != 0;
+    bool right_analog_trigger_supported = (fflags[0] & 0x80) != 0;
 
-    ctx->left_analog_stick_supported = (data[2] & 0x10) != 0;
-    ctx->right_analog_stick_supported = (data[2] & 0x20) != 0;
-    ctx->left_analog_trigger_supported = (data[2] & 0x40) != 0;
-    ctx->right_analog_trigger_supported = (data[2] & 0x80) != 0;
+    ctx->touchpad_supported = (fflags[1] & 0x01) != 0;
+    ctx->joystick_rgb_supported = (fflags[1] & 0x02) != 0;
+    ctx->is_handheld = (fflags[1] & 0x04) != 0;
 
-    ctx->touchpad_supported = (data[3] & 0x01) != 0;
-    ctx->joystick_rgb_supported = (data[3] & 0x02) != 0;
-
-    ctx->is_handheld = (data[3] & 0x04) != 0;
-
-    // The gamepad type represents a style of gamepad that most closely
-    // resembles the gamepad in question (Button style, button layout)
+    //
+    // Gamepad Info
+    //
     SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
     type = (SDL_GamepadType)SDL_clamp(data[4], SDL_GAMEPAD_TYPE_UNKNOWN, SDL_GAMEPAD_TYPE_COUNT);
     device->type = type;
+    
+    // Update version to the custom one
+    Uint16 version = HIDAPI_DriverSInput_DeriveVersion(buttons, left_analog_stick_supported, right_analog_stick_supported,
+        left_analog_trigger_supported, right_analog_trigger_supported);
+    device->guid.data[6] = version & 0xFF;
+    device->guid.data[7] = (version >> 8) & 0xFF;
 
     // The 3 MSB represent a button layout style SDL_GamepadFaceStyle
     // The 5 LSB represent a device sub-type
     device->guid.data[15] = data[5];
-
-    ctx->sub_type = (data[5] & 0x1F);
+    ctx->subtype = data[5];
 
 #if defined(DEBUG_SINPUT_INIT)
     SDL_Log("SInput Face Style: %d", (data[5] & 0xE0) >> 5);
     SDL_Log("SInput Sub-type: %d", (data[5] & 0x1F));
 #endif
 
+    //
+    // IMU Info
+    //
     ctx->polling_rate_ms = data[6];
-
     ctx->accelRange = EXTRACTUINT16(data, 8);
     ctx->gyroRange = EXTRACTUINT16(data, 10);
 
+    //
+    // Get mappings based on SDL subtype and assert that they match.
+    //
+    HIDAPI_DriverSInput_GetControllerType(device->vendor_id, device->product_id, version, ctx->subtype, &ctx->features);
+    struct SDL_SInputFeatures *f = &ctx->features;
 
-    if ((device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC) && (device->vendor_id == USB_VENDOR_RASPBERRYPI)) {
-        switch (ctx->sub_type) {
-        // SInput generic device, exposes all buttons
-        default:
-        case 0:
-            ctx->usage_masks[0] = 0xFF;
-            ctx->usage_masks[1] = 0xFF;
-            ctx->usage_masks[2] = 0xFF;
-            ctx->usage_masks[3] = 0xFF;
-            break;
-        }
-    } else {
+    switch (f->controller_type) {
+    case k_eSInputControllerType_HHL_PROGCC:
+    case k_eSInputControllerType_HHL_GCCULT:
+    case k_eSInputControllerType_LoadFirmware:
+        ctx->usage_masks[0] = buttons[0];
+        ctx->usage_masks[1] = buttons[1];
+        ctx->usage_masks[2] = buttons[2];
+        ctx->usage_masks[3] = buttons[3];
+        ctx->left_analog_stick_supported = left_analog_stick_supported;
+        ctx->right_analog_stick_supported = right_analog_stick_supported;
+        ctx->left_analog_trigger_supported = left_analog_trigger_supported;
+        ctx->right_analog_trigger_supported = right_analog_trigger_supported;
+        break;
+    case k_eSInputControllerType_Dynamic:
+    default:
+        ctx->usage_masks[0] = 0xFF;
+        ctx->usage_masks[1] = 0x00;
+        if (ctx->left_analog_stick_supported)
+            ctx->usage_masks[1] |= 0x01 << (SINPUT_BTN_IDX_LEFT_STICK % 8);
+        if (ctx->right_analog_stick_supported)
+            ctx->usage_masks[1] |= 0x01 << (SINPUT_BTN_IDX_RIGHT_STICK % 8);
+        if (f->trigger_style == k_eSInputMiscTriggerStyle_DigitalBumpers ||
+            f->trigger_style == k_eSInputMiscTriggerStyle_AnalogBumpers)
+            ctx->usage_masks[1] |= (0x01 << (SINPUT_BTN_IDX_LEFT_BUMPER % 8)) |
+                                   (0x01 << (SINPUT_BTN_IDX_RIGHT_BUMPER % 8));
+        if (f->trigger_style == k_eSInputMiscTriggerStyle_Digital ||
+            f->trigger_style == k_eSInputMiscTriggerStyle_DigitalBumpers)
+            ctx->usage_masks[1] |= (0x01 << (SINPUT_BTN_IDX_LEFT_TRIGGER % 8)) |
+                                   (0x01 << (SINPUT_BTN_IDX_RIGHT_TRIGGER % 8));
+        if (f->paddle_style != k_eSInputPaddleStyle_None)
+            ctx->usage_masks[1] |= (0x01 << (SINPUT_BTN_IDX_LEFT_PADDLE1 % 8)) |
+                                   (0x01 << (SINPUT_BTN_IDX_RIGHT_PADDLE1 % 8));
+
+        ctx->usage_masks[2] = 0x03;
+        if (f->guide_style == k_eSInputHasButtonStyle_Yes)
+            ctx->usage_masks[2] |= (0x01 << (SINPUT_BTN_IDX_GUIDE % 8));        
+        if (f->guide_style == k_eSInputHasButtonStyle_Yes)
+            ctx->usage_masks[2] |= (0x01 << (SINPUT_BTN_IDX_GUIDE % 8));
+        if (f->misc_button_style != k_eSInputMiscButtonStyle_None)
+            ctx->usage_masks[2] |= (0x01 << (SINPUT_BTN_IDX_CAPTURE % 8));
+        if (f->paddle_style == k_eSInputPaddleStyle_Four)
+            ctx->usage_masks[2] |= (0x01 << (SINPUT_BTN_IDX_LEFT_PADDLE2 % 8)) |
+                                   (0x01 << (SINPUT_BTN_IDX_RIGHT_PADDLE2 % 8));
+        if (f->misc_button_style != k_eSInputMiscButtonStyle_Two && f->misc_button_style != k_eSInputMiscButtonStyle_None)
+            ctx->usage_masks[2] |= 0x01 << (SINPUT_BTN_IDX_TOUCHPAD2 % 8);
+        
+        ctx->usage_masks[3] = 0x00;
+        for (int i = k_eSInputMiscButtonStyle_Two; i < k_eSInputMiscButtonStyle_Max; ++i)
+            ctx->usage_masks[3] |= 0x01 << (i - 2);
+
+        ctx->left_analog_stick_supported = f->analog_style != k_eSInputanalog_None;
+        ctx->right_analog_stick_supported = f->analog_style == k_eSInputanalog_Two;
+
+        ctx->left_analog_trigger_supported = (f->trigger_style == k_eSInputMiscTriggerStyle_Analog &&
+                                              f->trigger_style == k_eSInputMiscTriggerStyle_DigitalBumpers);
+        ctx->right_analog_trigger_supported = ctx->left_analog_trigger_supported;
+        break;
+    }
+
+    // Since SDL uses fixed mappings, unfortunately we cannot use the
+    // button mask from the protocol. SInput defines a set of predefined
+    // sub-types for this use. However, we can check it matches our expectations.
+    if (
         // Masks in LSB to MSB
         // South, East, West, North, DUp, DDown, DLeft, DRight
-        ctx->usage_masks[0] = data[12];
-
-        // Stick Left, Stick Right, L Shoulder, R Shoulder,
-        // L Digital Trigger, R Digital Trigger, L Paddle 1, R Paddle 1
-        ctx->usage_masks[1] = data[13];
-
+        ctx->usage_masks[0] != buttons[0] ||
+        // Left Stick, Right Stick, L Shoulder, R Shoulder,
+        // L Trigger, R Trigger, L Paddle 1, R Paddle 1
+        ctx->usage_masks[1] != buttons[1] ||
         // Start, Back, Guide, Capture, L Paddle 2, R Paddle 2, Touchpad L, Touchpad R
-        ctx->usage_masks[2] = data[14];
-
+        ctx->usage_masks[2] != buttons[2] ||
         // Power, Misc 4 to 10
-        ctx->usage_masks[3] = data[15];
+        ctx->usage_masks[3] != buttons[3] ||
+        // Check Axes
+        ctx->left_analog_stick_supported != left_analog_stick_supported ||
+        ctx->right_analog_stick_supported != right_analog_stick_supported ||
+        ctx->left_analog_trigger_supported != left_analog_trigger_supported ||
+        ctx->right_analog_trigger_supported != right_analog_trigger_supported
+    ) {
+        SDL_LogWarn(
+            SDL_LOG_CATEGORY_INPUT,
+            "SInput device %s has different button mask than controller type 0x%.8x or that type is uknown. Found: %.2x%.2x%.2x%.2x-%d%d%d%d and will use: %.2x%.2x%.2x%.2x-%d%d%d%d",
+            device->name, f->controller_type,
+            buttons[0], buttons[1], buttons[2], buttons[3],
+            left_analog_stick_supported, right_analog_stick_supported,
+            left_analog_trigger_supported, right_analog_trigger_supported,
+            ctx->usage_masks[0], ctx->usage_masks[1], ctx->usage_masks[2], ctx->usage_masks[3],
+            ctx->left_analog_stick_supported, ctx->right_analog_stick_supported,
+            ctx->left_analog_trigger_supported, ctx->right_analog_trigger_supported
+        );
     }
 
     // Derive button count from mask
@@ -316,10 +343,10 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     }
 
     // Convert DPAD to hat
-    const int DPAD_MASK = (1 << SINPUT_BUTTON_IDX_DPAD_UP) |
-                          (1 << SINPUT_BUTTON_IDX_DPAD_DOWN) |
-                          (1 << SINPUT_BUTTON_IDX_DPAD_LEFT) |
-                          (1 << SINPUT_BUTTON_IDX_DPAD_RIGHT);
+    const int DPAD_MASK = (1 << SINPUT_BTN_IDX_DPAD_UP) |
+                          (1 << SINPUT_BTN_IDX_DPAD_DOWN) |
+                          (1 << SINPUT_BTN_IDX_DPAD_LEFT) |
+                          (1 << SINPUT_BTN_IDX_DPAD_RIGHT);
     if ((ctx->usage_masks[0] & DPAD_MASK) == DPAD_MASK) {
         ctx->dpad_supported = true;
         ctx->usage_masks[0] &= ~DPAD_MASK;
@@ -540,16 +567,6 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         ++axes;
     }
 
-    if ((device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC) && (device->vendor_id == USB_VENDOR_RASPBERRYPI)) {
-        switch (ctx->sub_type) {
-        // Default generic device, exposes all axes
-        default:
-        case 0:
-            axes = 6;
-            break;
-        }
-    } 
-
     joystick->naxes = axes;
 
     if (ctx->dpad_supported) {
@@ -704,16 +721,16 @@ static void HIDAPI_DriverSInput_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     if (ctx->dpad_supported) {
         Uint8 hat = SDL_HAT_CENTERED;
 
-        if (data[SINPUT_REPORT_IDX_BUTTONS_0] & (1 << SINPUT_BUTTON_IDX_DPAD_UP)) {
+        if (data[SINPUT_REPORT_IDX_BUTTONS_0] & (1 << SINPUT_BTN_IDX_DPAD_UP)) {
             hat |= SDL_HAT_UP;
         }
-        if (data[SINPUT_REPORT_IDX_BUTTONS_0] & (1 << SINPUT_BUTTON_IDX_DPAD_DOWN)) {
+        if (data[SINPUT_REPORT_IDX_BUTTONS_0] & (1 << SINPUT_BTN_IDX_DPAD_DOWN)) {
             hat |= SDL_HAT_DOWN;
         }
-        if (data[SINPUT_REPORT_IDX_BUTTONS_0] & (1 << SINPUT_BUTTON_IDX_DPAD_LEFT)) {
+        if (data[SINPUT_REPORT_IDX_BUTTONS_0] & (1 << SINPUT_BTN_IDX_DPAD_LEFT)) {
             hat |= SDL_HAT_LEFT;
         }
-        if (data[SINPUT_REPORT_IDX_BUTTONS_0] & (1 << SINPUT_BUTTON_IDX_DPAD_RIGHT)) {
+        if (data[SINPUT_REPORT_IDX_BUTTONS_0] & (1 << SINPUT_BTN_IDX_DPAD_RIGHT)) {
             hat |= SDL_HAT_RIGHT;
         }
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
