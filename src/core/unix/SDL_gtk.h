@@ -74,7 +74,7 @@ typedef struct _GtkSettings GtkSettings;
 typedef struct SDL_GtkContext
 {
 	/* Glib 2.0 */
-	struct 
+	struct
 	{
 		gulong (*signal_connect)(gpointer instance, const gchar *detailed_signal, void *c_handler, gpointer data);
 		gulong (*signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, SDL_GConnectFlags connect_flags);
