@@ -174,7 +174,6 @@ if(NGAGESDK)
     set(HAVE_GETAUXVAL                                   ""    CACHE INTERNAL "Have symbol getauxval")
     set(HAVE_ELF_AUX_INFO                                ""    CACHE INTERNAL "Have symbol elf_aux_info")
     set(HAVE_POLL                                        ""    CACHE INTERNAL "Have symbol poll")
-    set(HAVE_MEMFD_CREATE                                ""    CACHE INTERNAL "Have symbol memfd_create")
     set(HAVE_POSIX_FALLOCATE                             ""    CACHE INTERNAL "Have symbol posix_fallocate")
     set(HAVE_DLOPEN_IN_LIBC                              ""    CACHE INTERNAL "Have symbol dlopen")
 

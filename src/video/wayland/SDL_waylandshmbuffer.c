@@ -67,15 +67,22 @@ static bool SetTempFileSize(int fd, off_t size)
 
 static int CreateTempFD(off_t size)
 {
-    int fd;
+    // memfd_create is in newer glibc releases.
+    typedef int (*memfd_create_fn)(const char *name, unsigned int flags);
+    static memfd_create_fn pmemfd_create = NULL;
+    static bool lookup_memfd_create = true;
+    if (lookup_memfd_create) {
+        lookup_memfd_create = false;
+        pmemfd_create = (memfd_create_fn) SDL_LoadFunction(NULL, "memfd_create");
+    }
 
-#ifdef HAVE_MEMFD_CREATE
-    fd = memfd_create("SDL", MFD_CLOEXEC | MFD_ALLOW_SEALING);
+    int fd = -1;
+    if (pmemfd_create) {
+        fd = pmemfd_create("SDL", MFD_CLOEXEC | MFD_ALLOW_SEALING);
+    }
     if (fd >= 0) {
         fcntl(fd, F_ADD_SEALS, F_SEAL_SHRINK | F_SEAL_SEAL);
-    } else
-#endif
-    {
+    } else {
         static const char template[] = "/sdl-shared-XXXXXX";
         const char *xdg_path;
         char tmp_path[PATH_MAX];
