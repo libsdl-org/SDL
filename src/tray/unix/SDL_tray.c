@@ -252,7 +252,10 @@ SDL_TraySupport IsTraySupportedDesktop(void) {
 		
 		i = 0;
 		has_schema = false;
-		SDL_GlibContext_Init(&g, NULL, true, false, true);
+		if (!SDL_GlibContext_Init(&g, NULL, true, false, true)) {
+			return SDL_TRAYSUPPORT_UNKNOWN;
+		}
+		
 		schemas = g.settings_list_schemas();
 		if (!schemas) {
 			SDL_GlibContext_Cleanup(&g);
