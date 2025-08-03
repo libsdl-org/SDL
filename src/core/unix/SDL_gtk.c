@@ -223,5 +223,6 @@ void SDL_UpdateGtk(void)
 {
     if (IsGtkInit()) {
         gtk.g.main_context_iteration(sdl_main_context, GTK_FALSE);
+        gtk.g.main_context_iteration(NULL, GTK_FALSE);
     }
 }
