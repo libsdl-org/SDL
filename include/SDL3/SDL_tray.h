@@ -125,7 +125,7 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  *          the SDL_TRAYSUPPORT_TOOLTIPS flag is set if tray tooltips are supported.
  *
  * \threadsafety This function should only be called on the main thread. It
- *               will return false if not called on the main thread.
+ *               will return SDL_TRAYSUPPORT_UNAVAILABLE if not called on the main thread.
  *
  * \since This function is available since SDL 3.4.0.
  *
