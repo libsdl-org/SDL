@@ -1171,7 +1171,7 @@ float SDL_GetDisplayContentScale(SDL_DisplayID displayID)
 
 void SDL_SetWindowHDRProperties(SDL_Window *window, const SDL_HDROutputProperties *HDR, bool send_event)
 {
-    if (window->HDR.HDR_headroom != HDR->HDR_headroom || window->HDR.SDR_white_level != window->HDR.SDR_white_level) {
+    if (window->HDR.HDR_headroom != HDR->HDR_headroom || window->HDR.SDR_white_level != HDR->SDR_white_level) {
         SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
 
         SDL_SetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, SDL_max(HDR->HDR_headroom, 1.0f));
