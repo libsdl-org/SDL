@@ -31,11 +31,11 @@ typedef struct XGenericEventCookie XGenericEventCookie;
 #endif
 
 extern bool X11_InitXinput2(SDL_VideoDevice *_this);
+extern void X11_QuitXinput2(SDL_VideoDevice *_this);
 extern void X11_InitXinput2Multitouch(SDL_VideoDevice *_this);
 extern void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie);
 extern bool X11_Xinput2IsInitialized(void);
-extern bool X11_Xinput2IsMultitouchSupported(void);
-extern void X11_Xinput2SelectTouch(SDL_VideoDevice *_this, SDL_Window *window);
+extern void X11_Xinput2Select(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_Xinput2GrabTouch(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_Xinput2UngrabTouch(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool X11_Xinput2SelectMouseAndKeyboard(SDL_VideoDevice *_this, SDL_Window *window);

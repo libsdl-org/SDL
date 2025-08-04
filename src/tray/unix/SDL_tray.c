@@ -166,7 +166,7 @@ struct SDL_Tray {
     GtkMenuShell *menu_cached;
 };
 
-static void call_callback(GtkMenuItem *item, GParamSpec *pspec, gpointer ptr)
+static void call_callback(GtkMenuItem *item, gpointer ptr)
 {
     SDL_TrayEntry *entry = ptr;
 
@@ -238,24 +238,6 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
 void SDL_UpdateTrays(void)
 {
     SDL_UpdateGtk();
-}
-
-bool SDL_IsTraySupported(void)
-{
-    if (!SDL_IsMainThread()) {
-        SDL_SetError("This function should be called on the main thread");
-        return false;
-    }
-
-    static bool has_trays = false;
-    static bool has_been_detected_once = false;
-
-    if (!has_been_detected_once) {
-        has_trays = init_appindicator() && SDL_Gtk_Init();
-        has_been_detected_once = true;
-    }
-
-    return has_trays;
 }
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
@@ -404,7 +386,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
         SDL_SetError("Cannot create submenu for entry not created with SDL_TRAYENTRY_SUBMENU");
         return NULL;
     }
-    
+
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (!gtk) {
         return NULL;

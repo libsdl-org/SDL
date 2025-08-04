@@ -82,16 +82,6 @@ void SDL_UpdateTrays(void)
 {
 }
 
-bool SDL_IsTraySupported(void)
-{
-    if (!SDL_IsMainThread()) {
-        SDL_SetError("This function should be called on the main thread");
-        return false;
-    }
-
-    return true;
-}
-
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     if (!SDL_IsMainThread()) {

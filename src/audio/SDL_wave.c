@@ -2114,8 +2114,8 @@ bool SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio, SDL_AudioSpec *spec, Uint8 
     result = WaveLoad(src, &file, spec, audio_buf, audio_len);
     if (!result) {
         SDL_free(*audio_buf);
-        audio_buf = NULL;
-        audio_len = 0;
+        *audio_buf = NULL;
+        *audio_len = 0;
     }
 
     // Cleanup

@@ -416,6 +416,17 @@ macro(CheckX11)
         endif()
         set(SDL_VIDEO_DRIVER_X11_XINPUT2 1)
 
+        # Check for scroll info
+        check_c_source_compiles("
+            #include <X11/Xlib.h>
+            #include <X11/Xproto.h>
+            #include <X11/extensions/XInput2.h>
+            XIScrollClassInfo *s;
+            int main(int argc, char **argv) {}" HAVE_XINPUT2_SCROLLINFO)
+        if(HAVE_XINPUT2_SCROLLINFO)
+          set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO 1)
+        endif()
+
         # Check for multitouch
         check_c_source_compiles_static("
             #include <X11/Xlib.h>

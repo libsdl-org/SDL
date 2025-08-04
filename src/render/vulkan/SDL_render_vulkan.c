@@ -3760,7 +3760,7 @@ static VkSampler VULKAN_GetSampler(VULKAN_RenderData *data, SDL_ScaleMode scale_
         VkResult result = vkCreateSampler(data->device, &samplerCreateInfo, NULL, &data->samplers[key]);
         if (result != VK_SUCCESS) {
             SET_ERROR_CODE("vkCreateSampler()", result);
-            return false;
+            return VK_NULL_HANDLE;
         }
     }
     return data->samplers[key];
