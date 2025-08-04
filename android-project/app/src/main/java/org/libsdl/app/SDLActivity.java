@@ -61,7 +61,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private static final String TAG = "SDL";
     private static final int SDL_MAJOR_VERSION = 3;
     private static final int SDL_MINOR_VERSION = 2;
-    private static final int SDL_MICRO_VERSION = 19;
+    private static final int SDL_MICRO_VERSION = 20;
 /*
     // Display InputType.SOURCE/CLASS of events and devices
     //
