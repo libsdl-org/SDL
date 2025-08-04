@@ -29,11 +29,6 @@ void SDL_UpdateTrays(void)
 {
 }
 
-bool SDL_IsTraySupported(void)
-{
-    return false;
-}
-
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     SDL_Unsupported();
