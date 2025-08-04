@@ -729,7 +729,7 @@ static void onCameraAvailable(void *context, const char *cameraId)
 static void onCameraUnavailable(void *context, const char *cameraId)
 {
     #if DEBUG_CAMERA
-    SDL_Log("CAMERA: CB onCameraUnvailable('%s')", cameraId);
+    SDL_Log("CAMERA: CB onCameraUnavailable('%s')", cameraId);
     #endif
 
     SDL_assert(cameraId != NULL);
@@ -814,7 +814,7 @@ static void ANDROIDCAMERA_Deinitialize(void)
 static bool ANDROIDCAMERA_Init(SDL_CameraDriverImpl *impl)
 {
     // !!! FIXME: slide this off into a subroutine
-    // system libraries are in android-24 and later; we currently target android-16 and later, so check if they exist at runtime.
+    // system libraries are in android-24 and later; we currently target android-21 and later, so check if they exist at runtime.
     void *libcamera2 = dlopen("libcamera2ndk.so", RTLD_NOW | RTLD_LOCAL);
     if (!libcamera2) {
         SDL_Log("CAMERA: libcamera2ndk.so can't be loaded: %s", dlerror());

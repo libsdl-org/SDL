@@ -96,7 +96,7 @@ static void register_error_str(wchar_t **error_str, const char *msg)
 	*error_str = utf8_to_wchar_t(msg);
 }
 
-/* Semilar to register_error_str, but allows passing a format string with va_list args into this function. */
+/* Similar to register_error_str, but allows passing a format string with va_list args into this function. */
 static void register_error_str_vformat(wchar_t **error_str, const char *format, va_list args)
 {
 	char msg[256];

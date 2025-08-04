@@ -19,7 +19,7 @@ android {
                 abiFilters 'arm64-v8a'
             }
             cmake {
-                arguments "-DANDROID_PLATFORM=android-21", "-DANDROID_STL=c++_static"
+                arguments "-DANDROID_PLATFORM=android-21", "-DANDROID_STL=c++_static", "-DAPP_SUPPORT_FLEXIBLE_PAGE_SIZES=true"
                 // abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
                 abiFilters 'arm64-v8a'
             }

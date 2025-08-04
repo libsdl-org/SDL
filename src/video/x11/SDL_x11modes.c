@@ -27,6 +27,8 @@
 #include "edid.h"
 #include "../../events/SDL_displayevents_c.h"
 
+#include "../../core/unix/SDL_gtk.h"
+
 // #define X11MODES_DEBUG
 
 /* Timeout and revert mode switches if the timespan has elapsed without the window becoming fullscreen.
@@ -59,6 +61,20 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
             if (value >= 1.0f && value <= 10.0f) {
                 scale_factor = value;
             }
+        }
+
+        // If that failed, try "Xft.dpi" from GTK if available. On XWayland this
+        // will retrieve the current scale factor which is not updated dynamically
+        // in the Xrm database.
+        SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+        if (gtk) {
+            GtkSettings *gtksettings = gtk->gtk.settings_get_default();
+            if (gtksettings) {
+                int dpi = 0;
+                gtk->g.object_get(gtksettings, "gtk-xft-dpi", &dpi, NULL);
+                scale_factor = dpi / 1024.0 / 96.0;
+            }
+            SDL_Gtk_ExitContext(gtk);
         }
 
         // If that failed, try "Xft.dpi" from the XResourcesDatabase...

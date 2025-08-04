@@ -51,8 +51,8 @@
 #include "wmmsg.h"
 #endif
 
-#ifdef HAVE_SHOBJIDL_CORE_H
-#include <shobjidl_core.h>
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#include <shobjidl.h>
 #endif
 
 #ifdef SDL_PLATFORM_GDK
@@ -2412,7 +2412,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     }
 
-#ifdef HAVE_SHOBJIDL_CORE_H
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     if (msg == data->videodata->WM_TASKBAR_BUTTON_CREATED) {
         data->taskbar_button_created = true;
         WIN_ApplyWindowProgress(SDL_GetVideoDevice(), data->window);

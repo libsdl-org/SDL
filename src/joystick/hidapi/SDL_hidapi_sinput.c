@@ -56,8 +56,6 @@
 #define SINPUT_DEVICE_COMMAND_PLAYERLED     0x03
 #define SINPUT_DEVICE_COMMAND_JOYSTICKRGB   0x04
 
-#define SINPUT_GENERIC_SUBTYPE_SUPERGAMEPADPLUS 0x01
-
 #define SINPUT_HAPTIC_TYPE_PRECISE          0x01
 #define SINPUT_HAPTIC_TYPE_ERMSIMULATION    0x02
 
@@ -88,10 +86,10 @@
 #define SINPUT_REPORT_IDX_TOUCH2_Y          43
 #define SINPUT_REPORT_IDX_TOUCH2_P          45
 
-#define SINPUT_BUTTON_IDX_SOUTH             0
-#define SINPUT_BUTTON_IDX_EAST              1
-#define SINPUT_BUTTON_IDX_WEST              2
-#define SINPUT_BUTTON_IDX_NORTH             3
+#define SINPUT_BUTTON_IDX_EAST              0
+#define SINPUT_BUTTON_IDX_SOUTH             1
+#define SINPUT_BUTTON_IDX_NORTH             2
+#define SINPUT_BUTTON_IDX_WEST              3
 #define SINPUT_BUTTON_IDX_DPAD_UP           4
 #define SINPUT_BUTTON_IDX_DPAD_DOWN         5
 #define SINPUT_BUTTON_IDX_DPAD_LEFT         6
@@ -200,6 +198,7 @@ typedef struct
     bool right_analog_trigger_supported;
     bool dpad_supported;
     bool touchpad_supported;
+    bool is_handheld;
 
     Uint8 touchpad_count;        // 2 touchpads maximum
     Uint8 touchpad_finger_count; // 2 fingers for one touchpad, or 1 per touchpad (2 max)
@@ -255,39 +254,57 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->touchpad_supported = (data[3] & 0x01) != 0;
     ctx->joystick_rgb_supported = (data[3] & 0x02) != 0;
 
+    ctx->is_handheld = (data[3] & 0x04) != 0;
+
+    // The gamepad type represents a style of gamepad that most closely
+    // resembles the gamepad in question (Button style, button layout)
     SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
     type = (SDL_GamepadType)SDL_clamp(data[4], SDL_GAMEPAD_TYPE_UNKNOWN, SDL_GAMEPAD_TYPE_COUNT);
     device->type = type;
 
-    // The 4 MSB represent a button layout style SDL_GamepadFaceStyle
-    // The 4 LSB represent a device sub-type
+    // The 3 MSB represent a button layout style SDL_GamepadFaceStyle
+    // The 5 LSB represent a device sub-type
     device->guid.data[15] = data[5];
 
-#if defined(DEBUG_SINPUT_INIT)
-        SDL_Log("SInput Face Style: %d", (data[5] & 0xF0) >> 4);
-        SDL_Log("SInput Sub-type: %d", (data[5] & 0xF));
-#endif
+    ctx->sub_type = (data[5] & 0x1F);
 
-    ctx->sub_type = (data[5] & 0xF);
+#if defined(DEBUG_SINPUT_INIT)
+    SDL_Log("SInput Face Style: %d", (data[5] & 0xE0) >> 5);
+    SDL_Log("SInput Sub-type: %d", (data[5] & 0x1F));
+#endif
 
     ctx->polling_rate_ms = data[6];
 
     ctx->accelRange = EXTRACTUINT16(data, 8);
     ctx->gyroRange = EXTRACTUINT16(data, 10);
 
-    // Masks in LSB to MSB
-    // South, East, West, North, DUp, DDown, DLeft, DRight
-    ctx->usage_masks[0] = data[12];
 
-    // Stick Left, Stick Right, L Shoulder, R Shoulder,
-    // L Trigger, R Trigger, L Paddle 1, R Paddle 1
-    ctx->usage_masks[1] = data[13];
+    if ((device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC) && (device->vendor_id == USB_VENDOR_RASPBERRYPI)) {
+        switch (ctx->sub_type) {
+        // SInput generic device, exposes all buttons
+        default:
+        case 0:
+            ctx->usage_masks[0] = 0xFF;
+            ctx->usage_masks[1] = 0xFF;
+            ctx->usage_masks[2] = 0xFF;
+            ctx->usage_masks[3] = 0xFF;
+            break;
+        }
+    } else {
+        // Masks in LSB to MSB
+        // South, East, West, North, DUp, DDown, DLeft, DRight
+        ctx->usage_masks[0] = data[12];
 
-    // Start, Back, Guide, Capture, L Paddle 2, R Paddle 2, Touchpad L, Touchpad R
-    ctx->usage_masks[2] = data[14];
+        // Stick Left, Stick Right, L Shoulder, R Shoulder,
+        // L Digital Trigger, R Digital Trigger, L Paddle 1, R Paddle 1
+        ctx->usage_masks[1] = data[13];
 
-    // Power, Misc 4 to 10
-    ctx->usage_masks[3] = data[15];
+        // Start, Back, Guide, Capture, L Paddle 2, R Paddle 2, Touchpad L, Touchpad R
+        ctx->usage_masks[2] = data[14];
+
+        // Power, Misc 4 to 10
+        ctx->usage_masks[3] = data[15];
+    }
 
     // Derive button count from mask
     for (Uint8 byte = 0; byte < 4; ++byte) {
@@ -321,6 +338,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     char serial[18];
     (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                        data[18], data[19], data[20], data[21], data[22], data[23]);
+
 #if defined(DEBUG_SINPUT_INIT)
     SDL_Log("Serial num: %s", serial);
 #endif
@@ -375,7 +393,7 @@ static bool RetrieveSDLFeatures(SDL_HIDAPI_Device *device)
         }
 
 #ifdef DEBUG_SINPUT_PROTOCOL
-        HIDAPI_DumpPacket("SInput packet: size = %d", data, size);
+        HIDAPI_DumpPacket("SInput packet: size = %d", data, read);
 #endif
 
         if ((read == USB_PACKET_LENGTH) && (data[0] == SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT) && (data[1] == SINPUT_DEVICE_COMMAND_FEATURES)) {
@@ -449,11 +467,10 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
     case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
         HIDAPI_SetDeviceName(device, "HHL ProGCC");
         break;
-    case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
-        if (ctx->sub_type == SINPUT_GENERIC_SUBTYPE_SUPERGAMEPADPLUS) {
-            HIDAPI_SetDeviceName(device, "HHL SuperGamepad+");
-        }
+    case USB_PRODUCT_BONZIRICHANNEL_FIREBIRD:
+        HIDAPI_SetDeviceName(device, "Bonziri Firebird");
         break;
+    case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
     default:
         // Use the USB product name
         break;
@@ -522,6 +539,16 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     if (ctx->right_analog_trigger_supported) {
         ++axes;
     }
+
+    if ((device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC) && (device->vendor_id == USB_VENDOR_RASPBERRYPI)) {
+        switch (ctx->sub_type) {
+        // Default generic device, exposes all axes
+        default:
+        case 0:
+            axes = 6;
+            break;
+        }
+    } 
 
     joystick->naxes = axes;
 
@@ -612,9 +639,7 @@ static bool HIDAPI_DriverSInput_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Jo
 {
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
 
-    if (ctx->player_leds_supported) {
-
-        // Set player number, finalizing the setup
+    if (ctx->joystick_rgb_supported) {
         Uint8 joystickRGBCommand[SINPUT_DEVICE_REPORT_COMMAND_SIZE] = { SINPUT_DEVICE_REPORT_ID_OUTPUT_CMDDAT, SINPUT_DEVICE_COMMAND_JOYSTICKRGB, red, green, blue };
         int joystickRGBBytesWritten = SDL_hid_write(device->dev, joystickRGBCommand, SINPUT_DEVICE_REPORT_COMMAND_SIZE);
 
@@ -880,7 +905,6 @@ static bool HIDAPI_DriverSInput_UpdateDevice(SDL_HIDAPI_Device *device)
             continue;
         }
 
-        // Handle command response information
         if (data[0] == SINPUT_DEVICE_REPORT_ID_JOYSTICK_INPUT) {
             HIDAPI_DriverSInput_HandleStatePacket(joystick, ctx, data, size);
         }

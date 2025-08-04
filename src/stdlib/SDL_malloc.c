@@ -1478,6 +1478,13 @@ DLMALLOC_EXPORT int mspace_mallopt(int, int);
 #endif /* NO_MALLOC_STATS */
 #ifndef LACKS_ERRNO_H
 #include <errno.h>       /* for MALLOC_FAILURE_ACTION */
+#else /* LACKS_ERRNO_H */
+#ifndef EINVAL
+#define EINVAL 22
+#endif
+#ifndef ENOMEM
+#define ENOMEM 12
+#endif
 #endif /* LACKS_ERRNO_H */
 #ifdef DEBUG
 #if ABORT_ON_ASSERT_FAILURE
@@ -3035,7 +3042,7 @@ static size_t traverse_and_check(mstate m);
   http://www.usenix.org/events/lisa03/tech/robertson.html The footer
   of an inuse chunk holds the xor of its mstate and a random seed,
   that is checked upon calls to free() and realloc().  This is
-  (probabalistically) unguessable from outside the program, but can be
+  (probabilistically) unguessable from outside the program, but can be
   computed by any code successfully malloc'ing any chunk, so does not
   itself provide protection against code that has already broken
   security through some other means.  Unlike Robertson et al, we

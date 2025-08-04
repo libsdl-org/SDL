@@ -1015,4 +1015,4 @@ void DestroyVulkanVideoContext(VulkanVideoContext *context)
 {
 }
 
-#endif // FFMPEG_VULKAN_SUPPORT
+#endif /* FFMPEG_VULKAN_SUPPORT */

@@ -98,7 +98,6 @@ static void (*ALSA_snd_pcm_info_set_device)(snd_pcm_info_t *, unsigned int);
 static void (*ALSA_snd_pcm_info_set_subdevice)(snd_pcm_info_t *, unsigned int);
 static void (*ALSA_snd_pcm_info_set_stream)(snd_pcm_info_t *, snd_pcm_stream_t);
 static int (*ALSA_snd_ctl_pcm_info)(snd_ctl_t *, snd_pcm_info_t *);
-static unsigned int (*ALSA_snd_pcm_info_get_subdevices_count)(const snd_pcm_info_t *);
 static const char *(*ALSA_snd_ctl_card_info_get_id)(const snd_ctl_card_info_t *);
 static const char *(*ALSA_snd_pcm_info_get_name)(const snd_pcm_info_t *);
 static const char *(*ALSA_snd_pcm_info_get_subdevice_name)(const snd_pcm_info_t *);
@@ -652,7 +651,7 @@ static void swizzle_map_compute_alsa_subscan(const struct ALSA_pcm_cfg_ctx *ctx,
     }
 }
 
-// XXX: this must stay playback/recording symetric.
+// XXX: this must stay playback/recording symmetric.
 static void swizzle_map_compute(const struct ALSA_pcm_cfg_ctx *ctx, int *swizzle_map, bool *needs_swizzle)
 {
     *needs_swizzle = false;
@@ -1069,7 +1068,7 @@ static bool ALSA_pcm_cfg_hw(struct ALSA_pcm_cfg_ctx *ctx)
     }
 
     // Here, status == CHANS_N_NOT_CONFIGURED
-    return SDL_SetError("ALSA: Coudn't configure targetting any SDL supported channel number");
+    return SDL_SetError("ALSA: Couldn't configure targeting any SDL supported channel number");
 }
 #undef CHANS_N_SCAN_MODE__EQUAL_OR_ABOVE_REQUESTED_CHANS_N
 #undef CHANS_N_SCAN_MODE__BELOW_REQUESTED_CHANS_N
@@ -1150,7 +1149,7 @@ static bool ALSA_OpenDevice(SDL_AudioDevice *device)
         goto err_close_pcm;
     }
 
-    // from here, we get only the alsa chmap queries in cfg_ctx to explicitely clean, hwparams is
+    // from here, we get only the alsa chmap queries in cfg_ctx to explicitly clean, hwparams is
     // uninstalled upon pcm closing
 
     // This is useful for debugging

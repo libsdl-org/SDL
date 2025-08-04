@@ -12,6 +12,9 @@
 
 /* Defines some images for tests */
 
+#ifndef testautomation_images_h_
+#define testautomation_images_h_
+
 /**
  * Type for test images.
  */
@@ -32,3 +35,5 @@ extern SDL_Surface *SDLTest_ImagePrimitives(void);
 extern SDL_Surface *SDLTest_ImageBlendingBackground(void);
 extern SDL_Surface *SDLTest_ImageBlendingSprite(void);
 extern SDL_Surface *SDLTest_ImageWrappingSprite(void);
+
+#endif /* testautomation_images_h_ */

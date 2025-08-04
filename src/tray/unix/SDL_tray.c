@@ -34,81 +34,11 @@
 #ifdef APPINDICATOR_HEADER
 #include APPINDICATOR_HEADER
 #else
+#include "../../core/unix/SDL_gtk.h"
+
 /* ------------------------------------------------------------------------- */
 /*                     BEGIN THIRD-PARTY HEADER CONTENT                      */
 /* ------------------------------------------------------------------------- */
-/* Glib 2.0 */
-
-typedef unsigned long gulong;
-typedef void *gpointer;
-typedef char gchar;
-typedef int gint;
-typedef unsigned int guint;
-typedef gint gboolean;
-typedef void (*GCallback)(void);
-typedef struct _GClosure GClosure;
-typedef void (*GClosureNotify) (gpointer data, GClosure *closure);
-typedef gboolean (*GSourceFunc) (gpointer user_data);
-typedef enum
-{
-    G_CONNECT_AFTER = 1 << 0,
-    G_CONNECT_SWAPPED = 1 << 1
-} GConnectFlags;
-
-static gulong (*g_signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, GConnectFlags connect_flags);
-static void (*g_object_unref)(gpointer object);
-static gchar *(*g_mkdtemp)(gchar *template);
-static gpointer (*g_object_ref_sink)(gpointer object);
-static gpointer (*g_object_ref)(gpointer object);
-
-// glib_typeof requires compiler-specific code and includes that are too complex
-// to be worth copy-pasting here
-//#define g_object_ref(Obj) ((glib_typeof (Obj)) (g_object_ref) (Obj))
-//#define g_object_ref_sink(Obj) ((glib_typeof (Obj)) (g_object_ref_sink) (Obj))
-
-#define g_signal_connect(instance, detailed_signal, c_handler, data) \
-    g_signal_connect_data ((instance), (detailed_signal), (c_handler), (data), NULL, (GConnectFlags) 0)
-
-#define _G_TYPE_CIC(ip, gt, ct) ((ct*) ip)
-
-#define G_TYPE_CHECK_INSTANCE_CAST(instance, g_type, c_type) (_G_TYPE_CIC ((instance), (g_type), c_type))
-
-#define G_CALLBACK(f) ((GCallback) (f))
-
-#define FALSE 0
-#define TRUE 1
-
-/* GTK 3.0 */
-
-typedef struct _GtkMenu GtkMenu;
-typedef struct _GtkMenuItem GtkMenuItem;
-typedef struct _GtkMenuShell GtkMenuShell;
-typedef struct _GtkWidget GtkWidget;
-typedef struct _GtkCheckMenuItem GtkCheckMenuItem;
-
-static gboolean (*gtk_init_check)(int *argc, char ***argv);
-static gboolean (*gtk_main_iteration_do)(gboolean blocking);
-static GtkWidget *(*gtk_menu_new)(void);
-static GtkWidget *(*gtk_separator_menu_item_new)(void);
-static GtkWidget *(*gtk_menu_item_new_with_label)(const gchar *label);
-static void (*gtk_menu_item_set_submenu)(GtkMenuItem *menu_item, GtkWidget *submenu);
-static GtkWidget *(*gtk_check_menu_item_new_with_label)(const gchar *label);
-static void (*gtk_check_menu_item_set_active)(GtkCheckMenuItem *check_menu_item, gboolean is_active);
-static void (*gtk_widget_set_sensitive)(GtkWidget *widget, gboolean sensitive);
-static void (*gtk_widget_show)(GtkWidget *widget);
-static void (*gtk_menu_shell_append)(GtkMenuShell *menu_shell, GtkWidget *child);
-static void (*gtk_menu_shell_insert)(GtkMenuShell *menu_shell, GtkWidget *child, gint position);
-static void (*gtk_widget_destroy)(GtkWidget *widget);
-static const gchar *(*gtk_menu_item_get_label)(GtkMenuItem *menu_item);
-static void (*gtk_menu_item_set_label)(GtkMenuItem *menu_item, const gchar *label);
-static gboolean (*gtk_check_menu_item_get_active)(GtkCheckMenuItem *check_menu_item);
-static gboolean (*gtk_widget_get_sensitive)(GtkWidget *widget);
-
-#define GTK_MENU_ITEM(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GTK_TYPE_MENU_ITEM, GtkMenuItem))
-#define GTK_WIDGET(widget) (G_TYPE_CHECK_INSTANCE_CAST ((widget), GTK_TYPE_WIDGET, GtkWidget))
-#define GTK_CHECK_MENU_ITEM(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GTK_TYPE_CHECK_MENU_ITEM, GtkCheckMenuItem))
-#define GTK_MENU(obj) (G_TYPE_CHECK_INSTANCE_CAST ((obj), GTK_TYPE_MENU, GtkMenu))
-
 /* AppIndicator */
 
 typedef enum {
@@ -137,43 +67,14 @@ static void (*app_indicator_set_menu)(AppIndicator *self, GtkMenu *menu);
 /* ------------------------------------------------------------------------- */
 #endif
 
-#ifdef APPINDICATOR_HEADER
-
-static void quit_gtk(void)
-{
-}
-
-static bool init_gtk(void)
-{
-    return true;
-}
-
-#else
-
-static bool gtk_is_init = false;
-
 static void *libappindicator = NULL;
-static void *libgtk = NULL;
-static void *libgdk = NULL;
 
-static void quit_gtk(void)
+static void quit_appindicator(void)
 {
     if (libappindicator) {
         dlclose(libappindicator);
         libappindicator = NULL;
     }
-
-    if (libgtk) {
-        dlclose(libgtk);
-        libgtk = NULL;
-    }
-
-    if (libgdk) {
-        dlclose(libgdk);
-        libgdk = NULL;
-    }
-
-    gtk_is_init = false;
 }
 
 const char *appindicator_names[] = {
@@ -183,24 +84,6 @@ const char *appindicator_names[] = {
 #else
     "libayatana-appindicator3.so.1",
     "libappindicator3.so.1",
-#endif
-    NULL
-};
-
-const char *gtk_names[] = {
-#ifdef SDL_PLATFORM_OPENBSD
-    "libgtk-3.so",
-#else
-    "libgtk-3.so.0",
-#endif
-    NULL
-};
-
-const char *gdk_names[] = {
-#ifdef SDL_PLATFORM_OPENBSD
-    "libgdk-3.so",
-#else
-    "libgdk-3.so.0",
 #endif
     NULL
 };
@@ -217,92 +100,34 @@ static void *find_lib(const char **names)
     return handle;
 }
 
-static bool init_gtk(void)
+static bool init_appindicator(void)
 {
-    if (gtk_is_init) {
+    if (libappindicator) {
         return true;
     }
 
     libappindicator = find_lib(appindicator_names);
-    libgtk = find_lib(gtk_names);
-    libgdk = find_lib(gdk_names);
 
-    if (!libappindicator || !libgtk || !libgdk) {
-        quit_gtk();
-        return SDL_SetError("Could not load GTK/AppIndicator libraries");
+    if (!libappindicator) {
+        quit_appindicator();
+        return SDL_SetError("Could not load AppIndicator libraries");
     }
-
-    gtk_init_check = dlsym(libgtk, "gtk_init_check");
-    gtk_main_iteration_do = dlsym(libgtk, "gtk_main_iteration_do");
-    gtk_menu_new = dlsym(libgtk, "gtk_menu_new");
-    gtk_separator_menu_item_new = dlsym(libgtk, "gtk_separator_menu_item_new");
-    gtk_menu_item_new_with_label = dlsym(libgtk, "gtk_menu_item_new_with_label");
-    gtk_menu_item_set_submenu = dlsym(libgtk, "gtk_menu_item_set_submenu");
-    gtk_check_menu_item_new_with_label = dlsym(libgtk, "gtk_check_menu_item_new_with_label");
-    gtk_check_menu_item_set_active = dlsym(libgtk, "gtk_check_menu_item_set_active");
-    gtk_widget_set_sensitive = dlsym(libgtk, "gtk_widget_set_sensitive");
-    gtk_widget_show = dlsym(libgtk, "gtk_widget_show");
-    gtk_menu_shell_append = dlsym(libgtk, "gtk_menu_shell_append");
-    gtk_menu_shell_insert = dlsym(libgtk, "gtk_menu_shell_insert");
-    gtk_widget_destroy = dlsym(libgtk, "gtk_widget_destroy");
-    gtk_menu_item_get_label = dlsym(libgtk, "gtk_menu_item_get_label");
-    gtk_menu_item_set_label = dlsym(libgtk, "gtk_menu_item_set_label");
-    gtk_check_menu_item_get_active = dlsym(libgtk, "gtk_check_menu_item_get_active");
-    gtk_widget_get_sensitive = dlsym(libgtk, "gtk_widget_get_sensitive");
-
-    /* Technically these are GLib or GObject functions, but we can find
-     * them via GDK */
-    g_mkdtemp = dlsym(libgdk, "g_mkdtemp");
-    g_signal_connect_data = dlsym(libgdk, "g_signal_connect_data");
-    g_object_unref = dlsym(libgdk, "g_object_unref");
-    g_object_ref_sink = dlsym(libgdk, "g_object_ref_sink");
-    g_object_ref = dlsym(libgdk, "g_object_ref");
 
     app_indicator_new = dlsym(libappindicator, "app_indicator_new");
     app_indicator_set_status = dlsym(libappindicator, "app_indicator_set_status");
     app_indicator_set_icon = dlsym(libappindicator, "app_indicator_set_icon");
     app_indicator_set_menu = dlsym(libappindicator, "app_indicator_set_menu");
 
-    if (!gtk_init_check ||
-        !gtk_main_iteration_do ||
-        !gtk_menu_new ||
-        !gtk_separator_menu_item_new ||
-        !gtk_menu_item_new_with_label ||
-        !gtk_menu_item_set_submenu ||
-        !gtk_check_menu_item_new_with_label ||
-        !gtk_check_menu_item_set_active ||
-        !gtk_widget_set_sensitive ||
-        !gtk_widget_show ||
-        !gtk_menu_shell_append ||
-        !gtk_menu_shell_insert ||
-        !gtk_widget_destroy ||
-        !g_mkdtemp ||
-        !g_object_ref_sink ||
-        !g_object_ref ||
-        !g_signal_connect_data ||
-        !g_object_unref ||
-        !app_indicator_new ||
+    if (!app_indicator_new ||
         !app_indicator_set_status ||
         !app_indicator_set_icon ||
-        !app_indicator_set_menu ||
-        !gtk_menu_item_get_label ||
-        !gtk_menu_item_set_label ||
-        !gtk_check_menu_item_get_active ||
-        !gtk_widget_get_sensitive) {
-        quit_gtk();
-        return SDL_SetError("Could not load GTK/AppIndicator functions");
+        !app_indicator_set_menu) {
+        quit_appindicator();
+        return SDL_SetError("Could not load AppIndicator functions");
     }
-
-    if (gtk_init_check(0, NULL) == FALSE) {
-        quit_gtk();
-        return SDL_SetError("Could not init GTK");
-    }
-
-    gtk_is_init = true;
 
     return true;
 }
-#endif
 
 struct SDL_TrayMenu {
     GtkMenuShell *menu;
@@ -399,7 +224,11 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
     }
 
     if (menu->menu) {
-        g_object_unref(menu->menu);
+        SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+        if (gtk) {
+            gtk->g.object_unref(menu->menu);
+            SDL_Gtk_ExitContext(gtk);
+        }
     }
 
     SDL_free(menu->entries);
@@ -408,9 +237,7 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
 
 void SDL_UpdateTrays(void)
 {
-    if (SDL_HasActiveTrays()) {
-        gtk_main_iteration_do(FALSE);
-    }
+    SDL_UpdateGtk();
 }
 
 bool SDL_IsTraySupported(void)
@@ -424,7 +251,7 @@ bool SDL_IsTraySupported(void)
     static bool has_been_detected_once = false;
 
     if (!has_been_detected_once) {
-        has_trays = init_gtk();
+        has_trays = init_appindicator() && SDL_Gtk_Init();
         has_been_detected_once = true;
     }
 
@@ -438,29 +265,33 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
         return NULL;
     }
 
-    if (init_gtk() != true) {
+    if (!init_appindicator()) {
         return NULL;
     }
 
-    SDL_Tray *tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
+    SDL_Tray *tray = NULL;
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (!gtk) {
+        goto error;
+    }
+
+    tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
     if (!tray) {
-        return NULL;
+        goto error;
     }
 
     /* On success, g_mkdtemp edits its argument in-place to replace the Xs
      * with a random directory name, which it creates safely and atomically.
      * On failure, it sets errno. */
     SDL_strlcpy(tray->icon_dir, ICON_DIR_TEMPLATE, sizeof(tray->icon_dir));
-    if (!g_mkdtemp(tray->icon_dir)) {
+    if (!gtk->g.mkdtemp(tray->icon_dir)) {
         SDL_SetError("Cannot create directory for tray icon: %s", strerror(errno));
-        SDL_free(tray);
-        return NULL;
+        goto error;
     }
 
     if (icon) {
         if (!new_tmp_filename(tray)) {
-            SDL_free(tray);
-            return NULL;
+            goto error;
         }
 
         SDL_SaveBMP(icon, tray->icon_path);
@@ -472,12 +303,24 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     app_indicator_set_status(tray->indicator, APP_INDICATOR_STATUS_ACTIVE);
 
     // The tray icon isn't shown before a menu is created; create one early.
-    tray->menu_cached = (GtkMenuShell *) g_object_ref_sink(gtk_menu_new());
+    tray->menu_cached = (GtkMenuShell *)gtk->g.object_ref_sink(gtk->gtk.menu_new());
     app_indicator_set_menu(tray->indicator, GTK_MENU(tray->menu_cached));
 
     SDL_RegisterTray(tray);
+    SDL_Gtk_ExitContext(gtk);
 
     return tray;
+
+error:
+    if (tray) {
+        SDL_free(tray);
+    }
+
+    if (gtk) {
+        SDL_Gtk_ExitContext(gtk);
+    }
+
+    return NULL;
 }
 
 void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
@@ -513,16 +356,24 @@ SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
         return NULL;
     }
 
-    tray->menu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*tray->menu));
-    if (!tray->menu) {
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (!gtk) {
         return NULL;
     }
 
-    tray->menu->menu = g_object_ref(tray->menu_cached);
+    tray->menu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*tray->menu));
+    if (!tray->menu) {
+        SDL_Gtk_ExitContext(gtk);
+        return NULL;
+    }
+
+    tray->menu->menu = gtk->g.object_ref(tray->menu_cached);
     tray->menu->parent_tray = tray;
     tray->menu->parent_entry = NULL;
     tray->menu->nEntries = 0;
     tray->menu->entries = NULL;
+
+    SDL_Gtk_ExitContext(gtk);
 
     return tray->menu;
 }
@@ -554,18 +405,26 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
         return NULL;
     }
 
-    entry->submenu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*entry->submenu));
-    if (!entry->submenu) {
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (!gtk) {
         return NULL;
     }
 
-    entry->submenu->menu = g_object_ref_sink(gtk_menu_new());
+    entry->submenu = (SDL_TrayMenu *)SDL_calloc(1, sizeof(*entry->submenu));
+    if (!entry->submenu) {
+        SDL_Gtk_ExitContext(gtk);
+        return NULL;
+    }
+
+    entry->submenu->menu = gtk->g.object_ref_sink(gtk->gtk.menu_new());
     entry->submenu->parent_tray = NULL;
     entry->submenu->parent_entry = entry;
     entry->submenu->nEntries = 0;
     entry->submenu->entries = NULL;
 
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(entry->item), GTK_WIDGET(entry->submenu->menu));
+    gtk->gtk.menu_item_set_submenu(GTK_MENU_ITEM(entry->item), GTK_WIDGET(entry->submenu->menu));
+
+    SDL_Gtk_ExitContext(gtk);
 
     return entry->submenu;
 }
@@ -625,7 +484,11 @@ void SDL_RemoveTrayEntry(SDL_TrayEntry *entry)
         menu->entries[menu->nEntries] = NULL;
     }
 
-    gtk_widget_destroy(entry->item);
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        gtk->gtk.widget_destroy(entry->item);
+        SDL_Gtk_ExitContext(gtk);
+    }
     SDL_free(entry);
 }
 
@@ -645,9 +508,15 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
         pos = menu->nEntries;
     }
 
-    SDL_TrayEntry *entry = (SDL_TrayEntry *)SDL_calloc(1, sizeof(*entry));
+    SDL_TrayEntry *entry = NULL;
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (!gtk) {
+        goto error;
+    }
+
+    entry = (SDL_TrayEntry *)SDL_calloc(1, sizeof(*entry));
     if (!entry) {
-        return NULL;
+        goto error;
     }
 
     entry->parent = menu;
@@ -659,23 +528,22 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
     entry->submenu = NULL;
 
     if (label == NULL) {
-        entry->item = gtk_separator_menu_item_new();
+        entry->item = gtk->gtk.separator_menu_item_new();
     } else if (flags & SDL_TRAYENTRY_CHECKBOX) {
-        entry->item = gtk_check_menu_item_new_with_label(label);
+        entry->item = gtk->gtk.check_menu_item_new_with_label(label);
         gboolean active = ((flags & SDL_TRAYENTRY_CHECKED) != 0);
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), active);
+        gtk->gtk.check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), active);
     } else {
-        entry->item = gtk_menu_item_new_with_label(label);
+        entry->item = gtk->gtk.menu_item_new_with_label(label);
     }
 
     gboolean sensitive = ((flags & SDL_TRAYENTRY_DISABLED) == 0);
-    gtk_widget_set_sensitive(entry->item, sensitive);
+    gtk->gtk.widget_set_sensitive(entry->item, sensitive);
 
     SDL_TrayEntry **new_entries = (SDL_TrayEntry **)SDL_realloc(menu->entries, (menu->nEntries + 2) * sizeof(*new_entries));
 
     if (!new_entries) {
-        SDL_free(entry);
-        return NULL;
+        goto error;
     }
 
     menu->entries = new_entries;
@@ -688,12 +556,25 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
     new_entries[pos] = entry;
     new_entries[menu->nEntries] = NULL;
 
-    gtk_widget_show(entry->item);
-    gtk_menu_shell_insert(menu->menu, entry->item, (pos == menu->nEntries) ? -1 : pos);
+    gtk->gtk.widget_show(entry->item);
+    gtk->gtk.menu_shell_insert(menu->menu, entry->item, (pos == menu->nEntries) ? -1 : pos);
 
-    g_signal_connect(entry->item, "activate", G_CALLBACK(call_callback), entry);
+    gtk->g.signal_connect(entry->item, "activate", call_callback, entry);
+
+    SDL_Gtk_ExitContext(gtk);
 
     return entry;
+
+error:
+    if (entry) {
+        SDL_free(entry);
+    }
+
+    if (gtk) {
+        SDL_Gtk_ExitContext(gtk);
+    }
+
+    return NULL;
 }
 
 void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
@@ -702,7 +583,11 @@ void SDL_SetTrayEntryLabel(SDL_TrayEntry *entry, const char *label)
         return;
     }
 
-    gtk_menu_item_set_label(GTK_MENU_ITEM(entry->item), label);
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        gtk->gtk.menu_item_set_label(GTK_MENU_ITEM(entry->item), label);
+        SDL_Gtk_ExitContext(gtk);
+    }
 }
 
 const char *SDL_GetTrayEntryLabel(SDL_TrayEntry *entry)
@@ -712,7 +597,15 @@ const char *SDL_GetTrayEntryLabel(SDL_TrayEntry *entry)
         return NULL;
     }
 
-    return gtk_menu_item_get_label(GTK_MENU_ITEM(entry->item));
+    const char *label = NULL;
+
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        label = gtk->gtk.menu_item_get_label(GTK_MENU_ITEM(entry->item));
+        SDL_Gtk_ExitContext(gtk);
+    }
+
+    return label;
 }
 
 void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
@@ -721,9 +614,13 @@ void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
         return;
     }
 
-    entry->ignore_signal = true;
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), checked);
-    entry->ignore_signal = false;
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        entry->ignore_signal = true;
+        gtk->gtk.check_menu_item_set_active(GTK_CHECK_MENU_ITEM(entry->item), checked);
+        entry->ignore_signal = false;
+        SDL_Gtk_ExitContext(gtk);
+    }
 }
 
 bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
@@ -732,7 +629,15 @@ bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
         return false;
     }
 
-    return gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(entry->item));
+    bool checked = false;
+
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        checked = gtk->gtk.check_menu_item_get_active(GTK_CHECK_MENU_ITEM(entry->item));
+        SDL_Gtk_ExitContext(gtk);
+    }
+
+    return checked;
 }
 
 void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
@@ -741,7 +646,11 @@ void SDL_SetTrayEntryEnabled(SDL_TrayEntry *entry, bool enabled)
         return;
     }
 
-    gtk_widget_set_sensitive(entry->item, enabled);
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        gtk->gtk.widget_set_sensitive(entry->item, enabled);
+        SDL_Gtk_ExitContext(gtk);
+    }
 }
 
 bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
@@ -750,7 +659,15 @@ bool SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry)
         return false;
     }
 
-    return gtk_widget_get_sensitive(entry->item);
+    bool enabled = false;
+
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        enabled = gtk->gtk.widget_get_sensitive(entry->item);
+        SDL_Gtk_ExitContext(gtk);
+    }
+
+    return enabled;
 }
 
 void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata)
@@ -823,12 +740,17 @@ void SDL_DestroyTray(SDL_Tray *tray)
         SDL_RemovePath(tray->icon_dir);
     }
 
-    if (tray->menu_cached) {
-        g_object_unref(tray->menu_cached);
-    }
+    SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
+    if (gtk) {
+        if (tray->menu_cached) {
+            gtk->g.object_unref(tray->menu_cached);
+        }
 
-    if (tray->indicator) {
-        g_object_unref(tray->indicator);
+        if (tray->indicator) {
+            gtk->g.object_unref(tray->indicator);
+        }
+
+        SDL_Gtk_ExitContext(gtk);
     }
 
     SDL_free(tray);

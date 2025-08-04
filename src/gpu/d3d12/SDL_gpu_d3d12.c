@@ -1183,7 +1183,6 @@ struct D3D12UniformBuffer
     D3D12Buffer *buffer;
     Uint32 writeOffset;
     Uint32 drawOffset;
-    Uint32 currentBlockSize;
 };
 
 // Forward function declarations
@@ -4494,7 +4493,6 @@ static D3D12UniformBuffer *D3D12_INTERNAL_AcquireUniformBufferFromPool(
 
     SDL_UnlockMutex(renderer->acquireUniformBufferLock);
 
-    uniformBuffer->currentBlockSize = 0;
     uniformBuffer->drawOffset = 0;
     uniformBuffer->writeOffset = 0;
 
@@ -4533,6 +4531,7 @@ static void D3D12_INTERNAL_PushUniformData(
     Uint32 length)
 {
     D3D12UniformBuffer *uniformBuffer;
+    Uint32 blockSize;
 
     if (shaderStage == SDL_GPU_SHADERSTAGE_VERTEX) {
         if (commandBuffer->vertexUniformBuffers[slotIndex] == NULL) {
@@ -4557,13 +4556,13 @@ static void D3D12_INTERNAL_PushUniformData(
         return;
     }
 
-    uniformBuffer->currentBlockSize =
+    blockSize =
         D3D12_INTERNAL_Align(
             length,
             256);
 
     // If there is no more room, acquire a new uniform buffer
-    if (uniformBuffer->writeOffset + uniformBuffer->currentBlockSize >= UNIFORM_BUFFER_SIZE) {
+    if (uniformBuffer->writeOffset + blockSize >= UNIFORM_BUFFER_SIZE) {
         ID3D12Resource_Unmap(
             uniformBuffer->buffer->handle,
             0,
@@ -4593,7 +4592,7 @@ static void D3D12_INTERNAL_PushUniformData(
         data,
         length);
 
-    uniformBuffer->writeOffset += uniformBuffer->currentBlockSize;
+    uniformBuffer->writeOffset += blockSize;
 
     if (shaderStage == SDL_GPU_SHADERSTAGE_VERTEX) {
         commandBuffer->needVertexUniformBufferBind[slotIndex] = true;
