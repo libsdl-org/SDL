@@ -48,7 +48,7 @@
  */
 // #define XRANDR_DISABLED_BY_DEFAULT
 
-static float GetGlobalContentScale(SDL_VideoDevice *_this)
+float X11_GetGlobalContentScale(SDL_VideoDevice *_this)
 {
     static double scale_factor = 0.0;
 
@@ -61,20 +61,6 @@ static float GetGlobalContentScale(SDL_VideoDevice *_this)
             if (value >= 1.0f && value <= 10.0f) {
                 scale_factor = value;
             }
-        }
-
-        // If that failed, try "Xft.dpi" from GTK if available. On XWayland this
-        // will retrieve the current scale factor which is not updated dynamically
-        // in the Xrm database.
-        SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
-        if (gtk) {
-            GtkSettings *gtksettings = gtk->gtk.settings_get_default();
-            if (gtksettings) {
-                int dpi = 0;
-                gtk->g.object_get(gtksettings, "gtk-xft-dpi", &dpi, NULL);
-                scale_factor = dpi / 1024.0 / 96.0;
-            }
-            SDL_Gtk_ExitContext(gtk);
         }
 
         // If that failed, try "Xft.dpi" from the XResourcesDatabase...
@@ -505,7 +491,7 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
         display->name = display_name;
     }
     display->desktop_mode = mode;
-    display->content_scale = GetGlobalContentScale(_this);
+    display->content_scale = X11_GetGlobalContentScale(_this);
     display->internal = displaydata;
 
     return true;
@@ -875,7 +861,7 @@ static bool X11_InitModes_StdXlib(SDL_VideoDevice *_this)
     display.name = (char *)"Generic X11 Display"; /* this is just copied and thrown away, it's safe to cast to char* here. */
     display.desktop_mode = mode;
     display.internal = displaydata;
-    display.content_scale = GetGlobalContentScale(_this);
+    display.content_scale = X11_GetGlobalContentScale(_this);
     if (SDL_AddVideoDisplay(&display, true) == 0) {
         return false;
     }
