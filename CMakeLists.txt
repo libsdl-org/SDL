@@ -1534,6 +1534,9 @@ elseif(OHOS)
     endif()
   endif()
 
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/ohos/*.c")
+  set(HAVE_SDL_LOCALE TRUE)
+
   set(SDL_LOADSO_DLOPEN 1)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
   set(HAVE_SDL_LOADSO TRUE)
