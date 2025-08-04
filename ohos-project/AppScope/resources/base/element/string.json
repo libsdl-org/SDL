@@ -3,6 +3,10 @@
     {
       "name": "app_name",
       "value": "MyApplication"
+    },
+    {
+      "name": "perm_reason",
+      "value": "Subsystem for SDL / SDL 子系统"
     }
   ]
 }

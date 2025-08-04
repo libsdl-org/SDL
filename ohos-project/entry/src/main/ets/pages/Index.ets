@@ -10,18 +10,15 @@ export class ArkNapiCallback {
     sdltest.sdlLaunchMain("libentry.so", "main")
   }
   showDialog(title: string, message: string) {
-    promptAction.showDialog({title: title, message: message, buttons: [{text: 'Ok', color: '#999999'}]});
+    promptAction.showDialog({title: title, message: message, buttons: [{text: 'Ok', color: '#999999'}]})
   }
   fetchLocale(): string {
-    let locale = new intl.Locale();
-    return locale.toString();
+    let locale = new intl.Locale()
+    return locale.language + "_" + locale.region
   }
   test(): number {
-    hilog.info(DOMAIN, 'testTag', 'Call from native !!!');
-    focusControl.requestFocus("inputHandler")
-    let locale = new intl.Locale();
-    hilog.info(DOMAIN, 'testTag', locale.toString());
-    return 1;
+    hilog.info(DOMAIN, 'testTag', 'Call from native !!!')
+    return 1
   }
 }
 

@@ -5,6 +5,7 @@
 #include "SDL3/SDL_timer.h"
 #include "SDL3/SDL_video.h"
 #include "SDL3/SDL_vulkan.h"
+#include "SDL3/SDL_locale.h"
 #include "napi/native_api.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_hints.h"
@@ -73,7 +74,9 @@ int main()
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_Init(SDL_INIT_VIDEO);
-    SDL_Log("Main func invoke !!!");
+    int i = 0;
+    auto t = SDL_GetPreferredLocales(&i);
+    SDL_Log("Main func invoke !!! %s %s", t[0]->country, t[0]->language);
     // SDL_GL_LoadLibrary("libGLESv2.so");
     SDL_Log("sdl error: %s", SDL_GetError());
     SDL_Window* win = SDL_CreateWindow("test", 1024, 1024, SDL_WINDOW_OPENGL);
