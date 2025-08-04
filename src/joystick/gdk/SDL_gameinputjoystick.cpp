@@ -279,6 +279,10 @@ static bool GAMEINPUT_JoystickInit(void)
         return false;
     }
 
+    // Allow background controller input
+    // SDL manages focus policy at a higher level, so we can set this unconditionally.
+    g_pGameInput->SetFocusPolicy(GameInputEnableBackgroundInput | GameInputEnableBackgroundGuideButton | GameInputEnableBackgroundShareButton);
+
     hr = g_pGameInput->RegisterDeviceCallback(NULL,
                                            GameInputKindController,
                                            GameInputDeviceConnected,
