@@ -240,24 +240,6 @@ void SDL_UpdateTrays(void)
     SDL_UpdateGtk();
 }
 
-bool SDL_IsTraySupported(void)
-{
-    if (!SDL_IsMainThread()) {
-        SDL_SetError("This function should be called on the main thread");
-        return false;
-    }
-
-    static bool has_trays = false;
-    static bool has_been_detected_once = false;
-
-    if (!has_been_detected_once) {
-        has_trays = init_appindicator() && SDL_Gtk_Init();
-        has_been_detected_once = true;
-    }
-
-    return has_trays;
-}
-
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     if (!SDL_IsMainThread()) {
