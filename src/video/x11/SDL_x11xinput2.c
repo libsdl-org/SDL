@@ -45,6 +45,11 @@ static bool xinput2_multitouch_supported;
  * this extension */
 static int xinput2_opcode;
 
+static Atom xinput2_rel_x_atom;
+static Atom xinput2_rel_y_atom;
+static Atom xinput2_abs_x_atom;
+static Atom xinput2_abs_y_atom;
+
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
 typedef struct
 {
@@ -67,23 +72,40 @@ static int scrollable_device_count;
 static bool xinput2_scrolling_supported;
 #endif
 
-static void parse_valuators(const double *input_values, const unsigned char *mask, int mask_len,
-                            double *output_values, int output_values_len)
+static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRawEvent *rawev)
 {
-    int i = 0, z = 0;
-    int top = mask_len * 8;
-    if (top > MAX_AXIS) {
-        top = MAX_AXIS;
+    double processed_coords[2] = { 0.0, 0.0 };
+    int values_i = 0, found = 0;
+
+    for (int i = 0; i < rawev->valuators.mask_len * 8 && found < 2; ++i) {
+        if (!XIMaskIsSet(rawev->valuators.mask, i)) {
+            continue;
+        }
+
+        for (int j = 0; j < 2; ++j) {
+            if (devinfo->number[j] == i) {
+                const double current_val = rawev->valuators.values[values_i];
+
+                if (devinfo->relative[j]) {
+                    processed_coords[j] = current_val;
+                } else {
+                    processed_coords[j] = devinfo->prev_coords[j] - current_val; // convert absolute to relative
+                }
+
+                devinfo->prev_coords[j] = current_val;
+                ++found;
+
+                break;
+            }
+        }
+
+        ++values_i;
     }
 
-    SDL_memset(output_values, 0, output_values_len * sizeof(double));
-    for (; i < top && z < output_values_len; i++) {
-        if (XIMaskIsSet(mask, i)) {
-            const int value = (int)*input_values;
-            output_values[z] = value;
-            input_values++;
-        }
-        z++;
+    // Relative mouse motion is delivered to the window with keyboard focus
+    SDL_Mouse *mouse = SDL_GetMouse();
+    if (mouse->relative_mode && SDL_GetKeyboardFocus()) {
+        SDL_SendMouseMotion(rawev->time, mouse->focus, (SDL_MouseID)rawev->sourceid, true, (float)processed_coords[0], (float)processed_coords[1]);
     }
 }
 
@@ -260,6 +282,12 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
     xinput2_multitouch_supported = xinput2_version_atleast(version, 2, 2);
 #endif
 
+    // Populate the atoms for finding relative axes
+    xinput2_rel_x_atom = X11_XInternAtom(data->display, "Rel X", False);
+    xinput2_rel_y_atom = X11_XInternAtom(data->display, "Rel Y", False);
+    xinput2_abs_x_atom = X11_XInternAtom(data->display, "Abs X", False);
+    xinput2_abs_y_atom = X11_XInternAtom(data->display, "Abs Y", False);
+
     // Enable raw motion events for this display
     SDL_zero(eventmask);
     SDL_zeroa(mask);
@@ -345,7 +373,6 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
     SDL_XInput2DeviceInfo *prev = NULL;
     SDL_XInput2DeviceInfo *devinfo;
     XIDeviceInfo *xidevinfo;
-    int axis = 0;
     int i;
 
     for (devinfo = videodata->mouse_device_info; devinfo; devinfo = devinfo->next) {
@@ -375,18 +402,49 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
 
     devinfo->device_id = device_id;
 
-    /* !!! FIXME: this is sort of hacky because we only care about the first two axes we see, but any given
-       !!! FIXME:  axis could be relative or absolute, and they might not even be the X and Y axes!
-       !!! FIXME:  But we go on, for now. Maybe we need a more robust mouse API in SDL3... */
+    /* Search for relative axes with the following priority:
+     *  - Labelled 'Rel X'/'Rel Y'
+     *   - Labelled 'Abs X'/'Abs Y'
+     *    - The first two axes found
+     */
+    bool have_rel_x = false, have_rel_y = false;
+    bool have_abs_x = false, have_abs_y = false;
+    int axis_index = 0;
     for (i = 0; i < xidevinfo->num_classes; i++) {
         const XIValuatorClassInfo *v = (const XIValuatorClassInfo *)xidevinfo->classes[i];
         if (v->type == XIValuatorClass) {
-            devinfo->relative[axis] = (v->mode == XIModeRelative);
-            devinfo->minval[axis] = v->min;
-            devinfo->maxval[axis] = v->max;
-            if (++axis >= 2) {
+            if (v->label == xinput2_rel_x_atom || (v->label == xinput2_abs_x_atom && !have_rel_x) ||
+                (axis_index == 0 && !have_rel_x && !have_abs_x)) {
+                devinfo->number[0] = v->number;
+                devinfo->relative[0] = (v->mode == XIModeRelative);
+                devinfo->minval[0] = v->min;
+                devinfo->maxval[0] = v->max;
+
+                if (v->label == xinput2_rel_x_atom) {
+                    have_rel_x = true;
+                } else if (v->label == xinput2_abs_x_atom) {
+                    have_abs_x = true;
+                }
+            } else if (v->label == xinput2_rel_y_atom || (v->label == xinput2_abs_y_atom && !have_rel_y) ||
+                       (axis_index == 1 && !have_rel_y && !have_abs_y)) {
+                devinfo->number[1] = v->number;
+                devinfo->relative[1] = (v->mode == XIModeRelative);
+                devinfo->minval[1] = v->min;
+                devinfo->maxval[1] = v->max;
+
+                if (v->label == xinput2_rel_y_atom) {
+                    have_rel_y = true;
+                } else if (v->label == xinput2_abs_y_atom) {
+                    have_abs_y = true;
+                }
+            }
+
+            // If two relative axes were found, nothing more to do.
+            if (have_rel_x && have_rel_y) {
                 break;
             }
+
+            ++axis_index;
         }
     }
 
@@ -437,41 +495,18 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     {
         const XIRawEvent *rawev = (const XIRawEvent *)cookie->data;
         const bool is_pen = X11_FindPenByDeviceID(rawev->sourceid) != NULL;
-        SDL_Mouse *mouse = SDL_GetMouse();
-        SDL_XInput2DeviceInfo *devinfo;
-        double coords[2];
-        double processed_coords[2];
-        int i;
-        Uint64 timestamp = X11_GetEventTimestamp(rawev->time);
 
         videodata->global_mouse_changed = true;
         if (is_pen) {
             break; // Pens check for XI_Motion instead
         }
 
-        devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
+        SDL_XInput2DeviceInfo *devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
         if (!devinfo) {
             break; // oh well.
         }
 
-        parse_valuators(rawev->raw_values, rawev->valuators.mask,
-                        rawev->valuators.mask_len, coords, 2);
-
-        for (i = 0; i < 2; i++) {
-            if (devinfo->relative[i]) {
-                processed_coords[i] = coords[i];
-            } else {
-                processed_coords[i] = devinfo->prev_coords[i] - coords[i]; // convert absolute to relative
-            }
-        }
-
-        // Relative mouse motion is delivered to the window with keyboard focus
-        if (mouse->relative_mode && SDL_GetKeyboardFocus()) {
-            SDL_SendMouseMotion(timestamp, mouse->focus, (SDL_MouseID)rawev->sourceid, true, (float)processed_coords[0], (float)processed_coords[1]);
-        }
-
-        devinfo->prev_coords[0] = coords[0];
-        devinfo->prev_coords[1] = coords[1];
+        parse_relative_valuators(devinfo, rawev);
     } break;
 
     case XI_KeyPress:
