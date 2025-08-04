@@ -1855,7 +1855,7 @@ bool Android_JNI_FileClose(void *userdata)
 
 bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-    SDL_assert((*path == '\0') || (path[SDL_strlen(path) - 1] == '/'));  // SDL_SYS_EnumerateDirectory() should have verified this.
+    SDL_assert(path != NULL);
 
     if (!asset_manager) {
         Internal_Android_Create_AssetManager();
