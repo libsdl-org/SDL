@@ -1927,11 +1927,15 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
             goto done;
         }
         if (commit) {
+            bool skip_spaces_switch = false;
             // If we're switching between a fullscreen Space and exclusive fullscreen, we need to get back to normal first.
             if (fullscreen && Cocoa_IsWindowInFullscreenSpace(window) && !window->last_fullscreen_exclusive_display && window->fullscreen_exclusive) {
                 if (!Cocoa_SetWindowFullscreenSpace(window, false, true)) {
                     goto error;
                 }
+
+                // We just left spaces to go to an exclusive mode, so don't try to re-enter.
+                skip_spaces_switch = true;
             } else if (fullscreen && window->last_fullscreen_exclusive_display && !window->fullscreen_exclusive) {
                 for (i = 0; i < _this->num_displays; ++i) {
                     SDL_VideoDisplay *last_display = _this->displays[i];
@@ -1945,8 +1949,10 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
                 }
             }
 
-            if (Cocoa_SetWindowFullscreenSpace(window, !!fullscreen, syncHint)) {
-                goto done;
+            if (!skip_spaces_switch) {
+                if (Cocoa_SetWindowFullscreenSpace(window, !!fullscreen, syncHint)) {
+                    goto done;
+                }
             }
         }
     }
