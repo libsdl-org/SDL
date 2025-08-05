@@ -1191,34 +1191,65 @@ endif()
 # General source files
 sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/*.c"
+  "${SDL3_SOURCE_DIR}/src/*.h"
+  "${SDL3_SOURCE_DIR}/src/*.c"
+  "${SDL3_SOURCE_DIR}/src/*.h"
   "${SDL3_SOURCE_DIR}/src/atomic/*.c"
+  "${SDL3_SOURCE_DIR}/src/atomic/*.h"
   "${SDL3_SOURCE_DIR}/src/audio/*.c"
+  "${SDL3_SOURCE_DIR}/src/audio/*.h"
   "${SDL3_SOURCE_DIR}/src/camera/*.c"
+  "${SDL3_SOURCE_DIR}/src/camera/*.h"
   "${SDL3_SOURCE_DIR}/src/core/*.c"
+  "${SDL3_SOURCE_DIR}/src/core/*.h"
   "${SDL3_SOURCE_DIR}/src/cpuinfo/*.c"
+  "${SDL3_SOURCE_DIR}/src/cpuinfo/*.h"
   "${SDL3_SOURCE_DIR}/src/dynapi/*.c"
+  "${SDL3_SOURCE_DIR}/src/dynapi/*.h"
   "${SDL3_SOURCE_DIR}/src/events/*.c"
+  "${SDL3_SOURCE_DIR}/src/events/*.h"
   "${SDL3_SOURCE_DIR}/src/io/*.c"
+  "${SDL3_SOURCE_DIR}/src/io/*.h"
   "${SDL3_SOURCE_DIR}/src/io/generic/*.c"
+  "${SDL3_SOURCE_DIR}/src/io/generic/*.h"
   "${SDL3_SOURCE_DIR}/src/filesystem/*.c"
+  "${SDL3_SOURCE_DIR}/src/filesystem/*.h"
   "${SDL3_SOURCE_DIR}/src/gpu/*.c"
+  "${SDL3_SOURCE_DIR}/src/gpu/*.h"
   "${SDL3_SOURCE_DIR}/src/joystick/*.c"
+  "${SDL3_SOURCE_DIR}/src/joystick/*.h"
   "${SDL3_SOURCE_DIR}/src/haptic/*.c"
+  "${SDL3_SOURCE_DIR}/src/haptic/*.h"
   "${SDL3_SOURCE_DIR}/src/hidapi/*.c"
+  "${SDL3_SOURCE_DIR}/src/hidapi/*.h"
   "${SDL3_SOURCE_DIR}/src/locale/*.c"
+  "${SDL3_SOURCE_DIR}/src/locale/*.h"
   "${SDL3_SOURCE_DIR}/src/main/*.c"
+  "${SDL3_SOURCE_DIR}/src/main/*.h"
   "${SDL3_SOURCE_DIR}/src/misc/*.c"
+  "${SDL3_SOURCE_DIR}/src/misc/*.h"
   "${SDL3_SOURCE_DIR}/src/power/*.c"
+  "${SDL3_SOURCE_DIR}/src/power/*.h"
   "${SDL3_SOURCE_DIR}/src/render/*.c"
+  "${SDL3_SOURCE_DIR}/src/render/*.h"
   "${SDL3_SOURCE_DIR}/src/render/*/*.c"
+  "${SDL3_SOURCE_DIR}/src/render/*/*.h"
   "${SDL3_SOURCE_DIR}/src/sensor/*.c"
+  "${SDL3_SOURCE_DIR}/src/sensor/*.h"
   "${SDL3_SOURCE_DIR}/src/stdlib/*.c"
+  "${SDL3_SOURCE_DIR}/src/stdlib/*.h"
   "${SDL3_SOURCE_DIR}/src/storage/*.c"
+  "${SDL3_SOURCE_DIR}/src/storage/*.h"
   "${SDL3_SOURCE_DIR}/src/thread/*.c"
+  "${SDL3_SOURCE_DIR}/src/thread/*.h"
   "${SDL3_SOURCE_DIR}/src/time/*.c"
+  "${SDL3_SOURCE_DIR}/src/time/*.h"
   "${SDL3_SOURCE_DIR}/src/timer/*.c"
+  "${SDL3_SOURCE_DIR}/src/timer/*.h"
   "${SDL3_SOURCE_DIR}/src/video/*.c"
+  "${SDL3_SOURCE_DIR}/src/video/*.h"
   "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.c"
+  "${SDL3_SOURCE_DIR}/src/video/yuv2rgb/*.h"
 )
 
 # Build uclibc as a static library such that non-used symbols don't end up in the SDL3 shared library.
@@ -3275,8 +3306,9 @@ list(APPEND SDL3_INCLUDE_FILES "${SDL3_BINARY_DIR}/include-revision/SDL3/SDL_rev
 if(SDL_FRAMEWORK)
   # With Apple frameworks, headers in the PUBLIC_HEADER property also need to be added as sources
   list(APPEND SDL3_INCLUDE_FILES ${SDL3_TEST_INCLUDE_FILES})
-  sdl_sources(${SDL3_INCLUDE_FILES})
 endif()
+
+sdl_sources(${SDL3_INCLUDE_FILES})
 
 if((CMAKE_STATIC_LIBRARY_PREFIX STREQUAL "" AND CMAKE_STATIC_LIBRARY_SUFFIX STREQUAL ".lib") OR SDL_FRAMEWORK)
   # - Avoid conflict between the dll import library and the static library
