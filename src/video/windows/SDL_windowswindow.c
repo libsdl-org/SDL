@@ -1043,16 +1043,16 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         WIN_SetWindowPosition(_this, window);
     }
 
-    /* If the window will immediately become fullscreen, use the borderless style to hide the initial borders.
-     *
-     * Note: The combination of flags used in STYLE_BORDERLESS_WINDOWED will still briefly show the borders if
-     * the initial window size exactly matches the desktop, so STYLE_BORDERLESS must be used instead.
-     */
+    // If the window isn't borderless and will be fullscreen, use the borderless style to hide the initial borders.
     if (window->pending_flags & SDL_WINDOW_FULLSCREEN) {
-        style = GetWindowLong(hwnd, GWL_STYLE);
-        style &= ~STYLE_MASK;
-        style |= STYLE_BORDERLESS;
-        SetWindowLong(hwnd, GWL_STYLE, style);
+        if (!(window->flags & SDL_WINDOW_BORDERLESS)) {
+            window->flags |= SDL_WINDOW_BORDERLESS;
+            style = GetWindowLong(hwnd, GWL_STYLE);
+            style &= ~STYLE_MASK;
+            style |= GetWindowStyle(window);
+            SetWindowLong(hwnd, GWL_STYLE, style);
+            window->flags &= ~SDL_WINDOW_BORDERLESS;
+        }
     }
     style = GetWindowLong(hwnd, GWL_EXSTYLE);
     if (style & WS_EX_NOACTIVATE) {
