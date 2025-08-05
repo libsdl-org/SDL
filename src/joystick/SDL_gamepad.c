@@ -30,6 +30,7 @@
 #include "controller_type.h"
 #include "usb_ids.h"
 #include "hidapi/SDL_hidapi_nintendo.h"
+#include "hidapi/SDL_hidapi_sinput.h"
 #include "../events/SDL_events_c.h"
 
 
@@ -53,6 +54,26 @@
 #define SDL_GAMEPAD_SDKGE_FIELD_SIZE    SDL_strlen(SDL_GAMEPAD_SDKGE_FIELD)
 #define SDL_GAMEPAD_SDKLE_FIELD         "sdk<=:"
 #define SDL_GAMEPAD_SDKLE_FIELD_SIZE    SDL_strlen(SDL_GAMEPAD_SDKLE_FIELD)
+
+// Helper function to add button mapping
+#ifndef ADD_BUTTON_MAPPING
+#define SDL_ADD_BUTTON_MAPPING(sdl_name, button_id, maxlen)                     \
+    do {                                                                        \
+        char temp[32];                                                          \
+        (void)SDL_snprintf(temp, sizeof(temp), "%s:b%d,", sdl_name, button_id); \
+        SDL_strlcat(mapping_string, temp, maxlen);                              \
+    } while (0)
+#endif
+
+// Helper function to add axis mapping
+#ifndef ADD_AXIS_MAPPING
+#define SDL_ADD_AXIS_MAPPING(sdl_name, axis_id, maxlen)                       \
+    do {                                                                      \
+        char temp[32];                                                        \
+        (void)SDL_snprintf(temp, sizeof(temp), "%s:a%d,", sdl_name, axis_id); \
+        SDL_strlcat(mapping_string, temp, maxlen);                            \
+    } while (0)
+#endif
 
 static bool SDL_gamepads_initialized;
 static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
@@ -689,6 +710,268 @@ static GamepadMapping_t *SDL_CreateMappingForAndroidGamepad(SDL_GUID guid)
 #endif // SDL_PLATFORM_ANDROID
 
 /*
+* Helper function to apply SInput decoded styles to the mapping string
+*/
+static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, char* mapping_string, size_t mapping_string_len)
+{
+    int current_button = 0;
+    int current_axis = 0;
+    bool digital_triggers = false;
+    bool bumpers = false;
+    bool left_stick = false;
+    bool right_stick = false;
+    bool paddle_second_pair = false;
+
+    // Analog joysticks (always come first in axis mapping)
+    switch (styles->analog_style) {
+    case SINPUT_ANALOGSTYLE_LEFTONLY:
+        SDL_ADD_AXIS_MAPPING("leftx", current_axis++, mapping_string_len);
+        SDL_ADD_AXIS_MAPPING("lefty", current_axis++, mapping_string_len);
+        left_stick = true;
+        break;
+
+    case SINPUT_ANALOGSTYLE_LEFTRIGHT:
+        SDL_ADD_AXIS_MAPPING("leftx", current_axis++, mapping_string_len);
+        SDL_ADD_AXIS_MAPPING("lefty", current_axis++, mapping_string_len);
+        SDL_ADD_AXIS_MAPPING("rightx", current_axis++, mapping_string_len);
+        SDL_ADD_AXIS_MAPPING("righty", current_axis++, mapping_string_len);
+        left_stick = true;
+        right_stick = true;
+        break;
+
+    case SINPUT_ANALOGSTYLE_RIGHTONLY:
+        SDL_ADD_AXIS_MAPPING("rightx", current_axis++, mapping_string_len);
+        SDL_ADD_AXIS_MAPPING("righty", current_axis++, mapping_string_len);
+        right_stick = true;
+        break;
+
+    default:
+        break;
+    }
+
+    // Analog triggers
+    switch (styles->trigger_style) {
+    // Analog triggers + bumpers
+    case SINPUT_TRIGGERSTYLE_ANALOG:
+        SDL_ADD_AXIS_MAPPING("lefttrigger", current_axis++, mapping_string_len);
+        SDL_ADD_AXIS_MAPPING("righttrigger", current_axis++, mapping_string_len);
+        break;
+
+    // Digital triggers + bumpers
+    case SINPUT_TRIGGERSTYLE_DIGITAL:
+        digital_triggers = true;
+        bumpers = true;
+        break;
+
+    // Only bumpers
+    case SINPUT_TRIGGERSTYLE_BUMPERS:
+        bumpers = true;
+        break;
+
+    default:
+        break;
+    }
+
+    // BAYX buttons (East, South, North, West)
+    SDL_ADD_BUTTON_MAPPING("b", current_button++, mapping_string_len); // East  (typically B on Xbox, Circle on PlayStation)
+    SDL_ADD_BUTTON_MAPPING("a", current_button++, mapping_string_len); // South (typically A on Xbox, X on PlayStation)
+    SDL_ADD_BUTTON_MAPPING("y", current_button++, mapping_string_len); // North (typically Y on Xbox, Triangle on PlayStation)
+    SDL_ADD_BUTTON_MAPPING("x", current_button++, mapping_string_len); // West  (typically X on Xbox, Square on PlayStation)
+
+    // DPad
+    SDL_strlcat(mapping_string, "dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,", mapping_string_len);
+
+    // Left and Right stick buttons
+    if (left_stick) {
+        SDL_ADD_BUTTON_MAPPING("leftstick", current_button++, mapping_string_len);
+    }
+    if (right_stick) {
+        SDL_ADD_BUTTON_MAPPING("rightstick", current_button++, mapping_string_len);
+    }
+
+    // Digital shoulder buttons (L/R Shoulder)
+    if (bumpers) {
+        SDL_ADD_BUTTON_MAPPING("leftshoulder", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("rightshoulder", current_button++, mapping_string_len);
+    }
+
+    // Digital trigger buttons (capability overrides analog)
+    if (digital_triggers) {
+        SDL_ADD_BUTTON_MAPPING("lefttrigger", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("righttrigger", current_button++, mapping_string_len);
+    }
+
+    // Paddle 1/2
+    switch (styles->paddle_style) {
+    case SINPUT_PADDLESTYLE_TWO:
+        SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
+        break;
+
+    case SINPUT_PADDLESTYLE_FOUR:
+        SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
+        paddle_second_pair = true;
+        break;
+
+    default:
+        break;
+    }
+
+    // Start/Plus & Select/Back
+    SDL_ADD_BUTTON_MAPPING("start", current_button++, mapping_string_len);
+    SDL_ADD_BUTTON_MAPPING("back", current_button++, mapping_string_len);
+
+    switch (styles->meta_style) {
+    case SINPUT_METASTYLE_GUIDE:
+        SDL_ADD_BUTTON_MAPPING("guide", current_button++, mapping_string_len);
+        break;
+
+    case SINPUT_METASTYLE_GUIDESHARE:
+        SDL_ADD_BUTTON_MAPPING("guide", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("misc1", current_button++, mapping_string_len);
+        break;
+
+    default:
+        break;
+    }
+
+    // Paddle 3/4
+    if (paddle_second_pair) {
+        SDL_ADD_BUTTON_MAPPING("paddle3", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("paddle4", current_button++, mapping_string_len);
+    }
+
+    // Touchpad buttons
+    switch (styles->touch_style) {
+    case SINPUT_TOUCHSTYLE_SINGLE:
+        SDL_ADD_BUTTON_MAPPING("touchpad", current_button++, mapping_string_len);
+        break;
+
+    case SINPUT_TOUCHSTYLE_DOUBLE:
+        SDL_ADD_BUTTON_MAPPING("touchpad", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("misc2", current_button++, mapping_string_len);
+        break;
+
+    default:
+        break;
+    }
+
+    switch (styles->misc_style) {
+    case SINPUT_MISCSTYLE_1:
+        SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
+        break;
+
+    case SINPUT_MISCSTYLE_2:
+        SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
+        break;
+
+    case SINPUT_MISCSTYLE_3:
+        SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("misc5", current_button++, mapping_string_len);
+        break;
+
+    case SINPUT_MISCSTYLE_4:
+        SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("misc5", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("misc6", current_button++, mapping_string_len);
+        break;
+
+    default:
+        break;
+    }
+
+    // Remove trailing comma
+    size_t len = SDL_strlen(mapping_string);
+    if (len > 0 && mapping_string[len - 1] == ',') {
+        mapping_string[len - 1] = '\0';
+    }
+}
+
+/*
+* Helper function to decode SInput features information packed into version
+*/
+static bool SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 product, Uint8 sub_product, Uint16 version, Uint8 face_style, char* mapping_string, size_t mapping_string_len)
+{
+    SDL_SInputStyles_t decoded = { 0 };
+
+    switch (face_style) {
+    default:
+        SDL_strlcat(mapping_string, "face:abxy,", mapping_string_len);
+        break;
+    case 2:
+        SDL_strlcat(mapping_string, "face:axby,", mapping_string_len);
+        break;
+    case 3:
+        SDL_strlcat(mapping_string, "face:bayx,", mapping_string_len);
+        break;
+    case 4:
+        SDL_strlcat(mapping_string, "face:sony,", mapping_string_len);
+        break;
+    }
+
+    switch (product) {
+    case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
+        switch (sub_product) {
+        default:
+            // ProGCC Primary Mapping
+            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", mapping_string_len);
+            break;
+        }
+        return true;
+
+    case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
+        switch (sub_product) {
+        default:
+            // GC Ultimate Primary Map
+            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,x:b1,y:b3,misc3:b8,misc4:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", mapping_string_len);
+            break;
+        }
+        return true;
+
+    case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
+        switch (sub_product) {
+        default:
+        case SINPUT_GENERIC_DEVMAP:
+            // Default Fully Exposed Mapping (Development Purposes)
+            SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b10,paddle2:b11,start:b12,back:b13,guide:b14,misc1:b15,paddle3:b16,paddle4:b17,touchpad:b18,misc2:b19,misc3:b20,misc4:b21,misc5:b22,misc6:b23", mapping_string_len);
+            break;
+
+        case SINPUT_GENERIC_DYNMAP:
+            // Decode styles for correct dynamic features
+            decoded.misc_style = (SINPUT_MISC_STYLE_E)(version % SINPUT_MISCSTYLE_MAX);
+            version /= SINPUT_MISCSTYLE_MAX;
+
+            decoded.touch_style = (SINPUT_TOUCH_STYLE_E)(version % SINPUT_TOUCHSTYLE_MAX);
+            version /= SINPUT_TOUCHSTYLE_MAX;
+
+            decoded.meta_style = (SINPUT_META_STYLE_E)(version % SINPUT_METASTYLE_MAX);
+            version /= SINPUT_METASTYLE_MAX;
+
+            decoded.paddle_style = (SINPUT_PADDLE_STYLE_E)(version % SINPUT_PADDLESTYLE_MAX);
+            version /= SINPUT_PADDLESTYLE_MAX;
+
+            decoded.trigger_style = (SINPUT_TRIGGER_STYLE_E)(version % SINPUT_TRIGGERSTYLE_MAX);
+            version /= SINPUT_TRIGGERSTYLE_MAX;
+
+            decoded.analog_style = (SINPUT_ANALOG_STYLE_E)(version % SINPUT_ANALOGSTYLE_MAX);
+
+            SDL_SInputStylesMapExtraction(&decoded, mapping_string, mapping_string_len);
+            break;
+        }
+        return true;
+
+    case USB_PRODUCT_BONZIRICHANNEL_FIREBIRD:
+    default:
+        // Unmapped device
+        return false;
+    }
+}
+
+/*
  * Helper function to guess at a mapping for HIDAPI gamepads
  */
 static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
@@ -697,10 +980,11 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
     char mapping_string[1024];
     Uint16 vendor;
     Uint16 product;
+    Uint16 version;
 
     SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, &version, NULL);
 
     if (SDL_IsJoystickWheel(vendor, product)) {
         // We don't want to pick up Logitech FFB wheels here
@@ -799,54 +1083,11 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             // This controller has no guide button
             SDL_strlcat(mapping_string, "a:b1,b:b0,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
     } else if (SDL_IsJoystickSInputController(vendor, product)) {
+
         Uint8 face_style = (guid.data[15] & 0xE0) >> 5;
-        Uint8 sub_type  = guid.data[15] & 0x1F;
+        Uint8 sub_product  = guid.data[15] & 0x1F;
 
-        // Apply face style according to gamepad response
-        switch (face_style) {
-        default:
-            SDL_strlcat(mapping_string, "face:abxy,", sizeof(mapping_string));
-            break;
-        case 2:
-            SDL_strlcat(mapping_string, "face:axby,", sizeof(mapping_string));
-            break;
-        case 3:
-            SDL_strlcat(mapping_string, "face:bayx,", sizeof(mapping_string));
-            break;
-        case 4:
-            SDL_strlcat(mapping_string, "face:sony,", sizeof(mapping_string));
-            break;
-        }
-
-        switch (product) {
-        case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
-            switch (sub_type) {
-            default:
-                // ProGCC Primary Mapping
-                SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
-                break;
-            }
-            break;
-        case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
-            switch (sub_type) {
-            default:
-                // GC Ultimate Primary Map
-                SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,misc3:b8,misc4:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
-                break;
-            } 
-            break;
-        case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
-            switch (sub_type) {
-            default:
-                // Default Fully Exposed Mapping (Development Purposes)
-                SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,a:b0,b:b1,x:b2,y:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b10,paddle2:b11,start:b12,back:b13,guide:b14,misc1:b15,paddle3:b16,paddle4:b17,touchpad:b18,misc2:b19,misc3:b20,misc4:b21,misc5:b22,misc6:b23", sizeof(mapping_string));
-                break;
-            }
-            break;
-        
-        case USB_PRODUCT_BONZIRICHANNEL_FIREBIRD:
-        default:
-            // Unmapped device
+        if (!SDL_CreateMappingStringForSInputGamepad(vendor, product, sub_product, version, face_style, mapping_string, sizeof(mapping_string))) {
             return NULL;
         }
     } else {
