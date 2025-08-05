@@ -389,10 +389,10 @@ DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
 
     int version = analogIndex;
     version = version * (int) SINPUT_TRIGGERSTYLE_MAX + triggerIndex;
-    version = version * (int)SINPUT_PADDLESTYLE_MAX + paddleIndex;
-    version = version * (int)SINPUT_METASTYLE_MAX + metaIndex;
-    version = version * (int)SINPUT_TOUCHSTYLE_MAX + touchIndex;
-    version = version * (int)SINPUT_MISCSTYLE_MAX + miscIndex;
+    version = version * (int) SINPUT_PADDLESTYLE_MAX + paddleIndex;
+    version = version * (int) SINPUT_METASTYLE_MAX + metaIndex;
+    version = version * (int) SINPUT_TOUCHSTYLE_MAX + touchIndex;
+    version = version * (int) SINPUT_MISCSTYLE_MAX + miscIndex;
 
     ctx->usage_masks[0] = mask[0];
     ctx->usage_masks[1] = mask[1];
