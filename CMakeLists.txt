@@ -1192,8 +1192,6 @@ endif()
 sdl_glob_sources(
   "${SDL3_SOURCE_DIR}/src/*.c"
   "${SDL3_SOURCE_DIR}/src/*.h"
-  "${SDL3_SOURCE_DIR}/src/*.c"
-  "${SDL3_SOURCE_DIR}/src/*.h"
   "${SDL3_SOURCE_DIR}/src/atomic/*.c"
   "${SDL3_SOURCE_DIR}/src/atomic/*.h"
   "${SDL3_SOURCE_DIR}/src/audio/*.c"
