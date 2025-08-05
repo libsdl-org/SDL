@@ -173,6 +173,7 @@ static VideoBootStrap *bootstrap[] = {
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_VIDEO_DRIVER_COCOA)
 // Support for macOS fullscreen spaces, etc.
 extern bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window);
+extern bool Cocoa_IsWindowInFullscreenSpaceTransition(SDL_Window *window);
 extern bool Cocoa_SetWindowFullscreenSpace(SDL_Window *window, bool state, bool blocking);
 extern bool Cocoa_IsShowingModalDialog(SDL_Window *window);
 #endif
@@ -2111,6 +2112,16 @@ bool SDL_SetWindowFullscreenMode(SDL_Window *window, const SDL_DisplayMode *mode
      * is in progress. It will be overwritten if a new request is made.
      */
     SDL_copyp(&window->current_fullscreen_mode, &window->requested_fullscreen_mode);
+
+#if defined(SDL_PLATFORM_MACOS) && defined(SDL_VIDEO_DRIVER_COCOA)
+    /* If this is called while in the middle of a Cocoa fullscreen spaces transition,
+     * wait until the transition has completed, or the window can wind up in a weird,
+     * broken state if a mode switch occurs while in a fullscreen space.
+     */
+    if (SDL_strcmp(_this->name, "cocoa") == 0 && Cocoa_IsWindowInFullscreenSpaceTransition(window)) {
+        SDL_SyncWindow(window);
+    }
+#endif
     if (SDL_WINDOW_FULLSCREEN_VISIBLE(window)) {
         SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_UPDATE, true);
         SDL_SyncIfRequired(window);
