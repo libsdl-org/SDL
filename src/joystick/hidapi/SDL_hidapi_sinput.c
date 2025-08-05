@@ -387,17 +387,19 @@ DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
         break;
     }
 
-    Uint16 version = analogIndex;
-    version = version * SINPUT_TRIGGERSTYLE_MAX + triggerIndex;
-    version = version * SINPUT_PADDLESTYLE_MAX + paddleIndex;
-    version = version * SINPUT_METASTYLE_MAX + metaIndex;
-    version = version * SINPUT_TOUCHSTYLE_MAX + touchIndex;
-    version = version * SINPUT_MISCSTYLE_MAX + miscIndex;
+    int version = analogIndex;
+    version = version * (int) SINPUT_TRIGGERSTYLE_MAX + triggerIndex;
+    version = version * (int)SINPUT_PADDLESTYLE_MAX + paddleIndex;
+    version = version * (int)SINPUT_METASTYLE_MAX + metaIndex;
+    version = version * (int)SINPUT_TOUCHSTYLE_MAX + touchIndex;
+    version = version * (int)SINPUT_MISCSTYLE_MAX + miscIndex;
 
     ctx->usage_masks[0] = mask[0];
     ctx->usage_masks[1] = mask[1];
     ctx->usage_masks[2] = mask[2];
     ctx->usage_masks[3] = mask[3];
+
+    version = SDL_clamp(version, 0, UINT16_MAX);
 
     device->guid.data[12] = (Uint8)(version & 0xFF);
     device->guid.data[13] = (Uint8)(version >> 8);
@@ -449,6 +451,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->accelRange = EXTRACTUINT16(data, 8);
     ctx->gyroRange = EXTRACTUINT16(data, 10);
 
+    bool use_dynamic_mapping = false;
 
     if ((device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC) && (device->vendor_id == USB_VENDOR_RASPBERRYPI)) {
         switch (ctx->sub_type) {
@@ -467,6 +470,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
             ctx->usage_masks[1] = data[13];
             ctx->usage_masks[2] = data[14];
             ctx->usage_masks[3] = data[15];
+            use_dynamic_mapping = true;
             break;
         }
     } else {
@@ -508,7 +512,9 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->gyroScale = CalculateGyroScale(ctx->gyroRange);
 
     // Process dynamic controller info
-    DeviceDynamicEncodingSetup(device);
+    if (use_dynamic_mapping) {
+        DeviceDynamicEncodingSetup(device);
+    }
 
     // Derive button count from mask
     for (Uint8 byte = 0; byte < 4; ++byte) {
