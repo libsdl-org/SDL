@@ -1445,7 +1445,6 @@ void SDL_PumpEventMaintenance(void)
     }
 #endif
 
-	// SDL_UpdateTrays will also pump GTK events if needed
     SDL_UpdateTrays();
 
     SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.

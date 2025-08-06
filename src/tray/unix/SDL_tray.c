@@ -233,7 +233,9 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
 
 void SDL_UpdateTrays(void)
 {
-    SDL_UpdateGtk();
+    if (SDL_HasActiveTrays()) {
+        SDL_UpdateGtk();
+    }
 }
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)

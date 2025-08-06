@@ -27,7 +27,8 @@
     ctx.sub.fn = (void *)SDL_LoadFunction(lib, #sym)
 
 #define SDL_GTK_SYM2(ctx, lib, sub, fn, sym)                              \
-    if (!(ctx.sub.fn = (void *)SDL_LoadFunction(lib, #sym))) {            \
+    SDL_GTK_SYM2_OPTIONAL(ctx, lib, sub, fn, sym);                        \
+    if (!ctx.sub.fn) {                                                    \
         return SDL_SetError("Could not load GTK functions");              \
     }
 
