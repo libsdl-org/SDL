@@ -128,7 +128,7 @@ _m_prefetch(void *__P)
  * \sa SDL_BIG_ENDIAN
  */
 #define SDL_BYTEORDER   SDL_LIL_ENDIAN___or_maybe___SDL_BIG_ENDIAN
-#elif defined(SDL_PLATFORM_LINUX)
+#elif defined(SDL_PLATFORM_LINUX) || defined(__GLIBC__)
 #include <endian.h>
 #define SDL_BYTEORDER  __BYTE_ORDER
 #elif defined(SDL_PLATFORM_SOLARIS)
