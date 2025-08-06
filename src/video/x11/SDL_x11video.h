@@ -103,6 +103,7 @@ struct SDL_VideoData
         Atom SDL_SELECTION;
         Atom TARGETS;
         Atom SDL_FORMATS;
+        Atom RESOURCE_MANAGER;
         Atom XdndAware;
         Atom XdndEnter;
         Atom XdndLeave;

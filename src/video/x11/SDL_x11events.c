@@ -850,16 +850,6 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
     }
 }
 
-static void X11_HandleSettingsEvent(SDL_VideoDevice *_this, const XEvent *xevent)
-{
-    SDL_VideoData *videodata = _this->internal;
-
-    SDL_assert(videodata->xsettings_window != None);
-    SDL_assert(xevent->xany.window == videodata->xsettings_window);
-
-    X11_HandleXsettings(_this, xevent);
-}
-
 static Bool isMapNotify(Display *display, XEvent *ev, XPointer arg)
 {
     XUnmapEvent *unmap;
@@ -1228,11 +1218,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         return;
     }
 
-    if ((videodata->xsettings_window != None) &&
-        (videodata->xsettings_window == xevent->xany.window)) {
-        X11_HandleSettingsEvent(_this, xevent);
-        return;
-    }
+    // xsettings internally filters events for the windows it watches
+    X11_HandleXsettingsEvent(_this, xevent);
 
     data = X11_FindWindow(_this, xevent->xany.window);
 
