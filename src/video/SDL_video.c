@@ -6164,7 +6164,7 @@ SDL_MenuItem* SDL_CreateMenuBarItem(SDL_MenuBar* menu_bar, const char *name, SDL
     menu_item->common.menu_bar = menu_bar;
     menu_item->common.type = type;
 
-    if (_this->CreateMenuBarItem(menu_item, name, event_type)) {
+    if (!_this->CreateMenuBarItem(menu_item, name, event_type)) {
         SDL_free(menu_item);
         return NULL;
     }
