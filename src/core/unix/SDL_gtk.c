@@ -114,8 +114,8 @@ static bool InitGtk(void)
     SDL_GTK_SYM(gtk, libgtk, gtk, menu_item_set_submenu);
     SDL_GTK_SYM(gtk, libgtk, gtk, menu_item_get_label);
     SDL_GTK_SYM(gtk, libgtk, gtk, menu_item_set_label);
-	SDL_GTK_SYM(gtk, libgtk, gtk, menu_shell_append);
-	SDL_GTK_SYM(gtk, libgtk, gtk, menu_shell_insert);
+    SDL_GTK_SYM(gtk, libgtk, gtk, menu_shell_append);
+    SDL_GTK_SYM(gtk, libgtk, gtk, menu_shell_insert);
     SDL_GTK_SYM(gtk, libgtk, gtk, check_menu_item_new_with_label);
     SDL_GTK_SYM(gtk, libgtk, gtk, check_menu_item_get_active);
     SDL_GTK_SYM(gtk, libgtk, gtk, check_menu_item_set_active);
@@ -127,6 +127,7 @@ static bool InitGtk(void)
 
     SDL_GTK_SYM(gtk, libgdk, g, signal_connect_data);
     SDL_GTK_SYM(gtk, libgdk, g, mkdtemp);
+    SDL_GTK_SYM(gtk, libgdk, g, get_user_cache_dir);
     SDL_GTK_SYM(gtk, libgdk, g, object_ref);
     SDL_GTK_SYM(gtk, libgdk, g, object_ref_sink);
     SDL_GTK_SYM(gtk, libgdk, g, object_unref);
