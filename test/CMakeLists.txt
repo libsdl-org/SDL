@@ -37,7 +37,7 @@ add_library(sdltests_utils OBJECT
 )
 target_link_libraries(sdltests_utils PRIVATE SDL3::Headers)
 
-file(GLOB RESOURCE_FILES *.bmp *.wav *.csv *.hex moose.dat utf8.txt)
+file(GLOB RESOURCE_FILES *.bmp *.wav *.csv *.hex moose.dat utf8.txt small.txt)
 
 option(SDLTEST_TRACKMEM "Run tests with --trackmem" OFF)
 

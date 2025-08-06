@@ -19,11 +19,13 @@ static SDL_Renderer *renderer = NULL;
 static SDL_Texture *texture = NULL;
 static SDL_AsyncIOQueue *queue = NULL;
 static SDLTest_CommonState *state = NULL;
+static char READ_BUFFER[4096] = { };
 
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     const char *base = NULL;
     SDL_AsyncIO *asyncio = NULL;
+    SDL_AsyncIO *read_asyncio = NULL;
     char **bmps = NULL;
     int bmpcount = 0;
     int i;
@@ -103,6 +105,24 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         }
     }
 
+    {
+        char* path =NULL;
+        if (SDL_asprintf(&path, "%s%s", base, "small.txt") < 0) {
+            SDL_free(path);
+            SDL_Log("Failed!");
+            return SDL_APP_FAILURE;
+        }
+
+        read_asyncio = SDL_AsyncIOFromFile(path, "r");
+        SDL_free(path);
+
+        /* buffer should be bigger than the file contents */
+        if (SDL_ReadAsyncIO(read_asyncio, READ_BUFFER, 0, 4096, queue, "small.txt") == false) {
+            SDL_Log("Failed!");
+            return SDL_APP_FAILURE;
+        }
+    }
+
     SDL_free(bmps);
 
     SDL_Log("Opening asyncio.tmp...");
@@ -130,7 +150,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     return SDLTest_CommonEventMainCallbacks(state, event);
 }
 
-static void async_io_task_complete(const SDL_AsyncIOOutcome *outcome)
+static SDL_AppResult async_io_task_complete(const SDL_AsyncIOOutcome *outcome)
 {
     const char *fname = (const char *) outcome->userdata;
     const char *resultstr = "[unknown result]";
@@ -146,7 +166,14 @@ static void async_io_task_complete(const SDL_AsyncIOOutcome *outcome)
     SDL_Log("File '%s' async results: %s", fname, resultstr);
 
     if (SDL_strncmp(fname, "asyncio.tmp", 11) == 0) {
-        return;
+        return SDL_APP_SUCCESS;
+    }
+
+    if (SDL_strncmp(fname, "small.txt", 9) == 0) {
+        if (outcome->result != SDL_ASYNCIO_COMPLETE) {
+            return SDL_APP_FAILURE;
+        }
+        return SDL_APP_SUCCESS;
     }
 
     if (outcome->result == SDL_ASYNCIO_COMPLETE) {
@@ -164,13 +191,18 @@ static void async_io_task_complete(const SDL_AsyncIOOutcome *outcome)
 
     SDL_free(outcome->userdata);
     SDL_free(outcome->buffer);
+    return SDL_APP_SUCCESS;
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
+    SDL_AppResult result;
     SDL_AsyncIOOutcome outcome;
     if (SDL_GetAsyncIOResult(queue, &outcome)) {
-        async_io_task_complete(&outcome);
+        result = async_io_task_complete(&outcome);
+        if (result != SDL_APP_SUCCESS) {
+            return result;
+        }
     }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
