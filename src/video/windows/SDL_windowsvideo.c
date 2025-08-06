@@ -990,15 +990,4 @@ static void Win32_DestroyMenuItem(SDL_MenuItem *menu_item)
     SDL_free(menu_item->common.platform);
 }
 
-static bool SDLCALL Win32_WindowsMessageHook(void *userdata, MSG *msg)
-{
-    if (msg->message != WM_COMMAND) {
-        return true;
-    }
-
-
-    return true;
-}
-
-
 #endif // SDL_VIDEO_DRIVER_WINDOWS

@@ -3037,8 +3037,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_DisableScreenSaver(void);
 typedef enum SDL_MenuItemType
 {
     SDL_MENU,
-    SDL_MENU_BUTTON,    // Start Enabled
-    SDL_MENU_CHECKABLE, // Start Unchecked and Enabled
+    SDL_MENU_BUTTON,
+    SDL_MENU_CHECKABLE,
 } SDL_MenuItemType;
 
 typedef struct SDL_MenuBar SDL_MenuBar;
@@ -3048,9 +3048,8 @@ typedef union SDL_MenuItem SDL_MenuItem;
 extern SDL_DECLSPEC SDL_MenuBar* SDL_CreateMenuBar(SDL_Window*window);
 extern SDL_DECLSPEC SDL_MenuItem* SDL_CreateMenuBarItem(SDL_MenuBar*menu_bar, const char*name, SDL_MenuItemType type, Uint16 event_type);
 extern SDL_DECLSPEC SDL_MenuItem* SDL_CreateMenuItem(SDL_Menu*menu_bar, const char*name, SDL_MenuItemType type, Uint16 event_type);
-// SDL_SetMenu(SDL_MenuBar* menu_bar);
 extern SDL_DECLSPEC bool SDL_CheckMenuItem(SDL_MenuItem*menu_item, bool checked);
-extern SDL_DECLSPEC bool SDL_EnableMenuItem(SDL_MenuItem*menu_item, bool enabled); // Start Enabled
+extern SDL_DECLSPEC bool SDL_EnableMenuItem(SDL_MenuItem*menu_item, bool enabled);
 extern SDL_DECLSPEC bool SDL_DestroyMenuBar(SDL_MenuBar*menu_bar);
 
 /**
