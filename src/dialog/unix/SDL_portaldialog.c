@@ -350,6 +350,7 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     }
 
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
+    DBusError error;
     DBusMessage *msg;
     DBusMessageIter params, options;
     const char *signal_id = NULL;
@@ -360,6 +361,8 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
 
     const char *err_msg = validate_filters(filters, nfilters);
+
+    dbus->error_init(&error);
 
     if (err_msg) {
         SDL_SetError("%s", err_msg);
@@ -459,7 +462,14 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     }
     dbus->message_iter_close_container(&params, &options);
 
-    DBusMessage *reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, DBUS_TIMEOUT_INFINITE, NULL);
+    DBusMessage *reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, DBUS_TIMEOUT_INFINITE, &error);
+    if (dbus->error_is_set(&error)) {
+        SDL_SetError("Failed to open dialog via DBus, %s: %s", error.name, error.message);
+        dbus->error_free(&error);
+        callback(userdata, NULL, -1);
+        goto cleanup;
+    }
+
     if (reply) {
         DBusMessageIter reply_iter;
         dbus->message_iter_init(reply, &reply_iter);
@@ -485,8 +495,15 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     }
 
     SDL_snprintf(filter, filter_len, SIGNAL_FILTER"%s'", signal_id);
-    dbus->bus_add_match(dbus->session_conn, filter, NULL);
+    dbus->bus_add_match(dbus->session_conn, filter, &error);
     SDL_free(filter);
+
+    if (dbus->error_is_set(&error)) {
+        SDL_SetError("Failed to set up DBus listener for dialog, %s: %s", error.name, error.message);
+        dbus->error_free(&error);
+        callback(userdata, NULL, -1);
+        goto cleanup;
+    }
 
     SignalCallback *data = SDL_malloc(sizeof(SignalCallback));
     if (!data) {
