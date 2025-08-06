@@ -177,6 +177,24 @@ static VideoBootStrap *bootstrap[] = {
         return result;                                                  \
     }
 
+#define CHECK_MENUBAR_MAGIC(menubar, result)                            \
+    if (!menubar) {                                                     \
+        SDL_SetError("Invalid menubar");                                \
+        return result;                                                  \
+    }
+
+#define CHECK_MENU_MAGIC(menu, result)                                  \
+    if (!menu) {                                                        \
+        SDL_SetError("Invalid menu");                                   \
+        return result;                                                  \
+    }
+
+#define CHECK_MENUITEM_MAGIC(menuitem, result)                          \
+    if (!menuitem) {                                                    \
+        SDL_SetError("Invalid menuitem");                               \
+        return result;                                                  \
+    }
+
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_VIDEO_DRIVER_COCOA)
 // Support for macOS fullscreen spaces, etc.
 extern bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window);
@@ -6113,19 +6131,41 @@ void SDL_OnApplicationDidEnterForeground(void)
 
 SDL_MenuBar* SDL_CreateMenuBar(SDL_Window *window)
 {
-    return _this->CreateMenuBar(window);
+    CHECK_WINDOW_MAGIC(window, NULL);
+    
+    if (!_this) {
+        return NULL;
+    }
+    
+    if (!_this->CreateMenuBar) {
+        return NULL;
+    }
+    
+    SDL_MenuBar *menu_bar = SDL_calloc(1, sizeof(SDL_MenuBar));
+    menu_bar->window = window;
+    
+    if (!_this->CreateMenuBar(menu_bar)) {
+        SDL_free(menu_bar);
+        return NULL;
+    }
+    
+    return menu_bar;
 }
 
 SDL_MenuItem* SDL_CreateMenuBarItem(SDL_MenuBar* menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type)
 {
+    CHECK_MENUBAR_MAGIC(menu_bar, NULL);
     if (type == SDL_MENU_CHECKABLE) {
         SDL_SetError("Can't created a checkable item on the menubar, they must be in a menu.");
         return false;
     }
+    
+    SDL_MenuItem *menu_item = SDL_calloc(1, sizeof(SDL_MenuItem));
+    menu_item->common.menu_bar = menu_bar;
+    menu_item->common.type = type;
 
-    SDL_MenuItem* menu_item = _this->CreateMenuBarItem(menu_bar, name, type, event_type);
-
-    if (menu_item == NULL) {
+    if (_this->CreateMenuBarItem(menu_item, name, event_type)) {
+        SDL_free(menu_item);
         return NULL;
     }
 
@@ -6133,8 +6173,7 @@ SDL_MenuItem* SDL_CreateMenuBarItem(SDL_MenuBar* menu_bar, const char *name, SDL
     if (menu_bar->item_list) {
         SDL_MenuItem* last = menu_bar->item_list;
 
-        for (; last->common.next; last = last->common.next)
-            ;
+        while (last->common.next) last = last->common.next;
 
         last->common.next = menu_item;
         menu_item->common.prev = last;
@@ -6145,11 +6184,16 @@ SDL_MenuItem* SDL_CreateMenuBarItem(SDL_MenuBar* menu_bar, const char *name, SDL
     return menu_item;
 }
 
-SDL_MenuItem* SDL_CreateMenuItem(SDL_Menu *menu, const char *name, SDL_MenuItemType type, Uint16 event_type)
+SDL_MenuItem* SDL_CreateMenuItem(SDL_Menu* menu, const char *name, SDL_MenuItemType type, Uint16 event_type)
 {
-    SDL_MenuItem* menu_item = _this->CreateMenuItem(menu, name, type, event_type);
-
-    if (menu_item == NULL) {
+    CHECK_MENU_MAGIC(menu, NULL);
+    
+    SDL_MenuItem *menu_item = SDL_calloc(1, sizeof(SDL_MenuItem));
+    menu_item->common.menu_bar = menu->common.menu_bar;
+    menu_item->common.type = type;
+    
+    if (!_this->CreateMenuItem(menu_item, name, event_type)) {
+        SDL_free(menu_item);
         return NULL;
     }
 
@@ -6170,6 +6214,7 @@ SDL_MenuItem* SDL_CreateMenuItem(SDL_Menu *menu, const char *name, SDL_MenuItemT
 
 bool SDL_CheckMenuItem(SDL_MenuItem* menu_item, bool checked)
 {
+    CHECK_MENUITEM_MAGIC(menu_item, NULL);
     if (menu_item->common.type != SDL_MENU_CHECKABLE) {
         SDL_SetError("menu_item isn't a checkable.");
         return false;
@@ -6180,6 +6225,7 @@ bool SDL_CheckMenuItem(SDL_MenuItem* menu_item, bool checked)
 
 bool SDL_EnableMenuItem(SDL_MenuItem* menu_item, bool enabled)
 {
+    CHECK_MENUITEM_MAGIC(menu_item, NULL);
     if (menu_item->common.type == SDL_MENU) {
         SDL_SetError("menu_item can't be a menu.");
         return false;

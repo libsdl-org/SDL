@@ -910,11 +910,9 @@ static HWND GetHwndFromWindow(SDL_Window *window)
     return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 }
 
-SDL_MenuBar *SDLCALL Win32_CreateMenuBar(SDL_Window *window)
+bool SDLCALL Win32_CreateMenuBar(SDL_MenuBar *menu_bar)
 {
-    SDL_MenuBar *menu_bar = SDL_calloc(1, sizeof(SDL_MenuBar));
     menu_bar->platform = CreatePlatformMenuData(INVALID_HANDLE_VALUE, SDL_MENU);
-    menu_bar->window = window;
     menu_bar->platform->handle_or_id = (UINT_PTR)CreateMenu();
 
     SetMenu(GetHwndFromWindow(window), (HMENU)menu_bar->platform->handle_or_id);
@@ -922,10 +920,8 @@ SDL_MenuBar *SDLCALL Win32_CreateMenuBar(SDL_Window *window)
     return menu_bar;
 }
 
-static SDL_MenuItem *Win32_CreateMenuItemImpl(HMENU menu, const char *name, SDL_MenuItemType type, Uint16 event_type, bool toplevel_menu)
+static bool Win32_CreateMenuItemImpl(SDL_MenuItem* menu_item, HMENU menu, const char *name, Uint16 event_type, bool toplevel_menu)
 {
-    SDL_MenuItem *menu_item = SDL_calloc(1, sizeof(SDL_MenuItem));
-    menu_item->common.type = type;
     menu_item->common.platform = CreatePlatformMenuData(menu, type);
     UINT flags = 0;
 
@@ -954,19 +950,17 @@ static SDL_MenuItem *Win32_CreateMenuItemImpl(HMENU menu, const char *name, SDL_
     return menu_item;
 }
 
-static SDL_MenuItem *Win32_CreateMenuBarItem(SDL_MenuBar *menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type)
+static bool Win32_CreateMenuBarItem(SDL_MenuItem* menu_item, const char *name, SDL_MenuItemType type, Uint16 event_type)
 {
-    SDL_MenuItem *item = Win32_CreateMenuItemImpl((HMENU)menu_bar->platform->handle_or_id, name, type, event_type, true);
-    item->common.menu_bar = menu_bar;
+    bool ret = Win32_CreateMenuItemImpl((HMENU)menu_bar->platform->handle_or_id, name, type, event_type, true);
 
     DrawMenuBar(GetHwndFromWindow(menu_bar->window));
     return item;
 }
 
-static SDL_MenuItem *Win32_CreateMenuItem(SDL_Menu *menu, const char *name, SDL_MenuItemType type, Uint16 event_type)
+static bool Win32_CreateMenuItem(SDL_MenuItem* menu_item, const char *name, SDL_MenuItemType type, Uint16 event_type)
 {
-    SDL_MenuItem *item = Win32_CreateMenuItemImpl((HMENU)menu->common.platform->handle_or_id, name, type, event_type, false);
-    item->common.menu_bar = menu->common.menu_bar;
+    bool ret = Win32_CreateMenuItemImpl((HMENU)menu->common.platform->handle_or_id, name, type, event_type, false);
 
     DrawMenuBar(GetHwndFromWindow(item->common.menu_bar->window));
     return item;

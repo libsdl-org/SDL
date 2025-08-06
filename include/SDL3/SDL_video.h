@@ -3046,8 +3046,8 @@ typedef struct SDL_Menu SDL_Menu;
 typedef union SDL_MenuItem SDL_MenuItem;
 
 extern SDL_DECLSPEC SDL_MenuBar* SDL_CreateMenuBar(SDL_Window*window);
-extern SDL_DECLSPEC SDL_MenuItem* SDL_CreateMenuBarItem(SDL_MenuBar*menu_bar, const char*name, SDL_MenuItemType type, Uint16 event_type);
-extern SDL_DECLSPEC SDL_MenuItem* SDL_CreateMenuItem(SDL_Menu*menu_bar, const char*name, SDL_MenuItemType type, Uint16 event_type);
+extern SDL_DECLSPEC SDL_MenuItem* SDL_CreateMenuBarItem(SDL_MenuBar*menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type);
+extern SDL_DECLSPEC SDL_MenuItem* SDL_CreateMenuItem(SDL_Menu*menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type);
 extern SDL_DECLSPEC bool SDL_CheckMenuItem(SDL_MenuItem*menu_item, bool checked);
 extern SDL_DECLSPEC bool SDL_EnableMenuItem(SDL_MenuItem*menu_item, bool enabled);
 extern SDL_DECLSPEC bool SDL_DestroyMenuBar(SDL_MenuBar*menu_bar);

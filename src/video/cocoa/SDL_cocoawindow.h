@@ -196,4 +196,12 @@ extern bool Cocoa_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 
 extern void Cocoa_MenuVisibilityCallback(void *userdata, const char *name, const char *oldValue, const char *newValue);
 
+
+extern bool SDLCALL Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar);
+extern bool Cocoa_CreateMenuBarItem(SDL_MenuItem *menu_item, const char *name, Uint16 event_type);
+extern bool Cocoa_CreateMenuItem(SDL_MenuItem *menu_item, const char *name, Uint16 event_type);
+extern bool Cocoa_CheckMenuItem(SDL_MenuItem *menu_item, bool checked);
+extern bool Cocoa_EnableMenuItem(SDL_MenuItem *menu_item, bool enabled);
+extern void Cocoa_DestroyMenuItem(SDL_MenuItem *menu_item);
+
 #endif // SDL_cocoawindow_h_

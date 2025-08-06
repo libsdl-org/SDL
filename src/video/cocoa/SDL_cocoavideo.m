@@ -126,6 +126,12 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->SetWindowParent = Cocoa_SetWindowParent;
         device->SetWindowModal = Cocoa_SetWindowModal;
         device->SyncWindow = Cocoa_SyncWindow;
+        device->CreateMenuBar = Cocoa_CreateMenuBar;
+        device->CreateMenuBarItem = Cocoa_CreateMenuBarItem;
+        device->CreateMenuItem = Cocoa_CreateMenuItem;
+        device->CheckMenuItem = Cocoa_CheckMenuItem;
+        device->EnableMenuItem = Cocoa_EnableMenuItem;
+        device->DestroyMenuItem = Cocoa_DestroyMenuItem;
 
 #ifdef SDL_VIDEO_OPENGL_CGL
         device->GL_LoadLibrary = Cocoa_GL_LoadLibrary;
@@ -328,6 +334,92 @@ void SDL_NSLog(const char *prefix, const char *text)
             NSLog(@"%@", nsText);
         }
     }
+}
+
+
+
+@interface PlatformMenuData2 : NSObject {
+@public
+    Uint16 user_event_type;
+    NSMenu *menubar;
+}
+
+- (void)Cocoa_PlatformMenuData_MenuButtonClicked;
+
+@end
+
+
+@implementation PlatformMenuData2
++ (PlatformMenuData2*)Cocoa_CreatePlatformMenuData{
+    
+}
+- (void)Cocoa_PlatformMenuData_MenuButtonClicked{
+    SDL_Event event;
+    event.type = SDL_EVENT_MENU_BUTTON_CLICKED;
+    event.menu.timestamp = SDL_GetTicksNS();
+    event.menu.user_event_type = user_event_type;
+
+    SDL_PushEvent(&event);
+}
+
+@end
+
+
+bool SDLCALL Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
+{
+    PlatformMenuData2* platform_menu =[PlatformMenuData2 new];
+    platform_menu->menubar = [NSMenu new];
+    [NSApp setMainMenu:platform_menu->menubar];
+    menu_bar->platform_data = CFBridgingRetain(platform_menu);
+    
+    return true;
+   // **** App Menu **** //
+//    NSMenuItem *appMenuItem = [NSMenuItem new];
+//    NSMenu *appMenu = [NSMenu new];
+//    [appMenu addItemWithTitle: @"Quit" action:@selector(terminate:) keyEquivalent:@"q"];
+//    [appMenuItem setSubmenu:appMenu];
+//    [menubar addItem:appMenuItem];
+//   // **** File Menu **** //
+//    NSMenuItem *fileMenuItem = [NSMenuItem new];
+//    NSMenu *fileMenu = [[NSMenu alloc] initWithTitle:@"File"];
+//    //[fileMenu addItemWithTitle:@"New" action:@selector(menuAction:) keyEquivalent:@""];
+//    //[fileMenu addItemWithTitle:@"Open" action:@selector(menuAction:) keyEquivalent:@""];
+//    //[fileMenu addItemWithTitle:@"Save" action:@selector(menuAction:) keyEquivalent:@""];
+//    NSMenuItem *newItem = [fileMenu addItemWithTitle:@"New" action:@selector(Cocoa_PlatformMenuData_MenuButtonClicked:) keyEquivalent:@""];
+//    newItem.target = platform_menu;
+//    [fileMenuItem setSubmenu: fileMenu];
+//    [menubar addItem: fileMenuItem];
+    
+    
+    
+    
+    return NULL;
+}
+
+bool Cocoa_CreateMenuBarItem(SDL_MenuItem *menu_item, const char *name, Uint16 event_type)
+{
+    menu_item->common.platform = CreatePlatformMenuData(menu, type);
+    return NULL;
+}
+
+bool Cocoa_CreateMenuItem(SDL_MenuItem *menu_item, const char *name, Uint16 event_type)
+{
+    return NULL;
+}
+
+bool Cocoa_CheckMenuItem(SDL_MenuItem *menu_item, bool checked)
+{
+    return false;
+}
+
+bool Cocoa_EnableMenuItem(SDL_MenuItem *menu_item, bool enabled)
+{
+    return false;
+}
+
+void Cocoa_DestroyMenuItem(SDL_MenuItem *menu_item)
+{
+    return false;
 }
 
 #endif // SDL_VIDEO_DRIVER_COCOA
