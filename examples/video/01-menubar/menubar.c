@@ -62,6 +62,7 @@ void CreateMenuBar()
   {
     // We can't create a top level checkable .
     SDL_MenuItem* checkable = SDL_CreateMenuBarItem(bar, "Incognito", SDL_MENU_CHECKABLE, MENU_BAR_INCOGNITO);
+    SDL_assert(!checkable);
     
     SDL_MenuItem* disabled = SDL_CreateMenuBarItem(bar, "Disabled Top-Level Button", SDL_MENU_BUTTON, MENU_BAR_TOP_LEVEL_BUTTON);
     SDL_EnableMenuItem(disabled, false);
@@ -75,7 +76,7 @@ void CreateMenuBar()
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char** argv) {
   SDL_CreateWindowAndRenderer("menu bar test", 640, 480, 0, &window, &renderer);
 
-  CreateMenuBar();
+  //CreateMenuBar();
 
   //return SDL_APP_SUCCESS;
   return SDL_APP_CONTINUE;
