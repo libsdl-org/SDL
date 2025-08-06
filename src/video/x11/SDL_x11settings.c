@@ -67,6 +67,7 @@ void X11_QuitXsettings(SDL_VideoDevice *_this)
 
     if (xsettings_data->xsettings) {
         xsettings_client_destroy(xsettings_data->xsettings);
+        xsettings_data->xsettings = NULL;
     }
 }
 
