@@ -1730,9 +1730,17 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
         // Use the pending position and dimensions, if available, otherwise, use the current.
         const int x = window->last_position_pending ? window->pending.x : window->x;
         const int y = window->last_position_pending ? window->pending.y : window->y;
-        const int w = window->last_size_pending ? window->pending.w : window->w;
-        const int h = window->last_size_pending ? window->pending.h : window->h;
-
+        int w, h;
+        if (window->last_size_pending) {
+            w = window->pending.w;
+            h = window->pending.h;
+        } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            w = 1;
+            h = 1;
+        } else {
+            w = window->w;
+            h = window->h;
+        }
         displayID = GetDisplayForRect(x, y, w, h);
     }
     if (!displayID) {
@@ -2881,9 +2889,6 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
 
     CHECK_WINDOW_MAGIC(window, false);
 
-    const int w = window->last_size_pending ? window->pending.w : window->windowed.w;
-    const int h = window->last_size_pending ? window->pending.h : window->windowed.h;
-
     original_displayID = SDL_GetDisplayForWindow(window);
 
     if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
@@ -2894,7 +2899,19 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
     }
     if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
         SDL_DisplayID displayID = original_displayID;
+        int w, h;
         SDL_Rect bounds;
+
+        if (window->last_size_pending) {
+            w = window->pending.w;
+            h = window->pending.h;
+        } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            w = 1;
+            h = 1;
+        } else {
+            w = window->windowed.w;
+            h = window->windowed.h;
+        }
 
         if (SDL_WINDOWPOS_ISCENTERED(x) && (x & 0xFFFF)) {
             displayID = (x & 0xFFFF);
