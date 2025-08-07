@@ -4421,8 +4421,8 @@ extern "C" {
 #define SDL_HINT_DEBUG_LOGGING "SDL_DEBUG_LOGGING"
 
 /**
- * \brief On Windows, this hint forces SDL to call SetCursor(NULL) to hide the mouse cursor,
- *        instead of using an invisible blank cursor.
+ * On Windows, this hint forces SDL to call SetCursor(NULL) to hide the mouse cursor,
+ * instead of using an invisible blank cursor.
  *
  * This may be required in certain environments (e.g., VMware or specific RDP configurations),
  * where SetCursorPos() does not function correctly if the cursor is not truly hidden using SetCursor(NULL).
