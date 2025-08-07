@@ -25,6 +25,7 @@
 #include "SDL_fcitx.h"
 #include "../../video/SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
+#include "../../core/unix/SDL_appid.h"
 #include "SDL_dbus.h"
 
 #ifdef SDL_VIDEO_DRIVER_X11
@@ -53,32 +54,14 @@ typedef struct FcitxClient
 
 static FcitxClient fcitx_client;
 
-static char *GetAppName(void)
+static const char *GetAppName(void)
 {
-#if defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_FREEBSD)
-    char *spot;
-    char procfile[1024];
-    char linkfile[1024];
-    int linksize;
-
-#ifdef SDL_PLATFORM_LINUX
-    (void)SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/exe", getpid());
-#elif defined(SDL_PLATFORM_FREEBSD)
-    (void)SDL_snprintf(procfile, sizeof(procfile), "/proc/%d/file", getpid());
-#endif
-    linksize = readlink(procfile, linkfile, sizeof(linkfile) - 1);
-    if (linksize > 0) {
-        linkfile[linksize] = '\0';
-        spot = SDL_strrchr(linkfile, '/');
-        if (spot) {
-            return SDL_strdup(spot + 1);
-        } else {
-            return SDL_strdup(linkfile);
-        }
+    const char *exe_name = SDL_GetExeName();
+    if (exe_name) {
+        return exe_name;
     }
-#endif // SDL_PLATFORM_LINUX || SDL_PLATFORM_FREEBSD
 
-    return SDL_strdup("SDL_App");
+    return "SDL_App";
 }
 
 static size_t Fcitx_GetPreeditString(SDL_DBusContext *dbus,
@@ -281,7 +264,7 @@ static bool FcitxCreateInputContext(SDL_DBusContext *dbus, const char *appname, 
 
 static bool FcitxClientCreateIC(FcitxClient *client)
 {
-    char *appname = GetAppName();
+    const char *appname = GetAppName();
     char *ic_path = NULL;
     SDL_DBusContext *dbus = client->dbus;
 
@@ -289,8 +272,6 @@ static bool FcitxClientCreateIC(FcitxClient *client)
     if (!FcitxCreateInputContext(dbus, appname, &ic_path)) {
         ic_path = NULL; // just in case.
     }
-
-    SDL_free(appname);
 
     if (ic_path) {
         SDL_free(client->ic_path);
