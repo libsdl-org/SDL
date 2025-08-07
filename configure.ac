@@ -124,9 +124,6 @@ fi
 BASE_CFLAGS=""
 BASE_LDFLAGS=""
 case "$host" in
-    *-*-android*)
-        BASE_LDFLAGS="-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384"
-        ;;
     *-*-cygwin*)
         # We build SDL on cygwin without the UNIX emulation layer
         save_CFLAGS="$CFLAGS"
