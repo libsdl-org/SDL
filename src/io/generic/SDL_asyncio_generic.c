@@ -87,7 +87,7 @@ static void SynchronousIO(SDL_AsyncIOTask *task)
     } else {
         const bool writing = (task->type == SDL_ASYNCIO_TASK_WRITE);
         task->result_size = (Uint64) (writing ? SDL_WriteIO(io, ptr, size) : SDL_ReadIO(io, ptr, size));
-        if (task->result_size == task->requested_size) {
+        if (task->result_size <= task->requested_size) {
             task->result = SDL_ASYNCIO_COMPLETE;
         } else {
             if (writing) {
