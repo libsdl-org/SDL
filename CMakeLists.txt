@@ -1275,6 +1275,9 @@ if(ANDROID)
     set(HAVE_SDL_MISC TRUE)
   endif()
 
+  # https://developer.android.com/guide/practices/page-sizes
+  list(APPEND EXTRA_LDFLAGS_BUILD "-Wl,-z,max-page-size=16384" "-Wl,-z,common-page-size=16384")
+
   # SDL_spinlock.c Needs to be compiled in ARM mode.
   # There seems to be no better way currently to set the ARM mode.
   # see: https://issuetracker.google.com/issues/62264618

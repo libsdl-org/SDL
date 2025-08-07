@@ -88,6 +88,10 @@ ifeq ($(NDK_DEBUG),1)
     cmd-strip :=
 endif
 
+# https://developer.android.com/guide/practices/page-sizes
+LOCAL_LDFLAGS += "-Wl,-z,max-page-size=16384"
+LOCAL_LDFLAGS += "-Wl,-z,common-page-size=16384"
+
 LOCAL_STATIC_LIBRARIES := cpufeatures
 
 include $(BUILD_SHARED_LIBRARY)
