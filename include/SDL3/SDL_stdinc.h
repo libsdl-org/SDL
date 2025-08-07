@@ -3426,7 +3426,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strnlen(const char *str, size_t bytes
  * Convert an integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3454,7 +3454,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_itoa(int value, char *str, int radix);
  * Convert an unsigned integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3482,7 +3482,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_uitoa(unsigned int value, char *str, int 
  * Convert a long integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3510,7 +3510,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ltoa(long value, char *str, int radix);
  * Convert an unsigned long integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3540,7 +3540,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ultoa(unsigned long value, char *str, int
  * Convert a long long integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3568,7 +3568,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_lltoa(long long value, char *str, int rad
  * Convert an unsigned long long integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3923,7 +3923,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str
 extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen);
 
 /**
- * Searches a string for the first occurence of any character contained in a
+ * Searches a string for the first occurrence of any character contained in a
  * breakset, and returns a pointer from the string to that character.
  *
  * \param str The null-terminated string to be searched. Must not be NULL, and
@@ -3931,7 +3931,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *st
  * \param breakset A null-terminated string containing the list of characters
  *                 to look for. Must not be NULL, and must not overlap with
  *                 `str`.
- * \returns A pointer to the location, in str, of the first occurence of a
+ * \returns A pointer to the location, in str, of the first occurrence of a
  *          character present in the breakset, or NULL if none is found.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -5821,7 +5821,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_iconv_close(SDL_iconv_t cd);
  * This function converts text between encodings, reading from and writing to
  * a buffer.
  *
- * It returns the number of succesful conversions on success. On error,
+ * It returns the number of successful conversions on success. On error,
  * SDL_ICONV_E2BIG is returned when the output buffer is too small, or
  * SDL_ICONV_EILSEQ is returned when an invalid input sequence is encountered,
  * or SDL_ICONV_EINVAL is returned when an incomplete input sequence is
