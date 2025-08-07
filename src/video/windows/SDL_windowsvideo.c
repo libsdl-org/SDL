@@ -893,11 +893,11 @@ static PlatformMenuData *CreatePlatformMenuData(HMENU owner, SDL_MenuItemType ty
 
     switch (type) {
     case SDL_MENU:
-        platform->menu_owner = INVALID_HANDLE_VALUE;
+        platform->menu_bar = INVALID_HANDLE_VALUE;
         platform->handle_or_id = (UINT_PTR)INVALID_HANDLE_VALUE;
         break;
     default:
-        platform->menu_owner = owner;
+        platform->menu_bar = owner;
         platform->handle_or_id = (UINT_PTR)SDL_WIN32_INVALID_MENU_ID;
         break;
     }
@@ -910,30 +910,35 @@ static HWND GetHwndFromWindow(SDL_Window *window)
     return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 }
 
+// PlatformMenuData platform_data = 
+
 bool SDLCALL Win32_CreateMenuBar(SDL_MenuBar *menu_bar)
 {
-    menu_bar->platform = CreatePlatformMenuData(INVALID_HANDLE_VALUE, SDL_MENU);
-    menu_bar->platform->handle_or_id = (UINT_PTR)CreateMenu();
+    PlatformMenuData* platform_data = CreatePlatformMenuData(INVALID_HANDLE_VALUE, SDL_MENU);
+    menu_bar->platform_data = (void*)platform_data;
+    platform_data->handle_or_id = (UINT_PTR)CreateMenu();
 
-    SetMenu(GetHwndFromWindow(window), (HMENU)menu_bar->platform->handle_or_id);
+    SetMenu(GetHwndFromWindow(menu_bar->window), (HMENU)platform_data->handle_or_id);
 
     return menu_bar;
 }
 
-static bool Win32_CreateMenuItemImpl(SDL_MenuItem* menu_item, HMENU menu, const char *name, Uint16 event_type, bool toplevel_menu)
+static bool Win32_CreateMenuItemImpl(SDL_MenuItem *menu_item, HMENU menu, const char *name, Uint16 event_type, bool toplevel_menu)
 {
-    menu_item->common.platform = CreatePlatformMenuData(menu, type);
+    PlatformMenuData *platform_data = CreatePlatformMenuData(menu, menu_item->common.type);
+    menu_item->common.platform_data = (void *)platform_data;
+
     UINT flags = 0;
 
     if (!toplevel_menu) {
         flags = MF_STRING;
     }
 
-    if (type == SDL_MENU) {
+    if (menu_item->common.type == SDL_MENU) {
         if (toplevel_menu) {
-            menu_item->common.platform->handle_or_id = (UINT_PTR)CreateMenu();
+            platform_data->handle_or_id = (UINT_PTR)CreateMenu();
         } else {
-            menu_item->common.platform->handle_or_id = (UINT_PTR)CreatePopupMenu();
+            platform_data->handle_or_id = (UINT_PTR)CreatePopupMenu();
         }
 
         flags |= MF_POPUP;
@@ -942,46 +947,44 @@ static bool Win32_CreateMenuItemImpl(SDL_MenuItem* menu_item, HMENU menu, const 
             flags |= MF_STRING;
         }
 
-        menu_item->common.platform->handle_or_id = (UINT_PTR)event_type;
+        platform_data->handle_or_id = (UINT_PTR)event_type;
     }
 
-    AppendMenuA(menu, flags, menu_item->common.platform->handle_or_id, name);
+    AppendMenuA(menu, flags, platform_data->handle_or_id, name);
 
     return menu_item;
 }
 
-static bool Win32_CreateMenuBarItem(SDL_MenuItem* menu_item, const char *name, SDL_MenuItemType type, Uint16 event_type)
+static bool Win32_CreateMenuBarItem(SDL_MenuItem *menu_item, const char *name, SDL_MenuItemType type, Uint16 event_type)
 {
-    bool ret = Win32_CreateMenuItemImpl((HMENU)menu_bar->platform->handle_or_id, name, type, event_type, true);
+    bool ret = Win32_CreateMenuItemImpl((HMENU)menu_bar->platform_data->handle_or_id, name, type, event_type, true);
 
     DrawMenuBar(GetHwndFromWindow(menu_bar->window));
     return item;
 }
 
-static bool Win32_CreateMenuItem(SDL_MenuItem* menu_item, const char *name, SDL_MenuItemType type, Uint16 event_type)
+static bool Win32_CreateMenuItem(SDL_MenuItem *menu_item, const char *name, SDL_MenuItemType type, Uint16 event_type)
 {
-    bool ret = Win32_CreateMenuItemImpl((HMENU)menu->common.platform->handle_or_id, name, type, event_type, false);
+    bool ret = Win32_CreateMenuItemImpl((HMENU)menu_item->common.platform_data->handle_or_id, name, type, event_type, false);
 
-    DrawMenuBar(GetHwndFromWindow(item->common.menu_bar->window));
-    return item;
+    DrawMenuBar(GetHwndFromWindow(menu_item->common.menu_bar->window));
+    return true;
 }
 
 static bool Win32_CheckMenuItem(SDL_MenuItem *menu_item, bool checked)
 {
-    return CheckMenuItem(menu_item->common.platform->menu_owner, (UINT)menu_item->common.platform->handle_or_id, MF_BYCOMMAND | (checked ? MF_CHECKED : MF_UNCHECKED));
-    ;
+    return CheckMenuItem(menu_item->common.platform_data->menu_bar, (UINT)menu_item->common.platform_data->handle_or_id, MF_BYCOMMAND | (checked ? MF_CHECKED : MF_UNCHECKED));
 }
 
 static bool Win32_EnableMenuItem(SDL_MenuItem *menu_item, bool enabled)
 {
-    return EnableMenuItem(menu_item->common.platform->menu_owner, (UINT)menu_item->common.platform->handle_or_id, MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_GRAYED));
-    ;
+    return EnableMenuItem(menu_item->common.platform_data->menu_bar, (UINT)menu_item->common.platform_data->handle_or_id, MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_GRAYED));
 }
 
 static void Win32_DestroyMenuItem(SDL_MenuItem *menu_item)
 {
-    RemoveMenu(menu_item->common.platform->menu_owner, (UINT)menu_item->common.platform->handle_or_id, MF_BYCOMMAND);
-    SDL_free(menu_item->common.platform);
+    RemoveMenu(menu_item->common.platform_data->menu_bar, (UINT)menu_item->common.platform_data->handle_or_id, MF_BYCOMMAND);
+    SDL_free(menu_item->common.platform_data);
 }
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS
