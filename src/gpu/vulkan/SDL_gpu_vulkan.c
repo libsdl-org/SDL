@@ -9587,6 +9587,7 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
 
     commandBuffer->autoReleaseFence = true;
 
+    commandBuffer->swapchainRequested = false;
     commandBuffer->isDefrag = 0;
 
     /* Reset the command buffer here to avoid resets being called
