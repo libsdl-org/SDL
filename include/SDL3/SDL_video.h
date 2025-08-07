@@ -1519,7 +1519,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_COCOA_WINDOW_POINTER`: the `(__unsafe_unretained)`
  *   NSWindow associated with the window
  * - `SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER`: the NSInteger tag
- *   assocated with metal views on the window
+ *   associated with metal views on the window
  *
  * On OpenVR:
  *
