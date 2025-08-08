@@ -1080,7 +1080,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
 {
     const char *utfname = (*env)->GetStringUTFChars(env, name, NULL);
 
-    SDL_AddTouch((SDL_TouchID)touchId, SDL_TOUCH_DEVICE_DIRECT, utfname);
+    SDL_AddTouch(Android_ConvertJavaTouchID(touchId),
+            SDL_TOUCH_DEVICE_DIRECT, utfname);
 
     (*env)->ReleaseStringUTFChars(env, name, utfname);
 }
