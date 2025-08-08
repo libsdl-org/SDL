@@ -1593,7 +1593,7 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         seat->keyboard.sdl_keymap = SDL_calloc(seat->keyboard.xkb.num_layouts, sizeof(SDL_Keymap *));
         for (xkb_layout_index_t i = 0; i < seat->keyboard.xkb.num_layouts; ++i) {
             seat->keyboard.sdl_keymap[i] = SDL_CreateKeymap(false);
-            if (!seat->keyboard.sdl_keymap) {
+            if (!seat->keyboard.sdl_keymap[i]) {
                 return;
             }
         }
