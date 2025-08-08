@@ -1674,6 +1674,21 @@ SDL_DisplayID SDL_GetDisplayForRect(const SDL_Rect *rect)
     return GetDisplayForRect(rect->x, rect->y, rect->w, rect->h);
 }
 
+static SDL_DisplayID GetDisplayAtOrigin(int x, int y)
+{
+    for (int i = 0; i < _this->num_displays; ++i) {
+        SDL_Rect rect;
+        const SDL_DisplayID cur_id = _this->displays[i]->id;
+        if (SDL_GetDisplayBounds(cur_id, &rect)) {
+            if (x == rect.x && y == rect.y) {
+                return cur_id;
+            }
+        }
+    }
+
+    return 0;
+}
+
 SDL_DisplayID SDL_GetDisplayForWindowPosition(SDL_Window *window)
 {
     int x, y;
@@ -1736,7 +1751,11 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForFullscreenWindow(SDL_Window *window)
         const int w = window->last_size_pending ? window->pending.w : window->w;
         const int h = window->last_size_pending ? window->pending.h : window->h;
 
-        displayID = GetDisplayForRect(x, y, w, h);
+        // Check if the window is exactly at the origin of a display. Otherwise, fall back to the generic check.
+        displayID = GetDisplayAtOrigin(x, y);
+        if (!displayID) {
+            displayID = GetDisplayForRect(x, y, w, h);
+        }
     }
     if (!displayID) {
         // Use the primary display for a window if we can't find it anywhere else
@@ -2929,16 +2948,7 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
          * the pending fullscreen display ID if it does. This needs to be set early in case
          * the window is prevented from moving to the exact origin due to struts.
          */
-        for (int i = 0; i < _this->num_displays; ++i) {
-            SDL_Rect rect;
-            const SDL_DisplayID cur_id = _this->displays[i]->id;
-            if (SDL_GetDisplayBounds(cur_id, &rect)) {
-                if (x == rect.x && y == rect.y) {
-                    window->pending_displayID = cur_id;
-                    break;
-                }
-            }
-        }
+        window->pending_displayID = GetDisplayAtOrigin(x, y);
     }
 
     window->pending.x = x;
