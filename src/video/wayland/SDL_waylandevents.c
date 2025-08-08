@@ -1591,9 +1591,18 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     seat->keyboard.xkb.num_layouts = WAYLAND_xkb_keymap_num_layouts(seat->keyboard.xkb.keymap);
     if (seat->keyboard.xkb.num_layouts) {
         seat->keyboard.sdl_keymap = SDL_calloc(seat->keyboard.xkb.num_layouts, sizeof(SDL_Keymap *));
+        if (!seat->keyboard.sdl_keymap) {
+            return;
+        }
+
         for (xkb_layout_index_t i = 0; i < seat->keyboard.xkb.num_layouts; ++i) {
             seat->keyboard.sdl_keymap[i] = SDL_CreateKeymap(false);
-            if (!seat->keyboard.sdl_keymap) {
+            if (!seat->keyboard.sdl_keymap[i]) {
+                for (xkb_layout_index_t j = 0; j < i; ++j) {
+                    SDL_DestroyKeymap(seat->keyboard.sdl_keymap[j]);
+                }
+                SDL_free(seat->keyboard.sdl_keymap);
+                seat->keyboard.sdl_keymap = NULL;
                 return;
             }
         }
@@ -2095,7 +2104,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
     Wayland_HandleModifierKeys(seat, scancode, state == WL_KEYBOARD_KEY_STATE_PRESSED);
 
     // If we have a key with unknown scancode, check if the keysym corresponds to a valid Unicode value, and assign it a reserved scancode.
-    if (scancode == SDL_SCANCODE_UNKNOWN && syms) {
+    if (scancode == SDL_SCANCODE_UNKNOWN && syms && seat->keyboard.sdl_keymap) {
         const SDL_Keycode keycode = (SDL_Keycode)SDL_KeySymToUcs4(syms[0]);
         if (keycode != SDLK_UNKNOWN) {
             SDL_Keymod modstate = SDL_KMOD_NONE;
