@@ -3306,10 +3306,6 @@ bool SDL_SetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
         return SDL_InvalidParamError("blendMode");
     }
 
-    if (blendMode == SDL_BLENDMODE_INVALID) {
-        return SDL_InvalidParamError("blendMode");
-    }
-
     if (!IsSupportedBlendMode(renderer, blendMode)) {
         return SDL_Unsupported();
     }
