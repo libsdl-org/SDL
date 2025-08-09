@@ -544,6 +544,7 @@ class AndroidApiVersion:
 
 ANDROID_ABI_EXTRA_LINK_OPTIONS = {
     "arm64-v8a": "-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384",
+    "x86_64": "-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384",
 }
 
 class Releaser:
