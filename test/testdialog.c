@@ -22,7 +22,7 @@ const SDL_DialogFileFilter filters[] = {
     { "PNG images", "png" }
 };
 
-static void SDLCALL callback(void *userdata, const char * const *files, int filter) {
+static void SDLCALL file_callback(void *userdata, const char * const *files, int filter) {
     if (files) {
         const char* filter_name = "(filter fetching unsupported)";
 
@@ -45,16 +45,109 @@ static void SDLCALL callback(void *userdata, const char * const *files, int filt
     }
 }
 
+static void SDLCALL input_callback(void *userdata, const char *input, SDL_DialogResult result) {
+    switch (result)
+    {
+    case SDL_DIALOGRESULT_ERROR:
+        SDL_Log("Error: %s\n", SDL_GetError());
+        break;
+
+    case SDL_DIALOGRESULT_CANCEL:
+        SDL_Log("Cancel\n");
+        break;
+
+    case SDL_DIALOGRESULT_SUCCESS:
+        SDL_Log("'%s'\n", input);
+        break;
+
+    default:
+        SDL_Log("Unknown result: %d\n", result);
+    }
+}
+
+static bool progress_done = false;
+
+static void SDLCALL progress_callback(void* dialog, SDL_DialogResult result)
+{
+    switch (result)
+    {
+    case SDL_DIALOGRESULT_ERROR:
+        SDL_Log("Error: %s\n", SDL_GetError());
+        break;
+
+    case SDL_DIALOGRESULT_CANCEL:
+        SDL_Log("Cancel\n");
+        break;
+
+    case SDL_DIALOGRESULT_SUCCESS:
+        SDL_Log("Success\n");
+        break;
+
+    default:
+        SDL_Log("Unknown result: %d\n", result);
+    }
+
+    progress_done = true;
+}
+
+static void SDLCALL color_callback(void* userdata, SDL_Color c, SDL_DialogResult result)
+{
+    switch (result)
+    {
+    case SDL_DIALOGRESULT_ERROR:
+        SDL_Log("Error: %s\n", SDL_GetError());
+        break;
+
+    case SDL_DIALOGRESULT_CANCEL:
+        SDL_Log("Cancel\n");
+        break;
+
+    case SDL_DIALOGRESULT_SUCCESS:
+        SDL_Log("%d, %d, %d, %d\n", c.r, c.g, c.b, c.a);
+        break;
+
+    default:
+        SDL_Log("Unknown result: %d\n", result);
+    }
+}
+
+static void SDLCALL date_callback(void* userdata, SDL_Date d, SDL_DialogResult result)
+{
+    switch (result)
+    {
+    case SDL_DIALOGRESULT_ERROR:
+        SDL_Log("Error: %s\n", SDL_GetError());
+        break;
+
+    case SDL_DIALOGRESULT_CANCEL:
+        SDL_Log("Cancel\n");
+        break;
+
+    case SDL_DIALOGRESULT_SUCCESS:
+        SDL_Log("%04d-%02d-%02d\n", d.y, d.m, d.d);
+        break;
+
+    default:
+        SDL_Log("Unknown result: %d\n", result);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     SDL_Window *w;
     SDL_Renderer *r;
     SDLTest_CommonState *state;
-    const SDL_FRect open_file_rect = { 50, 50, 220, 140 };
-    const SDL_FRect save_file_rect = { 50, 290, 220, 140 };
-    const SDL_FRect open_folder_rect = { 370, 50, 220, 140 };
+    const SDL_FRect open_file_rect = { 50, 50, 220, 70 };
+    const SDL_FRect save_file_rect = { 370, 50, 220, 70 };
+    const SDL_FRect open_folder_rect = { 50, 140, 220, 70 };
+    const SDL_FRect input_rect = { 370, 140, 220, 70 };
+    const SDL_FRect progress_rect = { 50, 230, 220, 70 };
+    const SDL_FRect color_rect = { 370, 230, 220, 70 };
+    const SDL_FRect date_rect = { 50, 320, 220, 70 };
     int i;
     const char *initial_path = NULL;
+    SDL_ProgressDialog* progress_dialog = NULL;
+    int progress;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -112,11 +205,37 @@ int main(int argc, char *argv[])
                  * - Nonzero if the user is allowed to choose multiple entries (not for SDL_ShowSaveFileDialog)
                  */
                 if (SDL_PointInRectFloat(&p, &open_file_rect)) {
-                    SDL_ShowOpenFileDialog(callback, NULL, w, filters, SDL_arraysize(filters), initial_path, 1);
+                    SDL_ShowOpenFileDialog(file_callback, NULL, w, filters, SDL_arraysize(filters), initial_path, 1);
                 } else if (SDL_PointInRectFloat(&p, &open_folder_rect)) {
-                    SDL_ShowOpenFolderDialog(callback, NULL, w, initial_path, 1);
+                    SDL_ShowOpenFolderDialog(file_callback, NULL, w, initial_path, 1);
                 } else if (SDL_PointInRectFloat(&p, &save_file_rect)) {
-                    SDL_ShowSaveFileDialog(callback, NULL, w, filters, SDL_arraysize(filters), initial_path);
+                    SDL_ShowSaveFileDialog(file_callback, NULL, w, filters, SDL_arraysize(filters), initial_path);
+                } else if (SDL_PointInRectFloat(&p, &input_rect)) {
+                    SDL_PropertiesID props = SDL_CreateProperties();
+                    SDL_SetPointerProperty(props, SDL_PROP_INPUT_DIALOG_WINDOW_POINTER, w);
+                    SDL_ShowInputDialogWithProperties(input_callback, NULL, props);
+                    SDL_DestroyProperties(props);
+                } else if (SDL_PointInRectFloat(&p, &progress_rect)) {
+                    if (progress_dialog) {
+                        continue;
+                    }
+                    SDL_PropertiesID props = SDL_CreateProperties();
+                    SDL_SetPointerProperty(props, SDL_PROP_PROGRESS_DIALOG_WINDOW_POINTER, w);
+                    progress_dialog = SDL_ShowProgressDialogWithProperties(progress_callback, NULL, props);
+                    SDL_DestroyProperties(props);
+                    progress = 0;
+                    progress_done = false;
+                    /* Check creating and immediately destroying a progress dialog */
+                } else if (SDL_PointInRectFloat(&p, &color_rect)) {
+                    SDL_PropertiesID props = SDL_CreateProperties();
+                    SDL_SetPointerProperty(props, SDL_PROP_COLOR_DIALOG_WINDOW_POINTER, w);
+                    SDL_ShowColorPickerDialogWithProperties(color_callback, NULL, props);
+                    SDL_DestroyProperties(props);
+                } else if (SDL_PointInRectFloat(&p, &date_rect)) {
+                    SDL_PropertiesID props = SDL_CreateProperties();
+                    SDL_SetPointerProperty(props, SDL_PROP_DATE_DIALOG_WINDOW_POINTER, w);
+                    SDL_ShowDatePickerDialogWithProperties(date_callback, NULL, props);
+                    SDL_DestroyProperties(props);
                 }
             }
         }
@@ -137,12 +256,37 @@ int main(int argc, char *argv[])
         SDL_SetRenderDrawColor(r, 0, 0, 255, SDL_ALPHA_OPAQUE);
         SDL_RenderFillRect(r, &open_folder_rect);
 
+        SDL_SetRenderDrawColor(r, 255, 255, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(r, &input_rect);
+
+        SDL_SetRenderDrawColor(r, 255, 0, 255, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(r, &progress_rect);
+
+        SDL_SetRenderDrawColor(r, 0, 255, 255, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(r, &color_rect);
+
+        SDL_SetRenderDrawColor(r, 255, 255, 255, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(r, &date_rect);
+
         SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDLTest_DrawString(r, open_file_rect.x+5, open_file_rect.y+open_file_rect.h/2, "Open File...");
         SDLTest_DrawString(r, save_file_rect.x+5, save_file_rect.y+save_file_rect.h/2, "Save File...");
         SDLTest_DrawString(r, open_folder_rect.x+5, open_folder_rect.y+open_folder_rect.h/2, "Open Folder...");
+        SDLTest_DrawString(r, input_rect.x+5, input_rect.y+input_rect.h/2, "Input test...");
+        SDLTest_DrawString(r, progress_rect.x+5, progress_rect.y+progress_rect.h/2, "Progress...");
+        SDLTest_DrawString(r, color_rect.x+5, color_rect.y+color_rect.h/2, "Choose color...");
+        SDLTest_DrawString(r, date_rect.x+5, date_rect.y+date_rect.h/2, "Choose date...");
 
         SDL_RenderPresent(r);
+
+        if (progress_dialog) {
+            if (progress_done) {
+                SDL_DestroyProgressDialog(progress_dialog);
+                progress_dialog = NULL;
+            } else if (progress < 30) {
+                SDL_UpdateProgressDialog(progress_dialog, ((float) ++progress) / 30.0f, NULL);
+            }
+        }
     }
 
     SDLTest_CleanupTextDrawing();
