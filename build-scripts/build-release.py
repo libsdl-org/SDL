@@ -542,10 +542,7 @@ class AndroidApiVersion:
     def __repr__(self) -> str:
         return f"<{self.name} ({'.'.join(str(v) for v in self.ints)})>"
 
-ANDROID_ABI_EXTRA_LINK_OPTIONS = {
-    "arm64-v8a": "-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384",
-    "x86_64": "-Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384",
-}
+ANDROID_ABI_EXTRA_LINK_OPTIONS = {}
 
 class Releaser:
     def __init__(self, release_info: dict, commit: str, revision: str, root: Path, dist_path: Path, section_printer: SectionPrinter, executer: Executer, cmake_generator: str, deps_path: Path, overwrite: bool, github: bool, fast: bool):
