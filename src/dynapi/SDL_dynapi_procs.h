@@ -1286,3 +1286,4 @@ SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateGPURenderer,(SDL_Window *a,SDL_GPUShader
 SDL_DYNAPI_PROC(bool,SDL_PutAudioStreamPlanarData,(SDL_AudioStream *a,const void * const*b,int c,int d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_GetEventDescription,(const SDL_Event *a,char *b,int c),(a,b,c),return)
 SDL_DYNAPI_PROC(bool,SDL_PutAudioStreamDataNoCopy,(SDL_AudioStream *a,const void *b,int c,SDL_AudioStreamDataCompleteCallback d,void *e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(bool,SDL_IsUbuntuTouch,(void),(),return)
