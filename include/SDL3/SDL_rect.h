@@ -88,8 +88,7 @@ typedef struct SDL_Rect
 
 
 /**
- * A rectangle, with the origin at the upper left (using floating point
- * values).
+ * A rectangle stored using floating point values.
  *
  * \since This struct is available since SDL 3.2.0.
  *
