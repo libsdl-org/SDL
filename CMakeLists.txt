@@ -2899,7 +2899,6 @@ elseif(VITA)
     "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_syssem.c"
     "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_systhread.c"
     "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_systhread_c.h"
-    "${SDL3_SOURCE_DIR}/src/thread/vita/*.h"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond_c.h"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock_c.h"
