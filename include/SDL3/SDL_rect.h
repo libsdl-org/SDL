@@ -90,8 +90,9 @@ typedef struct SDL_Rect
 /**
  * A rectangle stored using floating point values.
  *
- * The origin of the coordinate space is in the top-left, with increasing values moving down and right.
- * The properties `x` and `y` represent the coordinates of the top-left corner of the rectangle.
+ * The origin of the coordinate space is in the top-left, with increasing
+ * values moving down and right. The properties `x` and `y` represent the
+ * coordinates of the top-left corner of the rectangle.
  *
  * \since This struct is available since SDL 3.2.0.
  *
