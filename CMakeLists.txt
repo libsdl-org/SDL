@@ -1319,10 +1319,7 @@ if(SDL_CAMERA)
   # !!! FIXME: for later.
   #if(SDL_DISKCAMERA)
   #  set(SDL_CAMERA_DRIVER_DISK 1)
-  #  sdl_glob_sources(
-  #  "${SDL3_SOURCE_DIR}/src/camera/disk/*.c"
-  #  "${SDL3_SOURCE_DIR}/src/camera/disk/*.h"
-  #)
+  #  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/camera/disk/*.c")
   #  set(HAVE_DISKCAMERA TRUE)
   #  set(HAVE_SDL_CAMERA TRUE)
   #endif()
@@ -2248,6 +2245,7 @@ elseif(WINDOWS)
   sdl_sources(
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond_c.h"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock_c.h"
     "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_syscond_cv.c"
     "${SDL3_SOURCE_DIR}/src/thread/windows/SDL_sysmutex.c"
