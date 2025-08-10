@@ -2899,6 +2899,7 @@ elseif(VITA)
     "${SDL3_SOURCE_DIR}/src/thread/vita/SDL_systhread_c.h"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond_c.h"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock_c.h"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
   )
@@ -3056,6 +3057,7 @@ elseif(PSP)
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond_c.h"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock_c.h"
     "${SDL3_SOURCE_DIR}/src/thread/psp/*.c"
     "${SDL3_SOURCE_DIR}/src/thread/psp/*.h"
@@ -3129,6 +3131,7 @@ elseif(PS2)
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond_c.h"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysmutex.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock_c.h"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
     "${SDL3_SOURCE_DIR}/src/thread/ps2/*.c"
@@ -3201,6 +3204,7 @@ elseif(N3DS)
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond_c.h"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock.c"
     "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_sysrwlock_c.h"
   )
   set(HAVE_SDL_THREADS TRUE)
