@@ -345,15 +345,14 @@ void SDL_NSLog(const char *prefix, const char *text)
     NSMenuItem *menu_item;
 }
 
-+ (PlatformMenuData*)Cocoa_CreatePlatformMenuData:(SDL_Menu*)menu :(SDL_MenuItemType)type;
-- (void)Cocoa_PlatformMenuData_MenuButtonClicked;
+- (void) Cocoa_PlatformMenuData_MenuButtonClicked: (id)sender;
 
 @end
 
 
 @implementation PlatformMenuData
 
-- (void)Cocoa_PlatformMenuData_MenuButtonClicked{
+- (void) Cocoa_PlatformMenuData_MenuButtonClicked: (id)sender;{
     SDL_Event event;
     event.type = SDL_EVENT_MENU_BUTTON_CLICKED;
     event.menu.timestamp = SDL_GetTicksNS();
@@ -401,42 +400,30 @@ bool SDLCALL Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
 
 bool Cocoa_CreateMenuBarItem(SDL_MenuItem *menu_item, const char *name, Uint16 event_type)
 {
-    PlatformMenuData* platform_data = [PlatformMenuData new];
-    menu_item->common.platform_data = CFBridgingRetain(platform_data);
-    PlatformMenuData* parent_platform_data = (__bridge id _Nullable)(menu_item->common.parent->common.platform_data);
-    
-    if (menu_item->common.type == SDL_MENU) {
-        platform_data->menu = [[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:name]];
-        platform_data->menu_item = [NSMenuItem new];
-        [platform_data->menu_item setTitle:[NSString stringWithUTF8String:name]];
-        [platform_data->menu_item setSubmenu: platform_data->menu];
-        [parent_platform_data->menu addItem: platform_data->menu_item];
-        
-    } else {
-        platform_data->menu_item = [parent_platform_data->menu addItemWithTitle:[NSString stringWithUTF8String:name] action:@selector(Cocoa_PlatformMenuData_MenuButtonClicked:) keyEquivalent:@""];
-        
-        [platform_data->menu_item  setTarget:platform_data];
-    }
-    return true;
+    return Cocoa_CreateMenuItem((SDL_MenuItem*)menu_item, name, event_type);
 }
 
 bool Cocoa_CreateMenuItem(SDL_MenuItem *menu_item, const char *name, Uint16 event_type)
 {
     PlatformMenuData* platform_data = [PlatformMenuData new];
+    platform_data->user_event_type = event_type;
     menu_item->common.platform_data = CFBridgingRetain(platform_data);
     PlatformMenuData* parent_platform_data = (__bridge id _Nullable)(menu_item->common.parent->common.platform_data);
+    NSString* name_ns = [NSString stringWithUTF8String:name];
     
     if (menu_item->common.type == SDL_MENU) {
-        platform_data->menu = [[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:name]];
+        platform_data->menu = [[NSMenu alloc] initWithTitle:name_ns];
+        [platform_data->menu setAutoenablesItems:true];
         platform_data->menu_item = [NSMenuItem new];
-        [platform_data->menu_item setTitle:[NSString stringWithUTF8String:name]];
+        [platform_data->menu_item setTitle:name_ns];
         [platform_data->menu_item setSubmenu: platform_data->menu];
         [parent_platform_data->menu addItem: platform_data->menu_item];
         
     } else {
-        platform_data->menu_item = [parent_platform_data->menu addItemWithTitle:[NSString stringWithUTF8String:name] action:@selector(Cocoa_PlatformMenuData_MenuButtonClicked:) keyEquivalent:@""];
+        platform_data->menu_item = [parent_platform_data->menu addItemWithTitle:name_ns action:@selector(Cocoa_PlatformMenuData_MenuButtonClicked:) keyEquivalent:@""];
         
         [platform_data->menu_item  setTarget:platform_data];
+        [platform_data->menu_item  setEnabled:true];
     }
     return true;
 }
