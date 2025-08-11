@@ -23,8 +23,7 @@ typedef enum SDL_EventType_MenuExt
   MENU_BAR_BOOKMARKS_TOOLBAR_WIKI,
   MENU_BAR_BOOKMARKS_TOOLBAR_DISCORD,
   MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS,
-  MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS_TWITTER,
-  MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS_REDDIT,
+  MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS_STACKOVERFLOW,
   MENU_BAR_INCOGNITO,
   MENU_BAR_TOP_LEVEL_BUTTON,
   MENU_BAR_EXIT,
@@ -54,7 +53,7 @@ void CreateMenuBar()
     SDL_CreateMenuItem((SDL_Menu*)main_bookmarks, "SDL Discord", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_DISCORD);
 
     SDL_MenuItem* other_bookmarks = SDL_CreateMenuItem((SDL_Menu*)menu, "Other Bookmarks", SDL_MENU, MENU_BAR_LAST);
-    SDL_CreateMenuItem((SDL_Menu*)other_bookmarks, "Stack Overflow", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS);
+    SDL_CreateMenuItem((SDL_Menu *)other_bookmarks, "Stack Overflow", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS_STACKOVERFLOW);
 
     SDL_EnableMenuItem(other_bookmarks, false);
   }
@@ -102,6 +101,32 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
     case SDL_EVENT_MENU_BUTTON_CLICKED:
     case SDL_EVENT_MENU_CHECKABLE_CLICKED:
     {
+        switch (event->menu.user_event_type) {
+          case MENU_BAR_BOOKMARKS_TOOLBAR_GITHUB:
+          {
+              SDL_OpenURL("https://github.com/libsdl-org/SDL");
+              break;
+          }
+          case MENU_BAR_BOOKMARKS_TOOLBAR_WIKI:
+          {
+              SDL_OpenURL("https://wiki.libsdl.org/SDL3/FrontPage");
+              break;
+          }
+          case MENU_BAR_BOOKMARKS_TOOLBAR_DISCORD:
+          {
+              SDL_OpenURL("https://discord.gg/BwpFGBWsv8");
+              break;
+          }
+          case MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS_STACKOVERFLOW:
+          {
+              SDL_OpenURL("https://stackoverflow.com/questions");
+              break;
+          }
+          case MENU_BAR_EXIT:
+          {
+              return SDL_APP_SUCCESS;
+          }
+        }
         SDL_Log("%d\n", event->menu.user_event_type);
     }
   }
