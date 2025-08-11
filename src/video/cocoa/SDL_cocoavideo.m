@@ -338,26 +338,20 @@ void SDL_NSLog(const char *prefix, const char *text)
 
 
 
-@interface PlatformMenuData2 : NSObject {
+@interface PlatformMenuData : NSObject {
 @public
     Uint16 user_event_type;
     NSMenu *menu;
     NSMenuItem *menu_item;
-    SDL_Menu* parent;
 }
 
-+ (PlatformMenuData2*)Cocoa_CreatePlatformMenuData:(SDL_Menu*)menu :(SDL_MenuItemType)type;
++ (PlatformMenuData*)Cocoa_CreatePlatformMenuData:(SDL_Menu*)menu :(SDL_MenuItemType)type;
 - (void)Cocoa_PlatformMenuData_MenuButtonClicked;
 
 @end
 
 
-@implementation PlatformMenuData2
-+ (PlatformMenuData2*)Cocoa_CreatePlatformMenuDataWithMenu:(SDL_Menu*)menu {
-    PlatformMenuData2* platform_menu =[PlatformMenuData2 new];
-    platform_menu->parent = menu;
-    return platform_menu;
-}
+@implementation PlatformMenuData
 
 - (void)Cocoa_PlatformMenuData_MenuButtonClicked{
     SDL_Event event;
@@ -373,10 +367,10 @@ void SDL_NSLog(const char *prefix, const char *text)
 
 bool SDLCALL Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
 {
-    PlatformMenuData2* platform_menu =[PlatformMenuData2 new];
+    PlatformMenuData* platform_menu =[PlatformMenuData new];
     platform_menu->menu = [NSMenu new];
     [NSApp setMainMenu:platform_menu->menu];
-    menu_bar->platform_data = CFBridgingRetain(platform_menu);
+    menu_bar->common.platform_data = CFBridgingRetain(platform_menu);
     
     return true;
    // **** App Menu **** //
@@ -395,21 +389,16 @@ bool SDLCALL Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
 //    newItem.target = platform_menu;
 //    [fileMenuItem setSubmenu: fileMenu];
 //    [menubar addItem: fileMenuItem];
-    
-    
-    
-    
-    return NULL;
 }
 
 bool Cocoa_CreateMenuBarItem(SDL_MenuItem *menu_item, const char *name, Uint16 event_type)
 {
-    PlatformMenuData2* platform_data = [PlatformMenuData2 new];
+    PlatformMenuData* platform_data = [PlatformMenuData new];
     menu_item->common.platform_data = CFBridgingRetain(platform_data);
-    PlatformMenuData2* parent_platform_data = (PlatformMenuData2*)CFBridgingRelease(menu_item->common.platform_data);
+    PlatformMenuData* parent_platform_data = (__bridge id _Nullable)(menu_item->common.parent->common.platform_data);
     
     if (menu_item->common.type == SDL_MENU) {
-        platform_data->menu = [NSMenu new];
+        platform_data->menu = [[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:name]];
         platform_data->menu_item = [NSMenuItem new];
         [platform_data->menu_item setSubmenu: platform_data->menu];
         [parent_platform_data->menu addItem: platform_data->menu_item];
@@ -425,9 +414,9 @@ bool Cocoa_CreateMenuBarItem(SDL_MenuItem *menu_item, const char *name, Uint16 e
 
 bool Cocoa_CreateMenuItem(SDL_MenuItem *menu_item, const char *name, Uint16 event_type)
 {
-    PlatformMenuData2* platform_data = [PlatformMenuData2 new];
+    PlatformMenuData* platform_data = [PlatformMenuData new];
     menu_item->common.platform_data = CFBridgingRetain(platform_data);
-    PlatformMenuData2* parent_platform_data = (PlatformMenuData2*)CFBridgingRelease(menu_item->common.platform_data);
+    PlatformMenuData* parent_platform_data = (__bridge id _Nullable)(menu_item->common.parent->common.platform_data);
     
     if (menu_item->common.type == SDL_MENU) {
         platform_data->menu = [NSMenu new];
