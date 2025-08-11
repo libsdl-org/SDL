@@ -3006,6 +3006,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_DisableScreenSaver(void);
 
 typedef enum SDL_MenuItemType
 {
+    SDL_MENUBAR,
     SDL_MENU,
     SDL_MENU_BUTTON,
     SDL_MENU_CHECKABLE,
