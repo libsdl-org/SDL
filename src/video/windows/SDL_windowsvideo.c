@@ -365,6 +365,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->CheckMenuItem = Win32_CheckMenuItem;
     device->EnableMenuItem = Win32_EnableMenuItem;
     device->DestroyMenuItem = Win32_DestroyMenuItem;
+    device->DestroyMenuBar = Win32_DestroyMenuBar;
 #endif
 
 
@@ -1017,15 +1018,26 @@ static bool Win32_EnableMenuItem(SDL_MenuItem *menu_item, bool enabled)
     return true;
 }
 
-static void Win32_DestroyMenuItem(SDL_MenuItem *menu_item)
+// We rely on the top level Win32_DestroyMenuBar to recursively deal with the native handles,
+// but we need to recurse through and delete the platform datas.
+static bool Win32_DestroyMenuItem(SDL_MenuItem *menu_item)
 {
-    PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
+    SDL_free(menu_item->common.platform_data);
+    return true;
+}
 
-    if (!RemoveMenu(platform_data->owner_handle, (UINT)platform_data->self_handle, MF_BYCOMMAND)) {
+static bool Win32_DestroyMenuBar(SDL_MenuBar *menu_bar)
+{
+    PlatformMenuData *platform_data = (PlatformMenuData *)menu_bar->common.platform_data;
+
+    // This will take care of all of the child handles underneath the menubar.
+    if (!DestroyMenu((HMENU)platform_data->self_handle)) {
         return WIN_SetError("Unable to remove menu item.");
     }
 
-    SDL_free(menu_item->common.platform_data);
+    Win32_DestroyMenuItem((SDL_MenuItem *)menu_bar);
+    SDL_free(menu_bar->common.platform_data);
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS

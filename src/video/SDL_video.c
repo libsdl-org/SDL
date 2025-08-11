@@ -6172,15 +6172,15 @@ SDL_MenuItem* SDL_CreateMenuBarItem(SDL_MenuBar* menu_bar, const char *name, SDL
     }
 
     // Get the last item in the list and insert our new item.
-    if (menu_bar->item_list) {
-        SDL_MenuItem* last = menu_bar->item_list;
+    if (menu_bar->common.next) {
+        SDL_MenuItem* common = menu_bar->common.next;
 
-        while (last->common.next) last = last->common.next;
+        while (common->common.next) common = common->common.next;
 
-        last->common.next = menu_item;
-        menu_item->common.prev = last;
+        common->common.next = menu_item;
+        menu_item->common.prev = common;
     } else {
-        menu_bar->item_list = menu_item;
+        menu_bar->common.next = menu_item;
     }
 
     return menu_item;
@@ -6201,15 +6201,15 @@ SDL_MenuItem* SDL_CreateMenuItem(SDL_Menu* menu, const char *name, SDL_MenuItemT
     }
 
     // Get the last item in the list and insert our new item.
-    if (menu->menuitem_list) {
-        SDL_MenuItem* last = menu->menuitem_list;
+    if (menu->common.next) {
+        SDL_MenuItem* current = menu->common.next;
 
-        while (last->common.next) last = last->common.next;
+        while (current->common.next) current = current->common.next;
 
-        last->common.next = menu_item;
-        menu_item->common.prev = last;
+        current->common.next = menu_item;
+        menu_item->common.prev = current;
     } else {
-        menu->menuitem_list = menu_item;
+        menu->common.next = menu_item;
     }
 
     return menu_item;
@@ -6237,8 +6237,20 @@ bool SDL_EnableMenuItem(SDL_MenuItem* menu_item, bool enabled)
     return _this->EnableMenuItem(menu_item, enabled);
 }
 
+static void SDL_DestroyMenuItem(SDL_MenuItem* menu_item) {
+    for (SDL_MenuItem *current = menu_item->common.next; current != NULL; current = current->common.next) {
+        SDL_DestroyMenuItem(current);
+    }
+
+    _this->DestroyMenuItem(menu_item);
+    SDL_free(menu_item);
+}
+
 bool SDL_DestroyMenuBar(SDL_MenuBar* menu_bar)
 {
+    bool ret = _this->DestroyMenuBar(menu_bar);
+    SDL_DestroyMenuItem((SDL_MenuItem *)menu_bar);
+
     return true;
 }
 

@@ -223,13 +223,11 @@ typedef struct SDL_MenuItem_CommonData
 typedef struct SDL_MenuBar
 {
     SDL_MenuItem_CommonData common;
-    SDL_MenuItem *item_list;
 } SDL_MenuBar;
 
 typedef struct SDL_Menu
 {
     SDL_MenuItem_CommonData common;
-    SDL_MenuItem *menuitem_list;
 } SDL_Menu;
 
 typedef struct SDL_MenuItem_Button
@@ -364,7 +362,8 @@ struct SDL_VideoDevice
     bool (*CreateMenuItem)(SDL_MenuItem *menu_item, const char *name, Uint16 event_type);
     bool (*CheckMenuItem)(SDL_MenuItem *menu_item, bool checked);
     bool (*EnableMenuItem)(SDL_MenuItem *menu_item, bool enabled);
-    void (*DestroyMenuItem)(SDL_MenuItem *menu_item);
+    bool (*DestroyMenuItem)(SDL_MenuItem *menu_item);
+    bool (*DestroyMenuBar)(SDL_MenuBar *menu_bar);
 
     /* * * */
     /*
