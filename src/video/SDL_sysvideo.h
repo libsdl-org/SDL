@@ -209,21 +209,22 @@ typedef enum
     SDL_FULLSCREEN_PENDING
 } SDL_FullscreenResult;
 
-typedef struct SDL_MenuBar
-{
-    SDL_Window *window;
-    SDL_MenuItem *item_list;
-    void *platform_data;
-} SDL_MenuBar;
 
 typedef struct SDL_MenuItem_CommonData
 {
     void *platform_data;
-    SDL_MenuBar *menu_bar;
+    SDL_MenuItem *parent;
+    SDL_Window *window;
     SDL_MenuItem *prev;
     SDL_MenuItem *next;
     SDL_MenuItemType type;
 } SDL_MenuItem_CommonData;
+
+typedef struct SDL_MenuBar
+{
+    SDL_MenuItem_CommonData common;
+    SDL_MenuItem *item_list;
+} SDL_MenuBar;
 
 typedef struct SDL_Menu
 {
@@ -245,6 +246,8 @@ typedef struct SDL_MenuItem_Checkable
 typedef union SDL_MenuItem
 {
     SDL_MenuItem_CommonData common;
+    SDL_MenuBar menu_bar;
+    SDL_Menu menu;
     SDL_MenuItem_Button button;
     SDL_MenuItem_Checkable checkable;
 } SDL_MenuItem;

@@ -667,8 +667,8 @@ extern bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this);
 
 typedef struct PlatformMenuData
 {
-    HMENU menu_owner;
-    UINT_PTR handle_or_id;
+    HMENU owner_handle;
+    UINT_PTR self_handle;
 } PlatformMenuData;
 
 extern PlatformMenuData *CreatePlatformMenuData(HMENU owner, SDL_MenuItemType type);
