@@ -184,29 +184,6 @@ if(MSVC)
   set(SDL_RELOCATABLE_DEFAULT ON)
 endif()
 
-if(MSVC)
-  if(NOT SDL_LIBC)
-    # Make sure /RTC1 is disabled, otherwise it will use functions from the CRT
-    foreach(flag_var
-        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
-        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-      string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
-    endforeach(flag_var)
-    set(CMAKE_MSVC_RUNTIME_CHECKS "")
-  endif()
-
-  if(MSVC_CLANG)
-    # clang-cl treats /W4 as '-Wall -Wextra' -- we don't need -Wextra
-    foreach(flag_var
-        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-      string(REGEX REPLACE "/W4" "/W3" ${flag_var} "${${flag_var}}")
-    endforeach(flag_var)
-  endif()
-endif()
-
 set(SDL_SHARED_DEFAULT ON)
 set(SDL_STATIC_DEFAULT ON)
 
@@ -442,6 +419,29 @@ endif()
 
 if(SDL_PRESEED)
   SDL_Preseed_CMakeCache()
+endif()
+
+if(MSVC)
+  if(NOT SDL_LIBC)
+    # Make sure /RTC1 is disabled, otherwise it will use functions from the CRT
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+      string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
+    endforeach(flag_var)
+    set(CMAKE_MSVC_RUNTIME_CHECKS "")
+  endif()
+
+  if(MSVC_CLANG)
+    # clang-cl treats /W4 as '-Wall -Wextra' -- we don't need -Wextra
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+      string(REGEX REPLACE "/W4" "/W3" ${flag_var} "${${flag_var}}")
+    endforeach(flag_var)
+  endif()
 endif()
 
 if(SDL_SHARED)
