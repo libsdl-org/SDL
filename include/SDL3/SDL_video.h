@@ -1077,8 +1077,6 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  *
  * - `SDL_WINDOW_FULLSCREEN`: fullscreen window at desktop resolution
  * - `SDL_WINDOW_OPENGL`: window usable with an OpenGL context
- * - `SDL_WINDOW_OCCLUDED`: window partially or completely obscured by another
- *   window
  * - `SDL_WINDOW_HIDDEN`: window is not visible
  * - `SDL_WINDOW_BORDERLESS`: no window decoration
  * - `SDL_WINDOW_RESIZABLE`: window can be resized
