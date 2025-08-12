@@ -1106,7 +1106,8 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  * - `SDL_WINDOW_TRANSPARENT`: window with transparent buffer
  * - `SDL_WINDOW_NOT_FOCUSABLE`: window should not be focusable
  *
- * The SDL_Window is implicitly shown if SDL_WINDOW_HIDDEN is not set.
+ * The SDL_Window will be shown if SDL_WINDOW_HIDDEN is not set. If hidden at
+ * creation time, SDL_ShowWindow() can be used to show it later.
  *
  * On Apple's macOS, you **must** set the NSHighResolutionCapable Info.plist
  * property to YES, otherwise you will not receive a High-DPI OpenGL canvas.
