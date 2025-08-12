@@ -183,7 +183,7 @@
     ],
     "api-minimum": 21,
     "api-target": 35,
-    "ndk-minimum": 21,
+    "ndk-minimum": 28,
     "aar-files": {
       "": [
         "android-project/app/proguard-rules.pro:proguard.txt",
