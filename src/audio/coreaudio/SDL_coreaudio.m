@@ -383,7 +383,8 @@ static BOOL update_audio_session(_THIS, SDL_bool open, SDL_bool allow_playandrec
 
         hint = SDL_GetHint(SDL_HINT_AUDIO_CATEGORY);
         if (hint) {
-            if (SDL_strcasecmp(hint, "AVAudioSessionCategoryAmbient") == 0) {
+            if (SDL_strcasecmp(hint, "AVAudioSessionCategoryAmbient") == 0 ||
+                SDL_strcasecmp(hint, "ambient") == 0) {
                 category = AVAudioSessionCategoryAmbient;
             } else if (SDL_strcasecmp(hint, "AVAudioSessionCategorySoloAmbient") == 0) {
                 category = AVAudioSessionCategorySoloAmbient;
