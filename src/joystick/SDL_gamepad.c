@@ -887,9 +887,10 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
         SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
     }
 
-    // Start/Plus & Select/Back
+    // Start/Plus
     SDL_ADD_BUTTON_MAPPING("start", current_button++, mapping_string_len);
 
+    // Back/Minus, Guide/Home, Share/Capture
     switch (styles->meta_style) {
     case SINPUT_METASTYLE_BACK:
         SDL_ADD_BUTTON_MAPPING("back", current_button++, mapping_string_len);
