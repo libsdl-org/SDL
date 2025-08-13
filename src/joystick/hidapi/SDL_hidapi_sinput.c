@@ -237,8 +237,8 @@ typedef struct
     Uint8 touchpad_count;        // 2 touchpads maximum
     Uint8 touchpad_finger_count; // 2 fingers for one touchpad, or 1 per touchpad (2 max)
 
-    Uint8  polling_rate_ms;
-    Uint8  sub_product;    // Subtype of the device, 0 in most cases
+    Uint16 polling_rate_us;
+    Uint8 sub_product;    // Subtype of the device, 0 in most cases
 
     Uint16 accelRange; // Example would be 2,4,8,16 +/- (g-force)
     Uint16 gyroRange;  // Example would be 1000,2000,4000 +/- (degrees per second)
@@ -475,7 +475,11 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     SDL_Log("SInput Sub-type: %d", (data[5] & 0x1F));
 #endif
 
-    ctx->polling_rate_ms = data[6];
+    ctx->polling_rate_us = EXTRACTUINT16(data, 6);
+
+#if defined(DEBUG_SINPUT_INIT)
+    SDL_Log("SInput polling interval (microseconds): %d", ctx->polling_rate_us);
+#endif
 
     ctx->accelRange = EXTRACTUINT16(data, 8);
     ctx->gyroRange = EXTRACTUINT16(data, 10);
@@ -744,11 +748,11 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     }
 
     if (ctx->accelerometer_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 1000.0f / ctx->polling_rate_ms);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 1000000.0f / ctx->polling_rate_us);
     }
 
     if (ctx->gyroscope_supported) {
-        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 1000.0f / ctx->polling_rate_ms);
+        SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 1000000.0f / ctx->polling_rate_us);
     }
 
     if (ctx->touchpad_supported) {
