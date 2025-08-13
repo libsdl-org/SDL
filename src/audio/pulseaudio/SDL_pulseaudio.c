@@ -732,7 +732,7 @@ static bool PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
                 if (!actual_bufattr) {
                     result = SDL_SetError("Could not determine connected PulseAudio stream's buffer attributes");
                 } else {
-                    device->buffer_size = (int) recording ? actual_bufattr->tlength : actual_bufattr->fragsize;
+                    device->buffer_size = (int) recording ? actual_bufattr->fragsize : actual_bufattr->tlength;
                     device->sample_frames = device->buffer_size / SDL_AUDIO_FRAMESIZE(device->spec);
                 }
             }
