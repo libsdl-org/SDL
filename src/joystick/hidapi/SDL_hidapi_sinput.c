@@ -510,7 +510,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->accelScale = CalculateAccelScale(ctx->accelRange);
     ctx->gyroScale = CalculateGyroScale(ctx->gyroRange);
 
-    int axes = 0;
+    Uint8 axes = 0;
     if (ctx->left_analog_stick_supported) {
         axes += 2;
     }
