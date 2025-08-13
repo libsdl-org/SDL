@@ -210,6 +210,9 @@ typedef enum
 } SDL_FullscreenResult;
 
 
+typedef struct SDL_MenuBar SDL_MenuBar;
+typedef struct SDL_Menu SDL_Menu;
+
 typedef struct SDL_MenuItem_CommonData
 {
     void *platform_data;
@@ -220,14 +223,21 @@ typedef struct SDL_MenuItem_CommonData
     SDL_MenuItemType type;
 } SDL_MenuItem_CommonData;
 
+typedef struct SDL_Menu_CommonData
+{
+    SDL_MenuItem_CommonData item_common;
+    SDL_MenuItem *child_list;
+    Sint64 children;
+} SDL_Menu_CommonData;
+
 typedef struct SDL_MenuBar
 {
-    SDL_MenuItem_CommonData common;
+    SDL_Menu_CommonData common;
 } SDL_MenuBar;
 
 typedef struct SDL_Menu
 {
-    SDL_MenuItem_CommonData common;
+    SDL_Menu_CommonData common;
 } SDL_Menu;
 
 typedef struct SDL_MenuItem_Button
@@ -244,6 +254,7 @@ typedef struct SDL_MenuItem_Checkable
 typedef union SDL_MenuItem
 {
     SDL_MenuItem_CommonData common;
+    SDL_Menu_CommonData menu_common;
     SDL_MenuBar menu_bar;
     SDL_Menu menu;
     SDL_MenuItem_Button button;
@@ -356,14 +367,15 @@ struct SDL_VideoDevice
     bool (*SyncWindow)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*ReconfigureWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
 
-    
     bool (*CreateMenuBar)(SDL_MenuBar *menu_bar);
-    bool (*CreateMenuBarItem)(SDL_MenuItem *menu_item, const char *name, Uint16 event_type);
-    bool (*CreateMenuItem)(SDL_MenuItem *menu_item, const char *name, Uint16 event_type);
-    bool (*CheckMenuItem)(SDL_MenuItem *menu_item, bool checked);
-    bool (*EnableMenuItem)(SDL_MenuItem *menu_item, bool enabled);
+    bool (*CreateMenuItemAt)(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type);
+    bool (*CheckMenuItem)(SDL_MenuItem *menu_item);
+    bool (*UncheckMenuItem)(SDL_MenuItem *menu_item);
+    bool (*MenuItemChecked)(SDL_MenuItem *menu_item, bool *checked);
+    bool (*MenuItemEnabled)(SDL_MenuItem *menu_item, bool *enabled);
+    bool (*EnableMenuItem)(SDL_MenuItem *menu_item);
+    bool (*DisableMenuItem)(SDL_MenuItem *menu_item);
     bool (*DestroyMenuItem)(SDL_MenuItem *menu_item);
-    bool (*DestroyMenuBar)(SDL_MenuBar *menu_bar);
 
     /* * * */
     /*

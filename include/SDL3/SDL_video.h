@@ -3042,16 +3042,35 @@ typedef enum SDL_MenuItemType
     SDL_MENU_CHECKABLE,
 } SDL_MenuItemType;
 
-typedef struct SDL_MenuBar SDL_MenuBar;
-typedef struct SDL_Menu SDL_Menu;
 typedef union SDL_MenuItem SDL_MenuItem;
 
-extern SDL_DECLSPEC SDL_MenuBar* SDL_CreateMenuBar(SDL_Window*window);
-extern SDL_DECLSPEC SDL_MenuItem* SDL_CreateMenuBarItem(SDL_MenuBar*menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type);
-extern SDL_DECLSPEC SDL_MenuItem* SDL_CreateMenuItem(SDL_Menu*menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type);
-extern SDL_DECLSPEC bool SDL_CheckMenuItem(SDL_MenuItem*menu_item, bool checked);
-extern SDL_DECLSPEC bool SDL_EnableMenuItem(SDL_MenuItem*menu_item, bool enabled);
-extern SDL_DECLSPEC bool SDL_DestroyMenuBar(SDL_MenuBar*menu_bar);
+extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuBar(SDL_Window *window);
+
+// Must be a SDL_MENUBAR or SDL_MENU
+// On MacOS, buttoms created under a menubar will go into the "App" submenu
+extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_bar_as_item, size_t index, const char *name, SDL_MenuItemType type, Uint16 event_type);
+
+// Must be a SDL_MENUBAR or SDL_MENU
+// On MacOS, buttoms created under a menubar will go into the "App" submenu
+extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *name, SDL_MenuItemType type, Uint16 event_type);
+
+// -1 on error
+extern SDL_DECLSPEC Sint64 SDL_ChildItems(SDL_MenuItem *menu_bar_as_item);
+
+
+// Must be a SDL_MENU_CHECKABLE
+extern SDL_DECLSPEC bool SDL_CheckMenuItem(SDL_MenuItem *menu_item);
+
+// Must be a SDL_MENU_CHECKABLE
+extern SDL_DECLSPEC bool SDL_UncheckMenuItem(SDL_MenuItem *menu_item);
+
+// Must be a SDL_MENU_CHECKABLE
+extern SDL_DECLSPEC bool SDL_MenuItemChecked(SDL_MenuItem *menu_item, bool *checked);
+
+extern SDL_DECLSPEC bool SDL_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled);
+extern SDL_DECLSPEC bool SDL_EnableMenuItem(SDL_MenuItem *menu_item);
+extern SDL_DECLSPEC bool SDL_DisableMenuItem(SDL_MenuItem *menu_item);
+extern SDL_DECLSPEC bool SDL_DestroyMenuItem(SDL_MenuItem *menu_item);
 
 /**
  *  \name OpenGL support functions

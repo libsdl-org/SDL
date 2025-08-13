@@ -35,38 +35,38 @@ static SDL_EventType_MenuExt EVENT_START = (SDL_EventType_MenuExt)0;
 
 void CreateMenuBar()
 {
-  SDL_MenuBar* bar = SDL_CreateMenuBar(window);
+  SDL_MenuItem* bar = SDL_CreateMenuBar(window);
 
   {
-    SDL_MenuItem* menu = SDL_CreateMenuBarItem(bar, "File", SDL_MENU, MENU_BAR_LAST);
-    SDL_CreateMenuItem((SDL_Menu*)menu, "New Window", SDL_MENU_BUTTON, MENU_BAR_FILE_NEW_WINDOW);
-    SDL_MenuItem* checkable = SDL_CreateMenuItem((SDL_Menu*)menu, "Autosave Tabs on Close", SDL_MENU_CHECKABLE, MENU_BAR_FILE_AUTOSAVE_TABS_ON_CLOSE);
+    SDL_MenuItem* menu = SDL_CreateMenuItem(bar, "File", SDL_MENU, MENU_BAR_LAST);
+    SDL_CreateMenuItem(menu, "New Window", SDL_MENU_BUTTON, MENU_BAR_FILE_NEW_WINDOW);
+    SDL_MenuItem* checkable = SDL_CreateMenuItem(menu, "Autosave Tabs on Close", SDL_MENU_CHECKABLE, MENU_BAR_FILE_AUTOSAVE_TABS_ON_CLOSE);
 
-    SDL_CheckMenuItem(checkable, true);
+    SDL_CheckMenuItem(checkable);
   }
 
   {
-    SDL_MenuItem* menu = SDL_CreateMenuBarItem(bar, "Bookmarks", SDL_MENU, MENU_BAR_LAST);
-    SDL_MenuItem* main_bookmarks = SDL_CreateMenuItem((SDL_Menu*)menu, "Bookmarks Toolbar", SDL_MENU, MENU_BAR_LAST);
-    SDL_CreateMenuItem((SDL_Menu*)main_bookmarks, "SDL GitHub", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_GITHUB);
-    SDL_CreateMenuItem((SDL_Menu*)main_bookmarks, "SDL Wiki", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_WIKI);
-    SDL_CreateMenuItem((SDL_Menu*)main_bookmarks, "SDL Discord", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_DISCORD);
+    SDL_MenuItem* menu = SDL_CreateMenuItem(bar, "Bookmarks", SDL_MENU, MENU_BAR_LAST);
+    SDL_MenuItem* main_bookmarks = SDL_CreateMenuItem(menu, "Bookmarks Toolbar", SDL_MENU, MENU_BAR_LAST);
+    SDL_CreateMenuItem(main_bookmarks, "SDL GitHub", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_GITHUB);
+    SDL_CreateMenuItem(main_bookmarks, "SDL Wiki", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_WIKI);
+    SDL_CreateMenuItem(main_bookmarks, "SDL Discord", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_DISCORD);
 
-    SDL_MenuItem* other_bookmarks = SDL_CreateMenuItem((SDL_Menu*)menu, "Other Bookmarks", SDL_MENU, MENU_BAR_LAST);
-    SDL_CreateMenuItem((SDL_Menu *)other_bookmarks, "Stack Overflow", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS_STACKOVERFLOW);
+    SDL_MenuItem* other_bookmarks = SDL_CreateMenuItem(menu, "Other Bookmarks", SDL_MENU, MENU_BAR_LAST);
+    SDL_CreateMenuItem(other_bookmarks, "Stack Overflow", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS_STACKOVERFLOW);
 
-    SDL_EnableMenuItem(other_bookmarks, false);
+    SDL_DisableMenuItem(other_bookmarks);
   }
 
   {
     // We can't create a top level checkable .
-    SDL_MenuItem* checkable = SDL_CreateMenuBarItem(bar, "Incognito", SDL_MENU_CHECKABLE, MENU_BAR_INCOGNITO);
+    SDL_MenuItem* checkable = SDL_CreateMenuItem(bar, "Incognito", SDL_MENU_CHECKABLE, MENU_BAR_INCOGNITO);
     SDL_assert(!checkable);
     
-    SDL_MenuItem* disabled = SDL_CreateMenuBarItem(bar, "Disabled Top-Level Button", SDL_MENU_BUTTON, MENU_BAR_TOP_LEVEL_BUTTON);
-    SDL_EnableMenuItem(disabled, false);
+    SDL_MenuItem* disabled = SDL_CreateMenuItem(bar, "Disabled Top-Level Button", SDL_MENU_BUTTON, MENU_BAR_TOP_LEVEL_BUTTON);
+    SDL_DisableMenuItem(disabled);
 
-    SDL_CreateMenuBarItem(bar, "Exit", SDL_MENU_BUTTON, MENU_BAR_EXIT);
+    SDL_CreateMenuItem(bar, "Exit", SDL_MENU_BUTTON, MENU_BAR_EXIT);
   }
 
   EVENT_START = (SDL_EventType_MenuExt)SDL_RegisterEvents(MENU_BAR_LAST);

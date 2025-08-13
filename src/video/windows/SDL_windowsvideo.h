@@ -669,14 +669,17 @@ typedef struct PlatformMenuData
 {
     HMENU owner_handle;
     UINT_PTR self_handle;
+    Uint16 user_event_type;
 } PlatformMenuData;
 
-extern bool SDLCALL Win32_CreateMenuBar(SDL_MenuBar *menu_bar);
-extern bool Win32_CreateMenuBarItem(SDL_MenuItem *menu_item, const char *name, Uint16 event_type);
-extern bool Win32_CreateMenuItem(SDL_MenuItem *menu_item, const char *name, Uint16 event_type);
-extern bool Win32_CheckMenuItem(SDL_MenuItem *menu_item, bool checked);
-extern bool Win32_EnableMenuItem(SDL_MenuItem *menu_item, bool enabled);
+extern bool Win32_CreateMenuBar(SDL_MenuBar *menu_bar);
+extern bool Win32_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type);
+extern bool Win32_CheckMenuItem(SDL_MenuItem *menu_item);
+extern bool Win32_UncheckMenuItem(SDL_MenuItem *menu_item);
+extern bool Win32_MenuItemChecked(SDL_MenuItem *menu_item, bool *checked);
+extern bool Win32_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled);
+extern bool Win32_EnableMenuItem(SDL_MenuItem *menu_item);
+extern bool Win32_DisableMenuItem(SDL_MenuItem *menu_item);
 extern bool Win32_DestroyMenuItem(SDL_MenuItem *menu_item);
-extern bool Win32_DestroyMenuBar(SDL_MenuBar *menu_bar);
 
 #endif // SDL_windowsvideo_h_
