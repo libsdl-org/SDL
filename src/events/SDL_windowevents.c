@@ -99,6 +99,12 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
     case SDL_EVENT_WINDOW_MOVED:
         window->undefined_x = false;
         window->undefined_y = false;
+        /* Clear the pending display if this move was not the result of an explicit request,
+         * and the window is not scheduled to become fullscreen when shown.
+         */
+        if (!window->last_position_pending && !(window->pending_flags & SDL_WINDOW_FULLSCREEN)) {
+            window->pending_displayID = 0;
+        }
         window->last_position_pending = false;
         if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
             window->windowed.x = data1;

@@ -390,7 +390,7 @@ macro(CheckX11)
         set(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1)
       endif()
 
-      check_symbol_exists(XkbLookupKeySym "X11/Xlib.h;X11/XKBlib.h" SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM)
+      check_include_file("X11/XKBlib.h" SDL_VIDEO_DRIVER_X11_HAS_XKBLIB)
 
       if(SDL_X11_XCURSOR AND HAVE_XCURSOR_H AND XCURSOR_LIB)
         set(HAVE_X11_XCURSOR TRUE)
@@ -884,6 +884,9 @@ macro(CheckPTHREAD)
       set(PTHREAD_LDFLAGS "-pthread")
     elseif(QNX)
       # pthread support is baked in
+    elseif(HURD)
+      set(PTHREAD_CFLAGS "-D_REENTRANT")
+      set(PTHREAD_LDFLAGS "-pthread")
     else()
       set(PTHREAD_CFLAGS "-D_REENTRANT")
       set(PTHREAD_LDFLAGS "-lpthread")

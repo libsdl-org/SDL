@@ -48,88 +48,93 @@
  */
 // #define XRANDR_DISABLED_BY_DEFAULT
 
-static float GetGlobalContentScale(SDL_VideoDevice *_this)
+float X11_GetGlobalContentScale(SDL_VideoDevice *_this)
 {
-    static double scale_factor = 0.0;
+    double scale_factor = 0.0;
 
-    if (scale_factor <= 0.0) {
+    // First use the forced scaling factor specified by the app/user
+    const char *hint = SDL_GetHint(SDL_HINT_VIDEO_X11_SCALING_FACTOR);
+    if (hint && *hint) {
+        double value = SDL_atof(hint);
+        if (value >= 1.0f && value <= 10.0f) {
+            scale_factor = value;
+        }
+    }
 
-        // First use the forced scaling factor specified by the app/user
-        const char *hint = SDL_GetHint(SDL_HINT_VIDEO_X11_SCALING_FACTOR);
-        if (hint && *hint) {
-            double value = SDL_atof(hint);
-            if (value >= 1.0f && value <= 10.0f) {
-                scale_factor = value;
-            }
+    // If that failed, try "Xft.dpi" from the XResourcesDatabase...
+    // We attempt to read this directly to get the live value, XResourceManagerString
+    // is cached per display connection.
+    if (scale_factor <= 0.0)
+    {
+        SDL_VideoData *data = _this->internal;
+        Display *display = data->display;
+        int status, real_format;
+        Atom real_type;
+        unsigned long items_read, items_left;
+        char *resource_manager;
+        bool owns_resource_manager = false;
+
+        X11_XrmInitialize();
+        status = X11_XGetWindowProperty(display, RootWindow(display, DefaultScreen(display)),
+                                        data->atoms.RESOURCE_MANAGER, 0L, 8192L, False, XA_STRING,
+                                        &real_type, &real_format, &items_read, &items_left,
+                                        (unsigned char **)&resource_manager);
+
+        if (status == Success && resource_manager) {
+            owns_resource_manager = true;
+        } else {
+            // Fall back to XResourceManagerString. This will not be updated if the
+            // dpi value is later changed but should allow getting the initial value.
+            resource_manager = X11_XResourceManagerString(display);
         }
 
-        // If that failed, try "Xft.dpi" from GTK if available. On XWayland this
-        // will retrieve the current scale factor which is not updated dynamically
-        // in the Xrm database.
-        SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
-        if (gtk) {
-            GtkSettings *gtksettings = gtk->gtk.settings_get_default();
-            if (gtksettings) {
-                int dpi = 0;
-                gtk->g.object_get(gtksettings, "gtk-xft-dpi", &dpi, NULL);
-                scale_factor = dpi / 1024.0 / 96.0;
-            }
-            SDL_Gtk_ExitContext(gtk);
-        }
-
-        // If that failed, try "Xft.dpi" from the XResourcesDatabase...
-        if (scale_factor <= 0.0)
-        {
-            SDL_VideoData *data = _this->internal;
-            Display *display = data->display;
-            char *resource_manager;
+        if (resource_manager) {
             XrmDatabase db;
             XrmValue value;
             char *type;
 
-            X11_XrmInitialize();
+            db = X11_XrmGetStringDatabase(resource_manager);
 
-            resource_manager = X11_XResourceManagerString(display);
-            if (resource_manager) {
-                db = X11_XrmGetStringDatabase(resource_manager);
-
-                // Get the value of Xft.dpi from the Database
-                if (X11_XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
-                    if (value.addr && type && SDL_strcmp(type, "String") == 0) {
-                        int dpi = SDL_atoi(value.addr);
-                        scale_factor  = dpi / 96.0;
-                    }
-                }
-                X11_XrmDestroyDatabase(db);
-            }
-        }
-
-        // If that failed, try the XSETTINGS keys...
-        if (scale_factor <= 0.0) {
-            scale_factor = X11_GetXsettingsIntKey(_this, "Gdk/WindowScalingFactor", -1);
-
-            // The Xft/DPI key is stored in increments of 1024th
-            if (scale_factor <= 0.0) {
-                int dpi = X11_GetXsettingsIntKey(_this, "Xft/DPI", -1);
-                if (dpi > 0) {
-                    scale_factor = (double) dpi / 1024.0;
-                    scale_factor /= 96.0;
+            // Get the value of Xft.dpi from the Database
+            if (X11_XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
+                if (value.addr && type && SDL_strcmp(type, "String") == 0) {
+                    int dpi = SDL_atoi(value.addr);
+                    scale_factor  = dpi / 96.0;
                 }
             }
-        }
+            X11_XrmDestroyDatabase(db);
 
-        // If that failed, try the GDK_SCALE envvar...
-        if (scale_factor <= 0.0) {
-            const char *scale_str = SDL_getenv("GDK_SCALE");
-            if (scale_str) {
-                scale_factor = SDL_atoi(scale_str);
+            if (owns_resource_manager) {
+                X11_XFree(resource_manager);
             }
         }
+    }
 
-        // Nothing or a bad value, just fall back to 1.0
+    // If that failed, try the XSETTINGS keys...
+    if (scale_factor <= 0.0) {
+        scale_factor = X11_GetXsettingsIntKey(_this, "Gdk/WindowScalingFactor", -1);
+
+        // The Xft/DPI key is stored in increments of 1024th
         if (scale_factor <= 0.0) {
-            scale_factor = 1.0;
+            int dpi = X11_GetXsettingsIntKey(_this, "Xft/DPI", -1);
+            if (dpi > 0) {
+                scale_factor = (double) dpi / 1024.0;
+                scale_factor /= 96.0;
+            }
         }
+    }
+
+    // If that failed, try the GDK_SCALE envvar...
+    if (scale_factor <= 0.0) {
+        const char *scale_str = SDL_getenv("GDK_SCALE");
+        if (scale_str) {
+            scale_factor = SDL_atoi(scale_str);
+        }
+    }
+
+    // Nothing or a bad value, just fall back to 1.0
+    if (scale_factor <= 0.0) {
+        scale_factor = 1.0;
     }
 
     return (float)scale_factor;
@@ -505,7 +510,7 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
         display->name = display_name;
     }
     display->desktop_mode = mode;
-    display->content_scale = GetGlobalContentScale(_this);
+    display->content_scale = X11_GetGlobalContentScale(_this);
     display->internal = displaydata;
 
     return true;
@@ -875,7 +880,7 @@ static bool X11_InitModes_StdXlib(SDL_VideoDevice *_this)
     display.name = (char *)"Generic X11 Display"; /* this is just copied and thrown away, it's safe to cast to char* here. */
     display.desktop_mode = mode;
     display.internal = displaydata;
-    display.content_scale = GetGlobalContentScale(_this);
+    display.content_scale = X11_GetGlobalContentScale(_this);
     if (SDL_AddVideoDisplay(&display, true) == 0) {
         return false;
     }
