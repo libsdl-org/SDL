@@ -678,8 +678,11 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
     case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
         HIDAPI_SetDeviceName(device, "HHL ProGCC");
         break;
+    case USB_PRODUCT_VOIDGAMING_PS4FIREBIRD:
+        HIDAPI_SetDeviceName(device, "Void Gaming PS4 FireBird");
+        break;
     case USB_PRODUCT_BONZIRICHANNEL_FIREBIRD:
-        HIDAPI_SetDeviceName(device, "Bonziri Firebird");
+        HIDAPI_SetDeviceName(device, "Bonziri FireBird");
         break;
     case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
     default:

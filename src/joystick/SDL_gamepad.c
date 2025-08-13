@@ -1038,7 +1038,24 @@ static bool SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 produc
         }
         return true;
 
+    case USB_PRODUCT_VOIDGAMING_PS4FIREBIRD:
+        switch (sub_product) {
+        default:
+            // PS4 FireBird Default Mapping
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b15,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b14,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,paddle1:b11,paddle2:b10,paddle3:b17,paddle4:b16,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b12,touchpad:b13,x:b2,y:b3,", mapping_string_len);
+            break;
+        }
+        return true;
+
     case USB_PRODUCT_BONZIRICHANNEL_FIREBIRD:
+        switch (sub_product) {
+        default:
+            // FireBird Default Mapping
+            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b13,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b14,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b15,paddle1:b11,paddle2:b10,paddle3:b17,paddle4:b16,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b12,x:b2,y:b3,", mapping_string_len);
+            break;
+        }
+        return true;
+
     default:
         return false;
     }
