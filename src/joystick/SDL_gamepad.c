@@ -814,13 +814,9 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
     switch (styles->paddle_style) {
     case SINPUT_PADDLESTYLE_TWO:
         paddle_pairs = 1;
-        SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
-        SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
         break;
 
     case SINPUT_PADDLESTYLE_FOUR:
-        SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
-        SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
         paddle_pairs = 2;
         break;
 
