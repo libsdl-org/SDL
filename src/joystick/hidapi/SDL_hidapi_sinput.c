@@ -2,9 +2,6 @@
   Simple DirectMedia Layer
   Copyright (C) 2025 Mitchell Cairns <mitch.cairns@handheldlegend.com>
 
-  Contributors:
-  Antheas Kapenekakis <git@antheas.dev>
-
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
   arising from the use of this software.
@@ -241,7 +238,7 @@ typedef struct
     Uint8 touchpad_finger_count; // 2 fingers for one touchpad, or 1 per touchpad (2 max)
 
     Uint8  polling_rate_ms;
-    Uint8  sub_type;    // Subtype of the device, 0 in most cases
+    Uint8  sub_product;    // Subtype of the device, 0 in most cases
 
     Uint16 accelRange; // Example would be 2,4,8,16 +/- (g-force)
     Uint16 gyroRange;  // Example would be 1000,2000,4000 +/- (degrees per second)
@@ -273,127 +270,156 @@ static inline float CalculateAccelScale(uint16_t g_range)
 // This function uses base-n encoding to encode features into the version GUID bytes
 // that properly represents the supported device features
 // This also sets the driver context button mask correctly based on the features
-static void
-DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
+static void DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSInput_Context *ctx = device->context;
+
+    // A new button mask is generated to provide
+    // SDL with a mapping string that is sane. In case of
+    // an unconventional gamepad setup, the closest sane
+    // mapping is provided to the driver.
     Uint8 mask[4] = { 0 };
+
+    // For all gamepads, there is a minimum SInput expectation
+    // to have dpad, abxy, and start buttons
 
     // ABXY + D-Pad
     mask[0] = 0xFF;
     ctx->dpad_supported = true;
 
-    // Start + Back
-    mask[2] |= (SINPUT_BUTTONMASK_BACK | SINPUT_BUTTONMASK_START);
+    // Start button
+    mask[2] |= SINPUT_BUTTONMASK_START;
 
-    // Trigger & bumper bits live in mask[1]
-    bool digital_triggers = (ctx->usage_masks[1] & SINPUT_BUTTONMASK_LEFT_TRIGGER) ||
-                            (ctx->usage_masks[1] & SINPUT_BUTTONMASK_RIGHT_TRIGGER);
-    bool bumpers = (ctx->usage_masks[1] & SINPUT_BUTTONMASK_LEFT_BUMPER) ||
-                   (ctx->usage_masks[1] & SINPUT_BUTTONMASK_RIGHT_BUMPER);
-    bool analog_trigs = ctx->left_analog_trigger_supported ||
-                        ctx->right_analog_trigger_supported;
+    // Bumpers 
+    bool left_bumper = (ctx->usage_masks[1] & SINPUT_BUTTONMASK_LEFT_BUMPER) != 0;
+    bool right_bumper = (ctx->usage_masks[1] & SINPUT_BUTTONMASK_RIGHT_BUMPER) != 0;
 
-    // Paddle bits may touch mask[1] and mask[2]
-    bool pg1 = (ctx->usage_masks[1] & SINPUT_BUTTONMASK_LEFT_PADDLE1) ||
-               (ctx->usage_masks[1] & SINPUT_BUTTONMASK_RIGHT_PADDLE1);
-    bool pg2 = (ctx->usage_masks[2] & SINPUT_BUTTONMASK_LEFT_PADDLE2) ||
-               (ctx->usage_masks[2] & SINPUT_BUTTONMASK_RIGHT_PADDLE2);
+    int bumperStyle = SINPUT_BUMPERSTYLE_NONE;
+    if (left_bumper && right_bumper) {
+        bumperStyle = SINPUT_BUMPERSTYLE_TWO;
+        mask[1] |= (SINPUT_BUTTONMASK_LEFT_BUMPER | SINPUT_BUTTONMASK_RIGHT_BUMPER);
+    } else if (left_bumper || right_bumper) {
+        bumperStyle = SINPUT_BUMPERSTYLE_ONE;
 
-    // Guide/Share
-    bool guide = (ctx->usage_masks[2] & SINPUT_BUTTONMASK_GUIDE) != 0;
-    bool share = (ctx->usage_masks[2] & SINPUT_BUTTONMASK_CAPTURE) != 0;
+        if (left_bumper) {
+            mask[1] |= SINPUT_BUTTONMASK_LEFT_BUMPER;
+        } else if (right_bumper) {
+            mask[1] |= SINPUT_BUTTONMASK_RIGHT_BUMPER;
+        }
+    }
+
+    // Trigger bits live in mask[1]
+    bool digital_triggers = (ctx->usage_masks[1] & (SINPUT_BUTTONMASK_LEFT_TRIGGER | SINPUT_BUTTONMASK_RIGHT_TRIGGER)) != 0;
+
+    bool analog_triggers = ctx->left_analog_trigger_supported || ctx->right_analog_trigger_supported;
 
     // Touchpads
     bool t1 = (ctx->usage_masks[2] & SINPUT_BUTTONMASK_TOUCHPAD1) != 0;
     bool t2 = (ctx->usage_masks[2] & SINPUT_BUTTONMASK_TOUCHPAD2) != 0;
 
-    int analogIndex = SINPUT_ANALOGSTYLE_NONE;
+    int analogStyle = SINPUT_ANALOGSTYLE_NONE;
     if (ctx->left_analog_stick_supported && ctx->right_analog_stick_supported) {
-        analogIndex = SINPUT_ANALOGSTYLE_LEFTRIGHT;
+        analogStyle = SINPUT_ANALOGSTYLE_LEFTRIGHT;
         mask[1] |= (SINPUT_BUTTONMASK_LEFT_STICK | SINPUT_BUTTONMASK_RIGHT_STICK);
     } else if (ctx->left_analog_stick_supported) {
-        analogIndex = SINPUT_ANALOGSTYLE_LEFTONLY;
+        analogStyle = SINPUT_ANALOGSTYLE_LEFTONLY;
         mask[1] |= SINPUT_BUTTONMASK_LEFT_STICK;
     } else if (ctx->right_analog_stick_supported) {
-        analogIndex = SINPUT_ANALOGSTYLE_RIGHTONLY;
+        analogStyle = SINPUT_ANALOGSTYLE_RIGHTONLY;
         mask[1] |= SINPUT_BUTTONMASK_RIGHT_STICK;
     }
 
-    int triggerIndex = SINPUT_TRIGGERSTYLE_NONE;
-    if (analog_trigs) {
-        triggerIndex = SINPUT_TRIGGERSTYLE_ANALOG;
-        mask[1] |= (SINPUT_BUTTONMASK_LEFT_BUMPER | SINPUT_BUTTONMASK_RIGHT_BUMPER);
+    int triggerStyle = SINPUT_TRIGGERSTYLE_NONE;
+
+    if (analog_triggers && digital_triggers) {
+        // When we have both analog triggers and digital triggers
+        // this is interpreted as having dual-stage triggers
+        triggerStyle = SINPUT_TRIGGERSTYLE_DUALSTAGE;
+        mask[1] |= (SINPUT_BUTTONMASK_LEFT_TRIGGER | SINPUT_BUTTONMASK_RIGHT_TRIGGER);
+    } else if (analog_triggers) {
+        triggerStyle = SINPUT_TRIGGERSTYLE_ANALOG;
     } else if (digital_triggers) {
-        triggerIndex = SINPUT_TRIGGERSTYLE_DIGITAL;
-        mask[1] |= (SINPUT_BUTTONMASK_LEFT_BUMPER | SINPUT_BUTTONMASK_RIGHT_BUMPER |
-                    SINPUT_BUTTONMASK_LEFT_TRIGGER | SINPUT_BUTTONMASK_RIGHT_TRIGGER);
-    } else if (bumpers) {
-        triggerIndex = SINPUT_TRIGGERSTYLE_BUMPERS;
-        mask[1] |= (SINPUT_BUTTONMASK_LEFT_BUMPER | SINPUT_BUTTONMASK_RIGHT_BUMPER);
+        triggerStyle = SINPUT_TRIGGERSTYLE_DIGITAL;
+        mask[1] |= (SINPUT_BUTTONMASK_LEFT_TRIGGER | SINPUT_BUTTONMASK_RIGHT_TRIGGER);
     }
 
-    int paddleIndex = SINPUT_PADDLESTYLE_NONE;
+    // Paddle bits may touch mask[1] and mask[2]
+    bool pg1 = (ctx->usage_masks[1] & (SINPUT_BUTTONMASK_LEFT_PADDLE1 | SINPUT_BUTTONMASK_RIGHT_PADDLE1)) != 0;
+    bool pg2 = (ctx->usage_masks[2] & (SINPUT_BUTTONMASK_LEFT_PADDLE2 | SINPUT_BUTTONMASK_RIGHT_PADDLE2)) != 0;
+
+    int paddleStyle = SINPUT_PADDLESTYLE_NONE;
     if (pg1 && pg2) {
-        paddleIndex = SINPUT_PADDLESTYLE_FOUR;
+        paddleStyle = SINPUT_PADDLESTYLE_FOUR;
         mask[1] |= (SINPUT_BUTTONMASK_LEFT_PADDLE1 | SINPUT_BUTTONMASK_RIGHT_PADDLE1);
         mask[2] |= (SINPUT_BUTTONMASK_LEFT_PADDLE2 | SINPUT_BUTTONMASK_RIGHT_PADDLE2);
     } else if (pg1) {
-        paddleIndex = SINPUT_PADDLESTYLE_TWO;
+        paddleStyle = SINPUT_PADDLESTYLE_TWO;
         mask[1] |= (SINPUT_BUTTONMASK_LEFT_PADDLE1 | SINPUT_BUTTONMASK_RIGHT_PADDLE1);
     }
 
-    int metaIndex = SINPUT_METASTYLE_NONE;
-    if (guide && share) {
-        metaIndex = SINPUT_METASTYLE_GUIDESHARE;
-        mask[2] |= (SINPUT_BUTTONMASK_GUIDE | SINPUT_BUTTONMASK_CAPTURE);
+
+    // Meta Buttons (Back, Guide, Share)
+    bool back = (ctx->usage_masks[2] & SINPUT_BUTTONMASK_BACK) != 0;
+    bool guide = (ctx->usage_masks[2] & SINPUT_BUTTONMASK_GUIDE) != 0;
+    bool share = (ctx->usage_masks[2] & SINPUT_BUTTONMASK_CAPTURE) != 0;
+
+    int metaStyle = SINPUT_METASTYLE_NONE;
+    if (share) {
+        metaStyle = SINPUT_METASTYLE_BACKGUIDESHARE;
+        mask[2] |= (SINPUT_BUTTONMASK_BACK | SINPUT_BUTTONMASK_GUIDE | SINPUT_BUTTONMASK_CAPTURE);
     } else if (guide) {
-        metaIndex = SINPUT_METASTYLE_GUIDE;
-        mask[2] |= SINPUT_BUTTONMASK_GUIDE;
+        metaStyle = SINPUT_METASTYLE_BACKGUIDE;
+        mask[2] |= (SINPUT_BUTTONMASK_BACK | SINPUT_BUTTONMASK_GUIDE);
+    } else if (back) {
+        metaStyle = SINPUT_METASTYLE_BACK;
+        mask[2] |= (SINPUT_BUTTONMASK_BACK);
     }
 
-    int touchIndex = SINPUT_TOUCHSTYLE_NONE;
+    int touchStyle = SINPUT_TOUCHSTYLE_NONE;
     if (t1 && t2) {
-        touchIndex = SINPUT_TOUCHSTYLE_DOUBLE;
+        touchStyle = SINPUT_TOUCHSTYLE_DOUBLE;
         mask[2] |= (SINPUT_BUTTONMASK_TOUCHPAD1 | SINPUT_BUTTONMASK_TOUCHPAD2);
     } else if (t1) {
-        touchIndex = SINPUT_TOUCHSTYLE_SINGLE;
+        touchStyle = SINPUT_TOUCHSTYLE_SINGLE;
         mask[2] |= SINPUT_BUTTONMASK_TOUCHPAD1;
     }
 
-    // Extra misc
-    int miscIndex = SINPUT_MISCSTYLE_NONE;
+    // Misc Buttons
+    int miscStyle = SINPUT_MISCSTYLE_NONE;
     Uint8 extra_misc = ctx->usage_masks[3] & 0x0F;
     switch (extra_misc) {
     case 0x0F:
-        miscIndex = SINPUT_MISCSTYLE_4;
+        miscStyle = SINPUT_MISCSTYLE_4;
         mask[3] = 0x0F;
         break;
     case 0x07:
-        miscIndex = SINPUT_MISCSTYLE_3;
+        miscStyle = SINPUT_MISCSTYLE_3;
         mask[3] = 0x07;
         break;
     case 0x03:
-        miscIndex = SINPUT_MISCSTYLE_2;
+        miscStyle = SINPUT_MISCSTYLE_2;
         mask[3] = 0x03;
         break;
     case 0x01:
-        miscIndex = SINPUT_MISCSTYLE_1;
+        miscStyle = SINPUT_MISCSTYLE_1;
         mask[3] = 0x01;
         break;
     default:
-        miscIndex = SINPUT_MISCSTYLE_NONE;
+        miscStyle = SINPUT_MISCSTYLE_NONE;
         mask[3] = 0x00;
         break;
     }
 
-    int version = analogIndex;
-    version = version * (int) SINPUT_TRIGGERSTYLE_MAX + triggerIndex;
-    version = version * (int) SINPUT_PADDLESTYLE_MAX + paddleIndex;
-    version = version * (int) SINPUT_METASTYLE_MAX + metaIndex;
-    version = version * (int) SINPUT_TOUCHSTYLE_MAX + touchIndex;
-    version = version * (int) SINPUT_MISCSTYLE_MAX + miscIndex;
+    int version = analogStyle;
+    version = (version * (int)SINPUT_BUMPERSTYLE_MAX) + bumperStyle;
+    version = (version * (int)SINPUT_TRIGGERSTYLE_MAX) + triggerStyle;
+    version = (version * (int)SINPUT_PADDLESTYLE_MAX) + paddleStyle;
+    version = (version * (int)SINPUT_METASTYLE_MAX) + metaStyle;
+    version = (version * (int)SINPUT_TOUCHSTYLE_MAX) + touchStyle;
+    version = (version * (int)SINPUT_MISCSTYLE_MAX) + miscStyle;
 
+    // Overwrite our button usage masks
+    // with our sanitized masks
     ctx->usage_masks[0] = mask[0];
     ctx->usage_masks[1] = mask[1];
     ctx->usage_masks[2] = mask[2];
@@ -401,6 +427,7 @@ DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
 
     version = SDL_clamp(version, 0, UINT16_MAX);
 
+    // Overwrite 'Version' field of the GUID data
     device->guid.data[12] = (Uint8)(version & 0xFF);
     device->guid.data[13] = (Uint8)(version >> 8);
 }
@@ -439,7 +466,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     // The 5 LSB represent a device sub-type
     device->guid.data[15] = data[5];
 
-    ctx->sub_type = (data[5] & 0x1F);
+    ctx->sub_product = (data[5] & 0x1F);
 
 #if defined(DEBUG_SINPUT_INIT)
     SDL_Log("SInput Face Style: %d", (data[5] & 0xE0) >> 5);
@@ -451,40 +478,10 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->accelRange = EXTRACTUINT16(data, 8);
     ctx->gyroRange = EXTRACTUINT16(data, 10);
 
-    bool use_dynamic_mapping = false;
-
-    if ((device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC) && (device->vendor_id == USB_VENDOR_RASPBERRYPI)) {
-        switch (ctx->sub_type) {
-        default:
-        // SInput Generic DevMode, exposes all buttons/inputs
-        case SINPUT_GENERIC_DEVMAP:
-            ctx->usage_masks[0] = 0xFF;
-            ctx->usage_masks[1] = 0xFF;
-            ctx->usage_masks[2] = 0xFF;
-            ctx->usage_masks[3] = 0xFF;
-            break;
-
-        // SInput Generic Device Dynamic, applies an appropriate mapping
-        case SINPUT_GENERIC_DYNMAP:
-            ctx->usage_masks[0] = data[12];
-            ctx->usage_masks[1] = data[13];
-            ctx->usage_masks[2] = data[14];
-            ctx->usage_masks[3] = data[15];
-            use_dynamic_mapping = true;
-            break;
-        }
-    } else {
-        // Masks in LSB to MSB
-        // South, East, West, North, DUp, DDown, DLeft, DRight
-        ctx->usage_masks[0] = data[12];
-        // Stick Left, Stick Right, L Shoulder, R Shoulder,
-        // L Digital Trigger, R Digital Trigger, L Paddle 1, R Paddle 1
-        ctx->usage_masks[1] = data[13];
-        // Start, Back, Guide, Capture, L Paddle 2, R Paddle 2, Touchpad L, Touchpad R
-        ctx->usage_masks[2] = data[14];
-        // Power, Misc 4 to 10
-        ctx->usage_masks[3] = data[15];
-    }
+    ctx->usage_masks[0] = data[12];
+    ctx->usage_masks[1] = data[13];
+    ctx->usage_masks[2] = data[14];
+    ctx->usage_masks[3] = data[15];
 
     // Get and validate touchpad parameters
     ctx->touchpad_count = data[16];
@@ -511,8 +508,9 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->accelScale = CalculateAccelScale(ctx->accelRange);
     ctx->gyroScale = CalculateGyroScale(ctx->gyroRange);
 
-    // Process dynamic controller info
-    if (use_dynamic_mapping) {
+    // Sub Product 0 is a fallback to
+    // utilize a dynamic mapping
+    if (ctx->sub_product == 0) {
         DeviceDynamicEncodingSetup(device);
     }
 
@@ -720,21 +718,9 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         axes += 2;
     }
 
-    if (ctx->left_analog_trigger_supported) {
-        ++axes;
-    }
-
-    if (ctx->right_analog_trigger_supported) {
-        ++axes;
-    }
-
-    if ((device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC) && (device->vendor_id == USB_VENDOR_RASPBERRYPI)) {
-        switch (ctx->sub_type) {
-        // Default generic device, exposes all axes
-        case SINPUT_GENERIC_DEVMAP:
-            axes = 6;
-            break;
-        }
+    if (ctx->left_analog_trigger_supported || ctx->right_analog_trigger_supported) {
+        // Always add both analog trigger axes if one is present
+        axes += 2;
     }
 
     joystick->naxes = axes;

@@ -716,11 +716,35 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
 {
     int current_button = 0;
     int current_axis = 0;
+    int misc_buttons = 0;
     bool digital_triggers = false;
-    bool bumpers = false;
+    bool dualstage_triggers = false;
+    int bumpers = 0;
     bool left_stick = false;
     bool right_stick = false;
-    bool paddle_second_pair = false;
+    int paddle_pairs = 0;
+
+    // Determine how many misc buttons are used
+    switch (styles->misc_style) {
+    case SINPUT_MISCSTYLE_1:
+        misc_buttons = 1;
+        break;
+
+    case SINPUT_MISCSTYLE_2:
+        misc_buttons = 2;
+        break;
+
+    case SINPUT_MISCSTYLE_3:
+        misc_buttons = 3;
+        break;
+
+    case SINPUT_MISCSTYLE_4:
+        misc_buttons = 4;
+        break;
+
+    default:
+        break;
+    }
 
     // Analog joysticks (always come first in axis mapping)
     switch (styles->analog_style) {
@@ -749,36 +773,69 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
         break;
     }
 
-    // Analog triggers
-    switch (styles->trigger_style) {
-    // Analog triggers + bumpers
-    case SINPUT_TRIGGERSTYLE_ANALOG:
-        SDL_ADD_AXIS_MAPPING("lefttrigger", current_axis++, mapping_string_len);
-        SDL_ADD_AXIS_MAPPING("righttrigger", current_axis++, mapping_string_len);
+    // Bumpers
+    switch (styles->bumper_style) {
+    case SINPUT_BUMPERSTYLE_ONE:
+        bumpers = 1;
         break;
 
-    // Digital triggers + bumpers
-    case SINPUT_TRIGGERSTYLE_DIGITAL:
-        digital_triggers = true;
-        bumpers = true;
-        break;
-
-    // Only bumpers
-    case SINPUT_TRIGGERSTYLE_BUMPERS:
-        bumpers = true;
+    case SINPUT_BUMPERSTYLE_TWO:
+        bumpers = 2;
         break;
 
     default:
         break;
     }
 
-    // BAYX buttons (East, South, North, West)
-    SDL_ADD_BUTTON_MAPPING("b", current_button++, mapping_string_len); // East  (typically B on Xbox, Circle on PlayStation)
-    SDL_ADD_BUTTON_MAPPING("a", current_button++, mapping_string_len); // South (typically A on Xbox, X on PlayStation)
-    SDL_ADD_BUTTON_MAPPING("y", current_button++, mapping_string_len); // North (typically Y on Xbox, Triangle on PlayStation)
-    SDL_ADD_BUTTON_MAPPING("x", current_button++, mapping_string_len); // West  (typically X on Xbox, Square on PlayStation)
+    // Analog triggers
+    switch (styles->trigger_style) {
+    // Analog triggers
+    case SINPUT_TRIGGERSTYLE_ANALOG:
+        SDL_ADD_AXIS_MAPPING("lefttrigger", current_axis++, mapping_string_len);
+        SDL_ADD_AXIS_MAPPING("righttrigger", current_axis++, mapping_string_len);
+        break;
 
-    // DPad
+    // Digital triggers
+    case SINPUT_TRIGGERSTYLE_DIGITAL:
+        digital_triggers = true;
+        break;
+
+    // Analog triggers with digital press
+    case SINPUT_TRIGGERSTYLE_DUALSTAGE:
+        SDL_ADD_AXIS_MAPPING("lefttrigger", current_axis++, mapping_string_len);
+        SDL_ADD_AXIS_MAPPING("righttrigger", current_axis++, mapping_string_len);
+        dualstage_triggers = true;
+        break;
+
+    default:
+        break;
+    }
+
+    switch (styles->paddle_style) {
+    case SINPUT_PADDLESTYLE_TWO:
+        paddle_pairs = 1;
+        SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
+        break;
+
+    case SINPUT_PADDLESTYLE_FOUR:
+        SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
+        paddle_pairs = 2;
+        break;
+
+    default:
+        break;
+    }
+
+    // Digital button mappings
+    // ABXY buttons (always applied as South, East, West, North)
+    SDL_ADD_BUTTON_MAPPING("a", current_button++, mapping_string_len); // South (typically A on Xbox, X on PlayStation)
+    SDL_ADD_BUTTON_MAPPING("b", current_button++, mapping_string_len); // East  (typically B on Xbox, Circle on PlayStation)
+    SDL_ADD_BUTTON_MAPPING("x", current_button++, mapping_string_len); // West  (typically X on Xbox, Square on PlayStation)
+    SDL_ADD_BUTTON_MAPPING("y", current_button++, mapping_string_len); // North (typically Y on Xbox, Triangle on PlayStation)
+
+    // DPad (always applied)
     SDL_strlcat(mapping_string, "dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,", mapping_string_len);
 
     // Left and Right stick buttons
@@ -790,8 +847,10 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
     }
 
     // Digital shoulder buttons (L/R Shoulder)
-    if (bumpers) {
+    if (bumpers > 0) {
         SDL_ADD_BUTTON_MAPPING("leftshoulder", current_button++, mapping_string_len);
+    }
+    if (bumpers > 1) {
         SDL_ADD_BUTTON_MAPPING("rightshoulder", current_button++, mapping_string_len);
     }
 
@@ -799,35 +858,54 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
     if (digital_triggers) {
         SDL_ADD_BUTTON_MAPPING("lefttrigger", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("righttrigger", current_button++, mapping_string_len);
+    } else if (dualstage_triggers) {
+        // Dual-stage trigger buttons are appended as MISC buttons
+        // but only if we have the space to use them.
+        if (misc_buttons <= 2) {
+            switch (misc_buttons) {
+            case 0:
+                SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
+                SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
+                break;
+
+            case 1:
+                SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
+                SDL_ADD_BUTTON_MAPPING("misc5", current_button++, mapping_string_len);
+                break;
+
+            case 2:
+                SDL_ADD_BUTTON_MAPPING("misc5", current_button++, mapping_string_len);
+                SDL_ADD_BUTTON_MAPPING("misc6", current_button++, mapping_string_len);
+                break;
+
+            default:
+                // We do not overwrite other misc buttons if they are used.
+                break;
+            }
+        }
     }
 
     // Paddle 1/2
-    switch (styles->paddle_style) {
-    case SINPUT_PADDLESTYLE_TWO:
+    if(paddle_pairs > 0) {
         SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
-        break;
-
-    case SINPUT_PADDLESTYLE_FOUR:
-        SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
-        SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
-        paddle_second_pair = true;
-        break;
-
-    default:
-        break;
     }
 
     // Start/Plus & Select/Back
     SDL_ADD_BUTTON_MAPPING("start", current_button++, mapping_string_len);
-    SDL_ADD_BUTTON_MAPPING("back", current_button++, mapping_string_len);
 
     switch (styles->meta_style) {
-    case SINPUT_METASTYLE_GUIDE:
+    case SINPUT_METASTYLE_BACK:
+        SDL_ADD_BUTTON_MAPPING("back", current_button++, mapping_string_len);
+        break;
+
+    case SINPUT_METASTYLE_BACKGUIDE:
+        SDL_ADD_BUTTON_MAPPING("back", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("guide", current_button++, mapping_string_len);
         break;
 
-    case SINPUT_METASTYLE_GUIDESHARE:
+    case SINPUT_METASTYLE_BACKGUIDESHARE:
+        SDL_ADD_BUTTON_MAPPING("back", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("guide", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("misc1", current_button++, mapping_string_len);
         break;
@@ -837,7 +915,7 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
     }
 
     // Paddle 3/4
-    if (paddle_second_pair) {
+    if (paddle_pairs > 1) {
         SDL_ADD_BUTTON_MAPPING("paddle3", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("paddle4", current_button++, mapping_string_len);
     }
@@ -857,23 +935,23 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
         break;
     }
 
-    switch (styles->misc_style) {
-    case SINPUT_MISCSTYLE_1:
+    switch (misc_buttons) {
+    case 1:
         SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
         break;
 
-    case SINPUT_MISCSTYLE_2:
+    case 2:
         SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
         break;
 
-    case SINPUT_MISCSTYLE_3:
+    case 3:
         SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("misc5", current_button++, mapping_string_len);
         break;
 
-    case SINPUT_MISCSTYLE_4:
+    case 4:
         SDL_ADD_BUTTON_MAPPING("misc3", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("misc4", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("misc5", current_button++, mapping_string_len);
@@ -882,12 +960,6 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
 
     default:
         break;
-    }
-
-    // Remove trailing comma
-    size_t len = SDL_strlen(mapping_string);
-    if (len > 0 && mapping_string[len - 1] == ',') {
-        mapping_string[len - 1] = '\0';
     }
 }
 
@@ -913,12 +985,41 @@ static bool SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 produc
         break;
     }
 
+    // For a sub-product value of 0, we interpret the
+    // mapping string dynamically based on the feature responses
+    if (sub_product == 0) {
+        // Decode styles for correct dynamic features
+        decoded.misc_style = (SInput_MiscStyleType)(version % SINPUT_MISCSTYLE_MAX);
+        version /= SINPUT_MISCSTYLE_MAX;
+
+        decoded.touch_style = (SInput_TouchStyleType)(version % SINPUT_TOUCHSTYLE_MAX);
+        version /= SINPUT_TOUCHSTYLE_MAX;
+
+        decoded.meta_style = (SInput_MetaStyleType)(version % SINPUT_METASTYLE_MAX);
+        version /= SINPUT_METASTYLE_MAX;
+
+        decoded.paddle_style = (SInput_PaddleStyleType)(version % SINPUT_PADDLESTYLE_MAX);
+        version /= SINPUT_PADDLESTYLE_MAX;
+
+        decoded.trigger_style = (SInput_TriggerStyleType)(version % SINPUT_TRIGGERSTYLE_MAX);
+        version /= SINPUT_TRIGGERSTYLE_MAX;
+
+        decoded.bumper_style = (SInput_BumperStyleType)(version % SINPUT_BUMPERSTYLE_MAX);
+        version /= SINPUT_BUMPERSTYLE_MAX;
+
+        decoded.analog_style = (SInput_AnalogStyleType)(version % SINPUT_ANALOGSTYLE_MAX);
+
+        SDL_SInputStylesMapExtraction(&decoded, mapping_string, mapping_string_len);
+        return true;
+    }
+
+    // For non-zero sub-product IDs
     switch (product) {
     case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
         switch (sub_product) {
         default:
-            // ProGCC Primary Mapping
-            SDL_strlcat(mapping_string, "a:b1,b:b0,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,x:b3,y:b2,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", mapping_string_len);
+            // ProGCC Default Mapping
+            SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", mapping_string_len);
             break;
         }
         return true;
@@ -926,8 +1027,8 @@ static bool SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 produc
     case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
         switch (sub_product) {
         default:
-            // GC Ultimate Primary Map
-            SDL_strlcat(mapping_string, "a:b0,b:b2,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,x:b1,y:b3,misc3:b8,misc4:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", mapping_string_len);
+            // GC Ultimate Default Mapping
+            SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc3:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,misc4:b8,misc5:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", mapping_string_len);
             break;
         }
         return true;
@@ -935,38 +1036,14 @@ static bool SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 produc
     case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
         switch (sub_product) {
         default:
-        case SINPUT_GENERIC_DEVMAP:
-            // Default Fully Exposed Mapping (Development Purposes)
-            SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,b:b0,a:b1,y:b2,x:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b10,paddle2:b11,start:b12,back:b13,guide:b14,misc1:b15,paddle3:b16,paddle4:b17,touchpad:b18,misc2:b19,misc3:b20,misc4:b21,misc5:b22,misc6:b23", mapping_string_len);
-            break;
-
-        case SINPUT_GENERIC_DYNMAP:
-            // Decode styles for correct dynamic features
-            decoded.misc_style = (SINPUT_MISC_STYLE_E)(version % SINPUT_MISCSTYLE_MAX);
-            version /= SINPUT_MISCSTYLE_MAX;
-
-            decoded.touch_style = (SINPUT_TOUCH_STYLE_E)(version % SINPUT_TOUCHSTYLE_MAX);
-            version /= SINPUT_TOUCHSTYLE_MAX;
-
-            decoded.meta_style = (SINPUT_META_STYLE_E)(version % SINPUT_METASTYLE_MAX);
-            version /= SINPUT_METASTYLE_MAX;
-
-            decoded.paddle_style = (SINPUT_PADDLE_STYLE_E)(version % SINPUT_PADDLESTYLE_MAX);
-            version /= SINPUT_PADDLESTYLE_MAX;
-
-            decoded.trigger_style = (SINPUT_TRIGGER_STYLE_E)(version % SINPUT_TRIGGERSTYLE_MAX);
-            version /= SINPUT_TRIGGERSTYLE_MAX;
-
-            decoded.analog_style = (SINPUT_ANALOG_STYLE_E)(version % SINPUT_ANALOGSTYLE_MAX);
-
-            SDL_SInputStylesMapExtraction(&decoded, mapping_string, mapping_string_len);
+            // Fully Exposed Mapping (Development Purposes)
+            SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,a:b0,b:b1,x:b2,y:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b10,paddle2:b11,start:b12,back:b13,guide:b14,misc1:b15,paddle3:b16,paddle4:b17,touchpad:b18,misc2:b19,misc3:b20,misc4:b21,misc5:b22,misc6:b23", mapping_string_len);
             break;
         }
         return true;
 
     case USB_PRODUCT_BONZIRICHANNEL_FIREBIRD:
     default:
-        // Unmapped device
         return false;
     }
 }

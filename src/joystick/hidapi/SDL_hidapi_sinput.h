@@ -2,9 +2,6 @@
   Simple DirectMedia Layer
   Copyright (C) 2025 Mitchell Cairns <mitch.cairns@handheldlegend.com>
 
-  Contributors:
-  Antheas Kapenekakis <git@antheas.dev>
-
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
   arising from the use of this software.
@@ -29,16 +26,24 @@ typedef enum
     SINPUT_ANALOGSTYLE_RIGHTONLY,
     SINPUT_ANALOGSTYLE_LEFTRIGHT,
     SINPUT_ANALOGSTYLE_MAX,
-} SINPUT_ANALOG_STYLE_E;
+} SInput_AnalogStyleType;
+
+typedef enum
+{
+    SINPUT_BUMPERSTYLE_NONE,
+    SINPUT_BUMPERSTYLE_ONE,
+    SINPUT_BUMPERSTYLE_TWO,
+    SINPUT_BUMPERSTYLE_MAX,
+} SInput_BumperStyleType;
 
 typedef enum
 {
     SINPUT_TRIGGERSTYLE_NONE,
-    SINPUT_TRIGGERSTYLE_BUMPERS,
     SINPUT_TRIGGERSTYLE_ANALOG,
     SINPUT_TRIGGERSTYLE_DIGITAL,
+    SINPUT_TRIGGERSTYLE_DUALSTAGE,
     SINPUT_TRIGGERSTYLE_MAX,
-} SINPUT_TRIGGER_STYLE_E;
+} SInput_TriggerStyleType;
 
 typedef enum
 {
@@ -46,15 +51,16 @@ typedef enum
     SINPUT_PADDLESTYLE_TWO,
     SINPUT_PADDLESTYLE_FOUR,
     SINPUT_PADDLESTYLE_MAX,
-} SINPUT_PADDLE_STYLE_E;
+} SInput_PaddleStyleType;
 
 typedef enum
 {
     SINPUT_METASTYLE_NONE,
-    SINPUT_METASTYLE_GUIDE,
-    SINPUT_METASTYLE_GUIDESHARE,
+    SINPUT_METASTYLE_BACK,
+    SINPUT_METASTYLE_BACKGUIDE,
+    SINPUT_METASTYLE_BACKGUIDESHARE,
     SINPUT_METASTYLE_MAX,
-} SINPUT_META_STYLE_E;
+} SInput_MetaStyleType;
 
 typedef enum
 {
@@ -62,7 +68,7 @@ typedef enum
     SINPUT_TOUCHSTYLE_SINGLE,
     SINPUT_TOUCHSTYLE_DOUBLE,
     SINPUT_TOUCHSTYLE_MAX,
-} SINPUT_TOUCH_STYLE_E;
+} SInput_TouchStyleType;
 
 typedef enum
 {
@@ -72,17 +78,12 @@ typedef enum
     SINPUT_MISCSTYLE_3,
     SINPUT_MISCSTYLE_4,
     SINPUT_MISCSTYLE_MAX,
-} SINPUT_MISC_STYLE_E;
-
-typedef enum
-{
-    SINPUT_GENERIC_DEVMAP = 0x00,
-    SINPUT_GENERIC_DYNMAP = 0x1F,
-} SDL_SInputGenericDevices_t;
+} SInput_MiscStyleType;
 
 typedef struct
 {
     Uint16 analog_style;
+    Uint16 bumper_style;
     Uint16 trigger_style;
     Uint16 paddle_style;
     Uint16 meta_style;
