@@ -33,7 +33,7 @@
 
 /*****************************************************************************************************/
 // This protocol is documented at:
-// https://docs.handheldlegend.com/s/sinput/doc/sinput-hid-protocol-TkPYWlDMAg
+// https://docs.handheldlegend.com/s/sinput
 /*****************************************************************************************************/
 
 // Define this if you want to log all packets from the controller
@@ -246,6 +246,8 @@ typedef struct
     float accelScale; // Scale factor for accelerometer values
     float gyroScale;  // Scale factor for gyroscope values
     Uint8 last_state[USB_PACKET_LENGTH];
+
+    Uint8 axes_count;
 
     Uint8 buttons_count;
     Uint8 usage_masks[4];
@@ -508,10 +510,33 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     ctx->accelScale = CalculateAccelScale(ctx->accelRange);
     ctx->gyroScale = CalculateGyroScale(ctx->gyroRange);
 
+    int axes = 0;
+    if (ctx->left_analog_stick_supported) {
+        axes += 2;
+    }
+
+    if (ctx->right_analog_stick_supported) {
+        axes += 2;
+    }
+
+    if (ctx->left_analog_trigger_supported || ctx->right_analog_trigger_supported) {
+        // Always add both analog trigger axes if one is present
+        axes += 2;
+    }
+
+    ctx->axes_count = axes;
+
     // Sub Product 0 is a fallback to
     // utilize a dynamic mapping
     if (ctx->sub_product == 0) {
         DeviceDynamicEncodingSetup(device);
+    } else if (device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC && device->vendor_id == USB_VENDOR_RASPBERRYPI) {
+        ctx->usage_masks[0] = 0xFF;
+        ctx->usage_masks[1] = 0xFF;
+        ctx->usage_masks[2] = 0xFF;
+        ctx->usage_masks[3] = 0xFF;
+
+        ctx->axes_count = 6;
     }
 
     // Derive button count from mask
@@ -709,21 +734,7 @@ static bool HIDAPI_DriverSInput_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
 
     SDL_zeroa(ctx->last_state);
 
-    int axes = 0;
-    if (ctx->left_analog_stick_supported) {
-        axes += 2;
-    }
-
-    if (ctx->right_analog_stick_supported) {
-        axes += 2;
-    }
-
-    if (ctx->left_analog_trigger_supported || ctx->right_analog_trigger_supported) {
-        // Always add both analog trigger axes if one is present
-        axes += 2;
-    }
-
-    joystick->naxes = axes;
+    joystick->naxes = ctx->axes_count;
 
     if (ctx->dpad_supported) {
         joystick->nhats = 1;
