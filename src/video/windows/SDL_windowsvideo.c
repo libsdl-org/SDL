@@ -901,11 +901,6 @@ static PlatformMenuData *CreatePlatformMenuData(HMENU owner_handle, UINT_PTR sel
     return platform;
 }
 
-static HWND GetHwndFromWindow(SDL_Window *window)
-{
-    return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
-}
-
 // PlatformMenuData platform_data = 
 
 bool SDLCALL Win32_CreateMenuBar(SDL_MenuBar *menu_bar)
@@ -918,8 +913,9 @@ bool SDLCALL Win32_CreateMenuBar(SDL_MenuBar *menu_bar)
     }
 
     menu_bar->common.item_common.platform_data = (void*)CreatePlatformMenuData(NULL, (UINT_PTR)menu_handle);
+    const SDL_WindowData *data = menu_bar->common.item_common.window->internal;
 
-    if (!SetMenu(GetHwndFromWindow(menu_bar->common.item_common.window), menu_handle)) {
+    if (!SetMenu(data->hwnd, menu_handle)) {
         WIN_SetError("Unable to set MenuBar");
         SDL_free(menu_bar->common.item_common.platform_data);
         DestroyMenu(menu_handle);
@@ -962,15 +958,18 @@ static bool Win32_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const 
             flags |= MF_STRING;
         }
 
+        flags |= MF_BYPOSITION;
+
         platform_data->self_handle = (UINT_PTR)event_type;
     }
 
-    if (!AppendMenuA((HMENU)menu_platform_data->self_handle, flags, platform_data->self_handle, name)) {
+    if (!InsertMenuA((HMENU)menu_platform_data->self_handle, (UINT)index, flags, platform_data->self_handle, name)) {
         return WIN_SetError("Unable to append item to Menu.");
     }
 
+    const SDL_WindowData *data = menu_item->common.window->internal;
     
-    if (!DrawMenuBar(GetHwndFromWindow(menu_item->common.window))) {
+    if (!DrawMenuBar(data->hwnd)) {
         return WIN_SetError("Unable to draw menu bar");
     }
 

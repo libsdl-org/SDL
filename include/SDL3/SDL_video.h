@@ -3046,11 +3046,13 @@ typedef union SDL_MenuItem SDL_MenuItem;
 
 extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuBar(SDL_Window *window);
 
-// Must be a SDL_MENUBAR or SDL_MENU
+// menu_bar_as_item must be a SDL_MENUBAR or SDL_MENU
+// event_type will be ignored if type == SDL_MENU
 // On MacOS, buttoms created under a menubar will go into the "App" submenu
 extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_bar_as_item, size_t index, const char *name, SDL_MenuItemType type, Uint16 event_type);
 
-// Must be a SDL_MENUBAR or SDL_MENU
+// menu_bar_as_item must be a SDL_MENUBAR or SDL_MENU
+// event_type will be ignored if type == SDL_MENU
 // On MacOS, buttoms created under a menubar will go into the "App" submenu
 extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *name, SDL_MenuItemType type, Uint16 event_type);
 

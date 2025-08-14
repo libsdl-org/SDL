@@ -6174,13 +6174,21 @@ SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_bar_as_item, size_t index,
 
     // Get the last item in the list and insert our new item.
     if (menu->child_list) {
-        SDL_MenuItem *common = menu->child_list;
+        SDL_MenuItem *current = menu->child_list;
 
-        while (common->common.next)
-            common = common->common.next;
+        for (size_t i = 1; i < index; ++i) {
+            current = current->common.next;
+        }
 
-        common->common.next = menu_item;
-        menu_item->common.prev = common;
+        SDL_assert(current);
+
+        if (current->common.next) {
+            current->common.next->common.prev = menu_item;
+            menu_item->common.next = current->common.next;
+        }
+
+        current->common.next = menu_item;
+        menu_item->common.prev = current;
     } else {
         menu->child_list = menu_item;
     }
@@ -6199,7 +6207,7 @@ SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *nam
     }
 
     SDL_Menu_CommonData *menu = (SDL_Menu_CommonData *)menu_bar_as_item;
-    return SDL_CreateMenuItemAt(menu_bar_as_item, menu->children, name, type, event_type);
+    return SDL_CreateMenuItemAt(menu_bar_as_item, -1, name, type, event_type);
 }
 
 
