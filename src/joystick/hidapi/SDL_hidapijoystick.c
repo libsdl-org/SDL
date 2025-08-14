@@ -334,7 +334,7 @@ static bool HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(NULL, name, type, vendor_id, product_id, version, -1, 0, 0, 0)) {
+        if (driver->enabled && driver->IsSupportedDevice(driver, name, type, vendor_id, product_id, version, -1, 0, 0, 0)) {
             return true;
         }
     }

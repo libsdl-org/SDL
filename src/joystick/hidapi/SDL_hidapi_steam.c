@@ -1038,7 +1038,7 @@ static bool HIDAPI_DriverSteam_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
         return false;
     }
 
-    if (device->is_bluetooth) {
+    if (device && device->is_bluetooth) {
         return true;
     }
 
