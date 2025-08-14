@@ -100,6 +100,9 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI_SINPUT
     &SDL_HIDAPI_DriverSInput,
 #endif
+#ifdef SDL_JOYSTICK_HIDAPI_ZUIKI
+    &SDL_HIDAPI_DriverZUIKI,
+#endif
 };
 static int SDL_HIDAPI_numdrivers = 0;
 static SDL_AtomicInt SDL_HIDAPI_updating_devices;
