@@ -515,6 +515,7 @@ void X11_QuitKeyboard(SDL_VideoDevice *_this)
 
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLIB
     if (data->keyboard.xkb_enabled) {
+        SDL_SetKeymap(NULL, false);
         for (int i = 0; i < XkbNumKbdGroups; ++i) {
             SDL_DestroyKeymap(data->keyboard.xkb.keymaps[i]);
             data->keyboard.xkb.keymaps[i] = NULL;
