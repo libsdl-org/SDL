@@ -52,7 +52,7 @@ void CreateMenuBar()
     SDL_CreateMenuItem(main_bookmarks, "SDL Wiki", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_WIKI);
     SDL_CreateMenuItem(main_bookmarks, "SDL Discord", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_DISCORD);
 
-    SDL_MenuItem* other_bookmarks = SDL_CreateMenuItem(menu, "Other Bookmarks", SDL_MENU, MENU_BAR_LAST);
+    SDL_MenuItem *other_bookmarks = SDL_CreateMenuItem(main_bookmarks, "Other Bookmarks", SDL_MENU, MENU_BAR_LAST);
     SDL_CreateMenuItem(other_bookmarks, "Stack Overflow", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS_STACKOVERFLOW);
 
     SDL_DisableMenuItem(other_bookmarks);
