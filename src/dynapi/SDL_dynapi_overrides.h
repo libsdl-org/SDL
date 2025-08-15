@@ -1278,3 +1278,9 @@
 #define SDL_PutAudioStreamPlanarData SDL_PutAudioStreamPlanarData_REAL
 #define SDL_GetEventDescription SDL_GetEventDescription_REAL
 #define SDL_PutAudioStreamDataNoCopy SDL_PutAudioStreamDataNoCopy_REAL
+#define SDL_CreateMenuBar SDL_CreateMenuBar_REAL
+#define SDL_CreateMenuBarItem SDL_CreateMenuBarItem_REAL
+#define SDL_CreateMenuItem SDL_CreateMenuItem_REAL
+#define SDL_CheckMenuItem SDL_CheckMenuItem_REAL
+#define SDL_EnableMenuItem SDL_EnableMenuItem_REAL
+#define SDL_DestroyMenuBar SDL_DestroyMenuBar_REAL
