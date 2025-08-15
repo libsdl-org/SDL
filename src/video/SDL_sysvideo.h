@@ -209,6 +209,49 @@ typedef enum
     SDL_FULLSCREEN_PENDING
 } SDL_FullscreenResult;
 
+
+typedef struct PlatformMenuData PlatformMenuData;
+
+typedef struct SDL_MenuBar
+{
+    SDL_Window *window;
+    SDL_MenuItem *item_list;
+    PlatformMenuData *platform;
+} SDL_MenuBar;
+
+typedef struct SDL_MenuItem_CommonData
+{
+    size_t type;
+    PlatformMenuData *platform;
+    SDL_MenuBar *menu_bar;
+    SDL_MenuItem *prev;
+    SDL_MenuItem *next;
+} SDL_MenuItem_CommonData;
+
+typedef struct SDL_Menu
+{
+    SDL_MenuItem_CommonData common;
+    SDL_MenuItem *menuitem_list;
+} SDL_Menu;
+
+typedef struct SDL_MenuItem_Button
+{
+    SDL_MenuItem_CommonData common;
+} SDL_MenuItem_Button;
+
+typedef struct SDL_MenuItem_Checkable
+{
+    SDL_MenuItem_CommonData common;
+    bool is_checked;
+} SDL_MenuItem_Checkable;
+
+typedef union SDL_MenuItem
+{
+    SDL_MenuItem_CommonData common;
+    SDL_MenuItem_Button button;
+    SDL_MenuItem_Checkable checkable;
+} SDL_MenuItem;
+
 struct SDL_VideoDevice
 {
     /* * * */
@@ -314,6 +357,14 @@ struct SDL_VideoDevice
     bool (*SetWindowFocusable)(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
     bool (*SyncWindow)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*ReconfigureWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
+
+    
+    SDL_MenuBar *(*CreateMenuBar)(SDL_Window *window);
+    SDL_MenuItem *(*CreateMenuBarItem)(SDL_MenuBar *menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type);
+    SDL_MenuItem *(*CreateMenuItem)(SDL_Menu *menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type);
+    bool (*CheckMenuItem)(SDL_MenuItem *menu_item, bool checked);
+    bool (*EnableMenuItem)(SDL_MenuItem *menu_item, bool enabled);
+    void (*DestroyMenuItem)(SDL_MenuItem *menu_item);
 
     /* * * */
     /*

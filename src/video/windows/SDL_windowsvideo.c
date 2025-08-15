@@ -359,7 +359,14 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->ShowWindowSystemMenu = WIN_ShowWindowSystemMenu;
     device->SetWindowFocusable = WIN_SetWindowFocusable;
     device->UpdateWindowShape = WIN_UpdateWindowShape;
+    device->CreateMenuBar = Win32_CreateMenuBar;
+    device->CreateMenuBarItem = Win32_CreateMenuBarItem;
+    device->CreateMenuItem = Win32_CreateMenuItem;
+    device->CheckMenuItem = Win32_CheckMenuItem;
+    device->EnableMenuItem = Win32_EnableMenuItem;
+    device->DestroyMenuItem = Win32_DestroyMenuItem;
 #endif
+
 
 #ifdef SDL_VIDEO_OPENGL_WGL
     device->GL_LoadLibrary = WIN_GL_LoadLibrary;
@@ -877,5 +884,121 @@ bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this)
 #endif
     return false;
 }
+
+#define SDL_WIN32_INVALID_MENU_ID 65535
+
+static PlatformMenuData *CreatePlatformMenuData(HMENU owner, SDL_MenuItemType type)
+{
+    PlatformMenuData *platform = SDL_calloc(1, sizeof(PlatformMenuData));
+
+    switch (type) {
+    case SDL_MENU:
+        platform->menu_owner = INVALID_HANDLE_VALUE;
+        platform->handle_or_id = (UINT_PTR)INVALID_HANDLE_VALUE;
+        break;
+    default:
+        platform->menu_owner = owner;
+        platform->handle_or_id = (UINT_PTR)SDL_WIN32_INVALID_MENU_ID;
+        break;
+    }
+
+    return platform;
+}
+
+static HWND GetHwndFromWindow(SDL_Window *window)
+{
+    return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+}
+
+SDL_MenuBar *SDLCALL Win32_CreateMenuBar(SDL_Window *window)
+{
+    SDL_MenuBar *menu_bar = SDL_calloc(1, sizeof(SDL_MenuBar));
+    menu_bar->platform = CreatePlatformMenuData(INVALID_HANDLE_VALUE, SDL_MENU);
+    menu_bar->window = window;
+    menu_bar->platform->handle_or_id = (UINT_PTR)CreateMenu();
+
+    SetMenu(GetHwndFromWindow(window), (HMENU)menu_bar->platform->handle_or_id);
+
+    return menu_bar;
+}
+
+static SDL_MenuItem *Win32_CreateMenuItemImpl(HMENU menu, const char *name, SDL_MenuItemType type, Uint16 event_type, bool toplevel_menu)
+{
+    SDL_MenuItem *menu_item = SDL_calloc(1, sizeof(SDL_MenuItem));
+    menu_item->common.type = type;
+    menu_item->common.platform = CreatePlatformMenuData(menu, type);
+    UINT flags = 0;
+
+    if (!toplevel_menu) {
+        flags = MF_STRING;
+    }
+
+    if (type == SDL_MENU) {
+        if (toplevel_menu) {
+            menu_item->common.platform->handle_or_id = (UINT_PTR)CreateMenu();
+        } else {
+            menu_item->common.platform->handle_or_id = (UINT_PTR)CreatePopupMenu();
+        }
+
+        flags |= MF_POPUP;
+    } else {
+        if (toplevel_menu) {
+            flags |= MF_STRING;
+        }
+
+        menu_item->common.platform->handle_or_id = (UINT_PTR)event_type;
+    }
+
+    AppendMenuA(menu, flags, menu_item->common.platform->handle_or_id, name);
+
+    return menu_item;
+}
+
+static SDL_MenuItem *Win32_CreateMenuBarItem(SDL_MenuBar *menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type)
+{
+    SDL_MenuItem *item = Win32_CreateMenuItemImpl((HMENU)menu_bar->platform->handle_or_id, name, type, event_type, true);
+    item->common.menu_bar = menu_bar;
+
+    DrawMenuBar(GetHwndFromWindow(menu_bar->window));
+    return item;
+}
+
+static SDL_MenuItem *Win32_CreateMenuItem(SDL_Menu *menu, const char *name, SDL_MenuItemType type, Uint16 event_type)
+{
+    SDL_MenuItem *item = Win32_CreateMenuItemImpl((HMENU)menu->common.platform->handle_or_id, name, type, event_type, false);
+    item->common.menu_bar = menu->common.menu_bar;
+
+    DrawMenuBar(GetHwndFromWindow(item->common.menu_bar->window));
+    return item;
+}
+
+static bool Win32_CheckMenuItem(SDL_MenuItem *menu_item, bool checked)
+{
+    return CheckMenuItem(menu_item->common.platform->menu_owner, (UINT)menu_item->common.platform->handle_or_id, MF_BYCOMMAND | (checked ? MF_CHECKED : MF_UNCHECKED));
+    ;
+}
+
+static bool Win32_EnableMenuItem(SDL_MenuItem *menu_item, bool enabled)
+{
+    return EnableMenuItem(menu_item->common.platform->menu_owner, (UINT)menu_item->common.platform->handle_or_id, MF_BYCOMMAND | (enabled ? MF_ENABLED : MF_GRAYED));
+    ;
+}
+
+static void Win32_DestroyMenuItem(SDL_MenuItem *menu_item)
+{
+    RemoveMenu(menu_item->common.platform->menu_owner, (UINT)menu_item->common.platform->handle_or_id, MF_BYCOMMAND);
+    SDL_free(menu_item->common.platform);
+}
+
+static bool SDLCALL Win32_WindowsMessageHook(void *userdata, MSG *msg)
+{
+    if (msg->message != WM_COMMAND) {
+        return true;
+    }
+
+
+    return true;
+}
+
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS

@@ -256,6 +256,10 @@ typedef enum SDL_EventType
     SDL_EVENT_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
     SDL_EVENT_RENDER_DEVICE_LOST, /**< The device has been lost and can't be recovered. */
 
+    /* Menu events */
+    SDL_EVENT_MENU_BUTTON_CLICKED = 0x2100,
+    SDL_EVENT_MENU_CHECKABLE_CLICKED,
+
     /* Reserved events for private platforms */
     SDL_EVENT_PRIVATE0 = 0x4000,
     SDL_EVENT_PRIVATE1,
@@ -981,6 +985,13 @@ typedef struct SDL_UserEvent
     void *data2;        /**< User defined data pointer */
 } SDL_UserEvent;
 
+typedef struct SDL_MenuEvent
+{
+    Uint32 type; /**< SDL_EVENT_KEY_DOWN or SDL_EVENT_KEY_UP */
+    Uint32 reserved;
+    Uint64 timestamp; /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    Uint16 user_event_type;
+} SDL_MenuEvent;
 
 /**
  * The structure for all events in SDL.
@@ -1030,6 +1041,7 @@ typedef union SDL_Event
     SDL_RenderEvent render;                 /**< Render event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
+    SDL_MenuEvent menu;                     /**< Menu event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of

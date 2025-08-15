@@ -2427,6 +2427,22 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
         break;
 
+    case WM_COMMAND:
+        {
+            if (HIWORD(wParam) != 0) {
+                break;
+            }
+
+            WORD command_id = LOWORD(wParam);
+
+            SDL_Event event;
+            event.type = SDL_EVENT_MENU_BUTTON_CLICKED;
+            event.menu.timestamp = SDL_GetTicksNS();
+            event.menu.user_event_type = (Uint16)command_id;
+
+            SDL_PushEvent(&event);
+        }
+
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
     default:

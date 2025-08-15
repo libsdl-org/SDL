@@ -1264,6 +1264,12 @@ SDL3_0.0.0 {
     SDL_LoadPNG;
     SDL_SavePNG_IO;
     SDL_SavePNG;
+    SDL_CreateMenuBar;
+    SDL_CreateMenuBarItem;
+    SDL_CreateMenuItem;
+    SDL_CheckMenuItem;
+    SDL_EnableMenuItem;
+    SDL_DestroyMenuBar;
     # extra symbols go here (don't modify this line)
   local: *;
 };

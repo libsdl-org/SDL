@@ -661,4 +661,50 @@ extern bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface);
 extern SDL_SystemTheme WIN_GetSystemTheme(void);
 extern bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this);
 
+
+
+#define SDL_WIN32_INVALID_MENU_ID 65535
+
+typedef struct PlatformMenuData
+{
+    HMENU menu_owner;
+    UINT_PTR handle_or_id;
+} PlatformMenuData;
+
+extern PlatformMenuData *CreatePlatformMenuData(HMENU owner, SDL_MenuItemType type);
+extern HWND GetHwndFromWindow(SDL_Window *window);
+extern SDL_MenuBar *SDLCALL Win32_CreateMenuBar(SDL_Window *window);
+extern SDL_MenuItem *Win32_CreateMenuItemImpl(HMENU menu, const char *name, SDL_MenuItemType type, Uint16 event_type, bool toplevel_menu);
+extern SDL_MenuItem *Win32_CreateMenuBarItem(SDL_MenuBar *menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type);
+extern SDL_MenuItem *Win32_CreateMenuItem(SDL_Menu *menu, const char *name, SDL_MenuItemType type, Uint16 event_type);
+extern bool Win32_CheckMenuItem(SDL_MenuItem *menu_item, bool checked);
+extern bool Win32_EnableMenuItem(SDL_MenuItem *menu_item, bool enabled);
+extern void Win32_DestroyMenuItem(SDL_MenuItem *menu_item);
+extern bool SDLCALL Win32_WindowsMessageHook(void *userdata, MSG *msg);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #endif // SDL_windowsvideo_h_

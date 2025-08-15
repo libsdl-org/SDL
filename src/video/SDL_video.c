@@ -6111,6 +6111,88 @@ void SDL_OnApplicationDidEnterForeground(void)
     }
 }
 
+SDL_MenuBar* SDL_CreateMenuBar(SDL_Window *window)
+{
+    return _this->CreateMenuBar(window);
+}
+
+SDL_MenuItem* SDL_CreateMenuBarItem(SDL_MenuBar* menu_bar, const char *name, SDL_MenuItemType type, Uint16 event_type)
+{
+    if (type == SDL_MENU_CHECKABLE) {
+        SDL_SetError("Can't created a checkable item on the menubar, they must be in a menu.");
+        return false;
+    }
+
+    SDL_MenuItem* menu_item = _this->CreateMenuBarItem(menu_bar, name, type, event_type);
+
+    if (menu_item == NULL) {
+        return NULL;
+    }
+
+    // Get the last item in the list and insert our new item.
+    if (menu_bar->item_list) {
+        SDL_MenuItem* last = menu_bar->item_list;
+
+        for (; last->common.next; last = last->common.next)
+            ;
+
+        last->common.next = menu_item;
+        menu_item->common.prev = last;
+    } else {
+        menu_bar->item_list = menu_item;
+    }
+
+    return menu_item;
+}
+
+SDL_MenuItem* SDL_CreateMenuItem(SDL_Menu *menu, const char *name, SDL_MenuItemType type, Uint16 event_type)
+{
+    SDL_MenuItem* menu_item = _this->CreateMenuItem(menu, name, type, event_type);
+
+    if (menu_item == NULL) {
+        return NULL;
+    }
+
+    // Get the last item in the list and insert our new item.
+    if (menu->menuitem_list) {
+        SDL_MenuItem* last = menu->menuitem_list;
+
+        while (last->common.next) last = last->common.next;
+
+        last->common.next = menu_item;
+        menu_item->common.prev = last;
+    } else {
+        menu->menuitem_list = menu_item;
+    }
+
+    return menu_item;
+}
+
+bool SDL_CheckMenuItem(SDL_MenuItem* menu_item, bool checked)
+{
+    if (menu_item->common.type != SDL_MENU_CHECKABLE) {
+        SDL_SetError("menu_item isn't a checkable.");
+        return false;
+    }
+
+    return _this->CheckMenuItem(menu_item, checked);
+}
+
+bool SDL_EnableMenuItem(SDL_MenuItem* menu_item, bool enabled)
+{
+    if (menu_item->common.type == SDL_MENU) {
+        SDL_SetError("menu_item can't be a menu.");
+        return false;
+    }
+
+    return _this->EnableMenuItem(menu_item, enabled);
+}
+
+bool SDL_DestroyMenuBar(SDL_MenuBar* menu_bar)
+{
+    return true;
+}
+
 #define NOT_A_VULKAN_WINDOW "The specified window isn't a Vulkan window"
 
 bool SDL_Vulkan_LoadLibrary(const char *path)

@@ -1290,3 +1290,9 @@
 #define SDL_LoadPNG SDL_LoadPNG_REAL
 #define SDL_SavePNG_IO SDL_SavePNG_IO_REAL
 #define SDL_SavePNG SDL_SavePNG_REAL
+#define SDL_CreateMenuBar SDL_CreateMenuBar_REAL
+#define SDL_CreateMenuBarItem SDL_CreateMenuBarItem_REAL
+#define SDL_CreateMenuItem SDL_CreateMenuItem_REAL
+#define SDL_CheckMenuItem SDL_CheckMenuItem_REAL
+#define SDL_EnableMenuItem SDL_EnableMenuItem_REAL
+#define SDL_DestroyMenuBar SDL_DestroyMenuBar_REAL
