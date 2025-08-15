@@ -12,7 +12,7 @@ SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 
 SDL_MenuItem* checkable = NULL;
-SDL_MenuItem* disabled = NULL;
+SDL_MenuItem* new_window = NULL;
 
 typedef enum SDL_EventType_MenuExt
 {
@@ -42,7 +42,7 @@ void CreateMenuBar()
 
   {
     SDL_MenuItem* menu = SDL_CreateMenuItem(bar, "File", SDL_MENU, MENU_BAR_LAST);
-    SDL_CreateMenuItem(menu, "New Window", SDL_MENU_BUTTON, MENU_BAR_FILE_NEW_WINDOW);
+    new_window = SDL_CreateMenuItem(menu, "New Window", SDL_MENU_BUTTON, MENU_BAR_FILE_NEW_WINDOW);
     checkable = SDL_CreateMenuItem(menu, "Autosave Tabs on Close", SDL_MENU_CHECKABLE, MENU_BAR_FILE_DISABLE_NEW_WINDOW);
 
     SDL_CheckMenuItem(checkable);
@@ -51,24 +51,23 @@ void CreateMenuBar()
   {
     SDL_MenuItem* menu = SDL_CreateMenuItem(bar, "Bookmarks", SDL_MENU, MENU_BAR_LAST);
     SDL_MenuItem* main_bookmarks = SDL_CreateMenuItem(menu, "Bookmarks Toolbar", SDL_MENU, MENU_BAR_LAST);
+    SDL_MenuItem* discord = SDL_CreateMenuItem(main_bookmarks, "SDL Discord", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_DISCORD);
     SDL_CreateMenuItem(main_bookmarks, "SDL GitHub", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_GITHUB);
-    SDL_CreateMenuItem(main_bookmarks, "SDL Wiki", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_WIKI);
-    SDL_CreateMenuItem(main_bookmarks, "SDL Discord", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_DISCORD);
+    SDL_CreateMenuItemAt(main_bookmarks, 0, "SDL Wiki", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_TOOLBAR_WIKI);
 
     SDL_MenuItem *other_bookmarks = SDL_CreateMenuItem(main_bookmarks, "Other Bookmarks", SDL_MENU, MENU_BAR_LAST);
     SDL_CreateMenuItem(other_bookmarks, "Stack Overflow", SDL_MENU_BUTTON, MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS_STACKOVERFLOW);
+      
+    SDL_DestroyMenuItem(discord);
+
 
     SDL_DisableMenuItem(other_bookmarks);
   }
 
   {
     // We can't create a top level checkable .
-    SDL_MenuItem* checkable = SDL_CreateMenuItem(bar, "Incognito", SDL_MENU_CHECKABLE, MENU_BAR_INCOGNITO);
-    SDL_assert(!checkable);
-    
-    disabled = SDL_CreateMenuItem(bar, "Disabled Top-Level Button", SDL_MENU_BUTTON, MENU_BAR_TOP_LEVEL_BUTTON);
-    SDL_DisableMenuItem(disabled);
-
+    SDL_assert(!SDL_CreateMenuItem(bar, "Incognito", SDL_MENU_CHECKABLE, MENU_BAR_INCOGNITO));
+      
     SDL_CreateMenuItem(bar, "Exit", SDL_MENU_BUTTON, MENU_BAR_EXIT);
   }
 
@@ -131,11 +130,19 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
               SDL_MenuItemChecked(checkable, &is_checked);
               if (is_checked) {
                   SDL_UncheckMenuItem(checkable);
-                  SDL_EnableMenuItem(disabled);
               }
               else {
                   SDL_CheckMenuItem(checkable);
-                  SDL_DisableMenuItem(disabled);
+              }
+              
+              bool is_enabled = false;
+              SDL_MenuItemEnabled(new_window, &is_enabled);
+              
+              if (is_enabled) {
+                  SDL_DisableMenuItem(new_window);
+              }
+              else {
+                  SDL_EnableMenuItem(new_window);
               }
               break;
           }
