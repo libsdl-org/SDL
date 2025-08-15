@@ -11,12 +11,14 @@
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 
+SDL_MenuItem* checkable = NULL;
+SDL_MenuItem* disabled = NULL;
 
 typedef enum SDL_EventType_MenuExt
 {
   MENU_BAR_FILE,
   MENU_BAR_FILE_NEW_WINDOW,
-  MENU_BAR_FILE_AUTOSAVE_TABS_ON_CLOSE,
+  MENU_BAR_FILE_DISABLE_NEW_WINDOW,
   MENU_BAR_BOOKMARKS,
   MENU_BAR_BOOKMARKS_TOOLBAR,
   MENU_BAR_BOOKMARKS_TOOLBAR_GITHUB,
@@ -33,6 +35,7 @@ typedef enum SDL_EventType_MenuExt
 
 static SDL_EventType_MenuExt EVENT_START = (SDL_EventType_MenuExt)0;
 
+
 void CreateMenuBar()
 {
   SDL_MenuItem* bar = SDL_CreateMenuBar(window);
@@ -40,7 +43,7 @@ void CreateMenuBar()
   {
     SDL_MenuItem* menu = SDL_CreateMenuItem(bar, "File", SDL_MENU, MENU_BAR_LAST);
     SDL_CreateMenuItem(menu, "New Window", SDL_MENU_BUTTON, MENU_BAR_FILE_NEW_WINDOW);
-    SDL_MenuItem* checkable = SDL_CreateMenuItem(menu, "Autosave Tabs on Close", SDL_MENU_CHECKABLE, MENU_BAR_FILE_AUTOSAVE_TABS_ON_CLOSE);
+    checkable = SDL_CreateMenuItem(menu, "Autosave Tabs on Close", SDL_MENU_CHECKABLE, MENU_BAR_FILE_DISABLE_NEW_WINDOW);
 
     SDL_CheckMenuItem(checkable);
   }
@@ -63,7 +66,7 @@ void CreateMenuBar()
     SDL_MenuItem* checkable = SDL_CreateMenuItem(bar, "Incognito", SDL_MENU_CHECKABLE, MENU_BAR_INCOGNITO);
     SDL_assert(!checkable);
     
-    SDL_MenuItem* disabled = SDL_CreateMenuItem(bar, "Disabled Top-Level Button", SDL_MENU_BUTTON, MENU_BAR_TOP_LEVEL_BUTTON);
+    disabled = SDL_CreateMenuItem(bar, "Disabled Top-Level Button", SDL_MENU_BUTTON, MENU_BAR_TOP_LEVEL_BUTTON);
     SDL_DisableMenuItem(disabled);
 
     SDL_CreateMenuItem(bar, "Exit", SDL_MENU_BUTTON, MENU_BAR_EXIT);
@@ -120,6 +123,20 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
           case MENU_BAR_BOOKMARKS_OTHER_BOOKMARKS_STACKOVERFLOW:
           {
               SDL_OpenURL("https://stackoverflow.com/questions");
+              break;
+          }
+          case MENU_BAR_FILE_DISABLE_NEW_WINDOW:
+          {
+              bool is_checked = false;
+              SDL_MenuItemChecked(checkable, &is_checked);
+              if (is_checked) {
+                  SDL_UncheckMenuItem(checkable);
+                  SDL_EnableMenuItem(disabled);
+              }
+              else {
+                  SDL_CheckMenuItem(checkable);
+                  SDL_DisableMenuItem(disabled);
+              }
               break;
           }
           case MENU_BAR_EXIT:
