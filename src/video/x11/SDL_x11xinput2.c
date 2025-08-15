@@ -84,15 +84,14 @@ static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRaw
 
         for (int j = 0; j < 2; ++j) {
             if (devinfo->number[j] == i) {
-                const double current_val = rawev->valuators.values[values_i];
+                double current_val = rawev->raw_values[values_i];
 
                 if (devinfo->relative[j]) {
                     processed_coords[j] = current_val;
                 } else {
-                    processed_coords[j] = devinfo->prev_coords[j] - current_val; // convert absolute to relative
+                    processed_coords[j] = (current_val - devinfo->prev_coords[j]); // convert absolute to relative
+                    devinfo->prev_coords[j] = current_val;
                 }
-
-                devinfo->prev_coords[j] = current_val;
                 ++found;
 
                 break;
