@@ -3004,6 +3004,57 @@ extern SDL_DECLSPEC bool SDLCALL SDL_EnableScreenSaver(void);
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_DisableScreenSaver(void);
 
+typedef enum SDL_MenuItemType
+{
+    SDL_MENUBAR,
+    SDL_MENU,
+    SDL_MENU_BUTTON,
+    SDL_MENU_CHECKABLE,
+} SDL_MenuItemType;
+
+typedef union SDL_MenuItem SDL_MenuItem;
+
+extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuBar(SDL_Window *window);
+
+/**
+ * menu_bar_as_item must be a SDL_MENUBAR or SDL_MENU
+ * event_type will be ignored if type == SDL_MENU
+ * On MacOS, buttoms created under a menubar will go into the "App" submenu
+ */
+extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_bar_as_item, size_t index, const char *name, SDL_MenuItemType type, Uint16 event_type);
+
+/**
+ * menu_bar_as_item must be a SDL_MENUBAR or SDL_MENU
+ * event_type will be ignored if type == SDL_MENU
+ * On MacOS, buttoms created under a menubar will go into the "App" submenu
+ */
+extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *name, SDL_MenuItemType type, Uint16 event_type);
+
+/**
+ * -1 on error
+ */
+    extern SDL_DECLSPEC Sint64 SDL_ChildItems(SDL_MenuItem *menu_bar_as_item);
+
+
+/**
+ * Must be a SDL_MENU_CHECKABLE
+ */
+    extern SDL_DECLSPEC bool SDL_CheckMenuItem(SDL_MenuItem *menu_item);
+
+/**
+ * Must be a SDL_MENU_CHECKABLE
+ */
+    extern SDL_DECLSPEC bool SDL_UncheckMenuItem(SDL_MenuItem *menu_item);
+
+/**
+ * Must be a SDL_MENU_CHECKABLE
+ */
+    extern SDL_DECLSPEC bool SDL_MenuItemChecked(SDL_MenuItem *menu_item, bool *checked);
+
+extern SDL_DECLSPEC bool SDL_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled);
+extern SDL_DECLSPEC bool SDL_EnableMenuItem(SDL_MenuItem *menu_item);
+extern SDL_DECLSPEC bool SDL_DisableMenuItem(SDL_MenuItem *menu_item);
+extern SDL_DECLSPEC bool SDL_DestroyMenuItem(SDL_MenuItem *menu_item);
 
 /**
  *  \name OpenGL support functions
