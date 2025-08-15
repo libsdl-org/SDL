@@ -380,7 +380,8 @@ bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
     
     NSMenuItem *appMenuItem = [NSMenuItem new];
     NSMenu *appMenu = [NSMenu new];
-    //[appMenu addItemWithTitle: @"Quit" action:@selector(terminate:) keyEquivalent:@"q"];
+    [appMenu setAutoenablesItems:false];
+    
     [appMenuItem setSubmenu:appMenu];
     
     [platform_menu->menu addItem:appMenuItem];
@@ -401,7 +402,7 @@ bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *n
     
     if (menu_item->common.type == SDL_MENU) {
         platform_data->menu = [[NSMenu alloc] initWithTitle:name_ns];
-        [platform_data->menu setAutoenablesItems:true];
+        [platform_data->menu setAutoenablesItems:false];
         platform_data->menu_item = [NSMenuItem new];
         [platform_data->menu_item setTitle:name_ns];
         [platform_data->menu_item setSubmenu: platform_data->menu];
@@ -430,6 +431,7 @@ bool Cocoa_CheckMenuItem(SDL_MenuItem *menu_item)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
     [platform_data->menu_item setState:NSControlStateValueOn];
+    [platform_data->menu update];
     return true;
 }
 
@@ -437,25 +439,30 @@ bool Cocoa_UncheckMenuItem(SDL_MenuItem *menu_item)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
     [platform_data->menu_item setState:NSControlStateValueOff];
+    [platform_data->menu update];
     return true;
 }
 
 bool Cocoa_MenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
-    return [platform_data->menu_item state] == NSControlStateValueOn;
+    NSControlStateValue state = [platform_data->menu_item state];
+    *checked = state == NSControlStateValueOn;
+    return true;
 }
 
 bool Cocoa_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
-    return [platform_data->menu_item isEnabled];
+    *enabled = [platform_data->menu_item isEnabled];
+    return true;
 }
 
 bool Cocoa_EnableMenuItem(SDL_MenuItem *menu_item)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
     [platform_data->menu_item setEnabled:true];
+    [platform_data->menu update];
     return true;
 }
 
@@ -463,12 +470,13 @@ bool Cocoa_DisableMenuItem(SDL_MenuItem *menu_item)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
     [platform_data->menu_item setEnabled:false];
+    [platform_data->menu update];
     return true;
 }
 
 bool Cocoa_DestroyMenuItem(SDL_MenuItem *menu_item)
 {
-    PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
+    PlatformMenuData* platform_data = CFBridgingRelease(menu_item->common.platform_data);
     PlatformMenuData* parent_platform_data = (__bridge id _Nullable)(menu_item->common.parent->common.platform_data);
     [parent_platform_data->menu removeItem:platform_data->menu_item];
     return false;

@@ -6277,11 +6277,6 @@ bool SDL_MenuItemChecked(SDL_MenuItem* menu_item, bool* checked)
 bool SDL_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
 {
     CHECK_MENUITEM_MAGIC(menu_item, false);
-    if (menu_item->common.type != SDL_MENU_CHECKABLE) {
-        SDL_SetError("menu_item isn't a checkable.");
-        return false;
-    }
-
     return _this->MenuItemEnabled(menu_item, enabled);
 }
 
@@ -6300,10 +6295,10 @@ bool SDL_EnableMenuItem(SDL_MenuItem* menu_item)
 bool SDL_DisableMenuItem(SDL_MenuItem *menu_item)
 {
     CHECK_MENUITEM_MAGIC(menu_item, false);
-    if (menu_item->common.type == SDL_MENU || menu_item->common.type == SDL_MENUBAR) {
-        SDL_SetError("menu_item can't be a menu.");
-        return false;
-    }
+//    if (menu_item->common.type == SDL_MENU || menu_item->common.type == SDL_MENUBAR) {
+//        SDL_SetError("menu_item can't be a menu.");
+//        return false;
+//    }
 
     return _this->DisableMenuItem(menu_item);
 }
