@@ -43,7 +43,7 @@ void CreateMenuBar()
   {
     SDL_MenuItem* menu = SDL_CreateMenuItem(bar, "File", SDL_MENU, MENU_BAR_LAST);
     new_window = SDL_CreateMenuItem(menu, "New Window", SDL_MENU_BUTTON, MENU_BAR_FILE_NEW_WINDOW);
-    checkable = SDL_CreateMenuItem(menu, "Autosave Tabs on Close", SDL_MENU_CHECKABLE, MENU_BAR_FILE_DISABLE_NEW_WINDOW);
+    checkable = SDL_CreateMenuItem(menu, "Enable New Window", SDL_MENU_CHECKABLE, MENU_BAR_FILE_DISABLE_NEW_WINDOW);
 
     SDL_CheckMenuItem(checkable);
   }

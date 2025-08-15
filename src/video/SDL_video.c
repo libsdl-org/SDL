@@ -6174,21 +6174,26 @@ SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_bar_as_item, size_t index,
 
     // Get the last item in the list and insert our new item.
     if (menu->child_list) {
-        SDL_MenuItem *current = menu->child_list;
+        if (index == 0) {
+            menu_item->common.next = menu->child_list;
+            menu->child_list->common.prev = menu_item;
+            menu->child_list = menu_item;
+        } else {
+            SDL_MenuItem *current = menu->child_list;
+            for (size_t i = 1; (i < index) && current; ++i) {
+                current = current->common.next;
+            }
 
-        for (size_t i = 1; (i < index) && current; ++i) {
-            current = current->common.next;
+            SDL_assert(current);
+
+            if (current->common.next) {
+                current->common.next->common.prev = menu_item;
+                menu_item->common.next = current->common.next;
+            }
+
+            current->common.next = menu_item;
+            menu_item->common.prev = current;
         }
-
-        SDL_assert(current);
-
-        if (current->common.next) {
-            current->common.next->common.prev = menu_item;
-            menu_item->common.next = current->common.next;
-        }
-
-        current->common.next = menu_item;
-        menu_item->common.prev = current;
     } else {
         menu->child_list = menu_item;
     }
@@ -6322,7 +6327,7 @@ bool SDL_DestroyMenuItem(SDL_MenuItem *menu_item)
 
     if (menu_item->common.prev) {
         menu_item->common.prev->common.next = menu_item->common.next;
-        menu_item->common.next->common.next = menu_item->common.prev;
+        menu_item->common.next->common.prev = menu_item->common.prev;
 
         if (menu_item == menu_item->common.parent->menu_common.child_list) {
             menu_item->common.parent->menu_common.child_list = menu_item->common.next;

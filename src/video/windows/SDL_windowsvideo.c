@@ -1030,7 +1030,7 @@ static bool Win32_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
         return WIN_SetError("Unable to get menu_item check state.");
     }
 
-    *enabled = !(flags & MF_DISABLED);
+    *enabled = !(flags & MF_GRAYED);
 
     return true;
 }
@@ -1069,7 +1069,7 @@ static bool Win32_DestroyMenuItem(SDL_MenuItem *menu_item)
             return WIN_SetError("Unable to remove menu item.");
         }
     } else {
-        DeleteMenu((HMENU)platform_data->self_handle, i, MF_BYPOSITION);
+        DeleteMenu((HMENU)platform_data->owner_handle, i, MF_BYPOSITION);
     }
 
     SDL_free(menu_item->common.platform_data);
