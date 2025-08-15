@@ -925,9 +925,9 @@ bool SDLCALL Win32_CreateMenuBar(SDL_MenuBar *menu_bar)
     return true;
 }
 
-static bool Win32_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type)
+bool Win32_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type)
 {
-    SDL_Menu_CommonData *parent = menu_item->common.parent;
+    SDL_Menu_CommonData *parent = (SDL_Menu_CommonData *)menu_item->common.parent;
     PlatformMenuData *menu_platform_data = (PlatformMenuData *)menu_item->common.parent->common.platform_data;
     PlatformMenuData *platform_data = CreatePlatformMenuData((HMENU)menu_platform_data->self_handle, menu_item->common.type);
     menu_item->common.platform_data = (void *)platform_data;
@@ -980,7 +980,7 @@ static bool Win32_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const 
     return menu_item;
 }
 
-static bool Win32_CheckMenuItem(SDL_MenuItem *menu_item)
+bool Win32_CheckMenuItem(SDL_MenuItem *menu_item)
 {
     PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
     Uint32 i = SDL_GetIndexInMenu(menu_item);
@@ -992,7 +992,7 @@ static bool Win32_CheckMenuItem(SDL_MenuItem *menu_item)
     return true;
 }
 
-static bool Win32_UncheckMenuItem(SDL_MenuItem *menu_item)
+bool Win32_UncheckMenuItem(SDL_MenuItem *menu_item)
 {
     PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
     Uint32 i = SDL_GetIndexInMenu(menu_item);
@@ -1004,7 +1004,7 @@ static bool Win32_UncheckMenuItem(SDL_MenuItem *menu_item)
     return true;
 }
 
-static bool Win32_MenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
+bool Win32_MenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
 {
     PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
     Uint32 i = SDL_GetIndexInMenu(menu_item);
@@ -1019,7 +1019,7 @@ static bool Win32_MenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
     return true;
 }
 
-static bool Win32_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
+bool Win32_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
 {
     PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
     Uint32 i = SDL_GetIndexInMenu(menu_item);
@@ -1035,7 +1035,7 @@ static bool Win32_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
     return true;
 }
 
-static bool Win32_EnableMenuItem(SDL_MenuItem *menu_item)
+bool Win32_EnableMenuItem(SDL_MenuItem *menu_item)
 {
     PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
     Uint32 i = SDL_GetIndexInMenu(menu_item);
@@ -1047,7 +1047,7 @@ static bool Win32_EnableMenuItem(SDL_MenuItem *menu_item)
     return true;
 }
 
-static bool Win32_DisableMenuItem(SDL_MenuItem *menu_item)
+bool Win32_DisableMenuItem(SDL_MenuItem *menu_item)
 {
     PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
     Uint32 i = SDL_GetIndexInMenu(menu_item);
@@ -1059,7 +1059,7 @@ static bool Win32_DisableMenuItem(SDL_MenuItem *menu_item)
     return true;
 }
 
-static bool Win32_DestroyMenuItem(SDL_MenuItem *menu_item)
+bool Win32_DestroyMenuItem(SDL_MenuItem *menu_item)
 {
     PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
     Uint32 i = SDL_GetIndexInMenu(menu_item);
