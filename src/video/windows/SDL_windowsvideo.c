@@ -962,12 +962,14 @@ bool Win32_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *n
         platform_data->self_handle = (UINT_PTR)event_type;
     }
 
-    // To add items at the back, we need to set the index to -1.
-    if (index == parent->children) {
-        index = -1;
+    UINT win_index = (UINT)index;
+
+    // To add items at the back, we need to set the index to -1, despite it being unsigned.
+    if ((Sint64)index == parent->children) {
+        win_index = (UINT)-1;
     }
 
-    if (!InsertMenuA((HMENU)menu_platform_data->self_handle, (UINT)index, flags, platform_data->self_handle, name)) {
+    if (!InsertMenuA((HMENU)menu_platform_data->self_handle, win_index, flags, platform_data->self_handle, name)) {
         return WIN_SetError("Unable to append item to Menu.");
     }
 
