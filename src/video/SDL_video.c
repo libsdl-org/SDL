@@ -6176,7 +6176,7 @@ SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_bar_as_item, size_t index,
     if (menu->child_list) {
         SDL_MenuItem *current = menu->child_list;
 
-        for (size_t i = 1; i < index; ++i) {
+        for (size_t i = 1; (i < index) && current; ++i) {
             current = current->common.next;
         }
 
@@ -6198,6 +6198,24 @@ SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_bar_as_item, size_t index,
     return menu_item;
 }
 
+
+Uint32 SDL_GetIndexInMenu(SDL_MenuItem *menu_item)
+{
+    Uint32 i = 0;
+    SDL_MenuItem *current = menu_item->common.prev;
+    while (current) {
+        current = current->common.prev;
+        ++i;
+    }
+    return i;
+}
+
+
+SDL_MenuItem* SDL_CreateMenuItemWithProperties(SDL_MenuItem* menu_bar_as_item, SDL_PropertiesID props)
+{
+    return NULL;
+}
+
 SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *name, SDL_MenuItemType type, Uint16 event_type)
 {
     CHECK_MENUITEM_MAGIC(menu_bar_as_item, NULL);
@@ -6207,7 +6225,7 @@ SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *nam
     }
 
     SDL_Menu_CommonData *menu = (SDL_Menu_CommonData *)menu_bar_as_item;
-    return SDL_CreateMenuItemAt(menu_bar_as_item, -1, name, type, event_type);
+    return SDL_CreateMenuItemAt(menu_bar_as_item, menu->children, name, type, event_type);
 }
 
 

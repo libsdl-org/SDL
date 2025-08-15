@@ -675,4 +675,6 @@ extern SDL_Capitalization SDL_GetTextInputCapitalization(SDL_PropertiesID props)
 extern bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props);
 extern bool SDL_GetTextInputMultiline(SDL_PropertiesID props);
 
+extern Uint32 SDL_GetIndexInMenu(SDL_MenuItem *menu_item);
+
 #endif // SDL_sysvideo_h_
