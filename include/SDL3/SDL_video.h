@@ -3058,8 +3058,7 @@ extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_bar_as
  * event_type will be ignored if type == SDL_MENU
  * On MacOS, buttoms created under a menubar will go into the "App" submenu
  */
-    extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *name, SDL_MenuItemType type, Uint16 event_type);
-extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItemWithProperties(SDL_MenuItem *menu_bar_as_item, SDL_PropertiesID props);
+extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *name, SDL_MenuItemType type, Uint16 event_type);
 
 /**
  * -1 on error
