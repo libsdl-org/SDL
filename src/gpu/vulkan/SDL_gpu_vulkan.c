@@ -11252,13 +11252,14 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     VkPhysicalDevice physicalDevice,
     VulkanExtensions *physicalDeviceExtensions,
     Uint32 *queueFamilyIndex,
-    Uint8 *deviceRank)
+    Uint16 *deviceRank)
 {
     Uint32 queueFamilyCount, queueFamilyRank, queueFamilyBest;
     VkQueueFamilyProperties *queueProps;
     bool supportsPresent;
     VkPhysicalDeviceProperties deviceProperties;
     VkPhysicalDeviceFeatures deviceFeatures;
+    VkPhysicalDeviceMemoryProperties deviceMemory;
     Uint32 i;
 
     const Uint8 *devicePriority = renderer->preferLowPower ? DEVICE_PRIORITY_LOWPOWER : DEVICE_PRIORITY_HIGHPERFORMANCE;
@@ -11284,6 +11285,24 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         *deviceRank = 0;
         return 0;
     }
+
+    /* If we prefer high performance, sum up all device local memory (rounded to megabytes)
+     * to deviceRank. In the niche case of someone having multiple dedicated GPUs in the same
+     * system, this theoretically picks the most powerful one (or at least the one with the
+     * most memory!)
+     */
+
+    renderer->vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemory);
+    Uint64 videoMemory = 0;
+    for (i = 0; i < deviceMemory.memoryHeapCount; i++) {
+        VkMemoryHeap heap = deviceMemory.memoryHeaps[i];
+        if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+            videoMemory += heap.size;
+        }
+    }
+    // Round it to megabytes (as per the vulkan spec videoMemory is in bytes)
+    Uint64 videoMemoryRounded = videoMemory / 1024 / 1024;
+    *deviceRank += videoMemoryRounded;
 
     renderer->vkGetPhysicalDeviceFeatures(
         physicalDevice,
@@ -11392,7 +11411,7 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
     Uint32 i, physicalDeviceCount;
     Sint32 suitableIndex;
     Uint32 queueFamilyIndex, suitableQueueFamilyIndex;
-    Uint8 deviceRank, highestRank;
+    Uint16 deviceRank, highestRank;
 
     vulkanResult = renderer->vkEnumeratePhysicalDevices(
         renderer->instance,
