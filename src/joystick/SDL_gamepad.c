@@ -2863,8 +2863,8 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
     }
 #endif
 
-    if (name && SDL_strcmp(name, "uinput-fpc") == 0) {
-        // The Google Pixel fingerprint sensor reports itself as a joystick
+    if (name && SDL_startswith(name, "uinput-")) {
+        // The Google Pixel fingerprint sensor, as well as other fingerprint sensors, reports itself as a joystick
         return true;
     }
 
