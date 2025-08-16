@@ -305,6 +305,7 @@ static SDL_JoystickID EMSCRIPTEN_JoystickGetDeviceInstanceID(int device_index)
 static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDeviceIndex(device_index);
+    bool rumble_available = false;
 
     if (!item) {
         return SDL_SetError("No such device");
@@ -322,6 +323,22 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     joystick->nbuttons = item->nbuttons;
     joystick->naxes = item->naxes;
+
+    rumble_available = EM_ASM_INT({
+        let gamepads = navigator['getGamepads']();
+        if (!gamepads) {
+            return 0;
+        }
+        let gamepad = gamepads[$0];
+        if (!gamepad || !gamepad['vibrationActuator']) {
+            return 0;
+        }
+        return 1;
+        }, item->index);
+
+    if (rumble_available) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
+    }
 
     return true;
 }
@@ -390,7 +407,29 @@ static SDL_GUID EMSCRIPTEN_JoystickGetDeviceGUID(int device_index)
 
 static bool EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    return SDL_Unsupported();
+    SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
+
+    // clang-format off
+    bool result = EM_ASM_INT({
+        let gamepads = navigator['getGamepads']();
+        if (!gamepads) {
+            return 0;
+        }
+        let gamepad = gamepads[$0];
+        if (!gamepad || !gamepad['vibrationActuator']) {
+            return 0;
+        }
+
+        gamepad['vibrationActuator']['playEffect']('dual-rumble', {
+            'startDelay': 0,
+            'duration': 3000,
+            'weakMagnitude': $1 / 0xFFFF,
+            'strongMagnitude': $2 / 0xFFFF,
+        });
+        return 1;
+        }, item->index, low_frequency_rumble, high_frequency_rumble);
+
+    return result;
 }
 
 static bool EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
