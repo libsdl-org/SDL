@@ -1080,7 +1080,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
 {
     const char *utfname = (*env)->GetStringUTFChars(env, name, NULL);
 
-    SDL_AddTouch((SDL_TouchID)touchId, SDL_TOUCH_DEVICE_DIRECT, utfname);
+    SDL_AddTouch(Android_ConvertJavaTouchID(touchId),
+            SDL_TOUCH_DEVICE_DIRECT, utfname);
 
     (*env)->ReleaseStringUTFChars(env, name, utfname);
 }
@@ -1855,7 +1856,7 @@ bool Android_JNI_FileClose(void *userdata)
 
 bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
-    SDL_assert((*path == '\0') || (path[SDL_strlen(path) - 1] == '/'));  // SDL_SYS_EnumerateDirectory() should have verified this.
+    SDL_assert(path != NULL);
 
     if (!asset_manager) {
         Internal_Android_Create_AssetManager();

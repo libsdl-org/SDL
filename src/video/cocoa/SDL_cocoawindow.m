@@ -411,6 +411,19 @@ bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window)
     }
 }
 
+bool Cocoa_IsWindowInFullscreenSpaceTransition(SDL_Window *window)
+{
+    @autoreleasepool {
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+
+        if ([data.listener isInFullscreenSpaceTransition]) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
 bool Cocoa_IsWindowZoomed(SDL_Window *window)
 {
     SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;

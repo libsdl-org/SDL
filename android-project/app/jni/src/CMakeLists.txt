@@ -26,9 +26,4 @@ endif()
 add_library(main SHARED
     YourSourceHere.c
 )
-
-#https://developer.android.com/guide/practices/page-sizes#update-packaging
-target_link_options(main PRIVATE "-Wl,-z,max-page-size=16384")
-target_link_options(main PRIVATE "-Wl,-z,common-page-size=16384")
-
 target_link_libraries(main PRIVATE SDL3::SDL3)

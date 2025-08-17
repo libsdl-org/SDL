@@ -471,7 +471,7 @@ bool SDL_SendJoystickVirtualSensorDataInner(SDL_Joystick *joystick, SDL_SensorTy
             return false;
         }
         hwdata->sensor_events = sensor_events;
-        hwdata->max_sensor_events = hwdata->max_sensor_events;
+        hwdata->max_sensor_events = new_max_sensor_events;
     }
 
     VirtualSensorEvent *event = &hwdata->sensor_events[hwdata->num_sensor_events++];

@@ -30,7 +30,6 @@ abi="arm64-v8a" # "armeabi-v7a arm64-v8a x86 x86_64"
 obj=
 lib=
 ndk_args=
-flexpage=true
 
 # Allow an external caller to specify locations and platform.
 while [ $# -gt 0 ]; do
@@ -43,8 +42,6 @@ while [ $# -gt 0 ]; do
         platform=${arg#APP_PLATFORM=}
     elif [ "${arg:0:8}" == "APP_ABI=" ]; then
         abi=${arg#APP_ABI=}
-    elif [ "${arg:0:32}" == "APP_SUPPORT_FLEXIBLE_PAGE_SIZES=" ]; then
-        flexpage=${arg#APP_SUPPORT_FLEXIBLE_PAGE_SIZES=}
     else
         ndk_args="$ndk_args $arg"
     fi
@@ -70,9 +67,6 @@ done
 # APP_* variables set in the environment here will not be seen by the
 # ndk-build makefile segments that use them, e.g., default-application.mk.
 # For consistency, pass all values on the command line.
-#
-# Add support for Google Play 16 KB Page size requirement:
-# https://developer.android.com/guide/practices/page-sizes#ndk-build
 ndk-build \
     NDK_PROJECT_PATH=null \
     NDK_OUT=$obj \
@@ -81,5 +75,4 @@ ndk-build \
     APP_ABI="$abi" \
     APP_PLATFORM="$platform" \
     APP_MODULES="SDL3" \
-    APP_SUPPORT_FLEXIBLE_PAGE_SIZES="$flexpage" \
     $ndk_args

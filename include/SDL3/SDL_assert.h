@@ -126,7 +126,7 @@ extern "C" {
  */
 #define SDL_TriggerBreakpoint() TriggerABreakpointInAPlatformSpecificManner
 
-#elif defined(_MSC_VER) && _MSC_VER >= 1310
+#elif defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER >= 1310)
     /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()

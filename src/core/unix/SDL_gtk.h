@@ -80,6 +80,7 @@ typedef struct SDL_GtkContext
 		gulong (*signal_connect_data)(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data, GClosureNotify destroy_data, SDL_GConnectFlags connect_flags);
 		void (*object_unref)(gpointer object);
 		gchar *(*mkdtemp)(gchar *template);
+		gchar *(*get_user_cache_dir)(void);
 		gpointer (*object_ref_sink)(gpointer object);
 		gpointer (*object_ref)(gpointer object);
 		void (*object_get)(gpointer object, const gchar *first_property_name, ...);
@@ -117,7 +118,7 @@ typedef struct SDL_GtkContext
 extern bool SDL_Gtk_Init(void);
 extern void SDL_Gtk_Quit(void);
 extern SDL_GtkContext *SDL_Gtk_EnterContext(void);
-extern void SDL_Gtk_ExitContext(SDL_GtkContext *gtk);
+extern void SDL_Gtk_ExitContext(SDL_GtkContext *ctx);
 extern void SDL_UpdateGtk(void);
 
 #endif // SDL_gtk_h_

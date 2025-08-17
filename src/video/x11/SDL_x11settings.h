@@ -27,17 +27,13 @@
 #include <X11/Xlib.h>
 #include "xsettings-client.h"
 
-#include "core/unix/SDL_gtk.h"
-
 typedef struct X11_SettingsData {
     XSettingsClient *xsettings;
-    GtkSettings *gtksettings;
-    guint xft_dpi_signal_handler_id;
 } SDLX11_SettingsData;
 
 extern void X11_InitXsettings(SDL_VideoDevice *_this);
 extern void X11_QuitXsettings(SDL_VideoDevice *_this);
-extern void X11_HandleXsettings(SDL_VideoDevice *_this, const XEvent *xevent);
+extern void X11_HandleXsettingsEvent(SDL_VideoDevice *_this, const XEvent *xevent);
 extern int X11_GetXsettingsIntKey(SDL_VideoDevice *_this, const char *key, int fallback_value);
 
 #endif // SDL_x11settings_h_

@@ -61,6 +61,7 @@ struct SDL_Window
     bool fullscreen_exclusive;  // The window is currently fullscreen exclusive
     SDL_DisplayID last_fullscreen_exclusive_display;  // The last fullscreen_exclusive display
     SDL_DisplayID last_displayID;
+    SDL_DisplayID pending_displayID;
 
     /* Stored position and size for the window in the non-fullscreen state,
      * including when the window is maximized or tiled.

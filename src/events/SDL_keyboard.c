@@ -266,7 +266,7 @@ void SDL_SetKeymap(SDL_Keymap *keymap, bool send_event)
                 !SDL_isdigit(SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, SDL_KMOD_SHIFT))) {
                 keymap->french_numbers = false;
                 break;
-                }
+            }
         }
 
         // Detect non-Latin keymap
