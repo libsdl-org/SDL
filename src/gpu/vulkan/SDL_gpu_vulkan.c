@@ -11286,24 +11286,6 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         return 0;
     }
 
-    /* If we prefer high performance, sum up all device local memory (rounded to megabytes)
-     * to deviceRank. In the niche case of someone having multiple dedicated GPUs in the same
-     * system, this theoretically picks the most powerful one (or at least the one with the
-     * most memory!)
-     */
-
-    renderer->vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemory);
-    Uint64 videoMemory = 0;
-    for (i = 0; i < deviceMemory.memoryHeapCount; i++) {
-        VkMemoryHeap heap = deviceMemory.memoryHeaps[i];
-        if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
-            videoMemory += heap.size;
-        }
-    }
-    // Round it to megabytes (as per the vulkan spec videoMemory is in bytes)
-    Uint64 videoMemoryRounded = videoMemory / 1024 / 1024;
-    *deviceRank += videoMemoryRounded;
-
     renderer->vkGetPhysicalDeviceFeatures(
         physicalDevice,
         &deviceFeatures);
@@ -11398,6 +11380,30 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         // Somehow no graphics queues existed. Compute-only device?
         return 0;
     }
+
+    /* If we prefer high performance, sum up all device local memory (rounded to megabytes)
+     * to deviceRank. In the niche case of someone having multiple dedicated GPUs in the same
+     * system, this theoretically picks the most powerful one (or at least the one with the
+     * most memory!)
+     *
+     * We do this *after* discarding all non suitable devices, which means if this computer
+     * has multiple dedicated GPUs that all meet our criteria, *and* the user asked for high
+     * performance, then we always pick the GPU with more VRAM.
+     */
+    if (!renderer->preferLowPower) {
+        renderer->vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemory);
+        Uint64 videoMemory = 0;
+        for (i = 0; i < deviceMemory.memoryHeapCount; i++) {
+            VkMemoryHeap heap = deviceMemory.memoryHeaps[i];
+            if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+                videoMemory += heap.size;
+            }
+        }
+        // Round it to megabytes (as per the vulkan spec videoMemory is in bytes)
+        Uint64 videoMemoryRounded = videoMemory / 1024 / 1024;
+        *deviceRank += videoMemoryRounded;
+    }
+
 
     // FIXME: Need better structure for checking vs storing swapchain support details
     return 1;
