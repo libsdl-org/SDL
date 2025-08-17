@@ -390,7 +390,7 @@ macro(CheckX11)
         set(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1)
       endif()
 
-      check_symbol_exists(XkbLookupKeySym "X11/Xlib.h;X11/XKBlib.h" SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM)
+      check_include_file("X11/XKBlib.h" SDL_VIDEO_DRIVER_X11_HAS_XKBLIB)
 
       if(SDL_X11_XCURSOR AND HAVE_XCURSOR_H AND XCURSOR_LIB)
         set(HAVE_X11_XCURSOR TRUE)
@@ -415,6 +415,17 @@ macro(CheckX11)
           sdl_link_dependency(xi LIBS X11::Xi CMAKE_MODULE X11 PKG_CONFIG_SPECS ${Xi_PKG_CONFIG_SPEC})
         endif()
         set(SDL_VIDEO_DRIVER_X11_XINPUT2 1)
+
+        # Check for scroll info
+        check_c_source_compiles("
+            #include <X11/Xlib.h>
+            #include <X11/Xproto.h>
+            #include <X11/extensions/XInput2.h>
+            XIScrollClassInfo *s;
+            int main(int argc, char **argv) {}" HAVE_XINPUT2_SCROLLINFO)
+        if(HAVE_XINPUT2_SCROLLINFO)
+          set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO 1)
+        endif()
 
         # Check for multitouch
         check_c_source_compiles_static("
@@ -873,6 +884,9 @@ macro(CheckPTHREAD)
       set(PTHREAD_LDFLAGS "-pthread")
     elseif(QNX)
       # pthread support is baked in
+    elseif(HURD)
+      set(PTHREAD_CFLAGS "-D_REENTRANT")
+      set(PTHREAD_LDFLAGS "-pthread")
     else()
       set(PTHREAD_CFLAGS "-D_REENTRANT")
       set(PTHREAD_LDFLAGS "-lpthread")

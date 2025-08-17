@@ -395,6 +395,7 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
     GET_ATOM(SDL_SELECTION);
     GET_ATOM(TARGETS);
     GET_ATOM(SDL_FORMATS);
+    GET_ATOM(RESOURCE_MANAGER);
     GET_ATOM(XdndAware);
     GET_ATOM(XdndEnter);
     GET_ATOM(XdndLeave);
@@ -468,6 +469,7 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     }
 #endif
 
+    X11_QuitXinput2(_this);
     X11_QuitModes(_this);
     X11_QuitKeyboard(_this);
     X11_QuitMouse(_this);

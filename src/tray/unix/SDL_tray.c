@@ -153,15 +153,11 @@ struct SDL_TrayEntry {
     SDL_TrayMenu *submenu;
 };
 
-/* Template for g_mkdtemp(). The Xs will get replaced with a random
- * directory name, which is created safely and atomically. */
-#define ICON_DIR_TEMPLATE "/tmp/SDL-tray-XXXXXX"
-
 struct SDL_Tray {
     AppIndicator *indicator;
     SDL_TrayMenu *menu;
-    char icon_dir[sizeof(ICON_DIR_TEMPLATE)];
-    char icon_path[256];
+    char *icon_dir;
+    char *icon_path;
 
     GtkMenuShell *menu_cached;
 };
@@ -188,13 +184,13 @@ static bool new_tmp_filename(SDL_Tray *tray)
 {
     static int count = 0;
 
-    int would_have_written = SDL_snprintf(tray->icon_path, sizeof(tray->icon_path), "%s/%d.bmp", tray->icon_dir, count++);
+    int would_have_written = SDL_asprintf(&tray->icon_path, "%s/%d.bmp", tray->icon_dir, count++);
 
-    if (would_have_written > 0 && ((unsigned) would_have_written) < sizeof(tray->icon_path) - 1) {
+    if (would_have_written >= 0) {
         return true;
     }
 
-    tray->icon_path[0] = '\0';
+    tray->icon_path = NULL;
     SDL_SetError("Failed to format new temporary filename");
     return false;
 }
@@ -237,25 +233,9 @@ static void DestroySDLMenu(SDL_TrayMenu *menu)
 
 void SDL_UpdateTrays(void)
 {
-    SDL_UpdateGtk();
-}
-
-bool SDL_IsTraySupported(void)
-{
-    if (!SDL_IsMainThread()) {
-        SDL_SetError("This function should be called on the main thread");
-        return false;
+    if (SDL_HasActiveTrays()) {
+        SDL_UpdateGtk();
     }
-
-    static bool has_trays = false;
-    static bool has_been_detected_once = false;
-
-    if (!has_been_detected_once) {
-        has_trays = init_appindicator() && SDL_Gtk_Init();
-        has_been_detected_once = true;
-    }
-
-    return has_trays;
 }
 
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
@@ -272,29 +252,47 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     SDL_Tray *tray = NULL;
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
     if (!gtk) {
-        goto error;
+        goto tray_error;
     }
 
     tray = (SDL_Tray *)SDL_calloc(1, sizeof(*tray));
     if (!tray) {
-        goto error;
+        goto tray_error;
+    }
+
+    const gchar *cache_dir = gtk->g.get_user_cache_dir();
+    if (!cache_dir) {
+        SDL_SetError("Cannot get user cache directory: %s", strerror(errno));
+        goto tray_error;
+    }
+
+    char *sdl_dir;
+    SDL_asprintf(&sdl_dir, "%s/SDL", cache_dir);
+    if (!SDL_GetPathInfo(sdl_dir, NULL)) {
+        if (!SDL_CreateDirectory(sdl_dir)) {
+            SDL_SetError("Cannot create directory for tray icon: %s", strerror(errno));
+            goto sdl_dir_error;
+        }
     }
 
     /* On success, g_mkdtemp edits its argument in-place to replace the Xs
      * with a random directory name, which it creates safely and atomically.
      * On failure, it sets errno. */
-    SDL_strlcpy(tray->icon_dir, ICON_DIR_TEMPLATE, sizeof(tray->icon_dir));
+    SDL_asprintf(&tray->icon_dir, "%s/tray-XXXXXX", sdl_dir);
     if (!gtk->g.mkdtemp(tray->icon_dir)) {
         SDL_SetError("Cannot create directory for tray icon: %s", strerror(errno));
-        goto error;
+        goto icon_dir_error;
     }
 
     if (icon) {
         if (!new_tmp_filename(tray)) {
-            goto error;
+            goto icon_dir_error;
         }
 
         SDL_SaveBMP(icon, tray->icon_path);
+    } else {
+        // allocate a dummy icon path
+        SDL_asprintf(&tray->icon_path, " ");
     }
 
     tray->indicator = app_indicator_new(get_appindicator_id(), tray->icon_path,
@@ -311,7 +309,13 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 
     return tray;
 
-error:
+icon_dir_error:
+    SDL_free(tray->icon_dir);
+
+sdl_dir_error:
+    SDL_free(sdl_dir);
+
+tray_error:
     if (tray) {
         SDL_free(tray);
     }
@@ -329,8 +333,10 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
         return;
     }
 
-    if (*tray->icon_path) {
+    if (tray->icon_path) {
         SDL_RemovePath(tray->icon_path);
+        SDL_free(tray->icon_path);
+        tray->icon_path = NULL;
     }
 
     /* AppIndicator caches the icon files; always change filename to avoid caching */
@@ -339,7 +345,8 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
         SDL_SaveBMP(icon, tray->icon_path);
         app_indicator_set_icon(tray->indicator, tray->icon_path);
     } else {
-        *tray->icon_path = '\0';
+        SDL_free(tray->icon_path);
+        tray->icon_path = NULL;
         app_indicator_set_icon(tray->indicator, NULL);
     }
 }
@@ -732,12 +739,14 @@ void SDL_DestroyTray(SDL_Tray *tray)
         DestroySDLMenu(tray->menu);
     }
 
-    if (*tray->icon_path) {
+    if (tray->icon_path) {
         SDL_RemovePath(tray->icon_path);
+        SDL_free(tray->icon_path);
     }
 
-    if (*tray->icon_dir) {
+    if (tray->icon_dir) {
         SDL_RemovePath(tray->icon_dir);
+        SDL_free(tray->icon_dir);
     }
 
     SDL_GtkContext *gtk = SDL_Gtk_EnterContext();
