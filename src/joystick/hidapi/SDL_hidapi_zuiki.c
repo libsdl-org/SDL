@@ -92,8 +92,6 @@ static bool HIDAPI_DriverZUIKI_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
         switch (product_id) {
         case USB_PRODUCT_ZUIKI_MASCON_PRO:
             return true;
-        case USB_PRODUCT_ZUIKI_EVOTOP:
-            return true;
         default:
             break;
         }
