@@ -497,7 +497,7 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
 #endif
 #endif
 
-	if (!data->scale) {
+	if (data->scale == 0) {
 	    data->window_width = w;    
 		data->window_height = h;	
 	} else {
