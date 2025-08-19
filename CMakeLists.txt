@@ -2172,6 +2172,7 @@ elseif(WINDOWS)
     #include <gameinput.h>
     int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
   )
+  check_include_file(dxgi1_5.h HAVE_DXGI1_5_H)
   check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)
   check_include_file(tpcshrd.h HAVE_TPCSHRD_H)
   check_include_file(roapi.h HAVE_ROAPI_H)
