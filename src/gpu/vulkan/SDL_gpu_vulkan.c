@@ -7910,15 +7910,17 @@ static void VULKAN_BeginRenderPass(
 
     clearValues = SDL_stack_alloc(VkClearValue, clearCount);
 
-    for (i = 0; i < totalColorAttachmentCount; i += 1) {
-        clearValues[i].color.float32[0] = colorTargetInfos[i].clear_color.r;
-        clearValues[i].color.float32[1] = colorTargetInfos[i].clear_color.g;
-        clearValues[i].color.float32[2] = colorTargetInfos[i].clear_color.b;
-        clearValues[i].color.float32[3] = colorTargetInfos[i].clear_color.a;
+    int clearIndex = 0;
+    for (i = 0; i < numColorTargets; i += 1) {
+        clearValues[clearIndex].color.float32[0] = colorTargetInfos[i].clear_color.r;
+        clearValues[clearIndex].color.float32[1] = colorTargetInfos[i].clear_color.g;
+        clearValues[clearIndex].color.float32[2] = colorTargetInfos[i].clear_color.b;
+        clearValues[clearIndex].color.float32[3] = colorTargetInfos[i].clear_color.a;
+        clearIndex += 1;
 
         if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
             // Skip over the resolve texture, we're not clearing it
-            i += 1;
+            clearIndex += 1;
         }
     }
 
