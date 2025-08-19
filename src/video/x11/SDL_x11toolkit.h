@@ -71,10 +71,12 @@ typedef struct SDL_ToolkitWindowX11
     XColor xcolor_pressed;
         
     bool has_focus;
-    struct SDL_ToolkitControlX11 *focused_control;
-    
+  	struct SDL_ToolkitControlX11 *focused_control;  
+	struct SDL_ToolkitControlX11 *fiddled_control;
     struct SDL_ToolkitControlX11 **controls;
-    size_t controls_sz;
+    size_t controls_sz;  
+	struct SDL_ToolkitControlX11 **dyn_controls;
+    size_t dyn_controls_sz;
 } SDL_ToolkitWindowX11;
 
 typedef enum SDL_ToolkitControlStateX11
