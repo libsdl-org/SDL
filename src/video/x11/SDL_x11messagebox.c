@@ -27,7 +27,7 @@
 #include "SDL_x11toolkit.h"
 
 #ifndef SDL_FORK_MESSAGEBOX
-#define SDL_FORK_MESSAGEBOX 1
+#define SDL_FORK_MESSAGEBOX 0
 #endif
 
 #if SDL_FORK_MESSAGEBOX
@@ -85,6 +85,7 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     
     /* Create window */
     window = X11Toolkit_CreateWindowStruct(messageboxdata->window, colorhints);
+    max_button_w *= window->iscale;
     if (!window) {
         return false;
     }
@@ -108,7 +109,7 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
         
     /* Positioning and sizing */
     if (icon) {
-        message->rect.x = SDL_TOOLKIT_X11_ELEMENT_PADDING_2 + icon->rect.x + icon->rect.w;
+        message->rect.x = (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * window->iscale) + icon->rect.x + icon->rect.w;
         message->rect.y = X11Toolkit_GetIconControlCharY(icon);
     } else {
         message->rect.x = 0;
@@ -126,13 +127,13 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
             X11Toolkit_NotifyUpsize(buttons[i]);    
             
             if (icon->rect.h > message->rect.h) {
-                buttons[i]->rect.y = icon->rect.h + SDL_TOOLKIT_X11_ELEMENT_PADDING_2;
+                buttons[i]->rect.y = icon->rect.h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * window->iscale);
             } else {
-                buttons[i]->rect.y = message->rect.h + SDL_TOOLKIT_X11_ELEMENT_PADDING_2;                
+                buttons[i]->rect.y = message->rect.h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * window->iscale);                
             }        
             
             if (i) {
-                buttons[i]->rect.x = buttons[i-1]->rect.x + buttons[i-1]->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_3;
+                buttons[i]->rect.x = buttons[i-1]->rect.x + buttons[i-1]->rect.w + (SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * window->iscale);
             }
         }        
     } else {
@@ -142,13 +143,13 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
             X11Toolkit_NotifyUpsize(buttons[i]);    
             
             if (icon->rect.h > message->rect.h) {
-                buttons[i]->rect.y = icon->rect.h + SDL_TOOLKIT_X11_ELEMENT_PADDING_2;
+                buttons[i]->rect.y = icon->rect.h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * window->iscale);
             } else {
-                buttons[i]->rect.y = message->rect.h + SDL_TOOLKIT_X11_ELEMENT_PADDING_2;                
+                buttons[i]->rect.y = message->rect.h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * window->iscale);                
             }        
             
             if (i) {
-                buttons[i]->rect.x = buttons[i-1]->rect.x + buttons[i-1]->rect.w + SDL_TOOLKIT_X11_ELEMENT_PADDING_3;
+                buttons[i]->rect.x = buttons[i-1]->rect.x + buttons[i-1]->rect.w + (SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * window->iscale);
             }
         }        
     }
@@ -159,22 +160,22 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     } else {
         w = total_text_and_icon_w;
     }
-    w += SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * 2;
+    w += (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * window->iscale) * 2;
     if (message->rect.h > icon->rect.h) {
         h = message->rect.h;
     } else {
         h = icon->rect.h;
     }
-    h += max_button_h + SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * 3;
+    h += max_button_h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * window->iscale) * 3;
     t = (w - total_text_and_icon_w) / 2;
     icon->rect.x += t;
     message->rect.x += t;
-    icon->rect.y += SDL_TOOLKIT_X11_ELEMENT_PADDING_2;
-    message->rect.y += SDL_TOOLKIT_X11_ELEMENT_PADDING_2;
+    icon->rect.y += (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * window->iscale);
+    message->rect.y += (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * window->iscale);
     t = (w - total_button_w) / 2;
     for (i = 0; i < messageboxdata->numbuttons; i++) {
         buttons[i]->rect.x += t;
-        buttons[i]->rect.y += SDL_TOOLKIT_X11_ELEMENT_PADDING_2;
+        buttons[i]->rect.y += (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * window->iscale);
     }
     if (!messageboxdata->message) {
         icon->rect.x = (w - icon->rect.w)/2;

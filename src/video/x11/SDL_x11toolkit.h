@@ -25,7 +25,9 @@
 
 #include "SDL_x11video.h"
 #include "SDL_x11dyn.h"
+#include "SDL_x11settings.h"
 #include "SDL_x11toolkit.h"
+#include "xsettings-client.h"
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
@@ -43,9 +45,11 @@ typedef struct SDL_ToolkitWindowX11
     Window window;
     Drawable drawable;
     Visual *visual;
+    XVisualInfo vi;
     Colormap cmap;
     GC ctx;
     bool utf8;
+    bool pixmap;
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
     XdbeBackBuffer buf;
     bool xdbe; // Whether Xdbe is present or not
@@ -60,7 +64,13 @@ typedef struct SDL_ToolkitWindowX11
     
     int window_width;  // Window width.
     int window_height; // Window height.
-
+    int pixmap_width;  
+    int pixmap_height;
+		
+	XSettingsClient *xsettings;
+	int iscale;
+	float scale;
+	
     XFontSet font_set;        // for UTF-8 systems
     XFontStruct *font_struct; // Latin1 (ASCII) fallback.
 
