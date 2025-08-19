@@ -26,6 +26,9 @@
 #include "SDL_x11video.h"
 #include "SDL_x11dyn.h"
 #include "SDL_x11toolkit.h"
+#include "SDL_x11settings.h"
+#include "SDL_x11modes.h"
+#include "xsettings-client.h"
 #include <X11/keysym.h>
 #include <locale.h>
 
@@ -71,22 +74,24 @@ typedef struct SDL_ToolkitLabelControlX11
     size_t sz;
 } SDL_ToolkitLabelControlX11;
 
-static const char *g_IconFont = "-*-*-bold-r-normal-*-18-*-*-*-*-*-iso8859-1[33 88 105]";
+static const char *g_IconFont = "-*-*-bold-r-normal-*-%d-*-*-*-*-*-iso8859-1[33 88 105]";
+#define G_ICONFONT_SIZE 18
 
 static const char g_ToolkitFontLatin1[] =
-    "-*-*-medium-r-normal--0-120-*-*-p-0-iso8859-1";
+    "-*-*-medium-r-normal--0-%d-*-*-p-0-iso8859-1";
 
 static const char *g_ToolkitFont[] = {
-    "-*-*-medium-r-normal--*-120-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
-    "-*-*-medium-r-*--*-120-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
+    "-*-*-medium-r-normal--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
+    "-*-*-medium-r-*--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
     "-misc-*-*-*-*--*-*-*-*-*-*-iso10646-1",  // misc unicode (fix for some systems)
     "-*-*-*-*-*--*-*-*-*-*-*-iso10646-1",  // just give me anything Unicode.
-    "-*-*-medium-r-normal--*-120-*-*-*-*-iso8859-1",  // explicitly latin1, in case low-ASCII works out.
-    "-*-*-medium-r-*--*-120-*-*-*-*-iso8859-1",  // explicitly latin1, in case low-ASCII works out.
+    "-*-*-medium-r-normal--*-v-*-*-*-*-iso8859-1",  // explicitly latin1, in case low-ASCII works out.
+    "-*-*-medium-r-*--*-%d-*-*-*-*-iso8859-1",  // explicitly latin1, in case low-ASCII works out.
     "-misc-*-*-*-*--*-*-*-*-*-*-iso8859-1",  // misc latin1 (fix for some systems)
     "-*-*-*-*-*--*-*-*-*-*-*-iso8859-1",  // just give me anything latin1.
     NULL
 };
+#define G_TOOLKITFONT_SIZE 120
 
 static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = {
     { 191, 184, 191 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
@@ -95,6 +100,141 @@ static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = 
     { 191, 184, 191 },  // SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
     { 235, 235, 235 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
 };
+
+int SettingsGetInt(XSettingsClient *client, const char *key, int fallback_value) {
+    XSettingsSetting *setting = NULL;
+    int res = fallback_value;
+
+
+    if (client) {
+        if (xsettings_client_get_setting(client, key, &setting) != XSETTINGS_SUCCESS) {
+            goto no_key;
+        }
+
+        if (setting->type != XSETTINGS_TYPE_INT) {
+            goto no_key;
+        }
+
+        res = setting->data.v_int;
+    }
+
+no_key:
+    if (setting) {
+        xsettings_setting_free(setting);
+    }
+
+    return res;
+}
+
+static float GetUIScale(XSettingsClient *client, Display *display)
+{
+    double scale_factor = 0.0;
+
+    // First use the forced scaling factor specified by the app/user
+    const char *hint = SDL_GetHint(SDL_HINT_VIDEO_X11_SCALING_FACTOR);
+    if (hint && *hint) {
+        double value = SDL_atof(hint);
+        if (value >= 1.0f && value <= 10.0f) {
+            scale_factor = value;
+        }
+    }
+
+    // If that failed, try "Xft.dpi" from the XResourcesDatabase...
+    // We attempt to read this directly to get the live value, XResourceManagerString
+    // is cached per display connection.
+    if (scale_factor <= 0.0)
+    {
+        int status, real_format;
+        Atom real_type;
+		Atom res_mgr;
+        unsigned long items_read, items_left;
+        char *resource_manager;
+        bool owns_resource_manager = false;
+
+        X11_XrmInitialize();
+        res_mgr = X11_XInternAtom(display, "RESOURCE_MANAGER", False);
+        status = X11_XGetWindowProperty(display, RootWindow(display, DefaultScreen(display)),
+                                        res_mgr, 0L, 8192L, False, XA_STRING,
+                                        &real_type, &real_format, &items_read, &items_left,
+                                        (unsigned char **)&resource_manager);
+
+        if (status == Success && resource_manager) {
+            owns_resource_manager = true;
+        } else {
+            // Fall back to XResourceManagerString. This will not be updated if the
+            // dpi value is later changed but should allow getting the initial value.
+            resource_manager = X11_XResourceManagerString(display);
+        }
+
+        if (resource_manager) {
+            XrmDatabase db;
+            XrmValue value;
+            char *type;
+
+            db = X11_XrmGetStringDatabase(resource_manager);
+
+            // Get the value of Xft.dpi from the Database
+            if (X11_XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
+                if (value.addr && type && SDL_strcmp(type, "String") == 0) {
+                    int dpi = SDL_atoi(value.addr);
+                    scale_factor  = dpi / 96.0;
+                }
+            }
+            X11_XrmDestroyDatabase(db);
+
+            if (owns_resource_manager) {
+                X11_XFree(resource_manager);
+            }
+        }
+    }
+
+    // If that failed, try the XSETTINGS keys...
+    if (scale_factor <= 0.0) {
+        scale_factor = SettingsGetInt(client, "Gdk/WindowScalingFactor", -1);
+
+        // The Xft/DPI key is stored in increments of 1024th
+        if (scale_factor <= 0.0) {
+            int dpi = SettingsGetInt(client, "Xft/DPI", -1);
+            if (dpi > 0) {
+                scale_factor = (double) dpi / 1024.0;
+                scale_factor /= 96.0;
+            }
+        }
+    }
+
+    // If that failed, try the GDK_SCALE envvar...
+    if (scale_factor <= 0.0) {
+        const char *scale_str = SDL_getenv("GDK_SCALE");
+        if (scale_str) {
+            scale_factor = SDL_atoi(scale_str);
+        }
+    }
+
+    // Nothing or a bad value, just fall back to 1.0
+    if (scale_factor <= 0.0) {
+        scale_factor = 1.0;
+    }
+
+    return (float)scale_factor;
+}
+
+static void SettingsNotify(const char *name, XSettingsAction action, XSettingsSetting *setting, void *data)
+{
+    SDL_ToolkitWindowX11 *window;
+    
+	window = data;
+
+    if (SDL_strcmp(name, SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR) == 0 ||
+    	SDL_strcmp(name, SDL_XSETTINGS_GDK_UNSCALED_DPI) == 0 ||
+        SDL_strcmp(name, SDL_XSETTINGS_XFT_DPI) == 0) {
+		window->scale = GetUIScale(window->xsettings, window->display);
+		window->iscale = SDL_lroundf(window->scale);
+		if (roundf(window->scale) == window->scale) {
+			window->scale = 0;
+		}
+	}
+}
+
 
 static void GetTextWidthHeightForFont(XFontStruct *font, const char *str, int nbytes, int *pwidth, int *pheight, int *font_ascent)
 {
@@ -173,7 +313,16 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
     window->xrandr = X11_XRRQueryExtension(window->display, &xrandr_event_base, &xrandr_error_base);
 #endif
         
+	/* Scale/Xsettings */
+    window->xsettings = xsettings_client_new(window->display, DefaultScreen(window->display), SettingsNotify, NULL, window);
+	window->scale = GetUIScale(window->xsettings, window->display);
+	window->iscale = SDL_lroundf(window->scale);
+	if (roundf(window->scale) == window->scale) {
+		window->scale = 0;
+	}
+	
 #ifdef X_HAVE_UTF8_STRING
+	window->pixmap = false;
     window->utf8 = true;
     window->font_set = NULL;
     if (SDL_X11_HAVE_UTF8) {
@@ -182,8 +331,12 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
         int i_font;
         window->font_struct = NULL;
         for (i_font = 0; g_ToolkitFont[i_font]; ++i_font) {
-            window->font_set = X11_XCreateFontSet(window->display, g_ToolkitFont[i_font],
+			char *font;
+			
+			SDL_asprintf(&font, g_ToolkitFont[i_font], G_TOOLKITFONT_SIZE * window->iscale);
+            window->font_set = X11_XCreateFontSet(window->display, font,
                                                 &missing, &num_missing, NULL);
+			SDL_free(font);
             if (missing) {
                 X11_XFreeStringList(missing);
             }
@@ -197,9 +350,13 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
     } else
 #endif
     {
+		char *font;
         load_font_traditional:
-        window->font_struct = X11_XLoadQueryFont(window->display, g_ToolkitFontLatin1);
-        window->utf8 = false;    
+
+		SDL_asprintf(&font, g_ToolkitFontLatin1, G_TOOLKITFONT_SIZE * window->iscale);
+        window->font_struct = X11_XLoadQueryFont(window->display, font);
+		SDL_free(font);
+		window->utf8 = false;    
         if (!window->font_struct) {
             ErrorCloseFreeRetNull("Couldn't load font %s", g_ToolkitFontLatin1, window);
         }
@@ -261,8 +418,10 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
     window->controls = NULL;
     window->controls_sz = 0;
     window->dyn_controls_sz = 0;
-
+	window->fiddled_control = NULL;
+	
     return window;
+    
 }
 
 static void X11Toolkit_AddControlToWindow(SDL_ToolkitWindowX11 *window, SDL_ToolkitControlX11 *control) {
@@ -338,8 +497,18 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
 #endif
 #endif
 
-    data->window_width = w;    
-    data->window_height = h;
+	if (!data->scale) {
+	    data->window_width = w;    
+		data->window_height = h;	
+	} else {
+		data->window_width = SDL_lroundf(w/data->iscale * data->scale);
+		data->window_height = SDL_lroundf(h/data->iscale * data->scale);
+		data->pixmap_width = w;
+		data->pixmap_height = h;
+		data->pixmap = true;
+		X11_GetVisualInfoFromVisual(data->display, data->visual, &data->vi);
+	}
+	
     if (data->parent) {
         windowdata = data->parent->internal;
     }
@@ -513,9 +682,10 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
     X11_XMapRaised(display, data->window);
     
     data->drawable = data->window;
+	
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
     // Initialise a back buffer for double buffering
-    if (SDL_X11_HAVE_XDBE) {
+    if (SDL_X11_HAVE_XDBE && !data->pixmap) {
         int xdbe_major, xdbe_minor;
         if (X11_XdbeQueryExtension(display, &xdbe_major, &xdbe_minor) != 0) {
             data->xdbe = true;
@@ -527,6 +697,10 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
     }
 #endif
 
+	if (data->pixmap) { 
+		data->drawable = X11_XCreatePixmap(display, data->window, data->pixmap_width, data->pixmap_height, DefaultDepth(display, data->screen));
+	}
+	
     SDL_zero(ctx_vals);
     ctx_vals.foreground = data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel;
     ctx_vals.background = data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel;
@@ -569,14 +743,18 @@ static void X11Toolkit_DrawWindow(SDL_ToolkitWindowX11 *data) {
     int i;
     
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
-    if (SDL_X11_HAVE_XDBE && data->xdbe) {
+    if (SDL_X11_HAVE_XDBE && data->xdbe && !data->pixmap) {
         X11_XdbeBeginIdiom(data->display);
     }
 #endif
 
     X11_XSetForeground(data->display, data->ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel);
-    X11_XFillRectangle(data->display, data->drawable, data->ctx, 0, 0, data->window_width, data->window_height);
-
+ 	if (data->pixmap) {
+		X11_XFillRectangle(data->display, data->drawable, data->ctx, 0, 0, data->pixmap_width, data->pixmap_height);
+	} else {
+		X11_XFillRectangle(data->display, data->drawable, data->ctx, 0, 0, data->window_width, data->window_height);
+	}
+	
     for (i = 0; i < data->controls_sz; i++) {
         SDL_ToolkitControlX11 *control;
         
@@ -589,7 +767,7 @@ static void X11Toolkit_DrawWindow(SDL_ToolkitWindowX11 *data) {
     }
        
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
-    if (SDL_X11_HAVE_XDBE && data->xdbe) {
+    if (SDL_X11_HAVE_XDBE && data->xdbe && !data->pixmap) {
         XdbeSwapInfo swap_info;
         swap_info.swap_window = data->window;
         swap_info.swap_action = XdbeUndefined;
@@ -597,6 +775,26 @@ static void X11Toolkit_DrawWindow(SDL_ToolkitWindowX11 *data) {
         X11_XdbeEndIdiom(data->display);
     }
 #endif
+
+	if (data->pixmap) {
+		XImage *pixmap_image;
+		XImage *put_image;
+		SDL_Surface *pixmap_surface;
+		SDL_Surface *put_surface;
+		
+		/* FIXME: Implement SHM transport! */
+		pixmap_image = X11_XGetImage(data->display, data->drawable, 0, 0 , data->pixmap_width, data->pixmap_height, AllPlanes, ZPixmap);	
+		pixmap_surface = SDL_CreateSurfaceFrom(data->pixmap_width, data->pixmap_height, X11_GetPixelFormatFromVisualInfo(data->display, &data->vi), pixmap_image->data, pixmap_image->bytes_per_line);
+		put_surface = SDL_ScaleSurface(pixmap_surface, data->window_width, data->window_height, SDL_SCALEMODE_LINEAR);
+		put_image = X11_XCreateImage(data->display, data->visual, data->vi.depth, ZPixmap, 0, put_surface->pixels, data->window_width, data->window_height, 32, put_surface->pitch);
+		X11_XPutImage(data->display, data->window, data->ctx, put_image, 0, 0, 0, 0, data->window_width, data->window_height);
+		
+		/* FIXME: a leak is generated on each frame draw when using fractional scaling because these are commented out, they are commented out becaues they cause a double free! */
+		/* X11_XDestroyImage(pixmap_image); */
+		/* X11_XDestroyImage(put_image); */
+		SDL_DestroySurface(pixmap_surface);
+		SDL_DestroySurface(put_surface);
+	}
 
     X11_XFlush(data->display);
 }
@@ -624,9 +822,17 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
     SDL_ToolkitControlX11 *key_control_enter;
     KeySym last_key_pressed = XK_VoidSymbol;
     int i;
-    
+    float scale;
+	float iscale;
+   
     data->close = false;
     key_control_esc = key_control_enter = NULL;
+    if (!data->pixmap) {
+		scale = iscale = 1;
+	} else {
+		scale = data->scale;
+		iscale = data->iscale;
+	}
     while (!data->close) {
         XEvent e;
         bool draw;
@@ -669,8 +875,8 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
         case MotionNotify:
             if (data->has_focus) {                
                 previous_control = data->fiddled_control;
-                data->fiddled_control = GetControlMouseIsOn(data, e.xbutton.x, e.xbutton.y);
-                 if (previous_control) {
+                data->fiddled_control = GetControlMouseIsOn(data, SDL_lroundf((e.xbutton.x/scale)*iscale), SDL_lroundf((e.xbutton.y/scale)*iscale));
+				if (previous_control) {
                     previous_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
                     draw = true;
                 }
@@ -691,7 +897,7 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
                 draw = true;
             }
             if (e.xbutton.button == Button1) {
-                data->fiddled_control = GetControlMouseIsOn(data, e.xbutton.x, e.xbutton.y);
+                data->fiddled_control = GetControlMouseIsOn(data, SDL_lroundf((e.xbutton.x/scale)*iscale), SDL_lroundf((e.xbutton.y/scale)*iscale));
                 if (data->fiddled_control) {
                     data->fiddled_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED;
                     draw = true;
@@ -702,7 +908,7 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
             if ((e.xbutton.button == Button1) && (data->fiddled_control)) {
                 SDL_ToolkitControlX11 *control;
                 
-                control = GetControlMouseIsOn(data, e.xbutton.x, e.xbutton.y);
+                control = GetControlMouseIsOn(data, SDL_lroundf((e.xbutton.x/scale)*iscale), SDL_lroundf((e.xbutton.y/scale)*iscale));
                 if (data->fiddled_control == control) {
                     if (data->fiddled_control->func_on_state_change) {
                         data->fiddled_control->func_on_state_change(data->fiddled_control);
@@ -800,31 +1006,31 @@ static void X11Toolkit_DrawIconControl(SDL_ToolkitControlX11 *control) {
     SDL_ToolkitIconControlX11 *icon_control;
 
     icon_control = (SDL_ToolkitIconControlX11 *)control;
-    control->rect.w -= 2;
-    control->rect.h -= 2;
+    control->rect.w -= 2 * control->window->iscale;
+    control->rect.h -= 2 * control->window->iscale;
     X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_bg_shadow.pixel);
-    X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x + 2, control->rect.y + 2, control->rect.w, control->rect.h, 0, 360 * 64);
+    X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x + (2 * control->window->iscale), control->rect.y + (2* control->window->iscale), control->rect.w, control->rect.h, 0, 360 * 64);
     
     switch (icon_control->flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION)) {
         case SDL_MESSAGEBOX_ERROR:
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_red_darker.pixel);
                 X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x, control->rect.y, control->rect.w, control->rect.h, 0, 360 * 64);
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_red.pixel);
-                X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x+1, control->rect.y+1, control->rect.w-2, control->rect.h-2, 0, 360 * 64);
+                X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x+(1* control->window->iscale), control->rect.y+(1* control->window->iscale), control->rect.w-(2* control->window->iscale), control->rect.h-(2* control->window->iscale), 0, 360 * 64);
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_white.pixel);
                 break;
         case SDL_MESSAGEBOX_WARNING:
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_black.pixel);
                 X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x, control->rect.y, control->rect.w, control->rect.h, 0, 360 * 64);
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_yellow.pixel);
-                X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x+1, control->rect.y+1, control->rect.w-2, control->rect.h-2, 0, 360 * 64);
+                X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x+(1* control->window->iscale), control->rect.y+(1* control->window->iscale), control->rect.w-(2* control->window->iscale), control->rect.h-(2* control->window->iscale), 0, 360 * 64);
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_black.pixel);
                 break;
         case SDL_MESSAGEBOX_INFORMATION:
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_white.pixel);
                 X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x, control->rect.y, control->rect.w, control->rect.h, 0, 360 * 64);
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_blue.pixel);
-                X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x+1, control->rect.y+1, control->rect.w-2, control->rect.h-2, 0, 360 * 64);
+                X11_XFillArc(control->window->display, control->window->drawable, control->window->ctx, control->rect.x+(1* control->window->iscale), control->rect.y+(1* control->window->iscale), control->rect.w-(2* control->window->iscale), control->rect.h-(2* control->window->iscale), 0, 360 * 64);
                 X11_XSetForeground(control->window->display, control->window->ctx, icon_control->xcolor_white.pixel);
                 break;
     }
@@ -834,14 +1040,15 @@ static void X11Toolkit_DrawIconControl(SDL_ToolkitControlX11 *control) {
         X11_XSetFont(control->window->display, control->window->ctx, control->window->font_struct->fid); 
     }
     
-    control->rect.w += 2;
-    control->rect.h += 2;
+    control->rect.w += 2 * control->window->iscale;
+    control->rect.h += 2 * control->window->iscale;
 }
 
 SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window, SDL_MessageBoxFlags flags) {
     SDL_ToolkitIconControlX11 *control;
     SDL_ToolkitControlX11 *base_control;
-    int icon_char_w;
+	char *font;
+	int icon_char_w;
     int icon_char_h;
     int icon_char_max;
             
@@ -862,9 +1069,13 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window
     base_control->is_default_enter = false;  
     base_control->is_default_esc = false;  
     control->flags = flags;
-    control->icon_char_font = X11_XLoadQueryFont(window->display, g_IconFont);
+	SDL_asprintf(&font, g_IconFont, G_ICONFONT_SIZE * window->iscale);
+    control->icon_char_font = X11_XLoadQueryFont(window->display, font);
+    SDL_free(font);
     if (!control->icon_char_font) {
-        control->icon_char_font = X11_XLoadQueryFont(window->display, g_ToolkitFontLatin1);
+		SDL_asprintf(&font, g_ToolkitFontLatin1, G_TOOLKITFONT_SIZE * window->iscale);
+		control->icon_char_font = X11_XLoadQueryFont(window->display, font);
+		SDL_free(font);
         if (!control->icon_char_font) {
             SDL_free(control);
             return NULL;
@@ -929,8 +1140,8 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window
     X11_XAllocColor(window->display, window->cmap, &control->xcolor_bg_shadow);    
 
     GetTextWidthHeightForFont(control->icon_char_font, &control->icon_char, 1, &icon_char_w, &icon_char_h, &control->icon_char_a);
-    base_control->rect.w = icon_char_w + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2;
-    base_control->rect.h = icon_char_h + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2;
+    base_control->rect.w = icon_char_w + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * window->iscale;
+    base_control->rect.h = icon_char_h + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * window->iscale;
     icon_char_max = SDL_max(base_control->rect.w, base_control->rect.h) + 2;
     base_control->rect.w = icon_char_max;
     base_control->rect.h = icon_char_max;        
@@ -938,10 +1149,10 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window
     base_control->rect.x = 0;
     control->icon_char_y = control->icon_char_a + (base_control->rect.h - icon_char_h)/2 + 1;
     control->icon_char_x = (base_control->rect.w - icon_char_w)/2 + 1;
-    base_control->rect.w += 2;
-    base_control->rect.h += 2;
+    base_control->rect.w += 2 * window->iscale;
+    base_control->rect.h += 2 * window->iscale;
     
-     X11Toolkit_AddControlToWindow(window, base_control);       
+	X11Toolkit_AddControlToWindow(window, base_control);       
     return base_control;
 }
 
@@ -961,9 +1172,9 @@ static void X11Toolkit_UpsizeButtonControl(SDL_ToolkitControlX11 *control) {
     button_control->text_rect.x = (control->rect.w - button_control->text_rect.w)/2;
     button_control->text_rect.y = button_control->text_a + (control->rect.h - button_control->text_rect.h)/2;
     if (control->window->utf8) {
-        button_control->text_rect.y -= 2;
+        button_control->text_rect.y -= 2 * control->window->iscale;
     } else {
-        button_control->text_rect.y -= 4;    
+        button_control->text_rect.y -= 4 * control->window->iscale;    
     }
 }
 
@@ -983,23 +1194,23 @@ static void X11Toolkit_DrawButtonControl(SDL_ToolkitControlX11 *control) {
             X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor_bevel_l2.pixel);
             X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
                                    control->rect.x, control->rect.y,
-                                   control->rect.w - 1, control->rect.h - 1);
+                                   control->rect.w - (1* control->window->iscale), control->rect.h - (1* control->window->iscale));
                 
            
             X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor_bevel_l1.pixel);
             X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
-                                   control->rect.x + 1, control->rect.y + 1,
-                                   control->rect.w - 3, control->rect.h - 2);
+                                   control->rect.x + 1 * control->window->iscale, control->rect.y + 1 * control->window->iscale,
+                                   control->rect.w - 3 * control->window->iscale, control->rect.h - 2 * control->window->iscale);
                                                        
             X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].pixel);
             X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
-                               control->rect.x + 1, control->rect.y + 1,
-                               control->rect.w - 3, control->rect.h - 3);
+                               control->rect.x + 1 * control->window->iscale, control->rect.y + 1 * control->window->iscale,
+                               control->rect.w - 3 * control->window->iscale, control->rect.h - 3 * control->window->iscale);
 
             X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor_pressed.pixel);
             X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
-                               control->rect.x + 2, control->rect.y + 2,
-                               control->rect.w - 4, control->rect.h - 4);
+                               control->rect.x + 2 * control->window->iscale, control->rect.y + 2 * control->window->iscale,
+                               control->rect.w - 4 * control->window->iscale, control->rect.h - 4 * control->window->iscale);
         } else {
             if (control->selected) {
                 X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor_bevel_d.pixel);
@@ -1009,23 +1220,23 @@ static void X11Toolkit_DrawButtonControl(SDL_ToolkitControlX11 *control) {
 
                 X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor_bevel_l2.pixel);
                 X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
-                                   control->rect.x + 1, control->rect.y + 1,
-                                   control->rect.w - 3, control->rect.h - 3);
+                                   control->rect.x + 1 * control->window->iscale, control->rect.y + 1 * control->window->iscale,
+                                   control->rect.w - 3 * control->window->iscale, control->rect.h - 3 * control->window->iscale);
           
                 X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].pixel);
                 X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
-                                   control->rect.x + 2, control->rect.y + 2,
-                                   control->rect.w - 4, control->rect.h - 4);
+                                   control->rect.x + 2 * control->window->iscale, control->rect.y + 2 * control->window->iscale,
+                                   control->rect.w - 4 * control->window->iscale, control->rect.h - 4 * control->window->iscale);
            
                 X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor_bevel_l1.pixel);
                 X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
-                                   control->rect.x + 2, control->rect.y + 2,
-                                   control->rect.w - 5, control->rect.h - 5);
+                                   control->rect.x + 2 * control->window->iscale, control->rect.y + 2 * control->window->iscale,
+                                   control->rect.w - 5 * control->window->iscale, control->rect.h - 5 * control->window->iscale);
            
                 X11_XSetForeground(control->window->display, control->window->ctx, (control->state == SDL_TOOLKIT_CONTROL_STATE_X11_HOVER) ? control->window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED].pixel : control->window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].pixel);
                 X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
-                                   control->rect.x + 3, control->rect.y + 3,
-                                   control->rect.w - 6, control->rect.h - 6);
+                                   control->rect.x + 3 * control->window->iscale, control->rect.y + 3 * control->window->iscale,
+                                   control->rect.w - 6 * control->window->iscale, control->rect.h - 6 * control->window->iscale);
             } else {
                 X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor_bevel_d.pixel);
                 X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
@@ -1035,22 +1246,22 @@ static void X11Toolkit_DrawButtonControl(SDL_ToolkitControlX11 *control) {
                 X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor_bevel_l2.pixel);
                 X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
                                    control->rect.x, control->rect.y,
-                                   control->rect.w - 1, control->rect.h - 1);
+                                   control->rect.w - 1 * control->window->iscale, control->rect.h - 1 * control->window->iscale);
           
                 X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BORDER].pixel);
                 X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
-                                   control->rect.x + 1, control->rect.y + 1,
-                                   control->rect.w - 2, control->rect.h - 2);
+                                   control->rect.x + 1 * control->window->iscale, control->rect.y + 1 * control->window->iscale,
+                                   control->rect.w - 2 * control->window->iscale, control->rect.h - 2 * control->window->iscale);
            
                 X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor_bevel_l1.pixel);
                 X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
-                                   control->rect.x + 1, control->rect.y + 1,
-                                   control->rect.w - 3, control->rect.h - 3);
+                                   control->rect.x + 1 * control->window->iscale, control->rect.y + 1 * control->window->iscale,
+                                   control->rect.w - 3 * control->window->iscale, control->rect.h - 3 * control->window->iscale);
            
                 X11_XSetForeground(control->window->display, control->window->ctx, (control->state == SDL_TOOLKIT_CONTROL_STATE_X11_HOVER) ? control->window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED].pixel : control->window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].pixel);
                 X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
-                                   control->rect.x + 2, control->rect.y + 2,
-                                   control->rect.w - 4, control->rect.h - 4);
+                                   control->rect.x + 2 * control->window->iscale, control->rect.y + 2 * control->window->iscale,
+                                   control->rect.w - 4 * control->window->iscale, control->rect.h - 4 * control->window->iscale);
             }
         }
                                                                                              
@@ -1116,8 +1327,8 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
     control->str_sz = SDL_strlen(control->data->text);
     control->cb = NULL;
     GetTextWidthHeight(base_control->window, control->data->text, control->str_sz, &control->text_rect.w, &control->text_rect.h, &control->text_a, &text_d);
-    base_control->rect.w = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 + control->text_rect.w;
-    base_control->rect.h = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 + control->text_rect.h;    
+    base_control->rect.w = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * window->iscale + control->text_rect.w;
+    base_control->rect.h = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * window->iscale + control->text_rect.h;    
     control->text_rect.x = control->text_rect.y = 0;
     X11Toolkit_UpsizeButtonControl(base_control);
     X11Toolkit_AddControlToWindow(window, base_control);       
@@ -1154,6 +1365,9 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
     SDL_free(data->controls);
 	SDL_free(data->dyn_controls);
 
+	if (data->pixmap) { 
+		X11_XFreePixmap(data->display, data->drawable);
+	}
     
 #ifdef X_HAVE_UTF8_STRING
     if (data->font_set) {
@@ -1168,11 +1382,15 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
     }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
-    if (SDL_X11_HAVE_XDBE && data->xdbe) {
+    if (SDL_X11_HAVE_XDBE && data->xdbe && !data->pixmap) {
         X11_XdbeDeallocateBackBufferName(data->display, data->buf);
     }
 #endif
 
+	if (data->xsettings) {
+		xsettings_client_destroy(data->xsettings);
+	}
+	
     X11_XFreeGC(data->display, data->ctx);
 
     if (data->display) {
