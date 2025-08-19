@@ -27,7 +27,7 @@
 #include "SDL_x11toolkit.h"
 
 #ifndef SDL_FORK_MESSAGEBOX
-#define SDL_FORK_MESSAGEBOX 0
+#define SDL_FORK_MESSAGEBOX 1
 #endif
 
 #if SDL_FORK_MESSAGEBOX
