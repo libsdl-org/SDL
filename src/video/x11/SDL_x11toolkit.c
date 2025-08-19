@@ -258,9 +258,9 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
         
     /* Control list */
     window->has_focus = false;
-    window->focused_control = NULL;
     window->controls = NULL;
     window->controls_sz = 0;
+    window->dyn_controls_sz = 0;
 
     return window;
 }
@@ -275,6 +275,22 @@ static void X11Toolkit_AddControlToWindow(SDL_ToolkitWindowX11 *window, SDL_Tool
     }
     
     window->controls[window->controls_sz - 1] = control;
+    
+    if (control->dynamic) {
+		window->dyn_controls_sz++;
+		
+		if (window->dyn_controls_sz == 1) {
+			window->dyn_controls = (struct SDL_ToolkitControlX11 **)SDL_malloc(sizeof(struct SDL_ToolkitControlX11 *));
+		} else {
+			window->dyn_controls = (struct SDL_ToolkitControlX11 **)SDL_realloc(window->dyn_controls, sizeof(struct SDL_ToolkitControlX11 *) * window->dyn_controls_sz);        
+		}
+    
+		window->dyn_controls[window->dyn_controls_sz - 1] = control;		
+	}
+
+    if (control->selected) {
+		window->focused_control = control;
+	}	
 }
 
 static void X11Toolkit_FreeWindowStruct(SDL_ToolkitWindowX11 *data) {
@@ -642,56 +658,56 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
             break;
         case FocusOut:
             data->has_focus = false;
-            if (data->focused_control) {
-                data->focused_control->selected = false;
+            if (data->fiddled_control) {
+                data->fiddled_control->selected = false;
             }
-            data->focused_control = NULL;
+            data->fiddled_control = NULL;
             for (i = 0; i < data->controls_sz; i++) {
                 data->controls[i]->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
             }
             break;
         case MotionNotify:
             if (data->has_focus) {                
-                previous_control = data->focused_control;
-                data->focused_control = GetControlMouseIsOn(data, e.xbutton.x, e.xbutton.y);
+                previous_control = data->fiddled_control;
+                data->fiddled_control = GetControlMouseIsOn(data, e.xbutton.x, e.xbutton.y);
                  if (previous_control) {
                     previous_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
                     draw = true;
                 }
-                if (data->focused_control) {
-                    if (data->focused_control->dynamic) {
-                        data->focused_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_HOVER;
+                if (data->fiddled_control) {
+                    if (data->fiddled_control->dynamic) {
+                        data->fiddled_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_HOVER;
                         draw = true;    
                     } else {
-                        data->focused_control = NULL;
+                        data->fiddled_control = NULL;
                     }
                 } 
             }
             break;
         case ButtonPress:
-            previous_control = data->focused_control;
+            previous_control = data->fiddled_control;
             if (previous_control) {
                 previous_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
                 draw = true;
             }
             if (e.xbutton.button == Button1) {
-                data->focused_control = GetControlMouseIsOn(data, e.xbutton.x, e.xbutton.y);
-                if (data->focused_control) {
-                    data->focused_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED;
+                data->fiddled_control = GetControlMouseIsOn(data, e.xbutton.x, e.xbutton.y);
+                if (data->fiddled_control) {
+                    data->fiddled_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED;
                     draw = true;
                 } 
             }
             break;
         case ButtonRelease:
-            if ((e.xbutton.button == Button1) && (data->focused_control)) {
+            if ((e.xbutton.button == Button1) && (data->fiddled_control)) {
                 SDL_ToolkitControlX11 *control;
                 
                 control = GetControlMouseIsOn(data, e.xbutton.x, e.xbutton.y);
-                if (data->focused_control == control) {
-                    if (data->focused_control->func_on_state_change) {
-                        data->focused_control->func_on_state_change(data->focused_control);
+                if (data->fiddled_control == control) {
+                    if (data->fiddled_control->func_on_state_change) {
+                        data->fiddled_control->func_on_state_change(data->fiddled_control);
                     }
-                    data->focused_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
+                    data->fiddled_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
                     draw = true;
                 }
             }
@@ -709,7 +725,7 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
                 }
             } else if ((last_key_pressed == XK_Return) || (last_key_pressed == XK_KP_Enter)) {
                 for (i = 0; i < data->controls_sz; i++) {                
-                    if(data->controls[i]->is_default_enter) {
+                    if(data->controls[i]->selected) {
                         data->controls[i]->state = SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED;
                         draw = true;
                         key_control_enter = data->controls[i];
@@ -737,7 +753,23 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
                         key_control_enter->func_on_state_change(key_control_enter);
                     }        
                 }
-            }    
+            } else if (key == XK_Tab) {
+				data->focused_control->selected = false;
+				draw = true;
+				for (i = 0; i < data->dyn_controls_sz; i++) {                
+                    if (data->dyn_controls[i] == data->focused_control) {
+						int next_index;
+						
+						next_index = i + 1;
+						if (next_index >= data->dyn_controls_sz) {
+							next_index = 0;
+						}
+						data->focused_control = data->dyn_controls[next_index];
+						data->focused_control->selected = true;
+						break;
+					}
+                }
+            }
             break;
             }
 
@@ -969,7 +1001,7 @@ static void X11Toolkit_DrawButtonControl(SDL_ToolkitControlX11 *control) {
                                control->rect.x + 2, control->rect.y + 2,
                                control->rect.w - 4, control->rect.h - 4);
         } else {
-            if (button_control->data->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
+            if (control->selected) {
                 X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor_bevel_d.pixel);
                 X11_XFillRectangle(control->window->display, control->window->drawable, control->window->ctx,
                                    control->rect.x, control->rect.y,
@@ -1078,6 +1110,7 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
     }
     if (data->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
         base_control->is_default_enter = true;  
+		base_control->selected = true;
     }
     control->data = data;
     control->str_sz = SDL_strlen(control->data->text);
@@ -1118,6 +1151,9 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
             data->controls[i]->func_free(data->controls[i]);
         }
     }
+    SDL_free(data->controls);
+	SDL_free(data->dyn_controls);
+
     
 #ifdef X_HAVE_UTF8_STRING
     if (data->font_set) {
