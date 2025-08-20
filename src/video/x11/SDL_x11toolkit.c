@@ -782,16 +782,17 @@ static void X11Toolkit_DrawWindow(SDL_ToolkitWindowX11 *data) {
 		SDL_Surface *pixmap_surface;
 		SDL_Surface *put_surface;
 		
-		/* FIXME: Implement SHM transport! */
+		/* FIXME: Implement SHM transport? */
 		pixmap_image = X11_XGetImage(data->display, data->drawable, 0, 0 , data->pixmap_width, data->pixmap_height, AllPlanes, ZPixmap);	
 		pixmap_surface = SDL_CreateSurfaceFrom(data->pixmap_width, data->pixmap_height, X11_GetPixelFormatFromVisualInfo(data->display, &data->vi), pixmap_image->data, pixmap_image->bytes_per_line);
 		put_surface = SDL_ScaleSurface(pixmap_surface, data->window_width, data->window_height, SDL_SCALEMODE_LINEAR);
 		put_image = X11_XCreateImage(data->display, data->visual, data->vi.depth, ZPixmap, 0, put_surface->pixels, data->window_width, data->window_height, 32, put_surface->pitch);
 		X11_XPutImage(data->display, data->window, data->ctx, put_image, 0, 0, 0, 0, data->window_width, data->window_height);
 		
-		/* FIXME: a leak is generated on each frame draw when using fractional scaling because these are commented out, they are commented out becaues they cause a double free! */
-		/* X11_XDestroyImage(pixmap_image); */
-		/* X11_XDestroyImage(put_image); */
+		X11_XDestroyImage(pixmap_image);
+		/* Needed because XDestroyImage results in a double-free otherwise */
+		put_image->data = NULL;
+		X11_XDestroyImage(put_image);
 		SDL_DestroySurface(pixmap_surface);
 		SDL_DestroySurface(put_surface);
 	}
