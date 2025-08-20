@@ -280,7 +280,6 @@ static bool HIDAPI_DriverZUIKI_UpdateDevice(SDL_HIDAPI_Device *device)
         }
 
         if (size == 8) {
-            // Old firmware USB report for the SF30 Pro and SN30 Pro controllers
             HIDAPI_DriverZUIKI_HandleOldStatePacket(joystick, ctx, data, size);
         }
     }
