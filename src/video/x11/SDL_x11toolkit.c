@@ -838,6 +838,9 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
         XEvent e;
         bool draw;
         
+		if (data->xsettings) {
+			xsettings_client_process_event(data->xsettings, &e);
+		}  
         // can't use XWindowEvent() because it can't handle ClientMessage events.
         // can't use XNextEvent() because we only want events for this window.
         draw = false;
@@ -848,6 +851,7 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
         if ((e.type != Expose) && X11_XFilterEvent(&e, None)) {
             continue;
         }
+
 
         switch (e.type) {
         case Expose:
