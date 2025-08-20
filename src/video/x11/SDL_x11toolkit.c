@@ -501,8 +501,8 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
 	    data->window_width = w;    
 		data->window_height = h;	
 	} else {
-		data->window_width = SDL_lroundf(w/data->iscale * data->scale);
-		data->window_height = SDL_lroundf(h/data->iscale * data->scale);
+		data->window_width = SDL_lroundf((w/data->iscale) * data->scale);
+		data->window_height = SDL_lroundf((h/data->iscale) * data->scale);
 		data->pixmap_width = w;
 		data->pixmap_height = h;
 		data->pixmap = true;
@@ -964,16 +964,24 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
                         key_control_enter->func_on_state_change(key_control_enter);
                     }        
                 }
-            } else if (key == XK_Tab) {
+            } else if (key == XK_Tab || key == XK_Left || key == XK_Right) {
 				data->focused_control->selected = false;
 				draw = true;
 				for (i = 0; i < data->dyn_controls_sz; i++) {                
                     if (data->dyn_controls[i] == data->focused_control) {
 						int next_index;
 						
-						next_index = i + 1;
-						if (next_index >= data->dyn_controls_sz) {
-							next_index = 0;
+						if (key == XK_Left) {
+							next_index = i - 1;
+						} else { 
+							next_index = i + 1;
+						}
+						if ((next_index >= data->dyn_controls_sz) || (next_index < 0)) {
+							if (key == XK_Right || key == XK_Left) {
+								next_index = i;
+							} else {
+								next_index = 0;
+							}
 						}
 						data->focused_control = data->dyn_controls[next_index];
 						data->focused_control->selected = true;
