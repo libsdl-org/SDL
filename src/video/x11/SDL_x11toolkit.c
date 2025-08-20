@@ -228,7 +228,7 @@ static void SettingsNotify(const char *name, XSettingsAction action, XSettingsSe
     	SDL_strcmp(name, SDL_XSETTINGS_GDK_UNSCALED_DPI) == 0 ||
         SDL_strcmp(name, SDL_XSETTINGS_XFT_DPI) == 0) {
 		window->scale = GetUIScale(window->xsettings, window->display);
-		window->iscale = SDL_lroundf(window->scale);
+		window->iscale = (int)SDL_ceilf(window->scale);
 		if (roundf(window->scale) == window->scale) {
 			window->scale = 0;
 		}
@@ -316,7 +316,7 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
 	/* Scale/Xsettings */
     window->xsettings = xsettings_client_new(window->display, DefaultScreen(window->display), SettingsNotify, NULL, window);
 	window->scale = GetUIScale(window->xsettings, window->display);
-	window->iscale = SDL_lroundf(window->scale);
+	window->iscale = (int)SDL_ceilf(window->scale);
 	if (roundf(window->scale) == window->scale) {
 		window->scale = 0;
 	}
