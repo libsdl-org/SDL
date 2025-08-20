@@ -1760,6 +1760,10 @@ extern "C" {
  */
 #define SDL_HINT_JOYSTICK_HIDAPI_SINPUT "SDL_JOYSTICK_HIDAPI_SINPUT"
 
+/**
+ * A variable controlling whether the HIDAPI driver for SInput controllers
+ * should be used.
+ *
  * This variable can be set to the following values:
  *
  * "0" - HIDAPI driver is not used. "1" - HIDAPI driver is used.
@@ -2842,7 +2846,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.2.0.
  */
-#define SDL_HINT_OPENVR_LIBRARY              "SDL_OPENVR_LIBRARY"
+#define SDL_HINT_OPENVR_LIBRARY "SDL_OPENVR_LIBRARY"
 
 /**
  * A variable controlling which orientations are allowed on iOS/Android.
@@ -4185,7 +4189,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.2.0.
  */
-#define SDL_HINT_WINDOWS_GAMEINPUT   "SDL_WINDOWS_GAMEINPUT"
+#define SDL_HINT_WINDOWS_GAMEINPUT "SDL_WINDOWS_GAMEINPUT"
 
 /**
  * A variable controlling whether raw keyboard events are used on Windows.
@@ -4230,7 +4234,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.2.0.
  */
-#define SDL_HINT_WINDOWS_INTRESOURCE_ICON       "SDL_WINDOWS_INTRESOURCE_ICON"
+#define SDL_HINT_WINDOWS_INTRESOURCE_ICON "SDL_WINDOWS_INTRESOURCE_ICON"
 
 /**
  * A variable to specify custom icon resource id from RC file on Windows
@@ -4538,7 +4542,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetHint(const char *name);
 
 /**
  * Get the boolean value of a hint variable.
@@ -4614,8 +4618,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AddHintCallback(const char *name, SDL_HintC
  * \sa SDL_AddHintCallback
  */
 extern SDL_DECLSPEC void SDLCALL SDL_RemoveHintCallback(const char *name,
-                                                     SDL_HintCallback callback,
-                                                     void *userdata);
+                                                        SDL_HintCallback callback,
+                                                        void *userdata);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
