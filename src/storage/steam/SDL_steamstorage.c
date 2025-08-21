@@ -23,6 +23,23 @@
 
 #include "../SDL_sysstorage.h"
 
+#if defined(_WIN64)
+#define SDL_DRIVER_STEAMAPI_DYNAMIC "steam_api64.dll"
+#elif defined(_WIN32)
+#define SDL_DRIVER_STEAMAPI_DYNAMIC "steam_api.dll"
+#elif defined(__APPLE__)
+#define SDL_DRIVER_STEAMAPI_DYNAMIC "libsteam_api.dylib"
+#else
+#define SDL_DRIVER_STEAMAPI_DYNAMIC "libsteam_api.so"
+#endif
+
+SDL_ELF_NOTE_DLOPEN(
+    "storage-steam",
+    "Support for Steam user storage",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_DRIVER_STEAMAPI_DYNAMIC
+);
+
 // !!! FIXME: Async API can use SteamRemoteStorage_ReadFileAsync
 // !!! FIXME: Async API can use SteamRemoteStorage_WriteFileAsync
 
@@ -154,17 +171,7 @@ static SDL_Storage *STEAM_User_Create(const char *org, const char *app, SDL_Prop
         return NULL;
     }
 
-    steam->libsteam_api = SDL_LoadObject(
-#if defined(_WIN64)
-        "steam_api64.dll"
-#elif defined(_WIN32)
-        "steam_api.dll"
-#elif defined(__APPLE__)
-        "libsteam_api.dylib"
-#else
-        "libsteam_api.so"
-#endif
-    );
+    steam->libsteam_api = SDL_LoadObject(SDL_DRIVER_STEAMAPI_DYNAMIC);
     if (steam->libsteam_api == NULL) {
         SDL_free(steam);
         return NULL;

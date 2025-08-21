@@ -110,6 +110,37 @@
 #define DEFAULT_OGL_ES2    "libGLESv2.so.2"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so.1"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so.1"
+
+SDL_ELF_NOTE_DLOPEN(
+    "egl-opengl",
+    "Support for OpenGL",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_OGL, ALT_OGL
+);
+SDL_ELF_NOTE_DLOPEN(
+    "egl-egl",
+    "Support for EGL",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_EGL
+);
+SDL_ELF_NOTE_DLOPEN(
+    "egl-es2",
+    "Support for EGL ES2",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_OGL_ES2
+);
+SDL_ELF_NOTE_DLOPEN(
+    "egl-es-pvr",
+    "Support for EGL ES PVR",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_OGL_ES_PVR
+);
+SDL_ELF_NOTE_DLOPEN(
+    "egl-ogl-es",
+    "Support for OpenGL ES",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_OGL_ES
+);
 #endif // SDL_VIDEO_DRIVER_RPI
 
 #if defined(SDL_VIDEO_OPENGL) && !defined(SDL_VIDEO_VITA_PVR_OGL)
