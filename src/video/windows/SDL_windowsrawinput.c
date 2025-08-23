@@ -77,7 +77,7 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
     if (data->flags & ENABLE_RAW_KEYBOARD_INPUT) {
         devices[count].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
         devices[count].usUsage = USB_USAGE_GENERIC_KEYBOARD;
-        devices[count].dwFlags = SDL_GetHintBoolean(SDL_HINT_WINDOWS_RAW_KEYBOARD_NOHOTKEY) ? 0x200 : 0;
+        devices[count].dwFlags = SDL_GetHintBoolean(SDL_HINT_WINDOWS_RAW_KEYBOARD_NOHOTKEY, false) ? RIDEV_NOHOTKEYS : 0;
         devices[count].hwndTarget = window;
         ++count;
     }
