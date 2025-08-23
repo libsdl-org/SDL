@@ -224,15 +224,11 @@ static void SettingsNotify(const char *name, XSettingsAction action, XSettingsSe
     int i;
 
     window = data;
-
-	puts("notify");
 	
     if (window->xsettings_first_time) {
         return;
     }
-    
-	puts("!notify");
-	
+    	
     if (SDL_strcmp(name, SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR) == 0 ||
         SDL_strcmp(name, SDL_XSETTINGS_GDK_UNSCALED_DPI) == 0 ||
         SDL_strcmp(name, SDL_XSETTINGS_XFT_DPI) == 0) {
