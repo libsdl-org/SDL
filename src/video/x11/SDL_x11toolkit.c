@@ -225,10 +225,14 @@ static void SettingsNotify(const char *name, XSettingsAction action, XSettingsSe
 
     window = data;
 
+	puts("notify");
+	
     if (window->xsettings_first_time) {
         return;
     }
     
+	puts("!notify");
+	
     if (SDL_strcmp(name, SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR) == 0 ||
         SDL_strcmp(name, SDL_XSETTINGS_GDK_UNSCALED_DPI) == 0 ||
         SDL_strcmp(name, SDL_XSETTINGS_XFT_DPI) == 0) {
@@ -957,6 +961,7 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
         if (data->xsettings) {
             xsettings_client_process_event(data->xsettings, &e);
         }  
+        
         // can't use XWindowEvent() because it can't handle ClientMessage events.
         // can't use XNextEvent() because we only want events for this window.
         draw = false;
@@ -1284,7 +1289,7 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window
         break;
     case SDL_MESSAGEBOX_WARNING:
         control->icon_char = '!';
-           control->xcolor_black.flags = DoRed|DoGreen|DoBlue;
+        control->xcolor_black.flags = DoRed|DoGreen|DoBlue;
         control->xcolor_black.red = 0;
         control->xcolor_black.green = 0;
         control->xcolor_black.blue = 0;
