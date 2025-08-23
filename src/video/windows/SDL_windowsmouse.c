@@ -343,7 +343,7 @@ static SDL_Cursor *WIN_CreateSystemCursor(SDL_SystemCursor id)
         name = IDC_SIZEWE;
         break;
     }
-    return WIN_CreateCursorAndData(LoadCursor(NULL, name));
+    return WIN_CreateCursorAndData(LoadImage(NULL, name, IMAGE_CURSOR, 0, 0, LR_SHARED));
 }
 
 static SDL_Cursor *WIN_CreateDefaultCursor(void)
