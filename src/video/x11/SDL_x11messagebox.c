@@ -63,8 +63,7 @@ static void X11_MessageBoxButtonCallback(SDL_ToolkitControlX11 *control, void *d
 }
 
 static void X11_PositionMessageBox(SDL_MessageBoxControlsX11 *controls, int *wp, int *hp) {
-    SDL_ToolkitControlX11 fake_icon;
-     int max_button_w;
+    int max_button_w;
     int max_button_h;
     int total_button_w;
     int total_text_and_icon_w;
@@ -98,7 +97,7 @@ static void X11_PositionMessageBox(SDL_MessageBoxControlsX11 *controls, int *wp,
     } else {
         controls->message->rect.x = 0;
         controls->message->rect.y = -2;
-        controls->icon = &fake_icon;
+        controls->icon = &controls->fake_icon;
         controls->icon->rect.w = 0;
         controls->icon->rect.h = 0;
         controls->icon->rect.x = 0;
