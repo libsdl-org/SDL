@@ -46,6 +46,7 @@ typedef struct SDL_ToolkitWindowX11
     Drawable drawable;
     Visual *visual;
     XVisualInfo vi;
+    int depth;
     Colormap cmap;
     GC ctx;
     bool utf8;
@@ -66,11 +67,12 @@ typedef struct SDL_ToolkitWindowX11
     int window_height; // Window height.
     int pixmap_width;  
     int pixmap_height;
-		
-	XSettingsClient *xsettings;
-	int iscale;
-	float scale;
-	
+        
+    XSettingsClient *xsettings;
+    bool xsettings_first_time;
+    int iscale;
+    float scale;
+    
     XFontSet font_set;        // for UTF-8 systems
     XFontStruct *font_struct; // Latin1 (ASCII) fallback.
 
@@ -81,12 +83,15 @@ typedef struct SDL_ToolkitWindowX11
     XColor xcolor_pressed;
         
     bool has_focus;
-  	struct SDL_ToolkitControlX11 *focused_control;  
-	struct SDL_ToolkitControlX11 *fiddled_control;
+      struct SDL_ToolkitControlX11 *focused_control;  
+    struct SDL_ToolkitControlX11 *fiddled_control;
     struct SDL_ToolkitControlX11 **controls;
     size_t controls_sz;  
-	struct SDL_ToolkitControlX11 **dyn_controls;
+    struct SDL_ToolkitControlX11 **dyn_controls;
     size_t dyn_controls_sz;
+    
+    void *cb_data;
+    void (*cb_on_scale_change)(struct SDL_ToolkitWindowX11 *, void *);
 } SDL_ToolkitWindowX11;
 
 typedef enum SDL_ToolkitControlStateX11
@@ -107,7 +112,8 @@ typedef struct SDL_ToolkitControlX11
     bool is_default_esc;
     void *data;
     void (*func_draw)(struct SDL_ToolkitControlX11 *);
-    void (*func_upsize)(struct SDL_ToolkitControlX11 *);
+    void (*func_calc_size)(struct SDL_ToolkitControlX11 *);
+    void (*func_on_scale_change)(struct SDL_ToolkitControlX11 *);
     void (*func_on_state_change)(struct SDL_ToolkitControlX11 *);
     void (*func_free)(struct SDL_ToolkitControlX11 *);
 } SDL_ToolkitControlX11;
@@ -122,7 +128,7 @@ extern void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data);
 extern void X11Toolkit_SignalWindowClose(SDL_ToolkitWindowX11 *data);
 
 /* GENERIC CONTROL FUNCTIONS */
-extern bool X11Toolkit_NotifyUpsize(SDL_ToolkitControlX11 *control);
+extern bool X11Toolkit_NotifyControlOfSizeChange(SDL_ToolkitControlX11 *control);
 
 /* ICON CONTROL FUNCTIONS */
 extern SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window, SDL_MessageBoxFlags flags);
