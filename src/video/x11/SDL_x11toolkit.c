@@ -146,7 +146,7 @@ static float GetUIScale(XSettingsClient *client, Display *display)
     {
         int status, real_format;
         Atom real_type;
-		Atom res_mgr;
+        Atom res_mgr;
         unsigned long items_read, items_left;
         char *resource_manager;
         bool owns_resource_manager = false;
@@ -221,18 +221,130 @@ static float GetUIScale(XSettingsClient *client, Display *display)
 static void SettingsNotify(const char *name, XSettingsAction action, XSettingsSetting *setting, void *data)
 {
     SDL_ToolkitWindowX11 *window;
-    
-	window = data;
+    int i;
 
+    window = data;
+
+    if (window->xsettings_first_time) {
+        return;
+    }
+    
     if (SDL_strcmp(name, SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR) == 0 ||
-    	SDL_strcmp(name, SDL_XSETTINGS_GDK_UNSCALED_DPI) == 0 ||
+        SDL_strcmp(name, SDL_XSETTINGS_GDK_UNSCALED_DPI) == 0 ||
         SDL_strcmp(name, SDL_XSETTINGS_XFT_DPI) == 0) {
-		window->scale = GetUIScale(window->xsettings, window->display);
-		window->iscale = (int)SDL_ceilf(window->scale);
-		if (roundf(window->scale) == window->scale) {
-			window->scale = 0;
-		}
-	}
+        bool dbe_already_setup;
+        bool pixmap_already_setup;
+        
+        if (window->pixmap) {
+            pixmap_already_setup = true;
+        } else {
+            dbe_already_setup = true;
+        }
+        
+        /* set scale vars */
+        window->scale = GetUIScale(window->xsettings, window->display);
+        window->iscale = (int)SDL_ceilf(window->scale);
+        if (roundf(window->scale) == window->scale) {
+            window->scale = 0;
+        }
+        
+        /* set up window */
+        if (window->scale != 0) {
+            window->window_width = SDL_lroundf((window->window_width/window->iscale) * window->scale);
+            window->window_height = SDL_lroundf((window->window_height/window->iscale) * window->scale);
+            window->pixmap_width = window->window_width;
+            window->pixmap_height = window->window_height;
+            window->pixmap = true;
+        } else {
+            window->pixmap = false;
+        }
+        
+        if (window->pixmap) {
+            if (!pixmap_already_setup) {
+#ifdef SDL_VIDEO_DRIVER_X11_XDBE
+                if (SDL_X11_HAVE_XDBE && window->xdbe) {
+                    X11_XdbeDeallocateBackBufferName(window->display, window->buf);
+                }
+#endif
+            }
+
+            X11_XFreePixmap(window->display, window->drawable);
+            window->drawable = X11_XCreatePixmap(window->display, window->window, window->pixmap_width, window->pixmap_height, window->depth);        
+        } else {
+            if (!dbe_already_setup) {
+                X11_XFreePixmap(window->display, window->drawable);
+#ifdef SDL_VIDEO_DRIVER_X11_XDBE
+                if (SDL_X11_HAVE_XDBE && window->xdbe) {
+                    window->buf = X11_XdbeAllocateBackBufferName(window->display, window->window, XdbeUndefined);
+                    window->drawable = window->buf;
+                }
+#endif
+            }
+        }
+        
+        /* setup fonts */
+#ifdef X_HAVE_UTF8_STRING
+        if (window->font_set) {
+            X11_XFreeFontSet(window->display, window->font_set);
+        }
+#endif
+        if (window->font_struct) {
+            X11_XFreeFont(window->display, window->font_struct);
+        }
+    
+#ifdef X_HAVE_UTF8_STRING
+        window->utf8 = true;
+        window->font_set = NULL;
+        if (SDL_X11_HAVE_UTF8) {
+            char **missing = NULL;
+            int num_missing = 0;
+            int i_font;
+            window->font_struct = NULL;
+            for (i_font = 0; g_ToolkitFont[i_font]; ++i_font) {
+                char *font;
+                
+                SDL_asprintf(&font, g_ToolkitFont[i_font], G_TOOLKITFONT_SIZE * window->iscale);
+                window->font_set = X11_XCreateFontSet(window->display, font,
+                                                    &missing, &num_missing, NULL);
+                SDL_free(font);
+                if (missing) {
+                    X11_XFreeStringList(missing);
+                }
+                if (window->font_set) {
+                    break;
+                }
+            }
+            if (!window->font_set) {
+                goto load_font_traditional;
+            }
+        } else
+#endif
+        {
+            char *font;
+            load_font_traditional:
+
+            SDL_asprintf(&font, g_ToolkitFontLatin1, G_TOOLKITFONT_SIZE * window->iscale);
+            window->font_struct = X11_XLoadQueryFont(window->display, font);
+            SDL_free(font);
+            window->utf8 = false;    
+        }
+
+        /* notify controls */
+        for (i = 0; i < window->controls_sz; i++) {
+            if (window->controls[i]->func_on_scale_change) {
+                window->controls[i]->func_on_scale_change(window->controls[i]);
+            }
+            
+            if (window->controls[i]->func_calc_size) {
+                window->controls[i]->func_calc_size(window->controls[i]);
+            }
+        }
+        
+        /* notify */
+        if (window->cb_on_scale_change) {
+            window->cb_on_scale_change(window, window->cb_data);
+        }
+    }
 }
 
 
@@ -313,16 +425,18 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
     window->xrandr = X11_XRRQueryExtension(window->display, &xrandr_event_base, &xrandr_error_base);
 #endif
         
-	/* Scale/Xsettings */
+    /* Scale/Xsettings */
+    window->pixmap = false;
+    window->xsettings_first_time = true;
     window->xsettings = xsettings_client_new(window->display, DefaultScreen(window->display), SettingsNotify, NULL, window);
-	window->scale = GetUIScale(window->xsettings, window->display);
-	window->iscale = (int)SDL_ceilf(window->scale);
-	if (roundf(window->scale) == window->scale) {
-		window->scale = 0;
-	}
-	
+    window->xsettings_first_time = false;
+    window->scale = GetUIScale(window->xsettings, window->display);
+    window->iscale = (int)SDL_ceilf(window->scale);
+    if (roundf(window->scale) == window->scale) {
+        window->scale = 0;
+    }
+    
 #ifdef X_HAVE_UTF8_STRING
-	window->pixmap = false;
     window->utf8 = true;
     window->font_set = NULL;
     if (SDL_X11_HAVE_UTF8) {
@@ -331,12 +445,12 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
         int i_font;
         window->font_struct = NULL;
         for (i_font = 0; g_ToolkitFont[i_font]; ++i_font) {
-			char *font;
-			
-			SDL_asprintf(&font, g_ToolkitFont[i_font], G_TOOLKITFONT_SIZE * window->iscale);
+            char *font;
+            
+            SDL_asprintf(&font, g_ToolkitFont[i_font], G_TOOLKITFONT_SIZE * window->iscale);
             window->font_set = X11_XCreateFontSet(window->display, font,
                                                 &missing, &num_missing, NULL);
-			SDL_free(font);
+            SDL_free(font);
             if (missing) {
                 X11_XFreeStringList(missing);
             }
@@ -350,13 +464,13 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
     } else
 #endif
     {
-		char *font;
+        char *font;
         load_font_traditional:
 
-		SDL_asprintf(&font, g_ToolkitFontLatin1, G_TOOLKITFONT_SIZE * window->iscale);
+        SDL_asprintf(&font, g_ToolkitFontLatin1, G_TOOLKITFONT_SIZE * window->iscale);
         window->font_struct = X11_XLoadQueryFont(window->display, font);
-		SDL_free(font);
-		window->utf8 = false;    
+        SDL_free(font);
+        window->utf8 = false;    
         if (!window->font_struct) {
             ErrorCloseFreeRetNull("Couldn't load font %s", g_ToolkitFontLatin1, window);
         }
@@ -405,6 +519,9 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
 
     window->visual = DefaultVisual(window->display, window->screen);
     window->cmap = DefaultColormap(window->display, window->screen);
+    window->depth = DefaultDepth(window->display, window->screen);
+    X11_GetVisualInfoFromVisual(window->display, window->visual, &window->vi);
+        
     for (i = 0; i < SDL_MESSAGEBOX_COLOR_COUNT; i++) {
         X11_XAllocColor(window->display, window->cmap, &window->xcolor[i]);    
     }
@@ -418,8 +535,8 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SD
     window->controls = NULL;
     window->controls_sz = 0;
     window->dyn_controls_sz = 0;
-	window->fiddled_control = NULL;
-	
+    window->fiddled_control = NULL;
+    
     return window;
     
 }
@@ -436,20 +553,20 @@ static void X11Toolkit_AddControlToWindow(SDL_ToolkitWindowX11 *window, SDL_Tool
     window->controls[window->controls_sz - 1] = control;
     
     if (control->dynamic) {
-		window->dyn_controls_sz++;
-		
-		if (window->dyn_controls_sz == 1) {
-			window->dyn_controls = (struct SDL_ToolkitControlX11 **)SDL_malloc(sizeof(struct SDL_ToolkitControlX11 *));
-		} else {
-			window->dyn_controls = (struct SDL_ToolkitControlX11 **)SDL_realloc(window->dyn_controls, sizeof(struct SDL_ToolkitControlX11 *) * window->dyn_controls_sz);        
-		}
+        window->dyn_controls_sz++;
+        
+        if (window->dyn_controls_sz == 1) {
+            window->dyn_controls = (struct SDL_ToolkitControlX11 **)SDL_malloc(sizeof(struct SDL_ToolkitControlX11 *));
+        } else {
+            window->dyn_controls = (struct SDL_ToolkitControlX11 **)SDL_realloc(window->dyn_controls, sizeof(struct SDL_ToolkitControlX11 *) * window->dyn_controls_sz);        
+        }
     
-		window->dyn_controls[window->dyn_controls_sz - 1] = control;		
-	}
+        window->dyn_controls[window->dyn_controls_sz - 1] = control;        
+    }
 
     if (control->selected) {
-		window->focused_control = control;
-	}	
+        window->focused_control = control;
+    }    
 }
 
 static void X11Toolkit_FreeWindowStruct(SDL_ToolkitWindowX11 *data) {
@@ -497,18 +614,17 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
 #endif
 #endif
 
-	if (data->scale == 0) {
-	    data->window_width = w;    
-		data->window_height = h;	
-	} else {
-		data->window_width = SDL_lroundf((w/data->iscale) * data->scale);
-		data->window_height = SDL_lroundf((h/data->iscale) * data->scale);
-		data->pixmap_width = w;
-		data->pixmap_height = h;
-		data->pixmap = true;
-		X11_GetVisualInfoFromVisual(data->display, data->visual, &data->vi);
-	}
-	
+    if (data->scale == 0) {
+        data->window_width = w;    
+        data->window_height = h;    
+    } else {
+        data->window_width = SDL_lroundf((w/data->iscale) * data->scale);
+        data->window_height = SDL_lroundf((h/data->iscale) * data->scale);
+        data->pixmap_width = w;
+        data->pixmap_height = h;
+        data->pixmap = true;
+    }
+    
     if (data->parent) {
         windowdata = data->parent->internal;
     }
@@ -523,7 +639,7 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
         display, root_win,
         0, 0,
         data->window_width, data->window_height,
-        0, DefaultDepth(display, data->screen), InputOutput, data->visual,
+        0, data->depth, InputOutput, data->visual,
         CWEventMask | CWColormap, &wnd_attr);
     if (data->window == None) {
         return SDL_SetError("Couldn't create X window");
@@ -682,7 +798,7 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
     X11_XMapRaised(display, data->window);
     
     data->drawable = data->window;
-	
+    
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
     // Initialise a back buffer for double buffering
     if (SDL_X11_HAVE_XDBE && !data->pixmap) {
@@ -697,10 +813,10 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *
     }
 #endif
 
-	if (data->pixmap) { 
-		data->drawable = X11_XCreatePixmap(display, data->window, data->pixmap_width, data->pixmap_height, DefaultDepth(display, data->screen));
-	}
-	
+    if (data->pixmap) { 
+        data->drawable = X11_XCreatePixmap(display, data->window, data->pixmap_width, data->pixmap_height, data->depth);
+    }
+    
     SDL_zero(ctx_vals);
     ctx_vals.foreground = data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel;
     ctx_vals.background = data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel;
@@ -749,12 +865,12 @@ static void X11Toolkit_DrawWindow(SDL_ToolkitWindowX11 *data) {
 #endif
 
     X11_XSetForeground(data->display, data->ctx, data->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].pixel);
- 	if (data->pixmap) {
-		X11_XFillRectangle(data->display, data->drawable, data->ctx, 0, 0, data->pixmap_width, data->pixmap_height);
-	} else {
-		X11_XFillRectangle(data->display, data->drawable, data->ctx, 0, 0, data->window_width, data->window_height);
-	}
-	
+     if (data->pixmap) {
+        X11_XFillRectangle(data->display, data->drawable, data->ctx, 0, 0, data->pixmap_width, data->pixmap_height);
+    } else {
+        X11_XFillRectangle(data->display, data->drawable, data->ctx, 0, 0, data->window_width, data->window_height);
+    }
+    
     for (i = 0; i < data->controls_sz; i++) {
         SDL_ToolkitControlX11 *control;
         
@@ -776,26 +892,26 @@ static void X11Toolkit_DrawWindow(SDL_ToolkitWindowX11 *data) {
     }
 #endif
 
-	if (data->pixmap) {
-		XImage *pixmap_image;
-		XImage *put_image;
-		SDL_Surface *pixmap_surface;
-		SDL_Surface *put_surface;
-		
-		/* FIXME: Implement SHM transport? */
-		pixmap_image = X11_XGetImage(data->display, data->drawable, 0, 0 , data->pixmap_width, data->pixmap_height, AllPlanes, ZPixmap);	
-		pixmap_surface = SDL_CreateSurfaceFrom(data->pixmap_width, data->pixmap_height, X11_GetPixelFormatFromVisualInfo(data->display, &data->vi), pixmap_image->data, pixmap_image->bytes_per_line);
-		put_surface = SDL_ScaleSurface(pixmap_surface, data->window_width, data->window_height, SDL_SCALEMODE_LINEAR);
-		put_image = X11_XCreateImage(data->display, data->visual, data->vi.depth, ZPixmap, 0, put_surface->pixels, data->window_width, data->window_height, 32, put_surface->pitch);
-		X11_XPutImage(data->display, data->window, data->ctx, put_image, 0, 0, 0, 0, data->window_width, data->window_height);
-		
-		X11_XDestroyImage(pixmap_image);
-		/* Needed because XDestroyImage results in a double-free otherwise */
-		put_image->data = NULL;
-		X11_XDestroyImage(put_image);
-		SDL_DestroySurface(pixmap_surface);
-		SDL_DestroySurface(put_surface);
-	}
+    if (data->pixmap) {
+        XImage *pixmap_image;
+        XImage *put_image;
+        SDL_Surface *pixmap_surface;
+        SDL_Surface *put_surface;
+        
+        /* FIXME: Implement SHM transport? */
+        pixmap_image = X11_XGetImage(data->display, data->drawable, 0, 0 , data->pixmap_width, data->pixmap_height, AllPlanes, ZPixmap);    
+        pixmap_surface = SDL_CreateSurfaceFrom(data->pixmap_width, data->pixmap_height, X11_GetPixelFormatFromVisualInfo(data->display, &data->vi), pixmap_image->data, pixmap_image->bytes_per_line);
+        put_surface = SDL_ScaleSurface(pixmap_surface, data->window_width, data->window_height, SDL_SCALEMODE_LINEAR);
+        put_image = X11_XCreateImage(data->display, data->visual, data->vi.depth, ZPixmap, 0, put_surface->pixels, data->window_width, data->window_height, 32, put_surface->pitch);
+        X11_XPutImage(data->display, data->window, data->ctx, put_image, 0, 0, 0, 0, data->window_width, data->window_height);
+        
+        X11_XDestroyImage(pixmap_image);
+        /* Needed because XDestroyImage results in a double-free otherwise */
+        put_image->data = NULL;
+        X11_XDestroyImage(put_image);
+        SDL_DestroySurface(pixmap_surface);
+        SDL_DestroySurface(put_surface);
+    }
 
     X11_XFlush(data->display);
 }
@@ -824,23 +940,23 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
     KeySym last_key_pressed = XK_VoidSymbol;
     int i;
     float scale;
-	float iscale;
+    float iscale;
    
     data->close = false;
     key_control_esc = key_control_enter = NULL;
     if (!data->pixmap) {
-		scale = iscale = 1;
-	} else {
-		scale = data->scale;
-		iscale = data->iscale;
-	}
+        scale = iscale = 1;
+    } else {
+        scale = data->scale;
+        iscale = data->iscale;
+    }
     while (!data->close) {
         XEvent e;
         bool draw;
         
-		if (data->xsettings) {
-			xsettings_client_process_event(data->xsettings, &e);
-		}  
+        if (data->xsettings) {
+            xsettings_client_process_event(data->xsettings, &e);
+        }  
         // can't use XWindowEvent() because it can't handle ClientMessage events.
         // can't use XNextEvent() because we only want events for this window.
         draw = false;
@@ -881,7 +997,7 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
             if (data->has_focus) {                
                 previous_control = data->fiddled_control;
                 data->fiddled_control = GetControlMouseIsOn(data, SDL_lroundf((e.xbutton.x/scale)*iscale), SDL_lroundf((e.xbutton.y/scale)*iscale));
-				if (previous_control) {
+                if (previous_control) {
                     previous_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
                     draw = true;
                 }
@@ -965,28 +1081,28 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
                     }        
                 }
             } else if (key == XK_Tab || key == XK_Left || key == XK_Right) {
-				data->focused_control->selected = false;
-				draw = true;
-				for (i = 0; i < data->dyn_controls_sz; i++) {                
+                data->focused_control->selected = false;
+                draw = true;
+                for (i = 0; i < data->dyn_controls_sz; i++) {                
                     if (data->dyn_controls[i] == data->focused_control) {
-						int next_index;
-						
-						if (key == XK_Left) {
-							next_index = i - 1;
-						} else { 
-							next_index = i + 1;
-						}
-						if ((next_index >= data->dyn_controls_sz) || (next_index < 0)) {
-							if (key == XK_Right || key == XK_Left) {
-								next_index = i;
-							} else {
-								next_index = 0;
-							}
-						}
-						data->focused_control = data->dyn_controls[next_index];
-						data->focused_control->selected = true;
-						break;
-					}
+                        int next_index;
+                        
+                        if (key == XK_Left) {
+                            next_index = i - 1;
+                        } else { 
+                            next_index = i + 1;
+                        }
+                        if ((next_index >= data->dyn_controls_sz) || (next_index < 0)) {
+                            if (key == XK_Right || key == XK_Left) {
+                                next_index = i;
+                            } else {
+                                next_index = 0;
+                            }
+                        }
+                        data->focused_control = data->dyn_controls[next_index];
+                        data->focused_control->selected = true;
+                        break;
+                    }
                 }
             }
             break;
@@ -1001,9 +1117,19 @@ void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data) {
 
 }
 
-void X11Toolkit_ResizeWindow(SDL_ToolkitWindowX11 *data, int w, int h) {
-    data->window_width = w;
-    data->window_height = h;
+void X11Toolkit_ResizeWindow(SDL_ToolkitWindowX11 *data, int w, int h) {    
+    if (!data->pixmap) {
+        data->window_width = w;    
+        data->window_height = h;    
+    } else {
+        data->window_width = SDL_lroundf((w/data->iscale) * data->scale);
+        data->window_height = SDL_lroundf((h/data->iscale) * data->scale);
+        data->pixmap_width = w;
+        data->pixmap_height = h;
+        X11_XFreePixmap(data->display, data->drawable);
+        data->drawable = X11_XCreatePixmap(data->display, data->window, data->pixmap_width, data->pixmap_height, data->depth);        
+    }
+
     X11_XResizeWindow(data->display, data->window, data->window_width, data->window_height);
 }
 
@@ -1057,44 +1183,86 @@ static void X11Toolkit_DrawIconControl(SDL_ToolkitControlX11 *control) {
     control->rect.h += 2 * control->window->iscale;
 }
 
+static void X11Toolkit_CalculateIconControl(SDL_ToolkitControlX11 *base_control) {
+    SDL_ToolkitIconControlX11 *control;
+    int icon_char_w;
+    int icon_char_h;
+    int icon_char_max;
+    
+    control = (SDL_ToolkitIconControlX11 *)base_control;
+    GetTextWidthHeightForFont(control->icon_char_font, &control->icon_char, 1, &icon_char_w, &icon_char_h, &control->icon_char_a);
+    base_control->rect.w = icon_char_w + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * base_control->window->iscale;
+    base_control->rect.h = icon_char_h + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * base_control->window->iscale;
+    icon_char_max = SDL_max(base_control->rect.w, base_control->rect.h) + 2;
+    base_control->rect.w = icon_char_max;
+    base_control->rect.h = icon_char_max;        
+    base_control->rect.y = 0;
+    base_control->rect.x = 0;
+    control->icon_char_y = control->icon_char_a + (base_control->rect.h - icon_char_h)/2 + 1;
+    control->icon_char_x = (base_control->rect.w - icon_char_w)/2 + 1;
+    base_control->rect.w += 2 * base_control->window->iscale;
+    base_control->rect.h += 2 * base_control->window->iscale;
+}
+
+static void X11Toolkit_OnScaleChangeIconControl(SDL_ToolkitControlX11 *base_control) {
+    SDL_ToolkitIconControlX11 *control;
+    char *font;
+    
+    control = (SDL_ToolkitIconControlX11 *)base_control;
+    X11_XFreeFont(base_control->window->display, control->icon_char_font);
+    SDL_asprintf(&font, g_IconFont, G_ICONFONT_SIZE * base_control->window->iscale);
+    control->icon_char_font = X11_XLoadQueryFont(base_control->window->display, font);
+    SDL_free(font);
+    if (!control->icon_char_font) {
+        SDL_asprintf(&font, g_ToolkitFontLatin1, G_TOOLKITFONT_SIZE * base_control->window->iscale);
+        control->icon_char_font = X11_XLoadQueryFont(base_control->window->display, font);
+        SDL_free(font);
+    } 
+}
+
 SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window, SDL_MessageBoxFlags flags) {
     SDL_ToolkitIconControlX11 *control;
     SDL_ToolkitControlX11 *base_control;
-	char *font;
-	int icon_char_w;
-    int icon_char_h;
-    int icon_char_max;
+    char *font;
+
             
+    /* Create control struct */
     control = (SDL_ToolkitIconControlX11 *)SDL_malloc(sizeof(SDL_ToolkitIconControlX11));
     base_control = (SDL_ToolkitControlX11 *)control;
     if (!control) {
         SDL_SetError("Unable to allocate icon control structure");
         return NULL;
     }
+    
+    /* Fill out struct */
     base_control->window = window;
     base_control->func_draw = X11Toolkit_DrawIconControl;
     base_control->func_free = X11Toolkit_DestroyIconControl;
     base_control->func_on_state_change = NULL;
-    base_control->func_upsize = NULL;
+    base_control->func_calc_size = X11Toolkit_CalculateIconControl;
+    base_control->func_on_scale_change = X11Toolkit_OnScaleChangeIconControl;
     base_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
     base_control->selected = false;
     base_control->dynamic = false;  
     base_control->is_default_enter = false;  
     base_control->is_default_esc = false;  
     control->flags = flags;
-	SDL_asprintf(&font, g_IconFont, G_ICONFONT_SIZE * window->iscale);
+    
+    /* Load font */
+    SDL_asprintf(&font, g_IconFont, G_ICONFONT_SIZE * window->iscale);
     control->icon_char_font = X11_XLoadQueryFont(window->display, font);
     SDL_free(font);
     if (!control->icon_char_font) {
-		SDL_asprintf(&font, g_ToolkitFontLatin1, G_TOOLKITFONT_SIZE * window->iscale);
-		control->icon_char_font = X11_XLoadQueryFont(window->display, font);
-		SDL_free(font);
+        SDL_asprintf(&font, g_ToolkitFontLatin1, G_TOOLKITFONT_SIZE * window->iscale);
+        control->icon_char_font = X11_XLoadQueryFont(window->display, font);
+        SDL_free(font);
         if (!control->icon_char_font) {
             SDL_free(control);
             return NULL;
         }
     } 
     
+    /* Set colors */
     switch (flags & (SDL_MESSAGEBOX_ERROR | SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_INFORMATION)) {
     case SDL_MESSAGEBOX_ERROR:
         control->icon_char = 'X';
@@ -1145,40 +1313,29 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window
         SDL_free(control);
         return NULL;
     }
-            
     control->xcolor_bg_shadow.flags = DoRed|DoGreen|DoBlue;
     control->xcolor_bg_shadow.red = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red - 12500, 0, 65535);
     control->xcolor_bg_shadow.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green - 12500, 0, 65535);
     control->xcolor_bg_shadow.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue - 12500, 0, 65535);
     X11_XAllocColor(window->display, window->cmap, &control->xcolor_bg_shadow);    
 
-    GetTextWidthHeightForFont(control->icon_char_font, &control->icon_char, 1, &icon_char_w, &icon_char_h, &control->icon_char_a);
-    base_control->rect.w = icon_char_w + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * window->iscale;
-    base_control->rect.h = icon_char_h + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * window->iscale;
-    icon_char_max = SDL_max(base_control->rect.w, base_control->rect.h) + 2;
-    base_control->rect.w = icon_char_max;
-    base_control->rect.h = icon_char_max;        
-    base_control->rect.y = 0;
-    base_control->rect.x = 0;
-    control->icon_char_y = control->icon_char_a + (base_control->rect.h - icon_char_h)/2 + 1;
-    control->icon_char_x = (base_control->rect.w - icon_char_w)/2 + 1;
-    base_control->rect.w += 2 * window->iscale;
-    base_control->rect.h += 2 * window->iscale;
+    /* Sizing and positioning */
+    X11Toolkit_CalculateIconControl(base_control);
     
-	X11Toolkit_AddControlToWindow(window, base_control);       
+    X11Toolkit_AddControlToWindow(window, base_control);       
     return base_control;
 }
 
-bool X11Toolkit_NotifyUpsize(SDL_ToolkitControlX11 *control) {
-    if (control->func_upsize) {
-        control->func_upsize(control);
+bool X11Toolkit_NotifyControlOfSizeChange(SDL_ToolkitControlX11 *control) {
+    if (control->func_calc_size) {
+        control->func_calc_size(control);
         return true;
     } else {
         return false;
     }
 }
 
-static void X11Toolkit_UpsizeButtonControl(SDL_ToolkitControlX11 *control) {
+static void X11Toolkit_CalculateButtonControl(SDL_ToolkitControlX11 *control) {
     SDL_ToolkitButtonControlX11 *button_control;
     
     button_control = (SDL_ToolkitButtonControlX11 *)control;
@@ -1303,7 +1460,7 @@ static void X11Toolkit_OnButtonControlStateChange(SDL_ToolkitControlX11 *control
     }
 }
 
-static void X11Toolkit_DestroyButtonControl(SDL_ToolkitControlX11 *control) {
+static void X11Toolkit_DestroyGenericControl(SDL_ToolkitControlX11 *control) {
     SDL_free(control);
 }
 
@@ -1320,10 +1477,11 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
     }
     base_control->window = window;
     base_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
-    base_control->func_upsize = X11Toolkit_UpsizeButtonControl;
+    base_control->func_calc_size = X11Toolkit_CalculateButtonControl;
     base_control->func_draw = X11Toolkit_DrawButtonControl;
     base_control->func_on_state_change = X11Toolkit_OnButtonControlStateChange;
-    base_control->func_free = X11Toolkit_DestroyButtonControl;
+    base_control->func_free = X11Toolkit_DestroyGenericControl;
+    base_control->func_on_scale_change = NULL;
     base_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
     base_control->selected = false;
     base_control->dynamic = true;    
@@ -1334,7 +1492,7 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
     }
     if (data->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
         base_control->is_default_enter = true;  
-		base_control->selected = true;
+        base_control->selected = true;
     }
     control->data = data;
     control->str_sz = SDL_strlen(control->data->text);
@@ -1343,7 +1501,7 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
     base_control->rect.w = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * window->iscale + control->text_rect.w;
     base_control->rect.h = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * window->iscale + control->text_rect.h;    
     control->text_rect.x = control->text_rect.y = 0;
-    X11Toolkit_UpsizeButtonControl(base_control);
+    X11Toolkit_CalculateButtonControl(base_control);
     X11Toolkit_AddControlToWindow(window, base_control);       
     return base_control;
 }
@@ -1376,11 +1534,11 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
         }
     }
     SDL_free(data->controls);
-	SDL_free(data->dyn_controls);
+    SDL_free(data->dyn_controls);
 
-	if (data->pixmap) { 
-		X11_XFreePixmap(data->display, data->drawable);
-	}
+    if (data->pixmap) { 
+        X11_XFreePixmap(data->display, data->drawable);
+    }
     
 #ifdef X_HAVE_UTF8_STRING
     if (data->font_set) {
@@ -1400,10 +1558,10 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
     }
 #endif
 
-	if (data->xsettings) {
-		xsettings_client_destroy(data->xsettings);
-	}
-	
+    if (data->xsettings) {
+        xsettings_client_destroy(data->xsettings);
+    }
+    
     X11_XFreeGC(data->display, data->ctx);
 
     if (data->display) {
@@ -1470,6 +1628,29 @@ static void X11Toolkit_DestroyLabelControl(SDL_ToolkitControlX11 *control) {
     SDL_free(label_control);
 }
 
+
+static void X11Toolkit_CalculateLabelControl(SDL_ToolkitControlX11 *base_control) {
+    SDL_ToolkitLabelControlX11 *control;
+    int ascent;
+    int descent;
+    int w;
+    int h;
+    int i;
+    
+    control = (SDL_ToolkitLabelControlX11 *)base_control;
+    for (i = 0; i < control->sz; i++) {
+        GetTextWidthHeight(base_control->window, control->lines[i], control->szs[i], &w, &h, &ascent, &descent);
+
+        if (i > 0) {
+            control->y[i] = ascent + descent + control->y[i-1];
+            base_control->rect.h += ascent + descent + h;
+        } else {
+            control->y[i] = ascent;
+            base_control->rect.h = h;
+        }
+    }
+}
+
 SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *window, char *utf8) {
     SDL_ToolkitLabelControlX11 *control;
     SDL_ToolkitControlX11 *base_control;
@@ -1489,8 +1670,9 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
     base_control->window = window;
     base_control->func_draw = X11Toolkit_DrawLabelControl;
     base_control->func_on_state_change = NULL;
-    base_control->func_upsize = NULL;
-    base_control->func_free    = X11Toolkit_DestroyLabelControl;
+    base_control->func_calc_size = X11Toolkit_CalculateLabelControl;
+    base_control->func_free  = X11Toolkit_DestroyLabelControl;
+    base_control->func_on_scale_change = NULL;
     base_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
     base_control->selected = false;
     base_control->dynamic = false;    
