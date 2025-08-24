@@ -8501,8 +8501,8 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     SDL_UnloadObject(d3d12Dll);
     SDL_UnloadObject(dxgiDll);
 
-    if (!supports_64UAVs) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Tier 2 Resource binding is not supported");
+    if (!supports_64UAVs && !SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN, false)) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Tier 2 Resource Binding is not supported");
         return false;
     }
 
