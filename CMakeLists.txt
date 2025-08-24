@@ -1602,6 +1602,55 @@ if(ANDROID)
     endif()
   endif()
 
+if(TARGET SDL3-shared)
+  target_link_options(SDL3-shared PRIVATE "-Wl,-z,max-page-size=16384")
+  target_link_options(SDL3-shared PRIVATE "-Wl,-z,common-page-size=16384")
+endif()
+
+elseif(OHOS)
+  # disable warnings from the toolchain
+  sdl_compile_options(PRIVATE "-Wno-unused-command-line-argument")
+
+  sdl_link_dependency(ohos LIBS ace_napi.z hilog_ndk.z ace_ndk.z rawfile.z pixelmap_ndk.z)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/ohos/*.c")
+
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_OHOS 1)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/ohos/*.c")
+    set(HAVE_SDL_VIDEO TRUE)
+    set(HAVE_VULKAN ON)
+    set(SDL_VIDEO_VULKAN ON)
+    set(SDL_VIDEO_RENDER_VULKAN 1)
+    set(HAVE_RENDER_VULKAN TRUE)
+
+    if(SDL_OPENGLES)
+      set(SDL_VIDEO_OPENGL_EGL 1)
+      set(HAVE_OPENGLES TRUE)
+      set(SDL_VIDEO_OPENGL_ES2 1)
+      set(SDL_VIDEO_RENDER_OGL_ES2 1)
+
+      sdl_link_dependency(opengles LIBS GLESv2)
+    endif()
+  endif()
+
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/locale/ohos/*.c")
+  set(HAVE_SDL_LOCALE TRUE)
+
+  set(SDL_LOADSO_DLOPEN 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c")
+  set(HAVE_SDL_LOADSO TRUE)
+
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/time/unix/*.c")
+  set(HAVE_SDL_TIME TRUE)
+
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/unix/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
+  set(SDL_PTHREADS 1)
+
+  CheckPTHREAD()
 elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
