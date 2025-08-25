@@ -94,12 +94,11 @@ typedef enum SDL_ScaleMode
  *
  * \since This enum is available since SDL 3.2.0.
  */
-typedef enum SDL_FlipMode
-{
-    SDL_FLIP_NONE,          /**< Do not flip */
-    SDL_FLIP_HORIZONTAL,    /**< flip horizontally */
-    SDL_FLIP_VERTICAL       /**< flip vertically */
-} SDL_FlipMode;
+typedef Uint32 SDL_FlipMode;
+
+#define SDL_FLIP_NONE          0x00000000u  /**< Do not flip */
+#define SDL_FLIP_HORIZONTAL    0x00000001u  /**< flip horizontally */
+#define SDL_FLIP_VERTICAL      0x00000002u  /**< flip vertically */
 
 #ifndef SDL_INTERNAL
 

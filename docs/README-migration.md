@@ -1400,6 +1400,8 @@ SDL_RenderReadPixels() returns a surface instead of filling in preallocated memo
 
 SDL_RenderSetLogicalSize() (now called SDL_SetRenderLogicalPresentation()) in SDL2 would modify the scaling and viewport state. In SDL3, logical presentation maintains its state separately, so the app can use its own viewport and scaling while also setting a logical size.
 
+SDL_RendererFlip has been renamed to SDL_FlipMode and moved to SDL_surface.h, is now Uint32 and the SDL_FLIP_* constants are now defines instead of an enum.
+
 The following functions have been renamed:
 * SDL_GetRendererOutputSize() => SDL_GetCurrentRenderOutputSize(), returns bool
 * SDL_RenderCopy() => SDL_RenderTexture(), returns bool
@@ -1448,7 +1450,7 @@ The following functions have been removed:
 * SDL_SetTextureUserData() - use SDL_GetTextureProperties() instead
 
 The following enums have been renamed:
-* SDL_RendererFlip => SDL_FlipMode - moved to SDL_surface.h
+* SDL_RendererFlip => SDL_FlipMode - moved to SDL_surface.h 
 
 The following symbols have been renamed:
 * SDL_ScaleModeLinear => SDL_SCALEMODE_LINEAR
