@@ -1243,8 +1243,8 @@ static void relative_pointer_handle_relative_motion(void *data,
     seat->pointer.pending_frame.have_relative = true;
     seat->pointer.pending_frame.relative.dx = dx;
     seat->pointer.pending_frame.relative.dy = dy;
-    seat->pointer.pending_frame.relative.dx_unaccel = dx;
-    seat->pointer.pending_frame.relative.dy_unaccel = dy;
+    seat->pointer.pending_frame.relative.dx_unaccel = dx_unaccel;
+    seat->pointer.pending_frame.relative.dy_unaccel = dy_unaccel;
     seat->pointer.pending_frame.timestamp_ns = Wayland_AdjustEventTimestampBase(SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo));
 
     if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
