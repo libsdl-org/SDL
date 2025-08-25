@@ -392,8 +392,8 @@ bool Cocoa_InitMouse(SDL_VideoDevice *_this)
     SDL_SetDefaultCursor(Cocoa_CreateDefaultCursor());
 
     location = [NSEvent mouseLocation];
-    internal->lastMoveX = location.x;
-    internal->lastMoveY = location.y;
+    data->lastMoveX = location.x;
+    data->lastMoveY = location.y;
     return true;
 }
 
