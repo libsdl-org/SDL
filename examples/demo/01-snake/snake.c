@@ -18,7 +18,9 @@
 #define SNAKE_GAME_HEIGHT 18U
 #define SNAKE_MATRIX_SIZE (SNAKE_GAME_WIDTH * SNAKE_GAME_HEIGHT)
 
-#define THREE_BITS  0x7U /* ~CHAR_MAX >> (CHAR_BIT - SNAKE_CELL_MAX_BITS) */
+#define SNAKE_CELL_MAX_BITS 3U /* floor(log2(SNAKE_CELL_FOOD)) + 1 */
+
+#define THREE_BITS  (~(~0u << SNAKE_CELL_MAX_BITS))
 #define SHIFT(x, y) (((x) + ((y) * SNAKE_GAME_WIDTH)) * SNAKE_CELL_MAX_BITS)
 
 static SDL_Joystick *joystick = NULL;
@@ -32,8 +34,6 @@ typedef enum
     SNAKE_CELL_SDOWN = 4U,
     SNAKE_CELL_FOOD = 5U
 } SnakeCell;
-
-#define SNAKE_CELL_MAX_BITS 3U /* floor(log2(SNAKE_CELL_FOOD)) + 1 */
 
 typedef enum
 {
