@@ -270,7 +270,7 @@ static void ClosePhysicalCamera(SDL_Camera *device)
 
     SDL_aligned_free(device->zombie_pixels);
 
-    device->permission = 0;
+    device->permission = SDL_CAMERA_PERMISSION_STATE_PENDING;
     device->zombie_pixels = NULL;
     device->filled_output_surfaces.next = NULL;
     device->empty_output_surfaces.next = NULL;
@@ -581,7 +581,7 @@ void SDL_CameraPermissionOutcome(SDL_Camera *device, bool approved)
     pending.next = NULL;
     SDL_PendingCameraEvent *pending_tail = &pending;
 
-    const int permission = approved ? 1 : -1;
+    const SDL_CameraPermissionState permission = approved ? SDL_CAMERA_PERMISSION_STATE_APPROVED : SDL_CAMERA_PERMISSION_STATE_DENIED;
 
     ObtainPhysicalCameraObj(device);
     if (device->permission != permission) {
@@ -665,7 +665,7 @@ bool SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
 
     SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ObtainPhysicalCameraObj(device);
-    if (device->permission > 0) {
+    if (device->permission > SDL_CAMERA_PERMISSION_STATE_PENDING) {
         SDL_copyp(spec, &device->spec);
         result = true;
     } else {
@@ -808,9 +808,9 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
     }
 
     const int permission = device->permission;
-    if (permission <= 0) {
+    if (permission <= SDL_CAMERA_PERMISSION_STATE_PENDING) {
         SDL_UnlockMutex(device->lock);
-        return (permission < 0) ? false : true;  // if permission was denied, shut it down. if undecided, we're done for now.
+        return (permission < SDL_CAMERA_PERMISSION_STATE_PENDING) ? false : true;  // if permission was denied, shut it down. if undecided, we're done for now.
     }
 
     bool failed = false;  // set to true if disaster worthy of treating the device as lost has happened.
@@ -1264,7 +1264,7 @@ SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS)
 
     ObtainPhysicalCameraObj(device);
 
-    if (device->permission <= 0) {
+    if (device->permission <= SDL_CAMERA_PERMISSION_STATE_PENDING) {
         ReleaseCamera(device);
         SDL_SetError("Camera permission has not been granted");
         return NULL;
@@ -1371,12 +1371,12 @@ SDL_PropertiesID SDL_GetCameraProperties(SDL_Camera *camera)
     return result;
 }
 
-int SDL_GetCameraPermissionState(SDL_Camera *camera)
+SDL_CameraPermissionState SDL_GetCameraPermissionState(SDL_Camera *camera)
 {
-    int result;
+    SDL_CameraPermissionState result;
     if (!camera) {
         SDL_InvalidParamError("camera");
-        result = -1;
+        result = SDL_CAMERA_PERMISSION_STATE_DENIED;
     } else {
         SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
         ObtainPhysicalCameraObj(device);

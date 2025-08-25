@@ -85,7 +85,7 @@ static void CoreMediaFormatToSDL(FourCharCode fmt, SDL_PixelFormat *pixel_format
 
 static bool CheckCameraPermissions(SDL_Camera *device)
 {
-    if (device->permission == 0) {  // still expecting a permission result.
+    if (device->permission == SDL_CAMERA_PERMISSION_STATE_PENDING) {  // still expecting a permission result.
         if (@available(macOS 14, *)) {
             const AVAuthorizationStatus status = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
             if (status != AVAuthorizationStatusNotDetermined) {   // NotDetermined == still waiting for an answer from the user.
@@ -96,7 +96,7 @@ static bool CheckCameraPermissions(SDL_Camera *device)
         }
     }
 
-    return (device->permission > 0);
+    return (device->permission > SDL_CAMERA_PERMISSION_STATE_PENDING);
 }
 
 // this delegate just receives new video frames on a Grand Central Dispatch queue, and fires off the
