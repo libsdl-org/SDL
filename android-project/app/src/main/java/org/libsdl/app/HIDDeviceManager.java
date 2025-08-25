@@ -108,7 +108,9 @@ public class HIDDeviceManager {
         HIDDeviceRegisterCallback();
 
         mSharedPreferences = mContext.getSharedPreferences("hidapi", Context.MODE_PRIVATE);
-        mIsChromebook = mContext.getPackageManager().hasSystemFeature("org.chromium.arc.device_management");
+        mIsChromebook = mContext.getPackageManager().hasSystemFeature("org.chromium.arc.device_management")
+                     || mContext.getPackageManager().hasSystemFeature("org.chromium.arc")
+                     || (Build.MODEL != null && Build.MODEL.startsWith("sdk_gpc_")); // emulator
 
 //        if (shouldClear) {
 //            SharedPreferences.Editor spedit = mSharedPreferences.edit();
