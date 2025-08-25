@@ -183,7 +183,7 @@ typedef struct SDL_AudioDriver
     const char *name;  // The name of this audio driver
     const char *desc;  // The description of this audio driver
     SDL_AudioDriverImpl impl; // the backend's interface
-    SDL_RWLock *device_hash_lock;  // A rwlock that protects `device_hash*` and some other things.
+    SDL_RWLock *subsystem_rwlock;  // A rwlock that protects several things in the audio subsystem (device hashtables, etc).
     SDL_HashTable *device_hash_physical;  // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_AudioDevice*.
     SDL_HashTable *device_hash_logical;  // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_LogicalAudioDevice*.
     SDL_AudioStream *existing_streams;  // a list of all existing SDL_AudioStreams.
