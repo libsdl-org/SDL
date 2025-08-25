@@ -367,12 +367,26 @@ static SDL_AudioDeviceID AssignAudioDeviceInstanceId(bool recording, bool islogi
 
 bool SDL_IsAudioDevicePhysical(SDL_AudioDeviceID devid)
 {
+    // bit #1 of devid is set for physical devices and unset for logical.
     return (devid & (1 << 1)) != 0;
+}
+
+bool SDL_IsAudioDeviceLogical(SDL_AudioDeviceID devid)
+{
+    // bit #1 of devid is set for physical devices and unset for logical.
+    return (devid & (1 << 1)) == 0;
 }
 
 bool SDL_IsAudioDevicePlayback(SDL_AudioDeviceID devid)
 {
+    // bit #0 of devid is set for playback devices and unset for recording.
     return (devid & (1 << 0)) != 0;
+}
+
+bool SDL_IsAudioDeviceRecording(SDL_AudioDeviceID devid)
+{
+    // bit #0 of devid is set for playback devices and unset for recording.
+    return (devid & (1 << 0)) == 0;
 }
 
 static void ObtainPhysicalAudioDeviceObj(SDL_AudioDevice *device) SDL_NO_THREAD_SAFETY_ANALYSIS  // !!! FIXMEL SDL_ACQUIRE
@@ -405,9 +419,7 @@ static SDL_LogicalAudioDevice *ObtainLogicalAudioDevice(SDL_AudioDeviceID devid,
     SDL_AudioDevice *device = NULL;
     SDL_LogicalAudioDevice *logdev = NULL;
 
-    // bit #1 of devid is set for physical devices and unset for logical.
-    const bool islogical = !(devid & (1<<1));
-    if (islogical) {  // don't bother looking if it's not a logical device id value.
+    if (SDL_IsAudioDeviceLogical(devid)) {  // don't bother looking if it's not a logical device id value.
         SDL_LockRWLockForReading(current_audio.subsystem_rwlock);
         SDL_FindInHashTable(current_audio.device_hash_logical, (const void *) (uintptr_t) devid, (const void **) &logdev);
         if (logdev) {
@@ -452,9 +464,7 @@ static SDL_AudioDevice *ObtainPhysicalAudioDevice(SDL_AudioDeviceID devid)  // !
 {
     SDL_AudioDevice *device = NULL;
 
-    // bit #1 of devid is set for physical devices and unset for logical.
-    const bool islogical = !(devid & (1<<1));
-    if (islogical) {
+    if (SDL_IsAudioDeviceLogical(devid)) {
         ObtainLogicalAudioDevice(devid, &device);
     } else if (!SDL_GetCurrentAudioDriver()) {  // (the `islogical` path, above, checks this in ObtainLogicalAudioDevice.)
         SDL_SetError("Audio subsystem is not initialized");
@@ -879,12 +889,8 @@ static bool SDLCALL FindLowestDeviceID(void *userdata, const SDL_HashTable *tabl
 {
     FindLowestDeviceIDData *data = (FindLowestDeviceIDData *) userdata;
     const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
-    // bit #0 of devid is set for playback devices and unset for recording.
-    // bit #1 of devid is set for physical devices and unset for logical.
-    const bool devid_recording = !(devid & (1 << 0));
-    const bool isphysical = !!(devid & (1 << 1));
-    SDL_assert(isphysical);  // should only be iterating device_hash_physical.
-    if ((devid_recording == data->recording) && (devid < data->highest)) {
+    SDL_assert(SDL_IsAudioDevicePhysical(devid));  // should only be iterating device_hash_physical.
+    if ((SDL_IsAudioDeviceRecording(devid) == data->recording) && (devid < data->highest)) {
         data->highest = devid;
         data->result = (SDL_AudioDevice *) value;
         SDL_assert(data->result->instance_id == devid);
@@ -1065,10 +1071,8 @@ bool SDL_InitAudio(const char *driver_name)
 
 static bool SDLCALL DestroyOnePhysicalAudioDevice(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
 {
-    // bit #1 of devid is set for physical devices and unset for logical.
     const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
-    const bool isphysical = !!(devid & (1<<1));
-    SDL_assert(isphysical);
+    SDL_assert(SDL_IsAudioDevicePhysical(devid));   // should only be iterating device_hash_physical.
     SDL_AudioDevice *dev = (SDL_AudioDevice *) value;
     SDL_assert(dev->instance_id == devid);
     DestroyPhysicalAudioDevice(dev);
@@ -1428,12 +1432,8 @@ static bool SDLCALL CountAudioDevices(void *userdata, const SDL_HashTable *table
 {
     CountAudioDevicesData *data = (CountAudioDevicesData *) userdata;
     const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
-    // bit #0 of devid is set for playback devices and unset for recording.
-    // bit #1 of devid is set for physical devices and unset for logical.
-    const bool devid_recording = !(devid & (1<<0));
-    const bool isphysical = !!(devid & (1<<1));
-    SDL_assert(isphysical);
-    if (devid_recording == data->recording) {
+    SDL_assert(SDL_IsAudioDevicePhysical(devid));  // should only be iterating device_hash_physical.
+    if (SDL_IsAudioDeviceRecording(devid) == data->recording) {
         SDL_assert(data->devs_seen < data->num_devices);
         SDL_AudioDevice *device = (SDL_AudioDevice *) value;  // this is normally risky, but we hold the subsystem_rwlock here.
         const bool zombie = SDL_GetAtomicInt(&device->zombie) != 0;
@@ -1500,9 +1500,7 @@ static bool SDLCALL FindAudioDeviceByCallback(void *userdata, const SDL_HashTabl
 {
     FindAudioDeviceByCallbackData *data = (FindAudioDeviceByCallbackData *) userdata;
     const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
-    // bit #1 of devid is set for physical devices and unset for logical.
-    const bool isphysical = !!(devid & (1<<1));
-    SDL_assert(isphysical);
+    SDL_assert(SDL_IsAudioDevicePhysical(devid));  // should only be iterating device_hash_physical.
     SDL_AudioDevice *device = (SDL_AudioDevice *) value;
     if (data->callback(device, data->userdata)) {  // found it?
         data->retval = device;
@@ -1545,13 +1543,14 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
 const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
 {
     // bit #1 of devid is set for physical devices and unset for logical.
-    const bool islogical = !(devid & (1<<1));
     const char *result = NULL;
-    const void *vdev = NULL;
 
     if (!SDL_GetCurrentAudioDriver()) {
         SDL_SetError("Audio subsystem is not initialized");
     } else {
+        const bool islogical = SDL_IsAudioDeviceLogical(devid);
+        const void *vdev = NULL;
+
         // This does not call ObtainPhysicalAudioDevice() because the device's name never changes, so
         // it doesn't have to lock the whole device. However, just to make sure the device pointer itself
         // remains valid (in case the device is unplugged at the wrong moment), we hold the
@@ -1844,8 +1843,7 @@ SDL_AudioDeviceID SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSp
 
     // this will let you use a logical device to make a new logical device on the parent physical device. Could be useful?
     SDL_AudioDevice *device = NULL;
-    const bool islogical = (!wants_default && !(devid & (1<<1)));
-    if (!islogical) {
+    if ((wants_default || SDL_IsAudioDevicePhysical(devid))) {
         device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
     } else {
         SDL_LogicalAudioDevice *logdev = ObtainLogicalAudioDevice(devid, &device);
@@ -1982,7 +1980,6 @@ bool SDL_SetAudioPostmixCallback(SDL_AudioDeviceID devid, SDL_AudioPostmixCallba
 
 bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream * const *streams, int num_streams)
 {
-    const bool islogical = !(devid & (1<<1));
     SDL_AudioDevice *device = NULL;
     SDL_LogicalAudioDevice *logdev = NULL;
     bool result = true;
@@ -1993,7 +1990,7 @@ bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream * const *stre
         return SDL_InvalidParamError("num_streams");
     } else if (!streams) {
         return SDL_InvalidParamError("streams");
-    } else if (!islogical) {
+    } else if (SDL_IsAudioDevicePhysical(devid)) {
         return SDL_SetError("Audio streams are bound to device ids from SDL_OpenAudioDevice, not raw physical devices");
     }
 
@@ -2600,7 +2597,7 @@ void SDL_UpdateAudio(void)
             SDL_zero(event);
             event.type = i->type;
             event.adevice.which = (Uint32) i->devid;
-            event.adevice.recording = ((i->devid & (1<<0)) == 0);  // bit #0 of devid is set for playback devices and unset for recording.
+            event.adevice.recording = SDL_IsAudioDeviceRecording(i->devid);  // bit #0 of devid is set for playback devices and unset for recording.
             SDL_PushEvent(&event);
         }
         SDL_free(i);
