@@ -24,6 +24,7 @@
 #include "SDL_system_theme.h"
 #include "../../video/SDL_sysvideo.h"
 
+#include <stdio.h>
 #include <unistd.h>
 
 #define PORTAL_DESTINATION "org.freedesktop.portal.Desktop"
@@ -150,7 +151,55 @@ incorrect_type:
     return true;
 }
 
+SDL_SystemTheme UbuntuTouch_GetSystemTheme(void)
+{
+    SDL_SystemTheme theme = SDL_SYSTEM_THEME_UNKNOWN;
+    FILE *config_file = NULL;
+    char *line = NULL;
+    size_t line_alloc = 0;
+    ssize_t line_size = 0;
+    bool is_in_general_category = false;
+
+    // "Lomiri": Ubuntu Touch 20.04+
+    // "Ubuntu": Ubuntu Touch 16.04
+    config_file = fopen("/home/phablet/.config/lomiri-ui-toolkit/theme.ini", "r");
+    if (!config_file) {
+        config_file = fopen("/home/phablet/.config/ubuntu-ui-toolkit/theme.ini", "r");
+        if (!config_file) {
+            return SDL_SYSTEM_THEME_UNKNOWN;
+        }
+    }
+
+    while ((line_size = getline(&line, &line_alloc, config_file)) != -1) {
+        if (line_size >= 1 && line[0] == '[') {
+            is_in_general_category = SDL_strcmp(line, "[General]\n") == 0;
+        } else if (is_in_general_category && SDL_strncmp(line, "theme=", 6) == 0) {
+            if (SDL_strcmp(line, "theme=Lomiri.Components.Themes.SuruDark\n") == 0 ||
+                SDL_strcmp(line, "theme=Ubuntu.Components.Themes.SuruDark\n") == 0) {
+                theme = SDL_SYSTEM_THEME_DARK;
+            } else if (SDL_strcmp(line, "theme=Lomiri.Components.Themes.Ambiance\n") == 0 ||
+                       SDL_strcmp(line, "theme=Ubuntu.Components.Themes.Ambiance\n") == 0) {
+                theme = SDL_SYSTEM_THEME_LIGHT;
+            } else {
+                theme = SDL_SYSTEM_THEME_UNKNOWN;
+            }
+        }
+
+        free(line); // This should NOT be SDL_free()
+    }
+
+    fclose(config_file);
+
+    return theme;
+}
+
 SDL_SystemTheme SDL_SystemTheme_Get(void)
 {
+    if (system_theme_data.theme == SDL_SYSTEM_THEME_UNKNOWN) {
+        // TODO: Use inotify to watch for changes, so that the config file
+        // doesn't need to be checked each time.
+        return UbuntuTouch_GetSystemTheme();
+    }
+
     return system_theme_data.theme;
 }
