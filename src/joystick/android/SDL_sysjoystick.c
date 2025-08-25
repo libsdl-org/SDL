@@ -328,6 +328,10 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
         goto done;
     }
 
+    if (SDL_ShouldIgnoreJoystick(vendor_id, product_id, 0, name)) {
+        goto done;
+    }
+
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Joystick: %s, descriptor %s, vendor = 0x%.4x, product = 0x%.4x, %d axes, %d hats", name, desc, vendor_id, product_id, naxes, nhats);
 #endif
