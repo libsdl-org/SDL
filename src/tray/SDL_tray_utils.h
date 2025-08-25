@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#define SDL_PROP_TRAY_CLEANUP "SDL.PROP.Tray.Cleanup"
+
 extern void SDL_RegisterTray(SDL_Tray *tray);
 extern void SDL_UnregisterTray(SDL_Tray *tray);
 extern void SDL_CleanupTrays(void);
