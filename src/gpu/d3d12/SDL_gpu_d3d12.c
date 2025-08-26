@@ -109,8 +109,8 @@
 #define DXGI_GET_DEBUG_INTERFACE_FUNC       "DXGIGetDebugInterface"
 #define D3D12_GET_DEBUG_INTERFACE_FUNC      "D3D12GetDebugInterface"
 #define WINDOW_PROPERTY_DATA                "SDL_GPUD3D12WindowPropertyData"
-#define D3D_FEATURE_LEVEL_CHOICE            D3D_FEATURE_LEVEL_11_1
-#define D3D_FEATURE_LEVEL_CHOICE_STR        "11_1"
+#define D3D_FEATURE_LEVEL_CHOICE            D3D_FEATURE_LEVEL_11_0
+#define D3D_FEATURE_LEVEL_CHOICE_STR        "11_0"
 #define MAX_ROOT_SIGNATURE_PARAMETERS         64
 #define D3D12_FENCE_UNSIGNALED_VALUE          0
 #define D3D12_FENCE_SIGNAL_VALUE              1
@@ -8347,6 +8347,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     IDXGIFactory4 *factory4;
     IDXGIFactory6 *factory6;
     IDXGIAdapter1 *adapter;
+    bool supports_64UAVs = false;
 
     // Early check to see if the app has _any_ D3D12 formats, if not we don't
     // have to fuss with loading D3D in the first place.
@@ -8446,11 +8447,38 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         return false;
     }
 
+    SDL_COMPILE_TIME_ASSERT(featurelevel, D3D_FEATURE_LEVEL_CHOICE < D3D_FEATURE_LEVEL_11_1);
+
+    // Check feature level 11_1 first, guarantees 64+ UAVs unlike 11_0 Tier1
     res = D3D12CreateDeviceFunc(
         (IUnknown *)adapter,
-        D3D_FEATURE_LEVEL_CHOICE,
+        D3D_FEATURE_LEVEL_11_1,
         D3D_GUID(D3D_IID_ID3D12Device),
         (void **)&device);
+
+    if (SUCCEEDED(res)) {
+        supports_64UAVs = true;
+    } else {
+        res = D3D12CreateDeviceFunc(
+            (IUnknown *)adapter,
+            D3D_FEATURE_LEVEL_CHOICE,
+            D3D_GUID(D3D_IID_ID3D12Device),
+            (void **)&device);
+
+        if (SUCCEEDED(res)) {
+            D3D12_FEATURE_DATA_D3D12_OPTIONS featureOptions;
+            SDL_zero(featureOptions);
+
+            res = ID3D12Device_CheckFeatureSupport(
+                device,
+                D3D12_FEATURE_D3D12_OPTIONS,
+                &featureOptions,
+                sizeof(featureOptions));
+            if (SUCCEEDED(res) && featureOptions.ResourceBindingTier >= D3D12_RESOURCE_BINDING_TIER_2) {
+                supports_64UAVs = true;
+            }
+        }
+    }
 
     if (SUCCEEDED(res)) {
         D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
@@ -8472,6 +8500,11 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 
     SDL_UnloadObject(d3d12Dll);
     SDL_UnloadObject(dxgiDll);
+
+    if (!supports_64UAVs) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Tier 2 Resource binding is not supported");
+        return false;
+    }
 
     if (!supports_dxil && !has_dxbc) {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: DXIL is not supported and DXBC is not being provided");

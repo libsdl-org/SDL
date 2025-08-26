@@ -30,7 +30,11 @@
 #include "../../video/SDL_pixels_c.h"
 
 #include <d3d11_1.h>
+#ifdef HAVE_DXGI1_5_H
+#include <dxgi1_5.h>
+#else
 #include <dxgi1_4.h>
+#endif
 #include <dxgidebug.h>
 
 #include "SDL_shaders_d3d11.h"
@@ -157,6 +161,7 @@ typedef struct
     ID3D11DeviceContext1 *d3dContext;
     IDXGISwapChain1 *swapChain;
     DXGI_SWAP_EFFECT swapEffect;
+    UINT swapChainFlags;
     UINT syncInterval;
     UINT presentFlags;
     ID3D11RenderTargetView *mainRenderTargetView;
@@ -206,6 +211,9 @@ typedef struct
 #pragma GCC diagnostic ignored "-Wunused-const-variable"
 #endif
 
+#ifdef HAVE_DXGI1_5_H
+static const GUID SDL_IID_IDXGIFactory5 = { 0x7632e1f5, 0xee65, 0x4dca, { 0x87, 0xfd, 0x84, 0xcd, 0x75, 0xf8, 0x83, 0x8d } };
+#endif
 static const GUID SDL_IID_IDXGIFactory2 = { 0x50c83a1c, 0xe072, 0x4c48, { 0x87, 0xb0, 0x36, 0x30, 0xfa, 0x36, 0xa6, 0xd0 } };
 static const GUID SDL_IID_IDXGIDevice1 = { 0x77db970f, 0x6276, 0x48ba, { 0xba, 0x28, 0x07, 0x01, 0x43, 0xb4, 0x39, 0x2c } };
 static const GUID SDL_IID_ID3D11Texture2D = { 0x6f15aaf2, 0xd208, 0x4e89, { 0x9a, 0xb4, 0x48, 0x95, 0x35, 0xd3, 0x4f, 0x9c } };
@@ -511,6 +519,9 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     HRESULT result = S_OK;
     UINT creationFlags = 0;
     bool createDebug;
+#ifdef HAVE_DXGI1_5_H
+    IDXGIFactory5 *dxgiFactory5 = NULL;
+#endif
 
     /* This array defines the set of DirectX hardware feature levels this app will support.
      * Note the ordering should be preserved.
@@ -600,6 +611,20 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateDXGIFactory"), result);
         goto done;
     }
+
+#ifdef HAVE_DXGI1_5_H
+    // Check for tearing support, which requires the IDXGIFactory5 interface.
+    data->swapChainFlags = 0;
+    result = IDXGIFactory2_QueryInterface(data->dxgiFactory, &SDL_IID_IDXGIFactory5, (void **)&dxgiFactory5);
+    if (SUCCEEDED(result)) {
+        BOOL allowTearing = FALSE;
+        result = IDXGIFactory5_CheckFeatureSupport(dxgiFactory5, DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
+        if (SUCCEEDED(result) && allowTearing) {
+            data->swapChainFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+        }
+        IDXGIFactory5_Release(dxgiFactory5);
+    }
+#endif // HAVE_DXGI1_5_H
 
     // FIXME: Should we use the default adapter?
     result = IDXGIFactory2_EnumAdapters(data->dxgiFactory, 0, &data->dxgiAdapter);
@@ -870,7 +895,7 @@ static HRESULT D3D11_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     } else {
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
     }
-    swapChainDesc.Flags = 0;
+    swapChainDesc.Flags = data->swapChainFlags;
 
     if (coreWindow) {
         result = IDXGIFactory2_CreateSwapChainForCoreWindow(data->dxgiFactory,
@@ -956,6 +981,28 @@ static void D3D11_ReleaseMainRenderTargetView(SDL_Renderer *renderer)
     SAFE_RELEASE(data->mainRenderTargetView);
 }
 
+static void D3D11_UpdatePresentFlags(SDL_Renderer *renderer)
+{
+    D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
+
+    if (data->syncInterval > 0) {
+        data->presentFlags = 0;
+    } else {
+        data->presentFlags = DXGI_PRESENT_DO_NOT_WAIT;
+#ifdef HAVE_DXGI1_5_H
+        // Present tearing requires sync interval 0, a swap chain flag, and not in exclusive fullscreen mode.
+        if ((data->swapChainFlags & DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING)) {
+            HRESULT result = S_OK;
+            BOOL fullscreenState = FALSE;
+            result = IDXGISwapChain_GetFullscreenState(data->swapChain, &fullscreenState, NULL);
+            if (SUCCEEDED(result) && !fullscreenState) {
+                data->presentFlags = DXGI_PRESENT_ALLOW_TEARING;
+            }
+        }
+#endif // HAVE_DXGI1_5_H
+    }
+}
+
 // Initialize all resources that change when the window's size changes.
 static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
 {
@@ -985,7 +1032,7 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
                                               0,
                                               w, h,
                                               DXGI_FORMAT_UNKNOWN,
-                                              0);
+                                              data->swapChainFlags);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("IDXGISwapChain::ResizeBuffers"), result);
             goto done;
@@ -996,6 +1043,8 @@ static HRESULT D3D11_CreateWindowSizeDependentResources(SDL_Renderer *renderer)
             goto done;
         }
     }
+
+    D3D11_UpdatePresentFlags(renderer);
 
     // Set the proper rotation for the swap chain.
     if (WIN_IsWindows8OrGreater()) {
@@ -2663,11 +2712,10 @@ static bool D3D11_SetVSync(SDL_Renderer *renderer, const int vsync)
 
     if (vsync > 0) {
         data->syncInterval = vsync;
-        data->presentFlags = 0;
     } else {
         data->syncInterval = 0;
-        data->presentFlags = DXGI_PRESENT_DO_NOT_WAIT;
     }
+    D3D11_UpdatePresentFlags(renderer);
     return true;
 }
 
@@ -2733,6 +2781,7 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
 
+    data->swapChainFlags = 0;
     data->syncInterval = 0;
     data->presentFlags = DXGI_PRESENT_DO_NOT_WAIT;
 

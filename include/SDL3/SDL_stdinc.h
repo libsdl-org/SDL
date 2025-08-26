@@ -4722,7 +4722,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
 /**
  * Compute the ceiling of `x`.
  *
- * The ceiling of `x` is the smallest integer `y` such that `y > x`, i.e `x`
+ * The ceiling of `x` is the smallest integer `y` such that `y >= x`, i.e `x`
  * rounded up to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`
@@ -4750,7 +4750,7 @@ extern SDL_DECLSPEC double SDLCALL SDL_ceil(double x);
 /**
  * Compute the ceiling of `x`.
  *
- * The ceiling of `x` is the smallest integer `y` such that `y > x`, i.e `x`
+ * The ceiling of `x` is the smallest integer `y` such that `y >= x`, i.e `x`
  * rounded up to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`
@@ -4992,7 +4992,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_fabsf(float x);
 /**
  * Compute the floor of `x`.
  *
- * The floor of `x` is the largest integer `y` such that `y > x`, i.e `x`
+ * The floor of `x` is the largest integer `y` such that `y <= x`, i.e `x`
  * rounded down to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`
@@ -5020,7 +5020,7 @@ extern SDL_DECLSPEC double SDLCALL SDL_floor(double x);
 /**
  * Compute the floor of `x`.
  *
- * The floor of `x` is the largest integer `y` such that `y > x`, i.e `x`
+ * The floor of `x` is the largest integer `y` such that `y <= x`, i.e `x`
  * rounded down to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`

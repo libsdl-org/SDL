@@ -1168,6 +1168,12 @@ void SDL_QuitMouse(void)
     }
     SDL_free(SDL_mice);
     SDL_mice = NULL;
+
+    if (mouse->internal) {
+        SDL_free(mouse->internal);
+        mouse->internal = NULL;
+    }
+    SDL_zerop(mouse);
 }
 
 bool SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback transform, void *userdata)

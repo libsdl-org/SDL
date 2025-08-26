@@ -223,6 +223,7 @@
 #cmakedefine HAVE_WINDOWS_GAMING_INPUT_H 1
 #cmakedefine HAVE_GAMEINPUT_H 1
 #cmakedefine HAVE_DXGI_H 1
+#cmakedefine HAVE_DXGI1_5_H 1
 #cmakedefine HAVE_DXGI1_6_H 1
 
 #cmakedefine HAVE_MMDEVICEAPI_H 1
