@@ -1874,14 +1874,23 @@ bool SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip)
         return true;
     }
 
+    bool result = true;
     switch (flip) {
     case SDL_FLIP_HORIZONTAL:
-        return SDL_FlipSurfaceHorizontal(surface);
+        result = SDL_FlipSurfaceHorizontal(surface);
+        break;
     case SDL_FLIP_VERTICAL:
-        return SDL_FlipSurfaceVertical(surface);
+        result = SDL_FlipSurfaceVertical(surface);
+        break;
+    case SDL_FLIP_HORIZONTAL_AND_VERTICAL:
+        result &= SDL_FlipSurfaceHorizontal(surface);
+        result &= SDL_FlipSurfaceVertical(surface);
+        break;
     default:
-        return SDL_InvalidParamError("flip");
+        result = SDL_InvalidParamError("flip");
+        break;
     }
+    return result;
 }
 
 SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props)
