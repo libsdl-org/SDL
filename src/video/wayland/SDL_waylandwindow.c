@@ -2543,6 +2543,49 @@ bool Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, b
     return true;
 }
 
+bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags)
+{
+    SDL_WindowData *data = window->internal;
+
+    if (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_SHOWN) {
+        // Window is already mapped; abort.
+        return false;
+    }
+
+    /* The caller guarantees that only one of the GL or Vulkan flags will be set,
+     * and the window will have no previous video flags.
+     */
+    if (flags & SDL_WINDOW_OPENGL) {
+        if (!data->egl_window) {
+            data->egl_window = WAYLAND_wl_egl_window_create(data->surface, data->current.pixel_width, data->current.pixel_height);
+        }
+
+#ifdef SDL_VIDEO_OPENGL_EGL
+        // Create the GLES window surface
+        data->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)data->egl_window);
+
+        if (data->egl_surface == EGL_NO_SURFACE) {
+            return false; // SDL_EGL_CreateSurface should have set error
+        }
+#endif
+
+        if (!data->gles_swap_frame_event_queue) {
+            data->gles_swap_frame_event_queue = WAYLAND_wl_display_create_queue(data->waylandData->display);
+            data->gles_swap_frame_surface_wrapper = WAYLAND_wl_proxy_create_wrapper(data->surface);
+            WAYLAND_wl_proxy_set_queue((struct wl_proxy *)data->gles_swap_frame_surface_wrapper, data->gles_swap_frame_event_queue);
+            data->gles_swap_frame_callback = wl_surface_frame(data->gles_swap_frame_surface_wrapper);
+            wl_callback_add_listener(data->gles_swap_frame_callback, &gles_swap_frame_listener, data);
+        }
+
+        return true;
+    } else if (flags & SDL_WINDOW_VULKAN) {
+        // Nothing to configure for Vulkan.
+        return true;
+    }
+
+    return false;
+}
+
 bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
     SDL_WindowData *data;
