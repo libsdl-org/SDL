@@ -2258,7 +2258,6 @@ static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat, bool send_event)
     if (seat->keyboard.sdl_keymap) {
         if (seat->keyboard.xkb.current_layout < seat->keyboard.xkb.num_layouts &&
             seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout] == SDL_GetCurrentKeymap(true)) {
-            SDL_SetKeymap(NULL, false);
             SDL_SetModState(SDL_KMOD_NONE);
         }
         for (xkb_layout_index_t i = 0; i < seat->keyboard.xkb.num_layouts; ++i) {
