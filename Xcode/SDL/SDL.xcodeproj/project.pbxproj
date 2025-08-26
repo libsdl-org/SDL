@@ -66,6 +66,7 @@
 		566E26D8246274CC00718109 /* SDL_locale.c in Sources */ = {isa = PBXBuildFile; fileRef = 566E26CD246274CB00718109 /* SDL_locale.c */; };
 		566E26E1246274CC00718109 /* SDL_syslocale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26CE246274CC00718109 /* SDL_syslocale.h */; };
 		56A2373329F9C113003CCA5F /* SDL_sysrwlock.c in Sources */ = {isa = PBXBuildFile; fileRef = 56A2373229F9C113003CCA5F /* SDL_sysrwlock.c */; };
+		63124A422E5C357500A53610 /* SDL_hidapi_zuiki.c in Sources */ = {isa = PBXBuildFile; fileRef = 63124A412E5C357500A53610 /* SDL_hidapi_zuiki.c */; };
 		6312C66D2B42341400A7BB00 /* SDL_murmur3.c in Sources */ = {isa = PBXBuildFile; fileRef = 6312C66C2B42341400A7BB00 /* SDL_murmur3.c */; };
 		63134A252A7902FD0021E9A6 /* SDL_pen_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 63134A232A7902FD0021E9A6 /* SDL_pen_c.h */; };
 		63134A262A7902FD0021E9A6 /* SDL_pen.c in Sources */ = {isa = PBXBuildFile; fileRef = 63134A242A7902FD0021E9A6 /* SDL_pen.c */; };
@@ -611,6 +612,7 @@
 		566E26CD246274CB00718109 /* SDL_locale.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_locale.c; path = locale/SDL_locale.c; sourceTree = "<group>"; };
 		566E26CE246274CC00718109 /* SDL_syslocale.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_syslocale.h; path = locale/SDL_syslocale.h; sourceTree = "<group>"; };
 		56A2373229F9C113003CCA5F /* SDL_sysrwlock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysrwlock.c; sourceTree = "<group>"; };
+		63124A412E5C357500A53610 /* SDL_hidapi_zuiki.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_zuiki.c; sourceTree = "<group>"; };
 		6312C66C2B42341400A7BB00 /* SDL_murmur3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_murmur3.c; sourceTree = "<group>"; };
 		63134A232A7902FD0021E9A6 /* SDL_pen_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_pen_c.h; sourceTree = "<group>"; };
 		63134A242A7902FD0021E9A6 /* SDL_pen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_pen.c; sourceTree = "<group>"; };
@@ -1955,6 +1957,7 @@
 				A7D8A7C223E2513E00DCD162 /* SDL_hidapi_xbox360.c */,
 				A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */,
 				A7D8A7C523E2513E00DCD162 /* SDL_hidapi_xboxone.c */,
+				63124A412E5C357500A53610 /* SDL_hidapi_zuiki.c */,
 				A7D8A7C423E2513E00DCD162 /* SDL_hidapijoystick.c */,
 				A7D8A7C723E2513E00DCD162 /* SDL_hidapijoystick_c.h */,
 			);
@@ -3104,6 +3107,7 @@
 				00004D0B73767647AD550000 /* SDL_asyncio_generic.c in Sources */,
 				0000A03C0F32C43816F40000 /* SDL_asyncio_windows_ioring.c in Sources */,
 				0000A877C7DB9FA935FC0000 /* SDL_uikitpen.m in Sources */,
+				63124A422E5C357500A53610 /* SDL_hidapi_zuiki.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
