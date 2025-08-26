@@ -343,7 +343,7 @@ sub wikify_chunk {
 
         # Convert obvious API things to wikilinks.
         if (defined $apiprefixregex) {
-            $str =~ s/(\A|[^\/a-zA-Z0-9_])($apiprefixregex[a-zA-Z0-9_]+)/$1\[$2\]\($2\)/gms;
+            $str =~ s/(\A|[^\/a-zA-Z0-9_\[])($apiprefixregex[a-zA-Z0-9_]+)/$1\[$2\]\($2\)/gms;
         }
 
         $str = $codedstr . $str;
