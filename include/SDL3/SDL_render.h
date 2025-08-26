@@ -2720,7 +2720,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderVSync(SDL_Renderer *renderer, int 
  *   break. If the text goes out of the window, it's gone.
  *
  * For serious text rendering, there are several good options, such as
- * SDL_ttf, stb_truetype, or other external libraries.
+ * [SDL_ttf](https://wiki.libsdl.org/SDL3_ttf/FrontPage)
+ * , stb_truetype, or other external libraries.
  *
  * On first use, this will create an internal texture for rendering glyphs.
  * This texture will live until the renderer is destroyed.
