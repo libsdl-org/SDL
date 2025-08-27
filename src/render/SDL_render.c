@@ -5948,23 +5948,17 @@ bool SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale
     return true;
 }
 
-SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateDesc *desc)
+SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateCreateInfo *createinfo)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
-    if (!desc) {
-        SDL_InvalidParamError("desc");
+    if (!createinfo) {
+        SDL_InvalidParamError("createinfo");
         return NULL;
     }
 
-    if (desc->version < sizeof(*desc)) {
-        // Update this to handle older versions of this interface
-        SDL_SetError("Invalid desc, should be initialized with SDL_INIT_INTERFACE()");
-        return NULL;
-    }
-
-    if (!desc->fragment_shader) {
-        SDL_SetError("desc->fragment_shader is required");
+    if (!createinfo->fragment_shader) {
+        SDL_SetError("A fragment_shader is required");
         return NULL;
     }
 
@@ -5980,36 +5974,36 @@ SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURend
     }
 
     state->renderer = renderer;
-    state->fragment_shader = desc->fragment_shader;
+    state->fragment_shader = createinfo->fragment_shader;
 
-    if (desc->num_sampler_bindings > 0) {
-        state->sampler_bindings = (SDL_GPUTextureSamplerBinding *)SDL_calloc(desc->num_sampler_bindings, sizeof(*state->sampler_bindings));
+    if (createinfo->num_sampler_bindings > 0) {
+        state->sampler_bindings = (SDL_GPUTextureSamplerBinding *)SDL_calloc(createinfo->num_sampler_bindings, sizeof(*state->sampler_bindings));
         if (!state->sampler_bindings) {
             SDL_DestroyGPURenderState(state);
             return NULL;
         }
-        SDL_memcpy(state->sampler_bindings, desc->sampler_bindings, desc->num_sampler_bindings * sizeof(*state->sampler_bindings));
-        state->num_sampler_bindings = desc->num_sampler_bindings;
+        SDL_memcpy(state->sampler_bindings, createinfo->sampler_bindings, createinfo->num_sampler_bindings * sizeof(*state->sampler_bindings));
+        state->num_sampler_bindings = createinfo->num_sampler_bindings;
     }
 
-    if (desc->num_storage_textures > 0) {
-        state->storage_textures = (SDL_GPUTexture **)SDL_calloc(desc->num_storage_textures, sizeof(*state->storage_textures));
+    if (createinfo->num_storage_textures > 0) {
+        state->storage_textures = (SDL_GPUTexture **)SDL_calloc(createinfo->num_storage_textures, sizeof(*state->storage_textures));
         if (!state->storage_textures) {
             SDL_DestroyGPURenderState(state);
             return NULL;
         }
-        SDL_memcpy(state->storage_textures, desc->storage_textures, desc->num_storage_textures * sizeof(*state->storage_textures));
-        state->num_storage_textures = desc->num_storage_textures;
+        SDL_memcpy(state->storage_textures, createinfo->storage_textures, createinfo->num_storage_textures * sizeof(*state->storage_textures));
+        state->num_storage_textures = createinfo->num_storage_textures;
     }
 
-    if (desc->num_storage_buffers > 0) {
-        state->storage_buffers = (SDL_GPUBuffer **)SDL_calloc(desc->num_storage_buffers, sizeof(*state->storage_buffers));
+    if (createinfo->num_storage_buffers > 0) {
+        state->storage_buffers = (SDL_GPUBuffer **)SDL_calloc(createinfo->num_storage_buffers, sizeof(*state->storage_buffers));
         if (!state->storage_buffers) {
             SDL_DestroyGPURenderState(state);
             return NULL;
         }
-        SDL_memcpy(state->storage_buffers, desc->storage_buffers, desc->num_storage_buffers * sizeof(*state->storage_buffers));
-        state->num_storage_buffers = desc->num_storage_buffers;
+        SDL_memcpy(state->storage_buffers, createinfo->storage_buffers, createinfo->num_storage_buffers * sizeof(*state->storage_buffers));
+        state->num_storage_buffers = createinfo->num_storage_buffers;
     }
 
     return state;
