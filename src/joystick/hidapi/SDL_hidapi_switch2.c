@@ -26,12 +26,20 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 
 #include "../../SDL_hints_c.h"
+#include "../../misc/SDL_libusb.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
-#include "SDL_hidapi_rumble.h"
-#include "SDL_hidapi_nintendo.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH2
+
+typedef struct
+{
+    SDL_LibUSBContext *libusb;
+    libusb_device_handle *device_handle;
+    bool interface_claimed;
+    Uint8 interface_number;
+    Uint8 bulk_endpoint;
+} SDL_DriverSwitch2_Context;
 
 static void HIDAPI_DriverSwitch2_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
@@ -51,29 +59,138 @@ static bool HIDAPI_DriverSwitch2_IsEnabled(void)
 static bool HIDAPI_DriverSwitch2_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
-		switch (product_id) {
-		case USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER:
-		case USB_PRODUCT_NINTENDO_SWITCH2_PRO:
+        switch (product_id) {
+        case USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER:
+        case USB_PRODUCT_NINTENDO_SWITCH2_PRO:
             return true;
-		}
+        }
     }
 
     return false;
 }
 
+static bool HIDAPI_DriverSwitch2_InitBluetooth(SDL_HIDAPI_Device *device)
+{
+    // FIXME: Need to add Bluetooth support
+    return SDL_SetError("Nintendo Switch2 controllers not supported over Bluetooth");
+}
+
+static bool FindBulkOutEndpoint(SDL_LibUSBContext *libusb, libusb_device_handle *handle, Uint8 *bInterfaceNumber, Uint8 *bEndpointAddress)
+{
+    struct libusb_config_descriptor *config;
+    if (libusb->get_config_descriptor(libusb->get_device(handle), 0, &config) != 0) {
+         return false;
+    }
+
+    for (int i = 0; i < config->bNumInterfaces; i++) {
+        const struct libusb_interface *iface = &config->interface[i];
+        for (int j = 0; j < iface->num_altsetting; j++) {
+            const struct libusb_interface_descriptor *altsetting = &iface->altsetting[j];
+            if (altsetting->bInterfaceNumber == 1) {
+                for (int k = 0; k < altsetting->bNumEndpoints; k++) {
+                    const struct libusb_endpoint_descriptor *ep = &altsetting->endpoint[k];
+                    if ((ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK) == LIBUSB_TRANSFER_TYPE_BULK && (ep->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK) == LIBUSB_ENDPOINT_OUT) {
+
+                        *bInterfaceNumber = altsetting->bInterfaceNumber;
+                        *bEndpointAddress = ep->bEndpointAddress;
+                        libusb->free_config_descriptor(config);
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    libusb->free_config_descriptor(config);
+    return false;
+}
+
+static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
+
+    if (!SDL_InitLibUSB(&ctx->libusb)) {
+        return false;
+    }
+
+    ctx->device_handle = (libusb_device_handle *)SDL_GetPointerProperty(SDL_hid_get_properties(device->dev), SDL_PROP_HIDAPI_LIBUSB_DEVICE_HANDLE_POINTER, NULL);
+    if (!ctx->device_handle) {
+        return SDL_SetError("Couldn't get libusb device handle");
+    }
+
+    if (!FindBulkOutEndpoint(ctx->libusb, ctx->device_handle, &ctx->interface_number, &ctx->bulk_endpoint)) {
+        return SDL_SetError("Couldn't find bulk endpoint");
+    }
+
+    int res = ctx->libusb->claim_interface(ctx->device_handle, ctx->interface_number);
+    if (res < 0) {
+        return SDL_SetError("Couldn't claim interface %d: %d\n", ctx->interface_number, res);
+    }
+    ctx->interface_claimed = true;
+
+    const unsigned char DEFAULT_REPORT_DATA[] = {
+        0x03, 0x91, 0x00, 0x0d, 0x00, 0x08,
+        0x00, 0x00, 0x01, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+    };
+    const unsigned char SET_LED_DATA[] = {
+        0x09, 0x91, 0x00, 0x07, 0x00, 0x08,
+        0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+
+    int transferred;
+    res = ctx->libusb->bulk_transfer(ctx->device_handle,
+                ctx->bulk_endpoint,
+                (unsigned char *)DEFAULT_REPORT_DATA,
+                sizeof(DEFAULT_REPORT_DATA),
+                &transferred,
+                1000);
+    if (res < 0) {
+        return SDL_SetError("Couldn't set report data: %d\n", res);
+    }
+
+    res = ctx->libusb->bulk_transfer(ctx->device_handle,
+                ctx->bulk_endpoint,
+                (unsigned char *)SET_LED_DATA,
+                sizeof(SET_LED_DATA),
+                &transferred,
+                1000);
+    if (res < 0) {
+        return SDL_SetError("Couldn't set LED data: %d\n", res);
+    }
+
+    return true;
+}
+
 static bool HIDAPI_DriverSwitch2_InitDevice(SDL_HIDAPI_Device *device)
 {
-	// Sometimes the device handle isn't available during enumeration so we don't get the device name, so set it explicitly
-	switch (device->product_id) {
-	case USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER:
-		HIDAPI_SetDeviceName(device, "Nintendo GameCube Controller");
-		break;
-	case USB_PRODUCT_NINTENDO_SWITCH2_PRO:
-		HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
-		break;
-	default:
-		break;
-	}
+    SDL_DriverSwitch2_Context *ctx;
+
+    ctx = (SDL_DriverSwitch2_Context *)SDL_calloc(1, sizeof(*ctx));
+    if (!ctx) {
+        return false;
+    }
+    device->context = ctx;
+
+    if (device->is_bluetooth) {
+        if (!HIDAPI_DriverSwitch2_InitBluetooth(device)) {
+            return false;
+        }
+    } else {
+        if (!HIDAPI_DriverSwitch2_InitUSB(device)) {
+            return false;
+        }
+    }
+
+    // Sometimes the device handle isn't available during enumeration so we don't get the device name, so set it explicitly
+    switch (device->product_id) {
+    case USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER:
+        HIDAPI_SetDeviceName(device, "Nintendo GameCube Controller");
+        break;
+    case USB_PRODUCT_NINTENDO_SWITCH2_PRO:
+        HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
+        break;
+    default:
+        break;
+    }
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
@@ -250,6 +367,18 @@ static void HIDAPI_DriverSwitch2_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 
 static void HIDAPI_DriverSwitch2_FreeDevice(SDL_HIDAPI_Device *device)
 {
+    SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
+
+    if (ctx) {
+        if (ctx->interface_claimed) {
+            ctx->libusb->release_interface(ctx->device_handle, ctx->interface_number);
+            ctx->interface_claimed = false;
+        }
+        if (ctx->libusb) {
+            SDL_QuitLibUSB();
+            ctx->libusb = NULL;
+        }
+    }
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch2 = {
