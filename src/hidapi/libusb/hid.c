@@ -1320,64 +1320,67 @@ static bool is_ns2(unsigned short idVendor, unsigned short idProduct)
 	return false;
 }
 
-static bool ns2_find_bulk_out_endpoint(libusb_device_handle* handle, uint8_t* endpoint_out)
+static void init_ns2(libusb_device_handle *device_handle, const struct libusb_config_descriptor *conf_desc)
 {
-	struct libusb_config_descriptor* config;
-	if (libusb_get_config_descriptor(libusb_get_device(handle), 0, &config) != 0) {
-		return false;
-	}
+	int j, k, l, res;
 
-	for (int i = 0; i < config->bNumInterfaces; i++) {
-		const struct libusb_interface* iface = &config->interface[i];
-		for (int j = 0; j < iface->num_altsetting; j++) {
-			const struct libusb_interface_descriptor* altsetting = &iface->altsetting[j];
-			if (altsetting->bInterfaceNumber == 1) {
-				for (int k = 0; k < altsetting->bNumEndpoints; k++) {
-					const struct libusb_endpoint_descriptor* ep = &altsetting->endpoint[k];
+	for (j = 0; j < conf_desc->bNumInterfaces; j++) {
+		const struct libusb_interface *intf = &conf_desc->interface[j];
+		for (k = 0; k < intf->num_altsetting; k++) {
+			const struct libusb_interface_descriptor *intf_desc = &intf->altsetting[k];
+			if (intf_desc->bInterfaceNumber == 1) {
+				uint8_t endpoint = 0;
+				for (l = 0; l < intf_desc->bNumEndpoints; l++) {
+					const struct libusb_endpoint_descriptor* ep = &intf_desc->endpoint[l];
 					if ((ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK) == LIBUSB_TRANSFER_TYPE_BULK && (ep->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK) == LIBUSB_ENDPOINT_OUT) {
-						*endpoint_out = ep->bEndpointAddress;
-						libusb_free_config_descriptor(config);
-						return true;
+						endpoint = ep->bEndpointAddress;
+						break;
 					}
+				}
+
+				if (endpoint) {
+					res = libusb_claim_interface(device_handle, intf_desc->bInterfaceNumber);
+					if (res < 0) {
+						LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
+						continue;
+					}
+
+					const unsigned char DEFAULT_REPORT_DATA[] = {
+						0x03, 0x91, 0x00, 0x0d, 0x00, 0x08,
+						0x00, 0x00, 0x01, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
+					};
+					const unsigned char SET_LED_DATA[] = {
+						0x09, 0x91, 0x00, 0x07, 0x00, 0x08,
+						0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+					};
+
+					int transferred;
+					res = libusb_bulk_transfer(device_handle,
+								endpoint,
+								(unsigned char*)DEFAULT_REPORT_DATA,
+								sizeof(DEFAULT_REPORT_DATA),
+								&transferred,
+								1000);
+					if (res < 0) {
+						LOG("can't set report data: %d\n", res);
+					}
+
+					res = libusb_bulk_transfer(device_handle,
+								endpoint,
+								(unsigned char*)SET_LED_DATA,
+								sizeof(SET_LED_DATA),
+								&transferred,
+								1000);
+					if (res < 0) {
+						LOG("can't set LED data: %d\n", res);
+					}
+
+					libusb_release_interface(device_handle, intf_desc->bInterfaceNumber);
+					return;
 				}
 			}
 		}
 	}
-
-	libusb_free_config_descriptor(config);
-	return false;
-}
-
-static void init_ns2(libusb_device_handle *device_handle)
-{
-	const unsigned char DEFAULT_REPORT_DATA[] = {
-		0x03, 0x91, 0x00, 0x0d, 0x00, 0x08,
-		0x00, 0x00, 0x01, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-	};
-	const unsigned char SET_LED_DATA[] = {
-		0x09, 0x91, 0x00, 0x07, 0x00, 0x08,
-		0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-	};
-
-	uint8_t endpoint_out = 0;
-	if (!ns2_find_bulk_out_endpoint(device_handle, &endpoint_out)) {
-		return;
-	}
-
-	int transferred;
-	libusb_bulk_transfer(device_handle,
-				endpoint_out,
-				(unsigned char*)DEFAULT_REPORT_DATA,
-				sizeof(DEFAULT_REPORT_DATA),
-				&transferred,
-				1000);
-
-	libusb_bulk_transfer(device_handle,
-				endpoint_out,
-				(unsigned char*)SET_LED_DATA,
-				sizeof(SET_LED_DATA),
-				&transferred,
-				1000);
 }
 
 static void calculate_device_quirks(hid_device *dev, unsigned short idVendor, unsigned short idProduct)
@@ -1441,9 +1444,9 @@ static int hidapi_initialize_device(hid_device *dev, const struct libusb_interfa
 		init_xboxone(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
 	}
 
-	/* Initialize NSO GameCube controllers */
+	/* Initialize Nintendo Switch 2 controllers */
 	if (is_ns2(desc.idVendor, desc.idProduct)) {
-		init_ns2(dev->device_handle);
+		init_ns2(dev->device_handle, conf_desc);
 	}
 
 	/* Store off the string descriptor indexes */
