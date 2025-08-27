@@ -721,7 +721,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         SDL_strlcat(mapping_string, "a:b1,b:b3,dpdown:b8,dpleft:b10,dpright:b9,dpup:b11,guide:b16,leftshoulder:b13,lefttrigger:a4,leftx:a0,lefty:a1~,misc1:b17,misc2:b20,misc3:b4,misc4:b12,rightshoulder:b5,righttrigger:a5,rightx:a2,righty:a3~,start:b6,x:b0,y:b2,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
                (product == USB_PRODUCT_NINTENDO_SWITCH2_PRO)) {
-        SDL_strlcat(mapping_string, "a:b1,b:b0,dpdown:b8,dpleft:b10,dpright:b9,dpup:b11,guide:b16,leftshoulder:b12,lefttrigger:b13,leftx:a0,lefty:a1~,misc1:b17,misc2:b20,rightshoulder:b4,righttrigger:b5,rightx:a2,righty:a3~,start:b6,back:b14,x:b3,y:b2,leftstick:b15,rightstick:b7,paddle1:b18,paddle2:b19,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:b8,dpleft:b10,dpright:b9,dpup:b11,guide:b16,leftshoulder:b12,lefttrigger:b13,leftx:a0,lefty:a1~,misc1:b17,misc2:b20,rightshoulder:b4,righttrigger:b5,rightx:a2,righty:a3~,start:b6,back:b14,x:b2,y:b3,leftstick:b15,rightstick:b7,paddle1:b18,paddle2:b19,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
                (guid.data[15] == k_eSwitchDeviceInfoControllerType_HVCLeft ||
                 guid.data[15] == k_eSwitchDeviceInfoControllerType_HVCRight ||
