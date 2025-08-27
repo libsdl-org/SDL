@@ -237,6 +237,7 @@ static bool SDL_ShouldQuitSubsystem(Uint32 subsystem)
     return (((subsystem_index >= 0) && (SDL_SubsystemRefCount[subsystem_index] == 1)) || SDL_bInMainQuit);
 }
 
+#if !defined(SDL_VIDEO_DISABLED) || !defined(SDL_AUDIO_DISABLED) || !defined(SDL_JOYSTICK_DISABLED)
 /* Private helper to either increment's existing ref counter,
  * or fully init a new subsystem. */
 static bool SDL_InitOrIncrementSubsystem(Uint32 subsystem)
@@ -252,6 +253,7 @@ static bool SDL_InitOrIncrementSubsystem(Uint32 subsystem)
     }
     return SDL_InitSubSystem(subsystem);
 }
+#endif // !SDL_VIDEO_DISABLED || !SDL_AUDIO_DISABLED || !SDL_JOYSTICK_DISABLED
 
 void SDL_SetMainReady(void)
 {
