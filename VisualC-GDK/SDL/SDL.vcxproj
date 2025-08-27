@@ -889,7 +889,6 @@
     <ClCompile Include="..\..\src\video\SDL_video_unsupported.c" />
     <ClCompile Include="..\..\src\video\SDL_vulkan_utils.c" />
     <ClCompile Include="..\..\src\video\SDL_yuv.c" />
-    <ClCompile Include="..\..\src\video\windows\SDL_surface_utils.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsclipboard.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsevents.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsframebuffer.c" />

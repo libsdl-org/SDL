@@ -1356,9 +1356,6 @@
     <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c">
       <Filter>video\dummy</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\video\windows\SDL_surface_utils.c">
-      <Filter>video\windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\video\windows\SDL_windowsclipboard.c">
       <Filter>video\windows</Filter>
     </ClCompile>

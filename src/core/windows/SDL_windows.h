@@ -157,7 +157,11 @@ extern void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect);
 extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
 
 // Returns false if a window client rect is not valid
-bool WIN_WindowRectValid(const RECT *rect);
+extern bool WIN_WindowRectValid(const RECT *rect);
+
+extern void WIN_UpdateDarkModeForHWND(HWND hwnd);
+
+extern HICON WIN_CreateIconFromSurface(SDL_Surface *surface);
 
 extern SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);
 

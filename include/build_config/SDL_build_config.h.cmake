@@ -540,6 +540,9 @@
 /* Enable dialog subsystem */
 #cmakedefine SDL_DIALOG_DUMMY 1
 
+/* Enable tray subsystem */
+#cmakedefine SDL_TRAY_DUMMY 1
+
 /* Enable assembly routines */
 #cmakedefine SDL_ALTIVEC_BLITTERS 1
 
