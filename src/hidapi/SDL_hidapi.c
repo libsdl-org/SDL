@@ -40,6 +40,15 @@
 
 #ifndef SDL_HIDAPI_DISABLED
 
+#ifdef SDL_LIBUSB_DYNAMIC
+SDL_ELF_NOTE_DLOPEN(
+    "hidabi-libusb",
+    "Support for joysticks through libusb",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_LIBUSB_DYNAMIC
+);
+#endif
+
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #include "../core/windows/SDL_windows.h"
 #endif

@@ -53,6 +53,19 @@ struct SDL_GLContextState
 #include <SDL3/SDL_opengles2_gl2.h>
 #endif
 
+#ifdef SDL_PLATFORM_WINDOWS
+#define SDL_OPENVR_DRIVER_DYNAMIC "openvr_api.dll"
+#else
+#define SDL_OPENVR_DRIVER_DYNAMIC "openvr_api.so"
+#endif
+
+SDL_ELF_NOTE_DLOPEN(
+    "video-openvr",
+    "Support for OpenVR video",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_OPENVR_DRIVER_DYNAMIC
+);
+
 #define MARKER_ID 0
 #define MARKER_STR "vr-marker,frame_end,type,application"
 
@@ -1474,6 +1487,7 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
+    const char *hint;
 
 #ifdef SDL_PLATFORM_WINDOWS
     SDL_RegisterApp(NULL, 0, NULL);
@@ -1495,19 +1509,13 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
     }
     device->internal = data;
 
-    {
-        const char * hint = SDL_GetHint(SDL_HINT_OPENVR_LIBRARY);
-        if (hint)
-            data->openVRLIB = SDL_LoadObject(hint);
-#ifdef SDL_PLATFORM_WINDOWS
-        if (!data->openVRLIB)
-            data->openVRLIB = SDL_LoadObject("openvr_api.dll");
-#else
-        if (!data->openVRLIB)
-            data->openVRLIB = SDL_LoadObject("openvr_api.so");
-#endif
+    hint = SDL_GetHint(SDL_HINT_OPENVR_LIBRARY);
+    if (hint) {
+        data->openVRLIB = SDL_LoadObject(hint);
     }
-
+    if (!data->openVRLIB) {
+        data->openVRLIB = SDL_LoadObject(SDL_OPENVR_DRIVER_DYNAMIC);
+    }
     if (!data->openVRLIB) {
         SDL_SetError("Could not open OpenVR API Library");
         goto error;
