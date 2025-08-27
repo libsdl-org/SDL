@@ -1324,82 +1324,6 @@ static void init_xboxone(libusb_device_handle *device_handle, unsigned short idV
 	}
 }
 
-static bool is_ns2(unsigned short idVendor, unsigned short idProduct)
-{
-	if (idVendor == 0x057e) {
-		if (idProduct == 0x2069) {
-			return true;
-		}
-		if (idProduct == 0x2073) {
-			return true;
-		}
-	}
-	return false;
-}
-
-static void init_ns2(libusb_device_handle *device_handle, const struct libusb_config_descriptor *conf_desc)
-{
-	int j, k, l, res;
-
-	for (j = 0; j < conf_desc->bNumInterfaces; j++) {
-		const struct libusb_interface *intf = &conf_desc->interface[j];
-		for (k = 0; k < intf->num_altsetting; k++) {
-			const struct libusb_interface_descriptor *intf_desc = &intf->altsetting[k];
-			if (intf_desc->bInterfaceNumber == 1) {
-				uint8_t endpoint = 0;
-				for (l = 0; l < intf_desc->bNumEndpoints; l++) {
-					const struct libusb_endpoint_descriptor* ep = &intf_desc->endpoint[l];
-					if ((ep->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK) == LIBUSB_TRANSFER_TYPE_BULK && (ep->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK) == LIBUSB_ENDPOINT_OUT) {
-						endpoint = ep->bEndpointAddress;
-						break;
-					}
-				}
-
-				if (endpoint) {
-					res = libusb_claim_interface(device_handle, intf_desc->bInterfaceNumber);
-					if (res < 0) {
-						LOG("can't claim interface %d: %d\n", intf_desc->bInterfaceNumber, res);
-						continue;
-					}
-
-					const unsigned char DEFAULT_REPORT_DATA[] = {
-						0x03, 0x91, 0x00, 0x0d, 0x00, 0x08,
-						0x00, 0x00, 0x01, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
-					};
-					const unsigned char SET_LED_DATA[] = {
-						0x09, 0x91, 0x00, 0x07, 0x00, 0x08,
-						0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-					};
-
-					int transferred;
-					res = libusb_bulk_transfer(device_handle,
-								endpoint,
-								(unsigned char*)DEFAULT_REPORT_DATA,
-								sizeof(DEFAULT_REPORT_DATA),
-								&transferred,
-								1000);
-					if (res < 0) {
-						LOG("can't set report data: %d\n", res);
-					}
-
-					res = libusb_bulk_transfer(device_handle,
-								endpoint,
-								(unsigned char*)SET_LED_DATA,
-								sizeof(SET_LED_DATA),
-								&transferred,
-								1000);
-					if (res < 0) {
-						LOG("can't set LED data: %d\n", res);
-					}
-
-					libusb_release_interface(device_handle, intf_desc->bInterfaceNumber);
-					return;
-				}
-			}
-		}
-	}
-}
-
 static void calculate_device_quirks(hid_device *dev, unsigned short idVendor, unsigned short idProduct)
 {
 	static const int VENDOR_SONY = 0x054c;
@@ -1459,11 +1383,6 @@ static int hidapi_initialize_device(hid_device *dev, const struct libusb_interfa
 	/* Initialize XBox One controllers */
 	if (is_xboxone(desc.idVendor, intf_desc)) {
 		init_xboxone(dev->device_handle, desc.idVendor, desc.idProduct, conf_desc);
-	}
-
-	/* Initialize Nintendo Switch 2 controllers */
-	if (is_ns2(desc.idVendor, desc.idProduct)) {
-		init_ns2(dev->device_handle, conf_desc);
 	}
 
 	/* Store off the string descriptor indexes */
