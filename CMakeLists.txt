@@ -253,6 +253,7 @@ define_sdl_subsystem(Hidapi)
 define_sdl_subsystem(Power)
 define_sdl_subsystem(Sensor)
 define_sdl_subsystem(Dialog)
+define_sdl_subsystem(Tray)
 
 cmake_dependent_option(SDL_FRAMEWORK "Build SDL libraries as Apple Framework" OFF "APPLE" OFF)
 if(SDL_FRAMEWORK)
@@ -410,6 +411,7 @@ if (NGAGE)
   set(SDL_DUMMYVIDEO       OFF)
   set(SDL_OFFSCREEN        OFF)
   set(SDL_RENDER_GPU       OFF)
+  set(SDL_TRAY             OFF)
   set(SDL_VIRTUAL_JOYSTICK OFF)
 endif()
 
@@ -1752,7 +1754,9 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     CheckVivante()
     CheckVulkan()
     CheckQNXScreen()
+  endif()
 
+  if(SDL_TRAY)
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/tray/unix/*.c"
       "${SDL3_SOURCE_DIR}/src/tray/unix/*.h"
@@ -2330,7 +2334,9 @@ elseif(WINDOWS)
         set(HAVE_RENDER_VULKAN TRUE)
       endif()
     endif()
+  endif()
 
+  if(SDL_TRAY)
     sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/windows/*.c")
     set(HAVE_SDL_TRAY TRUE)
   endif()
@@ -2646,11 +2652,11 @@ elseif(APPLE)
         endif()
       endif()
     endif()
+  endif()
 
-    if(MACOS)
-      sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/cocoa/*.m")
-      set(HAVE_SDL_TRAY TRUE)
-    endif()
+  if(SDL_TRAY AND MACOS)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/tray/cocoa/*.m")
+    set(HAVE_SDL_TRAY TRUE)
   endif()
 
   # Minimum version for $<LINK_LIBRARY:feature,library-list>

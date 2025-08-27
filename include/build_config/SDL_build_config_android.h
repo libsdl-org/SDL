@@ -208,6 +208,9 @@
 #define SDL_CAMERA_DRIVER_ANDROID 1
 #endif /* SDL_CAMERA_DISABLED */
 
+/* Enable tray subsystem */
+#define SDL_TRAY_DUMMY 1
+
 /* Enable nl_langinfo and high-res file times on version 26 and higher. */
 #if __ANDROID_API__ >= 26
 #define HAVE_NL_LANGINFO 1
