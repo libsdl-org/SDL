@@ -22,6 +22,7 @@
 #include "SDL_internal.h"
 
 #include "../SDL_tray_utils.h"
+#include "../../video/SDL_stb_c.h"
 
 #include <dlfcn.h>
 #include <errno.h>
@@ -184,7 +185,7 @@ static bool new_tmp_filename(SDL_Tray *tray)
 {
     static int count = 0;
 
-    int would_have_written = SDL_asprintf(&tray->icon_path, "%s/%d.bmp", tray->icon_dir, count++);
+    int would_have_written = SDL_asprintf(&tray->icon_path, "%s/%d.png", tray->icon_dir, count++);
 
     if (would_have_written >= 0) {
         return true;
@@ -289,7 +290,7 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
             goto icon_dir_error;
         }
 
-        SDL_SaveBMP(icon, tray->icon_path);
+        SDL_SavePNG(icon, tray->icon_path);
     } else {
         // allocate a dummy icon path
         SDL_asprintf(&tray->icon_path, " ");
@@ -342,7 +343,7 @@ void SDL_SetTrayIcon(SDL_Tray *tray, SDL_Surface *icon)
     /* AppIndicator caches the icon files; always change filename to avoid caching */
 
     if (icon && new_tmp_filename(tray)) {
-        SDL_SaveBMP(icon, tray->icon_path);
+        SDL_SavePNG(icon, tray->icon_path);
         app_indicator_set_icon(tray->indicator, tray->icon_path);
     } else {
         SDL_free(tray->icon_path);

@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 
 #include "SDL_stb_c.h"
-
+#include "SDL_surface_c.h"
 
 // We currently only support JPEG, but we could add other image formats if we wanted
 #ifdef SDL_HAVE_STB
@@ -58,6 +58,13 @@
 #define STBI_ASSERT SDL_assert
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+#undef memcpy
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_STATIC
+#define STBI_WRITE_NO_STDIO
+#define STBIW_ASSERT SDL_assert
+#include "stb_image_write.h"
 
 #undef memset
 #endif
@@ -117,5 +124,70 @@ bool SDL_ConvertPixels_STB(int width, int height,
     return result;
 #else
     return SDL_SetError("SDL not built with STB image support");
+#endif
+}
+
+#ifdef SDL_HAVE_STB
+static void SDL_STBWriteFunc(void *context, void *data, int size)
+{
+    SDL_WriteIO(context, data, size);
+}
+#endif
+
+bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
+{
+#ifdef SDL_HAVE_STB
+    bool retval = true;
+
+    // Make sure we have somewhere to save
+    if (!SDL_SurfaceValid(surface)) {
+        retval = SDL_InvalidParamError("surface");
+        goto done;
+    }
+    if (!dst) {
+        retval = SDL_InvalidParamError("dst");
+        goto done;
+    }
+
+    bool free_surface = false;
+    if (surface->format != SDL_PIXELFORMAT_ABGR8888) {
+        surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ABGR8888);
+        if (!surface) {
+            retval = false;
+            goto done;
+        }
+        free_surface = true;
+    }
+
+    if (!stbi_write_png_to_func(SDL_STBWriteFunc, dst, surface->w, surface->h, 4, surface->pixels, surface->pitch)) {
+        retval = SDL_SetError("Failed to write PNG");
+    }
+
+    if (free_surface) {
+        SDL_DestroySurface(surface);
+    }
+
+done:
+    if (dst && closeio) {
+        retval = SDL_CloseIO(dst);
+    }
+
+    return retval;
+#else
+    return SDL_SetError("SDL not built with STB image write support");
+#endif
+}
+
+bool SDL_SavePNG(SDL_Surface *surface, const char *file)
+{
+#ifdef SDL_HAVE_STB
+    SDL_IOStream *stream = SDL_IOFromFile(file, "wb");
+    if (!stream) {
+        return false;
+    }
+
+    return SDL_SavePNG_IO(surface, stream, true);
+#else
+    return SDL_SetError("SDL not built with STB image write support");
 #endif
 }
