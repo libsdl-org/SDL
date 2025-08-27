@@ -91,7 +91,15 @@
 
 #else
 
+#if defined (__GNUC__) && __GNUC__ < 3
+
+#define SDL_ELF_NOTE_DLOPEN
+
+#else
+
 #define SDL_ELF_NOTE_DLOPEN(...)
+
+#endif
 
 #endif
 
