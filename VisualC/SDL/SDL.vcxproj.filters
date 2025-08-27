@@ -1137,6 +1137,9 @@
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c">
       <Filter>loadso\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\misc\SDL_libusb.c">
+      <Filter>misc</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\misc\SDL_url.c">
       <Filter>misc</Filter>
     </ClCompile>
