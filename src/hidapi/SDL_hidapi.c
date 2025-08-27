@@ -951,13 +951,14 @@ struct SDL_hid_device
     void *device;
     const struct hidapi_backend *backend;
     SDL_hid_device_info info;
+    SDL_PropertiesID props;
 };
 
 #if defined(HAVE_PLATFORM_BACKEND) || defined(HAVE_DRIVER_BACKEND) || defined(HAVE_LIBUSB)
 
 static SDL_hid_device *CreateHIDDeviceWrapper(void *device, const struct hidapi_backend *backend)
 {
-    SDL_hid_device *wrapper = (SDL_hid_device *)SDL_malloc(sizeof(*wrapper));
+    SDL_hid_device *wrapper = (SDL_hid_device *)SDL_calloc(1, sizeof(*wrapper));
     SDL_SetObjectValid(wrapper, SDL_OBJECT_TYPE_HIDAPI_DEVICE, true);
     wrapper->device = device;
     wrapper->backend = backend;
@@ -1424,7 +1425,9 @@ SDL_hid_device *SDL_hid_open(unsigned short vendor_id, unsigned short product_id
     if (libusb_ctx) {
         pDevice = LIBUSB_hid_open(vendor_id, product_id, serial_number);
         if (pDevice != NULL) {
-            return CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
+            SDL_hid_device *dev = CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
+            SDL_SetPointerProperty(SDL_hid_get_properties(dev), SDL_PROP_HIDAPI_LIBUSB_DEVICE_HANDLE_POINTER, ((LIBUSB_hid_device *)pDevice)->device_handle);
+            return dev;
         }
     }
 #endif // HAVE_LIBUSB
@@ -1463,7 +1466,9 @@ SDL_hid_device *SDL_hid_open_path(const char *path)
     if (libusb_ctx) {
         pDevice = LIBUSB_hid_open_path(path);
         if (pDevice != NULL) {
-            return CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
+            SDL_hid_device *dev = CreateHIDDeviceWrapper(pDevice, &LIBUSB_Backend);
+            SDL_SetPointerProperty(SDL_hid_get_properties(dev), SDL_PROP_HIDAPI_LIBUSB_DEVICE_HANDLE_POINTER, ((LIBUSB_hid_device *)pDevice)->device_handle);
+            return dev;
         }
     }
 #endif // HAVE_LIBUSB
@@ -1471,6 +1476,16 @@ SDL_hid_device *SDL_hid_open_path(const char *path)
 #endif // HAVE_PLATFORM_BACKEND || HAVE_DRIVER_BACKEND || HAVE_LIBUSB
 
     return NULL;
+}
+
+SDL_PropertiesID SDL_hid_get_properties(SDL_hid_device *device)
+{
+    CHECK_DEVICE_MAGIC(device, 0);
+
+    if (!device->props) {
+        device->props = SDL_CreateProperties();
+    }
+    return device->props;
 }
 
 int SDL_hid_write(SDL_hid_device *device, const unsigned char *data, size_t length)
@@ -1527,6 +1542,7 @@ int SDL_hid_close(SDL_hid_device *device)
     CHECK_DEVICE_MAGIC(device, -1);
 
     device->backend->hid_close(device->device);
+    SDL_DestroyProperties(device->props);
     DeleteHIDDeviceWrapper(device);
     return 0;
 }
