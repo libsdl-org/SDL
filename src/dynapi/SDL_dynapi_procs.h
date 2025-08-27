@@ -1271,7 +1271,7 @@ SDL_DYNAPI_PROC(bool,SDL_SetRelativeMouseTransform,(SDL_MouseMotionTransformCall
 SDL_DYNAPI_PROC(bool,SDL_RenderTexture9GridTiled,(SDL_Renderer *a,SDL_Texture *b,const SDL_FRect *c,float d,float e,float f,float g,float h,const SDL_FRect *i,float j),(a,b,c,d,e,f,g,h,i,j),return)
 SDL_DYNAPI_PROC(bool,SDL_SetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode *b),(a,b),return)
-SDL_DYNAPI_PROC(SDL_GPURenderState*,SDL_CreateGPURenderState,(SDL_Renderer *a,SDL_GPURenderStateDesc *b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_GPURenderState*,SDL_CreateGPURenderState,(SDL_Renderer *a,SDL_GPURenderStateCreateInfo *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_SetGPURenderStateFragmentUniforms,(SDL_GPURenderState *a,Uint32 b,const void *c,Uint32 d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(bool,SDL_SetRenderGPUState,(SDL_Renderer *a,SDL_GPURenderState *b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_DestroyGPURenderState,(SDL_GPURenderState *a),(a),)
