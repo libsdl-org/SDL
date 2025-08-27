@@ -284,6 +284,23 @@ extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_
 extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path);
 
 /**
+ * Get the properties associated with an SDL_hid_device.
+ *
+ * The following read-only properties are provided by SDL:
+ *
+ * - `SDL_PROP_HIDAPI_LIBUSB_DEVICE_HANDLE_POINTER`: the libusb_device_handle associated with the device, if it was opened using libusb.
+ *
+ * \param dev a device handle returned from SDL_hid_open().
+ * \returns a valid property ID on success or 0 on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_hid_get_properties(SDL_hid_device *dev);
+
+#define SDL_PROP_HIDAPI_LIBUSB_DEVICE_HANDLE_POINTER   "SDL.hidapi.libusb.device.handle"
+
+/**
  * Write an Output report to a HID device.
  *
  * The first byte of `data` must contain the Report ID. For devices which only
