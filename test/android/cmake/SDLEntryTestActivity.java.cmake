@@ -18,7 +18,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
 
-public class SDLEntryTestActivity extends Activity {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class SDLEntryTestActivity extends AppCompatActivity {
 
     public String MODIFY_ARGUMENTS = "@ANDROID_MANIFEST_PACKAGE@.MODIFY_ARGUMENTS";
     boolean isModifyingArguments;
