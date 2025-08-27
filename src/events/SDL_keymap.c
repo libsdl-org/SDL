@@ -208,6 +208,7 @@ void SDL_DestroyKeymap(SDL_Keymap *keymap)
     }
 
     if (keymap == SDL_GetCurrentKeymap(true)) {
+        keymap->auto_release = false;
         SDL_SetKeymap(NULL, false);
     }
 
