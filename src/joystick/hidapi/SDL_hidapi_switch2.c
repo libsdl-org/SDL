@@ -51,12 +51,11 @@ static bool HIDAPI_DriverSwitch2_IsEnabled(void)
 static bool HIDAPI_DriverSwitch2_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
-        if (product_id == USB_PRODUCT_NINTENDO_SWITCH2_PRO) {
+		switch (product_id) {
+		case USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER:
+		case USB_PRODUCT_NINTENDO_SWITCH2_PRO:
             return true;
-        }
-        if (product_id == USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER) {
-            return true;
-        }
+		}
     }
 
     return false;
@@ -64,6 +63,17 @@ static bool HIDAPI_DriverSwitch2_IsSupportedDevice(SDL_HIDAPI_Device *device, co
 
 static bool HIDAPI_DriverSwitch2_InitDevice(SDL_HIDAPI_Device *device)
 {
+	// Sometimes the device handle isn't available during enumeration so we don't get the device name, so set it explicitly
+	switch (device->product_id) {
+	case USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER:
+		HIDAPI_SetDeviceName(device, "Nintendo GameCube Controller");
+		break;
+	case USB_PRODUCT_NINTENDO_SWITCH2_PRO:
+		HIDAPI_SetDeviceName(device, "Nintendo Switch Pro Controller");
+		break;
+	default:
+		break;
+	}
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
