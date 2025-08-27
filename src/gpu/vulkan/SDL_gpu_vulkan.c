@@ -11274,14 +11274,20 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     renderer->vkGetPhysicalDeviceProperties(
         physicalDevice,
         &deviceProperties);
-    if (*deviceRank < devicePriority[deviceProperties.deviceType]) {
+
+    /* Apply a large bias on the devicePriority so that we always respect the order in the priority arrays.
+     * We also rank by e.g. VRAM which should have less influence than the device type.
+     */
+    Uint64 devicePriorityValue = devicePriority[deviceProperties.deviceType] * 1000000;
+
+    if (*deviceRank < devicePriorityValue) {
         /* This device outranks the best device we've found so far!
          * This includes a dedicated GPU that has less features than an
          * integrated GPU, because this is a freak case that is almost
          * never intentionally desired by the end user
          */
-        *deviceRank = devicePriority[deviceProperties.deviceType];
-    } else if (*deviceRank > devicePriority[deviceProperties.deviceType]) {
+        *deviceRank = devicePriorityValue;
+    } else if (*deviceRank > devicePriorityValue) {
         /* Device is outranked by a previous device, don't even try to
          * run a query and reset the rank to avoid overwrites
          */
