@@ -454,8 +454,8 @@ static int process_testStdinToStdout(void *arg)
 
     total_written = 0;
     total_read = 0;
-    for (;;) {
-        int log_this_iteration = (iteration_count % 32) == 32;
+    for (iteration_count = 0; true; iteration_count++) {
+        bool log_this_iteration = true;
         char local_buffer[16 * 4094];
         size_t amount_read;
         SDL_IOStatus io_status;
@@ -466,7 +466,10 @@ static int process_testStdinToStdout(void *arg)
             }
             amount_written = SDL_WriteIO(process_stdin, text_in + total_written, text_in_size - total_written);
             if (log_this_iteration) {
-                SDLTest_Log("SDL_WriteIO() -> %u (%dth time)", (unsigned)amount_written, iteration_count);
+                SDLTest_Log("SDL_WriteIO() -> %u (%dth time), total written %u",
+                            (unsigned)amount_written,
+                            iteration_count,
+                            (unsigned)(total_written + amount_written));
             }
             if (amount_written == 0) {
                 io_status = SDL_GetIOStatus(process_stdin);
@@ -477,6 +480,12 @@ static int process_testStdinToStdout(void *arg)
             }
             total_written += amount_written;
             SDL_FlushIO(process_stdin);
+            if (total_written == text_in_size) {
+                SDLTest_Log("All data written to stdin");
+            }
+            else if (total_written > text_in_size) {
+                SDLTest_Log("Too much data written?!");
+            }
         }
 
         /* FIXME: this needs a rate limit */
@@ -485,7 +494,10 @@ static int process_testStdinToStdout(void *arg)
         }
         amount_read = SDL_ReadIO(process_stdout, local_buffer, sizeof(local_buffer));
         if (log_this_iteration) {
-            SDLTest_Log("SDL_ReadIO() -> %u (%dth time)", (unsigned)amount_read, iteration_count);
+            SDLTest_Log("SDL_ReadIO() -> %u (%dth time), total read %u",
+                        (unsigned)amount_read,
+                        iteration_count,
+                        (unsigned)(total_read + amount_read));
         }
         if (amount_read == 0) {
             io_status = SDL_GetIOStatus(process_stdout);
