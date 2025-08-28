@@ -1257,6 +1257,17 @@ SDL3_0.0.0 {
     SDL_hid_get_properties;
     SDL_GetPixelFormatFromGPUTextureFormat;
     SDL_GetGPUTextureFormatFromPixelFormat;
+    SDL_CompareAndSwapRelaxedAtomicInt;
+    SDL_SetRelaxedAtomicInt;
+    SDL_GetRelaxedAtomicInt;
+    SDL_AddRelaxedAtomicInt;
+    SDL_CompareAndSwapRelaxedAtomicU32;
+    SDL_SetRelaxedAtomicU32;
+    SDL_GetRelaxedAtomicU32;
+    SDL_AddRelaxedAtomicU32;
+    SDL_CompareAndSwapRelaxedAtomicPointer;
+    SDL_SetRelaxedAtomicPointer;
+    SDL_GetRelaxedAtomicPointer;
     # extra symbols go here (don't modify this line)
   local: *;
 };

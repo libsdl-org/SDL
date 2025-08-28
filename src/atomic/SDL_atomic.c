@@ -23,6 +23,9 @@
 #if defined(_MSC_VER) && (_MSC_VER >= 1900)
 #include <intrin.h>
 #define HAVE_MSC_ATOMICS 1
+#if defined(_M_ARM) || defined(_M_ARM64)
+#define HAVE_MSC_NF_ATOMICS 1
+#endif
 #endif
 
 #ifdef SDL_PLATFORM_MACOS // !!! FIXME: should we favor gcc atomics?
@@ -42,9 +45,32 @@
 #define HAVE_ATOMIC_LOAD_N 1
 #endif
 #endif
+#if __has_builtin(__atomic_compare_exchange_n) || defined(HAVE_GCC_ATOMICS)
+/* !!! FIXME: see above */
+#ifndef SDL_PLATFORM_ANDROID
+#define HAVE_ATOMIC_COMPARE_EXCHANGE_N 1
+#endif
+#endif
+#if __has_builtin(__atomic_exchange_n) || defined(HAVE_GCC_ATOMICS)
+/* !!! FIXME: see above */
+#ifndef SDL_PLATFORM_ANDROID
+#define HAVE_ATOMIC_EXCHANGE_N 1
+#endif
+#endif
+#if __has_builtin(__atomic_fetch_add) || defined(HAVE_GCC_ATOMICS)
+/* !!! FIXME: see above */
+#ifndef SDL_PLATFORM_ANDROID
+#define HAVE_ATOMIC_FETCH_ADD 1
+#endif
+#endif
 #elif defined(__GNUC__)
 #if (__GNUC__ >= 5)
 #define HAVE_ATOMIC_LOAD_N 1
+#if !defined(SDL_PLATFORM_PS2)
+#define HAVE_ATOMIC_COMPARE_EXCHANGE_N 1
+#define HAVE_ATOMIC_EXCHANGE_N 1
+#define HAVE_ATOMIC_FETCH_ADD 1
+#endif
 #endif
 #endif
 
@@ -124,7 +150,9 @@ static SDL_INLINE void leaveLock(void *a)
 
 bool SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval)
 {
-#ifdef HAVE_MSC_ATOMICS
+#ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
+    return __atomic_compare_exchange_n(&a->value, &oldval, newval, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+#elif defined(HAVE_MSC_ATOMICS)
     SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
     return _InterlockedCompareExchange((long *)&a->value, (long)newval, (long)oldval) == (long)oldval;
 #elif defined(HAVE_WATCOM_ATOMICS)
@@ -152,9 +180,23 @@ bool SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval)
 #endif
 }
 
+bool SDL_CompareAndSwapRelaxedAtomicInt(SDL_AtomicInt *a, int oldval, int newval)
+{
+#ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
+    return __atomic_compare_exchange_n(&a->value, &oldval, newval, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
+    return _InterlockedCompareExchange_nf((long *)&a->value, (long)newval, (long)oldval) == (long)oldval;
+#else
+    return SDL_CompareAndSwapAtomicInt(a, oldval, newval);
+#endif
+}
+
 bool SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval)
 {
-#ifdef HAVE_MSC_ATOMICS
+#ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
+    return __atomic_compare_exchange_n(&a->value, &oldval, newval, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+#elif defined(HAVE_MSC_ATOMICS)
     SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
     return _InterlockedCompareExchange((long *)&a->value, (long)newval, (long)oldval) == (long)oldval;
 #elif defined(HAVE_WATCOM_ATOMICS)
@@ -183,9 +225,23 @@ bool SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval)
 #endif
 }
 
+bool SDL_CompareAndSwapRelaxedAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval)
+{
+#ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
+    return __atomic_compare_exchange_n(&a->value, &oldval, newval, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
+    return _InterlockedCompareExchange_nf((long *)&a->value, (long)newval, (long)oldval) == (long)oldval;
+#else
+    return SDL_CompareAndSwapAtomicU32(a, oldval, newval);
+#endif
+}
+
 bool SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval)
 {
-#ifdef HAVE_MSC_ATOMICS
+#ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
+    return __atomic_compare_exchange_n(a, &oldval, newval, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+#elif defined(HAVE_MSC_ATOMICS)
     return _InterlockedCompareExchangePointer(a, newval, oldval) == oldval;
 #elif defined(HAVE_WATCOM_ATOMICS)
     return _SDL_cmpxchg_watcom((int *)a, (long)newval, (long)oldval);
@@ -213,9 +269,22 @@ bool SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval)
 #endif
 }
 
+bool SDL_CompareAndSwapRelaxedAtomicPointer(void **a, void *oldval, void *newval)
+{
+#ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
+    return __atomic_compare_exchange_n(a, &oldval, newval, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    return _InterlockedCompareExchangePointer_nf(a, newval, oldval) == oldval;
+#else
+    return SDL_CompareAndSwapAtomicPointer(a, oldval, newval);
+#endif
+}
+
 int SDL_SetAtomicInt(SDL_AtomicInt *a, int v)
 {
-#ifdef HAVE_MSC_ATOMICS
+#ifdef HAVE_ATOMIC_EXCHANGE_N
+    return __atomic_exchange_n(&a->value, v, __ATOMIC_SEQ_CST);
+#elif defined(HAVE_MSC_ATOMICS)
     SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
     return _InterlockedExchange((long *)&a->value, v);
 #elif defined(HAVE_WATCOM_ATOMICS)
@@ -234,9 +303,23 @@ int SDL_SetAtomicInt(SDL_AtomicInt *a, int v)
 #endif
 }
 
+int SDL_SetRelaxedAtomicInt(SDL_AtomicInt *a, int v)
+{
+#ifdef HAVE_ATOMIC_EXCHANGE_N
+    return __atomic_exchange_n(&a->value, v, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
+    return _InterlockedExchange_nf((long *)&a->value, v);
+#else
+    return SDL_SetAtomicInt(a, v);
+#endif
+}
+
 Uint32 SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v)
 {
-#ifdef HAVE_MSC_ATOMICS
+#ifdef HAVE_ATOMIC_EXCHANGE_N
+    return __atomic_exchange_n(&a->value, v, __ATOMIC_SEQ_CST);
+#elif defined(HAVE_MSC_ATOMICS)
     SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
     return _InterlockedExchange((long *)&a->value, v);
 #elif defined(HAVE_WATCOM_ATOMICS)
@@ -255,9 +338,23 @@ Uint32 SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v)
 #endif
 }
 
+Uint32 SDL_SetRelaxedAtomicU32(SDL_AtomicU32 *a, Uint32 v)
+{
+#ifdef HAVE_ATOMIC_EXCHANGE_N
+    return __atomic_exchange_n(&a->value, v, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
+    return _InterlockedExchange_nf((long *)&a->value, v);
+#else
+    return SDL_SetAtomicU32(a, v);
+#endif
+}
+
 void *SDL_SetAtomicPointer(void **a, void *v)
 {
-#ifdef HAVE_MSC_ATOMICS
+#ifdef HAVE_ATOMIC_EXCHANGE_N
+    return __atomic_exchange_n(a, v, __ATOMIC_SEQ_CST);
+#elif defined(HAVE_MSC_ATOMICS)
     return _InterlockedExchangePointer(a, v);
 #elif defined(HAVE_WATCOM_ATOMICS)
     return (void *)_SDL_xchg_watcom((int *)a, (long)v);
@@ -274,9 +371,22 @@ void *SDL_SetAtomicPointer(void **a, void *v)
 #endif
 }
 
+void *SDL_SetRelaxedAtomicPointer(void **a, void *v)
+{
+#ifdef HAVE_ATOMIC_EXCHANGE_N
+    return __atomic_exchange_n(a, v, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    return _InterlockedExchangePointer_nf(a, v);
+#else
+    return SDL_SetAtomicPointer(a, v);
+#endif
+}
+
 int SDL_AddAtomicInt(SDL_AtomicInt *a, int v)
 {
-#ifdef HAVE_MSC_ATOMICS
+#ifdef HAVE_ATOMIC_FETCH_ADD
+    return __atomic_fetch_add(&a->value, v, __ATOMIC_SEQ_CST);
+#elif defined(HAVE_MSC_ATOMICS)
     SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
     return _InterlockedExchangeAdd((long *)&a->value, v);
 #elif defined(HAVE_WATCOM_ATOMICS)
@@ -298,9 +408,23 @@ int SDL_AddAtomicInt(SDL_AtomicInt *a, int v)
 #endif
 }
 
+int SDL_AddRelaxedAtomicInt(SDL_AtomicInt *a, int v)
+{
+#ifdef HAVE_ATOMIC_FETCH_ADD
+    return __atomic_fetch_add(&a->value, v, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
+    return _InterlockedExchangeAdd_nf((long *)&a->value, v);
+#else
+    return SDL_AddAtomicInt(a, v);
+#endif
+}
+
 Uint32 SDL_AddAtomicU32(SDL_AtomicU32 *a, int v)
 {
-#ifdef HAVE_MSC_ATOMICS
+#ifdef HAVE_ATOMIC_FETCH_ADD
+    return __atomic_fetch_add(&a->value, v, __ATOMIC_SEQ_CST);
+#elif defined(HAVE_MSC_ATOMICS)
     SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
     return (Uint32)_InterlockedExchangeAdd((long *)&a->value, v);
 #elif defined(HAVE_WATCOM_ATOMICS)
@@ -319,6 +443,18 @@ Uint32 SDL_AddAtomicU32(SDL_AtomicU32 *a, int v)
         value = a->value;
     } while (!SDL_CompareAndSwapAtomicU32(a, value, (value + v)));
     return value;
+#endif
+}
+
+Uint32 SDL_AddRelaxedAtomicU32(SDL_AtomicU32 *a, int v)
+{
+#ifdef HAVE_ATOMIC_FETCH_ADD
+    return __atomic_fetch_add(&a->value, v, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
+    return _InterlockedExchangeAdd_nf((long *)&a->value, v);
+#else
+    return SDL_AddAtomicU32(a, v);
 #endif
 }
 
@@ -343,6 +479,18 @@ int SDL_GetAtomicInt(SDL_AtomicInt *a)
         value = a->value;
     } while (!SDL_CompareAndSwapAtomicInt(a, value, value));
     return value;
+#endif
+}
+
+int SDL_GetRelaxedAtomicInt(SDL_AtomicInt *a)
+{
+#ifdef HAVE_ATOMIC_LOAD_N
+    return __atomic_load_n(&a->value, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_get, sizeof(long) == sizeof(a->value));
+    return _InterlockedOr_nf((long *)&a->value, 0);
+#else
+    return SDL_GetAtomicInt(a);
 #endif
 }
 
@@ -372,6 +520,18 @@ Uint32 SDL_GetAtomicU32(SDL_AtomicU32 *a)
 #endif
 }
 
+Uint32 SDL_GetRelaxedAtomicU32(SDL_AtomicU32 *a)
+{
+#ifdef HAVE_ATOMIC_LOAD_N
+    return __atomic_load_n(&a->value, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_get, sizeof(long) == sizeof(a->value));
+    return (Uint32)_InterlockedOr_nf((long *)&a->value, 0);
+#else
+    return SDL_GetAtomicU32(a);
+#endif
+}
+
 void *SDL_GetAtomicPointer(void **a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
@@ -388,6 +548,17 @@ void *SDL_GetAtomicPointer(void **a)
         value = *a;
     } while (!SDL_CompareAndSwapAtomicPointer(a, value, value));
     return value;
+#endif
+}
+
+void *SDL_GetRelaxedAtomicPointer(void **a)
+{
+#ifdef HAVE_ATOMIC_LOAD_N
+    return __atomic_load_n(a, __ATOMIC_RELAXED);
+#elif defined(HAVE_MSC_NF_ATOMICS)
+    return _InterlockedCompareExchangePointer_nf(a, NULL, NULL);
+#else
+    return SDL_GetAtomicPointer(a);
 #endif
 }
 
