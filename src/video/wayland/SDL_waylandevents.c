@@ -3763,9 +3763,6 @@ void Wayland_SeatUpdatePointerGrab(SDL_WaylandSeat *seat)
                 if (confine_rect) {
                     wl_region_destroy(confine_rect);
                 }
-
-                // Commit the new confinement region immediately.
-                wl_surface_commit(w->surface);
             }
         }
     }
