@@ -323,7 +323,7 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 {
     Sint16 axis;
     Uint64 timestamp = SDL_GetTicksNS();
-    if (data[0] != 0x04 && data[0] != 0xFE) {
+    if (data[0] != 0x04 || data[1] != 0xFE) {
         // We don't know how to handle this report
         return;
     }
