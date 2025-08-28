@@ -314,6 +314,7 @@ add_sdl_test_executable(testhittesting SOURCES testhittesting.c)
 add_sdl_test_executable(testdraw SOURCES testdraw.c)
 add_sdl_test_executable(testdrawchessboard SOURCES testdrawchessboard.c)
 add_sdl_test_executable(testdropfile MAIN_CALLBACKS SOURCES testdropfile.c)
+add_sdl_test_executable(testlocation SOURCES testlocation.c)
 add_sdl_test_executable(testerror NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testerror.c)
 
 set(build_options_dependent_tests )

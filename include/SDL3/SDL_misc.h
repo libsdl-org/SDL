@@ -69,6 +69,27 @@ extern "C" {
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_OpenURL(const char *url);
 
+/*
+ * Start receiving location, through SDL_EVENT_LOCATION events
+ *
+ * \returns 0 on success or a negative error code on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \sa SDL_StopLocation
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_StartLocation(void);
+
+/*
+ * Stop receiving location.
+ *
+ * \sa SDL_StartLocation
+ *
+ * \since This function is available since SDL 3.0.0.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_StopLocation(void);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

@@ -262,6 +262,9 @@ typedef enum SDL_EventType
     SDL_EVENT_PRIVATE2,
     SDL_EVENT_PRIVATE3,
 
+    /* Location events */
+    SDL_EVENT_LOCATION = 0x3000, /* Location datas */
+
     /* Internal events */
     SDL_EVENT_POLL_SENTINEL = 0x7F00, /**< Signals the end of an event poll cycle */
 
@@ -948,6 +951,20 @@ typedef struct SDL_SensorEvent
 } SDL_SensorEvent;
 
 /**
+ * Location event structure (event.location.*)
+ * 
+ * \since This struct is available since SDL 3.4.0.
+ */
+typedef struct SDL_LocationEvent
+{
+    Uint32 type;        /**< ::SDL_EVENT_LOCATION */
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    double latitude;    /**< Latitude in degrees */
+    double longitude;   /**< Longitude in degrees */
+    double altitude;    /**< Altitude in meters */
+} SDL_LocationEvent;
+
+/**
  * The "quit requested" event
  *
  * \since This struct is available since SDL 3.2.0.
@@ -1030,6 +1047,7 @@ typedef union SDL_Event
     SDL_RenderEvent render;                 /**< Render event data */
     SDL_DropEvent drop;                     /**< Drag and drop event data */
     SDL_ClipboardEvent clipboard;           /**< Clipboard event data */
+    SDL_LocationEvent location;             /**< Location event data */
 
     /* This is necessary for ABI compatibility between Visual C++ and GCC.
        Visual C++ will respect the push pack pragma and use 52 bytes (size of

@@ -21,6 +21,7 @@
 #include "SDL_internal.h"
 
 #include "SDL_sysurl.h"
+#include "../core/linux/SDL_dbus.h"
 
 bool SDL_OpenURL(const char *url)
 {
@@ -28,4 +29,22 @@ bool SDL_OpenURL(const char *url)
         return SDL_InvalidParamError("url");
     }
     return SDL_SYS_OpenURL(url);
+}
+
+int SDL_StartLocation(void)
+{
+#ifdef SDL_USE_LIBDBUS
+    return SDL_DBus_StartLocation();
+#else
+    return SDL_Unsupported();
+#endif
+}
+
+void SDL_StopLocation(void)
+{
+#ifdef SDL_USE_LIBDBUS
+    SDL_DBus_StopLocation();
+#else
+    SDL_Unsupported();
+#endif
 }
