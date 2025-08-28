@@ -102,6 +102,8 @@ typedef enum SDL_FlipMode
     SDL_FLIP_HORIZONTAL_AND_VERTICAL,   /**< flip horizontally and vertically (not a diagonal flip) */
 } SDL_FlipMode;
 
+SDL_COMPILE_TIME_ASSERT(SDL_FlipMode_is_flags, (SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL) == SDL_FLIP_HORIZONTAL_AND_VERTICAL);
+
 #ifndef SDL_INTERNAL
 
 /**
