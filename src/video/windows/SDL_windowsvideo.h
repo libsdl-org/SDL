@@ -486,6 +486,7 @@ struct SDL_VideoData
     SDL_Point last_raw_mouse_position;
     bool raw_mouse_enabled;
     bool raw_keyboard_enabled;
+    bool raw_keyboard_flag_nohotkeys;
     bool pending_E1_key_sequence;
     Uint32 raw_input_enabled;
 

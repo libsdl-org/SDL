@@ -23,6 +23,7 @@
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
 
 #include "SDL_windowsvideo.h"
+#include "SDL_windowsrawinput.h"
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
@@ -33,6 +34,7 @@
 
 #define ENABLE_RAW_MOUSE_INPUT      0x01
 #define ENABLE_RAW_KEYBOARD_INPUT   0x02
+#define RAW_KEYBOARD_FLAG_NOHOTKEYS 0x04
 
 typedef struct
 {
@@ -78,6 +80,9 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
         devices[count].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
         devices[count].usUsage = USB_USAGE_GENERIC_KEYBOARD;
         devices[count].dwFlags = 0;
+        if (data->flags & RAW_KEYBOARD_FLAG_NOHOTKEYS) {
+            devices[count].dwFlags |= RIDEV_NOHOTKEYS;
+        }
         devices[count].hwndTarget = window;
         ++count;
     }
@@ -198,6 +203,9 @@ static bool WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
     }
     if (data->raw_keyboard_enabled) {
         flags |= ENABLE_RAW_KEYBOARD_INPUT;
+        if (data->raw_keyboard_flag_nohotkeys) {
+            flags |= RAW_KEYBOARD_FLAG_NOHOTKEYS;
+        }
     }
     if (flags != data->raw_input_enabled) {
         if (WIN_SetRawInputEnabled(_this, flags)) {
@@ -245,6 +253,25 @@ bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
     return true;
 }
 
+bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled)
+{
+    SDL_VideoData *data = _this->internal;
+    if (data->gameinput_context) {
+        return false;
+    }
+
+    switch(flag) {
+        case NOHOTKEYS:
+            data->raw_keyboard_flag_nohotkeys = enabled;
+            break;
+        default:
+            return false;
+            break;
+    }
+
+    return WIN_UpdateRawInputEnabled(_this);
+}
+
 #else
 
 bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
@@ -253,6 +280,11 @@ bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
 }
 
 bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
+{
+    return SDL_Unsupported();
+}
+
+bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled)
 {
     return SDL_Unsupported();
 }
