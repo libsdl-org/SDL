@@ -76,7 +76,7 @@ jobs:
         id: setup-ndk
         with:
           local-cache: true
-          ndk-version: r21e
+          ndk-version: r28c
       - name: 'Configure Android NDK variables'
         if: ${{ matrix.platform.android-ndk }}
         shell: sh
