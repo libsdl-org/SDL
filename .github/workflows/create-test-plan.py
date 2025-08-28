@@ -552,7 +552,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     f"-DANDROID_ABI={spec.android_abi}",
                 ))
                 job.cmake_toolchain_file = "${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake"
-                job.cc = f"${{ANDROID_NDK_HOME}}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target={spec.android_arch}-none-linux-androideabi{spec.android_platform}"
+                job.cc = f"${{ANDROID_NDK_HOME}}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target={spec.android_arch}-none-linux-androideabi{spec.android_platform} -fPIC"
 
                 job.android_apks = [
                     "testaudiorecording-apk",
