@@ -2643,6 +2643,11 @@ static bool SDL_ReconfigureWindowInternal(SDL_Window *window, SDL_WindowFlags fl
         return false;
     }
 
+    // Don't attempt to reconfigure external windows.
+    if (window->flags & SDL_WINDOW_EXTERNAL) {
+        return false;
+    }
+
     // Only attempt to reconfigure if the window has no existing graphics flags.
     if (window->flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN)) {
         return false;
