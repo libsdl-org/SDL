@@ -288,7 +288,8 @@ extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path)
  *
  * The following read-only properties are provided by SDL:
  *
- * - `SDL_PROP_HIDAPI_LIBUSB_DEVICE_HANDLE_POINTER`: the libusb_device_handle associated with the device, if it was opened using libusb.
+ * - `SDL_PROP_HIDAPI_LIBUSB_DEVICE_HANDLE_POINTER`: the libusb_device_handle
+ *   associated with the device, if it was opened using libusb.
  *
  * \param dev a device handle returned from SDL_hid_open().
  * \returns a valid property ID on success or 0 on failure; call
