@@ -19,7 +19,7 @@ endfunction()
 # Use sdl_glob_sources to add glob sources to SDL3-shared, to SDL3-static, or to both.
 function(sdl_glob_sources)
   cmake_parse_arguments(ARGS "" "" "SHARED;STATIC" ${ARGN})
-  if (ARGS_SHARED)
+  if(ARGS_SHARED)
     file(GLOB shared_sources CONFIGURE_DEPENDS ${ARGS_SHARED})
   endif()
   if(ARGS_STATIC)
