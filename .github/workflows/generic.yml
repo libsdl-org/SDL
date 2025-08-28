@@ -415,9 +415,9 @@ jobs:
         if: ${{ matrix.platform.android-ndk && !matrix.platform.no-cmake }}
         run: |
           # Check test apks
-          find build/test -iname '*.apk' -exec ./build-scripts/check_elf_alignment.sh {} ';'
+          find ./ -iname '*.apk' | xargs -L1 ./build-scripts/check_elf_alignment.sh
           # Check output libs
-          find build -iname '*.so' -exec ./build-scripts/check_elf_alignment.sh {} ';'
+          find ./ -iname '*.so' | xargs -L1 ./build-scripts/check_elf_alignment.sh
       - name: 'Upload binary package'
         uses: actions/upload-artifact@v4
         if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}
