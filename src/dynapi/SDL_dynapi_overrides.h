@@ -1279,3 +1279,4 @@
 #define SDL_GetEventDescription SDL_GetEventDescription_REAL
 #define SDL_PutAudioStreamDataNoCopy SDL_PutAudioStreamDataNoCopy_REAL
 #define SDL_AddAtomicU32 SDL_AddAtomicU32_REAL
+#define SDL_hid_get_properties SDL_hid_get_properties_REAL
