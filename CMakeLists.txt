@@ -3397,7 +3397,7 @@ if(WINDOWS)
   )
   set(SDL_PROCESS_WINDOWS 1)
   set(HAVE_SDL_PROCESS TRUE)
-else()
+elseif(NOT ANDROID)
   check_c_source_compiles("
 #include <spawn.h>
 #include <unistd.h>
