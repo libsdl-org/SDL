@@ -411,6 +411,13 @@ jobs:
           build-scripts/test-versioning.sh
           python build-scripts/check_android_jni.py
           python build-scripts/check_stdlib_usage.py
+      - name: 'Verify Android alignment'
+        if: ${{ matrix.platform.android-ndk && !matrix.platform.no-cmake }}
+        run: |
+          # Check test apks
+          find build/test -iname '*.apk' -exec ./build-scripts/check_elf_alignment.sh {} ';'
+          # Check output libs
+          find build/android/lib -iname '*.so' -exec ./build-scripts/check_elf_alignment.sh {} ';'
       - name: 'Upload binary package'
         uses: actions/upload-artifact@v4
         if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}
