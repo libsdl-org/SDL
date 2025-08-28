@@ -139,6 +139,9 @@ extern bool SDL_DBus_ScreensaverInhibit(bool inhibit);
 
 extern bool SDL_DBus_OpenURI(const char *uri, const char *window_id, const char *activation_token);
 
+extern int SDL_DBus_StartLocation(void);
+extern void SDL_DBus_StopLocation(void);
+
 extern void SDL_DBus_PumpEvents(void);
 extern char *SDL_DBus_GetLocalMachineId(void);
 
