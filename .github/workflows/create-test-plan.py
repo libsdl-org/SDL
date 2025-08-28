@@ -552,9 +552,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     f"-DANDROID_ABI={spec.android_abi}",
                 ))
                 job.cmake_toolchain_file = "${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake"
-
-                # -fPIC is required after updating NDK from 21 to 28
-                job.cc = f"${{ANDROID_NDK_HOME}}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target={spec.android_arch}-none-linux-androideabi{spec.android_platform} -fPIC"
+                job.cc = f"${{ANDROID_NDK_HOME}}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target={spec.android_arch}-none-linux-androideabi{spec.android_platform}"
 
                 job.android_apks = [
                     "testaudiorecording-apk",
@@ -563,6 +561,10 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     "testmultiaudio-apk",
                     "testsprite-apk",
                 ]
+
+                # -fPIC is required after updating NDK from 21 to 28
+                job.cflags.append("-fPIC")
+                job.cxxflags.append("-fPIC")
         case SdlPlatform.Emscripten:
             job.clang_tidy = False  # clang-tidy does not understand -gsource-map
             job.shared = False
