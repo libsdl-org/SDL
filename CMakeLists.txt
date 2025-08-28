@@ -1388,10 +1388,6 @@ if(ANDROID)
   )
   set(HAVE_SDL_MISC TRUE)
 
-  # Required with updating NDK from 21 to 28, due to errors like this:
-  # ld.lld: error: relocation X cannot be used against symbol Y; recompile with -fPIC
-  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
   # SDL_spinlock.c Needs to be compiled in ARM mode.
   # There seems to be no better way currently to set the ARM mode.
   # see: https://issuetracker.google.com/issues/62264618
