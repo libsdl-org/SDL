@@ -33,6 +33,7 @@
 
 #define ENABLE_RAW_MOUSE_INPUT      0x01
 #define ENABLE_RAW_KEYBOARD_INPUT   0x02
+#define RAW_KEYBOARD_FLAG_NOHOTKEYS 0x00000200
 
 typedef struct
 {
@@ -78,6 +79,9 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
         devices[count].usUsagePage = USB_USAGEPAGE_GENERIC_DESKTOP;
         devices[count].usUsage = USB_USAGE_GENERIC_KEYBOARD;
         devices[count].dwFlags = 0;
+        if (data->flags & RAW_KEYBOARD_FLAG_NOHOTKEYS) {
+            devices[count].dwFlags |= RIDEV_NOHOTKEYS;
+        }
         devices[count].hwndTarget = window;
         ++count;
     }
@@ -198,6 +202,9 @@ static bool WIN_UpdateRawInputEnabled(SDL_VideoDevice *_this)
     }
     if (data->raw_keyboard_enabled) {
         flags |= ENABLE_RAW_KEYBOARD_INPUT;
+        if (data->raw_keyboard_flag_nohotkeys) {
+            flags |= RAW_KEYBOARD_FLAG_NOHOTKEYS;
+        }
     }
     if (flags != data->raw_input_enabled) {
         if (WIN_SetRawInputEnabled(_this, flags)) {
