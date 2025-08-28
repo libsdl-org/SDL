@@ -540,6 +540,234 @@ bool SDL_DBus_ScreensaverInhibit(bool inhibit)
     return true;
 }
 
+#define LOCATION_NODE "org.freedesktop.portal.Desktop"
+#define LOCATION_PATH "/org/freedesktop/portal/desktop"
+#define LOCATION_IF "org.freedesktop.portal.Location"
+#define SESSION_IF "org.freedesktop.portal.Session"
+
+static void fill_location_event(SDL_Event *e, const char *key, double val)
+{
+    if (!key) {
+        return;
+    }
+    if (SDL_strcmp(key, "Latitude") == 0) {
+        e->location.latitude = val;
+    } else if (SDL_strcmp(key, "Longitude") == 0) {
+        e->location.longitude = val;
+    } else if (SDL_strcmp(key, "Altitude") == 0) {
+        e->location.altitude = val;
+    }
+}
+
+static DBusHandlerResult DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data) {
+
+/*
+ *  TODO: detect/test session.Closed signal matching session_path
+    if (dbus.message_is_signal(msg, SESSION_IF, "Closed")) {
+        SDL_free(session_path);
+        session_path = NULL;
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+*/
+    if (dbus.message_is_signal(msg, LOCATION_IF, "LocationUpdated")) {
+        DBusMessageIter signal_iter, variant_iter;
+        const char *session_handle;
+        SDL_Event evt;
+
+        SDL_zero(evt);
+
+        dbus.message_iter_init(msg, &signal_iter);
+        /* Check if the parameters are what we expect */
+        if (dbus.message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_OBJECT_PATH) {
+            goto not_our_signal;
+        }
+        dbus.message_iter_get_basic(&signal_iter, &session_handle);
+
+        if (!dbus.message_iter_next(&signal_iter)) {
+            goto not_our_signal;
+        }
+        if (dbus.message_iter_get_arg_type(&signal_iter) != DBUS_TYPE_ARRAY) {
+            goto not_our_signal;
+        }
+
+        dbus.message_iter_recurse(&signal_iter, &variant_iter);
+
+	    while (dbus.message_iter_get_arg_type(&variant_iter) == DBUS_TYPE_DICT_ENTRY) {
+            DBusMessageIter entry;
+		    const char *key;
+
+            dbus.message_iter_recurse(&variant_iter, &entry);
+
+            if (dbus.message_iter_get_arg_type(&entry) == DBUS_TYPE_STRING) {
+                dbus.message_iter_get_basic(&entry, &key);
+
+                dbus.message_iter_next(&entry);
+
+                if (dbus.message_iter_get_arg_type(&entry) == DBUS_TYPE_VARIANT) {
+                    DBusMessageIter value;
+                    dbus.message_iter_recurse(&entry, &value);
+
+                    if (dbus.message_iter_get_arg_type(&value) == DBUS_TYPE_DOUBLE) {
+                        double val = 0;
+                        dbus.message_iter_get_basic(&value, &val);
+                        fill_location_event(&evt, key, val);
+                    }
+                }
+
+            }
+
+		    dbus.message_iter_next(&variant_iter);
+
+	    }
+
+        evt.type = SDL_EVENT_LOCATION;
+        SDL_PushEvent(&evt);
+
+        return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+not_our_signal:
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+
+
+/* Location session path */
+static char *session_path = NULL;
+
+/* enable location services in GNOME's privacy settings ? */
+int SDL_DBus_StartLocation(void)
+{
+    char *request_path = NULL;
+    DBusMessage *msg = NULL;
+
+    if (!dbus.session_conn) {
+        /* We either lost connection to the session bus or were not able to
+         * load the D-Bus library at all. */
+        return true;
+    }
+
+    if (session_path != NULL) { /* Already started */
+        return 0;
+    }
+
+    /* Call Location.CreateSession() */
+    {
+        DBusMessageIter iterInit;
+        const char *session_handle_token = "someTokenForSDL";
+
+        msg = dbus.message_new_method_call(LOCATION_NODE, LOCATION_PATH, LOCATION_IF, "CreateSession");
+        if (msg == NULL) {
+            goto failure;
+        }
+
+        dbus.message_iter_init_append(msg, &iterInit);
+
+        /* a{sv} */
+        {
+            const char *keys[1];
+            const char *values[1];
+            keys[0] = "session_handle_token";
+            values[0] = session_handle_token;
+            if (!SDL_DBus_AppendDictWithKeysAndValues(&iterInit, keys, values, 1)) {
+                goto failure;
+            }
+        }
+
+        if (SDL_DBus_CallWithBasicReply(dbus.session_conn, msg, DBUS_TYPE_OBJECT_PATH, &session_path)) {
+            session_path = SDL_strdup(session_path);
+        } else {
+            SDL_SetError("no session");
+            goto failure;
+        }
+
+        dbus.message_unref(msg);
+        msg = NULL;
+
+        SDL_Log("Session path: %s", session_path);
+    }
+
+    /* Connect to client signal LocationUpdated().  */
+    {
+        /* Add better rule ?
+        char rule[1024];
+        SDL_snprintf(rule, sizeof(rule), "type='signal', interface='%s', member='LocationUpdated', path='%s'", LOCATION_IF, session_path);
+        // SDL_snprintf(rule, sizeof(rule), "type='signal', member='LocationUpdated'");
+        dbus.bus_add_match(dbus.session_conn, rule, NULL);
+        SDL_Log("add filter & rule: %s", rule);
+        */
+
+       if (!dbus.connection_add_filter(dbus.session_conn, &DBus_MessageFilter, NULL /* cb data */, NULL)) {
+           SDL_SetError("add filter");
+           goto failure;
+       }
+
+       dbus.connection_flush(dbus.session_conn);
+    }
+
+    /* Call Location.Start() */
+    {
+        DBusMessageIter iterInit;
+        const char *handle_token = "anotherTokenForSDL";
+        const char *window_str = "win";
+
+        msg = dbus.message_new_method_call(LOCATION_NODE, LOCATION_PATH, LOCATION_IF, "Start");
+        if (msg == NULL) {
+            goto failure;
+        }
+
+        if (!dbus.message_append_args(msg, DBUS_TYPE_OBJECT_PATH, &session_path, DBUS_TYPE_STRING, &window_str, DBUS_TYPE_INVALID)) {
+            goto failure;
+        }
+
+        dbus.message_iter_init_append(msg, &iterInit);
+
+        /* a{sv} */
+        {
+            const char *keys[1];
+            const char *values[1];
+            keys[0] = "handle_token";
+            values[0] = handle_token;
+            if (!SDL_DBus_AppendDictWithKeysAndValues(&iterInit, keys, values, 1)) {
+                goto failure;
+            }
+        }
+
+        if (SDL_DBus_CallWithBasicReply(dbus.session_conn, msg, DBUS_TYPE_OBJECT_PATH, &request_path)) {
+            SDL_Log("Request path: %s", request_path);
+        } else {
+            goto failure;
+        }
+
+        dbus.message_unref(msg);
+    }
+
+    return 0;
+
+failure:
+    if (msg) {
+        dbus.message_unref(msg);
+    }
+    if (session_path) {
+        SDL_free(session_path);
+        session_path = NULL;
+    }
+    return -1;
+}
+void SDL_DBus_StopLocation(void)
+{
+    if (session_path == NULL) {
+        SDL_SetError("not started");
+        return;
+    }
+
+    /* Call Session.Stop() */
+    SDL_DBus_CallVoidMethod(LOCATION_NODE, session_path, SESSION_IF, "Close", DBUS_TYPE_INVALID);
+
+    SDL_free(session_path);
+    session_path = NULL;
+}
+
 void SDL_DBus_PumpEvents(void)
 {
     if (dbus.session_conn) {

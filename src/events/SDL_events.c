@@ -855,6 +855,11 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
                            event->sensor.data[3], event->sensor.data[4], event->sensor.data[5]);
         break;
 
+        SDL_EVENT_CASE(SDL_EVENT_LOCATION)
+        (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u latitude=%g longitude=%g altitude=%g)",
+                           (uint)event->jaxis.timestamp, event->location.latitude, event->location.longitude, event->location.altitude);
+        break;
+
 #undef SDL_EVENT_CASE
 
     case SDL_EVENT_POLL_SENTINEL:
