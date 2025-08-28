@@ -24,6 +24,15 @@
 
 #ifdef HAVE_LIBUSB
 
+#ifdef SDL_LIBUSB_DYNAMIC
+SDL_ELF_NOTE_DLOPEN(
+    "libusb",
+    "Support for joysticks through libusb",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_LIBUSB_DYNAMIC
+);
+#endif
+
 static SDL_AtomicInt SDL_libusb_refcount;
 static bool SDL_libusb_loaded;
 static SDL_SharedObject *SDL_libusb_handle;
