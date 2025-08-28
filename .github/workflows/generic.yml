@@ -76,7 +76,7 @@ jobs:
         id: setup-ndk
         with:
           local-cache: true
-          ndk-version: r21e
+          ndk-version: r28c
       - name: 'Configure Android NDK variables'
         if: ${{ matrix.platform.android-ndk }}
         shell: sh
@@ -406,6 +406,14 @@ jobs:
           build-scripts/test-versioning.sh
           python build-scripts/check_android_jni.py
           python build-scripts/check_stdlib_usage.py
+      - name: 'Verify alignment of Android test apks'
+        if: ${{ matrix.platform.android-ndk && !matrix.platform.no-cmake }}
+        run: |
+          find ./ -iname '*.apk' | xargs -L1 ./build-scripts/check_elf_alignment.sh
+      - name: 'Verify alignment of Android .so files'
+        if: ${{ matrix.platform.android-ndk && !matrix.platform.no-cmake }}
+        run: |
+          find ./ -iname '*.so' | xargs -L1 ./build-scripts/check_elf_alignment.sh
       - name: 'Upload binary package'
         uses: actions/upload-artifact@v4
         if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}
