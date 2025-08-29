@@ -21,8 +21,8 @@
 
 // This is an include file for windows.h with the SDL build settings
 
-#ifndef _INCLUDED_WINDOWS_H
-#define _INCLUDED_WINDOWS_H
+#ifndef SDL_windows_h_
+#define SDL_windows_h_
 
 #ifdef SDL_PLATFORM_WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -180,4 +180,4 @@ extern int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCh
 }
 #endif
 
-#endif // _INCLUDED_WINDOWS_H
+#endif // SDL_windows_h_
