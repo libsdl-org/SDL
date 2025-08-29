@@ -2116,6 +2116,8 @@ typedef struct SDL_GPUBufferBinding
  *
  * \sa SDL_BindGPUVertexSamplers
  * \sa SDL_BindGPUFragmentSamplers
+ * \sa SDL_GPUTexture
+ * \sa SDL_GPUSampler
  */
 typedef struct SDL_GPUTextureSamplerBinding
 {
