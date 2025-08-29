@@ -174,6 +174,7 @@
 #cmakedefine HAVE_MEMFD_CREATE 1
 #cmakedefine HAVE_POSIX_FALLOCATE 1
 #cmakedefine HAVE_SIGACTION 1
+#cmakedefine HAVE_SIGTIMEDWAIT 1
 #cmakedefine HAVE_SA_SIGACTION 1
 #cmakedefine HAVE_ST_MTIM 1
 #cmakedefine HAVE_SETJMP 1
