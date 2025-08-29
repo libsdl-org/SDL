@@ -334,15 +334,15 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
         // assert(*filter_ptr == L'\0');
     }
 
-    if (title && !(title_w = WIN_UTF8ToStringW(title))) {
+    if (title && (title_w = WIN_UTF8ToStringW(title)) == NULL) {
         goto quit;
     }
 
-    if (accept && !(accept_w = WIN_UTF8ToStringW(accept))) {
+    if (accept && (accept_w = WIN_UTF8ToStringW(accept)) == NULL) {
         goto quit;
     }
 
-    if (cancel && !(cancel_w = WIN_UTF8ToStringW(cancel))) {
+    if (cancel && (cancel_w = WIN_UTF8ToStringW(cancel)) == NULL) {
         goto quit;
     }
 
