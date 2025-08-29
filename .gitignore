@@ -50,6 +50,7 @@ compile_commands.json
 *.pc
 test/*.test
 wayland-generated-protocols
+CMakeSettings.json
 
 # for CLion
 .idea
