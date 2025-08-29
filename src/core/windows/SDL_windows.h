@@ -36,12 +36,19 @@
 #endif
 #undef WINVER
 #undef _WIN32_WINNT
+#ifdef SDL_WINVER
+#if SDL_WINVER < 0x501
+#error SDL_WINVER must be at least 0x501 (Windows XP or higher)
+#endif
+#define _WIN32_WINNT SDL_WINVER
+#else
 #if defined(SDL_VIDEO_RENDER_D3D12) || defined(HAVE_DXGI1_6_H)
 #define _WIN32_WINNT 0xA00 // For D3D12, 0xA00 is required
 #elif defined(HAVE_SHELLSCALINGAPI_H)
 #define _WIN32_WINNT 0x603 // For DPI support
 #else
 #define _WIN32_WINNT 0x501 // Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input
+#endif
 #endif
 #define WINVER _WIN32_WINNT
 
