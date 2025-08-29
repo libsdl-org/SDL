@@ -162,7 +162,11 @@ bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
         return false;
     }
 
-    const BOOL rc = CopyFileExW(woldpath, wnewpath, NULL, NULL, NULL, COPY_FILE_ALLOW_DECRYPTED_DESTINATION|COPY_FILE_NO_BUFFERING);
+    const BOOL rc = CopyFileExW(woldpath, wnewpath, NULL, NULL, NULL, COPY_FILE_ALLOW_DECRYPTED_DESTINATION
+#if WINVER >= _WIN32_WINNT_VISTA
+        |COPY_FILE_NO_BUFFERING
+#endif
+    );
     SDL_free(wnewpath);
     SDL_free(woldpath);
     if (!rc) {

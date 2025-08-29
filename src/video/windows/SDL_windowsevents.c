@@ -1250,6 +1250,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         WIN_UpdateFocus(data->window, false, GetMessagePos());
     } break;
 
+#if WINVER >= _WIN32_WINNT_WIN10
     case WM_POINTERENTER:
     {
         if (!data->videodata->GetPointerType) {
@@ -1367,6 +1368,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         returnCode = 0;
     } break;
+#endif
 
     case WM_MOUSEMOVE:
     {
@@ -2063,6 +2065,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         returnCode = 0;
         break;
 
+#if WINVER >= _WIN32_WINNT_WIN10
     case WM_TOUCH:
         if (data->videodata->GetTouchInputInfo && data->videodata->CloseTouchInputHandle) {
             UINT i, num_inputs = LOWORD(wParam);
@@ -2130,6 +2133,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             return 0;
         }
         break;
+#endif
 
 #ifdef HAVE_TPCSHRD_H
 
@@ -2275,6 +2279,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
     } break;
 
+#if WINVER >= _WIN32_WINNT_WIN10
     case WM_GETDPISCALEDSIZE:
         // Windows 10 Creators Update+
         /* Documented as only being sent to windows that are per-monitor V2 DPI aware.
@@ -2408,8 +2413,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             WIN_UpdateMouseSystemScale();
         }
         break;
+#endif
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+
+    default:
+        break;
     }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

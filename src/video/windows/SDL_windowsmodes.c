@@ -250,6 +250,7 @@ static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
     const SDL_VideoData *videodata = (const SDL_VideoData *)_this->internal;
     int dpi = 0;
 
+#if WINVER >= _WIN32_WINNT_WIN10
     if (videodata->GetDpiForMonitor) {
         UINT hdpi_uint, vdpi_uint;
         if (videodata->GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &hdpi_uint, &vdpi_uint) == S_OK) {
@@ -264,6 +265,7 @@ static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
             ReleaseDC(NULL, hdc);
         }
     }
+#endif
     if (dpi == 0) {
         // Safe default
         dpi = USER_DEFAULT_SCREEN_DPI;
@@ -311,6 +313,7 @@ static bool WIN_GetDisplayMode(SDL_VideoDevice *_this, void *dxgi_output, HMONIT
 
 static char *WIN_GetDisplayNameVista(SDL_VideoData *videodata, const WCHAR *deviceName)
 {
+#if WINVER >= _WIN32_WINNT_VISTA
     DISPLAYCONFIG_PATH_INFO *paths = NULL;
     DISPLAYCONFIG_MODE_INFO *modes = NULL;
     char *result = NULL;
@@ -385,6 +388,7 @@ WIN_GetDisplayNameVista_failed:
     SDL_free(result);
     SDL_free(paths);
     SDL_free(modes);
+#endif
     return NULL;
 }
 
@@ -438,6 +442,8 @@ static bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
 
 static bool WIN_GetMonitorPathInfo(SDL_VideoData *videodata, HMONITOR hMonitor, DISPLAYCONFIG_PATH_INFO *path_info)
 {
+    bool found = false;
+#if WINVER >= _WIN32_WINNT_WIN10
     LONG result;
     MONITORINFOEXW view_info;
     UINT32 i;
@@ -445,7 +451,6 @@ static bool WIN_GetMonitorPathInfo(SDL_VideoData *videodata, HMONITOR hMonitor, 
     UINT32 num_mode_info_array_elements = 0;
     DISPLAYCONFIG_PATH_INFO *path_infos = NULL, *new_path_infos;
     DISPLAYCONFIG_MODE_INFO *mode_infos = NULL, *new_mode_infos;
-    bool found = false;
 
     if (!videodata->GetDisplayConfigBufferSizes || !videodata->QueryDisplayConfig || !videodata->DisplayConfigGetDeviceInfo) {
         return false;
@@ -502,15 +507,17 @@ static bool WIN_GetMonitorPathInfo(SDL_VideoData *videodata, HMONITOR hMonitor, 
 done:
     SDL_free(path_infos);
     SDL_free(mode_infos);
+#endif
 
     return found;
 }
 
 static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
 {
+    float SDR_white_level = 1.0f;
+#if WINVER >= _WIN32_WINNT_WIN10
     DISPLAYCONFIG_PATH_INFO path_info;
     SDL_VideoData *videodata = _this->internal;
-    float SDR_white_level = 1.0f;
 
     if (WIN_GetMonitorPathInfo(videodata, hMonitor, &path_info)) {
         /* workarounds for https://github.com/libsdl-org/SDL/issues/11193 */
@@ -531,6 +538,7 @@ static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
             SDR_white_level = (white_level.SDRWhiteLevel / 1000.0f);
         }
     }
+#endif
     return SDR_white_level;
 }
 
