@@ -734,6 +734,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360w.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_lg4ff.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_zuiki.c" />
     <ClCompile Include="..\..\src\joystick\SDL_gamepad.c" />
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c" />
     <ClCompile Include="..\..\src\joystick\SDL_steam_virtual_gamepad.c" />
