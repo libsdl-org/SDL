@@ -1540,7 +1540,7 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
         SDL_SetError("Could not get interfaces for the OpenVR System (%s), Overlay (%s) and Input (%s) versions", IVRSystem_Version, IVROverlay_Version, IVRInput_Version);
     }
 
-    const char *hint = SDL_GetHint("SDL_OPENVR_INPUT_PROFILE");
+    hint = SDL_GetHint("SDL_OPENVR_INPUT_PROFILE");
     char *loadpath = 0;
     EVRInputError err;
 
