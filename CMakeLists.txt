@@ -1099,6 +1099,7 @@ if(SDL_LIBC)
     endforeach()
 
     check_symbol_exists(sigaction "signal.h" HAVE_SIGACTION)
+    check_symbol_exists(sigtimedwait "signal.h" HAVE_SIGTIMEDWAIT)
     check_symbol_exists(setjmp "setjmp.h" HAVE_SETJMP)
     check_symbol_exists(nanosleep "time.h" HAVE_NANOSLEEP)
     check_symbol_exists(sysconf "unistd.h" HAVE_SYSCONF)

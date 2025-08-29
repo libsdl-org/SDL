@@ -19756,6 +19756,12 @@ then :
   printf "%s\n" "#define HAVE_SIGACTION 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "sigtimedwait" "ac_cv_func_sigtimedwait"
+if test "x$ac_cv_func_sigtimedwait" = xyes
+then :
+  printf "%s\n" "#define HAVE_SIGTIMEDWAIT 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "setjmp" "ac_cv_func_setjmp"
 if test "x$ac_cv_func_setjmp" = xyes
 then :
@@ -22422,7 +22428,6 @@ printf %s "checking for NAS audio support... " >&6; }
             have_nas=yes
             NAS_CFLAGS="-I/usr/X11R6/include/"
             NAS_LIBS="-L/usr/X11R6/lib -laudio -lXt"
-
         fi
 
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_nas" >&5

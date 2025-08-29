@@ -195,6 +195,7 @@
 #undef HAVE_FSEEKO
 #undef HAVE_FSEEKO64
 #undef HAVE_SIGACTION
+#undef HAVE_SIGTIMEDWAIT
 #undef HAVE_SA_SIGACTION
 #undef HAVE_SETJMP
 #undef HAVE_NANOSLEEP
@@ -216,6 +217,7 @@
 #undef HAVE__EXIT
 
 #else
+
 #define HAVE_STDARG_H 1
 #define HAVE_STDDEF_H 1
 #define HAVE_STDINT_H 1

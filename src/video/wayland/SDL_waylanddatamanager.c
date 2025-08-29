@@ -40,6 +40,48 @@
  */
 #define PIPE_MS_TIMEOUT 14
 
+/* sigtimedwait() is an optional part of POSIX.1-2001, and OpenBSD doesn't implement it.
+ * Based on https://comp.unix.programmer.narkive.com/rEDH0sPT/sigtimedwait-implementation
+ */
+#ifndef HAVE_SIGTIMEDWAIT
+#include <errno.h>
+#include <time.h>
+static int sigtimedwait(const sigset_t *set, siginfo_t *info, const struct timespec *timeout)
+{
+    struct timespec elapsed = { 0 }, rem = { 0 };
+    sigset_t pending;
+    int signo;
+    do {
+        /* Check the pending signals, and call sigwait if there is at least one of interest in the set. */
+        sigpending(&pending);
+        for (signo = 1; signo < NSIG; ++signo) {
+            if (sigismember(set, signo) && sigismember(&pending, signo)) {
+                if (!sigwait(set, &signo)) {
+                    if (info) {
+                        SDL_memset(info, 0, sizeof *info);
+                        info->si_signo = signo;
+                    }
+                    return signo;
+                } else {
+                    return -1;
+                }
+            }
+        }
+
+        if (timeout->tv_sec || timeout->tv_nsec) {
+            long ns = 20000000L; // 2/100ths of a second
+            nanosleep(&(struct timespec){ 0, ns }, &rem);
+            ns -= rem.tv_nsec;
+            elapsed.tv_sec += (elapsed.tv_nsec + ns) / 1000000000L;
+            elapsed.tv_nsec = (elapsed.tv_nsec + ns) % 1000000000L;
+        }
+    } while (elapsed.tv_sec < timeout->tv_sec || (elapsed.tv_sec == timeout->tv_sec && elapsed.tv_nsec < timeout->tv_nsec));
+
+    errno = EAGAIN;
+    return -1;
+}
+#endif
+
 static ssize_t write_pipe(int fd, const void *buffer, size_t total_length, size_t *pos)
 {
     int ready = 0;
@@ -75,7 +117,7 @@ static ssize_t write_pipe(int fd, const void *buffer, size_t total_length, size_
         }
     }
 
-    sigtimedwait(&sig_set, 0, &zerotime);
+    sigtimedwait(&sig_set, NULL, &zerotime);
 
 #ifdef SDL_THREADS_DISABLED
     sigprocmask(SIG_SETMASK, &old_sig_set, NULL);
