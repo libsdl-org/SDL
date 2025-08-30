@@ -26,6 +26,7 @@
 #include "SDL_x11messagebox.h"
 #include "SDL_x11toolkit.h"
 
+/* when the pr reopens, set this back to 1 */
 #ifndef SDL_FORK_MESSAGEBOX
 #define SDL_FORK_MESSAGEBOX 0
 #endif
