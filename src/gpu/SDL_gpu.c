@@ -1785,6 +1785,8 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         commandBufferHeader->render_pass.num_color_targets = num_color_targets;
         if (depth_stencil_target_info != NULL) {
             commandBufferHeader->render_pass.depth_stencil_target = depth_stencil_target_info->texture;
+        } else {
+            commandBufferHeader->render_pass.depth_stencil_target = NULL;
         }
     }
 
