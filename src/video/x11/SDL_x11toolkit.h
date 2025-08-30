@@ -23,6 +23,7 @@
 #ifndef SDL_x11toolkit_h_
 #define SDL_x11toolkit_h_
 
+#include "../../SDL_list.h"
 #include "SDL_x11video.h"
 #include "SDL_x11dyn.h"
 #include "SDL_x11settings.h"
@@ -34,11 +35,20 @@
 #define SDL_TOOLKIT_X11_ELEMENT_PADDING 4
 #define SDL_TOOLKIT_X11_ELEMENT_PADDING_2 12
 #define SDL_TOOLKIT_X11_ELEMENT_PADDING_3 8
+#define SDL_TOOLKIT_X11_ELEMENT_PADDING_4 16
+#define SDL_TOOLKIT_X11_ELEMENT_PADDING_5 3
+
+typedef enum SDL_ToolkitChildModeX11
+{
+    SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG,
+    SDL_TOOLKIT_WINDOW_MODE_X11_CHILD
+} SDL_ToolkitWindowModeX11;
 
 typedef struct SDL_ToolkitWindowX11
 {
     char *origlocale;
-
+    SDL_ToolkitWindowModeX11 mode;
+    
     SDL_Window *parent;
     Display *display;
     int screen;
@@ -68,30 +78,51 @@ typedef struct SDL_ToolkitWindowX11
     int pixmap_width;  
     int pixmap_height;
         
+    /* XSettings and scaling */
     XSettingsClient *xsettings;
     bool xsettings_first_time;
     int iscale;
     float scale;
     
+    /* Font */
     XFontSet font_set;        // for UTF-8 systems
     XFontStruct *font_struct; // Latin1 (ASCII) fallback.
 
+	/* Control colors */
     XColor xcolor[SDL_MESSAGEBOX_COLOR_COUNT];
     XColor xcolor_bevel_l1;
     XColor xcolor_bevel_l2;
     XColor xcolor_bevel_d;
     XColor xcolor_pressed;
         
+    /* Control list */
     bool has_focus;
-      struct SDL_ToolkitControlX11 *focused_control;  
+    struct SDL_ToolkitControlX11 *focused_control;  
     struct SDL_ToolkitControlX11 *fiddled_control;
     struct SDL_ToolkitControlX11 **controls;
     size_t controls_sz;  
     struct SDL_ToolkitControlX11 **dyn_controls;
     size_t dyn_controls_sz;
-    
+
+	/* User callbacks */
     void *cb_data;
     void (*cb_on_scale_change)(struct SDL_ToolkitWindowX11 *, void *);
+    
+    /* Child windows */
+    Window *child_windows;
+    size_t child_windows_sz;
+    
+    /* Event loop */
+    XEvent *e;
+    struct SDL_ToolkitControlX11 *previous_control;
+    struct SDL_ToolkitControlX11 *key_control_esc;
+    struct SDL_ToolkitControlX11 *key_control_enter;
+    KeySym last_key_pressed;
+    int ev_i;
+    float ev_scale;
+    float ev_iscale;
+    Window ev_child_window;
+    bool draw;
 } SDL_ToolkitWindowX11;
 
 typedef enum SDL_ToolkitControlStateX11
@@ -99,6 +130,7 @@ typedef enum SDL_ToolkitControlStateX11
     SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL,
     SDL_TOOLKIT_CONTROL_STATE_X11_HOVER,
     SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED,
+    SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED_HELD
 } SDL_ToolkitControlStateX11;
 
 typedef struct SDL_ToolkitControlX11
@@ -118,10 +150,23 @@ typedef struct SDL_ToolkitControlX11
     void (*func_free)(struct SDL_ToolkitControlX11 *);
 } SDL_ToolkitControlX11;
 
+typedef struct SDL_ToolkitMenuItemX11
+{
+    const char *utf8;
+    bool checkbox;
+    bool checked;
+	void *cb_data;
+    void (*cb)(struct SDL_ToolkitMenuItemX11 *, void *);
+    SDL_ListNode *sub_menu;
+    
+    SDL_Rect utf8_rect;
+    SDL_Rect hover_rect;
+    SDL_ToolkitControlStateX11 state;
+} SDL_ToolkitMenuItemX11;
+
 /* WINDOW FUNCTIONS */
-extern SDL_ToolkitWindowX11 *X11Toolkit_CreateWindow(SDL_Window *parent, const SDL_MessageBoxColor *colorhints, int w, int h, char *title);
-extern SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, const SDL_MessageBoxColor *colorhints);
-extern bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, char *title);
+extern SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_ToolkitWindowModeX11 mode, const SDL_MessageBoxColor *colorhints);
+extern bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, int cx, int cy, char *title);
 extern void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data);
 extern void X11Toolkit_ResizeWindow(SDL_ToolkitWindowX11 *data, int w, int h);
 extern void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data);
@@ -141,6 +186,9 @@ extern SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11
 extern SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *window, const SDL_MessageBoxButtonData *data);
 extern void X11Toolkit_RegisterCallbackForButtonControl(SDL_ToolkitControlX11 *control, void *data, void (*cb)(struct SDL_ToolkitControlX11 *, void *));
 extern const SDL_MessageBoxButtonData *X11Toolkit_GetButtonControlData(SDL_ToolkitControlX11 *control);
+
+/* MENU CONTROL FUNCTIONS */
+extern SDL_ToolkitControlX11 *X11Toolkit_CreateMenuBarControl(SDL_ToolkitWindowX11 *window, SDL_ListNode *menu_items);
 
 #endif // SDL_VIDEO_DRIVER_X11
 
