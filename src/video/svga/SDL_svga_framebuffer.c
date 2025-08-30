@@ -26,6 +26,7 @@
 #include <sys/movedata.h>
 #include <sys/segments.h>
 
+#include "SDL_mouse.h"
 #include "SDL_svga_video.h"
 #include "SDL_svga_framebuffer.h"
 
