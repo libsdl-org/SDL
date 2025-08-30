@@ -32,6 +32,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
+/* Various predefined paddings */
 #define SDL_TOOLKIT_X11_ELEMENT_PADDING 4
 #define SDL_TOOLKIT_X11_ELEMENT_PADDING_2 12
 #define SDL_TOOLKIT_X11_ELEMENT_PADDING_3 8
@@ -41,26 +42,37 @@
 typedef enum SDL_ToolkitChildModeX11
 {
     SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG,
-    SDL_TOOLKIT_WINDOW_MODE_X11_CHILD
+    SDL_TOOLKIT_WINDOW_MODE_X11_CHILD /* For embedding into a normal SDL_Window */
 } SDL_ToolkitWindowModeX11;
 
 typedef struct SDL_ToolkitWindowX11
 {
+	/* Locale */
     char *origlocale;
+    
+	/* Mode */
     SDL_ToolkitWindowModeX11 mode;
     
-    SDL_Window *parent;
+    /* Display */
     Display *display;
     int screen;
+    
+    /* Parent */
+    SDL_Window *parent;
+    
+	/* Window */
     Window window;
     Drawable drawable;
+    
+    /* Visuals and drawing */
     Visual *visual;
     XVisualInfo vi;
-    int depth;
     Colormap cmap;
-    GC ctx;
-    bool utf8;
+  	GC ctx;
+	int depth;
     bool pixmap;
+
+	/* X11 extensions */
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
     XdbeBackBuffer buf;
     bool xdbe; // Whether Xdbe is present or not
@@ -68,11 +80,13 @@ typedef struct SDL_ToolkitWindowX11
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     bool xrandr; // Whether Xrandr is present or not
 #endif
-    long event_mask;
+    bool utf8;
+
+	/* Atoms */
     Atom wm_protocols;
     Atom wm_delete_message;
-    bool close;
     
+    /* Window and pixmap sizes */
     int window_width;  // Window width.
     int window_height; // Window height.
     int pixmap_width;  
@@ -123,26 +137,32 @@ typedef struct SDL_ToolkitWindowX11
     float ev_iscale;
     Window ev_child_window;
     bool draw;
+	bool close;
+    long event_mask;
 } SDL_ToolkitWindowX11;
 
 typedef enum SDL_ToolkitControlStateX11
 {
     SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL,
     SDL_TOOLKIT_CONTROL_STATE_X11_HOVER,
-    SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED,
-    SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED_HELD
+    SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED, /* Key/Button Up */
+    SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED_HELD /* Key/Button Down */
 } SDL_ToolkitControlStateX11;
 
 typedef struct SDL_ToolkitControlX11
 {
-    SDL_ToolkitControlStateX11 state;
     SDL_ToolkitWindowX11 *window;
+    SDL_ToolkitControlStateX11 state;
     SDL_Rect rect;
     bool selected;
     bool dynamic;
     bool is_default_enter;
     bool is_default_esc;
+    
+    /* User data */
     void *data;
+    
+    /* Virtual functions */
     void (*func_draw)(struct SDL_ToolkitControlX11 *);
     void (*func_calc_size)(struct SDL_ToolkitControlX11 *);
     void (*func_on_scale_change)(struct SDL_ToolkitControlX11 *);
@@ -159,6 +179,7 @@ typedef struct SDL_ToolkitMenuItemX11
     void (*cb)(struct SDL_ToolkitMenuItemX11 *, void *);
     SDL_ListNode *sub_menu;
     
+    /* Internal use */
     SDL_Rect utf8_rect;
     SDL_Rect hover_rect;
     SDL_ToolkitControlStateX11 state;
