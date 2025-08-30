@@ -33,18 +33,23 @@
 #include <X11/keysym.h>
 #include <locale.h>
 
-#define SDL_SET_LOCALE      1
+#define SDL_SET_LOCALE 1
 
 typedef struct SDL_ToolkitIconControlX11
 {
     SDL_ToolkitControlX11 parent;
     
+    /* Icon type */
     SDL_MessageBoxFlags flags;
     char icon_char;
+    
+    /* Font */
     XFontStruct *icon_char_font;
     int icon_char_x;
     int icon_char_y;
     int icon_char_a;
+    
+    /* Colors */
     XColor xcolor_black;
     XColor xcolor_red;
     XColor xcolor_red_darker;
@@ -57,18 +62,25 @@ typedef struct SDL_ToolkitIconControlX11
 typedef struct SDL_ToolkitButtonControlX11
 {
     SDL_ToolkitControlX11 parent;
+    
+    /* Data */
     const SDL_MessageBoxButtonData *data;
+    
+    /* Text */
     SDL_Rect text_rect;
     int text_a;
     int text_d;
     int str_sz;
-    void (*cb)(struct SDL_ToolkitControlX11 *, void *);
-    void *cb_data;
+    
+    /* Callback */
+	void *cb_data;
+	void (*cb)(struct SDL_ToolkitControlX11 *, void *);
 } SDL_ToolkitButtonControlX11;
 
 typedef struct SDL_ToolkitLabelControlX11
 {
     SDL_ToolkitControlX11 parent;
+    
     char **lines;
     int *y;
     size_t *szs;
@@ -78,16 +90,17 @@ typedef struct SDL_ToolkitLabelControlX11
 typedef struct SDL_ToolkitMenuBarControlX11
 {
 	SDL_ToolkitControlX11 parent;
+	
 	SDL_ListNode *menu_items;
 } SDL_ToolkitMenuBarControlX11;
 
-
+/* Font for icon control */
 static const char *g_IconFont = "-*-*-bold-r-normal-*-%d-*-*-*-*-*-iso8859-1[33 88 105]";
 #define G_ICONFONT_SIZE 18
 
+/* General UI font */
 static const char g_ToolkitFontLatin1[] =
     "-*-*-medium-r-normal--0-%d-*-*-p-0-iso8859-1";
-
 static const char *g_ToolkitFont[] = {
     "-*-*-medium-r-normal--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
     "-*-*-medium-r-*--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
@@ -347,7 +360,7 @@ static void SettingsNotify(const char *name, XSettingsAction action, XSettingsSe
             }
         }
         
-        /* notify */
+        /* notify cb */
         if (window->cb_on_scale_change) {
             window->cb_on_scale_change(window, window->cb_data);
         }
@@ -520,6 +533,7 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
     window->xcolor_pressed.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].green - 12500, 0, 65535);
     window->xcolor_pressed.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND].blue - 12500, 0, 65535);
     
+    /* Screen */
     window->parent = parent;
     if (parent) {
         SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(parent);
@@ -527,7 +541,8 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
     } else {
         window->screen = DefaultScreen(window->display);
     }
-
+	
+	/* Visuals */
 	if (mode == SDL_TOOLKIT_WINDOW_MODE_X11_CHILD) {
 	    window->visual = parent->internal->visual;
 		window->cmap = parent->internal->colormap;
@@ -540,6 +555,7 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
 		X11_GetVisualInfoFromVisual(window->display, window->visual, &window->vi);		
 	}
 
+	/* Allocate colors */
     for (i = 0; i < SDL_MESSAGEBOX_COLOR_COUNT; i++) {
         X11_XAllocColor(window->display, window->cmap, &window->xcolor[i]);    
     }
@@ -564,28 +580,27 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
 }
 
 static void X11Toolkit_AddControlToWindow(SDL_ToolkitWindowX11 *window, SDL_ToolkitControlX11 *control) {
+	/* Add to controls list */
     window->controls_sz++;
-    
     if (window->controls_sz == 1) {
         window->controls = (struct SDL_ToolkitControlX11 **)SDL_malloc(sizeof(struct SDL_ToolkitControlX11 *));
     } else {
         window->controls = (struct SDL_ToolkitControlX11 **)SDL_realloc(window->controls, sizeof(struct SDL_ToolkitControlX11 *) * window->controls_sz);        
     }
-    
     window->controls[window->controls_sz - 1] = control;
     
+    /* If dynamic, add it to the dynamic controls list too */
     if (control->dynamic) {
         window->dyn_controls_sz++;
-        
         if (window->dyn_controls_sz == 1) {
             window->dyn_controls = (struct SDL_ToolkitControlX11 **)SDL_malloc(sizeof(struct SDL_ToolkitControlX11 *));
         } else {
             window->dyn_controls = (struct SDL_ToolkitControlX11 **)SDL_realloc(window->dyn_controls, sizeof(struct SDL_ToolkitControlX11 *) * window->dyn_controls_sz);        
         }
-    
         window->dyn_controls[window->dyn_controls_sz - 1] = control;        
     }
 
+	/* If selected, set currently focused control to it */
     if (control->selected) {
         window->focused_control = control;
     }    
@@ -625,6 +640,7 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, int cx
     if (data->parent) {
         windowdata = data->parent->internal;
     }
+    
     data->event_mask = ExposureMask |
                        ButtonPressMask | ButtonReleaseMask | KeyPressMask | KeyReleaseMask |
                        StructureNotifyMask | FocusChangeMask | PointerMotionMask;
@@ -637,6 +653,7 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, int cx
 	} else {
 		parent_win = root_win;
 	}
+	
     data->window = X11_XCreateWindow(
         display, parent_win,
         0, 0,
