@@ -27,7 +27,7 @@
 #include "SDL_x11toolkit.h"
 
 #ifndef SDL_FORK_MESSAGEBOX
-#define SDL_FORK_MESSAGEBOX 1
+#define SDL_FORK_MESSAGEBOX 0
 #endif
 
 #if SDL_FORK_MESSAGEBOX
@@ -78,7 +78,6 @@ static void X11_PositionMessageBox(SDL_MessageBoxControlsX11 *controls, int *wp,
     w = h = 2;
     i = t = total_button_w = total_text_and_icon_w = 0;
     max_button_w *= controls->window->iscale;
-   
     
     /* Positioning and sizing */
     for (i = 0; i < controls->messageboxdata->numbuttons; i++) {
@@ -175,10 +174,11 @@ static void X11_OnMessageBoxScaleChange(SDL_ToolkitWindowX11 *window, void *data
         
     controls = data;
     X11_PositionMessageBox(controls, &w, &h);
-    X11Toolkit_ResizeWindow(window, w, h);
+    printf("%d %d\n", w, h);
+    X11Toolkit_ResizeWindow(window, w*window->iscale, h*window->iscale);
 }
 
-static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+static bool X11_ShowMessageBoxImplAAAAA(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     SDL_MessageBoxControlsX11 controls;
     SDL_MessageBoxCallbackDataX11 data;
@@ -197,7 +197,7 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     }
     
     /* Create window */
-    controls.window = X11Toolkit_CreateWindowStruct(messageboxdata->window, colorhints);
+    controls.window = X11Toolkit_CreateWindowStruct(messageboxdata->window, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints);
     controls.window->cb_data = &controls;
     controls.window->cb_on_scale_change = X11_OnMessageBoxScaleChange;
     if (!controls.window) {
@@ -219,12 +219,42 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     X11_PositionMessageBox(&controls, &w, &h);
     
     /* Actually create window, do event loop, cleanup */
-    X11Toolkit_CreateWindowRes(controls.window, w, h, (char *)messageboxdata->title);
+    X11Toolkit_CreateWindowRes(controls.window, w, h, 0, 0, (char *)messageboxdata->title);
     X11Toolkit_DoWindowEventLoop(controls.window);
     X11Toolkit_DestroyWindow(controls.window);
     if (controls.buttons) {
         SDL_free(controls.buttons);
     }
+    return true;
+}
+
+/* for testing menus, replace with AAAAA later! */
+static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+{
+    SDL_ToolkitWindowX11 *window;
+    SDL_ToolkitControlX11 *bar;
+	SDL_ListNode *list;
+	SDL_ToolkitMenuItemX11 a;
+	SDL_ToolkitMenuItemX11 b;
+	SDL_ToolkitMenuItemX11 c;
+	
+	/* items */
+	list = NULL;
+	a.utf8 = "Hello";
+	SDL_ListAdd(&list, &a);
+ 	b.utf8 = "Testing";
+	SDL_ListAdd(&list, &b);
+	c.utf8 = "123";
+	SDL_ListAdd(&list, &c);
+	
+	/* Create window */
+    window = X11Toolkit_CreateWindowStruct(NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, NULL);
+    bar = X11Toolkit_CreateMenuBarControl(window, list);
+    
+    /* Actually create window, do event loop, cleanup */
+    X11Toolkit_CreateWindowRes(window, 320, 240, 0, 0, "MENUBAR TEST");
+    X11Toolkit_DoWindowEventLoop(window);
+    X11Toolkit_DestroyWindow(window);
     return true;
 }
 
