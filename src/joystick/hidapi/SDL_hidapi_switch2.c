@@ -85,6 +85,9 @@ typedef struct
 
 typedef struct
 {
+    SDL_HIDAPI_Device *device;
+    SDL_Joystick *joystick;
+
     SDL_LibUSBContext *libusb;
     libusb_device_handle *device_handle;
     bool interface_claimed;
@@ -96,6 +99,9 @@ typedef struct
     Switch2_StickCalibration right_stick;
     Uint8 left_trigger_max;
     Uint8 right_trigger_max;
+
+    bool player_lights;
+    int player_index;
 
     bool vertical_mode;
     Uint8 last_state[USB_PACKET_LENGTH];
@@ -196,6 +202,37 @@ static void MapTriggerAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis,
         SDL_MIN_SINT16, SDL_MAX_SINT16
     );
     SDL_SendJoystickAxis(timestamp, joystick, axis, mapped_value);
+}
+
+static bool UpdateSlotLED(SDL_DriverSwitch2_Context *ctx)
+{
+    unsigned char SET_LED_DATA[] = {
+        0x09, 0x91, 0x00, 0x07, 0x00, 0x08, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+    unsigned char calibration_data[0x50] = {0};
+
+    if (ctx->player_lights && ctx->player_index >= 0) {
+        SET_LED_DATA[8] = (1 << (ctx->player_index % 4));
+    }
+    int res = SendBulkData(ctx, SET_LED_DATA, sizeof(SET_LED_DATA));
+    if (res < 0) {
+        return SDL_SetError("Couldn't set LED data: %d\n", res);
+    }
+    return (RecvBulkData(ctx, calibration_data, 0x40) > 0);
+}
+
+static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)userdata;
+    bool player_lights = SDL_GetStringBoolean(hint, true);
+
+    if (player_lights != ctx->player_lights) {
+        ctx->player_lights = player_lights;
+
+        UpdateSlotLED(ctx);
+        HIDAPI_UpdateDeviceProperties(ctx->device);
+    }
 }
 
 static void HIDAPI_DriverSwitch2_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -300,10 +337,6 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
         0x03, 0x91, 0x00, 0x0d, 0x00, 0x08, 0x00, 0x00,
         0x01, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
     };
-    const unsigned char SET_LED_DATA[] = {
-        0x09, 0x91, 0x00, 0x07, 0x00, 0x08, 0x00, 0x00,
-        0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-    };
     unsigned char flash_read_command[] = {
         0x02, 0x91, 0x00, 0x01, 0x00, 0x08, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x01, 0x00
@@ -313,12 +346,6 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
     res = SendBulkData(ctx, INIT_DATA, sizeof(INIT_DATA));
     if (res < 0) {
         return SDL_SetError("Couldn't send initialization data: %d\n", res);
-    }
-    RecvBulkData(ctx, calibration_data, 0x40);
-
-    res = SendBulkData(ctx, SET_LED_DATA, sizeof(SET_LED_DATA));
-    if (res < 0) {
-        return SDL_SetError("Couldn't set LED data: %d\n", res);
     }
     RecvBulkData(ctx, calibration_data, 0x40);
 
@@ -377,6 +404,7 @@ static bool HIDAPI_DriverSwitch2_InitDevice(SDL_HIDAPI_Device *device)
     if (!ctx) {
         return false;
     }
+    ctx->device = device;
     device->context = ctx;
 
     if (device->is_bluetooth) {
@@ -410,11 +438,30 @@ static int HIDAPI_DriverSwitch2_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, 
 
 static void HIDAPI_DriverSwitch2_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
+    SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
+
+    if (!ctx->joystick) {
+        return;
+    }
+
+    ctx->player_index = player_index;
+
+    UpdateSlotLED(ctx);
 }
 
 static bool HIDAPI_DriverSwitch2_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
+
+    ctx->joystick = joystick;
+
+    // Initialize player index (needed for setting LEDs)
+    ctx->player_index = SDL_GetJoystickPlayerIndex(joystick);
+    ctx->player_lights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED, true);
+    UpdateSlotLED(ctx);
+
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED,
+                        SDL_PlayerLEDHintChanged, ctx);
 
     // Initialize the joystick capabilities
     switch (device->product_id) {
@@ -453,7 +500,13 @@ static bool HIDAPI_DriverSwitch2_RumbleJoystickTriggers(SDL_HIDAPI_Device *devic
 
 static Uint32 HIDAPI_DriverSwitch2_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return 0;
+    SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
+    Uint32 result = 0;
+
+    if (ctx->player_lights) {
+        result |= SDL_JOYSTICK_CAP_PLAYER_LED;
+    }
+    return result;
 }
 
 static bool HIDAPI_DriverSwitch2_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
@@ -886,6 +939,12 @@ static bool HIDAPI_DriverSwitch2_UpdateDevice(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverSwitch2_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+    SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
+
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED,
+                           SDL_PlayerLEDHintChanged, ctx);
+
+    ctx->joystick = NULL;
 }
 
 static void HIDAPI_DriverSwitch2_FreeDevice(SDL_HIDAPI_Device *device)
