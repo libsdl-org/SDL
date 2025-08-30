@@ -426,6 +426,7 @@ sub dewikify_chunk {
         }
     } elsif ($dewikify_mode eq 'manpage') {
         # make sure these can't become part of roff syntax.
+        $str =~ s/\\/\\(rs/gms;
         $str =~ s/\./\\[char46]/gms;
         $str =~ s/"/\\(dq/gms;
         $str =~ s/'/\\(aq/gms;
