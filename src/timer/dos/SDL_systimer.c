@@ -46,14 +46,14 @@ SDL_TicksQuit(void)
     ticks_started = SDL_FALSE;
 }
 
-Uint32
-SDL_GetTicks(void)
+Uint64
+SDL_GetTicks64(void)
 {
     if (!ticks_started) {
         SDL_TicksInit();
     }
 
-    return (clock() - start) * 1000 / CLOCKS_PER_SEC;
+    return (Uint64)((clock() - start) * 1000 / CLOCKS_PER_SEC);
 }
 
 Uint64
@@ -72,7 +72,7 @@ SDL_GetPerformanceFrequency(void)
 #ifdef HAVE_UCLOCK
     return UCLOCKS_PER_SEC;
 #else
-    return return 1000;
+    return 1000;
 #endif
 }
 

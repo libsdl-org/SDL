@@ -53,7 +53,7 @@ SVGA_DeleteDevice(SDL_VideoDevice * device)
 }
 
 static SDL_VideoDevice *
-SVGA_CreateDevice(int devindex)
+SVGA_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_DeviceData *devdata;
@@ -100,7 +100,8 @@ SVGA_CreateDevice(int devindex)
 
 VideoBootStrap SVGA_bootstrap = {
     SVGAVID_DRIVER_NAME, "SDL SVGA video driver",
-    SVGA_CreateDevice
+    SVGA_CreateDevice,
+    NULL /* no ShowMessageBox implementation */
 };
 
 static int
