@@ -2705,7 +2705,7 @@ static SDL_bool ShouldAttemptTextureFramebuffer(void)
             attempt_texture_framebuffer = SDL_FALSE;
         }
 #endif
-#if defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__) || defined(__MSDOS__)
         attempt_texture_framebuffer = SDL_FALSE;
 #endif
     }
