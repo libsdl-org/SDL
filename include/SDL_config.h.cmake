@@ -229,6 +229,7 @@
 #cmakedefine HAVE_INOTIFY 1
 #cmakedefine HAVE_LIBUSB 1
 #cmakedefine HAVE_O_CLOEXEC 1
+#cmakedefine HAVE_UCLOCK
 
 /* Apple platforms might be building universal binaries, where Intel builds
    can use immintrin.h but other architectures can't. */
@@ -398,6 +399,7 @@
 #cmakedefine SDL_TIMER_UNIX @SDL_TIMER_UNIX@
 #cmakedefine SDL_TIMER_WINDOWS @SDL_TIMER_WINDOWS@
 #cmakedefine SDL_TIMER_OS2 @SDL_TIMER_OS2@
+#cmakedefine SDL_TIMER_DOS @SDL_TIMER_DOS@
 #cmakedefine SDL_TIMER_VITA @SDL_TIMER_VITA@
 #cmakedefine SDL_TIMER_PSP @SDL_TIMER_PSP@
 #cmakedefine SDL_TIMER_PS2 @SDL_TIMER_PS2@
@@ -420,6 +422,7 @@
 #cmakedefine SDL_VIDEO_DRIVER_VIVANTE @SDL_VIDEO_DRIVER_VIVANTE@
 #cmakedefine SDL_VIDEO_DRIVER_VIVANTE_VDK @SDL_VIDEO_DRIVER_VIVANTE_VDK@
 #cmakedefine SDL_VIDEO_DRIVER_OS2 @SDL_VIDEO_DRIVER_OS2@
+#cmakedefine SDL_VIDEO_DRIVER_SVGA @SDL_VIDEO_DRIVER_SVGA@
 #cmakedefine SDL_VIDEO_DRIVER_QNX @SDL_VIDEO_DRIVER_QNX@
 #cmakedefine SDL_VIDEO_DRIVER_RISCOS @SDL_VIDEO_DRIVER_RISCOS@
 #cmakedefine SDL_VIDEO_DRIVER_PSP @SDL_VIDEO_DRIVER_PSP@
