@@ -43,7 +43,8 @@ NOTES:
 openSUSE Tumbleweed:
 
     sudo zypper in libunwind-devel libusb-1_0-devel Mesa-libGL-devel libxkbcommon-devel libdrm-devel \
-    libgbm-devel pipewire-devel libpulse-devel sndio-devel Mesa-libEGL-devel
+    libgbm-devel pipewire-devel libpulse-devel sndio-devel Mesa-libEGL-devel alsa-devel xwayland-devel \
+    wayland-devel wayland-protocols-devel
 
 Arch:
 
