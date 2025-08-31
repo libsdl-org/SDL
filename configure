@@ -28399,7 +28399,8 @@ fi
 
         if test x$hidapi_support = xyes; then
             if test x$have_libusb_h = xyes; then
-                printf "%s\n" "#define HAVE_LIBUSB 1" >>confdefs.h
+
+printf "%s\n" "#define HAVE_LIBUSB 1" >>confdefs.h
 
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
                 if test x$require_hidapi_libusb = xyes; then
