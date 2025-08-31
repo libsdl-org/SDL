@@ -1352,3 +1352,18 @@ macro(CheckLibUnwind)
     endif()
   endif()
 endmacro()
+
+macro(CheckWinverCSourceCompiles _WINVER _SOURCE _VAR)
+  if(SDL_WINVER GREATER_EQUAL 0)
+    check_c_source_compiles("
+      #if ${SDL_WINVER} < ${_WINVER}
+      #error SDL_WINVER must be at least ${_WINVER}
+      #endif
+      #define _WIN32_WINNT ${SDL_WINVER}
+      #define WINVER _WIN32_WINNT
+${_SOURCE}" ${_VAR}
+    )
+  else()
+    check_c_source_compiles("${_SOURCE}" ${_VAR})
+  endif()
+endmacro()

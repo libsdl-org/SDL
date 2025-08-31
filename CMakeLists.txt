@@ -378,10 +378,6 @@ set_option(SDL_CCACHE              "Use Ccache to speed up build" OFF)
 set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
 set_option(SDL_GPU_DXVK            "Build SDL_GPU with DXVK support" OFF)
 
-if(WINDOWS)
-  set(SDL_WINVER "" CACHE STRING "Desktop Windows version being targeted")
-endif()
-
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
 cmake_dependent_option(SDL_SHARED "Build a shared version of the library" ${SDL_SHARED_DEFAULT} ${SDL_SHARED_AVAILABLE} OFF)
@@ -2122,7 +2118,7 @@ elseif(WINDOWS)
     #include <windows.h>
     int main(int argc, char **argv) { return 0; }" HAVE_WIN32_CC)
 
-  if(NOT SDL_WINVER STREQUAL "")
+  if(SDL_WINVER GREATER_EQUAL 0)
     sdl_compile_definitions(PRIVATE "SDL_WINVER=${SDL_WINVER}")
   endif()
 
@@ -2194,11 +2190,11 @@ elseif(WINDOWS)
   endif()
 
   # headers needed elsewhere
-  check_c_source_compiles("
-    #define COBJMACROS
-    #include <windows.gaming.input.h>
-    static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
-    int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
+  CheckWinverCSourceCompiles(0x0A00 "
+      #define COBJMACROS
+      #include <windows.gaming.input.h>
+      static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
+      int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
   )
   check_c_source_compiles("
     #include <stdbool.h>
@@ -2214,13 +2210,13 @@ elseif(WINDOWS)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
   check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
   check_include_file(shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
-  check_c_source_compiles("
-    #include <windows.h>
-    #include <mfapi.h>
-    #include <mfidl.h>
-    #include <mfreadwrite.h>
-    int main(int argc, char **argv) { return 0; }
-    " HAVE_MFAPI_H
+  CheckWinverCSourceCompiles(0x0602 "
+      #include <windows.h>
+      #include <mfapi.h>
+      #include <mfidl.h>
+      #include <mfreadwrite.h>
+      int main(int argc, char **argv) { return 0; }
+      " HAVE_MFAPI_H
   )
 
   if(SDL_AUDIO)
@@ -2381,7 +2377,6 @@ elseif(WINDOWS)
       "${SDL3_SOURCE_DIR}/src/joystick/windows/*.h"
     )
 
-    set(SDL_JOYSTICK_RAWINPUT 1)
     if(HAVE_DINPUT_H)
       set(SDL_JOYSTICK_DINPUT 1)
       sdl_link_dependency(joystick LIBS dinput8)
