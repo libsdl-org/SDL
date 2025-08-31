@@ -32,7 +32,7 @@ To use the SDL3.xcframework follow these steps:
 
 1. Run Xcode and create a new project using the iOS Game template, selecting the Objective C language and Metal game technology.
 2. In the main view, delete all files except for Assets and LaunchScreen
-3. Select the project in the main view, go to the "General" tab, scroll down to "Frameworks, Libraries, and Embedded Content", and drag and drop the SDL3.xcframework 
+3. Select the project in the main view, go to the "General" tab, scroll down to "Frameworks, Libraries, and Embedded Content", and drag and drop the SDL3.xcframework
 4. Still in "Frameworks, Libraries, and Embedded Content", select "Embed & Sign" for the SDL3.xcframework.
 5. Add the source files that you would normally have for an SDL program, making sure to have #include <SDL3/SDL_main.h> at the top of the file containing your main() function.
 6. Add any assets that your application needs.
