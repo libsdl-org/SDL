@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_SVGA
+#ifdef SDL_VIDEO_DRIVER_SVGA
 
 #include <dpmi.h>
 #include <sys/movedata.h>
@@ -151,7 +151,7 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
     CopyCursorPixels(window);
 
     /* Display fresh page to screen. */
-    SVGA_SetDisplayStart(0, windata->framebuffer_page ? surface->h : 0); 
+    SVGA_SetDisplayStart(0, windata->framebuffer_page ? surface->h : 0);
 
     return 0;
 }

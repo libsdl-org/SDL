@@ -22,7 +22,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_SVGA
+#ifdef SDL_VIDEO_DRIVER_SVGA
 
 #include "SDL_svga_mouse.h"
 
