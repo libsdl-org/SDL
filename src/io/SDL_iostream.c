@@ -1023,12 +1023,8 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
 
 SDL_IOStream *SDL_IOFromMem(void *mem, size_t size)
 {
-    CHECK_PARAM(!mem) {
+    if (size && !mem) {
         SDL_InvalidParamError("mem");
-        return NULL;
-    }
-    CHECK_PARAM(!size) {
-        SDL_InvalidParamError("size");
         return NULL;
     }
 
@@ -1065,12 +1061,8 @@ SDL_IOStream *SDL_IOFromMem(void *mem, size_t size)
 
 SDL_IOStream *SDL_IOFromConstMem(const void *mem, size_t size)
 {
-    CHECK_PARAM(!mem) {
+    if (size && !mem) {
         SDL_InvalidParamError("mem");
-        return NULL;
-    }
-    CHECK_PARAM(!size) {
-        SDL_InvalidParamError("size");
         return NULL;
     }
 
