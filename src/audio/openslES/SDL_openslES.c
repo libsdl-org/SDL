@@ -422,7 +422,7 @@ static int openslES_CreatePCMPlayer(_THIS)
             switch (test_format) {
             case AUDIO_U8:
             case AUDIO_S16LSB:
-            case AUDIO_F32LBS:
+            case AUDIO_F32LSB:
                 break;
             default:
                 continue;
