@@ -160,7 +160,8 @@ extern int SVGA_GetState(void **state);
 extern int SVGA_SetState(const void *state, size_t size);
 extern int SVGA_SetDisplayStart(int x, int y);
 extern int SVGA_SetDACPaletteFormat(int bits);
-extern int SVGA_GetPaletteData(SDL_Color * colors, int num_colors);
+extern int SVGA_GetPaletteData(SDL_Color * colors, int num_colors, Uint8 palette_dac_bits);
+extern int SVGA_SetPaletteData(SDL_Color *colors, int num_colors, Uint8 palette_dac_bits);
 extern SDL_PixelFormatEnum SVGA_GetPixelFormat(const VBEModeInfo * info);
 
 #endif /* SDL_svga_vbe_h_ */

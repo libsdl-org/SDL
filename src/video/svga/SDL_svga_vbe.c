@@ -226,13 +226,18 @@ SVGA_SetDACPaletteFormat(int bits)
 
     __dpmi_int(0x10, &r);
 
+    if (r.h.al != 0x4F) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "VBE: Failed to set DAC palette format to %d bits, got al=%02x ah=%02x bh=%d; will assume 6-bit color channels",
+                     (int)bits, (int)r.h.al, (int)r.h.ah, (int)r.h.bh);
+    }
+
     RETURN_IF_VBE_CALL_FAILED(r);
 
     return r.h.bh;
 }
 
 int
-SVGA_GetPaletteData(SDL_Color * colors, int num_colors)
+SVGA_GetPaletteData(SDL_Color * colors, int num_colors, Uint8 palette_dac_bits)
 {
     int i;
     __dpmi_regs r;
@@ -250,13 +255,70 @@ SVGA_GetPaletteData(SDL_Color * colors, int num_colors)
 
     dosmemget(__tb, num_colors * sizeof(*colors), colors);
 
-    /* Palette color components are stored in BGR order. */
+    /*
+       Palette color components are stored in BGRA order, where
+       A is the alignment byte.
+    */
     for (i = 0; i < num_colors; i++) {
         Uint8 temp = colors[i].r;
         colors[i].r = colors[i].b;
         colors[i].b = temp;
         colors[i].a = SDL_ALPHA_OPAQUE;
+        if (palette_dac_bits == 6) {
+            colors[i].r <<= 2;
+            colors[i].g <<= 2;
+            colors[i].b <<= 2;
+        }
     }
+
+    return 0;
+}
+
+int SVGA_SetPaletteData(SDL_Color *colors, int num_colors, Uint8 palette_dac_bits)
+{
+    int i;
+    __dpmi_regs r;
+    Uint8 bgr_colors[256 * 4];
+
+    if (num_colors > 256) {
+        SDL_SetError("Too many palette colors");
+        return -1;
+    }
+
+    if (palette_dac_bits == 8) {
+        for (i = 0; i < num_colors; i++) {
+            bgr_colors[i * 4] = colors[i].b;
+            bgr_colors[i * 4 + 1] = colors[i].g;
+            bgr_colors[i * 4 + 2] = colors[i].r;
+            bgr_colors[i * 4 + 3] = 0;
+        }
+    } else {
+        for (i = 0; i < num_colors; i++) {
+            bgr_colors[i * 4] = colors[i].b >> 2;
+            bgr_colors[i * 4 + 1] = colors[i].g >> 2;
+            bgr_colors[i * 4 + 2] = colors[i].r >> 2;
+            bgr_colors[i * 4 + 3] = 0;
+        }
+    }
+
+    r.x.ax = 0x4F09;
+    /*
+       Flag to set colors.
+
+       Note that according to https://www.phatcode.net/res/221/files/vbe20.pdf 4.12 (page 37),
+       on some systems this flag should be 0x80 and that can be determined using the Capabilities
+       field, which we do not yet do.
+     */
+    r.h.bl = 0x0;
+    r.x.cx = num_colors;
+    r.x.dx = 0; /* First color */
+    r.x.es = __tb_segment;
+    r.x.di = __tb_offset;
+
+    dosmemput(bgr_colors, num_colors * 4, __tb);
+    __dpmi_int(0x10, &r);
+
+    RETURN_IF_VBE_CALL_FAILED(r);
 
     return 0;
 }

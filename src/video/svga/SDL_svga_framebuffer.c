@@ -85,10 +85,18 @@ SDL_SVGA_CreateFramebuffer(_THIS, SDL_Window * window, Uint32 * format, void ** 
     /* Populate color palette for indexed pixel formats. */
     if (surface->format->palette) {
         SDL_Palette *palette = surface->format->palette;
-        if (SVGA_GetPaletteData(palette->colors, palette->ncolors)) {
+        if (SVGA_SetDACPaletteFormat(8)) {
+            /* Failed to set to 8-bit, assume 6-bit channel */
+            windata->palette_dac_bits = 6;
+        } else {
+            windata->palette_dac_bits = 8;
+        }
+        if (SVGA_GetPaletteData(palette->colors, palette->ncolors, windata->palette_dac_bits)) {
             SDL_SVGA_DestroyFramebuffer(_this, window);
             return -1;
         }
+        windata->last_palette = palette;
+        windata->last_palette_version = palette->version;
     }
 
     /* Save data and set output parameters. */
@@ -142,6 +150,15 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
     /* Flip the active page flag. */
     windata->framebuffer_page = !windata->framebuffer_page;
     framebuffer_offset = windata->framebuffer_page ? surface_size : 0;
+
+    if (surface->format->BitsPerPixel == 8 &&
+        (surface->format->palette != windata->last_palette ||
+         surface->format->palette->version != windata->last_palette_version)) {
+        /* Update the palette */
+        SVGA_SetPaletteData(surface->format->palette->colors, surface->format->palette->ncolors, windata->palette_dac_bits);
+        windata->last_palette = surface->format->palette;
+        windata->last_palette_version = surface->format->palette->version;
+    }
 
     /* Copy surface pixels to hidden framebuffer. */
     movedata(_my_ds(), (uintptr_t)surface->pixels, windata->framebuffer_selector,

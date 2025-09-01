@@ -43,9 +43,12 @@ typedef struct
 
 typedef struct
 {
-    SDL_bool framebuffer_page;
-    int framebuffer_selector;
+    SDL_Palette *last_palette;
+    Uint32 last_palette_version;
     Uint32 framebuffer_linear_addr;
+    int framebuffer_selector;
+    SDL_bool framebuffer_page;
+    Uint8 palette_dac_bits;
 } SDL_WindowData;
 
 #endif /* SDL_svga_video_h_ */
