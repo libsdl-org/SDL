@@ -438,6 +438,10 @@ static bool OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
             case SDL_AUDIO_S16LE:
             case SDL_AUDIO_F32:
                 break;
+            default:
+                continue;
+            }
+            break;
         }
 
         if (!test_format) {
