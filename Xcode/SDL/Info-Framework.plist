@@ -19,10 +19,10 @@
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.32.10</string>
+	<string>2.32.11</string>
 	<key>CFBundleSignature</key>
 	<string>SDLX</string>
 	<key>CFBundleVersion</key>
-	<string>2.32.10</string>
+	<string>2.32.11</string>
 </dict>
 </plist>
