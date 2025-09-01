@@ -74,9 +74,21 @@ include("${SDL3_SOURCE_DIR}/cmake/sdlmanpages.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/sdlplatform.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/3rdparty.cmake")
-include("${SDL3_SOURCE_DIR}/cmake/PreseedMSVCCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedEmscriptenCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedNokiaNGageCache.cmake")
+
+if(WINDOWS)
+  set(SDL_WINVER "-1" CACHE STRING "Desktop Windows version being targeted")
+
+  if(NOT SDL_WINVER LESS 0)
+    math(EXPR SDL_MINWINVER "0x0501")
+    if(SDL_WINVER LESS SDL_MINWINVER)
+      message(FATAL_ERROR "SDL_WINVER must be at least 0x501 (Windows XP or higher)")
+    endif()
+    sdl_compile_definitions(PRIVATE "SDL_WINVER=${SDL_WINVER}")
+  endif()
+endif()
+include("${SDL3_SOURCE_DIR}/cmake/PreseedMSVCCache.cmake")
 
 SDL_DetectCompiler()
 SDL_DetectTargetCPUArchitectures(SDL_CPUS)
@@ -2118,10 +2130,6 @@ elseif(WINDOWS)
     #include <windows.h>
     int main(int argc, char **argv) { return 0; }" HAVE_WIN32_CC)
 
-  if(SDL_WINVER GREATER_EQUAL 0)
-    sdl_compile_definitions(PRIVATE "SDL_WINVER=${SDL_WINVER}")
-  endif()
-
   sdl_glob_sources(
     "${SDL3_SOURCE_DIR}/src/core/windows/*.c"
     "${SDL3_SOURCE_DIR}/src/core/windows/*.cpp"
@@ -2158,14 +2166,14 @@ elseif(WINDOWS)
     endif()
 
     check_include_file(d3d9.h HAVE_D3D9_H)
-    check_include_file(d3d11_1.h HAVE_D3D11_H)
+    CheckWinverIncludeFile(0x0601 ${SDL_WINVER} d3d11_1.h HAVE_D3D11_H)
     check_include_file(ddraw.h HAVE_DDRAW_H)
     check_include_file(dsound.h HAVE_DSOUND_H)
     check_include_file(dinput.h HAVE_DINPUT_H)
     if(SDL_CPU_ARM32)  # !!! FIXME: this should probably check if we're !(x86 or x86-64) instead of arm.
       set(HAVE_DINPUT_H 0)
     endif()
-    check_include_file(dxgi.h HAVE_DXGI_H)
+    CheckWinverIncludeFile(0x0600 ${SDL_WINVER} dxgi.h HAVE_DXGI_H)
     cmake_pop_check_state()
     if(HAVE_D3D9_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H)
       set(HAVE_DIRECTX TRUE)
@@ -2183,34 +2191,34 @@ elseif(WINDOWS)
 
   if(SDL_XINPUT)
     # xinput.h may need windows.h, but does not include it itself.
-    check_c_source_compiles("
+    CheckWinverCSourceCompiles(0x600 ${SDL_WINVER} "
       #include <windows.h>
       #include <xinput.h>
       int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H)
   endif()
 
   # headers needed elsewhere
-  CheckWinverCSourceCompiles(0x0A00 "
+  CheckWinverCSourceCompiles(0x0A00 ${SDL_WINVER} "
       #define COBJMACROS
       #include <windows.gaming.input.h>
       static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
       int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
   )
-  check_c_source_compiles("
+  CheckWinverCSourceCompiles(0x0A00 ${SDL_WINVER} "
     #include <stdbool.h>
     #define COBJMACROS
     #include <gameinput.h>
     int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
   )
-  check_include_file(dxgi1_5.h HAVE_DXGI1_5_H)
-  check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)
+  CheckWinverIncludeFile(0x0A00 ${SDL_WINVER} dxgi1_5.h HAVE_DXGI1_5_H)
+  CheckWinverIncludeFile(0x0A00 ${SDL_WINVER} dxgi1_6.h HAVE_DXGI1_6_H)
   check_include_file(tpcshrd.h HAVE_TPCSHRD_H)
-  check_include_file(roapi.h HAVE_ROAPI_H)
-  check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
-  check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
-  check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
-  check_include_file(shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
-  CheckWinverCSourceCompiles(0x0602 "
+  CheckWinverIncludeFile(0x0602 ${SDL_WINVER} roapi.h HAVE_ROAPI_H)
+  CheckWinverIncludeFile(0x0600 ${SDL_WINVER} mmdeviceapi.h HAVE_MMDEVICEAPI_H)
+  CheckWinverIncludeFile(0x0600 ${SDL_WINVER} audioclient.h HAVE_AUDIOCLIENT_H)
+  CheckWinverIncludeFile(0x0601 ${SDL_WINVER} sensorsapi.h HAVE_SENSORSAPI_H)
+  CheckWinverIncludeFile(0x0602 ${SDL_WINVER} shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
+  CheckWinverCSourceCompiles(0x0602 ${SDL_WINVER} "
       #include <windows.h>
       #include <mfapi.h>
       #include <mfidl.h>
@@ -2258,7 +2266,7 @@ elseif(WINDOWS)
       set(SDL_VIDEO_RENDER_D3D11 1)
       set(HAVE_RENDER_D3D11 TRUE)
     endif()
-    if(SDL_RENDER_D3D12)
+    if(SDL_RENDER_D3D12 AND HAVE_DXGI1_6_H)
       set(SDL_VIDEO_RENDER_D3D12 1)
       set(HAVE_RENDER_D3D12 TRUE)
     endif()
@@ -2352,7 +2360,7 @@ elseif(WINDOWS)
       set(HAVE_OPENGLES TRUE)
     endif()
 
-    if(SDL_VULKAN)
+    if(SDL_VULKAN AND HAVE_D3D11_H)
       set(SDL_VIDEO_VULKAN 1)
       set(HAVE_VULKAN TRUE)
       if(SDL_RENDER_VULKAN)
@@ -3464,15 +3472,7 @@ endif()
 sdl_glob_sources(${SDL3_SOURCE_DIR}/src/tray/*.c)
 
 if(SDL_GPU)
-  if(HAVE_D3D11_H)
-    sdl_glob_sources(
-      "${SDL3_SOURCE_DIR}/src/gpu/d3d11/*.c"
-      "${SDL3_SOURCE_DIR}/src/gpu/d3d11/*.h"
-    )
-    set(SDL_GPU_D3D11 1)
-    set(HAVE_SDL_GPU TRUE)
-  endif()
-  if(WINDOWS)
+  if(HAVE_DXGI1_6_H)
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/gpu/d3d12/*.c"
       "${SDL3_SOURCE_DIR}/src/gpu/d3d12/*.h"
@@ -3488,7 +3488,7 @@ if(SDL_GPU)
     set(SDL_GPU_VULKAN 1)
     set(HAVE_SDL_GPU TRUE)
   endif()
-  if(SDL_RENDER_GPU)
+  if(SDL_RENDER_GPU AND HAVE_SDL_GPU)
     set(SDL_VIDEO_RENDER_GPU 1)
     set(HAVE_RENDER_GPU TRUE)
   endif()

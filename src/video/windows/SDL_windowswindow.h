@@ -94,7 +94,9 @@ struct SDL_WindowData
     SDL_DisplayID last_displayID;
     WCHAR *ICMFileName;
     SDL_WindowEraseBackgroundMode hint_erase_background_mode;
+#if WINVER >= _WIN32_WINNT_WIN7
     bool taskbar_button_created;
+#endif
     struct SDL_VideoData *videodata;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;

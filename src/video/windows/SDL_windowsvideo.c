@@ -555,7 +555,7 @@ static bool WIN_VideoInit(SDL_VideoDevice *_this)
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     data->_SDL_WAKEUP = RegisterWindowMessageA("_SDL_WAKEUP");
 #endif
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && (WINVER >= _WIN32_WINNT_WIN7)
     data->WM_TASKBAR_BUTTON_CREATED = RegisterWindowMessageA("TaskbarButtonCreated");
 #endif
 
@@ -581,10 +581,12 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
     WIN_QuitKeyboard(_this);
     WIN_QuitMouse(_this);
 
+#if WINVER >= _WIN32_WINNT_WIN7
     if (data->taskbar_list) {
         IUnknown_Release(data->taskbar_list);
         data->taskbar_list = NULL;
     }
+#endif
 
     if (data->oleinitialized) {
         OleUninitialize();
