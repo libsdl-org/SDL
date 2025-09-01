@@ -159,7 +159,7 @@ SVGA_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 
         if (status) {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "SVGA_GetVBEModeInfo failed: %d", status);
-            return;
+            continue;
         }
 
         /* Mode must support graphics with a linear framebuffer. */
