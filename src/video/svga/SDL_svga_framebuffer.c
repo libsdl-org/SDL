@@ -26,6 +26,7 @@
 #include <sys/movedata.h>
 #include <sys/segments.h>
 
+#include "SDL_events.h"
 #include "SDL_mouse.h"
 #include "SDL_svga_video.h"
 #include "SDL_svga_framebuffer.h"
@@ -165,7 +166,9 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
         framebuffer_offset, surface_size);
 
     /* Copy cursor pixels to hidden framebuffer. */
-    CopyCursorPixels(window);
+    if (SDL_ShowCursor(SDL_QUERY) == SDL_ENABLE) {
+        CopyCursorPixels(window);
+    }
 
     /* Display fresh page to screen. */
     SVGA_SetDisplayStart(0, windata->framebuffer_page ? surface->h : 0);
