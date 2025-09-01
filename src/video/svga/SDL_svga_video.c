@@ -80,6 +80,7 @@ SVGA_CreateDevice(void)
     }
 
     device->driverdata = devdata;
+    device->quirk_flags = VIDEO_DEVICE_QUIRK_FULLSCREEN_ONLY;
 
     /* Set the function pointers */
     device->VideoInit = SVGA_VideoInit;
@@ -263,10 +264,6 @@ SVGA_CreateWindow(_THIS, SDL_Window * window)
 
     /* Set framebuffer selector to sentinel value. */
     windata->framebuffer_selector = -1;
-
-    /* Window is always fullscreen. */
-    /* QUESTION: Is this appropriate, or should an error be returned instead? */
-    window->flags |= SDL_WINDOW_FULLSCREEN;
 
     return 0;
 }
