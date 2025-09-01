@@ -420,9 +420,9 @@ static int openslES_CreatePCMPlayer(_THIS)
         SDL_AudioFormat test_format;
         for (test_format = SDL_FirstAudioFormat(this->spec.format); test_format; test_format = SDL_NextAudioFormat()) {
             switch (test_format) {
-            case SDL_AUDIO_U8:
-            case SDL_AUDIO_S16LE:
-            case SDL_AUDIO_F32:
+            case AUDIO_U8:
+            case AUDIO_S16LSB:
+            case AUDIO_F32LBS:
                 break;
             default:
                 continue;
