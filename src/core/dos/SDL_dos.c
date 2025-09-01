@@ -258,6 +258,19 @@ static const SDL_Scancode extended_key_to_sdl_scancode[128] = {
     0, /* 127 0x7f */
 };
 
+static const char shift_digits[16] = {
+    ')', /* 0 */
+    '!', /* 1 */
+    '@', /* 2 */
+    '#', /* 3 */
+    '$', /* 4 */
+    '%', /* 5 */
+    '^', /* 6 */
+    '&', /* 7 */
+    '*', /* 8 */
+    '(', /* 9 */
+};
+
 static volatile Uint8 scancode_buf[100];
 static volatile int scancode_count;
 
@@ -338,29 +351,54 @@ DOS_InitKeyboard(void)
 }
 
 static void
-DOS_ProcessScancode(Uint8 scancode)
+DOS_ProcessScancode(Uint8 raw)
 {
     static SDL_bool extended_key = SDL_FALSE;
-    Uint8 state = scancode & 0x80 ? SDL_RELEASED : SDL_PRESSED;
+    Uint8 state = raw & 0x80 ? SDL_RELEASED : SDL_PRESSED;
+    SDL_Scancode scancode;
 
     /* Check if the code is an extended key prefix. */
-    if (scancode == 0xE0) {
+    if (raw == 0xE0) {
         extended_key = SDL_TRUE;
         return;
     }
 
     /* Mask off state bit. */
-    scancode &= 0x7F;
+    raw &= 0x7F;
 
-    /* Generate SDL key event. */
+    /* Convert to SDL scancode. */
     if (extended_key) {
-        SDL_SendKeyboardKey(state, extended_key_to_sdl_scancode[scancode]);
+        scancode = extended_key_to_sdl_scancode[raw];
     } else {
-        SDL_SendKeyboardKey(state, bios_to_sdl_scancode[scancode]);
+        scancode = bios_to_sdl_scancode[raw];
     }
 
     /* Reset extended key flag. */
     extended_key = SDL_FALSE;
+
+    /* Send a key event. Return if it wasn't posted. */
+    if (SDL_SendKeyboardKey(state, scancode) == 0) return;
+
+    /* If text input events are enabled, send one with basic US layout conversion. */
+    if (state == SDL_PRESSED && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE) {
+        const SDL_Keymod modstate = SDL_GetModState();
+        const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode);
+        if (((modstate & (KMOD_CTRL | KMOD_ALT)) == 0) &&
+            keycode >= SDLK_SPACE && keycode <= SDLK_z) {
+            char buf[2];
+            if ((modstate & KMOD_SHIFT)) {
+                if (keycode >= SDLK_0 && keycode <= SDLK_9) {
+                    buf[0] = shift_digits[keycode - '0'];
+                } else if (keycode >= SDLK_a && keycode <= SDLK_z) {
+                    buf[0] = keycode - ('a' - 'A');
+                }
+            } else {
+                buf[0] = (char)keycode;
+            }
+            buf[1] = '\0';
+            SDL_SendKeyboardText(buf);
+        }
+    }
 }
 
 static void
