@@ -253,7 +253,7 @@ bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
     return true;
 }
 
-bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled)
+bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, Uint32 flag, bool enabled)
 {
     SDL_VideoData *data = _this->internal;
     if (data->gameinput_context) {
@@ -261,7 +261,7 @@ bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bo
     }
 
     switch(flag) {
-        case NOHOTKEYS:
+        case WIN_RAWKEYBOARD_FLAG_ENUM_NOHOTKEYS:
             data->raw_keyboard_flag_nohotkeys = enabled;
             break;
         default:

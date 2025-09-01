@@ -26,9 +26,7 @@
 extern bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled);
 extern bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled);
 
-typedef enum WIN_RawKeyboardFlag {
-    NOHOTKEYS
-} WIN_RawKeyboardFlag;
-extern bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled);
+#define WIN_RAWKEYBOARD_FLAG_ENUM_NOHOTKEYS 0
+extern bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, Uint32 flag, bool enabled);
 
 #endif // SDL_windowsrawinput_h_
