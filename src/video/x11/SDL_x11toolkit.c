@@ -1871,8 +1871,8 @@ static void X11Toolkit_CalculateMenuBarControl(SDL_ToolkitControlX11 *base_contr
     int max_h;
     int i;
    
-    i = prev_x = max_h = 0;
-     base_control->rect.x = base_control->rect.y = 0;
+    i = prev_w = prev_x = max_h = 0;
+    base_control->rect.x = base_control->rect.y = 0;
     control = (SDL_ToolkitMenuBarControlX11 *)base_control;
     cursor = control->menu_items;
     while (cursor) {
