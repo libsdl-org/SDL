@@ -1370,7 +1370,7 @@ ${_SOURCE}" "${_VAR}"
       set("${_VAR}" FALSE)
     endif()
   else()
-    check_c_source_compiles("${_SOURCE}" ${_VAR})
+    check_c_source_compiles("${_SOURCE}" "${_VAR}")
   endif()
 endmacro()
 

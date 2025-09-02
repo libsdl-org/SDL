@@ -76,18 +76,6 @@ include("${SDL3_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/3rdparty.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedEmscriptenCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedNokiaNGageCache.cmake")
-
-if(WINDOWS)
-  set(SDL_WINVER "-1" CACHE STRING "Desktop Windows version being targeted")
-
-  if(NOT SDL_WINVER LESS 0)
-    math(EXPR SDL_MINWINVER "0x0501")
-    if(SDL_WINVER LESS SDL_MINWINVER)
-      message(FATAL_ERROR "SDL_WINVER must be at least 0x501 (Windows XP or higher)")
-    endif()
-    sdl_compile_definitions(PRIVATE "SDL_WINVER=${SDL_WINVER}")
-  endif()
-endif()
 include("${SDL3_SOURCE_DIR}/cmake/PreseedMSVCCache.cmake")
 
 SDL_DetectCompiler()
@@ -407,6 +395,15 @@ dep_option(SDL_EXAMPLES_LINK_SHARED "link examples to shared SDL library" "${SDL
 if(VITA)
   set_option(VIDEO_VITA_PIB  "Build with PSVita piglet gles2 support" OFF)
   set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
+endif()
+
+if(WINDOWS)
+  set(SDL_WINVER "-1" CACHE STRING "Desktop Windows version being targeted")
+  math(EXPR SDL_WINVER_DECIMAL "${SDL_WINVER}")
+  math(EXPR SDL_MINWINVER_DECIMAL "0x0501")
+  if(SDL_WINVER_DECIMAL GREATER_EQUAL 0 AND SDL_WINVER_DECIMAL LESS SDL_MINWINVER_DECIMAL)
+    message(FATAL_ERROR "SDL_WINVER must be at least 0x501 (Windows XP or higher)")
+  endif()
 endif()
 
 if (NGAGE)
@@ -2125,6 +2122,10 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     set (USE_POSIX_SPAWN 1)
   endif()
 elseif(WINDOWS)
+  if(NOT SDL_WINVER_DECIMAL LESS 0)
+    sdl_compile_definitions(PRIVATE "SDL_WINVER=${SDL_WINVER}")
+  endif()
+
   enable_language(CXX)
   check_c_source_compiles("
     #include <windows.h>
