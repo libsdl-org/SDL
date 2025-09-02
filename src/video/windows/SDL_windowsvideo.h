@@ -66,7 +66,7 @@
 #define USER_DEFAULT_SCREEN_DPI 96
 #endif
 
-#if WINVER < 0x0601
+#if WINVER < _WIN32_WINNT_WIN7
 // Touch input definitions
 #define TWF_FINETOUCH 1
 #define TWF_WANTPALM  2
@@ -287,7 +287,7 @@ typedef struct DISPLAYCONFIG_TARGET_DEVICE_NAME
 
 #define QDC_ONLY_ACTIVE_PATHS 0x00000002
 
-#endif // WINVER < 0x0601
+#endif // WINVER < _WIN32_WINNT_WIN7
 
 #ifndef HAVE_SHELLSCALINGAPI_H
 
@@ -431,13 +431,44 @@ struct SDL_VideoData
     DWORD clipboard_count;
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) // Xbox doesn't support user32/shcore
-#if WINVER >= _WIN32_WINNT_WIN10
-    // Touch input functions
     SDL_SharedObject *userDLL;
+
+    // DisplayConfig functions
+    /* *INDENT-OFF* */ // clang-format off
+    LONG (WINAPI *GetDisplayConfigBufferSizes)( UINT32, UINT32 *, UINT32 *);
+    LONG (WINAPI *QueryDisplayConfig)( UINT32, UINT32 *, DISPLAYCONFIG_PATH_INFO*, UINT32 *, DISPLAYCONFIG_MODE_INFO*, DISPLAYCONFIG_TOPOLOGY_ID*);
+    LONG (WINAPI *DisplayConfigGetDeviceInfo)( DISPLAYCONFIG_DEVICE_INFO_HEADER*);
+    /* *INDENT-ON* */ // clang-format on
+
+    // Touch input functions
     /* *INDENT-OFF* */ // clang-format off
     BOOL (WINAPI *CloseTouchInputHandle)( HTOUCHINPUT );
     BOOL (WINAPI *GetTouchInputInfo)( HTOUCHINPUT, UINT, PTOUCHINPUT, int );
     BOOL (WINAPI *RegisterTouchWindow)( HWND, ULONG );
+    /* *INDENT-ON* */ // clang-format on
+
+#if WINVER >= _WIN32_WINNT_VISTA
+    // DWM functions
+    SDL_SharedObject *dwmapiDLL;
+    /* *INDENT-OFF* */ // clang-format off
+    HRESULT (WINAPI *DwmFlush)(void);
+    HRESULT (WINAPI *DwmEnableBlurBehindWindow)(HWND hwnd, const DWM_BLURBEHIND *pBlurBehind);
+    HRESULT (WINAPI *DwmSetWindowAttribute)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
+    /* *INDENT-ON* */ // clang-format on
+#endif
+
+#if WINVER >= _WIN32_WINNT_WIN8
+    // Pen input functions
+    /* *INDENT-OFF* */ // clang-format off
+    BOOL (WINAPI *GetPointerType)(UINT32 pointerId, POINTER_INPUT_TYPE *pointerType);
+    BOOL (WINAPI *GetPointerPenInfo)(UINT32 pointerId, POINTER_PEN_INFO *penInfo);
+    /* *INDENT-ON* */ // clang-format on
+#endif
+
+#if WINVER >= _WIN32_WINNT_WIN10
+    // DPI functions
+    SDL_SharedObject *shcoreDLL;
+    /* *INDENT-OFF* */ // clang-format off
     BOOL (WINAPI *SetProcessDPIAware)( void );
     BOOL (WINAPI *SetProcessDpiAwarenessContext)( DPI_AWARENESS_CONTEXT );
     DPI_AWARENESS_CONTEXT (WINAPI *SetThreadDpiAwarenessContext)( DPI_AWARENESS_CONTEXT );
@@ -448,33 +479,13 @@ struct SDL_VideoData
     UINT (WINAPI *GetDpiForWindow)( HWND );
     BOOL (WINAPI *AreDpiAwarenessContextsEqual)(DPI_AWARENESS_CONTEXT, DPI_AWARENESS_CONTEXT);
     BOOL (WINAPI *IsValidDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
-    /* *INDENT-ON* */ // clang-format on
-
-    SDL_SharedObject *shcoreDLL;
-    /* *INDENT-OFF* */ // clang-format off
     HRESULT (WINAPI *GetDpiForMonitor)( HMONITOR         hmonitor,
                                         MONITOR_DPI_TYPE dpiType,
                                         UINT             *dpiX,
                                         UINT             *dpiY );
     HRESULT (WINAPI *SetProcessDpiAwareness)(PROCESS_DPI_AWARENESS dpiAwareness);
-    BOOL (WINAPI *GetPointerType)(UINT32 pointerId, POINTER_INPUT_TYPE *pointerType);
-    BOOL (WINAPI *GetPointerPenInfo)(UINT32 pointerId, POINTER_PEN_INFO *penInfo);
     /* *INDENT-ON* */ // clang-format on
 #endif
-
-    // DisplayConfig functions
-    /* *INDENT-OFF* */ // clang-format off
-    LONG (WINAPI *GetDisplayConfigBufferSizes)( UINT32, UINT32 *, UINT32 *);
-    LONG (WINAPI *QueryDisplayConfig)( UINT32, UINT32 *, DISPLAYCONFIG_PATH_INFO*, UINT32 *, DISPLAYCONFIG_MODE_INFO*, DISPLAYCONFIG_TOPOLOGY_ID*);
-    LONG (WINAPI *DisplayConfigGetDeviceInfo)( DISPLAYCONFIG_DEVICE_INFO_HEADER*);
-    /* *INDENT-ON* */ // clang-format on
-
-    SDL_SharedObject *dwmapiDLL;
-    /* *INDENT-OFF* */ // clang-format off
-    HRESULT (WINAPI *DwmFlush)(void);
-    HRESULT (WINAPI *DwmEnableBlurBehindWindow)(HWND hwnd, const DWM_BLURBEHIND *pBlurBehind);
-    HRESULT (WINAPI *DwmSetWindowAttribute)(HWND hwnd, DWORD dwAttribute, LPCVOID pvAttribute, DWORD cbAttribute);
-    /* *INDENT-ON* */ // clang-format on
 #endif                // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #ifdef HAVE_DXGI_H
