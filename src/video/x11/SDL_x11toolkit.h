@@ -220,10 +220,6 @@ extern SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX1
 extern void X11Toolkit_RegisterCallbackForButtonControl(SDL_ToolkitControlX11 *control, void *data, void (*cb)(struct SDL_ToolkitControlX11 *, void *));
 extern const SDL_MessageBoxButtonData *X11Toolkit_GetButtonControlData(SDL_ToolkitControlX11 *control);
 
-/* MENU CONTROL FUNCTIONS */
-extern SDL_ToolkitControlX11 *X11Toolkit_CreateMenuBarControl(SDL_ToolkitWindowX11 *window, SDL_ListNode *menu_items);
-extern SDL_ToolkitControlX11 *X11Toolkit_CreateMenuControl(SDL_ToolkitWindowX11 *window, SDL_ListNode *menu_items);
-
 #endif // SDL_VIDEO_DRIVER_X11
 
 #endif // SDL_x11toolkit_h_
