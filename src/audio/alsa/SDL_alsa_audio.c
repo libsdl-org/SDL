@@ -88,7 +88,7 @@ static const char *(*ALSA_snd_pcm_info_get_name)(const snd_pcm_info_t *);
 static int (*ALSA_snd_pcm_info_get_card)(const snd_pcm_info_t *);
 static int (*ALSA_snd_card_get_name)(int, char **);
 static int (*ALSA_snd_pcm_info_malloc)(snd_pcm_info_t **);
-static int (*ALSA_snd_pcm_info_free)(snd_pcm_info_t *);
+static void (*ALSA_snd_pcm_info_free)(snd_pcm_info_t *);
 #ifdef SND_CHMAP_API_VERSION
 static snd_pcm_chmap_t *(*ALSA_snd_pcm_get_chmap)(snd_pcm_t *);
 static int (*ALSA_snd_pcm_chmap_print)(const snd_pcm_chmap_t *map, size_t maxlen, char *buf);
