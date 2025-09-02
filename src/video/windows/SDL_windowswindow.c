@@ -171,7 +171,9 @@ static ITaskbarList3 *GetTaskbarList(SDL_Window *window)
  */
 static bool WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD styleEx, BOOL menu, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type)
 {
+#if WINVER >= _WIN32_WINNT_WIN10
     SDL_VideoData *videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->internal : NULL;
+#endif
     RECT rect;
 
     // Client rect, in points
@@ -218,8 +220,8 @@ static bool WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
         AdjustWindowRectEx(&rect, style, menu, 0);
 #else
-        if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
 #if WINVER >= _WIN32_WINNT_WIN10
+        if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
             /* With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of
                AdjustWindowRectEx. */
             if (videodata) {
@@ -230,8 +232,9 @@ static bool WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD
                     return WIN_SetError("AdjustWindowRectExForDpi()");
                 }
             }
+        } else
 #endif
-        } else {
+	{
             if (AdjustWindowRectEx(&rect, style, menu, styleEx) == 0) {
                 return WIN_SetError("AdjustWindowRectEx()");
             }
@@ -275,8 +278,10 @@ bool WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *h
 
 bool WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
 {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && (WINVER >= _WIN32_WINNT_WIN10)
     SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
     SDL_VideoData *videodata = videodevice ? videodevice->internal : NULL;
+#endif
     DWORD style, styleEx;
     BOOL menu;
 
@@ -291,8 +296,8 @@ bool WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     AdjustWindowRectEx(lpRect, style, menu, styleEx);
 #else
-    if (WIN_IsPerMonitorV2DPIAware(videodevice)) {
 #if WINVER >= _WIN32_WINNT_WIN10
+    if (WIN_IsPerMonitorV2DPIAware(videodevice)) {
         // With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of AdjustWindowRectEx.
         if (!frame_dpi) {
             frame_dpi = videodata->GetDpiForWindow ? videodata->GetDpiForWindow(hwnd) : USER_DEFAULT_SCREEN_DPI;
@@ -300,8 +305,9 @@ bool WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
         if (!videodata->AdjustWindowRectExForDpi(lpRect, style, menu, styleEx, frame_dpi)) {
             return WIN_SetError("AdjustWindowRectExForDpi()");
         }
+    } else
 #endif
-    } else {
+    {
         if (!AdjustWindowRectEx(lpRect, style, menu, styleEx)) {
             return WIN_SetError("AdjustWindowRectEx()");
         }
