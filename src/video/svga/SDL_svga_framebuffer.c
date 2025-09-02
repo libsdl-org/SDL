@@ -200,6 +200,8 @@ SDL_SVGA_DestroyFramebuffer(_THIS, SDL_Window * window)
         __dpmi_free_physical_address_mapping(&meminfo);
         windata->framebuffer_linear_addr = 0;
     }
+
+    windata->last_palette = NULL;
 }
 
 #endif /* SDL_VIDEO_DRIVER_SVGA */

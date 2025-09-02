@@ -58,6 +58,11 @@ SVGA_CreateDevice(void)
     SDL_VideoDevice *device;
     SDL_DeviceData *devdata;
 
+    if (SVGA_InitProtectedModeInterface()) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "SVGA: Failed to get protected mode interface");
+        return NULL;
+    }
+
     devdata = (SDL_DeviceData *) SDL_calloc(1, sizeof(*devdata));
     if (!devdata) {
         SDL_OutOfMemory();

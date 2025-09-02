@@ -18,6 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+/*
+  Some of the asm routines here are based on Allegro 4.2.
+  Huge thanks to Allegro 4 authors for publishing their code under
+  a permissive license!
+*/
+
 #include "../../SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_SVGA
@@ -35,6 +42,56 @@
 #define RETURN_IF_VBE_CALL_FAILED(regs) \
     if ((regs).h.al != 0x4F) return SDL_MIN_SINT8; \
     if ((regs).h.ah != 0) return -(regs).h.ah;
+
+typedef struct VbeProtectedModeInterface
+{
+    unsigned short setWindow __attribute__((packed));
+    unsigned short setDisplayStart __attribute__((packed));
+    unsigned short setPalette __attribute__((packed));
+    unsigned short IOPrivInfo __attribute__((packed));
+} VbeProtectedModeInterface;
+VbeProtectedModeInterface *PM_Interface;
+
+/* Protected mode interface functions: */
+void *PM_SetWindow_Ptr;
+void *PM_SetDisplayStart_Ptr;
+void *PM_SetPalette_Ptr;
+
+int SVGA_InitProtectedModeInterface()
+{
+    __dpmi_regs r;
+
+    if (PM_Interface != NULL) {
+        return 0;
+    }
+
+    /* call the VESA function */
+    r.x.ax = 0x4F0A;
+    r.x.bx = 0;
+    __dpmi_int(0x10, &r);
+    if (r.h.ah)
+        return -1;
+
+    PM_Interface = SDL_malloc(r.x.cx);
+    dosmemget(r.x.es * 16 + r.x.di, r.x.cx, PM_Interface);
+    PM_SetWindow_Ptr = (void *)((char *)PM_Interface + PM_Interface->setWindow);
+    PM_SetDisplayStart_Ptr = (void *)((char *)PM_Interface + PM_Interface->setDisplayStart);
+    PM_SetPalette_Ptr = (void *)((char *)PM_Interface + PM_Interface->setPalette);
+    return 0;
+}
+
+/* Returns a copy of the current %ds selector. */
+static int default_ds(void)
+{
+    short result;
+
+    __asm__(
+        "  movw %%ds, %0 "
+
+        : "=r"(result));
+
+    return result;
+}
 
 int
 SVGA_GetVBEInfo(VBEInfo * info)
@@ -276,8 +333,14 @@ SVGA_GetPaletteData(SDL_Color * colors, int num_colors, Uint8 palette_dac_bits)
 
 int SVGA_SetPaletteData(SDL_Color *colors, int num_colors, Uint8 palette_dac_bits)
 {
+    /*
+      Flag to set colors.
+
+      Set to 0x80 to wait for vblank before setting palette (e.g. for vsync).
+    */
+    int mode = 0x80;
+    int seg;
     int i;
-    __dpmi_regs r;
     Uint8 bgr_colors[256 * 4];
 
     if (num_colors > 256) {
@@ -301,24 +364,26 @@ int SVGA_SetPaletteData(SDL_Color *colors, int num_colors, Uint8 palette_dac_bit
         }
     }
 
-    r.x.ax = 0x4F09;
-    /*
-       Flag to set colors.
+    seg = default_ds();
+    asm(
+        "  pushl %%ebp ; "
+        "  pushw %%ds ; "
+        "  movw %w1, %%ds ; " /* set the IO segment */
+        "  call *%0 ; "       /* call the VESA function */
+        "  popw %%ds ; "
+        "  popl %%ebp ; "
 
-       Note that according to https://www.phatcode.net/res/221/files/vbe20.pdf 4.12 (page 37),
-       on some systems this flag should be 0x80 and that can be determined using the Capabilities
-       field, which we do not yet do.
-     */
-    r.h.bl = 0x0;
-    r.x.cx = num_colors;
-    r.x.dx = 0; /* First color */
-    r.x.es = __tb_segment;
-    r.x.di = __tb_offset;
+        : /* no outputs */
 
-    dosmemput(bgr_colors, num_colors * 4, __tb);
-    __dpmi_int(0x10, &r);
+        : "S"(PM_SetPalette_Ptr), /* function pointer in esi */
+          "a"(seg),               /* IO segment in eax */
+          "b"(mode),              /* mode in ebx */
+          "c"(num_colors),        /* how many colors in ecx */
+          "d"(0),                 /* first color in edx */
+          "D"(bgr_colors)         /* palette data pointer in edi */
 
-    RETURN_IF_VBE_CALL_FAILED(r);
+        : "memory", "%cc" /* clobbers flags */
+    );
 
     return 0;
 }

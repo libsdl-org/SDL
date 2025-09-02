@@ -151,6 +151,7 @@ SDL_COMPILE_TIME_ASSERT(VBEModeInfo, sizeof(VBEModeInfo) == 256);
 #define VBE_MEM_MODEL_DIRECT    6
 #define VBE_MEM_MODEL_YUV       7
 
+extern int SVGA_InitProtectedModeInterface();
 extern int SVGA_GetVBEInfo(VBEInfo * info);
 extern VBEMode SVGA_GetVBEModeAtIndex(const VBEInfo * info, int index);
 extern int SVGA_GetVBEModeInfo(VBEMode mode, VBEModeInfo * info);
