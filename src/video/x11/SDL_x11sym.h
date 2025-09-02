@@ -43,7 +43,6 @@ SDL_X11_SYM(Pixmap,XCreateBitmapFromData,(Display *dpy,Drawable d,_Xconst char *
 SDL_X11_SYM(Colormap,XCreateColormap,(Display* a,Window b,Visual* c,int d))
 SDL_X11_SYM(Cursor,XCreatePixmapCursor,(Display* a,Pixmap b,Pixmap c,XColor* d,XColor* e,unsigned int f,unsigned int g))
 SDL_X11_SYM(Cursor,XCreatePixmap,(Display* a,Drawable b,unsigned int d,unsigned int e,unsigned int f))
-
 SDL_X11_SYM(Cursor,XCreateFontCursor,(Display* a,unsigned int b))
 SDL_X11_SYM(XFontSet,XCreateFontSet,(Display* a, _Xconst char* b, char*** c, int* d, char** e))
 SDL_X11_SYM(GC,XCreateGC,(Display* a,Drawable b,unsigned long c,XGCValues* d))

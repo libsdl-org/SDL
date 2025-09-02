@@ -175,11 +175,10 @@ static void X11_OnMessageBoxScaleChange(SDL_ToolkitWindowX11 *window, void *data
         
     controls = data;
     X11_PositionMessageBox(controls, &w, &h);
-    printf("%d %d\n", w, h);
-    X11Toolkit_ResizeWindow(window, w*window->iscale, h*window->iscale);
+    X11Toolkit_ResizeWindow(window, w, h);
 }
 
-static bool X11_ShowMessageBoxImplAAAAA(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+static bool X11_ShowMessageBoxImplaaaa(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     SDL_MessageBoxControlsX11 controls;
     SDL_MessageBoxCallbackDataX11 data;
@@ -198,7 +197,7 @@ static bool X11_ShowMessageBoxImplAAAAA(const SDL_MessageBoxData *messageboxdata
     }
     
     /* Create window */
-    controls.window = X11Toolkit_CreateWindowStruct(messageboxdata->window, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints);
+    controls.window = X11Toolkit_CreateWindowStruct(messageboxdata->window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints);
     controls.window->cb_data = &controls;
     controls.window->cb_on_scale_change = X11_OnMessageBoxScaleChange;
     if (!controls.window) {
@@ -234,23 +233,37 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
 {
     SDL_ToolkitWindowX11 *window;
     SDL_ToolkitControlX11 *bar;
-	SDL_ListNode *list;
+	SDL_ListNode *lista;
+	SDL_ListNode *listb;
 	SDL_ToolkitMenuItemX11 a;
 	SDL_ToolkitMenuItemX11 b;
 	SDL_ToolkitMenuItemX11 c;
+	SDL_ToolkitMenuItemX11 d;
 	
 	/* items */
-	list = NULL;
+	lista = NULL;
 	a.utf8 = "Hello";
-	SDL_ListAdd(&list, &a);
+	a.sub_menu = 342;
+	a.disabled = false;
+	SDL_ListAdd(&lista, &a);
  	b.utf8 = "Testing";
-	SDL_ListAdd(&list, &b);
+	b.sub_menu = NULL;
+	b.disabled = true;
+	SDL_ListAdd(&lista, &b);
 	c.utf8 = "123";
-	SDL_ListAdd(&list, &c);
+	c.sub_menu = NULL;
+	c.disabled = false;
+	SDL_ListAdd(&lista, &c);
 	
+	listb = NULL;
+	d.utf8 = "Menu";
+	d.sub_menu = lista;
+	d.disabled = false;
+	SDL_ListAdd(&listb, &d);
+		
 	/* Create window */
-    window = X11Toolkit_CreateWindowStruct(NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, NULL);
-    bar = X11Toolkit_CreateMenuBarControl(window, list);
+    window = X11Toolkit_CreateWindowStruct(NULL, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, NULL);
+    bar = X11Toolkit_CreateMenuBarControl(window, listb);
     
     /* Actually create window, do event loop, cleanup */
     X11Toolkit_CreateWindowRes(window, 320, 240, 0, 0, "MENUBAR TEST");

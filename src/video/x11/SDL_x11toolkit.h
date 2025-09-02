@@ -42,7 +42,9 @@
 typedef enum SDL_ToolkitChildModeX11
 {
     SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG,
-    SDL_TOOLKIT_WINDOW_MODE_X11_CHILD /* For embedding into a normal SDL_Window */
+    SDL_TOOLKIT_WINDOW_MODE_X11_CHILD, /* For embedding into a normal SDL_Window */
+    SDL_TOOLKIT_WINDOW_MODE_X11_MENU,
+    SDL_TOOLKIT_WINDOW_MODE_X11_TOOLTIP
 } SDL_ToolkitWindowModeX11;
 
 typedef struct SDL_ToolkitWindowX11
@@ -56,9 +58,11 @@ typedef struct SDL_ToolkitWindowX11
     /* Display */
     Display *display;
     int screen;
+    bool display_close;
     
     /* Parent */
     SDL_Window *parent;
+    struct SDL_ToolkitWindowX11 *tk_parent;
     
 	/* Window */
     Window window;
@@ -91,7 +95,9 @@ typedef struct SDL_ToolkitWindowX11
     int window_height; // Window height.
     int pixmap_width;  
     int pixmap_height;
-        
+	int window_x;
+    int window_y;
+          
     /* XSettings and scaling */
     XSettingsClient *xsettings;
     bool xsettings_first_time;
@@ -103,12 +109,14 @@ typedef struct SDL_ToolkitWindowX11
     XFontStruct *font_struct; // Latin1 (ASCII) fallback.
 
 	/* Control colors */
+	const SDL_MessageBoxColor *color_hints;
     XColor xcolor[SDL_MESSAGEBOX_COLOR_COUNT];
     XColor xcolor_bevel_l1;
     XColor xcolor_bevel_l2;
     XColor xcolor_bevel_d;
     XColor xcolor_pressed;
-        
+	XColor xcolor_disabled_text;
+       
     /* Control list */
     bool has_focus;
     struct SDL_ToolkitControlX11 *focused_control;  
@@ -122,10 +130,9 @@ typedef struct SDL_ToolkitWindowX11
     void *cb_data;
     void (*cb_on_scale_change)(struct SDL_ToolkitWindowX11 *, void *);
     
-    /* Child windows */
-    Window *child_windows;
-    size_t child_windows_sz;
-    
+    /* Popup windows */
+	SDL_ListNode *popup_windows;   
+
     /* Event loop */
     XEvent *e;
     struct SDL_ToolkitControlX11 *previous_control;
@@ -135,7 +142,6 @@ typedef struct SDL_ToolkitWindowX11
     int ev_i;
     float ev_scale;
     float ev_iscale;
-    Window ev_child_window;
     bool draw;
 	bool close;
     long event_mask;
@@ -175,6 +181,7 @@ typedef struct SDL_ToolkitMenuItemX11
     const char *utf8;
     bool checkbox;
     bool checked;
+    bool disabled;
 	void *cb_data;
     void (*cb)(struct SDL_ToolkitMenuItemX11 *, void *);
     SDL_ListNode *sub_menu;
@@ -183,10 +190,12 @@ typedef struct SDL_ToolkitMenuItemX11
     SDL_Rect utf8_rect;
     SDL_Rect hover_rect;
     SDL_ToolkitControlStateX11 state;
+    int arrow_x;
+    int arrow_y;
 } SDL_ToolkitMenuItemX11;
 
 /* WINDOW FUNCTIONS */
-extern SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_ToolkitWindowModeX11 mode, const SDL_MessageBoxColor *colorhints);
+extern SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_ToolkitWindowX11 *tkparent, SDL_ToolkitWindowModeX11 mode, const SDL_MessageBoxColor *colorhints);
 extern bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, int cx, int cy, char *title);
 extern void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data);
 extern void X11Toolkit_ResizeWindow(SDL_ToolkitWindowX11 *data, int w, int h);
@@ -210,6 +219,7 @@ extern const SDL_MessageBoxButtonData *X11Toolkit_GetButtonControlData(SDL_Toolk
 
 /* MENU CONTROL FUNCTIONS */
 extern SDL_ToolkitControlX11 *X11Toolkit_CreateMenuBarControl(SDL_ToolkitWindowX11 *window, SDL_ListNode *menu_items);
+extern SDL_ToolkitControlX11 *X11Toolkit_CreateMenuControl(SDL_ToolkitWindowX11 *window, SDL_ListNode *menu_items);
 
 #endif // SDL_VIDEO_DRIVER_X11
 
