@@ -165,20 +165,19 @@ function(check_x86_source_compiles BODY VAR)
   if(ARGN)
     message(FATAL_ERROR "Unknown arguments: ${ARGN}")
   endif()
-  if(APPLE AND DEFINED CMAKE_OSX_ARCHITECTURES)
+  if(APPLE_MULTIARCH AND (SDL_CPU_X86 OR SDL_CPU_X64))
     set(test_conditional 1)
   else()
     set(test_conditional 0)
   endif()
   check_c_source_compiles("
     #if ${test_conditional}
-    # include \"TargetConditionals.h\"
-    # if TARGET_CPU_X86 || TARGET_CPU_X86_64
+    # if defined(__i386__) || defined(__x86_64__)
     #  define test_enabled 1
     # else
-    #  define test_enabled 0
+    #  define test_enabled 0 /* feign success in Apple multi-arch configs */
     # endif
-    #else
+    #else                    /* test normally */
     # define test_enabled 1
     #endif
     #if test_enabled
@@ -196,20 +195,19 @@ function(check_arm_source_compiles BODY VAR)
   if(ARGN)
     message(FATAL_ERROR "Unknown arguments: ${ARGN}")
   endif()
-  if(APPLE AND DEFINED CMAKE_OSX_ARCHITECTURES)
+  if(APPLE_MULTIARCH AND (SDL_CPU_ARM32 OR SDL_CPU_ARM64))
     set(test_conditional 1)
   else()
     set(test_conditional 0)
   endif()
   check_c_source_compiles("
     #if ${test_conditional}
-    # include \"TargetConditionals.h\"
-    # if TARGET_CPU_ARM || TARGET_CPU_ARM64
+    # if defined(__arm__) || defined(__aarch64__)
     #  define test_enabled 1
     # else
-    #  define test_enabled 0
+    #  define test_enabled 0 /* feign success in Apple multi-arch configs */
     # endif
-    #else
+    #else                    /* test normally */
     # define test_enabled 1
     #endif
     #if test_enabled
