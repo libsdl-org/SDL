@@ -26,10 +26,6 @@
 #include "SDL_x11video.h"
 #include "SDL_x11settings.h"
 
-#define SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR "Gdk/WindowScalingFactor"
-#define SDL_XSETTINGS_GDK_UNSCALED_DPI "Gdk/UnscaledDPI"
-#define SDL_XSETTINGS_XFT_DPI "Xft/DPI"
-
 static void UpdateContentScale(SDL_VideoDevice *_this)
 {
     if (_this) {
