@@ -58,6 +58,11 @@ my $quickreftitle = undef;
 my $quickrefurl = undef;
 my $quickrefdesc = undef;
 my $quickrefmacroregex = undef;
+my $envvarenabled = 0;
+my $envvartitle = 'Environment Variables';
+my $envvardesc = undef;
+my $envvarsymregex = undef;
+my $envvarsymreplace = undef;
 my $changeformat = undef;
 my $manpath = undef;
 my $gitrev = undef;
@@ -137,6 +142,11 @@ if (defined $optionsfname) {
             $quickrefurl = $val, next if $key eq 'quickrefurl';
             $quickrefdesc = $val, next if $key eq 'quickrefdesc';
             $quickrefmacroregex = $val, next if $key eq 'quickrefmacroregex';
+            $envvarenabled = int($val), next if $key eq 'envvarenabled';
+            $envvartitle = $val, next if $key eq 'envvartitle';
+            $envvardesc = $val, next if $key eq 'envvardesc';
+            $envvarsymregex = $val, next if $key eq 'envvarsymregex';
+            $envvarsymreplace = $val, next if $key eq 'envvarsymreplace';
         }
     }
     close(OPTIONS);
@@ -1032,6 +1042,55 @@ sub generate_quickref {
 #    }
     rename($tmppath, $path) or die("Can't rename '$tmppath' to '$path': $!\n");
 }
+
+
+sub generate_envvar_wiki_page {
+    my $briefsref = shift;
+    my $path = shift;
+
+    return if not $envvarenabled or not defined $envvarsymregex or not defined $envvarsymreplace;
+
+    my $replace = "\"$envvarsymreplace\"";
+    my $tmppath = "$path.tmp";
+    open(my $fh, '>', $tmppath) or die("Can't open '$tmppath': $!\n");
+
+    print $fh "<!-- DO NOT EDIT THIS PAGE ON THE WIKI. IT WILL BE OVERWRITTEN BY WIKIHEADERS AND CHANGES WILL BE LOST! -->\n\n";
+    print $fh "# $envvartitle\n\n";
+
+    if (defined $envvardesc) {
+        my $desc = "$envvardesc";
+        $desc =~ s/\\n/\n/g;  # replace "\n" strings with actual newlines.
+        print $fh "$desc\n\n";
+    }
+
+    print $fh "## Environment Variable List\n\n";
+
+    foreach (sort keys %headersyms) {
+        my $sym = $_;
+        next if $headersymstype{$sym} != 2;  # not a #define? skip it.
+        my $hint = "$_";
+        next if not $hint =~ s/$envvarsymregex/$replace/ee;
+
+        my $brief = $$briefsref{$sym};
+        if (not defined $brief) {
+            $brief = '';
+        } else {
+            $brief = "$brief";
+            chomp($brief);
+            my $thiswikitype = defined $wikitypes{$sym} ? $wikitypes{$sym} : 'md';  # default to MarkDown for new stuff.
+            $brief = ": " . dewikify($thiswikitype, $brief);
+        }
+        print $fh "- [$hint]($sym)$brief\n";
+    }
+
+    print $fh "\n";
+
+    close($fh);
+
+    rename($tmppath, $path) or die("Can't rename '$tmppath' to '$path': $!\n");
+}
+
+
 
 
 my $incpath = "$srcpath";
@@ -2733,6 +2792,11 @@ __EOF__
         generate_quickref(\%briefs, "$wikipath/QuickReference.md", 0);
         generate_quickref(\%briefs, "$wikipath/QuickReferenceNoUnicode.md", 1);
     }
+
+    if ($envvarenabled and defined $envvarsymregex and defined $envvarsymreplace) {
+        generate_envvar_wiki_page(\%briefs, "$wikipath/EnvironmentVariables.md");
+    }
+
 } elsif ($copy_direction == -2) { # --copy-to-manpages
     # This only takes from the wiki data, since it has sections we omit from the headers, like code examples.
 
