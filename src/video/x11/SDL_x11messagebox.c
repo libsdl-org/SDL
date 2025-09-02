@@ -26,9 +26,8 @@
 #include "SDL_x11messagebox.h"
 #include "SDL_x11toolkit.h"
 
-/* when the pr reopens, set this back to 1 */
 #ifndef SDL_FORK_MESSAGEBOX
-#define SDL_FORK_MESSAGEBOX 0
+#define SDL_FORK_MESSAGEBOX 1
 #endif
 
 #if SDL_FORK_MESSAGEBOX
@@ -178,7 +177,7 @@ static void X11_OnMessageBoxScaleChange(SDL_ToolkitWindowX11 *window, void *data
     X11Toolkit_ResizeWindow(window, w, h);
 }
 
-static bool X11_ShowMessageBoxImplaaaa(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     SDL_MessageBoxControlsX11 controls;
     SDL_MessageBoxCallbackDataX11 data;
@@ -225,50 +224,6 @@ static bool X11_ShowMessageBoxImplaaaa(const SDL_MessageBoxData *messageboxdata,
     if (controls.buttons) {
         SDL_free(controls.buttons);
     }
-    return true;
-}
-
-/* for testing menus, replace with AAAAA later! */
-static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonID)
-{
-    SDL_ToolkitWindowX11 *window;
-    SDL_ToolkitControlX11 *bar;
-	SDL_ListNode *lista;
-	SDL_ListNode *listb;
-	SDL_ToolkitMenuItemX11 a;
-	SDL_ToolkitMenuItemX11 b;
-	SDL_ToolkitMenuItemX11 c;
-	SDL_ToolkitMenuItemX11 d;
-	
-	/* items */
-	lista = NULL;
-	a.utf8 = "Hello";
-	a.sub_menu = 342;
-	a.disabled = false;
-	SDL_ListAdd(&lista, &a);
- 	b.utf8 = "Testing";
-	b.sub_menu = NULL;
-	b.disabled = true;
-	SDL_ListAdd(&lista, &b);
-	c.utf8 = "123";
-	c.sub_menu = NULL;
-	c.disabled = false;
-	SDL_ListAdd(&lista, &c);
-	
-	listb = NULL;
-	d.utf8 = "Menu";
-	d.sub_menu = lista;
-	d.disabled = false;
-	SDL_ListAdd(&listb, &d);
-		
-	/* Create window */
-    window = X11Toolkit_CreateWindowStruct(NULL, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, NULL);
-    bar = X11Toolkit_CreateMenuBarControl(window, listb);
-    
-    /* Actually create window, do event loop, cleanup */
-    X11Toolkit_CreateWindowRes(window, 320, 240, 0, 0, "MENUBAR TEST");
-    X11Toolkit_DoWindowEventLoop(window);
-    X11Toolkit_DestroyWindow(window);
     return true;
 }
 

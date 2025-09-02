@@ -152,7 +152,8 @@ typedef enum SDL_ToolkitControlStateX11
     SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL,
     SDL_TOOLKIT_CONTROL_STATE_X11_HOVER,
     SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED, /* Key/Button Up */
-    SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED_HELD /* Key/Button Down */
+    SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED_HELD, /* Key/Button Down */
+    SDL_TOOLKIT_CONTROL_STATE_X11_DISABLED
 } SDL_ToolkitControlStateX11;
 
 typedef struct SDL_ToolkitControlX11
@@ -189,9 +190,11 @@ typedef struct SDL_ToolkitMenuItemX11
     /* Internal use */
     SDL_Rect utf8_rect;
     SDL_Rect hover_rect;
+    SDL_Rect check_rect;
     SDL_ToolkitControlStateX11 state;
     int arrow_x;
     int arrow_y;
+    bool reverse_arrows;
 } SDL_ToolkitMenuItemX11;
 
 /* WINDOW FUNCTIONS */
