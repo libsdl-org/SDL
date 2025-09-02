@@ -62,7 +62,7 @@ static int (*ALSA_snd_pcm_hw_params_set_access)(snd_pcm_t *, snd_pcm_hw_params_t
 static int (*ALSA_snd_pcm_hw_params_set_format)(snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_format_t);
 static int (*ALSA_snd_pcm_hw_params_set_channels)(snd_pcm_t *, snd_pcm_hw_params_t *, unsigned int);
 static int (*ALSA_snd_pcm_hw_params_get_channels)(const snd_pcm_hw_params_t *, unsigned int *);
-static int (*ALSA_snd_pcm_hw_params_get_rate)(snd_pcm_hw_params_t *, unsigned int*, int*);
+static int (*ALSA_snd_pcm_hw_params_get_rate)(const snd_pcm_hw_params_t *, unsigned int*, int*);
 static int (*ALSA_snd_pcm_hw_params_set_rate_near)(snd_pcm_t *, snd_pcm_hw_params_t *, unsigned int *, int *);
 static int (*ALSA_snd_pcm_hw_params_set_period_size_near)(snd_pcm_t *, snd_pcm_hw_params_t *, snd_pcm_uframes_t *, int *);
 static int (*ALSA_snd_pcm_hw_params_get_period_size)(const snd_pcm_hw_params_t *, snd_pcm_uframes_t *, int *);
@@ -89,7 +89,7 @@ static const char *(*ALSA_snd_pcm_info_get_name)(const snd_pcm_info_t *);
 static int (*ALSA_snd_pcm_info_get_card)(const snd_pcm_info_t *);
 static int (*ALSA_snd_card_get_name)(int, char **);
 static int (*ALSA_snd_pcm_info_malloc)(snd_pcm_info_t **);
-static int (*ALSA_snd_pcm_info_free)(snd_pcm_info_t *);
+static void (*ALSA_snd_pcm_info_free)(snd_pcm_info_t *);
 #ifdef SND_CHMAP_API_VERSION
 static snd_pcm_chmap_t *(*ALSA_snd_pcm_get_chmap)(snd_pcm_t *);
 static int (*ALSA_snd_pcm_chmap_print)(const snd_pcm_chmap_t *map, size_t maxlen, char *buf);
