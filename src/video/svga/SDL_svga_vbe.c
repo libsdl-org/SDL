@@ -255,19 +255,32 @@ SVGA_SetState(const void *state, size_t size)
     return 0;
 }
 
-int
-SVGA_SetDisplayStart(int x, int y)
+int SVGA_SetDisplayStart(int x, int y, int bytes_per_pixel, int bytes_per_line)
 {
-    __dpmi_regs r;
+    int seg;
+    long a;
+    seg = default_ds();
 
-    r.x.ax = 0x4F07;
-    r.x.bx = 0x80; /* Set start and wait for vertical retrace. */
-    r.x.cx = x;
-    r.x.dx = y;
+    a = ((x * bytes_per_pixel) + (y * bytes_per_line)) / 4;
 
-    __dpmi_int(0x10, &r);
+    asm(
+        "  pushl %%ebp ; "
+        "  pushw %%es ; "
+        "  movw %w1, %%es ; " /* set the IO segment */
+        "  call *%0 ; "       /* call the VESA function */
+        "  popw %%es ; "
+        "  popl %%ebp ; "
 
-    RETURN_IF_VBE_CALL_FAILED(r);
+        : /* no outputs */
+
+        : "S"(PM_SetDisplayStart_Ptr), /* function pointer in esi */
+          "a"(seg),                    /* IO segment in eax */
+          "b"(0x80),                   /* mode in ebx (0x80 = wait for vertical retrace) */
+          "c"(a & 0xFFFF),             /* low word of address in ecx */
+          "d"(a >> 16)                 /* high word of address in edx */
+
+        : "memory", "%edi", "%cc" /* clobbers edi and flags */
+    );
 
     return 0;
 }

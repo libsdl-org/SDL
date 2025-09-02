@@ -171,7 +171,10 @@ SDL_SVGA_UpdateFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, i
     }
 
     /* Display fresh page to screen. */
-    SVGA_SetDisplayStart(0, windata->framebuffer_page ? surface->h : 0);
+    SVGA_SetDisplayStart(
+        /*x=*/0, /*y=*/windata->framebuffer_page ? surface->h : 0,
+        /*bytes_per_pixel=*/surface->format->BytesPerPixel,
+        /*bytes_per_line=*/surface->pitch * surface->format->BytesPerPixel);
 
     return 0;
 }
