@@ -179,11 +179,6 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
                 ctx->sensors_supported = true;
                 ctx->rumble_supported = true;
                 ctx->powerstate_supported = true;
-
-                if (!device->is_bluetooth) {
-                    // The dongle appears to just stop sending reports after intense rumble activity
-                    ctx->rumble_supported = false;
-                }
             }
             break;
         }
