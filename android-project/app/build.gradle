@@ -11,15 +11,15 @@ android {
     if (buildAsApplication) {
         namespace "org.libsdl.app"
     }
-    compileSdkVersion 34
+    compileSdkVersion 35
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 34
+        minSdkVersion 21
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
         externalNativeBuild {
             ndkBuild {
-                arguments "APP_PLATFORM=android-19"
+                arguments "APP_PLATFORM=android-21"
                 abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
             }
             // cmake {
