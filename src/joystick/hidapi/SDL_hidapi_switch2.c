@@ -349,6 +349,7 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
     }
     RecvBulkData(ctx, calibration_data, 0x40);
 
+    // Wait for initialization to complete
     SDL_Delay(1);
 
     flash_read_command[12] = 0x80;
