@@ -49,34 +49,34 @@ typedef enum SDL_ToolkitChildModeX11
 
 typedef struct SDL_ToolkitWindowX11
 {
-	/* Locale */
+    /* Locale */
     char *origlocale;
-    
-	/* Mode */
+
+    /* Mode */
     SDL_ToolkitWindowModeX11 mode;
-    
+
     /* Display */
     Display *display;
     int screen;
     bool display_close;
-    
+
     /* Parent */
     SDL_Window *parent;
     struct SDL_ToolkitWindowX11 *tk_parent;
-    
-	/* Window */
+
+    /* Window */
     Window window;
     Drawable drawable;
-    
+
     /* Visuals and drawing */
     Visual *visual;
     XVisualInfo vi;
     Colormap cmap;
-  	GC ctx;
-	int depth;
+    GC ctx;
+    int depth;
     bool pixmap;
 
-	/* X11 extensions */
+    /* X11 extensions */
 #ifdef SDL_VIDEO_DRIVER_X11_XDBE
     XdbeBackBuffer buf;
     bool xdbe; // Whether Xdbe is present or not
@@ -86,37 +86,37 @@ typedef struct SDL_ToolkitWindowX11
 #endif
     bool utf8;
 
-	/* Atoms */
+    /* Atoms */
     Atom wm_protocols;
     Atom wm_delete_message;
-    
+
     /* Window and pixmap sizes */
     int window_width;  // Window width.
     int window_height; // Window height.
     int pixmap_width;  
     int pixmap_height;
-	int window_x;
+    int window_x;
     int window_y;
-          
+
     /* XSettings and scaling */
     XSettingsClient *xsettings;
     bool xsettings_first_time;
     int iscale;
     float scale;
-    
+
     /* Font */
     XFontSet font_set;        // for UTF-8 systems
     XFontStruct *font_struct; // Latin1 (ASCII) fallback.
 
-	/* Control colors */
-	const SDL_MessageBoxColor *color_hints;
+    /* Control colors */
+    const SDL_MessageBoxColor *color_hints;
     XColor xcolor[SDL_MESSAGEBOX_COLOR_COUNT];
     XColor xcolor_bevel_l1;
     XColor xcolor_bevel_l2;
     XColor xcolor_bevel_d;
     XColor xcolor_pressed;
-	XColor xcolor_disabled_text;
-       
+    XColor xcolor_disabled_text;
+
     /* Control list */
     bool has_focus;
     struct SDL_ToolkitControlX11 *focused_control;  
@@ -126,12 +126,12 @@ typedef struct SDL_ToolkitWindowX11
     struct SDL_ToolkitControlX11 **dyn_controls;
     size_t dyn_controls_sz;
 
-	/* User callbacks */
+    /* User callbacks */
     void *cb_data;
     void (*cb_on_scale_change)(struct SDL_ToolkitWindowX11 *, void *);
-    
+
     /* Popup windows */
-	SDL_ListNode *popup_windows;   
+    SDL_ListNode *popup_windows;
 
     /* Event loop */
     XEvent *e;
@@ -143,7 +143,7 @@ typedef struct SDL_ToolkitWindowX11
     float ev_scale;
     float ev_iscale;
     bool draw;
-	bool close;
+    bool close;
     long event_mask;
 } SDL_ToolkitWindowX11;
 
@@ -165,10 +165,10 @@ typedef struct SDL_ToolkitControlX11
     bool dynamic;
     bool is_default_enter;
     bool is_default_esc;
-    
+
     /* User data */
     void *data;
-    
+
     /* Virtual functions */
     void (*func_draw)(struct SDL_ToolkitControlX11 *);
     void (*func_calc_size)(struct SDL_ToolkitControlX11 *);
@@ -183,10 +183,10 @@ typedef struct SDL_ToolkitMenuItemX11
     bool checkbox;
     bool checked;
     bool disabled;
-	void *cb_data;
+    void *cb_data;
     void (*cb)(struct SDL_ToolkitMenuItemX11 *, void *);
     SDL_ListNode *sub_menu;
-    
+
     /* Internal use */
     SDL_Rect utf8_rect;
     SDL_Rect hover_rect;

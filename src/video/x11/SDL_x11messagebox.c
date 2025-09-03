@@ -56,7 +56,7 @@ typedef struct SDL_MessageBoxControlsX11
 static void X11_MessageBoxButtonCallback(SDL_ToolkitControlX11 *control, void *data)
 {
     SDL_MessageBoxCallbackDataX11 *cbdata;
-    
+
     cbdata = (SDL_MessageBoxCallbackDataX11 *)data;
     *cbdata->buttonID = X11Toolkit_GetButtonControlData(control)->buttonID;
     X11Toolkit_SignalWindowClose(cbdata->window);
@@ -71,25 +71,25 @@ static void X11_PositionMessageBox(SDL_MessageBoxControlsX11 *controls, int *wp,
     int h;
     int i;
     int t;
-  
+
     /* Init vars */
     max_button_w = 50;
     max_button_h = 0;
     w = h = 2;
     i = t = total_button_w = total_text_and_icon_w = 0;
     max_button_w *= controls->window->iscale;
-    
+
     /* Positioning and sizing */
     for (i = 0; i < controls->messageboxdata->numbuttons; i++) {
         max_button_w = SDL_max(max_button_w, controls->buttons[i]->rect.w);
         max_button_h = SDL_max(max_button_h, controls->buttons[i]->rect.h);
         controls->buttons[i]->rect.x = 0;
     }
-    
+
     if (controls->icon) {
         controls->icon->rect.x = controls->icon->rect.y = 0;
     }
-        
+
     if (controls->icon) {
         controls->message->rect.x = (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale) + controls->icon->rect.x + controls->icon->rect.w;
         controls->message->rect.y = X11Toolkit_GetIconControlCharY(controls->icon);
@@ -100,40 +100,40 @@ static void X11_PositionMessageBox(SDL_MessageBoxControlsX11 *controls, int *wp,
         controls->icon->rect.w = 0;
         controls->icon->rect.h = 0;
         controls->icon->rect.x = 0;
-        controls->icon->rect.y = 0;    
+        controls->icon->rect.y = 0;
     }
     if (controls->messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
         for (i = controls->messageboxdata->numbuttons; i != -1; i--) {
             controls->buttons[i]->rect.w = max_button_w;
             controls->buttons[i]->rect.h = max_button_h;
-            X11Toolkit_NotifyControlOfSizeChange(controls->buttons[i]);    
-            
+            X11Toolkit_NotifyControlOfSizeChange(controls->buttons[i]);
+
             if (controls->icon->rect.h > controls->message->rect.h) {
                 controls->buttons[i]->rect.y = controls->icon->rect.h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 *controls-> window->iscale);
             } else {
-                controls->buttons[i]->rect.y = controls->message->rect.h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale);                
-            }        
-            
+                controls->buttons[i]->rect.y = controls->message->rect.h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale);
+            }
+
             if (i) {
                 controls->buttons[i]->rect.x = controls->buttons[i-1]->rect.x + controls->buttons[i-1]->rect.w + (SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * controls->window->iscale);
             }
-        }        
+        }
     } else {
         for (i = 0; i < controls->messageboxdata->numbuttons; i++) {
             controls->buttons[i]->rect.w = max_button_w;
             controls->buttons[i]->rect.h = max_button_h;
-            X11Toolkit_NotifyControlOfSizeChange(controls->buttons[i]);    
-            
+            X11Toolkit_NotifyControlOfSizeChange(controls->buttons[i]);
+
             if (controls->icon->rect.h > controls->message->rect.h) {
                 controls->buttons[i]->rect.y = controls->icon->rect.h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale);
             } else {
-                controls->buttons[i]->rect.y = controls->message->rect.h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale);                
-            }        
-            
+                controls->buttons[i]->rect.y = controls->message->rect.h + (SDL_TOOLKIT_X11_ELEMENT_PADDING_2 * controls->window->iscale);
+            }
+
             if (i) {
                 controls->buttons[i]->rect.x = controls->buttons[i-1]->rect.x + controls->buttons[i-1]->rect.w + (SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * controls->window->iscale);
             }
-        }        
+        }
     }
     total_button_w = controls->buttons[controls->messageboxdata->numbuttons-1]->rect.x + controls->buttons[controls->messageboxdata->numbuttons-1]->rect.w;
     total_text_and_icon_w =  controls->message->rect.x + controls->message->rect.w;
@@ -161,8 +161,8 @@ static void X11_PositionMessageBox(SDL_MessageBoxControlsX11 *controls, int *wp,
     }
     if (!controls->messageboxdata->message) {
         controls->icon->rect.x = (w - controls->icon->rect.w)/2;
-    }  
-    
+    }
+
     *wp = w;
     *hp = h;
 }
@@ -171,7 +171,7 @@ static void X11_OnMessageBoxScaleChange(SDL_ToolkitWindowX11 *window, void *data
     SDL_MessageBoxControlsX11 *controls;
     int w;
     int h;
-        
+
     controls = data;
     X11_PositionMessageBox(controls, &w, &h);
     X11Toolkit_ResizeWindow(window, w, h);
@@ -185,16 +185,16 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     int i;
     int w;
     int h;
-    
+
     controls.messageboxdata = messageboxdata;
-    
+
     /* Color scheme */
     if (messageboxdata->colorScheme) {
         colorhints = messageboxdata->colorScheme->colors;
     } else {
         colorhints = NULL;
     }
-    
+
     /* Create window */
     controls.window = X11Toolkit_CreateWindowStruct(messageboxdata->window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints);
     controls.window->cb_data = &controls;
@@ -202,7 +202,7 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     if (!controls.window) {
         return false;
     }
-    
+
     /* Create controls */
     controls.buttons = SDL_calloc(messageboxdata->numbuttons, sizeof(SDL_ToolkitControlX11 *));
     controls.icon = X11Toolkit_CreateIconControl(controls.window, messageboxdata->flags);
@@ -216,7 +216,7 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
 
     /* Positioning */
     X11_PositionMessageBox(&controls, &w, &h);
-    
+
     /* Actually create window, do event loop, cleanup */
     X11Toolkit_CreateWindowRes(controls.window, w, h, 0, 0, (char *)messageboxdata->title);
     X11Toolkit_DoWindowEventLoop(controls.window);
