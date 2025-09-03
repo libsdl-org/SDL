@@ -2361,7 +2361,7 @@ elseif(WINDOWS)
       set(HAVE_OPENGLES TRUE)
     endif()
 
-    if(SDL_VULKAN AND HAVE_D3D11_H)
+    if(SDL_VULKAN AND HAVE_SENSORSAPI_H)
       set(SDL_VIDEO_VULKAN 1)
       set(HAVE_VULKAN TRUE)
       if(SDL_RENDER_VULKAN)
