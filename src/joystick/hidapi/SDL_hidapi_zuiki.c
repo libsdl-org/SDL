@@ -35,23 +35,7 @@
 
 typedef struct
 {
-    bool sensors_supported;
-    bool sensors_enabled;
-    bool touchpad_01_supported;
-    bool touchpad_02_supported;
-    bool rumble_supported;
-    bool rumble_type;
-    bool rgb_supported;
-    bool player_led_supported;
-    bool powerstate_supported;
-    Uint8 serial[6];
-    Uint16 version;
-    Uint16 version_beta;
-    float accelScale;
-    float gyroScale;
     Uint8 last_state[USB_PACKET_LENGTH];
-    Uint64 sensor_timestamp; // Nanoseconds.  Simulate onboard clock. Different models have different rates vs different connection styles.
-    Uint64 sensor_timestamp_interval;
 } SDL_DriverZUIKI_Context;
 
 #pragma pack(push, 1)
@@ -172,7 +156,10 @@ static bool HIDAPI_DriverZUIKI_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joy
 
 static bool HIDAPI_DriverZUIKI_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
-    return SDL_Unsupported();
+    if (SDL_HIDAPI_SendRumble(device, data, size) != size) {
+        return SDL_SetError("Couldn't send rumble packet");
+    }
+    return true;
 }
 
 static bool HIDAPI_DriverZUIKI_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
