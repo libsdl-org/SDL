@@ -16,13 +16,6 @@ else()
 endif()
 set(HAVE_EXAMPLES_LINK_SHARED "${SDL_EXAMPLES_LINK_SHARED}" PARENT_SCOPE)
 
-# CMake incorrectly detects opengl32.lib being present on MSVC ARM64
-if(NOT (MSVC AND SDL_CPU_ARM64))
-    # Prefer GLVND, if present
-    set(OpenGL_GL_PREFERENCE GLVND)
-    find_package(OpenGL)
-endif()
-
 set(SDL_EXAMPLE_EXECUTABLES)
 
 if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
@@ -70,7 +63,6 @@ macro(add_sdl_example_executable TARGET)
         add_executable(${TARGET} ${AST_SOURCES} ${AST_DATAFILES})
     endif()
     SDL_AddCommonCompilerFlags(${TARGET})
-    target_include_directories(${TARGET} PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
     target_link_libraries(${TARGET} PRIVATE SDL3::${sdl_name_component})
 
     list(APPEND SDL_EXAMPLE_EXECUTABLES ${TARGET})
@@ -109,8 +101,6 @@ macro(add_sdl_example_executable TARGET)
         if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
             set_property(TARGET ${TARGET} APPEND_STRING PROPERTY LINK_FLAGS " -CETCOMPAT")
         endif()
-    elseif(PSP)
-        target_link_libraries(${TARGET} PRIVATE GL)
     elseif(EMSCRIPTEN)
         set_property(TARGET ${TARGET} PROPERTY SUFFIX ".html")
         target_link_options(${TARGET} PRIVATE -sALLOW_MEMORY_GROWTH=1)
@@ -134,13 +124,6 @@ macro(add_sdl_example_executable TARGET)
         string(SUBSTRING "${TARGET_MD5}" 0 8 TARGET_MD5_8)
         target_link_options(${TARGET} PRIVATE "SHELL:-s UID3=0x${TARGET_MD5_8}")
     endif()
-
-    if(OPENGL_FOUND)
-        target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
-    endif()
-
-    # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
-    target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
 endmacro()
 
 add_sdl_example_executable(renderer-clear SOURCES renderer/01-clear/clear.c)
