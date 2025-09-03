@@ -81,7 +81,7 @@ macro(add_sdl_example_executable TARGET)
                 COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${AST_DATAFILES} $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET}
                 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             )
-        elseif(NOT APPLE)
+        elseif(NOT APPLE AND NOT N3DS)
             add_dependencies(${TARGET} copy-sdl-example-resources)
         endif()
         if(EMSCRIPTEN)
@@ -114,6 +114,21 @@ macro(add_sdl_example_executable TARGET)
     elseif(EMSCRIPTEN)
         set_property(TARGET ${TARGET} PROPERTY SUFFIX ".html")
         target_link_options(${TARGET} PRIVATE -sALLOW_MEMORY_GROWTH=1)
+    elseif(N3DS)
+        set(ROMFS_DIR "${CMAKE_CURRENT_BINARY_DIR}/romfs/${TARGET}")
+        file(MAKE_DIRECTORY "${ROMFS_DIR}")
+        file(COPY ${AST_DATAFILES} DESTINATION "${ROMFS_DIR}")
+        ctr_generate_smdh("${TARGET}.smdh"
+            NAME "SDL-${TARGET}"
+            DESCRIPTION "SDL3 example application"
+            AUTHOR "SDL3 Contributors"
+            ICON "${CMAKE_CURRENT_SOURCE_DIR}/../test/n3ds/logo48x48.png"
+        )
+        ctr_create_3dsx(
+            ${TARGET}
+            ROMFS "${ROMFS_DIR}"
+            SMDH "${TARGET}.smdh"
+        )
     elseif(NGAGE)
         string(MD5 TARGET_MD5 "${TARGET}")
         string(SUBSTRING "${TARGET_MD5}" 0 8 TARGET_MD5_8)
@@ -180,28 +195,6 @@ if(PSP)
             BACKGROUND_PATH NULL
             PREVIEW_PATH    NULL
             OUTPUT_DIR      $<TARGET_FILE_DIR:${APP}>/sdl-${APP}
-        )
-    endforeach()
-endif()
-
-if(N3DS)
-    set(ROMFS_DIR "${CMAKE_CURRENT_BINARY_DIR}/romfs")
-    file(MAKE_DIRECTORY "${ROMFS_DIR}")
-    file(COPY ${RESOURCE_FILES} DESTINATION "${ROMFS_DIR}")
-
-    foreach(APP ${SDL_EXAMPLE_EXECUTABLES})
-        get_target_property(TARGET_BINARY_DIR ${APP} BINARY_DIR)
-        set(SMDH_FILE "${TARGET_BINARY_DIR}/${APP}.smdh")
-        ctr_generate_smdh("${SMDH_FILE}"
-            NAME "SDL-${APP}"
-            DESCRIPTION "SDL3 Test suite"
-            AUTHOR "SDL3 Contributors"
-            ICON "${CMAKE_CURRENT_SOURCE_DIR}/../test/n3ds/logo48x48.png"
-        )
-        ctr_create_3dsx(
-            ${APP}
-            ROMFS "${ROMFS_DIR}"
-            SMDH "${SMDH_FILE}"
         )
     endforeach()
 endif()
