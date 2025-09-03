@@ -23,6 +23,11 @@
 #ifndef SDL_x11dyn_h_
 #define SDL_x11dyn_h_
 
+// Tell Xutil.h to provide symbol prototypes for external functions,
+// instead of just a #define for calling virtual methods through a pointer.
+// Otherwise we won't be able to take the address of XDestroyImage()
+#define XUTIL_DEFINE_FUNCTIONS
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
