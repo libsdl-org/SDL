@@ -981,10 +981,10 @@ static void X11Toolkit_DrawWindow(SDL_ToolkitWindowX11 *data) {
         put_image = X11_XCreateImage(data->display, data->visual, data->vi.depth, ZPixmap, 0, put_surface->pixels, data->window_width, data->window_height, 32, put_surface->pitch);
         X11_XPutImage(data->display, data->window, data->ctx, put_image, 0, 0, 0, 0, data->window_width, data->window_height);
 
-        X11_XDestroyImage(pixmap_image);
+        XDestroyImage(pixmap_image);
         /* Needed because XDestroyImage results in a double-free otherwise */
         put_image->data = NULL;
-        X11_XDestroyImage(put_image);
+        XDestroyImage(put_image);
         SDL_DestroySurface(pixmap_surface);
         SDL_DestroySurface(put_surface);
     }
