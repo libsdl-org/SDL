@@ -444,7 +444,7 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
     window->tk_parent = tkparent;
 
 #if SDL_SET_LOCALE
-    if (mode != SDL_TOOLKIT_WINDOW_MODE_X11_CHILD) {
+    if (mode == SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG) {
         window->origlocale = setlocale(LC_ALL, NULL);
         if (window->origlocale) {
             window->origlocale = SDL_strdup(window->origlocale);
@@ -1707,7 +1707,7 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
     }
 
 #if SDL_SET_LOCALE
-    if (data->origlocale && (data->mode != SDL_TOOLKIT_WINDOW_MODE_X11_CHILD)) {
+    if (data->origlocale && (data->mode == SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG)) {
         (void)setlocale(LC_ALL, data->origlocale);
         SDL_free(data->origlocale);
     }
