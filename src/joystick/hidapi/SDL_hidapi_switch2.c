@@ -349,10 +349,12 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
     }
     RecvBulkData(ctx, calibration_data, 0x40);
 
+    SDL_Delay(1);
+
     flash_read_command[12] = 0x80;
     res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
     if (res < 0) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read calibration data: %d", res);
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request calibration data: %d", res);
     } else {
         res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
         if (res < 0) {
@@ -366,7 +368,7 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
     flash_read_command[12] = 0xC0;
     res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
     if (res < 0) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read calibration data: %d", res);
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request calibration data: %d", res);
     } else {
         res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
         if (res < 0) {
