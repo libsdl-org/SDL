@@ -64,14 +64,10 @@ macro(add_sdl_example_executable TARGET)
     if(NOT AST_SOURCES)
         message(FATAL_ERROR "add_sdl_example_executable needs at least one source")
     endif()
-    set(EXTRA_SOURCES "")
-    if(AST_DATAFILES)
-        list(APPEND EXTRA_SOURCES ${DATAFILES})
-    endif()
     if(ANDROID)
-        add_library(${TARGET} SHARED ${AST_SOURCES} ${EXTRA_SOURCES})
+        add_library(${TARGET} SHARED ${AST_SOURCES} ${AST_DATAFILES})
     else()
-        add_executable(${TARGET} ${AST_SOURCES} ${EXTRA_SOURCES})
+        add_executable(${TARGET} ${AST_SOURCES} ${AST_DATAFILES})
     endif()
     SDL_AddCommonCompilerFlags(${TARGET})
     target_include_directories(${TARGET} PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
@@ -85,12 +81,8 @@ macro(add_sdl_example_executable TARGET)
                 COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${AST_DATAFILES} $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET}
                 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             )
-        else()
+        elseif(NOT APPLE)
             add_dependencies(${TARGET} copy-sdl-example-resources)
-        endif()
-        if(APPLE)
-            # Make sure resource files get installed into macOS/iOS .app bundles.
-            set_target_properties(${TARGET} PROPERTIES RESOURCE "${AST_DATAFILES}")
         endif()
         if(EMSCRIPTEN)
             foreach(res IN LISTS AST_DATAFILES)
@@ -101,7 +93,18 @@ macro(add_sdl_example_executable TARGET)
         set_property(TARGET ${TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:${TARGET}>/$<JOIN:${AST_DATAFILES},$<SEMICOLON>$<TARGET_FILE_DIR:${TARGET}>/>")
     endif()
 
-    if(WINDOWS)
+    if(APPLE)
+        # Set Apple App ID / Bundle ID.  This is needed to launch apps on some Apple
+        # platforms (iOS, for example).
+        set_target_properties(${TARGET} PROPERTIES
+          RESOURCES "${AST_DATAFILES}"
+          MACOSX_BUNDLE TRUE
+          MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${TARGET}"
+          MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
+          MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
+        )
+        set_property(SOURCE ${AST_DATAFILES} PROPERTY MACOSX_PACKAGE_LOCATION "Resources")
+    elseif(WINDOWS)
         # CET support was added in VS 16.7
         if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
             set_property(TARGET ${TARGET} APPEND_STRING PROPERTY LINK_FLAGS " -CETCOMPAT")
@@ -215,18 +218,6 @@ if(RISCOS)
         add_custom_target(${APP}-aif ALL DEPENDS ${APP},ff8)
         list(APPEND SDL_EXAMPLE_EXECUTABLES_AIF ${CMAKE_CURRENT_BINARY_DIR}/${APP},ff8)
     endforeach()
-endif()
-
-# Set Apple App ID / Bundle ID.  This is needed to launch apps on some Apple
-# platforms (iOS, for example).
-if(APPLE)
-  foreach(CURRENT_TARGET ${SDL_EXAMPLE_EXECUTABLES})
-    set_target_properties("${CURRENT_TARGET}" PROPERTIES
-      MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
-      MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
-      MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
-    )
-  endforeach()
 endif()
 
 if(SDL_INSTALL_EXAMPLES)
