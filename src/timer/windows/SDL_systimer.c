@@ -60,7 +60,6 @@ static HANDLE SDL_GetWaitableEvent(void)
     return event;
 }
 
-#if WINVER >= _WIN32_WINNT_WIN7
 /* CREATE_WAITABLE_TIMER_HIGH_RESOLUTION flag was added in Windows 10 version 1803. */
 #ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
 #define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x2
@@ -72,56 +71,45 @@ static CreateWaitableTimerExW_t pCreateWaitableTimerExW;
 typedef BOOL (WINAPI *SetWaitableTimerEx_t)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, PREASON_CONTEXT WakeContext, ULONG TolerableDelay);
 static SetWaitableTimerEx_t pSetWaitableTimerEx;
 
-#else
 typedef HANDLE (WINAPI *CreateWaitableTimerW_t)(LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName);
 static CreateWaitableTimerW_t pCreateWaitableTimerW;
 
 typedef BOOL (WINAPI *SetWaitableTimer_t)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume);
 static SetWaitableTimer_t pSetWaitableTimer;
-#endif
 
 static HANDLE SDL_GetWaitableTimer(void)
 {
     static SDL_TLSID TLS_timer_handle;
     HANDLE timer;
+    static bool initialized;
 
-#if WINVER >= _WIN32_WINNT_WIN7
-    if (!pCreateWaitableTimerExW || !pSetWaitableTimerEx) {
-#else
-    if (!pCreateWaitableTimerW || !pSetWaitableTimer) {
-#endif
-        static bool initialized;
-
-        if (!initialized) {
-            HMODULE module = GetModuleHandle(TEXT("kernel32.dll"));
-            if (module) {
-#if WINVER >= _WIN32_WINNT_WIN7
-                pCreateWaitableTimerExW = (CreateWaitableTimerExW_t)GetProcAddress(module, "CreateWaitableTimerExW");
-                pSetWaitableTimerEx = (SetWaitableTimerEx_t)GetProcAddress(module, "SetWaitableTimerEx");
-#else
+    if (!initialized) {
+        HMODULE module = GetModuleHandle(TEXT("kernel32.dll"));
+        if (module) {
+            pCreateWaitableTimerExW = (CreateWaitableTimerExW_t)GetProcAddress(module, "CreateWaitableTimerExW"); // Windows 7 and up
+            if (!pCreateWaitableTimerExW) {
                 pCreateWaitableTimerW = (CreateWaitableTimerW_t)GetProcAddress(module, "CreateWaitableTimerW");
-                pSetWaitableTimer = (SetWaitableTimer_t)GetProcAddress(module, "SetWaitableTimer");
-#endif
             }
-            initialized = true;
+            pSetWaitableTimerEx = (SetWaitableTimerEx_t)GetProcAddress(module, "SetWaitableTimerEx"); // Windows Vista and up
+            if (!pSetWaitableTimerEx) {
+                pSetWaitableTimer = (SetWaitableTimer_t)GetProcAddress(module, "SetWaitableTimer");
+            }
         }
+    }
 
-#if WINVER >= _WIN32_WINNT_WIN7
-        if (!pCreateWaitableTimerExW || !pSetWaitableTimerEx) {
-#else
-        if (!pCreateWaitableTimerW || !pSetWaitableTimer) {
-#endif
-            return NULL;
-        }
+    if ((!pCreateWaitableTimerExW && !pCreateWaitableTimerW) || (!pSetWaitableTimerEx && !pSetWaitableTimer)) {
+        return NULL;
+    } else {
+        initialized = true;
     }
 
     timer = SDL_GetTLS(&TLS_timer_handle);
     if (!timer) {
-#if WINVER >= _WIN32_WINNT_WIN7
-        timer = pCreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
-#else
-        timer = pCreateWaitableTimerW(NULL, TRUE, NULL);
-#endif
+        if (pCreateWaitableTimerExW) {
+            timer = pCreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+        } else {
+            timer = pCreateWaitableTimerW(NULL, TRUE, NULL);
+        }
         if (timer) {
             SDL_SetTLS(&TLS_timer_handle, timer, SDL_CleanupWaitableHandle);
         }
@@ -135,11 +123,7 @@ void SDL_SYS_DelayNS(Uint64 ns)
     if (timer) {
         LARGE_INTEGER due_time;
         due_time.QuadPart = -((LONGLONG)ns / 100);
-#if WINVER >= _WIN32_WINNT_WIN7
-        if (pSetWaitableTimerEx(timer, &due_time, 0, NULL, NULL, NULL, 0)) {
-#else
-        if (pSetWaitableTimer(timer, &due_time, 0, NULL, NULL, 0)) {
-#endif
+        if ((pSetWaitableTimerEx && pSetWaitableTimerEx(timer, &due_time, 0, NULL, NULL, NULL, 0)) || pSetWaitableTimer(timer, &due_time, 0, NULL, NULL, 0)) {
             WaitForSingleObject(timer, INFINITE);
         }
         return;
