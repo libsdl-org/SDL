@@ -101,9 +101,9 @@ static HANDLE SDL_GetWaitableTimer(void)
             initialized =
                 (pCreateWaitableTimerExW || pCreateWaitableTimerW) &&
                 (pSetWaitableTimerEx || pSetWaitableTimer);
-            if (!initialized) {
-                return NULL;
-            }
+        }
+        if (!initialized) {
+            return NULL;
         }
     }
 
