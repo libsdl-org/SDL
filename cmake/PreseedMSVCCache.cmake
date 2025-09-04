@@ -1,23 +1,13 @@
 if(MSVC)
   function(SDL_Preseed_CMakeCache)
-    if(SDL_WINVER_DECIMAL GREATER_EQUAL 0)
-      check_c_source_compiles("
-        #if ${SDL_WINVER} < 0x0A00
-        #error Preseeding is only supported for MSVC supporting Windows 10 or higher
-        #endif
-        int main(int argc, char **argv) { return 0; }
-        " CAN_PRESEED
-      )
-    else()
-      check_c_source_compiles("
-        #include <sdkddkver.h>
-        #if _WIN32_WINNT < 0x0A00
-        #error Preseeding is only supported for MSVC supporting Windows 10 or higher
-        #endif
-        int main(int argc, char **argv) { return 0; }
-        " CAN_PRESEED
-      )
-    endif()
+    check_c_source_compiles("
+      #include <sdkddkver.h>
+      #if _WIN32_WINNT < 0x0A00
+      #error Preseeding is only supported for MSVC supporting Windows 10 or higher
+      #endif
+      int main(int argc, char **argv) { return 0; }
+      " CAN_PRESEED
+    )
     if(CAN_PRESEED)
       set(COMPILER_SUPPORTS_W3                             "1"   CACHE INTERNAL "Test /W3")
       set(COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS      ""    CACHE INTERNAL "Test COMPILER_SUPPORTS_FDIAGNOSTICS_COLOR_ALWAYS")

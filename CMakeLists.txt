@@ -397,15 +397,6 @@ if(VITA)
   set_option(VIDEO_VITA_PVR  "Build with PSVita PVR gles/gles2 support" OFF)
 endif()
 
-if(WINDOWS)
-  set(SDL_WINVER "-1" CACHE STRING "Desktop Windows version being targeted")
-  math(EXPR SDL_WINVER_DECIMAL "${SDL_WINVER}")
-  math(EXPR SDL_MINWINVER_DECIMAL "0x0501")
-  if(SDL_WINVER_DECIMAL GREATER_EQUAL 0 AND SDL_WINVER_DECIMAL LESS SDL_MINWINVER_DECIMAL)
-    message(FATAL_ERROR "SDL_WINVER must be at least 0x501 (Windows XP or higher)")
-  endif()
-endif()
-
 if (NGAGE)
   set(SDL_GPU              OFF)
   set(SDL_CAMERA           OFF)
@@ -2122,10 +2113,6 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
     set (USE_POSIX_SPAWN 1)
   endif()
 elseif(WINDOWS)
-  if(NOT SDL_WINVER_DECIMAL LESS 0)
-    sdl_compile_definitions(PRIVATE "SDL_WINVER=${SDL_WINVER}")
-  endif()
-
   enable_language(CXX)
   check_c_source_compiles("
     #include <windows.h>
@@ -2167,14 +2154,14 @@ elseif(WINDOWS)
     endif()
 
     check_include_file(d3d9.h HAVE_D3D9_H)
-    CheckWinverIncludeFile(0x0601 ${SDL_WINVER} d3d11_1.h HAVE_D3D11_H)
+    check_include_file(d3d11_1.h HAVE_D3D11_H)
     check_include_file(ddraw.h HAVE_DDRAW_H)
     check_include_file(dsound.h HAVE_DSOUND_H)
     check_include_file(dinput.h HAVE_DINPUT_H)
     if(SDL_CPU_ARM32)  # !!! FIXME: this should probably check if we're !(x86 or x86-64) instead of arm.
       set(HAVE_DINPUT_H 0)
     endif()
-    CheckWinverIncludeFile(0x0600 ${SDL_WINVER} dxgi.h HAVE_DXGI_H)
+    check_include_file(dxgi.h HAVE_DXGI_H)
     cmake_pop_check_state()
     if(HAVE_D3D9_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H)
       set(HAVE_DIRECTX TRUE)
@@ -2192,41 +2179,47 @@ elseif(WINDOWS)
 
   if(SDL_XINPUT)
     # xinput.h may need windows.h, but does not include it itself.
-    CheckWinverCSourceCompiles(0x600 ${SDL_WINVER} "
+    check_c_source_compiles("
       #include <windows.h>
       #include <xinput.h>
-      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H)
+      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H
+    )
   endif()
 
   # headers needed elsewhere
-  CheckWinverCSourceCompiles(0x0A00 ${SDL_WINVER} "
-      #define COBJMACROS
-      #include <windows.gaming.input.h>
-      static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
-      int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
+  check_c_source_compiles("
+    #define COBJMACROS
+    #include <windows.gaming.input.h>
+    static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
+    int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
   )
-  CheckWinverCSourceCompiles(0x0A00 ${SDL_WINVER} "
+  check_c_source_compiles("
     #include <stdbool.h>
     #define COBJMACROS
     #include <gameinput.h>
     int main(int argc, char **argv) { return 0; }" HAVE_GAMEINPUT_H
   )
-  CheckWinverIncludeFile(0x0A00 ${SDL_WINVER} dxgi1_5.h HAVE_DXGI1_5_H)
-  CheckWinverIncludeFile(0x0A00 ${SDL_WINVER} dxgi1_6.h HAVE_DXGI1_6_H)
+  check_include_file(dxgi1_5.h HAVE_DXGI1_5_H)
+  check_include_file(dxgi1_6.h HAVE_DXGI1_6_H)
   check_include_file(tpcshrd.h HAVE_TPCSHRD_H)
-  CheckWinverIncludeFile(0x0602 ${SDL_WINVER} roapi.h HAVE_ROAPI_H)
-  CheckWinverIncludeFile(0x0600 ${SDL_WINVER} mmdeviceapi.h HAVE_MMDEVICEAPI_H)
-  CheckWinverIncludeFile(0x0600 ${SDL_WINVER} audioclient.h HAVE_AUDIOCLIENT_H)
-  CheckWinverIncludeFile(0x0601 ${SDL_WINVER} sensorsapi.h HAVE_SENSORSAPI_H)
-  CheckWinverIncludeFile(0x0602 ${SDL_WINVER} shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
-  CheckWinverCSourceCompiles(0x0A00 ${SDL_WINVER} "
-      #include <windows.h>
-      #include <mfapi.h>
-      #include <mfidl.h>
-      #include <mfreadwrite.h>
-      static MFVideoPrimaries primaries = MFVideoPrimaries_DCI_P3;
-      int main(int argc, char **argv) { return 0; }
-      " HAVE_MFAPI_H
+  check_include_file(roapi.h HAVE_ROAPI_H)
+  check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
+  check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
+  check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
+  check_c_source_compiles("
+    #include <shellscalingapi.h>
+    static void *ptr = GetDpiForMonitor;
+    int main (int argc, char **argv) { return 0; }
+    " HAVE_SHELLSCALINGAPI_H
+  )
+  check_c_source_compiles("
+    #include <windows.h>
+    #include <mfapi.h>
+    #include <mfidl.h>
+    #include <mfreadwrite.h>
+    static MFVideoPrimaries primaries = MFVideoPrimaries_DCI_P3;
+    int main(int argc, char **argv) { return 0; }
+    " HAVE_MFAPI_H
   )
 
   if(SDL_AUDIO)

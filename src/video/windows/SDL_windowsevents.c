@@ -2415,8 +2415,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         break;
     }
 
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && (WINVER >= _WIN32_WINNT_WIN7)
-    if (msg == data->videodata->WM_TASKBAR_BUTTON_CREATED) {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    if (msg && msg == data->videodata->WM_TASKBAR_BUTTON_CREATED) {
         data->taskbar_button_created = true;
         WIN_ApplyWindowProgress(SDL_GetVideoDevice(), data->window);
     }

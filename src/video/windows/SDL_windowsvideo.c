@@ -38,6 +38,89 @@
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 #include <shobjidl.h>
+
+#ifndef __ITaskbarList3_INTERFACE_DEFINED__
+typedef enum TBPFLAG
+{
+    TBPF_NOPROGRESS = 0x0,
+    TBPF_INDETERMINATE = 0x1,
+    TBPF_NORMAL = 0x2,
+    TBPF_ERROR = 0x4,
+    TBPF_PAUSED = 0x8
+} TBPFLAG;
+
+typedef enum THUMBBUTTONMASK
+{
+    THB_BITMAP = 0x1,
+    THB_ICON = 0x2,
+    THB_TOOLTIP = 0x4,
+    THB_FLAGS = 0x8
+} THUMBBUTTONMASK;
+
+typedef enum THUMBBUTTONFLAGS
+{
+    THBF_ENABLED = 0x0,
+    THBF_DISABLED = 0x1,
+    THBF_DISMISSONCLICK = 0x2,
+    THBF_NOBACKGROUND = 0x4,
+    THBF_HIDDEN = 0x8,
+    THBF_NONINTERACTIVE = 0x10
+} THUMBBUTTONFLAGS;
+ 
+#if defined(_MSC_VER)
+#pragma warning(disable: 4103)
+#endif
+#pragma pack(push, 8)
+typedef struct THUMBBUTTON
+{
+    THUMBBUTTONMASK dwMask;
+    UINT iId;
+    UINT iBitmap;
+    HICON hIcon;
+    WCHAR szTip[260];
+    THUMBBUTTONFLAGS dwFlags;
+} THUMBBUTTON;
+
+typedef struct THUMBBUTTON *LPTHUMBBUTTON;
+#pragma pack(pop)
+
+#ifndef HIMAGELIST
+struct _IMAGELIST;
+typedef struct _IMAGELIST *HIMAGELIST;
+#endif
+
+typedef struct ITaskbarList3Vtbl
+{
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(__RPC__in ITaskbarList3 *This, __RPC__in REFIID riid, __RPC__deref_out void **ppvObject);
+    ULONG (STDMETHODCALLTYPE *AddRef)(__RPC__in ITaskbarList3 *This);
+    ULONG (STDMETHODCALLTYPE *Release)(__RPC__in ITaskbarList3 *This);
+    HRESULT (STDMETHODCALLTYPE *HrInit)(__RPC__in ITaskbarList3 *This);
+    HRESULT (STDMETHODCALLTYPE *AddTab)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd);
+    HRESULT (STDMETHODCALLTYPE *DeleteTab)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd);
+    HRESULT (STDMETHODCALLTYPE *ActivateTab)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd);
+    HRESULT (STDMETHODCALLTYPE *SetActiveAlt)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd);
+    HRESULT (STDMETHODCALLTYPE *MarkFullscreenWindow)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, BOOL fFullscreen);
+    HRESULT (STDMETHODCALLTYPE *SetProgressValue)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, ULONGLONG ullCompleted, ULONGLONG ullTotal);
+    HRESULT (STDMETHODCALLTYPE *SetProgressState)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, TBPFLAG tbpFlags);
+    HRESULT (STDMETHODCALLTYPE *RegisterTab)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwndTab, __RPC__in HWND hwndMDI);
+    HRESULT (STDMETHODCALLTYPE *UnregisterTab)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwndTab);
+    HRESULT (STDMETHODCALLTYPE *SetTabOrder)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwndTab, __RPC__in HWND hwndInsertBefore);
+    HRESULT (STDMETHODCALLTYPE *SetTabActive)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwndTab, __RPC__in HWND hwndMDI, DWORD dwReserved);
+    HRESULT (STDMETHODCALLTYPE *ThumbBarAddButtons)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, UINT cButtons, __RPC__in_ecount_full(cButtons) LPTHUMBBUTTON pButton);
+    HRESULT (STDMETHODCALLTYPE *ThumbBarUpdateButtons)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, UINT cButtons, __RPC__in_ecount_full(cButtons) LPTHUMBBUTTON pButton);
+    HRESULT (STDMETHODCALLTYPE *ThumbBarSetImageList)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, __RPC__in_opt HIMAGELIST himl);
+    HRESULT (STDMETHODCALLTYPE *SetOverlayIcon)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, __RPC__in HICON hIcon, __RPC__in_opt_string LPCWSTR pszDescription);
+    HRESULT (STDMETHODCALLTYPE *SetThumbnailTooltip)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, __RPC__in_opt_string LPCWSTR pszTip);
+    HRESULT (STDMETHODCALLTYPE *SetThumbnailClip)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, __RPC__in RECT *prcClip);
+} ITaskbarList3Vtbl;
+
+struct ITaskbarList3
+{
+    CONST_VTBL struct ITaskbarList3Vtbl *lpVtbl;
+};
+
+#endif // #ifndef __ITaskbarList3_INTERFACE_DEFINED__
+
 #endif
 
 #ifdef SDL_GDK_TEXTINPUT
@@ -552,9 +635,7 @@ static bool WIN_VideoInit(SDL_VideoDevice *_this)
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     data->_SDL_WAKEUP = RegisterWindowMessageA("_SDL_WAKEUP");
-#endif
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && (WINVER >= _WIN32_WINNT_WIN7)
-    data->WM_TASKBAR_BUTTON_CREATED = RegisterWindowMessageA("TaskbarButtonCreated");
+    data->WM_TASKBAR_BUTTON_CREATED = WIN_IsWindows7OrGreater() ? RegisterWindowMessageA("TaskbarButtonCreated") : 0;
 #endif
 
     return true;
@@ -579,12 +660,10 @@ void WIN_VideoQuit(SDL_VideoDevice *_this)
     WIN_QuitKeyboard(_this);
     WIN_QuitMouse(_this);
 
-#if WINVER >= _WIN32_WINNT_WIN7
     if (data->taskbar_list) {
-        IUnknown_Release(data->taskbar_list);
+        data->taskbar_list->lpVtbl->Release(data->taskbar_list);
         data->taskbar_list = NULL;
     }
-#endif
 
     if (data->oleinitialized) {
         OleUninitialize();

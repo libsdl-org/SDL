@@ -1352,37 +1352,3 @@ macro(CheckLibUnwind)
     endif()
   endif()
 endmacro()
-
-macro(CheckWinverCSourceCompiles _MINVER _TARGETVER _SOURCE _VAR)
-  # CMake control flow expressions don't support hexadecimal, but math() can
-  # convert hexadecimal to decimal for the expressions.
-  math(EXPR __MINVER "${_MINVER}")
-  math(EXPR __TARGETVER "${_TARGETVER}")
-  if(__TARGETVER GREATER_EQUAL 0)
-    if(__TARGETVER GREATER_EQUAL __MINVER)
-      check_c_source_compiles("
-        #define _WIN32_WINNT ${_TARGETVER}
-        #define WINVER _WIN32_WINNT
-${_SOURCE}" "${_VAR}"
-      )
-    else()
-      message(STATUS "Assuming ${_VAR} is FALSE (target WINVER is ${_TARGETVER} but at least ${_MINVER} is required)")
-      set("${_VAR}" FALSE)
-    endif()
-  else()
-    check_c_source_compiles("${_SOURCE}" "${_VAR}")
-  endif()
-endmacro()
-
-macro(CheckWinverIncludeFile _MINVER _TARGETVER _INCLUDE_FILE _VAR)
-  # CMake control flow expressions don't support hexadecimal, but math() can
-  # convert hexadecimal to decimal for the expressions.
-  math(EXPR __MINVER "${_MINVER}")
-  math(EXPR __TARGETVER "${_TARGETVER}")
-  if(__TARGETVER GREATER_EQUAL 0 AND __TARGETVER LESS __MINVER)
-    message(STATUS "Assuming ${_INCLUDE_FILE} is unavailable (target WINVER is ${_TARGETVER} but at least ${_MINVER} is required)")
-    set("${_VAR}" FALSE)
-  else()
-    check_include_file("${_INCLUDE_FILE}" "${_VAR}")
-  endif()
-endmacro()
