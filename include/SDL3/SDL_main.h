@@ -615,8 +615,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char *argv[]
  * Most applications do not need to, and should not, call this directly; SDL
  * will call it when initializing the video subsystem.
  *
- * If `name` is NULL, SDL currently uses `(CS_BYTEALIGNCLIENT | CS_OWNDC)`
- * for the style, regardless of what is specified here.
+ * If `name` is NULL, SDL currently uses `(CS_BYTEALIGNCLIENT | CS_OWNDC)` for
+ * the style, regardless of what is specified here.
  *
  * \param name the window class name, in UTF-8 encoding. If NULL, SDL
  *             currently uses "SDL_app" but this isn't guaranteed.
