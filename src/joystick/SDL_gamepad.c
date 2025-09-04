@@ -882,7 +882,7 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
     }
 
     // Paddle 1/2
-    if(paddle_pairs > 0) {
+    if (paddle_pairs > 0) {
         SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
         SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
     }
