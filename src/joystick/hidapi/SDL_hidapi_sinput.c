@@ -248,7 +248,6 @@ typedef struct
     Uint8 last_state[USB_PACKET_LENGTH];
 
     Uint8 axes_count;
-
     Uint8 buttons_count;
     Uint8 usage_masks[4];
 
