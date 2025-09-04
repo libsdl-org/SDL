@@ -831,7 +831,7 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
     SDL_ADD_BUTTON_MAPPING("x", current_button++, mapping_string_len); // West  (typically X on Xbox, Square on PlayStation)
     SDL_ADD_BUTTON_MAPPING("y", current_button++, mapping_string_len); // North (typically Y on Xbox, Triangle on PlayStation)
 
-    // DPad (always applied)
+    // D-Pad (always applied)
     SDL_strlcat(mapping_string, "dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,", mapping_string_len);
 
     // Left and Right stick buttons
