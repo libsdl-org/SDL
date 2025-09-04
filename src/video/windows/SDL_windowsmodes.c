@@ -34,6 +34,9 @@
 #ifndef CDS_FULLSCREEN
 #define CDS_FULLSCREEN 0
 #endif
+#ifndef USER_DEFAULT_SCREEN_DPI
+#define USER_DEFAULT_SCREEN_DPI 96
+#endif
 
 // #define DEBUG_MODES
 // #define HIGHDPI_DEBUG_VERBOSE
@@ -249,7 +252,6 @@ static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
 {
     int dpi = 0;
 
-#if WINVER >= _WIN32_WINNT_WIN10
     const SDL_VideoData *videodata = (const SDL_VideoData *)_this->internal;
     if (videodata->GetDpiForMonitor) {
         UINT hdpi_uint, vdpi_uint;
@@ -265,7 +267,6 @@ static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
             ReleaseDC(NULL, hdc);
         }
     }
-#endif
     if (dpi == 0) {
         // Safe default
         dpi = USER_DEFAULT_SCREEN_DPI;
@@ -313,7 +314,6 @@ static bool WIN_GetDisplayMode(SDL_VideoDevice *_this, void *dxgi_output, HMONIT
 
 static char *WIN_GetDisplayNameVista(SDL_VideoData *videodata, const WCHAR *deviceName)
 {
-#if WINVER >= _WIN32_WINNT_VISTA
     DISPLAYCONFIG_PATH_INFO *paths = NULL;
     DISPLAYCONFIG_MODE_INFO *modes = NULL;
     char *result = NULL;
@@ -388,7 +388,6 @@ WIN_GetDisplayNameVista_failed:
     SDL_free(result);
     SDL_free(paths);
     SDL_free(modes);
-#endif
     return NULL;
 }
 
@@ -443,7 +442,6 @@ static bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
 static bool WIN_GetMonitorPathInfo(SDL_VideoData *videodata, HMONITOR hMonitor, DISPLAYCONFIG_PATH_INFO *path_info)
 {
     bool found = false;
-#if WINVER >= _WIN32_WINNT_WIN10
     LONG result;
     MONITORINFOEXW view_info;
     UINT32 i;
@@ -507,15 +505,12 @@ static bool WIN_GetMonitorPathInfo(SDL_VideoData *videodata, HMONITOR hMonitor, 
 done:
     SDL_free(path_infos);
     SDL_free(mode_infos);
-#endif
-
     return found;
 }
 
 static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
 {
     float SDR_white_level = 1.0f;
-#if WINVER >= _WIN32_WINNT_WIN10
     DISPLAYCONFIG_PATH_INFO path_info;
     SDL_VideoData *videodata = _this->internal;
 
@@ -538,7 +533,6 @@ static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
             SDR_white_level = (white_level.SDRWhiteLevel / 1000.0f);
         }
     }
-#endif
     return SDR_white_level;
 }
 

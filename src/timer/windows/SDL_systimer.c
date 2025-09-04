@@ -68,6 +68,10 @@ static HANDLE SDL_GetWaitableEvent(void)
 typedef HANDLE (WINAPI *CreateWaitableTimerExW_t)(LPSECURITY_ATTRIBUTES lpTimerAttributes, LPCWSTR lpTimerName, DWORD dwFlags, DWORD dwDesiredAccess);
 static CreateWaitableTimerExW_t pCreateWaitableTimerExW;
 
+#if WINVER < _WIN32_WINNT_WIN7
+typedef struct _REASON_CONTEXT REASON_CONTEXT;
+typedef REASON_CONTEXT * PREASON_CONTEXT;
+#endif
 typedef BOOL (WINAPI *SetWaitableTimerEx_t)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, PREASON_CONTEXT WakeContext, ULONG TolerableDelay);
 static SetWaitableTimerEx_t pSetWaitableTimerEx;
 

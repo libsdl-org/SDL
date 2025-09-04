@@ -29,6 +29,10 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysfilesystem.h"
 
+#ifndef COPY_FILE_NO_BUFFERING
+#define COPY_FILE_NO_BUFFERING 0x00001000
+#endif
+
 bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     SDL_EnumerationResult result = SDL_ENUM_CONTINUE;
@@ -162,11 +166,7 @@ bool SDL_SYS_CopyFile(const char *oldpath, const char *newpath)
         return false;
     }
 
-    const BOOL rc = CopyFileExW(woldpath, wnewpath, NULL, NULL, NULL, COPY_FILE_ALLOW_DECRYPTED_DESTINATION
-#if WINVER >= _WIN32_WINNT_VISTA
-        |COPY_FILE_NO_BUFFERING
-#endif
-    );
+    const BOOL rc = CopyFileExW(woldpath, wnewpath, NULL, NULL, NULL, COPY_FILE_ALLOW_DECRYPTED_DESTINATION|COPY_FILE_NO_BUFFERING);
     SDL_free(wnewpath);
     SDL_free(woldpath);
     if (!rc) {

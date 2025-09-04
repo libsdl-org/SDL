@@ -171,9 +171,7 @@ static ITaskbarList3 *GetTaskbarList(SDL_Window *window)
  */
 static bool WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD styleEx, BOOL menu, int *x, int *y, int *width, int *height, SDL_WindowRect rect_type)
 {
-#if WINVER >= _WIN32_WINNT_WIN10
     SDL_VideoData *videodata = SDL_GetVideoDevice() ? SDL_GetVideoDevice()->internal : NULL;
-#endif
     RECT rect;
 
     // Client rect, in points
@@ -220,7 +218,6 @@ static bool WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
         AdjustWindowRectEx(&rect, style, menu, 0);
 #else
-#if WINVER >= _WIN32_WINNT_WIN10
         if (WIN_IsPerMonitorV2DPIAware(SDL_GetVideoDevice())) {
             /* With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of
                AdjustWindowRectEx. */
@@ -232,9 +229,7 @@ static bool WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, DWORD
                     return WIN_SetError("AdjustWindowRectExForDpi()");
                 }
             }
-        } else
-#endif
-	{
+        } else {
             if (AdjustWindowRectEx(&rect, style, menu, styleEx) == 0) {
                 return WIN_SetError("AdjustWindowRectEx()");
             }
@@ -278,10 +273,8 @@ bool WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *h
 
 bool WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
 {
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && (WINVER >= _WIN32_WINNT_WIN10)
     SDL_VideoDevice *videodevice = SDL_GetVideoDevice();
     SDL_VideoData *videodata = videodevice ? videodevice->internal : NULL;
-#endif
     DWORD style, styleEx;
     BOOL menu;
 
@@ -296,7 +289,6 @@ bool WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     AdjustWindowRectEx(lpRect, style, menu, styleEx);
 #else
-#if WINVER >= _WIN32_WINNT_WIN10
     if (WIN_IsPerMonitorV2DPIAware(videodevice)) {
         // With per-monitor v2, the window border/titlebar size depend on the DPI, so we need to call AdjustWindowRectExForDpi instead of AdjustWindowRectEx.
         if (!frame_dpi) {
@@ -305,9 +297,7 @@ bool WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi)
         if (!videodata->AdjustWindowRectExForDpi(lpRect, style, menu, styleEx, frame_dpi)) {
             return WIN_SetError("AdjustWindowRectExForDpi()");
         }
-    } else
-#endif
-    {
+    } else {
         if (!AdjustWindowRectEx(lpRect, style, menu, styleEx)) {
             return WIN_SetError("AdjustWindowRectEx()");
         }
@@ -701,9 +691,7 @@ static void WIN_SetKeyboardFocus(SDL_Window *window, bool set_active_focus)
 
 bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props)
 {
-#if WINVER >= _WIN32_WINNT_VISTA
     SDL_VideoData *videodata = _this->internal;
-#endif
     HWND hwnd = (HWND)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, SDL_GetPointerProperty(create_props, "sdl2-compat.external_window", NULL));
     HWND parent = NULL;
     if (hwnd) {
@@ -766,7 +754,6 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-#if WINVER >= _WIN32_WINNT_VISTA
     // FIXME: does not work on all hardware configurations with different renders (i.e. hybrid GPUs)
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
         if (videodata->DwmEnableBlurBehindWindow) {
@@ -784,7 +771,6 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             DeleteObject(rgn);
         }
     }
-#endif
 
     HWND share_hwnd = (HWND)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER, NULL);
     if (share_hwnd) {
@@ -1231,7 +1217,7 @@ void WIN_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
 static void WIN_UpdateCornerRoundingForHWND(SDL_VideoDevice *_this, HWND hwnd, DWM_WINDOW_CORNER_PREFERENCE cornerPref)
 {
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && (WINVER >= _WIN32_WINNT_VISTA)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_VideoData *videodata = _this->internal;
     if (videodata->DwmSetWindowAttribute) {
         videodata->DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
@@ -1241,7 +1227,7 @@ static void WIN_UpdateCornerRoundingForHWND(SDL_VideoDevice *_this, HWND hwnd, D
 
 static void WIN_UpdateBorderColorForHWND(SDL_VideoDevice *_this, HWND hwnd, COLORREF colorRef)
 {
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES) && (WINVER >= _WIN32_WINNT_VISTA)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_VideoData *videodata = _this->internal;
     if (videodata->DwmSetWindowAttribute) {
         videodata->DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, &colorRef, sizeof(colorRef));

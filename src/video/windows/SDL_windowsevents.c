@@ -1250,7 +1250,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         WIN_UpdateFocus(data->window, false, GetMessagePos());
     } break;
 
-#if WINVER >= _WIN32_WINNT_WIN8
     case WM_POINTERENTER:
     {
         if (!data->videodata->GetPointerType) {
@@ -1368,7 +1367,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         returnCode = 0;
     } break;
-#endif // WINVER >= _WIN32_WINNT_WIN8
 
     case WM_MOUSEMOVE:
     {
@@ -2277,7 +2275,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
     } break;
 
-#if WINVER >= _WIN32_WINNT_WIN10
     case WM_GETDPISCALEDSIZE:
         // Windows 10 Creators Update+
         /* Documented as only being sent to windows that are per-monitor V2 DPI aware.
@@ -2411,7 +2408,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             WIN_UpdateMouseSystemScale();
         }
         break;
-#endif // WINVER >= _WIN32_WINNT_WIN10
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
