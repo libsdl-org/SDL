@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     SDL_WindowFlags flags;
     bool done = false;
     SDL_Event event;
-    int i;
+    
     int return_code = 1;
 
 
