@@ -2219,11 +2219,12 @@ elseif(WINDOWS)
   CheckWinverIncludeFile(0x0600 ${SDL_WINVER} audioclient.h HAVE_AUDIOCLIENT_H)
   CheckWinverIncludeFile(0x0601 ${SDL_WINVER} sensorsapi.h HAVE_SENSORSAPI_H)
   CheckWinverIncludeFile(0x0602 ${SDL_WINVER} shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
-  CheckWinverCSourceCompiles(0x0602 ${SDL_WINVER} "
+  CheckWinverCSourceCompiles(0x0A00 ${SDL_WINVER} "
       #include <windows.h>
       #include <mfapi.h>
       #include <mfidl.h>
       #include <mfreadwrite.h>
+      MFVideoPrimaries primaries = MFVideoPrimaries_DCI_P3;
       int main(int argc, char **argv) { return 0; }
       " HAVE_MFAPI_H
   )
