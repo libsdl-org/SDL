@@ -2224,7 +2224,7 @@ elseif(WINDOWS)
       #include <mfapi.h>
       #include <mfidl.h>
       #include <mfreadwrite.h>
-      MFVideoPrimaries primaries = MFVideoPrimaries_DCI_P3;
+      static MFVideoPrimaries primaries = MFVideoPrimaries_DCI_P3;
       int main(int argc, char **argv) { return 0; }
       " HAVE_MFAPI_H
   )
