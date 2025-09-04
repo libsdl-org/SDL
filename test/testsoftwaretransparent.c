@@ -17,7 +17,6 @@
 
 int main(int argc, char *argv[])
 {
-    const char *image_file = NULL;
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
     SDL_Texture *texture = NULL;
@@ -63,7 +62,7 @@ int main(int argc, char *argv[])
 
     /* Create the window hidden */
     flags = (SDL_WINDOW_HIDDEN |  SDL_WINDOW_TRANSPARENT);
-    //flags |= SDL_WINDOW_BORDERLESS;
+    /*flags |= SDL_WINDOW_BORDERLESS;*/
 
     window = SDL_CreateWindow("SDL Software Renderer Transparent Test", windowWidth, windowHeight, flags);
     if (!window) {
@@ -84,9 +83,9 @@ int main(int argc, char *argv[])
     }
 
     /* Create texture and set the blend mode */
-    // texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight);
-    //texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight);
-    // texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGRA32, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight);
+    /* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight); */
+    /* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight); */
+    /* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGRA32, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight); */
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGRA8888, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight);
     if (texture == NULL) {
         SDL_Log("Couldn't create texture: %s\n", SDL_GetError());
