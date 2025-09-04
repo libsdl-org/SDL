@@ -12,93 +12,66 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-#include "glass.h"
+#define SQUARE_SIZE 100.0f
 
+/* Draw opaque red squares at the four corners of the form, and draw a red square with an alpha value of 180 in the center of the form */
+static void draw(SDL_Renderer *renderer)
+{
+    SDL_FRect rect = { 0.0f, 0.0f, SQUARE_SIZE, SQUARE_SIZE };
+    int w, h;
+
+    SDL_GetCurrentRenderOutputSize(renderer, &w, &h);
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+
+    if (w >= 3 * SQUARE_SIZE && h >= 3 * SQUARE_SIZE) {
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+        SDL_RenderFillRect(renderer, &rect);
+
+        rect.y = h - SQUARE_SIZE;
+        SDL_RenderFillRect(renderer, &rect);
+
+        rect.x = w - SQUARE_SIZE;
+        SDL_RenderFillRect(renderer, &rect);
+
+        rect.y = 0.0f;
+        SDL_RenderFillRect(renderer, &rect);
+    }
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 180);
+    rect.x = (w - SQUARE_SIZE) / 2;
+    rect.y = (h - SQUARE_SIZE) / 2;
+    SDL_RenderFillRect(renderer, &rect);
+}
 
 int main(int argc, char *argv[])
 {
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
-    SDL_Texture *texture = NULL;
-    SDL_WindowFlags flags;
     bool done = false;
     SDL_Event event;
-    
+
     int return_code = 1;
 
-
-    int windowWidth = 800;
-    int windowHeight = 600;
-    SDL_FRect destRect;
-    destRect.x = 0;
-    destRect.y = 0;
-    destRect.w = 100;
-    destRect.h = 100;
-
-    SDL_FRect destRect2;
-    destRect2.x = 700;
-    destRect2.y = 0;
-    destRect2.w = 100;
-    destRect2.h = 100;
-
-    SDL_FRect destRect3;
-    destRect3.x = 0;
-    destRect3.y = 500;
-    destRect3.w = 100;
-    destRect3.h = 100;
-
-    SDL_FRect destRect4;
-    destRect4.x = 700;
-    destRect4.y = 500;
-    destRect4.w = 100;
-    destRect4.h = 100;
-
-    SDL_FRect destRect5;
-    destRect5.x = 350;
-    destRect5.y = 250;
-    destRect5.w = 100;
-    destRect5.h = 100;
-
-
-    /* Create the window hidden */
-    flags = (SDL_WINDOW_HIDDEN |  SDL_WINDOW_TRANSPARENT);
-    /*flags |= SDL_WINDOW_BORDERLESS;*/
-
-    window = SDL_CreateWindow("SDL Software Renderer Transparent Test", windowWidth, windowHeight, flags);
+    window = SDL_CreateWindow("SDL Software Renderer Transparent Test", 800, 600, SDL_WINDOW_TRANSPARENT | SDL_WINDOW_RESIZABLE);
     if (!window) {
         SDL_Log("Couldn't create transparent window: %s", SDL_GetError());
         goto quit;
     }
 
-    /* Create a software renderer and set the blend mode */
+    /* Create a software renderer */
     renderer = SDL_CreateRenderer(window, SDL_SOFTWARE_RENDERER);
     if (!renderer) {
         SDL_Log("Couldn't create renderer: %s", SDL_GetError());
         goto quit;
     }
 
-    if (!SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND)) {
-        SDL_Log("Couldn't set renderer blend mode: %s\n", SDL_GetError());
-        return false;
-    }
-
-    /* Create texture and set the blend mode */
-    /* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight); */
-    /* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight); */
-    /* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGRA32, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight); */
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGRA8888, SDL_TEXTUREACCESS_TARGET, windowWidth, windowHeight);
-    if (texture == NULL) {
-        SDL_Log("Couldn't create texture: %s\n", SDL_GetError());
-        return false;
-    }
-
-    if (!SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND_PREMULTIPLIED)) {
-        SDL_Log("Couldn't set texture blend mode: %s\n", SDL_GetError());
-        return false;
-    }
-
-    /* Show */
-    SDL_ShowWindow(window);
+    /* Make sure we're setting the alpha channel while drawing */
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
     /* We're ready to go! */
     while (!done) {
@@ -109,6 +82,10 @@ int main(int argc, char *argv[])
                     done = true;
                 }
                 break;
+            case SDL_EVENT_WINDOW_EXPOSED:
+                /* The software renderer is persistent, so only redraw as-needed */
+                draw(renderer);
+                break;
             case SDL_EVENT_QUIT:
                 done = true;
                 break;
@@ -116,26 +93,6 @@ int main(int argc, char *argv[])
                 break;
             }
         }
-
-        
-        /* Draw opaque red squares at the four corners of the form, and draw a red square with an alpha value of 180 in the center of the form */
-        
-        SDL_SetRenderTarget(renderer, texture);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-        SDL_RenderClear(renderer);
-
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        SDL_RenderFillRect(renderer, &destRect);
-        SDL_RenderFillRect(renderer, &destRect2);
-        SDL_RenderFillRect(renderer, &destRect3);
-        SDL_RenderFillRect(renderer, &destRect4);
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 180);
-        SDL_RenderFillRect(renderer, &destRect5);
-
-        SDL_SetRenderTarget(renderer, NULL);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-        SDL_RenderClear(renderer);
-        SDL_RenderTexture(renderer, texture, NULL, NULL);
 
         /* Show everything on the screen and wait a bit */
         SDL_RenderPresent(renderer);
@@ -146,7 +103,6 @@ int main(int argc, char *argv[])
     return_code = 0;
 
 quit:
-    SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
