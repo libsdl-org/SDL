@@ -98,13 +98,14 @@ static HANDLE SDL_GetWaitableTimer(void)
             if (!pSetWaitableTimerEx) {
                 pSetWaitableTimer = (SetWaitableTimer_t)GetProcAddress(module, "SetWaitableTimer");
             }
+            initialized =
+                (pCreateWaitableTimerExW || pCreateWaitableTimerW) &&
+                (pSetWaitableTimerEx || pSetWaitableTimer);
         }
     }
 
-    if ((!pCreateWaitableTimerExW && !pCreateWaitableTimerW) || (!pSetWaitableTimerEx && !pSetWaitableTimer)) {
+    if (!initialized) {
         return NULL;
-    } else {
-        initialized = true;
     }
 
     timer = SDL_GetTLS(&TLS_timer_handle);
