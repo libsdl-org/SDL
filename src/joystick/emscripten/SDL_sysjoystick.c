@@ -66,8 +66,17 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         goto done;
     }
 
+    int first_hat_button = -1;
+    int num_buttons = gamepadEvent->numButtons;
+    if ((SDL_strcmp(gamepadEvent->mapping, "standard") == 0) && (num_buttons >= 16)) {  // maps to a game console gamepad layout, turn the d-pad into a hat.
+        num_buttons -= 4;
+        first_hat_button = 12;
+    }
+
+    item->first_hat_button = first_hat_button;
+    item->nhats = (first_hat_button >= 0) ? 1 : 0;
     item->naxes = gamepadEvent->numAxes;
-    item->nbuttons = gamepadEvent->numButtons;
+    item->nbuttons = num_buttons;
     item->device_instance = SDL_GetNextObjectID();
 
     item->timestamp = gamepadEvent->timestamp;
@@ -76,9 +85,30 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         item->axis[i] = gamepadEvent->axis[i];
     }
 
-    for (i = 0; i < item->nbuttons; i++) {
-        item->analogButton[i] = gamepadEvent->analogButton[i];
-        item->digitalButton[i] = gamepadEvent->digitalButton[i];
+    int buttonidx = 0;
+    for (i = 0; i < item->nbuttons; i++, buttonidx++) {
+        if (buttonidx == first_hat_button) {
+            buttonidx += 3;  // skip these buttons, we're treating them as hat input.
+        }
+        item->analogButton[i] = gamepadEvent->analogButton[buttonidx];
+        item->digitalButton[i] = gamepadEvent->digitalButton[buttonidx];
+    }
+
+    SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
+    if (item->nhats) {
+        Uint8 value = SDL_HAT_CENTERED;
+        // this currently expects the first button to be up, then down, then left, then right.
+        if (gamepadEvent->digitalButton[first_hat_button + 0]) {
+            value |= SDL_HAT_UP;
+        } else if (gamepadEvent->digitalButton[first_hat_button + 1]) {
+            value |= SDL_HAT_DOWN;
+        }
+        if (gamepadEvent->digitalButton[first_hat_button + 2]) {
+            value |= SDL_HAT_LEFT;
+        } else if (gamepadEvent->digitalButton[first_hat_button + 3]) {
+            value |= SDL_HAT_RIGHT;
+        }
+        item->hat = value;
     }
 
     if (!SDL_joylist_tail) {
@@ -318,9 +348,8 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->hwdata = (struct joystick_hwdata *)item;
     item->joystick = joystick;
 
-    // HTML5 Gamepad API doesn't say anything about these
-    joystick->nhats = 0;
-
+    // HTML5 Gamepad API doesn't offer hats, but we can fake it from the d-pad buttons on the "standard" mapping.
+    joystick->nhats = item->nhats;
     joystick->nbuttons = item->nbuttons;
     joystick->naxes = item->naxes;
 
@@ -361,15 +390,21 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
         result = emscripten_get_gamepad_status(item->index, &gamepadState);
         if (result == EMSCRIPTEN_RESULT_SUCCESS) {
             if (gamepadState.timestamp == 0 || gamepadState.timestamp != item->timestamp) {
-                for (i = 0; i < item->nbuttons; i++) {
-                    if (item->digitalButton[i] != gamepadState.digitalButton[i]) {
-                        bool down = (gamepadState.digitalButton[i] != 0);
+                const int first_hat_button = item->first_hat_button;
+
+                int buttonidx = 0;
+                for (i = 0; i < item->nbuttons; i++, buttonidx++) {
+                    if (buttonidx == first_hat_button) {
+                        buttonidx += 4;  // skip these buttons, we're treating them as hat input.
+                    }
+                    if (item->digitalButton[i] != gamepadState.digitalButton[buttonidx]) {
+                        bool down = (gamepadState.digitalButton[buttonidx] != 0);
                         SDL_SendJoystickButton(timestamp, item->joystick, i, down);
                     }
 
                     // store values to compare them in the next update
-                    item->analogButton[i] = gamepadState.analogButton[i];
-                    item->digitalButton[i] = gamepadState.digitalButton[i];
+                    item->analogButton[i] = gamepadState.analogButton[buttonidx];
+                    item->digitalButton[i] = gamepadState.digitalButton[buttonidx];
                 }
 
                 for (i = 0; i < item->naxes; i++) {
@@ -382,6 +417,27 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                     // store to compare in next update
                     item->axis[i] = gamepadState.axis[i];
                 }
+
+                SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
+                if (item->nhats) {
+                    Uint8 value = SDL_HAT_CENTERED;
+                    // this currently expects the first button to be up, then down, then left, then right.
+                    if (gamepadState.digitalButton[first_hat_button + 0]) {
+                        value |= SDL_HAT_UP;
+                    } else if (gamepadState.digitalButton[first_hat_button + 1]) {
+                        value |= SDL_HAT_DOWN;
+                    }
+                    if (gamepadState.digitalButton[first_hat_button + 2]) {
+                        value |= SDL_HAT_LEFT;
+                    } else if (gamepadState.digitalButton[first_hat_button + 3]) {
+                        value |= SDL_HAT_RIGHT;
+                    }
+                    if (item->hat != value) {
+                        item->hat = value;
+                        SDL_SendJoystickHat(timestamp, item->joystick, 0, value);
+                    }
+                }
+
 
                 item->timestamp = gamepadState.timestamp;
             }
