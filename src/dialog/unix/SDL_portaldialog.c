@@ -26,6 +26,8 @@
 #ifdef SDL_USE_LIBDBUS
 
 #include <errno.h>
+#include <libgen.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -294,7 +296,12 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     bool allow_many = SDL_GetBooleanProperty(props, SDL_PROP_FILE_DIALOG_MANY_BOOLEAN, false);
     const char *default_location = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_LOCATION_STRING, NULL);
     const char *accept = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_ACCEPT_STRING, NULL);
+    char *location_name = NULL;
+    char *location_folder = NULL;
+    struct stat statbuf;
     bool open_folders = false;
+    bool save_file_existing = false;
+    bool save_file_new_named = false;
 
     switch (type) {
     case SDL_FILEDIALOG_OPENFILE:
@@ -305,6 +312,28 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     case SDL_FILEDIALOG_SAVEFILE:
         method = "SaveFile";
         method_title = SDL_GetStringProperty(props, SDL_PROP_FILE_DIALOG_TITLE_STRING, "Save File");
+        if (default_location) {
+            if (stat(default_location, &statbuf) == 0) {
+                save_file_existing = S_ISREG(statbuf.st_mode);
+            } else if (errno == ENOENT) {
+                char *dirc = SDL_strdup(default_location);
+                if (dirc) {
+                    location_folder = SDL_strdup(dirname(dirc));
+                    SDL_free(dirc);
+                    if (location_folder) {
+                        save_file_new_named = (stat(location_folder, &statbuf) == 0) && S_ISDIR(statbuf.st_mode);
+                    }
+                }
+            }
+
+            if (save_file_existing || save_file_new_named) {
+                char *basec = SDL_strdup(default_location);
+                if (basec) {
+                    location_name = SDL_strdup(basename(basec));
+                    SDL_free(basec);
+                }
+            }
+        }
         break;
 
     case SDL_FILEDIALOG_OPENFOLDER:
@@ -317,10 +346,11 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
         /* This is already checked in ../SDL_dialog.c; this silences compiler warnings */
         SDL_SetError("Invalid file dialog type: %d", type);
         callback(userdata, NULL, -1);
-        return;
+        goto cleanup;
     }
 
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
+    DBusError error;
     DBusMessage *msg;
     DBusMessageIter params, options;
     const char *signal_id = NULL;
@@ -332,23 +362,25 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
 
     const char *err_msg = validate_filters(filters, nfilters);
 
+    dbus->error_init(&error);
+
     if (err_msg) {
         SDL_SetError("%s", err_msg);
         callback(userdata, NULL, -1);
-        return;
+        goto cleanup;
     }
 
     if (dbus == NULL) {
         SDL_SetError("Failed to connect to DBus");
         callback(userdata, NULL, -1);
-        return;
+        goto cleanup;
     }
 
     msg = dbus->message_new_method_call(PORTAL_DESTINATION, PORTAL_PATH, PORTAL_INTERFACE, method);
     if (msg == NULL) {
         SDL_SetError("Failed to send message to portal");
         callback(userdata, NULL, -1);
-        return;
+        goto cleanup;
     }
 
     dbus->message_iter_init_append(msg, &params);
@@ -362,7 +394,7 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
             handle_str = SDL_malloc(len * sizeof(char));
             if (!handle_str) {
                 callback(userdata, NULL, -1);
-                return;
+                goto cleanup;
             }
 
             SDL_snprintf(handle_str, len, "%s%s", WAYLAND_HANDLE_PREFIX, parent_handle);
@@ -373,7 +405,7 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
                 handle_str = SDL_malloc(len * sizeof(char));
                 if (!handle_str) {
                     callback(userdata, NULL, -1);
-                    return;
+                    goto cleanup;
                 }
 
                 // The portal wants X11 window ID numbers in hex.
@@ -393,7 +425,7 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     handle_str = SDL_malloc(sizeof(char) * (HANDLE_LEN + 1));
     if (!handle_str) {
         callback(userdata, NULL, -1);
-        return;
+        goto cleanup;
     }
     SDL_snprintf(handle_str, HANDLE_LEN, "%u", ++handle_id);
     DBus_AppendStringOption(dbus, &options, "handle_token", handle_str);
@@ -410,14 +442,34 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
         DBus_AppendFilters(dbus, &options, filters, nfilters);
     }
     if (default_location) {
-        DBus_AppendByteArray(dbus, &options, "current_folder", default_location);
+        if (save_file_existing && location_name) {
+            /* Open a save dialog at an existing file */
+            DBus_AppendByteArray(dbus, &options, "current_file", default_location);
+            /* Setting "current_name" should not be necessary however the kde-desktop-portal sets the filename without an extension.
+             * An alternative would be to match the extension to a filter and set "current_filter".
+             */
+            DBus_AppendStringOption(dbus, &options, "current_name", location_name);
+        } else if (save_file_new_named && location_folder && location_name) {
+            /* Open a save dialog at a location with a suggested name */
+            DBus_AppendByteArray(dbus, &options, "current_folder", location_folder);
+            DBus_AppendStringOption(dbus, &options, "current_name", location_name);
+        } else {
+            DBus_AppendByteArray(dbus, &options, "current_folder", default_location);
+        }
     }
     if (accept) {
         DBus_AppendStringOption(dbus, &options, "accept_label", accept);
     }
     dbus->message_iter_close_container(&params, &options);
 
-    DBusMessage *reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, DBUS_TIMEOUT_INFINITE, NULL);
+    DBusMessage *reply = dbus->connection_send_with_reply_and_block(dbus->session_conn, msg, DBUS_TIMEOUT_INFINITE, &error);
+    if (dbus->error_is_set(&error)) {
+        SDL_SetError("Failed to open dialog via DBus, %s: %s", error.name, error.message);
+        dbus->error_free(&error);
+        callback(userdata, NULL, -1);
+        goto cleanup;
+    }
+
     if (reply) {
         DBusMessageIter reply_iter;
         dbus->message_iter_init(reply, &reply_iter);
@@ -443,8 +495,15 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
     }
 
     SDL_snprintf(filter, filter_len, SIGNAL_FILTER"%s'", signal_id);
-    dbus->bus_add_match(dbus->session_conn, filter, NULL);
+    dbus->bus_add_match(dbus->session_conn, filter, &error);
     SDL_free(filter);
+
+    if (dbus->error_is_set(&error)) {
+        SDL_SetError("Failed to set up DBus listener for dialog, %s: %s", error.name, error.message);
+        dbus->error_free(&error);
+        callback(userdata, NULL, -1);
+        goto cleanup;
+    }
 
     SignalCallback *data = SDL_malloc(sizeof(SignalCallback));
     if (!data) {
@@ -469,6 +528,10 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
 
 incorrect_type:
     dbus->message_unref(reply);
+
+cleanup:
+    SDL_free(location_name);
+    SDL_free(location_folder);
 }
 
 bool SDL_Portal_detect(void)

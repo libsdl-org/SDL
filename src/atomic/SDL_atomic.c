@@ -298,6 +298,30 @@ int SDL_AddAtomicInt(SDL_AtomicInt *a, int v)
 #endif
 }
 
+Uint32 SDL_AddAtomicU32(SDL_AtomicU32 *a, int v)
+{
+#ifdef HAVE_MSC_ATOMICS
+    SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
+    return (Uint32)_InterlockedExchangeAdd((long *)&a->value, v);
+#elif defined(HAVE_WATCOM_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(int) == sizeof(a->value));
+    return (Uint32)_SDL_xadd_watcom((volatile int *)&a->value, v);
+#elif defined(HAVE_GCC_ATOMICS)
+    return __sync_fetch_and_add(&a->value, v);
+#elif defined(SDL_PLATFORM_SOLARIS)
+    Uint32 pv = a->value;
+    membar_consumer();
+    atomic_add_int((volatile uint_t *)&a->value, v);
+    return pv;
+#else
+    Uint32 value;
+    do {
+        value = a->value;
+    } while (!SDL_CompareAndSwapAtomicU32(a, value, (value + v)));
+    return value;
+#endif
+}
+
 int SDL_GetAtomicInt(SDL_AtomicInt *a)
 {
 #ifdef HAVE_ATOMIC_LOAD_N

@@ -108,7 +108,7 @@ public class HIDDeviceManager {
         HIDDeviceRegisterCallback();
 
         mSharedPreferences = mContext.getSharedPreferences("hidapi", Context.MODE_PRIVATE);
-        mIsChromebook = mContext.getPackageManager().hasSystemFeature("org.chromium.arc.device_management");
+        mIsChromebook = SDLActivity.isChromebook();
 
 //        if (shouldClear) {
 //            SharedPreferences.Editor spedit = mSharedPreferences.edit();
@@ -193,7 +193,7 @@ public class HIDDeviceManager {
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
         filter.addAction(HIDDeviceManager.ACTION_USB_PERMISSION);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= 33) { /* Android 13.0 (TIRAMISU) */
             mContext.registerReceiver(mUsbBroadcast, filter, Context.RECEIVER_EXPORTED);
         } else {
             mContext.registerReceiver(mUsbBroadcast, filter);
@@ -380,7 +380,7 @@ public class HIDDeviceManager {
             return;
         }
 
-        if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE) || (Build.VERSION.SDK_INT < 18 /* Android 4.3 (JELLY_BEAN_MR2) */)) {
+        if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Log.d(TAG, "Couldn't initialize Bluetooth, this version of Android does not support Bluetooth LE");
             return;
         }
@@ -412,7 +412,7 @@ public class HIDDeviceManager {
         IntentFilter filter = new IntentFilter();
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (Build.VERSION.SDK_INT >= 33) { /* Android 13.0 (TIRAMISU) */
             mContext.registerReceiver(mBluetoothBroadcast, filter, Context.RECEIVER_EXPORTED);
         } else {
             mContext.registerReceiver(mBluetoothBroadcast, filter);
@@ -603,13 +603,10 @@ public class HIDDeviceManager {
                 } else {
                     flags = 0;
                 }
-                if (Build.VERSION.SDK_INT >= 33 /* Android 14.0 (U) */) {
-                   Intent intent = new Intent(HIDDeviceManager.ACTION_USB_PERMISSION);
-                   intent.setPackage(mContext.getPackageName());
-                   mUsbManager.requestPermission(usbDevice, PendingIntent.getBroadcast(mContext, 0, intent, flags));
-               } else {
-                   mUsbManager.requestPermission(usbDevice, PendingIntent.getBroadcast(mContext, 0, new Intent(HIDDeviceManager.ACTION_USB_PERMISSION), flags));
-               }
+
+                Intent intent = new Intent(HIDDeviceManager.ACTION_USB_PERMISSION);
+                intent.setPackage(mContext.getPackageName());
+                mUsbManager.requestPermission(usbDevice, PendingIntent.getBroadcast(mContext, 0, intent, flags));
             } catch (Exception e) {
                 Log.v(TAG, "Couldn't request permission for USB device " + usbDevice);
                 HIDDeviceOpenResult(deviceID, false);

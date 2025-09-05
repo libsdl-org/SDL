@@ -660,6 +660,7 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->ShowWindowSystemMenu = Wayland_ShowWindowSystemMenu;
     device->SyncWindow = Wayland_SyncWindow;
     device->SetWindowFocusable = Wayland_SetWindowFocusable;
+    device->ReconfigureWindow = Wayland_ReconfigureWindow;
 
 #ifdef SDL_USE_LIBDBUS
     if (SDL_SystemTheme_Init())

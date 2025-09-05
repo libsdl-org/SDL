@@ -164,7 +164,7 @@ static bool InitGPURenderState(void)
 {
     SDL_GPUShaderFormat formats;
     SDL_GPUShaderCreateInfo info;
-    SDL_GPURenderStateDesc desc;
+    SDL_GPURenderStateCreateInfo createinfo;
     MSDFShaderUniforms uniforms;
 
     device = (SDL_GPUDevice *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, NULL);
@@ -205,9 +205,9 @@ static bool InitGPURenderState(void)
         return false;
     }
 
-    SDL_INIT_INTERFACE(&desc);
-    desc.fragment_shader = shader;
-    render_state = SDL_CreateGPURenderState(renderer, &desc);
+    SDL_zero(createinfo);
+    createinfo.fragment_shader = shader;
+    render_state = SDL_CreateGPURenderState(renderer, &createinfo);
     if (!render_state) {
         SDL_Log("Couldn't create render state: %s", SDL_GetError());
         return false;

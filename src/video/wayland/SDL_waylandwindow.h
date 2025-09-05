@@ -253,6 +253,7 @@ extern void *Wayland_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *win
 extern bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern bool Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
 extern bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
 
 extern void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, SDL_DisplayData *display_data);
 

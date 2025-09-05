@@ -180,6 +180,7 @@
 #cmakedefine HAVE_MEMFD_CREATE 1
 #cmakedefine HAVE_POSIX_FALLOCATE 1
 #cmakedefine HAVE_SIGACTION 1
+#cmakedefine HAVE_SIGTIMEDWAIT 1
 #cmakedefine HAVE_SA_SIGACTION 1
 #cmakedefine HAVE_ST_MTIM 1
 #cmakedefine HAVE_SETJMP 1
@@ -223,6 +224,7 @@
 #cmakedefine HAVE_WINDOWS_GAMING_INPUT_H 1
 #cmakedefine HAVE_GAMEINPUT_H 1
 #cmakedefine HAVE_DXGI_H 1
+#cmakedefine HAVE_DXGI1_5_H 1
 #cmakedefine HAVE_DXGI1_6_H 1
 
 #cmakedefine HAVE_MMDEVICEAPI_H 1
@@ -233,6 +235,8 @@
 #cmakedefine USE_POSIX_SPAWN 1
 #cmakedefine HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR 1
 #cmakedefine HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP 1
+
+#cmakedefine HAVE_DLOPEN_NOTES 1
 
 /* SDL internal assertion support */
 #cmakedefine SDL_DEFAULT_ASSERT_LEVEL_CONFIGURED 1
@@ -540,6 +544,9 @@
 
 /* Enable dialog subsystem */
 #cmakedefine SDL_DIALOG_DUMMY 1
+
+/* Enable tray subsystem */
+#cmakedefine SDL_TRAY_DUMMY 1
 
 /* Enable assembly routines */
 #cmakedefine SDL_ALTIVEC_BLITTERS 1

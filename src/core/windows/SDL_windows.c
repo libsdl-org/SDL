@@ -24,6 +24,8 @@
 
 #include "SDL_windows.h"
 
+#include "../../video/SDL_surface_c.h"
+
 #include <objbase.h> // for CoInitialize/CoUninitialize (Win32 only)
 #ifdef HAVE_ROAPI_H
 #include <roapi.h> // For RoInitialize/RoUninitialize (Win32 only)
@@ -52,6 +54,44 @@ typedef enum RO_INIT_TYPE
 #ifndef WC_ERR_INVALID_CHARS
 #define WC_ERR_INVALID_CHARS 0x00000080
 #endif
+
+// Dark mode support
+typedef enum {
+    UXTHEME_APPMODE_DEFAULT,
+    UXTHEME_APPMODE_ALLOW_DARK,
+    UXTHEME_APPMODE_FORCE_DARK,
+    UXTHEME_APPMODE_FORCE_LIGHT,
+    UXTHEME_APPMODE_MAX
+} UxthemePreferredAppMode;
+
+typedef enum {
+    WCA_UNDEFINED = 0,
+    WCA_USEDARKMODECOLORS = 26,
+    WCA_LAST = 27
+} WINDOWCOMPOSITIONATTRIB;
+
+typedef struct {
+    WINDOWCOMPOSITIONATTRIB Attrib;
+    PVOID pvData;
+    SIZE_T cbData;
+} WINDOWCOMPOSITIONATTRIBDATA;
+
+typedef struct {
+    ULONG dwOSVersionInfoSize;
+    ULONG dwMajorVersion;
+    ULONG dwMinorVersion;
+    ULONG dwBuildNumber;
+    ULONG dwPlatformId;
+    WCHAR szCSDVersion[128];
+} NT_OSVERSIONINFOW;
+
+typedef bool (WINAPI *ShouldAppsUseDarkMode_t)(void);
+typedef void (WINAPI *AllowDarkModeForWindow_t)(HWND, bool);
+typedef void (WINAPI *AllowDarkModeForApp_t)(bool);
+typedef void (WINAPI *RefreshImmersiveColorPolicyState_t)(void);
+typedef UxthemePreferredAppMode (WINAPI *SetPreferredAppMode_t)(UxthemePreferredAppMode);
+typedef BOOL (WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
+typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
 
 // Fake window to help with DirectInput events.
 HWND SDL_HelperWindow = NULL;
@@ -406,6 +446,148 @@ bool WIN_WindowRectValid(const RECT *rect)
 {
     // A window can be resized to zero height, but not zero width
     return (rect->right > 0);
+}
+
+void WIN_UpdateDarkModeForHWND(HWND hwnd)
+{
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
+    if (!ntdll) {
+        return;
+    }
+    // There is no function to get Windows build number, so let's get it here via RtlGetVersion
+    RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)GetProcAddress(ntdll, "RtlGetVersion");
+    NT_OSVERSIONINFOW os_info;
+    os_info.dwOSVersionInfoSize = sizeof(NT_OSVERSIONINFOW);
+    os_info.dwBuildNumber = 0;
+    if (RtlGetVersionFunc) {
+        RtlGetVersionFunc(&os_info);
+    }
+    FreeLibrary(ntdll);
+    os_info.dwBuildNumber &= ~0xF0000000;
+    if (os_info.dwBuildNumber < 17763) {
+        // Too old to support dark mode
+        return;
+    }
+    HMODULE uxtheme = LoadLibrary(TEXT("uxtheme.dll"));
+    if (!uxtheme) {
+        return;
+    }
+    RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(104));
+    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(132));
+    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(133));
+    if (os_info.dwBuildNumber < 18362) {
+        AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
+        if (AllowDarkModeForAppFunc) {
+            AllowDarkModeForAppFunc(true);
+        }
+    } else {
+        SetPreferredAppMode_t SetPreferredAppModeFunc = (SetPreferredAppMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
+        if (SetPreferredAppModeFunc) {
+            SetPreferredAppModeFunc(UXTHEME_APPMODE_ALLOW_DARK);
+        }
+    }
+    if (RefreshImmersiveColorPolicyStateFunc) {
+        RefreshImmersiveColorPolicyStateFunc();
+    }
+    if (AllowDarkModeForWindowFunc) {
+        AllowDarkModeForWindowFunc(hwnd, true);
+    }
+    BOOL value;
+    // Check dark mode using ShouldAppsUseDarkMode, but use SDL_GetSystemTheme as a fallback
+    if (ShouldAppsUseDarkModeFunc) {
+        value = ShouldAppsUseDarkModeFunc() ? TRUE : FALSE;
+    } else {
+        value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
+    }
+    FreeLibrary(uxtheme);
+    if (os_info.dwBuildNumber < 18362) {
+        SetProp(hwnd, TEXT("UseImmersiveDarkModeColors"), SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
+    } else {
+        HMODULE user32 = GetModuleHandle(TEXT("user32.dll"));
+        if (user32) {
+            SetWindowCompositionAttribute_t SetWindowCompositionAttributeFunc = (SetWindowCompositionAttribute_t)GetProcAddress(user32, "SetWindowCompositionAttribute");
+            if (SetWindowCompositionAttributeFunc) {
+                WINDOWCOMPOSITIONATTRIBDATA data = { WCA_USEDARKMODECOLORS, &value, sizeof(value) };
+                SetWindowCompositionAttributeFunc(hwnd, &data);
+            }
+        }
+    }
+#endif
+}
+
+HICON WIN_CreateIconFromSurface(SDL_Surface *surface)
+{
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    SDL_Surface *s = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
+    if (!s) {
+        return NULL;
+    }
+
+    /* The dimensions will be needed after s is freed */
+    const int width = s->w;
+    const int height = s->h;
+
+    BITMAPINFO bmpInfo;
+    SDL_zero(bmpInfo);
+    bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmpInfo.bmiHeader.biWidth = width;
+    bmpInfo.bmiHeader.biHeight = -height; /* Top-down bitmap */
+    bmpInfo.bmiHeader.biPlanes = 1;
+    bmpInfo.bmiHeader.biBitCount = 32;
+    bmpInfo.bmiHeader.biCompression = BI_RGB;
+
+    HDC hdc = GetDC(NULL);
+    void *pBits = NULL;
+    HBITMAP hBitmap = CreateDIBSection(hdc, &bmpInfo, DIB_RGB_COLORS, &pBits, NULL, 0);
+    if (!hBitmap) {
+        ReleaseDC(NULL, hdc);
+        SDL_DestroySurface(s);
+        return NULL;
+    }
+
+    SDL_memcpy(pBits, s->pixels, width * height * 4);
+
+    SDL_DestroySurface(s);
+
+    HBITMAP hMask = CreateBitmap(width, height, 1, 1, NULL);
+    if (!hMask) {
+        DeleteObject(hBitmap);
+        ReleaseDC(NULL, hdc);
+        return NULL;
+    }
+
+    HDC hdcMem = CreateCompatibleDC(hdc);
+    HGDIOBJ oldBitmap = SelectObject(hdcMem, hMask);
+
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+            BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
+            BYTE alpha = pixel[3];
+            COLORREF maskColor = (alpha == 0) ? RGB(0, 0, 0) : RGB(255, 255, 255);
+            SetPixel(hdcMem, x, y, maskColor);
+        }
+    }
+
+    ICONINFO iconInfo;
+    iconInfo.fIcon = TRUE;
+    iconInfo.xHotspot = 0;
+    iconInfo.yHotspot = 0;
+    iconInfo.hbmMask = hMask;
+    iconInfo.hbmColor = hBitmap;
+
+    HICON hIcon = CreateIconIndirect(&iconInfo);
+
+    SelectObject(hdcMem, oldBitmap);
+    DeleteDC(hdcMem);
+    DeleteObject(hBitmap);
+    DeleteObject(hMask);
+    ReleaseDC(NULL, hdc);
+
+    return hIcon;
+#else
+    return NULL;
+#endif
 }
 
 // Some GUIDs we need to know without linking to libraries that aren't available before Vista.

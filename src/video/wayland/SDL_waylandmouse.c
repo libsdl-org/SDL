@@ -889,14 +889,14 @@ static bool Wayland_WarpMouseRelative(SDL_Window *window, float x, float y)
     SDL_WindowData *wind = window->internal;
     SDL_WaylandSeat *seat;
 
-    if (d->pointer_constraints) {
+    if (d->wp_pointer_warp_v1 || d->pointer_constraints) {
         wl_list_for_each (seat, &d->seat_list, link) {
             if (wind == seat->pointer.focus) {
                 Wayland_SeatWarpMouse(seat, wind, x, y);
             }
         }
     } else {
-        return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required zwp_pointer_confinement_v1 protocol");
+        return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required wp_pointer_warp_v1 or zwp_pointer_confinement_v1 protocol");
     }
 
     return true;
@@ -908,7 +908,7 @@ static bool Wayland_WarpMouseGlobal(float x, float y)
     SDL_VideoData *d = vd->internal;
     SDL_WaylandSeat *seat;
 
-    if (d->pointer_constraints) {
+    if (d->wp_pointer_warp_v1 || d->pointer_constraints) {
         wl_list_for_each (seat, &d->seat_list, link) {
             SDL_WindowData *wind = seat->pointer.focus ? seat->pointer.focus : seat->keyboard.focus;
 
@@ -929,7 +929,7 @@ static bool Wayland_WarpMouseGlobal(float x, float y)
             }
         }
     } else {
-        return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required zwp_pointer_confinement_v1 protocol");
+        return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required wp_pointer_warp_v1 or zwp_pointer_confinement_v1 protocol");
     }
 
     return true;

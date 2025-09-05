@@ -36,7 +36,22 @@
 #include "SDL_evdev_capabilities.h"
 #include "../unix/SDL_poll.h"
 
-static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
+#define SDL_UDEV_FALLBACK_LIBS "libudev.so.1", "libudev.so.0" 
+
+static const char *SDL_UDEV_LIBS[] = { SDL_UDEV_FALLBACK_LIBS };
+
+#ifdef SDL_UDEV_DYNAMIC
+#define SDL_UDEV_DLNOTE_LIBS SDL_UDEV_DYNAMIC, SDL_UDEV_FALLBACK_LIBS
+#else
+#define SDL_UDEV_DLNOTE_LIBS SDL_UDEV_FALLBACK_LIBS
+#endif
+
+SDL_ELF_NOTE_DLOPEN(
+    "events-udev",
+    "Support for events through libudev",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+    SDL_UDEV_DLNOTE_LIBS
+);
 
 static SDL_UDEV_PrivateData *_this = NULL;
 
