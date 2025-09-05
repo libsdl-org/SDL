@@ -135,6 +135,24 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
     bool success = false;
     bool co_init = false;
 
+    if (!WIN_IsWindows7OrGreater()) {
+        goto quit;
+    }
+
+    typedef HRESULT (WINAPI *pfnSHCreateItemFromParsingName)(PCWSTR pszPath, IBindCtx *pbc, REFIID riid, void **ppv);
+    static pfnSHCreateItemFromParsingName pSHCreateItemFromParsingName = NULL;
+    static bool SHCreateItemFromParsingName_GetProcAddressAttempted = false;
+    if (!SHCreateItemFromParsingName_GetProcAddressAttempted) {
+        HMODULE lib = LoadLibraryW(L"Shell32.dll");
+        if (lib) {
+            pSHCreateItemFromParsingName = (pfnSHCreateItemFromParsingName) GetProcAddress(lib, "SHCreateItemFromParsingName");
+            SHCreateItemFromParsingName_GetProcAddressAttempted = true;
+        }
+    }
+    if (!pSHCreateItemFromParsingName) {
+        goto quit;
+    }
+
     if (filter_wchar && nfilters > 0) {
         wchar_t *filter_ptr = filter_wchar;
         filter_data = SDL_calloc(sizeof(COMDLG_FILTERSPEC), nfilters);
@@ -231,7 +249,7 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
     // SetFolder would enforce using the same location each and every time, but
     // Windows docs recommend against it
     if (default_folder_w) {
-        CHECK(SHCreateItemFromParsingName(default_folder_w, NULL, &IID_IShellItem, (void**)&pFolderItem));
+        CHECK(pSHCreateItemFromParsingName(default_folder_w, NULL, &IID_IShellItem, (void**)&pFolderItem));
         CHECK(pFileDialog->lpVtbl->SetDefaultFolder(pFileDialog, pFolderItem));
     }
 
