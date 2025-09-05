@@ -222,8 +222,6 @@ static bool OPENVR_VideoInit(SDL_VideoDevice *_this)
     } else {
         display.desktop_mode.refresh_rate = data->oSystem->GetFloatTrackedDeviceProperty(k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty_Prop_DisplayFrequency_Float, 0);
     }
-
-    display.internal = (SDL_DisplayData *)data;
     display.name = (char *)"OpenVRDisplay";
     SDL_AddVideoDisplay(&display, false);
 
