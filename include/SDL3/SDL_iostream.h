@@ -581,8 +581,8 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  * value and SDL_GetError() will offer a human-readable message.
  *
  * A request for zero bytes on a valid stream will return zero immediately
- * without accessing the stream, so the stream status (EOF, err, etc) will
- * not change.
+ * without accessing the stream, so the stream status (EOF, err, etc) will not
+ * change.
  *
  * \param context a pointer to an SDL_IOStream structure.
  * \param ptr a pointer to a buffer to read data into.
@@ -614,8 +614,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, 
  * or a fatal error.
  *
  * A request for zero bytes on a valid stream will return zero immediately
- * without accessing the stream, so the stream status (EOF, err, etc) will
- * not change.
+ * without accessing the stream, so the stream status (EOF, err, etc) will not
+ * change.
  *
  * \param context a pointer to an SDL_IOStream structure.
  * \param ptr a pointer to a buffer containing data to write.
