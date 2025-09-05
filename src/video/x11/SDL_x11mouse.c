@@ -536,8 +536,10 @@ void X11_QuitMouse(SDL_VideoDevice *_this)
     int j;
 
     for (j = 0; j < SDL_arraysize(sys_cursors); j++) {
-        X11_FreeCursor(sys_cursors[j]);
-        sys_cursors[j] = NULL;
+        if (sys_cursors[j]) {
+            X11_FreeCursor(sys_cursors[j]);
+            sys_cursors[j] = NULL;
+        }
     }
 
     for (i = data->mouse_device_info; i; i = next) {

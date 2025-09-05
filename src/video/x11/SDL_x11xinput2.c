@@ -74,8 +74,12 @@ static bool xinput2_scrolling_supported;
 
 static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRawEvent *rawev)
 {
+    SDL_Mouse *mouse = SDL_GetMouse();
     double processed_coords[2] = { 0.0, 0.0 };
     int values_i = 0, found = 0;
+
+    // Use the raw values if a custom transform function is set, or the relative system scale hint is unset.
+    const bool use_raw_vals = mouse->InputTransform || !mouse->enable_relative_system_scale;
 
     for (int i = 0; i < rawev->valuators.mask_len * 8 && found < 2; ++i) {
         if (!XIMaskIsSet(rawev->valuators.mask, i)) {
@@ -84,15 +88,14 @@ static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRaw
 
         for (int j = 0; j < 2; ++j) {
             if (devinfo->number[j] == i) {
-                const double current_val = rawev->valuators.values[values_i];
+                const double current_val = use_raw_vals ? rawev->raw_values[values_i] : rawev->valuators.values[values_i];
 
                 if (devinfo->relative[j]) {
                     processed_coords[j] = current_val;
                 } else {
-                    processed_coords[j] = devinfo->prev_coords[j] - current_val; // convert absolute to relative
+                    processed_coords[j] = (current_val - devinfo->prev_coords[j]); // convert absolute to relative
+                    devinfo->prev_coords[j] = current_val;
                 }
-
-                devinfo->prev_coords[j] = current_val;
                 ++found;
 
                 break;
@@ -103,7 +106,6 @@ static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRaw
     }
 
     // Relative mouse motion is delivered to the window with keyboard focus
-    SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse->relative_mode && SDL_GetKeyboardFocus()) {
         SDL_SendMouseMotion(rawev->time, mouse->focus, (SDL_MouseID)rawev->sourceid, true, (float)processed_coords[0], (float)processed_coords[1]);
     }

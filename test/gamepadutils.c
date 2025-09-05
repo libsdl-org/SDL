@@ -97,7 +97,7 @@ static SDL_FPoint ProjectVec3ToRect(const Vector3 *v, const SDL_FRect *rect)
     const float cameraZ = 4.0f; /* Camera is at(0, 0, +4), looking toward origin */
     float aspect = rect->w / rect->h;
 
-    float fovScaleY = SDL_tanf((verticalFOV_deg * SDL_PI_F / 180.0f) * 0.5f);
+    float fovScaleY = SDL_tanf(((verticalFOV_deg / 180.0f) * SDL_PI_F) * 0.5f);
     float fovScaleX = fovScaleY * aspect;
 
     float relZ = cameraZ - v->z;

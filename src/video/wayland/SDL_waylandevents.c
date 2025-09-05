@@ -1243,8 +1243,8 @@ static void relative_pointer_handle_relative_motion(void *data,
     seat->pointer.pending_frame.have_relative = true;
     seat->pointer.pending_frame.relative.dx = dx;
     seat->pointer.pending_frame.relative.dy = dy;
-    seat->pointer.pending_frame.relative.dx_unaccel = dx;
-    seat->pointer.pending_frame.relative.dy_unaccel = dy;
+    seat->pointer.pending_frame.relative.dx_unaccel = dx_unaccel;
+    seat->pointer.pending_frame.relative.dy_unaccel = dy_unaccel;
     seat->pointer.pending_frame.timestamp_ns = Wayland_AdjustEventTimestampBase(SDL_US_TO_NS(((Uint64)time_hi << 32) | (Uint64)time_lo));
 
     if (wl_pointer_get_version(seat->pointer.wl_pointer) < WL_POINTER_FRAME_SINCE_VERSION) {
@@ -2258,7 +2258,6 @@ static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat, bool send_event)
     if (seat->keyboard.sdl_keymap) {
         if (seat->keyboard.xkb.current_layout < seat->keyboard.xkb.num_layouts &&
             seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout] == SDL_GetCurrentKeymap(true)) {
-            SDL_SetKeymap(NULL, false);
             SDL_SetModState(SDL_KMOD_NONE);
         }
         for (xkb_layout_index_t i = 0; i < seat->keyboard.xkb.num_layouts; ++i) {
@@ -3764,9 +3763,6 @@ void Wayland_SeatUpdatePointerGrab(SDL_WaylandSeat *seat)
                 if (confine_rect) {
                     wl_region_destroy(confine_rect);
                 }
-
-                // Commit the new confinement region immediately.
-                wl_surface_commit(w->surface);
             }
         }
     }

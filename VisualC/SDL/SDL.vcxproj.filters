@@ -1137,6 +1137,9 @@
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c">
       <Filter>loadso\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\misc\SDL_libusb.c">
+      <Filter>misc</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\misc\SDL_url.c">
       <Filter>misc</Filter>
     </ClCompile>
@@ -1231,6 +1234,9 @@
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch2.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_wii.c">
@@ -1355,9 +1361,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c">
       <Filter>video\dummy</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\video\windows\SDL_surface_utils.c">
-      <Filter>video\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\windows\SDL_windowsclipboard.c">
       <Filter>video\windows</Filter>

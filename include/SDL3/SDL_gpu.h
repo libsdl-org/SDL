@@ -235,7 +235,8 @@
  * SDL driver name: "direct3d12"
  *
  * Supported on Windows 10 or newer, Xbox One (GDK), and Xbox Series X|S
- * (GDK). Requires a GPU that supports DirectX 12 Feature Level 11_1.
+ * (GDK). Requires a GPU that supports DirectX 12 Feature Level 11_0 and
+ * Resource Binding Tier 2 or above.
  *
  * ### Metal
  *
@@ -1995,6 +1996,7 @@ typedef struct SDL_GPUComputePipelineCreateInfo
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPURenderPass
+ * \sa SDL_FColor
  */
 typedef struct SDL_GPUColorTargetInfo
 {
@@ -2114,6 +2116,8 @@ typedef struct SDL_GPUBufferBinding
  *
  * \sa SDL_BindGPUVertexSamplers
  * \sa SDL_BindGPUFragmentSamplers
+ * \sa SDL_GPUTexture
+ * \sa SDL_GPUSampler
  */
 typedef struct SDL_GPUTextureSamplerBinding
 {
@@ -3755,6 +3759,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnmapGPUTransferBuffer(
  * \returns a copy pass handle.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_EndGPUCopyPass
  */
 extern SDL_DECLSPEC SDL_GPUCopyPass * SDLCALL SDL_BeginGPUCopyPass(
     SDL_GPUCommandBuffer *command_buffer);

@@ -207,6 +207,10 @@ void SDL_DestroyKeymap(SDL_Keymap *keymap)
         return;
     }
 
+    if (!keymap->auto_release && keymap == SDL_GetCurrentKeymap(true)) {
+        SDL_SetKeymap(NULL, false);
+    }
+
     SDL_DestroyHashTable(keymap->scancode_to_keycode);
     SDL_DestroyHashTable(keymap->keycode_to_scancode);
     SDL_free(keymap);

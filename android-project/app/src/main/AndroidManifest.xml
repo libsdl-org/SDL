@@ -71,6 +71,7 @@
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="true"
         android:theme="@style/AppTheme"
+        android:enableOnBackInvokedCallback="false"
         android:hardwareAccelerated="true" >
 
         <!-- Example of setting SDL hints from AndroidManifest.xml:

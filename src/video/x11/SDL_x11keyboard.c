@@ -380,7 +380,6 @@ void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event)
     if (data->keyboard.xkb_enabled) {
         XkbStateRec state;
 
-        SDL_SetKeymap(NULL, false);
         for (unsigned int i = 0; i < XkbNumKbdGroups; ++i) {
             SDL_DestroyKeymap(data->keyboard.xkb.keymaps[i]);
             data->keyboard.xkb.keymaps[i] = SDL_CreateKeymap(false);

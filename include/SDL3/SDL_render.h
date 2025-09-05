@@ -283,7 +283,7 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  *   present synchronized with the refresh rate. This property can take any
  *   value that is supported by SDL_SetRenderVSync() for the renderer.
  *
- * With the SDL GPU renderer:
+ * With the SDL GPU renderer (since SDL 3.4.0):
  *
  * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN`: the app is able to
  *   provide SPIR-V shaders to SDL_GPURenderState, optional.
@@ -2720,7 +2720,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderVSync(SDL_Renderer *renderer, int 
  *   break. If the text goes out of the window, it's gone.
  *
  * For serious text rendering, there are several good options, such as
- * SDL_ttf, stb_truetype, or other external libraries.
+ * [SDL_ttf](https://wiki.libsdl.org/SDL3_ttf/FrontPage)
+ * , stb_truetype, or other external libraries.
  *
  * On first use, this will create an internal texture for rendering glyphs.
  * This texture will live until the renderer is destroyed.
@@ -2808,18 +2809,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetDefaultTextureScaleMode(SDL_Renderer *re
 extern SDL_DECLSPEC bool SDLCALL SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale_mode);
 
 /**
- * GPU render state description.
- *
- * This structure should be initialized using SDL_INIT_INTERFACE().
+ * A structure specifying the parameters of a GPU render state.
  *
  * \since This struct is available since SDL 3.4.0.
  *
  * \sa SDL_CreateGPURenderState
  */
-typedef struct SDL_GPURenderStateDesc
+typedef struct SDL_GPURenderStateCreateInfo
 {
-    Uint32 version;                 /**< the version of this interface */
-
     SDL_GPUShader *fragment_shader; /**< The fragment shader to use when this render state is active */
 
     Sint32 num_sampler_bindings;    /**< The number of additional fragment samplers to bind when this render state is active */
@@ -2828,19 +2825,11 @@ typedef struct SDL_GPURenderStateDesc
     Sint32 num_storage_textures;    /**< The number of storage textures to bind when this render state is active */
     SDL_GPUTexture *const *storage_textures;    /**< Storage textures to bind when this render state is active */
 
-    Sint32 num_storage_buffers;    /**< The number of storage buffers to bind when this render state is active */
+    Sint32 num_storage_buffers;     /**< The number of storage buffers to bind when this render state is active */
     SDL_GPUBuffer *const *storage_buffers;      /**< Storage buffers to bind when this render state is active */
-} SDL_GPURenderStateDesc;
 
-/* Check the size of SDL_GPURenderStateDesc
- *
- * If this assert fails, either the compiler is padding to an unexpected size,
- * or the interface has been updated and this should be updated to match and
- * the code using this interface should be updated to handle the old version.
- */
-SDL_COMPILE_TIME_ASSERT(SDL_GPURenderStateDesc_SIZE,
-    (sizeof(void *) == 4 && sizeof(SDL_GPURenderStateDesc) == 32) ||
-    (sizeof(void *) == 8 && sizeof(SDL_GPURenderStateDesc) == 64));
+    SDL_PropertiesID props;         /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
+} SDL_GPURenderStateCreateInfo;
 
 /**
  * A custom GPU render state.
@@ -2858,8 +2847,7 @@ typedef struct SDL_GPURenderState SDL_GPURenderState;
  * Create custom GPU render state.
  *
  * \param renderer the renderer to use.
- * \param desc GPU render state description, initialized using
- *             SDL_INIT_INTERFACE().
+ * \param createinfo a struct describing the GPU render state to create.
  * \returns a custom GPU render state or NULL on failure; call SDL_GetError()
  *          for more information.
  *
@@ -2872,7 +2860,7 @@ typedef struct SDL_GPURenderState SDL_GPURenderState;
  * \sa SDL_SetRenderGPUState
  * \sa SDL_DestroyGPURenderState
  */
-extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateDesc *desc);
+extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateCreateInfo *createinfo);
 
 /**
  * Set fragment shader uniform variables in a custom GPU render state.

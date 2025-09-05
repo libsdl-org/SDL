@@ -2797,94 +2797,6 @@ bool SDL_GetRenderLogicalPresentationRect(SDL_Renderer *renderer, SDL_FRect *rec
     return true;
 }
 
-static void SDL_RenderLogicalBorders(SDL_Renderer *renderer, const SDL_FRect *dst)
-{
-    const SDL_RenderViewState *view = renderer->view;
-
-    if (dst->x > 0.0f || dst->y > 0.0f) {
-        SDL_BlendMode saved_blend_mode = renderer->blendMode;
-        SDL_FColor saved_color = renderer->color;
-
-        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-        SDL_SetRenderDrawColorFloat(renderer, 0.0f, 0.0f, 0.0f, 1.0f);
-
-        if (dst->x > 0.0f) {
-            SDL_FRect rect;
-
-            rect.x = 0.0f;
-            rect.y = 0.0f;
-            rect.w = dst->x;
-            rect.h = (float)view->pixel_h;
-            SDL_RenderFillRect(renderer, &rect);
-
-            rect.x = dst->x + dst->w;
-            rect.w = (float)view->pixel_w - rect.x;
-            SDL_RenderFillRect(renderer, &rect);
-        }
-
-        if (dst->y > 0.0f) {
-            SDL_FRect rect;
-
-            rect.x = 0.0f;
-            rect.y = 0.0f;
-            rect.w = (float)view->pixel_w;
-            rect.h = dst->y;
-            SDL_RenderFillRect(renderer, &rect);
-
-            rect.y = dst->y + dst->h;
-            rect.h = (float)view->pixel_h - rect.y;
-            SDL_RenderFillRect(renderer, &rect);
-        }
-
-        SDL_SetRenderDrawBlendMode(renderer, saved_blend_mode);
-        SDL_SetRenderDrawColorFloat(renderer, saved_color.r, saved_color.g, saved_color.b, saved_color.a);
-    }
-}
-
-static void SDL_RenderLogicalPresentation(SDL_Renderer *renderer)
-{
-    SDL_assert(renderer->view == &renderer->main_view);
-
-    SDL_RenderViewState *view = &renderer->main_view;
-    const SDL_RendererLogicalPresentation mode = view->logical_presentation_mode;
-    if (mode == SDL_LOGICAL_PRESENTATION_LETTERBOX) {
-        // save off some state we're going to trample.
-        const int logical_w = view->logical_w;
-        const int logical_h = view->logical_h;
-        const float scale_x = view->scale.x;
-        const float scale_y = view->scale.y;
-        const bool clipping_enabled = view->clipping_enabled;
-        SDL_Rect orig_viewport, orig_cliprect;
-        const SDL_FRect logical_dst_rect = view->logical_dst_rect;
-
-        SDL_copyp(&orig_viewport, &view->viewport);
-        if (clipping_enabled) {
-            SDL_copyp(&orig_cliprect, &view->clip_rect);
-        }
-
-        // trample some state.
-        SDL_SetRenderLogicalPresentation(renderer, logical_w, logical_h, SDL_LOGICAL_PRESENTATION_DISABLED);
-        SDL_SetRenderViewport(renderer, NULL);
-        if (clipping_enabled) {
-            SDL_SetRenderClipRect(renderer, NULL);
-        }
-        SDL_SetRenderScale(renderer, 1.0f, 1.0f);
-
-        // draw the borders.
-        SDL_RenderLogicalBorders(renderer, &logical_dst_rect);
-
-        // now set everything back.
-        view->logical_presentation_mode = mode;
-        SDL_SetRenderViewport(renderer, &orig_viewport);
-        if (clipping_enabled) {
-            SDL_SetRenderClipRect(renderer, &orig_cliprect);
-        }
-        SDL_SetRenderScale(renderer, scale_x, scale_y);
-
-        SDL_SetRenderLogicalPresentation(renderer, logical_w, logical_h, mode);
-    }
-}
-
 static bool SDL_RenderVectorFromWindow(SDL_Renderer *renderer, float window_dx, float window_dy, float *dx, float *dy)
 {
     // Convert from window coordinates to pixels within the window
@@ -5401,8 +5313,6 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
         return SDL_SetError("You can't present on a render target");
     }
 
-    SDL_RenderLogicalPresentation(renderer);
-
     if (renderer->transparent_window) {
         SDL_RenderApplyWindowShape(renderer);
     }
@@ -5948,23 +5858,17 @@ bool SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale
     return true;
 }
 
-SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateDesc *desc)
+SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateCreateInfo *createinfo)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
 
-    if (!desc) {
-        SDL_InvalidParamError("desc");
+    if (!createinfo) {
+        SDL_InvalidParamError("createinfo");
         return NULL;
     }
 
-    if (desc->version < sizeof(*desc)) {
-        // Update this to handle older versions of this interface
-        SDL_SetError("Invalid desc, should be initialized with SDL_INIT_INTERFACE()");
-        return NULL;
-    }
-
-    if (!desc->fragment_shader) {
-        SDL_SetError("desc->fragment_shader is required");
+    if (!createinfo->fragment_shader) {
+        SDL_SetError("A fragment_shader is required");
         return NULL;
     }
 
@@ -5980,36 +5884,36 @@ SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURend
     }
 
     state->renderer = renderer;
-    state->fragment_shader = desc->fragment_shader;
+    state->fragment_shader = createinfo->fragment_shader;
 
-    if (desc->num_sampler_bindings > 0) {
-        state->sampler_bindings = (SDL_GPUTextureSamplerBinding *)SDL_calloc(desc->num_sampler_bindings, sizeof(*state->sampler_bindings));
+    if (createinfo->num_sampler_bindings > 0) {
+        state->sampler_bindings = (SDL_GPUTextureSamplerBinding *)SDL_calloc(createinfo->num_sampler_bindings, sizeof(*state->sampler_bindings));
         if (!state->sampler_bindings) {
             SDL_DestroyGPURenderState(state);
             return NULL;
         }
-        SDL_memcpy(state->sampler_bindings, desc->sampler_bindings, desc->num_sampler_bindings * sizeof(*state->sampler_bindings));
-        state->num_sampler_bindings = desc->num_sampler_bindings;
+        SDL_memcpy(state->sampler_bindings, createinfo->sampler_bindings, createinfo->num_sampler_bindings * sizeof(*state->sampler_bindings));
+        state->num_sampler_bindings = createinfo->num_sampler_bindings;
     }
 
-    if (desc->num_storage_textures > 0) {
-        state->storage_textures = (SDL_GPUTexture **)SDL_calloc(desc->num_storage_textures, sizeof(*state->storage_textures));
+    if (createinfo->num_storage_textures > 0) {
+        state->storage_textures = (SDL_GPUTexture **)SDL_calloc(createinfo->num_storage_textures, sizeof(*state->storage_textures));
         if (!state->storage_textures) {
             SDL_DestroyGPURenderState(state);
             return NULL;
         }
-        SDL_memcpy(state->storage_textures, desc->storage_textures, desc->num_storage_textures * sizeof(*state->storage_textures));
-        state->num_storage_textures = desc->num_storage_textures;
+        SDL_memcpy(state->storage_textures, createinfo->storage_textures, createinfo->num_storage_textures * sizeof(*state->storage_textures));
+        state->num_storage_textures = createinfo->num_storage_textures;
     }
 
-    if (desc->num_storage_buffers > 0) {
-        state->storage_buffers = (SDL_GPUBuffer **)SDL_calloc(desc->num_storage_buffers, sizeof(*state->storage_buffers));
+    if (createinfo->num_storage_buffers > 0) {
+        state->storage_buffers = (SDL_GPUBuffer **)SDL_calloc(createinfo->num_storage_buffers, sizeof(*state->storage_buffers));
         if (!state->storage_buffers) {
             SDL_DestroyGPURenderState(state);
             return NULL;
         }
-        SDL_memcpy(state->storage_buffers, desc->storage_buffers, desc->num_storage_buffers * sizeof(*state->storage_buffers));
-        state->num_storage_buffers = desc->num_storage_buffers;
+        SDL_memcpy(state->storage_buffers, createinfo->storage_buffers, createinfo->num_storage_buffers * sizeof(*state->storage_buffers));
+        state->num_storage_buffers = createinfo->num_storage_buffers;
     }
 
     return state;

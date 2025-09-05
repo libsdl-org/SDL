@@ -448,6 +448,7 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
         // codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_PROP_WINDOW_TEXTUREDATA_POINTER and not leaked here.
         return false; // NOLINT(clang-analyzer-unix.Malloc)
     }
+    SDL_SetTextureBlendMode(data->texture, SDL_BLENDMODE_NONE);
 
     // Create framebuffer data
     data->bytes_per_pixel = SDL_BYTESPERPIXEL(*format);
@@ -2634,6 +2635,71 @@ SDL_Window *SDL_CreatePopupWindow(SDL_Window *parent, int offset_x, int offset_y
     return window;
 }
 
+static bool SDL_ReconfigureWindowInternal(SDL_Window *window, SDL_WindowFlags flags)
+{
+    bool loaded_opengl = false;
+    bool loaded_vulkan = false;
+
+    if (!_this->ReconfigureWindow) {
+        return false;
+    }
+
+    // Don't attempt to reconfigure external windows.
+    if (window->flags & SDL_WINDOW_EXTERNAL) {
+        return false;
+    }
+
+    // Only attempt to reconfigure if the window has no existing graphics flags.
+    if (window->flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN)) {
+        return false;
+    }
+
+    const SDL_WindowFlags graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
+    if (graphics_flags & (graphics_flags - 1)) {
+        return SDL_SetError("Conflicting window flags specified");
+    }
+
+    if ((flags & SDL_WINDOW_OPENGL) && !_this->GL_CreateContext) {
+        return SDL_ContextNotSupported("OpenGL");
+    }
+    if ((flags & SDL_WINDOW_VULKAN) && !_this->Vulkan_CreateSurface) {
+        return SDL_ContextNotSupported("Vulkan");
+    }
+    if ((flags & SDL_WINDOW_METAL) && !_this->Metal_CreateView) {
+        return SDL_ContextNotSupported("Metal");
+    }
+
+    SDL_DestroyWindowSurface(window);
+
+    if (graphics_flags & SDL_WINDOW_OPENGL) {
+        loaded_opengl = SDL_GL_LoadLibrary(NULL);
+        if (!loaded_opengl) {
+            return false;
+        }
+    } else if (graphics_flags & SDL_WINDOW_VULKAN) {
+        loaded_vulkan = SDL_GL_LoadLibrary(NULL);
+        if (!loaded_vulkan) {
+            return false;
+        }
+    }
+
+    // Try to reconfigure the window for the requested graphics flags.
+    if (!_this->ReconfigureWindow(_this, window, graphics_flags)) {
+        if (loaded_opengl) {
+            SDL_GL_UnloadLibrary();
+        }
+        if (loaded_vulkan) {
+            SDL_Vulkan_UnloadLibrary();
+        }
+
+        return false;
+    }
+
+    window->flags |= graphics_flags;
+
+    return true;
+}
+
 bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
 {
     bool loaded_opengl = false;
@@ -2784,6 +2850,16 @@ bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags)
     }
 
     SDL_FinishWindowCreation(window, flags);
+
+    return true;
+}
+
+bool SDL_ReconfigureWindow(SDL_Window *window, SDL_WindowFlags flags)
+{
+    // Try to reconfigure the window for the desired flags first, before completely destroying and recreating it.
+    if (!SDL_ReconfigureWindowInternal(window, flags)) {
+        return SDL_RecreateWindow(window, flags);
+    }
 
     return true;
 }
