@@ -1485,7 +1485,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *
  * \param renderer the rendering context.
  * \param w an int filled with the logical presentation width.
  * \param h an int filled with the logical presentation height.
- * \param mode a variable filled with the logical presentation mode being used.
+ * \param mode a variable filled with the logical presentation mode being
+ *             used.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
