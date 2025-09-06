@@ -8,13 +8,7 @@ if(DEFINED PACKAGE_FIND_FILE)
     include(${PACKAGE_FIND_FILE})
 endif()
 
-if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../SDL_port)
-add_subdirectory(../../../../../SDL_port external/sdlbin)
-else()
-	message(FATAL_ERROR "没有找到 SDL 主项目，需要将 OpenMinecraft-Dev/SDL clone 到与本项目同位置的文件夹中")
-endif()
-
-# add_subdirectory(../../../../../openal-soft external/openalbin)
+add_subdirectory(../../../../.. external/sdlbin)
 
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 add_definitions(-DVK_USE_PLATFORM_OHOS=1)
