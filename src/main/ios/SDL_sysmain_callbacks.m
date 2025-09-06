@@ -43,6 +43,17 @@ static SDLIosMainCallbacksDisplayLink *globalDisplayLink;
 {
     if ((self = [super init])) {
         self.displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(appIteration:)];
+        // Enable high refresh rates on iOS
+        // To enable this on phones, you should add the following line to Info.plist:
+        // <key>CADisableMinimumFrameDurationOnPhone</key> <true/>
+        // If main callbacks are used then this CADisplayLink will affect framerate, not one in SDL_uikitviewcontroller.
+        if (@available(iOS 15.0, tvOS 15.0, *)) {
+            const SDL_DisplayMode *mode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+            if (mode && mode->refresh_rate > 60.0f) {
+                int frame_rate = (int)mode->refresh_rate;
+                self.displayLink.preferredFrameRateRange = CAFrameRateRangeMake((frame_rate * 2) / 3, frame_rate, frame_rate);
+            }
+        }
         [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
     }
     return self;
