@@ -1,5 +1,6 @@
 #include "../SDL_sysvideo.h"
 #include "SDL_internal.h"
+#include "dynapi/SDL_dynapi_overrides.h"
 
 #ifdef SDL_VIDEO_DRIVER_OHOS
 #include "../../core/ohos/SDL_ohos.h"
@@ -25,6 +26,37 @@ void OHOS_VideoQuit(SDL_VideoDevice *_this)
 void OHOS_DeviceFree(SDL_VideoDevice *device)
 {
     SDL_free(device);
+}
+bool OHOS_SetClipboardTextImpl(SDL_VideoDevice *, const char *data)
+{
+    OHOS_SetClipboardText(data);
+    return true;
+}
+bool OHOS_HasClipboardText(SDL_VideoDevice *)
+{
+    return false;
+}
+bool OHOS_HasScreenKeyboardSupport(SDL_VideoDevice *)
+{
+    return true;
+}
+bool OHOS_IsScreenKeyboardShownImpl(SDL_VideoDevice *, SDL_Window *)
+{
+    return OHOS_IsScreenKeyboardShown();
+}
+bool OHOS_StartTextInputImpl(SDL_VideoDevice *, SDL_Window *, SDL_PropertiesID)
+{
+    OHOS_StartTextInput();
+    return true;
+}
+bool OHOS_StopTextInputImpl(SDL_VideoDevice *, SDL_Window *)
+{
+    OHOS_StopTextInput();
+    return true;
+}
+void OHOS_PumpEvents(SDL_VideoDevice *)
+{
+    
 }
 static SDL_VideoDevice *OHOS_CreateDevice(void)
 {
@@ -67,6 +99,16 @@ static SDL_VideoDevice *OHOS_CreateDevice(void)
     device->GL_GetSwapInterval = SDL_EGL_GetSwapInterval;
     device->GL_DestroyContext = SDL_EGL_DestroyContext;
 #endif
+    
+    device->SetClipboardText = OHOS_SetClipboardTextImpl;
+    device->HasClipboardText = OHOS_HasClipboardText;
+    
+    device->HasScreenKeyboardSupport = OHOS_HasScreenKeyboardSupport;
+    device->IsScreenKeyboardShown = OHOS_IsScreenKeyboardShownImpl;
+    device->StartTextInput = OHOS_StartTextInputImpl;
+    device->StopTextInput = OHOS_StopTextInputImpl;
+    
+    device->PumpEvents = OHOS_PumpEvents;
 
     return device;
 }

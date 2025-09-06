@@ -10,6 +10,19 @@
       "2in1"
     ],
     "requestPermissions": [
+      {
+        "name": "ohos.permission.INPUT_KEYBOARD_CONTROLLER",
+        "reason": "$string:perm_reason",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when":"inuse"
+        }
+      },
+      {
+        "name": "ohos.permission.INTERNET"
+      }
     ],
     
     "deliveryWithInstall": true,

@@ -10,7 +10,7 @@ import { BusinessError } from '@kit.BasicServicesKit';
 
 const DOMAIN = 0x0000;
 
-const permissions: Array<Permissions> = ['ohos.permission.INPUT_KEYBOARD_CONTROLLER'];
+const permissions: Array<Permissions> = ['ohos.permission.INPUT_KEYBOARD_CONTROLLER', 'ohos.permission.READ_PASTEBOARD'];
 function reqPermissionsFromUser(permissions: Array<Permissions>, context: common.UIAbilityContext): void {
   let atManager: abilityAccessCtrl.AtManager = abilityAccessCtrl.createAtManager();
   atManager.requestPermissionsFromUser(context, permissions).then((data) => {
@@ -18,9 +18,9 @@ function reqPermissionsFromUser(permissions: Array<Permissions>, context: common
     let length: number = grantStatus.length;
     for (let i = 0; i < length; i++) {
       if (grantStatus[i] === 0) {
-        promptAction.showDialog({title: "permissions", message: "granted", buttons: [{text: 'Ok', color: '#999999'}]});
+        // promptAction.showDialog({title: "permissions", message: "granted", buttons: [{text: 'Ok', color: '#999999'}]});
       } else {
-        promptAction.showDialog({title: "permissions", message: "not granted", buttons: [{text: 'Ok', color: '#999999'}]});
+        // promptAction.showDialog({title: "permissions", message: "not granted", buttons: [{text: 'Ok', color: '#999999'}]});
         return;
       }
     }

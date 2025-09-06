@@ -6,6 +6,7 @@
 #include "SDL3/SDL_video.h"
 #include "SDL3/SDL_vulkan.h"
 #include "SDL3/SDL_locale.h"
+#include "SDL3/SDL_clipboard.h"
 #include "napi/native_api.h"
 #include "SDL3/SDL_log.h"
 #include "SDL3/SDL_hints.h"
@@ -14,6 +15,8 @@
 #include <thread>
 #include <unistd.h>
 #include <vulkan/vulkan_core.h>
+#include <ohaudio/native_audiorenderer.h>
+#include <ohaudio/native_audiostreambuilder.h>
 
 static napi_value Add(napi_env env, napi_callback_info info)
 {
@@ -67,6 +70,40 @@ float vtxdata2[] = {
 
 int main()
 {
+    /*OH_AudioStreamBuilder* builder;
+    OH_AudioStreamBuilder_Create(&builder, AUDIOSTREAM_TYPE_RENDERER);
+
+    OH_AudioStreamBuilder_SetSamplingRate(builder, 48000);
+    OH_AudioStreamBuilder_SetChannelCount(builder, 2);
+    OH_AudioStreamBuilder_SetSampleFormat(builder, AUDIOSTREAM_SAMPLE_U8);
+    OH_AudioStreamBuilder_SetEncodingType(builder, AUDIOSTREAM_ENCODING_TYPE_RAW);
+    OH_AudioStreamBuilder_SetRendererInfo(builder, AUDIOSTREAM_USAGE_MUSIC);
+    // OH_AudioStreamBuilder_SetLatencyMode(builder, AUDIOSTREAM_LATENCY_MODE_FAST);
+    
+    OH_AudioRenderer_Callbacks callbacks;
+
+    srand(time(nullptr));
+    callbacks.OH_AudioRenderer_OnStreamEvent = nullptr;
+    callbacks.OH_AudioRenderer_OnInterruptEvent = nullptr;
+    callbacks.OH_AudioRenderer_OnError = nullptr;
+    callbacks.OH_AudioRenderer_OnWriteData = [](OH_AudioRenderer* renderer, void* userData, void* buffer, int32_t length) {
+        auto p = (uint8_t *)buffer;
+        int t = length;
+        while (t > 0) {
+            *p = rand() % 255;
+            p++;
+            t--;
+        }
+        return 0;
+    };
+    
+    OH_AudioStreamBuilder_SetRendererCallback(builder, callbacks, nullptr);
+    
+    OH_AudioRenderer* audioRenderer;
+    OH_AudioStreamBuilder_GenerateRenderer(builder, &audioRenderer);
+    OH_AudioRenderer_Start(audioRenderer);
+    OH_AudioStreamBuilder_Destroy(builder);*/
+    
     SDL_SetHint(SDL_HINT_EGL_LIBRARY, "libEGL.so");
     SDL_SetHint(SDL_HINT_OPENGL_LIBRARY, "libGLESv2.so");
     SDL_SetHint(SDL_HINT_OPENGL_ES_DRIVER, "libGLESv2.so");
@@ -82,6 +119,8 @@ int main()
     SDL_Window* win = SDL_CreateWindow("test", 1024, 1024, SDL_WINDOW_OPENGL);
     
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "SDL Application", "test!", win);
+    SDL_StartTextInput(win);
+    // SDL_StopTextInput();
     
     auto context = SDL_GL_CreateContext(win);
     SDL_GL_MakeCurrent(win, context);
@@ -129,10 +168,11 @@ int main()
         ((PFNGLCLEARPROC)SDL_GL_GetProcAddress("glClear"))(GL_COLOR_BUFFER_BIT);
         ((PFNGLUSEPROGRAMPROC)SDL_GL_GetProcAddress("glUseProgram"))(prog);
         for (int i = 0; i < 9; i++) {
-            vtxdata2[i] += 0.01f;
+            vtxdata2[i] = SDL_randf();
+            /*vtxdata2[i] += 0.01f;
             if (vtxdata2[i] >= 1.f) {
                 vtxdata2[i] = 0.f;
-            }
+            }*/
         }
         ((PFNGLVERTEXATTRIBPOINTERPROC)SDL_GL_GetProcAddress("glVertexAttribPointer"))(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)vtxdata);
         ((PFNGLENABLEVERTEXATTRIBARRAYPROC)SDL_GL_GetProcAddress("glEnableVertexAttribArray"))(0);
@@ -140,8 +180,17 @@ int main()
         ((PFNGLENABLEVERTEXATTRIBARRAYPROC)SDL_GL_GetProcAddress("glEnableVertexAttribArray"))(1);
         
         ((PFNGLDRAWARRAYSPROC)SDL_GL_GetProcAddress("glDrawArrays"))(GL_TRIANGLES, 0, 3);
-            
+        
         SDL_GL_SwapWindow(win);
+        
+        SDL_Event event;
+        if (SDL_PollEvent(&event)) {
+            SDL_Log("event type: %d", event.type);
+            
+            if (event.type == SDL_EVENT_FINGER_DOWN || event.type == SDL_EVENT_FINGER_UP || event.type == SDL_EVENT_FINGER_MOTION) {
+                SDL_Log("%f %f", event.tfinger.x, event.tfinger.y); 
+            }
+        }
     }
     
     SDL_Log("glversion: %s", ((PFNGLGETSTRINGPROC)SDL_GL_GetProcAddress("glGetString"))(GL_VERSION));

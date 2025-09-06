@@ -1,4 +1,6 @@
 #include "SDL_internal.h"
+#include "events/SDL_keyboard_c.h"
+#include "video/ohos/SDL_ohosmouse.h"
 #include <EGL/egl.h>
 #include <EGL/eglplatform.h>
 #include <dlfcn.h>
@@ -224,6 +226,59 @@ static void sdlJSCallback(napi_env env, napi_value jsCb, void *content, void *da
     ar->returned = true;
 }
 
+void OHOS_SetClipboardText(const char* c)
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "setPasteboardString";
+    data->argCount = 1;
+    data->arg[0].type = String;
+    data->arg[0].enabled = true;
+    data->arg[0].data.str = c;
+
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+}
+
+bool OHOS_IsScreenKeyboardShown()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "textEditing";
+    data->argCount = 0;
+    data->type = Int;
+    data->returned = false;
+    
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_nonblocking);
+    
+    while (!data->returned) {}
+    
+    bool d = data->ret.data.i == 1;
+    SDL_free(data);
+    return d;
+}
+void OHOS_StartTextInput()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "startTextInput";
+    data->argCount = 0;
+    data->returned = false;
+
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_blocking);
+    while (!data->returned) {}
+}
+void OHOS_StopTextInput()
+{
+    napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
+    SDL_memset(data, 0, sizeof(napiCallbackData));
+    data->func = "stopTextInput";
+    data->argCount = 0;
+    data->returned = false;
+
+    napi_call_threadsafe_function(napiEnv.func, data, napi_tsfn_blocking);
+    while (!data->returned) {}
+}
+
 void OHOS_MessageBox(const char* title, const char* message)
 {
     napiCallbackData *data = SDL_malloc(sizeof(napiCallbackData));
@@ -438,7 +493,7 @@ static void onNativeTouch(OH_NativeXComponent *component, void *window)
         e.timestamp = touchEvent.timeStamp;
         // skip assertions
         e.deviceId = touchEvent.deviceId + 1;
-        e.fingerId = touchEvent.touchPoints[i].id;
+        e.fingerId = touchEvent.touchPoints[i].id + 1;
         e.area = touchEvent.touchPoints[i].size;
         e.x = touchEvent.touchPoints[i].x / (float)wid;
         e.y = touchEvent.touchPoints[i].y / (float)hei;
@@ -459,7 +514,7 @@ static void onNativeTouch(OH_NativeXComponent *component, void *window)
             e.type = SDL_EVENT_FINGER_CANCELED;
             break;
         }
-
+        
         OHOS_OnTouch(e);
     }
     
@@ -467,14 +522,116 @@ static void onNativeTouch(OH_NativeXComponent *component, void *window)
 }
 // TODO mouse data
 static void onNativeMouse(OH_NativeXComponent *component, void *window) {
-    onNativeTouch(component, window);
+    OH_NativeXComponent_MouseEvent event;
+    OHOS_LockPage();
+    OH_NativeXComponent_GetMouseEvent(component, window, &event);
+    if (event.button == OH_NATIVEXCOMPONENT_NONE_BUTTON || event.action == OH_NATIVEXCOMPONENT_MOUSE_NONE) {
+        return;
+    }
+    SDL_OHOSMouseEvent e;
+    e.x = event.x;
+    e.y = event.y;
+    e.timestamp = event.timestamp;
+    switch (event.button)
+    {
+    case OH_NATIVEXCOMPONENT_LEFT_BUTTON:
+        e.button = SDL_BUTTON_LEFT;
+        break;
+    case OH_NATIVEXCOMPONENT_RIGHT_BUTTON:
+        e.button = SDL_BUTTON_RIGHT;
+        break;
+    case OH_NATIVEXCOMPONENT_MIDDLE_BUTTON:
+        e.button = SDL_BUTTON_MIDDLE;
+        break;
+    case OH_NATIVEXCOMPONENT_BACK_BUTTON:
+        e.button = SDL_BUTTON_X1;
+        break;
+    case OH_NATIVEXCOMPONENT_FORWARD_BUTTON:
+        e.button = SDL_BUTTON_X2;
+        break;
+    }
+    
+    if (event.action == OH_NATIVEXCOMPONENT_MOUSE_MOVE) {
+        e.motion = true;    
+    }
+    else {
+        e.down = event.action == OH_NATIVEXCOMPONENT_MOUSE_PRESS;
+    }
+    OHOS_OnMouse(e);
+    
+    OHOS_UnlockPage();
+}
+
+static napi_value sdlKeyEvent(napi_env env, napi_callback_info info)
+{
+    size_t argc = 2;
+    napi_value args[2] = { NULL, NULL };
+    napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+    
+    int keycode, type;
+    napi_get_value_int32(env, args[0], &keycode);
+    napi_get_value_int32(env, args[1], &type);
+    
+    if (type == 0) {
+        OHOS_OnKeyDown(keycode);    
+    }
+    else {
+        OHOS_OnKeyUp(keycode);
+    }
+    
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
+static napi_value sdlTextAppend(napi_env env, napi_callback_info info)
+{
+    size_t argc = 1;
+    napi_value args[1] = { NULL };
+    napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+    
+    size_t fstringSize = 0;
+    napi_get_value_string_utf8(env, args[0], NULL, 0, &fstringSize);
+    char *fname = SDL_malloc(fstringSize + 1);
+    napi_get_value_string_utf8(env, args[0], fname, fstringSize + 1, &fstringSize);
+    
+    SDL_SendKeyboardText(fname);
+    
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
+}
+
+static napi_value sdlTextEditing(napi_env env, napi_callback_info info)
+{
+    size_t argc = 3;
+    napi_value args[3] = { NULL, NULL, NULL };
+    napi_get_cb_info(env, info, &argc, args, NULL, NULL);
+    
+    size_t fstringSize = 0;
+    napi_get_value_string_utf8(env, args[0], NULL, 0, &fstringSize);
+    char *fname = SDL_malloc(fstringSize + 1);
+    napi_get_value_string_utf8(env, args[0], fname, fstringSize + 1, &fstringSize);
+    
+    int start, len;
+    napi_get_value_int32(env, args[1], &start);
+    napi_get_value_int32(env, args[2], &len);
+    
+    SDL_SendEditingText(fname, start, len);
+    
+    napi_value result;
+    napi_create_int32(env, 0, &result);
+    return result;
 }
 
 static napi_value SDL_OHOS_NAPI_Init(napi_env env, napi_value exports)
 {
     napi_property_descriptor desc[] = {
         { "sdlCallbackInit", NULL, sdlCallbackInit, NULL, NULL, NULL, napi_default, NULL },
-        { "sdlLaunchMain", NULL, sdlLaunchMain, NULL, NULL, NULL, napi_default, NULL }
+        { "sdlLaunchMain", NULL, sdlLaunchMain, NULL, NULL, NULL, napi_default, NULL }, 
+        { "sdlKeyEvent", NULL, sdlKeyEvent, NULL, NULL, NULL, napi_default, NULL },
+        { "sdlTextAppend", NULL, sdlTextAppend, NULL, NULL, NULL, napi_default, NULL }, 
+        { "sdlTextEditing", NULL, sdlTextEditing, NULL, NULL, NULL, napi_default, NULL }
     };
     napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
 

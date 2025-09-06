@@ -14,6 +14,11 @@ int OHOS_FetchHeight();
 
 void OHOS_MessageBox(const char* title, const char* message);
 const char* OHOS_Locale();
+void OHOS_SetClipboardText(const char* data);
+
+bool OHOS_IsScreenKeyboardShown(); 
+void OHOS_StartTextInput();
+void OHOS_StopTextInput();
 
 typedef struct SDL_VideoData {
     SDL_Rect textRect;
