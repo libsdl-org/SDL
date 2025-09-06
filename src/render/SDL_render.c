@@ -2757,9 +2757,14 @@ bool SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_
     CHECK_RENDERER_MAGIC(renderer, false);
 
     SDL_RenderViewState *view = renderer->view;
+    if (mode == SDL_LOGICAL_PRESENTATION_DISABLED) {
+        view->logical_w = 0;
+        view->logical_h = 0;
+    } else {
+        view->logical_w = w;
+        view->logical_h = h;
+    }
     view->logical_presentation_mode = mode;
-    view->logical_w = w;
-    view->logical_h = h;
 
     UpdateLogicalPresentation(renderer);
 

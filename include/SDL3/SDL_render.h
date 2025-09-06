@@ -1477,15 +1477,15 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *
  * Get device independent resolution and presentation mode for rendering.
  *
  * This function gets the width and height of the logical rendering output, or
- * the output size in pixels if a logical resolution is not enabled.
+ * 0 if a logical resolution is not enabled.
  *
  * Each render target has its own logical presentation state. This function
  * gets the state for the current render target.
  *
  * \param renderer the rendering context.
- * \param w an int to be filled with the width.
- * \param h an int to be filled with the height.
- * \param mode the presentation mode used.
+ * \param w an int filled with the logical presentation width.
+ * \param h an int filled with the logical presentation height.
+ * \param mode a variable filled with the logical presentation mode being used.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
