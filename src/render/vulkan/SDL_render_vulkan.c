@@ -3386,7 +3386,7 @@ static VULKAN_Shader SelectShader(const VULKAN_PixelShaderConstants *shader_cons
         return SHADER_SOLID;
     }
 
-    if (!shader_constants->pixel_art &&
+    if (shader_constants->pixel_art == 0.0f &&
         shader_constants->input_type == INPUTTYPE_UNSPECIFIED &&
         shader_constants->tonemap_method == TONEMAP_NONE) {
         return SHADER_RGB;
