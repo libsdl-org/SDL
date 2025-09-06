@@ -39,6 +39,10 @@
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 #include <shobjidl.h>
 
+#ifndef __ITaskbarList3_FWD_DEFINED__
+typedef struct ITaskbarList3 ITaskbarList3;
+#endif
+
 #ifndef __ITaskbarList3_INTERFACE_DEFINED__
 typedef enum TBPFLAG
 {
@@ -91,32 +95,32 @@ typedef struct _IMAGELIST *HIMAGELIST;
 
 typedef struct ITaskbarList3Vtbl
 {
-    HRESULT (STDMETHODCALLTYPE *QueryInterface)(__RPC__in ITaskbarList3 *This, __RPC__in REFIID riid, __RPC__deref_out void **ppvObject);
-    ULONG (STDMETHODCALLTYPE *AddRef)(__RPC__in ITaskbarList3 *This);
-    ULONG (STDMETHODCALLTYPE *Release)(__RPC__in ITaskbarList3 *This);
-    HRESULT (STDMETHODCALLTYPE *HrInit)(__RPC__in ITaskbarList3 *This);
-    HRESULT (STDMETHODCALLTYPE *AddTab)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd);
-    HRESULT (STDMETHODCALLTYPE *DeleteTab)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd);
-    HRESULT (STDMETHODCALLTYPE *ActivateTab)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd);
-    HRESULT (STDMETHODCALLTYPE *SetActiveAlt)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd);
-    HRESULT (STDMETHODCALLTYPE *MarkFullscreenWindow)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, BOOL fFullscreen);
-    HRESULT (STDMETHODCALLTYPE *SetProgressValue)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, ULONGLONG ullCompleted, ULONGLONG ullTotal);
-    HRESULT (STDMETHODCALLTYPE *SetProgressState)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, TBPFLAG tbpFlags);
-    HRESULT (STDMETHODCALLTYPE *RegisterTab)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwndTab, __RPC__in HWND hwndMDI);
-    HRESULT (STDMETHODCALLTYPE *UnregisterTab)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwndTab);
-    HRESULT (STDMETHODCALLTYPE *SetTabOrder)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwndTab, __RPC__in HWND hwndInsertBefore);
-    HRESULT (STDMETHODCALLTYPE *SetTabActive)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwndTab, __RPC__in HWND hwndMDI, DWORD dwReserved);
-    HRESULT (STDMETHODCALLTYPE *ThumbBarAddButtons)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, UINT cButtons, __RPC__in_ecount_full(cButtons) LPTHUMBBUTTON pButton);
-    HRESULT (STDMETHODCALLTYPE *ThumbBarUpdateButtons)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, UINT cButtons, __RPC__in_ecount_full(cButtons) LPTHUMBBUTTON pButton);
-    HRESULT (STDMETHODCALLTYPE *ThumbBarSetImageList)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, __RPC__in_opt HIMAGELIST himl);
-    HRESULT (STDMETHODCALLTYPE *SetOverlayIcon)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, __RPC__in HICON hIcon, __RPC__in_opt_string LPCWSTR pszDescription);
-    HRESULT (STDMETHODCALLTYPE *SetThumbnailTooltip)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, __RPC__in_opt_string LPCWSTR pszTip);
-    HRESULT (STDMETHODCALLTYPE *SetThumbnailClip)(__RPC__in ITaskbarList3 *This, __RPC__in HWND hwnd, __RPC__in RECT *prcClip);
+    HRESULT (__stdcall *QueryInterface)(ITaskbarList3 *This, REFIID riid, void **ppvObject);
+    ULONG (__stdcall *AddRef)(ITaskbarList3 *This);
+    ULONG (__stdcall *Release)(ITaskbarList3 *This);
+    HRESULT (__stdcall *HrInit)(ITaskbarList3 *This);
+    HRESULT (__stdcall *AddTab)(ITaskbarList3 *This, HWND hwnd);
+    HRESULT (__stdcall *DeleteTab)(ITaskbarList3 *This, HWND hwnd);
+    HRESULT (__stdcall *ActivateTab)(ITaskbarList3 *This, HWND hwnd);
+    HRESULT (__stdcall *SetActiveAlt)(ITaskbarList3 *This, HWND hwnd);
+    HRESULT (__stdcall *MarkFullscreenWindow)(ITaskbarList3 *This, HWND hwnd, BOOL fFullscreen);
+    HRESULT (__stdcall *SetProgressValue)(ITaskbarList3 *This, HWND hwnd, ULONGLONG ullCompleted, ULONGLONG ullTotal);
+    HRESULT (__stdcall *SetProgressState)(ITaskbarList3 *This, HWND hwnd, TBPFLAG tbpFlags);
+    HRESULT (__stdcall *RegisterTab)(ITaskbarList3 *This, HWND hwndTab, HWND hwndMDI);
+    HRESULT (__stdcall *UnregisterTab)(ITaskbarList3 *This, HWND hwndTab);
+    HRESULT (__stdcall *SetTabOrder)(ITaskbarList3 *This, HWND hwndTab, HWND hwndInsertBefore);
+    HRESULT (__stdcall *SetTabActive)(ITaskbarList3 *This, HWND hwndTab, HWND hwndMDI, DWORD dwReserved);
+    HRESULT (__stdcall *ThumbBarAddButtons)(ITaskbarList3 *This, HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton);
+    HRESULT (__stdcall *ThumbBarUpdateButtons)(ITaskbarList3 *This, HWND hwnd, UINT cButtons, LPTHUMBBUTTON pButton);
+    HRESULT (__stdcall *ThumbBarSetImageList)(ITaskbarList3 *This, HWND hwnd, HIMAGELIST himl);
+    HRESULT (__stdcall *SetOverlayIcon)(ITaskbarList3 *This, HWND hwnd, HICON hIcon, LPCWSTR pszDescription);
+    HRESULT (__stdcall *SetThumbnailTooltip)(ITaskbarList3 *This, HWND hwnd, LPCWSTR pszTip);
+    HRESULT (__stdcall *SetThumbnailClip)(ITaskbarList3 *This, HWND hwnd, RECT *prcClip);
 } ITaskbarList3Vtbl;
 
 struct ITaskbarList3
 {
-    CONST_VTBL struct ITaskbarList3Vtbl *lpVtbl;
+    ITaskbarList3Vtbl *lpVtbl;
 };
 
 #endif // #ifndef __ITaskbarList3_INTERFACE_DEFINED__
