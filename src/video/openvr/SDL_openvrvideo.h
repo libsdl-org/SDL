@@ -13,7 +13,6 @@
 #pragma GCC diagnostic ignored "-Wunused-variable"
 #endif
 
-#define OPENVR_API_NODLL
 #define USE_SDL
 #include "openvr_capi.h"
 
