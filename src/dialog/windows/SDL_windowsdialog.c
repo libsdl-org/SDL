@@ -86,7 +86,7 @@ typedef struct _tagpropertykey {
 
 typedef DWORD SHCONTF;
 
-#endif
+#endif // WINVER < _WIN32_WINNT_VISTA
 
 #ifndef __IFileDialog_FWD_DEFINED__
 typedef struct IFileDialog IFileDialog;
@@ -128,7 +128,7 @@ struct IShellItemFilter
     IShellItemFilterVtbl *lpVtbl;
 };
 
-#endif
+#endif // #ifndef __IShellItemFilter_INTERFACE_DEFINED__
 
 #ifndef __IFileDialogEvents_INTERFACE_DEFINED__
 typedef struct IFileDialogEventsVtbl
@@ -150,7 +150,7 @@ struct IFileDialogEvents
     IFileDialogEventsVtbl *lpVtbl;
 };
 
-#endif
+#endif // #ifndef __IFileDialogEvents_INTERFACE_DEFINED__
 
 #ifndef __IShellItem_INTERFACE_DEFINED__
 typedef enum _SIGDN {
@@ -193,7 +193,7 @@ struct IShellItem
     IShellItemVtbl *lpVtbl;
 };
 
-#endif
+#endif // #ifndef __IShellItem_INTERFACE_DEFINED__
 
 #ifndef __IEnumShellItems_INTERFACE_DEFINED__
 typedef struct IEnumShellItemsVtbl
@@ -212,7 +212,7 @@ struct IEnumShellItems
     IEnumShellItemsVtbl *lpVtbl;
 };
 
-#endif
+#endif // #ifndef __IEnumShellItems_INTERFACE_DEFINED__
 
 #ifndef __IShellItemArray_INTERFACE_DEFINED__
 typedef enum SIATTRIBFLAGS
@@ -243,7 +243,7 @@ struct IShellItemArray
     IShellItemArrayVtbl *lpVtbl;
 };
 
-#endif
+#endif // #ifndef __IShellItemArray_INTERFACE_DEFINED__
 
 #ifndef __IFileDialog_INTERFACE_DEFINED__
 enum _FILEOPENDIALOGOPTIONS
@@ -312,7 +312,7 @@ struct IFileDialog
     IFileDialogVtbl *lpVtbl;
 };
 
-#endif
+#endif // #ifndef __IFileDialog_INTERFACE_DEFINED__
 
 #ifndef __IFileOpenDialog_INTERFACE_DEFINED__
 typedef struct IFileOpenDialogVtbl
@@ -353,7 +353,7 @@ struct IFileOpenDialog
     IFileOpenDialogVtbl *lpVtbl;
 };
 
-#endif
+#endif // #ifndef __IFileOpenDialog_INTERFACE_DEFINED__
 
 #ifndef __IFileDialog2_INTERFACE_DEFINED__
 typedef struct IFileDialog2Vtbl
@@ -394,7 +394,7 @@ struct IFileDialog2
     IFileDialog2Vtbl *lpVtbl;
 };
 
-#endif
+#endif // #ifndef __IFileDialog2_INTERFACE_DEFINED__
 
 // If this number is too small, selecting too many files will give an error
 #define SELECTLIST_SIZE 65536
