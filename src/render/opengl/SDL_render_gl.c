@@ -971,8 +971,9 @@ static bool GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     int i;
     int count = indices ? num_indices : num_vertices;
     GLfloat *verts;
-    size_t sz = 2 * sizeof(GLfloat) + 4 * sizeof(GLfloat) + (texture ? 2 : 0) * sizeof(GLfloat);
+    size_t sz = 4 * sizeof(GLfloat) + 4 * sizeof(GLfloat) + (texture ? 2 : 0) * sizeof(GLfloat);
     const float color_scale = cmd->data.draw.color_scale;
+    Uint8 pos_len = cmd->data.draw.tentatively_named_rendergeometry_position_coordinate_count;
 
     verts = (GLfloat *)SDL_AllocateRenderVertices(renderer, count * sz, 0, &cmd->data.draw.first);
     if (!verts) {
@@ -1004,6 +1005,8 @@ static bool GL_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
 
         *(verts++) = xy_[0] * scale_x;
         *(verts++) = xy_[1] * scale_y;
+        *(verts++) = pos_len > 2 ? xy_[2] : 0;
+        *(verts++) = pos_len > 3 ? xy_[3] : 1;
 
         col_ = (SDL_FColor *)((char *)color + j * color_stride);
         *(verts++) = col_->r * color_scale;
@@ -1026,6 +1029,9 @@ static bool SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, cons
     bool vertex_array;
     bool color_array;
     bool texture_array;
+    bool isCmdRenderGeometry = (cmd->command == SDL_RENDERCMD_GEOMETRY);
+    bool isCmdDrawPoints = (cmd->command == SDL_RENDERCMD_DRAW_POINTS);
+    bool isCmdDrawLines = (cmd->command == SDL_RENDERCMD_DRAW_LINES);
 
     if (data->drawstate.viewport_dirty) {
         const bool istarget = data->drawstate.target != NULL;
@@ -1052,6 +1058,14 @@ static bool SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, cons
             data->glEnable(GL_SCISSOR_TEST);
         }
         data->drawstate.cliprect_enabled_dirty = false;
+    }
+
+    if (isCmdRenderGeometry && cmd->data.draw.tentatively_named_rendergeometry_position_coordinate_count > 2) { 
+        data->glEnable(GL_DEPTH_TEST);
+        data->glDepthMask(GL_TRUE);
+    } else {
+        data->glDisable(GL_DEPTH_TEST);
+        data->glDepthMask(GL_FALSE);
     }
 
     if (data->drawstate.cliprect_enabled && data->drawstate.cliprect_dirty) {
@@ -1095,8 +1109,8 @@ static bool SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, cons
         data->drawstate.texturing_dirty = false;
     }
 
-    vertex_array = cmd->command == SDL_RENDERCMD_DRAW_POINTS || cmd->command == SDL_RENDERCMD_DRAW_LINES || cmd->command == SDL_RENDERCMD_GEOMETRY;
-    color_array = cmd->command == SDL_RENDERCMD_GEOMETRY;
+    vertex_array = isCmdDrawPoints || isCmdDrawLines || isCmdRenderGeometry;
+    color_array = isCmdRenderGeometry;
     texture_array = cmd->data.draw.texture != NULL;
 
     if (vertex_array != data->drawstate.vertex_array) {
@@ -1354,7 +1368,7 @@ static bool GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
                 data->drawstate.cliprect_enabled_dirty = data->drawstate.cliprect_enabled;
             }
 
-            data->glClear(GL_COLOR_BUFFER_BIT);
+            data->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             break;
         }
 
@@ -1421,6 +1435,7 @@ static bool GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             SDL_RenderCommand *finalcmd = cmd;
             SDL_RenderCommand *nextcmd = cmd->next;
             size_t count = cmd->data.draw.count;
+            Uint8 pos_len = cmd->data.draw.tentatively_named_rendergeometry_position_coordinate_count;
             int ret;
             while (nextcmd) {
                 const SDL_RenderCommandType nextcmdtype = nextcmd->command;
@@ -1458,12 +1473,12 @@ static bool GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
                 } else {
                     // SetDrawState handles glEnableClientState.
                     if (thistexture) {
-                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 8, verts + 0);
-                        data->glColorPointer(4, GL_FLOAT, sizeof(float) * 8, verts + 2);
-                        data->glTexCoordPointer(2, GL_FLOAT, sizeof(float) * 8, verts + 6);
+                        data->glVertexPointer(pos_len, GL_FLOAT, sizeof(float) * 10, verts + 0);
+                        data->glColorPointer(4, GL_FLOAT, sizeof(float) * 10, verts + 4);
+                        data->glTexCoordPointer(2, GL_FLOAT, sizeof(float) * 10, verts + 8);
                     } else {
-                        data->glVertexPointer(2, GL_FLOAT, sizeof(float) * 6, verts + 0);
-                        data->glColorPointer(4, GL_FLOAT, sizeof(float) * 6, verts + 2);
+                        data->glVertexPointer(pos_len, GL_FLOAT, sizeof(float) * 8, verts + 0);
+                        data->glColorPointer(4, GL_FLOAT, sizeof(float) * 8, verts + 4);
                     }
                 }
 
