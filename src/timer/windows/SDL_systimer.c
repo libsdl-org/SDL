@@ -103,6 +103,42 @@ Uint64 SDL_GetPerformanceFrequency(void)
     return (Uint64)frequency.QuadPart;
 }
 
+#ifdef SDL_TIMER_WINDOWS_USE_NTDELAYEXECUTION
+
+typedef LONG (NTAPI *NtDelayExecution_t)(BOOLEAN Alertable, PLARGE_INTEGER DelayInterval);
+static NtDelayExecution_t pNtDelayExecution;
+
+static void SDL_NtDelayExecution(BOOLEAN Alertable, PLARGE_INTEGER DelayInterval)
+{
+    if (!pNtDelayExecution) {
+        static bool initialized;
+
+        if (!initialized) {
+            HMODULE module = GetModuleHandle(TEXT("ntdll.dll"));
+            if (module) {
+                pNtDelayExecution = (NtDelayExecution_t)GetProcAddress(module, "NtDelayExecution");
+            }
+            initialized = true;
+        }
+
+        if (!pNtDelayExecution) {
+            return;
+        }
+    }
+
+    pNtDelayExecution(Alertable, DelayInterval);
+}
+
+void SDL_SYS_DelayNS(Uint64 ns)
+{
+    Sint64 tick = ns;
+    tick /= 100;
+    tick *= -1;
+    SDL_NtDelayExecution(0, (PLARGE_INTEGER)&tick);
+}
+
+#else
+
 void SDL_SYS_DelayNS(Uint64 ns)
 {
     HANDLE timer = SDL_GetWaitableTimer();
@@ -129,5 +165,7 @@ void SDL_SYS_DelayNS(Uint64 ns)
 
     Sleep(delay);
 }
+
+#endif // SDL_TIMER_WINDOWS_USE_NTDELAYEXECUTION
 
 #endif // SDL_TIMER_WINDOWS
