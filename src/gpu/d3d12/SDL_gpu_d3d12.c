@@ -128,8 +128,8 @@
 #endif
 
 // Function Pointer Signatures
-typedef HRESULT(WINAPI *PFN_CREATE_DXGI_FACTORY1)(const GUID *riid, void **ppFactory);
-typedef HRESULT(WINAPI *PFN_DXGI_GET_DEBUG_INTERFACE)(const GUID *riid, void **ppDebug);
+typedef HRESULT (WINAPI *pfnCreateDXGIFactory1)(const GUID *riid, void **ppFactory);
+typedef HRESULT (WINAPI *pfnDXGIGetDebugInterface)(const GUID *riid, void **ppDebug);
 
 // IIDs (from https://www.magnumdb.com/)
 static const IID D3D_IID_IDXGIFactory1 = { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } };
@@ -863,7 +863,7 @@ struct D3D12Renderer
     BOOL supportsTearing;
     SDL_SharedObject *d3d12_dll;
     ID3D12Device *device;
-    PFN_D3D12_SERIALIZE_ROOT_SIGNATURE D3D12SerializeRootSignature_func;
+    PFN_D3D12_SERIALIZE_ROOT_SIGNATURE pD3D12SerializeRootSignature;
     const char *semantic;
     SDL_iconv_t iconv;
 
@@ -1700,7 +1700,7 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
         renderer->dxgidebug_dll = NULL;
     }
 #endif
-    renderer->D3D12SerializeRootSignature_func = NULL;
+    renderer->pD3D12SerializeRootSignature = NULL;
 
     if (renderer->iconv) {
         SDL_iconv_close(renderer->iconv);
@@ -2556,7 +2556,7 @@ static D3D12GraphicsRootSignature *D3D12_INTERNAL_CreateGraphicsRootSignature(
     // Serialize the root signature
     ID3DBlob *serializedRootSignature;
     ID3DBlob *errorBlob;
-    HRESULT res = renderer->D3D12SerializeRootSignature_func(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serializedRootSignature, &errorBlob);
+    HRESULT res = renderer->pD3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &serializedRootSignature, &errorBlob);
 
     if (FAILED(res)) {
         if (errorBlob) {
@@ -2786,7 +2786,7 @@ static D3D12ComputeRootSignature *D3D12_INTERNAL_CreateComputeRootSignature(
 
     ID3DBlob *serializedRootSignature;
     ID3DBlob *errorBlob;
-    HRESULT res = renderer->D3D12SerializeRootSignature_func(
+    HRESULT res = renderer->pD3D12SerializeRootSignature(
         &rootSignatureDesc,
         D3D_ROOT_SIGNATURE_VERSION_1,
         &serializedRootSignature,
@@ -8339,8 +8339,8 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 #else
     SDL_SharedObject *d3d12Dll;
     SDL_SharedObject *dxgiDll;
-    PFN_D3D12_CREATE_DEVICE D3D12CreateDeviceFunc;
-    PFN_CREATE_DXGI_FACTORY1 CreateDXGIFactoryFunc;
+    PFN_D3D12_CREATE_DEVICE pD3D12CreateDevice;
+    pfnCreateDXGIFactory1 pCreateDXGIFactory1;
     HRESULT res;
     ID3D12Device *device;
     IDXGIFactory1 *factory;
@@ -8368,10 +8368,10 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         return false;
     }
 
-    D3D12CreateDeviceFunc = (PFN_D3D12_CREATE_DEVICE)SDL_LoadFunction(
+    pD3D12CreateDevice = (PFN_D3D12_CREATE_DEVICE)SDL_LoadFunction(
         d3d12Dll,
         D3D12_CREATE_DEVICE_FUNC);
-    if (D3D12CreateDeviceFunc == NULL) {
+    if (pD3D12CreateDevice == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not find function " D3D12_CREATE_DEVICE_FUNC " in " D3D12_DLL);
         SDL_UnloadObject(d3d12Dll);
         return false;
@@ -8385,10 +8385,10 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         return false;
     }
 
-    CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY1)SDL_LoadFunction(
+    pCreateDXGIFactory1 = (pfnCreateDXGIFactory1)SDL_LoadFunction(
         dxgiDll,
         CREATE_DXGI_FACTORY1_FUNC);
-    if (CreateDXGIFactoryFunc == NULL) {
+    if (pCreateDXGIFactory1 == NULL) {
         SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "D3D12: Could not find function " CREATE_DXGI_FACTORY1_FUNC " in " DXGI_DLL);
         SDL_UnloadObject(dxgiDll);
         return false;
@@ -8397,7 +8397,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     // Can we create a device?
 
     // Create the DXGI factory
-    res = CreateDXGIFactoryFunc(
+    res = pCreateDXGIFactory1(
         &D3D_IID_IDXGIFactory1,
         (void **)&factory);
     if (FAILED(res)) {
@@ -8450,7 +8450,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     SDL_COMPILE_TIME_ASSERT(featurelevel, D3D_FEATURE_LEVEL_CHOICE < D3D_FEATURE_LEVEL_11_1);
 
     // Check feature level 11_1 first, guarantees 64+ UAVs unlike 11_0 Tier1
-    res = D3D12CreateDeviceFunc(
+    res = pD3D12CreateDevice(
         (IUnknown *)adapter,
         D3D_FEATURE_LEVEL_11_1,
         D3D_GUID(D3D_IID_ID3D12Device),
@@ -8459,7 +8459,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     if (SUCCEEDED(res)) {
         supports_64UAVs = true;
     } else {
-        res = D3D12CreateDeviceFunc(
+        res = pD3D12CreateDevice(
             (IUnknown *)adapter,
             D3D_FEATURE_LEVEL_CHOICE,
             D3D_GUID(D3D_IID_ID3D12Device),
@@ -8523,7 +8523,7 @@ static bool D3D12_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)) && defined(HAVE_IDXGIINFOQUEUE)
 static bool D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
 {
-    PFN_DXGI_GET_DEBUG_INTERFACE DXGIGetDebugInterfaceFunc;
+    pfnDXGIGetDebugInterface pDXGIGetDebugInterface;
     HRESULT res;
 
     renderer->dxgidebug_dll = SDL_LoadObject(DXGIDEBUG_DLL);
@@ -8531,19 +8531,19 @@ static bool D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
         return false;
     }
 
-    DXGIGetDebugInterfaceFunc = (PFN_DXGI_GET_DEBUG_INTERFACE)SDL_LoadFunction(
+    pDXGIGetDebugInterface = (pfnDXGIGetDebugInterface)SDL_LoadFunction(
         renderer->dxgidebug_dll,
         DXGI_GET_DEBUG_INTERFACE_FUNC);
-    if (DXGIGetDebugInterfaceFunc == NULL) {
+    if (pDXGIGetDebugInterface == NULL) {
         return false;
     }
 
-    res = DXGIGetDebugInterfaceFunc(&D3D_IID_IDXGIDebug, (void **)&renderer->dxgiDebug);
+    res = pDXGIGetDebugInterface(&D3D_IID_IDXGIDebug, (void **)&renderer->dxgiDebug);
     if (FAILED(res)) {
         return false;
     }
 
-    res = DXGIGetDebugInterfaceFunc(&D3D_IID_IDXGIInfoQueue, (void **)&renderer->dxgiInfoQueue);
+    res = pDXGIGetDebugInterface(&D3D_IID_IDXGIInfoQueue, (void **)&renderer->dxgiInfoQueue);
     if (FAILED(res)) {
         return false;
     }
@@ -8554,17 +8554,17 @@ static bool D3D12_INTERNAL_TryInitializeDXGIDebug(D3D12Renderer *renderer)
 
 static bool D3D12_INTERNAL_TryInitializeD3D12Debug(D3D12Renderer *renderer)
 {
-    PFN_D3D12_GET_DEBUG_INTERFACE D3D12GetDebugInterfaceFunc;
+    PFN_D3D12_GET_DEBUG_INTERFACE pD3D12GetDebugInterface;
     HRESULT res;
 
-    D3D12GetDebugInterfaceFunc = (PFN_D3D12_GET_DEBUG_INTERFACE)SDL_LoadFunction(
+    pD3D12GetDebugInterface = (PFN_D3D12_GET_DEBUG_INTERFACE)SDL_LoadFunction(
         renderer->d3d12_dll,
         D3D12_GET_DEBUG_INTERFACE_FUNC);
-    if (D3D12GetDebugInterfaceFunc == NULL) {
+    if (pD3D12GetDebugInterface == NULL) {
         return false;
     }
 
-    res = D3D12GetDebugInterfaceFunc(D3D_GUID(D3D_IID_ID3D12Debug), (void **)&renderer->d3d12Debug);
+    res = pD3D12GetDebugInterface(D3D_GUID(D3D_IID_ID3D12Debug), (void **)&renderer->d3d12Debug);
     if (FAILED(res)) {
         return false;
     }
@@ -8727,13 +8727,13 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     PFN_D3D12_XBOX_CREATE_DEVICE D3D12XboxCreateDeviceFunc;
     D3D12XBOX_CREATE_DEVICE_PARAMETERS createDeviceParams;
 #else
-    PFN_CREATE_DXGI_FACTORY1 CreateDXGIFactoryFunc;
+    pfnCreateDXGIFactory1 pCreateDXGIFactory1;
     IDXGIFactory1 *factory1;
     IDXGIFactory5 *factory5;
     IDXGIFactory6 *factory6;
     DXGI_ADAPTER_DESC1 adapterDesc;
     LARGE_INTEGER umdVersion;
-    PFN_D3D12_CREATE_DEVICE D3D12CreateDeviceFunc;
+    PFN_D3D12_CREATE_DEVICE pD3D12CreateDevice;
 #endif
     D3D12_FEATURE_DATA_ARCHITECTURE architecture;
     D3D12_COMMAND_QUEUE_DESC queueDesc;
@@ -8764,16 +8764,16 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
 #endif
 
     // Load the CreateDXGIFactory1 function
-    CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY1)SDL_LoadFunction(
+    pCreateDXGIFactory1 = (pfnCreateDXGIFactory1)SDL_LoadFunction(
         renderer->dxgi_dll,
         CREATE_DXGI_FACTORY1_FUNC);
-    if (CreateDXGIFactoryFunc == NULL) {
+    if (pCreateDXGIFactory1 == NULL) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
         SET_STRING_ERROR_AND_RETURN("Could not load function: " CREATE_DXGI_FACTORY1_FUNC, NULL);
     }
 
     // Create the DXGI factory
-    res = CreateDXGIFactoryFunc(
+    res = pCreateDXGIFactory1(
         &D3D_IID_IDXGIFactory1,
         (void **)&factory1);
     if (FAILED(res)) {
@@ -8898,19 +8898,19 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         SET_STRING_ERROR_AND_RETURN("Could not load function: D3D12XboxCreateDevice", NULL);
     }
 #else
-    D3D12CreateDeviceFunc = (PFN_D3D12_CREATE_DEVICE)SDL_LoadFunction(
+    pD3D12CreateDevice = (PFN_D3D12_CREATE_DEVICE)SDL_LoadFunction(
         renderer->d3d12_dll,
         D3D12_CREATE_DEVICE_FUNC);
-    if (D3D12CreateDeviceFunc == NULL) {
+    if (pD3D12CreateDevice == NULL) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
         SET_STRING_ERROR_AND_RETURN("Could not load function: " D3D12_CREATE_DEVICE_FUNC, NULL);
     }
 #endif
 
-    renderer->D3D12SerializeRootSignature_func = (PFN_D3D12_SERIALIZE_ROOT_SIGNATURE)SDL_LoadFunction(
+    renderer->pD3D12SerializeRootSignature = (PFN_D3D12_SERIALIZE_ROOT_SIGNATURE)SDL_LoadFunction(
         renderer->d3d12_dll,
         D3D12_SERIALIZE_ROOT_SIGNATURE_FUNC);
-    if (renderer->D3D12SerializeRootSignature_func == NULL) {
+    if (renderer->pD3D12SerializeRootSignature == NULL) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
         SET_STRING_ERROR_AND_RETURN("Could not load function: " D3D12_SERIALIZE_ROOT_SIGNATURE_FUNC, NULL);
     }
@@ -8971,7 +8971,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         s_Device = renderer->device;
     }
 #else
-    res = D3D12CreateDeviceFunc(
+    res = pD3D12CreateDevice(
         (IUnknown *)renderer->adapter,
         D3D_FEATURE_LEVEL_CHOICE,
         D3D_GUID(D3D_IID_ID3D12Device),

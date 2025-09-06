@@ -772,12 +772,12 @@ static HRESULT D3D12_CreateVertexBuffer(D3D12_RenderData *data, size_t vbidx, si
 static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(UINT flags, REFIID riid, void **ppFactory);
-    PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc;
-    PFN_D3D12_CREATE_DEVICE D3D12CreateDeviceFunc;
+    typedef HRESULT (WINAPI *pfnCreateDXGIFactory2)(UINT flags, REFIID riid, void **ppFactory);
+    pfnCreateDXGIFactory2 pCreateDXGIFactory2;
+    PFN_D3D12_CREATE_DEVICE pD3D12CreateDevice;
 #endif
-    typedef HANDLE(WINAPI * PFN_CREATE_EVENT_EX)(LPSECURITY_ATTRIBUTES lpEventAttributes, LPCWSTR lpName, DWORD dwFlags, DWORD dwDesiredAccess);
-    PFN_CREATE_EVENT_EX CreateEventExFunc;
+    typedef HANDLE (WINAPI *pfnCreateEventExW)(LPSECURITY_ATTRIBUTES lpEventAttributes, LPCWSTR lpName, DWORD dwFlags, DWORD dwDesiredAccess);
+    pfnCreateEventExW pCreateEventExW;
 
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     ID3D12Device *d3dDevice = NULL;
@@ -794,18 +794,18 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     createDebug = SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, false);
 
 #ifdef SDL_PLATFORM_GDK
-    CreateEventExFunc = CreateEventExW;
+    pCreateEventExW = CreateEventExW;
 #else
-    // CreateEventEx() arrived in Vista, so we need to load it with GetProcAddress for XP.
+    // CreateEventExW() arrived in Vista, so we need to load it with GetProcAddress for XP.
     {
         HMODULE kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
-        CreateEventExFunc = NULL;
+        pCreateEventExW = NULL;
         if (kernel32) {
-            CreateEventExFunc = (PFN_CREATE_EVENT_EX)GetProcAddress(kernel32, "CreateEventExW");
+            pCreateEventExW = (pfnCreateEventExW)GetProcAddress(kernel32, "CreateEventExW");
         }
     }
 #endif
-    if (!CreateEventExFunc) {
+    if (!pCreateEventExW) {
         result = E_FAIL;
         goto done;
     }
@@ -817,8 +817,8 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory2");
-    if (!CreateDXGIFactoryFunc) {
+    pCreateDXGIFactory2 = (pfnCreateDXGIFactory2)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory2");
+    if (!pCreateDXGIFactory2) {
         result = E_FAIL;
         goto done;
     }
@@ -829,8 +829,8 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    D3D12CreateDeviceFunc = (PFN_D3D12_CREATE_DEVICE)SDL_LoadFunction(data->hD3D12Mod, "D3D12CreateDevice");
-    if (!D3D12CreateDeviceFunc) {
+    pD3D12CreateDevice = (PFN_D3D12_CREATE_DEVICE)SDL_LoadFunction(data->hD3D12Mod, "D3D12CreateDevice");
+    if (!pD3D12CreateDevice) {
         result = E_FAIL;
         goto done;
     }
@@ -859,10 +859,10 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
     if (createDebug) {
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
         IDXGIInfoQueue *dxgiInfoQueue = NULL;
-        PFN_CREATE_DXGI_FACTORY DXGIGetDebugInterfaceFunc;
+        pfnCreateDXGIFactory2 DXGIGetDebugInterfaceFunc;
 
         // If the debug hint is set, also create the DXGI factory in debug mode
-        DXGIGetDebugInterfaceFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(data->hDXGIMod, "DXGIGetDebugInterface1");
+        DXGIGetDebugInterfaceFunc = (pfnCreateDXGIFactory2)SDL_LoadFunction(data->hDXGIMod, "DXGIGetDebugInterface1");
         if (!DXGIGetDebugInterfaceFunc) {
             result = E_FAIL;
             goto done;
@@ -887,7 +887,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         creationFlags = DXGI_CREATE_FACTORY_DEBUG;
     }
 
-    result = CreateDXGIFactoryFunc(creationFlags, D3D_GUID(SDL_IID_IDXGIFactory6), (void **)&data->dxgiFactory);
+    result = pCreateDXGIFactory2(creationFlags, D3D_GUID(SDL_IID_IDXGIFactory6), (void **)&data->dxgiFactory);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateDXGIFactory"), result);
         goto done;
@@ -904,7 +904,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    result = D3D12CreateDeviceFunc((IUnknown *)data->dxgiAdapter,
+    result = pD3D12CreateDevice((IUnknown *)data->dxgiAdapter,
                                    D3D_FEATURE_LEVEL_11_0, // Request minimum feature level 11.0 for maximum compatibility
                                    D3D_GUID(SDL_IID_ID3D12Device1),
                                    (void **)&d3dDevice);
@@ -1052,7 +1052,7 @@ static HRESULT D3D12_CreateDeviceResources(SDL_Renderer *renderer)
 
     data->fenceValue++;
 
-    data->fenceEvent = CreateEventExFunc(NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
+    data->fenceEvent = pCreateEventExW(NULL, NULL, 0, EVENT_MODIFY_STATE | SYNCHRONIZE);
     if (!data->fenceEvent) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateEventEx"), result);
         goto done;

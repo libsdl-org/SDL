@@ -39,10 +39,10 @@ SDL_mutex_impl_t SDL_mutex_impl_active = { 0 };
  * Implementation based on Slim Reader/Writer (SRW) Locks for Win 7 and newer.
  */
 
-typedef VOID(WINAPI *pfnInitializeSRWLock)(PSRWLOCK);
-typedef VOID(WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
-typedef VOID(WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
-typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
+typedef VOID (WINAPI *pfnInitializeSRWLock)(PSRWLOCK);
+typedef VOID (WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
+typedef VOID (WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
+typedef BOOLEAN (WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
 static pfnInitializeSRWLock pInitializeSRWLock = NULL;
 static pfnReleaseSRWLockExclusive pReleaseSRWLockExclusive = NULL;
 static pfnAcquireSRWLockExclusive pAcquireSRWLockExclusive = NULL;

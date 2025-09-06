@@ -65,21 +65,21 @@ static HANDLE SDL_GetWaitableEvent(void)
 #define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x2
 #endif
 
-typedef HANDLE (WINAPI *CreateWaitableTimerExW_t)(LPSECURITY_ATTRIBUTES lpTimerAttributes, LPCWSTR lpTimerName, DWORD dwFlags, DWORD dwDesiredAccess);
-static CreateWaitableTimerExW_t pCreateWaitableTimerExW;
+typedef HANDLE (WINAPI *pfnCreateWaitableTimerExW)(LPSECURITY_ATTRIBUTES lpTimerAttributes, LPCWSTR lpTimerName, DWORD dwFlags, DWORD dwDesiredAccess);
+static pfnCreateWaitableTimerExW pCreateWaitableTimerExW;
 
 #if WINVER < _WIN32_WINNT_WIN7
 typedef struct _REASON_CONTEXT REASON_CONTEXT;
 typedef REASON_CONTEXT * PREASON_CONTEXT;
 #endif
-typedef BOOL (WINAPI *SetWaitableTimerEx_t)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, PREASON_CONTEXT WakeContext, ULONG TolerableDelay);
-static SetWaitableTimerEx_t pSetWaitableTimerEx;
+typedef BOOL (WINAPI *pfnSetWaitableTimerEx)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, PREASON_CONTEXT WakeContext, ULONG TolerableDelay);
+static pfnSetWaitableTimerEx pSetWaitableTimerEx;
 
-typedef HANDLE (WINAPI *CreateWaitableTimerW_t)(LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName);
-static CreateWaitableTimerW_t pCreateWaitableTimerW;
+typedef HANDLE (WINAPI *pfnCreateWaitableTimerW)(LPSECURITY_ATTRIBUTES lpTimerAttributes, BOOL bManualReset, LPCWSTR lpTimerName);
+static pfnCreateWaitableTimerW pCreateWaitableTimerW;
 
-typedef BOOL (WINAPI *SetWaitableTimer_t)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume);
-static SetWaitableTimer_t pSetWaitableTimer;
+typedef BOOL (WINAPI *pfnSetWaitableTimer)(HANDLE hTimer, const LARGE_INTEGER *lpDueTime, LONG lPeriod, PTIMERAPCROUTINE pfnCompletionRoutine, LPVOID lpArgToCompletionRoutine, BOOL fResume);
+static pfnSetWaitableTimer pSetWaitableTimer;
 
 static HANDLE SDL_GetWaitableTimer(void)
 {
@@ -90,13 +90,13 @@ static HANDLE SDL_GetWaitableTimer(void)
     if (!initialized) {
         HMODULE module = GetModuleHandle(TEXT("kernel32.dll"));
         if (module) {
-            pCreateWaitableTimerExW = (CreateWaitableTimerExW_t)GetProcAddress(module, "CreateWaitableTimerExW"); // Windows 7 and up
+            pCreateWaitableTimerExW = (pfnCreateWaitableTimerExW)GetProcAddress(module, "CreateWaitableTimerExW"); // Windows 7 and up
             if (!pCreateWaitableTimerExW) {
-                pCreateWaitableTimerW = (CreateWaitableTimerW_t)GetProcAddress(module, "CreateWaitableTimerW");
+                pCreateWaitableTimerW = (pfnCreateWaitableTimerW)GetProcAddress(module, "CreateWaitableTimerW");
             }
-            pSetWaitableTimerEx = (SetWaitableTimerEx_t)GetProcAddress(module, "SetWaitableTimerEx"); // Windows Vista and up
+            pSetWaitableTimerEx = (pfnSetWaitableTimerEx)GetProcAddress(module, "SetWaitableTimerEx"); // Windows Vista and up
             if (!pSetWaitableTimerEx) {
-                pSetWaitableTimer = (SetWaitableTimer_t)GetProcAddress(module, "SetWaitableTimer");
+                pSetWaitableTimer = (pfnSetWaitableTimer)GetProcAddress(module, "SetWaitableTimer");
             }
             initialized =
                 (pCreateWaitableTimerExW || pCreateWaitableTimerW) &&

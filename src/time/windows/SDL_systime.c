@@ -30,7 +30,7 @@
 #define WINDOWS_TICK          10000000ULL
 #define UNIX_EPOCH_OFFSET_SEC 11644473600ULL
 
-typedef void(WINAPI *pfnGetSystemTimePreciseAsFileTime)(FILETIME *);
+typedef void (WINAPI *pfnGetSystemTimePreciseAsFileTime)(FILETIME *);
 
 void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 {
