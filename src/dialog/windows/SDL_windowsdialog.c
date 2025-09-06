@@ -29,6 +29,373 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../../thread/SDL_systhread.h"
 
+#if WINVER < _WIN32_WINNT_VISTA
+typedef struct _COMDLG_FILTERSPEC
+{
+    LPCWSTR pszName;
+    LPCWSTR pszSpec;
+} COMDLG_FILTERSPEC;
+
+typedef enum FDE_OVERWRITE_RESPONSE
+{
+    FDEOR_DEFAULT
+    FDEOR_ACCEPT
+    FDEOR_REFUSE
+} FDE_OVERWRITE_RESPONSE;
+
+typedef enum FDE_SHAREVIOLATION_RESPONSE
+{
+    FDESVR_DEFAULT
+    FDESVR_ACCEPT
+    FDESVR_REFUSE
+} FDE_SHAREVIOLATION_RESPONSE;
+
+typedef enum FDAP
+{
+    FDAP_BOTTOM
+    FDAP_TOP
+} FDAP;
+
+typedef ULONG SFGAOF;
+
+typedef enum GETPROPERTYSTOREFLAGS
+{
+    GPS_DEFAULT = 0x0,
+    GPS_HANDLERPROPERTIESONLY = 0x1,
+    GPS_READWRITE = 0x2,
+    GPS_TEMPORARY = 0x4,
+    GPS_FASTPROPERTIESONLY = 0x8,
+    GPS_OPENSLOWITEM = 0x10,
+    GPS_DELAYCREATION = 0x20,
+    GPS_BESTEFFORT = 0x40,
+    GPS_NO_OPLOCK = 0x80,
+    GPS_PREFERQUERYPROPERTIES = 0x100,
+    GPS_EXTRINSICPROPERTIES = 0x200,
+    GPS_EXTRINSICPROPERTIESONLY = 0x400,
+    GPS_VOLATILEPROPERTIES = 0x800,
+    GPS_VOLATILEPROPERTIESONLY = 0x1000,
+    GPS_MASK_VALID = 0x1FFF
+} GETPROPERTYSTOREFLAGS;
+
+typedef struct _tagpropertykey {
+    GUID fmtid;
+    DWORD pid;
+} PROPERTYKEY;
+
+#define REFPROPERTYKEY const PROPERTYKEY * const
+
+typedef DWORD SHCONTF;
+
+#endif
+
+#ifndef __IFileDialog_FWD_DEFINED__
+typedef struct IFileDialog IFileDialog;
+#endif
+#ifndef __IShellItem_FWD_DEFINED__
+typedef struct IShellItem IShellItem;
+#endif
+#ifndef __IFileOpenDialog_FWD_DEFINED__
+typedef struct IFileOpenDialog IFileOpenDialog;
+#endif
+#ifndef __IFileDialogEvents_FWD_DEFINED__
+typedef struct IFileDialogEvents IFileDialogEvents;
+#endif
+#ifndef __IShellItemArray_FWD_DEFINED__
+typedef struct IShellItemArray IShellItemArray;
+#endif
+#ifndef __IEnumShellItems_FWD_DEFINED__
+typedef struct IEnumShellItems IEnumShellItems;
+#endif
+#ifndef __IShellItemFilter_FWD_DEFINED__
+typedef struct IShellItemFilter IShellItemFilter;
+#endif
+#ifndef __IFileDialog2_FWD_DEFINED__
+typedef struct IFileDialog2 IFileDialog2;
+#endif
+
+#ifndef __IShellItemFilter_INTERFACE_DEFINED__
+typedef struct IShellItemFilterVtbl
+{
+    HRESULT (__stdcall *QueryInterface)(IShellItemFilter *This, REFIID riid, void **ppvObject);
+    ULONG (__stdcall *AddRef)(IShellItemFilter *This);
+    ULONG (__stdcall *Release)(IShellItemFilter *This);
+    HRESULT (__stdcall *IncludeItem)(IShellItemFilter *This, IShellItem *psi);
+    HRESULT (__stdcall *GetEnumFlagsForItem)(IShellItemFilter *This, IShellItem *psi, SHCONTF *pgrfFlags);
+} IShellItemFilterVtbl;
+
+struct IShellItemFilter
+{
+    IShellItemFilterVtbl *lpVtbl;
+};
+
+#endif
+
+#ifndef __IFileDialogEvents_INTERFACE_DEFINED__
+typedef struct IFileDialogEventsVtbl
+{
+    HRESULT (__stdcall *QueryInterface)(IFileDialogEvents *This, REFIID riid,  void **ppvObject);
+    ULONG (__stdcall *AddRef)(IFileDialogEvents *This);
+    ULONG (__stdcall *Release)(IFileDialogEvents *This);
+    HRESULT (__stdcall *OnFileOk)(IFileDialogEvents *This, IFileDialog *pfd);
+    HRESULT (__stdcall *OnFolderChanging)(IFileDialogEvents *This, IFileDialog *pfd, IShellItem *psiFolder);
+    HRESULT (__stdcall *OnFolderChange)(IFileDialogEvents *This, IFileDialog *pfd);
+    HRESULT (__stdcall *OnSelectionChange)(IFileDialogEvents *This, IFileDialog *pfd);
+    HRESULT (__stdcall *OnShareViolation)(IFileDialogEvents *This, IFileDialog *pfd, IShellItem *psi, FDE_SHAREVIOLATION_RESPONSE *pResponse);
+    HRESULT (__stdcall *OnTypeChange)(IFileDialogEvents *This, IFileDialog *pfd);
+    HRESULT (__stdcall *OnOverwrite)(IFileDialogEvents *This, IFileDialog *pfd, IShellItem *psi, FDE_OVERWRITE_RESPONSE *pResponse);
+} IFileDialogEventsVtbl;
+
+struct IFileDialogEvents
+{
+    IFileDialogEventsVtbl *lpVtbl;
+};
+
+#endif
+
+#ifndef __IShellItem_INTERFACE_DEFINED__
+typedef enum _SIGDN {
+    SIGDN_NORMALDISPLAY = 0x00000000,
+    SIGDN_PARENTRELATIVEPARSING = 0x80018001,
+    SIGDN_DESKTOPABSOLUTEPARSING = 0x80028000,
+    SIGDN_PARENTRELATIVEEDITING = 0x80031001,
+    SIGDN_DESKTOPABSOLUTEEDITING = 0x8004C000,
+    SIGDN_FILESYSPATH = 0x80058000,
+    SIGDN_URL = 0x80068000,
+    SIGDN_PARENTRELATIVEFORADDRESSBAR = 0x8007C001,
+    SIGDN_PARENTRELATIVE = 0x80080001,
+    SIGDN_PARENTRELATIVEFORUI = 0x80094001
+} SIGDN;
+
+enum _SICHINTF {
+    SICHINT_DISPLAY = 0x00000000,
+    SICHINT_ALLFIELDS = 0x80000000,
+    SICHINT_CANONICAL = 0x10000000,
+    SICHINT_TEST_FILESYSPATH_IF_NOT_EQUAL = 0x20000000
+};
+typedef DWORD SICHINTF;
+
+extern const IID IID_IShellItem;
+
+typedef struct IShellItemVtbl
+{
+    HRESULT (__stdcall *QueryInterface)(IShellItem *This, REFIID riid, void **ppvObject);
+    ULONG (__stdcall *AddRef)(IShellItem *This);
+    ULONG (__stdcall *Release)(IShellItem *This);
+    HRESULT (__stdcall *BindToHandler)(IShellItem *This, IBindCtx *pbc, REFGUID bhid, REFIID riid, void **ppv);
+    HRESULT (__stdcall *GetParent)(IShellItem *This, IShellItem **ppsi);
+    HRESULT (__stdcall *GetDisplayName)(IShellItem *This, SIGDN sigdnName, LPWSTR *ppszName);
+    HRESULT (__stdcall *GetAttributes)(IShellItem *This, SFGAOF sfgaoMask, SFGAOF *psfgaoAttribs);
+    HRESULT (__stdcall *Compare)(IShellItem *This, IShellItem *psi, SICHINTF hint, int *piOrder);
+} IShellItemVtbl;
+
+struct IShellItem
+{
+    IShellItemVtbl *lpVtbl;
+};
+
+#endif
+
+#ifndef __IEnumShellItems_INTERFACE_DEFINED__
+typedef struct IEnumShellItemsVtbl
+{
+    HRESULT (__stdcall *QueryInterface)(IEnumShellItems *This, REFIID riid, void **ppvObject);
+    ULONG (__stdcall *AddRef)(IEnumShellItems *This);
+    ULONG (__stdcall *Release)(IEnumShellItems *This);
+    HRESULT (__stdcall *Next)(IEnumShellItems *This, ULONG celt, IShellItem **rgelt, ULONG *pceltFetched);
+    HRESULT (__stdcall *Skip)(IEnumShellItems *This, ULONG celt);
+    HRESULT (__stdcall *Reset)(IEnumShellItems *This);
+    HRESULT (__stdcall *Clone)(IEnumShellItems *This, IEnumShellItems **ppenum);
+} IEnumShellItemsVtbl;
+
+struct IEnumShellItems
+{
+    IEnumShellItemsVtbl *lpVtbl;
+};
+
+#endif
+
+#ifndef __IShellItemArray_INTERFACE_DEFINED__
+typedef enum SIATTRIBFLAGS
+{
+    SIATTRIBFLAGS_AND = 0x1,
+    SIATTRIBFLAGS_OR = 0x2,
+    SIATTRIBFLAGS_APPCOMPAT = 0x3,
+    SIATTRIBFLAGS_MASK = 0x3,
+    SIATTRIBFLAGS_ALLITEMS = 0x4000
+}  SIATTRIBFLAGS;
+
+typedef struct IShellItemArrayVtbl
+{
+    HRESULT (__stdcall *QueryInterface)(IShellItemArray *This, REFIID riid, void **ppvObject);
+    ULONG (__stdcall *AddRef)(IShellItemArray *This);
+    ULONG (__stdcall *Release)(IShellItemArray *This);
+    HRESULT (__stdcall *BindToHandler)(IShellItemArray *This, IBindCtx *pbc, REFGUID bhid, REFIID riid, void **ppvOut);
+    HRESULT (__stdcall *GetPropertyStore)(IShellItemArray *This, GETPROPERTYSTOREFLAGS flags, REFIID riid, void **ppv);
+    HRESULT (__stdcall *GetPropertyDescriptionList)(IShellItemArray *This, REFPROPERTYKEY keyType, REFIID riid, void **ppv);
+    HRESULT (__stdcall *GetAttributes)(IShellItemArray *This, SIATTRIBFLAGS AttribFlags, SFGAOF sfgaoMask, SFGAOF *psfgaoAttribs);
+    HRESULT (__stdcall *GetCount)(IShellItemArray *This, DWORD *pdwNumItems);
+    HRESULT (__stdcall *GetItemAt)(IShellItemArray *This, DWORD dwIndex, IShellItem **ppsi);
+    HRESULT (__stdcall *EnumItems)(IShellItemArray *This, IEnumShellItems **ppenumShellItems);
+} IShellItemArrayVtbl;
+
+struct IShellItemArray
+{
+    IShellItemArrayVtbl *lpVtbl;
+};
+
+#endif
+
+#ifndef __IFileDialog_INTERFACE_DEFINED__
+enum _FILEOPENDIALOGOPTIONS
+{
+    FOS_OVERWRITEPROMPT = 0x2,
+    FOS_STRICTFILETYPES = 0x4,
+    FOS_NOCHANGEDIR = 0x8,
+    FOS_PICKFOLDERS = 0x20,
+    FOS_FORCEFILESYSTEM = 0x40,
+    FOS_ALLNONSTORAGEITEMS = 0x80,
+    FOS_NOVALIDATE = 0x100,
+    FOS_ALLOWMULTISELECT = 0x200,
+    FOS_PATHMUSTEXIST = 0x800,
+    FOS_FILEMUSTEXIST = 0x1000,
+    FOS_CREATEPROMPT = 0x2000,
+    FOS_SHAREAWARE = 0x4000,
+    FOS_NOREADONLYRETURN = 0x8000,
+    FOS_NOTESTFILECREATE = 0x10000,
+    FOS_HIDEMRUPLACES = 0x20000,
+    FOS_HIDEPINNEDPLACES = 0x40000,
+    FOS_NODEREFERENCELINKS = 0x100000,
+    FOS_OKBUTTONNEEDSINTERACTION = 0x200000,
+    FOS_DONTADDTORECENT = 0x2000000,
+    FOS_FORCESHOWHIDDEN = 0x10000000,
+    FOS_DEFAULTNOMINIMODE = 0x20000000,
+    FOS_FORCEPREVIEWPANEON = 0x40000000,
+    FOS_SUPPORTSTREAMABLEITEMS = 0x80000000
+};
+typedef DWORD FILEOPENDIALOGOPTIONS;
+
+extern const IID IID_IFileDialog;
+
+typedef struct IFileDialogVtbl
+{
+    HRESULT (__stdcall *QueryInterface)(IFileDialog *This, REFIID riid, void **ppvObject);
+    ULONG (__stdcall *AddRef)(IFileDialog *This);
+    ULONG (__stdcall *Release)(IFileDialog *This);
+    HRESULT (__stdcall *Show)(IFileDialog *This, HWND hwndOwner);
+    HRESULT (__stdcall *SetFileTypes)(IFileDialog *This, UINT cFileTypes, const COMDLG_FILTERSPEC *rgFilterSpec);
+    HRESULT (__stdcall *SetFileTypeIndex)(IFileDialog *This, UINT iFileType);
+    HRESULT (__stdcall *GetFileTypeIndex)(IFileDialog *This, UINT *piFileType);
+    HRESULT (__stdcall *Advise)(IFileDialog *This, IFileDialogEvents *pfde, DWORD *pdwCookie);
+    HRESULT (__stdcall *Unadvise)(IFileDialog *This, DWORD dwCookie);
+    HRESULT (__stdcall *SetOptions)(IFileDialog *This, FILEOPENDIALOGOPTIONS fos);
+    HRESULT (__stdcall *GetOptions)(IFileDialog *This, FILEOPENDIALOGOPTIONS *pfos);
+    HRESULT (__stdcall *SetDefaultFolder)(IFileDialog *This, IShellItem *psi);
+    HRESULT (__stdcall *SetFolder)(IFileDialog *This, IShellItem *psi);
+    HRESULT (__stdcall *GetFolder)(IFileDialog *This, IShellItem **ppsi);
+    HRESULT (__stdcall *GetCurrentSelection)(IFileDialog *This, IShellItem **ppsi);
+    HRESULT (__stdcall *SetFileName)(IFileDialog *This, LPCWSTR pszName);
+    HRESULT (__stdcall *GetFileName)(IFileDialog *This, LPWSTR *pszName);
+    HRESULT (__stdcall *SetTitle)(IFileDialog *This, LPCWSTR pszTitle);
+    HRESULT (__stdcall *SetOkButtonLabel)(IFileDialog *This, LPCWSTR pszText);
+    HRESULT (__stdcall *SetFileNameLabel)(IFileDialog *This, LPCWSTR pszLabel);
+    HRESULT (__stdcall *GetResult)(IFileDialog *This, IShellItem **ppsi);
+    HRESULT (__stdcall *AddPlace)(IFileDialog *This, IShellItem *psi, FDAP fdap);
+    HRESULT (__stdcall *SetDefaultExtension)(IFileDialog *This, LPCWSTR pszDefaultExtension);
+    HRESULT (__stdcall *Close)(IFileDialog *This, HRESULT hr);
+    HRESULT (__stdcall *SetClientGuid)(IFileDialog *This, REFGUID guid);
+    HRESULT (__stdcall *ClearClientData)(IFileDialog *This);
+    HRESULT (__stdcall *SetFilter)(IFileDialog *This, IShellItemFilter *pFilter);
+} IFileDialogVtbl;
+
+struct IFileDialog
+{
+    IFileDialogVtbl *lpVtbl;
+};
+
+#endif
+
+#ifndef __IFileOpenDialog_INTERFACE_DEFINED__
+typedef struct IFileOpenDialogVtbl
+{
+    HRESULT (__stdcall *QueryInterface)(IFileOpenDialog *This, REFIID riid, void **ppvObject);
+    ULONG (__stdcall *AddRef)(IFileOpenDialog *This);
+    ULONG (__stdcall *Release)(IFileOpenDialog *This);
+    HRESULT (__stdcall *Show)(IFileOpenDialog *This, HWND hwndOwner);
+    HRESULT (__stdcall *SetFileTypes)(IFileOpenDialog *This, UINT cFileTypes, const COMDLG_FILTERSPEC *rgFilterSpec);
+    HRESULT (__stdcall *SetFileTypeIndex)(IFileOpenDialog *This, UINT iFileType);
+    HRESULT (__stdcall *GetFileTypeIndex)(IFileOpenDialog *This, UINT *piFileType);
+    HRESULT (__stdcall *Advise)(IFileOpenDialog *This, IFileDialogEvents *pfde, DWORD *pdwCookie);
+    HRESULT (__stdcall *Unadvise)(IFileOpenDialog *This, DWORD dwCookie);
+    HRESULT (__stdcall *SetOptions)(IFileOpenDialog *This, FILEOPENDIALOGOPTIONS fos);
+    HRESULT (__stdcall *GetOptions)(IFileOpenDialog *This, FILEOPENDIALOGOPTIONS *pfos);
+    HRESULT (__stdcall *SetDefaultFolder)(IFileOpenDialog *This, IShellItem *psi);
+    HRESULT (__stdcall *SetFolder)(IFileOpenDialog *This, IShellItem *psi);
+    HRESULT (__stdcall *GetFolder)(IFileOpenDialog *This, IShellItem **ppsi);
+    HRESULT (__stdcall *GetCurrentSelection)(IFileOpenDialog *This, IShellItem **ppsi);
+    HRESULT (__stdcall *SetFileName)(IFileOpenDialog *This, LPCWSTR pszName);
+    HRESULT (__stdcall *GetFileName)(IFileOpenDialog *This, LPWSTR *pszName);
+    HRESULT (__stdcall *SetTitle)(IFileOpenDialog *This, LPCWSTR pszTitle);
+    HRESULT (__stdcall *SetOkButtonLabel)(IFileOpenDialog *This, LPCWSTR pszText);
+    HRESULT (__stdcall *SetFileNameLabel)(IFileOpenDialog *This, LPCWSTR pszLabel);
+    HRESULT (__stdcall *GetResult)(IFileOpenDialog *This, IShellItem **ppsi);
+    HRESULT (__stdcall *AddPlace)(IFileOpenDialog *This, IShellItem *psi, FDAP fdap);
+    HRESULT (__stdcall *SetDefaultExtension)(IFileOpenDialog *This, LPCWSTR pszDefaultExtension);
+    HRESULT (__stdcall *Close)(IFileOpenDialog *This, HRESULT hr);
+    HRESULT (__stdcall *SetClientGuid)(IFileOpenDialog *This, REFGUID guid);
+    HRESULT (__stdcall *ClearClientData)(IFileOpenDialog *This);
+    HRESULT (__stdcall *SetFilter)(IFileOpenDialog *This, IShellItemFilter *pFilter);
+    HRESULT (__stdcall *GetResults)(IFileOpenDialog *This, IShellItemArray **ppenum);
+    HRESULT (__stdcall *GetSelectedItems)(IFileOpenDialog *This, IShellItemArray **ppsai);
+} IFileOpenDialogVtbl;
+
+struct IFileOpenDialog
+{
+    IFileOpenDialogVtbl *lpVtbl;
+};
+
+#endif
+
+#ifndef __IFileDialog2_INTERFACE_DEFINED__
+typedef struct IFileDialog2Vtbl
+{
+    HRESULT (__stdcall *QueryInterface)(IFileDialog2 *This, REFIID riid, void **ppvObject);
+    ULONG (__stdcall *AddRef)(IFileDialog2 *This);
+    ULONG (__stdcall *Release)(IFileDialog2 *This);
+    HRESULT (__stdcall *Show)(IFileDialog2 *This, HWND hwndOwner);
+    HRESULT (__stdcall *SetFileTypes)(IFileDialog2 *This, UINT cFileTypes, const COMDLG_FILTERSPEC *rgFilterSpec);
+    HRESULT (__stdcall *SetFileTypeIndex)(IFileDialog2 *This, UINT iFileType);
+    HRESULT (__stdcall *GetFileTypeIndex)(IFileDialog2 *This, UINT *piFileType);
+    HRESULT (__stdcall *Advise)(IFileDialog2 *This, IFileDialogEvents *pfde, DWORD *pdwCookie);
+    HRESULT (__stdcall *Unadvise)(IFileDialog2 *This, DWORD dwCookie);
+    HRESULT (__stdcall *SetOptions)(IFileDialog2 *This, FILEOPENDIALOGOPTIONS fos);
+    HRESULT (__stdcall *GetOptions)(IFileDialog2 *This, FILEOPENDIALOGOPTIONS *pfos);
+    HRESULT (__stdcall *SetDefaultFolder)(IFileDialog2 *This, IShellItem *psi);
+    HRESULT (__stdcall *SetFolder)(IFileDialog2 *This, IShellItem *psi);
+    HRESULT (__stdcall *GetFolder)(IFileDialog2 *This, IShellItem **ppsi);
+    HRESULT (__stdcall *GetCurrentSelection)(IFileDialog2 *This, IShellItem **ppsi);
+    HRESULT (__stdcall *SetFileName)(IFileDialog2 *This, LPCWSTR pszName);
+    HRESULT (__stdcall *GetFileName)(IFileDialog2 *This, LPWSTR *pszName);
+    HRESULT (__stdcall *SetTitle)(IFileDialog2 *This, LPCWSTR pszTitle);
+    HRESULT (__stdcall *SetOkButtonLabel)(IFileDialog2 *This, LPCWSTR pszText);
+    HRESULT (__stdcall *SetFileNameLabel)(IFileDialog2 *This, LPCWSTR pszLabel);
+    HRESULT (__stdcall *GetResult)(IFileDialog2 *This, IShellItem **ppsi);
+    HRESULT (__stdcall *AddPlace)(IFileDialog2 *This, IShellItem *psi, FDAP fdap);
+    HRESULT (__stdcall *SetDefaultExtension)(IFileDialog2 *This, LPCWSTR pszDefaultExtension);
+    HRESULT (__stdcall *Close)(IFileDialog2 *This, HRESULT hr);
+    HRESULT (__stdcall *SetClientGuid)(IFileDialog2 *This, REFGUID guid);
+    HRESULT (__stdcall *ClearClientData)(IFileDialog2 *This);
+    HRESULT (__stdcall *SetFilter)(IFileDialog2 *This, IShellItemFilter *pFilter);
+    HRESULT (__stdcall *SetCancelButtonLabel)(IFileDialog2 *This, LPCWSTR pszLabel);
+    HRESULT (__stdcall *SetNavigationRoot)(IFileDialog2 *This, IShellItem *psi);
+} IFileDialog2Vtbl;
+
+struct IFileDialog2
+{
+    IFileDialog2Vtbl *lpVtbl;
+};
+
+#endif
+
 // If this number is too small, selecting too many files will give an error
 #define SELECTLIST_SIZE 65536
 
