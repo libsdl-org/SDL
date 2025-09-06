@@ -2057,6 +2057,7 @@ static bool SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
 {
     SDL_Texture *native = texture->native;
     SDL_Rect full_rect;
+    bool result = true;
 
     if (!SDL_SW_UpdateYUVTexture(texture->yuv, rect, pixels, pitch)) {
         return false;
@@ -2076,8 +2077,7 @@ static bool SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
         if (!SDL_LockTexture(native, rect, &native_pixels, &native_pitch)) {
             return false;
         }
-        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
-                            rect->w, rect->h, native_pixels, native_pitch);
+        result = SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format, rect->w, rect->h, native_pixels, native_pitch);
         SDL_UnlockTexture(native);
     } else {
         // Use a temporary buffer for updating
@@ -2088,13 +2088,14 @@ static bool SDL_UpdateTextureYUV(SDL_Texture *texture, const SDL_Rect *rect,
             if (!temp_pixels) {
                 return false;
             }
-            SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
-                                rect->w, rect->h, temp_pixels, temp_pitch);
-            SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+            result = SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format, rect->w, rect->h, temp_pixels, temp_pitch);
+            if (result) {
+                SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+            }
             SDL_free(temp_pixels);
         }
     }
-    return true;
+    return result;
 }
 #endif // SDL_HAVE_YUV
 
@@ -2186,6 +2187,7 @@ static bool SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rec
 {
     SDL_Texture *native = texture->native;
     SDL_Rect full_rect;
+    bool result = true;
 
     if (!SDL_SW_UpdateYUVTexturePlanar(texture->yuv, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch)) {
         return false;
@@ -2209,8 +2211,7 @@ static bool SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rec
         if (!SDL_LockTexture(native, rect, &native_pixels, &native_pitch)) {
             return false;
         }
-        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
-                            rect->w, rect->h, native_pixels, native_pitch);
+        result = SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format, rect->w, rect->h, native_pixels, native_pitch);
         SDL_UnlockTexture(native);
     } else {
         // Use a temporary buffer for updating
@@ -2221,13 +2222,14 @@ static bool SDL_UpdateTextureYUVPlanar(SDL_Texture *texture, const SDL_Rect *rec
             if (!temp_pixels) {
                 return false;
             }
-            SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
-                                rect->w, rect->h, temp_pixels, temp_pitch);
-            SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+            result = SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format, rect->w, rect->h, temp_pixels, temp_pitch);
+            if (result) {
+                SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+            }
             SDL_free(temp_pixels);
         }
     }
-    return true;
+    return result;
 }
 
 static bool SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect,
@@ -2236,6 +2238,7 @@ static bool SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect
 {
     SDL_Texture *native = texture->native;
     SDL_Rect full_rect;
+    bool result = true;
 
     if (!SDL_SW_UpdateNVTexturePlanar(texture->yuv, rect, Yplane, Ypitch, UVplane, UVpitch)) {
         return false;
@@ -2259,8 +2262,7 @@ static bool SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect
         if (!SDL_LockTexture(native, rect, &native_pixels, &native_pitch)) {
             return false;
         }
-        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
-                            rect->w, rect->h, native_pixels, native_pitch);
+        result = SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format, rect->w, rect->h, native_pixels, native_pitch);
         SDL_UnlockTexture(native);
     } else {
         // Use a temporary buffer for updating
@@ -2271,13 +2273,14 @@ static bool SDL_UpdateTextureNVPlanar(SDL_Texture *texture, const SDL_Rect *rect
             if (!temp_pixels) {
                 return false;
             }
-            SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
-                                rect->w, rect->h, temp_pixels, temp_pitch);
-            SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+            result = SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format, rect->w, rect->h, temp_pixels, temp_pitch);
+            if (result) {
+                SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+            }
             SDL_free(temp_pixels);
         }
     }
-    return true;
+    return result;
 }
 
 #endif // SDL_HAVE_YUV
