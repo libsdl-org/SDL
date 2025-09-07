@@ -582,12 +582,12 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 
             if (internal->state != DisplayRemoved) {
                 // We've already enumerated this display, don't move it
-                return;
+                goto cleanup;
             }
 
             if (index >= _this->num_displays) {
                 // This should never happen due to the check above, but just in case...
-                return;
+                goto cleanup;
             }
 
             if (moved) {
@@ -608,6 +608,8 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 
                 SDL_ResetFullscreenDisplayModes(existing_display);
                 SDL_SetDesktopDisplayMode(existing_display, &mode);
+                // The mode is owned by the video subsystem
+                mode.internal = NULL;
                 if (WIN_GetDisplayBounds(_this, existing_display, &bounds) &&
                     SDL_memcmp(&internal->bounds, &bounds, sizeof(bounds)) != 0) {
                     changed_bounds = true;
@@ -630,7 +632,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 
     displaydata = (SDL_DisplayData *)SDL_calloc(1, sizeof(*displaydata));
     if (!displaydata) {
-        return;
+        goto cleanup;
     }
     SDL_memcpy(displaydata->DeviceName, info->szDevice, sizeof(displaydata->DeviceName));
     displaydata->MonitorHandle = hMonitor;
@@ -657,11 +659,19 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 #ifdef HAVE_DXGI1_6_H
     WIN_GetHDRProperties(_this, hMonitor, &display.HDR);
 #endif
-    SDL_AddVideoDisplay(&display, false);
+    if (SDL_AddVideoDisplay(&display, false)) {
+        // The mode is owned by the video subsystem
+        mode.internal = NULL;
+    } else {
+        SDL_free(displaydata);
+    }
     SDL_free(display.name);
 
 done:
     *display_index += 1;
+
+cleanup:
+    SDL_free(mode.internal);
 }
 
 typedef struct _WIN_AddDisplaysData
