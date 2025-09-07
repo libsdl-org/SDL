@@ -1125,6 +1125,11 @@ bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, S
         return SDL_InvalidParamError("surface");
     }
 
+    if (SDL_BITSPERPIXEL(surface->format) < 8 ||
+        SDL_BITSPERPIXEL(surface->format) > 32) {
+        return SDL_SetError("Unsupported surface format");
+    }
+
     renderer->software = true;
 
     data = (SW_RenderData *)SDL_calloc(1, sizeof(*data));
