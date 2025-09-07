@@ -220,9 +220,17 @@ static bool SW_QueueFillRects(SDL_Renderer *renderer, SDL_RenderCommand *cmd, co
 
     for (i = 0; i < count; i++, verts++, rects++) {
         verts->x = (int)rects->x;
+        verts->w = (int)rects->w;
+        if (verts->w < 0) {
+            verts->w = -verts->w;
+            verts->x -= verts->w;
+        }
         verts->y = (int)rects->y;
-        verts->w = SDL_max((int)rects->w, 1);
-        verts->h = SDL_max((int)rects->h, 1);
+        verts->h = (int)rects->h;
+        if (verts->h < 0) {
+            verts->h = -verts->h;
+            verts->y -= verts->h;
+        }
     }
 
     return true;
