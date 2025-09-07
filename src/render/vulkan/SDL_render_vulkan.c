@@ -406,7 +406,7 @@ static int VULKAN_VkFormatGetNumPlanes(VkFormat vkFormat)
     }
 }
 
-static VkDeviceSize VULKAN_GetBytesPerPixel(VkFormat vkFormat)
+static VkDeviceSize VULKAN_GetBytesPerPixel(VkFormat vkFormat, int plane)
 {
     switch (vkFormat) {
     case VK_FORMAT_R8_UNORM:
@@ -421,6 +421,10 @@ static VkDeviceSize VULKAN_GetBytesPerPixel(VkFormat vkFormat)
         return 4;
     case VK_FORMAT_R16G16B16A16_SFLOAT:
         return 8;
+    case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+        return 1;
+    case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
+        return (plane == 0) ? 1 : 2;
     default:
         return 4;
     }
@@ -2755,7 +2759,7 @@ static void VULKAN_DestroyTexture(SDL_Renderer *renderer,
 
 static bool VULKAN_UpdateTextureInternal(VULKAN_RenderData *rendererData, VkImage image, VkFormat format, int plane, int x, int y, int w, int h, const void *pixels, int pitch, VkImageLayout *imageLayout)
 {
-    VkDeviceSize pixelSize = VULKAN_GetBytesPerPixel(format);
+    VkDeviceSize pixelSize = VULKAN_GetBytesPerPixel(format, plane);
     VkDeviceSize length = w * pixelSize;
     VkDeviceSize uploadBufferSize = length * h;
     const Uint8 *src;
@@ -2908,11 +2912,20 @@ static bool VULKAN_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture
     if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 0, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch, &textureData->mainImage.imageLayout)) {
         return false;
     }
-    if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 1, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Uplane, Upitch, &textureData->mainImage.imageLayout)) {
-        return false;
-    }
-    if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 2, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Vplane, Vpitch, &textureData->mainImage.imageLayout)) {
-        return false;
+    if (texture->format == SDL_PIXELFORMAT_YV12) {
+        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 1, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Vplane, Vpitch, &textureData->mainImage.imageLayout)) {
+            return false;
+        }
+        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 2, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Uplane, Upitch, &textureData->mainImage.imageLayout)) {
+            return false;
+        }
+    } else {
+        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 1, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Uplane, Upitch, &textureData->mainImage.imageLayout)) {
+            return false;
+        }
+        if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 2, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, Vplane, Vpitch, &textureData->mainImage.imageLayout)) {
+            return false;
+        }
     }
     return true;
 }
@@ -2954,7 +2967,7 @@ static bool VULKAN_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("texture is already locked");
     }
 
-    VkDeviceSize pixelSize = VULKAN_GetBytesPerPixel(textureData->mainImage.format);
+    VkDeviceSize pixelSize = VULKAN_GetBytesPerPixel(textureData->mainImage.format, 0);
     VkDeviceSize length = rect->w * pixelSize;
     VkDeviceSize stagingBufferSize = length * rect->h;
     rc = VULKAN_AllocateBuffer(rendererData,
@@ -4001,7 +4014,7 @@ static SDL_Surface *VULKAN_RenderReadPixels(SDL_Renderer *renderer, const SDL_Re
         vkFormat = rendererData->surfaceFormat.format;
     }
 
-    pixelSize = VULKAN_GetBytesPerPixel(vkFormat);
+    pixelSize = VULKAN_GetBytesPerPixel(vkFormat, 0);
     length = rect->w * pixelSize;
     readbackBufferSize = length * rect->h;
     if (VULKAN_AllocateBuffer(rendererData, readbackBufferSize,
