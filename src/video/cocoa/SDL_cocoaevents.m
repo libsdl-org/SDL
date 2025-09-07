@@ -295,9 +295,11 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
        behaviour there.  https://github.com/libsdl-org/SDL/issues/10340
        (13.6 still needs it, presumably 13.7 does, too.) */
     SDL_bool background_app_default = SDL_FALSE;
+#if _SDL_HAS_BUILTIN(__builtin_available)
     if (@available(macOS 14.0, *)) {
         background_app_default = SDL_TRUE;  /* by default, don't explicitly activate the dock and then us again to force to foreground */
     }
+#endif
 
     if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, background_app_default)) {
         /* Get more aggressive for Catalina: activate the Dock first so we definitely reset all activation state. */
