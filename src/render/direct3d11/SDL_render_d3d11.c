@@ -154,7 +154,6 @@ typedef struct
     SDL_SharedObject *hDXGIMod;
     SDL_SharedObject *hD3D11Mod;
     IDXGIFactory2 *dxgiFactory;
-    IDXGIAdapter *dxgiAdapter;
     IDXGIDebug *dxgiDebug;
     ID3D11Device1 *d3dDevice;
     ID3D11DeviceContext1 *d3dContext;
@@ -369,7 +368,6 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
 
         SAFE_RELEASE(data->d3dContext);
         SAFE_RELEASE(data->d3dDevice);
-        SAFE_RELEASE(data->dxgiAdapter);
         SAFE_RELEASE(data->dxgiFactory);
 
         data->swapEffect = (DXGI_SWAP_EFFECT)0;
@@ -512,10 +510,12 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     PFN_CREATE_DXGI_FACTORY2 CreateDXGIFactory2Func = NULL;
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
     PFN_D3D11_CREATE_DEVICE D3D11CreateDeviceFunc;
+    IDXGIAdapter *dxgiAdapter = NULL;
     ID3D11Device *d3dDevice = NULL;
     ID3D11DeviceContext *d3dContext = NULL;
     IDXGIDevice1 *dxgiDevice = NULL;
     HRESULT result = S_OK;
+    D3D_DRIVER_TYPE driverType = D3D_DRIVER_TYPE_UNKNOWN;
     UINT creationFlags = 0;
     bool createDebug;
 #ifdef HAVE_DXGI1_5_H
@@ -625,11 +625,18 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     }
 #endif // HAVE_DXGI1_5_H
 
-    // FIXME: Should we use the default adapter?
-    result = IDXGIFactory2_EnumAdapters(data->dxgiFactory, 0, &data->dxgiAdapter);
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D11CreateDevice"), result);
-        goto done;
+    if (SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_WARP, false)) {
+        driverType = D3D_DRIVER_TYPE_WARP;
+        dxgiAdapter = NULL;
+    } else {
+        driverType = D3D_DRIVER_TYPE_UNKNOWN;
+
+        // FIXME: Should we use the default adapter?
+        result = IDXGIFactory2_EnumAdapters(data->dxgiFactory, 0, &dxgiAdapter);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("EnumAdapters"), result);
+            goto done;
+        }
     }
 
     /* This flag adds support for surfaces with a different color channel ordering
@@ -649,8 +656,8 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 
     // Create the Direct3D 11 API device object and a corresponding context.
     result = D3D11CreateDeviceFunc(
-        data->dxgiAdapter,
-        D3D_DRIVER_TYPE_UNKNOWN,
+        dxgiAdapter,
+        driverType,
         NULL,
         creationFlags, // Set set debug and Direct2D compatibility flags.
         featureLevels, // List of feature levels this app can support.
@@ -779,6 +786,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D11_DEVICE_POINTER, data->d3dDevice);
 
 done:
+    SAFE_RELEASE(dxgiAdapter);
     SAFE_RELEASE(d3dDevice);
     SAFE_RELEASE(d3dContext);
     SAFE_RELEASE(dxgiDevice);
