@@ -400,6 +400,7 @@ int main(int argc, char **argv)
     SDL_Surface *converted;
     SDL_Surface *bmp;
     SDL_Window *window;
+    const char *renderer_name = NULL;
     SDL_Renderer *renderer;
     SDL_Texture *output[3];
     const char *titles[3] = { "ORIGINAL", "SOFTWARE", "HARDWARE" };
@@ -412,6 +413,7 @@ int main(int argc, char **argv)
     Uint32 rgb_format = SDL_PIXELFORMAT_RGBX8888;
     SDL_Colorspace rgb_colorspace = SDL_COLORSPACE_SRGB;
     SDL_PropertiesID props;
+    bool planar = false;
     bool monochrome = false;
     int luminance = 100;
     int current = 0;
@@ -492,6 +494,9 @@ int main(int argc, char **argv)
             } else if (SDL_strcmp(argv[i], "--bgra") == 0) {
                 rgb_format = SDL_PIXELFORMAT_BGRA8888;
                 consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--planar") == 0) {
+                planar = true;
+                consumed = 1;
             } else if (SDL_strcmp(argv[i], "--monochrome") == 0) {
                 monochrome = true;
                 consumed = 1;
@@ -504,6 +509,9 @@ int main(int argc, char **argv)
             } else if (SDL_strcmp(argv[i], "--colorspace-test") == 0) {
                 should_run_colorspace_test = true;
                 consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--renderer") == 0 && argv[i + 1]) {
+                renderer_name = argv[i + 1];
+                consumed = 2;
             } else if (!filename) {
                 filename = argv[i];
                 consumed = 1;
@@ -514,8 +522,8 @@ int main(int argc, char **argv)
                 "[--jpeg|--bt601|--bt709|--bt2020|--auto]",
                 "[--yv12|--iyuv|--yuy2|--uyvy|--yvyu|--nv12|--nv21]",
                 "[--rgb555|--rgb565|--rgb24|--argb|--abgr|--rgba|--bgra]",
-                "[--monochrome] [--luminance N%]",
-                "[--automated] [--colorspace-test]",
+                "[--monochrome] [--luminance N%] [--planar]",
+                "[--automated] [--colorspace-test] [--renderer NAME]",
                 "[sample.bmp]",
                 NULL,
             };
@@ -603,7 +611,7 @@ int main(int argc, char **argv)
         return 4;
     }
 
-    renderer = SDL_CreateRenderer(window, NULL);
+    renderer = SDL_CreateRenderer(window, renderer_name);
     if (!renderer) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s", SDL_GetError());
         return 4;
@@ -623,7 +631,102 @@ int main(int argc, char **argv)
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s", SDL_GetError());
         return 5;
     }
-    SDL_UpdateTexture(output[2], NULL, raw_yuv, pitch);
+    if (planar && (yuv_format == SDL_PIXELFORMAT_YV12 || yuv_format == SDL_PIXELFORMAT_IYUV)) {
+        const int Yrows = original->h;
+        const int UVrows = ((original->h + 1) / 2);
+        const int src_Ypitch = pitch;
+        const int src_UVpitch = ((pitch + 1) / 2);
+        const Uint8 *src_plane0 = (const Uint8 *)raw_yuv;
+        const Uint8 *src_plane1 = src_plane0 + Yrows * src_Ypitch;
+        const Uint8 *src_plane2 = src_plane1 + UVrows * src_UVpitch;
+        const int Ypitch = pitch + 37;
+        const int UVpitch = ((Ypitch + 1) / 2);
+        Uint8 *plane0 = (Uint8 *)SDL_calloc(1, Yrows * Ypitch);
+        Uint8 *plane1 = (Uint8 *)SDL_calloc(1, UVrows * UVpitch);
+        Uint8 *plane2 = (Uint8 *)SDL_calloc(1, UVrows * UVpitch);
+        int row;
+        const Uint8 *src;
+        Uint8 *dst;
+
+        if (!plane0 || !plane1 || !plane0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create YUV planes: %s", SDL_GetError());
+            return 6;
+        }
+
+        src = src_plane0;
+        dst = plane0;
+        for (row = 0; row < Yrows; ++row) {
+            SDL_memcpy(dst, src, src_Ypitch);
+            src += src_Ypitch;
+            dst += Ypitch;
+        }
+
+        src = src_plane1;
+        dst = plane1;
+        for (row = 0; row < UVrows; ++row) {
+            SDL_memcpy(dst, src, src_UVpitch);
+            src += src_UVpitch;
+            dst += UVpitch;
+        }
+
+        src = src_plane2;
+        dst = plane2;
+        for (row = 0; row < UVrows; ++row) {
+            SDL_memcpy(dst, src, src_UVpitch);
+            src += src_UVpitch;
+            dst += UVpitch;
+        }
+
+        if (yuv_format == SDL_PIXELFORMAT_YV12) {
+            SDL_UpdateYUVTexture(output[2], NULL, plane0, Ypitch, plane2, UVpitch, plane1, UVpitch);
+        } else {
+            SDL_UpdateYUVTexture(output[2], NULL, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
+        }
+        SDL_free(plane0);
+        SDL_free(plane1);
+        SDL_free(plane2);
+    } else if (planar && (yuv_format == SDL_PIXELFORMAT_NV12 || yuv_format == SDL_PIXELFORMAT_NV21)) {
+        const int Yrows = original->h;
+        const int UVrows = ((original->h + 1) / 2);
+        const int src_Ypitch = pitch;
+        const int src_UVpitch = ((pitch + 1) / 2) * 2;
+        const Uint8 *src_plane0 = (const Uint8 *)raw_yuv;
+        const Uint8 *src_plane1 = src_plane0 + Yrows * src_Ypitch;
+        const int Ypitch = pitch + 37;
+        const int UVpitch = ((Ypitch + 1) / 2) * 2;
+        Uint8 *plane0 = (Uint8 *)SDL_calloc(1, Yrows * Ypitch);
+        Uint8 *plane1 = (Uint8 *)SDL_calloc(1, UVrows * UVpitch);
+        int row;
+        const Uint8 *src;
+        Uint8 *dst;
+
+        if (!plane0 || !plane1) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create YUV planes: %s", SDL_GetError());
+            return 6;
+        }
+
+        src = src_plane0;
+        dst = plane0;
+        for (row = 0; row < Yrows; ++row) {
+            SDL_memcpy(dst, src, src_Ypitch);
+            src += src_Ypitch;
+            dst += Ypitch;
+        }
+
+        src = src_plane1;
+        dst = plane1;
+        for (row = 0; row < UVrows; ++row) {
+            SDL_memcpy(dst, src, src_UVpitch);
+            src += src_UVpitch;
+            dst += UVpitch;
+        }
+
+        SDL_UpdateNVTexture(output[2], NULL, plane0, Ypitch, plane1, UVpitch);
+        SDL_free(plane0);
+        SDL_free(plane1);
+    } else {
+        SDL_UpdateTexture(output[2], NULL, raw_yuv, pitch);
+    }
 
     yuv_format_name = SDL_GetPixelFormatName(yuv_format);
     if (SDL_strncmp(yuv_format_name, "SDL_PIXELFORMAT_", 16) == 0) {
