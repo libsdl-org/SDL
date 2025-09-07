@@ -100,12 +100,14 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         // this currently expects the first button to be up, then down, then left, then right.
         if (gamepadEvent->digitalButton[first_hat_button + 0]) {
             value |= SDL_HAT_UP;
-        } else if (gamepadEvent->digitalButton[first_hat_button + 1]) {
+        }
+        if (gamepadEvent->digitalButton[first_hat_button + 1]) {
             value |= SDL_HAT_DOWN;
         }
         if (gamepadEvent->digitalButton[first_hat_button + 2]) {
             value |= SDL_HAT_LEFT;
-        } else if (gamepadEvent->digitalButton[first_hat_button + 3]) {
+        }
+        if (gamepadEvent->digitalButton[first_hat_button + 3]) {
             value |= SDL_HAT_RIGHT;
         }
         item->hat = value;
