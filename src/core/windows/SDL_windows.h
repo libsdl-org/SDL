@@ -75,10 +75,8 @@
 #define _WIN32_WINNT _WIN32_WINNT_WIN7
 #elif defined(HAVE_MMDEVICEAPI_H)
 #define _WIN32_WINNT _WIN32_WINNT_VISTA
-#elif defined(HAVE_TPCSHRD_H)
-#define _WIN32_WINNT _WIN32_WINNT_WINXP // Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input
 #else
-#error Only Windows XP or higher is supported
+#define _WIN32_WINNT _WIN32_WINNT_WINXP // Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input
 #endif
 #define WINVER _WIN32_WINNT
 
