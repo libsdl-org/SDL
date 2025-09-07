@@ -2410,6 +2410,10 @@ extern "C" {
  *
  * `app=info,assert=warn,test=verbose,*=error`
  *
+ * If the `DEBUG_INVOCATION` environment variable is set to "1", the default log levels are equivalent to:
+ *
+ * `assert=warn,test=verbose,*=debug`
+ *
  * This hint can be set anytime.
  *
  * \since This hint is available since SDL 3.2.0.
