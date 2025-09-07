@@ -2965,7 +2965,8 @@ extern "C" {
 #define SDL_HINT_RENDER_DIRECT3D11_DEBUG "SDL_RENDER_DIRECT3D11_DEBUG"
 
 /**
- * A variable controlling whether to use the Direct3D 11 WARP software rasterizer.
+ * A variable controlling whether to use the Direct3D 11 WARP software
+ * rasterizer.
  *
  * For more information, see:
  * https://learn.microsoft.com/en-us/windows/win32/direct3darticles/directx-warp
