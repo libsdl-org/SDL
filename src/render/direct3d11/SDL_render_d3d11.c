@@ -614,14 +614,16 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 #ifdef HAVE_DXGI1_5_H
     // Check for tearing support, which requires the IDXGIFactory5 interface.
     data->swapChainFlags = 0;
-    result = IDXGIFactory2_QueryInterface(data->dxgiFactory, &SDL_IID_IDXGIFactory5, (void **)&dxgiFactory5);
-    if (SUCCEEDED(result)) {
-        BOOL allowTearing = FALSE;
-        result = IDXGIFactory5_CheckFeatureSupport(dxgiFactory5, DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
-        if (SUCCEEDED(result) && allowTearing) {
-            data->swapChainFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    if (!(SDL_GetWindowFlags(renderer->window) & SDL_WINDOW_TRANSPARENT)) {
+        result = IDXGIFactory2_QueryInterface(data->dxgiFactory, &SDL_IID_IDXGIFactory5, (void **)&dxgiFactory5);
+        if (SUCCEEDED(result)) {
+            BOOL allowTearing = FALSE;
+            result = IDXGIFactory5_CheckFeatureSupport(dxgiFactory5, DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
+            if (SUCCEEDED(result) && allowTearing) {
+                data->swapChainFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+            }
+            IDXGIFactory5_Release(dxgiFactory5);
         }
-        IDXGIFactory5_Release(dxgiFactory5);
     }
 #endif // HAVE_DXGI1_5_H
 
