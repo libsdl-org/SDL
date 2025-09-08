@@ -441,7 +441,6 @@ static bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
 
 static bool WIN_GetMonitorPathInfo(SDL_VideoData *videodata, HMONITOR hMonitor, DISPLAYCONFIG_PATH_INFO *path_info)
 {
-    bool found = false;
     LONG result;
     MONITORINFOEXW view_info;
     UINT32 i;
@@ -449,6 +448,7 @@ static bool WIN_GetMonitorPathInfo(SDL_VideoData *videodata, HMONITOR hMonitor, 
     UINT32 num_mode_info_array_elements = 0;
     DISPLAYCONFIG_PATH_INFO *path_infos = NULL, *new_path_infos;
     DISPLAYCONFIG_MODE_INFO *mode_infos = NULL, *new_mode_infos;
+    bool found = false;
 
     if (!videodata->GetDisplayConfigBufferSizes || !videodata->QueryDisplayConfig || !videodata->DisplayConfigGetDeviceInfo) {
         return false;
@@ -505,14 +505,15 @@ static bool WIN_GetMonitorPathInfo(SDL_VideoData *videodata, HMONITOR hMonitor, 
 done:
     SDL_free(path_infos);
     SDL_free(mode_infos);
+
     return found;
 }
 
 static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
 {
-    float SDR_white_level = 1.0f;
     DISPLAYCONFIG_PATH_INFO path_info;
     SDL_VideoData *videodata = _this->internal;
+    float SDR_white_level = 1.0f;
 
     if (WIN_GetMonitorPathInfo(videodata, hMonitor, &path_info)) {
         /* workarounds for https://github.com/libsdl-org/SDL/issues/11193 */
