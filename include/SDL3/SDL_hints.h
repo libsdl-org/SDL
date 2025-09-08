@@ -2410,6 +2410,11 @@ extern "C" {
  *
  * `app=info,assert=warn,test=verbose,*=error`
  *
+ * If the `DEBUG_INVOCATION` environment variable is set to "1", the default
+ * log levels are equivalent to:
+ *
+ * `assert=warn,test=verbose,*=debug`
+ *
  * This hint can be set anytime.
  *
  * \since This hint is available since SDL 3.2.0.
@@ -2963,6 +2968,24 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_RENDER_DIRECT3D11_DEBUG "SDL_RENDER_DIRECT3D11_DEBUG"
+
+/**
+ * A variable controlling whether to use the Direct3D 11 WARP software
+ * rasterizer.
+ *
+ * For more information, see:
+ * https://learn.microsoft.com/en-us/windows/win32/direct3darticles/directx-warp
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable WARP rasterizer. (default)
+ * - "1": Enable WARP rasterizer.
+ *
+ * This hint should be set before creating a renderer.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_RENDER_DIRECT3D11_WARP "SDL_RENDER_DIRECT3D11_WARP"
 
 /**
  * A variable controlling whether to enable Vulkan Validation Layers.

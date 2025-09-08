@@ -82,6 +82,7 @@ static int (*ALSA_snd_pcm_nonblock)(snd_pcm_t *, int);
 static int (*ALSA_snd_pcm_wait)(snd_pcm_t *, int);
 static int (*ALSA_snd_pcm_sw_params_set_avail_min)(snd_pcm_t *, snd_pcm_sw_params_t *, snd_pcm_uframes_t);
 static int (*ALSA_snd_pcm_reset)(snd_pcm_t *);
+static snd_pcm_state_t (*ALSA_snd_pcm_state)(snd_pcm_t *);
 static int (*ALSA_snd_device_name_hint)(int, const char *, void ***);
 static char *(*ALSA_snd_device_name_get_hint)(const void *, const char *);
 static int (*ALSA_snd_device_name_free_hint)(void **);
@@ -171,6 +172,7 @@ static bool load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_wait);
     SDL_ALSA_SYM(snd_pcm_sw_params_set_avail_min);
     SDL_ALSA_SYM(snd_pcm_reset);
+    SDL_ALSA_SYM(snd_pcm_state);
     SDL_ALSA_SYM(snd_device_name_hint);
     SDL_ALSA_SYM(snd_device_name_get_hint);
     SDL_ALSA_SYM(snd_device_name_free_hint);
@@ -352,6 +354,20 @@ static char *get_pcm_str(void *handle)
     return pcm_str;
 }
 
+static int RecoverALSADevice(snd_pcm_t *pcm, int errnum)
+{
+    const snd_pcm_state_t prerecovery = ALSA_snd_pcm_state(pcm);
+    const int status = ALSA_snd_pcm_recover(pcm, errnum, 0);  // !!! FIXME: third parameter is non-zero to prevent libasound from printing error messages. Should we do that?
+    if (status == 0) {
+        const snd_pcm_state_t postrecovery = ALSA_snd_pcm_state(pcm);
+        if ((prerecovery == SND_PCM_STATE_XRUN) && (postrecovery == SND_PCM_STATE_PREPARED)) {
+            ALSA_snd_pcm_start(pcm);  // restart the device if it stopped due to an overrun or underrun.
+        }
+    }
+    return status;
+}
+
+
 // This function waits until it is possible to write a full sound buffer
 static bool ALSA_WaitDevice(SDL_AudioDevice *device)
 {
@@ -362,7 +378,7 @@ static bool ALSA_WaitDevice(SDL_AudioDevice *device)
     while (!SDL_GetAtomicInt(&device->shutdown)) {
         const int rc = ALSA_snd_pcm_avail(device->hidden->pcm);
         if (rc < 0) {
-            const int status = ALSA_snd_pcm_recover(device->hidden->pcm, rc, 0);
+            const int status = RecoverALSADevice(device->hidden->pcm, rc);
             if (status < 0) {
                 // Hmm, not much we can do - abort
                 SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA wait failed (unrecoverable): %s", ALSA_snd_strerror(rc));
@@ -390,7 +406,7 @@ static bool ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bu
         SDL_assert(rc != 0);  // assuming this can't happen if we used snd_pcm_wait and queried for available space.
         if (rc < 0) {
             SDL_assert(rc != -EAGAIN);  // assuming this can't happen if we used snd_pcm_wait and queried for available space. snd_pcm_recover won't handle it!
-            const int status = ALSA_snd_pcm_recover(device->hidden->pcm, rc, 0);
+            const int status = RecoverALSADevice(device->hidden->pcm, rc);
             if (status < 0) {
                 // Hmm, not much we can do - abort
                 SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA write failed (unrecoverable): %s", ALSA_snd_strerror(rc));
@@ -445,7 +461,7 @@ static int ALSA_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
     SDL_assert(rc != -EAGAIN);  // assuming this can't happen if we used snd_pcm_wait and queried for available space. snd_pcm_recover won't handle it!
 
     if (rc < 0) {
-        const int status = ALSA_snd_pcm_recover(device->hidden->pcm, rc, 0);
+        const int status = RecoverALSADevice(device->hidden->pcm, rc);
         if (status < 0) {
             // Hmm, not much we can do - abort
             SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "ALSA read failed (unrecoverable): %s", ALSA_snd_strerror(rc));

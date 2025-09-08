@@ -179,11 +179,6 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
                 ctx->sensors_supported = true;
                 ctx->rumble_supported = true;
                 ctx->powerstate_supported = true;
-
-                if (!device->is_bluetooth) {
-                    // The dongle appears to just stop sending reports after intense rumble activity
-                    ctx->rumble_supported = false;
-                }
             }
             break;
         }
@@ -275,6 +270,13 @@ static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(SDL_HIDAPI_Device *devi
             return 100;
         }
     case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
+        if (device->is_bluetooth) {
+            // Note, This is estimated by observation of Bluetooth packets received in the testcontroller tool
+            return 120; // Observed Bluetooth packet rate seems to be 120hz
+        } else {
+            // This firmware appears to update at 1000 Hz over USB dongle
+            return 1000;
+        }
     default:
         return 120;
     }

@@ -230,6 +230,7 @@ static int SDLCALL IncrementCounterThread(void *userdata)
     SDL_Event event;
 
     SDL_assert(!SDL_IsMainThread());
+    SDL_zero(event);
 
     if (data->delay > 0) {
         SDL_Delay(data->delay);

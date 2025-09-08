@@ -448,6 +448,7 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
         // codechecker_false_positive [Malloc] Static analyzer doesn't realize allocated `data` is saved to SDL_PROP_WINDOW_TEXTUREDATA_POINTER and not leaked here.
         return false; // NOLINT(clang-analyzer-unix.Malloc)
     }
+    SDL_SetTextureBlendMode(data->texture, SDL_BLENDMODE_NONE);
 
     // Create framebuffer data
     data->bytes_per_pixel = SDL_BYTESPERPIXEL(*format);

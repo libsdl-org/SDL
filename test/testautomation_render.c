@@ -124,16 +124,23 @@ static int SDLCALL render_testPrimitives(void *arg)
     rect.y = 0.0f;
     rect.w = 40.0f;
     rect.h = 80.0f;
-
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 13, 73, 200, SDL_ALPHA_OPAQUE))
     CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
 
-    /* Draw a rectangle. */
+    /* Draw a rectangle with negative width and height. */
+    rect.x = 10.0f + 60.0f;
+    rect.y = 10.0f + 40.0f;
+    rect.w = -60.0f;
+    rect.h = -40.0f;
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 200, 0, 100, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
+
+    /* Draw a rectangle with zero width and height. */
     rect.x = 10.0f;
     rect.y = 10.0f;
-    rect.w = 60.0f;
-    rect.h = 40.0f;
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 200, 0, 100, SDL_ALPHA_OPAQUE))
+    rect.w = 0.0f;
+    rect.h = 0.0f;
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 255, 0, 0, SDL_ALPHA_OPAQUE))
     CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
 
     /* Draw some points like so:

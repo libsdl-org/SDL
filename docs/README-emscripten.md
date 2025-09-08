@@ -239,7 +239,7 @@ If you want to build with thread support, something like this works:
 ```bash
 mkdir build
 cd build
-emcmake cmake -DSDL_THREADS=ON ..
+emcmake cmake -DSDL_PTHREADS=ON ..
 # you can also do `emcmake cmake -G Ninja ..` and then use `ninja` instead of this command.
 emmake make -j4
 ```

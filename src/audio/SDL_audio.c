@@ -371,7 +371,7 @@ bool SDL_IsAudioDevicePhysical(SDL_AudioDeviceID devid)
     return (devid & (1 << 1)) != 0;
 }
 
-bool SDL_IsAudioDeviceLogical(SDL_AudioDeviceID devid)
+static bool SDL_IsAudioDeviceLogical(SDL_AudioDeviceID devid)
 {
     // bit #1 of devid is set for physical devices and unset for logical.
     return (devid & (1 << 1)) == 0;
@@ -383,7 +383,7 @@ bool SDL_IsAudioDevicePlayback(SDL_AudioDeviceID devid)
     return (devid & (1 << 0)) != 0;
 }
 
-bool SDL_IsAudioDeviceRecording(SDL_AudioDeviceID devid)
+static bool SDL_IsAudioDeviceRecording(SDL_AudioDeviceID devid)
 {
     // bit #0 of devid is set for playback devices and unset for recording.
     return (devid & (1 << 0)) == 0;

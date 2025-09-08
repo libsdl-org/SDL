@@ -245,6 +245,7 @@ struct IShellItemArray
 
 #endif // #ifndef __IShellItemArray_INTERFACE_DEFINED__
 
+// Flags/GUIDs defined for compatibility with pre-Vista headers
 #ifndef __IFileDialog_INTERFACE_DEFINED__
 enum _FILEOPENDIALOGOPTIONS
 {
@@ -272,6 +273,7 @@ enum _FILEOPENDIALOGOPTIONS
     FOS_FORCEPREVIEWPANEON = 0x40000000,
     FOS_SUPPORTSTREAMABLEITEMS = 0x80000000
 };
+
 typedef DWORD FILEOPENDIALOGOPTIONS;
 
 extern const IID IID_IFileDialog;
@@ -396,6 +398,143 @@ struct IFileDialog2
 
 #endif // #ifndef __IFileDialog2_INTERFACE_DEFINED__
 
+typedef enum FDAP {
+    FDAP_BOTTOM = 0,
+    FDAP_TOP = 1
+} FDAP;
+
+/* *INDENT-OFF* */ // clang-format off
+typedef struct IFileDialogVtbl
+{
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(IFileDialog *, REFIID, void **);
+    ULONG (STDMETHODCALLTYPE *AddRef)(IFileDialog *);
+    ULONG (STDMETHODCALLTYPE *Release)(IFileDialog *);
+    HRESULT (STDMETHODCALLTYPE *Show)(IFileDialog *, HWND);
+    HRESULT (STDMETHODCALLTYPE *SetFileTypes)(IFileDialog *, UINT, const COMDLG_FILTERSPEC *);
+    HRESULT (STDMETHODCALLTYPE *SetFileTypeIndex)(IFileDialog *, UINT);
+    HRESULT (STDMETHODCALLTYPE *GetFileTypeIndex)(IFileDialog *, UINT *);
+    HRESULT (STDMETHODCALLTYPE *Advise)(IFileDialog *, IFileDialogEvents *, DWORD *);
+    HRESULT (STDMETHODCALLTYPE *Unadvise)(IFileDialog *, DWORD);
+    HRESULT (STDMETHODCALLTYPE *SetOptions)(IFileDialog *, FILEOPENDIALOGOPTIONS);
+    HRESULT (STDMETHODCALLTYPE *GetOptions)(IFileDialog *, FILEOPENDIALOGOPTIONS *);
+    HRESULT (STDMETHODCALLTYPE *SetDefaultFolder)(IFileDialog *, IShellItem *);
+    HRESULT (STDMETHODCALLTYPE *SetFolder)(IFileDialog *, IShellItem *);
+    HRESULT (STDMETHODCALLTYPE *GetFolder)(IFileDialog *, IShellItem **);
+    HRESULT (STDMETHODCALLTYPE *GetCurrentSelection)(IFileDialog *, IShellItem **);
+    HRESULT (STDMETHODCALLTYPE *SetFileName)(IFileDialog *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *GetFileName)(IFileDialog *, LPWSTR *);
+    HRESULT (STDMETHODCALLTYPE *SetTitle)(IFileDialog *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *SetOkButtonLabel)(IFileDialog *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *SetFileNameLabel)(IFileDialog *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *GetResult)(IFileDialog *, IShellItem **);
+    HRESULT (STDMETHODCALLTYPE *AddPlace)(IFileDialog *, IShellItem *, FDAP);
+    HRESULT (STDMETHODCALLTYPE *SetDefaultExtension)(IFileDialog *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *Close)(IFileDialog *, HRESULT);
+    HRESULT (STDMETHODCALLTYPE *SetClientGuid)(IFileDialog *, REFGUID);
+    HRESULT (STDMETHODCALLTYPE *ClearClientData)(IFileDialog *);
+    HRESULT (STDMETHODCALLTYPE *SetFilter)(IFileDialog *,IShellItemFilter *);
+} IFileDialogVtbl;
+/* *INDENT-ON* */ // clang-format on
+
+struct IFileDialog
+{
+    const struct IFileDialogVtbl *lpVtbl;
+};
+#endif
+
+#ifndef __IFileDialog2_INTERFACE_DEFINED__
+/* *INDENT-OFF* */ // clang-format off
+typedef struct IFileDialog2Vtbl
+{
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(IFileDialog2 *, REFIID, void **);
+    ULONG (STDMETHODCALLTYPE *AddRef)(IFileDialog2 *);
+    ULONG (STDMETHODCALLTYPE *Release)(IFileDialog2 *);
+    HRESULT (STDMETHODCALLTYPE *Show)(IFileDialog2 *, HWND);
+    HRESULT (STDMETHODCALLTYPE *SetFileTypes)(IFileDialog2 *, UINT, const COMDLG_FILTERSPEC *);
+    HRESULT (STDMETHODCALLTYPE *SetFileTypeIndex)(IFileDialog2 *, UINT);
+    HRESULT (STDMETHODCALLTYPE *GetFileTypeIndex)(IFileDialog2 *, UINT *);
+    HRESULT (STDMETHODCALLTYPE *Advise)(IFileDialog2 *, IFileDialogEvents *, DWORD *);
+    HRESULT (STDMETHODCALLTYPE *Unadvise)(IFileDialog2 *, DWORD);
+    HRESULT (STDMETHODCALLTYPE *SetOptions)(IFileDialog2 *, FILEOPENDIALOGOPTIONS);
+    HRESULT (STDMETHODCALLTYPE *GetOptions)(IFileDialog2 *, FILEOPENDIALOGOPTIONS *);
+    HRESULT (STDMETHODCALLTYPE *SetDefaultFolder)(IFileDialog2 *, IShellItem *);
+    HRESULT (STDMETHODCALLTYPE *SetFolder)(IFileDialog2 *, IShellItem *);
+    HRESULT (STDMETHODCALLTYPE *GetFolder)(IFileDialog2 *, IShellItem **);
+    HRESULT (STDMETHODCALLTYPE *GetCurrentSelection)(IFileDialog2 *, IShellItem **);
+    HRESULT (STDMETHODCALLTYPE *SetFileName)(IFileDialog2 *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *GetFileName)(IFileDialog2 *, LPWSTR *);
+    HRESULT (STDMETHODCALLTYPE *SetTitle)(IFileDialog2 *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *SetOkButtonLabel)(IFileDialog2 *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *SetFileNameLabel)(IFileDialog2 *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *GetResult)(IFileDialog2 *, IShellItem **);
+    HRESULT (STDMETHODCALLTYPE *AddPlace)(IFileDialog2 *, IShellItem *, FDAP);
+    HRESULT (STDMETHODCALLTYPE *SetDefaultExtension)(IFileDialog2 *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *Close)(IFileDialog2 *, HRESULT);
+    HRESULT (STDMETHODCALLTYPE *SetClientGuid)(IFileDialog2 *, REFGUID);
+    HRESULT (STDMETHODCALLTYPE *ClearClientData)(IFileDialog2 *);
+    HRESULT (STDMETHODCALLTYPE *SetFilter)(IFileDialog2 *, IShellItemFilter *);
+    HRESULT (STDMETHODCALLTYPE *SetCancelButtonLabel)(IFileDialog2 *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *SetNavigationRoot)(IFileDialog2 *, IShellItem *);
+} IFileDialog2Vtbl;
+/* *INDENT-ON* */ // clang-format on
+
+struct IFileDialog2
+{
+    const struct IFileDialog2Vtbl *lpVtbl;
+};
+#endif
+
+#ifndef __IFileOpenDialog_INTERFACE_DEFINED__
+/* *INDENT-OFF* */ // clang-format off
+typedef struct IFileOpenDialogVtbl
+{
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(IFileOpenDialog *, REFIID, void **);
+    ULONG (STDMETHODCALLTYPE *AddRef)(IFileOpenDialog *);
+    ULONG (STDMETHODCALLTYPE *Release)(IFileOpenDialog *);
+    HRESULT (STDMETHODCALLTYPE *Show)(IFileOpenDialog *, HWND);
+    HRESULT (STDMETHODCALLTYPE *SetFileTypes)(IFileOpenDialog *, UINT, const COMDLG_FILTERSPEC *);
+    HRESULT (STDMETHODCALLTYPE *SetFileTypeIndex)(IFileOpenDialog *, UINT);
+    HRESULT (STDMETHODCALLTYPE *GetFileTypeIndex)(IFileOpenDialog *, UINT *);
+    HRESULT (STDMETHODCALLTYPE *Advise)(IFileOpenDialog *, IFileDialogEvents *, DWORD *);
+    HRESULT (STDMETHODCALLTYPE *Unadvise)(IFileOpenDialog *, DWORD);
+    HRESULT (STDMETHODCALLTYPE *SetOptions)(IFileOpenDialog *, FILEOPENDIALOGOPTIONS);
+    HRESULT (STDMETHODCALLTYPE *GetOptions)(IFileOpenDialog *, FILEOPENDIALOGOPTIONS *);
+    HRESULT (STDMETHODCALLTYPE *SetDefaultFolder)(IFileOpenDialog *, IShellItem *);
+    HRESULT (STDMETHODCALLTYPE *SetFolder)(IFileOpenDialog *, IShellItem *);
+    HRESULT (STDMETHODCALLTYPE *GetFolder)(IFileOpenDialog *, IShellItem **);
+    HRESULT (STDMETHODCALLTYPE *GetCurrentSelection)(IFileOpenDialog *, IShellItem **);
+    HRESULT (STDMETHODCALLTYPE *SetFileName)(IFileOpenDialog *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *GetFileName)(IFileOpenDialog *, LPWSTR *);
+    HRESULT (STDMETHODCALLTYPE *SetTitle)(IFileOpenDialog *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *SetOkButtonLabel)(IFileOpenDialog *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *SetFileNameLabel)(IFileOpenDialog *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *GetResult)(IFileOpenDialog *, IShellItem **);
+    HRESULT (STDMETHODCALLTYPE *AddPlace)(IFileOpenDialog *, IShellItem *, FDAP);
+    HRESULT (STDMETHODCALLTYPE *SetDefaultExtension)(IFileOpenDialog *, LPCWSTR);
+    HRESULT (STDMETHODCALLTYPE *Close)(IFileOpenDialog *, HRESULT);
+    HRESULT (STDMETHODCALLTYPE *SetClientGuid)(IFileOpenDialog *, REFGUID);
+    HRESULT (STDMETHODCALLTYPE *ClearClientData)(IFileOpenDialog *);
+    HRESULT (STDMETHODCALLTYPE *SetFilter)(IFileOpenDialog *, IShellItemFilter *);
+    HRESULT (STDMETHODCALLTYPE *GetResults)(IFileOpenDialog *, IShellItemArray **);
+    HRESULT (STDMETHODCALLTYPE *GetSelectedItems)(IFileOpenDialog *, IShellItemArray **);
+} IFileOpenDialogVtbl;
+/* *INDENT-ON* */ // clang-format on
+
+struct IFileOpenDialog
+{
+    const struct IFileOpenDialogVtbl *lpVtbl;
+};
+#endif
+
+/* *INDENT-OFF* */ // clang-format off
+static const CLSID SDL_CLSID_FileOpenDialog = { 0xdc1c5a9c, 0xe88a, 0x4dde, { 0xa5, 0xa1, 0x60, 0xf8, 0x2a, 0x20, 0xae, 0xf7 } };
+static const CLSID SDL_CLSID_FileSaveDialog = { 0xc0b4e2f3, 0xba21, 0x4773, { 0x8d, 0xba, 0x33, 0x5e, 0xc9, 0x46, 0xeb, 0x8b } };
+
+static const IID SDL_IID_IFileDialog = { 0x42f85136, 0xdb7e, 0x439c, { 0x85, 0xf1, 0xe4, 0x07, 0x5d, 0x13, 0x5f, 0xc8 } };
+static const IID SDL_IID_IFileDialog2 = { 0x61744fc7, 0x85b5, 0x4791, { 0xa9, 0xb0, 0x27, 0x22, 0x76, 0x30, 0x9b, 0x13 } };
+static const IID SDL_IID_IFileOpenDialog = { 0xd57c7288, 0xd4ad, 0x4768, { 0xbe, 0x02, 0x9d, 0x96, 0x95, 0x32, 0xd9, 0x60 } };
+/* *INDENT-ON* */ // clang-format on
+
 // If this number is too small, selecting too many files will give an error
 #define SELECTLIST_SIZE 65536
 
@@ -482,6 +621,11 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
         allow_many = false;
     }
 
+    HMODULE shell32_handle = NULL;
+
+    typedef HRESULT(WINAPI *pfnSHCreateItemFromParsingName)(PCWSTR, IBindCtx *, REFIID, void **);
+    pfnSHCreateItemFromParsingName pSHCreateItemFromParsingName = NULL;
+
     IFileDialog *pFileDialog = NULL;
     IFileOpenDialog *pFileOpenDialog = NULL;
     IFileDialog2 *pFileDialog2 = NULL;
@@ -506,16 +650,13 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
         goto quit;
     }
 
-    typedef HRESULT (WINAPI *pfnSHCreateItemFromParsingName)(PCWSTR pszPath, IBindCtx *pbc, REFIID riid, void **ppv);
-    static pfnSHCreateItemFromParsingName pSHCreateItemFromParsingName = NULL;
-    static bool SHCreateItemFromParsingName_GetProcAddressAttempted = false;
-    if (!SHCreateItemFromParsingName_GetProcAddressAttempted) {
-        HMODULE lib = LoadLibraryW(L"Shell32.dll");
-        if (lib) {
-            pSHCreateItemFromParsingName = (pfnSHCreateItemFromParsingName) GetProcAddress(lib, "SHCreateItemFromParsingName");
-            SHCreateItemFromParsingName_GetProcAddressAttempted = true;
-        }
+    // We can assume shell32 is already loaded here.
+    shell32_handle = GetModuleHandle(TEXT("shell32.dll"));
+    if (!shell32_handle) {
+        goto quit;
     }
+
+    pSHCreateItemFromParsingName = (pfnSHCreateItemFromParsingName)GetProcAddress(shell32_handle, "SHCreateItemFromParsingName");
     if (!pSHCreateItemFromParsingName) {
         goto quit;
     }
@@ -537,15 +678,15 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
         // assert(*filter_ptr == L'\0');
     }
 
-    if (title && !(title_w = WIN_UTF8ToStringW(title))) {
+    if (title && (title_w = WIN_UTF8ToStringW(title)) == NULL) {
         goto quit;
     }
 
-    if (accept && !(accept_w = WIN_UTF8ToStringW(accept))) {
+    if (accept && (accept_w = WIN_UTF8ToStringW(accept)) == NULL) {
         goto quit;
     }
 
-    if (cancel && !(cancel_w = WIN_UTF8ToStringW(cancel))) {
+    if (cancel && (cancel_w = WIN_UTF8ToStringW(cancel)) == NULL) {
         goto quit;
     }
 
@@ -581,11 +722,11 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
 
     co_init = true;
 
-    CHECK(CoCreateInstance(is_save ? &CLSID_FileSaveDialog : &CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, &IID_IFileDialog, (void**)&pFileDialog));
-    CHECK(pFileDialog->lpVtbl->QueryInterface(pFileDialog, &IID_IFileDialog2, (void**)&pFileDialog2));
+    CHECK(CoCreateInstance(is_save ? &SDL_CLSID_FileSaveDialog : &SDL_CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_IFileDialog, (void**)&pFileDialog));
+    CHECK(pFileDialog->lpVtbl->QueryInterface(pFileDialog, &SDL_IID_IFileDialog2, (void**)&pFileDialog2));
 
     if (allow_many) {
-        CHECK(pFileDialog->lpVtbl->QueryInterface(pFileDialog, &IID_IFileOpenDialog, (void**)&pFileOpenDialog));
+        CHECK(pFileDialog->lpVtbl->QueryInterface(pFileDialog, &SDL_IID_IFileOpenDialog, (void**)&pFileOpenDialog));
     }
 
     CHECK(pFileDialog2->lpVtbl->GetOptions(pFileDialog2, &pfos));

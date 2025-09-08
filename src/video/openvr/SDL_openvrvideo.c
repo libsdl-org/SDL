@@ -222,8 +222,6 @@ static bool OPENVR_VideoInit(SDL_VideoDevice *_this)
     } else {
         display.desktop_mode.refresh_rate = data->oSystem->GetFloatTrackedDeviceProperty(k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty_Prop_DisplayFrequency_Float, 0);
     }
-
-    display.internal = (SDL_DisplayData *)data;
     display.name = (char *)"OpenVRDisplay";
     SDL_AddVideoDisplay(&display, false);
 
@@ -1550,7 +1548,7 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
         SDL_SetError("Could not get interfaces for the OpenVR System (%s), Overlay (%s) and Input (%s) versions", IVRSystem_Version, IVROverlay_Version, IVRInput_Version);
     }
 
-    const char *hint = SDL_GetHint("SDL_OPENVR_INPUT_PROFILE");
+    hint = SDL_GetHint("SDL_OPENVR_INPUT_PROFILE");
     char *loadpath = 0;
     EVRInputError err;
 

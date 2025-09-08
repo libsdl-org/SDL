@@ -78,7 +78,7 @@ static char *search_path_for_binary(const char *bin)
     char *envr;
     size_t alloc_size;
     char *exe = NULL;
-    char *start = envr;
+    char *start;
     char *ptr;
 
     if (!envr_real) {
@@ -86,7 +86,7 @@ static char *search_path_for_binary(const char *bin)
         return NULL;
     }
 
-    envr = SDL_strdup(envr_real);
+    start = envr = SDL_strdup(envr_real);
     if (!envr) {
         return NULL;
     }

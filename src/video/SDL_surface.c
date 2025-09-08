@@ -49,7 +49,7 @@ bool SDL_SurfaceValid(SDL_Surface *surface)
 
 void SDL_UpdateSurfaceLockFlag(SDL_Surface *surface)
 {
-    if (SDL_SurfaceHasRLE(surface)) {
+    if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
         surface->flags |= SDL_SURFACE_LOCK_NEEDED;
     } else {
         surface->flags &= ~SDL_SURFACE_LOCK_NEEDED;
@@ -611,7 +611,6 @@ bool SDL_SetSurfaceRLE(SDL_Surface *surface, bool enabled)
     if (surface->map.info.flags != flags) {
         SDL_InvalidateMap(&surface->map);
     }
-    SDL_UpdateSurfaceLockFlag(surface);
     return true;
 }
 
@@ -1090,15 +1089,42 @@ bool SDL_BlitSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst
     return SDL_BlitSurfaceUnchecked(src, &r_src, dst, &r_dst);
 }
 
+static bool SDL_BlitSurfaceClippedScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
+{
+    // We need to scale first, then blit into dst because we're clipping in the destination surface pixel coordinates
+    if (SDL_MUSTLOCK(src)) {
+        if (!SDL_LockSurface(src)) {
+            return false;
+        }
+    }
+
+    bool result;
+    int saved_w = src->w;
+    int saved_h = src->h;
+    void *saved_pixels = src->pixels;
+    src->w = srcrect->w;
+    src->h = srcrect->h;
+    src->pixels = (Uint8 *)src->pixels + srcrect->y * src->pitch + srcrect->x * SDL_BYTESPERPIXEL(src->format);
+    SDL_Surface *scaled = SDL_ScaleSurface(src, dstrect->w, dstrect->h, scaleMode);
+    if (scaled) {
+        result = SDL_BlitSurface(scaled, NULL, dst, dstrect);
+        SDL_DestroySurface(scaled);
+    } else {
+        result = false;
+    }
+    src->w = saved_w;
+    src->h = saved_h;
+    src->pixels = saved_pixels;
+
+    if (SDL_MUSTLOCK(src)) {
+        SDL_UnlockSurface(src);
+    }
+    return result;
+}
+
 bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
-    SDL_Rect *clip_rect;
-    double src_x0, src_y0, src_x1, src_y1;
-    double dst_x0, dst_y0, dst_x1, dst_y1;
-    SDL_Rect final_src, final_dst;
-    double scaling_w, scaling_h;
-    int src_w, src_h;
-    int dst_w, dst_h;
+    SDL_Rect r_src, r_dst;
 
     // Make sure the surfaces aren't locked
     if (!SDL_SurfaceValid(src) || !src->pixels) {
@@ -1121,148 +1147,70 @@ bool SDL_BlitSurfaceScaled(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surfac
         return SDL_InvalidParamError("scaleMode");
     }
 
-    if (!srcrect) {
-        src_w = src->w;
-        src_h = src->h;
-    } else {
-        src_w = srcrect->w;
-        src_h = srcrect->h;
-    }
-
-    if (!dstrect) {
-        dst_w = dst->w;
-        dst_h = dst->h;
-    } else {
-        dst_w = dstrect->w;
-        dst_h = dstrect->h;
-    }
-
-    if (dst_w == src_w && dst_h == src_h) {
+    int src_w = srcrect ? srcrect->w : src->w;
+    int src_h = srcrect ? srcrect->h : src->h;
+    int dst_w = dstrect ? dstrect->w : dst->w;
+    int dst_h = dstrect ? dstrect->h : dst->h;
+    if (src_w == dst_w && src_h == dst_h) {
         // No scaling, defer to regular blit
         return SDL_BlitSurface(src, srcrect, dst, dstrect);
     }
 
-    if (src_w == 0) {
-        src_w = 1;
-    }
-    if (src_h == 0) {
-        src_h = 1;
-    }
-
-    scaling_w = (double)dst_w / src_w;
-    scaling_h = (double)dst_h / src_h;
-
-    if (!dstrect) {
-        dst_x0 = 0;
-        dst_y0 = 0;
-        dst_x1 = dst_w;
-        dst_y1 = dst_h;
-    } else {
-        dst_x0 = dstrect->x;
-        dst_y0 = dstrect->y;
-        dst_x1 = dst_x0 + dst_w;
-        dst_y1 = dst_y0 + dst_h;
-    }
-
-    if (!srcrect) {
-        src_x0 = 0;
-        src_y0 = 0;
-        src_x1 = src_w;
-        src_y1 = src_h;
-    } else {
-        src_x0 = srcrect->x;
-        src_y0 = srcrect->y;
-        src_x1 = src_x0 + src_w;
-        src_y1 = src_y0 + src_h;
-
-        // Clip source rectangle to the source surface
-
-        if (src_x0 < 0) {
-            dst_x0 -= src_x0 * scaling_w;
-            src_x0 = 0;
-        }
-
-        if (src_x1 > src->w) {
-            dst_x1 -= (src_x1 - src->w) * scaling_w;
-            src_x1 = src->w;
-        }
-
-        if (src_y0 < 0) {
-            dst_y0 -= src_y0 * scaling_h;
-            src_y0 = 0;
-        }
-
-        if (src_y1 > src->h) {
-            dst_y1 -= (src_y1 - src->h) * scaling_h;
-            src_y1 = src->h;
-        }
-    }
-
-    // Clip destination rectangle to the clip rectangle
-    clip_rect = &dst->clip_rect;
-
-    // Translate to clip space for easier calculations
-    dst_x0 -= clip_rect->x;
-    dst_x1 -= clip_rect->x;
-    dst_y0 -= clip_rect->y;
-    dst_y1 -= clip_rect->y;
-
-    if (dst_x0 < 0) {
-        src_x0 -= dst_x0 / scaling_w;
-        dst_x0 = 0;
-    }
-
-    if (dst_x1 > clip_rect->w) {
-        src_x1 -= (dst_x1 - clip_rect->w) / scaling_w;
-        dst_x1 = clip_rect->w;
-    }
-
-    if (dst_y0 < 0) {
-        src_y0 -= dst_y0 / scaling_h;
-        dst_y0 = 0;
-    }
-
-    if (dst_y1 > clip_rect->h) {
-        src_y1 -= (dst_y1 - clip_rect->h) / scaling_h;
-        dst_y1 = clip_rect->h;
-    }
-
-    // Translate back to surface coordinates
-    dst_x0 += clip_rect->x;
-    dst_x1 += clip_rect->x;
-    dst_y0 += clip_rect->y;
-    dst_y1 += clip_rect->y;
-
-    final_src.x = (int)SDL_round(src_x0);
-    final_src.y = (int)SDL_round(src_y0);
-    final_src.w = (int)SDL_round(src_x1 - src_x0);
-    final_src.h = (int)SDL_round(src_y1 - src_y0);
-
-    final_dst.x = (int)SDL_round(dst_x0);
-    final_dst.y = (int)SDL_round(dst_y0);
-    final_dst.w = (int)SDL_round(dst_x1 - dst_x0);
-    final_dst.h = (int)SDL_round(dst_y1 - dst_y0);
-
-    // Clip again
-    {
-        SDL_Rect tmp;
-        tmp.x = 0;
-        tmp.y = 0;
-        tmp.w = src->w;
-        tmp.h = src->h;
-        SDL_GetRectIntersection(&tmp, &final_src, &final_src);
-    }
-
-    // Clip again
-    SDL_GetRectIntersection(clip_rect, &final_dst, &final_dst);
-
-    if (final_dst.w <= 0 || final_dst.h <= 0 ||
-        final_src.w < 0 || final_src.h < 0) {
-        // No-op.
+    if (src->w == 0 || src->h == 0) {
+        // Nothing to do
         return true;
     }
 
-    return SDL_BlitSurfaceUncheckedScaled(src, &final_src, dst, &final_dst, scaleMode);
+    // Full src surface
+    r_src.x = 0;
+    r_src.y = 0;
+    r_src.w = src->w;
+    r_src.h = src->h;
+
+    if (dstrect) {
+        r_dst.x = dstrect->x;
+        r_dst.y = dstrect->y;
+        r_dst.w = dstrect->w;
+        r_dst.h = dstrect->h;
+    } else {
+        r_dst.x = 0;
+        r_dst.y = 0;
+        r_dst.w = dst->w;
+        r_dst.h = dst->h;
+    }
+
+    // clip the source rectangle to the source surface
+    if (srcrect) {
+        SDL_Rect desired, tmp;
+        desired.x = srcrect->x;
+        desired.y = srcrect->y;
+        desired.w = SDL_max(srcrect->w, 1);
+        desired.h = SDL_max(srcrect->h, 1);
+        if (SDL_GetRectIntersection(&desired, &r_src, &tmp) == false) {
+            return true;
+        }
+
+        // Shift dstrect, if srcrect origin has changed
+        r_dst.x += (tmp.x - desired.x) * r_dst.w / desired.w;
+        r_dst.y += (tmp.y - desired.y) * r_dst.h / desired.h;
+        r_dst.w += (tmp.w - desired.w) * r_dst.w / desired.w;
+        r_dst.h += (tmp.h - desired.h) * r_dst.h / desired.h;
+
+        // Update srcrect
+        r_src = tmp;
+    }
+
+    SDL_Rect tmp;
+    if (SDL_GetRectIntersection(&r_dst, &dst->clip_rect, &tmp) == false) {
+        return true;
+    }
+
+    if (tmp.x != r_dst.x || tmp.y != r_dst.y || tmp.w != r_dst.w || tmp.h != r_dst.h) {
+        // Need to do a clipped and scaled blit
+        return SDL_BlitSurfaceClippedScaled(src, &r_src, dst, &r_dst, scaleMode);
+    }
+
+    return SDL_BlitSurfaceUncheckedScaled(src, &r_src, dst, &r_dst, scaleMode);
 }
 
 /**
@@ -1760,6 +1708,7 @@ bool SDL_LockSurface(SDL_Surface *surface)
         if (surface->internal_flags & SDL_INTERNAL_SURFACE_RLEACCEL) {
             SDL_UnRLESurface(surface, true);
             surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL; // save accel'd state
+            SDL_UpdateSurfaceLockFlag(surface);
         }
 #endif
     }

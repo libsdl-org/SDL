@@ -160,3 +160,63 @@ function(SDL_AddCommonCompilerFlags TARGET)
     endif()
   endif()
 endfunction()
+
+function(check_x86_source_compiles BODY VAR)
+  if(ARGN)
+    message(FATAL_ERROR "Unknown arguments: ${ARGN}")
+  endif()
+  if(APPLE_MULTIARCH AND (SDL_CPU_X86 OR SDL_CPU_X64))
+    set(test_conditional 1)
+  else()
+    set(test_conditional 0)
+  endif()
+  check_c_source_compiles("
+    #if ${test_conditional}
+    # if defined(__i386__) || defined(__x86_64__)
+    #  define test_enabled 1
+    # else
+    #  define test_enabled 0 /* feign success in Apple multi-arch configs */
+    # endif
+    #else                    /* test normally */
+    # define test_enabled 1
+    #endif
+    #if test_enabled
+    ${BODY}
+    #else
+    int main(int argc, char *argv[]) {
+      (void)argc;
+      (void)argv;
+      return 0;
+    }
+    #endif" ${VAR})
+endfunction()
+
+function(check_arm_source_compiles BODY VAR)
+  if(ARGN)
+    message(FATAL_ERROR "Unknown arguments: ${ARGN}")
+  endif()
+  if(APPLE_MULTIARCH AND (SDL_CPU_ARM32 OR SDL_CPU_ARM64))
+    set(test_conditional 1)
+  else()
+    set(test_conditional 0)
+  endif()
+  check_c_source_compiles("
+    #if ${test_conditional}
+    # if defined(__arm__) || defined(__aarch64__)
+    #  define test_enabled 1
+    # else
+    #  define test_enabled 0 /* feign success in Apple multi-arch configs */
+    # endif
+    #else                    /* test normally */
+    # define test_enabled 1
+    #endif
+    #if test_enabled
+    ${BODY}
+    #else
+    int main(int argc, char *argv[]) {
+      (void)argc;
+      (void)argv;
+      return 0;
+    }
+    #endif" ${VAR})
+endfunction()

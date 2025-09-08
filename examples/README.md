@@ -65,3 +65,38 @@ If writing new examples, this is the skeleton code we start from, to keep
 everything consistent. You can ignore it.
 
 
+## How are the thumbnails/onmouseover media created?
+
+(Since I have to figure this out every time.)
+
+This is how Ryan is doing it currently, although this could be automated
+_much_ better:
+
+- Launch the example app on Desktop Linux. Gnome currently always puts it at
+  the same location.
+- Hit PrtScr for capture.
+- Highlight exactly the window without the titlebar. Usually I take an
+  initial screenshot, paste it into Gimp, zoom in and make sure it's
+  pixel-perfect. Repeat. This takes too much effort and should be automated.
+- Take a screenshot for thumbnail.png if it makes sense.
+- Take a video of a few seconds of the example app running.
+- Take the video and turn it into webp format:
+
+  ```bash
+  ffmpeg -i video.mp4 -loop 0 -quality 40 -framerate 10 -frames:v 40 onmouseover.webp
+  ```
+
+  You might need to start in the middle of the video, or mess with quality or
+  number of frames to generate, ymmv.
+- If you didn't take a screenshot for the thumbnail, extract a frame from the
+  video. The 0 means "the first frame of the video" but you can choose another:
+
+  ```bash
+  ffmpeg -i video.mp4 -vf "select=eq(n\,0)" thumbnail.png
+  ```
+- Run the thumbnail through pngquant for massive file size reduction without
+  any obvious loss in quality:
+
+  ```bash
+  pngquant thumbnail.png --output new_thumbnail.png
+  ```
