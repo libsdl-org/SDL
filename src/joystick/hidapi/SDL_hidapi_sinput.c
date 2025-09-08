@@ -471,7 +471,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 
 #if defined(DEBUG_SINPUT_INIT)
     SDL_Log("SInput Face Style: %d", (data[5] & 0xE0) >> 5);
-    SDL_Log("SInput Sub-type: %d", (data[5] & 0x1F));
+    SDL_Log("SInput Sub-product: %d", (data[5] & 0x1F));
 #endif
 
     ctx->polling_rate_us = EXTRACTUINT16(data, 6);
@@ -529,18 +529,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 
     ctx->axes_count = axes;
 
-    // Sub Product 0 is a fallback to
-    // utilize a dynamic mapping
-    if (ctx->sub_product == 0) {
-        DeviceDynamicEncodingSetup(device);
-    } else if (device->product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC && device->vendor_id == USB_VENDOR_RASPBERRYPI) {
-        ctx->usage_masks[0] = 0xFF;
-        ctx->usage_masks[1] = 0xFF;
-        ctx->usage_masks[2] = 0xFF;
-        ctx->usage_masks[3] = 0xFF;
-
-        ctx->axes_count = 6;
-    }
+    DeviceDynamicEncodingSetup(device);
 
     // Derive button count from mask
     for (Uint8 byte = 0; byte < 4; ++byte) {

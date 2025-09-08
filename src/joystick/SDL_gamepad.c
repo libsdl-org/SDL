@@ -964,7 +964,7 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
 /*
 * Helper function to decode SInput features information packed into version
 */
-static bool SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 product, Uint8 sub_product, Uint16 version, Uint8 face_style, char* mapping_string, size_t mapping_string_len)
+static void SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 product, Uint8 sub_product, Uint16 version, Uint8 face_style, char* mapping_string, size_t mapping_string_len)
 {
     SDL_SInputStyles_t decoded = { 0 };
 
@@ -983,84 +983,29 @@ static bool SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 produc
         break;
     }
 
-    // For a sub-product value of 0, we interpret the
-    // mapping string dynamically based on the feature responses
-    if (sub_product == 0) {
-        // Decode styles for correct dynamic features
-        decoded.misc_style = (SInput_MiscStyleType)(version % SINPUT_MISCSTYLE_MAX);
-        version /= SINPUT_MISCSTYLE_MAX;
+    // Interpret the mapping string
+    // dynamically based on the feature responses
+    decoded.misc_style = (SInput_MiscStyleType)(version % SINPUT_MISCSTYLE_MAX);
+    version /= SINPUT_MISCSTYLE_MAX;
 
-        decoded.touch_style = (SInput_TouchStyleType)(version % SINPUT_TOUCHSTYLE_MAX);
-        version /= SINPUT_TOUCHSTYLE_MAX;
+    decoded.touch_style = (SInput_TouchStyleType)(version % SINPUT_TOUCHSTYLE_MAX);
+    version /= SINPUT_TOUCHSTYLE_MAX;
 
-        decoded.meta_style = (SInput_MetaStyleType)(version % SINPUT_METASTYLE_MAX);
-        version /= SINPUT_METASTYLE_MAX;
+    decoded.meta_style = (SInput_MetaStyleType)(version % SINPUT_METASTYLE_MAX);
+    version /= SINPUT_METASTYLE_MAX;
 
-        decoded.paddle_style = (SInput_PaddleStyleType)(version % SINPUT_PADDLESTYLE_MAX);
-        version /= SINPUT_PADDLESTYLE_MAX;
+    decoded.paddle_style = (SInput_PaddleStyleType)(version % SINPUT_PADDLESTYLE_MAX);
+    version /= SINPUT_PADDLESTYLE_MAX;
 
-        decoded.trigger_style = (SInput_TriggerStyleType)(version % SINPUT_TRIGGERSTYLE_MAX);
-        version /= SINPUT_TRIGGERSTYLE_MAX;
+    decoded.trigger_style = (SInput_TriggerStyleType)(version % SINPUT_TRIGGERSTYLE_MAX);
+    version /= SINPUT_TRIGGERSTYLE_MAX;
 
-        decoded.bumper_style = (SInput_BumperStyleType)(version % SINPUT_BUMPERSTYLE_MAX);
-        version /= SINPUT_BUMPERSTYLE_MAX;
+    decoded.bumper_style = (SInput_BumperStyleType)(version % SINPUT_BUMPERSTYLE_MAX);
+    version /= SINPUT_BUMPERSTYLE_MAX;
 
-        decoded.analog_style = (SInput_AnalogStyleType)(version % SINPUT_ANALOGSTYLE_MAX);
+    decoded.analog_style = (SInput_AnalogStyleType)(version % SINPUT_ANALOGSTYLE_MAX);
 
-        SDL_SInputStylesMapExtraction(&decoded, mapping_string, mapping_string_len);
-        return true;
-    }
-
-    // For non-zero sub-product IDs
-    switch (product) {
-    case USB_PRODUCT_HANDHELDLEGEND_PROGCC:
-        switch (sub_product) {
-        default:
-            // ProGCC Default Mapping
-            SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b13,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b10,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", mapping_string_len);
-            break;
-        }
-        return true;
-
-    case USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE:
-        switch (sub_product) {
-        default:
-            // GC Ultimate Default Mapping
-            SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b11,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b13,misc3:b14,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b10,misc4:b8,misc5:b9,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", mapping_string_len);
-            break;
-        }
-        return true;
-
-    case USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC:
-        switch (sub_product) {
-        default:
-            // Fully Exposed Mapping (Development Purposes)
-            SDL_strlcat(mapping_string, "leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,a:b0,b:b1,x:b2,y:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftstick:b4,rightstick:b5,leftshoulder:b6,rightshoulder:b7,paddle1:b10,paddle2:b11,start:b12,back:b13,guide:b14,misc1:b15,paddle3:b16,paddle4:b17,touchpad:b18,misc2:b19,misc3:b20,misc4:b21,misc5:b22,misc6:b23", mapping_string_len);
-            break;
-        }
-        return true;
-
-    case USB_PRODUCT_VOIDGAMING_PS4FIREBIRD:
-        switch (sub_product) {
-        default:
-            // PS4 FireBird Default Mapping
-            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b15,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b14,leftshoulder:b6,leftstick:b4,lefttrigger:a4,leftx:a0,lefty:a1,paddle1:b11,paddle2:b10,paddle3:b17,paddle4:b16,rightshoulder:b7,rightstick:b5,righttrigger:a5,rightx:a2,righty:a3,start:b12,touchpad:b13,x:b2,y:b3,", mapping_string_len);
-            break;
-        }
-        return true;
-
-    case USB_PRODUCT_BONZIRICHANNEL_FIREBIRD:
-        switch (sub_product) {
-        default:
-            // FireBird Default Mapping
-            SDL_strlcat(mapping_string, "a:b0,b:b1,back:b13,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b14,leftshoulder:b6,leftstick:b4,lefttrigger:b8,leftx:a0,lefty:a1,misc1:b15,paddle1:b11,paddle2:b10,paddle3:b17,paddle4:b16,rightshoulder:b7,rightstick:b5,righttrigger:b9,rightx:a2,righty:a3,start:b12,x:b2,y:b3,", mapping_string_len);
-            break;
-        }
-        return true;
-
-    default:
-        return false;
-    }
+    SDL_SInputStylesMapExtraction(&decoded, mapping_string, mapping_string_len);
 }
 
 /*
@@ -1206,9 +1151,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         Uint8 face_style = (guid.data[15] & 0xE0) >> 5;
         Uint8 sub_product  = guid.data[15] & 0x1F;
 
-        if (!SDL_CreateMappingStringForSInputGamepad(vendor, product, sub_product, version, face_style, mapping_string, sizeof(mapping_string))) {
-            return NULL;
-        }
+        SDL_CreateMappingStringForSInputGamepad(vendor, product, sub_product, version, face_style, mapping_string, sizeof(mapping_string));
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes
         if (SDL_IsJoystickGameCube(vendor, product)) {
