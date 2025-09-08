@@ -266,7 +266,6 @@ bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bo
             break;
         default:
             return false;
-            break;
     }
 
     return WIN_UpdateRawInputEnabled(_this);
