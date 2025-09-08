@@ -29,6 +29,10 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../SDL_sysfilesystem.h"
 
+#ifndef COPY_FILE_NO_BUFFERING
+#define COPY_FILE_NO_BUFFERING 0x00001000
+#endif
+
 bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
     SDL_EnumerationResult result = SDL_ENUM_CONTINUE;

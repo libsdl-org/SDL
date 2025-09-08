@@ -2172,7 +2172,7 @@ elseif(WINDOWS)
         else()
           set(PROCESSOR_ARCH "x86")
         endif()
-        sdl_link_directories("$<BUILD_INTERFACE:$$ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH}>")
+        sdl_link_directories("$<BUILD_INTERFACE:$ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH}>")
         sdl_include_directories(PRIVATE SYSTEM "$<BUILD_INTERFACE:$ENV{DXSDK_DIR}\\Include>")
       endif()
     endif()
@@ -2183,7 +2183,8 @@ elseif(WINDOWS)
     check_c_source_compiles("
       #include <windows.h>
       #include <xinput.h>
-      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H)
+      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H
+    )
   endif()
 
   # headers needed elsewhere
@@ -2206,12 +2207,18 @@ elseif(WINDOWS)
   check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
   check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
-  check_include_file(shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
+  check_c_source_compiles("
+    #include <shellscalingapi.h>
+    static void *ptr = GetDpiForMonitor;
+    int main (int argc, char **argv) { return 0; }
+    " HAVE_SHELLSCALINGAPI_H
+  )
   check_c_source_compiles("
     #include <windows.h>
     #include <mfapi.h>
     #include <mfidl.h>
     #include <mfreadwrite.h>
+    static MFVideoPrimaries primaries = MFVideoPrimaries_DCI_P3;
     int main(int argc, char **argv) { return 0; }
     " HAVE_MFAPI_H
   )
@@ -2255,7 +2262,7 @@ elseif(WINDOWS)
       set(SDL_VIDEO_RENDER_D3D11 1)
       set(HAVE_RENDER_D3D11 TRUE)
     endif()
-    if(SDL_RENDER_D3D12)
+    if(SDL_RENDER_D3D12 AND HAVE_DXGI1_6_H)
       set(SDL_VIDEO_RENDER_D3D12 1)
       set(HAVE_RENDER_D3D12 TRUE)
     endif()
@@ -3462,15 +3469,7 @@ endif()
 sdl_glob_sources(${SDL3_SOURCE_DIR}/src/tray/*.c)
 
 if(SDL_GPU)
-  if(HAVE_D3D11_H)
-    sdl_glob_sources(
-      "${SDL3_SOURCE_DIR}/src/gpu/d3d11/*.c"
-      "${SDL3_SOURCE_DIR}/src/gpu/d3d11/*.h"
-    )
-    set(SDL_GPU_D3D11 1)
-    set(HAVE_SDL_GPU TRUE)
-  endif()
-  if(WINDOWS)
+  if(HAVE_DXGI1_6_H)
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/gpu/d3d12/*.c"
       "${SDL3_SOURCE_DIR}/src/gpu/d3d12/*.h"
@@ -3486,7 +3485,7 @@ if(SDL_GPU)
     set(SDL_GPU_VULKAN 1)
     set(HAVE_SDL_GPU TRUE)
   endif()
-  if(SDL_RENDER_GPU)
+  if(SDL_RENDER_GPU AND HAVE_SDL_GPU)
     set(SDL_VIDEO_RENDER_GPU 1)
     set(HAVE_RENDER_GPU TRUE)
   endif()

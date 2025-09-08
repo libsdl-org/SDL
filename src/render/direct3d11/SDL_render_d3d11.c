@@ -504,12 +504,12 @@ static ID3D11BlendState *D3D11_CreateBlendState(SDL_Renderer *renderer, SDL_Blen
 // Create resources that depend on the device.
 static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 {
-    typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID riid, void **ppFactory);
-    typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY2)(UINT flags, REFIID riid, void **ppFactory);
-    PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc = NULL;
-    PFN_CREATE_DXGI_FACTORY2 CreateDXGIFactory2Func = NULL;
+    typedef HRESULT (WINAPI *pfnCreateDXGIFactory)(REFIID riid, void **ppFactory);
+    typedef HRESULT (WINAPI *pfnCreateDXGIFactory2)(UINT flags, REFIID riid, void **ppFactory);
+    pfnCreateDXGIFactory pCreateDXGIFactory = NULL;
+    pfnCreateDXGIFactory2 pCreateDXGIFactory2 = NULL;
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
-    PFN_D3D11_CREATE_DEVICE D3D11CreateDeviceFunc;
+    PFN_D3D11_CREATE_DEVICE pD3D11CreateDevice;
     IDXGIAdapter *dxgiAdapter = NULL;
     ID3D11Device *d3dDevice = NULL;
     ID3D11DeviceContext *d3dContext = NULL;
@@ -549,10 +549,10 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    CreateDXGIFactory2Func = (PFN_CREATE_DXGI_FACTORY2)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory2");
-    if (!CreateDXGIFactory2Func) {
-        CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory");
-        if (!CreateDXGIFactoryFunc) {
+    pCreateDXGIFactory2 = (pfnCreateDXGIFactory2)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory2");
+    if (!pCreateDXGIFactory2) {
+        pCreateDXGIFactory = (pfnCreateDXGIFactory)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory");
+        if (!pCreateDXGIFactory) {
             result = E_FAIL;
             goto done;
         }
@@ -564,8 +564,8 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    D3D11CreateDeviceFunc = (PFN_D3D11_CREATE_DEVICE)SDL_LoadFunction(data->hD3D11Mod, "D3D11CreateDevice");
-    if (!D3D11CreateDeviceFunc) {
+    pD3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)SDL_LoadFunction(data->hD3D11Mod, "D3D11CreateDevice");
+    if (!pD3D11CreateDevice) {
         result = E_FAIL;
         goto done;
     }
@@ -573,22 +573,22 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     if (createDebug) {
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
         IDXGIInfoQueue *dxgiInfoQueue = NULL;
-        PFN_CREATE_DXGI_FACTORY2 DXGIGetDebugInterfaceFunc;
+        pfnCreateDXGIFactory2 pDXGIGetDebugInterface1;
 
         // If the debug hint is set, also create the DXGI factory in debug mode
-        DXGIGetDebugInterfaceFunc = (PFN_CREATE_DXGI_FACTORY2)SDL_LoadFunction(data->hDXGIMod, "DXGIGetDebugInterface1");
-        if (!DXGIGetDebugInterfaceFunc) {
+        pDXGIGetDebugInterface1 = (pfnCreateDXGIFactory2)SDL_LoadFunction(data->hDXGIMod, "DXGIGetDebugInterface1");
+        if (!pDXGIGetDebugInterface1) {
             result = E_FAIL;
             goto done;
         }
 
-        result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIDebug1, (void **)&data->dxgiDebug);
+        result = pDXGIGetDebugInterface1(0, &SDL_IID_IDXGIDebug1, (void **)&data->dxgiDebug);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("DXGIGetDebugInterface1"), result);
             goto done;
         }
 
-        result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIInfoQueue, (void **)&dxgiInfoQueue);
+        result = pDXGIGetDebugInterface1(0, &SDL_IID_IDXGIInfoQueue, (void **)&dxgiInfoQueue);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("DXGIGetDebugInterface1"), result);
             goto done;
@@ -601,10 +601,10 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         creationFlags = DXGI_CREATE_FACTORY_DEBUG;
     }
 
-    if (CreateDXGIFactory2Func) {
-        result = CreateDXGIFactory2Func(creationFlags, &SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
+    if (pCreateDXGIFactory2) {
+        result = pCreateDXGIFactory2(creationFlags, &SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
     } else {
-        result = CreateDXGIFactoryFunc(&SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
+        result = pCreateDXGIFactory(&SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
     }
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateDXGIFactory"), result);
@@ -657,7 +657,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     }
 
     // Create the Direct3D 11 API device object and a corresponding context.
-    result = D3D11CreateDeviceFunc(
+    result = pD3D11CreateDevice(
         dxgiAdapter,
         driverType,
         NULL,
