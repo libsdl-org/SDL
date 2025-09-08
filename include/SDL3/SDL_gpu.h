@@ -2259,13 +2259,14 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *
  * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING`: the prefix to
  *   use for all vertex semantics, default is "TEXCOORD".
- * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN`:
- *   By default, Resourcing Binding Tier 2 is required for D3D12 support.
- *   However, an application can enable this property to enable Tier 1 support,
- *   if (and only if) the application uses 8 or fewer storage resources across
- *   all shader stages. As of writing, this property is useful for targeting
- *   Intel Haswell and Broadwell GPUs; other hardware either supports Tier 2
- *   Resource Binding or does not support D3D12 in any capacity.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN`: By
+ *   default, Resourcing Binding Tier 2 is required for D3D12 support.
+ *   However, an application can enable this property to enable Tier 1
+ *   support, if (and only if) the application uses 8 or fewer storage
+ *   resources across all shader stages. As of writing, this property is
+ *   useful for targeting Intel Haswell and Broadwell GPUs; other hardware
+ *   either supports Tier 2 Resource Binding or does not support D3D12 in any
+ *   capacity.
  *
  * With the Vulkan renderer:
  *
