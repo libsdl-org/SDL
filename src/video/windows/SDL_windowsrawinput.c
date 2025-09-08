@@ -23,7 +23,6 @@
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
 
 #include "SDL_windowsvideo.h"
-#include "SDL_windowsrawinput.h"
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
@@ -253,7 +252,11 @@ bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
     return true;
 }
 
-bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled)
+typedef enum WIN_RawKeyboardFlag {
+    NOHOTKEYS
+} WIN_RawKeyboardFlag;
+
+static bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled)
 {
     SDL_VideoData *data = _this->internal;
     if (data->gameinput_context) {
@@ -271,6 +274,11 @@ bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bo
     return WIN_UpdateRawInputEnabled(_this);
 }
 
+bool WIN_SetRawKeyboardFlag_NoHotkeys(SDL_VideoDevice *_this, bool enabled)
+{
+    return WIN_SetRawKeyboardFlag(_this, NOHOTKEYS, enabled);
+}
+
 #else
 
 bool WIN_SetRawMouseEnabled(SDL_VideoDevice *_this, bool enabled)
@@ -283,7 +291,7 @@ bool WIN_SetRawKeyboardEnabled(SDL_VideoDevice *_this, bool enabled)
     return SDL_Unsupported();
 }
 
-bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled)
+bool WIN_SetRawKeyboardFlag_NoHotkeys(SDL_VideoDevice *_this, bool enabled)
 {
     return SDL_Unsupported();
 }

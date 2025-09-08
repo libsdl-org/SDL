@@ -66,7 +66,7 @@ static void SDLCALL UpdateWindowsRawKeyboardNoHotkeys(void *userdata, const char
 {
     SDL_VideoDevice *_this = (SDL_VideoDevice *)userdata;
     bool enabled = SDL_GetStringBoolean(newValue, false);
-    WIN_SetRawKeyboardFlag(_this, NOHOTKEYS, enabled);
+    WIN_SetRawKeyboardFlag_NoHotkeys(_this, enabled);
 }
 
 static void SDLCALL UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
