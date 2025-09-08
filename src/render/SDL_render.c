@@ -4306,6 +4306,11 @@ static bool SDL_RenderTextureTiled_Iterate(SDL_Renderer *renderer, SDL_Texture *
     return true;
 }
 
+static bool IsNPOT(int x)
+{
+    return (x <= 0) || ((x & (x - 1)) != 0);
+}
+
 bool SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float scale, const SDL_FRect *dstrect)
 {
     SDL_FRect real_srcrect;
@@ -4350,11 +4355,18 @@ bool SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const 
 
     texture->last_command_generation = renderer->render_command_generation;
 
+    bool do_wrapping = !renderer->software &&
+                        (!srcrect ||
+                            (real_srcrect.x == 0.0f && real_srcrect.y == 0.0f &&
+                             real_srcrect.w == (float)texture->w && real_srcrect.h == (float)texture->h));
+    if (do_wrapping) {
+        if (renderer->npot_texture_wrap_unsupported && (IsNPOT((int) real_srcrect.w) || IsNPOT((int) real_srcrect.h))) {
+            do_wrapping = false;
+        }
+    }
+
     // See if we can use geometry with repeating texture coordinates
-    if (!renderer->software &&
-        (!srcrect ||
-         (real_srcrect.x == 0.0f && real_srcrect.y == 0.0f &&
-          real_srcrect.w == (float)texture->w && real_srcrect.h == (float)texture->h))) {
+    if (do_wrapping) {
         return SDL_RenderTextureTiled_Wrap(renderer, texture, &real_srcrect, scale, dstrect);
     } else {
         return SDL_RenderTextureTiled_Iterate(renderer, texture, &real_srcrect, scale, dstrect);
