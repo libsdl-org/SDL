@@ -30,6 +30,7 @@
 
 #include "../../joystick/usb_ids.h"
 #include "../../events/SDL_events_c.h"
+#include "../../thread/SDL_systhread.h"
 
 #define ENABLE_RAW_MOUSE_INPUT      0x01
 #define ENABLE_RAW_KEYBOARD_INPUT   0x02
@@ -58,6 +59,8 @@ static DWORD WINAPI WIN_RawInputThread(LPVOID param)
     RAWINPUTDEVICE devices[2];
     HWND window;
     UINT count = 0;
+
+    SDL_SYS_SetupThread("SDLRawInput");
 
     window = CreateWindowEx(0, TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
     if (!window) {
