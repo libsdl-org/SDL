@@ -117,63 +117,6 @@ static bool GPU_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMod
     return true;
 }
 
-static SDL_GPUTextureFormat PixFormatToTexFormat(SDL_PixelFormat pixel_format)
-{
-    switch (pixel_format) {
-    case SDL_PIXELFORMAT_BGRA32:
-    case SDL_PIXELFORMAT_BGRX32:
-        return SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM;
-    case SDL_PIXELFORMAT_RGBA32:
-    case SDL_PIXELFORMAT_RGBX32:
-        return SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-
-    // YUV TODO
-    case SDL_PIXELFORMAT_YV12:
-    case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_NV12:
-    case SDL_PIXELFORMAT_NV21:
-    case SDL_PIXELFORMAT_UYVY:
-    default:
-        return SDL_GPU_TEXTUREFORMAT_INVALID;
-    }
-}
-
-static SDL_PixelFormat TexFormatToPixFormat(SDL_GPUTextureFormat tex_format)
-{
-    switch (tex_format) {
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
-        return SDL_PIXELFORMAT_RGBA32;
-    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM:
-        return SDL_PIXELFORMAT_BGRA32;
-    case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
-        return SDL_PIXELFORMAT_BGR565;
-    case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
-        return SDL_PIXELFORMAT_BGRA5551;
-    case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
-        return SDL_PIXELFORMAT_BGRA4444;
-    case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
-        return SDL_PIXELFORMAT_ABGR2101010;
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
-        return SDL_PIXELFORMAT_RGBA64;
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
-        return SDL_PIXELFORMAT_RGBA32;
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT:
-        return SDL_PIXELFORMAT_RGBA64_FLOAT;
-    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
-        return SDL_PIXELFORMAT_RGBA128_FLOAT;
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
-        return SDL_PIXELFORMAT_RGBA32;
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
-        return SDL_PIXELFORMAT_RGBA64;
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB:
-        return SDL_PIXELFORMAT_RGBA32;
-    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
-        return SDL_PIXELFORMAT_BGRA32;
-    default:
-        return SDL_PIXELFORMAT_UNKNOWN;
-    }
-}
-
 static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
@@ -181,7 +124,7 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     SDL_GPUTextureFormat format;
     SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
-    format = PixFormatToTexFormat(texture->format);
+    format = SDL_GetGPUTextureFormatFromPixelFormat(texture->format);
 
     if (format == SDL_GPU_TEXTUREFORMAT_INVALID) {
         return SDL_SetError("Texture format %s not supported by SDL_GPU",
@@ -948,7 +891,7 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
         pixfmt = texture->format;
     } else {
         gpu_tex = data->backbuffer.texture;
-        pixfmt = TexFormatToPixFormat(data->backbuffer.format);
+        pixfmt = SDL_GetPixelFormatFromGPUTextureFormat(data->backbuffer.format);
 
         if (pixfmt == SDL_PIXELFORMAT_UNKNOWN) {
             SDL_SetError("Unsupported backbuffer format");
