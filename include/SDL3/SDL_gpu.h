@@ -4429,6 +4429,26 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_CalculateGPUTextureFormatSize(
     Uint32 height,
     Uint32 depth_or_layer_count);
 
+/**
+ * Get the SDL pixel format corresponding to a GPU texture format.
+ *
+ * \param format a texture format.
+ * \returns the corresponding pixel format, or SDL_PIXELFORMAT_UNKNOWN if there is no corresponding pixel format.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetPixelFormatFromGPUTextureFormat(SDL_GPUTextureFormat format);
+
+/**
+ * Get the GPU texture format corresponding to an SDL pixel format.
+ *
+ * \param format a pixel format.
+ * \returns the corresponding GPU texture format, or SDL_GPU_TEXTUREFORMAT_INVALID if there is no corresponding GPU texture format.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUTextureFormatFromPixelFormat(SDL_PixelFormat format);
+
 #ifdef SDL_PLATFORM_GDK
 
 /**
