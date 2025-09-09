@@ -461,6 +461,7 @@ static BOOL WIN_DeclareDPIAwareUnaware(SDL_VideoDevice *_this)
 
 static BOOL WIN_DeclareDPIAwareSystem(SDL_VideoDevice *_this)
 {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_VideoData *data = _this->internal;
 
     if (data->SetProcessDpiAwarenessContext) {
@@ -472,9 +473,9 @@ static BOOL WIN_DeclareDPIAwareSystem(SDL_VideoDevice *_this)
     } else if (data->SetProcessDPIAware) {
         // Windows Vista
         return data->SetProcessDPIAware();
-    } else {
-        return FALSE;
     }
+#endif
+    return FALSE;
 }
 
 static BOOL WIN_DeclareDPIAwarePerMonitor(SDL_VideoDevice *_this)
