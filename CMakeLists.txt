@@ -2207,12 +2207,7 @@ elseif(WINDOWS)
   check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
   check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
   check_include_file(sensorsapi.h HAVE_SENSORSAPI_H)
-  check_c_source_compiles("
-    #include <shellscalingapi.h>
-    static void *ptr = GetDpiForMonitor;
-    int main (int argc, char **argv) { return 0; }
-    " HAVE_SHELLSCALINGAPI_H
-  )
+  check_include_file(shellscalingapi.h HAVE_SHELLSCALINGAPI_H)
   check_c_source_compiles("
     #include <windows.h>
     #include <mfapi.h>
