@@ -19,14 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#include "../../core/windows/SDL_windows.h"
 #include "../SDL_dialog.h"
 #include "../SDL_dialog_utils.h"
 
-#include <windows.h>
+#include <unknwn.h>
 #include <commdlg.h>
 #include <shlobj.h>
 #include <shobjidl.h>
-#include "../../core/windows/SDL_windows.h"
 #include "../../thread/SDL_systhread.h"
 
 #if WINVER < _WIN32_WINNT_VISTA
