@@ -2742,7 +2742,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     }
 
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
-    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER, (Sint64)textureData->mainImage.image);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER, (Sint64)textureData->mainImage.image);
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         result = VULKAN_CreateFramebuffersAndRenderPasses(renderer,
