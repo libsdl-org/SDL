@@ -233,10 +233,12 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
 
     data->format = format;
     data->texture = SDL_CreateGPUTexture(renderdata->device, &tci);
-
     if (!data->texture) {
         return false;
     }
+
+    SDL_PropertiesID props = SDL_GetTextureProperties(texture);
+    SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER, data->texture);
 
     if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
         data->shader = FRAG_SHADER_TEXTURE_RGBA;
