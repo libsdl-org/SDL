@@ -33,7 +33,7 @@ static int shm_error;
 static int (*X_handler)(Display *, XErrorEvent *) = NULL;
 static int shm_errhandler(Display *d, XErrorEvent *e)
 {
-    if (e->error_code == BadAccess) {
+    if (e->error_code == BadAccess || e->error_code == BadRequest) {
         shm_error = True;
         return 0;
     }
