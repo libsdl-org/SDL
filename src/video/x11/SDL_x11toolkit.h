@@ -68,6 +68,11 @@ typedef struct SDL_ToolkitWindowX11
     /* Window */
     Window window;
     Drawable drawable;
+#ifndef NO_SHARED_MEMORY
+	XImage *image;
+	XShmSegmentInfo shm_info;
+	int shm_bytes_per_line;
+#endif
 
     /* Visuals and drawing */
     Visual *visual;
@@ -84,6 +89,10 @@ typedef struct SDL_ToolkitWindowX11
 #endif
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     bool xrandr; // Whether Xrandr is present or not
+#endif
+#ifndef NO_SHARED_MEMORY
+	bool shm;
+	Bool shm_pixmap;
 #endif
     bool utf8;
 
