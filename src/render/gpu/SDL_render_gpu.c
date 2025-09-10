@@ -620,6 +620,8 @@ static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
         return false;
     }
 
+    data->vertices.buffer_size = size;
+
     return true;
 }
 
