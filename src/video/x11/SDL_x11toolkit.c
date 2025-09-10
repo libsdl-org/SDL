@@ -420,7 +420,7 @@ static void X11Toolkit_GetTextWidthHeight(SDL_ToolkitWindowX11 *data, const char
     }
 }
 
-SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_ToolkitWindowX11 *tkparent, SDL_ToolkitWindowModeX11 mode, const SDL_MessageBoxColor *colorhints)
+SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_ToolkitWindowX11 *tkparent, SDL_ToolkitWindowModeX11 mode, const SDL_MessageBoxColor *colorhints, bool create_new_display)
 {
     SDL_ToolkitWindowX11 *window;
     int i;
@@ -456,20 +456,29 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
     }
 #endif
 
-    if (parent) {
-        SDL_VideoData *videodata = SDL_GetVideoDevice()->internal;
-        window->display = videodata->display;
-        window->display_close = false;
-    } else if (tkparent) {
-        window->display = tkparent->display;
-        window->display_close = false;        
-    } else {
-        window->display = X11_XOpenDisplay(NULL);
-        window->display_close = true;
-        if (!window->display) {
-            ErrorFreeRetNull("Couldn't open X11 display", window);
-        }
-    }
+    window->parent_device = NULL;
+	if (create_new_display) {
+		window->display = X11_XOpenDisplay(NULL);
+		window->display_close = true;
+		if (!window->display) {
+			ErrorFreeRetNull("Couldn't open X11 display", window);
+		}		
+	} else {
+		if (parent) {        
+			window->parent_device = SDL_GetVideoDevice();
+			window->display = window->parent_device->internal->display;
+			window->display_close = false;
+		} else if (tkparent) {
+			window->display = tkparent->display;
+			window->display_close = false;        
+		} else {
+			window->display = X11_XOpenDisplay(NULL);
+			window->display_close = true;
+			if (!window->display) {
+				ErrorFreeRetNull("Couldn't open X11 display", window);
+			}
+		}
+	}
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     int xrandr_event_base, xrandr_error_base;

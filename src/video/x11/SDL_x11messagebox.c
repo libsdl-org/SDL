@@ -196,7 +196,11 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     }
 
     /* Create window */
-    controls.window = X11Toolkit_CreateWindowStruct(messageboxdata->window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints);
+#if SDL_FORK_MESSAGEBOX
+    controls.window = X11Toolkit_CreateWindowStruct(messageboxdata->window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints, true);
+#else 
+    controls.window = X11Toolkit_CreateWindowStruct(messageboxdata->window, NULL, SDL_TOOLKIT_WINDOW_MODE_X11_DIALOG, colorhints, false);
+#endif
     controls.window->cb_data = &controls;
     controls.window->cb_on_scale_change = X11_OnMessageBoxScaleChange;
     if (!controls.window) {
