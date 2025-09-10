@@ -286,6 +286,16 @@ static SDL_Window *Emscripten_GetFocusedWindow(SDL_VideoDevice *device)
             break;
         }
     }
+    // If the DOM is focused, then at least one canvas in the DOM should be considered focused.
+    // So in this case, just assume that the first canvas is focused.
+    if (!window) {
+        const int focused = MAIN_THREAD_EM_ASM_INT({
+            return document.hasFocus();
+        });
+        if (focused) {
+            window = device->windows;
+        }
+    }
     return window;
 }
 
