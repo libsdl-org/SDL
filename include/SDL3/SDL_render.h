@@ -858,8 +858,8 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
  *
  * With the gpu renderer:
  *
- * - `SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER`: the SDL_GPUTexture associated with
- *   the texture
+ * - `SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER`: the SDL_GPUTexture associated
+ *   with the texture
  *
  * \param texture the texture to query.
  * \returns a valid property ID on success or 0 on failure; call
