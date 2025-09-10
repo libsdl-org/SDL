@@ -415,6 +415,27 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
 extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval);
 
 /**
+ * Set an atomic variable to a new value if it is currently an old value,
+ * using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param oldval the old value.
+ * \param newval the new value.
+ * \returns true if the atomic variable was set, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetRelaxedAtomicInt
+ * \sa SDL_SetRelaxedAtomicInt
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapRelaxedAtomicInt(SDL_AtomicInt *a, int oldval, int newval);
+
+/**
  * Set an atomic variable to a value.
  *
  * This function also acts as a full memory barrier.
@@ -435,6 +456,24 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, i
 extern SDL_DECLSPEC int SDLCALL SDL_SetAtomicInt(SDL_AtomicInt *a, int v);
 
 /**
+ * Set an atomic variable to a value using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param v the desired value.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetRelaxedAtomicInt
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_SetRelaxedAtomicInt(SDL_AtomicInt *a, int v);
+
+/**
  * Get the value of an atomic variable.
  *
  * ***Note: If you don't know what this function is for, you shouldn't use
@@ -450,6 +489,23 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAtomicInt(SDL_AtomicInt *a, int v);
  * \sa SDL_SetAtomicInt
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetAtomicInt(SDL_AtomicInt *a);
+
+/**
+ * Get the value of an atomic variable using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt variable.
+ * \returns the current value of an atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetRelaxedAtomicInt
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetRelaxedAtomicInt(SDL_AtomicInt *a);
 
 /**
  * Add to an atomic variable.
@@ -472,6 +528,25 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAtomicInt(SDL_AtomicInt *a);
  */
 extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
 
+/**
+ * Add to an atomic variable using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param v the desired value to add.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_RelaxedAtomicDecRef
+ * \sa SDL_RelaxedAtomicIncRef
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_AddRelaxedAtomicInt(SDL_AtomicInt *a, int v);
+
 #ifndef SDL_AtomicIncRef
 
 /**
@@ -489,6 +564,25 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * \sa SDL_AtomicDecRef
  */
 #define SDL_AtomicIncRef(a)    SDL_AddAtomicInt(a, 1)
+#endif
+
+#ifndef SDL_RelaxedAtomicIncRef
+
+/**
+ * Increment an atomic variable used as a reference count, using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this macro is for, you shouldn't use it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt to increment.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ *
+ * \sa SDL_RelaxedAtomicDecRef
+ */
+#define SDL_RelaxedAtomicIncRef(a)    SDL_AddRelaxedAtomicInt(a, 1)
 #endif
 
 #ifndef SDL_AtomicDecRef
@@ -509,6 +603,26 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * \sa SDL_AtomicIncRef
  */
 #define SDL_AtomicDecRef(a)    (SDL_AddAtomicInt(a, -1) == 1)
+#endif
+
+#ifndef SDL_RelaxedAtomicDecRef
+
+/**
+ * Decrement an atomic variable used as a reference count, using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this macro is for, you shouldn't use it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt to decrement.
+ * \returns true if the variable reached zero after decrementing, false
+ *          otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ *
+ * \sa SDL_AtomicIncRef
+ */
+#define SDL_RelaxedAtomicDecRef(a)    (SDL_AddRelaxedAtomicInt(a, -1) == 1)
 #endif
 
 /**
@@ -560,6 +674,27 @@ typedef struct SDL_AtomicU32 { Uint32 value; } SDL_AtomicU32;
 extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval);
 
 /**
+ * Set an atomic variable to a new value if it is currently an old value,
+ * using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param oldval the old value.
+ * \param newval the new value.
+ * \returns true if the atomic variable was set, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetRelaxedAtomicU32
+ * \sa SDL_SetRelaxedAtomicU32
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapRelaxedAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval);
+
+/**
  * Set an atomic variable to a value.
  *
  * This function also acts as a full memory barrier.
@@ -580,6 +715,24 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, U
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v);
 
 /**
+ * Set an atomic variable to a value using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param v the desired value.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetRelaxedAtomicU32
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetRelaxedAtomicU32(SDL_AtomicU32 *a, Uint32 v);
+
+/**
  * Get the value of an atomic variable.
  *
  * ***Note: If you don't know what this function is for, you shouldn't use
@@ -595,6 +748,23 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v);
  * \sa SDL_SetAtomicU32
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
+
+/**
+ * Get the value of an atomic variable using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable.
+ * \returns the current value of an atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetRelaxedAtomicU32
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetRelaxedAtomicU32(SDL_AtomicU32 *a);
 
 /**
  * Add to an atomic variable.
@@ -613,6 +783,22 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
  * \since This function is available since SDL 3.4.0.
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_AddAtomicU32(SDL_AtomicU32 *a, int v);
+
+/**
+ * Add to an atomic variable using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param v the desired value to add or subtract.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_AddRelaxedAtomicU32(SDL_AtomicU32 *a, int v);
 
 /**
  * Set a pointer to a new value if it is currently an old value.
@@ -636,6 +822,28 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_AddAtomicU32(SDL_AtomicU32 *a, int v);
 extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval);
 
 /**
+ * Set a pointer to a new value if it is currently an old value,
+ * using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to a pointer.
+ * \param oldval the old pointer value.
+ * \param newval the new pointer value.
+ * \returns true if the pointer was set, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapRelaxedAtomicInt
+ * \sa SDL_GetRelaxedAtomicPointer
+ * \sa SDL_SetRelaxedAtomicPointer
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapRelaxedAtomicPointer(void **a, void *oldval, void *newval);
+
+/**
  * Set a pointer to a value atomically.
  *
  * ***Note: If you don't know what this function is for, you shouldn't use
@@ -655,6 +863,25 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicPointer(void **a, void 
 extern SDL_DECLSPEC void * SDLCALL SDL_SetAtomicPointer(void **a, void *v);
 
 /**
+ * Set a pointer to a value atomically using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to a pointer.
+ * \param v the desired pointer value.
+ * \returns the previous value of the pointer.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapRelaxedAtomicPointer
+ * \sa SDL_GetRelaxedAtomicPointer
+ */
+extern SDL_DECLSPEC void * SDLCALL SDL_SetRelaxedAtomicPointer(void **a, void *v);
+
+/**
  * Get the value of a pointer atomically.
  *
  * ***Note: If you don't know what this function is for, you shouldn't use
@@ -671,6 +898,24 @@ extern SDL_DECLSPEC void * SDLCALL SDL_SetAtomicPointer(void **a, void *v);
  * \sa SDL_SetAtomicPointer
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_GetAtomicPointer(void **a);
+
+/**
+ * Get the value of a pointer atomically using relaxed memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to a pointer.
+ * \returns the current value of a pointer.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapRelaxedAtomicPointer
+ * \sa SDL_SetRelaxedAtomicPointer
+ */
+extern SDL_DECLSPEC void * SDLCALL SDL_GetRelaxedAtomicPointer(void **a);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
