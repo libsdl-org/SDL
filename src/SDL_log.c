@@ -640,17 +640,39 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
         message = stack_buf;
     }
 
-    // Chop off final endline.
-    if ((len > 0) && (message[len - 1] == '\n')) {
-        message[--len] = '\0';
-        if ((len > 0) && (message[len - 1] == '\r')) { // catch "\r\n", too.
-            message[--len] = '\0';
-        }
-    }
-
     SDL_LockMutex(SDL_log_function_lock);
     {
-        SDL_log_function(SDL_log_userdata, category, priority, message);
+        char * const end = &message[len];
+        char *c = message;
+        char *line = message;
+        char term = '\0';
+        // Log lines with terminating newlines
+        while (c < end) {
+            if ((*c == '\r') || (*c == '\n')) {
+                term = *c;
+                *c = '\0';
+                SDL_log_function(SDL_log_userdata, category, priority, line);
+                c++;
+                if (c >= end) {
+                    break;
+                }
+                if ((term == '\r') && (*c == '\n')) {
+                    c++;
+                    if (c >= end) {
+                        break;
+                    }
+                }
+                line = c;
+                term = '\0';
+            } else {
+                c++;
+            }
+        }
+        if (term == '\0') {
+            // If there's no newline on the last line, it won't be logged in
+            // the above loop, so log it here
+            SDL_log_function(SDL_log_userdata, category, priority, line);
+        }
     }
     SDL_UnlockMutex(SDL_log_function_lock);
 

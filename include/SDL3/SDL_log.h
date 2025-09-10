@@ -58,10 +58,9 @@
  * - Others: standard error output (stderr)
  *
  * You don't need to have a newline (`\n`) on the end of messages, the
- * functions will do that for you. For consistent behavior cross-platform, you
- * shouldn't have any newlines in messages, such as to log multiple lines in
- * one call; unusual platform-specific behavior can be observed in such usage.
- * Do one log call per line instead, with no newlines in messages.
+ * functions will do that for you. You can log multiple lines per message, with
+ * newlines separating the lines, in which case the multiple lines are logged
+ * together atomically.
  *
  * Each log call is atomic, so you won't see log messages cut off one another
  * when logging from multiple threads.
