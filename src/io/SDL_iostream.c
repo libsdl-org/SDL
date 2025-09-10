@@ -431,7 +431,7 @@ static size_t SDLCALL fd_read(void *userdata, void *ptr, size_t size, SDL_IOStat
             SDL_SetError("Error reading from datastream: %s", strerror(errno));
         }
         bytes = 0;
-    } else if (bytes < size) {
+    } else if (bytes == 0) {
         *status = SDL_IO_STATUS_EOF;
     }
     return (size_t)bytes;
