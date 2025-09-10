@@ -317,6 +317,7 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
 				
 				window->image = X11_XShmCreateImage(window->display, window->visual, window->depth, ZPixmap, NULL, &window->shm_info, window->pixmap_width, window->pixmap_height);
 				if (window->image) {
+					window->shm_bytes_per_line = window->image->bytes_per_line;
 					window->shm_info.shmid = shmget(IPC_PRIVATE, window->image->bytes_per_line * window->image->height, IPC_CREAT | 0777);
 					if (window->shm_info.shmid < 0) {
 						XDestroyImage(window->image);
@@ -1404,6 +1405,7 @@ void X11Toolkit_ResizeWindow(SDL_ToolkitWindowX11 *data, int w, int h) {
 				
 			data->image = X11_XShmCreateImage(data->display, data->visual, data->depth, ZPixmap, NULL, &data->shm_info, data->pixmap_width, data->pixmap_height);
 			if (data->image) {
+				data->shm_bytes_per_line = data->image->bytes_per_line;
 				data->shm_info.shmid = shmget(IPC_PRIVATE, data->image->bytes_per_line * data->image->height, IPC_CREAT | 0777);
 				if (data->shm_info.shmid < 0) {
 					XDestroyImage(data->image);
