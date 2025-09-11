@@ -421,18 +421,36 @@ static size_t SDLCALL fd_read(void *userdata, void *ptr, size_t size, SDL_IOStat
     ssize_t bytes;
     do {
         bytes = read(iodata->fd, ptr, size);
-    } while (bytes < 0 && errno == EINTR);
+    } while ((bytes < 0) && (errno == EINTR));
 
-    if (bytes < 0) {
+    ssize_t result = bytes;
+    if ((bytes > 0) && (bytes < size)) {   // was it a short read, EOF, or error?
+        // try to read the difference, so we can rule out a short read.
+        do {
+            result = read(iodata->fd, ((Uint8 *) ptr) + bytes, size - bytes);
+        } while ((result < 0) && (errno == EINTR));
+
+        if (result > 0) {
+            bytes += result;
+            result = bytes;
+            SDL_assert(bytes <= size);
+        }
+    }
+
+    if (result < 0) {
         if (errno == EAGAIN) {
             *status = SDL_IO_STATUS_NOT_READY;
         } else {
             *status = SDL_IO_STATUS_ERROR;
             SDL_SetError("Error reading from datastream: %s", strerror(errno));
         }
-        bytes = 0;
-    } else if (bytes == 0) {
+        if (bytes < 0) {
+            bytes = 0;
+        }
+    } else if (result == 0) {
         *status = SDL_IO_STATUS_EOF;
+    } else if (result < size) {
+        *status = SDL_IO_STATUS_NOT_READY;;
     }
     return (size_t)bytes;
 }
@@ -443,17 +461,36 @@ static size_t SDLCALL fd_write(void *userdata, const void *ptr, size_t size, SDL
     ssize_t bytes;
     do {
         bytes = write(iodata->fd, ptr, size);
-    } while (bytes < 0 && errno == EINTR);
+    } while ((bytes < 0) && (errno == EINTR));
 
-    if (bytes < 0) {
+    ssize_t result = bytes;
+    if ((bytes > 0) && (bytes < size)) {   // was it a short write, or error?
+        // try to write the difference, so we can rule out a short read.
+        do {
+            result = write(iodata->fd, ((Uint8 *) ptr) + bytes, size - bytes);
+        } while ((result < 0) && (errno == EINTR));
+
+        if (result > 0) {
+            bytes += result;
+            result = bytes;
+            SDL_assert(bytes <= size);
+        }
+    }
+
+    if (result < 0) {
         if (errno == EAGAIN) {
             *status = SDL_IO_STATUS_NOT_READY;
         } else {
             *status = SDL_IO_STATUS_ERROR;
             SDL_SetError("Error writing to datastream: %s", strerror(errno));
         }
-        bytes = 0;
+        if (bytes < 0) {
+            bytes = 0;
+        }
+    } else if (result < size) {
+        *status = SDL_IO_STATUS_NOT_READY;;
     }
+
     return (size_t)bytes;
 }
 
