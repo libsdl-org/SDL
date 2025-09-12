@@ -2055,6 +2055,8 @@ typedef struct SDL_GPUColorTargetInfo
  *
  * Note that depth/stencil targets do not support multisample resolves.
  *
+ * Due to ABI limitations, depth textures with more than 255 layers are not supported.
+ *
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPURenderPass
@@ -2069,8 +2071,8 @@ typedef struct SDL_GPUDepthStencilTargetInfo
     SDL_GPUStoreOp stencil_store_op;       /**< What is done with the stencil results of the render pass. */
     bool cycle;                            /**< true cycles the texture if the texture is bound and any load ops are not LOAD */
     Uint8 clear_stencil;                   /**< The value to clear the stencil component to at the beginning of the render pass. Ignored if SDL_GPU_LOADOP_CLEAR is not used. */
-    Uint8 padding1;
-    Uint8 padding2;
+    Uint8 mip_level;                       /**< The mip level to use as the depth stencil target. */
+    Uint8 layer;                           /**< The layer index to use as the depth stencil target. */
 } SDL_GPUDepthStencilTargetInfo;
 
 /**
@@ -4492,8 +4494,3 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(SDL_GPUDevice *device);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_gpu_h_ */
-
-
-
-
-

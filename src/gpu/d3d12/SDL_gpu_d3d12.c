@@ -4289,8 +4289,8 @@ static void D3D12_BeginRenderPass(
     if (depthStencilTargetInfo != NULL) {
         D3D12TextureContainer *container = (D3D12TextureContainer *)depthStencilTargetInfo->texture;
 
-        Uint32 h = container->header.info.height;
-        Uint32 w = container->header.info.width;
+        Uint32 h = container->header.info.height >> depthStencilTargetInfo->mip_level;
+        Uint32 w = container->header.info.width >> depthStencilTargetInfo->mip_level;
 
         // The framebuffer cannot be larger than the smallest target.
 
@@ -4359,8 +4359,8 @@ static void D3D12_BeginRenderPass(
         D3D12TextureSubresource *subresource = D3D12_INTERNAL_PrepareTextureSubresourceForWrite(
             d3d12CommandBuffer,
             container,
-            0,
-            0,
+            depthStencilTargetInfo->layer,
+            depthStencilTargetInfo->mip_level,
             depthStencilTargetInfo->cycle,
             D3D12_RESOURCE_STATE_DEPTH_WRITE);
 

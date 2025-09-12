@@ -1688,6 +1688,14 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         return NULL;
     }
 
+    if (depth_stencil_target_info != NULL) {
+        TextureCommonHeader *depthTextureCommonHeader = (TextureCommonHeader *) depth_stencil_target_info->texture;
+        if (depthTextureCommonHeader->info.layer_count_or_depth > 255) {
+            SDL_SetError("Cannot bind a depth texture with more than 255 layers!");
+            return NULL;
+        }
+    }
+
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
         CHECK_COMMAND_BUFFER_RETURN_NULL
         CHECK_ANY_PASS_IN_PROGRESS("Cannot begin render pass during another pass!", NULL)
@@ -3408,4 +3416,3 @@ SDL_GPUTextureFormat SDL_GetGPUTextureFormatFromPixelFormat(SDL_PixelFormat form
         return SDL_GPU_TEXTUREFORMAT_INVALID;
     }
 }
-
