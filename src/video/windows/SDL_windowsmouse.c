@@ -434,20 +434,28 @@ error:
 static bool WIN_ShowCursor(SDL_Cursor *cursor)
 {
     if (!cursor) {
-        cursor = SDL_blank_cursor;
+        if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_FORCE_NULL_CURSOR, true)) {
+            SDL_cursor = NULL;
+            SetCursor(NULL);
+
+            return false;
+        } else {
+            cursor = SDL_blank_cursor;
+        }
     }
+
     if (cursor) {
         if (cursor->internal->surface) {
             SDL_cursor = GetCachedCursor(cursor);
         } else {
             SDL_cursor = cursor->internal->cursor;
         }
-    } else {
-        SDL_cursor = NULL;
     }
+
     if (SDL_GetMouseFocus() != NULL) {
         SetCursor(SDL_cursor);
     }
+
     return true;
 }
 
