@@ -35,11 +35,13 @@ typedef struct SDL_joylist_item
     SDL_JoystickID device_instance;
     SDL_Joystick *joystick;
     int first_hat_button;
+    int first_trigger_button;
+    bool triggers_are_buttons;
     int nhats;
     int nbuttons;
     int naxes;
     double timestamp;
-    double axis[64];
+    double axis[64];            // !!! FIXME: don't hardcode 64 on all of these.
     double analogButton[64];
     EM_BOOL digitalButton[64];
     Uint8 hat;  // there is (currently) only ever one of these, faked from the d-pad buttons.
