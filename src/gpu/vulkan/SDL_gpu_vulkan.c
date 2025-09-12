@@ -7276,8 +7276,8 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     } else {
         VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
             (VulkanTextureContainer *)depthStencilTargetInfo->texture,
-            0,
-            0);
+            depthStencilTargetInfo->layer,
+            depthStencilTargetInfo->mip_level);
         key.depthStencilAttachmentView = subresource->depthStencilView;
     }
 
@@ -7332,8 +7332,8 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     if (depthStencilTargetInfo != NULL) {
         VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
             (VulkanTextureContainer *)depthStencilTargetInfo->texture,
-            0,
-            0);
+            depthStencilTargetInfo->layer,
+            depthStencilTargetInfo->mip_level);
         imageViewAttachments[attachmentCount] = subresource->depthStencilView;
 
         attachmentCount += 1;
@@ -7813,8 +7813,8 @@ static void VULKAN_BeginRenderPass(
     if (depthStencilTargetInfo != NULL) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)depthStencilTargetInfo->texture;
 
-        w = textureContainer->header.info.width;
-        h = textureContainer->header.info.height;
+        w = textureContainer->header.info.width >> depthStencilTargetInfo->mip_level;
+        h = textureContainer->header.info.height >> depthStencilTargetInfo->mip_level;
 
         // The framebuffer cannot be larger than the smallest attachment.
 
@@ -7869,8 +7869,8 @@ static void VULKAN_BeginRenderPass(
             renderer,
             vulkanCommandBuffer,
             textureContainer,
-            0,
-            0,
+            depthStencilTargetInfo->layer,
+            depthStencilTargetInfo->mip_level,
             depthStencilTargetInfo->cycle,
             VULKAN_TEXTURE_USAGE_MODE_DEPTH_STENCIL_ATTACHMENT);
 
