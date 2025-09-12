@@ -612,14 +612,14 @@ static bool SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
     name[0] = '\0';
     ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
 
-    SDL_AddKeyboard((SDL_KeyboardID)item->fd, name, true);
+    SDL_AddKeyboard((SDL_KeyboardID)item->fd, name);
 
     return true;
 }
 
 static void SDL_EVDEV_destroy_keyboard(SDL_evdevlist_item *item)
 {
-    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd, true);
+    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd);
 }
 
 static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
@@ -631,7 +631,7 @@ static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
     name[0] = '\0';
     ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
 
-    SDL_AddMouse((SDL_MouseID)item->fd, name, true);
+    SDL_AddMouse((SDL_MouseID)item->fd, name);
 
     ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
     if (ret < 0) {
@@ -656,7 +656,7 @@ static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
 
 static void SDL_EVDEV_destroy_mouse(SDL_evdevlist_item *item)
 {
-    SDL_RemoveMouse((SDL_MouseID)item->fd, true);
+    SDL_RemoveMouse((SDL_MouseID)item->fd);
 }
 
 static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)

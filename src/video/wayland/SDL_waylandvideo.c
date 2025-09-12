@@ -1373,10 +1373,10 @@ static void display_remove_global(void *data, struct wl_registry *registry, uint
     {
         if (seat->registry_id == id) {
             if (seat->keyboard.wl_keyboard) {
-                SDL_RemoveKeyboard(seat->keyboard.sdl_id, true);
+                SDL_RemoveKeyboard(seat->keyboard.sdl_id);
             }
             if (seat->pointer.wl_pointer) {
-                SDL_RemoveMouse(seat->pointer.sdl_id, true);
+                SDL_RemoveMouse(seat->pointer.sdl_id);
             }
             Wayland_SeatDestroy(seat, true);
         }

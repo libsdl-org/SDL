@@ -44,6 +44,7 @@ typedef struct SDL_MouseInstance
 static SDL_Mouse SDL_mouse;
 static int SDL_mouse_count;
 static SDL_MouseInstance *SDL_mice;
+static bool SDL_mouse_quitting;
 
 // for mapping mouse events to touch
 static bool track_mouse_down = false;
@@ -346,7 +347,7 @@ static int SDL_GetMouseIndex(SDL_MouseID mouseID)
     return -1;
 }
 
-void SDL_AddMouse(SDL_MouseID mouseID, const char *name, bool send_event)
+void SDL_AddMouse(SDL_MouseID mouseID, const char *name)
 {
     int mouse_index = SDL_GetMouseIndex(mouseID);
     if (mouse_index >= 0) {
@@ -366,16 +367,14 @@ void SDL_AddMouse(SDL_MouseID mouseID, const char *name, bool send_event)
     SDL_mice = mice;
     ++SDL_mouse_count;
 
-    if (send_event) {
-        SDL_Event event;
-        SDL_zero(event);
-        event.type = SDL_EVENT_MOUSE_ADDED;
-        event.mdevice.which = mouseID;
-        SDL_PushEvent(&event);
-    }
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = SDL_EVENT_MOUSE_ADDED;
+    event.mdevice.which = mouseID;
+    SDL_PushEvent(&event);
 }
 
-void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
+void SDL_RemoveMouse(SDL_MouseID mouseID)
 {
     int mouse_index = SDL_GetMouseIndex(mouseID);
     if (mouse_index < 0) {
@@ -404,7 +403,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
         }
     }
 
-    if (send_event) {
+    if (!SDL_mouse_quitting) {
         SDL_Event event;
         SDL_zero(event);
         event.type = SDL_EVENT_MOUSE_REMOVED;
@@ -1078,6 +1077,8 @@ void SDL_QuitMouse(void)
     SDL_Cursor *cursor, *next;
     SDL_Mouse *mouse = SDL_GetMouse();
 
+    SDL_mouse_quitting = true;
+
     if (mouse->added_mouse_touch_device) {
         SDL_DelTouch(SDL_MOUSE_TOUCHID);
         mouse->added_mouse_touch_device = false;
@@ -1164,7 +1165,7 @@ void SDL_QuitMouse(void)
                         SDL_MouseIntegerModeChanged, mouse);
 
     for (int i = SDL_mouse_count; i--; ) {
-        SDL_RemoveMouse(SDL_mice[i].instance_id, false);
+        SDL_RemoveMouse(SDL_mice[i].instance_id);
     }
     SDL_free(SDL_mice);
     SDL_mice = NULL;
@@ -1174,6 +1175,8 @@ void SDL_QuitMouse(void)
         mouse->internal = NULL;
     }
     SDL_zerop(mouse);
+
+    SDL_mouse_quitting = false;
 }
 
 bool SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback transform, void *userdata)

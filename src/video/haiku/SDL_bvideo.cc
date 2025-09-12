@@ -286,8 +286,8 @@ bool HAIKU_VideoInit(SDL_VideoDevice *_this)
     HAIKU_MouseInit(_this);
 
     // Assume we have a mouse and keyboard
-    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
-    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
+    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL);
+    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL);
 
 #ifdef SDL_VIDEO_OPENGL
         // testgl application doesn't load library, just tries to load symbols
