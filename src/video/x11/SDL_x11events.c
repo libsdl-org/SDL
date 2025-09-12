@@ -2337,7 +2337,7 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     }
 
     if (data->xinput_hierarchy_changed) {
-        X11_Xinput2UpdateDevices(_this, false);
+        X11_Xinput2UpdateDevices(_this);
         data->xinput_hierarchy_changed = false;
     }
 }

@@ -387,8 +387,8 @@ bool Emscripten_VideoInit(SDL_VideoDevice *_this)
     Emscripten_InitMouse();
 
     // Assume we have a mouse and keyboard
-    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
-    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
+    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL);
+    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL);
 
     Emscripten_RegisterGlobalEventHandlers(_this);
 

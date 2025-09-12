@@ -2201,7 +2201,7 @@ static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat, bool send_event)
         pointer_handle_leave(seat, seat->pointer.wl_pointer, 0, seat->pointer.focus->surface);
     }
 
-    SDL_RemoveMouse(seat->pointer.sdl_id, send_event);
+    SDL_RemoveMouse(seat->pointer.sdl_id);
 
     if (seat->pointer.confined_pointer) {
         zwp_confined_pointer_v1_destroy(seat->pointer.confined_pointer);
@@ -2253,7 +2253,7 @@ static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat, bool send_event)
         keyboard_handle_leave(seat, seat->keyboard.wl_keyboard, 0, seat->keyboard.focus->surface);
     }
 
-    SDL_RemoveKeyboard(seat->keyboard.sdl_id, send_event);
+    SDL_RemoveKeyboard(seat->keyboard.sdl_id);
 
     if (seat->keyboard.sdl_keymap) {
         if (seat->keyboard.xkb.current_layout < seat->keyboard.xkb.num_layouts &&
@@ -2351,7 +2351,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
             SDL_snprintf(name_fmt, sizeof(name_fmt), "%s %" SDL_PRIu32, WAYLAND_DEFAULT_POINTER_NAME, seat->pointer.sdl_id);
         }
 
-        SDL_AddMouse(seat->pointer.sdl_id, name_fmt, !seat->display->initializing);
+        SDL_AddMouse(seat->pointer.sdl_id, name_fmt);
     } else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) && seat->pointer.wl_pointer) {
         Wayland_SeatDestroyPointer(seat, true);
     }
@@ -2385,7 +2385,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
             SDL_snprintf(name_fmt, sizeof(name_fmt), "%s %" SDL_PRIu32, WAYLAND_DEFAULT_KEYBOARD_NAME, seat->keyboard.sdl_id);
         }
 
-        SDL_AddKeyboard(seat->keyboard.sdl_id, name_fmt, !seat->display->initializing);
+        SDL_AddKeyboard(seat->keyboard.sdl_id, name_fmt);
     } else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && seat->keyboard.wl_keyboard) {
         Wayland_SeatDestroyKeyboard(seat, true);
     }

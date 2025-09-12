@@ -66,6 +66,7 @@ typedef struct SDL_Keyboard
 static SDL_Keyboard SDL_keyboard;
 static int SDL_keyboard_count;
 static SDL_KeyboardInstance *SDL_keyboards;
+static bool SDL_keyboard_quitting;
 
 static void SDLCALL SDL_KeycodeOptionsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -118,7 +119,7 @@ static int SDL_GetKeyboardIndex(SDL_KeyboardID keyboardID)
     return -1;
 }
 
-void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, bool send_event)
+void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name)
 {
     int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index >= 0) {
@@ -138,16 +139,14 @@ void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, bool send_even
     SDL_keyboards = keyboards;
     ++SDL_keyboard_count;
 
-    if (send_event) {
-        SDL_Event event;
-        SDL_zero(event);
-        event.type = SDL_EVENT_KEYBOARD_ADDED;
-        event.kdevice.which = keyboardID;
-        SDL_PushEvent(&event);
-    }
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = SDL_EVENT_KEYBOARD_ADDED;
+    event.kdevice.which = keyboardID;
+    SDL_PushEvent(&event);
 }
 
-void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event)
+void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID)
 {
     int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index < 0) {
@@ -162,7 +161,7 @@ void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event)
     }
     --SDL_keyboard_count;
 
-    if (send_event) {
+    if (!SDL_keyboard_quitting) {
         SDL_Event event;
         SDL_zero(event);
         event.type = SDL_EVENT_KEYBOARD_REMOVED;
@@ -869,8 +868,10 @@ void SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int se
 
 void SDL_QuitKeyboard(void)
 {
+    SDL_keyboard_quitting = true;
+
     for (int i = SDL_keyboard_count; i--;) {
-        SDL_RemoveKeyboard(SDL_keyboards[i].instance_id, false);
+        SDL_RemoveKeyboard(SDL_keyboards[i].instance_id);
     }
     SDL_free(SDL_keyboards);
     SDL_keyboards = NULL;
@@ -882,6 +883,8 @@ void SDL_QuitKeyboard(void)
 
     SDL_RemoveHintCallback(SDL_HINT_KEYCODE_OPTIONS,
                         SDL_KeycodeOptionsChanged, &SDL_keyboard);
+
+    SDL_keyboard_quitting = false;
 }
 
 const bool *SDL_GetKeyboardState(int *numkeys)
