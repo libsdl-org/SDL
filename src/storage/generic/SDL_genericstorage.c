@@ -26,8 +26,19 @@
 
 static char *GENERIC_INTERNAL_CreateFullPath(const char *base, const char *relative)
 {
+    const char *rel = relative;
+
+#ifdef SDL_PLATFORM_ANDROID
+    if (rel) {
+        // Removes any leading slash
+        if (rel[0] == '/' || rel[0] == '\\') {
+            rel += 1;
+        }
+    }
+#endif
+
     char *result = NULL;
-    SDL_asprintf(&result, "%s%s", base ? base : "", relative);
+    SDL_asprintf(&result, "%s%s", base ? base : "", rel ? rel : "");
     return result;
 }
 
@@ -239,15 +250,25 @@ static SDL_Storage *GENERIC_Title_Create(const char *override, SDL_PropertiesID 
     char *basepath = NULL;
 
     if (override != NULL) {
-        // make sure override has a path separator at the end. If you're not on Windows and used '\\', that's on you.
         const size_t slen = SDL_strlen(override);
-        const bool need_sep = (!slen || ((override[slen-1] != '/') && (override[slen-1] != '\\')));
-        if (SDL_asprintf(&basepath, "%s%s", override, need_sep ? "/" : "") == -1) {
-            return NULL;
+        if (slen > 0) {
+            // make sure override has a path separator at the end. If you're not on Windows and used '\\', that's on you.
+            const bool need_sep = ((override[slen - 1] != '/') && (override[slen - 1] != '\\'));
+            if (SDL_asprintf(&basepath, "%s%s", override, need_sep ? "/" : "") == -1) {
+                return NULL;
+            }
+        } else {
+            // override == "" -> empty base (not "/")
+            basepath = SDL_strdup("");
         }
     } else {
         const char *base = SDL_GetBasePath();
+        // On Android, SDL_GetBasePath() can be NULL: use empty base.
+#ifdef SDL_PLATFORM_ANDROID
+        basepath = base ? SDL_strdup(base) : SDL_strdup("");
+#else
         basepath = base ? SDL_strdup(base) : NULL;
+#endif
     }
 
     if (basepath != NULL) {
