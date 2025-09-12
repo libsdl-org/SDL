@@ -39,7 +39,7 @@ static void CopyFramebuffertoN3DS_24(u8  *dest, const Dimensions dest_dim, const
 static void CopyFramebuffertoN3DS_32(u32 *dest, const Dimensions dest_dim, const u32 *source, const Dimensions source_dim);
 static int GetDestOffset(int x, int y, int dest_width);
 static int GetSourceOffset(int x, int y, int source_width);
-static void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen);
+static void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen, bool swap);
 
 
 bool SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
@@ -67,6 +67,7 @@ bool SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
 
 bool SDL_N3DS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
 {
+    SDL_VideoData *internal = (SDL_VideoData *)_this->internal;
     SDL_WindowData *drv_data = window->internal;
     SDL_Surface *surface;
     u16 width, height;
@@ -79,7 +80,7 @@ bool SDL_N3DS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     }
 
     // Get the N3DS internal framebuffer and its size
-    framebuffer = gfxGetFramebuffer(drv_data->screen, GFX_LEFT, &width, &height);
+    framebuffer = gfxGetFramebuffer(drv_data->screen, drv_data->side, &width, &height);
     bufsize = width * height * 4;
 
     if (SDL_BYTESPERPIXEL(surface->format) == 2)
@@ -91,7 +92,32 @@ bool SDL_N3DS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     else
         CopyFramebuffertoN3DS_32(framebuffer, (Dimensions){ width, height },
                                  surface->pixels, (Dimensions){ surface->w, surface->h });
-    FlushN3DSBuffer(framebuffer, bufsize, drv_data->screen);
+
+    if(gfxIs3D() == false || drv_data->screen == GFX_BOTTOM)
+        FlushN3DSBuffer(framebuffer, bufsize, drv_data->screen, true);
+
+    else if(drv_data->screen == GFX_TOP) {
+        // We have to check if both screens are ready because if we can only
+        // swap both at the same time.
+
+        if(drv_data->side == GFX_LEFT)
+            internal->top_left_ready = true;
+
+        else if(drv_data->side == GFX_RIGHT)
+            internal->top_right_ready = true;
+
+        if(internal->top_left_ready && internal->top_right_ready) {
+            internal->top_left_ready = false;
+            internal->top_right_ready = false;
+
+            // This is safe because both screens share the same size
+            framebuffer = gfxGetFramebuffer(GFX_TOP, GFX_LEFT, &width, &height);
+            FlushN3DSBuffer(framebuffer, bufsize, GFX_TOP, false);
+
+            framebuffer = gfxGetFramebuffer(GFX_TOP, GFX_RIGHT, &width, &height);
+            FlushN3DSBuffer(framebuffer, bufsize, GFX_TOP, true);
+        }
+    }
 
     return true;
 }
@@ -147,10 +173,11 @@ static int GetSourceOffset(int x, int y, int source_width)
     return x + y * source_width;
 }
 
-static void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen)
+static void FlushN3DSBuffer(const void *buffer, u32 bufsize, gfxScreen_t screen, bool swap)
 {
     GSPGPU_FlushDataCache(buffer, bufsize);
-    gfxScreenSwapBuffers(screen, false);
+    if(swap)
+        gfxScreenSwapBuffers(screen, gfxIs3D());
 }
 
 void SDL_N3DS_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
