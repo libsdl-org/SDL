@@ -227,7 +227,7 @@ sub handle_example_dir {
 
     my $other_examples_html = "<ul>";
     foreach my $example (get_examples_for_category($category)) {
-        $other_examples_html .= "<li><a href='/$project/$category/$example'>$category/$example</a></li>";
+        $other_examples_html .= "<li><a href='/$project/$category/$example/'>$category/$example</a></li>";
     }
     $other_examples_html .= "</ul>";
 
@@ -288,7 +288,7 @@ sub generate_example_thumbnail {
     }
 
     return "
-        <a href='/$project/$category/$example'>
+        <a href='/$project/$category/$example/'>
           <div>
             <img src='$example_image_url' $example_mouseover_html />
             <div>$example_no_num</div>
