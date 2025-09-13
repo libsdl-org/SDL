@@ -115,7 +115,7 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     if (s_taskbarRestart == 0) {
         s_taskbarRestart = RegisterWindowMessage(TEXT("TaskbarCreated"));
     }
-    if(uMsg == s_taskbarRestart) {
+    if (uMsg == s_taskbarRestart) {
         Shell_NotifyIconW(NIM_ADD, &tray->nid);
         Shell_NotifyIconW(NIM_SETVERSION, &tray->nid);
     }
@@ -225,7 +225,8 @@ void SDL_UpdateTrays(void)
 {
 }
 
-static void SDL_PropTrayCleanupCb(void* userdata, void* cls) {
+static void SDL_PropTrayCleanupCb(void *userdata, void *cls)
+{
     WNDCLASSEX wcex;
 
     wcex.hIcon = NULL;
@@ -238,12 +239,11 @@ static void SDL_PropTrayCleanupCb(void* userdata, void* cls) {
 
 static bool SDL_RegisterTrayClass(LPCWSTR className)
 {
-    SDL_PropertiesID g = SDL_GetGlobalProperties();
-    if (!g) {
+    SDL_PropertiesID props = SDL_GetGlobalProperties();
+    if (!props) {
         return false;
     }
-    void* p = SDL_GetPointerProperty(g, SDL_PROP_TRAY_CLEANUP, NULL);
-    if (p) {
+    if (SDL_GetPointerProperty(props, SDL_PROP_TRAY_CLEANUP, NULL) != NULL) {
         return true;
     }
 
@@ -266,7 +266,7 @@ static bool SDL_RegisterTrayClass(LPCWSTR className)
         return SDL_SetError("Couldn't register tray class");
     }
 
-    SDL_SetPointerPropertyWithCleanup(g, SDL_PROP_TRAY_CLEANUP, (void*)wcex.lpszClassName, SDL_PropTrayCleanupCb, NULL);
+    SDL_SetPointerPropertyWithCleanup(props, SDL_PROP_TRAY_CLEANUP, (void*)wcex.lpszClassName, SDL_PropTrayCleanupCb, NULL);
     return true;
 }
 
