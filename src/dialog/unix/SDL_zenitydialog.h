@@ -23,5 +23,7 @@
 
 extern void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props);
 
+extern void SDL_Zenity_ShowSimpleInputDialog(SDL_DialogInputCallback callback, void *userdata, const char *title, const char *message, const char *value, SDL_Window *window);
+
 /** @returns non-zero if available, zero if unavailable */
 extern bool SDL_Zenity_detect(void);

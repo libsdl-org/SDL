@@ -24,7 +24,8 @@
 #include "./SDL_portaldialog.h"
 #include "./SDL_zenitydialog.h"
 
-static void (*detected_function)(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props) = NULL;
+static void (*detected_dialog)(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props) = NULL;
+static void (*detected_input)(SDL_DialogInputCallback callback, void *userdata, const char *title, const char *message, const char *value, SDL_Window *window) = NULL;
 
 void SDLCALL hint_callback(void *userdata, const char *name, const char *oldValue, const char *newValue);
 
@@ -47,14 +48,16 @@ static int detect_available_methods(const char *value)
 
     if (driver == NULL || SDL_strcmp(driver, "portal") == 0) {
         if (SDL_Portal_detect()) {
-            detected_function = SDL_Portal_ShowFileDialogWithProperties;
+            detected_dialog = SDL_Portal_ShowFileDialogWithProperties;
+            detected_input = SDL_Zenity_ShowSimpleInputDialog;
             return 1;
         }
     }
 
     if (driver == NULL || SDL_strcmp(driver, "zenity") == 0) {
         if (SDL_Zenity_detect()) {
-            detected_function = SDL_Zenity_ShowFileDialogWithProperties;
+            detected_dialog = SDL_Zenity_ShowFileDialogWithProperties;
+            detected_input = SDL_Zenity_ShowSimpleInputDialog;
             return 2;
         }
     }
@@ -71,11 +74,23 @@ void SDLCALL hint_callback(void *userdata, const char *name, const char *oldValu
 void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
     // Call detect_available_methods() again each time in case the situation changed
-    if (!detected_function && !detect_available_methods(NULL)) {
+    if (!detected_dialog && !detect_available_methods(NULL)) {
         // SetError() done by detect_available_methods()
         callback(userdata, NULL, -1);
         return;
     }
 
-    detected_function(type, callback, userdata, props);
+    detected_dialog(type, callback, userdata, props);
+}
+
+void SDL_ShowSimpleInputDialog(SDL_DialogInputCallback callback, void *userdata, const char *title, const char *message, const char *value, SDL_Window *window)
+{
+    // Call detect_available_methods() again each time in case the situation changed
+    if (!detected_input && !detect_available_methods(NULL)) {
+        // SetError() done by detect_available_methods()
+        callback(userdata, NULL);
+        return;
+    }
+
+    detected_input(callback, userdata, title, message, value, window);
 }

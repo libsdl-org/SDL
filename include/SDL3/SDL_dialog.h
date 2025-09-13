@@ -334,6 +334,52 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowFileDialogWithProperties(SDL_FileDialog
 #define SDL_PROP_FILE_DIALOG_ACCEPT_STRING       "SDL.filedialog.accept"
 #define SDL_PROP_FILE_DIALOG_CANCEL_STRING       "SDL.filedialog.cancel"
 
+/**
+ * Callback used by input dialog functions.
+ *
+ * If `value` is NULL, an error occured. Details can be obtained with
+ * SDL_GetError().
+ *
+ * If the user cancels the dialog, the callback will be invoked with an empty
+ * string. It is not possible to differentiate cancelling and inputting an empty
+ * string.
+ *
+ * The value argument should not be freed; it will automatically be freed
+ * when the callback returns. If you need to keep the string after the callback
+ * returns, you must duplicate it with SDL_strdup() or some other means.
+ *
+ * \param userdata an app-provided pointer, for the callback's use.
+ * \param value the value provided by the user, or NULL if an error occured.
+ *
+ * \since This datatype is available since SDL 3.4.0.
+ *
+ * \sa SDL_ShowSimpleInputDialog
+ */
+typedef void (SDLCALL *SDL_DialogInputCallback)(void *userdata, const char *value);
+
+/**
+ * Show a simple dialog prompting the user to input a string.
+ *
+ * \param callback a function pointer to be invoked when the user inputs a
+ *                 string and confirms, or cancels the dialog, or an error
+ *                 occurs.
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked.
+ * \param title the title of the dialog. May be NULL.
+ * \param message the message of the dialog. May be NULL.
+ * \param value the default value of the dialog. May be NULL.
+ * \param window the window the dialog should be modal for. May be NULL.
+ *
+ * \threadsafety This function should be called only from the main thread. The
+ *               callback may be invoked from the same thread or from a
+ *               different one, depending on the OS's constraints.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_DialogInputCallback
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_ShowSimpleInputDialog(SDL_DialogInputCallback callback, void *userdata, const char *title, const char *message, const char *value, SDL_Window *window);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
