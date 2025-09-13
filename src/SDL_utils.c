@@ -137,6 +137,7 @@ Uint32 SDL_GetNextObjectID(void)
 
 static SDL_InitState SDL_objects_init;
 static SDL_HashTable *SDL_objects;
+static bool check_validity = true;
 
 static Uint32 SDLCALL SDL_HashObject(void *unused, const void *key)
 {
@@ -153,6 +154,7 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
     SDL_assert(object != NULL);
 
     if (SDL_ShouldInit(&SDL_objects_init)) {
+        check_validity = SDL_GetHintBoolean(SDL_HINT_CHECK_OBJECT_VALIDITY, true);
         SDL_objects = SDL_CreateHashTable(0, true, SDL_HashObject, SDL_KeyMatchObject, NULL, NULL);
         const bool initialized = (SDL_objects != NULL);
         SDL_SetInitialized(&SDL_objects_init, initialized);
@@ -161,10 +163,12 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
         }
     }
 
-    if (valid) {
-        SDL_InsertIntoHashTable(SDL_objects, object, (void *)(uintptr_t)type, true);
-    } else {
-        SDL_RemoveFromHashTable(SDL_objects, object);
+    if (check_validity) {
+        if (valid) {
+            SDL_InsertIntoHashTable(SDL_objects, object, (void *)(uintptr_t)type, true);
+        } else {
+            SDL_RemoveFromHashTable(SDL_objects, object);
+        }
     }
 }
 
@@ -172,6 +176,10 @@ bool SDL_ObjectValid(void *object, SDL_ObjectType type)
 {
     if (!object) {
         return false;
+    }
+
+    if (!check_validity) {
+        return true;
     }
 
     const void *object_type;
