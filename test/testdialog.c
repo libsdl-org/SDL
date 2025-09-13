@@ -55,6 +55,10 @@ static void SDLCALL callback(void *userdata, const char * const *files, int filt
     }
 }
 
+static void SDLCALL input_callback(void *userdata, const char *input) {
+    SDL_Log("Input: %s\n", input);
+}
+
 char *concat_strings(const char *a, const char *b)
 {
     char *out = NULL;
@@ -80,6 +84,7 @@ int main(int argc, char *argv[])
     const SDL_FRect open_file_rect = { 50, 50, 220, 140 };
     const SDL_FRect save_file_rect = { 50, 290, 220, 140 };
     const SDL_FRect open_folder_rect = { 370, 50, 220, 140 };
+    const SDL_FRect input_rect = { 370, 290, 220, 140 };
     int i;
     const char *default_filename = "Untitled.index";
     const char *initial_path = NULL;
@@ -153,6 +158,8 @@ int main(int argc, char *argv[])
                     }
                     SDL_ShowSaveFileDialog(callback, &last_saved_path, w, filters, SDL_arraysize(filters), save_path ? save_path : default_filename);
                     SDL_free(save_path);
+                } else if (SDL_PointInRectFloat(&p, &input_rect)) {
+                    SDL_ShowSimpleInputDialog(input_callback, NULL, NULL, NULL, NULL, w);
                 }
             }
         }
@@ -173,10 +180,14 @@ int main(int argc, char *argv[])
         SDL_SetRenderDrawColor(r, 0, 0, 255, SDL_ALPHA_OPAQUE);
         SDL_RenderFillRect(r, &open_folder_rect);
 
+        SDL_SetRenderDrawColor(r, 255, 255, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderFillRect(r, &input_rect);
+
         SDL_SetRenderDrawColor(r, 0, 0, 0, SDL_ALPHA_OPAQUE);
         SDLTest_DrawString(r, open_file_rect.x+5, open_file_rect.y+open_file_rect.h/2, "Open File...");
         SDLTest_DrawString(r, save_file_rect.x+5, save_file_rect.y+save_file_rect.h/2, "Save File...");
         SDLTest_DrawString(r, open_folder_rect.x+5, open_folder_rect.y+open_folder_rect.h/2, "Open Folder...");
+        SDLTest_DrawString(r, input_rect.x+5, input_rect.y+input_rect.h/2, "Input text...");
 
         SDL_RenderPresent(r);
     }

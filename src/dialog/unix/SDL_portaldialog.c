@@ -534,6 +534,12 @@ cleanup:
     SDL_free(location_folder);
 }
 
+void SDL_Portal_ShowSimpleInputDialog(SDL_DialogInputCallback callback, void *userdata, const char *title, const char *message, const char *value, SDL_Window *window)
+{
+    SDL_Unsupported();
+    callback(userdata, NULL);
+}
+
 bool SDL_Portal_detect(void)
 {
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
@@ -598,6 +604,12 @@ void SDL_Portal_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
 {
     SDL_Unsupported();
     callback(userdata, NULL, -1);
+}
+
+void SDL_Portal_ShowSimpleInputDialog(SDL_DialogInputCallback callback, void *userdata, const char *title, const char *message, const char *value, SDL_Window *window)
+{
+    SDL_Unsupported();
+    callback(userdata, NULL);
 }
 
 bool SDL_Portal_detect(void)
