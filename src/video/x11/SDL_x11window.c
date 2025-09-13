@@ -283,7 +283,7 @@ static void X11_SetKeyboardFocus(SDL_Window *window, bool set_active_focus)
     }
 }
 
-Uint32 X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow)
+SDL_WindowFlags X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Window xwindow)
 {
     SDL_VideoData *videodata = _this->internal;
     Display *display = videodata->display;
