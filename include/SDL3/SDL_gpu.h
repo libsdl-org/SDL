@@ -2055,7 +2055,8 @@ typedef struct SDL_GPUColorTargetInfo
  *
  * Note that depth/stencil targets do not support multisample resolves.
  *
- * Due to ABI limitations, depth textures with more than 255 layers are not supported.
+ * Due to ABI limitations, depth textures with more than 255 layers are not
+ * supported.
  *
  * \since This struct is available since SDL 3.2.0.
  *
