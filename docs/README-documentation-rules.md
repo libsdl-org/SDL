@@ -274,6 +274,23 @@ comment. So don't mention the type a second time in the documentation if
 possible. It looks cluttered and repetitive to do so.
 
 
+## Keep `\param` and `\returns` sections short.
+
+These strings end up in a table that we don't want to be bulky.
+Try to keep these to one sentence/phrase where possible. If you need more
+detail--even extremely common details, like "you need to free the returned
+pointer"--put that information in the general Remarks section, where you
+can be as verbose as you like.
+
+(One exception for SDL: the return value almost always notes that on error,
+you should call SDL_GetError() to get more information. The documentation
+is so saturated with this that it's just the standard now.)
+
+Convention at the moment is that pointer params that are permitted to
+be NULL, which is somewhat uncommon, end with terse "May be NULL." sentence
+at the end, and pointers that must be non-NULL (most of them) say nothing.
+This is fine.
+
 ## Code examples go in the wiki.
 
 We don't want the headers cluttered up with code examples. These live on the
