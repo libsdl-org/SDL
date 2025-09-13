@@ -445,6 +445,7 @@ static Uint32 initial_blacklist_devices[] = {
     MAKE_VIDPID(0x26ce, 0x01a2), // ASRock LED Controller
     MAKE_VIDPID(0x20d6, 0x0002), // PowerA Enhanced Wireless Controller for Nintendo Switch (charging port only)
     MAKE_VIDPID(0x3434, 0x0211), // Keychron K1 Pro System Control
+    MAKE_VIDPID(0x04f2, 0xa13c), // HP Deluxe Webcam KQ246AA
 };
 static SDL_vidpid_list blacklist_devices = {
     SDL_HINT_JOYSTICK_BLACKLIST_DEVICES, 0, 0, NULL,
