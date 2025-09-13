@@ -57,24 +57,20 @@
 #define SDL_GAMEPAD_SDKLE_FIELD_SIZE    SDL_strlen(SDL_GAMEPAD_SDKLE_FIELD)
 
 // Helper function to add button mapping
-#ifndef ADD_BUTTON_MAPPING
 #define SDL_ADD_BUTTON_MAPPING(sdl_name, button_id, maxlen)                     \
     do {                                                                        \
         char temp[32];                                                          \
         (void)SDL_snprintf(temp, sizeof(temp), "%s:b%d,", sdl_name, button_id); \
         SDL_strlcat(mapping_string, temp, maxlen);                              \
     } while (0)
-#endif
 
 // Helper function to add axis mapping
-#ifndef ADD_AXIS_MAPPING
 #define SDL_ADD_AXIS_MAPPING(sdl_name, axis_id, maxlen)                       \
     do {                                                                      \
         char temp[32];                                                        \
         (void)SDL_snprintf(temp, sizeof(temp), "%s:a%d,", sdl_name, axis_id); \
         SDL_strlcat(mapping_string, temp, maxlen);                            \
     } while (0)
-#endif
 
 static bool SDL_gamepads_initialized;
 static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
