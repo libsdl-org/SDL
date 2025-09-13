@@ -71,6 +71,10 @@ int main(int argc, char *argv[])
     SDL_Event event;
     int list = 0;
 
+    /* Set desired error behavior for tests, use the environment to persist past SDL_Quit() */
+    SDL_setenv_unsafe(SDL_HINT_INVALID_PARAM_CHECKS, "2", 0);
+    SDL_setenv_unsafe(SDL_HINT_INVALID_PARAM_ACTION, "return", 0);
+
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_AUDIO);
     if (!state) {

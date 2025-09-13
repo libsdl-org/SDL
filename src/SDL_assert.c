@@ -120,25 +120,6 @@ static void SDL_GenerateAssertionReport(void)
     }
 }
 
-/* This is not declared in any header, although it is shared between some
-    parts of SDL, because we don't want anything calling it without an
-    extremely good reason. */
-#ifdef __WATCOMC__
-extern void SDL_ExitProcess(int exitcode);
-#pragma aux SDL_ExitProcess aborts;
-#endif
-extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
-
-#ifdef __WATCOMC__
-static void SDL_AbortAssertion(void);
-#pragma aux SDL_AbortAssertion aborts;
-#endif
-static SDL_NORETURN void SDL_AbortAssertion(void)
-{
-    SDL_Quit();
-    SDL_ExitProcess(42);
-}
-
 static SDL_AssertState SDLCALL SDL_PromptAssertion(const SDL_AssertData *data, void *userdata)
 {
     SDL_AssertState state = SDL_ASSERTION_ABORT;

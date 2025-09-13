@@ -91,10 +91,6 @@ SDL_COMPILE_TIME_ASSERT(SDL_MINOR_VERSION_max, SDL_MINOR_VERSION <= 999);
 SDL_COMPILE_TIME_ASSERT(SDL_MICRO_VERSION_min, SDL_MICRO_VERSION >= 0);
 SDL_COMPILE_TIME_ASSERT(SDL_MICRO_VERSION_max, SDL_MICRO_VERSION <= 999);
 
-/* This is not declared in any header, although it is shared between some
-    parts of SDL, because we don't want anything calling it without an
-    extremely good reason. */
-extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 SDL_NORETURN void SDL_ExitProcess(int exitcode)
 {
 #if defined(SDL_PLATFORM_WINDOWS)
@@ -116,6 +112,12 @@ SDL_NORETURN void SDL_ExitProcess(int exitcode)
 #else
     _exit(exitcode);
 #endif
+}
+
+SDL_NORETURN void SDL_AbortAssertion(void)
+{
+    SDL_Quit();
+    SDL_ExitProcess(42);
 }
 
 // App metadata
@@ -191,6 +193,48 @@ static bool SDL_MainIsReady = true;
 static SDL_ThreadID SDL_MainThreadID = 0;
 static bool SDL_bInMainQuit = false;
 static Uint8 SDL_SubsystemRefCount[32];
+
+static bool SDL_param_hints_set = false;
+SDL_InvalidParamChecks SDL_invalid_param_checks = SDL_INVALID_PARAM_CHECKS_DEFAULT;
+SDL_InvalidParamAction SDL_invalid_param_action = SDL_INVALID_PARAM_ACTION_DEFAULT;
+
+static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_InvalidParamChecks checks = SDL_INVALID_PARAM_CHECKS_DEFAULT;
+
+    if (hint) {
+        switch (*hint) {
+        case '0':
+            checks = SDL_INVALID_PARAM_CHECKS_DISABLED;
+            break;
+        case '1':
+            checks = SDL_INVALID_PARAM_CHECKS_FAST;
+            break;
+        case '2':
+            checks = SDL_INVALID_PARAM_CHECKS_FULL;
+            break;
+        default:
+            break;
+        }
+    }
+    SDL_invalid_param_checks = checks;
+}
+
+static void SDLCALL SDL_InvalidParamActionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_InvalidParamAction action = SDL_INVALID_PARAM_ACTION_DEFAULT;
+
+    if (hint) {
+        if (SDL_strcasecmp(hint, "return") == 0) {
+            action = SDL_INVALID_PARAM_ACTION_RETURN;
+        } else if (SDL_strcasecmp(hint, "assert") == 0) {
+            action = SDL_INVALID_PARAM_ACTION_ASSERT;
+        } else if (SDL_strcasecmp(hint, "abort") == 0) {
+            action = SDL_INVALID_PARAM_ACTION_ABORT;
+        }
+    }
+    SDL_invalid_param_action = action;
+}
 
 // Private helper to increment a subsystem's ref counter.
 static void SDL_IncrementSubsystemRefCount(Uint32 subsystem)
@@ -286,6 +330,12 @@ void SDL_InitMainThread(void)
     SDL_InitTicks();
     SDL_InitFilesystem();
 
+    if (!SDL_param_hints_set) {
+        SDL_AddHintCallback(SDL_HINT_INVALID_PARAM_CHECKS, SDL_InvalidParamChecksChanged, NULL);
+        SDL_AddHintCallback(SDL_HINT_INVALID_PARAM_ACTION, SDL_InvalidParamActionChanged, NULL);
+        SDL_param_hints_set = true;
+    }
+
     if (!done_info) {
         const char *value;
 
@@ -307,6 +357,8 @@ static void SDL_QuitMainThread(void)
     SDL_QuitTicks();
     SDL_QuitEnvironment();
     SDL_QuitTLSData();
+
+    SDL_param_hints_set = false;
 }
 
 bool SDL_InitSubSystem(SDL_InitFlags flags)

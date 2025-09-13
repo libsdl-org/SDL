@@ -686,6 +686,36 @@ extern "C" {
 #define SDL_HINT_DISPLAY_USABLE_BOUNDS "SDL_DISPLAY_USABLE_BOUNDS"
 
 /**
+ * Set the action taken for invalid parameters passed to SDL functions.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "return": Return an error result.
+ * - "assert": Assert and return an error result. (default)
+ * - "abort": Assert and abort execution.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_INVALID_PARAM_ACTION "SDL_INVALID_PARAM_ACTION"
+
+/**
+ * Set the level of checking for invalid parameters passed to SDL functions.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable parameter error checking. (default for release SDL builds)
+ * - "1": Enable fast parameter error checking, e.g. quick NULL checks, etc.
+ * - "2": Enable full parameter error checking, e.g. validating objects are the correct type, etc. (default for debug SDL builds)
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_INVALID_PARAM_CHECKS "SDL_INVALID_PARAM_CHECKS"
+
+/**
  * Disable giving back control to the browser automatically when running with
  * asyncify.
  *

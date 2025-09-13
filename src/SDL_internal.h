@@ -263,6 +263,18 @@
 extern "C" {
 #endif
 
+#if !defined(SDL_RELEASE_BUILD) && !defined(SDL_DEBUG_BUILD)
+#if defined(_DEBUG) || defined(DEBUG)
+#define SDL_DEBUG_BUILD
+#else
+#define SDL_RELEASE_BUILD
+#endif
+#endif // !SDL_RELEASE_BUILD && !SDL_DEBUG_BUILD
+
+#if defined(SDL_RELEASE_BUILD) && defined(SDL_DEBUG_BUILD)
+#error This build is both debug and release
+#endif
+
 #include "SDL_utils_c.h"
 #include "SDL_hashtable.h"
 
@@ -271,6 +283,61 @@ extern "C" {
 
 #define POP_SDL_ERROR() \
     SDL_SetError("%s", _error); SDL_free(_error); }
+
+#ifdef __WATCOMC__
+extern void SDL_ExitProcess(int exitcode);
+#pragma aux SDL_ExitProcess aborts;
+#endif
+extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
+
+#ifdef __WATCOMC__
+static void SDL_AbortAssertion(void);
+#pragma aux SDL_AbortAssertion aborts;
+#endif
+extern SDL_NORETURN void SDL_AbortAssertion(void);
+
+#ifdef SDL_DISABLE_PARAMETER_CHECKS
+#define PARAMETER_CHECKS(RUN_CHECKS)
+#define CHECK_PARAM(invalid) if (false)
+#else
+#define PARAMETER_CHECKS(RUN_CHECKS)                                        \
+    if (SDL_invalid_param_checks != SDL_INVALID_PARAM_CHECKS_DISABLED) {    \
+        RUN_CHECKS                                                          \
+    }
+#define CHECK_PARAM(invalid)                                                \
+    if (SDL_invalid_param_action != SDL_INVALID_PARAM_ACTION_RETURN) {      \
+        SDL_assert_always(!(invalid));                                      \
+        if (SDL_invalid_param_action == SDL_INVALID_PARAM_ACTION_ABORT) {   \
+            if (invalid) {                                                  \
+                SDL_AbortAssertion();                                       \
+            }                                                               \
+        }                                                                   \
+    }                                                                       \
+    if (invalid)
+#endif
+
+typedef enum {
+    SDL_INVALID_PARAM_CHECKS_DISABLED,
+    SDL_INVALID_PARAM_CHECKS_FAST,
+    SDL_INVALID_PARAM_CHECKS_FULL,
+} SDL_InvalidParamChecks;
+
+#ifdef SDL_DEBUG_BUILD
+#define SDL_INVALID_PARAM_CHECKS_DEFAULT    SDL_INVALID_PARAM_CHECKS_FULL
+#else
+#define SDL_INVALID_PARAM_CHECKS_DEFAULT    SDL_INVALID_PARAM_CHECKS_DISABLED
+#endif
+
+typedef enum {
+    SDL_INVALID_PARAM_ACTION_RETURN,
+    SDL_INVALID_PARAM_ACTION_ASSERT,
+    SDL_INVALID_PARAM_ACTION_ABORT,
+} SDL_InvalidParamAction;
+
+#define SDL_INVALID_PARAM_ACTION_DEFAULT    SDL_INVALID_PARAM_ACTION_ASSERT
+
+extern SDL_InvalidParamChecks SDL_invalid_param_checks;
+extern SDL_InvalidParamAction SDL_invalid_param_action;
 
 // Do any initialization that needs to happen before threads are started
 extern void SDL_InitMainThread(void);
