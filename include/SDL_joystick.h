@@ -214,6 +214,9 @@ extern DECLSPEC const char *SDLCALL SDL_JoystickPathForIndex(int device_index);
  * Get the player index of a joystick, or -1 if it's not available This can be
  * called before any joysticks are opened.
  *
+ * \param device_index device index.
+ * \returns player index, or -1 if not available.
+ *
  * \since This function is available since SDL 2.0.9.
  */
 extern DECLSPEC int SDLCALL SDL_JoystickGetDevicePlayerIndex(int device_index);
@@ -356,6 +359,10 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromPlayerIndex(int player_ind
 /**
  * Attach a new virtual joystick.
  *
+ * \param type joystick type.
+ * \param naxes number of axes.
+ * \param nbuttons number of buttons.
+ * \param nhats number of hats.
  * \returns the joystick's device index, or -1 if an error occurred.
  *
  * \since This function is available since SDL 2.0.14.
@@ -409,6 +416,7 @@ typedef struct SDL_VirtualJoystickDesc
 /**
  * Attach a new virtual joystick with extended properties.
  *
+ * \param desc joystick description.
  * \returns the joystick's device index, or -1 if an error occurred.
  *
  * \since This function is available since SDL 2.24.0.
