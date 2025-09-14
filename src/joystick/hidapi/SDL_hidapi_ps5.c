@@ -1047,6 +1047,9 @@ static bool HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *c
     if (!ctx->enhanced_mode) {
         if (application_usage) {
             HIDAPI_DriverPS5_UpdateEnhancedModeOnApplicationUsage(ctx);
+
+            // Wait briefly before sending additional effects
+            SDL_Delay(10);
         }
 
         if (!ctx->enhanced_mode) {
