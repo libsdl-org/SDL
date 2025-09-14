@@ -4461,10 +4461,28 @@ extern "C" {
 #define SDL_HINT_DEBUG_LOGGING "SDL_DEBUG_LOGGING"
 
 /**
+ * On Windows, this hint forces SDL to call SetCursor(NULL) to hide the mouse cursor,
+ * instead of using an invisible blank cursor.
+ *
+ * This may be required in certain environments (e.g., VMware or specific RDP configurations),
+ * where SetCursorPos() does not function correctly if the cursor is not truly hidden using SetCursor(NULL).
+ *
+ * By default, SDL uses a transparent cursor surface to simulate a hidden cursor,
+ * which avoids issues in some scenarios (e.g., multi-window focus handling).
+ * However, this method may not work properly in all virtualized environments.
+ *
+ * Set this hint to "1" to restore the previous behavior and force SetCursor(NULL) to be used.
+ *
+ * This hint is only applicable on Windows.
+ */
+#define SDL_HINT_WINDOWS_FORCE_NULL_CURSOR "SDL_WINDOWS_FORCE_NULL_CURSOR"
+
+/**
  * An enumeration of hint priorities.
  *
  * \since This enum is available since SDL 3.2.0.
  */
+
 typedef enum SDL_HintPriority
 {
     SDL_HINT_DEFAULT,
