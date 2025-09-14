@@ -217,11 +217,6 @@ static bool SDL_SendsDisplayChanges(SDL_VideoDevice *_this)
     return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES);
 }
 
-static bool SDL_DisableMouseWarpOnFullscreenTransitions(SDL_VideoDevice *_this)
-{
-    return !!(_this->device_caps & VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS);
-}
-
 static bool SDL_DriverSendsHDRChanges(SDL_VideoDevice *_this)
 {
     return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES);
@@ -1876,22 +1871,6 @@ static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
     }
 }
 
-static void SDL_RestoreMousePosition(SDL_Window *window)
-{
-    float x, y;
-    SDL_Mouse *mouse = SDL_GetMouse();
-
-    if (window == SDL_GetMouseFocus()) {
-        const bool prev_warp_val = mouse->warp_emulation_prohibited;
-        SDL_GetMouseState(&x, &y);
-
-        // Disable the warp emulation so it isn't accidentally activated on a fullscreen transitions.
-        mouse->warp_emulation_prohibited = true;
-        SDL_WarpMouseInWindow(window, x, y);
-        mouse->warp_emulation_prohibited = prev_warp_val;
-    }
-}
-
 bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, bool commit)
 {
     SDL_VideoDisplay *display = NULL;
@@ -2056,11 +2035,6 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
                     SDL_OnWindowResized(window);
                 }
             }
-
-            // Restore the cursor position
-            if (!SDL_DisableMouseWarpOnFullscreenTransitions(_this)) {
-                SDL_RestoreMousePosition(window);
-            }
         }
     } else {
         bool resized = false;
@@ -2104,11 +2078,6 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
                 } else {
                     SDL_OnWindowResized(window);
                 }
-            }
-
-            // Restore the cursor position if we've exited fullscreen on a display
-            if (display && !SDL_DisableMouseWarpOnFullscreenTransitions(_this)) {
-                SDL_RestoreMousePosition(window);
             }
         }
     }
