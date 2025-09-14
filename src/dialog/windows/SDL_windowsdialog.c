@@ -518,10 +518,6 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
     bool success = false;
     bool co_init = false;
 
-    if (!WIN_IsWindows7OrGreater()) {
-        goto quit;
-    }
-
     // We can assume shell32 is already loaded here.
     shell32_handle = GetModuleHandle(TEXT("shell32.dll"));
     if (!shell32_handle) {
