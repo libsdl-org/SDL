@@ -24,7 +24,7 @@
 #include <intrin.h>
 #define HAVE_MSC_ATOMICS 1
 #if defined(_M_ARM) || defined(_M_ARM64)
-#define HAVE_MSC_NF_ATOMICS 1
+#define HAVE_MSC_ORDERED_ATOMICS 1
 #endif
 #endif
 
@@ -148,6 +148,80 @@ static SDL_INLINE void leaveLock(void *a)
 }
 #endif
 
+#ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
+// __atomic ordering arguments should be compile time constants
+#define COMPARE_AND_SWAP_INT_WITH_ORDER(value, oldval, newval, weak, successord, failord) \
+    switch (successord) { \
+        case SDL_MEMORY_ORDER_RELAXED: \
+            switch (failord) { \
+                case SDL_MEMORY_ORDER_RELAXED: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_RELAXED, __ATOMIC_RELAXED); \
+                default: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
+            } \
+        case SDL_MEMORY_ORDER_ACQUIRE: \
+            switch (failord) { \
+                case SDL_MEMORY_ORDER_RELAXED: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_ACQUIRE, __ATOMIC_RELAXED); \
+                case SDL_MEMORY_ORDER_ACQUIRE: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_ACQUIRE, __ATOMIC_ACQUIRE); \
+                default: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
+            } \
+        case SDL_MEMORY_ORDER_RELEASE: \
+            switch (failord) { \
+                case SDL_MEMORY_ORDER_RELAXED: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_RELEASE, __ATOMIC_RELAXED); \
+                default: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
+            } \
+        case SDL_MEMORY_ORDER_ACQ_REL: \
+            switch (failord) { \
+                case SDL_MEMORY_ORDER_RELAXED: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED); \
+                case SDL_MEMORY_ORDER_ACQUIRE: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE); \
+                default: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
+            } \
+        default: \
+            switch (failord) { \
+                case SDL_MEMORY_ORDER_RELAXED: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_SEQ_CST, __ATOMIC_RELAXED); \
+                case SDL_MEMORY_ORDER_ACQUIRE: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_SEQ_CST, __ATOMIC_ACQUIRE); \
+                default: \
+                    return __atomic_compare_exchange_n(value, &oldval, newval, weak, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST); \
+            } \
+    }
+#define COMPARE_AND_SWAP_POINTER_WITH_ORDER(value, oldval, newval, weak, successord, failord) \
+    COMPARE_AND_SWAP_INT_WITH_ORDER(value, oldval, newval, weak, successord, failord)
+#elif defined(HAVE_MSC_ORDERED_ATOMICS)
+#define COMPARE_AND_SWAP_INT_WITH_ORDER(value, oldval, newval, weak, successord, failord) \
+    SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(*value)); \
+    switch (successord) { \
+        case SDL_MEMORY_ORDER_RELAXED: \
+            return _InterlockedCompareExchange_nf((long *)(value), (long)(newval), (long)(oldval)) == (long)(oldval); \
+        case SDL_MEMORY_ORDER_ACQUIRE: \
+            return _InterlockedCompareExchange_acq((long *)(value), (long)(newval), (long)(oldval)) == (long)(oldval); \
+        case SDL_MEMORY_ORDER_RELEASE: \
+            return _InterlockedCompareExchange_rel((long *)(value), (long)(newval), (long)(oldval)) == (long)(oldval); \
+        default: \
+            return _InterlockedCompareExchange((long *)(value), (long)(newval), (long)(oldval)) == (long)(oldval); \
+    }
+#define COMPARE_AND_SWAP_POINTER_WITH_ORDER(value, oldval, newval, weak, successord, failord) \
+    switch (successord) { \
+        case SDL_MEMORY_ORDER_RELAXED: \
+            return _InterlockedCompareExchangePointer_nf(value, newval, oldval) == oldval; \
+        case SDL_MEMORY_ORDER_ACQUIRE: \
+            return _InterlockedCompareExchangePointer_acq(value, newval, oldval) == oldval; \
+        case SDL_MEMORY_ORDER_RELEASE: \
+            return _InterlockedCompareExchangePointer_rel(value, newval, oldval) == oldval; \
+        default: \
+            return _InterlockedCompareExchangePointer(value, newval, oldval) == oldval; \
+    }
+#endif
+
 bool SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval)
 {
 #ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
@@ -180,13 +254,19 @@ bool SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval)
 #endif
 }
 
-bool SDL_CompareAndSwapRelaxedAtomicInt(SDL_AtomicInt *a, int oldval, int newval)
+bool SDL_CompareAndSwapAtomicIntStrongWithOrder(SDL_AtomicInt *a, int oldval, int newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord)
 {
-#ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
-    return __atomic_compare_exchange_n(&a->value, &oldval, newval, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
-    SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
-    return _InterlockedCompareExchange_nf((long *)&a->value, (long)newval, (long)oldval) == (long)oldval;
+#ifdef COMPARE_AND_SWAP_INT_WITH_ORDER
+    COMPARE_AND_SWAP_INT_WITH_ORDER(&a->value, oldval, newval, false, successord, failord)
+#else
+    return SDL_CompareAndSwapAtomicInt(a, oldval, newval);
+#endif
+}
+
+bool SDL_CompareAndSwapAtomicIntWeakWithOrder(SDL_AtomicInt *a, int oldval, int newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord)
+{
+#ifdef COMPARE_AND_SWAP_INT_WITH_ORDER
+    COMPARE_AND_SWAP_INT_WITH_ORDER(&a->value, oldval, newval, true, successord, failord)
 #else
     return SDL_CompareAndSwapAtomicInt(a, oldval, newval);
 #endif
@@ -225,13 +305,19 @@ bool SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval)
 #endif
 }
 
-bool SDL_CompareAndSwapRelaxedAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval)
+bool SDL_CompareAndSwapAtomicU32StrongWithOrder(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord)
 {
-#ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
-    return __atomic_compare_exchange_n(&a->value, &oldval, newval, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
-    SDL_COMPILE_TIME_ASSERT(atomic_cas, sizeof(long) == sizeof(a->value));
-    return _InterlockedCompareExchange_nf((long *)&a->value, (long)newval, (long)oldval) == (long)oldval;
+#ifdef COMPARE_AND_SWAP_INT_WITH_ORDER
+    COMPARE_AND_SWAP_INT_WITH_ORDER(&a->value, oldval, newval, false, successord, failord)
+#else
+    return SDL_CompareAndSwapAtomicU32(a, oldval, newval);
+#endif
+}
+
+bool SDL_CompareAndSwapAtomicU32WeakWithOrder(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord)
+{
+#ifdef COMPARE_AND_SWAP_INT_WITH_ORDER
+    COMPARE_AND_SWAP_INT_WITH_ORDER(&a->value, oldval, newval, true, successord, failord)
 #else
     return SDL_CompareAndSwapAtomicU32(a, oldval, newval);
 #endif
@@ -269,12 +355,19 @@ bool SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval)
 #endif
 }
 
-bool SDL_CompareAndSwapRelaxedAtomicPointer(void **a, void *oldval, void *newval)
+bool SDL_CompareAndSwapAtomicPointerStrongWithOrder(void **a, void *oldval, void *newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord)
 {
-#ifdef HAVE_ATOMIC_COMPARE_EXCHANGE_N
-    return __atomic_compare_exchange_n(a, &oldval, newval, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
-    return _InterlockedCompareExchangePointer_nf(a, newval, oldval) == oldval;
+#ifdef COMPARE_AND_SWAP_POINTER_WITH_ORDER
+    COMPARE_AND_SWAP_POINTER_WITH_ORDER(a, oldval, newval, false, successord, failord)
+#else
+    return SDL_CompareAndSwapAtomicPointer(a, oldval, newval);
+#endif
+}
+
+bool SDL_CompareAndSwapAtomicPointerWeakWithOrder(void **a, void *oldval, void *newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord)
+{
+#ifdef COMPARE_AND_SWAP_POINTER_WITH_ORDER
+    COMPARE_AND_SWAP_POINTER_WITH_ORDER(a, oldval, newval, true, successord, failord)
 #else
     return SDL_CompareAndSwapAtomicPointer(a, oldval, newval);
 #endif
@@ -303,13 +396,24 @@ int SDL_SetAtomicInt(SDL_AtomicInt *a, int v)
 #endif
 }
 
-int SDL_SetRelaxedAtomicInt(SDL_AtomicInt *a, int v)
+int SDL_SetAtomicIntWithOrder(SDL_AtomicInt *a, int v, SDL_MemoryOrder order)
 {
 #ifdef HAVE_ATOMIC_EXCHANGE_N
-    return __atomic_exchange_n(&a->value, v, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return __atomic_exchange_n(&a->value, v, __ATOMIC_RELAXED);
+        case SDL_MEMORY_ORDER_ACQUIRE: return __atomic_exchange_n(&a->value, v, __ATOMIC_ACQUIRE);
+        case SDL_MEMORY_ORDER_RELEASE: return __atomic_exchange_n(&a->value, v, __ATOMIC_RELEASE);
+        case SDL_MEMORY_ORDER_ACQ_REL: return __atomic_exchange_n(&a->value, v, __ATOMIC_ACQ_REL);
+        default: return __atomic_exchange_n(&a->value, v, __ATOMIC_SEQ_CST);
+    }
+#elif defined(HAVE_MSC_ORDERED_ATOMICS)
     SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
-    return _InterlockedExchange_nf((long *)&a->value, v);
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return _InterlockedExchange_nf((long *)&a->value, v);
+        case SDL_MEMORY_ORDER_ACQUIRE: return _InterlockedExchange_acq((long *)&a->value, v);
+        case SDL_MEMORY_ORDER_RELEASE: return _InterlockedExchange_rel((long *)&a->value, v);
+        default: return _InterlockedExchange((long *)&a->value, v);
+    }
 #else
     return SDL_SetAtomicInt(a, v);
 #endif
@@ -338,13 +442,24 @@ Uint32 SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v)
 #endif
 }
 
-Uint32 SDL_SetRelaxedAtomicU32(SDL_AtomicU32 *a, Uint32 v)
+Uint32 SDL_SetAtomicU32WithOrder(SDL_AtomicU32 *a, Uint32 v, SDL_MemoryOrder order)
 {
 #ifdef HAVE_ATOMIC_EXCHANGE_N
-    return __atomic_exchange_n(&a->value, v, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return __atomic_exchange_n(&a->value, v, __ATOMIC_RELAXED);
+        case SDL_MEMORY_ORDER_ACQUIRE: return __atomic_exchange_n(&a->value, v, __ATOMIC_ACQUIRE);
+        case SDL_MEMORY_ORDER_RELEASE: return __atomic_exchange_n(&a->value, v, __ATOMIC_RELEASE);
+        case SDL_MEMORY_ORDER_ACQ_REL: return __atomic_exchange_n(&a->value, v, __ATOMIC_ACQ_REL);
+        default: return __atomic_exchange_n(&a->value, v, __ATOMIC_SEQ_CST);
+    }
+#elif defined(HAVE_MSC_ORDERED_ATOMICS)
     SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
-    return _InterlockedExchange_nf((long *)&a->value, v);
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return _InterlockedExchange_nf((long *)&a->value, v);
+        case SDL_MEMORY_ORDER_ACQUIRE: return _InterlockedExchange_acq((long *)&a->value, v);
+        case SDL_MEMORY_ORDER_RELEASE: return _InterlockedExchange_rel((long *)&a->value, v);
+        default: return _InterlockedExchange((long *)&a->value, v);
+    }
 #else
     return SDL_SetAtomicU32(a, v);
 #endif
@@ -371,12 +486,23 @@ void *SDL_SetAtomicPointer(void **a, void *v)
 #endif
 }
 
-void *SDL_SetRelaxedAtomicPointer(void **a, void *v)
+void *SDL_SetAtomicPointerWithOrder(void **a, void *v, SDL_MemoryOrder order)
 {
 #ifdef HAVE_ATOMIC_EXCHANGE_N
-    return __atomic_exchange_n(a, v, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
-    return _InterlockedExchangePointer_nf(a, v);
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return __atomic_exchange_n(a, v, __ATOMIC_RELAXED);
+        case SDL_MEMORY_ORDER_ACQUIRE: return __atomic_exchange_n(a, v, __ATOMIC_ACQUIRE);
+        case SDL_MEMORY_ORDER_RELEASE: return __atomic_exchange_n(a, v, __ATOMIC_RELEASE);
+        case SDL_MEMORY_ORDER_ACQ_REL: return __atomic_exchange_n(a, v, __ATOMIC_ACQ_REL);
+        default: return __atomic_exchange_n(a, v, __ATOMIC_SEQ_CST);
+    }
+#elif defined(HAVE_MSC_ORDERED_ATOMICS)
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return _InterlockedExchangePointer_nf(a, v);
+        case SDL_MEMORY_ORDER_ACQUIRE: return _InterlockedExchangePointer_acq(a, v);
+        case SDL_MEMORY_ORDER_RELEASE: return _InterlockedExchangePointer_rel(a, v);
+        default: return _InterlockedExchangePointer(a, v);
+    }
 #else
     return SDL_SetAtomicPointer(a, v);
 #endif
@@ -408,13 +534,24 @@ int SDL_AddAtomicInt(SDL_AtomicInt *a, int v)
 #endif
 }
 
-int SDL_AddRelaxedAtomicInt(SDL_AtomicInt *a, int v)
+int SDL_AddAtomicIntWithOrder(SDL_AtomicInt *a, int v, SDL_MemoryOrder order)
 {
 #ifdef HAVE_ATOMIC_FETCH_ADD
-    return __atomic_fetch_add(&a->value, v, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
-    SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
-    return _InterlockedExchangeAdd_nf((long *)&a->value, v);
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return __atomic_fetch_add(&a->value, v, __ATOMIC_RELAXED);
+        case SDL_MEMORY_ORDER_ACQUIRE: return __atomic_fetch_add(&a->value, v, __ATOMIC_ACQUIRE);
+        case SDL_MEMORY_ORDER_RELEASE: return __atomic_fetch_add(&a->value, v, __ATOMIC_RELEASE);
+        case SDL_MEMORY_ORDER_ACQ_REL: return __atomic_fetch_add(&a->value, v, __ATOMIC_ACQ_REL);
+        default: return __atomic_fetch_add(&a->value, v, __ATOMIC_SEQ_CST);
+    }
+#elif defined(HAVE_MSC_ORDERED_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return _InterlockedExchangeAdd_nf((long *)&a->value, v);
+        case SDL_MEMORY_ORDER_ACQUIRE: return _InterlockedExchangeAdd_acq((long *)&a->value, v);
+        case SDL_MEMORY_ORDER_RELEASE: return _InterlockedExchangeAdd_rel((long *)&a->value, v);
+        default: return _InterlockedExchangeAdd((long *)&a->value, v);
+    }
 #else
     return SDL_AddAtomicInt(a, v);
 #endif
@@ -446,13 +583,24 @@ Uint32 SDL_AddAtomicU32(SDL_AtomicU32 *a, int v)
 #endif
 }
 
-Uint32 SDL_AddRelaxedAtomicU32(SDL_AtomicU32 *a, int v)
+Uint32 SDL_AddAtomicU32WithOrder(SDL_AtomicU32 *a, int v, SDL_MemoryOrder order)
 {
 #ifdef HAVE_ATOMIC_FETCH_ADD
-    return __atomic_fetch_add(&a->value, v, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
-    SDL_COMPILE_TIME_ASSERT(atomic_add, sizeof(long) == sizeof(a->value));
-    return _InterlockedExchangeAdd_nf((long *)&a->value, v);
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return __atomic_fetch_add(&a->value, v, __ATOMIC_RELAXED);
+        case SDL_MEMORY_ORDER_ACQUIRE: return __atomic_fetch_add(&a->value, v, __ATOMIC_ACQUIRE);
+        case SDL_MEMORY_ORDER_RELEASE: return __atomic_fetch_add(&a->value, v, __ATOMIC_RELEASE);
+        case SDL_MEMORY_ORDER_ACQ_REL: return __atomic_fetch_add(&a->value, v, __ATOMIC_ACQ_REL);
+        default: return __atomic_fetch_add(&a->value, v, __ATOMIC_SEQ_CST);
+    }
+#elif defined(HAVE_MSC_ORDERED_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return _InterlockedExchangeAdd_nf((long *)&a->value, v);
+        case SDL_MEMORY_ORDER_ACQUIRE: return _InterlockedExchangeAdd_acq((long *)&a->value, v);
+        case SDL_MEMORY_ORDER_RELEASE: return _InterlockedExchangeAdd_rel((long *)&a->value, v);
+        default: return _InterlockedExchangeAdd((long *)&a->value, v);
+    }
 #else
     return SDL_AddAtomicU32(a, v);
 #endif
@@ -482,13 +630,21 @@ int SDL_GetAtomicInt(SDL_AtomicInt *a)
 #endif
 }
 
-int SDL_GetRelaxedAtomicInt(SDL_AtomicInt *a)
+int SDL_GetAtomicIntWithOrder(SDL_AtomicInt *a, SDL_MemoryOrder order)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
-    return __atomic_load_n(&a->value, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
-    SDL_COMPILE_TIME_ASSERT(atomic_get, sizeof(long) == sizeof(a->value));
-    return _InterlockedOr_nf((long *)&a->value, 0);
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return __atomic_load_n(&a->value, __ATOMIC_RELAXED);
+        case SDL_MEMORY_ORDER_ACQUIRE: return __atomic_load_n(&a->value, __ATOMIC_ACQUIRE);
+        default: return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
+    }
+#elif defined(HAVE_MSC_ORDERED_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return _InterlockedOr_nf((long *)&a->value, 0);
+        case SDL_MEMORY_ORDER_ACQUIRE: return _InterlockedOr_acq((long *)&a->value, 0);
+        default: return _InterlockedOr((long *)&a->value, 0);
+    }
 #else
     return SDL_GetAtomicInt(a);
 #endif
@@ -520,13 +676,21 @@ Uint32 SDL_GetAtomicU32(SDL_AtomicU32 *a)
 #endif
 }
 
-Uint32 SDL_GetRelaxedAtomicU32(SDL_AtomicU32 *a)
+Uint32 SDL_GetAtomicU32WithOrder(SDL_AtomicU32 *a, SDL_MemoryOrder order)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
-    return __atomic_load_n(&a->value, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
-    SDL_COMPILE_TIME_ASSERT(atomic_get, sizeof(long) == sizeof(a->value));
-    return (Uint32)_InterlockedOr_nf((long *)&a->value, 0);
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return __atomic_load_n(&a->value, __ATOMIC_RELAXED);
+        case SDL_MEMORY_ORDER_ACQUIRE: return __atomic_load_n(&a->value, __ATOMIC_ACQUIRE);
+        default: return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
+    }
+#elif defined(HAVE_MSC_ORDERED_ATOMICS)
+    SDL_COMPILE_TIME_ASSERT(atomic_set, sizeof(long) == sizeof(a->value));
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return _InterlockedOr_nf((long *)&a->value, 0);
+        case SDL_MEMORY_ORDER_ACQUIRE: return _InterlockedOr_acq((long *)&a->value, 0);
+        default: return _InterlockedOr((long *)&a->value, 0);
+    }
 #else
     return SDL_GetAtomicU32(a);
 #endif
@@ -551,12 +715,20 @@ void *SDL_GetAtomicPointer(void **a)
 #endif
 }
 
-void *SDL_GetRelaxedAtomicPointer(void **a)
+void *SDL_GetAtomicPointerWithOrder(void **a, SDL_MemoryOrder order)
 {
 #ifdef HAVE_ATOMIC_LOAD_N
-    return __atomic_load_n(a, __ATOMIC_RELAXED);
-#elif defined(HAVE_MSC_NF_ATOMICS)
-    return _InterlockedCompareExchangePointer_nf(a, NULL, NULL);
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return __atomic_load_n(a, __ATOMIC_RELAXED);
+        case SDL_MEMORY_ORDER_ACQUIRE: return __atomic_load_n(a, __ATOMIC_ACQUIRE);
+        default: return __atomic_load_n(a, __ATOMIC_SEQ_CST);
+    }
+#elif defined(HAVE_MSC_ORDERED_ATOMICS)
+    switch (order) {
+        case SDL_MEMORY_ORDER_RELAXED: return _InterlockedCompareExchangePointer_nf(a, NULL, NULL);
+        case SDL_MEMORY_ORDER_ACQUIRE: return _InterlockedCompareExchangePointer_acq(a, NULL, NULL);
+        default: return _InterlockedCompareExchangePointer(a, NULL, NULL);
+    }
 #else
     return SDL_GetAtomicPointer(a);
 #endif
