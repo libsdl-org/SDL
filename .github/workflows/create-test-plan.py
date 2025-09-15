@@ -30,7 +30,8 @@ class JobOs(Enum):
     Ubuntu22_04 = "ubuntu-22.04"
     Ubuntu24_04 = "ubuntu-24.04"
     Ubuntu24_04_arm = "ubuntu-24.04-arm"
-    Macos13 = "macos-13"
+    Macos13 = "macos-13"  # macOS Ventura (2022)
+    Macos26 = "macos-26"  # macOS Tahoe (2025)
 
 
 class SdlPlatform(Enum):
@@ -119,6 +120,7 @@ JOB_SPECS = {
     "ubuntu-intel-icc": JobSpec(name="Ubuntu 22.04 (Intel Compiler)",       os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04-icc",    intel=IntelCompiler.Icc, ),
     "macos-framework-x64":  JobSpec(name="MacOS (Framework) (x64)",         os=JobOs.Macos13,           platform=SdlPlatform.MacOS,       artifact="SDL-macos-framework",    apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, xcode=True, ),
     "macos-framework-arm64": JobSpec(name="MacOS (Framework) (arm64)",      os=JobOs.MacosLatest,       platform=SdlPlatform.MacOS,       artifact=None,                     apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, ),
+    "macos-26-framework-arm64": JobSpec(name="MacOS 26 (Framework) (arm64)",os=JobOs.Macos26,           platform=SdlPlatform.MacOS,       artifact=None,                     apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, ),
     "macos-gnu-arm64": JobSpec(name="MacOS (GNU prefix)",                   os=JobOs.MacosLatest,       platform=SdlPlatform.MacOS,       artifact="SDL-macos-arm64-gnu",    apple_framework=False, apple_archs={AppleArch.Aarch64, },  ),
     "ios": JobSpec(name="iOS (CMake & xcode)",                              os=JobOs.MacosLatest,       platform=SdlPlatform.Ios,         artifact="SDL-ios-arm64",          xcode=True, ),
     "tvos": JobSpec(name="tvOS (CMake & xcode)",                            os=JobOs.MacosLatest,       platform=SdlPlatform.Tvos,        artifact="SDL-tvos-arm64",         xcode=True, ),
