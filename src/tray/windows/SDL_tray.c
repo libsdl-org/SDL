@@ -23,6 +23,7 @@
 
 #include "../SDL_tray_utils.h"
 #include "../../core/windows/SDL_windows.h"
+#include "../../video/windows/SDL_windowsvideo.h"
 
 #include <windowsx.h>
 #include <shellapi.h>
@@ -100,6 +101,20 @@ static SDL_TrayEntry *find_entry_with_id(SDL_Tray *tray, UINT_PTR id)
     return find_entry_in_menu(tray->menu, id);
 }
 
+static void TrayUpdateDarkMode(HWND hwnd, BOOL value)
+{
+    HMODULE user32 = GetModuleHandle(TEXT("user32.dll"));
+    if (!user32) {
+        return;
+    }
+
+    WINDOWCOMPOSITIONATTRIBDATA data = {
+        WCA_USEDARKMODECOLORS,
+        &value, sizeof(value)
+    };
+    SDL_GetVideoDevice()->internal->SetWindowCompositionAttribute(hwnd, &data);
+}
+
 LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     SDL_Tray *tray = (SDL_Tray *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
     SDL_TrayEntry *entry = NULL;
@@ -142,7 +157,9 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
         case WM_SETTINGCHANGE:
             if (wParam == 0 && lParam != 0 && SDL_wcscmp((wchar_t *)lParam, L"ImmersiveColorSet") == 0) {
-                WIN_UpdateDarkModeForHWND(hwnd);
+                if (SDL_GetVideoDevice()->preferred_theme == SDL_SYSTEM_THEME_UNKNOWN) {
+                    TrayUpdateDarkMode(hwnd, SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK);
+                }
             }
             break;
 
@@ -288,7 +305,7 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     tray->hwnd = CreateWindowEx(0, TEXT("SDL_TRAY"), NULL, WS_OVERLAPPEDWINDOW,
                                 CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, NULL, NULL);
 
-    WIN_UpdateDarkModeForHWND(tray->hwnd);
+    TrayUpdateDarkMode(tray->hwnd, SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK);
 
     SDL_zero(tray->nid);
     tray->nid.cbSize = sizeof(NOTIFYICONDATAW);

@@ -237,6 +237,10 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     }
     device->internal = data;
     device->system_theme = WIN_GetSystemTheme();
+    device->preferred_theme = SDL_SYSTEM_THEME_UNKNOWN;
+    device->SetPreferredTheme = WIN_SetPreferredTheme;
+
+    WIN_SetPreferredTheme(device, device->system_theme);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     data->userDLL = SDL_LoadObject("USER32.DLL");
@@ -260,6 +264,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
         data->DisplayConfigGetDeviceInfo = (LONG (WINAPI *)(DISPLAYCONFIG_DEVICE_INFO_HEADER*))SDL_LoadFunction(data->userDLL, "DisplayConfigGetDeviceInfo");
         data->GetPointerType = (BOOL (WINAPI *)(UINT32, POINTER_INPUT_TYPE *))SDL_LoadFunction(data->userDLL, "GetPointerType");
         data->GetPointerPenInfo = (BOOL (WINAPI *)(UINT32, POINTER_PEN_INFO *))SDL_LoadFunction(data->userDLL, "GetPointerPenInfo");
+        data->SetWindowCompositionAttribute = (BOOL (WINAPI *)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *))SDL_LoadFunction(data->userDLL, "SetWindowCompositionAttribute");
         /* *INDENT-ON* */ // clang-format on
     } else {
         SDL_ClearError();
@@ -875,6 +880,28 @@ bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this)
     }
 #endif
     return false;
+}
+
+void WIN_SetPreferredTheme(SDL_VideoDevice *_this, SDL_SystemTheme preferred)
+{
+    SDL_Window *window;
+    SDL_SystemTheme theme;
+
+    if (!WIN_UpdatePreferredTheme(preferred)) {
+        return;
+    }
+
+    if (preferred == SDL_SYSTEM_THEME_UNKNOWN) {
+        theme = WIN_GetSystemTheme();
+    } else {
+        theme = preferred;
+    }
+
+    for (window = _this->windows; window; window = window->next) {
+        WIN_SetDarkModeColorsForHWND(_this, window, preferred == SDL_SYSTEM_THEME_DARK);
+    }
+
+    SDL_SetSystemTheme(theme);
 }
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS

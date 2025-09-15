@@ -194,7 +194,7 @@ extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
 // Returns false if a window client rect is not valid
 extern bool WIN_WindowRectValid(const RECT *rect);
 
-extern void WIN_UpdateDarkModeForHWND(HWND hwnd);
+extern BOOL WIN_UpdatePreferredTheme(SDL_SystemTheme preferredTheme);
 
 extern HICON WIN_CreateIconFromSurface(SDL_Surface *surface);
 
