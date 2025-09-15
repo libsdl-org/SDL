@@ -195,7 +195,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(TreatWarningsAsError)'!=''">
     <ClCompile>
-      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
       <TreatWarningAsError>$(TreatWarningsAsError)</TreatWarningAsError>
     </ClCompile>
   </ItemDefinitionGroup>

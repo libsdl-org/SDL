@@ -34,6 +34,9 @@
 #ifndef CDS_FULLSCREEN
 #define CDS_FULLSCREEN 0
 #endif
+#ifndef USER_DEFAULT_SCREEN_DPI
+#define USER_DEFAULT_SCREEN_DPI 96
+#endif
 
 // #define DEBUG_MODES
 // #define HIGHDPI_DEBUG_VERBOSE
@@ -247,9 +250,9 @@ static void WIN_GetRefreshRate(void *dxgi_output, DEVMODEW *mode, int *numerator
 
 static float WIN_GetContentScale(SDL_VideoDevice *_this, HMONITOR hMonitor)
 {
-    const SDL_VideoData *videodata = (const SDL_VideoData *)_this->internal;
     int dpi = 0;
 
+    const SDL_VideoData *videodata = (const SDL_VideoData *)_this->internal;
     if (videodata->GetDpiForMonitor) {
         UINT hdpi_uint, vdpi_uint;
         if (videodata->GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &hdpi_uint, &vdpi_uint) == S_OK) {
@@ -391,21 +394,21 @@ WIN_GetDisplayNameVista_failed:
 #ifdef HAVE_DXGI1_6_H
 static bool WIN_GetMonitorDESC1(HMONITOR hMonitor, DXGI_OUTPUT_DESC1 *desc)
 {
-    typedef HRESULT (WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID riid, void **ppFactory);
-    PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc = NULL;
+    typedef HRESULT (WINAPI *pfnCreateDXGIFactory1)(REFIID riid, void **ppFactory);
+    pfnCreateDXGIFactory1 pCreateDXGIFactory1 = NULL;
     SDL_SharedObject *hDXGIMod = NULL;
     bool found = false;
 
     hDXGIMod = SDL_LoadObject("dxgi.dll");
     if (hDXGIMod) {
-        CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(hDXGIMod, "CreateDXGIFactory1");
+        pCreateDXGIFactory1 = (pfnCreateDXGIFactory1)SDL_LoadFunction(hDXGIMod, "CreateDXGIFactory1");
     }
-    if (CreateDXGIFactoryFunc) {
+    if (pCreateDXGIFactory1) {
         static const GUID SDL_IID_IDXGIFactory1 = { 0x770aae78, 0xf26f, 0x4dba, { 0xa8, 0x29, 0x25, 0x3c, 0x83, 0xd1, 0xb3, 0x87 } };
         static const GUID SDL_IID_IDXGIOutput6 = { 0x068346e8, 0xaaec, 0x4b84, { 0xad, 0xd7, 0x13, 0x7f, 0x51, 0x3f, 0x77, 0xa1 } };
         IDXGIFactory1 *dxgiFactory;
 
-        if (SUCCEEDED(CreateDXGIFactoryFunc(&SDL_IID_IDXGIFactory1, (void **)&dxgiFactory))) {
+        if (SUCCEEDED(pCreateDXGIFactory1(&SDL_IID_IDXGIFactory1, (void **)&dxgiFactory))) {
             IDXGIAdapter1 *dxgiAdapter;
             UINT adapter = 0;
             while (!found && SUCCEEDED(IDXGIFactory1_EnumAdapters1(dxgiFactory, adapter, &dxgiAdapter))) {
@@ -582,12 +585,12 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 
             if (internal->state != DisplayRemoved) {
                 // We've already enumerated this display, don't move it
-                return;
+                goto cleanup;
             }
 
             if (index >= _this->num_displays) {
                 // This should never happen due to the check above, but just in case...
-                return;
+                goto cleanup;
             }
 
             if (moved) {
@@ -608,6 +611,8 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 
                 SDL_ResetFullscreenDisplayModes(existing_display);
                 SDL_SetDesktopDisplayMode(existing_display, &mode);
+                // The mode is owned by the video subsystem
+                mode.internal = NULL;
                 if (WIN_GetDisplayBounds(_this, existing_display, &bounds) &&
                     SDL_memcmp(&internal->bounds, &bounds, sizeof(bounds)) != 0) {
                     changed_bounds = true;
@@ -630,7 +635,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 
     displaydata = (SDL_DisplayData *)SDL_calloc(1, sizeof(*displaydata));
     if (!displaydata) {
-        return;
+        goto cleanup;
     }
     SDL_memcpy(displaydata->DeviceName, info->szDevice, sizeof(displaydata->DeviceName));
     displaydata->MonitorHandle = hMonitor;
@@ -657,11 +662,19 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
 #ifdef HAVE_DXGI1_6_H
     WIN_GetHDRProperties(_this, hMonitor, &display.HDR);
 #endif
-    SDL_AddVideoDisplay(&display, false);
+    if (SDL_AddVideoDisplay(&display, false)) {
+        // The mode is owned by the video subsystem
+        mode.internal = NULL;
+    } else {
+        SDL_free(displaydata);
+    }
     SDL_free(display.name);
 
 done:
     *display_index += 1;
+
+cleanup:
+    SDL_free(mode.internal);
 }
 
 typedef struct _WIN_AddDisplaysData

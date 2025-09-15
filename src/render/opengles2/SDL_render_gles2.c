@@ -1658,9 +1658,9 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     data->texture_u = 0;
     data->texture_v = 0;
 #endif
-    data->texture_scale_mode = SDL_SCALEMODE_INVALID;
-    data->texture_address_mode_u = SDL_TEXTURE_ADDRESS_INVALID;
-    data->texture_address_mode_v = SDL_TEXTURE_ADDRESS_INVALID;
+    data->texture_scale_mode = texture->scaleMode;
+    data->texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
+    data->texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
 
     // Allocate a blob for image renderdata
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
@@ -1707,6 +1707,13 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         renderdata->glActiveTexture(GL_TEXTURE2);
         renderdata->glBindTexture(data->texture_type, data->texture_v);
         renderdata->glTexImage2D(data->texture_type, 0, format, (texture->w + 1) / 2, (texture->h + 1) / 2, 0, format, type, NULL);
+        if (!GL_CheckError("glTexImage2D()", renderer)) {
+            SDL_free(data->pixel_data);
+            SDL_free(data);
+            return false;
+        }
+        SetTextureScaleMode(renderdata, data->texture_type, data->texture_scale_mode);
+        SetTextureAddressMode(renderdata, data->texture_type, data->texture_address_mode_u, data->texture_address_mode_v);
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_V_NUMBER, data->texture_v);
 
         data->texture_u = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_U_NUMBER, 0);
@@ -1728,6 +1735,8 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             SDL_free(data);
             return false;
         }
+        SetTextureScaleMode(renderdata, data->texture_type, data->texture_scale_mode);
+        SetTextureAddressMode(renderdata, data->texture_type, data->texture_address_mode_u, data->texture_address_mode_v);
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_U_NUMBER, data->texture_u);
 
         if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8)) {
@@ -1755,6 +1764,8 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             SDL_free(data);
             return false;
         }
+        SetTextureScaleMode(renderdata, data->texture_type, data->texture_scale_mode);
+        SetTextureAddressMode(renderdata, data->texture_type, data->texture_address_mode_u, data->texture_address_mode_v);
         SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_UV_NUMBER, data->texture_u);
 
         if (!SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8)) {
@@ -1785,6 +1796,8 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             return false;
         }
     }
+    SetTextureScaleMode(renderdata, data->texture_type, data->texture_scale_mode);
+    SetTextureAddressMode(renderdata, data->texture_type, data->texture_address_mode_u, data->texture_address_mode_v);
     SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_NUMBER, data->texture);
     SDL_SetNumberProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER, data->texture_type);
 
@@ -2176,7 +2189,7 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, RENDERER_CONTEXT_MAJOR);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, RENDERER_CONTEXT_MINOR);
 
-        if (!SDL_RecreateWindow(window, (window_flags & ~(SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)) | SDL_WINDOW_OPENGL)) {
+        if (!SDL_ReconfigureWindow(window, (window_flags & ~(SDL_WINDOW_VULKAN | SDL_WINDOW_METAL)) | SDL_WINDOW_OPENGL)) {
             goto error;
         }
     }
@@ -2280,6 +2293,12 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
 
     if (SDL_GL_ExtensionSupported("GL_EXT_blend_minmax")) {
         data->GL_EXT_blend_minmax_supported = true;
+    }
+
+    // Full NPOT textures (that can use GL_REPEAT, etc) are a core feature of GLES3,
+    //  and an extension in GLES2.
+    if ((major < 3) && !SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+        renderer->npot_texture_wrap_unsupported = true;
     }
 
     // Set up parameters for rendering

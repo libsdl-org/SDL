@@ -1827,7 +1827,10 @@ size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOSta
     const int bytes = AAsset_read((AAsset *)userdata, buffer, size);
     if (bytes < 0) {
         SDL_SetError("AAsset_read() failed");
+        *status = SDL_IO_STATUS_ERROR;
         return 0;
+    } else if (bytes < size) {
+        *status = SDL_IO_STATUS_EOF;
     }
     return (size_t)bytes;
 }
@@ -1835,6 +1838,7 @@ size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOSta
 size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SDL_IOStatus *status)
 {
     SDL_SetError("Cannot write to Android package filesystem");
+    *status = SDL_IO_STATUS_ERROR;
     return 0;
 }
 

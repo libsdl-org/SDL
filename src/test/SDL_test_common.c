@@ -1733,12 +1733,12 @@ void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " HDR %s", event->window.windowID, event->window.data1 ? "enabled" : "disabled");
         break;
     case SDL_EVENT_KEYBOARD_ADDED:
-        SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " attached",
-                event->kdevice.which);
+        SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " (%s) attached",
+                event->kdevice.which, SDL_GetKeyboardNameForID(event->kdevice.which));
         break;
     case SDL_EVENT_KEYBOARD_REMOVED:
-        SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " removed",
-                event->kdevice.which);
+        SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " (%s) removed",
+                event->kdevice.which, SDL_GetKeyboardNameForID(event->kdevice.which));
         break;
     case SDL_EVENT_KEY_DOWN:
     case SDL_EVENT_KEY_UP: {
@@ -1775,12 +1775,12 @@ void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Keymap changed");
         break;
     case SDL_EVENT_MOUSE_ADDED:
-        SDL_Log("SDL EVENT: Mouse %" SDL_PRIu32 " attached",
-                event->mdevice.which);
+        SDL_Log("SDL EVENT: Mouse %" SDL_PRIu32 " (%s) attached",
+                event->mdevice.which, SDL_GetMouseNameForID(event->mdevice.which));
         break;
     case SDL_EVENT_MOUSE_REMOVED:
-        SDL_Log("SDL EVENT: Mouse %" SDL_PRIu32 " removed",
-                event->mdevice.which);
+        SDL_Log("SDL EVENT: Mouse %" SDL_PRIu32 " (%s) removed",
+                event->mdevice.which, SDL_GetMouseNameForID(event->mdevice.which));
         break;
     case SDL_EVENT_MOUSE_MOTION:
         SDL_Log("SDL EVENT: Mouse: moved to %g,%g (%g,%g) in window %" SDL_PRIu32,

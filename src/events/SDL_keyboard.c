@@ -44,12 +44,6 @@
 #define KEYCODE_OPTION_LATIN_LETTERS    0x04
 #define DEFAULT_KEYCODE_OPTIONS         (KEYCODE_OPTION_FRENCH_NUMBERS | KEYCODE_OPTION_LATIN_LETTERS)
 
-typedef struct SDL_KeyboardInstance
-{
-    SDL_KeyboardID instance_id;
-    char *name;
-} SDL_KeyboardInstance;
-
 typedef struct SDL_Keyboard
 {
     // Data common to all keyboards
@@ -65,7 +59,9 @@ typedef struct SDL_Keyboard
 
 static SDL_Keyboard SDL_keyboard;
 static int SDL_keyboard_count;
-static SDL_KeyboardInstance *SDL_keyboards;
+static SDL_KeyboardID *SDL_keyboards;
+static SDL_HashTable *SDL_keyboard_names;
+static bool SDL_keyboard_quitting;
 
 static void SDLCALL SDL_KeycodeOptionsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -94,6 +90,9 @@ bool SDL_InitKeyboard(void)
 {
     SDL_AddHintCallback(SDL_HINT_KEYCODE_OPTIONS,
                         SDL_KeycodeOptionsChanged, &SDL_keyboard);
+
+    SDL_keyboard_names = SDL_CreateHashTable(0, true, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
+
     return true;
 }
 
@@ -111,14 +110,14 @@ bool SDL_IsKeyboard(Uint16 vendor, Uint16 product, int num_keys)
 static int SDL_GetKeyboardIndex(SDL_KeyboardID keyboardID)
 {
     for (int i = 0; i < SDL_keyboard_count; ++i) {
-        if (keyboardID == SDL_keyboards[i].instance_id) {
+        if (keyboardID == SDL_keyboards[i]) {
             return i;
         }
     }
     return -1;
 }
 
-void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, bool send_event)
+void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name)
 {
     int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index >= 0) {
@@ -128,26 +127,27 @@ void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, bool send_even
 
     SDL_assert(keyboardID != 0);
 
-    SDL_KeyboardInstance *keyboards = (SDL_KeyboardInstance *)SDL_realloc(SDL_keyboards, (SDL_keyboard_count + 1) * sizeof(*keyboards));
+    SDL_KeyboardID *keyboards = (SDL_KeyboardID *)SDL_realloc(SDL_keyboards, (SDL_keyboard_count + 1) * sizeof(*keyboards));
     if (!keyboards) {
         return;
     }
-    SDL_KeyboardInstance *instance = &keyboards[SDL_keyboard_count];
-    instance->instance_id = keyboardID;
-    instance->name = SDL_strdup(name ? name : "");
+    keyboards[SDL_keyboard_count] = keyboardID;
     SDL_keyboards = keyboards;
     ++SDL_keyboard_count;
 
-    if (send_event) {
-        SDL_Event event;
-        SDL_zero(event);
-        event.type = SDL_EVENT_KEYBOARD_ADDED;
-        event.kdevice.which = keyboardID;
-        SDL_PushEvent(&event);
+    if (!name) {
+        name = "Keyboard";
     }
+    SDL_InsertIntoHashTable(SDL_keyboard_names, (const void *)(uintptr_t)keyboardID, SDL_strdup(name), true);
+
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = SDL_EVENT_KEYBOARD_ADDED;
+    event.kdevice.which = keyboardID;
+    SDL_PushEvent(&event);
 }
 
-void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event)
+void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID)
 {
     int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index < 0) {
@@ -155,14 +155,12 @@ void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event)
         return;
     }
 
-    SDL_free(SDL_keyboards[keyboard_index].name);
-
     if (keyboard_index != SDL_keyboard_count - 1) {
         SDL_memmove(&SDL_keyboards[keyboard_index], &SDL_keyboards[keyboard_index + 1], (SDL_keyboard_count - keyboard_index - 1) * sizeof(SDL_keyboards[keyboard_index]));
     }
     --SDL_keyboard_count;
 
-    if (send_event) {
+    if (!SDL_keyboard_quitting) {
         SDL_Event event;
         SDL_zero(event);
         event.type = SDL_EVENT_KEYBOARD_REMOVED;
@@ -188,7 +186,7 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
         }
 
         for (i = 0; i < SDL_keyboard_count; ++i) {
-            keyboards[i] = SDL_keyboards[i].instance_id;
+            keyboards[i] = SDL_keyboards[i];
         }
         keyboards[i] = 0;
     } else {
@@ -202,12 +200,17 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
 
 const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
 {
-    int keyboard_index = SDL_GetKeyboardIndex(instance_id);
-    if (keyboard_index < 0) {
+    const char *name = NULL;
+    if (!SDL_FindInHashTable(SDL_keyboard_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
         SDL_SetError("Keyboard %" SDL_PRIu32 " not found", instance_id);
         return NULL;
     }
-    return SDL_GetPersistentString(SDL_keyboards[keyboard_index].name);
+    if (!name) {
+        // SDL_strdup() failed during insert
+        SDL_OutOfMemory();
+        return NULL;
+    }
+    return name;
 }
 
 void SDL_ResetKeyboard(void)
@@ -266,7 +269,7 @@ void SDL_SetKeymap(SDL_Keymap *keymap, bool send_event)
                 !SDL_isdigit(SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, SDL_KMOD_SHIFT))) {
                 keymap->french_numbers = false;
                 break;
-                }
+            }
         }
 
         // Detect non-Latin keymap
@@ -869,11 +872,16 @@ void SDL_SendEditingTextCandidates(char **candidates, int num_candidates, int se
 
 void SDL_QuitKeyboard(void)
 {
+    SDL_keyboard_quitting = true;
+
     for (int i = SDL_keyboard_count; i--;) {
-        SDL_RemoveKeyboard(SDL_keyboards[i].instance_id, false);
+        SDL_RemoveKeyboard(SDL_keyboards[i]);
     }
     SDL_free(SDL_keyboards);
     SDL_keyboards = NULL;
+
+    SDL_DestroyHashTable(SDL_keyboard_names);
+    SDL_keyboard_names = NULL;
 
     if (SDL_keyboard.keymap && SDL_keyboard.keymap->auto_release) {
         SDL_DestroyKeymap(SDL_keyboard.keymap);
@@ -882,6 +890,8 @@ void SDL_QuitKeyboard(void)
 
     SDL_RemoveHintCallback(SDL_HINT_KEYCODE_OPTIONS,
                         SDL_KeycodeOptionsChanged, &SDL_keyboard);
+
+    SDL_keyboard_quitting = false;
 }
 
 const bool *SDL_GetKeyboardState(int *numkeys)

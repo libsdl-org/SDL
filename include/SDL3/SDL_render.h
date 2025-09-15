@@ -122,7 +122,7 @@ typedef enum SDL_RendererLogicalPresentation
 {
     SDL_LOGICAL_PRESENTATION_DISABLED,  /**< There is no logical size in effect */
     SDL_LOGICAL_PRESENTATION_STRETCH,   /**< The rendered content is stretched to the output resolution */
-    SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with black bars */
+    SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with the clear color */
     SDL_LOGICAL_PRESENTATION_OVERSCAN,  /**< The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds */
     SDL_LOGICAL_PRESENTATION_INTEGER_SCALE   /**< The rendered content is scaled up by integer multiples to fit the output resolution */
 } SDL_RendererLogicalPresentation;
@@ -283,7 +283,7 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  *   present synchronized with the refresh rate. This property can take any
  *   value that is supported by SDL_SetRenderVSync() for the renderer.
  *
- * With the SDL GPU renderer:
+ * With the SDL GPU renderer (since SDL 3.4.0):
  *
  * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN`: the app is able to
  *   provide SPIR-V shaders to SDL_GPURenderState, optional.
@@ -856,6 +856,11 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
  * - `SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER`: the GLenum for the
  *   texture target (`GL_TEXTURE_2D`, `GL_TEXTURE_EXTERNAL_OES`, etc)
  *
+ * With the gpu renderer:
+ *
+ * - `SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER`: the SDL_GPUTexture associated
+ *   with the texture
+ *
  * \param texture the texture to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -892,6 +897,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Textur
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_V_NUMBER         "SDL.texture.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER    "SDL.texture.opengles2.target"
 #define SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER              "SDL.texture.vulkan.texture"
+#define SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER                "SDL.texture.gpu.texture"
 
 /**
  * Get the renderer that created an SDL_Texture.
@@ -1445,14 +1451,6 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *rend
  * specific dimensions but to make fonts look sharp, the app turns off logical
  * presentation while drawing text, for example.
  *
- * For the renderer's window, letterboxing is drawn into the framebuffer if
- * logical presentation is enabled during SDL_RenderPresent; be sure to
- * reenable it before presenting if you were toggling it, otherwise the
- * letterbox areas might have artifacts from previous frames (or artifacts
- * from external overlays, etc). Letterboxing is never drawn into texture
- * render targets; be sure to call SDL_RenderClear() before drawing into the
- * texture so the letterboxing areas are cleared, if appropriate.
- *
  * You can convert coordinates in an event into rendering coordinates using
  * SDL_ConvertEventToRenderCoordinates().
  *
@@ -1477,15 +1475,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *
  * Get device independent resolution and presentation mode for rendering.
  *
  * This function gets the width and height of the logical rendering output, or
- * the output size in pixels if a logical resolution is not enabled.
+ * 0 if a logical resolution is not enabled.
  *
  * Each render target has its own logical presentation state. This function
  * gets the state for the current render target.
  *
  * \param renderer the rendering context.
- * \param w an int to be filled with the width.
- * \param h an int to be filled with the height.
- * \param mode the presentation mode used.
+ * \param w an int filled with the logical presentation width.
+ * \param h an int filled with the logical presentation height.
+ * \param mode a variable filled with the logical presentation mode being
+ *             used.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -2808,18 +2807,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetDefaultTextureScaleMode(SDL_Renderer *re
 extern SDL_DECLSPEC bool SDLCALL SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale_mode);
 
 /**
- * GPU render state description.
- *
- * This structure should be initialized using SDL_INIT_INTERFACE().
+ * A structure specifying the parameters of a GPU render state.
  *
  * \since This struct is available since SDL 3.4.0.
  *
  * \sa SDL_CreateGPURenderState
  */
-typedef struct SDL_GPURenderStateDesc
+typedef struct SDL_GPURenderStateCreateInfo
 {
-    Uint32 version;                 /**< the version of this interface */
-
     SDL_GPUShader *fragment_shader; /**< The fragment shader to use when this render state is active */
 
     Sint32 num_sampler_bindings;    /**< The number of additional fragment samplers to bind when this render state is active */
@@ -2828,19 +2823,11 @@ typedef struct SDL_GPURenderStateDesc
     Sint32 num_storage_textures;    /**< The number of storage textures to bind when this render state is active */
     SDL_GPUTexture *const *storage_textures;    /**< Storage textures to bind when this render state is active */
 
-    Sint32 num_storage_buffers;    /**< The number of storage buffers to bind when this render state is active */
+    Sint32 num_storage_buffers;     /**< The number of storage buffers to bind when this render state is active */
     SDL_GPUBuffer *const *storage_buffers;      /**< Storage buffers to bind when this render state is active */
-} SDL_GPURenderStateDesc;
 
-/* Check the size of SDL_GPURenderStateDesc
- *
- * If this assert fails, either the compiler is padding to an unexpected size,
- * or the interface has been updated and this should be updated to match and
- * the code using this interface should be updated to handle the old version.
- */
-SDL_COMPILE_TIME_ASSERT(SDL_GPURenderStateDesc_SIZE,
-    (sizeof(void *) == 4 && sizeof(SDL_GPURenderStateDesc) == 32) ||
-    (sizeof(void *) == 8 && sizeof(SDL_GPURenderStateDesc) == 64));
+    SDL_PropertiesID props;         /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
+} SDL_GPURenderStateCreateInfo;
 
 /**
  * A custom GPU render state.
@@ -2858,8 +2845,7 @@ typedef struct SDL_GPURenderState SDL_GPURenderState;
  * Create custom GPU render state.
  *
  * \param renderer the renderer to use.
- * \param desc GPU render state description, initialized using
- *             SDL_INIT_INTERFACE().
+ * \param createinfo a struct describing the GPU render state to create.
  * \returns a custom GPU render state or NULL on failure; call SDL_GetError()
  *          for more information.
  *
@@ -2872,7 +2858,7 @@ typedef struct SDL_GPURenderState SDL_GPURenderState;
  * \sa SDL_SetRenderGPUState
  * \sa SDL_DestroyGPURenderState
  */
-extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateDesc *desc);
+extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateCreateInfo *createinfo);
 
 /**
  * Set fragment shader uniform variables in a custom GPU render state.

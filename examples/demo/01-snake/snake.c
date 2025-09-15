@@ -18,7 +18,8 @@
 #define SNAKE_GAME_HEIGHT 18U
 #define SNAKE_MATRIX_SIZE (SNAKE_GAME_WIDTH * SNAKE_GAME_HEIGHT)
 
-#define THREE_BITS  0x7U /* ~CHAR_MAX >> (CHAR_BIT - SNAKE_CELL_MAX_BITS) */
+#define SNAKE_CELL_MAX_BITS 3U /* floor(log2(SNAKE_CELL_FOOD)) + 1 */
+#define SNAKE_CELL_SET_BITS  (~(~0u << SNAKE_CELL_MAX_BITS))
 #define SHIFT(x, y) (((x) + ((y) * SNAKE_GAME_WIDTH)) * SNAKE_CELL_MAX_BITS)
 
 static SDL_Joystick *joystick = NULL;
@@ -32,8 +33,6 @@ typedef enum
     SNAKE_CELL_SDOWN = 4U,
     SNAKE_CELL_FOOD = 5U
 } SnakeCell;
-
-#define SNAKE_CELL_MAX_BITS 3U /* floor(log2(SNAKE_CELL_FOOD)) + 1 */
 
 typedef enum
 {
@@ -68,7 +67,7 @@ SnakeCell snake_cell_at(const SnakeContext *ctx, char x, char y)
     const int shift = SHIFT(x, y);
     unsigned short range;
     SDL_memcpy(&range, ctx->cells + (shift / 8), sizeof(range));
-    return (SnakeCell)((range >> (shift % 8)) & THREE_BITS);
+    return (SnakeCell)((range >> (shift % 8)) & SNAKE_CELL_SET_BITS);
 }
 
 static void set_rect_xy_(SDL_FRect *r, short x, short y)
@@ -84,8 +83,8 @@ static void put_cell_at_(SnakeContext *ctx, char x, char y, SnakeCell ct)
     unsigned char *const pos = ctx->cells + (shift / 8);
     unsigned short range;
     SDL_memcpy(&range, pos, sizeof(range));
-    range &= ~(THREE_BITS << adjust); /* clear bits */
-    range |= (ct & THREE_BITS) << adjust;
+    range &= ~(SNAKE_CELL_SET_BITS << adjust); /* clear bits */
+    range |= (ct & SNAKE_CELL_SET_BITS) << adjust;
     SDL_memcpy(pos, &range, sizeof(range));
 }
 

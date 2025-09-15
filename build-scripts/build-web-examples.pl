@@ -187,6 +187,11 @@ sub handle_example_dir {
         $description =~ s/\s+\Z//;
     }
 
+    my $short_description = "$description";
+    $short_description =~ s/\<br\/\>\n.*//gms;
+    $short_description =~ s/\A\s+//;
+    $short_description =~ s/\s+\Z//;
+
     do_mkdir($dst);
     do_copy($jssrc, $jsdst);
     do_copy($wasmsrc, $wasmdst);
@@ -222,7 +227,7 @@ sub handle_example_dir {
 
     my $other_examples_html = "<ul>";
     foreach my $example (get_examples_for_category($category)) {
-        $other_examples_html .= "<li><a href='/$project/$category/$example'>$category/$example</a></li>";
+        $other_examples_html .= "<li><a href='/$project/$category/$example/'>$category/$example</a></li>";
     }
     $other_examples_html .= "</ul>";
 
@@ -238,6 +243,7 @@ sub handle_example_dir {
         s/\@example_name\@/$example/g;
         s/\@javascript_file\@/$jsfname/g;
         s/\@htmlified_source_code\@/$htmlified_source_code/g;
+        s/\@short_description\@/$short_description/g;
         s/\@description\@/$description/g;
         s/\@preview_image\@/$preview_image/g;
         s/\@other_examples_html\@/$other_examples_html/g;
@@ -282,7 +288,7 @@ sub generate_example_thumbnail {
     }
 
     return "
-        <a href='/$project/$category/$example'>
+        <a href='/$project/$category/$example/'>
           <div>
             <img src='$example_image_url' $example_mouseover_html />
             <div>$example_no_num</div>

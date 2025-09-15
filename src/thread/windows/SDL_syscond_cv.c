@@ -56,10 +56,10 @@ typedef struct CONDITION_VARIABLE
 } CONDITION_VARIABLE, *PCONDITION_VARIABLE;
 #endif
 
-typedef VOID(WINAPI *pfnWakeConditionVariable)(PCONDITION_VARIABLE);
-typedef VOID(WINAPI *pfnWakeAllConditionVariable)(PCONDITION_VARIABLE);
-typedef BOOL(WINAPI *pfnSleepConditionVariableSRW)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG);
-typedef BOOL(WINAPI *pfnSleepConditionVariableCS)(PCONDITION_VARIABLE, PCRITICAL_SECTION, DWORD);
+typedef VOID (WINAPI *pfnWakeConditionVariable)(PCONDITION_VARIABLE);
+typedef VOID (WINAPI *pfnWakeAllConditionVariable)(PCONDITION_VARIABLE);
+typedef BOOL (WINAPI *pfnSleepConditionVariableSRW)(PCONDITION_VARIABLE, PSRWLOCK, DWORD, ULONG);
+typedef BOOL (WINAPI *pfnSleepConditionVariableCS)(PCONDITION_VARIABLE, PCRITICAL_SECTION, DWORD);
 
 static pfnWakeConditionVariable pWakeConditionVariable = NULL;
 static pfnWakeAllConditionVariable pWakeAllConditionVariable = NULL;

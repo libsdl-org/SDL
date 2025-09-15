@@ -160,8 +160,8 @@ struct SDL_Camera
     // Optional properties.
     SDL_PropertiesID props;
 
-    // -1: user denied permission, 0: waiting for user response, 1: user approved permission.
-    int permission;
+    // Current state of user permission check.
+    SDL_CameraPermissionState permission;
 
     // Data private to this driver, used when device is opened and running.
     struct SDL_PrivateCameraData *hidden;

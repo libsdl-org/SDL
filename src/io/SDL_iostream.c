@@ -220,15 +220,17 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
             switch (error) {
             case ERROR_BROKEN_PIPE:
             case ERROR_HANDLE_EOF:
+                *status = SDL_IO_STATUS_EOF;
                 break;
             case ERROR_NO_DATA:
                 *status = SDL_IO_STATUS_NOT_READY;
                 break;
             default:
+                *status = SDL_IO_STATUS_ERROR;
                 WIN_SetError("Error reading from datastream");
                 break;
             }
-            return 0;
+            return 0;  // !!! FIXME: this should return the bytes read from any readahead we finished out before this (the `iodata->left > 0` code above). In that case, fail on the next read.
         }
         read_ahead = SDL_min(total_need, bytes);
         SDL_memcpy(ptr, iodata->data, read_ahead);
@@ -241,15 +243,17 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
             switch (error) {
             case ERROR_BROKEN_PIPE:
             case ERROR_HANDLE_EOF:
+                *status = SDL_IO_STATUS_EOF;
                 break;
             case ERROR_NO_DATA:
                 *status = SDL_IO_STATUS_NOT_READY;
                 break;
             default:
+                *status = SDL_IO_STATUS_ERROR;
                 WIN_SetError("Error reading from datastream");
                 break;
             }
-            return 0;
+            return 0;  // !!! FIXME: this should return the bytes read from any readahead we finished out before this (the `iodata->left > 0` code above). In that case, fail on the next read.
         }
         total_read += bytes;
     }
@@ -263,6 +267,7 @@ static size_t SDLCALL windows_file_write(void *userdata, const void *ptr, size_t
 
     if (iodata->left) {
         if (!SetFilePointer(iodata->h, -(LONG)iodata->left, NULL, FILE_CURRENT)) {
+            *status = SDL_IO_STATUS_ERROR;
             WIN_SetError("Error seeking in datastream");
             return 0;
         }
@@ -274,16 +279,17 @@ static size_t SDLCALL windows_file_write(void *userdata, const void *ptr, size_t
         LARGE_INTEGER windowsoffset;
         windowsoffset.QuadPart = 0;
         if (!SetFilePointerEx(iodata->h, windowsoffset, &windowsoffset, FILE_END)) {
+            *status = SDL_IO_STATUS_ERROR;
             WIN_SetError("Error seeking in datastream");
             return 0;
         }
     }
 
     if (!WriteFile(iodata->h, ptr, (DWORD)size, &bytes, NULL)) {
+        *status = SDL_IO_STATUS_ERROR;
         WIN_SetError("Error writing to datastream");
         return 0;
-    }
-    if (bytes == 0 && size > 0) {
+    } else if (bytes == 0 && size > 0) {
         *status = SDL_IO_STATUS_NOT_READY;
     }
     return bytes;
@@ -415,15 +421,36 @@ static size_t SDLCALL fd_read(void *userdata, void *ptr, size_t size, SDL_IOStat
     ssize_t bytes;
     do {
         bytes = read(iodata->fd, ptr, size);
-    } while (bytes < 0 && errno == EINTR);
+    } while ((bytes < 0) && (errno == EINTR));
 
-    if (bytes < 0) {
+    ssize_t result = bytes;
+    if ((bytes > 0) && (bytes < size)) {   // was it a short read, EOF, or error?
+        // try to read the difference, so we can rule out a short read.
+        do {
+            result = read(iodata->fd, ((Uint8 *) ptr) + bytes, size - bytes);
+        } while ((result < 0) && (errno == EINTR));
+
+        if (result > 0) {
+            bytes += result;
+            result = bytes;
+            SDL_assert(bytes <= size);
+        }
+    }
+
+    if (result < 0) {
         if (errno == EAGAIN) {
             *status = SDL_IO_STATUS_NOT_READY;
         } else {
+            *status = SDL_IO_STATUS_ERROR;
             SDL_SetError("Error reading from datastream: %s", strerror(errno));
         }
-        bytes = 0;
+        if (bytes < 0) {
+            bytes = 0;
+        }
+    } else if (result == 0) {
+        *status = SDL_IO_STATUS_EOF;
+    } else if (result < size) {
+        *status = SDL_IO_STATUS_NOT_READY;;
     }
     return (size_t)bytes;
 }
@@ -434,16 +461,36 @@ static size_t SDLCALL fd_write(void *userdata, const void *ptr, size_t size, SDL
     ssize_t bytes;
     do {
         bytes = write(iodata->fd, ptr, size);
-    } while (bytes < 0 && errno == EINTR);
+    } while ((bytes < 0) && (errno == EINTR));
 
-    if (bytes < 0) {
+    ssize_t result = bytes;
+    if ((bytes > 0) && (bytes < size)) {   // was it a short write, or error?
+        // try to write the difference, so we can rule out a short read.
+        do {
+            result = write(iodata->fd, ((Uint8 *) ptr) + bytes, size - bytes);
+        } while ((result < 0) && (errno == EINTR));
+
+        if (result > 0) {
+            bytes += result;
+            result = bytes;
+            SDL_assert(bytes <= size);
+        }
+    }
+
+    if (result < 0) {
         if (errno == EAGAIN) {
             *status = SDL_IO_STATUS_NOT_READY;
         } else {
+            *status = SDL_IO_STATUS_ERROR;
             SDL_SetError("Error writing to datastream: %s", strerror(errno));
         }
-        bytes = 0;
+        if (bytes < 0) {
+            bytes = 0;
+        }
+    } else if (result < size) {
+        *status = SDL_IO_STATUS_NOT_READY;;
     }
+
     return (size_t)bytes;
 }
 
@@ -455,7 +502,8 @@ static bool SDLCALL fd_flush(void *userdata, SDL_IOStatus *status)
         result = SDL_fdatasync(iodata->fd);
     } while (result < 0 && errno == EINTR);
 
-    if (result < 0) {
+    // We get EINVAL when flushing a pipe, just make that a no-op
+    if (result < 0 && errno != EINVAL) {
         return SDL_SetError("Error flushing datastream: %s", strerror(errno));
     }
     return true;
@@ -606,12 +654,18 @@ static size_t SDLCALL stdio_read(void *userdata, void *ptr, size_t size, SDL_IOS
 {
     IOStreamStdioData *iodata = (IOStreamStdioData *) userdata;
     const size_t bytes = fread(ptr, 1, size, iodata->fp);
-    if (bytes == 0 && ferror(iodata->fp)) {
-        if (errno == EAGAIN) {
-            *status = SDL_IO_STATUS_NOT_READY;
-            clearerr(iodata->fp);
+    if (bytes < size) {
+        if (ferror(iodata->fp)) {
+            if (errno == EAGAIN) {
+                *status = SDL_IO_STATUS_NOT_READY;
+                clearerr(iodata->fp);
+            } else {
+                *status = SDL_IO_STATUS_ERROR;
+                SDL_SetError("Error reading from datastream: %s", strerror(errno));
+            }
         } else {
-            SDL_SetError("Error reading from datastream: %s", strerror(errno));
+            SDL_assert(feof(iodata->fp));
+            *status = SDL_IO_STATUS_EOF;
         }
     }
     return bytes;
@@ -626,6 +680,7 @@ static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size, 
             *status = SDL_IO_STATUS_NOT_READY;
             clearerr(iodata->fp);
         } else {
+            *status = SDL_IO_STATUS_ERROR;
             SDL_SetError("Error writing to datastream: %s", strerror(errno));
         }
     }
@@ -769,13 +824,22 @@ static size_t mem_io(void *userdata, void *dst, const void *src, size_t size)
 static size_t SDLCALL mem_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
 {
     IOStreamMemData *iodata = (IOStreamMemData *) userdata;
-    return mem_io(userdata, ptr, iodata->here, size);
+    const size_t retval = mem_io(userdata, ptr, iodata->here, size);
+    if ((retval < size) && (iodata->stop == iodata->here)) {
+        *status = SDL_IO_STATUS_EOF;
+    }
+    return retval;
 }
 
 static size_t SDLCALL mem_write(void *userdata, const void *ptr, size_t size, SDL_IOStatus *status)
 {
     IOStreamMemData *iodata = (IOStreamMemData *) userdata;
-    return mem_io(userdata, iodata->here, ptr, size);
+    const size_t retval = mem_io(userdata, iodata->here, ptr, size);
+    if ((retval < size) && (iodata->stop == iodata->here)) {
+        SDL_SetError("Memory buffer is full");
+        *status = SDL_IO_STATUS_ERROR;
+    }
+    return retval;
 }
 
 static bool SDLCALL mem_close(void *userdata)
@@ -1027,7 +1091,11 @@ static Sint64 SDLCALL dynamic_mem_seek(void *userdata, Sint64 offset, SDL_IOWhen
 static size_t SDLCALL dynamic_mem_read(void *userdata, void *ptr, size_t size, SDL_IOStatus *status)
 {
     IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
-    return mem_io(&iodata->data, ptr, iodata->data.here, size);
+    const size_t retval = mem_io(&iodata->data, ptr, iodata->data.here, size);
+    if ((retval < size) && (iodata->data.stop == iodata->data.here)) {
+        *status = SDL_IO_STATUS_EOF;
+    }
+    return retval;
 }
 
 static bool dynamic_mem_realloc(IOStreamDynamicMemData *iodata, size_t size)
@@ -1060,12 +1128,15 @@ static size_t SDLCALL dynamic_mem_write(void *userdata, const void *ptr, size_t 
     if (size > (size_t)(iodata->data.stop - iodata->data.here)) {
         if (size > (size_t)(iodata->end - iodata->data.here)) {
             if (!dynamic_mem_realloc(iodata, size)) {
+                *status = SDL_IO_STATUS_ERROR;
                 return 0;
             }
         }
         iodata->data.stop = iodata->data.here + size;
     }
-    return mem_io(&iodata->data, iodata->data.here, ptr, size);
+    const size_t retval = mem_io(&iodata->data, iodata->data.here, ptr, size);
+    SDL_assert(retval == size);  // we should have allocated enough to cover this!
+    return retval;
 }
 
 static bool SDLCALL dynamic_mem_close(void *userdata)
@@ -1333,8 +1404,6 @@ Sint64 SDL_TellIO(SDL_IOStream *context)
 
 size_t SDL_ReadIO(SDL_IOStream *context, void *ptr, size_t size)
 {
-    size_t bytes;
-
     if (!context) {
         SDL_InvalidParamError("context");
         return 0;
@@ -1342,30 +1411,18 @@ size_t SDL_ReadIO(SDL_IOStream *context, void *ptr, size_t size)
         context->status = SDL_IO_STATUS_WRITEONLY;
         SDL_Unsupported();
         return 0;
+    } else if (size == 0) {
+        return 0;  // context->status doesn't change for this.
     }
 
     context->status = SDL_IO_STATUS_READY;
     SDL_ClearError();
 
-    if (size == 0) {
-        return 0;
-    }
-
-    bytes = context->iface.read(context->userdata, ptr, size, &context->status);
-    if (bytes == 0 && context->status == SDL_IO_STATUS_READY) {
-        if (*SDL_GetError()) {
-            context->status = SDL_IO_STATUS_ERROR;
-        } else {
-            context->status = SDL_IO_STATUS_EOF;
-        }
-    }
-    return bytes;
+    return context->iface.read(context->userdata, ptr, size, &context->status);
 }
 
 size_t SDL_WriteIO(SDL_IOStream *context, const void *ptr, size_t size)
 {
-    size_t bytes;
-
     if (!context) {
         SDL_InvalidParamError("context");
         return 0;
@@ -1373,20 +1430,14 @@ size_t SDL_WriteIO(SDL_IOStream *context, const void *ptr, size_t size)
         context->status = SDL_IO_STATUS_READONLY;
         SDL_Unsupported();
         return 0;
+    } else if (size == 0) {
+        return 0;  // context->status doesn't change for this.
     }
 
     context->status = SDL_IO_STATUS_READY;
     SDL_ClearError();
 
-    if (size == 0) {
-        return 0;
-    }
-
-    bytes = context->iface.write(context->userdata, ptr, size, &context->status);
-    if ((bytes == 0) && (context->status == SDL_IO_STATUS_READY)) {
-        context->status = SDL_IO_STATUS_ERROR;
-    }
-    return bytes;
+    return context->iface.write(context->userdata, ptr, size, &context->status);
 }
 
 size_t SDL_IOprintf(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)

@@ -43,44 +43,6 @@
 #include <shobjidl.h>
 #endif
 
-// Dark mode support
-typedef enum {
-    UXTHEME_APPMODE_DEFAULT,
-    UXTHEME_APPMODE_ALLOW_DARK,
-    UXTHEME_APPMODE_FORCE_DARK,
-    UXTHEME_APPMODE_FORCE_LIGHT,
-    UXTHEME_APPMODE_MAX
-} UxthemePreferredAppMode;
-
-typedef enum {
-    WCA_UNDEFINED = 0,
-    WCA_USEDARKMODECOLORS = 26,
-    WCA_LAST = 27
-} WINDOWCOMPOSITIONATTRIB;
-
-typedef struct {
-    WINDOWCOMPOSITIONATTRIB Attrib;
-    PVOID pvData;
-    SIZE_T cbData;
-} WINDOWCOMPOSITIONATTRIBDATA;
-
-typedef struct {
-    ULONG dwOSVersionInfoSize;
-    ULONG dwMajorVersion;
-    ULONG dwMinorVersion;
-    ULONG dwBuildNumber;
-    ULONG dwPlatformId;
-    WCHAR szCSDVersion[128];
-} NT_OSVERSIONINFOW;
-
-typedef bool (WINAPI *ShouldAppsUseDarkMode_t)(void);
-typedef void (WINAPI *AllowDarkModeForWindow_t)(HWND, bool);
-typedef void (WINAPI *AllowDarkModeForApp_t)(bool);
-typedef void (WINAPI *RefreshImmersiveColorPolicyState_t)(void);
-typedef UxthemePreferredAppMode (WINAPI *SetPreferredAppMode_t)(UxthemePreferredAppMode);
-typedef BOOL (WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
-typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
-
 // Windows CE compatibility
 #ifndef SWP_NOCOPYBITS
 #define SWP_NOCOPYBITS 0
@@ -179,7 +141,7 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
     return style;
 }
 
-#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 static ITaskbarList3 *GetTaskbarList(SDL_Window *window)
 {
     const SDL_WindowData *data = window->internal;
@@ -775,8 +737,10 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             return false;
         }
 
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         // Ensure that the IME isn't active on the new window until explicitly requested.
         WIN_StopTextInput(_this, window);
+#endif
 
         // Inform Windows of the frame change so we can respond to WM_NCCALCSIZE
         SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
@@ -2194,7 +2158,7 @@ bool WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperat
 
 bool WIN_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window *window)
 {
-#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_WindowData *data = window->internal;
     if (!data->taskbar_button_created) {
         return true;
@@ -2297,74 +2261,6 @@ bool WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool foc
     return true;
 }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-
-void WIN_UpdateDarkModeForHWND(HWND hwnd)
-{
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    HMODULE ntdll = LoadLibrary(TEXT("ntdll.dll"));
-    if (!ntdll) {
-        return;
-    }
-    // There is no function to get Windows build number, so let's get it here via RtlGetVersion
-    RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)GetProcAddress(ntdll, "RtlGetVersion");
-    NT_OSVERSIONINFOW os_info;
-    os_info.dwOSVersionInfoSize = sizeof(NT_OSVERSIONINFOW);
-    os_info.dwBuildNumber = 0;
-    if (RtlGetVersionFunc) {
-        RtlGetVersionFunc(&os_info);
-    }
-    FreeLibrary(ntdll);
-    os_info.dwBuildNumber &= ~0xF0000000;
-    if (os_info.dwBuildNumber < 17763) {
-        // Too old to support dark mode
-        return;
-    }
-    HMODULE uxtheme = LoadLibrary(TEXT("uxtheme.dll"));
-    if (!uxtheme) {
-        return;
-    }
-    RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(104));
-    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(132));
-    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(133));
-    if (os_info.dwBuildNumber < 18362) {
-        AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
-        if (AllowDarkModeForAppFunc) {
-            AllowDarkModeForAppFunc(true);
-        }
-    } else {
-        SetPreferredAppMode_t SetPreferredAppModeFunc = (SetPreferredAppMode_t)GetProcAddress(uxtheme, MAKEINTRESOURCEA(135));
-        if (SetPreferredAppModeFunc) {
-            SetPreferredAppModeFunc(UXTHEME_APPMODE_ALLOW_DARK);
-        }
-    }
-    if (RefreshImmersiveColorPolicyStateFunc) {
-        RefreshImmersiveColorPolicyStateFunc();
-    }
-    if (AllowDarkModeForWindowFunc) {
-        AllowDarkModeForWindowFunc(hwnd, true);
-    }
-    BOOL value;
-    // Check dark mode using ShouldAppsUseDarkMode, but use SDL_GetSystemTheme as a fallback
-    if (ShouldAppsUseDarkModeFunc) {
-        value = ShouldAppsUseDarkModeFunc() ? TRUE : FALSE;
-    } else {
-        value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
-    }
-    FreeLibrary(uxtheme);
-    if (os_info.dwBuildNumber < 18362) {
-        SetProp(hwnd, TEXT("UseImmersiveDarkModeColors"), SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
-    } else {
-        HMODULE user32 = GetModuleHandle(TEXT("user32.dll"));
-        if (user32) {
-            SetWindowCompositionAttribute_t SetWindowCompositionAttributeFunc = (SetWindowCompositionAttribute_t)GetProcAddress(user32, "SetWindowCompositionAttribute");
-            if (SetWindowCompositionAttributeFunc) {
-                WINDOWCOMPOSITIONATTRIBDATA data = { WCA_USEDARKMODECOLORS, &value, sizeof(value) };
-                SetWindowCompositionAttributeFunc(hwnd, &data);
-            }
-        }
-    }
-#endif
-}
 
 bool WIN_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent)
 {

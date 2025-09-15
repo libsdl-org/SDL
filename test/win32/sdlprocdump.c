@@ -5,6 +5,28 @@
 #include <windows.h>
 #include <dbghelp.h>
 
+#ifndef STATUS_HEAP_CORRUPTION
+#define STATUS_HEAP_CORRUPTION ((DWORD)0xC0000374L)    
+#endif
+#ifndef EXCEPTION_UNWINDING
+#define EXCEPTION_UNWINDING 0x2
+#endif
+#ifndef EXCEPTION_EXIT_UNWIND
+#define EXCEPTION_EXIT_UNWIND 0x4
+#endif
+#ifndef EXCEPTION_STACK_INVALID
+#define EXCEPTION_STACK_INVALID 0x8
+#endif
+#ifndef EXCEPTION_NESTED_CALL
+#define EXCEPTION_NESTED_CALL 0x10
+#endif
+#ifndef EXCEPTION_TARGET_UNWIND
+#define EXCEPTION_TARGET_UNWIND 0x20
+#endif
+#ifndef EXCEPTION_COLLIDED_UNWIND
+#define EXCEPTION_COLLIDED_UNWIND 0x40
+#endif
+
 #include <inttypes.h>
 #include <stdarg.h>
 #include <stdio.h>

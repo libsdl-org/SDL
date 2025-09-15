@@ -38,10 +38,10 @@ extern bool SDL_InitKeyboard(void);
 extern bool SDL_IsKeyboard(Uint16 vendor, Uint16 product, int num_keys);
 
 // A keyboard has been added to the system
-extern void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name, bool send_event);
+extern void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name);
 
 // A keyboard has been removed from the system
-extern void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID, bool send_event);
+extern void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID);
 
 // Set the mapping of scancode to key codes
 extern void SDL_SetKeymap(SDL_Keymap *keymap, bool send_event);

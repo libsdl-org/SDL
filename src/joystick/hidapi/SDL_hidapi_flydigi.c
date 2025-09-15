@@ -25,6 +25,7 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_flydigi.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_FLYDIGI
 
@@ -42,10 +43,10 @@ enum
     SDL_GAMEPAD_NUM_BASE_FLYDIGI_BUTTONS
 };
 
-/* Rate of IMU Sensor Packets over wireless Dongle observed in testcontroller tool at 1000hz */
+/* Rate of IMU Sensor Packets over wireless dongle observed in testcontroller at 1000hz */
 #define SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ 1000
 #define SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS    (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ)
-/* Rate of IMU Sensor Packets over wired observed in testcontroller tool connection at 500hz */
+/* Rate of IMU Sensor Packets over wired connection observed in testcontroller at 500hz */
 #define SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ  500
 #define SENSOR_INTERVAL_VADER_PRO4_WIRED_NS     (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ)
 
@@ -147,70 +148,104 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (ctx->deviceID == 0) {
+    Uint8 controller_type = SDL_FLYDIGI_UNKNOWN;
+    switch (ctx->deviceID) {
+    case 19:
+        controller_type = SDL_FLYDIGI_APEX2;
+        break;
+    case 24:
+    case 26:
+    case 29:
+        controller_type = SDL_FLYDIGI_APEX3;
+        break;
+    case 84:
+        controller_type = SDL_FLYDIGI_APEX4;
+        break;
+    case 20:
+    case 21:
+    case 23:
+        controller_type = SDL_FLYDIGI_VADER2;
+        break;
+    case 22:
+        controller_type = SDL_FLYDIGI_VADER2_PRO;
+        break;
+    case 28:
+        controller_type = SDL_FLYDIGI_VADER3;
+        break;
+    case 80:
+    case 81:
+        controller_type = SDL_FLYDIGI_VADER3_PRO;
+        break;
+    case 85:
+    case 91:
+    case 105:
+        controller_type = SDL_FLYDIGI_VADER4_PRO;
+        break;
+    default:
         // Try to guess from the name of the controller
         if (SDL_strstr(device->name, "VADER") != NULL) {
             if (SDL_strstr(device->name, "VADER2") != NULL) {
-                ctx->deviceID = 20;
+                controller_type = SDL_FLYDIGI_VADER2;
             } else if (SDL_strstr(device->name, "VADER3") != NULL) {
-                ctx->deviceID = 28;
+                controller_type = SDL_FLYDIGI_VADER3;
             } else if (SDL_strstr(device->name, "VADER4") != NULL) {
-                ctx->deviceID = 85;
+                controller_type = SDL_FLYDIGI_VADER4;
             }
         } else if (SDL_strstr(device->name, "APEX") != NULL) {
             if (SDL_strstr(device->name, "APEX2") != NULL) {
-                ctx->deviceID = 19;
+                controller_type = SDL_FLYDIGI_APEX2;
             } else if (SDL_strstr(device->name, "APEX3") != NULL) {
-                ctx->deviceID = 24;
+                controller_type = SDL_FLYDIGI_APEX3;
             } else if (SDL_strstr(device->name, "APEX4") != NULL) {
-                ctx->deviceID = 84;
+                controller_type = SDL_FLYDIGI_APEX4;
+            } else if (SDL_strstr(device->name, "APEX5") != NULL) {
+                controller_type = SDL_FLYDIGI_APEX5;
             }
         }
+        break;
     }
-    device->guid.data[15] = ctx->deviceID;
+    device->guid.data[15] = controller_type;
 
     // This is the previous sensor default of 125hz.
     // Override this in the switch statement below based on observed sensor packet rate.
     ctx->sensor_timestamp_step_ns = SDL_NS_PER_SECOND / 125;
 
-    switch (ctx->deviceID) {
-    case 19:
+    switch (controller_type) {
+    case SDL_FLYDIGI_APEX2:
         HIDAPI_SetDeviceName(device, "Flydigi Apex 2");
         break;
-    case 24:
-    case 26:
-    case 29:
+    case SDL_FLYDIGI_APEX3:
         HIDAPI_SetDeviceName(device, "Flydigi Apex 3");
         break;
-    case 84:
+    case SDL_FLYDIGI_APEX4:
         // The Apex 4 controller has sensors, but they're only reported when gyro mouse is enabled
         HIDAPI_SetDeviceName(device, "Flydigi Apex 4");
         break;
-    case 20:
-    case 21:
-    case 23:
+    case SDL_FLYDIGI_APEX5:
+        HIDAPI_SetDeviceName(device, "Flydigi Apex 5");
+        break;
+    case SDL_FLYDIGI_VADER2:
         // The Vader 2 controller has sensors, but they're only reported when gyro mouse is enabled
         HIDAPI_SetDeviceName(device, "Flydigi Vader 2");
         ctx->has_cz = true;
         break;
-    case 22:
+    case SDL_FLYDIGI_VADER2_PRO:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 2 Pro");
         ctx->has_cz = true;
         break;
-    case 28:
+    case SDL_FLYDIGI_VADER3:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 3");
         ctx->has_cz = true;
         break;
-    case 80:
-    case 81:
+    case SDL_FLYDIGI_VADER3_PRO:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 3 Pro");
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER_PRO4_WIRED_NS;
         break;
-    case 85:
-    case 105:
+    case SDL_FLYDIGI_VADER4:
+    case SDL_FLYDIGI_VADER4_PRO:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 4 Pro");
         ctx->has_cz = true;
         ctx->sensors_supported = true;
@@ -270,7 +305,6 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     }
 
     if (ctx->sensors_supported) {
-
         const float flSensorRate = ctx->wireless ? (float)SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ : (float)SENSOR_INTERVAL_VADER_PRO4_WIRED_RATE_HZ;
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, flSensorRate);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, flSensorRate);
@@ -324,7 +358,7 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
 {
     Sint16 axis;
     Uint64 timestamp = SDL_GetTicksNS();
-    if (data[0] != 0x04 && data[0] != 0xFE) {
+    if (data[0] != 0x04 || data[1] != 0xFE) {
         // We don't know how to handle this report
         return;
     }
@@ -437,10 +471,10 @@ static void HIDAPI_DriverFlydigi_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         // These values were estimated using the testcontroller tool in lieux of hard data sheet references.
         const float flPitchAndYawScale = DEG2RAD(72000.0f);
         const float flRollScale = DEG2RAD(1200.0f);
+
         values[0] = HIDAPI_RemapVal(-1.0f * LOAD16(data[26], data[27]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
         values[1] = HIDAPI_RemapVal(-1.0f * LOAD16(data[18], data[20]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
         values[2] = HIDAPI_RemapVal(-1.0f * LOAD16(data[29], data[30]), INT16_MIN, INT16_MAX, -flRollScale, flRollScale);
-
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
         values[0] = -LOAD16(data[11], data[12])  * ctx->accelScale; // Acceleration along pitch axis

@@ -79,6 +79,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     BOOL rotatingOrientation;
     NSString *committedText;
     NSString *obligateForBackspace;
+    BOOL isOTPMode;
 #endif
 }
 
@@ -280,6 +281,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
     textField.hidden = YES;
     textFieldFocused = NO;
+    isOTPMode = NO;
 
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 #ifndef SDL_PLATFORM_TVOS
@@ -477,6 +479,10 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     if (SDL_TextInputActive(window)) {
         [textField becomeFirstResponder];
     }
+
+    isOTPMode =
+        (SDL_GetTextInputType(props) == SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_HIDDEN) ||
+        (SDL_GetTextInputType(props) == SDL_TEXTINPUT_TYPE_NUMBER_PASSWORD_VISIBLE);
 }
 
 /* requests the SDL text field to become focused and accept text input.
@@ -490,6 +496,12 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         return true;
     }
 
+    if (isOTPMode) {
+        if (textField.text.length == 64 && [textField.text isEqualToString:[@"" stringByPaddingToLength:64 withString:@" " startingAtIndex:0]]) {
+            textField.text = @"";
+            committedText  = @"";
+        }
+    }
     return [textField becomeFirstResponder];
 }
 
@@ -632,8 +644,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 // UITextFieldDelegate method.  Invoked when user types something.
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
-    if (textField.markedTextRange == nil) {
-        if (textField.text.length < 16) {
+    if (!isOTPMode) {
+        if (textField.markedTextRange == nil && textField.text.length < 16) {
             [self resetTextState];
         }
     }
@@ -653,8 +665,10 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 - (void)resetTextState
 {
-    textField.text = obligateForBackspace;
-    committedText = textField.text;
+    if (!isOTPMode) {
+        textField.text = obligateForBackspace;
+        committedText = textField.text;
+    }
 }
 
 #endif

@@ -21,10 +21,39 @@
 
 // This is an include file for windows.h with the SDL build settings
 
-#ifndef _INCLUDED_WINDOWS_H
-#define _INCLUDED_WINDOWS_H
+#ifndef SDL_windows_h_
+#define SDL_windows_h_
 
 #ifdef SDL_PLATFORM_WIN32
+
+#ifndef _WIN32_WINNT_NT4
+#define _WIN32_WINNT_NT4 0x0400
+#endif
+#ifndef _WIN32_WINNT_WIN2K
+#define _WIN32_WINNT_WIN2K 0x0500
+#endif
+#ifndef _WIN32_WINNT_WINXP
+#define _WIN32_WINNT_WINXP 0x0501
+#endif
+#ifndef _WIN32_WINNT_WS03
+#define _WIN32_WINNT_WS03 0x0502
+#endif
+#ifndef _WIN32_WINNT_VISTA
+#define _WIN32_WINNT_VISTA 0x0600
+#endif
+#ifndef _WIN32_WINNT_WIN7
+#define _WIN32_WINNT_WIN7 0x0601
+#endif
+#ifndef _WIN32_WINNT_WIN8
+#define _WIN32_WINNT_WIN8 0x0602
+#endif
+#ifndef _WIN32_WINNT_WINBLUE
+#define _WIN32_WINNT_WINBLUE 0x0603
+#endif
+#ifndef _WIN32_WINNT_WIN10
+#define _WIN32_WINNT_WIN10 0x0A00
+#endif
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -37,11 +66,17 @@
 #undef WINVER
 #undef _WIN32_WINNT
 #if defined(SDL_VIDEO_RENDER_D3D12) || defined(HAVE_DXGI1_6_H)
-#define _WIN32_WINNT 0xA00 // For D3D12, 0xA00 is required
+#define _WIN32_WINNT _WIN32_WINNT_WIN10 // For D3D12, 0xA00 is required
 #elif defined(HAVE_SHELLSCALINGAPI_H)
-#define _WIN32_WINNT 0x603 // For DPI support
+#define _WIN32_WINNT _WIN32_WINNT_WINBLUE // For DPI support
+#elif defined(HAVE_ROAPI_H)
+#define _WIN32_WINNT _WIN32_WINNT_WIN8
+#elif defined(HAVE_SENSORSAPI_H)
+#define _WIN32_WINNT _WIN32_WINNT_WIN7
+#elif defined(HAVE_MMDEVICEAPI_H)
+#define _WIN32_WINNT _WIN32_WINNT_VISTA
 #else
-#define _WIN32_WINNT 0x501 // Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input
+#define _WIN32_WINNT _WIN32_WINNT_WINXP // Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input
 #endif
 #define WINVER _WIN32_WINNT
 
@@ -157,7 +192,11 @@ extern void WIN_RECTToRect(const RECT *winrect, SDL_Rect *sdlrect);
 extern void WIN_RectToRECT(const SDL_Rect *sdlrect, RECT *winrect);
 
 // Returns false if a window client rect is not valid
-bool WIN_WindowRectValid(const RECT *rect);
+extern bool WIN_WindowRectValid(const RECT *rect);
+
+extern void WIN_UpdateDarkModeForHWND(HWND hwnd);
+
+extern HICON WIN_CreateIconFromSurface(SDL_Surface *surface);
 
 extern SDL_AudioFormat SDL_WaveFormatExToSDLFormat(WAVEFORMATEX *waveformat);
 
@@ -169,4 +208,4 @@ extern int WIN_WideCharToMultiByte(UINT CodePage, DWORD dwFlags, LPCWCH lpWideCh
 }
 #endif
 
-#endif // _INCLUDED_WINDOWS_H
+#endif // SDL_windows_h_

@@ -1688,6 +1688,14 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         return NULL;
     }
 
+    if (depth_stencil_target_info != NULL) {
+        TextureCommonHeader *depthTextureCommonHeader = (TextureCommonHeader *) depth_stencil_target_info->texture;
+        if (depthTextureCommonHeader->info.layer_count_or_depth > 255) {
+            SDL_SetError("Cannot bind a depth texture with more than 255 layers!");
+            return NULL;
+        }
+    }
+
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
         CHECK_COMMAND_BUFFER_RETURN_NULL
         CHECK_ANY_PASS_IN_PROGRESS("Cannot begin render pass during another pass!", NULL)
@@ -1779,6 +1787,8 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         commandBufferHeader->render_pass.num_color_targets = num_color_targets;
         if (depth_stencil_target_info != NULL) {
             commandBufferHeader->render_pass.depth_stencil_target = depth_stencil_target_info->texture;
+        } else {
+            commandBufferHeader->render_pass.depth_stencil_target = NULL;
         }
     }
 
@@ -3341,4 +3351,68 @@ Uint32 SDL_CalculateGPUTextureFormatSize(
     Uint32 blocksPerRow = (width + blockWidth - 1) / blockWidth;
     Uint32 blocksPerColumn = (height + blockHeight - 1) / blockHeight;
     return depth_or_layer_count * blocksPerRow * blocksPerColumn * SDL_GPUTextureFormatTexelBlockSize(format);
+}
+
+SDL_PixelFormat SDL_GetPixelFormatFromGPUTextureFormat(SDL_GPUTextureFormat format)
+{
+    switch (format) {
+    case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
+        return SDL_PIXELFORMAT_BGRA4444;
+    case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
+        return SDL_PIXELFORMAT_BGR565;
+    case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
+        return SDL_PIXELFORMAT_BGRA5551;
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
+        return SDL_PIXELFORMAT_RGBA32;
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
+        return SDL_PIXELFORMAT_RGBA32;
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
+        return SDL_PIXELFORMAT_RGBA32;
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB:
+        return SDL_PIXELFORMAT_RGBA32;
+    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM:
+        return SDL_PIXELFORMAT_BGRA32;
+    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
+        return SDL_PIXELFORMAT_BGRA32;
+    case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
+        return SDL_PIXELFORMAT_ABGR2101010;
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
+        return SDL_PIXELFORMAT_RGBA64;
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
+        return SDL_PIXELFORMAT_RGBA64;
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT:
+        return SDL_PIXELFORMAT_RGBA64_FLOAT;
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
+        return SDL_PIXELFORMAT_RGBA128_FLOAT;
+    default:
+        return SDL_PIXELFORMAT_UNKNOWN;
+    }
+}
+
+SDL_GPUTextureFormat SDL_GetGPUTextureFormatFromPixelFormat(SDL_PixelFormat format)
+{
+    switch (format) {
+    case SDL_PIXELFORMAT_BGRA4444:
+        return SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM;
+    case SDL_PIXELFORMAT_BGR565:
+        return SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM;
+    case SDL_PIXELFORMAT_BGRA5551:
+        return SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM;
+    case SDL_PIXELFORMAT_BGRA32:
+    case SDL_PIXELFORMAT_BGRX32:
+        return SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM;
+    case SDL_PIXELFORMAT_RGBA32:
+    case SDL_PIXELFORMAT_RGBX32:
+        return SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+    case SDL_PIXELFORMAT_ABGR2101010:
+        return SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM;
+    case SDL_PIXELFORMAT_RGBA64:
+        return SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM;
+    case SDL_PIXELFORMAT_RGBA64_FLOAT:
+        return SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT;
+    case SDL_PIXELFORMAT_RGBA128_FLOAT:
+        return SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT;
+    default:
+        return SDL_GPU_TEXTUREFORMAT_INVALID;
+    }
 }

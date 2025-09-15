@@ -1116,6 +1116,7 @@ struct VulkanRenderer
     VulkanExtensions supports;
     bool supportsDebugUtils;
     bool supportsColorspace;
+    bool supportsPhysicalDeviceProperties2;
     bool supportsFillModeNonSolid;
     bool supportsMultiDrawIndirect;
 
@@ -6065,7 +6066,6 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
         colorAttachmentReferences[colorAttachmentReferenceCount].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
         attachmentDescriptionCount += 1;
-        colorAttachmentReferenceCount += 1;
 
         if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
             VulkanTextureContainer *resolveContainer = (VulkanTextureContainer *)colorTargetInfos[i].resolve_texture;
@@ -6080,12 +6080,16 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
             attachmentDescriptions[attachmentDescriptionCount].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             attachmentDescriptions[attachmentDescriptionCount].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-            resolveReferences[resolveReferenceCount].attachment = attachmentDescriptionCount;
-            resolveReferences[resolveReferenceCount].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            resolveReferences[colorAttachmentReferenceCount].attachment = attachmentDescriptionCount;
+            resolveReferences[colorAttachmentReferenceCount].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
             attachmentDescriptionCount += 1;
             resolveReferenceCount += 1;
+        } else {
+            resolveReferences[colorAttachmentReferenceCount].attachment = VK_ATTACHMENT_UNUSED;
         }
+
+        colorAttachmentReferenceCount += 1;
     }
 
     subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -7272,8 +7276,8 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     } else {
         VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
             (VulkanTextureContainer *)depthStencilTargetInfo->texture,
-            0,
-            0);
+            depthStencilTargetInfo->layer,
+            depthStencilTargetInfo->mip_level);
         key.depthStencilAttachmentView = subresource->depthStencilView;
     }
 
@@ -7328,8 +7332,8 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     if (depthStencilTargetInfo != NULL) {
         VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
             (VulkanTextureContainer *)depthStencilTargetInfo->texture,
-            0,
-            0);
+            depthStencilTargetInfo->layer,
+            depthStencilTargetInfo->mip_level);
         imageViewAttachments[attachmentCount] = subresource->depthStencilView;
 
         attachmentCount += 1;
@@ -7809,8 +7813,8 @@ static void VULKAN_BeginRenderPass(
     if (depthStencilTargetInfo != NULL) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)depthStencilTargetInfo->texture;
 
-        w = textureContainer->header.info.width;
-        h = textureContainer->header.info.height;
+        w = textureContainer->header.info.width >> depthStencilTargetInfo->mip_level;
+        h = textureContainer->header.info.height >> depthStencilTargetInfo->mip_level;
 
         // The framebuffer cannot be larger than the smallest attachment.
 
@@ -7865,8 +7869,8 @@ static void VULKAN_BeginRenderPass(
             renderer,
             vulkanCommandBuffer,
             textureContainer,
-            0,
-            0,
+            depthStencilTargetInfo->layer,
+            depthStencilTargetInfo->mip_level,
             depthStencilTargetInfo->cycle,
             VULKAN_TEXTURE_USAGE_MODE_DEPTH_STENCIL_ATTACHMENT);
 
@@ -9405,6 +9409,8 @@ static bool VULKAN_INTERNAL_AllocateCommandBuffer(
     commandBuffer->usedUniformBuffers = SDL_malloc(
         commandBuffer->usedUniformBufferCapacity * sizeof(VulkanUniformBuffer *));
 
+    commandBuffer->swapchainRequested = false;
+
     // Pool it!
 
     vulkanCommandPool->inactiveCommandBuffers[vulkanCommandPool->inactiveCommandBufferCount] = commandBuffer;
@@ -9515,13 +9521,16 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
     VulkanCommandBuffer *commandBuffer =
         VULKAN_INTERNAL_GetInactiveCommandBufferFromPool(renderer, threadID);
 
-    commandBuffer->descriptorSetCache = VULKAN_INTERNAL_AcquireDescriptorSetCache(renderer);
+    DescriptorSetCache *descriptorSetCache =
+        VULKAN_INTERNAL_AcquireDescriptorSetCache(renderer);
 
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
     if (commandBuffer == NULL) {
         return NULL;
     }
+
+    commandBuffer->descriptorSetCache = descriptorSetCache;
 
     // Reset state
 
@@ -11031,7 +11040,8 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     const char **requiredExtensions,
     Uint32 requiredExtensionsLength,
     bool *supportsDebugUtils,
-    bool *supportsColorspace)
+    bool *supportsColorspace,
+    bool *supportsPhysicalDeviceProperties2)
 {
     Uint32 extensionCount, i;
     VkExtensionProperties *availableExtensions;
@@ -11067,6 +11077,12 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     // Also optional and nice to have!
     *supportsColorspace = SupportsInstanceExtension(
         VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME,
+        availableExtensions,
+        extensionCount);
+
+    // Only needed for KHR_driver_properties!
+    *supportsPhysicalDeviceProperties2 = SupportsInstanceExtension(
+        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME,
         availableExtensions,
         extensionCount);
 
@@ -11180,10 +11196,6 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
         instanceExtensionCount + 4);
     SDL_memcpy((void *)instanceExtensionNames, originalInstanceExtensionNames, instanceExtensionCount * sizeof(const char *));
 
-    // Core since 1.1
-    instanceExtensionNames[instanceExtensionCount++] =
-        VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
-
 #ifdef SDL_PLATFORM_APPLE
     instanceExtensionNames[instanceExtensionCount++] =
         VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
@@ -11194,7 +11206,8 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
             instanceExtensionNames,
             instanceExtensionCount,
             &renderer->supportsDebugUtils,
-            &renderer->supportsColorspace)) {
+            &renderer->supportsColorspace,
+            &renderer->supportsPhysicalDeviceProperties2)) {
         SDL_stack_free((char *)instanceExtensionNames);
         SET_STRING_ERROR_AND_RETURN("Required Vulkan instance extensions not supported", false);
     }
@@ -11214,6 +11227,12 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
         // Append colorspace extension
         instanceExtensionNames[instanceExtensionCount++] =
             VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME;
+    }
+
+    if (renderer->supportsPhysicalDeviceProperties2) {
+        // Append KHR_physical_device_properties2 extension
+        instanceExtensionNames[instanceExtensionCount++] =
+            VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
     }
 
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -11252,13 +11271,14 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     VkPhysicalDevice physicalDevice,
     VulkanExtensions *physicalDeviceExtensions,
     Uint32 *queueFamilyIndex,
-    Uint8 *deviceRank)
+    Uint64 *deviceRank)
 {
     Uint32 queueFamilyCount, queueFamilyRank, queueFamilyBest;
     VkQueueFamilyProperties *queueProps;
     bool supportsPresent;
     VkPhysicalDeviceProperties deviceProperties;
     VkPhysicalDeviceFeatures deviceFeatures;
+    VkPhysicalDeviceMemoryProperties deviceMemory;
     Uint32 i;
 
     const Uint8 *devicePriority = renderer->preferLowPower ? DEVICE_PRIORITY_LOWPOWER : DEVICE_PRIORITY_HIGHPERFORMANCE;
@@ -11270,14 +11290,20 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
     renderer->vkGetPhysicalDeviceProperties(
         physicalDevice,
         &deviceProperties);
-    if (*deviceRank < devicePriority[deviceProperties.deviceType]) {
+
+    /* Apply a large bias on the devicePriority so that we always respect the order in the priority arrays.
+     * We also rank by e.g. VRAM which should have less influence than the device type.
+     */
+    Uint64 devicePriorityValue = devicePriority[deviceProperties.deviceType] * 1000000;
+
+    if (*deviceRank < devicePriorityValue) {
         /* This device outranks the best device we've found so far!
          * This includes a dedicated GPU that has less features than an
          * integrated GPU, because this is a freak case that is almost
          * never intentionally desired by the end user
          */
-        *deviceRank = devicePriority[deviceProperties.deviceType];
-    } else if (*deviceRank > devicePriority[deviceProperties.deviceType]) {
+        *deviceRank = devicePriorityValue;
+    } else if (*deviceRank > devicePriorityValue) {
         /* Device is outranked by a previous device, don't even try to
          * run a query and reset the rank to avoid overwrites
          */
@@ -11380,6 +11406,30 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         return 0;
     }
 
+    /* If we prefer high performance, sum up all device local memory (rounded to megabytes)
+     * to deviceRank. In the niche case of someone having multiple dedicated GPUs in the same
+     * system, this theoretically picks the most powerful one (or at least the one with the
+     * most memory!)
+     *
+     * We do this *after* discarding all non suitable devices, which means if this computer
+     * has multiple dedicated GPUs that all meet our criteria, *and* the user asked for high
+     * performance, then we always pick the GPU with more VRAM.
+     */
+    if (!renderer->preferLowPower) {
+        renderer->vkGetPhysicalDeviceMemoryProperties(physicalDevice, &deviceMemory);
+        Uint64 videoMemory = 0;
+        for (i = 0; i < deviceMemory.memoryHeapCount; i++) {
+            VkMemoryHeap heap = deviceMemory.memoryHeaps[i];
+            if (heap.flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+                videoMemory += heap.size;
+            }
+        }
+        // Round it to megabytes (as per the vulkan spec videoMemory is in bytes)
+        Uint64 videoMemoryRounded = videoMemory / 1024 / 1024;
+        *deviceRank += videoMemoryRounded;
+    }
+
+
     // FIXME: Need better structure for checking vs storing swapchain support details
     return 1;
 }
@@ -11392,7 +11442,7 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer)
     Uint32 i, physicalDeviceCount;
     Sint32 suitableIndex;
     Uint32 queueFamilyIndex, suitableQueueFamilyIndex;
-    Uint8 deviceRank, highestRank;
+    Uint64 deviceRank, highestRank;
 
     vulkanResult = renderer->vkEnumeratePhysicalDevices(
         renderer->instance,

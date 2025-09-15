@@ -66,19 +66,74 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         goto done;
     }
 
-    item->naxes = gamepadEvent->numAxes;
-    item->nbuttons = gamepadEvent->numButtons;
+    const int real_button_count = gamepadEvent->numButtons;
+    const int real_axis_count = gamepadEvent->numAxes;
+    int first_trigger_button = -1;
+    int first_hat_button = -1;
+    int num_buttons = gamepadEvent->numButtons;
+    int num_axes = gamepadEvent->numAxes;
+    bool triggers_are_buttons = false;
+    if ((SDL_strcmp(gamepadEvent->mapping, "standard") == 0) && (num_buttons >= 16)) {  // maps to a game console gamepad layout, turn the d-pad into a hat, treat triggers as analog.
+        num_buttons -= 4;  // 4 dpad buttons become a hat.
+        first_hat_button = 12;
+
+        if (num_axes == 4) {  // Chrome gives the triggers analog button values, Firefox exposes them as extra axes. Both have the digital buttons.
+            num_axes += 2;  // the two trigger "buttons"
+            triggers_are_buttons = true;
+        }
+
+        // dump the digital trigger buttons in any case.
+        first_trigger_button = 6;
+        num_buttons -= 2;
+    }
+
+    item->first_hat_button = first_hat_button;
+    item->first_trigger_button = first_trigger_button;
+    item->triggers_are_buttons = triggers_are_buttons;
+    item->nhats = (first_hat_button >= 0) ? 1 : 0;
+    item->naxes = num_axes;
+    item->nbuttons = num_buttons;
     item->device_instance = SDL_GetNextObjectID();
 
     item->timestamp = gamepadEvent->timestamp;
 
-    for (i = 0; i < item->naxes; i++) {
+    int buttonidx = 0;
+    for (i = 0; i < real_button_count; i++, buttonidx++) {
+        if (buttonidx == first_hat_button) {
+            buttonidx += 4;  // skip these buttons, we're treating them as hat input.
+        } else if (buttonidx == first_trigger_button) {
+            buttonidx += 2;  // skip these buttons, we're treating them as axes.
+        }
+        item->analogButton[i] = gamepadEvent->analogButton[buttonidx];
+        item->digitalButton[i] = gamepadEvent->digitalButton[buttonidx];
+    }
+
+    for (i = 0; i < real_axis_count; i++) {
         item->axis[i] = gamepadEvent->axis[i];
     }
 
-    for (i = 0; i < item->nbuttons; i++) {
-        item->analogButton[i] = gamepadEvent->analogButton[i];
-        item->digitalButton[i] = gamepadEvent->digitalButton[i];
+    if (item->triggers_are_buttons) {
+        item->axis[real_axis_count] = (gamepadEvent->analogButton[first_trigger_button] * 2.0f) - 1.0f;
+        item->axis[real_axis_count+1] = (gamepadEvent->analogButton[first_trigger_button+1] * 2.0f) - 1.0f;
+    }
+
+    SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
+    if (first_hat_button != -1) {
+        Uint8 value = SDL_HAT_CENTERED;
+        // this currently expects the first button to be up, then down, then left, then right.
+        if (gamepadEvent->digitalButton[first_hat_button + 0]) {
+            value |= SDL_HAT_UP;
+        }
+        if (gamepadEvent->digitalButton[first_hat_button + 1]) {
+            value |= SDL_HAT_DOWN;
+        }
+        if (gamepadEvent->digitalButton[first_hat_button + 2]) {
+            value |= SDL_HAT_LEFT;
+        }
+        if (gamepadEvent->digitalButton[first_hat_button + 3]) {
+            value |= SDL_HAT_RIGHT;
+        }
+        item->hat = value;
     }
 
     if (!SDL_joylist_tail) {
@@ -305,6 +360,7 @@ static SDL_JoystickID EMSCRIPTEN_JoystickGetDeviceInstanceID(int device_index)
 static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDeviceIndex(device_index);
+    bool rumble_available = false;
 
     if (!item) {
         return SDL_SetError("No such device");
@@ -317,11 +373,26 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->hwdata = (struct joystick_hwdata *)item;
     item->joystick = joystick;
 
-    // HTML5 Gamepad API doesn't say anything about these
-    joystick->nhats = 0;
-
+    // HTML5 Gamepad API doesn't offer hats, but we can fake it from the d-pad buttons on the "standard" mapping.
+    joystick->nhats = item->nhats;
     joystick->nbuttons = item->nbuttons;
     joystick->naxes = item->naxes;
+
+    rumble_available = EM_ASM_INT({
+        let gamepads = navigator['getGamepads']();
+        if (!gamepads) {
+            return 0;
+        }
+        let gamepad = gamepads[$0];
+        if (!gamepad || !gamepad['vibrationActuator']) {
+            return 0;
+        }
+        return 1;
+        }, item->index);
+
+    if (rumble_available) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
+    }
 
     return true;
 }
@@ -344,27 +415,64 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
         result = emscripten_get_gamepad_status(item->index, &gamepadState);
         if (result == EMSCRIPTEN_RESULT_SUCCESS) {
             if (gamepadState.timestamp == 0 || gamepadState.timestamp != item->timestamp) {
-                for (i = 0; i < item->nbuttons; i++) {
-                    if (item->digitalButton[i] != gamepadState.digitalButton[i]) {
-                        bool down = (gamepadState.digitalButton[i] != 0);
+                const int first_hat_button = item->first_hat_button;
+                const int first_trigger_button = item->first_trigger_button;
+                const int real_button_count = gamepadState.numButtons;
+                const int real_axis_count = gamepadState.numAxes;
+
+                int buttonidx = 0;
+                for (i = 0; i < real_button_count; i++, buttonidx++) {
+                    if (buttonidx == first_hat_button) {
+                        buttonidx += 4;  // skip these buttons, we're treating them as hat input.
+                    } else if (buttonidx == first_trigger_button) {
+                        buttonidx += 2;  // skip these buttons, we're treating them as axes.
+                    }
+                    if (item->digitalButton[i] != gamepadState.digitalButton[buttonidx]) {
+                        const bool down = (gamepadState.digitalButton[buttonidx] != 0);
                         SDL_SendJoystickButton(timestamp, item->joystick, i, down);
                     }
 
                     // store values to compare them in the next update
-                    item->analogButton[i] = gamepadState.analogButton[i];
-                    item->digitalButton[i] = gamepadState.digitalButton[i];
+                    item->analogButton[i] = gamepadState.analogButton[buttonidx];
+                    item->digitalButton[i] = gamepadState.digitalButton[buttonidx];
                 }
 
-                for (i = 0; i < item->naxes; i++) {
+                for (i = 0; i < real_axis_count; i++) {
                     if (item->axis[i] != gamepadState.axis[i]) {
-                        // do we need to do conversion?
-                        SDL_SendJoystickAxis(timestamp, item->joystick, i,
-                                                (Sint16)(32767. * gamepadState.axis[i]));
+                        SDL_SendJoystickAxis(timestamp, item->joystick, i, (Sint16)(32767.0f * gamepadState.axis[i]));
+                        item->axis[i] = gamepadState.axis[i];
                     }
-
-                    // store to compare in next update
-                    item->axis[i] = gamepadState.axis[i];
                 }
+
+                if (item->triggers_are_buttons) {
+                    for (i = 0; i < 2; i++) {
+                        if (item->axis[real_axis_count+i] != gamepadState.analogButton[first_trigger_button+i]) {
+                            SDL_SendJoystickAxis(timestamp, item->joystick, real_axis_count+i, (Sint16)(32767.0f * ((gamepadState.analogButton[first_trigger_button+i] * 2.0f) - 1.0f)));
+                            item->axis[real_axis_count+i] = gamepadState.analogButton[first_trigger_button+i];
+                        }
+                    }
+                }
+
+                SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
+                if (item->nhats) {
+                    Uint8 value = SDL_HAT_CENTERED;
+                    // this currently expects the first button to be up, then down, then left, then right.
+                    if (gamepadState.digitalButton[first_hat_button + 0]) {
+                        value |= SDL_HAT_UP;
+                    } else if (gamepadState.digitalButton[first_hat_button + 1]) {
+                        value |= SDL_HAT_DOWN;
+                    }
+                    if (gamepadState.digitalButton[first_hat_button + 2]) {
+                        value |= SDL_HAT_LEFT;
+                    } else if (gamepadState.digitalButton[first_hat_button + 3]) {
+                        value |= SDL_HAT_RIGHT;
+                    }
+                    if (item->hat != value) {
+                        item->hat = value;
+                        SDL_SendJoystickHat(timestamp, item->joystick, 0, value);
+                    }
+                }
+
 
                 item->timestamp = gamepadState.timestamp;
             }
@@ -390,7 +498,29 @@ static SDL_GUID EMSCRIPTEN_JoystickGetDeviceGUID(int device_index)
 
 static bool EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    return SDL_Unsupported();
+    SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
+
+    // clang-format off
+    bool result = EM_ASM_INT({
+        let gamepads = navigator['getGamepads']();
+        if (!gamepads) {
+            return 0;
+        }
+        let gamepad = gamepads[$0];
+        if (!gamepad || !gamepad['vibrationActuator']) {
+            return 0;
+        }
+
+        gamepad['vibrationActuator']['playEffect']('dual-rumble', {
+            'startDelay': 0,
+            'duration': 3000,
+            'weakMagnitude': $1 / 0xFFFF,
+            'strongMagnitude': $2 / 0xFFFF,
+        });
+        return 1;
+        }, item->index, low_frequency_rumble, high_frequency_rumble);
+
+    return result;
 }
 
 static bool EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)

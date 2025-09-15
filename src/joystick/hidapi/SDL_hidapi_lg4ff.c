@@ -277,7 +277,7 @@ static bool HIDAPI_DriverLg4ff_IsSupportedDevice(
         return true;
     }
     // a supported native mode is found, send mode change command, then still state that we support the device
-    if (device != NULL && SDL_HIDAPI_DriverLg4ff_GetEnvInt("SDL_HIDAPI_LG4FF_NO_MODE_SWITCH", 0, 1, 0) == 0) {
+    if (device && SDL_HIDAPI_DriverLg4ff_GetEnvInt("SDL_HIDAPI_LG4FF_NO_MODE_SWITCH", 0, 1, 0) == 0) {
         HIDAPI_DriverLg4ff_SwitchMode(device, real_id);
     }
     return true;

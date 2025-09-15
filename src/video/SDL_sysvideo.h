@@ -191,8 +191,7 @@ typedef enum
     VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS = 0x04,
     VIDEO_DEVICE_CAPS_FULLSCREEN_ONLY = 0x08,
     VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES = 0x10,
-    VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS = 0x20,
-    VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES = 0x40
+    VIDEO_DEVICE_CAPS_SENDS_HDR_CHANGES = 0x20
 } DeviceCaps;
 
 // Fullscreen operations
@@ -314,6 +313,7 @@ struct SDL_VideoDevice
     bool (*ApplyWindowProgress)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*SetWindowFocusable)(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
     bool (*SyncWindow)(SDL_VideoDevice *_this, SDL_Window *window);
+    bool (*ReconfigureWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
 
     /* * * */
     /*
@@ -574,6 +574,7 @@ extern void SDL_SetWindowSafeAreaInsets(SDL_Window *window, int left, int right,
 extern void SDL_GL_DeduceMaxSupportedESProfile(int *major, int *minor);
 
 extern bool SDL_RecreateWindow(SDL_Window *window, SDL_WindowFlags flags);
+extern bool SDL_ReconfigureWindow(SDL_Window *window, SDL_WindowFlags flags);
 extern bool SDL_HasWindows(void);
 extern void SDL_RelativeToGlobalForWindow(SDL_Window *window, int rel_x, int rel_y, int *abs_x, int *abs_y);
 extern void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int *rel_x, int *rel_y);

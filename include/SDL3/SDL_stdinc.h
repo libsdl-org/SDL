@@ -49,9 +49,29 @@
 #include <SDL3/SDL_platform_defines.h>
 
 #include <stdarg.h>
-#include <stdint.h>
 #include <string.h>
 #include <wchar.h>
+
+/* Most everything except Visual Studio 2008 and earlier has stdint.h now */
+#if defined(_MSC_VER) && (_MSC_VER < 1600)
+typedef signed __int8 int8_t;
+typedef unsigned __int8 uint8_t;
+typedef signed __int16 int16_t;
+typedef unsigned __int16 uint16_t;
+typedef signed __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+typedef signed __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+#ifndef _UINTPTR_T_DEFINED
+#ifdef _WIN64
+typedef unsigned __int64 uintptr_t;
+#else
+typedef unsigned int uintptr_t;
+#endif
+#endif
+#else
+#include <stdint.h>
+#endif
 
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
     defined(SDL_INCLUDE_INTTYPES_H)
@@ -4722,7 +4742,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
 /**
  * Compute the ceiling of `x`.
  *
- * The ceiling of `x` is the smallest integer `y` such that `y > x`, i.e `x`
+ * The ceiling of `x` is the smallest integer `y` such that `y >= x`, i.e `x`
  * rounded up to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`
@@ -4750,7 +4770,7 @@ extern SDL_DECLSPEC double SDLCALL SDL_ceil(double x);
 /**
  * Compute the ceiling of `x`.
  *
- * The ceiling of `x` is the smallest integer `y` such that `y > x`, i.e `x`
+ * The ceiling of `x` is the smallest integer `y` such that `y >= x`, i.e `x`
  * rounded up to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`
@@ -4992,7 +5012,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_fabsf(float x);
 /**
  * Compute the floor of `x`.
  *
- * The floor of `x` is the largest integer `y` such that `y > x`, i.e `x`
+ * The floor of `x` is the largest integer `y` such that `y <= x`, i.e `x`
  * rounded down to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`
@@ -5020,7 +5040,7 @@ extern SDL_DECLSPEC double SDLCALL SDL_floor(double x);
 /**
  * Compute the floor of `x`.
  *
- * The floor of `x` is the largest integer `y` such that `y > x`, i.e `x`
+ * The floor of `x` is the largest integer `y` such that `y <= x`, i.e `x`
  * rounded down to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`

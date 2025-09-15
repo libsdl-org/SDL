@@ -240,7 +240,6 @@ void WIN_QuitKeyboard(SDL_VideoDevice *_this)
     }
 #endif // !SDL_DISABLE_WINDOWS_IME
 
-    SDL_SetKeymap(NULL, false);
     for (int i = 0; i < keymap_cache_size; ++i) {
         SDL_DestroyKeymap(keymap_cache[i].keymap);
     }

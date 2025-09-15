@@ -34,16 +34,12 @@
 
 #define WARP_EMULATION_THRESHOLD_NS SDL_MS_TO_NS(30)
 
-typedef struct SDL_MouseInstance
-{
-    SDL_MouseID instance_id;
-    char *name;
-} SDL_MouseInstance;
-
 // The mouse state
 static SDL_Mouse SDL_mouse;
 static int SDL_mouse_count;
-static SDL_MouseInstance *SDL_mice;
+static SDL_MouseID *SDL_mice;
+static SDL_HashTable *SDL_mouse_names;
+static bool SDL_mouse_quitting;
 
 // for mapping mouse events to touch
 static bool track_mouse_down = false;
@@ -310,6 +306,8 @@ bool SDL_PreInitMouse(void)
 
     mouse->cursor_visible = true;
 
+    SDL_mouse_names = SDL_CreateHashTable(0, true, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
+
     return true;
 }
 
@@ -339,14 +337,14 @@ bool SDL_IsMouse(Uint16 vendor, Uint16 product)
 static int SDL_GetMouseIndex(SDL_MouseID mouseID)
 {
     for (int i = 0; i < SDL_mouse_count; ++i) {
-        if (mouseID == SDL_mice[i].instance_id) {
+        if (mouseID == SDL_mice[i]) {
             return i;
         }
     }
     return -1;
 }
 
-void SDL_AddMouse(SDL_MouseID mouseID, const char *name, bool send_event)
+void SDL_AddMouse(SDL_MouseID mouseID, const char *name)
 {
     int mouse_index = SDL_GetMouseIndex(mouseID);
     if (mouse_index >= 0) {
@@ -356,34 +354,33 @@ void SDL_AddMouse(SDL_MouseID mouseID, const char *name, bool send_event)
 
     SDL_assert(mouseID != 0);
 
-    SDL_MouseInstance *mice = (SDL_MouseInstance *)SDL_realloc(SDL_mice, (SDL_mouse_count + 1) * sizeof(*mice));
+    SDL_MouseID *mice = (SDL_MouseID *)SDL_realloc(SDL_mice, (SDL_mouse_count + 1) * sizeof(*mice));
     if (!mice) {
         return;
     }
-    SDL_MouseInstance *instance = &mice[SDL_mouse_count];
-    instance->instance_id = mouseID;
-    instance->name = SDL_strdup(name ? name : "");
+    mice[SDL_mouse_count] = mouseID;
     SDL_mice = mice;
     ++SDL_mouse_count;
 
-    if (send_event) {
-        SDL_Event event;
-        SDL_zero(event);
-        event.type = SDL_EVENT_MOUSE_ADDED;
-        event.mdevice.which = mouseID;
-        SDL_PushEvent(&event);
+    if (!name) {
+        name = "Mouse";
     }
+    SDL_InsertIntoHashTable(SDL_mouse_names, (const void *)(uintptr_t)mouseID, SDL_strdup(name), true);
+
+    SDL_Event event;
+    SDL_zero(event);
+    event.type = SDL_EVENT_MOUSE_ADDED;
+    event.mdevice.which = mouseID;
+    SDL_PushEvent(&event);
 }
 
-void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
+void SDL_RemoveMouse(SDL_MouseID mouseID)
 {
     int mouse_index = SDL_GetMouseIndex(mouseID);
     if (mouse_index < 0) {
         // We don't know about this mouse
         return;
     }
-
-    SDL_free(SDL_mice[mouse_index].name);
 
     if (mouse_index != SDL_mouse_count - 1) {
         SDL_memmove(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
@@ -404,7 +401,7 @@ void SDL_RemoveMouse(SDL_MouseID mouseID, bool send_event)
         }
     }
 
-    if (send_event) {
+    if (!SDL_mouse_quitting) {
         SDL_Event event;
         SDL_zero(event);
         event.type = SDL_EVENT_MOUSE_REMOVED;
@@ -430,7 +427,7 @@ SDL_MouseID *SDL_GetMice(int *count)
         }
 
         for (i = 0; i < SDL_mouse_count; ++i) {
-            mice[i] = SDL_mice[i].instance_id;
+            mice[i] = SDL_mice[i];
         }
         mice[i] = 0;
     } else {
@@ -444,12 +441,17 @@ SDL_MouseID *SDL_GetMice(int *count)
 
 const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)
 {
-    int mouse_index = SDL_GetMouseIndex(instance_id);
-    if (mouse_index < 0) {
+    const char *name = NULL;
+    if (!SDL_FindInHashTable(SDL_mouse_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
         SDL_SetError("Mouse %" SDL_PRIu32 " not found", instance_id);
         return NULL;
     }
-    return SDL_GetPersistentString(SDL_mice[mouse_index].name);
+    if (!name) {
+        // SDL_strdup() failed during insert
+        SDL_OutOfMemory();
+        return NULL;
+    }
+    return name;
 }
 
 void SDL_SetDefaultCursor(SDL_Cursor *cursor)
@@ -1078,6 +1080,8 @@ void SDL_QuitMouse(void)
     SDL_Cursor *cursor, *next;
     SDL_Mouse *mouse = SDL_GetMouse();
 
+    SDL_mouse_quitting = true;
+
     if (mouse->added_mouse_touch_device) {
         SDL_DelTouch(SDL_MOUSE_TOUCHID);
         mouse->added_mouse_touch_device = false;
@@ -1164,10 +1168,21 @@ void SDL_QuitMouse(void)
                         SDL_MouseIntegerModeChanged, mouse);
 
     for (int i = SDL_mouse_count; i--; ) {
-        SDL_RemoveMouse(SDL_mice[i].instance_id, false);
+        SDL_RemoveMouse(SDL_mice[i]);
     }
     SDL_free(SDL_mice);
     SDL_mice = NULL;
+
+    SDL_DestroyHashTable(SDL_mouse_names);
+    SDL_mouse_names = NULL;
+
+    if (mouse->internal) {
+        SDL_free(mouse->internal);
+        mouse->internal = NULL;
+    }
+    SDL_zerop(mouse);
+
+    SDL_mouse_quitting = false;
 }
 
 bool SDL_SetRelativeMouseTransform(SDL_MouseMotionTransformCallback transform, void *userdata)

@@ -117,63 +117,6 @@ static bool GPU_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMod
     return true;
 }
 
-static SDL_GPUTextureFormat PixFormatToTexFormat(SDL_PixelFormat pixel_format)
-{
-    switch (pixel_format) {
-    case SDL_PIXELFORMAT_BGRA32:
-    case SDL_PIXELFORMAT_BGRX32:
-        return SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM;
-    case SDL_PIXELFORMAT_RGBA32:
-    case SDL_PIXELFORMAT_RGBX32:
-        return SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-
-    // YUV TODO
-    case SDL_PIXELFORMAT_YV12:
-    case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_NV12:
-    case SDL_PIXELFORMAT_NV21:
-    case SDL_PIXELFORMAT_UYVY:
-    default:
-        return SDL_GPU_TEXTUREFORMAT_INVALID;
-    }
-}
-
-static SDL_PixelFormat TexFormatToPixFormat(SDL_GPUTextureFormat tex_format)
-{
-    switch (tex_format) {
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
-        return SDL_PIXELFORMAT_RGBA32;
-    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM:
-        return SDL_PIXELFORMAT_BGRA32;
-    case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
-        return SDL_PIXELFORMAT_BGR565;
-    case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
-        return SDL_PIXELFORMAT_BGRA5551;
-    case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
-        return SDL_PIXELFORMAT_BGRA4444;
-    case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
-        return SDL_PIXELFORMAT_ABGR2101010;
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
-        return SDL_PIXELFORMAT_RGBA64;
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
-        return SDL_PIXELFORMAT_RGBA32;
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT:
-        return SDL_PIXELFORMAT_RGBA64_FLOAT;
-    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
-        return SDL_PIXELFORMAT_RGBA128_FLOAT;
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
-        return SDL_PIXELFORMAT_RGBA32;
-    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
-        return SDL_PIXELFORMAT_RGBA64;
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB:
-        return SDL_PIXELFORMAT_RGBA32;
-    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
-        return SDL_PIXELFORMAT_BGRA32;
-    default:
-        return SDL_PIXELFORMAT_UNKNOWN;
-    }
-}
-
 static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
@@ -181,7 +124,7 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     SDL_GPUTextureFormat format;
     SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
-    format = PixFormatToTexFormat(texture->format);
+    format = SDL_GetGPUTextureFormatFromPixelFormat(texture->format);
 
     if (format == SDL_GPU_TEXTUREFORMAT_INVALID) {
         return SDL_SetError("Texture format %s not supported by SDL_GPU",
@@ -233,10 +176,12 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
 
     data->format = format;
     data->texture = SDL_CreateGPUTexture(renderdata->device, &tci);
-
     if (!data->texture) {
         return false;
     }
+
+    SDL_PropertiesID props = SDL_GetTextureProperties(texture);
+    SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER, data->texture);
 
     if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
         data->shader = FRAG_SHADER_TEXTURE_RGBA;
@@ -720,6 +665,8 @@ static bool InitVertexBuffer(GPU_RenderData *data, Uint32 size)
         return false;
     }
 
+    data->vertices.buffer_size = size;
+
     return true;
 }
 
@@ -948,7 +895,7 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
         pixfmt = texture->format;
     } else {
         gpu_tex = data->backbuffer.texture;
-        pixfmt = TexFormatToPixFormat(data->backbuffer.format);
+        pixfmt = SDL_GetPixelFormatFromGPUTextureFormat(data->backbuffer.format);
 
         if (pixfmt == SDL_PIXELFORMAT_UNKNOWN) {
             SDL_SetError("Unsupported backbuffer format");
@@ -1251,6 +1198,25 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, debug);
     SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, lowpower);
+
+    // Set hints for the greatest hardware compatibility
+    // This property allows using the renderer on Intel Haswell and Broadwell GPUs.
+    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN)) {
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN, true);
+    }
+    // These properties allow using the renderer on more Android devices.
+    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN)) {
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN, false);
+    }
+    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOLEAN)) {
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOLEAN, false);
+    }
+    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN)) {
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN, false);
+    }
+    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN)) {
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN, false);
+    }
 
     GPU_FillSupportedShaderFormats(create_props);
     data->device = SDL_CreateGPUDeviceWithProperties(create_props);

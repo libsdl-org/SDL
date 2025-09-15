@@ -74,8 +74,12 @@ static bool xinput2_scrolling_supported;
 
 static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRawEvent *rawev)
 {
+    SDL_Mouse *mouse = SDL_GetMouse();
     double processed_coords[2] = { 0.0, 0.0 };
     int values_i = 0, found = 0;
+
+    // Use the raw values if a custom transform function is set, or the relative system scale hint is unset.
+    const bool use_raw_vals = mouse->InputTransform || !mouse->enable_relative_system_scale;
 
     for (int i = 0; i < rawev->valuators.mask_len * 8 && found < 2; ++i) {
         if (!XIMaskIsSet(rawev->valuators.mask, i)) {
@@ -84,15 +88,14 @@ static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRaw
 
         for (int j = 0; j < 2; ++j) {
             if (devinfo->number[j] == i) {
-                const double current_val = rawev->valuators.values[values_i];
+                const double current_val = use_raw_vals ? rawev->raw_values[values_i] : rawev->valuators.values[values_i];
 
                 if (devinfo->relative[j]) {
                     processed_coords[j] = current_val;
                 } else {
-                    processed_coords[j] = devinfo->prev_coords[j] - current_val; // convert absolute to relative
+                    processed_coords[j] = (current_val - devinfo->prev_coords[j]); // convert absolute to relative
+                    devinfo->prev_coords[j] = current_val;
                 }
-
-                devinfo->prev_coords[j] = current_val;
                 ++found;
 
                 break;
@@ -103,7 +106,6 @@ static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRaw
     }
 
     // Relative mouse motion is delivered to the window with keyboard focus
-    SDL_Mouse *mouse = SDL_GetMouse();
     if (mouse->relative_mode && SDL_GetKeyboardFocus()) {
         SDL_SendMouseMotion(rawev->time, mouse->focus, (SDL_MouseID)rawev->sourceid, true, (float)processed_coords[0], (float)processed_coords[1]);
     }
@@ -325,7 +327,7 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
     XISetMask(mask, XI_HierarchyChanged);
     X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask, 1);
 
-    X11_Xinput2UpdateDevices(_this, true);
+    X11_Xinput2UpdateDevices(_this);
 
     return true;
 #else
@@ -894,7 +896,7 @@ static bool HasDeviceID64(Uint64 deviceID, const Uint64 *list, int count)
 
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2
 
-void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
+void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_VideoData *data = _this->internal;
@@ -912,7 +914,6 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
     Uint64 *old_touch_devices = NULL;
     int new_touch_count = 0;
     Uint64 *new_touch_devices = NULL;
-    bool send_event = !initial_check;
 
     SDL_assert(X11_Xinput2IsInitialized());
 
@@ -942,7 +943,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
                 SDL_KeyboardID keyboardID = (SDL_KeyboardID)dev->deviceid;
                 AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
                 if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
-                    SDL_AddKeyboard(keyboardID, dev->name, send_event);
+                    SDL_AddKeyboard(keyboardID, dev->name);
                 }
             }
             break;
@@ -954,7 +955,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
                 SDL_MouseID mouseID = (SDL_MouseID)dev->deviceid;
                 AddDeviceID(mouseID, &new_mice, &new_mouse_count);
                 if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
-                    SDL_AddMouse(mouseID, dev->name, send_event);
+                    SDL_AddMouse(mouseID, dev->name);
                 }
             }
             break;
@@ -1038,13 +1039,13 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
 
     for (int i = old_keyboard_count; i--;) {
         if (!HasDeviceID(old_keyboards[i], new_keyboards, new_keyboard_count)) {
-            SDL_RemoveKeyboard(old_keyboards[i], send_event);
+            SDL_RemoveKeyboard(old_keyboards[i]);
         }
     }
 
     for (int i = old_mouse_count; i--;) {
         if (!HasDeviceID(old_mice[i], new_mice, new_mouse_count)) {
-            SDL_RemoveMouse(old_mice[i], send_event);
+            SDL_RemoveMouse(old_mice[i]);
         }
     }
 

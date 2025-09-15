@@ -595,29 +595,26 @@ bool SDL_ConvertPixels_YUV_to_RGB(int width, int height,
     const Uint8 *v = NULL;
     Uint32 y_stride = 0;
     Uint32 uv_stride = 0;
+    YCbCrType yuv_type = YCBCR_601_LIMITED;
 
     if (!GetYUVPlanes(width, height, src_format, src, src_pitch, &y, &u, &v, &y_stride, &uv_stride)) {
         return false;
     }
 
-    if (SDL_COLORSPACEPRIMARIES(src_colorspace) == SDL_COLORSPACEPRIMARIES(dst_colorspace)) {
-        YCbCrType yuv_type = YCBCR_601_LIMITED;
+    if (!GetYUVConversionType(src_colorspace, &yuv_type)) {
+        return false;
+    }
 
-        if (!GetYUVConversionType(src_colorspace, &yuv_type)) {
-            return false;
-        }
+    if (yuv_rgb_sse(src_format, dst_format, width, height, y, u, v, y_stride, uv_stride, (Uint8 *)dst, dst_pitch, yuv_type)) {
+        return true;
+    }
 
-        if (yuv_rgb_sse(src_format, dst_format, width, height, y, u, v, y_stride, uv_stride, (Uint8 *)dst, dst_pitch, yuv_type)) {
-            return true;
-        }
+    if (yuv_rgb_lsx(src_format, dst_format, width, height, y, u, v, y_stride, uv_stride, (Uint8 *)dst, dst_pitch, yuv_type)) {
+        return true;
+    }
 
-        if (yuv_rgb_lsx(src_format, dst_format, width, height, y, u, v, y_stride, uv_stride, (Uint8 *)dst, dst_pitch, yuv_type)) {
-            return true;
-        }
-
-        if (yuv_rgb_std(src_format, dst_format, width, height, y, u, v, y_stride, uv_stride, (Uint8 *)dst, dst_pitch, yuv_type)) {
-            return true;
-        }
+    if (yuv_rgb_std(src_format, dst_format, width, height, y, u, v, y_stride, uv_stride, (Uint8 *)dst, dst_pitch, yuv_type)) {
+        return true;
     }
 
     // No fast path for the RGB format, instead convert using an intermediate buffer
@@ -1158,14 +1155,12 @@ bool SDL_ConvertPixels_RGB_to_YUV(int width, int height,
 #endif
 
     // ARGB8888 to FOURCC
-    if ((src_format == SDL_PIXELFORMAT_ARGB8888 || src_format == SDL_PIXELFORMAT_XRGB8888) &&
-        SDL_COLORSPACEPRIMARIES(src_colorspace) == SDL_COLORSPACEPRIMARIES(dst_colorspace)) {
+    if (src_format == SDL_PIXELFORMAT_ARGB8888 || src_format == SDL_PIXELFORMAT_XRGB8888) {
         return SDL_ConvertPixels_XRGB8888_to_YUV(width, height, src, src_pitch, dst_format, dst, dst_pitch, yuv_type);
     }
 
     if (dst_format == SDL_PIXELFORMAT_P010) {
-        if (src_format == SDL_PIXELFORMAT_XBGR2101010 &&
-            SDL_COLORSPACEPRIMARIES(src_colorspace) == SDL_COLORSPACEPRIMARIES(dst_colorspace)) {
+        if (src_format == SDL_PIXELFORMAT_XBGR2101010) {
             return SDL_ConvertPixels_XBGR2101010_to_P010(width, height, src, src_pitch, dst_format, dst, dst_pitch, yuv_type);
         }
 

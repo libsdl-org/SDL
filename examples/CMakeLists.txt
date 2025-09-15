@@ -16,13 +16,6 @@ else()
 endif()
 set(HAVE_EXAMPLES_LINK_SHARED "${SDL_EXAMPLES_LINK_SHARED}" PARENT_SCOPE)
 
-# CMake incorrectly detects opengl32.lib being present on MSVC ARM64
-if(NOT (MSVC AND SDL_CPU_ARM64))
-    # Prefer GLVND, if present
-    set(OpenGL_GL_PREFERENCE GLVND)
-    find_package(OpenGL)
-endif()
-
 set(SDL_EXAMPLE_EXECUTABLES)
 
 if(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
@@ -64,17 +57,12 @@ macro(add_sdl_example_executable TARGET)
     if(NOT AST_SOURCES)
         message(FATAL_ERROR "add_sdl_example_executable needs at least one source")
     endif()
-    set(EXTRA_SOURCES "")
-    if(AST_DATAFILES)
-        list(APPEND EXTRA_SOURCES ${DATAFILES})
-    endif()
     if(ANDROID)
-        add_library(${TARGET} SHARED ${AST_SOURCES} ${EXTRA_SOURCES})
+        add_library(${TARGET} SHARED ${AST_SOURCES} ${AST_DATAFILES})
     else()
-        add_executable(${TARGET} ${AST_SOURCES} ${EXTRA_SOURCES})
+        add_executable(${TARGET} ${AST_SOURCES} ${AST_DATAFILES})
     endif()
     SDL_AddCommonCompilerFlags(${TARGET})
-    target_include_directories(${TARGET} PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
     target_link_libraries(${TARGET} PRIVATE SDL3::${sdl_name_component})
 
     list(APPEND SDL_EXAMPLE_EXECUTABLES ${TARGET})
@@ -85,12 +73,8 @@ macro(add_sdl_example_executable TARGET)
                 COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${AST_DATAFILES} $<TARGET_FILE_DIR:${TARGET}>/sdl-${TARGET}
                 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
             )
-        else()
+        elseif(NOT APPLE AND NOT N3DS)
             add_dependencies(${TARGET} copy-sdl-example-resources)
-        endif()
-        if(APPLE)
-            # Make sure resource files get installed into macOS/iOS .app bundles.
-            set_target_properties(${TARGET} PROPERTIES RESOURCE "${AST_DATAFILES}")
         endif()
         if(EMSCRIPTEN)
             foreach(res IN LISTS AST_DATAFILES)
@@ -101,28 +85,45 @@ macro(add_sdl_example_executable TARGET)
         set_property(TARGET ${TARGET} APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:${TARGET}>/$<JOIN:${AST_DATAFILES},$<SEMICOLON>$<TARGET_FILE_DIR:${TARGET}>/>")
     endif()
 
-    if(WINDOWS)
+    if(APPLE)
+        # Set Apple App ID / Bundle ID.  This is needed to launch apps on some Apple
+        # platforms (iOS, for example).
+        set_target_properties(${TARGET} PROPERTIES
+          RESOURCES "${AST_DATAFILES}"
+          MACOSX_BUNDLE TRUE
+          MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${TARGET}"
+          MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
+          MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
+        )
+        set_property(SOURCE ${AST_DATAFILES} PROPERTY MACOSX_PACKAGE_LOCATION "Resources")
+    elseif(WINDOWS)
         # CET support was added in VS 16.7
         if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
             set_property(TARGET ${TARGET} APPEND_STRING PROPERTY LINK_FLAGS " -CETCOMPAT")
         endif()
-    elseif(PSP)
-        target_link_libraries(${TARGET} PRIVATE GL)
     elseif(EMSCRIPTEN)
         set_property(TARGET ${TARGET} PROPERTY SUFFIX ".html")
         target_link_options(${TARGET} PRIVATE -sALLOW_MEMORY_GROWTH=1)
+    elseif(N3DS)
+        set(ROMFS_DIR "${CMAKE_CURRENT_BINARY_DIR}/romfs/${TARGET}")
+        file(MAKE_DIRECTORY "${ROMFS_DIR}")
+        file(COPY ${AST_DATAFILES} DESTINATION "${ROMFS_DIR}")
+        ctr_generate_smdh("${TARGET}.smdh"
+            NAME "SDL-${TARGET}"
+            DESCRIPTION "SDL3 example application"
+            AUTHOR "SDL3 Contributors"
+            ICON "${CMAKE_CURRENT_SOURCE_DIR}/../test/n3ds/logo48x48.png"
+        )
+        ctr_create_3dsx(
+            ${TARGET}
+            ROMFS "${ROMFS_DIR}"
+            SMDH "${TARGET}.smdh"
+        )
     elseif(NGAGE)
         string(MD5 TARGET_MD5 "${TARGET}")
         string(SUBSTRING "${TARGET_MD5}" 0 8 TARGET_MD5_8)
         target_link_options(${TARGET} PRIVATE "SHELL:-s UID3=0x${TARGET_MD5_8}")
     endif()
-
-    if(OPENGL_FOUND)
-        target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
-    endif()
-
-    # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
-    target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
 endmacro()
 
 add_sdl_example_executable(renderer-clear SOURCES renderer/01-clear/clear.c)
@@ -148,6 +149,8 @@ add_sdl_example_executable(audio-multiple-streams SOURCES audio/04-multiple-stre
 add_sdl_example_executable(audio-planar-data SOURCES audio/05-planar-data/planar-data.c)
 add_sdl_example_executable(input-joystick-polling SOURCES input/01-joystick-polling/joystick-polling.c)
 add_sdl_example_executable(input-joystick-events SOURCES input/02-joystick-events/joystick-events.c)
+add_sdl_example_executable(input-gamepad-polling SOURCES input/03-gamepad-polling/gamepad-polling.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/gamepad_front.bmp)
+add_sdl_example_executable(input-gamepad-events SOURCES input/04-gamepad-events/gamepad-events.c)
 add_sdl_example_executable(camera-read-and-draw SOURCES camera/01-read-and-draw/read-and-draw.c)
 add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawing-lines.c)
 add_sdl_example_executable(asyncio-load-bitmaps SOURCES asyncio/01-load-bitmaps/load-bitmaps.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.bmp ${CMAKE_CURRENT_SOURCE_DIR}/../test/gamepad_front.bmp ${CMAKE_CURRENT_SOURCE_DIR}/../test/speaker.bmp ${CMAKE_CURRENT_SOURCE_DIR}/../test/icon2x.bmp)
@@ -181,28 +184,6 @@ if(PSP)
     endforeach()
 endif()
 
-if(N3DS)
-    set(ROMFS_DIR "${CMAKE_CURRENT_BINARY_DIR}/romfs")
-    file(MAKE_DIRECTORY "${ROMFS_DIR}")
-    file(COPY ${RESOURCE_FILES} DESTINATION "${ROMFS_DIR}")
-
-    foreach(APP ${SDL_EXAMPLE_EXECUTABLES})
-        get_target_property(TARGET_BINARY_DIR ${APP} BINARY_DIR)
-        set(SMDH_FILE "${TARGET_BINARY_DIR}/${APP}.smdh")
-        ctr_generate_smdh("${SMDH_FILE}"
-            NAME "SDL-${APP}"
-            DESCRIPTION "SDL3 Test suite"
-            AUTHOR "SDL3 Contributors"
-            ICON "${CMAKE_CURRENT_SOURCE_DIR}/../test/n3ds/logo48x48.png"
-        )
-        ctr_create_3dsx(
-            ${APP}
-            ROMFS "${ROMFS_DIR}"
-            SMDH "${SMDH_FILE}"
-        )
-    endforeach()
-endif()
-
 if(RISCOS)
     set(SDL_EXAMPLE_EXECUTABLES_AIF)
     foreach(APP ${SDL_EXAMPLE_EXECUTABLES})
@@ -215,18 +196,6 @@ if(RISCOS)
         add_custom_target(${APP}-aif ALL DEPENDS ${APP},ff8)
         list(APPEND SDL_EXAMPLE_EXECUTABLES_AIF ${CMAKE_CURRENT_BINARY_DIR}/${APP},ff8)
     endforeach()
-endif()
-
-# Set Apple App ID / Bundle ID.  This is needed to launch apps on some Apple
-# platforms (iOS, for example).
-if(APPLE)
-  foreach(CURRENT_TARGET ${SDL_EXAMPLE_EXECUTABLES})
-    set_target_properties("${CURRENT_TARGET}" PROPERTIES
-      MACOSX_BUNDLE_GUI_IDENTIFIER "org.libsdl.${CURRENT_TARGET}"
-      MACOSX_BUNDLE_BUNDLE_VERSION "${SDL3_VERSION}"
-      MACOSX_BUNDLE_SHORT_VERSION_STRING "${SDL3_VERSION}"
-    )
-  endforeach()
 endif()
 
 if(SDL_INSTALL_EXAMPLES)

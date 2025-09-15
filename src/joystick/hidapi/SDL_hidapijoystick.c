@@ -75,6 +75,9 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
     &SDL_HIDAPI_DriverJoyCons,
     &SDL_HIDAPI_DriverSwitch,
 #endif
+#ifdef SDL_JOYSTICK_HIDAPI_SWITCH2
+    &SDL_HIDAPI_DriverSwitch2,
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI_WII
     &SDL_HIDAPI_DriverWii,
 #endif
@@ -452,7 +455,9 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, bool *removed) S
     if (device->driver) {
         bool enabled;
 
-        if (device->vendor_id == USB_VENDOR_NINTENDO && device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR) {
+        if (device->vendor_id == USB_VENDOR_NINTENDO &&
+            (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR ||
+             device->product_id == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_PAIR)) {
             enabled = SDL_HIDAPI_combine_joycons;
         } else {
             enabled = device->driver->enabled;
@@ -1068,7 +1073,11 @@ static bool HIDAPI_CreateCombinedJoyCons(void)
             SDL_zero(info);
             info.path = "nintendo_joycons_combined";
             info.vendor_id = USB_VENDOR_NINTENDO;
-            info.product_id = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
+            if (joycons[0]->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT) {
+                info.product_id = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
+            } else {
+                info.product_id = USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_PAIR;
+            }
             info.interface_number = -1;
             info.usage_page = USB_USAGEPAGE_GENERIC_DESKTOP;
             info.usage = USB_USAGE_GENERIC_GAMEPAD;

@@ -1434,6 +1434,7 @@ bool SDL_RLESurface(SDL_Surface *surface)
 
     // The surface is now accelerated
     surface->internal_flags |= SDL_INTERNAL_SURFACE_RLEACCEL;
+    SDL_UpdateSurfaceLockFlag(surface);
 
     return true;
 }
@@ -1565,11 +1566,12 @@ void SDL_UnRLESurface(SDL_Surface *surface, bool recode)
                 }
             }
         }
-        surface->map.info.flags &=
-            ~(SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY);
+        surface->map.info.flags &= ~(SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY);
 
         SDL_free(surface->map.data);
         surface->map.data = NULL;
+
+        SDL_UpdateSurfaceLockFlag(surface);
     }
 }
 

@@ -944,7 +944,7 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     TASKDIALOG_BUTTON *pButtons;
     TASKDIALOG_BUTTON *pButton;
     HMODULE hComctl32;
-    TASKDIALOGINDIRECTPROC pfnTaskDialogIndirect;
+    TASKDIALOGINDIRECTPROC pTaskDialogIndirect;
     HRESULT hr;
     char *ampescape = NULL;
     size_t ampescapesize = 0;
@@ -958,11 +958,11 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     }
 
     HMODULE hUser32 = GetModuleHandle(TEXT("user32.dll"));
-    typedef DPI_AWARENESS_CONTEXT (WINAPI * SetThreadDpiAwarenessContext_t)(DPI_AWARENESS_CONTEXT);
-    SetThreadDpiAwarenessContext_t SetThreadDpiAwarenessContextFunc = (SetThreadDpiAwarenessContext_t)GetProcAddress(hUser32, "SetThreadDpiAwarenessContext");
+    typedef DPI_AWARENESS_CONTEXT (WINAPI *pfnSetThreadDpiAwarenessContext)(DPI_AWARENESS_CONTEXT);
+    pfnSetThreadDpiAwarenessContext pSetThreadDpiAwarenessContext = (pfnSetThreadDpiAwarenessContext)GetProcAddress(hUser32, "SetThreadDpiAwarenessContext");
     DPI_AWARENESS_CONTEXT previous_context = DPI_AWARENESS_CONTEXT_UNAWARE;
-    if (SetThreadDpiAwarenessContextFunc) {
-        previous_context = SetThreadDpiAwarenessContextFunc(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    if (pSetThreadDpiAwarenessContext) {
+        previous_context = pSetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     }
 
     // If we cannot load comctl32.dll use the old messagebox!
@@ -979,8 +979,8 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
        If you don't want to bother with manifests, put this #pragma in your app's source code somewhere:
        #pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
      */
-    pfnTaskDialogIndirect = (TASKDIALOGINDIRECTPROC)GetProcAddress(hComctl32, "TaskDialogIndirect");
-    if (!pfnTaskDialogIndirect) {
+    pTaskDialogIndirect = (TASKDIALOGINDIRECTPROC)GetProcAddress(hComctl32, "TaskDialogIndirect");
+    if (!pTaskDialogIndirect) {
         FreeLibrary(hComctl32);
         result = WIN_ShowOldMessageBox(messageboxdata, buttonID);
         goto done;
@@ -1049,7 +1049,7 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     TaskConfig.pButtons = pButtons;
 
     // Show the Task Dialog
-    hr = pfnTaskDialogIndirect(&TaskConfig, &nButton, NULL, NULL);
+    hr = pTaskDialogIndirect(&TaskConfig, &nButton, NULL, NULL);
 
     // Free everything
     FreeLibrary(hComctl32);
@@ -1077,8 +1077,8 @@ bool WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     }
 
 done:
-    if (SetThreadDpiAwarenessContextFunc) {
-        SetThreadDpiAwarenessContextFunc(previous_context);
+    if (pSetThreadDpiAwarenessContext) {
+        pSetThreadDpiAwarenessContext(previous_context);
     }
     return result;
 }

@@ -1836,6 +1836,23 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED "SDL_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED"
 
 /**
+ * A variable controlling whether the HIDAPI driver for Nintendo Switch 2
+ * controllers should be used.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_SWITCH2 "SDL_JOYSTICK_HIDAPI_SWITCH2"
+
+/**
  * A variable controlling whether Nintendo Switch Joy-Con controllers will be
  * in vertical mode when using the HIDAPI driver.
  *
@@ -2222,8 +2239,8 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": WGI is not used.
- * - "1": WGI is used. (default)
+ * - "0": WGI is not used. (default)
+ * - "1": WGI is used.
  *
  * This hint should be set before SDL is initialized.
  *
@@ -2404,6 +2421,11 @@ extern "C" {
  * If this hint isn't set, the default log levels are equivalent to:
  *
  * `app=info,assert=warn,test=verbose,*=error`
+ *
+ * If the `DEBUG_INVOCATION` environment variable is set to "1", the default
+ * log levels are equivalent to:
+ *
+ * `assert=warn,test=verbose,*=debug`
  *
  * This hint can be set anytime.
  *
@@ -2958,6 +2980,24 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_RENDER_DIRECT3D11_DEBUG "SDL_RENDER_DIRECT3D11_DEBUG"
+
+/**
+ * A variable controlling whether to use the Direct3D 11 WARP software
+ * rasterizer.
+ *
+ * For more information, see:
+ * https://learn.microsoft.com/en-us/windows/win32/direct3darticles/directx-warp
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable WARP rasterizer. (default)
+ * - "1": Enable WARP rasterizer.
+ *
+ * This hint should be set before creating a renderer.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_RENDER_DIRECT3D11_WARP "SDL_RENDER_DIRECT3D11_WARP"
 
 /**
  * A variable controlling whether to enable Vulkan Validation Layers.
@@ -4530,12 +4570,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \param name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
- * \threadsafety It is safe to call this function from any thread, however the
- *               return value only remains valid until the hint is changed; if
- *               another thread might do so, the app should supply locks
- *               and/or make a copy of the string. Note that using a hint
- *               callback instead is always thread-safe, as SDL holds a lock
- *               on the thread subsystem during the callback.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *

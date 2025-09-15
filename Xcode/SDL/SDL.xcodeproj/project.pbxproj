@@ -230,6 +230,7 @@
 		A7D8B54523E2514300DCD162 /* SDL_hidapijoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C423E2513E00DCD162 /* SDL_hidapijoystick.c */; };
 		A7D8B54B23E2514300DCD162 /* SDL_hidapi_xboxone.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C523E2513E00DCD162 /* SDL_hidapi_xboxone.c */; };
 		A7D8B55123E2514300DCD162 /* SDL_hidapi_switch.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C623E2513E00DCD162 /* SDL_hidapi_switch.c */; };
+		A7D8B55123E2514300DCD163 /* SDL_hidapi_switch2.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C623E2513E00DCD163 /* SDL_hidapi_switch2.c */; };
 		A7D8B55723E2514300DCD162 /* SDL_hidapijoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7C723E2513E00DCD162 /* SDL_hidapijoystick_c.h */; };
 		A7D8B55D23E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */; };
 		A7D8B56323E2514300DCD162 /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */; };
@@ -522,6 +523,8 @@
 		F3D60A8328C16A1900788A3A /* SDL_hidapi_wii.c in Sources */ = {isa = PBXBuildFile; fileRef = F3D60A8228C16A1800788A3A /* SDL_hidapi_wii.c */; };
 		F3D8BDFC2D6D2C7000B22FA1 /* SDL_eventwatch_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F3D8BDFB2D6D2C7000B22FA1 /* SDL_eventwatch_c.h */; };
 		F3D8BDFD2D6D2C7000B22FA1 /* SDL_eventwatch.c in Sources */ = {isa = PBXBuildFile; fileRef = F3D8BDFA2D6D2C7000B22FA1 /* SDL_eventwatch.c */; };
+		F3DC38C92E5FC60300CD73DE /* SDL_libusb.h in Headers */ = {isa = PBXBuildFile; fileRef = F3DC38C72E5FC60300CD73DE /* SDL_libusb.h */; };
+		F3DC38CA2E5FC60300CD73DE /* SDL_libusb.c in Sources */ = {isa = PBXBuildFile; fileRef = F3DC38C82E5FC60300CD73DE /* SDL_libusb.c */; };
 		F3DDCC562AFD42B600B0842B /* SDL_clipboard_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F3DDCC4D2AFD42B500B0842B /* SDL_clipboard_c.h */; };
 		F3DDCC5B2AFD42B600B0842B /* SDL_video_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F3DDCC522AFD42B600B0842B /* SDL_video_c.h */; };
 		F3DDCC5D2AFD42B600B0842B /* SDL_rect_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F3DDCC542AFD42B600B0842B /* SDL_rect_impl.h */; };
@@ -815,6 +818,7 @@
 		A7D8A7C423E2513E00DCD162 /* SDL_hidapijoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapijoystick.c; sourceTree = "<group>"; };
 		A7D8A7C523E2513E00DCD162 /* SDL_hidapi_xboxone.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xboxone.c; sourceTree = "<group>"; };
 		A7D8A7C623E2513E00DCD162 /* SDL_hidapi_switch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_switch.c; sourceTree = "<group>"; };
+		A7D8A7C623E2513E00DCD163 /* SDL_hidapi_switch2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_switch2.c; sourceTree = "<group>"; };
 		A7D8A7C723E2513E00DCD162 /* SDL_hidapijoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapijoystick_c.h; sourceTree = "<group>"; };
 		A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xbox360w.c; sourceTree = "<group>"; };
 		A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_gamecube.c; sourceTree = "<group>"; };
@@ -1101,6 +1105,8 @@
 		F3D60A8228C16A1800788A3A /* SDL_hidapi_wii.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_wii.c; sourceTree = "<group>"; };
 		F3D8BDFA2D6D2C7000B22FA1 /* SDL_eventwatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_eventwatch.c; sourceTree = "<group>"; };
 		F3D8BDFB2D6D2C7000B22FA1 /* SDL_eventwatch_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_eventwatch_c.h; sourceTree = "<group>"; };
+		F3DC38C72E5FC60300CD73DE /* SDL_libusb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_libusb.h; sourceTree = "<group>"; };
+		F3DC38C82E5FC60300CD73DE /* SDL_libusb.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_libusb.c; sourceTree = "<group>"; };
 		F3DDCC4D2AFD42B500B0842B /* SDL_clipboard_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_clipboard_c.h; sourceTree = "<group>"; };
 		F3DDCC522AFD42B600B0842B /* SDL_video_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_video_c.h; sourceTree = "<group>"; };
 		F3DDCC542AFD42B600B0842B /* SDL_rect_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rect_impl.h; sourceTree = "<group>"; };
@@ -1414,6 +1420,8 @@
 			children = (
 				F3ADAB8C2576F08500A6B1D9 /* ios */,
 				5616CA48252BB285005D5928 /* macos */,
+				F3DC38C72E5FC60300CD73DE /* SDL_libusb.h */,
+				F3DC38C82E5FC60300CD73DE /* SDL_libusb.c */,
 				5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */,
 				5616CA49252BB2A5005D5928 /* SDL_url.c */,
 			);
@@ -1953,6 +1961,7 @@
 				F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */,
 				A797456F2B2E9D39009D224A /* SDL_hidapi_steamdeck.c */,
 				A7D8A7C623E2513E00DCD162 /* SDL_hidapi_switch.c */,
+				A7D8A7C623E2513E00DCD163 /* SDL_hidapi_switch2.c */,
 				F3D60A8228C16A1800788A3A /* SDL_hidapi_wii.c */,
 				A7D8A7C223E2513E00DCD162 /* SDL_hidapi_xbox360.c */,
 				A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */,
@@ -2750,6 +2759,7 @@
 				F3FA5A252B59ACE000FEAD97 /* yuv_rgb_common.h in Headers */,
 				F3FA5A1D2B59ACE000FEAD97 /* yuv_rgb_internal.h in Headers */,
 				F3D8BDFC2D6D2C7000B22FA1 /* SDL_eventwatch_c.h in Headers */,
+				F3DC38C92E5FC60300CD73DE /* SDL_libusb.h in Headers */,
 				F3FA5A242B59ACE000FEAD97 /* yuv_rgb_lsx.h in Headers */,
 				F3FA5A1E2B59ACE000FEAD97 /* yuv_rgb_lsx_func.h in Headers */,
 				F3FA5A1F2B59ACE000FEAD97 /* yuv_rgb_sse.h in Headers */,
@@ -2869,7 +2879,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Build an xcframework with both device and simulator files for all platforms.\n# Adapted from an answer in\n# https://developer.apple.com/forums/thread/666335?answerId=685927022#685927022\n\nif [ \"$XCODE_VERSION_ACTUAL\" -lt 1100 ]\nthen\n    echo \"error: Building an xcframework requires Xcode 11 minimum.\"\n    exit 1\nfi\n\nFRAMEWORK_NAME=\"SDL3\"\nPROJECT_NAME=\"SDL\"\nSCHEME=\"SDL3\"\n\nMACOS_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-macosx.xcarchive\"\nIOS_SIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphonesimulator.xcarchive\"\nIOS_DEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphoneos.xcarchive\"\nTVOS_SIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-appletvsimulator.xcarchive\"\nTVOS_DEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-appletvos.xcarchive\"\n\nOUTPUT_DIR=\"./build/\"\n\n# macOS\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${MACOS_ARCHIVE_PATH} \\\n    -destination 'generic/platform=macOS,name=Any Mac' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n    \n# iOS simulator\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${IOS_SIMULATOR_ARCHIVE_PATH} \\\n    -destination 'generic/platform=iOS Simulator' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# iOS device\nxcodebuild archive \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${IOS_DEVICE_ARCHIVE_PATH} \\\n    -destination 'generic/platform=iOS' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# tvOS simulator\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${TVOS_SIMULATOR_ARCHIVE_PATH} \\\n    -destination 'generic/platform=tvOS Simulator' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# tvOS device\nxcodebuild archive \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${TVOS_DEVICE_ARCHIVE_PATH} \\\n    -destination 'generic/platform=tvOS' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# Clean-up any existing instance of this xcframework from the Products directory\nrm -rf \"${OUTPUT_DIR}${FRAMEWORK_NAME}.xcframework\"\n\n# Create final xcframework\nxcodebuild -create-xcframework \\\n    -framework \"${MACOS_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${IOS_DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${IOS_SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${TVOS_DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${TVOS_SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -output ${OUTPUT_DIR}/${FRAMEWORK_NAME}.xcframework\n\n# Ensure git doesn't pick up on our Products folder. \nrm -rf ${OUTPUT_DIR}/.gitignore\necho \"*\" >> ${OUTPUT_DIR}/.gitignore\n";
+			shellScript = "# Build an xcframework with both device and simulator files for all platforms.\n# Adapted from an answer in\n# https://developer.apple.com/forums/thread/666335?answerId=685927022#685927022\n\nif [ \"$XCODE_VERSION_ACTUAL\" -lt 1100 ]\nthen\n    echo \"error: Building an xcframework requires Xcode 11 minimum.\"\n    exit 1\nfi\n\nFRAMEWORK_NAME=\"SDL3\"\nPROJECT_NAME=\"SDL\"\nSCHEME=\"SDL3\"\n\nMACOS_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-macosx.xcarchive\"\nIOS_SIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphonesimulator.xcarchive\"\nIOS_DEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphoneos.xcarchive\"\nTVOS_SIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-appletvsimulator.xcarchive\"\nTVOS_DEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-appletvos.xcarchive\"\n\nOUTPUT_DIR=\"./build/\"\n\n# macOS\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${MACOS_ARCHIVE_PATH} \\\n    -destination 'generic/platform=macOS,name=Any Mac' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n    \n# iOS simulator\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${IOS_SIMULATOR_ARCHIVE_PATH} \\\n    -destination 'generic/platform=iOS Simulator' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# iOS device\nxcodebuild archive \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${IOS_DEVICE_ARCHIVE_PATH} \\\n    -destination 'generic/platform=iOS' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# tvOS simulator\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${TVOS_SIMULATOR_ARCHIVE_PATH} \\\n    -destination 'generic/platform=tvOS Simulator' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# tvOS device\nxcodebuild archive \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${TVOS_DEVICE_ARCHIVE_PATH} \\\n    -destination 'generic/platform=tvOS' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# Clean-up any existing instance of this xcframework from the Products directory\nrm -rf \"${OUTPUT_DIR}${FRAMEWORK_NAME}.xcframework\"\n\n# Create final xcframework\nxcodebuild -create-xcframework \\\n    -framework \"${MACOS_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -debug-symbols \"${MACOS_ARCHIVE_PATH}\"/dSYMs/$FRAMEWORK_NAME.framework.dSYM \\\n    -framework \"${IOS_DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -debug-symbols \"${IOS_DEVICE_ARCHIVE_PATH}\"/dSYMs/$FRAMEWORK_NAME.framework.dSYM \\\n    -framework \"${IOS_SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${TVOS_DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -debug-symbols \"${TVOS_DEVICE_ARCHIVE_PATH}\"/dSYMs/$FRAMEWORK_NAME.framework.dSYM \\\n    -framework \"${TVOS_SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -output ${OUTPUT_DIR}/${FRAMEWORK_NAME}.xcframework\n\n# Ensure git doesn't pick up on our Products folder. \nrm -rf ${OUTPUT_DIR}/.gitignore\necho \"*\" >> ${OUTPUT_DIR}/.gitignore\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -3042,6 +3052,7 @@
 				F3FA5A222B59ACE000FEAD97 /* yuv_rgb_sse.c in Sources */,
 				F3C2CB232C5DDDB2004D7998 /* SDL_categories.c in Sources */,
 				A7D8B55123E2514300DCD162 /* SDL_hidapi_switch.c in Sources */,
+				A7D8B55123E2514300DCD163 /* SDL_hidapi_switch2.c in Sources */,
 				A7D8B96223E2514400DCD162 /* SDL_strtokr.c in Sources */,
 				A7D8BB7523E2514500DCD162 /* SDL_clipboardevents.c in Sources */,
 				E4F798202AD8D87F00669F54 /* SDL_video_unsupported.c in Sources */,
@@ -3100,6 +3111,7 @@
 				0000481D255AF155B42C0000 /* SDL_sysfsops.c in Sources */,
 				0000494CC93F3E624D3C0000 /* SDL_systime.c in Sources */,
 				000095FA1BDE436CF3AF0000 /* SDL_time.c in Sources */,
+				F3DC38CA2E5FC60300CD73DE /* SDL_libusb.c in Sources */,
 				0000140640E77F73F1DF0000 /* SDL_dialog_utils.c in Sources */,
 				0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */,
 				6312C66D2B42341400A7BB00 /* SDL_murmur3.c in Sources */,
@@ -3173,7 +3185,7 @@
 				SUPPORTED_PLATFORMS = "xrsimulator xros macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
 				TVOS_DEPLOYMENT_TARGET = 11.0;
-				XROS_DEPLOYMENT_TARGET = 1.0;
+				XROS_DEPLOYMENT_TARGET = 1.3;
 			};
 			name = Release;
 		};
@@ -3182,6 +3194,8 @@
 			baseConfigurationReference = F3F7BE3B2CBD79D200C984AF /* config.xcconfig */;
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				OTHER_LDFLAGS = "-liconv";
 				SUPPORTS_MACCATALYST = YES;
 			};
@@ -3235,7 +3249,7 @@
 				SUPPORTED_PLATFORMS = "xrsimulator xros macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
 				TVOS_DEPLOYMENT_TARGET = 11.0;
-				XROS_DEPLOYMENT_TARGET = 1.0;
+				XROS_DEPLOYMENT_TARGET = 1.3;
 			};
 			name = Debug;
 		};
@@ -3244,6 +3258,8 @@
 			baseConfigurationReference = F3F7BE3B2CBD79D200C984AF /* config.xcconfig */;
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				OTHER_LDFLAGS = "-liconv";
 				SUPPORTS_MACCATALYST = YES;
 			};
