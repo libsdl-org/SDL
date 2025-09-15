@@ -53,7 +53,7 @@ SDL_DYNAPI_PROC(SDL_GPUCommandBuffer*,SDL_AcquireGPUCommandBuffer,(SDL_GPUDevice
 SDL_DYNAPI_PROC(bool,SDL_AcquireGPUSwapchainTexture,(SDL_GPUCommandBuffer *a, SDL_Window *b, SDL_GPUTexture **c, Uint32 *d, Uint32 *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_AddAtomicInt,(SDL_AtomicInt *a, int b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_AddEventWatch,(SDL_EventFilter a, void *b),(a,b),return)
-SDL_DYNAPI_PROC(int,SDL_AddGamepadMapping,(const char *a),(a),return)
+SDL_DYNAPI_PROC(SDL_GamepadAddMappingResult,SDL_AddGamepadMapping,(const char *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_AddGamepadMappingsFromFile,(const char *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_AddGamepadMappingsFromIO,(SDL_IOStream *a, bool b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_AddHintCallback,(const char *a, SDL_HintCallback b, void *c),(a,b,c),return)

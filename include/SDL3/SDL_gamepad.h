@@ -298,6 +298,20 @@ typedef struct SDL_GamepadBinding
     } output;
 } SDL_GamepadBinding;
 
+/**
+ * Possible return values from calling SDL_AddGamepadMapping.
+ *
+ * \since This enum is available since SDL 3.4.0.
+ *
+ * \sa SDL_AddGamepadMapping
+ */
+typedef enum SDL_GamepadAddMappingResult
+{
+    SDL_GAMEPAD_ADD_MAPPING_FAILED = -1,
+    SDL_GAMEPAD_ADD_MAPPING_UPDATED,
+    SDL_GAMEPAD_ADD_MAPPING_ADDED,
+} SDL_GamepadAddMappingResult;
+
 
 /**
  * Add support for gamepads that SDL is unaware of or change the binding of an
@@ -325,13 +339,16 @@ typedef struct SDL_GamepadBinding
  * ```
  *
  * \param mapping the mapping string.
- * \returns 1 if a new mapping is added, 0 if an existing mapping is updated,
- *          -1 on failure; call SDL_GetError() for more information.
+ * \returns SDL_GAMEPAD_ADD_MAPPING_ADDED if a new mapping is added,
+ *          SDL_GAMEPAD_ADD_MAPPING_UPDATED if an existing mapping is updated,
+ *          SDL_GAMEPAD_ADD_MAPPING_FAILED on failure; call SDL_GetError() for
+ *          more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_GamepadAddMappingResult
  * \sa SDL_AddGamepadMappingsFromFile
  * \sa SDL_AddGamepadMappingsFromIO
  * \sa SDL_GetGamepadMapping
@@ -340,7 +357,7 @@ typedef struct SDL_GamepadBinding
  * \sa SDL_HINT_GAMECONTROLLERCONFIG_FILE
  * \sa SDL_EVENT_GAMEPAD_ADDED
  */
-extern SDL_DECLSPEC int SDLCALL SDL_AddGamepadMapping(const char *mapping);
+extern SDL_DECLSPEC SDL_GamepadAddMappingResult SDLCALL SDL_AddGamepadMapping(const char *mapping);
 
 /**
  * Load a set of gamepad mappings from an SDL_IOStream.

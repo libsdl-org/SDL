@@ -2440,7 +2440,7 @@ static char *SDL_ConvertMappingToPositionalBAXY(const char *mapping)
 /*
  * Add or update an entry into the Mappings Database with a priority
  */
-static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMappingPriority priority)
+static SDL_GamepadAddMappingResult SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMappingPriority priority)
 {
     char *appended = NULL;
     char *remapped = NULL;
@@ -2451,19 +2451,19 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
     bool is_xinput_mapping = false;
     bool existing = false;
     GamepadMapping_t *pGamepadMapping;
-    int result = -1;
+    SDL_GamepadAddMappingResult result = SDL_GAMEPAD_ADD_MAPPING_FAILED;
 
     SDL_AssertJoysticksLocked();
 
     if (!mappingString) {
         SDL_InvalidParamError("mappingString");
-        return -1;
+        return SDL_GAMEPAD_ADD_MAPPING_FAILED;
     }
 
     pchGUID = SDL_PrivateGetGamepadGUIDFromMappingString(mappingString);
     if (!pchGUID) {
         SDL_SetError("Couldn't parse GUID from %s", mappingString);
-        return -1;
+        return SDL_GAMEPAD_ADD_MAPPING_FAILED;
     }
     if (!SDL_strcasecmp(pchGUID, "default")) {
         is_default_mapping = true;
@@ -2544,7 +2544,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
                     value = !value;
                 }
                 if (!value) {
-                    result = 0;
+                    result = SDL_GAMEPAD_ADD_MAPPING_UPDATED;
                     goto done;
                 }
             }
@@ -2580,14 +2580,14 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
     }
 
     if (existing) {
-        result = 0;
+        result = SDL_GAMEPAD_ADD_MAPPING_UPDATED;
     } else {
         if (is_default_mapping) {
             s_pDefaultMapping = pGamepadMapping;
         } else if (is_xinput_mapping) {
             s_pXInputMapping = pGamepadMapping;
         }
-        result = 1;
+        result = SDL_GAMEPAD_ADD_MAPPING_ADDED;
     }
 done:
     SDL_free(appended);
@@ -2598,9 +2598,9 @@ done:
 /*
  * Add or update an entry into the Mappings Database
  */
-int SDL_AddGamepadMapping(const char *mapping)
+SDL_GamepadAddMappingResult SDL_AddGamepadMapping(const char *mapping)
 {
-    int result;
+    SDL_GamepadAddMappingResult result;
 
     SDL_LockJoysticks();
     {
