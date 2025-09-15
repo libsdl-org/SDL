@@ -1215,7 +1215,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN, false);
     }
     if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN)) {
-        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN, false);
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN, false);
     }
 
     GPU_FillSupportedShaderFormats(create_props);
