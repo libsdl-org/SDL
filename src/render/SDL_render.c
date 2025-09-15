@@ -1147,8 +1147,12 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
     }
 
-    int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
-    SDL_SetRenderVSync(renderer, vsync);
+    // use whatever the system default is if this property wasn't explicitly set.
+    if (SDL_HasProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER)) {
+        const int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
+        SDL_SetRenderVSync(renderer, vsync);
+    }
+
     SDL_CalculateSimulatedVSyncInterval(renderer, window);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
