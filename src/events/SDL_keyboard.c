@@ -898,7 +898,7 @@ const bool *SDL_GetKeyboardState(int *numkeys)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    if (numkeys != (int *)0) {
+    if (numkeys) {
         *numkeys = SDL_SCANCODE_COUNT;
     }
     return keyboard->keystate;
