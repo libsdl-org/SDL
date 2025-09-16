@@ -10,4 +10,5 @@ audio
 camera
 asyncio
 pen
+misc
 demo
