@@ -8,8 +8,6 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
-#include "../../save-rendering-to-bitmaps.h"
-
 /* We will use this renderer to draw into this window every frame. */
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
@@ -46,27 +44,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 {
     const SDL_FRect frame = { 100, 200, 440, 80 };  /* the percentage bar dimensions. */
 
-static Uint64 start = 0;
-Uint64 now = SDL_GetTicks();
-if (!start) {
-    start = now;
-}
-now -= start;
-
     /* Query for battery info */
     int seconds = 0, percent = 0;
-    //const SDL_PowerState state = SDL_GetPowerInfo(&seconds, &percent);
-
-SDL_PowerState state;
-if (now < 500) {
-    state = SDL_POWERSTATE_ON_BATTERY;
-    seconds = 8088 + ((500 / 1000) * 300);
-    percent = ((int) ((500 / 1500.0f) * 100.0f));
-} else {
-    state = (now < 1500) ? SDL_POWERSTATE_CHARGING : SDL_POWERSTATE_CHARGED;
-    seconds = 8088 + ((int) ((SDL_min(now, 1500) / 1500.0) * 10000));
-    percent = (now < 1500) ? ((int) ((now / 1500.0f) * 100.0f)) : 100;
-}
+    const SDL_PowerState state = SDL_GetPowerInfo(&seconds, &percent);
 
     /* We set up different drawing details for each power state, then
        run it all through the same drawing code. */
