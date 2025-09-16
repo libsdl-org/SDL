@@ -274,6 +274,7 @@ sub generate_example_thumbnail {
     my $project = shift;
     my $category = shift;
     my $example = shift;
+    my $preloadhtmlref = shift;
 
     my $example_no_num = "$example";
     $example_no_num =~ s/\A\d+\-//;
@@ -283,8 +284,10 @@ sub generate_example_thumbnail {
     my $example_mouseover_html = '';
     if ( -f "$examples_dir/$category/$example/onmouseover.webp" ) {
         $example_mouseover_html = "onmouseover=\"this.src='/$project/$category/$example/onmouseover.webp'\" onmouseout=\"this.src='$example_image_url';\"";
+        $$preloadhtmlref .= "    <link rel='preload' as='image' href='/$project/$category/$example/onmouseover.webp'>\n";
     } elsif ( -f "$examples_dir/$category/onmouseover.webp" ) {
         $example_mouseover_html = "onmouseover=\"this.src='/$project/$category/onmouseover.webp'\" onmouseout=\"this.src='$example_image_url';\"";
+        $$preloadhtmlref .= "    <link rel='preload' as='image' href='/$project/$category/onmouseover.webp'>\n";
     }
 
     return "
@@ -300,10 +303,11 @@ sub generate_example_thumbnail {
 sub generate_example_thumbnails_for_category {
     my $project = shift;
     my $category = shift;
+    my $preloadhtmlref = shift;
     my @examples = get_examples_for_category($category);
     my $retval = '';
     foreach my $example (@examples) {
-        $retval .= generate_example_thumbnail($project, $category, $example);
+        $retval .= generate_example_thumbnail($project, $category, $example, $preloadhtmlref);
     }
     return $retval;
 }
@@ -325,7 +329,8 @@ sub handle_category_dir {
 
     closedir($dh);
 
-    my $examples_list_html = generate_example_thumbnails_for_category($project, $category);
+    my $preloadhtml = '';
+    my $examples_list_html = generate_example_thumbnails_for_category($project, $category, \$preloadhtml);
 
     my $dst = "$output_dir/$category";
 
@@ -345,6 +350,7 @@ sub handle_category_dir {
         s/\@project_name\@/$project/g;
         s/\@category_name\@/$category/g;
         s/\@category_description\@/$category_description/g;
+        s/\@preload_images_html\@/$preloadhtml/g;
         s/\@examples_list_html\@/$examples_list_html/g;
         s/\@preview_image\@/$preview_image/g;
         $html .= $_;
@@ -396,12 +402,13 @@ while (readdir($dh)) {
 closedir($dh);
 
 # write homepage
-my $homepage_list_html = "";
+my $homepage_list_html = '';
+my $homepage_preloadhtml = '';
 foreach my $category (get_categories()) {
     my $category_description = get_category_description($category);
     $homepage_list_html .= "<h2>$category_description</h2>";
     $homepage_list_html .= "<div class='list'>";
-    $homepage_list_html .= generate_example_thumbnails_for_category($project, $category);
+    $homepage_list_html .= generate_example_thumbnails_for_category($project, $category, \$homepage_preloadhtml);
     $homepage_list_html .= "</div>";
 }
 
@@ -414,6 +421,7 @@ while (<$htmltemplate>) {
     s/\@project_name\@/$project/g;
     s/\@homepage_list_html\@/$homepage_list_html/g;
     s/\@preview_image\@/$preview_image/g;
+    s/\@preload_images_html\@/$homepage_preloadhtml/g;
     $html .= $_;
 }
 close($htmltemplate);
