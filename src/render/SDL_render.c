@@ -1147,8 +1147,16 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
     }
 
-    int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
+#ifdef SDL_PLATFORM_EMSCRIPTEN  // don't change vsync on Emscripten unless explicitly requested; we already set this with a mainloop, and a 0 default causes problems here.
+    if (SDL_HasProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER)) {
+        const int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
+        SDL_SetRenderVSync(renderer, vsync);
+    }
+#else  // everything else defaults to no vsync if not requested.
+    const int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
     SDL_SetRenderVSync(renderer, vsync);
+#endif
+
     SDL_CalculateSimulatedVSyncInterval(renderer, window);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
