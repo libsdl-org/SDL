@@ -624,7 +624,6 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
 
     gsGlobal = gsKit_init_global_custom(RENDER_QUEUE_OS_POOLSIZE, RENDER_QUEUE_PER_POOLSIZE);
 
-    gsGlobal->Mode = GS_MODE_NTSC;
     gsGlobal->Height = 448;
 
     gsGlobal->PSM = GS_PSM_CT24;
