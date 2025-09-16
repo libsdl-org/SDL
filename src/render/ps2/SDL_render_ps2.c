@@ -626,13 +626,36 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     gsGlobal = gsKit_init_global_custom(RENDER_QUEUE_OS_POOLSIZE, RENDER_QUEUE_PER_POOLSIZE);
 
     SDL_GetWindowSize(window,&w,&h);
+    if (SDL_GetHintBoolean(SDL_HINT_PS2_GS_PROGRESSIVE,0)) {
+        gsGlobal->Interlace = GS_NONINTERLACED;
+    } else {
+        gsGlobal->Interlace = GS_INTERLACED;
+    }
+
+    // GS width/height
+    if (
+        SDL_GetHint(SDL_HINT_PS2_GS_WIDTH) == NULL ||
+        sscanf(SDL_GetHint(SDL_HINT_PS2_GS_WIDTH),"%d",&w) != 1
+    ) { w = 640; }
+
+    if (
+        SDL_GetHint(SDL_HINT_PS2_GS_HEIGHT) == NULL ||
+        sscanf(SDL_GetHint(SDL_HINT_PS2_GS_HEIGHT),"%d",&h) != 1
+    ) { h = 448; }
+
+    // GS region
+    if (SDL_GetHint(SDL_HINT_PS2_GS_MODE) != NULL) {
+        if (strcmp(SDL_GetHint(SDL_HINT_PS2_GS_MODE),"NTSC") == 0) {
+            gsGlobal->Mode = GS_MODE_NTSC;
+        }
+
+        if (strcmp(SDL_GetHint(SDL_HINT_PS2_GS_MODE),"PAL") == 0) {
+            gsGlobal->Mode = GS_MODE_PAL;
+        }
+    }
+
     gsGlobal->Width = w;
     gsGlobal->Height = h;
-    if (w > 320 || h > 240) {
-        gsGlobal->Interlace = GS_INTERLACED;
-    } else {
-        gsGlobal->Interlace = GS_NONINTERLACED;
-    }
 
     gsGlobal->PSM = GS_PSM_CT24;
     gsGlobal->PSMZ = GS_PSMZ_16S;
