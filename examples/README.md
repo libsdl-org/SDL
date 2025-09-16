@@ -69,34 +69,26 @@ everything consistent. You can ignore it.
 
 (Since I have to figure this out every time.)
 
-This is how Ryan is doing it currently, although this could be automated
-_much_ better:
+This is how Ryan is doing it currently.
 
-- Launch the example app on Desktop Linux. Gnome currently always puts it at
-  the same location.
-- Hit PrtScr for capture.
-- Highlight exactly the window without the titlebar. Usually I take an
-  initial screenshot, paste it into Gimp, zoom in and make sure it's
-  pixel-perfect. Repeat. This takes too much effort and should be automated.
-- Take a screenshot for thumbnail.png if it makes sense.
-- Take a video of a few seconds of the example app running.
-- Take the video and turn it into webp format:
+- `rm -f frame*.bmp`
+- Temporarily add `#include "../../save-rendering-to-bitmaps.h"` after any SDL
+  includes in the example program.
+- Launch the example app, interact with it, let it run for a few seconds, quit.
+- This will dump a "frameX.bmp" file for each frame rendered.
+- Make a video in webp format from the bitmaps (this assumes the bitmaps were
+  stored at 60fps, you might have to tweak).
 
   ```bash
-  ffmpeg -i video.mp4 -loop 0 -quality 40 -framerate 10 -frames:v 40 onmouseover.webp
+  ffmpeg -framerate 60 -pattern_type glob -i 'frame*.bmp' -loop 0 -quality 40 -r 10 -frames:v 40 onmouseover.webp
   ```
 
   You might need to start in the middle of the video, or mess with quality or
   number of frames to generate, ymmv.
-- If you didn't take a screenshot for the thumbnail, extract a frame from the
-  video. The 0 means "the first frame of the video" but you can choose another:
+- Pick a frame for the thumbnail, make it a .png, and run that png through
+  pngquant for massive file size reduction without any obvious loss in quality:
 
   ```bash
-  ffmpeg -i video.mp4 -vf "select=eq(n\,0)" thumbnail.png
+  convert frame00000.bmp cvt.png ; pngquant cvt.png --output thumbnail.png ; rm -f cvt.png
   ```
-- Run the thumbnail through pngquant for massive file size reduction without
-  any obvious loss in quality:
 
-  ```bash
-  pngquant thumbnail.png --output new_thumbnail.png
-  ```
