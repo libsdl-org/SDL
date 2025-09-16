@@ -1198,6 +1198,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     bool tiled = false;
     bool suspended = false;
     bool resizing = false;
+    wind->toplevel_constraints = 0;
 
     static const enum libdecor_window_state tiled_states = (LIBDECOR_WINDOW_STATE_TILED_LEFT | LIBDECOR_WINDOW_STATE_TILED_RIGHT |
                                                             LIBDECOR_WINDOW_STATE_TILED_TOP | LIBDECOR_WINDOW_STATE_TILED_BOTTOM);
@@ -1213,8 +1214,20 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
 #endif
 #if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
         resizing = (window_state & LIBDECOR_WINDOW_STATE_RESIZING) != 0;
+
+        if (window_state & LIBDECOR_WINDOW_STATE_CONSTRAINED_LEFT) {
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_LEFT;
+        }
+        if (window_state & LIBDECOR_WINDOW_STATE_CONSTRAINED_RIGHT) {
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_RIGHT;
+        }
+        if (window_state & LIBDECOR_WINDOW_STATE_CONSTRAINED_TOP) {
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_TOP;
+        }
+        if (window_state & LIBDECOR_WINDOW_STATE_CONSTRAINED_BOTTOM) {
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM;
+        }
 #endif
-        // TODO: Toplevel constraint passthrough is waiting on upstream libdecor changes.
     }
     const bool floating = !(fullscreen || maximized || tiled);
 
@@ -1289,6 +1302,13 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                 if (floating) {
                     width = window->floating.w;
                     height = window->floating.h;
+
+                    // Clamp the window to the toplevel bounds, if any are set.
+                    if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE &&
+                        wind->toplevel_bounds.width && wind->toplevel_bounds.height) {
+                        width = SDL_min(wind->toplevel_bounds.width, width);
+                        height = SDL_min(wind->toplevel_bounds.height, height);
+                    }
                 } else {
                     width = window->windowed.w;
                     height = window->windowed.h;
@@ -1451,11 +1471,25 @@ static void decoration_dismiss_popup(struct libdecor_frame *frame, const char *s
     // NOP
 }
 
+static void decoration_frame_bounds(struct libdecor_frame *frame, int width, int height, void *user_data)
+{
+    SDL_WindowData *window = (SDL_WindowData *)user_data;
+    window->toplevel_bounds.width = width;
+    window->toplevel_bounds.height = height;
+}
+
+#if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
+#define FRAME_BOUNDS_FUNC_CAST(func) func
+#else
+#define FRAME_BOUNDS_FUNC_CAST(func) (void(*)(void))func
+#endif
+
 static struct libdecor_frame_interface libdecor_frame_interface = {
     decoration_frame_configure,
     decoration_frame_close,
     decoration_frame_commit,
-    decoration_dismiss_popup
+    decoration_dismiss_popup,
+    FRAME_BOUNDS_FUNC_CAST(decoration_frame_bounds)
 };
 #endif
 
