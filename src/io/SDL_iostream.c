@@ -219,7 +219,6 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
             DWORD error = GetLastError();
             switch (error) {
             case ERROR_BROKEN_PIPE:
-            case ERROR_HANDLE_EOF:
                 *status = SDL_IO_STATUS_EOF;
                 break;
             case ERROR_NO_DATA:
@@ -231,6 +230,8 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
                 break;
             }
             return 0;  // !!! FIXME: this should return the bytes read from any readahead we finished out before this (the `iodata->left > 0` code above). In that case, fail on the next read.
+        } else if (bytes == 0) {
+            *status = SDL_IO_STATUS_EOF;
         }
         read_ahead = SDL_min(total_need, bytes);
         SDL_memcpy(ptr, iodata->data, read_ahead);
@@ -242,7 +243,6 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
             DWORD error = GetLastError();
             switch (error) {
             case ERROR_BROKEN_PIPE:
-            case ERROR_HANDLE_EOF:
                 *status = SDL_IO_STATUS_EOF;
                 break;
             case ERROR_NO_DATA:
@@ -254,6 +254,8 @@ static size_t SDLCALL windows_file_read(void *userdata, void *ptr, size_t size, 
                 break;
             }
             return 0;  // !!! FIXME: this should return the bytes read from any readahead we finished out before this (the `iodata->left > 0` code above). In that case, fail on the next read.
+        } else if (bytes == 0) {
+            *status = SDL_IO_STATUS_EOF;
         }
         total_read += bytes;
     }
