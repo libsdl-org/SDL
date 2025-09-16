@@ -154,6 +154,7 @@ add_sdl_example_executable(input-gamepad-events SOURCES input/04-gamepad-events/
 add_sdl_example_executable(camera-read-and-draw SOURCES camera/01-read-and-draw/read-and-draw.c)
 add_sdl_example_executable(pen-drawing-lines SOURCES pen/01-drawing-lines/drawing-lines.c)
 add_sdl_example_executable(asyncio-load-bitmaps SOURCES asyncio/01-load-bitmaps/load-bitmaps.c DATAFILES ${CMAKE_CURRENT_SOURCE_DIR}/../test/sample.bmp ${CMAKE_CURRENT_SOURCE_DIR}/../test/gamepad_front.bmp ${CMAKE_CURRENT_SOURCE_DIR}/../test/speaker.bmp ${CMAKE_CURRENT_SOURCE_DIR}/../test/icon2x.bmp)
+add_sdl_example_executable(misc-power SOURCES misc/01-power/power.c)
 add_sdl_example_executable(demo-snake SOURCES demo/01-snake/snake.c)
 add_sdl_example_executable(demo-woodeneye-008 SOURCES demo/02-woodeneye-008/woodeneye-008.c)
 add_sdl_example_executable(demo-infinite-monkeys SOURCES demo/03-infinite-monkeys/infinite-monkeys.c)
