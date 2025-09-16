@@ -609,6 +609,7 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
     GSGLOBAL *gsGlobal;
     ee_sema_t sema;
     SDL_bool dynamicVsync;
+    int w,h;
 
     data = (PS2_RenderData *)SDL_calloc(1, sizeof(*data));
     if (!data) {
@@ -624,7 +625,14 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
 
     gsGlobal = gsKit_init_global_custom(RENDER_QUEUE_OS_POOLSIZE, RENDER_QUEUE_PER_POOLSIZE);
 
-    gsGlobal->Height = 448;
+    SDL_GetWindowSize(window,&w,&h);
+    gsGlobal->Width = w;
+    gsGlobal->Height = h;
+    if (w > 320 || h > 240) {
+        gsGlobal->Interlace = GS_INTERLACED;
+    } else {
+        gsGlobal->Interlace = GS_NONINTERLACED;
+    }
 
     gsGlobal->PSM = GS_PSM_CT24;
     gsGlobal->PSMZ = GS_PSMZ_16S;
