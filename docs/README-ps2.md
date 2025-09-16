@@ -11,7 +11,7 @@ Credit to
 ## Building
 To build SDL2 library for the PS2, make sure you have the latest PS2Dev status and run:
 ```bash
-cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake
+cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev.cmake
 cmake --build build
 cmake --install build
 ```
