@@ -41,7 +41,7 @@ void *SDL_GetTLS(SDL_TLSID *id)
     SDL_TLSData *storage;
     int storage_index;
 
-    if (id == NULL) {
+    CHECK_PARAM(id == NULL) {
         SDL_InvalidParamError("id");
         return NULL;
     }
@@ -59,7 +59,7 @@ bool SDL_SetTLS(SDL_TLSID *id, const void *value, SDL_TLSDestructorCallback dest
     SDL_TLSData *storage;
     int storage_index;
 
-    if (id == NULL) {
+    CHECK_PARAM(id == NULL) {
         return SDL_InvalidParamError("id");
     }
 

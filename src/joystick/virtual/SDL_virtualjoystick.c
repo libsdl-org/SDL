@@ -138,11 +138,11 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
 
     SDL_AssertJoysticksLocked();
 
-    if (!desc) {
+    CHECK_PARAM(!desc) {
         SDL_InvalidParamError("desc");
         return 0;
     }
-    if (desc->version < sizeof(*desc)) {
+    CHECK_PARAM(desc->version < sizeof(*desc)) {
         // Update this to handle older versions of this interface
         SDL_SetError("Invalid desc, should be initialized with SDL_INIT_INTERFACE()");
         return 0;

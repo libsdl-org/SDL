@@ -136,11 +136,11 @@ int SDL_GetNumAudioDrivers(void)
 
 const char *SDL_GetAudioDriver(int index)
 {
-    if (index >= 0 && index < SDL_GetNumAudioDrivers()) {
-        return deduped_bootstrap[index]->name;
+    CHECK_PARAM(index < 0 || index >= SDL_GetNumAudioDrivers()) {
+        SDL_InvalidParamError("index");
+        return NULL;
     }
-    SDL_InvalidParamError("index");
-    return NULL;
+    return deduped_bootstrap[index]->name;
 }
 
 const char *SDL_GetCurrentAudioDriver(void)
@@ -1576,7 +1576,7 @@ const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
 
 bool SDL_GetAudioDeviceFormat(SDL_AudioDeviceID devid, SDL_AudioSpec *spec, int *sample_frames)
 {
-    if (!spec) {
+    CHECK_PARAM(!spec) {
         return SDL_InvalidParamError("spec");
     }
 
@@ -1937,7 +1937,7 @@ float SDL_GetAudioDeviceGain(SDL_AudioDeviceID devid)
 
 bool SDL_SetAudioDeviceGain(SDL_AudioDeviceID devid, float gain)
 {
-    if (gain < 0.0f) {
+    CHECK_PARAM(gain < 0.0f) {
         return SDL_InvalidParamError("gain");
     }
 
@@ -1986,11 +1986,15 @@ bool SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream * const *stre
 
     if (num_streams == 0) {
         return true;  // nothing to do
-    } else if (num_streams < 0) {
+    }
+
+    CHECK_PARAM(num_streams < 0) {
         return SDL_InvalidParamError("num_streams");
-    } else if (!streams) {
+    }
+    CHECK_PARAM(!streams) {
         return SDL_InvalidParamError("streams");
-    } else if (SDL_IsAudioDevicePhysical(devid)) {
+    }
+    CHECK_PARAM(SDL_IsAudioDevicePhysical(devid)) {
         return SDL_SetError("Audio streams are bound to device ids from SDL_OpenAudioDevice, not raw physical devices");
     }
 
@@ -2150,7 +2154,7 @@ SDL_AudioDeviceID SDL_GetAudioStreamDevice(SDL_AudioStream *stream)
 {
     SDL_AudioDeviceID result = 0;
 
-    if (!stream) {
+    CHECK_PARAM(!stream) {
         SDL_InvalidParamError("stream");
         return 0;
     }
