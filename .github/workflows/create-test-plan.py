@@ -519,11 +519,14 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 job.shared_lib = SharedLibType.DYLIB
                 job.static_lib = StaticLibType.A
             job.ccache = True
+            if spec.os == JobOs.Macos13:
+                job.ccache = False
             job.apt_packages = []
             job.brew_packages.extend((
-                "ccache",
                 "ninja",
             ))
+            if job.ccache:
+                job.brew_packages.append("ccache")
             if job.clang_tidy:
                 job.brew_packages.append("llvm")
             if spec.xcode:
