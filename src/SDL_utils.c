@@ -137,7 +137,7 @@ Uint32 SDL_GetNextObjectID(void)
 
 static SDL_InitState SDL_objects_init;
 static SDL_HashTable *SDL_objects;
-static bool SDL_object_validation;
+bool SDL_object_validation = false;
 
 static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -195,16 +195,8 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
     }
 }
 
-bool SDL_ObjectValid(void *object, SDL_ObjectType type)
+bool SDL_FindObject(void *object, SDL_ObjectType type)
 {
-    if (!object) {
-        return false;
-    }
-
-    if (!SDL_object_validation) {
-        return true;
-    }
-
     const void *object_type;
     if (!SDL_FindInHashTable(SDL_objects, object, &object_type)) {
         return false;
