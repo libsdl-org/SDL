@@ -147,12 +147,12 @@ struct SDL_Gamepad
 
 #undef _guarded
 
-#define CHECK_GAMEPAD_MAGIC(gamepad, result)                    \
-    if (!SDL_ObjectValid(gamepad, SDL_OBJECT_TYPE_GAMEPAD) ||   \
-        !SDL_IsJoystickValid(gamepad->joystick)) {              \
-        SDL_InvalidParamError("gamepad");                       \
-        SDL_UnlockJoysticks();                                  \
-        return result;                                          \
+#define CHECK_GAMEPAD_MAGIC(gamepad, result)                            \
+    CHECK_PARAM(!SDL_ObjectValid(gamepad, SDL_OBJECT_TYPE_GAMEPAD) ||   \
+        !SDL_IsJoystickValid(gamepad->joystick)) {                      \
+        SDL_InvalidParamError("gamepad");                               \
+        SDL_UnlockJoysticks();                                          \
+        return result;                                                  \
     }
 
 static SDL_vidpid_list SDL_allowed_gamepads = {
@@ -2455,7 +2455,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
 
     SDL_AssertJoysticksLocked();
 
-    if (!mappingString) {
+    CHECK_PARAM(!mappingString) {
         SDL_InvalidParamError("mappingString");
         return -1;
     }
@@ -2790,7 +2790,7 @@ bool SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping)
     SDL_GUID guid = SDL_GetJoystickGUIDForID(instance_id);
     bool result = false;
 
-    if (SDL_memcmp(&guid, &s_zeroGUID, sizeof(guid)) == 0) {
+    CHECK_PARAM(SDL_memcmp(&guid, &s_zeroGUID, sizeof(guid)) == 0) {
         return SDL_InvalidParamError("instance_id");
     }
 

@@ -2113,7 +2113,7 @@ void Android_JNI_HapticStop(int device_id)
 
 bool SDL_SendAndroidMessage(Uint32 command, int param)
 {
-    if (command < 0x8000) {
+    CHECK_PARAM(command < 0x8000) {
         return SDL_InvalidParamError("command");
     }
     return Android_JNI_SendMessage(command, param);

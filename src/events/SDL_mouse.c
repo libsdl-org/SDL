@@ -1558,7 +1558,7 @@ SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
     SDL_Surface *temp = NULL;
     SDL_Cursor *cursor;
 
-    if (!surface) {
+    CHECK_PARAM(!surface) {
         SDL_InvalidParamError("surface");
         return NULL;
     }
@@ -1569,8 +1569,8 @@ SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
     hot_y = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, hot_y);
 
     // Sanity check the hot spot
-    if ((hot_x < 0) || (hot_y < 0) ||
-        (hot_x >= surface->w) || (hot_y >= surface->h)) {
+    CHECK_PARAM((hot_x < 0) || (hot_y < 0) ||
+                (hot_x >= surface->w) || (hot_y >= surface->h)) {
         SDL_SetError("Cursor hot spot doesn't lie within cursor");
         return NULL;
     }

@@ -290,7 +290,7 @@ static const struct
 
 static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate)
 {
-    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
+    CHECK_PARAM(((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
         SDL_InvalidParamError("scancode");
         return SDLK_UNKNOWN;
     }
@@ -1053,7 +1053,7 @@ static const char *SDL_extended_key_names[] = {
 
 bool SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 {
-    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
+    CHECK_PARAM(((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
         return SDL_InvalidParamError("scancode");
     }
 
@@ -1064,7 +1064,8 @@ bool SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 const char *SDL_GetScancodeName(SDL_Scancode scancode)
 {
     const char *name;
-    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
+
+    CHECK_PARAM(((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
         SDL_InvalidParamError("scancode");
         return "";
     }
@@ -1081,7 +1082,7 @@ SDL_Scancode SDL_GetScancodeFromName(const char *name)
 {
     int i;
 
-    if (!name || !*name) {
+    CHECK_PARAM(!name || !*name) {
         SDL_InvalidParamError("name");
         return SDL_SCANCODE_UNKNOWN;
     }

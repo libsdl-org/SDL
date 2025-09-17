@@ -148,7 +148,7 @@ static bool SDL_ValidMetadataProperty(const char *name)
 
 bool SDL_SetAppMetadataProperty(const char *name, const char *value)
 {
-    if (!SDL_ValidMetadataProperty(name)) {
+    CHECK_PARAM(!SDL_ValidMetadataProperty(name)) {
         return SDL_InvalidParamError("name");
     }
 
@@ -157,7 +157,7 @@ bool SDL_SetAppMetadataProperty(const char *name, const char *value)
 
 const char *SDL_GetAppMetadataProperty(const char *name)
 {
-    if (!SDL_ValidMetadataProperty(name)) {
+    CHECK_PARAM(!SDL_ValidMetadataProperty(name)) {
         SDL_InvalidParamError("name");
         return NULL;
     }

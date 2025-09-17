@@ -70,7 +70,7 @@ typedef enum THUMBBUTTONFLAGS
     THBF_HIDDEN = 0x8,
     THBF_NONINTERACTIVE = 0x10
 } THUMBBUTTONFLAGS;
- 
+
 #if defined(_MSC_VER)
 #pragma warning(disable: 4103)
 #endif
@@ -801,11 +801,11 @@ bool SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, int *adapterIndex, int *outp
     IDXGIAdapter *pDXGIAdapter;
     IDXGIOutput *pDXGIOutput;
 
-    if (!adapterIndex) {
+    CHECK_PARAM(!adapterIndex) {
         return SDL_InvalidParamError("adapterIndex");
     }
 
-    if (!outputIndex) {
+    CHECK_PARAM(!outputIndex) {
         return SDL_InvalidParamError("outputIndex");
     }
 

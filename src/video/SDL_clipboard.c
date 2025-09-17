@@ -196,7 +196,7 @@ void *SDL_GetClipboardData(const char *mime_type, size_t *size)
         return NULL;
     }
 
-    if (!mime_type) {
+    CHECK_PARAM(!mime_type) {
         SDL_InvalidParamError("mime_type");
         return NULL;
     }
@@ -245,7 +245,7 @@ bool SDL_HasClipboardData(const char *mime_type)
         return SDL_UninitializedVideo();
     }
 
-    if (!mime_type) {
+    CHECK_PARAM(!mime_type) {
         return SDL_InvalidParamError("mime_type");
     }
 

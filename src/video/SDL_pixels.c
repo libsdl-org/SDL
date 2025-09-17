@@ -1035,7 +1035,7 @@ SDL_Palette *SDL_CreatePalette(int ncolors)
     SDL_Palette *palette;
 
     // Input validation
-    if (ncolors < 1) {
+    CHECK_PARAM(ncolors < 1) {
         SDL_InvalidParamError("ncolors");
         return NULL;
     }
@@ -1219,13 +1219,13 @@ void SDL_DetectPalette(const SDL_Palette *pal, bool *is_opaque, bool *has_alpha_
 // Find the opaque pixel value corresponding to an RGB triple
 Uint32 SDL_MapRGB(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 r, Uint8 g, Uint8 b)
 {
-    if (!format) {
+    CHECK_PARAM(!format) {
         SDL_InvalidParamError("format");
         return 0;
     }
 
     if (SDL_ISPIXELFORMAT_INDEXED(format->format)) {
-        if (!palette) {
+        CHECK_PARAM(!palette) {
             SDL_InvalidParamError("palette");
             return 0;
         }
@@ -1248,13 +1248,13 @@ Uint32 SDL_MapRGB(const SDL_PixelFormatDetails *format, const SDL_Palette *palet
 // Find the pixel value corresponding to an RGBA quadruple
 Uint32 SDL_MapRGBA(const SDL_PixelFormatDetails *format, const SDL_Palette *palette, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 {
-    if (!format) {
+    CHECK_PARAM(!format) {
         SDL_InvalidParamError("format");
         return 0;
     }
 
     if (SDL_ISPIXELFORMAT_INDEXED(format->format)) {
-        if (!palette) {
+        CHECK_PARAM(!palette) {
             SDL_InvalidParamError("palette");
             return 0;
         }

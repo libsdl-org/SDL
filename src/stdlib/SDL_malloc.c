@@ -6419,16 +6419,16 @@ bool SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
                                 SDL_realloc_func realloc_func,
                                 SDL_free_func free_func)
 {
-    if (!malloc_func) {
+    CHECK_PARAM(!malloc_func) {
         return SDL_InvalidParamError("malloc_func");
     }
-    if (!calloc_func) {
+    CHECK_PARAM(!calloc_func) {
         return SDL_InvalidParamError("calloc_func");
     }
-    if (!realloc_func) {
+    CHECK_PARAM(!realloc_func) {
         return SDL_InvalidParamError("realloc_func");
     }
-    if (!free_func) {
+    CHECK_PARAM(!free_func) {
         return SDL_InvalidParamError("free_func");
     }
 

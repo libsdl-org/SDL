@@ -79,7 +79,7 @@ bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
     FILETIME ft;
 
-    if (!ticks) {
+    CHECK_PARAM(!ticks) {
         return SDL_InvalidParamError("ticks");
     }
 
@@ -115,7 +115,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
     SYSTEMTIME *st = NULL;
     Uint32 low, high;
 
-    if (!dt) {
+    CHECK_PARAM(!dt) {
         return SDL_InvalidParamError("dt");
     }
 
