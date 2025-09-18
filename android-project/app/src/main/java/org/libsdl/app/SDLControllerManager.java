@@ -471,6 +471,11 @@ class SDLHapticHandler_API31 extends SDLHapticHandler {
             return;
         }
 
+        if (Build.VERSION.SDK_INT < 31 /* Android 12.0 (S) */) {
+            /* Silence 'lint' warning */
+            return;
+        }
+
         VibratorManager manager = device.getVibratorManager();
         int[] vibrators = manager.getVibratorIds();
         if (vibrators.length >= 2) {
@@ -483,6 +488,12 @@ class SDLHapticHandler_API31 extends SDLHapticHandler {
     }
 
     private void vibrate(Vibrator vibrator, float intensity, int length) {
+
+        if (Build.VERSION.SDK_INT < 31 /* Android 12.0 (S) */) {
+            /* Silence 'lint' warning */
+            return;
+        }
+
         if (intensity == 0.0f) {
             vibrator.cancel();
             return;
@@ -510,6 +521,12 @@ class SDLHapticHandler_API31 extends SDLHapticHandler {
 class SDLHapticHandler_API26 extends SDLHapticHandler {
     @Override
     void run(int device_id, float intensity, int length) {
+
+        if (Build.VERSION.SDK_INT < 26 /* Android 8.0 (O) */) {
+            /* Silence 'lint' warning */
+            return;
+        }
+
         SDLHaptic haptic = getHaptic(device_id);
         if (haptic != null) {
             if (intensity == 0.0f) {
@@ -743,6 +760,11 @@ class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API14 {
 
     @Override
     float getEventX(MotionEvent event, int pointerIndex) {
+        if (Build.VERSION.SDK_INT < 24 /* Android 7.0 (N) */) {
+            /* Silence 'lint' warning */
+            return 0;
+        }
+
         if (mRelativeModeEnabled && event.getToolType(pointerIndex) == MotionEvent.TOOL_TYPE_MOUSE) {
             return event.getAxisValue(MotionEvent.AXIS_RELATIVE_X, pointerIndex);
         } else {
@@ -752,6 +774,11 @@ class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API14 {
 
     @Override
     float getEventY(MotionEvent event, int pointerIndex) {
+        if (Build.VERSION.SDK_INT < 24 /* Android 7.0 (N) */) {
+            /* Silence 'lint' warning */
+            return 0;
+        }
+
         if (mRelativeModeEnabled && event.getToolType(pointerIndex) == MotionEvent.TOOL_TYPE_MOUSE) {
             return event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y, pointerIndex);
         } else {
@@ -776,6 +803,12 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     boolean setRelativeMouseEnabled(boolean enabled) {
+
+        if (Build.VERSION.SDK_INT < 26 /* Android 8.0 (O) */) {
+            /* Silence 'lint' warning */
+            return false;
+        }
+
         if (!SDLActivity.isDeXMode() || Build.VERSION.SDK_INT >= 27 /* Android 8.1 (O_MR1) */) {
             if (enabled) {
                 SDLActivity.getContentView().requestPointerCapture();
@@ -791,6 +824,12 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     void reclaimRelativeMouseModeIfNeeded() {
+
+        if (Build.VERSION.SDK_INT < 26 /* Android 8.0 (O) */) {
+            /* Silence 'lint' warning */
+            return;
+        }
+
         if (mRelativeModeEnabled && !SDLActivity.isDeXMode()) {
             SDLActivity.getContentView().requestPointerCapture();
         }
@@ -798,6 +837,10 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     boolean checkRelativeEvent(MotionEvent event) {
+        if (Build.VERSION.SDK_INT < 26 /* Android 8.0 (O) */) {
+            /* Silence 'lint' warning */
+            return false;
+        }
         return event.getSource() == InputDevice.SOURCE_MOUSE_RELATIVE;
     }
 
