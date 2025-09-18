@@ -193,7 +193,8 @@ function(add_sdl_test_executable TARGET)
         set_property(TARGET ${TARGET} APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/emscripten/pre.js")
         set_property(TARGET ${TARGET} APPEND PROPERTY EXTRA_INSTALL
             "$<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_BASE_NAME:${TARGET}>.js"
-            "$<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_BASE_NAME:${TARGET}>.wasm")
+            "$<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_BASE_NAME:${TARGET}>.wasm"
+            "$<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_BASE_NAME:${TARGET}>.wasm.map")
     elseif(NGAGE)
         string(MD5 TARGET_MD5 "${TARGET}")
         string(SUBSTRING "${TARGET_MD5}" 0 8 TARGET_MD5_8)
@@ -679,6 +680,7 @@ if(SDL_INSTALL_TESTS)
                     install(
                         FILES ${extra_install}
                         DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
+                        OPTIONAL
                     )
                 endif()
             endif()
