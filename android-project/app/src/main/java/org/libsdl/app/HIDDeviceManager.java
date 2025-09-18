@@ -113,7 +113,7 @@ public class HIDDeviceManager {
 //        if (shouldClear) {
 //            SharedPreferences.Editor spedit = mSharedPreferences.edit();
 //            spedit.clear();
-//            spedit.commit();
+//            spedit.apply();
 //        }
 //        else
         {
@@ -135,7 +135,7 @@ public class HIDDeviceManager {
         }
 
         spedit.putInt(identifier, result);
-        spedit.commit();
+        spedit.apply();
         return result;
     }
 
