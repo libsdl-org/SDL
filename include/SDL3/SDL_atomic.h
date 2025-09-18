@@ -366,6 +366,17 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 
 
 /**
+ * Memory ordering. TODO: document this
+ */
+typedef enum SDL_MemoryOrder {
+    SDL_MEMORY_ORDER_RELAXED,
+    SDL_MEMORY_ORDER_ACQUIRE,
+    SDL_MEMORY_ORDER_RELEASE,
+    SDL_MEMORY_ORDER_ACQ_REL,
+    SDL_MEMORY_ORDER_SEQ_CST,
+} SDL_MemoryOrder;
+
+/**
  * A type representing an atomic integer value.
  *
  * This can be used to manage a value that is synchronized across multiple
@@ -395,7 +406,8 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
 
 /**
- * Set an atomic variable to a new value if it is currently an old value.
+ * Set an atomic variable to a new value if it is currently an old value,
+ * using SEQ_CST memory ordering.
  *
  * ***Note: If you don't know what this function is for, you shouldn't use
  * it!***
@@ -409,10 +421,66 @@ typedef struct SDL_AtomicInt { int value; } SDL_AtomicInt;
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_CompareAndSwapAtomicIntStrongWithOrder
+ * \sa SDL_CompareAndSwapAtomicIntWeakWithOrder
  * \sa SDL_GetAtomicInt
  * \sa SDL_SetAtomicInt
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, int oldval, int newval);
+
+/**
+ * Set an atomic variable to a new value if it is currently an old value,
+ * using the provided memory ordering. If you use this is a loop, consider
+ * using SDL_CompareAndSwapAtomicIntWeakWithOrder instead.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param oldval the old value.
+ * \param newval the new value.
+ * \param successord memory order to use on a successful compare and swap.
+ * \param failord memory order to use on a failed compare. May not be RELEASE, ACQ_REL, or stronger than successord.
+ * \returns true if the atomic variable was set, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapAtomicInt
+ * \sa SDL_CompareAndSwapAtomicIntWeakWithOrder
+ * \sa SDL_GetAtomicIntWithOrder
+ * \sa SDL_SetAtomicIntWithOrder
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicIntStrongWithOrder(SDL_AtomicInt *a, int oldval, int newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord);
+
+/**
+ * Set an atomic variable to a new value if it is currently an old value,
+ * using the provided memory ordering. This version can spuriously fail,
+ * but may be faster than SDL_CompareAndSwapAtomicIntStrongWithOrder in a loop.
+ * If SDL_CompareAndSwapAtomicIntStrongWithOrder wouldn't need a loop you should
+ * use that instead.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param oldval the old value.
+ * \param newval the new value.
+ * \param successord memory order to use on a successful compare and swap.
+ * \param failord memory order to use on a failed compare. May not be RELEASE, ACQ_REL, or stronger than successord.
+ * \returns true if the atomic variable was set, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapAtomicInt
+ * \sa SDL_CompareAndSwapAtomicIntStrongWithOrder
+ * \sa SDL_GetAtomicIntWithOrder
+ * \sa SDL_SetAtomicIntWithOrder
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicIntWeakWithOrder(SDL_AtomicInt *a, int oldval, int newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord);
 
 /**
  * Set an atomic variable to a value.
@@ -435,6 +503,25 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicInt(SDL_AtomicInt *a, i
 extern SDL_DECLSPEC int SDLCALL SDL_SetAtomicInt(SDL_AtomicInt *a, int v);
 
 /**
+ * Set an atomic variable to a value using the provided memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param v the desired value.
+ * \param order memory order to use for the atomic exchange.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetAtomicIntWithOrder
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_SetAtomicIntWithOrder(SDL_AtomicInt *a, int v, SDL_MemoryOrder order);
+
+/**
  * Get the value of an atomic variable.
  *
  * ***Note: If you don't know what this function is for, you shouldn't use
@@ -450,6 +537,24 @@ extern SDL_DECLSPEC int SDLCALL SDL_SetAtomicInt(SDL_AtomicInt *a, int v);
  * \sa SDL_SetAtomicInt
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetAtomicInt(SDL_AtomicInt *a);
+
+/**
+ * Get the value of an atomic variable using the provided memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt variable.
+ * \param order memory order to use for the atomic load. Must be one of RELAXED, ACQUIRE or SEQ_CST.
+ * \returns the current value of an atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetAtomicIntWithOrder
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetAtomicIntWithOrder(SDL_AtomicInt *a, SDL_MemoryOrder order);
 
 /**
  * Add to an atomic variable.
@@ -472,6 +577,26 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAtomicInt(SDL_AtomicInt *a);
  */
 extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
 
+/**
+ * Add to an atomic variable using the provided memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt variable to be modified.
+ * \param v the desired value to add.
+ * \param order memory order to use for the atomic add.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_AtomicDecRefWithOrder
+ * \sa SDL_AtomicIncRefWithOrder
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicIntWithOrder(SDL_AtomicInt *a, int v, SDL_MemoryOrder order);
+
 #ifndef SDL_AtomicIncRef
 
 /**
@@ -489,6 +614,26 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * \sa SDL_AtomicDecRef
  */
 #define SDL_AtomicIncRef(a)    SDL_AddAtomicInt(a, 1)
+#endif
+
+#ifndef SDL_AtomicIncRefWithOrder
+
+/**
+ * Increment an atomic variable used as a reference count, using the provided memory ordering.
+ *
+ * ***Note: If you don't know what this macro is for, you shouldn't use it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt to increment.
+ * \param o memory order to use for the atomic increment.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ *
+ * \sa SDL_AtomicDecRefWithOrder
+ */
+#define SDL_AtomicIncRefWithOrder(a, o)    SDL_AddAtomicIntWithOrder(a, 1, o)
 #endif
 
 #ifndef SDL_AtomicDecRef
@@ -509,6 +654,27 @@ extern SDL_DECLSPEC int SDLCALL SDL_AddAtomicInt(SDL_AtomicInt *a, int v);
  * \sa SDL_AtomicIncRef
  */
 #define SDL_AtomicDecRef(a)    (SDL_AddAtomicInt(a, -1) == 1)
+#endif
+
+#ifndef SDL_AtomicDecRefWithOrder
+
+/**
+ * Decrement an atomic variable used as a reference count, using the provided memory ordering.
+ *
+ * ***Note: If you don't know what this macro is for, you shouldn't use it!***
+ *
+ * \param a a pointer to an SDL_AtomicInt to decrement.
+ * \param o memory order to use for the atomic decrement.
+ * \returns true if the variable reached zero after decrementing, false
+ *          otherwise.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ *
+ * \sa SDL_AtomicIncRef
+ */
+#define SDL_AtomicDecRefWithOrder(a, o)    (SDL_AddAtomicIntWithOrder(a, -1, o) == 1)
 #endif
 
 /**
@@ -554,10 +720,66 @@ typedef struct SDL_AtomicU32 { Uint32 value; } SDL_AtomicU32;
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_CompareAndSwapAtomicU32StrongWithOrder
+ * \sa SDL_CompareAndSwapAtomicU32WeakWithOrder
  * \sa SDL_GetAtomicU32
  * \sa SDL_SetAtomicU32
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval);
+
+/**
+ * Set an atomic variable to a new value if it is currently an old value,
+ * using the provided memory ordering. If you use this is a loop, consider
+ * using SDL_CompareAndSwapAtomicU32WeakWithOrder instead.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param oldval the old value.
+ * \param newval the new value.
+ * \param successord memory order to use on a successful compare and swap.
+ * \param failord memory order to use on a failed compare. May not be RELEASE, ACQ_REL, or stronger than successord.
+ * \returns true if the atomic variable was set, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapAtomicU32
+ * \sa SDL_CompareAndSwapAtomicU32WeakWithOrder
+ * \sa SDL_GetAtomicU32WithOrder
+ * \sa SDL_SetAtomicU32WithOrder
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32StrongWithOrder(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord);
+
+/**
+ * Set an atomic variable to a new value if it is currently an old value,
+ * using the provided memory ordering. This version can spuriously fail,
+ * but may be faster than SDL_CompareAndSwapAtomicU32StrongWithOrder in a loop.
+ * If SDL_CompareAndSwapAtomicU32StrongWithOrder wouldn't need a loop you should
+ * use that instead.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param oldval the old value.
+ * \param newval the new value.
+ * \param successord memory order to use on a successful compare and swap.
+ * \param failord memory order to use on a failed compare. May not be RELEASE, ACQ_REL, or stronger than successord.
+ * \returns true if the atomic variable was set, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapAtomicU32
+ * \sa SDL_CompareAndSwapAtomicU32StrongWithOrder
+ * \sa SDL_GetAtomicU32WithOrder
+ * \sa SDL_SetAtomicU32WithOrder
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32WeakWithOrder(SDL_AtomicU32 *a, Uint32 oldval, Uint32 newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord);
 
 /**
  * Set an atomic variable to a value.
@@ -580,6 +802,25 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicU32(SDL_AtomicU32 *a, U
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v);
 
 /**
+ * Set an atomic variable to a value using the provided memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param v the desired value.
+ * \param order memory order to use for the atomic exchange.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetAtomicU32WithOrder
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32WithOrder(SDL_AtomicU32 *a, Uint32 v, SDL_MemoryOrder order);
+
+/**
  * Get the value of an atomic variable.
  *
  * ***Note: If you don't know what this function is for, you shouldn't use
@@ -595,6 +836,24 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_SetAtomicU32(SDL_AtomicU32 *a, Uint32 v);
  * \sa SDL_SetAtomicU32
  */
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
+
+/**
+ * Get the value of an atomic variable using the provided memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable.
+ * \param order memory order to use for the atomic load. Must be one of RELAXED, ACQUIRE or SEQ_CST.
+ * \returns the current value of an atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetAtomicU32WithOrder
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32WithOrder(SDL_AtomicU32 *a, SDL_MemoryOrder order);
 
 /**
  * Add to an atomic variable.
@@ -615,6 +874,23 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_GetAtomicU32(SDL_AtomicU32 *a);
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_AddAtomicU32(SDL_AtomicU32 *a, int v);
 
 /**
+ * Add to an atomic variable using the provided memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to an SDL_AtomicU32 variable to be modified.
+ * \param v the desired value to add or subtract.
+ * \param order memory order to use for the atomic add.
+ * \returns the previous value of the atomic variable.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC Uint32 SDLCALL SDL_AddAtomicU32WithOrder(SDL_AtomicU32 *a, int v, SDL_MemoryOrder order);
+
+/**
  * Set a pointer to a new value if it is currently an old value.
  *
  * ***Note: If you don't know what this function is for, you shouldn't use
@@ -629,11 +905,67 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_AddAtomicU32(SDL_AtomicU32 *a, int v);
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_CompareAndSwapAtomicPointerStrongWithOrder
+ * \sa SDL_CompareAndSwapAtomicPointerWeakWithOrder
  * \sa SDL_CompareAndSwapAtomicInt
  * \sa SDL_GetAtomicPointer
  * \sa SDL_SetAtomicPointer
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicPointer(void **a, void *oldval, void *newval);
+
+/**
+ * Set a pointer to a new value if it is currently an old value,
+ * using the provided memory ordering. If you use this is a loop, consider
+ * using SDL_CompareAndSwapAtomicIntWeakWithOrder instead.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to a pointer.
+ * \param oldval the old pointer value.
+ * \param newval the new pointer value.
+ * \param successord memory order to use on a successful compare and swap.
+ * \param failord memory order to use on a failed compare. May not be RELEASE, ACQ_REL, or stronger than successord.
+ * \returns true if the pointer was set, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapAtomicPointer
+ * \sa SDL_CompareAndSwapAtomicPointerWeakWithOrder
+ * \sa SDL_GetAtomicPointerWithOrder
+ * \sa SDL_SetAtomicPointerWithOrder
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicPointerStrongWithOrder(void **a, void *oldval, void *newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord);
+
+/**
+ * Set a pointer to a new value if it is currently an old value,
+ * using the provided memory ordering. This version can spuriously fail,
+ * but may be faster than SDL_CompareAndSwapAtomicPointerStrongWithOrder in a loop.
+ * If SDL_CompareAndSwapAtomicPointerStrongWithOrder wouldn't need a loop you should
+ * use that instead.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to a pointer.
+ * \param oldval the old pointer value.
+ * \param newval the new pointer value.
+ * \param successord memory order to use on a successful compare and swap.
+ * \param failord memory order to use on a failed compare. May not be RELEASE, ACQ_REL, or stronger than successord.
+ * \returns true if the pointer was set, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapAtomicPointer
+ * \sa SDL_CompareAndSwapAtomicPointerStrongWithOrder
+ * \sa SDL_GetAtomicPointerWithOrder
+ * \sa SDL_SetAtomicPointerWithOrder
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicPointerWeakWithOrder(void **a, void *oldval, void *newval, SDL_MemoryOrder successord, SDL_MemoryOrder failord);
 
 /**
  * Set a pointer to a value atomically.
@@ -655,6 +987,26 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CompareAndSwapAtomicPointer(void **a, void 
 extern SDL_DECLSPEC void * SDLCALL SDL_SetAtomicPointer(void **a, void *v);
 
 /**
+ * Set a pointer to a value atomically using the provided memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to a pointer.
+ * \param v the desired pointer value.
+ * \param order memory order to use for the atomic exchange.
+ * \returns the previous value of the pointer.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapAtomicPointerWithOrder
+ * \sa SDL_GetAtomicPointerWithOrder
+ */
+extern SDL_DECLSPEC void * SDLCALL SDL_SetAtomicPointerWithOrder(void **a, void *v, SDL_MemoryOrder order);
+
+/**
  * Get the value of a pointer atomically.
  *
  * ***Note: If you don't know what this function is for, you shouldn't use
@@ -671,6 +1023,25 @@ extern SDL_DECLSPEC void * SDLCALL SDL_SetAtomicPointer(void **a, void *v);
  * \sa SDL_SetAtomicPointer
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_GetAtomicPointer(void **a);
+
+/**
+ * Get the value of a pointer atomically using the provided memory ordering.
+ *
+ * ***Note: If you don't know what this function is for, you shouldn't use
+ * it!***
+ *
+ * \param a a pointer to a pointer.
+ * \param order memory order to use for the atomic load. Must be one of RELAXED, ACQUIRE or SEQ_CST.
+ * \returns the current value of a pointer.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CompareAndSwapAtomicPointerWithOrder
+ * \sa SDL_SetAtomicPointerWithOrder
+ */
+extern SDL_DECLSPEC void * SDLCALL SDL_GetAtomicPointerWithOrder(void **a, SDL_MemoryOrder order);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
