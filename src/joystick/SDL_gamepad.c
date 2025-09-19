@@ -583,10 +583,14 @@ static void PopMappingChangeTracking(void)
             GamepadMapping_t *old_mapping = gamepad ? gamepad->mapping : tracker->joystick_mappings[i];
 
             if (new_mapping && !old_mapping) {
-                SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)joystick, (const void *)true, true);
+                if (s_gamepadInstanceIDs) {
+                    SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)joystick, (const void *)true, true);
+                }
                 SDL_PrivateGamepadAdded(joystick);
             } else if (old_mapping && !new_mapping) {
-                SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)joystick, (const void *)false, true);
+                if (s_gamepadInstanceIDs) {
+                    SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)joystick, (const void *)false, true);
+                }
                 SDL_PrivateGamepadRemoved(joystick);
             } else if (old_mapping != new_mapping || HasMappingChangeTracking(tracker, new_mapping)) {
                 if (gamepad) {
@@ -2342,7 +2346,11 @@ int SDL_AddGamepadMappingsFromIO(SDL_IOStream *src, bool closeio)
 
 int SDL_AddGamepadMappingsFromFile(const char *file)
 {
-    return SDL_AddGamepadMappingsFromIO(SDL_IOFromFile(file, "rb"), true);
+    SDL_IOStream *stream = SDL_IOFromFile(file, "rb");
+    if (!stream) {
+        return -1;
+    }
+    return SDL_AddGamepadMappingsFromIO(stream, true);
 }
 
 bool SDL_ReloadGamepadMappings(void)
@@ -3109,7 +3117,8 @@ bool SDL_IsGamepad(SDL_JoystickID instance_id)
     SDL_LockJoysticks();
     {
         const void *value;
-        if (SDL_FindInHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, &value)) {
+        if (s_gamepadInstanceIDs &&
+            SDL_FindInHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, &value)) {
             result = (bool)(uintptr_t)value;
         } else {
             if (SDL_PrivateGetGamepadMapping(instance_id, true) != NULL) {
@@ -3117,11 +3126,12 @@ bool SDL_IsGamepad(SDL_JoystickID instance_id)
             } else {
                 result = false;
             }
-
             if (!s_gamepadInstanceIDs) {
                 s_gamepadInstanceIDs = SDL_CreateHashTable(0, false, SDL_HashID, SDL_KeyMatchID, NULL, NULL);
             }
-            SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, (void *)(uintptr_t)result, true);
+            if (s_gamepadInstanceIDs) {
+                SDL_InsertIntoHashTable(s_gamepadInstanceIDs, (void *)(uintptr_t)instance_id, (void *)(uintptr_t)result, true);
+            }
         }
     }
     SDL_UnlockJoysticks();
