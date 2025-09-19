@@ -3170,6 +3170,37 @@ extern "C" {
 #define SDL_HINT_ROG_GAMEPAD_MICE_EXCLUDED "SDL_ROG_GAMEPAD_MICE_EXCLUDED"
 
 /**
+ * Variable controlling the width of the PS2's framebuffer in pixels
+ *
+ * By default, this variable is "640"
+ */
+#define SDL_HINT_PS2_GS_WIDTH    "SDL_PS2_GS_WIDTH"
+
+/**
+ * Variable controlling the height of the PS2's framebuffer in pixels
+ *
+ * By default, this variable is "448"
+ */
+#define SDL_HINT_PS2_GS_HEIGHT    "SDL_PS2_GS_HEIGHT"
+
+/**
+ * Variable controlling whether the signal is interlaced or progressive
+ *
+ * - "0": Image is interlaced. Default
+ * - "1": Image is progressive
+ */
+#define SDL_HINT_PS2_GS_PROGRESSIVE    "SDL_PS2_GS_PROGRESSIVE"
+
+/**
+ * Variable controlling the video mode of the console
+ *
+ * - "": Console-native. Default
+ * - "NTSC": 60hz region
+ * - "PAL": 50hz region
+ */
+#define SDL_HINT_PS2_GS_MODE    "SDL_PS2_GS_MODE"
+
+/**
  * A variable controlling which Dispmanx layer to use on a Raspberry PI.
  *
  * Also known as Z-order. The variable can take a negative or positive value.

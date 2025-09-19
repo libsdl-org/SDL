@@ -16,6 +16,12 @@ cmake --build build
 cmake --install build
 ```
 
+## Hints
+- `SDL_HINT_PS2_GS_WIDTH`: Width of the framebuffer. Defaults to 640.
+- `SDL_HINT_PS2_GS_HEIGHT`: Height of the framebuffer. Defaults to 448.
+- `SDL_HINT_PS2_GS_PROGRESSIVE`: Whether to use progressive, instead of interlaced. Defaults to 0.
+- `SDL_HINT_PS2_GS_MODE`: Regional standard of the signal. "NTSC" (60hz), "PAL" (50hz) or "" (the console's region, default).
+
 ## Notes
 If you trying to debug a SDL app through [ps2client](https://github.com/ps2dev/ps2client) you need to avoid the IOP reset, otherwise you will lose the connection with your computer.
 So to avoid the reset of the IOP CPU, you need to call to the macro `SDL_PS2_SKIP_IOP_RESET();`.
