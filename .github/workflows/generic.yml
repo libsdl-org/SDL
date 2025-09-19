@@ -242,7 +242,7 @@ jobs:
           ${{ matrix.platform.pretest-cmd }}
           set -eu
           export SDL_TESTS_QUICK=1
-          ctest -VV --test-dir build/ -j2
+          ctest --test-dir build/ ${{ matrix.platform.ctest-args || '-VV -j2' }}
       - name: "Build test apk's (CMake)"
         id: apks
         if: ${{ always() && steps.build.outcome == 'success' && matrix.platform.android-apks != '' }}
