@@ -690,8 +690,10 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "1": Enable fast parameter error checking, e.g. quick NULL checks, etc. (default)
- * - "2": Enable full parameter error checking, e.g. validating objects are the correct type, etc.
+ * - "1": Enable fast parameter error checking, e.g. quick NULL checks, etc.
+ *   (default)
+ * - "2": Enable full parameter error checking, e.g. validating objects are
+ *   the correct type, etc.
  *
  * This hint can be set anytime.
  *
