@@ -625,8 +625,6 @@ static int PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, Uint32
 
     gsGlobal = gsKit_init_global_custom(RENDER_QUEUE_OS_POOLSIZE, RENDER_QUEUE_PER_POOLSIZE);
 
-    SDL_GetWindowSize(window,&w,&h);
-
     // GS interlaced/progressive
     if (SDL_GetHintBoolean(SDL_HINT_PS2_GS_PROGRESSIVE,0)) {
         gsGlobal->Interlace = GS_NONINTERLACED;
