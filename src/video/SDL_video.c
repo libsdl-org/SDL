@@ -1168,33 +1168,35 @@ float SDL_GetDisplayContentScale(SDL_DisplayID displayID)
 
 void SDL_SetWindowHDRProperties(SDL_Window *window, const SDL_HDROutputProperties *HDR, bool send_event)
 {
-    if (window->HDR.HDR_headroom != HDR->HDR_headroom || window->HDR.SDR_white_level != HDR->SDR_white_level) {
+    const SDL_HDROutputProperties HDR_clamped = {
+        SDL_max(HDR->SDR_white_level, 1.0f),
+        SDL_max(HDR->HDR_headroom, 1.0f)
+    };
+
+    if (window->HDR.HDR_headroom != HDR_clamped.HDR_headroom || window->HDR.SDR_white_level != HDR_clamped.SDR_white_level) {
         SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
 
-        SDL_SetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, SDL_max(HDR->HDR_headroom, 1.0f));
-        SDL_SetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, SDL_max(HDR->SDR_white_level, 1.0f));
-        SDL_SetBooleanProperty(window_props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, HDR->HDR_headroom > 1.0f);
-        SDL_copyp(&window->HDR, HDR);
+        SDL_SetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, HDR_clamped.HDR_headroom);
+        SDL_SetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, HDR_clamped.SDR_white_level);
+        SDL_SetBooleanProperty(window_props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, HDR_clamped.HDR_headroom > 1.0f);
+        SDL_copyp(&window->HDR, &HDR_clamped);
 
         if (send_event) {
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HDR_STATE_CHANGED, HDR->HDR_headroom > 1.0f, 0);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HDR_STATE_CHANGED, HDR_clamped.HDR_headroom > 1.0f, 0);
         }
     }
 }
 
 void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDROutputProperties *HDR)
 {
-    bool changed = false;
+    const SDL_HDROutputProperties HDR_clamped = {
+        SDL_max(HDR->SDR_white_level, 1.0f),
+        SDL_max(HDR->HDR_headroom, 1.0f)
+    };
+    const bool changed = HDR_clamped.SDR_white_level != display->HDR.SDR_white_level ||
+                         HDR_clamped.HDR_headroom != display->HDR.HDR_headroom;
 
-    if (HDR->SDR_white_level != display->HDR.SDR_white_level) {
-        display->HDR.SDR_white_level = SDL_max(HDR->SDR_white_level, 1.0f);
-        changed = true;
-    }
-    if (HDR->HDR_headroom != display->HDR.HDR_headroom) {
-        display->HDR.HDR_headroom = SDL_max(HDR->HDR_headroom, 1.0f);
-        changed = true;
-    }
-    SDL_copyp(&display->HDR, HDR);
+    SDL_copyp(&display->HDR, &HDR_clamped);
 
     if (changed && !SDL_DriverSendsHDRChanges(_this)) {
         for (SDL_Window *w = display->device->windows; w; w = w->next) {
