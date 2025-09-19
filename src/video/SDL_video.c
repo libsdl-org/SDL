@@ -4429,6 +4429,8 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DESTROYED, 0, 0);
 
+    SDL_DestroyWindowSurface(window);
+
     SDL_Renderer *renderer = SDL_GetRenderer(window);
     if (renderer) {
         SDL_DestroyRendererWithoutFreeing(renderer);
@@ -4468,8 +4470,6 @@ void SDL_DestroyWindow(SDL_Window *window)
     if (SDL_GetMouseFocus() == window) {
         SDL_SetMouseFocus(NULL);
     }
-
-    SDL_DestroyWindowSurface(window);
 
     // Make no context current if this is the current context window
     if (window->flags & SDL_WINDOW_OPENGL) {
