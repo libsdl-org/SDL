@@ -173,6 +173,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_Driver8BitDo;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverFlydigi;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSInput;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverZUIKI;
+
 // Return true if a HID device is present and supported as a joystick of the given type
 extern bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);
 
