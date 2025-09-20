@@ -29,6 +29,7 @@
 #include "../audio/SDL_audio_c.h"
 #include "../camera/SDL_camera_c.h"
 #include "../timer/SDL_timer_c.h"
+#include "../core/linux/SDL_udev.h"
 #ifndef SDL_JOYSTICK_DISABLED
 #include "../joystick/SDL_joystick_c.h"
 #endif
@@ -1423,6 +1424,10 @@ bool SDL_RunOnMainThread(SDL_MainThreadCallback callback, void *userdata, bool w
 
 void SDL_PumpEventMaintenance(void)
 {
+#ifdef SDL_USE_LIBUDEV
+    SDL_UDEV_Poll();
+#endif
+
 #ifndef SDL_AUDIO_DISABLED
     SDL_UpdateAudio();
 #endif

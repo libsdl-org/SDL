@@ -973,7 +973,7 @@ static void LINUX_JoystickDetect(void)
 {
 #ifdef SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
-        SDL_UDEV_Poll();
+        // Polling will happen in the main event loop
     } else
 #endif
 #ifdef HAVE_INOTIFY
