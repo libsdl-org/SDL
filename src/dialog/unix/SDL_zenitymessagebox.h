@@ -19,13 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_waylandmessagebox_h_
-#define SDL_waylandmessagebox_h_
+#ifndef SDL_zenitymessagebox_h_
+#define SDL_zenitymessagebox_h_
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND
-
-extern bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
-
-#endif // SDL_VIDEO_DRIVER_WAYLAND
+extern bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
 #endif // SDL_waylandmessagebox_h_

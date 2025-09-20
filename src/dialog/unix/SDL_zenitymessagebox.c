@@ -21,9 +21,7 @@
 
 #include "SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_WAYLAND
-
-#include "SDL_waylandmessagebox.h"
+#include "SDL_zenitymessagebox.h"
 
 #define ZENITY_VERSION_LEN 32 // Number of bytes to read from zenity --version (including NUL)
 
@@ -75,7 +73,7 @@ static bool get_zenity_version(int *major, int *minor)
     return result;
 }
 
-bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
+bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     int zenity_major = 0, zenity_minor = 0, output_len = 0;
     int argc = 5, i;
@@ -83,14 +81,6 @@ bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *butto
         "zenity", "--question", "--switch", "--no-wrap", "--no-markup"
     };
     SDL_Process *process;
-
-    // Are we trying to connect to or are currently in a Wayland session?
-    if (!SDL_getenv("WAYLAND_DISPLAY")) {
-        const char *session = SDL_getenv("XDG_SESSION_TYPE");
-        if (session && SDL_strcasecmp(session, "wayland") != 0) {
-            return SDL_SetError("Not on a wayland display");
-        }
-    }
 
     if (messageboxdata->numbuttons > MAX_BUTTONS) {
         return SDL_SetError("Too many buttons (%d max allowed)", MAX_BUTTONS);
@@ -193,4 +183,3 @@ bool Wayland_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *butto
     return true;
 }
 
-#endif // SDL_VIDEO_DRIVER_WAYLAND
