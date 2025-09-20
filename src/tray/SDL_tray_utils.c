@@ -83,6 +83,8 @@ void SDL_CleanupTrays(void)
         SDL_DestroyTray((SDL_Tray *)trays[i]);
     }
     SDL_free(trays);
+
+    SDL_ClearProperty(SDL_GetGlobalProperties(), SDL_PROP_TRAY_CLEANUP);
 }
 
 bool SDL_HasActiveTrays(void)
