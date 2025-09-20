@@ -25,13 +25,13 @@
 
 #include "../../core/linux/SDL_system_theme.h"
 #include "../../core/linux/SDL_progressbar.h"
+#include "../../dialog/unix/SDL_zenitymessagebox.h"
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_waylandclipboard.h"
 #include "SDL_waylandcolor.h"
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandkeyboard.h"
-#include "SDL_waylandmessagebox.h"
 #include "SDL_waylandmouse.h"
 #include "SDL_waylandopengles.h"
 #include "SDL_waylandvideo.h"
@@ -708,14 +708,14 @@ static SDL_VideoDevice *Wayland_Fallback_CreateDevice(void)
 VideoBootStrap Wayland_preferred_bootstrap = {
     WAYLANDVID_DRIVER_NAME, "SDL Wayland video driver",
     Wayland_Preferred_CreateDevice,
-    Wayland_ShowMessageBox,
+    SDL_Zenity_ShowMessageBox,
     true
 };
 
 VideoBootStrap Wayland_bootstrap = {
     WAYLANDVID_DRIVER_NAME, "SDL Wayland video driver",
     Wayland_Fallback_CreateDevice,
-    Wayland_ShowMessageBox,
+    SDL_Zenity_ShowMessageBox,
     false
 };
 
