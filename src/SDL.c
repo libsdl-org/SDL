@@ -845,9 +845,7 @@ SDL_Sandbox SDL_GetSandbox(void)
 
 #ifdef SDL_PLATFORM_WIN32
 
-#if (!defined(HAVE_LIBC) || defined(__WATCOMC__)) && !defined(SDL_STATIC_LIB)
-// FIXME: Still need to include DllMain() on Watcom C ?
-
+#if !defined(HAVE_LIBC) && !defined(SDL_STATIC_LIB)
 BOOL APIENTRY MINGW32_FORCEALIGN _DllMainCRTStartup(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
     switch (ul_reason_for_call) {

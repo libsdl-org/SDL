@@ -1830,24 +1830,7 @@ int SDL_swprintf(SDL_OUT_Z_CAP(maxlen) wchar_t *text, size_t maxlen, SDL_PRINTF_
     return result;
 }
 
-#if defined(HAVE_LIBC) && defined(__WATCOMC__)
-// _vsnprintf() doesn't ensure nul termination
-int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
-{
-    int result;
-    if (!fmt) {
-        fmt = "";
-    }
-    result = _vsnprintf(text, maxlen, fmt, ap);
-    if (maxlen > 0) {
-        text[maxlen - 1] = '\0';
-    }
-    if (result < 0) {
-        result = (int)maxlen;
-    }
-    return result;
-}
-#elif defined(HAVE_VSNPRINTF)
+#if defined(HAVE_VSNPRINTF)
 int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
 {
     if (!fmt) {
