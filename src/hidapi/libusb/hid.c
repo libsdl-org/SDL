@@ -671,6 +671,8 @@ static void fill_device_info_usage(struct hid_device_info *cur_dev, libusb_devic
 
 	cur_dev->usage_page = page;
 	cur_dev->usage = usage;
+
+	free(hid_report_descriptor);
 }
 
 #ifdef INVASIVE_GET_USAGE
