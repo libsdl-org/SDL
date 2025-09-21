@@ -38,6 +38,7 @@ typedef struct SDL_joylist_item
     int first_trigger_button;
     bool triggers_are_buttons;
     int nhats;
+    SDL_GUID guid;
     int nbuttons;
     int naxes;
     double timestamp;
