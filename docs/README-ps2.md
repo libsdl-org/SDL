@@ -11,7 +11,7 @@ Credit to
 ## Building
 To build SDL2 library for the PS2, make sure you have the latest PS2Dev status and run:
 ```bash
-cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/ps2sdk/ps2dev.cmake
+cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev.cmake
 cmake --build build
 cmake --install build
 ```
@@ -19,6 +19,10 @@ cmake --install build
 ## Hints
 The PS2 port has a special Hint for having a dynamic VSYNC. The Hint is `SDL_HINT_PS2_DYNAMIC_VSYNC`.
 If you enabled the dynamic vsync having as well `SDL_RENDERER_PRESENTVSYNC` enabled, then if the app is not able to run at 60 FPS, automatically the `vsync` will be disabled having a better performance, instead of droping FPS to 30.
+- `SDL_HINT_PS2_GS_WIDTH`: Width of the framebuffer. Defaults to 640.
+- `SDL_HINT_PS2_GS_HEIGHT`: Height of the framebuffer. Defaults to 448.
+- `SDL_HINT_PS2_GS_PROGRESSIVE`: Whether to use progressive, instead of interlaced. Defaults to 0.
+- `SDL_HINT_PS2_GS_MODE`: Regional standard of the signal. "NTSC" (60hz), "PAL" (50hz) or "" (the console's region, default).
 
 ## Notes
 If you trying to debug a SDL app through [ps2client](https://github.com/ps2dev/ps2client) you need to avoid the IOP reset, otherwise you will lose the conection with your computer.
