@@ -635,7 +635,6 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     PS2_RenderData *data;
     GSGLOBAL *gsGlobal;
     ee_sema_t sema;
-    int w,h;
 
     SDL_SetupRendererColorspace(renderer, create_props);
 
@@ -657,33 +656,38 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     gsGlobal = gsKit_init_global_custom(RENDER_QUEUE_OS_POOLSIZE, RENDER_QUEUE_PER_POOLSIZE);
 
     // GS interlaced/progressive
-    if (SDL_GetHintBoolean(SDL_HINT_PS2_GS_PROGRESSIVE,0)) {
+    if (SDL_GetHintBoolean(SDL_HINT_PS2_GS_PROGRESSIVE, false)) {
         gsGlobal->Interlace = GS_NONINTERLACED;
     } else {
         gsGlobal->Interlace = GS_INTERLACED;
     }
-
+    
     // GS width/height
-    if (
-        SDL_GetHint(SDL_HINT_PS2_GS_WIDTH) == NULL ||
-        sscanf(SDL_GetHint(SDL_HINT_PS2_GS_WIDTH),"%d",&w) != 1
-    ) { w = 640; }
-
-    if (
-        SDL_GetHint(SDL_HINT_PS2_GS_HEIGHT) == NULL ||
-        sscanf(SDL_GetHint(SDL_HINT_PS2_GS_HEIGHT),"%d",&h) != 1
-    ) { h = 448; }
-
-    gsGlobal->Width = w;
-    gsGlobal->Height = h;
+    gsGlobal->Width = 0;
+    gsGlobal->Height = 0;
+    const char *hint = SDL_GetHint(SDL_HINT_PS2_GS_WIDTH);
+    if (hint) {
+        gsGlobal->Width = SDL_atoi(hint);
+    }
+    hint = SDL_GetHint(SDL_HINT_PS2_GS_HEIGHT);
+    if (hint) {
+        gsGlobal->Height = SDL_atoi(hint);
+    }
+    if (gsGlobal->Width <= 0) {
+        gsGlobal->Width = 640;
+    }
+    if (gsGlobal->Height <= 0) {
+        gsGlobal->Height = 448;
+    }
 
     // GS region
-    if (SDL_GetHint(SDL_HINT_PS2_GS_MODE) != NULL) {
-        if (strcmp(SDL_GetHint(SDL_HINT_PS2_GS_MODE),"NTSC") == 0) {
+    hint = SDL_GetHint(SDL_HINT_PS2_GS_MODE);
+    if (hint) {
+        if (SDL_strcasecmp(SDL_GetHint(SDL_HINT_PS2_GS_MODE), "NTSC") == 0) {
             gsGlobal->Mode = GS_MODE_NTSC;
         }
 
-        if (strcmp(SDL_GetHint(SDL_HINT_PS2_GS_MODE),"PAL") == 0) {
+        if (SDL_strcasecmp(SDL_GetHint(SDL_HINT_PS2_GS_MODE), "PAL") == 0) {
             gsGlobal->Mode = GS_MODE_PAL;
         }
     }

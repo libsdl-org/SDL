@@ -3186,7 +3186,7 @@ extern "C" {
 /**
  * Variable controlling whether the signal is interlaced or progressive
  *
- * - "0": Image is interlaced. Default
+ * - "0": Image is interlaced. (default)
  * - "1": Image is progressive
  */
 #define SDL_HINT_PS2_GS_PROGRESSIVE    "SDL_PS2_GS_PROGRESSIVE"
@@ -3194,7 +3194,7 @@ extern "C" {
 /**
  * Variable controlling the video mode of the console
  *
- * - "": Console-native. Default
+ * - "": Console-native. (default)
  * - "NTSC": 60hz region
  * - "PAL": 50hz region
  */
