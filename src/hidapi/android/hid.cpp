@@ -1462,13 +1462,13 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceDisconnected)(
 extern "C"
 JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceInputReport)(JNIEnv *env, jobject thiz, int nDeviceID, jbyteArray value)
 {
-	LOGV("Stub HIDDeviceInput() id=%d len=%u\n", nDeviceID, nBufSize);
+	LOGV("Stub HIDDeviceInput() id=%d len=%u\n", nDeviceID, env->GetArrayLength(value));
 }
 
 extern "C"
 JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceReportResponse)(JNIEnv *env, jobject thiz, int nDeviceID, jbyteArray value)
 {
-	LOGV("Stub HIDDeviceReportResponse() id=%d len=%u\n", nDeviceID, nBufSize);
+	LOGV("Stub HIDDeviceReportResponse() id=%d len=%u\n", nDeviceID, env->GetArrayLength(value));
 }
 
 #endif /* SDL_HIDAPI_DISABLED */
