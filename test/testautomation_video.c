@@ -17,6 +17,9 @@ static bool VideoSupportsWindowPositioning(void)
 	if (SDL_strcmp(video_driver, "emscripten") == 0) {
 		return false;
 	}
+	if (SDL_strcmp(video_driver, "uikit") == 0) {
+		return false;
+	}
 	if (SDL_strcmp(video_driver, "wayland") == 0) {
 		return false;
 	}
@@ -31,6 +34,9 @@ static bool VideoSupportsWindowResizing(void)
 		return false;
 	}
 	if (SDL_strcmp(video_driver, "emscripten") == 0) {
+		return false;
+	}
+	if (SDL_strcmp(video_driver, "uikit") == 0) {
 		return false;
 	}
 	return true;
@@ -398,7 +404,7 @@ static int SDLCALL video_getClosestDisplayModeCurrentResolution(void *arg)
                 SDL_memcpy(&current, modes[0], sizeof(current));
 
                 /* Make call */
-                result = SDL_GetClosestFullscreenDisplayMode(displays[i], current.w, current.h, current.refresh_rate, false, &closest);
+                result = SDL_GetClosestFullscreenDisplayMode(displays[i], current.w, current.h, current.refresh_rate, (current.pixel_density > 1.0f), &closest);
                 SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=current)");
                 SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
 
