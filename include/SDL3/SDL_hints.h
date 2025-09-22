@@ -2868,7 +2868,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.2.0.
  */
-#define SDL_HINT_OPENVR_LIBRARY "SDL_OPENVR_LIBRARY"
+#define SDL_HINT_OPENVR_LIBRARY              "SDL_OPENVR_LIBRARY"
 
 /**
  * A variable controlling which orientations are allowed on iOS/Android.
