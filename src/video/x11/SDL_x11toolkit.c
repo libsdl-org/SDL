@@ -342,7 +342,7 @@ static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
                 SDL_free(font);
                 
                 if (!window->font_set) {
-                    if (window->scale && window->iscale > 0) {
+                    if (window->scale != 0 && window->iscale > 0) {
                         window->iscale = (int)SDL_ceilf(window->scale);
                         window->scale = 0;
                     } else {
@@ -378,7 +378,7 @@ static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
         SDL_free(font);
         if (!window->font_struct) {
             if (window->iscale > 0) {
-                if (window->scale) {
+                if (window->scale != 0) {
                     window->iscale = (int)SDL_ceilf(window->scale);
                     window->scale = 0;
                 } else {
