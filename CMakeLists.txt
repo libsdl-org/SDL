@@ -351,6 +351,8 @@ dep_option(SDL_WAYLAND             "Use Wayland video driver" ${UNIX_SYS} "SDL_V
 dep_option(SDL_WAYLAND_SHARED      "Dynamically load Wayland support" ON "SDL_WAYLAND;SDL_DEPS_SHARED" OFF)
 dep_option(SDL_WAYLAND_LIBDECOR    "Use client-side window decorations on Wayland" ON "SDL_WAYLAND" OFF)
 dep_option(SDL_WAYLAND_LIBDECOR_SHARED     "Dynamically load libdecor support" ON "SDL_WAYLAND_LIBDECOR;SDL_WAYLAND_SHARED;SDL_DEPS_SHARED" OFF)
+dep_option(SDL_WAYLAND_FCFT  		"International text rendering for Wayland toolkit functionality" ON "SDL_WAYLAND" OFF)
+dep_option(SDL_WAYLAND_FCFT_SHARED	"Dynamically load fcft support" ON "SDL_WAYLAND_FCFT;SDL_WAYLAND_SHARED;SDL_DEPS_SHARED" OFF)
 dep_option(SDL_RPI                 "Use Raspberry Pi video driver" ON "SDL_VIDEO;UNIX_SYS;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
 dep_option(SDL_ROCKCHIP            "Use ROCKCHIP Hardware Acceleration video driver" ON "SDL_VIDEO;UNIX_SYS;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
 dep_option(SDL_COCOA               "Use Cocoa video driver" ON "APPLE" OFF)
