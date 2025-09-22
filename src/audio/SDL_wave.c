@@ -1889,7 +1889,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
                size. This also means a malicious file can't allocate 4 gigabytes
                for the chunks without actually supplying a 4 gigabyte file. */
             if ((flen > 0) && ((chunk->position + chunk->length) > flen)) {
-                chunk->length = flen - chunk->position;
+                chunk->length = (Uint32) (flen - chunk->position);
             }
 
             /* Only use the first data chunk. Handling the wavl list madness
