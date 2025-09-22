@@ -60,6 +60,7 @@
 #define USB_VENDOR_VALVE        0x28de
 #define USB_VENDOR_ZEROPLUS     0x0c12
 #define USB_VENDOR_RASPBERRYPI  0x2e8a // Commercial hardware from various companies are registered under this VID
+#define USB_VENDOR_ZUIKI        0x33dd
 
 #define USB_PRODUCT_8BITDO_SF30_PRO                       0x6000    // B + START
 #define USB_PRODUCT_8BITDO_SF30_PRO_BT                    0x6100    // B + START
@@ -170,7 +171,8 @@
 #define USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC         0x10c6
 #define USB_PRODUCT_HANDHELDLEGEND_PROGCC                 0x10df
 #define USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE             0x10dd
-#define USB_PRODUCT_BONZIRICHANNEL_FIREBIRD               0x10e0
+#define USB_PRODUCT_BONZIRICHANNEL_FIREBIRD               0x10e0 
+#define USB_PRODUCT_ZUIKI_MASCON_PRO                      0x0006
 #define USB_PRODUCT_VOIDGAMING_PS4FIREBIRD                0x10e5
 
 // USB usage pages
