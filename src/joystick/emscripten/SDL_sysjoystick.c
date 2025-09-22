@@ -122,8 +122,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
 
     if (vendor && product) {
         item->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, vendor, product, 0, NULL, item->name, 0, 0);
-    }
-    else {
+    } else {
         item->guid = SDL_CreateJoystickGUIDForName(item->name);
     }
 
