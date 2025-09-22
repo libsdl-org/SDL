@@ -957,6 +957,39 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
         }
     }
 
+#elif defined(SDL_PLATFORM_IOS)
+
+    // Try to open the file on the filesystem first
+    FILE *fp = NULL;
+    if (*file == '/') {
+        fp = fopen(file, mode);
+    } else {
+        // We can't write to the current directory, so use a writable path
+        char *base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return NULL;
+        }
+
+        char *path = NULL;
+        SDL_asprintf(&path, "%s%s", base, file);
+        SDL_free(base);
+        if (!path) {
+            return NULL;
+        }
+
+        fp = fopen(path, mode);
+        SDL_free(path);
+    }
+
+    if (!fp) {
+        SDL_SetError("Couldn't open %s: %s", file, strerror(errno));
+    } else if (!IsRegularFileOrPipe(fp)) {
+        fclose(fp);
+        SDL_SetError("%s is not a regular file or pipe", file);
+    } else {
+        iostr = SDL_IOFromFP(fp, true);
+    }
+
 #elif defined(SDL_PLATFORM_WINDOWS)
     HANDLE handle = windows_file_open(file, mode);
     if (handle != INVALID_HANDLE_VALUE) {
@@ -975,7 +1008,6 @@ SDL_IOStream *SDL_IOFromFile(const char *file, const char *mode)
             SDL_SetError("Couldn't open %s: %s", file, strerror(errno));
         } else if (!IsRegularFileOrPipe(fp)) {
             fclose(fp);
-            fp = NULL;
             SDL_SetError("%s is not a regular file or pipe", file);
         } else {
             iostr = SDL_IOFromFP(fp, true);

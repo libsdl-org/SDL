@@ -269,10 +269,6 @@ extern "C" {
 /* SDL_ExitProcess is not declared in any public header, although
    it is shared between some parts of SDL, because we don't want
    anything calling it without an extremely good reason. */
-#ifdef __WATCOMC__
-extern void SDL_ExitProcess(int exitcode);
-#pragma aux SDL_ExitProcess aborts;
-#endif
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
 
 #ifdef HAVE_LIBC

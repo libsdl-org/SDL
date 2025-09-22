@@ -23,6 +23,7 @@
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
+#include "../../dialog/unix/SDL_zenitymessagebox.h"
 #include "SDL_x11messagebox.h"
 #include "SDL_x11toolkit.h"
 
@@ -234,6 +235,10 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
 // Display an x11 message box.
 bool X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
+    if (SDL_Zenity_ShowMessageBox(messageboxdata, buttonID)) {
+        return true;
+    }
+
 #if SDL_FORK_MESSAGEBOX
     // Use a child process to protect against setlocale(). Annoying.
     pid_t pid;

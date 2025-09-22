@@ -322,10 +322,6 @@ void SDL_EVDEV_Poll(void)
         return;
     }
 
-#ifdef SDL_USE_LIBUDEV
-    SDL_UDEV_Poll();
-#endif
-
     SDL_EVDEV_kbd_update(_this->kbd);
 
     mouse = SDL_GetMouse();

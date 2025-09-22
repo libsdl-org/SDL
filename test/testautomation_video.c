@@ -7,6 +7,52 @@
 
 /* Private helpers */
 
+static bool VideoSupportsWindowPositioning(void)
+{
+    const char *video_driver = SDL_GetCurrentVideoDriver();
+
+	if (SDL_strcmp(video_driver, "android") == 0) {
+		return false;
+	}
+	if (SDL_strcmp(video_driver, "emscripten") == 0) {
+		return false;
+	}
+	if (SDL_strcmp(video_driver, "uikit") == 0) {
+		return false;
+	}
+	if (SDL_strcmp(video_driver, "wayland") == 0) {
+		return false;
+	}
+	return true;
+}
+
+static bool VideoSupportsWindowResizing(void)
+{
+    const char *video_driver = SDL_GetCurrentVideoDriver();
+
+	if (SDL_strcmp(video_driver, "android") == 0) {
+		return false;
+	}
+	if (SDL_strcmp(video_driver, "emscripten") == 0) {
+		return false;
+	}
+	if (SDL_strcmp(video_driver, "uikit") == 0) {
+		return false;
+	}
+	return true;
+}
+
+static bool VideoSupportsWindowMinimizing(void)
+{
+    const char *video_driver = SDL_GetCurrentVideoDriver();
+
+	if (SDL_strcmp(video_driver, "android") == 0) {
+		// Technically it's supported, but minimizing backgrounds the application and stops processing
+		return false;
+	}
+	return true;
+}
+
 /**
  * Create a test window
  */
@@ -358,7 +404,7 @@ static int SDLCALL video_getClosestDisplayModeCurrentResolution(void *arg)
                 SDL_memcpy(&current, modes[0], sizeof(current));
 
                 /* Make call */
-                result = SDL_GetClosestFullscreenDisplayMode(displays[i], current.w, current.h, current.refresh_rate, false, &closest);
+                result = SDL_GetClosestFullscreenDisplayMode(displays[i], current.w, current.h, current.refresh_rate, (current.pixel_density > 1.0f), &closest);
                 SDLTest_AssertPass("Call to SDL_GetClosestFullscreenDisplayMode(target=current)");
                 SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
 
@@ -1678,7 +1724,6 @@ static int SDLCALL video_setWindowCenteredOnDisplay(void *arg)
     SDL_Rect display0, display1;
     const char *video_driver = SDL_GetCurrentVideoDriver();
     bool video_driver_is_wayland = SDL_strcmp(video_driver, "wayland") == 0;
-    bool video_driver_is_emscripten = SDL_strcmp(video_driver, "emscripten") == 0;
 
     displays = SDL_GetDisplays(&displayNum);
     if (displays) {
@@ -1758,17 +1803,17 @@ static int SDLCALL video_setWindowCenteredOnDisplay(void *arg)
                 } else {
                     SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display ID (current: %d, expected: %d)", currentDisplay, expectedDisplay);
                 }
-                if (video_driver_is_emscripten) {
-                    SDLTest_Log("Skipping window size validation: %s driver does not support window resizing", video_driver);
-                } else {
+                if (VideoSupportsWindowResizing()) {
                     SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
                     SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
-                }
-                if (video_driver_is_emscripten || video_driver_is_wayland) {
-                    SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
                 } else {
+                    SDLTest_Log("Skipping window size validation: %s driver does not support window resizing", video_driver);
+                }
+                if (VideoSupportsWindowPositioning()) {
                     SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
                     SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
+                } else {
+                    SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
                 }
 
                 /* Enter fullscreen desktop */
@@ -1799,17 +1844,17 @@ static int SDLCALL video_setWindowCenteredOnDisplay(void *arg)
                     SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display ID (current: %d, expected: %d)", currentDisplay, expectedDisplay);
                 }
 
-                if (video_driver_is_emscripten) {
-                    SDLTest_Log("Skipping window position validation: %s driver does not support window resizing", video_driver);
-                } else {
+                if (VideoSupportsWindowResizing()) {
                     SDLTest_AssertCheck(currentW == expectedFullscreenRect.w, "Validate width (current: %d, expected: %d)", currentW, expectedFullscreenRect.w);
                     SDLTest_AssertCheck(currentH == expectedFullscreenRect.h, "Validate height (current: %d, expected: %d)", currentH, expectedFullscreenRect.h);
-                }
-                if (video_driver_is_emscripten || video_driver_is_wayland) {
-                    SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
                 } else {
+                    SDLTest_Log("Skipping window size validation: %s driver does not support window resizing", video_driver);
+                }
+                if (VideoSupportsWindowPositioning()) {
                     SDLTest_AssertCheck(currentX == expectedFullscreenRect.x, "Validate x (current: %d, expected: %d)", currentX, expectedFullscreenRect.x);
                     SDLTest_AssertCheck(currentY == expectedFullscreenRect.y, "Validate y (current: %d, expected: %d)", currentY, expectedFullscreenRect.y);
+                } else {
+                    SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
                 }
 
                 /* Leave fullscreen desktop */
@@ -1830,17 +1875,17 @@ static int SDLCALL video_setWindowCenteredOnDisplay(void *arg)
                 } else {
                     SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
                 }
-                if (video_driver_is_emscripten) {
-                    SDLTest_Log("Skipping window position validation: %s driver does not support window resizing", video_driver);
-                } else {
+                if (VideoSupportsWindowResizing()) {
                     SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
                     SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
-                }
-                if (video_driver_is_emscripten || video_driver_is_wayland) {
-                    SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
                 } else {
+                    SDLTest_Log("Skipping window size validation: %s driver does not support window resizing", video_driver);
+                }
+                if (VideoSupportsWindowPositioning()) {
                     SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
                     SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
+                } else {
+                    SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
                 }
 
                 /* Center on display yVariation, and check window properties */
@@ -1866,17 +1911,17 @@ static int SDLCALL video_setWindowCenteredOnDisplay(void *arg)
                 } else {
                     SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display ID (current: %d, expected: %d)", currentDisplay, expectedDisplay);
                 }
-                if (video_driver_is_emscripten) {
-                    SDLTest_Log("Skipping window position validation: %s driver does not support window resizing", video_driver);
-                } else {
+                if (VideoSupportsWindowResizing()) {
                     SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
                     SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
-                }
-                if (video_driver_is_emscripten || video_driver_is_wayland) {
-                    SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
                 } else {
+                    SDLTest_Log("Skipping window size validation: %s driver does not support window resizing", video_driver);
+                }
+                if (VideoSupportsWindowPositioning()) {
                     SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
                     SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
+                } else {
+                    SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
                 }
 
                 /* Clean up */
@@ -2270,8 +2315,7 @@ static int SDLCALL video_getSetWindowState(void *arg)
 minimize_test:
 
     /* Minimize */
-    result = SDL_MinimizeWindow(window);
-    if (result) {
+	if (VideoSupportsWindowMinimizing() && SDL_MinimizeWindow(window)) {
         SDLTest_AssertPass("SDL_MinimizeWindow()");
         SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
 
@@ -2303,6 +2347,11 @@ static int SDLCALL video_createMinimized(void *arg)
     SDL_Window *window;
     int windowedX, windowedY;
     int windowedW, windowedH;
+
+	if (!VideoSupportsWindowMinimizing()) {
+		SDLTest_Log("Skipping creating mimized window, %s reports window minimizing as unsupported", SDL_GetCurrentVideoDriver());
+		return TEST_SKIPPED;
+	}
 
     /* Call against new test window */
     window = SDL_CreateWindow(title, 320, 200, SDL_WINDOW_MINIMIZED);

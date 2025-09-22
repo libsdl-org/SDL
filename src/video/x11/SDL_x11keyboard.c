@@ -766,6 +766,18 @@ void X11_CreateInputContext(SDL_WindowData *data)
 #endif // X_HAVE_UTF8_STRING
 }
 
+
+void X11_DestroyInputContext(SDL_WindowData *data)
+{
+#ifdef X_HAVE_UTF8_STRING
+    X11_XDestroyIC(data->ic);
+    SDL_free(data->preedit_text);
+    SDL_free(data->preedit_feedback);
+    data->preedit_text = NULL;
+    data->preedit_feedback = NULL;
+#endif
+}
+
 static void X11_ResetXIM(SDL_VideoDevice *_this, SDL_Window *window)
 {
 #ifdef X_HAVE_UTF8_STRING

@@ -88,7 +88,10 @@ Uint32 FNVHash(Uint32* buf, int length) {
  * Wraps the FNV-1a hash for an input surface's pixels
  */
 Uint32 hashSurfacePixels(SDL_Surface * surface) {
-    Uint64 buffer_size = surface->w * surface->h;
+    int buffer_size = surface->w * surface->h;
+    if (buffer_size < 0) {
+        return 0;
+    }
     return FNVHash(surface->pixels, buffer_size);
 }
 /* ================= Test Case Implementation ================== */

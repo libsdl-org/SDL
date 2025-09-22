@@ -18,37 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef SDL_uikitvideo_h_
-#define SDL_uikitvideo_h_
 
-#include "../SDL_sysvideo.h"
+#ifndef SDL_zenitymessagebox_h_
+#define SDL_zenitymessagebox_h_
 
-#ifdef __OBJC__
+extern bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID);
 
-#include <UIKit/UIKit.h>
-
-@interface SDL_UIKitVideoData : NSObject
-
-@property(nonatomic, assign) id pasteboardObserver;
-
-@property(nonatomic, assign) bool setting_clipboard;
-
-@end
-
-#ifdef SDL_PLATFORM_VISIONOS
-CGRect UIKit_ComputeViewFrame(SDL_Window *window);
-#else
-CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
-#endif
-
-#endif // __OBJC__
-
-bool UIKit_SuspendScreenSaver(SDL_VideoDevice *_this);
-
-void UIKit_ForceUpdateHomeIndicator(void);
-
-bool UIKit_IsSystemVersionAtLeast(double version);
-
-SDL_SystemTheme UIKit_GetSystemTheme(void);
-
-#endif // SDL_uikitvideo_h_
+#endif // SDL_waylandmessagebox_h_

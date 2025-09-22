@@ -1043,7 +1043,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
     // C functions we call
     public static native String nativeGetVersion();
-    public static native int nativeSetupJNI();
+    public static native void nativeSetupJNI();
     public static native void nativeInitMainThread();
     public static native void nativeCleanupMainThread();
     public static native int nativeRunMain(String library, String function, Object arguments);
@@ -1262,7 +1262,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
-    public static Context getContext() {
+    public static Activity getContext() {
         return SDL.getContext();
     }
 
@@ -2190,7 +2190,11 @@ class SDLClipboardHandler implements
     }
 
     public boolean clipboardHasText() {
-       return mClipMgr.hasPrimaryClip();
+        if (Build.VERSION.SDK_INT >= 28 /* Android 9 (P) */) {
+            return mClipMgr.hasPrimaryClip();
+        } else {
+            return mClipMgr.hasText();
+        }
     }
 
     public String clipboardGetText() {
@@ -2208,10 +2212,19 @@ class SDLClipboardHandler implements
     }
 
     public void clipboardSetText(String string) {
-       mClipMgr.removePrimaryClipChangedListener(this);
-       ClipData clip = ClipData.newPlainText(null, string);
-       mClipMgr.setPrimaryClip(clip);
-       mClipMgr.addPrimaryClipChangedListener(this);
+        mClipMgr.removePrimaryClipChangedListener(this);
+        if (string.isEmpty()) {
+            if (Build.VERSION.SDK_INT >= 28 /* Android 9 (P) */) {
+                mClipMgr.clearPrimaryClip();
+            } else {
+                ClipData clip = ClipData.newPlainText(null, "");
+                mClipMgr.setPrimaryClip(clip);
+            }
+        } else {
+            ClipData clip = ClipData.newPlainText(null, string);
+            mClipMgr.setPrimaryClip(clip);
+        }
+        mClipMgr.addPrimaryClipChangedListener(this);
     }
 
     @Override

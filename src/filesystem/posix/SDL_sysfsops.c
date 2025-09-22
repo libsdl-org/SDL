@@ -41,6 +41,42 @@
 
 bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata)
 {
+#ifdef SDL_PLATFORM_ANDROID
+    if (*path != '/') {
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
+        if (!apath) {
+            return false;
+        }
+        const bool retval = SDL_SYS_EnumerateDirectory(apath, cb, userdata);
+        SDL_free(apath);
+        if (retval) {
+            return true;
+        }
+    }
+#endif
+
+#ifdef SDL_PLATFORM_IOS
+    if (*path != '/') {
+        char *base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return false;
+        }
+
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s%s", base, path);
+        SDL_free(base);
+        if (!apath) {
+            return false;
+        }
+        const bool retval = SDL_SYS_EnumerateDirectory(apath, cb, userdata);
+        SDL_free(apath);
+        if (retval) {
+            return true;
+        }
+    }
+#endif
+
     char *pathwithsep = NULL;
     int pathwithseplen = SDL_asprintf(&pathwithsep, "%s/", path);
     if ((pathwithseplen == -1) || (!pathwithsep)) {
@@ -88,7 +124,41 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
 
 bool SDL_SYS_RemovePath(const char *path)
 {
-    int rc = remove(path);
+    int rc;
+
+#ifdef SDL_PLATFORM_ANDROID
+    if (*path == '/') {
+        rc = remove(path);
+    } else {
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
+        if (!apath) {
+            return false;
+        }
+        rc = remove(apath);
+        SDL_free(apath);
+    }
+#elif defined(SDL_PLATFORM_IOS)
+    if (*path == '/') {
+        rc = remove(path);
+    } else {
+        char *base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return false;
+        }
+
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s%s", base, path);
+        SDL_free(base);
+        if (!apath) {
+            return false;
+        }
+        rc = remove(apath);
+        SDL_free(apath);
+    }
+#else
+    rc = remove(path);
+#endif
     if (rc < 0) {
         if (errno == ENOENT) {
             // It's already gone, this is a success
@@ -101,7 +171,65 @@ bool SDL_SYS_RemovePath(const char *path)
 
 bool SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
 {
-    if (rename(oldpath, newpath) < 0) {
+    int rc;
+
+#ifdef SDL_PLATFORM_ANDROID
+    char *aoldpath = NULL;
+    char *anewpath = NULL;
+    if (*oldpath != '/') {
+        SDL_asprintf(&aoldpath, "%s/%s", SDL_GetAndroidInternalStoragePath(), oldpath);
+        if (!aoldpath) {
+            return false;
+        }
+        oldpath = aoldpath;
+    }
+    if (*newpath != '/') {
+        SDL_asprintf(&anewpath, "%s/%s", SDL_GetAndroidInternalStoragePath(), newpath);
+        if (!anewpath) {
+            SDL_free(aoldpath);
+            return false;
+        }
+        newpath = anewpath;
+    }
+    rc = rename(oldpath, newpath);
+    SDL_free(aoldpath);
+    SDL_free(anewpath);
+#elif defined(SDL_PLATFORM_IOS)
+    char *base = NULL;
+    if (*oldpath != '/' || *newpath != '/') {
+        base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return false;
+        }
+    }
+
+    char *aoldpath = NULL;
+    char *anewpath = NULL;
+    if (*oldpath != '/') {
+        SDL_asprintf(&aoldpath, "%s%s", base, oldpath);
+        if (!aoldpath) {
+            SDL_free(base);
+            return false;
+        }
+        oldpath = aoldpath;
+    }
+    if (*newpath != '/') {
+        SDL_asprintf(&anewpath, "%s%s", base, newpath);
+        if (!anewpath) {
+            SDL_free(base);
+            SDL_free(aoldpath);
+            return false;
+        }
+        newpath = anewpath;
+    }
+    rc = rename(oldpath, newpath);
+    SDL_free(base);
+    SDL_free(aoldpath);
+    SDL_free(anewpath);
+#else
+    rc = rename(oldpath, newpath);
+#endif
+    if (rc < 0) {
         return SDL_SetError("Can't rename path: %s", strerror(errno));
     }
     return true;
@@ -164,7 +292,41 @@ done:
 
 bool SDL_SYS_CreateDirectory(const char *path)
 {
-    const int rc = mkdir(path, 0770);
+    int rc;
+
+#ifdef SDL_PLATFORM_ANDROID
+    if (*path == '/') {
+        rc = mkdir(path, 0770);
+    } else {
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
+        if (!apath) {
+            return false;
+        }
+        rc = mkdir(apath, 0770);
+        SDL_free(apath);
+    }
+#elif defined(SDL_PLATFORM_IOS)
+    if (*path == '/') {
+        rc = mkdir(path, 0770);
+    } else {
+        char *base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return false;
+        }
+
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s%s", base, path);
+        SDL_free(base);
+        if (!apath) {
+            return false;
+        }
+        rc = mkdir(apath, 0770);
+        SDL_free(apath);
+    }
+#else
+    rc = mkdir(path, 0770);
+#endif
     if (rc < 0) {
         const int origerrno = errno;
         if (origerrno == EEXIST) {
@@ -181,13 +343,46 @@ bool SDL_SYS_CreateDirectory(const char *path)
 bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
 {
     struct stat statbuf;
-    const int rc = stat(path, &statbuf);
+    int rc;
+
+#ifdef SDL_PLATFORM_ANDROID
+    if (*path == '/') {
+        rc = stat(path, &statbuf);
+    } else {
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
+        if (!apath) {
+            return false;
+        }
+        rc = stat(apath, &statbuf);
+        SDL_free(apath);
+    }
     if (rc < 0) {
-        #ifdef SDL_PLATFORM_ANDROID  // Maybe it's an asset...?
         return Android_JNI_GetAssetPathInfo(path, info);
-        #else
+    }
+#elif defined(SDL_PLATFORM_IOS)
+    if (*path == '/') {
+        rc = stat(path, &statbuf);
+    } else {
+        char *base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return false;
+        }
+
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s%s", base, path);
+        SDL_free(base);
+        if (!apath) {
+            return false;
+        }
+        rc = stat(apath, &statbuf);
+        SDL_free(apath);
+    }
+#else
+    rc = stat(path, &statbuf);
+#endif
+    if (rc < 0) {
         return SDL_SetError("Can't stat: %s", strerror(errno));
-        #endif
     } else if (S_ISREG(statbuf.st_mode)) {
         info->type = SDL_PATHTYPE_FILE;
         info->size = (Uint64) statbuf.st_size;

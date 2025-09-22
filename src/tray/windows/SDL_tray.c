@@ -108,6 +108,15 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
 
+    static UINT s_taskbarRestart = 0;
+    if (s_taskbarRestart == 0) {
+        s_taskbarRestart = RegisterWindowMessage(TEXT("TaskbarCreated"));
+    }
+    if (uMsg == s_taskbarRestart) {
+        Shell_NotifyIconW(NIM_ADD, &tray->nid);
+        Shell_NotifyIconW(NIM_SETVERSION, &tray->nid);
+    }
+
     switch (uMsg) {
         case WM_TRAYICON:
             if (LOWORD(lParam) == WM_CONTEXTMENU || LOWORD(lParam) == WM_LBUTTONUP) {
@@ -213,6 +222,51 @@ void SDL_UpdateTrays(void)
 {
 }
 
+static void SDL_PropTrayCleanupCb(void *userdata, void *cls)
+{
+    WNDCLASSEX wcex;
+
+    wcex.hIcon = NULL;
+    wcex.hIconSm = NULL;
+    HINSTANCE h = GetModuleHandle(NULL);
+    if (GetClassInfoEx(h, cls, &wcex)) {
+        UnregisterClass(cls, h);
+    }
+}
+
+static bool SDL_RegisterTrayClass(LPCWSTR className)
+{
+    SDL_PropertiesID props = SDL_GetGlobalProperties();
+    if (!props) {
+        return false;
+    }
+    if (SDL_GetPointerProperty(props, SDL_PROP_TRAY_CLEANUP, NULL) != NULL) {
+        return true;
+    }
+
+    WNDCLASSEX wcex;
+
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.hCursor = NULL;
+    wcex.hIcon = NULL;
+    wcex.hIconSm = NULL;
+    wcex.lpszMenuName = NULL;
+    wcex.lpszClassName = className;
+    wcex.style = 0;
+    wcex.hbrBackground = NULL;
+    wcex.lpfnWndProc = TrayWindowProc;
+    wcex.hInstance = NULL;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+
+    if (!RegisterClassEx(&wcex)) {
+        return SDL_SetError("Couldn't register tray class");
+    }
+
+    SDL_SetPointerPropertyWithCleanup(props, SDL_PROP_TRAY_CLEANUP, (void *)wcex.lpszClassName, SDL_PropTrayCleanupCb, NULL);
+    return true;
+}
+
 SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
 {
     if (!SDL_IsMainThread()) {
@@ -227,8 +281,12 @@ SDL_Tray *SDL_CreateTray(SDL_Surface *icon, const char *tooltip)
     }
 
     tray->menu = NULL;
-    tray->hwnd = CreateWindowEx(0, TEXT("Message"), NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
-    SetWindowLongPtr(tray->hwnd, GWLP_WNDPROC, (LONG_PTR) TrayWindowProc);
+    if (!SDL_RegisterTrayClass(TEXT("SDL_TRAY"))) {
+        SDL_SetError("Failed to register SDL_TRAY window class");
+        return NULL;
+    }
+    tray->hwnd = CreateWindowEx(0, TEXT("SDL_TRAY"), NULL, WS_OVERLAPPEDWINDOW,
+                                CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, NULL, NULL);
 
     WIN_UpdateDarkModeForHWND(tray->hwnd);
 

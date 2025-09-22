@@ -1777,6 +1777,18 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SINPUT "SDL_JOYSTICK_HIDAPI_SINPUT"
 
 /**
+ * A variable controlling whether the HIDAPI driver for ZUIKI controllers
+ * should be used.
+ *
+ * This variable can be set to the following values:
+ *
+ * "0" - HIDAPI driver is not used. "1" - HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_ZUIKI "SDL_JOYSTICK_HIDAPI_ZUIKI"
+
+/**
  * A variable controlling whether the HIDAPI driver for Flydigi controllers
  * should be used.
  *
@@ -2619,7 +2631,7 @@ extern "C" {
  * the window center occur within a short time period, SDL will emulate mouse
  * warps using relative mouse mode. This can provide smoother and more
  * reliable mouse motion for some older games, which continuously calculate
- * the distance travelled by the mouse pointer and warp it back to the center
+ * the distance traveled by the mouse pointer and warp it back to the center
  * of the window, rather than using relative mouse motion.
  *
  * Note that relative mouse mode may have different mouse acceleration
@@ -3184,6 +3196,37 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_ROG_GAMEPAD_MICE_EXCLUDED "SDL_ROG_GAMEPAD_MICE_EXCLUDED"
+
+/**
+ * Variable controlling the width of the PS2's framebuffer in pixels
+ *
+ * By default, this variable is "640"
+ */
+#define SDL_HINT_PS2_GS_WIDTH    "SDL_PS2_GS_WIDTH"
+
+/**
+ * Variable controlling the height of the PS2's framebuffer in pixels
+ *
+ * By default, this variable is "448"
+ */
+#define SDL_HINT_PS2_GS_HEIGHT    "SDL_PS2_GS_HEIGHT"
+
+/**
+ * Variable controlling whether the signal is interlaced or progressive
+ *
+ * - "0": Image is interlaced. (default)
+ * - "1": Image is progressive
+ */
+#define SDL_HINT_PS2_GS_PROGRESSIVE    "SDL_PS2_GS_PROGRESSIVE"
+
+/**
+ * Variable controlling the video mode of the console
+ *
+ * - "": Console-native. (default)
+ * - "NTSC": 60hz region
+ * - "PAL": 50hz region
+ */
+#define SDL_HINT_PS2_GS_MODE    "SDL_PS2_GS_MODE"
 
 /**
  * A variable controlling which Dispmanx layer to use on a Raspberry PI.
@@ -4255,7 +4298,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.2.0.
  */
-#define SDL_HINT_WINDOWS_GAMEINPUT   "SDL_WINDOWS_GAMEINPUT"
+#define SDL_HINT_WINDOWS_GAMEINPUT "SDL_WINDOWS_GAMEINPUT"
 
 /**
  * A variable controlling whether raw keyboard events are used on Windows.
@@ -4300,7 +4343,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.2.0.
  */
-#define SDL_HINT_WINDOWS_INTRESOURCE_ICON       "SDL_WINDOWS_INTRESOURCE_ICON"
+#define SDL_HINT_WINDOWS_INTRESOURCE_ICON "SDL_WINDOWS_INTRESOURCE_ICON"
 
 /**
  * A variable to specify custom icon resource id from RC file on Windows
@@ -4603,7 +4646,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetHint(const char *name);
 
 /**
  * Get the boolean value of a hint variable.
@@ -4679,8 +4722,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AddHintCallback(const char *name, SDL_HintC
  * \sa SDL_AddHintCallback
  */
 extern SDL_DECLSPEC void SDLCALL SDL_RemoveHintCallback(const char *name,
-                                                     SDL_HintCallback callback,
-                                                     void *userdata);
+                                                        SDL_HintCallback callback,
+                                                        void *userdata);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

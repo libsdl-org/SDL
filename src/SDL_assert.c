@@ -120,10 +120,6 @@ static void SDL_GenerateAssertionReport(void)
     }
 }
 
-#ifdef __WATCOMC__
-static void SDL_AbortAssertion(void);
-#pragma aux SDL_AbortAssertion aborts;
-#endif
 static SDL_NORETURN void SDL_AbortAssertion(void)
 {
     SDL_Quit();

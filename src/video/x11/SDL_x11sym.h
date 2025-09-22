@@ -171,6 +171,7 @@ SDL_X11_SYM(char*,XResourceManagerString,(Display *display))
 SDL_X11_SYM(XrmDatabase,XrmGetStringDatabase,(char *data))
 SDL_X11_SYM(void,XrmDestroyDatabase,(XrmDatabase db))
 SDL_X11_SYM(Bool,XrmGetResource,(XrmDatabase db, char* str_name, char* str_class, char **str_type_return, XrmValue *))
+SDL_X11_SYM(int,XGetPointerMapping,(Display *a, unsigned char *b, unsigned int c))
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 SDL_X11_MODULE(XFIXES)
