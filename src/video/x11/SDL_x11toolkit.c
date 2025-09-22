@@ -377,17 +377,17 @@ static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
         window->font_struct = X11_XLoadQueryFont(window->display, font);
         SDL_free(font);
         if (!window->font_struct) {
-			if (window->iscale > 0) {
-				if (window->scale) {
-					window->iscale = (int)SDL_ceilf(window->scale);
-					window->scale = 0;
-				} else {
-					window->iscale--;
-				}
-				goto load_font_traditional;
-			} else {
-				window->font_struct = X11_XLoadQueryFont(window->display, g_ToolkitFontLatin1Fallback);
-			}
+            if (window->iscale > 0) {
+                if (window->scale) {
+                    window->iscale = (int)SDL_ceilf(window->scale);
+                    window->scale = 0;
+                } else {
+                    window->iscale--;
+                }
+                goto load_font_traditional;
+            } else {
+                window->font_struct = X11_XLoadQueryFont(window->display, g_ToolkitFontLatin1Fallback);
+            }
         }
     }
 }
