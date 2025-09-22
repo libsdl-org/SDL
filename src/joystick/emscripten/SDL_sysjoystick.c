@@ -27,6 +27,7 @@
 
 #include "SDL_sysjoystick_c.h"
 #include "../SDL_joystick_c.h"
+#include "../usb_ids.h"
 
 static SDL_joylist_item *JoystickByIndex(int index);
 
@@ -34,10 +35,60 @@ static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
+EM_JS(int, SDL_GetEmscriptenJoystickVendor, (int device_index), {
+    // Let's assume that if we're calling these function then the gamepad object definitely exists
+    let gamepad = navigator['getGamepads']()[device_index];
+
+    // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
+    let vendor_str = 'Vendor: ';
+    if (gamepad['id']['indexOf'](vendor_str) > 0) {
+        let vendor_str_index = gamepad['id']['indexOf'](vendor_str) + vendor_str['length'];
+        return parseInt(gamepad['id']['substr'](vendor_str_index, 4), 16);
+    }
+
+    // Firefox, Safari: 046d-c216-Logitech Dual Action (or 46d-c216-Logicool Dual Action)
+    let id_split = gamepad['id']['split']('-');
+    if (id_split['length'] > 1 && !isNaN(parseInt(id_split[0], 16))) {
+        return parseInt(id_split[0], 16);
+    }
+
+    return 0;
+});
+
+EM_JS(int, SDL_GetEmscriptenJoystickProduct, (int device_index), {
+    let gamepad = navigator['getGamepads']()[device_index];
+
+    // Chrome, Edge, Opera: Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
+    let product_str = 'Product: ';
+    if (gamepad['id']['indexOf'](product_str) > 0) {
+        let product_str_index = gamepad['id']['indexOf'](product_str) + product_str['length'];
+        return parseInt(gamepad['id']['substr'](product_str_index, 4), 16);
+    }
+
+    // Firefox, Safari: 046d-c216-Logitech Dual Action (or 46d-c216-Logicool Dual Action)
+    let id_split = gamepad['id']['split']('-');
+    if (id_split['length'] > 1 && !isNaN(parseInt(id_split[1], 16))) {
+        return parseInt(id_split[1], 16);
+    }
+
+    return 0;
+});
+
+EM_JS(int, SDL_IsEmscriptenJoystickXInput, (int device_index), {
+    let gamepad = navigator['getGamepads']()[device_index];
+
+    // Chrome, Edge, Opera: Xbox 360 Controller (XInput STANDARD GAMEPAD)
+    // Firefox: xinput
+    // TODO: Safari
+    return gamepad['id']['toLowerCase']()['indexOf']('xinput') >= 0;
+});
+
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item;
     int i;
+    Uint16 vendor, product;
+    bool is_xinput;
 
     SDL_LockJoysticks();
 
@@ -53,10 +104,30 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     SDL_zerop(item);
     item->index = gamepadEvent->index;
 
-    item->name = SDL_CreateJoystickName(0, 0, NULL, gamepadEvent->id);
+    vendor = SDL_GetEmscriptenJoystickVendor(gamepadEvent->index);
+    product = SDL_GetEmscriptenJoystickProduct(gamepadEvent->index);
+    is_xinput = SDL_IsEmscriptenJoystickXInput(gamepadEvent->index);
+
+    // Use a generic VID/PID representing an XInput controller
+    if (!vendor && !product && is_xinput) {
+        vendor = USB_VENDOR_MICROSOFT;
+        product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
+    }
+
+    item->name = SDL_CreateJoystickName(vendor, product, NULL, gamepadEvent->id);
     if (!item->name) {
         SDL_free(item);
         goto done;
+    }
+
+    if (vendor && product) {
+        item->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, vendor, product, 0, NULL, item->name, 0, 0);
+    } else {
+        item->guid = SDL_CreateJoystickGUIDForName(item->name);
+    }
+
+    if (is_xinput) {
+        item->guid.data[14] = 'x'; // See SDL_IsJoystickXInput
     }
 
     item->mapping = SDL_strdup(gamepadEvent->mapping);
@@ -491,9 +562,7 @@ static void EMSCRIPTEN_JoystickClose(SDL_Joystick *joystick)
 
 static SDL_GUID EMSCRIPTEN_JoystickGetDeviceGUID(int device_index)
 {
-    // the GUID is just the name for now
-    const char *name = EMSCRIPTEN_JoystickGetDeviceName(device_index);
-    return SDL_CreateJoystickGUIDForName(name);
+    return JoystickByDeviceIndex(device_index)->guid;
 }
 
 static bool EMSCRIPTEN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
