@@ -23,7 +23,7 @@
     void clipboardSetText(java.lang.String);
     int createCustomCursor(int[], int, int, int, int);
     void destroyCustomCursor(int);
-    android.content.Context getContext();
+    android.app.Activity getContext();
     boolean getManifestEnvironmentVariables();
     android.view.Surface getNativeSurface();
     void initTouch();
