@@ -110,6 +110,8 @@ static const char *g_IconFont = "-*-*-bold-r-normal-*-%d-*-*-*-*-*-iso8859-1[33 
 /* General UI font */
 static const char g_ToolkitFontLatin1[] =
     "-*-*-medium-r-normal--0-%d-*-*-p-0-iso8859-1";
+static const char g_ToolkitFontLatin1Fallback[] =
+    "-*-*-*-*-*--*-*-*-*-*-*-iso8859-1";    
 static const char *g_ToolkitFont[] = {
     "-*-*-medium-r-normal--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
     "-*-*-medium-r-*--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
@@ -375,13 +377,17 @@ static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
         window->font_struct = X11_XLoadQueryFont(window->display, font);
         SDL_free(font);
         if (!window->font_struct) {
-            if (window->scale && window->iscale > 0) {
-                window->iscale = (int)SDL_ceilf(window->scale);
-                window->scale = 0;
-            } else {
-                window->iscale--;
-            }
-            goto load_font_traditional;
+			if (window->iscale > 0) {
+				if (window->scale) {
+					window->iscale = (int)SDL_ceilf(window->scale);
+					window->scale = 0;
+				} else {
+					window->iscale--;
+				}
+				goto load_font_traditional;
+			} else {
+				window->font_struct = X11_XLoadQueryFont(window->display, g_ToolkitFontLatin1Fallback);
+			}
         }
     }
 }
