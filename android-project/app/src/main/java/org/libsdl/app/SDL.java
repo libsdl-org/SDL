@@ -28,12 +28,12 @@ public class SDL {
     }
 
     // This function stores the current activity (SDL or not)
-    static public void setContext(Context context) {
+    static public void setContext(SDLActivity context) {
         SDLAudioManager.setContext(context);
         mContext = context;
     }
 
-    static public Context getContext() {
+    static public SDLActivity getContext() {
         return mContext;
     }
 
@@ -86,5 +86,5 @@ public class SDL {
         }
     }
 
-    protected static Context mContext;
+    protected static SDLActivity mContext;
 }
