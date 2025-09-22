@@ -191,7 +191,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystic
 /**
  * Unlocking for atomic access to the joystick API.
  *
- * \threadsafety This should be called from the same thread that called SDL_LockJoysticks().
+ * \threadsafety This should be called from the same thread that called
+ *               SDL_LockJoysticks().
  *
  * \since This function is available since SDL 3.2.0.
  */
