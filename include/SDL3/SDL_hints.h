@@ -3922,6 +3922,28 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR "SDL_VIDEO_X11_XRANDR"
 
 /**
+ * A variable for disabling Unicode font support in the X11 toolkit.
+ * 
+ * This hint should be set before creating a messagebox. 
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_VIDEO_X11_TOOLKIT_FONT_USE_LATIN "SDL_VIDEO_X11_TOOLKIT_FONT_USE_LATIN"
+
+/**
+ * A variable forcing the font for the X11 toolkit.
+ * 
+ * Please note, the toolkit uses font metrics for calculating the size of UI elements.
+ * 
+ * Using this hint will cause Unicode font support to be disabled.
+ * 
+ * This hint should be set before creating a messagebox. 
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_VIDEO_X11_TOOLKIT_FONT "SDL_VIDEO_X11_TOOLKIT_FONT"
+
+/**
  * A variable controlling whether touch should be enabled on the back panel of
  * the PlayStation Vita.
  *
