@@ -56,6 +56,27 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
     }
 #endif
 
+#ifdef SDL_PLATFORM_IOS
+    if (*path != '/') {
+        char *base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return false;
+        }
+
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s%s", base, path);
+        SDL_free(base);
+        if (!apath) {
+            return false;
+        }
+        const bool retval = SDL_SYS_EnumerateDirectory(apath, cb, userdata);
+        SDL_free(apath);
+        if (retval) {
+            return true;
+        }
+    }
+#endif
+
     char *pathwithsep = NULL;
     int pathwithseplen = SDL_asprintf(&pathwithsep, "%s/", path);
     if ((pathwithseplen == -1) || (!pathwithsep)) {
@@ -117,6 +138,24 @@ bool SDL_SYS_RemovePath(const char *path)
         rc = remove(apath);
         SDL_free(apath);
     }
+#elif defined(SDL_PLATFORM_IOS)
+    if (*path == '/') {
+        rc = remove(path);
+    } else {
+        char *base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return false;
+        }
+
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s%s", base, path);
+        SDL_free(base);
+        if (!apath) {
+            return false;
+        }
+        rc = remove(apath);
+        SDL_free(apath);
+    }
 #else
     rc = remove(path);
 #endif
@@ -153,6 +192,38 @@ bool SDL_SYS_RenamePath(const char *oldpath, const char *newpath)
         newpath = anewpath;
     }
     rc = rename(oldpath, newpath);
+    SDL_free(aoldpath);
+    SDL_free(anewpath);
+#elif defined(SDL_PLATFORM_IOS)
+    char *base = NULL;
+    if (*oldpath != '/' || *newpath != '/') {
+        base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return false;
+        }
+    }
+
+    char *aoldpath = NULL;
+    char *anewpath = NULL;
+    if (*oldpath != '/') {
+        SDL_asprintf(&aoldpath, "%s%s", base, oldpath);
+        if (!aoldpath) {
+            SDL_free(base);
+            return false;
+        }
+        oldpath = aoldpath;
+    }
+    if (*newpath != '/') {
+        SDL_asprintf(&anewpath, "%s%s", base, newpath);
+        if (!anewpath) {
+            SDL_free(base);
+            SDL_free(aoldpath);
+            return false;
+        }
+        newpath = anewpath;
+    }
+    rc = rename(oldpath, newpath);
+    SDL_free(base);
     SDL_free(aoldpath);
     SDL_free(anewpath);
 #else
@@ -235,6 +306,24 @@ bool SDL_SYS_CreateDirectory(const char *path)
         rc = mkdir(apath, 0770);
         SDL_free(apath);
     }
+#elif defined(SDL_PLATFORM_IOS)
+    if (*path == '/') {
+        rc = mkdir(path, 0770);
+    } else {
+        char *base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return false;
+        }
+
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s%s", base, path);
+        SDL_free(base);
+        if (!apath) {
+            return false;
+        }
+        rc = mkdir(apath, 0770);
+        SDL_free(apath);
+    }
 #else
     rc = mkdir(path, 0770);
 #endif
@@ -270,6 +359,24 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     }
     if (rc < 0) {
         return Android_JNI_GetAssetPathInfo(path, info);
+    }
+#elif defined(SDL_PLATFORM_IOS)
+    if (*path == '/') {
+        rc = stat(path, &statbuf);
+    } else {
+        char *base = SDL_GetPrefPath("", "");
+        if (!base) {
+            return false;
+        }
+
+        char *apath = NULL;
+        SDL_asprintf(&apath, "%s%s", base, path);
+        SDL_free(base);
+        if (!apath) {
+            return false;
+        }
+        rc = stat(apath, &statbuf);
+        SDL_free(apath);
     }
 #else
     rc = stat(path, &statbuf);
