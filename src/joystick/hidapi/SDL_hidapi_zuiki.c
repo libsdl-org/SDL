@@ -39,23 +39,6 @@ typedef struct
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverZUIKI_Context;
 
-#pragma pack(push, 1)
-
-typedef struct
-{
-    // Accelerometer values
-    short sAccelX;
-    short sAccelY;
-    short sAccelZ;
-
-    // Gyroscope values
-    short sGyroX;
-    short sGyroY;
-    short sGyroZ;
-} ABITDO_SENSORS;
-
-#pragma pack(pop)
-
 static void HIDAPI_DriverZUIKI_RegisterHints(SDL_HintCallback callback, void *userdata)
 {
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_ZUIKI, callback, userdata);
