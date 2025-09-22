@@ -2227,7 +2227,7 @@ bool Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *b
     mid = (*env)->GetMethodID(env, clazz,
                               "messageboxShowMessageBox", "(ILjava/lang/String;Ljava/lang/String;[I[I[Ljava/lang/String;[I)I");
     *buttonID = (*env)->CallIntMethod(env, context, mid,
-                                      messageboxdata->flags,
+                                      (jint)messageboxdata->flags,
                                       title,
                                       message,
                                       button_flags,
