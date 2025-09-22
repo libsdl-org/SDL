@@ -342,6 +342,7 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
 
 void X11_QuitXinput2(SDL_VideoDevice *_this)
 {
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_free(xinput2_pointer_button_map);
     xinput2_pointer_button_map = NULL;
     xinput2_pointer_button_map_size = 0;
@@ -353,6 +354,7 @@ void X11_QuitXinput2(SDL_VideoDevice *_this)
     SDL_free(scrollable_devices);
     scrollable_devices = NULL;
     scrollable_device_count = 0;
+#endif
 #endif
 }
 
