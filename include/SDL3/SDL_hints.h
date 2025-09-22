@@ -2619,7 +2619,7 @@ extern "C" {
  * the window center occur within a short time period, SDL will emulate mouse
  * warps using relative mouse mode. This can provide smoother and more
  * reliable mouse motion for some older games, which continuously calculate
- * the distance travelled by the mouse pointer and warp it back to the center
+ * the distance traveled by the mouse pointer and warp it back to the center
  * of the window, rather than using relative mouse motion.
  *
  * Note that relative mouse mode may have different mouse acceleration
