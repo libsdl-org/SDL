@@ -1400,14 +1400,19 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
             X11_ReconcileKeyboardState(_this);
         } else if (xevent->type == MappingNotify) {
-            if (!videodata->keyboard.xkb_enabled) {
-                // Has the keyboard layout changed?
-                const int request = xevent->xmapping.request;
+            const int request = xevent->xmapping.request;
 
+            if (request == MappingPointer) {
 #ifdef DEBUG_XEVENTS
                 SDL_Log("window 0x%lx: MappingNotify!", xevent->xany.window);
 #endif
-                if ((request == MappingKeyboard) || (request == MappingModifier)) {
+                X11_Xinput2UpdatePointerMapping(_this);
+            } else if (!videodata->keyboard.xkb_enabled) {
+                // Has the keyboard layout changed?
+#ifdef DEBUG_XEVENTS
+                SDL_Log("window 0x%lx: MappingNotify!", xevent->xany.window);
+#endif
+                if (request == MappingKeyboard || request == MappingModifier) {
                     X11_XRefreshKeyboardMapping(&xevent->xmapping);
                 }
 
