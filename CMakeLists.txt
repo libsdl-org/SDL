@@ -2605,6 +2605,7 @@ elseif(APPLE)
       set(SDL_FRAMEWORK_UIKIT 1)
       set(SDL_IPHONE_KEYBOARD 1)
       set(SDL_IPHONE_LAUNCHSCREEN 1)
+      set(SDL_FRAMEWORK_GAMECONTROLLER 1)
       sdl_glob_sources(
         "${SDL3_SOURCE_DIR}/src/video/uikit/*.m"
         "${SDL3_SOURCE_DIR}/src/video/uikit/*.h"
