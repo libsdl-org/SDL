@@ -266,7 +266,7 @@ static bool SDL_RegisterTrayClass(LPCWSTR className)
         return SDL_SetError("Couldn't register tray class");
     }
 
-    SDL_SetPointerPropertyWithCleanup(props, SDL_PROP_TRAY_CLEANUP, (void*)wcex.lpszClassName, SDL_PropTrayCleanupCb, NULL);
+    SDL_SetPointerPropertyWithCleanup(props, SDL_PROP_TRAY_CLEANUP, (void *)wcex.lpszClassName, SDL_PropTrayCleanupCb, NULL);
     return true;
 }
 
