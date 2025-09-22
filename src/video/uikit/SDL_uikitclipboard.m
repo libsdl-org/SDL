@@ -38,7 +38,7 @@ bool UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text)
         if (text && *text) {
             [UIPasteboard generalPasteboard].string = @(text);
         } else {
-            [UIPasteboard generalPasteboard].items = nil;
+            [UIPasteboard generalPasteboard].string = nil;
         }
         data.setting_clipboard = false;
         return true;
