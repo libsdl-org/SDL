@@ -26,7 +26,7 @@
 
 /* TEXT RENDERING */
 typedef struct SDL_WaylandTextRenderer {
-	SDL_Surface *(*render)(struct SDL_WaylandTextRenderer *renderer, Uint32 *utf32, int sz);
+	SDL_Surface *(*render)(struct SDL_WaylandTextRenderer *renderer, Uint32 *utf32, int sz, SDL_Color *bg_fill);
     void (*set_color)(struct SDL_WaylandTextRenderer *renderer, SDL_Color *color);
     void (*set_pt_sz)(struct SDL_WaylandTextRenderer *renderer, int pt_sz);
 	void (*free)(struct SDL_WaylandTextRenderer *renderer);
@@ -35,7 +35,7 @@ typedef struct SDL_WaylandTextRenderer {
 extern SDL_WaylandTextRenderer *WaylandToolkit_CreateTextRenderer();
 extern void WaylandToolkit_SetTextRendererSize(SDL_WaylandTextRenderer *renderer, int pt_sz);
 extern void WaylandToolkit_SetTextRendererColor(SDL_WaylandTextRenderer *renderer, SDL_Color *color);
-extern SDL_Surface *WaylandToolkit_RenderText(SDL_WaylandTextRenderer *renderer, char *utf8);
+extern SDL_Surface *WaylandToolkit_RenderText(SDL_WaylandTextRenderer *renderer, char *utf8, SDL_Color *bg_fill);
 extern void WaylandToolkit_FreeTextRenderer(SDL_WaylandTextRenderer *renderer);
 
 #endif // SDL_VIDEO_DRIVER_WAYLAND

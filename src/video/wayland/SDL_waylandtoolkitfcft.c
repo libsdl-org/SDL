@@ -26,7 +26,7 @@
 #include "SDL_waylandtoolkitfcft.h"
 #include <fcft/fcft.h>
 
-#define SDL_WAYLAND_TOOLKIT_FCFT_FINI
+/* #define SDL_WAYLAND_TOOLKIT_FCFT_FINI */
 #define SDL_WAYLAND_TOOLKIT_FCFT_DEBUG
 
 /* fcft symbols */
@@ -141,7 +141,7 @@ static void WaylandToolkit_FreeTextRendererFcft(SDL_WaylandTextRenderer *rendere
 	SDL_free(renderer_fcft);
 }
 
-static SDL_Surface *WaylandToolkit_RenderTextFcft(SDL_WaylandTextRenderer *renderer, Uint32 *utf32, int sz) {
+static SDL_Surface *WaylandToolkit_RenderTextFcft(SDL_WaylandTextRenderer *renderer, Uint32 *utf32, int sz, SDL_Color *bg_fill) {
 	SDL_Surface *complete_surface;
 	pixman_image_t *complete_surface_pixman;
 	struct SDL_WaylandTextRendererFcft *renderer_fcft;
@@ -179,13 +179,26 @@ static SDL_Surface *WaylandToolkit_RenderTextFcft(SDL_WaylandTextRenderer *rende
 				rct.w += x_kern;
 			}
 
-			rct.w += glyph->advance.x + glyph->x;
+			rct.w += glyph->advance.x;
 			rct.h = SDL_max(rct.h, (renderer_fcft->cfont->ascent - glyph->y + glyph->height));
 		}
 
 		complete_surface = SDL_CreateSurface(rct.w, rct.h, SDL_PIXELFORMAT_ARGB8888);
 		complete_surface_pixman = renderer_fcft->pixman_image_create_bits_no_clear(PIXMAN_a8r8g8b8, rct.w, rct.h, complete_surface->pixels, complete_surface->pitch);
+		
+		if (bg_fill) {
+			pixman_image_t *bg_fill_img;
+			pixman_color_t bg_pcolor;
 
+			bg_pcolor.red = bg_fill->r * 257;
+			bg_pcolor.green = bg_fill->g * 257;
+			bg_pcolor.blue = bg_fill->b * 257;
+			bg_pcolor.alpha = bg_fill->a * 257;
+			bg_fill_img = renderer_fcft->pixman_image_create_solid_fill(&bg_pcolor);
+			renderer_fcft->pixman_image_composite32(PIXMAN_OP_OVER, bg_fill_img, NULL, complete_surface_pixman, 0, 0, 0, 0, 0, 0, rct.w, rct.h);
+			renderer_fcft->pixman_image_unref(bg_fill_img);
+		}
+	
 		for (i = 0; i < sz; i++) {
 			const struct fcft_glyph *glyph;
 

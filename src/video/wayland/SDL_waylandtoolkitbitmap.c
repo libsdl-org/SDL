@@ -52,14 +52,15 @@ void WaylandToolkit_FreeTextRendererBitmap(SDL_WaylandTextRenderer *renderer) {
 	SDL_free(renderer_bmp);
 }
 
-static SDL_Surface *WaylandToolkit_RenderTextBitmap(SDL_WaylandTextRenderer *renderer, Uint32 *utf32, int sz) {
+static SDL_Surface *WaylandToolkit_RenderTextBitmap(SDL_WaylandTextRenderer *renderer, Uint32 *utf32, int sz, SDL_Color *bg_fill) {
 	SDL_WaylandTextRendererBitmap *renderer_bmp;
 	SDL_Surface *complete_surface;
 	SDL_Rect rct;
 	SDL_ScaleMode mode;
 	int i;
 	int csz;
-
+	#define COMPLETE_SURFACE_FORMAT SDL_PIXELFORMAT_ARGB8888
+	
 	/* Get renderer */
 	renderer_bmp = (SDL_WaylandTextRendererBitmap *)renderer;		
 	
@@ -74,10 +75,22 @@ static SDL_Surface *WaylandToolkit_RenderTextBitmap(SDL_WaylandTextRenderer *ren
 	}
 	
 	/* Create surface for rendering */
-	complete_surface = SDL_CreateSurface(csz, renderer_bmp->px_sz, SDL_PIXELFORMAT_ARGB8888);
+	complete_surface = SDL_CreateSurface(csz, renderer_bmp->px_sz, COMPLETE_SURFACE_FORMAT);
 	if (!complete_surface) {
 		return NULL;
 	}	
+	
+	/* Background fill */
+	if (bg_fill) {
+		SDL_Rect rect;
+		Uint32 color;
+		
+		rect.x = rect.y = 0;
+		rect.w = csz;
+		rect.h = renderer_bmp->px_sz;
+		color = SDL_MapRGBA(SDL_GetPixelFormatDetails(COMPLETE_SURFACE_FORMAT), NULL, bg_fill->r, bg_fill->g, bg_fill->b, bg_fill->a);
+		SDL_FillSurfaceRect(complete_surface, &rect, color);
+	}
 	
 	/* Set scaling mode */
 	if (renderer_bmp->px_sz <= 8) {
@@ -90,16 +103,18 @@ static SDL_Surface *WaylandToolkit_RenderTextBitmap(SDL_WaylandTextRenderer *ren
 	for (i = 0; i < sz; i++) {
 		SDL_Surface *char_surface;
 
-		if (SDL_FindInHashTable(renderer_bmp->map, (const void *)(uintptr_t)(utf32[i]), (const void **)&char_surface)) {
-			if (renderer_bmp->px_sz == 8) {
-				SDL_BlitSurface(char_surface, NULL, complete_surface, &rct);
-			} else {
-				rct.w = renderer_bmp->px_sz;
-				rct.h = renderer_bmp->px_sz;
-				SDL_BlitSurfaceScaled(char_surface, NULL, complete_surface, &rct, mode);
-			}
-			rct.x += renderer_bmp->px_sz;
+		if (!SDL_FindInHashTable(renderer_bmp->map, (const void *)(uintptr_t)(utf32[i]), (const void **)&char_surface)) {
+			SDL_FindInHashTable(renderer_bmp->map, (const void *)(uintptr_t)('?'), (const void **)&char_surface);
 		}
+		
+		if (renderer_bmp->px_sz == 8) {	
+			SDL_BlitSurface(char_surface, NULL, complete_surface, &rct);
+		} else {
+			rct.w = renderer_bmp->px_sz;
+			rct.h = renderer_bmp->px_sz;
+			SDL_BlitSurfaceScaled(char_surface, NULL, complete_surface, &rct, mode);
+		}
+		rct.x += renderer_bmp->px_sz;
 	}
 	
 	return complete_surface;

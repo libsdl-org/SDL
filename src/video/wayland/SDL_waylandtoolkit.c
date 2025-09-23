@@ -61,20 +61,7 @@ extern SDL_WaylandTextRenderer *WaylandToolkit_CreateTextRenderer() {
 	}
 }
 
-/* For debugging */
-void rand_str(char *dest, size_t length) {
-    char charset[] = "0123456789"
-                     "abcdefghijklmnopqrstuvwxyz"
-                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-    while (length-- > 0) {
-        size_t index = (double) rand() / RAND_MAX * (sizeof charset - 1);
-        *dest++ = charset[index];
-    }
-    *dest = '\0';
-}
-
-SDL_Surface *WaylandToolkit_RenderText(SDL_WaylandTextRenderer *renderer, char *utf8) {
+SDL_Surface *WaylandToolkit_RenderText(SDL_WaylandTextRenderer *renderer, char *utf8, SDL_Color *bg_fill) {
 	if (renderer) {
 		SDL_Surface **surfaces;
 		SDL_Surface *ret;
@@ -88,6 +75,7 @@ SDL_Surface *WaylandToolkit_RenderText(SDL_WaylandTextRenderer *renderer, char *
 		int i;
 		SDL_Rect rct;
 		
+		surfaces = NULL;
 		max_surface_width = 0;
 		surfaces_count = 0;
 		total_surface_height = 0;
@@ -102,8 +90,8 @@ SDL_Surface *WaylandToolkit_RenderText(SDL_WaylandTextRenderer *renderer, char *
 		SDL_strlcpy(utf8t, utf8, utf8t_sz);
 		SDL_strlcat(utf8t, "\n", utf8t_sz);
 		start = end = utf8t;
-	
-		while (end = SDL_strpbrk(start, "\n\r\f\v")) {
+
+		while ((end = SDL_strpbrk(start, "\n\r\f\v"))) {
 			Uint32 *utf32;
 			char *utf8ta;
 			size_t sz;
@@ -122,7 +110,7 @@ SDL_Surface *WaylandToolkit_RenderText(SDL_WaylandTextRenderer *renderer, char *
 			for (ci = 0; ci < sz; ci++) {
 				utf32[ci] = SDL_Swap32BE(utf32[ci]);
 			}
-			surfaces[i] = renderer->render(renderer, utf32, sz);
+			surfaces[i] = renderer->render(renderer, utf32, sz, bg_fill);
 			max_surface_width = SDL_max(max_surface_width, surfaces[i]->w);
 			total_surface_height += surfaces[i]->h;
 			SDL_free(utf32);
@@ -137,12 +125,8 @@ SDL_Surface *WaylandToolkit_RenderText(SDL_WaylandTextRenderer *renderer, char *
 			rct.y += surfaces[i]->h;
 			SDL_DestroySurface(surfaces[i]);
 		}
-		
-		/* debug */
-		char a[6];
-		rand_str(a, 6);
-		SDL_SaveBMP(ret, a);
 		SDL_free(utf8t);
+		
 		return ret;
 	} else {
 		return NULL;
