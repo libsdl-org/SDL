@@ -1233,8 +1233,13 @@ void X11_SetWindowMinMax(SDL_Window *window, bool use_current)
     } else {
         // Set the min/max to the same values to make the window non-resizable
         sizehints->flags |= PMinSize | PMaxSize;
-        sizehints->min_width = sizehints->max_width = use_current ? data->window->floating.w : window->windowed.w;
-        sizehints->min_height = sizehints->max_height = use_current ? data->window->floating.h : window->windowed.h;
+        if (use_current) {
+            sizehints->min_width = sizehints->max_width = window->last_size_pending ? window->pending.w : data->window->floating.w;
+            sizehints->min_height = sizehints->max_height = window->last_size_pending ? window->pending.h : data->window->floating.h;
+        } else {
+            sizehints->min_width = sizehints->max_width = window->last_size_pending ? window->pending.w : data->window->windowed.w;
+            sizehints->min_height = sizehints->max_height = window->last_size_pending ? window->pending.h : data->window->windowed.h;
+        }
     }
 
     X11_XSetWMNormalHints(display, data->xwindow, sizehints);
