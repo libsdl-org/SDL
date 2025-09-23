@@ -44,19 +44,20 @@
 {
     static NSCursor *invisibleCursor = NULL;
     if (!invisibleCursor) {
-        // RAW 16x16 transparent GIF
-        static unsigned char cursorBytes[] = {
-            0x47, 0x49, 0x46, 0x38, 0x37, 0x61, 0x10, 0x00, 0x10, 0x00, 0x80,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x21, 0xF9, 0x04,
-            0x01, 0x00, 0x00, 0x01, 0x00, 0x2C, 0x00, 0x00, 0x00, 0x00, 0x10,
-            0x00, 0x10, 0x00, 0x00, 0x02, 0x0E, 0x8C, 0x8F, 0xA9, 0xCB, 0xED,
-            0x0F, 0xA3, 0x9C, 0xB4, 0xDA, 0x8B, 0xB3, 0x3E, 0x05, 0x00, 0x3B
-        };
+        const int size = 32;
+        NSImage *cursorImage = [[NSImage alloc] initWithSize:NSMakeSize(size, size)];
+        NSBitmapImageRep *imgrep = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
+                                                                           pixelsWide:size
+                                                                           pixelsHigh:size
+                                                                        bitsPerSample:8
+                                                                      samplesPerPixel:4
+                                                                             hasAlpha:YES
+                                                                             isPlanar:NO
+                                                                       colorSpaceName:NSDeviceRGBColorSpace
+                                                                          bytesPerRow:(size * 4)
+                                                                         bitsPerPixel:32];
+        [cursorImage addRepresentation:imgrep];
 
-        NSData *cursorData = [NSData dataWithBytesNoCopy:&cursorBytes[0]
-                                                  length:sizeof(cursorBytes)
-                                            freeWhenDone:NO];
-        NSImage *cursorImage = [[NSImage alloc] initWithData:cursorData];
         invisibleCursor = [[NSCursor alloc] initWithImage:cursorImage
                                                   hotSpot:NSZeroPoint];
     }
