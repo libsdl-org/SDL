@@ -37,6 +37,8 @@ typedef void (*SDL_WaylandFcftDestroy)(struct fcft_font *);
 typedef enum fcft_capabilities (*SDL_WaylandFcftCaps)(void);
 typedef bool (*SDL_WaylandFcftKern)(struct fcft_font *, uint32_t, uint32_t, long *restrict, long *restrict);
 typedef struct fcft_glyph *(*SDL_WaylandFcftRastChr)(struct fcft_font *, uint32_t, enum fcft_subpixel);
+typedef struct fcft_text_run  *(*SDL_WaylandFcftRastRun)(struct fcft_font *, size_t len, const uint32_t text[static len], enum fcft_subpixel);
+typedef void (*SDL_WaylandFcftDestroyRun)(struct fcft_text_run *);
 
 /* pixman symbols */
 typedef pixman_bool_t (*SDL_WaylandFcftPixmanImgUnref)(pixman_image_t *);
@@ -61,7 +63,9 @@ struct SDL_WaylandTextRendererFcft {
     SDL_WaylandFcftCaps fcft_capabilities;
     SDL_WaylandFcftKern fcft_kerning;
     SDL_WaylandFcftRastChr fcft_rasterize_char_utf32;
-
+    SDL_WaylandFcftRastRun fcft_rasterize_text_run_utf32;
+	SDL_WaylandFcftDestroyRun fcft_text_run_destroy;
+	
 	/* pixman functions */
     SDL_WaylandFcftPixmanImgUnref pixman_image_unref;
     SDL_WaylandFcftPixmanImgColFill pixman_image_create_solid_fill;
@@ -157,12 +161,73 @@ static SDL_Surface *WaylandToolkit_RenderTextFcft(SDL_WaylandTextRenderer *rende
 	rct.h = 0;
 	rct.w = 0;
 
-	/*if (caps & FCFT_CAPABILITY_TEXT_RUN_SHAPING) {
+	/* TODO: FCFT_CAPABILITY_GRAPHEME_SHAPING */
+	if (caps & FCFT_CAPABILITY_TEXT_RUN_SHAPING) {
+		struct fcft_text_run *run;
 		
-	} else if (caps & FCFT_CAPABILITY_GRAPHEME_SHAPING) {
+		run = renderer_fcft->fcft_rasterize_text_run_utf32(renderer_fcft->cfont, sz, utf32, FCFT_SUBPIXEL_DEFAULT);
 		
-	} else */
-	{
+		/* Calculate extents */
+		for (i = 0; i < run->count; i++) {
+			const struct fcft_glyph *glyph;
+
+			glyph = run->glyphs[i];
+			
+			if (i > 0) {
+				long x_kern;
+
+				x_kern = 0;
+				renderer_fcft->fcft_kerning(renderer_fcft->cfont, utf32[i - 1], utf32[i], &x_kern, NULL);
+				rct.w += x_kern;
+			}
+
+			rct.w += glyph->advance.x;
+			rct.h = SDL_max(rct.h, (renderer_fcft->cfont->ascent - glyph->y + glyph->height));
+		}	
+
+		/* Create target surface */
+		complete_surface = SDL_CreateSurface(rct.w, rct.h, SDL_PIXELFORMAT_ARGB8888);
+		complete_surface_pixman = renderer_fcft->pixman_image_create_bits_no_clear(PIXMAN_a8r8g8b8, rct.w, rct.h, complete_surface->pixels, complete_surface->pitch);
+		
+		/* Background fill */
+		if (bg_fill) {
+			pixman_image_t *bg_fill_img;
+			pixman_color_t bg_pcolor;
+
+			bg_pcolor.red = bg_fill->r * 257;
+			bg_pcolor.green = bg_fill->g * 257;
+			bg_pcolor.blue = bg_fill->b * 257;
+			bg_pcolor.alpha = bg_fill->a * 257;
+			bg_fill_img = renderer_fcft->pixman_image_create_solid_fill(&bg_pcolor);
+			renderer_fcft->pixman_image_composite32(PIXMAN_OP_OVER, bg_fill_img, NULL, complete_surface_pixman, 0, 0, 0, 0, 0, 0, rct.w, rct.h);
+			renderer_fcft->pixman_image_unref(bg_fill_img);
+		}
+	
+		/* Blit glyphs on to target */
+		for (i = 0; i < run->count; i++) {
+			const struct fcft_glyph *glyph;
+
+			glyph = run->glyphs[i];
+
+			if (i > 0) {
+				long x_kern;
+
+				x_kern = 0;
+				renderer_fcft->fcft_kerning(renderer_fcft->cfont, utf32[i - 1], utf32[i], &x_kern, NULL);
+				rct.x += x_kern;
+			}
+
+			if (renderer_fcft->pixman_image_get_format(glyph->pix) == PIXMAN_a8r8g8b8) {
+				renderer_fcft->pixman_image_composite32(PIXMAN_OP_OVER, glyph->pix, NULL, complete_surface_pixman, 0, 0, 0, 0,  rct.x + glyph->x, renderer_fcft->cfont->ascent - glyph->y, glyph->width, glyph->height);
+			} else {
+				renderer_fcft->pixman_image_composite32(PIXMAN_OP_OVER, renderer_fcft->color_fill, glyph->pix, complete_surface_pixman, 0, 0, 0, 0, rct.x + glyph->x, renderer_fcft->cfont->ascent - glyph->y, glyph->width, glyph->height);
+			}
+
+			rct.x += glyph->advance.x;
+		}
+		
+		renderer_fcft->fcft_text_run_destroy(run);
+	} else {
 		for (i = 0; i < sz; i++) {
 			const struct fcft_glyph *glyph;
 
@@ -257,6 +322,8 @@ SDL_WaylandTextRenderer *WaylandToolkit_CreateTextRendererFcft() {
 	SDL_WAYLAND_TOOLKIT_FCFT_LOAD_SYM(renderer->fcft_capabilities, "fcft_capabilities", SDL_WaylandFcftCaps);
 	SDL_WAYLAND_TOOLKIT_FCFT_LOAD_SYM(renderer->fcft_kerning, "fcft_kerning", SDL_WaylandFcftKern);
 	SDL_WAYLAND_TOOLKIT_FCFT_LOAD_SYM(renderer->fcft_rasterize_char_utf32, "fcft_rasterize_char_utf32", SDL_WaylandFcftRastChr);
+	SDL_WAYLAND_TOOLKIT_FCFT_LOAD_SYM(renderer->fcft_rasterize_text_run_utf32, "fcft_rasterize_text_run_utf32", SDL_WaylandFcftRastRun);
+	SDL_WAYLAND_TOOLKIT_FCFT_LOAD_SYM(renderer->fcft_text_run_destroy, "fcft_text_run_destroy", SDL_WaylandFcftDestroyRun);
 
 	SDL_WAYLAND_TOOLKIT_FCFT_LOAD_SYM(renderer->pixman_image_get_format, "pixman_image_get_format", SDL_WaylandFcftPixmanImgGetFmt);
 	SDL_WAYLAND_TOOLKIT_FCFT_LOAD_SYM(renderer->pixman_image_create_bits_no_clear, "pixman_image_create_bits_no_clear", SDL_WaylandFcftPixmanImgCreate);
@@ -272,6 +339,8 @@ SDL_WaylandTextRenderer *WaylandToolkit_CreateTextRendererFcft() {
 	renderer->fcft_capabilities = fcft_capabilities;	
 	renderer->fcft_rasterize_char_utf32 = fcft_rasterize_char_utf32;
 	renderer->fcft_kerning = fcft_kerning;
+	renderer->fcft_rasterize_text_run_utf32 = fcft_rasterize_text_run_utf32;
+	renderer->fcft_text_run_destroy = fcft_text_run_destroy;
 
 	renderer->pixman_image_create_bits_no_clear = pixman_image_create_bits_no_clear;
 	renderer->pixman_image_unref = pixman_image_unref;	

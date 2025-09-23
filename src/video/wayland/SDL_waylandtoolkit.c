@@ -61,6 +61,19 @@ extern SDL_WaylandTextRenderer *WaylandToolkit_CreateTextRenderer() {
 	}
 }
 
+/* For debugging */
+void rand_str(char *dest, size_t length) {
+    char charset[] = "0123456789"
+                     "abcdefghijklmnopqrstuvwxyz"
+                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    while (length-- > 0) {
+        size_t index = (size_t)((double) rand() / RAND_MAX * (sizeof charset - 1));
+        *dest++ = charset[index];
+    }
+    *dest = '\0';
+}
+
 SDL_Surface *WaylandToolkit_RenderText(SDL_WaylandTextRenderer *renderer, char *utf8, SDL_Color *bg_fill) {
 	if (renderer) {
 		SDL_Surface **surfaces;
@@ -125,8 +138,15 @@ SDL_Surface *WaylandToolkit_RenderText(SDL_WaylandTextRenderer *renderer, char *
 			rct.y += surfaces[i]->h;
 			SDL_DestroySurface(surfaces[i]);
 		}
-		SDL_free(utf8t);
 		
+		/* debug */
+		char a[256];
+		strcpy(a, "tkdbg_");
+		rand_str(a+6, 6);
+		strcpy(a+11, ".bmp");
+		a[15] = '\0';
+		SDL_SaveBMP(ret, a);
+		SDL_free(utf8t);
 		return ret;
 	} else {
 		return NULL;
