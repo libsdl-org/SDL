@@ -120,8 +120,6 @@ bool DBUS_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window *window)
 
     const char *progress_visible_str = "progress-visible";
     const char *progress_str = "progress";
-    int dbus_type_boolean_str = DBUS_TYPE_BOOLEAN;
-    int dbus_type_double_str = DBUS_TYPE_DOUBLE;
 
     const int progress_visible = ShouldShowProgress(window->progress_state);
     double progress = (double)window->progress_value;
@@ -134,14 +132,14 @@ bool DBUS_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window *window)
     // Set progress visible property
     dbus->message_iter_open_container(&props, DBUS_TYPE_DICT_ENTRY, NULL, &key_it);
     dbus->message_iter_append_basic(&key_it, DBUS_TYPE_STRING, &progress_visible_str); // Append progress-visible key data
-    dbus->message_iter_open_container(&key_it, DBUS_TYPE_VARIANT, (const char *)&dbus_type_boolean_str, &value_it);
+    dbus->message_iter_open_container(&key_it, DBUS_TYPE_VARIANT, "b", &value_it);
     dbus->message_iter_append_basic(&value_it, DBUS_TYPE_BOOLEAN, &progress_visible); // Append progress-visible value data
     dbus->message_iter_close_container(&key_it, &value_it);
     dbus->message_iter_close_container(&props, &key_it);
     // Set progress value property
     dbus->message_iter_open_container(&props, DBUS_TYPE_DICT_ENTRY, NULL, &key_it);
     dbus->message_iter_append_basic(&key_it, DBUS_TYPE_STRING, &progress_str); // Append progress key data
-    dbus->message_iter_open_container(&key_it, DBUS_TYPE_VARIANT, (const char *)&dbus_type_double_str, &value_it);
+    dbus->message_iter_open_container(&key_it, DBUS_TYPE_VARIANT, "d", &value_it);
     dbus->message_iter_append_basic(&value_it, DBUS_TYPE_DOUBLE, &progress); // Append progress value data
     dbus->message_iter_close_container(&key_it, &value_it);
     dbus->message_iter_close_container(&props, &key_it);
