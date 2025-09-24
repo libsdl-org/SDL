@@ -656,43 +656,46 @@ static void surface_frame_done(void *data, struct wl_callback *cb, uint32_t time
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
 
-    /* XXX: This is needed to work around an Nvidia egl-wayland bug due to buffer coordinates
-     *      being used with wl_surface_damage, which causes part of the output to not be
-     *      updated when using a viewport with an output region larger than the source region.
-     */
-    if (wl_compositor_get_version(wind->waylandData->compositor) >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
-        wl_surface_damage_buffer(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
-    } else {
-        wl_surface_damage(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
-    }
-
     wind->drop_interactive_resizes = false;
+    wind->pending_client_viewport_dimensions = false;
 
-    if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_FRAME) {
-        wind->shell_surface_status = WAYLAND_SHELL_SURFACE_STATUS_SHOWN;
-
-        // If any child windows are waiting on this window to be shown, show them now
-        for (SDL_Window *w = wind->sdlwindow->first_child; w; w = w->next_sibling) {
-            if (w->internal->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_SHOW_PENDING) {
-                Wayland_ShowWindow(SDL_GetVideoDevice(), w);
-            } else if (w->internal->reparenting_required) {
-                Wayland_SetWindowParent(SDL_GetVideoDevice(), w, w->parent);
-                if (w->flags & SDL_WINDOW_MODAL) {
-                    Wayland_SetWindowModal(SDL_GetVideoDevice(), w, true);
-                }
-            }
+    if (!(wind->sdlwindow->flags & SDL_WINDOW_EXTERNAL)) {
+        /* XXX: This is needed to work around an Nvidia egl-wayland bug due to buffer coordinates
+         *      being used with wl_surface_damage, which causes part of the output to not be
+         *      updated when using a viewport with an output region larger than the source region.
+         */
+        if (wl_compositor_get_version(wind->waylandData->compositor) >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
+            wl_surface_damage_buffer(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
+        } else {
+            wl_surface_damage(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
         }
 
-        /* If the window was initially set to the suspended state, send the occluded event now,
-         * as we don't want to mark the window as occluded until at least one frame has been submitted.
-         */
-        if (wind->suspended) {
-            SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);
+        if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_FRAME) {
+            wind->shell_surface_status = WAYLAND_SHELL_SURFACE_STATUS_SHOWN;
+
+            // If any child windows are waiting on this window to be shown, show them now
+            for (SDL_Window *w = wind->sdlwindow->first_child; w; w = w->next_sibling) {
+                if (w->internal->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_SHOW_PENDING) {
+                    Wayland_ShowWindow(SDL_GetVideoDevice(), w);
+                } else if (w->internal->reparenting_required) {
+                    Wayland_SetWindowParent(SDL_GetVideoDevice(), w, w->parent);
+                    if (w->flags & SDL_WINDOW_MODAL) {
+                        Wayland_SetWindowModal(SDL_GetVideoDevice(), w, true);
+                    }
+                }
+            }
+
+            /* If the window was initially set to the suspended state, send the occluded event now,
+             * as we don't want to mark the window as occluded until at least one frame has been submitted.
+             */
+            if (wind->suspended) {
+                SDL_SendWindowEvent(wind->sdlwindow, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);
+            }
         }
     }
 
     wl_callback_destroy(cb);
-    wind->surface_frame_callback = wl_surface_frame(wind->surface);
+    wind->surface_frame_callback = wl_surface_frame(wind->surface_wrapper);
     wl_callback_add_listener(wind->surface_frame_callback, &surface_frame_listener, data);
 }
 
@@ -2334,6 +2337,13 @@ SDL_FullscreenResult Wayland_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Win
                 output = NULL;
             }
         }
+
+        // Commit to preserve any pending client viewport dimensions before entering fullscreen.
+        if (fullscreen == SDL_FULLSCREEN_OP_ENTER && !(window->flags & SDL_WINDOW_MAXIMIZED) &&
+            wind->pending_client_viewport_dimensions) {
+            wind->pending_client_viewport_dimensions = false;
+            wl_surface_commit(wind->surface);
+        }
         SetFullscreen(window, output, !!fullscreen);
     } else if (wind->is_fullscreen) {
         /*
@@ -2462,8 +2472,11 @@ void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
             return; // Can't do anything yet, wait for ShowWindow
         }
 
-        // Commit to preserve any pending size data.
-        wl_surface_commit(wind->surface);
+        // Commit to preserve any pending viewport size data.
+        if (wind->pending_client_viewport_dimensions) {
+            wind->pending_client_viewport_dimensions = false;
+            wl_surface_commit(wind->surface);
+        }
         libdecor_frame_set_maximized(wind->shell_surface.libdecor.frame);
 
         ++wind->window_state_deadline_count;
@@ -2476,8 +2489,11 @@ void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
             return; // Can't do anything yet, wait for ShowWindow
         }
 
-        // Commit to preserve any pending size data.
-        wl_surface_commit(wind->surface);
+        // Commit to preserve any pending viewport size data.
+        if (wind->pending_client_viewport_dimensions) {
+            wind->pending_client_viewport_dimensions = false;
+            wl_surface_commit(wind->surface);
+        }
         xdg_toplevel_set_maximized(wind->shell_surface.xdg.toplevel.xdg_toplevel);
 
         ++wind->window_state_deadline_count;
@@ -2719,12 +2735,10 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
         wl_callback_add_listener(data->gles_swap_frame_callback, &gles_swap_frame_listener, data);
     }
 
-    // No frame callback on external surfaces as it may already have one attached.
-    if (!external_surface) {
-        // Fire a callback when the compositor wants a new frame to set the surface damage region.
-        data->surface_frame_callback = wl_surface_frame(data->surface);
-        wl_callback_add_listener(data->surface_frame_callback, &surface_frame_listener, data);
-    }
+    // Fire a callback when the compositor wants a new frame.
+    data->surface_wrapper = WAYLAND_wl_proxy_create_wrapper(data->surface);
+    data->surface_frame_callback = wl_surface_frame(data->surface_wrapper);
+    wl_callback_add_listener(data->surface_frame_callback, &surface_frame_listener, data);
 
     if (window->flags & SDL_WINDOW_TRANSPARENT) {
         if (_this->gl_config.alpha_size == 0) {
@@ -2854,6 +2868,11 @@ void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
             wind->requested.logical_height = PixelToPoint(window, window->pending.h);
             wind->requested.pixel_width = window->pending.w;
             wind->requested.pixel_height = window->pending.h;
+        }
+
+        if (wind->requested.logical_width != wind->current.logical_width ||
+            wind->requested.logical_height != wind->current.logical_height) {
+            wind->pending_client_viewport_dimensions = true;
         }
 
         ConfigureWindowGeometry(window);
@@ -3201,6 +3220,10 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         if (wind->surface_frame_callback) {
             wl_callback_destroy(wind->surface_frame_callback);
+        }
+
+        if (wind->surface_wrapper) {
+            WAYLAND_wl_proxy_wrapper_destroy(wind->surface_wrapper);
         }
 
         if (!(window->flags & SDL_WINDOW_EXTERNAL)) {

@@ -35,6 +35,7 @@ struct SDL_WindowData
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
+    struct wl_surface *surface_wrapper;
     struct wl_callback *gles_swap_frame_callback;
     struct wl_event_queue *gles_swap_frame_event_queue;
     struct wl_surface *gles_swap_frame_surface_wrapper;
@@ -202,6 +203,7 @@ struct SDL_WindowData
     bool suspended;
     bool resizing;
     bool active;
+    bool pending_client_viewport_dimensions;
     bool drop_interactive_resizes;
     bool is_fullscreen;
     bool fullscreen_exclusive;
