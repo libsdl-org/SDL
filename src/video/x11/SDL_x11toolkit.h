@@ -175,7 +175,8 @@ typedef struct SDL_ToolkitControlX11
     bool dynamic;
     bool is_default_enter;
     bool is_default_esc;
-
+	bool do_size;
+	
     /* User data */
     void *data;
 
