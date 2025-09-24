@@ -49,7 +49,8 @@ typedef struct SDL_ToolkitIconControlX11
     int icon_char_x;
     int icon_char_y;
     int icon_char_a;
-
+    int icon_char_h;
+    
     /* Colors */
     XColor xcolor_black;
     XColor xcolor_red;
@@ -112,12 +113,13 @@ static const char g_ToolkitFontLatin1[] =
     "-*-*-medium-r-normal--0-%d-*-*-p-0-iso8859-1";
 static const char g_ToolkitFontLatin1Fallback[] =
     "-*-*-*-*-*--*-*-*-*-*-*-iso8859-1";    
+    
 static const char *g_ToolkitFont[] = {
     "-*-*-medium-r-normal--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
     "-*-*-medium-r-*--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
     "-misc-*-*-*-*--*-*-*-*-*-*-iso10646-1",  // misc unicode (fix for some systems)
     "-*-*-*-*-*--*-*-*-*-*-*-iso10646-1",  // just give me anything Unicode.
-    "-*-*-medium-r-normal--*-v-*-*-*-*-iso8859-1",  // explicitly latin1, in case low-ASCII works out.
+    "-*-*-medium-r-normal--*-%d-*-*-*-*-iso8859-1",  // explicitly latin1, in case low-ASCII works out.
     "-*-*-medium-r-*--*-%d-*-*-*-*-iso8859-1",  // explicitly latin1, in case low-ASCII works out.
     "-misc-*-*-*-*--*-*-*-*-*-*-iso8859-1",  // misc latin1 (fix for some systems)
     "-*-*-*-*-*--*-*-*-*-*-*-iso8859-1",  // just give me anything latin1.
@@ -475,6 +477,8 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
 
         /* notify controls */
         for (i = 0; i < window->controls_sz; i++) {
+            window->controls[i]->skip_size = false;
+            
             if (window->controls[i]->func_on_scale_change) {
                 window->controls[i]->func_on_scale_change(window->controls[i]);
             }
@@ -482,6 +486,8 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
             if (window->controls[i]->func_calc_size) {
                 window->controls[i]->func_calc_size(window->controls[i]);
             }
+            
+            window->controls[i]->skip_size = true;
         }
 
         /* notify cb */
@@ -500,39 +506,39 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
 }
 
 
-static void X11Toolkit_GetTextWidthHeightForFont(XFontStruct *font, const char *str, int nbytes, int *pwidth, int *pheight, int *font_ascent)
+static void X11Toolkit_GetTextWidthHeightForFont(XFontStruct *font, const char *str, int nbytes, int *pwidth, int *pheight, int *ascent)
 {
     XCharStruct text_structure;
-    int font_direction, font_descent;
+    int font_direction, font_ascent, font_descent;
     X11_XTextExtents(font, str, nbytes,
-                     &font_direction, font_ascent, &font_descent,
+                     &font_direction, &font_ascent, &font_descent,
                      &text_structure);
     *pwidth = text_structure.width;
     *pheight = text_structure.ascent + text_structure.descent;
+    *ascent = text_structure.ascent;
 }
 
-static void X11Toolkit_GetTextWidthHeight(SDL_ToolkitWindowX11 *data, const char *str, int nbytes, int *pwidth, int *pheight, int *font_ascent, int *font_descent)
+static void X11Toolkit_GetTextWidthHeight(SDL_ToolkitWindowX11 *data, const char *str, int nbytes, int *pwidth, int *pheight, int *ascent, int *font_descent)
 {
 #ifdef X_HAVE_UTF8_STRING
     if (data->utf8) {
-        XFontSetExtents *extents;
         XRectangle overall_ink, overall_logical;
-        extents = X11_XExtentsOfFontSet(data->font_set);
         X11_Xutf8TextExtents(data->font_set, str, nbytes, &overall_ink, &overall_logical);
         *pwidth = overall_logical.width;
         *pheight = overall_logical.height;
-        *font_ascent = -extents->max_logical_extent.y;
-        *font_descent = extents->max_logical_extent.height - *font_ascent;
+        *ascent = -overall_logical.y;
+        *font_descent = overall_logical.height - *ascent;
     } else
 #endif
     {
         XCharStruct text_structure;
-        int font_direction;
+        int font_direction, font_ascent;
         X11_XTextExtents(data->font_struct, str, nbytes,
-                         &font_direction, font_ascent, font_descent,
+                         &font_direction, &font_ascent, font_descent,
                          &text_structure);
         *pwidth = text_structure.width;
         *pheight = text_structure.ascent + text_structure.descent;
+        *ascent = text_structure.ascent;
     }
 }
 
@@ -1416,19 +1422,18 @@ static void X11Toolkit_DrawIconControl(SDL_ToolkitControlX11 *control) {
 static void X11Toolkit_CalculateIconControl(SDL_ToolkitControlX11 *base_control) {
     SDL_ToolkitIconControlX11 *control;
     int icon_char_w;
-    int icon_char_h;
     int icon_char_max;
 
     control = (SDL_ToolkitIconControlX11 *)base_control;
-    X11Toolkit_GetTextWidthHeightForFont(control->icon_char_font, &control->icon_char, 1, &icon_char_w, &icon_char_h, &control->icon_char_a);
+    X11Toolkit_GetTextWidthHeightForFont(control->icon_char_font, &control->icon_char, 1, &icon_char_w, &control->icon_char_h, &control->icon_char_a);
     base_control->rect.w = icon_char_w + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * base_control->window->iscale;
-    base_control->rect.h = icon_char_h + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * base_control->window->iscale;
+    base_control->rect.h = control->icon_char_h + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * base_control->window->iscale;
     icon_char_max = SDL_max(base_control->rect.w, base_control->rect.h) + 2;
     base_control->rect.w = icon_char_max;
     base_control->rect.h = icon_char_max;
     base_control->rect.y = 0;
     base_control->rect.x = 0;
-    control->icon_char_y = control->icon_char_a + (base_control->rect.h - icon_char_h)/2 + 1;
+    control->icon_char_y = control->icon_char_a + (base_control->rect.h - control->icon_char_h)/2;
     control->icon_char_x = (base_control->rect.w - icon_char_w)/2 + 1;
     base_control->rect.w += 2 * base_control->window->iscale;
     base_control->rect.h += 2 * base_control->window->iscale;
@@ -1570,15 +1575,12 @@ static void X11Toolkit_CalculateButtonControl(SDL_ToolkitControlX11 *control) {
 
     button_control = (SDL_ToolkitButtonControlX11 *)control;
     X11Toolkit_GetTextWidthHeight(control->window, button_control->data->text, button_control->str_sz, &button_control->text_rect.w, &button_control->text_rect.h, &button_control->text_a, &text_d);
-    //control->rect.w = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * control->window->iscale + button_control->text_rect.w;
-    //control->rect.h = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * control->window->iscale + button_control->text_rect.h;
+    if (!control->skip_size) {
+        control->rect.w = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * control->window->iscale + button_control->text_rect.w;
+        control->rect.h = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * control->window->iscale + button_control->text_rect.h;
+    }
     button_control->text_rect.x = (control->rect.w - button_control->text_rect.w)/2;
     button_control->text_rect.y = button_control->text_a + (control->rect.h - button_control->text_rect.h)/2;
-    if (control->window->utf8) {
-        button_control->text_rect.y -= 2 * control->window->iscale;
-    } else {
-        button_control->text_rect.y -= 4 * control->window->iscale;
-    }
 }
 
 
@@ -1726,6 +1728,7 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
         base_control->is_default_enter = true;  
         base_control->selected = true;
     }
+    base_control->skip_size = true;
     control->data = data;
     control->str_sz = SDL_strlen(control->data->text);
     control->cb = NULL;
@@ -1980,7 +1983,7 @@ int X11Toolkit_GetIconControlCharY(SDL_ToolkitControlX11 *control) {
     SDL_ToolkitIconControlX11 *icon_control;
 
     icon_control = (SDL_ToolkitIconControlX11 *)control;
-    return icon_control->icon_char_y - icon_control->icon_char_a;
+    return icon_control->icon_char_y - icon_control->icon_char_a + icon_control->icon_char_h/4;
 }
 
 void X11Toolkit_SignalWindowClose(SDL_ToolkitWindowX11 *data) {
