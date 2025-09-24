@@ -3019,8 +3019,14 @@ bool SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
+#ifdef SDL_PLATFORM_MACOS
+    // On newer MacBooks, the fullscreen window might be placed below the camera notch, so use the actual window position
+    bool use_display_origin = false;
+#else
     // Fullscreen windows are always at their display's origin
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    bool use_display_origin = ((window->flags & SDL_WINDOW_FULLSCREEN) != 0);
+#endif
+    if (use_display_origin) {
         SDL_DisplayID displayID;
 
         if (x) {
