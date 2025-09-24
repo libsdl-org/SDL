@@ -64,7 +64,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     copybuttonrect.x = currenttimerect.x + currenttimerect.w + 30;
     copybuttonrect.y = currenttimerect.y;
-    copybuttonrect.w = (SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(copybuttonstr)) + 10;
+    copybuttonrect.w = (float) ((SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(copybuttonstr)) + 10);
     copybuttonrect.h = currenttimerect.h;
 
     pastetextrect.x = 10;
@@ -72,7 +72,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     pastetextrect.w = 620;
     pastetextrect.h = ((480 - pastetextrect.y) - copybuttonrect.h) - 20;
 
-    pastebuttonrect.w = (SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(pastebuttonstr)) + 10;
+    pastebuttonrect.w = (float) ((SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(pastebuttonstr)) + 10);
     pastebuttonrect.x = (640 - pastebuttonrect.w) / 2.0f;
     pastebuttonrect.y = pastetextrect.y + pastetextrect.h + 10;
     pastebuttonrect.h = copybuttonrect.h;
