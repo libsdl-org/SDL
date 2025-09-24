@@ -505,7 +505,6 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
     }
 }
 
-
 static void X11Toolkit_GetTextWidthHeightForFont(XFontStruct *font, const char *str, int nbytes, int *pwidth, int *pheight, int *ascent)
 {
     XCharStruct text_structure;
