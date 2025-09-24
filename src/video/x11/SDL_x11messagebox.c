@@ -235,7 +235,7 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
 // Display an x11 message box.
 bool X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
-    if (SDL_Zenity_ShowMessageBox(messageboxdata, buttonID)) {
+	if (SDL_Zenity_ShowMessageBox(messageboxdata, buttonID)) {
         return true;
     }
 
