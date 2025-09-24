@@ -388,6 +388,9 @@ static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
         char *font;
 
         load_font_traditional:
+#ifdef X_HAVE_UTF8_STRING
+        window->font_set = NULL;
+#endif
         window->utf8 = false;    
         SDL_asprintf(&font, g_ToolkitFontLatin1, G_TOOLKITFONT_SIZE * window->iscale);
         window->font_struct = X11_XLoadQueryFont(window->display, font);
