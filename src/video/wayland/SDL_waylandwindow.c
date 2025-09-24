@@ -1295,8 +1295,13 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
             } else {
                 /* Don't apply the supplied dimensions if they haven't changed from the last configuration
                  * event, or a newer size set programmatically can be overwritten by old data.
+                 *
+                 * If a client takes a long time to present the first frame after creating the window, a
+                 * configure event to set the suspended state may arrive with the content size increased
+                 * by the decoration dimensions, which should also be ignored.
                  */
-                if (width != wind->last_configure.width || height != wind->last_configure.height) {
+                if ((width != wind->last_configure.width || height != wind->last_configure.height) &&
+                    !(wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_FRAME && wind->suspended != suspended)) {
                     wind->requested.logical_width = width;
                     wind->requested.logical_height = height;
 
