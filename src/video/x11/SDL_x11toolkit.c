@@ -477,7 +477,7 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
 
         /* notify controls */
         for (i = 0; i < window->controls_sz; i++) {
-            window->controls[i]->skip_size = false;
+            window->controls[i]->do_size = true;
             
             if (window->controls[i]->func_on_scale_change) {
                 window->controls[i]->func_on_scale_change(window->controls[i]);
@@ -487,7 +487,7 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
                 window->controls[i]->func_calc_size(window->controls[i]);
             }
             
-            window->controls[i]->skip_size = true;
+            window->controls[i]->do_size = false;
         }
 
         /* notify cb */
@@ -1574,7 +1574,7 @@ static void X11Toolkit_CalculateButtonControl(SDL_ToolkitControlX11 *control) {
 
     button_control = (SDL_ToolkitButtonControlX11 *)control;
     X11Toolkit_GetTextWidthHeight(control->window, button_control->data->text, button_control->str_sz, &button_control->text_rect.w, &button_control->text_rect.h, &button_control->text_a, &text_d);
-    if (!control->skip_size) {
+    if (control->do_size) {
         control->rect.w = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * control->window->iscale + button_control->text_rect.w;
         control->rect.h = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * control->window->iscale + button_control->text_rect.h;
     }
@@ -1727,7 +1727,7 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
         base_control->is_default_enter = true;  
         base_control->selected = true;
     }
-    base_control->skip_size = true;
+    base_control->do_size = false;
     control->data = data;
     control->str_sz = SDL_strlen(control->data->text);
     control->cb = NULL;
