@@ -194,8 +194,7 @@ struct SDL_WindowData
     } text_input_props;
 
     SDL_DisplayID last_displayID;
-    int fullscreen_deadline_count;
-    int maximized_restored_deadline_count;
+    int window_state_deadline_count;
     Uint64 last_focus_event_time_ns;
     int icc_fd;
     Uint32 icc_size;

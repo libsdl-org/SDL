@@ -149,7 +149,7 @@ static void SetMinMaxDimensions(SDL_Window *window)
     SDL_WindowData *wind = window->internal;
     int min_width, min_height, max_width, max_height;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) || wind->fullscreen_deadline_count) {
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         min_width = 0;
         min_height = 0;
         max_width = 0;
@@ -486,38 +486,21 @@ static void CommitLibdecorFrame(SDL_Window *window)
 #endif
 }
 
-static void fullscreen_deadline_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
+static void window_state_deadline_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
 {
     // Get the window from the ID as it may have been destroyed
     SDL_WindowID windowID = (SDL_WindowID)((uintptr_t)data);
     SDL_Window *window = SDL_GetWindowFromID(windowID);
 
     if (window && window->internal) {
-        window->internal->fullscreen_deadline_count--;
+        window->internal->window_state_deadline_count--;
     }
 
     wl_callback_destroy(callback);
 }
 
-static struct wl_callback_listener fullscreen_deadline_listener = {
-    fullscreen_deadline_handler
-};
-
-static void maximized_restored_deadline_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
-{
-    // Get the window from the ID as it may have been destroyed
-    SDL_WindowID windowID = (SDL_WindowID)((uintptr_t)data);
-    SDL_Window *window = SDL_GetWindowFromID(windowID);
-
-    if (window && window->internal) {
-        window->internal->maximized_restored_deadline_count--;
-    }
-
-    wl_callback_destroy(callback);
-}
-
-static struct wl_callback_listener maximized_restored_deadline_listener = {
-    maximized_restored_deadline_handler
+static struct wl_callback_listener window_state_deadline_listener = {
+    window_state_deadline_handler
 };
 
 static void FlushPendingEvents(SDL_Window *window)
@@ -526,7 +509,7 @@ static void FlushPendingEvents(SDL_Window *window)
     const bool last_position_pending = window->last_position_pending;
     const bool last_size_pending = window->last_size_pending;
 
-    while (window->internal->fullscreen_deadline_count || window->internal->maximized_restored_deadline_count) {
+    while (window->internal->window_state_deadline_count) {
         WAYLAND_wl_display_roundtrip(window->internal->waylandData->display);
     }
 
@@ -601,11 +584,7 @@ static void SetFullscreen(SDL_Window *window, struct wl_output *output, bool ful
         }
 
         wind->fullscreen_exclusive = output ? window->fullscreen_exclusive : false;
-        ++wind->fullscreen_deadline_count;
         if (fullscreen) {
-            Wayland_SetWindowResizable(SDL_GetVideoDevice(), window, true);
-            wl_surface_commit(wind->surface);
-
             libdecor_frame_set_fullscreen(wind->shell_surface.libdecor.frame, output);
         } else {
             libdecor_frame_unset_fullscreen(wind->shell_surface.libdecor.frame);
@@ -618,11 +597,7 @@ static void SetFullscreen(SDL_Window *window, struct wl_output *output, bool ful
         }
 
         wind->fullscreen_exclusive = output ? window->fullscreen_exclusive : false;
-        ++wind->fullscreen_deadline_count;
         if (fullscreen) {
-            Wayland_SetWindowResizable(SDL_GetVideoDevice(), window, true);
-            wl_surface_commit(wind->surface);
-
             xdg_toplevel_set_fullscreen(wind->shell_surface.xdg.toplevel.xdg_toplevel, output);
         } else {
             xdg_toplevel_unset_fullscreen(wind->shell_surface.xdg.toplevel.xdg_toplevel);
@@ -630,8 +605,9 @@ static void SetFullscreen(SDL_Window *window, struct wl_output *output, bool ful
     }
 
     // Queue a deadline event
+    ++wind->window_state_deadline_count;
     struct wl_callback *cb = wl_display_sync(viddata->display);
-    wl_callback_add_listener(cb, &fullscreen_deadline_listener, (void *)((uintptr_t)window->id));
+    wl_callback_add_listener(cb, &window_state_deadline_listener, (void *)((uintptr_t)window->id));
 }
 
 static void UpdateWindowFullscreen(SDL_Window *window, bool fullscreen)
@@ -2391,8 +2367,7 @@ void Wayland_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     // Not currently fullscreen or maximized, and no state pending; nothing to do.
-    if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) &&
-        !wind->fullscreen_deadline_count && !wind->maximized_restored_deadline_count) {
+    if (!(window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) && !wind->window_state_deadline_count) {
         return;
     }
 
@@ -2403,9 +2378,9 @@ void Wayland_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
         }
         libdecor_frame_unset_maximized(wind->shell_surface.libdecor.frame);
 
-        ++wind->maximized_restored_deadline_count;
+        ++wind->window_state_deadline_count;
         struct wl_callback *cb = wl_display_sync(_this->internal->display);
-        wl_callback_add_listener(cb, &maximized_restored_deadline_listener, (void *)((uintptr_t)window->id));
+        wl_callback_add_listener(cb, &window_state_deadline_listener, (void *)((uintptr_t)window->id));
     } else
 #endif
         // Note that xdg-shell does NOT provide a way to unset minimize!
@@ -2415,9 +2390,9 @@ void Wayland_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
             }
             xdg_toplevel_unset_maximized(wind->shell_surface.xdg.toplevel.xdg_toplevel);
 
-            ++wind->maximized_restored_deadline_count;
+            ++wind->window_state_deadline_count;
             struct wl_callback *cb = wl_display_sync(_this->internal->display);
-            wl_callback_add_listener(cb, &maximized_restored_deadline_listener, (void *)((uintptr_t)window->id));
+            wl_callback_add_listener(cb, &window_state_deadline_listener, (void *)((uintptr_t)window->id));
         }
 }
 
@@ -2477,8 +2452,7 @@ void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     // Not fullscreen, already maximized, and no state pending; nothing to do.
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN) && (window->flags & SDL_WINDOW_MAXIMIZED) &&
-        !wind->fullscreen_deadline_count && !wind->maximized_restored_deadline_count) {
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN) && (window->flags & SDL_WINDOW_MAXIMIZED) && !wind->window_state_deadline_count) {
         return;
     }
 
@@ -2492,9 +2466,9 @@ void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
         wl_surface_commit(wind->surface);
         libdecor_frame_set_maximized(wind->shell_surface.libdecor.frame);
 
-        ++wind->maximized_restored_deadline_count;
+        ++wind->window_state_deadline_count;
         struct wl_callback *cb = wl_display_sync(viddata->display);
-        wl_callback_add_listener(cb, &maximized_restored_deadline_listener, (void *)((uintptr_t)window->id));
+        wl_callback_add_listener(cb, &window_state_deadline_listener, (void *)((uintptr_t)window->id));
     } else
 #endif
         if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
@@ -2506,9 +2480,9 @@ void Wayland_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
         wl_surface_commit(wind->surface);
         xdg_toplevel_set_maximized(wind->shell_surface.xdg.toplevel.xdg_toplevel);
 
-        ++wind->maximized_restored_deadline_count;
+        ++wind->window_state_deadline_count;
         struct wl_callback *cb = wl_display_sync(viddata->display);
-        wl_callback_add_listener(cb, &maximized_restored_deadline_listener, (void *)((uintptr_t)window->id));
+        wl_callback_add_listener(cb, &window_state_deadline_listener, (void *)((uintptr_t)window->id));
     }
 }
 
@@ -3066,7 +3040,7 @@ bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
     do {
         WAYLAND_wl_display_roundtrip(_this->internal->display);
-    } while (wind->fullscreen_deadline_count || wind->maximized_restored_deadline_count);
+    } while (wind->window_state_deadline_count);
 
     return true;
 }
