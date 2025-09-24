@@ -111,7 +111,7 @@ typedef struct SDL_IOStreamInterface
 
     /**
      *  Read up to `size` bytes from the data stream to the area pointed
-     *  at by `ptr`.
+     *  at by `ptr`. `size` will always be > 0.
      *
      *  On an incomplete read, you should set `*status` to a value from the
      *  SDL_IOStatus enum. You do not have to explicitly set this on
@@ -123,7 +123,7 @@ typedef struct SDL_IOStreamInterface
 
     /**
      *  Write exactly `size` bytes from the area pointed at by `ptr`
-     *  to data stream.
+     *  to data stream. `size` will always be > 0.
      *
      *  On an incomplete write, you should set `*status` to a value from the
      *  SDL_IOStatus enum. You do not have to explicitly set this on
@@ -580,6 +580,10 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  * the stream is not at EOF, SDL_GetIOStatus() will return a different error
  * value and SDL_GetError() will offer a human-readable message.
  *
+ * A request for zero bytes on a valid stream will return zero immediately
+ * without accessing the stream, so the stream status (EOF, err, etc) will not
+ * change.
+ *
  * \param context a pointer to an SDL_IOStream structure.
  * \param ptr a pointer to a buffer to read data into.
  * \param size the number of bytes to read from the data source.
@@ -608,6 +612,10 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, 
  * The caller can use SDL_GetIOStatus() to determine if the problem is
  * recoverable, such as a non-blocking write that can simply be retried later,
  * or a fatal error.
+ *
+ * A request for zero bytes on a valid stream will return zero immediately
+ * without accessing the stream, so the stream status (EOF, err, etc) will not
+ * change.
  *
  * \param context a pointer to an SDL_IOStream structure.
  * \param ptr a pointer to a buffer containing data to write.

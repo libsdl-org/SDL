@@ -35,17 +35,17 @@ static const char IOStreamAlphabetString[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static void SDLCALL IOStreamSetUp(void **arg)
 {
     size_t fileLen;
-    FILE *handle;
+    SDL_IOStream *handle;
     size_t writtenLen;
-    int result;
+    bool result;
 
     /* Clean up from previous runs (if any); ignore errors */
-    (void)remove(IOStreamReadTestFilename);
-    (void)remove(IOStreamWriteTestFilename);
-    (void)remove(IOStreamAlphabetFilename);
+    SDL_RemovePath(IOStreamReadTestFilename);
+    SDL_RemovePath(IOStreamWriteTestFilename);
+    SDL_RemovePath(IOStreamAlphabetFilename);
 
     /* Create a test file */
-    handle = fopen(IOStreamReadTestFilename, "w");
+    handle = SDL_IOFromFile(IOStreamReadTestFilename, "w");
     SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", IOStreamReadTestFilename);
     if (handle == NULL) {
         return;
@@ -53,13 +53,13 @@ static void SDLCALL IOStreamSetUp(void **arg)
 
     /* Write some known text into it */
     fileLen = SDL_strlen(IOStreamHelloWorldTestString);
-    writtenLen = fwrite(IOStreamHelloWorldTestString, 1, fileLen, handle);
+    writtenLen = SDL_WriteIO(handle, IOStreamHelloWorldTestString, fileLen);
     SDLTest_AssertCheck(fileLen == writtenLen, "Verify number of written bytes, expected %i, got %i", (int)fileLen, (int)writtenLen);
-    result = fclose(handle);
-    SDLTest_AssertCheck(result == 0, "Verify result from fclose, expected 0, got %i", result);
+    result = SDL_CloseIO(handle);
+    SDLTest_AssertCheck(result == true, "Verify result from SDL_CloseIO, expected true, got %s", result ? "true" : "false");
 
     /* Create a second test file */
-    handle = fopen(IOStreamAlphabetFilename, "w");
+    handle = SDL_IOFromFile(IOStreamAlphabetFilename, "w");
     SDLTest_AssertCheck(handle != NULL, "Verify creation of file '%s' returned non NULL handle", IOStreamAlphabetFilename);
     if (handle == NULL) {
         return;
@@ -67,10 +67,10 @@ static void SDLCALL IOStreamSetUp(void **arg)
 
     /* Write alphabet text into it */
     fileLen = SDL_strlen(IOStreamAlphabetString);
-    writtenLen = fwrite(IOStreamAlphabetString, 1, fileLen, handle);
+    writtenLen = SDL_WriteIO(handle, IOStreamAlphabetString, fileLen);
     SDLTest_AssertCheck(fileLen == writtenLen, "Verify number of written bytes, expected %i, got %i", (int)fileLen, (int)writtenLen);
-    result = fclose(handle);
-    SDLTest_AssertCheck(result == 0, "Verify result from fclose, expected 0, got %i", result);
+    result = SDL_CloseIO(handle);
+    SDLTest_AssertCheck(result == true, "Verify result from SDL_CloseIO, expected true, got %s", result ? "true" : "false");
 
     SDLTest_AssertPass("Creation of test file completed");
 }

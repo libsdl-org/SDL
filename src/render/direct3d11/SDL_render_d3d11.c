@@ -62,7 +62,7 @@ typedef struct
 } D3D11_VertexShaderConstants;
 
 // These should mirror the definitions in D3D11_PixelShader_Common.hlsli
-//static const float TONEMAP_NONE = 0;
+static const float TONEMAP_NONE = 0;
 //static const float TONEMAP_LINEAR = 1;
 static const float TONEMAP_CHROME = 2;
 
@@ -122,7 +122,6 @@ typedef struct
     ID3D11Texture2D *stagingTexture;
     int lockedTexturePositionX;
     int lockedTexturePositionY;
-    D3D11_Shader shader;
     const float *YCbCr_matrix;
 #ifdef SDL_HAVE_YUV
     // YV12 texture support
@@ -155,7 +154,6 @@ typedef struct
     SDL_SharedObject *hDXGIMod;
     SDL_SharedObject *hD3D11Mod;
     IDXGIFactory2 *dxgiFactory;
-    IDXGIAdapter *dxgiAdapter;
     IDXGIDebug *dxgiDebug;
     ID3D11Device1 *d3dDevice;
     ID3D11DeviceContext1 *d3dContext;
@@ -370,7 +368,6 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
 
         SAFE_RELEASE(data->d3dContext);
         SAFE_RELEASE(data->d3dDevice);
-        SAFE_RELEASE(data->dxgiAdapter);
         SAFE_RELEASE(data->dxgiFactory);
 
         data->swapEffect = (DXGI_SWAP_EFFECT)0;
@@ -507,16 +504,18 @@ static ID3D11BlendState *D3D11_CreateBlendState(SDL_Renderer *renderer, SDL_Blen
 // Create resources that depend on the device.
 static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 {
-    typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID riid, void **ppFactory);
-    typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY2)(UINT flags, REFIID riid, void **ppFactory);
-    PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc = NULL;
-    PFN_CREATE_DXGI_FACTORY2 CreateDXGIFactory2Func = NULL;
+    typedef HRESULT (WINAPI *pfnCreateDXGIFactory)(REFIID riid, void **ppFactory);
+    typedef HRESULT (WINAPI *pfnCreateDXGIFactory2)(UINT flags, REFIID riid, void **ppFactory);
+    pfnCreateDXGIFactory pCreateDXGIFactory = NULL;
+    pfnCreateDXGIFactory2 pCreateDXGIFactory2 = NULL;
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
-    PFN_D3D11_CREATE_DEVICE D3D11CreateDeviceFunc;
+    PFN_D3D11_CREATE_DEVICE pD3D11CreateDevice;
+    IDXGIAdapter *dxgiAdapter = NULL;
     ID3D11Device *d3dDevice = NULL;
     ID3D11DeviceContext *d3dContext = NULL;
     IDXGIDevice1 *dxgiDevice = NULL;
     HRESULT result = S_OK;
+    D3D_DRIVER_TYPE driverType = D3D_DRIVER_TYPE_UNKNOWN;
     UINT creationFlags = 0;
     bool createDebug;
 #ifdef HAVE_DXGI1_5_H
@@ -550,10 +549,10 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    CreateDXGIFactory2Func = (PFN_CREATE_DXGI_FACTORY2)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory2");
-    if (!CreateDXGIFactory2Func) {
-        CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory");
-        if (!CreateDXGIFactoryFunc) {
+    pCreateDXGIFactory2 = (pfnCreateDXGIFactory2)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory2");
+    if (!pCreateDXGIFactory2) {
+        pCreateDXGIFactory = (pfnCreateDXGIFactory)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory");
+        if (!pCreateDXGIFactory) {
             result = E_FAIL;
             goto done;
         }
@@ -565,8 +564,8 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         goto done;
     }
 
-    D3D11CreateDeviceFunc = (PFN_D3D11_CREATE_DEVICE)SDL_LoadFunction(data->hD3D11Mod, "D3D11CreateDevice");
-    if (!D3D11CreateDeviceFunc) {
+    pD3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)SDL_LoadFunction(data->hD3D11Mod, "D3D11CreateDevice");
+    if (!pD3D11CreateDevice) {
         result = E_FAIL;
         goto done;
     }
@@ -574,22 +573,22 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     if (createDebug) {
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
         IDXGIInfoQueue *dxgiInfoQueue = NULL;
-        PFN_CREATE_DXGI_FACTORY2 DXGIGetDebugInterfaceFunc;
+        pfnCreateDXGIFactory2 pDXGIGetDebugInterface1;
 
         // If the debug hint is set, also create the DXGI factory in debug mode
-        DXGIGetDebugInterfaceFunc = (PFN_CREATE_DXGI_FACTORY2)SDL_LoadFunction(data->hDXGIMod, "DXGIGetDebugInterface1");
-        if (!DXGIGetDebugInterfaceFunc) {
+        pDXGIGetDebugInterface1 = (pfnCreateDXGIFactory2)SDL_LoadFunction(data->hDXGIMod, "DXGIGetDebugInterface1");
+        if (!pDXGIGetDebugInterface1) {
             result = E_FAIL;
             goto done;
         }
 
-        result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIDebug1, (void **)&data->dxgiDebug);
+        result = pDXGIGetDebugInterface1(0, &SDL_IID_IDXGIDebug1, (void **)&data->dxgiDebug);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("DXGIGetDebugInterface1"), result);
             goto done;
         }
 
-        result = DXGIGetDebugInterfaceFunc(0, &SDL_IID_IDXGIInfoQueue, (void **)&dxgiInfoQueue);
+        result = pDXGIGetDebugInterface1(0, &SDL_IID_IDXGIInfoQueue, (void **)&dxgiInfoQueue);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("DXGIGetDebugInterface1"), result);
             goto done;
@@ -602,10 +601,10 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
         creationFlags = DXGI_CREATE_FACTORY_DEBUG;
     }
 
-    if (CreateDXGIFactory2Func) {
-        result = CreateDXGIFactory2Func(creationFlags, &SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
+    if (pCreateDXGIFactory2) {
+        result = pCreateDXGIFactory2(creationFlags, &SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
     } else {
-        result = CreateDXGIFactoryFunc(&SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
+        result = pCreateDXGIFactory(&SDL_IID_IDXGIFactory2, (void **)&data->dxgiFactory);
     }
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateDXGIFactory"), result);
@@ -615,22 +614,31 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
 #ifdef HAVE_DXGI1_5_H
     // Check for tearing support, which requires the IDXGIFactory5 interface.
     data->swapChainFlags = 0;
-    result = IDXGIFactory2_QueryInterface(data->dxgiFactory, &SDL_IID_IDXGIFactory5, (void **)&dxgiFactory5);
-    if (SUCCEEDED(result)) {
-        BOOL allowTearing = FALSE;
-        result = IDXGIFactory5_CheckFeatureSupport(dxgiFactory5, DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
-        if (SUCCEEDED(result) && allowTearing) {
-            data->swapChainFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    if (!(SDL_GetWindowFlags(renderer->window) & SDL_WINDOW_TRANSPARENT)) {
+        result = IDXGIFactory2_QueryInterface(data->dxgiFactory, &SDL_IID_IDXGIFactory5, (void **)&dxgiFactory5);
+        if (SUCCEEDED(result)) {
+            BOOL allowTearing = FALSE;
+            result = IDXGIFactory5_CheckFeatureSupport(dxgiFactory5, DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing));
+            if (SUCCEEDED(result) && allowTearing) {
+                data->swapChainFlags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+            }
+            IDXGIFactory5_Release(dxgiFactory5);
         }
-        IDXGIFactory5_Release(dxgiFactory5);
     }
 #endif // HAVE_DXGI1_5_H
 
-    // FIXME: Should we use the default adapter?
-    result = IDXGIFactory2_EnumAdapters(data->dxgiFactory, 0, &data->dxgiAdapter);
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("D3D11CreateDevice"), result);
-        goto done;
+    if (SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_WARP, false)) {
+        driverType = D3D_DRIVER_TYPE_WARP;
+        dxgiAdapter = NULL;
+    } else {
+        driverType = D3D_DRIVER_TYPE_UNKNOWN;
+
+        // FIXME: Should we use the default adapter?
+        result = IDXGIFactory2_EnumAdapters(data->dxgiFactory, 0, &dxgiAdapter);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("EnumAdapters"), result);
+            goto done;
+        }
     }
 
     /* This flag adds support for surfaces with a different color channel ordering
@@ -649,9 +657,9 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     }
 
     // Create the Direct3D 11 API device object and a corresponding context.
-    result = D3D11CreateDeviceFunc(
-        data->dxgiAdapter,
-        D3D_DRIVER_TYPE_UNKNOWN,
+    result = pD3D11CreateDevice(
+        dxgiAdapter,
+        driverType,
         NULL,
         creationFlags, // Set set debug and Direct2D compatibility flags.
         featureLevels, // List of feature levels this app can support.
@@ -780,6 +788,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D11_DEVICE_POINTER, data->d3dDevice);
 
 done:
+    SAFE_RELEASE(dxgiAdapter);
     SAFE_RELEASE(d3dDevice);
     SAFE_RELEASE(d3dContext);
     SAFE_RELEASE(dxgiDevice);
@@ -1205,11 +1214,6 @@ static bool D3D11_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
     textureData->w = (int)textureDesc.Width;
     textureData->h = (int)textureDesc.Height;
-    if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_SRGB) {
-        textureData->shader = SHADER_RGB;
-    } else {
-        textureData->shader = SHADER_ADVANCED;
-    }
 
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
         textureDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -2158,8 +2162,23 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
     }
 }
 
+static D3D11_Shader SelectShader(const D3D11_PixelShaderConstants *shader_constants)
+{
+    if (!shader_constants) {
+        return SHADER_SOLID;
+    }
+
+    if (shader_constants->texture_type == TEXTURETYPE_RGB &&
+        shader_constants->input_type == INPUTTYPE_UNSPECIFIED &&
+        shader_constants->tonemap_method == TONEMAP_NONE) {
+        return SHADER_RGB;
+    }
+
+    return SHADER_ADVANCED;
+}
+
 static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd,
-                              D3D11_Shader shader, const D3D11_PixelShaderConstants *shader_constants,
+                              const D3D11_PixelShaderConstants *shader_constants,
                               const int numShaderResources, ID3D11ShaderResourceView **shaderResources,
                               ID3D11SamplerState *sampler, const Float4X4 *matrix)
 
@@ -2172,6 +2191,7 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
     const SDL_BlendMode blendMode = cmd->data.draw.blend;
     ID3D11BlendState *blendState = NULL;
     bool updateSubresource = false;
+    D3D11_Shader shader = SelectShader(shader_constants);
     D3D11_PixelShaderState *shader_state = &rendererData->currentShaderState[shader];
     D3D11_PixelShaderConstants solid_constants;
 
@@ -2396,7 +2416,7 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
         shaderResources[1] = textureData->mainTextureResourceViewU;
         shaderResources[2] = textureData->mainTextureResourceViewV;
 
-        return D3D11_SetDrawState(renderer, cmd, textureData->shader, &constants,
+        return D3D11_SetDrawState(renderer, cmd, &constants,
                                   SDL_arraysize(shaderResources), shaderResources, textureSampler, matrix);
 
     } else if (textureData->nv12) {
@@ -2405,11 +2425,11 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
         shaderResources[0] = textureData->mainTextureResourceView;
         shaderResources[1] = textureData->mainTextureResourceViewNV;
 
-        return D3D11_SetDrawState(renderer, cmd, textureData->shader, &constants,
+        return D3D11_SetDrawState(renderer, cmd, &constants,
                                   SDL_arraysize(shaderResources), shaderResources, textureSampler, matrix);
     }
 #endif // SDL_HAVE_YUV
-    return D3D11_SetDrawState(renderer, cmd, textureData->shader, &constants,
+    return D3D11_SetDrawState(renderer, cmd, &constants,
                               1, &textureData->mainTextureResourceView, textureSampler, matrix);
 }
 
@@ -2507,7 +2527,7 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             const size_t count = cmd->data.draw.count;
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(D3D11_VertexPositionColor);
-            D3D11_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, 0, NULL, NULL, NULL);
+            D3D11_SetDrawState(renderer, cmd, NULL, 0, NULL, NULL, NULL);
             D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, start, count);
             break;
         }
@@ -2518,7 +2538,7 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             const size_t first = cmd->data.draw.first;
             const size_t start = first / sizeof(D3D11_VertexPositionColor);
             const D3D11_VertexPositionColor *verts = (D3D11_VertexPositionColor *)(((Uint8 *)vertices) + first);
-            D3D11_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, 0, NULL, NULL, NULL);
+            D3D11_SetDrawState(renderer, cmd, NULL, 0, NULL, NULL, NULL);
             D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, start, count);
             if (verts[0].pos.x != verts[count - 1].pos.x || verts[0].pos.y != verts[count - 1].pos.y) {
                 D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, start + (count - 1), 1);
@@ -2545,7 +2565,7 @@ static bool D3D11_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
             if (texture) {
                 D3D11_SetCopyState(renderer, cmd, NULL);
             } else {
-                D3D11_SetDrawState(renderer, cmd, SHADER_SOLID, NULL, 0, NULL, NULL, NULL);
+                D3D11_SetDrawState(renderer, cmd, NULL, 0, NULL, NULL, NULL);
             }
 
             D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST, start, count);

@@ -61,12 +61,18 @@ typedef struct SDL_ToolkitWindowX11
     bool display_close;
 
     /* Parent */
+    SDL_VideoDevice *parent_device;
     SDL_Window *parent;
     struct SDL_ToolkitWindowX11 *tk_parent;
 
     /* Window */
     Window window;
     Drawable drawable;
+#ifndef NO_SHARED_MEMORY
+	XImage *image;
+	XShmSegmentInfo shm_info;
+	int shm_bytes_per_line;
+#endif
 
     /* Visuals and drawing */
     Visual *visual;
@@ -83,6 +89,10 @@ typedef struct SDL_ToolkitWindowX11
 #endif
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
     bool xrandr; // Whether Xrandr is present or not
+#endif
+#ifndef NO_SHARED_MEMORY
+	bool shm;
+	Bool shm_pixmap;
 #endif
     bool utf8;
 
@@ -198,7 +208,7 @@ typedef struct SDL_ToolkitMenuItemX11
 } SDL_ToolkitMenuItemX11;
 
 /* WINDOW FUNCTIONS */
-extern SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_ToolkitWindowX11 *tkparent, SDL_ToolkitWindowModeX11 mode, const SDL_MessageBoxColor *colorhints);
+extern SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_ToolkitWindowX11 *tkparent, SDL_ToolkitWindowModeX11 mode, const SDL_MessageBoxColor *colorhints, bool create_new_display);
 extern bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, int cx, int cy, char *title);
 extern void X11Toolkit_DoWindowEventLoop(SDL_ToolkitWindowX11 *data);
 extern void X11Toolkit_ResizeWindow(SDL_ToolkitWindowX11 *data, int w, int h);

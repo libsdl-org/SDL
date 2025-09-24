@@ -439,6 +439,7 @@ static Uint32 initial_blacklist_devices[] = {
     MAKE_VIDPID(0x04d9, 0x8009), // OBINLB USB-HID Keyboard (Anne Pro II)
     MAKE_VIDPID(0x04d9, 0xa292), // OBINLB USB-HID Keyboard (Anne Pro II)
     MAKE_VIDPID(0x04d9, 0xa293), // OBINLB USB-HID Keyboard (Anne Pro II)
+    MAKE_VIDPID(0x04f2, 0xa13c), // HP Deluxe Webcam KQ246AA
     MAKE_VIDPID(0x0e6f, 0x018a), // PDP REALMz Wireless Controller for Switch, USB charging
     MAKE_VIDPID(0x1532, 0x0266), // Razer Huntsman V2 Analog, non-functional DInput device
     MAKE_VIDPID(0x1532, 0x0282), // Razer Huntsman Mini Analog, non-functional DInput device
@@ -614,18 +615,18 @@ static SDL_vidpid_list zero_centered_devices = {
     false
 };
 
-#define CHECK_JOYSTICK_MAGIC(joystick, result)                  \
-    if (!SDL_ObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK)) { \
-        SDL_InvalidParamError("joystick");                      \
-        SDL_UnlockJoysticks();                                  \
-        return result;                                          \
+#define CHECK_JOYSTICK_MAGIC(joystick, result)                          \
+    CHECK_PARAM(!SDL_ObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK)) { \
+        SDL_InvalidParamError("joystick");                              \
+        SDL_UnlockJoysticks();                                          \
+        return result;                                                  \
     }
 
-#define CHECK_JOYSTICK_VIRTUAL(joystick, result)                \
-    if (!joystick->is_virtual) {                                \
-        SDL_SetError("joystick isn't virtual");                 \
-        SDL_UnlockJoysticks();                                  \
-        return result;                                          \
+#define CHECK_JOYSTICK_VIRTUAL(joystick, result)                        \
+    CHECK_PARAM(!joystick->is_virtual) {                                \
+        SDL_SetError("joystick isn't virtual");                         \
+        SDL_UnlockJoysticks();                                          \
+        return result;                                                  \
     }
 
 bool SDL_JoysticksInitialized(void)
@@ -3221,7 +3222,8 @@ bool SDL_IsJoystickSInputController(Uint16 vendor_id, Uint16 product_id)
         if (product_id == USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC ||
             product_id == USB_PRODUCT_HANDHELDLEGEND_PROGCC ||
             product_id == USB_PRODUCT_HANDHELDLEGEND_GCULTIMATE ||
-            product_id == USB_PRODUCT_BONZIRICHANNEL_FIREBIRD) {
+            product_id == USB_PRODUCT_BONZIRICHANNEL_FIREBIRD ||
+            product_id == USB_PRODUCT_VOIDGAMING_PS4FIREBIRD) {
             return true;
         }
     }

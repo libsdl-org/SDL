@@ -26,6 +26,11 @@
 
 EM_JS_DEPS(sdlrunapp, "$dynCall,$stringToNewUTF8");
 
+// even though we reference the C runtime's free() in other places, it appears
+// to be inlined more aggressively in Emscripten 4, so we need a reference to
+// it here, too, so the inlined Javascript doesn't fail to find it.
+EMSCRIPTEN_KEEPALIVE void force_free(void *ptr) { free(ptr); }
+
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
     (void)reserved;
@@ -44,8 +49,8 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
                     //console.log("Setting SDL env var '" + key + "' to '" + value + "' ...");
                     dynCall('iiii', $0, [ckey, cvalue, 1]);
                 }
-                _free(ckey);  // these must use free(), not SDL_free()!
-                _free(cvalue);
+                _force_free(ckey);  // these must use free(), not SDL_free()!
+                _force_free(cvalue);
             }
         }
     }, SDL_setenv_unsafe);

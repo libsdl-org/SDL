@@ -52,7 +52,7 @@ SDL_WSCONS_mouse_input_data *SDL_WSCONS_Init_Mouse(void)
     }
 
     input->mouseID = SDL_GetNextObjectID();
-    SDL_AddMouse(input->mouseID, NULL, false);
+    SDL_AddMouse(input->mouseID, NULL);
 
 #ifdef WSMOUSEIO_SETMODE
     ioctl(input->fd, WSMOUSEIO_SETMODE, WSMOUSE_COMPAT);

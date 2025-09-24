@@ -59,6 +59,9 @@ bool WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL
     GetDIBits(data->hdc, hbm, 0, 0, NULL, info, DIB_RGB_COLORS);
     DeleteObject(hbm);
 
+    // Check if a transparent channel is required
+    bool need_alpha = (window->flags & SDL_WINDOW_TRANSPARENT) != 0;
+
     *format = SDL_PIXELFORMAT_UNKNOWN;
     if (info->bmiHeader.biCompression == BI_BITFIELDS) {
         int bpp;
@@ -68,16 +71,22 @@ bool WIN_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL
         masks = (Uint32 *)((Uint8 *)info + info->bmiHeader.biSize);
         *format = SDL_GetPixelFormatForMasks(bpp, masks[0], masks[1], masks[2], 0);
     }
-    if (*format == SDL_PIXELFORMAT_UNKNOWN) {
-        // We'll use RGB format for now
-        *format = SDL_PIXELFORMAT_XRGB8888;
+    if (*format == SDL_PIXELFORMAT_UNKNOWN || need_alpha) {
+        // We'll use RGB or BGRA32 format for now
+        *format = need_alpha ? SDL_PIXELFORMAT_BGRA32 : SDL_PIXELFORMAT_XRGB8888;
 
         // Create a new one
         SDL_memset(info, 0, size);
         info->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         info->bmiHeader.biPlanes = 1;
         info->bmiHeader.biBitCount = 32;
-        info->bmiHeader.biCompression = BI_RGB;
+        info->bmiHeader.biCompression = need_alpha ? BI_BITFIELDS : BI_RGB;
+
+        if (need_alpha) {
+            int tmpbpp;
+            Uint32 *bgr32masks = (Uint32 *)((Uint8 *)info + info->bmiHeader.biSize);
+            SDL_GetMasksForPixelFormat(SDL_PIXELFORMAT_BGRA32, &tmpbpp, &bgr32masks[0], &bgr32masks[1], &bgr32masks[2], &bgr32masks[3]);
+        }
     }
 
     // Fill in the size information

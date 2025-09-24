@@ -286,6 +286,16 @@ static SDL_Window *Emscripten_GetFocusedWindow(SDL_VideoDevice *device)
             break;
         }
     }
+    // If the DOM is focused, then at least one canvas in the DOM should be considered focused.
+    // So in this case, just assume that the first canvas is focused.
+    if (!window) {
+        const int focused = MAIN_THREAD_EM_ASM_INT({
+            return document.hasFocus();
+        });
+        if (focused) {
+            window = device->windows;
+        }
+    }
     return window;
 }
 
@@ -1104,7 +1114,9 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
                     _Emscripten_SendDragTextEvent(data, plain_text);
                     _free(plain_text);
                 } else if (event.dataTransfer.types.includes("Files")) {
-                    for (let i = 0; i < event.dataTransfer.files.length; i++) {
+                    let files_read = 0;
+                    const files_to_read = event.dataTransfer.files.length;
+                    for (let i = 0; i < files_to_read; i++) {
                         const file = event.dataTransfer.files.item(i);
                         const file_reader = new FileReader();
                         file_reader.readAsArrayBuffer(file);
@@ -1123,8 +1135,18 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
 
                             _Emscripten_SendDragFileEvent(data, c_fs_filepath);
                             _free(c_fs_filepath);
-                            _Emscripten_SendDragCompleteEvent(data);
+                            onFileRead();
                         };
+                        file_reader.onerror = function(event) {
+                            // Handle when error occurs to ensure that the drag event can still complete
+                            onFileRead();
+                        };
+                    }
+                    function onFileRead() {
+                        ++files_read;
+                        if (files_read === files_to_read) {
+                            _Emscripten_SendDragCompleteEvent(data);
+                        }
                     }
                 }
                 _Emscripten_SendDragCompleteEvent(data);
@@ -1217,6 +1239,17 @@ void Emscripten_UnregisterGlobalEventHandlers(SDL_VideoDevice *device)
     emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
 }
 
+EMSCRIPTEN_KEEPALIVE void Emscripten_HandleLockKeysCheck(SDL_WindowData *window_data, EM_BOOL capslock, EM_BOOL numlock, EM_BOOL scrolllock)
+{
+    const SDL_Keymod new_mods = (capslock ? SDL_KMOD_CAPS : 0) | (numlock ? SDL_KMOD_NUM : 0) | (scrolllock ? SDL_KMOD_SCROLL : 0);
+    SDL_Keymod modstate = SDL_GetModState();
+    if ((modstate & (SDL_KMOD_CAPS|SDL_KMOD_NUM|SDL_KMOD_SCROLL)) != new_mods) {
+        modstate &= ~(SDL_KMOD_CAPS|SDL_KMOD_NUM|SDL_KMOD_SCROLL);
+        modstate |= new_mods;
+        SDL_SetModState(modstate);
+    }
+}
+
 void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
     const char *keyElement;
@@ -1228,6 +1261,19 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 
     keyElement = Emscripten_GetKeyboardTargetElement(data->keyboard_element);
     if (keyElement) {
+        MAIN_THREAD_EM_ASM_INT({
+            var data = $0;
+            // our keymod state can get confused in various ways (changed capslock when browser didn't have focus, etc), and you can't query the current
+            //  state from the DOM, outside of a keyboard event, so catch keypresses globally and reset mod state if it's unexpectedly wrong. Best we can do.
+            //  Note that this thing _only_ adjusts the lock keys if necessary; the real SDL keypress handling happens elsewhere.
+            document.sdlEventHandlerLockKeysCheck = function(event) {
+                // don't try to adjust the state on the actual lock key presses; the normal key handler will catch that and adjust.
+                if ((event.key != "CapsLock") && (event.key != "NumLock") && (event.key != "ScrollLock")) {
+                    _Emscripten_HandleLockKeysCheck(data, event.getModifierState("CapsLock"), event.getModifierState("NumLock"), event.getModifierState("ScrollLock"));
+                }
+            };
+            document.addEventListener("keydown", document.sdlEventHandlerLockKeysCheck);
+        }, data);
         emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
         emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);
         emscripten_set_keypress_callback(keyElement, data, 0, Emscripten_HandleKeyPress);
@@ -1266,6 +1312,9 @@ void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
         emscripten_set_keydown_callback(keyElement, NULL, 0, NULL);
         emscripten_set_keyup_callback(keyElement, NULL, 0, NULL);
         emscripten_set_keypress_callback(keyElement, NULL, 0, NULL);
+        MAIN_THREAD_EM_ASM_INT({
+            document.removeEventListener("keydown", document.sdlEventHandlerLockKeysCheck);
+        });
     }
 
     emscripten_set_visibilitychange_callback(NULL, 0, NULL);

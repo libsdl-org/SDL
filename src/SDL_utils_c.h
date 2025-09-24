@@ -67,9 +67,24 @@ typedef enum
 
 extern Uint32 SDL_GetNextObjectID(void);
 extern void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid);
-extern bool SDL_ObjectValid(void *object, SDL_ObjectType type);
+extern bool SDL_FindObject(void *object, SDL_ObjectType type);
 extern int SDL_GetObjects(SDL_ObjectType type, void **objects, int count);
 extern void SDL_SetObjectsInvalid(void);
+
+extern bool SDL_object_validation;
+
+SDL_FORCE_INLINE bool SDL_ObjectValid(void *object, SDL_ObjectType type)
+{
+    if (!object) {
+        return false;
+    }
+
+    if (!SDL_object_validation) {
+        return true;
+    }
+
+    return SDL_FindObject(object, type);
+}
 
 extern const char *SDL_GetPersistentString(const char *string);
 

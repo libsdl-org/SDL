@@ -93,20 +93,20 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     /* Set a new clipping rectangle position */
     cliprect_position.x += distance * cliprect_direction.x;
-    if (cliprect_position.x < 0.0f) {
-        cliprect_position.x = 0.0f;
+    if (cliprect_position.x < -CLIPRECT_SIZE) {
+        cliprect_position.x = -CLIPRECT_SIZE;
         cliprect_direction.x = 1.0f;
-    } else if (cliprect_position.x >= (WINDOW_WIDTH - CLIPRECT_SIZE)) {
-        cliprect_position.x = (WINDOW_WIDTH - CLIPRECT_SIZE) - 1;
+    } else if (cliprect_position.x >= WINDOW_WIDTH) {
+        cliprect_position.x = WINDOW_WIDTH - 1;
         cliprect_direction.x = -1.0f;
     }
 
     cliprect_position.y += distance * cliprect_direction.y;
-    if (cliprect_position.y < 0.0f) {
-        cliprect_position.y = 0.0f;
+    if (cliprect_position.y < -CLIPRECT_SIZE) {
+        cliprect_position.y = -CLIPRECT_SIZE;
         cliprect_direction.y = 1.0f;
-    } else if (cliprect_position.y >= (WINDOW_HEIGHT - CLIPRECT_SIZE)) {
-        cliprect_position.y = (WINDOW_HEIGHT - CLIPRECT_SIZE) - 1;
+    } else if (cliprect_position.y >= WINDOW_HEIGHT) {
+        cliprect_position.y = WINDOW_HEIGHT - 1;
         cliprect_direction.y = -1.0f;
     }
     SDL_SetRenderClipRect(renderer, &cliprect);

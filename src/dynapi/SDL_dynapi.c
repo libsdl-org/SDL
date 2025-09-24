@@ -86,7 +86,7 @@ static void SDL_InitDynamicAPI(void);
     }
 
 #define SDL_DYNAPI_VARARGS(_static, name, initcall)                                                                                       \
-    _static bool SDLCALL SDL_SetError##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                            \
+    _static bool SDLCALL SDL_SetError##name(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                                                \
     {                                                                                                                                     \
         char buf[128], *str = buf;                                                                                                        \
         int result;                                                                                                                       \
@@ -98,7 +98,7 @@ static void SDL_InitDynamicAPI(void);
         if (result >= 0 && (size_t)result >= sizeof(buf)) {                                                                               \
             str = NULL;                                                                                                                   \
             va_start(ap, fmt);                                                                                                            \
-            result = jump_table.SDL_vasprintf(&str, fmt, ap);                                                                                        \
+            result = jump_table.SDL_vasprintf(&str, fmt, ap);                                                                             \
             va_end(ap);                                                                                                                   \
         }                                                                                                                                 \
         if (result >= 0) {                                                                                                                \
@@ -107,7 +107,7 @@ static void SDL_InitDynamicAPI(void);
         if (str != buf) {                                                                                                                 \
             jump_table.SDL_free(str);                                                                                                     \
         }                                                                                                                                 \
-        return false;                                                                                                                 \
+        return false;                                                                                                                     \
     }                                                                                                                                     \
     _static int SDLCALL SDL_sscanf##name(const char *buf, SDL_SCANF_FORMAT_STRING const char *fmt, ...)                                   \
     {                                                                                                                                     \
@@ -149,7 +149,7 @@ static void SDL_InitDynamicAPI(void);
         va_end(ap);                                                                                                                       \
         return result;                                                                                                                    \
     }                                                                                                                                     \
-    _static size_t SDLCALL SDL_IOprintf##name(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                          \
+    _static size_t SDLCALL SDL_IOprintf##name(SDL_IOStream *context, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)                       \
     {                                                                                                                                     \
         size_t result;                                                                                                                    \
         va_list ap;                                                                                                                       \
@@ -199,7 +199,7 @@ static void SDL_InitDynamicAPI(void);
         jump_table.SDL_LogMessageV(category, priority, fmt, ap);                                                                          \
         va_end(ap);                                                                                                                       \
     }                                                                                                                                     \
-    SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Trace, TRACE)                                                                   \
+    SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Trace, TRACE)                                                                       \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Verbose, VERBOSE)                                                                   \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Debug, DEBUG)                                                                       \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Info, INFO)                                                                         \
@@ -500,9 +500,6 @@ static void dynapi_warn(const char *msg)
 extern "C" {
 #endif
 extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
-#ifdef __WATCOMC__
-#pragma aux SDL_ExitProcess aborts;
-#endif
 #ifdef __cplusplus
 }
 #endif

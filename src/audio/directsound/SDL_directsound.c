@@ -40,16 +40,16 @@ static bool SupportsIMMDevice = false;
 
 // DirectX function pointers for audio
 static SDL_SharedObject *DSoundDLL = NULL;
-typedef HRESULT(WINAPI *fnDirectSoundCreate8)(LPGUID, LPDIRECTSOUND *, LPUNKNOWN);
-typedef HRESULT(WINAPI *fnDirectSoundEnumerateW)(LPDSENUMCALLBACKW, LPVOID);
-typedef HRESULT(WINAPI *fnDirectSoundCaptureCreate8)(LPCGUID, LPDIRECTSOUNDCAPTURE8 *, LPUNKNOWN);
-typedef HRESULT(WINAPI *fnDirectSoundCaptureEnumerateW)(LPDSENUMCALLBACKW, LPVOID);
-typedef HRESULT(WINAPI *fnGetDeviceID)(LPCGUID, LPGUID);
-static fnDirectSoundCreate8 pDirectSoundCreate8 = NULL;
-static fnDirectSoundEnumerateW pDirectSoundEnumerateW = NULL;
-static fnDirectSoundCaptureCreate8 pDirectSoundCaptureCreate8 = NULL;
-static fnDirectSoundCaptureEnumerateW pDirectSoundCaptureEnumerateW = NULL;
-static fnGetDeviceID pGetDeviceID = NULL;
+typedef HRESULT (WINAPI *pfnDirectSoundCreate8)(LPGUID, LPDIRECTSOUND *, LPUNKNOWN);
+typedef HRESULT (WINAPI *pfnDirectSoundEnumerateW)(LPDSENUMCALLBACKW, LPVOID);
+typedef HRESULT (WINAPI *pfnDirectSoundCaptureCreate8)(LPCGUID, LPDIRECTSOUNDCAPTURE8 *, LPUNKNOWN);
+typedef HRESULT (WINAPI *pfnDirectSoundCaptureEnumerateW)(LPDSENUMCALLBACKW, LPVOID);
+typedef HRESULT (WINAPI *pfnGetDeviceID)(LPCGUID, LPGUID);
+static pfnDirectSoundCreate8 pDirectSoundCreate8 = NULL;
+static pfnDirectSoundEnumerateW pDirectSoundEnumerateW = NULL;
+static pfnDirectSoundCaptureCreate8 pDirectSoundCaptureCreate8 = NULL;
+static pfnDirectSoundCaptureEnumerateW pDirectSoundCaptureEnumerateW = NULL;
+static pfnGetDeviceID pGetDeviceID = NULL;
 
 #include <initguid.h>
 DEFINE_GUID(SDL_DSDEVID_DefaultPlayback, 0xdef00000, 0x9c6d, 0x47ed, 0xaa, 0xf1, 0x4d, 0xda, 0x8f, 0x2b, 0x5c, 0x03);
@@ -85,7 +85,7 @@ static bool DSOUND_Load(void)
 // Now make sure we have DirectX 8 or better...
 #define DSOUNDLOAD(f)                                  \
     {                                                  \
-        p##f = (fn##f)SDL_LoadFunction(DSoundDLL, #f); \
+        p##f = (pfn##f)SDL_LoadFunction(DSoundDLL, #f); \
         if (!p##f)                                     \
             loaded = false;                                \
     }

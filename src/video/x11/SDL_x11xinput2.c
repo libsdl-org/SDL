@@ -50,6 +50,10 @@ static Atom xinput2_rel_y_atom;
 static Atom xinput2_abs_x_atom;
 static Atom xinput2_abs_y_atom;
 
+// Pointer button remapping table
+static unsigned char *xinput2_pointer_button_map;
+static int xinput2_pointer_button_map_size;
+
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
 typedef struct
 {
@@ -327,7 +331,8 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
     XISetMask(mask, XI_HierarchyChanged);
     X11_XISelectEvents(data->display, DefaultRootWindow(data->display), &eventmask, 1);
 
-    X11_Xinput2UpdateDevices(_this, true);
+    X11_Xinput2UpdateDevices(_this);
+    X11_Xinput2UpdatePointerMapping(_this);
 
     return true;
 #else
@@ -337,6 +342,11 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
 
 void X11_QuitXinput2(SDL_VideoDevice *_this)
 {
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
+    SDL_free(xinput2_pointer_button_map);
+    xinput2_pointer_button_map = NULL;
+    xinput2_pointer_button_map_size = 0;
+
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
     for (int i = 0; i < scrollable_device_count; ++i) {
         SDL_free(scrollable_devices[i].scroll_info);
@@ -344,6 +354,30 @@ void X11_QuitXinput2(SDL_VideoDevice *_this)
     SDL_free(scrollable_devices);
     scrollable_devices = NULL;
     scrollable_device_count = 0;
+#endif
+#endif
+}
+
+void X11_Xinput2UpdatePointerMapping(SDL_VideoDevice *_this)
+{
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
+    if (X11_Xinput2IsInitialized()) {
+        SDL_VideoData *vid = _this->internal;
+
+        SDL_free(xinput2_pointer_button_map);
+        xinput2_pointer_button_map = NULL;
+        xinput2_pointer_button_map_size = 0;
+
+        xinput2_pointer_button_map_size = X11_XGetPointerMapping(vid->display, NULL, 0);
+        if (xinput2_pointer_button_map_size) {
+            xinput2_pointer_button_map = SDL_calloc(xinput2_pointer_button_map_size, sizeof(unsigned char));
+            if (xinput2_pointer_button_map) {
+                xinput2_pointer_button_map_size = X11_XGetPointerMapping(vid->display, xinput2_pointer_button_map, xinput2_pointer_button_map_size);
+            } else {
+                xinput2_pointer_button_map_size = 0;
+            }
+        }
+    }
 #endif
 }
 
@@ -562,7 +596,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     {
         const XIDeviceEvent *xev = (const XIDeviceEvent *)cookie->data;
         X11_PenHandle *pen = X11_FindPenByDeviceID(xev->sourceid);
-        const int button = xev->detail;
+        int button = xev->detail;
         const bool down = (cookie->evtype == XI_ButtonPress);
 #if defined(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO) || defined(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH)
         bool pointer_emulated = (xev->flags & XIPointerEmulated) != 0;
@@ -586,6 +620,13 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             // Otherwise assume a regular mouse
             SDL_WindowData *windowdata = xinput2_get_sdlwindowdata(videodata, xev->event);
             int x_ticks = 0, y_ticks = 0;
+
+            // Slave pointer devices don't have button remapping applied automatically, so do it manually.
+            if (xev->deviceid != videodata->xinput_master_pointer_device) {
+                if (button <= xinput2_pointer_button_map_size) {
+                    button = xinput2_pointer_button_map[button - 1];
+                }
+            }
 
             /* Discard wheel events from "Master" devices to avoid duplicates,
              * as coarse wheel events are stateless and can't be deduplicated.
@@ -896,7 +937,7 @@ static bool HasDeviceID64(Uint64 deviceID, const Uint64 *list, int count)
 
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2
 
-void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
+void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this)
 {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_VideoData *data = _this->internal;
@@ -914,7 +955,6 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
     Uint64 *old_touch_devices = NULL;
     int new_touch_count = 0;
     Uint64 *new_touch_devices = NULL;
-    bool send_event = !initial_check;
 
     SDL_assert(X11_Xinput2IsInitialized());
 
@@ -944,7 +984,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
                 SDL_KeyboardID keyboardID = (SDL_KeyboardID)dev->deviceid;
                 AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
                 if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
-                    SDL_AddKeyboard(keyboardID, dev->name, send_event);
+                    SDL_AddKeyboard(keyboardID, dev->name);
                 }
             }
             break;
@@ -956,7 +996,7 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
                 SDL_MouseID mouseID = (SDL_MouseID)dev->deviceid;
                 AddDeviceID(mouseID, &new_mice, &new_mouse_count);
                 if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
-                    SDL_AddMouse(mouseID, dev->name, send_event);
+                    SDL_AddMouse(mouseID, dev->name);
                 }
             }
             break;
@@ -1040,13 +1080,13 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this, bool initial_check)
 
     for (int i = old_keyboard_count; i--;) {
         if (!HasDeviceID(old_keyboards[i], new_keyboards, new_keyboard_count)) {
-            SDL_RemoveKeyboard(old_keyboards[i], send_event);
+            SDL_RemoveKeyboard(old_keyboards[i]);
         }
     }
 
     for (int i = old_mouse_count; i--;) {
         if (!HasDeviceID(old_mice[i], new_mice, new_mouse_count)) {
-            SDL_RemoveMouse(old_mice[i], send_event);
+            SDL_RemoveMouse(old_mice[i]);
         }
     }
 

@@ -45,7 +45,7 @@ void VITA_InitKeyboard(void)
     sceHidKeyboardEnumerate(&keyboard_hid_handle, 1);
 
     if (keyboard_hid_handle > 0) {
-        SDL_AddKeyboard((SDL_KeyboardID)keyboard_hid_handle, NULL, false);
+        SDL_AddKeyboard((SDL_KeyboardID)keyboard_hid_handle, NULL);
     }
 }
 

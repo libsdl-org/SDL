@@ -382,7 +382,6 @@ set_option(SDL_LIBUDEV             "Enable libudev support" ON)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 set_option(SDL_CCACHE              "Use Ccache to speed up build" OFF)
 set_option(SDL_CLANG_TIDY          "Run clang-tidy static analysis" OFF)
-set_option(SDL_GPU_DXVK            "Build SDL_GPU with DXVK support" OFF)
 
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
 
@@ -457,6 +456,7 @@ if(SDL_SHARED)
   add_library(SDL3-shared SHARED)
   add_library(SDL3::SDL3-shared ALIAS SDL3-shared)
   SDL_AddCommonCompilerFlags(SDL3-shared)
+  target_compile_definitions(SDL3-shared PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
   set_property(TARGET SDL3-shared PROPERTY UNITY_BUILD OFF)
   if ("c_std_99" IN_LIST CMAKE_C_COMPILE_FEATURES)
     target_compile_features(SDL3-shared PRIVATE c_std_99)
@@ -469,6 +469,7 @@ if(SDL_STATIC)
   add_library(SDL3-static STATIC)
   add_library(SDL3::SDL3-static ALIAS SDL3-static)
   SDL_AddCommonCompilerFlags(SDL3-static)
+  target_compile_definitions(SDL3-static PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
   set_property(TARGET SDL3-static PROPERTY UNITY_BUILD OFF)
   if ("c_std_99" IN_LIST CMAKE_C_COMPILE_FEATURES)
     target_compile_features(SDL3-static PRIVATE c_std_99)
@@ -481,6 +482,7 @@ if(SDL_TEST_LIBRARY)
   add_library(SDL3_test STATIC)
   add_library(SDL3::SDL3_test ALIAS SDL3_test)
   SDL_AddCommonCompilerFlags(SDL3_test)
+  target_compile_definitions(SDL3_test PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 endif()
 
 # Make sure SDL3::SDL3 always exists
@@ -637,6 +639,10 @@ if(USE_GCC OR USE_CLANG OR USE_INTELCC OR USE_QCC)
     check_c_compiler_flag(-Wno-error=deprecated-declarations COMPILER_SUPPORTS_WNO_ERROR_DEPRECATED_DECLARATIONS)
     if(COMPILER_SUPPORTS_WNO_ERROR_DEPRECATED_DECLARATIONS)
       sdl_compile_options(PRIVATE "-Wno-error=deprecated-declarations")
+    endif()
+    check_c_compiler_flag(-Wno-deprecated-declarations COMPILER_SUPPORTS_WNO_DEPRECATED_DECLARATIONS)
+    if(COMPILER_SUPPORTS_WNO_DEPRECATED_DECLARATIONS)
+      sdl_compile_options(PRIVATE "-Wno-deprecated-declarations")
     endif()
   endif()
 
@@ -1264,6 +1270,7 @@ target_include_directories(SDL_uclibc PRIVATE "${SDL3_BINARY_DIR}/include-config
 target_include_directories(SDL_uclibc PRIVATE "${SDL3_SOURCE_DIR}/src")
 target_include_directories(SDL_uclibc PRIVATE "${SDL3_SOURCE_DIR}/include")
 SDL_AddCommonCompilerFlags(SDL_uclibc)
+target_compile_definitions(SDL_uclibc PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 sdl_sources(STATIC "$<TARGET_OBJECTS:SDL_uclibc>")
 set_property(TARGET SDL_uclibc PROPERTY UNITY_BUILD OFF)
 if(TARGET SDL3-shared)
@@ -1989,16 +1996,6 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       )
     endif()
 
-    if(SDL_GPU AND SDL_GPU_DXVK)
-      if(PKG_CONFIG_FOUND)
-        pkg_search_module(DXVK_NATIVE dxvk-dxgi)
-        if(DXVK_NATIVE_FOUND)
-          set(HAVE_D3D11_H TRUE)
-          sdl_include_directories(PRIVATE SYSTEM ${DXVK_NATIVE_INCLUDE_DIRS})
-        endif()
-      endif()
-    endif()
-
     if(HAVE_LIBURING_H)
       sdl_sources("${SDL3_SOURCE_DIR}/src/io/io_uring/SDL_asyncio_liburing.c")
     endif()
@@ -2172,7 +2169,7 @@ elseif(WINDOWS)
         else()
           set(PROCESSOR_ARCH "x86")
         endif()
-        sdl_link_directories("$<BUILD_INTERFACE:$$ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH}>")
+        sdl_link_directories("$<BUILD_INTERFACE:$ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH}>")
         sdl_include_directories(PRIVATE SYSTEM "$<BUILD_INTERFACE:$ENV{DXSDK_DIR}\\Include>")
       endif()
     endif()
@@ -2183,7 +2180,8 @@ elseif(WINDOWS)
     check_c_source_compiles("
       #include <windows.h>
       #include <xinput.h>
-      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H)
+      int main(int argc, char **argv) { return 0; }" HAVE_XINPUT_H
+    )
   endif()
 
   # headers needed elsewhere
@@ -2212,6 +2210,7 @@ elseif(WINDOWS)
     #include <mfapi.h>
     #include <mfidl.h>
     #include <mfreadwrite.h>
+    static MFVideoPrimaries primaries = MFVideoPrimaries_DCI_P3;
     int main(int argc, char **argv) { return 0; }
     " HAVE_MFAPI_H
   )
@@ -2255,7 +2254,7 @@ elseif(WINDOWS)
       set(SDL_VIDEO_RENDER_D3D11 1)
       set(HAVE_RENDER_D3D11 TRUE)
     endif()
-    if(SDL_RENDER_D3D12)
+    if(SDL_RENDER_D3D12 AND HAVE_DXGI1_6_H)
       set(SDL_VIDEO_RENDER_D3D12 1)
       set(HAVE_RENDER_D3D12 TRUE)
     endif()
@@ -2606,6 +2605,7 @@ elseif(APPLE)
       set(SDL_FRAMEWORK_UIKIT 1)
       set(SDL_IPHONE_KEYBOARD 1)
       set(SDL_IPHONE_LAUNCHSCREEN 1)
+      set(SDL_FRAMEWORK_GAMECONTROLLER 1)
       sdl_glob_sources(
         "${SDL3_SOURCE_DIR}/src/video/uikit/*.m"
         "${SDL3_SOURCE_DIR}/src/video/uikit/*.h"
@@ -3389,6 +3389,10 @@ if (SDL_DIALOG)
     set(HAVE_SDL_DIALOG TRUE)
   endif()
 endif()
+if(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
+  sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/unix/SDL_zenitymessagebox.h)
+  sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/unix/SDL_zenitymessagebox.c)
+endif()
 
 sdl_sources("${SDL3_SOURCE_DIR}/src/process/SDL_process.c")
 if(WINDOWS)
@@ -3462,15 +3466,7 @@ endif()
 sdl_glob_sources(${SDL3_SOURCE_DIR}/src/tray/*.c)
 
 if(SDL_GPU)
-  if(HAVE_D3D11_H)
-    sdl_glob_sources(
-      "${SDL3_SOURCE_DIR}/src/gpu/d3d11/*.c"
-      "${SDL3_SOURCE_DIR}/src/gpu/d3d11/*.h"
-    )
-    set(SDL_GPU_D3D11 1)
-    set(HAVE_SDL_GPU TRUE)
-  endif()
-  if(WINDOWS)
+  if(HAVE_DXGI1_6_H)
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/gpu/d3d12/*.c"
       "${SDL3_SOURCE_DIR}/src/gpu/d3d12/*.h"
@@ -3486,7 +3482,7 @@ if(SDL_GPU)
     set(SDL_GPU_VULKAN 1)
     set(HAVE_SDL_GPU TRUE)
   endif()
-  if(SDL_RENDER_GPU)
+  if(SDL_RENDER_GPU AND HAVE_SDL_GPU)
     set(SDL_VIDEO_RENDER_GPU 1)
     set(HAVE_RENDER_GPU TRUE)
   endif()

@@ -1785,6 +1785,9 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
         }
     }
 
+    // texture-rectangle doesn't support GL_REPEAT, it has to be the full NPOT extension (or real OpenGL 2.0+)
+    renderer->npot_texture_wrap_unsupported = !non_power_of_two_supported;
+
     data->textype = GL_TEXTURE_2D;
     if (non_power_of_two_supported) {
         data->GL_ARB_texture_non_power_of_two_supported = true;

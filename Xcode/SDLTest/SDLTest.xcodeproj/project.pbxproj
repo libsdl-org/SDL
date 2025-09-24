@@ -162,6 +162,7 @@
 		F36C34232C0F85DB00991150 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F36C342D2C0F869B00991150 /* testcamera.c in Sources */ = {isa = PBXBuildFile; fileRef = F36C342C2C0F869B00991150 /* testcamera.c */; };
 		F36C342E2C0F869B00991150 /* testcamera.c in Sources */ = {isa = PBXBuildFile; fileRef = F36C342C2C0F869B00991150 /* testcamera.c */; };
+		F38908B72E81276900CE01D5 /* testautomation_blit.c in Sources */ = {isa = PBXBuildFile; fileRef = F38908B42E81276900CE01D5 /* testautomation_blit.c */; };
 		F399C64E2A78929400C86979 /* gamepadutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F399C6492A78929400C86979 /* gamepadutils.c */; };
 		F399C64F2A78929400C86979 /* gamepadutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F399C6492A78929400C86979 /* gamepadutils.c */; };
 		F399C6512A7892D800C86979 /* testautomation_intrinsics.c in Sources */ = {isa = PBXBuildFile; fileRef = F399C6502A7892D800C86979 /* testautomation_intrinsics.c */; };
@@ -1367,6 +1368,9 @@
 		F35E56CD2983130F00A43A5F /* testautomation_mouse.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_mouse.c; sourceTree = "<group>"; };
 		F36C34272C0F85DB00991150 /* testcamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testcamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F36C342C2C0F869B00991150 /* testcamera.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testcamera.c; sourceTree = "<group>"; };
+		F38908B42E81276900CE01D5 /* testautomation_blit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testautomation_blit.c; sourceTree = "<group>"; };
+		F38908B52E81276900CE01D5 /* testautomation_images.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testautomation_images.h; sourceTree = "<group>"; };
+		F38908B62E81276900CE01D5 /* testautomation_suites.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testautomation_suites.h; sourceTree = "<group>"; };
 		F399C6492A78929400C86979 /* gamepadutils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = gamepadutils.c; sourceTree = "<group>"; };
 		F399C6502A7892D800C86979 /* testautomation_intrinsics.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testautomation_intrinsics.c; sourceTree = "<group>"; };
 		F399C6542A78933000C86979 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -1815,10 +1819,12 @@
 				001795B01074222D00F5D044 /* testaudioinfo.c */,
 				F35E56CC2983130F00A43A5F /* testautomation.c */,
 				F35E56C42983130D00A43A5F /* testautomation_audio.c */,
+				F38908B42E81276900CE01D5 /* testautomation_blit.c */,
 				F35E56BC2983130B00A43A5F /* testautomation_clipboard.c */,
 				F35E56BB2983130B00A43A5F /* testautomation_events.c */,
 				F35E56C92983130E00A43A5F /* testautomation_guid.c */,
 				F35E56B72983130A00A43A5F /* testautomation_hints.c */,
+				F38908B52E81276900CE01D5 /* testautomation_images.h */,
 				F35E56BF2983130C00A43A5F /* testautomation_images.c */,
 				F399C6502A7892D800C86979 /* testautomation_intrinsics.c */,
 				F35E56B92983130B00A43A5F /* testautomation_iostream.c */,
@@ -1836,6 +1842,7 @@
 				F35E56C82983130E00A43A5F /* testautomation_sdltest.c */,
 				F35E56BE2983130C00A43A5F /* testautomation_stdlib.c */,
 				A1A859492BC72FC20045DD6C /* testautomation_subsystems.c */,
+				F38908B62E81276900CE01D5 /* testautomation_suites.h */,
 				F35E56CB2983130F00A43A5F /* testautomation_surface.c */,
 				A1A8594B2BC72FC20045DD6C /* testautomation_time.c */,
 				F35E56BD2983130B00A43A5F /* testautomation_timer.c */,
@@ -3478,6 +3485,7 @@
 				F35E56DE2983130F00A43A5F /* testautomation_joystick.c in Sources */,
 				F35E56D82983130F00A43A5F /* testautomation_images.c in Sources */,
 				F35E56DC2983130F00A43A5F /* testautomation_audio.c in Sources */,
+				F38908B72E81276900CE01D5 /* testautomation_blit.c in Sources */,
 				F35E56D32983130F00A43A5F /* testautomation_math.c in Sources */,
 				F35E56E02983130F00A43A5F /* testautomation_sdltest.c in Sources */,
 				F35E56D42983130F00A43A5F /* testautomation_events.c in Sources */,

@@ -4,6 +4,7 @@ import android.hardware.usb.*;
 import android.os.Build;
 import android.util.Log;
 import java.util.Arrays;
+import java.util.Locale;
 
 class HIDDeviceUSB implements HIDDevice {
 
@@ -31,7 +32,7 @@ class HIDDeviceUSB implements HIDDevice {
     }
 
     String getIdentifier() {
-        return String.format("%s/%x/%x/%d", mDevice.getDeviceName(), mDevice.getVendorId(), mDevice.getProductId(), mInterfaceIndex);
+        return String.format(Locale.ENGLISH, "%s/%x/%x/%d", mDevice.getDeviceName(), mDevice.getVendorId(), mDevice.getProductId(), mInterfaceIndex);
     }
 
     @Override

@@ -18,20 +18,32 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
 
-#ifdef SDL_VIDEO_DRIVER_PSP
+/*
+This is for generating thumbnails and videos of examples. Just include it
+temporarily and let it override SDL_RenderPresent, etc, and it'll dump each
+frame rendered to a new .bmp file.
+*/
 
-#include <stdio.h>
-
-#include "../../events/SDL_events_c.h"
-
-#include "SDL_pspmouse_c.h"
-
-// The implementation dependent data for the window manager cursor
-struct WMcursor
+static bool SAVERENDERING_SDL_RenderPresent(SDL_Renderer *renderer)
 {
-    int unused;
-};
+    static unsigned int framenum = 0;
+    SDL_Surface *surface = SDL_RenderReadPixels(renderer, NULL);
+    if (!surface) {
+        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to read pixels for frame #%u! (%s)", framenum, SDL_GetError());
+    } else {
+        char fname[64];
+        SDL_snprintf(fname, sizeof (fname), "frame%05u.bmp", framenum);
+        if (!SDL_SaveBMP(surface, fname)) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to save bmp for frame #%u! (%s)", framenum, SDL_GetError());
+        }
+        SDL_DestroySurface(surface);
+    }
 
-#endif // SDL_VIDEO_DRIVER_PSP
+    framenum++;
+
+    return SDL_RenderPresent(renderer);
+}
+
+#define SDL_RenderPresent SAVERENDERING_SDL_RenderPresent
+

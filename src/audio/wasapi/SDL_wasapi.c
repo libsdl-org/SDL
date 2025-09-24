@@ -45,8 +45,8 @@
 
 // handle to Avrt.dll--Vista and later!--for flagging the callback thread as "Pro Audio" (low latency).
 static HMODULE libavrt = NULL;
-typedef HANDLE(WINAPI *pfnAvSetMmThreadCharacteristicsW)(LPCWSTR, LPDWORD);
-typedef BOOL(WINAPI *pfnAvRevertMmThreadCharacteristics)(HANDLE);
+typedef HANDLE (WINAPI *pfnAvSetMmThreadCharacteristicsW)(LPCWSTR, LPDWORD);
+typedef BOOL (WINAPI *pfnAvRevertMmThreadCharacteristics)(HANDLE);
 static pfnAvSetMmThreadCharacteristicsW pAvSetMmThreadCharacteristicsW = NULL;
 static pfnAvRevertMmThreadCharacteristics pAvRevertMmThreadCharacteristics = NULL;
 

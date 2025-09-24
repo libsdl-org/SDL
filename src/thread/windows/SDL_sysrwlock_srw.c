@@ -27,13 +27,13 @@
 // This header makes sure SRWLOCK is actually declared, even on ancient WinSDKs.
 #include "SDL_sysmutex_c.h"
 
-typedef VOID(WINAPI *pfnInitializeSRWLock)(PSRWLOCK);
-typedef VOID(WINAPI *pfnReleaseSRWLockShared)(PSRWLOCK);
-typedef VOID(WINAPI *pfnAcquireSRWLockShared)(PSRWLOCK);
-typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockShared)(PSRWLOCK);
-typedef VOID(WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
-typedef VOID(WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
-typedef BOOLEAN(WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
+typedef VOID (WINAPI *pfnInitializeSRWLock)(PSRWLOCK);
+typedef VOID (WINAPI *pfnReleaseSRWLockShared)(PSRWLOCK);
+typedef VOID (WINAPI *pfnAcquireSRWLockShared)(PSRWLOCK);
+typedef BOOLEAN (WINAPI *pfnTryAcquireSRWLockShared)(PSRWLOCK);
+typedef VOID (WINAPI *pfnReleaseSRWLockExclusive)(PSRWLOCK);
+typedef VOID (WINAPI *pfnAcquireSRWLockExclusive)(PSRWLOCK);
+typedef BOOLEAN (WINAPI *pfnTryAcquireSRWLockExclusive)(PSRWLOCK);
 
 static pfnInitializeSRWLock pInitializeSRWLock = NULL;
 static pfnReleaseSRWLockShared pReleaseSRWLockShared = NULL;

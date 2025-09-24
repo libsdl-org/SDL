@@ -1050,8 +1050,6 @@ void Wayland_RecreateCursors(void)
 void Wayland_InitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *d = vd->internal;
 
     mouse->CreateCursor = Wayland_CreateCursor;
     mouse->CreateSystemCursor = Wayland_CreateSystemCursor;
@@ -1100,7 +1098,10 @@ void Wayland_InitMouse(void)
     }
 
 #ifdef SDL_USE_LIBDBUS
-    /* The DBus cursor properties are only needed when manually loading themes and cursors.
+    SDL_VideoDevice *vd = SDL_GetVideoDevice();
+    SDL_VideoData *d = vd->internal;
+
+    /* The D-Bus cursor properties are only needed when manually loading themes and system cursors.
      * If the cursor shape protocol is present, the compositor will handle it internally.
      */
     if (!d->cursor_shape_manager) {

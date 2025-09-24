@@ -2295,6 +2295,12 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         data->GL_EXT_blend_minmax_supported = true;
     }
 
+    // Full NPOT textures (that can use GL_REPEAT, etc) are a core feature of GLES3,
+    //  and an extension in GLES2.
+    if ((major < 3) && !SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+        renderer->npot_texture_wrap_unsupported = true;
+    }
+
     // Set up parameters for rendering
     data->glDisable(GL_DEPTH_TEST);
     data->glDisable(GL_CULL_FACE);

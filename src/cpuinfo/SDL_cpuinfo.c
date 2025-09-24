@@ -174,7 +174,7 @@ static int CPU_haveCPUID(void)
     :
     : "%rax", "%rcx"
     );
-#elif (defined(_MSC_VER) && defined(_M_IX86)) || defined(__WATCOMC__)
+#elif defined(_MSC_VER) && defined(_M_IX86)
     __asm {
         pushfd                      ; Get original EFLAGS
         pop     eax
@@ -247,7 +247,7 @@ done:
         "        popq %%rbx         \n"      \
         : "=a"(a), "=S"(b), "=c"(c), "=d"(d) \
         : "a"(func))
-#elif (defined(_MSC_VER) && defined(_M_IX86)) || defined(__WATCOMC__)
+#elif defined(_MSC_VER) && defined(_M_IX86)
 #define cpuid(func, a, b, c, d) \
     __asm { \
         __asm mov eax, func \
@@ -311,7 +311,7 @@ static void CPU_calcCPUIDFeatures(void)
                             : "%edx");
 #elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) && (_MSC_FULL_VER >= 160040219) // VS2010 SP1
                     a = (int)_xgetbv(0);
-#elif (defined(_MSC_VER) && defined(_M_IX86)) || defined(__WATCOMC__)
+#elif defined(_MSC_VER) && defined(_M_IX86)
                     __asm
                         {
                         xor ecx, ecx

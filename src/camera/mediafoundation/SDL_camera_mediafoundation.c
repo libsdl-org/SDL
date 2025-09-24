@@ -324,18 +324,18 @@ static const GUID *SDLFmtToMFVidFmtGuid(SDL_PixelFormat format)
 
 // mf.dll ...
 static HMODULE libmf = NULL;
-typedef HRESULT(WINAPI *pfnMFEnumDeviceSources)(IMFAttributes *,IMFActivate ***,UINT32 *);
-typedef HRESULT(WINAPI *pfnMFCreateDeviceSource)(IMFAttributes  *, IMFMediaSource **);
+typedef HRESULT (WINAPI *pfnMFEnumDeviceSources)(IMFAttributes *,IMFActivate ***,UINT32 *);
+typedef HRESULT (WINAPI *pfnMFCreateDeviceSource)(IMFAttributes  *, IMFMediaSource **);
 static pfnMFEnumDeviceSources pMFEnumDeviceSources = NULL;
 static pfnMFCreateDeviceSource pMFCreateDeviceSource = NULL;
 
 // mfplat.dll ...
 static HMODULE libmfplat = NULL;
-typedef HRESULT(WINAPI *pfnMFStartup)(ULONG, DWORD);
-typedef HRESULT(WINAPI *pfnMFShutdown)(void);
-typedef HRESULT(WINAPI *pfnMFCreateAttributes)(IMFAttributes **, UINT32);
-typedef HRESULT(WINAPI *pfnMFCreateMediaType)(IMFMediaType **);
-typedef HRESULT(WINAPI *pfnMFGetStrideForBitmapInfoHeader)(DWORD, DWORD, LONG *);
+typedef HRESULT (WINAPI *pfnMFStartup)(ULONG, DWORD);
+typedef HRESULT (WINAPI *pfnMFShutdown)(void);
+typedef HRESULT (WINAPI *pfnMFCreateAttributes)(IMFAttributes **, UINT32);
+typedef HRESULT (WINAPI *pfnMFCreateMediaType)(IMFMediaType **);
+typedef HRESULT (WINAPI *pfnMFGetStrideForBitmapInfoHeader)(DWORD, DWORD, LONG *);
 
 static pfnMFStartup pMFStartup = NULL;
 static pfnMFShutdown pMFShutdown = NULL;
@@ -345,7 +345,7 @@ static pfnMFGetStrideForBitmapInfoHeader pMFGetStrideForBitmapInfoHeader = NULL;
 
 // mfreadwrite.dll ...
 static HMODULE libmfreadwrite = NULL;
-typedef HRESULT(WINAPI *pfnMFCreateSourceReaderFromMediaSource)(IMFMediaSource *, IMFAttributes *, IMFSourceReader **);
+typedef HRESULT (WINAPI *pfnMFCreateSourceReaderFromMediaSource)(IMFMediaSource *, IMFAttributes *, IMFSourceReader **);
 static pfnMFCreateSourceReaderFromMediaSource pMFCreateSourceReaderFromMediaSource = NULL;
 
 

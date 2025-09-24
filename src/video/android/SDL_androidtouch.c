@@ -57,8 +57,8 @@ SDL_TouchID Android_ConvertJavaTouchID(int touchID)
         //  adb shell input mouse tap 100 100
         //  adb shell input touchscreen tap 100 100
         //
-        // Prevent to be -1, since it's used in SDL internal for synthetic events:
-        retval -= 1;
+        // Prevent the values -1 and -2, since they're used in SDL internal for synthetic events:
+        retval -= 2;
     } else {
         // Touch ID 0 is invalid
         retval += 1;

@@ -1288,3 +1288,5 @@ SDL_DYNAPI_PROC(int,SDL_GetEventDescription,(const SDL_Event *a,char *b,int c),(
 SDL_DYNAPI_PROC(bool,SDL_PutAudioStreamDataNoCopy,(SDL_AudioStream *a,const void *b,int c,SDL_AudioStreamDataCompleteCallback d,void *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(Uint32,SDL_AddAtomicU32,(SDL_AtomicU32 *a,int b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_hid_get_properties,(SDL_hid_device *a),(a),return)
+SDL_DYNAPI_PROC(SDL_PixelFormat,SDL_GetPixelFormatFromGPUTextureFormat,(SDL_GPUTextureFormat a),(a),return)
+SDL_DYNAPI_PROC(SDL_GPUTextureFormat,SDL_GetGPUTextureFormatFromPixelFormat,(SDL_PixelFormat a),(a),return)

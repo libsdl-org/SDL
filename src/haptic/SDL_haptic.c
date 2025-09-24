@@ -107,10 +107,10 @@ static int SDL_Haptic_Get_Naxes(Uint16 vid, Uint16 pid)
 
 static SDL_Haptic *SDL_haptics = NULL;
 
-#define CHECK_HAPTIC_MAGIC(haptic, result)                  \
-    if (!SDL_ObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC)) { \
-        SDL_InvalidParamError("haptic");                    \
-        return result;                                      \
+#define CHECK_HAPTIC_MAGIC(haptic, result)                          \
+    CHECK_PARAM(!SDL_ObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC)) { \
+        SDL_InvalidParamError("haptic");                            \
+        return result;                                              \
     }
 
 bool SDL_InitHaptics(void)
@@ -512,7 +512,7 @@ bool SDL_HapticEffectSupported(SDL_Haptic *haptic, const SDL_HapticEffect *effec
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
-    if (!effect) {
+    CHECK_PARAM(!effect) {
         return false;
     }
 
@@ -528,7 +528,7 @@ SDL_HapticEffectID SDL_CreateHapticEffect(SDL_Haptic *haptic, const SDL_HapticEf
 
     CHECK_HAPTIC_MAGIC(haptic, -1);
 
-    if (!effect) {
+    CHECK_PARAM(!effect) {
         SDL_InvalidParamError("effect");
         return -1;
     }
@@ -577,24 +577,24 @@ bool SDL_UpdateHapticEffect(SDL_Haptic *haptic, SDL_HapticEffectID effect, const
 {
     CHECK_HAPTIC_MAGIC(haptic, false);
 
+    CHECK_PARAM(!ValidEffect(haptic, effect)) {
+        return false;
+    }
+
+    CHECK_PARAM(!data) {
+        return SDL_InvalidParamError("data");
+    }
+
+    // Can't change type dynamically.
+    CHECK_PARAM(data->type != haptic->effects[effect].effect.type) {
+        return SDL_SetError("Haptic: Updating effect type is illegal.");
+    }
+
     #ifdef SDL_JOYSTICK_HIDAPI
     if (SDL_HIDAPI_HapticIsHidapi(haptic)) {
         return SDL_HIDAPI_HapticUpdateEffect(haptic, effect, data);
     }
     #endif
-
-    if (!ValidEffect(haptic, effect)) {
-        return false;
-    }
-
-    if (!data) {
-        return SDL_InvalidParamError("data");
-    }
-
-    // Can't change type dynamically.
-    if (data->type != haptic->effects[effect].effect.type) {
-        return SDL_SetError("Haptic: Updating effect type is illegal.");
-    }
 
     // Updates the effect
     if (!SDL_SYS_HapticUpdateEffect(haptic, &haptic->effects[effect], data)) {
