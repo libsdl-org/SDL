@@ -115,7 +115,7 @@ static const char g_ToolkitFontLatin1Fallback[] =
     "-*-*-*-*-*--*-*-*-*-*-*-iso8859-1";    
     
 static const char *g_ToolkitFont[] = {
-    "-*-*-medium-r-normal--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
+    "-sony-*-medium-r-normal--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
     "-*-*-medium-r-*--*-%d-*-*-*-*-iso10646-1",  // explicitly unicode (iso10646-1)
     "-misc-*-*-*-*--*-*-*-*-*-*-iso10646-1",  // misc unicode (fix for some systems)
     "-*-*-*-*-*--*-*-*-*-*-*-iso10646-1",  // just give me anything Unicode.
