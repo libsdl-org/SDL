@@ -1282,3 +1282,4 @@
 #define SDL_hid_get_properties SDL_hid_get_properties_REAL
 #define SDL_GetPixelFormatFromGPUTextureFormat SDL_GetPixelFormatFromGPUTextureFormat_REAL
 #define SDL_GetGPUTextureFormatFromPixelFormat SDL_GetGPUTextureFormatFromPixelFormat_REAL
+#define JNI_OnLoad JNI_OnLoad_REAL
