@@ -404,7 +404,7 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
     } else {
         res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
         if (res < 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request user calibration data: %d", res);
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read user calibration data: %d", res);
         } else if (calibration_data[0x10] == 0xb2 && calibration_data[0x11] == 0xa1) {
             ParseStickCalibration(&ctx->left_stick, &calibration_data[0x12]);
         }
