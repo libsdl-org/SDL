@@ -40,6 +40,8 @@
 #include <SDL3/SDL.h>
 #define SDL_MAIN_NOIMPL // don't drag in header-only implementation of SDL_main
 #include <SDL3/SDL_main.h>
+#include "../core/SDL_core_unsupported.h"
+#include "../video/SDL_video_unsupported.h"
 
 
 // These headers have system specific definitions, so aren't included above

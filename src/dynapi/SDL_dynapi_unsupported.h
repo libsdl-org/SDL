@@ -33,20 +33,4 @@ typedef struct ID3D11Device ID3D11Device;
 typedef struct IDirect3DDevice9 IDirect3DDevice9;
 #endif
 
-#ifndef SDL_PLATFORM_GDK
-typedef struct XTaskQueueHandle XTaskQueueHandle;
-#endif
-
-#ifndef SDL_PLATFORM_GDK
-typedef struct XUserHandle XUserHandle;
-#endif
-
-#ifndef SDL_PLATFORM_ANDROID
-typedef void *SDL_RequestAndroidPermissionCallback;
-#endif
-
-#ifndef SDL_PLATFORM_IOS
-typedef void *SDL_iOSAnimationCallback;
-#endif
-
 #endif
