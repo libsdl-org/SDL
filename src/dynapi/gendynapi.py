@@ -45,6 +45,7 @@ SDL_INCLUDE_DIR = SDL_ROOT / "include/SDL3"
 SDL_DYNAPI_PROCS_H = SDL_ROOT / "src/dynapi/SDL_dynapi_procs.h"
 SDL_DYNAPI_OVERRIDES_H = SDL_ROOT / "src/dynapi/SDL_dynapi_overrides.h"
 SDL_DYNAPI_SYM = SDL_ROOT / "src/dynapi/SDL_dynapi.sym"
+TESTSYMBOLS = SDL_ROOT / "test/testsymbols.c"
 
 RE_EXTERN_C = re.compile(r'.*extern[ "]*C[ "].*')
 RE_COMMENT_REMOVE_CONTENT = re.compile(r'\/\*.*\*/')
@@ -508,6 +509,20 @@ def add_dyn_api(proc: SdlProcedure) -> None:
             new_input.append(line)
 
     with SDL_DYNAPI_SYM.open('w', newline='') as f:
+        for line in new_input:
+            f.write(line)
+
+    # File: test/testsymbols.c
+    #
+    # Add before "extra symbols go here" line
+    with TESTSYMBOLS.open() as f:
+        new_input = []
+        for line in f:
+            if "extra symbols go here" in line:
+                new_input.append(f"    SDL_SYMBOL_ITEM({proc.name}),\n")
+            new_input.append(line)
+
+    with TESTSYMBOLS.open("w", newline="") as f:
         for line in new_input:
             f.write(line)
 
