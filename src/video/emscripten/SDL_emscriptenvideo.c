@@ -31,6 +31,7 @@
 #include "SDL_emscriptenframebuffer.h"
 #include "SDL_emscriptenevents.h"
 #include "SDL_emscriptenmouse.h"
+#include "SDL_emscriptenclipboard.h"
 
 #define EMSCRIPTENVID_DRIVER_NAME "emscripten"
 
@@ -183,6 +184,11 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->GL_GetSwapInterval = Emscripten_GLES_GetSwapInterval;
     device->GL_SwapWindow = Emscripten_GLES_SwapWindow;
     device->GL_DestroyContext = Emscripten_GLES_DestroyContext;
+
+    device->GetTextMimeTypes = Emscripten_GetTextMimeTypes;
+    device->SetClipboardData = Emscripten_SetClipboardData;
+    device->GetClipboardData = Emscripten_GetClipboardData;
+    device->HasClipboardData = Emscripten_HasClipboardData;
 
     device->free = Emscripten_DeleteDevice;
 
@@ -392,6 +398,8 @@ bool Emscripten_VideoInit(SDL_VideoDevice *_this)
 
     Emscripten_RegisterGlobalEventHandlers(_this);
 
+    Emscripten_InitClipboard(_this);
+
     // We're done!
     return true;
 }
@@ -407,6 +415,7 @@ static void Emscripten_VideoQuit(SDL_VideoDevice *_this)
     Emscripten_UnregisterGlobalEventHandlers(_this);
     Emscripten_QuitMouse();
     Emscripten_UnlistenSystemTheme();
+    Emscripten_QuitClipboard(_this);
     pumpevents_has_run = false;
     pending_swap_interval = -1;
 }
