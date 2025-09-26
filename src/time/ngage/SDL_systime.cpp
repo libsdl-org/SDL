@@ -169,6 +169,26 @@ bool SDL_GetCurrentTime(SDL_Time *ticks)
     return true;
 }
 
+bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
+{
+    CHECK_PARAM(!dt) {
+        return SDL_InvalidParamError("dt");
+    }
+
+    // FIXME: Need implementation
+    dt->year = 1970;
+    dt->month = 1;
+    dt->day = 1;
+    dt->hour = 0;
+    dt->minute = 0;
+    dt->second = 0;
+    dt->nanosecond = 0;
+    dt->day_of_week = 4;
+    dt->utc_offset = 0;
+
+    return true;
+}
+
 static TTime UnixEpoch()
 {
     _LIT(KUnixEpoch, "19700101:000000.000000");
