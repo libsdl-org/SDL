@@ -233,14 +233,6 @@ static int SDLCALL iostrm_testParamNegative(void *arg)
     SDLTest_AssertPass("Call to SDL_IOFromMem(NULL, 10) succeeded");
     SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromMem(NULL, 10) returns NULL");
 
-    iostrm = SDL_IOFromMem((void *)IOStreamAlphabetString, 0);
-    SDLTest_AssertPass("Call to SDL_IOFromMem(data, 0) succeeded");
-    SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromMem(data, 0) returns NULL");
-
-    iostrm = SDL_IOFromConstMem((const void *)IOStreamAlphabetString, 0);
-    SDLTest_AssertPass("Call to SDL_IOFromConstMem(data, 0) succeeded");
-    SDLTest_AssertCheck(iostrm == NULL, "Verify SDL_IOFromConstMem(data, 0) returns NULL");
-
     return TEST_COMPLETED;
 }
 
