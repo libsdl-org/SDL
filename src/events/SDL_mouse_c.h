@@ -149,6 +149,7 @@ typedef struct
     SDL_Cursor *def_cursor;
     SDL_Cursor *cur_cursor;
     bool cursor_visible;
+    bool cursor_auto_redraw;
 
     // Driver-dependent data.
     void *internal;
