@@ -147,6 +147,7 @@ static const SDL_MessageBoxColor g_default_colors_dark[SDL_MESSAGEBOX_COLOR_COUN
     { 36, 36, 36 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
 };
 
+#if 0
 static const SDL_MessageBoxColor g_default_colors_dark_high_contrast[SDL_MESSAGEBOX_COLOR_COUNT] = {
     { 0, 0, 0 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
     { 255, 255, 255 }, // SDL_MESSAGEBOX_COLOR_TEXT,
@@ -162,6 +163,8 @@ static const SDL_MessageBoxColor g_default_colors_light_high_contrast[SDL_MESSAG
     { 255, 255, 255 },  // SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
     { 20, 230, 255 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
 };
+#endif
+
 #endif
 
 static int g_shm_error;
@@ -682,12 +685,14 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
             case SDL_SYSTEM_THEME_DARK:
                 colorhints = g_default_colors_dark;
                 break;
+#if 0
             case SDL_SYSTEM_THEME_LIGHT_HIGH_CONTRAST:
                 colorhints = g_default_colors_light_high_contrast;
                 break;
             case SDL_SYSTEM_THEME_DARK_HIGH_CONTRAST:
                 colorhints = g_default_colors_dark_high_contrast;
                 break;
+#endif
             default:
                 colorhints = g_default_colors;
         }

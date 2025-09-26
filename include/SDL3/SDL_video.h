@@ -109,9 +109,7 @@ typedef enum SDL_SystemTheme
 {
     SDL_SYSTEM_THEME_UNKNOWN,   /**< Unknown system theme */
     SDL_SYSTEM_THEME_LIGHT,     /**< Light colored system theme */
-    SDL_SYSTEM_THEME_DARK,       /**< Dark colored system theme */
-    SDL_SYSTEM_THEME_LIGHT_HIGH_CONTRAST, /**< Light colored high contrast system theme */
-    SDL_SYSTEM_THEME_DARK_HIGH_CONTRAST   /**< Dark colored high contrast system theme */
+    SDL_SYSTEM_THEME_DARK       /**< Dark colored system theme */
 } SDL_SystemTheme;
 
 /**
