@@ -81,6 +81,7 @@ struct SDL_Texture
     int refcount;               /**< Application reference count, used when freeing texture */
 
     // Private API definition
+    SDL_Renderer *renderer;
     SDL_Colorspace colorspace;  // The colorspace of the texture
     float SDR_white_point;      // The SDR white point for this content
     float HDR_headroom;         // The HDR headroom needed by this content
@@ -89,8 +90,9 @@ struct SDL_Texture
     SDL_ScaleMode scaleMode;    // The texture scale mode
     SDL_FColor color;           // Texture modulation values
     SDL_RenderViewState view;   // Target texture view state
-
-    SDL_Renderer *renderer;
+    SDL_Palette *palette;
+    Uint32 palette_version;
+    SDL_Surface *palette_surface;
 
     // Support for formats not supported directly by the renderer
     SDL_Texture *native;
@@ -233,6 +235,7 @@ struct SDL_Renderer
 
     void (*InvalidateCachedState)(SDL_Renderer *renderer);
     bool (*RunCommandQueue)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
+    bool (*UpdateTexturePalette)(SDL_Renderer *renderer, SDL_Texture *texture);
     bool (*UpdateTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                          const SDL_Rect *rect, const void *pixels,
                          int pitch);

@@ -126,6 +126,20 @@ static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     return true;
 }
 
+static bool SW_UpdateTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+    SDL_Surface *surface = (SDL_Surface *)texture->internal;
+    SDL_Palette *palette = texture->palette;
+
+    if (!surface->palette) {
+        surface->palette = SDL_CreatePalette(1 << SDL_BITSPERPIXEL(surface->format));
+        if (!surface->palette) {
+            return false;
+        }
+    }
+    return SDL_SetPaletteColors(surface->palette, palette->colors, 0, palette->ncolors);
+}
+
 static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                             const SDL_Rect *rect, const void *pixels, int pitch)
 {
@@ -1115,6 +1129,9 @@ static void SW_SelectBestFormats(SDL_Renderer *renderer, SDL_PixelFormat format)
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
     }
+
+    // Add 8-bit palettized format
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
 }
 
 bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SDL_PropertiesID create_props)
@@ -1142,6 +1159,7 @@ bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, S
     renderer->WindowEvent = SW_WindowEvent;
     renderer->GetOutputSize = SW_GetOutputSize;
     renderer->CreateTexture = SW_CreateTexture;
+    renderer->UpdateTexturePalette = SW_UpdateTexturePalette;
     renderer->UpdateTexture = SW_UpdateTexture;
     renderer->LockTexture = SW_LockTexture;
     renderer->UnlockTexture = SW_UnlockTexture;
