@@ -585,7 +585,7 @@ static bool WGI_JoystickInit(void)
 {
     HRESULT hr;
 
-    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, true)) {
+    if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_WGI, false)) {
         return true;
     }
 

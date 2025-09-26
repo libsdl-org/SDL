@@ -26,10 +26,6 @@
 #include "SDL_x11video.h"
 #include "SDL_x11settings.h"
 
-#define SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR "Gdk/WindowScalingFactor"
-#define SDL_XSETTINGS_GDK_UNSCALED_DPI "Gdk/UnscaledDPI"
-#define SDL_XSETTINGS_XFT_DPI "Xft/DPI"
-
 static void UpdateContentScale(SDL_VideoDevice *_this)
 {
     if (_this) {
@@ -45,7 +41,7 @@ static void X11_XsettingsNotify(const char *name, XSettingsAction action, XSetti
     SDL_VideoDevice *_this = data;
 
     if (SDL_strcmp(name, SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR) == 0 ||
-    	SDL_strcmp(name, SDL_XSETTINGS_GDK_UNSCALED_DPI) == 0 ||
+        SDL_strcmp(name, SDL_XSETTINGS_GDK_UNSCALED_DPI) == 0 ||
         SDL_strcmp(name, SDL_XSETTINGS_XFT_DPI) == 0) {
         UpdateContentScale(_this);
     }

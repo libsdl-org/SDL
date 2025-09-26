@@ -269,6 +269,7 @@ struct SDL_Renderer
     SDL_PixelFormat *texture_formats;
     int num_texture_formats;
     bool software;
+    bool npot_texture_wrap_unsupported;
 
     // The window associated with the renderer
     SDL_Window *window;

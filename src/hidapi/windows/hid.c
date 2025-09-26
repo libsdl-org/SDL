@@ -1399,6 +1399,11 @@ int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char 
 		}
 	}
 	if (!res) {
+		if (GetLastError() == ERROR_OPERATION_ABORTED) {
+			/* The read request was issued on another thread.
+			   This is harmless, so just ignore it. */
+			return 0;
+		}
 		register_winapi_error(dev, L"hid_read_timeout/GetOverlappedResult");
 	}
 

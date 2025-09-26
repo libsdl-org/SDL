@@ -1,8 +1,8 @@
 package org.libsdl.app;
 
+import android.app.Activity;
 import android.content.Context;
 
-import java.lang.Class;
 import java.lang.reflect.Method;
 
 /**
@@ -28,12 +28,12 @@ public class SDL {
     }
 
     // This function stores the current activity (SDL or not)
-    static public void setContext(Context context) {
+    static public void setContext(Activity context) {
         SDLAudioManager.setContext(context);
         mContext = context;
     }
 
-    static public Context getContext() {
+    static public Activity getContext() {
         return mContext;
     }
 
@@ -86,5 +86,5 @@ public class SDL {
         }
     }
 
-    protected static Context mContext;
+    protected static Activity mContext;
 }

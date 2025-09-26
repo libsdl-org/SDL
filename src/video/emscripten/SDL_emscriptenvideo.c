@@ -376,7 +376,7 @@ bool Emscripten_VideoInit(SDL_VideoDevice *_this)
 
     // Use a fake 32-bpp desktop mode
     SDL_zero(mode);
-    mode.format = SDL_PIXELFORMAT_XRGB8888;
+    mode.format = SDL_PIXELFORMAT_RGBA32;
     emscripten_get_screen_size(&mode.w, &mode.h);
     mode.pixel_density = emscripten_get_device_pixel_ratio();
 
@@ -387,8 +387,8 @@ bool Emscripten_VideoInit(SDL_VideoDevice *_this)
     Emscripten_InitMouse();
 
     // Assume we have a mouse and keyboard
-    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
-    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
+    SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL);
+    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL);
 
     Emscripten_RegisterGlobalEventHandlers(_this);
 

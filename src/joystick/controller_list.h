@@ -540,8 +540,11 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x05ac, 0x0002 ), k_eControllerType_AppleController, NULL },	// MFI Standard Gamepad (generic entry for iOS/tvOS)
 
     { MAKE_CONTROLLER_ID( 0x057e, 0x2006 ), k_eControllerType_SwitchJoyConLeft, NULL },    // Nintendo Switch Joy-Con (Left)
+    { MAKE_CONTROLLER_ID( 0x057e, 0x2067 ), k_eControllerType_SwitchJoyConLeft, NULL },    // Nintendo Switch 2 Joy-Con (Left)
     { MAKE_CONTROLLER_ID( 0x057e, 0x2007 ), k_eControllerType_SwitchJoyConRight, NULL },   // Nintendo Switch Joy-Con (Right)
+    { MAKE_CONTROLLER_ID( 0x057e, 0x2066 ), k_eControllerType_SwitchJoyConRight, NULL },   // Nintendo Switch 2 Joy-Con (Right)
     { MAKE_CONTROLLER_ID( 0x057e, 0x2008 ), k_eControllerType_SwitchJoyConPair, NULL },    // Nintendo Switch Joy-Con (Left+Right Combined)
+    { MAKE_CONTROLLER_ID( 0x057e, 0x2068 ), k_eControllerType_SwitchJoyConPair, NULL },    // Nintendo Switch 2 Joy-Con (Left+Right Combined)
 
     // This same controller ID is spoofed by many 3rd-party Switch controllers.
     // The ones we currently know of are:
@@ -550,6 +553,7 @@ static const ControllerDescription_t arrControllers[] = {
     // * ZhiXu Gamepad Wireless
     // * Sunwaytek Wireless Motion Controller for Nintendo Switch
 	{ MAKE_CONTROLLER_ID( 0x057e, 0x2009 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Switch Pro Controller
+	{ MAKE_CONTROLLER_ID( 0x057e, 0x2069 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Switch 2 Pro Controller
     //{ MAKE_CONTROLLER_ID( 0x057e, 0x2017 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online SNES Controller
     //{ MAKE_CONTROLLER_ID( 0x057e, 0x2019 ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online N64 Controller
     //{ MAKE_CONTROLLER_ID( 0x057e, 0x201e ), k_eControllerType_SwitchProController, NULL },        // Nintendo Online SEGA Genesis Controller

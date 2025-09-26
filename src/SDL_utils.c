@@ -137,6 +137,32 @@ Uint32 SDL_GetNextObjectID(void)
 
 static SDL_InitState SDL_objects_init;
 static SDL_HashTable *SDL_objects;
+bool SDL_object_validation = false;
+
+static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    bool validation_enabled = false;
+
+#ifdef SDL_ASSERT_INVALID_PARAMS
+    // Full validation is enabled by default
+    validation_enabled = true;
+#endif
+
+    if (hint) {
+        switch (*hint) {
+        case '0':
+        case '1':
+            validation_enabled = false;
+            break;
+        case '2':
+            validation_enabled = true;
+            break;
+        default:
+            break;
+        }
+    }
+    SDL_object_validation = validation_enabled;
+}
 
 static Uint32 SDLCALL SDL_HashObject(void *unused, const void *key)
 {
@@ -159,6 +185,7 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
         if (!initialized) {
             return;
         }
+        SDL_AddHintCallback(SDL_HINT_INVALID_PARAM_CHECKS, SDL_InvalidParamChecksChanged, NULL);
     }
 
     if (valid) {
@@ -168,12 +195,8 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
     }
 }
 
-bool SDL_ObjectValid(void *object, SDL_ObjectType type)
+bool SDL_FindObject(void *object, SDL_ObjectType type)
 {
-    if (!object) {
-        return false;
-    }
-
     const void *object_type;
     if (!SDL_FindInHashTable(SDL_objects, object, &object_type)) {
         return false;
@@ -242,6 +265,7 @@ void SDL_SetObjectsInvalid(void)
         SDL_DestroyHashTable(SDL_objects);
         SDL_objects = NULL;
         SDL_SetInitialized(&SDL_objects_init, false);
+        SDL_RemoveHintCallback(SDL_HINT_INVALID_PARAM_CHECKS, SDL_InvalidParamChecksChanged, NULL);
     }
 }
 

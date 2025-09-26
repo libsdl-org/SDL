@@ -2319,6 +2319,8 @@ static void METAL_BeginRenderPass(
                 depthStencilTargetInfo->cycle);
 
             passDescriptor.depthAttachment.texture = texture->handle;
+            passDescriptor.depthAttachment.level = depthStencilTargetInfo->mip_level;
+            passDescriptor.depthAttachment.slice = depthStencilTargetInfo->layer;
             passDescriptor.depthAttachment.loadAction = SDLToMetal_LoadOp[depthStencilTargetInfo->load_op];
             passDescriptor.depthAttachment.storeAction = SDLToMetal_StoreOp[depthStencilTargetInfo->store_op];
             passDescriptor.depthAttachment.clearDepth = depthStencilTargetInfo->clear_depth;
@@ -2352,8 +2354,8 @@ static void METAL_BeginRenderPass(
 
         if (depthStencilTargetInfo != NULL) {
             MetalTextureContainer *container = (MetalTextureContainer *)depthStencilTargetInfo->texture;
-            Uint32 w = container->header.info.width;
-            Uint32 h = container->header.info.height;
+            Uint32 w = container->header.info.width >> depthStencilTargetInfo->mip_level;
+            Uint32 h = container->header.info.height >> depthStencilTargetInfo->mip_level;
 
             if (w < vpWidth) {
                 vpWidth = w;

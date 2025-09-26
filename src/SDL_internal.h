@@ -266,11 +266,40 @@ extern "C" {
 #include "SDL_utils_c.h"
 #include "SDL_hashtable.h"
 
+/* SDL_ExitProcess is not declared in any public header, although
+   it is shared between some parts of SDL, because we don't want
+   anything calling it without an extremely good reason. */
+extern SDL_NORETURN void SDL_ExitProcess(int exitcode);
+
+#ifdef HAVE_LIBC
+#define SDL_abort() abort()
+#else
+#define SDL_abort() do {                                        \
+        SDL_TriggerBreakpoint();                                \
+        SDL_ExitProcess(42);                                    \
+    } while (0)
+#endif
+
 #define PUSH_SDL_ERROR() \
     { char *_error = SDL_strdup(SDL_GetError());
 
 #define POP_SDL_ERROR() \
     SDL_SetError("%s", _error); SDL_free(_error); }
+
+#if defined(SDL_DISABLE_INVALID_PARAMS)
+#ifdef DEBUG
+// If you define SDL_DISABLE_INVALID_PARAMS, you're promising that you'll
+// never pass an invalid parameter to SDL, since it may crash or lead to
+// hard to diagnose bugs. Let's assert that this is true in debug builds.
+#define CHECK_PARAM(invalid) SDL_assert_always(!(invalid)); if (false)
+#else
+#define CHECK_PARAM(invalid) if (false)
+#endif
+#elif defined(SDL_ASSERT_INVALID_PARAMS)
+#define CHECK_PARAM(invalid) SDL_assert_always(!(invalid)); if (invalid)
+#else
+#define CHECK_PARAM(invalid) if (invalid)
+#endif
 
 // Do any initialization that needs to happen before threads are started
 extern void SDL_InitMainThread(void);

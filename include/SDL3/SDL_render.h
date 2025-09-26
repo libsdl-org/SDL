@@ -122,7 +122,7 @@ typedef enum SDL_RendererLogicalPresentation
 {
     SDL_LOGICAL_PRESENTATION_DISABLED,  /**< There is no logical size in effect */
     SDL_LOGICAL_PRESENTATION_STRETCH,   /**< The rendered content is stretched to the output resolution */
-    SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with black bars */
+    SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with the clear color */
     SDL_LOGICAL_PRESENTATION_OVERSCAN,  /**< The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds */
     SDL_LOGICAL_PRESENTATION_INTEGER_SCALE   /**< The rendered content is scaled up by integer multiples to fit the output resolution */
 } SDL_RendererLogicalPresentation;
@@ -856,6 +856,11 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
  * - `SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER`: the GLenum for the
  *   texture target (`GL_TEXTURE_2D`, `GL_TEXTURE_EXTERNAL_OES`, etc)
  *
+ * With the gpu renderer:
+ *
+ * - `SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER`: the SDL_GPUTexture associated
+ *   with the texture
+ *
  * \param texture the texture to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -892,6 +897,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Textur
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_V_NUMBER         "SDL.texture.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER    "SDL.texture.opengles2.target"
 #define SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER              "SDL.texture.vulkan.texture"
+#define SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER                "SDL.texture.gpu.texture"
 
 /**
  * Get the renderer that created an SDL_Texture.
@@ -1445,14 +1451,6 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *rend
  * specific dimensions but to make fonts look sharp, the app turns off logical
  * presentation while drawing text, for example.
  *
- * For the renderer's window, letterboxing is drawn into the framebuffer if
- * logical presentation is enabled during SDL_RenderPresent; be sure to
- * reenable it before presenting if you were toggling it, otherwise the
- * letterbox areas might have artifacts from previous frames (or artifacts
- * from external overlays, etc). Letterboxing is never drawn into texture
- * render targets; be sure to call SDL_RenderClear() before drawing into the
- * texture so the letterboxing areas are cleared, if appropriate.
- *
  * You can convert coordinates in an event into rendering coordinates using
  * SDL_ConvertEventToRenderCoordinates().
  *
@@ -1477,15 +1475,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *
  * Get device independent resolution and presentation mode for rendering.
  *
  * This function gets the width and height of the logical rendering output, or
- * the output size in pixels if a logical resolution is not enabled.
+ * 0 if a logical resolution is not enabled.
  *
  * Each render target has its own logical presentation state. This function
  * gets the state for the current render target.
  *
  * \param renderer the rendering context.
- * \param w an int to be filled with the width.
- * \param h an int to be filled with the height.
- * \param mode the presentation mode used.
+ * \param w an int filled with the logical presentation width.
+ * \param h an int filled with the logical presentation height.
+ * \param mode a variable filled with the logical presentation mode being
+ *             used.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -2720,8 +2719,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderVSync(SDL_Renderer *renderer, int 
  *   break. If the text goes out of the window, it's gone.
  *
  * For serious text rendering, there are several good options, such as
- * [SDL_ttf](https://wiki.libsdl.org/SDL3_ttf/FrontPage)
- * , stb_truetype, or other external libraries.
+ * SDL_ttf, stb_truetype, or other external libraries.
  *
  * On first use, this will create an internal texture for rendering glyphs.
  * This texture will live until the renderer is destroyed.

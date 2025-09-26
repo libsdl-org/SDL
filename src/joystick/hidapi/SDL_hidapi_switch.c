@@ -1388,7 +1388,15 @@ static bool HIDAPI_DriverSwitch_IsSupportedDevice(SDL_HIDAPI_Device *device, con
         return false;
     }
 
-    return (type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO);
+    if (type != SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO) {
+        return false;
+    }
+
+    // The Nintendo Switch 2 Pro uses another driver
+    if (vendor_id == USB_VENDOR_NINTENDO && product_id == USB_PRODUCT_NINTENDO_SWITCH2_PRO) {
+        return false;
+    }
+    return true;
 }
 
 static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)

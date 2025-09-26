@@ -31,3 +31,11 @@ quickreftitle = SDL3 API Quick Reference
 quickrefurl = https://libsdl.org/
 quickrefdesc = The latest version of this document can be found at https://wiki.libsdl.org/SDL3/QuickReference
 quickrefmacroregex = \A(SDL_PLATFORM_.*|SDL_.*_INTRINSICS|SDL_Atomic...Ref|SDL_assert.*?|SDL_COMPILE_TIME_ASSERT|SDL_arraysize|SDL_Swap[BL]E\d\d|SDL_[a-z]+_cast)\Z
+
+envvarenabled = 1
+envvartitle = SDL3 Environment Variables
+envvardesc = SDL3 can be controlled by the user, externally, with environment variables. They are all operate exactly like the [hints you can get and set programmatically](CategoryHints), but named without the `_HINT` part (so `"SDL_HINT_A"` would be environment variable `"SDL_A"`).\n\nThis list matches the latest in SDL3's revision control.
+envvarsymregex = \ASDL_HINT_(.*)\Z
+envvarsymreplace = SDL_$1
+
+
