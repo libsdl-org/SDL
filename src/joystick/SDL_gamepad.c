@@ -2559,7 +2559,7 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
         }
     }
 
-#ifdef ANDROID
+#ifdef SDL_PLATFORM_ANDROID
     { // Extract and verify the SDK version
         const char *tmp;
 
