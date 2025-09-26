@@ -25,6 +25,9 @@
 
 #include "../../SDL_list.h"
 #include "SDL_x11video.h"
+#ifdef SDL_USE_LIBDBUS
+#include "../../core/linux/SDL_system_theme.h"
+#endif
 #include "SDL_x11dyn.h"
 #include "SDL_x11toolkit.h"
 #include "SDL_x11settings.h"
@@ -134,6 +137,32 @@ static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = 
     { 191, 184, 191 },  // SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
     { 235, 235, 235 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
 };
+
+#ifdef SDL_USE_LIBDBUS
+static const SDL_MessageBoxColor g_default_colors_dark[SDL_MESSAGEBOX_COLOR_COUNT] = {
+    { 20, 20, 20 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
+    { 192, 192, 192 }, // SDL_MESSAGEBOX_COLOR_TEXT,
+    { 12, 12, 12 }, // SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
+    { 20, 20, 20 },  // SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
+    { 36, 36, 36 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
+};
+
+static const SDL_MessageBoxColor g_default_colors_dark_high_contrast[SDL_MESSAGEBOX_COLOR_COUNT] = {
+    { 0, 0, 0 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
+    { 255, 255, 255 }, // SDL_MESSAGEBOX_COLOR_TEXT,
+    { 20, 235, 255 }, // SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
+    { 0, 0, 0 },  // SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
+    { 125, 5, 125 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
+};
+
+static const SDL_MessageBoxColor g_default_colors_light_high_contrast[SDL_MESSAGEBOX_COLOR_COUNT] = {
+    { 255, 255, 255 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
+    { 0, 0, 0 }, // SDL_MESSAGEBOX_COLOR_TEXT,
+    { 0, 0, 0 }, // SDL_MESSAGEBOX_COLOR_BUTTON_BORDER,
+    { 255, 255, 255 },  // SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND,
+    { 20, 230, 255 },  // SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED,
+};
+#endif
 
 static int g_shm_error;
 static int (*g_old_error_handler)(Display *, XErrorEvent *) = NULL;
@@ -545,6 +574,9 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
 {
     SDL_ToolkitWindowX11 *window;
     int i;
+#ifdef SDL_USE_LIBDBUS
+    SDL_SystemTheme theme;
+#endif
     #define ErrorFreeRetNull(x, y) SDL_SetError(x); SDL_free(y); return NULL;
     #define ErrorCloseFreeRetNull(x, y, z) X11_XCloseDisplay(z->display); SDL_SetError(x, y); SDL_free(z); return NULL;
 
@@ -637,8 +669,31 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
     X11Toolkit_InitWindowFonts(window);
     
     /* Color hints */
+#ifdef SDL_USE_LIBDBUS
+    theme = SDL_SYSTEM_THEME_LIGHT; 
+    if (SDL_SystemTheme_Init()) {
+        theme = SDL_SystemTheme_Get(); 
+    }
+#endif
+
     if (!colorhints) {
+#ifdef SDL_USE_LIBDBUS
+        switch (theme) {
+            case SDL_SYSTEM_THEME_DARK:
+                colorhints = g_default_colors_dark;
+                break;
+            case SDL_SYSTEM_THEME_LIGHT_HIGH_CONTRAST:
+                colorhints = g_default_colors_light_high_contrast;
+                break;
+            case SDL_SYSTEM_THEME_DARK_HIGH_CONTRAST:
+                colorhints = g_default_colors_dark_high_contrast;
+                break;
+            default:
+                colorhints = g_default_colors;
+        }
+#else
         colorhints = g_default_colors;
+#endif
     }
     window->color_hints = colorhints;
 
@@ -1421,19 +1476,19 @@ static void X11Toolkit_DrawIconControl(SDL_ToolkitControlX11 *control) {
 static void X11Toolkit_CalculateIconControl(SDL_ToolkitControlX11 *base_control) {
     SDL_ToolkitIconControlX11 *control;
     int icon_char_w;
-    int icon_char_max;
+    int icon_wh;
 
     control = (SDL_ToolkitIconControlX11 *)base_control;
     X11Toolkit_GetTextWidthHeightForFont(control->icon_char_font, &control->icon_char, 1, &icon_char_w, &control->icon_char_h, &control->icon_char_a);
-    base_control->rect.w = icon_char_w + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * base_control->window->iscale;
-    base_control->rect.h = control->icon_char_h + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * base_control->window->iscale;
-    icon_char_max = SDL_max(base_control->rect.w, base_control->rect.h) + 2;
-    base_control->rect.w = icon_char_max;
-    base_control->rect.h = icon_char_max;
+    base_control->rect.w = icon_char_w;
+    base_control->rect.h = control->icon_char_h;
+    icon_wh = SDL_max(icon_char_w, control->icon_char_h) + SDL_TOOLKIT_X11_ELEMENT_PADDING * 2 * base_control->window->iscale;
+    base_control->rect.w = icon_wh;
+    base_control->rect.h = icon_wh;
     base_control->rect.y = 0;
     base_control->rect.x = 0;
     control->icon_char_y = control->icon_char_a + (base_control->rect.h - control->icon_char_h)/2;
-    control->icon_char_x = (base_control->rect.w - icon_char_w)/2 + 1;
+    control->icon_char_x = (base_control->rect.w - icon_char_w)/2;
     base_control->rect.w += 2 * base_control->window->iscale;
     base_control->rect.h += 2 * base_control->window->iscale;
 }
@@ -1547,9 +1602,29 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateIconControl(SDL_ToolkitWindowX11 *window
         return NULL;
     }
     control->xcolor_bg_shadow.flags = DoRed|DoGreen|DoBlue;
-    control->xcolor_bg_shadow.red = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red - 12500, 0, 65535);
-    control->xcolor_bg_shadow.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green - 12500, 0, 65535);
-    control->xcolor_bg_shadow.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue - 12500, 0, 65535);
+    if (window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red > 32896) {
+        control->xcolor_bg_shadow.red = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red - 12500, 0, 65535);    
+    } else if (window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red == 0) {
+        control->xcolor_bg_shadow.red = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red + 9000, 0, 65535);
+    } else {
+        control->xcolor_bg_shadow.red = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].red - 3000, 0, 65535);
+    }  
+    
+    if (window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green > 32896) {
+        control->xcolor_bg_shadow.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green - 12500, 0, 65535);    
+    } else if (window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green == 0) {
+        control->xcolor_bg_shadow.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green + 9000, 0, 65535);
+    } else {
+        control->xcolor_bg_shadow.green = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].green - 3000, 0, 65535);
+    }  
+    
+    if (window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue > 32896) {
+        control->xcolor_bg_shadow.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue - 12500, 0, 65535);    
+    } else if (window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue == 0) {
+        control->xcolor_bg_shadow.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue + 9000, 0, 65535);
+    } else {
+        control->xcolor_bg_shadow.blue = SDL_clamp(window->xcolor[SDL_MESSAGEBOX_COLOR_BACKGROUND].blue - 3000, 0, 65535);
+    }  
     X11_XAllocColor(window->display, window->cmap, &control->xcolor_bg_shadow);
 
     /* Sizing and positioning */
@@ -1889,36 +1964,39 @@ static void X11Toolkit_DestroyLabelControl(SDL_ToolkitControlX11 *control) {
     SDL_free(label_control);
 }
 
-
 static void X11Toolkit_CalculateLabelControl(SDL_ToolkitControlX11 *base_control) {
     SDL_ToolkitLabelControlX11 *control;
+     int last_h;
     int ascent;
     int descent;
     int w;
     int h;
     int i;
-
+    
+    last_h = 0;
     control = (SDL_ToolkitLabelControlX11 *)base_control;
     for (i = 0; i < control->sz; i++) {
         X11Toolkit_GetTextWidthHeight(base_control->window, control->lines[i], control->szs[i], &w, &h, &ascent, &descent);
 
         if (i > 0) {
             control->y[i] = ascent + descent + control->y[i-1];
-            base_control->rect.h += ascent + descent + h;
         } else {
             control->y[i] = ascent;
-            base_control->rect.h = h;
         }
+        
+        last_h = h;
     }
+    base_control->rect.h = control->y[control->sz -1] + last_h;
 }
 
 SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *window, char *utf8) {
     SDL_ToolkitLabelControlX11 *control;
     SDL_ToolkitControlX11 *base_control;
+     int last_h;
     int ascent;
     int descent;
     int i;
-
+    
     if (!utf8) {
         return NULL;
     }
@@ -1945,6 +2023,7 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
     control->lines = (char **)SDL_malloc(sizeof(char *) * control->sz);
     control->y = (int *)SDL_calloc(control->sz, sizeof(int));
     control->szs = (size_t *)SDL_calloc(control->sz, sizeof(size_t));
+    last_h = 0;
     for (i = 0; i < control->sz; i++) {
         const char *lf = SDL_strchr(utf8, '\n');
         const int length = lf ? (lf - utf8) : SDL_strlen(utf8);
@@ -1962,19 +2041,20 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
 
         if (i > 0) {
             control->y[i] = ascent + descent + control->y[i-1];
-            base_control->rect.h += ascent + descent + h;
         } else {
             control->y[i] = ascent;
-            base_control->rect.h = h;
         }
+        last_h = h;
         utf8 += length + 1;
 
         if (!lf) {
             break;
         }
-    }
+    }    
+    base_control->rect.h = control->y[control->sz -1] + last_h;
 
     X11Toolkit_AddControlToWindow(window, base_control);
+    
     return base_control;
 }
 
