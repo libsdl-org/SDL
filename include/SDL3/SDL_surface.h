@@ -327,6 +327,8 @@ extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreateSurfacePalette(SDL_Surface *
 /**
  * Set the palette used by a surface.
  *
+ * Setting the palette keeps an internal reference to the palette, which can be safely destroyed afterwards.
+ *
  * A single palette can be shared with many surfaces.
  *
  * \param surface the SDL_Surface structure to update.
