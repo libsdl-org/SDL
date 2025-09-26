@@ -3793,6 +3793,43 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY "SDL_VIDEO_WAYLAND_SCALE_TO_DISPLAY"
 
 /**
+ * A variable controlling whether the built in SDL toolkit is prefered over Zenity
+ * under the Wayland driver.
+ *
+ * When this hint is set, the Wayland driver will use the built in toolkit even
+ * in cases where Zenity is avalible.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": The built in toolkit is only used in cases where Zenity fails or is unavalible.
+ *   (default)
+ * - "1": The built in toolkit is always used if available.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.?.?.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_PREFER_TOOLKIT "SDL_VIDEO_WAYLAND_PREFER_TOOLKIT"
+
+/**
+ * A variable controlling whether the built in SDL toolkit uses fcft or
+ * built in bitmap fonts.
+ *
+ * The fcft library is used over the built in bitmap fonts in cases 
+ * where it is avalible.
+ * 
+ * The variable can be set to the following values:
+ *
+ * - "0": Usage of the fcft library is disabled.
+ * - "1": Usage of the fcft library is enabled. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.?.?.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_ALLOW_FCFT "SDL_VIDEO_WAYLAND_ALLOW_FCFT"
+
+/**
  * A variable specifying which shader compiler to preload when using the
  * Chrome ANGLE binaries.
  *
