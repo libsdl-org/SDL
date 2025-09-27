@@ -6335,3 +6335,47 @@ const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name
     }
 }
 #endif
+
+int SDL_ShowNotification(const SDL_NotificationData *notificationdata)
+{
+    if (notificationdata == NULL) {
+        return SDL_InvalidParamError("notificationdata");
+    }
+
+    if (notificationdata->title == NULL) {
+        return SDL_InvalidParamError("notificationdata->title");
+    }
+
+    if (notificationdata->message == NULL) {
+        return SDL_InvalidParamError("notificationdata->message");
+    }
+
+    if (notificationdata->icon.flags == SDL_ICON_TYPE_SINGLE_FILE && notificationdata->icon.data.path == NULL) {
+        return SDL_InvalidParamError("notificationdata->icon.dta.path");
+    }
+
+    if (notificationdata->icon.flags == SDL_ICON_TYPE_SINGLE_FILE && notificationdata->icon.data.surface == NULL) {
+        return SDL_InvalidParamError("notificationdata->icon.data.surface");
+    }
+
+    if (notificationdata->icon.flags == SDL_ICON_TYPE_WINDOW && notificationdata->icon.data.window == NULL) {
+        return SDL_InvalidParamError("notificationdata->icon.data.window");
+    }
+
+    if (_this && _this->ShowNotification) {
+        return _this->ShowNotification(_this, notificationdata);
+    }
+
+    return SDL_Unsupported();
+}
+
+
+int SDL_ShowSimpleNotification(const char *title, const char *message)
+{
+    SDL_NotificationData notificationdata;
+    SDL_zero(notificationdata);
+    notificationdata.title = title;
+    notificationdata.message = message;
+    return SDL_ShowNotification(&notificationdata);
+}
+

@@ -65,6 +65,7 @@
 #include <SDL3/SDL_misc.h>
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_mutex.h>
+#include <SDL3/SDL_notification.h>
 #include <SDL3/SDL_pen.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_platform.h>

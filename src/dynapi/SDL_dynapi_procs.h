@@ -1291,3 +1291,5 @@ SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_hid_get_properties,(SDL_hid_device *a),(a),
 SDL_DYNAPI_PROC(SDL_PixelFormat,SDL_GetPixelFormatFromGPUTextureFormat,(SDL_GPUTextureFormat a),(a),return)
 SDL_DYNAPI_PROC(SDL_GPUTextureFormat,SDL_GetGPUTextureFormatFromPixelFormat,(SDL_PixelFormat a),(a),return)
 SDL_DYNAPI_PROC(Sint32,JNI_OnLoad,(JavaVM *a, void *b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_ShowNotification,(const SDL_NotificationData *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_ShowSimpleNotification,(const char *a,const char *b),(a,b),return)

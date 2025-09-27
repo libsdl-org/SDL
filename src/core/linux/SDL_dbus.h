@@ -111,6 +111,7 @@ extern bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char 
 
 extern void SDL_DBus_ScreensaverTickle(void);
 extern bool SDL_DBus_ScreensaverInhibit(bool inhibit);
+extern int SDL_DBus_ShowNotification(const SDL_NotificationData *notificationdata);
 
 extern void SDL_DBus_PumpEvents(void);
 extern char *SDL_DBus_GetLocalMachineId(void);

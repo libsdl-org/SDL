@@ -1332,6 +1332,8 @@ const static struct {
     SDL_SYMBOL_ITEM(SDL_hid_get_properties),
     SDL_SYMBOL_ITEM(SDL_GetPixelFormatFromGPUTextureFormat),
     SDL_SYMBOL_ITEM(SDL_GetGPUTextureFormatFromPixelFormat),
+    SDL_SYMBOL_ITEM(SDL_ShowNotification),
+    SDL_SYMBOL_ITEM(SDL_ShowSimpleNotification),
     /* extra symbols go here (don't modify this line) */
     { NULL, NULL }
 };

@@ -526,6 +526,12 @@ static bool Wayland_IsPreferred(struct wl_display *display)
     return preferred_data.has_fifo_v1;
 }
 
+#ifdef SDL_USE_LIBDBUS
+static int Wayland_ShowNotification(SDL_VideoDevice *device, const SDL_NotificationData *notificationdata) {
+    return SDL_DBus_ShowNotification(notificationdata);
+}
+#endif
+
 static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
 {
     SDL_VideoDevice *device;
@@ -674,6 +680,10 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->StartTextInput = Wayland_StartTextInput;
     device->StopTextInput = Wayland_StopTextInput;
     device->UpdateTextInputArea = Wayland_UpdateTextInputArea;
+
+#ifdef SDL_USE_LIBDBUS
+    device->ShowNotification = Wayland_ShowNotification;
+#endif
 
 #ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Wayland_Vulkan_LoadLibrary;

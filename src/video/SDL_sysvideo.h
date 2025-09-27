@@ -400,6 +400,9 @@ struct SDL_VideoDevice
     // Display the system-level window menu
     void (*ShowWindowSystemMenu)(SDL_Window *window, int x, int y);
 
+    // Notification
+    int (*ShowNotification)(SDL_VideoDevice *_this, const SDL_NotificationData *notificationdata);
+
     /* * * */
     // Data common to all drivers
     SDL_ThreadID thread;
