@@ -39,13 +39,6 @@
 
 typedef struct
 {
-    SDL_Palette *palette;
-    Uint32 version;
-    int refcount;
-} SW_Palette;
-
-typedef struct
-{
     const SDL_Rect *viewport;
     const SDL_Rect *cliprect;
     bool surface_cliprect_dirty;
@@ -56,7 +49,6 @@ typedef struct
 {
     SDL_Surface *surface;
     SDL_Surface *window;
-    SDL_HashTable *palettes;
 } SW_RenderData;
 
 static SDL_Surface *SW_ActivateRenderer(SDL_Renderer *renderer)
@@ -110,19 +102,25 @@ static bool SW_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
 static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     SDL_Surface *surface = SDL_CreateSurface(texture->w, texture->h, texture->format);
-    Uint8 r, g, b, a;
-
-    if (!SDL_SurfaceValid(surface)) {
-        return SDL_SetError("Cannot create surface");
+    if (!surface) {
+        return SDL_SetError("Can't create surface");
     }
     texture->internal = surface;
-    r = (Uint8)SDL_roundf(SDL_clamp(texture->color.r, 0.0f, 1.0f) * 255.0f);
-    g = (Uint8)SDL_roundf(SDL_clamp(texture->color.g, 0.0f, 1.0f) * 255.0f);
-    b = (Uint8)SDL_roundf(SDL_clamp(texture->color.b, 0.0f, 1.0f) * 255.0f);
-    a = (Uint8)SDL_roundf(SDL_clamp(texture->color.a, 0.0f, 1.0f) * 255.0f);
+
+    Uint8 r = (Uint8)SDL_roundf(SDL_clamp(texture->color.r, 0.0f, 1.0f) * 255.0f);
+    Uint8 g = (Uint8)SDL_roundf(SDL_clamp(texture->color.g, 0.0f, 1.0f) * 255.0f);
+    Uint8 b = (Uint8)SDL_roundf(SDL_clamp(texture->color.b, 0.0f, 1.0f) * 255.0f);
+    Uint8 a = (Uint8)SDL_roundf(SDL_clamp(texture->color.a, 0.0f, 1.0f) * 255.0f);
     SDL_SetSurfaceColorMod(surface, r, g, b);
     SDL_SetSurfaceAlphaMod(surface, a);
     SDL_SetSurfaceBlendMode(surface, texture->blendMode);
+
+    if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+        surface->palette = SDL_CreatePalette((1 << SDL_BITSPERPIXEL(surface->format)));
+        if (!surface->palette) {
+            return SDL_SetError("Can't create palette");
+        }
+    }
 
     /* Only RLE encode textures without an alpha channel since the RLE coder
      * discards the color values of pixels with an alpha value of zero.
@@ -134,87 +132,12 @@ static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     return true;
 }
 
-static void SW_DestroyPalette(void *unused, const void *key, const void *value)
-{
-    SW_Palette *internal = (SW_Palette *)value;
-    if (internal->palette) {
-        SDL_DestroyPalette(internal->palette);
-    }
-    SDL_free(internal);
-}
-
-static bool SW_ChangeTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Palette *palette)
-{
-    SW_RenderData *data = (SW_RenderData *)renderer->internal;
-    SDL_Surface *surface = (SDL_Surface *)texture->internal;
-
-    // We can't use the palette directly since it may change while drawing is in flight,
-    // so we'll keep a shadow of the palette that our texture surfaces will use instead.
-    if (!data->palettes) {
-        data->palettes = SDL_CreateHashTable(0, false, SDL_HashPointer, SDL_KeyMatchPointer, SW_DestroyPalette, NULL);
-        if (!data->palettes) {
-            return false;
-        }
-    }
-
-    // Unreference our internal palette
-    SW_Palette *internal = NULL;
-    if (texture->palette) {
-        if (SDL_FindInHashTable(data->palettes, texture->palette, (const void **)&internal)) {
-            --internal->refcount;
-            if (internal->refcount == 0) {
-                SDL_RemoveFromHashTable(data->palettes, texture->palette);
-            }
-        }
-    }
-
-    if (palette) {
-        if (SDL_FindInHashTable(data->palettes, palette, (const void **)&internal)) {
-            ++internal->refcount;
-        } else {
-            internal = (SW_Palette *)SDL_calloc(1, sizeof(*internal));
-            if (!internal) {
-                return false;
-            }
-            internal->refcount = 1;
-
-            if (!SDL_InsertIntoHashTable(data->palettes, palette, internal, false)) {
-                SW_DestroyPalette(NULL, palette, internal);
-                return false;
-            }
-        }
-        return SDL_SetSurfacePalette(surface, internal->palette);
-    } else {
-        return SDL_SetSurfacePalette(surface, NULL);
-    }
-}
-
 static bool SW_UpdateTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-    SW_RenderData *data = (SW_RenderData *)renderer->internal;
     SDL_Surface *surface = (SDL_Surface *)texture->internal;
     SDL_Palette *palette = texture->palette;
-    Uint32 version = palette->version;
 
-    SW_Palette *internal = NULL;
-    if (!SDL_FindInHashTable(data->palettes, palette, (const void **)&internal)) {
-        return SDL_SetError("Couldn't find internal palette");
-    }
-    if (internal->version != version) {
-        // Cycle the palette as some drawing might be in flight using the old colors
-        if (internal->palette) {
-            SDL_DestroyPalette(internal->palette);
-        }
-        internal->palette = SDL_CreatePalette(palette->ncolors);
-        if (!internal->palette) {
-            return false;
-        }
-        if (!SDL_SetPaletteColors(internal->palette, palette->colors, 0, palette->ncolors)) {
-            return false;
-        }
-        internal->version = version;
-    }
-    return SDL_SetSurfacePalette(surface, internal->palette);
+    return SDL_SetPaletteColors(surface->palette, palette->colors, 0, palette->ncolors);
 }
 
 static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -1107,10 +1030,6 @@ static void SW_DestroyRenderer(SDL_Renderer *renderer)
     SDL_Window *window = renderer->window;
     SW_RenderData *data = (SW_RenderData *)renderer->internal;
 
-    if (data->palettes) {
-        SDL_assert(SDL_HashTableEmpty(data->palettes));
-        SDL_DestroyHashTable(data->palettes);
-    }
     if (window) {
         SDL_DestroyWindowSurface(window);
     }
@@ -1240,7 +1159,6 @@ bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, S
     renderer->WindowEvent = SW_WindowEvent;
     renderer->GetOutputSize = SW_GetOutputSize;
     renderer->CreateTexture = SW_CreateTexture;
-    renderer->ChangeTexturePalette = SW_ChangeTexturePalette;
     renderer->UpdateTexturePalette = SW_UpdateTexturePalette;
     renderer->UpdateTexture = SW_UpdateTexture;
     renderer->LockTexture = SW_LockTexture;
