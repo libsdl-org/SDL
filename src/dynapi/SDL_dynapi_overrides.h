@@ -1283,3 +1283,5 @@
 #define SDL_GetPixelFormatFromGPUTextureFormat SDL_GetPixelFormatFromGPUTextureFormat_REAL
 #define SDL_GetGPUTextureFormatFromPixelFormat SDL_GetGPUTextureFormatFromPixelFormat_REAL
 #define JNI_OnLoad JNI_OnLoad_REAL
+#define SDL_SetTexturePalette SDL_SetTexturePalette_REAL
+#define SDL_GetTexturePalette SDL_GetTexturePalette_REAL

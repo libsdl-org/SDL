@@ -660,6 +660,7 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  *   pixels, required
  * - `SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER`: the height of the texture in
  *   pixels, required
+ * - `SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER`: an SDL_Palette to use with palettized texture formats. This can be set later with SDL_SetTexturePalette()
  * - `SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating
  *   point textures, this defines the value of 100% diffuse white, with higher
  *   values being displayed in the High Dynamic Range headroom. This defaults
@@ -759,6 +760,7 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
 #define SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER               "SDL.texture.create.access"
 #define SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER                "SDL.texture.create.width"
 #define SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER               "SDL.texture.create.height"
+#define SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER             "SDL.texture.create.palette"
 #define SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT       "SDL.texture.create.SDR_white_point"
 #define SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT          "SDL.texture.create.HDR_headroom"
 #define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_POINTER       "SDL.texture.create.d3d11.texture"
@@ -928,6 +930,42 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_GetRendererFromTexture(SDL_Textur
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureSize(SDL_Texture *texture, float *w, float *h);
+
+/**
+ * Set the palette used by a texture.
+ *
+ * Setting the palette keeps an internal reference to the palette, which can be safely destroyed afterwards.
+ *
+ * A single palette can be shared with many textures.
+ *
+ * \param texture the texture to update.
+ * \param palette the SDL_Palette structure to use.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CreatePalette
+ * \sa SDL_GetTexturePalette
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette);
+
+/**
+ * Get the palette used by a texture.
+ *
+ * \param texture the texture to query.
+ * \returns a pointer to the palette used by the texture, or NULL if there is
+ *          no palette used.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetTexturePalette
+ */
+extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_GetTexturePalette(SDL_Texture *texture);
 
 /**
  * Set an additional color value multiplied into render copy operations.
@@ -1157,7 +1195,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureBlendMode(SDL_Texture *texture, S
  *
  * The default texture scale mode is SDL_SCALEMODE_LINEAR.
  *
- * If the scale mode is not supported, the closest supported mode is chosen.
+ * If the scale mode is not supported, the closest supported mode is chosen. Palettized textures will use SDL_SCALEMODE_PIXELART instead of SDL_SCALEMODE_LINEAR.
  *
  * \param texture the texture to update.
  * \param scaleMode the SDL_ScaleMode to use for texture scaling.

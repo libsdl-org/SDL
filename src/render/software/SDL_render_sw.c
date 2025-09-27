@@ -39,6 +39,13 @@
 
 typedef struct
 {
+    SDL_Palette *palette;
+    Uint32 version;
+    int refcount;
+} SW_Palette;
+
+typedef struct
+{
     const SDL_Rect *viewport;
     const SDL_Rect *cliprect;
     bool surface_cliprect_dirty;
@@ -49,6 +56,7 @@ typedef struct
 {
     SDL_Surface *surface;
     SDL_Surface *window;
+    SDL_HashTable *palettes;
 } SW_RenderData;
 
 static SDL_Surface *SW_ActivateRenderer(SDL_Renderer *renderer)
@@ -124,6 +132,89 @@ static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     }
 
     return true;
+}
+
+static void SW_DestroyPalette(void *unused, const void *key, const void *value)
+{
+    SW_Palette *internal = (SW_Palette *)value;
+    if (internal->palette) {
+        SDL_DestroyPalette(internal->palette);
+    }
+    SDL_free(internal);
+}
+
+static bool SW_ChangeTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Palette *palette)
+{
+    SW_RenderData *data = (SW_RenderData *)renderer->internal;
+    SDL_Surface *surface = (SDL_Surface *)texture->internal;
+
+    // We can't use the palette directly since it may change while drawing is in flight,
+    // so we'll keep a shadow of the palette that our texture surfaces will use instead.
+    if (!data->palettes) {
+        data->palettes = SDL_CreateHashTable(0, false, SDL_HashPointer, SDL_KeyMatchPointer, SW_DestroyPalette, NULL);
+        if (!data->palettes) {
+            return false;
+        }
+    }
+
+    // Unreference our internal palette
+    SW_Palette *internal = NULL;
+    if (texture->palette) {
+        if (SDL_FindInHashTable(data->palettes, texture->palette, (const void **)&internal)) {
+            --internal->refcount;
+            if (internal->refcount == 0) {
+                SDL_RemoveFromHashTable(data->palettes, texture->palette);
+            }
+        }
+    }
+
+    if (palette) {
+        if (SDL_FindInHashTable(data->palettes, palette, (const void **)&internal)) {
+            ++internal->refcount;
+        } else {
+            internal = (SW_Palette *)SDL_calloc(1, sizeof(*internal));
+            if (!internal) {
+                return false;
+            }
+            internal->refcount = 1;
+
+            if (!SDL_InsertIntoHashTable(data->palettes, palette, internal, false)) {
+                SW_DestroyPalette(NULL, palette, internal);
+                return false;
+            }
+        }
+        return SDL_SetSurfacePalette(surface, internal->palette);
+    } else {
+        return SDL_SetSurfacePalette(surface, NULL);
+    }
+}
+
+static bool SW_UpdateTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+    SW_RenderData *data = (SW_RenderData *)renderer->internal;
+    SDL_Surface *surface = (SDL_Surface *)texture->internal;
+    SDL_Palette *palette = texture->palette;
+    Uint32 version = palette->version;
+
+    SW_Palette *internal = NULL;
+    if (!SDL_FindInHashTable(data->palettes, palette, (const void **)&internal)) {
+        return SDL_SetError("Couldn't find internal palette");
+    }
+    if (internal->version != version) {
+        // Cycle the palette as some drawing might be in flight using the old colors
+        if (internal->palette) {
+            SDL_DestroyPalette(internal->palette);
+        }
+        internal->palette = SDL_CreatePalette(palette->ncolors);
+        if (!internal->palette) {
+            return false;
+        }
+        if (!SDL_SetPaletteColors(internal->palette, palette->colors, 0, palette->ncolors)) {
+            return false;
+        }
+        internal->version = version;
+    }
+    return SDL_SetSurfacePalette(surface, internal->palette);
 }
 
 static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -1016,6 +1107,10 @@ static void SW_DestroyRenderer(SDL_Renderer *renderer)
     SDL_Window *window = renderer->window;
     SW_RenderData *data = (SW_RenderData *)renderer->internal;
 
+    if (data->palettes) {
+        SDL_assert(SDL_HashTableEmpty(data->palettes));
+        SDL_DestroyHashTable(data->palettes);
+    }
     if (window) {
         SDL_DestroyWindowSurface(window);
     }
@@ -1115,6 +1210,9 @@ static void SW_SelectBestFormats(SDL_Renderer *renderer, SDL_PixelFormat format)
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
     }
+
+    // Add 8-bit palettized format
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
 }
 
 bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SDL_PropertiesID create_props)
@@ -1142,6 +1240,8 @@ bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, S
     renderer->WindowEvent = SW_WindowEvent;
     renderer->GetOutputSize = SW_GetOutputSize;
     renderer->CreateTexture = SW_CreateTexture;
+    renderer->ChangeTexturePalette = SW_ChangeTexturePalette;
+    renderer->UpdateTexturePalette = SW_UpdateTexturePalette;
     renderer->UpdateTexture = SW_UpdateTexture;
     renderer->LockTexture = SW_LockTexture;
     renderer->UnlockTexture = SW_UnlockTexture;
