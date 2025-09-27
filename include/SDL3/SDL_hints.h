@@ -3595,6 +3595,22 @@ extern "C" {
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY "SDL_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY"
 
 /**
+ * A variable indicating whether the metal layer drawable size should be
+ * updated for the SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event on macOS.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": metal view event watcher is disabled, the drawable size of the metal view
+ *   will not be updated for the SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
+ * - "1": metal view event watcher is enabled, the drawable size of the metal view
+ *   will be updated for the SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event. (default)
+ *
+ * This hint should be set before SDL_Metal_CreateView called.
+ *
+ * \since This hint is available since SDL 3.4.0. */
+#define SDL_HINT_VIDEO_MAC_ENABLE_METAL_VIEW_WATCHER "SDL_VIDEO_MAC_ENABLE_METAL_VIEW_WATCHER"
+
+/**
  * A variable controlling whether SDL will attempt to automatically set the
  * destination display to a mode most closely matching that of the previous
  * display if an exclusive fullscreen window is moved onto it.
