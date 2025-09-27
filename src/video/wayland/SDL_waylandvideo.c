@@ -394,7 +394,7 @@ static void Wayland_SortOutputs(SDL_VideoData *vid)
     Wayland_SortOutputsByPriorityHint(vid);
 }
 
-static void display_handle_done(void *data, struct wl_output *output);
+static void handle_wl_output_done(void *data, struct wl_output *output);
 
 // Initialization/Query functions
 static bool Wayland_VideoInit(SDL_VideoDevice *_this);
@@ -719,8 +719,7 @@ VideoBootStrap Wayland_bootstrap = {
     false
 };
 
-static void xdg_output_handle_logical_position(void *data, struct zxdg_output_v1 *xdg_output,
-                                               int32_t x, int32_t y)
+static void handle_xdg_output_logical_position(void *data, struct zxdg_output_v1 *xdg_output, int32_t x, int32_t y)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
@@ -729,8 +728,7 @@ static void xdg_output_handle_logical_position(void *data, struct zxdg_output_v1
     internal->has_logical_position = true;
 }
 
-static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xdg_output,
-                                           int32_t width, int32_t height)
+static void handle_xdg_output_logical_size(void *data, struct zxdg_output_v1 *xdg_output, int32_t width, int32_t height)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
@@ -739,7 +737,7 @@ static void xdg_output_handle_logical_size(void *data, struct zxdg_output_v1 *xd
     internal->has_logical_size = true;
 }
 
-static void xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output)
+static void handle_xdg_output_done(void *data, struct zxdg_output_v1 *xdg_output)
 {
     SDL_DisplayData *internal = data;
 
@@ -748,12 +746,11 @@ static void xdg_output_handle_done(void *data, struct zxdg_output_v1 *xdg_output
      * A wl-output.done event will be emitted in version 3 or higher.
      */
     if (zxdg_output_v1_get_version(internal->xdg_output) < 3) {
-        display_handle_done(data, internal->output);
+        handle_wl_output_done(data, internal->output);
     }
 }
 
-static void xdg_output_handle_name(void *data, struct zxdg_output_v1 *xdg_output,
-                                   const char *name)
+static void handle_xdg_output_name(void *data, struct zxdg_output_v1 *xdg_output, const char *name)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
@@ -765,8 +762,7 @@ static void xdg_output_handle_name(void *data, struct zxdg_output_v1 *xdg_output
     }
 }
 
-static void xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg_output,
-                                          const char *description)
+static void handle_xdg_output_description(void *data, struct zxdg_output_v1 *xdg_output, const char *description)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
@@ -780,11 +776,11 @@ static void xdg_output_handle_description(void *data, struct zxdg_output_v1 *xdg
 }
 
 static const struct zxdg_output_v1_listener xdg_output_listener = {
-    xdg_output_handle_logical_position,
-    xdg_output_handle_logical_size,
-    xdg_output_handle_done,
-    xdg_output_handle_name,
-    xdg_output_handle_description,
+    handle_xdg_output_logical_position,
+    handle_xdg_output_logical_size,
+    handle_xdg_output_done,
+    handle_xdg_output_name,
+    handle_xdg_output_description,
 };
 
 static void AddEmulatedModes(SDL_DisplayData *dispdata, int native_width, int native_height)
@@ -865,16 +861,9 @@ static void AddEmulatedModes(SDL_DisplayData *dispdata, int native_width, int na
     }
 }
 
-static void display_handle_geometry(void *data,
-                                    struct wl_output *output,
-                                    int x, int y,
-                                    int physical_width,
-                                    int physical_height,
-                                    int subpixel,
-                                    const char *make,
-                                    const char *model,
-                                    int transform)
-
+static void handle_wl_output_geometry(void *data, struct wl_output *output, int x, int y,
+                                      int physical_width, int physical_height, int subpixel,
+                                      const char *make, const char *model, int transform)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
@@ -922,12 +911,8 @@ static void display_handle_geometry(void *data,
 #undef TF_CASE
 }
 
-static void display_handle_mode(void *data,
-                                struct wl_output *output,
-                                uint32_t flags,
-                                int width,
-                                int height,
-                                int refresh)
+static void handle_wl_output_mode(void *data, struct wl_output *output, uint32_t flags,
+                                  int width, int height, int refresh)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
@@ -948,8 +933,7 @@ static void display_handle_mode(void *data,
     }
 }
 
-static void display_handle_done(void *data,
-                                struct wl_output *output)
+static void handle_wl_output_done(void *data, struct wl_output *output)
 {
     const bool mode_emulation_enabled = SDL_GetHintBoolean(SDL_HINT_VIDEO_WAYLAND_MODE_EMULATION, true);
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
@@ -1099,15 +1083,13 @@ static void display_handle_done(void *data,
     }
 }
 
-static void display_handle_scale(void *data,
-                                 struct wl_output *output,
-                                 int32_t factor)
+static void handle_wl_output_scale(void *data, struct wl_output *output, int32_t factor)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
     internal->scale_factor = factor;
 }
 
-static void display_handle_name(void *data, struct wl_output *wl_output, const char *name)
+static void handle_wl_output_name(void *data, struct wl_output *wl_output, const char *name)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
@@ -1115,7 +1097,7 @@ static void display_handle_name(void *data, struct wl_output *wl_output, const c
     internal->wl_output_name = SDL_strdup(name);
 }
 
-static void display_handle_description(void *data, struct wl_output *wl_output, const char *description)
+static void handle_wl_output_description(void *data, struct wl_output *wl_output, const char *description)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
 
@@ -1127,12 +1109,12 @@ static void display_handle_description(void *data, struct wl_output *wl_output, 
 }
 
 static const struct wl_output_listener output_listener = {
-    display_handle_geometry,   // Version 1
-    display_handle_mode,       // Version 1
-    display_handle_done,       // Version 2
-    display_handle_scale,      // Version 2
-    display_handle_name,       // Version 4
-    display_handle_description // Version 4
+    handle_wl_output_geometry,   // Version 1
+    handle_wl_output_mode,       // Version 1
+    handle_wl_output_done,       // Version 2
+    handle_wl_output_scale,      // Version 2
+    handle_wl_output_name,       // Version 4
+    handle_wl_output_description // Version 4
 };
 
 static void handle_output_image_description_changed(void *data,
@@ -1247,13 +1229,13 @@ static void Wayland_InitColorManager(SDL_VideoData *d)
     }
 }
 
-static void handle_ping_xdg_wm_base(void *data, struct xdg_wm_base *xdg, uint32_t serial)
+static void handle_xdg_wm_base_ping(void *data, struct xdg_wm_base *xdg, uint32_t serial)
 {
     xdg_wm_base_pong(xdg, serial);
 }
 
-static const struct xdg_wm_base_listener shell_listener_xdg = {
-    handle_ping_xdg_wm_base
+static const struct xdg_wm_base_listener _xdg_wm_base_listener = {
+    handle_xdg_wm_base_ping
 };
 
 #ifdef HAVE_LIBDECOR_H
@@ -1265,12 +1247,12 @@ static void libdecor_error(struct libdecor *context,
 }
 
 static struct libdecor_interface libdecor_interface = {
-    libdecor_error,
+    libdecor_error
 };
 #endif
 
-static void display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
-                                  const char *interface, uint32_t version)
+static void handle_registry_global(void *data, struct wl_registry *registry, uint32_t id,
+                                   const char *interface, uint32_t version)
 {
     SDL_VideoData *d = data;
 
@@ -1285,7 +1267,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         Wayland_DisplayCreateSeat(d, seat, id);
     } else if (SDL_strcmp(interface, "xdg_wm_base") == 0) {
         d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, SDL_min(version, 7));
-        xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
+        xdg_wm_base_add_listener(d->shell.xdg, &_xdg_wm_base_listener, NULL);
     } else if (SDL_strcmp(interface, "wl_shm") == 0) {
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, SDL_min(SDL_WL_SHM_VERSION, version));
     } else if (SDL_strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
@@ -1348,7 +1330,7 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
 #endif
 }
 
-static void display_remove_global(void *data, struct wl_registry *registry, uint32_t id)
+static void handle_registry_remove_global(void *data, struct wl_registry *registry, uint32_t id)
 {
     SDL_VideoData *d = data;
 
@@ -1383,8 +1365,8 @@ static void display_remove_global(void *data, struct wl_registry *registry, uint
 }
 
 static const struct wl_registry_listener registry_listener = {
-    display_handle_global,
-    display_remove_global
+    handle_registry_global,
+    handle_registry_remove_global
 };
 
 #ifdef HAVE_LIBDECOR_H
