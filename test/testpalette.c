@@ -12,6 +12,7 @@
 /* Simple program:  Move N sprites around on the screen as fast as possible */
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_test_memory.h>
 #include <SDL3/SDL_main.h>
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
@@ -284,11 +285,25 @@ static const SDL_Color Palette[256] = {
 static SDL_Renderer *renderer;
 static SDL_Palette *palette;
 static SDL_Texture *texture;
-static SDL_Texture *black_texture;
-static SDL_Texture *white_texture;
+static SDL_Texture *black_texture1;
+static SDL_Texture *black_texture2;
+static SDL_Texture *white_texture1;
+static SDL_Texture *white_texture2;
 static int palettePos = 0;
 static int paletteDir = -1;
 static bool done;
+
+static SDL_Texture *CreateTexture(const void *pixels, int pitch)
+{
+    SDL_Texture *tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_INDEX8, SDL_TEXTUREACCESS_STATIC, 256, 1);
+    if (!tex) {
+        return NULL;
+    }
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_NONE);
+    SDL_UpdateTexture(tex, NULL, pixels, pitch);
+    SDL_SetTexturePalette(tex, palette);
+    return tex;
+}
 
 static bool CreateTextures()
 {
@@ -304,26 +319,30 @@ static bool CreateTextures()
         data[i] = i;
     }
 
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_INDEX8, SDL_TEXTUREACCESS_STATIC, 256, 1);
+    texture = CreateTexture(data, SDL_arraysize(data));
     if (!texture) {
         return false;
     }
-    SDL_UpdateTexture(texture, NULL, data, SDL_arraysize(data));
-    SDL_SetTexturePalette(texture, palette);
 
-    black_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_INDEX8, SDL_TEXTUREACCESS_STATIC, 1, 1);
-    if (!black_texture) {
+    black_texture1 = CreateTexture(data, SDL_arraysize(data));
+    if (!black_texture1) {
         return false;
     }
-    SDL_UpdateTexture(black_texture, NULL, data, SDL_arraysize(data));
-    SDL_SetTexturePalette(black_texture, palette);
 
-    white_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_INDEX8, SDL_TEXTUREACCESS_STATIC, 1, 1);
-    if (!white_texture) {
+    black_texture2 = CreateTexture(data, SDL_arraysize(data));
+    if (!black_texture2) {
         return false;
     }
-    SDL_UpdateTexture(white_texture, NULL, data, SDL_arraysize(data));
-    SDL_SetTexturePalette(white_texture, palette);
+
+    white_texture1 = CreateTexture(data, SDL_arraysize(data));
+    if (!white_texture1) {
+        return false;
+    }
+
+    white_texture2 = CreateTexture(data, SDL_arraysize(data));
+    if (!white_texture2) {
+        return false;
+    }
 
     return true;
 }
@@ -343,9 +362,11 @@ static void UpdatePalette(int pos)
 static void loop(void)
 {
     SDL_Event event;
-    SDL_FRect src = { 0.0f, 0.0f, 1.0f, 1.0f };
+    SDL_FRect src = { 1.0f, 0.0f, 1.0f, 1.0f };
     SDL_FRect dst1 = { 0.0f, 0.0f, 32.0f, 32.0f };
-    SDL_FRect dst2 = { WINDOW_WIDTH - 32.0f, 0.0f, 32.0f, 32.0f };
+    SDL_FRect dst2 = { 0.0f, WINDOW_HEIGHT - 32.0f, 32.0f, 32.0f };
+    SDL_FRect dst3 = { WINDOW_WIDTH - 32.0f, 0.0f, 32.0f, 32.0f };
+    SDL_FRect dst4 = { WINDOW_WIDTH - 32.0f, WINDOW_HEIGHT - 32.0f, 32.0f, 32.0f };
     const SDL_Color black = { 0, 0, 0, SDL_ALPHA_OPAQUE };
     const SDL_Color white = { 255, 255, 255, SDL_ALPHA_OPAQUE };
 
@@ -390,10 +411,18 @@ static void loop(void)
     /* Draw one square with black, and one square with white
      * This tests changing palette colors within a single frame
      */
-    SDL_SetPaletteColors(palette, &black, 0, 1);
-    SDL_RenderTexture(renderer, black_texture, &src, &dst1);
-    SDL_SetPaletteColors(palette, &white, 0, 1);
-    SDL_RenderTexture(renderer, white_texture, &src, &dst2);
+    SDL_SetPaletteColors(palette, &black, 1, 1);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderDebugText(renderer, dst1.x + 32.0f + 2.0f, dst1.y + 12, "Black");
+    SDL_RenderTexture(renderer, black_texture1, &src, &dst1);
+    SDL_RenderDebugText(renderer, dst2.x + 32.0f + 2.0f, dst2.y + 12, "Black");
+    SDL_RenderTexture(renderer, black_texture2, &src, &dst2);
+    SDL_SetPaletteColors(palette, &white, 1, 1);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderDebugText(renderer, dst3.x - 40.0f - 2.0f, dst3.y + 12, "White");
+    SDL_RenderTexture(renderer, white_texture1, &src, &dst3);
+    SDL_RenderDebugText(renderer, dst4.x - 40.0f - 2.0f, dst4.y + 12, "White");
+    SDL_RenderTexture(renderer, white_texture2, &src, &dst4);
 
     SDL_RenderPresent(renderer);
     SDL_Delay(10);
@@ -409,6 +438,8 @@ int main(int argc, char *argv[])
 {
     SDL_Window *window = NULL;
     int return_code = -1;
+
+    SDLTest_TrackAllocations();
 
     if (argc > 1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "USAGE: %s", argv[0]);
@@ -444,5 +475,6 @@ quit:
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    SDLTest_LogAllocations();
     return return_code;
 }
