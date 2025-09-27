@@ -59,7 +59,7 @@ typedef enum
 /**
  * Notification structure containing title, text, window, etc.
  */
-typedef struct
+typedef struct SDL_NotificationData
 {
     Uint32 flags;                       /**< ::SDL_NotificationFlags */
     const char *title;                  /**< UTF-8 title */
