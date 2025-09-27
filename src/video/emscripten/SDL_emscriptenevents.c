@@ -933,7 +933,11 @@ static void Emscripten_prep_pointer_event_callbacks(void)
 
                 var ptr = _SDL_malloc($0);
                 if (ptr != 0) {
+                    #ifdef __wasm32__
                     var idx = ptr >> 2;
+                    #elif __wasm64__
+                    var idx = Number(ptr / 4n);
+                    #endif
                     HEAP32[idx++] = ptrtype;
                     HEAP32[idx++] = event.pointerId;
                     HEAP32[idx++] = (typeof(event.button) !== "undefined") ? event.button : -1;
@@ -967,15 +971,42 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
             var data = $0;
             target.sdlEventHandlerPointerEnter = function(event) {
                 var rect = target.getBoundingClientRect();
-                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event); if (d != 0) { _Emscripten_HandlePointerEnter(data, d); _SDL_free(d); }
+                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event);
+                if (d != 0)
+                {
+                    #ifdef  __wasm32__
+                    _Emscripten_HandlePointerEnter(data, d);
+                    #elif __wasm64__
+                    _Emscripten_HandlePointerEnter(BigInt(data), d);
+                    #endif
+                    _SDL_free(d);
+                }
             };
             target.sdlEventHandlerPointerLeave = function(event) {
                 var rect = target.getBoundingClientRect();
-                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event); if (d != 0) { _Emscripten_HandlePointerLeave(data, d); _SDL_free(d); }
+                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event);
+                if (d != 0)
+                {
+                    #ifdef __wasm32__
+                        _Emscripten_HandlePointerLeave(data, d);
+                    #elif __wasm64__
+                        _Emscripten_HandlePointerLeave(BigInt(data), d);
+                    #endif
+                    _SDL_free(d);
+                }
             };
             target.sdlEventHandlerPointerGeneric = function(event) {
                 var rect = target.getBoundingClientRect();
-                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event); if (d != 0) { _Emscripten_HandlePointerGeneric(data, d); _SDL_free(d); }
+                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event);
+                if (d != 0)
+                {
+                    #ifdef __wasm32__
+                        _Emscripten_HandlePointerGeneric(data, d);
+                    #elif __wasm64__
+                        _Emscripten_HandlePointerGeneric(BigInt(data), d);
+                    #endif
+                    _SDL_free(d);
+                }
             };
 
             target.style.touchAction = "none";  // or mobile devices will scroll as your touch moves across the element.
@@ -1028,7 +1059,16 @@ static void Emscripten_set_global_mouseup_callback(SDL_VideoDevice *device)
         if (target) {
             target.sdlEventHandlerMouseButtonUpGlobal = function(event) {
                 var SDL3 = Module['SDL3'];
-                var d = SDL3.makePointerEventCStruct(0, 0, event); if (d != 0) { _Emscripten_HandleMouseButtonUpGlobal($0, d); _SDL_free(d); }
+                var d = SDL3.makePointerEventCStruct(0, 0, event);
+                if (d != 0)
+                {
+                    #ifdef __wasm32__
+                    _Emscripten_HandleMouseButtonUpGlobal($0, d);
+                    #elif __wasm64__
+                    _Emscripten_HandleMouseButtonUpGlobal(BigInt($0), d);
+                    #endif
+                    _SDL_free(d);
+                }
             };
             target.addEventListener("pointerup", target.sdlEventHandlerMouseButtonUpGlobal);
         }
@@ -1268,8 +1308,13 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
             //  Note that this thing _only_ adjusts the lock keys if necessary; the real SDL keypress handling happens elsewhere.
             document.sdlEventHandlerLockKeysCheck = function(event) {
                 // don't try to adjust the state on the actual lock key presses; the normal key handler will catch that and adjust.
-                if ((event.key != "CapsLock") && (event.key != "NumLock") && (event.key != "ScrollLock")) {
-                    _Emscripten_HandleLockKeysCheck(data, event.getModifierState("CapsLock"), event.getModifierState("NumLock"), event.getModifierState("ScrollLock"));
+                if ((event.key != "CapsLock") && (event.key != "NumLock") && (event.key != "ScrollLock"))
+                {
+                    #ifdef __wasm32__
+                        _Emscripten_HandleLockKeysCheck(data, event.getModifierState("CapsLock"), event.getModifierState("NumLock"), event.getModifierState("ScrollLock"));
+                    #elif __wasm64__
+                        _Emscripten_HandleLockKeysCheck(BigInt(data), event.getModifierState("CapsLock"), event.getModifierState("NumLock"), event.getModifierState("ScrollLock"));
+                    #endif
                 }
             };
             document.addEventListener("keydown", document.sdlEventHandlerLockKeysCheck);
