@@ -1089,6 +1089,8 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
                         if (rc) {
                             break;
                         }
+                        SDL_DestroyRendererWithoutFreeing(renderer);
+                        SDL_zerop(renderer); // make sure we don't leave function pointers from a previous CreateRenderer() in this struct.
                     }
                 }
 
