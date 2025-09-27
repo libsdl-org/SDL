@@ -235,7 +235,6 @@ struct SDL_Renderer
 
     void (*InvalidateCachedState)(SDL_Renderer *renderer);
     bool (*RunCommandQueue)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
-    bool (*ChangeTexturePalette)(SDL_Renderer *renderer, SDL_Texture *texture, SDL_Palette *palette);
     bool (*UpdateTexturePalette)(SDL_Renderer *renderer, SDL_Texture *texture);
     bool (*UpdateTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                          const SDL_Rect *rect, const void *pixels,

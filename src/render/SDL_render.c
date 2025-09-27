@@ -1900,17 +1900,6 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
     }
 
     if (palette != texture->palette) {
-        if (!FlushRenderCommandsIfTextureNeeded(texture)) {
-            return false;
-        }
-
-        if (!texture->native) {
-            SDL_Renderer *renderer = texture->renderer;
-            if (!renderer->ChangeTexturePalette(renderer, texture, palette)) {
-                return false;
-            }
-        }
-
         if (texture->palette) {
             SDL_DestroyPalette(texture->palette);
         }
