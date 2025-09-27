@@ -728,6 +728,10 @@ static bool UpdateTexturePalette(SDL_Texture *texture)
             return false;
         }
     } else {
+        if (!FlushRenderCommandsIfTextureNeeded(texture)) {
+            return false;
+        }
+
         if (!renderer->UpdateTexturePalette(renderer, texture)) {
             return false;
         }
