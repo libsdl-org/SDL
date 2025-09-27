@@ -39,7 +39,7 @@ extern "C" {
 /**
  * \brief SDL_Notification flags.
  */
-typedef enum
+typedef enum SDL_NotificationFlags
 {
     SDL_NOTIFICATION_PRIORITY_LOW        = 0x00000010,   /**< lowest */
     SDL_NOTIFICATION_PRIORITY_NORMAL     = 0x00000020,   /**< normal/medium */
@@ -49,7 +49,7 @@ typedef enum
 /**
  * \brief SDL_Icon flags.
  */
-typedef enum
+typedef enum SDL_IconFlags
 {
     SDL_ICON_TYPE_SINGLE_FILE    = 0x00000010,   /**< A single icon file. */
     SDL_ICON_TYPE_SURFACE        = 0x00000020,   /**< Icon inside an SDL surface. */
