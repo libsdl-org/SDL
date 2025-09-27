@@ -346,7 +346,7 @@ int main(int argc, char *argv[])
 
         /* Test showing a system notification message with a parent window */
         success = SDL_ShowSimpleNotification("Simple Notification", "Hey this window needs attention!");
-        if (success == -1) {
+        if (!success) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Error Presenting Notification: %s\n", SDL_GetError());
             quit(1);
         }
