@@ -171,10 +171,13 @@ int SDL_GetDefaultSampleFramesFromFreq(const int freq)
 
 int *SDL_ChannelMapDup(const int *origchmap, int channels)
 {
-    const size_t chmaplen = sizeof (*origchmap) * channels;
-    int *chmap = (int *)SDL_malloc(chmaplen);
-    if (chmap) {
-        SDL_memcpy(chmap, origchmap, chmaplen);
+    int *chmap = NULL;
+    if ((channels > 0) && origchmap) {
+        const size_t chmaplen = sizeof (*origchmap) * channels;
+        chmap = (int *)SDL_malloc(chmaplen);
+        if (chmap) {
+            SDL_memcpy(chmap, origchmap, chmaplen);
+        }
     }
     return chmap;
 }
@@ -1617,9 +1620,7 @@ int *SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int *count)
     SDL_AudioDevice *device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
     if (device) {
         channels = device->spec.channels;
-        if (channels > 0 && device->chmap) {
-            result = SDL_ChannelMapDup(device->chmap, channels);
-        }
+        result = SDL_ChannelMapDup(device->chmap, channels);
     }
     ReleaseAudioDevice(device);
 
