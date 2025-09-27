@@ -50,13 +50,12 @@
 #endif
 #if defined(__MACOSX__) && (defined(__ppc__) || defined(__ppc64__))
 #include <sys/sysctl.h>         /* For AltiVec check */
-#elif defined(__OpenBSD__) && defined(__powerpc__)
+#elif defined(__OpenBSD__) && defined(__powerpc__) && !defined(HAVE_ELF_AUX_INFO)
 #include <sys/types.h>
 #include <sys/sysctl.h> /* For AltiVec check */
 #include <machine/cpu.h>
-#elif defined(__FreeBSD__) && defined(__powerpc__)
+#elif defined(__FreeBSD__) && defined(__powerpc__) && defined(HAVE_ELF_AUX_INFO)
 #include <machine/cpu.h>
-#include <sys/auxv.h>
 #elif defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
 #include <signal.h>
 #include <setjmp.h>
@@ -343,7 +342,12 @@ static int CPU_haveAltiVec(void)
 {
     volatile int altivec = 0;
 #ifndef SDL_CPUINFO_DISABLED
-#if (defined(__MACOSX__) && (defined(__ppc__) || defined(__ppc64__))) || (defined(__OpenBSD__) && defined(__powerpc__))
+#if (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(__powerpc__) && defined(HAVE_ELF_AUX_INFO)
+    unsigned long cpufeatures = 0;
+    elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
+    altivec = cpufeatures & PPC_FEATURE_HAS_ALTIVEC;
+    return altivec;
+#elif (defined(__MACOSX__) && (defined(__ppc__) || defined(__ppc64__))) || (defined(__OpenBSD__) && defined(__powerpc__))
 #ifdef __OpenBSD__
     int selectors[2] = { CTL_MACHDEP, CPU_ALTIVEC };
 #else
@@ -355,11 +359,6 @@ static int CPU_haveAltiVec(void)
     if (0 == error) {
         altivec = (hasVectorUnit != 0);
     }
-#elif defined(__FreeBSD__) && defined(__powerpc__)
-    unsigned long cpufeatures = 0;
-    elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
-    altivec = cpufeatures & PPC_FEATURE_HAS_ALTIVEC;
-    return altivec;
 #elif defined(__LINUX__) && defined(__powerpc__) && defined(HAVE_GETAUXVAL)
     altivec = getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC;
 #elif defined(SDL_ALTIVEC_BLITTERS) && defined(HAVE_SETJMP)
@@ -489,8 +488,6 @@ static int CPU_haveNEON(void)
     return 0; /* assume anything else from Apple doesn't have NEON. */
 #elif !defined(__arm__)
     return 0; /* not an ARM CPU at all. */
-#elif defined(__OpenBSD__)
-    return 1; /* OpenBSD only supports ARMv7 CPUs that have NEON. */
 #elif defined(HAVE_ELF_AUX_INFO)
     unsigned long hasneon = 0;
     if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0) {
@@ -527,6 +524,8 @@ static int CPU_haveNEON(void)
         }
         return 0;
     }
+#elif defined(__OpenBSD__)
+    return 1; /* OpenBSD only supports ARMv7 CPUs that have NEON. */
 #else
 #warning SDL_HasNEON is not implemented for this ARM platform. Write me.
     return 0;
