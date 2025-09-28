@@ -6384,7 +6384,11 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizationStateCreateInfo.pNext = NULL;
     rasterizationStateCreateInfo.flags = 0;
-    rasterizationStateCreateInfo.depthClampEnable = !createinfo->rasterizer_state.enable_depth_clip;
+    if (renderer->desiredDeviceFeatures.depthClamp) {
+        rasterizationStateCreateInfo.depthClampEnable = !createinfo->rasterizer_state.enable_depth_clip;
+    } else {
+        rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
+    }
     rasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
     rasterizationStateCreateInfo.polygonMode = SDLToVK_PolygonMode(
         renderer,
