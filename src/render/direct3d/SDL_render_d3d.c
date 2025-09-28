@@ -90,6 +90,7 @@ typedef struct
 typedef struct
 {
     D3D_TextureRep texture;
+    D3D_TextureRep palette;
     D3D9_Shader shader;
     const float *shader_params;
 
@@ -198,6 +199,7 @@ static D3DFORMAT PixelFormatToD3DFMT(Uint32 format)
         return D3DFMT_X8R8G8B8;
     case SDL_PIXELFORMAT_ARGB8888:
         return D3DFMT_A8R8G8B8;
+    case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_NV12:
@@ -552,6 +554,13 @@ static bool D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     if (!D3D_CreateTextureRep(data->device, &texturedata->texture, usage, texture->format, PixelFormatToD3DFMT(texture->format), texture->w, texture->h)) {
         return false;
     }
+    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+        if (!D3D_CreateTextureRep(data->device, &texturedata->palette, usage, SDL_PIXELFORMAT_ARGB8888, D3DFMT_A8R8G8B8, 256, 1)) {
+            return false;
+        }
+
+        texturedata->shader = SHADER_PALETTE;
+    }
 #ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
@@ -587,6 +596,12 @@ static bool D3D_RecreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (!D3D_RecreateTextureRep(data->device, &texturedata->texture)) {
         return false;
     }
+    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+        if (!D3D_RecreateTextureRep(data->device, &texturedata->palette)) {
+            return false;
+        }
+        texture->palette_version = 0;
+    }
 #ifdef SDL_HAVE_YUV
     if (texturedata->yuv) {
         if (!D3D_RecreateTextureRep(data->device, &texturedata->utexture)) {
@@ -599,6 +614,24 @@ static bool D3D_RecreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 #endif
     return true;
+}
+
+static bool D3D_UpdateTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+    D3D_RenderData *data = (D3D_RenderData *)renderer->internal;
+    D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
+    const int ncolors = texture->palette->ncolors;
+    const SDL_Color *colors = texture->palette->colors;
+    Uint32 palette[256];
+
+    if (!texturedata) {
+        return SDL_SetError("Texture is not currently available");
+    }
+
+    for (int i = 0; i < ncolors; ++i) {
+        palette[i] = (colors[i].a << 24) | (colors[i].r << 16) | (colors[i].g << 8) | colors[i].b;
+    }
+    return D3D_UpdateTextureRep(data->device, &texturedata->palette, 0, 0, 256, 1, palette, sizeof(palette));
 }
 
 static bool D3D_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -980,6 +1013,11 @@ static bool SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, D3D9_S
     if (!BindTextureRep(data->device, &texturedata->texture, 0)) {
         return false;
     }
+    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+        if (!BindTextureRep(data->device, &texturedata->palette, 1)) {
+            return false;
+        }
+    }
 #ifdef SDL_HAVE_YUV
     if (texturedata->yuv) {
         if (!BindTextureRep(data->device, &texturedata->utexture, 1)) {
@@ -999,16 +1037,18 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
     const SDL_BlendMode blend = cmd->data.draw.blend;
 
     if (texture != data->drawstate.texture) {
-#ifdef SDL_HAVE_YUV
         D3D_TextureData *oldtexturedata = data->drawstate.texture ? (D3D_TextureData *)data->drawstate.texture->internal : NULL;
         D3D_TextureData *newtexturedata = texture ? (D3D_TextureData *)texture->internal : NULL;
-#endif
         D3D9_Shader shader = SHADER_NONE;
         const float *shader_params = NULL;
 
         // disable any enabled textures we aren't going to use, let SetupTextureState() do the rest.
         if (!texture) {
             IDirect3DDevice9_SetTexture(data->device, 0, NULL);
+        }
+        if ((!newtexturedata || (texture->format != SDL_PIXELFORMAT_INDEX8)) &&
+            (oldtexturedata && (data->drawstate.texture->format == SDL_PIXELFORMAT_INDEX8))) {
+            IDirect3DDevice9_SetTexture(data->device, 1, NULL);
         }
 #ifdef SDL_HAVE_YUV
         if ((!newtexturedata || !newtexturedata->yuv) && (oldtexturedata && oldtexturedata->yuv)) {
@@ -1046,6 +1086,9 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
         D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
         if (texturedata) {
             UpdateDirtyTexture(data->device, &texturedata->texture);
+            if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+                UpdateDirtyTexture(data->device, &texturedata->palette);
+            }
 #ifdef SDL_HAVE_YUV
             if (texturedata->yuv) {
                 UpdateDirtyTexture(data->device, &texturedata->utexture);
@@ -1445,8 +1488,11 @@ static void D3D_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         renderdata->drawstate.shader_params = NULL;
         IDirect3DDevice9_SetPixelShader(renderdata->device, NULL);
         IDirect3DDevice9_SetTexture(renderdata->device, 0, NULL);
+        if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+            IDirect3DDevice9_SetTexture(renderdata->device, 1, NULL);
+        }
 #ifdef SDL_HAVE_YUV
-        if (data->yuv) {
+        if (data && data->yuv) {
             IDirect3DDevice9_SetTexture(renderdata->device, 1, NULL);
             IDirect3DDevice9_SetTexture(renderdata->device, 2, NULL);
         }
@@ -1483,14 +1529,12 @@ static void D3D_DestroyRenderer(SDL_Renderer *renderer)
             IDirect3DSurface9_Release(data->currentRenderTarget);
             data->currentRenderTarget = NULL;
         }
-#ifdef SDL_HAVE_YUV
         for (i = 0; i < SDL_arraysize(data->shaders); ++i) {
             if (data->shaders[i]) {
                 IDirect3DPixelShader9_Release(data->shaders[i]);
                 data->shaders[i] = NULL;
             }
         }
-#endif
         // Release all vertex buffers
         for (i = 0; i < SDL_arraysize(data->vertexBuffers); ++i) {
             if (data->vertexBuffers[i]) {
@@ -1668,6 +1712,7 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     renderer->WindowEvent = D3D_WindowEvent;
     renderer->SupportsBlendMode = D3D_SupportsBlendMode;
     renderer->CreateTexture = D3D_CreateTexture;
+    renderer->UpdateTexturePalette = D3D_UpdateTexturePalette;
     renderer->UpdateTexture = D3D_UpdateTexture;
 #ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = D3D_UpdateTextureYUV;
@@ -1771,19 +1816,19 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     // Set up parameters for rendering
     D3D_InitRenderState(data);
+    for (int i = SHADER_NONE + 1; i < SDL_arraysize(data->shaders); ++i) {
+        result = D3D9_CreatePixelShader(data->device, (D3D9_Shader)i, &data->shaders[i]);
+        if (FAILED(result)) {
+            D3D_SetError("CreatePixelShader()", result);
+        }
+    }
+    if (caps.MaxSimultaneousTextures >= 2 && data->shaders[SHADER_PALETTE]) {
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
+    }
 #ifdef SDL_HAVE_YUV
-    if (caps.MaxSimultaneousTextures >= 3) {
-        int i;
-        for (i = SHADER_NONE + 1; i < SDL_arraysize(data->shaders); ++i) {
-            result = D3D9_CreatePixelShader(data->device, (D3D9_Shader)i, &data->shaders[i]);
-            if (FAILED(result)) {
-                D3D_SetError("CreatePixelShader()", result);
-            }
-        }
-        if (data->shaders[SHADER_YUV]) {
-            SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
-            SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
-        }
+    if (caps.MaxSimultaneousTextures >= 3 && data->shaders[SHADER_YUV]) {
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
     }
 #endif
 

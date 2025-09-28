@@ -88,6 +88,19 @@ static const char GLES2_Fragment_Solid[] =
 "}\n"
 ;
 
+#define PALETTE_SHADER_PROLOGUE                                 \
+"uniform sampler2D u_texture;\n"                                \
+"uniform sampler2D u_palette;\n"                                \
+"varying mediump vec4 v_color;\n"                               \
+"varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
+
+#define PALETTE_PIXELART_SHADER_PROLOGUE                        \
+"uniform sampler2D u_texture;\n"                                \
+"uniform sampler2D u_palette;\n"                                \
+"uniform mediump vec4 u_texel_size;\n"                          \
+"varying mediump vec4 v_color;\n"                               \
+"varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
+
 #define RGB_SHADER_PROLOGUE                                     \
 "uniform sampler2D u_texture;\n"                                \
 "varying mediump vec4 v_color;\n"                               \
@@ -100,17 +113,41 @@ static const char GLES2_Fragment_Solid[] =
 "varying SDL_TEXCOORD_PRECISION vec2 v_texCoord;\n"             \
 
 #ifdef OPENGLES_300 // This is required for fwidth() and textureGrad()
+#define PALETTE_PIXELART_GETCOLOR                                                               \
+"    mediump vec2 boxSize = clamp(fwidth(v_texCoord) * u_texel_size.zw, 1e-5, 1.0);\n"          \
+"    mediump vec2 tx = v_texCoord * u_texel_size.zw - 0.5 * boxSize;\n"                         \
+"    mediump vec2 txOffset = smoothstep(vec2(1.0) - boxSize, vec2(1.0), fract(tx));\n"          \
+"    mediump vec2 uv = (floor(tx) + 0.5 + txOffset) * u_texel_size.xy;\n"                       \
+"    mediump float index = textureGrad(u_texture, uv, dFdx(v_texCoord), dFdy(v_texCoord)).r * 255.0;\n" \
+"    SDL_TEXCOORD_PRECISION vec2 paletteCoords = vec2((index + 0.5) / 256.0, 0.5);\n"           \
+"    mediump vec4 color = texture2D(u_palette, paletteCoords);\n"
 #define RGB_PIXELART_GETCOLOR                                                                   \
 "    mediump vec2 boxSize = clamp(fwidth(v_texCoord) * u_texel_size.zw, 1e-5, 1.0);\n"          \
 "    mediump vec2 tx = v_texCoord * u_texel_size.zw - 0.5 * boxSize;\n"                         \
 "    mediump vec2 txOffset = smoothstep(vec2(1.0) - boxSize, vec2(1.0), fract(tx));\n"          \
 "    mediump vec2 uv = (floor(tx) + 0.5 + txOffset) * u_texel_size.xy;\n"                       \
-"    mediump vec4 color = textureGrad(u_texture, uv, dFdx(v_texCoord), dFdy(v_texCoord));\n"    \
-"    mediump vec4 color = texture2D(u_texture, uv);\n"
+"    mediump vec4 color = textureGrad(u_texture, uv, dFdx(v_texCoord), dFdy(v_texCoord));\n"
 #else
+#define PALETTE_PIXELART_GETCOLOR                                                               \
+"    mediump float index = texture2D(u_texture, v_texCoord).r * 255.0;\n"                       \
+"    SDL_TEXCOORD_PRECISION vec2 paletteCoords = vec2((index + 0.5) / 256.0, 0.5);\n"           \
+"    mediump vec4 color = texture2D(u_palette, paletteCoords);\n"
 #define RGB_PIXELART_GETCOLOR                                                                   \
 "    mediump vec4 color = texture2D(u_texture, v_texCoord);\n"
 #endif
+
+static const char GLES2_Fragment_TexturePalette[] =
+    PALETTE_SHADER_PROLOGUE
+"\n"
+"void main()\n"
+"{\n"
+"    mediump float index = texture2D(u_texture, v_texCoord).r * 255.0;\n"
+"    SDL_TEXCOORD_PRECISION vec2 paletteCoords = vec2((index + 0.5) / 256.0, 0.5);\n"
+"    mediump vec4 color = texture2D(u_palette, paletteCoords);\n"
+"    gl_FragColor = color;\n"
+"    gl_FragColor *= v_color;\n"
+"}\n"
+;
 
 static const char GLES2_Fragment_TextureABGR[] =
     RGB_SHADER_PROLOGUE
@@ -161,6 +198,17 @@ static const char GLES2_Fragment_TextureBGR[] =
 "    mediump vec4 color = texture2D(u_texture, v_texCoord);\n"
 "    gl_FragColor = color;\n"
 "    gl_FragColor.a = 1.0;\n"
+"    gl_FragColor *= v_color;\n"
+"}\n"
+;
+
+static const char GLES2_Fragment_TexturePalette_PixelArt[] =
+    PALETTE_PIXELART_SHADER_PROLOGUE
+"\n"
+"void main()\n"
+"{\n"
+    PALETTE_PIXELART_GETCOLOR
+"    gl_FragColor = color;\n"
 "    gl_FragColor *= v_color;\n"
 "}\n"
 ;
@@ -427,6 +475,8 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
         return GLES2_Vertex_Default;
     case GLES2_SHADER_FRAGMENT_SOLID:
         return GLES2_Fragment_Solid;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE:
+        return GLES2_Fragment_TexturePalette;
     case GLES2_SHADER_FRAGMENT_TEXTURE_ABGR:
         return GLES2_Fragment_TextureABGR;
     case GLES2_SHADER_FRAGMENT_TEXTURE_ARGB:
@@ -435,6 +485,8 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
         return GLES2_Fragment_TextureRGB;
     case GLES2_SHADER_FRAGMENT_TEXTURE_BGR:
         return GLES2_Fragment_TextureBGR;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_PIXELART:
+        return GLES2_Fragment_TexturePalette_PixelArt;
     case GLES2_SHADER_FRAGMENT_TEXTURE_ABGR_PIXELART:
         return GLES2_Fragment_TextureABGR_PixelArt;
     case GLES2_SHADER_FRAGMENT_TEXTURE_ARGB_PIXELART:

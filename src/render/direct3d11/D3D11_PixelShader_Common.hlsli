@@ -3,6 +3,7 @@ Texture2D texture0 : register(t0);
 Texture2D texture1 : register(t1);
 Texture2D texture2 : register(t2);
 SamplerState sampler0 : register(s0);
+SamplerState sampler1 : register(s1);
 
 struct PixelShaderInput
 {
@@ -19,9 +20,11 @@ static const float TONEMAP_CHROME = 2;
 static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
-static const float TEXTURETYPE_NV12 = 3;
-static const float TEXTURETYPE_NV21 = 4;
-static const float TEXTURETYPE_YUV = 5;
+static const float TEXTURETYPE_PALETTE = 3;
+static const float TEXTURETYPE_PALETTE_PIXELART = 4;
+static const float TEXTURETYPE_NV12 = 5;
+static const float TEXTURETYPE_NV21 = 6;
+static const float TEXTURETYPE_YUV = 7;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -116,6 +119,23 @@ float3 ApplyTonemap(float3 v)
     return v;
 }
 
+float2 GetPixelArtUV(PixelShaderInput input)
+{
+    // box filter size in texel units
+    float2 boxSize = clamp(fwidth(input.tex) * texel_size.zw, 1e-5, 1);
+
+    // scale uv by texture size to get texel coordinate
+    float2 tx = input.tex * texel_size.zw - 0.5 * boxSize;
+
+    // compute offset for pixel-sized box filter
+    float2 txOffset = smoothstep(1 - boxSize, 1, frac(tx));
+
+    // compute bilinear sample uv coordinates
+    float2 uv = (floor(tx) + 0.5 + txOffset) * texel_size.xy;
+
+    return uv;
+}
+
 float4 GetInputColor(PixelShaderInput input)
 {
     float4 rgba;
@@ -125,20 +145,15 @@ float4 GetInputColor(PixelShaderInput input)
     } else if (texture_type == TEXTURETYPE_RGB) {
         rgba = texture0.Sample(sampler0, input.tex);
     } else if (texture_type == TEXTURETYPE_RGB_PIXELART) {
-        // box filter size in texel units
-        float2 boxSize = clamp(fwidth(input.tex) * texel_size.zw, 1e-5, 1);
-
-        // scale uv by texture size to get texel coordinate
-        float2 tx = input.tex * texel_size.zw - 0.5 * boxSize;
-
-        // compute offset for pixel-sized box filter
-        float2 txOffset = smoothstep(1 - boxSize, 1, frac(tx));
-
-        // compute bilinear sample uv coordinates
-        float2 uv = (floor(tx) + 0.5 + txOffset) * texel_size.xy;
-
-        // sample the texture
+        float2 uv = GetPixelArtUV(input);
         rgba = texture0.SampleGrad(sampler0, uv, ddx(input.tex), ddy(input.tex));
+    } else if (texture_type == TEXTURETYPE_PALETTE) {
+        float index = texture0.Sample(sampler0, input.tex).r * 255;
+        rgba = texture1.Sample(sampler1, float2((index + 0.5) / 256, 0.5));
+    } else if (texture_type == TEXTURETYPE_PALETTE_PIXELART) {
+        float2 uv = GetPixelArtUV(input);
+        float index = texture0.Sample(sampler0, uv).r * 255;
+        rgba = texture1.Sample(sampler1, float2((index + 0.5) / 256, 0.5));
     } else if (texture_type == TEXTURETYPE_NV12) {
         float3 yuv;
         yuv.x = texture0.Sample(sampler0, input.tex).r;

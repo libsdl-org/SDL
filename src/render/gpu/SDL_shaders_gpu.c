@@ -111,6 +111,13 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
         SHADER_DXIL60(color_frag_dxil)
         SHADER_METAL(color_frag_msl)
     },
+    [FRAG_SHADER_TEXTURE_PALETTE] = {
+        .num_samplers = 2,
+        .num_uniform_buffers = 0,
+        SHADER_SPIRV(texture_palette_frag_spv)
+        SHADER_DXIL60(texture_palette_frag_dxil)
+        SHADER_METAL(texture_palette_frag_msl)
+    },
     [FRAG_SHADER_TEXTURE_RGB] = {
         .num_samplers = 1,
         .num_uniform_buffers = 0,
@@ -124,6 +131,13 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
         SHADER_SPIRV(texture_rgba_frag_spv)
         SHADER_DXIL60(texture_rgba_frag_dxil)
         SHADER_METAL(texture_rgba_frag_msl)
+    },
+    [FRAG_SHADER_TEXTURE_PALETTE_PIXELART] = {
+        .num_samplers = 2,
+        .num_uniform_buffers = 1,
+        SHADER_SPIRV(texture_palette_pixelart_frag_spv)
+        SHADER_DXIL60(texture_palette_pixelart_frag_dxil)
+        SHADER_METAL(texture_palette_pixelart_frag_msl)
     },
     [FRAG_SHADER_TEXTURE_RGB_PIXELART] = {
         .num_samplers = 1,
