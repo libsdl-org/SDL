@@ -31,7 +31,7 @@ import android.view.ScaleGestureDetector;
     Because of this, that's where we set up the SDL thread
 */
 public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
-    View.OnApplyWindowInsetsListener, View.OnKeyListener, View.OnTouchListener, 
+    View.OnApplyWindowInsetsListener, View.OnKeyListener, View.OnTouchListener,
     SensorEventListener, ScaleGestureDetector.OnScaleGestureListener {
 
     // Sensors
@@ -241,12 +241,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     @Override
     public boolean onTouch(View v, MotionEvent event) {
 
-        if (scaleGestureDetector.onTouchEvent(event)) {
-            if (scaleGestureDetector.isInProgress()) {
-                return true; /* event was consumed as gesture */
-            }
-        }
-
         /* Ref: http://developer.android.com/training/gestures/multi.html */
         int touchDevId = event.getDeviceId();
         final int pointerCount = event.getPointerCount();
@@ -306,6 +300,14 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             if (action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_POINTER_DOWN)
                 break;
         } while (++i < pointerCount);
+
+        if (scaleGestureDetector.onTouchEvent(event)) {
+            if (scaleGestureDetector.isInProgress()) {
+                return true; /* event was consumed as gesture */
+            }
+        }
+
+
 
         return true;
     }
