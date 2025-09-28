@@ -155,11 +155,8 @@ static bool EMSCRIPTENAUDIO_OpenDevice(SDL_AudioDevice *device)
             Module['SDL3'] = {};
         }
         var SDL3 = Module['SDL3'];
-        if (!$0) {
-            SDL3.audio_playback = {};
-        } else {
-            SDL3.audio_recording = {};
-        }
+        SDL3.audio_playback = {};
+        SDL3.audio_recording = {};
 
         if (!SDL3.audioContext) {
             if (typeof(AudioContext) !== 'undefined') {
