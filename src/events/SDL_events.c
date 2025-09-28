@@ -904,12 +904,13 @@ static void SDL_LogEvent(const SDL_Event *event)
         return;
     }
 
-    // sensor/mouse/pen/finger motion are spammy, ignore these if they aren't demanded.
+    // sensor/mouse/pen/finger/pinch motion are spammy, ignore these if they aren't demanded.
     if ((SDL_EventLoggingVerbosity < 2) &&
         ((event->type == SDL_EVENT_MOUSE_MOTION) ||
          (event->type == SDL_EVENT_FINGER_MOTION) ||
          (event->type == SDL_EVENT_PEN_AXIS) ||
          (event->type == SDL_EVENT_PEN_MOTION) ||
+         (event->type == SDL_EVENT_PINCH_UPDATE) ||
          (event->type == SDL_EVENT_GAMEPAD_AXIS_MOTION) ||
          (event->type == SDL_EVENT_GAMEPAD_SENSOR_UPDATE) ||
          (event->type == SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION) ||
