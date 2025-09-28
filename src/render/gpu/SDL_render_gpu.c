@@ -89,6 +89,7 @@ typedef struct GPU_RenderData
 typedef struct GPU_TextureData
 {
     SDL_GPUTexture *texture;
+    SDL_GPUTexture *palette;
     SDL_GPUTextureFormat format;
     GPU_FragmentShaderID shader;
     void *pixels;
@@ -124,8 +125,11 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     SDL_GPUTextureFormat format;
     SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
-    format = SDL_GetGPUTextureFormatFromPixelFormat(texture->format);
-
+    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+        format = SDL_GPU_TEXTUREFORMAT_R8_UNORM;
+    } else {
+        format = SDL_GetGPUTextureFormatFromPixelFormat(texture->format);
+    }
     if (format == SDL_GPU_TEXTUREFORMAT_INVALID) {
         return SDL_SetError("Texture format %s not supported by SDL_GPU",
                             SDL_GetPixelFormatName(texture->format));
@@ -180,6 +184,16 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         return false;
     }
 
+    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+        tci.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+        tci.width = 256;
+        tci.height = 1;
+        data->palette = SDL_CreateGPUTexture(renderdata->device, &tci);
+        if (!data->palette) {
+            return false;
+        }
+    }
+
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
     SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER, data->texture);
 
@@ -188,6 +202,52 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     } else {
         data->shader = FRAG_SHADER_TEXTURE_RGB;
     }
+
+    return true;
+}
+
+static bool GPU_UpdateTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+    GPU_RenderData *renderdata = (GPU_RenderData *)renderer->internal;
+    GPU_TextureData *data = (GPU_TextureData *)texture->internal;
+    SDL_Palette *palette = texture->palette;
+    const Uint32 data_size = palette->ncolors * sizeof(*palette->colors);
+
+    SDL_GPUTransferBufferCreateInfo tbci;
+    SDL_zero(tbci);
+    tbci.size = data_size;
+    tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+
+    SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(renderdata->device, &tbci);
+    if (tbuf == NULL) {
+        return false;
+    }
+
+    Uint8 *output = SDL_MapGPUTransferBuffer(renderdata->device, tbuf, false);
+    SDL_memcpy(output, palette->colors, data_size);
+    SDL_UnmapGPUTransferBuffer(renderdata->device, tbuf);
+
+    SDL_GPUCommandBuffer *cbuf = renderdata->state.command_buffer;
+    SDL_GPUCopyPass *cpass = SDL_BeginGPUCopyPass(cbuf);
+
+    SDL_GPUTextureTransferInfo tex_src;
+    SDL_zero(tex_src);
+    tex_src.transfer_buffer = tbuf;
+    tex_src.rows_per_layer = 1;
+    tex_src.pixels_per_row = palette->ncolors;
+
+    SDL_GPUTextureRegion tex_dst;
+    SDL_zero(tex_dst);
+    tex_dst.texture = data->palette;
+    tex_dst.x = 0;
+    tex_dst.y = 0;
+    tex_dst.w = palette->ncolors;
+    tex_dst.h = 1;
+    tex_dst.d = 1;
+
+    SDL_UploadToGPUTexture(cpass, &tex_src, &tex_dst, false);
+    SDL_EndGPUCopyPass(cpass);
+    SDL_ReleaseGPUTransferBuffer(renderdata->device, tbuf);
 
     return true;
 }
@@ -539,7 +599,13 @@ static void Draw(
         SDL_Texture *texture = cmd->data.draw.texture;
         if (texture) {
             v_shader = VERT_SHADER_TRI_TEXTURE;
-            if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
+            if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+                if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+                    f_shader = FRAG_SHADER_TEXTURE_PALETTE_PIXELART;
+                } else {
+                    f_shader = FRAG_SHADER_TEXTURE_PALETTE;
+                }
+            } else if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
                 if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
                     f_shader = FRAG_SHADER_TEXTURE_RGBA_PIXELART;
                 } else {
@@ -589,12 +655,19 @@ static void Draw(
 
     Uint32 sampler_slot = 0;
     if (cmd->data.draw.texture) {
-        GPU_TextureData *tdata = (GPU_TextureData *)cmd->data.draw.texture->internal;
+        SDL_Texture *texture = cmd->data.draw.texture;
+        GPU_TextureData *tdata = (GPU_TextureData *)texture->internal;
         SDL_GPUTextureSamplerBinding sampler_bind;
         SDL_zero(sampler_bind);
         sampler_bind.sampler = GetSampler(data, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
         sampler_bind.texture = tdata->texture;
         SDL_BindGPUFragmentSamplers(pass, sampler_slot++, &sampler_bind, 1);
+
+        if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+            sampler_bind.sampler = GetSampler(data, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+            sampler_bind.texture = tdata->palette;
+            SDL_BindGPUFragmentSamplers(pass, sampler_slot++, &sampler_bind, 1);
+        }
     }
     if (custom_state) {
         if (custom_state->num_sampler_bindings > 0) {
@@ -1055,6 +1128,7 @@ static void GPU_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 
     SDL_ReleaseGPUTexture(renderdata->device, data->texture);
+    SDL_ReleaseGPUTexture(renderdata->device, data->palette);
     SDL_free(data->pixels);
     SDL_free(data);
     texture->internal = NULL;
@@ -1169,6 +1243,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     renderer->SupportsBlendMode = GPU_SupportsBlendMode;
     renderer->CreateTexture = GPU_CreateTexture;
+    renderer->UpdateTexturePalette = GPU_UpdateTexturePalette;
     renderer->UpdateTexture = GPU_UpdateTexture;
     renderer->LockTexture = GPU_LockTexture;
     renderer->UnlockTexture = GPU_UnlockTexture;
@@ -1256,6 +1331,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
 
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
 

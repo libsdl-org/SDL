@@ -1,5 +1,7 @@
 #include "color.frag.dxil.h"
 #include "linepoint.vert.dxil.h"
+#include "texture_palette.frag.dxil.h"
+#include "texture_palette_pixelart.frag.dxil.h"
 #include "texture_rgb.frag.dxil.h"
 #include "texture_rgb_pixelart.frag.dxil.h"
 #include "texture_rgba.frag.dxil.h"

@@ -33,4 +33,5 @@ cbuffer VertexShaderConstants : register(b0)
     "DescriptorTable ( SRV(t0), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( SRV(t1), visibility = SHADER_VISIBILITY_PIXEL ),"\
     "DescriptorTable ( SRV(t2), visibility = SHADER_VISIBILITY_PIXEL ),"\
-    "DescriptorTable ( Sampler(s0), visibility = SHADER_VISIBILITY_PIXEL )"
+    "DescriptorTable ( Sampler(s0), visibility = SHADER_VISIBILITY_PIXEL )," \
+    "DescriptorTable ( Sampler(s1), visibility = SHADER_VISIBILITY_PIXEL )"

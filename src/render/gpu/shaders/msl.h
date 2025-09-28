@@ -1,5 +1,7 @@
 #include "color.frag.msl.h"
 #include "linepoint.vert.msl.h"
+#include "texture_palette.frag.msl.h"
+#include "texture_palette_pixelart.frag.msl.h"
 #include "texture_rgb.frag.msl.h"
 #include "texture_rgb_pixelart.frag.msl.h"
 #include "texture_rgba.frag.msl.h"
