@@ -59,8 +59,7 @@ extern "C" {
 // Vertex shader, common values
 typedef struct
 {
-    Float4X4 model;
-    Float4X4 projectionAndView;
+    Float4X4 mpv;
 } D3D12_VertexShaderConstants;
 
 // These should mirror the definitions in D3D12_PixelShader_Common.hlsli
@@ -232,7 +231,7 @@ typedef struct
     D3D12_SRVPoolNode srvPoolNodes[SDL_D3D12_MAX_NUM_TEXTURES];
 
     // Vertex buffer constants
-    D3D12_VertexShaderConstants vertexShaderConstantsData;
+    Float4X4 projectionAndView;
 
     // Cached renderer properties
     DXGI_MODE_ROTATION rotation;
@@ -2449,9 +2448,7 @@ static bool D3D12_UpdateViewport(SDL_Renderer *renderer)
      * set here (as of this writing, on Dec 26, 2013).  When done, store it
      * for eventual transfer to the GPU.
      */
-    data->vertexShaderConstantsData.projectionAndView = MatrixMultiply(
-        view,
-        projection);
+    data->projectionAndView = MatrixMultiply(view, projection);
 
     /* Update the Direct3D viewport, which seems to be aligned to the
      * swap buffer's coordinate space, which is always in either
@@ -2694,12 +2691,14 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
         rendererData->currentSampler = *sampler;
     }
 
-    if (updateSubresource == true || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix)) != 0) {
-        SDL_memcpy(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof(*newmatrix));
+    if (updateSubresource == true) {
+        D3D12_VertexShaderConstants vertex_constants;
+        // Our model matrix is always identity
+        vertex_constants.mpv = rendererData->projectionAndView;
         ID3D12GraphicsCommandList2_SetGraphicsRoot32BitConstants(rendererData->commandList,
                  0,
-                 32,
-                 &rendererData->vertexShaderConstantsData,
+                 sizeof(vertex_constants) / sizeof(float),
+                 &vertex_constants,
                  0);
     }
 
