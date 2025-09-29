@@ -1096,6 +1096,9 @@ struct SDL_GPUDevice
 
     // Store this for SDL_gpu.c's debug layer
     bool debug_mode;
+    bool validate_feature_depth_clamp_disabled;
+    bool validate_feature_indirect_draw_first_instance_disabled;
+    bool validate_feature_anisotropy_disabled;
 };
 
 #define ASSIGN_DRIVER_FUNC(func, name) \
