@@ -87,8 +87,6 @@ typedef struct
     SDL_bool cliprect_dirty;
     SDL_Rect cliprect;
 
-    SDL_Texture *target;
-
     float draw_offset_x;
     float draw_offset_y;
 
@@ -1100,7 +1098,8 @@ static void SetDrawState(PSP_RenderData *data)
 
     if (data->drawstate.cliprect_enabled_dirty) {
         if (!data->drawstate.cliprect_enabled && !data->drawstate.viewport_is_set) {
-            sceGuDisable(GU_SCISSOR_TEST);
+            sceGuScissor(0, 0, data->drawstate.drawablew, data->drawstate.drawableh);
+            sceGuEnable(GU_SCISSOR_TEST);
         }
         data->drawstate.cliprect_enabled_dirty = SDL_FALSE;
     }
@@ -1167,14 +1166,12 @@ static int PSP_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
     }
     SDL_memcpy(gpumem, vertices, vertsize);
 
-    data->drawstate.target = renderer->target;
-    if (!data->drawstate.target) {
+    if (!data->boundTarget) {
         SDL_GL_GetDrawableSize(renderer->window, &w, &h);
     } else {
-        if (SDL_QueryTexture(renderer->target, NULL, NULL, &w, &h) < 0) {
-            w = data->drawstate.drawablew;
-            h = data->drawstate.drawableh;
-        }
+        PSP_TextureData *psp_texture = (PSP_TextureData *)data->boundTarget->driverdata;
+        w = psp_texture->width;
+        h = psp_texture->height;
     }
 
     if ((w != data->drawstate.drawablew) || (h != data->drawstate.drawableh)) {
