@@ -1116,6 +1116,13 @@ static SDL_GPUGraphicsPipeline *METAL_CreateGraphicsPipeline(
                 SDL_assert_release(!"CreateGraphicsPipeline was passed a vertex shader for the fragment stage");
             }
         }
+#ifdef SDL_PLATFORM_VISIONOS
+        // The default is depth clipping enabled and it can't be changed
+        if (!createinfo->rasterizer_state.enable_depth_clip) {
+            SDL_assert_release(!"Rasterizer state enable_depth_clip must be true on this platform");
+        }
+#endif
+
         pipelineDescriptor = [MTLRenderPipelineDescriptor new];
 
         // Blend
@@ -2414,7 +2421,9 @@ static void METAL_BindGraphicsPipeline(
         [metalCommandBuffer->renderEncoder setTriangleFillMode:SDLToMetal_PolygonMode[pipeline->rasterizerState.fill_mode]];
         [metalCommandBuffer->renderEncoder setCullMode:SDLToMetal_CullMode[pipeline->rasterizerState.cull_mode]];
         [metalCommandBuffer->renderEncoder setFrontFacingWinding:SDLToMetal_FrontFace[pipeline->rasterizerState.front_face]];
+#ifndef SDL_PLATFORM_VISIONOS
         [metalCommandBuffer->renderEncoder setDepthClipMode:SDLToMetal_DepthClipMode(pipeline->rasterizerState.enable_depth_clip)];
+#endif
         [metalCommandBuffer->renderEncoder
             setDepthBias:((rast->enable_depth_bias) ? rast->depth_bias_constant_factor : 0)
               slopeScale:((rast->enable_depth_bias) ? rast->depth_bias_slope_factor : 0)
@@ -4511,6 +4520,8 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         } else if (@available(macOS 10.14, *)) {
             hasHardwareSupport = [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily2_v1];
         }
+#elif defined(SDL_PLATFORM_VISIONOS)
+        hasHardwareSupport = true;
 #else
         if (@available(iOS 13.0, tvOS 13.0, *)) {
             hasHardwareSupport = [device supportsFamily:MTLGPUFamilyApple3];
