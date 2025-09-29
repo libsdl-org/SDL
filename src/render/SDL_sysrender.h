@@ -70,6 +70,15 @@ typedef struct SDL_RenderViewState
     SDL_FPoint current_scale;  // this is just `scale * logical_scale`, precalculated, since we use it a lot.
 } SDL_RenderViewState;
 
+// Define the SDL texture palette structure
+typedef struct SDL_TexturePalette
+{
+    int refcount;
+    Uint32 version;
+    Uint32 last_command_generation; // last command queue generation this palette was in.
+    void *internal;             // Driver specific palette representation
+} SDL_TexturePalette;
+
 // Define the SDL texture structure
 struct SDL_Texture
 {
@@ -90,7 +99,8 @@ struct SDL_Texture
     SDL_ScaleMode scaleMode;    // The texture scale mode
     SDL_FColor color;           // Texture modulation values
     SDL_RenderViewState view;   // Target texture view state
-    SDL_Palette *palette;
+    SDL_Palette *public_palette;
+    SDL_TexturePalette *palette;
     Uint32 palette_version;
     SDL_Surface *palette_surface;
 
@@ -235,7 +245,10 @@ struct SDL_Renderer
 
     void (*InvalidateCachedState)(SDL_Renderer *renderer);
     bool (*RunCommandQueue)(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
-    bool (*UpdateTexturePalette)(SDL_Renderer *renderer, SDL_Texture *texture);
+    bool (*CreatePalette)(SDL_Renderer *renderer, SDL_TexturePalette *palette);
+    bool (*UpdatePalette)(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors);
+    void (*DestroyPalette)(SDL_Renderer *renderer, SDL_TexturePalette *palette);
+    bool (*ChangeTexturePalette)(SDL_Renderer *renderer, SDL_Texture *texture);
     bool (*UpdateTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                          const SDL_Rect *rect, const void *pixels,
                          int pitch);
@@ -300,6 +313,9 @@ struct SDL_Renderer
     SDL_Texture *textures;
     SDL_Texture *target;
     SDL_Mutex *target_mutex;
+
+    // The list of palettes
+    SDL_HashTable *palettes;
 
     SDL_Colorspace output_colorspace;
     float SDR_white_point;

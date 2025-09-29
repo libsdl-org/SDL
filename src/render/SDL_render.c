@@ -347,6 +347,15 @@ static bool FlushRenderCommandsIfTextureNeeded(SDL_Texture *texture)
     return true;
 }
 
+static bool FlushRenderCommandsIfPaletteNeeded(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    if (palette->last_command_generation == renderer->render_command_generation) {
+        // the current command queue depends on this palette, flush the queue now before it changes
+        return FlushRenderCommands(renderer);
+    }
+    return true;
+}
+
 static bool FlushRenderCommandsIfGPURenderStateNeeded(SDL_GPURenderState *state)
 {
     SDL_Renderer *renderer = state->renderer;
@@ -700,20 +709,22 @@ static bool QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, co
 static bool UpdateTexturePalette(SDL_Texture *texture)
 {
     SDL_Renderer *renderer = texture->renderer;
+    SDL_Palette *public = texture->public_palette;
 
     if (!SDL_ISPIXELFORMAT_INDEXED(texture->format)) {
         return true;
     }
 
-    if (!texture->palette) {
+    if (!public) {
         return SDL_SetError("Texture doesn't have a palette");
     }
 
-    if (texture->palette_version == texture->palette->version) {
-        return true;
-    }
-
     if (texture->native) {
+        // Keep the native texture in sync with palette updates
+        if (texture->palette_version == public->version) {
+            return true;
+        }
+
         if (!FlushRenderCommandsIfTextureNeeded(texture->native)) {
             return false;
         }
@@ -727,17 +738,25 @@ static bool UpdateTexturePalette(SDL_Texture *texture)
         if (!result) {
             return false;
         }
-    } else {
-        if (!FlushRenderCommandsIfTextureNeeded(texture)) {
-            return false;
-        }
-
-        if (!renderer->UpdateTexturePalette(renderer, texture)) {
-            return false;
-        }
+        texture->palette_version = public->version;
+        return true;
     }
 
-    texture->palette_version = texture->palette->version;
+    SDL_TexturePalette *palette = texture->palette;
+    if (palette->version != public->version) {
+        // Keep the native palette in sync with palette updates
+        if (!FlushRenderCommandsIfPaletteNeeded(renderer, palette)) {
+            return false;
+        }
+
+        if (!renderer->UpdatePalette(renderer, palette, public->ncolors, public->colors)) {
+            return false;
+        }
+
+        palette->version = public->version;
+    }
+
+    palette->last_command_generation = renderer->render_command_generation;
     return true;
 }
 
@@ -1142,6 +1161,11 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     UpdatePixelViewport(renderer, &renderer->main_view);
     UpdatePixelClipRect(renderer, &renderer->main_view);
     UpdateMainViewDimensions(renderer);
+
+    renderer->palettes = SDL_CreateHashTable(0, false, SDL_HashPointer, SDL_KeyMatchPointer, SDL_DestroyHashValue, NULL);
+    if (!renderer->palettes) {
+        goto error;
+    }
 
     // new textures start at zero, so we start at 1 so first render doesn't flush by accident.
     renderer->render_command_generation = 1;
@@ -1656,7 +1680,7 @@ static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, S
     bool direct_update;
 
     if (surface->format == texture->format &&
-        surface->palette == texture->palette &&
+        surface->palette == texture->public_palette &&
         SDL_GetSurfaceColorspace(surface) == texture->colorspace) {
         if (SDL_ISPIXELFORMAT_ALPHA(surface->format) && SDL_SurfaceHasColorKey(surface)) {
             /* Surface and Renderer formats are identical.
@@ -1682,7 +1706,7 @@ static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, S
         }
     } else {
         // Set up a destination surface for the texture update
-        SDL_Surface *temp = SDL_ConvertSurfaceAndColorspace(surface, texture->format, texture->palette, texture->colorspace, SDL_GetSurfaceProperties(surface));
+        SDL_Surface *temp = SDL_ConvertSurfaceAndColorspace(surface, texture->format, texture->public_palette, texture->colorspace, SDL_GetSurfaceProperties(surface));
         if (temp) {
             SDL_UpdateTexture(texture, NULL, temp->pixels, temp->pitch);
             SDL_DestroySurface(temp);
@@ -1901,16 +1925,56 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
         return SDL_SetError("SDL_SetSurfacePalette() passed a palette that doesn't match the surface format");
     }
 
-    if (palette != texture->palette) {
-        if (texture->palette) {
-            SDL_DestroyPalette(texture->palette);
+    if (palette != texture->public_palette) {
+        SDL_Renderer *renderer = texture->renderer;
+
+        if (texture->public_palette) {
+            SDL_DestroyPalette(texture->public_palette);
+
+            if (!texture->native) {
+                // Clean up the texture palette
+                --texture->palette->refcount;
+                if (texture->palette->refcount == 0) {
+                    renderer->DestroyPalette(renderer, texture->palette);
+                    SDL_RemoveFromHashTable(renderer->palettes, texture->public_palette);
+                }
+                texture->palette = NULL;
+            }
         }
 
-        texture->palette = palette;
+        texture->public_palette = palette;
         texture->palette_version = 0;
 
-        if (texture->palette) {
-            ++texture->palette->refcount;
+        if (texture->public_palette) {
+            ++texture->public_palette->refcount;
+
+            if (!texture->native) {
+                if (SDL_FindInHashTable(renderer->palettes, palette, (const void **)&texture->palette)) {
+                    ++texture->palette->refcount;
+                } else {
+                    SDL_TexturePalette *texture_palette = (SDL_TexturePalette *)SDL_calloc(1, sizeof(*texture_palette));
+                    if (!texture_palette) {
+                        SDL_SetTexturePalette(texture, NULL);
+                        return false;
+                    }
+                    if (!renderer->CreatePalette(renderer, texture_palette)) {
+                        renderer->DestroyPalette(renderer, texture_palette);
+                        SDL_SetTexturePalette(texture, NULL);
+                        return false;
+                    }
+                    texture->palette = texture_palette;
+                    texture->palette->refcount = 1;
+
+                    if (!SDL_InsertIntoHashTable(renderer->palettes, palette, texture->palette, false)) {
+                        SDL_SetTexturePalette(texture, NULL);
+                        return false;
+                    }
+                }
+            }
+
+            if (!texture->native && renderer->ChangeTexturePalette) {
+                renderer->ChangeTexturePalette(renderer, texture);
+            }
         }
 
         if (texture->palette_surface) {
@@ -1924,7 +1988,7 @@ SDL_Palette *SDL_GetTexturePalette(SDL_Texture *texture)
 {
     CHECK_TEXTURE_MAGIC(texture, NULL);
 
-    return texture->palette;
+    return texture->public_palette;
 }
 
 bool SDL_SetTextureColorMod(SDL_Texture *texture, Uint8 r, Uint8 g, Uint8 b)
@@ -2602,8 +2666,8 @@ bool SDL_LockTextureToSurface(SDL_Texture *texture, const SDL_Rect *rect, SDL_Su
         SDL_UnlockTexture(texture);
         return false;
     }
-    if (texture->palette) {
-        SDL_SetSurfacePalette(texture->locked_surface, texture->palette);
+    if (texture->public_palette) {
+        SDL_SetSurfacePalette(texture->locked_surface, texture->public_palette);
     }
 
     *surface = texture->locked_surface;
@@ -5513,7 +5577,7 @@ static void SDL_DestroyTextureInternal(SDL_Texture *texture, bool is_destroying)
 {
     SDL_Renderer *renderer;
 
-    if (texture->palette) {
+    if (texture->public_palette) {
         SDL_SetTexturePalette(texture, NULL);
     }
 
@@ -5632,6 +5696,13 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
         SDL_Texture *tex = renderer->textures;
         SDL_DestroyTextureInternal(renderer->textures, true /* is_destroying */);
         SDL_assert(tex != renderer->textures); // satisfy static analysis.
+    }
+
+    // Free palette cache, which should be empty now
+    if (renderer->palettes) {
+        SDL_assert(SDL_HashTableEmpty(renderer->palettes));
+        SDL_DestroyHashTable(renderer->palettes);
+        renderer->palettes = NULL;
     }
 
     // Clean up renderer-specific resources

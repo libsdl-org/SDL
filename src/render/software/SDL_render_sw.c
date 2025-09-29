@@ -99,6 +99,38 @@ static bool SW_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
     return SDL_SetError("Software renderer doesn't have an output surface");
 }
 
+static bool SW_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    SDL_Palette *surface_palette = SDL_CreatePalette(256);
+    if (!surface_palette) {
+        return false;
+    }
+    palette->internal = surface_palette;
+    return true;
+}
+
+static bool SW_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
+{
+    SDL_Palette *surface_palette = (SDL_Palette *)palette->internal;
+    return SDL_SetPaletteColors(surface_palette, colors, 0, ncolors);
+}
+
+static void SW_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    SDL_Palette *surface_palette = (SDL_Palette *)palette->internal;
+    SDL_DestroyPalette(surface_palette);
+}
+
+static bool SW_ChangeTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+    SDL_Surface *surface = (SDL_Surface *)texture->internal;
+    SDL_Palette *surface_palette = NULL;
+    if (texture->palette) {
+        surface_palette = (SDL_Palette *)texture->palette->internal;
+    }
+    return SDL_SetSurfacePalette(surface, surface_palette);
+}
+
 static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     SDL_Surface *surface = SDL_CreateSurface(texture->w, texture->h, texture->format);
@@ -130,14 +162,6 @@ static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     }
 
     return true;
-}
-
-static bool SW_UpdateTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    SDL_Surface *surface = (SDL_Surface *)texture->internal;
-    SDL_Palette *palette = texture->palette;
-
-    return SDL_SetPaletteColors(surface->palette, palette->colors, 0, palette->ncolors);
 }
 
 static bool SW_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -1158,8 +1182,11 @@ bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, S
 
     renderer->WindowEvent = SW_WindowEvent;
     renderer->GetOutputSize = SW_GetOutputSize;
+    renderer->CreatePalette = SW_CreatePalette;
+    renderer->UpdatePalette = SW_UpdatePalette;
+    renderer->DestroyPalette = SW_DestroyPalette;
+    renderer->ChangeTexturePalette = SW_ChangeTexturePalette;
     renderer->CreateTexture = SW_CreateTexture;
-    renderer->UpdateTexturePalette = SW_UpdateTexturePalette;
     renderer->UpdateTexture = SW_UpdateTexture;
     renderer->LockTexture = SW_LockTexture;
     renderer->UnlockTexture = SW_UnlockTexture;

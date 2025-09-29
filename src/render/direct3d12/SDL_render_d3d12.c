@@ -109,6 +109,15 @@ typedef struct
     SDL_FColor color;
 } D3D12_VertexPositionColor;
 
+// Per-palette data
+typedef struct
+{
+    ID3D12Resource *texture;
+    D3D12_CPU_DESCRIPTOR_HANDLE resourceView;
+    D3D12_RESOURCE_STATES resourceState;
+    SIZE_T SRVIndex;
+} D3D12_PaletteData;
+
 // Per-texture data
 typedef struct
 {
@@ -119,10 +128,6 @@ typedef struct
     SIZE_T mainSRVIndex;
     D3D12_CPU_DESCRIPTOR_HANDLE mainTextureRenderTargetView;
     DXGI_FORMAT mainTextureFormat;
-    ID3D12Resource *paletteTexture;
-    D3D12_CPU_DESCRIPTOR_HANDLE paletteTextureResourceView;
-    D3D12_RESOURCE_STATES paletteResourceState;
-    SIZE_T paletteSRVIndex;
     ID3D12Resource *stagingBuffer;
     D3D12_RESOURCE_STATES stagingResourceState;
     const float *YCbCr_matrix;
@@ -288,6 +293,8 @@ static const GUID SDL_IID_ID3D12InfoQueue = { 0x0742a90b, 0xc387, 0x483f, { 0xb9
 #ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic pop
 #endif
+
+static bool D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Resource *texture, int plane, int x, int y, int w, int h, const void *pixels, int pitch, D3D12_RESOURCE_STATES *resourceState);
 
 static UINT D3D12_Align(UINT location, UINT alignment)
 {
@@ -1537,6 +1544,88 @@ static bool GetTextureProperty(SDL_PropertiesID props, const char *name, ID3D12R
     return true;
 }
 
+static bool D3D12_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
+    D3D12_PaletteData *palettedata = (D3D12_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
+    if (!palettedata) {
+        return false;
+    }
+    palette->internal = palettedata;
+
+    if (!data->d3dDevice) {
+        return SDL_SetError("Device lost and couldn't be recovered");
+    }
+
+    D3D12_RESOURCE_DESC textureDesc;
+    SDL_zero(textureDesc);
+    textureDesc.Width = 256;
+    textureDesc.Height = 1;
+    textureDesc.MipLevels = 1;
+    textureDesc.DepthOrArraySize = 1;
+    textureDesc.Format = SDLPixelFormatToDXGITextureFormat(SDL_PIXELFORMAT_RGBA32, renderer->output_colorspace);
+    textureDesc.SampleDesc.Count = 1;
+    textureDesc.SampleDesc.Quality = 0;
+    textureDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+    textureDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+    D3D12_HEAP_PROPERTIES heapProps;
+    SDL_zero(heapProps);
+    heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+    heapProps.CreationNodeMask = 1;
+    heapProps.VisibleNodeMask = 1;
+
+    HRESULT result = ID3D12Device1_CreateCommittedResource(data->d3dDevice,
+                      &heapProps,
+                      D3D12_HEAP_FLAG_NONE,
+                      &textureDesc,
+                      D3D12_RESOURCE_STATE_COPY_DEST,
+                      NULL,
+                      D3D_GUID(SDL_IID_ID3D12Resource),
+                      (void **)&palettedata->texture);
+    if (FAILED(result)) {
+        return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [texture]"), result);
+    }
+    palettedata->resourceState = D3D12_RESOURCE_STATE_COPY_DEST;
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
+    SDL_zero(resourceViewDesc);
+    resourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(SDL_PIXELFORMAT_RGBA32, renderer->output_colorspace);
+    resourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    resourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
+
+    D3D_CALL_RET(data->srvDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &palettedata->resourceView);
+    palettedata->SRVIndex = D3D12_GetAvailableSRVIndex(renderer);
+    palettedata->resourceView.ptr += palettedata->SRVIndex * data->srvDescriptorSize;
+
+    ID3D12Device1_CreateShaderResourceView(data->d3dDevice,
+             palettedata->texture,
+             &resourceViewDesc,
+             palettedata->resourceView);
+
+    return true;
+}
+
+static bool D3D12_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
+{
+    D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
+    D3D12_PaletteData *palettedata = (D3D12_PaletteData *)palette->internal;
+
+    return D3D12_UpdateTextureInternal(data, palettedata->texture, 0, 0, 0, ncolors, 1, colors, ncolors * sizeof(*colors), &palettedata->resourceState);
+}
+
+static void D3D12_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    D3D12_PaletteData *palettedata = (D3D12_PaletteData *)palette->internal;
+
+    if (palettedata) {
+        D3D_SAFE_RELEASE(palettedata->texture);
+        D3D12_FreeSRVIndex(renderer, palettedata->SRVIndex);
+        SDL_free(palettedata);
+    }
+}
+
 static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
@@ -1611,29 +1700,6 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
     textureData->mainResourceState = D3D12_RESOURCE_STATE_COPY_DEST;
     SDL_SetPointerProperty(SDL_GetTextureProperties(texture), SDL_PROP_TEXTURE_D3D12_TEXTURE_POINTER, textureData->mainTexture);
-
-    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-        textureDesc.Width = 256;
-        textureDesc.Height = 1;
-        if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-        } else {
-            textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        }
-
-        result = ID3D12Device1_CreateCommittedResource(rendererData->d3dDevice,
-                          &heapProps,
-                          D3D12_HEAP_FLAG_NONE,
-                          &textureDesc,
-                          D3D12_RESOURCE_STATE_COPY_DEST,
-                          NULL,
-                          D3D_GUID(SDL_IID_ID3D12Resource),
-                          (void **)&textureData->paletteTexture);
-        if (FAILED(result)) {
-            return WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D12Device::CreateCommittedResource [texture]"), result);
-        }
-        textureData->paletteResourceState = D3D12_RESOURCE_STATE_COPY_DEST;
-    }
 
 #ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
@@ -1723,19 +1789,6 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
              &resourceViewDesc,
              textureData->mainTextureResourceView);
 
-    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-        resourceViewDesc.Format = textureDesc.Format;
-
-        D3D_CALL_RET(rendererData->srvDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &textureData->paletteTextureResourceView);
-        textureData->paletteSRVIndex = D3D12_GetAvailableSRVIndex(renderer);
-        textureData->paletteTextureResourceView.ptr += textureData->paletteSRVIndex * rendererData->srvDescriptorSize;
-
-        ID3D12Device1_CreateShaderResourceView(rendererData->d3dDevice,
-                 textureData->paletteTexture,
-                 &resourceViewDesc,
-                 textureData->paletteTextureResourceView);
-    }
-
 #ifdef SDL_HAVE_YUV
     if (textureData->yuv) {
         D3D_CALL_RET(rendererData->srvDescriptorHeap, GetCPUDescriptorHandleForHeapStart, &textureData->mainTextureResourceViewU);
@@ -1811,10 +1864,6 @@ static void D3D12_DestroyTexture(SDL_Renderer *renderer,
     D3D_SAFE_RELEASE(textureData->mainTexture);
     D3D_SAFE_RELEASE(textureData->stagingBuffer);
     D3D12_FreeSRVIndex(renderer, textureData->mainSRVIndex);
-    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-        D3D_SAFE_RELEASE(textureData->paletteTexture);
-        D3D12_FreeSRVIndex(renderer, textureData->paletteSRVIndex);
-    }
 #ifdef SDL_HAVE_YUV
     D3D_SAFE_RELEASE(textureData->mainTextureU);
     D3D_SAFE_RELEASE(textureData->mainTextureV);
@@ -1967,19 +2016,6 @@ static bool D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Re
     }
 
     return true;
-}
-
-static bool D3D12_UpdateTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
-    D3D12_TextureData *textureData = (D3D12_TextureData *)texture->internal;
-    SDL_Palette *palette = texture->palette;
-
-    if (!textureData) {
-        return SDL_SetError("Texture is not currently available");
-    }
-
-    return D3D12_UpdateTextureInternal(rendererData, textureData->paletteTexture, 0, 0, 0, palette->ncolors, 1, palette->colors, palette->ncolors * sizeof(*palette->colors), &textureData->paletteResourceState);
 }
 
 static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -2902,10 +2938,12 @@ static bool D3D12_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
     }
     shaderSamplers[numShaderSamplers++] = *textureSampler;
 
-    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-        D3D12_TransitionResource(rendererData, textureData->paletteTexture, textureData->paletteResourceState, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-        textureData->paletteResourceState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
-        shaderResources[numShaderResources++] = textureData->paletteTextureResourceView;
+    if (texture->palette) {
+        D3D12_PaletteData *palette = (D3D12_PaletteData *)texture->palette->internal;
+
+        D3D12_TransitionResource(rendererData, palette->texture, palette->resourceState, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        palette->resourceState = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE;
+        shaderResources[numShaderResources++] = palette->resourceView;
 
         textureSampler = D3D12_GetSamplerState(rendererData, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
         if (!textureSampler) {
@@ -3366,8 +3404,10 @@ bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Proper
 
     renderer->WindowEvent = D3D12_WindowEvent;
     renderer->SupportsBlendMode = D3D12_SupportsBlendMode;
+    renderer->CreatePalette = D3D12_CreatePalette;
+    renderer->UpdatePalette = D3D12_UpdatePalette;
+    renderer->DestroyPalette = D3D12_DestroyPalette;
     renderer->CreateTexture = D3D12_CreateTexture;
-    renderer->UpdateTexturePalette = D3D12_UpdateTexturePalette;
     renderer->UpdateTexture = D3D12_UpdateTexture;
 #ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = D3D12_UpdateTextureYUV;

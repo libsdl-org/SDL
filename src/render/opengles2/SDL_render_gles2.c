@@ -58,14 +58,18 @@ struct GLES2_FBOList
     GLES2_FBOList *next;
 };
 
-typedef struct GLES2_TextureData
+typedef struct
+{
+    GLuint texture;
+} GLES2_PaletteData;
+
+typedef struct
 {
     GLuint texture;
     bool texture_external;
     GLenum texture_type;
     GLenum pixel_format;
     GLenum pixel_type;
-    GLuint palette;
     void *pixel_data;
     int pitch;
 #ifdef SDL_HAVE_YUV
@@ -1277,8 +1281,9 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, v
         }
 #endif
         if (texture->palette) {
+            GLES2_PaletteData *palette = (GLES2_PaletteData *)texture->palette->internal;
             data->glActiveTexture(GL_TEXTURE1);
-            data->glBindTexture(tdata->texture_type, tdata->palette);
+            data->glBindTexture(tdata->texture_type, palette->texture);
 
             data->glActiveTexture(GL_TEXTURE0);
         }
@@ -1633,6 +1638,58 @@ static void GLES2_DestroyRenderer(SDL_Renderer *renderer)
     }
 }
 
+static bool GLES2_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
+    GLES2_PaletteData *palettedata = (GLES2_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
+    if (!palettedata) {
+        return false;
+    }
+    palette->internal = palettedata;
+
+    data->drawstate.texture = NULL; // we trash this state.
+
+    data->glGenTextures(1, &palettedata->texture);
+    if (!GL_CheckError("glGenTexures()", renderer)) {
+        return false;
+    }
+    data->glActiveTexture(GL_TEXTURE1);
+    data->glBindTexture(GL_TEXTURE_2D, palettedata->texture);
+    data->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    if (!GL_CheckError("glTexImage2D()", renderer)) {
+        return false;
+    }
+    SetTextureScaleMode(data, GL_TEXTURE_2D, SDL_SCALEMODE_NEAREST);
+    SetTextureAddressMode(data, GL_TEXTURE_2D, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+    return true;
+}
+
+static bool GLES2_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
+{
+    GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
+    GLES2_PaletteData *palettedata = (GLES2_PaletteData *)palette->internal;
+
+    GLES2_ActivateRenderer(renderer);
+
+    data->drawstate.texture = NULL; // we trash this state.
+
+    data->glBindTexture(GL_TEXTURE_2D, palettedata->texture);
+    data->glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ncolors, 1, GL_RGBA, GL_UNSIGNED_BYTE, colors);
+
+    return GL_CheckError("glTexSubImage2D()", renderer);
+}
+
+static void GLES2_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
+    GLES2_PaletteData *palettedata = (GLES2_PaletteData *)palette->internal;
+
+    if (palettedata) {
+        data->glDeleteTextures(1, &palettedata->texture);
+        SDL_free(palettedata);
+    }
+}
+
 static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     GLES2_RenderData *renderdata = (GLES2_RenderData *)renderer->internal;
@@ -1730,25 +1787,6 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     data->texel_size[3] = texture->h;
     data->texel_size[0] = 1.0f / data->texel_size[2];
     data->texel_size[1] = 1.0f / data->texel_size[3];
-
-    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-        renderdata->glGenTextures(1, &data->palette);
-        if (!GL_CheckError("glGenTexures()", renderer)) {
-            SDL_free(data->pixel_data);
-            SDL_free(data);
-            return false;
-        }
-        renderdata->glActiveTexture(GL_TEXTURE1);
-        renderdata->glBindTexture(data->texture_type, data->palette);
-        renderdata->glTexImage2D(data->texture_type, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        if (!GL_CheckError("glTexImage2D()", renderer)) {
-            SDL_free(data->pixel_data);
-            SDL_free(data);
-            return false;
-        }
-        SetTextureScaleMode(renderdata, data->texture_type, SDL_SCALEMODE_NEAREST);
-        SetTextureAddressMode(renderdata, data->texture_type, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
-    }
 
 #ifdef SDL_HAVE_YUV
     if (data->yuv) {
@@ -1902,22 +1940,6 @@ static bool GLES2_TexSubImage2D(GLES2_RenderData *data, GLenum target, GLint xof
         SDL_free(blob);
     }
     return true;
-}
-
-static bool GLES2_UpdateTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    GLES2_RenderData *data = (GLES2_RenderData *)renderer->internal;
-    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->internal;
-    SDL_Palette *palette = texture->palette;
-
-    GLES2_ActivateRenderer(renderer);
-
-    data->drawstate.texture = NULL; /* we trash this state. */
-
-    data->glBindTexture(tdata->texture_type, tdata->palette);
-    data->glTexSubImage2D(tdata->texture_type, 0, 0, 0, palette->ncolors, 1, GL_RGBA, GL_UNSIGNED_BYTE, palette->colors);
-
-    return GL_CheckError("glTexSubImage2D()", renderer);
 }
 
 static bool GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect,
@@ -2160,9 +2182,6 @@ static void GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         if (tdata->texture && !tdata->texture_external) {
             data->glDeleteTextures(1, &tdata->texture);
         }
-        if (tdata->palette) {
-            data->glDeleteTextures(1, &tdata->palette);
-        }
 #ifdef SDL_HAVE_YUV
         if (tdata->texture_v && !tdata->texture_v_external) {
             data->glDeleteTextures(1, &tdata->texture_v);
@@ -2290,8 +2309,10 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     // Populate the function pointers for the module
     renderer->WindowEvent = GLES2_WindowEvent;
     renderer->SupportsBlendMode = GLES2_SupportsBlendMode;
+    renderer->CreatePalette = GLES2_CreatePalette;
+    renderer->UpdatePalette = GLES2_UpdatePalette;
+    renderer->DestroyPalette = GLES2_DestroyPalette;
     renderer->CreateTexture = GLES2_CreateTexture;
-    renderer->UpdateTexturePalette = GLES2_UpdateTexturePalette;
     renderer->UpdateTexture = GLES2_UpdateTexture;
 #ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = GLES2_UpdateTextureYUV;
