@@ -660,7 +660,9 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  *   pixels, required
  * - `SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER`: the height of the texture in
  *   pixels, required
- * - `SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER`: an SDL_Palette to use with palettized texture formats. This can be set later with SDL_SetTexturePalette()
+ * - `SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER`: an SDL_Palette to use with
+ *   palettized texture formats. This can be set later with
+ *   SDL_SetTexturePalette()
  * - `SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating
  *   point textures, this defines the value of 100% diffuse white, with higher
  *   values being displayed in the High Dynamic Range headroom. This defaults
@@ -934,7 +936,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureSize(SDL_Texture *texture, float 
 /**
  * Set the palette used by a texture.
  *
- * Setting the palette keeps an internal reference to the palette, which can be safely destroyed afterwards.
+ * Setting the palette keeps an internal reference to the palette, which can
+ * be safely destroyed afterwards.
  *
  * A single palette can be shared with many textures.
  *
@@ -1195,7 +1198,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureBlendMode(SDL_Texture *texture, S
  *
  * The default texture scale mode is SDL_SCALEMODE_LINEAR.
  *
- * If the scale mode is not supported, the closest supported mode is chosen. Palettized textures will use SDL_SCALEMODE_PIXELART instead of SDL_SCALEMODE_LINEAR.
+ * If the scale mode is not supported, the closest supported mode is chosen.
+ * Palettized textures will use SDL_SCALEMODE_PIXELART instead of
+ * SDL_SCALEMODE_LINEAR.
  *
  * \param texture the texture to update.
  * \param scaleMode the SDL_ScaleMode to use for texture scaling.
