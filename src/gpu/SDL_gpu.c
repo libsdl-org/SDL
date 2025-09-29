@@ -719,6 +719,9 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
         if (result != NULL) {
             result->backend = selectedBackend->name;
             result->debug_mode = debug_mode;
+            result->validate_feature_depth_clamp_disabled = !SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true);
+            result->validate_feature_indirect_draw_first_instance_disabled = !SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true);
+            result->validate_feature_anisotropy_disabled = !SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true);
         }
     }
     return result;
@@ -1104,6 +1107,12 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             CHECK_STENCILOP_ENUM_INVALID(stencil_state->pass_op, NULL)
             CHECK_STENCILOP_ENUM_INVALID(stencil_state->depth_fail_op, NULL)
         }
+
+        if (device->validate_feature_depth_clamp_disabled &&
+            !graphicsPipelineCreateInfo->rasterizer_state.enable_depth_clip) {
+            SDL_assert_release(!"Rasterizer state enable_depth_clip must be set to true (FEATURE_DEPTH_CLAMPING disabled)");
+            return NULL;
+        }
     }
 
     return device->CreateGraphicsPipeline(
@@ -1120,6 +1129,14 @@ SDL_GPUSampler *SDL_CreateGPUSampler(
     CHECK_PARAM(createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
         return NULL;
+    }
+
+    if (device->debug_mode) {
+        if (device->validate_feature_anisotropy_disabled &&
+            createinfo->enable_anisotropy) {
+            SDL_assert_release(!"enable_anisotropy must be set to false (FEATURE_ANISOTROPY disabled)");
+            return NULL;
+        }
     }
 
     return device->CreateSampler(
@@ -2164,6 +2181,11 @@ void SDL_DrawGPUIndexedPrimitives(
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
         SDL_GPU_CheckGraphicsBindings(render_pass);
+        if (RENDERPASS_DEVICE->validate_feature_indirect_draw_first_instance_disabled &&
+            first_instance != 0) {
+            SDL_assert_release(!"first_instance must be 0 (FEATURE_INDIRECT_DRAW_FIRST_INSTANCE disabled)");
+            return;
+        }
     }
 
     RENDERPASS_DEVICE->DrawIndexedPrimitives(
@@ -2191,6 +2213,11 @@ void SDL_DrawGPUPrimitives(
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
         SDL_GPU_CheckGraphicsBindings(render_pass);
+        if (RENDERPASS_DEVICE->validate_feature_indirect_draw_first_instance_disabled &&
+            first_instance != 0) {
+            SDL_assert_release(!"first_instance must be 0 (FEATURE_INDIRECT_DRAW_FIRST_INSTANCE disabled)");
+            return;
+        }
     }
 
     RENDERPASS_DEVICE->DrawPrimitives(
