@@ -230,7 +230,9 @@
  * - `drawIndirectFirstInstance`
  * - `sampleRateShading`
  *
- * You can remove some of these requirements to increase compatibility with Android devices by using these properties when creating the GPU device with SDL_CreateGPUDeviceWithProperties():
+ * You can remove some of these requirements to increase compatibility with
+ * Android devices by using these properties when creating the GPU device with
+ * SDL_CreateGPUDeviceWithProperties():
  *
  * - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN
  * - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN
@@ -245,7 +247,9 @@
  * (GDK). Requires a GPU that supports DirectX 12 Feature Level 11_0 and
  * Resource Binding Tier 2 or above.
  *
- * You can remove the Tier 2 resource binding requirement to support Intel Haswell and Broadwell GPUs by using this property when creating the GPU device with SDL_CreateGPUDeviceWithProperties():
+ * You can remove the Tier 2 resource binding requirement to support Intel
+ * Haswell and Broadwell GPUs by using this property when creating the GPU
+ * device with SDL_CreateGPUDeviceWithProperties():
  *
  * - SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN
  *
@@ -2253,22 +2257,27 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   useful debug information on device creation, defaults to true.
  * - `SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING`: the name of the GPU driver to
  *   use, if a specific one is desired.
- * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN`: Enable
- *   Vulkan device feature shaderClipDistance. If disabled, clip distances are not
+ * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN`: Enable Vulkan
+ *   device feature shaderClipDistance. If disabled, clip distances are not
  *   supported in shader code: gl_ClipDistance[] built-ins of GLSL,
  *   SV_ClipDistance0/1 semantics of HLSL and [[clip_distance]] attribute of
- *   Metal. Disabling optional features allows the application to run on some older Android devices. Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN`: Enable Vulkan device
- *   feature depthClamp. If disabled, there is no depth clamp support and
- *   enable_depth_clip in SDL_GPURasterizerState must always be set to true.
- *   Disabling optional features allows the application to run on some older Android devices. Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN`: Enable
- *   Vulkan device feature drawIndirectFirstInstance. If disabled, the argument
- *   first_instance of SDL_GPUIndirectDrawCommand must be set to zero.
- *   Disabling optional features allows the application to run on some older Android devices. Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN`: Enable
- *   Vulkan device feature samplerAnisotropy. If disabled, enable_anisotropy of
- *   SDL_GPUSamplerCreateInfo must be set to false. Disabling optional features allows the application to run on some older Android devices. Defaults to true.
+ *   Metal. Disabling optional features allows the application to run on some
+ *   older Android devices. Defaults to true.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN`: Enable
+ *   Vulkan device feature depthClamp. If disabled, there is no depth clamp
+ *   support and enable_depth_clip in SDL_GPURasterizerState must always be
+ *   set to true. Disabling optional features allows the application to run on
+ *   some older Android devices. Defaults to true.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN`:
+ *   Enable Vulkan device feature drawIndirectFirstInstance. If disabled, the
+ *   argument first_instance of SDL_GPUIndirectDrawCommand must be set to
+ *   zero. Disabling optional features allows the application to run on some
+ *   older Android devices. Defaults to true.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN`: Enable Vulkan
+ *   device feature samplerAnisotropy. If disabled, enable_anisotropy of
+ *   SDL_GPUSamplerCreateInfo must be set to false. Disabling optional
+ *   features allows the application to run on some older Android devices.
+ *   Defaults to true.
  *
  * These are the current shader format properties:
  *
