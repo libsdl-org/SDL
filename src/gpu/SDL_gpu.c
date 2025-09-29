@@ -375,6 +375,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     } else {
         blit_pipeline_create_info.fragment_shader = blit_from_2d_shader;
     }
+    blit_pipeline_create_info.rasterizer_state.enable_depth_clip = device->default_enable_depth_clip;
 
     blit_pipeline_create_info.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
     blit_pipeline_create_info.multisample_state.enable_mask = false;
@@ -719,9 +720,18 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
         if (result != NULL) {
             result->backend = selectedBackend->name;
             result->debug_mode = debug_mode;
-            result->validate_feature_depth_clamp_disabled = !SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true);
-            result->validate_feature_indirect_draw_first_instance_disabled = !SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true);
-            result->validate_feature_anisotropy_disabled = !SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true);
+            if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true)) {
+                result->default_enable_depth_clip = false;
+            } else {
+                result->default_enable_depth_clip = true;
+                result->validate_feature_depth_clamp_disabled = true;
+            }
+            if (!SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true)) {
+                result->validate_feature_indirect_draw_first_instance_disabled = true;
+            }
+            if (!SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true)) {
+                result->validate_feature_anisotropy_disabled = true;
+            }
         }
     }
     return result;
