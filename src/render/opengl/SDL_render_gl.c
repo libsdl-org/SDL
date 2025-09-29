@@ -128,12 +128,16 @@ typedef struct
 typedef struct
 {
     GLuint texture;
+} GL_PaletteData;
+
+typedef struct
+{
+    GLuint texture;
     bool texture_external;
     GLfloat texw;
     GLfloat texh;
     GLenum format;
     GLenum formattype;
-    GLuint palette;
     GL_Shader shader;
     float texel_size[4];
     const float *shader_params;
@@ -481,6 +485,58 @@ static void SetTextureAddressMode(GL_RenderData *data, GLenum textype, SDL_Textu
     data->glTexParameteri(textype, GL_TEXTURE_WRAP_T, TranslateAddressMode(addressModeV));
 }
 
+static bool GL_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    GL_RenderData *data = (GL_RenderData *)renderer->internal;
+    GL_PaletteData *palettedata = (GL_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
+    if (!palettedata) {
+        return false;
+    }
+    palette->internal = palettedata;
+
+    data->drawstate.texture = NULL; // we trash this state.
+
+    const GLenum textype = data->textype;
+    data->glGenTextures(1, &palettedata->texture);
+    data->glBindTexture(textype, palettedata->texture);
+    data->glTexImage2D(textype, 0, GL_RGBA8, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    if (!GL_CheckError("glTexImage2D()", renderer)) {
+        return false;
+    }
+    SetTextureScaleMode(data, textype, SDL_SCALEMODE_NEAREST);
+    SetTextureAddressMode(data, textype, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+    return true;
+}
+
+static bool GL_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
+{
+    GL_RenderData *data = (GL_RenderData *)renderer->internal;
+    GL_PaletteData *palettedata = (GL_PaletteData *)palette->internal;
+
+    GL_ActivateRenderer(renderer);
+
+    data->drawstate.texture = NULL; // we trash this state.
+
+    const GLenum textype = data->textype;
+    data->glBindTexture(textype, palettedata->texture);
+    data->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    data->glPixelStorei(GL_UNPACK_ROW_LENGTH, ncolors);
+    data->glTexSubImage2D(textype, 0, 0, 0, ncolors, 1, GL_RGBA, GL_UNSIGNED_BYTE, colors);
+
+    return GL_CheckError("glTexSubImage2D()", renderer);
+}
+
+static void GL_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    GL_RenderData *data = (GL_RenderData *)renderer->internal;
+    GL_PaletteData *palettedata = (GL_PaletteData *)palette->internal;
+
+    if (palettedata) {
+        data->glDeleteTextures(1, &palettedata->texture);
+        SDL_free(palettedata);
+    }
+}
+
 static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     GL_RenderData *renderdata = (GL_RenderData *)renderer->internal;
@@ -621,14 +677,6 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     SetTextureScaleMode(renderdata, textype, data->texture_scale_mode);
     SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
 
-    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-        renderdata->glGenTextures(1, &data->palette);
-        renderdata->glBindTexture(textype, data->palette);
-        renderdata->glTexImage2D(textype, 0, GL_RGBA8, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-        SetTextureScaleMode(renderdata, textype, SDL_SCALEMODE_NEAREST);
-        SetTextureAddressMode(renderdata, textype, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
-    }
-
 #ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
@@ -721,25 +769,6 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     renderdata->glDisable(textype);
 
     return GL_CheckError("", renderer);
-}
-
-static bool GL_UpdateTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    GL_RenderData *renderdata = (GL_RenderData *)renderer->internal;
-    const GLenum textype = renderdata->textype;
-    GL_TextureData *data = (GL_TextureData *)texture->internal;
-    SDL_Palette *palette = texture->palette;
-
-    GL_ActivateRenderer(renderer);
-
-    renderdata->drawstate.texture = NULL; // we trash this state.
-
-    renderdata->glBindTexture(textype, data->palette);
-    renderdata->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, palette->ncolors);
-    renderdata->glTexSubImage2D(textype, 0, 0, 0, palette->ncolors, 1, GL_RGBA, GL_UNSIGNED_BYTE, palette->colors);
-
-    return GL_CheckError("glTexSubImage2D()", renderer);
 }
 
 static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -1205,8 +1234,9 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
         }
 #endif
         if (texture->palette) {
+            GL_PaletteData *palette = (GL_PaletteData *)texture->palette->internal;
             data->glActiveTextureARB(GL_TEXTURE1_ARB);
-            data->glBindTexture(textype, texturedata->palette);
+            data->glBindTexture(textype, palette->texture);
         }
         if (data->GL_ARB_multitexture_supported) {
             data->glActiveTextureARB(GL_TEXTURE0_ARB);
@@ -1631,9 +1661,6 @@ static void GL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (data->texture && !data->texture_external) {
         renderdata->glDeleteTextures(1, &data->texture);
     }
-    if (data->palette) {
-        renderdata->glDeleteTextures(1, &data->palette);
-    }
 #ifdef SDL_HAVE_YUV
     if (data->yuv) {
         if (!data->utexture_external) {
@@ -1753,8 +1780,10 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
 
     renderer->WindowEvent = GL_WindowEvent;
     renderer->SupportsBlendMode = GL_SupportsBlendMode;
+    renderer->CreatePalette = GL_CreatePalette;
+    renderer->UpdatePalette = GL_UpdatePalette;
+    renderer->DestroyPalette = GL_DestroyPalette;
     renderer->CreateTexture = GL_CreateTexture;
-    renderer->UpdateTexturePalette = GL_UpdateTexturePalette;
     renderer->UpdateTexture = GL_UpdateTexture;
 #ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = GL_UpdateTextureYUV;

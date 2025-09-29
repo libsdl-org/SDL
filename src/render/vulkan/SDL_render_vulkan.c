@@ -240,11 +240,16 @@ typedef struct
     VkFormat format;
 } VULKAN_Image;
 
+// Per-palette data
+typedef struct
+{
+    VULKAN_Image image;
+} VULKAN_PaletteData;
+
 // Per-texture data
 typedef struct
 {
     VULKAN_Image mainImage;
-    VULKAN_Image paletteImage;
     VkRenderPass mainRenderpasses[VULKAN_RENDERPASS_COUNT];
     VkFramebuffer mainFramebuffer;
     VULKAN_Buffer stagingBuffer;
@@ -383,6 +388,8 @@ typedef struct
     int currentVertexBuffer;
     bool issueBatch;
 } VULKAN_RenderData;
+
+static bool VULKAN_UpdateTextureInternal(VULKAN_RenderData *rendererData, VkImage image, VkFormat format, int plane, int x, int y, int w, int h, const void *pixels, int pitch, VkImageLayout *imageLayout);
 
 static SDL_PixelFormat VULKAN_VkFormatToSDLPixelFormat(VkFormat vkFormat)
 {
@@ -2533,6 +2540,45 @@ static bool VULKAN_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blend
     return true;
 }
 
+static bool VULKAN_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    VULKAN_RenderData *data = (VULKAN_RenderData *)renderer->internal;
+    VULKAN_PaletteData *palettedata = (VULKAN_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
+    if (!palettedata) {
+        return false;
+    }
+    palette->internal = palettedata;
+
+    VkFormat format = SDLPixelFormatToVkTextureFormat(SDL_PIXELFORMAT_RGBA32, renderer->output_colorspace);
+    VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    VkComponentMapping imageViewSwizzle = data->identitySwizzle;
+    VkResult result = VULKAN_AllocateImage(data, 0, 256, 1, format, usage, imageViewSwizzle, VK_NULL_HANDLE, &palettedata->image);
+    if (result != VK_SUCCESS) {
+        SET_ERROR_CODE("VULKAN_AllocateImage()", result);
+        return false;
+    }
+    return true;
+}
+
+static bool VULKAN_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
+{
+    VULKAN_RenderData *data = (VULKAN_RenderData *)renderer->internal;
+    VULKAN_PaletteData *palettedata = (VULKAN_PaletteData *)palette->internal;
+
+    return VULKAN_UpdateTextureInternal(data, palettedata->image.image, palettedata->image.format, 0, 0, 0, ncolors, 1, colors, ncolors * sizeof(*colors), &palettedata->image.imageLayout);
+}
+
+static void VULKAN_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    VULKAN_RenderData *data = (VULKAN_RenderData *)renderer->internal;
+    VULKAN_PaletteData *palettedata = (VULKAN_PaletteData *)palette->internal;
+
+    if (palettedata) {
+        VULKAN_DestroyImage(data, &palettedata->image);
+        SDL_free(palettedata);
+    }
+}
+
 static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
@@ -2694,21 +2740,6 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
         return false;
     }
 
-    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-        VkFormat paletteFormat;
-
-        if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
-            paletteFormat = VK_FORMAT_R8G8B8A8_SRGB;
-        } else {
-            paletteFormat = VK_FORMAT_R8G8B8A8_UNORM;
-        }
-        result = VULKAN_AllocateImage(rendererData, 0, 256, 1, paletteFormat, usage, imageViewSwizzle, textureData->samplerYcbcrConversion, &textureData->paletteImage);
-        if (result != VK_SUCCESS) {
-            SET_ERROR_CODE("VULKAN_AllocateImage()", result);
-            return false;
-        }
-    }
-
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER, (Sint64)textureData->mainImage.image);
 
@@ -2745,10 +2776,6 @@ static void VULKAN_DestroyTexture(SDL_Renderer *renderer,
     VULKAN_WaitForGPU(rendererData);
 
     VULKAN_DestroyImage(rendererData, &textureData->mainImage);
-
-    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-        VULKAN_DestroyImage(rendererData, &textureData->paletteImage);
-    }
 
 #ifdef SDL_HAVE_YUV
     if (textureData->samplerYcbcrConversion != VK_NULL_HANDLE) {
@@ -2874,20 +2901,6 @@ static bool VULKAN_UpdateTextureInternal(VULKAN_RenderData *rendererData, VkImag
     }
 
     return true;
-}
-
-
-static bool VULKAN_UpdateTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
-{
-    VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
-    VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
-    SDL_Palette *palette = texture->palette;
-
-    if (!textureData) {
-        return SDL_SetError("Texture is not currently available");
-    }
-
-    return VULKAN_UpdateTextureInternal(rendererData, textureData->paletteImage.image, textureData->paletteImage.format, 0, 0, 0, palette->ncolors, 1, palette->colors, palette->ncolors * sizeof(*palette->colors), &textureData->paletteImage.imageLayout);
 }
 
 static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
@@ -3900,8 +3913,9 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
     }
     ++numSamplers;
 
-    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-        if (textureData->paletteImage.imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+    if (texture->palette) {
+        VULKAN_PaletteData *palette = (VULKAN_PaletteData *)texture->palette->internal;
+        if (palette->image.imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
             bool stoppedRenderPass = false;
             if (rendererData->currentRenderPass != VK_NULL_HANDLE) {
                 vkCmdEndRenderPass(rendererData->currentCommandBuffer);
@@ -3915,14 +3929,14 @@ static bool VULKAN_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand 
                 VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                textureData->paletteImage.image,
-                &textureData->paletteImage.imageLayout);
+                palette->image.image,
+                &palette->image.imageLayout);
 
             if (stoppedRenderPass) {
                 VULKAN_BeginRenderPass(rendererData, VK_ATTACHMENT_LOAD_OP_LOAD, NULL);
             }
         }
-        imageViews[numImageViews++] = textureData->paletteImage.imageView;
+        imageViews[numImageViews++] = palette->image.imageView;
 
         samplers[numSamplers] = VULKAN_GetSampler(rendererData, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
         if (samplers[numSamplers] == VK_NULL_HANDLE) {
@@ -4391,8 +4405,10 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
 
     renderer->WindowEvent = VULKAN_WindowEvent;
     renderer->SupportsBlendMode = VULKAN_SupportsBlendMode;
+    renderer->CreatePalette = VULKAN_CreatePalette;
+    renderer->UpdatePalette = VULKAN_UpdatePalette;
+    renderer->DestroyPalette = VULKAN_DestroyPalette;
     renderer->CreateTexture = VULKAN_CreateTexture;
-    renderer->UpdateTexturePalette = VULKAN_UpdateTexturePalette;
     renderer->UpdateTexture = VULKAN_UpdateTexture;
 #ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = VULKAN_UpdateTextureYUV;
