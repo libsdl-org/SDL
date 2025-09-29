@@ -3600,15 +3600,15 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": metal view event watcher is disabled, the drawable size of the metal view
- *   will not be updated for the SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
- * - "1": metal view event watcher is enabled, the drawable size of the metal view
- *   will be updated for the SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event. (default)
+ * - "0": the metal layer drawable size will not be updated
+ *   on the SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
+ * - "1": the metal layer drawable size will be updated
+ *   on the SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event. (default)
  *
  * This hint should be set before SDL_Metal_CreateView called.
  *
  * \since This hint is available since SDL 3.4.0. */
-#define SDL_HINT_VIDEO_MAC_ENABLE_METAL_VIEW_WATCHER "SDL_VIDEO_MAC_ENABLE_METAL_VIEW_WATCHER"
+#define SDL_HINT_VIDEO_METAL_AUTO_RESIZE_DRAWABLE "SDL_VIDEO_METAL_AUTO_RESIZE_DRAWABLE"
 
 /**
  * A variable controlling whether SDL will attempt to automatically set the

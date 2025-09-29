@@ -90,7 +90,7 @@ static bool SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
         self.layer.opaque = opaque;
 
-        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_ENABLE_METAL_VIEW_WATCHER, true)) {
+        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_METAL_AUTO_RESIZE_DRAWABLE, true)) {
             SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_EARLY, SDL_MetalViewEventWatch, (__bridge void *)(self));
         }
 
@@ -102,7 +102,7 @@ static bool SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
 - (void)dealloc
 {
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_ENABLE_METAL_VIEW_WATCHER, true)) {
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_METAL_AUTO_RESIZE_DRAWABLE, true)) {
         SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_EARLY, SDL_MetalViewEventWatch, (__bridge void *)(self));
     }
 }
