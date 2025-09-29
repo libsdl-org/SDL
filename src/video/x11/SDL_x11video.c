@@ -77,6 +77,12 @@ static bool X11_IsXWayland(Display *d)
     return X11_XQueryExtension(d, "XWAYLAND", &opcode, &event, &error) == True;
 }
 
+#ifdef SDL_USE_LIBDBUS
+static int X11_ShowNotification(SDL_VideoDevice *device, const SDL_NotificationData *notificationdata) {
+    return SDL_DBus_ShowNotification(notificationdata);
+}
+#endif
+
 static SDL_VideoDevice *X11_CreateDevice(void)
 {
     SDL_VideoDevice *device;
@@ -239,6 +245,10 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->ShowScreenKeyboard = X11_ShowScreenKeyboard;
     device->HideScreenKeyboard = X11_HideScreenKeyboard;
     device->IsScreenKeyboardShown = X11_IsScreenKeyboardShown;
+
+#ifdef SDL_USE_LIBDBUS
+    device->ShowNotification = X11_ShowNotification;
+#endif
 
     device->free = X11_DeleteDevice;
 
