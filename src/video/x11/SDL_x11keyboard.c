@@ -770,7 +770,10 @@ void X11_CreateInputContext(SDL_WindowData *data)
 void X11_DestroyInputContext(SDL_WindowData *data)
 {
 #ifdef X_HAVE_UTF8_STRING
-    X11_XDestroyIC(data->ic);
+    if (data->ic) {
+        X11_XDestroyIC(data->ic);
+        data->ic = NULL;
+    }
     SDL_free(data->preedit_text);
     SDL_free(data->preedit_feedback);
     data->preedit_text = NULL;
