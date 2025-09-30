@@ -4,8 +4,8 @@
 ;
 ; Name                 Index   Mask Register SysValue  Format   Used
 ; -------------------- ----- ------ -------- -------- ------- ------
-; POSITION                 0   xyz         0     NONE   float   xyz
-; TEXCOORD                 0   xy          1     NONE   float   xy
+; POSITION                 0   xyz         0     NONE   float   xyz 
+; TEXCOORD                 0   xy          1     NONE   float   xy  
 ; COLOR                    0   xyzw        2     NONE   float   xyzw
 ;
 ;
@@ -14,12 +14,12 @@
 ; Name                 Index   Mask Register SysValue  Format   Used
 ; -------------------- ----- ------ -------- -------- ------- ------
 ; SV_Position              0   xyzw        0      POS   float   xyzw
-; TEXCOORD                 0   xy          1     NONE   float   xy
+; TEXCOORD                 0   xy          1     NONE   float   xy  
 ; COLOR                    0   xyzw        2     NONE   float   xyzw
 ;
 ; shader hash: 6855ad6b0e7d04a14cff9d3ae06dc84d
 ;
-; Pipeline Runtime Information:
+; Pipeline Runtime Information: 
 ;
 ; Vertex Shader
 ; OutputPositionPresent=1
@@ -29,17 +29,17 @@
 ;
 ; Name                 Index             InterpMode DynIdx
 ; -------------------- ----- ---------------------- ------
-; POSITION                 0
-; TEXCOORD                 0
-; COLOR                    0
+; POSITION                 0                              
+; TEXCOORD                 0                              
+; COLOR                    0                              
 ;
 ; Output signature:
 ;
 ; Name                 Index             InterpMode DynIdx
 ; -------------------- ----- ---------------------- ------
-; SV_Position              0          noperspective
-; TEXCOORD                 0                 linear
-; COLOR                    0                 linear
+; SV_Position              0          noperspective       
+; TEXCOORD                 0                 linear       
+; COLOR                    0                 linear       
 ;
 ; Buffer Definitions:
 ;
@@ -50,7 +50,7 @@
 ;   {
 ;
 ;       row_major float4x4 mpv;                       ; Offset:    0
-;
+;   
 ;   } VertexShaderConstants;                          ; Offset:    0 Size:    64
 ;
 ; }

@@ -275,7 +275,7 @@ fragment float4 SDL_Palette_fragment(CopyVertexOutput vert [[stage_in]],
         rgba = tex1.sample(s1, float2((index + 0.5) / 256, 0.5));
     } else if (c.texture_type == TEXTURETYPE_PALETTE_PIXELART) {
         float2 uv = GetPixelArtUV(vert.texcoord, c.texel_size);
-        float index = tex0.sample(s0, uv).r * 255;
+        float index = tex0.sample(s0, uv, gradient2d(dfdx(vert.texcoord), dfdy(vert.texcoord))).r * 255;
         rgba = tex1.sample(s1, float2((index + 0.5) / 256, 0.5));
     } else {
         // Unexpected texture type, use magenta error color

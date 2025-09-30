@@ -153,7 +153,7 @@ float4 GetInputColor(PixelShaderInput input)
         rgba = texture1.Sample(sampler1, float2((index + 0.5) / 256, 0.5));
     } else if (texture_type == TEXTURETYPE_PALETTE_PIXELART) {
         float2 uv = GetPixelArtUV(input);
-        float index = texture0.Sample(sampler0, uv).r * 255;
+        float index = texture0.SampleGrad(sampler0, uv, ddx(input.tex), ddy(input.tex)).r * 255;
         rgba = texture1.Sample(sampler1, float2((index + 0.5) / 256, 0.5));
     } else if (texture_type == TEXTURETYPE_NV12) {
         float3 yuv;
