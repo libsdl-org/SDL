@@ -441,6 +441,23 @@ macro(CheckX11)
         if(HAVE_XINPUT2_MULTITOUCH)
           set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1)
         endif()
+
+        # Check for gesture
+        check_c_source_compiles("
+            #include <X11/Xlib.h>
+            #include <X11/Xproto.h>
+            #include <X11/extensions/XInput2.h>
+            int event_type = XI_GesturePinchBegin;
+            XITouchClassInfo *t;
+            Status XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f) {
+              return (Status)0;
+            }
+            int main(int argc, char **argv) { return 0; }" HAVE_XINPUT2_GESTURE)
+        if(HAVE_XINPUT2_GESTURE)
+          set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE 1)
+        endif()
+
+
       endif()
 
       # check along with XInput2.h because we use Xfixes with XIBarrierReleasePointer

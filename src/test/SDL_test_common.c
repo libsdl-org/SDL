@@ -1920,6 +1920,16 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;
 
+    case SDL_EVENT_PINCH_BEGIN:
+        SDL_Log("SDL EVENT: Pinch Begin");
+        break;
+    case SDL_EVENT_PINCH_UPDATE:
+        SDL_Log("SDL EVENT: Pinch Update, scale=%f", event->pinch.scale);
+        break;
+    case SDL_EVENT_PINCH_END:
+        SDL_Log("SDL EVENT: Pinch End");
+        break;
+
     case SDL_EVENT_RENDER_TARGETS_RESET:
         SDL_Log("SDL EVENT: render targets reset in window %" SDL_PRIu32, event->render.windowID);
         break;
@@ -2230,6 +2240,7 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
              event->type != SDL_EVENT_FINGER_MOTION &&
              event->type != SDL_EVENT_PEN_MOTION &&
              event->type != SDL_EVENT_PEN_AXIS &&
+             event->type != SDL_EVENT_PINCH_UPDATE &&
              event->type != SDL_EVENT_JOYSTICK_AXIS_MOTION) ||
             (state->verbose & VERBOSE_MOTION)) {
             SDLTest_PrintEvent(event);
