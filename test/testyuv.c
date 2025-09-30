@@ -685,11 +685,11 @@ int main(int argc, char **argv)
         SDL_free(plane0);
         SDL_free(plane1);
         SDL_free(plane2);
-    } else if (planar && (yuv_format == SDL_PIXELFORMAT_NV12 || yuv_format == SDL_PIXELFORMAT_NV21)) {
+    } else if (planar && (yuv_format == SDL_PIXELFORMAT_NV12 || yuv_format == SDL_PIXELFORMAT_NV21 || yuv_format == SDL_PIXELFORMAT_P010)) {
         const int Yrows = original->h;
         const int UVrows = ((original->h + 1) / 2);
         const int src_Ypitch = pitch;
-        const int src_UVpitch = ((pitch + 1) / 2) * 2;
+        const int src_UVpitch = (yuv_format == SDL_PIXELFORMAT_P010) ? ((pitch + 3) & ~3) : ((pitch + 1) & ~1);
         const Uint8 *src_plane0 = (const Uint8 *)raw_yuv;
         const Uint8 *src_plane1 = src_plane0 + Yrows * src_Ypitch;
         const int Ypitch = pitch + 37;

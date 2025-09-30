@@ -2475,7 +2475,7 @@ bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
 
     CHECK_PARAM(texture->format != SDL_PIXELFORMAT_YV12 &&
                 texture->format != SDL_PIXELFORMAT_IYUV) {
-        return SDL_SetError("Texture format must by YV12 or IYUV");
+        return SDL_SetError("Texture format must be YV12 or IYUV");
     }
 
     real_rect.x = 0;
@@ -2534,8 +2534,9 @@ bool SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
     }
 
     CHECK_PARAM(texture->format != SDL_PIXELFORMAT_NV12 &&
-                texture->format != SDL_PIXELFORMAT_NV21) {
-        return SDL_SetError("Texture format must by NV12 or NV21");
+                texture->format != SDL_PIXELFORMAT_NV21 &&
+                texture->format != SDL_PIXELFORMAT_P010) {
+        return SDL_SetError("Texture format must be NV12, NV21, or P010");
     }
 
     real_rect.x = 0;
