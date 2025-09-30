@@ -884,8 +884,9 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
 
     // Paddle 1/2
     if (paddle_pairs > 0) {
-        SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
+        // Paddle 2 is first for left/right order of SInput
         SDL_ADD_BUTTON_MAPPING("paddle2", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("paddle1", current_button++, mapping_string_len);
     }
 
     // Start/Plus
@@ -914,8 +915,9 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
 
     // Paddle 3/4
     if (paddle_pairs > 1) {
-        SDL_ADD_BUTTON_MAPPING("paddle3", current_button++, mapping_string_len);
+        // Paddle 4 is first for left/right order of SInput
         SDL_ADD_BUTTON_MAPPING("paddle4", current_button++, mapping_string_len);
+        SDL_ADD_BUTTON_MAPPING("paddle3", current_button++, mapping_string_len);
     }
 
     // Touchpad buttons
