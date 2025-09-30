@@ -726,9 +726,6 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
                 result->default_enable_depth_clip = true;
                 result->validate_feature_depth_clamp_disabled = true;
             }
-            if (!SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true)) {
-                result->validate_feature_indirect_draw_first_instance_disabled = true;
-            }
             if (!SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true)) {
                 result->validate_feature_anisotropy_disabled = true;
             }
@@ -2191,11 +2188,6 @@ void SDL_DrawGPUIndexedPrimitives(
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
         SDL_GPU_CheckGraphicsBindings(render_pass);
-        if (RENDERPASS_DEVICE->validate_feature_indirect_draw_first_instance_disabled &&
-            first_instance != 0) {
-            SDL_assert_release(!"first_instance must be 0 (FEATURE_INDIRECT_DRAW_FIRST_INSTANCE disabled)");
-            return;
-        }
     }
 
     RENDERPASS_DEVICE->DrawIndexedPrimitives(
@@ -2223,11 +2215,6 @@ void SDL_DrawGPUPrimitives(
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
         SDL_GPU_CheckGraphicsBindings(render_pass);
-        if (RENDERPASS_DEVICE->validate_feature_indirect_draw_first_instance_disabled &&
-            first_instance != 0) {
-            SDL_assert_release(!"first_instance must be 0 (FEATURE_INDIRECT_DRAW_FIRST_INSTANCE disabled)");
-            return;
-        }
     }
 
     RENDERPASS_DEVICE->DrawPrimitives(
