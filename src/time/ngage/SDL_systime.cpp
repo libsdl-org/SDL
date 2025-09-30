@@ -171,7 +171,7 @@ bool SDL_GetCurrentTime(SDL_Time *ticks)
 
 bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
 {
-    TTime time;
+    TTime ticks_time;
     TTime universal_time;
     TTimeIntervalMicroSeconds offset;
     TDateTime date_time;
@@ -181,10 +181,10 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
         return SDL_InvalidParamError("dt");
     }
 
-    time = UnixEpoch();
+    ticks_time = UnixEpoch();
     offset = TTimeIntervalMicroSeconds(ticks / 1000);
-    time += offset;
-    date_time = time.DateTime();
+    ticks_time += offset;
+    date_time = ticks_time.DateTime();
     universal_time.UniversalTime();
     universal_date_time = universal_time.DateTime();
     dt->year = date_time.Year();
@@ -194,7 +194,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
     dt->minute = date_time.Minute();
     dt->second = date_time.Second();
     dt->nanosecond = date_time.MicroSecond() * 1000;
-    dt->day_of_week = time.DayNoInWeek() + 1;
+    dt->day_of_week = ticks_time.DayNoInWeek() + 1;
     dt->utc_offset = universal_date_time.Second() - date_time.Second();
 
     return true;
