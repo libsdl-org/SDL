@@ -102,9 +102,7 @@ static bool SDLCALL SDL_MetalViewEventWatch(void *userdata, SDL_Event *event)
 
 - (void)dealloc
 {
-    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_METAL_AUTO_RESIZE_DRAWABLE, true)) {
-        SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_EARLY, SDL_MetalViewEventWatch, (__bridge void *)(self));
-    }
+    SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_EARLY, SDL_MetalViewEventWatch, (__bridge void *)(self));
 }
 
 - (NSInteger)tag
