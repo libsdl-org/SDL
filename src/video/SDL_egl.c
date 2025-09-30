@@ -1221,9 +1221,12 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
     // max 16 key+value pairs, plus terminator.
     EGLint attribs[33];
     int attr = 0;
-
+    bool use_opaque_ext;
+    
     EGLSurface surface;
 
+    use_opaque_ext = true;
+try:
     if (!SDL_EGL_ChooseConfig(_this)) {
         return EGL_NO_SURFACE;
     }
@@ -1253,7 +1256,7 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
     }
 
 #ifdef EGL_EXT_present_opaque
-    if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_EXT_present_opaque")) {
+    if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_EXT_present_opaque") && use_opaque_ext) {
         bool allow_transparent = false;
         if (window && (window->flags & SDL_WINDOW_TRANSPARENT)) {
             allow_transparent = true;
@@ -1294,6 +1297,10 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
         _this->egl_data->egl_config,
         nw, &attribs[0]);
     if (surface == EGL_NO_SURFACE) {
+        if (_this->egl_data->eglGetError() == EGL_BAD_ATTRIBUTE && use_opaque_ext) {
+            use_opaque_ext = false;
+            goto try;    
+        }
         SDL_EGL_SetError("unable to create an EGL window surface", "eglCreateWindowSurface");
     }
 
