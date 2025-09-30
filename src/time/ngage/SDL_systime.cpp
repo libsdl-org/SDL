@@ -176,13 +176,15 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
     TTimeIntervalMicroSeconds offset;
     TDateTime date_time;
     TDateTime universal_date_time;
+    TInt64 ticks_div;
     
     CHECK_PARAM(!dt) {
         return SDL_InvalidParamError("dt");
     }
 
     ticks_time = UnixEpoch();
-    offset = TTimeIntervalMicroSeconds(TInt64::TInt64(ticks / 1000));
+    ticks_div = ticks / 1000;
+    offset = TTimeIntervalMicroSeconds(ticks_div);
     ticks_time += offset;
     date_time = ticks_time.DateTime();
     universal_time.UniversalTime();
