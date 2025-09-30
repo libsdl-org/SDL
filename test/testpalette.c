@@ -451,13 +451,16 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     SDL_Window *window = NULL;
-    int return_code = -1;
+    int i, return_code = -1;
     bool pixelart = false;
 
     SDLTest_TrackAllocations();
 
-    if (argv[1]) {
-        if (SDL_strcmp(argv[1], "--pixelart") == 0) {
+    for (i = 1; i < argc; ++i) {
+        if (SDL_strcmp(argv[1], "--renderer") == 0 && argv[i + 1]) {
+            ++i;
+            SDL_SetHint(SDL_HINT_RENDER_DRIVER, argv[i]);
+        } else if (SDL_strcmp(argv[1], "--pixelart") == 0) {
             pixelart = true;
         } else {
             SDL_Log("Usage: %s [--pixelart]", argv[0]);
