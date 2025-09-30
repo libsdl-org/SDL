@@ -152,7 +152,11 @@ int main(int argc, char *argv[])
         RWOP_ERR_QUIT(rwops);
     }
     if (0 != rwops->read(rwops, test_buf, 1, 1)) {
+        #ifdef __DJGPP__
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "DJGPP allowed read on write only file\n");
+        #else
         RWOP_ERR_QUIT(rwops); /* we are in write only mode */
+        #endif
     }
 
     rwops->close(rwops);
