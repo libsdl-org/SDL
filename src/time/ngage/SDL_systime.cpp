@@ -182,7 +182,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
     }
 
     ticks_time = UnixEpoch();
-    offset = TTimeIntervalMicroSeconds(ticks / 1000);
+    offset = TTimeIntervalMicroSeconds(TInt64::TInt64(ticks / 1000));
     ticks_time += offset;
     date_time = ticks_time.DateTime();
     universal_time.UniversalTime();
