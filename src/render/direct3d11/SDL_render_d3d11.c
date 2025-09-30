@@ -2192,10 +2192,6 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
         case SDL_PIXELFORMAT_INDEX8:
             if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
                 constants->texture_type = TEXTURETYPE_PALETTE_PIXELART;
-                constants->texture_width = texture->w;
-                constants->texture_height = texture->h;
-                constants->texel_width = 1.0f / constants->texture_width;
-                constants->texel_height = 1.0f / constants->texture_height;
             } else {
                 constants->texture_type = TEXTURETYPE_PALETTE;
             }
@@ -2221,10 +2217,6 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
         default:
             if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
                 constants->texture_type = TEXTURETYPE_RGB_PIXELART;
-                constants->texture_width = texture->w;
-                constants->texture_height = texture->h;
-                constants->texel_width = 1.0f / constants->texture_width;
-                constants->texel_height = 1.0f / constants->texture_height;
             } else {
                 constants->texture_type = TEXTURETYPE_RGB;
             }
@@ -2237,6 +2229,13 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
                 constants->input_type = INPUTTYPE_UNSPECIFIED;
             }
             break;
+        }
+
+        if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+            constants->texture_width = texture->w;
+            constants->texture_height = texture->h;
+            constants->texel_width = 1.0f / constants->texture_width;
+            constants->texel_height = 1.0f / constants->texture_height;
         }
 
         constants->sdr_white_point = texture->SDR_white_point;

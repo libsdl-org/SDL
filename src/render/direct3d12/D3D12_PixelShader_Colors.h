@@ -4,8 +4,8 @@
 ;
 ; Name                 Index   Mask Register SysValue  Format   Used
 ; -------------------- ----- ------ -------- -------- ------- ------
-; SV_Position              0   xyzw        0      POS   float
-; TEXCOORD                 0   xy          1     NONE   float
+; SV_Position              0   xyzw        0      POS   float       
+; TEXCOORD                 0   xy          1     NONE   float       
 ; COLOR                    0   xyzw        2     NONE   float   xyzw
 ;
 ;
@@ -17,7 +17,7 @@
 ;
 ; shader hash: 8ae1603dec7cda8e7dc3dd934e8ac75b
 ;
-; Pipeline Runtime Information:
+; Pipeline Runtime Information: 
 ;
 ; Pixel Shader
 ; DepthOutput=0
@@ -28,15 +28,15 @@
 ;
 ; Name                 Index             InterpMode DynIdx
 ; -------------------- ----- ---------------------- ------
-; SV_Position              0          noperspective
-; TEXCOORD                 0                 linear
-; COLOR                    0                 linear
+; SV_Position              0          noperspective       
+; TEXCOORD                 0                 linear       
+; COLOR                    0                 linear       
 ;
 ; Output signature:
 ;
 ; Name                 Index             InterpMode DynIdx
 ; -------------------- ----- ---------------------- ------
-; SV_Target                0
+; SV_Target                0                              
 ;
 ; Buffer Definitions:
 ;
@@ -59,7 +59,7 @@
 ;       float4 Rcoeff;                                ; Offset:   64
 ;       float4 Gcoeff;                                ; Offset:   80
 ;       float4 Bcoeff;                                ; Offset:   96
-;
+;   
 ;   } Constants;                                      ; Offset:    0 Size:   112
 ;
 ; }
