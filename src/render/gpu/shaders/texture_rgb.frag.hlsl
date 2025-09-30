@@ -1,3 +1,9 @@
+
+cbuffer Constants : register(b0, space3)
+{
+    float color_scale;
+};
+
 Texture2D u_texture : register(t0, space2);
 SamplerState u_sampler : register(s0, space2);
 
@@ -10,8 +16,10 @@ struct PSOutput {
     float4 o_color : SV_Target;
 };
 
+#include "common.frag.hlsli"
+
 PSOutput main(PSInput input) {
     PSOutput output;
-    output.o_color = float4(u_texture.Sample(u_sampler, input.v_uv).rgb, 1.0f) * input.v_color;
+    output.o_color = GetOutputColor(float4(u_texture.Sample(u_sampler, input.v_uv).rgb, 1.0f)) * input.v_color;
     return output;
 }
