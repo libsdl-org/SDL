@@ -177,7 +177,9 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
     TDateTime date_time;
     TDateTime universal_date_time;
     TInt64 ticks_div;
+    TInt64 ticks_div_d_64;
     TInt64 ticks_div_r;
+    SDL_Time ticks_div_d;
     
     CHECK_PARAM(!dt) {
         return SDL_InvalidParamError("dt");
@@ -185,7 +187,9 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
 
     ticks_time = UnixEpoch();
     ticks_div = TInt64((TUint)(ticks >> 32), (TUint)ticks);
-    ticks_div.DivMod(1000, &ticks_div_r);
+    ticks_div_d = 1000;
+    ticks_div_d_64 = TInt64((TUint)(ticks_div_d >> 32), (TUint)ticks_div_d);
+    ticks_div.DivMod(ticks_div_d_64, ticks_div_r);
     offset = TTimeIntervalMicroSeconds(ticks_div);
     ticks_time += offset;
     date_time = ticks_time.DateTime();
