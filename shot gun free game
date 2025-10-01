@@ -1,0 +1,233 @@
+// shotgun_game.c
+// Simple 2D shotgun demo using SDL2
+// Compile: gcc shotgun_game.c -o shotgun_game -lSDL2 -lm
+
+#include <SDL2/SDL.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+#include <stdbool.h>
+
+#define WIN_W 800
+#define WIN_H 600
+
+typedef struct {
+    float x, y;
+    float vx, vy;
+    bool alive;
+    int w, h;
+} Target;
+
+typedef struct {
+    float x, y;
+    float vx, vy;
+    bool alive;
+} Pellet;
+
+#define MAX_TARGETS 16
+#define MAX_PELLETS 64
+
+Target targets[MAX_TARGETS];
+Pellet pellets[MAX_PELLETS];
+
+void spawn_target() {
+    for (int i = 0; i < MAX_TARGETS; ++i) {
+        if (!targets[i].alive) {
+            targets[i].w = 40 + rand() % 30;
+            targets[i].h = 30 + rand() % 20;
+            targets[i].x = WIN_W + (rand() % 200);
+            targets[i].y = 50 + rand() % (WIN_H - 150);
+            targets[i].vx = - (100 + rand() % 100) / 60.0f; // px per frame approx
+            targets[i].vy = 0;
+            targets[i].alive = true;
+            break;
+        }
+    }
+}
+
+void fire_shotgun(float px, float py) {
+    int pellets_to_fire = 8; // shotgun spread
+    float base_speed = 8.0f;
+    float spread_deg = 30.0f;
+    for (int i = 0; i < MAX_PELLETS && pellets_to_fire > 0; ++i) {
+        if (!pellets[i].alive) {
+            float t = ((float)rand() / RAND_MAX) - 0.5f;
+            float angle = (t * spread_deg) * (M_PI / 180.0f); // radians
+            // aim horizontally to the right (+x) plus spread
+            pellets[i].x = px;
+            pellets[i].y = py;
+            pellets[i].vx = base_speed * cos(angle);
+            pellets[i].vy = base_speed * sin(angle);
+            pellets[i].alive = true;
+            pellets_to_fire--;
+        }
+    }
+}
+
+bool rect_intersect(float rx, float ry, int rw, int rh, float px, float py) {
+    return (px >= rx && px <= rx + rw && py >= ry && py <= ry + rh);
+}
+
+int main(int argc, char *argv[]) {
+    (void)argc; (void)argv;
+    srand((unsigned int)time(NULL));
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
+        SDL_Log("SDL_Init error: %s", SDL_GetError());
+        return 1;
+    }
+
+    SDL_Window *win = SDL_CreateWindow("Shotgun Demo (C + SDL2)",
+            SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+            WIN_W, WIN_H, SDL_WINDOW_SHOWN);
+    if (!win) {
+        SDL_Log("CreateWindow error: %s", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    if (!ren) {
+        SDL_Log("CreateRenderer error: %s", SDL_GetError());
+        SDL_DestroyWindow(win);
+        SDL_Quit();
+        return 1;
+    }
+
+    // init arrays
+    for (int i=0;i<MAX_TARGETS;i++) targets[i].alive = false;
+    for (int i=0;i<MAX_PELLETS;i++) pellets[i].alive = false;
+
+    // player
+    float player_x = 100;
+    float player_y = WIN_H - 120;
+    int player_w = 40, player_h = 60;
+    float player_speed = 6.0f;
+
+    Uint32 last_spawn = SDL_GetTicks();
+    Uint32 spawn_interval = 1500; // ms
+    Uint32 last_time = SDL_GetTicks();
+
+    int score = 0;
+    bool running = true;
+    SDL_Event e;
+    while (running) {
+        // timing
+        Uint32 now = SDL_GetTicks();
+        float dt = (now - last_time) / 16.6667f; // approximate frame-normalized (60fps baseline)
+        if (dt < 0.01f) dt = 1.0f;
+        last_time = now;
+
+        // events
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) running = false;
+            if (e.type == SDL_KEYDOWN) {
+                if (e.key.keysym.sym == SDLK_ESCAPE) running = false;
+                if (e.key.keysym.sym == SDLK_SPACE) {
+                    // fire from player's gun muzzle (right side)
+                    fire_shotgun(player_x + player_w + 5, player_y + player_h/2);
+                }
+            }
+        }
+
+        // keyboard state
+        const Uint8 *ks = SDL_GetKeyboardState(NULL);
+        if (ks[SDL_SCANCODE_LEFT]) player_x -= player_speed * dt;
+        if (ks[SDL_SCANCODE_RIGHT]) player_x += player_speed * dt;
+        if (player_x < 0) player_x = 0;
+        if (player_x > WIN_W - player_w) player_x = WIN_W - player_w;
+
+        // spawn targets occasionally
+        if (now - last_spawn > spawn_interval) {
+            spawn_target();
+            last_spawn = now;
+            // slightly randomize spawn interval
+            spawn_interval = 1000 + rand() % 1500;
+        }
+
+        // update targets
+        for (int i=0;i<MAX_TARGETS;i++) {
+            if (!targets[i].alive) continue;
+            targets[i].x += targets[i].vx * dt * 10.0f;
+            targets[i].y += targets[i].vy * dt * 10.0f;
+            // if reached left edge -> disappear (missed)
+            if (targets[i].x + targets[i].w < 0) {
+                targets[i].alive = false;
+            }
+        }
+
+        // update pellets
+        for (int i=0;i<MAX_PELLETS;i++) {
+            if (!pellets[i].alive) continue;
+            pellets[i].x += pellets[i].vx * dt * 6.0f;
+            pellets[i].y += pellets[i].vy * dt * 6.0f;
+            // out of screen?
+            if (pellets[i].x < 0 || pellets[i].x > WIN_W || pellets[i].y < 0 || pellets[i].y > WIN_H) {
+                pellets[i].alive = false;
+                continue;
+            }
+            // check collision with targets
+            for (int t=0;t<MAX_TARGETS;t++) {
+                if (!targets[t].alive) continue;
+                if (rect_intersect(targets[t].x, targets[t].y, targets[t].w, targets[t].h, pellets[i].x, pellets[i].y)) {
+                    // hit: mark pellet dead and mark target dead
+                    pellets[i].alive = false;
+                    targets[t].alive = false;
+                    score += 10;
+                    break;
+                }
+            }
+        }
+
+        // render
+        SDL_SetRenderDrawColor(ren, 30, 30, 40, 255);
+        SDL_RenderClear(ren);
+
+        // draw ground
+        SDL_Rect ground = {0, WIN_H - 60, WIN_W, 60};
+        SDL_SetRenderDrawColor(ren, 40, 80, 40, 255);
+        SDL_RenderFillRect(ren, &ground);
+
+        // draw player
+        SDL_Rect pr = {(int)player_x, (int)player_y, player_w, player_h};
+        SDL_SetRenderDrawColor(ren, 200, 200, 220, 255);
+        SDL_RenderFillRect(ren, &pr);
+        // muzzle line
+        SDL_SetRenderDrawColor(ren, 220, 180, 120, 255);
+        SDL_Rect muzzle = {(int)player_x + player_w, (int)(player_y + player_h/2 - 4), 10, 8};
+        SDL_RenderFillRect(ren, &muzzle);
+
+        // draw targets
+        for (int i=0;i<MAX_TARGETS;i++) {
+            if (!targets[i].alive) continue;
+            SDL_Rect tr = {(int)targets[i].x, (int)targets[i].y, targets[i].w, targets[i].h};
+            SDL_SetRenderDrawColor(ren, 180, 60, 60, 255);
+            SDL_RenderFillRect(ren, &tr);
+            // simple eye/marker
+            SDL_SetRenderDrawColor(ren, 220, 220, 60, 255);
+            SDL_Rect eye = {(int)targets[i].x + targets[i].w/4, (int)targets[i].y + targets[i].h/4, 6, 6};
+            SDL_RenderFillRect(ren, &eye);
+        }
+
+        // draw pellets
+        for (int i=0;i<MAX_PELLETS;i++) {
+            if (!pellets[i].alive) continue;
+            SDL_Rect p = {(int)pellets[i].x-2, (int)pellets[i].y-2, 4, 4};
+            SDL_SetRenderDrawColor(ren, 240, 220, 120, 255);
+            SDL_RenderFillRect(ren, &p);
+        }
+
+        // draw score (very simple: draw rectangles as digits not required; instead use window title)
+        char title[128];
+        snprintf(title, sizeof(title), "Shotgun Demo - Score: %d   (Left/Right to move, Space to fire)", score);
+        SDL_SetWindowTitle(win, title);
+
+        SDL_RenderPresent(ren);
+
+        // small delay to cap CPU usage (also keeps consistent fps)
+        SDL_Delay(10);
+    }
+
+    SDL_DestroyRenderer(ren);
+    SDL_DestroyWindow(win);
+    SDL_Quit();
+    return 0;
+}
