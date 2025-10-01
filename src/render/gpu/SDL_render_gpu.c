@@ -83,6 +83,7 @@ static const float INPUTTYPE_HDR10 = 3;
 
 typedef struct GPU_RenderData
 {
+    bool external_device;
     SDL_GPUDevice *device;
     GPU_Shaders shaders;
     GPU_PipelineCache pipeline_cache;
@@ -1415,34 +1416,37 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
 {
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
 
-    SDL_GPUTexture *swapchain;
-    Uint32 swapchain_texture_width, swapchain_texture_height;
-    bool result = SDL_WaitAndAcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain, &swapchain_texture_width, &swapchain_texture_height);
+    if (renderer->window) {
+        SDL_GPUTexture *swapchain;
+        Uint32 swapchain_texture_width, swapchain_texture_height;
+        bool result = SDL_WaitAndAcquireGPUSwapchainTexture(data->state.command_buffer, renderer->window, &swapchain, &swapchain_texture_width, &swapchain_texture_height);
 
-    if (!result) {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to acquire swapchain texture: %s", SDL_GetError());
-    }
+        if (!result) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to acquire swapchain texture: %s", SDL_GetError());
+        }
 
-    if (swapchain != NULL) {
-        SDL_GPUBlitInfo blit_info;
-        SDL_zero(blit_info);
+        if (swapchain != NULL) {
+            SDL_GPUBlitInfo blit_info;
+            SDL_zero(blit_info);
 
-        blit_info.source.texture = data->backbuffer.texture;
-        blit_info.source.w = data->backbuffer.width;
-        blit_info.source.h = data->backbuffer.height;
-        blit_info.destination.texture = swapchain;
-        blit_info.destination.w = swapchain_texture_width;
-        blit_info.destination.h = swapchain_texture_height;
-        blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
-        blit_info.filter = SDL_GPU_FILTER_LINEAR;
+            blit_info.source.texture = data->backbuffer.texture;
+            blit_info.source.w = data->backbuffer.width;
+            blit_info.source.h = data->backbuffer.height;
+            blit_info.destination.texture = swapchain;
+            blit_info.destination.w = swapchain_texture_width;
+            blit_info.destination.h = swapchain_texture_height;
+            blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
+            blit_info.filter = SDL_GPU_FILTER_LINEAR;
 
-        SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
+            SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
 
-        SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
+            SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
 
-        if (swapchain_texture_width != data->backbuffer.width || swapchain_texture_height != data->backbuffer.height) {
-            SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
-            CreateBackbuffer(data, swapchain_texture_width, swapchain_texture_height, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
+            if (swapchain_texture_width != data->backbuffer.width || swapchain_texture_height != data->backbuffer.height) {
+                CreateBackbuffer(data, swapchain_texture_width, swapchain_texture_height, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
+            }
+        } else {
+            SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
         }
     } else {
         SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
@@ -1486,7 +1490,7 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
     }
 
     if (data->state.command_buffer) {
-        SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
+        SDL_CancelGPUCommandBuffer(data->state.command_buffer);
         data->state.command_buffer = NULL;
     }
 
@@ -1509,7 +1513,9 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
 
     if (data->device) {
         GPU_ReleaseShaders(&data->shaders, data->device);
-        SDL_DestroyGPUDevice(data->device);
+        if (!data->external_device) {
+            SDL_DestroyGPUDevice(data->device);
+        }
     }
 
     SDL_free(data);
@@ -1551,6 +1557,14 @@ static bool GPU_SetVSync(SDL_Renderer *renderer, const int vsync)
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
     SDL_GPUPresentMode mode = SDL_GPU_PRESENTMODE_VSYNC;
 
+    if (!renderer->window) {
+        if (!vsync) {
+            return true;
+        } else {
+            return SDL_Unsupported();
+        }
+    }
+
     if (!ChoosePresentMode(data->device, renderer->window, vsync, &mode)) {
         return false;
     }
@@ -1575,8 +1589,8 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
-        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
-        renderer->output_colorspace != SDL_COLORSPACE_HDR10) {
+        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR
+        /*&& renderer->output_colorspace != SDL_COLORSPACE_HDR10*/) {
         return SDL_SetError("Unsupported output colorspace");
     }
 
@@ -1614,40 +1628,45 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     renderer->window = window;
     renderer->name = GPU_RenderDriver.name;
 
-    bool debug = SDL_GetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, false);
-    bool lowpower = SDL_GetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
+    data->device = SDL_GetPointerProperty(create_props, SDL_PROP_RENDERER_CREATE_GPU_DEVICE_POINTER, NULL);
+    if (data->device) {
+        data->external_device = true;
+    } else {
+        bool debug = SDL_GetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, false);
+        bool lowpower = SDL_GetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, false);
 
-    // Prefer environment variables/hints if they exist, otherwise defer to properties
-    debug = SDL_GetHintBoolean(SDL_HINT_RENDER_GPU_DEBUG, debug);
-    lowpower = SDL_GetHintBoolean(SDL_HINT_RENDER_GPU_LOW_POWER, lowpower);
+        // Prefer environment variables/hints if they exist, otherwise defer to properties
+        debug = SDL_GetHintBoolean(SDL_HINT_RENDER_GPU_DEBUG, debug);
+        lowpower = SDL_GetHintBoolean(SDL_HINT_RENDER_GPU_LOW_POWER, lowpower);
 
-    SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, debug);
-    SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, lowpower);
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, debug);
+        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN, lowpower);
 
-    // Set hints for the greatest hardware compatibility
-    // This property allows using the renderer on Intel Haswell and Broadwell GPUs.
-    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN)) {
-        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN, true);
-    }
-    // These properties allow using the renderer on more Android devices.
-    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN)) {
-        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, false);
-    }
-    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN)) {
-        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, false);
-    }
-    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN)) {
-        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, false);
-    }
-    if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN)) {
-        SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, false);
-    }
+        // Set hints for the greatest hardware compatibility
+        // This property allows using the renderer on Intel Haswell and Broadwell GPUs.
+        if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN)) {
+            SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN, true);
+        }
+        // These properties allow using the renderer on more Android devices.
+        if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN)) {
+            SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, false);
+        }
+        if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN)) {
+            SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, false);
+        }
+        if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN)) {
+            SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, false);
+        }
+        if (!SDL_HasProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN)) {
+            SDL_SetBooleanProperty(create_props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, false);
+        }
 
-    GPU_FillSupportedShaderFormats(create_props);
-    data->device = SDL_CreateGPUDeviceWithProperties(create_props);
+        GPU_FillSupportedShaderFormats(create_props);
+        data->device = SDL_CreateGPUDeviceWithProperties(create_props);
 
-    if (!data->device) {
-        return false;
+        if (!data->device) {
+            return false;
+        }
     }
 
     if (!GPU_InitShaders(&data->shaders, data->device)) {
@@ -1663,30 +1682,39 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         return false;
     }
 
-    if (!SDL_ClaimWindowForGPUDevice(data->device, window)) {
-        return false;
+    if (window) {
+        if (!SDL_ClaimWindowForGPUDevice(data->device, window)) {
+            return false;
+        }
+
+        switch (renderer->output_colorspace) {
+        case SDL_COLORSPACE_SRGB_LINEAR:
+            data->swapchain.composition = SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR;
+            break;
+        case SDL_COLORSPACE_HDR10:
+            data->swapchain.composition = SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084;
+            break;
+        case SDL_COLORSPACE_SRGB:
+        default:
+            data->swapchain.composition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
+            break;
+        }
+        data->swapchain.present_mode = SDL_GPU_PRESENTMODE_VSYNC;
+
+        int vsync = (int)SDL_GetNumberProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
+        ChoosePresentMode(data->device, window, vsync, &data->swapchain.present_mode);
+
+        SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode);
+
+        SDL_SetGPUAllowedFramesInFlight(data->device, 1);
+
+        int w, h;
+        SDL_GetWindowSizeInPixels(window, &w, &h);
+
+        if (!CreateBackbuffer(data, w, h, SDL_GetGPUSwapchainTextureFormat(data->device, window))) {
+            return false;
+        }
     }
-
-    switch (renderer->output_colorspace) {
-    case SDL_COLORSPACE_SRGB_LINEAR:
-        data->swapchain.composition = SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR;
-        break;
-    case SDL_COLORSPACE_HDR10:
-        data->swapchain.composition = SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084;
-        break;
-    case SDL_COLORSPACE_SRGB:
-    default:
-        data->swapchain.composition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
-        break;
-    }
-    data->swapchain.present_mode = SDL_GPU_PRESENTMODE_VSYNC;
-
-    int vsync = (int)SDL_GetNumberProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
-    ChoosePresentMode(data->device, window, vsync, &data->swapchain.present_mode);
-
-    SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode);
-
-    SDL_SetGPUAllowedFramesInFlight(data->device, 1);
 
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
@@ -1710,13 +1738,6 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     data->state.viewport.min_depth = 0;
     data->state.viewport.max_depth = 1;
     data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
-
-    int w, h;
-    SDL_GetWindowSizeInPixels(window, &w, &h);
-
-    if (!CreateBackbuffer(data, w, h, SDL_GetGPUSwapchainTextureFormat(data->device, window))) {
-        return false;
-    }
 
     SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, data->device);
 

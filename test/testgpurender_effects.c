@@ -148,6 +148,12 @@ static bool InitGPURenderState(void)
     SDL_GPURenderStateCreateInfo createinfo;
     int i;
 
+    device = SDL_GetGPURendererDevice(renderer);
+    if (!device) {
+        SDL_Log("Couldn't get GPU device");
+        return false;
+    }
+
     formats = SDL_GetGPUShaderFormats(device);
     if (formats == SDL_GPU_SHADERFORMAT_INVALID) {
         SDL_Log("Couldn't get supported shader formats: %s", SDL_GetError());
@@ -244,8 +250,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    renderer = SDL_CreateGPURenderer(window, SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_MSL, &device);
-    if (!renderer || !device) {
+    renderer = SDL_CreateRenderer(window, SDL_GPU_RENDERER);
+    if (!renderer) {
         SDL_Log("Couldn't create renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
@@ -316,9 +322,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetRenderTarget(renderer, NULL);
 
     /* Display the render target with the fullscreen effect */
-    SDL_SetRenderGPUState(renderer, effect->state);
+    SDL_SetGPURenderState(renderer, effect->state);
     SDL_RenderTexture(renderer, target, NULL, NULL);
-    SDL_SetRenderGPUState(renderer, NULL);
+    SDL_SetGPURenderState(renderer, NULL);
 
     /* Draw some help text */
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);

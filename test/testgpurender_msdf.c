@@ -167,7 +167,7 @@ static bool InitGPURenderState(void)
     SDL_GPURenderStateCreateInfo createinfo;
     MSDFShaderUniforms uniforms;
 
-    device = (SDL_GPUDevice *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, NULL);
+    device = SDL_GetGPURendererDevice(renderer);
     if (!device) {
         SDL_Log("Couldn't get GPU device");
         return false;
@@ -255,7 +255,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    renderer = SDL_CreateRenderer(window, "gpu");
+    renderer = SDL_CreateRenderer(window, SDL_GPU_RENDERER);
     if (!renderer) {
         SDL_Log("Couldn't create renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -300,9 +300,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_GetCurrentRenderOutputSize(renderer, &output_width, &output_height);
     x = (output_width - text_width) / 2;
     y = (output_height - text_height) / 2;
-    SDL_SetRenderGPUState(renderer, render_state);
+    SDL_SetGPURenderState(renderer, render_state);
     RenderText("Hello World!", text_height, x, y);
-    SDL_SetRenderGPUState(renderer, NULL);
+    SDL_SetGPURenderState(renderer, NULL);
 
     SDL_RenderPresent(renderer);
 
