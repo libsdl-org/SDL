@@ -505,24 +505,31 @@ static EM_BOOL Emscripten_HandleFullscreenChangeGlobal(int eventType, const Emsc
 static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    bool force = false;
-
-    // update pixel ratio
-    if (window_data->window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
-        if (window_data->pixel_ratio != emscripten_get_device_pixel_ratio()) {
-            window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
-            force = true;
-        }
-    }
 
     if (!(window_data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-        // this will only work if the canvas size is set through css
-        if (window_data->window->flags & SDL_WINDOW_RESIZABLE) {
-            double w = window_data->window->w;
-            double h = window_data->window->h;
+        bool force = false;
 
-            if (window_data->external_size) {
-                emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
+        // update pixel ratio
+        if (window_data->window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+            if (window_data->pixel_ratio != emscripten_get_device_pixel_ratio()) {
+                window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
+                force = true;
+            }
+        }
+
+        if (window_data->fill_document || (window_data->window->flags & SDL_WINDOW_RESIZABLE)) {
+            double w, h;
+            if (window_data->fill_document) {
+                w = (double) uiEvent->windowInnerWidth;
+                h = (double) uiEvent->windowInnerHeight;
+            } else {
+                SDL_assert(window_data->window->flags & SDL_WINDOW_RESIZABLE);
+                w = window_data->window->w;
+                h = window_data->window->h;
+                // this will only work if the canvas size is set through css
+                if (window_data->external_size) {
+                    emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
+                }
             }
 
             emscripten_set_canvas_element_size(window_data->canvas_id, SDL_lroundf(w * window_data->pixel_ratio), SDL_lroundf(h * window_data->pixel_ratio));

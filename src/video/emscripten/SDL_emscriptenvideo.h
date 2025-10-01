@@ -38,6 +38,8 @@ struct SDL_WindowData
     char *canvas_id;
     char *keyboard_element;
 
+    bool fill_document;
+
     float pixel_ratio;
 
     bool external_size;

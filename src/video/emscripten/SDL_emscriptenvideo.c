@@ -478,6 +478,12 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     }
     wdata->keyboard_element = SDL_strdup(selector);
 
+    if (SDL_GetHint(SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT)) {
+        wdata->fill_document = SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT, false);
+    } else {
+        wdata->fill_document = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN, false);
+    }
+
     if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
         wdata->pixel_ratio = emscripten_get_device_pixel_ratio();
     } else {
@@ -492,19 +498,56 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
     emscripten_get_element_css_size(wdata->canvas_id, &css_w, &css_h);
 
     wdata->external_size = SDL_floor(css_w) != 1 || SDL_floor(css_h) != 1;
-
-    if ((window->flags & SDL_WINDOW_RESIZABLE) && wdata->external_size) {
-        // external css has resized us
-        scaled_w = css_w * wdata->pixel_ratio;
-        scaled_h = css_h * wdata->pixel_ratio;
-
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(css_w), SDL_lroundf(css_h));
+    if (wdata->external_size) {
+        wdata->fill_document = false;  // can't be resizable if something else is controlling it.
     }
-    emscripten_set_canvas_element_size(wdata->canvas_id, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
 
-    // if the size is not being controlled by css, we need to scale down for hidpi
-    if (!wdata->external_size) {
+    // fill_document takes up the entire page and resizes as the browser window resizes.
+    if (wdata->fill_document) {
+        const int w = MAIN_THREAD_EM_ASM_INT({ return window.innerWidth; });
+        const int h = MAIN_THREAD_EM_ASM_INT({ return window.innerHeight; });
+
+        scaled_w = w * wdata->pixel_ratio;
+        scaled_h = h * wdata->pixel_ratio;
+
+        MAIN_THREAD_EM_ASM({
+            var canvas = document.querySelector(UTF8ToString($0));
+
+            // hide everything on the page that isn't the canvas.
+            var div = document.createElement('div');
+            div.id = 'SDL3_fill_document_background_elements';
+
+            div.SDL3_canvas = canvas;
+            div.SDL3_canvas_parent = canvas.parentNode;
+            div.SDL3_canvas_nextsib = canvas.nextSibling;
+
+            var children = Array.from(document.body.children);
+            for (var child of children) {
+                div.appendChild(child);
+            }
+            document.body.appendChild(div);
+            div.style.display = 'none';
+            document.body.appendChild(canvas);
+            canvas.style.position = 'fixed';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+        }, wdata->canvas_id);
+
+        emscripten_set_canvas_element_size(wdata->canvas_id, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
+
+        // set_canvas_size unsets this
         if (wdata->pixel_ratio != 1.0f) {
+            emscripten_set_element_css_size(wdata->canvas_id, w, h);
+        }
+
+        // force the event to trigger, so pixel ratio changes can be handled
+        window->w = window->h = 0;
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, SDL_lroundf(w), SDL_lroundf(h));
+    } else {
+        emscripten_set_canvas_element_size(wdata->canvas_id, SDL_lroundf(scaled_w), SDL_lroundf(scaled_h));
+
+        // if the size is not being controlled by css, we need to scale down for hidpi
+        if (!wdata->external_size && (wdata->pixel_ratio != 1.0f)) {
             // scale canvas down
             emscripten_set_element_css_size(wdata->canvas_id, window->w, window->h);
         }
@@ -521,16 +564,17 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
 
     Emscripten_RegisterEventHandlers(wdata);
 
-    // disable the emscripten "fullscreen" button.
+    // Make the emscripten "fullscreen" button go through SDL.
     MAIN_THREAD_EM_ASM({
         Module['requestFullscreen'] = function(lockPointer, resizeCanvas) {
             _requestFullscreenThroughSDL($0);
         };
     }, window);
 
-    // Ensure canvas_id and keyboard_element are added to the window's properties
+    // Ensure various things are added to the window's properties
     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING, wdata->canvas_id);
     SDL_SetStringProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, wdata->keyboard_element);
+    SDL_SetBooleanProperty(window->props, SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN, wdata->fill_document);
 
     // Window has been successfully created
     return true;
@@ -538,10 +582,12 @@ static bool Emscripten_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, 
 
 static void Emscripten_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    SDL_WindowData *data;
-
     if (window->internal) {
-        data = window->internal;
+        SDL_WindowData *data = window->internal;
+        if (data->fill_document) {
+            return;  // canvas size is being dictated by the browser window size, refuse request.
+        }
+
         // update pixel ratio
         if (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
@@ -578,6 +624,9 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         // We can't destroy the canvas, so resize it to zero instead
         emscripten_set_canvas_element_size(data->canvas_id, 0, 0);
+        if (data->pixel_ratio != 1.0f) {
+            emscripten_set_element_css_size(data->canvas_id, 1, 1);
+        }
         SDL_free(data->canvas_id);
 
         SDL_free(data->keyboard_element);
@@ -586,8 +635,27 @@ static void Emscripten_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         window->internal = NULL;
     }
 
-    // just ignore clicks on the fullscreen button while there's no SDL window.
-    MAIN_THREAD_EM_ASM({ Module['requestFullscreen'] = function(lockPointer, resizeCanvas) {}; });
+    MAIN_THREAD_EM_ASM({
+        // just ignore clicks on the fullscreen button while there's no SDL window.
+        Module['requestFullscreen'] = function(lockPointer, resizeCanvas) {};
+
+        // if we had previously hidden everything behind a fill_document window, put it back.
+        var div = document.getElementById('SDL3_fill_document_background_elements');
+        if (div) {
+            if (div.SDL3_canvas_nextsib) {
+                div.SDL3_canvas_parent.insertBefore(div.SDL3_canvas, div.SDL3_canvas_nextsib);
+            } else {
+                div.SDL3_canvas_parent.appendChild(div.SDL3_canvas);
+            }
+            while (div.firstChild) {
+                document.body.insertBefore(div.firstChild, div);
+            }
+            div.SDL3_canvas.style.position = undefined;
+            div.SDL3_canvas.style.top = undefined;
+            div.SDL3_canvas.style.left = undefined;
+            div.remove();
+        }
+    });
 }
 
 static SDL_FullscreenResult Emscripten_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
