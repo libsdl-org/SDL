@@ -440,8 +440,8 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
     if (SDL_strcmp(name, SDL_XSETTINGS_GDK_WINDOW_SCALING_FACTOR) == 0 ||
         SDL_strcmp(name, SDL_XSETTINGS_GDK_UNSCALED_DPI) == 0 ||
         SDL_strcmp(name, SDL_XSETTINGS_XFT_DPI) == 0) {
-        bool dbe_already_setup;
-        bool pixmap_already_setup;
+        bool dbe_already_setup = false;
+        bool pixmap_already_setup = false;
 
         if (window->pixmap) {
             pixmap_already_setup = true;
