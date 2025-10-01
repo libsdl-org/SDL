@@ -141,12 +141,7 @@ bool SDL_object_validation = false;
 
 static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    bool validation_enabled = false;
-
-#ifdef SDL_ASSERT_INVALID_PARAMS
-    // Full validation is enabled by default
-    validation_enabled = true;
-#endif
+    bool validation_enabled = true;
 
     if (hint) {
         switch (*hint) {
