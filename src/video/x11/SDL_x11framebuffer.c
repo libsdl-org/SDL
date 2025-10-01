@@ -42,6 +42,16 @@ static int shm_errhandler(Display *d, XErrorEvent *e)
 static SDL_bool have_mitshm(Display *dpy)
 {
     /* Only use shared memory on local X servers */
+    /* Given that Windows 10 and 11 now offer use of OpenSSH, checking for a
+       SSH_TTY value (man ssh(1)) is potentially an OS-agnostic means of
+       detecting a common case of using a remote X server: when accessing via
+       X11 forwarding over `ssh -X`. */
+    /* (Linux-specific alternative: checking if XDG_SESSION_TYPE == "tty" (see
+       man pam_systemd(8))) */
+    const char *ssh_tty = SDL_getenv("SSH_TTY");
+    if (ssh_tty != NULL && SDL_strlen(ssh_tty) > 0) {
+        return SDL_FALSE;
+    }
     return X11_XShmQueryExtension(dpy) ? SDL_X11_HAVE_SHM : SDL_FALSE;
 }
 
