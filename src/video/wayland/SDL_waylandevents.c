@@ -1414,6 +1414,58 @@ static const struct wl_touch_listener touch_listener = {
     touch_handler_orientation // Version 6
 };
 
+// Fallback for xkb_keymap_key_get_mods_for_level(), which is only available from 1.0.0, while the SDL minimum os 0.5.0.
+#if !SDL_XKBCOMMON_CHECK_VERSION(1, 0, 0)
+static size_t xkb_legacy_get_mods_for_level(SDL_WaylandSeat *seat, xkb_keycode_t key, xkb_layout_index_t layout, xkb_level_index_t level, xkb_mod_mask_t *masks_out, size_t masks_size)
+{
+    if (!masks_out || !masks_size) {
+        return 0;
+    }
+
+    // Level 0 is always unmodified, so early out.
+    if (level == 0) {
+        *masks_out = 0;
+        return 1;
+    }
+
+    struct xkb_state *state = WAYLAND_xkb_state_new(seat->keyboard.xkb.keymap);
+    if (state) {
+        const xkb_mod_mask_t keymod_masks[] = {
+            0,
+            seat->keyboard.xkb.shift_mask,
+            seat->keyboard.xkb.caps_mask,
+            seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask,
+            seat->keyboard.xkb.level3_mask,
+            seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask,
+            seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.caps_mask,
+            seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask,
+            seat->keyboard.xkb.level5_mask,
+            seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask,
+            seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.caps_mask,
+            seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask
+        };
+        const xkb_mod_mask_t pressed_mod_mask = seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.level5_mask;
+        const xkb_mod_mask_t locked_mod_mask = seat->keyboard.xkb.caps_mask;
+
+        size_t mask_idx = 0;
+
+        for (size_t i = 0; i < SDL_arraysize(keymod_masks); ++i) {
+            WAYLAND_xkb_state_update_mask(state, keymod_masks[i] & pressed_mod_mask, 0, keymod_masks[i] & locked_mod_mask, 0, 0, layout);
+            if (WAYLAND_xkb_state_key_get_level(state, key, layout) == level) {
+                masks_out[mask_idx] = keymod_masks[i];
+
+                if (++mask_idx == masks_size) {
+                    break;
+                }
+            }
+        }
+
+        WAYLAND_xkb_state_unref(state);
+    }
+    return mask_idx;
+}
+#endif
+
 static void Wayland_KeymapIterator(struct xkb_keymap *keymap, xkb_keycode_t key, void *data)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
@@ -1450,7 +1502,11 @@ static void Wayland_KeymapIterator(struct xkb_keymap *keymap, xkb_keycode_t key,
                 }
 
                 xkb_mod_mask_t xkb_mod_masks[16];
+#if SDL_XKBCOMMON_CHECK_VERSION(1, 0, 0)
                 const size_t num_masks = WAYLAND_xkb_keymap_key_get_mods_for_level(seat->keyboard.xkb.keymap, key, layout, level, xkb_mod_masks, SDL_arraysize(xkb_mod_masks));
+#else
+                const size_t num_masks = xkb_legacy_get_mods_for_level(seat, key, layout, level, xkb_mod_masks, SDL_arraysize(xkb_mod_masks));
+#endif
                 for (size_t mask = 0; mask < num_masks; ++mask) {
                     // Ignore this modifier set if it uses unsupported modifier types.
                     if ((xkb_mod_masks[mask] | xkb_valid_mod_mask) != xkb_valid_mod_mask) {
