@@ -137,12 +137,13 @@ Uint32 SDL_GetNextObjectID(void)
 
 static SDL_InitState SDL_objects_init;
 static SDL_HashTable *SDL_objects;
-bool SDL_object_validation = false;
+bool SDL_object_validation = true;
 
 static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     bool validation_enabled = true;
 
+#ifndef OBJECT_VALIDATION_REQUIRED
     if (hint) {
         switch (*hint) {
         case '0':
@@ -156,6 +157,8 @@ static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *na
             break;
         }
     }
+#endif // !OBJECT_VALIDATION_REQUIRED
+
     SDL_object_validation = validation_enabled;
 }
 
