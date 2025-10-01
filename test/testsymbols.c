@@ -1315,7 +1315,7 @@ const static struct {
     SDL_SYMBOL_ITEM(SDL_GetDefaultTextureScaleMode),
     SDL_SYMBOL_ITEM(SDL_CreateGPURenderState),
     SDL_SYMBOL_ITEM(SDL_SetGPURenderStateFragmentUniforms),
-    SDL_SYMBOL_ITEM(SDL_SetRenderGPUState),
+    SDL_SYMBOL_ITEM(SDL_SetGPURenderState),
     SDL_SYMBOL_ITEM(SDL_DestroyGPURenderState),
     SDL_SYMBOL_ITEM(SDL_SetWindowProgressState),
     SDL_SYMBOL_ITEM(SDL_SetWindowProgressValue),
@@ -1334,6 +1334,7 @@ const static struct {
     SDL_SYMBOL_ITEM(SDL_GetGPUTextureFormatFromPixelFormat),
     SDL_SYMBOL_ITEM(SDL_SetTexturePalette),
     SDL_SYMBOL_ITEM(SDL_GetTexturePalette),
+    SDL_SYMBOL_ITEM(SDL_GetGPURendererDevice),
     /* extra symbols go here (don't modify this line) */
     { NULL, NULL }
 };

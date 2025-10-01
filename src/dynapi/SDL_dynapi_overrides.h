@@ -1265,7 +1265,7 @@
 #define SDL_GetDefaultTextureScaleMode SDL_GetDefaultTextureScaleMode_REAL
 #define SDL_CreateGPURenderState SDL_CreateGPURenderState_REAL
 #define SDL_SetGPURenderStateFragmentUniforms SDL_SetGPURenderStateFragmentUniforms_REAL
-#define SDL_SetRenderGPUState SDL_SetRenderGPUState_REAL
+#define SDL_SetGPURenderState SDL_SetGPURenderState_REAL
 #define SDL_DestroyGPURenderState SDL_DestroyGPURenderState_REAL
 #define SDL_SetWindowProgressState SDL_SetWindowProgressState_REAL
 #define SDL_SetWindowProgressValue SDL_SetWindowProgressValue_REAL
@@ -1285,3 +1285,4 @@
 #define JNI_OnLoad JNI_OnLoad_REAL
 #define SDL_SetTexturePalette SDL_SetTexturePalette_REAL
 #define SDL_GetTexturePalette SDL_GetTexturePalette_REAL
+#define SDL_GetGPURendererDevice SDL_GetGPURendererDevice_REAL

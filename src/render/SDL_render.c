@@ -1047,8 +1047,14 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     const char *hint;
     SDL_PropertiesID new_props;
 
-    CHECK_PARAM((!window && !surface) || (window && surface)) {
+    // The GPU renderer is the only one that can be created without a window or surface
+    CHECK_PARAM(!window && !surface && (!driver_name || SDL_strcmp(driver_name, SDL_GPU_RENDERER) != 0)) {
         SDL_InvalidParamError("window");
+        return NULL;
+    }
+
+    CHECK_PARAM(window && surface) {
+        SDL_SetError("A renderer can't target both a window and surface");
         return NULL;
     }
 
@@ -1269,35 +1275,30 @@ SDL_Renderer *SDL_CreateRenderer(SDL_Window *window, const char *name)
     return renderer;
 }
 
-SDL_Renderer *SDL_CreateGPURenderer(SDL_Window *window, SDL_GPUShaderFormat format_flags, SDL_GPUDevice **device)
+SDL_Renderer *SDL_CreateGPURenderer(SDL_GPUDevice *device, SDL_Window *window)
 {
-    CHECK_PARAM(!device) {
-        SDL_InvalidParamError("device");
-        return NULL;
-    }
-
-    *device = NULL;
     SDL_Renderer *renderer;
 
     SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_GPU_DEVICE_POINTER, device);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, window);
-    if (format_flags & SDL_GPU_SHADERFORMAT_SPIRV) {
-        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, true);
-    }
-    if (format_flags & SDL_GPU_SHADERFORMAT_DXIL) {
-        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, true);
-    }
-    if (format_flags & SDL_GPU_SHADERFORMAT_MSL) {
-        SDL_SetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN, true);
-    }
-    SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, "gpu");
+    SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, SDL_GPU_RENDERER);
 
     renderer = SDL_CreateRendererWithProperties(props);
-    if (renderer) {
-        *device = (SDL_GPUDevice *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, NULL);
-    }
     SDL_DestroyProperties(props);
     return renderer;
+}
+
+SDL_GPUDevice *SDL_GetGPURendererDevice(SDL_Renderer *renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, NULL);
+
+    SDL_GPUDevice *device = SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, NULL);
+    if (!device) {
+        SDL_SetError("Renderer isn't a GPU renderer");
+        return NULL;
+    }
+    return device;
 }
 
 SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
@@ -1365,8 +1366,8 @@ bool SDL_GetRenderOutputSize(SDL_Renderer *renderer, int *w, int *h)
     } else if (renderer->window) {
         return SDL_GetWindowSizeInPixels(renderer->window, w, h);
     } else {
-        SDL_assert(!"This should never happen");
-        return SDL_SetError("Renderer doesn't support querying output size");
+        // We don't have any output size, this might be an offscreen-only renderer
+        return true;
     }
 }
 
@@ -5548,7 +5549,11 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
     CHECK_RENDERER_MAGIC(renderer, false);
 
     CHECK_PARAM(renderer->target) {
-        return SDL_SetError("You can't present on a render target");
+        if (!renderer->window && SDL_strcmp(renderer->name, SDL_GPU_RENDERER) == 0) {
+            // We're an offscreen renderer, we must submit the command queue
+        } else {
+            return SDL_SetError("You can't present on a render target");
+        }
     }
 
     if (renderer->transparent_window) {
@@ -6218,7 +6223,7 @@ bool SDL_SetGPURenderStateFragmentUniforms(SDL_GPURenderState *state, Uint32 slo
     return true;
 }
 
-bool SDL_SetRenderGPUState(SDL_Renderer *renderer, SDL_GPURenderState *state)
+bool SDL_SetGPURenderState(SDL_Renderer *renderer, SDL_GPURenderState *state)
 {
     CHECK_RENDERER_MAGIC(renderer, false);
 
