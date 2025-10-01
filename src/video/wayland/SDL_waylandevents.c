@@ -1414,7 +1414,7 @@ static const struct wl_touch_listener touch_listener = {
     touch_handler_orientation // Version 6
 };
 
-// Fallback for xkb_keymap_key_get_mods_for_level(), which is only available from 1.0.0, while the SDL minimum os 0.5.0.
+// Fallback for xkb_keymap_key_get_mods_for_level(), which is only available from 1.0.0, while the SDL minimum is 0.5.0.
 #if !SDL_XKBCOMMON_CHECK_VERSION(1, 0, 0)
 static size_t xkb_legacy_get_mods_for_level(SDL_WaylandSeat *seat, xkb_keycode_t key, xkb_layout_index_t layout, xkb_level_index_t level, xkb_mod_mask_t *masks_out, size_t masks_size)
 {
