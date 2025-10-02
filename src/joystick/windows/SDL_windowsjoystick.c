@@ -583,6 +583,9 @@ static bool WINDOWS_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
 static bool WINDOWS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
+    if (!joystick->hwdata) {
+        return SDL_SetError("Rumble failed, device disconnected.");
+    }
 #ifdef SDL_JOYSTICK_XINPUT
     if (joystick->hwdata->bXInputDevice) {
         return SDL_XINPUT_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble);
@@ -629,6 +632,9 @@ static void WINDOWS_JoystickUpdate(SDL_Joystick *joystick)
 // Function to close a joystick after use
 static void WINDOWS_JoystickClose(SDL_Joystick *joystick)
 {
+    if (!joystick->hwdata) {
+        return SDL_SetError("Unable to close joystick, hwdata is NULL.");
+    }
 #ifdef SDL_JOYSTICK_XINPUT
     if (joystick->hwdata->bXInputDevice) {
         SDL_XINPUT_JoystickClose(joystick);
