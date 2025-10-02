@@ -292,7 +292,8 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  *
  * With the SDL GPU renderer (since SDL 3.4.0):
  *
- * - `SDL_PROP_RENDERER_CREATE_GPU_DEVICE_POINTER`: the device to use with the renderer, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_DEVICE_POINTER`: the device to use with the
+ *   renderer, optional.
  * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN`: the app is able to
  *   provide SPIR-V shaders to SDL_GPURenderState, optional.
  * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN`: the app is able to
@@ -350,16 +351,26 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_
 /**
  * Create a 2D GPU rendering context.
  *
- * The GPU device to use is passed in as a parameter. If this is NULL, then a device will be created normally and can be retrieved using SDL_GetGPURendererDevice().
+ * The GPU device to use is passed in as a parameter. If this is NULL, then a
+ * device will be created normally and can be retrieved using
+ * SDL_GetGPURendererDevice().
  *
- * The window to use is passed in as a parameter. If this is NULL, then this will become an offscreen renderer. In that case, you should call SDL_SetRenderTarget() to setup rendering to a texture, and then call SDL_RenderPresent() normally to complete drawing a frame.
+ * The window to use is passed in as a parameter. If this is NULL, then this
+ * will become an offscreen renderer. In that case, you should call
+ * SDL_SetRenderTarget() to setup rendering to a texture, and then call
+ * SDL_RenderPresent() normally to complete drawing a frame.
  *
- * \param device the GPU device to use with the renderer, or NULL to create a device.
- * \param window the window where rendering is displayed, or NULL to create an offscreen renderer.
+ * \param device the GPU device to use with the renderer, or NULL to create a
+ *               device.
+ * \param window the window where rendering is displayed, or NULL to create an
+ *               offscreen renderer.
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety If this function is called with a valid GPU device, it should be called on the thread that created the device. If this function is called with a valid window, it should be called on the thread that created the window.
+ * \threadsafety If this function is called with a valid GPU device, it should
+ *               be called on the thread that created the device. If this
+ *               function is called with a valid window, it should be called
+ *               on the thread that created the window.
  *
  * \since This function is available since SDL 3.4.0.
  *
@@ -375,7 +386,8 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateGPURenderer(SDL_GPUDevice *
  * Return the GPU device used by a renderer.
  *
  * \param renderer the rendering context.
- * \returns the GPU device used by the renderer, or NULL if the renderer is not a GPU renderer; call SDL_GetError() for more information.
+ * \returns the GPU device used by the renderer, or NULL if the renderer is
+ *          not a GPU renderer; call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
