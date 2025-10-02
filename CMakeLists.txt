@@ -1490,7 +1490,7 @@ if(ANDROID)
     endif()
   endif()
   if(TARGET SDL3-static)
-    target_link_options(SDL3-static PRIVATE -Wl,--version-script=${CMAKE_CURRENT_LIST_DIR}/../android-project/android.export.sym)
+    target_link_options(SDL3-static INTERFACE "-Wl,-u,JNI_OnLoad")
   endif()
 
 elseif(EMSCRIPTEN)
