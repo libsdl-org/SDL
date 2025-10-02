@@ -1614,6 +1614,11 @@ if(ANDROID)
       endif()
     endif()
   endif()
+  if(TARGET SDL3-shared)
+    target_link_options(SDL3-shared PRIVATE -Wl,--version-script=${CMAKE_CURRENT_LIST_DIR}/../android-project/android.export.sym)
+  elseif(TARGET SDL3-static)
+    target_link_options(SDL3-static PRIVATE -Wl,--version-script=${CMAKE_CURRENT_LIST_DIR}/../android-project/android.export.sym)
+  endif()
 
 elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
