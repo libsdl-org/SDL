@@ -760,9 +760,9 @@ extern "C" {
  * generated as the browser window is resized, as that will adjust the canvas
  * size as well. The canvas will cover anything else on the page, including
  * any controls provided by Emscripten in its generated HTML file. Often times
- * this is desirable for a browser-based game, but it means several things that
- * we expect of an SDL window on other platforms might not work as expected,
- * such as minimum window sizes and aspect ratios.
+ * this is desirable for a browser-based game, but it means several things
+ * that we expect of an SDL window on other platforms might not work as
+ * expected, such as minimum window sizes and aspect ratios.
  *
  * This hint overrides SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN
  * properties when creating an SDL window.
