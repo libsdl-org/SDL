@@ -634,6 +634,7 @@ static void WINDOWS_JoystickClose(SDL_Joystick *joystick)
 {
     if (!joystick->hwdata) {
         SDL_SetError("Unable to close joystick, hwdata is NULL.");
+        return;
     }
 #ifdef SDL_JOYSTICK_XINPUT
     if (joystick->hwdata->bXInputDevice) {
