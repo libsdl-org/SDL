@@ -226,6 +226,8 @@ typedef Uint64 SDL_WindowFlags;
  * SDL_WINDOWPOS_UNDEFINED or SDL_WINDOWPOS_UNDEFINED_DISPLAY.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
 
@@ -238,6 +240,8 @@ typedef Uint64 SDL_WindowFlags;
  * \param X the SDL_DisplayID of the display to use.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
 
@@ -247,6 +251,8 @@ typedef Uint64 SDL_WindowFlags;
  * This always uses the primary display.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_UNDEFINED         SDL_WINDOWPOS_UNDEFINED_DISPLAY(0)
 
@@ -256,6 +262,8 @@ typedef Uint64 SDL_WindowFlags;
  * \param X the window position value.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_ISUNDEFINED(X)    (((X)&0xFFFF0000) == SDL_WINDOWPOS_UNDEFINED_MASK)
 
@@ -266,6 +274,8 @@ typedef Uint64 SDL_WindowFlags;
  * SDL_WINDOWPOS_CENTERED or SDL_WINDOWPOS_CENTERED_DISPLAY.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_CENTERED_MASK    0x2FFF0000u
 
@@ -278,6 +288,8 @@ typedef Uint64 SDL_WindowFlags;
  * \param X the SDL_DisplayID of the display to use.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_CENTERED_DISPLAY(X)  (SDL_WINDOWPOS_CENTERED_MASK|(X))
 
@@ -287,6 +299,8 @@ typedef Uint64 SDL_WindowFlags;
  * This always uses the primary display.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_CENTERED         SDL_WINDOWPOS_CENTERED_DISPLAY(0)
 
@@ -296,6 +310,8 @@ typedef Uint64 SDL_WindowFlags;
  * \param X the window position value.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetWindowPosition
  */
 #define SDL_WINDOWPOS_ISCENTERED(X)    \
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK)
