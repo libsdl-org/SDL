@@ -3164,7 +3164,7 @@ static void VULKAN_INTERNAL_DestroySampler(
     SDL_free(vulkanSampler);
 }
 
-static void VULKAN_INTERNAL_DestroySwapchain(
+static void VULKAN_INTERNAL_DestroySwapchainImage(
     VulkanRenderer *renderer,
     WindowData *windowData)
 {
@@ -3190,22 +3190,6 @@ static void VULKAN_INTERNAL_DestroySwapchain(
     SDL_free(windowData->textureContainers);
     windowData->textureContainers = NULL;
 
-    if (windowData->swapchain) {
-        renderer->vkDestroySwapchainKHR(
-            renderer->logicalDevice,
-            windowData->swapchain,
-            NULL);
-        windowData->swapchain = VK_NULL_HANDLE;
-    }
-
-    if (windowData->surface) {
-        renderer->vkDestroySurfaceKHR(
-            renderer->instance,
-            windowData->surface,
-            NULL);
-        windowData->surface = VK_NULL_HANDLE;
-    }
-
     for (i = 0; i < MAX_FRAMES_IN_FLIGHT; i += 1) {
         if (windowData->imageAvailableSemaphore[i]) {
             renderer->vkDestroySemaphore(
@@ -3228,6 +3212,33 @@ static void VULKAN_INTERNAL_DestroySwapchain(
     windowData->renderFinishedSemaphore = NULL;
 
     windowData->imageCount = 0;
+}
+
+static void VULKAN_INTERNAL_DestroySwapchain(
+    VulkanRenderer *renderer,
+    WindowData *windowData)
+{
+    if (windowData == NULL) {
+        return;
+    }
+
+    VULKAN_INTERNAL_DestroySwapchainImage(renderer, windowData);
+
+    if (windowData->swapchain) {
+        renderer->vkDestroySwapchainKHR(
+            renderer->logicalDevice,
+            windowData->swapchain,
+            NULL);
+        windowData->swapchain = VK_NULL_HANDLE;
+    }
+
+    if (windowData->surface) {
+        renderer->vkDestroySurfaceKHR(
+            renderer->instance,
+            windowData->surface,
+            NULL);
+        windowData->surface = VK_NULL_HANDLE;
+    }
 }
 
 static void VULKAN_INTERNAL_DestroyGraphicsPipelineResourceLayout(
@@ -4484,17 +4495,20 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
 
     windowData->frameCounter = 0;
 
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    SDL_assert(_this && _this->Vulkan_CreateSurface);
+    // We dont have to create surface again on recreate swapchain
+    if (windowData->surface == VK_NULL_HANDLE) {
+        SDL_VideoDevice *_this = SDL_GetVideoDevice();
+        SDL_assert(_this && _this->Vulkan_CreateSurface);
 
-    // Each swapchain must have its own surface.
-    if (!_this->Vulkan_CreateSurface(
-            _this,
-            windowData->window,
-            renderer->instance,
-            NULL, // FIXME: VAllocationCallbacks
-            &windowData->surface)) {
-        return false;
+        // Each swapchain must have its own surface.
+        if (!_this->Vulkan_CreateSurface(
+                _this,
+                windowData->window,
+                renderer->instance,
+                NULL, // FIXME: VAllocationCallbacks
+                &windowData->surface)) {
+            return false;
+        }
     }
     SDL_assert(windowData->surface);
 
@@ -4663,13 +4677,16 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     swapchainCreateInfo.compositeAlpha = compositeAlphaFlag;
     swapchainCreateInfo.presentMode = SDLToVK_PresentMode[windowData->presentMode];
     swapchainCreateInfo.clipped = VK_TRUE;
-    swapchainCreateInfo.oldSwapchain = VK_NULL_HANDLE;
-
+    swapchainCreateInfo.oldSwapchain = windowData->swapchain;
     vulkanResult = renderer->vkCreateSwapchainKHR(
         renderer->logicalDevice,
         &swapchainCreateInfo,
         NULL,
         &windowData->swapchain);
+
+    if (swapchainCreateInfo.oldSwapchain != VK_NULL_HANDLE) {
+        renderer->vkDestroySwapchainKHR(renderer->logicalDevice, swapchainCreateInfo.oldSwapchain, NULL);
+    }
 
     if (swapchainSupportDetails.formatsLength > 0) {
         SDL_free(swapchainSupportDetails.formats);
@@ -4684,6 +4701,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
             windowData->surface,
             NULL);
         windowData->surface = VK_NULL_HANDLE;
+        windowData->swapchain = VK_NULL_HANDLE;
         CHECK_VULKAN_ERROR_AND_RETURN(vulkanResult, vkCreateSwapchainKHR, false);
     }
 
@@ -9890,7 +9908,7 @@ static Uint32 VULKAN_INTERNAL_RecreateSwapchain(
         }
     }
 
-    VULKAN_INTERNAL_DestroySwapchain(renderer, windowData);
+    VULKAN_INTERNAL_DestroySwapchainImage(renderer, windowData);
     return VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
 }
 
