@@ -168,6 +168,52 @@ static SDL_vidpid_list SDL_ignored_gamepads = {
     false
 };
 
+/*
+    List of words in gamepad names that indicate that the gamepad should not be detected.
+    See also `initial_blacklist_devices` in SDL_joystick.c
+*/
+
+enum SDL_GamepadBlacklistWordsPosition {
+    GAMEPAD_BLACKLIST_BEGIN,
+    GAMEPAD_BLACKLIST_END,
+    GAMEPAD_BLACKLIST_ANYWHERE,
+};
+
+struct SDL_GamepadBlacklistWords {
+    const char* str;
+    enum SDL_GamepadBlacklistWordsPosition pos;
+};
+
+static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
+#ifdef SDL_PLATFORM_LINUX
+    {" Motion Sensors", GAMEPAD_BLACKLIST_END}, // Don't treat the PS3 and PS4 motion controls as a separate gamepad
+    {" IMU",            GAMEPAD_BLACKLIST_END}, // Don't treat the Nintendo IMU as a separate gamepad
+
+    // Don't treat the Wii extension controls as a separate gamepad
+    {" Accelerometer",  GAMEPAD_BLACKLIST_END},
+    {" IR",             GAMEPAD_BLACKLIST_END},
+    {" Motion Plus",    GAMEPAD_BLACKLIST_END},
+    {" Nunchuk",        GAMEPAD_BLACKLIST_END},
+#endif
+
+    // The Google Pixel fingerprint sensor, as well as other fingerprint sensors, reports itself as a joystick
+    {"uinput-",         GAMEPAD_BLACKLIST_BEGIN},
+
+    {" TouchPad",       GAMEPAD_BLACKLIST_END}, // "SynPS/2 Synaptics TouchPad"
+    {" Touchpad",       GAMEPAD_BLACKLIST_END}, // "Sony Interactive Entertainment DualSense Wireless Controller Touchpad"
+    {"Synaptics ",      GAMEPAD_BLACKLIST_BEGIN}, // "Synaptics TM2768-001"
+    {"Trackpad",        GAMEPAD_BLACKLIST_ANYWHERE},
+    {"Clickpad",        GAMEPAD_BLACKLIST_ANYWHERE},
+    // "PG-90215 Keyboard", "Usb Keyboard Usb Keyboard Consumer Control", "Framework Laptop 16 Keyboard Module - ISO System Control"
+    {" Keyboard",       GAMEPAD_BLACKLIST_ANYWHERE},
+    {" Laptop ",        GAMEPAD_BLACKLIST_ANYWHERE}, // "Framework Laptop 16 Numpad Module System Control"
+    {"Mouse ",          GAMEPAD_BLACKLIST_BEGIN}, // "Mouse passthrough"
+    {" Pen",            GAMEPAD_BLACKLIST_END}, // "Wacom One by Wacom S Pen"
+    {" Finger",         GAMEPAD_BLACKLIST_END}, // "Wacom HID 495F Finger"
+    {" LED ",           GAMEPAD_BLACKLIST_ANYWHERE}, // "ASRock LED Controller"
+    {" Thelio ",        GAMEPAD_BLACKLIST_ANYWHERE}, // "System76 Thelio Io 2"
+};
+
 static GamepadMapping_t *SDL_PrivateAddMappingForGUID(SDL_GUID jGUID, const char *mappingString, bool *existing, SDL_GamepadMappingPriority priority);
 static void SDL_PrivateLoadButtonMapping(SDL_Gamepad *gamepad, GamepadMapping_t *pGamepadMapping);
 static GamepadMapping_t *SDL_PrivateGetGamepadMapping(SDL_JoystickID instance_id, bool create_mapping);
@@ -3144,27 +3190,29 @@ bool SDL_IsGamepad(SDL_JoystickID instance_id)
  */
 bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
-#ifdef SDL_PLATFORM_LINUX
-    if (SDL_endswith(name, " Motion Sensors")) {
-        // Don't treat the PS3 and PS4 motion controls as a separate gamepad
-        return true;
-    }
-    if (SDL_strncmp(name, "Nintendo ", 9) == 0 && SDL_strstr(name, " IMU") != NULL) {
-        // Don't treat the Nintendo IMU as a separate gamepad
-        return true;
-    }
-    if (SDL_endswith(name, " Accelerometer") ||
-        SDL_endswith(name, " IR") ||
-        SDL_endswith(name, " Motion Plus") ||
-        SDL_endswith(name, " Nunchuk")) {
-        // Don't treat the Wii extension controls as a separate gamepad
-        return true;
-    }
-#endif
+    int i;
+    for (i = 0; i < SDL_arraysize(SDL_gamepad_blacklist_words); i++) {
+        const struct SDL_GamepadBlacklistWords *blacklist_word = &SDL_gamepad_blacklist_words[i];
 
-    if (name && SDL_startswith(name, "uinput-")) {
-        // The Google Pixel fingerprint sensor, as well as other fingerprint sensors, reports itself as a joystick
-        return true;
+        switch (blacklist_word->pos) {
+            case GAMEPAD_BLACKLIST_BEGIN:
+                if (SDL_startswith(name, blacklist_word->str)) {
+                    return true;
+                }
+                break;
+            
+            case GAMEPAD_BLACKLIST_END:
+                if (SDL_endswith(name, blacklist_word->str)) {
+                    return true;
+                }
+                break;
+
+            case GAMEPAD_BLACKLIST_ANYWHERE:
+                if (SDL_strstr(name, blacklist_word->str) != NULL) {
+                    return true;
+                }
+                break;
+        }
     }
 
 #ifdef SDL_PLATFORM_WIN32
