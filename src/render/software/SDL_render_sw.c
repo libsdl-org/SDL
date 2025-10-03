@@ -881,8 +881,8 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             if (drawstate.viewport &&
                 (drawstate.viewport->x || drawstate.viewport->y) &&
                 (copydata->scale_x > 0.0f && copydata->scale_y > 0.0f)) {
-                copydata->dstrect.x += drawstate.viewport->x / copydata->scale_x;
-                copydata->dstrect.y += drawstate.viewport->y / copydata->scale_y;
+                copydata->dstrect.x += (int)(drawstate.viewport->x / copydata->scale_x);
+                copydata->dstrect.y += (int)(drawstate.viewport->y / copydata->scale_y);
             }
 
             SW_RenderCopyEx(renderer, surface, cmd->data.draw.texture, &copydata->srcrect,
