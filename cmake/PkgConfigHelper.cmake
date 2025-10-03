@@ -1,16 +1,21 @@
 # Helper for Find modules
 
 function(get_flags_from_pkg_config _library _pc_prefix _out_prefix)
-  if("${_library}" MATCHES "${CMAKE_STATIC_LIBRARY_SUFFIX}$")
-    set(_cflags ${_pc_prefix}_STATIC_CFLAGS_OTHER)
-    set(_link_libraries ${_pc_prefix}_STATIC_LIBRARIES)
-    set(_link_options ${_pc_prefix}_STATIC_LDFLAGS_OTHER)
-    set(_library_dirs ${_pc_prefix}_STATIC_LIBRARY_DIRS)
+  if(MINGW)
+    set(re_shared_suffix ".dll.a$")
   else()
+    set(re_shared_suffix "${CMAKE_SHARED_LIBRARY_SUFFIX}$")
+  endif()
+  if("${_library}" MATCHES "${re_shared_suffix}")
     set(_cflags ${_pc_prefix}_CFLAGS_OTHER)
     set(_link_libraries ${_pc_prefix}_LIBRARIES)
     set(_link_options ${_pc_prefix}_LDFLAGS_OTHER)
     set(_library_dirs ${_pc_prefix}_LIBRARY_DIRS)
+  else()
+    set(_cflags ${_pc_prefix}_STATIC_CFLAGS_OTHER)
+    set(_link_libraries ${_pc_prefix}_STATIC_LIBRARIES)
+    set(_link_options ${_pc_prefix}_STATIC_LDFLAGS_OTHER)
+    set(_library_dirs ${_pc_prefix}_STATIC_LIBRARY_DIRS)
   endif()
 
   # The *_LIBRARIES lists always start with the library itself
