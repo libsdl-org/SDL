@@ -391,7 +391,6 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     data->last_pointer_update = (LPARAM)-1;
     data->videodata = videodata;
     data->initializing = true;
-    data->last_displayID = window->last_displayID;
     data->hint_erase_background_mode = GetEraseBackgroundModeHint();
 
 

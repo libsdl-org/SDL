@@ -1150,7 +1150,7 @@ void SDL_SetDisplayContentScale(SDL_VideoDisplay *display, float scale)
 
         // Check the windows on this display
         for (window = _this->windows; window; window = window->next) {
-            if (display->id == window->last_displayID) {
+            if (display->id == window->displayID) {
                 SDL_CheckWindowDisplayScaleChanged(window);
             }
         }
@@ -1800,7 +1800,7 @@ static void SDL_CheckWindowDisplayChanged(SDL_Window *window)
 
     SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
 
-    if (displayID != window->last_displayID) {
+    if (displayID != window->displayID) {
         int i, display_index;
 
         // Sanity check our fullscreen windows
@@ -1862,7 +1862,7 @@ static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
         display_scale = _this->GetWindowContentScale(_this, window);
     } else {
         const float pixel_density = SDL_GetWindowPixelDensity(window);
-        const float content_scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindowPosition(window));
+        const float content_scale = SDL_GetDisplayContentScale(window->displayID);
 
         display_scale = pixel_density * content_scale;
     }
@@ -2524,7 +2524,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     window->opacity = 1.0f;
     window->next = _this->windows;
     window->is_destroying = false;
-    window->last_displayID = SDL_GetDisplayForWindow(window);
+    window->displayID = SDL_GetDisplayForWindow(window);
     window->external_graphics_context = external_graphics_context;
     window->constrain_popup = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN, true);
 
