@@ -924,9 +924,11 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             PrepTextureForCopy(cmd, &drawstate);
 
             // Apply viewport
-            if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
-                copydata->dstrect.x += drawstate.viewport->x;
-                copydata->dstrect.y += drawstate.viewport->y;
+            if (drawstate.viewport &&
+                (drawstate.viewport->x || drawstate.viewport->y) &&
+                (copydata->scale_x > 0.0f && copydata->scale_y > 0.0f)) {
+                copydata->dstrect.x += drawstate.viewport->x / copydata->scale_x;
+                copydata->dstrect.y += drawstate.viewport->y / copydata->scale_y;
             }
 
             SW_RenderCopyEx(renderer, surface, cmd->data.draw.texture, &copydata->srcrect,
