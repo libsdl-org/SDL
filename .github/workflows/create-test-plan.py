@@ -113,6 +113,7 @@ JOB_SPECS = {
     "msvc-arm64": JobSpec(name="Windows (MSVC, ARM64)",                     os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-arm64",           msvc_arch=MsvcArch.Arm64, ),
     "msvc-gdk-x64": JobSpec(name="GDK (MSVC, x64)",                         os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-GDK",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC-GDK/SDL.sln", gdk=True, no_cmake=True, ),
     "ubuntu-22.04": JobSpec(name="Ubuntu 22.04",                            os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04", ),
+    "ubuntu-latest": JobSpec(name="Ubuntu (latest)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-ubuntu-latest", ),
     "ubuntu-24.04-arm64": JobSpec(name="Ubuntu 24.04 (ARM64)",              os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu24.04-arm64", ),
     "steamrt3": JobSpec(name="Steam Linux Runtime 3.0 (x86_64)",            os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-steamrt3",           container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest", ),
     "steamrt3-arm64": JobSpec(name="Steam Linux Runtime 3.0 (arm64)",       os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-steamrt3-arm64",     container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk/arm64:latest", ),
@@ -457,10 +458,18 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     "libibus-1.0-dev",
                     "libudev-dev",
                     "fcitx-libs-dev",
+                    # testffmpeg
+                    "libavcodec-dev",
+                    "libavfilter-dev",
+                    "libavutil-dev",
+                    "libswresample-dev",
+                    "libswscale-dev",
                 ))
-                match = re.match(r"ubuntu-(?P<year>[0-9]+)\.(?P<month>[0-9]+).*", spec.os.value)
-                ubuntu_year, ubuntu_month = [int(match["year"]), int(match["month"])]
-                if ubuntu_year >= 22:
+                match = re.match(r"ubuntu-(?P<year>[0-9]+)\.(?P<month>[0-9]+|latest).*", spec.os.value)
+                ubuntu_ge_22 = True
+                if match and match["month"] != "latest":
+                    ubuntu_year, ubuntu_month = [int(match["year"]), int(match["month"])]
+                    ubuntu_ge_22 = ubuntu_year >= 22
                     job.apt_packages.extend(("libpipewire-0.3-dev", "libdecor-0-dev"))
                 job.apt_packages.extend((
                     "libunwind-dev",  # For SDL_test memory tracking
@@ -517,6 +526,10 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     "-DCMAKE_OSX_ARCHITECTURES=arm64",
                     "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.13",
                     "-DCLANG_TIDY_BINARY=$(brew --prefix llvm)/bin/clang-tidy",
+                ))
+                job.brew_packages.extend((
+                    # Brew provides a single architecture (aarch64), so it's not usable for fat libraries
+                    "ffmpeg",  # testffmpeg
                 ))
                 job.shared_lib = SharedLibType.DYLIB
                 job.static_lib = StaticLibType.A
