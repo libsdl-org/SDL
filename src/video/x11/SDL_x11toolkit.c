@@ -358,6 +358,22 @@ static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
 
 static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
 {
+    const char *custom_font;
+    
+    custom_font = SDL_GetHint(SDL_HINT_VIDEO_X11_TOOLKIT_FONT);
+    if (custom_font) {
+        window->utf8 = false;
+        window->font_set = NULL;
+        window->font_struct = X11_XLoadQueryFont(window->display, custom_font);
+        if (window->font_struct) {
+			return;
+		}	
+    }
+
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_TOOLKIT_FONT_USE_LATIN, false)) {
+        goto load_font_traditional;
+    }
+
 #ifdef X_HAVE_UTF8_STRING
     window->utf8 = true;
     window->font_set = NULL;
@@ -406,6 +422,9 @@ static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
         char *font;
 
         load_font_traditional:
+#ifdef X_HAVE_UTF8_STRING
+        window->font_set = NULL;
+#endif
         window->utf8 = false;    
         SDL_asprintf(&font, g_ToolkitFontLatin1, G_TOOLKITFONT_SIZE * window->iscale);
         window->font_struct = X11_XLoadQueryFont(window->display, font);
