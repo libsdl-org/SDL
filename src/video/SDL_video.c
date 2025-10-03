@@ -1801,6 +1801,32 @@ static void SDL_CheckWindowDisplayChanged(SDL_Window *window)
     SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
 
     if (displayID != window->displayID) {
+        // See if we are fully committed to the new display
+        // 80% is about the right value, tested with 350% scale on the left monitor and 100% scale on the right
+        SDL_Rect old_bounds, new_bounds;
+        SDL_Rect window_rect;
+        SDL_Rect old_overlap, new_overlap;
+
+        if (SDL_GetDisplayBounds(window->displayID, &old_bounds) &&
+            SDL_GetDisplayBounds(displayID, &new_bounds)) {
+            window_rect.x = window->x;
+            window_rect.y = window->y;
+            window_rect.w = window->w;
+            window_rect.h = window->h;
+
+            if (SDL_GetRectIntersection(&old_bounds, &window_rect, &old_overlap) &&
+                SDL_GetRectIntersection(&new_bounds, &window_rect, &new_overlap)) {
+                int old_area = old_overlap.w * old_overlap.h;
+                int new_area = new_overlap.w * new_overlap.h;
+                float new_overlap_ratio = (new_area / ((float)old_area + new_area));
+                if (new_overlap_ratio < 0.80) {
+                    return;
+                }
+            }
+        }
+    }
+
+    if (displayID != window->displayID) {
         int i, display_index;
 
         // Sanity check our fullscreen windows
