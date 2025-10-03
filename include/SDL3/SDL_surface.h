@@ -86,7 +86,7 @@ typedef enum SDL_ScaleMode
     SDL_SCALEMODE_INVALID = -1,
     SDL_SCALEMODE_NEAREST,  /**< nearest pixel sampling */
     SDL_SCALEMODE_LINEAR,   /**< linear filtering */
-    SDL_SCALEMODE_PIXELART  /**< nearest pixel sampling with improved scaling for pixel art */
+    SDL_SCALEMODE_PIXELART  /**< nearest pixel sampling with improved scaling for pixel art, available since SDL 3.4.0 */
 } SDL_ScaleMode;
 
 /**
@@ -326,6 +326,9 @@ extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreateSurfacePalette(SDL_Surface *
 
 /**
  * Set the palette used by a surface.
+ *
+ * Setting the palette keeps an internal reference to the palette, which can
+ * be safely destroyed afterwards.
  *
  * A single palette can be shared with many surfaces.
  *

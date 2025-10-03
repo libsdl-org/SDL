@@ -30,6 +30,7 @@ jobs:
           install: >-
             ${{ matrix.platform.msys2-env }}-cc
             ${{ matrix.platform.msys2-env }}-cmake
+            ${{ matrix.platform.msys2-env }}-ffmpeg
             ${{ matrix.platform.msys2-env }}-ninja
             ${{ (!matrix.platform.msys2-no-perl && format('{0}-perl', matrix.platform.msys2-env)) || '' }}
             ${{ matrix.platform.msys2-env }}-pkg-config

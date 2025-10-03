@@ -13,6 +13,8 @@ using namespace metal;
 #define TEXTURETYPE_NONE        0
 #define TEXTURETYPE_RGB         1
 #define TEXTURETYPE_RGB_PIXELART 2
+#define TEXTURETYPE_PALETTE     1
+#define TEXTURETYPE_PALETTE_PIXELART 2
 #define TEXTURETYPE_NV12        3
 #define TEXTURETYPE_NV21        4
 #define TEXTURETYPE_YUV         5
@@ -108,6 +110,21 @@ float3 ApplyTonemap(float3 v, float input_type, float tonemap_method, float tone
         }
     }
     return v;
+}
+
+float2 GetPixelArtUV(float2 texcoord, float4 texel_size)
+{
+    // box filter size in texel units
+    float2 boxSize = clamp(fwidth(texcoord) * texel_size.zw, 1e-5, 1);
+
+    // scale uv by texture size to get texel coordinate
+    float2 tx = texcoord * texel_size.zw - 0.5 * boxSize;
+
+    // compute offset for pixel-sized box filter
+    float2 txOffset = smoothstep(1 - boxSize, 1, fract(tx));
+
+    // compute bilinear sample uv coordinates
+    return (floor(tx) + 0.5 + txOffset) * texel_size.xy;
 }
 
 float4 GetOutputColorSimple(float4 rgba, float color_scale)
@@ -244,6 +261,29 @@ vertex CopyVertexOutput SDL_Copy_vertex(CopyVertexInput in [[stage_in]],
     return v;
 }
 
+fragment float4 SDL_Palette_fragment(CopyVertexOutput vert [[stage_in]],
+                                     constant ShaderConstants &c [[buffer(0)]],
+                                     texture2d<float> tex0 [[texture(0)]],
+                                     texture2d<float> tex1 [[texture(1)]],
+                                     sampler s0 [[sampler(0)]],
+                                     sampler s1 [[sampler(1)]])
+{
+    float4 rgba;
+
+    if (c.texture_type == TEXTURETYPE_PALETTE) {
+        float index = tex0.sample(s0, vert.texcoord).r * 255;
+        rgba = tex1.sample(s1, float2((index + 0.5) / 256, 0.5));
+    } else if (c.texture_type == TEXTURETYPE_PALETTE_PIXELART) {
+        float2 uv = GetPixelArtUV(vert.texcoord, c.texel_size);
+        float index = tex0.sample(s0, uv, gradient2d(dfdx(vert.texcoord), dfdy(vert.texcoord))).r * 255;
+        rgba = tex1.sample(s1, float2((index + 0.5) / 256, 0.5));
+    } else {
+        // Unexpected texture type, use magenta error color
+        rgba = float4(1.0, 0.0, 1.0, 1.0);
+    }
+    return GetOutputColor(rgba, c) * vert.color;
+}
+
 fragment float4 SDL_Copy_fragment(CopyVertexOutput vert [[stage_in]],
                                   constant ShaderConstants &c [[buffer(0)]],
                                   texture2d<float> tex [[texture(0)]],
@@ -254,19 +294,7 @@ fragment float4 SDL_Copy_fragment(CopyVertexOutput vert [[stage_in]],
     if (c.texture_type == TEXTURETYPE_RGB) {
         rgba = tex.sample(s, vert.texcoord);
     } else if (c.texture_type == TEXTURETYPE_RGB_PIXELART) {
-        // box filter size in texel units
-        float2 boxSize = clamp(fwidth(vert.texcoord) * c.texel_size.zw, 1e-5, 1);
-
-        // scale uv by texture size to get texel coordinate
-        float2 tx = vert.texcoord * c.texel_size.zw - 0.5 * boxSize;
-
-        // compute offset for pixel-sized box filter
-        float2 txOffset = smoothstep(1 - boxSize, 1, fract(tx));
-
-        // compute bilinear sample uv coordinates
-        float2 uv = (floor(tx) + 0.5 + txOffset) * c.texel_size.xy;
-
-        // sample the texture
+        float2 uv = GetPixelArtUV(vert.texcoord, c.texel_size);
         rgba = tex.sample(s, uv, gradient2d(dfdx(vert.texcoord), dfdy(vert.texcoord)));
     } else {
         // Unexpected texture type, use magenta error color

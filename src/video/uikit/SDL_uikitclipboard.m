@@ -33,7 +33,14 @@ bool UIKit_SetClipboardText(SDL_VideoDevice *_this, const char *text)
     return SDL_SetError("The clipboard is not available on tvOS");
 #else
     @autoreleasepool {
-        [UIPasteboard generalPasteboard].string = @(text);
+        SDL_UIKitVideoData *data = (__bridge SDL_UIKitVideoData *)_this->internal;
+        data.setting_clipboard = true;
+        if (text && *text) {
+            [UIPasteboard generalPasteboard].string = @(text);
+        } else {
+            [UIPasteboard generalPasteboard].string = nil;
+        }
+        data.setting_clipboard = false;
         return true;
     }
 #endif
@@ -61,7 +68,7 @@ bool UIKit_HasClipboardText(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
 #ifndef SDL_PLATFORM_TVOS
-        if ([UIPasteboard generalPasteboard].string != nil) {
+        if ([UIPasteboard generalPasteboard].hasStrings) {
             return true;
         }
 #endif
@@ -80,11 +87,14 @@ void UIKit_InitClipboard(SDL_VideoDevice *_this)
                                           object:nil
                                            queue:nil
                                       usingBlock:^(NSNotification *note) {
-                                        // TODO: compute mime types
-                                        SDL_SendClipboardUpdate(false, NULL, 0);
+                                        if (!data.setting_clipboard) {
+                                            // TODO: compute mime types
+                                            SDL_SendClipboardUpdate(false, NULL, 0);
+                                        }
                                       }];
 
         data.pasteboardObserver = observer;
+        data.setting_clipboard = false;
     }
 #endif
 }

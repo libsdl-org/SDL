@@ -141,7 +141,7 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
     return style;
 }
 
-#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 static ITaskbarList3 *GetTaskbarList(SDL_Window *window)
 {
     const SDL_WindowData *data = window->internal;
@@ -2158,7 +2158,7 @@ bool WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperat
 
 bool WIN_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window *window)
 {
-#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_WindowData *data = window->internal;
     if (!data->taskbar_button_created) {
         return true;

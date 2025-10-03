@@ -29,6 +29,7 @@
 #include "../audio/SDL_audio_c.h"
 #include "../camera/SDL_camera_c.h"
 #include "../timer/SDL_timer_c.h"
+#include "../core/linux/SDL_udev.h"
 #ifndef SDL_JOYSTICK_DISABLED
 #include "../joystick/SDL_joystick_c.h"
 #endif
@@ -532,7 +533,6 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_RESIZED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_METAL_VIEW_RESIZED);
-        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_SAFE_AREA_CHANGED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_MINIMIZED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_MAXIMIZED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_RESTORED);
@@ -545,6 +545,7 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_ICCPROF_CHANGED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DISPLAY_CHANGED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED);
+        SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_SAFE_AREA_CHANGED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_OCCLUDED);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_ENTER_FULLSCREEN);
         SDL_WINDOWEVENT_CASE(SDL_EVENT_WINDOW_LEAVE_FULLSCREEN);
@@ -1131,7 +1132,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
             return -1;
         }
         if (action == SDL_ADDEVENT) {
-            if (!events) {
+            CHECK_PARAM(!events) {
                 SDL_UnlockMutex(SDL_EventQ.lock);
                 return SDL_InvalidParamError("events");
             }
@@ -1423,6 +1424,10 @@ bool SDL_RunOnMainThread(SDL_MainThreadCallback callback, void *userdata, bool w
 
 void SDL_PumpEventMaintenance(void)
 {
+#ifdef SDL_USE_LIBUDEV
+    SDL_UDEV_Poll();
+#endif
+
 #ifndef SDL_AUDIO_DISABLED
     SDL_UpdateAudio();
 #endif
@@ -1671,6 +1676,8 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
 
 #ifdef SDL_PLATFORM_ANDROID
     for (;;) {
+        SDL_PumpEventsInternal(true);
+
         if (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) > 0) {
             return true;
         }

@@ -295,11 +295,6 @@ void SDLTest_TrackAllocations(void)
     SDLTest_Crc32Init(&s_crc32_context);
 
     s_previous_allocations = SDL_GetNumAllocations();
-    if (s_previous_allocations < 0) {
-        SDL_Log("SDL was built without allocation count support, disabling free() validation");
-    } else if (s_previous_allocations != 0) {
-        SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
-    }
 #ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
     do {
         /* Don't use SDL_GetHint: SDL_malloc is off limits. */
@@ -346,6 +341,12 @@ dbghelp_failed:
                            SDLTest_TrackedCalloc,
                            SDLTest_TrackedRealloc,
                            SDLTest_TrackedFree);
+
+    if (s_previous_allocations < 0) {
+        SDL_Log("SDL was built without allocation count support, disabling free() validation");
+    } else if (s_previous_allocations != 0) {
+        SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
+    }
 }
 
 void SDLTest_RandFillAllocations(void)

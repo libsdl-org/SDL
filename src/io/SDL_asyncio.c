@@ -42,10 +42,11 @@ static const char *AsyncFileModeValid(const char *mode)
 
 SDL_AsyncIO *SDL_AsyncIOFromFile(const char *file, const char *mode)
 {
-    if (!file) {
+    CHECK_PARAM(!file) {
         SDL_InvalidParamError("file");
         return NULL;
-    } else if (!mode) {
+    }
+    CHECK_PARAM(!mode) {
         SDL_InvalidParamError("mode");
         return NULL;
     }
@@ -78,7 +79,7 @@ SDL_AsyncIO *SDL_AsyncIOFromFile(const char *file, const char *mode)
 
 Sint64 SDL_GetAsyncIOSize(SDL_AsyncIO *asyncio)
 {
-    if (!asyncio) {
+    CHECK_PARAM(!asyncio) {
         SDL_InvalidParamError("asyncio");
         return -1;
     }
@@ -87,11 +88,13 @@ Sint64 SDL_GetAsyncIOSize(SDL_AsyncIO *asyncio)
 
 static bool RequestAsyncIO(bool reading, SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 size, SDL_AsyncIOQueue *queue, void *userdata)
 {
-    if (!asyncio) {
+    CHECK_PARAM(!asyncio) {
         return SDL_InvalidParamError("asyncio");
-    } else if (!ptr) {
+    }
+    CHECK_PARAM(!ptr) {
         return SDL_InvalidParamError("ptr");
-    } else if (!queue) {
+    }
+    CHECK_PARAM(!queue) {
         return SDL_InvalidParamError("queue");
     }
 
@@ -143,9 +146,10 @@ bool SDL_WriteAsyncIO(SDL_AsyncIO *asyncio, void *ptr, Uint64 offset, Uint64 siz
 
 bool SDL_CloseAsyncIO(SDL_AsyncIO *asyncio, bool flush, SDL_AsyncIOQueue *queue, void *userdata)
 {
-    if (!asyncio) {
+    CHECK_PARAM(!asyncio) {
         return SDL_InvalidParamError("asyncio");
-    } else if (!queue) {
+    }
+    CHECK_PARAM(!queue) {
         return SDL_InvalidParamError("queue");
     }
 
@@ -298,9 +302,10 @@ void SDL_QuitAsyncIO(void)
 
 bool SDL_LoadFileAsync(const char *file, SDL_AsyncIOQueue *queue, void *userdata)
 {
-    if (!file) {
+    CHECK_PARAM(!file) {
         return SDL_InvalidParamError("file");
-    } else if (!queue) {
+    }
+    CHECK_PARAM(!queue) {
         return SDL_InvalidParamError("queue");
     }
 

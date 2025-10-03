@@ -40,6 +40,8 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
         seat = wl_container_of(video_data->seat_list.next, seat, link);
     }
 
+    video_data->last_incoming_data_offer_seat = seat;
+
     if (seat && seat->data_device) {
         SDL_WaylandDataDevice *data_device = seat->data_device;
 
@@ -118,6 +120,8 @@ bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
     if (!seat && !WAYLAND_wl_list_empty(&video_data->seat_list)) {
         seat = wl_container_of(video_data->seat_list.next, seat, link);
     }
+
+    video_data->last_incoming_primary_selection_seat = seat;
 
     if (seat && seat->primary_selection_device) {
         SDL_WaylandPrimarySelectionDevice *primary_selection_device = seat->primary_selection_device;

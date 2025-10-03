@@ -128,6 +128,11 @@ typedef struct
 typedef struct
 {
     GLuint texture;
+} GL_PaletteData;
+
+typedef struct
+{
+    GLuint texture;
     bool texture_external;
     GLfloat texw;
     GLfloat texh;
@@ -421,6 +426,7 @@ static bool convert_format(Uint32 pixel_format, GLint *internalFormat, GLenum *f
         *format = GL_RGBA;
         *type = GL_UNSIGNED_BYTE; // previously GL_UNSIGNED_INT_8_8_8_8_REV, seeing if this is better in modern times.
         break;
+    case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_NV12:
@@ -477,6 +483,58 @@ static void SetTextureAddressMode(GL_RenderData *data, GLenum textype, SDL_Textu
 {
     data->glTexParameteri(textype, GL_TEXTURE_WRAP_S, TranslateAddressMode(addressModeU));
     data->glTexParameteri(textype, GL_TEXTURE_WRAP_T, TranslateAddressMode(addressModeV));
+}
+
+static bool GL_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    GL_RenderData *data = (GL_RenderData *)renderer->internal;
+    GL_PaletteData *palettedata = (GL_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
+    if (!palettedata) {
+        return false;
+    }
+    palette->internal = palettedata;
+
+    data->drawstate.texture = NULL; // we trash this state.
+
+    const GLenum textype = data->textype;
+    data->glGenTextures(1, &palettedata->texture);
+    data->glBindTexture(textype, palettedata->texture);
+    data->glTexImage2D(textype, 0, GL_RGBA8, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    if (!GL_CheckError("glTexImage2D()", renderer)) {
+        return false;
+    }
+    SetTextureScaleMode(data, textype, SDL_SCALEMODE_NEAREST);
+    SetTextureAddressMode(data, textype, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+    return true;
+}
+
+static bool GL_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
+{
+    GL_RenderData *data = (GL_RenderData *)renderer->internal;
+    GL_PaletteData *palettedata = (GL_PaletteData *)palette->internal;
+
+    GL_ActivateRenderer(renderer);
+
+    data->drawstate.texture = NULL; // we trash this state.
+
+    const GLenum textype = data->textype;
+    data->glBindTexture(textype, palettedata->texture);
+    data->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    data->glPixelStorei(GL_UNPACK_ROW_LENGTH, ncolors);
+    data->glTexSubImage2D(textype, 0, 0, 0, ncolors, 1, GL_RGBA, GL_UNSIGNED_BYTE, colors);
+
+    return GL_CheckError("glTexSubImage2D()", renderer);
+}
+
+static void GL_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    GL_RenderData *data = (GL_RenderData *)renderer->internal;
+    GL_PaletteData *palettedata = (GL_PaletteData *)palette->internal;
+
+    if (palettedata) {
+        data->glDeleteTextures(1, &palettedata->texture);
+        SDL_free(palettedata);
+    }
 }
 
 static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
@@ -671,7 +729,9 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     }
 #endif
 
-    if (texture->format == SDL_PIXELFORMAT_ABGR8888 || texture->format == SDL_PIXELFORMAT_ARGB8888) {
+    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+        data->shader = SHADER_PALETTE;
+    } else if (texture->format == SDL_PIXELFORMAT_ABGR8888 || texture->format == SDL_PIXELFORMAT_ARGB8888) {
         data->shader = SHADER_RGBA;
     } else {
         data->shader = SHADER_RGB;
@@ -1141,6 +1201,10 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 
     if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
         switch (shader) {
+        case SHADER_PALETTE:
+            shader = SHADER_PALETTE_PIXELART;
+            shader_params = texturedata->texel_size;
+            break;
         case SHADER_RGB:
             shader = SHADER_RGB_PIXELART;
             shader_params = texturedata->texel_size;
@@ -1169,6 +1233,11 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
             data->glBindTexture(textype, texturedata->utexture);
         }
 #endif
+        if (texture->palette) {
+            GL_PaletteData *palette = (GL_PaletteData *)texture->palette->internal;
+            data->glActiveTextureARB(GL_TEXTURE1_ARB);
+            data->glBindTexture(textype, palette->texture);
+        }
         if (data->GL_ARB_multitexture_supported) {
             data->glActiveTextureARB(GL_TEXTURE0_ARB);
         }
@@ -1200,6 +1269,14 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
             data->glActiveTextureARB(GL_TEXTURE0);
         }
 #endif
+        if (texture->palette) {
+            data->glActiveTextureARB(GL_TEXTURE1);
+            if (!SetTextureScaleMode(data, textype, SDL_SCALEMODE_NEAREST)) {
+                return false;
+            }
+
+            data->glActiveTextureARB(GL_TEXTURE0);
+        }
         if (!SetTextureScaleMode(data, textype, cmd->data.draw.texture_scale_mode)) {
             return false;
         }
@@ -1225,6 +1302,12 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
             data->glActiveTextureARB(GL_TEXTURE0);
         }
 #endif
+        if (texture->palette) {
+            data->glActiveTextureARB(GL_TEXTURE1);
+            SetTextureAddressMode(data, textype, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+
+            data->glActiveTextureARB(GL_TEXTURE0);
+        }
         SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
 
         texturedata->texture_address_mode_u = cmd->data.draw.texture_address_mode_u;
@@ -1697,6 +1780,9 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
 
     renderer->WindowEvent = GL_WindowEvent;
     renderer->SupportsBlendMode = GL_SupportsBlendMode;
+    renderer->CreatePalette = GL_CreatePalette;
+    renderer->UpdatePalette = GL_UpdatePalette;
+    renderer->DestroyPalette = GL_DestroyPalette;
     renderer->CreateTexture = GL_CreateTexture;
     renderer->UpdateTexture = GL_UpdateTexture;
 #ifdef SDL_HAVE_YUV
@@ -1785,6 +1871,9 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
         }
     }
 
+    // texture-rectangle doesn't support GL_REPEAT, it has to be the full NPOT extension (or real OpenGL 2.0+)
+    renderer->npot_texture_wrap_unsupported = !non_power_of_two_supported;
+
     data->textype = GL_TEXTURE_2D;
     if (non_power_of_two_supported) {
         data->GL_ARB_texture_non_power_of_two_supported = true;
@@ -1814,6 +1903,10 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     data->shaders = GL_CreateShaderContext();
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
                 data->shaders ? "ENABLED" : "DISABLED");
+    // We support INDEX8 textures using 2 textures and a shader
+    if (data->shaders && data->num_texture_units >= 2) {
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
+    }
 #ifdef SDL_HAVE_YUV
     // We support YV12 textures using 3 textures and a shader
     if (data->shaders && data->num_texture_units >= 3) {

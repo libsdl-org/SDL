@@ -7276,8 +7276,8 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     } else {
         VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
             (VulkanTextureContainer *)depthStencilTargetInfo->texture,
-            0,
-            0);
+            depthStencilTargetInfo->layer,
+            depthStencilTargetInfo->mip_level);
         key.depthStencilAttachmentView = subresource->depthStencilView;
     }
 
@@ -7332,8 +7332,8 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     if (depthStencilTargetInfo != NULL) {
         VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
             (VulkanTextureContainer *)depthStencilTargetInfo->texture,
-            0,
-            0);
+            depthStencilTargetInfo->layer,
+            depthStencilTargetInfo->mip_level);
         imageViewAttachments[attachmentCount] = subresource->depthStencilView;
 
         attachmentCount += 1;
@@ -7813,8 +7813,8 @@ static void VULKAN_BeginRenderPass(
     if (depthStencilTargetInfo != NULL) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)depthStencilTargetInfo->texture;
 
-        w = textureContainer->header.info.width;
-        h = textureContainer->header.info.height;
+        w = textureContainer->header.info.width >> depthStencilTargetInfo->mip_level;
+        h = textureContainer->header.info.height >> depthStencilTargetInfo->mip_level;
 
         // The framebuffer cannot be larger than the smallest attachment.
 
@@ -7869,8 +7869,8 @@ static void VULKAN_BeginRenderPass(
             renderer,
             vulkanCommandBuffer,
             textureContainer,
-            0,
-            0,
+            depthStencilTargetInfo->layer,
+            depthStencilTargetInfo->mip_level,
             depthStencilTargetInfo->cycle,
             VULKAN_TEXTURE_USAGE_MODE_DEPTH_STENCIL_ATTACHMENT);
 
@@ -7910,15 +7910,17 @@ static void VULKAN_BeginRenderPass(
 
     clearValues = SDL_stack_alloc(VkClearValue, clearCount);
 
-    for (i = 0; i < totalColorAttachmentCount; i += 1) {
-        clearValues[i].color.float32[0] = colorTargetInfos[i].clear_color.r;
-        clearValues[i].color.float32[1] = colorTargetInfos[i].clear_color.g;
-        clearValues[i].color.float32[2] = colorTargetInfos[i].clear_color.b;
-        clearValues[i].color.float32[3] = colorTargetInfos[i].clear_color.a;
+    int clearIndex = 0;
+    for (i = 0; i < numColorTargets; i += 1) {
+        clearValues[clearIndex].color.float32[0] = colorTargetInfos[i].clear_color.r;
+        clearValues[clearIndex].color.float32[1] = colorTargetInfos[i].clear_color.g;
+        clearValues[clearIndex].color.float32[2] = colorTargetInfos[i].clear_color.b;
+        clearValues[clearIndex].color.float32[3] = colorTargetInfos[i].clear_color.a;
+        clearIndex += 1;
 
         if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
             // Skip over the resolve texture, we're not clearing it
-            i += 1;
+            clearIndex += 1;
         }
     }
 
@@ -9521,13 +9523,16 @@ static SDL_GPUCommandBuffer *VULKAN_AcquireCommandBuffer(
     VulkanCommandBuffer *commandBuffer =
         VULKAN_INTERNAL_GetInactiveCommandBufferFromPool(renderer, threadID);
 
-    commandBuffer->descriptorSetCache = VULKAN_INTERNAL_AcquireDescriptorSetCache(renderer);
+    DescriptorSetCache *descriptorSetCache =
+        VULKAN_INTERNAL_AcquireDescriptorSetCache(renderer);
 
     SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
     if (commandBuffer == NULL) {
         return NULL;
     }
+
+    commandBuffer->descriptorSetCache = descriptorSetCache;
 
     // Reset state
 
@@ -11734,10 +11739,10 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     renderer = (VulkanRenderer *)SDL_calloc(1, sizeof(*renderer));
     if (renderer) {
         // Opt out device features (higher compatibility in exchange for reduced functionality)
-        renderer->desiredDeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-        renderer->desiredDeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-        renderer->desiredDeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-        renderer->desiredDeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredDeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredDeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredDeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredDeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
 
         // These features have near universal support so they are always enabled
         renderer->desiredDeviceFeatures.independentBlend = VK_TRUE;
@@ -11783,10 +11788,10 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->allowedFramesInFlight = 2;
 
     // Opt out device features (higher compatibility in exchange for reduced functionality)
-    renderer->desiredDeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredDeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredDeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredDeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredDeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredDeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredDeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredDeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
 
     // These features have near universal support so they are always enabled
     renderer->desiredDeviceFeatures.independentBlend = VK_TRUE;
@@ -11909,7 +11914,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     }
 
     // FIXME: just move this into this function
-    result = (SDL_GPUDevice *)SDL_malloc(sizeof(SDL_GPUDevice));
+    result = (SDL_GPUDevice *)SDL_calloc(1, sizeof(SDL_GPUDevice));
     ASSIGN_DRIVER(VULKAN)
 
     result->driverData = (SDL_GPURenderer *)renderer;

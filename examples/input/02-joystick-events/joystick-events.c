@@ -13,8 +13,8 @@
    and knows how to map arbitrary buttons and such to look like an
    Xbox/PlayStation/etc gamepad. This is easier, and better, for many games,
    but isn't necessarily a good fit for complex apps and hardware. A flight
-   simulator, a realistic racing game, etc, might want this interface instead
-   of gamepads. */
+   simulator, a realistic racing game, etc, might want the joystick interface
+   instead of gamepads. */
 
 #define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
 #include <SDL3/SDL.h>

@@ -104,7 +104,7 @@ static const char *GetHintEnvironmentVariable(const char *name)
 
 bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
 {
-    if (!name || !*name) {
+    CHECK_PARAM(!name || !*name) {
         return SDL_InvalidParamError("name");
     }
 
@@ -165,7 +165,7 @@ bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriori
 
 bool SDL_ResetHint(const char *name)
 {
-    if (!name || !*name) {
+    CHECK_PARAM(!name || !*name) {
         return SDL_InvalidParamError("name");
     }
 
@@ -316,9 +316,10 @@ bool SDL_GetHintBoolean(const char *name, bool default_value)
 
 bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {
-    if (!name || !*name) {
+    CHECK_PARAM(!name || !*name) {
         return SDL_InvalidParamError("name");
-    } else if (!callback) {
+    }
+    CHECK_PARAM(!callback) {
         return SDL_InvalidParamError("callback");
     }
 

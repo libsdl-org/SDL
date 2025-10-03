@@ -360,8 +360,9 @@ extern SDL_DECLSPEC SDL_Camera * SDLCALL SDL_OpenCamera(SDL_CameraID instance_id
  * on others the approval might be implicit and not alert the user at all.
  *
  * This function can be used to check the status of that approval. It will
- * return 0 if still waiting for user response, 1 if the camera is approved
- * for use, and -1 if the user denied access.
+ * return SDL_CAMERA_PERMISSION_STATE_PENDING if waiting for user response,
+ * SDL_CAMERA_PERMISSION_STATE_APPROVED if the camera is approved for use, and
+ * SDL_CAMERA_PERMISSION_STATE_DENIED if the user denied access.
  *
  * Instead of polling with this function, you can wait for a
  * SDL_EVENT_CAMERA_DEVICE_APPROVED (or SDL_EVENT_CAMERA_DEVICE_DENIED) event
@@ -372,8 +373,9 @@ extern SDL_DECLSPEC SDL_Camera * SDLCALL SDL_OpenCamera(SDL_CameraID instance_id
  * SDL_CloseCamera() to dispose of it.
  *
  * \param camera the opened camera device to query.
- * \returns -1 if user denied access to the camera, 1 if user approved access,
- *          0 if no decision has been made yet.
+ * \returns an SDL_CameraPermissionState value indicating if access is
+ *          granted, or `SDL_CAMERA_PERMISSION_STATE_PENDING` if the decision
+ *          is still pending.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

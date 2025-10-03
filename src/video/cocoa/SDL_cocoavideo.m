@@ -211,8 +211,8 @@ static bool Cocoa_VideoInit(SDL_VideoDevice *_this)
 
         // Assume we have a mouse and keyboard
         // We could use GCMouse and GCKeyboard if we needed to, as is done in SDL_uikitevents.m
-        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
-        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
+        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL);
+        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL);
 
         data.allow_spaces = SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, true);
         data.trackpad_is_touch_only = SDL_GetHintBoolean(SDL_HINT_TRACKPAD_IS_TOUCH_ONLY, false);

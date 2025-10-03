@@ -191,6 +191,10 @@ function(add_sdl_test_executable TARGET)
         target_link_options(${TARGET} PRIVATE "SHELL:--pre-js ${CMAKE_CURRENT_SOURCE_DIR}/emscripten/pre.js")
         target_link_options(${TARGET} PRIVATE "-sEXIT_RUNTIME=1")
         set_property(TARGET ${TARGET} APPEND PROPERTY LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/emscripten/pre.js")
+        set_property(TARGET ${TARGET} APPEND PROPERTY EXTRA_INSTALL
+            "$<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_BASE_NAME:${TARGET}>.js"
+            "$<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_BASE_NAME:${TARGET}>.wasm"
+            "$<TARGET_FILE_DIR:${TARGET}>/$<TARGET_FILE_BASE_NAME:${TARGET}>.wasm.map")
     elseif(NGAGE)
         string(MD5 TARGET_MD5 "${TARGET}")
         string(SUBSTRING "${TARGET_MD5}" 0 8 TARGET_MD5_8)
@@ -315,6 +319,7 @@ add_sdl_test_executable(testdraw SOURCES testdraw.c)
 add_sdl_test_executable(testdrawchessboard SOURCES testdrawchessboard.c)
 add_sdl_test_executable(testdropfile MAIN_CALLBACKS SOURCES testdropfile.c)
 add_sdl_test_executable(testerror NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testerror.c)
+add_sdl_test_executable(testsymbols NONINTERACTIVE NOTRACKMEM NONINTERACTIVE_ARGS 0 10 20 40 80 160 320 640 SOURCES testsymbols.c)
 
 set(build_options_dependent_tests )
 
@@ -354,7 +359,7 @@ add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
 add_sdl_test_executable(testgl SOURCES testgl.c)
 add_sdl_test_executable(testgles SOURCES testgles.c)
 add_sdl_test_executable(testgpu_simple_clear SOURCES testgpu_simple_clear.c)
-add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c)
+add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
 add_sdl_test_executable(testgpurender_effects MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_effects.c)
 add_sdl_test_executable(testgpurender_msdf MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_msdf.c)
 if(ANDROID)
@@ -398,6 +403,7 @@ add_sdl_test_executable(testsoftwaretransparent SOURCES testsoftwaretransparent.
 add_sdl_test_executable(testsprite MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c)
 add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
 add_sdl_test_executable(testspritesurface SOURCES testspritesurface.c ${icon_bmp_header} DEPENDS generate-icon_bmp_header)
+add_sdl_test_executable(testpalette SOURCES testpalette.c)
 add_sdl_test_executable(teststreaming NEEDS_RESOURCES TESTUTILS SOURCES teststreaming.c)
 add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c)
 add_sdl_test_executable(testurl SOURCES testurl.c)
@@ -593,7 +599,9 @@ function(add_sdl_test TEST TARGET)
             set(command ${TARGET})
         endif()
         get_property(noninteractive_arguments TARGET ${TARGET} PROPERTY SDL_NONINTERACTIVE_ARGUMENTS)
-        get_property(installed_arguments TARGET ${TARGET} PROPERTY SDL_INSTALLED_ARGUMENTS)
+        get_property(installed_arguments_list TARGET ${TARGET} PROPERTY SDL_INSTALLED_ARGUMENTS)
+        # This assumes that none of the arguments need quoting
+        list(JOIN installed_arguments_list " " installed_arguments)
         get_property(disable_threads_args TARGET ${TARGET} PROPERTY SDL_DISABLE_THREADS_ARGS)
         get_property(uses_threads TARGET ${TARGET} PROPERTY SDL_THREADS)
         if(noninteractive_arguments)
@@ -671,6 +679,14 @@ if(SDL_INSTALL_TESTS)
                     TARGETS ${test}
                     DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
                 )
+                get_property(extra_install TARGET ${test} PROPERTY "EXTRA_INSTALL")
+                if(extra_install)
+                    install(
+                        FILES ${extra_install}
+                        DESTINATION ${CMAKE_INSTALL_LIBEXECDIR}/installed-tests/SDL3
+                        OPTIONAL
+                    )
+                endif()
             endif()
         endforeach()
     endif()

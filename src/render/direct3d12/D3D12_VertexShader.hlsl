@@ -21,9 +21,7 @@ VertexShaderOutput mainColor(VertexShaderInput input)
     float4 pos = float4(input.pos, 1.0f);
 
     // Transform the vertex position into projected space.
-    pos = mul(pos, model);
-    pos = mul(pos, projectionAndView);
-    output.pos = pos;
+    output.pos = mul(pos, mpv);
 
     // Pass through texture coordinates and color values without transformation
     output.tex = input.tex;

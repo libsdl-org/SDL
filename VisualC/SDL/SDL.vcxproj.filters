@@ -489,6 +489,9 @@
     <ClInclude Include="..\..\src\audio\SDL_audioresample.h">
       <Filter>audio</Filter>
     </ClInclude>
+    <ClCompile Include="..\..\src\core\SDL_core_unsupported.h">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h">
       <Filter>core\windows</Filter>
     </ClInclude>
@@ -684,10 +687,13 @@
     <ClInclude Include="..\..\src\video\SDL_stb_c.h">
       <Filter>video</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\SDL_yuv_c.h">
+    <ClInclude Include="..\..\src\video\SDL_video_unsupported.h">
       <Filter>video</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h">
+      <Filter>video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\SDL_yuv_c.h">
       <Filter>video</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\dummy\SDL_nullevents_c.h">
@@ -1252,6 +1258,9 @@
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_lg4ff.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_zuiki.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c">

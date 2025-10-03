@@ -160,22 +160,22 @@ static VideoBootStrap *bootstrap[] = {
 };
 
 #define CHECK_WINDOW_MAGIC(window, result)                              \
-    if (!_this) {                                                       \
+    CHECK_PARAM(!_this) {                                               \
         SDL_UninitializedVideo();                                       \
         return result;                                                  \
     }                                                                   \
-    if (!SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW)) {             \
+    CHECK_PARAM(!SDL_ObjectValid(window, SDL_OBJECT_TYPE_WINDOW)) {     \
         SDL_SetError("Invalid window");                                 \
         return result;                                                  \
     }
 
 #define CHECK_DISPLAY_MAGIC(display, result)                            \
-    if (!display) {                                                     \
+    CHECK_PARAM(!display) {                                             \
         return result;                                                  \
     }                                                                   \
 
 #define CHECK_WINDOW_NOT_POPUP(window, result)                          \
-    if (SDL_WINDOW_IS_POPUP(window)) {                                  \
+    CHECK_PARAM(SDL_WINDOW_IS_POPUP(window)) {                          \
         SDL_SetError("Operation invalid on popup windows");             \
         return result;                                                  \
     }
@@ -218,11 +218,6 @@ static bool IsFullscreenOnly(SDL_VideoDevice *_this)
 static bool SDL_SendsDisplayChanges(SDL_VideoDevice *_this)
 {
     return !!(_this->device_caps & VIDEO_DEVICE_CAPS_SENDS_DISPLAY_CHANGES);
-}
-
-static bool SDL_DisableMouseWarpOnFullscreenTransitions(SDL_VideoDevice *_this)
-{
-    return !!(_this->device_caps & VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS);
 }
 
 static bool SDL_DriverSendsHDRChanges(SDL_VideoDevice *_this)
@@ -606,11 +601,11 @@ int SDL_GetNumVideoDrivers(void)
 
 const char *SDL_GetVideoDriver(int index)
 {
-    if (index >= 0 && index < SDL_GetNumVideoDrivers()) {
-        return deduped_bootstrap[index]->name;
+    CHECK_PARAM(index < 0 || index >= SDL_GetNumVideoDrivers()) {
+        SDL_InvalidParamError("index");
+        return NULL;
     }
-    SDL_InvalidParamError("index");
-    return NULL;
+    return deduped_bootstrap[index]->name;
 }
 
 /*
@@ -1067,7 +1062,7 @@ bool SDL_GetDisplayBounds(SDL_DisplayID displayID, SDL_Rect *rect)
 
     CHECK_DISPLAY_MAGIC(display, false);
 
-    if (!rect) {
+    CHECK_PARAM(!rect) {
         return SDL_InvalidParamError("rect");
     }
 
@@ -1102,7 +1097,7 @@ bool SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect)
 
     CHECK_DISPLAY_MAGIC(display, false);
 
-    if (!rect) {
+    CHECK_PARAM(!rect) {
         return SDL_InvalidParamError("rect");
     }
 
@@ -1176,33 +1171,35 @@ float SDL_GetDisplayContentScale(SDL_DisplayID displayID)
 
 void SDL_SetWindowHDRProperties(SDL_Window *window, const SDL_HDROutputProperties *HDR, bool send_event)
 {
-    if (window->HDR.HDR_headroom != HDR->HDR_headroom || window->HDR.SDR_white_level != HDR->SDR_white_level) {
+    const SDL_HDROutputProperties HDR_clamped = {
+        SDL_max(HDR->SDR_white_level, 1.0f),
+        SDL_max(HDR->HDR_headroom, 1.0f)
+    };
+
+    if (window->HDR.HDR_headroom != HDR_clamped.HDR_headroom || window->HDR.SDR_white_level != HDR_clamped.SDR_white_level) {
         SDL_PropertiesID window_props = SDL_GetWindowProperties(window);
 
-        SDL_SetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, SDL_max(HDR->HDR_headroom, 1.0f));
-        SDL_SetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, SDL_max(HDR->SDR_white_level, 1.0f));
-        SDL_SetBooleanProperty(window_props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, HDR->HDR_headroom > 1.0f);
-        SDL_copyp(&window->HDR, HDR);
+        SDL_SetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, HDR_clamped.HDR_headroom);
+        SDL_SetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, HDR_clamped.SDR_white_level);
+        SDL_SetBooleanProperty(window_props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, HDR_clamped.HDR_headroom > 1.0f);
+        SDL_copyp(&window->HDR, &HDR_clamped);
 
         if (send_event) {
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HDR_STATE_CHANGED, HDR->HDR_headroom > 1.0f, 0);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_HDR_STATE_CHANGED, HDR_clamped.HDR_headroom > 1.0f, 0);
         }
     }
 }
 
 void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDROutputProperties *HDR)
 {
-    bool changed = false;
+    const SDL_HDROutputProperties HDR_clamped = {
+        SDL_max(HDR->SDR_white_level, 1.0f),
+        SDL_max(HDR->HDR_headroom, 1.0f)
+    };
+    const bool changed = HDR_clamped.SDR_white_level != display->HDR.SDR_white_level ||
+                         HDR_clamped.HDR_headroom != display->HDR.HDR_headroom;
 
-    if (HDR->SDR_white_level != display->HDR.SDR_white_level) {
-        display->HDR.SDR_white_level = SDL_max(HDR->SDR_white_level, 1.0f);
-        changed = true;
-    }
-    if (HDR->HDR_headroom != display->HDR.HDR_headroom) {
-        display->HDR.HDR_headroom = SDL_max(HDR->HDR_headroom, 1.0f);
-        changed = true;
-    }
-    SDL_copyp(&display->HDR, HDR);
+    SDL_copyp(&display->HDR, &HDR_clamped);
 
     if (changed && !SDL_DriverSendsHDRChanges(_this)) {
         for (SDL_Window *w = display->device->windows; w; w = w->next) {
@@ -1370,7 +1367,7 @@ SDL_DisplayMode **SDL_GetFullscreenDisplayModes(SDL_DisplayID displayID, int *co
 
 bool SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, float refresh_rate, bool include_high_density_modes, SDL_DisplayMode *result)
 {
-    if (!result) {
+    CHECK_PARAM(!result) {
         return SDL_InvalidParamError("closest"); // Parameter `result` is called `closest` in the header.
     }
 
@@ -1660,7 +1657,7 @@ void SDL_GlobalToRelativeForWindow(SDL_Window *window, int abs_x, int abs_y, int
 
 SDL_DisplayID SDL_GetDisplayForPoint(const SDL_Point *point)
 {
-    if (!point) {
+    CHECK_PARAM(!point) {
         SDL_InvalidParamError("point");
         return 0;
     }
@@ -1670,7 +1667,7 @@ SDL_DisplayID SDL_GetDisplayForPoint(const SDL_Point *point)
 
 SDL_DisplayID SDL_GetDisplayForRect(const SDL_Rect *rect)
 {
-    if (!rect) {
+    CHECK_PARAM(!rect) {
         SDL_InvalidParamError("rect");
         return 0;
     }
@@ -1879,22 +1876,6 @@ static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
     }
 }
 
-static void SDL_RestoreMousePosition(SDL_Window *window)
-{
-    float x, y;
-    SDL_Mouse *mouse = SDL_GetMouse();
-
-    if (window == SDL_GetMouseFocus()) {
-        const bool prev_warp_val = mouse->warp_emulation_prohibited;
-        SDL_GetMouseState(&x, &y);
-
-        // Disable the warp emulation so it isn't accidentally activated on a fullscreen transitions.
-        mouse->warp_emulation_prohibited = true;
-        SDL_WarpMouseInWindow(window, x, y);
-        mouse->warp_emulation_prohibited = prev_warp_val;
-    }
-}
-
 bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, bool commit)
 {
     SDL_VideoDisplay *display = NULL;
@@ -2059,11 +2040,6 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
                     SDL_OnWindowResized(window);
                 }
             }
-
-            // Restore the cursor position
-            if (!SDL_DisableMouseWarpOnFullscreenTransitions(_this)) {
-                SDL_RestoreMousePosition(window);
-            }
         }
     } else {
         bool resized = false;
@@ -2107,11 +2083,6 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
                 } else {
                     SDL_OnWindowResized(window);
                 }
-            }
-
-            // Restore the cursor position if we've exited fullscreen on a display
-            if (display && !SDL_DisableMouseWarpOnFullscreenTransitions(_this)) {
-                SDL_RestoreMousePosition(window);
             }
         }
     }
@@ -2958,7 +2929,7 @@ bool SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
-    if (!icon) {
+    CHECK_PARAM(!icon) {
         return SDL_InvalidParamError("icon");
     }
 
@@ -3051,8 +3022,14 @@ bool SDL_GetWindowPosition(SDL_Window *window, int *x, int *y)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
+#ifdef SDL_PLATFORM_MACOS
+    // On newer MacBooks, the fullscreen window might be placed below the camera notch, so use the actual window position
+    bool use_display_origin = false;
+#else
     // Fullscreen windows are always at their display's origin
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    bool use_display_origin = ((window->flags & SDL_WINDOW_FULLSCREEN) != 0);
+#endif
+    if (use_display_origin) {
         SDL_DisplayID displayID;
 
         if (x) {
@@ -3152,10 +3129,10 @@ bool SDL_SetWindowSize(SDL_Window *window, int w, int h)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
-    if (w <= 0) {
+    CHECK_PARAM(w <= 0) {
         return SDL_InvalidParamError("w");
     }
-    if (h <= 0) {
+    CHECK_PARAM(h <= 0) {
         return SDL_InvalidParamError("h");
     }
 
@@ -3300,15 +3277,14 @@ bool SDL_GetWindowSizeInPixels(SDL_Window *window, int *w, int *h)
 bool SDL_SetWindowMinimumSize(SDL_Window *window, int min_w, int min_h)
 {
     CHECK_WINDOW_MAGIC(window, false);
-    if (min_w < 0) {
+    CHECK_PARAM(min_w < 0) {
         return SDL_InvalidParamError("min_w");
     }
-    if (min_h < 0) {
+    CHECK_PARAM(min_h < 0) {
         return SDL_InvalidParamError("min_h");
     }
 
-    if ((window->max_w && min_w > window->max_w) ||
-        (window->max_h && min_h > window->max_h)) {
+    CHECK_PARAM((window->max_w && min_w > window->max_w) || (window->max_h && min_h > window->max_h)) {
         return SDL_SetError("SDL_SetWindowMinimumSize(): Tried to set minimum size larger than maximum size");
     }
 
@@ -3342,10 +3318,10 @@ bool SDL_GetWindowMinimumSize(SDL_Window *window, int *min_w, int *min_h)
 bool SDL_SetWindowMaximumSize(SDL_Window *window, int max_w, int max_h)
 {
     CHECK_WINDOW_MAGIC(window, false);
-    if (max_w < 0) {
+    CHECK_PARAM(max_w < 0) {
         return SDL_InvalidParamError("max_w");
     }
-    if (max_h < 0) {
+    CHECK_PARAM(max_h < 0) {
         return SDL_InvalidParamError("max_h");
     }
 
@@ -4126,7 +4102,7 @@ bool SDL_SetWindowProgressState(SDL_Window *window, SDL_ProgressState state)
     CHECK_WINDOW_MAGIC(window, false);
     CHECK_WINDOW_NOT_POPUP(window, false);
 
-    if (state < SDL_PROGRESS_STATE_NONE || state > SDL_PROGRESS_STATE_ERROR) {
+    CHECK_PARAM(state < SDL_PROGRESS_STATE_NONE || state > SDL_PROGRESS_STATE_ERROR) {
         return SDL_InvalidParamError("state");
     }
 
@@ -4464,6 +4440,8 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DESTROYED, 0, 0);
 
+    SDL_DestroyWindowSurface(window);
+
     SDL_Renderer *renderer = SDL_GetRenderer(window);
     if (renderer) {
         SDL_DestroyRendererWithoutFreeing(renderer);
@@ -4503,8 +4481,6 @@ void SDL_DestroyWindow(SDL_Window *window)
     if (SDL_GetMouseFocus() == window) {
         SDL_SetMouseFocus(NULL);
     }
-
-    SDL_DestroyWindowSurface(window);
 
     // Make no context current if this is the current context window
     if (window->flags & SDL_WINDOW_OPENGL) {
@@ -5082,7 +5058,7 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
     GLenum attachmentattrib = 0;
 #endif
 
-    if (!value) {
+    CHECK_PARAM(!value) {
         return SDL_InvalidParamError("value");
     }
 
@@ -5491,7 +5467,7 @@ bool SDL_GL_SetSwapInterval(int interval)
 
 bool SDL_GL_GetSwapInterval(int *interval)
 {
-    if (!interval) {
+    CHECK_PARAM(!interval) {
        return SDL_InvalidParamError("interval");
     }
 
@@ -5525,10 +5501,10 @@ bool SDL_GL_SwapWindow(SDL_Window *window)
 
 bool SDL_GL_DestroyContext(SDL_GLContext context)
 {
-    if (!_this) {
+    CHECK_PARAM(!_this) {
         return SDL_UninitializedVideo();
     }
-    if (!context) {
+    CHECK_PARAM(!context) {
         return SDL_InvalidParamError("context");
     }
 
@@ -5839,9 +5815,10 @@ bool SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
     SDL_Window *current_window;
     SDL_MessageBoxData mbdata;
 
-    if (!messageboxdata) {
+    CHECK_PARAM(!messageboxdata) {
         return SDL_InvalidParamError("messageboxdata");
-    } else if (messageboxdata->numbuttons < 0) {
+    }
+    CHECK_PARAM(messageboxdata->numbuttons < 0) {
         return SDL_SetError("Invalid number of buttons");
     }
 
@@ -6180,11 +6157,11 @@ bool SDL_Vulkan_CreateSurface(SDL_Window *window,
         return SDL_SetError(NOT_A_VULKAN_WINDOW);
     }
 
-    if (!instance) {
+    CHECK_PARAM(!instance) {
         return SDL_InvalidParamError("instance");
     }
 
-    if (!surface) {
+    CHECK_PARAM(!surface) {
         return SDL_InvalidParamError("surface");
     }
 
@@ -6204,17 +6181,17 @@ bool SDL_Vulkan_GetPresentationSupport(VkInstance instance,
                                            VkPhysicalDevice physicalDevice,
                                            Uint32 queueFamilyIndex)
 {
-    if (!_this) {
+    CHECK_PARAM(!_this) {
         SDL_UninitializedVideo();
         return false;
     }
 
-    if (!instance) {
+    CHECK_PARAM(!instance) {
         SDL_InvalidParamError("instance");
         return false;
     }
 
-    if (!physicalDevice) {
+    CHECK_PARAM(!physicalDevice) {
         SDL_InvalidParamError("physicalDevice");
         return false;
     }
@@ -6265,12 +6242,11 @@ void SDL_Metal_DestroyView(SDL_MetalView view)
 void *SDL_Metal_GetLayer(SDL_MetalView view)
 {
     if (_this && _this->Metal_GetLayer) {
-        if (view) {
-            return _this->Metal_GetLayer(_this, view);
-        } else {
+        CHECK_PARAM(!view) {
             SDL_InvalidParamError("view");
             return NULL;
         }
+        return _this->Metal_GetLayer(_this, view);
     } else {
         SDL_SetError("Metal is not supported.");
         return NULL;

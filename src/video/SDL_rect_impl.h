@@ -38,17 +38,20 @@ bool SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
 
-    if (!A) {
+    CHECK_PARAM(!A) {
         SDL_InvalidParamError("A");
         return false;
-    } else if (!B) {
+    }
+    CHECK_PARAM(!B) {
         SDL_InvalidParamError("B");
         return false;
-    } else if (SDL_RECT_CAN_OVERFLOW(A) ||
-               SDL_RECT_CAN_OVERFLOW(B)) {
+    }
+    CHECK_PARAM(SDL_RECT_CAN_OVERFLOW(A) || SDL_RECT_CAN_OVERFLOW(B)) {
         SDL_SetError("Potential rect math overflow");
         return false;
-    } else if (SDL_RECTEMPTY(A) || SDL_RECTEMPTY(B)) {
+    }
+
+    if (SDL_RECTEMPTY(A) || SDL_RECTEMPTY(B)) {
         return false; // Special cases for empty rects
     }
 
@@ -87,20 +90,24 @@ bool SDL_INTERSECTRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
 
-    if (!A) {
+    CHECK_PARAM(!A) {
         SDL_InvalidParamError("A");
         return false;
-    } else if (!B) {
+    }
+    CHECK_PARAM(!B) {
         SDL_InvalidParamError("B");
         return false;
-    } else if (SDL_RECT_CAN_OVERFLOW(A) ||
-               SDL_RECT_CAN_OVERFLOW(B)) {
+    }
+    CHECK_PARAM(SDL_RECT_CAN_OVERFLOW(A) || SDL_RECT_CAN_OVERFLOW(B)) {
         SDL_SetError("Potential rect math overflow");
         return false;
-    } else if (!result) {
+    }
+    CHECK_PARAM(!result) {
         SDL_InvalidParamError("result");
         return false;
-    } else if (SDL_RECTEMPTY(A) || SDL_RECTEMPTY(B)) { // Special cases for empty rects
+    }
+
+    if (SDL_RECTEMPTY(A) || SDL_RECTEMPTY(B)) { // Special cases for empty rects
         result->w = 0;
         result->h = 0;
         return false;
@@ -141,16 +148,20 @@ bool SDL_UNIONRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
 {
     SCALARTYPE Amin, Amax, Bmin, Bmax;
 
-    if (!A) {
+    CHECK_PARAM(!A) {
         return SDL_InvalidParamError("A");
-    } else if (!B) {
+    }
+    CHECK_PARAM(!B) {
         return SDL_InvalidParamError("B");
-    } else if (SDL_RECT_CAN_OVERFLOW(A) ||
-               SDL_RECT_CAN_OVERFLOW(B)) {
+    }
+    CHECK_PARAM(SDL_RECT_CAN_OVERFLOW(A) || SDL_RECT_CAN_OVERFLOW(B)) {
         return SDL_SetError("Potential rect math overflow");
-    } else if (!result) {
+    }
+    CHECK_PARAM(!result) {
         return SDL_InvalidParamError("result");
-    } else if (SDL_RECTEMPTY(A)) { // Special cases for empty Rects
+    }
+
+    if (SDL_RECTEMPTY(A)) { // Special cases for empty Rects
         if (SDL_RECTEMPTY(B)) {    // A and B empty
             SDL_zerop(result);
         } else { // A empty, B not empty
@@ -201,10 +212,11 @@ bool SDL_ENCLOSEPOINTS(const POINTTYPE *points, int count, const RECTTYPE *clip,
     SCALARTYPE x, y;
     int i;
 
-    if (!points) {
+    CHECK_PARAM(!points) {
         SDL_InvalidParamError("points");
         return false;
-    } else if (count < 1) {
+    }
+    CHECK_PARAM(count < 1) {
         SDL_InvalidParamError("count");
         return false;
     }
@@ -320,25 +332,32 @@ bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *
     SCALARTYPE recty2;
     int outcode1, outcode2;
 
-    if (!rect) {
+    CHECK_PARAM(!rect) {
         SDL_InvalidParamError("rect");
         return false;
-    } else if (SDL_RECT_CAN_OVERFLOW(rect)) {
+    }
+    CHECK_PARAM(SDL_RECT_CAN_OVERFLOW(rect)) {
         SDL_SetError("Potential rect math overflow");
         return false;
-    } else if (!X1) {
+    }
+    CHECK_PARAM(!X1) {
         SDL_InvalidParamError("X1");
         return false;
-    } else if (!Y1) {
+    }
+    CHECK_PARAM(!Y1) {
         SDL_InvalidParamError("Y1");
         return false;
-    } else if (!X2) {
+    }
+    CHECK_PARAM(!X2) {
         SDL_InvalidParamError("X2");
         return false;
-    } else if (!Y2) {
+    }
+    CHECK_PARAM(!Y2) {
         SDL_InvalidParamError("Y2");
         return false;
-    } else if (SDL_RECTEMPTY(rect)) {
+    }
+
+    if (SDL_RECTEMPTY(rect)) {
         return false; // Special case for empty rect
     }
 

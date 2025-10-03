@@ -266,7 +266,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fm
  * \sa SDL_LogInfo
  * \sa SDL_LogMessage
  * \sa SDL_LogMessageV
- * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
  */

@@ -355,25 +355,24 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
     flash_read_command[12] = 0x80;
     res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
     if (res < 0) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request calibration data: %d", res);
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request factory calibration data: %d", res);
     } else {
         res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
         if (res < 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read calibration data: %d", res);
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
         } else {
             ParseStickCalibration(&ctx->left_stick, &calibration_data[0x38]);
         }
     }
 
-
     flash_read_command[12] = 0xC0;
     res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
     if (res < 0) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request calibration data: %d", res);
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request factory calibration data: %d", res);
     } else {
         res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
         if (res < 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read calibration data: %d", res);
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
         } else {
             ParseStickCalibration(&ctx->right_stick, &calibration_data[0x38]);
         }
@@ -384,15 +383,43 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
         flash_read_command[13] = 0x31;
         res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
         if (res < 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read calibration data: %d", res);
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request factory calibration data: %d", res);
         } else {
             res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
             if (res < 0) {
-                SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read calibration data: %d", res);
+                SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
             } else {
                 ctx->left_trigger_max = calibration_data[0x10];
                 ctx->right_trigger_max = calibration_data[0x11];
             }
+        }
+    }
+
+    flash_read_command[12] = 0x40;
+    flash_read_command[13] = 0xC0;
+    flash_read_command[14] = 0x1F;
+    res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
+    if (res < 0) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request user calibration data: %d", res);
+    } else {
+        res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
+        if (res < 0) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read user calibration data: %d", res);
+        } else if (calibration_data[0x10] == 0xb2 && calibration_data[0x11] == 0xa1) {
+            ParseStickCalibration(&ctx->left_stick, &calibration_data[0x12]);
+        }
+    }
+
+    flash_read_command[12] = 0x80;
+    res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
+    if (res < 0) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request user calibration data: %d", res);
+    } else {
+        res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
+        if (res < 0) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read user calibration data: %d", res);
+        } else if (calibration_data[0x10] == 0xb2 && calibration_data[0x11] == 0xa1) {
+            ParseStickCalibration(&ctx->right_stick, &calibration_data[0x12]);
         }
     }
 

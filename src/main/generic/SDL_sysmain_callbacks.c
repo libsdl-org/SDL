@@ -54,7 +54,7 @@ static SDL_AppResult GenericIterateMainCallbacks(void)
 int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {
     SDL_AppResult rc = SDL_InitMainCallbacks(argc, argv, appinit, appiter, appevent, appquit);
-    if (rc == 0) {
+    if (rc == SDL_APP_CONTINUE) {
         SDL_AddHintCallback(SDL_HINT_MAIN_CALLBACK_RATE, MainCallbackRateHintChanged, NULL);
 
         Uint64 next_iteration = callback_rate_increment ? (SDL_GetTicksNS() + callback_rate_increment) : 0;

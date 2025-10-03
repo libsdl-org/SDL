@@ -1400,14 +1400,19 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 
             X11_ReconcileKeyboardState(_this);
         } else if (xevent->type == MappingNotify) {
-            if (!videodata->keyboard.xkb_enabled) {
-                // Has the keyboard layout changed?
-                const int request = xevent->xmapping.request;
+            const int request = xevent->xmapping.request;
 
+            if (request == MappingPointer) {
 #ifdef DEBUG_XEVENTS
                 SDL_Log("window 0x%lx: MappingNotify!", xevent->xany.window);
 #endif
-                if ((request == MappingKeyboard) || (request == MappingModifier)) {
+                X11_Xinput2UpdatePointerMapping(_this);
+            } else if (!videodata->keyboard.xkb_enabled) {
+                // Has the keyboard layout changed?
+#ifdef DEBUG_XEVENTS
+                SDL_Log("window 0x%lx: MappingNotify!", xevent->xany.window);
+#endif
+                if (request == MappingKeyboard || request == MappingModifier) {
                     X11_XRefreshKeyboardMapping(&xevent->xmapping);
                 }
 
@@ -1658,7 +1663,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
          * expected by SDL and its clients. Defer emitting the size/move events until the corresponding
          * PropertyNotify arrives for consistency.
          */
-        const Uint32 changed = X11_GetNetWMState(_this, data->window, xevent->xproperty.window) ^ data->window->flags;
+        const SDL_WindowFlags changed = X11_GetNetWMState(_this, data->window, xevent->xproperty.window) ^ data->window->flags;
         if (changed & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MAXIMIZED)) {
             SDL_copyp(&data->pending_xconfigure, &xevent->xconfigure);
             data->emit_size_move_after_property_notify = true;
@@ -2337,7 +2342,7 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     }
 
     if (data->xinput_hierarchy_changed) {
-        X11_Xinput2UpdateDevices(_this, false);
+        X11_Xinput2UpdateDevices(_this);
         data->xinput_hierarchy_changed = false;
     }
 }

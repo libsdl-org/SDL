@@ -741,7 +741,7 @@ static const struct wl_callback_listener gles_swap_frame_listener = {
     gles_swap_frame_done
 };
 
-static void handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t serial)
+static void handle_xdg_surface_configure(void *data, struct xdg_surface *xdg, uint32_t serial)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
@@ -755,11 +755,11 @@ static void handle_configure_xdg_shell_surface(void *data, struct xdg_surface *x
     }
 }
 
-static const struct xdg_surface_listener shell_surface_listener_xdg = {
-    handle_configure_xdg_shell_surface
+static const struct xdg_surface_listener _xdg_surface_listener = {
+    handle_xdg_surface_configure
 };
 
-static void handle_configure_xdg_toplevel(void *data,
+static void handle_xdg_toplevel_configure(void *data,
                                           struct xdg_toplevel *xdg_toplevel,
                                           int32_t width,
                                           int32_t height,
@@ -984,13 +984,13 @@ static void handle_configure_xdg_toplevel(void *data,
     wind->resizing = resizing;
 }
 
-static void handle_close_xdg_toplevel(void *data, struct xdg_toplevel *xdg_toplevel)
+static void handle_xdg_toplevel_close(void *data, struct xdg_toplevel *xdg_toplevel)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
     SDL_SendWindowEvent(window->sdlwindow, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
 }
 
-static void handle_xdg_configure_toplevel_bounds(void *data,
+static void handle_xdg_toplevel_configure_bounds(void *data,
                                                  struct xdg_toplevel *xdg_toplevel,
                                                  int32_t width, int32_t height)
 {
@@ -1029,13 +1029,13 @@ static void handle_xdg_toplevel_wm_capabilities(void *data,
 }
 
 static const struct xdg_toplevel_listener toplevel_listener_xdg = {
-    handle_configure_xdg_toplevel,
-    handle_close_xdg_toplevel,
-    handle_xdg_configure_toplevel_bounds, // Version 4
+    handle_xdg_toplevel_configure,
+    handle_xdg_toplevel_close,
+    handle_xdg_toplevel_configure_bounds, // Version 4
     handle_xdg_toplevel_wm_capabilities   // Version 5
 };
 
-static void handle_configure_xdg_popup(void *data,
+static void handle_xdg_popup_configure(void *data,
                                        struct xdg_popup *xdg_popup,
                                        int32_t x,
                                        int32_t y,
@@ -1086,28 +1086,28 @@ static void handle_configure_xdg_popup(void *data,
     }
 }
 
-static void handle_done_xdg_popup(void *data, struct xdg_popup *xdg_popup)
+static void handle_xdg_popup_done(void *data, struct xdg_popup *xdg_popup)
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
     SDL_SendWindowEvent(window->sdlwindow, SDL_EVENT_WINDOW_CLOSE_REQUESTED, 0, 0);
 }
 
-static void handle_repositioned_xdg_popup(void *data,
+static void handle_xdg_popup_repositioned(void *data,
                                           struct xdg_popup *xdg_popup,
                                           uint32_t token)
 {
     // No-op, configure does all the work we care about
 }
 
-static const struct xdg_popup_listener popup_listener_xdg = {
-    handle_configure_xdg_popup,
-    handle_done_xdg_popup,
-    handle_repositioned_xdg_popup
+static const struct xdg_popup_listener _xdg_popup_listener = {
+    handle_xdg_popup_configure,
+    handle_xdg_popup_done,
+    handle_xdg_popup_repositioned
 };
 
-static void handle_configure_zxdg_decoration(void *data,
-                                             struct zxdg_toplevel_decoration_v1 *zxdg_toplevel_decoration_v1,
-                                             uint32_t mode)
+static void handle_xdg_toplevel_decoration_configure(void *data,
+                                                     struct zxdg_toplevel_decoration_v1 *zxdg_toplevel_decoration_v1,
+                                                     uint32_t mode)
 {
     SDL_Window *window = (SDL_Window *)data;
     SDL_WindowData *internal = window->internal;
@@ -1135,8 +1135,8 @@ static void handle_configure_zxdg_decoration(void *data,
     }
 }
 
-static const struct zxdg_toplevel_decoration_v1_listener decoration_listener = {
-    handle_configure_zxdg_decoration
+static const struct zxdg_toplevel_decoration_v1_listener xdg_toplevel_decoration_listener = {
+    handle_xdg_toplevel_decoration_configure
 };
 
 #ifdef HAVE_LIBDECOR_H
@@ -1198,6 +1198,7 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
     bool tiled = false;
     bool suspended = false;
     bool resizing = false;
+    wind->toplevel_constraints = 0;
 
     static const enum libdecor_window_state tiled_states = (LIBDECOR_WINDOW_STATE_TILED_LEFT | LIBDECOR_WINDOW_STATE_TILED_RIGHT |
                                                             LIBDECOR_WINDOW_STATE_TILED_TOP | LIBDECOR_WINDOW_STATE_TILED_BOTTOM);
@@ -1213,8 +1214,20 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
 #endif
 #if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
         resizing = (window_state & LIBDECOR_WINDOW_STATE_RESIZING) != 0;
+
+        if (window_state & LIBDECOR_WINDOW_STATE_CONSTRAINED_LEFT) {
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_LEFT;
+        }
+        if (window_state & LIBDECOR_WINDOW_STATE_CONSTRAINED_RIGHT) {
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_RIGHT;
+        }
+        if (window_state & LIBDECOR_WINDOW_STATE_CONSTRAINED_TOP) {
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_TOP;
+        }
+        if (window_state & LIBDECOR_WINDOW_STATE_CONSTRAINED_BOTTOM) {
+            wind->toplevel_constraints |= WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM;
+        }
 #endif
-        // TODO: Toplevel constraint passthrough is waiting on upstream libdecor changes.
     }
     const bool floating = !(fullscreen || maximized || tiled);
 
@@ -1289,6 +1302,13 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
                 if (floating) {
                     width = window->floating.w;
                     height = window->floating.h;
+
+                    // Clamp the window to the toplevel bounds, if any are set.
+                    if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE &&
+                        wind->toplevel_bounds.width && wind->toplevel_bounds.height) {
+                        width = SDL_min(wind->toplevel_bounds.width, width);
+                        height = SDL_min(wind->toplevel_bounds.height, height);
+                    }
                 } else {
                     width = window->windowed.w;
                     height = window->windowed.h;
@@ -1306,8 +1326,13 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
             } else {
                 /* Don't apply the supplied dimensions if they haven't changed from the last configuration
                  * event, or a newer size set programmatically can be overwritten by old data.
+                 *
+                 * If a client takes a long time to present the first frame after creating the window, a
+                 * configure event to set the suspended state may arrive with the content size increased
+                 * by the decoration dimensions, which should also be ignored.
                  */
-                if (width != wind->last_configure.width || height != wind->last_configure.height) {
+                if ((width != wind->last_configure.width || height != wind->last_configure.height) &&
+                    !(wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_FRAME && wind->suspended != suspended)) {
                     wind->requested.logical_width = width;
                     wind->requested.logical_height = height;
 
@@ -1451,11 +1476,25 @@ static void decoration_dismiss_popup(struct libdecor_frame *frame, const char *s
     // NOP
 }
 
+static void decoration_frame_bounds(struct libdecor_frame *frame, int width, int height, void *user_data)
+{
+    SDL_WindowData *window = (SDL_WindowData *)user_data;
+    window->toplevel_bounds.width = width;
+    window->toplevel_bounds.height = height;
+}
+
+#if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
+#define FRAME_BOUNDS_FUNC_CAST(func) func
+#else
+#define FRAME_BOUNDS_FUNC_CAST(func) (void(*)(void))func
+#endif
+
 static struct libdecor_frame_interface libdecor_frame_interface = {
     decoration_frame_configure,
     decoration_frame_close,
     decoration_frame_commit,
-    decoration_dismiss_popup
+    decoration_dismiss_popup,
+    FRAME_BOUNDS_FUNC_CAST(decoration_frame_bounds)
 };
 #endif
 
@@ -1582,7 +1621,7 @@ static void handle_surface_leave(void *data, struct wl_surface *surface, struct 
     Wayland_RemoveOutputFromWindow(window, (SDL_DisplayData *)wl_output_get_user_data(output));
 }
 
-static void handle_preferred_buffer_scale(void *data, struct wl_surface *wl_surface, int32_t factor)
+static void handle_surface_preferred_buffer_scale(void *data, struct wl_surface *wl_surface, int32_t factor)
 {
     SDL_WindowData *wind = data;
 
@@ -1595,7 +1634,7 @@ static void handle_preferred_buffer_scale(void *data, struct wl_surface *wl_surf
     }
 }
 
-static void handle_preferred_buffer_transform(void *data, struct wl_surface *wl_surface, uint32_t transform)
+static void handle_surface_preferred_buffer_transform(void *data, struct wl_surface *wl_surface, uint32_t transform)
 {
     // Nothing to do here.
 }
@@ -1603,18 +1642,18 @@ static void handle_preferred_buffer_transform(void *data, struct wl_surface *wl_
 static const struct wl_surface_listener surface_listener = {
     handle_surface_enter,
     handle_surface_leave,
-    handle_preferred_buffer_scale,
-    handle_preferred_buffer_transform
+    handle_surface_preferred_buffer_scale,
+    handle_surface_preferred_buffer_transform
 };
 
-static void handle_preferred_fractional_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale)
+static void handle_fractional_scale_preferred(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale)
 {
     const double factor = (double)scale / 120.; // 120 is a magic number defined in the spec as a common denominator
     Wayland_HandlePreferredScaleChanged(data, factor);
 }
 
 static const struct wp_fractional_scale_v1_listener fractional_scale_listener = {
-    handle_preferred_fractional_scale
+    handle_fractional_scale_preferred
 };
 
 static void frog_preferred_metadata_handler(void *data, struct frog_color_managed_surface *frog_color_managed_surface, uint32_t transfer_function,
@@ -1658,16 +1697,16 @@ static const struct frog_color_managed_surface_listener frog_surface_listener = 
     frog_preferred_metadata_handler
 };
 
-static void feedback_surface_preferred_changed(void *data,
-                                               struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1,
-                                               uint32_t identity)
+static void handle_surface_feedback_preferred_changed(void *data,
+                                                      struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback_v1,
+                                                      uint32_t identity)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     Wayland_GetColorInfoForWindow(wind, false);
 }
 
 static const struct wp_color_management_surface_feedback_v1_listener color_management_surface_feedback_listener = {
-    feedback_surface_preferred_changed
+    handle_surface_feedback_preferred_changed
 };
 
 static void Wayland_SetKeyboardFocus(SDL_Window *window, bool set_focus)
@@ -1883,7 +1922,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL || data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP) {
         data->shell_surface.xdg.surface = xdg_wm_base_get_xdg_surface(c->shell.xdg, data->surface);
         xdg_surface_set_user_data(data->shell_surface.xdg.surface, data);
-        xdg_surface_add_listener(data->shell_surface.xdg.surface, &shell_surface_listener_xdg, data);
+        xdg_surface_add_listener(data->shell_surface.xdg.surface, &_xdg_surface_listener, data);
         SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER, data->shell_surface.xdg.surface);
 
         if (data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP) {
@@ -1906,7 +1945,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             // Set up the positioner for the popup and configure the constraints
             data->shell_surface.xdg.popup.xdg_positioner = xdg_wm_base_create_positioner(c->shell.xdg);
             xdg_positioner_set_anchor(data->shell_surface.xdg.popup.xdg_positioner, XDG_POSITIONER_ANCHOR_TOP_LEFT);
-            xdg_positioner_set_anchor_rect(data->shell_surface.xdg.popup.xdg_positioner, 0, 0, parent->internal->current.logical_width, parent->internal->current.logical_width);
+            xdg_positioner_set_anchor_rect(data->shell_surface.xdg.popup.xdg_positioner, 0, 0, parent->internal->current.logical_width, parent->internal->current.logical_height);
 
             const Uint32 constraint = window->constrain_popup ? (XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X | XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y) : XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE;
             xdg_positioner_set_constraint_adjustment(data->shell_surface.xdg.popup.xdg_positioner, constraint);
@@ -1928,7 +1967,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             data->shell_surface.xdg.popup.xdg_popup = xdg_surface_get_popup(data->shell_surface.xdg.surface,
                                                                                 parent_xdg_surface,
                                                                                 data->shell_surface.xdg.popup.xdg_positioner);
-            xdg_popup_add_listener(data->shell_surface.xdg.popup.xdg_popup, &popup_listener_xdg, data);
+            xdg_popup_add_listener(data->shell_surface.xdg.popup.xdg_popup, &_xdg_popup_listener, data);
 
             if (window->flags & SDL_WINDOW_TOOLTIP) {
                 struct wl_region *region;
@@ -1952,7 +1991,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             // Create the window decorations
             if (c->decoration_manager) {
                 data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.toplevel.xdg_toplevel);
-                zxdg_toplevel_decoration_v1_add_listener(data->server_decoration, &decoration_listener, window);
+                zxdg_toplevel_decoration_v1_add_listener(data->server_decoration, &xdg_toplevel_decoration_listener, window);
                 const enum zxdg_toplevel_decoration_v1_mode mode = !(window->flags & SDL_WINDOW_BORDERLESS) ? ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE : ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
                 zxdg_toplevel_decoration_v1_set_mode(data->server_decoration, mode);
             }
@@ -2188,7 +2227,7 @@ static void handle_xdg_activation_done(void *data,
     }
 }
 
-static const struct xdg_activation_token_v1_listener activation_listener_xdg = {
+static const struct xdg_activation_token_v1_listener xdg_activation_listener = {
     handle_xdg_activation_done
 };
 
@@ -2234,7 +2273,7 @@ static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *target_
 
         target_wind->activation_token = xdg_activation_v1_get_activation_token(data->activation_manager);
         xdg_activation_token_v1_add_listener(target_wind->activation_token,
-                                             &activation_listener_xdg,
+                                             &xdg_activation_listener,
                                              target_wind);
 
         /* Note that we are not setting the app_id here.

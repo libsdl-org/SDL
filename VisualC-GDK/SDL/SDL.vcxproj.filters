@@ -86,6 +86,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360w.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_lg4ff.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_zuiki.c" />
     <ClCompile Include="..\..\src\joystick\SDL_gamepad.c" />
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c" />
     <ClCompile Include="..\..\src\joystick\SDL_steam_virtual_gamepad.c" />
@@ -330,6 +331,7 @@
     <ClInclude Include="..\..\src\core\windows\SDL_immdevice.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_windows.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_xinput.h" />
+    <ClInclude Include="..\..\src\core\SDL_core_unsupported.h" />
     <ClInclude Include="..\..\src\cpuinfo\SDL_cpuinfo_c.h" />
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi.h" />
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi_overrides.h" />
@@ -452,6 +454,7 @@
     <ClInclude Include="..\..\src\video\SDL_stb_c.h" />
     <ClInclude Include="..\..\src\video\SDL_surface_c.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
+    <ClInclude Include="..\..\src\video\SDL_video_unsupported.h" />
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h" />
     <ClInclude Include="..\..\src\video\SDL_yuv_c.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_msctf.h" />
