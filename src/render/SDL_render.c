@@ -1209,9 +1209,9 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         SDL_SetPointerProperty(new_props, SDL_PROP_RENDERER_SURFACE_POINTER, surface);
     }
     SDL_SetNumberProperty(new_props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, renderer->output_colorspace);
-    UpdateHDRProperties(renderer);
 
     if (window) {
+        UpdateHDRProperties(renderer);
         SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_RENDERER_POINTER, renderer);
         SDL_AddWindowRenderer(window, renderer);
     }
@@ -1232,7 +1232,9 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     SDL_SetRenderVSync(renderer, vsync);
 #endif
 
-    SDL_CalculateSimulatedVSyncInterval(renderer, window);
+    if (window) {
+        SDL_CalculateSimulatedVSyncInterval(renderer, window);
+    }
 
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
                 "Created renderer: %s", renderer->name);
