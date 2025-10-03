@@ -1525,9 +1525,8 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     texture->color.b = 1.0f;
     texture->color.a = 1.0f;
     texture->blendMode = SDL_ISPIXELFORMAT_ALPHA(format) ? SDL_BLENDMODE_BLEND : SDL_BLENDMODE_NONE;
-    if (renderer->scale_mode == SDL_SCALEMODE_LINEAR &&
-        SDL_ISPIXELFORMAT_INDEXED(format)) {
-        texture->scaleMode = SDL_SCALEMODE_PIXELART;
+    if (SDL_ISPIXELFORMAT_INDEXED(format)) {
+        texture->scaleMode = SDL_SCALEMODE_NEAREST;
     } else {
         texture->scaleMode = renderer->scale_mode;
     }
@@ -2163,11 +2162,11 @@ bool SDL_SetTextureScaleMode(SDL_Texture *texture, SDL_ScaleMode scaleMode)
 
     switch (scaleMode) {
     case SDL_SCALEMODE_NEAREST:
-    case SDL_SCALEMODE_PIXELART:
         break;
+    case SDL_SCALEMODE_PIXELART:
     case SDL_SCALEMODE_LINEAR:
         if (SDL_ISPIXELFORMAT_INDEXED(texture->format)) {
-            scaleMode = SDL_SCALEMODE_PIXELART;
+            scaleMode = SDL_SCALEMODE_NEAREST;
         }
         break;
     default:

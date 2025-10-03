@@ -1234,8 +1234,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureBlendMode(SDL_Texture *texture, S
  * The default texture scale mode is SDL_SCALEMODE_LINEAR.
  *
  * If the scale mode is not supported, the closest supported mode is chosen.
- * Palettized textures will use SDL_SCALEMODE_PIXELART instead of
- * SDL_SCALEMODE_LINEAR.
+ * Palettized textures will always use SDL_SCALEMODE_NEAREST.
  *
  * \param texture the texture to update.
  * \param scaleMode the SDL_ScaleMode to use for texture scaling.
