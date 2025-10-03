@@ -343,7 +343,7 @@ static void WASAPI_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDe
 void WASAPI_DisconnectDevice(SDL_AudioDevice *device)
 {
     // don't block in here; IMMDevice's own thread needs to return or everything will deadlock.
-    if (device->hidden && SDL_CompareAndSwapAtomicInt(&device->hidden->device_disconnecting, 0, 1)) {
+    if (device && device->hidden && SDL_CompareAndSwapAtomicInt(&device->hidden->device_disconnecting, 0, 1)) {
         SDL_AudioDeviceDisconnected(device); // this proxies the work to the main thread now, so no point in proxying to the management thread.
     }
 }
