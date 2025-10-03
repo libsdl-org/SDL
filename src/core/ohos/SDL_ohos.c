@@ -141,7 +141,6 @@ void OHOS_UnlockPage()
 {
     // SDL_UnlockMutex(g_ohosPageMutex);
 }
-
 int OHOS_FetchWidth()
 {
     return wid;
