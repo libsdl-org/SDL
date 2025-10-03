@@ -1893,7 +1893,7 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       set(HAVE_INOTIFY 1)
     endif()
 
-    if(PKG_CONFIG_FOUND)      
+    if(PKG_CONFIG_FOUND)
       if(SDL_DBUS)
         pkg_search_module(DBUS dbus-1 dbus)
         if(DBUS_FOUND)
