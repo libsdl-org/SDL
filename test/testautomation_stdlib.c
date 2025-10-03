@@ -265,6 +265,14 @@ static int SDLCALL stdlib_snprintf(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
     SDLTest_AssertCheck(result == 6, "Check result value, expected: 6, got: %d", result);
 
+    result = SDL_snprintf(text, sizeof(text), "%06.0f", ((double)SDL_MAX_SINT64) * 1.5);
+    predicted = SDL_snprintf(NULL, 0, "%06.0f", ((double)SDL_MAX_SINT64) * 1.5);
+    expected = "13835058055282163712";
+    SDLTest_AssertPass("Call to SDL_snprintf(\"%%06.2f\", SDL_MAX_SINT64 * 1.5)");
+    SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
+    SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int)SDL_strlen(text), result);
+    SDLTest_AssertCheck(predicted == result, "Check predicted value, expected: %d, got: %d", result, predicted);
+
     {
         static struct
         {
