@@ -1429,38 +1429,34 @@ static size_t xkb_legacy_get_mods_for_level(SDL_WaylandSeat *seat, xkb_keycode_t
     }
 
     size_t mask_idx = 0;
-    struct xkb_state *state = WAYLAND_xkb_state_new(seat->keyboard.xkb.keymap);
-    if (state) {
-        const xkb_mod_mask_t keymod_masks[] = {
-            0,
-            seat->keyboard.xkb.shift_mask,
-            seat->keyboard.xkb.caps_mask,
-            seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask,
-            seat->keyboard.xkb.level3_mask,
-            seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask,
-            seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.caps_mask,
-            seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask,
-            seat->keyboard.xkb.level5_mask,
-            seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask,
-            seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.caps_mask,
-            seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask
-        };
-        const xkb_mod_mask_t pressed_mod_mask = seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.level5_mask;
-        const xkb_mod_mask_t locked_mod_mask = seat->keyboard.xkb.caps_mask;
+    const xkb_mod_mask_t keymod_masks[] = {
+        0,
+        seat->keyboard.xkb.shift_mask,
+        seat->keyboard.xkb.caps_mask,
+        seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask,
+        seat->keyboard.xkb.level3_mask,
+        seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask,
+        seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.caps_mask,
+        seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask,
+        seat->keyboard.xkb.level5_mask,
+        seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask,
+        seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.caps_mask,
+        seat->keyboard.xkb.level5_mask | seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.caps_mask
+    };
+    const xkb_mod_mask_t pressed_mod_mask = seat->keyboard.xkb.shift_mask | seat->keyboard.xkb.level3_mask | seat->keyboard.xkb.level5_mask;
+    const xkb_mod_mask_t locked_mod_mask = seat->keyboard.xkb.caps_mask;
 
-        for (size_t i = 0; i < SDL_arraysize(keymod_masks); ++i) {
-            WAYLAND_xkb_state_update_mask(state, keymod_masks[i] & pressed_mod_mask, 0, keymod_masks[i] & locked_mod_mask, 0, 0, layout);
-            if (WAYLAND_xkb_state_key_get_level(state, key, layout) == level) {
-                masks_out[mask_idx] = keymod_masks[i];
+    for (size_t i = 0; i < SDL_arraysize(keymod_masks); ++i) {
+        WAYLAND_xkb_state_update_mask(seat->keyboard.xkb.state, keymod_masks[i] & pressed_mod_mask, 0, keymod_masks[i] & locked_mod_mask, 0, 0, layout);
+        if (WAYLAND_xkb_state_key_get_level(seat->keyboard.xkb.state, key, layout) == level) {
+            masks_out[mask_idx] = keymod_masks[i];
 
-                if (++mask_idx == masks_size) {
-                    break;
-                }
+            if (++mask_idx == masks_size) {
+                break;
             }
         }
-
-        WAYLAND_xkb_state_unref(state);
     }
+
     return mask_idx;
 }
 #endif
