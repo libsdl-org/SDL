@@ -110,6 +110,7 @@ typedef struct SDL_WaylandSeat
 
             // Current system modifier flags
             xkb_mod_mask_t wl_pressed_modifiers;
+            xkb_mod_mask_t wl_latched_modifiers;
             xkb_mod_mask_t wl_locked_modifiers;
         } xkb;
     } keyboard;
