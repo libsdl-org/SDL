@@ -142,10 +142,10 @@ static bool GAMEINPUT_InternalRemoveByIndex(WIN_GameInputData *data, int idx)
         if (device) {
             if (device->registered) {
                 if (device->info->supportedInput & GameInputKindMouse) {
-                    SDL_RemoveMouse(device->instance_id, true);
+                    SDL_RemoveMouse(device->instance_id);
                 }
                 if (device->info->supportedInput & GameInputKindKeyboard) {
-                    SDL_RemoveKeyboard(device->instance_id, true);
+                    SDL_RemoveKeyboard(device->instance_id);
                 }
                 if (device->last_mouse_reading) {
                     device->last_mouse_reading->Release();
@@ -446,10 +446,10 @@ void WIN_UpdateGameInput(SDL_VideoDevice *_this)
 
             if (!device->registered) {
                 if (device->info->supportedInput & GameInputKindMouse) {
-                    SDL_AddMouse(device->instance_id, device->name, true);
+                    SDL_AddMouse(device->instance_id, device->name);
                 }
                 if (device->info->supportedInput & GameInputKindKeyboard) {
-                    SDL_AddKeyboard(device->instance_id, device->name, true);
+                    SDL_AddKeyboard(device->instance_id, device->name);
                 }
                 device->registered = true;
             }

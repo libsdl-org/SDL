@@ -106,38 +106,31 @@ static const GPU_ShaderSources vert_shader_sources[NUM_VERT_SHADERS] = {
 static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
     [FRAG_SHADER_COLOR] = {
         .num_samplers = 0,
-        .num_uniform_buffers = 0,
+        .num_uniform_buffers = 1,
         SHADER_SPIRV(color_frag_spv)
         SHADER_DXIL60(color_frag_dxil)
         SHADER_METAL(color_frag_msl)
     },
     [FRAG_SHADER_TEXTURE_RGB] = {
         .num_samplers = 1,
-        .num_uniform_buffers = 0,
+        .num_uniform_buffers = 1,
         SHADER_SPIRV(texture_rgb_frag_spv)
         SHADER_DXIL60(texture_rgb_frag_dxil)
         SHADER_METAL(texture_rgb_frag_msl)
     },
     [FRAG_SHADER_TEXTURE_RGBA] = {
         .num_samplers = 1,
-        .num_uniform_buffers = 0,
+        .num_uniform_buffers = 1,
         SHADER_SPIRV(texture_rgba_frag_spv)
         SHADER_DXIL60(texture_rgba_frag_dxil)
         SHADER_METAL(texture_rgba_frag_msl)
     },
-    [FRAG_SHADER_TEXTURE_RGB_PIXELART] = {
-        .num_samplers = 1,
+    [FRAG_SHADER_TEXTURE_ADVANCED] = {
+        .num_samplers = 3,
         .num_uniform_buffers = 1,
-        SHADER_SPIRV(texture_rgb_pixelart_frag_spv)
-        SHADER_DXIL60(texture_rgb_pixelart_frag_dxil)
-        SHADER_METAL(texture_rgb_pixelart_frag_msl)
-    },
-    [FRAG_SHADER_TEXTURE_RGBA_PIXELART] = {
-        .num_samplers = 1,
-        .num_uniform_buffers = 1,
-        SHADER_SPIRV(texture_rgba_pixelart_frag_spv)
-        SHADER_DXIL60(texture_rgba_pixelart_frag_dxil)
-        SHADER_METAL(texture_rgba_pixelart_frag_msl)
+        SHADER_SPIRV(texture_advanced_frag_spv)
+        SHADER_DXIL60(texture_advanced_frag_dxil)
+        SHADER_METAL(texture_advanced_frag_msl)
     },
 };
 // clang-format on

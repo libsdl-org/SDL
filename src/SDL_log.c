@@ -392,6 +392,9 @@ void SDL_ResetLogPriorities(void)
 
     SDL_LockMutex(SDL_log_lock);
     {
+        const char *env = SDL_getenv("DEBUG_INVOCATION");
+        bool debug = (env && *env && *env != '0');
+
         CleanupLogPriorities();
 
         SDL_log_default_priority = SDL_LOG_PRIORITY_INVALID;
@@ -414,7 +417,11 @@ void SDL_ResetLogPriorities(void)
 
             switch (i) {
             case SDL_LOG_CATEGORY_APPLICATION:
-                SDL_log_priorities[i] = SDL_LOG_PRIORITY_INFO;
+                if (debug) {
+                    SDL_log_priorities[i] = SDL_LOG_PRIORITY_DEBUG;
+                } else {
+                    SDL_log_priorities[i] = SDL_LOG_PRIORITY_INFO;
+                }
                 break;
             case SDL_LOG_CATEGORY_ASSERT:
                 SDL_log_priorities[i] = SDL_LOG_PRIORITY_WARN;
@@ -423,7 +430,11 @@ void SDL_ResetLogPriorities(void)
                 SDL_log_priorities[i] = SDL_LOG_PRIORITY_VERBOSE;
                 break;
             default:
-                SDL_log_priorities[i] = SDL_LOG_PRIORITY_ERROR;
+                if (debug) {
+                    SDL_log_priorities[i] = SDL_LOG_PRIORITY_DEBUG;
+                } else {
+                    SDL_log_priorities[i] = SDL_LOG_PRIORITY_ERROR;
+                }
                 break;
             }
         }
@@ -467,7 +478,7 @@ bool SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix)
 {
     char *prefix_copy;
 
-    if (priority <= SDL_LOG_PRIORITY_INVALID || priority >= SDL_LOG_PRIORITY_COUNT) {
+    CHECK_PARAM(priority <= SDL_LOG_PRIORITY_INVALID || priority >= SDL_LOG_PRIORITY_COUNT) {
         return SDL_InvalidParamError("priority");
     }
 

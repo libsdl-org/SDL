@@ -286,6 +286,16 @@ static SDL_Window *Emscripten_GetFocusedWindow(SDL_VideoDevice *device)
             break;
         }
     }
+    // If the DOM is focused, then at least one canvas in the DOM should be considered focused.
+    // So in this case, just assume that the first canvas is focused.
+    if (!window) {
+        const int focused = MAIN_THREAD_EM_ASM_INT({
+            return document.hasFocus();
+        });
+        if (focused) {
+            window = device->windows;
+        }
+    }
     return window;
 }
 
@@ -495,24 +505,31 @@ static EM_BOOL Emscripten_HandleFullscreenChangeGlobal(int eventType, const Emsc
 static EM_BOOL Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    bool force = false;
-
-    // update pixel ratio
-    if (window_data->window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
-        if (window_data->pixel_ratio != emscripten_get_device_pixel_ratio()) {
-            window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
-            force = true;
-        }
-    }
 
     if (!(window_data->window->flags & SDL_WINDOW_FULLSCREEN)) {
-        // this will only work if the canvas size is set through css
-        if (window_data->window->flags & SDL_WINDOW_RESIZABLE) {
-            double w = window_data->window->w;
-            double h = window_data->window->h;
+        bool force = false;
 
-            if (window_data->external_size) {
-                emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
+        // update pixel ratio
+        if (window_data->window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) {
+            if (window_data->pixel_ratio != emscripten_get_device_pixel_ratio()) {
+                window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
+                force = true;
+            }
+        }
+
+        if (window_data->fill_document || (window_data->window->flags & SDL_WINDOW_RESIZABLE)) {
+            double w, h;
+            if (window_data->fill_document) {
+                w = (double) uiEvent->windowInnerWidth;
+                h = (double) uiEvent->windowInnerHeight;
+            } else {
+                SDL_assert(window_data->window->flags & SDL_WINDOW_RESIZABLE);
+                w = window_data->window->w;
+                h = window_data->window->h;
+                // this will only work if the canvas size is set through css
+                if (window_data->external_size) {
+                    emscripten_get_element_css_size(window_data->canvas_id, &w, &h);
+                }
             }
 
             emscripten_set_canvas_element_size(window_data->canvas_id, SDL_lroundf(w * window_data->pixel_ratio), SDL_lroundf(h * window_data->pixel_ratio));
@@ -923,7 +940,11 @@ static void Emscripten_prep_pointer_event_callbacks(void)
 
                 var ptr = _SDL_malloc($0);
                 if (ptr != 0) {
+                    #ifdef __wasm32__
                     var idx = ptr >> 2;
+                    #elif __wasm64__
+                    var idx = Number(ptr / 4n);
+                    #endif
                     HEAP32[idx++] = ptrtype;
                     HEAP32[idx++] = event.pointerId;
                     HEAP32[idx++] = (typeof(event.button) !== "undefined") ? event.button : -1;
@@ -957,15 +978,42 @@ static void Emscripten_set_pointer_event_callbacks(SDL_WindowData *data)
             var data = $0;
             target.sdlEventHandlerPointerEnter = function(event) {
                 var rect = target.getBoundingClientRect();
-                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event); if (d != 0) { _Emscripten_HandlePointerEnter(data, d); _SDL_free(d); }
+                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event);
+                if (d != 0)
+                {
+                    #ifdef  __wasm32__
+                    _Emscripten_HandlePointerEnter(data, d);
+                    #elif __wasm64__
+                    _Emscripten_HandlePointerEnter(BigInt(data), d);
+                    #endif
+                    _SDL_free(d);
+                }
             };
             target.sdlEventHandlerPointerLeave = function(event) {
                 var rect = target.getBoundingClientRect();
-                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event); if (d != 0) { _Emscripten_HandlePointerLeave(data, d); _SDL_free(d); }
+                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event);
+                if (d != 0)
+                {
+                    #ifdef __wasm32__
+                        _Emscripten_HandlePointerLeave(data, d);
+                    #elif __wasm64__
+                        _Emscripten_HandlePointerLeave(BigInt(data), d);
+                    #endif
+                    _SDL_free(d);
+                }
             };
             target.sdlEventHandlerPointerGeneric = function(event) {
                 var rect = target.getBoundingClientRect();
-                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event); if (d != 0) { _Emscripten_HandlePointerGeneric(data, d); _SDL_free(d); }
+                var d = SDL3.makePointerEventCStruct(rect.left, rect.top, event);
+                if (d != 0)
+                {
+                    #ifdef __wasm32__
+                        _Emscripten_HandlePointerGeneric(data, d);
+                    #elif __wasm64__
+                        _Emscripten_HandlePointerGeneric(BigInt(data), d);
+                    #endif
+                    _SDL_free(d);
+                }
             };
 
             target.style.touchAction = "none";  // or mobile devices will scroll as your touch moves across the element.
@@ -1018,7 +1066,16 @@ static void Emscripten_set_global_mouseup_callback(SDL_VideoDevice *device)
         if (target) {
             target.sdlEventHandlerMouseButtonUpGlobal = function(event) {
                 var SDL3 = Module['SDL3'];
-                var d = SDL3.makePointerEventCStruct(0, 0, event); if (d != 0) { _Emscripten_HandleMouseButtonUpGlobal($0, d); _SDL_free(d); }
+                var d = SDL3.makePointerEventCStruct(0, 0, event);
+                if (d != 0)
+                {
+                    #ifdef __wasm32__
+                    _Emscripten_HandleMouseButtonUpGlobal($0, d);
+                    #elif __wasm64__
+                    _Emscripten_HandleMouseButtonUpGlobal(BigInt($0), d);
+                    #endif
+                    _SDL_free(d);
+                }
             };
             target.addEventListener("pointerup", target.sdlEventHandlerMouseButtonUpGlobal);
         }
@@ -1104,7 +1161,9 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
                     _Emscripten_SendDragTextEvent(data, plain_text);
                     _free(plain_text);
                 } else if (event.dataTransfer.types.includes("Files")) {
-                    for (let i = 0; i < event.dataTransfer.files.length; i++) {
+                    let files_read = 0;
+                    const files_to_read = event.dataTransfer.files.length;
+                    for (let i = 0; i < files_to_read; i++) {
                         const file = event.dataTransfer.files.item(i);
                         const file_reader = new FileReader();
                         file_reader.readAsArrayBuffer(file);
@@ -1123,8 +1182,18 @@ static void Emscripten_set_drag_event_callbacks(SDL_WindowData *data)
 
                             _Emscripten_SendDragFileEvent(data, c_fs_filepath);
                             _free(c_fs_filepath);
-                            _Emscripten_SendDragCompleteEvent(data);
+                            onFileRead();
                         };
+                        file_reader.onerror = function(event) {
+                            // Handle when error occurs to ensure that the drag event can still complete
+                            onFileRead();
+                        };
+                    }
+                    function onFileRead() {
+                        ++files_read;
+                        if (files_read === files_to_read) {
+                            _Emscripten_SendDragCompleteEvent(data);
+                        }
                     }
                 }
                 _Emscripten_SendDragCompleteEvent(data);
@@ -1217,6 +1286,17 @@ void Emscripten_UnregisterGlobalEventHandlers(SDL_VideoDevice *device)
     emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
 }
 
+EMSCRIPTEN_KEEPALIVE void Emscripten_HandleLockKeysCheck(SDL_WindowData *window_data, EM_BOOL capslock, EM_BOOL numlock, EM_BOOL scrolllock)
+{
+    const SDL_Keymod new_mods = (capslock ? SDL_KMOD_CAPS : 0) | (numlock ? SDL_KMOD_NUM : 0) | (scrolllock ? SDL_KMOD_SCROLL : 0);
+    SDL_Keymod modstate = SDL_GetModState();
+    if ((modstate & (SDL_KMOD_CAPS|SDL_KMOD_NUM|SDL_KMOD_SCROLL)) != new_mods) {
+        modstate &= ~(SDL_KMOD_CAPS|SDL_KMOD_NUM|SDL_KMOD_SCROLL);
+        modstate |= new_mods;
+        SDL_SetModState(modstate);
+    }
+}
+
 void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
     const char *keyElement;
@@ -1228,6 +1308,24 @@ void Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 
     keyElement = Emscripten_GetKeyboardTargetElement(data->keyboard_element);
     if (keyElement) {
+        MAIN_THREAD_EM_ASM_INT({
+            var data = $0;
+            // our keymod state can get confused in various ways (changed capslock when browser didn't have focus, etc), and you can't query the current
+            //  state from the DOM, outside of a keyboard event, so catch keypresses globally and reset mod state if it's unexpectedly wrong. Best we can do.
+            //  Note that this thing _only_ adjusts the lock keys if necessary; the real SDL keypress handling happens elsewhere.
+            document.sdlEventHandlerLockKeysCheck = function(event) {
+                // don't try to adjust the state on the actual lock key presses; the normal key handler will catch that and adjust.
+                if ((event.key != "CapsLock") && (event.key != "NumLock") && (event.key != "ScrollLock"))
+                {
+                    #ifdef __wasm32__
+                        _Emscripten_HandleLockKeysCheck(data, event.getModifierState("CapsLock"), event.getModifierState("NumLock"), event.getModifierState("ScrollLock"));
+                    #elif __wasm64__
+                        _Emscripten_HandleLockKeysCheck(BigInt(data), event.getModifierState("CapsLock"), event.getModifierState("NumLock"), event.getModifierState("ScrollLock"));
+                    #endif
+                }
+            };
+            document.addEventListener("keydown", document.sdlEventHandlerLockKeysCheck);
+        }, data);
         emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
         emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);
         emscripten_set_keypress_callback(keyElement, data, 0, Emscripten_HandleKeyPress);
@@ -1266,6 +1364,9 @@ void Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
         emscripten_set_keydown_callback(keyElement, NULL, 0, NULL);
         emscripten_set_keyup_callback(keyElement, NULL, 0, NULL);
         emscripten_set_keypress_callback(keyElement, NULL, 0, NULL);
+        MAIN_THREAD_EM_ASM_INT({
+            document.removeEventListener("keydown", document.sdlEventHandlerLockKeysCheck);
+        });
     }
 
     emscripten_set_visibilitychange_callback(NULL, 0, NULL);

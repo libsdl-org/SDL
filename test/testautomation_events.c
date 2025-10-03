@@ -287,6 +287,9 @@ static int SDLCALL events_mainThreadCallbacks(void *arg)
         SDL_WaitThread(thread, NULL);
         SDLTest_AssertCheck(data.counter == 3, "Incremented counter on main thread, expected 3, got %d", data.counter);
 
+        /* Flush events again, as the previous SDL_WaitEvent() call may have pumped OS events and added them to the queue */
+        SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
+
         /* Try again, but this time delay the calls until we've started waiting for events */
         data.delay = 100;
         thread = SDL_CreateThread(IncrementCounterThread, NULL, &data);

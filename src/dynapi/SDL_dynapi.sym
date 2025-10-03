@@ -1240,7 +1240,7 @@ SDL3_0.0.0 {
     SDL_GetDefaultTextureScaleMode;
     SDL_CreateGPURenderState;
     SDL_SetGPURenderStateFragmentUniforms;
-    SDL_SetRenderGPUState;
+    SDL_SetGPURenderState;
     SDL_DestroyGPURenderState;
     SDL_SetWindowProgressState;
     SDL_SetWindowProgressValue;
@@ -1255,6 +1255,11 @@ SDL3_0.0.0 {
     SDL_PutAudioStreamDataNoCopy;
     SDL_AddAtomicU32;
     SDL_hid_get_properties;
+    SDL_GetPixelFormatFromGPUTextureFormat;
+    SDL_GetGPUTextureFormatFromPixelFormat;
+    SDL_SetTexturePalette;
+    SDL_GetTexturePalette;
+    SDL_GetGPURendererDevice;
     # extra symbols go here (don't modify this line)
   local: *;
 };

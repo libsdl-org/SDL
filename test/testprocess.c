@@ -367,8 +367,11 @@ static int SDLCALL process_testKill(void *arg)
     result = SDL_WaitProcess(process, false, &exit_code);
     SDLTest_AssertCheck(result == false, "Process should not have exited yet");
 
-    SDLTest_AssertPass("About to call SDL_KillProcess(false)");
-    result = SDL_KillProcess(process, false);
+    /* Wait for the child process to finish initializing */
+    SDL_Delay(500);
+
+    SDLTest_AssertPass("About to call SDL_KillProcess(true)");
+    result = SDL_KillProcess(process, true);
     SDLTest_AssertCheck(result == true, "Process should have exited");
 
     exit_code = 0;

@@ -101,7 +101,7 @@ don't want any shutdown code that might be sitting below this code
 to actually run if main() were to continue on, since we're just
 getting started.
 
-Another option is to use SDL' main callbacks, which handle this for you
+Another option is to use SDL's main callbacks, which handle this for you
 without platform-specific code in your app. Please refer to
 [the wiki](https://wiki.libsdl.org/SDL3/README-main-functions#main-callbacks-in-sdl3)
 or `docs/README-main-functions.md` in the SDL source code.

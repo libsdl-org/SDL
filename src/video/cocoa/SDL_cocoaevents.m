@@ -261,11 +261,10 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
         return;
     }
 
+    // Restore any fullscreen window
     device = SDL_GetVideoDevice();
     if (device && device->windows) {
-        SDL_Window *window = device->windows;
-        int i;
-        for (i = 0; i < device->num_displays; ++i) {
+        for (int i = 0; i < device->num_displays; ++i) {
             SDL_Window *fullscreen_window = device->displays[i]->fullscreen_window;
             if (fullscreen_window) {
                 if (fullscreen_window->flags & SDL_WINDOW_MINIMIZED) {
@@ -273,12 +272,6 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                 }
                 return;
             }
-        }
-
-        if (window->flags & SDL_WINDOW_MINIMIZED) {
-            SDL_RestoreWindow(window);
-        } else {
-            SDL_RaiseWindow(window);
         }
     }
 }
@@ -370,9 +363,9 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 
 - (IBAction)menu:(id)sender
 {
-	SDL_TrayEntry *entry = [[sender representedObject] pointerValue];
+    SDL_TrayEntry *entry = [[sender representedObject] pointerValue];
 
-	SDL_ClickTrayEntry(entry);
+    SDL_ClickTrayEntry(entry);
 }
 
 @end

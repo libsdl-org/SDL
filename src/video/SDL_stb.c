@@ -140,11 +140,11 @@ bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
     bool retval = true;
 
     // Make sure we have somewhere to save
-    if (!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
         retval = SDL_InvalidParamError("surface");
         goto done;
     }
-    if (!dst) {
+    CHECK_PARAM(!dst) {
         retval = SDL_InvalidParamError("dst");
         goto done;
     }

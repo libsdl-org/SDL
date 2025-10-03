@@ -926,6 +926,7 @@ void DestroyGamepadImage(GamepadImage *ctx)
         SDL_DestroyTexture(ctx->touchpad_texture);
         SDL_DestroyTexture(ctx->button_texture);
         SDL_DestroyTexture(ctx->axis_texture);
+		SDL_free(ctx->fingers);
         SDL_free(ctx);
     }
 }

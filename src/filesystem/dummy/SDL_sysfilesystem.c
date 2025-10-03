@@ -47,8 +47,12 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
 
 char *SDL_SYS_GetCurrentDirectory(void)
 {
-    SDL_Unsupported();
-    return NULL;
+    const char *base = SDL_GetBasePath();
+    if (!base) {
+        return NULL;
+    }
+
+    return SDL_strdup(base);
 }
 
 #endif // SDL_FILESYSTEM_DUMMY || SDL_FILESYSTEM_DISABLED

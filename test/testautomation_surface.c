@@ -305,10 +305,7 @@ static void testBlitBlendMode(int mode)
 /* Helper to check that a file exists */
 static void AssertFileExist(const char *filename)
 {
-    struct stat st;
-    int ret = stat(filename, &st);
-
-    SDLTest_AssertCheck(ret == 0, "Verify file '%s' exists", filename);
+    SDLTest_AssertCheck(SDL_GetPathInfo(filename, NULL), "Verify file '%s' exists", filename);
 }
 
 /* Test case functions */

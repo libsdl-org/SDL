@@ -686,6 +686,21 @@ extern "C" {
 #define SDL_HINT_DISPLAY_USABLE_BOUNDS "SDL_DISPLAY_USABLE_BOUNDS"
 
 /**
+ * Set the level of checking for invalid parameters passed to SDL functions.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "1": Enable fast parameter error checking, e.g. quick NULL checks, etc.
+ * - "2": Enable full parameter error checking, e.g. validating objects are
+ *   the correct type, etc. (default)
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_INVALID_PARAM_CHECKS "SDL_INVALID_PARAM_CHECKS"
+
+/**
  * Disable giving back control to the browser automatically when running with
  * asyncify.
  *
@@ -737,6 +752,28 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
+
+/**
+ * Dictate that newly-created windows will fill the whole browser window.
+ *
+ * The canvas element fills the entire document. Resize events will be
+ * generated as the browser window is resized, as that will adjust the canvas
+ * size as well. The canvas will cover anything else on the page, including
+ * any controls provided by Emscripten in its generated HTML file. Often times
+ * this is desirable for a browser-based game, but it means several things
+ * that we expect of an SDL window on other platforms might not work as
+ * expected, such as minimum window sizes and aspect ratios.
+ *
+ * This hint overrides SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN
+ * properties when creating an SDL window.
+ *
+ * This hint only applies to the emscripten platform.
+ *
+ * This hint should be set before creating a window.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT "SDL_EMSCRIPTEN_FILL_DOCUMENT"
 
 /**
  * A variable that controls whether the on-screen keyboard should be shown
@@ -1761,6 +1798,18 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SINPUT "SDL_JOYSTICK_HIDAPI_SINPUT"
 
 /**
+ * A variable controlling whether the HIDAPI driver for ZUIKI controllers
+ * should be used.
+ *
+ * This variable can be set to the following values:
+ *
+ * "0" - HIDAPI driver is not used. "1" - HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_ZUIKI "SDL_JOYSTICK_HIDAPI_ZUIKI"
+
+/**
  * A variable controlling whether the HIDAPI driver for Flydigi controllers
  * should be used.
  *
@@ -2227,8 +2276,8 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": WGI is not used.
- * - "1": WGI is used. (default)
+ * - "0": WGI is not used. (default)
+ * - "1": WGI is used.
  *
  * This hint should be set before SDL is initialized.
  *
@@ -2409,6 +2458,11 @@ extern "C" {
  * If this hint isn't set, the default log levels are equivalent to:
  *
  * `app=info,assert=warn,test=verbose,*=error`
+ *
+ * If the `DEBUG_INVOCATION` environment variable is set to "1", the default
+ * log levels are equivalent to:
+ *
+ * `assert=warn,test=verbose,*=debug`
  *
  * This hint can be set anytime.
  *
@@ -2598,7 +2652,7 @@ extern "C" {
  * the window center occur within a short time period, SDL will emulate mouse
  * warps using relative mouse mode. This can provide smoother and more
  * reliable mouse motion for some older games, which continuously calculate
- * the distance travelled by the mouse pointer and warp it back to the center
+ * the distance traveled by the mouse pointer and warp it back to the center
  * of the window, rather than using relative mouse motion.
  *
  * Note that relative mouse mode may have different mouse acceleration
@@ -2965,6 +3019,24 @@ extern "C" {
 #define SDL_HINT_RENDER_DIRECT3D11_DEBUG "SDL_RENDER_DIRECT3D11_DEBUG"
 
 /**
+ * A variable controlling whether to use the Direct3D 11 WARP software
+ * rasterizer.
+ *
+ * For more information, see:
+ * https://learn.microsoft.com/en-us/windows/win32/direct3darticles/directx-warp
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Disable WARP rasterizer. (default)
+ * - "1": Enable WARP rasterizer.
+ *
+ * This hint should be set before creating a renderer.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_RENDER_DIRECT3D11_WARP "SDL_RENDER_DIRECT3D11_WARP"
+
+/**
  * A variable controlling whether to enable Vulkan Validation Layers.
  *
  * This variable can be set to the following values:
@@ -3145,6 +3217,37 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_ROG_GAMEPAD_MICE_EXCLUDED "SDL_ROG_GAMEPAD_MICE_EXCLUDED"
+
+/**
+ * Variable controlling the width of the PS2's framebuffer in pixels
+ *
+ * By default, this variable is "640"
+ */
+#define SDL_HINT_PS2_GS_WIDTH    "SDL_PS2_GS_WIDTH"
+
+/**
+ * Variable controlling the height of the PS2's framebuffer in pixels
+ *
+ * By default, this variable is "448"
+ */
+#define SDL_HINT_PS2_GS_HEIGHT    "SDL_PS2_GS_HEIGHT"
+
+/**
+ * Variable controlling whether the signal is interlaced or progressive
+ *
+ * - "0": Image is interlaced. (default)
+ * - "1": Image is progressive
+ */
+#define SDL_HINT_PS2_GS_PROGRESSIVE    "SDL_PS2_GS_PROGRESSIVE"
+
+/**
+ * Variable controlling the video mode of the console
+ *
+ * - "": Console-native. (default)
+ * - "NTSC": 60hz region
+ * - "PAL": 50hz region
+ */
+#define SDL_HINT_PS2_GS_MODE    "SDL_PS2_GS_MODE"
 
 /**
  * A variable controlling which Dispmanx layer to use on a Raspberry PI.
@@ -4194,7 +4297,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.2.0.
  */
-#define SDL_HINT_WINDOWS_GAMEINPUT   "SDL_WINDOWS_GAMEINPUT"
+#define SDL_HINT_WINDOWS_GAMEINPUT "SDL_WINDOWS_GAMEINPUT"
 
 /**
  * A variable controlling whether raw keyboard events are used on Windows.
@@ -4239,7 +4342,7 @@ extern "C" {
  *
  * \since This hint is available since SDL 3.2.0.
  */
-#define SDL_HINT_WINDOWS_INTRESOURCE_ICON       "SDL_WINDOWS_INTRESOURCE_ICON"
+#define SDL_HINT_WINDOWS_INTRESOURCE_ICON "SDL_WINDOWS_INTRESOURCE_ICON"
 
 /**
  * A variable to specify custom icon resource id from RC file on Windows
@@ -4535,19 +4638,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetHints(void);
  * \param name the hint to query.
  * \returns the string value of a hint or NULL if the hint isn't set.
  *
- * \threadsafety It is safe to call this function from any thread, however the
- *               return value only remains valid until the hint is changed; if
- *               another thread might do so, the app should supply locks
- *               and/or make a copy of the string. Note that using a hint
- *               callback instead is always thread-safe, as SDL holds a lock
- *               on the thread subsystem during the callback.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetHint
  * \sa SDL_SetHintWithPriority
  */
-extern SDL_DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
+extern SDL_DECLSPEC const char *SDLCALL SDL_GetHint(const char *name);
 
 /**
  * Get the boolean value of a hint variable.
@@ -4623,8 +4721,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AddHintCallback(const char *name, SDL_HintC
  * \sa SDL_AddHintCallback
  */
 extern SDL_DECLSPEC void SDLCALL SDL_RemoveHintCallback(const char *name,
-                                                     SDL_HintCallback callback,
-                                                     void *userdata);
+                                                        SDL_HintCallback callback,
+                                                        void *userdata);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -35,7 +35,7 @@
 #define UNIFORM_BUFFER_SIZE            32768
 #define MAX_VERTEX_BUFFERS             16
 #define MAX_VERTEX_ATTRIBUTES          16
-#define MAX_COLOR_TARGET_BINDINGS      4
+#define MAX_COLOR_TARGET_BINDINGS      8
 #define MAX_PRESENT_COUNT              16
 #define MAX_FRAMES_IN_FLIGHT           3
 
@@ -1096,6 +1096,9 @@ struct SDL_GPUDevice
 
     // Store this for SDL_gpu.c's debug layer
     bool debug_mode;
+    bool default_enable_depth_clip;
+    bool validate_feature_depth_clamp_disabled;
+    bool validate_feature_anisotropy_disabled;
 };
 
 #define ASSIGN_DRIVER_FUNC(func, name) \

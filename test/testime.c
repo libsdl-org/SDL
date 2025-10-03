@@ -791,7 +791,11 @@ static void RedrawWindow(WindowState *ctx)
         break;
     }
 
-    SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
+    if (SDL_TextInputActive(ctx->window)) {
+        SDL_SetRenderDrawColor(renderer, backColor.r, backColor.g, backColor.b, backColor.a);
+    } else {
+        SDL_SetRenderDrawColor(renderer, 0x80, 0x80, 0x80, 0xFF);
+    }
     SDL_RenderFillRect(renderer, &ctx->textRect);
 
     /* Initialize the drawn text rectangle for the cursor */
@@ -876,20 +880,22 @@ static void RedrawWindow(WindowState *ctx)
     }
 
     /* Draw the cursor */
-    Uint64 now = SDL_GetTicks();
-    if ((now - ctx->last_cursor_change) >= CURSOR_BLINK_INTERVAL_MS) {
-        ctx->cursor_visible = !ctx->cursor_visible;
-        ctx->last_cursor_change = now;
-    }
-    if (ctx->cursor_length > 0) {
-        /* We'll show a highlight */
-        SDL_SetRenderDrawBlendMode(renderer, highlight_mode);
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderFillRect(renderer, &cursorRect);
-        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
-    } else if (ctx->cursor_visible) {
-        SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
-        SDL_RenderFillRect(renderer, &cursorRect);
+    if (SDL_TextInputActive(ctx->window)) {
+        Uint64 now = SDL_GetTicks();
+        if ((now - ctx->last_cursor_change) >= CURSOR_BLINK_INTERVAL_MS) {
+            ctx->cursor_visible = !ctx->cursor_visible;
+            ctx->last_cursor_change = now;
+        }
+        if (ctx->cursor_length > 0) {
+            /* We'll show a highlight */
+            SDL_SetRenderDrawBlendMode(renderer, highlight_mode);
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_RenderFillRect(renderer, &cursorRect);
+            SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+        } else if (ctx->cursor_visible) {
+            SDL_SetRenderDrawColor(renderer, lineColor.r, lineColor.g, lineColor.b, lineColor.a);
+            SDL_RenderFillRect(renderer, &cursorRect);
+        }
     }
 
     /* Draw the candidates */
@@ -911,6 +917,9 @@ static void Redraw(void)
         SDL_RenderClear(renderer);
 
         RedrawWindow(&windowstate[i]);
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderDebugTextFormat(renderer, 4, 4, "Window %d", 1 + i);
 
         SDL_RenderPresent(renderer);
     }
@@ -1076,6 +1085,19 @@ int main(int argc, char *argv[])
                     }
                     break;
                 default:
+                    if ((event.key.mod & SDL_KMOD_CTRL) && (event.key.key >= SDLK_KP_1 && event.key.key <= SDLK_KP_9)) {
+                        int index = (event.key.key - SDLK_KP_1);
+                        if (index < state->num_windows) {
+                            SDL_Window *window = state->windows[index];
+                            if (SDL_TextInputActive(window)) {
+                                SDL_Log("Disabling text input for window %d\n", 1 + index);
+                                SDL_StopTextInput(window);
+                            } else {
+                                SDL_Log("Enabling text input for window %d\n", 1 + index);
+                                SDL_StartTextInput(window);
+                            }
+                        }
+                    }
                     break;
                 }
 
