@@ -1015,7 +1015,7 @@ static SDL_RenderLineMethod SDL_GetRenderLineMethod(void)
 
 static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Window *window)
 {
-    SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
+    SDL_DisplayID displayID = window ? SDL_GetDisplayForWindow(window) : 0;
     const SDL_DisplayMode *mode;
     int refresh_num, refresh_den;
 
@@ -1232,9 +1232,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     SDL_SetRenderVSync(renderer, vsync);
 #endif
 
-    if (window) {
-        SDL_CalculateSimulatedVSyncInterval(renderer, window);
-    }
+    SDL_CalculateSimulatedVSyncInterval(renderer, window);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
                 "Created renderer: %s", renderer->name);
