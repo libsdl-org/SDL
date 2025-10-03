@@ -386,16 +386,16 @@ bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
     
     [platform_menu->menu addItem:appMenuItem];
     
-    menu_bar->common.item_common.platform_data = CFBridgingRetain(platform_menu);
-    
+    menu_bar->common.item_common.platform_data = (void*)CFBridgingRetain(platform_menu);
+
     return true;
 }
 
 bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type)
 {
     PlatformMenuData* platform_data = [PlatformMenuData new];
+    menu_item->common.platform_data = (void*)CFBridgingRetain(platform_data);
     platform_data->user_event_type = event_type;
-    menu_item->common.platform_data = CFBridgingRetain(platform_data);
     
     PlatformMenuData* parent_platform_data = (__bridge id _Nullable)(menu_item->common.parent->common.platform_data);
     NSString* name_ns = [NSString stringWithUTF8String:name];
@@ -477,7 +477,8 @@ bool Cocoa_DisableMenuItem(SDL_MenuItem *menu_item)
 bool Cocoa_DestroyMenuItem(SDL_MenuItem *menu_item)
 {
     PlatformMenuData* platform_data = CFBridgingRelease(menu_item->common.platform_data);
-    PlatformMenuData* parent_platform_data = (__bridge id _Nullable)(menu_item->common.parent->common.platform_data);
+    menu_item->common.platform_data = NULL;
+    PlatformMenuData* parent_platform_data = (__bridge PlatformMenuData*)(menu_item->common.parent->common.platform_data);
     [parent_platform_data->menu removeItem:platform_data->menu_item];
     return false;
 }
