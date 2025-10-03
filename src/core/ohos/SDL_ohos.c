@@ -135,11 +135,11 @@ void OHOS_removeWindow(SDL_Window *w)
 
 void OHOS_LockPage()
 {
-    SDL_LockMutex(g_ohosPageMutex);
+    // SDL_LockMutex(g_ohosPageMutex);
 }
 void OHOS_UnlockPage()
 {
-    SDL_UnlockMutex(g_ohosPageMutex);
+    // SDL_UnlockMutex(g_ohosPageMutex);
 }
 
 int OHOS_FetchWidth()
