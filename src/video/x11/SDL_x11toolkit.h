@@ -126,6 +126,7 @@ typedef struct SDL_ToolkitWindowX11
     XColor xcolor_bevel_d;
     XColor xcolor_pressed;
     XColor xcolor_disabled_text;
+    XColor xcolor_light_control_bg;
 
     /* Control list */
     bool has_focus;
@@ -230,6 +231,11 @@ extern SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11
 extern SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *window, const SDL_MessageBoxButtonData *data);
 extern void X11Toolkit_RegisterCallbackForButtonControl(SDL_ToolkitControlX11 *control, void *data, void (*cb)(struct SDL_ToolkitControlX11 *, void *));
 extern const SDL_MessageBoxButtonData *X11Toolkit_GetButtonControlData(SDL_ToolkitControlX11 *control);
+
+/* MENU CONTROL FUNCTIONS */
+/* The menu_items variable is a list of SDL_ToolkitMenuItemX11 structs */
+extern SDL_ToolkitControlX11 *X11Toolkit_CreateMenuBarControl(SDL_ToolkitWindowX11 *window, SDL_ListNode *menu_items);
+extern SDL_ToolkitControlX11 *X11Toolkit_CreateMenuControl(SDL_ToolkitWindowX11 *window, SDL_ListNode *menu_items);
 
 #endif // SDL_VIDEO_DRIVER_X11
 
