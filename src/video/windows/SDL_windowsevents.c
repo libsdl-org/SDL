@@ -1715,7 +1715,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_WINDOWPOSCHANGED:
     {
         SDL_Window *win;
-        const SDL_DisplayID original_displayID = data->last_displayID;
+        const SDL_DisplayID original_displayID = data->window->displayID;
         const WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
         bool iconic;
         bool zoomed;
@@ -1790,9 +1790,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         WIN_UpdateClipCursor(data->window);
 
         // Update the window display position
-        data->last_displayID = SDL_GetDisplayForWindow(data->window);
-
-        if (data->last_displayID != original_displayID) {
+        if (data->window->displayID != original_displayID) {
             // Display changed, check ICC profile
             WIN_UpdateWindowICCProfile(data->window, true);
         }
