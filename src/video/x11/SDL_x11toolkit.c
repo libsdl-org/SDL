@@ -28,6 +28,9 @@
 #ifdef SDL_USE_LIBDBUS
 #include "../../core/linux/SDL_system_theme.h"
 #endif
+#ifdef HAVE_FRIBIDI_H
+#include "../../core/unix/SDL_fribidi.h"
+#endif
 #include "SDL_x11dyn.h"
 #include "SDL_x11toolkit.h"
 #include "SDL_x11settings.h"
@@ -70,12 +73,16 @@ typedef struct SDL_ToolkitButtonControlX11
 
     /* Data */
     const SDL_MessageBoxButtonData *data;
-
+    
     /* Text */
     SDL_Rect text_rect;
     int text_a;
     int text_d;
     int str_sz;
+#ifdef HAVE_FRIBIDI_H
+    char *text;
+    bool free_text;
+#endif
 
     /* Callback */
     void *cb_data;
@@ -90,6 +97,12 @@ typedef struct SDL_ToolkitLabelControlX11
     int *y;
     size_t *szs;
     size_t sz;
+#ifdef HAVE_FRIBIDI_H
+    int *x;
+    int *w;
+    bool *free_lines;
+    FriBidiParType *par_types;
+#endif
 } SDL_ToolkitLabelControlX11;
 
 typedef struct SDL_ToolkitMenuBarControlX11
@@ -109,7 +122,7 @@ typedef struct SDL_ToolkitMenuControlX11
 
 /* Font for icon control */
 static const char *g_IconFont = "-*-*-bold-r-normal-*-%d-*-*-*-*-*-iso8859-1[33 88 105]";
-#define G_ICONFONT_SIZE 18
+#define G_ICONFONT_SIZE 22
 
 /* General UI font */
 static const char g_ToolkitFontLatin1[] =
@@ -128,7 +141,7 @@ static const char *g_ToolkitFont[] = {
     "-*-*-*-*-*--*-*-*-*-*-*-iso8859-1,*",  // just give me anything latin1.
     NULL
 };
-#define G_TOOLKITFONT_SIZE 120
+#define G_TOOLKITFONT_SIZE 140
 
 static const SDL_MessageBoxColor g_default_colors[SDL_MESSAGEBOX_COLOR_COUNT] = {
     { 191, 184, 191 },    // SDL_MESSAGEBOX_COLOR_BACKGROUND,
@@ -399,6 +412,10 @@ static void X11Toolkit_InitWindowFonts(SDL_ToolkitWindowX11 *window)
         
         if (!window->font_set) {
             goto load_font_traditional;
+        } else {
+#ifdef HAVE_FRIBIDI_H
+            window->do_shaping = !X11_XContextDependentDrawing(window->font_set);
+#endif
         }
     } else
 #endif
@@ -549,27 +566,40 @@ static void X11Toolkit_GetTextWidthHeightForFont(XFontStruct *font, const char *
     *ascent = text_structure.ascent;
 }
 
-static void X11Toolkit_GetTextWidthHeight(SDL_ToolkitWindowX11 *data, const char *str, int nbytes, int *pwidth, int *pheight, int *ascent, int *font_descent)
+static void X11Toolkit_GetTextWidthHeight(SDL_ToolkitWindowX11 *data, const char *str, int nbytes, int *pwidth, int *pheight, int *ascent, int *descent, int *font_height)
 {
 #ifdef X_HAVE_UTF8_STRING
     if (data->utf8) {
         XRectangle overall_ink, overall_logical;
+        
         X11_Xutf8TextExtents(data->font_set, str, nbytes, &overall_ink, &overall_logical);
         *pwidth = overall_logical.width;
         *pheight = overall_logical.height;
         *ascent = -overall_logical.y;
-        *font_descent = overall_logical.height - *ascent;
+        *descent = overall_logical.height - *ascent;
+        
+        if (font_height) {
+            XFontSetExtents *extents;
+            
+            extents = X11_XExtentsOfFontSet(data->font_set);
+            *font_height = extents->max_logical_extent.height;
+        }    
     } else
 #endif
     {
         XCharStruct text_structure;
-        int font_direction, font_ascent;
+        int font_direction, font_ascent, font_descent;
         X11_XTextExtents(data->font_struct, str, nbytes,
-                         &font_direction, &font_ascent, font_descent,
+                         &font_direction, &font_ascent, &font_descent,
                          &text_structure);
         *pwidth = text_structure.width;
         *pheight = text_structure.ascent + text_structure.descent;
         *ascent = text_structure.ascent;
+        *descent = text_structure.descent;
+        
+        if (font_height) {
+            *font_height = font_ascent + font_descent;
+        }    
     }
 }
 
@@ -778,7 +808,10 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
 
     /* Menu windows */
     window->popup_windows = NULL;
-
+    
+#ifdef HAVE_FRIBIDI_H
+    window->fribidi = SDL_FriBidi_Create();
+#endif
     return window;
 }
 
@@ -1653,7 +1686,7 @@ static void X11Toolkit_CalculateButtonControl(SDL_ToolkitControlX11 *control) {
     int text_d;
 
     button_control = (SDL_ToolkitButtonControlX11 *)control;
-    X11Toolkit_GetTextWidthHeight(control->window, button_control->data->text, button_control->str_sz, &button_control->text_rect.w, &button_control->text_rect.h, &button_control->text_a, &text_d);
+    X11Toolkit_GetTextWidthHeight(control->window, button_control->data->text, button_control->str_sz, &button_control->text_rect.w, &button_control->text_rect.h, &button_control->text_a, &text_d, NULL);
     if (control->do_size) {
         control->rect.w = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * control->window->iscale + button_control->text_rect.w;
         control->rect.h = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * control->window->iscale + button_control->text_rect.h;
@@ -1665,8 +1698,16 @@ static void X11Toolkit_CalculateButtonControl(SDL_ToolkitControlX11 *control) {
 
 static void X11Toolkit_DrawButtonControl(SDL_ToolkitControlX11 *control) {
     SDL_ToolkitButtonControlX11 *button_control;
-
+    char *text;
+    
     button_control = (SDL_ToolkitButtonControlX11 *)control;
+    
+#ifdef HAVE_FRIBIDI_H
+    text = button_control->text;
+#else
+    text = (char *)button_control->data->text;
+#endif
+
     X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
     /* Draw bevel */
     if (control->state == SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED || control->state == SDL_TOOLKIT_CONTROL_STATE_X11_PRESSED_HELD) {
@@ -1754,13 +1795,13 @@ static void X11Toolkit_DrawButtonControl(SDL_ToolkitControlX11 *control) {
             X11_Xutf8DrawString(control->window->display, control->window->drawable, control->window->font_set, control->window->ctx,
                                 control->rect.x + button_control->text_rect.x,
                                 control->rect.y + button_control->text_rect.y,
-                                button_control->data->text, button_control->str_sz);
+                                text, button_control->str_sz);
         } else
 #endif
         {
             X11_XDrawString(control->window->display, control->window->drawable, control->window->ctx,
                             control->rect.x + button_control->text_rect.x, control->rect.y + button_control->text_rect.y,
-                            button_control->data->text, button_control->str_sz);
+                            text, button_control->str_sz);
         }
 }
 
@@ -1773,7 +1814,15 @@ static void X11Toolkit_OnButtonControlStateChange(SDL_ToolkitControlX11 *control
     }
 }
 
-static void X11Toolkit_DestroyGenericControl(SDL_ToolkitControlX11 *control) {
+static void X11Toolkit_DestroyButtonControl(SDL_ToolkitControlX11 *control) {
+#ifdef HAVE_FRIBIDI_H
+    SDL_ToolkitButtonControlX11 *button_control;
+
+    button_control = (SDL_ToolkitButtonControlX11 *)control;
+    if (button_control->free_text) {
+        SDL_free(button_control->text);
+    }
+#endif
     SDL_free(control);
 }
 
@@ -1793,7 +1842,7 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
     base_control->func_calc_size = X11Toolkit_CalculateButtonControl;
     base_control->func_draw = X11Toolkit_DrawButtonControl;
     base_control->func_on_state_change = X11Toolkit_OnButtonControlStateChange;
-    base_control->func_free = X11Toolkit_DestroyGenericControl;
+    base_control->func_free = X11Toolkit_DestroyButtonControl;
     base_control->func_on_scale_change = NULL;
     base_control->state = SDL_TOOLKIT_CONTROL_STATE_X11_NORMAL;
     base_control->selected = false;
@@ -1810,8 +1859,23 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateButtonControl(SDL_ToolkitWindowX11 *wind
     base_control->do_size = false;
     control->data = data;
     control->str_sz = SDL_strlen(control->data->text);
+#ifdef HAVE_FRIBIDI_H
+    if (base_control->window->fribidi) {
+        control->text = SDL_FriBidi_Process(base_control->window->fribidi, (char *)control->data->text, control->str_sz, base_control->window->do_shaping, NULL);
+        if (control->text) {
+            control->free_text = true;
+            control->str_sz = SDL_strlen(control->text);
+        } else {
+            control->text = (char *)control->data->text;
+            control->free_text = false;
+        }
+    } else {
+        control->text = (char *)control->data->text;
+        control->free_text = false;
+    }
+#endif
     control->cb = NULL;
-    X11Toolkit_GetTextWidthHeight(base_control->window, control->data->text, control->str_sz, &control->text_rect.w, &control->text_rect.h, &control->text_a, &text_d);
+    X11Toolkit_GetTextWidthHeight(base_control->window, control->data->text, control->str_sz, &control->text_rect.w, &control->text_rect.h, &control->text_a, &text_d, NULL);
     base_control->rect.w = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * window->iscale + control->text_rect.w;
     base_control->rect.h = SDL_TOOLKIT_X11_ELEMENT_PADDING_3 * 2 * window->iscale + control->text_rect.h;    
     control->text_rect.x = control->text_rect.y = 0;
@@ -1923,6 +1987,10 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
     }
 #endif
 
+#ifdef HAVE_FRIBIDI_H
+    SDL_FriBidi_Destroy(data->fribidi);
+#endif
+
     SDL_free(data);
 }
 
@@ -1940,20 +2008,27 @@ static int X11Toolkit_CountLinesOfText(const char *text)
 static void X11Toolkit_DrawLabelControl(SDL_ToolkitControlX11 *control) {
     SDL_ToolkitLabelControlX11 *label_control;
     int i;
-
+    int x;
+    
     label_control = (SDL_ToolkitLabelControlX11 *)control;
     X11_XSetForeground(control->window->display, control->window->ctx, control->window->xcolor[SDL_MESSAGEBOX_COLOR_TEXT].pixel);
     for (i = 0; i < label_control->sz; i++) {
+        x = control->rect.x;
+#ifdef HAVE_FRIBIDI_H
+        if (control->window->fribidi) {
+            x += label_control->x[i];
+        }
+#endif        
 #ifdef X_HAVE_UTF8_STRING
         if (control->window->utf8) {
             X11_Xutf8DrawString(control->window->display, control->window->drawable, control->window->font_set, control->window->ctx,
-                                control->rect.x, control->rect.y + label_control->y[i],
+                                x, control->rect.y + label_control->y[i],
                                 label_control->lines[i], label_control->szs[i]);
         } else
 #endif
         {
             X11_XDrawString(control->window->display, control->window->drawable, control->window->ctx,
-                                control->rect.x, control->rect.y + label_control->y[i],
+                                x, control->rect.y + label_control->y[i],
                                 label_control->lines[i], label_control->szs[i]);
         }
     }
@@ -1963,6 +2038,21 @@ static void X11Toolkit_DestroyLabelControl(SDL_ToolkitControlX11 *control) {
     SDL_ToolkitLabelControlX11 *label_control;
 
     label_control = (SDL_ToolkitLabelControlX11 *)control;
+#ifdef HAVE_FRIBIDI_H
+    if (control->window->fribidi) {
+        int i;
+        
+        for (i = 0; i < label_control->sz; i++) {
+            if (label_control->free_lines[i]) {
+                SDL_free(label_control->lines[i]);
+            }
+        }
+        SDL_free(label_control->x);
+        SDL_free(label_control->free_lines);
+        SDL_free(label_control->w);
+        SDL_free(label_control->par_types);
+    }
+#endif
     SDL_free(label_control->lines);
     SDL_free(label_control->szs);
     SDL_free(label_control->y);
@@ -1971,20 +2061,26 @@ static void X11Toolkit_DestroyLabelControl(SDL_ToolkitControlX11 *control) {
 
 static void X11Toolkit_CalculateLabelControl(SDL_ToolkitControlX11 *base_control) {
     SDL_ToolkitLabelControlX11 *control;
-     int last_h;
+    int last_h;
     int ascent;
     int descent;
+    int font_h;
     int w;
     int h;
     int i;
-    
+#ifdef HAVE_FRIBIDI_H
+    FriBidiParType first_ndn_dir;
+    int last_ndn;
+#endif
+
     last_h = 0;
     control = (SDL_ToolkitLabelControlX11 *)base_control;
     for (i = 0; i < control->sz; i++) {
-        X11Toolkit_GetTextWidthHeight(base_control->window, control->lines[i], control->szs[i], &w, &h, &ascent, &descent);
+        X11Toolkit_GetTextWidthHeight(base_control->window, control->lines[i], control->szs[i], &w, &h, &ascent, &descent, &font_h);
+        base_control->rect.w = SDL_max(base_control->rect.w, w);
 
         if (i > 0) {
-            control->y[i] = ascent + descent + control->y[i-1];
+            control->y[i] = font_h + control->y[i-1];
         } else {
             control->y[i] = ascent;
         }
@@ -1992,12 +2088,56 @@ static void X11Toolkit_CalculateLabelControl(SDL_ToolkitControlX11 *base_control
         last_h = h;
     }
     base_control->rect.h = control->y[control->sz -1] + last_h;
+    
+#ifdef HAVE_FRIBIDI_H
+    if (base_control->window->fribidi) {
+        first_ndn_dir = FRIBIDI_PAR_LTR;
+        for (i = 0; i < control->sz; i++) {
+            if (control->par_types[i] != FRIBIDI_PAR_ON) {
+                first_ndn_dir = control->par_types[i];
+            }
+        }
+        
+        last_ndn = -1;
+        for (i = 0; i < control->sz; i++) {
+            switch (control->par_types[i]) {
+                case FRIBIDI_PAR_LTR:
+                    control->x[i] = 0;
+                    last_ndn = i;
+                    break;
+                case FRIBIDI_PAR_RTL:
+                    control->x[i] = base_control->rect.w - control->w[i];
+                    last_ndn = i;
+                    break;
+                default:
+                    if (last_ndn != -1) {
+                        if (control->par_types[last_ndn] == FRIBIDI_PAR_RTL) {
+                            control->x[i] = base_control->rect.w - control->w[i];
+                        } else {
+                            control->x[i] = 0;
+                        }
+                    } else {
+                        if (first_ndn_dir == FRIBIDI_PAR_RTL) {
+                            control->x[i] = base_control->rect.w - control->w[i];
+                        } else {
+                            control->x[i] = 0;
+                        }                        
+                    }
+            }
+        }
+    }
+#endif
 }
 
 SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *window, char *utf8) {
     SDL_ToolkitLabelControlX11 *control;
     SDL_ToolkitControlX11 *base_control;
-     int last_h;
+#ifdef HAVE_FRIBIDI_H
+    FriBidiParType first_ndn_dir;
+    int last_ndn;
+#endif
+    int font_h;
+    int last_h;
     int ascent;
     int descent;
     int i;
@@ -2028,6 +2168,14 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
     control->lines = (char **)SDL_malloc(sizeof(char *) * control->sz);
     control->y = (int *)SDL_calloc(control->sz, sizeof(int));
     control->szs = (size_t *)SDL_calloc(control->sz, sizeof(size_t));
+#ifdef HAVE_FRIBIDI_H
+    if (base_control->window->fribidi) {
+        control->x = (int *)SDL_calloc(control->sz, sizeof(int));
+        control->free_lines = (bool *)SDL_calloc(control->sz, sizeof(bool));        
+        control->par_types = (FriBidiParType *)SDL_calloc(control->sz, sizeof(FriBidiParType));        
+        control->w = (int *)SDL_calloc(control->sz, sizeof(int));
+    }
+#endif
     last_h = 0;
     for (i = 0; i < control->sz; i++) {
         const char *lf = SDL_strchr(utf8, '\n');
@@ -2035,17 +2183,34 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
         int w;
         int h;
 
-        control->lines[i] = utf8;
-        X11Toolkit_GetTextWidthHeight(window, utf8, length, &w, &h, &ascent, &descent);
+#ifdef HAVE_FRIBIDI_H
+        if (base_control->window->fribidi) {
+            control->lines[i] = SDL_FriBidi_Process(base_control->window->fribidi, utf8, length, base_control->window->do_shaping, &control->par_types[i]);
+            control->szs[i] = SDL_strlen(control->lines[i]);
+            control->free_lines[i] = true;
+        } else 
+#endif    
+        {
+            control->lines[i] = utf8;
+            control->szs[i] = length;
+#ifdef HAVE_FRIBIDI_H
+            control->free_lines[i] = false;
+#endif
+        }
+        X11Toolkit_GetTextWidthHeight(window, control->lines[i], control->szs[i], &w, &h, &ascent, &descent, &font_h);
+#ifdef HAVE_FRIBIDI_H
+        if (base_control->window->fribidi) {
+            control->w[i] = w;
+        }    
+#endif
         base_control->rect.w = SDL_max(base_control->rect.w, w);
 
-        control->szs[i] = length;
-        if (lf && (lf > utf8) && (lf[-1] == '\r')) {
+        if (lf && (lf > control->lines[i]) && (lf[-1] == '\r')) {
             control->szs[i]--;
         }
 
         if (i > 0) {
-            control->y[i] = ascent + descent + control->y[i-1];
+            control->y[i] = font_h + control->y[i-1];
         } else {
             control->y[i] = ascent;
         }
@@ -2057,6 +2222,44 @@ SDL_ToolkitControlX11 *X11Toolkit_CreateLabelControl(SDL_ToolkitWindowX11 *windo
         }
     }    
     base_control->rect.h = control->y[control->sz -1] + last_h;
+#ifdef HAVE_FRIBIDI_H
+    if (base_control->window->fribidi) {
+        first_ndn_dir = FRIBIDI_PAR_LTR;
+        for (i = 0; i < control->sz; i++) {
+            if (control->par_types[i] != FRIBIDI_PAR_ON) {
+                first_ndn_dir = control->par_types[i];
+            }
+        }
+        
+        last_ndn = -1;
+        for (i = 0; i < control->sz; i++) {
+            switch (control->par_types[i]) {
+                case FRIBIDI_PAR_LTR:
+                    control->x[i] = 0;
+                    last_ndn = i;
+                    break;
+                case FRIBIDI_PAR_RTL:
+                    control->x[i] = base_control->rect.w - control->w[i];
+                    last_ndn = i;
+                    break;
+                default:
+                    if (last_ndn != -1) {
+                        if (control->par_types[last_ndn] == FRIBIDI_PAR_RTL) {
+                            control->x[i] = base_control->rect.w - control->w[i];
+                        } else {
+                            control->x[i] = 0;
+                        }
+                    } else {
+                        if (first_ndn_dir == FRIBIDI_PAR_RTL) {
+                            control->x[i] = base_control->rect.w - control->w[i];
+                        } else {
+                            control->x[i] = 0;
+                        }                        
+                    }
+            }
+        }
+    }
+#endif
 
     X11Toolkit_AddControlToWindow(window, base_control);
     
