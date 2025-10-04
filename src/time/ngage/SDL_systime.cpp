@@ -152,7 +152,8 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 
 bool SDL_GetCurrentTime(SDL_Time *ticks)
 {
-    CHECK_PARAM(!ticks) {
+    CHECK_PARAM(!ticks)
+    {
         return SDL_InvalidParamError("ticks");
     }
 
@@ -169,21 +170,39 @@ bool SDL_GetCurrentTime(SDL_Time *ticks)
     return true;
 }
 
+#define SYMBIAN_UNIX_EPOCH_OFFSET_US 62135596800000000LL
+
 bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
 {
-    CHECK_PARAM(!dt) {
+    CHECK_PARAM(!dt)
+    {
         return SDL_InvalidParamError("dt");
     }
 
-    // FIXME: Need implementation
-    dt->year = 1970;
-    dt->month = 1;
-    dt->day = 1;
-    dt->hour = 0;
-    dt->minute = 0;
-    dt->second = 0;
-    dt->nanosecond = 0;
-    dt->day_of_week = 4;
+    long long unixMicros = ticks / 1000LL;
+
+    unixMicros += SYMBIAN_UNIX_EPOCH_OFFSET_US;
+
+    TInt32 high = (TInt32)(unixMicros >> 32);
+    TUint32 low = (TUint32)(unixMicros & 0xFFFFFFFFu);
+    TInt64 symbianTime(high, low);
+
+    TTime s60Time(symbianTime);
+
+    if (localTime) {
+        s60Time.HomeTime();
+    }
+
+    TDateTime dtSym = s60Time.DateTime();
+
+    dt->year = dtSym.Year();
+    dt->month = dtSym.Month() + 1; // Months are 0-11
+    dt->day = dtSym.Day() + 1;     // Days are 0-30
+    dt->hour = dtSym.Hour();
+    dt->minute = dtSym.Minute();
+    dt->second = dtSym.Second();
+    dt->nanosecond = (int)(ticks % 1000000000LL);
+    dt->day_of_week = s60Time.DayNoInWeek();
     dt->utc_offset = 0;
 
     return true;
