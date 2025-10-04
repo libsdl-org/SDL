@@ -10,13 +10,15 @@ using namespace metal;
 #define TONEMAP_LINEAR          1
 #define TONEMAP_CHROME          2
 
-#define TEXTURETYPE_NONE        0
-#define TEXTURETYPE_RGB         1
-#define TEXTURETYPE_RGB_PIXELART 2
-#define TEXTURETYPE_PALETTE     3
-#define TEXTURETYPE_NV12        4
-#define TEXTURETYPE_NV21        5
-#define TEXTURETYPE_YUV         6
+#define TEXTURETYPE_NONE                0
+#define TEXTURETYPE_RGB                 1
+#define TEXTURETYPE_RGB_PIXELART        2
+#define TEXTURETYPE_PALETTE_NEAREST     3
+#define TEXTURETYPE_PALETTE_LINEAR      4
+#define TEXTURETYPE_PALETTE_PIXELART    5
+#define TEXTURETYPE_NV12                6
+#define TEXTURETYPE_NV21                7
+#define TEXTURETYPE_YUV                 8
 
 #define INPUTTYPE_UNSPECIFIED   0
 #define INPUTTYPE_SRGB          1
@@ -111,13 +113,42 @@ float3 ApplyTonemap(float3 v, float input_type, float tonemap_method, float tone
     return v;
 }
 
-float2 GetPixelArtUV(float2 texcoord, float4 texel_size)
+float4 SamplePaletteNearest(texture2d<float> tex0, texture2d<float> tex1, sampler s0, sampler s1, float2 uv)
+{
+    float index = tex0.sample(s0, uv).r * 255;
+    return tex1.sample(s1, float2((index + 0.5) / 256, 0.5));
+}
+
+// Implementation with thanks from bgolus:
+// https://discussions.unity.com/t/how-to-make-data-shader-support-bilinear-trilinear/598639/8
+float4 SamplePaletteLinear(texture2d<float> tex0, texture2d<float> tex1, sampler s0, sampler s1, float2 uv, float4 texel_size)
+{
+    // scale & offset uvs to integer values at texel centers
+    float2 uv_texels = uv * texel_size.zw + 0.5;
+
+    // get uvs for the center of the 4 surrounding texels by flooring
+    float4 uv_min_max = float4((floor(uv_texels) - 0.5) * texel_size.xy, (floor(uv_texels) + 0.5) * texel_size.xy);
+
+    // blend factor
+    float2 uv_frac = fract(uv_texels);
+
+    // sample all 4 texels
+    float4 texelA = SamplePaletteNearest(tex0, tex1, s0, s1, uv_min_max.xy);
+    float4 texelB = SamplePaletteNearest(tex0, tex1, s0, s1, uv_min_max.xw);
+    float4 texelC = SamplePaletteNearest(tex0, tex1, s0, s1, uv_min_max.zy);
+    float4 texelD = SamplePaletteNearest(tex0, tex1, s0, s1, uv_min_max.zw);
+
+    // bilinear interpolation
+    return mix(mix(texelA, texelB, uv_frac.y), mix(texelC, texelD, uv_frac.y), uv_frac.x);
+}
+
+float2 GetPixelArtUV(float2 uv, float4 texel_size)
 {
     // box filter size in texel units
-    float2 boxSize = clamp(fwidth(texcoord) * texel_size.zw, 1e-5, 1);
+    float2 boxSize = clamp(fwidth(uv) * texel_size.zw, 1e-5, 1);
 
     // scale uv by texture size to get texel coordinate
-    float2 tx = texcoord * texel_size.zw - 0.5 * boxSize;
+    float2 tx = uv * texel_size.zw - 0.5 * boxSize;
 
     // compute offset for pixel-sized box filter
     float2 txOffset = smoothstep(1 - boxSize, 1, fract(tx));
@@ -269,9 +300,13 @@ fragment float4 SDL_Palette_fragment(CopyVertexOutput vert [[stage_in]],
 {
     float4 rgba;
 
-    if (c.texture_type == TEXTURETYPE_PALETTE) {
-        float index = tex0.sample(s0, vert.texcoord).r * 255;
-        rgba = tex1.sample(s1, float2((index + 0.5) / 256, 0.5));
+    if (c.texture_type == TEXTURETYPE_PALETTE_NEAREST) {
+        rgba = SamplePaletteNearest(tex0, tex1, s0, s1, vert.texcoord);
+    } else if (c.texture_type == TEXTURETYPE_PALETTE_LINEAR) {
+        rgba = SamplePaletteLinear(tex0, tex1, s0, s1, vert.texcoord, c.texel_size);
+    } else if (c.texture_type == TEXTURETYPE_PALETTE_PIXELART) {
+        float2 uv = GetPixelArtUV(vert.texcoord, c.texel_size);
+        rgba = SamplePaletteLinear(tex0, tex1, s0, s1, uv, c.texel_size);
     } else {
         // Unexpected texture type, use magenta error color
         rgba = float4(1.0, 0.0, 1.0, 1.0);

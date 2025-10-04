@@ -69,10 +69,12 @@ static const float TONEMAP_CHROME = 2;
 //static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
-static const float TEXTURETYPE_PALETTE = 3;
-static const float TEXTURETYPE_NV12 = 4;
-static const float TEXTURETYPE_NV21 = 5;
-static const float TEXTURETYPE_YUV = 6;
+static const float TEXTURETYPE_PALETTE_NEAREST = 3;
+static const float TEXTURETYPE_PALETTE_LINEAR = 4;
+static const float TEXTURETYPE_PALETTE_PIXELART = 5;
+static const float TEXTURETYPE_NV12 = 6;
+static const float TEXTURETYPE_NV21 = 7;
+static const float TEXTURETYPE_YUV = 8;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -2189,8 +2191,20 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
 
         switch (texture->format) {
         case SDL_PIXELFORMAT_INDEX8:
-            constants->texture_type = TEXTURETYPE_PALETTE;
-            constants->input_type = INPUTTYPE_UNSPECIFIED;
+            switch (cmd->data.draw.texture_scale_mode) {
+            case SDL_SCALEMODE_NEAREST:
+                constants->texture_type = TEXTURETYPE_PALETTE_NEAREST;
+                break;
+            case SDL_SCALEMODE_LINEAR:
+                constants->texture_type = TEXTURETYPE_PALETTE_LINEAR;
+                break;
+            case SDL_SCALEMODE_PIXELART:
+                constants->texture_type = TEXTURETYPE_PALETTE_PIXELART;
+                break;
+            default:
+                SDL_assert(!"Unknown scale mode");
+                break;
+            }
             break;
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
@@ -2212,10 +2226,6 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
         default:
             if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
                 constants->texture_type = TEXTURETYPE_RGB_PIXELART;
-                constants->texture_width = texture->w;
-                constants->texture_height = texture->h;
-                constants->texel_width = 1.0f / constants->texture_width;
-                constants->texel_height = 1.0f / constants->texture_height;
             } else {
                 constants->texture_type = TEXTURETYPE_RGB;
             }
@@ -2228,6 +2238,15 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
                 constants->input_type = INPUTTYPE_UNSPECIFIED;
             }
             break;
+        }
+
+        if (constants->texture_type == TEXTURETYPE_PALETTE_LINEAR ||
+            constants->texture_type == TEXTURETYPE_PALETTE_PIXELART ||
+            constants->texture_type == TEXTURETYPE_RGB_PIXELART) {
+            constants->texture_width = texture->w;
+            constants->texture_height = texture->h;
+            constants->texel_width = 1.0f / constants->texture_width;
+            constants->texel_height = 1.0f / constants->texture_height;
         }
 
         constants->sdr_white_point = texture->SDR_white_point;
@@ -2429,7 +2448,7 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
     return true;
 }
 
-static ID3D11SamplerState *D3D11_GetSamplerState(D3D11_RenderData *data, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
+static ID3D11SamplerState *D3D11_GetSamplerState(D3D11_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
     Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
     SDL_assert(key < SDL_arraysize(data->samplers));
@@ -2448,7 +2467,12 @@ static ID3D11SamplerState *D3D11_GetSamplerState(D3D11_RenderData *data, SDL_Sca
             break;
         case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
-            samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            if (format == SDL_PIXELFORMAT_INDEX8) {
+                // We'll do linear sampling in the shader
+                samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+            } else {
+                samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            }
             break;
         default:
             SDL_SetError("Unknown scale mode: %d", scale_mode);
@@ -2506,7 +2530,7 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
     shaderResources[numShaderResources++] = textureData->mainTextureResourceView;
 
-    shaderSamplers[numShaderSamplers] = D3D11_GetSamplerState(rendererData, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
+    shaderSamplers[numShaderSamplers] = D3D11_GetSamplerState(rendererData, texture->format, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
     if (!shaderSamplers[numShaderSamplers]) {
         return false;
     }
@@ -2517,7 +2541,7 @@ static bool D3D11_SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
         shaderResources[numShaderResources++] = palette->resourceView;
 
-        shaderSamplers[numShaderSamplers] = D3D11_GetSamplerState(rendererData, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+        shaderSamplers[numShaderSamplers] = D3D11_GetSamplerState(rendererData, SDL_PIXELFORMAT_UNKNOWN, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
         if (!shaderSamplers[numShaderSamplers]) {
             return false;
         }

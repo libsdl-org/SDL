@@ -43,10 +43,12 @@ static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
 static const float TEXTURETYPE_RGBA = 3;
 static const float TEXTURETYPE_RGBA_PIXELART = 4;
-static const float TEXTURETYPE_PALETTE = 5;
-static const float TEXTURETYPE_NV12 = 6;
-static const float TEXTURETYPE_NV21 = 7;
-static const float TEXTURETYPE_YUV = 8;
+static const float TEXTURETYPE_PALETTE_NEAREST = 5;
+static const float TEXTURETYPE_PALETTE_LINEAR = 6;
+static const float TEXTURETYPE_PALETTE_PIXELART = 7;
+static const float TEXTURETYPE_NV12 = 8;
+static const float TEXTURETYPE_NV21 = 9;
+static const float TEXTURETYPE_YUV = 10;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -122,21 +124,48 @@ float3 ApplyTonemap(float3 v)
     return v;
 }
 
-float2 GetPixelArtUV(PSInput input)
+float4 SamplePaletteNearest(float2 uv)
+{
+    float index = texture0.Sample(sampler0, uv).r * 255;
+    return texture1.Sample(sampler1, float2((index + 0.5) / 256, 0.5));
+}
+
+// Implementation with thanks from bgolus:
+// https://discussions.unity.com/t/how-to-make-data-shader-support-bilinear-trilinear/598639/8
+float4 SamplePaletteLinear(float2 uv)
+{
+    // scale & offset uvs to integer values at texel centers
+    float2 uv_texels = uv * texel_size.zw + 0.5;
+
+    // get uvs for the center of the 4 surrounding texels by flooring
+    float4 uv_min_max = float4((floor(uv_texels) - 0.5) * texel_size.xy, (floor(uv_texels) + 0.5) * texel_size.xy);
+
+    // blend factor
+    float2 uv_frac = frac(uv_texels);
+
+    // sample all 4 texels
+    float4 texelA = SamplePaletteNearest(uv_min_max.xy);
+    float4 texelB = SamplePaletteNearest(uv_min_max.xw);
+    float4 texelC = SamplePaletteNearest(uv_min_max.zy);
+    float4 texelD = SamplePaletteNearest(uv_min_max.zw);
+
+    // bilinear interpolation
+    return lerp(lerp(texelA, texelB, uv_frac.y), lerp(texelC, texelD, uv_frac.y), uv_frac.x);
+}
+
+float2 GetPixelArtUV(float2 uv)
 {
     // box filter size in texel units
-    float2 boxSize = clamp(fwidth(input.v_uv) * texel_size.zw, 1e-5, 1);
+    float2 boxSize = clamp(fwidth(uv) * texel_size.zw, 1e-5, 1);
 
     // scale uv by texture size to get texel coordinate
-    float2 tx = input.v_uv * texel_size.zw - 0.5 * boxSize;
+    float2 tx = uv * texel_size.zw - 0.5 * boxSize;
 
     // compute offset for pixel-sized box filter
     float2 txOffset = smoothstep(1 - boxSize, 1, frac(tx));
 
     // compute bilinear sample uv coordinates
-    float2 uv = (floor(tx) + 0.5 + txOffset) * texel_size.xy;
-
-    return uv;
+    return (floor(tx) + 0.5 + txOffset) * texel_size.xy;
 }
 
 float4 GetInputColor(PSInput input)
@@ -148,16 +177,20 @@ float4 GetInputColor(PSInput input)
     } else if (texture_type == TEXTURETYPE_RGBA) {
         rgba = texture0.Sample(sampler0, input.v_uv);
     } else if (texture_type == TEXTURETYPE_RGBA_PIXELART) {
-        float2 uv = GetPixelArtUV(input);
+        float2 uv = GetPixelArtUV(input.v_uv);
         rgba = texture0.SampleGrad(sampler0, uv, ddx(input.v_uv), ddy(input.v_uv));
     } else if (texture_type == TEXTURETYPE_RGB) {
         rgba = float4(texture0.Sample(sampler0, input.v_uv).rgb, 1.0);
     } else if (texture_type == TEXTURETYPE_RGB_PIXELART) {
-        float2 uv = GetPixelArtUV(input);
+        float2 uv = GetPixelArtUV(input.v_uv);
         rgba = float4(texture0.SampleGrad(sampler0, uv, ddx(input.v_uv), ddy(input.v_uv)).rgb, 1.0);
-    } else if (texture_type == TEXTURETYPE_PALETTE) {
-        float index = texture0.Sample(sampler0, input.v_uv).r * 255;
-        rgba = texture1.Sample(sampler1, float2((index + 0.5) / 256, 0.5));
+    } else if (texture_type == TEXTURETYPE_PALETTE_NEAREST) {
+        rgba = SamplePaletteNearest(input.v_uv);
+    } else if (texture_type == TEXTURETYPE_PALETTE_LINEAR) {
+        rgba = SamplePaletteLinear(input.v_uv);
+    } else if (texture_type == TEXTURETYPE_PALETTE_PIXELART) {
+        float2 uv = GetPixelArtUV(input.v_uv);
+        rgba = SamplePaletteLinear(uv);
     } else if (texture_type == TEXTURETYPE_NV12) {
         float3 yuv;
         yuv.x = texture0.Sample(sampler0, input.v_uv).r;
@@ -193,7 +226,7 @@ float4 GetInputColor(PSInput input)
         // Error!
         rgba.r = 1.0;
         rgba.g = 0.0;
-        rgba.b = 0.0;
+        rgba.b = 1.0;
         rgba.a = 1.0;
     }
     return rgba;

@@ -1333,10 +1333,12 @@ static const float TONEMAP_CHROME = 2;
 //static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
-static const float TEXTURETYPE_PALETTE = 3;
-static const float TEXTURETYPE_NV12 = 4;
-static const float TEXTURETYPE_NV21 = 5;
-static const float TEXTURETYPE_YUV = 6;
+static const float TEXTURETYPE_PALETTE_NEAREST = 3;
+static const float TEXTURETYPE_PALETTE_LINEAR = 4;
+static const float TEXTURETYPE_PALETTE_PIXELART = 5;
+static const float TEXTURETYPE_NV12 = 6;
+static const float TEXTURETYPE_NV21 = 7;
+static const float TEXTURETYPE_YUV = 8;
 
 //static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -1393,7 +1395,20 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
     if (texture) {
         switch (texture->format) {
         case SDL_PIXELFORMAT_INDEX8:
-            constants->texture_type = TEXTURETYPE_PALETTE;
+            switch (cmd->data.draw.texture_scale_mode) {
+            case SDL_SCALEMODE_NEAREST:
+                constants->texture_type = TEXTURETYPE_PALETTE_NEAREST;
+                break;
+            case SDL_SCALEMODE_LINEAR:
+                constants->texture_type = TEXTURETYPE_PALETTE_LINEAR;
+                break;
+            case SDL_SCALEMODE_PIXELART:
+                constants->texture_type = TEXTURETYPE_PALETTE_PIXELART;
+                break;
+            default:
+                SDL_assert(!"Unknown scale mode");
+                break;
+            }
             break;
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
@@ -1411,10 +1426,6 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
         default:
             if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
                 constants->texture_type = TEXTURETYPE_RGB_PIXELART;
-                constants->texture_width = texture->w;
-                constants->texture_height = texture->h;
-                constants->texel_width = 1.0f / constants->texture_width;
-                constants->texel_height = 1.0f / constants->texture_height;
             } else {
                 constants->texture_type = TEXTURETYPE_RGB;
             }
@@ -1430,6 +1441,15 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
         default:
             constants->input_type = INPUTTYPE_SRGB;
             break;
+        }
+
+        if (constants->texture_type == TEXTURETYPE_PALETTE_LINEAR ||
+            constants->texture_type == TEXTURETYPE_PALETTE_PIXELART ||
+            constants->texture_type == TEXTURETYPE_RGB_PIXELART) {
+            constants->texture_width = texture->w;
+            constants->texture_height = texture->h;
+            constants->texel_width = 1.0f / constants->texture_width;
+            constants->texel_height = 1.0f / constants->texture_height;
         }
 
         constants->sdr_white_point = texture->SDR_white_point;
@@ -1539,7 +1559,7 @@ static bool SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
     return true;
 }
 
-static id<MTLSamplerState> GetSampler(SDL3METAL_RenderData *data, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
+static id<MTLSamplerState> GetSampler(SDL3METAL_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
     NSNumber *key = [NSNumber numberWithInteger:RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v)];
     id<MTLSamplerState> mtlsampler = data.mtlsamplers[key];
@@ -1553,8 +1573,14 @@ static id<MTLSamplerState> GetSampler(SDL3METAL_RenderData *data, SDL_ScaleMode 
             break;
         case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
-            samplerdesc.minFilter = MTLSamplerMinMagFilterLinear;
-            samplerdesc.magFilter = MTLSamplerMinMagFilterLinear;
+            if (format == SDL_PIXELFORMAT_INDEX8) {
+                // We'll do linear sampling in the shader
+                samplerdesc.minFilter = MTLSamplerMinMagFilterNearest;
+                samplerdesc.magFilter = MTLSamplerMinMagFilterNearest;
+            } else {
+                samplerdesc.minFilter = MTLSamplerMinMagFilterLinear;
+                samplerdesc.magFilter = MTLSamplerMinMagFilterLinear;
+            }
             break;
         default:
             SDL_SetError("Unknown scale mode: %d", scale_mode);
@@ -1624,7 +1650,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
     if (cmd->data.draw.texture_scale_mode != statecache->texture_scale_mode ||
         cmd->data.draw.texture_address_mode_u != statecache->texture_address_mode_u ||
         cmd->data.draw.texture_address_mode_v != statecache->texture_address_mode_v) {
-        id<MTLSamplerState> mtlsampler = GetSampler(data, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
+        id<MTLSamplerState> mtlsampler = GetSampler(data, texture->format, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
         if (mtlsampler == nil) {
             return false;
         }
@@ -1636,7 +1662,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, c
     }
     if (texture->palette) {
         if (!statecache->texture_palette) {
-            id<MTLSamplerState> mtlsampler = GetSampler(data, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+            id<MTLSamplerState> mtlsampler = GetSampler(data, SDL_PIXELFORMAT_UNKNOWN, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
             if (mtlsampler == nil) {
                 return false;
             }
