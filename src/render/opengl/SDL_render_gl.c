@@ -1201,10 +1201,6 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 
     if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
         switch (shader) {
-        case SHADER_PALETTE:
-            shader = SHADER_PALETTE_PIXELART;
-            shader_params = texturedata->texel_size;
-            break;
         case SHADER_RGB:
             shader = SHADER_RGB_PIXELART;
             shader_params = texturedata->texel_size;

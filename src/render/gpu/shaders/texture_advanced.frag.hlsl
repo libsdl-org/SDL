@@ -44,10 +44,9 @@ static const float TEXTURETYPE_RGB_PIXELART = 2;
 static const float TEXTURETYPE_RGBA = 3;
 static const float TEXTURETYPE_RGBA_PIXELART = 4;
 static const float TEXTURETYPE_PALETTE = 5;
-static const float TEXTURETYPE_PALETTE_PIXELART = 6;
-static const float TEXTURETYPE_NV12 = 7;
-static const float TEXTURETYPE_NV21 = 8;
-static const float TEXTURETYPE_YUV = 9;
+static const float TEXTURETYPE_NV12 = 6;
+static const float TEXTURETYPE_NV21 = 7;
+static const float TEXTURETYPE_YUV = 8;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -158,10 +157,6 @@ float4 GetInputColor(PSInput input)
         rgba = float4(texture0.SampleGrad(sampler0, uv, ddx(input.v_uv), ddy(input.v_uv)).rgb, 1.0);
     } else if (texture_type == TEXTURETYPE_PALETTE) {
         float index = texture0.Sample(sampler0, input.v_uv).r * 255;
-        rgba = texture1.Sample(sampler1, float2((index + 0.5) / 256, 0.5));
-    } else if (texture_type == TEXTURETYPE_PALETTE_PIXELART) {
-        float2 uv = GetPixelArtUV(input);
-        float index = texture0.SampleGrad(sampler0, uv, ddx(input.v_uv), ddy(input.v_uv)).r * 255;
         rgba = texture1.Sample(sampler1, float2((index + 0.5) / 256, 0.5));
     } else if (texture_type == TEXTURETYPE_NV12) {
         float3 yuv;

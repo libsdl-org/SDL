@@ -13,11 +13,10 @@ using namespace metal;
 #define TEXTURETYPE_NONE        0
 #define TEXTURETYPE_RGB         1
 #define TEXTURETYPE_RGB_PIXELART 2
-#define TEXTURETYPE_PALETTE     1
-#define TEXTURETYPE_PALETTE_PIXELART 2
-#define TEXTURETYPE_NV12        3
-#define TEXTURETYPE_NV21        4
-#define TEXTURETYPE_YUV         5
+#define TEXTURETYPE_PALETTE     3
+#define TEXTURETYPE_NV12        4
+#define TEXTURETYPE_NV21        5
+#define TEXTURETYPE_YUV         6
 
 #define INPUTTYPE_UNSPECIFIED   0
 #define INPUTTYPE_SRGB          1
@@ -272,10 +271,6 @@ fragment float4 SDL_Palette_fragment(CopyVertexOutput vert [[stage_in]],
 
     if (c.texture_type == TEXTURETYPE_PALETTE) {
         float index = tex0.sample(s0, vert.texcoord).r * 255;
-        rgba = tex1.sample(s1, float2((index + 0.5) / 256, 0.5));
-    } else if (c.texture_type == TEXTURETYPE_PALETTE_PIXELART) {
-        float2 uv = GetPixelArtUV(vert.texcoord, c.texel_size);
-        float index = tex0.sample(s0, uv, gradient2d(dfdx(vert.texcoord), dfdy(vert.texcoord))).r * 255;
         rgba = tex1.sample(s1, float2((index + 0.5) / 256, 0.5));
     } else {
         // Unexpected texture type, use magenta error color

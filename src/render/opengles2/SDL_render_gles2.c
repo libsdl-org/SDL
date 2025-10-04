@@ -634,12 +634,7 @@ static bool GLES2_SelectProgram(GLES2_RenderData *data, SDL_Texture *texture, GL
         ftype = GLES2_SHADER_FRAGMENT_SOLID;
         break;
     case GLES2_IMAGESOURCE_TEXTURE_INDEX8:
-        if (scale_mode == SDL_SCALEMODE_PIXELART) {
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_PIXELART;
-            shader_params = tdata->texel_size;
-        } else {
-            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE;
-        }
+        ftype = GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE;
         break;
     case GLES2_IMAGESOURCE_TEXTURE_ABGR:
         if (scale_mode == SDL_SCALEMODE_PIXELART) {
@@ -772,7 +767,7 @@ static bool GLES2_SelectProgram(GLES2_RenderData *data, SDL_Texture *texture, GL
         }
         else
 #endif
-        if (ftype >= GLES2_SHADER_FRAGMENT_TEXTURE_PALETTE_PIXELART) {
+        if (ftype >= GLES2_SHADER_FRAGMENT_TEXTURE_ABGR_PIXELART) {
             data->glUniform4f(program->uniform_locations[GLES2_UNIFORM_TEXEL_SIZE], shader_params[0], shader_params[1], shader_params[2], shader_params[3]);
         }
         program->shader_params = shader_params;

@@ -1333,9 +1333,10 @@ static const float TONEMAP_CHROME = 2;
 //static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
-static const float TEXTURETYPE_NV12 = 3;
-static const float TEXTURETYPE_NV21 = 4;
-static const float TEXTURETYPE_YUV = 5;
+static const float TEXTURETYPE_PALETTE = 3;
+static const float TEXTURETYPE_NV12 = 4;
+static const float TEXTURETYPE_NV21 = 5;
+static const float TEXTURETYPE_YUV = 6;
 
 //static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -1391,6 +1392,9 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
 
     if (texture) {
         switch (texture->format) {
+        case SDL_PIXELFORMAT_INDEX8:
+            constants->texture_type = TEXTURETYPE_PALETTE;
+            break;
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
             constants->texture_type = TEXTURETYPE_YUV;
