@@ -25,12 +25,14 @@
 #include "SDL_fribidi.h"
 #include <fribidi.h>
 
+#ifdef SDL_FRIBIDI_DYNAMIC
 SDL_ELF_NOTE_DLOPEN(
     "fribidi",
     "Bidirectional text support",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_FRIBIDI_DYNAMIC
 );
+#endif
 
 SDL_FriBidi *SDL_FriBidi_Create(void) {
 	SDL_FriBidi *fribidi;
