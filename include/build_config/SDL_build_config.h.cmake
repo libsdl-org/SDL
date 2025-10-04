@@ -216,6 +216,8 @@
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBDECOR_H 1
 #cmakedefine HAVE_LIBURING_H 1
+#cmakedefine HAVE_FRIBIDI_H 1
+#cmakedefine SDL_FRIBIDI_DYNAMIC @SDL_FRIBIDI_DYNAMIC@
 
 #cmakedefine HAVE_DDRAW_H 1
 #cmakedefine HAVE_DSOUND_H 1

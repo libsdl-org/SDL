@@ -29,6 +29,9 @@
 #include "SDL_x11settings.h"
 #include "SDL_x11toolkit.h"
 #include "xsettings-client.h"
+#ifdef HAVE_FRIBIDI_H
+#include "../../core/unix/SDL_fribidi.h"
+#endif
 
 #ifdef SDL_VIDEO_DRIVER_X11
 
@@ -95,7 +98,6 @@ typedef struct SDL_ToolkitWindowX11
 	Bool shm_pixmap;
 #endif
     bool utf8;
-
     /* Atoms */
     Atom wm_protocols;
     Atom wm_delete_message;
@@ -155,6 +157,12 @@ typedef struct SDL_ToolkitWindowX11
     bool draw;
     bool close;
     long event_mask;
+  
+#ifdef HAVE_FRIBIDI_H
+    /* BIDI engine */
+	SDL_FriBidi *fribidi;
+	bool do_shaping;
+#endif
 } SDL_ToolkitWindowX11;
 
 typedef enum SDL_ToolkitControlStateX11
