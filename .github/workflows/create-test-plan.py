@@ -458,6 +458,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     "libibus-1.0-dev",
                     "libudev-dev",
                     "fcitx-libs-dev",
+                    "libfribidi-dev",
                     # testffmpeg
                     "libavcodec-dev",
                     "libavfilter-dev",

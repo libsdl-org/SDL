@@ -521,10 +521,6 @@ macro(CheckFribidi)
     if(PC_FRIBIDI_FOUND)
       set(HAVE_FRIBIDI TRUE)
       set(HAVE_FRIBIDI_H 1)
-      sdl_sources(
-        "${SDL3_SOURCE_DIR}/src/core/unix/SDL_fribidi.c"
-        "${SDL3_SOURCE_DIR}/src/core/unix/SDL_fribidi.h"
-      )
       if(SDL_FRIBIDI_SHARED AND NOT HAVE_SDL_LOADSO)
         message(WARNING "You must have SDL_LoadObject() support for dynamic fribidi loading")
       endif()
