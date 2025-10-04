@@ -1039,7 +1039,7 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, int cx
                             X11_XRRFreeOutputInfo(out_info);
                             goto FIRSTCRTCXRANDR;
                         }
-                                                    
+
                         x = (crtc_info->width - data->window_width) / 2;
                         y = (crtc_info->height - data->window_height) / 3;
                         X11_XRRFreeOutputInfo(out_info);
