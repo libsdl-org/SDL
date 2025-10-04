@@ -31,23 +31,23 @@ typedef FriBidiStrIndex (*SDL_FriBidiUnicodeToCharset)(FriBidiCharSet, const Fri
 typedef FriBidiStrIndex (*SDL_FriBidiCharsetToUnicode)(FriBidiCharSet, const char *, FriBidiStrIndex, FriBidiChar *);
 typedef void (*SDL_FriBidiGetBidiTypes)(const FriBidiChar *, const FriBidiStrIndex, FriBidiCharType *);
 typedef FriBidiParType (*SDL_FriBidiGetParDirection)(const FriBidiCharType *, const FriBidiStrIndex);
-typedef FriBidiLevel (*SDL_FriBidiGetParEmbeddingLevels)(const FriBidiCharType *, const FriBidiStrIndex, FriBidiParType *,	FriBidiLevel *);
+typedef FriBidiLevel (*SDL_FriBidiGetParEmbeddingLevels)(const FriBidiCharType *, const FriBidiStrIndex, FriBidiParType *, FriBidiLevel *);
 typedef void (*SDL_FriBidiGetJoiningTypes)(const FriBidiChar *, const FriBidiStrIndex, FriBidiJoiningType *);
 typedef void (*SDL_FriBidiJoinArabic)(const FriBidiCharType *, const FriBidiStrIndex, const FriBidiLevel *, FriBidiArabicProp *);
 typedef void (*SDL_FriBidiShape)(FriBidiFlags flags, const FriBidiLevel *, const FriBidiStrIndex, FriBidiArabicProp *, FriBidiChar *str);
 typedef FriBidiLevel (*SDL_FriBidiReorderLine)(FriBidiFlags flags, const FriBidiCharType *, const FriBidiStrIndex, const FriBidiStrIndex, const FriBidiParType, FriBidiLevel *, FriBidiChar *, FriBidiStrIndex *);
 
 typedef struct SDL_FriBidi {
-	SDL_SharedObject *lib;
-	SDL_FriBidiUnicodeToCharset unicode_to_charset;
-	SDL_FriBidiCharsetToUnicode charset_to_unicode;
-	SDL_FriBidiGetBidiTypes get_bidi_types;
-	SDL_FriBidiGetParDirection get_par_direction;
-	SDL_FriBidiGetParEmbeddingLevels get_par_embedding_levels;
-	SDL_FriBidiGetJoiningTypes get_joining_types;
-	SDL_FriBidiJoinArabic join_arabic;
-	SDL_FriBidiShape shape;
-	SDL_FriBidiReorderLine reorder_line;
+    SDL_SharedObject *lib;
+    SDL_FriBidiUnicodeToCharset unicode_to_charset;
+    SDL_FriBidiCharsetToUnicode charset_to_unicode;
+    SDL_FriBidiGetBidiTypes get_bidi_types;
+    SDL_FriBidiGetParDirection get_par_direction;
+    SDL_FriBidiGetParEmbeddingLevels get_par_embedding_levels;
+    SDL_FriBidiGetJoiningTypes get_joining_types;
+    SDL_FriBidiJoinArabic join_arabic;
+    SDL_FriBidiShape shape;
+    SDL_FriBidiReorderLine reorder_line;
 } SDL_FriBidi;
 
 extern SDL_FriBidi *SDL_FriBidi_Create(void);

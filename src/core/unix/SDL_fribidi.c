@@ -35,54 +35,54 @@ SDL_ELF_NOTE_DLOPEN(
 #endif
 
 SDL_FriBidi *SDL_FriBidi_Create(void) {
-	SDL_FriBidi *fribidi;
+    SDL_FriBidi *fribidi;
 
-	fribidi = (SDL_FriBidi *)SDL_malloc(sizeof(SDL_FriBidi));
-	if (!fribidi) {
-		return NULL;
-	}
+    fribidi = (SDL_FriBidi *)SDL_malloc(sizeof(SDL_FriBidi));
+    if (!fribidi) {
+        return NULL;
+    }
 
 #ifdef SDL_FRIBIDI_DYNAMIC
-	#define SDL_FRIBIDI_LOAD_SYM(x, n, t) x = ((t)SDL_LoadFunction(fribidi->lib, n)); if (!x) { SDL_UnloadObject(fribidi->lib); SDL_free(fribidi); return NULL; }
+    #define SDL_FRIBIDI_LOAD_SYM(x, n, t) x = ((t)SDL_LoadFunction(fribidi->lib, n)); if (!x) { SDL_UnloadObject(fribidi->lib); SDL_free(fribidi); return NULL; }
 
-	fribidi->lib = SDL_LoadObject(SDL_FRIBIDI_DYNAMIC);
-	if (!fribidi->lib) {
-		SDL_free(fribidi);
-		return NULL;
-	}
+    fribidi->lib = SDL_LoadObject(SDL_FRIBIDI_DYNAMIC);
+    if (!fribidi->lib) {
+        SDL_free(fribidi);
+        return NULL;
+    }
 
-	SDL_FRIBIDI_LOAD_SYM(fribidi->unicode_to_charset, "fribidi_unicode_to_charset", SDL_FriBidiUnicodeToCharset);
-	SDL_FRIBIDI_LOAD_SYM(fribidi->charset_to_unicode, "fribidi_charset_to_unicode", SDL_FriBidiCharsetToUnicode);
-	SDL_FRIBIDI_LOAD_SYM(fribidi->get_bidi_types, "fribidi_get_bidi_types", SDL_FriBidiGetBidiTypes);
-	SDL_FRIBIDI_LOAD_SYM(fribidi->get_par_direction, "fribidi_get_par_direction", SDL_FriBidiGetParDirection);
-	SDL_FRIBIDI_LOAD_SYM(fribidi->get_par_embedding_levels, "fribidi_get_par_embedding_levels", SDL_FriBidiGetParEmbeddingLevels);
-	SDL_FRIBIDI_LOAD_SYM(fribidi->get_joining_types, "fribidi_get_joining_types", SDL_FriBidiGetJoiningTypes);
-	SDL_FRIBIDI_LOAD_SYM(fribidi->join_arabic, "fribidi_join_arabic", SDL_FriBidiJoinArabic);
-	SDL_FRIBIDI_LOAD_SYM(fribidi->shape, "fribidi_shape", SDL_FriBidiShape);
-	SDL_FRIBIDI_LOAD_SYM(fribidi->reorder_line, "fribidi_reorder_line", SDL_FriBidiReorderLine);
+    SDL_FRIBIDI_LOAD_SYM(fribidi->unicode_to_charset, "fribidi_unicode_to_charset", SDL_FriBidiUnicodeToCharset);
+    SDL_FRIBIDI_LOAD_SYM(fribidi->charset_to_unicode, "fribidi_charset_to_unicode", SDL_FriBidiCharsetToUnicode);
+    SDL_FRIBIDI_LOAD_SYM(fribidi->get_bidi_types, "fribidi_get_bidi_types", SDL_FriBidiGetBidiTypes);
+    SDL_FRIBIDI_LOAD_SYM(fribidi->get_par_direction, "fribidi_get_par_direction", SDL_FriBidiGetParDirection);
+    SDL_FRIBIDI_LOAD_SYM(fribidi->get_par_embedding_levels, "fribidi_get_par_embedding_levels", SDL_FriBidiGetParEmbeddingLevels);
+    SDL_FRIBIDI_LOAD_SYM(fribidi->get_joining_types, "fribidi_get_joining_types", SDL_FriBidiGetJoiningTypes);
+    SDL_FRIBIDI_LOAD_SYM(fribidi->join_arabic, "fribidi_join_arabic", SDL_FriBidiJoinArabic);
+    SDL_FRIBIDI_LOAD_SYM(fribidi->shape, "fribidi_shape", SDL_FriBidiShape);
+    SDL_FRIBIDI_LOAD_SYM(fribidi->reorder_line, "fribidi_reorder_line", SDL_FriBidiReorderLine);
 #else
-	fribidi->unicode_to_charset = fribidi_unicode_to_charset;
-	fribidi->charset_to_unicode = fribidi_charset_to_unicode;
-	fribidi->get_bidi_types = fribidi_get_bidi_types;
-	fribidi->get_par_direction = fribidi_get_par_direction;
-	fribidi->get_par_embedding_levels = fribidi_get_par_embedding_levels;
-	fribidi->get_joining_types = fribidi_get_joining_types;
-	fribidi->join_arabic = fribidi_join_arabic;
-	fribidi->shape = fribidi_shape;
-	fribidi->reorder_line = fribidi_reorder_line;
+    fribidi->unicode_to_charset = fribidi_unicode_to_charset;
+    fribidi->charset_to_unicode = fribidi_charset_to_unicode;
+    fribidi->get_bidi_types = fribidi_get_bidi_types;
+    fribidi->get_par_direction = fribidi_get_par_direction;
+    fribidi->get_par_embedding_levels = fribidi_get_par_embedding_levels;
+    fribidi->get_joining_types = fribidi_get_joining_types;
+    fribidi->join_arabic = fribidi_join_arabic;
+    fribidi->shape = fribidi_shape;
+    fribidi->reorder_line = fribidi_reorder_line;
 #endif
 
-	return fribidi;
+    return fribidi;
 }
 
 char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bool shaping, FriBidiParType *out_par_type) {
     FriBidiCharType *types;
     FriBidiLevel *levels;
     FriBidiArabicProp *props;
-	FriBidiChar *str;
-	char *result;
+    FriBidiChar *str;
+    char *result;
     FriBidiStrIndex len;
-	FriBidiLevel max_level;
+    FriBidiLevel max_level;
     FriBidiLevel start;
     FriBidiLevel end;
     FriBidiParType direction;
@@ -94,10 +94,10 @@ char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bo
         return NULL;
     }
 
-	/* Convert to UTF32 */
-	if (utf8_len < 0) {
-		utf8_len = SDL_strlen(utf8);
-	}
+    /* Convert to UTF32 */
+    if (utf8_len < 0) {
+        utf8_len = SDL_strlen(utf8);
+    }
     str = SDL_calloc(SDL_utf8strnlen(utf8, utf8_len), sizeof(FriBidiChar));
     len = fribidi->charset_to_unicode(FRIBIDI_CHAR_SET_UTF8, utf8, utf8_len, str);
 
@@ -109,17 +109,17 @@ char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bo
     levels = SDL_calloc(len + 1, sizeof(FriBidiLevel));
     types = SDL_calloc(len + 1, sizeof(FriBidiCharType));
 
-	/* Shape */
+    /* Shape */
     fribidi->get_bidi_types(str, len, types);
-	str_direction = fribidi->get_par_direction(types, len);
-	max_level = fribidi->get_par_embedding_levels(types, len, &direction, levels);
-	if (shaping) {
-		fribidi->get_joining_types(str, len, props);
-		fribidi->join_arabic(types, len, levels, props);
-		fribidi->shape(FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC, levels, len, props, str);
-	}
+    str_direction = fribidi->get_par_direction(types, len);
+    max_level = fribidi->get_par_embedding_levels(types, len, &direction, levels);
+    if (shaping) {
+        fribidi->get_joining_types(str, len, props);
+        fribidi->join_arabic(types, len, levels, props);
+        fribidi->shape(FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC, levels, len, props, str);
+    }
 
-	/* BIDI */
+    /* BIDI */
     for (end = 0, start = 0; end < len; end++) {
         if (str[end] == '\n' || str[end] == '\r' || str[end] == '\f' || str[end] == '\v' || end == len - 1) {
             max_level = fribidi->reorder_line(FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC, types, end - start + 1, start, direction, levels, str, NULL);
@@ -127,10 +127,10 @@ char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bo
         }
     }
 
-	/* Silence warning */
-	(void)max_level;
+    /* Silence warning */
+    (void)max_level;
 
-	/* Remove fillers */
+    /* Remove fillers */
     for (i = 0, c = 0; i < len; i++) {
         if (str[i] != FRIBIDI_CHAR_FILL) {
             str[c++] = str[i];
@@ -138,32 +138,32 @@ char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bo
     }
     len = c;
 
-	/* Convert back to UTF8 */
+    /* Convert back to UTF8 */
     result = SDL_malloc(len * 4 + 1);
     fribidi->unicode_to_charset(FRIBIDI_CHAR_SET_UTF8, str, len, result);
 
-	/* Cleanup */
+    /* Cleanup */
     SDL_free(levels);
     SDL_free(props);
     SDL_free(types);
 
-	/* Return */
-	if (out_par_type) {
-		*out_par_type = str_direction;
-	}
-	return result;
+    /* Return */
+    if (out_par_type) {
+        *out_par_type = str_direction;
+    }
+    return result;
 }
 
 void SDL_FriBidi_Destroy(SDL_FriBidi *fribidi) {
-	if (!fribidi) {
-		return;
-	}
+    if (!fribidi) {
+        return;
+    }
 
 #ifdef SDL_FRIBIDI_DYNAMIC
-	SDL_UnloadObject(fribidi->lib);
+    SDL_UnloadObject(fribidi->lib);
 #endif
 
-	SDL_free(fribidi);
+    SDL_free(fribidi);
 }
 
 #endif
