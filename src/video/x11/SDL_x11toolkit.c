@@ -999,7 +999,14 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, int cx
                     goto FIRSTOUTPUTXRANDR;
                 }
 
-                crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtc);
+                if (out_info->crtc != None) {
+                    crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtc);
+                } else if (out_info->ncrtc > 0) {
+                    crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtcs[0]);
+                } else {
+                    crtc_info = NULL;
+                }
+                
                 if (crtc_info) {
                     x = (crtc_info->width - data->window_width) / 2;
                     y = (crtc_info->height - data->window_height) / 3;
@@ -1020,7 +1027,14 @@ bool X11Toolkit_CreateWindowRes(SDL_ToolkitWindowX11 *data, int w, int h, int cx
                             goto FIRSTCRTCXRANDR;
                         }
 
-                        crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtc);
+                        if (out_info->crtc != None) {
+                            crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtc);
+                        } else if (out_info->ncrtc > 0) {
+                            crtc_info = X11_XRRGetCrtcInfo(display, screen_res, out_info->crtcs[0]);
+                        } else {
+                            crtc_info = NULL;
+                        }
+
                         if (!crtc_info) {
                             X11_XRRFreeOutputInfo(out_info);
                             goto FIRSTCRTCXRANDR;
