@@ -98,7 +98,6 @@ typedef struct SDL_ToolkitWindowX11
 	Bool shm_pixmap;
 #endif
     bool utf8;
-	
     /* Atoms */
     Atom wm_protocols;
     Atom wm_delete_message;
