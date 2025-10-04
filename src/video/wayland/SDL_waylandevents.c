@@ -307,10 +307,12 @@ void Wayland_DisplayInitCursorShapeManager(SDL_VideoData *display)
 
 static void Wayland_SeatSetKeymap(SDL_WaylandSeat *seat)
 {
+    const bool send_event = !seat->display->initializing;
+
     if (seat->keyboard.sdl_keymap &&
         seat->keyboard.xkb.current_layout < seat->keyboard.xkb.num_layouts &&
         seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout] != SDL_GetCurrentKeymap(true)) {
-        SDL_SetKeymap(seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout], true);
+        SDL_SetKeymap(seat->keyboard.sdl_keymap[seat->keyboard.xkb.current_layout], send_event);
         SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
     }
 }
@@ -3531,7 +3533,6 @@ void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, 
     seat->wl_seat = wl_seat;
     seat->display = display;
     seat->registry_id = id;
-    seat->keyboard.xkb.current_layout = XKB_LAYOUT_INVALID;
 
     Wayland_SeatCreateDataDevice(seat);
     Wayland_SeatCreatePrimarySelectionDevice(seat);
