@@ -70,10 +70,12 @@ static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
 static const float TEXTURETYPE_RGBA = 3;
 static const float TEXTURETYPE_RGBA_PIXELART = 4;
-static const float TEXTURETYPE_PALETTE = 5;
-static const float TEXTURETYPE_NV12 = 6;
-static const float TEXTURETYPE_NV21 = 7;
-static const float TEXTURETYPE_YUV = 8;
+static const float TEXTURETYPE_PALETTE_NEAREST = 5;
+static const float TEXTURETYPE_PALETTE_LINEAR = 6;
+static const float TEXTURETYPE_PALETTE_PIXELART = 7;
+static const float TEXTURETYPE_NV12 = 8;
+static const float TEXTURETYPE_NV21 = 9;
+static const float TEXTURETYPE_YUV = 10;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -748,7 +750,7 @@ static void SetViewportAndScissor(GPU_RenderData *data)
     }
 }
 
-static SDL_GPUSampler *GetSampler(GPU_RenderData *data, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
+static SDL_GPUSampler *GetSampler(GPU_RenderData *data, SDL_PixelFormat format, SDL_ScaleMode scale_mode, SDL_TextureAddressMode address_u, SDL_TextureAddressMode address_v)
 {
     Uint32 key = RENDER_SAMPLER_HASHKEY(scale_mode, address_u, address_v);
     SDL_assert(key < SDL_arraysize(data->samplers));
@@ -763,9 +765,16 @@ static SDL_GPUSampler *GetSampler(GPU_RenderData *data, SDL_ScaleMode scale_mode
             break;
         case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
         case SDL_SCALEMODE_LINEAR:
-            sci.min_filter = SDL_GPU_FILTER_LINEAR;
-            sci.mag_filter = SDL_GPU_FILTER_LINEAR;
-            sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
+            if (format == SDL_PIXELFORMAT_INDEX8) {
+                // We'll do linear sampling in the shader
+                sci.min_filter = SDL_GPU_FILTER_NEAREST;
+                sci.mag_filter = SDL_GPU_FILTER_NEAREST;
+                sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
+            } else {
+                sci.min_filter = SDL_GPU_FILTER_LINEAR;
+                sci.mag_filter = SDL_GPU_FILTER_LINEAR;
+                sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR;
+            }
             break;
         default:
             SDL_SetError("Unknown scale mode: %d", scale_mode);
@@ -810,6 +819,22 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
     constants->color_scale = cmd->data.draw.color_scale;
 
     switch (texture->format) {
+    case SDL_PIXELFORMAT_INDEX8:
+        switch (cmd->data.draw.texture_scale_mode) {
+        case SDL_SCALEMODE_NEAREST:
+            constants->texture_type = TEXTURETYPE_PALETTE_NEAREST;
+            break;
+        case SDL_SCALEMODE_LINEAR:
+            constants->texture_type = TEXTURETYPE_PALETTE_LINEAR;
+            break;
+        case SDL_SCALEMODE_PIXELART:
+            constants->texture_type = TEXTURETYPE_PALETTE_PIXELART;
+            break;
+        default:
+            SDL_assert(!"Unknown scale mode");
+            break;
+        }
+        break;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
         constants->texture_type = TEXTURETYPE_YUV;
@@ -829,9 +854,6 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
         break;
     default:
         switch (texture->format) {
-        case SDL_PIXELFORMAT_INDEX8:
-            constants->texture_type = TEXTURETYPE_PALETTE;
-            break;
         case SDL_PIXELFORMAT_BGRX32:
         case SDL_PIXELFORMAT_RGBX32:
             if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
@@ -840,22 +862,12 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
                 constants->texture_type = TEXTURETYPE_RGB;
             }
             break;
-        case SDL_PIXELFORMAT_BGRA32:
-        case SDL_PIXELFORMAT_RGBA32:
-        case SDL_PIXELFORMAT_ABGR2101010:
-        case SDL_PIXELFORMAT_RGBA64_FLOAT:
+        default:
             if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
                 constants->texture_type = TEXTURETYPE_RGBA_PIXELART;
-                constants->texture_width = texture->w;
-                constants->texture_height = texture->h;
-                constants->texel_width = 1.0f / constants->texture_width;
-                constants->texel_height = 1.0f / constants->texture_height;
             } else {
                 constants->texture_type = TEXTURETYPE_RGBA;
             }
-            break;
-        default:
-            SDL_assert(!"Unhandled pixel format");
             break;
         }
         if (texture->colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
@@ -867,6 +879,16 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
             constants->input_type = INPUTTYPE_UNSPECIFIED;
         }
         break;
+    }
+
+    if (constants->texture_type == TEXTURETYPE_PALETTE_LINEAR ||
+        constants->texture_type == TEXTURETYPE_PALETTE_PIXELART ||
+        constants->texture_type == TEXTURETYPE_RGB_PIXELART ||
+        constants->texture_type == TEXTURETYPE_RGBA_PIXELART) {
+        constants->texture_width = texture->w;
+        constants->texture_height = texture->h;
+        constants->texel_width = 1.0f / constants->texture_width;
+        constants->texel_height = 1.0f / constants->texture_height;
     }
 
     constants->sdr_white_point = texture->SDR_white_point;
@@ -968,7 +990,7 @@ static void Draw(
         GPU_TextureData *tdata = (GPU_TextureData *)texture->internal;
         SDL_GPUTextureSamplerBinding sampler_bind;
         SDL_zero(sampler_bind);
-        sampler_bind.sampler = GetSampler(data, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
+        sampler_bind.sampler = GetSampler(data, texture->format, cmd->data.draw.texture_scale_mode, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
         sampler_bind.texture = tdata->texture;
         SDL_BindGPUFragmentSamplers(pass, sampler_slot++, &sampler_bind, 1);
 
@@ -976,7 +998,7 @@ static void Draw(
             if (texture->palette) {
                 GPU_PaletteData *palette = (GPU_PaletteData *)texture->palette->internal;
 
-                sampler_bind.sampler = GetSampler(data, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+                sampler_bind.sampler = GetSampler(data, SDL_PIXELFORMAT_UNKNOWN, SDL_SCALEMODE_NEAREST, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
                 sampler_bind.texture = palette->texture;
                 SDL_BindGPUFragmentSamplers(pass, sampler_slot++, &sampler_bind, 1);
 #ifdef SDL_HAVE_YUV

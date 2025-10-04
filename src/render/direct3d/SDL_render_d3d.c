@@ -86,9 +86,7 @@ typedef struct
     IDirect3DSurface9 *defaultRenderTarget;
     IDirect3DSurface9 *currentRenderTarget;
     void *d3dxDLL;
-#ifdef SDL_HAVE_YUV
     LPDIRECT3DPIXELSHADER9 shaders[NUM_SHADERS];
-#endif
     LPDIRECT3DVERTEXBUFFER9 vertexBuffers[8];
     size_t vertexBufferSize[8];
     int currentVertexBuffer;
@@ -100,8 +98,9 @@ typedef struct
 typedef struct
 {
     D3D_TextureRep texture;
-    D3D9_Shader shader;
+    UINT shader_params_length;
     const float *shader_params;
+    float palette_shader_params[4];
 
 #ifdef SDL_HAVE_YUV
     // YV12 texture support
@@ -657,7 +656,12 @@ static bool D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         return false;
     }
     if (texture->format == SDL_PIXELFORMAT_INDEX8) {
-        texturedata->shader = SHADER_PALETTE;
+        texturedata->shader_params_length = 1; // The palette shader takes 1 float4 parameters
+        texturedata->shader_params = texturedata->palette_shader_params;
+        texturedata->palette_shader_params[0] = 1.0f / texture->w;
+        texturedata->palette_shader_params[1] = 1.0f / texture->h;
+        texturedata->palette_shader_params[2] = texture->w;
+        texturedata->palette_shader_params[3] = texture->h;
     }
 #ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
@@ -672,7 +676,7 @@ static bool D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
             return false;
         }
 
-        texturedata->shader = SHADER_YUV;
+        texturedata->shader_params_length = 4; // The YUV shader takes 4 float4 parameters
         texturedata->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
         if (texturedata->shader_params == NULL) {
             return SDL_SetError("Unsupported YUV colorspace");
@@ -1041,7 +1045,7 @@ static void UpdateTextureAddressMode(D3D_RenderData *data, SDL_TextureAddressMod
     }
 }
 
-static bool SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, D3D9_Shader *shader, const float **shader_params)
+static bool SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, SDL_ScaleMode scale_mode, D3D9_Shader *shader, const float **shader_params)
 {
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->internal;
 
@@ -1049,7 +1053,15 @@ static bool SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, D3D9_S
         return SDL_SetError("Texture is not currently available");
     }
 
-    *shader = texturedata->shader;
+    if (texture->format == SDL_PIXELFORMAT_INDEX8) {
+        if (scale_mode == SDL_SCALEMODE_LINEAR) {
+            *shader = SHADER_PALETTE_LINEAR;
+        } else {
+            *shader = SHADER_PALETTE_NEAREST;
+        }
+    } else if (texturedata->yuv) {
+        *shader = SHADER_YUV;
+    }
     *shader_params = texturedata->shader_params;
 
     if (!BindTextureRep(data->device, &texturedata->texture, 0)) {
@@ -1099,11 +1111,10 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             IDirect3DDevice9_SetTexture(data->device, 2, NULL);
         }
 #endif
-        if (texture && !SetupTextureState(data, texture, &shader, &shader_params)) {
+        if (texture && !SetupTextureState(data, texture, cmd->data.draw.texture_scale_mode, &shader, &shader_params)) {
             return false;
         }
 
-#ifdef SDL_HAVE_YUV
         if (shader != data->drawstate.shader) {
             const HRESULT result = IDirect3DDevice9_SetPixelShader(data->device, data->shaders[shader]);
             if (FAILED(result)) {
@@ -1122,7 +1133,6 @@ static bool SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
             }
             data->drawstate.shader_params = shader_params;
         }
-#endif // SDL_HAVE_YUV
 
         data->drawstate.texture = texture;
     } else if (texture) {
@@ -1877,7 +1887,9 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
             D3D_SetError("CreatePixelShader()", result);
         }
     }
-    if (caps.MaxSimultaneousTextures >= 2 && data->shaders[SHADER_PALETTE]) {
+    if (caps.MaxSimultaneousTextures >= 2 &&
+        data->shaders[SHADER_PALETTE_NEAREST] &&
+        data->shaders[SHADER_PALETTE_LINEAR]) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
     }
 #ifdef SDL_HAVE_YUV
