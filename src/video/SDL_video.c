@@ -2674,7 +2674,7 @@ static bool SDL_ReconfigureWindowInternal(SDL_Window *window, SDL_WindowFlags fl
             return false;
         }
     } else if (graphics_flags & SDL_WINDOW_VULKAN) {
-        loaded_vulkan = SDL_GL_LoadLibrary(NULL);
+        loaded_vulkan = SDL_Vulkan_LoadLibrary(NULL);
         if (!loaded_vulkan) {
             return false;
         }
@@ -6176,8 +6176,9 @@ bool SDL_Vulkan_CreateSurface(SDL_Window *window,
 {
     CHECK_WINDOW_MAGIC(window, false);
 
-    if (!(window->flags & SDL_WINDOW_VULKAN)) {
-        return SDL_SetError(NOT_A_VULKAN_WINDOW);
+    if (!_this->Vulkan_CreateSurface) {
+        SDL_Unsupported();
+        return NULL;
     }
 
     CHECK_PARAM(!instance) {
@@ -6186,6 +6187,23 @@ bool SDL_Vulkan_CreateSurface(SDL_Window *window,
 
     CHECK_PARAM(!surface) {
         return SDL_InvalidParamError("surface");
+    }
+
+    if (!(window->flags & SDL_WINDOW_VULKAN)) {
+        // No problem, we can convert to Vulkan
+        if (window->flags & SDL_WINDOW_OPENGL) {
+            window->flags &= ~SDL_WINDOW_OPENGL;
+            SDL_GL_UnloadLibrary();
+        }
+        if (window->flags & SDL_WINDOW_METAL) {
+            window->flags &= ~SDL_WINDOW_METAL;
+            // Nothing more to do for Metal.
+        }
+        if (SDL_Vulkan_LoadLibrary(NULL)) {
+            window->flags |= SDL_WINDOW_VULKAN;
+        } else {
+            return SDL_SetError("failed to load Vulkan library");
+        }
     }
 
     return _this->Vulkan_CreateSurface(_this, window, instance, allocator, surface);
