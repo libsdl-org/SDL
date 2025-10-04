@@ -1928,7 +1928,6 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
           set(HAVE_LIBURING TRUE)
         endif()
       endif()
-      
       if((FREEBSD OR NETBSD) AND NOT HAVE_INOTIFY)
         set(LibInotify_PKG_CONFIG_SPEC libinotify)
         pkg_check_modules(PC_LIBINOTIFY IMPORTED_TARGET ${LibInotify_PKG_CONFIG_SPEC})
