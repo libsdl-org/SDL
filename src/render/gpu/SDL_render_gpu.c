@@ -71,10 +71,9 @@ static const float TEXTURETYPE_RGB_PIXELART = 2;
 static const float TEXTURETYPE_RGBA = 3;
 static const float TEXTURETYPE_RGBA_PIXELART = 4;
 static const float TEXTURETYPE_PALETTE = 5;
-static const float TEXTURETYPE_PALETTE_PIXELART = 6;
-static const float TEXTURETYPE_NV12 = 7;
-static const float TEXTURETYPE_NV21 = 8;
-static const float TEXTURETYPE_YUV = 9;
+static const float TEXTURETYPE_NV12 = 6;
+static const float TEXTURETYPE_NV21 = 7;
+static const float TEXTURETYPE_YUV = 8;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -831,11 +830,7 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
     default:
         switch (texture->format) {
         case SDL_PIXELFORMAT_INDEX8:
-            if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
-                constants->texture_type = TEXTURETYPE_PALETTE_PIXELART;
-            } else {
-                constants->texture_type = TEXTURETYPE_PALETTE;
-            }
+            constants->texture_type = TEXTURETYPE_PALETTE;
             break;
         case SDL_PIXELFORMAT_BGRX32:
         case SDL_PIXELFORMAT_RGBX32:
@@ -851,6 +846,10 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
         case SDL_PIXELFORMAT_RGBA64_FLOAT:
             if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
                 constants->texture_type = TEXTURETYPE_RGBA_PIXELART;
+                constants->texture_width = texture->w;
+                constants->texture_height = texture->h;
+                constants->texel_width = 1.0f / constants->texture_width;
+                constants->texel_height = 1.0f / constants->texture_height;
             } else {
                 constants->texture_type = TEXTURETYPE_RGBA;
             }
@@ -868,13 +867,6 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
             constants->input_type = INPUTTYPE_UNSPECIFIED;
         }
         break;
-    }
-
-    if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
-        constants->texture_width = texture->w;
-        constants->texture_height = texture->h;
-        constants->texel_width = 1.0f / constants->texture_width;
-        constants->texel_height = 1.0f / constants->texture_height;
     }
 
     constants->sdr_white_point = texture->SDR_white_point;

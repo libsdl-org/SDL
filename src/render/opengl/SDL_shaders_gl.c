@@ -280,31 +280,6 @@ static struct {
         "#version 130\n"
     },
 
-    // SHADER_PALETTE_PIXELART
-    {
-        // vertex shader
-        TEXTURE_VERTEX_SHADER,
-        // fragment shader
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"uniform sampler2D tex0;\n"
-"uniform sampler2D tex1;\n"
-"uniform vec4 texel_size;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    vec2 boxSize = clamp(fwidth(v_texCoord) * texel_size.zw, 1e-5, 1.0);\n"
-"    vec2 tx = v_texCoord * texel_size.zw - 0.5 * boxSize;\n"
-"    vec2 txOffset = smoothstep(vec2(1.0) - boxSize, vec2(1.0), fract(tx));\n"
-"    vec2 uv = (floor(tx) + 0.5 + txOffset) * texel_size.xy;\n"
-"    float index = textureGrad(tex0, uv, dFdx(v_texCoord), dFdy(v_texCoord)).r * 255.0;\n"
-"    gl_FragColor = texture2D(tex1, vec2((index + 0.5) / 256.0, 0.5));\n"
-"    gl_FragColor *= v_color;\n"
-"}",
-        // fragment version
-        "#version 130\n"
-    },
-
     // SHADER_RGB
     {
         // vertex shader
@@ -632,8 +607,7 @@ void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shade
     ctx->glUseProgramObjectARB(program);
 
     if (shader_params && shader_params != ctx->shader_params[shader]) {
-        if (shader == SHADER_PALETTE_PIXELART ||
-            shader == SHADER_RGB_PIXELART ||
+        if (shader == SHADER_RGB_PIXELART ||
             shader == SHADER_RGBA_PIXELART) {
             location = ctx->glGetUniformLocationARB(program, "texel_size");
             if (location >= 0) {

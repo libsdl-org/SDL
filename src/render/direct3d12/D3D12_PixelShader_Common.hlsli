@@ -22,10 +22,9 @@ static const float TEXTURETYPE_NONE = 0;
 static const float TEXTURETYPE_RGB = 1;
 static const float TEXTURETYPE_RGB_PIXELART = 2;
 static const float TEXTURETYPE_PALETTE = 3;
-static const float TEXTURETYPE_PALETTE_PIXELART = 4;
-static const float TEXTURETYPE_NV12 = 5;
-static const float TEXTURETYPE_NV21 = 6;
-static const float TEXTURETYPE_YUV = 7;
+static const float TEXTURETYPE_NV12 = 4;
+static const float TEXTURETYPE_NV21 = 5;
+static const float TEXTURETYPE_YUV = 6;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -150,10 +149,6 @@ float4 GetInputColor(PixelShaderInput input)
         rgba = texture0.SampleGrad(sampler0, uv, ddx(input.tex), ddy(input.tex));
     } else if (texture_type == TEXTURETYPE_PALETTE) {
         float index = texture0.Sample(sampler0, input.tex).r * 255;
-        rgba = texture1.Sample(sampler1, float2((index + 0.5) / 256, 0.5));
-    } else if (texture_type == TEXTURETYPE_PALETTE_PIXELART) {
-        float2 uv = GetPixelArtUV(input);
-        float index = texture0.SampleGrad(sampler0, uv, ddx(input.tex), ddy(input.tex)).r * 255;
         rgba = texture1.Sample(sampler1, float2((index + 0.5) / 256, 0.5));
     } else if (texture_type == TEXTURETYPE_NV12) {
         float3 yuv;
