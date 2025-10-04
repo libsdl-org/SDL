@@ -158,7 +158,15 @@ bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
         return false;
     }
     if (buttonID) {
-        char *output = SDL_ReadProcess(process, NULL, NULL);
+		int exit_code;
+        char *output = SDL_ReadProcess(process, NULL, &exit_code);
+        if (exit_code == 255) {
+            if (output) {
+                SDL_free(output);
+            }
+            SDL_DestroyProcess(process);
+            return false;
+		}
         if (output) {
             // It likes to add a newline...
             char *tmp = SDL_strrchr(output, '\n');
