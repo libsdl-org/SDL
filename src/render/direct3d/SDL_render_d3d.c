@@ -1059,8 +1059,10 @@ static bool SetupTextureState(D3D_RenderData *data, SDL_Texture *texture, SDL_Sc
         } else {
             *shader = SHADER_PALETTE_NEAREST;
         }
+#ifdef SDL_HAVE_YUV
     } else if (texturedata->yuv) {
         *shader = SHADER_YUV;
+#endif // SDL_HAVE_YUV
     }
     *shader_params = texturedata->shader_params;
 
