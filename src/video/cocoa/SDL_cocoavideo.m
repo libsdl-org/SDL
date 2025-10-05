@@ -128,10 +128,10 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->SyncWindow = Cocoa_SyncWindow;
         device->CreateMenuBar = Cocoa_CreateMenuBar;
         device->CreateMenuItemAt = Cocoa_CreateMenuItemAt;
-        device->CheckMenuItem = Cocoa_CheckMenuItem;
-        device->UncheckMenuItem = Cocoa_UncheckMenuItem;
-        device->MenuItemChecked = Cocoa_MenuItemChecked;
-        device->MenuItemEnabled = Cocoa_MenuItemEnabled;
+        device->SetMenuItemChecked = Cocoa_SetMenuItemChecked;
+        device->UnSetMenuItemChecked = Cocoa_UnSetMenuItemChecked;
+        device->GetMenuItemChecked = Cocoa_GetMenuItemChecked;
+        device->GetMenuItemEnabled = Cocoa_GetMenuItemEnabled;
         device->EnableMenuItem = Cocoa_EnableMenuItem;
         device->DisableMenuItem = Cocoa_DisableMenuItem;
         device->DestroyMenuItem = Cocoa_DestroyMenuItem;
@@ -427,7 +427,7 @@ bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *n
 }
 
 
-bool Cocoa_CheckMenuItem(SDL_MenuItem *menu_item)
+bool Cocoa_SetMenuItemChecked(SDL_MenuItem *menu_item)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
     [platform_data->menu_item setState:NSControlStateValueOn];
@@ -435,7 +435,7 @@ bool Cocoa_CheckMenuItem(SDL_MenuItem *menu_item)
     return true;
 }
 
-bool Cocoa_UncheckMenuItem(SDL_MenuItem *menu_item)
+bool Cocoa_UnSetMenuItemChecked(SDL_MenuItem *menu_item)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
     [platform_data->menu_item setState:NSControlStateValueOff];
@@ -443,7 +443,7 @@ bool Cocoa_UncheckMenuItem(SDL_MenuItem *menu_item)
     return true;
 }
 
-bool Cocoa_MenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
+bool Cocoa_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
     NSControlStateValue state = [platform_data->menu_item state];
@@ -451,7 +451,7 @@ bool Cocoa_MenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
     return true;
 }
 
-bool Cocoa_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
+bool Cocoa_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
     *enabled = [platform_data->menu_item isEnabled];

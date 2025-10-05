@@ -34,6 +34,9 @@ typedef struct SDL_VideoDevice SDL_VideoDevice;
 typedef struct SDL_VideoData SDL_VideoData;
 typedef struct SDL_DisplayData SDL_DisplayData;
 typedef struct SDL_WindowData SDL_WindowData;
+typedef struct SDL_MenuBar SDL_MenuBar;
+typedef struct SDL_Menu SDL_Menu;
+
 
 typedef struct
 {
@@ -138,6 +141,8 @@ struct SDL_Window
     // If a toplevel window, holds the current keyboard focus for grabbing popups.
     SDL_Window *keyboard_focus;
 
+    SDL_MenuBar *menu_bar;
+
     SDL_Window *prev;
     SDL_Window *next;
 
@@ -209,36 +214,34 @@ typedef enum
     SDL_FULLSCREEN_PENDING
 } SDL_FullscreenResult;
 
-
-typedef struct SDL_MenuBar SDL_MenuBar;
-typedef struct SDL_Menu SDL_Menu;
-
 typedef struct SDL_MenuItem_CommonData
 {
     void *platform_data;
+    SDL_MenuBar  *menu_bar;
     SDL_MenuItem *parent;
-    SDL_Window *window;
     SDL_MenuItem *prev;
     SDL_MenuItem *next;
+    const char *label;
     SDL_MenuItemType type;
 } SDL_MenuItem_CommonData;
 
 typedef struct SDL_Menu_CommonData
 {
     SDL_MenuItem_CommonData item_common;
-    SDL_MenuItem *child_list;
-    Sint64 children;
+    SDL_MenuItem *children;
+    Sint64 num_children;
 } SDL_Menu_CommonData;
 
 typedef struct SDL_MenuBar
 {
     SDL_Menu_CommonData common;
+    SDL_Window *window;
 } SDL_MenuBar;
 
-typedef struct SDL_Menu
+typedef struct SDL_SubMenu
 {
     SDL_Menu_CommonData common;
-} SDL_Menu;
+} SDL_SubMenu;
 
 typedef struct SDL_MenuItem_Button
 {
@@ -256,7 +259,7 @@ typedef union SDL_MenuItem
     SDL_MenuItem_CommonData common;
     SDL_Menu_CommonData menu_common;
     SDL_MenuBar menu_bar;
-    SDL_Menu menu;
+    SDL_SubMenu sub_menu;
     SDL_MenuItem_Button button;
     SDL_MenuItem_Checkable checkable;
 } SDL_MenuItem;
@@ -368,13 +371,13 @@ struct SDL_VideoDevice
     bool (*ReconfigureWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
 
     bool (*CreateMenuBar)(SDL_MenuBar *menu_bar);
+    bool (*SetWindowMenuBar)(SDL_MenuBar *menu_bar);
     bool (*CreateMenuItemAt)(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type);
-    bool (*CheckMenuItem)(SDL_MenuItem *menu_item);
-    bool (*UncheckMenuItem)(SDL_MenuItem *menu_item);
-    bool (*MenuItemChecked)(SDL_MenuItem *menu_item, bool *checked);
-    bool (*MenuItemEnabled)(SDL_MenuItem *menu_item, bool *enabled);
-    bool (*EnableMenuItem)(SDL_MenuItem *menu_item);
-    bool (*DisableMenuItem)(SDL_MenuItem *menu_item);
+    bool (*SetMenuItemLabel)(SDL_MenuItem *menu_item, const char *label);
+    bool (*GetMenuItemChecked)(SDL_MenuItem *menu_item, bool *checked);
+    bool (*SetMenuItemChecked)(SDL_MenuItem *menu_item, bool checked);
+    bool (*GetMenuItemEnabled)(SDL_MenuItem *menu_item, bool *enabled);
+    bool (*SetMenuItemEnabled)(SDL_MenuItem *menu_item, bool enabled);
     bool (*DestroyMenuItem)(SDL_MenuItem *menu_item);
 
     /* * * */
@@ -484,6 +487,7 @@ struct SDL_VideoDevice
     bool setting_display_mode;
     Uint32 device_caps;
     SDL_SystemTheme system_theme;
+    int num_menu_bars;
 
     /* * * */
     // Data used by the GL drivers
@@ -676,5 +680,7 @@ extern bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props);
 extern bool SDL_GetTextInputMultiline(SDL_PropertiesID props);
 
 extern Uint32 SDL_GetIndexInMenu(SDL_MenuItem *menu_item);
+
+void SDL_CleanupMenubars();
 
 #endif // SDL_sysvideo_h_

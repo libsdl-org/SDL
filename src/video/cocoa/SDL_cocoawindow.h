@@ -198,10 +198,10 @@ extern void Cocoa_MenuVisibilityCallback(void *userdata, const char *name, const
 
 extern bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar);
 extern bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type);
-extern bool Cocoa_CheckMenuItem(SDL_MenuItem *menu_item);
-extern bool Cocoa_UncheckMenuItem(SDL_MenuItem *menu_item);
-extern bool Cocoa_MenuItemChecked(SDL_MenuItem *menu_item, bool *checked);
-extern bool Cocoa_MenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled);
+extern bool Cocoa_SetMenuItemChecked(SDL_MenuItem *menu_item);
+extern bool Cocoa_UnSetMenuItemChecked(SDL_MenuItem *menu_item);
+extern bool Cocoa_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked);
+extern bool Cocoa_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled);
 extern bool Cocoa_EnableMenuItem(SDL_MenuItem *menu_item);
 extern bool Cocoa_DisableMenuItem(SDL_MenuItem *menu_item);
 extern bool Cocoa_DestroyMenuItem(SDL_MenuItem *menu_item);
