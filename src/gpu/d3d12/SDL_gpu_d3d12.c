@@ -26,6 +26,8 @@
 #include "../../core/windows/SDL_windows.h"
 #include "../../video/directx/SDL_d3d12.h"
 #include "../SDL_sysgpu.h"
+#include <d3d11_2.h>
+#include <d3d11on12.h>
 
 #ifdef __IDXGIInfoQueue_INTERFACE_DEFINED__
 #define HAVE_IDXGIINFOQUEUE
@@ -147,7 +149,7 @@ static const IID D3D_IID_IDXGISwapChain3 = { 0x94d99bdb, 0xf1f8, 0x4ab0, { 0xb2,
 static const IID D3D_IID_IDXGIDebug = { 0x119e7452, 0xde9e, 0x40fe, { 0x88, 0x06, 0x88, 0xf9, 0x0c, 0x12, 0xb4, 0x41 } };
 static const IID D3D_IID_IDXGIInfoQueue = { 0xd67441c7, 0x672a, 0x476f, { 0x9e, 0x82, 0xcd, 0x55, 0xb4, 0x49, 0x49, 0xce } };
 #endif
-static const GUID D3D_IID_DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, { 0x87, 0xe6, 0x43, 0xe9, 0xa9, 0xcf, 0xda, 0x08 } };
+static const IID D3D_IID_DXGI_DEBUG_ALL = { 0xe48ae283, 0xda80, 0x490b, { 0x87, 0xe6, 0x43, 0xe9, 0xa9, 0xcf, 0xda, 0x08 } };
 
 static const IID D3D_IID_ID3D12Device = { 0x189819f1, 0x1db6, 0x4b57, { 0xbe, 0x54, 0x18, 0x21, 0x33, 0x9b, 0x85, 0xf7 } };
 static const IID D3D_IID_ID3D12CommandQueue = { 0x0ec870a6, 0x5d7e, 0x4c22, { 0x8c, 0xfc, 0x5b, 0xaa, 0xe0, 0x76, 0x16, 0xed } };
@@ -163,6 +165,12 @@ static const IID D3D_IID_ID3D12PipelineState = { 0x765a30f3, 0xf624, 0x4c6f, { 0
 static const IID D3D_IID_ID3D12Debug = { 0x344488b7, 0x6846, 0x474b, { 0xb9, 0x89, 0xf0, 0x27, 0x44, 0x82, 0x45, 0xe0 } };
 static const IID D3D_IID_ID3D12InfoQueue = { 0x0742a90b, 0xc387, 0x483f, { 0xb9, 0x46, 0x30, 0xa7, 0xe4, 0xe6, 0x14, 0x58 } };
 static const IID D3D_IID_ID3D12InfoQueue1 = { 0x2852dd88, 0xb484, 0x4c0c, { 0xb6, 0xb1, 0x67, 0x16, 0x85, 0x00, 0xe6, 0x00 } };
+
+static const IID D3D_IID_ID3D11On12Device = { 0x85611e73, 0x70a9, 0x490e, { 0x96, 0x14, 0xa9, 0xe3, 0x02, 0x77, 0x79, 0x04 } };
+static const IID D3D_IID_ID3D11DeviceContext2 = { 0x420d5b32, 0xb90c, 0x4da4, { 0xbe, 0xf0, 0x35, 0x9f, 0x6a, 0x24, 0xa8, 0x3a } };
+static const IID D3D_IID_ID3D11Resource = { 0xdc8e63f3, 0xd12b, 0x4952, { 0xb4, 0x7b, 0x5e, 0x45, 0x02, 0x6a, 0x86, 0x2d } };
+static const IID D3D_IID_ID3D11Texture2D = { 0x6f15aaf2, 0xd208, 0x4e89, { 0x9a, 0xb4, 0x48, 0x95, 0x35, 0xd3, 0x4f, 0x9c } };
+static const IID D3D_IID_IDXGIKeyedMutex = { 0x9d8e1289, 0xd7b3, 0x465f, { 0x81, 0x26, 0x25, 0x0e, 0x34, 0x9a, 0xf8, 0x5d } };
 
 // Enums
 
@@ -806,6 +814,8 @@ struct D3D12Texture
     ID3D12Resource *resource;
     D3D12StagingDescriptor srvHandle;
 
+    IDXGIKeyedMutex *keyed_mutex;
+
     SDL_AtomicInt referenceCount;
 };
 
@@ -951,6 +961,10 @@ struct D3D12Renderer
     SDL_Mutex *windowLock;
     SDL_Mutex *fenceLock;
     SDL_Mutex *disposeLock;
+
+    // Shared textures
+    ID3D11On12Device *d3d11on12Device;
+    ID3D11DeviceContext2 *d3d11DeviceContext2;
 };
 
 struct D3D12CommandBuffer
@@ -1354,8 +1368,28 @@ static void D3D12_INTERNAL_ReleaseBufferContainer(
     SDL_UnlockMutex(renderer->disposeLock);
 }
 
+static void D3D12_INTERNAL_DestroySharedKeyedMutex(
+    D3D12Renderer *renderer,
+    IDXGIKeyedMutex *keyed_mutex)
+{
+    ID3D11Resource *resource;
+    HRESULT res = IDXGIKeyedMutex_QueryInterface(keyed_mutex, &D3D_IID_ID3D11Resource, (void **)&resource);
+    if (SUCCEEDED(res)) {
+        // Should always succeed
+        ID3D11On12Device_ReleaseWrappedResources(renderer->d3d11on12Device, &resource, 1);
+        ID3D11Resource_Release(resource);
+
+        // 11on12 has (had?) a bug where D3D12 resources used only for keyed shared mutexes
+        // are not released until work is submitted to the device context and flushed.
+        // The most minimal work we can get away with is issuing a TiledResourceBarrier.
+        ID3D11DeviceContext2_TiledResourceBarrier(renderer->d3d11DeviceContext2, NULL, NULL);
+        ID3D11DeviceContext2_Flush(renderer->d3d11DeviceContext2);
+    }
+    IDXGIKeyedMutex_Release(keyed_mutex);
+}
+
 static void D3D12_INTERNAL_DestroyTexture(
-    D3D12Texture *texture)
+    D3D12Renderer *renderer, D3D12Texture *texture)
 {
     if (!texture) {
         return;
@@ -1380,6 +1414,10 @@ static void D3D12_INTERNAL_DestroyTexture(
 
     D3D12_INTERNAL_ReleaseStagingDescriptorHandle(
         &texture->srvHandle);
+
+    if (texture->keyed_mutex) {
+        D3D12_INTERNAL_DestroySharedKeyedMutex(renderer, texture->keyed_mutex);
+    }
 
     if (texture->resource) {
         ID3D12Resource_Release(texture->resource);
@@ -1586,6 +1624,16 @@ static void D3D12_INTERNAL_DestroyFence(D3D12Fence *fence)
 
 static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
 {
+    // Release D3D11on12
+    if (renderer->d3d11DeviceContext2) {
+        ID3D11DeviceContext2_Release(renderer->d3d11DeviceContext2);
+        renderer->d3d11DeviceContext2 = NULL;
+    }
+    if (renderer->d3d11on12Device) {
+        ID3D11On12Device_Release(renderer->d3d11on12Device);
+        renderer->d3d11on12Device = NULL;
+    }
+
     // Release uniform buffers
     for (Uint32 i = 0; i < renderer->uniformBufferPoolCount; i += 1) {
         D3D12_INTERNAL_DestroyBuffer(
@@ -3277,6 +3325,86 @@ static SDL_GPUShader *D3D12_CreateShader(
     return (SDL_GPUShader *)shader;
 }
 
+static bool D3D12_INTERNAL_EnsureD3D11on12(D3D12Renderer* renderer)
+{
+    if (renderer->d3d11on12Device) {
+        return true;
+    }
+
+    HMODULE hD3D11 = GetModuleHandle(TEXT("D3D11.dll"));
+    if (!hD3D11) {
+        return SDL_SetError("Couldn't get D3D11 handle");
+    }
+
+    PFN_D3D11ON12_CREATE_DEVICE D3D11On12CreateDeviceFunc = (PFN_D3D11ON12_CREATE_DEVICE)GetProcAddress(hD3D11, "D3D11On12CreateDevice");
+    if (!D3D11On12CreateDeviceFunc) {
+        return SDL_SetError("Couldn't find D3D11On12CreateDevice");
+    }
+
+    IUnknown *iUnknownDevice = (IUnknown *)renderer->device;
+    IUnknown *iUnknownQueue = (IUnknown *)renderer->commandQueue;
+    ID3D11Device *d3d11Device;
+    ID3D11DeviceContext *d3d11DeviceContext;
+    D3D_FEATURE_LEVEL d3dFeatureLevel;
+    HRESULT res = D3D11On12CreateDeviceFunc(iUnknownDevice, 0, NULL, 0, &iUnknownQueue, 1, 1,
+                                            &d3d11Device, &d3d11DeviceContext, &d3dFeatureLevel);
+    if (FAILED(res)) {
+        D3D12_INTERNAL_SetError(renderer, "Couldn't create D3D11on12 device", res);
+        return false;
+    }
+
+    res = ID3D11Device_QueryInterface(d3d11Device, &D3D_IID_ID3D11On12Device, (void **)&renderer->d3d11on12Device);
+    ID3D11Device_Release(d3d11Device);
+    if (FAILED(res)) {
+        D3D12_INTERNAL_SetError(renderer, "Couldn't query ID3D11On12Device interface", res);
+        ID3D11DeviceContext_Release(d3d11DeviceContext);
+        return false;
+    }
+
+    res = ID3D11DeviceContext_QueryInterface(d3d11DeviceContext, &D3D_IID_ID3D11DeviceContext2, (void **)&renderer->d3d11DeviceContext2);
+    ID3D11DeviceContext_Release(d3d11DeviceContext);
+    if (FAILED(res)) {
+        D3D12_INTERNAL_SetError(renderer, "Couldn't query ID3D11DeviceContext2 interface", res);
+        ID3D11On12Device_Release(renderer->d3d11on12Device);
+        renderer->d3d11on12Device = NULL;
+        return false;
+    }
+    return true;
+}
+
+static IDXGIKeyedMutex *D3D12_INTERNAL_CreateSharedKeyedMutex(
+    D3D12Renderer *renderer,
+    ID3D12Resource *handle)
+{
+    // We can't directly query the shared keyed mutex from the resource, instead we need to bounce through D3D11on12
+    if (!D3D12_INTERNAL_EnsureD3D11on12(renderer)) {
+        return NULL;
+    }
+
+    ID3D11Texture2D *d3d11Texture;
+    D3D11_RESOURCE_FLAGS resourceFlags;
+    resourceFlags.BindFlags = 0;
+    resourceFlags.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
+    resourceFlags.CPUAccessFlags = 0;
+    resourceFlags.StructureByteStride = 0;
+    HRESULT res = ID3D11On12Device_CreateWrappedResource(renderer->d3d11on12Device,
+                                                         (IUnknown *)handle, &resourceFlags, D3D12_RESOURCE_STATE_COMMON,
+                                                         D3D12_RESOURCE_STATE_COMMON, &D3D_IID_ID3D11Texture2D, (void **)&d3d11Texture);
+    if (FAILED(res)) {
+        D3D12_INTERNAL_SetError(renderer, "Couldn't create wrapped resource", res);
+        return NULL;
+    }
+
+    IDXGIKeyedMutex *keyed_mutex;
+    res = ID3D12Resource_QueryInterface(d3d11Texture, &D3D_IID_IDXGIKeyedMutex, (void **)&keyed_mutex);
+    ID3D11Texture2D_Release(d3d11Texture);
+    if (FAILED(res)) {
+        D3D12_INTERNAL_SetError(renderer, "Couldn't query IDXGIKeyedMutex interface", res);
+        return NULL;
+    }
+    return keyed_mutex;
+}
+
 static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     D3D12Renderer *renderer,
     const SDL_GPUTextureCreateInfo *createinfo,
@@ -3285,14 +3413,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
 {
     D3D12Texture *texture;
     ID3D12Resource *handle;
-    D3D12_HEAP_PROPERTIES heapProperties;
-    D3D12_HEAP_FLAGS heapFlags = (D3D12_HEAP_FLAGS)0;
-    D3D12_RESOURCE_DESC desc;
-    D3D12_RESOURCE_FLAGS resourceFlags = (D3D12_RESOURCE_FLAGS)0;
-    D3D12_RESOURCE_STATES initialState = (D3D12_RESOURCE_STATES)0;
-    D3D12_CLEAR_VALUE clearValue;
-    DXGI_FORMAT format;
-    bool useClearValue = false;
+    HANDLE dxgi_handle;
     bool needsSRV =
         (createinfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) ||
         (createinfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ) ||
@@ -3300,6 +3421,10 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     bool needsUAV =
         (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) ||
         (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE);
+    Uint32 layerCount = createinfo->type == SDL_GPU_TEXTURETYPE_3D ? 1 : createinfo->layer_count_or_depth;
+    Uint32 depth = createinfo->type == SDL_GPU_TEXTURETYPE_3D ? createinfo->layer_count_or_depth : 1;
+    Uint32 slice = 0;
+    bool isMultisample = createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1;
     HRESULT res;
 
     texture = (D3D12Texture *)SDL_calloc(1, sizeof(D3D12Texture));
@@ -3307,86 +3432,149 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
         return NULL;
     }
 
-    Uint32 layerCount = createinfo->type == SDL_GPU_TEXTURETYPE_3D ? 1 : createinfo->layer_count_or_depth;
-    Uint32 depth = createinfo->type == SDL_GPU_TEXTURETYPE_3D ? createinfo->layer_count_or_depth : 1;
-    bool isMultisample = createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1;
+    dxgi_handle = SDL_GetPointerProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_DXGI_SHARED_HANDLE_POINTER, NULL);
+    if (dxgi_handle) {
+        res = ID3D12Device_OpenSharedHandle(renderer->device, dxgi_handle, &D3D_IID_ID3D12Resource, (void **)&handle);
+        if (FAILED(res)) {
+            D3D12_INTERNAL_SetError(renderer, "Couldn't open shared handle", res);
+            D3D12_INTERNAL_DestroyTexture(renderer, texture);
+            return NULL;
+        }
 
-    format = SDLToD3D12_TextureFormat[createinfo->format];
+        texture->keyed_mutex = D3D12_INTERNAL_CreateSharedKeyedMutex(renderer, handle);
+        if (!texture->keyed_mutex) {
+            SDL_SetError("Shared textures should be created with D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX");
+            D3D12_INTERNAL_DestroyTexture(renderer, texture);
+            return NULL;
+        }
 
-    if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
-        resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-        useClearValue = true;
-        clearValue.Format = format;
-        clearValue.Color[0] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT, 0);
-        clearValue.Color[1] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_G_FLOAT, 0);
-        clearValue.Color[2] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_B_FLOAT, 0);
-        clearValue.Color[3] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_A_FLOAT, 0);
-    }
+        // I'm not sure what other operations require a sync, but we definitely need it here
+        const DWORD KEYED_MUTEX_TIMEOUT = 100;
+        res = IDXGIKeyedMutex_AcquireSync(texture->keyed_mutex, 0, KEYED_MUTEX_TIMEOUT);
+        if (FAILED(res)) {
+            D3D12_INTERNAL_SetError(renderer, "Couldn't acquire keyed mutex", res);
+            D3D12_INTERNAL_DestroyTexture(renderer, texture);
+            return NULL;
+        }
+        IDXGIKeyedMutex_ReleaseSync(texture->keyed_mutex, 0);
 
-    if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
-        resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-        useClearValue = true;
-        clearValue.Format = SDLToD3D12_DepthFormat[createinfo->format];
-        clearValue.DepthStencil.Depth = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT, 0);
-        clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_NUMBER, 0);
-        format = needsSRV ? SDLToD3D12_TypelessFormat[createinfo->format] : SDLToD3D12_DepthFormat[createinfo->format];
-    }
+        D3D12_RESOURCE_DESC desc;
+        ID3D12Resource_GetDesc(handle, &desc);
+        switch (desc.Format) {
+        case DXGI_FORMAT_NV12:
+            switch (createinfo->format) {
+            case SDL_GPU_TEXTUREFORMAT_R8_UNORM:
+                slice = 0;
+                break;
+            case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM:
+                slice = 1;
+                break;
+            default:
+                break;
+            }
+            break;
+        case DXGI_FORMAT_P010:
+            switch (createinfo->format) {
+            case SDL_GPU_TEXTUREFORMAT_R16_UNORM:
+                slice = 0;
+                break;
+            case SDL_GPU_TEXTUREFORMAT_R16G16_UNORM:
+                slice = 1;
+                break;
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
 
-    if (needsUAV) {
-        resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-    }
-
-    heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
-    heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-    heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-    heapProperties.CreationNodeMask = 0; // We don't do multi-adapter operation
-    heapProperties.VisibleNodeMask = 0;  // We don't do multi-adapter operation
-
-    heapFlags = isSwapchainTexture ? D3D12_HEAP_FLAG_ALLOW_DISPLAY : D3D12_HEAP_FLAG_NONE;
-
-    if (createinfo->type != SDL_GPU_TEXTURETYPE_3D) {
-        desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-        desc.Alignment = isSwapchainTexture ? 0 : isMultisample ? D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-        desc.Width = createinfo->width;
-        desc.Height = createinfo->height;
-        desc.DepthOrArraySize = (UINT16)createinfo->layer_count_or_depth;
-        desc.MipLevels = (UINT16)createinfo->num_levels;
-        desc.Format = format;
-        desc.SampleDesc.Count = SDLToD3D12_SampleCount[createinfo->sample_count];
-        desc.SampleDesc.Quality = isMultisample ? D3D12_STANDARD_MULTISAMPLE_PATTERN : 0;
-        desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // Apparently this is the most efficient choice
-        desc.Flags = resourceFlags;
     } else {
-        desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
-        desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-        desc.Width = createinfo->width;
-        desc.Height = createinfo->height;
-        desc.DepthOrArraySize = (UINT16)createinfo->layer_count_or_depth;
-        desc.MipLevels = (UINT16)createinfo->num_levels;
-        desc.Format = format;
-        desc.SampleDesc.Count = 1;
-        desc.SampleDesc.Quality = 0;
-        desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-        desc.Flags = resourceFlags;
+        D3D12_HEAP_PROPERTIES heapProperties;
+        D3D12_HEAP_FLAGS heapFlags = (D3D12_HEAP_FLAGS)0;
+        D3D12_RESOURCE_DESC desc;
+        D3D12_RESOURCE_FLAGS resourceFlags = (D3D12_RESOURCE_FLAGS)0;
+        D3D12_RESOURCE_STATES initialState = (D3D12_RESOURCE_STATES)0;
+        D3D12_CLEAR_VALUE clearValue;
+        DXGI_FORMAT format;
+        bool useClearValue = false;
+
+        format = SDLToD3D12_TextureFormat[createinfo->format];
+
+        if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
+            resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+            useClearValue = true;
+            clearValue.Format = format;
+            clearValue.Color[0] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT, 0);
+            clearValue.Color[1] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_G_FLOAT, 0);
+            clearValue.Color[2] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_B_FLOAT, 0);
+            clearValue.Color[3] = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_A_FLOAT, 0);
+        }
+
+        if (createinfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+            resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+            useClearValue = true;
+            clearValue.Format = SDLToD3D12_DepthFormat[createinfo->format];
+            clearValue.DepthStencil.Depth = SDL_GetFloatProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT, 0);
+            clearValue.DepthStencil.Stencil = (UINT8)SDL_GetNumberProperty(createinfo->props, SDL_PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_NUMBER, 0);
+            format = needsSRV ? SDLToD3D12_TypelessFormat[createinfo->format] : SDLToD3D12_DepthFormat[createinfo->format];
+        }
+
+        if (needsUAV) {
+            resourceFlags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+        }
+
+        heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+        heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+        heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+        heapProperties.CreationNodeMask = 0; // We don't do multi-adapter operation
+        heapProperties.VisibleNodeMask = 0;  // We don't do multi-adapter operation
+
+        heapFlags = isSwapchainTexture ? D3D12_HEAP_FLAG_ALLOW_DISPLAY : D3D12_HEAP_FLAG_NONE;
+
+        if (createinfo->type != SDL_GPU_TEXTURETYPE_3D) {
+            desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+            desc.Alignment = isSwapchainTexture ? 0 : isMultisample ? D3D12_DEFAULT_MSAA_RESOURCE_PLACEMENT_ALIGNMENT : D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+            desc.Width = createinfo->width;
+            desc.Height = createinfo->height;
+            desc.DepthOrArraySize = (UINT16)createinfo->layer_count_or_depth;
+            desc.MipLevels = (UINT16)createinfo->num_levels;
+            desc.Format = format;
+            desc.SampleDesc.Count = SDLToD3D12_SampleCount[createinfo->sample_count];
+            desc.SampleDesc.Quality = isMultisample ? D3D12_STANDARD_MULTISAMPLE_PATTERN : 0;
+            desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN; // Apparently this is the most efficient choice
+            desc.Flags = resourceFlags;
+        } else {
+            desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
+            desc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+            desc.Width = createinfo->width;
+            desc.Height = createinfo->height;
+            desc.DepthOrArraySize = (UINT16)createinfo->layer_count_or_depth;
+            desc.MipLevels = (UINT16)createinfo->num_levels;
+            desc.Format = format;
+            desc.SampleDesc.Count = 1;
+            desc.SampleDesc.Quality = 0;
+            desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+            desc.Flags = resourceFlags;
+        }
+
+        initialState = isSwapchainTexture ? D3D12_RESOURCE_STATE_PRESENT : D3D12_INTERNAL_DefaultTextureResourceState(createinfo->usage);
+
+        res = ID3D12Device_CreateCommittedResource(
+            renderer->device,
+            &heapProperties,
+            heapFlags,
+            &desc,
+            initialState,
+            useClearValue ? &clearValue : NULL,
+            D3D_GUID(D3D_IID_ID3D12Resource),
+            (void **)&handle);
+        if (FAILED(res)) {
+            D3D12_INTERNAL_SetError(renderer, "Failed to create texture!", res);
+            D3D12_INTERNAL_DestroyTexture(renderer, texture);
+            return NULL;
+        }
     }
-
-    initialState = isSwapchainTexture ? D3D12_RESOURCE_STATE_PRESENT : D3D12_INTERNAL_DefaultTextureResourceState(createinfo->usage);
-
-    res = ID3D12Device_CreateCommittedResource(
-        renderer->device,
-        &heapProperties,
-        heapFlags,
-        &desc,
-        initialState,
-        useClearValue ? &clearValue : NULL,
-        D3D_GUID(D3D_IID_ID3D12Resource),
-        (void **)&handle);
-    if (FAILED(res)) {
-        D3D12_INTERNAL_SetError(renderer, "Failed to create texture!", res);
-        D3D12_INTERNAL_DestroyTexture(texture);
-        return NULL;
-    }
-
     texture->resource = handle;
 
     // Create the SRV if applicable
@@ -3430,7 +3618,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
             srvDesc.Texture2D.MipLevels = createinfo->num_levels;
             srvDesc.Texture2D.MostDetailedMip = 0;
-            srvDesc.Texture2D.PlaneSlice = 0;
+            srvDesc.Texture2D.PlaneSlice = slice;
             srvDesc.Texture2D.ResourceMinLODClamp = 0; // default behavior
         }
 
@@ -3447,7 +3635,7 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
     texture->subresources = (D3D12TextureSubresource *)SDL_calloc(
         texture->subresourceCount, sizeof(D3D12TextureSubresource));
     if (!texture->subresources) {
-        D3D12_INTERNAL_DestroyTexture(texture);
+        D3D12_INTERNAL_DestroyTexture(renderer, texture);
         return NULL;
     }
     for (Uint32 layerIndex = 0; layerIndex < layerCount; layerIndex += 1) {
@@ -6606,7 +6794,7 @@ static void D3D12_INTERNAL_DestroySwapchain(
 {
     renderer->commandQueue->PresentX(0, NULL, NULL);
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
-        D3D12_INTERNAL_DestroyTexture(windowData->textureContainers[i].activeTexture);
+        D3D12_INTERNAL_DestroyTexture(renderer, windowData->textureContainers[i].activeTexture);
     }
 }
 
@@ -6622,7 +6810,7 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
 
     // Clean up the previous swapchain textures
     for (Uint32 i = 0; i < windowData->swapchainTextureCount; i += 1) {
-        D3D12_INTERNAL_DestroyTexture(windowData->textureContainers[i].activeTexture);
+        D3D12_INTERNAL_DestroyTexture(renderer, windowData->textureContainers[i].activeTexture);
     }
 
     // Create a new swapchain
@@ -7575,7 +7763,7 @@ static void D3D12_INTERNAL_PerformPendingDestroys(D3D12Renderer *renderer)
     for (Sint32 i = renderer->texturesToDestroyCount - 1; i >= 0; i -= 1) {
         if (SDL_GetAtomicInt(&renderer->texturesToDestroy[i]->referenceCount) == 0) {
             D3D12_INTERNAL_DestroyTexture(
-                renderer->texturesToDestroy[i]);
+                renderer, renderer->texturesToDestroy[i]);
 
             renderer->texturesToDestroy[i] = renderer->texturesToDestroy[renderer->texturesToDestroyCount - 1];
             renderer->texturesToDestroyCount -= 1;
