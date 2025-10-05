@@ -86,6 +86,8 @@ struct SDL_WindowData
     bool disable_move_size_events;
     bool showing_window;
     int in_modal_loop;
+    int last_modal_width;
+    int last_modal_height;
     RECT initial_size_rect;
     RECT cursor_clipped_rect; // last successfully committed clipping rect for this window
     RECT cursor_ctrlock_rect; // this is Windows-specific, but probably does not need to be per-window
