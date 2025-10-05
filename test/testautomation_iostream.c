@@ -615,9 +615,9 @@ static int SDLCALL iostrm_testFileWrite(void *arg)
     int result;
 
     /* Write test. */
-    rw = SDL_IOFromFile(IOStreamWriteTestFilename, "w+");
-    SDLTest_AssertPass("Call to SDL_IOFromFile(..,\"w+\") succeeded");
-    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_IOFromFile in write mode does not return NULL");
+    rw = SDL_IOFromFile(IOStreamWriteTestFilename, "w+x");
+    SDLTest_AssertPass("Call to SDL_IOFromFile(..,\"w+x\") succeeded");
+    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_IOFromFile in exclusive write mode does not return NULL");
 
     /* Bail out if NULL */
     if (rw == NULL) {
@@ -631,6 +631,11 @@ static int SDLCALL iostrm_testFileWrite(void *arg)
     result = SDL_CloseIO(rw);
     SDLTest_AssertPass("Call to SDL_CloseIO() succeeded");
     SDLTest_AssertCheck(result == true, "Verify result value is true; got: %d", result);
+
+    /* Exclusively opening an existing file should fail. */
+    rw = SDL_IOFromFile(IOStreamWriteTestFilename, "wx");
+    SDLTest_AssertPass("Call to SDL_IOFromFile(..,\"wx\") succeeded");
+    SDLTest_AssertCheck(rw == NULL, "Verify opening existing file with SDL_IOFromFile in exclusive write mode returns NULL");
 
     return TEST_COMPLETED;
 }
