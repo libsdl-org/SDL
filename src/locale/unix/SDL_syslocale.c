@@ -101,3 +101,7 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     SDL_small_free(tmp, isstack);
     return true;
 }
+
+bool SDL_SYS_GetLocaleDirection(SDL_Locale *locale, SDL_LocaleDirection *direction) {
+	return false;
+}

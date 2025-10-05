@@ -53,3 +53,9 @@ static u8 GetLocaleIndex(void)
     cfguExit();
     return R_SUCCEEDED(result) ? current_locale : BAD_LOCALE;
 }
+
+/* TODO: Implement this! */
+bool SDL_SYS_GetLocaleDirection(SDL_Locale *locale, SDL_LocaleDirection *direction)
+{
+	return false;
+}

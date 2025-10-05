@@ -28,6 +28,8 @@ extern "C" {
 
 extern bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen);
 
+extern bool SDL_SYS_GetLocaleDirection(SDL_Locale *locale, SDL_LocaleDirection *direction);
+	
 #ifdef __cplusplus
 }
 #endif

@@ -109,3 +109,9 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
         return SDL_SYS_GetPreferredLocales_vista(buf, buflen); // available on Vista and later.
     }
 }
+
+/* TODO: Implement this! */
+bool SDL_SYS_GetLocaleDirection(SDL_Locale *locale, SDL_LocaleDirection *direction)
+{
+	return false;
+}

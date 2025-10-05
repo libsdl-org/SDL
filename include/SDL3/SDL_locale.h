@@ -64,6 +64,21 @@ typedef struct SDL_Locale
 } SDL_Locale;
 
 /**
+ * The text direction of a locale.
+ *
+ * \since This enum is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetLocaleDirection
+ */
+typedef enum SDL_LocaleDirection
+{
+    SDL_LOCALE_DIRECTION_HORIZONTAL_LEFT_TO_RIGHT,
+    SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT,
+    SDL_LOCALE_DIRECTION_VERTICAL_LEFT_TO_RIGHT_TOP_TO_BOTTOM,
+    SDL_LOCALE_DIRECTION_VERTICAL_RIGHT_TO_LEFT_TOP_TO_BOTTOM
+} SDL_LocaleDirection;
+
+/**
  * Report the user's preferred locale.
  *
  * Returned language strings are in the format xx, where 'xx' is an ISO-639
@@ -105,6 +120,18 @@ typedef struct SDL_Locale
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_Locale ** SDLCALL SDL_GetPreferredLocales(int *count);
+
+/**
+ * Get the text direction of a locale.
+ *
+ * This function returns the text direction for a locale.
+ * 
+ * \param locale the locale to get the direction information for.
+ * \returns the text direction for the locale.
+ * 
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC SDL_LocaleDirection SDLCALL SDL_GetLocaleDirection(SDL_Locale *locale);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

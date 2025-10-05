@@ -27,3 +27,9 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     return Android_JNI_GetLocale(buf, buflen);
 }
+
+/* TODO: Implement this! */
+bool SDL_SYS_GetLocaleDirection(SDL_Locale *locale, SDL_LocaleDirection *direction)
+{
+	return false;
+}

@@ -13,6 +13,22 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
+static const char *get_direction_string(SDL_Locale *locale) 
+{
+    SDL_LocaleDirection direction;
+    
+    direction = SDL_GetLocaleDirection(locale);
+    if (direction == SDL_LOCALE_DIRECTION_HORIZONTAL_LEFT_TO_RIGHT) {
+        return "horizontal, left to right";
+    } else if (direction == SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT) {
+        return "horizontal, right to left";
+    } else if (direction == SDL_LOCALE_DIRECTION_VERTICAL_LEFT_TO_RIGHT_TOP_TO_BOTTOM) {
+        return "vertical, left to right, top to bottom";
+    } else {
+        return "vertical, right to left, top to bottom";
+    }
+}
+
 static void log_locales(void)
 {
     SDL_Locale **locales = SDL_GetPreferredLocales(NULL);
@@ -25,7 +41,7 @@ static void log_locales(void)
         for (i = 0; locales[i]; ++i) {
             const SDL_Locale *l = locales[i];
             const char *c = l->country;
-            SDL_Log(" - %s%s%s", l->language, c ? "_" : "", c ? c : "");
+            SDL_Log(" - %s%s%s (direction: %s)", l->language, c ? "_" : "", c ? c : "", get_direction_string(locales[i]));
             total++;
         }
         SDL_Log("%u locales seen.", total);

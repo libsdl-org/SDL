@@ -1286,3 +1286,4 @@
 #define SDL_SetTexturePalette SDL_SetTexturePalette_REAL
 #define SDL_GetTexturePalette SDL_GetTexturePalette_REAL
 #define SDL_GetGPURendererDevice SDL_GetGPURendererDevice_REAL
+#define SDL_GetLocaleDirection SDL_GetLocaleDirection_REAL

@@ -27,3 +27,10 @@ bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
     // dummy implementation. Caller already zero'd out buffer.
     return SDL_Unsupported();
 }
+
+bool SDL_SYS_GetLocaleDirection(SDL_Locale *locale, SDL_LocaleDirection *direction)
+{
+    // dummy implementation.
+	return SDL_Unsupported();
+}
+

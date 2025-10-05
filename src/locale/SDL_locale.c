@@ -110,3 +110,73 @@ SDL_Locale **SDL_GetPreferredLocales(int *count)
     }
     return build_locales_from_csv_string(locbuf, count);
 }
+
+SDL_LocaleDirection SDL_GetLocaleDirection(SDL_Locale *locale) 
+{
+    SDL_LocaleDirection dir;
+    
+    if (SDL_SYS_GetLocaleDirection(locale, &dir)) {
+        return dir;
+    }
+    
+    /* fallback implementation */    
+    dir = SDL_LOCALE_DIRECTION_HORIZONTAL_LEFT_TO_RIGHT;
+
+    if (!SDL_strcmp(locale->language, "ar")) {
+        dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+    }
+    
+    if (!SDL_strcmp(locale->language, "fa") && locale->country) {
+        if (!SDL_strcmp(locale->country, "AF")) {
+            dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+        }
+    }
+
+    if (!SDL_strcmp(locale->language, "fa") && locale->country) {
+        if (!SDL_strcmp(locale->country, "IR")) {
+            dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+        }
+    }
+    
+    if (!SDL_strcmp(locale->language, "he")) {
+        dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+    }
+    
+    if (!SDL_strcmp(locale->language, "iw")) {
+        dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+    }
+    
+    if (!SDL_strcmp(locale->language, "kd")) {
+        dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+    }
+    
+    if (!SDL_strcmp(locale->language, "PK") && locale->country) {
+        if (!SDL_strcmp(locale->country, "PK")) {
+            dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+        }
+    }
+    
+    if (!SDL_strcmp(locale->language, "ps")) {
+        dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+    }
+    
+    if (!SDL_strcmp(locale->language, "ug")) {
+        dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+    }
+    
+    if (!SDL_strcmp(locale->language, "ur")) {
+        dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+    }
+        
+    if (!SDL_strcmp(locale->language, "yi")) {
+        dir = SDL_LOCALE_DIRECTION_HORIZONTAL_RIGHT_TO_LEFT;
+    }
+
+    if (!SDL_strcmp(locale->language, "mn") && locale->country) {
+        if (!SDL_strcmp(locale->country, "MN")) {
+            dir = SDL_LOCALE_DIRECTION_VERTICAL_LEFT_TO_RIGHT_TOP_TO_BOTTOM;
+        }
+    }
+        
+    return dir;
+}
