@@ -75,6 +75,7 @@ bool SDL_get_zenity_version(int *major, int *minor)
 
 bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
+    int exit_code = -1;
     int zenity_major = 0, zenity_minor = 0, output_len = 0;
     int argc = 5, i;
     const char *argv[5 + 2 /* icon name */ + 2 /* title */ + 2 /* message */ + 2 * MAX_BUTTONS + 1 /* NULL */] = {
@@ -158,8 +159,12 @@ bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
         return false;
     }
     if (buttonID) {
-        char *output = SDL_ReadProcess(process, NULL, NULL);
-        if (output) {
+        char *output = SDL_ReadProcess(process, NULL, &exit_code);
+        if (exit_code < 0 || exit_code == 255) {
+            if (output) {
+                SDL_free(output);
+            }
+        } else if (output) {
             // It likes to add a newline...
             char *tmp = SDL_strrchr(output, '\n');
             if (tmp) {
@@ -177,9 +182,10 @@ bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
             }
             SDL_free(output);
         }
+    } else {
+        SDL_WaitProcess(process, true, &exit_code);
     }
     SDL_DestroyProcess(process);
 
-    return true;
+    return !(exit_code < 0 || exit_code == 255);
 }
-
