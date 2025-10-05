@@ -53,7 +53,7 @@ static bool parse_zenity_version(const char *version, int *major, int *minor)
     return true;
 }
 
-static bool get_zenity_version(int *major, int *minor)
+bool SDL_get_zenity_version(int *major, int *minor)
 {
     const char *argv[] = { "zenity", "--version", NULL };
     bool result = false;
@@ -87,7 +87,7 @@ bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
     }
 
     // get zenity version so we know which arg to use
-    if (!get_zenity_version(&zenity_major, &zenity_minor)) {
+    if (!SDL_get_zenity_version(&zenity_major, &zenity_minor)) {
         return false; // get_zenity_version() calls SDL_SetError(), so message is already set
     }
 
