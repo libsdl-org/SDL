@@ -1105,7 +1105,11 @@ static bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **texture
     }
 
     props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
-    SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, pPixelBuffer);
+    if (have_gpu_renderer) {
+        SDL_SetPointerProperty(props, SDL_PROP_GPU_TEXTURE_CREATE_PIXELBUFFER_POINTER, pPixelBuffer);
+    } else {
+        SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER, pPixelBuffer);
+    }
     *texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!*texture) {
