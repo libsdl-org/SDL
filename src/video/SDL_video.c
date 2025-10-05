@@ -6178,7 +6178,7 @@ bool SDL_Vulkan_CreateSurface(SDL_Window *window,
 
     if (!_this->Vulkan_CreateSurface) {
         SDL_Unsupported();
-        return NULL;
+        return false;
     }
 
     CHECK_PARAM(!instance) {
