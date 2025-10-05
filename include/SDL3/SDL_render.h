@@ -765,6 +765,19 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  *   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL associated with the texture, if
  *   you want to wrap an existing texture.
  *
+ * With the GPU renderer:
+ *
+ * - `SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER`: the SDL_GPUTexture associated with the texture, if you want to wrap an existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_UV_NUMBER`: the SDL_GPUTexture
+ *   associated with the UV plane of an NV12 texture, if you want to wrap an
+ *   existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_U_NUMBER`: the SDL_GPUTexture
+ *   associated with the U plane of a YUV texture, if you want to wrap an
+ *   existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_V_NUMBER`: the SDL_GPUTexture
+ *   associated with the V plane of a YUV texture, if you want to wrap an
+ *   existing texture.
+ *
  * \param renderer the rendering context.
  * \param props the properties to use.
  * \returns the created texture or NULL on failure; call SDL_GetError() for
@@ -783,30 +796,34 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  */
 extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props);
 
-#define SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER           "SDL.texture.create.colorspace"
-#define SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER               "SDL.texture.create.format"
-#define SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER               "SDL.texture.create.access"
-#define SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER                "SDL.texture.create.width"
-#define SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER               "SDL.texture.create.height"
-#define SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER             "SDL.texture.create.palette"
-#define SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT       "SDL.texture.create.SDR_white_point"
-#define SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT          "SDL.texture.create.HDR_headroom"
-#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_POINTER       "SDL.texture.create.d3d11.texture"
-#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_U_POINTER     "SDL.texture.create.d3d11.texture_u"
-#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_V_POINTER     "SDL.texture.create.d3d11.texture_v"
-#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_POINTER       "SDL.texture.create.d3d12.texture"
-#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_U_POINTER     "SDL.texture.create.d3d12.texture_u"
-#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_V_POINTER     "SDL.texture.create.d3d12.texture_v"
-#define SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER   "SDL.texture.create.metal.pixelbuffer"
-#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_NUMBER       "SDL.texture.create.opengl.texture"
-#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_UV_NUMBER    "SDL.texture.create.opengl.texture_uv"
-#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_U_NUMBER     "SDL.texture.create.opengl.texture_u"
-#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_V_NUMBER     "SDL.texture.create.opengl.texture_v"
-#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_NUMBER    "SDL.texture.create.opengles2.texture"
-#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_UV_NUMBER "SDL.texture.create.opengles2.texture_uv"
-#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_U_NUMBER  "SDL.texture.create.opengles2.texture_u"
-#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_V_NUMBER  "SDL.texture.create.opengles2.texture_v"
-#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER       "SDL.texture.create.vulkan.texture"
+#define SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER               "SDL.texture.create.colorspace"
+#define SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER                   "SDL.texture.create.format"
+#define SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER                   "SDL.texture.create.access"
+#define SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER                    "SDL.texture.create.width"
+#define SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER                   "SDL.texture.create.height"
+#define SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER                 "SDL.texture.create.palette"
+#define SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT           "SDL.texture.create.SDR_white_point"
+#define SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT              "SDL.texture.create.HDR_headroom"
+#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_POINTER           "SDL.texture.create.d3d11.texture"
+#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_U_POINTER         "SDL.texture.create.d3d11.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_V_POINTER         "SDL.texture.create.d3d11.texture_v"
+#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_POINTER           "SDL.texture.create.d3d12.texture"
+#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_U_POINTER         "SDL.texture.create.d3d12.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_V_POINTER         "SDL.texture.create.d3d12.texture_v"
+#define SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER       "SDL.texture.create.metal.pixelbuffer"
+#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_NUMBER           "SDL.texture.create.opengl.texture"
+#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_UV_NUMBER        "SDL.texture.create.opengl.texture_uv"
+#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_U_NUMBER         "SDL.texture.create.opengl.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_V_NUMBER         "SDL.texture.create.opengl.texture_v"
+#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_NUMBER        "SDL.texture.create.opengles2.texture"
+#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_UV_NUMBER     "SDL.texture.create.opengles2.texture_uv"
+#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_U_NUMBER      "SDL.texture.create.opengles2.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_V_NUMBER      "SDL.texture.create.opengles2.texture_v"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER           "SDL.texture.create.vulkan.texture"
+#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER             "SDL.texture.create.gpu.texture"
+#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_UV_POINTER          "SDL.texture.create.gpu.texture_uv"
+#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_U_POINTER           "SDL.texture.create.gpu.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_V_POINTER           "SDL.texture.create.gpu.texture_v"
 
 /**
  * Get the properties associated with a texture.

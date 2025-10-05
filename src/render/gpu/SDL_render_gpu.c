@@ -133,6 +133,7 @@ typedef struct GPU_PaletteData
 
 typedef struct GPU_TextureData
 {
+    bool external_texture;
     SDL_GPUTexture *texture;
     SDL_GPUTextureFormat format;
     void *pixels;
@@ -142,11 +143,14 @@ typedef struct GPU_TextureData
 #ifdef SDL_HAVE_YUV
     // YV12 texture support
     bool yuv;
+    bool external_texture_u;
+    bool external_texture_v;
     SDL_GPUTexture *textureU;
     SDL_GPUTexture *textureV;
 
     // NV12 texture support
     bool nv12;
+    bool external_texture_nv;
     SDL_GPUTexture *textureNV;
 #endif
 } GPU_TextureData;
@@ -261,6 +265,12 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     SDL_GPUTextureFormat format;
     SDL_GPUTextureUsageFlags usage = SDL_GPU_TEXTUREUSAGE_SAMPLER;
 
+    data = (GPU_TextureData *)SDL_calloc(1, sizeof(*data));
+    if (!data) {
+        return false;
+    }
+    texture->internal = data;
+
     switch (texture->format) {
     case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
@@ -292,11 +302,7 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         return SDL_SetError("Texture format %s not supported by SDL_GPU",
                             SDL_GetPixelFormatName(texture->format));
     }
-
-    data = (GPU_TextureData *)SDL_calloc(1, sizeof(*data));
-    if (!data) {
-        return false;
-    }
+    data->format = format;
 
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
         size_t size;
@@ -326,7 +332,6 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         usage |= SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     }
 
-    texture->internal = data;
     SDL_GPUTextureCreateInfo tci;
     SDL_zero(tci);
     tci.format = format;
@@ -336,11 +341,16 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     tci.width = texture->w;
     tci.height = texture->h;
     tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    tci.props = create_props;
 
-    data->format = format;
-    data->texture = SDL_CreateGPUTexture(renderdata->device, &tci);
-    if (!data->texture) {
-        return false;
+    data->texture = SDL_GetPointerProperty(create_props, SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER, NULL);
+    if (data->texture) {
+        data->external_texture = true;
+    } else {
+        data->texture = SDL_CreateGPUTexture(renderdata->device, &tci);
+        if (!data->texture) {
+            return false;
+        }
     }
 
     SDL_PropertiesID props = SDL_GetTextureProperties(texture);
@@ -354,15 +364,25 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         tci.width = (tci.width + 1) / 2;
         tci.height = (tci.height + 1) / 2;
 
-        data->textureU = SDL_CreateGPUTexture(renderdata->device, &tci);
-        if (!data->textureU) {
-            return false;
+        data->textureU = SDL_GetPointerProperty(create_props, SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_U_POINTER, NULL);
+        if (data->textureU) {
+            data->external_texture_u = true;
+        } else {
+            data->textureU = SDL_CreateGPUTexture(renderdata->device, &tci);
+            if (!data->textureU) {
+                return false;
+            }
         }
         SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_GPU_TEXTURE_U_POINTER, data->textureU);
 
-        data->textureV = SDL_CreateGPUTexture(renderdata->device, &tci);
-        if (!data->textureV) {
-            return false;
+        data->textureV = SDL_GetPointerProperty(create_props, SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_V_POINTER, NULL);
+        if (data->textureV) {
+            data->external_texture_v = true;
+        } else {
+            data->textureV = SDL_CreateGPUTexture(renderdata->device, &tci);
+            if (!data->textureV) {
+                return false;
+            }
         }
         SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_GPU_TEXTURE_V_POINTER, data->textureU);
 
@@ -378,17 +398,22 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
 
         data->nv12 = true;
 
-        tci.width = ((tci.width + 1) / 2);
-        tci.height = ((tci.height + 1) / 2);
-        if (texture->format == SDL_PIXELFORMAT_P010) {
-            tci.format = SDL_GPU_TEXTUREFORMAT_R16G16_UNORM;
+        data->textureNV = SDL_GetPointerProperty(create_props, SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_UV_POINTER, NULL);
+        if (data->textureNV) {
+            data->external_texture_nv = true;
         } else {
-            tci.format = SDL_GPU_TEXTUREFORMAT_R8G8_UNORM;
-        }
+            tci.width = ((tci.width + 1) / 2);
+            tci.height = ((tci.height + 1) / 2);
+            if (texture->format == SDL_PIXELFORMAT_P010) {
+                tci.format = SDL_GPU_TEXTUREFORMAT_R16G16_UNORM;
+            } else {
+                tci.format = SDL_GPU_TEXTUREFORMAT_R8G8_UNORM;
+            }
 
-        data->textureNV = SDL_CreateGPUTexture(renderdata->device, &tci);
-        if (!data->textureNV) {
-            return false;
+            data->textureNV = SDL_CreateGPUTexture(renderdata->device, &tci);
+            if (!data->textureNV) {
+                return false;
+            }
         }
         SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_GPU_TEXTURE_UV_POINTER, data->textureNV);
 
@@ -1484,11 +1509,19 @@ static void GPU_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return;
     }
 
-    SDL_ReleaseGPUTexture(renderdata->device, data->texture);
+    if (!data->external_texture) {
+        SDL_ReleaseGPUTexture(renderdata->device, data->texture);
+    }
 #ifdef SDL_HAVE_YUV
-    SDL_ReleaseGPUTexture(renderdata->device, data->textureU);
-    SDL_ReleaseGPUTexture(renderdata->device, data->textureV);
-    SDL_ReleaseGPUTexture(renderdata->device, data->textureNV);
+    if (!data->external_texture_u) {
+        SDL_ReleaseGPUTexture(renderdata->device, data->textureU);
+    }
+    if (!data->external_texture_v) {
+        SDL_ReleaseGPUTexture(renderdata->device, data->textureV);
+    }
+    if (!data->external_texture_nv) {
+        SDL_ReleaseGPUTexture(renderdata->device, data->textureNV);
+    }
 #endif
     SDL_free(data->pixels);
     SDL_free(data);
