@@ -6321,15 +6321,15 @@ SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *lab
 }
 
 
-SDL_MenuItem *SDL_GetMenuBarAppMenu(SDL_MenuBar *menu_bar)
+SDL_MenuItem *SDL_GetMenuBarAppMenu(SDL_MenuItem *menu_bar)
 {
     CHECK_MENUITEM_MAGIC(menu_bar, NULL);
     
-    if (!menu_bar->app_menu) {
+    if (!menu_bar->menu_bar.app_menu) {
         SDL_SetError("This platform doesn't support an Application menu.");
     }
     
-    return menu_bar->app_menu;
+    return menu_bar->menu_bar.app_menu;
 }
 
 Sint64 SDL_GetMenuChildItems(SDL_MenuItem *menu_as_item)

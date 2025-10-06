@@ -106,7 +106,13 @@ void CreateMenuBar_1()
         // We can't create a top level checkable .
         SDL_assert(!SDL_CreateMenuItem(menu_bar_1, "Incognito", SDL_MENUITEM_CHECKABLE, MENU_BAR_INCOGNITO));
 
-        SDL_CreateMenuItem(menu_bar_1, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
+        SDL_MenuItem* app_menu = SDL_GetMenuBarAppMenu(menu_bar_1);
+        if (app_menu) {
+            SDL_assert(!SDL_CreateMenuItem(menu_bar_1, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT));
+            SDL_CreateMenuItem(app_menu, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
+        } else {
+            SDL_CreateMenuItem(menu_bar_1, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
+        }
     }
 
     SDL_SetWindowMenuBar(window_1, menu_bar_1);
@@ -147,7 +153,13 @@ void CreateMenuBar_2()
         // We can't create a top level checkable .
         SDL_assert(!SDL_CreateMenuItem(menu_bar_2, "Incognito_2", SDL_MENUITEM_CHECKABLE, MENU_BAR_INCOGNITO));
 
-        SDL_CreateMenuItem(menu_bar_2, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
+        SDL_MenuItem* app_menu = SDL_GetMenuBarAppMenu(menu_bar_2);
+        if (app_menu) {
+            SDL_assert(!SDL_CreateMenuItem(menu_bar_2, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT));
+            SDL_CreateMenuItem(app_menu, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
+        } else {
+            SDL_CreateMenuItem(menu_bar_2, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
+        }
     }
 
     SDL_SetWindowMenuBar(window_2, menu_bar_2);

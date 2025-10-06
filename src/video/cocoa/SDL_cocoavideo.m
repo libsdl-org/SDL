@@ -360,6 +360,7 @@ bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
     app_menu->common.type = SDL_MENUITEM_SUBMENU;
     app_menu->common.enabled = true;
     app_menu->common.parent = (SDL_MenuItem*)menu_bar;
+    app_menu->common.menu_bar = menu_bar;
     
     PlatformMenuData* app_menu_platform_data = [PlatformMenuData new];
     app_menu->common.platform_data = (void*)CFBridgingRetain(app_menu_platform_data);
@@ -372,6 +373,7 @@ bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
     [platform_menu->menu addItem:app_menu_platform_data->menu_item];
     
     menu_bar->common.item_common.platform_data = (void*)CFBridgingRetain(platform_menu);
+    menu_bar->app_menu = app_menu;
 
     return true;
 }
@@ -398,6 +400,11 @@ bool Cocoa_SetWindowMenuBar(SDL_Window *window, SDL_MenuBar *menu_bar)
 
 bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type)
 {
+    if ((menu_item->common.parent->common.type == SDL_MENUITEM_MENUBAR) && (menu_item->common.type != SDL_MENUITEM_SUBMENU)) {
+        SDL_SetError("No top level Checkables or Buttons on this platform");
+        return false;
+    }
+    
     PlatformMenuData* platform_data = [PlatformMenuData new];
     menu_item->common.platform_data = (void*)CFBridgingRetain(platform_data);
     platform_data->user_event_type = event_type;
@@ -420,14 +427,7 @@ bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *n
         [platform_data->menu_item setAction:@selector(Cocoa_PlatformMenuData_MenuButtonClicked:)];
         [platform_data->menu_item setTarget:platform_data];
         [platform_data->menu_item setEnabled:true];
-        
-        if ((menu_item->common.parent->common.type == SDL_MENUITEM_MENUBAR) && (menu_item->common.type != SDL_MENUITEM_SUBMENU)) {
-            NSMenu* app_menu = [[parent_platform_data->menu itemAtIndex:(NSInteger)0] submenu];
-            [app_menu addItem:platform_data->menu_item];
-            
-        } else {
-            [parent_platform_data->menu insertItem:platform_data->menu_item atIndex:(NSInteger)index];
-        }
+        [parent_platform_data->menu insertItem:platform_data->menu_item atIndex:(NSInteger)index];
     }
     return true;
 }

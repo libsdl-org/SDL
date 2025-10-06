@@ -3062,7 +3062,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_DisableScreenSaver(void);
 
 extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuBar();
 
-#define SDL_PROP_MENUITEM_CREATE_LABEL "SDL.menuitem.create.label"
+extern SDL_DECLSPEC SDL_MenuItem *SDL_GetMenuBarAppMenu(SDL_MenuItem *menu_bar);
 
 /**
  * menu_as_item must be a SDL_MENUITEM_MENUBAR or SDL_MENUITEM_SUBMENU
