@@ -376,7 +376,8 @@ bool Cocoa_SetWindowMenuBar(SDL_Window *window, SDL_MenuBar *menu_bar)
     }
 
     // We don't actually set the menubar until the window is in focus
-    if (!menu_bar->window->keyboard_focus) {
+    
+    if (!(menu_bar->window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         return true;
     }
     
