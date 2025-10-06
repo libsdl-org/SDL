@@ -127,13 +127,13 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->SetWindowModal = Cocoa_SetWindowModal;
         device->SyncWindow = Cocoa_SyncWindow;
         device->CreateMenuBar = Cocoa_CreateMenuBar;
+        device->SetWindowMenuBar = Cocoa_SetWindowMenuBar;
         device->CreateMenuItemAt = Cocoa_CreateMenuItemAt;
-        device->SetMenuItemChecked = Cocoa_SetMenuItemChecked;
-        device->UnSetMenuItemChecked = Cocoa_UnSetMenuItemChecked;
+        device->SetMenuItemLabel = Cocoa_SetMenuItemLabel;
         device->GetMenuItemChecked = Cocoa_GetMenuItemChecked;
+        device->SetMenuItemChecked = Cocoa_SetMenuItemChecked;
         device->GetMenuItemEnabled = Cocoa_GetMenuItemEnabled;
-        device->EnableMenuItem = Cocoa_EnableMenuItem;
-        device->DisableMenuItem = Cocoa_DisableMenuItem;
+        device->SetMenuItemEnabled = Cocoa_SetMenuItemEnabled;
         device->DestroyMenuItem = Cocoa_DestroyMenuItem;
 
 #ifdef SDL_VIDEO_OPENGL_CGL
@@ -339,20 +339,6 @@ void SDL_NSLog(const char *prefix, const char *text)
     }
 }
 
-
-
-@interface PlatformMenuData : NSObject {
-@public
-    Uint16 user_event_type;
-    NSMenu *menu;
-    NSMenuItem *menu_item;
-}
-
-- (void) Cocoa_PlatformMenuData_MenuButtonClicked: (id)sender;
-
-@end
-
-
 @implementation PlatformMenuData
 
 - (void) Cocoa_PlatformMenuData_MenuButtonClicked: (id)sender;{
@@ -366,17 +352,10 @@ void SDL_NSLog(const char *prefix, const char *text)
 
 @end
 
-
-
-
-
-
-
 bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
 {
     PlatformMenuData* platform_menu =[PlatformMenuData new];
     platform_menu->menu = [NSMenu new];
-    [NSApp setMainMenu:platform_menu->menu];
     
     NSMenuItem *appMenuItem = [NSMenuItem new];
     NSMenu *appMenu = [NSMenu new];
@@ -391,6 +370,19 @@ bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
     return true;
 }
 
+bool Cocoa_SetWindowMenuBar(SDL_MenuBar *menu_bar)
+{
+    // We don't actually set the menubar until the window is in focus
+    if (!menu_bar->window->keyboard_focus) {
+        return true;
+    }
+    
+    PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_bar->common.item_common.platform_data;
+    [NSApp setMainMenu:platform_data->menu];
+    
+    return true;
+}
+
 bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type)
 {
     PlatformMenuData* platform_data = [PlatformMenuData new];
@@ -400,7 +392,7 @@ bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *n
     PlatformMenuData* parent_platform_data = (__bridge id _Nullable)(menu_item->common.parent->common.platform_data);
     NSString* name_ns = [NSString stringWithUTF8String:name];
     
-    if (menu_item->common.type == SDL_MENU) {
+    if (menu_item->common.type == SDL_MENUITEM_SUBMENU) {
         platform_data->menu = [[NSMenu alloc] initWithTitle:name_ns];
         [platform_data->menu setAutoenablesItems:false];
         platform_data->menu_item = [NSMenuItem new];
@@ -415,7 +407,7 @@ bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *n
         [platform_data->menu_item setTarget:platform_data];
         [platform_data->menu_item setEnabled:true];
         
-        if ((menu_item->common.parent->common.type == SDL_MENUBAR) && (menu_item->common.type != SDL_MENU)) {
+        if ((menu_item->common.parent->common.type == SDL_MENUITEM_MENUBAR) && (menu_item->common.type != SDL_MENUITEM_SUBMENU)) {
             NSMenu* app_menu = [[parent_platform_data->menu itemAtIndex:(NSInteger)0] submenu];
             [app_menu addItem:platform_data->menu_item];
             
@@ -426,20 +418,11 @@ bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *n
     return true;
 }
 
-
-bool Cocoa_SetMenuItemChecked(SDL_MenuItem *menu_item)
+bool Cocoa_SetMenuItemLabel(SDL_MenuItem *menu_item, const char *label)
 {
+    NSString* label_ns = [NSString stringWithUTF8String:label];
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
-    [platform_data->menu_item setState:NSControlStateValueOn];
-    [platform_data->menu update];
-    return true;
-}
-
-bool Cocoa_UnSetMenuItemChecked(SDL_MenuItem *menu_item)
-{
-    PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
-    [platform_data->menu_item setState:NSControlStateValueOff];
-    [platform_data->menu update];
+    [platform_data->menu_item setTitle:label_ns];
     return true;
 }
 
@@ -451,6 +434,15 @@ bool Cocoa_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
     return true;
 }
 
+bool Cocoa_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked)
+{
+    NSControlStateValue flag = checked ? NSControlStateValueOn : NSControlStateValueOff;
+    PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
+    [platform_data->menu_item setState:flag];
+    [platform_data->menu update];
+    return true;
+}
+
 bool Cocoa_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
@@ -458,18 +450,10 @@ bool Cocoa_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
     return true;
 }
 
-bool Cocoa_EnableMenuItem(SDL_MenuItem *menu_item)
+bool Cocoa_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled)
 {
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
-    [platform_data->menu_item setEnabled:true];
-    [platform_data->menu update];
-    return true;
-}
-
-bool Cocoa_DisableMenuItem(SDL_MenuItem *menu_item)
-{
-    PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
-    [platform_data->menu_item setEnabled:false];
+    [platform_data->menu_item setEnabled:enabled];
     [platform_data->menu update];
     return true;
 }

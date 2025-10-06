@@ -64,6 +64,18 @@ typedef enum
 @property(nonatomic) OptionAsAlt option_as_alt;
 @end
 
+@interface PlatformMenuData : NSObject {
+@public
+    Uint16 user_event_type;
+    NSMenu *menu;
+    NSMenuItem *menu_item;
+}
+
+- (void) Cocoa_PlatformMenuData_MenuButtonClicked: (id)sender;
+
+@end
+
+
 // Utility functions
 extern SDL_SystemTheme Cocoa_GetSystemTheme(void);
 extern NSImage *Cocoa_CreateImage(SDL_Surface *surface);
