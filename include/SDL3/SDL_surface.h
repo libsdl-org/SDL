@@ -595,7 +595,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *f
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_DestroySurface
  * \sa SDL_LoadPNG
@@ -615,7 +615,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadPNG_IO(SDL_IOStream *src, bool
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_DestroySurface
  * \sa SDL_LoadPNG_IO
@@ -635,7 +635,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadPNG(const char *file);
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_LoadPNG_IO
  * \sa SDL_SavePNG
@@ -652,7 +652,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStre
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_LoadPNG
  * \sa SDL_SavePNG_IO
