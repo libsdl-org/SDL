@@ -344,6 +344,7 @@ void SDL_NSLog(const char *prefix, const char *text)
     event.type = SDL_EVENT_MENU_BUTTON_CLICKED;
     event.menu.timestamp = SDL_GetTicksNS();
     event.menu.user_event_type = user_event_type;
+    event.menu.windowID = menu_bar->window->id;
 
     SDL_PushEvent(&event);
 }
@@ -355,13 +356,20 @@ bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
     PlatformMenuData* platform_menu =[PlatformMenuData new];
     platform_menu->menu = [NSMenu new];
     
-    NSMenuItem *appMenuItem = [NSMenuItem new];
-    NSMenu *appMenu = [NSMenu new];
-    [appMenu setAutoenablesItems:false];
+    SDL_MenuItem* app_menu = SDL_calloc_REAL(1, sizeof(SDL_MenuItem));
+    app_menu->common.type = SDL_MENUITEM_SUBMENU;
+    app_menu->common.enabled = true;
+    app_menu->common.parent = (SDL_MenuItem*)menu_bar;
     
-    [appMenuItem setSubmenu:appMenu];
+    PlatformMenuData* app_menu_platform_data = [PlatformMenuData new];
+    app_menu->common.platform_data = (void*)CFBridgingRetain(app_menu_platform_data);
     
-    [platform_menu->menu addItem:appMenuItem];
+    app_menu_platform_data->menu = [NSMenu new];
+    app_menu_platform_data->menu_item  = [NSMenuItem new];
+    [app_menu_platform_data->menu setAutoenablesItems:false];
+    [app_menu_platform_data->menu_item setSubmenu:app_menu_platform_data->menu];
+    
+    [platform_menu->menu addItem:app_menu_platform_data->menu_item];
     
     menu_bar->common.item_common.platform_data = (void*)CFBridgingRetain(platform_menu);
 
@@ -376,11 +384,12 @@ bool Cocoa_SetWindowMenuBar(SDL_Window *window, SDL_MenuBar *menu_bar)
     }
 
     // We don't actually set the menubar until the window is in focus
-    
     if (!(menu_bar->window->flags & SDL_WINDOW_INPUT_FOCUS)) {
         return true;
     }
     
+    // If we don't set it to nil first, it won't change menu bars until you switch off and back on focus.
+    [NSApp setMainMenu:nil];
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_bar->common.item_common.platform_data;
     [NSApp setMainMenu:platform_data->menu];
     
@@ -392,6 +401,7 @@ bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *n
     PlatformMenuData* platform_data = [PlatformMenuData new];
     menu_item->common.platform_data = (void*)CFBridgingRetain(platform_data);
     platform_data->user_event_type = event_type;
+    platform_data->menu_bar = menu_item->common.menu_bar;
     
     PlatformMenuData* parent_platform_data = (__bridge id _Nullable)(menu_item->common.parent->common.platform_data);
     NSString* name_ns = [NSString stringWithUTF8String:name];

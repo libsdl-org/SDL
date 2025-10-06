@@ -66,9 +66,10 @@ typedef enum
 
 @interface PlatformMenuData : NSObject {
 @public
-    Uint16 user_event_type;
+    SDL_MenuBar *menu_bar;
     NSMenu *menu;
     NSMenuItem *menu_item;
+    Uint16 user_event_type;
 }
 
 - (void) Cocoa_PlatformMenuData_MenuButtonClicked: (id)sender;
