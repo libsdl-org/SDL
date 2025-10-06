@@ -136,8 +136,6 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     int zoom = 2;
     int i;
     Uint8 r, g, b;
-    (void)argc;
-    (void)argv;
 
     if (!SDL_SetAppMetadata("SDL 3 BytePusher", "1.0", "com.example.SDL3BytePusher")) {
         return SDL_APP_FAILURE;
@@ -221,6 +219,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 
     vm->last_tick = SDL_GetTicksNS();
     vm->tick_acc = NS_PER_SECOND;
+
+    if (argc > 1) {
+        load_file(vm, argv[1]);
+    }
 
     return SDL_APP_CONTINUE;
 }
