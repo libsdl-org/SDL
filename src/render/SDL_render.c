@@ -1918,7 +1918,7 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
     }
 
     CHECK_PARAM(palette && palette->ncolors > (1 << SDL_BITSPERPIXEL(texture->format))) {
-        return SDL_SetError("SDL_SetSurfacePalette() passed a palette that doesn't match the surface format");
+        return SDL_SetError("Palette doesn't match surface format");
     }
 
     if (palette != texture->public_palette) {
