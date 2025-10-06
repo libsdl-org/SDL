@@ -213,7 +213,7 @@ typedef struct SDL_IOStream SDL_IOStream;
  *   the same name already exists its content is erased and the file is
  *   treated as a new empty file.
  * - "w+x": Create an empty file for both reading and writing. If a file with
- *    the same name already exists, the call fails.
+ *   the same name already exists, the call fails.
  * - "a+": Open a file for reading and appending. All writing operations are
  *   performed at the end of the file, protecting the previous content to be
  *   overwritten. You can reposition (fseek, rewind) the internal pointer to
