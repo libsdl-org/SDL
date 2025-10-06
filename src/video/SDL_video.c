@@ -6162,17 +6162,36 @@ bool SDL_SetWindowMenuBar(SDL_Window* window, SDL_MenuItem* menu_bar)
     CHECK_WINDOW_MAGIC(window, false);
 
     if (!_this) {
-        return false;
+        return SDL_UninitializedVideo();
+    }
+    
+    // Same Window/MenuBar combination, no need to do anything.
+    if (menu_bar->menu_bar.window == window) {
+        return true;
     }
 
-    if (!menu_bar) {
+    // Passed NULL to the Window, user wants to retake ownership of the menubar.
+    if (!menu_bar && window->menu_bar) {
+        bool success = _this->SetWindowMenuBar(NULL);
+        
+        SDL_SetObjectValid(window->menu_bar, SDL_OBJECT_TYPE_MENUBAR, true);
         window->menu_bar = NULL;
-        return true;
+        
+        return success;
     }
 
     if (menu_bar->common.type != SDL_MENUITEM_MENUBAR) {
         SDL_SetError("Can't set menu Item that isn't a Menu onto a Window.");
         return false;
+    }
+    
+    if (menu_bar->menu_bar.window) {
+        bool success = _this->SetWindowMenuBar(NULL);
+        SDL_SetObjectValid(menu_bar->menu_bar.window->menu_bar, SDL_OBJECT_TYPE_MENUBAR, true);
+        window->menu_bar = NULL;
+        menu_bar->menu_bar.window->menu_bar
+        
+        menu_bar->menu_bar.window = NULL;
     }
 
     SDL_MenuBar *menu_bar_real = (SDL_MenuBar*)menu_bar;
@@ -6284,11 +6303,6 @@ Uint32 SDL_GetIndexInMenu(SDL_MenuItem *menu_item)
     return i;
 }
 
-SDL_MenuItem *SDL_CreateMenuItemWithProperties(SDL_MenuItem *menu_bar_as_item, SDL_PropertiesID props)
-{
-    return NULL;
-}
-
 SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *label, SDL_MenuItemType type, Uint16 event_type)
 {
     CHECK_MENUITEM_MAGIC(menu_bar_as_item, NULL);
@@ -6299,6 +6313,18 @@ SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *lab
 
     SDL_Menu_CommonData *menu = (SDL_Menu_CommonData *)menu_bar_as_item;
     return SDL_CreateMenuItemAt(menu_bar_as_item, menu->num_children, label, type, event_type);
+}
+
+
+SDL_MenuItem *SDL_GetMenuBarAppMenu(SDL_MenuBar *menu_bar)
+{
+    CHECK_MENUITEM_MAGIC(menu_bar, NULL);
+    
+    if (!menu_bar->app_menu) {
+        SDL_SetError("This platform doesn't support an Application menu.");
+    }
+    
+    return menu_bar->app_menu;
 }
 
 Sint64 SDL_GetMenuChildItems(SDL_MenuItem *menu_as_item)

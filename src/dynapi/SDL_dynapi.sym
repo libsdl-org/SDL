@@ -1265,6 +1265,7 @@ SDL3_0.0.0 {
     SDL_SavePNG_IO;
     SDL_SavePNG;
     SDL_CreateMenuBar;
+    SDL_GetMenuBarAppMenu;
     SDL_GetWindowMenuBar;
     SDL_SetWindowMenuBar;
     SDL_CreateMenuItemAt;

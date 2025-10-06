@@ -236,6 +236,7 @@ typedef struct SDL_MenuBar
 {
     SDL_Menu_CommonData common;
     SDL_Window *window;
+    SDL_MenuItem *app_menu;
 } SDL_MenuBar;
 
 typedef struct SDL_SubMenu

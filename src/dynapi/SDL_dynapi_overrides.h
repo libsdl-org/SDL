@@ -1291,6 +1291,7 @@
 #define SDL_SavePNG_IO SDL_SavePNG_IO_REAL
 #define SDL_SavePNG SDL_SavePNG_REAL
 #define SDL_CreateMenuBar SDL_CreateMenuBar_REAL
+#define SDL_GetMenuBarAppMenu SDL_GetMenuBarAppMenu_REAL
 #define SDL_GetWindowMenuBar SDL_GetWindowMenuBar_REAL
 #define SDL_SetWindowMenuBar SDL_SetWindowMenuBar_REAL
 #define SDL_CreateMenuItemAt SDL_CreateMenuItemAt_REAL
