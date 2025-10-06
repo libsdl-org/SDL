@@ -1754,9 +1754,11 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     GLint value;
     SDL_WindowFlags window_flags;
     int profile_mask = 0, major = 0, minor = 0;
+    int real_major = 0, real_minor = 0;
     bool changed_window = false;
-    const char *hint;
+    const char *hint, *verstr;
     bool non_power_of_two_supported = false;
+    bool bgra_supported = false;
 
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
@@ -1822,9 +1824,6 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     renderer->window = window;
 
     renderer->name = GL_RenderDriver.name;
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
-    /* TODO: Check for required extensions on OpenGL 1.1 systems? */
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
 
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
@@ -1862,23 +1861,22 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
         data->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     }
 
+    verstr = (const char *)data->glGetString(GL_VERSION);
+    if (verstr) {
+        char verbuf[16];
+        char *ptr;
+        SDL_strlcpy(verbuf, verstr, sizeof(verbuf));
+        ptr = SDL_strchr(verbuf, '.');
+        if (ptr) {
+            real_minor = SDL_atoi(ptr + 1);
+            *ptr = '\0';
+            real_major = SDL_atoi(verbuf);
+        }
+    }
+
     hint = SDL_GetHint("GL_ARB_texture_non_power_of_two");
     if (!hint || *hint != '0') {
-        bool isGL2 = false;
-        const char *verstr = (const char *)data->glGetString(GL_VERSION);
-        if (verstr) {
-            char verbuf[16];
-            char *ptr;
-            SDL_strlcpy(verbuf, verstr, sizeof(verbuf));
-            ptr = SDL_strchr(verbuf, '.');
-            if (ptr) {
-                *ptr = '\0';
-                if (SDL_atoi(verbuf) >= 2) {
-                    isGL2 = true;
-                }
-            }
-        }
-        if (isGL2 || SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+        if (real_major >= 2 || SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
             non_power_of_two_supported = true;
         }
     }
@@ -1911,13 +1909,30 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
         }
     }
 
+    // Check for texture format support
+    hint = SDL_GetHint("GL_EXT_bgra");
+    if (!hint || *hint != '0') {
+        if (real_major > 1 || (real_major == 1 && real_minor >= 2) ||
+            SDL_GL_ExtensionSupported("GL_EXT_bgra")) {
+            bgra_supported = true;
+        }
+    }
+
+    // RGBA32 is always supported with OpenGL
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBA32);
+    if (bgra_supported) {
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRA32);
+    }
+
     // Check for shader support
     data->shaders = GL_CreateShaderContext();
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
                 data->shaders ? "ENABLED" : "DISABLED");
     if (data->shaders) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
+        if (bgra_supported) {
+            SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
+        }
     }
     // We support INDEX8 textures using 2 textures and a shader
     if (data->shaders && data->num_texture_units >= 2) {
