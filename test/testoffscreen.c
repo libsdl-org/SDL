@@ -10,7 +10,7 @@
   freely.
 */
 
-/* Simple program: picks the offscreen backend and renders each frame to a bmp */
+/* Simple program: picks the offscreen backend and renders each frame to a png */
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -47,17 +47,17 @@ static void draw(void)
     SDL_RenderPresent(renderer);
 }
 
-static void save_surface_to_bmp(void)
+static void save_surface_to_png(void)
 {
     SDL_Surface *surface;
     char file[128];
 
     surface = SDL_RenderReadPixels(renderer, NULL);
 
-    (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIs32 "-%8.8d.bmp",
+    (void)SDL_snprintf(file, sizeof(file), "SDL_window%" SDL_PRIs32 "-%8.8d.png",
                        SDL_GetWindowID(window), ++frame_number);
 
-    SDL_SaveBMP(surface, file);
+    SDL_SavePNG(surface, file);
     SDL_DestroySurface(surface);
 }
 
@@ -77,7 +77,7 @@ static void loop(void)
     }
 
     draw();
-    save_surface_to_bmp();
+    save_surface_to_png();
 
 #ifdef SDL_PLATFORM_EMSCRIPTEN
     if (done) {

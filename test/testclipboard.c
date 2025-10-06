@@ -21,7 +21,7 @@ static SDL_Renderer *renderer = NULL;
 
 static const char *mime_types[] = {
     "text/plain",
-    "image/bmp",
+    "image/png",
 };
 
 static const void *ClipboardDataCallback(void *userdata, const char *mime_type, size_t *size)
@@ -30,9 +30,9 @@ static const void *ClipboardDataCallback(void *userdata, const char *mime_type, 
         const char *text = "Hello world!";
         *size = SDL_strlen(text);
         return text;
-    } else if (SDL_strcmp(mime_type, "image/bmp") == 0) {
-        *size = icon_bmp_len;
-        return icon_bmp;
+    } else if (SDL_strcmp(mime_type, "image/png") == 0) {
+        *size = icon_png_len;
+        return icon_png;
     } else {
         return NULL;
     }
@@ -113,7 +113,7 @@ static float PrintPrimarySelectionText(float x, float y)
 static float PrintClipboardImage(float x, float y, const char *mime_type)
 {
     /* We don't actually need to read this data each frame, but this is a simple example */
-    if (SDL_strcmp(mime_type, "image/bmp") == 0) {
+    if (SDL_strcmp(mime_type, "image/png") == 0) {
         size_t size;
         void *data = SDL_GetClipboardData(mime_type, &size);
         if (data) {
@@ -121,7 +121,7 @@ static float PrintClipboardImage(float x, float y, const char *mime_type)
             bool rendered = false;
             SDL_IOStream *stream = SDL_IOFromConstMem(data, size);
             if (stream) {
-                SDL_Surface *surface = SDL_LoadBMP_IO(stream, false);
+                SDL_Surface *surface = SDL_LoadPNG_IO(stream, false);
                 if (surface) {
                     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
                     if (texture) {

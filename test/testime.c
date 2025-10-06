@@ -1002,7 +1002,7 @@ int main(int argc, char *argv[])
         ctx->window = window;
         ctx->renderer = renderer;
         ctx->rendererID = i;
-        ctx->settings_icon = LoadTexture(renderer, "icon.bmp", true);
+        ctx->settings_icon = LoadTexture(renderer, "icon.png", true);
         if (ctx->settings_icon) {
             ctx->settings_rect.w = (float)ctx->settings_icon->w;
             ctx->settings_rect.h = (float)ctx->settings_icon->h;

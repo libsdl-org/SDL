@@ -50,7 +50,7 @@ static int LoadSprite(const char *file)
     int i;
 
     for (i = 0; i < state->num_windows; ++i) {
-        /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
+        /* This does the SDL_LoadPNG step repeatedly, but that's OK for test code. */
         sprites[i] = LoadTexture(state->renderers[i], file, true);
         if (!sprites[i]) {
             return -1;
@@ -183,7 +183,7 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     int i;
-    const char *icon = "icon.bmp";
+    const char *icon = "icon.png";
     Uint64 then, now;
     Uint32 frames;
 

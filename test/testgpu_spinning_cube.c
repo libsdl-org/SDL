@@ -124,7 +124,7 @@ static SDL_Texture *CreateSpriteTexture(SDL_Renderer *renderer, unsigned char *d
     SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_IO(src, true);
+        surface = SDL_LoadPNG_IO(src, true);
         if (surface) {
             /* Treat white as transparent */
             SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
@@ -171,7 +171,7 @@ static bool InitSpriteOverlay(SpriteRenderState *rs, SDL_Window *window)
         return false;
     }
 
-    rs->sprite = CreateSpriteTexture(rs->renderer, icon_bmp, icon_bmp_len);
+    rs->sprite = CreateSpriteTexture(rs->renderer, icon_png, icon_png_len);
     if (!rs->sprite) {
         SDL_Log("Couldn't create sprite: %s\n", SDL_GetError());
         QuitSpriteOverlay(rs);

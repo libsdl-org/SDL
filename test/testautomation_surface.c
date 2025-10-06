@@ -331,10 +331,10 @@ static int SDLCALL surface_testInvalidFormat(void *arg)
 /**
  * Tests sprite saving and loading
  */
-static int SDLCALL surface_testSaveLoadBitmap(void *arg)
+static int SDLCALL surface_testSaveLoad(void *arg)
 {
     int ret;
-    const char *sampleFilename = "testSaveLoadBitmap.bmp";
+    const char *sampleFilename = "testSaveLoad.tmp";
     SDL_Surface *face;
     SDL_Surface *rface;
 
@@ -348,19 +348,41 @@ static int SDLCALL surface_testSaveLoadBitmap(void *arg)
     /* Delete test file; ignore errors */
     unlink(sampleFilename);
 
-    /* Save a surface */
+    /* Save a BMP surface */
     ret = SDL_SaveBMP(face, sampleFilename);
     SDLTest_AssertPass("Call to SDL_SaveBMP()");
     SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP, expected: true, got: %i", ret);
     AssertFileExist(sampleFilename);
 
-    /* Load a surface */
+    /* Load a BMP surface */
     rface = SDL_LoadBMP(sampleFilename);
     SDLTest_AssertPass("Call to SDL_LoadBMP()");
     SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP is not NULL");
     if (rface != NULL) {
         SDLTest_AssertCheck(face->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", face->w, rface->w);
         SDLTest_AssertCheck(face->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", face->h, rface->h);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+
+    /* Delete test file; ignore errors */
+    unlink(sampleFilename);
+
+    /* Save a PNG surface */
+    ret = SDL_SavePNG(face, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SavePNG()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG, expected: true, got: %i", ret);
+    AssertFileExist(sampleFilename);
+
+    /* Load a PNG surface */
+    rface = SDL_LoadPNG(sampleFilename);
+    SDLTest_AssertPass("Call to SDL_LoadPNG()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadPNG is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(face->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", face->w, rface->w);
+        SDLTest_AssertCheck(face->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", face->h, rface->h);
+        SDL_DestroySurface(rface);
+        rface = NULL;
     }
 
     /* Delete test file; ignore errors */
@@ -369,8 +391,6 @@ static int SDLCALL surface_testSaveLoadBitmap(void *arg)
     /* Clean up */
     SDL_DestroySurface(face);
     face = NULL;
-    SDL_DestroySurface(rface);
-    rface = NULL;
 
     return TEST_COMPLETED;
 }
@@ -1630,8 +1650,8 @@ static const SDLTest_TestCaseReference surfaceTestInvalidFormat = {
     surface_testInvalidFormat, "surface_testInvalidFormat", "Tests creating surface with invalid format", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference surfaceTestSaveLoadBitmap = {
-    surface_testSaveLoadBitmap, "surface_testSaveLoadBitmap", "Tests sprite saving and loading.", TEST_ENABLED
+static const SDLTest_TestCaseReference surfaceTestSaveLoad = {
+    surface_testSaveLoad, "surface_testSaveLoad", "Tests sprite saving and loading.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitZeroSource = {
@@ -1737,7 +1757,7 @@ static const SDLTest_TestCaseReference surfaceTestScale = {
 /* Sequence of Surface test cases */
 static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestInvalidFormat,
-    &surfaceTestSaveLoadBitmap,
+    &surfaceTestSaveLoad,
     &surfaceTestBlitZeroSource,
     &surfaceTestBlit,
     &surfaceTestBlitTiled,

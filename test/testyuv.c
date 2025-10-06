@@ -398,7 +398,7 @@ int main(int argc, char **argv)
     char *filename = NULL;
     SDL_Surface *original;
     SDL_Surface *converted;
-    SDL_Surface *bmp;
+    SDL_Surface *png;
     SDL_Window *window;
     const char *renderer_name = NULL;
     SDL_Renderer *renderer;
@@ -524,7 +524,7 @@ int main(int argc, char **argv)
                 "[--rgb555|--rgb565|--rgb24|--argb|--abgr|--rgba|--bgra]",
                 "[--monochrome] [--luminance N%] [--planar]",
                 "[--automated] [--colorspace-test] [--renderer NAME]",
-                "[sample.bmp]",
+                "[sample.png]",
                 NULL,
             };
             SDLTest_CommonLogUsage(state, argv[0], options);
@@ -556,10 +556,10 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    filename = GetResourceFilename(filename, "testyuv.bmp");
-    bmp = SDL_LoadBMP(filename);
-    original = SDL_ConvertSurface(bmp, SDL_PIXELFORMAT_RGB24);
-    SDL_DestroySurface(bmp);
+    filename = GetResourceFilename(filename, "testyuv.png");
+    png = SDL_LoadPNG(filename);
+    original = SDL_ConvertSurface(png, SDL_PIXELFORMAT_RGB24);
+    SDL_DestroySurface(png);
     if (!original) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", filename, SDL_GetError());
         return 3;

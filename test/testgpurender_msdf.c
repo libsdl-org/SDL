@@ -17,7 +17,7 @@
 #include "testutils.h"
 
 /* This font was created with:
- * ./msdf-atlas-gen.exe -font OpenSans-VariableFont_wdth,wght.ttf -chars '[32,126]' -type msdf -potr -yorigin top -imageout msdf_font.bmp -csv msdf_font.csv
+ * ./msdf-atlas-gen.exe -font OpenSans-VariableFont_wdth,wght.ttf -chars '[32,126]' -type msdf -potr -yorigin top -imageout msdf_font.png -csv msdf_font.csv
  */
 
 /* This is the distance field range in pixels used when generating the font atlas, defaults to 2 */
@@ -55,7 +55,7 @@ static GlyphInfo glyphs[128];
 
 static bool LoadFontTexture(void)
 {
-    font_texture = LoadTexture(renderer, "msdf_font.bmp", false);
+    font_texture = LoadTexture(renderer, "msdf_font.png", false);
     if (!font_texture) {
         SDL_Log("Failed to create font texture: %s", SDL_GetError());
         return false;
