@@ -130,9 +130,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         device->SetWindowMenuBar = Cocoa_SetWindowMenuBar;
         device->CreateMenuItemAt = Cocoa_CreateMenuItemAt;
         device->SetMenuItemLabel = Cocoa_SetMenuItemLabel;
-        device->GetMenuItemChecked = Cocoa_GetMenuItemChecked;
         device->SetMenuItemChecked = Cocoa_SetMenuItemChecked;
-        device->GetMenuItemEnabled = Cocoa_GetMenuItemEnabled;
         device->SetMenuItemEnabled = Cocoa_SetMenuItemEnabled;
         device->DestroyMenuItem = Cocoa_DestroyMenuItem;
 
