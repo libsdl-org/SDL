@@ -1286,3 +1286,7 @@
 #define SDL_SetTexturePalette SDL_SetTexturePalette_REAL
 #define SDL_GetTexturePalette SDL_GetTexturePalette_REAL
 #define SDL_GetGPURendererDevice SDL_GetGPURendererDevice_REAL
+#define SDL_LoadPNG_IO SDL_LoadPNG_IO_REAL
+#define SDL_LoadPNG SDL_LoadPNG_REAL
+#define SDL_SavePNG_IO SDL_SavePNG_IO_REAL
+#define SDL_SavePNG SDL_SavePNG_REAL
