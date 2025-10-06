@@ -32,7 +32,7 @@ static int converted_texture_height = 0;
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     SDL_Surface *surface = NULL;
-    char *bmp_path = NULL;
+    char *png_path = NULL;
 
     SDL_SetAppMetadata("Example Renderer Read Pixels", "1.0", "com.example.renderer-read-pixels");
 
@@ -51,15 +51,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
        times) with data from a bitmap file. */
 
     /* SDL_Surface is pixel data the CPU can access. SDL_Texture is pixel data the GPU can access.
-       Load a .bmp into a surface, move it to a texture from there. */
-    SDL_asprintf(&bmp_path, "%ssample.bmp", SDL_GetBasePath());  /* allocate a string of the full file path */
-    surface = SDL_LoadBMP(bmp_path);
+       Load a .png into a surface, move it to a texture from there. */
+    SDL_asprintf(&png_path, "%ssample.png", SDL_GetBasePath());  /* allocate a string of the full file path */
+    surface = SDL_LoadPNG(png_path);
     if (!surface) {
         SDL_Log("Couldn't load bitmap: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
-    SDL_free(bmp_path);  /* done with this, the file is loaded. */
+    SDL_free(png_path);  /* done with this, the file is loaded. */
 
     texture_width = surface->w;
     texture_height = surface->h;

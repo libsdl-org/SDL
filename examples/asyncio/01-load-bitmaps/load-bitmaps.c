@@ -14,7 +14,7 @@ static SDL_Renderer *renderer = NULL;
 static SDL_AsyncIOQueue *queue = NULL;
 
 #define TOTAL_TEXTURES 4
-static const char * const bmps[TOTAL_TEXTURES] = { "sample.bmp", "gamepad_front.bmp", "speaker.bmp", "icon2x.bmp" };
+static const char * const pngs[TOTAL_TEXTURES] = { "sample.png", "gamepad_front.png", "speaker.png", "icon2x.png" };
 static SDL_Texture *textures[TOTAL_TEXTURES];
 static const SDL_FRect texture_rects[TOTAL_TEXTURES] = {
     { 116, 156, 408, 167 },
@@ -44,12 +44,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    /* Load some .bmp files asynchronously from wherever the app is being run from, put them in the same queue. */
-    for (i = 0; i < SDL_arraysize(bmps); i++) {
+    /* Load some .png files asynchronously from wherever the app is being run from, put them in the same queue. */
+    for (i = 0; i < SDL_arraysize(pngs); i++) {
         char *path = NULL;
-        SDL_asprintf(&path, "%s%s", SDL_GetBasePath(), bmps[i]);  /* allocate a string of the full file path */
+        SDL_asprintf(&path, "%s%s", SDL_GetBasePath(), pngs[i]);  /* allocate a string of the full file path */
         /* you _should) check for failure, but we'll just go on without files here. */
-        SDL_LoadFileAsync(path, queue, (void *) bmps[i]);  /* attach the filename as app-specific data, so we can see it later. */
+        SDL_LoadFileAsync(path, queue, (void *) pngs[i]);  /* attach the filename as app-specific data, so we can see it later. */
         SDL_free(path);
     }
 
@@ -72,18 +72,18 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_AsyncIOOutcome outcome;
     int i;
 
-    if (SDL_GetAsyncIOResult(queue, &outcome)) {  /* a .bmp file load has finished? */
+    if (SDL_GetAsyncIOResult(queue, &outcome)) {  /* a .png file load has finished? */
         if (outcome.result == SDL_ASYNCIO_COMPLETE) {
-            /* this might be _any_ of the bmps; they might finish loading in any order. */
-            for (i = 0; i < SDL_arraysize(bmps); i++) {
+            /* this might be _any_ of the pngs; they might finish loading in any order. */
+            for (i = 0; i < SDL_arraysize(pngs); i++) {
                 /* this doesn't need a strcmp because we gave the pointer from this array to SDL_LoadFileAsync */
-                if (outcome.userdata == bmps[i]) {
+                if (outcome.userdata == pngs[i]) {
                     break;
                 }
             }
 
-            if (i < SDL_arraysize(bmps)) {  /* (just in case.) */
-                SDL_Surface *surface = SDL_LoadBMP_IO(SDL_IOFromConstMem(outcome.buffer, (size_t) outcome.bytes_transferred), true);
+            if (i < SDL_arraysize(pngs)) {  /* (just in case.) */
+                SDL_Surface *surface = SDL_LoadPNG_IO(SDL_IOFromConstMem(outcome.buffer, (size_t) outcome.bytes_transferred), true);
                 if (surface) {  /* the renderer is not multithreaded, so create the texture here once the data loads. */
                     textures[i] = SDL_CreateTextureFromSurface(renderer, surface);
                     if (!textures[i]) {
