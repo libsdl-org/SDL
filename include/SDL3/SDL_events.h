@@ -990,6 +990,7 @@ typedef struct SDL_MenuEvent
     Uint32 type; /**< SDL_EVENT_MENU_BUTTON_CLICKED or SDL_EVENT_MENU_CHECKABLE_CLICKED */
     Uint32 reserved;
     Uint64 timestamp; /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    SDL_WindowID windowID; /**< The associated window if any */
     Uint16 user_event_type;
 } SDL_MenuEvent;
 

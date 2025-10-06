@@ -1299,7 +1299,8 @@
 #define SDL_GetMenuChildItems SDL_GetMenuChildItems_REAL
 #define SDL_GetMenuChildItem SDL_GetMenuChildItem_REAL
 #define SDL_GetMenuItemLabel SDL_GetMenuItemLabel_REAL
-#define SDL_GetMenuItemType SDL_GetMenuItemType_REAL
+#define SDL_GetMenuItemType   SDL_GetMenuItemType_REAL
+#define SDL_GetMenuItemEventType SDL_GetMenuItemEventType_REAL
 #define SDL_SetMenuItemLabel SDL_SetMenuItemLabel_REAL
 #define SDL_SetMenuItemChecked SDL_SetMenuItemChecked_REAL
 #define SDL_GetMenuItemChecked SDL_GetMenuItemChecked_REAL

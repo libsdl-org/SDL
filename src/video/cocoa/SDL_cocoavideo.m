@@ -431,27 +431,12 @@ bool Cocoa_SetMenuItemLabel(SDL_MenuItem *menu_item, const char *label)
     return true;
 }
 
-bool Cocoa_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
-{
-    PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
-    NSControlStateValue state = [platform_data->menu_item state];
-    *checked = state == NSControlStateValueOn;
-    return true;
-}
-
 bool Cocoa_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked)
 {
     NSControlStateValue flag = checked ? NSControlStateValueOn : NSControlStateValueOff;
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
     [platform_data->menu_item setState:flag];
     [platform_data->menu update];
-    return true;
-}
-
-bool Cocoa_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
-{
-    PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_item->common.platform_data;
-    *enabled = [platform_data->menu_item isEnabled];
     return true;
 }
 

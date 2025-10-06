@@ -200,9 +200,7 @@ extern bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar);
 extern bool Cocoa_SetWindowMenuBar(SDL_Window *window, SDL_MenuBar *menu_bar);
 extern bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type);
 extern bool Cocoa_SetMenuItemLabel(SDL_MenuItem *menu_item, const char *label);
-extern bool Cocoa_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked);
 extern bool Cocoa_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked);
-extern bool Cocoa_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled);
 extern bool Cocoa_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled);
 extern bool Cocoa_DestroyMenuItem(SDL_MenuItem *menu_item);
 

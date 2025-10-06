@@ -6122,10 +6122,8 @@ void SDL_OnApplicationDidEnterForeground(void)
     }
 }
 
-SDL_MenuItem *SDL_CreateMenuBar(SDL_Window *window)
+SDL_MenuItem *SDL_CreateMenuBar()
 {
-    CHECK_WINDOW_MAGIC(window, NULL);
-    
     if (!_this) {
         return NULL;
     }
@@ -6137,6 +6135,7 @@ SDL_MenuItem *SDL_CreateMenuBar(SDL_Window *window)
     SDL_MenuBar *menu_bar = SDL_calloc(1, sizeof(SDL_MenuBar));
     menu_bar->common.item_common.menu_bar = menu_bar;
     menu_bar->common.item_common.type = SDL_MENUITEM_MENUBAR;
+    menu_bar->common.item_common.enabled = true;
     
     if (!_this->CreateMenuBar(menu_bar)) {
         SDL_free(menu_bar);
@@ -6165,14 +6164,20 @@ bool SDL_SetWindowMenuBar(SDL_Window* window, SDL_MenuItem* menu_bar)
         return SDL_UninitializedVideo();
     }
 
-    // Passed NULL to the Window, user wants to retake ownership of the menubar.
-    if (!menu_bar && window->menu_bar) {
-        bool success = _this->SetWindowMenuBar(window, NULL);
-        
-        SDL_SetObjectValid(window->menu_bar, SDL_OBJECT_TYPE_MENUBAR, true);
-        window->menu_bar = NULL;
-        
-        return success;
+    if (!menu_bar) {
+        // Passed NULL to the Window, user wants to retake ownership of the menubar.
+        if (window->menu_bar) {
+            bool success = _this->SetWindowMenuBar(window, NULL);
+
+            SDL_SetObjectValid(window->menu_bar, SDL_OBJECT_TYPE_MENUBAR, true);
+            window->menu_bar->window = NULL;
+            window->menu_bar = NULL;
+
+            return success;
+        }
+
+        // It's valid to pass a NULL menu_bar even if the Window doesn't currently have one.
+        return true;
     }
 
     // Same Window/MenuBar combination, no need to do anything.
@@ -6188,7 +6193,7 @@ bool SDL_SetWindowMenuBar(SDL_Window* window, SDL_MenuItem* menu_bar)
     // menu_bar is already on another window, null out the menubar on that window
     // before we add this menubar to the given window.
     if (menu_bar->menu_bar.window) {
-        _this->SetWindowMenuBar(menu_bar->menu_bar.window, NULL);
+        SDL_SetWindowMenuBar(menu_bar->menu_bar.window, NULL);
     }
 
     SDL_MenuBar *menu_bar_real = (SDL_MenuBar*)menu_bar;
@@ -6196,7 +6201,7 @@ bool SDL_SetWindowMenuBar(SDL_Window* window, SDL_MenuItem* menu_bar)
 
     // Window has an existing MenuBar, release it back to the user.
     if (window->menu_bar) {
-        SDL_SetObjectValid(window->menu_bar, SDL_OBJECT_TYPE_MENUBAR, true);
+        SDL_SetWindowMenuBar(window, NULL);
     }
 
     window->menu_bar = menu_bar_real;
@@ -6250,6 +6255,8 @@ SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_as_item, size_t index, con
     menu_item->common.parent = (SDL_MenuItem *)menu;
     menu_item->common.menu_bar = menu->item_common.menu_bar;
     menu_item->common.type = type;
+    menu_item->common.event_type = event_type;
+    menu_item->common.enabled = true;
 
     if (!_this->CreateMenuItemAt(menu_item, index, label, event_type)) {
         SDL_free(menu_item);
@@ -6387,6 +6394,18 @@ SDL_MenuItemType SDL_GetMenuItemType(SDL_MenuItem *menu_item)
     return menu_item->common.type;
 }
 
+Sint32 SDL_GetMenuItemEventType(SDL_MenuItem *menu_item)
+{
+    CHECK_MENUITEM_MAGIC(menu_item, -1);
+
+    if (menu_item->common.type == SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("menu_item can't be a SDL_MENUITEM_MENUBAR.");
+        return -1;
+    }
+
+    return menu_item->common.event_type;
+}
+
 bool SDL_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
 {
     CHECK_MENUITEM_MAGIC(menu_item, false);
@@ -6395,35 +6414,47 @@ bool SDL_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
         return false;
     }
 
-    return _this->GetMenuItemChecked(menu_item, checked);
+    return menu_item->checkable.is_checked;
 }
 
-bool SDL_SetMenuItemChecked(SDL_MenuItem *menu_item, bool enabled)
+bool SDL_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked)
 {
     CHECK_MENUITEM_MAGIC(menu_item, false);
     if (menu_item->common.type != SDL_MENUITEM_CHECKABLE) {
-        SDL_SetError("menu_item isn't a checkable.");
+        SDL_SetError("menu_item isn't a SDL_MENUITEM_CHECKABLE.");
         return false;
     }
 
-    return _this->SetMenuItemChecked(menu_item, enabled);
+    if (!_this->SetMenuItemChecked(menu_item, checked)) {
+        return false;
+    }
+
+    menu_item->checkable.is_checked = checked;
+
+    return true;
 }
 
 bool SDL_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
 {
     CHECK_MENUITEM_MAGIC(menu_item, false);
-    return _this->GetMenuItemEnabled(menu_item, enabled);
+    return menu_item->common.enabled;
 }
 
 bool SDL_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled)
 {
     CHECK_MENUITEM_MAGIC(menu_item, false);
-    if (menu_item->common.type == SDL_MENUITEM_SUBMENU || menu_item->common.type == SDL_MENUITEM_MENUBAR) {
-        SDL_SetError("menu_item can't be a Menu.");
+    if (menu_item->common.type == SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("A SDL_MENUITEM_MENUBAR can't be disabled.");
         return false;
     }
 
-    return _this->SetMenuItemEnabled(menu_item, enabled);
+    if (!_this->SetMenuItemEnabled(menu_item, enabled)) {
+        return false;
+    }
+
+    menu_item->common.enabled = enabled;
+
+    return true;
 }
 
 bool SDL_DestroyMenuItem(SDL_MenuItem *menu_item)

@@ -223,6 +223,8 @@ typedef struct SDL_MenuItem_CommonData
     SDL_MenuItem *next;
     const char *label;
     SDL_MenuItemType type;
+    Uint16 event_type;
+    bool enabled;
 } SDL_MenuItem_CommonData;
 
 typedef struct SDL_Menu_CommonData
@@ -375,9 +377,7 @@ struct SDL_VideoDevice
     bool (*SetWindowMenuBar)(SDL_Window *window, SDL_MenuBar *menu_bar);
     bool (*CreateMenuItemAt)(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type);
     bool (*SetMenuItemLabel)(SDL_MenuItem *menu_item, const char *label);
-    bool (*GetMenuItemChecked)(SDL_MenuItem *menu_item, bool *checked);
     bool (*SetMenuItemChecked)(SDL_MenuItem *menu_item, bool checked);
-    bool (*GetMenuItemEnabled)(SDL_MenuItem *menu_item, bool *enabled);
     bool (*SetMenuItemEnabled)(SDL_MenuItem *menu_item, bool enabled);
     bool (*DestroyMenuItem)(SDL_MenuItem *menu_item);
 

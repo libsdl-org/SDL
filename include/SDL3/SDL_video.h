@@ -3060,7 +3060,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_EnableScreenSaver(void);
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_DisableScreenSaver(void);
 
-extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuBar(SDL_Window *window);
+extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuBar();
 
 #define SDL_PROP_MENUITEM_CREATE_LABEL "SDL.menuitem.create.label"
 
@@ -3087,6 +3087,7 @@ extern SDL_DECLSPEC SDL_MenuItem *SDL_GetMenuChildItem(SDL_MenuItem *menu_as_ite
 extern SDL_DECLSPEC const char *SDL_GetMenuItemLabel(SDL_MenuItem *menu_item);
 extern SDL_DECLSPEC bool SDL_SetMenuItemLabel(SDL_MenuItem *menu_item, const char *label);
 extern SDL_DECLSPEC SDL_MenuItemType SDL_GetMenuItemType(SDL_MenuItem *menu_item);
+extern SDL_DECLSPEC Sint32 SDL_GetMenuItemEventType(SDL_MenuItem *menu_item);
 
 /**
  * Must be a SDL_MENUITEM_CHECKABLE

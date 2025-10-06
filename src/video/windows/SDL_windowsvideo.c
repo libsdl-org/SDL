@@ -364,9 +364,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->SetWindowMenuBar = Win32_SetWindowMenuBar;
     device->CreateMenuItemAt = Win32_CreateMenuItemAt;
     device->SetMenuItemLabel = Win32_SetMenuItemLabel;
-    device->GetMenuItemChecked = Win32_GetMenuItemChecked;
     device->SetMenuItemChecked = Win32_SetMenuItemChecked;
-    device->GetMenuItemEnabled = Win32_GetMenuItemEnabled;
     device->SetMenuItemEnabled = Win32_SetMenuItemEnabled;
     device->DestroyMenuItem = Win32_DestroyMenuItem;
 #endif
@@ -1027,21 +1025,6 @@ bool Win32_SetMenuItemLabel(SDL_MenuItem* menu_item, const char* label)
     return success;
 }
 
-bool Win32_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
-{
-    PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
-    Uint32 i = SDL_GetIndexInMenu(menu_item);
-
-    UINT flags = GetMenuState(platform_data->owner_handle, i, MF_BYPOSITION);
-
-    if (flags == -1) {
-        return WIN_SetError("Unable to get menu_item check state.");
-    }
-
-    *checked = flags &MF_CHECKED;
-    return true;
-}
-
 bool Win32_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked)
 {
     PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
@@ -1049,25 +1032,9 @@ bool Win32_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked)
 
     UINT32 flag = checked ? MF_CHECKED : MF_UNCHECKED;
 
-    if (!CheckMenuItem(platform_data->owner_handle, i, MF_BYPOSITION | flag)) {
+    if (CheckMenuItem(platform_data->owner_handle, i, MF_BYPOSITION | flag) == -1) {
         return WIN_SetError("Unable to check menu item.");
     }
-
-    return true;
-}
-
-bool Win32_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
-{
-    PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
-    Uint32 i = SDL_GetIndexInMenu(menu_item);
-
-    UINT flags = GetMenuState(platform_data->owner_handle, i, MF_BYPOSITION);
-
-    if (flags == -1) {
-        return WIN_SetError("Unable to get menu_item check state.");
-    }
-
-    *enabled = !(flags & MF_GRAYED);
 
     return true;
 }
@@ -1079,7 +1046,7 @@ bool Win32_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled)
 
     UINT32 flag = enabled ? MF_ENABLED : MF_GRAYED;
 
-    if (!EnableMenuItem(platform_data->owner_handle, i, MF_BYPOSITION | flag)) {
+    if (EnableMenuItem(platform_data->owner_handle, i, MF_BYPOSITION | flag) == -1) {
         return WIN_SetError("Unable to enable menu item.");
     }
 
