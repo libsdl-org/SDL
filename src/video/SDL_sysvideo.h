@@ -372,7 +372,7 @@ struct SDL_VideoDevice
     bool (*ReconfigureWindow)(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
 
     bool (*CreateMenuBar)(SDL_MenuBar *menu_bar);
-    bool (*SetWindowMenuBar)(SDL_MenuBar *menu_bar);
+    bool (*SetWindowMenuBar)(SDL_Window *window, SDL_MenuBar *menu_bar);
     bool (*CreateMenuItemAt)(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type);
     bool (*SetMenuItemLabel)(SDL_MenuItem *menu_item, const char *label);
     bool (*GetMenuItemChecked)(SDL_MenuItem *menu_item, bool *checked);

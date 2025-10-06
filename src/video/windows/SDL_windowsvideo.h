@@ -672,15 +672,15 @@ typedef struct PlatformMenuData
     Uint16 user_event_type;
 } PlatformMenuData;
 
-extern bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar);
-extern bool Cocoa_SetWindowMenuBar(SDL_MenuBar *menu_bar);
-extern bool Cocoa_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type);
+extern bool Win32_CreateMenuBar(SDL_MenuBar *menu_bar);
+extern bool Win32_SetWindowMenuBar(SDL_Window *window, SDL_MenuBar *menu_bar);
+extern bool Win32_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type);
 
-extern bool Cocoa_SetMenuItemLabel(SDL_MenuItem *menu_item, const char *label);
-extern bool Cocoa_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked);
-extern bool Cocoa_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked);
-extern bool Cocoa_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled);
-extern bool Cocoa_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled);
-extern bool Cocoa_DestroyMenuItem(SDL_MenuItem *menu_item);
+extern bool Win32_SetMenuItemLabel(SDL_MenuItem *menu_item, const char *label);
+extern bool Win32_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked);
+extern bool Win32_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked);
+extern bool Win32_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled);
+extern bool Win32_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled);
+extern bool Win32_DestroyMenuItem(SDL_MenuItem *menu_item);
 
 #endif // SDL_windowsvideo_h_

@@ -920,8 +920,19 @@ bool Win32_CreateMenuBar(SDL_MenuBar *menu_bar)
     return true;
 }
 
-bool Win32_SetWindowMenuBar(SDL_MenuBar *menu_bar)
+bool Win32_SetWindowMenuBar(SDL_Window *window, SDL_MenuBar *menu_bar)
 {
+    if (!menu_bar) {
+        const SDL_WindowData *data = window->internal;
+
+        if (!SetMenu(data->hwnd, (HMENU)NULL)) {
+            WIN_SetError("Unable to unset MenuBar");
+            return false;
+        }
+        
+        return true;
+    }
+
     const PlatformMenuData *menu_platform_data = (PlatformMenuData *)menu_bar->common.item_common.platform_data;
     const SDL_WindowData *data = menu_bar->common.item_common.menu_bar->window->internal;
      

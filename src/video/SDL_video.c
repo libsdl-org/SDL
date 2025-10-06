@@ -6164,15 +6164,10 @@ bool SDL_SetWindowMenuBar(SDL_Window* window, SDL_MenuItem* menu_bar)
     if (!_this) {
         return SDL_UninitializedVideo();
     }
-    
-    // Same Window/MenuBar combination, no need to do anything.
-    if (menu_bar->menu_bar.window == window) {
-        return true;
-    }
 
     // Passed NULL to the Window, user wants to retake ownership of the menubar.
     if (!menu_bar && window->menu_bar) {
-        bool success = _this->SetWindowMenuBar(NULL);
+        bool success = _this->SetWindowMenuBar(window, NULL);
         
         SDL_SetObjectValid(window->menu_bar, SDL_OBJECT_TYPE_MENUBAR, true);
         window->menu_bar = NULL;
@@ -6180,23 +6175,26 @@ bool SDL_SetWindowMenuBar(SDL_Window* window, SDL_MenuItem* menu_bar)
         return success;
     }
 
+    // Same Window/MenuBar combination, no need to do anything.
+    if (menu_bar->menu_bar.window == window) {
+        return true;
+    }
+
     if (menu_bar->common.type != SDL_MENUITEM_MENUBAR) {
         SDL_SetError("Can't set menu Item that isn't a Menu onto a Window.");
         return false;
     }
-    
+
+    // menu_bar is already on another window, null out the menubar on that window
+    // before we add this menubar to the given window.
     if (menu_bar->menu_bar.window) {
-        bool success = _this->SetWindowMenuBar(NULL);
-        SDL_SetObjectValid(menu_bar->menu_bar.window->menu_bar, SDL_OBJECT_TYPE_MENUBAR, true);
-        window->menu_bar = NULL;
-        menu_bar->menu_bar.window->menu_bar
-        
-        menu_bar->menu_bar.window = NULL;
+        _this->SetWindowMenuBar(menu_bar->menu_bar.window, NULL);
     }
 
     SDL_MenuBar *menu_bar_real = (SDL_MenuBar*)menu_bar;
     menu_bar_real->window = window;
 
+    // Window has an existing MenuBar, release it back to the user.
     if (window->menu_bar) {
         SDL_SetObjectValid(window->menu_bar, SDL_OBJECT_TYPE_MENUBAR, true);
     }
@@ -6205,7 +6203,7 @@ bool SDL_SetWindowMenuBar(SDL_Window* window, SDL_MenuItem* menu_bar)
 
     SDL_SetObjectValid(menu_bar_real, SDL_OBJECT_TYPE_MENUBAR, false);
 
-    return _this->SetWindowMenuBar(menu_bar_real);
+    return _this->SetWindowMenuBar(window, menu_bar_real);
 }
 
 void SDL_CleanupMenubars()

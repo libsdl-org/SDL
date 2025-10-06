@@ -370,8 +370,13 @@ bool Cocoa_CreateMenuBar(SDL_MenuBar *menu_bar)
     return true;
 }
 
-bool Cocoa_SetWindowMenuBar(SDL_MenuBar *menu_bar)
+bool Cocoa_SetWindowMenuBar(SDL_Window *window, SDL_MenuBar *menu_bar)
 {
+    if (menu_bar == NULL) {
+        [NSApp setMainMenu:nil];
+        return true;
+    }
+
     // We don't actually set the menubar until the window is in focus
     if (!menu_bar->window->keyboard_focus) {
         return true;
