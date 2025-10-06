@@ -1279,6 +1279,8 @@ SDL3_0.0.0 {
     SDL_GetMenuItemChecked;
     SDL_GetMenuItemEnabled;
     SDL_SetMenuItemEnabled;
+    SDL_GetMenuItemLabel;
+    SDL_SetMenuItemLabel;
     SDL_DestroyMenuItem;
     # extra symbols go here (don't modify this line)
   local: *;
