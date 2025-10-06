@@ -1335,6 +1335,10 @@ const static struct {
     SDL_SYMBOL_ITEM(SDL_SetTexturePalette),
     SDL_SYMBOL_ITEM(SDL_GetTexturePalette),
     SDL_SYMBOL_ITEM(SDL_GetGPURendererDevice),
+    SDL_SYMBOL_ITEM(SDL_LoadPNG_IO),
+    SDL_SYMBOL_ITEM(SDL_LoadPNG),
+    SDL_SYMBOL_ITEM(SDL_SavePNG_IO),
+    SDL_SYMBOL_ITEM(SDL_SavePNG),
     /* extra symbols go here (don't modify this line) */
     { NULL, NULL }
 };
