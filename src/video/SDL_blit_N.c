@@ -870,28 +870,17 @@ static void ConvertAltivec32to32_prefetch(SDL_BlitInfo *info)
     vec_dss(DST_CHAN_DEST);
 }
 
-static Uint32 GetBlitFeatures(void)
-{
-    static Uint32 features = ~0u;
-    if (features == ~0u) {
-        features = (0
-                    // Feature 1 is has-SSE41
-                    | ((SDL_HasSSE41()) ? BLIT_FEATURE_HAS_SSE41 : 0)
-                    // Feature 2 is has-AltiVec
-                    | ((SDL_HasAltiVec()) ? BLIT_FEATURE_HAS_ALTIVEC : 0)
-                    // Feature 4 is dont-use-prefetch
-                    // !!!! FIXME: Check for G5 or later, not the cache size! Always prefetch on a G4.
-                    | ((GetL3CacheSize() == 0) ? BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH : 0));
-    }
-    return features;
-}
+// !!!! FIXME: Check for G5 or later, not the cache size! Always prefetch on a G4.
+#define GetBlitFeatures()   \
+            ((SDL_HasAltiVec() ? BLIT_FEATURE_HAS_ALTIVEC : 0) | \
+             ((GetL3CacheSize() == 0) ? BLIT_FEATURE_ALTIVEC_DONT_USE_PREFETCH : 0))
 
 #ifdef __MWERKS__
 #pragma altivec_model off
 #endif
 #else
-// Feature 1 is has-SSE41
-#define GetBlitFeatures() ((SDL_HasSSE41() ? BLIT_FEATURE_HAS_SSE41 : 0))
+#define GetBlitFeatures()   \
+             (SDL_HasSSE41() ? BLIT_FEATURE_HAS_SSE41 : 0)
 #endif
 
 // This is now endian dependent
@@ -1165,7 +1154,7 @@ static void Blit_XRGB8888_RGB565(SDL_BlitInfo *info)
 
 #ifdef SDL_SSE4_1_INTRINSICS
 
-static void SDL_TARGETING("sse4.1") Blit_RGB565_32_SSE41(SDL_BlitInfo *info, int Rshift, int Gshift, int Bshift, int Amask)
+static void SDL_TARGETING("sse4.1") Blit_RGB565_32_SSE41(SDL_BlitInfo *info)
 {
     int c;
     int width, height;
@@ -1182,47 +1171,104 @@ static void SDL_TARGETING("sse4.1") Blit_RGB565_32_SSE41(SDL_BlitInfo *info, int
     dst = (Uint32 *)info->dst;
     dstskip = info->dst_skip / 4;
 
+    // Red and blue channel multiplier to repeat 5 bits
+    __m128i rb_mult = _mm_shuffle_epi32(_mm_cvtsi32_si128(0x01080108), 0);
+
+    // Green channel multiplier to shift by 5 and then repeat 6 bits
+    __m128i g_mult = _mm_shuffle_epi32(_mm_cvtsi32_si128(0x20802080), 0);
+
+    // Red channel mask
+    __m128i r_mask = _mm_shuffle_epi32(_mm_cvtsi32_si128(0xf800f800), 0);
+
+    // Green channel mask
+    __m128i g_mask = _mm_shuffle_epi32(_mm_cvtsi32_si128(0x07e007e0), 0);
+
+    // Alpha channel mask
+    __m128i a_mask = _mm_shuffle_epi32(_mm_cvtsi32_si128(0xff00ff00), 0);
+
+    // Get the masks for converting from ARGB
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    const Uint32 Rshift = dstfmt->Rshift;
+    const Uint32 Gshift = dstfmt->Gshift;
+    const Uint32 Bshift = dstfmt->Bshift;
+    Uint32 Amask, Ashift;
+
+    SDL_Get8888AlphaMaskAndShift(dstfmt, &Amask, &Ashift);
+
+    // The byte offsets for the start of each pixel
+    const __m128i mask_offsets = _mm_set_epi8(12, 12, 12, 12, 8, 8, 8, 8, 4, 4, 4, 4, 0, 0, 0, 0);
+    const __m128i convert_mask = _mm_add_epi32(
+            _mm_set1_epi32(
+                ((16 >> 3) << Rshift) |
+                (( 8 >> 3) << Gshift) |
+                (( 0 >> 3) << Bshift) |
+                ((24 >> 3) << Ashift)),
+            mask_offsets);
+
     while (height--) {
-        // Copy in 4 pixel chunks
-        for (c = width / 4; c; --c) {
-            // Load 4 16-bit RGB565 pixels into an SSE register
-            __m128i pixels_rgb565 = _mm_loadu_si128((__m128i*)src);
+        // Copy in 8 pixel chunks
+        for (c = width / 8; c; --c) {
+            __m128i pixel = _mm_loadu_si128((__m128i *)src);
+            __m128i red = pixel;
+            __m128i green = pixel;
+            __m128i blue = pixel;
 
-            // Extract Red components (5 bits)
-            __m128i red_5bit = _mm_and_si128(pixels_rgb565, _mm_set1_epi16(0xF800)); // Mask for Red
-            red_5bit = _mm_srli_epi16(red_5bit, 11); // Shift to get 5-bit value
-            __m128i red_8bit = _mm_cvtepu16_epi32(red_5bit); // Convert to 32-bit and zero-extend
-            red_8bit = _mm_slli_epi32(red_8bit, 3); // Scale to 8 bits (multiply by 8)
-            red_8bit = _mm_or_si128(red_8bit, _mm_srli_epi32(red_8bit, 5)); // Replicate top 3 bits for better scaling
+            // Get red in the upper 5 bits and then multiply
+            red = _mm_and_si128(red, r_mask);
+            red = _mm_mulhi_epu16(red, rb_mult);
 
-            // Extract Green components (6 bits)
-            __m128i green_6bit = _mm_and_si128(pixels_rgb565, _mm_set1_epi16(0x07E0)); // Mask for Green
-            green_6bit = _mm_srli_epi16(green_6bit, 5); // Shift to get 6-bit value
-            __m128i green_8bit = _mm_cvtepu16_epi32(green_6bit); // Convert to 32-bit and zero-extend
-            green_8bit = _mm_slli_epi32(green_8bit, 2); // Scale to 8 bits (multiply by 4)
-            green_8bit = _mm_or_si128(green_8bit, _mm_srli_epi32(green_8bit, 6)); // Replicate top 2 bits
+            // Get blue in the upper 5 bits and then multiply
+            blue = _mm_slli_epi16(blue, 11);
+            blue = _mm_mulhi_epu16(blue, rb_mult);
 
-            // Extract Blue components (5 bits)
-            __m128i blue_5bit = _mm_and_si128(pixels_rgb565, _mm_set1_epi16(0x001F)); // Mask for Blue
-            __m128i blue_8bit = _mm_cvtepu16_epi32(blue_5bit); // Convert to 32-bit and zero-extend
-            blue_8bit = _mm_slli_epi32(blue_8bit, 3); // Scale to 8 bits (multiply by 8)
-            blue_8bit = _mm_or_si128(blue_8bit, _mm_srli_epi32(blue_8bit, 5)); // Replicate top 3 bits
+            // Combine the red and blue channels
+            __m128i red_blue = _mm_or_si128(_mm_slli_epi16(red, 8), blue);
 
-            // Set Alpha to opaque (0xFF)
-            __m128i alpha_8bit = _mm_set1_epi32(Amask);
+            // Get the green channel and then multiply into place
+            green = _mm_and_si128(green, g_mask);
+            green = _mm_mulhi_epu16(green, g_mult);
 
-            // Combine into 32-bit values
-            __m128i argb_pixels_low = _mm_or_si128(alpha_8bit, _mm_slli_epi32(red_8bit, Rshift));
-            argb_pixels_low = _mm_or_si128(argb_pixels_low, _mm_slli_epi32(green_8bit, Gshift));
-            argb_pixels_low = _mm_or_si128(argb_pixels_low, _mm_slli_epi32(blue_8bit, Bshift));
+            // Combine the green and alpha channels
+            __m128i green_alpha = _mm_or_si128(green, a_mask);
 
-            // Store the results
-            _mm_storeu_si128((__m128i*)dst, argb_pixels_low);
-            src += 4;
-            dst += 4;
+            // Unpack them into output ARGB pixels
+            __m128i out1 = _mm_unpacklo_epi8(red_blue, green_alpha);
+            __m128i out2 = _mm_unpackhi_epi8(red_blue, green_alpha);
+
+            // Convert to dst format and save!
+            // This is an SSSE3 instruction
+            out1 = _mm_shuffle_epi8(out1, convert_mask);
+            out2 = _mm_shuffle_epi8(out2, convert_mask);
+
+            _mm_storeu_si128((__m128i*)dst, out1);
+            _mm_storeu_si128((__m128i*)(dst + 4), out2);
+
+            src += 8;
+            dst += 8;
         }
+
         // Get any leftovers
-        switch (width & 3) {
+        switch (width & 7) {
+        case 7:
+            RGB_FROM_RGB565(*src, r, g, b);
+            *dst++ = (r << Rshift) | (g << Gshift) | (b << Bshift) | Amask;
+            ++src;
+            SDL_FALLTHROUGH;
+        case 6:
+            RGB_FROM_RGB565(*src, r, g, b);
+            *dst++ = (r << Rshift) | (g << Gshift) | (b << Bshift) | Amask;
+            ++src;
+            SDL_FALLTHROUGH;
+        case 5:
+            RGB_FROM_RGB565(*src, r, g, b);
+            *dst++ = (r << Rshift) | (g << Gshift) | (b << Bshift) | Amask;
+            ++src;
+            SDL_FALLTHROUGH;
+        case 4:
+            RGB_FROM_RGB565(*src, r, g, b);
+            *dst++ = (r << Rshift) | (g << Gshift) | (b << Bshift) | Amask;
+            ++src;
+            SDL_FALLTHROUGH;
         case 3:
             RGB_FROM_RGB565(*src, r, g, b);
             *dst++ = (r << Rshift) | (g << Gshift) | (b << Bshift) | Amask;
@@ -1242,26 +1288,6 @@ static void SDL_TARGETING("sse4.1") Blit_RGB565_32_SSE41(SDL_BlitInfo *info, int
         src += srcskip;
         dst += dstskip;
     }
-}
-
-static void Blit_RGB565_ARGB8888_SSE41(SDL_BlitInfo * info)
-{
-    Blit_RGB565_32_SSE41(info, 16, 8, 0, 0xFF000000);
-}
-
-static void Blit_RGB565_ABGR8888_SSE41(SDL_BlitInfo * info)
-{
-    Blit_RGB565_32_SSE41(info, 0, 8, 16, 0xFF000000);
-}
-
-static void Blit_RGB565_RGBA8888_SSE41(SDL_BlitInfo * info)
-{
-    Blit_RGB565_32_SSE41(info, 24, 16, 8, 0x000000FF);
-}
-
-static void Blit_RGB565_BGRA8888_SSE41(SDL_BlitInfo * info)
-{
-    Blit_RGB565_32_SSE41(info, 8, 16, 24, 0x000000FF);
 }
 
 #endif // SDL_SSE4_1_INTRINSICS
@@ -2555,6 +2581,7 @@ static void SDL_TARGETING("sse4.1") Blit8888to8888PixelSwizzleSSE41(SDL_BlitInfo
             __m128i src128 = _mm_loadu_si128((__m128i *)src);
 
             // Convert to dst format
+            // This is an SSSE3 instruction
             src128 = _mm_shuffle_epi8(src128, convert_mask);
 
             if (fill_alpha) {
@@ -2950,13 +2977,13 @@ static const struct blit_table normal_blit_2[] = {
 #endif
 #ifdef SDL_SSE4_1_INTRINSICS
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
-      BLIT_FEATURE_HAS_SSE41, Blit_RGB565_ARGB8888_SSE41, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
+      BLIT_FEATURE_HAS_SSE41, Blit_RGB565_32_SSE41, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
-      BLIT_FEATURE_HAS_SSE41, Blit_RGB565_ABGR8888_SSE41, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
+      BLIT_FEATURE_HAS_SSE41, Blit_RGB565_32_SSE41, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0xFF000000, 0x00FF0000, 0x0000FF00,
-      BLIT_FEATURE_HAS_SSE41, Blit_RGB565_RGBA8888_SSE41, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
+      BLIT_FEATURE_HAS_SSE41, Blit_RGB565_32_SSE41, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x0000FF00, 0x00FF0000, 0xFF000000,
-      BLIT_FEATURE_HAS_SSE41, Blit_RGB565_BGRA8888_SSE41, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
+      BLIT_FEATURE_HAS_SSE41, Blit_RGB565_32_SSE41, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
 #endif
 #ifdef SDL_HAVE_BLIT_N_RGB565
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
