@@ -39,10 +39,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("examples/renderer/cliprect", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("examples/renderer/cliprect", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+    SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     cliprect_direction.x = cliprect_direction.y = 1.0f;
 
