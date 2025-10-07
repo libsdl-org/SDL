@@ -1642,6 +1642,81 @@ static int SDLCALL surface_testScale(void *arg)
     return TEST_COMPLETED;
 }
 
+#define GENERATE_SHIFTS
+
+static Uint32 Calculate(int v, int bits, int vmax, int shift)
+{
+#if defined(GENERATE_FLOOR)
+    return (Uint32)SDL_floor(v * 255.0f / vmax) << shift;
+#elif defined(GENERATE_ROUND)
+    return (Uint32)SDL_roundf(v * 255.0f / vmax) << shift;
+#elif defined(GENERATE_SHIFTS)
+    switch (bits) {
+    case 1:
+        v = (v << 7) | (v << 6) | (v << 5) | (v << 4) | (v << 3) | (v << 2) | (v << 1) | v;
+        break;
+    case 2:
+        v = (v << 6) | (v << 4) | (v << 2) | v;
+        break;
+    case 3:
+        v = (v << 5) | (v << 2) | (v >> 1);
+        break;
+    case 4:
+        v = (v << 4) | v;
+        break;
+    case 5:
+        v = (v << 3) | (v >> 2);
+        break;
+    case 6:
+        v = (v << 2) | (v >> 4);
+        break;
+    case 7:
+        v = (v << 1) | (v >> 6);
+        break;
+    case 8:
+        break;
+    }
+    return (Uint32)v << shift;
+#endif
+}
+
+static Uint32 Calculate565toARGB(int v)
+{
+    Uint8 r = (v & 0xF800) >> 11;
+    Uint8 g = (v & 0x07E0) >> 5;
+    Uint8 b = (v & 0x001F);
+    return 0xFF000000 |
+            Calculate(r, 5, 31, 16) |
+            Calculate(g, 6, 63, 8) |
+            Calculate(b, 5, 31, 0);
+}
+
+static int SDLCALL surface_test16BitTo32Bit(void *arg)
+{
+    static Uint16 pixels[1 << 16];
+    static Uint32 expected[1 << 16];
+    int i, ret;
+    SDL_Surface *surface16;
+    SDL_Surface *surface32;
+    SDL_Surface *expected32;
+
+    for (i = 0; i < SDL_arraysize(pixels); ++i) {
+        pixels[i] = i;
+        expected[i] = Calculate565toARGB(i);
+    }
+
+    surface16 = SDL_CreateSurfaceFrom(SDL_arraysize(pixels), 1, SDL_PIXELFORMAT_RGB565, pixels, sizeof(pixels));
+    surface32 = SDL_ConvertSurface(surface16, SDL_PIXELFORMAT_ARGB8888);
+    expected32 = SDL_CreateSurfaceFrom(SDL_arraysize(expected), 1, SDL_PIXELFORMAT_ARGB8888, expected, sizeof(expected));
+    ret = SDLTest_CompareSurfaces(surface32, expected32, 0);
+    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+    SDL_DestroySurface(surface16);
+    SDL_DestroySurface(surface32);
+    SDL_DestroySurface(expected32);
+
+    return TEST_COMPLETED;
+}
+
 
 /* ================= Test References ================== */
 
@@ -1754,6 +1829,10 @@ static const SDLTest_TestCaseReference surfaceTestScale = {
     surface_testScale, "surface_testScale", "Test scaling operations.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTest16BitTo32Bit = {
+    surface_test16BitTo32Bit, "surface_test16BitTo32Bit", "Test conversion from 16-bit to 32-bit pixels.", TEST_ENABLED
+};
+
 /* Sequence of Surface test cases */
 static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestInvalidFormat,
@@ -1783,6 +1862,7 @@ static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestClearSurface,
     &surfaceTestPremultiplyAlpha,
     &surfaceTestScale,
+    &surfaceTest16BitTo32Bit,
     NULL
 };
 
