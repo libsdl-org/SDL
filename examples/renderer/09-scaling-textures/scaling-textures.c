@@ -32,10 +32,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("examples/renderer/scaling-textures", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("examples/renderer/scaling-textures", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+    SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     /* Textures are pixel data that we upload to the video hardware for fast drawing. Lots of 2D
        engines refer to these as "sprites." We'll do a static texture (upload once, draw many

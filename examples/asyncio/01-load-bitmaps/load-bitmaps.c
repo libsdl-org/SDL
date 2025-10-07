@@ -33,10 +33,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("examples/asyncio/load-bitmaps", 640, 480, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("examples/asyncio/load-bitmaps", 640, 480, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create window/renderer!", SDL_GetError(), NULL);
         return SDL_APP_FAILURE;
     }
+    SDL_SetRenderLogicalPresentation(renderer, 640, 480, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     queue = SDL_CreateAsyncIOQueue();
     if (!queue) {
