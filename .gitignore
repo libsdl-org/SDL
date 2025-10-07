@@ -162,7 +162,6 @@ test/testshader
 test/testshape
 test/testsprite
 test/testspriteminimal
-test/teststreaming
 test/testsurround
 test/testthread
 test/testtimer
