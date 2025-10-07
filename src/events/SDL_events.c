@@ -43,6 +43,10 @@
 #include "../video/android/SDL_androidevents.h"
 #endif
 
+#ifdef SDL_PLATFORM_UNIX
+#include "../tray/SDL_tray_utils.h"
+#endif
+
 // An arbitrary limit so we don't have unbounded growth
 #define SDL_MAX_QUEUED_EVENTS 65535
 
@@ -51,6 +55,9 @@
 
 // Determines how often to pump events if joysticks or sensors are actively being read
 #define EVENT_POLL_INTERVAL_NS SDL_MS_TO_NS(1)
+
+// Determines how often to pump events if tray items are active
+#define TRAY_POLL_INTERVAL_NS SDL_MS_TO_NS(50)
 
 // Make sure the type in the SDL_Event aligns properly across the union
 SDL_COMPILE_TIME_ASSERT(SDL_Event_type, sizeof(Uint32) == sizeof(SDL_EventType));
@@ -1531,6 +1538,12 @@ static Sint64 SDL_events_get_polling_interval(void)
     }
 #endif
 
+#ifdef SDL_PLATFORM_UNIX
+    if (SDL_HasActiveTrays()) {
+        // Tray events on *nix platforms run separately from window system events, and need periodic polling
+        poll_intervalNS = SDL_min(poll_intervalNS, TRAY_POLL_INTERVAL_NS);
+    }
+#endif
     return poll_intervalNS;
 }
 
