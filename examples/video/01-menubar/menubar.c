@@ -55,6 +55,12 @@ void PrintMenuItems(SDL_Renderer* renderer, SDL_MenuItem *menu_item, int indent,
         return;
     }
 
+    SDL_MenuItem *app_menu = SDL_GetMenuBarAppMenu(menu_item);
+    if (app_menu) {
+        SDL_RenderDebugText(renderer, (float)(8 * indent * 2), (float)(*total_index * 8), " -> AppMenu");
+        ++(*total_index);
+    }
+
     const char* label = SDL_GetMenuItemLabel(menu_item);
 
     if (!label) {

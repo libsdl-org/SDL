@@ -459,6 +459,18 @@ bool Cocoa_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled)
 
 bool Cocoa_DestroyMenuItem(SDL_MenuItem *menu_item)
 {
+    if (menu_item->common.type == SDL_MENUITEM_MENUBAR) {
+        SDL_DestroyMenuItem(menu_item->menu_bar.app_menu);
+
+        // The abstract funtion above won't actually delete the app_menu, so take care of the 
+        // platform side of it here.
+        Cocoa_DestroyMenuItem(menu_item->menu_bar.app_menu);
+
+        // And now we're safe to free the app_menu itself and NULL it out.
+        SDL_free(menu_item->menu_bar.app_menu);
+        menu_item->menu_bar.app_menu = NULL;
+    }
+
     PlatformMenuData* platform_data = CFBridgingRelease(menu_item->common.platform_data);
     menu_item->common.platform_data = NULL;
     PlatformMenuData* parent_platform_data = (__bridge PlatformMenuData*)(menu_item->common.parent->common.platform_data);

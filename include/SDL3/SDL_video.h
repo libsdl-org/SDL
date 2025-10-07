@@ -2975,11 +2975,34 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowProgressValue(SDL_Window *window)
  * Assigns a menu_bar to the given window, which will take ownership of it's destruction. NULL
  * releases the menu_bar without destroying it.
  */
+
+/**
+ * Gets the value of the menu bar for the given window.
+ *
+ * \param window the window to retrieve the Menu Bar of.
+ * \returns A pointer to an SDL_MenuBar on success or NULL on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC SDL_MenuItem *SDL_GetWindowMenuBar(SDL_Window *window);
 
 /**
- * Assigns a menu_bar to the given window, which will take ownership of it's destruction. NULL
- * releases the menu_bar without destroying it.
+ * Gets a menu bar for the given window, a NULL menu_bar will unset a menu_bar on the given window.
+ *
+ * The window will take ownership over this menu_bar, handling destruction of it it the window
+ * is destroyed. Ownership will be released back to the user if this function is called again,
+ * so make sure to keep a reference to it if you plan to call this function more than once.
+ * 
+ * \param window the window to assign the menu_bar to.
+ * \param menu_bar the window to retrieve the Menu Bar of.
+ * \returns true on success, or false on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC bool SDL_SetWindowMenuBar(SDL_Window *window, SDL_MenuItem *menu_bar);
 
@@ -3060,49 +3083,223 @@ extern SDL_DECLSPEC bool SDLCALL SDL_EnableScreenSaver(void);
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_DisableScreenSaver(void);
 
+/**
+ * Creates an empty menu bar, on platforms that support it, also creates an empty app menu.
+ *
+ * \returns a pointer to a menu bar, or -1 on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuBar();
 
+/**
+ * Gets the app menu of the given menu bar, must be SDL_MENUITEM_MENUBAR
+ *
+ * Most platforms do not have an App Menu, notably MacOS does.
+ *
+ * \param menu_bar the menu item to get the app menu of.
+ * \returns a pointer to the app menu, or NULL on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC SDL_MenuItem *SDL_GetMenuBarAppMenu(SDL_MenuItem *menu_bar);
 
 /**
- * menu_as_item must be a SDL_MENUITEM_MENUBAR or SDL_MENUITEM_SUBMENU
- * event_type will be ignored if type == SDL_MENUITEM_SUBMENU
- * On MacOS, buttoms created under a menubar will go into the "App" submenu
+ * Gets the app menu of the given menu bar, must be SDL_MENUITEM_MENUBAR
+ *
+ * \param menu_as_item must be a SDL_MENUITEM_MENUBAR or SDL_MENUITEM_SUBMENU
+ * \param index place to put the new menu item under the menu_as_item.
+ * \param label label to use for the given menu_item.
+ * \param type type of menu item to create, cannot create an SDL_MENUITEM_MENUBAR.
+ * \param event_type the event number you'll be passed in SDL_MenuEvent when this menu 
+ *                   item is clicked, ignored when type == SDL_MENUITEM_SUBMENU.
+ * \returns a pointer to the app menu, or NULL on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
  */
-extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_as_item, size_t index, const char *Label, SDL_MenuItemType type, Uint16 event_type);
+extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_as_item, size_t index, const char *label, SDL_MenuItemType type, Uint16 event_type);
 
 /**
- * menu_as_item must be a SDL_MENUITEM_MENUBAR or SDL_MENUITEM_SUBMENU
- * event_type will be ignored if type == SDL_MENUITEM_SUBMENU
- * On MacOS, buttoms created under a menubar will go into the "App" submenu
+ * Gets the app menu of the given menu bar, must be SDL_MENUITEM_MENUBAR
+ *
+ * Item will be placed at the end of the list of children of the menu_as_item.
+ *
+ * \param menu_as_item must be a SDL_MENUITEM_MENUBAR or SDL_MENUITEM_SUBMENU
+ * \param label label to use for the given menu_item.
+ * \param type type of menu item to create, cannot create an SDL_MENUITEM_MENUBAR.
+ * \param event_type the event number you'll be passed in SDL_MenuEvent when this menu 
+ *                   item is clicked, ignored when type == SDL_MENUITEM_SUBMENU.
+ * \returns a pointer to the app menu, or NULL on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
  */
-extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_as_item, const char *Label, SDL_MenuItemType type, Uint16 event_type);
+extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_as_item, const char *label, SDL_MenuItemType type, Uint16 event_type);
 
 /**
- * -1 on error
+ * Gets the number of children of the given menu, must be SDL_MENUITEM_MENUBAR or SDL_MENUITEM_SUBMENU
+ *
+ * \param menu_item the menu item to get the label of.
+ * \returns the number of children of the given menu, or -1 on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC Sint64 SDL_GetMenuChildItems(SDL_MenuItem *menu_as_item);
+
+/**
+ * Gets child of the given menu at index, menu_as_item must be SDL_MENUITEM_MENUBAR or
+ * SDL_MENUITEM_SUBMENU.
+ *
+ * \param menu_as_item the menu item to get the child of.
+ * \param index of the child to get.
+ * \returns the number of children of the given menu, or -1 on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC SDL_MenuItem *SDL_GetMenuChildItem(SDL_MenuItem *menu_as_item, size_t index);
 
+
+/**
+ * Gets the given menu_items label.
+ *
+ * If called on an SDL_MENUITEM_MENUBAR or an App Menu, the return will be an empty string.
+ *
+ * \param menu_item the menu item to get the label of.
+ * \returns a pointer to the label of the given menu_item, or NULL on failure;
+ *          call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC const char *SDL_GetMenuItemLabel(SDL_MenuItem *menu_item);
+
+/**
+ * Sets the given menu_items label.
+ *
+ * Cannot set the label of a SDL_MENUITEM_MENUBAR or an App Menu.
+ *
+ * \param menu_item the menu item to set the label of.
+ * \param label the string to set for the menu_items label..
+ * \returns a pointer to the label of the given menu_item, or NULL on failure;
+ *          call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC bool SDL_SetMenuItemLabel(SDL_MenuItem *menu_item, const char *label);
+
+
+/**
+ * Gets the given menu_items SDL_MenuItemType.
+ *
+ * \param menu_item the menu item to get the SDL_MenuItemType of.
+ * \returns A valid SDL_MenuItemType on success, or SDL_MENUITEM_INVALID on failure;
+ *          call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC SDL_MenuItemType SDL_GetMenuItemType(SDL_MenuItem *menu_item);
+
+/**
+ * Gets the given menu_items user event type.
+ * 
+ * \param menu_item the menu item to get the user type of.
+ * \returns >= 0 on success, or -1 on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC Sint32 SDL_GetMenuItemEventType(SDL_MenuItem *menu_item);
 
 /**
- * Must be a SDL_MENUITEM_CHECKABLE
+ * Gets the given menu_items (which must be an SDL_MENUITEM_CHECKABLE) checked state.
+ * 
+ * \param menu_item the menu item to check the state of.
+ * \param checked pointer to variable to populate with the menu_items checked state.
+ * \returns true on success, or false on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC bool SDL_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked);
 
 /**
- * Must be a SDL_MENUITEM_CHECKABLE
+ * Sets the given menu_item (which must be an SDL_MENUITEM_CHECKABLE) to be checked or unchecked.
+ * 
+ * \param menu_item the menu item to have it's state changed.
+ * \param checked the value to set for if the menu_item is checked or unchecked.
+ * \returns true on success, or false on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC bool SDL_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked);
 
-
+/**
+ * Gets the given menu_items enabled or disabled state.
+ * 
+ * \param menu_item the menu item to check the state of.
+ * \param enabled pointer to variable to populate with the menu_items enabled state.
+ * \returns true on success, or false on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC bool SDL_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled);
+
+/**
+ * Sets the given menu_item to be enabled or disabled.
+ * 
+ * \param menu_item the menu item to have it's state changed.
+ * \param enabled the value to set for if the menu_item is enabled or disabled.
+ * \returns true on success, or false on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC bool SDL_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled);
 
+/**
+ * Destroys the given menu_item and all of it's children.
+ * 
+ * If called on an SDL_MENUITEM_MENUBAR, the menu bar will be unset from a window it may be 
+ * set to. If called on an SDL_MENUITEM_SUBMENU that happens to be the AppMenu for a menu
+ * bar, only it's children will be destroyed, not the AppMenu itself. If called on anything
+ * else, the item will be removed from menu tree it's part of.
+ * 
+ * \param menu_item the menu item to be destroyed.
+ * \returns true on success, or false on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
 extern SDL_DECLSPEC bool SDL_DestroyMenuItem(SDL_MenuItem *menu_item);
 
 /**
