@@ -2309,9 +2309,11 @@ static void SDL_FinishWindowCreation(SDL_Window *window, SDL_WindowFlags flags)
     }
 
 #if defined(SDL_PLATFORM_LINUX)
-    // On Linux the progress state is persisted throughout multiple program runs, so reset state on window creation
-    SDL_SetWindowProgressState(window, SDL_PROGRESS_STATE_NONE);
-    SDL_SetWindowProgressValue(window, 0.0f);
+    if (!SDL_WINDOW_IS_POPUP(window)) {
+        // On Linux the progress state is persisted throughout multiple program runs, so reset state on window creation
+        SDL_SetWindowProgressState(window, SDL_PROGRESS_STATE_NONE);
+        SDL_SetWindowProgressValue(window, 0.0f);
+    }
 #endif
 }
 
