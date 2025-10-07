@@ -3150,7 +3150,7 @@ extern SDL_DECLSPEC SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_as_item,
 /**
  * Gets the number of children of the given menu, must be SDL_MENUITEM_MENUBAR or SDL_MENUITEM_SUBMENU
  *
- * \param menu_item the menu item to get the label of.
+ * \param menu_as_item the menu item to get the label of.
  * \returns the number of children of the given menu, or -1 on failure; call SDL_GetError() for more
  *          information.
  *

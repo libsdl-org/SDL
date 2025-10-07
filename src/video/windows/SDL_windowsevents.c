@@ -2442,6 +2442,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             event.menu.windowID = data->window->id;
 
             SDL_PushEvent(&event);
+            break;
         }
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

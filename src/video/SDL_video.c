@@ -6332,9 +6332,15 @@ SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *lab
 SDL_MenuItem *SDL_GetMenuBarAppMenu(SDL_MenuItem *menu_bar)
 {
     CHECK_MENUITEM_MAGIC(menu_bar, NULL);
+
+    if (menu_bar->common.type != SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("menu_bar must be a SDL_MENUITEM_MENUBAR.");
+        return NULL;
+    }
     
     if (!menu_bar->menu_bar.app_menu) {
         SDL_SetError("This platform doesn't support an Application menu.");
+        return NULL;
     }
     
     return menu_bar->menu_bar.app_menu;

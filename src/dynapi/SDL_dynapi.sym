@@ -1272,7 +1272,6 @@ SDL3_0.0.0 {
     SDL_CreateMenuItem;
     SDL_GetMenuChildItems;
     SDL_GetMenuChildItem;
-    SDL_GetMenuItemLabel;
     SDL_GetMenuItemType;
     SDL_SetMenuItemLabel;
     SDL_SetMenuItemChecked;

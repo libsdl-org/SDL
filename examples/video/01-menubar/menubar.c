@@ -51,14 +51,12 @@ static SDL_EventType_MenuExt EVENT_START = (SDL_EventType_MenuExt)0;
 
 void PrintMenuItems(SDL_Renderer* renderer, SDL_MenuItem *menu_item, int indent, int *total_index)
 {
+    SDL_MenuItem *app_menu = NULL;
+    Sint64 item_count = 0;
+    Sint64 i = 0;
+
     if (!menu_item) {
         return;
-    }
-
-    SDL_MenuItem *app_menu = SDL_GetMenuBarAppMenu(menu_item);
-    if (app_menu) {
-        SDL_RenderDebugText(renderer, (float)(8 * indent * 2), (float)(*total_index * 8), " -> AppMenu");
-        ++(*total_index);
     }
 
     const char* label = SDL_GetMenuItemLabel(menu_item);
@@ -68,13 +66,28 @@ void PrintMenuItems(SDL_Renderer* renderer, SDL_MenuItem *menu_item, int indent,
     }
 
     SDL_RenderDebugText(renderer, (float)(8 * indent * 2), (float)(*total_index * 8), label);
-
     ++(*total_index);
+    
+    
+    if (SDL_GetMenuItemType(menu_item) == SDL_MENUITEM_MENUBAR) {
+        app_menu = SDL_GetMenuBarAppMenu(menu_item);
+        
+        if (app_menu) {
+            SDL_RenderDebugText(renderer, (float)(8 * (indent + 1) * 2), (float)(*total_index * 8), " -> AppMenu");
+            ++(*total_index);
+            
+            item_count = SDL_GetMenuChildItems(app_menu);
+            
+            for (i = 0; i < item_count; ++i) {
+                PrintMenuItems(renderer, SDL_GetMenuChildItem(app_menu, (size_t)i), indent + 2, total_index);
+            }
+        }
+    }
 
-    size_t item_count = SDL_GetMenuChildItems(menu_item);
+    item_count = SDL_GetMenuChildItems(menu_item);
 
-    for (size_t i = 0; i < item_count; ++i) {
-        PrintMenuItems(renderer, SDL_GetMenuChildItem(menu_item, i), indent + 1, total_index);
+    for (i = 0; i < item_count; ++i) {
+        PrintMenuItems(renderer, SDL_GetMenuChildItem(menu_item, (size_t)i), indent + 1, total_index);
     }
 }
 
@@ -114,10 +127,10 @@ void CreateMenuBar_1()
 
         SDL_MenuItem* app_menu = SDL_GetMenuBarAppMenu(menu_bar_1);
         if (app_menu) {
-            SDL_assert(!SDL_CreateMenuItem(menu_bar_1, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT));
-            SDL_CreateMenuItem(app_menu, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
+            SDL_assert(!SDL_CreateMenuItem(menu_bar_1, "Exit 1", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT));
+            SDL_CreateMenuItem(app_menu, "Exit 1", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
         } else {
-            SDL_CreateMenuItem(menu_bar_1, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
+            SDL_CreateMenuItem(menu_bar_1, "Exit 1", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
         }
     }
 
@@ -161,10 +174,10 @@ void CreateMenuBar_2()
 
         SDL_MenuItem* app_menu = SDL_GetMenuBarAppMenu(menu_bar_2);
         if (app_menu) {
-            SDL_assert(!SDL_CreateMenuItem(menu_bar_2, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT));
-            SDL_CreateMenuItem(app_menu, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
+            SDL_assert(!SDL_CreateMenuItem(menu_bar_2, "Exit 2", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT));
+            SDL_CreateMenuItem(app_menu, "Exit 2", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
         } else {
-            SDL_CreateMenuItem(menu_bar_2, "Exit", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
+            SDL_CreateMenuItem(menu_bar_2, "Exit 2", SDL_MENUITEM_BUTTON, MENU_BAR_EXIT);
         }
     }
 

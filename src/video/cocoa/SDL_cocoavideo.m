@@ -390,8 +390,6 @@ bool Cocoa_SetWindowMenuBar(SDL_Window *window, SDL_MenuBar *menu_bar)
         return true;
     }
     
-    // If we don't set it to nil first, it won't change menu bars until you switch off and back on focus.
-    [NSApp setMainMenu:nil];
     PlatformMenuData* platform_data = (__bridge PlatformMenuData*)menu_bar->common.item_common.platform_data;
     [NSApp setMainMenu:platform_data->menu];
     
