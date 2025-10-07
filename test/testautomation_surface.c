@@ -1680,39 +1680,53 @@ static Uint32 Calculate(int v, int bits, int vmax, int shift)
 #endif
 }
 
-static Uint32 Calculate565toARGB(int v)
+static Uint32 Calculate565toARGB(int v, const SDL_PixelFormatDetails *fmt)
 {
     Uint8 r = (v & 0xF800) >> 11;
     Uint8 g = (v & 0x07E0) >> 5;
     Uint8 b = (v & 0x001F);
-    return 0xFF000000 |
-            Calculate(r, 5, 31, 16) |
-            Calculate(g, 6, 63, 8) |
-            Calculate(b, 5, 31, 0);
+    return fmt->Amask |
+            Calculate(r, 5, 31, fmt->Rshift) |
+            Calculate(g, 6, 63, fmt->Gshift) |
+            Calculate(b, 5, 31, fmt->Bshift);
 }
 
 static int SDLCALL surface_test16BitTo32Bit(void *arg)
 {
+    static const SDL_PixelFormat formats[] = {
+        SDL_PIXELFORMAT_ARGB8888,
+        SDL_PIXELFORMAT_ABGR8888,
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_PIXELFORMAT_BGRA8888
+    };
     static Uint16 pixels[1 << 16];
     static Uint32 expected[1 << 16];
-    int i, ret;
+    int i, p, ret;
     SDL_Surface *surface16;
     SDL_Surface *surface32;
     SDL_Surface *expected32;
 
-    for (i = 0; i < SDL_arraysize(pixels); ++i) {
-        pixels[i] = i;
-        expected[i] = Calculate565toARGB(i);
+    for (p = 0; p < SDL_arraysize(pixels); ++p) {
+        pixels[p] = p;
     }
-
     surface16 = SDL_CreateSurfaceFrom(SDL_arraysize(pixels), 1, SDL_PIXELFORMAT_RGB565, pixels, sizeof(pixels));
-    surface32 = SDL_ConvertSurface(surface16, SDL_PIXELFORMAT_ARGB8888);
-    expected32 = SDL_CreateSurfaceFrom(SDL_arraysize(expected), 1, SDL_PIXELFORMAT_ARGB8888, expected, sizeof(expected));
-    ret = SDLTest_CompareSurfaces(surface32, expected32, 0);
-    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+
+    for (i = 0; i < SDL_arraysize(formats); ++i) {
+        SDL_PixelFormat format = formats[i];
+        const SDL_PixelFormatDetails *fmt = SDL_GetPixelFormatDetails(format);
+
+        SDLTest_Log("Checking conversion from SDL_PIXELFORMAT_RGB565 to %s", SDL_GetPixelFormatName(format));
+        surface32 = SDL_ConvertSurface(surface16, format);
+        for (p = 0; p < SDL_arraysize(pixels); ++p) {
+            expected[p] = Calculate565toARGB(p, fmt);
+        }
+        expected32 = SDL_CreateSurfaceFrom(SDL_arraysize(expected), 1, format, expected, sizeof(expected));
+        ret = SDLTest_CompareSurfaces(surface32, expected32, 0);
+        SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
+        SDL_DestroySurface(surface32);
+        SDL_DestroySurface(expected32);
+    }
     SDL_DestroySurface(surface16);
-    SDL_DestroySurface(surface32);
-    SDL_DestroySurface(expected32);
 
     return TEST_COMPLETED;
 }
