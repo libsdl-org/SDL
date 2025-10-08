@@ -708,6 +708,140 @@ static int SDLCALL surface_testBlitMultiple(void *arg)
 }
 
 /**
+ *  Tests operations on surfaces with NULL pixels
+ */
+static int SDLCALL surface_testSurfaceNULLPixels(void *arg)
+{
+    SDL_Surface *a, *b, *face;
+    bool result;
+
+    face = SDLTest_ImageFace();
+    SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
+    if (face == NULL) {
+        return TEST_ABORTED;
+    }
+
+    /* Test blitting with NULL pixels */
+    a = SDL_CreateSurfaceFrom(face->w, face->h, SDL_PIXELFORMAT_ARGB8888, NULL, 0);
+    SDLTest_AssertCheck(a != NULL, "Verify result from SDL_CreateSurfaceFrom() with NULL pixels is not NULL");
+    result = SDL_BlitSurface(a, NULL, face, NULL);
+    SDLTest_AssertCheck(!result, "Verify result from SDL_BlitSurface() with src having NULL pixels is false");
+    result = SDL_BlitSurface(face, NULL, a, NULL);
+    SDLTest_AssertCheck(!result, "Verify result from SDL_BlitSurface() with dst having NULL pixels is false");
+
+    b = SDL_CreateSurfaceFrom(face->w * 2, face->h * 2, SDL_PIXELFORMAT_ARGB8888, NULL, 0);
+    SDLTest_AssertCheck(b != NULL, "Verify result from SDL_CreateSurfaceFrom() with NULL pixels is not NULL");
+    result = SDL_BlitSurfaceScaled(b, NULL, face, NULL, SDL_SCALEMODE_NEAREST);
+    SDLTest_AssertCheck(!result, "Verify result from SDL_BlitSurfaceScaled() with src having NULL pixels is false");
+    result = SDL_BlitSurfaceScaled(face, NULL, b, NULL, SDL_SCALEMODE_NEAREST);
+    SDLTest_AssertCheck(!result, "Verify result from SDL_BlitSurfaceScaled() with dst having NULL pixels is false");
+    SDL_DestroySurface(b);
+    b = NULL;
+
+    /* Test conversion with NULL pixels */
+    b = SDL_ConvertSurfaceAndColorspace(a, SDL_PIXELFORMAT_ABGR8888, NULL, SDL_COLORSPACE_UNKNOWN, 0);
+    SDLTest_AssertCheck(b != NULL, "Verify result from SDL_ConvertSurfaceAndColorspace() with NULL pixels is not NULL");
+    SDL_DestroySurface(b);
+    b = NULL;
+
+    /* Test duplication with NULL pixels */
+    b = SDL_DuplicateSurface(a);
+    SDLTest_AssertCheck(b != NULL, "Verify result from SDL_DuplicateSurface() with NULL pixels is not NULL");
+    SDL_DestroySurface(b);
+    b = NULL;
+
+    /* Test scaling with NULL pixels */
+    b = SDL_ScaleSurface(a, a->w * 2, a->h * 2, SDL_SCALEMODE_NEAREST);
+    SDLTest_AssertCheck(b != NULL, "Verify result from SDL_ScaleSurface() with NULL pixels is not NULL");
+    SDLTest_AssertCheck(b->pixels == NULL, "Verify pixels from SDL_ScaleSurface() is NULL");
+    SDL_DestroySurface(b);
+    b = NULL;
+
+    /* Test filling surface with NULL pixels */
+    result = SDL_FillSurfaceRect(a, NULL, 0);
+    SDLTest_AssertCheck(result, "Verify result from SDL_FillSurfaceRect() with dst having NULL pixels is true");
+
+    /* Clean up. */
+    SDL_DestroySurface(face);
+    SDL_DestroySurface(a);
+    SDL_DestroySurface(b);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ *  Tests operations on surfaces with RLE pixels
+ */
+static int SDLCALL surface_testSurfaceRLEPixels(void *arg)
+{
+    SDL_Surface *face, *a, *b, *tmp;
+    bool result;
+
+    face = SDLTest_ImageFace();
+    SDLTest_AssertCheck(face != NULL, "Verify face surface is not NULL");
+    if (face == NULL) {
+        return TEST_ABORTED;
+    }
+
+    /* Create a temporary surface to trigger RLE encoding during blit */
+    tmp = SDL_DuplicateSurface(face);
+    SDLTest_AssertCheck(tmp != NULL, "Verify result from SDL_DuplicateSurface() with RLE pixels is not NULL");
+
+    result = SDL_SetSurfaceRLE(face, true);
+    SDLTest_AssertCheck(result, "Verify result from SDL_SetSurfaceRLE() is true");
+
+    /* Test duplication with RLE pixels */
+    a = SDL_DuplicateSurface(face);
+    SDLTest_AssertCheck(a != NULL, "Verify result from SDL_DuplicateSurface() with RLE pixels is not NULL");
+    SDLTest_AssertCheck(SDL_SurfaceHasRLE(a), "Verify result from SDL_DuplicateSurface() with RLE pixels has RLE set");
+
+    /* Verify that blitting from an RLE surface does RLE encode it */
+    SDLTest_AssertCheck(!SDL_MUSTLOCK(a), "Verify initial RLE surface does not need to be locked");
+    SDLTest_AssertCheck(a->pixels != NULL, "Verify initial RLE surface has pixels available");
+    result = SDL_BlitSurface(a, NULL, tmp, NULL);
+    SDLTest_AssertCheck(result, "Verify result from SDL_BlitSurface() with RLE surface is true");
+    SDLTest_AssertCheck(SDL_MUSTLOCK(a), "Verify RLE surface after blit needs to be locked");
+    SDLTest_AssertCheck(a->pixels == NULL, "Verify RLE surface after blit does not have pixels available");
+
+    /* Test scaling with RLE pixels */
+    b = SDL_ScaleSurface(a, a->w * 2, a->h * 2, SDL_SCALEMODE_NEAREST);
+    SDLTest_AssertCheck(b != NULL, "Verify result from SDL_ScaleSurface() is not NULL");
+    SDLTest_AssertCheck(SDL_SurfaceHasRLE(b), "Verify result from SDL_ScaleSurface() with RLE pixels has RLE set");
+
+    /* Test scaling blitting with RLE pixels */
+    result = SDL_BlitSurfaceScaled(a, NULL, b, NULL, SDL_SCALEMODE_NEAREST);
+    SDLTest_AssertCheck(result, "Verify result from SDL_BlitSurfaceScaled() with src having RLE pixels is true");
+    SDL_BlitSurface(a, NULL, tmp, NULL);
+    SDL_DestroySurface(b);
+    b = NULL;
+
+    /* Test conversion with RLE pixels */
+    b = SDL_ConvertSurfaceAndColorspace(a, SDL_PIXELFORMAT_ABGR8888, NULL, SDL_COLORSPACE_UNKNOWN, 0);
+    SDLTest_AssertCheck(b != NULL, "Verify result from SDL_ConvertSurfaceAndColorspace() with RLE pixels is not NULL");
+    SDLTest_AssertCheck(SDL_SurfaceHasRLE(b), "Verify result from SDL_ConvertSurfaceAndColorspace() with RLE pixels has RLE set");
+    SDL_BlitSurface(a, NULL, tmp, NULL);
+    SDL_DestroySurface(b);
+    b = NULL;
+
+#if 0 /* This will currently fail, you must lock the surface first */
+    /* Test filling surface with RLE pixels */
+    result = SDL_FillSurfaceRect(a, NULL, 0);
+    SDLTest_AssertCheck(result, "Verify result from SDL_FillSurfaceRect() with dst having RLE pixels is true");
+#endif
+
+    /* Make sure the RLE surface still needs to be locked after surface operations */
+    SDLTest_AssertCheck(a->pixels == NULL, "Verify RLE surface after operations does not have pixels available");
+
+    /* Clean up. */
+    SDL_DestroySurface(face);
+    SDL_DestroySurface(a);
+    SDL_DestroySurface(b);
+    SDL_DestroySurface(tmp);
+
+    return TEST_COMPLETED;
+}
+
+/**
  *  Tests surface conversion.
  */
 static int SDLCALL surface_testSurfaceConversion(void *arg)
@@ -740,9 +874,7 @@ static int SDLCALL surface_testSurfaceConversion(void *arg)
 
     /* Clean up. */
     SDL_DestroySurface(face);
-    face = NULL;
     SDL_DestroySurface(rface);
-    rface = NULL;
 
     return TEST_COMPLETED;
 }
@@ -991,9 +1123,9 @@ static int SDLCALL surface_testBlitInvalid(void *arg)
     SDLTest_AssertCheck(invalid->pixels == NULL, "Check surface pixels are NULL");
 
     result = SDL_BlitSurface(invalid, NULL, valid, NULL);
-    SDLTest_AssertCheck(result == true, "SDL_BlitSurface(invalid, NULL, valid, NULL), result = %s\n", result ? "true" : "false");
+    SDLTest_AssertCheck(result == false, "SDL_BlitSurface(invalid, NULL, valid, NULL), result = %s\n", result ? "true" : "false");
     result = SDL_BlitSurface(valid, NULL, invalid, NULL);
-    SDLTest_AssertCheck(result == true, "SDL_BlitSurface(valid, NULL, invalid, NULL), result = %s\n", result ? "true" : "false");
+    SDLTest_AssertCheck(result == false, "SDL_BlitSurface(valid, NULL, invalid, NULL), result = %s\n", result ? "true" : "false");
 
     result = SDL_BlitSurfaceScaled(invalid, NULL, valid, NULL, SDL_SCALEMODE_NEAREST);
     SDLTest_AssertCheck(result == false, "SDL_BlitSurfaceScaled(invalid, NULL, valid, NULL, SDL_SCALEMODE_NEAREST), result = %s\n", result ? "true" : "false");
@@ -1767,6 +1899,14 @@ static const SDLTest_TestCaseReference surfaceTestLoadFailure = {
     surface_testLoadFailure, "surface_testLoadFailure", "Tests sprite loading. A failure case.", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference surfaceTestNULLPixels = {
+    surface_testSurfaceNULLPixels, "surface_testSurfaceNULLPixels", "Tests surface operations with NULL pixels.", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference surfaceTestRLEPixels = {
+    surface_testSurfaceRLEPixels, "surface_testSurfaceRLEPixels", "Tests surface operations with RLE surfaces.", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference surfaceTestSurfaceConversion = {
     surface_testSurfaceConversion, "surface_testSurfaceConversion", "Tests surface conversion.", TEST_ENABLED
 };
@@ -1857,6 +1997,8 @@ static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestBlit9Grid,
     &surfaceTestBlitMultiple,
     &surfaceTestLoadFailure,
+    &surfaceTestNULLPixels,
+    &surfaceTestRLEPixels,
     &surfaceTestSurfaceConversion,
     &surfaceTestCompleteSurfaceConversion,
     &surfaceTestBlitColorMod,

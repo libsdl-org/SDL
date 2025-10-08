@@ -266,17 +266,16 @@ bool SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Ui
         return SDL_InvalidParamError("SDL_FillSurfaceRects(): dst");
     }
 
-    // Perform software fill
-    CHECK_PARAM(!dst->pixels) {
-        return SDL_SetError("SDL_FillSurfaceRects(): You must lock the surface");
-    }
-
     CHECK_PARAM(!rects) {
         return SDL_InvalidParamError("SDL_FillSurfaceRects(): rects");
     }
 
+    if (!dst->pixels && SDL_MUSTLOCK(dst)) {
+        return SDL_SetError("SDL_FillSurfaceRects(): You must lock the surface");
+    }
+
     // Nothing to do
-    if (dst->w == 0 || dst->h == 0) {
+    if (dst->w == 0 || dst->h == 0 || !dst->pixels) {
         return true;
     }
 
