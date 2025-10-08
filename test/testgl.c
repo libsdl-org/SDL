@@ -22,6 +22,7 @@ typedef struct GL_Context
 {
 #define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
 #include "../src/render/opengl/SDL_glfuncs.h"
+#include "../src/render/opengles2/SDL_gl_common_funcs.h"
 #undef SDL_PROC
 } GL_Context;
 
@@ -54,6 +55,7 @@ static bool LoadContext(GL_Context *data)
 #endif /* __SDL_NOGETPROCADDR__ */
 
 #include "../src/render/opengl/SDL_glfuncs.h"
+#include "../src/render/opengles2/SDL_gl_common_funcs.h"
 #undef SDL_PROC
     return true;
 }
