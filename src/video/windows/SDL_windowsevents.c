@@ -1818,9 +1818,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
         }
 
-        // Forces a WM_PAINT event
-        InvalidateRect(hwnd, NULL, FALSE);
-
     } break;
 
     case WM_ENTERSIZEMOVE:
