@@ -1262,8 +1262,8 @@ extern "C" {
  *
  * This variable can be set to the following values:
  *
- * - "0": RAWINPUT drivers are not used
- * - "1": RAWINPUT drivers are used (the default)
+ * - "0": RAWINPUT drivers are not used (the default)
+ * - "1": RAWINPUT drivers are used
  */
 #define SDL_HINT_JOYSTICK_RAWINPUT "SDL_JOYSTICK_RAWINPUT"
 
