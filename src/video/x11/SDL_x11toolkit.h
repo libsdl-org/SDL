@@ -72,9 +72,9 @@ typedef struct SDL_ToolkitWindowX11
     Window window;
     Drawable drawable;
 #ifndef NO_SHARED_MEMORY
-	XImage *image;
-	XShmSegmentInfo shm_info;
-	int shm_bytes_per_line;
+    XImage *image;
+    XShmSegmentInfo shm_info;
+    int shm_bytes_per_line;
 #endif
 
     /* Visuals and drawing */
@@ -94,8 +94,8 @@ typedef struct SDL_ToolkitWindowX11
     bool xrandr; // Whether Xrandr is present or not
 #endif
 #ifndef NO_SHARED_MEMORY
-	bool shm;
-	Bool shm_pixmap;
+    bool shm;
+    Bool shm_pixmap;
 #endif
     bool utf8;
     /* Atoms */
@@ -160,9 +160,11 @@ typedef struct SDL_ToolkitWindowX11
 
 #ifdef HAVE_FRIBIDI_H
     /* BIDI engine */
-	SDL_FriBidi *fribidi;
-	bool do_shaping;
+    SDL_FriBidi *fribidi;
+    bool do_shaping;
 #endif
+
+    bool flip_interface;
 } SDL_ToolkitWindowX11;
 
 typedef enum SDL_ToolkitControlStateX11
@@ -183,7 +185,7 @@ typedef struct SDL_ToolkitControlX11
     bool dynamic;
     bool is_default_enter;
     bool is_default_esc;
-	bool do_size;
+    bool do_size;
 
     /* User data */
     void *data;

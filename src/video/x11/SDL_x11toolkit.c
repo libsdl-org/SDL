@@ -603,6 +603,35 @@ static void X11Toolkit_GetTextWidthHeight(SDL_ToolkitWindowX11 *data, const char
     }
 }
 
+static bool ShouldFlipUI(void) 
+{
+    char *current_locale;
+    static const char *rtl_locales[] = {
+        "ar",
+        "fa_AF",
+        "fa_IR",
+        "he",
+        "iw",
+        "yi",
+        "ur",
+        "ug",
+        "kd",
+        "pk_PK",
+        "ps",
+        NULL
+    };
+    int i;
+
+    current_locale = setlocale(LC_ALL, NULL);
+    for (i = 0; rtl_locales[i]; ++i) {
+        if (SDL_startswith(current_locale, rtl_locales[i])) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
 SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_ToolkitWindowX11 *tkparent, SDL_ToolkitWindowModeX11 mode, const SDL_MessageBoxColor *colorhints, bool create_new_display)
 {
     SDL_ToolkitWindowX11 *window;
@@ -809,9 +838,14 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
     /* Menu windows */
     window->popup_windows = NULL;
 
+    /* BIDI engine */
 #ifdef HAVE_FRIBIDI_H
     window->fribidi = SDL_FriBidi_Create();
 #endif
+
+    /* Interface direction */
+    window->flip_interface = ShouldFlipUI();
+    
     return window;
 }
 
