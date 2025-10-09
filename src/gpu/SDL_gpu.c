@@ -61,6 +61,10 @@
         return;                                              \
     }
 
+#if 0
+// The below validation is too aggressive, since there are advanced situations 
+// where this is legal. This is being temporarily disabled for further review.
+// See: https://github.com/libsdl-org/SDL/issues/13871
 #define CHECK_SAMPLER_TEXTURES                                                                                                          \
     RenderPass *rp = (RenderPass *)render_pass;                                                                                         \
     for (Uint32 color_target_index = 0; color_target_index < rp->num_color_targets; color_target_index += 1) {                          \
@@ -92,6 +96,10 @@
             SDL_assert_release(!"Texture cannot be simultaneously bound as a depth stencil target and a storage texture!"); \
         }                                                                                                                   \
     }
+#else
+#define CHECK_SAMPLER_TEXTURES
+#define CHECK_STORAGE_TEXTURES
+#endif
 
 #define CHECK_GRAPHICS_PIPELINE_BOUND                                                   \
     if (!((RenderPass *)render_pass)->graphics_pipeline) { \
