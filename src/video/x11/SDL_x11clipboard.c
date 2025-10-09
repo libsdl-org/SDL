@@ -139,7 +139,7 @@ static bool WaitForSelection(SDL_VideoDevice *_this, Atom selection_type, bool *
     waitStart = SDL_GetTicks();
     *flag = true;
     while (*flag) {
-        SDL_PumpEvents();
+        X11_PumpEvents(_this);
         waitElapsed = SDL_GetTicks() - waitStart;
         // Wait one second for a selection response.
         if (waitElapsed > 1000) {
