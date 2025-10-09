@@ -2008,9 +2008,11 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_SETCURSOR:
     {
-        Uint16 hittest;
+        if (SDL_GetMouse()->external_cursor) {
+            break;
+        }
 
-        hittest = LOWORD(lParam);
+        Uint16 hittest = LOWORD(lParam);
         if (hittest == HTCLIENT) {
             SetCursor(SDL_cursor);
             returnCode = TRUE;

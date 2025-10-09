@@ -2645,6 +2645,20 @@ extern "C" {
 #define SDL_HINT_MOUSE_DEFAULT_SYSTEM_CURSOR "SDL_MOUSE_DEFAULT_SYSTEM_CURSOR"
 
 /**
+ * A variable controlling whether the application will be drawing its own cursor.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": SDL will update the cursor as needed. (default)
+ * - "1": SDL will hide the cursor in relative mode, but will not otherwise touch the cursor state.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.2.0.
+ */
+#define SDL_HINT_MOUSE_EXTERNAL_CURSOR "SDL_MOUSE_EXTERNAL_CURSOR"
+
+/**
  * A variable controlling whether warping a hidden mouse cursor will activate
  * relative mouse mode.
  *

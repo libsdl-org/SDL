@@ -145,6 +145,7 @@ typedef struct
     int num_sources;
     SDL_MouseInputSource *sources;
 
+    bool external_cursor;
     SDL_Cursor *cursors;
     SDL_Cursor *def_cursor;
     SDL_Cursor *cur_cursor;

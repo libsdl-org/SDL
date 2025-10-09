@@ -1131,6 +1131,10 @@ void Wayland_SeatUpdateCursor(SDL_WaylandSeat *seat)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_WindowData *pointer_focus = seat->pointer.focus;
 
+    if (mouse->external_cursor) {
+        return;
+    }
+
     if (pointer_focus && mouse->cursor_visible) {
         if (!seat->pointer.relative_pointer || !mouse->relative_mode_hide_cursor) {
             const SDL_HitTestResult rc = pointer_focus->hit_test_result;

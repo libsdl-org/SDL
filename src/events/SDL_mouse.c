@@ -234,6 +234,15 @@ static void SDLCALL SDL_MouseRelativeCursorVisibleChanged(void *userdata, const 
     SDL_RedrawCursor(); // Update cursor visibility
 }
 
+static void SDLCALL SDL_MouseExternalCursorChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->external_cursor = !(SDL_GetStringBoolean(hint, false));
+
+    SDL_RedrawCursor(); // Update cursor visibility
+}
+
 static void SDLCALL SDL_MouseIntegerModeChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
@@ -298,6 +307,9 @@ bool SDL_PreInitMouse(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
                         SDL_MouseRelativeCursorVisibleChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_EXTERNAL_CURSOR,
+                        SDL_MouseExternalCursorChanged, mouse);
 
     SDL_AddHintCallback("SDL_MOUSE_INTEGER_MODE",
                         SDL_MouseIntegerModeChanged, mouse);
@@ -1164,6 +1176,9 @@ void SDL_QuitMouse(void)
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_RELATIVE_CURSOR_VISIBLE,
                         SDL_MouseRelativeCursorVisibleChanged, mouse);
 
+    SDL_RemoveHintCallback(SDL_HINT_MOUSE_EXTERNAL_CURSOR,
+                        SDL_MouseExternalCursorChanged, mouse);
+
     SDL_RemoveHintCallback("SDL_MOUSE_INTEGER_MODE",
                         SDL_MouseIntegerModeChanged, mouse);
 
@@ -1630,6 +1645,10 @@ void SDL_RedrawCursor(void)
 
     if (mouse->focus && (!mouse->cursor_visible || (mouse->relative_mode && mouse->relative_mode_hide_cursor))) {
         cursor = NULL;
+    }
+
+    if (cursor && mouse->external_cursor) {
+        return;
     }
 
     if (mouse->ShowCursor) {
