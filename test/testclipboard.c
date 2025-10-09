@@ -34,6 +34,7 @@ static const void *ClipboardDataCallback(void *userdata, const char *mime_type, 
         *size = icon_png_len;
         return icon_png;
     } else {
+        SDL_Log("Called with unexpected mime type: %s", mime_type);
         return NULL;
     }
 }
