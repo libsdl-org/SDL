@@ -1064,6 +1064,7 @@ bool SDL_GetDisplayBounds(SDL_DisplayID displayID, SDL_Rect *rect)
     }
 
     if (_this->GetDisplayBounds) {
+        SDL_zerop(rect);
         if (_this->GetDisplayBounds(_this, display, rect)) {
             return true;
         }
@@ -1103,6 +1104,7 @@ bool SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect)
     }
 
     if (_this->GetDisplayUsableBounds) {
+        SDL_zerop(rect);
         if (_this->GetDisplayUsableBounds(_this, display, rect)) {
             return true;
         }

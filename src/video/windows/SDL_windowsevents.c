@@ -2422,6 +2422,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         if (wParam == SPI_SETMOUSE || wParam == SPI_SETMOUSESPEED) {
             WIN_UpdateMouseSystemScale();
         }
+        if (wParam == SPI_SETWORKAREA) {
+            WIN_UpdateDisplayUsableBounds(SDL_GetVideoDevice());
+        }
         break;
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
