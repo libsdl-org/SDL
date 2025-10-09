@@ -1139,17 +1139,18 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
         if (rc) {
             SDL_DebugLogBackend("render", renderer->name);
+            SDL_free(driver_error);
         } else {
             if (driver_name) {
                 if (driver_error) {
                     SDL_SetError("%s", driver_error);
-                    SDL_free(driver_error);
                 } else {
                     SDL_SetError("%s not available", driver_name);
                 }
             } else {
                 SDL_SetError("Couldn't find matching render driver");
             }
+            SDL_free(driver_error);
             goto error;
         }
     }
