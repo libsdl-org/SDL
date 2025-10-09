@@ -48,7 +48,7 @@
  */
 // #define XRANDR_DISABLED_BY_DEFAULT
 
-float X11_GetGlobalContentScale(Display *display, XSettingsClient *client, bool limit)
+float X11_GetGlobalContentScale(Display *display, XSettingsClient *client)
 {
     double scale_factor = 0.0;
 
@@ -136,16 +136,12 @@ float X11_GetGlobalContentScale(Display *display, XSettingsClient *client, bool 
         scale_factor = 1.0;
     }
 
-    if (limit && scale_factor < 1.0) {
-        scale_factor = 1.0;
-    }
-    
     return (float)scale_factor;
 }
 
 float X11_GetGlobalContentScaleForDevice(SDL_VideoDevice *_this)
 {
-    return X11_GetGlobalContentScale(_this->internal->display, _this->internal->xsettings_data.xsettings, false);
+    return X11_GetGlobalContentScale(_this->internal->display, _this->internal->xsettings_data.xsettings);
 }
 
 static bool get_visualinfo(Display *display, int screen, XVisualInfo *vinfo)

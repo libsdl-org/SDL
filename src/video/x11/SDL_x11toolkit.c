@@ -354,6 +354,9 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
         /* set scale vars */
         window->scale = X11_GetGlobalContentScale(window->display, window->xsettings, true);
         window->iscale = (int)SDL_ceilf(window->scale);
+        if (window->scale < 1) {
+            window->scale = 1;
+        }
         if (SDL_roundf(window->scale) == window->scale) {
             window->scale = 0;
         }
@@ -613,7 +616,10 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
     window->xsettings_first_time = true;
     window->xsettings = xsettings_client_new(window->display, DefaultScreen(window->display), X11Toolkit_SettingsNotify, NULL, window);
     window->xsettings_first_time = false;
-    window->scale = X11_GetGlobalContentScale(window->display, window->xsettings, true);
+    window->scale = X11_GetGlobalContentScale(window->display, window->xsettings);
+    if (window->scale < 1) {
+        window->scale = 1;
+    }
     window->iscale = (int)SDL_ceilf(window->scale);
     if (SDL_roundf(window->scale) == window->scale) {
         window->scale = 0;

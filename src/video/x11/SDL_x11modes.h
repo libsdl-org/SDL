@@ -64,7 +64,7 @@ extern SDL_PixelFormat X11_GetPixelFormatFromVisualInfo(Display *display, XVisua
 extern bool X11_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 extern bool X11_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 
-extern float X11_GetGlobalContentScale(Display *display, XSettingsClient *client, bool limit);
+extern float X11_GetGlobalContentScale(Display *display, XSettingsClient *client);
 extern float X11_GetGlobalContentScaleForDevice(SDL_VideoDevice *_this);
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
