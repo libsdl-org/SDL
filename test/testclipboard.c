@@ -92,9 +92,23 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 static float PrintClipboardText(float x, float y, const char *mime_type)
 {
-    void *data = SDL_GetClipboardData(mime_type, NULL);
+    size_t size;
+    void *data = SDL_GetClipboardData(mime_type, &size);
     if (data) {
-        SDL_RenderDebugText(renderer, x, y, (const char *)data);
+        char *text = (char *)data;
+        if (size > 2 && text[2] == '\0') {
+            /* UCS-4 data */
+            text = (char *)SDL_iconv_string("UTF-8", "UCS-4", data, size+4);
+        } else if (size > 1 && text[1] == '\0') {
+            /* UCS-2 data */
+            text = (char *)SDL_iconv_string("UTF-8", "UCS-2", data, size+2);
+        }
+        if (text) {
+            SDL_RenderDebugText(renderer, x, y, text);
+        }
+        if (text != data) {
+            SDL_free(text);
+        }
         SDL_free(data);
         return SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE + 2.0f;
     }
