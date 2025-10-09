@@ -1096,6 +1096,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
             goto error;
         }
     } else {
+        char *driver_error = NULL;
         bool rc = false;
         if (!driver_name) {
             driver_name = SDL_GetHint(SDL_HINT_RENDER_DRIVER);
@@ -1110,10 +1111,13 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
                 for (int i = 0; render_drivers[i]; i++) {
                     const SDL_RenderDriver *driver = render_drivers[i];
                     if ((driver_attempt_len == SDL_strlen(driver->name)) && (SDL_strncasecmp(driver->name, driver_attempt, driver_attempt_len) == 0)) {
+                        SDL_free(driver_error);
                         rc = driver->CreateRenderer(renderer, window, props);
                         if (rc) {
                             break;
                         }
+                        driver_error = SDL_strdup(SDL_GetError());
+                        SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Couldn't create renderer %s: %s\n", driver->name, driver_error);
                         SDL_DestroyRendererWithoutFreeing(renderer);
                         SDL_zerop(renderer); // make sure we don't leave function pointers from a previous CreateRenderer() in this struct.
                     }
@@ -1137,7 +1141,12 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
             SDL_DebugLogBackend("render", renderer->name);
         } else {
             if (driver_name) {
-                SDL_SetError("%s not available", driver_name);
+                if (driver_error) {
+                    SDL_SetError("%s", driver_error);
+                    SDL_free(driver_error);
+                } else {
+                    SDL_SetError("%s not available", driver_name);
+                }
             } else {
                 SDL_SetError("Couldn't find matching render driver");
             }
