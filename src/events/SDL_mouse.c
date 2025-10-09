@@ -1121,6 +1121,15 @@ int SDL_WarpMouseGlobal(int x, int y)
 
 static SDL_bool ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
 {
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
+    SDL_VideoDevice *vid = SDL_GetVideoDevice();
+
+    /* Wayland can't warp the mouse, but uses this hint internally to deliver accelerated motion */
+    if (SDL_strcmp(vid->name, "wayland") == 0) {
+        return SDL_FALSE;
+    }
+#endif
+
     if (!mouse->WarpMouse) {
         /* Need this functionality for relative mode warp implementation */
         return SDL_FALSE;

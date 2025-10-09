@@ -2681,23 +2681,28 @@ static void relative_pointer_handle_relative_motion(void *data,
     struct SDL_WaylandInput *input = data;
     SDL_VideoData *d = input->display;
     SDL_WindowData *window = input->pointer_focus;
-    double dx_unaccel;
-    double dy_unaccel;
     double dx;
     double dy;
+    double dx_mod;
+    double dy_mod;
 
-    dx_unaccel = wl_fixed_to_double(dx_unaccel_w);
-    dy_unaccel = wl_fixed_to_double(dy_unaccel_w);
+    if (!d->relative_mode_accelerated) {
+        dx = wl_fixed_to_double(dx_unaccel_w);
+        dy = wl_fixed_to_double(dy_unaccel_w);
+    } else {
+        dx = wl_fixed_to_double(dx_w) * (window ? window->pointer_scale_x : 1.0);
+        dy = wl_fixed_to_double(dy_w) * (window ? window->pointer_scale_y : 1.0);
+    }
 
     /* Add left over fraction from last event. */
-    dx_unaccel += input->dx_frac;
-    dy_unaccel += input->dy_frac;
+    dx += input->dx_frac;
+    dy += input->dy_frac;
 
-    input->dx_frac = modf(dx_unaccel, &dx);
-    input->dy_frac = modf(dy_unaccel, &dy);
+    input->dx_frac = modf(dx, &dx_mod);
+    input->dy_frac = modf(dy, &dy_mod);
 
     if (input->pointer_focus && d->relative_mouse_mode) {
-        SDL_SendMouseMotion(window->sdlwindow, 0, 1, (int)dx, (int)dy);
+        SDL_SendMouseMotion(window->sdlwindow, 0, 1, (int)dx_mod, (int)dy_mod);
     }
 }
 
