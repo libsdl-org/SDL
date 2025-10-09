@@ -101,6 +101,7 @@ typedef struct
     char *classname;
 
     int relative_mouse_mode;
+    int relative_mode_accelerated;
     SDL_bool egl_transparency_enabled;
 } SDL_VideoData;
 
