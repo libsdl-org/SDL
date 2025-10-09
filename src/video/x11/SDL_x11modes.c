@@ -48,7 +48,7 @@
  */
 // #define XRANDR_DISABLED_BY_DEFAULT
 
-float X11_GetGlobalContentScale(SDL_VideoDevice *_this)
+float X11_GetGlobalContentScale(Display *display, XSettingsClient *client, bool limit)
 {
     double scale_factor = 0.0;
 
@@ -64,19 +64,18 @@ float X11_GetGlobalContentScale(SDL_VideoDevice *_this)
     // If that failed, try "Xft.dpi" from the XResourcesDatabase...
     // We attempt to read this directly to get the live value, XResourceManagerString
     // is cached per display connection.
-    if (scale_factor <= 0.0)
-    {
-        SDL_VideoData *data = _this->internal;
-        Display *display = data->display;
+    if (scale_factor <= 0.0) {
         int status, real_format;
         Atom real_type;
+        Atom res_mgr;
         unsigned long items_read, items_left;
         char *resource_manager;
         bool owns_resource_manager = false;
 
         X11_XrmInitialize();
+        res_mgr = X11_XInternAtom(display, "RESOURCE_MANAGER", False);
         status = X11_XGetWindowProperty(display, RootWindow(display, DefaultScreen(display)),
-                                        data->atoms.RESOURCE_MANAGER, 0L, 8192L, False, XA_STRING,
+                                        res_mgr, 0L, 8192L, False, XA_STRING,
                                         &real_type, &real_format, &items_read, &items_left,
                                         (unsigned char **)&resource_manager);
 
@@ -112,11 +111,11 @@ float X11_GetGlobalContentScale(SDL_VideoDevice *_this)
 
     // If that failed, try the XSETTINGS keys...
     if (scale_factor <= 0.0) {
-        scale_factor = X11_GetXsettingsIntKey(_this, "Gdk/WindowScalingFactor", -1);
+        scale_factor = X11_GetXsettingsClientIntKey(client, "Gdk/WindowScalingFactor", -1);
 
         // The Xft/DPI key is stored in increments of 1024th
         if (scale_factor <= 0.0) {
-            int dpi = X11_GetXsettingsIntKey(_this, "Xft/DPI", -1);
+            int dpi = X11_GetXsettingsClientIntKey(client, "Xft/DPI", -1);
             if (dpi > 0) {
                 scale_factor = (double) dpi / 1024.0;
                 scale_factor /= 96.0;
@@ -137,7 +136,16 @@ float X11_GetGlobalContentScale(SDL_VideoDevice *_this)
         scale_factor = 1.0;
     }
 
+    if (limit && scale_factor < 1.0) {
+        scale_factor = 1.0;
+    }
+    
     return (float)scale_factor;
+}
+
+float X11_GetGlobalContentScaleForDevice(SDL_VideoDevice *_this)
+{
+    return X11_GetGlobalContentScale(_this->internal->display, _this->internal->xsettings_data.xsettings, false);
 }
 
 static bool get_visualinfo(Display *display, int screen, XVisualInfo *vinfo)
@@ -312,7 +320,7 @@ static SDL_DisplayID X11_AddGenericDisplay(SDL_VideoDevice *_this, bool send_eve
     display.name = (char *)"Generic X11 Display"; /* this is just copied and thrown away, it's safe to cast to char* here. */
     display.desktop_mode = mode;
     display.internal = displaydata;
-    display.content_scale = X11_GetGlobalContentScale(_this);
+    display.content_scale = X11_GetGlobalContentScaleForDevice(_this);
     return SDL_AddVideoDisplay(&display, send_event);
 }
 
@@ -599,7 +607,7 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
         display->name = display_name;
     }
     display->desktop_mode = mode;
-    display->content_scale = X11_GetGlobalContentScale(_this);
+    display->content_scale = X11_GetGlobalContentScaleForDevice(_this);
     display->internal = displaydata;
 
     return true;

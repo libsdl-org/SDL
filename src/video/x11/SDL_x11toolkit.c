@@ -192,121 +192,6 @@ static int X11Toolkit_SharedMemoryErrorHandler(Display *d, XErrorEvent *e)
     return g_old_error_handler(d, e);
 }
 
-int X11Toolkit_SettingsGetInt(XSettingsClient *client, const char *key, int fallback_value) {
-    XSettingsSetting *setting = NULL;
-    int res = fallback_value;
-
-    if (client) {
-        if (xsettings_client_get_setting(client, key, &setting) != XSETTINGS_SUCCESS) {
-            goto no_key;
-        }
-
-        if (setting->type != XSETTINGS_TYPE_INT) {
-            goto no_key;
-        }
-
-        res = setting->data.v_int;
-    }
-
-no_key:
-    if (setting) {
-        xsettings_setting_free(setting);
-    }
-
-    return res;
-}
-
-static float X11Toolkit_GetUIScale(XSettingsClient *client, Display *display)
-{
-    double scale_factor = 0.0;
-
-    // First use the forced scaling factor specified by the app/user
-    const char *hint = SDL_GetHint(SDL_HINT_VIDEO_X11_SCALING_FACTOR);
-    if (hint && *hint) {
-        double value = SDL_atof(hint);
-        if (value >= 1.0f && value <= 10.0f) {
-            scale_factor = value;
-        }
-    }
-
-    // If that failed, try "Xft.dpi" from the XResourcesDatabase...
-    // We attempt to read this directly to get the live value, XResourceManagerString
-    // is cached per display connection.
-    if (scale_factor <= 0.0) {
-        int status, real_format;
-        Atom real_type;
-        Atom res_mgr;
-        unsigned long items_read, items_left;
-        char *resource_manager;
-        bool owns_resource_manager = false;
-
-        X11_XrmInitialize();
-        res_mgr = X11_XInternAtom(display, "RESOURCE_MANAGER", False);
-        status = X11_XGetWindowProperty(display, RootWindow(display, DefaultScreen(display)),
-                                        res_mgr, 0L, 8192L, False, XA_STRING,
-                                        &real_type, &real_format, &items_read, &items_left,
-                                        (unsigned char **)&resource_manager);
-
-        if (status == Success && resource_manager) {
-            owns_resource_manager = true;
-        } else {
-            // Fall back to XResourceManagerString. This will not be updated if the
-            // dpi value is later changed but should allow getting the initial value.
-            resource_manager = X11_XResourceManagerString(display);
-        }
-
-        if (resource_manager) {
-            XrmDatabase db;
-            XrmValue value;
-            char *type;
-
-            db = X11_XrmGetStringDatabase(resource_manager);
-
-            // Get the value of Xft.dpi from the Database
-            if (X11_XrmGetResource(db, "Xft.dpi", "String", &type, &value)) {
-                if (value.addr && type && SDL_strcmp(type, "String") == 0) {
-                    int dpi = SDL_atoi(value.addr);
-                    scale_factor  = dpi / 96.0;
-                }
-            }
-            X11_XrmDestroyDatabase(db);
-
-            if (owns_resource_manager) {
-                X11_XFree(resource_manager);
-            }
-        }
-    }
-
-    // If that failed, try the XSETTINGS keys...
-    if (scale_factor <= 0.0) {
-        scale_factor = X11Toolkit_SettingsGetInt(client, "Gdk/WindowScalingFactor", -1);
-
-        // The Xft/DPI key is stored in increments of 1024th
-        if (scale_factor <= 0.0) {
-            int dpi = X11Toolkit_SettingsGetInt(client, "Xft/DPI", -1);
-            if (dpi > 0) {
-                scale_factor = (double) dpi / 1024.0;
-                scale_factor /= 96.0;
-            }
-        }
-    }
-
-    // If that failed, try the GDK_SCALE envvar...
-    if (scale_factor <= 0.0) {
-        const char *scale_str = SDL_getenv("GDK_SCALE");
-        if (scale_str) {
-            scale_factor = SDL_atoi(scale_str);
-        }
-    }
-
-    // Nothing or a bad value, just fall back to 1.0
-    if (scale_factor < 1.0) {
-        scale_factor = 1.0;
-    }
-
-    return (float)scale_factor;
-}
-
 static void X11Toolkit_InitWindowPixmap(SDL_ToolkitWindowX11 *data) {
     if (data->pixmap) {
 #ifndef NO_SHARED_MEMORY
@@ -467,7 +352,7 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
         }
 
         /* set scale vars */
-        window->scale = X11Toolkit_GetUIScale(window->xsettings, window->display);
+        window->scale = X11_GetGlobalContentScale(window->display, window->xsettings, true);
         window->iscale = (int)SDL_ceilf(window->scale);
         if (SDL_roundf(window->scale) == window->scale) {
             window->scale = 0;
@@ -728,7 +613,7 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
     window->xsettings_first_time = true;
     window->xsettings = xsettings_client_new(window->display, DefaultScreen(window->display), X11Toolkit_SettingsNotify, NULL, window);
     window->xsettings_first_time = false;
-    window->scale = X11Toolkit_GetUIScale(window->xsettings, window->display);
+    window->scale = X11_GetGlobalContentScale(window->display, window->xsettings, true);
     window->iscale = (int)SDL_ceilf(window->scale);
     if (SDL_roundf(window->scale) == window->scale) {
         window->scale = 0;
