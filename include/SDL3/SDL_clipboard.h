@@ -198,7 +198,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasPrimarySelectionText(void);
  * \param mime_type the requested mime-type.
  * \param size a pointer filled in with the length of the returned data.
  * \returns a pointer to the data for the provided mime-type. Returning NULL
- *          or setting the length to 0 will cause zero length data to be sent to the "receiver", which should be able to handle this. The returned data will not be freed, so it needs to be retained and dealt with internally.
+ *          or setting the length to 0 will cause zero length data to be sent
+ *          to the "receiver", which should be able to handle this. The
+ *          returned data will not be freed, so it needs to be retained and
+ *          dealt with internally.
  *
  * \since This function is available since SDL 3.2.0.
  *
