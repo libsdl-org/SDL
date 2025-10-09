@@ -619,7 +619,6 @@ static bool X11Toolkit_ShouldFlipUI(void)
         { "pk", "PK", },
         { "ps", NULL, }
     }; 
-    static const unsigned int rtl_locales_sz = 11;
     int current_locales_sz;
     int i;
 
@@ -627,8 +626,7 @@ static bool X11Toolkit_ShouldFlipUI(void)
     if (current_locales_sz <= 0) {
         return false;        
     }
-    
-    for (i = 0; i < rtl_locales_sz; ++i) {
+    for (i = 0; i < SDL_arraysize(rtl_locales); ++i) {
         if (SDL_startswith(current_locales[0]->language, rtl_locales[i].language)) {
             if (!rtl_locales[i].country) {
                 return true;
