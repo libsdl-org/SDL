@@ -603,29 +603,38 @@ static void X11Toolkit_GetTextWidthHeight(SDL_ToolkitWindowX11 *data, const char
     }
 }
 
-static bool ShouldFlipUI(void) 
+static bool X11Toolkit_ShouldFlipUI(void) 
 {
-    char *current_locale;
-    static const char *rtl_locales[] = {
-        "ar",
-        "fa_AF",
-        "fa_IR",
-        "he",
-        "iw",
-        "yi",
-        "ur",
-        "ug",
-        "kd",
-        "pk_PK",
-        "ps",
-        NULL
-    };
+    SDL_Locale **current_locales;
+    static const SDL_Locale rtl_locales[] = {
+        { "ar", NULL, },
+        { "fa", "AF", },
+        { "fa", "IR", },
+        { "he", NULL, },
+        { "iw", NULL, },
+        { "yi", NULL, },
+        { "ur", NULL, },
+        { "ug", NULL, },
+        { "kd", NULL, },
+        { "pk", "PK", },
+        { "ps", NULL, }
+    }; 
+    static const unsigned int rtl_locales_sz = 11;
+    int current_locales_sz;
     int i;
 
-    current_locale = setlocale(LC_ALL, NULL);
-    for (i = 0; rtl_locales[i]; ++i) {
-        if (SDL_startswith(current_locale, rtl_locales[i])) {
-            return true;
+    current_locales = SDL_GetPreferredLocales(&current_locales_sz);
+    if (current_locales_sz <= 0) {
+        return false;        
+    }
+    
+    for (i = 0; i < rtl_locales_sz; ++i) {
+        if (SDL_startswith(current_locales[0]->language, rtl_locales[i].language)) {
+            if (!rtl_locales[i].country) {
+                return true;
+            } else {
+                return SDL_startswith(current_locales[0]->country, rtl_locales[i].country);
+            }
         }
     }
     
@@ -844,7 +853,7 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
 #endif
 
     /* Interface direction */
-    window->flip_interface = ShouldFlipUI();
+    window->flip_interface = X11Toolkit_ShouldFlipUI();
     
     return window;
 }

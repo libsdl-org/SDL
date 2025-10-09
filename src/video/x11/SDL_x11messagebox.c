@@ -168,7 +168,8 @@ static void X11_PositionMessageBox(SDL_MessageBoxControlsX11 *controls, int *wp,
     *hp = h;
 }
 
-static void X11_PositionMessageBoxFlipped(SDL_MessageBoxControlsX11 *controls, int *wp, int *hp) {
+static void X11_PositionMessageBoxFlipped(SDL_MessageBoxControlsX11 *controls, int *wp, int *hp)
+{
     int max_button_w;
     int max_button_h;
     int total_button_w;
