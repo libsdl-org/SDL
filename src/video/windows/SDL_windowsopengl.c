@@ -707,8 +707,10 @@ bool WIN_GL_UseEGL(SDL_VideoDevice *_this)
     SDL_assert(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
 
     // (we don't need EGL to do OpenGL ES if HAS_WGL_EXT_create_context_es2_profile exists.)
-
-    return !_this->gl_data->HAS_WGL_EXT_create_context_es2_profile || SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, false) || _this->gl_config.major_version == 1 || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor); // No WGL extension for OpenGL ES 1.x profiles.
+    return !_this->gl_data->HAS_WGL_EXT_create_context_es2_profile ||
+           SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, false) ||
+           _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major ||
+           (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor);
 }
 
 SDL_GLContext WIN_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
