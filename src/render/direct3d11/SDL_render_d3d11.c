@@ -542,16 +542,11 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
     /* This array defines the set of DirectX hardware feature levels this app will support.
      * Note the ordering should be preserved.
      * Don't forget to declare your application's minimum required feature level in its
-     * description.  All applications are assumed to support 9.1 unless otherwise stated.
+     * description. All applications are assumed to support 11.0 unless otherwise stated.
      */
     D3D_FEATURE_LEVEL featureLevels[] = {
         D3D_FEATURE_LEVEL_11_1,
-        D3D_FEATURE_LEVEL_11_0,
-        D3D_FEATURE_LEVEL_10_1,
-        D3D_FEATURE_LEVEL_10_0,
-        D3D_FEATURE_LEVEL_9_3,
-        D3D_FEATURE_LEVEL_9_2,
-        D3D_FEATURE_LEVEL_9_1
+        D3D_FEATURE_LEVEL_11_0
     };
 
     D3D11_BUFFER_DESC constantBufferDesc;
@@ -722,31 +717,7 @@ static HRESULT D3D11_CreateDeviceResources(SDL_Renderer *renderer)
      * Max texture sizes are documented on MSDN, at:
      * http://msdn.microsoft.com/en-us/library/windows/apps/ff476876.aspx
      */
-    switch (data->featureLevel) {
-    case D3D_FEATURE_LEVEL_11_1:
-    case D3D_FEATURE_LEVEL_11_0:
-        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
-        break;
-
-    case D3D_FEATURE_LEVEL_10_1:
-    case D3D_FEATURE_LEVEL_10_0:
-        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 8192);
-        break;
-
-    case D3D_FEATURE_LEVEL_9_3:
-        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 4096);
-        break;
-
-    case D3D_FEATURE_LEVEL_9_2:
-    case D3D_FEATURE_LEVEL_9_1:
-        SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 2048);
-        break;
-
-    default:
-        SDL_SetError("%s, Unexpected feature level: %d", __FUNCTION__, data->featureLevel);
-        result = E_FAIL;
-        goto done;
-    }
+    SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 16384);
 
     if (!D3D11_CreateVertexShader(data->d3dDevice, &data->vertexShader, &data->inputLayout)) {
         goto done;
