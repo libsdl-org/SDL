@@ -352,7 +352,7 @@ static void X11Toolkit_SettingsNotify(const char *name, XSettingsAction action, 
         }
 
         /* set scale vars */
-        window->scale = X11_GetGlobalContentScale(window->display, window->xsettings, true);
+        window->scale = X11_GetGlobalContentScale(window->display, window->xsettings);
         window->iscale = (int)SDL_ceilf(window->scale);
         if (window->scale < 1) {
             window->scale = 1;
