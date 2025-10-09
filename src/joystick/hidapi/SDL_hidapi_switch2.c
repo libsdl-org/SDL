@@ -97,8 +97,8 @@ typedef struct
 
     Switch2_StickCalibration left_stick;
     Switch2_StickCalibration right_stick;
-    Uint8 left_trigger_max;
-    Uint8 right_trigger_max;
+    Uint8 left_trigger_zero;
+    Uint8 right_trigger_zero;
 
     bool player_lights;
     int player_index;
@@ -389,8 +389,8 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
             if (res < 0) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
             } else {
-                ctx->left_trigger_max = calibration_data[0x10];
-                ctx->right_trigger_max = calibration_data[0x11];
+                ctx->left_trigger_zero = calibration_data[0x10];
+                ctx->right_trigger_zero = calibration_data[0x11];
             }
         }
     }
@@ -597,14 +597,14 @@ static void HandleGameCubeState(Uint64 timestamp, SDL_Joystick *joystick, SDL_Dr
         timestamp,
         joystick,
         SDL_GAMEPAD_AXIS_LEFT_TRIGGER,
-        ctx->left_trigger_max,
+        ctx->left_trigger_zero,
         data[13]
     );
     MapTriggerAxis(
         timestamp,
         joystick,
         SDL_GAMEPAD_AXIS_RIGHT_TRIGGER,
-        ctx->right_trigger_max,
+        ctx->right_trigger_zero,
         data[14]
     );
 
