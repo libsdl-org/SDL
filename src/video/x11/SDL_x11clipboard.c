@@ -273,6 +273,11 @@ bool X11_SetClipboardData(SDL_VideoDevice *_this)
 void *X11_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length)
 {
     SDL_VideoData *videodata = _this->internal;
+    if (!SDL_HasInternalClipboardData(_this, mime_type)) {
+        // This mime type wasn't advertised by the last selection owner.
+        // The atom might still have data, but it's stale, so ignore it.
+        return NULL;
+    }
     return GetSelectionData(_this, videodata->atoms.CLIPBOARD, mime_type, length);
 }
 
