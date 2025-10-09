@@ -113,7 +113,9 @@ static float PrintPrimarySelectionText(float x, float y)
 static float PrintClipboardImage(float x, float y, const char *mime_type)
 {
     /* We don't actually need to read this data each frame, but this is a simple example */
-    if (SDL_strcmp(mime_type, "image/png") == 0) {
+    bool isBMP = (SDL_strcmp(mime_type, "image/bmp") == 0);
+    bool isPNG = (SDL_strcmp(mime_type, "image/png") == 0);
+    if (isBMP || isPNG) {
         size_t size;
         void *data = SDL_GetClipboardData(mime_type, &size);
         if (data) {
@@ -121,7 +123,12 @@ static float PrintClipboardImage(float x, float y, const char *mime_type)
             bool rendered = false;
             SDL_IOStream *stream = SDL_IOFromConstMem(data, size);
             if (stream) {
-                SDL_Surface *surface = SDL_LoadPNG_IO(stream, false);
+                SDL_Surface *surface;
+                if (isBMP) {
+                    surface = SDL_LoadBMP_IO(stream, false);
+                } else {
+                    surface = SDL_LoadPNG_IO(stream, false);
+                }
                 if (surface) {
                     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
                     if (texture) {
