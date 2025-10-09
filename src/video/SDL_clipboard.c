@@ -156,9 +156,9 @@ bool SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardClean
     }
 
     char **mime_types_copy = SDL_CopyClipboardMimeTypes(mime_types, num_mime_types, true);
-    if (!mime_types_copy)
+    if (!mime_types_copy) {
         return SDL_SetError("unable to copy current mime types");
-
+	}
     SDL_SendClipboardUpdate(true, mime_types_copy, num_mime_types);
     return true;
 }
@@ -432,9 +432,9 @@ bool SDL_SetPrimarySelectionText(const char *text)
     }
 
     char **mime_types = SDL_CopyClipboardMimeTypes((const char **)_this->clipboard_mime_types, _this->num_clipboard_mime_types, true);
-    if (!mime_types)
+    if (!mime_types) {
         return SDL_SetError("unable to copy current mime types");
-
+	}
     SDL_SendClipboardUpdate(true, mime_types, _this->num_clipboard_mime_types);
     return true;
 }
