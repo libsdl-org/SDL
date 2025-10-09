@@ -300,7 +300,7 @@ static float X11Toolkit_GetUIScale(XSettingsClient *client, Display *display)
     }
 
     // Nothing or a bad value, just fall back to 1.0
-    if (scale_factor <= 0.0) {
+    if (scale_factor < 1.0) {
         scale_factor = 1.0;
     }
 
