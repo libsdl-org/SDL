@@ -603,6 +603,42 @@ static void X11Toolkit_GetTextWidthHeight(SDL_ToolkitWindowX11 *data, const char
     }
 }
 
+static bool X11Toolkit_ShouldFlipUI(void) 
+{
+    SDL_Locale **current_locales;
+    static const SDL_Locale rtl_locales[] = {
+        { "ar", NULL, },
+        { "fa", "AF", },
+        { "fa", "IR", },
+        { "he", NULL, },
+        { "iw", NULL, },
+        { "yi", NULL, },
+        { "ur", NULL, },
+        { "ug", NULL, },
+        { "kd", NULL, },
+        { "pk", "PK", },
+        { "ps", NULL, }
+    }; 
+    int current_locales_sz;
+    int i;
+
+    current_locales = SDL_GetPreferredLocales(&current_locales_sz);
+    if (current_locales_sz <= 0) {
+        return false;        
+    }
+    for (i = 0; i < SDL_arraysize(rtl_locales); ++i) {
+        if (SDL_startswith(current_locales[0]->language, rtl_locales[i].language)) {
+            if (!rtl_locales[i].country) {
+                return true;
+            } else {
+                return SDL_startswith(current_locales[0]->country, rtl_locales[i].country);
+            }
+        }
+    }
+    
+    return false;
+}
+
 SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_ToolkitWindowX11 *tkparent, SDL_ToolkitWindowModeX11 mode, const SDL_MessageBoxColor *colorhints, bool create_new_display)
 {
     SDL_ToolkitWindowX11 *window;
@@ -809,9 +845,14 @@ SDL_ToolkitWindowX11 *X11Toolkit_CreateWindowStruct(SDL_Window *parent, SDL_Tool
     /* Menu windows */
     window->popup_windows = NULL;
 
+    /* BIDI engine */
 #ifdef HAVE_FRIBIDI_H
     window->fribidi = SDL_FriBidi_Create();
 #endif
+
+    /* Interface direction */
+    window->flip_interface = X11Toolkit_ShouldFlipUI();
+    
     return window;
 }
 
