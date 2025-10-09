@@ -933,6 +933,14 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
     }
 }
 
+void WIN_UpdateDisplayUsableBounds(SDL_VideoDevice *_this)
+{
+    // This almost never happens, so just go ahead and send update events for all displays
+    for (int i = 0; i < _this->num_displays; ++i) {
+        SDL_SendDisplayEvent(_this->displays[i], SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED, 0, 0);
+    }
+}
+
 void WIN_QuitModes(SDL_VideoDevice *_this)
 {
     // All fullscreen windows should have restored modes by now
