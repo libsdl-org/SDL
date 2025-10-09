@@ -119,7 +119,11 @@ static void MoveSprites(SDL_Renderer *renderer, SDL_Texture *sprite)
     }
 
     /* Draw a gray background */
-    SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0x00 /* used with --transparent */);
+    if (SDL_GetWindowFlags(SDL_GetRenderWindow(renderer)) & SDL_WINDOW_TRANSPARENT) {
+        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, SDL_ALPHA_TRANSPARENT);
+    } else {
+        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, SDL_ALPHA_OPAQUE);
+    }
     SDL_RenderClear(renderer);
 
     /* Test points */
