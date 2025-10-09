@@ -9685,6 +9685,13 @@ static bool VULKAN_INTERNAL_OnWindowResize(void *userdata, SDL_Event *e)
         data->swapchainCreateHeight = e->window.data2;
     }
 
+#ifdef SDL_PLATFORM_ANDROID
+    if (e->type == SDL_EVENT_DID_ENTER_BACKGROUND) {
+        data = VULKAN_INTERNAL_FetchWindowData(w);
+        data->needsSwapchainRecreate = true;
+    }
+#endif
+
     return true;
 }
 
