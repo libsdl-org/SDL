@@ -4086,7 +4086,7 @@ extern "C" {
  * This hint should be set before creating a Vulkan window. Expects a positive
  * integer. E.g. 3 for Vulkan 1.3.
  *
- * \since This hint is available since SDL 3.xx.
+ * \since This hint is available since SDL 3.4.0.
  */
 #define SDL_HINT_VULKAN_REQUEST_API_MINOR_VERSION "SDL_VULKAN_REQUEST_API_MINOR_VERSION"
 
