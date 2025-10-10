@@ -1748,9 +1748,10 @@ elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
       return argc + dlnote.hdr.a;
     }
     ]==])
+    set(SDL_DISABLE_DLOPEN_NOTES FALSE)
     check_c_source_compiles("${CHECK_ELF_DLNOTES_SRC}" COMPILER_SUPPORTS_ELFNOTES)
-    if(COMPILER_SUPPORTS_ELFNOTES)
-      set(HAVE_DLOPEN_NOTES TRUE)
+    if(NOT COMPILER_SUPPORTS_ELFNOTES)
+      set(SDL_DISABLE_DLOPEN_NOTES TRUE)
     endif()
   endif()
 
