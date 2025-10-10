@@ -4081,14 +4081,14 @@ extern "C" {
 #define SDL_HINT_VULKAN_LIBRARY "SDL_VULKAN_LIBRARY"
 
 /**
- * Specify the Vulkan API minor version to create the instance with.
+ * Specify the Vulkan API version to create the instance with.
  *
- * This hint should be set before creating a Vulkan window. Expects a positive
- * integer. E.g. 3 for Vulkan 1.3.
+ * This hint should be set before creating a Vulkan window. Expects a
+ * version string delimited by underscores. E.g. 1_0_0 or 1_3_0
  *
  * \since This hint is available since SDL 3.4.0.
  */
-#define SDL_HINT_VULKAN_REQUEST_API_MINOR_VERSION "SDL_VULKAN_REQUEST_API_MINOR_VERSION"
+#define SDL_HINT_VULKAN_REQUEST_API_VERSION "SDL_VULKAN_REQUEST_API_VERSION"
 
 /**
  * A variable controlling how the fact chunk affects the loading of a WAVE
