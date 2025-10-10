@@ -1523,6 +1523,11 @@ bool SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, fl
 
     int tile_width = (int)(r_src.w * scale);
     int tile_height = (int)(r_src.h * scale);
+
+    if (tile_width <= 0 || tile_height <= 0) {
+        return SDL_SetError("Invalid scale: scaled tile size would be zero");
+    }
+
     int rows = r_dst.h / tile_height;
     int cols = r_dst.w / tile_width;
     int remaining_dst_w = (r_dst.w - cols * tile_width);

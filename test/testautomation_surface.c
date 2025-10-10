@@ -442,6 +442,15 @@ static int SDLCALL surface_testBlitTiled(void *arg)
         SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
     }
 
+    /* Tiled blit - very small scale (should fail gracefully) */
+    {
+        float tiny_scale = 0.01f;
+        ret = SDL_BlitSurfaceTiledWithScale(face, NULL, tiny_scale, SDL_SCALEMODE_NEAREST, testSurface, NULL);
+        SDLTest_AssertCheck(ret == false, "Expected SDL_BlitSurfaceTiledWithScale to fail with very small scale: %f, got: %i", tiny_scale, ret);
+        const char *err = SDL_GetError();
+        SDLTest_AssertCheck(err && SDL_strstr(err, "Invalid scale") != NULL, "Expected SDL_GetError() to contain 'Invalid scale', got: %s", err ? err : "NULL");
+    }
+
     /* Clean up. */
     SDL_DestroySurface(face);
     SDL_DestroySurface(testSurface2x);
