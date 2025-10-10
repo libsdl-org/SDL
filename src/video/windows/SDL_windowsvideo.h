@@ -661,4 +661,24 @@ extern bool D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface);
 extern SDL_SystemTheme WIN_GetSystemTheme(void);
 extern bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this);
 
+
+
+#define SDL_WIN32_INVALID_MENU_ID 65535
+
+typedef struct PlatformMenuData
+{
+    HMENU owner_handle;
+    UINT_PTR self_handle;
+    Uint16 user_event_type;
+} PlatformMenuData;
+
+extern bool Win32_CreateMenuBar(SDL_MenuBar *menu_bar);
+extern bool Win32_SetWindowMenuBar(SDL_Window *window, SDL_MenuBar *menu_bar);
+extern bool Win32_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *name, Uint16 event_type);
+
+extern bool Win32_SetMenuItemLabel(SDL_MenuItem *menu_item, const char *label);
+extern bool Win32_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked);
+extern bool Win32_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled);
+extern bool Win32_DestroyMenuItem(SDL_MenuItem *menu_item);
+
 #endif // SDL_windowsvideo_h_

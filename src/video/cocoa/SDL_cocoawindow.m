@@ -1277,6 +1277,13 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 - (void)windowDidBecomeKey:(NSNotification *)aNotification
 {
     SDL_Window *window = _data.window;
+    
+    if (window->menu_bar) {
+        PlatformMenuData* platform_data = (__bridge PlatformMenuData*)window->menu_bar->common.item_common.platform_data;
+        [NSApp setMainMenu:platform_data->menu];
+    } else {
+        [NSApp setMainMenu:nil];
+    }
 
     // We're going to get keyboard events, since we're key.
     // This needs to be done before restoring the relative mouse mode.

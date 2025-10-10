@@ -177,6 +177,12 @@ static VideoBootStrap *bootstrap[] = {
         return result;                                                  \
     }
 
+#define CHECK_MENUITEM_MAGIC(menuitem, result)                          \
+    if (!menuitem) {                                                    \
+        SDL_SetError("Invalid menu_item");                              \
+        return result;                                                  \
+    }
+
 #if defined(SDL_PLATFORM_MACOS) && defined(SDL_VIDEO_DRIVER_COCOA)
 // Support for macOS fullscreen spaces, etc.
 extern bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window);
@@ -4467,6 +4473,11 @@ void SDL_DestroyWindow(SDL_Window *window)
 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_DESTROYED, 0, 0);
 
+    if (window->menu_bar) {
+        SDL_DestroyMenuItem((SDL_MenuItem *)window->menu_bar);
+        window->menu_bar = NULL;
+    }
+
     SDL_DestroyWindowSurface(window);
 
     SDL_Renderer *renderer = SDL_GetRenderer(window);
@@ -4629,6 +4640,9 @@ void SDL_VideoQuit(void)
     while (_this->windows) {
         SDL_DestroyWindow(_this->windows);
     }
+
+    SDL_CleanupMenubars();
+
     _this->VideoQuit(_this);
 
     for (i = _this->num_displays; i--; ) {
@@ -6111,6 +6125,423 @@ void SDL_OnApplicationDidEnterForeground(void)
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
         }
     }
+}
+
+SDL_MenuItem *SDL_CreateMenuBar()
+{
+    if (!_this) {
+        return NULL;
+    }
+    
+    if (!_this->CreateMenuBar) {
+        return NULL;
+    }
+    
+    SDL_MenuBar *menu_bar = SDL_calloc(1, sizeof(SDL_MenuBar));
+    menu_bar->common.item_common.menu_bar = menu_bar;
+    menu_bar->common.item_common.type = SDL_MENUITEM_MENUBAR;
+    menu_bar->common.item_common.enabled = true;
+    
+    if (!_this->CreateMenuBar(menu_bar)) {
+        SDL_free(menu_bar);
+        return NULL;
+    }
+
+    ++_this->num_menu_bars;
+
+    SDL_SetObjectValid(menu_bar, SDL_OBJECT_TYPE_MENUBAR, true);
+    
+    return (SDL_MenuItem *)menu_bar;
+}
+
+
+SDL_MenuItem *SDL_GetWindowMenuBar(SDL_Window *window)
+{
+    CHECK_WINDOW_MAGIC(window, false);
+    return (SDL_MenuItem*)window->menu_bar;
+}
+
+bool SDL_SetWindowMenuBar(SDL_Window* window, SDL_MenuItem* menu_bar)
+{
+    CHECK_WINDOW_MAGIC(window, false);
+
+    if (!_this) {
+        return SDL_UninitializedVideo();
+    }
+
+    if (!menu_bar) {
+        // Passed NULL to the Window, user wants to retake ownership of the menubar.
+        if (window->menu_bar) {
+            bool success = _this->SetWindowMenuBar(window, NULL);
+
+            SDL_SetObjectValid(window->menu_bar, SDL_OBJECT_TYPE_MENUBAR, true);
+            window->menu_bar->window = NULL;
+            window->menu_bar = NULL;
+
+            return success;
+        }
+
+        // It's valid to pass a NULL menu_bar even if the Window doesn't currently have one.
+        return true;
+    }
+
+    // Same Window/MenuBar combination, no need to do anything.
+    if (menu_bar->menu_bar.window == window) {
+        return true;
+    }
+
+    if (menu_bar->common.type != SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("Can't set menu Item that isn't a Menu onto a Window.");
+        return false;
+    }
+
+    // menu_bar is already on another window, null out the menubar on that window
+    // before we add this menubar to the given window.
+    if (menu_bar->menu_bar.window) {
+        SDL_SetWindowMenuBar(menu_bar->menu_bar.window, NULL);
+    }
+
+    SDL_MenuBar *menu_bar_real = (SDL_MenuBar*)menu_bar;
+    menu_bar_real->window = window;
+
+    // Window has an existing MenuBar, release it back to the user.
+    if (window->menu_bar) {
+        SDL_SetWindowMenuBar(window, NULL);
+    }
+
+    window->menu_bar = menu_bar_real;
+
+    SDL_SetObjectValid(menu_bar_real, SDL_OBJECT_TYPE_MENUBAR, false);
+
+    return _this->SetWindowMenuBar(window, menu_bar_real);
+}
+
+void SDL_CleanupMenubars()
+{
+    if (_this->num_menu_bars == 0) {
+        return;
+    }
+
+    void **menu_bars = (void **)SDL_malloc(_this->num_menu_bars * sizeof(*menu_bars));
+    if (!menu_bars) {
+        return;
+    }
+
+    int count = SDL_GetObjects(SDL_OBJECT_TYPE_MENUBAR, menu_bars, _this->num_menu_bars);
+    SDL_assert(count == _this->num_menu_bars);
+    for (int i = 0; i < count; ++i) {
+        SDL_DestroyMenuItem((SDL_MenuItem *)menu_bars[i]);
+    }
+    SDL_free(menu_bars);
+}
+
+SDL_MenuItem *SDL_CreateMenuItemAt(SDL_MenuItem *menu_as_item, size_t index, const char *label, SDL_MenuItemType type, Uint16 event_type)
+{
+    CHECK_MENUITEM_MAGIC(menu_as_item, NULL);
+
+    if (menu_as_item->common.type != SDL_MENUITEM_SUBMENU && menu_as_item->common.type != SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("Can't create an item on a Menu Item that isn't a Menu or MenuBar.");
+        return false;
+    }
+
+    if ((menu_as_item->common.type == SDL_MENUITEM_MENUBAR) && (type == SDL_MENUITEM_CHECKABLE)) {
+        SDL_SetError("Can't create a checkable item on the Menu Bar, they must be in a menu.");
+        return false;
+    }
+
+    if (!label) {
+        SDL_SetError("Label cannot be null");
+        return NULL;
+    }
+
+    SDL_Menu_CommonData *menu = (SDL_Menu_CommonData *)menu_as_item;
+
+    if (menu->num_children < (Sint64)index) {
+        SDL_SetError("Can't create a menu item beyond the number of children.");
+        return false;
+    }
+
+    SDL_MenuItem *menu_item = SDL_calloc(1, sizeof(SDL_MenuItem));
+    menu_item->common.parent = (SDL_MenuItem *)menu;
+    menu_item->common.menu_bar = menu->item_common.menu_bar;
+    menu_item->common.type = type;
+    menu_item->common.event_type = event_type;
+    menu_item->common.enabled = true;
+
+    if (!_this->CreateMenuItemAt(menu_item, index, label, event_type)) {
+        SDL_free(menu_item);
+        return NULL;
+    }
+
+    // Succeeded in creating the menu_item, we can dupe the name now.
+    menu_item->common.label = SDL_strdup(label);
+
+    // Get the last item in the list and insert our new item.
+    if (menu->children) {
+        if (index == 0) {
+            menu_item->common.next = menu->children;
+            menu->children->common.prev = menu_item;
+            menu->children = menu_item;
+        } else {
+            SDL_MenuItem *current = menu->children;
+            for (size_t i = 1; (i < index) && current; ++i) {
+                current = current->common.next;
+            }
+
+            SDL_assert(current);
+
+            if (current->common.next) {
+                current->common.next->common.prev = menu_item;
+                menu_item->common.next = current->common.next;
+            }
+
+            current->common.next = menu_item;
+            menu_item->common.prev = current;
+        }
+    } else {
+        menu->children = menu_item;
+    }
+
+    ++menu->num_children;
+
+    return menu_item;
+}
+
+Uint32 SDL_GetIndexInMenu(SDL_MenuItem *menu_item)
+{
+    Uint32 i = 0;
+    SDL_MenuItem *current = menu_item->common.prev;
+    while (current) {
+        current = current->common.prev;
+        ++i;
+    }
+    return i;
+}
+
+SDL_MenuItem *SDL_CreateMenuItem(SDL_MenuItem *menu_bar_as_item, const char *label, SDL_MenuItemType type, Uint16 event_type)
+{
+    CHECK_MENUITEM_MAGIC(menu_bar_as_item, NULL);
+    if (menu_bar_as_item->common.type != SDL_MENUITEM_SUBMENU && menu_bar_as_item->common.type != SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("Can't create an item on a Menu Item that isn't a Menu or MenuBar.");
+        return false;
+    }
+
+    SDL_Menu_CommonData *menu = (SDL_Menu_CommonData *)menu_bar_as_item;
+    return SDL_CreateMenuItemAt(menu_bar_as_item, menu->num_children, label, type, event_type);
+}
+
+
+SDL_MenuItem *SDL_GetMenuBarAppMenu(SDL_MenuItem *menu_bar)
+{
+    CHECK_MENUITEM_MAGIC(menu_bar, NULL);
+
+    if (menu_bar->common.type != SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("menu_bar must be a SDL_MENUITEM_MENUBAR.");
+        return NULL;
+    }
+    
+    if (!menu_bar->menu_bar.app_menu) {
+        SDL_SetError("This platform doesn't support an Application menu.");
+        return NULL;
+    }
+    
+    return menu_bar->menu_bar.app_menu;
+}
+
+Sint64 SDL_GetMenuChildItems(SDL_MenuItem *menu_as_item)
+{
+    CHECK_MENUITEM_MAGIC(menu_as_item, -1);
+    if (menu_as_item->common.type != SDL_MENUITEM_SUBMENU && menu_as_item->common.type != SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("Can't get child items on Menu Item that isn't a Menu or MenuBar.");
+        return false;
+    }
+
+    SDL_Menu_CommonData *menu = (SDL_Menu_CommonData *)menu_as_item;
+    return menu->num_children;
+}
+
+SDL_MenuItem *SDL_GetMenuChildItem(SDL_MenuItem *menu_as_item, size_t index)
+{
+    CHECK_MENUITEM_MAGIC(menu_as_item, NULL);
+    if (menu_as_item->common.type != SDL_MENUITEM_SUBMENU && menu_as_item->common.type != SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("Can't get child items on Menu Item that isn't a Menu or MenuBar.");
+        return false;
+    }
+
+    SDL_MenuItem *it = menu_as_item->menu_common.children;
+    size_t i = 0;
+    while (it != NULL && i < index) {
+        it = it->common.next;
+        ++i;
+    }
+
+    if (it == NULL) {
+        SDL_SetError("SDL_MenuItem index out of range.");
+        return NULL;
+    }
+
+    return (SDL_MenuItem *)it;
+}
+
+const char *SDL_GetMenuItemLabel(SDL_MenuItem *menu_item)
+{
+    CHECK_MENUITEM_MAGIC(menu_item, NULL);
+
+    if (menu_item->common.menu_bar->app_menu == menu_item ||
+        menu_item->common.type == SDL_MENUITEM_MENUBAR) {
+        return "";
+    }
+
+    return menu_item->common.label;
+}
+
+bool SDL_SetMenuItemLabel(SDL_MenuItem *menu_item, const char *label)
+{
+    CHECK_MENUITEM_MAGIC(menu_item, false);
+
+    if (menu_item->common.menu_bar->app_menu == menu_item) {
+        SDL_SetError("Cannot set a label on an app menu.");
+        return false;
+    }
+
+    if (menu_item->common.type == SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("Cannot set a label on an SDL_MENUITEM_MENUBAR.");
+        return false;
+    }
+
+    if (_this->SetMenuItemLabel(menu_item, label)) {
+        if (menu_item->common.label) {
+            SDL_free((void*)menu_item->common.label);
+        }
+
+        menu_item->common.label = SDL_strdup(label);
+        return true;
+    }
+
+    return false;
+}
+
+SDL_MenuItemType SDL_GetMenuItemType(SDL_MenuItem *menu_item)
+{
+    CHECK_MENUITEM_MAGIC(menu_item, SDL_MENUITEM_INVALID);
+    return menu_item->common.type;
+}
+
+Sint32 SDL_GetMenuItemEventType(SDL_MenuItem *menu_item)
+{
+    CHECK_MENUITEM_MAGIC(menu_item, -1);
+
+    if (menu_item->common.type == SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("menu_item can't be a SDL_MENUITEM_MENUBAR.");
+        return -1;
+    }
+
+    return menu_item->common.event_type;
+}
+
+bool SDL_GetMenuItemChecked(SDL_MenuItem *menu_item, bool *checked)
+{
+    CHECK_MENUITEM_MAGIC(menu_item, false);
+    if (menu_item->common.type != SDL_MENUITEM_CHECKABLE) {
+        SDL_SetError("menu_item isn't a checkable.");
+        return false;
+    }
+
+    return menu_item->checkable.is_checked;
+}
+
+bool SDL_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked)
+{
+    CHECK_MENUITEM_MAGIC(menu_item, false);
+    if (menu_item->common.type != SDL_MENUITEM_CHECKABLE) {
+        SDL_SetError("menu_item isn't a SDL_MENUITEM_CHECKABLE.");
+        return false;
+    }
+
+    if (!_this->SetMenuItemChecked(menu_item, checked)) {
+        return false;
+    }
+
+    menu_item->checkable.is_checked = checked;
+
+    return true;
+}
+
+bool SDL_GetMenuItemEnabled(SDL_MenuItem *menu_item, bool *enabled)
+{
+    CHECK_MENUITEM_MAGIC(menu_item, false);
+    return menu_item->common.enabled;
+}
+
+bool SDL_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled)
+{
+    CHECK_MENUITEM_MAGIC(menu_item, false);
+    if (menu_item->common.type == SDL_MENUITEM_MENUBAR) {
+        SDL_SetError("A SDL_MENUITEM_MENUBAR can't be disabled.");
+        return false;
+    }
+
+    if (!_this->SetMenuItemEnabled(menu_item, enabled)) {
+        return false;
+    }
+
+    menu_item->common.enabled = enabled;
+
+    return true;
+}
+
+bool SDL_DestroyMenuItem(SDL_MenuItem *menu_item)
+{
+    if (menu_item->common.type == SDL_MENUITEM_SUBMENU || menu_item->common.type == SDL_MENUITEM_MENUBAR) {
+        if (menu_item->common.type == SDL_MENUITEM_MENUBAR) {
+            SDL_SetObjectValid(menu_item, SDL_OBJECT_TYPE_MENUBAR, false);
+            --_this->num_menu_bars;
+        }
+
+        SDL_MenuItem *current = menu_item->menu_common.children;
+        SDL_MenuItem *next = current->common.next;
+        while (current) {
+            if (!SDL_DestroyMenuItem(current)) {
+                SDL_SetError("Failed to destroy Child Menu Item");
+                return false;
+            }
+
+            current = next;
+
+            if (current) {
+                next = current->common.next;
+            }
+        }
+    }
+
+    // App Menus cannot be destroyed by the user, only their children can, so we can exit out here.
+    if (menu_item == menu_item->common.menu_bar->app_menu) {
+        return true;
+    }
+
+    if (!_this->DestroyMenuItem(menu_item)) {
+        SDL_SetError("Failed to destroy Menu Item");
+        return false;
+    }
+
+    if (menu_item->common.prev) {
+        menu_item->common.prev->common.next = menu_item->common.next;
+    }
+
+    if (menu_item->common.next) {
+        menu_item->common.next->common.prev = menu_item->common.prev;
+    }
+
+    if (menu_item->common.parent && (menu_item->common.parent->menu_common.children == menu_item)) {
+        menu_item->common.parent->menu_common.children = menu_item->common.next;
+        --menu_item->common.parent->menu_common.num_children;
+    }
+
+    menu_item->common.prev = NULL;
+    menu_item->common.next = NULL;
+
+    SDL_free(menu_item);
+    return true;
 }
 
 #define NOT_A_VULKAN_WINDOW "The specified window isn't a Vulkan window"

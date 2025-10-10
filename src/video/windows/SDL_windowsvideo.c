@@ -359,7 +359,16 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->ShowWindowSystemMenu = WIN_ShowWindowSystemMenu;
     device->SetWindowFocusable = WIN_SetWindowFocusable;
     device->UpdateWindowShape = WIN_UpdateWindowShape;
+    
+    device->CreateMenuBar = Win32_CreateMenuBar;
+    device->SetWindowMenuBar = Win32_SetWindowMenuBar;
+    device->CreateMenuItemAt = Win32_CreateMenuItemAt;
+    device->SetMenuItemLabel = Win32_SetMenuItemLabel;
+    device->SetMenuItemChecked = Win32_SetMenuItemChecked;
+    device->SetMenuItemEnabled = Win32_SetMenuItemEnabled;
+    device->DestroyMenuItem = Win32_DestroyMenuItem;
 #endif
+
 
 #ifdef SDL_VIDEO_OPENGL_WGL
     device->GL_LoadLibrary = WIN_GL_LoadLibrary;
@@ -876,6 +885,190 @@ bool WIN_IsPerMonitorV2DPIAware(SDL_VideoDevice *_this)
     }
 #endif
     return false;
+}
+
+#define SDL_WIN32_INVALID_MENU_ID 65535
+
+static PlatformMenuData *CreatePlatformMenuData(HMENU owner_handle, UINT_PTR self_handle)
+{
+    PlatformMenuData *platform = SDL_calloc(1, sizeof(PlatformMenuData));
+
+    platform->owner_handle = owner_handle;
+    platform->self_handle = self_handle;
+
+    return platform;
+}
+
+bool Win32_CreateMenuBar(SDL_MenuBar *menu_bar)
+{
+    HMENU menu_handle = CreateMenu();
+
+    if (!menu_handle) {
+        WIN_SetError("Unable to create MenuBar");
+        return false;
+    }
+
+    menu_bar->common.item_common.platform_data = (void*)CreatePlatformMenuData(NULL, (UINT_PTR)menu_handle);
+
+    if (!menu_bar->common.item_common.platform_data) {
+        DestroyMenu(menu_handle);
+        return false;
+    }
+
+    return true;
+}
+
+bool Win32_SetWindowMenuBar(SDL_Window *window, SDL_MenuBar *menu_bar)
+{
+    if (!menu_bar) {
+        const SDL_WindowData *data = window->internal;
+
+        if (!SetMenu(data->hwnd, (HMENU)NULL)) {
+            WIN_SetError("Unable to unset MenuBar");
+            return false;
+        }
+        
+        return true;
+    }
+
+    const PlatformMenuData *menu_platform_data = (PlatformMenuData *)menu_bar->common.item_common.platform_data;
+    const SDL_WindowData *data = menu_bar->common.item_common.menu_bar->window->internal;
+     
+    if (!SetMenu(data->hwnd, (HMENU)menu_platform_data->self_handle)) {
+        WIN_SetError("Unable to set MenuBar");
+        return false;
+    }
+
+    return true;
+}
+
+bool Win32_CreateMenuItemAt(SDL_MenuItem *menu_item, size_t index, const char *label, Uint16 event_type)
+{
+    SDL_Menu_CommonData *parent = (SDL_Menu_CommonData *)menu_item->common.parent;
+    PlatformMenuData *menu_platform_data = (PlatformMenuData *)menu_item->common.parent->common.platform_data;
+    PlatformMenuData *platform_data = CreatePlatformMenuData((HMENU)menu_platform_data->self_handle, menu_item->common.type);
+    menu_item->common.platform_data = (void *)platform_data;
+    platform_data->user_event_type = event_type;
+    UINT flags = 0;
+    bool top_level_menu = menu_item->common.parent->common.type == SDL_MENUITEM_MENUBAR;
+
+    if (!top_level_menu) {
+        flags = MF_STRING;
+    }
+
+    if (menu_item->common.type == SDL_MENUITEM_SUBMENU) {
+        if (top_level_menu) {
+            platform_data->self_handle = (UINT_PTR)CreateMenu();
+        } else {
+            platform_data->self_handle = (UINT_PTR)CreatePopupMenu();
+        }
+
+        if (!platform_data->self_handle) {
+            SDL_free(platform_data);
+            return WIN_SetError("Unable to create Menu.");
+        }
+
+        flags |= MF_POPUP;
+    } else {
+        if (top_level_menu) {
+            flags |= MF_STRING;
+        }
+
+        flags |= MF_BYPOSITION;
+
+        platform_data->self_handle = (UINT_PTR)event_type;
+    }
+
+    UINT win_index = (UINT)index;
+
+    // To add items at the back, we need to set the index to -1, despite it being unsigned.
+    if ((Sint64)index == parent->num_children) {
+        win_index = (UINT)-1;
+    }
+
+    wchar_t* label_w = WIN_UTF8ToStringW(label);
+
+    if (!InsertMenuW((HMENU)menu_platform_data->self_handle, win_index, flags, platform_data->self_handle, label_w)) {
+        SDL_free(label_w);
+        return WIN_SetError("Unable to append item to Menu.");
+    }
+
+    SDL_free(label_w);
+
+    if (menu_item->common.menu_bar->window) {
+        const SDL_WindowData *data = menu_item->common.menu_bar->window->internal;
+
+        if (!DrawMenuBar(data->hwnd)) {
+            return WIN_SetError("Unable to draw menu bar");
+        }
+    }
+
+    return menu_item;
+}
+
+bool Win32_SetMenuItemLabel(SDL_MenuItem* menu_item, const char* label)
+{
+    PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
+    Uint32 i = SDL_GetIndexInMenu(menu_item);
+
+    
+    wchar_t *label_w = WIN_UTF8ToStringW(label);
+
+    MENUITEMINFOW info;
+    SDL_zero(info);
+    info.cbSize = sizeof(MENUITEMINFOW);
+    info.fMask = MIIM_STRING;
+    info.dwTypeData = label_w;
+    bool success = SetMenuItemInfoW(platform_data->owner_handle, i, true, &info);
+    
+    SDL_free(label_w);
+    return success;
+}
+
+bool Win32_SetMenuItemChecked(SDL_MenuItem *menu_item, bool checked)
+{
+    PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
+    Uint32 i = SDL_GetIndexInMenu(menu_item);
+
+    UINT32 flag = checked ? MF_CHECKED : MF_UNCHECKED;
+
+    if (CheckMenuItem(platform_data->owner_handle, i, MF_BYPOSITION | flag) == -1) {
+        return WIN_SetError("Unable to check menu item.");
+    }
+
+    return true;
+}
+
+bool Win32_SetMenuItemEnabled(SDL_MenuItem *menu_item, bool enabled)
+{
+    PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
+    Uint32 i = SDL_GetIndexInMenu(menu_item);
+
+    UINT32 flag = enabled ? MF_ENABLED : MF_GRAYED;
+
+    if (EnableMenuItem(platform_data->owner_handle, i, MF_BYPOSITION | flag) == -1) {
+        return WIN_SetError("Unable to enable menu item.");
+    }
+
+    return true;
+}
+
+bool Win32_DestroyMenuItem(SDL_MenuItem *menu_item)
+{
+    PlatformMenuData *platform_data = (PlatformMenuData *)menu_item->common.platform_data;
+    Uint32 i = SDL_GetIndexInMenu(menu_item);
+
+    if (menu_item->common.type == SDL_MENUITEM_MENUBAR) {
+        if (!DestroyMenu((HMENU)platform_data->self_handle)) {
+            return WIN_SetError("Unable to remove menu item.");
+        }
+    } else {
+        DeleteMenu((HMENU)platform_data->owner_handle, i, MF_BYPOSITION);
+    }
+
+    SDL_free(menu_item->common.platform_data);
+    menu_item->common.platform_data = NULL;
+    return true;
 }
 
 #endif // SDL_VIDEO_DRIVER_WINDOWS
