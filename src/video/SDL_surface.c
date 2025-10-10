@@ -1475,7 +1475,7 @@ bool SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, fl
     CHECK_PARAM((src->flags & SDL_SURFACE_LOCKED) || (dst->flags & SDL_SURFACE_LOCKED)) {
         return SDL_SetError("Surfaces must not be locked during blit");
     }
-    CHECK_PARAM(scale <= 0.0f) {
+    CHECK_PARAM(scale < 0.0f) {
         return SDL_InvalidParamError("scale");
     }
 
@@ -1521,8 +1521,12 @@ bool SDL_BlitSurfaceTiledWithScale(SDL_Surface *src, const SDL_Rect *srcrect, fl
         SDL_InvalidateMap(&src->map);
     }
 
-    int tile_width = (int)(r_src.w * scale);
-    int tile_height = (int)(r_src.h * scale);
+    int tile_width = (int)SDL_roundf(r_src.w * scale);
+    int tile_height = (int)SDL_roundf(r_src.h * scale);
+    if (tile_width <= 0 || tile_height <= 0) {
+        // Nothing to do
+        return true;
+    }
     int rows = r_dst.h / tile_height;
     int cols = r_dst.w / tile_width;
     int remaining_dst_w = (r_dst.w - cols * tile_width);

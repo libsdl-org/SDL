@@ -442,6 +442,13 @@ static int SDLCALL surface_testBlitTiled(void *arg)
         SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
     }
 
+    /* Tiled blit - very small scale */
+    {
+        float tiny_scale = 0.01f;
+        ret = SDL_BlitSurfaceTiledWithScale(face, NULL, tiny_scale, SDL_SCALEMODE_NEAREST, testSurface, NULL);
+        SDLTest_AssertCheck(ret == true, "Expected SDL_BlitSurfaceTiledWithScale to succeed with very small scale: %f, got: %i", tiny_scale, ret);
+    }
+
     /* Clean up. */
     SDL_DestroySurface(face);
     SDL_DestroySurface(testSurface2x);
