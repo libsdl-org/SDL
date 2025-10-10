@@ -93,6 +93,13 @@
 #define SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED    "required"
 
 
+#if !defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_ANDROID)
+/* The dlopen note functionality isn't used on this platform */
+#ifndef SDL_DISABLE_DLOPEN_NOTES
+#define SDL_DISABLE_DLOPEN_NOTES
+#endif
+#endif /* SDL_PLATFORM_UNIX || SDL_PLATFORM_ANDROID */
+
 #if defined(__ELF__) && !defined(SDL_DISABLE_DLOPEN_NOTES)
 
 #include <SDL3/SDL_stdinc.h>
