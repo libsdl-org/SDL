@@ -28,8 +28,8 @@
  * dynamic shared library dependencies.
  *
  * If you determine that your toolchain doesn't support dlopen notes, you can
- * disable this feature by defining `SDL_DISABLE_DLOPEN_NOTES`. You can use this
- * CMake snippet to check for support:
+ * disable this feature by defining `SDL_DISABLE_DLOPEN_NOTES`. You can use
+ * this CMake snippet to check for support:
  *
  * ```cmake
  *  set(CHECK_ELF_DLNOTES_SRC [==[
@@ -54,9 +54,11 @@
 #define SDL_dlopennote_h
 
 /**
- * Use this macro with SDL_ELF_NOTE_DLOPEN() to note that a dynamic shared library dependency is optional.
+ * Use this macro with SDL_ELF_NOTE_DLOPEN() to note that a dynamic shared
+ * library dependency is optional.
  *
- * Optional functionality uses the dependency, the binary will work and the dependency is only needed for full-featured installations.
+ * Optional functionality uses the dependency, the binary will work and the
+ * dependency is only needed for full-featured installations.
  *
  * \since This macro is available since SDL 3.4.0.
  *
@@ -67,9 +69,11 @@
 #define SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED   "suggested"
 
 /**
- * Use this macro with SDL_ELF_NOTE_DLOPEN() to note that a dynamic shared library dependency is recommended.
+ * Use this macro with SDL_ELF_NOTE_DLOPEN() to note that a dynamic shared
+ * library dependency is recommended.
  *
- * Important functionality needs the dependency, the binary will work but in most cases the dependency should be provided.
+ * Important functionality needs the dependency, the binary will work but in
+ * most cases the dependency should be provided.
  *
  * \since This macro is available since SDL 3.4.0.
  *
@@ -80,9 +84,11 @@
 #define SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED "recommended"
 
 /**
- * Use this macro with SDL_ELF_NOTE_DLOPEN() to note that a dynamic shared library dependency is required.
+ * Use this macro with SDL_ELF_NOTE_DLOPEN() to note that a dynamic shared
+ * library dependency is required.
  *
- * Core functionality needs the dependency, the binary will not work if it cannot be found.
+ * Core functionality needs the dependency, the binary will not work if it
+ * cannot be found.
  *
  * \since This macro is available since SDL 3.4.0.
  *
@@ -173,6 +179,7 @@
  * ```
  *
  * Or if you support multiple versions of a library, you can list them:
+ *
  * ```c
  * // Our app supports SDL1, SDL2, and SDL3 by dynamically loading them
  * SDL_ELF_NOTE_DLOPEN(
