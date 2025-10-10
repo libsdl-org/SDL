@@ -1044,6 +1044,14 @@ int main(int argc, char *argv[])
                     ToggleSettings(ctx);
                 } else if (ctx->settings_visible) {
                     ClickSettings(ctx, point.x, point.y);
+                } else {
+                    if (SDL_TextInputActive(ctx->window)) {
+                        SDL_Log("Disabling text input\n");
+                        SDL_StopTextInput(ctx->window);
+                    } else {
+                        SDL_Log("Enabling text input\n");
+                        SDL_StartTextInput(ctx->window);
+                    }
                 }
                 break;
             }
