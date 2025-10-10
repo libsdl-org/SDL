@@ -1298,3 +1298,4 @@ SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadPNG_IO,(SDL_IOStream *a,bool b),(a,b),retur
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadPNG,(const char *a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_SavePNG_IO,(SDL_Surface *a,SDL_IOStream *b,bool c),(a,b,c),return)
 SDL_DYNAPI_PROC(bool,SDL_SavePNG,(SDL_Surface *a,const char *b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetSystemPageSize,(void),(),return)
