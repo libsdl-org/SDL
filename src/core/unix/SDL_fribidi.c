@@ -23,7 +23,6 @@
 #ifdef HAVE_FRIBIDI_H
 
 #include "SDL_fribidi.h"
-#include <fribidi.h>
 
 #ifdef SDL_FRIBIDI_DYNAMIC
 SDL_ELF_NOTE_DLOPEN(
@@ -34,7 +33,8 @@ SDL_ELF_NOTE_DLOPEN(
 );
 #endif
 
-SDL_FriBidi *SDL_FriBidi_Create(void) {
+SDL_FriBidi *SDL_FriBidi_Create(void)
+{
     SDL_FriBidi *fribidi;
 
     fribidi = (SDL_FriBidi *)SDL_malloc(sizeof(SDL_FriBidi));
@@ -75,7 +75,8 @@ SDL_FriBidi *SDL_FriBidi_Create(void) {
     return fribidi;
 }
 
-char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bool shaping, FriBidiParType *out_par_type) {
+char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bool shaping, FriBidiParType *out_par_type)
+{
     FriBidiCharType *types;
     FriBidiLevel *levels;
     FriBidiArabicProp *props;
@@ -154,7 +155,8 @@ char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bo
     return result;
 }
 
-void SDL_FriBidi_Destroy(SDL_FriBidi *fribidi) {
+void SDL_FriBidi_Destroy(SDL_FriBidi *fribidi)
+{
     if (!fribidi) {
         return;
     }

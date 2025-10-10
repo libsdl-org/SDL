@@ -22,6 +22,7 @@
 #include "SDL_internal.h"
 
 #ifdef HAVE_FRIBIDI_H
+#include <sys/types.h> // for ssize_t
 #include <fribidi.h>
 
 #ifndef SDL_fribidi_h_
