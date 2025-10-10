@@ -7916,6 +7916,22 @@ const char* lodepng_error_text(unsigned code) {
 
 #endif
 
+SDL_Surface *SDL_LoadPNG_IO(SDL_IOStream *src, bool closeio)
+{
+    SDL_SetError("stub :(");
+    return NULL;
+}
+
+SDL_Surface *SDL_LoadPNG(const char *file)
+{
+    SDL_IOStream *stream = SDL_IOFromFile(file, "rb");
+    if (!stream) {
+        return NULL;
+    }
+
+    return SDL_LoadPNG_IO(stream, true);
+}
+
 bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
 {
 	unsigned char *png;
