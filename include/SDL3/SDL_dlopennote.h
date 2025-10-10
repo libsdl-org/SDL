@@ -204,7 +204,7 @@
         "\",\"soname\":" SDL_SONAME_ARRAY(__VA_ARGS__) "}]",     \
         SDL_ELF_NOTE_UNIQUE_NAME)
 
-#elif defined (__GNUC__) && __GNUC__ < 3
+#elif (defined (__GNUC__) && __GNUC__ < 3) || (defined(_MSC_VER) && (_MSC_VER < 1400))
 
 /* Variadic macros are not supported */
 #define SDL_ELF_NOTE_DLOPEN
