@@ -11207,10 +11207,11 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
     appInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
     const char *hint = SDL_GetHint(SDL_HINT_VULKAN_REQUEST_API_VERSION);
     if (hint) {
+        char *text = SDL_strdup(hint);
         int numFound = 0;
         int version[3] = { 0, 0, 0 };
         char *saveptr = NULL;
-        char *token = SDL_strtok_r(hint, "_", &saveptr);
+        char *token = SDL_strtok_r(text, "_", &saveptr);
         while (token != NULL && numFound < 3) {
             version[numFound] = SDL_atoi(token);
             numFound++;
@@ -11218,6 +11219,7 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
         }
 
         appInfo.apiVersion = VK_MAKE_VERSION(version[0], version[1], version[2]);
+        SDL_free(text);
     }
 
     createFlags = 0;
