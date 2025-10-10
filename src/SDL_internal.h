@@ -192,9 +192,14 @@
 #define SDL_VIDEO_RENDER_SW 1
 #endif
 
-/* STB image conversion */
-#if !defined(SDL_HAVE_STB) && !defined(SDL_LEAN_AND_MEAN)
-#define SDL_HAVE_STB 1
+/* JPEG decoding */
+#if !defined(SDL_HAVE_NANOJPEG) && !defined(SDL_LEAN_AND_MEAN)
+#define SDL_HAVE_NANOJPEG 1
+#endif
+
+/* PNG codec */
+#if !defined(SDL_HAVE_LODEPNG) && !defined(SDL_LEAN_AND_MEAN)
+#define SDL_HAVE_LODEPNG 1
 #endif
 
 /* YUV formats

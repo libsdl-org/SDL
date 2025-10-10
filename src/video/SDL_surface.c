@@ -24,7 +24,7 @@
 #include "SDL_video_c.h"
 #include "SDL_RLEaccel_c.h"
 #include "SDL_pixels_c.h"
-#include "SDL_stb_c.h"
+#include "SDL_nanojpeg.h"
 #include "SDL_yuv_c.h"
 #include "../render/SDL_sysrender.h"
 
@@ -2329,7 +2329,7 @@ bool SDL_ConvertPixelsAndColorspace(int width, int height,
     }
 
     if (src_format == SDL_PIXELFORMAT_MJPG) {
-        return SDL_ConvertPixels_STB(width, height, src_format, src_colorspace, src_properties, src, src_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch);
+        return SDL_ConvertPixels_JPEG(width, height, src_format, src_colorspace, src_properties, src, src_pitch, dst_format, dst_colorspace, dst_properties, dst, dst_pitch);
     }
 
 #ifdef SDL_HAVE_YUV
