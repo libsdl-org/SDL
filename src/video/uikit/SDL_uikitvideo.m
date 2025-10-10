@@ -101,7 +101,6 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->StartTextInput = UIKit_StartTextInput;
         device->StopTextInput = UIKit_StopTextInput;
         device->SetTextInputProperties = UIKit_SetTextInputProperties;
-        device->IsScreenKeyboardShown = UIKit_IsScreenKeyboardShown;
         device->UpdateTextInputArea = UIKit_UpdateTextInputArea;
 #endif
 

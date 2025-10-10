@@ -215,7 +215,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected static SDLActivity mSingleton;
     protected static SDLSurface mSurface;
     protected static SDLDummyEdit mTextEdit;
-    protected static boolean mScreenKeyboardShown;
     protected static ViewGroup mLayout;
     protected static SDLClipboardHandler mClipboardHandler;
     protected static Hashtable<Integer, PointerIcon> mCursors;
@@ -951,7 +950,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(mTextEdit.getWindowToken(), 0);
 
-                    mScreenKeyboardShown = false;
+                    onNativeScreenKeyboardHidden();
 
                     mSurface.requestFocus();
                 }
@@ -1070,6 +1069,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void onNativeSurfaceCreated();
     public static native void onNativeSurfaceChanged();
     public static native void onNativeSurfaceDestroyed();
+    public static native void onNativeScreenKeyboardShown();
+    public static native void onNativeScreenKeyboardHidden();
     public static native String nativeGetHint(String name);
     public static native boolean nativeGetHintBoolean(String name, boolean default_value);
     public static native void nativeSetenv(String name, String value);
@@ -1203,24 +1204,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean shouldMinimizeOnFocusLoss() {
         return false;
-    }
-
-    /**
-     * This method is called by SDL using JNI.
-     */
-    public static boolean isScreenKeyboardShown()
-    {
-        if (mTextEdit == null) {
-            return false;
-        }
-
-        if (!mScreenKeyboardShown) {
-            return false;
-        }
-
-        InputMethodManager imm = (InputMethodManager)getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        return imm.isAcceptingText();
-
     }
 
     /**
@@ -1442,7 +1425,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(mTextEdit, 0);
 
-            mScreenKeyboardShown = true;
+            if (imm.isAcceptingText()) {
+                onNativeScreenKeyboardShown();
+            }
         }
     }
 

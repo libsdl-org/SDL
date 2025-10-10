@@ -1272,20 +1272,14 @@ static void OPENVR_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window
     videodata->oOverlay->ShowKeyboardForOverlay(videodata->overlayID,
            input_mode, line_mode,
            EKeyboardFlags_KeyboardFlag_Minimal, "Virtual Keyboard", 128, "", 0);
-    videodata->bKeyboardShown = true;
+    SDL_SendScreenKeyboardShown();
 }
 
 static void OPENVR_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
     videodata->oOverlay->HideKeyboard();
-    videodata->bKeyboardShown = false;
-}
-
-static bool OPENVR_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
-    return videodata->bKeyboardShown;
+    SDL_SendScreenKeyboardHidden();
 }
 
 static SDL_Cursor *OPENVR_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
@@ -1662,7 +1656,6 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
     device->HasScreenKeyboardSupport = OPENVR_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = OPENVR_ShowScreenKeyboard;
     device->HideScreenKeyboard = OPENVR_HideScreenKeyboard;
-    device->IsScreenKeyboardShown = OPENVR_IsScreenKeyboardShown;
     device->SetWindowIcon = OPENVR_SetWindowIcon;
 
     return device;

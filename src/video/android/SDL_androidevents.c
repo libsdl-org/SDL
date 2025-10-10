@@ -156,11 +156,6 @@ static void Android_OnResume(void)
     }
 #endif
 
-    // Make sure SW Keyboard is restored when an app becomes foreground
-    if (Android_Window) {
-        Android_RestoreScreenKeyboardOnResume(SDL_GetVideoDevice(), Android_Window);
-    }
-
     SDL_OnApplicationDidEnterForeground();
 }
 
