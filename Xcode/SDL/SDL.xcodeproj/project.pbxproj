@@ -54,6 +54,7 @@
 		00CFA89D106B4BA100758660 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFA89C106B4BA100758660 /* ForceFeedback.framework */; platformFilters = (macos, ); };
 		00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D08310675DD9004B05EF /* CoreFoundation.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Required, ); }; };
 		00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007317C10858E15000B2BC32 /* Carbon.framework */; platformFilters = (macos, ); };
+		02D6A1C228A84B8F00A7F002 /* SDL_hidapi_sinput.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D6A1C128A84B8F00A7F001 /* SDL_hidapi_sinput.c */; };
 		1485C3312BBA4AF30063985B /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1485C32F2BBA4A0C0063985B /* UniformTypeIdentifiers.framework */; platformFilters = (maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		557D0CFA254586CA003913E3 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		557D0CFB254586D7003913E3 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDABD23E28B6200529352 /* GameController.framework */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -77,7 +78,6 @@
 		89E580242D03606400DAF6D3 /* SDL_hidapihaptic_lg4ff.c in Sources */ = {isa = PBXBuildFile; fileRef = 89E580212D03606400DAF6D3 /* SDL_hidapihaptic_lg4ff.c */; };
 		89E580252D03606400DAF6D3 /* SDL_hidapihaptic_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 89E580202D03606400DAF6D3 /* SDL_hidapihaptic_c.h */; };
 		9846B07C287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */ = {isa = PBXBuildFile; fileRef = 9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */; };
-		02D6A1C228A84B8F00A7F002 /* SDL_hidapi_sinput.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D6A1C128A84B8F00A7F001 /* SDL_hidapi_sinput.c */; };
 		A1626A3E2617006A003F1973 /* SDL_triangle.c in Sources */ = {isa = PBXBuildFile; fileRef = A1626A3D2617006A003F1973 /* SDL_triangle.c */; };
 		A1626A522617008D003F1973 /* SDL_triangle.h in Headers */ = {isa = PBXBuildFile; fileRef = A1626A512617008C003F1973 /* SDL_triangle.h */; };
 		A1BB8B6327F6CF330057CFA8 /* SDL_list.c in Sources */ = {isa = PBXBuildFile; fileRef = A1BB8B6127F6CF320057CFA8 /* SDL_list.c */; };
@@ -417,6 +417,7 @@
 		F386F6F02884663E001840AA /* SDL_utils_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F386F6E52884663E001840AA /* SDL_utils_c.h */; };
 		F386F6F92884663E001840AA /* SDL_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = F386F6E62884663E001840AA /* SDL_utils.c */; };
 		F388C95528B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
+		F39344CE2E99771B0056986F /* SDL_dlopennote.h in Headers */ = {isa = PBXBuildFile; fileRef = F39344CD2E99771B0056986F /* SDL_dlopennote.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F395BF6525633B2400942BFF /* SDL_crc32.c in Sources */ = {isa = PBXBuildFile; fileRef = F395BF6425633B2400942BFF /* SDL_crc32.c */; };
 		F395C1932569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F395C1912569C68E00942BFF /* SDL_iokitjoystick_c.h */; };
 		F395C19C2569C68F00942BFF /* SDL_iokitjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = F395C1922569C68E00942BFF /* SDL_iokitjoystick.c */; };
@@ -605,6 +606,7 @@
 		007317C10858E15000B2BC32 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		00CFA89C106B4BA100758660 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForceFeedback.framework; path = System/Library/Frameworks/ForceFeedback.framework; sourceTree = SDKROOT; };
 		00D0D08310675DD9004B05EF /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		02D6A1C128A84B8F00A7F001 /* SDL_hidapi_sinput.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_sinput.c; sourceTree = "<group>"; };
 		1485C32F2BBA4A0C0063985B /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		5616CA49252BB2A5005D5928 /* SDL_url.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_url.c; sourceTree = "<group>"; };
 		5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysurl.h; sourceTree = "<group>"; };
@@ -626,7 +628,6 @@
 		89E580202D03606400DAF6D3 /* SDL_hidapihaptic_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_hidapihaptic_c.h; sourceTree = "<group>"; };
 		89E580212D03606400DAF6D3 /* SDL_hidapihaptic_lg4ff.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapihaptic_lg4ff.c; sourceTree = "<group>"; };
 		9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_shield.c; sourceTree = "<group>"; };
-		02D6A1C128A84B8F00A7F001 /* SDL_hidapi_sinput.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_sinput.c; sourceTree = "<group>"; };
 		A1626A3D2617006A003F1973 /* SDL_triangle.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_triangle.c; sourceTree = "<group>"; };
 		A1626A512617008C003F1973 /* SDL_triangle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_triangle.h; sourceTree = "<group>"; };
 		A1BB8B6127F6CF320057CFA8 /* SDL_list.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_list.c; sourceTree = "<group>"; };
@@ -1000,6 +1001,7 @@
 		F386F6E52884663E001840AA /* SDL_utils_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_utils_c.h; sourceTree = "<group>"; };
 		F386F6E62884663E001840AA /* SDL_utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_utils.c; sourceTree = "<group>"; };
 		F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps3.c; sourceTree = "<group>"; };
+		F39344CD2E99771B0056986F /* SDL_dlopennote.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_dlopennote.h; sourceTree = "<group>"; };
 		F395BF6425633B2400942BFF /* SDL_crc32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_crc32.c; sourceTree = "<group>"; };
 		F395C1912569C68E00942BFF /* SDL_iokitjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_iokitjoystick_c.h; sourceTree = "<group>"; };
 		F395C1922569C68E00942BFF /* SDL_iokitjoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_iokitjoystick.c; sourceTree = "<group>"; };
@@ -1267,6 +1269,7 @@
 				F3D46A8B2D20625800D9CBDF /* SDL_copying.h */,
 				F3D46A8C2D20625800D9CBDF /* SDL_cpuinfo.h */,
 				F3D46A8D2D20625800D9CBDF /* SDL_dialog.h */,
+				F39344CD2E99771B0056986F /* SDL_dlopennote.h */,
 				F3D46A8E2D20625800D9CBDF /* SDL_egl.h */,
 				F3D46A8F2D20625800D9CBDF /* SDL_endian.h */,
 				F3D46A902D20625800D9CBDF /* SDL_error.h */,
@@ -2757,6 +2760,7 @@
 				A7D8B28A23E2514200DCD162 /* vulkan_xlib_xrandr.h in Headers */,
 				A7D8B3D423E2514300DCD162 /* yuv_rgb.h in Headers */,
 				F3FA5A252B59ACE000FEAD97 /* yuv_rgb_common.h in Headers */,
+				F39344CE2E99771B0056986F /* SDL_dlopennote.h in Headers */,
 				F3FA5A1D2B59ACE000FEAD97 /* yuv_rgb_internal.h in Headers */,
 				F3D8BDFC2D6D2C7000B22FA1 /* SDL_eventwatch_c.h in Headers */,
 				F3DC38C92E5FC60300CD73DE /* SDL_libusb.h in Headers */,

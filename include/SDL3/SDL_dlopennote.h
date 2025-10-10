@@ -19,14 +19,83 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef SDL_dynapi_dlopennote_h
-#define SDL_dynapi_dlopennote_h
+/* WIKI CATEGORY: DlopenNotes */
 
-#define SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED    "required"
-#define SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED "recommended"
+/**
+ * # CategoryDlopenNotes
+ *
+ * This header allows you to annotate your code so external tools know about
+ * dynamic shared library dependencies.
+ *
+ * If you determine that your toolchain doesn't support dlopen notes, you can
+ * disable this feature by defining `SDL_DISABLE_DLOPEN_NOTES`. You can use this
+ * CMake snippet to check for support:
+ *
+ * ```cmake
+ *  set(CHECK_ELF_DLNOTES_SRC [==[
+ *  #ifndef __ELF__
+ *    ELF DL notes is only supported on ELF platforms
+ *  #endif
+ *  __attribute__ ((used,aligned(4),section(".note.dlopen"))) static const struct {
+ *    struct { int a; int b; int c; } hdr; char name[4]; __attribute__((aligned(4))) char json[24];
+ *  } dlnote = { { 4, 0x407c0c0aU, 16 }, "FDO", "[\\"a\\":{\\"a\\":\\"1\\",\\"b\\":\\"2\\"}]" };
+ *  int main(int argc, char *argv[]) {
+ *    return argc + dlnote.hdr.a;
+ *  }
+ *  ]==])
+ *  check_c_source_compiles("${CHECK_ELF_DLNOTES_SRC}" COMPILER_SUPPORTS_ELFNOTES)
+ *  if(NOT COMPILER_SUPPORTS_ELFNOTES)
+ *    set(SDL_DISABLE_DLOPEN_NOTES TRUE)
+ *  endif()
+ * ```
+ */
+
+#ifndef SDL_dlopennote_h
+#define SDL_dlopennote_h
+
+/**
+ * Use this macro with SDL_ELF_NOTE_DLOPEN() to note that a dynamic shared library dependency is optional.
+ *
+ * Optional functionality uses the dependency, the binary will work and the dependency is only needed for full-featured installations.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ *
+ * \sa SDL_ELF_NOTE_DLOPEN
+ * \sa SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED
+ * \sa SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED
+ */
 #define SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED   "suggested"
 
-#if defined(__ELF__) && defined(HAVE_DLOPEN_NOTES)
+/**
+ * Use this macro with SDL_ELF_NOTE_DLOPEN() to note that a dynamic shared library dependency is recommended.
+ *
+ * Important functionality needs the dependency, the binary will work but in most cases the dependency should be provided.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ *
+ * \sa SDL_ELF_NOTE_DLOPEN
+ * \sa SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED
+ * \sa SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED
+ */
+#define SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED "recommended"
+
+/**
+ * Use this macro with SDL_ELF_NOTE_DLOPEN() to note that a dynamic shared library dependency is required.
+ *
+ * Core functionality needs the dependency, the binary will not work if it cannot be found.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ *
+ * \sa SDL_ELF_NOTE_DLOPEN
+ * \sa SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED
+ * \sa SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED
+ */
+#define SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED    "required"
+
+
+#if defined(__ELF__) && !defined(SDL_DISABLE_DLOPEN_NOTES)
+
+#include <SDL3/SDL_stdinc.h>
 
 #define SDL_ELF_NOTE_DLOPEN_VENDOR "FDO"
 #define SDL_ELF_NOTE_DLOPEN_TYPE 0x407c0c0aU
@@ -75,12 +144,44 @@
          SDL_SONAME_ARRAY1 \
     )(__VA_ARGS__)
 
-// Create "unique" variable name using __LINE__,
-// so creating elf notes on the same line is not supported
+/* Create "unique" variable name using __LINE__,
+ * so creating elf notes on the same line is not supported
+ */
 #define SDL_ELF_NOTE_JOIN2(A,B) A##B
 #define SDL_ELF_NOTE_JOIN(A,B) SDL_ELF_NOTE_JOIN2(A,B)
-#define SDL_ELF_NOTE_UNIQUE_NAME SDL_ELF_NOTE_JOIN(s_dlopen_note_, __LINE__)
+#define SDL_ELF_NOTE_UNIQUE_NAME SDL_ELF_NOTE_JOIN(s_SDL_dlopen_note_, __LINE__)
 
+/**
+ * Note that your application has dynamic shared library dependencies.
+ *
+ * You can do this by adding the following to the global scope:
+ *
+ * ```c
+ * SDL_ELF_NOTE_DLOPEN(
+ *     "png",
+ *     "Support for loading PNG images using libpng (required for APNG)",
+ *     SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED,
+ *     "libpng12.so.0"
+ * );
+ * ```
+ *
+ * Or if you support multiple versions of a library, you can list them:
+ * ```c
+ * // Our app supports SDL1, SDL2, and SDL3 by dynamically loading them
+ * SDL_ELF_NOTE_DLOPEN(
+ *     "SDL",
+ *     "Create windows through SDL video backend",
+ *     SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED
+ *     "libSDL-1.2.so.0", "libSDL2-2.0.so.0", "libSDL3.so.0"
+ * );
+ * ```
+ *
+ * \since This macro is available since SDL 3.4.0.
+ *
+ * \sa SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED
+ * \sa SDL_ELF_NOTE_DLOPEN_PRIORITY_RECOMMENDED
+ * \sa SDL_ELF_NOTE_DLOPEN_PRIORITY_REQUIRED
+ */
 #define SDL_ELF_NOTE_DLOPEN(feature, description, priority, ...) \
     SDL_ELF_NOTE_INTERNAL(                                       \
         "[{\"feature\":\"" feature                               \
@@ -89,10 +190,9 @@
         "\",\"soname\":" SDL_SONAME_ARRAY(__VA_ARGS__) "}]",     \
         SDL_ELF_NOTE_UNIQUE_NAME)
 
-#else
+#elif defined (__GNUC__) && __GNUC__ < 3
 
-#if defined (__GNUC__) && __GNUC__ < 3
-
+/* Variadic macros are not supported */
 #define SDL_ELF_NOTE_DLOPEN
 
 #else
@@ -101,6 +201,4 @@
 
 #endif
 
-#endif
-
-#endif
+#endif /* SDL_dlopennote_h */
