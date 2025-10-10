@@ -11205,6 +11205,20 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
     appInfo.pEngineName = "SDLGPU";
     appInfo.engineVersion = SDL_VERSION;
     appInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
+    const char *hint = SDL_GetHint(SDL_HINT_VULKAN_REQUEST_API_VERSION);
+    if (hint) {
+        int numFound = 0;
+        int version[3] = { 0, 0, 0 };
+        char *saveptr = NULL;
+        char *token = SDL_strtok_r(hint, "_", &saveptr);
+        while (token != NULL && numFound < 3) {
+            version[numFound] = SDL_atoi(token);
+            numFound++;
+            token = SDL_strtok_r(NULL, "_", &saveptr);
+        }
+
+        appInfo.apiVersion = VK_MAKE_VERSION(version[0], version[1], version[2]);
+    }
 
     createFlags = 0;
 
