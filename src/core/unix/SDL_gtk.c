@@ -57,7 +57,7 @@ static void *libgtk = NULL;
 static SDL_GtkContext gtk;
 static GMainContext *sdl_main_context;
 
-gulong signal_connect(gpointer instance, const gchar *detailed_signal, void *c_handler, gpointer data)
+static gulong signal_connect(gpointer instance, const gchar *detailed_signal, void *c_handler, gpointer data)
 {
     return gtk.g.signal_connect_data(instance, detailed_signal, SDL_G_CALLBACK(c_handler), data, NULL, (SDL_GConnectFlags)0);
 }
