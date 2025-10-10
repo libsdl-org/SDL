@@ -1178,8 +1178,8 @@ extern "C" {
 #define SDL_HINT_IME_IMPLEMENTED_UI "SDL_IME_IMPLEMENTED_UI"
 
 /**
- * A variable controlling whether the home indicator bar on iPhone X should be
- * hidden.
+ * A variable controlling whether the home indicator bar on iPhone X and later
+ * should be hidden.
  *
  * The variable can be set to the following values:
  *
