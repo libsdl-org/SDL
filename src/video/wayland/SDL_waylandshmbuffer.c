@@ -114,11 +114,10 @@ static struct wl_buffer_listener buffer_listener = {
     buffer_handle_release
 };
 
-bool Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shmBuffer)
+bool Wayland_AllocSHMBuffer(int width, int height, Wayland_SHMBuffer *shmBuffer)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *data = vd->internal;
-    struct wl_shm_pool *shm_pool;
     const Uint32 SHM_FMT = WL_SHM_FORMAT_ARGB8888;
 
     if (!shmBuffer) {
@@ -142,7 +141,7 @@ bool Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shm
 
     SDL_assert(shmBuffer->shm_data != NULL);
 
-    shm_pool = wl_shm_create_pool(data->shm, shm_fd, shmBuffer->shm_data_size);
+    struct wl_shm_pool *shm_pool = wl_shm_create_pool(data->shm, shm_fd, shmBuffer->shm_data_size);
     shmBuffer->wl_buffer = wl_shm_pool_create_buffer(shm_pool, 0, width, height, stride, SHM_FMT);
     wl_buffer_add_listener(shmBuffer->wl_buffer, &buffer_listener, shmBuffer);
 
@@ -152,7 +151,7 @@ bool Wayland_AllocSHMBuffer(int width, int height, struct Wayland_SHMBuffer *shm
     return true;
 }
 
-void Wayland_ReleaseSHMBuffer(struct Wayland_SHMBuffer *shmBuffer)
+void Wayland_ReleaseSHMBuffer(Wayland_SHMBuffer *shmBuffer)
 {
     if (shmBuffer) {
         if (shmBuffer->wl_buffer) {
@@ -164,6 +163,77 @@ void Wayland_ReleaseSHMBuffer(struct Wayland_SHMBuffer *shmBuffer)
             shmBuffer->shm_data = NULL;
         }
         shmBuffer->shm_data_size = 0;
+    }
+}
+
+Wayland_SHMPool *Wayland_AllocSHMPool(int width, int height, int buffer_count)
+{
+    SDL_VideoDevice *vd = SDL_GetVideoDevice();
+    SDL_VideoData *data = vd->internal;
+    const Uint32 SHM_FMT = WL_SHM_FORMAT_ARGB8888;
+
+    if (buffer_count <= 0) {
+        SDL_InvalidParamError("count");
+        return NULL;
+    }
+
+    Wayland_SHMPool *shmPool = SDL_calloc(buffer_count, sizeof(Wayland_SHMPool) + (sizeof(Wayland_SHMBuffer) * buffer_count));
+    if (!shmPool) {
+        return NULL;
+    }
+
+    const int stride = width * 4;
+    const int element_size = stride * height;
+    const int element_offset = (element_size + 15) & (~15);
+    shmPool->internal.shm_pool_size = element_offset * buffer_count;
+    shmPool->buffer_count = buffer_count;
+
+    const int shm_fd = CreateTempFD(shmPool->internal.shm_pool_size);
+    if (shm_fd < 0) {
+        SDL_free(shmPool);
+        SDL_SetError("Creating SHM buffer failed.");
+        return NULL;
+    }
+
+    shmPool->internal.shm_pool_handle = mmap(NULL, shmPool->internal.shm_pool_size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    if (shmPool->internal.shm_pool_handle == MAP_FAILED) {
+        shmPool->internal.shm_pool_handle = NULL;
+        close(shm_fd);
+        SDL_free(shmPool);
+        SDL_SetError("mmap() failed.");
+        return NULL;
+    }
+
+    SDL_assert(shmPool->internal.shm_pool_handle != NULL);
+
+    struct wl_shm_pool *shm_pool = wl_shm_create_pool(data->shm, shm_fd, shmPool->internal.shm_pool_size);
+
+    for (size_t i = 0; i < buffer_count; i++) {
+        shmPool->buffers[i].shm_data = (Uint8 *)shmPool->internal.shm_pool_handle + (element_offset * i);
+        shmPool->buffers[i].wl_buffer = wl_shm_pool_create_buffer(shm_pool, element_offset * i, width, height, stride, SHM_FMT);
+        wl_buffer_add_listener(shmPool->buffers[i].wl_buffer, &buffer_listener, shmPool);
+    }
+
+    wl_shm_pool_destroy(shm_pool);
+    close(shm_fd);
+
+    return shmPool;
+}
+
+void Wayland_ReleaseSHMPool(Wayland_SHMPool *shmPool)
+{
+    if (shmPool) {
+        for (int i = 0; i < shmPool->buffer_count; ++i) {
+            if (shmPool->buffers[i].wl_buffer) {
+                wl_buffer_destroy(shmPool->buffers[i].wl_buffer);
+            }
+        }
+
+        if (shmPool->internal.shm_pool_handle) {
+            munmap(shmPool->internal.shm_pool_handle, shmPool->internal.shm_pool_size);
+        }
+
+        SDL_free(shmPool);
     }
 }
 

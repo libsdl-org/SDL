@@ -182,10 +182,11 @@ typedef struct SDL_WaylandSeat
             struct wl_surface *surface;
             struct wp_viewport *viewport;
 
-            // Animation state for legacy animated cursors
+            // Animation state for cursors
+            void *cursor_handle;
             struct wl_callback *frame_callback;
-            Uint64 last_frame_callback_time_ns;
-            Uint64 current_frame_time_ns;
+            Uint64 last_frame_callback_time_ms;
+            Uint32 current_frame_time_ms;
             int current_frame;
         } cursor_state;
     } pointer;

@@ -2988,14 +2988,14 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
     wind->icon_buffer_count = 0;
 
     wind->xdg_toplevel_icon_v1 = xdg_toplevel_icon_manager_v1_create_icon(_this->internal->xdg_toplevel_icon_manager_v1);
-    wind->icon_buffers = SDL_calloc(image_count, sizeof(struct Wayland_SHMBuffer));
+    wind->icon_buffers = SDL_calloc(image_count, sizeof(Wayland_SHMBuffer));
     if (!wind->icon_buffers) {
         goto failure_cleanup;
     }
 
     for (int i = 0; i < image_count; ++i) {
         if (images[i]->w == images[i]->h) {
-            struct Wayland_SHMBuffer *buffer = &wind->icon_buffers[wind->icon_buffer_count];
+            Wayland_SHMBuffer *buffer = &wind->icon_buffers[wind->icon_buffer_count];
 
             if (!Wayland_AllocSHMBuffer(images[i]->w, images[i]->h, buffer)) {
                 SDL_SetError("wayland: failed to allocate SHM buffer for the icon");
