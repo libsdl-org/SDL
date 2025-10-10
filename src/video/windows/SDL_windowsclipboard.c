@@ -28,18 +28,20 @@
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_clipboardevents_c.h"
 
-#ifdef UNICODE
-#define TEXT_FORMAT CF_UNICODETEXT
-#else
-#define TEXT_FORMAT CF_TEXT
-#endif
-
-#define IMAGE_FORMAT CF_DIB
-#define IMAGE_MIME_TYPE "image/bmp"
 #define BFT_BITMAP 0x4d42 // 'BM'
 
 // Assume we can directly read and write BMP fields without byte swapping
 SDL_COMPILE_TIME_ASSERT(verify_byte_order, SDL_BYTEORDER == SDL_LIL_ENDIAN);
+
+static UINT GetClipboardFormatPNG()
+{
+    static UINT format;
+
+    if (!format) {
+        format = RegisterClipboardFormat(TEXT("PNG"));
+    }
+    return format;
+}
 
 static BOOL WIN_OpenClipboard(SDL_VideoDevice *_this)
 {
@@ -65,7 +67,7 @@ static void WIN_CloseClipboard(void)
     CloseClipboard();
 }
 
-static HANDLE WIN_ConvertBMPtoDIB(const void *bmp, size_t bmp_size)
+static HANDLE WIN_ConvertBMPtoDIB(const void *bmp, size_t bmp_size, UINT *format)
 {
     HANDLE hMem = NULL;
 
@@ -74,6 +76,12 @@ static HANDLE WIN_ConvertBMPtoDIB(const void *bmp, size_t bmp_size)
         BITMAPINFOHEADER *pbih = (BITMAPINFOHEADER *)((Uint8 *)bmp + sizeof(BITMAPFILEHEADER));
         size_t bih_size = pbih->biSize + pbih->biClrUsed * sizeof(RGBQUAD);
         size_t pixels_size = pbih->biSizeImage;
+
+        if (pbih->biSize >= sizeof(BITMAPV5HEADER)) {
+            *format = CF_DIBV5;
+        } else {
+            *format = CF_DIB;
+        }
 
         if (pbfh->bfOffBits >= (sizeof(BITMAPFILEHEADER) + bih_size) &&
             (pbfh->bfOffBits + pixels_size) <= bmp_size) {
@@ -146,7 +154,7 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
                     pbfh->bfReserved1 = 0;
                     pbfh->bfReserved2 = 0;
                     pbfh->bfOffBits = (DWORD)(sizeof(BITMAPFILEHEADER) + pbih->biSize + color_table_size);
-                    SDL_memcpy((Uint8 *)bmp + sizeof(BITMAPFILEHEADER), dib, dib_size);
+                    SDL_memcpy((Uint8 *)bmp + sizeof(BITMAPFILEHEADER), dib, mem_size);
                     *size = bmp_size;
                 }
             } else {
@@ -162,18 +170,39 @@ static void *WIN_ConvertDIBtoBMP(HANDLE hMem, size_t *size)
     return bmp;
 }
 
-static bool WIN_SetClipboardImage(SDL_VideoDevice *_this)
+static bool WIN_SetClipboardImage(SDL_VideoDevice *_this, const char *mime_type)
 {
-    HANDLE hMem;
+    UINT format = 0;
+    HANDLE hMem = NULL;
     size_t clipboard_data_size;
     const void *clipboard_data;
     bool result = true;
 
-    clipboard_data = _this->clipboard_callback(_this->clipboard_userdata, IMAGE_MIME_TYPE, &clipboard_data_size);
-    hMem = WIN_ConvertBMPtoDIB(clipboard_data, clipboard_data_size);
+    clipboard_data = _this->clipboard_callback(_this->clipboard_userdata, mime_type, &clipboard_data_size);
+    if (SDL_strcmp(mime_type, "image/bmp") == 0) {
+        hMem = WIN_ConvertBMPtoDIB(clipboard_data, clipboard_data_size, &format);
+    } else if (SDL_strcmp(mime_type, "image/png") == 0) {
+        format = GetClipboardFormatPNG();
+        hMem = GlobalAlloc(GMEM_MOVEABLE, clipboard_data_size);
+        if (hMem) {
+            LPVOID dst = GlobalLock(hMem);
+            if (dst) {
+                SDL_memcpy(dst, clipboard_data, clipboard_data_size);
+                GlobalUnlock(hMem);
+            } else {
+                result = WIN_SetError("GlobalLock()");
+                GlobalFree(hMem);
+                hMem = NULL;
+            }
+        } else {
+            result = SDL_OutOfMemory();
+        }
+    } else {
+        result = SDL_SetError("Unknown image format");
+    }
     if (hMem) {
         // Save the image to the clipboard
-        if (!SetClipboardData(IMAGE_FORMAT, hMem)) {
+        if (!SetClipboardData(format, hMem)) {
             result = WIN_SetError("Couldn't set clipboard data");
         }
     } else {
@@ -223,7 +252,7 @@ static bool WIN_SetClipboardText(SDL_VideoDevice *_this, const char *mime_type)
                 GlobalUnlock(hMem);
             }
 
-            if (!SetClipboardData(TEXT_FORMAT, hMem)) {
+            if (!SetClipboardData(CF_UNICODETEXT, hMem)) {
                 result = WIN_SetError("Couldn't set clipboard data");
             }
         } else {
@@ -265,8 +294,9 @@ bool WIN_SetClipboardData(SDL_VideoDevice *_this)
         for (i = 0; i < _this->num_clipboard_mime_types; ++i) {
             const char *mime_type = _this->clipboard_mime_types[i];
 
-            if (SDL_strcmp(mime_type, IMAGE_MIME_TYPE) == 0) {
-                if (!WIN_SetClipboardImage(_this)) {
+            if (SDL_strcmp(mime_type, "image/bmp") == 0 ||
+                SDL_strcmp(mime_type, "image/png") == 0) {
+                if (!WIN_SetClipboardImage(_this, mime_type)) {
                     result = false;
                 }
                 break;
@@ -288,16 +318,35 @@ void *WIN_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t
     if (SDL_IsTextMimeType(mime_type)) {
         char *text = NULL;
 
-        if (IsClipboardFormatAvailable(TEXT_FORMAT)) {
+        if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
             if (WIN_OpenClipboard(_this)) {
                 HANDLE hMem;
-                LPTSTR tstr;
+                LPTSTR str;
 
-                hMem = GetClipboardData(TEXT_FORMAT);
+                hMem = GetClipboardData(CF_UNICODETEXT);
                 if (hMem) {
-                    tstr = (LPTSTR)GlobalLock(hMem);
-                    if (tstr) {
-                        text = WIN_StringToUTF8(tstr);
+                    str = (LPTSTR)GlobalLock(hMem);
+                    if (str) {
+                        text = WIN_StringToUTF8W(str);
+                        GlobalUnlock(hMem);
+                    } else {
+                        WIN_SetError("Couldn't lock clipboard data");
+                    }
+                } else {
+                    WIN_SetError("Couldn't get clipboard data");
+                }
+                WIN_CloseClipboard();
+            }
+        } else if (IsClipboardFormatAvailable(CF_TEXT)) {
+            if (WIN_OpenClipboard(_this)) {
+                HANDLE hMem;
+                LPCSTR str;
+
+                hMem = GetClipboardData(CF_TEXT);
+                if (hMem) {
+                    str = (LPCSTR)GlobalLock(hMem);
+                    if (str) {
+                        text = SDL_strdup(str);
                         GlobalUnlock(hMem);
                     } else {
                         WIN_SetError("Couldn't lock clipboard data");
@@ -314,12 +363,20 @@ void *WIN_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t
         data = text;
         *size = SDL_strlen(text);
 
-    } else if (SDL_strcmp(mime_type, IMAGE_MIME_TYPE) == 0) {
-        if (IsClipboardFormatAvailable(IMAGE_FORMAT)) {
+    } else if (SDL_strcmp(mime_type, "image/bmp") == 0) {
+        if (IsClipboardFormatAvailable(CF_DIBV5)) {
             if (WIN_OpenClipboard(_this)) {
-                HANDLE hMem;
-
-                hMem = GetClipboardData(IMAGE_FORMAT);
+                HANDLE hMem = GetClipboardData(CF_DIBV5);
+                if (hMem) {
+                    data = WIN_ConvertDIBtoBMP(hMem, size);
+                } else {
+                    WIN_SetError("Couldn't get clipboard data");
+                }
+                WIN_CloseClipboard();
+            }
+        } else if (IsClipboardFormatAvailable(CF_DIB)) {
+            if (WIN_OpenClipboard(_this)) {
+                HANDLE hMem = GetClipboardData(CF_DIB);
                 if (hMem) {
                     data = WIN_ConvertDIBtoBMP(hMem, size);
                 } else {
@@ -328,6 +385,31 @@ void *WIN_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t
                 WIN_CloseClipboard();
             }
         }
+
+    } else if (SDL_strcmp(mime_type, "image/png") == 0) {
+        if (IsClipboardFormatAvailable(GetClipboardFormatPNG())) {
+            if (WIN_OpenClipboard(_this)) {
+                HANDLE hMem = GetClipboardData(GetClipboardFormatPNG());
+                if (hMem) {
+                    size_t mem_size = GlobalSize(hMem);
+                    void *mem = GlobalLock(hMem);
+                    if (mem) {
+                        data = SDL_malloc(mem_size);
+                        if (data) {
+                            SDL_memcpy(data, mem, mem_size);
+                            *size = mem_size;
+                        }
+                        GlobalUnlock(hMem);
+                    } else {
+                        WIN_SetError("Couldn't lock clipboard data");
+                    }
+                } else {
+                    WIN_SetError("Couldn't get clipboard data");
+                }
+                WIN_CloseClipboard();
+            }
+        }
+
     } else {
         data = SDL_GetInternalClipboardData(_this, mime_type, size);
     }
@@ -337,40 +419,48 @@ void *WIN_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t
 bool WIN_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
 {
     if (SDL_IsTextMimeType(mime_type)) {
-        if (IsClipboardFormatAvailable(TEXT_FORMAT)) {
+        if (IsClipboardFormatAvailable(CF_UNICODETEXT) || IsClipboardFormatAvailable(CF_TEXT)) {
             return true;
         }
-    } else if (SDL_strcmp(mime_type, IMAGE_MIME_TYPE) == 0) {
-        if (IsClipboardFormatAvailable(IMAGE_FORMAT)) {
+    } else if (SDL_strcmp(mime_type, "image/bmp") == 0) {
+        if (IsClipboardFormatAvailable(CF_DIBV5) || IsClipboardFormatAvailable(CF_DIB)) {
             return true;
         }
-    } else {
-        if (SDL_HasInternalClipboardData(_this, mime_type)) {
+    } else if (SDL_strcmp(mime_type, "image/png") == 0) {
+        if (IsClipboardFormatAvailable(GetClipboardFormatPNG())) {
             return true;
         }
     }
-    return false;
+    return SDL_HasInternalClipboardData(_this, mime_type);
 }
 
 static int GetClipboardFormatMimeType(UINT format, char *name)
 {
-    static struct
-    {
-        UINT format;
-        const char *mime_type;
-    } mime_types[] = {
-        { TEXT_FORMAT, "text/plain;charset=utf-8" },
-        { IMAGE_FORMAT, IMAGE_MIME_TYPE },
-    };
+    const char *mime_type = NULL;
 
-    for (int i = 0; i < SDL_arraysize(mime_types); ++i) {
-        if (format == mime_types[i].format) {
-            size_t len = SDL_strlen(mime_types[i].mime_type) + 1;
-            if (name) {
-                SDL_memcpy(name, mime_types[i].mime_type, len);
-            }
-            return (int)len;
+    switch (format) {
+    case CF_TEXT:
+        mime_type = "text/plain";
+        break;
+    case CF_UNICODETEXT:
+        mime_type = "text/plain;charset=utf-8";
+        break;
+    case CF_DIB:
+    case CF_DIBV5:
+        mime_type = "image/bmp";
+        break;
+    default:
+        if (format == GetClipboardFormatPNG()) {
+            mime_type = "image/png";
         }
+        break;
+    }
+    if (mime_type) {
+        size_t len = SDL_strlen(mime_type) + 1;
+        if (name) {
+            SDL_memcpy(name, mime_type, len);
+        }
+        return (int)len;
     }
     return 0;
 }
@@ -385,10 +475,25 @@ static char **GetMimeTypes(int *pnformats)
         int nformats = 0;
         UINT format = 0;
         int formatsSz = 0;
+        bool have_image_bmp = false;
         for ( ; ; ) {
             format = EnumClipboardFormats(format);
             if (!format) {
                 break;
+            }
+
+#ifdef DEBUG_CLIPBOARD
+            char name[128] = { 0 };
+            GetClipboardFormatNameA(format, name, sizeof(name));
+            SDL_Log("Clipboard format: %d (0x%x), '%s'", format, format, name);
+#endif
+
+            if (format == CF_DIB || format == CF_DIBV5) {
+                if (have_image_bmp) {
+                    // We have already registered this format
+                    continue;
+                }
+                have_image_bmp = true;
             }
 
             int len = GetClipboardFormatMimeType(format, NULL);
@@ -398,6 +503,7 @@ static char **GetMimeTypes(int *pnformats)
             }
         }
 
+        have_image_bmp = false;
         new_mime_types = SDL_AllocateTemporaryMemory((nformats + 1) * sizeof(char *) + formatsSz);
         if (new_mime_types) {
             format = 0;
@@ -407,6 +513,14 @@ static char **GetMimeTypes(int *pnformats)
                 format = EnumClipboardFormats(format);
                 if (!format) {
                     break;
+                }
+
+                if (format == CF_DIB || format == CF_DIBV5) {
+                    if (have_image_bmp) {
+                        // We have already registered this format
+                        continue;
+                    }
+                    have_image_bmp = true;
                 }
 
                 int len = GetClipboardFormatMimeType(format, strPtr);
