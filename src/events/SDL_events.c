@@ -601,6 +601,10 @@ int SDL_GetEventDescription(const SDL_Event *event, char *buf, int buflen)
         SDL_EVENT_CASE(SDL_EVENT_TEXT_INPUT)
         (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u windowid=%u text='%s')", (uint)event->text.timestamp, (uint)event->text.windowID, event->text.text);
         break;
+        SDL_EVENT_CASE(SDL_EVENT_SCREEN_KEYBOARD_SHOWN)
+        break;
+        SDL_EVENT_CASE(SDL_EVENT_SCREEN_KEYBOARD_HIDDEN)
+        break;
 
 #define PRINT_MOUSEDEV_EVENT(event) (void)SDL_snprintf(details, sizeof(details), " (timestamp=%u which=%u)", (uint)event->mdevice.timestamp, (uint)event->mdevice.which)
         SDL_EVENT_CASE(SDL_EVENT_MOUSE_ADDED)

@@ -5823,10 +5823,39 @@ bool SDL_ScreenKeyboardShown(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
-    if (_this->IsScreenKeyboardShown) {
-        return _this->IsScreenKeyboardShown(_this, window);
+    return _this->screen_keyboard_shown;
+}
+
+void SDL_SendScreenKeyboardShown(void)
+{
+    if (_this->screen_keyboard_shown) {
+        return;
     }
-    return false;
+
+    _this->screen_keyboard_shown = true;
+
+    if (SDL_EventEnabled(SDL_EVENT_SCREEN_KEYBOARD_SHOWN)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_SCREEN_KEYBOARD_SHOWN;
+        event.common.timestamp = 0;
+        SDL_PushEvent(&event);
+    }
+}
+
+void SDL_SendScreenKeyboardHidden(void)
+{
+    if (!_this->screen_keyboard_shown) {
+        return;
+    }
+
+    _this->screen_keyboard_shown = false;
+
+    if (SDL_EventEnabled(SDL_EVENT_SCREEN_KEYBOARD_HIDDEN)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_SCREEN_KEYBOARD_HIDDEN;
+        event.common.timestamp = 0;
+        SDL_PushEvent(&event);
+    }
 }
 
 int SDL_GetMessageBoxCount(void)

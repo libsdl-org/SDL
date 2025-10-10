@@ -489,7 +489,11 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
  * also shows the onscreen virtual keyboard if no hardware keyboard is attached. */
 - (bool)startTextInput
 {
-    textFieldFocused = YES;
+    if (!textFieldFocused) {
+        textFieldFocused = YES;
+        SDL_SendScreenKeyboardShown();
+    }
+
     if (!textField.window) {
         /* textField has not been added to the view yet,
          * we will try again when that happens. */
@@ -509,7 +513,11 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
  * also hides the onscreen virtual keyboard if no hardware keyboard is attached. */
 - (bool)stopTextInput
 {
-    textFieldFocused = NO;
+    if (textFieldFocused) {
+        textFieldFocused = NO;
+        SDL_SendScreenKeyboardHidden();
+    }
+
     if (!textField.window) {
         /* textField has not been added to the view yet,
          * we will try again when that happens. */
@@ -716,17 +724,6 @@ void UIKit_SetTextInputProperties(SDL_VideoDevice *_this, SDL_Window *window, SD
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
         [vc setTextFieldProperties:props];
-    }
-}
-
-bool UIKit_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    @autoreleasepool {
-        SDL_uikitviewcontroller *vc = GetWindowViewController(window);
-        if (vc != nil) {
-            return vc.textFieldFocused;
-        }
-        return false;
     }
 }
 

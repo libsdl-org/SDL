@@ -423,7 +423,6 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->HasScreenKeyboardSupport = GDK_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = GDK_ShowScreenKeyboard;
     device->HideScreenKeyboard = GDK_HideScreenKeyboard;
-    device->IsScreenKeyboardShown = GDK_IsScreenKeyboardShown;
 #endif
 
     device->free = WIN_DeleteDevice;
