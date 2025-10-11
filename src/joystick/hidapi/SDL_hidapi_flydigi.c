@@ -57,8 +57,8 @@ enum
 /* Rate of IMU Sensor Packets over wireless dongle observed in testcontroller at 295hz */
 #define SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ     295
 #define SENSOR_INTERVAL_APEX5_DONGLE_NS         (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ)
-/* Rate of IMU Sensor Packets over wired connection observed in testcontroller at 570hz */
-#define SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ      570
+/* Rate of IMU Sensor Packets over wired connection observed in testcontroller at 970hz */
+#define SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ      970
 #define SENSOR_INTERVAL_APEX5_WIRED_NS          (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ)
 
 #define FLYDIGI_V1_CMD_REPORT_ID    0x05
@@ -69,13 +69,14 @@ enum
 #define FLYDIGI_V2_MAGIC1           0x5A
 #define FLYDIGI_V2_MAGIC2           0xA5
 #define FLYDIGI_V2_GET_INFO_COMMAND 0x01
-#define FLYDIGI_V2_SET_MODE_COMMAND 0x11
 #define FLYDIGI_V2_HAPTIC_COMMAND   0x12
-
+#define FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND 0x1c
+#define FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME  1000 * 60
 #define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
 typedef struct
 {
+    bool enabled;
     Uint8 deviceID;
     bool has_cz;
     bool has_lmrm;
@@ -88,6 +89,10 @@ typedef struct
     float accelScale;
     float gyroScale;
     Uint8 last_state[USB_PACKET_LENGTH];
+
+    bool stop_thread;
+    SDL_Thread *thread;
+    char thread_name_buf[256];
 } SDL_DriverFlydigi_Context;
 
 
@@ -193,6 +198,26 @@ static bool GetReply(SDL_HIDAPI_Device* device, Uint8 command, Uint8* data, size
     return false;
 }
 
+static int SDLCALL SDL_HIDAPI_Flydigi_ThreadFunction(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
+    while (true) {
+        if (ctx->stop_thread) {
+            return 0;
+        }
+
+        const Uint8 acquireControllerCmd[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND, 23, 1, 83, 68, 76, 0 };
+        if (SDL_hid_write(device->dev, acquireControllerCmd, sizeof(acquireControllerCmd)) < 0) {
+            return SDL_SetError("Couldn't enable input reports");
+        }
+        Uint8 acquireControllerData[USB_PACKET_LENGTH];
+
+        if (GetReply(device, FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND, acquireControllerData, sizeof(acquireControllerData))) {
+            ctx->enabled = acquireControllerData[6] == 1;
+        }
+        SDL_Delay(FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME);
+    }
+}
 static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
@@ -208,6 +233,7 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
         ctx->firmware_version = LOAD16(data[17], data[16]);
 
         switch (data[7]) {
+
         case 1:
             // Wired connection
             ctx->wireless = false;
@@ -221,14 +247,26 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
         }
     }
 
-    const Uint8 enable_xinput = 255; // 1 to enable, 0 to disable (which increases report rate to 1Khz)
-    const Uint8 enable_reports[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_SET_MODE_COMMAND, 6, enable_xinput, 1, 255, 255, 0 };
-    if (SDL_hid_write(device->dev, enable_reports, sizeof(enable_reports)) < 0) {
+    const Uint8 acquireControllerCmd[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND, 23, 1, 83, 68, 76, 0 };
+    if (SDL_hid_write(device->dev, acquireControllerCmd, sizeof(acquireControllerCmd)) < 0) {
         return SDL_SetError("Couldn't enable input reports");
     }
-    return true;
-}
 
+    Uint8 acquireControllerData[USB_PACKET_LENGTH];
+    if (GetReply(device, FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND, acquireControllerData, sizeof(acquireControllerData))) {
+        if (acquireControllerData[6] == 1) {
+            ctx->enabled = true;
+        } else {
+            // the controller can not be acquired by third party app
+            ctx->enabled = false;
+        }
+    }else{
+        // the controller does not support acquired by third party app
+        ctx->enabled = false;
+    }
+
+    return ctx->enabled;
+}
 
 static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
 {
@@ -268,6 +306,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         controller_type = SDL_FLYDIGI_VADER4_PRO;
         break;
     case 128:
+    case 129:
+    case 133:
+    case 134:
         controller_type = SDL_FLYDIGI_APEX5;
         break;
     default:
@@ -314,8 +355,8 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "Flydigi Apex 5");
         ctx->has_lmrm = true;
 
-        // The Apex 5 gyro values are only usable on firmware 7.0.2.8 and newer
-        if (ctx->firmware_version >= 0x7028) {
+        // The Apex 5 gyro values are only usable on firmware 7.0.3.0 and newer
+        if (ctx->firmware_version >= 0x7030) {
             ctx->sensors_supported = true;
             ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
             ctx->gyroScale = DEG2RAD(2000.0f);
@@ -416,7 +457,13 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, flSensorRate);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, flSensorRate);
     }
+    if (ctx->enabled && device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
 
+        SDL_snprintf(ctx->thread_name_buf, sizeof(ctx->thread_name_buf), "SDL_hidapi_flydigi %d %04x:%04x", SDL_GetJoystickID(device->joysticks), USB_VENDOR_FLYDIGI_V2, ctx->deviceID);
+
+        ctx->stop_thread = false;
+        ctx->thread = SDL_CreateThread(SDL_HIDAPI_Flydigi_ThreadFunction, ctx->thread_name_buf, device);
+    }
     return true;
 }
 
@@ -612,6 +659,9 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV2(SDL_Joystick *joystick, SDL
     Sint16 axis;
     Uint64 timestamp = SDL_GetTicksNS();
 
+    if (!ctx->enabled) {
+        return;
+    }
     if (size > 0 && data[0] != 0x5A) {
         // If first byte is not 0x5A, it must be REPORT_ID, we need to remove it.
         ++data;
@@ -728,13 +778,13 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV2(SDL_Joystick *joystick, SDL
         const float flGyroScale = ctx->gyroScale;
         values[0] = HIDAPI_RemapVal((float)LOAD16(data[17], data[18]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
         values[1] = HIDAPI_RemapVal((float)LOAD16(data[19], data[20]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
-        values[2] = HIDAPI_RemapVal((float)-LOAD16(data[21], data[22]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
+        values[2] = HIDAPI_RemapVal((float)LOAD16(data[21], data[22]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
         const float flAccelScale = ctx->accelScale;
-        values[0] = LOAD16(data[25], data[26]) * flAccelScale;  // Acceleration along pitch axis
-        values[1] = LOAD16(data[27], data[28]) * flAccelScale;  // Acceleration along yaw axis
-        values[2] = -LOAD16(data[23], data[24]) * flAccelScale; // Acceleration along roll axis
+        values[0] = LOAD16(data[23], data[24]) * flAccelScale;  // Acceleration along pitch axis
+        values[1] = LOAD16(data[25], data[26]) * flAccelScale;  // Acceleration along yaw axis
+        values[2] = -LOAD16(data[27], data[28]) * flAccelScale; // Acceleration along roll axis
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, values, 3);
     }
 
@@ -777,6 +827,12 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverFlydigi_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
+    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
+    ctx->stop_thread = true;
+    const Uint8 acquireControllerCmd[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND, 23, 0, 83, 68, 76, 0 };
+    if (SDL_hid_write(device->dev, acquireControllerCmd, sizeof(acquireControllerCmd)) < 0) {
+        return SDL_SetError("Couldn't enable input reports");
+    }
 }
 
 static void HIDAPI_DriverFlydigi_FreeDevice(SDL_HIDAPI_Device *device)
