@@ -2306,7 +2306,15 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   useful for targeting Intel Haswell and Broadwell GPUs; other hardware
  *   either supports Tier 2 Resource Binding or does not support D3D12 in any
  *   capacity. Defaults to false.
+ * 
+ * With the Vulkan renderer:
  *
+ * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER`: pointer
+ *   to a Vulkan structure to be appended to SDL's VkDeviceCreateInfo during
+ *   device creation.
+ *   This allows passing a list of VkPhysicalDeviceFeature structures to
+ *   opt-into features aside from the minimal set SDL requires.
+ * 
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
  *          for more information.
@@ -2337,6 +2345,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN                     "SDL.gpu.device.create.shaders.metallib"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN     "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING                   "SDL.gpu.device.create.d3d12.semantic"
+#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER           "SDL.gpu.device.create.vulkan.additional_features"
 
 /**
  * Destroys a GPU context previously returned by SDL_CreateGPUDevice.

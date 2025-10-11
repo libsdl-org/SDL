@@ -11694,7 +11694,19 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
         deviceCreateInfo.enabledExtensionCount);
     CreateDeviceExtensionArray(&renderer->supports, deviceExtensions);
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions;
-    deviceCreateInfo.pEnabledFeatures = &renderer->desiredDeviceFeatures;
+
+    // Look for opt-in features
+    VkPhysicalDeviceFeatures2 featureList;
+    if (SDL_HasProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER)) {
+        deviceCreateInfo.pEnabledFeatures = NULL;
+        deviceCreateInfo.pNext = &featureList;
+
+        featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        featureList.features = renderer->desiredDeviceFeatures;
+        featureList.pNext = SDL_GetPointerProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER, NULL);
+    } else {
+        deviceCreateInfo.pEnabledFeatures = &renderer->desiredDeviceFeatures;
+    }
 
     vulkanResult = renderer->vkCreateDevice(
         renderer->physicalDevice,
@@ -11963,6 +11975,21 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     } else {
         if (verboseLogs) {
             SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Vulkan Driver: %s", driverVer);
+        }
+    }
+
+    // Pass opt-in device features to renderer creation
+    if (SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER)) {
+        void *ptr = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER, NULL);
+        if (!SDL_SetPointerProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER, ptr)) {
+            SDL_LogError(
+                SDL_LOG_CATEGORY_GPU,
+                "VULKAN_CreateDevice: Failed to set additional Vulkan features: %s",
+                SDL_GetError());
+            SDL_SetError(
+                "VULKAN_CreateDevice: Failed to set additional Vulkan features: %s",
+                SDL_GetError());
+            return NULL;
         }
     }
 
