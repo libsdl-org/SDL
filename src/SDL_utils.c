@@ -575,12 +575,9 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
     return name;
 }
 
-#define SDL_DEBUG_LOG_INTRO "SDL_DEBUG: "
 
 void SDL_DebugLogBackend(const char *subsystem, const char *backend)
 {
-    if (SDL_GetHintBoolean(SDL_HINT_DEBUG_LOGGING, false)) {
-        SDL_Log(SDL_DEBUG_LOG_INTRO "chose %s backend '%s'", subsystem, backend);
-    }
+    SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "SDL chose %s backend '%s'", subsystem, backend);
 }
 

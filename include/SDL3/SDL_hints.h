@@ -4532,31 +4532,6 @@ extern "C" {
 #define SDL_HINT_PEN_TOUCH_EVENTS "SDL_PEN_TOUCH_EVENTS"
 
 /**
- * A variable controlling whether SDL logs some debug information.
- *
- * The variable can be set to the following values:
- *
- * - "0": SDL debug information will not be logged. (default)
- * - "1": SDL debug information will be logged.
- *
- * This is generally meant to be used as an environment variable to let
- * end-users report what subsystems were chosen on their system, perhaps what
- * sort of hardware they are running on, etc, to aid in debugging. Logged
- * information is sent through SDL_Log(), which means by default they appear
- * on stdout on most platforms, or maybe OutputDebugString() on Windows, and
- * can be funneled by the app with SDL_SetLogOutputFunction(), etc.
- *
- * The specific output might change between SDL versions; more information
- * might be deemed useful in the future.
- *
- * This hint can be set anytime, but the specific logs are generated during
- * subsystem init.
- *
- * \since This hint is available since SDL 3.4.0.
- */
-#define SDL_HINT_DEBUG_LOGGING "SDL_DEBUG_LOGGING"
-
-/**
  * An enumeration of hint priorities.
  *
  * \since This enum is available since SDL 3.2.0.
