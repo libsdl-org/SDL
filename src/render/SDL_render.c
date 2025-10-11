@@ -1686,7 +1686,6 @@ static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, S
     bool direct_update;
 
     if (surface->format == texture->format &&
-        surface->palette == texture->public_palette &&
         SDL_GetSurfaceColorspace(surface) == texture->colorspace) {
         if (SDL_ISPIXELFORMAT_ALPHA(surface->format) && SDL_SurfaceHasColorKey(surface)) {
             /* Surface and Renderer formats are identical.
@@ -1721,6 +1720,21 @@ static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, S
         }
     }
 
+    if (texture->format == surface->format && surface->palette) {
+        // Copy the palette to the new texture
+        SDL_Palette *existing = surface->palette;
+        SDL_Palette *palette = SDL_CreatePalette(existing->ncolors);
+        if (palette &&
+            SDL_SetPaletteColors(palette, existing->colors, 0, existing->ncolors) &&
+            SDL_SetTexturePalette(texture, palette)) {
+            // The texture has a reference to the palette now
+            SDL_DestroyPalette(palette);
+        } else {
+            SDL_DestroyPalette(palette);
+            return false;
+        }
+    }
+
     {
         Uint8 r, g, b, a;
         SDL_BlendMode blendMode;
@@ -1745,10 +1759,8 @@ static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, S
 
 SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
 {
-    bool needAlpha;
     int i;
     SDL_PixelFormat format = SDL_PIXELFORMAT_UNKNOWN;
-    SDL_Palette *palette;
     SDL_Texture *texture;
     SDL_PropertiesID props;
     SDL_Colorspace surface_colorspace = SDL_COLORSPACE_UNKNOWN;
@@ -1759,23 +1771,6 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     CHECK_PARAM(!SDL_SurfaceValid(surface)) {
         SDL_InvalidParamError("SDL_CreateTextureFromSurface(): surface");
         return NULL;
-    }
-
-    // See what the best texture format is
-    if (SDL_ISPIXELFORMAT_ALPHA(surface->format) || SDL_SurfaceHasColorKey(surface)) {
-        needAlpha = true;
-    } else {
-        needAlpha = false;
-    }
-
-    // If palette contains alpha values, promotes to alpha format
-    palette = SDL_GetSurfacePalette(surface);
-    if (palette) {
-        bool is_opaque, has_alpha_channel;
-        SDL_DetectPalette(palette, &is_opaque, &has_alpha_channel);
-        if (!is_opaque) {
-            needAlpha = true;
-        }
     }
 
     // Try to have the best pixel format for the texture
@@ -1830,6 +1825,24 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     // Fallback, choose a valid pixel format
     if (format == SDL_PIXELFORMAT_UNKNOWN) {
         format = renderer->texture_formats[0];
+
+        // See what the best texture format is
+        bool needAlpha;
+        if (SDL_ISPIXELFORMAT_ALPHA(surface->format) || SDL_SurfaceHasColorKey(surface)) {
+            needAlpha = true;
+        } else {
+            needAlpha = false;
+        }
+
+        // If palette contains alpha values, promotes to alpha format
+        if (surface->palette) {
+            bool is_opaque, has_alpha_channel;
+            SDL_DetectPalette(surface->palette, &is_opaque, &has_alpha_channel);
+            if (!is_opaque) {
+                needAlpha = true;
+            }
+        }
+
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->texture_formats[i]) &&
                 SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == needAlpha) {
@@ -1865,9 +1878,6 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, surface->w);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, surface->h);
-    if (format == surface->format && palette) {
-        SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER, palette);
-    }
     texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!texture) {
