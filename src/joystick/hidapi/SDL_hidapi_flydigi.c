@@ -196,19 +196,19 @@ static bool GetReply(SDL_HIDAPI_Device* device, Uint8 command, Uint8* data, size
     return false;
 }
 
-static bool SDL_HIDAPI_Flydigi_SendHeartbeat(SDL_HIDAPI_Device *device)
+static bool SDL_HIDAPI_Flydigi_SendAcquireRequest(SDL_HIDAPI_Device *device, bool acquire)
 {
-    const Uint8 acquireControllerCmd[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND, 23, 1, 83, 68, 76, 0 };
+    const Uint8 acquireControllerCmd[] = {
+        FLYDIGI_V2_CMD_REPORT_ID,
+        FLYDIGI_V2_MAGIC1,
+        FLYDIGI_V2_MAGIC2,
+        FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND,
+        23,
+        acquire ? 1 : 0,
+        83, 68, 76, 0
+    };
     if (SDL_hid_write(device->dev, acquireControllerCmd, sizeof(acquireControllerCmd)) < 0) {
-        return SDL_SetError("Couldn't enable input reports");
-    }
-
-    Uint8 acquireControllerData[USB_PACKET_LENGTH];
-    if (!GetReply(device, FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND, acquireControllerData, sizeof(acquireControllerData))) {
-        return SDL_SetError("Controller acquiring is not supported");
-    }
-    if (acquireControllerData[6] != 1) {
-        return SDL_SetError("Controller acquiring is disabled");
+        return SDL_SetError("Couldn't send acquire command");
     }
     return true;
 }
@@ -243,7 +243,16 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
 
     ctx->last_heartbeat = SDL_GetTicks();
 
-    return SDL_HIDAPI_Flydigi_SendHeartbeat(device);
+    if (!SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true)) {
+        return false;
+    }
+    if (!GetReply(device, FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND, data, sizeof(data))) {
+        return SDL_SetError("Controller acquiring is not supported");
+    }
+    if (data[6] != 1) {
+        return SDL_SetError("Controller acquiring is disabled");
+    }
+    return true;
 }
 
 static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
@@ -770,6 +779,14 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
         return false;
     }
 
+    if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
+        Uint64 now = SDL_GetTicks();
+        if (now >= (ctx->last_heartbeat + FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME)) {
+            SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true);
+            ctx->last_heartbeat = now;
+        }
+    }
+
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
 #ifdef DEBUG_FLYDIGI_PROTOCOL
         HIDAPI_DumpPacket("Flydigi packet: size = %d", data, size);
@@ -784,18 +801,6 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
         }
     }
 
-    if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
-        Uint64 now = SDL_GetTicks();
-        if (now >= (ctx->last_heartbeat + FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME)) {
-            if (!SDL_HIDAPI_Flydigi_SendHeartbeat(device)) {
-                // We can no longer acquire the device, mark it as disconnected
-                HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
-                return false;
-            }
-            ctx->last_heartbeat = now;
-        }
-    }
-
     if (size < 0) {
         // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
@@ -805,8 +810,7 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverFlydigi_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    const Uint8 acquireControllerCmd[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND, 23, 0, 83, 68, 76, 0 };
-    SDL_hid_write(device->dev, acquireControllerCmd, sizeof(acquireControllerCmd));
+    SDL_HIDAPI_Flydigi_SendAcquireRequest(device, false);
 }
 
 static void HIDAPI_DriverFlydigi_FreeDevice(SDL_HIDAPI_Device *device)
