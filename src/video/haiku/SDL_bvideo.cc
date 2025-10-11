@@ -240,16 +240,18 @@ static bool HAIKU_SetRelativeMouseMode(bool enabled)
     }
 
 	SDL_BWin *bewin = _ToBeWin(window);
-	BGLView *_SDL_GLView = bewin->GetGLView();
-    if (!_SDL_GLView) {
-        return false;
-    }
+	BView *_SDL_View = bewin->GetGLView();
+	if (!_SDL_View) {
+		_SDL_View = bewin->GetView();
+		if (!_SDL_View)
+			return false;
+	}
 
 	bewin->Lock();
 	if (enabled)
-		_SDL_GLView->SetEventMask(B_POINTER_EVENTS, B_NO_POINTER_HISTORY);
+		_SDL_View->SetEventMask(B_POINTER_EVENTS, B_NO_POINTER_HISTORY);
 	else
-		_SDL_GLView->SetEventMask(0, 0);
+		_SDL_View->SetEventMask(0, 0);
 	bewin->Unlock();
 
     return true;
