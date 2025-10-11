@@ -104,6 +104,11 @@
 #ifndef SDL_DISABLE_DLOPEN_NOTES
 #define SDL_DISABLE_DLOPEN_NOTES
 #endif
+#elif defined(__GNUC__) && (__GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ < 1))
+/* gcc < 3.1 too old */
+#ifndef SDL_DISABLE_DLOPEN_NOTES
+#define SDL_DISABLE_DLOPEN_NOTES
+#endif
 #endif /* SDL_PLATFORM_UNIX || SDL_PLATFORM_ANDROID */
 
 #if defined(__ELF__) && !defined(SDL_DISABLE_DLOPEN_NOTES)
@@ -204,7 +209,11 @@
         "\",\"soname\":" SDL_SONAME_ARRAY(__VA_ARGS__) "}]",     \
         SDL_ELF_NOTE_UNIQUE_NAME)
 
-#elif (defined (__GNUC__) && __GNUC__ < 3) || (defined(_MSC_VER) && (_MSC_VER < 1400))
+#elif defined(__GNUC__) && __GNUC__ < 3
+
+#define SDL_ELF_NOTE_DLOPEN(args...)
+
+#elif defined(_MSC_VER) && _MSC_VER < 1400
 
 /* Variadic macros are not supported */
 #define SDL_ELF_NOTE_DLOPEN
