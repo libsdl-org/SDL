@@ -32,6 +32,19 @@ extern void Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event);
 extern void Cocoa_HandleMouseWarp(CGFloat x, CGFloat y);
 extern void Cocoa_QuitMouse(SDL_VideoDevice *_this);
 
+struct SDL_CursorData
+{
+    NSTimer *frameTimer;
+    int current_frame;
+
+    int num_cursors;
+    struct
+    {
+        void *cursor;
+        Uint32 duration;
+    } frames[];
+};
+
 typedef struct
 {
     // Whether we've seen a cursor warp since the last move event.

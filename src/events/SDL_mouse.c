@@ -1552,6 +1552,103 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
     return cursor;
 }
 
+SDL_Cursor *SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Cursor *cursor = NULL;
+
+    CHECK_PARAM(!frames) {
+        SDL_InvalidParamError("frames");
+        return NULL;
+    }
+
+    CHECK_PARAM(!frame_count) {
+        SDL_InvalidParamError("frame_count");
+        return NULL;
+    }
+
+    // Fall back to a static cursor if the platform doesn't support animated cursors.
+    if (!mouse->CreateAnimatedCursor) {
+        // If there is a frame with infinite duration, use it; otherwise, use the first.
+        for (int i = 0; i < frame_count; ++i) {
+            if (!frames[i].duration) {
+                return SDL_CreateColorCursor(frames[i].surface, hot_x, hot_y);
+            }
+        }
+
+        return SDL_CreateColorCursor(frames[0].surface, hot_x, hot_y);
+    }
+
+    // Allow specifying the hot spot via properties on the surface
+    SDL_PropertiesID props = SDL_GetSurfaceProperties(frames[0].surface);
+    hot_x = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_X_NUMBER, hot_x);
+    hot_y = (int)SDL_GetNumberProperty(props, SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER, hot_y);
+
+    // Sanity check the hot spot
+    CHECK_PARAM((hot_x < 0) || (hot_y < 0) ||
+                (hot_x >= frames[0].surface->w) || (hot_y >= frames[0].surface->h)) {
+        SDL_SetError("Cursor hot spot doesn't lie within cursor");
+        return NULL;
+    }
+
+    CHECK_PARAM(!frames[0].surface) {
+        SDL_SetError("Null surface in frame 0");
+        return NULL;
+    }
+
+    bool isstack;
+    SDL_CursorFrameInfo *temp_frames = SDL_small_alloc(SDL_CursorFrameInfo, frame_count, &isstack);
+    if (!temp_frames) {
+        return NULL;
+    }
+    SDL_memset(temp_frames, 0, sizeof(SDL_CursorFrameInfo) * frame_count);
+
+    const int w = frames[0].surface->w;
+    const int h = frames[0].surface->h;
+
+    for (int i = 0; i < frame_count; ++i) {
+        CHECK_PARAM(!frames[i].surface) {
+            SDL_SetError("Null surface in frame %i", i);
+            goto cleanup;
+        }
+
+        // All cursor images should be the same size.
+        CHECK_PARAM(frames[i].surface->w != w || frames[i].surface->h != h) {
+            SDL_SetError("All frames in an animated sequence must have the same dimensions");
+            goto cleanup;
+        }
+
+        if (frames[i].surface->format == SDL_PIXELFORMAT_ARGB8888) {
+            temp_frames[i].surface = frames[i].surface;
+        } else {
+            SDL_Surface *temp = SDL_ConvertSurface(frames[i].surface, SDL_PIXELFORMAT_ARGB8888);
+            if (!temp) {
+                goto cleanup;
+            }
+            temp_frames[i].surface = temp;
+        }
+        temp_frames[i].duration = frames[i].duration;
+    }
+
+    cursor = mouse->CreateAnimatedCursor(temp_frames, frame_count, hot_x, hot_y);
+    if (cursor) {
+        cursor->next = mouse->cursors;
+        mouse->cursors = cursor;
+    }
+
+cleanup:
+    // Clean up any temporary converted surfaces.
+    for (int i = 0; i < frame_count; ++i) {
+        if (temp_frames[i].surface && frames[i].surface != temp_frames[i].surface) {
+            SDL_DestroySurface(temp_frames[i].surface);
+        }
+    }
+
+    SDL_small_free(temp_frames, isstack);
+
+    return cursor;
+}
+
 SDL_Cursor *SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
