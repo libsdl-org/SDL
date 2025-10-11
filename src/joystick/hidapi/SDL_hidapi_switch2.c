@@ -29,8 +29,12 @@
 #include "../../misc/SDL_libusb.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_SWITCH2
+
+#define RUMBLE_INTERVAL 12
+#define RUMBLE_MAX 29000
 
 // Define this if you want to log all packets from the controller
 #if 0
@@ -94,6 +98,13 @@ typedef struct
     Uint8 interface_number;
     Uint8 out_endpoint;
     Uint8 in_endpoint;
+
+    Uint64 rumble_timestamp;
+    Uint32 rumble_seq;
+    Uint16 rumble_hi_amp;
+    Uint16 rumble_lo_amp;
+    Uint32 rumble_error;
+    bool rumble_updated;
 
     Switch2_StickCalibration left_stick;
     Switch2_StickCalibration right_stick;
@@ -552,7 +563,15 @@ static bool HIDAPI_DriverSwitch2_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 
 static bool HIDAPI_DriverSwitch2_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    return SDL_Unsupported();
+    SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
+
+    if (low_frequency_rumble != ctx->rumble_lo_amp || high_frequency_rumble != ctx->rumble_hi_amp) {
+        ctx->rumble_lo_amp = low_frequency_rumble;
+        ctx->rumble_hi_amp = high_frequency_rumble;
+        ctx->rumble_updated = true;
+    }
+
+    return true;
 }
 
 static bool HIDAPI_DriverSwitch2_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
@@ -563,7 +582,7 @@ static bool HIDAPI_DriverSwitch2_RumbleJoystickTriggers(SDL_HIDAPI_Device *devic
 static Uint32 HIDAPI_DriverSwitch2_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
-    Uint32 result = 0;
+    Uint32 result = SDL_JOYSTICK_CAP_RUMBLE;
 
     if (ctx->player_lights) {
         result |= SDL_JOYSTICK_CAP_PLAYER_LED;
@@ -924,6 +943,83 @@ static void HandleSwitchProState(Uint64 timestamp, SDL_Joystick *joystick, SDL_D
     );
 }
 
+static bool UpdateRumble(SDL_DriverSwitch2_Context *ctx)
+{
+    if (!ctx->rumble_updated && !ctx->rumble_lo_amp && !ctx->rumble_hi_amp) {
+        return true;
+    }
+
+    Uint64 timestamp = SDL_GetTicks();
+    Uint64 interval = RUMBLE_INTERVAL;
+
+    if (timestamp < ctx->rumble_timestamp) {
+        return true;
+    }
+
+    if (!SDL_HIDAPI_LockRumble()) {
+        return false;
+    }
+
+    unsigned char rumble_data[64] = {};
+    if (ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER) {
+        Uint16 rumble_max = SDL_max(ctx->rumble_lo_amp, ctx->rumble_hi_amp);
+        rumble_data[0x00] = 0x3;
+        rumble_data[1] = 0x50 | (ctx->rumble_seq & 0xf);
+        if (rumble_max == 0) {
+            rumble_data[2] = 2;
+            ctx->rumble_error = 0;
+        } else {
+            if (ctx->rumble_error < rumble_max) {
+                rumble_data[2] = 1;
+                ctx->rumble_error += UINT16_MAX - rumble_max;
+            } else {
+                rumble_data[2] = 0;
+                ctx->rumble_error -= rumble_max;
+            }
+        }
+    } else {
+        // Rumble can get so strong that it might be dangerous to the controller...
+        // This is a game controller, not a massage device, so let's clamp it somewhat
+        int low_amp = ctx->rumble_lo_amp * RUMBLE_MAX / UINT16_MAX;
+        int high_amp = ctx->rumble_hi_amp * RUMBLE_MAX / UINT16_MAX;
+        rumble_data[0x01] = 0x50 | (ctx->rumble_seq & 0xf);
+        rumble_data[0x02] = 0x87;
+        rumble_data[0x03] = ((high_amp >> 4) & 0xfc) | 1;
+        rumble_data[0x04] = (high_amp >> 12) | 0x20;
+        rumble_data[0x05] = (low_amp & 0xc0) | 0x11;
+        rumble_data[0x06] = low_amp >> 8;
+        switch (ctx->device->product_id) {
+        case USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_LEFT:
+        case USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT:
+            if (ctx->device->parent) {
+                // FIXME: This shouldn't be necessary, but the rumble thread appears to back up if we don't do this
+                interval *= 2;
+            }
+            rumble_data[0] = 0x1;
+            break;
+        case USB_PRODUCT_NINTENDO_SWITCH2_PRO:
+            rumble_data[0] = 0x2;
+            SDL_memcpy(&rumble_data[0x11], &rumble_data[0x01], 6);
+            break;
+        }
+    }
+    ctx->rumble_seq++;
+    ctx->rumble_updated = false;
+    if (!ctx->rumble_lo_amp && !ctx->rumble_hi_amp) {
+        ctx->rumble_timestamp = 0;
+    } else {
+        if (!ctx->rumble_timestamp) {
+            ctx->rumble_timestamp = timestamp;
+        }
+        ctx->rumble_timestamp += interval;
+    }
+
+    if (SDL_HIDAPI_SendRumbleAndUnlock(ctx->device, rumble_data, sizeof(rumble_data)) != sizeof(rumble_data)) {
+        return SDL_SetError("Couldn't send rumble packet");
+    }
+    return true;
+}
+
 static void HIDAPI_DriverSwitch2_HandleStatePacket(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, SDL_DriverSwitch2_Context *ctx, Uint8 *data, int size)
 {
     Uint64 timestamp = SDL_GetTicksNS();
@@ -990,6 +1086,8 @@ static bool HIDAPI_DriverSwitch2_UpdateDevice(SDL_HIDAPI_Device *device)
         }
 
         HIDAPI_DriverSwitch2_HandleStatePacket(device, joystick, ctx, data, size);
+
+        UpdateRumble(ctx);
     }
 
     if (size < 0) {
