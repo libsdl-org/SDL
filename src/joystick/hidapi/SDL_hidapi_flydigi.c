@@ -777,14 +777,14 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV2(SDL_Joystick *joystick, SDL
 
         const float flGyroScale = ctx->gyroScale;
         values[0] = HIDAPI_RemapVal((float)LOAD16(data[17], data[18]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
-        values[1] = HIDAPI_RemapVal((float)LOAD16(data[19], data[20]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
-        values[2] = HIDAPI_RemapVal((float)LOAD16(data[21], data[22]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
+        values[1] = HIDAPI_RemapVal((float)LOAD16(data[21], data[22]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
+        values[2] = HIDAPI_RemapVal(-(float)LOAD16(data[19], data[20]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
         const float flAccelScale = ctx->accelScale;
         values[0] = LOAD16(data[23], data[24]) * flAccelScale;  // Acceleration along pitch axis
-        values[1] = LOAD16(data[25], data[26]) * flAccelScale;  // Acceleration along yaw axis
-        values[2] = -LOAD16(data[27], data[28]) * flAccelScale; // Acceleration along roll axis
+        values[1] = LOAD16(data[27], data[28]) * flAccelScale;  // Acceleration along yaw axis
+        values[2] = -LOAD16(data[25], data[26]) * flAccelScale; // Acceleration along roll axis
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, values, 3);
     }
 
