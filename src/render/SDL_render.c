@@ -1941,6 +1941,7 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
                 // Clean up the texture palette
                 --texture->palette->refcount;
                 if (texture->palette->refcount == 0) {
+                    FlushRenderCommandsIfPaletteNeeded(renderer, texture->palette);
                     renderer->DestroyPalette(renderer, texture->palette);
                     SDL_RemoveFromHashTable(renderer->palettes, texture->public_palette);
                 }
