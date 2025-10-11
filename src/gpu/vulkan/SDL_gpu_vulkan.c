@@ -11208,7 +11208,7 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
     const char *hint = SDL_GetHint(SDL_HINT_VULKAN_REQUEST_API_VERSION);
     if (hint) {
         int major, minor, patch;
-        if (SDL_sscanf(hint, "%d_%d_%d", &major, &minor, &patch) == 3) {
+        if (SDL_sscanf(hint, "%d.%d.%d", &major, &minor, &patch) == 3) {
             bool isValid = major >= 1 &&
                            minor >= 0 &&
                            patch >= 0;
@@ -11227,10 +11227,10 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
         } else {
             SDL_LogError(
                 SDL_LOG_CATEGORY_GPU,
-                "VULKAN_INTERNAL_CreateInstance: Failed to parse requested Vulkan API version. Expected 'MAJOR_MINOR_PATCH'. Got '%s'",
+                "VULKAN_INTERNAL_CreateInstance: Failed to parse requested Vulkan API version. Expected 'MAJOR.MINOR.PATCH'. Got '%s'",
                 hint);
             SDL_SetError(
-                "VULKAN_INTERNAL_CreateInstance: Failed to parse requested Vulkan API version. Expected 'MAJOR_MINOR_PATCH'. Got '%s'",
+                "VULKAN_INTERNAL_CreateInstance: Failed to parse requested Vulkan API version. Expected 'MAJOR.MINOR.PATCH'. Got '%s'",
                 hint);
             return 0;
         }
