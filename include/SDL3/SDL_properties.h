@@ -59,7 +59,11 @@ extern "C" {
 #endif
 
 /**
- * SDL properties ID
+ * The SDL_PropertiesID is an ID for a properties group
+ * created with SDL_CreateProperties.
+ *
+ * See [CategoryProperties](CategoryProperties) for detailed
+ * usage information.
  *
  * \since This datatype is available since SDL 3.2.0.
  */
