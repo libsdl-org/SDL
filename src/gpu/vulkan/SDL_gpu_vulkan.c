@@ -11699,7 +11699,14 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     VkPhysicalDeviceFeatures2 featureList;
     if (SDL_HasProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER)) {
         deviceCreateInfo.pEnabledFeatures = NULL;
-        deviceCreateInfo.pNext = &featureList;
+
+        // Walk the list of structures
+        VkBaseOutStructure *nextPtr = (VkBaseOutStructure *)&deviceCreateInfo;
+        while (nextPtr->pNext) {
+            nextPtr = (VkBaseOutStructure *)nextPtr->pNext;
+        }
+
+        nextPtr->pNext = &featureList;
 
         featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
         featureList.features = renderer->desiredBaselineDeviceFeatures;
