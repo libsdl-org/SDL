@@ -356,6 +356,7 @@ add_sdl_test_executable(testaudio MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURC
 add_sdl_test_executable(testcolorspace SOURCES testcolorspace.c)
 add_sdl_test_executable(testfile NONINTERACTIVE SOURCES testfile.c)
 add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c ${gamepad_image_headers} DEPENDS generate-gamepad_image_headers)
+add_sdl_test_executable(testdlopennote TESTUTILS SOURCES testdlopennote.c)
 add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
 add_sdl_test_executable(testgl SOURCES testgl.c)
 add_sdl_test_executable(testgles SOURCES testgles.c)
