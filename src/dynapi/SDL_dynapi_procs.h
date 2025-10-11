@@ -1300,3 +1300,4 @@ SDL_DYNAPI_PROC(bool,SDL_SavePNG_IO,(SDL_Surface *a,SDL_IOStream *b,bool c),(a,b
 SDL_DYNAPI_PROC(bool,SDL_SavePNG,(SDL_Surface *a,const char *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetSystemPageSize,(void),(),return)
 SDL_DYNAPI_PROC(SDL_PenDeviceType,SDL_GetPenDeviceType,(SDL_PenID a),(a),return)
+SDL_DYNAPI_PROC(SDL_Cursor*,SDL_CreateAnimatedCursor,(SDL_CursorFrameInfo *a,int b,int c,int d),(a,b,c,d),return)

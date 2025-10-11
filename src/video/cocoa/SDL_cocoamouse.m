@@ -66,27 +66,59 @@
 }
 @end
 
-static SDL_Cursor *Cocoa_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
+static SDL_Cursor *Cocoa_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
 {
     @autoreleasepool {
         NSImage *nsimage;
         NSCursor *nscursor = NULL;
         SDL_Cursor *cursor = NULL;
 
-        nsimage = Cocoa_CreateImage(surface);
-        if (nsimage) {
-            nscursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSMakePoint(hot_x, hot_y)];
-        }
-
-        if (nscursor) {
-            cursor = SDL_calloc(1, sizeof(*cursor));
-            if (cursor) {
-                cursor->internal = (void *)CFBridgingRetain(nscursor);
+        cursor = SDL_calloc(1, sizeof(*cursor));
+        if (cursor) {
+            SDL_CursorData *cdata = SDL_calloc(1, sizeof(*cdata) + (sizeof(*cdata->frames) * frame_count));
+            if (!cdata) {
+                SDL_free(cursor);
+                return NULL;
             }
-        }
 
-        return cursor;
+            cursor->internal = cdata;
+
+            for (int i = 0; i < frame_count; ++i) {
+                nsimage = Cocoa_CreateImage(frames[i].surface);
+                if (nsimage) {
+                    nscursor = [[NSCursor alloc] initWithImage:nsimage hotSpot:NSMakePoint(hot_x, hot_y)];
+                }
+
+                if (nscursor) {
+                    ++cdata->num_cursors;
+                    cdata->frames[i].cursor = (void *)CFBridgingRetain(nscursor);
+                    cdata->frames[i].duration = frames[i].duration;
+                } else {
+                    for (int j = 0; j < i; ++j) {
+                        CFBridgingRelease(cdata->frames[i].cursor);
+                    }
+
+                    SDL_free(cdata);
+                    SDL_free(cursor);
+                    cursor = NULL;
+                    break;
+                }
+            }
+
+            return cursor;
+        }
     }
+
+    return NULL;
+}
+
+static SDL_Cursor *Cocoa_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
+{
+    SDL_CursorFrameInfo frame = {
+        surface, 0
+    };
+
+    return Cocoa_CreateAnimatedCursor(&frame, 1, hot_x, hot_y);
 }
 
 /* there are .pdf files of some of the cursors we need, installed by default on macOS, but not available through NSCursor.
@@ -204,8 +236,11 @@ static SDL_Cursor *Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         if (nscursor) {
             cursor = SDL_calloc(1, sizeof(*cursor));
             if (cursor) {
+                SDL_CursorData *cdata = SDL_calloc(1, sizeof(*cdata) + sizeof(*cdata->frames));
                 // We'll free it later, so retain it here
-                cursor->internal = (void *)CFBridgingRetain(nscursor);
+                cursor->internal = cdata;
+                cdata->frames[0].cursor = (void *)CFBridgingRetain(nscursor);
+                cdata->num_cursors = 1;
             }
         }
 
@@ -222,7 +257,14 @@ static SDL_Cursor *Cocoa_CreateDefaultCursor(void)
 static void Cocoa_FreeCursor(SDL_Cursor *cursor)
 {
     @autoreleasepool {
-        CFBridgingRelease((void *)cursor->internal);
+        SDL_CursorData *cdata = cursor->internal;
+        if (cdata->frameTimer) {
+            [cdata->frameTimer invalidate];
+        }
+        for (int i = 0; i < cdata->num_cursors; ++i) {
+            CFBridgingRelease(cdata->frames[i].cursor);
+        }
+        SDL_free(cdata);
         SDL_free(cursor);
     }
 }
@@ -232,6 +274,14 @@ static bool Cocoa_ShowCursor(SDL_Cursor *cursor)
     @autoreleasepool {
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
+
+        SDL_CursorData *cdata = cursor->internal;
+        cdata->current_frame = 0;
+        if (cdata->frameTimer) {
+            [cdata->frameTimer invalidate];
+            cdata->frameTimer = nil;
+        }
+
         for (; window != NULL; window = window->next) {
             SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
             if (data) {
@@ -381,6 +431,7 @@ bool Cocoa_InitMouse(SDL_VideoDevice *_this)
 
     mouse->internal = data;
     mouse->CreateCursor = Cocoa_CreateCursor;
+    mouse->CreateAnimatedCursor = Cocoa_CreateAnimatedCursor;
     mouse->CreateSystemCursor = Cocoa_CreateSystemCursor;
     mouse->ShowCursor = Cocoa_ShowCursor;
     mouse->FreeCursor = Cocoa_FreeCursor;
