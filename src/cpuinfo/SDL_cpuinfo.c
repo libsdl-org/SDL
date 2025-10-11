@@ -29,7 +29,7 @@
 
 // CPU feature detection for SDL
 
-#ifdef HAVE_SYSCONF
+#if defined(HAVE_SYSCONF) || defined(HAVE_GETPAGESIZE)
 #include <unistd.h>
 #endif
 #ifdef HAVE_SYSCTLBYNAME
