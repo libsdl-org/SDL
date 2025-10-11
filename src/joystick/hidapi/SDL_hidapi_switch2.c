@@ -376,17 +376,6 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
     };
     unsigned char calibration_data[0x50] = {0};
 
-    for (int i = 0; init_sequence[i].size; i++) {
-        res = SendBulkData(ctx, init_sequence[i].data, init_sequence[i].size);
-        if (res < 0) {
-            return SDL_SetError("Couldn't send initialization data: %d\n", res);
-        }
-        RecvBulkData(ctx, calibration_data, 0x40);
-    }
-
-    // Wait for initialization to complete
-    SDL_Delay(1);
-
     flash_read_command[12] = 0x80;
     res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
     if (res < 0) {
@@ -456,6 +445,14 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
         } else if (calibration_data[0x10] == 0xb2 && calibration_data[0x11] == 0xa1) {
             ParseStickCalibration(&ctx->right_stick, &calibration_data[0x12]);
         }
+    }
+
+    for (int i = 0; init_sequence[i].size; i++) {
+        res = SendBulkData(ctx, init_sequence[i].data, init_sequence[i].size);
+        if (res < 0) {
+            return SDL_SetError("Couldn't send initialization data: %d\n", res);
+        }
+        RecvBulkData(ctx, calibration_data, 0x40);
     }
 
     return true;
