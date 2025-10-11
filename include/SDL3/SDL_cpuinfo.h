@@ -351,8 +351,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_GetSIMDAlignment(void);
  * times, 4 kilobytes is not unusual, but newer systems are moving to larger
  * page sizes, and esoteric platforms might have any unexpected size.
  *
- * Note that this function can return 0, which means SDL can't determine
- * the page size on this platform. It will _not_ set an error string to be
+ * Note that this function can return 0, which means SDL can't determine the
+ * page size on this platform. It will _not_ set an error string to be
  * retrieved with SDL_GetError() in this case! In this case, defaulting to
  * 4096 is often a reasonable option.
  *
