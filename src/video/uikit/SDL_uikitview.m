@@ -48,7 +48,7 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     SDL_TouchID directTouchId;
     SDL_TouchID indirectTouchId;
-    float last_scale;
+    float pinch_scale;
 
 #if !defined(SDL_PLATFORM_TVOS)
     UIPointerInteraction *indirectPointerInteraction API_AVAILABLE(ios(13.4));
@@ -489,16 +489,15 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     switch (state) {
 
         case UIGestureRecognizerStateBegan:
-            last_scale = 1.0f;
+            pinch_scale = 1.0f;
             SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0);
             break;
 
         case UIGestureRecognizerStateChanged:
-            /* TODO/FIXME: this isn't the same scale scale as others backed, should send the delta scale instead */
-            if (last_scale > 0.0f) {
-                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / last_scale);
+            if (pinch_scale > 0.0f) {
+                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / pinch_scale);
             }
-            last_scale = scale;
+            pinch_scale = scale;
             break;
 
         case UIGestureRecognizerStateFailed:

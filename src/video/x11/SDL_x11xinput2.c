@@ -804,7 +804,6 @@ void X11_Xinput2Select(SDL_VideoDevice *_this, SDL_Window *window)
         XISetMask(mask, XI_Motion);
     }
 
-
     if (X11_Xinput2IsGestureSupported()) {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE
         XISetMask(mask, XI_GesturePinchBegin);
@@ -812,7 +811,6 @@ void X11_Xinput2Select(SDL_VideoDevice *_this, SDL_Window *window)
         XISetMask(mask, XI_GesturePinchEnd);
 #endif
     }
-
 
     X11_XISelectEvents(data->display, window_data->xwindow, &eventmask, 1);
 #endif
