@@ -794,7 +794,7 @@ typedef struct SDL_TouchFingerEvent
 } SDL_TouchFingerEvent;
 
 /**
- *  Pinch event structure (event.pinch.*)
+ * Pinch event structure (event.pinch.*)
  */
 typedef struct SDL_PinchFingerEvent
 {
