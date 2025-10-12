@@ -11451,6 +11451,9 @@ static bool VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_11(VkPhysicalDeviceFeatu
         dst11->variablePointersStorageBuffer |= newFeatures->variablePointersStorageBuffer;
         hasAdded = true;
     } break;
+
+    default:
+        break;
     }
 
     return hasAdded;
@@ -11496,6 +11499,9 @@ static bool VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_12_Or_Later(VkPhysicalDe
                 hasAdded = true;
             }
         } break;
+
+        default:
+            break;
         }
     }
 
