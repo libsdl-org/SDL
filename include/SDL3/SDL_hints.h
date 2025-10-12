@@ -4081,17 +4081,6 @@ extern "C" {
 #define SDL_HINT_VULKAN_LIBRARY "SDL_VULKAN_LIBRARY"
 
 /**
- * Specify the Vulkan API version to create the instance with.
- *
- * This hint should be set before creating a Vulkan window. Expects a
- * version string. E.g. 1.0.0 or 1.3.0
- * Lowest supported version is 1.0.0.
- *
- * \since This hint is available since SDL 3.4.0.
- */
-#define SDL_HINT_VULKAN_REQUEST_API_VERSION "SDL_VULKAN_REQUEST_API_VERSION"
-
-/**
  * A variable controlling how the fact chunk affects the loading of a WAVE
  * file.
  *

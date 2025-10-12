@@ -1101,12 +1101,18 @@ struct VulkanRenderer
     VkPhysicalDevice physicalDevice;
     VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
     VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties;
-    VkPhysicalDeviceFeatures desiredBaselineDeviceFeatures;
+    VkPhysicalDeviceFeatures desiredVulkan10DeviceFeatures;
     VkDevice logicalDevice;
     Uint8 integratedMemoryNotification;
     Uint8 outOfDeviceLocalMemoryWarning;
     Uint8 outofBARMemoryWarning;
     Uint8 fillModeOnlyWarning;
+
+    bool usesCustomVulkanOptions;
+    Uint32 desiredApiVersion;
+    VkPhysicalDeviceVulkan11Features desiredVulkan11DeviceFeatures;
+    VkPhysicalDeviceVulkan12Features desiredVulkan12DeviceFeatures;
+    VkPhysicalDeviceVulkan13Features desiredVulkan13DeviceFeatures;
 
     bool debugMode;
     bool preferLowPower;
@@ -11187,6 +11193,281 @@ static Uint8 VULKAN_INTERNAL_CheckValidationLayers(
     return layerFound;
 }
 
+#define CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, feature, result)                             \
+    if (requested->feature && !supported->feature) {                                                     \
+        SDL_LogVerbose(                                                                                  \
+            SDL_LOG_CATEGORY_GPU,                                                                        \
+            "SDL GPU Vulkan: Application requested unsupported physical device feature '" #feature "'"); \
+        result = false;                                                                                  \
+    }
+
+static bool VULKAN_INTERNAL_ValidateOptInVulkan10Features(VkPhysicalDeviceFeatures *requested, VkPhysicalDeviceFeatures *supported)
+{
+    if (requested && supported) {
+        bool result = true;
+
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, robustBufferAccess, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, fullDrawIndexUint32, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, imageCubeArray, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, independentBlend, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, geometryShader, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, tessellationShader, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, sampleRateShading, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, dualSrcBlend, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, logicOp, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, multiDrawIndirect, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, drawIndirectFirstInstance, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, depthClamp, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, depthBiasClamp, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, fillModeNonSolid, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, depthBounds, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, wideLines, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, largePoints, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, alphaToOne, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, multiViewport, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, samplerAnisotropy, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, textureCompressionETC2, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, textureCompressionASTC_LDR, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, textureCompressionBC, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, occlusionQueryPrecise, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, pipelineStatisticsQuery, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, vertexPipelineStoresAndAtomics, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, fragmentStoresAndAtomics, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderTessellationAndGeometryPointSize, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderImageGatherExtended, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderStorageImageExtendedFormats, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderStorageImageMultisample, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderStorageImageReadWithoutFormat, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderStorageImageWriteWithoutFormat, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderUniformBufferArrayDynamicIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderSampledImageArrayDynamicIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderStorageBufferArrayDynamicIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderStorageImageArrayDynamicIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderClipDistance, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderCullDistance, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderFloat64, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderInt64, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderInt16, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderResourceResidency, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderResourceMinLod, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, sparseBinding, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, sparseResidencyBuffer, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, sparseResidencyImage2D, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, sparseResidencyImage3D, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, sparseResidency2Samples, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, sparseResidency4Samples, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, sparseResidency8Samples, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, sparseResidency16Samples, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, sparseResidencyAliased, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, variableMultisampleRate, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, inheritedQueries, result)
+
+        return result;
+    } else {
+        return false;
+    }
+}
+
+static bool VULKAN_INTERNAL_ValidateOptInVulkan11Features(VkPhysicalDeviceVulkan11Features *requested, VkPhysicalDeviceVulkan11Features *supported)
+{
+    if (requested && supported) {
+        bool result = true;
+
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, storageBuffer16BitAccess, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, uniformAndStorageBuffer16BitAccess, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, storagePushConstant16, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, storageInputOutput16, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, multiview, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, multiviewGeometryShader, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, multiviewTessellationShader, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, variablePointersStorageBuffer, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, variablePointers, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, protectedMemory, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, samplerYcbcrConversion, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderDrawParameters, result)
+
+        return result;
+    } else {
+        return false;
+    }
+}
+
+static bool VULKAN_INTERNAL_ValidateOptInVulkan12Features(VkPhysicalDeviceVulkan12Features *requested, VkPhysicalDeviceVulkan12Features *supported)
+{
+    if (requested && supported) {
+        bool result = true;
+
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, samplerMirrorClampToEdge, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, drawIndirectCount, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, storageBuffer8BitAccess, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, uniformAndStorageBuffer8BitAccess, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, storagePushConstant8, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderBufferInt64Atomics, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderSharedInt64Atomics, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderFloat16, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderInt8, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderInputAttachmentArrayDynamicIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderUniformTexelBufferArrayDynamicIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderStorageTexelBufferArrayDynamicIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderUniformBufferArrayNonUniformIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderSampledImageArrayNonUniformIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderStorageBufferArrayNonUniformIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderStorageImageArrayNonUniformIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderInputAttachmentArrayNonUniformIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderUniformTexelBufferArrayNonUniformIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderStorageTexelBufferArrayNonUniformIndexing, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorBindingUniformBufferUpdateAfterBind, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorBindingSampledImageUpdateAfterBind, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorBindingStorageImageUpdateAfterBind, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorBindingStorageBufferUpdateAfterBind, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorBindingUniformTexelBufferUpdateAfterBind, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorBindingStorageTexelBufferUpdateAfterBind, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorBindingUpdateUnusedWhilePending, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorBindingPartiallyBound, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorBindingVariableDescriptorCount, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, runtimeDescriptorArray, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, samplerFilterMinmax, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, scalarBlockLayout, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, imagelessFramebuffer, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, uniformBufferStandardLayout, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderSubgroupExtendedTypes, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, separateDepthStencilLayouts, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, hostQueryReset, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, timelineSemaphore, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, bufferDeviceAddress, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, bufferDeviceAddressCaptureReplay, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, bufferDeviceAddressMultiDevice, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, vulkanMemoryModel, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, vulkanMemoryModelDeviceScope, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, vulkanMemoryModelAvailabilityVisibilityChains, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderOutputViewportIndex, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderOutputLayer, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, subgroupBroadcastDynamicId, result)
+
+        return result;
+    } else {
+        return false;
+    }
+}
+
+static bool VULKAN_INTERNAL_ValidateOptInVulkan13Features(VkPhysicalDeviceVulkan13Features *requested, VkPhysicalDeviceVulkan13Features *supported)
+{
+    if (requested && supported) {
+        bool result = true;
+
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, robustImageAccess, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, inlineUniformBlock, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, descriptorBindingInlineUniformBlockUpdateAfterBind, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, pipelineCreationCacheControl, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, privateData, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderDemoteToHelperInvocation, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderTerminateInvocation, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, subgroupSizeControl, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, computeFullSubgroups, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, synchronization2, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, textureCompressionASTC_HDR, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderZeroInitializeWorkgroupMemory, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, dynamicRendering, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, shaderIntegerDotProduct, result)
+        CHECK_OPTIONAL_DEVICE_FEATURE(requested, supported, maintenance4, result)
+
+        return result;
+    } else {
+        return false;
+    }
+}
+
+#undef CHECK_OPTIONAL_DEVICE_FEATURE
+
+static void VULKAN_INTERNAL_AddDeviceFeatures(VkBool32 *firstFeature, VkBool32 *lastFeature, VkBool32 *firstFeatureToAdd)
+{
+    while (firstFeature <= lastFeature) {
+        *firstFeature = (*firstFeature | *firstFeatureToAdd);
+        firstFeature++;
+        firstFeatureToAdd++;
+    }
+}
+
+static bool VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, VulkanRenderer *renderer)
+{
+    if (SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER)) {
+        SDL_GPUVulkanOptions *options = (SDL_GPUVulkanOptions *)SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER, NULL);
+        if (options) {
+            renderer->usesCustomVulkanOptions = true;
+            renderer->desiredApiVersion = options->vulkan_api_version;
+            renderer->desiredVulkan11DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+            renderer->desiredVulkan12DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+            renderer->desiredVulkan13DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+
+            if (options->feature_list) {
+                VkPhysicalDeviceFeatures *vk10Features = &renderer->desiredVulkan10DeviceFeatures;
+                VkPhysicalDeviceVulkan11Features *vk11Features = &renderer->desiredVulkan11DeviceFeatures;
+                VkPhysicalDeviceVulkan12Features *vk12Features = &renderer->desiredVulkan12DeviceFeatures;
+                VkPhysicalDeviceVulkan13Features *vk13Features = &renderer->desiredVulkan13DeviceFeatures;
+
+                // Iterate through the entire list and combine all requested features
+                VkBaseOutStructure *nextStructure = (VkBaseOutStructure *)options->feature_list;
+                while (nextStructure) {
+                    switch (nextStructure->sType) {
+                    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2:
+                    {
+                        VkPhysicalDeviceFeatures2 *newFeatures = (VkPhysicalDeviceFeatures2 *)nextStructure;
+                        VULKAN_INTERNAL_AddDeviceFeatures(&vk10Features->robustBufferAccess,
+                                                          &vk10Features->inheritedQueries,
+                                                          &newFeatures->features.robustBufferAccess);
+                    } break;
+
+                    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES:
+                    {
+                        VkPhysicalDeviceVulkan11Features *newFeatures = (VkPhysicalDeviceVulkan11Features *)nextStructure;
+                        VULKAN_INTERNAL_AddDeviceFeatures(&vk11Features->storageBuffer16BitAccess,
+                                                          &vk11Features->shaderDrawParameters,
+                                                          &newFeatures->storageBuffer16BitAccess);
+                    } break;
+
+                    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES:
+                    {
+                        VkPhysicalDeviceVulkan12Features *newFeatures = (VkPhysicalDeviceVulkan12Features *)nextStructure;
+                        VULKAN_INTERNAL_AddDeviceFeatures(&vk12Features->samplerMirrorClampToEdge,
+                                                          &vk12Features->subgroupBroadcastDynamicId,
+                                                          &newFeatures->samplerMirrorClampToEdge);
+                    } break;
+
+                    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES:
+                    {
+                        VkPhysicalDeviceVulkan13Features *newFeatures = (VkPhysicalDeviceVulkan13Features *)nextStructure;
+                        VULKAN_INTERNAL_AddDeviceFeatures(&vk13Features->robustImageAccess,
+                                                          &vk13Features->maintenance4,
+                                                          &newFeatures->robustImageAccess);
+                    } break;
+
+                    default:
+                    {
+                        // It's very important that this routine aborts when an unhandled type is encountered.
+                        // Not all Vulkan structures (especially Vulkan 1.0 ones) cleanly cast to VkBaseOutStructure.
+                        // If we don't bail out, nextStructure would get set to some garbage memory location and
+                        // this loop would do very bad things.
+                        SDL_LogError(
+                            SDL_LOG_CATEGORY_GPU,
+                            "Unhandled Vulkan structure type in requested device feature list! %d",
+                            nextStructure->sType);
+                        SDL_SetError(
+                            "Unhandled Vulkan structure type in requested device feature list! %d",
+                            nextStructure->sType);
+                        return false;
+                    }
+                    }
+
+                    nextStructure = nextStructure->pNext;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
 static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
 {
     VkResult vulkanResult;
@@ -11204,37 +11485,9 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
     appInfo.applicationVersion = 0;
     appInfo.pEngineName = "SDLGPU";
     appInfo.engineVersion = SDL_VERSION;
-    appInfo.apiVersion = VK_MAKE_VERSION(1, 0, 0);
-    const char *hint = SDL_GetHint(SDL_HINT_VULKAN_REQUEST_API_VERSION);
-    if (hint) {
-        int major, minor, patch;
-        if (SDL_sscanf(hint, "%d.%d.%d", &major, &minor, &patch) == 3) {
-            bool isValid = major >= 1 &&
-                           minor >= 0 &&
-                           patch >= 0;
-            if (isValid) {
-                appInfo.apiVersion = VK_MAKE_VERSION(major, minor, patch);
-            } else {
-                SDL_LogError(
-                    SDL_LOG_CATEGORY_GPU,
-                    "VULKAN_INTERNAL_CreateInstance: Requested Vulkan API version was invalid. Must be at least 1.0.0. Got '%s'",
-                    hint);
-                SDL_SetError(
-                    "VULKAN_INTERNAL_CreateInstance: Requested Vulkan API version was invalid. Must be at least 1.0.0. Got '%s'",
-                    hint);
-                return 0;
-            }
-        } else {
-            SDL_LogError(
-                SDL_LOG_CATEGORY_GPU,
-                "VULKAN_INTERNAL_CreateInstance: Failed to parse requested Vulkan API version. Expected 'MAJOR.MINOR.PATCH'. Got '%s'",
-                hint);
-            SDL_SetError(
-                "VULKAN_INTERNAL_CreateInstance: Failed to parse requested Vulkan API version. Expected 'MAJOR.MINOR.PATCH'. Got '%s'",
-                hint);
-            return 0;
-        }
-    }
+    appInfo.apiVersion = renderer->usesCustomVulkanOptions
+                             ? renderer->desiredApiVersion
+                             : VK_MAKE_VERSION(1, 0, 0);
 
     createFlags = 0;
 
@@ -11378,14 +11631,46 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
         physicalDevice,
         &deviceFeatures);
 
-    if ((!deviceFeatures.independentBlend && renderer->desiredBaselineDeviceFeatures.independentBlend) ||
-        (!deviceFeatures.imageCubeArray && renderer->desiredBaselineDeviceFeatures.imageCubeArray) ||
-        (!deviceFeatures.depthClamp && renderer->desiredBaselineDeviceFeatures.depthClamp) ||
-        (!deviceFeatures.shaderClipDistance && renderer->desiredBaselineDeviceFeatures.shaderClipDistance) ||
-        (!deviceFeatures.drawIndirectFirstInstance && renderer->desiredBaselineDeviceFeatures.drawIndirectFirstInstance) ||
-        (!deviceFeatures.sampleRateShading && renderer->desiredBaselineDeviceFeatures.sampleRateShading) ||
-        (!deviceFeatures.samplerAnisotropy && renderer->desiredBaselineDeviceFeatures.samplerAnisotropy)) {
+    if ((!deviceFeatures.independentBlend && renderer->desiredVulkan10DeviceFeatures.independentBlend) ||
+        (!deviceFeatures.imageCubeArray && renderer->desiredVulkan10DeviceFeatures.imageCubeArray) ||
+        (!deviceFeatures.depthClamp && renderer->desiredVulkan10DeviceFeatures.depthClamp) ||
+        (!deviceFeatures.shaderClipDistance && renderer->desiredVulkan10DeviceFeatures.shaderClipDistance) ||
+        (!deviceFeatures.drawIndirectFirstInstance && renderer->desiredVulkan10DeviceFeatures.drawIndirectFirstInstance) ||
+        (!deviceFeatures.sampleRateShading && renderer->desiredVulkan10DeviceFeatures.sampleRateShading) ||
+        (!deviceFeatures.samplerAnisotropy && renderer->desiredVulkan10DeviceFeatures.samplerAnisotropy)) {
         return 0;
+    }
+
+    // Check opt-in device features
+    if (renderer->usesCustomVulkanOptions) {
+        VkPhysicalDeviceFeatures2 featureList = { 0 };
+        featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+
+        VkPhysicalDeviceVulkan11Features vk11Features = { 0 };
+        vk11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+
+        VkPhysicalDeviceVulkan12Features vk12Features = { 0 };
+        vk12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+
+        VkPhysicalDeviceVulkan13Features vk13Features = { 0 };
+        vk13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+
+        featureList.pNext = &vk11Features;
+        vk11Features.pNext = &vk12Features;
+        vk12Features.pNext = &vk13Features;
+
+        renderer->vkGetPhysicalDeviceFeatures2(
+            physicalDevice,
+            &featureList);
+
+        bool supportsAllFeatures = VULKAN_INTERNAL_ValidateOptInVulkan10Features(&renderer->desiredVulkan10DeviceFeatures, &featureList.features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan11Features(&renderer->desiredVulkan11DeviceFeatures, &vk11Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan12Features(&renderer->desiredVulkan12DeviceFeatures, &vk12Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan13Features(&renderer->desiredVulkan13DeviceFeatures, &vk13Features);
+
+        if (!supportsAllFeatures) {
+            return 0;
+        }
     }
 
     if (!VULKAN_INTERNAL_CheckDeviceExtensions(
@@ -11648,12 +11933,12 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     // specifying used device features
 
     if (haveDeviceFeatures.fillModeNonSolid) {
-        renderer->desiredBaselineDeviceFeatures.fillModeNonSolid = VK_TRUE;
+        renderer->desiredVulkan10DeviceFeatures.fillModeNonSolid = VK_TRUE;
         renderer->supportsFillModeNonSolid = true;
     }
 
     if (haveDeviceFeatures.multiDrawIndirect) {
-        renderer->desiredBaselineDeviceFeatures.multiDrawIndirect = VK_TRUE;
+        renderer->desiredVulkan10DeviceFeatures.multiDrawIndirect = VK_TRUE;
         renderer->supportsMultiDrawIndirect = true;
     }
 
@@ -11695,24 +11980,18 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     CreateDeviceExtensionArray(&renderer->supports, deviceExtensions);
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions;
 
-    // Look for opt-in features
     VkPhysicalDeviceFeatures2 featureList;
-    if (SDL_HasProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER)) {
-        deviceCreateInfo.pEnabledFeatures = NULL;
-
-        // Walk the list of structures
-        VkBaseOutStructure *nextPtr = (VkBaseOutStructure *)&deviceCreateInfo;
-        while (nextPtr->pNext) {
-            nextPtr = (VkBaseOutStructure *)nextPtr->pNext;
-        }
-
-        nextPtr->pNext = &featureList;
-
+    if (renderer->usesCustomVulkanOptions) {
         featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-        featureList.features = renderer->desiredBaselineDeviceFeatures;
-        featureList.pNext = SDL_GetPointerProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER, NULL);
+        featureList.features = renderer->desiredVulkan10DeviceFeatures;
+        featureList.pNext = &renderer->desiredVulkan11DeviceFeatures;
+        renderer->desiredVulkan11DeviceFeatures.pNext = &renderer->desiredVulkan12DeviceFeatures;
+        renderer->desiredVulkan12DeviceFeatures.pNext = &renderer->desiredVulkan13DeviceFeatures;
+        renderer->desiredVulkan13DeviceFeatures.pNext = (void *)deviceCreateInfo.pNext;
+        deviceCreateInfo.pEnabledFeatures = NULL;
+        deviceCreateInfo.pNext = &featureList;
     } else {
-        deviceCreateInfo.pEnabledFeatures = &renderer->desiredBaselineDeviceFeatures;
+        deviceCreateInfo.pEnabledFeatures = &renderer->desiredVulkan10DeviceFeatures;
     }
 
     vulkanResult = renderer->vkCreateDevice(
@@ -11819,20 +12098,26 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
     renderer = (VulkanRenderer *)SDL_calloc(1, sizeof(*renderer));
     if (renderer) {
         // Opt out device features (higher compatibility in exchange for reduced functionality)
-        renderer->desiredBaselineDeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-        renderer->desiredBaselineDeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-        renderer->desiredBaselineDeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-        renderer->desiredBaselineDeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredVulkan10DeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredVulkan10DeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredVulkan10DeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+        renderer->desiredVulkan10DeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
 
         // These features have near universal support so they are always enabled
-        renderer->desiredBaselineDeviceFeatures.independentBlend = VK_TRUE;
-        renderer->desiredBaselineDeviceFeatures.sampleRateShading = VK_TRUE;
-        renderer->desiredBaselineDeviceFeatures.imageCubeArray = VK_TRUE;
+        renderer->desiredVulkan10DeviceFeatures.independentBlend = VK_TRUE;
+        renderer->desiredVulkan10DeviceFeatures.sampleRateShading = VK_TRUE;
+        renderer->desiredVulkan10DeviceFeatures.imageCubeArray = VK_TRUE;
 
-        result = VULKAN_INTERNAL_PrepareVulkan(renderer);
-        if (result) {
-            renderer->vkDestroyInstance(renderer->instance, NULL);
+        // Handle opt-in device features
+        bool featuresInitialized = VULKAN_INTERNAL_AddOptInVulkanOptions(props, renderer);
+
+        if (featuresInitialized) {
+            result = VULKAN_INTERNAL_PrepareVulkan(renderer);
+            if (result) {
+                renderer->vkDestroyInstance(renderer->instance, NULL);
+            }
         }
+
         SDL_free(renderer);
     }
     SDL_Vulkan_UnloadLibrary();
@@ -11868,15 +12153,23 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->allowedFramesInFlight = 2;
 
     // Opt out device features (higher compatibility in exchange for reduced functionality)
-    renderer->desiredBaselineDeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredBaselineDeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredBaselineDeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
-    renderer->desiredBaselineDeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredVulkan10DeviceFeatures.samplerAnisotropy = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredVulkan10DeviceFeatures.depthClamp = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredVulkan10DeviceFeatures.shaderClipDistance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
+    renderer->desiredVulkan10DeviceFeatures.drawIndirectFirstInstance = SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN, true) ? VK_TRUE : VK_FALSE;
 
     // These features have near universal support so they are always enabled
-    renderer->desiredBaselineDeviceFeatures.independentBlend = VK_TRUE;
-    renderer->desiredBaselineDeviceFeatures.sampleRateShading = VK_TRUE;
-    renderer->desiredBaselineDeviceFeatures.imageCubeArray = VK_TRUE;
+    renderer->desiredVulkan10DeviceFeatures.independentBlend = VK_TRUE;
+    renderer->desiredVulkan10DeviceFeatures.sampleRateShading = VK_TRUE;
+    renderer->desiredVulkan10DeviceFeatures.imageCubeArray = VK_TRUE;
+
+    // Handle opt-in device features
+    if (!VULKAN_INTERNAL_AddOptInVulkanOptions(props, renderer)) {
+        SET_STRING_ERROR("Failed to initialize additional Vulkan options!");
+        SDL_free(renderer);
+        SDL_Vulkan_UnloadLibrary();
+        return NULL;
+    }
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
         SET_STRING_ERROR("Failed to initialize Vulkan!");
@@ -11982,21 +12275,6 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     } else {
         if (verboseLogs) {
             SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Vulkan Driver: %s", driverVer);
-        }
-    }
-
-    // Pass opt-in device features to renderer creation
-    if (SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER)) {
-        void *ptr = SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER, NULL);
-        if (!SDL_SetPointerProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER, ptr)) {
-            SDL_LogError(
-                SDL_LOG_CATEGORY_GPU,
-                "VULKAN_CreateDevice: Failed to set additional Vulkan features: %s",
-                SDL_GetError());
-            SDL_SetError(
-                "VULKAN_CreateDevice: Failed to set additional Vulkan features: %s",
-                SDL_GetError());
-            return NULL;
         }
     }
 

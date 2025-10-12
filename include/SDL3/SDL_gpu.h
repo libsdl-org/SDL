@@ -2346,6 +2346,29 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN     "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING                   "SDL.gpu.device.create.d3d12.semantic"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER           "SDL.gpu.device.create.vulkan.additional_features"
+#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
+
+
+
+
+/**
+ * A structure specifying additional options when using Vulkan.
+ *
+ * When no such structure is provided, SDL will use Vulkan API version 1.0 and a minimal set of features.
+ * The feature list is only allowed to contain the following structures:
+ *  - VkPhysicalDeviceFeatures2
+ *  - VkPhysicalDeviceVulkan11Features
+ *  - VkPhysicalDeviceVulkan12Features
+ *  - VkPhysicalDeviceVulkan13Features
+ * 
+ * \since This struct is available since SDL 3.4.0.
+ *
+ */
+typedef struct SDL_GPUVulkanOptions
+{
+    Uint32 vulkan_api_version; /**< The Vulkan API version to request for the instance. Use Vulkan's VK_MAKE_VERSION or VK_MAKE_API_VERSION. */
+    void *feature_list; /**< Pointer to the first element of a list of Vulkan physical device feature structs. */
+} SDL_GPUVulkanOptions;
 
 /**
  * Destroys a GPU context previously returned by SDL_CreateGPUDevice.
