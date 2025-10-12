@@ -1219,6 +1219,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         SDL_SetPointerProperty(new_props, SDL_PROP_RENDERER_SURFACE_POINTER, surface);
     }
     SDL_SetNumberProperty(new_props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, renderer->output_colorspace);
+    SDL_SetBooleanProperty(new_props, SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN, !renderer->npot_texture_wrap_unsupported);
 
     if (window) {
         UpdateHDRProperties(renderer);
@@ -4581,8 +4582,8 @@ bool SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const 
                         (!srcrect ||
                             (real_srcrect.x == 0.0f && real_srcrect.y == 0.0f &&
                              real_srcrect.w == (float)texture->w && real_srcrect.h == (float)texture->h));
-    if (do_wrapping && !renderer->npot_texture_wrap_unsupported) {
-        if (renderer->npot_texture_wrap_unsupported && (IsNPOT(texture->w) || IsNPOT(texture->h))) {
+    if (do_wrapping && renderer->npot_texture_wrap_unsupported) {
+        if (IsNPOT(texture->w) || IsNPOT(texture->h)) {
             do_wrapping = false;
         }
     }
@@ -5351,8 +5352,16 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
         }
     }
 
-    texture_address_mode_u = renderer->texture_address_mode_u;
-    texture_address_mode_v = renderer->texture_address_mode_v;
+    if (renderer->npot_texture_wrap_unsupported && IsNPOT(texture->w)) {
+        texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
+    } else {
+        texture_address_mode_u = renderer->texture_address_mode_u;
+    }
+    if (renderer->npot_texture_wrap_unsupported && IsNPOT(texture->h)) {
+        texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
+    } else {
+        texture_address_mode_v = renderer->texture_address_mode_v;
+    }
     if (texture &&
         (texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO ||
          texture_address_mode_v == SDL_TEXTURE_ADDRESS_AUTO)) {
@@ -5427,12 +5436,6 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
 bool SDL_SetRenderTextureAddressMode(SDL_Renderer *renderer, SDL_TextureAddressMode u_mode, SDL_TextureAddressMode v_mode)
 {
     CHECK_RENDERER_MAGIC(renderer, false);
-
-    if ((u_mode == SDL_TEXTURE_ADDRESS_WRAP || v_mode == SDL_TEXTURE_ADDRESS_WRAP) &&
-        renderer->npot_texture_wrap_unsupported) {
-        // Technically it's supported on power of two textures, but we're assuming that non-power-of-two textures are going to be used.
-        return SDL_SetError("SDL_TEXTURE_ADDRESS_WRAP not supported");
-    }
 
     renderer->texture_address_mode_u = u_mode;
     renderer->texture_address_mode_v = v_mode;
