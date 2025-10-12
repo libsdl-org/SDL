@@ -302,13 +302,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 break;
         } while (++i < pointerCount);
 
-        if (scaleGestureDetector.onTouchEvent(event)) {
-            if (scaleGestureDetector.isInProgress()) {
-                return true; /* event was consumed as gesture */
-            }
-        }
-
-
+        scaleGestureDetector.onTouchEvent(event);
 
         return true;
     }
