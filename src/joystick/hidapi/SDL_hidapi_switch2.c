@@ -960,7 +960,7 @@ static bool UpdateRumble(SDL_DriverSwitch2_Context *ctx)
         return false;
     }
 
-    unsigned char rumble_data[64] = {};
+    unsigned char rumble_data[64] = {0};
     if (ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER) {
         Uint16 rumble_max = SDL_max(ctx->rumble_lo_amp, ctx->rumble_hi_amp);
         rumble_data[0x00] = 0x3;
