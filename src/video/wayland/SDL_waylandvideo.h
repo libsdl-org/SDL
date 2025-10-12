@@ -86,7 +86,6 @@ struct SDL_VideoData
     struct wp_color_manager_v1 *wp_color_manager_v1;
     struct zwp_tablet_manager_v2 *tablet_manager;
     struct wl_fixes *wl_fixes;
-    struct zwp_pointer_gestures_v1 *zwp_pointer_gestures;
 
     struct xkb_context *xkb_context;
 

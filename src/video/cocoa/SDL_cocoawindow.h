@@ -122,7 +122,6 @@ typedef enum
 - (void)touchesMovedWithEvent:(NSEvent *)theEvent;
 - (void)touchesEndedWithEvent:(NSEvent *)theEvent;
 - (void)touchesCancelledWithEvent:(NSEvent *)theEvent;
-- (void)magnifyWithEvent:(NSEvent *) theEvent;
 
 // Touch event handling
 - (void)handleTouches:(NSTouchPhase)phase withEvent:(NSEvent *)theEvent;

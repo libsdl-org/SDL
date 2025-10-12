@@ -48,7 +48,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
     SDL_TouchID directTouchId;
     SDL_TouchID indirectTouchId;
-    float last_scale;
 
 #if !defined(SDL_PLATFORM_TVOS)
     UIPointerInteraction *indirectPointerInteraction API_AVAILABLE(ios(13.4));
@@ -75,15 +74,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
         swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
         [self addGestureRecognizer:swipeRight];
-#endif
-
-#if !defined(SDL_PLATFORM_TVOS)
-        /* Pinch gestures */
-        UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(sdlPinchGesture:)];
-        pinchGesture.cancelsTouchesInView = NO;
-        pinchGesture.delaysTouchesBegan = NO;
-        pinchGesture.delaysTouchesEnded = NO;
-        [self addGestureRecognizer:pinchGesture];
 #endif
 
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -479,40 +469,6 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
                                 (int)SDL_ceilf(self.safeAreaInsets.top),
                                 (int)SDL_ceilf(self.safeAreaInsets.bottom));
 }
-
-#if !defined(SDL_PLATFORM_TVOS)
-- (IBAction)sdlPinchGesture:(UIPinchGestureRecognizer *)sender
-{
-    CGFloat scale = sender.scale;
-    UIGestureRecognizerState state = sender.state;
-
-    switch (state) {
-
-        case UIGestureRecognizerStateBegan:
-            last_scale = 1.0f;
-            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, sdlwindow, 0);
-            break;
-
-        case UIGestureRecognizerStateChanged:
-            /* TODO/FIXME: this isn't the same scale scale as others backed, should send the delta scale instead */
-            if (last_scale > 0.0f) {
-                SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, sdlwindow, scale / last_scale);
-            }
-            last_scale = scale;
-            break;
-
-        case UIGestureRecognizerStateFailed:
-        case UIGestureRecognizerStateEnded:
-        case UIGestureRecognizerStateCancelled:
-            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, sdlwindow, 0);
-            break;
-
-        default:
-            break;
-    }
-
-}
-#endif
 
 - (SDL_Scancode)scancodeFromPress:(UIPress *)press
 {
