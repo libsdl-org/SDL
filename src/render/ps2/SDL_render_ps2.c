@@ -752,6 +752,7 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     renderer->window = window;
 
     renderer->name = PS2_RenderDriver.name;
+    renderer->npot_texture_wrap_unsupported = true;
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR1555);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ABGR8888);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);

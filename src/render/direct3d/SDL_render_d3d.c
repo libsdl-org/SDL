@@ -1843,6 +1843,13 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     } else {
         device_flags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
     }
+    if (caps.TextureCaps & D3DPTEXTURECAPS_POW2) {
+        if (caps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) {
+            renderer->npot_texture_wrap_unsupported = true;
+        } else {
+            return SDL_SetError("Non-power-of-two textures are not supported");
+        }
+    }
 
     if (SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D_THREADSAFE, false)) {
         device_flags |= D3DCREATE_MULTITHREADED;
