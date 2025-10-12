@@ -79,6 +79,9 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 #if !defined(SDL_PLATFORM_TVOS)
         /* Pinch gestures */
         UIPinchGestureRecognizer *pinchGesture = [[UIPinchGestureRecognizer alloc] initWithTarget:self action:@selector(sdlPinchGesture:)];
+        pinchGesture.cancelsTouchesInView = NO;
+        pinchGesture.delaysTouchesBegan = NO;
+        pinchGesture.delaysTouchesEnded = NO;
         [self addGestureRecognizer:pinchGesture];
 #endif
 
