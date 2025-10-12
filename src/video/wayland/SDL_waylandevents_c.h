@@ -192,6 +192,7 @@ typedef struct SDL_WaylandSeat
         struct zwp_input_timestamps_v1 *timestamps;
         Uint64 highres_timestamp_ns;
         struct wl_list points;
+        struct zwp_pointer_gesture_pinch_v1 *gesture_pinch;
     } touch;
 
     struct
