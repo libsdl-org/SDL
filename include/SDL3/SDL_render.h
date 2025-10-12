@@ -110,8 +110,9 @@ typedef enum SDL_TextureAccess
  *
  * This affects how texture coordinates are interpreted outside of [0, 1]
  *
- * Texture wrapping is always supported for power of two texture sizes,
- * and is supported for other texture sizes if SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN is set to true.
+ * Texture wrapping is always supported for power of two texture sizes, and is
+ * supported for other texture sizes if
+ * SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN is set to true.
  *
  * \since This enum is available since SDL 3.4.0.
  */
@@ -477,7 +478,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetRendererName(SDL_Renderer *rende
  * - `SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER`: a (const SDL_PixelFormat *)
  *   array of pixel formats, terminated with SDL_PIXELFORMAT_UNKNOWN,
  *   representing the available texture formats for this renderer.
- * - `SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN`: true if the renderer supports SDL_TEXTURE_ADDRESS_WRAP on non-power-of-two textures.
+ * - `SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN`: true if the renderer
+ *   supports SDL_TEXTURE_ADDRESS_WRAP on non-power-of-two textures.
  * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_Colorspace value
  *   describing the colorspace for output to the display, defaults to
  *   SDL_COLORSPACE_SRGB.
