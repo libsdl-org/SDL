@@ -11460,8 +11460,11 @@ static bool VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_12_Or_Later(VkPhysicalDe
                                                                     VkPhysicalDeviceVulkan11Features *dst11,
                                                                     VkPhysicalDeviceVulkan12Features *dst12,
                                                                     VkPhysicalDeviceVulkan13Features *dst13,
+                                                                    Uint32 apiVersion,
                                                                     VkBaseOutStructure *src)
 {
+    SDL_assert(apiVersion >= VK_API_VERSION_1_2);
+
     bool hasAdded = VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_11(dst10, dst11, src);
     if (!hasAdded) {
         switch (src->sType) {
@@ -11485,11 +11488,13 @@ static bool VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_12_Or_Later(VkPhysicalDe
 
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES:
         {
-            VkPhysicalDeviceVulkan13Features *newFeatures = (VkPhysicalDeviceVulkan13Features *)src;
-            VULKAN_INTERNAL_AddDeviceFeatures(&dst13->robustImageAccess,
-                                              &dst13->maintenance4,
-                                              &newFeatures->robustImageAccess);
-            hasAdded = true;
+            if (apiVersion >= VK_API_VERSION_1_3) {
+                VkPhysicalDeviceVulkan13Features *newFeatures = (VkPhysicalDeviceVulkan13Features *)src;
+                VULKAN_INTERNAL_AddDeviceFeatures(&dst13->robustImageAccess,
+                                                  &dst13->maintenance4,
+                                                  &newFeatures->robustImageAccess);
+                hasAdded = true;
+            }
         } break;
         }
     }
@@ -11542,6 +11547,7 @@ static bool VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, Vulkan
                                                                                 vk11Features,
                                                                                 vk12Features,
                                                                                 vk13Features,
+                                                                                renderer->desiredApiVersion,
                                                                                 nextStructure);
                         nextStructure = nextStructure->pNext;
                     }
