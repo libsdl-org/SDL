@@ -2355,11 +2355,8 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
  * A structure specifying additional options when using Vulkan.
  *
  * When no such structure is provided, SDL will use Vulkan API version 1.0 and a minimal set of features.
- * The feature list is only allowed to contain the following structures:
- *  - VkPhysicalDeviceFeatures2
- *  - VkPhysicalDeviceVulkan11Features
- *  - VkPhysicalDeviceVulkan12Features
- *  - VkPhysicalDeviceVulkan13Features
+ * The feature list gets passed to the vkCreateInstance function and allows requesting additional
+ * features.
  * 
  * \since This struct is available since SDL 3.4.0.
  *
@@ -2367,7 +2364,8 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 typedef struct SDL_GPUVulkanOptions
 {
     Uint32 vulkan_api_version; /**< The Vulkan API version to request for the instance. Use Vulkan's VK_MAKE_VERSION or VK_MAKE_API_VERSION. */
-    void *feature_list; /**< Pointer to the first element of a list of Vulkan physical device feature structs. */
+    void *feature_list; /**< Pointer to the first element of a list of structs to be passed to device creation. */
+	void *vulkan_10_physical_device_features; /**< Pointer to a VkPhysicalDeviceFeatures struct to enable additional Vulkan 1.0 features. */
 } SDL_GPUVulkanOptions;
 
 /**

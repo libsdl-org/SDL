@@ -11389,6 +11389,114 @@ static void VULKAN_INTERNAL_AddDeviceFeatures(VkBool32 *firstFeature, VkBool32 *
     }
 }
 
+static bool VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_11(VkPhysicalDeviceFeatures *dst10,
+                                                           VkPhysicalDeviceVulkan11Features *dst11,
+                                                           VkBaseOutStructure *src)
+{
+    bool hasAdded = false;
+    switch (src->sType) {
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2:
+    {
+        VkPhysicalDeviceFeatures2 *newFeatures = (VkPhysicalDeviceFeatures2 *)src;
+        VULKAN_INTERNAL_AddDeviceFeatures(&dst10->robustBufferAccess,
+                                          &dst10->inheritedQueries,
+                                          &newFeatures->features.robustBufferAccess);
+        hasAdded = true;
+    } break;
+
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES:
+    {
+        VkPhysicalDevice16BitStorageFeatures *newFeatures = (VkPhysicalDevice16BitStorageFeatures *)src;
+        dst11->storageBuffer16BitAccess |= newFeatures->storageBuffer16BitAccess;
+        dst11->uniformAndStorageBuffer16BitAccess |= newFeatures->uniformAndStorageBuffer16BitAccess;
+        dst11->storagePushConstant16 |= newFeatures->storagePushConstant16;
+        dst11->storageInputOutput16 |= newFeatures->storageInputOutput16;
+        hasAdded = true;
+    } break;
+
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES:
+    {
+        VkPhysicalDeviceMultiviewFeatures *newFeatures = (VkPhysicalDeviceMultiviewFeatures *)src;
+        dst11->multiview |= newFeatures->multiview;
+        dst11->multiviewGeometryShader |= newFeatures->multiviewGeometryShader;
+        dst11->multiviewTessellationShader |= newFeatures->multiviewTessellationShader;
+        hasAdded = true;
+    } break;
+
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES:
+    {
+        VkPhysicalDeviceProtectedMemoryFeatures *newFeatures = (VkPhysicalDeviceProtectedMemoryFeatures *)src;
+        dst11->protectedMemory |= newFeatures->protectedMemory;
+        hasAdded = true;
+    } break;
+
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES:
+    {
+        VkPhysicalDeviceSamplerYcbcrConversionFeatures *newFeatures = (VkPhysicalDeviceSamplerYcbcrConversionFeatures *)src;
+        dst11->samplerYcbcrConversion |= newFeatures->samplerYcbcrConversion;
+        hasAdded = true;
+    } break;
+
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES:
+    {
+        VkPhysicalDeviceShaderDrawParametersFeatures *newFeatures = (VkPhysicalDeviceShaderDrawParametersFeatures *)src;
+        dst11->shaderDrawParameters |= newFeatures->shaderDrawParameters;
+        hasAdded = true;
+    } break;
+
+    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES:
+    {
+        VkPhysicalDeviceVariablePointersFeatures *newFeatures = (VkPhysicalDeviceVariablePointersFeatures *)src;
+        dst11->variablePointers |= newFeatures->variablePointers;
+        dst11->variablePointersStorageBuffer |= newFeatures->variablePointersStorageBuffer;
+        hasAdded = true;
+    } break;
+    }
+
+    return hasAdded;
+}
+
+static bool VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_12_Or_Later(VkPhysicalDeviceFeatures *dst10,
+                                                                    VkPhysicalDeviceVulkan11Features *dst11,
+                                                                    VkPhysicalDeviceVulkan12Features *dst12,
+                                                                    VkPhysicalDeviceVulkan13Features *dst13,
+                                                                    VkBaseOutStructure *src)
+{
+    bool hasAdded = VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_11(dst10, dst11, src);
+    if (!hasAdded) {
+        switch (src->sType) {
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES:
+        {
+            VkPhysicalDeviceVulkan11Features *newFeatures = (VkPhysicalDeviceVulkan11Features *)src;
+            VULKAN_INTERNAL_AddDeviceFeatures(&dst11->storageBuffer16BitAccess,
+                                              &dst11->shaderDrawParameters,
+                                              &newFeatures->storageBuffer16BitAccess);
+            hasAdded = true;
+        } break;
+
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES:
+        {
+            VkPhysicalDeviceVulkan12Features *newFeatures = (VkPhysicalDeviceVulkan12Features *)src;
+            VULKAN_INTERNAL_AddDeviceFeatures(&dst12->samplerMirrorClampToEdge,
+                                              &dst12->subgroupBroadcastDynamicId,
+                                              &newFeatures->samplerMirrorClampToEdge);
+            hasAdded = true;
+        } break;
+
+        case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES:
+        {
+            VkPhysicalDeviceVulkan13Features *newFeatures = (VkPhysicalDeviceVulkan13Features *)src;
+            VULKAN_INTERNAL_AddDeviceFeatures(&dst13->robustImageAccess,
+                                              &dst13->maintenance4,
+                                              &newFeatures->robustImageAccess);
+            hasAdded = true;
+        } break;
+        }
+    }
+
+    return hasAdded;
+}
+
 static bool VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, VulkanRenderer *renderer)
 {
     if (SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER)) {
@@ -11396,70 +11504,47 @@ static bool VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, Vulkan
         if (options) {
             renderer->usesCustomVulkanOptions = true;
             renderer->desiredApiVersion = options->vulkan_api_version;
+
+            SDL_memset(&renderer->desiredVulkan11DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan11Features));
+            SDL_memset(&renderer->desiredVulkan12DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan12Features));
+            SDL_memset(&renderer->desiredVulkan13DeviceFeatures, 0, sizeof(VkPhysicalDeviceVulkan13Features));
             renderer->desiredVulkan11DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
             renderer->desiredVulkan12DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
             renderer->desiredVulkan13DeviceFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 
-            if (options->feature_list) {
-                VkPhysicalDeviceFeatures *vk10Features = &renderer->desiredVulkan10DeviceFeatures;
-                VkPhysicalDeviceVulkan11Features *vk11Features = &renderer->desiredVulkan11DeviceFeatures;
-                VkPhysicalDeviceVulkan12Features *vk12Features = &renderer->desiredVulkan12DeviceFeatures;
-                VkPhysicalDeviceVulkan13Features *vk13Features = &renderer->desiredVulkan13DeviceFeatures;
+            // Handle requested device features
+            VkPhysicalDeviceFeatures *vk10Features = &renderer->desiredVulkan10DeviceFeatures;
+            VkPhysicalDeviceVulkan11Features *vk11Features = &renderer->desiredVulkan11DeviceFeatures;
+            VkPhysicalDeviceVulkan12Features *vk12Features = &renderer->desiredVulkan12DeviceFeatures;
+            VkPhysicalDeviceVulkan13Features *vk13Features = &renderer->desiredVulkan13DeviceFeatures;
 
-                // Iterate through the entire list and combine all requested features
-                VkBaseOutStructure *nextStructure = (VkBaseOutStructure *)options->feature_list;
-                while (nextStructure) {
-                    switch (nextStructure->sType) {
-                    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2:
-                    {
-                        VkPhysicalDeviceFeatures2 *newFeatures = (VkPhysicalDeviceFeatures2 *)nextStructure;
-                        VULKAN_INTERNAL_AddDeviceFeatures(&vk10Features->robustBufferAccess,
-                                                          &vk10Features->inheritedQueries,
-                                                          &newFeatures->features.robustBufferAccess);
-                    } break;
+            if (options->vulkan_10_physical_device_features) {
+                VkPhysicalDeviceFeatures *features = (VkPhysicalDeviceFeatures *)options->vulkan_10_physical_device_features;
+                VULKAN_INTERNAL_AddDeviceFeatures(&vk10Features->robustBufferAccess,
+                                                  &vk10Features->inheritedQueries,
+                                                  &features->robustBufferAccess);
+            }
 
-                    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES:
-                    {
-                        VkPhysicalDeviceVulkan11Features *newFeatures = (VkPhysicalDeviceVulkan11Features *)nextStructure;
-                        VULKAN_INTERNAL_AddDeviceFeatures(&vk11Features->storageBuffer16BitAccess,
-                                                          &vk11Features->shaderDrawParameters,
-                                                          &newFeatures->storageBuffer16BitAccess);
-                    } break;
-
-                    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES:
-                    {
-                        VkPhysicalDeviceVulkan12Features *newFeatures = (VkPhysicalDeviceVulkan12Features *)nextStructure;
-                        VULKAN_INTERNAL_AddDeviceFeatures(&vk12Features->samplerMirrorClampToEdge,
-                                                          &vk12Features->subgroupBroadcastDynamicId,
-                                                          &newFeatures->samplerMirrorClampToEdge);
-                    } break;
-
-                    case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES:
-                    {
-                        VkPhysicalDeviceVulkan13Features *newFeatures = (VkPhysicalDeviceVulkan13Features *)nextStructure;
-                        VULKAN_INTERNAL_AddDeviceFeatures(&vk13Features->robustImageAccess,
-                                                          &vk13Features->maintenance4,
-                                                          &newFeatures->robustImageAccess);
-                    } break;
-
-                    default:
-                    {
-                        // It's very important that this routine aborts when an unhandled type is encountered.
-                        // Not all Vulkan structures (especially Vulkan 1.0 ones) cleanly cast to VkBaseOutStructure.
-                        // If we don't bail out, nextStructure would get set to some garbage memory location and
-                        // this loop would do very bad things.
-                        SDL_LogError(
-                            SDL_LOG_CATEGORY_GPU,
-                            "Unhandled Vulkan structure type in requested device feature list! %d",
-                            nextStructure->sType);
-                        SDL_SetError(
-                            "Unhandled Vulkan structure type in requested device feature list! %d",
-                            nextStructure->sType);
-                        return false;
+            bool supportsHigherLevelFeatures = renderer->desiredApiVersion != VK_API_VERSION_1_0;
+            if (supportsHigherLevelFeatures && options->feature_list) {
+                if (renderer->desiredApiVersion == VK_API_VERSION_1_1) {
+                    // Iterate through the entire list and combine all requested features
+                    VkBaseOutStructure *nextStructure = (VkBaseOutStructure *)options->feature_list;
+                    while (nextStructure) {
+                        VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_11(vk10Features, vk11Features, nextStructure);
+                        nextStructure = nextStructure->pNext;
                     }
+                } else {
+                    // Iterate through the entire list and combine all requested features
+                    VkBaseOutStructure *nextStructure = (VkBaseOutStructure *)options->feature_list;
+                    while (nextStructure) {
+                        VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_12_Or_Later(vk10Features,
+                                                                                vk11Features,
+                                                                                vk12Features,
+                                                                                vk13Features,
+                                                                                nextStructure);
+                        nextStructure = nextStructure->pNext;
                     }
-
-                    nextStructure = nextStructure->pNext;
                 }
             }
         }
