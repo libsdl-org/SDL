@@ -251,50 +251,6 @@ static void SDL_DelFinger(SDL_Touch *touch, SDL_FingerID fingerid)
     }
 }
 
-static void SDL_UpdatePinchGestures(Uint64 timestamp, SDL_Touch *touch, SDL_Window *window)
-{
-    SDL_EventType type;
-    bool pinch_active = (touch->num_fingers > 1);
-    float scale = 1.0f;
-    float distance = 0.0f;
-
-    if (pinch_active) {
-        float deltaX = (touch->fingers[0]->x - touch->fingers[1]->x);
-        float deltaY = (touch->fingers[0]->y - touch->fingers[1]->y);
-        distance = SDL_sqrtf(deltaX * deltaX + deltaY * deltaY);
-    }
-
-    if (pinch_active != touch->pinch_active) {
-        if (pinch_active) {
-            type = SDL_EVENT_PINCH_BEGIN;
-        } else {
-            type = SDL_EVENT_PINCH_END;
-        }
-        touch->pinch_active = pinch_active;
-        touch->pinch_distance = distance;
-
-    } else if (pinch_active) {
-        type = SDL_EVENT_PINCH_UPDATE;
-        if (touch->pinch_distance > 0) {
-            scale = distance / touch->pinch_distance;
-        }
-        touch->pinch_distance = distance;
-    } else {
-        return;
-    }
-
-    if (SDL_EventEnabled(type)) {
-        SDL_Event event;
-        event.type = type;
-        event.common.timestamp = timestamp;
-        event.pinch.touchID = touch->id;
-        event.pinch.distance = distance;
-        event.pinch.scale = scale;
-        event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
-        SDL_PushEvent(&event);
-    }
-}
-
 void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window, SDL_EventType type, float x, float y, float pressure)
 {
     SDL_Finger *finger;
@@ -415,8 +371,6 @@ void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_
 
         SDL_DelFinger(touch, fingerid);
     }
-
-    SDL_UpdatePinchGestures(timestamp, touch, window);
 }
 
 void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_Window *window,
@@ -505,8 +459,6 @@ void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid
         event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
         SDL_PushEvent(&event);
     }
-
-    SDL_UpdatePinchGestures(timestamp, touch, window);
 }
 
 void SDL_DelTouch(SDL_TouchID id)

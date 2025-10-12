@@ -67,6 +67,7 @@
 #include "xdg-toplevel-icon-v1-client-protocol.h"
 #include "color-management-v1-client-protocol.h"
 #include "pointer-warp-v1-client-protocol.h"
+#include "pointer-gestures-unstable-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1340,6 +1341,8 @@ static void display_handle_global(void *data, struct wl_registry *registry, uint
         Wayland_InitColorManager(d);
     } else if (SDL_strcmp(interface, "wp_pointer_warp_v1") == 0) {
         d->wp_pointer_warp_v1 = wl_registry_bind(d->registry, id, &wp_pointer_warp_v1_interface, 1);
+    } else if (SDL_strcmp(interface, "zwp_pointer_gestures_v1") == 0) {
+        d->zwp_pointer_gestures = wl_registry_bind(d->registry, id, &zwp_pointer_gestures_v1_interface, 1);
     }
 #ifdef SDL_WL_FIXES_VERSION
     else if (SDL_strcmp(interface, "wl_fixes") == 0) {
@@ -1661,6 +1664,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     if (data->wp_pointer_warp_v1) {
         wp_pointer_warp_v1_destroy(data->wp_pointer_warp_v1);
         data->wp_pointer_warp_v1 = NULL;
+    }
+
+    if (data->zwp_pointer_gestures) {
+        zwp_pointer_gestures_v1_destroy(data->zwp_pointer_gestures);
+        data->zwp_pointer_gestures = NULL;
     }
 
     if (data->compositor) {

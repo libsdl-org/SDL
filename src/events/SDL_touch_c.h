@@ -25,14 +25,12 @@
 
 typedef struct SDL_Touch
 {
-    char *name;
     SDL_TouchID id;
     SDL_TouchDeviceType type;
     int num_fingers;
     int max_fingers;
     SDL_Finger **fingers;
-    bool pinch_active;
-    float pinch_distance;
+    char *name;
 } SDL_Touch;
 
 // Initialize the touch subsystem
