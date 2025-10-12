@@ -8,7 +8,7 @@
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\renderer\10-geometry\README.txt" />
     <ClCompile Include="$(SolutionDir)\..\examples\renderer\10-geometry\geometry.c" />
-    <Content Include="$(SolutionDir)\..\test\sample.bmp" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(SolutionDir)\..\test\sample.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

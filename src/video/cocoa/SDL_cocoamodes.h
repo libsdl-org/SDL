@@ -26,6 +26,7 @@
 struct SDL_DisplayData
 {
     CGDirectDisplayID display;
+    SDL_Rect usable_bounds;
 };
 
 struct SDL_DisplayModeData

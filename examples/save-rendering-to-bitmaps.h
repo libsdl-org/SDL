@@ -22,7 +22,7 @@
 /*
 This is for generating thumbnails and videos of examples. Just include it
 temporarily and let it override SDL_RenderPresent, etc, and it'll dump each
-frame rendered to a new .bmp file.
+frame rendered to a new .png file.
 */
 
 static bool SAVERENDERING_SDL_RenderPresent(SDL_Renderer *renderer)
@@ -33,9 +33,9 @@ static bool SAVERENDERING_SDL_RenderPresent(SDL_Renderer *renderer)
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to read pixels for frame #%u! (%s)", framenum, SDL_GetError());
     } else {
         char fname[64];
-        SDL_snprintf(fname, sizeof (fname), "frame%05u.bmp", framenum);
-        if (!SDL_SaveBMP(surface, fname)) {
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to save bmp for frame #%u! (%s)", framenum, SDL_GetError());
+        SDL_snprintf(fname, sizeof (fname), "frame%05u.png", framenum);
+        if (!SDL_SavePNG(surface, fname)) {
+            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to save png for frame #%u! (%s)", framenum, SDL_GetError());
         }
         SDL_DestroySurface(surface);
     }

@@ -171,10 +171,13 @@ int SDL_GetDefaultSampleFramesFromFreq(const int freq)
 
 int *SDL_ChannelMapDup(const int *origchmap, int channels)
 {
-    const size_t chmaplen = sizeof (*origchmap) * channels;
-    int *chmap = (int *)SDL_malloc(chmaplen);
-    if (chmap) {
-        SDL_memcpy(chmap, origchmap, chmaplen);
+    int *chmap = NULL;
+    if ((channels > 0) && origchmap) {
+        const size_t chmaplen = sizeof (*origchmap) * channels;
+        chmap = (int *)SDL_malloc(chmaplen);
+        if (chmap) {
+            SDL_memcpy(chmap, origchmap, chmaplen);
+        }
     }
     return chmap;
 }
@@ -734,11 +737,10 @@ SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const SDL_
 }
 
 // Called when a device is removed from the system, or it fails unexpectedly, from any thread, possibly even the audio device's thread.
-void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
+static void SDLCALL SDL_AudioDeviceDisconnected_OnMainThread(void *userdata)
 {
-    if (!device) {
-        return;
-    }
+    SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
+    SDL_assert(device != NULL);
 
     // Save off removal info in a list so we can send events for each, next
     //  time the event queue pumps, in case something tries to close a device
@@ -807,6 +809,23 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
         }
 
         UnrefPhysicalAudioDevice(device);
+    }
+
+    // We always ref this in SDL_AudioDeviceDisconnected(), so if multiple attempts
+    // to disconnect are queued, the pointer stays valid until the last one comes
+    // through.
+    UnrefPhysicalAudioDevice(device);
+}
+
+void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
+{
+    // lots of risk of various audio backends deadlocking because they're calling
+    // this while holding a backend-specific lock, which causes problems when we
+    // want to obtain the device lock while its audio thread is also waiting for
+    // that lock to be released. So just queue the work on the main thread.
+    if (device) {
+        RefPhysicalAudioDevice(device);
+        SDL_RunOnMainThread(SDL_AudioDeviceDisconnected_OnMainThread, device, false);
     }
 }
 
@@ -1601,9 +1620,7 @@ int *SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int *count)
     SDL_AudioDevice *device = ObtainPhysicalAudioDeviceDefaultAllowed(devid);
     if (device) {
         channels = device->spec.channels;
-        if (channels > 0 && device->chmap) {
-            result = SDL_ChannelMapDup(device->chmap, channels);
-        }
+        result = SDL_ChannelMapDup(device->chmap, channels);
     }
     ReleaseAudioDevice(device);
 

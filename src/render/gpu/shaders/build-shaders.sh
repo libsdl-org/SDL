@@ -12,6 +12,7 @@ make-header() {
 # Requires shadercross CLI installed from SDL_shadercross
 for filename in *.hlsl; do
     if [ -f "$filename" ]; then
+        echo "$filename"
         shadercross "$filename" -o "${filename/.hlsl/.spv}"
         make-header "${filename/.hlsl/.spv}"
         shadercross "$filename" -o "${filename/.hlsl/.msl}"

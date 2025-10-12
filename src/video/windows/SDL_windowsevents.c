@@ -1709,13 +1709,28 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         if (data->expected_resize) {
             returnCode = 0;
+        } else if (data->in_modal_loop) {
+            WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
+
+            /* While in a modal loop, the size may only be updated if the window is being resized interactively.
+             * Set the SWP_NOSIZE flag if the reported size hasn't changed from the last WM_WINDOWPOSCHANGING
+             * event, or a size set programmatically may end up being overwritten by old size data.
+             */
+            if (data->last_modal_width == windowpos->cx && data->last_modal_height == windowpos->cy) {
+                windowpos->flags |= SWP_NOSIZE;
+            }
+
+            data->last_modal_width = windowpos->cx;
+            data->last_modal_height = windowpos->cy;
+
+            returnCode = 0;
         }
         break;
 
     case WM_WINDOWPOSCHANGED:
     {
         SDL_Window *win;
-        const SDL_DisplayID original_displayID = data->last_displayID;
+        const SDL_DisplayID original_displayID = data->window->displayID;
         const WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
         bool iconic;
         bool zoomed;
@@ -1790,9 +1805,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         WIN_UpdateClipCursor(data->window);
 
         // Update the window display position
-        data->last_displayID = SDL_GetDisplayForWindow(data->window);
-
-        if (data->last_displayID != original_displayID) {
+        if (data->window->displayID != original_displayID) {
             // Display changed, check ICC profile
             WIN_UpdateWindowICCProfile(data->window, true);
         }
@@ -1804,9 +1817,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
             }
         }
-
-        // Forces a WM_PAINT event
-        InvalidateRect(hwnd, NULL, FALSE);
 
     } break;
 
@@ -1821,6 +1831,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         ++data->in_modal_loop;
         if (data->in_modal_loop == 1) {
+            RECT rect;
+            SDL_zero(rect);
+            GetWindowRect(data->hwnd, &rect);
+            data->last_modal_width = rect.right - rect.left;
+            data->last_modal_height = rect.bottom - rect.top;
+
             data->initial_size_rect.left = data->window->x;
             data->initial_size_rect.right = data->window->x + data->window->w;
             data->initial_size_rect.top = data->window->y;
@@ -2405,6 +2421,9 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         }
         if (wParam == SPI_SETMOUSE || wParam == SPI_SETMOUSESPEED) {
             WIN_UpdateMouseSystemScale();
+        }
+        if (wParam == SPI_SETWORKAREA) {
+            WIN_UpdateDisplayUsableBounds(SDL_GetVideoDevice());
         }
         break;
 

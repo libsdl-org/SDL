@@ -62,6 +62,13 @@ typedef signed __int32 int32_t;
 typedef unsigned __int32 uint32_t;
 typedef signed __int64 int64_t;
 typedef unsigned __int64 uint64_t;
+#ifndef _INTPTR_T_DEFINED
+#ifdef _WIN64
+typedef __int64 intptr_t;
+#else
+typedef int intptr_t;
+#endif
+#endif
 #ifndef _UINTPTR_T_DEFINED
 #ifdef _WIN64
 typedef unsigned __int64 uintptr_t;

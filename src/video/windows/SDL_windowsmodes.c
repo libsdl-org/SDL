@@ -783,7 +783,8 @@ bool WIN_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 
     dxgi_output = WIN_GetDXGIOutput(_this, data->DeviceName);
 
-    for (i = 0;; ++i) {
+    // Make sure we add the current mode to the list in case it's a custom mode that doesn't enumerate
+    for (i = ENUM_CURRENT_SETTINGS; ; ++i) {
         if (!WIN_GetDisplayMode(_this, dxgi_output, data->MonitorHandle, data->DeviceName, i, &mode, NULL, NULL)) {
             break;
         }
@@ -929,6 +930,14 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
         if (internal->state == DisplayAdded) {
             SDL_SendDisplayEvent(display, SDL_EVENT_DISPLAY_ADDED, 0, 0);
         }
+    }
+}
+
+void WIN_UpdateDisplayUsableBounds(SDL_VideoDevice *_this)
+{
+    // This almost never happens, so just go ahead and send update events for all displays
+    for (int i = 0; i < _this->num_displays; ++i) {
+        SDL_SendDisplayEvent(_this->displays[i], SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED, 0, 0);
     }
 }
 

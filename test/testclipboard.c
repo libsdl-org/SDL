@@ -21,7 +21,7 @@ static SDL_Renderer *renderer = NULL;
 
 static const char *mime_types[] = {
     "text/plain",
-    "image/bmp",
+    "image/png",
 };
 
 static const void *ClipboardDataCallback(void *userdata, const char *mime_type, size_t *size)
@@ -30,10 +30,11 @@ static const void *ClipboardDataCallback(void *userdata, const char *mime_type, 
         const char *text = "Hello world!";
         *size = SDL_strlen(text);
         return text;
-    } else if (SDL_strcmp(mime_type, "image/bmp") == 0) {
-        *size = icon_bmp_len;
-        return icon_bmp;
+    } else if (SDL_strcmp(mime_type, "image/png") == 0) {
+        *size = icon_png_len;
+        return icon_png;
     } else {
+        SDL_Log("Called with unexpected mime type: %s", mime_type);
         return NULL;
     }
 }
@@ -45,7 +46,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("testclipboard", 640, 480, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("testclipboard", 640, 480, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
@@ -92,9 +93,23 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 
 static float PrintClipboardText(float x, float y, const char *mime_type)
 {
-    void *data = SDL_GetClipboardData(mime_type, NULL);
+    size_t size;
+    void *data = SDL_GetClipboardData(mime_type, &size);
     if (data) {
-        SDL_RenderDebugText(renderer, x, y, (const char *)data);
+        char *text = (char *)data;
+        if (size > 2 && text[2] == '\0') {
+            /* UCS-4 data */
+            text = (char *)SDL_iconv_string("UTF-8", "UCS-4", data, size+4);
+        } else if (size > 1 && text[1] == '\0') {
+            /* UCS-2 data */
+            text = (char *)SDL_iconv_string("UTF-8", "UCS-2", data, size+2);
+        }
+        if (text) {
+            SDL_RenderDebugText(renderer, x, y, text);
+        }
+        if (text != data) {
+            SDL_free(text);
+        }
         SDL_free(data);
         return SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE + 2.0f;
     }
@@ -113,7 +128,9 @@ static float PrintPrimarySelectionText(float x, float y)
 static float PrintClipboardImage(float x, float y, const char *mime_type)
 {
     /* We don't actually need to read this data each frame, but this is a simple example */
-    if (SDL_strcmp(mime_type, "image/bmp") == 0) {
+    bool isBMP = (SDL_strcmp(mime_type, "image/bmp") == 0);
+    bool isPNG = (SDL_strcmp(mime_type, "image/png") == 0);
+    if (isBMP || isPNG) {
         size_t size;
         void *data = SDL_GetClipboardData(mime_type, &size);
         if (data) {
@@ -121,7 +138,12 @@ static float PrintClipboardImage(float x, float y, const char *mime_type)
             bool rendered = false;
             SDL_IOStream *stream = SDL_IOFromConstMem(data, size);
             if (stream) {
-                SDL_Surface *surface = SDL_LoadBMP_IO(stream, false);
+                SDL_Surface *surface;
+                if (isBMP) {
+                    surface = SDL_LoadBMP_IO(stream, false);
+                } else {
+                    surface = SDL_LoadPNG_IO(stream, false);
+                }
                 if (surface) {
                     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
                     if (texture) {

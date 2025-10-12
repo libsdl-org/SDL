@@ -30,12 +30,22 @@
 
 // The shaders here were compiled with compile_shaders.bat
 
+#define g_ps20_main D3D9_PixelShader_Palette_Nearest
+#include "D3D9_PixelShader_Palette_Nearest.h"
+#undef g_ps20_main
+
+#define g_ps20_main D3D9_PixelShader_Palette_Linear
+#include "D3D9_PixelShader_Palette_Linear.h"
+#undef g_ps20_main
+
 #define g_ps20_main D3D9_PixelShader_YUV
 #include "D3D9_PixelShader_YUV.h"
 #undef g_ps20_main
 
 static const BYTE *D3D9_shaders[] = {
     NULL,
+    D3D9_PixelShader_Palette_Nearest,
+    D3D9_PixelShader_Palette_Linear,
     D3D9_PixelShader_YUV
 };
 SDL_COMPILE_TIME_ASSERT(D3D9_shaders, SDL_arraysize(D3D9_shaders) == NUM_SHADERS);

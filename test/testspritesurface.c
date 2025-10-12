@@ -38,7 +38,7 @@ static SDL_Surface *CreateSurface(unsigned char *data, unsigned int len, int *w,
     SDL_Surface *surface = NULL;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_IO(src, true);
+        surface = SDL_LoadPNG_IO(src, true);
         if (surface) {
             /* Treat white as transparent */
             SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    sprite = CreateSurface(icon_bmp, icon_bmp_len, &sprite_w, &sprite_h);
+    sprite = CreateSurface(icon_png, icon_png_len, &sprite_w, &sprite_h);
 
     if (!sprite) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create surface (%s)", SDL_GetError());

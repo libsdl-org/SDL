@@ -61,6 +61,10 @@
         return;                                              \
     }
 
+#if 0
+// The below validation is too aggressive, since there are advanced situations 
+// where this is legal. This is being temporarily disabled for further review.
+// See: https://github.com/libsdl-org/SDL/issues/13871
 #define CHECK_SAMPLER_TEXTURES                                                                                                          \
     RenderPass *rp = (RenderPass *)render_pass;                                                                                         \
     for (Uint32 color_target_index = 0; color_target_index < rp->num_color_targets; color_target_index += 1) {                          \
@@ -92,6 +96,10 @@
             SDL_assert_release(!"Texture cannot be simultaneously bound as a depth stencil target and a storage texture!"); \
         }                                                                                                                   \
     }
+#else
+#define CHECK_SAMPLER_TEXTURES
+#define CHECK_STORAGE_TEXTURES
+#endif
 
 #define CHECK_GRAPHICS_PIPELINE_BOUND                                                   \
     if (!((RenderPass *)render_pass)->graphics_pipeline) { \
@@ -375,6 +383,7 @@ SDL_GPUGraphicsPipeline *SDL_GPU_FetchBlitPipeline(
     } else {
         blit_pipeline_create_info.fragment_shader = blit_from_2d_shader;
     }
+    blit_pipeline_create_info.rasterizer_state.enable_depth_clip = device->default_enable_depth_clip;
 
     blit_pipeline_create_info.multisample_state.sample_count = SDL_GPU_SAMPLECOUNT_1;
     blit_pipeline_create_info.multisample_state.enable_mask = false;
@@ -719,6 +728,15 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
         if (result != NULL) {
             result->backend = selectedBackend->name;
             result->debug_mode = debug_mode;
+            if (SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN, true)) {
+                result->default_enable_depth_clip = false;
+            } else {
+                result->default_enable_depth_clip = true;
+                result->validate_feature_depth_clamp_disabled = true;
+            }
+            if (!SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true)) {
+                result->validate_feature_anisotropy_disabled = true;
+            }
         }
     }
     return result;
@@ -1104,6 +1122,12 @@ SDL_GPUGraphicsPipeline *SDL_CreateGPUGraphicsPipeline(
             CHECK_STENCILOP_ENUM_INVALID(stencil_state->pass_op, NULL)
             CHECK_STENCILOP_ENUM_INVALID(stencil_state->depth_fail_op, NULL)
         }
+
+        if (device->validate_feature_depth_clamp_disabled &&
+            !graphicsPipelineCreateInfo->rasterizer_state.enable_depth_clip) {
+            SDL_assert_release(!"Rasterizer state enable_depth_clip must be set to true (FEATURE_DEPTH_CLAMPING disabled)");
+            return NULL;
+        }
     }
 
     return device->CreateGraphicsPipeline(
@@ -1120,6 +1144,14 @@ SDL_GPUSampler *SDL_CreateGPUSampler(
     CHECK_PARAM(createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
         return NULL;
+    }
+
+    if (device->debug_mode) {
+        if (device->validate_feature_anisotropy_disabled &&
+            createinfo->enable_anisotropy) {
+            SDL_assert_release(!"enable_anisotropy must be set to false (FEATURE_ANISOTROPY disabled)");
+            return NULL;
+        }
     }
 
     return device->CreateSampler(

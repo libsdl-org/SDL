@@ -31,10 +31,11 @@
 #define MOOSEPIC_H 88
 
 #define MOOSEFRAME_SIZE   (MOOSEPIC_W * MOOSEPIC_H)
+#define MOOSEFRAME_PITCH  MOOSEPIC_W
 #define MOOSEFRAMES_COUNT 10
 
 /* *INDENT-OFF* */ /* clang-format off */
-static SDL_Color MooseColors[84] = {
+static const SDL_Color MooseColors[84] = {
     {49, 49, 49, SDL_ALPHA_OPAQUE}
     , {66, 24, 0, SDL_ALPHA_OPAQUE}
     , {66, 33, 0, SDL_ALPHA_OPAQUE}
@@ -147,9 +148,9 @@ static Uint64 next_fps_check;
 static Uint32 frames;
 static const Uint32 fps_check_delay = 5000;
 
-static Uint32 yuv_format = SDL_PIXELFORMAT_YV12;
-static SDL_Surface *MooseYUVSurfaces[MOOSEFRAMES_COUNT];
+static SDL_Surface *MooseSurfaces[MOOSEFRAMES_COUNT];
 static SDL_Texture *MooseTexture = NULL;
+static SDL_Palette *MoosePalette = NULL;
 static SDL_FRect displayrect;
 static int window_w;
 static int window_h;
@@ -169,11 +170,13 @@ quit(int rc)
      * This allows testing of platforms where SDL_main is required and does meaningful cleanup.
      */
 
-    SDL_free(RawMooseData);
-
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
-         SDL_DestroySurface(MooseYUVSurfaces[i]);
+         SDL_DestroySurface(MooseSurfaces[i]);
     }
+
+    SDL_DestroyPalette(MoosePalette);
+
+    SDL_free(RawMooseData);
 
     SDLTest_CommonQuit(state);
 
@@ -190,34 +193,7 @@ static void MoveSprites(SDL_Renderer *renderer)
     if (streaming) {
          if (!paused) {
              i = (i + 1) % MOOSEFRAMES_COUNT;
-             /* Test both upload paths for NV12/NV21 formats */
-             if ((yuv_format == SDL_PIXELFORMAT_NV12 || yuv_format == SDL_PIXELFORMAT_NV21) &&
-                 (i % 2) == 0) {
-#ifdef TEST_RECT_UPDATE
-                 SDL_Rect rect;
-
-                 if (i == 0) {
-                     rect.x = 0;
-                     rect.y = 0;
-                     rect.w = MOOSEPIC_W;
-                     rect.h = MOOSEPIC_H;
-                 } else {
-                     rect.x = MOOSEPIC_W / 4;
-                     rect.y = MOOSEPIC_H / 4;
-                     rect.w = MOOSEPIC_W / 2;
-                     rect.h = MOOSEPIC_H / 2;
-                 }
-                 SDL_UpdateNVTexture(MooseTexture, &rect,
-                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + rect.y * MooseYUVSurfaces[i]->pitch + rect.x, MooseYUVSurfaces[i]->pitch,
-                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE + (rect.y + 1) / 2 * MooseYUVSurfaces[i]->pitch + (rect.x + 1) / 2, MooseYUVSurfaces[i]->pitch);
-#else
-                 SDL_UpdateNVTexture(MooseTexture, NULL,
-                                     MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch,
-                                     (Uint8 *)MooseYUVSurfaces[i]->pixels + MOOSEFRAME_SIZE, MooseYUVSurfaces[i]->pitch);
-#endif
-             } else {
-                 SDL_UpdateTexture(MooseTexture, NULL, MooseYUVSurfaces[i]->pixels, MooseYUVSurfaces[i]->pitch);
-             }
+             SDL_UpdateTexture(MooseTexture, NULL, RawMooseData + i * MOOSEFRAME_SIZE, MOOSEFRAME_PITCH);
          }
          SDL_RenderClear(renderer);
          SDL_RenderTexture(renderer, MooseTexture, NULL, &displayrect);
@@ -230,7 +206,7 @@ static void MoveSprites(SDL_Renderer *renderer)
              i = (i + 1) % MOOSEFRAMES_COUNT;
          }
 
-         tmp = SDL_CreateTextureFromSurface(renderer, MooseYUVSurfaces[i]);
+         tmp = SDL_CreateTextureFromSurface(renderer, MooseSurfaces[i]);
          if (!tmp) {
              SDL_Log("Error %s", SDL_GetError());
              quit(7);
@@ -322,7 +298,6 @@ int main(int argc, char **argv)
 {
     SDL_IOStream *handle;
     int i;
-    int j;
     int fps = 12;
     int nodelay = 0;
     int scale = 5;
@@ -333,8 +308,6 @@ int main(int argc, char **argv)
     if (!state) {
         return 1;
     }
-
-    SDL_zeroa(MooseYUVSurfaces);
 
     for (i = 1; i < argc;) {
         int consumed;
@@ -380,33 +353,6 @@ int main(int argc, char **argv)
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --fps option requires an argument [from 1 to 1000], default is 12.");
                     quit(10);
                 }
-            } else if (SDL_strcmp(argv[i], "--yuvformat") == 0) {
-                consumed = 2;
-                if (argv[i + 1]) {
-                    char *fmt = argv[i + 1];
-
-                    if (SDL_strcmp(fmt, "YV12") == 0) {
-                        yuv_format = SDL_PIXELFORMAT_YV12;
-                    } else if (SDL_strcmp(fmt, "IYUV") == 0) {
-                        yuv_format = SDL_PIXELFORMAT_IYUV;
-                    } else if (SDL_strcmp(fmt, "YUY2") == 0) {
-                        yuv_format = SDL_PIXELFORMAT_YUY2;
-                    } else if (SDL_strcmp(fmt, "UYVY") == 0) {
-                        yuv_format = SDL_PIXELFORMAT_UYVY;
-                    } else if (SDL_strcmp(fmt, "YVYU") == 0) {
-                        yuv_format = SDL_PIXELFORMAT_YVYU;
-                    } else if (SDL_strcmp(fmt, "NV12") == 0) {
-                        yuv_format = SDL_PIXELFORMAT_NV12;
-                    } else if (SDL_strcmp(fmt, "NV21") == 0) {
-                        yuv_format = SDL_PIXELFORMAT_NV21;
-                    } else {
-                        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --yuvformat option requires one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)");
-                        quit(10);
-                    }
-                } else {
-                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "The --yuvformat option requires one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)");
-                    quit(10);
-                }
             }
 
         }
@@ -414,7 +360,6 @@ int main(int argc, char **argv)
             static const char *options[] = {
                 "[--fps <frames per second>]",
                 "[--nodelay]",
-                "[--yuvformat <fmt>] (one of the: YV12 (default), IYUV, YUY2, UYVY, YVYU, NV12, NV21)",
                 "[--scale <scale factor>] (initial scale of the overlay)",
                 "[--nostreaming] path that use SDL_CreateTextureFromSurface() not STREAMING texture",
                 NULL
@@ -456,6 +401,13 @@ int main(int argc, char **argv)
 
     SDL_CloseIO(handle);
 
+    MoosePalette = SDL_CreatePalette(SDL_arraysize(MooseColors));
+    if (!MoosePalette) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create palette: %s", SDL_GetError());
+        quit(3);
+    }
+    SDL_SetPaletteColors(MoosePalette, MooseColors, 0, SDL_arraysize(MooseColors));
+
     /* Create the window and renderer */
     window_w = MOOSEPIC_W * scale;
     window_h = MOOSEPIC_H * scale;
@@ -469,47 +421,26 @@ int main(int argc, char **argv)
         SDL_Renderer *renderer = state->renderers[i];
 
         if (streaming) {
-            MooseTexture = SDL_CreateTexture(renderer, yuv_format, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
+            MooseTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_INDEX8, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
             if (!MooseTexture) {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s", SDL_GetError());
                 quit(5);
             }
+            SDL_SetTexturePalette(MooseTexture, MoosePalette);
         }
     }
 
-    /* Uncomment this to check vertex color with a YUV texture */
+    /* Uncomment this to check vertex color with a paletted texture */
     /* SDL_SetTextureColorMod(MooseTexture, 0xff, 0x80, 0x80); */
 
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
-        /* Create RGB SDL_Surface */
-        SDL_Surface *mooseRGBSurface = SDL_CreateSurface(MOOSEPIC_W, MOOSEPIC_H, SDL_PIXELFORMAT_RGB24);
-        if (!mooseRGBSurface) {
+        MooseSurfaces[i] = SDL_CreateSurfaceFrom(MOOSEPIC_W, MOOSEPIC_H, SDL_PIXELFORMAT_INDEX8,
+                                                 RawMooseData + i * MOOSEFRAME_SIZE, MOOSEFRAME_PITCH);
+        if (!MooseSurfaces[i]) {
             quit(6);
         }
-
-        /* Load Moose into a RGB SDL_Surface */
-        {
-            Uint8 *rgb = mooseRGBSurface->pixels;
-            Uint8 *frame = RawMooseData + i * MOOSEFRAME_SIZE;
-            for (j = 0; j < MOOSEFRAME_SIZE; ++j) {
-                rgb[0] = MooseColors[frame[j]].r;
-                rgb[1] = MooseColors[frame[j]].g;
-                rgb[2] = MooseColors[frame[j]].b;
-                rgb += 3;
-            }
-        }
-
-        /* Convert to YUV SDL_Surface */
-        MooseYUVSurfaces[i] = SDL_ConvertSurface(mooseRGBSurface, yuv_format);
-        if (MooseYUVSurfaces[i] == NULL) {
-            quit(7);
-        }
-
-        SDL_DestroySurface(mooseRGBSurface);
+        SDL_SetSurfacePalette(MooseSurfaces[i], MoosePalette);
     }
-
-    SDL_free(RawMooseData);
-    RawMooseData = NULL;
 
     /* set the start frame */
     i = 0;

@@ -770,7 +770,10 @@ void X11_CreateInputContext(SDL_WindowData *data)
 void X11_DestroyInputContext(SDL_WindowData *data)
 {
 #ifdef X_HAVE_UTF8_STRING
-    X11_XDestroyIC(data->ic);
+    if (data->ic) {
+        X11_XDestroyIC(data->ic);
+        data->ic = NULL;
+    }
     SDL_free(data->preedit_text);
     SDL_free(data->preedit_feedback);
     data->preedit_text = NULL;
@@ -872,7 +875,7 @@ void X11_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
                            window->text_input_rect.w, window->text_input_rect.h,
                            mode);
         SDL_OpenURL(deeplink);
-        videodata->steam_keyboard_open = true;
+        SDL_SendScreenKeyboardShown();
     }
 }
 
@@ -882,15 +885,8 @@ void X11_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 
     if (videodata->is_steam_deck) {
         SDL_OpenURL("steam://close/keyboard");
-        videodata->steam_keyboard_open = false;
+        SDL_SendScreenKeyboardHidden();
     }
-}
-
-bool X11_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    SDL_VideoData *videodata = _this->internal;
-
-    return videodata->steam_keyboard_open;
 }
 
 #endif // SDL_VIDEO_DRIVER_X11

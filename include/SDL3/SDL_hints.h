@@ -691,9 +691,8 @@ extern "C" {
  * The variable can be set to the following values:
  *
  * - "1": Enable fast parameter error checking, e.g. quick NULL checks, etc.
- *   (default)
  * - "2": Enable full parameter error checking, e.g. validating objects are
- *   the correct type, etc.
+ *   the correct type, etc. (default)
  *
  * This hint can be set anytime.
  *
@@ -753,6 +752,28 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
+
+/**
+ * Dictate that newly-created windows will fill the whole browser window.
+ *
+ * The canvas element fills the entire document. Resize events will be
+ * generated as the browser window is resized, as that will adjust the canvas
+ * size as well. The canvas will cover anything else on the page, including
+ * any controls provided by Emscripten in its generated HTML file. Often times
+ * this is desirable for a browser-based game, but it means several things
+ * that we expect of an SDL window on other platforms might not work as
+ * expected, such as minimum window sizes and aspect ratios.
+ *
+ * This hint overrides SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN
+ * properties when creating an SDL window.
+ *
+ * This hint only applies to the emscripten platform.
+ *
+ * This hint should be set before creating a window.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_EMSCRIPTEN_FILL_DOCUMENT "SDL_EMSCRIPTEN_FILL_DOCUMENT"
 
 /**
  * A variable that controls whether the on-screen keyboard should be shown
@@ -1157,8 +1178,8 @@ extern "C" {
 #define SDL_HINT_IME_IMPLEMENTED_UI "SDL_IME_IMPLEMENTED_UI"
 
 /**
- * A variable controlling whether the home indicator bar on iPhone X should be
- * hidden.
+ * A variable controlling whether the home indicator bar on iPhone X and later
+ * should be hidden.
  *
  * The variable can be set to the following values:
  *
@@ -3595,6 +3616,23 @@ extern "C" {
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY "SDL_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY"
 
 /**
+ * A variable indicating whether the metal layer drawable size should be
+ * updated for the SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event on macOS.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": the metal layer drawable size will not be updated on the
+ *   SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event.
+ * - "1": the metal layer drawable size will be updated on the
+ *   SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED event. (default)
+ *
+ * This hint should be set before SDL_Metal_CreateView called.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_VIDEO_METAL_AUTO_RESIZE_DRAWABLE "SDL_VIDEO_METAL_AUTO_RESIZE_DRAWABLE"
+
+/**
  * A variable controlling whether SDL will attempt to automatically set the
  * destination display to a mode most closely matching that of the previous
  * display if an exclusive fullscreen window is moved onto it.
@@ -4268,9 +4306,8 @@ extern "C" {
  *
  * The variable can be set to the following values:
  *
- * - "0": GameInput is not used for raw keyboard and mouse events.
+ * - "0": GameInput is not used for raw keyboard and mouse events. (default)
  * - "1": GameInput is used for raw keyboard and mouse events, if available.
- *   (default)
  *
  * This hint should be set before SDL is initialized.
  *
@@ -4493,31 +4530,6 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_PEN_TOUCH_EVENTS "SDL_PEN_TOUCH_EVENTS"
-
-/**
- * A variable controlling whether SDL logs some debug information.
- *
- * The variable can be set to the following values:
- *
- * - "0": SDL debug information will not be logged. (default)
- * - "1": SDL debug information will be logged.
- *
- * This is generally meant to be used as an environment variable to let
- * end-users report what subsystems were chosen on their system, perhaps what
- * sort of hardware they are running on, etc, to aid in debugging. Logged
- * information is sent through SDL_Log(), which means by default they appear
- * on stdout on most platforms, or maybe OutputDebugString() on Windows, and
- * can be funneled by the app with SDL_SetLogOutputFunction(), etc.
- *
- * The specific output might change between SDL versions; more information
- * might be deemed useful in the future.
- *
- * This hint can be set anytime, but the specific logs are generated during
- * subsystem init.
- *
- * \since This hint is available since SDL 3.4.0.
- */
-#define SDL_HINT_DEBUG_LOGGING "SDL_DEBUG_LOGGING"
 
 /**
  * An enumeration of hint priorities.

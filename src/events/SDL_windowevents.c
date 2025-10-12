@@ -191,11 +191,11 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;
         break;
     case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
-        if (data1 == 0 || (SDL_DisplayID)data1 == window->last_displayID) {
+        if (data1 == 0 || (SDL_DisplayID)data1 == window->displayID) {
             return false;
         }
         window->update_fullscreen_on_display_changed = true;
-        window->last_displayID = (SDL_DisplayID)data1;
+        window->displayID = (SDL_DisplayID)data1;
         break;
     case SDL_EVENT_WINDOW_OCCLUDED:
         if (window->flags & SDL_WINDOW_OCCLUDED) {

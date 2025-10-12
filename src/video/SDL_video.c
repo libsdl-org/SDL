@@ -1064,6 +1064,7 @@ bool SDL_GetDisplayBounds(SDL_DisplayID displayID, SDL_Rect *rect)
     }
 
     if (_this->GetDisplayBounds) {
+        SDL_zerop(rect);
         if (_this->GetDisplayBounds(_this, display, rect)) {
             return true;
         }
@@ -1103,6 +1104,7 @@ bool SDL_GetDisplayUsableBounds(SDL_DisplayID displayID, SDL_Rect *rect)
     }
 
     if (_this->GetDisplayUsableBounds) {
+        SDL_zerop(rect);
         if (_this->GetDisplayUsableBounds(_this, display, rect)) {
             return true;
         }
@@ -1150,7 +1152,7 @@ void SDL_SetDisplayContentScale(SDL_VideoDisplay *display, float scale)
 
         // Check the windows on this display
         for (window = _this->windows; window; window = window->next) {
-            if (display->id == window->last_displayID) {
+            if (display->id == window->displayID) {
                 SDL_CheckWindowDisplayScaleChanged(window);
             }
         }
@@ -1800,7 +1802,33 @@ static void SDL_CheckWindowDisplayChanged(SDL_Window *window)
 
     SDL_DisplayID displayID = SDL_GetDisplayForWindowPosition(window);
 
-    if (displayID != window->last_displayID) {
+    if (displayID != window->displayID) {
+        // See if we are fully committed to the new display
+        // 80% is about the right value, tested with 350% scale on the left monitor and 100% scale on the right
+        SDL_Rect old_bounds, new_bounds;
+        SDL_Rect window_rect;
+        SDL_Rect old_overlap, new_overlap;
+
+        if (SDL_GetDisplayBounds(window->displayID, &old_bounds) &&
+            SDL_GetDisplayBounds(displayID, &new_bounds)) {
+            window_rect.x = window->x;
+            window_rect.y = window->y;
+            window_rect.w = window->w;
+            window_rect.h = window->h;
+
+            if (SDL_GetRectIntersection(&old_bounds, &window_rect, &old_overlap) &&
+                SDL_GetRectIntersection(&new_bounds, &window_rect, &new_overlap)) {
+                int old_area = old_overlap.w * old_overlap.h;
+                int new_area = new_overlap.w * new_overlap.h;
+                float new_overlap_ratio = (new_area / ((float)old_area + new_area));
+                if (new_overlap_ratio < 0.80) {
+                    return;
+                }
+            }
+        }
+    }
+
+    if (displayID != window->displayID) {
         int i, display_index;
 
         // Sanity check our fullscreen windows
@@ -1862,7 +1890,7 @@ static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
         display_scale = _this->GetWindowContentScale(_this, window);
     } else {
         const float pixel_density = SDL_GetWindowPixelDensity(window);
-        const float content_scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindowPosition(window));
+        const float content_scale = SDL_GetDisplayContentScale(window->displayID);
 
         display_scale = pixel_density * content_scale;
     }
@@ -2283,9 +2311,11 @@ static void SDL_FinishWindowCreation(SDL_Window *window, SDL_WindowFlags flags)
     }
 
 #if defined(SDL_PLATFORM_LINUX)
-    // On Linux the progress state is persisted throughout multiple program runs, so reset state on window creation
-    SDL_SetWindowProgressState(window, SDL_PROGRESS_STATE_NONE);
-    SDL_SetWindowProgressValue(window, 0.0f);
+    if (!SDL_WINDOW_IS_POPUP(window)) {
+        // On Linux the progress state is persisted throughout multiple program runs, so reset state on window creation
+        SDL_SetWindowProgressState(window, SDL_PROGRESS_STATE_NONE);
+        SDL_SetWindowProgressValue(window, 0.0f);
+    }
 #endif
 }
 
@@ -2524,7 +2554,7 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     window->opacity = 1.0f;
     window->next = _this->windows;
     window->is_destroying = false;
-    window->last_displayID = SDL_GetDisplayForWindow(window);
+    window->displayID = SDL_GetDisplayForWindow(window);
     window->external_graphics_context = external_graphics_context;
     window->constrain_popup = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_CONSTRAIN_POPUP_BOOLEAN, true);
 
@@ -2648,7 +2678,7 @@ static bool SDL_ReconfigureWindowInternal(SDL_Window *window, SDL_WindowFlags fl
             return false;
         }
     } else if (graphics_flags & SDL_WINDOW_VULKAN) {
-        loaded_vulkan = SDL_GL_LoadLibrary(NULL);
+        loaded_vulkan = SDL_Vulkan_LoadLibrary(NULL);
         if (!loaded_vulkan) {
             return false;
         }
@@ -5793,10 +5823,39 @@ bool SDL_ScreenKeyboardShown(SDL_Window *window)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
-    if (_this->IsScreenKeyboardShown) {
-        return _this->IsScreenKeyboardShown(_this, window);
+    return _this->screen_keyboard_shown;
+}
+
+void SDL_SendScreenKeyboardShown(void)
+{
+    if (_this->screen_keyboard_shown) {
+        return;
     }
-    return false;
+
+    _this->screen_keyboard_shown = true;
+
+    if (SDL_EventEnabled(SDL_EVENT_SCREEN_KEYBOARD_SHOWN)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_SCREEN_KEYBOARD_SHOWN;
+        event.common.timestamp = 0;
+        SDL_PushEvent(&event);
+    }
+}
+
+void SDL_SendScreenKeyboardHidden(void)
+{
+    if (!_this->screen_keyboard_shown) {
+        return;
+    }
+
+    _this->screen_keyboard_shown = false;
+
+    if (SDL_EventEnabled(SDL_EVENT_SCREEN_KEYBOARD_HIDDEN)) {
+        SDL_Event event;
+        event.type = SDL_EVENT_SCREEN_KEYBOARD_HIDDEN;
+        event.common.timestamp = 0;
+        SDL_PushEvent(&event);
+    }
 }
 
 int SDL_GetMessageBoxCount(void)
@@ -6150,8 +6209,9 @@ bool SDL_Vulkan_CreateSurface(SDL_Window *window,
 {
     CHECK_WINDOW_MAGIC(window, false);
 
-    if (!(window->flags & SDL_WINDOW_VULKAN)) {
-        return SDL_SetError(NOT_A_VULKAN_WINDOW);
+    if (!_this->Vulkan_CreateSurface) {
+        SDL_Unsupported();
+        return false;
     }
 
     CHECK_PARAM(!instance) {
@@ -6160,6 +6220,23 @@ bool SDL_Vulkan_CreateSurface(SDL_Window *window,
 
     CHECK_PARAM(!surface) {
         return SDL_InvalidParamError("surface");
+    }
+
+    if (!(window->flags & SDL_WINDOW_VULKAN)) {
+        // No problem, we can convert to Vulkan
+        if (window->flags & SDL_WINDOW_OPENGL) {
+            window->flags &= ~SDL_WINDOW_OPENGL;
+            SDL_GL_UnloadLibrary();
+        }
+        if (window->flags & SDL_WINDOW_METAL) {
+            window->flags &= ~SDL_WINDOW_METAL;
+            // Nothing more to do for Metal.
+        }
+        if (SDL_Vulkan_LoadLibrary(NULL)) {
+            window->flags |= SDL_WINDOW_VULKAN;
+        } else {
+            return SDL_SetError("failed to load Vulkan library");
+        }
     }
 
     return _this->Vulkan_CreateSurface(_this, window, instance, allocator, surface);

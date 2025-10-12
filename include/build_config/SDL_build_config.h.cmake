@@ -216,6 +216,8 @@
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBDECOR_H 1
 #cmakedefine HAVE_LIBURING_H 1
+#cmakedefine HAVE_FRIBIDI_H 1
+#cmakedefine SDL_FRIBIDI_DYNAMIC @SDL_FRIBIDI_DYNAMIC@
 
 #cmakedefine HAVE_DDRAW_H 1
 #cmakedefine HAVE_DSOUND_H 1
@@ -236,7 +238,7 @@
 #cmakedefine HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR 1
 #cmakedefine HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP 1
 
-#cmakedefine HAVE_DLOPEN_NOTES 1
+#cmakedefine SDL_DISABLE_DLOPEN_NOTES 1
 
 /* SDL internal assertion support */
 #cmakedefine SDL_DEFAULT_ASSERT_LEVEL_CONFIGURED 1

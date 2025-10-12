@@ -238,17 +238,21 @@
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb_std.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_close_code.h" />
     <ClInclude Include="..\..\include\SDL3\SDL.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_assert.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_asyncio.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_atomic.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_audio.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_bits.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_blendmode.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_camera.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_clipboard.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_close_code.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_copying.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_cpuinfo.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_dialog.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_dlopennote.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_egl.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_endian.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_error.h" />
@@ -258,8 +262,11 @@
     <ClInclude Include="..\..\include\SDL3\SDL_gpu.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_guid.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_haptic.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_hints.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_hidapi.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_hints.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_init.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_intrin.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_iostream.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_joystick.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_keyboard.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_keycode.h" />
@@ -267,11 +274,13 @@
     <ClInclude Include="..\..\include\SDL3\SDL_locale.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_log.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_main.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_main_impl.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_messagebox.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_metal.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_misc.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_mouse.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_mutex.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_oldnames.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_opengl.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_opengl_glext.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_opengles.h" />
@@ -290,10 +299,10 @@
     <ClInclude Include="..\..\include\SDL3\SDL_rect.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_render.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_revision.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_iostream.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_scancode.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_sensor.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_stdinc.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_storage.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_surface.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_system.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test.h" />
@@ -308,9 +317,10 @@
     <ClInclude Include="..\..\include\SDL3\SDL_test_md5.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_thread.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_time.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_timer.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_touch.h" />
-    <ClInclude Include="..\..\include\SDL3\SDL_types.h" />
+    <ClInclude Include="..\..\include\SDL3\SDL_tray.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_version.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_video.h" />
     <ClInclude Include="..\..\include\SDL3\SDL_vulkan.h" />
@@ -331,6 +341,7 @@
     <ClInclude Include="..\..\src\core\windows\SDL_immdevice.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_windows.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_xinput.h" />
+    <ClInclude Include="..\..\src\core\SDL_core_unsupported.h" />
     <ClInclude Include="..\..\src\cpuinfo\SDL_cpuinfo_c.h" />
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi.h" />
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi_overrides.h" />
@@ -453,6 +464,7 @@
     <ClInclude Include="..\..\src\video\SDL_stb_c.h" />
     <ClInclude Include="..\..\src\video\SDL_surface_c.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
+    <ClInclude Include="..\..\src\video\SDL_video_unsupported.h" />
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h" />
     <ClInclude Include="..\..\src\video\SDL_yuv_c.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_msctf.h" />

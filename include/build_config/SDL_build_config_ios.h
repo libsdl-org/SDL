@@ -214,7 +214,7 @@
 #define SDL_FSOPS_POSIX 1
 
 /* enable camera support */
-#ifndef SDL_PLATFORM_TVOS
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
 #define SDL_CAMERA_DRIVER_COREMEDIA 1
 #endif
 

@@ -622,11 +622,9 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
         CHECK(pFileDialog->lpVtbl->SetFileTypes(pFileDialog, nfilters, filter_data));
     }
 
-    // SetFolder would enforce using the same location each and every time, but
-    // Windows docs recommend against it
     if (default_folder_w) {
         CHECK(pSHCreateItemFromParsingName(default_folder_w, NULL, &IID_IShellItem, (void**)&pFolderItem));
-        CHECK(pFileDialog->lpVtbl->SetDefaultFolder(pFileDialog, pFolderItem));
+        CHECK(pFileDialog->lpVtbl->SetFolder(pFileDialog, pFolderItem));
     }
 
     if (default_file_w) {

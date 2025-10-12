@@ -25,6 +25,8 @@
 typedef enum
 {
     SHADER_NONE,
+    SHADER_PALETTE_NEAREST,
+    SHADER_PALETTE_LINEAR,
     SHADER_YUV,
     NUM_SHADERS
 } D3D9_Shader;

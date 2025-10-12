@@ -28,7 +28,7 @@ static void SDLCALL apply_icon(void *ptr, const char * const *filelist, int filt
         return;
     }
 
-    SDL_Surface *icon = SDL_LoadBMP(*filelist);
+    SDL_Surface *icon = SDL_LoadPNG(*filelist);
 
     if (!icon) {
         SDL_Log("Couldn't load icon '%s': %s", *filelist, SDL_GetError());
@@ -44,7 +44,7 @@ static void SDLCALL apply_icon(void *ptr, const char * const *filelist, int filt
 static void SDLCALL change_icon(void *ptr, SDL_TrayEntry *entry)
 {
     SDL_DialogFileFilter filters[] = {
-        { "BMP image files", "bmp" },
+        { "PNG image files", "png" },
         { "All files", "*" },
     };
 
@@ -521,16 +521,16 @@ int main(int argc, char **argv)
         goto quit;
     }
 
-    char *icon1filename = GetResourceFilename(NULL, "sdl-test_round.bmp");
-    SDL_Surface *icon = SDL_LoadBMP(icon1filename);
+    char *icon1filename = GetResourceFilename(NULL, "sdl-test_round.png");
+    SDL_Surface *icon = SDL_LoadPNG(icon1filename);
     SDL_free(icon1filename);
 
     if (!icon) {
         SDL_Log("Couldn't load icon 1, proceeding without: %s", SDL_GetError());
     }
 
-    char *icon2filename = GetResourceFilename(NULL, "speaker.bmp");
-    SDL_Surface *icon2 = SDL_LoadBMP(icon2filename);
+    char *icon2filename = GetResourceFilename(NULL, "speaker.png");
+    SDL_Surface *icon2 = SDL_LoadPNG(icon2filename);
     SDL_free(icon2filename);
 
     if (!icon2) {

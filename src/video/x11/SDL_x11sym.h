@@ -235,7 +235,9 @@ SDL_X11_SYM(int,Xutf8TextExtents,(XFontSet a, _Xconst char* b, int c, XRectangle
 SDL_X11_SYM(char*,XSetLocaleModifiers,(const char *a))
 SDL_X11_SYM(char*,Xutf8ResetIC,(XIC a))
 SDL_X11_SYM(XFontSetExtents*,XExtentsOfFontSet,(XFontSet a))
+SDL_X11_SYM(Bool,XContextDependentDrawing,(XFontSet a))
 #endif
+
 
 #ifndef NO_SHARED_MEMORY
 SDL_X11_MODULE(SHM)

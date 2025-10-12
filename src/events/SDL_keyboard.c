@@ -325,7 +325,9 @@ SDL_Window *SDL_GetKeyboardFocus(void)
 
 bool SDL_SetKeyboardFocus(SDL_Window *window)
 {
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
     SDL_VideoDevice *video = SDL_GetVideoDevice();
+#endif
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -357,12 +359,14 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
     if (keyboard->focus && keyboard->focus != window) {
         SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
 
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
         // Ensures IME compositions are committed
         if (SDL_TextInputActive(keyboard->focus)) {
             if (video && video->StopTextInput) {
                 video->StopTextInput(video, keyboard->focus);
             }
         }
+#endif // !SDL_PLATFORM_IOS && !SDL_PLATFORM_ANDROID
     }
 
     keyboard->focus = window;
@@ -370,11 +374,13 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
     if (keyboard->focus) {
         SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_GAINED, 0, 0);
 
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
         if (SDL_TextInputActive(keyboard->focus)) {
             if (video && video->StartTextInput) {
                 video->StartTextInput(video, keyboard->focus, keyboard->focus->text_input_props);
             }
         }
+#endif // !SDL_PLATFORM_IOS && !SDL_PLATFORM_ANDROID
     }
 
     SDL_UpdateRelativeMouseMode();

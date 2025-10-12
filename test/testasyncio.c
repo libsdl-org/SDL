@@ -24,8 +24,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     const char *base = NULL;
     SDL_AsyncIO *asyncio = NULL;
-    char **bmps = NULL;
-    int bmpcount = 0;
+    char **pngs = NULL;
+    int pngcount = 0;
     int i;
 
     SDL_srand(0);
@@ -87,15 +87,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     base = SDL_GetBasePath();
-    bmps = SDL_GlobDirectory(base, "*.bmp", SDL_GLOB_CASEINSENSITIVE, &bmpcount);
-    if (!bmps || (bmpcount == 0)) {
-        SDL_Log("No BMP files found.");
+    pngs = SDL_GlobDirectory(base, "*.png", SDL_GLOB_CASEINSENSITIVE, &pngcount);
+    if (!pngs || (pngcount == 0)) {
+        SDL_Log("No PNG files found.");
         return SDL_APP_FAILURE;
     }
 
-    for (i = 0; i < bmpcount; i++) {
+    for (i = 0; i < pngcount; i++) {
         char *path = NULL;
-        if (SDL_asprintf(&path, "%s%s", base, bmps[i]) < 0) {
+        if (SDL_asprintf(&path, "%s%s", base, pngs[i]) < 0) {
             SDL_free(path);
         } else {
             SDL_Log("Loading %s...", path);
@@ -103,7 +103,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         }
     }
 
-    SDL_free(bmps);
+    SDL_free(pngs);
 
     SDL_Log("Opening asyncio.tmp...");
     asyncio = SDL_AsyncIOFromFile("asyncio.tmp", "w");
@@ -150,7 +150,7 @@ static void async_io_task_complete(const SDL_AsyncIOOutcome *outcome)
     }
 
     if (outcome->result == SDL_ASYNCIO_COMPLETE) {
-        SDL_Surface *surface = SDL_LoadBMP_IO(SDL_IOFromConstMem(outcome->buffer, (size_t) outcome->bytes_transferred), true);
+        SDL_Surface *surface = SDL_LoadPNG_IO(SDL_IOFromConstMem(outcome->buffer, (size_t) outcome->bytes_transferred), true);
         if (surface) {
             SDL_Surface *converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA8888);
             SDL_DestroySurface(surface);
