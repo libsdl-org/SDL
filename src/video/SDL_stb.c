@@ -23,8 +23,8 @@
 #include "SDL_stb_c.h"
 #include "SDL_surface_c.h"
 
-// We currently only support JPEG, but we could add other image formats if we wanted
 #ifdef SDL_HAVE_STB
+////////////////////////////////////////////////////////////////////////////
 #define malloc SDL_malloc
 #define realloc SDL_realloc
 #define free SDL_free
@@ -58,15 +58,23 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#undef memcpy
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_STATIC
-#define STBI_WRITE_NO_STDIO
-#define STBIW_ASSERT SDL_assert
-#include "stb_image_write.h"
+////////////////////////////////////////////////////////////////////////////
+#define MZ_ASSERT(x) SDL_assert(x)
+//#undef memcpy
+//#define memcpy SDL_memcpy
+//#undef memset
+//#define memset SDL_memset
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#define MINIZ_LITTLE_ENDIAN 1
+#else
+#define MINIZ_LITTLE_ENDIAN 0
+#endif
+#define MINIZ_USE_UNALIGNED_LOADS_AND_STORES 0
+#define MINIZ_SDL_NOUNUSED
+#include "miniz.h"
 
 #undef memset
-#endif
+#endif // SDL_HAVE_STB
 
 #ifdef SDL_HAVE_STB
 static bool SDL_ConvertPixels_MJPG_to_NV12(int width, int height, const void *src, int src_pitch, void *dst, int dst_pitch)
@@ -372,13 +380,6 @@ SDL_Surface *SDL_LoadPNG(const char *file)
     return SDL_LoadPNG_IO(stream, true);
 }
 
-#ifdef SDL_HAVE_STB
-static void SDL_STBWriteFunc(void *context, void *data, int size)
-{
-    SDL_WriteIO(context, data, size);
-}
-#endif
-
 bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
 {
     bool retval = false;
@@ -403,10 +404,15 @@ bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
         free_surface = true;
     }
 
-    if (stbi_write_png_to_func(SDL_STBWriteFunc, dst, surface->w, surface->h, 4, surface->pixels, surface->pitch)) {
-        retval = true;
+    size_t size = 0;
+    void *png = tdefl_write_image_to_png_file_in_memory(surface->pixels, surface->w, surface->h, SDL_BYTESPERPIXEL(surface->format), surface->pitch, &size);
+    if (png) {
+        if (SDL_WriteIO(dst, png, size)) {
+            retval = true;
+        }
+        mz_free(png); /* calls SDL_free() */
     } else {
-        SDL_SetError("Failed to write PNG");
+        SDL_SetError("Failed to convert and save image");
     }
 
     if (free_surface) {
