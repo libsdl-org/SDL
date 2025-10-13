@@ -327,21 +327,25 @@ static bool CreateTextures()
     if (!black_texture1) {
         return false;
     }
+    SDL_SetTextureScaleMode(black_texture1, SDL_SCALEMODE_NEAREST);
 
     black_texture2 = CreateTexture(data, SDL_arraysize(data));
     if (!black_texture2) {
         return false;
     }
+    SDL_SetTextureScaleMode(black_texture2, SDL_SCALEMODE_NEAREST);
 
     white_texture1 = CreateTexture(data, SDL_arraysize(data));
     if (!white_texture1) {
         return false;
     }
+    SDL_SetTextureScaleMode(white_texture1, SDL_SCALEMODE_NEAREST);
 
     white_texture2 = CreateTexture(data, SDL_arraysize(data));
     if (!white_texture2) {
         return false;
     }
+    SDL_SetTextureScaleMode(white_texture2, SDL_SCALEMODE_NEAREST);
 
     return true;
 }
