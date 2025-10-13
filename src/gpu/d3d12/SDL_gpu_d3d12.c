@@ -2292,7 +2292,7 @@ static void D3D12_INTERNAL_TrackGPUDescriptorHeap(
     }
 
     commandBuffer->usedDescriptorHeaps[commandBuffer->usedDescriptorHeapCount] = descriptorHeap;
-    commandBuffer->usedDescriptorHeaps += 1;
+    commandBuffer->usedDescriptorHeapCount += 1;
 }
 
 static D3D12DescriptorHeap *D3D12_INTERNAL_AcquireGPUDescriptorHeapFromPool(
