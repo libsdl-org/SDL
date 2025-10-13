@@ -520,10 +520,15 @@ static bool CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char 
         info = SDL_small_alloc(char, length + 1, &isstack);
         if (info) {
             ctx->glGetInfoLogARB(shader, length, NULL, info);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to compile shader:");
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", defines);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", source);
-            SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s", info);
+            SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "Failed to compile shader:");
+            if (version) {
+                SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "%s", version);
+            }
+            if (defines) {
+                SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "%s", defines);
+            }
+            SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "%s", source);
+            SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "%s", info);
             SDL_small_free(info, isstack);
         }
         return false;
@@ -598,9 +603,18 @@ static bool CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData
 
 static void DestroyShaderProgram(GL_ShaderContext *ctx, GL_ShaderData *data)
 {
-    ctx->glDeleteObjectARB(data->vert_shader);
-    ctx->glDeleteObjectARB(data->frag_shader);
-    ctx->glDeleteObjectARB(data->program);
+    if (data->vert_shader) {
+        ctx->glDeleteObjectARB(data->vert_shader);
+        data->vert_shader = 0;
+    }
+    if (data->frag_shader) {
+        ctx->glDeleteObjectARB(data->frag_shader);
+        data->frag_shader = 0;
+    }
+    if (data->program) {
+        ctx->glDeleteObjectARB(data->program);
+        data->program = 0;
+    }
 }
 
 GL_ShaderContext *GL_CreateShaderContext(void)
@@ -669,13 +683,17 @@ GL_ShaderContext *GL_CreateShaderContext(void)
     // Compile all the shaders
     for (i = 0; i < NUM_SHADERS; ++i) {
         if (!CompileShaderProgram(ctx, i, &ctx->shaders[i])) {
-            GL_DestroyShaderContext(ctx);
-            return NULL;
+            DestroyShaderProgram(ctx, &ctx->shaders[i]);
         }
     }
 
     // We're done!
     return ctx;
+}
+
+bool GL_SupportsShader(GL_ShaderContext *ctx, GL_Shader shader)
+{
+    return ctx && ctx->shaders[shader].program;
 }
 
 void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shader_params)

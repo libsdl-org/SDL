@@ -91,6 +91,7 @@ typedef struct
 
     bool debug_enabled;
     bool GL_ARB_debug_output_supported;
+    bool pixelart_supported;
     int errors;
     char **error_messages;
     GLDEBUGPROCARB next_error_callback;
@@ -455,7 +456,13 @@ static bool SetTextureScaleMode(GL_RenderData *data, GLenum textype, SDL_PixelFo
         data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         break;
-    case SDL_SCALEMODE_PIXELART:    // Uses linear sampling
+    case SDL_SCALEMODE_PIXELART:    // Uses linear sampling if supported
+        if (!data->pixelart_supported) {
+            data->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            data->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            break;
+        }
+        SDL_FALLTHROUGH;
     case SDL_SCALEMODE_LINEAR:
         if (format == SDL_PIXELFORMAT_INDEX8) {
             // We'll do linear sampling in the shader
@@ -1210,19 +1217,22 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
         if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_LINEAR) {
             shader = SHADER_PALETTE_LINEAR;
             shader_params = texturedata->texel_size;
-        } else if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+        } else if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART &&
+                   data->pixelart_supported) {
             shader = SHADER_PALETTE_PIXELART;
             shader_params = texturedata->texel_size;
         }
         break;
     case SHADER_RGB:
-        if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+        if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART &&
+            data->pixelart_supported) {
             shader = SHADER_RGB_PIXELART;
             shader_params = texturedata->texel_size;
         }
         break;
     case SHADER_RGBA:
-        if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART) {
+        if (cmd->data.draw.texture_scale_mode == SDL_SCALEMODE_PIXELART &&
+            data->pixelart_supported) {
             shader = SHADER_RGBA_PIXELART;
             shader_params = texturedata->texel_size;
         }
@@ -1928,27 +1938,50 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     data->shaders = GL_CreateShaderContext();
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
                 data->shaders ? "ENABLED" : "DISABLED");
-    if (data->shaders) {
+    if (GL_SupportsShader(data->shaders, SHADER_RGB)) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGBX32);
         if (bgra_supported) {
             SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_BGRX32);
         }
+    } else {
+        SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL RGB shaders not supported");
+    }
+    // We support PIXELART mode using a shader
+    if (GL_SupportsShader(data->shaders, SHADER_RGB_PIXELART) &&
+        GL_SupportsShader(data->shaders, SHADER_RGBA_PIXELART)) {
+        data->pixelart_supported = true;
+    } else {
+        SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL PIXELART shaders not supported");
     }
     // We support INDEX8 textures using 2 textures and a shader
-    if (data->shaders && data->num_texture_units >= 2) {
+    if (GL_SupportsShader(data->shaders, SHADER_PALETTE_NEAREST) &&
+        GL_SupportsShader(data->shaders, SHADER_PALETTE_LINEAR) &&
+        (!data->pixelart_supported || GL_SupportsShader(data->shaders, SHADER_PALETTE_PIXELART)) &&
+        data->num_texture_units >= 2) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
+    } else {
+        SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL palette shaders not supported");
     }
 #ifdef SDL_HAVE_YUV
     // We support YV12 textures using 3 textures and a shader
-    if (data->shaders && data->num_texture_units >= 3) {
+    if (GL_SupportsShader(data->shaders, SHADER_YUV) &&
+        data->num_texture_units >= 3) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
+    } else {
+        SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL YUV not supported");
     }
 
     // We support NV12 textures using 2 textures and a shader
-    if (data->shaders && data->num_texture_units >= 2) {
+    if (GL_SupportsShader(data->shaders, SHADER_NV12_RA) &&
+        GL_SupportsShader(data->shaders, SHADER_NV12_RG) &&
+        GL_SupportsShader(data->shaders, SHADER_NV21_RA) &&
+        GL_SupportsShader(data->shaders, SHADER_NV21_RG) &&
+        data->num_texture_units >= 2) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
+    } else {
+        SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL NV12/NV21 not supported");
     }
 #endif
 #ifdef SDL_PLATFORM_MACOS
