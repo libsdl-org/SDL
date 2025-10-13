@@ -2378,9 +2378,9 @@ extern "C" {
  *   pressing the 1 key would yield the keycode SDLK_1, or '1', instead of
  *   SDLK_AMPERSAND, or '&'
  * - "latin_letters": For keyboards using non-Latin letters, such as Russian
- *   or Thai, the letter keys generate keycodes as though it had an English QWERTY
- *   layout. e.g. pressing the key associated with SDL_SCANCODE_A on a Russian
- *   keyboard would yield 'a' instead of a Cyrillic letter.
+ *   or Thai, the letter keys generate keycodes as though it had an English
+ *   QWERTY layout. e.g. pressing the key associated with SDL_SCANCODE_A on a
+ *   Russian keyboard would yield 'a' instead of a Cyrillic letter.
  *
  * The default value for this hint is "french_numbers,latin_letters"
  *
