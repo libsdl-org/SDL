@@ -3195,8 +3195,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
  * SDL_GL_GetAttribute() to check the values after creating the OpenGL
  * context, since the values obtained can differ from the requested ones.
  *
- * \param attr an SDL_GLAttr enum value specifying the OpenGL attribute to
- *             set.
+ * \param attr an enum value specifying the OpenGL attribute to set.
  * \param value the desired value for the attribute.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
@@ -3205,6 +3204,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_GL_CreateContext
  * \sa SDL_GL_GetAttribute
  * \sa SDL_GL_ResetAttributes
  */
@@ -3230,6 +3230,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value
 
 /**
  * Create an OpenGL context for an OpenGL window, and make it current.
+ *
+ * The OpenGL context will be created with the current states set through
+ * SDL_GL_SetAttribute().
  *
  * Windows users new to OpenGL should note that, for historical reasons, GL
  * functions added after OpenGL version 1.1 are not available by default.
