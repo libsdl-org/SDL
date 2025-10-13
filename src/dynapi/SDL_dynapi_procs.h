@@ -28,7 +28,7 @@
    Also, this file gets included multiple times, don't add #pragma once, etc.
 */
 
-// direct jump magic can use these, the rest needs special code.
+/* direct jump magic can use these, the rest needs special code. */
 #ifndef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_PROC(size_t,SDL_IOprintf,(SDL_IOStream *a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_Log,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a),)
@@ -47,7 +47,7 @@ SDL_DYNAPI_PROC(int,SDL_sscanf,(const char *a, SDL_SCANF_FORMAT_STRING const cha
 SDL_DYNAPI_PROC(int,SDL_swprintf,(SDL_OUT_Z_CAP(b) wchar_t *a, size_t b, SDL_PRINTF_FORMAT_STRING const wchar_t *c, ...),(a,b,c),return)
 #endif
 
-// New API symbols are added at the end
+/* New API symbols are added at the end */
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_AcquireCameraFrame,(SDL_Camera *a, Uint64 *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_GPUCommandBuffer*,SDL_AcquireGPUCommandBuffer,(SDL_GPUDevice *a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_AcquireGPUSwapchainTexture,(SDL_GPUCommandBuffer *a, SDL_Window *b, SDL_GPUTexture **c, Uint32 *d, Uint32 *e),(a,b,c,d,e),return)
