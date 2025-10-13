@@ -51,6 +51,8 @@
  * unicode code point.
  *
  * \since This datatype is available since SDL 3.2.0.
+ *
+ * \sa SDL_HINT_KEYCODE_OPTIONS
  */
 typedef Uint32 SDL_Keycode;
 
