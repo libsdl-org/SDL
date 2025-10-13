@@ -46,6 +46,8 @@
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
 #include "pointer-gestures-unstable-v1-client-protocol.h"
+#include "cursor-shape-v1-client-protocol.h"
+#include "viewporter-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -67,8 +69,6 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon-compose.h>
 #include <xkbcommon/xkbcommon.h>
-#include "cursor-shape-v1-client-protocol.h"
-#include "viewporter-client-protocol.h"
 
 // Weston uses a ratio of 10 units per scroll tick
 #define WAYLAND_WHEEL_AXIS_UNIT 10
@@ -286,6 +286,71 @@ void Wayland_DisplayInitInputTimestampManager(SDL_VideoData *display)
         wl_list_for_each (seat, &display->seat_list, link) {
             Wayland_SeatRegisterInputTimestampListeners(seat);
         }
+    }
+}
+
+static void handle_pinch_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers)
+{
+    if (!surface) {
+        return;
+    }
+
+    SDL_WindowData *wind = Wayland_GetWindowDataForOwnedSurface(surface);
+    if (wind) {
+        SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+        seat->pointer.gesture_focus = wind;
+
+        const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, timestamp, wind->sdlwindow, 0.0f);
+    }
+}
+
+static void handle_pinch_update(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t time,
+                                wl_fixed_t dx, wl_fixed_t dy, wl_fixed_t scale, wl_fixed_t rotation)
+{
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+
+    if (seat->pointer.gesture_focus) {
+        const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+        const float s = (float)wl_fixed_to_double(scale);
+        SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, timestamp, seat->pointer.gesture_focus->sdlwindow, s);
+    }
+}
+
+static void handle_pinch_end(void *data, struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1, uint32_t serial, uint32_t time, int32_t cancelled)
+{
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+
+    if (seat->pointer.gesture_focus) {
+        const Uint64 timestamp = Wayland_GetPointerTimestamp(seat, time);
+        SDL_SendPinch(SDL_EVENT_PINCH_END, timestamp, seat->pointer.gesture_focus->sdlwindow, 0.0f);
+
+        seat->pointer.gesture_focus = NULL;
+    }
+}
+
+static const struct zwp_pointer_gesture_pinch_v1_listener gesture_pinch_listener = {
+    handle_pinch_begin,
+    handle_pinch_update,
+    handle_pinch_end
+};
+
+static void Wayland_SeatCreatePointerGestures(SDL_WaylandSeat *seat)
+{
+    if (seat->display->zwp_pointer_gestures) {
+        if (seat->pointer.wl_pointer && !seat->pointer.gesture_pinch) {
+            seat->pointer.gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(seat->display->zwp_pointer_gestures, seat->pointer.wl_pointer);
+            zwp_pointer_gesture_pinch_v1_set_user_data(seat->pointer.gesture_pinch, seat);
+            zwp_pointer_gesture_pinch_v1_add_listener(seat->pointer.gesture_pinch, &gesture_pinch_listener, seat);
+        }
+    }
+}
+
+void Wayland_DisplayInitPointerGestureManager(SDL_VideoData *display)
+{
+    SDL_WaylandSeat *seat;
+    wl_list_for_each (seat, &display->seat_list, link) {
+        Wayland_SeatCreatePointerGestures(seat);
     }
 }
 
@@ -1417,43 +1482,6 @@ static const struct wl_touch_listener touch_listener = {
     touch_handler_orientation // Version 6
 };
 
-void pinch_begin(void *data,
-          struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1,
-          uint32_t serial,
-          uint32_t time,
-          struct wl_surface *surface,
-          uint32_t fingers)
-{
-    SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, NULL, 0);
-}
-void pinch_update(void *data,
-           struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1,
-           uint32_t time,
-           wl_fixed_t dx,
-           wl_fixed_t dy,
-           wl_fixed_t scale,
-           wl_fixed_t rotation)
-{
-
-    float s = (float)(wl_fixed_to_double(scale));
-    SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, NULL, s);
-}
-
-void pinch_end(void *data,
-        struct zwp_pointer_gesture_pinch_v1 *zwp_pointer_gesture_pinch_v1,
-        uint32_t serial,
-        uint32_t time,
-        int32_t cancelled)
-{
-    SDL_SendPinch(SDL_EVENT_PINCH_END, 0, NULL, 0);
-}
-
-static const struct zwp_pointer_gesture_pinch_v1_listener gesture_pinch_listener = {
-    pinch_begin,
-    pinch_update,
-    pinch_end
-};
-
 // Fallback for xkb_keymap_key_get_mods_for_level(), which is only available from 1.0.0, while the SDL minimum is 0.5.0.
 #if !SDL_XKBCOMMON_CHECK_VERSION(1, 0, 0)
 static size_t xkb_legacy_get_mods_for_level(SDL_WaylandSeat *seat, xkb_keycode_t key, xkb_layout_index_t layout, xkb_level_index_t level, xkb_mod_mask_t *masks_out, size_t masks_size)
@@ -2296,6 +2324,11 @@ static const struct wl_keyboard_listener keyboard_listener = {
 
 static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat, bool send_event)
 {
+    // End any active gestures.
+    if (seat->pointer.gesture_focus) {
+        SDL_SendPinch(SDL_EVENT_PINCH_END, 0, seat->pointer.gesture_focus->sdlwindow, 0.0f);
+    }
+
     // Make sure focus is removed from a surface before the pointer is destroyed.
     if (seat->pointer.focus) {
         pointer_handle_leave(seat, seat->pointer.wl_pointer, 0, seat->pointer.focus->surface);
@@ -2317,6 +2350,10 @@ static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat, bool send_event)
 
     if (seat->pointer.timestamps) {
         zwp_input_timestamps_v1_destroy(seat->pointer.timestamps);
+    }
+
+    if (seat->pointer.gesture_pinch) {
+        zwp_pointer_gesture_pinch_v1_destroy(seat->pointer.gesture_pinch);
     }
 
     if (seat->pointer.cursor_state.frame_callback) {
@@ -2425,10 +2462,6 @@ static void Wayland_SeatDestroyTouch(SDL_WaylandSeat *seat)
         }
     }
 
-    if (seat->touch.gesture_pinch) {
-        zwp_pointer_gesture_pinch_v1_destroy(seat->touch.gesture_pinch);
-    }
-
     SDL_zero(seat->touch);
     WAYLAND_wl_list_init(&seat->touch.points);
 }
@@ -2446,6 +2479,9 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
 
         wl_pointer_set_user_data(seat->pointer.wl_pointer, seat);
         wl_pointer_add_listener(seat->pointer.wl_pointer, &pointer_listener, seat);
+
+        // Pointer gestures
+        Wayland_SeatCreatePointerGestures(seat);
 
         seat->pointer.sdl_id = SDL_GetNextObjectID();
 
@@ -2472,12 +2508,6 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum w
         }
 
         SDL_AddTouch((SDL_TouchID)(uintptr_t)seat->touch.wl_touch, SDL_TOUCH_DEVICE_DIRECT, name_fmt);
-   
-        /* Pinch gesture */
-        seat->touch.gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(seat->display->zwp_pointer_gestures, seat->pointer.wl_pointer);
-        zwp_pointer_gesture_pinch_v1_set_user_data(seat->touch.gesture_pinch, seat);
-        zwp_pointer_gesture_pinch_v1_add_listener(seat->touch.gesture_pinch, &gesture_pinch_listener, seat);
-
     } else if (!(capabilities & WL_SEAT_CAPABILITY_TOUCH) && seat->touch.wl_touch) {
         Wayland_SeatDestroyTouch(seat);
     }

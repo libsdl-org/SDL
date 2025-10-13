@@ -1324,7 +1324,8 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
     } else if (SDL_strcmp(interface, "wp_pointer_warp_v1") == 0) {
         d->wp_pointer_warp_v1 = wl_registry_bind(d->registry, id, &wp_pointer_warp_v1_interface, 1);
     } else if (SDL_strcmp(interface, "zwp_pointer_gestures_v1") == 0) {
-        d->zwp_pointer_gestures = wl_registry_bind(d->registry, id, &zwp_pointer_gestures_v1_interface, 1);
+        d->zwp_pointer_gestures = wl_registry_bind(d->registry, id, &zwp_pointer_gestures_v1_interface, SDL_min(version, 3));
+        Wayland_DisplayInitPointerGestureManager(d);
     }
 #ifdef SDL_WL_FIXES_VERSION
     else if (SDL_strcmp(interface, "wl_fixes") == 0) {
@@ -1649,7 +1650,11 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     }
 
     if (data->zwp_pointer_gestures) {
-        zwp_pointer_gestures_v1_destroy(data->zwp_pointer_gestures);
+        if (zwp_pointer_gestures_v1_get_version(data->zwp_pointer_gestures) >= ZWP_POINTER_GESTURES_V1_RELEASE_SINCE_VERSION) {
+            zwp_pointer_gestures_v1_release(data->zwp_pointer_gestures);
+        } else {
+            zwp_pointer_gestures_v1_destroy(data->zwp_pointer_gestures);
+        }
         data->zwp_pointer_gestures = NULL;
     }
 
