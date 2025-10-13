@@ -4913,6 +4913,9 @@ static void D3D12_INTERNAL_SetGPUDescriptorHeaps(D3D12CommandBuffer *commandBuff
     viewHeap = D3D12_INTERNAL_AcquireGPUDescriptorHeapFromPool(commandBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     samplerHeap = D3D12_INTERNAL_AcquireGPUDescriptorHeapFromPool(commandBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 
+    commandBuffer->gpuDescriptorHeaps[0] = viewHeap;
+    commandBuffer->gpuDescriptorHeaps[1] = samplerHeap;
+
     heaps[0] = viewHeap->handle;
     heaps[1] = samplerHeap->handle;
 
