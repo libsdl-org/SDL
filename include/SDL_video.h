@@ -1008,6 +1008,8 @@ extern DECLSPEC void SDLCALL SDL_GetWindowPosition(SDL_Window * window,
  * \param h the height of the window in pixels, in screen coordinates, must be
  *          > 0.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_GetWindowSize
