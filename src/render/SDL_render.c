@@ -1846,7 +1846,8 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
 
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->texture_formats[i]) &&
-                SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == needAlpha) {
+                SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == needAlpha &&
+                SDL_ISPIXELFORMAT_INDEXED(renderer->texture_formats[i]) == SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
                 format = renderer->texture_formats[i];
                 break;
             }
