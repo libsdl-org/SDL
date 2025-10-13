@@ -350,6 +350,9 @@ typedef enum SDL_ProgressState
  * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_GL_CreateContext
+ * \sa SDL_GL_SetAttribute
+ * \sa SDL_GL_MakeCurrent
+ * \sa SDL_GL_DestroyContext
  */
 typedef struct SDL_GLContextState *SDL_GLContext;
 
