@@ -991,6 +991,10 @@ struct D3D12CommandBuffer
     // Set at acquire time
     D3D12DescriptorHeap *gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER + 1];
 
+    D3D12DescriptorHeap **usedDescriptorHeaps;
+    Uint32 usedDescriptorHeapCount;
+    Uint32 usedDescriptorHeapCapacity;
+
     D3D12UniformBuffer **usedUniformBuffers;
     Uint32 usedUniformBufferCount;
     Uint32 usedUniformBufferCapacity;
@@ -1588,6 +1592,7 @@ static void D3D12_INTERNAL_DestroyCommandBuffer(D3D12CommandBuffer *commandBuffe
     SDL_free(commandBuffer->usedSamplers);
     SDL_free(commandBuffer->usedGraphicsPipelines);
     SDL_free(commandBuffer->usedComputePipelines);
+    SDL_free(commandBuffer->usedDescriptorHeaps);
     SDL_free(commandBuffer->usedUniformBuffers);
     SDL_free(commandBuffer->textureDownloads);
     SDL_free(commandBuffer);
@@ -2284,6 +2289,28 @@ static bool D3D12_INTERNAL_ExpandStagingDescriptorPool(
     return true;
 }
 
+static void D3D12_INTERNAL_TrackGPUDescriptorHeap(
+    D3D12CommandBuffer *commandBuffer,
+    D3D12DescriptorHeap *descriptorHeap)
+{
+    Uint32 i;
+    for (i = 0; i < commandBuffer->usedDescriptorHeapCount; i += 1) {
+        if (commandBuffer->usedDescriptorHeaps[i] == descriptorHeap) {
+            return;
+        }
+    }
+
+    if (commandBuffer->usedDescriptorHeapCount == commandBuffer->usedDescriptorHeapCapacity) {
+        commandBuffer->usedDescriptorHeapCapacity += 1;
+        commandBuffer->usedDescriptorHeaps = (D3D12DescriptorHeap **)SDL_realloc(
+            commandBuffer->usedDescriptorHeaps,
+            commandBuffer->usedDescriptorHeapCapacity * sizeof(D3D12DescriptorHeap *));
+    }
+
+    commandBuffer->usedDescriptorHeaps[commandBuffer->usedDescriptorHeapCount] = descriptorHeap;
+    commandBuffer->usedDescriptorHeapCount += 1;
+}
+
 static D3D12DescriptorHeap *D3D12_INTERNAL_AcquireGPUDescriptorHeapFromPool(
     D3D12CommandBuffer *commandBuffer,
     D3D12_DESCRIPTOR_HEAP_TYPE descriptorHeapType)
@@ -2305,6 +2332,7 @@ static D3D12DescriptorHeap *D3D12_INTERNAL_AcquireGPUDescriptorHeapFromPool(
     }
     SDL_UnlockMutex(pool->lock);
 
+    D3D12_INTERNAL_TrackGPUDescriptorHeap(commandBuffer, result);
     return result;
 }
 
@@ -4889,14 +4917,7 @@ static void D3D12_INTERNAL_SetGPUDescriptorHeaps(D3D12CommandBuffer *commandBuff
     viewHeap = D3D12_INTERNAL_AcquireGPUDescriptorHeapFromPool(commandBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     samplerHeap = D3D12_INTERNAL_AcquireGPUDescriptorHeapFromPool(commandBuffer, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 
-    if (commandBuffer->gpuDescriptorHeaps[0] != NULL) {
-        D3D12_INTERNAL_ReturnGPUDescriptorHeapToPool(commandBuffer->renderer, commandBuffer->gpuDescriptorHeaps[0]);
-    }
     commandBuffer->gpuDescriptorHeaps[0] = viewHeap;
-
-    if (commandBuffer->gpuDescriptorHeaps[1] != NULL) {
-        D3D12_INTERNAL_ReturnGPUDescriptorHeapToPool(commandBuffer->renderer, commandBuffer->gpuDescriptorHeaps[1]);
-    }
     commandBuffer->gpuDescriptorHeaps[1] = samplerHeap;
 
     heaps[0] = viewHeap->handle;
@@ -7287,6 +7308,11 @@ static bool D3D12_INTERNAL_AllocateCommandBuffer(
     commandBuffer->usedComputePipelines = (D3D12ComputePipeline **)SDL_calloc(
         commandBuffer->usedComputePipelineCapacity, sizeof(D3D12ComputePipeline *));
 
+    commandBuffer->usedDescriptorHeapCapacity = 4;
+    commandBuffer->usedDescriptorHeapCount = 0;
+    commandBuffer->usedDescriptorHeaps = (D3D12DescriptorHeap **)SDL_calloc(
+        commandBuffer->usedDescriptorHeapCapacity, sizeof(D3D12DescriptorHeap *));
+
     commandBuffer->usedUniformBufferCapacity = 4;
     commandBuffer->usedUniformBufferCount = 0;
     commandBuffer->usedUniformBuffers = (D3D12UniformBuffer **)SDL_calloc(
@@ -7708,13 +7734,13 @@ static bool D3D12_INTERNAL_CleanCommandBuffer(
         NULL);
     CHECK_D3D12_ERROR_AND_RETURN("Could not reset command list", false);
 
-    // Return descriptor heaps to pool
-    D3D12_INTERNAL_ReturnGPUDescriptorHeapToPool(
-        renderer,
-        commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV]);
-    D3D12_INTERNAL_ReturnGPUDescriptorHeapToPool(
-        renderer,
-        commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER]);
+    // Return descriptor heaps to pool, pools own their own locks
+    for (i = 0; i < commandBuffer->usedDescriptorHeapCount; i += 1) {
+        D3D12_INTERNAL_ReturnGPUDescriptorHeapToPool(
+            renderer,
+            commandBuffer->usedDescriptorHeaps[i]);
+    }
+    commandBuffer->usedDescriptorHeapCount = 0;
 
     commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = NULL;
     commandBuffer->gpuDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = NULL;
