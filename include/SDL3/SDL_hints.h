@@ -391,11 +391,40 @@ extern "C" {
  * concept, so it applies to a physical audio device in this case, and not an
  * SDL_AudioStream, nor an SDL logical audio device.
  *
+ * For Windows WASAPI audio, the following roles are supported, and map to `AUDIO_STREAM_CATEGORY`:
+ *
+ * - "Other" (default)
+ * - "Communications" - Real-time communications, such as VOIP or chat
+ * - "Game" - Game audio
+ * - "GameChat" - Game chat audio, similar to "Communications" except that this will not attenuate other audio streams
+ * - "Movie" - Music or sound with dialog
+ * - "Media" - Music or sound without dialog
+ *
+ * If your application applies its own echo cancellation, gain control, and noise reduction it should also set SDL_HINT_AUDIO_DEVICE_RAW_STREAM.
+ *
  * This hint should be set before an audio device is opened.
  *
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_AUDIO_DEVICE_STREAM_ROLE "SDL_AUDIO_DEVICE_STREAM_ROLE"
+
+/**
+ * Specify whether this audio device should do audio processing.
+ *
+ * Some operating systems perform echo cancellation, gain control, and noise reduction as needed. If your application already handles these, you can set this hint to prevent the OS from doing additional audio processing.
+ *
+ * This corresponds to the WASAPI audio option `AUDCLNT_STREAMOPTIONS_RAW`.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": audio processing can be done by the OS. (default)
+ * - "1": audio processing is done by the application.
+ *
+ * This hint should be set before an audio device is opened.
+ *
+ * \since This hint is available since SDL 3.4.0.
+ */
+#define SDL_HINT_AUDIO_DEVICE_RAW_STREAM "SDL_AUDIO_DEVICE_RAW_STREAM"
 
 /**
  * Specify the input file when recording audio using the disk audio driver.
