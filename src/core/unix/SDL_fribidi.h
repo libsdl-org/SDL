@@ -21,12 +21,12 @@
 
 #include "SDL_internal.h"
 
+#ifndef SDL_fribidi_h_
+#define SDL_fribidi_h_
+
 #ifdef HAVE_FRIBIDI_H
 #include <sys/types.h> // for ssize_t
 #include <fribidi.h>
-
-#ifndef SDL_fribidi_h_
-#define SDL_fribidi_h_
 
 typedef FriBidiStrIndex (*SDL_FriBidiUnicodeToCharset)(FriBidiCharSet, const FriBidiChar *, FriBidiStrIndex, char *);
 typedef FriBidiStrIndex (*SDL_FriBidiCharsetToUnicode)(FriBidiCharSet, const char *, FriBidiStrIndex, FriBidiChar *);
@@ -54,6 +54,7 @@ typedef struct SDL_FriBidi {
 extern SDL_FriBidi *SDL_FriBidi_Create(void);
 extern char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bool shaping, FriBidiParType *out_par_type);
 extern void SDL_FriBidi_Destroy(SDL_FriBidi *fribidi);
-#endif
+
+#endif // HAVE_FRIBIDI_H
 
 #endif // SDL_fribidi_h_
