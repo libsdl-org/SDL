@@ -144,7 +144,8 @@ typedef enum SDL_PenDeviceType
  * Get the device type of the given pen.
  *
  * \param instance_id the pen instance ID.
- * \returns the device type of the given pen, or SDL_PEN_DEVICE_TYPE_INVALID on failure; call SDL_GetError() for more information.
+ * \returns the device type of the given pen, or SDL_PEN_DEVICE_TYPE_INVALID
+ *          on failure; call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
