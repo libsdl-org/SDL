@@ -87,7 +87,6 @@
 		00794EF009D23739003FC8A1 /* utf8.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6309D20839003FC8A1 /* utf8.txt */; };
 		00794EF709D237DE003FC8A1 /* moose.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5E09D20839003FC8A1 /* moose.dat */; };
 		453774A5120915E3002F0F45 /* testshape.c in Sources */ = {isa = PBXBuildFile; fileRef = 453774A4120915E3002F0F45 /* testshape.c */; };
-		66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E88E8A203B778F0004D44E /* testyuv_cvt.c */; };
 		A1A8594E2BC72FC20045DD6C /* testautomation_properties.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A859482BC72FC20045DD6C /* testautomation_properties.c */; };
 		A1A859502BC72FC20045DD6C /* testautomation_subsystems.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A859492BC72FC20045DD6C /* testautomation_subsystems.c */; };
 		A1A859522BC72FC20045DD6C /* testautomation_log.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A8594A2BC72FC20045DD6C /* testautomation_log.c */; };
@@ -274,6 +273,12 @@
 		F3CB570D2A78986000766177 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F3CB570F2A78986700766177 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
 		F3CB57102A78986700766177 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F3DB65DF2E9DA90000568044 /* testutils.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C17C7328E40ADE00E1A26D /* testutils.c */; };
+		F3DB65E12E9DA90000568044 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
+		F3DB65E52E9DA90000568044 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F3DB65EE2E9DA95D00568044 /* testyuv.png in Resources */ = {isa = PBXBuildFile; fileRef = F3DB65ED2E9DA95D00568044 /* testyuv.png */; };
+		F3DB65F12E9DA98E00568044 /* testyuv.c in Sources */ = {isa = PBXBuildFile; fileRef = F3DB65EF2E9DA98E00568044 /* testyuv.c */; };
+		F3DB65F22E9DA9B400568044 /* testyuv_cvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E88E8A203B778F0004D44E /* testyuv_cvt.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1193,6 +1198,17 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F3DB65E42E9DA90000568044 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F3DB65E52E9DA90000568044 /* SDL3.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -1344,6 +1360,10 @@
 		F3C17CD628E416AC00E1A26D /* testgeometry.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testgeometry.c; sourceTree = "<group>"; };
 		F3C17CDC28E416CF00E1A26D /* testgeometry.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgeometry.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3C2CAC52C5C8BD6004D7998 /* unifont-15.1.05.hex */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = "unifont-15.1.05.hex"; sourceTree = "<group>"; };
+		F3DB65E92E9DA90000568044 /* testyuv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testyuv.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3DB65ED2E9DA95D00568044 /* testyuv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testyuv.png; sourceTree = "<group>"; };
+		F3DB65EF2E9DA98E00568044 /* testyuv.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testyuv.c; sourceTree = "<group>"; };
+		F3DB65F02E9DA98E00568044 /* testyuv_cvt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testyuv_cvt.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1723,6 +1743,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F3DB65E02E9DA90000568044 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3DB65E12E9DA90000568044 /* SDL3.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1737,6 +1765,7 @@
 		00794E4609D207B4003FC8A1 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				F3DB65ED2E9DA95D00568044 /* testyuv.png */,
 				00794E5D09D20839003FC8A1 /* icon.png */,
 				00794E5E09D20839003FC8A1 /* moose.dat */,
 				00794E6109D20839003FC8A1 /* sample.png */,
@@ -1846,6 +1875,8 @@
 				F3C17C7328E40ADE00E1A26D /* testutils.c */,
 				083E4882006D86A17F000001 /* testver.c */,
 				0017993B10743FEF00F5D044 /* testwm.c */,
+				F3DB65EF2E9DA98E00568044 /* testyuv.c */,
+				F3DB65F02E9DA98E00568044 /* testyuv_cvt.h */,
 				66E88E8A203B778F0004D44E /* testyuv_cvt.c */,
 				083E4887006D86A17F000001 /* torturethread.c */,
 			);
@@ -1903,6 +1934,7 @@
 				F35E56AA298312CB00A43A5F /* testautomation.app */,
 				F36C34272C0F85DB00991150 /* testcamera.app */,
 				F3B7FD6A2D73FC630086D1D0 /* testpen.app */,
+				F3DB65E92E9DA90000568044 /* testyuv.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2757,6 +2789,24 @@
 			productReference = F3C17CDC28E416CF00E1A26D /* testgeometry.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F3DB65DC2E9DA90000568044 /* testyuv */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F3DB65E62E9DA90000568044 /* Build configuration list for PBXNativeTarget "testyuv" */;
+			buildPhases = (
+				F3DB65DD2E9DA90000568044 /* Sources */,
+				F3DB65E02E9DA90000568044 /* Frameworks */,
+				F3DB65E22E9DA90000568044 /* Resources */,
+				F3DB65E42E9DA90000568044 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testyuv;
+			productName = testalpha;
+			productReference = F3DB65E92E9DA90000568044 /* testyuv.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2970,6 +3020,7 @@
 				BEC5678D0761D90500A33029 /* testtimer */,
 				BEC567A70761D90500A33029 /* testversion */,
 				0017992010743FB700F5D044 /* testwm */,
+				F3DB65DC2E9DA90000568044 /* testyuv */,
 				BEC567EA0761D90600A33029 /* torturethread */,
 			);
 		};
@@ -3008,6 +3059,14 @@
 			files = (
 				F3C2CB072C5D3FB2004D7998 /* icon.png in Resources */,
 				F3C2CAC62C5C8BD6004D7998 /* unifont-15.1.05.hex in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3DB65E22E9DA90000568044 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3DB65EE2E9DA95D00568044 /* testyuv.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3153,7 +3212,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				002F345409CA202000EBEB88 /* testoverlay.c in Sources */,
-				66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */,
 				F3C17C7F28E4101000E1A26D /* testutils.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3442,6 +3500,16 @@
 			files = (
 				F3C17CEB28E4177600E1A26D /* testgeometry.c in Sources */,
 				F3C17CEC28E417EB00E1A26D /* testutils.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3DB65DD2E9DA90000568044 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3DB65DF2E9DA90000568044 /* testutils.c in Sources */,
+				F3DB65F22E9DA9B400568044 /* testyuv_cvt.c in Sources */,
+				F3DB65F12E9DA98E00568044 /* testyuv.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5138,6 +5206,15 @@
 			buildConfigurations = (
 				F3C17CE928E416D000E1A26D /* Debug */,
 				F3C17CEA28E416D000E1A26D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F3DB65E62E9DA90000568044 /* Build configuration list for PBXNativeTarget "testyuv" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3DB65E72E9DA90000568044 /* Debug */,
+				F3DB65E82E9DA90000568044 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
