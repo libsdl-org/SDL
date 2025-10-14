@@ -248,6 +248,12 @@ void Android_PumpEvents(Sint64 timeoutNS)
 
 bool Android_WaitActiveAndLockActivity(void)
 {
+    /* Make sure we have pumped all events so that Android_Paused state is correct */
+    SDL_AndroidLifecycleEvent event;
+    while (!Android_Destroyed && Android_WaitLifecycleEvent(&event, 0)) {
+        Android_HandleLifecycleEvent(event);
+    }
+
     while (Android_Paused && !Android_Destroyed) {
         Android_PumpEvents(-1);
     }
