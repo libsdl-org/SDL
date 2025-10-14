@@ -42,16 +42,21 @@ SDL_X11_SYM(int,XConvertSelection,(Display* a,Atom b,Atom c,Atom d,Window e,Time
 SDL_X11_SYM(Pixmap,XCreateBitmapFromData,(Display *dpy,Drawable d,_Xconst char *data,unsigned int width,unsigned int height))
 SDL_X11_SYM(Colormap,XCreateColormap,(Display* a,Window b,Visual* c,int d))
 SDL_X11_SYM(Cursor,XCreatePixmapCursor,(Display* a,Pixmap b,Pixmap c,XColor* d,XColor* e,unsigned int f,unsigned int g))
+SDL_X11_SYM(Cursor,XCreatePixmap,(Display* a,Drawable b,unsigned int d,unsigned int e,unsigned int f))
 SDL_X11_SYM(Cursor,XCreateFontCursor,(Display* a,unsigned int b))
 SDL_X11_SYM(XFontSet,XCreateFontSet,(Display* a, _Xconst char* b, char*** c, int* d, char** e))
 SDL_X11_SYM(GC,XCreateGC,(Display* a,Drawable b,unsigned long c,XGCValues* d))
+SDL_X11_SYM(void,XSetFont,(Display* a,GC b,Font c))
+SDL_X11_SYM(Status,XAllocColor,(Display *a, Colormap b, XColor *c))
 SDL_X11_SYM(XImage*,XCreateImage,(Display* a,Visual* b,unsigned int c,int d,int e,char* f,unsigned int g,unsigned int h,int i,int j))
 SDL_X11_SYM(Window,XCreateWindow,(Display* a,Window b,int c,int d,unsigned int e,unsigned int f,unsigned int g,int h,unsigned int i,Visual* j,unsigned long k,XSetWindowAttributes* l))
+SDL_X11_SYM(void,XCopyArea,(Display *a, Drawable b, Drawable c, GC d, int e, int f, unsigned int g, unsigned int h, int i, int j))
 SDL_X11_SYM(int,XDefineCursor,(Display* a,Window b,Cursor c))
 SDL_X11_SYM(int,XDeleteProperty,(Display* a,Window b,Atom c))
 SDL_X11_SYM(int,XDestroyWindow,(Display* a,Window b))
 SDL_X11_SYM(int,XDisplayKeycodes,(Display* a,int* b,int* c))
 SDL_X11_SYM(int,XDrawRectangle,(Display* a,Drawable b,GC c,int d,int e,unsigned int f,unsigned int g))
+SDL_X11_SYM(int,XFillArc,(Display* a,Drawable b,GC c,int d,int e,unsigned int f,unsigned int g, int h, int i))
 SDL_X11_SYM(char*,XDisplayName,(_Xconst char* a))
 SDL_X11_SYM(int,XDrawString,(Display* a,Drawable b,GC c,int d,int e,_Xconst char* f,int g))
 SDL_X11_SYM(int,XEventsQueued,(Display* a,int b))
@@ -65,9 +70,11 @@ SDL_X11_SYM(int,XFreeGC,(Display* a,GC b))
 SDL_X11_SYM(int,XFreeFont,(Display* a, XFontStruct* b))
 SDL_X11_SYM(int,XFreeModifiermap,(XModifierKeymap* a))
 SDL_X11_SYM(int,XFreePixmap,(Display* a,Pixmap b))
+SDL_X11_SYM(int,XFreeColormap,(Display* a,Colormap b))
 SDL_X11_SYM(void,XFreeStringList,(char** a))
 SDL_X11_SYM(char*,XGetAtomName,(Display *a,Atom b))
 SDL_X11_SYM(int,XGetInputFocus,(Display *a,Window *b,int *c))
+SDL_X11_SYM(KeySym*,XGetKeyboardMapping,(Display *a, KeyCode b, int c, int *d))
 SDL_X11_SYM(int,XGetErrorDatabaseText,(Display* a,_Xconst char* b,_Xconst char* c,_Xconst char* d,char* e,int f))
 SDL_X11_SYM(XModifierKeymap*,XGetModifierMapping,(Display* a))
 SDL_X11_SYM(int,XGetPointerControl,(Display* a,int* b,int* c,int* d))
@@ -98,6 +105,7 @@ SDL_X11_SYM(Display*,XOpenDisplay,(_Xconst char* a))
 SDL_X11_SYM(Status,XInitThreads,(void))
 SDL_X11_SYM(int,XPeekEvent,(Display* a,XEvent* b))
 SDL_X11_SYM(int,XPending,(Display* a))
+SDL_X11_SYM(XImage*,XGetImage,(Display* a,Drawable b,int c, int d,unsigned int e,unsigned int f,unsigned long g,int h))
 SDL_X11_SYM(int,XPutImage,(Display* a,Drawable b,GC c,XImage* d,int e,int f,int g,int h,unsigned int i,unsigned int j))
 SDL_X11_SYM(int,XQueryKeymap,(Display* a,char b[32]))
 SDL_X11_SYM(Bool,XQueryPointer,(Display* a,Window b,Window* c,Window* d,int* e,int* f,int* g,int* h,unsigned int* i))
@@ -163,6 +171,7 @@ SDL_X11_SYM(char*,XResourceManagerString,(Display *display))
 SDL_X11_SYM(XrmDatabase,XrmGetStringDatabase,(char *data))
 SDL_X11_SYM(void,XrmDestroyDatabase,(XrmDatabase db))
 SDL_X11_SYM(Bool,XrmGetResource,(XrmDatabase db, char* str_name, char* str_class, char **str_type_return, XrmValue *))
+SDL_X11_SYM(int,XGetPointerMapping,(Display *a, unsigned char *b, unsigned int c))
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
 SDL_X11_MODULE(XFIXES)
@@ -193,33 +202,19 @@ SDL_X11_SYM(Bool,XGetEventData,(Display* a,XGenericEventCookie* b))
 SDL_X11_SYM(void,XFreeEventData,(Display* a,XGenericEventCookie* b))
 #endif
 
-#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM
+#ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLIB
 SDL_X11_SYM(Bool,XkbQueryExtension,(Display* a,int * b,int * c,int * d,int * e, int *f))
-#if NeedWidePrototypes
-SDL_X11_SYM(Bool,XkbLookupKeySym,(Display* a, unsigned int b, unsigned int c, unsigned int* d, KeySym* e))
-#else
-SDL_X11_SYM(Bool,XkbLookupKeySym,(Display* a, KeyCode b, unsigned int c, unsigned int* d, KeySym* e))
-#endif
+SDL_X11_SYM(KeySym,XkbKeycodeToKeysym,(Display* a, KeyCode b, unsigned int c, unsigned int d))
+SDL_X11_SYM(Bool,XkbSelectEvents,(Display* a, unsigned int b, unsigned int c, unsigned long d))
+SDL_X11_SYM(Bool,XkbSelectEventDetails,(Display* a, unsigned int b, unsigned int c, unsigned long d, unsigned long e))
+SDL_X11_SYM(Status,XkbGetNames,(Display *a, unsigned int b, XkbDescPtr c))
 SDL_X11_SYM(Status,XkbGetState,(Display* a,unsigned int b,XkbStatePtr c))
 SDL_X11_SYM(Status,XkbGetUpdatedMap,(Display* a,unsigned int b,XkbDescPtr c))
 SDL_X11_SYM(XkbDescPtr,XkbGetMap,(Display* a,unsigned int b,unsigned int c))
 SDL_X11_SYM(void,XkbFreeClientMap,(XkbDescPtr a,unsigned int b, Bool c))
 SDL_X11_SYM(void,XkbFreeKeyboard,(XkbDescPtr a,unsigned int b, Bool c))
+SDL_X11_SYM(Status,XkbRefreshKeyboardMapping,(XkbMapNotifyEvent *a))
 SDL_X11_SYM(Bool,XkbSetDetectableAutoRepeat,(Display* a, Bool b, Bool* c))
-#endif
-
-// XKeycodeToKeysym is a deprecated function
-#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-#if NeedWidePrototypes
-SDL_X11_SYM(KeySym,XKeycodeToKeysym,(Display* a,unsigned int b,int c))
-#else
-SDL_X11_SYM(KeySym,XKeycodeToKeysym,(Display* a,KeyCode b,int c))
-#endif
-#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
-#pragma GCC diagnostic pop
 #endif
 
 #ifdef X_HAVE_UTF8_STRING
@@ -239,16 +234,22 @@ SDL_X11_SYM(void,Xutf8DrawString,(Display *a, Drawable b, XFontSet c, GC d, int 
 SDL_X11_SYM(int,Xutf8TextExtents,(XFontSet a, _Xconst char* b, int c, XRectangle* d, XRectangle* e))
 SDL_X11_SYM(char*,XSetLocaleModifiers,(const char *a))
 SDL_X11_SYM(char*,Xutf8ResetIC,(XIC a))
+SDL_X11_SYM(XFontSetExtents*,XExtentsOfFontSet,(XFontSet a))
+SDL_X11_SYM(Bool,XContextDependentDrawing,(XFontSet a))
 #endif
+
 
 #ifndef NO_SHARED_MEMORY
 SDL_X11_MODULE(SHM)
 SDL_X11_SYM(Status,XShmAttach,(Display* a,XShmSegmentInfo* b))
 SDL_X11_SYM(Status,XShmDetach,(Display* a,XShmSegmentInfo* b))
 SDL_X11_SYM(Status,XShmPutImage,(Display* a,Drawable b,GC c,XImage* d,int e,int f,int g,int h,unsigned int i,unsigned int j,Bool k))
+SDL_X11_SYM(Status,XShmGetImage,(Display* a,Drawable b,XImage *c,int d, int e, unsigned long f))
 SDL_X11_SYM(XImage*,XShmCreateImage,(Display* a,Visual* b,unsigned int c,int d,char* e,XShmSegmentInfo* f,unsigned int g,unsigned int h))
 SDL_X11_SYM(Pixmap,XShmCreatePixmap,(Display *a,Drawable b,char* c,XShmSegmentInfo* d, unsigned int e, unsigned int f, unsigned int g))
 SDL_X11_SYM(Bool,XShmQueryExtension,(Display* a))
+SDL_X11_SYM(Status,XShmQueryVersion,(Display* a, int *b, int *c, Bool *d))
+SDL_X11_SYM(int,XShmPixmapFormat,(Display* a))
 #endif
 
 /*

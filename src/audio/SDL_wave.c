@@ -813,7 +813,7 @@ static bool IMA_ADPCM_Init(WaveFile *file, size_t datalength)
 
     if (format->formattag == EXTENSIBLE_CODE) {
         /* There's no specification for this, but it's basically the same
-         * format because the extensible header has wSampePerBlocks too.
+         * format because the extensible header has wSamplePerBlocks too.
          */
     } else {
         // The Standards Update says there 'should' be 2 bytes for wSamplesPerBlock.
@@ -1775,6 +1775,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
     int result;
     Uint32 chunkcount = 0;
     Uint32 chunkcountlimit = 10000;
+    const Sint64 flen = SDL_GetIOSize(src);   // this might be -1 if the IOStream can't determine the total size.
     const char *hint;
     Sint64 RIFFstart, RIFFend, lastchunkpos;
     bool RIFFlengthknown = false;
@@ -1852,7 +1853,7 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
 
     /* Step through all chunks and save information on the fmt, data, and fact
      * chunks. Ignore the chunks we don't know as per specification. This
-     * currently also ignores cue, list, and slnt chunks.
+     * currently also ignores cue, list, and inst chunks.
      */
     while ((Uint64)RIFFend > (Uint64)chunk->position + chunk->length + (chunk->length & 1)) {
         // Abort after too many chunks or else corrupt files may waste time.
@@ -1883,6 +1884,14 @@ static bool WaveLoad(SDL_IOStream *src, WaveFile *file, SDL_AudioSpec *spec, Uin
                 fmtchunk = *chunk;
             }
         } else if (chunk->fourcc == DATA) {
+            /* If the data chunk is bigger than the file, it might be corrupt
+               or the file is truncated. Try to recover by clamping the file
+               size. This also means a malicious file can't allocate 4 gigabytes
+               for the chunks without actually supplying a 4 gigabyte file. */
+            if ((flen > 0) && ((chunk->position + chunk->length) > flen)) {
+                chunk->length = (Uint32) (flen - chunk->position);
+            }
+
             /* Only use the first data chunk. Handling the wavl list madness
              * may require a different approach.
              */
@@ -2092,16 +2101,19 @@ bool SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio, SDL_AudioSpec *spec, Uint8 
     }
 
     // Make sure we are passed a valid data source
-    if (!src) {
+    CHECK_PARAM(!src) {
         SDL_InvalidParamError("src");
         goto done;
-    } else if (!spec) {
+    }
+    CHECK_PARAM(!spec) {
         SDL_InvalidParamError("spec");
         goto done;
-    } else if (!audio_buf) {
+    }
+    CHECK_PARAM(!audio_buf) {
         SDL_InvalidParamError("audio_buf");
         goto done;
-    } else if (!audio_len) {
+    }
+    CHECK_PARAM(!audio_len) {
         SDL_InvalidParamError("audio_len");
         goto done;
     }
@@ -2114,8 +2126,8 @@ bool SDL_LoadWAV_IO(SDL_IOStream *src, bool closeio, SDL_AudioSpec *spec, Uint8 
     result = WaveLoad(src, &file, spec, audio_buf, audio_len);
     if (!result) {
         SDL_free(*audio_buf);
-        audio_buf = NULL;
-        audio_len = 0;
+        *audio_buf = NULL;
+        *audio_len = 0;
     }
 
     // Cleanup

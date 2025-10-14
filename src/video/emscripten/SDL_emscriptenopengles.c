@@ -28,6 +28,7 @@
 
 #include "SDL_emscriptenvideo.h"
 #include "SDL_emscriptenopengles.h"
+#include "../../main/SDL_main_callbacks.h"
 
 bool Emscripten_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
@@ -50,10 +51,14 @@ bool Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
     }
 
     if (Emscripten_ShouldSetSwapInterval(interval)) {
-        if (interval == 0) {
-            emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 0);
-        } else {
-            emscripten_set_main_loop_timing(EM_TIMING_RAF, interval);
+        // don't change the mainloop timing if the app is also driving a main callback with this hint,
+        //  as we assume that was the more deliberate action.
+        if (!SDL_HasMainCallbacks() || !SDL_GetHint(SDL_HINT_MAIN_CALLBACK_RATE)) {
+            if (interval == 0) {
+                emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 0);
+            } else {
+                emscripten_set_main_loop_timing(EM_TIMING_RAF, interval);
+            }
         }
     }
 

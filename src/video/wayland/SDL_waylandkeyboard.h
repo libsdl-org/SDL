@@ -28,7 +28,7 @@ extern void Wayland_QuitKeyboard(SDL_VideoDevice *_this);
 extern bool Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 extern bool Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
-extern void Wayland_UpdateTextInput(SDL_VideoData *display);
+extern void Wayland_SeatUpdateTextInput(SDL_WaylandSeat *seat);
 extern bool Wayland_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 
 #endif // SDL_waylandkeyboard_h_

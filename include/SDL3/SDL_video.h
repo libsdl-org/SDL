@@ -180,6 +180,12 @@ typedef struct SDL_Window SDL_Window;
  * changed on existing windows by the app, and some of it might be altered by
  * the user or system outside of the app's control.
  *
+ * When creating windows with `SDL_WINDOW_RESIZABLE`, SDL will constrain
+ * resizable windows to the dimensions recommended by the compositor to fit it
+ * within the usable desktop space, although some compositors will do this
+ * automatically without intervention as well. Use `SDL_SetWindowResizable`
+ * after creation instead if you wish to create a window with a specific size.
+ *
  * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_GetWindowFlags
@@ -220,6 +226,8 @@ typedef Uint64 SDL_WindowFlags;
  * SDL_WINDOWPOS_UNDEFINED or SDL_WINDOWPOS_UNDEFINED_DISPLAY.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
 
@@ -232,6 +240,8 @@ typedef Uint64 SDL_WindowFlags;
  * \param X the SDL_DisplayID of the display to use.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
 
@@ -241,6 +251,8 @@ typedef Uint64 SDL_WindowFlags;
  * This always uses the primary display.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_UNDEFINED         SDL_WINDOWPOS_UNDEFINED_DISPLAY(0)
 
@@ -250,6 +262,8 @@ typedef Uint64 SDL_WindowFlags;
  * \param X the window position value.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_ISUNDEFINED(X)    (((X)&0xFFFF0000) == SDL_WINDOWPOS_UNDEFINED_MASK)
 
@@ -260,6 +274,8 @@ typedef Uint64 SDL_WindowFlags;
  * SDL_WINDOWPOS_CENTERED or SDL_WINDOWPOS_CENTERED_DISPLAY.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_CENTERED_MASK    0x2FFF0000u
 
@@ -272,6 +288,8 @@ typedef Uint64 SDL_WindowFlags;
  * \param X the SDL_DisplayID of the display to use.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_CENTERED_DISPLAY(X)  (SDL_WINDOWPOS_CENTERED_MASK|(X))
 
@@ -281,6 +299,8 @@ typedef Uint64 SDL_WindowFlags;
  * This always uses the primary display.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetWindowPosition
  */
 #define SDL_WINDOWPOS_CENTERED         SDL_WINDOWPOS_CENTERED_DISPLAY(0)
 
@@ -290,6 +310,8 @@ typedef Uint64 SDL_WindowFlags;
  * \param X the window position value.
  *
  * \since This macro is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetWindowPosition
  */
 #define SDL_WINDOWPOS_ISCENTERED(X)    \
             (((X)&0xFFFF0000) == SDL_WINDOWPOS_CENTERED_MASK)
@@ -328,6 +350,9 @@ typedef enum SDL_ProgressState
  * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_GL_CreateContext
+ * \sa SDL_GL_SetAttribute
+ * \sa SDL_GL_MakeCurrent
+ * \sa SDL_GL_DestroyContext
  */
 typedef struct SDL_GLContextState *SDL_GLContext;
 
@@ -545,7 +570,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumVideoDrivers(void);
  * to be proper names.
  *
  * \param index the index of a video driver.
- * \returns the name of the video driver with the given **index**.
+ * \returns the name of the video driver with the given **index**, or NULL if
+ *          index is out of bounds.
  *
  * \threadsafety This function should only be called on the main thread.
  *
@@ -1070,8 +1096,6 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  *
  * - `SDL_WINDOW_FULLSCREEN`: fullscreen window at desktop resolution
  * - `SDL_WINDOW_OPENGL`: window usable with an OpenGL context
- * - `SDL_WINDOW_OCCLUDED`: window partially or completely obscured by another
- *   window
  * - `SDL_WINDOW_HIDDEN`: window is not visible
  * - `SDL_WINDOW_BORDERLESS`: no window decoration
  * - `SDL_WINDOW_RESIZABLE`: window can be resized
@@ -1099,7 +1123,8 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  * - `SDL_WINDOW_TRANSPARENT`: window with transparent buffer
  * - `SDL_WINDOW_NOT_FOCUSABLE`: window should not be focusable
  *
- * The SDL_Window is implicitly shown if SDL_WINDOW_HIDDEN is not set.
+ * The SDL_Window will be shown if SDL_WINDOW_HIDDEN is not set. If hidden at
+ * creation time, SDL_ShowWindow() can be used to show it later.
  *
  * On Apple's macOS, you **must** set the NSHighResolutionCapable Info.plist
  * property to YES, otherwise you will not receive a High-DPI OpenGL canvas.
@@ -1331,6 +1356,15 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *
  * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING`: the id given to the
  *   canvas element. This should start with a '#' sign
+ * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN`: true to make
+ *   the canvas element fill the entire document. Resize events will be
+ *   generated as the browser window is resized, as that will adjust the
+ *   canvas size as well. The canvas will cover anything else on the page,
+ *   including any controls provided by Emscripten in its generated HTML file.
+ *   Often times this is desirable for a browser-based game, but it means
+ *   several things that we expect of an SDL window on other platforms might
+ *   not work as expected, such as minimum window sizes and aspect ratios.
+ *   Default false.
  * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: override the
  *   binding element for keyboard inputs for this canvas. The variable can be
  *   one of:
@@ -1404,6 +1438,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "SDL.window.create.win32.pixel_format_hwnd"
 #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING         "SDL.window.create.emscripten.canvas_id"
+#define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN    "SDL.window.create.emscripten.fill_document"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING  "SDL.window.create.emscripten.keyboard_element"
 
 /**
@@ -1512,7 +1547,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_COCOA_WINDOW_POINTER`: the `(__unsafe_unretained)`
  *   NSWindow associated with the window
  * - `SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER`: the NSInteger tag
- *   assocated with metal views on the window
+ *   associated with metal views on the window
  *
  * On OpenVR:
  *
@@ -1573,6 +1608,9 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *
  * - `SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING`: the id the canvas element
  *   will have
+ * - `SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN`: true if the canvas is
+ *   set to consume the entire browser window, bypassing some SDL window
+ *   functionality.
  * - `SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: the keyboard
  *   element that associates keyboard events to this window
  *
@@ -1622,6 +1660,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_X11_SCREEN_NUMBER                           "SDL.window.x11.screen"
 #define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                           "SDL.window.x11.window"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING                 "SDL.window.emscripten.canvas_id"
+#define SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN            "SDL.window.emscripten.fill_document"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING          "SDL.window.emscripten.keyboard_element"
 
 /**
@@ -1680,15 +1719,16 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetWindowTitle(SDL_Window *window);
 /**
  * Set the icon for a window.
  *
- * If this function is passed a surface with alternate representations, the
- * surface will be interpreted as the content to be used for 100% display
- * scale, and the alternate representations will be used for high DPI
- * situations. For example, if the original surface is 32x32, then on a 2x
- * macOS display or 200% display scale on Windows, a 64x64 version of the
- * image will be used, if available. If a matching version of the image isn't
- * available, the closest larger size image will be downscaled to the
- * appropriate size and be used instead, if available. Otherwise, the closest
- * smaller image will be upscaled and be used instead.
+ * If this function is passed a surface with alternate representations added
+ * using SDL_AddSurfaceAlternateImage(), the surface will be interpreted as
+ * the content to be used for 100% display scale, and the alternate
+ * representations will be used for high DPI situations. For example, if the
+ * original surface is 32x32, then on a 2x macOS display or 200% display scale
+ * on Windows, a 64x64 version of the image will be used, if available. If a
+ * matching version of the image isn't available, the closest larger size
+ * image will be downscaled to the appropriate size and be used instead, if
+ * available. Otherwise, the closest smaller image will be upscaled and be
+ * used instead.
  *
  * \param window the window to change.
  * \param icon an SDL_Surface structure containing the icon for the window.
@@ -1698,6 +1738,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetWindowTitle(SDL_Window *window);
  * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_AddSurfaceAlternateImage
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowIcon(SDL_Window *window, SDL_Surface *icon);
 
@@ -1891,7 +1933,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowSafeArea(SDL_Window *window, SDL_R
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowAspectRatio(SDL_Window *window, float min_aspect, float max_aspect);
 
 /**
- * Get the size of a window's client area.
+ * Get the aspect ratio of a window's client area.
  *
  * \param window the window to query the width and height from.
  * \param min_aspect a pointer filled in with the minimum aspect ratio of the
@@ -3153,8 +3195,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
  * SDL_GL_GetAttribute() to check the values after creating the OpenGL
  * context, since the values obtained can differ from the requested ones.
  *
- * \param attr an SDL_GLAttr enum value specifying the OpenGL attribute to
- *             set.
+ * \param attr an enum value specifying the OpenGL attribute to set.
  * \param value the desired value for the attribute.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
@@ -3163,6 +3204,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_GL_CreateContext
  * \sa SDL_GL_GetAttribute
  * \sa SDL_GL_ResetAttributes
  */
@@ -3188,6 +3230,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value
 
 /**
  * Create an OpenGL context for an OpenGL window, and make it current.
+ *
+ * The OpenGL context will be created with the current states set through
+ * SDL_GL_SetAttribute().
+ *
+ * The SDL_Window specified must have been created with the SDL_WINDOW_OPENGL
+ * flag, or context creation will fail.
  *
  * Windows users new to OpenGL should note that, for historical reasons, GL
  * functions added after OpenGL version 1.1 are not available by default.

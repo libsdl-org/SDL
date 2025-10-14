@@ -108,7 +108,7 @@ static LONG NTAPI EmptyVectoredExceptionHandler(EXCEPTION_POINTERS *info)
     }
 }
 
-typedef HRESULT(WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
+typedef HRESULT (WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
 
 void SDL_SYS_SetupThread(const char *name)
 {

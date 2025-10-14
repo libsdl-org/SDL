@@ -57,12 +57,14 @@
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_RISCOS) // probably not useful on RISC OS, since dlopen() can't be used when using static linking.
 #define SDL_DYNAMIC_API 0
-#elif defined(__clang_analyzer__) || defined(__INTELLISENSE__) || defined(SDL_THREAD_SAFETY_ANALYSIS)
+#elif defined(__clang_analyzer__) || defined(__INTELLISENSE__) || defined(SDL_THREAD_SAFETY_ANALYSIS) || defined(__RESHARPER__)
 #define SDL_DYNAMIC_API 0 // Turn off for static analysis, so reports are more clear.
 #elif defined(SDL_PLATFORM_VITA)
 #define SDL_DYNAMIC_API 0 // vitasdk doesn't support dynamic linking
 #elif defined(SDL_PLATFORM_3DS)
 #define SDL_DYNAMIC_API 0 // devkitARM doesn't support dynamic linking
+#elif defined(SDL_PLATFORM_NGAGE)
+#define SDL_DYNAMIC_API 0
 #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
 #define SDL_DYNAMIC_API 0 // we need dlopen(), but don't have it....
 #endif

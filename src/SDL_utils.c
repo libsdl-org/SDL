@@ -137,6 +137,30 @@ Uint32 SDL_GetNextObjectID(void)
 
 static SDL_InitState SDL_objects_init;
 static SDL_HashTable *SDL_objects;
+bool SDL_object_validation = true;
+
+static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    bool validation_enabled = true;
+
+#ifndef OBJECT_VALIDATION_REQUIRED
+    if (hint) {
+        switch (*hint) {
+        case '0':
+        case '1':
+            validation_enabled = false;
+            break;
+        case '2':
+            validation_enabled = true;
+            break;
+        default:
+            break;
+        }
+    }
+#endif // !OBJECT_VALIDATION_REQUIRED
+
+    SDL_object_validation = validation_enabled;
+}
 
 static Uint32 SDLCALL SDL_HashObject(void *unused, const void *key)
 {
@@ -159,6 +183,7 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
         if (!initialized) {
             return;
         }
+        SDL_AddHintCallback(SDL_HINT_INVALID_PARAM_CHECKS, SDL_InvalidParamChecksChanged, NULL);
     }
 
     if (valid) {
@@ -168,12 +193,8 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
     }
 }
 
-bool SDL_ObjectValid(void *object, SDL_ObjectType type)
+bool SDL_FindObject(void *object, SDL_ObjectType type)
 {
-    if (!object) {
-        return false;
-    }
-
     const void *object_type;
     if (!SDL_FindInHashTable(SDL_objects, object, &object_type)) {
         return false;
@@ -242,6 +263,7 @@ void SDL_SetObjectsInvalid(void)
         SDL_DestroyHashTable(SDL_objects);
         SDL_objects = NULL;
         SDL_SetInitialized(&SDL_objects_init, false);
+        SDL_RemoveHintCallback(SDL_HINT_INVALID_PARAM_CHECKS, SDL_InvalidParamChecksChanged, NULL);
     }
 }
 
@@ -552,3 +574,10 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
 
     return name;
 }
+
+
+void SDL_DebugLogBackend(const char *subsystem, const char *backend)
+{
+    SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "SDL chose %s backend '%s'", subsystem, backend);
+}
+

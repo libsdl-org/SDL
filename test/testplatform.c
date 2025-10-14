@@ -412,6 +412,7 @@ static int TestCPUInfo(bool verbose)
         SDL_Log("LSX %s", SDL_HasLSX() ? "detected" : "not detected");
         SDL_Log("LASX %s", SDL_HasLASX() ? "detected" : "not detected");
         SDL_Log("System RAM %d MB", SDL_GetSystemRAM());
+        SDL_Log("System memory page size %d bytes", SDL_GetSystemPageSize());
     }
     return 0;
 }

@@ -82,7 +82,7 @@ extern "C" SDL_BLooper *SDL_Looper;
 class SDL_BLooper : public BLooper
 {
   public:
-    SDL_BLooper(const char* name) : BLooper(name)
+    SDL_BLooper(const char *name) : BLooper(name)
     {
 #ifdef SDL_VIDEO_OPENGL
         _current_context = NULL;

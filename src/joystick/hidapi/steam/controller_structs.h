@@ -112,7 +112,7 @@ typedef struct {
 	int16_t dur_ms; 			// Duration of tone / rumble (if applicable) (neg = infinite)
 
 	uint16_t noise_intensity;
-	uint16_t lfo_freq; 			// Drives both tone and rumble geneators
+	uint16_t lfo_freq; 			// Drives both tone and rumble generators
 	uint8_t lfo_depth; 			// percentage, typically 100
 	uint8_t rand_tone_gain; 	// Randomize each LFO cycle's gain
 	uint8_t script_id; 			// Used w/ dBgain for scripted haptics
@@ -261,7 +261,7 @@ typedef struct
 	short sRightPadX;
 	short sRightPadY;
 
-	//This mimcs how the dongle reconstitutes HID packets, there will be 0-4 shorts depending on gyro mode
+	//This mimics how the dongle reconstitutes HID packets, there will be 0-4 shorts depending on gyro mode
 	unsigned char ucGyroDataType; //TODO could maybe find some unused bits in the button field for this info (is only 2bits)
 	short sGyro[4];
 

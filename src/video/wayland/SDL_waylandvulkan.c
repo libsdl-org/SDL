@@ -41,6 +41,13 @@
 #define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
+SDL_ELF_NOTE_DLOPEN(
+    "wayland-vulkan",
+    "Support for Vulkan on wayland backend",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_VULKAN
+);
+
 bool Wayland_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
@@ -115,7 +122,7 @@ void Wayland_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const* const* Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
+char const * const *Wayland_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForWayland[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME

@@ -486,8 +486,8 @@ static void SDL_TARGETING("mmx") Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
                 d &= 0x07e0f81f;
                 *dstp++ = (Uint16)(d | d >> 16);
             },{
-                src1 = *(__m64*)srcp; // 4 src pixels -> src1
-                dst1 = *(__m64*)dstp; // 4 dst pixels -> dst1
+                src1 = *(__m64 *)srcp; // 4 src pixels -> src1
+                dst1 = *(__m64 *)dstp; // 4 dst pixels -> dst1
 
                 // red
                 src2 = src1;
@@ -536,7 +536,7 @@ static void SDL_TARGETING("mmx") Blit565to565SurfaceAlphaMMX(SDL_BlitInfo *info)
 
                 mm_res = _mm_or_si64(mm_res, dst2); // RED | GREEN | BLUE -> mm_res
 
-                *(__m64*)dstp = mm_res; // mm_res -> 4 dst pixels
+                *(__m64 *)dstp = mm_res; // mm_res -> 4 dst pixels
 
                 srcp += 4;
                 dstp += 4;
@@ -624,8 +624,8 @@ static void SDL_TARGETING("mmx") Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
                 d &= 0x03e07c1f;
                 *dstp++ = (Uint16)(d | d >> 16);
             },{
-                src1 = *(__m64*)srcp; // 4 src pixels -> src1
-                dst1 = *(__m64*)dstp; // 4 dst pixels -> dst1
+                src1 = *(__m64 *)srcp; // 4 src pixels -> src1
+                dst1 = *(__m64 *)dstp; // 4 dst pixels -> dst1
 
                 // red -- process the bits in place
                 src2 = src1;
@@ -674,7 +674,7 @@ static void SDL_TARGETING("mmx") Blit555to555SurfaceAlphaMMX(SDL_BlitInfo *info)
 
                 mm_res = _mm_or_si64(mm_res, dst2); // RED | GREEN | BLUE -> mm_res
 
-                *(__m64*)dstp = mm_res; // mm_res -> 4 dst pixels
+                *(__m64 *)dstp = mm_res; // mm_res -> 4 dst pixels
 
                 srcp += 4;
                 dstp += 4;
@@ -1061,8 +1061,8 @@ static void SDL_TARGETING("sse4.1") Blit8888to8888PixelAlphaSwizzleSSE41(SDL_Bli
             __m128i dst_hi = _mm_maddubs_epi16(srca_hi, _mm_unpackhi_epi8(src128, dst128));
 
             // dst += 0x1U (use 0x80 to round instead of floor) + 128*255 (to fix maddubs result)
-            dst_lo = _mm_add_epi16(dst_lo, _mm_set1_epi16(1 + 128*255));
-            dst_hi = _mm_add_epi16(dst_hi, _mm_set1_epi16(1 + 128*255));
+            dst_lo = _mm_add_epi16(dst_lo, _mm_set1_epi16(1 + 128 * 255));
+            dst_hi = _mm_add_epi16(dst_hi, _mm_set1_epi16(1 + 128 * 255));
 
             // dst = (dst + (dst >> 8)) >> 8 = (dst * 257) >> 16
             dst_lo = _mm_mulhi_epu16(dst_lo, _mm_set1_epi16(257));
@@ -1165,8 +1165,8 @@ static void SDL_TARGETING("avx2") Blit8888to8888PixelAlphaSwizzleAVX2(SDL_BlitIn
             __m256i dst_hi = _mm256_maddubs_epi16(alpha_hi, _mm256_unpackhi_epi8(src256, dst256));
 
             // dst += 0x1U (use 0x80 to round instead of floor) + 128*255 (to fix maddubs result)
-            dst_lo = _mm256_add_epi16(dst_lo, _mm256_set1_epi16(1 + 128*255));
-            dst_hi = _mm256_add_epi16(dst_hi, _mm256_set1_epi16(1 + 128*255));
+            dst_lo = _mm256_add_epi16(dst_lo, _mm256_set1_epi16(1 + 128 * 255));
+            dst_hi = _mm256_add_epi16(dst_hi, _mm256_set1_epi16(1 + 128 * 255));
 
             // dst = (dst + (dst >> 8)) >> 8 = (dst * 257) >> 16
             dst_lo = _mm256_mulhi_epu16(dst_lo, _mm256_set1_epi16(257));
@@ -1290,8 +1290,8 @@ static void Blit8888to8888PixelAlphaSwizzleNEON(SDL_BlitInfo *info)
         // Process 1 pixel per iteration, max 3 iterations, same calculations as above
         for (; i < width; ++i) {
             // Top 32-bits will be not used in src32 & dst32
-            uint8x8_t src32 = vreinterpret_u8_u32(vld1_dup_u32((Uint32*)src));
-            uint8x8_t dst32 = vreinterpret_u8_u32(vld1_dup_u32((Uint32*)dst));
+            uint8x8_t src32 = vreinterpret_u8_u32(vld1_dup_u32((Uint32 *)src));
+            uint8x8_t dst32 = vreinterpret_u8_u32(vld1_dup_u32((Uint32 *)dst));
 
             uint8x8_t srcA = vtbl1_u8(src32, vget_low_u8(alpha_splat_mask));
             src32 = vtbl1_u8(src32, vget_low_u8(convert_mask));
@@ -1309,7 +1309,7 @@ static void Blit8888to8888PixelAlphaSwizzleNEON(SDL_BlitInfo *info)
             }
 
             // Save the result, only low 32-bits
-            vst1_lane_u32((Uint32*)dst, vreinterpret_u32_u8(dst32), 0);
+            vst1_lane_u32((Uint32 *)dst, vreinterpret_u32_u8(dst32), 0);
 
             src += 4;
             dst += 4;

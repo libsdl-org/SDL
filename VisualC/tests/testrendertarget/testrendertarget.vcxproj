@@ -183,7 +183,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(TreatWarningsAsError)'!=''">
     <ClCompile>
-      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
       <TreatWarningAsError>$(TreatWarningsAsError)</TreatWarningAsError>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -202,7 +201,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\test\icon.bmp">
+    <CustomBuild Include="..\..\..\test\icon.png">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename)%(Extension)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy "%(FullPath)" "$(ProjectDir)\"
 </Command>
@@ -220,7 +219,7 @@
 </Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\%(Filename)%(Extension);%(Outputs)</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\test\sample.bmp">
+    <CustomBuild Include="..\..\..\test\sample.png">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename)%(Extension)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy "%(FullPath)" "$(ProjectDir)\"
 </Command>

@@ -25,7 +25,7 @@
 
 #ifndef SDL_PLATFORM_IOS
 
-static int callback_rate_increment = 0;
+static Uint64 callback_rate_increment = 0;
 static bool iterate_after_waitevent = false;
 
 static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
@@ -34,9 +34,9 @@ static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name
     if (iterate_after_waitevent) {
         callback_rate_increment = 0;
     } else {
-        const int callback_rate = newValue ? SDL_atoi(newValue) : 0;
-        if (callback_rate > 0) {
-            callback_rate_increment = ((Uint64) 1000000000) / ((Uint64) callback_rate);
+        const double callback_rate = newValue ? SDL_atof(newValue) : 0.0;
+        if (callback_rate > 0.0) {
+            callback_rate_increment = (Uint64) ((double) SDL_NS_PER_SECOND / callback_rate);
         } else {
             callback_rate_increment = 0;
         }
@@ -51,10 +51,10 @@ static SDL_AppResult GenericIterateMainCallbacks(void)
     return SDL_IterateMainCallbacks(!iterate_after_waitevent);
 }
 
-int SDL_EnterAppMainCallbacks(int argc, char* argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
+int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {
     SDL_AppResult rc = SDL_InitMainCallbacks(argc, argv, appinit, appiter, appevent, appquit);
-    if (rc == 0) {
+    if (rc == SDL_APP_CONTINUE) {
         SDL_AddHintCallback(SDL_HINT_MAIN_CALLBACK_RATE, MainCallbackRateHintChanged, NULL);
 
         Uint64 next_iteration = callback_rate_increment ? (SDL_GetTicksNS() + callback_rate_increment) : 0;

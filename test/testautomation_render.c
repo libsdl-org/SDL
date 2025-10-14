@@ -9,6 +9,8 @@
 
 /* ================= Test Case Implementation ================== */
 
+#define TESTRENDER_WINDOW_W 320
+#define TESTRENDER_WINDOW_H 240
 #define TESTRENDER_SCREEN_W 80
 #define TESTRENDER_SCREEN_H 60
 
@@ -46,10 +48,9 @@ static bool hasDrawColor(void);
  */
 static void SDLCALL InitCreateRenderer(void **arg)
 {
-    int width = 320, height = 240;
     const char *renderer_name = NULL;
     renderer = NULL;
-    window = SDL_CreateWindow("render_testCreateRenderer", width, height, 0);
+    window = SDL_CreateWindow("render_testCreateRenderer", TESTRENDER_WINDOW_W, TESTRENDER_WINDOW_H, 0);
     SDLTest_AssertPass("SDL_CreateWindow()");
     SDLTest_AssertCheck(window != NULL, "Check SDL_CreateWindow result");
     if (window == NULL) {
@@ -124,16 +125,23 @@ static int SDLCALL render_testPrimitives(void *arg)
     rect.y = 0.0f;
     rect.w = 40.0f;
     rect.h = 80.0f;
-
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 13, 73, 200, SDL_ALPHA_OPAQUE))
     CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
 
-    /* Draw a rectangle. */
+    /* Draw a rectangle with negative width and height. */
+    rect.x = 10.0f + 60.0f;
+    rect.y = 10.0f + 40.0f;
+    rect.w = -60.0f;
+    rect.h = -40.0f;
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 200, 0, 100, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
+
+    /* Draw a rectangle with zero width and height. */
     rect.x = 10.0f;
     rect.y = 10.0f;
-    rect.w = 60.0f;
-    rect.h = 40.0f;
-    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 200, 0, 100, SDL_ALPHA_OPAQUE))
+    rect.w = 0.0f;
+    rect.h = 0.0f;
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 255, 0, 0, SDL_ALPHA_OPAQUE))
     CHECK_FUNC(SDL_RenderFillRect, (renderer, &rect))
 
     /* Draw some points like so:
@@ -1388,11 +1396,17 @@ static int SDLCALL render_testLogicalSize(void *arg)
     SDL_Surface *referenceSurface;
     SDL_Rect viewport;
     SDL_FRect rect;
-    int w, h;
+    int w = 0, h = 0;
     int set_w, set_h;
     SDL_RendererLogicalPresentation set_presentation_mode;
     SDL_FRect set_rect;
     const int factor = 2;
+
+    SDL_GetWindowSize(window, &w, &h);
+    if (w != TESTRENDER_WINDOW_W || h != TESTRENDER_WINDOW_H) {
+        SDLTest_Log("Skipping test render_testLogicalSize: expected window %dx%d, got %dx%d", TESTRENDER_WINDOW_W, TESTRENDER_WINDOW_H, w, h);
+        return TEST_SKIPPED;
+    }
 
     viewport.x = ((TESTRENDER_SCREEN_W / 4) / factor) * factor;
     viewport.y = ((TESTRENDER_SCREEN_H / 4) / factor) * factor;
@@ -1420,8 +1434,8 @@ static int SDLCALL render_testLogicalSize(void *arg)
     SDLTest_AssertCheck(
         set_rect.x == 0.0f &&
         set_rect.y == 0.0f &&
-        set_rect.w == 320.0f &&
-        set_rect.h == 240.0f,
+        set_rect.w == (float)w &&
+        set_rect.h == (float)h,
         "Validate result from SDL_GetRenderLogicalPresentationRect, got {%g, %g, %gx%g}", set_rect.x, set_rect.y, set_rect.w, set_rect.h);
     CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE))
     rect.x = (float)viewport.x / factor;
@@ -1440,8 +1454,8 @@ static int SDLCALL render_testLogicalSize(void *arg)
     SDLTest_AssertCheck(
         set_rect.x == 0.0f &&
         set_rect.y == 0.0f &&
-        set_rect.w == 320.0f &&
-        set_rect.h == 240.0f,
+        set_rect.w == (float)w &&
+        set_rect.h == (float)h,
         "Validate result from SDL_GetRenderLogicalPresentationRect, got {%g, %g, %gx%g}", set_rect.x, set_rect.y, set_rect.w, set_rect.h);
 
     /* Check to see if final image matches. */
@@ -1758,6 +1772,110 @@ clearScreen(void)
 }
 
 /**
+ * Tests geometry UV clamping
+ */
+static int SDLCALL render_testUVClamping(void *arg)
+{
+    SDL_Vertex vertices[6];
+    SDL_Vertex *verts = vertices;
+    SDL_FColor color = { 1.0f, 1.0f, 1.0f, 1.0f };
+    SDL_FRect rect;
+    float min_U = -0.5f;
+    float max_U = 1.5f;
+    float min_V = -0.5f;
+    float max_V = 1.5f;
+    SDL_Texture *tface;
+    SDL_Surface *referenceSurface = NULL;
+
+    /* Clear surface. */
+    clearScreen();
+
+    /* Create face surface. */
+    tface = loadTestFace();
+    SDLTest_AssertCheck(tface != NULL, "Verify loadTestFace() result");
+    if (tface == NULL) {
+        return TEST_ABORTED;
+    }
+
+    rect.w = (float)tface->w * 2;
+    rect.h = (float)tface->h * 2;
+    rect.x = (TESTRENDER_SCREEN_W - rect.w) / 2;
+    rect.y = (TESTRENDER_SCREEN_H - rect.h) / 2;
+
+    /*
+     *   0--1
+     *   | /|
+     *   |/ |
+     *   3--2
+     *
+     *  Draw sprite2 as triangles that can be recombined as rect by software renderer
+     */
+
+    /* 0 */
+    verts->position.x = rect.x;
+    verts->position.y = rect.y;
+    verts->color = color;
+    verts->tex_coord.x = min_U;
+    verts->tex_coord.y = min_V;
+    verts++;
+    /* 1 */
+    verts->position.x = rect.x + rect.w;
+    verts->position.y = rect.y;
+    verts->color = color;
+    verts->tex_coord.x = max_U;
+    verts->tex_coord.y = min_V;
+    verts++;
+    /* 2 */
+    verts->position.x = rect.x + rect.w;
+    verts->position.y = rect.y + rect.h;
+    verts->color = color;
+    verts->tex_coord.x = max_U;
+    verts->tex_coord.y = max_V;
+    verts++;
+    /* 0 */
+    verts->position.x = rect.x;
+    verts->position.y = rect.y;
+    verts->color = color;
+    verts->tex_coord.x = min_U;
+    verts->tex_coord.y = min_V;
+    verts++;
+    /* 2 */
+    verts->position.x = rect.x + rect.w;
+    verts->position.y = rect.y + rect.h;
+    verts->color = color;
+    verts->tex_coord.x = max_U;
+    verts->tex_coord.y = max_V;
+    verts++;
+    /* 3 */
+    verts->position.x = rect.x;
+    verts->position.y = rect.y + rect.h;
+    verts->color = color;
+    verts->tex_coord.x = min_U;
+    verts->tex_coord.y = max_V;
+    verts++;
+
+    /* Set texture address mode to clamp */
+    SDL_SetRenderTextureAddressMode(renderer, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
+
+    /* Blit sprites as triangles onto the screen */
+    SDL_RenderGeometry(renderer, tface, vertices, 6, NULL, 0);
+
+    /* See if it's the same */
+    referenceSurface = SDLTest_ImageClampedSprite();
+    compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+    /* Make current */
+    SDL_RenderPresent(renderer);
+
+    /* Clean up. */
+    SDL_DestroyTexture(tface);
+    SDL_DestroySurface(referenceSurface);
+    referenceSurface = NULL;
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Tests geometry UV wrapping
  */
 static int SDLCALL render_testUVWrapping(void *arg)
@@ -2035,6 +2153,10 @@ static const SDLTest_TestCaseReference renderTestLogicalSize = {
     render_testLogicalSize, "render_testLogicalSize", "Tests logical size", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestUVClamping = {
+    render_testUVClamping, "render_testUVClamping", "Tests geometry UV clamping", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference renderTestUVWrapping = {
     render_testUVWrapping, "render_testUVWrapping", "Tests geometry UV wrapping", TEST_ENABLED
 };
@@ -2065,6 +2187,7 @@ static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestViewport,
     &renderTestClipRect,
     &renderTestLogicalSize,
+    &renderTestUVClamping,
     &renderTestUVWrapping,
     &renderTestTextureState,
     &renderTestGetSetTextureScaleMode,

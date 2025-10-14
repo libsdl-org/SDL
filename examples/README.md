@@ -65,3 +65,30 @@ If writing new examples, this is the skeleton code we start from, to keep
 everything consistent. You can ignore it.
 
 
+## How are the thumbnails/onmouseover media created?
+
+(Since I have to figure this out every time.)
+
+This is how Ryan is doing it currently.
+
+- `rm -f frame*.png`
+- Temporarily add `#include "../../save-rendering-to-bitmaps.h"` after any SDL
+  includes in the example program.
+- Launch the example app, interact with it, let it run for a few seconds, quit.
+- This will dump a "frameX.png" file for each frame rendered.
+- Make a video in webp format from the bitmaps (this assumes the bitmaps were
+  stored at 60fps, you might have to tweak).
+
+  ```bash
+  ffmpeg -framerate 60 -pattern_type glob -i 'frame*.png' -loop 0 -quality 40 -r 10 -frames:v 40 onmouseover.webp
+  ```
+
+  You might need to start in the middle of the video, or mess with quality or
+  number of frames to generate, ymmv.
+- Pick a frame for the thumbnail, make it a .png, and run that png through
+  pngquant for massive file size reduction without any obvious loss in quality:
+
+  ```bash
+  convert frame00000.png cvt.png ; pngquant cvt.png --output thumbnail.png ; rm -f cvt.png
+  ```
+

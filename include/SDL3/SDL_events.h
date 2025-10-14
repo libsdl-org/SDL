@@ -30,7 +30,7 @@
  * coming and going, the system changing in some way, etc.
  *
  * An app generally takes a moment, perhaps at the start of a new frame, to
- * examine any events that have occured since the last time and process or
+ * examine any events that have occurred since the last time and process or
  * ignore them. This is generally done by calling SDL_PollEvent() in a loop
  * until it returns false (or, if using the main callbacks, events are
  * provided one at a time in calls to SDL_AppEvent() before the next call to
@@ -127,15 +127,17 @@ typedef enum SDL_EventType
     SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED,  /**< Display has changed desktop mode */
     SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED,  /**< Display has changed current mode */
     SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED, /**< Display has changed content scale */
+    SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED, /**< Display has changed usable bounds */
     SDL_EVENT_DISPLAY_FIRST = SDL_EVENT_DISPLAY_ORIENTATION,
-    SDL_EVENT_DISPLAY_LAST = SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED,
+    SDL_EVENT_DISPLAY_LAST = SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED,
 
     /* Window events */
     /* 0x200 was SDL_WINDOWEVENT, reserve the number for sdl2-compat */
     /* 0x201 was SDL_SYSWMEVENT, reserve the number for sdl2-compat */
     SDL_EVENT_WINDOW_SHOWN = 0x202,     /**< Window has been shown */
     SDL_EVENT_WINDOW_HIDDEN,            /**< Window has been hidden */
-    SDL_EVENT_WINDOW_EXPOSED,           /**< Window has been exposed and should be redrawn, and can be redrawn directly from event watchers for this event */
+    SDL_EVENT_WINDOW_EXPOSED,           /**< Window has been exposed and should be redrawn, and can be redrawn directly from event watchers for this event.
+                                             data1 is 1 for live-resize expose events, 0 otherwise. */
     SDL_EVENT_WINDOW_MOVED,             /**< Window has been moved to data1, data2 */
     SDL_EVENT_WINDOW_RESIZED,           /**< Window has been resized to data1xdata2 */
     SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED,/**< The pixel size of the window has changed to data1xdata2 */
@@ -174,6 +176,8 @@ typedef enum SDL_EventType
     SDL_EVENT_KEYBOARD_ADDED,          /**< A new keyboard has been inserted into the system */
     SDL_EVENT_KEYBOARD_REMOVED,        /**< A keyboard has been removed */
     SDL_EVENT_TEXT_EDITING_CANDIDATES, /**< Keyboard text editing candidates */
+    SDL_EVENT_SCREEN_KEYBOARD_SHOWN,   /**< The on-screen keyboard has been shown */
+    SDL_EVENT_SCREEN_KEYBOARD_HIDDEN,  /**< The on-screen keyboard has been hidden */
 
     /* Mouse events */
     SDL_EVENT_MOUSE_MOTION    = 0x400, /**< Mouse moved */
@@ -214,10 +218,15 @@ typedef enum SDL_EventType
     SDL_EVENT_FINGER_MOTION,
     SDL_EVENT_FINGER_CANCELED,
 
+    /* Pinch events */
+    SDL_EVENT_PINCH_BEGIN      = 0x710,     /**< Pinch gesture started */
+    SDL_EVENT_PINCH_UPDATE,                 /**< Pinch gesture updated */
+    SDL_EVENT_PINCH_END,                    /**< Pinch gesture ended */
+
     /* 0x800, 0x801, and 0x802 were the Gesture events from SDL2. Do not reuse these values! sdl2-compat needs them! */
 
     /* Clipboard events */
-    SDL_EVENT_CLIPBOARD_UPDATE = 0x900, /**< The clipboard or primary selection changed */
+    SDL_EVENT_CLIPBOARD_UPDATE = 0x900, /**< The clipboard changed */
 
     /* Drag and drop events */
     SDL_EVENT_DROP_FILE        = 0x1000, /**< The system requests a file open */
@@ -704,6 +713,10 @@ typedef struct SDL_GamepadSensorEvent
 /**
  * Audio device event structure (event.adevice.*)
  *
+ * Note that SDL will send a SDL_EVENT_AUDIO_DEVICE_ADDED event for every
+ * device it discovers during initialization. After that, this event will only
+ * arrive when a device is hotplugged during the program's run.
+ *
  * \since This struct is available since SDL 3.2.0.
  */
 typedef struct SDL_AudioDeviceEvent
@@ -779,6 +792,18 @@ typedef struct SDL_TouchFingerEvent
     float pressure;     /**< Normalized in the range 0...1 */
     SDL_WindowID windowID; /**< The window underneath the finger, if any */
 } SDL_TouchFingerEvent;
+
+/**
+ * Pinch event structure (event.pinch.*)
+ */
+typedef struct SDL_PinchFingerEvent
+{
+    SDL_EventType type; /**< ::SDL_EVENT_PINCH_BEGIN or ::SDL_EVENT_PINCH_UPDATE or ::SDL_EVENT_PINCH_END */
+    Uint32 reserved;
+    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
+    float scale;        /**< The scale change since the last SDL_EVENT_PINCH_UPDATE. Scale < 1 is "zoom out". Scale > 1 is "zoom in". */
+    SDL_WindowID windowID; /**< The window underneath the finger, if any */
+} SDL_PinchFingerEvent;
 
 /**
  * Pressure-sensitive pen proximity event structure (event.pproximity.*)
@@ -1017,6 +1042,7 @@ typedef union SDL_Event
     SDL_QuitEvent quit;                     /**< Quit request event data */
     SDL_UserEvent user;                     /**< Custom event data */
     SDL_TouchFingerEvent tfinger;           /**< Touch finger event data */
+    SDL_PinchFingerEvent pinch;             /**< Pinch event data */
     SDL_PenProximityEvent pproximity;       /**< Pen proximity event data */
     SDL_PenTouchEvent ptouch;               /**< Pen tip touching event data */
     SDL_PenMotionEvent pmotion;             /**< Pen motion event data */
@@ -1255,6 +1281,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_FlushEvents(Uint32 minType, Uint32 maxType)
  * }
  * ```
  *
+ * Note that Windows (and possibly other platforms) has a quirk about how it
+ * handles events while dragging/resizing a window, which can cause this
+ * function to block for significant amounts of time. Technical explanations
+ * and solutions are discussed on the wiki:
+ *
+ * https://wiki.libsdl.org/SDL3/AppFreezeDuringDrag
+ *
  * \param event the SDL_Event structure to be filled with the next event from
  *              the queue, or NULL.
  * \returns true if this got an event or false if there are none available.
@@ -1391,7 +1424,10 @@ typedef bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
  * allows selective filtering of dynamically arriving events.
  *
  * **WARNING**: Be very careful of what you do in the event filter function,
- * as it may run in a different thread!
+ * as it may run in a different thread! The exception is handling of
+ * SDL_EVENT_WINDOW_EXPOSED, which is guaranteed to be sent from the OS on the
+ * main thread and you are expected to redraw your window in response to this
+ * event.
  *
  * On platforms that support it, if the quit event is generated by an
  * interrupt signal (e.g. pressing Ctrl-C), it will be delivered to the
@@ -1404,7 +1440,7 @@ typedef bool (SDLCALL *SDL_EventFilter)(void *userdata, SDL_Event *event);
  * the event filter, but events pushed onto the queue with SDL_PeepEvents() do
  * not.
  *
- * \param filter an SDL_EventFilter function to call when an event happens.
+ * \param filter a function to call when an event happens.
  * \param userdata a pointer that is passed to `filter`.
  *
  * \threadsafety It is safe to call this function from any thread.

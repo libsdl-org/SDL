@@ -69,11 +69,11 @@ int SDL_GetNumCameraDrivers(void)
 
 const char *SDL_GetCameraDriver(int index)
 {
-    if (index >= 0 && index < SDL_GetNumCameraDrivers()) {
-        return bootstrap[index]->name;
+    CHECK_PARAM(index < 0 || index >= SDL_GetNumCameraDrivers()) {
+        SDL_InvalidParamError("index");
+        return NULL;
     }
-    SDL_InvalidParamError("index");
-    return NULL;
+    return bootstrap[index]->name;
 }
 
 const char *SDL_GetCurrentCameraDriver(void)
@@ -229,10 +229,15 @@ static void ZombieReleaseFrame(SDL_Camera *device, SDL_Surface *frame) // Reclai
     // we just leave zombie_pixels alone, as we'll reuse it for every new frame until the camera is closed.
 }
 
+
+static void ObtainPhysicalCameraObj(SDL_Camera *device);
+static void ReleaseCamera(SDL_Camera *device);
+
+
 static void ClosePhysicalCamera(SDL_Camera *device)
 {
-    if (!device) {
-        return;
+    if (!device || (device->hidden == NULL)) {
+        return;  // device is not open.
     }
 
     SDL_SetAtomicInt(&device->shutdown, 1);
@@ -243,6 +248,8 @@ static void ClosePhysicalCamera(SDL_Camera *device)
         SDL_WaitThread(device->thread, NULL);
         device->thread = NULL;
     }
+
+    ObtainPhysicalCameraObj(device);
 
     // release frames that are queued up somewhere...
     if (!device->needs_conversion && !device->needs_scaling) {
@@ -255,6 +262,7 @@ static void ClosePhysicalCamera(SDL_Camera *device)
     }
 
     camera_driver.impl.CloseDevice(device);
+    device->hidden = NULL;  // just in case backend didn't reset this.
 
     SDL_DestroyProperties(device->props);
 
@@ -270,7 +278,7 @@ static void ClosePhysicalCamera(SDL_Camera *device)
 
     SDL_aligned_free(device->zombie_pixels);
 
-    device->permission = 0;
+    device->permission = SDL_CAMERA_PERMISSION_STATE_PENDING;
     device->zombie_pixels = NULL;
     device->filled_output_surfaces.next = NULL;
     device->empty_output_surfaces.next = NULL;
@@ -280,13 +288,16 @@ static void ClosePhysicalCamera(SDL_Camera *device)
     device->adjust_timestamp = 0;
 
     SDL_zero(device->spec);
+    UnrefPhysicalCamera(device);  // we're closed, release a reference.
+
+    ReleaseCamera(device);
 }
 
 // Don't hold the device lock when calling this, as we may destroy the device!
 void UnrefPhysicalCamera(SDL_Camera *device)
 {
     if (SDL_AtomicDecRef(&device->refcount)) {
-        // take it out of the device list.
+        // take it out of the device list. This will call DestroyCameraHashItem to clean up the object.
         SDL_LockRWLockForWriting(camera_driver.device_hash_lock);
         if (SDL_RemoveFromHashTable(camera_driver.device_hash, (const void *) (uintptr_t) device->instance_id)) {
             SDL_AddAtomicInt(&camera_driver.device_count, -1);
@@ -555,6 +566,8 @@ void SDL_CameraDisconnected(SDL_Camera *device)
             pending_tail->next = p;
             pending_tail = p;
         }
+
+        UnrefPhysicalCamera(device);   // camera is disconnected, drop its reference
     }
 
     ReleaseCamera(device);
@@ -581,7 +594,7 @@ void SDL_CameraPermissionOutcome(SDL_Camera *device, bool approved)
     pending.next = NULL;
     SDL_PendingCameraEvent *pending_tail = &pending;
 
-    const int permission = approved ? 1 : -1;
+    const SDL_CameraPermissionState permission = approved ? SDL_CAMERA_PERMISSION_STATE_APPROVED : SDL_CAMERA_PERMISSION_STATE_DENIED;
 
     ObtainPhysicalCameraObj(device);
     if (device->permission != permission) {
@@ -657,15 +670,16 @@ bool SDL_GetCameraFormat(SDL_Camera *camera, SDL_CameraSpec *spec)
 {
     bool result;
 
-    if (!camera) {
+    CHECK_PARAM(!camera) {
         return SDL_InvalidParamError("camera");
-    } else if (!spec) {
+    }
+    CHECK_PARAM(!spec) {
         return SDL_InvalidParamError("spec");
     }
 
     SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
     ObtainPhysicalCameraObj(device);
-    if (device->permission > 0) {
+    if (device->permission > SDL_CAMERA_PERMISSION_STATE_PENDING) {
         SDL_copyp(spec, &device->spec);
         result = true;
     } else {
@@ -808,9 +822,9 @@ bool SDL_CameraThreadIterate(SDL_Camera *device)
     }
 
     const int permission = device->permission;
-    if (permission <= 0) {
+    if (permission <= SDL_CAMERA_PERMISSION_STATE_PENDING) {
         SDL_UnlockMutex(device->lock);
-        return (permission < 0) ? false : true;  // if permission was denied, shut it down. if undecided, we're done for now.
+        return (permission < SDL_CAMERA_PERMISSION_STATE_PENDING) ? false : true;  // if permission was denied, shut it down. if undecided, we're done for now.
     }
 
     bool failed = false;  // set to true if disaster worthy of treating the device as lost has happened.
@@ -940,6 +954,8 @@ static int SDLCALL CameraThread(void *devicep)
     SDL_Log("CAMERA: dev[%p] Start thread 'CameraThread'", devicep);
     #endif
 
+    RefPhysicalCamera(device);  // this thread holds a reference.
+
     SDL_assert(device != NULL);
     SDL_CameraThreadSetup(device);
 
@@ -950,6 +966,8 @@ static int SDLCALL CameraThread(void *devicep)
     } while (SDL_CameraThreadIterate(device));
 
     SDL_CameraThreadShutdown(device);
+
+    UnrefPhysicalCamera(device);  // this thread no longer holds a reference.
 
     #if DEBUG_CAMERA
     SDL_Log("CAMERA: dev[%p] End thread 'CameraThread'", devicep);
@@ -1244,6 +1262,8 @@ SDL_Camera *SDL_OpenCamera(SDL_CameraID instance_id, const SDL_CameraSpec *spec)
         }
     }
 
+    RefPhysicalCamera(device);  // we're open, hold a reference.
+
     ReleaseCamera(device);  // unlock, we're good to go!
 
     return device;  // currently there's no separation between physical and logical device.
@@ -1255,7 +1275,7 @@ SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS)
         *timestampNS = 0;
     }
 
-    if (!camera) {
+    CHECK_PARAM(!camera) {
         SDL_InvalidParamError("camera");
         return NULL;
     }
@@ -1264,7 +1284,7 @@ SDL_Surface *SDL_AcquireCameraFrame(SDL_Camera *camera, Uint64 *timestampNS)
 
     ObtainPhysicalCameraObj(device);
 
-    if (device->permission <= 0) {
+    if (device->permission <= SDL_CAMERA_PERMISSION_STATE_PENDING) {
         ReleaseCamera(device);
         SDL_SetError("Camera permission has not been granted");
         return NULL;
@@ -1340,49 +1360,55 @@ void SDL_ReleaseCameraFrame(SDL_Camera *camera, SDL_Surface *frame)
 
 SDL_CameraID SDL_GetCameraID(SDL_Camera *camera)
 {
-    SDL_CameraID result = 0;
-    if (!camera) {
+    SDL_CameraID result;
+
+    CHECK_PARAM(!camera) {
         SDL_InvalidParamError("camera");
-    } else {
-        SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
-        ObtainPhysicalCameraObj(device);
-        result = device->instance_id;
-        ReleaseCamera(device);
+        return 0;
     }
+
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
+    ObtainPhysicalCameraObj(device);
+    result = device->instance_id;
+    ReleaseCamera(device);
 
     return result;
 }
 
 SDL_PropertiesID SDL_GetCameraProperties(SDL_Camera *camera)
 {
-    SDL_PropertiesID result = 0;
-    if (!camera) {
+    SDL_PropertiesID result;
+
+    CHECK_PARAM(!camera) {
         SDL_InvalidParamError("camera");
-    } else {
-        SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
-        ObtainPhysicalCameraObj(device);
-        if (device->props == 0) {
-            device->props = SDL_CreateProperties();
-        }
-        result = device->props;
-        ReleaseCamera(device);
+        return 0;
     }
+
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
+    ObtainPhysicalCameraObj(device);
+    if (device->props == 0) {
+        device->props = SDL_CreateProperties();
+    }
+    result = device->props;
+    ReleaseCamera(device);
 
     return result;
 }
 
-int SDL_GetCameraPermissionState(SDL_Camera *camera)
+SDL_CameraPermissionState SDL_GetCameraPermissionState(SDL_Camera *camera)
 {
-    int result;
-    if (!camera) {
+    SDL_CameraPermissionState result;
+
+    CHECK_PARAM(!camera) {
         SDL_InvalidParamError("camera");
-        result = -1;
-    } else {
-        SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
-        ObtainPhysicalCameraObj(device);
-        result = device->permission;
-        ReleaseCamera(device);
+        return SDL_CAMERA_PERMISSION_STATE_DENIED;
     }
+
+    SDL_Camera *device = camera;  // currently there's no separation between physical and logical device.
+    ObtainPhysicalCameraObj(device);
+    result = device->permission;
+    ReleaseCamera(device);
+
     return result;
 }
 
@@ -1436,6 +1462,11 @@ void SDL_QuitCamera(void)
 static void SDLCALL DestroyCameraHashItem(void *userdata, const void *key, const void *value)
 {
     SDL_Camera *device = (SDL_Camera *) value;
+
+    #if DEBUG_CAMERA
+    SDL_Log("DESTROYING CAMERA '%s'", device->name);
+    #endif
+
     ClosePhysicalCamera(device);
     camera_driver.impl.FreeDeviceHandle(device);
     SDL_DestroyMutex(device->lock);
@@ -1524,7 +1555,9 @@ bool SDL_CameraInit(const char *driver_name)
         }
     }
 
-    if (!initialized) {
+    if (initialized) {
+        SDL_DebugLogBackend("camera", camera_driver.name);
+    } else {
         // specific drivers will set the error message if they fail, but otherwise we do it here.
         if (!tried_to_init) {
             if (driver_name) {

@@ -39,9 +39,9 @@
  * may also be stretched with linear interpolation.
  *
  * This API is designed to accelerate simple 2D operations. You may want more
- * functionality such as polygons and particle effects and in that case you
- * should use SDL's OpenGL/Direct3D support, the SDL3 GPU API, or one of the
- * many good 3D engines.
+ * functionality such as 3D polygons and particle effects, and in that case
+ * you should use SDL's OpenGL/Direct3D support, the SDL3 GPU API, or one of
+ * the many good 3D engines.
  *
  * These functions must be called from the main thread. See this bug for
  * details: https://github.com/libsdl-org/SDL/issues/986
@@ -75,6 +75,13 @@ extern "C" {
 #define SDL_SOFTWARE_RENDERER   "software"
 
 /**
+ * The name of the GPU renderer.
+ *
+ * \since This macro is available since SDL 3.4.0.
+ */
+#define SDL_GPU_RENDERER        "gpu"
+
+/**
  * Vertex structure.
  *
  * \since This struct is available since SDL 3.2.0.
@@ -103,6 +110,10 @@ typedef enum SDL_TextureAccess
  *
  * This affects how texture coordinates are interpreted outside of [0, 1]
  *
+ * Texture wrapping is always supported for power of two texture sizes, and is
+ * supported for other texture sizes if
+ * SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN is set to true.
+ *
  * \since This enum is available since SDL 3.4.0.
  */
 typedef enum SDL_TextureAddressMode
@@ -110,7 +121,7 @@ typedef enum SDL_TextureAddressMode
     SDL_TEXTURE_ADDRESS_INVALID = -1,
     SDL_TEXTURE_ADDRESS_AUTO,   /**< Wrapping is enabled if texture coordinates are outside [0, 1], this is the default */
     SDL_TEXTURE_ADDRESS_CLAMP,  /**< Texture coordinates are clamped to the [0, 1] range */
-    SDL_TEXTURE_ADDRESS_WRAP,   /**< The texture is repeated (tiled) */
+    SDL_TEXTURE_ADDRESS_WRAP    /**< The texture is repeated (tiled) */
 } SDL_TextureAddressMode;
 
 /**
@@ -122,7 +133,7 @@ typedef enum SDL_RendererLogicalPresentation
 {
     SDL_LOGICAL_PRESENTATION_DISABLED,  /**< There is no logical size in effect */
     SDL_LOGICAL_PRESENTATION_STRETCH,   /**< The rendered content is stretched to the output resolution */
-    SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with black bars */
+    SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with the clear color */
     SDL_LOGICAL_PRESENTATION_OVERSCAN,  /**< The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds */
     SDL_LOGICAL_PRESENTATION_INTEGER_SCALE   /**< The rendered content is scaled up by integer multiples to fit the output resolution */
 } SDL_RendererLogicalPresentation;
@@ -283,8 +294,10 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  *   present synchronized with the refresh rate. This property can take any
  *   value that is supported by SDL_SetRenderVSync() for the renderer.
  *
- * With the SDL GPU renderer:
+ * With the SDL GPU renderer (since SDL 3.4.0):
  *
+ * - `SDL_PROP_RENDERER_CREATE_GPU_DEVICE_POINTER`: the device to use with the
+ *   renderer, optional.
  * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN`: the app is able to
  *   provide SPIR-V shaders to SDL_GPURenderState, optional.
  * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN`: the app is able to
@@ -328,6 +341,7 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_
 #define SDL_PROP_RENDERER_CREATE_SURFACE_POINTER                            "SDL.renderer.create.surface"
 #define SDL_PROP_RENDERER_CREATE_OUTPUT_COLORSPACE_NUMBER                   "SDL.renderer.create.output_colorspace"
 #define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER                       "SDL.renderer.create.present_vsync"
+#define SDL_PROP_RENDERER_CREATE_GPU_DEVICE_POINTER                         "SDL.renderer.create.gpu.device"
 #define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN                  "SDL.renderer.create.gpu.shaders_spirv"
 #define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN                   "SDL.renderer.create.gpu.shaders_dxil"
 #define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN                    "SDL.renderer.create.gpu.shaders_msl"
@@ -339,35 +353,51 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_
 #define SDL_PROP_RENDERER_CREATE_VULKAN_PRESENT_QUEUE_FAMILY_INDEX_NUMBER   "SDL.renderer.create.vulkan.present_queue_family_index"
 
 /**
- * Create a 2D GPU rendering context for a window, with support for the
- * specified shader format.
+ * Create a 2D GPU rendering context.
  *
- * This is a convenience function to create a SDL GPU backed renderer,
- * intended to be used with SDL_GPURenderState. The resulting renderer will
- * support shaders in one of the specified shader formats.
+ * The GPU device to use is passed in as a parameter. If this is NULL, then a
+ * device will be created normally and can be retrieved using
+ * SDL_GetGPURendererDevice().
  *
- * If no available GPU driver supports any of the specified shader formats,
- * this function will fail.
+ * The window to use is passed in as a parameter. If this is NULL, then this
+ * will become an offscreen renderer. In that case, you should call
+ * SDL_SetRenderTarget() to setup rendering to a texture, and then call
+ * SDL_RenderPresent() normally to complete drawing a frame.
  *
- * \param window the window where rendering is displayed.
- * \param format_flags a bitflag indicating which shader formats the app is
- *                     able to provide.
- * \param device a pointer filled with the associated GPU device, or NULL on
- *               error.
+ * \param device the GPU device to use with the renderer, or NULL to create a
+ *               device.
+ * \param window the window where rendering is displayed, or NULL to create an
+ *               offscreen renderer.
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety If this function is called with a valid GPU device, it should
+ *               be called on the thread that created the device. If this
+ *               function is called with a valid window, it should be called
+ *               on the thread that created the window.
  *
  * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_CreateRendererWithProperties
- * \sa SDL_GetGPUShaderFormats
+ * \sa SDL_GetGPURendererDevice
  * \sa SDL_CreateGPUShader
  * \sa SDL_CreateGPURenderState
- * \sa SDL_SetRenderGPUState
+ * \sa SDL_SetGPURenderState
  */
-extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateGPURenderer(SDL_Window *window, SDL_GPUShaderFormat format_flags, SDL_GPUDevice **device);
+extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateGPURenderer(SDL_GPUDevice *device, SDL_Window *window);
+
+/**
+ * Return the GPU device used by a renderer.
+ *
+ * \param renderer the rendering context.
+ * \returns the GPU device used by the renderer, or NULL if the renderer is
+ *          not a GPU renderer; call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_GetGPURendererDevice(SDL_Renderer *renderer);
 
 /**
  * Create a 2D software rendering context for a surface.
@@ -382,7 +412,7 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateGPURenderer(SDL_Window *win
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -448,6 +478,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetRendererName(SDL_Renderer *rende
  * - `SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER`: a (const SDL_PixelFormat *)
  *   array of pixel formats, terminated with SDL_PIXELFORMAT_UNKNOWN,
  *   representing the available texture formats for this renderer.
+ * - `SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN`: true if the renderer
+ *   supports SDL_TEXTURE_ADDRESS_WRAP on non-power-of-two textures.
  * - `SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER`: an SDL_Colorspace value
  *   describing the colorspace for output to the display, defaults to
  *   SDL_COLORSPACE_SRGB.
@@ -524,6 +556,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetRendererProperties(SDL_Rende
 #define SDL_PROP_RENDERER_VSYNC_NUMBER                              "SDL.renderer.vsync"
 #define SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER                   "SDL.renderer.max_texture_size"
 #define SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER                   "SDL.renderer.texture_formats"
+#define SDL_PROP_RENDERER_TEXTURE_WRAPPING_BOOLEAN                  "SDL.renderer.texture_wrapping"
 #define SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER                  "SDL.renderer.output_colorspace"
 #define SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN                       "SDL.renderer.HDR_enabled"
 #define SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT                     "SDL.renderer.SDR_white_point"
@@ -660,6 +693,9 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  *   pixels, required
  * - `SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER`: the height of the texture in
  *   pixels, required
+ * - `SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER`: an SDL_Palette to use with
+ *   palettized texture formats. This can be set later with
+ *   SDL_SetTexturePalette()
  * - `SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating
  *   point textures, this defines the value of 100% diffuse white, with higher
  *   values being displayed in the High Dynamic Range headroom. This defaults
@@ -736,6 +772,20 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  *   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL associated with the texture, if
  *   you want to wrap an existing texture.
  *
+ * With the GPU renderer:
+ *
+ * - `SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER`: the SDL_GPUTexture
+ *   associated with the texture, if you want to wrap an existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_UV_NUMBER`: the SDL_GPUTexture
+ *   associated with the UV plane of an NV12 texture, if you want to wrap an
+ *   existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_U_NUMBER`: the SDL_GPUTexture
+ *   associated with the U plane of a YUV texture, if you want to wrap an
+ *   existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_V_NUMBER`: the SDL_GPUTexture
+ *   associated with the V plane of a YUV texture, if you want to wrap an
+ *   existing texture.
+ *
  * \param renderer the rendering context.
  * \param props the properties to use.
  * \returns the created texture or NULL on failure; call SDL_GetError() for
@@ -754,29 +804,34 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  */
 extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_PropertiesID props);
 
-#define SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER           "SDL.texture.create.colorspace"
-#define SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER               "SDL.texture.create.format"
-#define SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER               "SDL.texture.create.access"
-#define SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER                "SDL.texture.create.width"
-#define SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER               "SDL.texture.create.height"
-#define SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT       "SDL.texture.create.SDR_white_point"
-#define SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT          "SDL.texture.create.HDR_headroom"
-#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_POINTER       "SDL.texture.create.d3d11.texture"
-#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_U_POINTER     "SDL.texture.create.d3d11.texture_u"
-#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_V_POINTER     "SDL.texture.create.d3d11.texture_v"
-#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_POINTER       "SDL.texture.create.d3d12.texture"
-#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_U_POINTER     "SDL.texture.create.d3d12.texture_u"
-#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_V_POINTER     "SDL.texture.create.d3d12.texture_v"
-#define SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER   "SDL.texture.create.metal.pixelbuffer"
-#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_NUMBER       "SDL.texture.create.opengl.texture"
-#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_UV_NUMBER    "SDL.texture.create.opengl.texture_uv"
-#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_U_NUMBER     "SDL.texture.create.opengl.texture_u"
-#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_V_NUMBER     "SDL.texture.create.opengl.texture_v"
-#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_NUMBER    "SDL.texture.create.opengles2.texture"
-#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_UV_NUMBER "SDL.texture.create.opengles2.texture_uv"
-#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_U_NUMBER  "SDL.texture.create.opengles2.texture_u"
-#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_V_NUMBER  "SDL.texture.create.opengles2.texture_v"
-#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER       "SDL.texture.create.vulkan.texture"
+#define SDL_PROP_TEXTURE_CREATE_COLORSPACE_NUMBER               "SDL.texture.create.colorspace"
+#define SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER                   "SDL.texture.create.format"
+#define SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER                   "SDL.texture.create.access"
+#define SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER                    "SDL.texture.create.width"
+#define SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER                   "SDL.texture.create.height"
+#define SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER                 "SDL.texture.create.palette"
+#define SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT           "SDL.texture.create.SDR_white_point"
+#define SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT              "SDL.texture.create.HDR_headroom"
+#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_POINTER           "SDL.texture.create.d3d11.texture"
+#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_U_POINTER         "SDL.texture.create.d3d11.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_D3D11_TEXTURE_V_POINTER         "SDL.texture.create.d3d11.texture_v"
+#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_POINTER           "SDL.texture.create.d3d12.texture"
+#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_U_POINTER         "SDL.texture.create.d3d12.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_D3D12_TEXTURE_V_POINTER         "SDL.texture.create.d3d12.texture_v"
+#define SDL_PROP_TEXTURE_CREATE_METAL_PIXELBUFFER_POINTER       "SDL.texture.create.metal.pixelbuffer"
+#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_NUMBER           "SDL.texture.create.opengl.texture"
+#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_UV_NUMBER        "SDL.texture.create.opengl.texture_uv"
+#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_U_NUMBER         "SDL.texture.create.opengl.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_V_NUMBER         "SDL.texture.create.opengl.texture_v"
+#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_NUMBER        "SDL.texture.create.opengles2.texture"
+#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_UV_NUMBER     "SDL.texture.create.opengles2.texture_uv"
+#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_U_NUMBER      "SDL.texture.create.opengles2.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_V_NUMBER      "SDL.texture.create.opengles2.texture_v"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER           "SDL.texture.create.vulkan.texture"
+#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER             "SDL.texture.create.gpu.texture"
+#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_UV_POINTER          "SDL.texture.create.gpu.texture_uv"
+#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_U_POINTER           "SDL.texture.create.gpu.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_V_POINTER           "SDL.texture.create.gpu.texture_v"
 
 /**
  * Get the properties associated with a texture.
@@ -856,6 +911,17 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
  * - `SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER`: the GLenum for the
  *   texture target (`GL_TEXTURE_2D`, `GL_TEXTURE_EXTERNAL_OES`, etc)
  *
+ * With the gpu renderer:
+ *
+ * - `SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER`: the SDL_GPUTexture associated
+ *   with the texture
+ * - `SDL_PROP_TEXTURE_GPU_TEXTURE_UV_POINTER`: the SDL_GPUTexture associated
+ *   with the UV plane of an NV12 texture
+ * - `SDL_PROP_TEXTURE_GPU_TEXTURE_U_POINTER`: the SDL_GPUTexture associated
+ *   with the U plane of a YUV texture
+ * - `SDL_PROP_TEXTURE_GPU_TEXTURE_V_POINTER`: the SDL_GPUTexture associated
+ *   with the V plane of a YUV texture
+ *
  * \param texture the texture to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -892,6 +958,10 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Textur
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_V_NUMBER         "SDL.texture.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER    "SDL.texture.opengles2.target"
 #define SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER              "SDL.texture.vulkan.texture"
+#define SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER                "SDL.texture.gpu.texture"
+#define SDL_PROP_TEXTURE_GPU_TEXTURE_UV_POINTER             "SDL.texture.gpu.texture_uv"
+#define SDL_PROP_TEXTURE_GPU_TEXTURE_U_POINTER              "SDL.texture.gpu.texture_u"
+#define SDL_PROP_TEXTURE_GPU_TEXTURE_V_POINTER              "SDL.texture.gpu.texture_v"
 
 /**
  * Get the renderer that created an SDL_Texture.
@@ -922,6 +992,43 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_GetRendererFromTexture(SDL_Textur
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetTextureSize(SDL_Texture *texture, float *w, float *h);
+
+/**
+ * Set the palette used by a texture.
+ *
+ * Setting the palette keeps an internal reference to the palette, which can
+ * be safely destroyed afterwards.
+ *
+ * A single palette can be shared with many textures.
+ *
+ * \param texture the texture to update.
+ * \param palette the SDL_Palette structure to use.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_CreatePalette
+ * \sa SDL_GetTexturePalette
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette);
+
+/**
+ * Get the palette used by a texture.
+ *
+ * \param texture the texture to query.
+ * \returns a pointer to the palette used by the texture, or NULL if there is
+ *          no palette used.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_SetTexturePalette
+ */
+extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_GetTexturePalette(SDL_Texture *texture);
 
 /**
  * Set an additional color value multiplied into render copy operations.
@@ -1445,14 +1552,6 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *rend
  * specific dimensions but to make fonts look sharp, the app turns off logical
  * presentation while drawing text, for example.
  *
- * For the renderer's window, letterboxing is drawn into the framebuffer if
- * logical presentation is enabled during SDL_RenderPresent; be sure to
- * reenable it before presenting if you were toggling it, otherwise the
- * letterbox areas might have artifacts from previous frames (or artifacts
- * from external overlays, etc). Letterboxing is never drawn into texture
- * render targets; be sure to call SDL_RenderClear() before drawing into the
- * texture so the letterboxing areas are cleared, if appropriate.
- *
  * You can convert coordinates in an event into rendering coordinates using
  * SDL_ConvertEventToRenderCoordinates().
  *
@@ -1477,15 +1576,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *
  * Get device independent resolution and presentation mode for rendering.
  *
  * This function gets the width and height of the logical rendering output, or
- * the output size in pixels if a logical resolution is not enabled.
+ * 0 if a logical resolution is not enabled.
  *
  * Each render target has its own logical presentation state. This function
  * gets the state for the current render target.
  *
  * \param renderer the rendering context.
- * \param w an int to be filled with the width.
- * \param h an int to be filled with the height.
- * \param mode the presentation mode used.
+ * \param w an int filled with the logical presentation width.
+ * \param h an int filled with the logical presentation height.
+ * \param mode a variable filled with the logical presentation mode being
+ *             used.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
@@ -2712,8 +2812,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderVSync(SDL_Renderer *renderer, int 
  * Among these limitations:
  *
  * - It accepts UTF-8 strings, but will only renders ASCII characters.
- * - It has a single, tiny size (8x8 pixels). One can use logical presentation
- *   or scaling to adjust it, but it will be blurry.
+ * - It has a single, tiny size (8x8 pixels). You can use logical presentation
+ *   or SDL_SetRenderScale() to adjust it.
  * - It uses a simple, hardcoded bitmap font. It does not allow different font
  *   selections and it does not support truetype, for proper scaling.
  * - It does no word-wrapping and does not treat newline characters as a line
@@ -2747,7 +2847,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderDebugText(SDL_Renderer *renderer, flo
  * Draw debug text to an SDL_Renderer.
  *
  * This function will render a printf()-style format string to a renderer.
- * Note that this is a convinence function for debugging, with severe
+ * Note that this is a convenience function for debugging, with severe
  * limitations, and is not intended to be used for production apps and games.
  *
  * For the full list of limitations and other useful information, see
@@ -2808,18 +2908,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetDefaultTextureScaleMode(SDL_Renderer *re
 extern SDL_DECLSPEC bool SDLCALL SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale_mode);
 
 /**
- * GPU render state description.
- *
- * This structure should be initialized using SDL_INIT_INTERFACE().
+ * A structure specifying the parameters of a GPU render state.
  *
  * \since This struct is available since SDL 3.4.0.
  *
  * \sa SDL_CreateGPURenderState
  */
-typedef struct SDL_GPURenderStateDesc
+typedef struct SDL_GPURenderStateCreateInfo
 {
-    Uint32 version;                 /**< the version of this interface */
-
     SDL_GPUShader *fragment_shader; /**< The fragment shader to use when this render state is active */
 
     Sint32 num_sampler_bindings;    /**< The number of additional fragment samplers to bind when this render state is active */
@@ -2828,19 +2924,11 @@ typedef struct SDL_GPURenderStateDesc
     Sint32 num_storage_textures;    /**< The number of storage textures to bind when this render state is active */
     SDL_GPUTexture *const *storage_textures;    /**< Storage textures to bind when this render state is active */
 
-    Sint32 num_storage_buffers;    /**< The number of storage buffers to bind when this render state is active */
+    Sint32 num_storage_buffers;     /**< The number of storage buffers to bind when this render state is active */
     SDL_GPUBuffer *const *storage_buffers;      /**< Storage buffers to bind when this render state is active */
-} SDL_GPURenderStateDesc;
 
-/* Check the size of SDL_GPURenderStateDesc
- *
- * If this assert fails, either the compiler is padding to an unexpected size,
- * or the interface has been updated and this should be updated to match and
- * the code using this interface should be updated to handle the old version.
- */
-SDL_COMPILE_TIME_ASSERT(SDL_GPURenderStateDesc_SIZE,
-    (sizeof(void *) == 4 && sizeof(SDL_GPURenderStateDesc) == 32) ||
-    (sizeof(void *) == 8 && sizeof(SDL_GPURenderStateDesc) == 64));
+    SDL_PropertiesID props;         /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
+} SDL_GPURenderStateCreateInfo;
 
 /**
  * A custom GPU render state.
@@ -2849,7 +2937,7 @@ SDL_COMPILE_TIME_ASSERT(SDL_GPURenderStateDesc_SIZE,
  *
  * \sa SDL_CreateGPURenderState
  * \sa SDL_SetGPURenderStateFragmentUniforms
- * \sa SDL_SetRenderGPUState
+ * \sa SDL_SetGPURenderState
  * \sa SDL_DestroyGPURenderState
  */
 typedef struct SDL_GPURenderState SDL_GPURenderState;
@@ -2858,8 +2946,7 @@ typedef struct SDL_GPURenderState SDL_GPURenderState;
  * Create custom GPU render state.
  *
  * \param renderer the renderer to use.
- * \param desc GPU render state description, initialized using
- *             SDL_INIT_INTERFACE().
+ * \param createinfo a struct describing the GPU render state to create.
  * \returns a custom GPU render state or NULL on failure; call SDL_GetError()
  *          for more information.
  *
@@ -2869,10 +2956,10 @@ typedef struct SDL_GPURenderState SDL_GPURenderState;
  * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_SetGPURenderStateFragmentUniforms
- * \sa SDL_SetRenderGPUState
+ * \sa SDL_SetGPURenderState
  * \sa SDL_DestroyGPURenderState
  */
-extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateDesc *desc);
+extern SDL_DECLSPEC SDL_GPURenderState * SDLCALL SDL_CreateGPURenderState(SDL_Renderer *renderer, SDL_GPURenderStateCreateInfo *createinfo);
 
 /**
  * Set fragment shader uniform variables in a custom GPU render state.
@@ -2910,7 +2997,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderStateFragmentUniforms(SDL_GPURe
  *
  * \since This function is available since SDL 3.4.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderGPUState(SDL_Renderer *renderer, SDL_GPURenderState *state);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetGPURenderState(SDL_Renderer *renderer, SDL_GPURenderState *state);
 
 /**
  * Destroy custom GPU render state.

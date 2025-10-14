@@ -256,7 +256,7 @@ jobs:
 
   msvc:
     needs: [src]
-    runs-on: windows-2019
+    runs-on: windows-2025
     outputs:
       VC-x86: ${{ steps.releaser.outputs.VC-x86 }}
       VC-x64: ${{ steps.releaser.outputs.VC-x64 }}
@@ -535,8 +535,8 @@ jobs:
         id: setup-ndk
         uses: nttld/setup-ndk@v1
         with:
-          local-cache: true
-          ndk-version: r21e
+          local-cache: false
+          ndk-version: r28c
       - name: 'Setup Java JDK'
         uses: actions/setup-java@v4
         with:
@@ -562,7 +562,7 @@ jobs:
         run: |
           python build-scripts/build-release.py \
             --actions android \
-            --android-api 23 \
+            --android-api 21 \
             --android-ndk-home "${{ steps.setup-ndk.outputs.ndk-path }}" \
             --commit ${{ inputs.commit }} \
             --root "${{ steps.tar.outputs.path }}" \
@@ -610,8 +610,14 @@ jobs:
           python "${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}.aar" -o /tmp/SDL3-android
           echo "prefix=/tmp/SDL3-android" >>$GITHUB_OUTPUT
           echo "sdl3-aar=/tmp/${{ needs.src.outputs.project }}-${{ needs.src.outputs.version }}.aar" >>$GITHUB_OUTPUT
+      - name: 'Verify alignment of libSDL3.so (arm64-v8a/x86_64)'
+        run: |
+          set -e
+          ${{ steps.src.outputs.path }}/build-scripts/check_elf_alignment.sh ${{ steps.sdk.outputs.prefix }}/lib/arm64-v8a/libSDL3.so
+          ${{ steps.src.outputs.path }}/build-scripts/check_elf_alignment.sh ${{ steps.sdk.outputs.prefix }}/lib/x86_64/libSDL3.so
       - name: 'CMake (configure + build) x86, x64, arm32, arm64'
         run: |
+          set -e
           android_abis="x86 x86_64 armeabi-v7a arm64-v8a"
           for android_abi in ${android_abis}; do
             echo "Configuring ${android_abi}..."

@@ -449,8 +449,8 @@ extern SDLMAIN_DECLSPEC SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_E
  *
  * This function is called once by SDL before terminating the program.
  *
- * This function will be called no matter what, even if SDL_AppInit requests
- * termination.
+ * This function will be called in all cases, even if SDL_AppInit requests
+ * termination at startup.
  *
  * This function should not go into an infinite mainloop; it should
  * deinitialize any resources necessary, perform whatever shutdown activities,
@@ -615,11 +615,12 @@ extern SDL_DECLSPEC int SDLCALL SDL_EnterAppMainCallbacks(int argc, char *argv[]
  * Most applications do not need to, and should not, call this directly; SDL
  * will call it when initializing the video subsystem.
  *
+ * If `name` is NULL, SDL currently uses `(CS_BYTEALIGNCLIENT | CS_OWNDC)` for
+ * the style, regardless of what is specified here.
+ *
  * \param name the window class name, in UTF-8 encoding. If NULL, SDL
  *             currently uses "SDL_app" but this isn't guaranteed.
- * \param style the value to use in WNDCLASSEX::style. If `name` is NULL, SDL
- *              currently uses `(CS_BYTEALIGNCLIENT | CS_OWNDC)` regardless of
- *              what is specified here.
+ * \param style the value to use in WNDCLASSEX::style.
  * \param hInst the HINSTANCE to use in WNDCLASSEX::hInstance. If zero, SDL
  *              will use `GetModuleHandle(NULL)` instead.
  * \returns true on success or false on failure; call SDL_GetError() for more

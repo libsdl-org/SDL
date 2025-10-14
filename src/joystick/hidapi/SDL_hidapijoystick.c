@@ -75,6 +75,9 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
     &SDL_HIDAPI_DriverJoyCons,
     &SDL_HIDAPI_DriverSwitch,
 #endif
+#ifdef SDL_JOYSTICK_HIDAPI_SWITCH2
+    &SDL_HIDAPI_DriverSwitch2,
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI_WII
     &SDL_HIDAPI_DriverWii,
 #endif
@@ -93,6 +96,15 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI_8BITDO
     &SDL_HIDAPI_Driver8BitDo,
+#endif
+#ifdef SDL_JOYSTICK_HIDAPI_FLYDIGI
+    &SDL_HIDAPI_DriverFlydigi,
+#endif
+#ifdef SDL_JOYSTICK_HIDAPI_SINPUT
+    &SDL_HIDAPI_DriverSInput,
+#endif
+#ifdef SDL_JOYSTICK_HIDAPI_ZUIKI
+    &SDL_HIDAPI_DriverZUIKI,
 #endif
 };
 static int SDL_HIDAPI_numdrivers = 0;
@@ -351,7 +363,7 @@ static SDL_HIDAPI_DeviceDriver *HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device
         return NULL;
     }
 
-    if (device->vendor_id != USB_VENDOR_VALVE) {
+    if (device->vendor_id != USB_VENDOR_VALVE && device->vendor_id != USB_VENDOR_FLYDIGI) {
         if (device->usage_page && device->usage_page != USAGE_PAGE_GENERIC_DESKTOP) {
             return NULL;
         }
@@ -443,7 +455,9 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, bool *removed) S
     if (device->driver) {
         bool enabled;
 
-        if (device->vendor_id == USB_VENDOR_NINTENDO && device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR) {
+        if (device->vendor_id == USB_VENDOR_NINTENDO &&
+            (device->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR ||
+             device->product_id == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_PAIR)) {
             enabled = SDL_HIDAPI_combine_joycons;
         } else {
             enabled = device->driver->enabled;
@@ -764,11 +778,12 @@ bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoysti
 
     ++SDL_HIDAPI_numjoysticks;
 
-    SDL_PrivateJoystickAdded(joystickID);
-
     if (pJoystickID) {
         *pJoystickID = joystickID;
     }
+
+    SDL_PrivateJoystickAdded(joystickID);
+
     return true;
 }
 
@@ -1058,12 +1073,21 @@ static bool HIDAPI_CreateCombinedJoyCons(void)
             SDL_zero(info);
             info.path = "nintendo_joycons_combined";
             info.vendor_id = USB_VENDOR_NINTENDO;
-            info.product_id = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
+            if (joycons[0]->product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT) {
+                info.product_id = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
+            } else {
+                info.product_id = USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_PAIR;
+            }
             info.interface_number = -1;
             info.usage_page = USB_USAGEPAGE_GENERIC_DESKTOP;
             info.usage = USB_USAGE_GENERIC_GAMEPAD;
             info.manufacturer_string = L"Nintendo";
             info.product_string = L"Switch Joy-Con (L/R)";
+            if (children[0]->is_bluetooth || children[1]->is_bluetooth) {
+                info.bus_type = SDL_HID_API_BUS_BLUETOOTH;
+            } else {
+                info.bus_type = SDL_HID_API_BUS_USB;
+            }
 
             combined = HIDAPI_AddDevice(&info, 2, children);
             if (combined && combined->driver) {

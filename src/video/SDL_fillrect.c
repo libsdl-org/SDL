@@ -238,7 +238,7 @@ static void SDL_FillSurfaceRect4(Uint8 *pixels, int pitch, Uint32 color, int w, 
  */
 bool SDL_FillSurfaceRect(SDL_Surface *dst, const SDL_Rect *rect, Uint32 color)
 {
-    if (!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRect(): dst");
     }
 
@@ -262,22 +262,21 @@ bool SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Ui
     void (*fill_function)(Uint8 * pixels, int pitch, Uint32 color, int w, int h) = NULL;
     int i;
 
-    if (!SDL_SurfaceValid(dst)) {
+    CHECK_PARAM(!SDL_SurfaceValid(dst)) {
         return SDL_InvalidParamError("SDL_FillSurfaceRects(): dst");
     }
 
-    // Nothing to do
-    if (dst->w == 0 || dst->h == 0) {
-        return true;
+    CHECK_PARAM(!rects) {
+        return SDL_InvalidParamError("SDL_FillSurfaceRects(): rects");
     }
 
-    // Perform software fill
-    if (!dst->pixels) {
+    if (!dst->pixels && SDL_MUSTLOCK(dst)) {
         return SDL_SetError("SDL_FillSurfaceRects(): You must lock the surface");
     }
 
-    if (!rects) {
-        return SDL_InvalidParamError("SDL_FillSurfaceRects(): rects");
+    // Nothing to do
+    if (dst->w == 0 || dst->h == 0 || !dst->pixels) {
+        return true;
     }
 
     /* This function doesn't usually work on surfaces < 8 bpp

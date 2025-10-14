@@ -28,14 +28,14 @@ typedef struct TitleStorageBootStrap
 {
     const char *name;
     const char *desc;
-    SDL_Storage *(*create)(const char*, SDL_PropertiesID);
+    SDL_Storage *(*create)(const char *, SDL_PropertiesID);
 } TitleStorageBootStrap;
 
 typedef struct UserStorageBootStrap
 {
     const char *name;
     const char *desc;
-    SDL_Storage *(*create)(const char*, const char*, SDL_PropertiesID);
+    SDL_Storage *(*create)(const char *, const char *, SDL_PropertiesID);
 } UserStorageBootStrap;
 
 // Not all of these are available in a given build. Use #ifdefs, etc.

@@ -49,9 +49,36 @@
 #include <SDL3/SDL_platform_defines.h>
 
 #include <stdarg.h>
-#include <stdint.h>
 #include <string.h>
 #include <wchar.h>
+
+/* Most everything except Visual Studio 2008 and earlier has stdint.h now */
+#if defined(_MSC_VER) && (_MSC_VER < 1600)
+typedef signed __int8 int8_t;
+typedef unsigned __int8 uint8_t;
+typedef signed __int16 int16_t;
+typedef unsigned __int16 uint16_t;
+typedef signed __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+typedef signed __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+#ifndef _INTPTR_T_DEFINED
+#ifdef _WIN64
+typedef __int64 intptr_t;
+#else
+typedef int intptr_t;
+#endif
+#endif
+#ifndef _UINTPTR_T_DEFINED
+#ifdef _WIN64
+typedef unsigned __int64 uintptr_t;
+#else
+typedef unsigned int uintptr_t;
+#endif
+#endif
+#else
+#include <stdint.h>
+#endif
 
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
     defined(SDL_INCLUDE_INTTYPES_H)
@@ -492,7 +519,7 @@ typedef uint64_t Uint64;
  * and SDL_SECONDS_TO_NS(), and between Windows FILETIME values with
  * SDL_TimeToWindows() and SDL_TimeFromWindows().
  *
- * \since This macro is available since SDL 3.2.0.
+ * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_MAX_SINT64
  * \sa SDL_MIN_SINT64
@@ -3426,7 +3453,7 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_utf8strnlen(const char *str, size_t bytes
  * Convert an integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3454,7 +3481,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_itoa(int value, char *str, int radix);
  * Convert an unsigned integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3482,7 +3509,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_uitoa(unsigned int value, char *str, int 
  * Convert a long integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3510,7 +3537,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ltoa(long value, char *str, int radix);
  * Convert an unsigned long integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3540,7 +3567,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_ultoa(unsigned long value, char *str, int
  * Convert a long long integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3568,7 +3595,7 @@ extern SDL_DECLSPEC char * SDLCALL SDL_lltoa(long long value, char *str, int rad
  * Convert an unsigned long long integer into a string.
  *
  * This requires a radix to specified for string format. Specifying 10
- * produces a decimal number, 16 hexidecimal, etc. Must be in the range of 2
+ * produces a decimal number, 16 hexadecimal, etc. Must be in the range of 2
  * to 36.
  *
  * Note that this function will overflow a buffer if `str` is not large enough
@@ -3923,7 +3950,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str
 extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen);
 
 /**
- * Searches a string for the first occurence of any character contained in a
+ * Searches a string for the first occurrence of any character contained in a
  * breakset, and returns a pointer from the string to that character.
  *
  * \param str The null-terminated string to be searched. Must not be NULL, and
@@ -3931,7 +3958,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *st
  * \param breakset A null-terminated string containing the list of characters
  *                 to look for. Must not be NULL, and must not overlap with
  *                 `str`.
- * \returns A pointer to the location, in str, of the first occurence of a
+ * \returns A pointer to the location, in str, of the first occurrence of a
  *          character present in the breakset, or NULL if none is found.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -4656,7 +4683,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_atanf(float x);
  *
  * Domain: `-INF <= x <= INF`, `-INF <= y <= INF`
  *
- * Range: `-Pi/2 <= y <= Pi/2`
+ * Range: `-Pi <= y <= Pi`
  *
  * This function operates on double-precision floating point values, use
  * SDL_atan2f for single-precision floats.
@@ -4692,7 +4719,7 @@ extern SDL_DECLSPEC double SDLCALL SDL_atan2(double y, double x);
  *
  * Domain: `-INF <= x <= INF`, `-INF <= y <= INF`
  *
- * Range: `-Pi/2 <= y <= Pi/2`
+ * Range: `-Pi <= y <= Pi`
  *
  * This function operates on single-precision floating point values, use
  * SDL_atan2 for double-precision floats.
@@ -4722,7 +4749,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_atan2f(float y, float x);
 /**
  * Compute the ceiling of `x`.
  *
- * The ceiling of `x` is the smallest integer `y` such that `y > x`, i.e `x`
+ * The ceiling of `x` is the smallest integer `y` such that `y >= x`, i.e `x`
  * rounded up to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`
@@ -4750,7 +4777,7 @@ extern SDL_DECLSPEC double SDLCALL SDL_ceil(double x);
 /**
  * Compute the ceiling of `x`.
  *
- * The ceiling of `x` is the smallest integer `y` such that `y > x`, i.e `x`
+ * The ceiling of `x` is the smallest integer `y` such that `y >= x`, i.e `x`
  * rounded up to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`
@@ -4992,7 +5019,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_fabsf(float x);
 /**
  * Compute the floor of `x`.
  *
- * The floor of `x` is the largest integer `y` such that `y > x`, i.e `x`
+ * The floor of `x` is the largest integer `y` such that `y <= x`, i.e `x`
  * rounded down to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`
@@ -5020,7 +5047,7 @@ extern SDL_DECLSPEC double SDLCALL SDL_floor(double x);
 /**
  * Compute the floor of `x`.
  *
- * The floor of `x` is the largest integer `y` such that `y > x`, i.e `x`
+ * The floor of `x` is the largest integer `y` such that `y <= x`, i.e `x`
  * rounded down to the nearest integer.
  *
  * Domain: `-INF <= x <= INF`
@@ -5821,7 +5848,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_iconv_close(SDL_iconv_t cd);
  * This function converts text between encodings, reading from and writing to
  * a buffer.
  *
- * It returns the number of succesful conversions on success. On error,
+ * It returns the number of successful conversions on success. On error,
  * SDL_ICONV_E2BIG is returned when the output buffer is too small, or
  * SDL_ICONV_EILSEQ is returned when an invalid input sequence is encountered,
  * or SDL_ICONV_EINVAL is returned when an incomplete input sequence is

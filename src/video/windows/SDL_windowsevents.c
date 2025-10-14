@@ -51,8 +51,8 @@
 #include "wmmsg.h"
 #endif
 
-#ifdef HAVE_SHOBJIDL_CORE_H
-#include <shobjidl_core.h>
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#include <shobjidl.h>
 #endif
 
 #ifdef SDL_PLATFORM_GDK
@@ -701,6 +701,10 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
             float fAmount = (float)amount / WHEEL_DELTA;
             SDL_SendMouseWheel(WIN_GetEventTimestamp(), window, mouseID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
         }
+
+        /* Invalidate the mouse button flags. If we don't do this then disabling raw input
+           will cause held down mouse buttons to persist when released. */
+        windowdata->mouse_button_flags = (WPARAM)-1;
     }
 }
 
@@ -966,7 +970,6 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
     SDL_MouseID *old_mice = NULL;
     int new_mouse_count = 0;
     SDL_MouseID *new_mice = NULL;
-    bool send_event = !initial_check;
 
     // Check to see if anything has changed
     static Uint64 s_last_device_change;
@@ -1044,7 +1047,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 AddDeviceID(keyboardID, &new_keyboards, &new_keyboard_count);
                 if (!HasDeviceID(keyboardID, old_keyboards, old_keyboard_count)) {
                     name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, "Keyboard", hid_loaded);
-                    SDL_AddKeyboard(keyboardID, name, send_event);
+                    SDL_AddKeyboard(keyboardID, name);
                     SDL_free(name);
                 }
             }
@@ -1055,7 +1058,7 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
                 AddDeviceID(mouseID, &new_mice, &new_mouse_count);
                 if (!HasDeviceID(mouseID, old_mice, old_mouse_count)) {
                     name = GetDeviceName(raw_devices[i].hDevice, devinfo, instance, "Mouse", hid_loaded);
-                    SDL_AddMouse(mouseID, name, send_event);
+                    SDL_AddMouse(mouseID, name);
                     SDL_free(name);
                 }
             }
@@ -1070,13 +1073,13 @@ void WIN_CheckKeyboardAndMouseHotplug(SDL_VideoDevice *_this, bool initial_check
 
     for (int i = old_keyboard_count; i--;) {
         if (!HasDeviceID(old_keyboards[i], new_keyboards, new_keyboard_count)) {
-            SDL_RemoveKeyboard(old_keyboards[i], send_event);
+            SDL_RemoveKeyboard(old_keyboards[i]);
         }
     }
 
     for (int i = old_mouse_count; i--;) {
         if (!HasDeviceID(old_mice[i], new_mice, new_mouse_count)) {
-            SDL_RemoveMouse(old_mice[i], send_event);
+            SDL_RemoveMouse(old_mice[i]);
         }
     }
 
@@ -1399,7 +1402,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 SDL_SendMouseMotion(WIN_GetEventTimestamp(), window, SDL_GLOBAL_MOUSE_ID, false, (float)GET_X_LPARAM(lParam), (float)GET_Y_LPARAM(lParam));
             }
         }
-        
+
     } break;
 
     case WM_LBUTTONUP:
@@ -1706,13 +1709,28 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         if (data->expected_resize) {
             returnCode = 0;
+        } else if (data->in_modal_loop) {
+            WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
+
+            /* While in a modal loop, the size may only be updated if the window is being resized interactively.
+             * Set the SWP_NOSIZE flag if the reported size hasn't changed from the last WM_WINDOWPOSCHANGING
+             * event, or a size set programmatically may end up being overwritten by old size data.
+             */
+            if (data->last_modal_width == windowpos->cx && data->last_modal_height == windowpos->cy) {
+                windowpos->flags |= SWP_NOSIZE;
+            }
+
+            data->last_modal_width = windowpos->cx;
+            data->last_modal_height = windowpos->cy;
+
+            returnCode = 0;
         }
         break;
 
     case WM_WINDOWPOSCHANGED:
     {
         SDL_Window *win;
-        const SDL_DisplayID original_displayID = data->last_displayID;
+        const SDL_DisplayID original_displayID = data->window->displayID;
         const WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
         bool iconic;
         bool zoomed;
@@ -1787,9 +1805,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         WIN_UpdateClipCursor(data->window);
 
         // Update the window display position
-        data->last_displayID = SDL_GetDisplayForWindow(data->window);
-
-        if (data->last_displayID != original_displayID) {
+        if (data->window->displayID != original_displayID) {
             // Display changed, check ICC profile
             WIN_UpdateWindowICCProfile(data->window, true);
         }
@@ -1801,9 +1817,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 WIN_SetWindowPositionInternal(win, SWP_NOCOPYBITS | SWP_NOACTIVATE, SDL_WINDOWRECT_CURRENT);
             }
         }
-
-        // Forces a WM_PAINT event
-        InvalidateRect(hwnd, NULL, FALSE);
 
     } break;
 
@@ -1818,6 +1831,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         ++data->in_modal_loop;
         if (data->in_modal_loop == 1) {
+            RECT rect;
+            SDL_zero(rect);
+            GetWindowRect(data->hwnd, &rect);
+            data->last_modal_width = rect.right - rect.left;
+            data->last_modal_height = rect.bottom - rect.top;
+
             data->initial_size_rect.left = data->window->x;
             data->initial_size_rect.right = data->window->x + data->window->w;
             data->initial_size_rect.top = data->window->y;
@@ -2171,7 +2190,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_NCCALCSIZE:
     {
-        SDL_WindowFlags window_flags = SDL_GetWindowFlags(data->window);
+        SDL_WindowFlags window_flags = data->window->flags;
         if (wParam == TRUE && (window_flags & SDL_WINDOW_BORDERLESS) && !(window_flags & SDL_WINDOW_FULLSCREEN)) {
             // When borderless, need to tell windows that the size of the non-client area is 0
             NCCALCSIZE_PARAMS *params = (NCCALCSIZE_PARAMS *)lParam;
@@ -2403,13 +2422,19 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         if (wParam == SPI_SETMOUSE || wParam == SPI_SETMOUSESPEED) {
             WIN_UpdateMouseSystemScale();
         }
+        if (wParam == SPI_SETWORKAREA) {
+            WIN_UpdateDisplayUsableBounds(SDL_GetVideoDevice());
+        }
         break;
 
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+
+    default:
+        break;
     }
 
-#ifdef HAVE_SHOBJIDL_CORE_H
-    if (msg == data->videodata->WM_TASKBAR_BUTTON_CREATED) {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    if (msg && msg == data->videodata->WM_TASKBAR_BUTTON_CREATED) {
         data->taskbar_button_created = true;
         WIN_ApplyWindowProgress(SDL_GetVideoDevice(), data->window);
     }
@@ -2585,7 +2610,7 @@ void WIN_PumpEvents(SDL_VideoDevice *_this)
                                                     // and this coincidence might no longer
                                                     // be true in the future.
                                                     // Ergo this placement concordantly
-                                                    // conveys its unconditionality 
+                                                    // conveys its unconditionality
                                                     // vis-a-vis the queuing of clipcursor.
             }
             if (refresh_clipcursor) {

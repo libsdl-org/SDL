@@ -434,7 +434,10 @@ error:
 static bool WIN_ShowCursor(SDL_Cursor *cursor)
 {
     if (!cursor) {
-        cursor = SDL_blank_cursor;
+        if (GetSystemMetrics(SM_REMOTESESSION)) {
+            // Use a blank cursor so we continue to get relative motion over RDP
+            cursor = SDL_blank_cursor;
+        }
     }
     if (cursor) {
         if (cursor->internal->surface) {
@@ -696,8 +699,8 @@ static void ReadMouseCurve(int v, Uint64 xs[5], Uint64 ys[5])
     ys[0] = 0; // first node must always be origin
     int i;
     for (i = 1; i < 5; i++) {
-        xs[i] = (7 * (Uint64)xbuff[i*2]);
-        ys[i] = (v * (Uint64)ybuff[i*2]) << 17;
+        xs[i] = (7 * (Uint64)xbuff[i * 2]);
+        ys[i] = (v * (Uint64)ybuff[i * 2]) << 17;
     }
 }
 

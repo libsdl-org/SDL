@@ -54,6 +54,7 @@
 		00CFA89D106B4BA100758660 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFA89C106B4BA100758660 /* ForceFeedback.framework */; platformFilters = (macos, ); };
 		00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D08310675DD9004B05EF /* CoreFoundation.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Required, ); }; };
 		00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007317C10858E15000B2BC32 /* Carbon.framework */; platformFilters = (macos, ); };
+		02D6A1C228A84B8F00A7F002 /* SDL_hidapi_sinput.c in Sources */ = {isa = PBXBuildFile; fileRef = 02D6A1C128A84B8F00A7F001 /* SDL_hidapi_sinput.c */; };
 		1485C3312BBA4AF30063985B /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1485C32F2BBA4A0C0063985B /* UniformTypeIdentifiers.framework */; platformFilters = (maccatalyst, macos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		557D0CFA254586CA003913E3 /* CoreHaptics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F37DC5F225350EBC0002E6F7 /* CoreHaptics.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Weak, ); }; };
 		557D0CFB254586D7003913E3 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75FDABD23E28B6200529352 /* GameController.framework */; settings = {ATTRIBUTES = (Required, ); }; };
@@ -66,6 +67,7 @@
 		566E26D8246274CC00718109 /* SDL_locale.c in Sources */ = {isa = PBXBuildFile; fileRef = 566E26CD246274CB00718109 /* SDL_locale.c */; };
 		566E26E1246274CC00718109 /* SDL_syslocale.h in Headers */ = {isa = PBXBuildFile; fileRef = 566E26CE246274CC00718109 /* SDL_syslocale.h */; };
 		56A2373329F9C113003CCA5F /* SDL_sysrwlock.c in Sources */ = {isa = PBXBuildFile; fileRef = 56A2373229F9C113003CCA5F /* SDL_sysrwlock.c */; };
+		63124A422E5C357500A53610 /* SDL_hidapi_zuiki.c in Sources */ = {isa = PBXBuildFile; fileRef = 63124A412E5C357500A53610 /* SDL_hidapi_zuiki.c */; };
 		6312C66D2B42341400A7BB00 /* SDL_murmur3.c in Sources */ = {isa = PBXBuildFile; fileRef = 6312C66C2B42341400A7BB00 /* SDL_murmur3.c */; };
 		63134A252A7902FD0021E9A6 /* SDL_pen_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 63134A232A7902FD0021E9A6 /* SDL_pen_c.h */; };
 		63134A262A7902FD0021E9A6 /* SDL_pen.c in Sources */ = {isa = PBXBuildFile; fileRef = 63134A242A7902FD0021E9A6 /* SDL_pen.c */; };
@@ -228,6 +230,7 @@
 		A7D8B54523E2514300DCD162 /* SDL_hidapijoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C423E2513E00DCD162 /* SDL_hidapijoystick.c */; };
 		A7D8B54B23E2514300DCD162 /* SDL_hidapi_xboxone.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C523E2513E00DCD162 /* SDL_hidapi_xboxone.c */; };
 		A7D8B55123E2514300DCD162 /* SDL_hidapi_switch.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C623E2513E00DCD162 /* SDL_hidapi_switch.c */; };
+		A7D8B55123E2514300DCD163 /* SDL_hidapi_switch2.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C623E2513E00DCD163 /* SDL_hidapi_switch2.c */; };
 		A7D8B55723E2514300DCD162 /* SDL_hidapijoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A7C723E2513E00DCD162 /* SDL_hidapijoystick_c.h */; };
 		A7D8B55D23E2514300DCD162 /* SDL_hidapi_xbox360w.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */; };
 		A7D8B56323E2514300DCD162 /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */; };
@@ -414,6 +417,7 @@
 		F386F6F02884663E001840AA /* SDL_utils_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F386F6E52884663E001840AA /* SDL_utils_c.h */; };
 		F386F6F92884663E001840AA /* SDL_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = F386F6E62884663E001840AA /* SDL_utils.c */; };
 		F388C95528B5F6F700661ECF /* SDL_hidapi_ps3.c in Sources */ = {isa = PBXBuildFile; fileRef = F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */; };
+		F39344CE2E99771B0056986F /* SDL_dlopennote.h in Headers */ = {isa = PBXBuildFile; fileRef = F39344CD2E99771B0056986F /* SDL_dlopennote.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F395BF6525633B2400942BFF /* SDL_crc32.c in Sources */ = {isa = PBXBuildFile; fileRef = F395BF6425633B2400942BFF /* SDL_crc32.c */; };
 		F395C1932569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F395C1912569C68E00942BFF /* SDL_iokitjoystick_c.h */; };
 		F395C19C2569C68F00942BFF /* SDL_iokitjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = F395C1922569C68E00942BFF /* SDL_iokitjoystick.c */; };
@@ -520,6 +524,8 @@
 		F3D60A8328C16A1900788A3A /* SDL_hidapi_wii.c in Sources */ = {isa = PBXBuildFile; fileRef = F3D60A8228C16A1800788A3A /* SDL_hidapi_wii.c */; };
 		F3D8BDFC2D6D2C7000B22FA1 /* SDL_eventwatch_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F3D8BDFB2D6D2C7000B22FA1 /* SDL_eventwatch_c.h */; };
 		F3D8BDFD2D6D2C7000B22FA1 /* SDL_eventwatch.c in Sources */ = {isa = PBXBuildFile; fileRef = F3D8BDFA2D6D2C7000B22FA1 /* SDL_eventwatch.c */; };
+		F3DC38C92E5FC60300CD73DE /* SDL_libusb.h in Headers */ = {isa = PBXBuildFile; fileRef = F3DC38C72E5FC60300CD73DE /* SDL_libusb.h */; };
+		F3DC38CA2E5FC60300CD73DE /* SDL_libusb.c in Sources */ = {isa = PBXBuildFile; fileRef = F3DC38C82E5FC60300CD73DE /* SDL_libusb.c */; };
 		F3DDCC562AFD42B600B0842B /* SDL_clipboard_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F3DDCC4D2AFD42B500B0842B /* SDL_clipboard_c.h */; };
 		F3DDCC5B2AFD42B600B0842B /* SDL_video_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F3DDCC522AFD42B600B0842B /* SDL_video_c.h */; };
 		F3DDCC5D2AFD42B600B0842B /* SDL_rect_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = F3DDCC542AFD42B600B0842B /* SDL_rect_impl.h */; };
@@ -541,6 +547,7 @@
 		F3FA5A232B59ACE000FEAD97 /* yuv_rgb_lsx.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FA5A1A2B59ACE000FEAD97 /* yuv_rgb_lsx.c */; };
 		F3FA5A242B59ACE000FEAD97 /* yuv_rgb_lsx.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1B2B59ACE000FEAD97 /* yuv_rgb_lsx.h */; };
 		F3FA5A252B59ACE000FEAD97 /* yuv_rgb_common.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FA5A1C2B59ACE000FEAD97 /* yuv_rgb_common.h */; };
+		F3FBB1082DDF93AB0000F99F /* SDL_hidapi_flydigi.c in Sources */ = {isa = PBXBuildFile; fileRef = F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */; };
 		F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */; };
 		F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Required, ); }; };
@@ -599,6 +606,7 @@
 		007317C10858E15000B2BC32 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		00CFA89C106B4BA100758660 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForceFeedback.framework; path = System/Library/Frameworks/ForceFeedback.framework; sourceTree = SDKROOT; };
 		00D0D08310675DD9004B05EF /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		02D6A1C128A84B8F00A7F001 /* SDL_hidapi_sinput.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_sinput.c; sourceTree = "<group>"; };
 		1485C32F2BBA4A0C0063985B /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		5616CA49252BB2A5005D5928 /* SDL_url.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_url.c; sourceTree = "<group>"; };
 		5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysurl.h; sourceTree = "<group>"; };
@@ -609,6 +617,7 @@
 		566E26CD246274CB00718109 /* SDL_locale.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_locale.c; path = locale/SDL_locale.c; sourceTree = "<group>"; };
 		566E26CE246274CC00718109 /* SDL_syslocale.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_syslocale.h; path = locale/SDL_syslocale.h; sourceTree = "<group>"; };
 		56A2373229F9C113003CCA5F /* SDL_sysrwlock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysrwlock.c; sourceTree = "<group>"; };
+		63124A412E5C357500A53610 /* SDL_hidapi_zuiki.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_zuiki.c; sourceTree = "<group>"; };
 		6312C66C2B42341400A7BB00 /* SDL_murmur3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_murmur3.c; sourceTree = "<group>"; };
 		63134A232A7902FD0021E9A6 /* SDL_pen_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_pen_c.h; sourceTree = "<group>"; };
 		63134A242A7902FD0021E9A6 /* SDL_pen.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_pen.c; sourceTree = "<group>"; };
@@ -810,6 +819,7 @@
 		A7D8A7C423E2513E00DCD162 /* SDL_hidapijoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapijoystick.c; sourceTree = "<group>"; };
 		A7D8A7C523E2513E00DCD162 /* SDL_hidapi_xboxone.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xboxone.c; sourceTree = "<group>"; };
 		A7D8A7C623E2513E00DCD162 /* SDL_hidapi_switch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_switch.c; sourceTree = "<group>"; };
+		A7D8A7C623E2513E00DCD163 /* SDL_hidapi_switch2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_switch2.c; sourceTree = "<group>"; };
 		A7D8A7C723E2513E00DCD162 /* SDL_hidapijoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapijoystick_c.h; sourceTree = "<group>"; };
 		A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xbox360w.c; sourceTree = "<group>"; };
 		A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_gamecube.c; sourceTree = "<group>"; };
@@ -949,6 +959,7 @@
 		F338A1172D1B37D8007CDFDF /* SDL_tray.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SDL_tray.m; sourceTree = "<group>"; };
 		F338A1192D1B37E4007CDFDF /* SDL_tray.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_tray.c; sourceTree = "<group>"; };
 		F3395BA72D9A5971007246C8 /* SDL_hidapi_8bitdo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_8bitdo.c; sourceTree = "<group>"; };
+		F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_flydigi.c; sourceTree = "<group>"; };
 		F344003C2D4022E1003F26D7 /* INSTALL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = INSTALL.md; sourceTree = "<group>"; };
 		F362B9152B3349E200D30B94 /* controller_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_list.h; sourceTree = "<group>"; };
 		F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamepad_c.h; sourceTree = "<group>"; };
@@ -990,6 +1001,7 @@
 		F386F6E52884663E001840AA /* SDL_utils_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_utils_c.h; sourceTree = "<group>"; };
 		F386F6E62884663E001840AA /* SDL_utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_utils.c; sourceTree = "<group>"; };
 		F388C95428B5F6F600661ECF /* SDL_hidapi_ps3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps3.c; sourceTree = "<group>"; };
+		F39344CD2E99771B0056986F /* SDL_dlopennote.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_dlopennote.h; sourceTree = "<group>"; };
 		F395BF6425633B2400942BFF /* SDL_crc32.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_crc32.c; sourceTree = "<group>"; };
 		F395C1912569C68E00942BFF /* SDL_iokitjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_iokitjoystick_c.h; sourceTree = "<group>"; };
 		F395C1922569C68E00942BFF /* SDL_iokitjoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_iokitjoystick.c; sourceTree = "<group>"; };
@@ -1095,6 +1107,8 @@
 		F3D60A8228C16A1800788A3A /* SDL_hidapi_wii.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_wii.c; sourceTree = "<group>"; };
 		F3D8BDFA2D6D2C7000B22FA1 /* SDL_eventwatch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_eventwatch.c; sourceTree = "<group>"; };
 		F3D8BDFB2D6D2C7000B22FA1 /* SDL_eventwatch_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_eventwatch_c.h; sourceTree = "<group>"; };
+		F3DC38C72E5FC60300CD73DE /* SDL_libusb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_libusb.h; sourceTree = "<group>"; };
+		F3DC38C82E5FC60300CD73DE /* SDL_libusb.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_libusb.c; sourceTree = "<group>"; };
 		F3DDCC4D2AFD42B500B0842B /* SDL_clipboard_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_clipboard_c.h; sourceTree = "<group>"; };
 		F3DDCC522AFD42B600B0842B /* SDL_video_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_video_c.h; sourceTree = "<group>"; };
 		F3DDCC542AFD42B600B0842B /* SDL_rect_impl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rect_impl.h; sourceTree = "<group>"; };
@@ -1255,6 +1269,7 @@
 				F3D46A8B2D20625800D9CBDF /* SDL_copying.h */,
 				F3D46A8C2D20625800D9CBDF /* SDL_cpuinfo.h */,
 				F3D46A8D2D20625800D9CBDF /* SDL_dialog.h */,
+				F39344CD2E99771B0056986F /* SDL_dlopennote.h */,
 				F3D46A8E2D20625800D9CBDF /* SDL_egl.h */,
 				F3D46A8F2D20625800D9CBDF /* SDL_endian.h */,
 				F3D46A902D20625800D9CBDF /* SDL_error.h */,
@@ -1408,6 +1423,8 @@
 			children = (
 				F3ADAB8C2576F08500A6B1D9 /* ios */,
 				5616CA48252BB285005D5928 /* macos */,
+				F3DC38C72E5FC60300CD73DE /* SDL_libusb.h */,
+				F3DC38C82E5FC60300CD73DE /* SDL_libusb.c */,
 				5616CA4A252BB2A6005D5928 /* SDL_sysurl.h */,
 				5616CA49252BB2A5005D5928 /* SDL_url.c */,
 			);
@@ -1929,6 +1946,7 @@
 			children = (
 				F3395BA72D9A5971007246C8 /* SDL_hidapi_8bitdo.c */,
 				F32305FE28939F6400E66D30 /* SDL_hidapi_combined.c */,
+				F3395BA72D9A5971007246C9 /* SDL_hidapi_flydigi.c */,
 				A7D8A7C923E2513E00DCD162 /* SDL_hidapi_gamecube.c */,
 				F3B6B8092DC3EA54004954FD /* SDL_hidapi_gip.c */,
 				89E5801D2D03602200DAF6D3 /* SDL_hidapi_lg4ff.c */,
@@ -1940,15 +1958,18 @@
 				A75FDBC323EA380300529352 /* SDL_hidapi_rumble.h */,
 				A75FDBC423EA380300529352 /* SDL_hidapi_rumble.c */,
 				9846B07B287A9020000C35C8 /* SDL_hidapi_shield.c */,
+				02D6A1C128A84B8F00A7F001 /* SDL_hidapi_sinput.c */,
 				F3984CCF25BCC92800374F43 /* SDL_hidapi_stadia.c */,
 				A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */,
 				F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */,
 				A797456F2B2E9D39009D224A /* SDL_hidapi_steamdeck.c */,
 				A7D8A7C623E2513E00DCD162 /* SDL_hidapi_switch.c */,
+				A7D8A7C623E2513E00DCD163 /* SDL_hidapi_switch2.c */,
 				F3D60A8228C16A1800788A3A /* SDL_hidapi_wii.c */,
 				A7D8A7C223E2513E00DCD162 /* SDL_hidapi_xbox360.c */,
 				A7D8A7C823E2513E00DCD162 /* SDL_hidapi_xbox360w.c */,
 				A7D8A7C523E2513E00DCD162 /* SDL_hidapi_xboxone.c */,
+				63124A412E5C357500A53610 /* SDL_hidapi_zuiki.c */,
 				A7D8A7C423E2513E00DCD162 /* SDL_hidapijoystick.c */,
 				A7D8A7C723E2513E00DCD162 /* SDL_hidapijoystick_c.h */,
 			);
@@ -2739,8 +2760,10 @@
 				A7D8B28A23E2514200DCD162 /* vulkan_xlib_xrandr.h in Headers */,
 				A7D8B3D423E2514300DCD162 /* yuv_rgb.h in Headers */,
 				F3FA5A252B59ACE000FEAD97 /* yuv_rgb_common.h in Headers */,
+				F39344CE2E99771B0056986F /* SDL_dlopennote.h in Headers */,
 				F3FA5A1D2B59ACE000FEAD97 /* yuv_rgb_internal.h in Headers */,
 				F3D8BDFC2D6D2C7000B22FA1 /* SDL_eventwatch_c.h in Headers */,
+				F3DC38C92E5FC60300CD73DE /* SDL_libusb.h in Headers */,
 				F3FA5A242B59ACE000FEAD97 /* yuv_rgb_lsx.h in Headers */,
 				F3FA5A1E2B59ACE000FEAD97 /* yuv_rgb_lsx_func.h in Headers */,
 				F3FA5A1F2B59ACE000FEAD97 /* yuv_rgb_sse.h in Headers */,
@@ -2860,7 +2883,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Build an xcframework with both device and simulator files for all platforms.\n# Adapted from an answer in\n# https://developer.apple.com/forums/thread/666335?answerId=685927022#685927022\n\nif [ \"$XCODE_VERSION_ACTUAL\" -lt 1100 ]\nthen\n    echo \"error: Building an xcframework requires Xcode 11 minimum.\"\n    exit 1\nfi\n\nFRAMEWORK_NAME=\"SDL3\"\nPROJECT_NAME=\"SDL\"\nSCHEME=\"SDL3\"\n\nMACOS_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-macosx.xcarchive\"\nIOS_SIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphonesimulator.xcarchive\"\nIOS_DEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphoneos.xcarchive\"\nTVOS_SIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-appletvsimulator.xcarchive\"\nTVOS_DEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-appletvos.xcarchive\"\n\nOUTPUT_DIR=\"./build/\"\n\n# macOS\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${MACOS_ARCHIVE_PATH} \\\n    -destination 'generic/platform=macOS,name=Any Mac' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n    \n# iOS simulator\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${IOS_SIMULATOR_ARCHIVE_PATH} \\\n    -destination 'generic/platform=iOS Simulator' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# iOS device\nxcodebuild archive \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${IOS_DEVICE_ARCHIVE_PATH} \\\n    -destination 'generic/platform=iOS' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# tvOS simulator\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${TVOS_SIMULATOR_ARCHIVE_PATH} \\\n    -destination 'generic/platform=tvOS Simulator' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# tvOS device\nxcodebuild archive \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${TVOS_DEVICE_ARCHIVE_PATH} \\\n    -destination 'generic/platform=tvOS' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# Clean-up any existing instance of this xcframework from the Products directory\nrm -rf \"${OUTPUT_DIR}${FRAMEWORK_NAME}.xcframework\"\n\n# Create final xcframework\nxcodebuild -create-xcframework \\\n    -framework \"${MACOS_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${IOS_DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${IOS_SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${TVOS_DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${TVOS_SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -output ${OUTPUT_DIR}/${FRAMEWORK_NAME}.xcframework\n\n# Ensure git doesn't pick up on our Products folder. \nrm -rf ${OUTPUT_DIR}/.gitignore\necho \"*\" >> ${OUTPUT_DIR}/.gitignore\n";
+			shellScript = "# Build an xcframework with both device and simulator files for all platforms.\n# Adapted from an answer in\n# https://developer.apple.com/forums/thread/666335?answerId=685927022#685927022\n\nif [ \"$XCODE_VERSION_ACTUAL\" -lt 1100 ]\nthen\n    echo \"error: Building an xcframework requires Xcode 11 minimum.\"\n    exit 1\nfi\n\nFRAMEWORK_NAME=\"SDL3\"\nPROJECT_NAME=\"SDL\"\nSCHEME=\"SDL3\"\n\nMACOS_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-macosx.xcarchive\"\nIOS_SIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphonesimulator.xcarchive\"\nIOS_DEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-iphoneos.xcarchive\"\nTVOS_SIMULATOR_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-appletvsimulator.xcarchive\"\nTVOS_DEVICE_ARCHIVE_PATH=\"${BUILD_DIR}/${CONFIGURATION}/${FRAMEWORK_NAME}-appletvos.xcarchive\"\n\nOUTPUT_DIR=\"./build/\"\n\n# macOS\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${MACOS_ARCHIVE_PATH} \\\n    -destination 'generic/platform=macOS,name=Any Mac' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n    \n# iOS simulator\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${IOS_SIMULATOR_ARCHIVE_PATH} \\\n    -destination 'generic/platform=iOS Simulator' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# iOS device\nxcodebuild archive \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${IOS_DEVICE_ARCHIVE_PATH} \\\n    -destination 'generic/platform=iOS' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# tvOS simulator\nxcodebuild archive \\\n    ONLY_ACTIVE_ARCH=NO \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${TVOS_SIMULATOR_ARCHIVE_PATH} \\\n    -destination 'generic/platform=tvOS Simulator' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# tvOS device\nxcodebuild archive \\\n    -scheme \"${SCHEME}\" \\\n    -project \"${PROJECT_NAME}.xcodeproj\" \\\n    -archivePath ${TVOS_DEVICE_ARCHIVE_PATH} \\\n    -destination 'generic/platform=tvOS' \\\n    BUILD_LIBRARY_FOR_DISTRIBUTION=YES \\\n    SKIP_INSTALL=NO || exit $?\n\n# Clean-up any existing instance of this xcframework from the Products directory\nrm -rf \"${OUTPUT_DIR}${FRAMEWORK_NAME}.xcframework\"\n\n# Create final xcframework\nxcodebuild -create-xcframework \\\n    -framework \"${MACOS_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -debug-symbols \"${MACOS_ARCHIVE_PATH}\"/dSYMs/$FRAMEWORK_NAME.framework.dSYM \\\n    -framework \"${IOS_DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -debug-symbols \"${IOS_DEVICE_ARCHIVE_PATH}\"/dSYMs/$FRAMEWORK_NAME.framework.dSYM \\\n    -framework \"${IOS_SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -framework \"${TVOS_DEVICE_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -debug-symbols \"${TVOS_DEVICE_ARCHIVE_PATH}\"/dSYMs/$FRAMEWORK_NAME.framework.dSYM \\\n    -framework \"${TVOS_SIMULATOR_ARCHIVE_PATH}\"/Products/Library/Frameworks/${FRAMEWORK_NAME}.framework \\\n    -output ${OUTPUT_DIR}/${FRAMEWORK_NAME}.xcframework\n\n# Ensure git doesn't pick up on our Products folder. \nrm -rf ${OUTPUT_DIR}/.gitignore\necho \"*\" >> ${OUTPUT_DIR}/.gitignore\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2874,6 +2897,7 @@
 				A7D8B62F23E2514300DCD162 /* SDL_sysfilesystem.m in Sources */,
 				A7D8B41C23E2514300DCD162 /* SDL_systls.c in Sources */,
 				9846B07C287A9020000C35C8 /* SDL_hidapi_shield.c in Sources */,
+				02D6A1C228A84B8F00A7F002 /* SDL_hidapi_sinput.c in Sources */,
 				F31013C72C24E98200FBE946 /* SDL_keymap.c in Sources */,
 				F3A9AE992C8A13C100AAC390 /* SDL_render_gpu.c in Sources */,
 				A7D8BBD923E2574800DCD162 /* SDL_uikitmessagebox.m in Sources */,
@@ -3032,6 +3056,7 @@
 				F3FA5A222B59ACE000FEAD97 /* yuv_rgb_sse.c in Sources */,
 				F3C2CB232C5DDDB2004D7998 /* SDL_categories.c in Sources */,
 				A7D8B55123E2514300DCD162 /* SDL_hidapi_switch.c in Sources */,
+				A7D8B55123E2514300DCD163 /* SDL_hidapi_switch2.c in Sources */,
 				A7D8B96223E2514400DCD162 /* SDL_strtokr.c in Sources */,
 				A7D8BB7523E2514500DCD162 /* SDL_clipboardevents.c in Sources */,
 				E4F798202AD8D87F00669F54 /* SDL_video_unsupported.c in Sources */,
@@ -3086,9 +3111,11 @@
 				00001B2471F503DD3C1B0000 /* SDL_camera_dummy.c in Sources */,
 				00002B20A48E055EB0350000 /* SDL_camera_coremedia.m in Sources */,
 				000080903BC03006F24E0000 /* SDL_filesystem.c in Sources */,
+				F3FBB1082DDF93AB0000F99F /* SDL_hidapi_flydigi.c in Sources */,
 				0000481D255AF155B42C0000 /* SDL_sysfsops.c in Sources */,
 				0000494CC93F3E624D3C0000 /* SDL_systime.c in Sources */,
 				000095FA1BDE436CF3AF0000 /* SDL_time.c in Sources */,
+				F3DC38CA2E5FC60300CD73DE /* SDL_libusb.c in Sources */,
 				0000140640E77F73F1DF0000 /* SDL_dialog_utils.c in Sources */,
 				0000D5B526B85DE7AB1C0000 /* SDL_cocoapen.m in Sources */,
 				6312C66D2B42341400A7BB00 /* SDL_murmur3.c in Sources */,
@@ -3096,6 +3123,7 @@
 				00004D0B73767647AD550000 /* SDL_asyncio_generic.c in Sources */,
 				0000A03C0F32C43816F40000 /* SDL_asyncio_windows_ioring.c in Sources */,
 				0000A877C7DB9FA935FC0000 /* SDL_uikitpen.m in Sources */,
+				63124A422E5C357500A53610 /* SDL_hidapi_zuiki.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3161,7 +3189,7 @@
 				SUPPORTED_PLATFORMS = "xrsimulator xros macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
 				TVOS_DEPLOYMENT_TARGET = 11.0;
-				XROS_DEPLOYMENT_TARGET = 1.0;
+				XROS_DEPLOYMENT_TARGET = 1.3;
 			};
 			name = Release;
 		};
@@ -3170,6 +3198,8 @@
 			baseConfigurationReference = F3F7BE3B2CBD79D200C984AF /* config.xcconfig */;
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				OTHER_LDFLAGS = "-liconv";
 				SUPPORTS_MACCATALYST = YES;
 			};
@@ -3223,7 +3253,7 @@
 				SUPPORTED_PLATFORMS = "xrsimulator xros macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
 				TVOS_DEPLOYMENT_TARGET = 11.0;
-				XROS_DEPLOYMENT_TARGET = 1.0;
+				XROS_DEPLOYMENT_TARGET = 1.3;
 			};
 			name = Debug;
 		};
@@ -3232,6 +3262,8 @@
 			baseConfigurationReference = F3F7BE3B2CBD79D200C984AF /* config.xcconfig */;
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				OTHER_LDFLAGS = "-liconv";
 				SUPPORTS_MACCATALYST = YES;
 			};

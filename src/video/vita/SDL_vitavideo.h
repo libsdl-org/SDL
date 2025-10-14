@@ -77,8 +77,6 @@ extern SDL_Window *Vita_Window;
 // Display and window functions
 extern bool VITA_VideoInit(SDL_VideoDevice *_this);
 extern void VITA_VideoQuit(SDL_VideoDevice *_this);
-extern bool VITA_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
-extern bool VITA_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern bool VITA_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern void VITA_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool VITA_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
@@ -116,7 +114,6 @@ extern bool VITA_GLES_DestroyContext(SDL_VideoDevice *_this, SDL_GLContext conte
 extern bool VITA_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 extern void VITA_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 extern void VITA_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-extern bool VITA_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
 
 extern void VITA_PumpEvents(SDL_VideoDevice *_this);
 

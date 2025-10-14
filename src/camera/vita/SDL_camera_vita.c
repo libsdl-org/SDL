@@ -93,7 +93,7 @@ static void MaybeAddDevice(Sint32 devid)
     GatherCameraSpecs(devid, &add_data, &fullname, &position);
 
     if (add_data.num_specs > 0) {
-        SDL_AddCamera(fullname, position, add_data.num_specs, add_data.specs, (void*)devid);
+        SDL_AddCamera(fullname, position, add_data.num_specs, add_data.specs, (void *)devid);
     }
 
     SDL_free(fullname);
@@ -102,7 +102,7 @@ static void MaybeAddDevice(Sint32 devid)
 
 static SceUID imbUid = -1;
 
-static void freeBuffers(SceCameraInfo* info)
+static void freeBuffers(SceCameraInfo *info)
 {
     if (imbUid != -1) {
         sceKernelFreeMemBlock(imbUid);
@@ -118,7 +118,7 @@ static bool VITACAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec
         return SDL_SetError("Only one camera can be active");
     }
 
-    SceCameraInfo* info = (SceCameraInfo*)SDL_calloc(1, sizeof(SceCameraInfo));
+    SceCameraInfo *info = (SceCameraInfo *)SDL_calloc(1, sizeof(SceCameraInfo));
 
     info->size = sizeof(SceCameraInfo);
     info->priority = SCE_CAMERA_PRIORITY_SHARE;
@@ -139,12 +139,12 @@ static bool VITACAMERA_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec
     info->format = SCE_CAMERA_FORMAT_YUV420_PLANE;
     info->pitch = 0; // same size surface
 
-    info->sizeIBase =  spec->width*spec->height;;
+    info->sizeIBase =  spec->width * spec->height;;
     info->sizeUBase =  ((spec->width+1)/2) * ((spec->height+1) / 2);
     info->sizeVBase =  ((spec->width+1)/2) * ((spec->height+1) / 2);
 
     // PHYCONT memory size *must* be a multiple of 1MB, we can just always spend 2MB, since we don't use PHYCONT anywhere else
-    imbUid = sceKernelAllocMemBlock("CameraI", SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW, 2*1024*1024 , NULL);
+    imbUid = sceKernelAllocMemBlock("CameraI", SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW, 2 * 1024 * 1024 , NULL);
     if (imbUid < 0)
     {
         return SDL_SetError("sceKernelAllocMemBlock error: 0x%08X", imbUid);
@@ -179,7 +179,7 @@ static void VITACAMERA_CloseDevice(SDL_Camera *device)
     if (device->hidden) {
         sceCameraStop((int)device->handle);
         sceCameraClose((int)device->handle);
-        freeBuffers((SceCameraInfo*)device->hidden);
+        freeBuffers((SceCameraInfo *)device->hidden);
         SDL_free(device->hidden);
     }
 }
@@ -205,7 +205,7 @@ static SDL_CameraFrameResult VITACAMERA_AcquireFrame(SDL_Camera *device, SDL_Sur
 
     *timestampNS = read.timestamp;
 
-    SceCameraInfo* info = (SceCameraInfo*)(device->hidden);
+    SceCameraInfo *info = (SceCameraInfo *)(device->hidden);
 
     frame->pitch = info->width;
     frame->pixels = SDL_aligned_alloc(SDL_GetSIMDAlignment(), info->sizeIBase + info->sizeUBase + info->sizeVBase);

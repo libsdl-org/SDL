@@ -95,7 +95,7 @@ static unsigned int get_allocation_bucket(void *mem)
     return index;
 }
 
-static SDL_tracked_allocation* SDL_GetTrackedAllocation(void *mem)
+static SDL_tracked_allocation *SDL_GetTrackedAllocation(void *mem)
 {
     SDL_tracked_allocation *entry;
     LOCK_ALLOCATOR();
@@ -216,9 +216,9 @@ static void SDL_UntrackAllocation(void *mem)
     UNLOCK_ALLOCATOR();
 }
 
-static void rand_fill_memory(void* ptr, size_t start, size_t end)
+static void rand_fill_memory(void *ptr, size_t start, size_t end)
 {
-    Uint8* mem = (Uint8*) ptr;
+    Uint8 *mem = (Uint8 *)ptr;
     size_t i;
 
     if (!s_randfill_allocations)
@@ -295,11 +295,6 @@ void SDLTest_TrackAllocations(void)
     SDLTest_Crc32Init(&s_crc32_context);
 
     s_previous_allocations = SDL_GetNumAllocations();
-    if (s_previous_allocations < 0) {
-        SDL_Log("SDL was built without allocation count support, disabling free() validation");
-    } else if (s_previous_allocations != 0) {
-        SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
-    }
 #ifdef SDLTEST_UNWIND_NO_PROC_NAME_BY_IP
     do {
         /* Don't use SDL_GetHint: SDL_malloc is off limits. */
@@ -346,6 +341,12 @@ dbghelp_failed:
                            SDLTest_TrackedCalloc,
                            SDLTest_TrackedRealloc,
                            SDLTest_TrackedFree);
+
+    if (s_previous_allocations < 0) {
+        SDL_Log("SDL was built without allocation count support, disabling free() validation");
+    } else if (s_previous_allocations != 0) {
+        SDL_Log("SDLTest_TrackAllocations(): There are %d previous allocations, disabling free() validation", s_previous_allocations);
+    }
 }
 
 void SDLTest_RandFillAllocations(void)

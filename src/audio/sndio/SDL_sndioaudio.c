@@ -108,6 +108,13 @@ static bool load_sndio_syms(void)
 
 #ifdef SDL_AUDIO_DRIVER_SNDIO_DYNAMIC
 
+SDL_ELF_NOTE_DLOPEN(
+    "audio-libsndio",
+    "Support for audio through libsndio",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_AUDIO_DRIVER_SNDIO_DYNAMIC
+);
+
 static void UnloadSNDIOLibrary(void)
 {
     if (sndio_handle) {

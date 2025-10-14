@@ -35,7 +35,7 @@
 #define UNIFORM_BUFFER_SIZE            32768
 #define MAX_VERTEX_BUFFERS             16
 #define MAX_VERTEX_ATTRIBUTES          16
-#define MAX_COLOR_TARGET_BINDINGS      4
+#define MAX_COLOR_TARGET_BINDINGS      8
 #define MAX_PRESENT_COUNT              16
 #define MAX_FRAMES_IN_FLIGHT           3
 
@@ -47,6 +47,20 @@ typedef struct Pass
     bool in_progress;
 } Pass;
 
+typedef struct ComputePass
+{
+    SDL_GPUCommandBuffer *command_buffer;
+    bool in_progress;
+
+    SDL_GPUComputePipeline *compute_pipeline;
+
+    bool sampler_bound[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    bool read_only_storage_texture_bound[MAX_STORAGE_TEXTURES_PER_STAGE];
+    bool read_only_storage_buffer_bound[MAX_STORAGE_BUFFERS_PER_STAGE];
+    bool read_write_storage_texture_bound[MAX_COMPUTE_WRITE_TEXTURES];
+    bool read_write_storage_buffer_bound[MAX_COMPUTE_WRITE_BUFFERS];
+} ComputePass;
+
 typedef struct RenderPass
 {
     SDL_GPUCommandBuffer *command_buffer;
@@ -54,15 +68,25 @@ typedef struct RenderPass
     SDL_GPUTexture *color_targets[MAX_COLOR_TARGET_BINDINGS];
     Uint32 num_color_targets;
     SDL_GPUTexture *depth_stencil_target;
+
+    SDL_GPUGraphicsPipeline *graphics_pipeline;
+
+    bool vertex_sampler_bound[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    bool vertex_storage_texture_bound[MAX_STORAGE_TEXTURES_PER_STAGE];
+    bool vertex_storage_buffer_bound[MAX_STORAGE_BUFFERS_PER_STAGE];
+
+    bool fragment_sampler_bound[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    bool fragment_storage_texture_bound[MAX_STORAGE_TEXTURES_PER_STAGE];
+    bool fragment_storage_buffer_bound[MAX_STORAGE_BUFFERS_PER_STAGE];
 } RenderPass;
 
 typedef struct CommandBufferCommonHeader
 {
     SDL_GPUDevice *device;
+
     RenderPass render_pass;
-    bool graphics_pipeline_bound;
-    Pass compute_pass;
-    bool compute_pipeline_bound;
+    ComputePass compute_pass;
+
     Pass copy_pass;
     bool swapchain_texture_acquired;
     bool submitted;
@@ -74,6 +98,29 @@ typedef struct TextureCommonHeader
 {
     SDL_GPUTextureCreateInfo info;
 } TextureCommonHeader;
+
+typedef struct GraphicsPipelineCommonHeader
+{
+    Uint32 num_vertex_samplers;
+    Uint32 num_vertex_storage_textures;
+    Uint32 num_vertex_storage_buffers;
+    Uint32 num_vertex_uniform_buffers;
+
+    Uint32 num_fragment_samplers;
+    Uint32 num_fragment_storage_textures;
+    Uint32 num_fragment_storage_buffers;
+    Uint32 num_fragment_uniform_buffers;
+} GraphicsPipelineCommonHeader;
+
+typedef struct ComputePipelineCommonHeader
+{
+    Uint32 numSamplers;
+    Uint32 numReadonlyStorageTextures;
+    Uint32 numReadonlyStorageBuffers;
+    Uint32 numReadWriteStorageTextures;
+    Uint32 numReadWriteStorageBuffers;
+    Uint32 numUniformBuffers;
+} ComputePipelineCommonHeader;
 
 typedef struct BlitFragmentUniforms
 {
@@ -1049,6 +1096,9 @@ struct SDL_GPUDevice
 
     // Store this for SDL_gpu.c's debug layer
     bool debug_mode;
+    bool default_enable_depth_clip;
+    bool validate_feature_depth_clamp_disabled;
+    bool validate_feature_anisotropy_disabled;
 };
 
 #define ASSIGN_DRIVER_FUNC(func, name) \
@@ -1141,7 +1191,6 @@ struct SDL_GPUDevice
 typedef struct SDL_GPUBootstrap
 {
     const char *name;
-    const SDL_GPUShaderFormat shader_formats;
     bool (*PrepareDriver)(SDL_VideoDevice *_this, SDL_PropertiesID props);
     SDL_GPUDevice *(*CreateDevice)(bool debug_mode, bool prefer_low_power, SDL_PropertiesID props);
 } SDL_GPUBootstrap;

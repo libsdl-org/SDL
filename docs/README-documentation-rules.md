@@ -34,6 +34,12 @@ things, you might confuse it. This is to the benefit of documentation, though,
 where we would rather you not do surprising things.
 
 
+## UTF-8 only!
+
+All text must be UTF-8 encoded. The wiki will refuse to update files that are
+malformed.
+
+
 ## We _sort of_ write in Doxygen format.
 
 To document a symbol, we use something that looks like Doxygen (and Javadoc)
@@ -268,6 +274,23 @@ comment. So don't mention the type a second time in the documentation if
 possible. It looks cluttered and repetitive to do so.
 
 
+## Keep `\param` and `\returns` sections short.
+
+These strings end up in a table that we don't want to be bulky.
+Try to keep these to one sentence/phrase where possible. If you need more
+detail--even extremely common details, like "you need to free the returned
+pointer"--put that information in the general Remarks section, where you
+can be as verbose as you like.
+
+(One exception for SDL: the return value almost always notes that on error,
+you should call SDL_GetError() to get more information. The documentation
+is so saturated with this that it's just the standard now.)
+
+Convention at the moment is that pointer params that are permitted to
+be NULL, which is somewhat uncommon, end with terse "May be NULL." sentence
+at the end, and pointers that must be non-NULL (most of them) say nothing.
+This is fine.
+
 ## Code examples go in the wiki.
 
 We don't want the headers cluttered up with code examples. These live on the
@@ -440,3 +463,19 @@ Beyond stripping the initial ` * ` portion off each line, these comments are
 treated as pure Markdown. They don't support any Doxygen tags like `\sa` or
 `\since`.
 
+## Enum/struct versioning
+
+If you have an enum or struct, it'll list its `\since` field as the first SDL
+release it was available in. However, we might later add new values to an enum
+or fields to a struct. These lines, arriving in a newer version, should have a
+note about that, like this one on SDL_SCALEMODE_PIXELART:
+
+```c
+typedef enum SDL_ScaleMode
+{
+    SDL_SCALEMODE_INVALID = -1,
+    SDL_SCALEMODE_NEAREST,  /**< nearest pixel sampling */
+    SDL_SCALEMODE_LINEAR,   /**< linear filtering */
+    SDL_SCALEMODE_PIXELART  /**< nearest pixel sampling with improved scaling for pixel art (since SDL 3.3.0) */
+} SDL_ScaleMode;
+```

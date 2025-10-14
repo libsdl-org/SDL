@@ -30,7 +30,7 @@ static Uint64 last_time = 0;
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     SDL_Surface *surface = NULL;
-    char *bmp_path = NULL;
+    char *png_path = NULL;
 
     SDL_SetAppMetadata("Example Renderer Clipping Rectangle", "1.0", "com.example.renderer-cliprect");
 
@@ -39,10 +39,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("examples/renderer/cliprect", WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("examples/renderer/cliprect", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+    SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     cliprect_direction.x = cliprect_direction.y = 1.0f;
 
@@ -53,15 +54,15 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
        times) with data from a bitmap file. */
 
     /* SDL_Surface is pixel data the CPU can access. SDL_Texture is pixel data the GPU can access.
-       Load a .bmp into a surface, move it to a texture from there. */
-    SDL_asprintf(&bmp_path, "%ssample.bmp", SDL_GetBasePath());  /* allocate a string of the full file path */
-    surface = SDL_LoadBMP(bmp_path);
+       Load a .png into a surface, move it to a texture from there. */
+    SDL_asprintf(&png_path, "%ssample.png", SDL_GetBasePath());  /* allocate a string of the full file path */
+    surface = SDL_LoadPNG(png_path);
     if (!surface) {
         SDL_Log("Couldn't load bitmap: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
-    SDL_free(bmp_path);  /* done with this, the file is loaded. */
+    SDL_free(png_path);  /* done with this, the file is loaded. */
 
     texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (!texture) {
@@ -93,20 +94,20 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     /* Set a new clipping rectangle position */
     cliprect_position.x += distance * cliprect_direction.x;
-    if (cliprect_position.x < 0.0f) {
-        cliprect_position.x = 0.0f;
+    if (cliprect_position.x < -CLIPRECT_SIZE) {
+        cliprect_position.x = -CLIPRECT_SIZE;
         cliprect_direction.x = 1.0f;
-    } else if (cliprect_position.x >= (WINDOW_WIDTH - CLIPRECT_SIZE)) {
-        cliprect_position.x = (WINDOW_WIDTH - CLIPRECT_SIZE) - 1;
+    } else if (cliprect_position.x >= WINDOW_WIDTH) {
+        cliprect_position.x = WINDOW_WIDTH - 1;
         cliprect_direction.x = -1.0f;
     }
 
     cliprect_position.y += distance * cliprect_direction.y;
-    if (cliprect_position.y < 0.0f) {
-        cliprect_position.y = 0.0f;
+    if (cliprect_position.y < -CLIPRECT_SIZE) {
+        cliprect_position.y = -CLIPRECT_SIZE;
         cliprect_direction.y = 1.0f;
-    } else if (cliprect_position.y >= (WINDOW_HEIGHT - CLIPRECT_SIZE)) {
-        cliprect_position.y = (WINDOW_HEIGHT - CLIPRECT_SIZE) - 1;
+    } else if (cliprect_position.y >= WINDOW_HEIGHT) {
+        cliprect_position.y = WINDOW_HEIGHT - 1;
         cliprect_direction.y = -1.0f;
     }
     SDL_SetRenderClipRect(renderer, &cliprect);

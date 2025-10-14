@@ -222,19 +222,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_camera.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_close_code.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_assert.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_asyncio.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_atomic.h">
@@ -243,19 +237,34 @@
     <ClInclude Include="..\..\include\SDL3\SDL_audio.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_begin_code.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_bits.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_blendmode.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_camera.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_clipboard.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_close_code.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_copying.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_cpuinfo.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_dialog.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_dlopennote.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_egl.h">
@@ -276,19 +285,28 @@
     <ClInclude Include="..\..\include\SDL3\SDL_gamepad.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_gpu.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_guid.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_haptic.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_hints.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_hidapi.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_asyncio.h">
+    <ClInclude Include="..\..\include\SDL3\SDL_hints.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_init.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_intrin.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_iostream.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_joystick.h">
@@ -312,13 +330,25 @@
     <ClInclude Include="..\..\include\SDL3\SDL_main.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_main_impl.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_messagebox.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_metal.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_misc.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_mouse.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_mutex.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_oldnames.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_opengl.h">
@@ -375,9 +405,6 @@
     <ClInclude Include="..\..\include\SDL3\SDL_revision.h">
       <Filter>API Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL3\SDL_iostream.h">
-      <Filter>API Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_scancode.h">
       <Filter>API Headers</Filter>
     </ClInclude>
@@ -385,6 +412,9 @@
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_stdinc.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_storage.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_surface.h">
@@ -423,13 +453,22 @@
     <ClInclude Include="..\..\include\SDL3\SDL_test_md5.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_test_memory.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_thread.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_time.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_timer.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_touch.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL3\SDL_tray.h">
       <Filter>API Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL3\SDL_version.h">
@@ -489,6 +528,9 @@
     <ClInclude Include="..\..\src\audio\SDL_audioresample.h">
       <Filter>audio</Filter>
     </ClInclude>
+    <ClCompile Include="..\..\src\core\SDL_core_unsupported.h">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h">
       <Filter>core\windows</Filter>
     </ClInclude>
@@ -684,10 +726,13 @@
     <ClInclude Include="..\..\src\video\SDL_stb_c.h">
       <Filter>video</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\SDL_yuv_c.h">
+    <ClInclude Include="..\..\src\video\SDL_video_unsupported.h">
       <Filter>video</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\SDL_vulkan_internal.h">
+      <Filter>video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\SDL_yuv_c.h">
       <Filter>video</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\dummy\SDL_nullevents_c.h">
@@ -1137,6 +1182,9 @@
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c">
       <Filter>loadso\windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\misc\SDL_libusb.c">
+      <Filter>misc</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\misc\SDL_url.c">
       <Filter>misc</Filter>
     </ClCompile>
@@ -1185,6 +1233,9 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_8bitdo.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_flydigi.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_combined.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
@@ -1212,6 +1263,9 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_shield.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_sinput.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_stadia.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
@@ -1227,6 +1281,9 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch2.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_wii.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
@@ -1240,6 +1297,9 @@
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_lg4ff.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_zuiki.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c">
@@ -1349,9 +1409,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\video\dummy\SDL_nullvideo.c">
       <Filter>video\dummy</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\video\windows\SDL_surface_utils.c">
-      <Filter>video\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\windows\SDL_windowsclipboard.c">
       <Filter>video\windows</Filter>

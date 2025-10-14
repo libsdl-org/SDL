@@ -42,6 +42,13 @@
 #define DEFAULT_VULKAN "libvulkan.so.1"
 #endif
 
+SDL_ELF_NOTE_DLOPEN(
+    "kmsdrm-vulkan",
+    "Support for Vulkan on KMSDRM",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_VULKAN
+);
+
 bool KMSDRM_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     VkExtensionProperties *extensions = NULL;
@@ -140,8 +147,7 @@ void KMSDRM_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 // members of the VkInstanceCreateInfo struct passed to
 // vkCreateInstance().
 /*********************************************************************/
-char const* const* KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                             Uint32 *count)
+char const * const *KMSDRM_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForKMSDRM[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_DISPLAY_EXTENSION_NAME

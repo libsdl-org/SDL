@@ -168,13 +168,13 @@ bool SDL_DateTimeToTime(const SDL_DateTime *dt, SDL_Time *ticks)
     static const Sint64 min_seconds = SDL_NS_TO_SECONDS(SDL_MIN_TIME) + 1;
     bool result = true;
 
-    if (!dt) {
+    CHECK_PARAM(!dt) {
         return SDL_InvalidParamError("dt");
     }
-    if (!ticks) {
+    CHECK_PARAM(!ticks) {
         return SDL_InvalidParamError("ticks");
     }
-    if (!SDL_DateTimeIsValid(dt)) {
+    CHECK_PARAM(!SDL_DateTimeIsValid(dt)) {
         // The validation function sets the error string.
         return false;
     }

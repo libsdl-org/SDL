@@ -39,6 +39,20 @@
 #define DEFAULT_X11_XCB "libX11-xcb.so.1"
 #endif
 
+SDL_ELF_NOTE_DLOPEN(
+    "x11-vulkan",
+    "Support for vulkan on X11",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_VULKAN
+);
+
+SDL_ELF_NOTE_DLOPEN(
+    "x11-vulkan",
+    "Support for vulkan on X11",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_X11_XCB
+);
+
 /*
 typedef uint32_t xcb_window_t;
 typedef uint32_t xcb_visualid_t;
@@ -144,8 +158,7 @@ void X11_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
     }
 }
 
-char const* const* X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this,
-                                          Uint32 *count)
+char const * const *X11_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     SDL_VideoData *videoData = _this->internal;
     if (videoData->vulkan_xlib_xcb_library) {

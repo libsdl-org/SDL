@@ -109,6 +109,13 @@ static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, 
 
 #ifdef SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC
 
+SDL_ELF_NOTE_DLOPEN(
+    "camera-libpipewire",
+    "Support for camera through libpipewire",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC
+);
+
 static const char *pipewire_library = SDL_CAMERA_DRIVER_PIPEWIRE_DYNAMIC;
 static SDL_SharedObject *pipewire_handle = NULL;
 
@@ -838,7 +845,7 @@ static void node_event_info(void *object, const struct pw_node_info *info)
             if (!(info->params[i].flags & SPA_PARAM_INFO_READ))
                 continue;
 
-            res = pw_node_enum_params((struct pw_node*)g->proxy,
+            res = pw_node_enum_params((struct pw_node *)g->proxy,
                         ++SPA_PARAMS_INFO_SEQ(info->params[i]), id, 0, -1, NULL);
             if (SPA_RESULT_IS_ASYNC(res))
                 SPA_PARAMS_INFO_SEQ(info->params[i]) = res;

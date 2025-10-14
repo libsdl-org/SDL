@@ -31,8 +31,8 @@ typedef struct {
     Uint64 tick_acc;
     SDL_Window* window;
     SDL_Renderer* renderer;
-    SDL_Surface* screen; 
-    SDL_Texture* screentex;
+    SDL_Palette* palette;
+    SDL_Texture* texture;
     SDL_Texture* rendertarget; /* we need this render target for text to look good */
     SDL_AudioStream* audiostream;
     char status[SCREEN_W / 8];
@@ -130,16 +130,12 @@ static void print(BytePusher* vm, int x, int y, const char* str) {
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
     BytePusher* vm;
-    SDL_Palette* palette;
     SDL_Rect usable_bounds;
     SDL_AudioSpec audiospec = { SDL_AUDIO_S8, 1, SAMPLES_PER_FRAME * FRAMES_PER_SECOND };
     SDL_DisplayID primary_display;
-    SDL_PropertiesID texprops;
     int zoom = 2;
     int i;
     Uint8 r, g, b;
-    (void)argc;
-    (void)argv;
 
     if (!SDL_SetAppMetadata("SDL 3 BytePusher", "1.0", "com.example.SDL3BytePusher")) {
         return SDL_APP_FAILURE;
@@ -185,13 +181,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         return SDL_APP_FAILURE;
     }
 
-    if (!(vm->screen = SDL_CreateSurfaceFrom(
-        SCREEN_W, SCREEN_H, SDL_PIXELFORMAT_INDEX8, vm->ram, SCREEN_W
-    ))) {
-        return SDL_APP_FAILURE;
-    }
-
-    if (!(palette = SDL_CreateSurfacePalette(vm->screen))) {
+    if (!(vm->palette = SDL_CreatePalette(256))) {
         return SDL_APP_FAILURE;
     }
     i = 0;
@@ -199,27 +189,22 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
         for (g = 0; g < 6; ++g) {
             for (b = 0; b < 6; ++b, ++i) {
                 SDL_Color color = { (Uint8)(r * 0x33), (Uint8)(g * 0x33), (Uint8)(b * 0x33), SDL_ALPHA_OPAQUE };
-                palette->colors[i] = color;
+                vm->palette->colors[i] = color;
             }
         }
     }
     for (; i < 256; ++i) {
         SDL_Color color = { 0, 0, 0, SDL_ALPHA_OPAQUE };
-        palette->colors[i] = color;
+        vm->palette->colors[i] = color;
     }
 
-    texprops = SDL_CreateProperties();
-    SDL_SetNumberProperty(texprops, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STREAMING);
-    SDL_SetNumberProperty(texprops, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, SCREEN_W);
-    SDL_SetNumberProperty(texprops, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, SCREEN_H);
-    vm->screentex = SDL_CreateTextureWithProperties(vm->renderer, texprops);
-    SDL_SetNumberProperty(texprops, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_TARGET);
-    vm->rendertarget = SDL_CreateTextureWithProperties(vm->renderer, texprops);
-    SDL_DestroyProperties(texprops);
-    if (!vm->screentex || !vm->rendertarget) {
+    vm->texture = SDL_CreateTexture(vm->renderer, SDL_PIXELFORMAT_INDEX8, SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
+    vm->rendertarget = SDL_CreateTexture(vm->renderer, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_TARGET, SCREEN_W, SCREEN_H);
+    if (!vm->texture || !vm->rendertarget) {
         return SDL_APP_FAILURE;
     }
-    SDL_SetTextureScaleMode(vm->screentex, SDL_SCALEMODE_NEAREST);
+    SDL_SetTexturePalette(vm->texture, vm->palette);
+    SDL_SetTextureScaleMode(vm->texture, SDL_SCALEMODE_NEAREST);
     SDL_SetTextureScaleMode(vm->rendertarget, SDL_SCALEMODE_NEAREST);
 
     if (!(vm->audiostream = SDL_OpenAudioDeviceStream(
@@ -234,6 +219,10 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) {
 
     vm->last_tick = SDL_GetTicksNS();
     vm->tick_acc = NS_PER_SECOND;
+
+    if (argc > 1) {
+        load_file(vm, argv[1]);
+    }
 
     return SDL_APP_CONTINUE;
 }
@@ -283,18 +272,11 @@ SDL_AppResult SDL_AppIterate(void* appstate) {
     }
 
     if (updated) {
-        SDL_Surface *tex;
+        const void *pixels = &vm->ram[(Uint32)vm->ram[IO_SCREEN_PAGE] << 16];
+        SDL_UpdateTexture(vm->texture, NULL, pixels, SCREEN_W);
 
         SDL_SetRenderTarget(vm->renderer, vm->rendertarget);
-
-        if (!SDL_LockTextureToSurface(vm->screentex, NULL, &tex)) {
-            return SDL_APP_FAILURE;
-        }
-        vm->screen->pixels = &vm->ram[(Uint32)vm->ram[IO_SCREEN_PAGE] << 16];
-        SDL_BlitSurface(vm->screen, NULL, tex, NULL);
-        SDL_UnlockTexture(vm->screentex);
-
-        SDL_RenderTexture(vm->renderer, vm->screentex, NULL, NULL);
+        SDL_RenderTexture(vm->renderer, vm->texture, NULL, NULL);
 
         if (vm->display_help) {
             print(vm, 4, 4, "Drop a BytePusher file in this");
@@ -406,8 +388,8 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result) {
         BytePusher* vm = (BytePusher*)appstate;
         SDL_DestroyAudioStream(vm->audiostream);
         SDL_DestroyTexture(vm->rendertarget);
-        SDL_DestroyTexture(vm->screentex);
-        SDL_DestroySurface(vm->screen);
+        SDL_DestroyTexture(vm->texture);
+        SDL_DestroyPalette(vm->palette);
         SDL_DestroyRenderer(vm->renderer);
         SDL_DestroyWindow(vm->window);
         SDL_free(vm);

@@ -213,6 +213,10 @@ static void loop(void *arg)
             break;
 
         case SDL_EVENT_KEY_DOWN:
+            if (event.key.scancode == SDL_SCANCODE_ESCAPE) {
+                loop_data->done = true;
+                break;
+            }
             if (event.key.key == SDLK_C) {
                 int x, y, w, h;
                 SDL_GetWindowPosition(window, &x, &y);

@@ -205,16 +205,6 @@ int SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name
     return index;
 }
 
-// Set or update the name of a touch.
-void SDL_SetTouchName(SDL_TouchID id, const char *name)
-{
-    SDL_Touch *touch = SDL_GetTouch(id);
-    if (touch) {
-        SDL_free(touch->name);
-        touch->name = SDL_strdup(name ? name : "");
-    }
-}
-
 static bool SDL_AddFinger(SDL_Touch *touch, SDL_FingerID fingerid, float x, float y, float pressure)
 {
     SDL_Finger *finger;
@@ -510,3 +500,19 @@ void SDL_QuitTouch(void)
     SDL_free(SDL_touchDevices);
     SDL_touchDevices = NULL;
 }
+
+int SDL_SendPinch(SDL_EventType type, Uint64 timestamp, SDL_Window *window, float scale)
+{
+    /* Post the event, if desired */
+    int posted = 0;
+    if (SDL_EventEnabled(type)) {
+        SDL_Event event;
+        event.type = type;
+        event.common.timestamp = timestamp;
+        event.pinch.scale = scale;
+        event.pinch.windowID = window ? SDL_GetWindowID(window) : 0;
+        posted = (SDL_PushEvent(&event) > 0);
+    }
+    return posted;
+}
+

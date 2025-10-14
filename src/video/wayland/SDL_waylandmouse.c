@@ -38,6 +38,7 @@
 #include "cursor-shape-v1-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "viewporter-client-protocol.h"
+#include "pointer-warp-v1-client-protocol.h"
 
 #include "../../SDL_hints_c.h"
 
@@ -832,43 +833,52 @@ void Wayland_SeatWarpMouse(SDL_WaylandSeat *seat, SDL_WindowData *window, float 
     SDL_VideoData *d = vd->internal;
 
     if (seat->pointer.wl_pointer) {
-        bool toggle_lock = !seat->pointer.locked_pointer;
-        bool update_grabs = false;
+        if (d->wp_pointer_warp_v1) {
+            // It's a protocol error to warp the pointer outside of the surface, so clamp the position.
+            const wl_fixed_t f_x = wl_fixed_from_double(SDL_clamp(x / window->pointer_scale.x, 0, window->current.logical_width));
+            const wl_fixed_t f_y = wl_fixed_from_double(SDL_clamp(y / window->pointer_scale.y, 0, window->current.logical_height));
+            wp_pointer_warp_v1_warp_pointer(d->wp_pointer_warp_v1, window->surface, seat->pointer.wl_pointer, f_x, f_y, seat->pointer.enter_serial);
+        } else {
+            bool update_grabs = false;
 
-        /* The pointer confinement protocol allows setting a hint to warp the pointer,
-         * but only when the pointer is locked.
-         *
-         * Lock the pointer, set the position hint, unlock, and hope for the best.
-         */
-        if (toggle_lock) {
+            // Pointers can only have one confinement type active on a surface at one time.
             if (seat->pointer.confined_pointer) {
                 zwp_confined_pointer_v1_destroy(seat->pointer.confined_pointer);
                 seat->pointer.confined_pointer = NULL;
                 update_grabs = true;
             }
-            seat->pointer.locked_pointer = zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints, window->surface,
-                                                                                   seat->pointer.wl_pointer, NULL,
-                                                                                   ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
-        }
+            if (seat->pointer.locked_pointer) {
+                zwp_locked_pointer_v1_destroy(seat->pointer.locked_pointer);
+                seat->pointer.locked_pointer = NULL;
+                update_grabs = true;
+            }
 
-        const wl_fixed_t f_x = wl_fixed_from_double(x / window->pointer_scale.x);
-        const wl_fixed_t f_y = wl_fixed_from_double(y / window->pointer_scale.y);
-        zwp_locked_pointer_v1_set_cursor_position_hint(seat->pointer.locked_pointer, f_x, f_y);
-        wl_surface_commit(window->surface);
+            /* The pointer confinement protocol allows setting a hint to warp the pointer,
+             * but only when the pointer is locked.
+             *
+             * Lock the pointer, set the position hint, unlock, and hope for the best.
+             */
+            struct zwp_locked_pointer_v1 *warp_lock =
+                zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints, window->surface,
+                                                        seat->pointer.wl_pointer, NULL,
+                                                        ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
 
-        if (toggle_lock) {
-            zwp_locked_pointer_v1_destroy(seat->pointer.locked_pointer);
-            seat->pointer.locked_pointer = NULL;
+            const wl_fixed_t f_x = wl_fixed_from_double(x / window->pointer_scale.x);
+            const wl_fixed_t f_y = wl_fixed_from_double(y / window->pointer_scale.y);
+            zwp_locked_pointer_v1_set_cursor_position_hint(warp_lock, f_x, f_y);
+            wl_surface_commit(window->surface);
+
+            zwp_locked_pointer_v1_destroy(warp_lock);
 
             if (update_grabs) {
                 Wayland_SeatUpdatePointerGrab(seat);
             }
-        }
 
-        /* NOTE: There is a pending warp event under discussion that should replace this when available.
-         * https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/340
-         */
-        SDL_SendMouseMotion(0, window->sdlwindow, seat->pointer.sdl_id, false, x, y);
+            /* NOTE: There is a pending warp event under discussion that should replace this when available.
+             * https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/340
+             */
+            SDL_SendMouseMotion(0, window->sdlwindow, seat->pointer.sdl_id, false, x, y);
+        }
     }
 }
 
@@ -879,14 +889,14 @@ static bool Wayland_WarpMouseRelative(SDL_Window *window, float x, float y)
     SDL_WindowData *wind = window->internal;
     SDL_WaylandSeat *seat;
 
-    if (d->pointer_constraints) {
+    if (d->wp_pointer_warp_v1 || d->pointer_constraints) {
         wl_list_for_each (seat, &d->seat_list, link) {
             if (wind == seat->pointer.focus) {
                 Wayland_SeatWarpMouse(seat, wind, x, y);
             }
         }
     } else {
-        return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required zwp_pointer_confinement_v1 protocol");
+        return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required wp_pointer_warp_v1 or zwp_pointer_confinement_v1 protocol");
     }
 
     return true;
@@ -898,7 +908,7 @@ static bool Wayland_WarpMouseGlobal(float x, float y)
     SDL_VideoData *d = vd->internal;
     SDL_WaylandSeat *seat;
 
-    if (d->pointer_constraints) {
+    if (d->wp_pointer_warp_v1 || d->pointer_constraints) {
         wl_list_for_each (seat, &d->seat_list, link) {
             SDL_WindowData *wind = seat->pointer.focus ? seat->pointer.focus : seat->keyboard.focus;
 
@@ -919,7 +929,7 @@ static bool Wayland_WarpMouseGlobal(float x, float y)
             }
         }
     } else {
-        return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required zwp_pointer_confinement_v1 protocol");
+        return SDL_SetError("wayland: mouse warp failed; compositor lacks support for the required wp_pointer_warp_v1 or zwp_pointer_confinement_v1 protocol");
     }
 
     return true;
@@ -1040,8 +1050,6 @@ void Wayland_RecreateCursors(void)
 void Wayland_InitMouse(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *d = vd->internal;
 
     mouse->CreateCursor = Wayland_CreateCursor;
     mouse->CreateSystemCursor = Wayland_CreateSystemCursor;
@@ -1090,7 +1098,10 @@ void Wayland_InitMouse(void)
     }
 
 #ifdef SDL_USE_LIBDBUS
-    /* The DBus cursor properties are only needed when manually loading themes and cursors.
+    SDL_VideoDevice *vd = SDL_GetVideoDevice();
+    SDL_VideoData *d = vd->internal;
+
+    /* The D-Bus cursor properties are only needed when manually loading themes and system cursors.
      * If the cursor shape protocol is present, the compositor will handle it internally.
      */
     if (!d->cursor_shape_manager) {

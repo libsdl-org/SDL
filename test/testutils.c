@@ -63,7 +63,7 @@ char *GetResourceFilename(const char *user_specified, const char *def)
 }
 
 /**
- * Load the .bmp file whose name is file, from the SDL_GetBasePath() if
+ * Load the .png file whose name is file, from the SDL_GetBasePath() if
  * possible or the current working directory if not.
  *
  * If transparent is true, set the transparent colour from the top left pixel.
@@ -84,7 +84,7 @@ SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transpar
         file = path;
     }
 
-    temp = SDL_LoadBMP(file);
+    temp = SDL_strstr(file, ".png") ? SDL_LoadPNG(file) : SDL_LoadBMP(file);
     if (!temp) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
     } else {

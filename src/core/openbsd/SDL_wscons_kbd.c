@@ -433,7 +433,7 @@ static SDL_WSCONS_input_data *SDL_WSCONS_Init_Keyboard(const char *dev)
     }
 
     input->keyboardID = SDL_GetNextObjectID();
-    SDL_AddKeyboard(input->keyboardID, NULL, false);
+    SDL_AddKeyboard(input->keyboardID, NULL);
 
     input->keymap.map = SDL_calloc(KS_NUMKEYCODES, sizeof(struct wscons_keymap));
     if (!input->keymap.map) {

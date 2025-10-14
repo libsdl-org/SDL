@@ -411,6 +411,19 @@ bool Cocoa_IsWindowInFullscreenSpace(SDL_Window *window)
     }
 }
 
+bool Cocoa_IsWindowInFullscreenSpaceTransition(SDL_Window *window)
+{
+    @autoreleasepool {
+        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+
+        if ([data.listener isInFullscreenSpaceTransition]) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
 bool Cocoa_IsWindowZoomed(SDL_Window *window)
 {
     SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
@@ -430,6 +443,18 @@ bool Cocoa_IsWindowZoomed(SDL_Window *window)
         }
     }
     return zoomed;
+}
+
+bool Cocoa_IsShowingModalDialog(SDL_Window *window)
+{
+    SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+    return data.has_modal_dialog;
+}
+
+void Cocoa_SetWindowHasModalDialog(SDL_Window *window, bool has_modal)
+{
+    SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
+    data.has_modal_dialog = has_modal;
 }
 
 typedef enum CocoaMenuVisibility
@@ -1187,21 +1212,27 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
     ScheduleContextUpdates(_data);
 
-    /* isZoomed always returns true if the window is not resizable
-     * and fullscreen windows are considered zoomed.
+    /* The OS can resize the window automatically if the display density
+     *  changes while the window is miniaturized or hidden.
      */
-    if ((window->flags & SDL_WINDOW_RESIZABLE) && [nswindow isZoomed] &&
-        !(window->flags & SDL_WINDOW_FULLSCREEN) && ![self isInFullscreenSpace]) {
-        zoomed = YES;
-    } else {
-        zoomed = NO;
-    }
-    if (!zoomed) {
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
-    } else {
-        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
-        if ([self windowOperationIsPending:PENDING_OPERATION_MINIMIZE]) {
-            [nswindow miniaturize:nil];
+    if ([nswindow isVisible])
+    {
+        /* isZoomed always returns true if the window is not resizable
+         * and fullscreen windows are considered zoomed.
+         */
+        if ((window->flags & SDL_WINDOW_RESIZABLE) && [nswindow isZoomed] &&
+            !(window->flags & SDL_WINDOW_FULLSCREEN) && ![self isInFullscreenSpace]) {
+            zoomed = YES;
+        } else {
+            zoomed = NO;
+        }
+        if (!zoomed) {
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
+        } else {
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MAXIMIZED, 0, 0);
+            if ([self windowOperationIsPending:PENDING_OPERATION_MINIMIZE]) {
+                [nswindow miniaturize:nil];
+            }
         }
     }
 
@@ -1831,6 +1862,19 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     x = point.x;
     y = (window->h - point.y);
 
+    // On macOS 26 if you move away from a space and then back, mouse motion events will have incorrect
+    // values at the top of the screen. The global mouse position query is still correct, so we'll fall
+    // back to that until this is fixed by Apple. Mouse button events are interestingly not affected.
+    if (@available(macOS 26.0, *)) {
+        if ([_data.listener isInFullscreenSpace]) {
+            int posx = 0, posy = 0;
+            SDL_GetWindowPosition(window, &posx, &posy);
+            SDL_GetGlobalMouseState(&x, &y);
+            x -= posx;
+            y -= posy;
+        }
+    }
+
     if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_13_2) {
         // Mouse grab is taken care of by the confinement rect
     } else {
@@ -1946,6 +1990,27 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     [self handleTouches:NSTouchPhaseCancelled withEvent:theEvent];
 }
 
+- (void)magnifyWithEvent:(NSEvent *)theEvent
+{
+    switch ([theEvent phase]) {
+    case NSEventPhaseBegan:
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0);
+        break;
+    case NSEventPhaseChanged:
+        {
+            CGFloat scale = 1.0f + [theEvent magnification];
+            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, scale);
+        }
+        break;
+    case NSEventPhaseEnded:
+    case NSEventPhaseCancelled:
+        SDL_SendPinch(SDL_EVENT_PINCH_END, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0);
+        break;
+    default:
+        break;
+    }
+}
+
 - (void)handleTouches:(NSTouchPhase)phase withEvent:(NSEvent *)theEvent
 {
     NSSet *touches = [theEvent touchesMatchingPhase:phase inView:nil];
@@ -2019,6 +2084,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 @interface SDL3View : NSView
 {
     SDL_Window *_sdlWindow;
+    NSTrackingArea *_trackingArea;   // only used on macOS <= 11.0
 }
 
 - (void)setSDLWindow:(SDL_Window *)window;
@@ -2030,6 +2096,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent;
 - (BOOL)wantsUpdateLayer;
 - (void)updateLayer;
+- (void)updateTrackingAreas;
 @end
 
 @implementation SDL3View
@@ -2110,6 +2177,20 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     }
 }
 
+// NSTrackingArea is how Cocoa tells you when the mouse cursor has entered or
+//  left certain regions. We put one over our entire window so we know when
+//  it has "mouse focus."
+- (void)updateTrackingAreas
+{
+    [super updateTrackingAreas];
+
+    SDL_CocoaWindowData *windata = (__bridge SDL_CocoaWindowData *)_sdlWindow->internal;
+    if (_trackingArea) {
+        [self removeTrackingArea:_trackingArea];
+    }
+    _trackingArea = [[NSTrackingArea alloc] initWithRect:[self bounds] options:NSTrackingMouseEnteredAndExited|NSTrackingActiveAlways owner:windata.listener userInfo:nil];
+    [self addTrackingArea:_trackingArea];
+}
 @end
 
 static void Cocoa_UpdateMouseFocus()

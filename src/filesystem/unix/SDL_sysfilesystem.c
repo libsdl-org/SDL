@@ -78,7 +78,7 @@ static char *search_path_for_binary(const char *bin)
     char *envr;
     size_t alloc_size;
     char *exe = NULL;
-    char *start = envr;
+    char *start;
     char *ptr;
 
     if (!envr_real) {
@@ -86,7 +86,7 @@ static char *search_path_for_binary(const char *bin)
         return NULL;
     }
 
-    envr = SDL_strdup(envr_real);
+    start = envr = SDL_strdup(envr_real);
     if (!envr) {
         return NULL;
     }
@@ -269,15 +269,6 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     const char *append;
     char *result = NULL;
     char *ptr = NULL;
-    size_t len = 0;
-
-    if (!app) {
-        SDL_InvalidParamError("app");
-        return NULL;
-    }
-    if (!org) {
-        org = "";
-    }
 
     if (!envr) {
         // You end up with "$HOME/.local/share/Game Name 2"
@@ -292,7 +283,7 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
         append = "/";
     }
 
-    len = SDL_strlen(envr);
+    size_t len = SDL_strlen(envr);
     if (envr[len - 1] == '/') {
         append += 1;
     }
@@ -377,7 +368,7 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
   if (!config_home || config_home[0] == 0)
     {
       l = SDL_strlen (home_dir) + SDL_strlen ("/.config/user-dirs.dirs") + 1;
-      config_file = (char*) SDL_malloc (l);
+      config_file = (char *)SDL_malloc (l);
       if (!config_file)
         goto error;
 
@@ -387,7 +378,7 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
   else
     {
       l = SDL_strlen (config_home) + SDL_strlen ("/user-dirs.dirs") + 1;
-      config_file = (char*) SDL_malloc (l);
+      config_file = (char *)SDL_malloc (l);
       if (!config_file)
         goto error;
 
@@ -449,7 +440,7 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
       if (relative)
         {
           l = SDL_strlen (home_dir) + 1 + SDL_strlen (p) + 1;
-          user_dir = (char*) SDL_malloc (l);
+          user_dir = (char *)SDL_malloc (l);
           if (!user_dir)
             goto error2;
 
@@ -458,7 +449,7 @@ static char *xdg_user_dir_lookup_with_fallback (const char *type, const char *fa
         }
       else
         {
-          user_dir = (char*) SDL_malloc (SDL_strlen (p) + 1);
+          user_dir = (char *)SDL_malloc (SDL_strlen (p) + 1);
           if (!user_dir)
             goto error2;
 
@@ -503,7 +494,7 @@ static char *xdg_user_dir_lookup (const char *type)
     // Special case desktop for historical compatibility
     if (SDL_strcmp(type, "DESKTOP") == 0) {
         size_t length = SDL_strlen(home_dir) + SDL_strlen("/Desktop") + 1;
-        user_dir = (char*) SDL_malloc(length);
+        user_dir = (char *)SDL_malloc(length);
         if (!user_dir)
             return NULL;
 

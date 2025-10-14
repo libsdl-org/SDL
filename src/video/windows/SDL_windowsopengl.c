@@ -489,7 +489,9 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
     }
 
     // Check for WGL_EXT_create_context_es2_profile
-    if (HasExtension("WGL_EXT_create_context_es2_profile", extensions)) {
+    // see if we can get at OpenGL ES profiles even if EGL isn't available.
+    _this->gl_data->HAS_WGL_EXT_create_context_es2_profile = HasExtension("WGL_EXT_create_context_es2_profile", extensions);
+    if (_this->gl_data->HAS_WGL_EXT_create_context_es2_profile) {
         SDL_GL_DeduceMaxSupportedESProfile(
             &_this->gl_data->es_profile_max_supported_version.major,
             &_this->gl_data->es_profile_max_supported_version.minor);
@@ -509,6 +511,10 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
     if (HasExtension("WGL_ARB_create_context_no_error", extensions)) {
         _this->gl_data->HAS_WGL_ARB_create_context_no_error = true;
     }
+
+    /* Check for WGL_ARB_pixel_format_float */
+    _this->gl_data->HAS_WGL_ARB_pixel_format_float =
+        HasExtension("WGL_ARB_pixel_format_float", extensions);
 
     _this->gl_data->wglMakeCurrent(hdc, NULL);
     _this->gl_data->wglDeleteContext(hglrc);
@@ -640,7 +646,7 @@ static bool WIN_GL_SetupWindowInternal(SDL_VideoDevice *_this, SDL_Window *windo
         *iAttr++ = _this->gl_config.multisamplesamples;
     }
 
-    if (_this->gl_config.floatbuffers) {
+    if (_this->gl_data->HAS_WGL_ARB_pixel_format_float && _this->gl_config.floatbuffers) {
         *iAttr++ = WGL_PIXEL_TYPE_ARB;
         *iAttr++ = WGL_TYPE_RGBA_FLOAT_ARB;
     }
@@ -700,7 +706,11 @@ bool WIN_GL_UseEGL(SDL_VideoDevice *_this)
     SDL_assert(_this->gl_data != NULL);
     SDL_assert(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES);
 
-    return SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, false) || _this->gl_config.major_version == 1 || _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major || (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor); // No WGL extension for OpenGL ES 1.x profiles.
+    // (we don't need EGL to do OpenGL ES if HAS_WGL_EXT_create_context_es2_profile exists.)
+    return !_this->gl_data->HAS_WGL_EXT_create_context_es2_profile ||
+           SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, false) ||
+           _this->gl_config.major_version > _this->gl_data->es_profile_max_supported_version.major ||
+           (_this->gl_config.major_version == _this->gl_data->es_profile_max_supported_version.major && _this->gl_config.minor_version > _this->gl_data->es_profile_max_supported_version.minor);
 }
 
 SDL_GLContext WIN_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
@@ -824,6 +834,9 @@ SDL_GLContext WIN_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         WIN_GL_DestroyContext(_this, (SDL_GLContext)context);
         return NULL;
     }
+
+    _this->gl_config.HAS_GL_ARB_color_buffer_float =
+        SDL_GL_ExtensionSupported("GL_ARB_color_buffer_float");
 
     return (SDL_GLContext)context;
 }

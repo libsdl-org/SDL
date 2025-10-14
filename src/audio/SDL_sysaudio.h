@@ -112,7 +112,7 @@ extern void SDL_AudioThreadFinalize(SDL_AudioDevice *device);
 
 extern void ConvertAudioToFloat(float *dst, const void *src, int num_samples, SDL_AudioFormat src_fmt);
 extern void ConvertAudioFromFloat(void *dst, const float *src, int num_samples, SDL_AudioFormat dst_fmt);
-extern void ConvertAudioSwapEndian(void* dst, const void* src, int num_samples, int bitsize);
+extern void ConvertAudioSwapEndian(void *dst, const void *src, int num_samples, int bitsize);
 
 extern bool SDL_ChannelMapIsDefault(const int *map, int channels);
 extern bool SDL_ChannelMapIsBogus(const int *map, int channels);
@@ -121,7 +121,7 @@ extern bool SDL_ChannelMapIsBogus(const int *map, int channels);
 extern void ConvertAudio(int num_frames,
                          const void *src, SDL_AudioFormat src_format, int src_channels, const int *src_map,
                          void *dst, SDL_AudioFormat dst_format, int dst_channels, const int *dst_map,
-                         void* scratch, float gain);
+                         void *scratch, float gain);
 
 // Compare two SDL_AudioSpecs, return true if they match exactly.
 // Using SDL_memcmp directly isn't safe, since potential padding might not be initialized.
@@ -183,8 +183,9 @@ typedef struct SDL_AudioDriver
     const char *name;  // The name of this audio driver
     const char *desc;  // The description of this audio driver
     SDL_AudioDriverImpl impl; // the backend's interface
-    SDL_RWLock *device_hash_lock;  // A rwlock that protects `device_hash`
-    SDL_HashTable *device_hash;  // the collection of currently-available audio devices (recording, playback, logical and physical!)
+    SDL_RWLock *subsystem_rwlock;  // A rwlock that protects several things in the audio subsystem (device hashtables, etc).
+    SDL_HashTable *device_hash_physical;  // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_AudioDevice*.
+    SDL_HashTable *device_hash_logical;  // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_LogicalAudioDevice*.
     SDL_AudioStream *existing_streams;  // a list of all existing SDL_AudioStreams.
     SDL_AudioDeviceID default_playback_device_id;
     SDL_AudioDeviceID default_recording_device_id;
@@ -201,7 +202,7 @@ struct SDL_AudioQueue; // forward decl.
 
 struct SDL_AudioStream
 {
-    SDL_Mutex* lock;
+    SDL_Mutex *lock;
 
     SDL_PropertiesID props;
 
@@ -217,7 +218,7 @@ struct SDL_AudioStream
     float freq_ratio;
     float gain;
 
-    struct SDL_AudioQueue* queue;
+    struct SDL_AudioQueue *queue;
 
     SDL_AudioSpec input_spec; // The spec of input data currently being processed
     int *input_chmap;
@@ -263,13 +264,6 @@ struct SDL_LogicalAudioDevice
 
     // true if device was opened with SDL_OpenAudioDeviceStream (so it forbids binding changes, etc).
     bool simplified;
-
-    // If non-NULL, callback into the app that alerts it to start/end of device iteration.
-    SDL_AudioIterationCallback iteration_start;
-    SDL_AudioIterationCallback iteration_end;
-
-    // App-supplied pointer for iteration callbacks.
-    void *iteration_userdata;
 
     // If non-NULL, callback into the app that lets them access the final postmix buffer.
     SDL_AudioPostmixCallback postmix;
@@ -393,6 +387,7 @@ extern AudioBootStrap PS2AUDIO_bootstrap;
 extern AudioBootStrap PSPAUDIO_bootstrap;
 extern AudioBootStrap VITAAUD_bootstrap;
 extern AudioBootStrap N3DSAUDIO_bootstrap;
+extern AudioBootStrap NGAGEAUDIO_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 extern AudioBootStrap QSAAUDIO_bootstrap;
 

@@ -65,9 +65,6 @@ static void X11_DeleteDevice(SDL_VideoDevice *device)
         X11_XCloseDisplay(data->request_display);
     }
     SDL_free(data->windowlist);
-    if (device->wakeup_lock) {
-        SDL_DestroyMutex(device->wakeup_lock);
-    }
     SDL_free(device->internal);
     SDL_free(device);
 
@@ -78,23 +75,6 @@ static bool X11_IsXWayland(Display *d)
 {
     int opcode, event, error;
     return X11_XQueryExtension(d, "XWAYLAND", &opcode, &event, &error) == True;
-}
-
-static bool X11_CheckCurrentDesktop(const char *name)
-{
-    SDL_Environment *env = SDL_GetEnvironment();
-
-    const char *desktopVar = SDL_GetEnvironmentVariable(env, "DESKTOP_SESSION");
-    if (desktopVar && SDL_strcasecmp(desktopVar, name) == 0) {
-        return true;
-    }
-
-    desktopVar = SDL_GetEnvironmentVariable(env, "XDG_CURRENT_DESKTOP");
-    if (desktopVar && SDL_strcasestr(desktopVar, name)) {
-        return true;
-    }
-
-    return false;
 }
 
 static SDL_VideoDevice *X11_CreateDevice(void)
@@ -147,8 +127,6 @@ static SDL_VideoDevice *X11_CreateDevice(void)
         SDL_X11_UnloadSymbols();
         return NULL;
     }
-
-    device->wakeup_lock = SDL_CreateMutex();
 
 #ifdef X11_DEBUG
     X11_XSynchronize(data->display, True);
@@ -260,7 +238,6 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->HasScreenKeyboardSupport = X11_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = X11_ShowScreenKeyboard;
     device->HideScreenKeyboard = X11_HideScreenKeyboard;
-    device->IsScreenKeyboardShown = X11_IsScreenKeyboardShown;
 
     device->free = X11_DeleteDevice;
 
@@ -280,19 +257,12 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
     device->device_caps = VIDEO_DEVICE_CAPS_HAS_POPUP_WINDOW_SUPPORT;
 
-    /* Openbox doesn't send the new window dimensions when entering fullscreen, so the events must be synthesized.
-     * This is otherwise not wanted, as it can break fullscreen window positioning on multi-monitor configurations.
-     */
-    if (!X11_CheckCurrentDesktop("openbox")) {
-        device->device_caps |= VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
-    }
-
     data->is_xwayland = X11_IsXWayland(x11_display);
     if (data->is_xwayland) {
         SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "Detected XWayland");
 
         device->device_caps |= VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED |
-                               VIDEO_DEVICE_CAPS_DISABLE_MOUSE_WARP_ON_FULLSCREEN_TRANSITIONS;
+                               VIDEO_DEVICE_CAPS_SENDS_FULLSCREEN_DIMENSIONS;
     }
 
     return device;
@@ -423,6 +393,7 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
     GET_ATOM(SDL_SELECTION);
     GET_ATOM(TARGETS);
     GET_ATOM(SDL_FORMATS);
+    GET_ATOM(RESOURCE_MANAGER);
     GET_ATOM(XdndAware);
     GET_ATOM(XdndEnter);
     GET_ATOM(XdndLeave);
@@ -444,8 +415,8 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
 
     if (!X11_InitXinput2(_this)) {
         // Assume a mouse and keyboard are attached
-        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL, false);
-        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL, false);
+        SDL_AddKeyboard(SDL_DEFAULT_KEYBOARD_ID, NULL);
+        SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL);
     }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XFIXES
@@ -475,6 +446,10 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
 
     X11_InitPen(_this);
 
+    // Request currently available mime-types in the clipboard.
+    X11_XConvertSelection(data->display, data->atoms.CLIPBOARD, data->atoms.TARGETS,
+            data->atoms.SDL_FORMATS, GetWindow(_this), CurrentTime);
+
     return true;
 }
 
@@ -496,6 +471,7 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     }
 #endif
 
+    X11_QuitXinput2(_this);
     X11_QuitModes(_this);
     X11_QuitKeyboard(_this);
     X11_QuitMouse(_this);

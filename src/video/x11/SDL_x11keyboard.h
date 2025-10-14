@@ -27,6 +27,7 @@ extern bool X11_InitKeyboard(SDL_VideoDevice *_this);
 extern void X11_UpdateKeymap(SDL_VideoDevice *_this, bool send_event);
 extern void X11_QuitKeyboard(SDL_VideoDevice *_this);
 extern void X11_CreateInputContext(SDL_WindowData *data);
+extern void X11_DestroyInputContext(SDL_WindowData *data);
 extern void X11_ClearComposition(SDL_WindowData *data);
 extern bool X11_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 extern bool X11_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
@@ -34,7 +35,5 @@ extern bool X11_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool X11_HasScreenKeyboardSupport(SDL_VideoDevice *_this);
 extern void X11_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 extern void X11_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
-extern bool X11_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window);
-extern KeySym X11_KeyCodeToSym(SDL_VideoDevice *_this, KeyCode, unsigned char group, unsigned int mod_mask);
 
 #endif // SDL_x11keyboard_h_

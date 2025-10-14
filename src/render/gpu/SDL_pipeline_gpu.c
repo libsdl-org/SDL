@@ -87,6 +87,7 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     pci.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE;
     pci.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
     pci.rasterizer_state.front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE;
+    pci.rasterizer_state.enable_depth_clip = true;
 
     SDL_GPUVertexBufferDescription vertex_buffer_desc;
     SDL_zero(vertex_buffer_desc);

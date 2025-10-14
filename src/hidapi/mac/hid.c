@@ -1424,7 +1424,7 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 
 	   UPD: The crash part was true in/until some version of macOS.
 	   Starting with macOS 10.15, there is an opposite effect in some environments:
-	   crash happenes if IOHIDDeviceClose() is not called.
+	   crash happens if IOHIDDeviceClose() is not called.
 	   Not leaking a resource in all tested environments.
 	*/
 	if (is_macos_10_10_or_greater || !dev->disconnected) {

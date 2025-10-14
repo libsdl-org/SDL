@@ -61,13 +61,12 @@ void Android_SetAllowRecreateActivity(bool enabled);
 extern void Android_JNI_SetActivityTitle(const char *title);
 extern void Android_JNI_SetWindowStyle(bool fullscreen);
 extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint);
-extern void Android_JNI_MinizeWindow(void);
+extern void Android_JNI_MinimizeWindow(void);
 extern bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
 extern bool Android_JNI_GetAccelerometerValues(float values[3]);
 extern void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect);
 extern void Android_JNI_HideScreenKeyboard(void);
-extern bool Android_JNI_IsScreenKeyboardShown(void);
 extern ANativeWindow *Android_JNI_GetNativeWindow(void);
 
 extern SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void);
@@ -88,6 +87,8 @@ Sint64 Android_JNI_FileSeek(void *userdata, Sint64 offset, SDL_IOWhence whence);
 size_t Android_JNI_FileRead(void *userdata, void *buffer, size_t size, SDL_IOStatus *status);
 size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SDL_IOStatus *status);
 bool Android_JNI_FileClose(void *userdata);
+bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata);
+bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info);
 
 // Environment support
 void Android_JNI_GetManifestEnvironmentVariables(void);
@@ -151,7 +152,7 @@ bool SDL_IsAndroidTablet(void);
 bool SDL_IsAndroidTV(void);
 
 // File Dialogs
-bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void* userdata,
+bool Android_JNI_OpenFileDialog(SDL_DialogFileCallback callback, void *userdata,
     const SDL_DialogFileFilter *filters, int nfilters, bool forwrite,
     bool multiple);
 

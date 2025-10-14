@@ -133,6 +133,13 @@ static bool load_pulseaudio_syms(void);
 
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
 
+SDL_ELF_NOTE_DLOPEN(
+    "audio-libpulseaudio",
+    "Support for audio through libpulseaudio",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
+);
+
 static const char *pulseaudio_library = SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC;
 static SDL_SharedObject *pulseaudio_handle = NULL;
 
@@ -672,7 +679,8 @@ static bool PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
     paspec.rate = device->spec.freq;
 
     // Reduced prebuffering compared to the defaults.
-    paattr.fragsize = device->buffer_size;   // despite the name, this is only used for recording devices, according to PulseAudio docs!
+
+    paattr.fragsize = device->buffer_size * 2;   // despite the name, this is only used for recording devices, according to PulseAudio docs!  (times 2 because we want _more_ than our buffer size sent from the server at a time, which helps some drivers).
     paattr.tlength = device->buffer_size;
     paattr.prebuf = -1;
     paattr.maxlength = -1;
@@ -731,7 +739,7 @@ static bool PULSEAUDIO_OpenDevice(SDL_AudioDevice *device)
                 if (!actual_bufattr) {
                     result = SDL_SetError("Could not determine connected PulseAudio stream's buffer attributes");
                 } else {
-                    device->buffer_size = (int) recording ? actual_bufattr->tlength : actual_bufattr->fragsize;
+                    device->buffer_size = (int) recording ? actual_bufattr->fragsize : actual_bufattr->tlength;
                     device->sample_frames = device->buffer_size / SDL_AUDIO_FRAMESIZE(device->spec);
                 }
             }

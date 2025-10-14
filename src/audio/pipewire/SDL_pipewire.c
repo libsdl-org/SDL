@@ -93,6 +93,13 @@ static int (*PIPEWIRE_pw_properties_setf)(struct pw_properties *, const char *, 
 
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
 
+SDL_ELF_NOTE_DLOPEN(
+    "audio-libpipewire",
+    "Support for audio through libpipewire",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC
+);
+
 static const char *pipewire_library = SDL_AUDIO_DRIVER_PIPEWIRE_DYNAMIC;
 static SDL_SharedObject *pipewire_handle = NULL;
 
@@ -546,7 +553,7 @@ static void node_event_info(void *object, const struct pw_node_info *info)
 
         // Need to parse the parameters to get the sample rate
         for (i = 0; i < info->n_params; ++i) {
-            pw_node_enum_params((struct pw_node*)node->proxy, 0, info->params[i].id, 0, 0, NULL);
+            pw_node_enum_params((struct pw_node *)node->proxy, 0, info->params[i].id, 0, 0, NULL);
         }
 
         hotplug_core_sync(node);

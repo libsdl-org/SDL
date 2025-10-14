@@ -32,10 +32,11 @@
 #include "SDL_evdev.h"
 #include "SDL_evdev_kbd.h"
 
-#include <sys/stat.h>
-#include <unistd.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <linux/input.h>
 
 #include "../../events/SDL_events_c.h"
@@ -287,8 +288,8 @@ static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_cl
 }
 #endif // SDL_USE_LIBUDEV
 
-void SDL_EVDEV_SetVTSwitchCallbacks(void (*release_callback)(void*), void *release_callback_data,
-                                    void (*acquire_callback)(void*), void *acquire_callback_data)
+void SDL_EVDEV_SetVTSwitchCallbacks(void (*release_callback)(void *), void *release_callback_data,
+                                    void (*acquire_callback)(void *), void *acquire_callback_data)
 {
     SDL_EVDEV_kbd_set_vt_switch_callbacks(_this->kbd,
                                           release_callback, release_callback_data,
@@ -321,10 +322,6 @@ void SDL_EVDEV_Poll(void)
     if (!_this) {
         return;
     }
-
-#ifdef SDL_USE_LIBUDEV
-    SDL_UDEV_Poll();
-#endif
 
     SDL_EVDEV_kbd_update(_this->kbd);
 
@@ -612,14 +609,14 @@ static bool SDL_EVDEV_init_keyboard(SDL_evdevlist_item *item, int udev_class)
     name[0] = '\0';
     ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
 
-    SDL_AddKeyboard((SDL_KeyboardID)item->fd, name, true);
+    SDL_AddKeyboard((SDL_KeyboardID)item->fd, name);
 
     return true;
 }
 
 static void SDL_EVDEV_destroy_keyboard(SDL_evdevlist_item *item)
 {
-    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd, true);
+    SDL_RemoveKeyboard((SDL_KeyboardID)item->fd);
 }
 
 static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
@@ -631,7 +628,7 @@ static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
     name[0] = '\0';
     ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
 
-    SDL_AddMouse((SDL_MouseID)item->fd, name, true);
+    SDL_AddMouse((SDL_MouseID)item->fd, name);
 
     ret = ioctl(item->fd, EVIOCGABS(ABS_X), &abs_info);
     if (ret < 0) {
@@ -656,7 +653,7 @@ static bool SDL_EVDEV_init_mouse(SDL_evdevlist_item *item, int udev_class)
 
 static void SDL_EVDEV_destroy_mouse(SDL_evdevlist_item *item)
 {
-    SDL_RemoveMouse((SDL_MouseID)item->fd, true);
+    SDL_RemoveMouse((SDL_MouseID)item->fd);
 }
 
 static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
@@ -678,7 +675,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     ret = ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
     if (ret < 0) {
         SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen name");
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen name");
+        return false;
     }
 
     item->touchscreen_data->name = SDL_strdup(name);
@@ -691,7 +689,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     if (ret < 0) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen limits");
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen limits");
+        return false;
     }
 
     if (abs_info.maximum == 0) {
@@ -708,7 +707,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     if (ret < 0) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen limits");
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen limits");
+        return false;
     }
     item->touchscreen_data->min_x = abs_info.minimum;
     item->touchscreen_data->max_x = abs_info.maximum;
@@ -718,7 +718,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     if (ret < 0) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen limits");
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen limits");
+        return false;
     }
     item->touchscreen_data->min_y = abs_info.minimum;
     item->touchscreen_data->max_y = abs_info.maximum;
@@ -728,7 +729,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
     if (ret < 0) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen limits");
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen limits");
+        return false;
     }
     item->touchscreen_data->min_pressure = abs_info.minimum;
     item->touchscreen_data->max_pressure = abs_info.maximum;
@@ -912,8 +914,9 @@ static bool SDL_EVDEV_device_added(const char *dev_path, int udev_class)
 
     item->fd = open(dev_path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
     if (item->fd < 0) {
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Couldn't open %s: %s", dev_path, strerror(errno));
         SDL_free(item);
-        return SDL_SetError("Unable to open %s", dev_path);
+        return false;
     }
 
     item->path = SDL_strdup(dev_path);

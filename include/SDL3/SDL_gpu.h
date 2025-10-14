@@ -230,12 +230,28 @@
  * - `drawIndirectFirstInstance`
  * - `sampleRateShading`
  *
+ * You can remove some of these requirements to increase compatibility with
+ * Android devices by using these properties when creating the GPU device with
+ * SDL_CreateGPUDeviceWithProperties():
+ *
+ * - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN
+ * - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN
+ * - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN
+ * - SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN
+ *
  * ### D3D12
  *
  * SDL driver name: "direct3d12"
  *
  * Supported on Windows 10 or newer, Xbox One (GDK), and Xbox Series X|S
- * (GDK). Requires a GPU that supports DirectX 12 Feature Level 11_1.
+ * (GDK). Requires a GPU that supports DirectX 12 Feature Level 11_0 and
+ * Resource Binding Tier 2 or above.
+ *
+ * You can remove the Tier 2 resource binding requirement to support Intel
+ * Haswell and Broadwell GPUs by using this property when creating the GPU
+ * device with SDL_CreateGPUDeviceWithProperties():
+ *
+ * - SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN
  *
  * ### Metal
  *
@@ -1158,7 +1174,7 @@ typedef enum SDL_GPUCompareOp
     SDL_GPU_COMPAREOP_LESS_OR_EQUAL,     /**< The comparison evaluates reference <= test. */
     SDL_GPU_COMPAREOP_GREATER,           /**< The comparison evaluates reference > test. */
     SDL_GPU_COMPAREOP_NOT_EQUAL,         /**< The comparison evaluates reference != test. */
-    SDL_GPU_COMPAREOP_GREATER_OR_EQUAL,  /**< The comparison evalutes reference >= test. */
+    SDL_GPU_COMPAREOP_GREATER_OR_EQUAL,  /**< The comparison evaluates reference >= test. */
     SDL_GPU_COMPAREOP_ALWAYS             /**< The comparison always evaluates true. */
 } SDL_GPUCompareOp;
 
@@ -1469,7 +1485,7 @@ typedef struct SDL_GPUTextureRegion
  */
 typedef struct SDL_GPUBlitRegion
 {
-    SDL_GPUTexture *texture;  /**< The texture. */
+    SDL_GPUTexture *texture;      /**< The texture. */
     Uint32 mip_level;             /**< The mip level index of the region. */
     Uint32 layer_or_depth_plane;  /**< The layer index or depth plane of the region. This value is treated as a layer index on 2D array and cube textures, and as a depth plane on 3D textures. */
     Uint32 x;                     /**< The left offset of the region. */
@@ -1598,8 +1614,8 @@ typedef struct SDL_GPUSamplerCreateInfo
     SDL_GPUCompareOp compare_op;               /**< The comparison operator to apply to fetched data before filtering. */
     float min_lod;                             /**< Clamps the minimum of the computed LOD value. */
     float max_lod;                             /**< Clamps the maximum of the computed LOD value. */
-    bool enable_anisotropy;                /**< true to enable anisotropic filtering. */
-    bool enable_compare;                   /**< true to enable comparison against a reference value during lookups. */
+    bool enable_anisotropy;                    /**< true to enable anisotropic filtering. */
+    bool enable_compare;                       /**< true to enable comparison against a reference value during lookups. */
     Uint8 padding1;
     Uint8 padding2;
 
@@ -1627,7 +1643,7 @@ typedef struct SDL_GPUSamplerCreateInfo
 typedef struct SDL_GPUVertexBufferDescription
 {
     Uint32 slot;                        /**< The binding slot of the vertex buffer. */
-    Uint32 pitch;                       /**< The byte pitch between consecutive elements of the vertex buffer. */
+    Uint32 pitch;                       /**< The size of a single element + the offset between elements. */
     SDL_GPUVertexInputRate input_rate;  /**< Whether attribute addressing is a function of the vertex index or instance index. */
     Uint32 instance_step_rate;          /**< Reserved for future use. Must be set to 0. */
 } SDL_GPUVertexBufferDescription;
@@ -1704,8 +1720,8 @@ typedef struct SDL_GPUColorTargetBlendState
     SDL_GPUBlendFactor dst_alpha_blendfactor;     /**< The value to be multiplied by the destination alpha. */
     SDL_GPUBlendOp alpha_blend_op;                /**< The blend operation for the alpha component. */
     SDL_GPUColorComponentFlags color_write_mask;  /**< A bitmask specifying which of the RGBA components are enabled for writing. Writes to all channels if enable_color_write_mask is false. */
-    bool enable_blend;                        /**< Whether blending is enabled for the color target. */
-    bool enable_color_write_mask;             /**< Whether the color write mask is enabled. */
+    bool enable_blend;                            /**< Whether blending is enabled for the color target. */
+    bool enable_color_write_mask;                 /**< Whether the color write mask is enabled. */
     Uint8 padding1;
     Uint8 padding2;
 } SDL_GPUColorTargetBlendState;
@@ -1717,6 +1733,8 @@ typedef struct SDL_GPUColorTargetBlendState
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUShader
+ * \sa SDL_GPUShaderFormat
+ * \sa SDL_GPUShaderStage
  */
 typedef struct SDL_GPUShaderCreateInfo
 {
@@ -1822,8 +1840,8 @@ typedef struct SDL_GPURasterizerState
     float depth_bias_constant_factor;  /**< A scalar factor controlling the depth value added to each fragment. */
     float depth_bias_clamp;            /**< The maximum depth bias of a fragment. */
     float depth_bias_slope_factor;     /**< A scalar factor applied to a fragment's slope in depth calculations. */
-    bool enable_depth_bias;        /**< true to bias fragment depth values. */
-    bool enable_depth_clip;        /**< true to enable depth clip, false to enable depth clamp. */
+    bool enable_depth_bias;            /**< true to bias fragment depth values. */
+    bool enable_depth_clip;            /**< true to enable depth clip, false to enable depth clamp. */
     Uint8 padding1;
     Uint8 padding2;
 } SDL_GPURasterizerState;
@@ -1840,7 +1858,7 @@ typedef struct SDL_GPUMultisampleState
 {
     SDL_GPUSampleCount sample_count;  /**< The number of samples to be used in rasterization. */
     Uint32 sample_mask;               /**< Reserved for future use. Must be set to 0. */
-    bool enable_mask;             /**< Reserved for future use. Must be set to false. */
+    bool enable_mask;                 /**< Reserved for future use. Must be set to false. */
     bool enable_alpha_to_coverage;    /**< true enables the alpha-to-coverage feature. */
     Uint8 padding2;
     Uint8 padding3;
@@ -1861,9 +1879,9 @@ typedef struct SDL_GPUDepthStencilState
     SDL_GPUStencilOpState front_stencil_state;  /**< The stencil op state for front-facing triangles. */
     Uint8 compare_mask;                         /**< Selects the bits of the stencil values participating in the stencil test. */
     Uint8 write_mask;                           /**< Selects the bits of the stencil values updated by the stencil test. */
-    bool enable_depth_test;                 /**< true enables the depth test. */
-    bool enable_depth_write;                /**< true enables depth writes. Depth writes are always disabled when enable_depth_test is false. */
-    bool enable_stencil_test;               /**< true enables the stencil test. */
+    bool enable_depth_test;                     /**< true enables the depth test. */
+    bool enable_depth_write;                    /**< true enables depth writes. Depth writes are always disabled when enable_depth_test is false. */
+    bool enable_stencil_test;                   /**< true enables the stencil test. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
@@ -1898,7 +1916,7 @@ typedef struct SDL_GPUGraphicsPipelineTargetInfo
     const SDL_GPUColorTargetDescription *color_target_descriptions;  /**< A pointer to an array of color target descriptions. */
     Uint32 num_color_targets;                                        /**< The number of color target descriptions in the above array. */
     SDL_GPUTextureFormat depth_stencil_format;                       /**< The pixel format of the depth-stencil target. Ignored if has_depth_stencil_target is false. */
-    bool has_depth_stencil_target;                               /**< true specifies that the pipeline uses a depth-stencil target. */
+    bool has_depth_stencil_target;                                   /**< true specifies that the pipeline uses a depth-stencil target. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
@@ -1993,6 +2011,7 @@ typedef struct SDL_GPUComputePipelineCreateInfo
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPURenderPass
+ * \sa SDL_FColor
  */
 typedef struct SDL_GPUColorTargetInfo
 {
@@ -2005,8 +2024,8 @@ typedef struct SDL_GPUColorTargetInfo
     SDL_GPUTexture *resolve_texture; /**< The texture that will receive the results of a multisample resolve operation. Ignored if a RESOLVE* store_op is not used. */
     Uint32 resolve_mip_level;        /**< The mip level of the resolve texture to use for the resolve operation. Ignored if a RESOLVE* store_op is not used. */
     Uint32 resolve_layer;            /**< The layer index of the resolve texture to use for the resolve operation. Ignored if a RESOLVE* store_op is not used. */
-    bool cycle;                  /**< true cycles the texture if the texture is bound and load_op is not LOAD */
-    bool cycle_resolve_texture;  /**< true cycles the resolve texture if the resolve texture is bound. Ignored if a RESOLVE* store_op is not used. */
+    bool cycle;                      /**< true cycles the texture if the texture is bound and load_op is not LOAD */
+    bool cycle_resolve_texture;      /**< true cycles the resolve texture if the resolve texture is bound. Ignored if a RESOLVE* store_op is not used. */
     Uint8 padding1;
     Uint8 padding2;
 } SDL_GPUColorTargetInfo;
@@ -2051,6 +2070,9 @@ typedef struct SDL_GPUColorTargetInfo
  *
  * Note that depth/stencil targets do not support multisample resolves.
  *
+ * Due to ABI limitations, depth textures with more than 255 layers are not
+ * supported.
+ *
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BeginGPURenderPass
@@ -2063,10 +2085,10 @@ typedef struct SDL_GPUDepthStencilTargetInfo
     SDL_GPUStoreOp store_op;               /**< What is done with the depth results of the render pass. */
     SDL_GPULoadOp stencil_load_op;         /**< What is done with the stencil contents at the beginning of the render pass. */
     SDL_GPUStoreOp stencil_store_op;       /**< What is done with the stencil results of the render pass. */
-    bool cycle;                        /**< true cycles the texture if the texture is bound and any load ops are not LOAD */
+    bool cycle;                            /**< true cycles the texture if the texture is bound and any load ops are not LOAD */
     Uint8 clear_stencil;                   /**< The value to clear the stencil component to at the beginning of the render pass. Ignored if SDL_GPU_LOADOP_CLEAR is not used. */
-    Uint8 padding1;
-    Uint8 padding2;
+    Uint8 mip_level;                       /**< The mip level to use as the depth stencil target. */
+    Uint8 layer;                           /**< The layer index to use as the depth stencil target. */
 } SDL_GPUDepthStencilTargetInfo;
 
 /**
@@ -2083,7 +2105,7 @@ typedef struct SDL_GPUBlitInfo {
     SDL_FColor clear_color;         /**< The color to clear the destination region to before the blit. Ignored if load_op is not SDL_GPU_LOADOP_CLEAR. */
     SDL_FlipMode flip_mode;         /**< The flip mode for the source region. */
     SDL_GPUFilter filter;           /**< The filter mode used when blitting. */
-    bool cycle;                 /**< true cycles the destination texture if it is already bound. */
+    bool cycle;                     /**< true cycles the destination texture if it is already bound. */
     Uint8 padding1;
     Uint8 padding2;
     Uint8 padding3;
@@ -2112,6 +2134,8 @@ typedef struct SDL_GPUBufferBinding
  *
  * \sa SDL_BindGPUVertexSamplers
  * \sa SDL_BindGPUFragmentSamplers
+ * \sa SDL_GPUTexture
+ * \sa SDL_GPUSampler
  */
 typedef struct SDL_GPUTextureSamplerBinding
 {
@@ -2233,6 +2257,27 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   useful debug information on device creation, defaults to true.
  * - `SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING`: the name of the GPU driver to
  *   use, if a specific one is desired.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN`: Enable Vulkan
+ *   device feature shaderClipDistance. If disabled, clip distances are not
+ *   supported in shader code: gl_ClipDistance[] built-ins of GLSL,
+ *   SV_ClipDistance0/1 semantics of HLSL and [[clip_distance]] attribute of
+ *   Metal. Disabling optional features allows the application to run on some
+ *   older Android devices. Defaults to true.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN`: Enable
+ *   Vulkan device feature depthClamp. If disabled, there is no depth clamp
+ *   support and enable_depth_clip in SDL_GPURasterizerState must always be
+ *   set to true. Disabling optional features allows the application to run on
+ *   some older Android devices. Defaults to true.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN`:
+ *   Enable Vulkan device feature drawIndirectFirstInstance. If disabled, the
+ *   argument first_instance of SDL_GPUIndirectDrawCommand must be set to
+ *   zero. Disabling optional features allows the application to run on some
+ *   older Android devices. Defaults to true.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN`: Enable Vulkan
+ *   device feature samplerAnisotropy. If disabled, enable_anisotropy of
+ *   SDL_GPUSamplerCreateInfo must be set to false. Disabling optional
+ *   features allows the application to run on some older Android devices.
+ *   Defaults to true.
  *
  * These are the current shader format properties:
  *
@@ -2253,25 +2298,14 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *
  * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING`: the prefix to
  *   use for all vertex semantics, default is "TEXCOORD".
- *
- * With the Vulkan renderer:
- *
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN`: Enable
- *   device feature shaderClipDistance. If disabled, clip distances are not
- *   supported in shader code: gl_ClipDistance[] built-ins of GLSL,
- *   SV_ClipDistance0/1 semantics of HLSL and [[clip_distance]] attribute of
- *   Metal. Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOLEAN`: Enable device
- *   feature depthClamp. If disabled, there is no depth clamp support and
- *   enable_depth_clip in SDL_GPURasterizerState must always be set to true.
- *   Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN`: Enable
- *   device feature drawIndirectFirstInstance. If disabled, the argument
- *   first_instance of SDL_GPUIndirectDrawCommand must be set to zero.
- *   Defaults to true.
- * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN`: Enable
- *   device feature samplerAnisotropy. If disabled, enable_anisotropy of
- *   SDL_GPUSamplerCreateInfo must be set to false. Defaults to true.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN`: By
+ *   default, Resourcing Binding Tier 2 is required for D3D12 support.
+ *   However, an application can set this property to true to enable Tier 1
+ *   support, if (and only if) the application uses 8 or fewer storage
+ *   resources across all shader stages. As of writing, this property is
+ *   useful for targeting Intel Haswell and Broadwell GPUs; other hardware
+ *   either supports Tier 2 Resource Binding or does not support D3D12 in any
+ *   capacity. Defaults to false.
  *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
@@ -2287,21 +2321,22 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
 extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
     SDL_PropertiesID props);
 
-#define SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN                 "SDL.gpu.device.create.debugmode"
-#define SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN            "SDL.gpu.device.create.preferlowpower"
-#define SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN                   "SDL.gpu.device.create.verbose"
-#define SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING                       "SDL.gpu.device.create.name"
-#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOLEAN           "SDL.gpu.device.create.shaders.private"
-#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN             "SDL.gpu.device.create.shaders.spirv"
-#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN              "SDL.gpu.device.create.shaders.dxbc"
-#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN              "SDL.gpu.device.create.shaders.dxil"
-#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN               "SDL.gpu.device.create.shaders.msl"
-#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN          "SDL.gpu.device.create.shaders.metallib"
-#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING        "SDL.gpu.device.create.d3d12.semantic"
-#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SHADERCLIPDISTANCE_BOOLEAN "SDL.gpu.device.create.vulkan.shaderclipdistance"
-#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DEPTHCLAMP_BOOLEAN         "SDL.gpu.device.create.vulkan.depthclamp"
-#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_DRAWINDIRECTFIRST_BOOLEAN  "SDL.gpu.device.create.vulkan.drawindirectfirstinstance"
-#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_SAMPLERANISOTROPY_BOOLEAN  "SDL.gpu.device.create.vulkan.sampleranisotropy"
+#define SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN                            "SDL.gpu.device.create.debugmode"
+#define SDL_PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN                       "SDL.gpu.device.create.preferlowpower"
+#define SDL_PROP_GPU_DEVICE_CREATE_VERBOSE_BOOLEAN                              "SDL.gpu.device.create.verbose"
+#define SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING                                  "SDL.gpu.device.create.name"
+#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN                "SDL.gpu.device.create.feature.clip_distance"
+#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_DEPTH_CLAMPING_BOOLEAN               "SDL.gpu.device.create.feature.depth_clamping"
+#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_INDIRECT_DRAW_FIRST_INSTANCE_BOOLEAN "SDL.gpu.device.create.feature.indirect_draw_first_instance"
+#define SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN                   "SDL.gpu.device.create.feature.anisotropy"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOLEAN                      "SDL.gpu.device.create.shaders.private"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN                        "SDL.gpu.device.create.shaders.spirv"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN                         "SDL.gpu.device.create.shaders.dxbc"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN                         "SDL.gpu.device.create.shaders.dxil"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN                          "SDL.gpu.device.create.shaders.msl"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN                     "SDL.gpu.device.create.shaders.metallib"
+#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN     "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
+#define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING                   "SDL.gpu.device.create.d3d12.semantic"
 
 /**
  * Destroys a GPU context previously returned by SDL_CreateGPUDevice.
@@ -2665,7 +2700,8 @@ extern SDL_DECLSPEC SDL_GPUShader * SDLCALL SDL_CreateGPUShader(
  * Creates a texture object to be used in graphics or compute workflows.
  *
  * The contents of this texture are undefined until data is written to the
- * texture.
+ * texture, either via SDL_UploadToGPUTexture or by performing a render or
+ * compute pass with this texture as a target.
  *
  * Note that certain combinations of usage flags are invalid. For example, a
  * texture cannot have both the SAMPLER and GRAPHICS_STORAGE_READ flags.
@@ -2707,6 +2743,8 @@ extern SDL_DECLSPEC SDL_GPUShader * SDLCALL SDL_CreateGPUShader(
  *
  * \sa SDL_UploadToGPUTexture
  * \sa SDL_DownloadFromGPUTexture
+ * \sa SDL_BeginGPURenderPass
+ * \sa SDL_BeginGPUComputePass
  * \sa SDL_BindGPUVertexSamplers
  * \sa SDL_BindGPUVertexStorageTextures
  * \sa SDL_BindGPUFragmentSamplers
@@ -2873,7 +2911,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_InsertGPUDebugLabel(
     const char *text);
 
 /**
- * Begins a debug group with an arbitary name.
+ * Begins a debug group with an arbitrary name.
  *
  * Used for denoting groups of calls when viewing the command buffer
  * callstream in a graphics debugging tool.
@@ -3119,6 +3157,14 @@ extern SDL_DECLSPEC void SDLCALL SDL_PushGPUComputeUniformData(
  * pass. A default viewport and scissor state are automatically set when this
  * is called. You cannot begin another render pass, or begin a compute pass or
  * copy pass until you have ended the render pass.
+ *
+ * Using SDL_GPU_LOADOP_LOAD before any contents have been written to the
+ * texture subresource will result in undefined behavior. SDL_GPU_LOADOP_CLEAR
+ * will set the contents of the texture subresource to a single value before
+ * any rendering is performed. It's fine to do an empty render pass using
+ * SDL_GPU_STOREOP_STORE to clear a texture, but in general it's better to
+ * think of clearing not as an independent operation but as something that's
+ * done as the beginning of a render pass.
  *
  * \param command_buffer a command buffer.
  * \param color_target_infos an array of texture subresources with
@@ -3742,6 +3788,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnmapGPUTransferBuffer(
  * \returns a copy pass handle.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_EndGPUCopyPass
  */
 extern SDL_DECLSPEC SDL_GPUCopyPass * SDLCALL SDL_BeginGPUCopyPass(
     SDL_GPUCommandBuffer *command_buffer);
@@ -4401,6 +4449,29 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_CalculateGPUTextureFormatSize(
     Uint32 height,
     Uint32 depth_or_layer_count);
 
+/**
+ * Get the SDL pixel format corresponding to a GPU texture format.
+ *
+ * \param format a texture format.
+ * \returns the corresponding pixel format, or SDL_PIXELFORMAT_UNKNOWN if
+ *          there is no corresponding pixel format.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetPixelFormatFromGPUTextureFormat(SDL_GPUTextureFormat format);
+
+/**
+ * Get the GPU texture format corresponding to an SDL pixel format.
+ *
+ * \param format a pixel format.
+ * \returns the corresponding GPU texture format, or
+ *          SDL_GPU_TEXTUREFORMAT_INVALID if there is no corresponding GPU
+ *          texture format.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUTextureFormatFromPixelFormat(SDL_PixelFormat format);
+
 #ifdef SDL_PLATFORM_GDK
 
 /**
@@ -4441,8 +4512,3 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(SDL_GPUDevice *device);
 #include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_gpu_h_ */
-
-
-
-
-

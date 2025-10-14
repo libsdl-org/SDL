@@ -10,6 +10,16 @@
   freely.
 */
 
+/* Note: This demo shows an example of using the SDL 2D renderer in combination
+ *       with the full GPU API. This is purely to demonstrate offline rendering
+ *       functionality of the GPU 2D renderer, and is not generally recommended
+ *       for real applications.
+ *
+ *       A blog post demonstrating a highly efficient method for 2D sprite batching
+ *       with the GPU API is available here:
+ *          https://moonside.games/posts/sdl-gpu-sprite-batcher/
+ */
+
 #include <stdlib.h>
 
 #ifdef __EMSCRIPTEN__
@@ -20,10 +30,21 @@
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_main.h>
 
+#include "icon.h"
+
 /* Regenerate the shaders with testgpu/build-shaders.sh */
-#include "testgpu/testgpu_spirv.h"
-#include "testgpu/testgpu_dxil.h"
-#include "testgpu/testgpu_metallib.h"
+#include "testgpu/cube.frag.dxil.h"
+#include "testgpu/cube.frag.msl.h"
+#include "testgpu/cube.frag.spv.h"
+#include "testgpu/cube.vert.dxil.h"
+#include "testgpu/cube.vert.msl.h"
+#include "testgpu/cube.vert.spv.h"
+#include "testgpu/overlay.frag.dxil.h"
+#include "testgpu/overlay.frag.msl.h"
+#include "testgpu/overlay.frag.spv.h"
+#include "testgpu/overlay.vert.dxil.h"
+#include "testgpu/overlay.vert.msl.h"
+#include "testgpu/overlay.vert.spv.h"
 
 #define TESTGPU_SUPPORTED_FORMATS (SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXBC | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_METALLIB)
 
@@ -38,20 +59,304 @@ typedef struct RenderState
     SDL_GPUSampleCount sample_count;
 } RenderState;
 
+#define NUM_SPRITES         100
+#define MAX_SPRITE_SPEED    1
+
+typedef struct SpriteRenderState
+{
+    SDL_Renderer *renderer;
+    SDL_Texture *sprite;
+    SDL_GPUGraphicsPipeline *pipeline;
+    SDL_GPUSampler *sampler;
+    bool show_sprites;
+} SpriteRenderState;
+
+typedef struct SpriteWindowState
+{
+    bool initialized;
+    SDL_Texture *target;
+    SDL_GPUTexture *texture;
+    SDL_FRect positions[NUM_SPRITES];
+    SDL_FPoint velocities[NUM_SPRITES];
+} SpriteWindowState;
+
 typedef struct WindowState
 {
     int angle_x, angle_y, angle_z;
     SDL_GPUTexture *tex_depth, *tex_msaa, *tex_resolve;
     Uint32 prev_drawablew, prev_drawableh;
+    SpriteWindowState sprite_state;
 } WindowState;
 
 static SDL_GPUDevice *gpu_device = NULL;
 static RenderState render_state;
+static SpriteRenderState sprite_render_state;
 static SDLTest_CommonState *state = NULL;
 static WindowState *window_states = NULL;
 
+static void QuitSpriteOverlay(SpriteRenderState *rs)
+{
+    int i;
+
+    if (!rs->renderer) {
+        return;
+    }
+
+    SDL_ReleaseGPUSampler(gpu_device, rs->sampler);
+    SDL_ReleaseGPUGraphicsPipeline(gpu_device, rs->pipeline);
+
+    for (i = 0; i < state->num_windows; ++i) {
+        SpriteWindowState *ws = &window_states[i].sprite_state;
+        if (ws->target) {
+            SDL_DestroyTexture(ws->target);
+            ws->target = NULL;
+            ws->texture = NULL;
+        }
+    }
+    SDL_DestroyRenderer(rs->renderer);
+
+    SDL_zerop(rs);
+}
+
+static SDL_Texture *CreateSpriteTexture(SDL_Renderer *renderer, unsigned char *data, unsigned int len)
+{
+    SDL_Texture *texture = NULL;
+    SDL_Surface *surface;
+    SDL_IOStream *src = SDL_IOFromConstMem(data, len);
+    if (src) {
+        surface = SDL_LoadPNG_IO(src, true);
+        if (surface) {
+            /* Treat white as transparent */
+            SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
+
+            texture = SDL_CreateTextureFromSurface(renderer, surface);
+            SDL_DestroySurface(surface);
+        }
+    }
+    return texture;
+}
+
+static SDL_GPUShader *LoadOverlayShader(bool is_vertex)
+{
+    SDL_GPUShaderCreateInfo createinfo;
+    SDL_zero(createinfo);
+    createinfo.num_samplers = is_vertex ? 0 : 1;
+
+    SDL_GPUShaderFormat format = SDL_GetGPUShaderFormats(gpu_device);
+    if (format & SDL_GPU_SHADERFORMAT_DXIL) {
+        createinfo.format = SDL_GPU_SHADERFORMAT_DXIL;
+        createinfo.code = is_vertex ? overlay_vert_dxil : overlay_frag_dxil;
+        createinfo.code_size = is_vertex ? overlay_vert_dxil_len : overlay_frag_dxil_len;
+    } else if (format & SDL_GPU_SHADERFORMAT_MSL) {
+        createinfo.format = SDL_GPU_SHADERFORMAT_MSL;
+        createinfo.code = is_vertex ? overlay_vert_msl : overlay_frag_msl;
+        createinfo.code_size = is_vertex ? overlay_vert_msl_len : overlay_frag_msl_len;
+    } else {
+        createinfo.format = SDL_GPU_SHADERFORMAT_SPIRV;
+        createinfo.code = is_vertex ? overlay_vert_spv : overlay_frag_spv;
+        createinfo.code_size = is_vertex ? overlay_vert_spv_len : overlay_frag_spv_len;
+    }
+
+    createinfo.stage = is_vertex ? SDL_GPU_SHADERSTAGE_VERTEX : SDL_GPU_SHADERSTAGE_FRAGMENT;
+    return SDL_CreateGPUShader(gpu_device, &createinfo);
+}
+
+static bool InitSpriteOverlay(SpriteRenderState *rs, SDL_Window *window)
+{
+    SDL_GPUShader *vertex_shader, *fragment_shader;
+
+    rs->renderer = SDL_CreateGPURenderer(gpu_device, NULL);
+    if (!rs->renderer) {
+        SDL_Log("Couldn't create renderer: %s\n", SDL_GetError());
+        return false;
+    }
+
+    rs->sprite = CreateSpriteTexture(rs->renderer, icon_png, icon_png_len);
+    if (!rs->sprite) {
+        SDL_Log("Couldn't create sprite: %s\n", SDL_GetError());
+        QuitSpriteOverlay(rs);
+        return false;
+    }
+
+    vertex_shader = LoadOverlayShader(true);
+    if (!vertex_shader) {
+        SDL_Log("Couldn't create vertex shader: %s\n", SDL_GetError());
+        QuitSpriteOverlay(rs);
+        return false;
+    }
+
+    fragment_shader = LoadOverlayShader(false);
+    if (!fragment_shader) {
+        SDL_Log("Couldn't create vertex shader: %s\n", SDL_GetError());
+        SDL_ReleaseGPUShader(gpu_device, vertex_shader);
+        QuitSpriteOverlay(rs);
+        return false;
+    }
+
+    SDL_GPUColorTargetDescription ctd;
+    SDL_zero(ctd);
+    ctd.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, window);
+    ctd.blend_state.enable_blend = true;
+    ctd.blend_state.color_write_mask = 0xF;
+    ctd.blend_state.color_blend_op = SDL_GPU_BLENDOP_ADD;
+    ctd.blend_state.alpha_blend_op = SDL_GPU_BLENDOP_ADD;
+    ctd.blend_state.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+    ctd.blend_state.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+    ctd.blend_state.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA;
+    ctd.blend_state.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
+
+    SDL_GPUGraphicsPipelineCreateInfo pci;
+    SDL_zero(pci);
+    pci.target_info.num_color_targets = 1;
+    pci.target_info.color_target_descriptions = &ctd;
+    pci.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
+    pci.vertex_shader = vertex_shader;
+    pci.fragment_shader = fragment_shader;
+    pci.rasterizer_state.enable_depth_clip = true;
+    rs->pipeline = SDL_CreateGPUGraphicsPipeline(gpu_device, &pci);
+    SDL_ReleaseGPUShader(gpu_device, vertex_shader);
+    SDL_ReleaseGPUShader(gpu_device, fragment_shader);
+    if (!rs->pipeline) {
+        SDL_Log("Couldn't create pipeline: %s", SDL_GetError());
+        QuitSpriteOverlay(rs);
+        return false;
+    }
+
+    SDL_GPUSamplerCreateInfo sci;
+    SDL_zero(sci);
+    sci.min_filter = SDL_GPU_FILTER_NEAREST;
+    sci.mag_filter = SDL_GPU_FILTER_NEAREST;
+    sci.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
+    sci.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+    sci.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+    sci.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
+    rs->sampler = SDL_CreateGPUSampler(gpu_device, &sci);
+    if (!rs->sampler) {
+        SDL_Log("Couldn't create sampler: %s", SDL_GetError());
+        QuitSpriteOverlay(rs);
+        return false;
+    }
+
+    return true;
+}
+
+static void UpdateRenderTarget(SpriteRenderState *rs, SpriteWindowState *ws, int w, int h)
+{
+    SDL_Renderer *renderer = rs->renderer;
+    SDL_Texture *target = ws->target;
+
+    if (!target || target->w != w || target->w != h) {
+        if (target) {
+            SDL_DestroyTexture(target);
+            ws->target = NULL;
+        }
+
+        target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_BGRA32, SDL_TEXTUREACCESS_TARGET, w, h);
+        if (!target) {
+            SDL_Log("Couldn't create render target: %s", SDL_GetError());
+            return;
+        }
+        SDL_SetRenderTarget(renderer, target);
+
+        ws->target = target;
+        ws->texture = (SDL_GPUTexture *)SDL_GetPointerProperty(SDL_GetTextureProperties(target), SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER, NULL);
+    }
+}
+
+static void UpdateSprites(SpriteRenderState *rs, SpriteWindowState *ws, int w, int h)
+{
+    SDL_Texture *sprite = rs->sprite;
+    SDL_FRect *positions = ws->positions;
+    SDL_FPoint *velocities = ws->velocities;
+    SDL_FRect *position;
+    SDL_FPoint *velocity;
+    int i;
+
+    /* Initialize the sprite positions */
+    if (!ws->initialized) {
+        for (i = 0; i < NUM_SPRITES; ++i) {
+            positions[i].x = (float)SDL_rand(w - sprite->w);
+            positions[i].y = (float)SDL_rand(h - sprite->h);
+            positions[i].w = (float)sprite->w;
+            positions[i].h = (float)sprite->h;
+            velocities[i].x = 0.0f;
+            velocities[i].y = 0.0f;
+            while (velocities[i].x == 0.f && velocities[i].y == 0.f) {
+                velocities[i].x = (float)(SDL_rand(MAX_SPRITE_SPEED * 2 + 1) - MAX_SPRITE_SPEED);
+                velocities[i].y = (float)(SDL_rand(MAX_SPRITE_SPEED * 2 + 1) - MAX_SPRITE_SPEED);
+            }
+        }
+        ws->initialized = true;
+    }
+
+    /* Move the sprite, bounce at the wall */
+    for (i = 0; i < NUM_SPRITES; ++i) {
+        position = &positions[i];
+        velocity = &velocities[i];
+        position->x += velocity->x;
+        if ((position->x < 0) || (position->x >= (w - sprite->w))) {
+            velocity->x = -velocity->x;
+            position->x += velocity->x;
+        }
+        position->y += velocity->y;
+        if ((position->y < 0) || (position->y >= (h - sprite->h))) {
+            velocity->y = -velocity->y;
+            position->y += velocity->y;
+        }
+    }
+}
+
+static void RenderSprites(SpriteRenderState *rs, SpriteWindowState *ws)
+{
+    SDL_Renderer *renderer = rs->renderer;
+    SDL_Texture *sprite = rs->sprite;
+    const SDL_FRect *positions = ws->positions;
+    int i;
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
+    SDL_RenderClear(renderer);
+    for (i = 0; i < NUM_SPRITES; ++i) {
+        SDL_RenderTexture(renderer, sprite, NULL, &positions[i]);
+    }
+    SDL_RenderPresent(renderer);
+}
+
+static void UpdateSpriteOverlay(SpriteRenderState *rs, SpriteWindowState *ws, int w, int h)
+{
+    SDL_Renderer *renderer = rs->renderer;
+
+    UpdateRenderTarget(rs, ws, w, h);
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
+    SDL_RenderClear(renderer);
+
+    if (rs->show_sprites) {
+        UpdateSprites(rs, ws, w, h);
+        RenderSprites(rs, ws);
+    }
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderDebugText(renderer, 4.0f, 4.0f, "Press 'S' to toggle 2D sprites");
+    SDL_RenderPresent(renderer);
+}
+
+static void RenderSpriteOverlay(SDL_GPURenderPass *pass, SpriteRenderState *rs, SpriteWindowState *ws)
+{
+    SDL_GPUTextureSamplerBinding binding;
+
+    SDL_zero(binding);
+    binding.texture = ws->texture;
+    binding.sampler = rs->sampler;
+
+    SDL_BindGPUGraphicsPipeline(pass, rs->pipeline);
+    SDL_BindGPUFragmentSamplers(pass, 0, &binding, 1);
+    SDL_DrawGPUPrimitives(pass, 6, 1, 0, 0);
+}
+
 static void shutdownGPU(void)
 {
+    QuitSpriteOverlay(&sprite_render_state);
+
     if (window_states) {
         int i;
         for (i = 0; i < state->num_windows; i++) {
@@ -87,8 +392,7 @@ quit(int rc)
  * Simulates desktop's glRotatef. The matrix is returned in column-major
  * order.
  */
-static void
-rotate_matrix(float angle, float x, float y, float z, float *r)
+static void rotate_matrix(float angle, float x, float y, float z, float *r)
 {
     float radians, c, s, c1, u[3], length;
     int i, j;
@@ -127,13 +431,12 @@ rotate_matrix(float angle, float x, float y, float z, float *r)
 /*
  * Simulates gluPerspectiveMatrix
  */
-static void
-perspective_matrix(float fovy, float aspect, float znear, float zfar, float *r)
+static void perspective_matrix(float fovy, float aspect, float znear, float zfar, float *r)
 {
     int i;
     float f;
 
-    f = 1.0f/SDL_tanf(fovy * 0.5f);
+    f = 1.0f/SDL_tanf((fovy / 180.0f) * SDL_PI_F  * 0.5f);
 
     for (i = 0; i < 16; i++) {
         r[i] = 0.0;
@@ -151,8 +454,7 @@ perspective_matrix(float fovy, float aspect, float znear, float zfar, float *r)
  * Multiplies lhs by rhs and writes out to r. All matrices are 4x4 and column
  * major. In-place multiplication is supported.
  */
-static void
-multiply_matrix(const float *lhs, const float *rhs, float *r)
+static void multiply_matrix(const float *lhs, const float *rhs, float *r)
 {
     int i, j, k;
     float tmp[16];
@@ -246,8 +548,7 @@ static const VertexData vertex_data[] = {
     {  0.5, -0.5,  0.5, 1.0, 0.0, 1.0 } /* magenta */
 };
 
-static SDL_GPUTexture*
-CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
+static SDL_GPUTexture *CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
 {
     SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
@@ -268,8 +569,7 @@ CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
     return result;
 }
 
-static SDL_GPUTexture*
-CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
+static SDL_GPUTexture *CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
 {
     SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
@@ -294,8 +594,7 @@ CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
     return result;
 }
 
-static SDL_GPUTexture *
-CreateResolveTexture(Uint32 drawablew, Uint32 drawableh)
+static SDL_GPUTexture *CreateResolveTexture(Uint32 drawablew, Uint32 drawableh)
 {
     SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
@@ -320,8 +619,7 @@ CreateResolveTexture(Uint32 drawablew, Uint32 drawableh)
     return result;
 }
 
-static void
-Render(SDL_Window *window, const int windownum)
+static void Render(SDL_Window *window, const int windownum)
 {
     WindowState *winstate = &window_states[windownum];
     SDL_GPUTexture *swapchainTexture;
@@ -352,10 +650,17 @@ Render(SDL_Window *window, const int windownum)
         return;
     }
 
+    if (sprite_render_state.renderer) {
+        /* Update the sprite positions and render to the 2D render target.
+         * Since we are rendering here, no other render pass should be active.
+         */
+        UpdateSpriteOverlay(&sprite_render_state, &winstate->sprite_state, drawablew, drawableh);
+    }
+
     /*
-    * Do some rotation with Euler angles. It is not a fixed axis as
-    * quaternions would be, but the effect is cool.
-    */
+     * Do some rotation with Euler angles. It is not a fixed axis as
+     * quaternions would be, but the effect is cool.
+     */
     rotate_matrix((float)winstate->angle_x, 1.0f, 0.0f, 0.0f, matrix_modelview);
     rotate_matrix((float)winstate->angle_y, 0.0f, 1.0f, 0.0f, matrix_rotate);
 
@@ -436,6 +741,17 @@ Render(SDL_Window *window, const int windownum)
     SDL_DrawGPUPrimitives(pass, 36, 1, 0, 0);
     SDL_EndGPURenderPass(pass);
 
+    /* Render the sprite overlay! */
+
+    if (sprite_render_state.renderer) {
+        /* Load the existing color target so we can blend with it */
+        color_target.load_op = SDL_GPU_LOADOP_LOAD;
+
+        pass = SDL_BeginGPURenderPass(cmd, &color_target, 1, NULL);
+        RenderSpriteOverlay(pass, &sprite_render_state, &winstate->sprite_state);
+        SDL_EndGPURenderPass(pass);
+    }
+
     /* Blit MSAA resolve target to swapchain, if needed */
     if (render_state.sample_count > SDL_GPU_SAMPLECOUNT_1) {
         SDL_zero(blit_info);
@@ -459,40 +775,32 @@ Render(SDL_Window *window, const int windownum)
     ++frames;
 }
 
-static SDL_GPUShader*
-load_shader(bool is_vertex)
+static SDL_GPUShader *load_shader(bool is_vertex)
 {
     SDL_GPUShaderCreateInfo createinfo;
-    createinfo.num_samplers = 0;
-    createinfo.num_storage_buffers = 0;
-    createinfo.num_storage_textures = 0;
+    SDL_zero(createinfo);
     createinfo.num_uniform_buffers = is_vertex ? 1 : 0;
-    createinfo.props = 0;
 
     SDL_GPUShaderFormat format = SDL_GetGPUShaderFormats(gpu_device);
     if (format & SDL_GPU_SHADERFORMAT_DXIL) {
         createinfo.format = SDL_GPU_SHADERFORMAT_DXIL;
-        createinfo.code = is_vertex ? D3D12_CubeVert : D3D12_CubeFrag;
-        createinfo.code_size = is_vertex ? SDL_arraysize(D3D12_CubeVert) : SDL_arraysize(D3D12_CubeFrag);
-        createinfo.entrypoint = is_vertex ? "VSMain" : "PSMain";
-    } else if (format & SDL_GPU_SHADERFORMAT_METALLIB) {
-        createinfo.format = SDL_GPU_SHADERFORMAT_METALLIB;
-        createinfo.code = is_vertex ? cube_vert_metallib : cube_frag_metallib;
-        createinfo.code_size = is_vertex ? cube_vert_metallib_len : cube_frag_metallib_len;
-        createinfo.entrypoint = is_vertex ? "vs_main" : "fs_main";
+        createinfo.code = is_vertex ? cube_vert_dxil : cube_frag_dxil;
+        createinfo.code_size = is_vertex ? cube_vert_dxil_len : cube_frag_dxil_len;
+    } else if (format & SDL_GPU_SHADERFORMAT_MSL) {
+        createinfo.format = SDL_GPU_SHADERFORMAT_MSL;
+        createinfo.code = is_vertex ? cube_vert_msl : cube_frag_msl;
+        createinfo.code_size = is_vertex ? cube_vert_msl_len : cube_frag_msl_len;
     } else {
         createinfo.format = SDL_GPU_SHADERFORMAT_SPIRV;
         createinfo.code = is_vertex ? cube_vert_spv : cube_frag_spv;
         createinfo.code_size = is_vertex ? cube_vert_spv_len : cube_frag_spv_len;
-        createinfo.entrypoint = "main";
     }
 
     createinfo.stage = is_vertex ? SDL_GPU_SHADERSTAGE_VERTEX : SDL_GPU_SHADERSTAGE_FRAGMENT;
     return SDL_CreateGPUShader(gpu_device, &createinfo);
 }
 
-static void
-init_render_state(int msaa)
+static void init_render_state(int msaa)
 {
     SDL_GPUCommandBuffer *cmd;
     SDL_GPUTransferBuffer *buf_transfer;
@@ -659,6 +967,9 @@ init_render_state(int msaa)
         winstate->angle_y = (i * 20) % 360;
         winstate->angle_z = (i * 30) % 360;
     }
+
+    /* Set up 2D sprite render state */
+    InitSpriteOverlay(&sprite_render_state, state->windows[0]);
 }
 
 static int done = 0;
@@ -671,6 +982,13 @@ void loop(void)
     /* Check for events */
     while (SDL_PollEvent(&event) && !done) {
         SDLTest_CommonEvent(state, &event, &done);
+
+        if (event.type == SDL_EVENT_KEY_UP) {
+            if (event.key.key == SDLK_S) {
+                /* Toggle 2D sprite drawing */
+                sprite_render_state.show_sprites = !sprite_render_state.show_sprites;
+            }
+        }
     }
     if (!done) {
         for (i = 0; i < state->num_windows; ++i) {

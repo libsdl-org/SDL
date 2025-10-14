@@ -126,15 +126,12 @@ extern "C" {
  */
 #define SDL_TriggerBreakpoint() TriggerABreakpointInAPlatformSpecificManner
 
-#elif defined(_MSC_VER) && _MSC_VER >= 1310
+#elif defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER >= 1310)
     /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
     #define SDL_TriggerBreakpoint() __debugbreak()
 #elif defined(_MSC_VER) && defined(_M_IX86)
     #define SDL_TriggerBreakpoint() { _asm { int 0x03 }  }
-#elif defined(ANDROID)
-    #include <assert.h>
-    #define SDL_TriggerBreakpoint() assert(0)
 #elif SDL_HAS_BUILTIN(__builtin_debugtrap)
     #define SDL_TriggerBreakpoint() __builtin_debugtrap()
 #elif SDL_HAS_BUILTIN(__builtin_trap)
@@ -362,7 +359,7 @@ extern SDL_DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *
 #define SDL_enabled_assert(condition) \
     do { \
         while ( !(condition) ) { \
-            static struct SDL_AssertData sdl_assert_data = { 0, 0, #condition, 0, 0, 0, 0 }; \
+            static struct SDL_AssertData sdl_assert_data = { false, 0, #condition, NULL, 0, NULL, NULL }; \
             const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
             if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
                 continue; /* go again. */ \

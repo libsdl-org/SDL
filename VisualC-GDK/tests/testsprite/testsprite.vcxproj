@@ -292,7 +292,6 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(TreatWarningsAsError)'!=''">
     <ClCompile>
-      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
       <TreatWarningAsError>$(TreatWarningsAsError)</TreatWarningAsError>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -311,7 +310,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="..\..\..\test\icon.bmp">
+    <CopyFileToFolders Include="..\..\..\test\icon.png">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Desktop.x64'">Copying %(Filename)%(Extension)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.Scarlett.x64'">Copying %(Filename)%(Extension)</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">Copying %(Filename)%(Extension)</Message>

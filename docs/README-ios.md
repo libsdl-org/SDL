@@ -12,8 +12,43 @@ Instructions:
 2. Select your desired target, and hit build.
 
 
-Using the Simple DirectMedia Layer for iOS
+Using the Simple DirectMedia Layer for iOS with the SDL3 xcFramework
 ==============================================================================
+
+The recommended way to use SDL for iOS is by including the SDL3.xcframework which is now a build target of the SDL.xcodeproj file. An xcframework is a new (Xcode 11) uber-framework which can handle any combination of processor type and target OS platform.
+You can either build the SDL3.xcframework yourself or download the latest release disk image asset (*.dmg).
+
+In the past, iOS devices were always an ARM variant processor, and the simulator was always i386 or x86_64, and thus libraries could be combined into a single framework for both simulator and device. With the introduction of the Apple Silicon ARM-based machines, regular frameworks would collide as CPU type was no longer sufficient to differentiate the platform. So Apple created the new xcframework library package.
+
+The xcframework target builds into a Products directory alongside the SDL.xcodeproj file, as SDL3.xcframework. This can be brought in to any iOS project and will function properly for both simulator and device, no matter their CPUs. Note that Intel Macs cannot cross-compile for Apple Silicon Macs. If you need AS compatibility, perform this build on an Apple Silicon Mac.
+
+This target requires Xcode 11 or later. The target will simply fail to build if attempted on older Xcodes.
+
+In addition, on Apple platforms, main() cannot be in a dynamically loaded library.
+However, unlike in SDL2, in SDL3 SDL_main is implemented inline in SDL_main.h, so you don't need to link against a static libSDL3main.lib, and you don't need to copy a .c file from the SDL3 source either.
+This means that iOS apps which used the statically-linked libSDL3.lib and now link with the xcframwork can just `#include <SDL3/SDL_main.h>` in the source file that contains their standard `int main(int argc, char *argv[])` function to get a header-only SDL_main implementation that calls the `SDL_RunApp()` with your standard main function.
+
+To use the SDL3.xcframework follow these steps:
+
+1. Run Xcode and create a new project using the iOS Game template, selecting the Objective C language and Metal game technology.
+2. In the main view, delete all files except for Assets and LaunchScreen
+3. Select the project in the main view, go to the "General" tab, scroll down to "Frameworks, Libraries, and Embedded Content", and drag and drop the SDL3.xcframework
+4. Still in "Frameworks, Libraries, and Embedded Content", select "Embed & Sign" for the SDL3.xcframework.
+5. Add the source files that you would normally have for an SDL program, making sure to have #include <SDL3/SDL_main.h> at the top of the file containing your main() function.
+6. Add any assets that your application needs.
+7. Enjoy!
+
+Using an xcFramework is similar to using a regular framework. However, issues have been seen with the build system not seeing the headers in the xcFramework. To remedy this, add the path to the xcFramework in your app's target ==> Build Settings ==> Framework Search Paths and mark it recursive (this is critical). Also critical is to remove "*.framework" from Build Settings ==> Sub-Directories to Exclude in Recursive Searches. Clean the build folder, and on your next build the build system should be able to see any of these in your code, as expected:
+
+#include "SDL3/SDL_main.h"
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+
+
+Using the Simple DirectMedia Layer for iOS by adding the SDL3 Xcode project
+==============================================================================
+
+To maintain compatibility with older Xcode versions than version 11 you can add the SDL3 Xcode project file to your project:
 
 1. Run Xcode and create a new project using the iOS Game template, selecting the Objective C language and Metal game technology.
 2. In the main view, delete all files except for Assets and LaunchScreen
@@ -26,6 +61,18 @@ Using the Simple DirectMedia Layer for iOS
 9. Add any assets that your application needs.
 10. Enjoy!
 
+Notes for distributing your iOS app on the AppStore when using the embedded SDL3 Xcode project:
+Embedding the SDL3 Xcode project makes SDL3.framework a target of your app, so it will be included in the archive created during the "Archive" step required for App Store submission. As this prevents successful distribution, remove the framework via a script in the Build Phase after the "Embed & Sign" step.
+
+1. Select the project in the main view, go to the "Build Phases" tab, click on the big '+' in this tab and click "New Run Script Phase".
+2. Scroll down to "Run Script" (after the "Embed SDL3 Framework") and enter the following script:
+```
+    if [ -d "$INSTALL_ROOT/Library" ]; then
+        echo "Removing SDL3.framework from INSTALL_ROOT for archiving"
+        rm -rf "$INSTALL_ROOT/Library"
+    fi
+```
+3. Below the script entry uncheck the "Run Script:" options "For install builds only" and "Based on dependency analysis"
 
 TODO: Add information regarding App Store requirements such as icons, etc.
 
@@ -154,26 +201,7 @@ More information on this subject is available here:
 http://developer.apple.com/library/ios/#documentation/iPhone/Conceptual/iPhoneOSProgrammingGuide/Introduction/Introduction.html
 
 
-Notes -- xcFramework
-==============================================================================
 
-The SDL.xcodeproj file now includes a target to build SDL3.xcframework. An xcframework is a new (Xcode 11) uber-framework which can handle any combination of processor type and target OS platform.
-
-In the past, iOS devices were always an ARM variant processor, and the simulator was always i386 or x86_64, and thus libraries could be combined into a single framework for both simulator and device. With the introduction of the Apple Silicon ARM-based machines, regular frameworks would collide as CPU type was no longer sufficient to differentiate the platform. So Apple created the new xcframework library package.
-
-The xcframework target builds into a Products directory alongside the SDL.xcodeproj file, as SDL3.xcframework. This can be brought in to any iOS project and will function properly for both simulator and device, no matter their CPUs. Note that Intel Macs cannot cross-compile for Apple Silicon Macs. If you need AS compatibility, perform this build on an Apple Silicon Mac.
-
-This target requires Xcode 11 or later. The target will simply fail to build if attempted on older Xcodes.
-
-In addition, on Apple platforms, main() cannot be in a dynamically loaded library.
-However, unlike in SDL2, in SDL3 SDL_main is implemented inline in SDL_main.h, so you don't need to link against a static libSDL3main.lib, and you don't need to copy a .c file from the SDL3 source either.
-This means that iOS apps which used the statically-linked libSDL3.lib and now link with the xcframwork can just `#include <SDL3/SDL_main.h>` in the source file that contains their standard `int main(int argc, char *argv[])` function to get a header-only SDL_main implementation that calls the `SDL_RunApp()` with your standard main function.
-
-Using an xcFramework is similar to using a regular framework. However, issues have been seen with the build system not seeing the headers in the xcFramework. To remedy this, add the path to the xcFramework in your app's target ==> Build Settings ==> Framework Search Paths and mark it recursive (this is critical). Also critical is to remove "*.framework" from Build Settings ==> Sub-Directories to Exclude in Recursive Searches. Clean the build folder, and on your next build the build system should be able to see any of these in your code, as expected:
-
-#include "SDL_main.h"
-#include <SDL.h>
-#include <SDL_main.h>
 
 
 Notes -- iPhone SDL limitations

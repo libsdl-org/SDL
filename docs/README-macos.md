@@ -49,7 +49,7 @@ NSApplicationDelegate implementation:
 ```objc
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-    if (SDL_GetEventState(SDL_EVENT_QUIT) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_EVENT_QUIT)) {
         SDL_Event event;
         SDL_zero(event);
         event.type = SDL_EVENT_QUIT;
@@ -61,7 +61,7 @@ NSApplicationDelegate implementation:
 
 - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
 {
-    if (SDL_GetEventState(SDL_EVENT_DROP_FILE) == SDL_ENABLE) {
+    if (SDL_EventEnabled(SDL_EVENT_DROP_FILE)) {
         SDL_Event event;
         SDL_zero(event);
         event.type = SDL_EVENT_DROP_FILE;

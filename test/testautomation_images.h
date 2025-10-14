@@ -12,6 +12,9 @@
 
 /* Defines some images for tests */
 
+#ifndef testautomation_images_h_
+#define testautomation_images_h_
+
 /**
  * Type for test images.
  */
@@ -26,8 +29,11 @@ typedef struct SDLTest_SurfaceImage_s {
 extern SDL_Surface *SDLTest_ImageBlit(void);
 extern SDL_Surface *SDLTest_ImageBlitTiled(void);
 extern SDL_Surface *SDLTest_ImageBlitColor(void);
+extern SDL_Surface *SDLTest_ImageClampedSprite(void);
 extern SDL_Surface *SDLTest_ImageFace(void);
 extern SDL_Surface *SDLTest_ImagePrimitives(void);
 extern SDL_Surface *SDLTest_ImageBlendingBackground(void);
 extern SDL_Surface *SDLTest_ImageBlendingSprite(void);
 extern SDL_Surface *SDLTest_ImageWrappingSprite(void);
+
+#endif /* testautomation_images_h_ */

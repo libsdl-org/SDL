@@ -31,28 +31,28 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
 #include "SDL_waylanddatamanager.h"
-#include "SDL_waylandkeyboard.h"
 
 enum SDL_WaylandAxisEvent
 {
-    AXIS_EVENT_CONTINUOUS = 0,
-    AXIS_EVENT_DISCRETE,
-    AXIS_EVENT_VALUE120
+    SDL_WAYLAND_AXIS_EVENT_CONTINUOUS = 0,
+    SDL_WAYLAND_AXIS_EVENT_DISCRETE,
+    SDL_WAYLAND_AXIS_EVENT_VALUE120
 };
 
 typedef struct
 {
-    int32_t repeat_rate;     // Repeat rate in range of [1, 1000] character(s) per second
-    int32_t repeat_delay_ms; // Time to first repeat event in milliseconds
-    Uint32 keyboard_id;      // ID of the source keyboard.
+    Sint32 repeat_rate;     // Repeat rate in range of [1, 1000] character(s) per second
+    Sint32 repeat_delay_ms; // Time to first repeat event in milliseconds
+    Uint32 keyboard_id;     // ID of the source keyboard.
     bool is_initialized;
 
     bool is_key_down;
-    uint32_t key;
-    Uint64 wl_press_time_ns;  // Key press time as reported by the Wayland API
+    Uint32 key;
+    Uint32 wl_press_time_ms;  // Key press time as reported by the Wayland API in milliseconds
+    Uint64 base_time_ns;      // Key press time as reported by the Wayland API in nanoseconds
     Uint64 sdl_press_time_ns; // Key press time expressed in SDL ticks
     Uint64 next_repeat_ns;    // Next repeat event in nanoseconds
-    uint32_t scancode;
+    Uint32 scancode;
     char text[8];
 } SDL_WaylandKeyboardRepeat;
 
@@ -74,7 +74,8 @@ typedef struct SDL_WaylandSeat
         struct zwp_input_timestamps_v1 *timestamps;
         struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
         SDL_WindowData *focus;
-        SDL_Keymap *sdl_keymap;
+        SDL_Keymap **sdl_keymap;
+        char *current_locale;
 
         SDL_WaylandKeyboardRepeat repeat;
         Uint64 highres_timestamp_ns;
@@ -93,22 +94,24 @@ typedef struct SDL_WaylandSeat
             struct xkb_compose_table *compose_table;
             struct xkb_compose_state *compose_state;
 
-            // Keyboard layout "group"
-            Uint32 current_group;
+            // Current keyboard layout (aka 'group')
+            xkb_layout_index_t num_layouts;
+            xkb_layout_index_t current_layout;
 
             // Modifier bitshift values
-            Uint32 idx_shift;
-            Uint32 idx_ctrl;
-            Uint32 idx_alt;
-            Uint32 idx_gui;
-            Uint32 idx_mod3;
-            Uint32 idx_mod5;
-            Uint32 idx_num;
-            Uint32 idx_caps;
+            xkb_mod_mask_t shift_mask;
+            xkb_mod_mask_t ctrl_mask;
+            xkb_mod_mask_t alt_mask;
+            xkb_mod_mask_t gui_mask;
+            xkb_mod_mask_t level3_mask;
+            xkb_mod_mask_t level5_mask;
+            xkb_mod_mask_t num_mask;
+            xkb_mod_mask_t caps_mask;
 
             // Current system modifier flags
-            Uint32 wl_pressed_modifiers;
-            Uint32 wl_locked_modifiers;
+            xkb_mod_mask_t wl_pressed_modifiers;
+            xkb_mod_mask_t wl_latched_modifiers;
+            xkb_mod_mask_t wl_locked_modifiers;
         } xkb;
     } keyboard;
 
@@ -120,30 +123,58 @@ typedef struct SDL_WaylandSeat
         struct wp_cursor_shape_device_v1 *cursor_shape;
         struct zwp_locked_pointer_v1 *locked_pointer;
         struct zwp_confined_pointer_v1 *confined_pointer;
+        struct zwp_pointer_gesture_pinch_v1 *gesture_pinch;
 
         SDL_WindowData *focus;
         SDL_CursorData *current_cursor;
+
+        // According to the spec, a seat can only have one active gesture of any type at a time.
+        SDL_WindowData *gesture_focus;
 
         Uint64 highres_timestamp_ns;
         Uint32 enter_serial;
         SDL_MouseButtonFlags buttons_pressed;
         SDL_Point last_motion;
+        bool is_confined;
 
         SDL_MouseID sdl_id;
 
         // Information about axis events on the current frame
         struct
         {
-            enum SDL_WaylandAxisEvent x_axis_type;
-            float x;
+            bool have_absolute;
+            bool have_relative;
+            bool have_axis;
+            bool have_enter;
 
-            enum SDL_WaylandAxisEvent y_axis_type;
-            float y;
+            struct
+            {
+                wl_fixed_t sx;
+                wl_fixed_t sy;
+            } absolute;
+
+            struct
+            {
+                wl_fixed_t dx;
+                wl_fixed_t dy;
+                wl_fixed_t dx_unaccel;
+                wl_fixed_t dy_unaccel;
+            } relative;
+
+            struct
+            {
+                enum SDL_WaylandAxisEvent x_axis_type;
+                float x;
+
+                enum SDL_WaylandAxisEvent y_axis_type;
+                float y;
+
+                SDL_MouseWheelDirection direction;
+            } axis;
 
             // Event timestamp in nanoseconds
             Uint64 timestamp_ns;
-            SDL_MouseWheelDirection direction;
-        } current_axis_info;
+        } pending_frame;
 
         // Cursor state
         struct
@@ -170,7 +201,8 @@ typedef struct SDL_WaylandSeat
     struct
     {
         struct zwp_text_input_v3 *zwp_text_input;
-        SDL_Rect cursor_rect;
+        SDL_Rect text_input_rect;
+        int text_input_cursor;
         bool enabled;
         bool has_preedit;
     } text_input;
@@ -191,6 +223,7 @@ extern int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS);
 
 extern void Wayland_DisplayInitInputTimestampManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitCursorShapeManager(SDL_VideoData *display);
+extern void Wayland_DisplayInitPointerGestureManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitTabletManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitDataDeviceManager(SDL_VideoData *display);
 extern void Wayland_DisplayInitPrimarySelectionDeviceManager(SDL_VideoData *display);

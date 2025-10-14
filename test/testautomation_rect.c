@@ -916,7 +916,7 @@ static int SDLCALL rect_testIntersectRectEmpty(void *arg)
  */
 static int SDLCALL rect_testIntersectRectParam(void *arg)
 {
-    SDL_Rect rectA;
+    SDL_Rect rectA = { 0 };
     SDL_Rect rectB = { 0 };
     SDL_Rect result;
     bool intersection;
@@ -1165,7 +1165,7 @@ static int SDLCALL rect_testHasIntersectionEmpty(void *arg)
  */
 static int SDLCALL rect_testHasIntersectionParam(void *arg)
 {
-    SDL_Rect rectA;
+    SDL_Rect rectA = { 0 };
     SDL_Rect rectB = { 0 };
     bool intersection;
 
@@ -1726,7 +1726,7 @@ static int SDLCALL rect_testUnionRectInside(void *arg)
  */
 static int SDLCALL rect_testUnionRectParam(void *arg)
 {
-    SDL_Rect rectA, rectB = { 0 };
+    SDL_Rect rectA = { 0 }, rectB = { 0 };
     SDL_Rect result;
 
     /* invalid parameter combinations */

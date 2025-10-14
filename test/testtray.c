@@ -1,3 +1,4 @@
+#include "testutils.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
@@ -27,7 +28,7 @@ static void SDLCALL apply_icon(void *ptr, const char * const *filelist, int filt
         return;
     }
 
-    SDL_Surface *icon = SDL_LoadBMP(*filelist);
+    SDL_Surface *icon = SDL_LoadPNG(*filelist);
 
     if (!icon) {
         SDL_Log("Couldn't load icon '%s': %s", *filelist, SDL_GetError());
@@ -43,7 +44,7 @@ static void SDLCALL apply_icon(void *ptr, const char * const *filelist, int filt
 static void SDLCALL change_icon(void *ptr, SDL_TrayEntry *entry)
 {
     SDL_DialogFileFilter filters[] = {
-        { "BMP image files", "bmp" },
+        { "PNG image files", "png" },
         { "All files", "*" },
     };
 
@@ -520,14 +521,17 @@ int main(int argc, char **argv)
         goto quit;
     }
 
-    /* TODO: Resource paths? */
-    SDL_Surface *icon = SDL_LoadBMP("../test/sdl-test_round.bmp");
+    char *icon1filename = GetResourceFilename(NULL, "sdl-test_round.png");
+    SDL_Surface *icon = SDL_LoadPNG(icon1filename);
+    SDL_free(icon1filename);
 
     if (!icon) {
         SDL_Log("Couldn't load icon 1, proceeding without: %s", SDL_GetError());
     }
 
-    SDL_Surface *icon2 = SDL_LoadBMP("../test/speaker.bmp");
+    char *icon2filename = GetResourceFilename(NULL, "speaker.png");
+    SDL_Surface *icon2 = SDL_LoadPNG(icon2filename);
+    SDL_free(icon2filename);
 
     if (!icon2) {
         SDL_Log("Couldn't load icon 2, proceeding without: %s", SDL_GetError());

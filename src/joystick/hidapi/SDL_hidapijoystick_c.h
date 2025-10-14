@@ -35,6 +35,9 @@
 #define SDL_JOYSTICK_HIDAPI_STEAM
 #define SDL_JOYSTICK_HIDAPI_STEAMDECK
 #define SDL_JOYSTICK_HIDAPI_SWITCH
+#ifdef HAVE_LIBUSB
+#define SDL_JOYSTICK_HIDAPI_SWITCH2
+#endif
 #define SDL_JOYSTICK_HIDAPI_WII
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
@@ -42,7 +45,10 @@
 #define SDL_JOYSTICK_HIDAPI_STEAM_HORI
 #define SDL_JOYSTICK_HIDAPI_LG4FF
 #define SDL_JOYSTICK_HIDAPI_8BITDO
+#define SDL_JOYSTICK_HIDAPI_FLYDIGI
 #define SDL_JOYSTICK_HIDAPI_GIP
+#define SDL_JOYSTICK_HIDAPI_SINPUT
+#define SDL_JOYSTICK_HIDAPI_ZUIKI
 
 // Joystick capability definitions
 #define SDL_JOYSTICK_CAP_MONO_LED       0x00000001
@@ -156,6 +162,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamDeck;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch2;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
@@ -163,6 +170,9 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamHori;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLg4ff;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_Driver8BitDo;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverFlydigi;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSInput;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverZUIKI;
 
 // Return true if a HID device is present and supported as a joystick of the given type
 extern bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);

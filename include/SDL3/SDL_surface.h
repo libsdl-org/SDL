@@ -32,7 +32,8 @@
  * There is also a simple .bmp loader, SDL_LoadBMP(). SDL itself does not
  * provide loaders for various other file formats, but there are several
  * excellent external libraries that do, including its own satellite library,
- * SDL_image:
+ * [SDL_image](https://wiki.libsdl.org/SDL3_image)
+ * :
  *
  * https://github.com/libsdl-org/SDL_image
  */
@@ -85,7 +86,7 @@ typedef enum SDL_ScaleMode
     SDL_SCALEMODE_INVALID = -1,
     SDL_SCALEMODE_NEAREST,  /**< nearest pixel sampling */
     SDL_SCALEMODE_LINEAR,   /**< linear filtering */
-    SDL_SCALEMODE_PIXELART  /**< nearest pixel sampling with improved scaling for pixel art */
+    SDL_SCALEMODE_PIXELART  /**< nearest pixel sampling with improved scaling for pixel art, available since SDL 3.4.0 */
 } SDL_ScaleMode;
 
 /**
@@ -95,9 +96,10 @@ typedef enum SDL_ScaleMode
  */
 typedef enum SDL_FlipMode
 {
-    SDL_FLIP_NONE,          /**< Do not flip */
-    SDL_FLIP_HORIZONTAL,    /**< flip horizontally */
-    SDL_FLIP_VERTICAL       /**< flip vertically */
+    SDL_FLIP_NONE,                                                                  /**< Do not flip */
+    SDL_FLIP_HORIZONTAL,                                                            /**< flip horizontally */
+    SDL_FLIP_VERTICAL,                                                              /**< flip vertically */
+    SDL_FLIP_HORIZONTAL_AND_VERTICAL = (SDL_FLIP_HORIZONTAL | SDL_FLIP_VERTICAL)    /**< flip horizontally and vertically (not a diagonal flip) */
 } SDL_FlipMode;
 
 #ifndef SDL_INTERNAL
@@ -324,6 +326,9 @@ extern SDL_DECLSPEC SDL_Palette * SDLCALL SDL_CreateSurfacePalette(SDL_Surface *
 
 /**
  * Set the palette used by a surface.
+ *
+ * Setting the palette keeps an internal reference to the palette, which can
+ * be safely destroyed afterwards.
  *
  * A single palette can be shared with many surfaces.
  *
@@ -554,7 +559,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP(const char *file);
 extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio);
 
 /**
- * Save a surface to a file.
+ * Save a surface to a file in BMP format.
  *
  * Surfaces with a 24-bit, 32-bit and paletted 8-bit format get saved in the
  * BMP directly. Other RGB formats with 8-bit or higher get converted to a
@@ -575,6 +580,84 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStre
  * \sa SDL_SaveBMP_IO
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *file);
+
+/**
+ * Load a PNG image from a seekable SDL data stream.
+ *
+ * The new surface should be freed with SDL_DestroySurface(). Not doing so
+ * will result in a memory leak.
+ *
+ * \param src the data stream for the surface.
+ * \param closeio if true, calls SDL_CloseIO() on `src` before returning, even
+ *                in the case of an error.
+ * \returns a pointer to a new SDL_Surface structure or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_DestroySurface
+ * \sa SDL_LoadPNG
+ * \sa SDL_SavePNG_IO
+ */
+extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadPNG_IO(SDL_IOStream *src, bool closeio);
+
+/**
+ * Load a PNG image from a file.
+ *
+ * The new surface should be freed with SDL_DestroySurface(). Not doing so
+ * will result in a memory leak.
+ *
+ * \param file the PNG file to load.
+ * \returns a pointer to a new SDL_Surface structure or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_DestroySurface
+ * \sa SDL_LoadPNG_IO
+ * \sa SDL_SavePNG
+ */
+extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadPNG(const char *file);
+
+/**
+ * Save a surface to a seekable SDL data stream in PNG format.
+ *
+ * \param surface the SDL_Surface structure containing the image to be saved.
+ * \param dst a data stream to save to.
+ * \param closeio if true, calls SDL_CloseIO() on `dst` before returning, even
+ *                in the case of an error.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_LoadPNG_IO
+ * \sa SDL_SavePNG
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio);
+
+/**
+ * Save a surface to a file in PNG format.
+ *
+ * \param surface the SDL_Surface structure containing the image to be saved.
+ * \param file a file to save to.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_LoadPNG
+ * \sa SDL_SavePNG_IO
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SavePNG(SDL_Surface *surface, const char *file);
 
 /**
  * Set the RLE acceleration hint for a surface.
@@ -1280,10 +1363,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src
  *
  * \param src the SDL_Surface structure to be copied from.
  * \param srcrect the SDL_Rect structure representing the rectangle to be
- *                copied, may not be NULL.
+ *                copied, or NULL to copy the entire surface.
  * \param dst the SDL_Surface structure that is the blit target.
  * \param dstrect the SDL_Rect structure representing the target rectangle in
- *                the destination surface, may not be NULL.
+ *                the destination surface, or NULL to fill the entire
+ *                destination surface.
  * \param scaleMode the SDL_ScaleMode to be used.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.

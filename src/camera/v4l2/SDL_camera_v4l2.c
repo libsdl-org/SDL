@@ -193,7 +193,7 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
             *timestampNS = (((Uint64) buf.timestamp.tv_sec) * SDL_NS_PER_SECOND) + SDL_US_TO_NS(buf.timestamp.tv_usec);
 
             #if DEBUG_CAMERA
-            SDL_Log("CAMERA: debug mmap: image %d/%d  data[0]=%p", buf.index, device->hidden->nb_buffers, (void*)frame->pixels);
+            SDL_Log("CAMERA: debug mmap: image %d/%d  data[0]=%p", buf.index, device->hidden->nb_buffers, (void *)frame->pixels);
             #endif
             break;
 
@@ -230,7 +230,7 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
                 return SDL_CAMERA_FRAME_ERROR;
             }
 
-            frame->pixels = (void*)buf.m.userptr;
+            frame->pixels = (void *)buf.m.userptr;
             if (device->hidden->driver_pitch) {
                 frame->pitch = device->hidden->driver_pitch;
             } else {
@@ -241,7 +241,7 @@ static SDL_CameraFrameResult V4L2_AcquireFrame(SDL_Camera *device, SDL_Surface *
             *timestampNS = (((Uint64) buf.timestamp.tv_sec) * SDL_NS_PER_SECOND) + SDL_US_TO_NS(buf.timestamp.tv_usec);
 
             #if DEBUG_CAMERA
-            SDL_Log("CAMERA: debug userptr: image %d/%d  data[0]=%p", buf.index, device->hidden->nb_buffers, (void*)frame->pixels);
+            SDL_Log("CAMERA: debug userptr: image %d/%d  data[0]=%p", buf.index, device->hidden->nb_buffers, (void *)frame->pixels);
             #endif
             break;
 

@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
                     }
 
                     if (e.key.key == SDLK_M) {
-                        if (SDL_SetWindowParent(w2, w2)) {
+                        if (SDL_SetWindowParent(w2, w1)) {
                             if (SDL_SetWindowModal(w2, true)) {
                                 SDL_SetWindowTitle(w2, "Modal Window");
                             }

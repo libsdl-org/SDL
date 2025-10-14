@@ -40,11 +40,7 @@
 #define CONVERT_MAGNITUDE(x) (((x)*10000) / 0x7FFF)
 
 // external variables referenced.
-#ifdef SDL_VIDEO_DRIVER_WINDOWS
 extern HWND SDL_HelperWindow;
-#else
-static const HWND SDL_HelperWindow = NULL;
-#endif
 
 // local variables
 static bool coinitialized = false;

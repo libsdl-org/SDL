@@ -41,7 +41,12 @@
 #define environ (*_NSGetEnviron())
 #elif defined(SDL_PLATFORM_FREEBSD)
 #include <dlfcn.h>
-#define environ ((char **)dlsym(RTLD_DEFAULT, "environ"))
+static char **get_environ_rtld(void)
+{
+    char ***environ_rtld = (char ***)dlsym(RTLD_DEFAULT, "environ");
+    return environ_rtld ? *environ_rtld : NULL;
+}
+#define environ (get_environ_rtld())
 #else
 extern char **environ;
 #endif
@@ -217,7 +222,7 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
 {
     char **result = NULL;
 
-    if (!env) {
+    CHECK_PARAM(!env) {
         SDL_InvalidParamError("env");
         return NULL;
     }
@@ -248,11 +253,13 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
 {
     bool result = false;
 
-    if (!env) {
+    CHECK_PARAM(!env) {
         return SDL_InvalidParamError("env");
-    } else if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
+    }
+    CHECK_PARAM(!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
         return SDL_InvalidParamError("name");
-    } else if (!value) {
+    }
+    CHECK_PARAM(!value) {
         return SDL_InvalidParamError("value");
     }
 
@@ -287,9 +294,10 @@ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
 {
     bool result = false;
 
-    if (!env) {
+    CHECK_PARAM(!env) {
         return SDL_InvalidParamError("env");
-    } else if (!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
+    }
+    CHECK_PARAM(!name || *name == '\0' || SDL_strchr(name, '=') != NULL) {
         return SDL_InvalidParamError("name");
     }
 

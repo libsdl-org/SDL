@@ -34,7 +34,7 @@
  * This category covers measuring time elapsed (SDL_GetTicks(),
  * SDL_GetPerformanceCounter()), putting a thread to sleep for a certain
  * amount of time (SDL_Delay(), SDL_DelayNS(), SDL_DelayPrecise()), and firing
- * a callback function after a certain amount of time has elasped
+ * a callback function after a certain amount of time has elapsed
  * (SDL_AddTimer(), etc).
  *
  * There are also useful macros to convert between time units, like
@@ -195,6 +195,8 @@ extern "C" {
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetTicksNS
  */
 extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetTicks(void);
 

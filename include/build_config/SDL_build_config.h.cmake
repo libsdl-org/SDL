@@ -33,6 +33,10 @@
 
 #cmakedefine SDL_PLATFORM_PRIVATE 1
 
+#ifdef SDL_PLATFORM_PRIVATE
+#include "SDL_begin_config_private.h"
+#endif
+
 #cmakedefine HAVE_GCC_ATOMICS 1
 #cmakedefine HAVE_GCC_SYNC_LOCK_TEST_AND_SET 1
 
@@ -176,6 +180,7 @@
 #cmakedefine HAVE_MEMFD_CREATE 1
 #cmakedefine HAVE_POSIX_FALLOCATE 1
 #cmakedefine HAVE_SIGACTION 1
+#cmakedefine HAVE_SIGTIMEDWAIT 1
 #cmakedefine HAVE_SA_SIGACTION 1
 #cmakedefine HAVE_ST_MTIM 1
 #cmakedefine HAVE_SETJMP 1
@@ -211,6 +216,8 @@
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBDECOR_H 1
 #cmakedefine HAVE_LIBURING_H 1
+#cmakedefine HAVE_FRIBIDI_H 1
+#cmakedefine SDL_FRIBIDI_DYNAMIC @SDL_FRIBIDI_DYNAMIC@
 
 #cmakedefine HAVE_DDRAW_H 1
 #cmakedefine HAVE_DSOUND_H 1
@@ -219,17 +226,19 @@
 #cmakedefine HAVE_WINDOWS_GAMING_INPUT_H 1
 #cmakedefine HAVE_GAMEINPUT_H 1
 #cmakedefine HAVE_DXGI_H 1
+#cmakedefine HAVE_DXGI1_5_H 1
 #cmakedefine HAVE_DXGI1_6_H 1
 
 #cmakedefine HAVE_MMDEVICEAPI_H 1
 #cmakedefine HAVE_TPCSHRD_H 1
 #cmakedefine HAVE_ROAPI_H 1
 #cmakedefine HAVE_SHELLSCALINGAPI_H 1
-#cmakedefine HAVE_SHOBJIDL_CORE_H 1
 
 #cmakedefine USE_POSIX_SPAWN 1
 #cmakedefine HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR 1
 #cmakedefine HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP 1
+
+#cmakedefine SDL_DISABLE_DLOPEN_NOTES 1
 
 /* SDL internal assertion support */
 #cmakedefine SDL_DEFAULT_ASSERT_LEVEL_CONFIGURED 1
@@ -277,6 +286,7 @@
 #cmakedefine SDL_AUDIO_DRIVER_PSP 1
 #cmakedefine SDL_AUDIO_DRIVER_PS2 1
 #cmakedefine SDL_AUDIO_DRIVER_N3DS 1
+#cmakedefine SDL_AUDIO_DRIVER_NGAGE 1
 #cmakedefine SDL_AUDIO_DRIVER_QNX 1
 
 #cmakedefine SDL_AUDIO_DRIVER_PRIVATE 1
@@ -365,6 +375,9 @@
 #cmakedefine SDL_TIME_PSP 1
 #cmakedefine SDL_TIME_PS2 1
 #cmakedefine SDL_TIME_N3DS 1
+#cmakedefine SDL_TIME_NGAGE 1
+
+#cmakedefine SDL_TIME_PRIVATE 1
 
 /* Enable various timer systems */
 #cmakedefine SDL_TIMER_HAIKU 1
@@ -387,6 +400,7 @@
 #cmakedefine SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC @SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC@
 #cmakedefine SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM @SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM@
 #cmakedefine SDL_VIDEO_DRIVER_N3DS 1
+#cmakedefine SDL_VIDEO_DRIVER_NGAGE 1
 #cmakedefine SDL_VIDEO_DRIVER_OFFSCREEN 1
 #cmakedefine SDL_VIDEO_DRIVER_PS2 1
 #cmakedefine SDL_VIDEO_DRIVER_PSP 1
@@ -414,13 +428,15 @@
 #cmakedefine SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR @SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR@
 #cmakedefine SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS @SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS@
 #cmakedefine SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST @SDL_VIDEO_DRIVER_X11_DYNAMIC_XTEST@
-#cmakedefine SDL_VIDEO_DRIVER_X11_HAS_XKBLOOKUPKEYSYM 1
+#cmakedefine SDL_VIDEO_DRIVER_X11_HAS_XKBLIB 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_XCURSOR 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_XDBE 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_XFIXES 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_XINPUT2 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1
+#cmakedefine SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO 1
+#cmakedefine SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE @SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_GESTURE@
 #cmakedefine SDL_VIDEO_DRIVER_X11_XRANDR 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_XSCRNSAVER 1
 #cmakedefine SDL_VIDEO_DRIVER_X11_XSHAPE 1
@@ -438,6 +454,7 @@
 #cmakedefine SDL_VIDEO_RENDER_VULKAN 1
 #cmakedefine SDL_VIDEO_RENDER_OGL 1
 #cmakedefine SDL_VIDEO_RENDER_OGL_ES2 1
+#cmakedefine SDL_VIDEO_RENDER_NGAGE 1
 #cmakedefine SDL_VIDEO_RENDER_PS2 1
 #cmakedefine SDL_VIDEO_RENDER_PSP 1
 #cmakedefine SDL_VIDEO_RENDER_VITA_GXM 1
@@ -466,6 +483,8 @@
 #cmakedefine SDL_GPU_D3D12 1
 #cmakedefine SDL_GPU_VULKAN 1
 #cmakedefine SDL_GPU_METAL 1
+
+#cmakedefine SDL_GPU_PRIVATE 1
 
 /* Enable system power support */
 #cmakedefine SDL_POWER_ANDROID 1
@@ -501,6 +520,8 @@
 /* Enable system storage support */
 #cmakedefine SDL_STORAGE_STEAM @SDL_STORAGE_STEAM@
 
+#cmakedefine SDL_STORAGE_PRIVATE 1
+
 /* Enable system FSops support */
 #cmakedefine SDL_FSOPS_POSIX 1
 #cmakedefine SDL_FSOPS_WINDOWS 1
@@ -525,6 +546,9 @@
 /* Enable dialog subsystem */
 #cmakedefine SDL_DIALOG_DUMMY 1
 
+/* Enable tray subsystem */
+#cmakedefine SDL_TRAY_DUMMY 1
+
 /* Enable assembly routines */
 #cmakedefine SDL_ALTIVEC_BLITTERS 1
 
@@ -543,6 +567,11 @@
 #cmakedefine SDL_VIDEO_VITA_PIB 1
 #cmakedefine SDL_VIDEO_VITA_PVR 1
 #cmakedefine SDL_VIDEO_VITA_PVR_OGL 1
+
+/* xkbcommon version info */
+#define SDL_XKBCOMMON_VERSION_MAJOR @SDL_XKBCOMMON_VERSION_MAJOR@
+#define SDL_XKBCOMMON_VERSION_MINOR @SDL_XKBCOMMON_VERSION_MINOR@
+#define SDL_XKBCOMMON_VERSION_PATCH @SDL_XKBCOMMON_VERSION_PATCH@
 
 /* Libdecor version info */
 #define SDL_LIBDECOR_VERSION_MAJOR @SDL_LIBDECOR_VERSION_MAJOR@

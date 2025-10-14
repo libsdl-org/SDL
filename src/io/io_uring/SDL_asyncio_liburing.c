@@ -44,8 +44,16 @@ static bool (*AsyncIOFromFile)(const char *file, const char *mode, SDL_AsyncIO *
 // we never link directly to liburing.
 // (this says "-ffi" which sounds like a scripting language binding thing, but the non-ffi version
 // is static-inline code we can't lookup with dlsym. This is by design.)
-static const char *liburing_library = "liburing-ffi.so.2";
+#define SDL_DRIVER_LIBURING_DYNAMIC "liburing-ffi.so.2"
+static const char *liburing_library = SDL_DRIVER_LIBURING_DYNAMIC;
 static void *liburing_handle = NULL;
+
+SDL_ELF_NOTE_DLOPEN(
+    "io-io_uring",
+    "Support for async IO through liburing",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_DRIVER_LIBURING_DYNAMIC
+);
 
 #define SDL_LIBURING_FUNCS \
     SDL_LIBURING_FUNC(int, io_uring_queue_init, (unsigned entries, struct io_uring *ring, unsigned flags)) \
@@ -512,10 +520,12 @@ static void MaybeInitializeLibUring(void)
 {
     if (SDL_ShouldInit(&liburing_init)) {
         if (LoadLibUring()) {
+            SDL_DebugLogBackend("asyncio", "liburing");
             CreateAsyncIOQueue = SDL_SYS_CreateAsyncIOQueue_liburing;
             QuitAsyncIO = SDL_SYS_QuitAsyncIO_liburing;
             AsyncIOFromFile = SDL_SYS_AsyncIOFromFile_liburing;
         } else {  // can't use liburing? Use the "generic" threadpool implementation instead.
+            SDL_DebugLogBackend("asyncio", "generic");
             CreateAsyncIOQueue = SDL_SYS_CreateAsyncIOQueue_Generic;
             QuitAsyncIO = SDL_SYS_QuitAsyncIO_Generic;
             AsyncIOFromFile = SDL_SYS_AsyncIOFromFile_Generic;

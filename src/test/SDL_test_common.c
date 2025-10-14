@@ -1626,6 +1626,14 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                     event->display.displayID, (int)(scale * 100.0f));
         }
         break;
+    case SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED:
+        {
+            SDL_Rect bounds;
+            SDL_GetDisplayUsableBounds(event->display.displayID, &bounds);
+            SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " changed usable bounds to %dx%d at %d,%d",
+                    event->display.displayID, bounds.w, bounds.h, bounds.x, bounds.y);
+        }
+        break;
     case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
         SDL_Log("SDL EVENT: Display %" SDL_PRIu32 " desktop mode changed to %" SDL_PRIs32 "x%" SDL_PRIs32,
                 event->display.displayID, event->display.data1, event->display.data2);
@@ -1733,12 +1741,12 @@ void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Window %" SDL_PRIu32 " HDR %s", event->window.windowID, event->window.data1 ? "enabled" : "disabled");
         break;
     case SDL_EVENT_KEYBOARD_ADDED:
-        SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " attached",
-                event->kdevice.which);
+        SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " (%s) attached",
+                event->kdevice.which, SDL_GetKeyboardNameForID(event->kdevice.which));
         break;
     case SDL_EVENT_KEYBOARD_REMOVED:
-        SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " removed",
-                event->kdevice.which);
+        SDL_Log("SDL EVENT: Keyboard %" SDL_PRIu32 " (%s) removed",
+                event->kdevice.which, SDL_GetKeyboardNameForID(event->kdevice.which));
         break;
     case SDL_EVENT_KEY_DOWN:
     case SDL_EVENT_KEY_UP: {
@@ -1775,12 +1783,12 @@ void SDLTest_PrintEvent(const SDL_Event *event)
         SDL_Log("SDL EVENT: Keymap changed");
         break;
     case SDL_EVENT_MOUSE_ADDED:
-        SDL_Log("SDL EVENT: Mouse %" SDL_PRIu32 " attached",
-                event->mdevice.which);
+        SDL_Log("SDL EVENT: Mouse %" SDL_PRIu32 " (%s) attached",
+                event->mdevice.which, SDL_GetMouseNameForID(event->mdevice.which));
         break;
     case SDL_EVENT_MOUSE_REMOVED:
-        SDL_Log("SDL EVENT: Mouse %" SDL_PRIu32 " removed",
-                event->mdevice.which);
+        SDL_Log("SDL EVENT: Mouse %" SDL_PRIu32 " (%s) removed",
+                event->mdevice.which, SDL_GetMouseNameForID(event->mdevice.which));
         break;
     case SDL_EVENT_MOUSE_MOTION:
         SDL_Log("SDL EVENT: Mouse: moved to %g,%g (%g,%g) in window %" SDL_PRIu32,
@@ -1918,6 +1926,16 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->tfinger.fingerID,
                 event->tfinger.x, event->tfinger.y,
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
+        break;
+
+    case SDL_EVENT_PINCH_BEGIN:
+        SDL_Log("SDL EVENT: Pinch Begin");
+        break;
+    case SDL_EVENT_PINCH_UPDATE:
+        SDL_Log("SDL EVENT: Pinch Update, scale=%f", event->pinch.scale);
+        break;
+    case SDL_EVENT_PINCH_END:
+        SDL_Log("SDL EVENT: Pinch End");
         break;
 
     case SDL_EVENT_RENDER_TARGETS_RESET:
@@ -2230,6 +2248,7 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
              event->type != SDL_EVENT_FINGER_MOTION &&
              event->type != SDL_EVENT_PEN_MOTION &&
              event->type != SDL_EVENT_PEN_AXIS &&
+             event->type != SDL_EVENT_PINCH_UPDATE &&
              event->type != SDL_EVENT_JOYSTICK_AXIS_MOTION) ||
             (state->verbose & VERBOSE_MOTION)) {
             SDLTest_PrintEvent(event);

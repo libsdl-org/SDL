@@ -28,7 +28,7 @@
    Also, this file gets included multiple times, don't add #pragma once, etc.
 */
 
-// direct jump magic can use these, the rest needs special code.
+/* direct jump magic can use these, the rest needs special code. */
 #ifndef SDL_DYNAPI_PROC_NO_VARARGS
 SDL_DYNAPI_PROC(size_t,SDL_IOprintf,(SDL_IOStream *a, SDL_PRINTF_FORMAT_STRING const char *b, ...),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_Log,(SDL_PRINTF_FORMAT_STRING const char *a, ...),(a),)
@@ -47,7 +47,7 @@ SDL_DYNAPI_PROC(int,SDL_sscanf,(const char *a, SDL_SCANF_FORMAT_STRING const cha
 SDL_DYNAPI_PROC(int,SDL_swprintf,(SDL_OUT_Z_CAP(b) wchar_t *a, size_t b, SDL_PRINTF_FORMAT_STRING const wchar_t *c, ...),(a,b,c),return)
 #endif
 
-// New API symbols are added at the end
+/* New API symbols are added at the end */
 SDL_DYNAPI_PROC(SDL_Surface*,SDL_AcquireCameraFrame,(SDL_Camera *a, Uint64 *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_GPUCommandBuffer*,SDL_AcquireGPUCommandBuffer,(SDL_GPUDevice *a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_AcquireGPUSwapchainTexture,(SDL_GPUCommandBuffer *a, SDL_Window *b, SDL_GPUTexture **c, Uint32 *d, Uint32 *e),(a,b,c,d,e),return)
@@ -288,7 +288,7 @@ SDL_DYNAPI_PROC(const char*,SDL_GetCameraDriver,(int a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_GetCameraFormat,(SDL_Camera *a, SDL_CameraSpec *b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_CameraID,SDL_GetCameraID,(SDL_Camera *a),(a),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetCameraName,(SDL_CameraID a),(a),return)
-SDL_DYNAPI_PROC(int,SDL_GetCameraPermissionState,(SDL_Camera *a),(a),return)
+SDL_DYNAPI_PROC(SDL_CameraPermissionState,SDL_GetCameraPermissionState,(SDL_Camera *a),(a),return)
 SDL_DYNAPI_PROC(SDL_CameraPosition,SDL_GetCameraPosition,(SDL_CameraID a),(a),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetCameraProperties,(SDL_Camera *a),(a),return)
 SDL_DYNAPI_PROC(SDL_CameraSpec**,SDL_GetCameraSupportedFormats,(SDL_CameraID a, int *b),(a,b),return)
@@ -1271,9 +1271,9 @@ SDL_DYNAPI_PROC(bool,SDL_SetRelativeMouseTransform,(SDL_MouseMotionTransformCall
 SDL_DYNAPI_PROC(bool,SDL_RenderTexture9GridTiled,(SDL_Renderer *a,SDL_Texture *b,const SDL_FRect *c,float d,float e,float f,float g,float h,const SDL_FRect *i,float j),(a,b,c,d,e,f,g,h,i,j),return)
 SDL_DYNAPI_PROC(bool,SDL_SetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GetDefaultTextureScaleMode,(SDL_Renderer *a,SDL_ScaleMode *b),(a,b),return)
-SDL_DYNAPI_PROC(SDL_GPURenderState*,SDL_CreateGPURenderState,(SDL_Renderer *a,SDL_GPURenderStateDesc *b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_GPURenderState*,SDL_CreateGPURenderState,(SDL_Renderer *a,SDL_GPURenderStateCreateInfo *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_SetGPURenderStateFragmentUniforms,(SDL_GPURenderState *a,Uint32 b,const void *c,Uint32 d),(a,b,c,d),return)
-SDL_DYNAPI_PROC(bool,SDL_SetRenderGPUState,(SDL_Renderer *a,SDL_GPURenderState *b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_SetGPURenderState,(SDL_Renderer *a,SDL_GPURenderState *b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_DestroyGPURenderState,(SDL_GPURenderState *a),(a),)
 SDL_DYNAPI_PROC(bool,SDL_SetWindowProgressState,(SDL_Window *a,SDL_ProgressState b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_SetWindowProgressValue,(SDL_Window *a,float b),(a,b),return)
@@ -1282,7 +1282,21 @@ SDL_DYNAPI_PROC(float,SDL_GetWindowProgressValue,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_SetRenderTextureAddressMode,(SDL_Renderer *a,SDL_TextureAddressMode b,SDL_TextureAddressMode c),(a,b,c),return)
 SDL_DYNAPI_PROC(bool,SDL_GetRenderTextureAddressMode,(SDL_Renderer *a,SDL_TextureAddressMode *b,SDL_TextureAddressMode *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetGPUDeviceProperties,(SDL_GPUDevice *a),(a),return)
-SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateGPURenderer,(SDL_Window *a,SDL_GPUShaderFormat b,SDL_GPUDevice **c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_Renderer*,SDL_CreateGPURenderer,(SDL_GPUDevice *a,SDL_Window *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_PutAudioStreamPlanarData,(SDL_AudioStream *a,const void * const*b,int c,int d),(a,b,c,d),return)
-SDL_DYNAPI_PROC(bool,SDL_SetAudioIterationCallbacks,(SDL_AudioDeviceID a,SDL_AudioIterationCallback b,SDL_AudioIterationCallback c,void *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_GetEventDescription,(const SDL_Event *a,char *b,int c),(a,b,c),return)
+SDL_DYNAPI_PROC(bool,SDL_PutAudioStreamDataNoCopy,(SDL_AudioStream *a,const void *b,int c,SDL_AudioStreamDataCompleteCallback d,void *e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(Uint32,SDL_AddAtomicU32,(SDL_AtomicU32 *a,int b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_hid_get_properties,(SDL_hid_device *a),(a),return)
+SDL_DYNAPI_PROC(SDL_PixelFormat,SDL_GetPixelFormatFromGPUTextureFormat,(SDL_GPUTextureFormat a),(a),return)
+SDL_DYNAPI_PROC(SDL_GPUTextureFormat,SDL_GetGPUTextureFormatFromPixelFormat,(SDL_PixelFormat a),(a),return)
+SDL_DYNAPI_PROC(Sint32,JNI_OnLoad,(JavaVM *a, void *b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_SetTexturePalette,(SDL_Texture *a,SDL_Palette *b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_Palette*,SDL_GetTexturePalette,(SDL_Texture *a),(a),return)
+SDL_DYNAPI_PROC(SDL_GPUDevice*,SDL_GetGPURendererDevice,(SDL_Renderer *a),(a),return)
+SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadPNG_IO,(SDL_IOStream *a,bool b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_Surface*,SDL_LoadPNG,(const char *a),(a),return)
+SDL_DYNAPI_PROC(bool,SDL_SavePNG_IO,(SDL_Surface *a,SDL_IOStream *b,bool c),(a,b,c),return)
+SDL_DYNAPI_PROC(bool,SDL_SavePNG,(SDL_Surface *a,const char *b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetSystemPageSize,(void),(),return)
+SDL_DYNAPI_PROC(SDL_PenDeviceType,SDL_GetPenDeviceType,(SDL_PenID a),(a),return)

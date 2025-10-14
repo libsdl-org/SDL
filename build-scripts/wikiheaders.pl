@@ -32,6 +32,7 @@ my $wikisubdir = '';
 my $incsubdir = 'include';
 my $readmesubdir = undef;
 my $apiprefixregex = undef;
+my $apipropertyregex = undef;
 my $versionfname = 'include/SDL_version.h';
 my $versionmajorregex = '\A\#define\s+SDL_MAJOR_VERSION\s+(\d+)\Z';
 my $versionminorregex = '\A\#define\s+SDL_MINOR_VERSION\s+(\d+)\Z';
@@ -57,6 +58,11 @@ my $quickreftitle = undef;
 my $quickrefurl = undef;
 my $quickrefdesc = undef;
 my $quickrefmacroregex = undef;
+my $envvarenabled = 0;
+my $envvartitle = 'Environment Variables';
+my $envvardesc = undef;
+my $envvarsymregex = undef;
+my $envvarsymreplace = undef;
 my $changeformat = undef;
 my $manpath = undef;
 my $gitrev = undef;
@@ -110,6 +116,7 @@ if (defined $optionsfname) {
             $srcpath = $val, next if $key eq 'srcpath';
             $wikipath = $val, next if $key eq 'wikipath';
             $apiprefixregex = $val, next if $key eq 'apiprefixregex';
+            $apipropertyregex = $val, next if $key eq 'apipropertyregex';
             $projectfullname = $val, next if $key eq 'projectfullname';
             $projectshortname = $val, next if $key eq 'projectshortname';
             $wikisubdir = $val, next if $key eq 'wikisubdir';
@@ -135,6 +142,11 @@ if (defined $optionsfname) {
             $quickrefurl = $val, next if $key eq 'quickrefurl';
             $quickrefdesc = $val, next if $key eq 'quickrefdesc';
             $quickrefmacroregex = $val, next if $key eq 'quickrefmacroregex';
+            $envvarenabled = int($val), next if $key eq 'envvarenabled';
+            $envvartitle = $val, next if $key eq 'envvartitle';
+            $envvardesc = $val, next if $key eq 'envvardesc';
+            $envvarsymregex = $val, next if $key eq 'envvarsymregex';
+            $envvarsymreplace = $val, next if $key eq 'envvarsymreplace';
         }
     }
     close(OPTIONS);
@@ -341,7 +353,7 @@ sub wikify_chunk {
 
         # Convert obvious API things to wikilinks.
         if (defined $apiprefixregex) {
-            $str =~ s/(\A|[^\/a-zA-Z0-9_])($apiprefixregex[a-zA-Z0-9_]+)/$1\[$2\]\($2\)/gms;
+            $str =~ s/(\A|[^\/a-zA-Z0-9_\[])($apiprefixregex[a-zA-Z0-9_]+)/$1\[$2\]\($2\)/gms;
         }
 
         $str = $codedstr . $str;
@@ -424,6 +436,7 @@ sub dewikify_chunk {
         }
     } elsif ($dewikify_mode eq 'manpage') {
         # make sure these can't become part of roff syntax.
+        $str =~ s/\\/\\(rs/gms;
         $str =~ s/\./\\[char46]/gms;
         $str =~ s/"/\\(dq/gms;
         $str =~ s/'/\\(aq/gms;
@@ -825,21 +838,23 @@ sub print_big_ascii_string {
             die("Don't have a big ascii entry for '$ch'!\n") if not defined $rowsref;
             my $row = @$rowsref[$rownum];
 
+            my $outstr = '';
             if ($lowascii) {
                 my @x = split //, $row;
                 foreach (@x) {
-                    my $v = ($_ eq "\x{2588}") ? 'X' : ' ';
-                    print $fh $v;
+                    $outstr .= ($_ eq "\x{2588}") ? 'X' : ' ';
                 }
             } else {
-                print $fh $row;
+                $outstr = $row;
             }
 
             $charidx++;
-
-            if ($charidx < $charcount) {
-                print $fh " ";
+            if ($charidx == $charcount) {
+                $outstr =~ s/\s*\Z//;  # dump extra spaces at the end of the line.
+            } else {
+                $outstr .= ' ';   # space between glyphs.
             }
+            print $fh $outstr;
         }
         print $fh "\n";
     }
@@ -1028,6 +1043,55 @@ sub generate_quickref {
 #    }
     rename($tmppath, $path) or die("Can't rename '$tmppath' to '$path': $!\n");
 }
+
+
+sub generate_envvar_wiki_page {
+    my $briefsref = shift;
+    my $path = shift;
+
+    return if not $envvarenabled or not defined $envvarsymregex or not defined $envvarsymreplace;
+
+    my $replace = "\"$envvarsymreplace\"";
+    my $tmppath = "$path.tmp";
+    open(my $fh, '>', $tmppath) or die("Can't open '$tmppath': $!\n");
+
+    print $fh "<!-- DO NOT EDIT THIS PAGE ON THE WIKI. IT WILL BE OVERWRITTEN BY WIKIHEADERS AND CHANGES WILL BE LOST! -->\n\n";
+    print $fh "# $envvartitle\n\n";
+
+    if (defined $envvardesc) {
+        my $desc = "$envvardesc";
+        $desc =~ s/\\n/\n/g;  # replace "\n" strings with actual newlines.
+        print $fh "$desc\n\n";
+    }
+
+    print $fh "## Environment Variable List\n\n";
+
+    foreach (sort keys %headersyms) {
+        my $sym = $_;
+        next if $headersymstype{$sym} != 2;  # not a #define? skip it.
+        my $hint = "$_";
+        next if not $hint =~ s/$envvarsymregex/$replace/ee;
+
+        my $brief = $$briefsref{$sym};
+        if (not defined $brief) {
+            $brief = '';
+        } else {
+            $brief = "$brief";
+            chomp($brief);
+            my $thiswikitype = defined $wikitypes{$sym} ? $wikitypes{$sym} : 'md';  # default to MarkDown for new stuff.
+            $brief = ": " . dewikify($thiswikitype, $brief);
+        }
+        print $fh "- [$hint]($sym)$brief\n";
+    }
+
+    print $fh "\n";
+
+    close($fh);
+
+    rename($tmppath, $path) or die("Can't rename '$tmppath' to '$path': $!\n");
+}
+
+
 
 
 my $incpath = "$srcpath";
@@ -1364,7 +1428,7 @@ while (my $d = readdir(DH)) {
                     # update strings now that we know everything pending is to be applied to this declaration. Add pending blank lines and the new text.
 
                     # At Sam's request, don't list property defines with functions. (See #9440)
-                    my $is_property = /\A\s*\#\s*define\s+SDL_PROP_/;
+                    my $is_property = (defined $apipropertyregex) ? /$apipropertyregex/ : 0;
                     if (!$is_property) {
                         if ($blank_lines > 0) {
                             while ($blank_lines > 0) {
@@ -2729,6 +2793,11 @@ __EOF__
         generate_quickref(\%briefs, "$wikipath/QuickReference.md", 0);
         generate_quickref(\%briefs, "$wikipath/QuickReferenceNoUnicode.md", 1);
     }
+
+    if ($envvarenabled and defined $envvarsymregex and defined $envvarsymreplace) {
+        generate_envvar_wiki_page(\%briefs, "$wikipath/EnvironmentVariables.md");
+    }
+
 } elsif ($copy_direction == -2) { # --copy-to-manpages
     # This only takes from the wiki data, since it has sections we omit from the headers, like code examples.
 
@@ -2972,10 +3041,12 @@ __EOF__
         }
 
         if (defined $returns) {
+            # Check for md link in return type: ([SDL_Renderer](SDL_Renderer) *)
+            # This would've prevented the next regex from working properly (it'd leave " *)")
+            $returns =~ s/\A\(\[.*?\]\((.*?)\)/\($1/ms;
             # Chop datatype in parentheses off the front.
-            if(!($returns =~ s/\A\([^\[]*\[[^\]]*\]\([^\)]*\)[^\)]*\) //ms)) {
-                $returns =~ s/\A\([^\)]*\) //ms;
-            }
+            $returns =~ s/\A\(.*?\) //;
+
             $returns = dewikify($wikitype, $returns);
             $str .= ".SH RETURN VALUE\n";
             $str .= "$returns\n";

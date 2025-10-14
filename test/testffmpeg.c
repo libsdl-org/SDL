@@ -93,7 +93,6 @@ static PFNGLEGLIMAGETARGETTEXTURE2DOESPROC glEGLImageTargetTexture2DOESFunc;
 #ifdef SDL_PLATFORM_WIN32
 static ID3D11Device *d3d11_device;
 static ID3D11DeviceContext *d3d11_context;
-static const GUID SDL_IID_ID3D11Resource = { 0xdc8e63f3, 0xd12b, 0x4952, { 0xb4, 0x7b, 0x5e, 0x45, 0x02, 0x6a, 0x86, 0x2d } };
 #endif
 static VulkanVideoContext *vulkan_context;
 struct SwsContextContainer
@@ -232,7 +231,7 @@ static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned
     SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadBMP_IO(src, true);
+        surface = SDL_LoadPNG_IO(src, true);
         if (surface) {
             /* Treat white as transparent */
             SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
@@ -925,7 +924,7 @@ static bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     glEGLImageTargetTexture2DOESFunc(GL_TEXTURE_EXTERNAL_OES, image);
     return true;
 }
-#endif // HAVE_EGL
+#endif /* HAVE_EGL */
 
 static bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
@@ -1459,7 +1458,7 @@ int main(int argc, char *argv[])
     }
 
     /* Create the sprite */
-    sprite = CreateTexture(renderer, icon_bmp, icon_bmp_len, &sprite_w, &sprite_h);
+    sprite = CreateTexture(renderer, icon_png, icon_png_len, &sprite_w, &sprite_h);
 
     if (!sprite) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture (%s)", SDL_GetError());

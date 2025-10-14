@@ -99,22 +99,60 @@ static bool SW_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
     return SDL_SetError("Software renderer doesn't have an output surface");
 }
 
+static bool SW_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    SDL_Palette *surface_palette = SDL_CreatePalette(256);
+    if (!surface_palette) {
+        return false;
+    }
+    palette->internal = surface_palette;
+    return true;
+}
+
+static bool SW_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
+{
+    SDL_Palette *surface_palette = (SDL_Palette *)palette->internal;
+    return SDL_SetPaletteColors(surface_palette, colors, 0, ncolors);
+}
+
+static void SW_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    SDL_Palette *surface_palette = (SDL_Palette *)palette->internal;
+    SDL_DestroyPalette(surface_palette);
+}
+
+static bool SW_ChangeTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+    SDL_Surface *surface = (SDL_Surface *)texture->internal;
+    SDL_Palette *surface_palette = NULL;
+    if (texture->palette) {
+        surface_palette = (SDL_Palette *)texture->palette->internal;
+    }
+    return SDL_SetSurfacePalette(surface, surface_palette);
+}
+
 static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     SDL_Surface *surface = SDL_CreateSurface(texture->w, texture->h, texture->format);
-    Uint8 r, g, b, a;
-
-    if (!SDL_SurfaceValid(surface)) {
-        return SDL_SetError("Cannot create surface");
+    if (!surface) {
+        return SDL_SetError("Can't create surface");
     }
     texture->internal = surface;
-    r = (Uint8)SDL_roundf(SDL_clamp(texture->color.r, 0.0f, 1.0f) * 255.0f);
-    g = (Uint8)SDL_roundf(SDL_clamp(texture->color.g, 0.0f, 1.0f) * 255.0f);
-    b = (Uint8)SDL_roundf(SDL_clamp(texture->color.b, 0.0f, 1.0f) * 255.0f);
-    a = (Uint8)SDL_roundf(SDL_clamp(texture->color.a, 0.0f, 1.0f) * 255.0f);
+
+    Uint8 r = (Uint8)SDL_roundf(SDL_clamp(texture->color.r, 0.0f, 1.0f) * 255.0f);
+    Uint8 g = (Uint8)SDL_roundf(SDL_clamp(texture->color.g, 0.0f, 1.0f) * 255.0f);
+    Uint8 b = (Uint8)SDL_roundf(SDL_clamp(texture->color.b, 0.0f, 1.0f) * 255.0f);
+    Uint8 a = (Uint8)SDL_roundf(SDL_clamp(texture->color.a, 0.0f, 1.0f) * 255.0f);
     SDL_SetSurfaceColorMod(surface, r, g, b);
     SDL_SetSurfaceAlphaMod(surface, a);
     SDL_SetSurfaceBlendMode(surface, texture->blendMode);
+
+    if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+        surface->palette = SDL_CreatePalette((1 << SDL_BITSPERPIXEL(surface->format)));
+        if (!surface->palette) {
+            return SDL_SetError("Can't create palette");
+        }
+    }
 
     /* Only RLE encode textures without an alpha channel since the RLE coder
      * discards the color values of pixels with an alpha value of zero.
@@ -220,9 +258,17 @@ static bool SW_QueueFillRects(SDL_Renderer *renderer, SDL_RenderCommand *cmd, co
 
     for (i = 0; i < count; i++, verts++, rects++) {
         verts->x = (int)rects->x;
+        verts->w = (int)rects->w;
+        if (verts->w < 0) {
+            verts->w = -verts->w;
+            verts->x -= verts->w;
+        }
         verts->y = (int)rects->y;
-        verts->w = SDL_max((int)rects->w, 1);
-        verts->h = SDL_max((int)rects->h, 1);
+        verts->h = (int)rects->h;
+        if (verts->h < 0) {
+            verts->h = -verts->h;
+            verts->y -= verts->h;
+        }
     }
 
     return true;
@@ -878,9 +924,11 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
             PrepTextureForCopy(cmd, &drawstate);
 
             // Apply viewport
-            if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
-                copydata->dstrect.x += drawstate.viewport->x;
-                copydata->dstrect.y += drawstate.viewport->y;
+            if (drawstate.viewport &&
+                (drawstate.viewport->x || drawstate.viewport->y) &&
+                (copydata->scale_x > 0.0f && copydata->scale_y > 0.0f)) {
+                copydata->dstrect.x += (int)(drawstate.viewport->x / copydata->scale_x);
+                copydata->dstrect.y += (int)(drawstate.viewport->y / copydata->scale_y);
             }
 
             SW_RenderCopyEx(renderer, surface, cmd->data.draw.texture, &copydata->srcrect,
@@ -1107,14 +1155,22 @@ static void SW_SelectBestFormats(SDL_Renderer *renderer, SDL_PixelFormat format)
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB8888);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB8888);
     }
+
+    // Add 8-bit palettized format
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
 }
 
 bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SDL_PropertiesID create_props)
 {
     SW_RenderData *data;
 
-    if (!SDL_SurfaceValid(surface)) {
+    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
         return SDL_InvalidParamError("surface");
+    }
+
+    CHECK_PARAM(SDL_BITSPERPIXEL(surface->format) < 8 ||
+                SDL_BITSPERPIXEL(surface->format) > 32) {
+        return SDL_SetError("Unsupported surface format");
     }
 
     renderer->software = true;
@@ -1128,6 +1184,10 @@ bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, S
 
     renderer->WindowEvent = SW_WindowEvent;
     renderer->GetOutputSize = SW_GetOutputSize;
+    renderer->CreatePalette = SW_CreatePalette;
+    renderer->UpdatePalette = SW_UpdatePalette;
+    renderer->DestroyPalette = SW_DestroyPalette;
+    renderer->ChangeTexturePalette = SW_ChangeTexturePalette;
     renderer->CreateTexture = SW_CreateTexture;
     renderer->UpdateTexture = SW_UpdateTexture;
     renderer->LockTexture = SW_LockTexture;

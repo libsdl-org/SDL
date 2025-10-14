@@ -17,7 +17,7 @@
 #include "testutils.h"
 
 /* This font was created with:
- * ./msdf-atlas-gen.exe -font OpenSans-VariableFont_wdth,wght.ttf -chars '[32,126]' -type msdf -potr -yorigin top -imageout msdf_font.bmp -csv msdf_font.csv
+ * ./msdf-atlas-gen.exe -font OpenSans-VariableFont_wdth,wght.ttf -chars '[32,126]' -type msdf -potr -yorigin top -imageout msdf_font.png -csv msdf_font.csv
  */
 
 /* This is the distance field range in pixels used when generating the font atlas, defaults to 2 */
@@ -55,7 +55,7 @@ static GlyphInfo glyphs[128];
 
 static bool LoadFontTexture(void)
 {
-    font_texture = LoadTexture(renderer, "msdf_font.bmp", false);
+    font_texture = LoadTexture(renderer, "msdf_font.png", false);
     if (!font_texture) {
         SDL_Log("Failed to create font texture: %s", SDL_GetError());
         return false;
@@ -164,10 +164,10 @@ static bool InitGPURenderState(void)
 {
     SDL_GPUShaderFormat formats;
     SDL_GPUShaderCreateInfo info;
-    SDL_GPURenderStateDesc desc;
+    SDL_GPURenderStateCreateInfo createinfo;
     MSDFShaderUniforms uniforms;
 
-    device = (SDL_GPUDevice *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_GPU_DEVICE_POINTER, NULL);
+    device = SDL_GetGPURendererDevice(renderer);
     if (!device) {
         SDL_Log("Couldn't get GPU device");
         return false;
@@ -205,9 +205,9 @@ static bool InitGPURenderState(void)
         return false;
     }
 
-    SDL_INIT_INTERFACE(&desc);
-    desc.fragment_shader = shader;
-    render_state = SDL_CreateGPURenderState(renderer, &desc);
+    SDL_zero(createinfo);
+    createinfo.fragment_shader = shader;
+    render_state = SDL_CreateGPURenderState(renderer, &createinfo);
     if (!render_state) {
         SDL_Log("Couldn't create render state: %s", SDL_GetError());
         return false;
@@ -255,7 +255,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    renderer = SDL_CreateRenderer(window, "gpu");
+    renderer = SDL_CreateRenderer(window, SDL_GPU_RENDERER);
     if (!renderer) {
         SDL_Log("Couldn't create renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -300,9 +300,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_GetCurrentRenderOutputSize(renderer, &output_width, &output_height);
     x = (output_width - text_width) / 2;
     y = (output_height - text_height) / 2;
-    SDL_SetRenderGPUState(renderer, render_state);
+    SDL_SetGPURenderState(renderer, render_state);
     RenderText("Hello World!", text_height, x, y);
-    SDL_SetRenderGPUState(renderer, NULL);
+    SDL_SetGPURenderState(renderer, NULL);
 
     SDL_RenderPresent(renderer);
 

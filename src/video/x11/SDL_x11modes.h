@@ -23,6 +23,8 @@
 #ifndef SDL_x11modes_h_
 #define SDL_x11modes_h_
 
+#include "SDL_x11settings.h"
+
 struct SDL_DisplayData
 {
     int screen;
@@ -61,6 +63,9 @@ extern bool X11_GetVisualInfoFromVisual(Display *display, Visual *visual, XVisua
 extern SDL_PixelFormat X11_GetPixelFormatFromVisualInfo(Display *display, XVisualInfo *vinfo);
 extern bool X11_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
 extern bool X11_GetDisplayUsableBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *sdl_display, SDL_Rect *rect);
+
+extern float X11_GetGlobalContentScale(Display *display, XSettingsClient *client);
+extern float X11_GetGlobalContentScaleForDevice(SDL_VideoDevice *_this);
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
 extern void X11_HandleXRandREvent(SDL_VideoDevice *_this, const XEvent *xevent);

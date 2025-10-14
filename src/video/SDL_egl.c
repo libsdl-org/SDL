@@ -110,6 +110,37 @@
 #define DEFAULT_OGL_ES2    "libGLESv2.so.2"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so.1"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so.1"
+
+SDL_ELF_NOTE_DLOPEN(
+    "egl-opengl",
+    "Support for OpenGL",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_OGL, ALT_OGL
+);
+SDL_ELF_NOTE_DLOPEN(
+    "egl-egl",
+    "Support for EGL",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_EGL
+);
+SDL_ELF_NOTE_DLOPEN(
+    "egl-es2",
+    "Support for EGL ES2",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_OGL_ES2
+);
+SDL_ELF_NOTE_DLOPEN(
+    "egl-es-pvr",
+    "Support for EGL ES PVR",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_OGL_ES_PVR
+);
+SDL_ELF_NOTE_DLOPEN(
+    "egl-ogl-es",
+    "Support for OpenGL ES",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    DEFAULT_OGL_ES
+);
 #endif // SDL_VIDEO_DRIVER_RPI
 
 #if defined(SDL_VIDEO_OPENGL) && !defined(SDL_VIDEO_VITA_PVR_OGL)
@@ -1076,7 +1107,8 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
         return NULL;
     }
 
-    _this->egl_data->egl_swapinterval = 0;
+    // The default swap interval is 1, according to the spec
+    _this->egl_data->egl_swapinterval = 1;
 
     if (!SDL_EGL_MakeCurrent(_this, egl_surface, (SDL_GLContext)egl_context)) {
         // Delete the context
@@ -1249,8 +1281,11 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
         }
     }
 
+    int opaque_ext_idx = -1;
+
 #ifdef EGL_EXT_present_opaque
     if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_EXT_present_opaque")) {
+        opaque_ext_idx = attr;
         bool allow_transparent = false;
         if (window && (window->flags & SDL_WINDOW_TRANSPARENT)) {
             allow_transparent = true;
@@ -1286,10 +1321,17 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
 
     attribs[attr++] = EGL_NONE;
 
-    surface = _this->egl_data->eglCreateWindowSurface(
-        _this->egl_data->egl_display,
-        _this->egl_data->egl_config,
-        nw, &attribs[0]);
+    surface = _this->egl_data->eglCreateWindowSurface(_this->egl_data->egl_display, _this->egl_data->egl_config, nw, &attribs[0]);
+    if (surface == EGL_NO_SURFACE) {
+        // we had a report of Nvidia drivers that report EGL_BAD_ATTRIBUTE if you try to
+        //  use EGL_PRESENT_OPAQUE_EXT, even when EGL_EXT_present_opaque is reported as available.
+        //  If we used it, try a second time without this attribute.
+        if ((_this->egl_data->eglGetError() == EGL_BAD_ATTRIBUTE) && (opaque_ext_idx >= 0)) {
+            SDL_memmove(&attribs[opaque_ext_idx], &attribs[opaque_ext_idx + 2], sizeof (attribs[0]) * ((attr - opaque_ext_idx) - 2));
+            surface = _this->egl_data->eglCreateWindowSurface(_this->egl_data->egl_display, _this->egl_data->egl_config, nw, &attribs[0]);
+        }
+    }
+
     if (surface == EGL_NO_SURFACE) {
         SDL_EGL_SetError("unable to create an EGL window surface", "eglCreateWindowSurface");
     }

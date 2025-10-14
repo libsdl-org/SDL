@@ -30,6 +30,7 @@ jobs:
           install: >-
             ${{ matrix.platform.msys2-env }}-cc
             ${{ matrix.platform.msys2-env }}-cmake
+            ${{ matrix.platform.msys2-env }}-ffmpeg
             ${{ matrix.platform.msys2-env }}-ninja
             ${{ (!matrix.platform.msys2-no-perl && format('{0}-perl', matrix.platform.msys2-env)) || '' }}
             ${{ matrix.platform.msys2-env }}-pkg-config
@@ -75,8 +76,8 @@ jobs:
         if: ${{ matrix.platform.android-ndk }}
         id: setup-ndk
         with:
-          local-cache: true
-          ndk-version: r21e
+          local-cache: false
+          ndk-version: r28c
       - name: 'Configure Android NDK variables'
         if: ${{ matrix.platform.android-ndk }}
         shell: sh
@@ -93,6 +94,11 @@ jobs:
         with:
           arch: ${{ matrix.platform.msvc-vcvars-arch }}
           sdk: ${{ matrix.platform.msvc-vcvars-sdk }}
+      - name: 'Set up Nokia N-Gage SDK'
+        uses: ./.github/actions/setup-ngage-sdk
+        if: ${{ matrix.platform.setup-ngage-sdk-path != '' }}
+        with:
+          path: '${{ matrix.platform.setup-ngage-sdk-path }}'
       - name: 'Set up Windows GDK Desktop'
         uses: ./.github/actions/setup-gdk-desktop
         if: ${{ matrix.platform.setup-gdk-folder != '' }}
@@ -201,7 +207,7 @@ jobs:
         #shell: ${{ matrix.platform.shell }}
         run: |
           ${{ matrix.platform.source-cmd }}
-          ${{ matrix.platform.cmake-config-emulator }} cmake -S . -B build -GNinja \
+          ${{ matrix.platform.cmake-config-emulator }} cmake -S . -B build -G "${{ matrix.platform.cmake-generator }}" \
             -Wdeprecated -Wdev -Werror \
             ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
             -DSDL_WERROR=${{ matrix.platform.werror }} \
@@ -232,9 +238,9 @@ jobs:
         run: |
           echo "This should show us the SDL_REVISION"
           echo "Shared library:"
-          ${{ (matrix.platform.shared-lib && format('strings build/{0} | grep "Github Workflow"', matrix.platform.shared-lib)) || 'echo "<Shared library not supported by platform>"' }}
+          ${{ (matrix.platform.shared-lib && format('{0} build/{1} | grep "Github Workflow"', matrix.platform.binutils-strings, matrix.platform.shared-lib)) || 'echo "<Shared library not supported by platform>"' }}
           echo "Static library:"
-          ${{ (matrix.platform.static-lib && format('strings build/{0} | grep "Github Workflow"', matrix.platform.static-lib)) || 'echo "<Static library not supported by platform>"' }}
+          ${{ (matrix.platform.static-lib && format('{0} build/{1} | grep "Github Workflow"', matrix.platform.binutils-strings, matrix.platform.static-lib)) || 'echo "<Static library not supported by platform>"' }}
       - name: 'Run build-time tests (CMake)'
         id: tests
         if: ${{ !matrix.platform.no-cmake && matrix.platform.run-tests }}
@@ -321,7 +327,7 @@ jobs:
       - name: 'Build (cross-platform-actions, BSD)'
         id: cpactions
         if: ${{ matrix.platform.cpactions }}
-        uses: cross-platform-actions/action@v0.27.0
+        uses: cross-platform-actions/action@v0.29.0
         with:
           operating_system: '${{ matrix.platform.cpactions-os }}'
           architecture: '${{ matrix.platform.cpactions-arch }}'
@@ -406,6 +412,14 @@ jobs:
           build-scripts/test-versioning.sh
           python build-scripts/check_android_jni.py
           python build-scripts/check_stdlib_usage.py
+      - name: 'Verify alignment of Android test apks'
+        if: ${{ matrix.platform.android-ndk && !matrix.platform.no-cmake }}
+        run: |
+          find ./ -iname '*.apk' | xargs -L1 ./build-scripts/check_elf_alignment.sh
+      - name: 'Verify alignment of Android .so files'
+        if: ${{ matrix.platform.android-ndk && !matrix.platform.no-cmake }}
+        run: |
+          find ./ -iname '*.so' | xargs -L1 ./build-scripts/check_elf_alignment.sh
       - name: 'Upload binary package'
         uses: actions/upload-artifact@v4
         if: ${{ always() && matrix.platform.artifact != '' && (steps.package.outcome == 'success' || steps.cpactions.outcome == 'success') && (matrix.platform.enable-artifacts || steps.tests.outcome == 'failure') }}

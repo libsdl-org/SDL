@@ -25,7 +25,7 @@
 
 // Internal functions used by SDL_AudioStream for queueing audio.
 
-typedef void (SDLCALL *SDL_ReleaseAudioBufferCallback)(void *userdata, const void *buffer, int buflen);
+typedef SDL_AudioStreamDataCompleteCallback SDL_ReleaseAudioBufferCallback;
 
 typedef struct SDL_AudioQueue SDL_AudioQueue;
 typedef struct SDL_AudioTrack SDL_AudioTrack;

@@ -28,9 +28,18 @@
  * handling, e.g., for input and drawing tablets or suitably equipped mobile /
  * tablet devices.
  *
- * To get started with pens, simply handle SDL_EVENT_PEN_* events. When a pen
- * starts providing input, SDL will assign it a unique SDL_PenID, which will
- * remain for the life of the process, as long as the pen stays connected.
+ * To get started with pens, simply handle pen events:
+ *
+ * - SDL_EVENT_PEN_PROXIMITY_IN, SDL_EVENT_PEN_PROXIMITY_OUT
+ *   (SDL_PenProximityEvent)
+ * - SDL_EVENT_PEN_DOWN, SDL_EVENT_PEN_UP (SDL_PenTouchEvent)
+ * - SDL_EVENT_PEN_MOTION (SDL_PenMotionEvent)
+ * - SDL_EVENT_PEN_BUTTON_DOWN, SDL_EVENT_PEN_BUTTON_UP (SDL_PenButtonEvent)
+ * - SDL_EVENT_PEN_AXIS (SDL_PenAxisEvent)
+ *
+ * When a pen starts providing input, SDL will assign it a unique SDL_PenID,
+ * which will remain for the life of the process, as long as the pen stays
+ * connected.
  *
  * Pens may provide more than simple touch input; they might have other axes,
  * such as pressure, tilt, rotation, etc.
@@ -43,6 +52,7 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_touch.h>
 
+#include <SDL3/SDL_begin_code.h>
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
@@ -74,7 +84,6 @@ typedef Uint32 SDL_PenID;
  * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_PEN_TOUCHID ((SDL_TouchID)-2)
-
 
 /**
  * Pen input flags, as reported by various pen events' `pen_state` field.
@@ -118,10 +127,50 @@ typedef enum SDL_PenAxis
     SDL_PEN_AXIS_COUNT       /**< Total known pen axis types in this version of SDL. This number may grow in future releases! */
 } SDL_PenAxis;
 
+/**
+ * An enum that describes the type of a pen device.
+ *
+ * A "direct" device is a pen that touches a graphic display (like an Apple
+ * Pencil on an iPad's screen). "Indirect" devices touch an external tablet
+ * surface that is connected to the machine but is not a display (like a
+ * lower-end Wacom tablet connected over USB).
+ *
+ * Apps may use this information to decide if they should draw a cursor; if
+ * the pen is touching the screen directly, a cursor doesn't make sense and
+ * can be in the way, but becomes necessary for indirect devices to know where
+ * on the display they are interacting.
+ *
+ * \since This enum is available since SDL 3.4.0.
+ */
+typedef enum SDL_PenDeviceType
+{
+    SDL_PEN_DEVICE_TYPE_INVALID = -1, /**< Not a valid pen device. */
+    SDL_PEN_DEVICE_TYPE_UNKNOWN,      /**< Don't know specifics of this pen. */
+    SDL_PEN_DEVICE_TYPE_DIRECT,       /**< Pen touches display. */
+    SDL_PEN_DEVICE_TYPE_INDIRECT      /**< Pen touches something that isn't the display. */
+} SDL_PenDeviceType;
+
+/**
+ * Get the device type of the given pen.
+ *
+ * Many platforms do not supply this information, so an app must always be
+ * prepared to get an SDL_PEN_DEVICE_TYPE_UNKNOWN result.
+ *
+ * \param instance_id the pen instance ID.
+ * \returns the device type of the given pen, or SDL_PEN_DEVICE_TYPE_INVALID
+ *          on failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC SDL_PenDeviceType SDLCALL SDL_GetPenDeviceType(SDL_PenID instance_id);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
 #endif
+#include <SDL3/SDL_close_code.h>
 
 #endif /* SDL_pen_h_ */
 

@@ -375,6 +375,9 @@ void SDL_ResetLogPriorities(void)
 
     SDL_LockMutex(SDL_log_lock);
     {
+        const char *env = SDL_getenv("DEBUG_INVOCATION");
+        bool debug = (env && *env && *env != '0');
+
         CleanupLogPriorities();
 
         SDL_log_default_priority = SDL_LOG_PRIORITY_INVALID;
@@ -397,7 +400,11 @@ void SDL_ResetLogPriorities(void)
 
             switch (i) {
             case SDL_LOG_CATEGORY_APPLICATION:
-                SDL_log_priorities[i] = SDL_LOG_PRIORITY_INFO;
+                if (debug) {
+                    SDL_log_priorities[i] = SDL_LOG_PRIORITY_DEBUG;
+                } else {
+                    SDL_log_priorities[i] = SDL_LOG_PRIORITY_INFO;
+                }
                 break;
             case SDL_LOG_CATEGORY_ASSERT:
                 SDL_log_priorities[i] = SDL_LOG_PRIORITY_WARN;
@@ -406,7 +413,11 @@ void SDL_ResetLogPriorities(void)
                 SDL_log_priorities[i] = SDL_LOG_PRIORITY_VERBOSE;
                 break;
             default:
-                SDL_log_priorities[i] = SDL_LOG_PRIORITY_ERROR;
+                if (debug) {
+                    SDL_log_priorities[i] = SDL_LOG_PRIORITY_DEBUG;
+                } else {
+                    SDL_log_priorities[i] = SDL_LOG_PRIORITY_ERROR;
+                }
                 break;
             }
         }
@@ -450,7 +461,7 @@ bool SDL_SetLogPriorityPrefix(SDL_LogPriority priority, const char *prefix)
 {
     char *prefix_copy;
 
-    if (priority <= SDL_LOG_PRIORITY_INVALID || priority >= SDL_LOG_PRIORITY_COUNT) {
+    CHECK_PARAM(priority <= SDL_LOG_PRIORITY_INVALID || priority >= SDL_LOG_PRIORITY_COUNT) {
         return SDL_InvalidParamError("priority");
     }
 
@@ -586,6 +597,25 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
     if (priority < SDL_GetLogPriority(category)) {
         return;
     }
+
+#if defined(SDL_PLATFORM_NGAGE)
+    extern void NGAGE_vnprintf(char *buf, size_t size, const char *fmt, va_list ap);
+    char buf[1024];
+    NGAGE_vnprintf(buf, sizeof(buf), fmt, ap);
+
+#ifdef ENABLE_FILE_LOG
+    FILE* file;
+    file = fopen("E:/SDL_Log.txt", "a");
+    if (file)
+    {
+        vfprintf(file, fmt, ap);
+        fprintf(file, "\n");
+        (void)fclose(file);
+    }
+#endif
+
+    return;
+#endif
 
     // Render into stack buffer
     va_copy(aq, ap);
@@ -767,9 +797,14 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
             (void)fclose(pFile);
         }
     }
+#elif defined(SDL_PLATFORM_NGAGE)
+    {
+        /* Nothing to do here. */
+    }
 #endif
 #if defined(HAVE_STDIO_H) && \
     !(defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))) && \
+    !(defined(SDL_PLATFORM_NGAGE)) && \
     !(defined(SDL_PLATFORM_WIN32))
     (void)fprintf(stderr, "%s%s\n", GetLogPriorityPrefix(priority), message);
 #endif

@@ -47,8 +47,15 @@ encounter limitations or behavior that is different from other windowing systems
 
 ### Warping the mouse cursor to or from a point outside the window doesn't work
 
-- The cursor can be warped only within the window with mouse focus, provided that the `zwp_pointer_confinement_v1`
-  protocol is supported by the compositor.
+- Warping the cursor on Wayland requires that either the `wp_pointer_warp_v1` or `zwp_pointer_confinement_v1` protocol
+  is supported by the compositor. Compositors typically restrict pointer warps to be within the window that currently
+  has mouse focus.
+
+### Minimize/Restored window events are not sent, and the ```SDL_WINDOW_MINIMIZED``` flag is not set.
+
+- Wayland windows do not currently report the minimized state, aside from when it is activated programmatically via
+  ```SDL_MinimizeWindow()```. Minimizing a window from the window controls or a desktop shortcut will not send a
+  minimized event or flag the window as being minimized.
 
 ### The application icon can't be set via ```SDL_SetWindowIcon()```
 

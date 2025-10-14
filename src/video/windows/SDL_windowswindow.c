@@ -33,52 +33,15 @@
 #include "../SDL_sysvideo.h"
 
 #include "SDL_windowsvideo.h"
+#include "SDL_windowskeyboard.h"
 #include "SDL_windowswindow.h"
 
 // Dropfile support
 #include <shellapi.h>
 
-#ifdef HAVE_SHOBJIDL_CORE_H
-#include <shobjidl_core.h>
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+#include <shobjidl.h>
 #endif
-
-// Dark mode support
-typedef enum {
-    UXTHEME_APPMODE_DEFAULT,
-    UXTHEME_APPMODE_ALLOW_DARK,
-    UXTHEME_APPMODE_FORCE_DARK,
-    UXTHEME_APPMODE_FORCE_LIGHT,
-    UXTHEME_APPMODE_MAX
-} UxthemePreferredAppMode;
-
-typedef enum {
-    WCA_UNDEFINED = 0,
-    WCA_USEDARKMODECOLORS = 26,
-    WCA_LAST = 27
-} WINDOWCOMPOSITIONATTRIB;
-
-typedef struct {
-    WINDOWCOMPOSITIONATTRIB Attrib;
-    PVOID pvData;
-    SIZE_T cbData;
-} WINDOWCOMPOSITIONATTRIBDATA;
-
-typedef struct {
-    ULONG dwOSVersionInfoSize;
-    ULONG dwMajorVersion;
-    ULONG dwMinorVersion;
-    ULONG dwBuildNumber;
-    ULONG dwPlatformId;
-    WCHAR szCSDVersion[128];
-} NT_OSVERSIONINFOW;
-
-typedef bool (WINAPI *ShouldAppsUseDarkMode_t)(void);
-typedef void (WINAPI *AllowDarkModeForWindow_t)(HWND, bool);
-typedef void (WINAPI *AllowDarkModeForApp_t)(bool);
-typedef void (WINAPI *RefreshImmersiveColorPolicyState_t)(void);
-typedef UxthemePreferredAppMode (WINAPI *SetPreferredAppMode_t)(UxthemePreferredAppMode);
-typedef BOOL (WINAPI *SetWindowCompositionAttribute_t)(HWND, const WINDOWCOMPOSITIONATTRIBDATA *);
-typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
 
 // Windows CE compatibility
 #ifndef SWP_NOCOPYBITS
@@ -94,12 +57,6 @@ typedef void (NTAPI *RtlGetVersion_t)(NT_OSVERSIONINFOW *);
 #endif
 
 // #define HIGHDPI_DEBUG
-
-// Fake window to help with DirectInput events.
-HWND SDL_HelperWindow = NULL;
-static const TCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
-static const TCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
-static ATOM SDL_HelperWindowClass = 0;
 
 /* For borderless Windows, still want the following flag:
    - WS_MINIMIZEBOX: window will respond to Windows minimize commands sent to all windows, such as windows key + m, shaking title bar, etc.
@@ -184,8 +141,8 @@ static DWORD GetWindowStyleEx(SDL_Window *window)
     return style;
 }
 
-#ifdef HAVE_SHOBJIDL_CORE_H
-static ITaskbarList3 *GetTaskbarList(SDL_Window* window)
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+static ITaskbarList3 *GetTaskbarList(SDL_Window *window)
 {
     const SDL_WindowData *data = window->internal;
     SDL_assert(data->taskbar_button_created);
@@ -434,7 +391,6 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
     data->last_pointer_update = (LPARAM)-1;
     data->videodata = videodata;
     data->initializing = true;
-    data->last_displayID = window->last_displayID;
     data->hint_erase_background_mode = GetEraseBackgroundModeHint();
 
 
@@ -779,6 +735,11 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             }
             return false;
         }
+
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+        // Ensure that the IME isn't active on the new window until explicitly requested.
+        WIN_StopTextInput(_this, window);
+#endif
 
         // Inform Windows of the frame change so we can respond to WM_NCCALCSIZE
         SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
@@ -1534,72 +1495,6 @@ void WIN_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     CleanupWindowData(_this, window);
 }
 
-/*
- * Creates a HelperWindow used for DirectInput.
- */
-bool SDL_HelperWindowCreate(void)
-{
-    HINSTANCE hInstance = GetModuleHandle(NULL);
-    WNDCLASS wce;
-
-    // Make sure window isn't created twice.
-    if (SDL_HelperWindow != NULL) {
-        return true;
-    }
-
-    // Create the class.
-    SDL_zero(wce);
-    wce.lpfnWndProc = DefWindowProc;
-    wce.lpszClassName = SDL_HelperWindowClassName;
-    wce.hInstance = hInstance;
-
-    // Register the class.
-    SDL_HelperWindowClass = RegisterClass(&wce);
-    if (SDL_HelperWindowClass == 0 && GetLastError() != ERROR_CLASS_ALREADY_EXISTS) {
-        return WIN_SetError("Unable to create Helper Window Class");
-    }
-
-    // Create the window.
-    SDL_HelperWindow = CreateWindowEx(0, SDL_HelperWindowClassName,
-                                      SDL_HelperWindowName,
-                                      WS_OVERLAPPED, CW_USEDEFAULT,
-                                      CW_USEDEFAULT, CW_USEDEFAULT,
-                                      CW_USEDEFAULT, HWND_MESSAGE, NULL,
-                                      hInstance, NULL);
-    if (!SDL_HelperWindow) {
-        UnregisterClass(SDL_HelperWindowClassName, hInstance);
-        return WIN_SetError("Unable to create Helper Window");
-    }
-
-    return true;
-}
-
-/*
- * Destroys the HelperWindow previously created with SDL_HelperWindowCreate.
- */
-void SDL_HelperWindowDestroy(void)
-{
-    HINSTANCE hInstance = GetModuleHandle(NULL);
-
-    // Destroy the window.
-    if (SDL_HelperWindow != NULL) {
-        if (DestroyWindow(SDL_HelperWindow) == 0) {
-            WIN_SetError("Unable to destroy Helper Window");
-            return;
-        }
-        SDL_HelperWindow = NULL;
-    }
-
-    // Unregister the class.
-    if (SDL_HelperWindowClass != 0) {
-        if ((UnregisterClass(SDL_HelperWindowClassName, hInstance)) == 0) {
-            WIN_SetError("Unable to destroy Helper Window Class");
-            return;
-        }
-        SDL_HelperWindowClass = 0;
-    }
-}
-
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 void WIN_OnWindowEnter(SDL_VideoDevice *_this, SDL_Window *window)
 {
@@ -2260,9 +2155,9 @@ bool WIN_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperat
     return true;
 }
 
-bool WIN_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window* window)
+bool WIN_ApplyWindowProgress(SDL_VideoDevice *_this, SDL_Window *window)
 {
-#ifdef HAVE_SHOBJIDL_CORE_H
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     SDL_WindowData *data = window->internal;
     if (!data->taskbar_button_created) {
         return true;
@@ -2365,74 +2260,6 @@ bool WIN_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool foc
     return true;
 }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-
-void WIN_UpdateDarkModeForHWND(HWND hwnd)
-{
-#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_SharedObject *ntdll = SDL_LoadObject("ntdll.dll");
-    if (!ntdll) {
-        return;
-    }
-    // There is no function to get Windows build number, so let's get it here via RtlGetVersion
-    RtlGetVersion_t RtlGetVersionFunc = (RtlGetVersion_t)SDL_LoadFunction(ntdll, "RtlGetVersion");
-    NT_OSVERSIONINFOW os_info;
-    os_info.dwOSVersionInfoSize = sizeof(NT_OSVERSIONINFOW);
-    os_info.dwBuildNumber = 0;
-    if (RtlGetVersionFunc) {
-        RtlGetVersionFunc(&os_info);
-    }
-    SDL_UnloadObject(ntdll);
-    os_info.dwBuildNumber &= ~0xF0000000;
-    if (os_info.dwBuildNumber < 17763) {
-        // Too old to support dark mode
-        return;
-    }
-    SDL_SharedObject *uxtheme = SDL_LoadObject("uxtheme.dll");
-    if (!uxtheme) {
-        return;
-    }
-    RefreshImmersiveColorPolicyState_t RefreshImmersiveColorPolicyStateFunc = (RefreshImmersiveColorPolicyState_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(104));
-    ShouldAppsUseDarkMode_t ShouldAppsUseDarkModeFunc = (ShouldAppsUseDarkMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(132));
-    AllowDarkModeForWindow_t AllowDarkModeForWindowFunc = (AllowDarkModeForWindow_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(133));
-    if (os_info.dwBuildNumber < 18362) {
-        AllowDarkModeForApp_t AllowDarkModeForAppFunc = (AllowDarkModeForApp_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(135));
-        if (AllowDarkModeForAppFunc) {
-            AllowDarkModeForAppFunc(true);
-        }
-    } else {
-        SetPreferredAppMode_t SetPreferredAppModeFunc = (SetPreferredAppMode_t)SDL_LoadFunction(uxtheme, MAKEINTRESOURCEA(135));
-        if (SetPreferredAppModeFunc) {
-            SetPreferredAppModeFunc(UXTHEME_APPMODE_ALLOW_DARK);
-        }
-    }
-    if (RefreshImmersiveColorPolicyStateFunc) {
-        RefreshImmersiveColorPolicyStateFunc();
-    }
-    if (AllowDarkModeForWindowFunc) {
-        AllowDarkModeForWindowFunc(hwnd, true);
-    }
-    BOOL value;
-    // Check dark mode using ShouldAppsUseDarkMode, but use SDL_GetSystemTheme as a fallback
-    if (ShouldAppsUseDarkModeFunc) {
-        value = ShouldAppsUseDarkModeFunc() ? TRUE : FALSE;
-    } else {
-        value = (SDL_GetSystemTheme() == SDL_SYSTEM_THEME_DARK) ? TRUE : FALSE;
-    }
-    SDL_UnloadObject(uxtheme);
-    if (os_info.dwBuildNumber < 18362) {
-        SetProp(hwnd, TEXT("UseImmersiveDarkModeColors"), SDL_reinterpret_cast(HANDLE, SDL_static_cast(INT_PTR, value)));
-    } else {
-        HMODULE user32 = GetModuleHandle(TEXT("user32.dll"));
-        if (user32) {
-            SetWindowCompositionAttribute_t SetWindowCompositionAttributeFunc = (SetWindowCompositionAttribute_t)GetProcAddress(user32, "SetWindowCompositionAttribute");
-            if (SetWindowCompositionAttributeFunc) {
-                WINDOWCOMPOSITIONATTRIBDATA data = { WCA_USEDARKMODECOLORS, &value, sizeof(value) };
-                SetWindowCompositionAttributeFunc(hwnd, &data);
-            }
-        }
-    }
-#endif
-}
 
 bool WIN_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent)
 {

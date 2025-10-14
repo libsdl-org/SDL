@@ -15,6 +15,7 @@ import android.view.Display;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -22,6 +23,7 @@ import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 
+import android.view.ScaleGestureDetector;
 
 /**
     SDLSurface. This is what we draw on, so we need to know when it's created
@@ -30,7 +32,8 @@ import android.view.WindowManager;
     Because of this, that's where we set up the SDL thread
 */
 public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
-    View.OnApplyWindowInsetsListener, View.OnKeyListener, View.OnTouchListener, SensorEventListener  {
+    View.OnApplyWindowInsetsListener, View.OnKeyListener, View.OnTouchListener,
+    SensorEventListener, ScaleGestureDetector.OnScaleGestureListener {
 
     // Sensors
     protected SensorManager mSensorManager;
@@ -42,10 +45,15 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     // Is SurfaceView ready for rendering
     protected boolean mIsSurfaceReady;
 
+    // Pinch events
+    private final ScaleGestureDetector scaleGestureDetector;
+
     // Startup
     protected SDLSurface(Context context) {
         super(context);
         getHolder().addCallback(this);
+
+        scaleGestureDetector = new ScaleGestureDetector(context, this);
 
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -121,14 +129,12 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         float density = 1.0f;
         try
         {
-            if (Build.VERSION.SDK_INT >= 17 /* Android 4.2 (JELLY_BEAN_MR1) */) {
-                DisplayMetrics realMetrics = new DisplayMetrics();
-                mDisplay.getRealMetrics( realMetrics );
-                nDeviceWidth = realMetrics.widthPixels;
-                nDeviceHeight = realMetrics.heightPixels;
-                // Use densityDpi instead of density to more closely match what the UI scale is
-                density = (float)realMetrics.densityDpi / 160.0f;
-            }
+            DisplayMetrics realMetrics = new DisplayMetrics();
+            mDisplay.getRealMetrics( realMetrics );
+            nDeviceWidth = realMetrics.widthPixels;
+            nDeviceHeight = realMetrics.heightPixels;
+            // Use densityDpi instead of density to more closely match what the UI scale is
+            density = (float)realMetrics.densityDpi / 160.0f;
         } catch(Exception ignored) {
         }
 
@@ -275,7 +281,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 // BUTTON_STYLUS_PRIMARY is 2^5, so shift by 4, and apply SDL_PEN_INPUT_DOWN/SDL_PEN_INPUT_ERASER_TIP
                 int buttonState = (event.getButtonState() >> 4) | (1 << (toolType == MotionEvent.TOOL_TYPE_STYLUS ? 0 : 30));
 
-                SDLActivity.onNativePen(pointerId, buttonState, action, x, y, p);
+                SDLActivity.onNativePen(pointerId, SDLActivity.getMotionListener().getPenDeviceType(event.getDevice()), buttonState, action, x, y, p);
             } else { // MotionEvent.TOOL_TYPE_FINGER or MotionEvent.TOOL_TYPE_UNKNOWN
                 pointerId = event.getPointerId(i);
                 x = getNormalizedX(event.getX(i));
@@ -294,6 +300,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             if (action == MotionEvent.ACTION_POINTER_UP || action == MotionEvent.ACTION_POINTER_DOWN)
                 break;
         } while (++i < pointerCount);
+
+        scaleGestureDetector.onTouchEvent(event);
 
         return true;
     }
@@ -362,6 +370,16 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         }
     }
 
+    // Prevent android internal NullPointerException (https://github.com/libsdl-org/SDL/issues/13306)
+    @Override
+    public PointerIcon onResolvePointerIcon(MotionEvent event, int pointerIndex) {
+        try {
+            return super.onResolvePointerIcon(event, pointerIndex);
+        } catch (NullPointerException e) {
+            return null;
+        }
+    }
+
     // Captured pointer events for API 26.
     @Override
     public boolean onCapturedPointerEvent(MotionEvent event)
@@ -406,4 +424,23 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         return false;
     }
+
+    @Override
+    public boolean onScale(ScaleGestureDetector detector) {
+        float scale = detector.getScaleFactor();
+        SDLActivity.onNativePinchUpdate(scale);
+        return true;
+    }
+
+    @Override
+    public boolean onScaleBegin(ScaleGestureDetector detector) {
+        SDLActivity.onNativePinchStart();
+        return true;
+    }
+
+    @Override
+    public void onScaleEnd(ScaleGestureDetector detector) {
+        SDLActivity.onNativePinchEnd();
+    }
+
 }

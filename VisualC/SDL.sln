@@ -131,6 +131,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01-joystick-polling", "exam
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02-joystick-events", "examples\input\02-joystick-events\02-joystick-events.vcxproj", "{FCBDF2B2-1129-49AE-9406-3F219E65CA89}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testsoftwaretransparent", "tests\testsoftwaretransparent\testsoftwaretransparent.vcxproj", "{D91C45E2-274E-4C0F-89C7-9986F9A7E85A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -579,6 +581,14 @@ Global
 		{FCBDF2B2-1129-49AE-9406-3F219E65CA89}.Release|Win32.Build.0 = Release|Win32
 		{FCBDF2B2-1129-49AE-9406-3F219E65CA89}.Release|x64.ActiveCfg = Release|x64
 		{FCBDF2B2-1129-49AE-9406-3F219E65CA89}.Release|x64.Build.0 = Release|x64
+		{D91C45E2-274E-4C0F-89C7-9986F9A7E85A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D91C45E2-274E-4C0F-89C7-9986F9A7E85A}.Debug|Win32.Build.0 = Debug|Win32
+		{D91C45E2-274E-4C0F-89C7-9986F9A7E85A}.Debug|x64.ActiveCfg = Debug|x64
+		{D91C45E2-274E-4C0F-89C7-9986F9A7E85A}.Debug|x64.Build.0 = Debug|x64
+		{D91C45E2-274E-4C0F-89C7-9986F9A7E85A}.Release|Win32.ActiveCfg = Release|Win32
+		{D91C45E2-274E-4C0F-89C7-9986F9A7E85A}.Release|Win32.Build.0 = Release|Win32
+		{D91C45E2-274E-4C0F-89C7-9986F9A7E85A}.Release|x64.ActiveCfg = Release|x64
+		{D91C45E2-274E-4C0F-89C7-9986F9A7E85A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -644,6 +654,7 @@ Global
 		{3DB9B219-769E-43AC-8B8B-319DB6045DCF} = {D1BF59F6-22DC-493B-BDEB-451A50DA793D}
 		{B3852DB7-E925-4026-8B9D-D2272EFEFF3C} = {8DEAE483-FDE7-463F-9FD5-F597BBAED1F9}
 		{FCBDF2B2-1129-49AE-9406-3F219E65CA89} = {8DEAE483-FDE7-463F-9FD5-F597BBAED1F9}
+		{D91C45E2-274E-4C0F-89C7-9986F9A7E85A} = {D69D5741-611F-4E14-8541-1FEE94F50B5A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C320C9F2-1A8F-41D7-B02B-6338F872BCAD}

@@ -31,7 +31,9 @@
 #define GAMEINPUT_API_VERSION 0
 #endif
 
-#if GAMEINPUT_API_VERSION == 1
+#if GAMEINPUT_API_VERSION == 2
+using namespace GameInput::v2;
+#elif GAMEINPUT_API_VERSION == 1
 using namespace GameInput::v1;
 #endif
 

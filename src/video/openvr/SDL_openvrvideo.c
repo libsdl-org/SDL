@@ -53,6 +53,19 @@ struct SDL_GLContextState
 #include <SDL3/SDL_opengles2_gl2.h>
 #endif
 
+#ifdef SDL_PLATFORM_WINDOWS
+#define SDL_OPENVR_DRIVER_DYNAMIC "openvr_api.dll"
+#else
+#define SDL_OPENVR_DRIVER_DYNAMIC "openvr_api.so"
+#endif
+
+SDL_ELF_NOTE_DLOPEN(
+    "video-openvr",
+    "Support for OpenVR video",
+    SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
+    SDL_OPENVR_DRIVER_DYNAMIC
+);
+
 #define MARKER_ID 0
 #define MARKER_STR "vr-marker,frame_end,type,application"
 
@@ -108,7 +121,7 @@ static BOOL (*ov_wglMakeCurrent)(HDC, HGLRC);
 #define OPENVR_DEFAULT_WIDTH 1920
 #define OPENVR_DEFAULT_HEIGHT 1080
 
-#define OPENVR_SetupProc(proc) { proc = (void*)SDL_GL_GetProcAddress((#proc)+3); if (!proc) { failed_extension = (#proc)+3; } }
+#define OPENVR_SetupProc(proc) { proc = (void *)SDL_GL_GetProcAddress((#proc)+3); if (!proc) { failed_extension = (#proc)+3; } }
 
 static bool OPENVR_InitExtensions(SDL_VideoDevice *_this)
 {
@@ -209,9 +222,7 @@ static bool OPENVR_VideoInit(SDL_VideoDevice *_this)
     } else {
         display.desktop_mode.refresh_rate = data->oSystem->GetFloatTrackedDeviceProperty(k_unTrackedDeviceIndex_Hmd, ETrackedDeviceProperty_Prop_DisplayFrequency_Float, 0);
     }
-
-    display.internal = (SDL_DisplayData *)data;
-    display.name = (char*)"OpenVRDisplay";
+    display.name = (char *)"OpenVRDisplay";
     SDL_AddVideoDisplay(&display, false);
 
     return true;
@@ -250,7 +261,7 @@ static uint32_t *ImageSDLToOpenVRGL(SDL_Surface * surf, bool bFlipY)
     int x, y;
     uint32_t * pxd = SDL_malloc(4 * surf->w * surf->h);
     for(y = 0; y < h; y++) {
-        uint32_t * iline = (uint32_t*)&(((uint8_t*)surf->pixels)[y*pitch]);
+        uint32_t * iline = (uint32_t *)&(((uint8_t *)surf->pixels)[y * pitch]);
         uint32_t * oline = &pxd[(bFlipY?(h-y-1):y)*w];
         for(x = 0; x < w; x++)
         {
@@ -430,7 +441,7 @@ static void OPENVR_VirtualControllerUpdate(void *userdata)
           xval *= -1.0f;
         if (a == SDL_GAMEPAD_AXIS_LEFT_TRIGGER || a == SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)
           xval = xval * 2.0f - 1.0f;
-        //SDL_SetJoystickVirtualAxis(joystick, a, analog_input_action.x*32767);
+        //SDL_SetJoystickVirtualAxis(joystick, a, analog_input_action.x * 32767);
         xval *= SDL_JOYSTICK_AXIS_MAX;
         SDL_SetJoystickVirtualAxis(joystick, a, xval);
 #ifdef DEBUG_OPENVR
@@ -643,6 +654,14 @@ static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this,SDL_Window *window)
     videodata->oOverlay->SetOverlayFlag(videodata->overlayID, 1<<23, true); //vr::VROverlayFlags_EnableControlBar
     videodata->oOverlay->SetOverlayFlag(videodata->overlayID, 1<<24, true); //vr::VROverlayFlags_EnableControlBarKeyboard
     videodata->oOverlay->SetOverlayFlag(videodata->overlayID, 1<<25, true); //vr::VROverlayFlags_EnableControlBarClose
+#if 0
+    /* OpenVR overlays assume unpremultiplied alpha by default, set this flag to tag the source buffer as premultiplied.
+     * Note that (as of 2025) OpenVR overlay composition is higher quality when premultiplied buffers are provided,
+     * as texture samplers that blend energy (such as bilinear) do not yield sensical results when operating on natively
+     * unpremultiplied textures. It is thus preferable to hand openvr natively premultiplied buffers when accurate
+     * sampling / composition is required. */
+    videodata->oOverlay->SetOverlayFlag(videodata->overlayID, VROverlayFlags_IsPremultiplied, true );
+#endif
     videodata->oOverlay->SetOverlayName(videodata->overlayID, window->title);
 
     videodata->bDidCreateOverlay = true;
@@ -1039,7 +1058,7 @@ static SDL_GLContext OVR_EGL_CreateContext(SDL_VideoDevice *_this, SDL_Window * 
 
     ov_glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
     for(int i = 0; i < numExtensions; i++) {
-        const char * ccc = (const char*)ov_glGetStringi(GL_EXTENSIONS, i);
+        const char * ccc = (const char *)ov_glGetStringi(GL_EXTENSIONS, i);
         if (SDL_strcmp(ccc, "GL_KHR_debug") == 0) {
 #ifdef DEBUG_OPENVR
            SDL_Log("Found renderdoc debug extension.");
@@ -1253,20 +1272,14 @@ static void OPENVR_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window
     videodata->oOverlay->ShowKeyboardForOverlay(videodata->overlayID,
            input_mode, line_mode,
            EKeyboardFlags_KeyboardFlag_Minimal, "Virtual Keyboard", 128, "", 0);
-    videodata->bKeyboardShown = true;
+    SDL_SendScreenKeyboardShown();
 }
 
 static void OPENVR_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
     videodata->oOverlay->HideKeyboard();
-    videodata->bKeyboardShown = false;
-}
-
-static bool OPENVR_IsScreenKeyboardShown(SDL_VideoDevice *_this, SDL_Window *window)
-{
-    SDL_VideoData *videodata = (SDL_VideoData *)_this->internal;
-    return videodata->bKeyboardShown;
+    SDL_SendScreenKeyboardHidden();
 }
 
 static SDL_Cursor *OPENVR_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
@@ -1327,7 +1340,7 @@ static bool OPENVR_ShowCursor(SDL_Cursor * cursor)
     hotspot.v[0] = (float)ovrc->hot_x / (float)ovrc->w;
     hotspot.v[1] = (float)ovrc->hot_y / (float)ovrc->h;
 
-    texture.handle = (void*)(intptr_t)(ovrc->texture_id_handle);
+    texture.handle = (void *)(intptr_t)(ovrc->texture_id_handle);
     texture.eType = ETextureType_TextureType_OpenGL;
     texture.eColorSpace = EColorSpace_ColorSpace_Auto;
 
@@ -1395,7 +1408,7 @@ static bool OPENVR_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window * window, SD
     SDL_free(pixels);
     ov_glBindTexture(GL_TEXTURE_2D, 0);
 
-    texture.handle = (void*)(intptr_t)(texture_id_handle);
+    texture.handle = (void *)(intptr_t)(texture_id_handle);
     texture.eType = ETextureType_TextureType_OpenGL;
     texture.eColorSpace = EColorSpace_ColorSpace_Auto;
 
@@ -1474,6 +1487,7 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
+    const char *hint;
 
 #ifdef SDL_PLATFORM_WINDOWS
     SDL_RegisterApp(NULL, 0, NULL);
@@ -1495,19 +1509,13 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
     }
     device->internal = data;
 
-    {
-        const char * hint = SDL_GetHint(SDL_HINT_OPENVR_LIBRARY);
-        if (hint)
-            data->openVRLIB = SDL_LoadObject(hint);
-#ifdef SDL_PLATFORM_WINDOWS
-        if (!data->openVRLIB)
-            data->openVRLIB = SDL_LoadObject("openvr_api.dll");
-#else
-        if (!data->openVRLIB)
-            data->openVRLIB = SDL_LoadObject("openvr_api.so");
-#endif
+    hint = SDL_GetHint(SDL_HINT_OPENVR_LIBRARY);
+    if (hint) {
+        data->openVRLIB = SDL_LoadObject(hint);
     }
-
+    if (!data->openVRLIB) {
+        data->openVRLIB = SDL_LoadObject(SDL_OPENVR_DRIVER_DYNAMIC);
+    }
     if (!data->openVRLIB) {
         SDL_SetError("Could not open OpenVR API Library");
         goto error;
@@ -1542,7 +1550,7 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
         SDL_SetError("Could not get interfaces for the OpenVR System (%s), Overlay (%s) and Input (%s) versions", IVRSystem_Version, IVROverlay_Version, IVRInput_Version);
     }
 
-    const char *hint = SDL_GetHint("SDL_OPENVR_INPUT_PROFILE");
+    hint = SDL_GetHint("SDL_OPENVR_INPUT_PROFILE");
     char *loadpath = 0;
     EVRInputError err;
 
@@ -1648,7 +1656,6 @@ static SDL_VideoDevice *OPENVR_CreateDevice(void)
     device->HasScreenKeyboardSupport = OPENVR_HasScreenKeyboardSupport;
     device->ShowScreenKeyboard = OPENVR_ShowScreenKeyboard;
     device->HideScreenKeyboard = OPENVR_HideScreenKeyboard;
-    device->IsScreenKeyboardShown = OPENVR_IsScreenKeyboardShown;
     device->SetWindowIcon = OPENVR_SetWindowIcon;
 
     return device;

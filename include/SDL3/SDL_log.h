@@ -206,6 +206,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ResetLogPriorities(void);
  * SDL_LOG_PRIORITY_WARN and higher have a prefix showing their priority, e.g.
  * "WARNING: ".
  *
+ * This function makes a copy of its string argument, **prefix**, so it is not
+ * necessary to keep the value of **prefix** alive after the call returns.
+ *
  * \param priority the SDL_LogPriority to modify.
  * \param prefix the prefix to use for that log priority, or NULL to use no
  *               prefix.
@@ -263,7 +266,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fm
  * \sa SDL_LogInfo
  * \sa SDL_LogMessage
  * \sa SDL_LogMessageV
- * \sa SDL_LogTrace
  * \sa SDL_LogVerbose
  * \sa SDL_LogWarn
  */

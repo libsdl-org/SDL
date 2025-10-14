@@ -122,6 +122,7 @@ typedef enum
 - (void)touchesMovedWithEvent:(NSEvent *)theEvent;
 - (void)touchesEndedWithEvent:(NSEvent *)theEvent;
 - (void)touchesCancelledWithEvent:(NSEvent *)theEvent;
+- (void)magnifyWithEvent:(NSEvent *) theEvent;
 
 // Touch event handling
 - (void)handleTouches:(NSTouchPhase)phase withEvent:(NSEvent *)theEvent;
@@ -152,6 +153,7 @@ typedef enum
 @property(nonatomic) bool pending_size;
 @property(nonatomic) bool pending_position;
 @property(nonatomic) bool border_toggled;
+@property(nonatomic) bool has_modal_dialog;
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 @property(nonatomic) EGLSurface egl_surface;

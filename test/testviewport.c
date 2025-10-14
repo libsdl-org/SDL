@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
-    sprite = LoadTexture(state->renderers[0], "icon.bmp", true);
+    sprite = LoadTexture(state->renderers[0], "icon.png", true);
     if (!sprite) {
         quit(2);
     }

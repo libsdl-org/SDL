@@ -97,16 +97,74 @@ void SDL_SetKeymapEntry(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod mo
 
 SDL_Keycode SDL_GetKeymapKeycode(SDL_Keymap *keymap, SDL_Scancode scancode, SDL_Keymod modstate)
 {
-    SDL_Keycode keycode;
+    if (keymap) {
+        const void *value;
+        const SDL_Keymod normalized_modstate = NormalizeModifierStateForKeymap(modstate);
+        Uint32 key = ((Uint32)normalized_modstate << 16) | scancode;
 
-    const Uint32 key = ((Uint32)NormalizeModifierStateForKeymap(modstate) << 16) | scancode;
-    const void *value;
-    if (keymap && SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
-        keycode = (SDL_Keycode)(uintptr_t)value;
-    } else {
-        keycode = SDL_GetDefaultKeyFromScancode(scancode, modstate);
+        // First, try the requested set of modifiers.
+        if (SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
+            return (SDL_Keycode)(uintptr_t)value;
+        }
+
+        // If the requested set of modifiers was not found, search for the key from the highest to lowest modifier levels.
+        if (normalized_modstate) {
+            SDL_Keymod caps_mask = normalized_modstate & SDL_KMOD_CAPS;
+
+            for (int i = caps_mask ? 2 : 1; i; --i) {
+                // Shift level 5
+                if (normalized_modstate & SDL_KMOD_LEVEL5) {
+                    const SDL_Keymod shifted_modstate = SDL_KMOD_LEVEL5 | caps_mask;
+                    key = ((Uint32)shifted_modstate << 16) | scancode;
+
+                    if (shifted_modstate != normalized_modstate && SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
+                        return (SDL_Keycode)(uintptr_t)value;
+                    }
+                }
+
+                // Shift level 4 (Level 3 + Shift)
+                if ((normalized_modstate & (SDL_KMOD_MODE | SDL_KMOD_SHIFT)) == (SDL_KMOD_MODE | SDL_KMOD_SHIFT)) {
+                    const SDL_Keymod shifted_modstate = SDL_KMOD_MODE | SDL_KMOD_SHIFT | caps_mask;
+                    key = ((Uint32)shifted_modstate << 16) | scancode;
+
+                    if (shifted_modstate != normalized_modstate && SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
+                        return (SDL_Keycode)(uintptr_t)value;
+                    }
+                }
+
+                // Shift level 3
+                if (normalized_modstate & SDL_KMOD_MODE) {
+                    const SDL_Keymod shifted_modstate = SDL_KMOD_MODE | caps_mask;
+                    key = ((Uint32)shifted_modstate << 16) | scancode;
+
+                    if (shifted_modstate != normalized_modstate && SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
+                        return (SDL_Keycode)(uintptr_t)value;
+                    }
+                }
+
+                // Shift level 2
+                if (normalized_modstate & SDL_KMOD_SHIFT) {
+                    const SDL_Keymod shifted_modstate = SDL_KMOD_SHIFT | caps_mask;
+                    key = ((Uint32)shifted_modstate << 16) | scancode;
+
+                    if (shifted_modstate != normalized_modstate && SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
+                        return (SDL_Keycode)(uintptr_t)value;
+                    }
+                }
+
+                // Shift Level 1 (unmodified)
+                key = ((Uint32)caps_mask << 16) | scancode;
+                if (SDL_FindInHashTable(keymap->scancode_to_keycode, (void *)(uintptr_t)key, &value)) {
+                    return (SDL_Keycode)(uintptr_t)value;
+                }
+
+                // Clear the capslock mask, if set.
+                caps_mask = SDL_KMOD_NONE;
+            }
+        }
     }
-    return keycode;
+
+    return SDL_GetDefaultKeyFromScancode(scancode, modstate);
 }
 
 SDL_Scancode SDL_GetKeymapScancode(SDL_Keymap *keymap, SDL_Keycode keycode, SDL_Keymod *modstate)
@@ -125,10 +183,32 @@ SDL_Scancode SDL_GetKeymapScancode(SDL_Keymap *keymap, SDL_Keycode keycode, SDL_
     return scancode;
 }
 
+SDL_Scancode SDL_GetKeymapNextReservedScancode(SDL_Keymap *keymap)
+{
+    SDL_Scancode scancode;
+
+    if (!keymap) {
+        return SDL_SCANCODE_UNKNOWN;
+    }
+
+    if (keymap->next_reserved_scancode && keymap->next_reserved_scancode < SDL_SCANCODE_RESERVED + 100) {
+        scancode = keymap->next_reserved_scancode;
+    } else {
+        scancode = SDL_SCANCODE_RESERVED;
+    }
+    keymap->next_reserved_scancode = scancode + 1;
+
+    return scancode;
+}
+
 void SDL_DestroyKeymap(SDL_Keymap *keymap)
 {
     if (!keymap) {
         return;
+    }
+
+    if (!keymap->auto_release && keymap == SDL_GetCurrentKeymap(true)) {
+        SDL_SetKeymap(NULL, false);
     }
 
     SDL_DestroyHashTable(keymap->scancode_to_keycode);
@@ -210,7 +290,7 @@ static const struct
 
 static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate)
 {
-    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
+    CHECK_PARAM(((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
         SDL_InvalidParamError("scancode");
         return SDLK_UNKNOWN;
     }
@@ -973,7 +1053,7 @@ static const char *SDL_extended_key_names[] = {
 
 bool SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 {
-    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
+    CHECK_PARAM(((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
         return SDL_InvalidParamError("scancode");
     }
 
@@ -984,7 +1064,8 @@ bool SDL_SetScancodeName(SDL_Scancode scancode, const char *name)
 const char *SDL_GetScancodeName(SDL_Scancode scancode)
 {
     const char *name;
-    if (((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
+
+    CHECK_PARAM(((int)scancode) < SDL_SCANCODE_UNKNOWN || scancode >= SDL_SCANCODE_COUNT) {
         SDL_InvalidParamError("scancode");
         return "";
     }
@@ -1001,7 +1082,7 @@ SDL_Scancode SDL_GetScancodeFromName(const char *name)
 {
     int i;
 
-    if (!name || !*name) {
+    CHECK_PARAM(!name || !*name) {
         SDL_InvalidParamError("name");
         return SDL_SCANCODE_UNKNOWN;
     }
@@ -1059,7 +1140,7 @@ const char *SDL_GetKeyName(SDL_Keycode key)
             // but the key name is defined as the letter printed on that key,
             // which is usually the shifted capital letter.
             if (key > 0x7F || (key >= 'a' && key <= 'z')) {
-                SDL_Keymap *keymap = SDL_GetCurrentKeymap();
+                SDL_Keymap *keymap = SDL_GetCurrentKeymap(false);
                 SDL_Keymod modstate;
                 SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, &modstate);
                 if (scancode != SDL_SCANCODE_UNKNOWN && !(modstate & SDL_KMOD_SHIFT)) {
@@ -1127,7 +1208,7 @@ SDL_Keycode SDL_GetKeyFromName(const char *name)
             // SDL_Keycode is defined as the unshifted key on the keyboard,
             // but the key name is defined as the letter printed on that key,
             // which is usually the shifted capital letter.
-            SDL_Keymap *keymap = SDL_GetCurrentKeymap();
+            SDL_Keymap *keymap = SDL_GetCurrentKeymap(false);
             SDL_Keymod modstate;
             SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, &modstate);
             if (scancode != SDL_SCANCODE_UNKNOWN && (modstate & (SDL_KMOD_SHIFT | SDL_KMOD_CAPS))) {
