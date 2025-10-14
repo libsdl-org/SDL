@@ -118,7 +118,6 @@
     <ClCompile Include="..\..\src\render\opengl\SDL_shaders_gl.c" />
     <ClCompile Include="..\..\src\render\opengles2\SDL_render_gles2.c" />
     <ClCompile Include="..\..\src\render\opengles2\SDL_shaders_gles2.c" />
-    <ClCompile Include="..\..\src\render\SDL_d3dmath.c" />
     <ClCompile Include="..\..\src\render\SDL_render.c" />
     <ClCompile Include="..\..\src\render\SDL_render_unsupported.c" />
     <ClCompile Include="..\..\src\render\SDL_yuv_sw.c" />
