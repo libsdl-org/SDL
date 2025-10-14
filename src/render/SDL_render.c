@@ -1844,10 +1844,13 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
             }
         }
 
+        // Indexed formats don't support the transparency needed for color-keyed surfaces
+        bool preferIndexed = SDL_ISPIXELFORMAT_INDEXED(surface->format) && !needAlpha;
+
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->texture_formats[i]) &&
                 SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == needAlpha &&
-                SDL_ISPIXELFORMAT_INDEXED(renderer->texture_formats[i]) == SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+                SDL_ISPIXELFORMAT_INDEXED(renderer->texture_formats[i]) == preferIndexed) {
                 format = renderer->texture_formats[i];
                 break;
             }
