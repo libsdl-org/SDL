@@ -292,7 +292,6 @@
 		A7D8BA2523E2514400DCD162 /* SDL_drawpoint.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8FC23E2514000DCD162 /* SDL_drawpoint.c */; };
 		A7D8BA2B23E2514400DCD162 /* SDL_blendfillrect.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8FD23E2514000DCD162 /* SDL_blendfillrect.c */; };
 		A7D8BA3123E2514400DCD162 /* SDL_rotate.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A8FE23E2514000DCD162 /* SDL_rotate.h */; };
-		A7D8BA3723E2514400DCD162 /* SDL_d3dmath.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A8FF23E2514000DCD162 /* SDL_d3dmath.c */; };
 		A7D8BA4923E2514400DCD162 /* SDL_render_gles2.c in Sources */ = {isa = PBXBuildFile; fileRef = A7D8A90423E2514000DCD162 /* SDL_render_gles2.c */; };
 		A7D8BA4F23E2514400DCD162 /* SDL_shaders_gles2.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90523E2514000DCD162 /* SDL_shaders_gles2.h */; };
 		A7D8BA5523E2514400DCD162 /* SDL_gles2funcs.h in Headers */ = {isa = PBXBuildFile; fileRef = A7D8A90623E2514000DCD162 /* SDL_gles2funcs.h */; };
@@ -869,7 +868,6 @@
 		A7D8A8FC23E2514000DCD162 /* SDL_drawpoint.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_drawpoint.c; sourceTree = "<group>"; };
 		A7D8A8FD23E2514000DCD162 /* SDL_blendfillrect.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_blendfillrect.c; sourceTree = "<group>"; };
 		A7D8A8FE23E2514000DCD162 /* SDL_rotate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rotate.h; sourceTree = "<group>"; };
-		A7D8A8FF23E2514000DCD162 /* SDL_d3dmath.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_d3dmath.c; sourceTree = "<group>"; };
 		A7D8A90423E2514000DCD162 /* SDL_render_gles2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render_gles2.c; sourceTree = "<group>"; };
 		A7D8A90523E2514000DCD162 /* SDL_shaders_gles2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_gles2.h; sourceTree = "<group>"; };
 		A7D8A90623E2514000DCD162 /* SDL_gles2funcs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gles2funcs.h; sourceTree = "<group>"; };
@@ -2135,7 +2133,6 @@
 				A7D8A90C23E2514000DCD162 /* opengl */,
 				A7D8A90323E2514000DCD162 /* opengles2 */,
 				A7D8A8EF23E2514000DCD162 /* software */,
-				A7D8A8FF23E2514000DCD162 /* SDL_d3dmath.c */,
 				A7D8A8DC23E2514000DCD162 /* SDL_d3dmath.h */,
 				A7D8A8DB23E2514000DCD162 /* SDL_render.c */,
 				E4F7981D2AD8D86A00669F54 /* SDL_render_unsupported.c */,
@@ -2903,7 +2900,6 @@
 				A7D8BBE723E2574800DCD162 /* SDL_uikitviewcontroller.m in Sources */,
 				A7D8ADF223E2514100DCD162 /* SDL_blit_A.c in Sources */,
 				A7D8BBDD23E2574800DCD162 /* SDL_uikitmodes.m in Sources */,
-				A7D8BA3723E2514400DCD162 /* SDL_d3dmath.c in Sources */,
 				F3A9AE9C2C8A13C100AAC390 /* SDL_pipeline_gpu.c in Sources */,
 				75E0915A241EA924004729E1 /* SDL_virtualjoystick.c in Sources */,
 				F338A11A2D1B37E4007CDFDF /* SDL_tray.c in Sources */,
