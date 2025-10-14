@@ -405,9 +405,18 @@ SDL_Thread *SDL_CreateThreadRuntime(SDL_ThreadFunction fn,
                  SDL_FunctionPointer pfnEndThread)
 {
     const SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetPointerProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, (void *) fn);
-    SDL_SetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, name);
-    SDL_SetPointerProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, userdata);
+    if (!props) {
+        return NULL;
+    }
+
+    bool ok = SDL_SetPointerProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, (void *) fn);
+    ok &= SDL_SetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, name);
+    ok &= SDL_SetPointerProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, userdata);
+    if (!ok) {
+        SDL_DestroyProperties(props);
+        return NULL;
+    }
+
     SDL_Thread *thread = SDL_CreateThreadWithPropertiesRuntime(props, pfnBeginThread, pfnEndThread);
     SDL_DestroyProperties(props);
     return thread;
@@ -417,10 +426,19 @@ SDL_Thread *SDL_CreateThreadRuntime(SDL_ThreadFunction fn,
 SDL_Thread *SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, size_t stacksize, void *userdata)
 {
     const SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetPointerProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, (void *) fn);
-    SDL_SetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, name);
-    SDL_SetPointerProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, userdata);
-    SDL_SetNumberProperty(props, SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER, (Sint64) stacksize);
+    if (!props) {
+        return NULL;
+    }
+
+    bool ok = SDL_SetPointerProperty(props, SDL_PROP_THREAD_CREATE_ENTRY_FUNCTION_POINTER, (void *) fn);
+    ok &= SDL_SetStringProperty(props, SDL_PROP_THREAD_CREATE_NAME_STRING, name);
+    ok &= SDL_SetPointerProperty(props, SDL_PROP_THREAD_CREATE_USERDATA_POINTER, userdata);
+    ok &= SDL_SetNumberProperty(props, SDL_PROP_THREAD_CREATE_STACKSIZE_NUMBER, (Sint64) stacksize);
+    if (!ok) {
+        SDL_DestroyProperties(props);
+        return NULL;
+    }
+
     SDL_Thread *thread = SDL_CreateThreadWithProperties(props);
     SDL_DestroyProperties(props);
     return thread;
