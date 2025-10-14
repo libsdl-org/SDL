@@ -219,7 +219,6 @@
 #elif defined(_MSC_VER) && _MSC_VER < 1400
 
 /* Variadic macros are not supported */
-#define SDL_ELF_NOTE_DLOPEN
 
 #else
 
