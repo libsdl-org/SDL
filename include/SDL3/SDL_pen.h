@@ -130,10 +130,10 @@ typedef enum SDL_PenAxis
 /**
  * An enum that describes the type of a pen device.
  *
- * A "direct" device is a pen that touches a graphic display (like an
- * Apple Pencil on an iPad's screen). "Indirect" devices touch an external
- * tablet surface that is connected to the machine but is not a display (like
- * a lower-end Wacom tablet connected over USB).
+ * A "direct" device is a pen that touches a graphic display (like an Apple
+ * Pencil on an iPad's screen). "Indirect" devices touch an external tablet
+ * surface that is connected to the machine but is not a display (like a
+ * lower-end Wacom tablet connected over USB).
  *
  * Apps may use this information to decide if they should draw a cursor; if
  * the pen is touching the screen directly, a cursor doesn't make sense and
@@ -152,7 +152,7 @@ typedef enum SDL_PenDeviceType
 
 /**
  * Get the device type of the given pen.
-
+ *
  * Many platforms do not supply this information, so an app must always be
  * prepared to get an SDL_PEN_DEVICE_TYPE_UNKNOWN result.
  *
