@@ -2179,6 +2179,14 @@ typedef struct SDL_GPUStorageTextureReadWriteBinding
     Uint8 padding3;
 } SDL_GPUStorageTextureReadWriteBinding;
 
+typedef struct SDL_GPUImageData
+{
+    Uint32 w;
+    Uint32 h;
+    SDL_GPUTextureFormat format;
+    Uint8 *pixels;
+} SDL_GPUImageData;
+
 /* Functions */
 
 /* Device */
@@ -4471,6 +4479,18 @@ extern SDL_DECLSPEC SDL_PixelFormat SDLCALL SDL_GetPixelFormatFromGPUTextureForm
  * \since This function is available since SDL 3.4.0.
  */
 extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUTextureFormatFromPixelFormat(SDL_PixelFormat format);
+
+/**
+ * Loads image data from a PNG data buffer.
+ * You must call SDL_free() on the returned pointer when you are done with the image data.
+ *
+ * \param data a buffer.
+ * \param data_length the length of the buffer in bytes.
+ * \returns a SDL_GPUImageData struct containing metadata and pixel bytes, or NULL if loading failed.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC SDL_GPUImageData * SDLCALL SDL_LoadGPUImageFromPNG(void *data, Uint32 data_length);
 
 #ifdef SDL_PLATFORM_GDK
 

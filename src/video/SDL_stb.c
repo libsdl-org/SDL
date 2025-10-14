@@ -442,3 +442,31 @@ bool SDL_SavePNG(SDL_Surface *surface, const char *file)
     return SDL_SetError("SDL not built with STB image support");
 #endif
 }
+
+SDL_GPUImageData * SDL_LoadGPUImageFromPNG(void *data, Uint32 data_length)
+{
+    int w, h, format;
+    stbi_uc *pixels = stbi_load_from_memory(data, data_length, &w, &h, &format, STBI_rgb_alpha);
+
+    if (!pixels) {
+        SDL_SetError("Image load failed!");
+        return NULL;
+    }
+
+    Uint32 pixelFieldOffset = offsetof(SDL_GPUImageData, pixels);
+
+    // Store all data in one malloc call for simplicity
+    Uint8 *allocMemory = SDL_malloc(sizeof(SDL_GPUImageData) + w * h * format);
+
+    SDL_GPUImageData *result = (SDL_GPUImageData *)allocMemory;
+    result->w = w;
+    result->h = h;
+    result->format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+    result->pixels = (Uint8 *)(allocMemory) + pixelFieldOffset + 8;
+
+    memcpy(result->pixels, pixels, w * h * format); // is this right?
+
+    stbi_image_free(pixels);
+
+    return result;
+}

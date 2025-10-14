@@ -1265,6 +1265,7 @@ SDL3_0.0.0 {
     SDL_SavePNG_IO;
     SDL_SavePNG;
     SDL_GetSystemPageSize;
+    SDL_LoadGPUImageFromPNG;
     # extra symbols go here (don't modify this line)
   local: *;
 };
