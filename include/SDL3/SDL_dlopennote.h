@@ -173,7 +173,7 @@
 #define SDL_DLNOTE_UNIQUE_NAME SDL_DLNOTE_JOIN(s_SDL_dlopen_note_, __LINE__)
 
 /**
- * Note that your application has dynamic shared library dependencies.
+ * Add a note that your application has dynamic shared library dependencies.
  *
  * You can do this by adding the following to the global scope:
  *
@@ -198,6 +198,8 @@
  * );
  * ```
  *
+ * This macro is not available for compilers that do not support variadic macro's.
+ *
  * \since This macro is available since SDL 3.4.0.
  *
  * \sa SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED
@@ -219,7 +221,6 @@
 #elif defined(_MSC_VER) && _MSC_VER < 1400
 
 /* Variadic macros are not supported */
-#define SDL_ELF_NOTE_DLOPEN
 
 #else
 
