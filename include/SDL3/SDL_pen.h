@@ -130,18 +130,31 @@ typedef enum SDL_PenAxis
 /**
  * An enum that describes the type of a pen device.
  *
+ * A "direct" device is a pen that touches a graphic display (like an
+ * Apple Pencil on an iPad's screen). "Indirect" devices touch an external
+ * tablet surface that is connected to the machine but is not a display (like
+ * a lower-end Wacom tablet connected over USB).
+ *
+ * Apps may use this information to decide if they should draw a cursor; if
+ * the pen is touching the screen directly, a cursor doesn't make sense and
+ * can be in the way, but becomes necessary for indirect devices to know where
+ * on the display they are interacting.
+ *
  * \since This enum is available since SDL 3.4.0.
  */
 typedef enum SDL_PenDeviceType
 {
-    SDL_PEN_DEVICE_TYPE_INVALID = -1,
-    SDL_PEN_DEVICE_TYPE_UNKNOWN,
-    SDL_PEN_DEVICE_TYPE_DIRECT,
-    SDL_PEN_DEVICE_TYPE_INDIRECT
+    SDL_PEN_DEVICE_TYPE_INVALID = -1, /**< Not a valid pen device. */
+    SDL_PEN_DEVICE_TYPE_UNKNOWN,      /**< Don't know specifics of this pen. */
+    SDL_PEN_DEVICE_TYPE_DIRECT,       /**< Pen touches display. */
+    SDL_PEN_DEVICE_TYPE_INDIRECT      /**< Pen touches something that isn't the display. */
 } SDL_PenDeviceType;
 
 /**
  * Get the device type of the given pen.
+
+ * Many platforms do not supply this information, so an app must always be
+ * prepared to get an SDL_PEN_DEVICE_TYPE_UNKNOWN result.
  *
  * \param instance_id the pen instance ID.
  * \returns the device type of the given pen, or SDL_PEN_DEVICE_TYPE_INVALID
