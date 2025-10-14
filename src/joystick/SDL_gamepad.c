@@ -1372,7 +1372,8 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_GUID guid, bool
 {
     GamepadMapping_t *mapping;
 
-    mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, true, adding_mapping);
+    // Try first with an exact match on version and CRC
+    mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, true, true);
     if (mapping) {
         return mapping;
     }
@@ -1382,10 +1383,19 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_GUID guid, bool
         return NULL;
     }
 
-    // Try harder to get the best match, or create a mapping
+    // Try without CRC match
+    mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, true, false);
+    if (mapping) {
+        return mapping;
+    }
 
+    // Try without version match
     if (SDL_JoystickGUIDUsesVersion(guid)) {
-        // Try again, ignoring the version
+        mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, false, true);
+        if (mapping) {
+            return mapping;
+        }
+
         mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, false, false);
         if (mapping) {
             return mapping;
