@@ -625,23 +625,23 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateColorCursor(SDL_Surface *surf
 /**
  * Create an animated color cursor.
  *
- * Animated cursors are composed of a sequential array of frames, specified
- * as surfaces and durations in an array of SDL_CursorFrameInfo structs.
- * The hot spot coordinates are universal to all frames, and all frames must
- * have the same dimensions.
+ * Animated cursors are composed of a sequential array of frames, specified as
+ * surfaces and durations in an array of SDL_CursorFrameInfo structs. The hot
+ * spot coordinates are universal to all frames, and all frames must have the
+ * same dimensions.
  *
  * Frame durations are specified in milliseconds. A duration of 0 implies an
- * infinite frame time, and the animation will stop on that frame. To create
- * a one-shot animation, set the duration of the last frame in the sequence
- * to 0.
+ * infinite frame time, and the animation will stop on that frame. To create a
+ * one-shot animation, set the duration of the last frame in the sequence to
+ * 0.
  *
  * If this function is passed surfaces with alternate representations added
- * with SDL_AddSurfaceAlternateImage(), the surfaces will be interpreted as the
- * content to be used for 100% display scale, and the alternate
+ * with SDL_AddSurfaceAlternateImage(), the surfaces will be interpreted as
+ * the content to be used for 100% display scale, and the alternate
  * representations will be used for high DPI situations. For example, if the
- * original surfaces are 32x32, then on a 2x macOS display or 200% display scale
- * on Windows, a 64x64 version of the image will be used, if available. If a
- * matching version of the image isn't available, the closest larger size
+ * original surfaces are 32x32, then on a 2x macOS display or 200% display
+ * scale on Windows, a 64x64 version of the image will be used, if available.
+ * If a matching version of the image isn't available, the closest larger size
  * image will be downscaled to the appropriate size and be used instead, if
  * available. Otherwise, the closest smaller image will be upscaled and be
  * used instead.
