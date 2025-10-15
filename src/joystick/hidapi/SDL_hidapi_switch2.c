@@ -221,7 +221,7 @@ static bool UpdateSlotLED(SDL_DriverSwitch2_Context *ctx)
         0x09, 0x91, 0x00, 0x07, 0x00, 0x08, 0x00, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
-    unsigned char calibration_data[0x50] = {0};
+    unsigned char reply[8] = {0};
 
     if (ctx->player_lights && ctx->player_index >= 0) {
         SET_LED_DATA[8] = (1 << (ctx->player_index % 4));
@@ -230,7 +230,7 @@ static bool UpdateSlotLED(SDL_DriverSwitch2_Context *ctx)
     if (res < 0) {
         return SDL_SetError("Couldn't set LED data: %d\n", res);
     }
-    return (RecvBulkData(ctx, calibration_data, 0x40) > 0);
+    return (RecvBulkData(ctx, reply, sizeof(reply)) > 0);
 }
 
 static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
