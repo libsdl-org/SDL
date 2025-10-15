@@ -233,6 +233,34 @@ static bool UpdateSlotLED(SDL_DriverSwitch2_Context *ctx)
     return (RecvBulkData(ctx, reply, sizeof(reply)) > 0);
 }
 
+static int ReadFlashBlock(SDL_DriverSwitch2_Context *ctx, Uint32 address, Uint8 *out)
+{
+    unsigned char flash_read_command[] = {
+        0x02, 0x91, 0x00, 0x01, 0x00, 0x08, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    };
+    unsigned char buffer[0x50] = {0};
+    int res;
+
+    flash_read_command[12] = address;
+    flash_read_command[13] = address >> 8;
+    flash_read_command[14] = address >> 16;
+    flash_read_command[15] = address >> 24;
+
+    res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
+    if (res < 0) {
+        return res;
+    }
+
+    res = RecvBulkData(ctx, buffer, sizeof(buffer));
+    if (res < 0) {
+        return res;
+    }
+
+    SDL_memcpy(out, &buffer[0x10], 0x40);
+    return 0;
+}
+
 static void SDLCALL SDL_PlayerLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)userdata;
@@ -382,81 +410,45 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
         },
         NULL, // Sentinel
     };
-    unsigned char flash_read_command[] = {
-        0x02, 0x91, 0x00, 0x01, 0x00, 0x08, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x01, 0x00
-    };
-    unsigned char calibration_data[0x50] = {0};
 
-    flash_read_command[12] = 0x80;
-    res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
+    unsigned char calibration_data[0x40] = {0};
+
+    res = ReadFlashBlock(ctx, 0x13080, calibration_data);
     if (res < 0) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request factory calibration data: %d", res);
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
     } else {
-        res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
-        if (res < 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
-        } else {
-            ParseStickCalibration(&ctx->left_stick, &calibration_data[0x38]);
-        }
+        ParseStickCalibration(&ctx->left_stick, &calibration_data[0x28]);
     }
 
-    flash_read_command[12] = 0xC0;
-    res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
+    res = ReadFlashBlock(ctx, 0x130C0, calibration_data);
     if (res < 0) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request factory calibration data: %d", res);
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
     } else {
-        res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
-        if (res < 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
-        } else {
-            ParseStickCalibration(&ctx->right_stick, &calibration_data[0x38]);
-        }
+        ParseStickCalibration(&ctx->right_stick, &calibration_data[0x28]);
     }
 
     if (device->product_id == USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER) {
-        flash_read_command[12] = 0x40;
-        flash_read_command[13] = 0x31;
-        res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
+        res = ReadFlashBlock(ctx, 0x13140, calibration_data);
         if (res < 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request factory calibration data: %d", res);
+            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
         } else {
-            res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
-            if (res < 0) {
-                SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
-            } else {
-                ctx->left_trigger_zero = calibration_data[0x10];
-                ctx->right_trigger_zero = calibration_data[0x11];
-            }
+            ctx->left_trigger_zero = calibration_data[0];
+            ctx->right_trigger_zero = calibration_data[1];
         }
     }
 
-    flash_read_command[12] = 0x40;
-    flash_read_command[13] = 0xC0;
-    flash_read_command[14] = 0x1F;
-    res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
+    res = ReadFlashBlock(ctx, 0x1FC040, calibration_data);
     if (res < 0) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request user calibration data: %d", res);
-    } else {
-        res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
-        if (res < 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read user calibration data: %d", res);
-        } else if (calibration_data[0x10] == 0xb2 && calibration_data[0x11] == 0xa1) {
-            ParseStickCalibration(&ctx->left_stick, &calibration_data[0x12]);
-        }
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read user calibration data: %d", res);
+    } else if (calibration_data[0] == 0xb2 && calibration_data[1] == 0xa1) {
+        ParseStickCalibration(&ctx->left_stick, &calibration_data[2]);
     }
 
-    flash_read_command[12] = 0x80;
-    res = SendBulkData(ctx, flash_read_command, sizeof(flash_read_command));
+    res = ReadFlashBlock(ctx, 0x1FC080, calibration_data);
     if (res < 0) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't request user calibration data: %d", res);
-    } else {
-        res = RecvBulkData(ctx, calibration_data, sizeof(calibration_data));
-        if (res < 0) {
-            SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read user calibration data: %d", res);
-        } else if (calibration_data[0x10] == 0xb2 && calibration_data[0x11] == 0xa1) {
-            ParseStickCalibration(&ctx->right_stick, &calibration_data[0x12]);
-        }
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read user calibration data: %d", res);
+    } else if (calibration_data[0] == 0xb2 && calibration_data[1] == 0xa1) {
+        ParseStickCalibration(&ctx->right_stick, &calibration_data[2]);
     }
 
     for (int i = 0; init_sequence[i]; i++) {
