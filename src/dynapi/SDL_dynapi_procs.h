@@ -573,6 +573,7 @@ SDL_DYNAPI_PROC(bool,SDL_GetWindowAspectRatio,(SDL_Window *a, float *b, float *c
 SDL_DYNAPI_PROC(bool,SDL_GetWindowBordersSize,(SDL_Window *a, int *b, int *c, int *d, int *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(float,SDL_GetWindowDisplayScale,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(SDL_WindowFlags,SDL_GetWindowFlags,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(SDL_WindowID,SDL_GetWindowIDFromEvent,(const SDL_Event *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_GetWindowFromEvent,(const SDL_Event *a),(a),return)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_GetWindowFromID,(SDL_WindowID a),(a),return)
 SDL_DYNAPI_PROC(const SDL_DisplayMode*,SDL_GetWindowFullscreenMode,(SDL_Window *a),(a),return)

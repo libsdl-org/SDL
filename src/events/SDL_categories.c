@@ -184,6 +184,50 @@ SDL_EventCategory SDL_GetEventCategory(Uint32 type)
     }
 }
 
+SDL_WindowID SDL_GetWindowIDFromEvent(const SDL_Event *event)
+{
+    switch (SDL_GetEventCategory(event->type)) {
+    case SDL_EVENTCATEGORY_USER:
+        return event->user.windowID;
+    case SDL_EVENTCATEGORY_WINDOW:
+        return event->window.windowID;
+    case SDL_EVENTCATEGORY_KEY:
+        return event->key.windowID;
+    case SDL_EVENTCATEGORY_EDIT:
+        return event->edit.windowID;
+    case SDL_EVENTCATEGORY_TEXT:
+        return event->text.windowID;
+    case SDL_EVENTCATEGORY_EDIT_CANDIDATES:
+        return event->edit_candidates.windowID;
+    case SDL_EVENTCATEGORY_MOTION:
+        return event->motion.windowID;
+    case SDL_EVENTCATEGORY_BUTTON:
+        return event->button.windowID;
+    case SDL_EVENTCATEGORY_WHEEL:
+        return event->wheel.windowID;
+    case SDL_EVENTCATEGORY_TFINGER:
+        return event->tfinger.windowID;
+    case SDL_EVENTCATEGORY_PPROXIMITY:
+        return event->pproximity.windowID;
+    case SDL_EVENTCATEGORY_PTOUCH:
+        return event->ptouch.windowID;
+    case SDL_EVENTCATEGORY_PBUTTON:
+        return event->pbutton.windowID;
+    case SDL_EVENTCATEGORY_PMOTION:
+        return event->pmotion.windowID;
+    case SDL_EVENTCATEGORY_PAXIS:
+        return event->paxis.windowID;
+    case SDL_EVENTCATEGORY_DROP:
+        return event->drop.windowID;
+    case SDL_EVENTCATEGORY_RENDER:
+        return event->render.windowID;
+    default:
+        // < 0  -> invalid event type (error is set by SDL_GetEventCategory)
+        // else -> event has no associated window (not an error)
+        return 0;
+    }
+}
+
 SDL_Window *SDL_GetWindowFromEvent(const SDL_Event *event)
 {
     SDL_WindowID windowID;

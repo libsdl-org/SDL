@@ -527,6 +527,7 @@ SDL3_0.0.0 {
     SDL_GetWindowBordersSize;
     SDL_GetWindowDisplayScale;
     SDL_GetWindowFlags;
+    SDL_GetWindowIDFromEvent;
     SDL_GetWindowFromEvent;
     SDL_GetWindowFromID;
     SDL_GetWindowFullscreenMode;

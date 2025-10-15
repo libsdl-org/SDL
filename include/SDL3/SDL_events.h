@@ -1588,6 +1588,23 @@ extern SDL_DECLSPEC bool SDLCALL SDL_EventEnabled(Uint32 type);
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 
 /**
+ * Get the numeric ID of the window associated with an event.
+ *
+ * \param event an event containing a `windowID`.
+ * \returns the numeric ID of the associated window on success or 0 if there is none.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.3.0.
+ *
+ * \sa SDL_GetWindowFromEvent
+ * \sa SDL_PollEvent
+ * \sa SDL_WaitEvent
+ * \sa SDL_WaitEventTimeout
+ */
+extern SDL_DECLSPEC SDL_WindowID SDLCALL SDL_GetWindowIDFromEvent(const SDL_Event *event);
+
+/**
  * Get window associated with an event.
  *
  * \param event an event containing a `windowID`.
@@ -1597,6 +1614,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_GetWindowIDFromEvent
  * \sa SDL_PollEvent
  * \sa SDL_WaitEvent
  * \sa SDL_WaitEventTimeout

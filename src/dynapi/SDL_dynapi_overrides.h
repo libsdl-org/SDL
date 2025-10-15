@@ -552,6 +552,7 @@
 #define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL
 #define SDL_GetWindowDisplayScale SDL_GetWindowDisplayScale_REAL
 #define SDL_GetWindowFlags SDL_GetWindowFlags_REAL
+#define SDL_GetWindowIDFromEvent SDL_GetWindowIDFromEvent_REAL
 #define SDL_GetWindowFromEvent SDL_GetWindowFromEvent_REAL
 #define SDL_GetWindowFromID SDL_GetWindowFromID_REAL
 #define SDL_GetWindowFullscreenMode SDL_GetWindowFullscreenMode_REAL
