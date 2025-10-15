@@ -307,7 +307,7 @@ typedef struct SDL_CommonEvent
  */
 typedef struct SDL_DisplayEvent
 {
-    SDL_EventType type; /**< SDL_DISPLAYEVENT_* */
+    SDL_EventType type; /**< SDL_EVENT_DISPLAY_* */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_DisplayID displayID;/**< The associated display */
