@@ -1128,7 +1128,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         SDL_strlcat(mapping_string, "a:b0,b:b2,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1~,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3~,start:b8,x:b1,y:b3,misc3:b11,misc4:b10,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
                product == USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER) {
-        SDL_strlcat(mapping_string, "a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b4,leftshoulder:b6,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b7,righttrigger:a5,rightx:a2,righty:a3,start:b5,x:b2,y:b3,misc1:b8,misc2:b9,misc3:b10,misc4:b11,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "a:b1,b:b3,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b4,leftshoulder:b6,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b7,righttrigger:a5,rightx:a2,righty:a3,start:b5,x:b0,y:b2,misc1:b8,misc2:b9,misc3:b10,misc4:b11,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&
                product == USB_PRODUCT_NINTENDO_SWITCH2_PRO) {
         SDL_strlcat(mapping_string, "a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,misc1:b11,misc2:b12,paddle1:b13,paddle2:b14,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
@@ -1139,7 +1139,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             SDL_strlcat(mapping_string, "back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b9,leftstick:b7,lefttrigger:a4,leftx:a0,lefty:a1,misc1:b11,paddle2:b14,paddle4:b16,", sizeof(mapping_string));
         } else {
             // Mini gamepad mode
-            SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,paddle2:b14,paddle4:b16,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b1,b:b2,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b3,y:b0,paddle2:b14,paddle4:b16,", sizeof(mapping_string));
         }
     } else if (vendor == USB_VENDOR_NINTENDO &&
                product == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT) {
@@ -1148,7 +1148,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a2,righty:a3,start:b6,x:b2,y:b3,misc2:b12,paddle1:b13,paddle3:b15,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
         } else {
             // Mini gamepad mode
-            SDL_strlcat(mapping_string, "a:b0,b:b1,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b2,y:b3,misc2:b12,paddle1:b13,paddle3:b15,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
+            SDL_strlcat(mapping_string, "a:b1,b:b3,guide:b5,leftshoulder:b9,leftstick:b7,leftx:a0,lefty:a1,rightshoulder:b10,start:b6,x:b0,y:b2,misc2:b12,paddle1:b13,paddle3:b15,hint:!SDL_GAMECONTROLLER_USE_BUTTON_LABELS:=1,", sizeof(mapping_string));
         }
     } else if (vendor == USB_VENDOR_NINTENDO &&
                product == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_PAIR) {
