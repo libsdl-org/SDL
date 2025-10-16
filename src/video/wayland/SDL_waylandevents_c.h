@@ -184,7 +184,10 @@ typedef struct SDL_WaylandSeat
 
             // Animation state for cursors
             void *cursor_handle;
+
+            // The cursor animation thread lock must be held when modifying this.
             struct wl_callback *frame_callback;
+
             Uint64 last_frame_callback_time_ms;
             Uint32 current_frame_time_ms;
             int current_frame;

@@ -2356,6 +2356,8 @@ static const struct wl_keyboard_listener keyboard_listener = {
 
 static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat, bool send_event)
 {
+    Wayland_SeatDestroyCursorFrameCallback(seat);
+
     // End any active gestures.
     if (seat->pointer.gesture_focus) {
         SDL_SendPinch(SDL_EVENT_PINCH_END, 0, seat->pointer.gesture_focus->sdlwindow, 0.0f);
@@ -2386,10 +2388,6 @@ static void Wayland_SeatDestroyPointer(SDL_WaylandSeat *seat, bool send_event)
 
     if (seat->pointer.gesture_pinch) {
         zwp_pointer_gesture_pinch_v1_destroy(seat->pointer.gesture_pinch);
-    }
-
-    if (seat->pointer.cursor_state.frame_callback) {
-        wl_callback_destroy(seat->pointer.cursor_state.frame_callback);
     }
 
     if (seat->pointer.cursor_state.surface) {
