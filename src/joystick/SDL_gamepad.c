@@ -74,6 +74,7 @@
 
 static bool SDL_gamepads_initialized;
 static SDL_Gamepad *SDL_gamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static SDL_HashTable *SDL_gamepad_names SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 
 // The face button style of a gamepad
 typedef enum
@@ -372,6 +373,45 @@ static void RecenterGamepad(SDL_Gamepad *gamepad)
     }
 }
 
+static const char *SDL_UpdateGamepadNameForID(SDL_JoystickID instance_id)
+{
+    const char *current_name = NULL;
+
+    GamepadMapping_t *mapping = SDL_PrivateGetGamepadMapping(instance_id, true);
+    if (mapping) {
+        if (SDL_strcmp(mapping->name, "*") == 0) {
+            current_name = SDL_GetJoystickNameForID(instance_id);
+        } else {
+            current_name = mapping->name;
+        }
+    }
+
+    if (!SDL_gamepad_names) {
+        return SDL_GetPersistentString(current_name);
+    }
+
+    char *name = NULL;
+    bool found = SDL_FindInHashTable(SDL_gamepad_names, (const void *)(uintptr_t)instance_id, (const void **)&name);
+    if (!current_name) {
+        if (!found) {
+            SDL_SetError("Gamepad %" SDL_PRIu32 " not found", instance_id);
+            return NULL;
+        }
+        if (!name) {
+            // SDL_strdup() failed during insert
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        return name;
+    }
+
+    if (!name || SDL_strcmp(name, current_name) != 0) {
+        name = SDL_strdup(current_name);
+        SDL_InsertIntoHashTable(SDL_gamepad_names, (const void *)(uintptr_t)instance_id, name, true);
+    }
+    return name;
+}
+
 void SDL_PrivateGamepadAdded(SDL_JoystickID instance_id)
 {
     SDL_Event event;
@@ -379,6 +419,8 @@ void SDL_PrivateGamepadAdded(SDL_JoystickID instance_id)
     if (!SDL_gamepads_initialized || SDL_IsJoystickBeingAdded()) {
         return;
     }
+
+    SDL_UpdateGamepadNameForID(instance_id);
 
     event.type = SDL_EVENT_GAMEPAD_ADDED;
     event.common.timestamp = 0;
@@ -2969,6 +3011,10 @@ bool SDL_InitGamepads(void)
 
     SDL_gamepads_initialized = true;
 
+    SDL_LockJoysticks();
+
+    SDL_gamepad_names = SDL_CreateHashTable(0, false, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
+
     // Watch for joystick events and fire gamepad ones if needed
     SDL_AddEventWatch(SDL_GamepadEventWatcher, NULL);
 
@@ -2982,6 +3028,8 @@ bool SDL_InitGamepads(void)
         }
         SDL_free(joysticks);
     }
+
+    SDL_UnlockJoysticks();
 
     return true;
 }
@@ -3029,19 +3077,10 @@ SDL_JoystickID *SDL_GetGamepads(int *count)
 
 const char *SDL_GetGamepadNameForID(SDL_JoystickID instance_id)
 {
-    const char *result = NULL;
+    const char *result;
 
     SDL_LockJoysticks();
-    {
-        GamepadMapping_t *mapping = SDL_PrivateGetGamepadMapping(instance_id, true);
-        if (mapping) {
-            if (SDL_strcmp(mapping->name, "*") == 0) {
-                result = SDL_GetJoystickNameForID(instance_id);
-            } else {
-                result = SDL_GetPersistentString(mapping->name);
-            }
-        }
-    }
+    result = SDL_UpdateGamepadNameForID(instance_id);
     SDL_UnlockJoysticks();
 
     return result;
@@ -3212,7 +3251,7 @@ bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version
                     return true;
                 }
                 break;
-            
+
             case GAMEPAD_BLACKLIST_END:
                 if (SDL_endswith(name, blacklist_word->str)) {
                     return true;
@@ -4296,6 +4335,11 @@ void SDL_QuitGamepads(void)
     while (SDL_gamepads) {
         SDL_gamepads->ref_count = 1;
         SDL_CloseGamepad(SDL_gamepads);
+    }
+
+    if (SDL_gamepad_names) {
+        SDL_DestroyHashTable(SDL_gamepad_names);
+        SDL_gamepad_names = NULL;
     }
 
     SDL_UnlockJoysticks();
