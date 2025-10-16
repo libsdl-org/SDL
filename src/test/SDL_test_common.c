@@ -1523,9 +1523,7 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
         }
     }
 
-    if (state->flags & SDL_INIT_CAMERA) {
-        SDL_InitSubSystem(SDL_INIT_CAMERA);
-    }
+    SDL_InitSubSystem(state->flags);
 
     return true;
 }
