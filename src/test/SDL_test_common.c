@@ -1811,12 +1811,12 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
     case SDL_EVENT_JOYSTICK_ADDED:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " attached",
-                event->jdevice.which);
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " (%s) attached",
+                event->jdevice.which, SDL_GetJoystickNameForID(event->jdevice.which));
         break;
     case SDL_EVENT_JOYSTICK_REMOVED:
-        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " removed",
-                event->jdevice.which);
+        SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " (%s) removed",
+                event->jdevice.which, SDL_GetJoystickNameForID(event->jdevice.which));
         break;
     case SDL_EVENT_JOYSTICK_AXIS_MOTION:
         SDL_Log("SDL EVENT: Joystick %" SDL_PRIu32 " axis %d value: %d",
@@ -1877,12 +1877,12 @@ void SDLTest_PrintEvent(const SDL_Event *event)
                 event->jbattery.which, event->jbattery.percent);
         break;
     case SDL_EVENT_GAMEPAD_ADDED:
-        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " attached",
-                event->gdevice.which);
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " (%s) attached",
+                event->gdevice.which, SDL_GetGamepadNameForID(event->gdevice.which));
         break;
     case SDL_EVENT_GAMEPAD_REMOVED:
-        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " removed",
-                event->gdevice.which);
+        SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " (%s) removed",
+                event->gdevice.which, SDL_GetGamepadNameForID(event->gdevice.which));
         break;
     case SDL_EVENT_GAMEPAD_REMAPPED:
         SDL_Log("SDL EVENT: Gamepad %" SDL_PRIu32 " mapping changed",
