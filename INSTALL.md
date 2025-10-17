@@ -1,12 +1,12 @@
 # To build and use SDL:
 
 SDL supports a number of development environments:
-- [CMake](https://wiki.libsdl.org/SDL3/INTRO-cmake)
-- [Visual Studio on Windows](https://wiki.libsdl.org/SDL3/INTRO-visualstudio)
-- [gcc on Windows](https://wiki.libsdl.org/SDL3/INTRO-mingw)
-- [Xcode on Apple platforms](https://wiki.libsdl.org/SDL3/INTRO-xcode)
-- [Android Studio](https://wiki.libsdl.org/SDL3/INTRO-androidstudio)
-- [Emscripten for web](https://wiki.libsdl.org/SDL3/INTRO-emscripten)
+- [CMake](https://wiki.libsdl.org/SDL3/README-INTRO-cmake)
+- [Visual Studio on Windows](https://wiki.libsdl.org/SDL3/README-INTRO-visualstudio)
+- [gcc on Windows](https://wiki.libsdl.org/SDL3/README-INTRO-mingw)
+- [Xcode on Apple platforms](https://wiki.libsdl.org/SDL3/README-INTRO-xcode)
+- [Android Studio](https://wiki.libsdl.org/SDL3/README-INTRO-androidstudio)
+- [Emscripten for web](https://wiki.libsdl.org/SDL3/README-INTRO-emscripten)
 
 SDL is also usable in other environments. The basic steps are to use CMake to build the library and then use the headers and library that you built in your project. You can search online to see if anyone has specific steps for your setup.
 
