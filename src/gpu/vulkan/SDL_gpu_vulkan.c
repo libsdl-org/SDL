@@ -9915,7 +9915,12 @@ static Uint32 VULKAN_INTERNAL_RecreateSwapchain(
         }
     }
 
+#ifdef SDL_VIDEO_DRIVER_PRIVATE
+    // Private platforms also invalidate the window, so don't try to preserve the surface/swapchain
+    VULKAN_INTERNAL_DestroySwapchain(renderer, windowData);
+#else
     VULKAN_INTERNAL_DestroySwapchainImage(renderer, windowData);
+#endif
     return VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
 }
 
