@@ -2027,8 +2027,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
         if (data->shell_surface.libdecor.frame) {
             while (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
-                WAYLAND_wl_display_flush(c->display);
-                WAYLAND_wl_display_dispatch(c->display);
+                libdecor_dispatch(c->shell.libdecor, -1);
             }
         }
     } else
@@ -2041,7 +2040,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         wl_surface_commit(data->surface);
         if (data->shell_surface.xdg.surface) {
             while (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
-                WAYLAND_wl_display_flush(c->display);
                 WAYLAND_wl_display_dispatch(c->display);
             }
         }
@@ -3266,7 +3264,6 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
         wind->icon_buffer_count = 0;
 
         SDL_free(wind);
-        WAYLAND_wl_display_flush(data->display);
     }
     window->internal = NULL;
 }

@@ -461,7 +461,6 @@ static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_VideoData *data = device->internal;
     if (data->display && !data->display_externally_owned) {
-        WAYLAND_wl_display_flush(data->display);
         WAYLAND_wl_display_disconnect(data->display);
         SDL_ClearProperty(SDL_GetGlobalProperties(), SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER);
     }
@@ -1454,9 +1453,6 @@ bool Wayland_VideoInit(SDL_VideoDevice *_this)
     Wayland_FinalizeDisplays(data);
 
     Wayland_InitMouse();
-
-    WAYLAND_wl_display_flush(data->display);
-
     Wayland_InitKeyboard(_this);
 
     if (data->primary_selection_device_manager) {

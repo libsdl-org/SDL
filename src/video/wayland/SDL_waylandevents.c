@@ -3654,8 +3654,6 @@ void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, 
     if (display->tablet_manager) {
         Wayland_SeatInitTabletSupport(seat);
     }
-
-    WAYLAND_wl_display_flush(display->display);
 }
 
 void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_WindowData *window)
