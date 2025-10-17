@@ -1,5 +1,6 @@
 # SDL3 CMake configuration file:
-# This file is meant to be placed in Resources/CMake of a SDL3 framework
+# This file is meant to be placed in Resources/CMake of a SDL3 framework for macOS,
+# or in the CMake directory of a SDL3 framework for iOS / tvOS / visionOS.
 
 # INTERFACE_LINK_OPTIONS needs CMake 3.12
 cmake_minimum_required(VERSION 3.12)
