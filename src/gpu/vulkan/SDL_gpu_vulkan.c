@@ -11380,6 +11380,89 @@ static bool VULKAN_INTERNAL_ValidateOptInVulkan13Features(VkPhysicalDeviceVulkan
 
 #undef CHECK_OPTIONAL_DEVICE_FEATURE
 
+static bool VULKAN_INTERNAL_ValidateOptInFeatures(VulkanRenderer *renderer, VkPhysicalDevice physicalDevice, VkPhysicalDeviceFeatures *vk10Features)
+{
+    bool supportsAllFeatures = true;
+
+    if (renderer->desiredApiVersion < VK_API_VERSION_1_1) {
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan10Features(&renderer->desiredVulkan10DeviceFeatures, vk10Features);
+    } else if (renderer->desiredApiVersion < VK_API_VERSION_1_2) {
+        // Query device features using the pre-1.2 structures
+        VkPhysicalDevice16BitStorageFeatures storage = { 0 };
+        storage.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES;
+
+        VkPhysicalDeviceMultiviewFeatures multiview = { 0 };
+        multiview.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES;
+
+        VkPhysicalDeviceProtectedMemoryFeatures protectedMem = { 0 };
+        protectedMem.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES;
+
+        VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr = { 0 };
+        ycbcr.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES;
+
+        VkPhysicalDeviceShaderDrawParametersFeatures drawParams = { 0 };
+        drawParams.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES;
+
+        VkPhysicalDeviceVariablePointersFeatures varPointers = { 0 };
+        varPointers.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES;
+
+        VkPhysicalDeviceFeatures2 supportedFeatureList = { 0 };
+        supportedFeatureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        supportedFeatureList.pNext = &storage;
+        storage.pNext = &multiview;
+        multiview.pNext = &protectedMem;
+        protectedMem.pNext = &ycbcr;
+        ycbcr.pNext = &drawParams;
+        drawParams.pNext = &varPointers;
+
+        renderer->vkGetPhysicalDeviceFeatures2(physicalDevice, &supportedFeatureList);
+
+        // Pack the results into the post-1.2 structure for easier checking
+        VkPhysicalDeviceVulkan11Features vk11Features = { 0 };
+        vk11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+        vk11Features.storageBuffer16BitAccess = storage.storageBuffer16BitAccess;
+        vk11Features.uniformAndStorageBuffer16BitAccess = storage.uniformAndStorageBuffer16BitAccess;
+        vk11Features.storagePushConstant16 = storage.storagePushConstant16;
+        vk11Features.storageInputOutput16 = storage.storageInputOutput16;
+        vk11Features.multiview = multiview.multiview;
+        vk11Features.multiviewGeometryShader = multiview.multiviewGeometryShader;
+        vk11Features.multiviewTessellationShader = multiview.multiviewTessellationShader;
+        vk11Features.protectedMemory = protectedMem.protectedMemory;
+        vk11Features.samplerYcbcrConversion = ycbcr.samplerYcbcrConversion;
+        vk11Features.shaderDrawParameters = drawParams.shaderDrawParameters;
+        vk11Features.variablePointers = varPointers.variablePointers;
+        vk11Features.variablePointersStorageBuffer = varPointers.variablePointersStorageBuffer;
+
+        // Check support
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan10Features(&renderer->desiredVulkan10DeviceFeatures, vk10Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan11Features(&renderer->desiredVulkan11DeviceFeatures, &vk11Features);
+    } else {
+        VkPhysicalDeviceVulkan11Features vk11Features = { 0 };
+        vk11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+
+        VkPhysicalDeviceVulkan12Features vk12Features = { 0 };
+        vk12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+
+        VkPhysicalDeviceVulkan13Features vk13Features = { 0 };
+        vk13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+
+        VkPhysicalDeviceFeatures2 supportedFeatureList = { 0 };
+        supportedFeatureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        supportedFeatureList.pNext = &vk11Features;
+        vk11Features.pNext = &vk12Features;
+        vk12Features.pNext = &vk13Features;
+
+        renderer->vkGetPhysicalDeviceFeatures2(physicalDevice, &supportedFeatureList);
+
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan10Features(&renderer->desiredVulkan10DeviceFeatures, vk10Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan11Features(&renderer->desiredVulkan11DeviceFeatures, &vk11Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan12Features(&renderer->desiredVulkan12DeviceFeatures, &vk12Features);
+        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan13Features(&renderer->desiredVulkan13DeviceFeatures, &vk13Features);
+    }
+
+    return supportsAllFeatures;
+}
+
 static void VULKAN_INTERNAL_AddDeviceFeatures(VkBool32 *firstFeature, VkBool32 *lastFeature, VkBool32 *firstFeatureToAdd)
 {
     while (firstFeature <= lastFeature) {
@@ -11536,9 +11619,9 @@ static bool VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, Vulkan
                                                   &features->robustBufferAccess);
             }
 
-            bool supportsHigherLevelFeatures = renderer->desiredApiVersion != VK_API_VERSION_1_0;
+            bool supportsHigherLevelFeatures = renderer->desiredApiVersion > VK_API_VERSION_1_0;
             if (supportsHigherLevelFeatures && options->feature_list) {
-                if (renderer->desiredApiVersion == VK_API_VERSION_1_1) {
+                if (renderer->desiredApiVersion < VK_API_VERSION_1_2) {
                     // Iterate through the entire list and combine all requested features
                     VkBaseOutStructure *nextStructure = (VkBaseOutStructure *)options->feature_list;
                     while (nextStructure) {
@@ -11740,31 +11823,7 @@ static Uint8 VULKAN_INTERNAL_IsDeviceSuitable(
 
     // Check opt-in device features
     if (renderer->usesCustomVulkanOptions) {
-        VkPhysicalDeviceFeatures2 featureList = { 0 };
-        featureList.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-
-        VkPhysicalDeviceVulkan11Features vk11Features = { 0 };
-        vk11Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
-
-        VkPhysicalDeviceVulkan12Features vk12Features = { 0 };
-        vk12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-
-        VkPhysicalDeviceVulkan13Features vk13Features = { 0 };
-        vk13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
-
-        featureList.pNext = &vk11Features;
-        vk11Features.pNext = &vk12Features;
-        vk12Features.pNext = &vk13Features;
-
-        renderer->vkGetPhysicalDeviceFeatures2(
-            physicalDevice,
-            &featureList);
-
-        bool supportsAllFeatures = VULKAN_INTERNAL_ValidateOptInVulkan10Features(&renderer->desiredVulkan10DeviceFeatures, &featureList.features);
-        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan11Features(&renderer->desiredVulkan11DeviceFeatures, &vk11Features);
-        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan12Features(&renderer->desiredVulkan12DeviceFeatures, &vk12Features);
-        supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan13Features(&renderer->desiredVulkan13DeviceFeatures, &vk13Features);
-
+        bool supportsAllFeatures = VULKAN_INTERNAL_ValidateOptInFeatures(renderer, physicalDevice, &deviceFeatures);
         if (!supportsAllFeatures) {
             return 0;
         }
