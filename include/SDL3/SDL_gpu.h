@@ -2306,7 +2306,16 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   useful for targeting Intel Haswell and Broadwell GPUs; other hardware
  *   either supports Tier 2 Resource Binding or does not support D3D12 in any
  *   capacity. Defaults to false.
+ * 
+ * With the Vulkan renderer:
  *
+ * - `SDL_PROP_GPU_DEVICE_CREATE_VULKAN_ADDITIONAL_FEATURES_POINTER`: pointer
+ *   to a Vulkan structure to be appended to SDL's VkDeviceCreateInfo during
+ *   device creation.
+ *   This allows passing a list of VkPhysicalDeviceFeature structures to
+ *   opt-into features aside from the minimal set SDL requires. It also allows
+ *   requesting a higher API version and opting into extensions.
+ * 
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
  *          for more information.
@@ -2337,6 +2346,29 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN                     "SDL.gpu.device.create.shaders.metallib"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN     "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING                   "SDL.gpu.device.create.d3d12.semantic"
+#define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
+
+
+/**
+ * A structure specifying additional options when using Vulkan.
+ *
+ * When no such structure is provided, SDL will use Vulkan API version 1.0 and a minimal set of features.
+ * The feature list gets passed to the vkCreateInstance function and allows requesting additional
+ * features.
+ * 
+ * \since This struct is available since SDL 3.4.0.
+ *
+ */
+typedef struct SDL_GPUVulkanOptions
+{
+    Uint32 vulkan_api_version; /**< The Vulkan API version to request for the instance. Use Vulkan's VK_MAKE_VERSION or VK_MAKE_API_VERSION. */
+    void *feature_list; /**< Pointer to the first element of a list of structs to be passed to device creation. */
+	void *vulkan_10_physical_device_features; /**< Pointer to a VkPhysicalDeviceFeatures struct to enable additional Vulkan 1.0 features. */
+	Uint32 device_extension_count; /**< Number of additional device extensions to require. */
+	const char **device_extension_names; /**< Pointer to a list of additional device extensions to require. */
+	Uint32 instance_extension_count; /**< Number of additional instance extensions to require. */
+	const char **instance_extension_names; /**< Pointer to a list of additional instance extensions to require. */
+} SDL_GPUVulkanOptions;
 
 /**
  * Destroys a GPU context previously returned by SDL_CreateGPUDevice.
