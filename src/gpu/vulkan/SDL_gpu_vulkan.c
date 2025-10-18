@@ -12401,6 +12401,12 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         return NULL;
     }
 
+    // Make sure we don't hold onto potentially unsafe pointers after initialization
+    renderer->additionalDeviceExtensionCount = 0;
+    renderer->additionalInstanceExtensionCount = 0;
+    renderer->additionalDeviceExtensionNames = NULL;
+    renderer->additionalInstanceExtensionNames = NULL;
+
     renderer->props = SDL_CreateProperties();
     if (verboseLogs) {
         SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "SDL_GPU Driver: Vulkan");
