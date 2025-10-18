@@ -385,6 +385,9 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
         (Uint8[]) { // Unknown purpose
             0x11, 0x91, 0x0, 0x3, 0x0, 0x0, 0x0, 0x0,
         },
+        (Uint8[]) { // Unknown purpose
+            0x11, 0x91, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0,
+        },
         (Uint8[]) { // Set rumble data?
             0x0a, 0x91, 0x00, 0x08, 0x00, 0x14, 0x00, 0x00,
             0x01, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -397,8 +400,17 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
         (Uint8[]) { // Unknown purpose
             0x10, 0x91, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0,
         },
+        (Uint8[]) { // Unknown purpose
+            0x01, 0x91, 0x0, 0xc, 0x0, 0x0, 0x0, 0x0,
+        },
         (Uint8[]) { // Enable rumble
             0x01, 0x91, 0x0, 0x1, 0x0, 0x0, 0x0, 0x0,
+        },
+        (Uint8[]) { // Unknown purpose
+            0x8, 0x91, 0x0, 0x1, 0x0, 0x4, 0x0, 0x0, 0x20, 0x0, 0x0, 0x0,
+        },
+        (Uint8[]) { // Enable grip buttons on charging grip
+            0x8, 0x91, 0x0, 0x2, 0x0, 0x4, 0x0, 0x0, 0x01, 0x0, 0x0, 0x0,
         },
         (Uint8[]) { // Set report format
             0x03, 0x91, 0x00, 0x0a, 0x00, 0x04, 0x00, 0x00,
@@ -717,6 +729,10 @@ static void HandleCombinedControllerStateL(Uint64 timestamp, SDL_Joystick *joyst
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data[7] & 0x40) != 0));
     }
 
+    if (data[8] != ctx->last_state[8]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SWITCH2_JOYCON_LEFT_PADDLE1, ((data[8] & 0x02) != 0));
+    }
+
     Sint16 axis = (data[7] & 0x80) ? 32767 : -32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
 
@@ -793,6 +809,10 @@ static void HandleCombinedControllerStateR(Uint64 timestamp, SDL_Joystick *joyst
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((data[6] & 0x04) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data[6] & 0x10) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SWITCH2_JOYCON_C, ((data[6] & 0x40) != 0));
+    }
+
+    if (data[8] != ctx->last_state[8]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SWITCH2_JOYCON_RIGHT_PADDLE1, ((data[8] & 0x01) != 0));
     }
 
     Sint16 axis = (data[5] & 0x80) ? 32767 : -32768;
