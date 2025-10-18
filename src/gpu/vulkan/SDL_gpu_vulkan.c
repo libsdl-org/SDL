@@ -11733,7 +11733,7 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
     }
 
     Uint32 extraInstanceExtensionCount = renderer->additionalInstanceExtensionCount;
-    char** extraInstanceExtensionNames = renderer->additionalInstanceExtensionNames;
+    const char** extraInstanceExtensionNames = renderer->additionalInstanceExtensionNames;
 
     /* Extra space for the following extensions:
      * VK_KHR_get_physical_device_properties2
