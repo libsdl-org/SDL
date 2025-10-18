@@ -88,6 +88,10 @@ SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_flags, (struct wl_proxy *pro
 SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_array_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version,  uint32_t flags, union wl_argument *args))
 #endif
 
+#if SDL_WAYLAND_CHECK_VERSION(1, 23, 0) || defined(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC)
+SDL_WAYLAND_SYM_OPT(struct wl_event_queue *, wl_display_create_queue_with_name, (struct wl_display *display, const char *name))
+#endif
+
 #if 0 // TODO RECONNECT: See waylandvideo.c for more information!
 #if SDL_WAYLAND_CHECK_VERSION(broken, on, purpose)
 SDL_WAYLAND_SYM(int, wl_display_reconnect, (struct wl_display *))

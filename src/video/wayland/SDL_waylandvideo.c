@@ -457,6 +457,18 @@ SDL_WindowData *Wayland_GetWindowDataForOwnedSurface(struct wl_surface *surface)
     return NULL;
 }
 
+struct wl_event_queue *Wayland_DisplayCreateQueue(struct wl_display *display, const char *name)
+{
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
+    if (WAYLAND_wl_display_create_queue_with_name) {
+        return WAYLAND_wl_display_create_queue_with_name(display, name);
+    }
+#elif SDL_WAYLAND_CHECK_VERSION(1, 23, 0)
+    return WAYLAND_wl_display_create_queue_with_name(display, name);
+#endif
+    return WAYLAND_wl_display_create_queue(display);
+}
+
 static void Wayland_DeleteDevice(SDL_VideoDevice *device)
 {
     SDL_VideoData *data = device->internal;
