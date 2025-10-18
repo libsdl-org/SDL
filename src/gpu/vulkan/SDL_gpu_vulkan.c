@@ -11636,7 +11636,7 @@ static bool VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_12_Or_Later(VkPhysicalDe
     return hasAdded;
 }
 
-static bool VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, VulkanRenderer *renderer)
+static void VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, VulkanRenderer *renderer)
 {
     if (SDL_HasProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER)) {
         SDL_GPUVulkanOptions *options = (SDL_GPUVulkanOptions *)SDL_GetPointerProperty(props, SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER, NULL);
@@ -11693,10 +11693,11 @@ static bool VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, Vulkan
             renderer->additionalDeviceExtensionNames = options->device_extension_names;
             renderer->additionalInstanceExtensionCount = options->instance_extension_count;
             renderer->additionalInstanceExtensionNames = options->instance_extension_names;
+        } else if (renderer->debugMode) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU,
+                        "VULKAN_INTERNAL_AddOptInVulkanOptions: Additional options property was set, but value was null. This may be a bug.");
         }
     }
-
-    return true;
 }
 
 static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
@@ -12338,13 +12339,11 @@ static bool VULKAN_PrepareDriver(SDL_VideoDevice *_this, SDL_PropertiesID props)
         renderer->desiredVulkan10DeviceFeatures.imageCubeArray = VK_TRUE;
 
         // Handle opt-in device features
-        bool featuresInitialized = VULKAN_INTERNAL_AddOptInVulkanOptions(props, renderer);
+        VULKAN_INTERNAL_AddOptInVulkanOptions(props, renderer);
 
-        if (featuresInitialized) {
-            result = VULKAN_INTERNAL_PrepareVulkan(renderer);
-            if (result) {
-                renderer->vkDestroyInstance(renderer->instance, NULL);
-            }
+        result = VULKAN_INTERNAL_PrepareVulkan(renderer);
+        if (result) {
+            renderer->vkDestroyInstance(renderer->instance, NULL);
         }
 
         SDL_free(renderer);
@@ -12393,12 +12392,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->desiredVulkan10DeviceFeatures.imageCubeArray = VK_TRUE;
 
     // Handle opt-in device features
-    if (!VULKAN_INTERNAL_AddOptInVulkanOptions(props, renderer)) {
-        SET_STRING_ERROR("Failed to initialize additional Vulkan options!");
-        SDL_free(renderer);
-        SDL_Vulkan_UnloadLibrary();
-        return NULL;
-    }
+    VULKAN_INTERNAL_AddOptInVulkanOptions(props, renderer);
 
     if (!VULKAN_INTERNAL_PrepareVulkan(renderer)) {
         SET_STRING_ERROR("Failed to initialize Vulkan!");
