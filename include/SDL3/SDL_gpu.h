@@ -2313,7 +2313,8 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   to a Vulkan structure to be appended to SDL's VkDeviceCreateInfo during
  *   device creation.
  *   This allows passing a list of VkPhysicalDeviceFeature structures to
- *   opt-into features aside from the minimal set SDL requires.
+ *   opt-into features aside from the minimal set SDL requires. It also allows
+ *   requesting a higher API version and opting into extensions.
  * 
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
