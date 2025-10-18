@@ -1114,9 +1114,9 @@ struct VulkanRenderer
     VkPhysicalDeviceVulkan12Features desiredVulkan12DeviceFeatures;
     VkPhysicalDeviceVulkan13Features desiredVulkan13DeviceFeatures;
     Uint32 additionalDeviceExtensionCount;
-    char **additionalDeviceExtensionNames;
+    const char **additionalDeviceExtensionNames;
     Uint32 additionalInstanceExtensionCount;
-    char **additionalInstanceExtensionNames;
+    const char **additionalInstanceExtensionNames;
 
     bool debugMode;
     bool preferLowPower;

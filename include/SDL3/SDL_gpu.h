@@ -2366,9 +2366,9 @@ typedef struct SDL_GPUVulkanOptions
     void *feature_list; /**< Pointer to the first element of a list of structs to be passed to device creation. */
 	void *vulkan_10_physical_device_features; /**< Pointer to a VkPhysicalDeviceFeatures struct to enable additional Vulkan 1.0 features. */
 	Uint32 device_extension_count; /**< Number of additional device extensions to require. */
-	char **device_extension_names; /**< Pointer to a list of additional device extensions to require. */
+	const char **device_extension_names; /**< Pointer to a list of additional device extensions to require. */
 	Uint32 instance_extension_count; /**< Number of additional instance extensions to require. */
-	char **instance_extension_names; /**< Pointer to a list of additional instance extensions to require. */
+	const char **instance_extension_names; /**< Pointer to a list of additional instance extensions to require. */
 } SDL_GPUVulkanOptions;
 
 /**
