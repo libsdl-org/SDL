@@ -1113,6 +1113,8 @@ struct VulkanRenderer
     VkPhysicalDeviceVulkan11Features desiredVulkan11DeviceFeatures;
     VkPhysicalDeviceVulkan12Features desiredVulkan12DeviceFeatures;
     VkPhysicalDeviceVulkan13Features desiredVulkan13DeviceFeatures;
+    Uint32 additionalInstanceExtensionCount;
+    char **additionalInstanceExtensionNames;
 
     bool debugMode;
     bool preferLowPower;
@@ -11080,7 +11082,8 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     Uint32 requiredExtensionsLength,
     bool *supportsDebugUtils,
     bool *supportsColorspace,
-    bool *supportsPhysicalDeviceProperties2)
+    bool *supportsPhysicalDeviceProperties2,
+    int *firstUnsupportedExtensionIndex)
 {
     Uint32 extensionCount, i;
     VkExtensionProperties *availableExtensions;
@@ -11103,6 +11106,7 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
                 availableExtensions,
                 extensionCount)) {
             allExtensionsSupported = 0;
+            *firstUnsupportedExtensionIndex = i;
             break;
         }
     }
@@ -11645,6 +11649,9 @@ static bool VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, Vulkan
                     }
                 }
             }
+
+            renderer->additionalInstanceExtensionCount = options->instance_extension_count;
+            renderer->additionalInstanceExtensionNames = options->instance_extension_names;
         }
     }
 
@@ -11684,37 +11691,59 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
         return 0;
     }
 
+    Uint32 extraInstanceExtensionCount = renderer->additionalInstanceExtensionCount;
+    char** extraInstanceExtensionNames = renderer->additionalInstanceExtensionNames;
+
     /* Extra space for the following extensions:
      * VK_KHR_get_physical_device_properties2
      * VK_EXT_swapchain_colorspace
      * VK_EXT_debug_utils
      * VK_KHR_portability_enumeration
+     *
+     * Plus additional opt-in extensions.
      */
     instanceExtensionNames = SDL_stack_alloc(
         const char *,
-        instanceExtensionCount + 4);
-    SDL_memcpy((void *)instanceExtensionNames, originalInstanceExtensionNames, instanceExtensionCount * sizeof(const char *));
+        instanceExtensionCount + 4 + extraInstanceExtensionCount);
+    const char** nextInstanceExtensionNamePtr = instanceExtensionNames;
+    SDL_memcpy((void *)nextInstanceExtensionNamePtr, originalInstanceExtensionNames, instanceExtensionCount * sizeof(const char *));
+    nextInstanceExtensionNamePtr += instanceExtensionCount;
+
+    if (extraInstanceExtensionCount > 0) {
+        SDL_memcpy((void *)nextInstanceExtensionNamePtr, extraInstanceExtensionNames, extraInstanceExtensionCount * sizeof(const char *));
+        nextInstanceExtensionNamePtr += extraInstanceExtensionCount;
+    }
+
 
 #ifdef SDL_PLATFORM_APPLE
-    instanceExtensionNames[instanceExtensionCount++] =
-        VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+    *nextInstanceExtensionNamePtr++ = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+    instanceExtensionCount++;
     createFlags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 #endif
 
+    int firstUnsupportedExtensionIndex = 0;
     if (!VULKAN_INTERNAL_CheckInstanceExtensions(
             instanceExtensionNames,
-            instanceExtensionCount,
+            instanceExtensionCount + extraInstanceExtensionCount,
             &renderer->supportsDebugUtils,
             &renderer->supportsColorspace,
-            &renderer->supportsPhysicalDeviceProperties2)) {
+            &renderer->supportsPhysicalDeviceProperties2,
+            &firstUnsupportedExtensionIndex)) {
+        if (renderer->debugMode) {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU,
+                         "Required Vulkan instance extension '%s' not supported",
+                         instanceExtensionNames[firstUnsupportedExtensionIndex]);
+        }
+        SDL_SetError("Required Vulkan instance extension '%s' not supported",
+                     instanceExtensionNames[firstUnsupportedExtensionIndex]);
         SDL_stack_free((char *)instanceExtensionNames);
-        SET_STRING_ERROR_AND_RETURN("Required Vulkan instance extensions not supported", false);
+        return false;
     }
 
     if (renderer->supportsDebugUtils) {
         // Append the debug extension
-        instanceExtensionNames[instanceExtensionCount++] =
-            VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+        *nextInstanceExtensionNamePtr++ = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+        instanceExtensionCount++;
     } else {
         SDL_LogWarn(
             SDL_LOG_CATEGORY_GPU,
@@ -11724,14 +11753,14 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
 
     if (renderer->supportsColorspace) {
         // Append colorspace extension
-        instanceExtensionNames[instanceExtensionCount++] =
-            VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME;
+        *nextInstanceExtensionNamePtr++ = VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME;
+        instanceExtensionCount++;
     }
 
     if (renderer->supportsPhysicalDeviceProperties2) {
         // Append KHR_physical_device_properties2 extension
-        instanceExtensionNames[instanceExtensionCount++] =
-            VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
+        *nextInstanceExtensionNamePtr++ = VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
+        instanceExtensionCount++;
     }
 
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -11739,7 +11768,7 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer)
     createInfo.flags = createFlags;
     createInfo.pApplicationInfo = &appInfo;
     createInfo.ppEnabledLayerNames = layerNames;
-    createInfo.enabledExtensionCount = instanceExtensionCount;
+    createInfo.enabledExtensionCount = instanceExtensionCount + extraInstanceExtensionCount;
     createInfo.ppEnabledExtensionNames = instanceExtensionNames;
     if (renderer->debugMode) {
         createInfo.enabledLayerCount = SDL_arraysize(layerNames);
