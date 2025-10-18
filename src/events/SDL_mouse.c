@@ -1562,6 +1562,11 @@ SDL_Cursor *SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_coun
         return NULL;
     }
 
+    CHECK_PARAM(!frames[0].surface) {
+        SDL_SetError("Null surface in frame 0");
+        return NULL;
+    }
+
     CHECK_PARAM(!frame_count) {
         SDL_InvalidParamError("frame_count");
         return NULL;
@@ -1588,11 +1593,6 @@ SDL_Cursor *SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_coun
     CHECK_PARAM((hot_x < 0) || (hot_y < 0) ||
                 (hot_x >= frames[0].surface->w) || (hot_y >= frames[0].surface->h)) {
         SDL_SetError("Cursor hot spot doesn't lie within cursor");
-        return NULL;
-    }
-
-    CHECK_PARAM(!frames[0].surface) {
-        SDL_SetError("Null surface in frame 0");
         return NULL;
     }
 
