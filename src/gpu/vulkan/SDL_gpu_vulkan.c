@@ -11384,9 +11384,11 @@ static bool VULKAN_INTERNAL_ValidateOptInFeatures(VulkanRenderer *renderer, VkPh
 {
     bool supportsAllFeatures = true;
 
-    if (renderer->desiredApiVersion < VK_API_VERSION_1_1) {
+    int minorVersion = VK_API_VERSION_MINOR(renderer->desiredApiVersion);
+
+    if (minorVersion < 1) {
         supportsAllFeatures &= VULKAN_INTERNAL_ValidateOptInVulkan10Features(&renderer->desiredVulkan10DeviceFeatures, vk10Features);
-    } else if (renderer->desiredApiVersion < VK_API_VERSION_1_2) {
+    } else if (minorVersion < 2) {
         // Query device features using the pre-1.2 structures
         VkPhysicalDevice16BitStorageFeatures storage = { 0 };
         storage.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES;
@@ -11549,8 +11551,8 @@ static bool VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_12_Or_Later(VkPhysicalDe
                                                                     Uint32 apiVersion,
                                                                     VkBaseOutStructure *src)
 {
-    SDL_assert(apiVersion >= VK_API_VERSION_1_2);
-
+    int minorVersion = VK_API_VERSION_MINOR(apiVersion);
+    SDL_assert(apiVersion >= 2);
     bool hasAdded = VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_11(dst10, dst11, src);
     if (!hasAdded) {
         switch (src->sType) {
@@ -11574,7 +11576,7 @@ static bool VULKAN_INTERNAL_TryAddDeviceFeatures_Vulkan_12_Or_Later(VkPhysicalDe
 
         case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES:
         {
-            if (apiVersion >= VK_API_VERSION_1_3) {
+            if (minorVersion >= 3) {
                 VkPhysicalDeviceVulkan13Features *newFeatures = (VkPhysicalDeviceVulkan13Features *)src;
                 VULKAN_INTERNAL_AddDeviceFeatures(&dst13->robustImageAccess,
                                                   &dst13->maintenance4,
@@ -11619,9 +11621,10 @@ static bool VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, Vulkan
                                                   &features->robustBufferAccess);
             }
 
-            bool supportsHigherLevelFeatures = renderer->desiredApiVersion > VK_API_VERSION_1_0;
+            int minorVersion = VK_API_VERSION_MINOR(renderer->desiredApiVersion);
+            bool supportsHigherLevelFeatures = minorVersion > 0;
             if (supportsHigherLevelFeatures && options->feature_list) {
-                if (renderer->desiredApiVersion < VK_API_VERSION_1_2) {
+                if (minorVersion < 2) {
                     // Iterate through the entire list and combine all requested features
                     VkBaseOutStructure *nextStructure = (VkBaseOutStructure *)options->feature_list;
                     while (nextStructure) {
