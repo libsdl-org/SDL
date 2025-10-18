@@ -100,6 +100,7 @@ class JobSpec:
     clang_cl: bool = False
     gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
+    deps_shared: bool = True
 
 
 JOB_SPECS = {
@@ -116,6 +117,7 @@ JOB_SPECS = {
     "ubuntu-22.04": JobSpec(name="Ubuntu 22.04",                            os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04", ),
     "ubuntu-latest": JobSpec(name="Ubuntu (latest)",                        os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-ubuntu-latest", ),
     "ubuntu-24.04-arm64": JobSpec(name="Ubuntu 24.04 (ARM64)",              os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu24.04-arm64", ),
+    "steamrt2": JobSpec(name="Steam Linux Runtime 2.0 (x86_64)",            os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-steamrt2",           container="registry.gitlab.steamos.cloud/steamrt/soldier/sdk:latest", deps_shared=False),
     "steamrt3": JobSpec(name="Steam Linux Runtime 3.0 (x86_64)",            os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-steamrt3",           container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest", ),
     "steamrt3-arm64": JobSpec(name="Steam Linux Runtime 3.0 (arm64)",       os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-steamrt3-arm64",     container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk/arm64:latest", ),
     "ubuntu-intel-icx": JobSpec(name="Ubuntu 22.04 (Intel oneAPI)",         os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04-oneapi", intel=IntelCompiler.Icx, ),
@@ -317,6 +319,13 @@ def my_shlex_join(s):
     return " ".join(escape(s))
 
 
+def cmake_yes_no(v):
+    if v:
+        return "YES"
+    else:
+        return "NO"
+
+
 def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDetails:
     job = JobDetails(
         name=spec.name,
@@ -341,6 +350,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
     win32 = spec.platform in (SdlPlatform.Msys2, SdlPlatform.Msvc)
     fpic = None
     build_parallel = True
+    job.cmake_arguments.append(f"-DSDL_DEPS_SHARED={cmake_yes_no(spec.deps_shared)}")
     if spec.lean:
         job.cppflags.append("-DSDL_LEAN_AND_MEAN=1")
     if win32:
@@ -476,7 +486,12 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 job.apt_packages.extend((
                     "libunwind-dev",  # For SDL_test memory tracking
                 ))
-            job.ccache = True
+            if key in ("steamrt2", ):
+                job.ccache = False
+                job.cflags.append("-Wno-incompatible-pointer-types")  # older PulseAudio headers lack const
+                job.cmake_arguments.append("-DSDL_KMSDRM=OFF")  # kmsdrm libraries in soldier are too old
+            else:
+                job.ccache = True
             if trackmem_symbol_names:
                 # older libunwind is slow
                 job.cmake_arguments.append("-DSDLTEST_TIMEOUT_MULTIPLIER=2")
