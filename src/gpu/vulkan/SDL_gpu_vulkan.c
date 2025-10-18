@@ -1113,6 +1113,8 @@ struct VulkanRenderer
     VkPhysicalDeviceVulkan11Features desiredVulkan11DeviceFeatures;
     VkPhysicalDeviceVulkan12Features desiredVulkan12DeviceFeatures;
     VkPhysicalDeviceVulkan13Features desiredVulkan13DeviceFeatures;
+    Uint32 additionalDeviceExtensionCount;
+    char **additionalDeviceExtensionNames;
     Uint32 additionalInstanceExtensionCount;
     char **additionalInstanceExtensionNames;
 
@@ -11133,6 +11135,30 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     return allExtensionsSupported;
 }
 
+static Uint8 CheckOptInDeviceExtensions(VulkanRenderer *renderer,
+                                        VkPhysicalDevice physicalDevice,
+                                        Uint32 numExtensions,
+                                        VkExtensionProperties *availableExtensions,
+                                        const char **missingExtensionName) {
+    Uint8 supportsAll = 1;
+    for (Uint32 extensionIdx = 0; extensionIdx < renderer->additionalDeviceExtensionCount; extensionIdx++) {
+        bool found = false;
+        for (Uint32 searchIdx = 0; searchIdx < numExtensions; searchIdx++) {
+            if (SDL_strcmp(renderer->additionalDeviceExtensionNames[extensionIdx], availableExtensions[searchIdx].extensionName) == 0) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            supportsAll = 0;
+            *missingExtensionName = renderer->additionalDeviceExtensionNames[extensionIdx];
+            break;
+        }
+    }
+
+    return supportsAll;
+}
+
 static Uint8 VULKAN_INTERNAL_CheckDeviceExtensions(
     VulkanRenderer *renderer,
     VkPhysicalDevice physicalDevice,
@@ -11159,6 +11185,19 @@ static Uint8 VULKAN_INTERNAL_CheckDeviceExtensions(
         availableExtensions,
         extensionCount,
         physicalDeviceExtensions);
+
+    if (renderer->usesCustomVulkanOptions) {
+        const char *missingExtensionName;
+        if (!CheckOptInDeviceExtensions(renderer, physicalDevice, extensionCount, availableExtensions, &missingExtensionName)) {
+            SDL_assert(missingExtensionName);
+            if (renderer->debugMode) {
+                SDL_LogError(SDL_LOG_CATEGORY_GPU,
+                             "Required Vulkan device extension '%s' not supported",
+                             missingExtensionName);
+            }
+            allExtensionsSupported = 0;
+        }
+    }
 
     SDL_free(availableExtensions);
     return allExtensionsSupported;
@@ -11650,6 +11689,8 @@ static bool VULKAN_INTERNAL_AddOptInVulkanOptions(SDL_PropertiesID props, Vulkan
                 }
             }
 
+            renderer->additionalDeviceExtensionCount = options->device_extension_count;
+            renderer->additionalDeviceExtensionNames = options->device_extension_names;
             renderer->additionalInstanceExtensionCount = options->instance_extension_count;
             renderer->additionalInstanceExtensionNames = options->instance_extension_names;
         }
