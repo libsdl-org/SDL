@@ -425,6 +425,15 @@ static bool HIDAPI_DriverSwitch2_InitUSB(SDL_HIDAPI_Device *device)
 
     unsigned char calibration_data[0x40] = {0};
 
+    res = ReadFlashBlock(ctx, 0x13000, calibration_data);
+    if (res < 0) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read serial number: %d", res);
+    } else {
+        char serial[0x11] = {0};
+        SDL_strlcpy(serial, (char*)&calibration_data[2], sizeof(serial));
+        HIDAPI_SetDeviceSerial(device, serial);
+    }
+
     res = ReadFlashBlock(ctx, 0x13080, calibration_data);
     if (res < 0) {
         SDL_LogWarn(SDL_LOG_CATEGORY_INPUT, "Couldn't read factory calibration data: %d", res);
