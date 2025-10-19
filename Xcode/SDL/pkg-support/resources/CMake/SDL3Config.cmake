@@ -3,7 +3,7 @@
 # or in the CMake directory of a SDL3 framework for iOS / tvOS / visionOS.
 
 # INTERFACE_LINK_OPTIONS needs CMake 3.12
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.12...4.0)
 
 include(FeatureSummary)
 set_package_properties(SDL3 PROPERTIES
@@ -32,26 +32,28 @@ endmacro()
 
 set(SDL3_FOUND TRUE)
 
-# Compute the installation prefix relative to this file.
-set(_sdl3_framework_path "${CMAKE_CURRENT_LIST_DIR}")
-get_filename_component(_sdl3_framework_path "${_sdl3_framework_path}" REALPATH)
+# Compute the installation prefix relative to this file:
+# search upwards for the .framework directory
+set(_current_path "${CMAKE_CURRENT_LIST_DIR}")
+get_filename_component(_current_path "${_current_path}" REALPATH)
+set(_sdl3_framework_path "")
 
-# Search upwards for the .framework directory
 set(_current_path "${_sdl3_framework_path}")
-set(_found_framework FALSE)
-foreach(i RANGE 10) # max 10 levels up
-    if (IS_DIRECTORY "${_current_path}" AND "${_current_path}" MATCHES "\\.framework$")
+while(NOT _sdl3_framework_path)
+    if (IS_DIRECTORY "${_current_path}" AND "${_current_path}" MATCHES "/SDL3\\.framework$")
         set(_sdl3_framework_path "${_current_path}")
-        set(_found_framework TRUE)
         break()
     endif()
-    if ("${_current_path}" STREQUAL "")
+    get_filename_component(_next_current_path "${_current_path}" DIRECTORY)
+    if ("${_current_path}" STREQUAL "${_next_current_path}")
         break()
     endif()
-    get_filename_component(_current_path "${_current_path}" DIRECTORY)
+    set(_next_current_path "${_current_path}")
 endforeach()
+set(_next_current_path)
+set(_next_current_path)
 
-if(NOT _found_framework)
+if(NOT _sdl3_framework_path)
     message(FATAL_ERROR "Could not find SDL3.framework root from ${CMAKE_CURRENT_LIST_DIR}")
 endif()
 

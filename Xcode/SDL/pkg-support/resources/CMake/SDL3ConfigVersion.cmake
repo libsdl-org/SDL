@@ -4,7 +4,7 @@
 # This file is meant to be placed in Resources/CMake of a SDL3 framework for macOS,
 # or in the CMake directory of a SDL3 framework for iOS / tvOS / visionOS.
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.12...4.0)
 
 # Find SDL_version.h
 set(_sdl_version_h_path "")
@@ -16,6 +16,7 @@ endif()
 
 if(NOT _sdl_version_h_path)
     message(AUTHOR_WARNING "Could not find SDL_version.h. This script is meant to be placed in the Resources/CMake directory or the CMake directory of SDL3.framework.")
+    set(PACKAGE_VERSION_UNSUITABLE TRUE)
     return()
 endif()
 
