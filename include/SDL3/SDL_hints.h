@@ -2477,10 +2477,9 @@ extern "C" {
  * A variable that controls whether KMSDRM will use "atomic" functionality.
  *
  * The KMSDRM backend can use atomic commits, if both DRM_CLIENT_CAP_ATOMIC
- * and DRM_CLIENT_CAP_UNIVERSAL_PLANES is supported by the system. As of
- * SDL 3.4.0, it will favor this functionality, but in case this doesn't
- * work well on a given system or other surprises, this hint can be used
- * to disable it.
+ * and DRM_CLIENT_CAP_UNIVERSAL_PLANES is supported by the system. As of SDL
+ * 3.4.0, it will favor this functionality, but in case this doesn't work well
+ * on a given system or other surprises, this hint can be used to disable it.
  *
  * This hint can not enable the functionality if it isn't available.
  *
