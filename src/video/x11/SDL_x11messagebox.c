@@ -307,7 +307,7 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     }
 
     /* Create window */
-    if (messageboxdata->window && SDL_strcmp(video->name, "x11") == 0) {
+    if (messageboxdata->window && video && SDL_strcmp(video->name, "x11") == 0) {
         // Only use the window as a parent if it is from the X11 driver.
         parent_window = messageboxdata->window;
     }
