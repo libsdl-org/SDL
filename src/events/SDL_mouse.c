@@ -1552,6 +1552,79 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
     return cursor;
 }
 
+static void SDL_DestroyCursorAnimation(SDL_CursorAnimation *animation)
+{
+    if (!animation) {
+        return;
+    }
+
+    for (int i = 0; i < animation->num_frames; ++i) {
+        SDL_DestroyCursor(animation->frames[i]);
+    }
+    SDL_free(animation->frames);
+    SDL_free(animation->durations);
+    SDL_free(animation);
+}
+
+static SDL_CursorAnimation *SDL_CreateCursorAnimation(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
+{
+    SDL_CursorAnimation *animation = (SDL_CursorAnimation *)SDL_calloc(1, sizeof(*animation));
+    if (!animation) {
+        return NULL;
+    }
+
+    animation->frames = (SDL_Cursor **)SDL_calloc(frame_count, sizeof(*animation->frames));
+    animation->durations = (Uint32 *)SDL_calloc(frame_count, sizeof(*animation->durations));
+    if (!animation->frames || !animation->durations) {
+        SDL_DestroyCursorAnimation(animation);
+        return NULL;
+    }
+
+    for (int i = 0; i < frame_count; ++i) {
+        animation->frames[i] = SDL_CreateColorCursor(frames[i].surface, hot_x, hot_y);
+        if (!animation->frames[i]) {
+            SDL_DestroyCursorAnimation(animation);
+            return NULL;
+        }
+
+        animation->durations[i] = frames[i].duration;
+    }
+    animation->num_frames = frame_count;
+
+    return animation;
+}
+
+void SDL_UpdateCursorAnimation(void)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Cursor *cursor = mouse->cur_cursor;
+
+    if (!cursor || !cursor->animation) {
+        return;
+    }
+
+    if (!mouse->focus) {
+        return;
+    }
+
+    SDL_CursorAnimation *animation = cursor->animation;
+    Uint32 duration = animation->durations[animation->current_frame];
+    if (!duration) {
+        // We've reached the stop frame of the animation
+        return;
+    }
+
+    Uint64 now = SDL_GetTicks();
+    if (now < (animation->last_update + duration)) {
+        return;
+    }
+
+    animation->current_frame = (animation->current_frame + 1) % animation->num_frames;
+    animation->last_update = now;
+
+    SDL_RedrawCursor();
+}
+
 SDL_Cursor *SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -1570,18 +1643,6 @@ SDL_Cursor *SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_coun
     CHECK_PARAM(!frame_count) {
         SDL_InvalidParamError("frame_count");
         return NULL;
-    }
-
-    // Fall back to a static cursor if the platform doesn't support animated cursors.
-    if (!mouse->CreateAnimatedCursor) {
-        // If there is a frame with infinite duration, use it; otherwise, use the first.
-        for (int i = 0; i < frame_count; ++i) {
-            if (!frames[i].duration) {
-                return SDL_CreateColorCursor(frames[i].surface, hot_x, hot_y);
-            }
-        }
-
-        return SDL_CreateColorCursor(frames[0].surface, hot_x, hot_y);
     }
 
     // Allow specifying the hot spot via properties on the surface
@@ -1630,7 +1691,22 @@ SDL_Cursor *SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_coun
         temp_frames[i].duration = frames[i].duration;
     }
 
-    cursor = mouse->CreateAnimatedCursor(temp_frames, frame_count, hot_x, hot_y);
+    if (mouse->CreateAnimatedCursor) {
+        cursor = mouse->CreateAnimatedCursor(temp_frames, frame_count, hot_x, hot_y);
+    } else {
+        SDL_CursorAnimation *animation = SDL_CreateCursorAnimation(temp_frames, frame_count, hot_x, hot_y);
+        if (!animation) {
+            goto cleanup;
+        }
+
+        cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
+        if (!cursor) {
+            SDL_DestroyCursorAnimation(animation);
+            goto cleanup;
+        }
+        cursor->animation = animation;
+    }
+
     if (cursor) {
         cursor->next = mouse->cursors;
         mouse->cursors = cursor;
@@ -1729,6 +1805,11 @@ void SDL_RedrawCursor(void)
         cursor = NULL;
     }
 
+    if (cursor && cursor->animation) {
+        SDL_CursorAnimation *animation = cursor->animation;
+        cursor = animation->frames[animation->current_frame];
+    }
+
     if (mouse->ShowCursor) {
         mouse->ShowCursor(cursor);
     }
@@ -1760,6 +1841,11 @@ bool SDL_SetCursor(SDL_Cursor *cursor)
             if (!found) {
                 return SDL_SetError("Cursor not associated with the current mouse");
             }
+        }
+        if (cursor->animation) {
+            SDL_CursorAnimation *animation = cursor->animation;
+            animation->current_frame = 0;
+            animation->last_update = SDL_GetTicks();
         }
         mouse->cur_cursor = cursor;
     }
@@ -1812,6 +1898,10 @@ void SDL_DestroyCursor(SDL_Cursor *cursor)
                 prev->next = curr->next;
             } else {
                 mouse->cursors = curr->next;
+            }
+
+            if (curr->animation) {
+                SDL_DestroyCursorAnimation(curr->animation);
             }
 
             if (mouse->FreeCursor && curr->internal) {

@@ -1477,6 +1477,8 @@ void SDL_PumpEventMaintenance(void)
     }
 #endif
 
+    SDL_UpdateCursorAnimation();
+
     SDL_UpdateTrays();
 
     SDL_SendPendingSignalEvents(); // in case we had a signal handler fire, etc.
