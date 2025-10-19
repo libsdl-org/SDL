@@ -1041,9 +1041,7 @@ static void SDLCALL OnlyControllersChanged(void *userdata, const char *name, con
 
 static void SDLCALL IgnoredDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    if (SDL_hidapi_ignored_devices) {
-        SDL_free(SDL_hidapi_ignored_devices);
-    }
+    SDL_free(SDL_hidapi_ignored_devices);
     if (hint && *hint) {
         SDL_hidapi_ignored_devices = SDL_strdup(hint);
     } else {

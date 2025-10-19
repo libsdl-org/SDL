@@ -161,9 +161,7 @@ bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
     if (buttonID) {
         char *output = SDL_ReadProcess(process, NULL, &exit_code);
         if (exit_code < 0 || exit_code == 255) {
-            if (output) {
-                SDL_free(output);
-            }
+            SDL_free(output);
         } else if (output) {
             // It likes to add a newline...
             char *tmp = SDL_strrchr(output, '\n');

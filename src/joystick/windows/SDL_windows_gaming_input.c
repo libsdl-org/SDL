@@ -973,9 +973,7 @@ static void WGI_JoystickQuit(void)
         while (wgi.controller_count > 0) {
             IEventHandler_CRawGameControllerVtbl_InvokeRemoved(&controller_removed.iface, NULL, wgi.controllers[wgi.controller_count - 1].controller);
         }
-        if (wgi.controllers) {
-            SDL_free(wgi.controllers);
-        }
+        SDL_free(wgi.controllers);
 
         if (wgi.arcade_stick_statics) {
             __x_ABI_CWindows_CGaming_CInput_CIArcadeStickStatics_Release(wgi.arcade_stick_statics);

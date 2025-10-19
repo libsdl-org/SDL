@@ -1141,9 +1141,7 @@ static void OPENVR_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data;
 
     data = window->internal;
-    if (data) {
-        SDL_free(data);
-    }
+    SDL_free(data);
     window->internal = NULL;
 }
 

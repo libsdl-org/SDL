@@ -1349,9 +1349,7 @@ static void D3D12_INTERNAL_ReleaseBufferContainer(
     }
 
     // Containers are just client handles, so we can free immediately
-    if (container->debugName) {
-        SDL_free(container->debugName);
-    }
+    SDL_free(container->debugName);
     SDL_free(container->buffers);
     SDL_free(container);
 
@@ -1426,9 +1424,7 @@ static void D3D12_INTERNAL_ReleaseTextureContainer(
     SDL_DestroyProperties(container->header.info.props);
 
     // Containers are just client handles, so we can destroy immediately
-    if (container->debugName) {
-        SDL_free(container->debugName);
-    }
+    SDL_free(container->debugName);
     SDL_free(container->textures);
     SDL_free(container);
 
@@ -2072,9 +2068,7 @@ static void D3D12_SetBufferName(
     D3D12BufferContainer *container = (D3D12BufferContainer *)buffer;
 
     if (renderer->debug_mode && text != NULL) {
-        if (container->debugName != NULL) {
-            SDL_free(container->debugName);
-        }
+        SDL_free(container->debugName);
 
         container->debugName = SDL_strdup(text);
 
@@ -2096,9 +2090,7 @@ static void D3D12_SetTextureName(
     D3D12TextureContainer *container = (D3D12TextureContainer *)texture;
 
     if (renderer->debug_mode && text != NULL) {
-        if (container->debugName != NULL) {
-            SDL_free(container->debugName);
-        }
+        SDL_free(container->debugName);
 
         container->debugName = SDL_strdup(text);
 

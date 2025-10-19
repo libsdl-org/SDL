@@ -731,25 +731,15 @@ quit:
     // default_file_w is a pointer into default_folder_w.
     if (default_folder_w) {
         SDL_free(default_folder_w);
-    } else if (default_file_w) {
-        SDL_free(default_file_w);
-    }
+    } else SDL_free(default_file_w);
 
-    if (title_w) {
-        SDL_free(title_w);
-    }
+    SDL_free(title_w);
 
-    if (accept_w) {
-        SDL_free(accept_w);
-    }
+    SDL_free(accept_w);
 
-    if (cancel_w) {
-        SDL_free(cancel_w);
-    }
+    SDL_free(cancel_w);
 
-    if (filter_data) {
-        SDL_free(filter_data);
-    }
+    SDL_free(filter_data);
 
     if (files) {
         for (char** files_ptr = files; *files_ptr; files_ptr++) {

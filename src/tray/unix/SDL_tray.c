@@ -317,9 +317,7 @@ sdl_dir_error:
     SDL_free(sdl_dir);
 
 tray_error:
-    if (tray) {
-        SDL_free(tray);
-    }
+    SDL_free(tray);
 
     if (gtk) {
         SDL_Gtk_ExitContext(gtk);

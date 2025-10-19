@@ -1453,9 +1453,7 @@ void SDL_SetDesktopDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode 
 
     SDL_copyp(&last_mode, &display->desktop_mode);
 
-    if (display->desktop_mode.internal) {
-        SDL_free(display->desktop_mode.internal);
-    }
+    SDL_free(display->desktop_mode.internal);
     SDL_copyp(&display->desktop_mode, mode);
     display->desktop_mode.displayID = display->id;
     SDL_FinalizeDisplayMode(&display->desktop_mode);

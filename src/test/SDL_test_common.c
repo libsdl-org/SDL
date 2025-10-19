@@ -2075,9 +2075,7 @@ static void SDLCALL SDLTest_ScreenShotClipboardCleanup(void *context)
 
     SDL_Log("Cleaning up screenshot image data");
 
-    if (data->image) {
-        SDL_free(data->image);
-    }
+    SDL_free(data->image);
     SDL_free(data);
 }
 
