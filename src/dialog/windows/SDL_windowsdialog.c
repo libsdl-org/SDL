@@ -731,7 +731,9 @@ quit:
     // default_file_w is a pointer into default_folder_w.
     if (default_folder_w) {
         SDL_free(default_folder_w);
-    } else SDL_free(default_file_w);
+    } else {
+        SDL_free(default_file_w);
+    }
 
     SDL_free(title_w);
 
