@@ -1237,12 +1237,8 @@ static void DelController(SDL_JoystickID id)
         CyclePS5TriggerEffect(&controllers[i]);
     }
     SDL_assert(controllers[i].gamepad == NULL);
-    if (controllers[i].axis_state) {
-        SDL_free(controllers[i].axis_state);
-    }
-    if (controllers[i].imu_state) {
-        SDL_free(controllers[i].imu_state);
-    }
+    SDL_free(controllers[i].axis_state);
+    SDL_free(controllers[i].imu_state);
     if (controllers[i].joystick) {
         SDL_CloseJoystick(controllers[i].joystick);
     }

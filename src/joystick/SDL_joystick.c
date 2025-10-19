@@ -3851,9 +3851,7 @@ static void SDL_LoadVIDPIDListFromHint(const char *hint, int *num_entries, int *
         (*entries)[(*num_entries)++] = entry;
     }
 
-    if (file) {
-        SDL_free(file);
-    }
+    SDL_free(file);
 }
 
 void SDL_LoadVIDPIDListFromHints(SDL_vidpid_list *list, const char *included_list, const char *excluded_list)

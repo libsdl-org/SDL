@@ -326,10 +326,7 @@ void VITA_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *data;
 
     data = window->internal;
-    if (data) {
-        // TODO: should we destroy egl context? No one sane should recreate ogl window as non-ogl
-        SDL_free(data);
-    }
+    SDL_free(data);
 
     window->internal = NULL;
     Vita_Window = NULL;

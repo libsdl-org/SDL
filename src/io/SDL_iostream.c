@@ -1177,9 +1177,7 @@ static bool SDLCALL dynamic_mem_close(void *userdata)
 {
     const IOStreamDynamicMemData *iodata = (IOStreamDynamicMemData *) userdata;
     void *mem = SDL_GetPointerProperty(SDL_GetIOProperties(iodata->stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
-    if (mem) {
-        SDL_free(mem);
-    }
+    SDL_free(mem);
     SDL_free(userdata);
     return true;
 }

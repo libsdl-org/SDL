@@ -1864,12 +1864,8 @@ void X11Toolkit_DestroyWindow(SDL_ToolkitWindowX11 *data) {
             data->controls[i]->func_free(data->controls[i]);
         }
     }
-    if (data->controls) {
-        SDL_free(data->controls);
-    }
-    if (data->dyn_controls) {
-        SDL_free(data->dyn_controls);
-    }
+    SDL_free(data->controls);
+    SDL_free(data->dyn_controls);
 
     if (data->popup_windows) {
         SDL_ListClear(&data->popup_windows);

@@ -243,9 +243,7 @@ static bool KMSDRM_DumpCursorToBO(SDL_VideoDisplay *display, SDL_Mouse *mouse, S
     }
 
 cleanup:
-    if (ready_buffer) {
-        SDL_free(ready_buffer);
-    }
+    SDL_free(ready_buffer);
     return result;
 }
 
@@ -263,9 +261,7 @@ static void KMSDRM_FreeCursor(SDL_Cursor *cursor)
             curdata->buffer = NULL;
         }
         // Free cursor itself
-        if (cursor->internal) {
-            SDL_free(cursor->internal);
-        }
+        SDL_free(cursor->internal);
         SDL_free(cursor);
     }
 }
@@ -322,14 +318,10 @@ static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface *surface, int hot_x, int hot_
 cleanup:
     if (!result) {
         if (curdata) {
-            if (curdata->buffer) {
-                SDL_free(curdata->buffer);
-            }
+            SDL_free(curdata->buffer);
             SDL_free(curdata);
         }
-        if (cursor) {
-            SDL_free(cursor);
-        }
+        SDL_free(cursor);
     }
 
     return result;

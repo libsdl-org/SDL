@@ -344,9 +344,7 @@ static bool X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int
     X11Toolkit_CreateWindowRes(controls.window, w, h, 0, 0, (char *)messageboxdata->title);
     X11Toolkit_DoWindowEventLoop(controls.window);
     X11Toolkit_DestroyWindow(controls.window);
-    if (controls.buttons) {
-        SDL_free(controls.buttons);
-    }
+    SDL_free(controls.buttons);
     return true;
 }
 

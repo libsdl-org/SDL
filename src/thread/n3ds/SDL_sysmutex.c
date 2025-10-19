@@ -37,9 +37,7 @@ SDL_Mutex *SDL_CreateMutex(void)
 
 void SDL_DestroyMutex(SDL_Mutex *mutex)
 {
-    if (mutex) {
-        SDL_free(mutex);
-    }
+    SDL_free(mutex);
 }
 
 void SDL_LockMutex(SDL_Mutex *mutex) SDL_NO_THREAD_SAFETY_ANALYSIS  // clang doesn't know about NULL mutexes

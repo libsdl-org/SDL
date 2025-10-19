@@ -4958,9 +4958,7 @@ static void VULKAN_DestroyDevice(
                 j);
         }
 
-        if (renderer->memoryAllocator->subAllocators[i].allocations != NULL) {
-            SDL_free(renderer->memoryAllocator->subAllocators[i].allocations);
-        }
+        SDL_free(renderer->memoryAllocator->subAllocators[i].allocations);
 
         SDL_free(renderer->memoryAllocator->subAllocators[i].sortedFreeRegions);
     }
@@ -6987,9 +6985,7 @@ static void VULKAN_ReleaseTexture(
     SDL_DestroyProperties(vulkanTextureContainer->header.info.props);
 
     // Containers are just client handles, so we can destroy immediately
-    if (vulkanTextureContainer->debugName != NULL) {
-        SDL_free(vulkanTextureContainer->debugName);
-    }
+    SDL_free(vulkanTextureContainer->debugName);
     SDL_free(vulkanTextureContainer->textures);
     SDL_free(vulkanTextureContainer);
 

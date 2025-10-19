@@ -286,9 +286,7 @@ bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
     size_t length;
     void *data;
     data = X11_GetClipboardData(_this, mime_type, &length);
-    if (data) {
-        SDL_free(data);
-    }
+    SDL_free(data);
     return length > 0;
 }
 

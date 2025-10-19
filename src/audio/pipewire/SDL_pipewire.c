@@ -635,16 +635,12 @@ static int metadata_property(void *object, Uint32 subject, const char *key, cons
 
     if (subject == PW_ID_CORE && key && value) {
         if (!SDL_strcmp(key, "default.audio.sink")) {
-            if (pipewire_default_sink_id) {
-                SDL_free(pipewire_default_sink_id);
-            }
+            SDL_free(pipewire_default_sink_id);
             pipewire_default_sink_id = get_name_from_json(value);
             node->persist = true;
             change_default_device(pipewire_default_sink_id);
         } else if (!SDL_strcmp(key, "default.audio.source")) {
-            if (pipewire_default_source_id) {
-                SDL_free(pipewire_default_source_id);
-            }
+            SDL_free(pipewire_default_source_id);
             pipewire_default_source_id = get_name_from_json(value);
             node->persist = true;
             change_default_device(pipewire_default_source_id);
