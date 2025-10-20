@@ -552,6 +552,18 @@ static Wayland_ScaledCustomCursor *Wayland_CacheScaledCustomCursor(SDL_CursorDat
                 }
             }
 
+            if (surface->format != SDL_PIXELFORMAT_ARGB8888) {
+                SDL_Surface *temp = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
+                if (temp) {
+                    SDL_DestroySurface(surface);
+                    surface = temp;
+                } else {
+                    Wayland_ReleaseSHMPool(cache->shmPool);
+                    SDL_free(cache);
+                    return NULL;
+                }
+            }
+
             // Wayland requires premultiplied alpha for its surfaces.
             SDL_PremultiplyAlpha(surface->w, surface->h,
                                  surface->format, surface->pixels, surface->pitch,

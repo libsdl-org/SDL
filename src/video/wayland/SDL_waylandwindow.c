@@ -2995,16 +2995,31 @@ bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
 
     for (int i = 0; i < image_count; ++i) {
         if (images[i]->w == images[i]->h) {
+            SDL_Surface *surface = images[i];
             Wayland_SHMBuffer *buffer = &wind->icon_buffers[wind->icon_buffer_count];
 
-            if (!Wayland_AllocSHMBuffer(images[i]->w, images[i]->h, buffer)) {
+            if (!Wayland_AllocSHMBuffer(surface->w, surface->h, buffer)) {
                 SDL_SetError("wayland: failed to allocate SHM buffer for the icon");
                 goto failure_cleanup;
             }
 
-            SDL_PremultiplyAlpha(images[i]->w, images[i]->h, images[i]->format, images[i]->pixels, images[i]->pitch, SDL_PIXELFORMAT_ARGB8888, buffer->shm_data, images[i]->w * 4, true);
-            const int scale = (int)SDL_ceil((double)images[i]->w / (double)icon->w);
+            if (surface->format != SDL_PIXELFORMAT_ARGB8888) {
+                surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
+                if (!surface) {
+                    goto failure_cleanup;
+                }
+            }
+
+            SDL_PremultiplyAlpha(surface->w, surface->h, surface->format, surface->pixels, surface->pitch, SDL_PIXELFORMAT_ARGB8888, buffer->shm_data, surface->w * 4, true);
+
+            const int scale = (int)SDL_ceil((double)surface->w / (double)icon->w);
             xdg_toplevel_icon_v1_add_buffer(wind->xdg_toplevel_icon_v1, buffer->wl_buffer, scale);
+
+            // Clean up the temporary conversion surface.
+            if (surface != images[i]) {
+                SDL_DestroySurface(surface);
+            }
+
             wind->icon_buffer_count++;
         } else {
             SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "wayland: icon width and height must be equal, got %ix%i for image level %i; skipping", images[i]->w, images[i]->h, i);
