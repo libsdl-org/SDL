@@ -5893,7 +5893,10 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
             VULKAN_TEXTURE_USAGE_MODE_UNINITIALIZED,
             texture);
         VULKAN_INTERNAL_TrackTexture(barrierCommandBuffer, texture);
-        VULKAN_Submit((SDL_GPUCommandBuffer *)barrierCommandBuffer);
+        if (!VULKAN_Submit((SDL_GPUCommandBuffer *)barrierCommandBuffer)) {
+            VULKAN_INTERNAL_DestroyTexture(renderer, texture);
+            return NULL;
+        }
     }
 
     return texture;
