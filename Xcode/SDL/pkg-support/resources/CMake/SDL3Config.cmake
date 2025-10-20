@@ -39,7 +39,7 @@ get_filename_component(_current_path "${_current_path}" REALPATH)
 set(_sdl3_framework_path "")
 
 while(NOT _sdl3_framework_path)
-    if (IS_DIRECTORY "${_current_path}" AND "${_current_path}" MATCHES "/SDL3\\.framework$")
+    if(IS_DIRECTORY "${_current_path}" AND "${_current_path}" MATCHES "/SDL3\\.framework$")
         set(_sdl3_framework_path "${_current_path}")
         break()
     endif()
