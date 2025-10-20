@@ -484,7 +484,7 @@ static SDL_Cursor *WIN_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int fra
         }
         data->hot_x = hot_x;
         data->hot_y = hot_y;
-        data->num_frames = 1;
+        data->num_frames = frame_count;
         for (int i = 0; i < frame_count; ++i) {
             data->frames[i].surface = frames[i].surface;
             data->frames[i].duration = frames[i].duration;
