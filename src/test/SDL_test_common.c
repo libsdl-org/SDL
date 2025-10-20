@@ -63,6 +63,7 @@ static const char *video_usage[] = {
     "[--minimize]",
     "[--mouse-focus]",
     "[--noframe]",
+    "[--quit-after-ms N]",
     "[--refresh R]",
     "[--renderer driver]",
     "[--resizable]",
@@ -85,6 +86,16 @@ static const char *audio_usage[] = {
     "[--channels N]",
     NULL
 };
+
+// tests can quit after N ms
+static Uint32 SDLCALL quit_after_ms_cb(void *userdata, SDL_TimerID timerID, Uint32 interval)
+{
+    SDL_Event event;
+    event.type = SDL_EVENT_QUIT;
+    event.common.timestamp = 0;
+    SDL_PushEvent(&event);
+    return 0;
+}
 
 static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
@@ -508,6 +519,17 @@ static int SDLCALL SDLTest_CommonStateParseVideoArguments(void *data, char **arg
     if (SDL_strcasecmp(argv[index], "--noframe") == 0) {
         state->window_flags |= SDL_WINDOW_BORDERLESS;
         return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--quit-after-ms") == 0) {
+        ++index;
+        if (!argv[index]) {
+            return -1;
+        }
+        state->quit_after_ms_interval = SDL_atoi(argv[index]);
+        if (state->quit_after_ms_interval <= 0) {
+            return -1;
+        }
+        return 2;
     }
     if (SDL_strcasecmp(argv[index], "--resizable") == 0) {
         state->window_flags |= SDL_WINDOW_RESIZABLE;
@@ -1524,6 +1546,11 @@ bool SDLTest_CommonInit(SDLTest_CommonState *state)
     }
 
     SDL_InitSubSystem(state->flags);
+
+
+    if (state->quit_after_ms_interval) {
+        state->quit_after_ms_timer = SDL_AddTimer(state->quit_after_ms_interval, quit_after_ms_cb, NULL);
+    }
 
     return true;
 }
@@ -2724,6 +2751,10 @@ void SDLTest_CommonQuit(SDLTest_CommonState *state)
                 SDL_DestroyWindow(state->windows[i]);
             }
             SDL_free(state->windows);
+        }
+
+        if (state->quit_after_ms_timer) {
+            SDL_RemoveTimer(state->quit_after_ms_timer);
         }
     }
     SDL_Quit();
