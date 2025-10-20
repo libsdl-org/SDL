@@ -1636,13 +1636,17 @@ SDL_Cursor *SDL_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_coun
     }
 
     CHECK_PARAM(!frames[0].surface) {
-        SDL_SetError("Null surface in frame 0");
+        SDL_SetError("NULL surface in frame 0");
         return NULL;
     }
 
-    CHECK_PARAM(!frame_count) {
+    CHECK_PARAM(frame_count <= 0) {
         SDL_InvalidParamError("frame_count");
         return NULL;
+    }
+
+    if (frame_count == 1) {
+        return SDL_CreateColorCursor(frames[0].surface, hot_x, hot_y);
     }
 
     // Allow specifying the hot spot via properties on the surface
