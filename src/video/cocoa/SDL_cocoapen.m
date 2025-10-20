@@ -84,7 +84,12 @@ static void Cocoa_HandlePenProximityEvent(SDL_CocoaWindowData *_data, NSEvent *e
             return;  // we ignore other things, which hopefully is right.
         }
 
-        Cocoa_PenHandle *handle = (Cocoa_PenHandle *) SDL_calloc(1, sizeof (*handle));
+        Cocoa_PenHandle *handle = Cocoa_FindPenByDeviceID(devid, toolid);
+        if (handle) {
+            return;  // already have this one.
+        }
+
+        handle = (Cocoa_PenHandle *) SDL_calloc(1, sizeof (*handle));
         if (!handle) {
             return;  // oh well.
         }
