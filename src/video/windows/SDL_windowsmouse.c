@@ -311,9 +311,13 @@ static HCURSOR WIN_CreateAnimatedCursorInternal(SDL_CursorFrameInfo *frames, int
     } else {
         surface = frames[0].surface;
     }
+    if (!surface) {
+        return NULL;
+    }
 
     // Since XP and still as of Win11, Windows cursors have a hard size limit of 256x256.
-    if (!surface || surface->w > 256 || surface->h > 256) {
+    if (surface->w > 256 || surface->h > 256) {
+        SDL_SetError("Cursor images must be <= 256x256");
         return NULL;
     }
 
