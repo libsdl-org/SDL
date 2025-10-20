@@ -275,11 +275,13 @@ static bool Cocoa_ShowCursor(SDL_Cursor *cursor)
         SDL_VideoDevice *device = SDL_GetVideoDevice();
         SDL_Window *window = (device ? device->windows : NULL);
 
-        SDL_CursorData *cdata = cursor->internal;
-        cdata->current_frame = 0;
-        if (cdata->frameTimer) {
-            [cdata->frameTimer invalidate];
-            cdata->frameTimer = nil;
+        if (cursor != NULL) {
+            SDL_CursorData *cdata = cursor->internal;
+            cdata->current_frame = 0;
+            if (cdata->frameTimer) {
+                [cdata->frameTimer invalidate];
+                cdata->frameTimer = nil;
+            }
         }
 
         for (; window != NULL; window = window->next) {
