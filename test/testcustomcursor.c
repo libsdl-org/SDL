@@ -106,7 +106,7 @@ static const char *cross[] = {
     "                                ",
     "                                ",
     "                                ",
-    "0,0"
+    "16,16"
 };
 
 static SDL_Surface *load_image_file(const char *file)
