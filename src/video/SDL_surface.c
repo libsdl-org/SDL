@@ -2147,6 +2147,13 @@ end:
         }
     }
 
+    // Copy properties
+    if (surface->props) {
+        if (!SDL_CopyProperties(surface->props, SDL_GetSurfaceProperties(convert))) {
+            goto error;
+        }
+    }
+
     // We're ready to go!
     return convert;
 
