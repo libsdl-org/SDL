@@ -196,7 +196,18 @@ static bool FillIconEntry(CURSORICONFILEDIRENTRY *entry, SDL_Surface *surface, i
 
 static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
 {
-    return SDL_SavePNG_IO(surface, dst, false);
+    if (!SDL_SavePNG_IO(surface, dst, false)) {
+        return false;
+    }
+
+    // Image data offsets must be WORD aligned
+    Sint64 offset = SDL_TellIO(dst);
+    if (offset & 1) {
+        if (!SDL_WriteU8(dst, 0)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 #else
