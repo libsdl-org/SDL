@@ -575,6 +575,10 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 - (void)textFieldTextDidChange:(NSNotification *)notification
 {
     if (textField.markedTextRange == nil) {
+        if (isOTPMode && labs((NSInteger)textField.text.length - (NSInteger)committedText.length) != 1) {
+            return;
+        }
+
         NSUInteger compareLength = SDL_min(textField.text.length, committedText.length);
         NSUInteger matchLength;
 
