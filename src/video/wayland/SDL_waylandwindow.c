@@ -2028,6 +2028,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         if (data->shell_surface.libdecor.frame) {
             while (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
                 libdecor_dispatch(c->shell.libdecor, -1);
+                WAYLAND_wl_display_dispatch_pending(c->display);
             }
         }
     } else
