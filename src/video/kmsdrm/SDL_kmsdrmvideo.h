@@ -237,5 +237,6 @@ extern void KMSDRM_MaximizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void KMSDRM_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void KMSDRM_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void KMSDRM_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool KMSDRM_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
 
 #endif // SDL_kmsdrmvideo_h

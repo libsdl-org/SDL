@@ -685,6 +685,7 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     device->MinimizeWindow = KMSDRM_MinimizeWindow;
     device->RestoreWindow = KMSDRM_RestoreWindow;
     device->DestroyWindow = KMSDRM_DestroyWindow;
+    device->SetWindowFocusable = KMSDRM_SetWindowFocusable;
 
     device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
     device->GL_GetProcAddress = KMSDRM_GLES_GetProcAddress;
@@ -2197,10 +2198,12 @@ bool KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_KMSDRM_DRM_FD_NUMBER, viddata->drm_fd);
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_KMSDRM_GBM_DEVICE_POINTER, viddata->gbm_dev);
 
-    /* Focus on the newly created window.
-       SDL_SetMouseFocus() also takes care of calling KMSDRM_ShowCursor() if necessary. */
-    SDL_SetMouseFocus(window);
-    SDL_SetKeyboardFocus(window);
+    if ((window->flags & SDL_WINDOW_NOT_FOCUSABLE) == 0) {
+        /* Focus on the newly created window.
+           SDL_SetMouseFocus() also takes care of calling KMSDRM_ShowCursor() if necessary. */
+        SDL_SetMouseFocus(window);
+        SDL_SetKeyboardFocus(window);
+    }
 
     // Tell the app that the window has moved to top-left.
     SDL_Rect display_bounds;
@@ -2252,6 +2255,10 @@ void KMSDRM_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window)
 }
 void KMSDRM_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 {
+}
+bool KMSDRM_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable)
+{
+    return true;  // this just has to exist or SDL_SetWindowFocusable() will refuse to change the window flag.
 }
 
 #endif // SDL_VIDEO_DRIVER_KMSDRM
