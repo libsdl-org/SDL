@@ -153,6 +153,42 @@ static bool FillIconEntry(CURSORICONFILEDIRENTRY *entry, SDL_Surface *surface, i
     return true;
 }
 
+#ifndef SAVE_ICON_PNG
+/* For info on the expected mask format see:
+ * https://devblogs.microsoft.com/oldnewthing/20101018-00/?p=12513
+ */
+static void *CreateIconMask(SDL_Surface *surface, size_t *mask_size)
+{
+    Uint8 *dst;
+    const int pitch = ((surface->w + 15) & ~15) / 8;
+    const size_t size = pitch * surface->h;
+    static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
+
+    void *mask = SDL_malloc(size);
+    if (!mask) {
+        return NULL;
+    }
+
+    dst = (Uint8 *)mask;
+
+    // Make the mask completely transparent.
+    SDL_memset(dst, 0xff, size);
+    for (int y = surface->h - 1; y >= 0; --y, dst += pitch) {
+        for (int x = 0; x < surface->w; ++x) {
+            Uint8 r, g, b, a;
+            SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a);
+
+            if (a != 0) {
+                // Reset bit of an opaque pixel.
+                dst[x >> 3] &= ~masks[x & 7];
+            }
+        }
+    }
+    *mask_size = size;
+    return mask;
+}
+#endif // !SAVE_ICON_PNG
+
 static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
 {
 #ifdef SAVE_ICON_PNG
@@ -168,47 +204,38 @@ static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
         surface = temp;
     }
 
-    /* Cursor data is double height (DIB and mask), stored bottom-up, and has a max width and height of 256 (represented by a value of 0).
-     * https://devblogs.microsoft.com/oldnewthing/20101018-00/?p=12513
-     */
+    // Cursor data is double height (DIB and mask), stored bottom-up
     bool ok = true;
+    size_t mask_size = 0;
+    void *mask = CreateIconMask(surface, &mask_size);
+    if (!mask) {
+        ok = false;
+        goto done;
+    }
+
     BITMAPINFOHEADER bmih;
+    SDL_zero(bmih);
+    DWORD row_size = surface->w * 4;
     bmih.biSize = sizeof(BITMAPINFOHEADER);
     bmih.biWidth = surface->w;
     bmih.biHeight = surface->h * 2;
     bmih.biPlanes = 1;
     bmih.biBitCount = 32;
     bmih.biCompression = BI_RGB;
-    bmih.biSizeImage = 0;
-    bmih.biXPelsPerMeter = 0;
-    bmih.biYPelsPerMeter = 0;
-    bmih.biClrUsed = 0;
-    bmih.biClrImportant = 0;
+    bmih.biSizeImage = (DWORD)(surface->h * row_size + mask_size);
     ok &= (SDL_WriteIO(dst, &bmih, sizeof(bmih)) == sizeof(bmih));
 
-    size_t length = surface->w * 4;
     const Uint8 *pix = surface->pixels;
     pix += (surface->h - 1) * surface->pitch;
     for (int i = 0; i < surface->h; ++i) {
-        ok &= (SDL_WriteIO(dst, pix, length) == length);
+        ok &= (SDL_WriteIO(dst, pix, row_size) == row_size);
         pix -= surface->pitch;
     }
+    ok &= (SDL_WriteIO(dst, mask, mask_size) == mask_size);
 
-    // Set a full AND mask
-    Uint8 *mask = (Uint8 *)SDL_malloc(length);
-    if (mask) {
-        SDL_memset(mask, 0xFF, length);
-        for (int i = 0; i < surface->h; ++i) {
-            ok &= (SDL_WriteIO(dst, mask, length) == length);
-        }
-        SDL_free(mask);
-    } else {
-        ok = false;
-    }
-
-    if (temp) {
-        SDL_DestroySurface(temp);
-    }
+done:
+    SDL_free(mask);
+    SDL_DestroySurface(temp);
     return ok;
 #endif // SAVE_ICON_PNG
 }
@@ -233,6 +260,8 @@ static bool WriteIconFrame(SDL_IOStream *dst, SDL_Surface *surface, int hot_x, i
     SDL_Surface **surfaces = &surface;
 #endif
 
+    // Raymond Chen has more insight into this format at:
+    // https://devblogs.microsoft.com/oldnewthing/20101018-00/?p=12513
     bool ok = true;
     ok &= SDL_WriteU32LE(dst, RIFF_FOURCC('i', 'c', 'o', 'n'));
     Sint64 icon_size_offset = SDL_TellIO(dst);
@@ -241,7 +270,7 @@ static bool WriteIconFrame(SDL_IOStream *dst, SDL_Surface *surface, int hot_x, i
 
     CURSORICONFILEDIR dir;
     dir.idReserved = 0;
-    dir.idType = 2;
+    dir.idType = 2; // Cursor
     dir.idCount = count;
     ok &= (SDL_WriteIO(dst, &dir, sizeof(dir)) == sizeof(dir));
 
