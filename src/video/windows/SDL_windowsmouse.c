@@ -73,9 +73,22 @@ typedef struct
 
 #pragma pack(pop)
 
+typedef struct CachedCursor
+{
+    float scale;
+    HCURSOR cursor;
+    struct CachedCursor *next;
+} CachedCursor;
+
 struct SDL_CursorData
 {
     HCURSOR cursor;
+
+    CachedCursor *cache;
+    int hot_x;
+    int hot_y;
+    int num_frames;
+    SDL_CursorFrameInfo frames[1];
 };
 
 typedef struct
@@ -117,6 +130,32 @@ static SDL_Cursor *WIN_CreateCursorAndData(HCURSOR hcursor)
     return cursor;
 }
 
+static SDL_Cursor *WIN_CreateAnimatedCursorAndData(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
+{
+    // Dynamically generate cursors at the appropriate DPI
+    SDL_Cursor *cursor = (SDL_Cursor *)SDL_calloc(1, sizeof(*cursor));
+    if (!cursor) {
+        return NULL;
+    }
+
+    SDL_CursorData *data = (SDL_CursorData *)SDL_calloc(1, sizeof(*data) + (sizeof(SDL_CursorFrameInfo) * (frame_count - 1)));
+    if (!data) {
+        SDL_free(cursor);
+        return NULL;
+    }
+
+    data->hot_x = hot_x;
+    data->hot_y = hot_y;
+    data->num_frames = frame_count;
+    for (int i = 0; i < frame_count; ++i) {
+        data->frames[i].surface = frames[i].surface;
+        data->frames[i].duration = frames[i].duration;
+        ++frames[i].surface->refcount;
+    }
+    cursor->internal = data;
+    return cursor;
+}
+
 static bool SaveChunkSize(SDL_IOStream* dst, Sint64 offset)
 {
     Sint64 here = SDL_TellIO(dst);
@@ -153,7 +192,15 @@ static bool FillIconEntry(CURSORICONFILEDIRENTRY *entry, SDL_Surface *surface, i
     return true;
 }
 
-#ifndef SAVE_ICON_PNG
+#ifdef SAVE_ICON_PNG
+
+static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
+{
+    return SDL_SavePNG_IO(surface, dst, false);
+}
+
+#else
+
 /* For info on the expected mask format see:
  * https://devblogs.microsoft.com/oldnewthing/20101018-00/?p=12513
  */
@@ -187,13 +234,9 @@ static void *CreateIconMask(SDL_Surface *surface, size_t *mask_size)
     *mask_size = size;
     return mask;
 }
-#endif // !SAVE_ICON_PNG
 
 static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
 {
-#ifdef SAVE_ICON_PNG
-    return SDL_SavePNG_IO(surface, dst, false);
-#else
     SDL_Surface *temp = NULL;
 
     if (surface->format != SDL_PIXELFORMAT_ARGB8888) {
@@ -237,10 +280,11 @@ done:
     SDL_free(mask);
     SDL_DestroySurface(temp);
     return ok;
-#endif // SAVE_ICON_PNG
 }
 
-static bool WriteIconFrame(SDL_IOStream *dst, SDL_Surface *surface, int hot_x, int hot_y)
+#endif // SAVE_ICON_PNG
+
+static bool WriteIconFrame(SDL_IOStream *dst, SDL_Surface *surface, int hot_x, int hot_y, float scale)
 {
 #ifdef SAVE_MULTIPLE_ICONS
     int count = 0;
@@ -249,9 +293,7 @@ static bool WriteIconFrame(SDL_IOStream *dst, SDL_Surface *surface, int hot_x, i
         return false;
     }
 #else
-    int desired_width = GetSystemMetrics(SM_CXCURSOR);
-    float display_scale = (float)desired_width / surface->w;
-    surface = SDL_GetSurfaceImage(surface, display_scale);
+    surface = SDL_GetSurfaceImage(surface, scale);
     if (!surface) {
         return false;
     }
@@ -315,13 +357,16 @@ done:
 /* Windows doesn't have an API to easily create animated cursors from a sequence of images,
  * so we have to build an animated cursor resource file in memory and load it.
  */
-static HCURSOR WIN_CreateAnimatedCursorInternal(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
+static HCURSOR WIN_CreateAnimatedCursorInternal(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y, float scale)
 {
     HCURSOR hcursor = NULL;
     SDL_IOStream *dst = SDL_IOFromDynamicMem();
     if (!dst) {
         return NULL;
     }
+
+    int w = (int)SDL_roundf(frames[0].surface->w * scale);
+    int h = (int)SDL_roundf(frames[0].surface->h * scale);
 
     bool ok = true;
     // RIFF header
@@ -360,7 +405,7 @@ static HCURSOR WIN_CreateAnimatedCursorInternal(SDL_CursorFrameInfo *frames, int
     ok &= SDL_WriteU32LE(dst, RIFF_FOURCC('f', 'r', 'a', 'm'));
 
     for (int i = 0; i < frame_count; ++i) {
-        ok &= WriteIconFrame(dst, frames[i].surface, hot_x, hot_y);
+        ok &= WriteIconFrame(dst, frames[i].surface, hot_x, hot_y, scale);
     }
     ok &= SaveChunkSize(dst, frame_list_size_offset);
 
@@ -373,7 +418,7 @@ static HCURSOR WIN_CreateAnimatedCursorInternal(SDL_CursorFrameInfo *frames, int
 
     BYTE *mem = (BYTE *)SDL_GetPointerProperty(SDL_GetIOProperties(dst), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
     DWORD size = (DWORD)SDL_GetIOSize(dst);
-    hcursor = (HCURSOR)CreateIconFromResource(mem, size, FALSE, 0x00030000);
+    hcursor = (HCURSOR)CreateIconFromResourceEx(mem, size, FALSE, 0x00030000, w, h, 0);
     if (!hcursor) {
         SDL_SetError("CreateIconFromResource failed");
     }
@@ -387,20 +432,12 @@ done:
 static SDL_Cursor *WIN_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     SDL_CursorFrameInfo frame = { surface, 0 };
-    HCURSOR hcursor = WIN_CreateAnimatedCursorInternal(&frame, 1, hot_x, hot_y);
-    if (!hcursor) {
-        return NULL;
-    }
-    return WIN_CreateCursorAndData(hcursor);
+    return WIN_CreateAnimatedCursorAndData(&frame, 1, hot_x, hot_y);
 }
 
 static SDL_Cursor *WIN_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
 {
-    HCURSOR hcursor = WIN_CreateAnimatedCursorInternal(frames, frame_count, hot_x, hot_y);
-    if (!hcursor) {
-        return NULL;
-    }
-    return WIN_CreateCursorAndData(hcursor);
+    return WIN_CreateAnimatedCursorAndData(frames, frame_count, hot_x, hot_y);
 }
 
 static SDL_Cursor *WIN_CreateBlankCursor(void)
@@ -496,11 +533,55 @@ static void WIN_FreeCursor(SDL_Cursor *cursor)
 {
     SDL_CursorData *data = cursor->internal;
 
+    for (int i = 0; i < data->num_frames; ++i) {
+        SDL_DestroySurface(data->frames[i].surface);
+    }
+    while (data->cache) {
+        CachedCursor *entry = data->cache;
+        data->cache = entry->next;
+        if (entry->cursor) {
+            DestroyCursor(entry->cursor);
+        }
+        SDL_free(entry);
+    }
     if (data->cursor) {
         DestroyCursor(data->cursor);
     }
     SDL_free(data);
     SDL_free(cursor);
+}
+
+static HCURSOR GetCachedCursor(SDL_Cursor *cursor)
+{
+    SDL_CursorData *data = cursor->internal;
+
+    float scale = SDL_GetDisplayContentScale(SDL_GetDisplayForWindow(SDL_GetMouseFocus()));
+    if (scale == 0.0f) {
+        scale = 1.0f;
+    }
+    for (CachedCursor *entry = data->cache; entry; entry = entry->next) {
+        if (scale == entry->scale) {
+            return entry->cursor;
+        }
+    }
+
+    // Need to create a cursor for this content scale
+    HCURSOR hcursor = WIN_CreateAnimatedCursorInternal(data->frames, data->num_frames, data->hot_x, data->hot_y, scale);
+    if (!hcursor) {
+        return NULL;
+    }
+
+    CachedCursor *entry = (CachedCursor *)SDL_calloc(1, sizeof(*entry));
+    if (!entry) {
+        DestroyCursor(hcursor);
+        return NULL;
+    }
+    entry->cursor = hcursor;
+    entry->scale = scale;
+    entry->next = data->cache;
+    data->cache = entry;
+
+    return hcursor;
 }
 
 static bool WIN_ShowCursor(SDL_Cursor *cursor)
@@ -512,7 +593,12 @@ static bool WIN_ShowCursor(SDL_Cursor *cursor)
         }
     }
     if (cursor) {
-        SDL_cursor = cursor->internal->cursor;
+        SDL_CursorData *data = cursor->internal;
+        if (data->num_frames > 0) {
+            SDL_cursor = GetCachedCursor(cursor);
+        } else {
+            SDL_cursor = data->cursor;
+        }
     } else {
         SDL_cursor = NULL;
     }
