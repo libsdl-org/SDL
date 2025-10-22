@@ -244,6 +244,10 @@
 #define SDL_EndThreadFunction NULL
 #endif
 
+// Don't hardcode full file paths in SDL binaries
+#undef SDL_FILE
+#define SDL_FILE DO_NOT_USE_SDL_FILE
+
 #ifdef SDL_NOLONGLONG
 #error We cannot build a valid SDL3 library without long long support
 #endif
