@@ -154,7 +154,7 @@ function(sdl_compile_options)
     target_compile_options(SDL3-static ${visibility} ${escaped_opts})
   endif()
   if(NOT ARGS_NO_EXPORT AND (ARGS_PUBLIC OR ARGS_INTERFACE))
-    set_property(TARGET SDL3-collector APPEND PROPERTY INTERFACE_COMPILE_COMPILE_OPTIONS "${ARGS_UNPARSED_ARGUMENTS}")
+    set_property(TARGET SDL3-collector APPEND PROPERTY INTERFACE_COMPILE_OPTIONS "${ARGS_UNPARSED_ARGUMENTS}")
   endif()
 endfunction()
 
