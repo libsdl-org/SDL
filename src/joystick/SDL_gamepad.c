@@ -169,6 +169,7 @@ static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
 #ifdef SDL_PLATFORM_LINUX
     {" Motion Sensors", GAMEPAD_BLACKLIST_END}, // Don't treat the PS3 and PS4 motion controls as a separate gamepad
     {" IMU",            GAMEPAD_BLACKLIST_END}, // Don't treat the Nintendo IMU as a separate gamepad
+    {" Touchpad",       GAMEPAD_BLACKLIST_END}, // "Sony Interactive Entertainment DualSense Wireless Controller Touchpad"
 
     // Don't treat the Wii extension controls as a separate gamepad
     {" Accelerometer",  GAMEPAD_BLACKLIST_END},
@@ -180,9 +181,7 @@ static const struct SDL_GamepadBlacklistWords SDL_gamepad_blacklist_words[] = {
     // The Google Pixel fingerprint sensor, as well as other fingerprint sensors, reports itself as a joystick
     {"uinput-",         GAMEPAD_BLACKLIST_BEGIN},
 
-    {" TouchPad",       GAMEPAD_BLACKLIST_END}, // "SynPS/2 Synaptics TouchPad"
-    {" Touchpad",       GAMEPAD_BLACKLIST_END}, // "Sony Interactive Entertainment DualSense Wireless Controller Touchpad"
-    {"Synaptics ",      GAMEPAD_BLACKLIST_BEGIN}, // "Synaptics TM2768-001"
+    {"Synaptics ",      GAMEPAD_BLACKLIST_ANYWHERE}, // "Synaptics TM2768-001", "SynPS/2 Synaptics TouchPad"
     {"Trackpad",        GAMEPAD_BLACKLIST_ANYWHERE},
     {"Clickpad",        GAMEPAD_BLACKLIST_ANYWHERE},
     // "PG-90215 Keyboard", "Usb Keyboard Usb Keyboard Consumer Control", "Framework Laptop 16 Keyboard Module - ISO System Control"
