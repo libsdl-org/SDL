@@ -24,6 +24,7 @@
 #include "SDL_video_c.h"
 #include "SDL_RLEaccel_c.h"
 #include "SDL_pixels_c.h"
+#include "SDL_rotate.h"
 #include "SDL_stb_c.h"
 #include "SDL_yuv_c.h"
 #include "../render/SDL_sysrender.h"
@@ -2165,6 +2166,38 @@ error:
         SDL_DestroySurface(convert);
     }
     return NULL;
+}
+
+SDL_Surface *SDL_RotateSurface(SDL_Surface *surface, float angle)
+{
+    SDL_Surface *rotated = NULL;
+
+    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+
+    SDL_Rect rect_dest;
+    double cangle, sangle;
+    SDL_FPoint center = { surface->w * 0.5f, surface->h * 0.5f };
+    SDLgfx_rotozoomSurfaceSizeTrig(surface->w, surface->h, angle, &center, &rect_dest, &cangle, &sangle);
+
+    // This function requires a 32-bit surface or 8-bit surface with a colorkey
+    if ((SDL_BITSPERPIXEL(surface->format) == 32 && SDL_PIXELLAYOUT(surface->format) == SDL_PACKEDLAYOUT_8888) ||
+        (surface->format == SDL_PIXELFORMAT_INDEX8 && SDL_SurfaceHasColorKey(surface))) {
+        rotated = SDLgfx_rotateSurface(surface, angle, 1, 0, 0, &rect_dest, cangle, sangle, &center);
+    } else {
+        SDL_Surface *convert = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+        if (convert) {
+            SDL_Surface *tmp = SDLgfx_rotateSurface(convert, angle, 1, 0, 0, &rect_dest, cangle, sangle, &center);
+            if (tmp) {
+                rotated = SDL_ConvertSurfaceAndColorspace(tmp, surface->format, surface->palette, surface->colorspace, surface->props);
+                SDL_DestroySurface(tmp);
+            }
+            SDL_DestroySurface(convert);
+        }
+    }
+    return rotated;
 }
 
 SDL_Surface *SDL_DuplicateSurface(SDL_Surface *surface)

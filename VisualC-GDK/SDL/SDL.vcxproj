@@ -504,7 +504,6 @@
     <ClInclude Include="..\..\src\render\software\SDL_drawline.h" />
     <ClInclude Include="..\..\src\render\software\SDL_drawpoint.h" />
     <ClInclude Include="..\..\src\render\software\SDL_render_sw_c.h" />
-    <ClInclude Include="..\..\src\render\software\SDL_rotate.h" />
     <ClInclude Include="..\..\src\render\software\SDL_triangle.h" />
     <ClInclude Include="..\..\src\SDL_assert_c.h" />
     <ClInclude Include="..\..\src\SDL_error_c.h" />
@@ -604,6 +603,7 @@
     <ClInclude Include="..\..\src\video\SDL_pixels_c.h" />
     <ClInclude Include="..\..\src\video\SDL_rect_c.h" />
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h" />
+    <ClInclude Include="..\..\src\video\SDL_rotate.h" />
     <ClInclude Include="..\..\src\video\SDL_stb_c.h" />
     <ClInclude Include="..\..\src\video\SDL_surface_c.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
@@ -809,7 +809,6 @@
     <ClCompile Include="..\..\src\render\software\SDL_drawline.c" />
     <ClCompile Include="..\..\src\render\software\SDL_drawpoint.c" />
     <ClCompile Include="..\..\src\render\software\SDL_render_sw.c" />
-    <ClCompile Include="..\..\src\render\software\SDL_rotate.c" />
     <ClCompile Include="..\..\src\render\software\SDL_triangle.c" />
     <ClCompile Include="..\..\src\render\vulkan\SDL_render_vulkan.c" />
     <ClCompile Include="..\..\src\render\vulkan\SDL_shaders_vulkan.c" />
@@ -891,6 +890,7 @@
     <ClCompile Include="..\..\src\video\SDL_pixels.c" />
     <ClCompile Include="..\..\src\video\SDL_rect.c" />
     <ClCompile Include="..\..\src\video\SDL_RLEaccel.c" />
+    <ClCompile Include="..\..\src\video\SDL_rotate.c" />
     <ClCompile Include="..\..\src\video\SDL_stb.c" />
     <ClCompile Include="..\..\src\video\SDL_stretch.c" />
     <ClCompile Include="..\..\src\video\SDL_surface.c" />

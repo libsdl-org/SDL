@@ -31,9 +31,9 @@
 #include "SDL_blendpoint.h"
 #include "SDL_drawline.h"
 #include "SDL_drawpoint.h"
-#include "SDL_rotate.h"
 #include "SDL_triangle.h"
 #include "../../video/SDL_pixels_c.h"
+#include "../../video/SDL_rotate.h"
 
 // SDL surface based renderer implementation
 
@@ -406,7 +406,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
     SDL_GetSurfaceColorMod(src, &rMod, &gMod, &bMod);
 
     // SDLgfx_rotateSurface only accepts 32-bit surfaces with a 8888 layout. Everything else has to be converted.
-    if (src->fmt->bits_per_pixel != 32 || SDL_PIXELLAYOUT(src->format) != SDL_PACKEDLAYOUT_8888 || !SDL_ISPIXELFORMAT_ALPHA(src->format)) {
+    if (!(SDL_BITSPERPIXEL(src->format) == 32 && SDL_PIXELLAYOUT(src->format) == SDL_PACKEDLAYOUT_8888)) {
         blitRequired = true;
     }
 
