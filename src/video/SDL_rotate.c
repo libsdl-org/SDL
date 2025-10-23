@@ -30,15 +30,8 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 */
 #include "SDL_internal.h"
 
-#ifdef SDL_VIDEO_RENDER_SW
-
-#if defined(SDL_PLATFORM_WINDOWS)
-#include "../../core/windows/SDL_windows.h"
-#endif
-
+#include "SDL_surface_c.h"
 #include "SDL_rotate.h"
-
-#include "../../video/SDL_surface_c.h"
 
 // ---- Internally used structures
 
@@ -506,8 +499,9 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
         }
     }
     // This function requires a 32-bit surface or 8-bit surface with a colorkey
-    is8bit = src->fmt->bits_per_pixel == 8 && colorKeyAvailable;
-    if (!(is8bit || (src->fmt->bits_per_pixel == 32 && SDL_ISPIXELFORMAT_ALPHA(src->format)))) {
+    is8bit = (src->format == SDL_PIXELFORMAT_INDEX8) && colorKeyAvailable;
+    if (!is8bit &&
+        !(SDL_BITSPERPIXEL(src->format) == 32 && SDL_PIXELLAYOUT(src->format) == SDL_PACKEDLAYOUT_8888)) {
         return NULL;
     }
 
@@ -609,4 +603,3 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     return rz_dst;
 }
 
-#endif // SDL_VIDEO_RENDER_SW
