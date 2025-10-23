@@ -944,16 +944,18 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL_FlipM
  *
  * The angle of rotation can be negative for counter-clockwise rotation.
  *
- * When the rotation isn't a multiple of 90 degrees, the resulting surface is larger than the original, with the background filled in with the colorkey, if available, or RGBA 255/255/255/0 if not.
+ * When the rotation isn't a multiple of 90 degrees, the resulting surface is
+ * larger than the original, with the background filled in with the colorkey,
+ * if available, or RGBA 255/255/255/0 if not.
  *
  * \param surface the surface to rotate.
  * \param angle the rotation angle, in degrees.
- * \returns a rotated copy of the surface or NULL on failure; call SDL_GetError() for
- *          more information.
+ * \returns a rotated copy of the surface or NULL on failure; call
+ *          SDL_GetError() for more information.
  *
  * \threadsafety This function is not thread safe.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.4.0.
  */
 extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_RotateSurface(SDL_Surface *surface, float angle);
 
