@@ -177,12 +177,13 @@ extern "C" {
 #endif
 
 #ifndef SDL_FILE
+
 /**
  * A macro that reports the current file being compiled.
  *
- * This macro is only defined if it isn't already defined, so to override
- * it (perhaps with something that doesn't provide path information at all,
- * so build machine information doesn't leak into public binaries), apps can
+ * This macro is only defined if it isn't already defined, so to override it
+ * (perhaps with something that doesn't provide path information at all, so
+ * build machine information doesn't leak into public binaries), apps can
  * define this macro before including SDL_assert.h. For example, Clang and GCC
  * can define this to `FILE_NAME` to get just the source filename instead of
  * the full path.
@@ -193,12 +194,14 @@ extern "C" {
 #endif
 
 #ifndef SDL_ASSERT_FILE
+
 /**
- * A macro that reports the current file being compiled, for use in assertions.
+ * A macro that reports the current file being compiled, for use in
+ * assertions.
  *
- * This macro is only defined if it isn't already defined, so to override
- * it (perhaps with something that doesn't provide path information at all,
- * so build machine information doesn't leak into public binaries), apps can
+ * This macro is only defined if it isn't already defined, so to override it
+ * (perhaps with something that doesn't provide path information at all, so
+ * build machine information doesn't leak into public binaries), apps can
  * define this macro before including SDL_assert.h. For example, defining this
  * to `""` will make sure no source path information is included in asserts.
  *
