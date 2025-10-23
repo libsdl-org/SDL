@@ -28,4 +28,18 @@
  */
 extern int (*WINRT_SDLAppEntryPoint)(int, char **);
 
+/* Protocol activation arguments storage */
+extern Platform::String^ WINRT_ProtocolActivationURI;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Get and clear the protocol activation URI as UTF-8 (caller must SDL_free) */
+extern char* SDL_WinRTGetProtocolActivationURI(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif // SDL_winrtapp_common_h_
