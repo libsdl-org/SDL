@@ -463,7 +463,6 @@ extern DECLSPEC int SDLCALL SDL_AndroidShowToast(const char* message, int durati
  *
  * \param command user command that must be greater or equal to 0x8000.
  * \param param user parameter.
- * \returns 0 on success, otherwise -1.
  *
  * \since This function is available since SDL 2.0.22.
  */
@@ -571,6 +570,22 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
  * \since This function is available since SDL 2.0.8.
  */
 extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
+
+/**
+ * Get the protocol activation URI if the app was launched via protocol activation.
+ *
+ * When a UWP/WinRT app is launched via a custom URI scheme (e.g., myapp://action?param=value),
+ * this function retrieves the full activation URI string.
+ * 
+ * The URI is only available once per activation - after the first successful call,
+ * subsequent calls will return NULL. This ensures the URI is processed only once.
+ *
+ * \returns the protocol activation URI as a UTF-8 string that must be freed with SDL_free(),
+ *          or NULL if the app was not activated via protocol or the URI was already retrieved.
+ *
+ * \since This function is available since SDL 2.33.0.
+ */
+extern DECLSPEC char * SDLCALL SDL_WinRTGetProtocolActivationURI(void);
 
 #endif /* __WINRT__ */
 

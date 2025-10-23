@@ -1,0 +1,5 @@
+UWP/WinRT protocol activation changes
+
+Moved SDL_WinRTGetProtocolActivationURI() to public API in SDL_system.h
+
+Addresses feedback from PR #14309
