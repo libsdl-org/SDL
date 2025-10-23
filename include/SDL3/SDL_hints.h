@@ -3927,6 +3927,34 @@ extern "C" {
 #define SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR "SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR"
 
 /**
+ * A variable controlling whether to allow positioning of windows via the
+ * `ext-zones-v1` protocol.
+ *
+ * This hint requires that the compositor supports the `ext-zones-v1` protocol.
+ * Support for this protocol can be checked via the global
+ * `SDL_PROP_GLOBAL_VIDEO_WAYLAND_HAS_ZONES_BOOLEAN` property after initializing
+ * the video subsystem with this hint set.
+ *
+ * If the compositor lacks support for the required protocol, this hint does
+ * nothing.
+ *
+ * Zones are arbitrary regions that allow for limited window placement within a
+ * logical space, and should not be presumed to correlate 1:1 to display output
+ * coordinates, so care must be taken when enabling this. See
+ * docs/README-wayland.md and wayland-protocols/ext-zones-v1.xml for more details.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": positioning with ext-zones is disabled. (default)
+ * - "1": positioning with ext-zones is enabled.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.1.6.
+ */
+#define SDL_HINT_VIDEO_WAYLAND_ENABLE_ZONES "SDL_VIDEO_WAYLAND_ENABLE_ZONES"
+
+/**
  * A variable controlling whether video mode emulation is enabled under
  * Wayland.
  *
