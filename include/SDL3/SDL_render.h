@@ -2390,6 +2390,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTextureTiled(SDL_Renderer *renderer, 
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_RenderTexture
+ * \sa SDL_RenderTexture9GridTiled
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9Grid(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect *dstrect);
 
@@ -2427,6 +2428,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9Grid(SDL_Renderer *renderer, 
  * \since This function is available since SDL 3.4.0.
  *
  * \sa SDL_RenderTexture
+ * \sa SDL_RenderTexture9Grid
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderTexture9GridTiled(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_FRect *srcrect, float left_width, float right_width, float top_height, float bottom_height, float scale, const SDL_FRect *dstrect, float tileScale);
 

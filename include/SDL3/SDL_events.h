@@ -1604,7 +1604,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowFromEvent(const SDL_Event *event);
 
 /**
- * Generate a human-readable description of an event.
+ * Generate an English description of an event.
  *
  * This will fill `buf` with a null-terminated string that might look
  * something like this:
