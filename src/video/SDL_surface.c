@@ -2153,6 +2153,9 @@ end:
         if (!SDL_CopyProperties(surface->props, SDL_GetSurfaceProperties(convert))) {
             goto error;
         }
+
+        // Make sure the new surface doesn't reference an old SDL2 surface.
+        SDL_ClearProperty(SDL_GetSurfaceProperties(convert), "sdl2-compat.surface2");
     }
 
     // We're ready to go!
