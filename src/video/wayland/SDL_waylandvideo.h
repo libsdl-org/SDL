@@ -87,6 +87,7 @@ struct SDL_VideoData
     struct wl_fixes *wl_fixes;
     struct zwp_pointer_gestures_v1 *zwp_pointer_gestures;
     struct wp_single_pixel_buffer_manager_v1 *single_pixel_buffer_manager;
+    struct xx_zone_manager_v1 *ext_zone_manager_v1;
 
     struct xkb_context *xkb_context;
 
@@ -111,12 +112,14 @@ struct SDL_DisplayData
     struct wl_output *output;
     struct zxdg_output_v1 *xdg_output;
     struct wp_color_management_output_v1 *wp_color_management_output;
+    struct xx_zone_v1 *ext_zone_v1;
     char *wl_output_name;
     double scale_factor;
     uint32_t registry_id;
     int logical_width, logical_height;
     int pixel_width, pixel_height;
     int x, y, refresh, transform;
+    int zone_width, zone_height;
     SDL_DisplayOrientation orientation;
     int physical_width_mm, physical_height_mm;
     bool has_logical_position, has_logical_size;
