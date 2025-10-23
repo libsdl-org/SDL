@@ -3,14 +3,6 @@
  * Adapted/rewritten for test lib by Andreas Schiffler
  */
 
-/* Suppress C4996 VS compiler warnings for unlink() */
-#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_DEPRECATE)
-#define _CRT_SECURE_NO_DEPRECATE
-#endif
-#if defined(_MSC_VER) && !defined(_CRT_NONSTDC_NO_DEPRECATE)
-#define _CRT_NONSTDC_NO_DEPRECATE
-#endif
-
 #include <stdio.h>
 #ifndef _MSC_VER
 #include <unistd.h>
@@ -337,6 +329,13 @@ static int SDLCALL surface_testSaveLoad(void *arg)
     const char *sampleFilename = "testSaveLoad.tmp";
     SDL_Surface *face;
     SDL_Surface *rface;
+    SDL_Palette *palette;
+    SDL_Color colors[] = {
+        { 255, 0, 0, SDL_ALPHA_OPAQUE },    /* Red */
+        { 0, 255, 0, SDL_ALPHA_OPAQUE }     /* Green */
+    };
+    SDL_IOStream *stream;
+    Uint8 r, g, b, a;
 
     /* Create sample surface */
     face = SDLTest_ImageFace();
@@ -346,7 +345,7 @@ static int SDLCALL surface_testSaveLoad(void *arg)
     }
 
     /* Delete test file; ignore errors */
-    unlink(sampleFilename);
+    SDL_RemovePath(sampleFilename);
 
     /* Save a BMP surface */
     ret = SDL_SaveBMP(face, sampleFilename);
@@ -366,7 +365,7 @@ static int SDLCALL surface_testSaveLoad(void *arg)
     }
 
     /* Delete test file; ignore errors */
-    unlink(sampleFilename);
+    SDL_RemovePath(sampleFilename);
 
     /* Save a PNG surface */
     ret = SDL_SavePNG(face, sampleFilename);
@@ -386,11 +385,94 @@ static int SDLCALL surface_testSaveLoad(void *arg)
     }
 
     /* Delete test file; ignore errors */
-    unlink(sampleFilename);
+    SDL_RemovePath(sampleFilename);
 
     /* Clean up */
     SDL_DestroySurface(face);
     face = NULL;
+
+    /* Create an 8-bit image */
+    face = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(face != NULL, "Verify 8-bit surface is not NULL");
+    if (face == NULL) {
+        return TEST_ABORTED;
+    }
+
+    palette = SDL_CreatePalette(2);
+    SDLTest_AssertCheck(palette != NULL, "Verify palette is not NULL");
+    if (palette == NULL) {
+        return TEST_ABORTED;
+    }
+    SDL_SetPaletteColors(palette, colors, 0, SDL_arraysize(colors));
+    SDL_SetSurfacePalette(face, palette);
+    SDL_DestroyPalette(palette);
+
+    /* Set a green pixel */
+    *(Uint8 *)face->pixels = 1;
+
+    /* Save and reload as a BMP */
+    stream = SDL_IOFromDynamicMem();
+    SDLTest_AssertCheck(stream != NULL, "Verify iostream is not NULL");
+    if (stream == NULL) {
+        return TEST_ABORTED;
+    }
+    ret = SDL_SaveBMP_IO(face, stream, false);
+    SDLTest_AssertPass("Call to SDL_SaveBMP()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP, expected: true, got: %i", ret);
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+    rface = SDL_LoadBMP_IO(stream, false);
+    SDLTest_AssertPass("Call to SDL_LoadBMP()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(face->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", face->w, rface->w);
+        SDLTest_AssertCheck(face->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", face->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX8, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(face->format), SDL_GetPixelFormatName(rface->format));
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == colors[1].r &&
+                            g == colors[1].g &&
+                            b == colors[1].b &&
+                            a == colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            r, g, b, a,
+                            colors[1].r, colors[1].g, colors[1].b, colors[1].a);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+    SDL_CloseIO(stream);
+    stream = NULL;
+
+    /* Save and reload as a PNG */
+    stream = SDL_IOFromDynamicMem();
+    SDLTest_AssertCheck(stream != NULL, "Verify iostream is not NULL");
+    if (stream == NULL) {
+        return TEST_ABORTED;
+    }
+    ret = SDL_SavePNG_IO(face, stream, false);
+    SDLTest_AssertPass("Call to SDL_SavePNG()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG, expected: true, got: %i", ret);
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+    rface = SDL_LoadPNG_IO(stream, false);
+    SDLTest_AssertPass("Call to SDL_LoadPNG()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadPNG is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(face->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", face->w, rface->w);
+        SDLTest_AssertCheck(face->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", face->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX8, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(face->format), SDL_GetPixelFormatName(rface->format));
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == colors[1].r &&
+                            g == colors[1].g &&
+                            b == colors[1].b &&
+                            a == colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            r, g, b, a,
+                            colors[1].r, colors[1].g, colors[1].b, colors[1].a);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+    SDL_CloseIO(stream);
+    stream = NULL;
+
+    SDL_DestroySurface(face);
 
     return TEST_COMPLETED;
 }

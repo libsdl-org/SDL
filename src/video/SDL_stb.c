@@ -383,6 +383,9 @@ SDL_Surface *SDL_LoadPNG(const char *file)
 bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
 {
     bool retval = false;
+    Uint8 *plte = NULL;
+    Uint8 *trns = NULL;
+    bool free_surface = false;
 
     // Make sure we have somewhere to save
     CHECK_PARAM(!SDL_SurfaceValid(surface)) {
@@ -395,17 +398,49 @@ bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
     }
 
 #ifdef SDL_HAVE_STB
-    bool free_surface = false;
-    if (surface->format != SDL_PIXELFORMAT_RGBA32) {
-        surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
-        if (!surface) {
+    int plte_size = 0;
+    int trns_size = 0;
+
+    if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+        if (!surface->palette) {
+            SDL_SetError("Indexed surfaces must have a palette");
             goto done;
         }
-        free_surface = true;
+
+        if (surface->format != SDL_PIXELFORMAT_INDEX8) {
+            surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_INDEX8);
+            if (!surface) {
+                goto done;
+            }
+            free_surface = true;
+        }
+
+        plte_size = surface->palette->ncolors * 3;
+        trns_size = surface->palette->ncolors;
+        plte = (Uint8 *)SDL_malloc(plte_size);
+        trns = (Uint8 *)SDL_malloc(trns_size);
+        if (!plte || !trns) {
+            goto done;
+        }
+        SDL_Color *colors = surface->palette->colors;
+        for (int i = 0; i < surface->palette->ncolors; ++i) {
+            plte[i * 3 + 0] = colors[i].r;
+            plte[i * 3 + 1] = colors[i].g;
+            plte[i * 3 + 2] = colors[i].b;
+            trns[i] = colors[i].a;
+        }
+    } else {
+        if (surface->format != SDL_PIXELFORMAT_RGBA32) {
+            surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+            if (!surface) {
+                goto done;
+            }
+            free_surface = true;
+        }
     }
 
     size_t size = 0;
-    void *png = tdefl_write_image_to_png_file_in_memory(surface->pixels, surface->w, surface->h, SDL_BYTESPERPIXEL(surface->format), surface->pitch, &size);
+    void *png = tdefl_write_image_to_png_file_in_memory_ex(surface->pixels, surface->w, surface->h, SDL_BYTESPERPIXEL(surface->format), surface->pitch, &size, 6, MZ_FALSE, plte, plte_size, trns, trns_size);
     if (png) {
         if (SDL_WriteIO(dst, png, size)) {
             retval = true;
@@ -415,14 +450,17 @@ bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
         SDL_SetError("Failed to convert and save image");
     }
 
-    if (free_surface) {
-        SDL_DestroySurface(surface);
-    }
 #else
     SDL_SetError("SDL not built with STB image support");
 #endif
 
 done:
+    if (free_surface) {
+        SDL_DestroySurface(surface);
+    }
+    SDL_free(plte);
+    SDL_free(trns);
+
     if (dst && closeio) {
         retval &= SDL_CloseIO(dst);
     }
