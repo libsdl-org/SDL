@@ -4129,18 +4129,25 @@ extern "C" {
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD "SDL_WINDOWS_RAW_KEYBOARD"
 
 /**
- * A variable controlling whether to block hotkeys when raw keyboard events are enabled.
+ * A variable controlling whether or not the RIDEV_NOHOTKEYS flag is set when 
+ * enabling Windows raw keyboard events. 
+ *
+ * This blocks any hotkeys that have been registered by applications from 
+ * having any effect beyond generating raw WM_INPUT events. 
+ *
+ * This flag does not affect system-hotkeys like ALT-TAB or CTRL-ALT-DEL,
+ * but does affect the Windows Logo key since it is a userland hotkey registered
+ * by explorer.exe.
  *
  * The variable can be set to the following values:
  *
- * - "0": Hotkeys are not blocked. (default)
- * - "1": Hotkeys are blocked.
+ * - "0": Hotkeys are not excluded. (default)
+ * - "1": Hotkeys are excluded.
  *
  * This hint can be set anytime.
  *
- * \since This hint is available since SDL 3.2.22.
  */
-#define SDL_HINT_WINDOWS_RAW_KEYBOARD_NOHOTKEYS "SDL_WINDOWS_RAW_KEYBOARD_NOHOTKEYS"
+#define SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS "SDL_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS"
 
 /**
  * A variable controlling whether SDL uses Kernel Semaphores on Windows.
