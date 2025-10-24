@@ -599,10 +599,6 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     }
 #endif
 
-#ifdef SDL_USE_LIBDBUS
-    SDL_DBus_PumpEvents();
-#endif
-
     // Synthesize key repeat events.
     wl_list_for_each (seat, &d->seat_list, link) {
         if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {

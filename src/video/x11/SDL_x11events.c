@@ -2271,10 +2271,6 @@ int X11_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     }
 
     X11_DispatchEvent(_this, &xevent);
-
-#ifdef SDL_USE_LIBDBUS
-    SDL_DBus_PumpEvents();
-#endif
     return 1;
 }
 
@@ -2326,10 +2322,6 @@ void X11_PumpEvents(SDL_VideoDevice *_this)
     while (X11_PollEvent(data->display, &xevent)) {
         X11_DispatchEvent(_this, &xevent);
     }
-
-#ifdef SDL_USE_LIBDBUS
-    SDL_DBus_PumpEvents();
-#endif
 
     // FIXME: Only need to do this when there are pending focus changes
     X11_HandleFocusChanges(_this);
