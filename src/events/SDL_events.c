@@ -36,6 +36,9 @@
 #ifndef SDL_SENSOR_DISABLED
 #include "../sensor/SDL_sensor_c.h"
 #endif
+#ifdef HAVE_DBUS_DBUS_H
+#include "core/linux/SDL_dbus.h"
+#endif
 #include "../video/SDL_sysvideo.h"
 
 #ifdef SDL_PLATFORM_ANDROID
@@ -58,6 +61,9 @@
 
 // Determines how often to pump events if tray items are active
 #define TRAY_POLL_INTERVAL_NS SDL_MS_TO_NS(50)
+
+// Determines how often to pump events if DBus is active
+#define DBUS_POLL_INTERVAL_NS (3 * SDL_NS_PER_SECOND)
 
 // Make sure the type in the SDL_Event aligns properly across the union
 SDL_COMPILE_TIME_ASSERT(SDL_Event_type, sizeof(Uint32) == sizeof(SDL_EventType));
@@ -1496,6 +1502,11 @@ static void SDL_PumpEventsInternal(bool push_sentinel)
     // Run any pending main thread callbacks
     SDL_RunMainThreadCallbacks();
 
+#ifdef SDL_USE_LIBDBUS
+    // DBus event processing is independent of the video subsystem
+    SDL_DBus_PumpEvents();
+#endif
+
 #ifdef SDL_PLATFORM_ANDROID
     // Android event processing is independent of the video subsystem
     Android_PumpEvents(0);
@@ -1565,6 +1576,11 @@ static Sint64 SDL_events_get_polling_interval(void)
         // Tray events on *nix platforms run separately from window system events, and need periodic polling
         poll_intervalNS = SDL_min(poll_intervalNS, TRAY_POLL_INTERVAL_NS);
     }
+#endif
+
+#ifdef SDL_USE_LIBDBUS
+    // Wake periodically to pump DBus events
+    poll_intervalNS = SDL_min(poll_intervalNS, DBUS_POLL_INTERVAL_NS);
 #endif
     return poll_intervalNS;
 }
