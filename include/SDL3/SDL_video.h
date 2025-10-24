@@ -101,6 +101,16 @@ typedef Uint32 SDL_WindowID;
 #define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "SDL.video.wayland.wl_display"
 
 /**
+ * A boolean set to true if the windowing system supports the optional
+ * ext-zones protocol for positioning windows in Wayland. Requires that the
+ * `SDL_VIDEO_WAYLAND_ENABLE_ZONES` hint be set to enable. See
+ * docs/README-wayland.md for more information.
+ *
+ * Can be queried after video subsystem initialization.
+ */
+#define SDL_PROP_GLOBAL_VIDEO_WAYLAND_HAS_ZONES_BOOLEAN "SDL.video.wayland.has_zones"
+
+/**
  * System theme.
  *
  * \since This enum is available since SDL 3.2.0.
