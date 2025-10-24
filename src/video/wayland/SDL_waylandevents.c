@@ -599,16 +599,6 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     }
 #endif
 
-    // Synthesize key repeat events.
-    wl_list_for_each (seat, &d->seat_list, link) {
-        if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
-            Wayland_SeatSetKeymap(seat);
-
-            const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
-            keyboard_repeat_handle(&seat->keyboard.repeat, elapsed);
-        }
-    }
-
 #ifdef HAVE_LIBDECOR_H
     if (d->shell.libdecor) {
         libdecor_dispatch(d->shell.libdecor, 0);
@@ -659,6 +649,18 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
 
     } else {
         ret = WAYLAND_wl_display_dispatch_pending(d->display);
+    }
+
+    if (ret >= 0) {
+        // Synthesize key repeat events.
+        wl_list_for_each (seat, &d->seat_list, link) {
+            if (keyboard_repeat_is_set(&seat->keyboard.repeat)) {
+                Wayland_SeatSetKeymap(seat);
+
+                const Uint64 elapsed = SDL_GetTicksNS() - seat->keyboard.repeat.sdl_press_time_ns;
+                keyboard_repeat_handle(&seat->keyboard.repeat, elapsed);
+            }
+        }
     }
 
 connection_error:
