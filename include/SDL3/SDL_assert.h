@@ -176,7 +176,7 @@ extern "C" {
 #   define SDL_FUNCTION "???"
 #endif
 
-#ifndef SDL_FILE
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
 /**
  * A macro that reports the current file being compiled.
@@ -184,16 +184,21 @@ extern "C" {
  * This macro is only defined if it isn't already defined, so to override it
  * (perhaps with something that doesn't provide path information at all, so
  * build machine information doesn't leak into public binaries), apps can
- * define this macro before including SDL_assert.h. For example, Clang and GCC
- * can define this to `FILE_NAME` to get just the source filename instead of
- * the full path.
+ * define this macro before including SDL.h or SDL_assert.h.
  *
  * \since This macro is available since SDL 3.2.0.
  */
+#define SDL_FILE    __FILE_NAME__
+
+#elif !defined(SDL_FILE)
+#ifdef __FILE_NAME__
+#define SDL_FILE    __FILE_NAME__
+#else
 #define SDL_FILE    __FILE__
 #endif
+#endif
 
-#ifndef SDL_ASSERT_FILE
+#ifdef SDL_WIKI_DOCUMENTATION_SECTION
 
 /**
  * A macro that reports the current file being compiled, for use in
@@ -207,6 +212,9 @@ extern "C" {
  *
  * \since This macro is available since SDL 3.4.0.
  */
+#define SDL_ASSERT_FILE SDL_FILE
+
+#elif !defined(SDL_ASSERT_FILE)
 #define SDL_ASSERT_FILE SDL_FILE
 #endif
 
