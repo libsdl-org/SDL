@@ -898,3 +898,4 @@
 #define SDL_DestroyWindowSurface SDL_DestroyWindowSurface_REAL
 #define SDL_GDKGetDefaultUser SDL_GDKGetDefaultUser_REAL
 #define SDL_GameControllerGetSteamHandle SDL_GameControllerGetSteamHandle_REAL
+#define SDL_WinRTGetProtocolActivationURI SDL_WinRTGetProtocolActivationURI_REAL

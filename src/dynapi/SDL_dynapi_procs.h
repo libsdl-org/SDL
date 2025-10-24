@@ -985,3 +985,6 @@ SDL_DYNAPI_PROC(int,SDL_DestroyWindowSurface,(SDL_Window *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GDKGetDefaultUser,(XUserHandle *a),(a),return)
 #endif
 SDL_DYNAPI_PROC(Uint64,SDL_GameControllerGetSteamHandle,(SDL_GameController *a),(a),return)
+#if defined(__WINRT__)
+SDL_DYNAPI_PROC(char*,SDL_WinRTGetProtocolActivationURI,(void),(),return)
+#endif
