@@ -43,6 +43,7 @@ extern "C" {
 #include "SDL_hints.h"
 #include "SDL_main.h"
 #include "SDL_stdinc.h"
+#include "SDL_system.h"
 #include "SDL_render.h"
 #include "../../video/SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
@@ -80,6 +81,9 @@ extern "C" void D3D11_Trim(SDL_Renderer *);
 // SDL_CreateWindow().
 SDL_WinRTApp ^ SDL_WinRTGlobalApp = nullptr;
 
+// Protocol activation URI storage
+static Platform::String^ WINRT_ProtocolActivationURI = nullptr;
+
 ref class SDLApplicationSource sealed : Windows::ApplicationModel::Core::IFrameworkViewSource
 {
   public:
@@ -105,6 +109,22 @@ int SDL_WinRTInitNonXAMLApp(int (*mainFunction)(int, char **))
     auto direct3DApplicationSource = ref new SDLApplicationSource();
     CoreApplication::Run(direct3DApplicationSource);
     return 0;
+}
+
+extern "C" char* SDL_WinRTGetProtocolActivationURI(void)
+{
+    if (WINRT_ProtocolActivationURI == nullptr)
+        return nullptr;
+    Platform::String^ uriStr = WINRT_ProtocolActivationURI;
+    const wchar_t* uriWide = uriStr->Data();
+    int uriLen = WideCharToMultiByte(CP_UTF8, 0, uriWide, -1, nullptr, 0, nullptr, nullptr);
+    char* uriUtf8 = (char*)SDL_malloc(uriLen);
+    if (uriUtf8)
+        WideCharToMultiByte(CP_UTF8, 0, uriWide, -1, uriUtf8, uriLen, nullptr, nullptr);
+
+    // Clear after first successful read (only return it once)
+    WINRT_ProtocolActivationURI = nullptr;
+    return uriUtf8;
 }
 
 static void WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identifying thing into WINRT_ProcessWindowSizeChange()
@@ -589,6 +609,14 @@ void SDL_WinRTApp::OnWindowClosed(CoreWindow ^ sender, CoreWindowEventArgs ^ arg
 
 void SDL_WinRTApp::OnAppActivated(CoreApplicationView ^ applicationView, IActivatedEventArgs ^ args)
 {
+    if (args->Kind == Windows::ApplicationModel::Activation::ActivationKind::Protocol)
+    {
+        auto protocolArgs = dynamic_cast<Windows::ApplicationModel::Activation::ProtocolActivatedEventArgs^>(args);
+        if (protocolArgs && protocolArgs->Uri)
+        {
+            WINRT_ProtocolActivationURI = protocolArgs->Uri->AbsoluteUri;
+        }
+    }
     CoreWindow::GetForCurrentThread()->Activate();
 }
 
