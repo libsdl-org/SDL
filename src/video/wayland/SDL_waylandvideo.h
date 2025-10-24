@@ -118,7 +118,6 @@ struct SDL_DisplayData
     SDL_DisplayOrientation orientation;
     int physical_width_mm, physical_height_mm;
     bool has_logical_position, has_logical_size;
-    bool running_colorspace_event_queue;
     SDL_HDROutputProperties HDR;
     SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
