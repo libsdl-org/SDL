@@ -399,6 +399,12 @@ struct SDL_VideoDevice
     // Display the system-level window menu
     void (*ShowWindowSystemMenu)(SDL_Window *window, int x, int y);
 
+    /*
+     * Set the preferred theme (light, dark, etc) for the application
+     * This is a hint, and may be ignored by the platform.
+     */
+    void (*SetPreferredTheme)(SDL_VideoDevice *_this, SDL_SystemTheme theme);
+
     /* * * */
     // Data common to all drivers
     SDL_ThreadID thread;
@@ -421,6 +427,7 @@ struct SDL_VideoDevice
     bool setting_display_mode;
     Uint32 device_caps;
     SDL_SystemTheme system_theme;
+    SDL_SystemTheme preferred_theme;
     bool screen_keyboard_shown;
 
     /* * * */

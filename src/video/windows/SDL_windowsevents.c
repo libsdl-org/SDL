@@ -2416,8 +2416,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_SETTINGCHANGE:
         if (wParam == 0 && lParam != 0 && SDL_wcscmp((wchar_t *)lParam, L"ImmersiveColorSet") == 0) {
-            SDL_SetSystemTheme(WIN_GetSystemTheme());
-            WIN_UpdateDarkModeForHWND(hwnd);
+            if (SDL_GetVideoDevice()->preferred_theme == SDL_SYSTEM_THEME_UNKNOWN) {
+                WIN_SetDarkModeColorsForHWND(SDL_GetVideoDevice(), data->window, WIN_GetSystemTheme() == SDL_SYSTEM_THEME_DARK ? TRUE : FALSE);
+                SDL_SetSystemTheme(WIN_GetSystemTheme());
+            }
         }
         if (wParam == SPI_SETMOUSE || wParam == SPI_SETMOUSESPEED) {
             WIN_UpdateMouseSystemScale();

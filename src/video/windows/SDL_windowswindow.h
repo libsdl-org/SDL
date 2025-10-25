@@ -107,6 +107,7 @@ struct SDL_WindowData
 };
 
 extern bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
+extern void WIN_SetDarkModeColorsForHWND(SDL_VideoDevice *_this, SDL_Window *window, BOOL value);
 extern void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon);
 extern bool WIN_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);

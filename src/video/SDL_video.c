@@ -770,6 +770,16 @@ bool SDL_OnVideoThread(void)
     return (_this && SDL_GetCurrentThreadID() == _this->thread);
 }
 
+void SDL_SetPreferredSystemTheme(SDL_SystemTheme theme)
+{
+    if (_this && theme != _this->preferred_theme) {
+        _this->preferred_theme = theme;
+        if (_this->SetPreferredTheme) {
+            _this->SetPreferredTheme(_this, theme);
+        }
+    }
+}
+
 void SDL_SetSystemTheme(SDL_SystemTheme theme)
 {
     if (_this && theme != _this->system_theme) {
