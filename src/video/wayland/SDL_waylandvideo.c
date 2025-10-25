@@ -1512,11 +1512,8 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
     SDL_WaylandSeat *seat, *tmp;
-    int i;
 
-    Wayland_FiniMouse(data);
-
-    for (i = _this->num_displays - 1; i >= 0; --i) {
+    for (int i = _this->num_displays - 1; i >= 0; --i) {
         SDL_VideoDisplay *display = _this->displays[i];
         Wayland_free_display(display, false);
     }
@@ -1525,6 +1522,8 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
     wl_list_for_each_safe (seat, tmp, &data->seat_list, link) {
         Wayland_SeatDestroy(seat, false);
     }
+
+    Wayland_FiniMouse(data);
 
     if (data->pointer_constraints) {
         zwp_pointer_constraints_v1_destroy(data->pointer_constraints);
