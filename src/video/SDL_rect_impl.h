@@ -48,8 +48,6 @@ bool SDL_HASINTERSECTION(const RECTTYPE *A, const RECTTYPE *B)
                SDL_RECT_CAN_OVERFLOW(B)) {
         SDL_SetError("Potential rect math overflow");
         return false;
-    } else if (SDL_RECTEMPTY(A) || SDL_RECTEMPTY(B)) {
-        return false; // Special cases for empty rects
     }
 
     // Horizontal intersection
@@ -99,10 +97,6 @@ bool SDL_INTERSECTRECT(const RECTTYPE *A, const RECTTYPE *B, RECTTYPE *result)
         return false;
     } else if (!result) {
         SDL_InvalidParamError("result");
-        return false;
-    } else if (SDL_RECTEMPTY(A) || SDL_RECTEMPTY(B)) { // Special cases for empty rects
-        result->w = 0;
-        result->h = 0;
         return false;
     }
 
