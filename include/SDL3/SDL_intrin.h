@@ -268,6 +268,7 @@ _m_prefetch(void *__P)
 #endif /* compiler version */
 
 #ifdef SDL_WIKI_DOCUMENTATION_SECTION
+
 /**
  * A macro to decide if the compiler supports `__attribute__((target))`.
  *
