@@ -3173,7 +3173,7 @@ char *SDL_GetGamepadMappingForID(SDL_JoystickID instance_id)
 }
 
 /*
- * Return 1 if the joystick with this name and GUID is a supported gamepad
+ * Return true if the joystick with this name and GUID is a supported gamepad
  */
 bool SDL_IsGamepadNameAndGUID(const char *name, SDL_GUID guid)
 {
@@ -3193,7 +3193,7 @@ bool SDL_IsGamepadNameAndGUID(const char *name, SDL_GUID guid)
 }
 
 /*
- * Return 1 if the joystick at this device index is a supported gamepad
+ * Return true if the joystick at this device index is a supported gamepad
  */
 bool SDL_IsGamepad(SDL_JoystickID instance_id)
 {
@@ -3225,7 +3225,7 @@ bool SDL_IsGamepad(SDL_JoystickID instance_id)
 }
 
 /*
- * Return 1 if the gamepad should be ignored by SDL
+ * Return true if the gamepad should be ignored by SDL
  */
 bool SDL_ShouldIgnoreGamepad(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
 {
