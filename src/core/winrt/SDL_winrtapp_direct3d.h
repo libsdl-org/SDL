@@ -26,6 +26,7 @@ ref class SDL_WinRTApp sealed : public Windows::ApplicationModel::Core::IFramewo
 {
   public:
     SDL_WinRTApp();
+    virtual ~SDL_WinRTApp();
 
     // IFrameworkView Methods.
     virtual void Initialize(Windows::ApplicationModel::Core::CoreApplicationView ^ applicationView);
