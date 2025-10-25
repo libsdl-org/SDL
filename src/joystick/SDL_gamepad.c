@@ -1281,6 +1281,9 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             if (guid.data[15] >= SDL_FLYDIGI_VADER2) {
                 // Vader series of controllers have C/Z buttons
                 SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
+            } else if (guid.data[15] == SDL_FLYDIGI_APEX5) {
+                // Apex 5 has additional shoulder macro buttons
+                SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
             }
         } else if (vendor == USB_VENDOR_8BITDO && product == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
             SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
