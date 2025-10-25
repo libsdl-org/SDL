@@ -92,6 +92,11 @@ int DSU_CreateSocket(Uint16 port)
     int sock;
     struct sockaddr_in addr;
     int reuse = 1;
+#ifdef _WIN32
+    u_long mode = 1;
+#else
+    int flags;
+#endif
     
     sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (sock == DSU_INVALID_SOCKET) {
@@ -101,12 +106,11 @@ int DSU_CreateSocket(Uint16 port)
     /* Allow address reuse */
     setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse));
     
-    /* Set non-blocking */
+    /* Set socket to non-blocking */
 #ifdef _WIN32
-    u_long mode = 1;
     ioctlsocket(sock, FIONBIO, &mode);
 #else
-    int flags = fcntl(sock, F_GETFL, 0);
+    flags = fcntl(sock, F_GETFL, 0);
     fcntl(sock, F_SETFL, flags | O_NONBLOCK);
 #endif
     
@@ -338,12 +342,18 @@ void DSU_ProcessControllerData(DSU_Context *ctx, DSU_ControllerData *data)
     
     /* Handle connection state changes */
     if (!was_connected && slot->connected) {
+        Uint16 vendor;
+        Uint16 product;
+        
         /* New controller connected */
         slot->instance_id = SDL_GetNextJoystickInstanceID();
         
-        /* Create GUID */
-        Uint16 vendor = 0x054C;  /* Sony vendor ID */
-        Uint16 product = (slot->model == DSU_MODEL_FULL_GYRO) ? 0x09CC : 0x05C4;
+        /* Update controller ID for SDL */
+        vendor = 0x054C;  /* Sony vendor ID */
+        product = 0x05C4; /* DS4 product ID by default */
+        if (slot->model == DSU_MODEL_FULL_GYRO) {
+            product = 0x09CC;
+        }
         slot->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor, product, 0, 
                                            NULL, slot->name, 'd', 0);
         
@@ -379,10 +389,13 @@ int DSU_ReceiverThread(void *data)
             
             /* Validate magic */
             if (SDL_memcmp(header->magic, DSU_MAGIC_SERVER, 4) == 0) {
+                Uint32 received_crc;
+                Uint32 calculated_crc;
+                
                 /* Validate CRC32 */
-                Uint32 received_crc = SDL_SwapLE32(header->crc32);
+                received_crc = SDL_SwapLE32(header->crc32);
                 header->crc32 = 0;
-                Uint32 calculated_crc = DSU_CalculateCRC32(buffer, received);
+                calculated_crc = DSU_CalculateCRC32(buffer, received);
                 
                 if (received_crc == calculated_crc) {
                     Uint32 msg_type = SDL_SwapLE32(header->message_type);
@@ -395,12 +408,15 @@ int DSU_ReceiverThread(void *data)
                     case DSU_MSG_PORTS_INFO: {
                         /* Port info response - tells us which slots have controllers */
                         if (received >= (int)(sizeof(DSU_Header) + 4)) {
+                            Uint8 *data_ptr;
+                            Uint8 slot_id;
+                            Uint8 slot_state;
+                            
                             /* Parse port info */
-                            Uint8 *data_ptr = buffer + sizeof(DSU_Header);
-                            Uint8 slot_id = data_ptr[0];
-                            Uint8 slot_state = data_ptr[1];
-                            Uint8 device_model = data_ptr[2];
-                            Uint8 connection_type = data_ptr[3];
+                            data_ptr = buffer + sizeof(DSU_Header);
+                            slot_id = data_ptr[0];
+                            slot_state = data_ptr[1];
+                            /* Skip device_model = data_ptr[2] and connection_type = data_ptr[3] - not used */
                             
                             /* If controller is connected in this slot, request data */
                             if (slot_state == DSU_STATE_CONNECTED && slot_id < DSU_MAX_SLOTS) {
