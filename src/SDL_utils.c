@@ -250,7 +250,7 @@ static bool SDLCALL LogOneLeakedObject(void *userdata, const SDL_HashTable *tabl
         #undef SDLOBJTYPECASE
         default: break;
     }
-    SDL_Log("Leaked %s (%p)", type, object);
+    SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "Leaked %s (%p)", type, object);
     return true;  // keep iterating.
 }
 
@@ -259,7 +259,6 @@ void SDL_SetObjectsInvalid(void)
     if (SDL_ShouldQuit(&SDL_objects_init)) {
         // Log any leaked objects
         SDL_IterateHashTable(SDL_objects, LogOneLeakedObject, NULL);
-        SDL_assert(SDL_HashTableEmpty(SDL_objects));
         SDL_DestroyHashTable(SDL_objects);
         SDL_objects = NULL;
         SDL_SetInitialized(&SDL_objects_init, false);
