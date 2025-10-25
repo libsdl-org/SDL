@@ -43,6 +43,9 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #ifdef SDL_SENSOR_N3DS
     &SDL_N3DS_SensorDriver,
 #endif
+#ifdef SDL_SENSOR_EMSCRIPTEN
+    &SDL_EMSCRIPTEN_SensorDriver,
+#endif
 #if defined(SDL_SENSOR_DUMMY) || defined(SDL_SENSOR_DISABLED)
     &SDL_DUMMY_SensorDriver
 #endif
