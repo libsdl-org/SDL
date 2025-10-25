@@ -261,6 +261,7 @@ typedef unsigned int uintptr_t;
 #define SDL_JOYSTICK_RAWINPUT   1
 #endif
 #define SDL_JOYSTICK_VIRTUAL    1
+#define SDL_JOYSTICK_DSU    1
 #ifdef HAVE_WINDOWS_GAMING_INPUT_H
 #define SDL_JOYSTICK_WGI    1
 #endif

@@ -1245,6 +1245,14 @@ if(SDL_JOYSTICK)
     file(GLOB JOYSTICK_VIRTUAL_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/virtual/*.c)
     list(APPEND SOURCE_FILES ${JOYSTICK_VIRTUAL_SOURCES})
   endif()
+  
+  # DSU (DualShock UDP) client support
+  option(SDL_DSU_JOYSTICK "Enable DSU client joystick support" ON)
+  if(SDL_DSU_JOYSTICK)
+    set(SDL_JOYSTICK_DSU 1)
+    file(GLOB JOYSTICK_DSU_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/dsu/*.c)
+    list(APPEND SOURCE_FILES ${JOYSTICK_DSU_SOURCES})
+  endif()
 endif()
 
 if(SDL_VIDEO)
@@ -1984,6 +1992,10 @@ elseif(WINDOWS)
   # Libraries for Win32 native and MinGW
   if(NOT WINDOWS_STORE)
     list(APPEND EXTRA_LIBS kernel32 user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 setupapi shell32)
+    # Add Winsock library for DSU support
+    if(SDL_DSU_JOYSTICK)
+      list(APPEND EXTRA_LIBS ws2_32)
+    endif()
   endif()
 
   if(WINDOWS_STORE)
