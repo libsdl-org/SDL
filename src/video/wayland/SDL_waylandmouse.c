@@ -51,19 +51,22 @@ static bool Wayland_SetRelativeMouseMode(bool enabled);
 
 typedef struct
 {
-    Wayland_SHMPool *shmPool;
-    double scale;
-    struct wl_list node;
-} Wayland_ScaledCustomCursor;
+    int width;
+    int height;
+    struct wl_buffer *buffer;
+} CustomCursorImage;
 
 typedef struct
 {
+    // The base dimensions of the cursor.
     int width;
     int height;
     int hot_x;
     int hot_y;
-    struct wl_list scaled_cursor_cache;
-    SDL_Surface *sdl_cursor_surfaces[];
+
+    Wayland_SHMPool *shmPool;
+    int images_per_frame;
+    CustomCursorImage images[];
 } Wayland_CustomCursor;
 
 typedef struct
@@ -293,13 +296,46 @@ static void Wayland_DBusFinishCursorProperties(void)
 
 #endif
 
+static CustomCursorImage *Wayland_GetScaledCustomCursorImage(SDL_CursorData *data, int frame_index, double scale)
+{
+    const int offset = data->cursor_data.custom.images_per_frame * frame_index;
+
+    /* Find the closest image. Images that are larger than the
+     * desired size are preferred over images that are smaller.
+     */
+    CustomCursorImage *closest = NULL;
+    int desired_w = (int)SDL_round(data->cursor_data.custom.width * scale);
+    int desired_h = (int)SDL_round(data->cursor_data.custom.height * scale);
+    int desired_size = desired_w * desired_h;
+    int closest_distance = -1;
+    int closest_size = -1;
+    for (int i = 0; i < data->cursor_data.custom.images_per_frame && closest_distance && data->cursor_data.custom.images[offset + i].buffer; ++i) {
+        CustomCursorImage *candidate = &data->cursor_data.custom.images[offset + i];
+        int size = candidate->width * candidate->height;
+        int delta_w = candidate->width - desired_w;
+        int delta_h = candidate->height - desired_h;
+        int distance = (delta_w * delta_w) + (delta_h * delta_h);
+        if (closest_distance < 0 || distance < closest_distance ||
+            (size > desired_size && closest_size < desired_size)) {
+            closest = candidate;
+            closest_distance = distance;
+            closest_size = size;
+            }
+    }
+
+    return closest;
+}
+
 static struct wl_buffer *Wayland_SeatGetCursorFrame(SDL_WaylandSeat *seat, int frame_index)
 {
     SDL_CursorData *data = seat->pointer.current_cursor;
 
     if (data) {
         if (!data->is_system_cursor) {
-            return ((Wayland_ScaledCustomCursor *)(seat->pointer.cursor_state.cursor_handle))->shmPool->buffers[frame_index].wl_buffer;
+            const double scale = seat->pointer.focus ? seat->pointer.focus->scale_factor : 1.0;
+            CustomCursorImage *image = Wayland_GetScaledCustomCursorImage(data, frame_index, scale);
+
+            return image ? image->buffer : NULL;
         } else {
             return ((Wayland_CachedSystemCursor *)(seat->pointer.cursor_state.cursor_handle))->buffers[frame_index];
         }
@@ -713,170 +749,132 @@ static bool Wayland_GetSystemCursor(SDL_CursorData *cdata, SDL_WaylandSeat *seat
     return true;
 }
 
-static Wayland_ScaledCustomCursor *Wayland_CacheScaledCustomCursor(SDL_CursorData *cursor, double scale)
-{
-    Wayland_ScaledCustomCursor *cache = NULL;
-
-    // Is this cursor already cached at the target scale?
-    if (!WAYLAND_wl_list_empty(&cursor->cursor_data.custom.scaled_cursor_cache)) {
-        Wayland_ScaledCustomCursor *c = NULL;
-        wl_list_for_each (c, &cursor->cursor_data.custom.scaled_cursor_cache, node) {
-            if (c->scale == scale) {
-                cache = c;
-                break;
-            }
-        }
-    }
-
-    if (!cache) {
-        cache = SDL_calloc(1, sizeof(Wayland_ScaledCustomCursor));
-        if (!cache) {
-            return NULL;
-        }
-
-        SDL_Surface *surface = SDL_GetSurfaceImage(cursor->cursor_data.custom.sdl_cursor_surfaces[0], (float)scale);
-        if (!surface) {
-            SDL_free(cache);
-            return NULL;
-        }
-
-        // Allocate the shared memory buffer for this cursor.
-        cache->shmPool = Wayland_AllocSHMPool(surface->w, surface->h, cursor->num_frames);
-        if (!cache->shmPool) {
-            SDL_free(cache);
-            SDL_DestroySurface(surface);
-            return NULL;
-        }
-
-        for (int i = 0; i < cursor->num_frames; ++i) {
-            if (!surface) {
-                surface = SDL_GetSurfaceImage(cursor->cursor_data.custom.sdl_cursor_surfaces[i], (float)scale);
-                if (!surface) {
-                    Wayland_ReleaseSHMPool(cache->shmPool);
-                    SDL_free(cache);
-                    return NULL;
-                }
-            }
-
-            if (surface->format != SDL_PIXELFORMAT_ARGB8888) {
-                SDL_Surface *temp = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
-                if (temp) {
-                    SDL_DestroySurface(surface);
-                    surface = temp;
-                } else {
-                    Wayland_ReleaseSHMPool(cache->shmPool);
-                    SDL_free(cache);
-                    return NULL;
-                }
-            }
-
-            // Wayland requires premultiplied alpha for its surfaces.
-            SDL_PremultiplyAlpha(surface->w, surface->h,
-                                 surface->format, surface->pixels, surface->pitch,
-                                 SDL_PIXELFORMAT_ARGB8888, cache->shmPool->buffers[i].shm_data, surface->w * 4, true);
-
-            SDL_DestroySurface(surface);
-            surface = NULL;
-        }
-
-        cache->scale = scale;
-        WAYLAND_wl_list_insert(&cursor->cursor_data.custom.scaled_cursor_cache, &cache->node);
-    }
-
-    return cache;
-}
-
-static bool Wayland_GetCustomCursor(SDL_CursorData *cursor, SDL_WaylandSeat *seat, int *scale, int *dst_width, int *dst_height, int *hot_x, int *hot_y)
-{
-    SDL_VideoDevice *vd = SDL_GetVideoDevice();
-    SDL_VideoData *wd = vd->internal;
-    Wayland_CustomCursor *custom_cursor = &cursor->cursor_data.custom;
-    SDL_Window *focus = SDL_GetMouseFocus();
-    double scale_factor = 1.0;
-
-    // If the surfaces were released, there are no scaled images.
-    if (focus && custom_cursor->sdl_cursor_surfaces[0]) {
-        scale_factor = focus->internal->scale_factor;
-    }
-
-    // Only use fractional scale values if viewports are available.
-    if (!wd->viewporter) {
-        scale_factor = SDL_ceil(scale_factor);
-    }
-
-    Wayland_ScaledCustomCursor *c = Wayland_CacheScaledCustomCursor(cursor, scale_factor);
-    if (!c) {
-        return false;
-    }
-
-    seat->pointer.cursor_state.cursor_handle = c;
-    *scale = SDL_ceil(scale_factor) == scale_factor ? (int)scale_factor : 0;
-    *dst_width = custom_cursor->width;
-    *dst_height = custom_cursor->height;
-    *hot_x = custom_cursor->hot_x;
-    *hot_y = custom_cursor->hot_y;
-
-    return true;
-}
-
 static SDL_Cursor *Wayland_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int frame_count, int hot_x, int hot_y)
 {
     SDL_Cursor *cursor = SDL_calloc(1, sizeof(*cursor));
+    if (!cursor) {
+        return NULL;
+    }
 
-    if (cursor) {
-        SDL_CursorData *data = SDL_calloc(1, sizeof(*data) + (sizeof(SDL_Surface *) * frame_count));
-        if (!data) {
-            SDL_free(cursor);
-            return NULL;
+    SDL_CursorData *data = NULL;
+    int pool_size = 0;
+    int max_images = 0;
+    bool is_stack = false;
+    struct SurfaceArray
+    {
+        SDL_Surface **surfaces;
+        int count;
+    } *surfaces = SDL_small_alloc(struct SurfaceArray, frame_count, &is_stack);
+    if (!surfaces) {
+        goto failed;
+    }
+    SDL_memset(surfaces, 0, sizeof(struct SurfaceArray) * frame_count);
+
+    // Calculate the total allocation size.
+    for (int i = 0; i < frame_count; ++i) {
+        surfaces[i].surfaces = SDL_GetSurfaceImages(frames[i].surface, &surfaces[i].count);
+        if (!surfaces[i].surfaces) {
+            goto failed;
         }
 
-        data->frame_durations_ms = SDL_calloc(frame_count, sizeof(Uint32));
-        if (!data->frame_durations_ms) {
-            SDL_free(data);
-            SDL_free(cursor);
-            return NULL;
+        max_images = SDL_max(max_images, surfaces[i].count);
+        for (int j = 0; j < surfaces[i].count; ++j) {
+            pool_size += surfaces[i].surfaces[j]->w * surfaces[i].surfaces[j]->h * 4;
+        }
+    }
+
+    data = SDL_calloc(1, sizeof(*data) + (sizeof(CustomCursorImage) * max_images * frame_count));
+    if (!data) {
+        goto failed;
+    }
+
+    data->frame_durations_ms = SDL_calloc(frame_count, sizeof(Uint32));
+    if (!data->frame_durations_ms) {
+        goto failed;
+    }
+
+    data->cursor_data.custom.shmPool = Wayland_AllocSHMPool(pool_size);
+    if (!data->cursor_data.custom.shmPool) {
+        goto failed;
+    }
+
+    cursor->internal = data;
+    data->cursor_data.custom.width = frames[0].surface->w;
+    data->cursor_data.custom.height = frames[0].surface->h;
+    data->cursor_data.custom.hot_x = hot_x;
+    data->cursor_data.custom.hot_y = hot_y;
+    data->cursor_data.custom.images_per_frame = max_images;
+    data->num_frames = frame_count;
+
+    for (int i = 0; i < frame_count; ++i) {
+        data->frame_durations_ms[i] = frames[i].duration;
+        if (data->total_duration_ms < SDL_MAX_UINT32) {
+            if (data->frame_durations_ms[i] > 0) {
+                data->total_duration_ms += data->frame_durations_ms[i];
+            } else {
+                data->total_duration_ms = SDL_MAX_UINT32;
+            }
         }
 
-        cursor->internal = data;
-        WAYLAND_wl_list_init(&data->cursor_data.custom.scaled_cursor_cache);
-        data->cursor_data.custom.width = frames[0].surface->w;
-        data->cursor_data.custom.height = frames[0].surface->h;
-        data->cursor_data.custom.hot_x = hot_x;
-        data->cursor_data.custom.hot_y = hot_y;
-        data->num_frames = frame_count;
+        const int offset = i * max_images;
+        for (int j = 0; j < surfaces[i].count; ++j) {
+            SDL_Surface *surface = surfaces[i].surfaces[j];
 
-        for (int i = 0; i < frame_count; ++i) {
-            data->frame_durations_ms[i] = frames[i].duration;
-            if (data->total_duration_ms < SDL_MAX_UINT32) {
-                if (data->frame_durations_ms[i] > 0) {
-                    data->total_duration_ms += data->frame_durations_ms[i];
-                } else {
-                    data->total_duration_ms = SDL_MAX_UINT32;
+            // Convert the surface format, if required.
+            if (surface->format != SDL_PIXELFORMAT_ARGB8888) {
+                surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
+                if (!surface) {
+                    goto failed;
                 }
             }
-            data->cursor_data.custom.sdl_cursor_surfaces[i] = frames[i].surface;
-            ++frames[i].surface->refcount;
+
+            data->cursor_data.custom.images[offset + j].width = surface->w;
+            data->cursor_data.custom.images[offset + j].height = surface->h;
+
+            void *buf_data;
+            data->cursor_data.custom.images[offset + j].buffer = Wayland_AllocBufferFromPool(data->cursor_data.custom.shmPool, surface->w, surface->h, &buf_data);
+            // Wayland requires premultiplied alpha for its surfaces.
+            SDL_PremultiplyAlpha(surface->w, surface->h,
+                                 surface->format, surface->pixels, surface->pitch,
+                                 SDL_PIXELFORMAT_ARGB8888, buf_data, surface->w * 4, true);
+
+            if (surface != surfaces[i].surfaces[j]) {
+                SDL_DestroySurface(surface);
+            }
         }
 
-        // If the cursor has only one size, just prepare it now.
-        if (!SDL_SurfaceHasAlternateImages(frames[0].surface)) {
-            bool success = !!Wayland_CacheScaledCustomCursor(data, 1.0);
+        // Free the memory returned by SDL_GetSurfaceImages().
+        SDL_free(surfaces[i].surfaces);
+    }
 
-            // Done with the surfaces.
-            for (int i = 0; i < frame_count; ++i) {
-                SDL_DestroySurface(data->cursor_data.custom.sdl_cursor_surfaces[i]);
-                data->cursor_data.custom.sdl_cursor_surfaces[i] = NULL;
-            }
+    SDL_small_free(surfaces, is_stack);
 
-            if (!success) {
-                SDL_free(data);
-                SDL_free(cursor);
-                return NULL;
+    return cursor;
+
+failed:
+    Wayland_ReleaseSHMPool(data->cursor_data.custom.shmPool);
+
+    if (data) {
+        SDL_free(data->frame_durations_ms);
+        for (int i = 0; i < data->cursor_data.custom.images_per_frame * frame_count; ++i) {
+            if (data->cursor_data.custom.images[i].buffer) {
+                wl_buffer_destroy(data->cursor_data.custom.images[i].buffer);
             }
         }
     }
 
-    return cursor;
+    SDL_free(data);
+
+    if (surfaces) {
+        for (int i = 0; i < frame_count; ++i) {
+            SDL_free(surfaces[i].surfaces);
+        }
+        SDL_small_free(surfaces, is_stack);
+    }
+
+    SDL_free(cursor);
+
+    return NULL;
 }
 
 static SDL_Cursor *Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
@@ -940,15 +938,13 @@ static void Wayland_FreeCursorData(SDL_CursorData *d)
             SDL_free(c);
         }
     } else {
-        Wayland_ScaledCustomCursor *c, *temp;
-        wl_list_for_each_safe(c, temp, &d->cursor_data.custom.scaled_cursor_cache, node) {
-            Wayland_ReleaseSHMPool(c->shmPool);
-            SDL_free(c);
+        for (int i = 0; i < d->num_frames * d->cursor_data.custom.images_per_frame; ++i) {
+            if (d->cursor_data.custom.images[i].buffer) {
+                wl_buffer_destroy(d->cursor_data.custom.images[i].buffer);
+            }
         }
 
-        for (int i = 0; i < d->num_frames; ++i) {
-            SDL_DestroySurface(d->cursor_data.custom.sdl_cursor_surfaces[i]);
-        }
+        Wayland_ReleaseSHMPool(d->cursor_data.custom.shmPool);
     }
 
     SDL_free(d->frame_durations_ms);
@@ -1048,7 +1044,7 @@ static void Wayland_SeatSetCursor(SDL_WaylandSeat *seat, SDL_Cursor *cursor)
 {
     if (seat->pointer.wl_pointer) {
         SDL_CursorData *cursor_data = cursor ? cursor->internal : NULL;
-        int scale = 1;
+        int scale = 0;
         int dst_width = 0;
         int dst_height = 0;
         int hot_x;
@@ -1095,8 +1091,21 @@ static void Wayland_SeatSetCursor(SDL_WaylandSeat *seat, SDL_Cursor *cursor)
 
                 dst_height = dst_width;
             } else {
-                if (!Wayland_GetCustomCursor(cursor_data, seat, &scale, &dst_width, &dst_height, &hot_x, &hot_y)) {
-                    return;
+                dst_width = cursor_data->cursor_data.custom.width;
+                dst_height = cursor_data->cursor_data.custom.height;
+                hot_x = cursor_data->cursor_data.custom.hot_x;
+                hot_y = cursor_data->cursor_data.custom.hot_y;
+
+                // If viewports aren't available, figure out the integer scale.
+                if (!seat->display->viewporter) {
+                    scale = 1;
+
+                    double image_scale = seat->pointer.focus ? seat->pointer.focus->scale_factor : 1.0;
+                    CustomCursorImage *image = Wayland_GetScaledCustomCursorImage(cursor_data, 0, image_scale);
+                    if (image) {
+                        image_scale = (double)image->width / (double)cursor_data->cursor_data.custom.width;
+                        scale= SDL_lround(image_scale);
+                    }
                 }
             }
 

@@ -31,23 +31,14 @@ typedef struct
     int shm_data_size;
 } Wayland_SHMBuffer;
 
-typedef struct
-{
-    struct
-    {
-        void *shm_pool_handle;
-        int shm_pool_size;
-    } internal;
-
-    int buffer_count;
-    Wayland_SHMBuffer buffers[];
-} Wayland_SHMPool;
+typedef struct Wayland_SHMPool Wayland_SHMPool;
 
 // Allocates an SHM buffer with the format WL_SHM_FORMAT_ARGB8888
 extern bool Wayland_AllocSHMBuffer(int width, int height, Wayland_SHMBuffer *shmBuffer);
 extern void Wayland_ReleaseSHMBuffer(Wayland_SHMBuffer *shmBuffer);
 
-extern Wayland_SHMPool *Wayland_AllocSHMPool(int width, int height, int buffer_count);
+extern Wayland_SHMPool *Wayland_AllocSHMPool(int size);
+extern struct wl_buffer *Wayland_AllocBufferFromPool(Wayland_SHMPool *shmPool, int width, int height, void **data);
 extern void Wayland_ReleaseSHMPool(Wayland_SHMPool *shmPool);
 
 #endif
