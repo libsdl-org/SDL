@@ -43,6 +43,8 @@ int SDL_RunApp(int caller_argc, char *caller_argv[], SDL_main_func mainFunction,
     int result;
     (void)reserved;
 
+    SDL_SetMainReady();
+
     // If the provided argv is valid, we pass it to the main function as-is, since it's probably what the user wants.
     // Otherwise, we take a NULL argv as an instruction for SDL to parse the command line into an argv.
     // On Windows, when SDL provides the main entry point, argv is always NULL.

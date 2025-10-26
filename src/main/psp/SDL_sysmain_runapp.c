@@ -83,7 +83,6 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
     sdl_psp_setup_callbacks();
 
     SDL_SetMainReady();
-
     return mainFunction(argc, argv);
 }
 
