@@ -5291,8 +5291,8 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
 {
     int i;
     int count = indices ? num_indices : num_vertices;
-    SDL_TextureAddressMode texture_address_mode_u;
-    SDL_TextureAddressMode texture_address_mode_v;
+    SDL_TextureAddressMode texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
+    SDL_TextureAddressMode texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
 
     CHECK_RENDERER_MAGIC(renderer, false);
 
@@ -5354,47 +5354,47 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
         if (texture->native) {
             texture = texture->native;
         }
-    }
 
-    if (renderer->npot_texture_wrap_unsupported && IsNPOT(texture->w)) {
-        texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
-    } else {
-        texture_address_mode_u = renderer->texture_address_mode_u;
-    }
-    if (renderer->npot_texture_wrap_unsupported && IsNPOT(texture->h)) {
-        texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
-    } else {
-        texture_address_mode_v = renderer->texture_address_mode_v;
-    }
-    if (texture &&
-        (texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO ||
-         texture_address_mode_v == SDL_TEXTURE_ADDRESS_AUTO)) {
-        for (i = 0; i < num_vertices; ++i) {
-            const float *uv_ = (const float *)((const char *)uv + i * uv_stride);
-            float u = uv_[0];
-            float v = uv_[1];
-            if (u < 0.0f || u > 1.0f) {
-                if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO) {
-                    texture_address_mode_u = SDL_TEXTURE_ADDRESS_WRAP;
-                    if (texture_address_mode_v != SDL_TEXTURE_ADDRESS_AUTO) {
-                        break;
-                    }
-                }
-            }
-            if (v < 0.0f || v > 1.0f) {
-                if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_AUTO) {
-                    texture_address_mode_v = SDL_TEXTURE_ADDRESS_WRAP;
-                    if (texture_address_mode_u != SDL_TEXTURE_ADDRESS_AUTO) {
-                        break;
-                    }
-                }
-            }
-        }
-        if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO) {
+        if (renderer->npot_texture_wrap_unsupported && IsNPOT(texture->w)) {
             texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
+        } else {
+            texture_address_mode_u = renderer->texture_address_mode_u;
         }
-        if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_AUTO) {
+        if (renderer->npot_texture_wrap_unsupported && IsNPOT(texture->h)) {
             texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
+        } else {
+            texture_address_mode_v = renderer->texture_address_mode_v;
+        }
+
+        if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO ||
+            texture_address_mode_v == SDL_TEXTURE_ADDRESS_AUTO) {
+            for (i = 0; i < num_vertices; ++i) {
+                const float *uv_ = (const float *)((const char *)uv + i * uv_stride);
+                float u = uv_[0];
+                float v = uv_[1];
+                if (u < 0.0f || u > 1.0f) {
+                    if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO) {
+                        texture_address_mode_u = SDL_TEXTURE_ADDRESS_WRAP;
+                        if (texture_address_mode_v != SDL_TEXTURE_ADDRESS_AUTO) {
+                            break;
+                        }
+                    }
+                }
+                if (v < 0.0f || v > 1.0f) {
+                    if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_AUTO) {
+                        texture_address_mode_v = SDL_TEXTURE_ADDRESS_WRAP;
+                        if (texture_address_mode_u != SDL_TEXTURE_ADDRESS_AUTO) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (texture_address_mode_u == SDL_TEXTURE_ADDRESS_AUTO) {
+                texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
+            }
+            if (texture_address_mode_v == SDL_TEXTURE_ADDRESS_AUTO) {
+                texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
+            }
         }
     }
 
