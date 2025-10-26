@@ -79,7 +79,7 @@ static bool GENERIC_EnumerateStorageDirectory(void *userdata, const char *path, 
 
     char *fullpath = GENERIC_INTERNAL_CreateFullPath((char *)userdata, path);
     if (fullpath) {
-        wrap_data.base_len = SDL_strlen((char *)userdata);
+        wrap_data.base_len = userdata ? SDL_strlen((char *)userdata) : 0;
         wrap_data.real_callback = callback;
         wrap_data.real_userdata = callback_userdata;
 
