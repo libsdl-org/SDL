@@ -26,15 +26,13 @@
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
+    char fallbackargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
+    char *fallbackargv[2] = { fallbackargv0, NULL };
     (void)reserved;
 
-    if(!argv)
-    {
-        // make sure argv isn't NULL, in case some user code doesn't like that
-        static char dummyargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
-        static char *argvdummy[2] = { dummyargv0, NULL };
+    if (!argv || argc < 0) {
         argc = 1;
-        argv = argvdummy;
+        argv = fallbackargv;
     }
 
     return mainFunction(argc, argv);

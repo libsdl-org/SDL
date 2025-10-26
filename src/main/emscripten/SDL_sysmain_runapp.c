@@ -33,7 +33,14 @@ EMSCRIPTEN_KEEPALIVE void force_free(void *ptr) { free(ptr); }
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
+    char fallbackargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
+    char *fallbackargv[2] = { fallbackargv0, NULL };
     (void)reserved;
+
+    if (!argv || argc < 0) {
+        argc = 1;
+        argv = fallbackargv;
+    }
 
     // Move any URL params that start with "SDL_" over to environment
     //  variables, so the hint system can pick them up, etc, much like a user

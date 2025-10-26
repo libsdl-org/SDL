@@ -49,24 +49,31 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserve
      * SDL_free() to use the same allocator after SDL_main() returns.
      */
     forward_main = mainFunction;
-    forward_argc = argc;
-    forward_argv = (char **)malloc((argc + 1) * sizeof(char *)); // This should NOT be SDL_malloc()
-    for (i = 0; i < argc; i++) {
-        forward_argv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char)); // This should NOT be SDL_malloc()
-        strcpy(forward_argv[i], argv[i]);
+    if (argv && argc >= 0) {
+        forward_argc = argc;
+        forward_argv = (char **)malloc((argc + 1) * sizeof(char *)); // This should NOT be SDL_malloc()
+        for (i = 0; i < argc; i++) {
+            forward_argv[i] = malloc((strlen(argv[i]) + 1) * sizeof(char)); // This should NOT be SDL_malloc()
+            strcpy(forward_argv[i], argv[i]);
+        }
+        forward_argv[i] = NULL;
+    } else {
+        forward_argc = 0;
+        forward_argv = NULL;
     }
-    forward_argv[i] = NULL;
 
     // Give over control to run loop, SDLUIKitDelegate will handle most things from here
     @autoreleasepool {
         UIApplicationMain(argc, argv, nil, [SDLUIKitDelegate getAppDelegateClassName]);
     }
 
-    // free the memory we used to hold copies of argc and argv
-    for (i = 0; i < forward_argc; i++) {
-        free(forward_argv[i]); // This should NOT be SDL_free()
+    if (forward_argv) {
+        // free the memory we used to hold copies of argc and argv
+        for (i = 0; i < forward_argc; i++) {
+            free(forward_argv[i]); // This should NOT be SDL_free()
+        }
+        free(forward_argv); // This should NOT be SDL_free()
     }
-    free(forward_argv); // This should NOT be SDL_free()
 
     return exit_status;
 }
@@ -395,7 +402,13 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
     // run the user's application, passing argc and argv
     SDL_SetiOSEventPump(true);
-    exit_status = forward_main(forward_argc, forward_argv);
+    if (forward_argv && forward_argc >= 0) {
+        exit_status = forward_main(forward_argc, forward_argv);
+    } else {
+        char fallbackargv0[] = { 'S', 'D', 'L', '_', 'a', 'p', 'p', '\0' };
+        char *fallbackargv[2] = { fallbackargv0, NULL };
+        exit_status = forward_main(1, fallbackargv);
+    }
     SDL_SetiOSEventPump(false);
 
     if (launchWindow) {
