@@ -259,9 +259,6 @@ typedef enum WIN_RawKeyboardFlag {
 static bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag flag, bool enabled)
 {
     SDL_VideoData *data = _this->internal;
-    if (data->gameinput_context) {
-        return false;
-    }
 
     switch(flag) {
         case NOHOTKEYS:
@@ -269,6 +266,10 @@ static bool WIN_SetRawKeyboardFlag(SDL_VideoDevice *_this, WIN_RawKeyboardFlag f
             break;
         default:
             return false;
+    }
+
+    if (data->gameinput_context) {
+        return true;
     }
 
     return WIN_UpdateRawInputEnabled(_this);
