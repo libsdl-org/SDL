@@ -41,9 +41,12 @@
  * This is also where an app can be configured to use the main callbacks, via
  * the SDL_MAIN_USE_CALLBACKS macro.
  *
- * SDL_main.h is a "single-header library," which is to say that including
+ * `SDL_main.h` is a "single-header library," which is to say that including
  * this header inserts code into your program, and you should only include it
- * once in most cases. SDL.h does not include this header automatically.
+ * once in most cases. `SDL.h` does not include this header automatically.
+ *
+ * If you want to include `SDL_main.h` but don't want SDL to redefine main(),
+ * you can define SDL_MAIN_HANDLED before including `SDL_main.h`.
  *
  * For more information, see:
  *
@@ -64,9 +67,10 @@
  * Inform SDL that the app is providing an entry point instead of SDL.
  *
  * SDL does not define this macro, but will check if it is defined when
- * including `SDL_main.h`. If defined, SDL will expect the app to provide the
- * proper entry point for the platform, and all the other magic details
- * needed, like manually calling SDL_SetMainReady.
+ * including `SDL_main.h`. If defined, SDL expects the app to provide a proper
+ * entry point for the platform that either calls SDL_RunApp() to let SDL
+ * initialize all platform-specific details, or initializes everything itself
+ * outside of SDL before finally calling SDL_SetMainReady().
  *
  * Please see [README-main-functions](README-main-functions), (or
  * docs/README-main-functions.md in the source tree) for a more detailed
@@ -115,7 +119,7 @@
  *
  * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_MAIN_AVAILABLE
+#define SDL_MAIN_AVAILABLE 1
 
 /**
  * Defined if the target platform _requires_ a special mainline through SDL.
@@ -134,7 +138,7 @@
  *
  * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_MAIN_NEEDED
+#define SDL_MAIN_NEEDED 1
 
 #endif
 
@@ -250,12 +254,12 @@
  *
  * \sa SDL_DECLSPEC
  */
-#define SDLMAIN_DECLSPEC
+#define SDLMAIN_DECLSPEC SDL_DECLSPEC
 
 #elif defined(SDL_MAIN_EXPORTED)
 /* We need to export SDL_main so it can be launched from external code,
    like SDLActivity.java on Android */
-#define SDLMAIN_DECLSPEC    SDL_DECLSPEC
+#define SDLMAIN_DECLSPEC SDL_DECLSPEC
 #else
 /* usually this is empty */
 #define SDLMAIN_DECLSPEC
@@ -531,34 +535,46 @@ typedef int (SDLCALL *SDL_main_func)(int argc, char *argv[]);
 extern SDLMAIN_DECLSPEC int SDLCALL SDL_main(int argc, char *argv[]);
 
 /**
- * Circumvent failure of SDL_Init() when not using SDL_main() as an entry
- * point.
+ * Informs SDL that an app that provides its own entry point instead of using
+ * SDL_main() has initialized all platform-specific details outside of SDL.
  *
- * This function is defined in SDL_main.h, along with the preprocessor rule to
- * redefine main() as SDL_main(). Thus to ensure that your main() function
- * will not be changed it is necessary to define SDL_MAIN_HANDLED before
- * including SDL.h.
+ * Apps that don't use SDL_main() should call SDL_SetMainReady() before
+ * calling SDL_Init(), otherwise SDL_Init() may fail on some platforms.
+ *
+ * If your app provides its own entry point, consider instead using
+ * SDL_RunApp(), which automatically initializes all platform-specific details
+ * for you and is generally more portable and reliable than initializing
+ * everything on your own. When using SDL_RunApp(), you do *not* need to call
+ * SDL_SetMainReady().
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_RunApp
  * \sa SDL_Init
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetMainReady(void);
 
 /**
  * Initializes and launches an SDL application, by doing platform-specific
- * initialization before calling your mainFunction and cleanups after it
+ * initialization before calling your `mainFunction` and cleanups after it
  * returns, if that is needed for a specific platform, otherwise it just calls
- * mainFunction.
+ * `mainFunction`.
  *
  * You can use this if you want to use your own main() implementation without
- * using SDL_main (like when using SDL_MAIN_HANDLED). When using this, you do
- * *not* need SDL_SetMainReady().
+ * using SDL_main() (like when using SDL_MAIN_HANDLED). When using this, you
+ * do *not* need to call SDL_SetMainReady().
+ *
+ * If `argv` is non-NULL, SDL will pass it forward to `mainFunction` as-is.
+ * Otherwise, SDL will override `argv` in a platform-specific way. On some
+ * platforms like Windows, SDL may try to get the command line string and
+ * parse it into an argv. On others, it might just fall back to a dummy argv.
+ * Either way, SDL ensures that the argv passed to `mainFunction` is not NULL.
  *
  * \param argc the argc parameter from the application's main() function, or 0
  *             if the platform's main-equivalent has no argc.
  * \param argv the argv parameter from the application's main() function, or
- *             NULL if the platform's main-equivalent has no argv.
+ *             NULL if the platform's main-equivalent has no argv (in which
+ *             case SDL will override it in a platform-specific way).
  * \param mainFunction your SDL app's C-style main(). NOT the function you're
  *                     calling this from! Its name doesn't matter; it doesn't
  *                     literally have to be `main`.
@@ -572,6 +588,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetMainReady(void);
  *               process's initial thread.
  *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_SetMainReady
  */
 extern SDL_DECLSPEC int SDLCALL SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved);
 
