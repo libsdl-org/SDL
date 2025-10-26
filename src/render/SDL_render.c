@@ -5356,12 +5356,12 @@ bool SDL_RenderGeometryRaw(SDL_Renderer *renderer,
         }
     }
 
-    if (renderer->npot_texture_wrap_unsupported && IsNPOT(texture->w)) {
+    if (!texture || (renderer->npot_texture_wrap_unsupported && IsNPOT(texture->w))) {
         texture_address_mode_u = SDL_TEXTURE_ADDRESS_CLAMP;
     } else {
         texture_address_mode_u = renderer->texture_address_mode_u;
     }
-    if (renderer->npot_texture_wrap_unsupported && IsNPOT(texture->h)) {
+    if (!texture || (renderer->npot_texture_wrap_unsupported && IsNPOT(texture->h))) {
         texture_address_mode_v = SDL_TEXTURE_ADDRESS_CLAMP;
     } else {
         texture_address_mode_v = renderer->texture_address_mode_v;
