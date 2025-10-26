@@ -338,6 +338,7 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
     unsigned w, h;
     int rc = -1;
     int num_planes = 0;
+    int i;
     uint32_t format, strides[4] = { 0 }, handles[4] = { 0 }, offsets[4] = { 0 }, flags = 0;
     uint64_t modifiers[4] = { 0 };
 
@@ -374,7 +375,7 @@ KMSDRM_FBInfo *KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 
         modifiers[0] = KMSDRM_gbm_bo_get_modifier(bo);
         num_planes = KMSDRM_gbm_bo_get_plane_count(bo);
-        for (int i = 0; i < num_planes; i++) {
+        for (i = 0; i < num_planes; i++) {
             strides[i] = KMSDRM_gbm_bo_get_stride_for_plane(bo, i);
             handles[i] = KMSDRM_gbm_bo_get_handle_for_plane(bo, i).u32;
             offsets[i] = KMSDRM_gbm_bo_get_offset(bo, i);
