@@ -4146,6 +4146,7 @@ extern "C" {
  *
  * This hint can be set anytime.
  *
+ * \since This hint is available since SDL 3.4.0.
  */
 #define SDL_HINT_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS "SDL_WINDOWS_RAW_KEYBOARD_EXCLUDE_HOTKEYS"
 
