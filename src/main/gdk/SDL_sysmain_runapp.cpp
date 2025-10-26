@@ -112,62 +112,78 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *)
 {
     int result;
     HRESULT hr;
-    XTaskQueueHandle taskQueue;
 
     hr = XGameRuntimeInitialize();
+    if (SUCCEEDED(hr)) {
+        XTaskQueueHandle taskQueue;
+        if (SDL_GetGDKTaskQueue(&taskQueue)) {
+            XTaskQueueSetCurrentProcessTaskQueue(taskQueue);
 
-    if (SUCCEEDED(hr) && SDL_GetGDKTaskQueue(&taskQueue)) {
-        Uint32 titleid = 0;
-        char scidBuffer[64];
-        XblInitArgs xblArgs;
+            // Try to get the TitleID and initialize Xbox Live
+            Uint32 titleId;
+            bool xblInitialized = false;
+            hr = XGameGetXboxTitleId(&titleId);
+            if (SUCCEEDED(hr)) {
+                XblInitArgs xblInitArgs;
+                char scidBuffer[64];
+                SDL_zero(xblInitArgs);
+                xblInitArgs.queue = taskQueue;
+                SDL_snprintf(scidBuffer, 64, "00000000-0000-0000-0000-0000%08X", titleId);
+                xblInitArgs.scid = scidBuffer;
+                hr = XblInitialize(&xblInitArgs);
+                if (SUCCEEDED(hr)) {
+                    xblInitialized = true;
+                } else {
+                    SDL_SetError("[GDK] Unable to call XblInitialize");
+                }
+            } else {
+                SDL_SetError("[GDK] Unable to get TitleID. Will not call XblInitialize. Check MicrosoftGame.config!");
+            }
 
-        XTaskQueueSetCurrentProcessTaskQueue(taskQueue);
+            if (GDK_RegisterChangeNotifications()) {
+                // We are now ready to call the main function.
+                SDL_SetMainReady();
+                result = CallMainFunction(argc, argv, mainFunction);
 
-        // Try to get the title ID and initialize Xbox Live
-        hr = XGameGetXboxTitleId(&titleid);
-        if (SUCCEEDED(hr)) {
-            SDL_zero(xblArgs);
-            xblArgs.queue = taskQueue;
-            SDL_snprintf(scidBuffer, 64, "00000000-0000-0000-0000-0000%08X", titleid);
-            xblArgs.scid = scidBuffer;
-            hr = XblInitialize(&xblArgs);
+                GDK_UnregisterChangeNotifications();
+            } else {
+                SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Unable to register change notifications - aborting", NULL);
+                result = -1;
+            }
+
+            // Clean up Xbox Live (synchronously)
+            if (xblInitialized) {
+                XAsyncBlock asyncBlock = { 0 };
+                hr = XblCleanupAsync(&asyncBlock);
+                if (SUCCEEDED(hr)) {
+                    hr = XAsyncGetStatus(&asyncBlock, true);
+                }
+            }
+
+            // Terminate the task queue and dispatch any pending tasks.
+            // !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit?
+            hr = XTaskQueueTerminate(taskQueue, false, nullptr, nullptr);
+            while (XTaskQueueDispatch(taskQueue, XTaskQueuePort::Completion, 0))
+                ;
+            XTaskQueueCloseHandle(taskQueue);
         } else {
-            SDL_SetError("[GDK] Unable to get titleid. Will not call XblInitialize. Check MicrosoftGame.config!");
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not create global task queue - aborting", NULL);
+            result = -1;
         }
-
-        SDL_SetMainReady();
-
-        if (!GDK_RegisterChangeNotifications()) {
-            return -1;
-        }
-
-        // Run the application main() code
-        result = CallMainFunction(argc, argv, mainFunction);
-
-        GDK_UnregisterChangeNotifications();
-
-        // !!! FIXME: This follows the docs exactly, but for some reason still leaks handles on exit?
-        // Terminate the task queue and dispatch any pending tasks
-        XTaskQueueTerminate(taskQueue, false, nullptr, nullptr);
-        while (XTaskQueueDispatch(taskQueue, XTaskQueuePort::Completion, 0))
-            ;
-
-        XTaskQueueCloseHandle(taskQueue);
 
         XGameRuntimeUninitialize();
     } else {
 #ifdef SDL_PLATFORM_WINGDK
         if (hr == E_GAMERUNTIME_DLL_NOT_FOUND) {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Gaming Runtime library not found (xgameruntime.dll)", NULL);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Gaming Runtime library not found (xgameruntime.dll) - aborting", NULL);
         } else {
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not initialize - aborting", NULL);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "[GDK] Could not initialize Gaming Runtime - aborting", NULL);
         }
 #else
-        SDL_assert_always(0 && "[GDK] Could not initialize - aborting");
+        SDL_assert_always(0 && "[GDK] Could not initialize Gaming Runtime - aborting");
 #endif
         result = -1;
     }
 
     return result;
 }
-
