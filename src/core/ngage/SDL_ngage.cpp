@@ -51,21 +51,6 @@ void NGAGE_DebugPrintf(const char *fmt, ...)
     RDebug::Print(_L("%S"), &buf);
 }
 
-void NGAGE_vnprintf(char *buf, size_t size, const char *fmt, va_list ap)
-{
-    char buffer[512] = { 0 };
-
-    vsprintf(buffer, fmt, ap);
-
-    TBuf<512> tbuf;
-    tbuf.Copy(TPtrC8((TText8 *)buffer));
-
-    RDebug::Print(_L("%S"), &tbuf);
-
-    strncpy(buf, buffer, size - 1);
-    buf[size - 1] = '\0';
-}
-
 TInt NGAGE_GetFreeHeapMemory()
 {
     TInt free = 0;
