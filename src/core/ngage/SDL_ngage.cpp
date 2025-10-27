@@ -36,13 +36,13 @@ bool NGAGE_IsClassicModel()
     return (0x101f8c19 == phone_id);
 }
 
-void NGAGE_printf(const char *fmt, ...)
+void NGAGE_DebugPrintf(const char *fmt, ...)
 {
     char buffer[512] = { 0 };
 
     va_list ap;
     va_start(ap, fmt);
-    vsprintf(buffer, fmt, ap);
+    (void)SDL_vsnprintf(buffer, sizeof(buffer), fmt, ap);
     va_end(ap);
 
     TBuf<512> buf;

@@ -24,6 +24,10 @@
 #include "core/windows/SDL_windows.h"
 #endif
 
+#if defined(SDL_PLATFORM_NGAGE)
+#include "core/ngage/SDL_ngage.h"
+#endif
+
 // Simple log messages in SDL
 
 #include "SDL_log_c.h"
@@ -780,7 +784,7 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
     }
 #elif defined(SDL_PLATFORM_NGAGE)
     {
-        // NGAGE TODO: Use RDebug::Print() logging here?
+        NGAGE_DebugPrintf("%s%s", GetLogPriorityPrefix(priority), message);
 #ifdef ENABLE_FILE_LOG
         FILE *pFile;
         pFile = fopen("E:/SDL_Log.txt", "a");
