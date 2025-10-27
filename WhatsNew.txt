@@ -49,26 +49,32 @@ Emscripten:
 PlayStation 2:
 * Added the following hints to control the display parameters: SDL_HINT_PS2_GS_WIDTH, SDL_HINT_PS2_GS_HEIGHT, SDL_HINT_PS2_GS_PROGRESSIVE, SDL_HINT_PS2_GS_MODE
 
+Note: On Unix platforms SDL provides ELF notes describing its non-mandatory library dependencies in the format described by https://systemd.io/ELF_DLOPEN_METADATA/. Some of these libraries are quite important, so distribution vendors who package SDL should parse the ELF notes and consider generating dependencies at the packaging level, for example by using https://github.com/systemd/package-notes. Other libraries and games can add similar ELF notes to describe their own dependencies by using the SDL_ELF_NOTE_DLOPEN macro.
+
 
 ---------------------------------------------------------------------------
 3.2.22:
 ---------------------------------------------------------------------------
 * SDL_HINT_JOYSTICK_WGI is disabled by default
 
+
 ---------------------------------------------------------------------------
 3.2.16:
 ---------------------------------------------------------------------------
 * SDL_HINT_JOYSTICK_RAWINPUT is disabled by default
+
 
 ---------------------------------------------------------------------------
 3.2.10:
 ---------------------------------------------------------------------------
 * Added SDL_HINT_VIDEO_X11_EXTERNAL_WINDOW_INPUT to control whether XSelectInput() should be called on external windows to enable input events.
 
+
 ---------------------------------------------------------------------------
 3.2.4:
 ---------------------------------------------------------------------------
 * Added SDL_StretchSurface()
+
 
 ---------------------------------------------------------------------------
 3.2.0:
