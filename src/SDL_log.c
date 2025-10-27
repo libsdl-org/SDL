@@ -24,6 +24,10 @@
 #include "core/windows/SDL_windows.h"
 #endif
 
+#if defined(SDL_PLATFORM_NGAGE)
+#include "core/ngage/SDL_ngage.h"
+#endif
+
 // Simple log messages in SDL
 
 #include "SDL_log_c.h"
@@ -598,25 +602,6 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
         return;
     }
 
-#if defined(SDL_PLATFORM_NGAGE)
-    extern void NGAGE_vnprintf(char *buf, size_t size, const char *fmt, va_list ap);
-    char buf[1024];
-    NGAGE_vnprintf(buf, sizeof(buf), fmt, ap);
-
-#ifdef ENABLE_FILE_LOG
-    FILE* file;
-    file = fopen("E:/SDL_Log.txt", "a");
-    if (file)
-    {
-        vfprintf(file, fmt, ap);
-        fprintf(file, "\n");
-        (void)fclose(file);
-    }
-#endif
-
-    return;
-#endif
-
     // Render into stack buffer
     va_copy(aq, ap);
     len = SDL_vsnprintf(stack_buf, sizeof(stack_buf), fmt, aq);
@@ -799,7 +784,15 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
     }
 #elif defined(SDL_PLATFORM_NGAGE)
     {
-        /* Nothing to do here. */
+        NGAGE_DebugPrintf("%s%s", GetLogPriorityPrefix(priority), message);
+#ifdef ENABLE_FILE_LOG
+        FILE *pFile;
+        pFile = fopen("E:/SDL_Log.txt", "a");
+        if (pFile) {
+            (void)fprintf(pFile, "%s%s\n", GetLogPriorityPrefix(priority), message);
+            (void)fclose(pFile);
+        }
+#endif
     }
 #endif
 #if defined(HAVE_STDIO_H) && \
