@@ -1669,7 +1669,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             w = size.right - size.left;
             h = size.bottom - size.top;
 #ifdef HIGHDPI_DEBUG
-            SDL_Log("WM_GETMINMAXINFO: max window size: %dx%d using dpi: %u", w, h, dpi);
+            // SDL_Log("WM_GETMINMAXINFO: max window size: %dx%d using dpi: %u", w, h, dpi);
 #endif
         }
 
@@ -1706,7 +1706,11 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 #endif // WM_GETMINMAXINFO
 
     case WM_WINDOWPOSCHANGING:
-
+    {
+#ifdef WMMSG_DEBUG
+        const WINDOWPOS *windowpos = (WINDOWPOS *)lParam;
+        SDL_Log("WM_WINDOWPOSCHANGING: output size: (%dx%d)", windowpos->cx, windowpos->cy);
+#endif // !WMMSG_DEBUG
         if (data->expected_resize) {
             returnCode = 0;
         } else if (data->in_modal_loop) {
@@ -1726,6 +1730,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             returnCode = 0;
         }
         break;
+    }
 
     case WM_WINDOWPOSCHANGED:
     {
@@ -1737,7 +1742,11 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         RECT rect;
         int x, y;
         int w, h;
-
+#ifdef WMMSG_DEBUG
+        GetClientRect(hwnd, &rect);
+        SDL_Log("WM_WINDOWPOSCHANGED: output size: WINDOWPOS(%dx%d), ClientRect(%d,%d)", windowpos->cx, windowpos->cy,
+            rect.right, rect.bottom);
+#endif // !WMMSG_DEBUG
         if (windowpos->flags & SWP_SHOWWINDOW) {
             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_SHOWN, 0, 0);
         }
@@ -2307,19 +2316,18 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                because Windows doesn't scale the non-client area (titlebar etc.)
                linearly. So, we need to handle this message to request custom
                scaling. */
-
             const int nextDPI = (int)wParam;
             const int prevDPI = (int)data->videodata->GetDpiForWindow(hwnd);
             SIZE *sizeInOut = (SIZE *)lParam;
 
             int frame_w, frame_h;
             int query_client_w_win, query_client_h_win;
-
 #ifdef HIGHDPI_DEBUG
             SDL_Log("WM_GETDPISCALEDSIZE: current DPI: %d potential DPI: %d input size: (%dx%d)",
                     prevDPI, nextDPI, sizeInOut->cx, sizeInOut->cy);
 #endif
-
+            // Early break here, we don't need to do any adjustment
+            break;
             // Subtract the window frame size that would have been used at prevDPI
             {
                 RECT rect = { 0 };
@@ -2406,8 +2414,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                          NULL,
                          suggestedRect->left,
                          suggestedRect->top,
-                         w,
-                         h,
+                         // w,
+                         // h,
+                         suggestedRect->right - suggestedRect->left,
+                         suggestedRect->bottom - suggestedRect->top,
                          SWP_NOZORDER | SWP_NOACTIVATE);
             data->expected_resize = false;
             return 0;
@@ -2446,6 +2456,13 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     } else if (returnCode >= 0) {
         return returnCode;
     } else {
+#ifdef WMMSG_DEBUG
+        if (msg > MAX_WMMSG) {
+            SDL_Log("Forwarding UNKNOWN (%d) to DefWindowProc", msg);
+        } else {
+            SDL_Log("Forwarding %s to DefWindowProc", wmtab[msg]);
+        }
+#endif  // !WMMSG_DEBUG
         return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
     }
 }
