@@ -67,7 +67,7 @@ static void SDL_EMSCRIPTEN_GyroscopeCallback(const EmscriptenDeviceMotionEvent *
     SDL_sensors[1].new_data = true;
 }
 
-static int SDL_EMSCRIPTEN_SensorCallback(int event_type, const EmscriptenDeviceMotionEvent *event, void *user_data)
+static EM_BOOL SDL_EMSCRIPTEN_SensorCallback(int event_type, const EmscriptenDeviceMotionEvent *event, void *user_data)
 {
     SDL_EMSCRIPTEN_AccelerometerCallback(event);
     SDL_EMSCRIPTEN_GyroscopeCallback(event);
