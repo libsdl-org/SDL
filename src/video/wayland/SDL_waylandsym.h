@@ -163,10 +163,10 @@ SDL_WAYLAND_SYM(const char *, xkb_keymap_layout_get_name, (struct xkb_keymap*, x
 #ifdef HAVE_LIBDECOR_H
 SDL_WAYLAND_MODULE(WAYLAND_LIBDECOR)
 SDL_WAYLAND_SYM(void, libdecor_unref, (struct libdecor *))
-SDL_WAYLAND_SYM(struct libdecor *, libdecor_new, (struct wl_display *, struct libdecor_interface *))
+SDL_WAYLAND_SYM(struct libdecor *, libdecor_new, (struct wl_display *, const struct libdecor_interface *))
 SDL_WAYLAND_SYM(struct libdecor_frame *, libdecor_decorate, (struct libdecor *,\
                                                              struct wl_surface *,\
-                                                             struct libdecor_frame_interface *,\
+                                                             const struct libdecor_frame_interface *,\
                                                              void *))
 SDL_WAYLAND_SYM(void, libdecor_frame_unref, (struct libdecor_frame *))
 SDL_WAYLAND_SYM(void, libdecor_frame_set_title, (struct libdecor_frame *, const char *))
