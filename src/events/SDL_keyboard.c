@@ -333,6 +333,18 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
         }
     }
 
+    // See if the current window has lost focus
+    if (keyboard->focus && keyboard->focus != window) {
+        SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
+
+        // Ensures IME compositions are committed
+        if (SDL_TextInputActive(keyboard->focus)) {
+            if (video && video->StopTextInput) {
+                video->StopTextInput(video, keyboard->focus);
+            }
+        }
+    }
+
     if (keyboard->focus && !window) {
         // We won't get anymore keyboard messages, so reset keyboard state
         SDL_ResetKeyboard();
@@ -347,18 +359,6 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
                 float x = focus->x + mouse->x;
                 float y = focus->y + mouse->y;
                 SDL_WarpMouseGlobal(x, y);
-            }
-        }
-    }
-
-    // See if the current window has lost focus
-    if (keyboard->focus && keyboard->focus != window) {
-        SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
-
-        // Ensures IME compositions are committed
-        if (SDL_TextInputActive(keyboard->focus)) {
-            if (video && video->StopTextInput) {
-                video->StopTextInput(video, keyboard->focus);
             }
         }
     }
