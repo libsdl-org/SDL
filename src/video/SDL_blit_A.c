@@ -412,6 +412,66 @@ static void BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo *info)
 
 #endif /* __MMX__ */
 
+#if defined(__loongarch_sx)
+
+static void
+BlitRGBtoRGBPixelAlphaLSX(SDL_BlitInfo * info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint32 *srcp = (Uint32 *) info->src;
+    int srcskip = info->src_skip >> 2;
+    Uint32 *dstp = (Uint32 *) info->dst;
+    int dstskip = info->dst_skip >> 2;
+    SDL_PixelFormat *sf = info->src_fmt;
+    Uint32 amask = sf->Amask;
+    Uint32 ashift = sf->Ashift;
+    Uint64 multmask, multmask2;
+
+    __m128i src1, src2, src3, dst1, alpha, alpha2;
+    multmask = 0x00FF;
+    multmask <<= (ashift * 2);
+    multmask2 = 0x00FF00FF00FF00FFULL;
+
+    while (height--) {
+        /* *INDENT-OFF* */
+        DUFFS_LOOP4({
+        Uint32 alpha1 = *srcp & amask;
+        if (alpha1 == 0) {
+            /* do nothing */
+        } else if (alpha1 == amask) {
+            *dstp = *srcp;
+        } else {
+            src1 = __lsx_vreplgr2vr_w(*srcp);
+            src1 = __lsx_vinsgr2vr_w(src1, *dstp, 1);
+            src2 = __lsx_vsllwil_hu_bu(src1, 0);
+
+            alpha = __lsx_vreplgr2vr_w(alpha1);
+            alpha = __lsx_vsrl_d(alpha, __lsx_vreplgr2vr_d(ashift));
+            alpha = __lsx_vilvl_h(alpha, alpha);
+            alpha2 = __lsx_vilvl_w(alpha, alpha);
+            alpha = __lsx_vor_v(alpha2, __lsx_vreplgr2vr_d(multmask));
+            alpha2 = __lsx_vxor_v(alpha2, __lsx_vreplgr2vr_d(multmask2));
+
+            src3 = __lsx_vilvl_d(alpha2, alpha);
+            src1 = __lsx_vmul_h(src2, src3);
+            src1 = __lsx_vsrli_h(src1, 8);
+            src2 = __lsx_vilvh_d(src1, src1);
+            src1 = __lsx_vadd_h(src1, src2);
+            dst1 = __lsx_vssrlni_bu_h(src1, src1, 0);
+            __lsx_vstelm_w(dst1, dstp, 0, 0);
+        }
+        ++srcp;
+        ++dstp;
+        }, width);
+        /* *INDENT-ON* */
+        srcp += srcskip;
+        dstp += dstskip;
+    }
+}
+
+#endif /* __loongarch_sx */
+
 #ifdef SDL_ARM_SIMD_BLITTERS
 void BlitARGBto565PixelAlphaARMSIMDAsm(int32_t w, int32_t h, uint16_t *dst, int32_t dst_stride, uint32_t *src, int32_t src_stride);
 
@@ -1456,7 +1516,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
 
         case 4:
             if (sf->Rmask == df->Rmask && sf->Gmask == df->Gmask && sf->Bmask == df->Bmask && sf->BytesPerPixel == 4) {
-#if defined(__MMX__) || defined(__3dNOW__)
+#if defined(__MMX__) || defined(__3dNOW__) || defined(__loongarch_sx)
                 if (sf->Rshift % 8 == 0 && sf->Gshift % 8 == 0 && sf->Bshift % 8 == 0 && sf->Ashift % 8 == 0 && sf->Aloss == 0) {
 #ifdef __3dNOW__
                     if (SDL_Has3DNow()) {
@@ -1468,8 +1528,13 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                         return BlitRGBtoRGBPixelAlphaMMX;
                     }
 #endif
+#ifdef __loongarch_sx
+                    if (SDL_HasLSX()) {
+                        return BlitRGBtoRGBPixelAlphaLSX;
+                    }
+#endif
                 }
-#endif /* __MMX__ || __3dNOW__ */
+#endif /* __MMX__ || __3dNOW__ || __loongarch_sx*/
                 if (sf->Amask == 0xff000000) {
 #ifdef SDL_ARM_NEON_BLITTERS
                     if (SDL_HasNEON()) {
