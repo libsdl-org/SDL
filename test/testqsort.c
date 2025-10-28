@@ -10,6 +10,11 @@
   freely.
 */
 
+#ifdef TEST_STDLIB_QSORT
+#define _GNU_SOURCE
+#include <stdlib.h>
+#endif
+
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
@@ -75,8 +80,17 @@ compare_version(const void *_a, const void *_b)
     return (int)a->micro - (int)b->micro;
 }
 
+#ifdef TEST_STDLIB_QSORT
+#define SDL_qsort qsort
+#define SDL_qsort_r qsort_r
+#endif
+
 static int SDLCALL
+#ifdef TEST_STDLIB_QSORT
+generic_compare_r(const void *a, const void *b, void *userdata)
+#else
 generic_compare_r(void *userdata, const void *a, const void *b)
+#endif
 {
     if (userdata != &a_global_var) {
         SDLTest_AssertCheck(userdata == &a_global_var, "User data of callback must be identical to global data");
@@ -153,6 +167,12 @@ generic_compare_r(void *userdata, const void *a, const void *b)
             CHECK_ARRAY_ELEMS, IS_LE, "SDL_qsort");                                                \
     } while (0);
 
+#if defined(SDL_PLATFORM_WINDOWS) && defined(TEST_STDLIB_QSORT)
+#define TEST_QSORT_ARRAY_QSORT_R(TYPE, ARRAY, SIZE, COMPARE_CBFN, CHECK_ARRAY_ELEMS, IS_LE) \
+    do {                                                                                    \
+        SDLTest_AssertPass(STR(TYPE) "qsort_r is not available on current platform");       \
+    } while (0)
+#else
 #define TEST_QSORT_ARRAY_QSORT_R(TYPE, ARRAY, SIZE, COMPARE_CBFN, CHECK_ARRAY_ELEMS, IS_LE)          \
     do {                                                                                             \
         SDLTest_AssertPass(STR(TYPE) "Testing SDL_qsort_r of array with size %u", (unsigned)(SIZE)); \
@@ -161,6 +181,7 @@ generic_compare_r(void *userdata, const void *a, const void *b)
             SDL_qsort_r(sorted, (SIZE), sizeof(TYPE), generic_compare_r, &a_global_var),             \
             CHECK_ARRAY_ELEMS, IS_LE, "SDL_qsort_r");                                                \
     } while (0);
+#endif
 
 #define TEST_QSORT_ARRAY(TYPE, ARRAY, SIZE, COMPARE_CBFN, CHECK_ARRAY_ELEMS, IS_LE)          \
     do {                                                                                     \
