@@ -1234,9 +1234,9 @@ int SDL_GetSystemPageSize(void)
 #if defined(HAVE_SYSCONF) && (defined(_SC_PAGESIZE) || defined(_SC_PAGE_SIZE))
         if (SDL_SystemPageSize <= 0) {
             #if defined(_SC_PAGE_SIZE)
-            SDL_SystemPageSize = sysconf(_SC_PAGE_SIZE);
+            SDL_SystemPageSize = (int)sysconf(_SC_PAGE_SIZE);
             #else
-            SDL_SystemPageSize = sysconf(_SC_PAGESIZE);
+            SDL_SystemPageSize = (int)sysconf(_SC_PAGESIZE);
             #endif
         }
 #endif
