@@ -337,6 +337,20 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
         }
     }
 
+    // See if the current window has lost focus
+    if (keyboard->focus && keyboard->focus != window) {
+        SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
+
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
+        // Ensures IME compositions are committed
+        if (SDL_TextInputActive(keyboard->focus)) {
+            if (video && video->StopTextInput) {
+                video->StopTextInput(video, keyboard->focus);
+            }
+        }
+#endif // !SDL_PLATFORM_IOS && !SDL_PLATFORM_ANDROID
+    }
+
     if (keyboard->focus && !window) {
         // We won't get anymore keyboard messages, so reset keyboard state
         SDL_ResetKeyboard();
@@ -353,20 +367,6 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
                 SDL_WarpMouseGlobal(x, y);
             }
         }
-    }
-
-    // See if the current window has lost focus
-    if (keyboard->focus && keyboard->focus != window) {
-        SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
-
-#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
-        // Ensures IME compositions are committed
-        if (SDL_TextInputActive(keyboard->focus)) {
-            if (video && video->StopTextInput) {
-                video->StopTextInput(video, keyboard->focus);
-            }
-        }
-#endif // !SDL_PLATFORM_IOS && !SDL_PLATFORM_ANDROID
     }
 
     keyboard->focus = window;
