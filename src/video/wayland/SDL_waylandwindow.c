@@ -1476,17 +1476,13 @@ static void decoration_dismiss_popup(struct libdecor_frame *frame, const char *s
     // NOP
 }
 
+#if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
 static void decoration_frame_bounds(struct libdecor_frame *frame, int width, int height, void *user_data)
 {
     SDL_WindowData *window = (SDL_WindowData *)user_data;
     window->toplevel_bounds.width = width;
     window->toplevel_bounds.height = height;
 }
-
-#if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
-#define FRAME_BOUNDS_FUNC_CAST(func) func
-#else
-#define FRAME_BOUNDS_FUNC_CAST(func) (void(*)(void))func
 #endif
 
 static struct libdecor_frame_interface libdecor_frame_interface = {
@@ -1494,7 +1490,9 @@ static struct libdecor_frame_interface libdecor_frame_interface = {
     decoration_frame_close,
     decoration_frame_commit,
     decoration_dismiss_popup,
-    FRAME_BOUNDS_FUNC_CAST(decoration_frame_bounds)
+#if SDL_LIBDECOR_CHECK_VERSION(0, 3, 0)
+    decoration_frame_bounds
+#endif
 };
 #endif
 
