@@ -873,6 +873,17 @@ static int SDLCALL surface_testSurfaceRLEPixels(void *arg)
         return TEST_ABORTED;
     }
 
+    /* RLE encoding only works for 32-bit surfaces with alpha in the high bits */
+    if (face->format != SDL_PIXELFORMAT_ARGB8888) {
+        tmp = SDL_ConvertSurface(face, SDL_PIXELFORMAT_ARGB8888);
+        SDLTest_AssertCheck(tmp != NULL, "Verify tmp surface is not NULL");
+        if (tmp == NULL) {
+            return TEST_ABORTED;
+        }
+        SDL_DestroySurface(face);
+        face = tmp;
+    }
+
     /* Create a temporary surface to trigger RLE encoding during blit */
     tmp = SDL_DuplicateSurface(face);
     SDLTest_AssertCheck(tmp != NULL, "Verify result from SDL_DuplicateSurface() with RLE pixels is not NULL");
