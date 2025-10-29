@@ -311,10 +311,12 @@ static bool kbd_vt_init(int console_fd)
 {
     struct vt_mode mode;
 
-    if (setup_vt_signal(SIGUSR1, kbd_vt_release_signal_action))
+    if (setup_vt_signal(SIGUSR1, kbd_vt_release_signal_action)) {
         vt_release_signal = SIGUSR1;
-    if (setup_vt_signal(SIGUSR2, kbd_vt_acquire_signal_action))
+    }
+    if (setup_vt_signal(SIGUSR2, kbd_vt_acquire_signal_action)) {
         vt_acquire_signal = SIGUSR2;
+    }
     if (!vt_release_signal || !vt_acquire_signal ) {
         kbd_vt_quit(console_fd);
         return false;
@@ -326,7 +328,7 @@ static bool kbd_vt_init(int console_fd)
     mode.acqsig = vt_acquire_signal;
     mode.frsig = SIGIO;
     if (ioctl(console_fd, VT_SETMODE, &mode) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed VT_SETMODE ioctl: %s", strerror(errno));
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed VT_SETMODE ioctl: %s", strerror(errno));
         kbd_vt_quit(console_fd);
         return false;
     }
@@ -373,8 +375,9 @@ SDL_EVDEV_keyboard_state *SDL_EVDEV_kbd_init(void)
             kbd->key_map = &keymap_default_us_acc;
         }
 
-        if (!kbd_vt_init(kbd->console_fd))
-            SDL_LogInfo(SDL_LOG_CATEGORY_VIDEO, "kbd_vt_init failed");
+        if (!kbd_vt_init(kbd->console_fd)) {
+            SDL_LogInfo(SDL_LOG_CATEGORY_INPUT, "kbd_vt_init failed");
+        }
 
         kbd->keyboard_fd = kbd->console_fd;
 
@@ -429,13 +432,13 @@ void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, bool muted)
         return;
     }
 
-    if(tcgetattr(state->console_fd, &tios) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not get terminal mode: %s", strerror(errno));
+    if (tcgetattr(state->console_fd, &tios) == -1) {
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Could not get terminal mode: %s", strerror(errno));
         return;
     }
 
     if (muted) {
-        if(SDL_GetHintBoolean(SDL_HINT_MUTE_CONSOLE_KEYBOARD, true)) {
+        if (SDL_GetHintBoolean(SDL_HINT_MUTE_CONSOLE_KEYBOARD, true)) {
             ioctl(state->console_fd, KDSKBMODE, K_OFF);
             cfmakeraw(&tios);
 
@@ -450,8 +453,8 @@ void SDL_EVDEV_kbd_set_muted(SDL_EVDEV_keyboard_state *state, bool muted)
         ioctl(state->console_fd, KDSKBMODE, state->old_kbd_mode);
     }
 
-    if(tcsetattr(state->console_fd, TCSAFLUSH, &tios) == -1) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set terminal mode to %s: %s", muted ? "raw" : "sane", strerror(errno));
+    if (tcsetattr(state->console_fd, TCSAFLUSH, &tios) == -1) {
+        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Could not set terminal mode to %s: %s", muted ? "raw" : "sane", strerror(errno));
         return;
     }
 

@@ -330,8 +330,9 @@ void SDL_EVDEV_Poll(void)
     for (item = _this->first; item; item = item->next) {
         while ((len = read(item->fd, events, sizeof(events))) > 0) {
 #ifdef SDL_INPUT_FBSDKBIO
-            if (SDL_GetAtomicInt(&vt_current) == VT_THEIRS)
+            if (SDL_GetAtomicInt(&vt_current) == VT_THEIRS) {
                 continue;
+            }
 #endif
             len /= sizeof(events[0]);
             for (i = 0; i < len; ++i) {
