@@ -1148,7 +1148,7 @@ static bool DispatchModalLoopMessageHook(HWND *hwnd, UINT *msg, WPARAM *wParam, 
 
 static WIN_OnDPIUpdateMinMaxSize(SDL_Window *window, int old_dpi, int new_dpi)
 {
-    auto scale = (float)new_dpi / old_dpi;
+    float scale = (float)new_dpi / old_dpi;
 
     if (window->min_w || window->min_h)
     {
@@ -2400,7 +2400,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 return 0;
             }
             // Update minimum size and maximum size for new dpi
-            const int prevDPI = (int)data->videodata->GetDpiForWindow(hwnd);
+            const int prevDPI = data->dpi;
             WIN_OnDPIUpdateMinMaxSize(data->window, prevDPI, newDPI);
 
             // Interactive user-initiated resizing/movement
@@ -2437,6 +2437,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                          h,
                          SWP_NOZORDER | SWP_NOACTIVATE);
             data->expected_resize = false;
+            data->dpi = newDPI;
             return 0;
         }
         break;

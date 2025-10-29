@@ -104,6 +104,7 @@ struct SDL_WindowData
     // Whether we retain the content of the window when changing state
     UINT copybits_flag;
     SDLDropTarget *drop_target;
+    int dpi;
 };
 
 extern bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
@@ -144,6 +145,7 @@ extern bool WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width,
 extern bool WIN_AdjustWindowRectForHWND(HWND hwnd, LPRECT lpRect, UINT frame_dpi);
 extern bool WIN_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent);
 extern bool WIN_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal);
+extern int WIN_GetWindowDpi(SDL_VideoDevice *_this, SDL_Window *window);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus
