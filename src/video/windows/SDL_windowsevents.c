@@ -2318,69 +2318,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     } break;
 
     case WM_GETDPISCALEDSIZE:
-        // Windows 10 Creators Update+
-        /* Documented as only being sent to windows that are per-monitor V2 DPI aware.
-
-           Experimentation shows it's only sent during interactive dragging, not in response to
-           SetWindowPos. */
-        if (data->videodata->GetDpiForWindow && data->videodata->AdjustWindowRectExForDpi) {
-            /* Windows expects applications to scale their window rects linearly
-               when dragging between monitors with different DPI's.
-               e.g. a 100x100 window dragged to a 200% scaled monitor
-               becomes 200x200.
-
-               For SDL, we instead want the client size to scale linearly.
-               This is not the same as the window rect scaling linearly,
-               because Windows doesn't scale the non-client area (titlebar etc.)
-               linearly. So, we need to handle this message to request custom
-               scaling. */
-            const int nextDPI = (int)wParam;
-            const int prevDPI = (int)data->videodata->GetDpiForWindow(hwnd);
-            SIZE *sizeInOut = (SIZE *)lParam;
-
-            int frame_w, frame_h;
-            int query_client_w_win, query_client_h_win;
-#ifdef HIGHDPI_DEBUG
-            SDL_Log("WM_GETDPISCALEDSIZE: current DPI: %d potential DPI: %d input size: (%dx%d)",
-                    prevDPI, nextDPI, sizeInOut->cx, sizeInOut->cy);
-#endif
-            // Early break here, we don't need to do any adjustment
-            break;
-            // Subtract the window frame size that would have been used at prevDPI
-            {
-                RECT rect = { 0 };
-
-                if (!(data->window->flags & SDL_WINDOW_BORDERLESS) && !SDL_WINDOW_IS_POPUP(data->window)) {
-                    WIN_AdjustWindowRectForHWND(hwnd, &rect, prevDPI);
-                }
-
-                frame_w = -rect.left + rect.right;
-                frame_h = -rect.top + rect.bottom;
-
-                query_client_w_win = sizeInOut->cx - frame_w;
-                query_client_h_win = sizeInOut->cy - frame_h;
-            }
-
-            // Add the window frame size that would be used at nextDPI
-            {
-                RECT rect = { 0 };
-                rect.right = query_client_w_win;
-                rect.bottom = query_client_h_win;
-
-                if (!(data->window->flags & SDL_WINDOW_BORDERLESS) && !SDL_WINDOW_IS_POPUP(data->window)) {
-                    WIN_AdjustWindowRectForHWND(hwnd, &rect, nextDPI);
-                }
-
-                // This is supposed to control the suggested rect param of WM_DPICHANGED
-                sizeInOut->cx = rect.right - rect.left;
-                sizeInOut->cy = rect.bottom - rect.top;
-            }
-
-#ifdef HIGHDPI_DEBUG
-            SDL_Log("WM_GETDPISCALEDSIZE: output size: (%dx%d)", sizeInOut->cx, sizeInOut->cy);
-#endif
-            return TRUE;
-        }
         break;
 
     case WM_DPICHANGED:
