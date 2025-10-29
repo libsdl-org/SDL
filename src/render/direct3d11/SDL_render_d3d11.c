@@ -292,6 +292,8 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(Uint32 format, Uint32 outpu
         return DXGI_FORMAT_NV12;
     case SDL_PIXELFORMAT_P010:
         return DXGI_FORMAT_P010;
+    case SDL_PIXELFORMAT_RGB565:
+        return DXGI_FORMAT_B5G6R5_UNORM;
     default:
         return DXGI_FORMAT_UNKNOWN;
     }
@@ -2897,6 +2899,7 @@ static bool D3D11_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_RGB565);
 
     data->swapChainFlags = 0;
     data->syncInterval = 0;
