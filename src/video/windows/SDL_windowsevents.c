@@ -1146,17 +1146,21 @@ static bool DispatchModalLoopMessageHook(HWND *hwnd, UINT *msg, WPARAM *wParam, 
     return false;
 }
 
-static WIN_OnDPIUpdateMinMaxSize(SDL_Window *window, int old_dpi, int new_dpi)
+static void WIN_OnDPIUpdateMinMaxSize(SDL_Window *window, int old_dpi, int new_dpi)
 {
     float scale = (float)new_dpi / old_dpi;
 
     if (window->min_w || window->min_h)
     {
-        SDL_SetWindowMinimumSize(window, window->min_w * scale, window->min_h * scale);
+        int new_min_w = (int)SDL_ceilf(window->min_w * scale);
+        int new_min_h = (int)SDL_ceilf(window->min_h * scale);
+        SDL_SetWindowMinimumSize(window, new_min_w, new_min_h);
     }
     if (window->max_w || window->max_h)
     {
-        SDL_SetWindowMaximumSize(window, window->max_w * scale, window->max_h * scale);
+        int new_max_w = (int)SDL_ceilf(window->max_w * scale);
+        int new_max_h = (int)SDL_ceilf(window->max_h * scale);
+        SDL_SetWindowMaximumSize(window, new_max_w, new_max_h);
     }
 }
 
