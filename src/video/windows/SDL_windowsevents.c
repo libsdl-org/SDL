@@ -1146,6 +1146,20 @@ static bool DispatchModalLoopMessageHook(HWND *hwnd, UINT *msg, WPARAM *wParam, 
     return false;
 }
 
+static WIN_OnDPIUpdateMinMaxSize(SDL_Window *window, int old_dpi, int new_dpi)
+{
+    auto scale = (float)new_dpi / old_dpi;
+
+    if (window->min_w || window->min_h)
+    {
+        SDL_SetWindowMinimumSize(window, window->min_w * scale, window->min_h * scale);
+    }
+    if (window->max_w || window->max_h)
+    {
+        SDL_SetWindowMaximumSize(window, window->max_w * scale, window->max_h * scale);
+    }
+}
+
 LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     SDL_WindowData *data;
@@ -2371,7 +2385,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             const int newDPI = HIWORD(wParam);
             RECT *const suggestedRect = (RECT *)lParam;
             int w, h;
-
 #ifdef HIGHDPI_DEBUG
             SDL_Log("WM_DPICHANGED: to %d\tsuggested rect: (%d, %d), (%dx%d)", newDPI,
                     suggestedRect->left, suggestedRect->top, suggestedRect->right - suggestedRect->left, suggestedRect->bottom - suggestedRect->top);
@@ -2386,11 +2399,15 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 #endif
                 return 0;
             }
+            // Update minimum size and maximum size for new dpi
+            const int prevDPI = (int)data->videodata->GetDpiForWindow(hwnd);
+            WIN_OnDPIUpdateMinMaxSize(data->window, prevDPI, newDPI);
 
             // Interactive user-initiated resizing/movement
             {
                 /* Calculate the new frame w/h such that
                    the client area size is maintained. */
+
                 RECT rect = { 0 };
                 rect.right = data->window->w;
                 rect.bottom = data->window->h;
@@ -2399,8 +2416,10 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                     WIN_AdjustWindowRectForHWND(hwnd, &rect, newDPI);
                 }
 
-                w = rect.right - rect.left;
-                h = rect.bottom - rect.top;
+                // w = rect.right - rect.left;
+                // h = rect.bottom - rect.top;
+                w = suggestedRect->right - suggestedRect->left;
+                h = suggestedRect->bottom - suggestedRect->top;
             }
 
 #ifdef HIGHDPI_DEBUG
@@ -2414,10 +2433,8 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                          NULL,
                          suggestedRect->left,
                          suggestedRect->top,
-                         // w,
-                         // h,
-                         suggestedRect->right - suggestedRect->left,
-                         suggestedRect->bottom - suggestedRect->top,
+                         w,
+                         h,
                          SWP_NOZORDER | SWP_NOACTIVATE);
             data->expected_resize = false;
             return 0;
