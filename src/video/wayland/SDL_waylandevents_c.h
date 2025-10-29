@@ -56,6 +56,66 @@ typedef struct
     char text[8];
 } SDL_WaylandKeyboardRepeat;
 
+typedef struct SDL_WaylandCursorState
+{
+    SDL_CursorData *current_cursor;
+    struct wp_cursor_shape_device_v1 *cursor_shape;
+    struct wl_surface *surface;
+    struct wp_viewport *viewport;
+
+    double scale;
+
+    // Pointer to the internal data for system cursors.
+    void *system_cursor_handle;
+
+    // The cursor animation thread lock must be held when modifying this.
+    struct wl_callback *frame_callback;
+
+    Uint64 last_frame_callback_time_ms;
+    Uint32 current_frame_time_ms;
+    int current_frame;
+    SDL_HitTestResult hit_test_result;
+} SDL_WaylandCursorState;
+
+typedef struct SDL_WaylandPenTool  // a stylus, etc, on a tablet.
+{
+    SDL_PenID instance_id;
+    SDL_PenInfo info;
+    SDL_WindowData *focus;
+    struct zwp_tablet_tool_v2 *wltool;
+    Uint32 proximity_serial;
+
+    struct
+    {
+        float x;
+        float y;
+
+        float axes[SDL_PEN_AXIS_COUNT];
+        Uint32 axes_set;
+
+        enum
+        {
+            WAYLAND_TABLET_TOOL_BUTTON_NONE = 0,
+            WAYLAND_TABLET_TOOL_BUTTON_DOWN,
+            WAYLAND_TABLET_TOOL_BUTTON_UP
+        } buttons[3];
+
+        enum
+        {
+            WAYLAND_TABLET_TOOL_STATE_NONE = 0,
+            WAYLAND_TABLET_TOOL_STATE_DOWN,
+            WAYLAND_TABLET_TOOL_STATE_UP
+        } tool_state;
+
+        bool have_motion;
+        bool have_proximity_in;
+        bool have_proximity_out;
+    } frame;
+
+    SDL_WaylandCursorState cursor_state;
+    struct wl_list link;
+} SDL_WaylandPenTool;
+
 typedef struct SDL_WaylandSeat
 {
     SDL_VideoData *display;
@@ -120,7 +180,6 @@ typedef struct SDL_WaylandSeat
         struct wl_pointer *wl_pointer;
         struct zwp_relative_pointer_v1 *relative_pointer;
         struct zwp_input_timestamps_v1 *timestamps;
-        struct wp_cursor_shape_device_v1 *cursor_shape;
         struct zwp_locked_pointer_v1 *locked_pointer;
         struct zwp_confined_pointer_v1 *confined_pointer;
         struct zwp_pointer_gesture_pinch_v1 *gesture_pinch;
@@ -176,22 +235,7 @@ typedef struct SDL_WaylandSeat
             Uint64 timestamp_ns;
         } pending_frame;
 
-        // Cursor state
-        struct
-        {
-            struct wl_surface *surface;
-            struct wp_viewport *viewport;
-
-            // Animation state for cursors
-            void *cursor_handle;
-
-            // The cursor animation thread lock must be held when modifying this.
-            struct wl_callback *frame_callback;
-
-            Uint64 last_frame_callback_time_ms;
-            Uint32 current_frame_time_ms;
-            int current_frame;
-        } cursor_state;
+        SDL_WaylandCursorState cursor_state;
     } pointer;
 
     struct
