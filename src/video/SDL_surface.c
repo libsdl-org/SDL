@@ -2014,7 +2014,7 @@ SDL_Surface *SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelForm
         }
     }
 
-    if (surface->pixels) {
+    if (surface->pixels || SDL_MUSTLOCK(surface)) {
         result = SDL_BlitSurfaceUnchecked(surface, &bounds, convert, &bounds);
     } else {
         result = true;
