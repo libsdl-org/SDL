@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* Include Windows socket headers before SDL to avoid macro conflicts */
+/* Include socket headers before SDL to avoid macro conflicts */
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
@@ -27,6 +27,13 @@
 #ifdef _MSC_VER
 #pragma comment(lib, "ws2_32.lib")
 #endif
+#else
+/* Unix-like systems including Haiku */
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <errno.h>
 #endif
 
 #include "SDL_internal.h"

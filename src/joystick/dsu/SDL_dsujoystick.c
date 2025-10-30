@@ -61,6 +61,10 @@ typedef int socklen_t;
     #include <fcntl.h>
     #include <unistd.h>
     #include <errno.h>
+    #include <sys/ioctl.h>  /* Required for ioctl on Unix-like systems including Haiku */
+    #ifdef __sun
+        #include <sys/filio.h>  /* FIONBIO on Solaris */
+    #endif
     #define closesocket close
 #endif
 
@@ -121,8 +125,15 @@ dsu_socket_t DSU_CreateSocket(Uint16 port)
 #ifdef _WIN32
     ioctlsocket(sock, FIONBIO, &mode);
 #else
-    flags = fcntl(sock, F_GETFL, 0);
-    fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+    /* Use ioctl with FIONBIO for better compatibility across Unix-like systems */
+    #ifdef FIONBIO
+        int mode_unix = 1;
+        ioctl(sock, FIONBIO, &mode_unix);
+    #else
+        /* Fallback to fcntl if FIONBIO is not available */
+        flags = fcntl(sock, F_GETFL, 0);
+        fcntl(sock, F_SETFL, flags | O_NONBLOCK);
+    #endif
 #endif
 
     /* Bind to client port if specified */
@@ -499,9 +510,9 @@ int SDLCALL DSU_ReceiverThread(void *data)
                     case DSU_MSG_DATA:
                         /* Controller data */
                         if (received >= (int)sizeof(DSU_ControllerData)) {
-                            DSU_ControllerData *data = (DSU_ControllerData *)buffer;
-                            SDL_Log("DSU: Data packet received for slot %d\n", data->info.slot);
-                            DSU_ProcessControllerData(ctx, data);
+                            DSU_ControllerData *packet = (DSU_ControllerData *)buffer;
+                            SDL_Log("DSU: Data packet received for slot %d\n", packet->info.slot);
+                            DSU_ProcessControllerData(ctx, packet);
                         }
                         break;
 

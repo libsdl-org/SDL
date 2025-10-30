@@ -1378,19 +1378,29 @@ if(SDL_JOYSTICK)
   
   # DSU (DualShock UDP) client support
   if(SDL_DSU_JOYSTICK)
-    set(SDL_JOYSTICK_DSU 1)
-    sdl_glob_sources(
-      "${SDL3_SOURCE_DIR}/src/joystick/dsu/*.c"
-      "${SDL3_SOURCE_DIR}/src/joystick/dsu/*.h"
-    )
-    
-    # DSU requires network libraries
-    if(WIN32)
-      list(APPEND SDL3_EXTRA_LIBS ws2_32)
-    elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT HAIKU)
-      # Unix systems typically have sockets built-in
-    elseif(HAIKU)
-      list(APPEND SDL3_EXTRA_LIBS network)
+    # Disable DSU for platforms that don't support UDP sockets
+    if(EMSCRIPTEN)
+      message(STATUS "DSU joystick disabled on Emscripten (no UDP socket support)")
+      set(SDL_DSU_JOYSTICK OFF)
+    else()
+      set(SDL_JOYSTICK_DSU 1)
+      sdl_glob_sources(
+        "${SDL3_SOURCE_DIR}/src/joystick/dsu/*.c"
+        "${SDL3_SOURCE_DIR}/src/joystick/dsu/*.h"
+      )
+      
+      # DSU requires network libraries
+      if(WIN32)
+        sdl_link_dependency(dsu LIBS ws2_32)
+      elseif(HAIKU)
+        sdl_link_dependency(dsu LIBS network)
+      elseif(APPLE)
+        # macOS/iOS have sockets built-in, no extra linking needed
+      elseif(ANDROID)
+        # Android has sockets built-in, no extra linking needed
+      elseif(UNIX)
+        # Other Unix systems typically have sockets built-in
+      endif()
     endif()
   endif()
 endif()

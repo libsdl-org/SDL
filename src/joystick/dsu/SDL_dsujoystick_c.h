@@ -122,9 +122,9 @@ extern DSU_Context *s_dsu_ctx;
 extern "C" {
 #endif
 
-static SDL_FORCE_INLINE Uint16 DSU_htons(Uint16 x) { return SDL_Swap16BE(x); }
-static SDL_FORCE_INLINE Uint32 DSU_htonl(Uint32 x) { return SDL_Swap32BE(x); }
-static SDL_FORCE_INLINE Uint32 DSU_ipv4_addr(const char *ip)
+ SDL_FORCE_INLINE Uint16 DSU_htons(Uint16 x) { return SDL_Swap16BE(x); }
+ SDL_FORCE_INLINE Uint32 DSU_htonl(Uint32 x) { return SDL_Swap32BE(x); }
+ SDL_FORCE_INLINE Uint32 DSU_ipv4_addr(const char *ip)
 {
     unsigned int a, b, c, d;
     if (SDL_sscanf(ip, "%u.%u.%u.%u", &a, &b, &c, &d) == 4) {
