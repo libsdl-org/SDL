@@ -61,18 +61,21 @@ enum
 #define SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ      970
 #define SENSOR_INTERVAL_APEX5_WIRED_NS          (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ)
 
-#define FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME  1000 * 60
+#define FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME  1000 * 30
 
-#define FLYDIGI_V1_CMD_REPORT_ID    0x05
-#define FLYDIGI_V1_HAPTIC_COMMAND   0x0F
-#define FLYDIGI_V1_GET_INFO_COMMAND 0xEC
+#define FLYDIGI_V1_CMD_REPORT_ID        0x05
+#define FLYDIGI_V1_HAPTIC_COMMAND       0x0F
+#define FLYDIGI_V1_GET_INFO_COMMAND     0xEC
 
-#define FLYDIGI_V2_CMD_REPORT_ID    0x03
-#define FLYDIGI_V2_MAGIC1           0x5A
-#define FLYDIGI_V2_MAGIC2           0xA5
-#define FLYDIGI_V2_GET_INFO_COMMAND 0x01
-#define FLYDIGI_V2_HAPTIC_COMMAND   0x12
-#define FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND 0x1c
+#define FLYDIGI_V2_CMD_REPORT_ID        0x03
+#define FLYDIGI_V2_MAGIC1               0x5A
+#define FLYDIGI_V2_MAGIC2               0xA5
+#define FLYDIGI_V2_GET_INFO_COMMAND     0x01
+#define FLYDIGI_V2_GET_STATUS_COMMAND   0x10
+#define FLYDIGI_V2_SET_STATUS_COMMAND   0x11
+#define FLYDIGI_V2_HAPTIC_COMMAND       0x12
+#define FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND 0x1C
+#define FLYDIGI_V2_INPUT_REPORT         0xEF
 
 #define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
@@ -89,7 +92,8 @@ typedef struct
     Uint64 sensor_timestamp_step_ns; // Based on observed rate of receipt of IMU sensor packets.
     float accelScale;
     float gyroScale;
-    Uint64 last_heartbeat;
+    Uint64 next_heartbeat;
+    Uint64 last_packet;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverFlydigi_Context;
 
@@ -198,17 +202,31 @@ static bool GetReply(SDL_HIDAPI_Device* device, Uint8 command, Uint8* data, size
 
 static bool SDL_HIDAPI_Flydigi_SendAcquireRequest(SDL_HIDAPI_Device *device, bool acquire)
 {
-    const Uint8 acquireControllerCmd[] = {
+    const Uint8 acquireControllerCmd[32] = {
         FLYDIGI_V2_CMD_REPORT_ID,
         FLYDIGI_V2_MAGIC1,
         FLYDIGI_V2_MAGIC2,
         FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND,
         23,
         acquire ? 1 : 0,
-        83, 68, 76, 0
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     };
+
+    // Set the name of the application acquiring the controller
+    const char *name = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
+    SDL_assert(name != NULL);
+    SDL_strlcpy((char *)&acquireControllerCmd[6], name, sizeof(acquireControllerCmd) - 6);
+
     if (SDL_hid_write(device->dev, acquireControllerCmd, sizeof(acquireControllerCmd)) < 0) {
         return SDL_SetError("Couldn't send acquire command");
+    }
+    return true;
+}
+
+static bool HIDAPI_DriverFlydigi_HandleAcquireResponse(Uint8 *data, int size)
+{
+    if (data[5] != 1) {
+        return SDL_SetError("Controller acquiring has been disabled");
     }
     return true;
 }
@@ -217,39 +235,45 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
 
+    Uint8 data[USB_PACKET_LENGTH];
     const Uint8 query_info[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_GET_INFO_COMMAND, 2, 0 };
     if (SDL_hid_write(device->dev, query_info, sizeof(query_info)) < 0) {
         return SDL_SetError("Couldn't query controller info");
     }
-
-    Uint8 data[USB_PACKET_LENGTH];
-    if (GetReply(device, FLYDIGI_V2_GET_INFO_COMMAND, data, sizeof(data))) {
-        ctx->deviceID = data[6];
-        ctx->firmware_version = LOAD16(data[17], data[16]);
-
-        switch (data[7]) {
-        case 1:
-            // Wired connection
-            ctx->wireless = false;
-            break;
-        case 2:
-            // Wireless connection
-            ctx->wireless = true;
-            break;
-        default:
-            break;
-        }
+    if (!GetReply(device, FLYDIGI_V2_GET_INFO_COMMAND, data, sizeof(data))) {
+        return SDL_SetError("Couldn't get controller info");
     }
 
-    ctx->last_heartbeat = SDL_GetTicks();
+    // Check the firmware version
+    ctx->firmware_version = LOAD16(data[17], data[16]);
+    if (ctx->firmware_version < 0x7031) {
+        return SDL_SetError("Unsupported firmware version");
+    }
 
-    if (!SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true)) {
-        return false;
+    switch (data[7]) {
+    case 1:
+        // Wired connection
+        ctx->wireless = false;
+        break;
+    case 2:
+        // Wireless connection
+        ctx->wireless = true;
+        break;
+    default:
+        break;
     }
-    if (!GetReply(device, FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND, data, sizeof(data))) {
-        return SDL_SetError("Controller acquiring is not supported");
+    ctx->deviceID = data[6];
+
+    // See whether we can acquire the controller
+    const Uint8 query_status[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_GET_STATUS_COMMAND };
+    if (SDL_hid_write(device->dev, query_status, sizeof(query_status)) < 0) {
+        return SDL_SetError("Couldn't query controller status");
     }
-    if (data[6] != 1) {
+    if (!GetReply(device, FLYDIGI_V2_GET_STATUS_COMMAND, data, sizeof(data))) {
+        return SDL_SetError("Couldn't get controller status");
+    }
+    if (data[10] != 1) {
+        // Click "Allow third-party apps to take over mappings" in the FlyDigi Space Station app
         return SDL_SetError("Controller acquiring is disabled");
     }
     return true;
@@ -341,14 +365,10 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     case SDL_FLYDIGI_APEX5:
         HIDAPI_SetDeviceName(device, "Flydigi Apex 5");
         ctx->has_lmrm = true;
-
-        // The Apex 5 gyro values are only usable on firmware 7.0.3.0 and newer
-        if (ctx->firmware_version >= 0x7030) {
-            ctx->sensors_supported = true;
-            ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
-            ctx->gyroScale = DEG2RAD(2000.0f);
-            ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_APEX5_DONGLE_NS : SENSOR_INTERVAL_APEX5_WIRED_NS;
-        }
+        ctx->sensors_supported = true;
+        ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
+        ctx->gyroScale = DEG2RAD(2000.0f);
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_APEX5_DONGLE_NS : SENSOR_INTERVAL_APEX5_WIRED_NS;
         break;
     case SDL_FLYDIGI_VADER2:
         // The Vader 2 controller has sensors, but they're only reported when gyro mouse is enabled
@@ -503,10 +523,6 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV1(SDL_Joystick *joystick, SDL
 {
     Sint16 axis;
     Uint64 timestamp = SDL_GetTicksNS();
-    if (data[0] != 0x04 || data[1] != 0xFE) {
-        // We don't know how to handle this report
-        return;
-    }
 
     Uint8 extra_button_index = SDL_GAMEPAD_NUM_BASE_FLYDIGI_BUTTONS;
 
@@ -632,20 +648,21 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV1(SDL_Joystick *joystick, SDL
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
+static bool HIDAPI_DriverFlydigi_HandlePacketV1(SDL_Joystick *joystick, SDL_DriverFlydigi_Context *ctx, Uint8 *data, int size)
+{
+    if (data[0] != 0x04 || data[1] != 0xFE) {
+        // We don't know how to handle this report, ignore it
+        return true;
+    }
+
+    HIDAPI_DriverFlydigi_HandleStatePacketV1(joystick, ctx, data, size);
+    return true;
+}
+
 static void HIDAPI_DriverFlydigi_HandleStatePacketV2(SDL_Joystick *joystick, SDL_DriverFlydigi_Context *ctx, Uint8 *data, int size)
 {
     Sint16 axis;
     Uint64 timestamp = SDL_GetTicksNS();
-
-    if (size > 0 && data[0] != 0x5A) {
-        // If first byte is not 0x5A, it must be REPORT_ID, we need to remove it.
-        ++data;
-        --size;
-    }
-    if (size < 31 || data[0] != 0x5A || data[1] != 0xA5 || data[2] != 0xEF) {
-        // We don't know how to handle this report
-        return;
-    }
 
     Uint8 extra_button_index = SDL_GAMEPAD_NUM_BASE_FLYDIGI_BUTTONS;
 
@@ -766,24 +783,50 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV2(SDL_Joystick *joystick, SDL
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
+static bool HIDAPI_DriverFlydigi_HandlePacketV2(SDL_Joystick *joystick, SDL_DriverFlydigi_Context *ctx, Uint8 *data, int size)
+{
+    if (size > 0 && data[0] != 0x5A) {
+        // If first byte is not 0x5A, it must be REPORT_ID, we need to remove it.
+        ++data;
+        --size;
+    }
+    if (size < 31 || data[0] != FLYDIGI_V2_MAGIC1 || data[1] != FLYDIGI_V2_MAGIC2) {
+        // We don't know how to handle this report, ignore it
+        return true;
+    }
+
+    switch (data[2]) {
+    case FLYDIGI_V2_ACQUIRE_CONTROLLER_COMMAND:
+        if (!HIDAPI_DriverFlydigi_HandleAcquireResponse(data, size)) {
+            return false;
+        }
+        break;
+    case FLYDIGI_V2_INPUT_REPORT:
+        HIDAPI_DriverFlydigi_HandleStatePacketV2(joystick, ctx, data, size);
+        break;
+    default:
+        // We don't recognize this command, ignore it
+        break;
+    }
+    return true;
+}
+
 static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
     SDL_Joystick *joystick = NULL;
     Uint8 data[USB_PACKET_LENGTH];
     int size = 0;
+    Uint64 now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
         joystick = SDL_GetJoystickFromID(device->joysticks[0]);
-    } else {
-        return false;
     }
 
-    if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
-        Uint64 now = SDL_GetTicks();
-        if (now >= (ctx->last_heartbeat + FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME)) {
+    if (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && joystick) {
+        if (!ctx->next_heartbeat || now >= ctx->next_heartbeat) {
             SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true);
-            ctx->last_heartbeat = now;
+            ctx->next_heartbeat = now + FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME;
         }
     }
 
@@ -791,17 +834,34 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
 #ifdef DEBUG_FLYDIGI_PROTOCOL
         HIDAPI_DumpPacket("Flydigi packet: size = %d", data, size);
 #endif
+        ctx->last_packet = now;
+
         if (!joystick) {
             continue;
         }
+
         if (device->vendor_id == USB_VENDOR_FLYDIGI_V1) {
-            HIDAPI_DriverFlydigi_HandleStatePacketV1(joystick, ctx, data, size);
+            if (!HIDAPI_DriverFlydigi_HandlePacketV1(joystick, ctx, data, size)) {
+                HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+                return false;
+            }
         } else {
-            HIDAPI_DriverFlydigi_HandleStatePacketV2(joystick, ctx, data, size);
+            if (!HIDAPI_DriverFlydigi_HandlePacketV2(joystick, ctx, data, size)) {
+                HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+                return false;
+            }
         }
     }
 
-    if (size < 0) {
+    if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
+        // If we haven't gotten a packet in a while, check to make sure we can still acquire it
+        const int INPUT_TIMEOUT_MS = 100;
+        if (now >= (ctx->last_packet + INPUT_TIMEOUT_MS)) {
+            ctx->next_heartbeat = now;
+        }
+    }
+
+    if (size < 0 && device->num_joysticks > 0) {
         // Read error, device is disconnected
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
@@ -810,7 +870,9 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverFlydigi_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    SDL_HIDAPI_Flydigi_SendAcquireRequest(device, false);
+    // Don't unacquire the controller, someone else might be using it too.
+    // The controller will automatically unacquire itself after a little while
+    //SDL_HIDAPI_Flydigi_SendAcquireRequest(device, false);
 }
 
 static void HIDAPI_DriverFlydigi_FreeDevice(SDL_HIDAPI_Device *device)
