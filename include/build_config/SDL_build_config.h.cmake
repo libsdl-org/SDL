@@ -313,6 +313,7 @@
 #cmakedefine SDL_JOYSTICK_RAWINPUT 1
 #cmakedefine SDL_JOYSTICK_USBHID 1
 #cmakedefine SDL_JOYSTICK_VIRTUAL 1
+#cmakedefine SDL_JOYSTICK_DSU 1
 #cmakedefine SDL_JOYSTICK_VITA 1
 #cmakedefine SDL_JOYSTICK_WGI 1
 #cmakedefine SDL_JOYSTICK_XINPUT 1

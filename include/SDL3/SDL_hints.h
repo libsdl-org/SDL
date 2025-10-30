@@ -2320,6 +2320,56 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_WGI "SDL_JOYSTICK_WGI"
 
 /**
+ * A variable controlling whether the DSU (DualShock UDP) joystick driver should be used.
+ *
+ * This variable can be set to the following values:
+ *
+ * - "0": DSU driver is disabled
+ * - "1": DSU driver is enabled (default)
+ *
+ * The DSU driver allows SDL to connect to DSU servers (DS4Windows, BetterJoy, etc.)
+ * to receive controller data over UDP, including motion sensors and touchpad data.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.2.0.
+ */
+#define SDL_HINT_JOYSTICK_DSU "SDL_JOYSTICK_DSU"
+
+/**
+ * A variable controlling the DSU server address.
+ *
+ * The default value is "127.0.0.1"
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.2.0.
+ */
+#define SDL_HINT_DSU_SERVER "SDL_DSU_SERVER"
+
+/**
+ * A variable controlling the DSU server port.
+ *
+ * The default value is "26760"
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.2.0.
+ */
+#define SDL_HINT_DSU_SERVER_PORT "SDL_DSU_SERVER_PORT"
+
+/**
+ * A variable controlling the DSU client port.
+ *
+ * The default value is "0" (auto-select)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.2.0.
+ */
+#define SDL_HINT_DSU_CLIENT_PORT "SDL_DSU_CLIENT_PORT"
+
+/**
  * A variable containing a list of wheel style controllers.
  *
  * The format of the string is a comma separated list of USB VID/PID pairs in

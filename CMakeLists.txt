@@ -380,6 +380,7 @@ dep_option(SDL_HIDAPI_LIBUSB       "Use libusb for low level joystick drivers" O
 dep_option(SDL_HIDAPI_LIBUSB_SHARED "Dynamically load libusb support" ON "SDL_HIDAPI_LIBUSB;SDL_DEPS_SHARED" OFF)
 dep_option(SDL_HIDAPI_JOYSTICK     "Use HIDAPI for low level joystick drivers" ON SDL_HIDAPI OFF)
 dep_option(SDL_VIRTUAL_JOYSTICK    "Enable the virtual-joystick driver" ON SDL_HIDAPI OFF)
+option(SDL_DSU_JOYSTICK             "Enable DSU client joystick support" ON)
 set_option(SDL_LIBUDEV             "Enable libudev support" ON)
 set_option(SDL_ASAN                "Use AddressSanitizer to detect memory errors" OFF)
 set_option(SDL_CCACHE              "Use Ccache to speed up build" OFF)
@@ -1373,6 +1374,24 @@ if(SDL_JOYSTICK)
       "${SDL3_SOURCE_DIR}/src/joystick/virtual/*.c"
       "${SDL3_SOURCE_DIR}/src/joystick/virtual/*.h"
     )
+  endif()
+  
+  # DSU (DualShock UDP) client support
+  if(SDL_DSU_JOYSTICK)
+    set(SDL_JOYSTICK_DSU 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/joystick/dsu/*.c"
+      "${SDL3_SOURCE_DIR}/src/joystick/dsu/*.h"
+    )
+    
+    # DSU requires network libraries
+    if(WIN32)
+      list(APPEND SDL3_EXTRA_LIBS ws2_32)
+    elseif(UNIX AND NOT APPLE AND NOT ANDROID AND NOT HAIKU)
+      # Unix systems typically have sockets built-in
+    elseif(HAIKU)
+      list(APPEND SDL3_EXTRA_LIBS network)
+    endif()
   endif()
 endif()
 
